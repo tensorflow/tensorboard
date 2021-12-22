@@ -25,6 +25,8 @@ import {
   canCreateNewPins,
   createPluginDataWithLoadable,
   createRunToLoadState,
+  generateNextCardStepIndex,
+  generateNextPinnedCardMappings,
   getCardId,
   getPinnedCardId,
   getRunIds,
@@ -498,6 +500,143 @@ describe('metrics store utils', () => {
       });
 
       expect(canCreateNewPins(state)).toBe(false);
+    });
+  });
+
+  describe('generateNextPinnedCardMappings', () => {
+    it(`keeps cardToPinnedCopy and pinnedCardToOriginal unchanged on all pinned cards included in cardlist`, () => {
+      const cardToPinnedCopy = new Map([
+        ['card1', 'card-pin1'],
+        ['card2', 'card-pin2'],
+      ]);
+      const pinnedCardToOriginal = new Map([
+        ['card-pin1', 'card1'],
+        ['card-pin2', 'card2'],
+      ]);
+      const cardList = ['card1', 'card2'];
+      const cardMetadataMap = {
+        card1: createCardMetadata(),
+        card2: createCardMetadata(),
+      };
+
+      const {nextCardToPinnedCopy, nextPinnedCardToOriginal} =
+        generateNextPinnedCardMappings(
+          cardToPinnedCopy,
+          pinnedCardToOriginal,
+          cardMetadataMap,
+          cardList
+        );
+
+      expect(nextCardToPinnedCopy).toEqual(
+        new Map([
+          ['card1', 'card-pin1'],
+          ['card2', 'card-pin2'],
+        ])
+      );
+      expect(nextPinnedCardToOriginal).toEqual(
+        new Map([
+          ['card-pin1', 'card1'],
+          ['card-pin2', 'card2'],
+        ])
+      );
+    });
+
+    it(`removes pinned cards from the maps on pinned cards not included in cardList`, () => {
+      const cardToPinnedCopy = new Map([
+        ['card1', 'card-pin1'],
+        ['card2', 'card-pin2'],
+      ]);
+      const pinnedCardToOriginal = new Map([
+        ['card-pin1', 'card1'],
+        ['card-pin2', 'card2'],
+      ]);
+      const cardList = ['card1', 'card3'];
+      const cardMetadataMap = {
+        card1: createCardMetadata(),
+        card3: createCardMetadata(),
+      };
+
+      const {
+        nextCardToPinnedCopy,
+        nextPinnedCardToOriginal,
+        pinnedCardMetadataMap,
+      } = generateNextPinnedCardMappings(
+        cardToPinnedCopy,
+        pinnedCardToOriginal,
+        cardMetadataMap,
+        cardList
+      );
+
+      expect(nextCardToPinnedCopy).toEqual(new Map([['card1', 'card-pin1']]));
+      expect(nextPinnedCardToOriginal).toEqual(
+        new Map([['card-pin1', 'card1']])
+      );
+    });
+
+    it('preserves pinned cards mapping in cardMetadataMap', () => {
+      const cardToPinnedCopy = new Map([['card1', 'card-pin1']]);
+      const pinnedCardToOriginal = new Map([['card-pin1', 'card1']]);
+      const cardMetadataMap = {card1: createCardMetadata()};
+      const cardList = ['card1'];
+
+      const {pinnedCardMetadataMap} = generateNextPinnedCardMappings(
+        cardToPinnedCopy,
+        pinnedCardToOriginal,
+        cardMetadataMap,
+        cardList
+      );
+
+      const expectedCardMetadataMap = {
+        'card-pin1': createCardMetadata(),
+      };
+      expect(pinnedCardMetadataMap).toEqual(expectedCardMetadataMap);
+    });
+  });
+
+  describe('generateNextCardStepIndex', () => {
+    it(`keeps nextCardStepIndexMap unchanged on cards included in cardMetadataMap`, () => {
+      const cardStepIndex = {card1: 1, card2: 2};
+      const cardMetadataMap = {
+        card1: createCardMetadata(),
+        card2: createCardMetadata(),
+      };
+
+      const nextCardStepIndexMap = generateNextCardStepIndex(
+        cardStepIndex,
+        cardMetadataMap
+      );
+
+      expect(nextCardStepIndexMap).toEqual({card1: 1, card2: 2});
+    });
+
+    it(`removes card mapping from nextCardStepIndexMap on cards not in cardMetadataMap`, () => {
+      const cardStepIndex = {card1: 1, card4: 2};
+      const cardMetadataMap = {
+        card1: createCardMetadata(),
+        card2: createCardMetadata(),
+      };
+
+      const nextCardStepIndexMap = generateNextCardStepIndex(
+        cardStepIndex,
+        cardMetadataMap
+      );
+
+      expect(nextCardStepIndexMap).toEqual({card1: 1});
+    });
+
+    it(`keeps nextCardStepIndexMap unchanged on cards not in nextCardStepIndexMap but in cardMetadataMap`, () => {
+      const cardStepIndex = {card1: 1};
+      const cardMetadataMap = {
+        card1: createCardMetadata(),
+        card2: createCardMetadata(),
+      };
+
+      const nextCardStepIndexMap = generateNextCardStepIndex(
+        cardStepIndex,
+        cardMetadataMap
+      );
+
+      expect(nextCardStepIndexMap).toEqual({card1: 1});
     });
   });
 });

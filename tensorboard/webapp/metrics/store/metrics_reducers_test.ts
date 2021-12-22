@@ -275,6 +275,7 @@ describe('metrics reducers', () => {
         },
         cardList: [cardId],
         cardToPinnedCopy: new Map([[cardId, pinnedCopyId]]),
+        pinnedCardToOriginal: new Map([[pinnedCopyId, cardId]]),
       });
       const action = actions.metricsTagMetadataLoaded({
         tagMetadata: {
@@ -300,6 +301,285 @@ describe('metrics reducers', () => {
       expect(nextState.cardToPinnedCopy).toEqual(
         expectedState.cardToPinnedCopy
       );
+    });
+
+    it('updates pinned/original cards mapping on pinned cards removal', () => {
+      const cardMetadata1 = {
+        plugin: PluginType.HISTOGRAMS,
+        tag: 'tagA',
+        runId: 'run1',
+      };
+      const cardMetadata2 = {
+        plugin: PluginType.SCALARS,
+        tag: 'tagB',
+        runId: null,
+      };
+      const cardId1 = getCardId(cardMetadata1);
+      const cardId2 = getCardId(cardMetadata2);
+      const pinnedCopyId1 = getPinnedCardId(cardId1);
+      const pinnedCopyId2 = getPinnedCardId(cardId2);
+      const beforeState = buildMetricsState({
+        cardMetadataMap: {
+          [cardId1]: cardMetadata1,
+          [cardId2]: cardMetadata2,
+          [pinnedCopyId1]: cardMetadata1,
+          [pinnedCopyId2]: cardMetadata2,
+        },
+        cardList: [cardId1, cardId2],
+        cardToPinnedCopy: new Map([
+          [cardId1, pinnedCopyId1],
+          [cardId2, pinnedCopyId2],
+        ]),
+        pinnedCardToOriginal: new Map([
+          [pinnedCopyId1, cardId1],
+          [pinnedCopyId2, cardId2],
+        ]),
+      });
+      const action = actions.metricsTagMetadataLoaded({
+        tagMetadata: {
+          ...buildDataSourceTagMetadata(),
+          [PluginType.HISTOGRAMS]: {
+            tagDescriptions: {},
+            runTagInfo: {run1: ['tagA']},
+          },
+        },
+      });
+      const nextState = reducers(beforeState, action);
+
+      const expectedState = buildMetricsState({
+        cardMetadataMap: {
+          [cardId1]: cardMetadata1,
+          [pinnedCopyId1]: cardMetadata1,
+        },
+        cardList: [cardId1],
+        cardToPinnedCopy: new Map([[cardId1, pinnedCopyId1]]),
+        pinnedCardToOriginal: new Map([[pinnedCopyId1, cardId1]]),
+      });
+      expect(nextState.cardMetadataMap).toEqual(expectedState.cardMetadataMap);
+      expect(nextState.cardList).toEqual(expectedState.cardList);
+      expect(nextState.cardToPinnedCopy).toEqual(
+        expectedState.cardToPinnedCopy
+      );
+      expect(nextState.pinnedCardToOriginal).toEqual(
+        expectedState.pinnedCardToOriginal
+      );
+    });
+
+    it('updates cardMetadataMap and keeps pinned/original cards mapping unchanged on non-pinned cards removal', () => {
+      const cardMetadata1 = {
+        plugin: PluginType.HISTOGRAMS,
+        tag: 'tagA',
+        runId: 'run1',
+      };
+      const cardMetadata2 = {
+        plugin: PluginType.SCALARS,
+        tag: 'tagB',
+        runId: null,
+      };
+      const cardId1 = getCardId(cardMetadata1);
+      const cardId2 = getCardId(cardMetadata2);
+      const pinnedCopyId1 = getPinnedCardId(cardId1);
+      const beforeState = buildMetricsState({
+        cardMetadataMap: {
+          [cardId1]: cardMetadata1,
+          [cardId2]: cardMetadata2,
+          [pinnedCopyId1]: cardMetadata1,
+        },
+        cardList: [cardId1, cardId2],
+        cardToPinnedCopy: new Map([[cardId1, pinnedCopyId1]]),
+        pinnedCardToOriginal: new Map([[pinnedCopyId1, cardId1]]),
+      });
+      const action = actions.metricsTagMetadataLoaded({
+        tagMetadata: {
+          ...buildDataSourceTagMetadata(),
+          [PluginType.HISTOGRAMS]: {
+            tagDescriptions: {},
+            runTagInfo: {run1: ['tagA']},
+          },
+        },
+      });
+      const nextState = reducers(beforeState, action);
+
+      const expectedState = buildMetricsState({
+        cardMetadataMap: {
+          [cardId1]: cardMetadata1,
+          [pinnedCopyId1]: cardMetadata1,
+        },
+        cardList: [cardId1],
+        cardToPinnedCopy: new Map([[cardId1, pinnedCopyId1]]),
+        pinnedCardToOriginal: new Map([[pinnedCopyId1, cardId1]]),
+      });
+      expect(nextState.cardMetadataMap).toEqual(expectedState.cardMetadataMap);
+      expect(nextState.cardList).toEqual(expectedState.cardList);
+      expect(nextState.cardToPinnedCopy).toEqual(
+        expectedState.cardToPinnedCopy
+      );
+      expect(nextState.pinnedCardToOriginal).toEqual(
+        expectedState.pinnedCardToOriginal
+      );
+    });
+
+    it('updates cardMetadataMap and keeps pinned/original cards mapping unchanged on adding new cards', () => {
+      const cardMetadata1 = {
+        plugin: PluginType.HISTOGRAMS,
+        tag: 'tagA',
+        runId: 'run1',
+      };
+      const cardMetadata2 = {
+        plugin: PluginType.HISTOGRAMS,
+        tag: 'tagB',
+        runId: 'run1',
+      };
+      const cardId1 = getCardId(cardMetadata1);
+      const cardId2 = getCardId(cardMetadata2);
+      const pinnedCopyId1 = getPinnedCardId(cardId1);
+      const beforeState = buildMetricsState({
+        cardMetadataMap: {
+          [cardId1]: cardMetadata1,
+          [pinnedCopyId1]: cardMetadata1,
+        },
+        cardList: [cardId1],
+        cardToPinnedCopy: new Map([[cardId1, pinnedCopyId1]]),
+        pinnedCardToOriginal: new Map([[pinnedCopyId1, cardId1]]),
+      });
+      const action = actions.metricsTagMetadataLoaded({
+        tagMetadata: {
+          ...buildDataSourceTagMetadata(),
+          [PluginType.HISTOGRAMS]: {
+            tagDescriptions: {},
+            runTagInfo: {run1: ['tagA', 'tagB']},
+          },
+        },
+      });
+      const nextState = reducers(beforeState, action);
+
+      const expectedState = buildMetricsState({
+        cardMetadataMap: {
+          [cardId1]: cardMetadata1,
+          [cardId2]: cardMetadata2,
+          [pinnedCopyId1]: cardMetadata1,
+        },
+        cardList: [cardId1, cardId2],
+        cardToPinnedCopy: new Map([[cardId1, pinnedCopyId1]]),
+        pinnedCardToOriginal: new Map([[pinnedCopyId1, cardId1]]),
+      });
+      expect(nextState.cardMetadataMap).toEqual(expectedState.cardMetadataMap);
+      expect(nextState.cardList).toEqual(expectedState.cardList);
+      expect(nextState.cardToPinnedCopy).toEqual(
+        expectedState.cardToPinnedCopy
+      );
+      expect(nextState.pinnedCardToOriginal).toEqual(
+        expectedState.pinnedCardToOriginal
+      );
+    });
+
+    it('removes cards from cardStepIndex mapping on cards removal', () => {
+      const cardMetadata1 = {
+        plugin: PluginType.HISTOGRAMS,
+        tag: 'tagA',
+        runId: 'run1',
+      };
+      const cardMetadata2 = {
+        plugin: PluginType.SCALARS,
+        tag: 'tagB',
+        runId: null,
+      };
+      const cardId1 = getCardId(cardMetadata1);
+      const cardId2 = getCardId(cardMetadata2);
+      const pinnedCopyId1 = getPinnedCardId(cardId1);
+      const pinnedCopyId2 = getPinnedCardId(cardId2);
+      const beforeState = buildMetricsState({
+        cardMetadataMap: {
+          [cardId1]: cardMetadata1,
+          [cardId2]: cardMetadata2,
+          [pinnedCopyId1]: cardMetadata1,
+          [pinnedCopyId2]: cardMetadata2,
+        },
+        cardStepIndex: {
+          [pinnedCopyId1]: 1,
+          [pinnedCopyId2]: 2,
+          [cardId1]: 1,
+          [cardId2]: 2,
+        },
+        cardToPinnedCopy: new Map([
+          [cardId1, pinnedCopyId1],
+          [cardId2, pinnedCopyId2],
+        ]),
+        pinnedCardToOriginal: new Map([
+          [pinnedCopyId1, cardId1],
+          [pinnedCopyId2, cardId2],
+        ]),
+      });
+      const action = actions.metricsTagMetadataLoaded({
+        tagMetadata: {
+          ...buildDataSourceTagMetadata(),
+          [PluginType.HISTOGRAMS]: {
+            tagDescriptions: {},
+            runTagInfo: {run1: ['tagA']},
+          },
+        },
+      });
+      const nextState = reducers(beforeState, action);
+
+      const expectedState = buildMetricsState({
+        cardMetadataMap: {
+          [cardId1]: cardMetadata1,
+          [pinnedCopyId1]: cardMetadata1,
+        },
+        cardStepIndex: {
+          [pinnedCopyId1]: 1,
+          [cardId1]: 1,
+        },
+      });
+      expect(nextState.cardMetadataMap).toEqual(expectedState.cardMetadataMap);
+      expect(nextState.cardStepIndex).toEqual(expectedState.cardStepIndex);
+    });
+
+    it('keeps cardStepIndex unchanged on removing cards not in cardStepIndex', () => {
+      const cardMetadata1 = {
+        plugin: PluginType.HISTOGRAMS,
+        tag: 'tagA',
+        runId: 'run1',
+      };
+      const cardMetadata2 = {
+        plugin: PluginType.SCALARS,
+        tag: 'tagB',
+        runId: null,
+      };
+      const cardId1 = getCardId(cardMetadata1);
+      const cardId2 = getCardId(cardMetadata2);
+      const pinnedCopyId1 = getPinnedCardId(cardId1);
+      const pinnedCopyId2 = getPinnedCardId(cardId2);
+      const beforeState = buildMetricsState({
+        cardMetadataMap: {
+          [cardId1]: cardMetadata1,
+          [cardId2]: cardMetadata2,
+        },
+        cardStepIndex: {
+          [cardId1]: 1,
+        },
+      });
+      const action = actions.metricsTagMetadataLoaded({
+        tagMetadata: {
+          ...buildDataSourceTagMetadata(),
+          [PluginType.HISTOGRAMS]: {
+            tagDescriptions: {},
+            runTagInfo: {run1: ['tagA']},
+          },
+        },
+      });
+      const nextState = reducers(beforeState, action);
+
+      const expectedState = buildMetricsState({
+        cardMetadataMap: {
+          [cardId1]: cardMetadata1,
+        },
+        cardStepIndex: {
+          [cardId1]: 1,
+        },
+      });
+      expect(nextState.cardMetadataMap).toEqual(expectedState.cardMetadataMap);
+      expect(nextState.cardStepIndex).toEqual(expectedState.cardStepIndex);
     });
 
     it('resolves imported pins by automatically creating pinned copies', () => {
@@ -409,7 +689,7 @@ describe('metrics reducers', () => {
       ]);
     });
 
-    it('does not drop existing data', () => {
+    it('resets existing data and replaces with new card set', () => {
       const beforeState = {
         ...buildMetricsState(),
         cardMetadataMap: {'<cardId>': createScalarCardMetadata()},
@@ -423,13 +703,23 @@ describe('metrics reducers', () => {
         },
       };
 
+      const cardMetadata = {
+        plugin: PluginType.SCALARS,
+        tag: 'tagA',
+        runId: null,
+      };
+      const cardId = getCardId(cardMetadata);
+
       const action = actions.metricsTagMetadataLoaded({tagMetadata});
       const nextState = reducers(beforeState, action);
 
-      expect(nextState.cardMetadataMap['<cardId>']).toEqual(
-        createScalarCardMetadata()
+      const expectedCardMetadataMap: CardMetadataMap = {};
+      expectedCardMetadataMap[cardId] = cardMetadata;
+
+      expect(nextState.cardMetadataMap.hasOwnProperty('<cardId>')).toBe(false);
+      expect(nextState.cardMetadataMap[cardId]).toEqual(
+        expectedCardMetadataMap[cardId]
       );
-      expect(nextState.cardMetadataMap['<cardId>']).toBe(origCardMetadata);
     });
   });
 

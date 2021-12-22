@@ -296,6 +296,65 @@ export function buildOrReturnStateWithPinnedCopy(
 }
 
 /**
+ * preserving the previous map, which might also contain outdated mapping due to
+ * Determines which pinned cards should continue to be present in the metrics
+ * state after an update to the set of experiments/tags/cards. Pinned cards are
+ * removed if their corresponding card is no longer present in the state (perhaps
+ * because the corresponding experiment and tag have been removed from the
+ * comparison). No new pinned cards are added by this function. It generates new
+ * cardToPinnedCopy, pinnedCardToOriginal maps to reflect the new set of pinned
+ * cards. It generates a cardMetadataMap object that is a combination of the input
+ * nextCardMetadataMap as well as metadata for the new set of pinned cards.
+ * @param previousCardToPinnedCopy The set of pinned cards that were present before
+ *  the update. This is a superset of pinned cards that may continue to be present
+ *  after the update.
+ * @param nextCardMetadataMap Metadata for all cards that will be present after
+ *  the update (we assume it does not yet include metadata for pinned copies of cards).
+ * @param nextCardList The set of base cards that will continue to be present in the
+ *  dashboard after the update.
+ */
+export function generateNextPinnedCardMappings(
+  previousCardToPinnedCopy: CardToPinnedCard,
+  previousPinnedCardToOriginal: PinnedCardToCard,
+  nextCardMetadataMap: CardMetadataMap,
+  nextCardList: CardId[]
+) {
+  const nextCardToPinnedCopy = new Map() as CardToPinnedCard;
+  const nextPinnedCardToOriginal = new Map() as PinnedCardToCard;
+  const pinnedCardMetadataMap = {} as CardMetadataMap;
+  for (const cardId of nextCardList) {
+    if (previousCardToPinnedCopy.has(cardId)) {
+      const pinnedCardId = previousCardToPinnedCopy.get(cardId)!;
+      nextCardToPinnedCopy.set(cardId, pinnedCardId);
+      nextPinnedCardToOriginal.set(pinnedCardId, cardId);
+      pinnedCardMetadataMap[pinnedCardId] = nextCardMetadataMap[cardId];
+    }
+  }
+
+  return {
+    nextCardToPinnedCopy,
+    nextPinnedCardToOriginal,
+    pinnedCardMetadataMap,
+  };
+}
+
+/**
+ * Removes cards not in cardMetadataMap from cardStepIndex mapping.
+ */
+export function generateNextCardStepIndex(
+  previousCardStepIndex: CardStepIndexMap,
+  nextCardMetadataMap: CardMetadataMap
+): CardStepIndexMap {
+  const nextCardStepIndexMap = {} as CardStepIndexMap;
+  Object.entries(previousCardStepIndex).forEach(([cardId, step]) => {
+    if (nextCardMetadataMap[cardId]) {
+      nextCardStepIndexMap[cardId] = step;
+    }
+  });
+  return nextCardStepIndexMap;
+}
+
+/**
  * The maximum number of pins we allow the user to create. This is intentionally
  * finite at the moment to mitigate super long URL lengths, until there is more
  * durable value storage for pins.
