@@ -187,7 +187,8 @@ export function createRouteContextedState<
           !areSameRouteKindAndExperiments(before, after) &&
           onRouteKindOrExperimentsChanged
         ) {
-          // Experiments have changed. Delegate additional changes to the caller.
+          // RouteKind or Experiments have changed. Delegate additional changes
+          // to the caller.
           nextFullState = onRouteKindOrExperimentsChanged(nextFullState, after);
         }
 
