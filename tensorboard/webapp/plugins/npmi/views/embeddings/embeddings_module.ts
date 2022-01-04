@@ -20,6 +20,7 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatIconModule} from '@angular/material/icon';
 import {RunsSelectorModule} from '../../../../runs/views/runs_selector/runs_selector_module';
 import {AnnotationsListModule} from '../annotations_list/annotations_list_module';
+import {EmbeddingProjectionModule} from '../embedding_projection/embedding_projection_module';
 import {DataSelectionModule} from './../data_selection/data_selection_module';
 import {SelectedAnnotationsModule} from './../selected_annotations/selected_annotations_module';
 import {EmbeddingsComponent} from './embeddings_component';
@@ -37,6 +38,7 @@ import {EmbeddingsContainer} from './embeddings_container';
     MatButtonModule,
     AnnotationsListModule,
     SelectedAnnotationsModule,
+    EmbeddingProjectionModule,
   ],
   exports: [EmbeddingsContainer],
 })

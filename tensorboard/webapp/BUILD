@@ -308,6 +308,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_arithmetic/metric_arithmetic_operator:metric_arithmetic_operator_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_search:metric_search_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/data_selection/results_download:results_download_test_lib",
+        "//tensorboard/webapp/plugins/npmi/views/embedding_projection:embedding_projection_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/embeddings:embeddings_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/main:main_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/selected_annotations:selected_annotations_test_lib",

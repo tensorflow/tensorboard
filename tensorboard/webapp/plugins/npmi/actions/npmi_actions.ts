@@ -134,7 +134,7 @@ export const npmiEmbeddingsSidebarWidthChanged = createAction(
 );
 
 export const npmiEmbeddingsSidebarExpandedToggled = createAction(
-  '[NPMI] Toggle Embeddings Sidebar Expanded'
+  '[NPMI] Embeddings Sidebar Expanded Toggled'
 );
 
 export const embeddingDataSetChanged = createAction(

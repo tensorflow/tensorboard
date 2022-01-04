@@ -33,6 +33,7 @@ tf_ng_module(
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/views/annotations_list",
         "//tensorboard/webapp/plugins/npmi/views/data_selection",
+        "//tensorboard/webapp/plugins/npmi/views/embedding_projection",
         "//tensorboard/webapp/plugins/npmi/views/selected_annotations",
         "//tensorboard/webapp/runs/views/runs_selector",
         "@npm//@angular/common",

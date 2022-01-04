@@ -34,17 +34,17 @@ limitations under the License.
 }
 
 .sidebar-contents {
-  height: 100%;
   display: flex;
   flex-direction: column;
+  height: 100%;
   min-width: 150px;
 }
 
 .analysis-container {
   display: flex;
+  flex: 1 1;
   flex-direction: column;
   height: 100%;
-  flex: 1 1;
 }
 
 .run-selector {
@@ -52,30 +52,42 @@ limitations under the License.
   width: 100%;
 }
 
+.embedding-projection {
+  min-height: 0px;
+  width: 100%;
+}
+
 .side-toggle {
-  width: 30px;
-  height: 30px;
-  position: absolute;
-  left: 10px;
-  bottom: 10px;
+  align-items: center;
   border: 1px solid mat.get-color-from-palette($tb-foreground, border);
   border-radius: 3px;
+  bottom: 10px;
   display: flex;
-  align-items: center;
+  height: 30px;
   justify-content: center;
+  left: 10px;
+  position: absolute;
+  width: 30px;
+}
+
+.run-divider {
+  background-color: mat.get-color-from-palette($tb-foreground, divider);
+  content: '';
+  height: 1px;
+  overflow: hidden;
 }
 
 .grabber {
+  background-color: mat.get-color-from-palette($tb-foreground, divider);
   content: '';
   cursor: ew-resize;
   height: 100%;
-  width: 3px;
   overflow: hidden;
-  background-color: mat.get-color-from-palette($tb-foreground, divider);
+  width: 3px;
 }
 
 .annotations-list {
-  width: 100%;
-  min-height: 0px;
   flex: 1 1;
+  min-height: 0px;
+  width: 100%;
 }
