@@ -63,12 +63,18 @@ tb_proto_library(
     srcs = ["config.proto"],
     deps = [
         ":cluster",
+        ":coordination_config",
         ":cost_graph",
         ":debug",
         ":graph",
         ":rewriter_config",
         ":step_stats",
     ],
+)
+
+tb_proto_library(
+    name = "coordination_config",
+    srcs = ["coordination_config.proto"],
 )
 
 tb_proto_library(
@@ -296,6 +302,7 @@ tb_proto_library(
         ":attr_value",
         ":cluster",
         ":config",
+        ":coordination_config",
         ":cost_graph",
         ":cpp_shape_inference",
         ":debug",
