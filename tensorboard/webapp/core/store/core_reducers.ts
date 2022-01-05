@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
-import {createRouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
+import {createNamespaceContextedState} from '../../app_routing/route_contexted_reducer_helper';
 import {metricsPromoGoToScalars} from '../../metrics/actions';
 import {globalSettingsLoaded} from '../../persistent_settings';
 import {DataLoadState} from '../../types/data';
@@ -174,12 +174,12 @@ const reducer = createReducer(
   })
 );
 
-// Core state is all routeful. None of it is routeless.
-const {reducers: routeContextReducer} = createRouteContextedState<
+// Core state is all namespaced. None of it is non-namespaced.
+const {reducers: namespaceContextedReducer} = createNamespaceContextedState<
   CoreState,
   {}
 >(initialState, {});
 
 export function reducers(state: CoreState | undefined, action: Action) {
-  return composeReducers(reducer, routeContextReducer)(state, action);
+  return composeReducers(reducer, namespaceContextedReducer)(state, action);
 }

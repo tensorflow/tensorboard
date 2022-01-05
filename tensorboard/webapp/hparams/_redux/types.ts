@@ -44,7 +44,7 @@ export const HPARAMS_FEATURE_KEY = 'hparams';
 export interface HparamsState {
   specs: ExperimentToHparams;
   /**
-   * RATIONALE: we do not use the RouteContextedState because of the following reasons.
+   * RATIONALE: we do not use the NamespaceContextedState because of the following reasons.
    * - RunsTable which uses the state renders both on the dashboard view and the
    *     experiments list view.
    * - For the RunsTable on the list view, we have to key the state by an experimentId
@@ -53,7 +53,7 @@ export interface HparamsState {
    * - For the dashboard view that supports comparison, we need to remember filter state
    *    when viewing multiple experiments separate from a single version one; while we can
    *    technically have a reasonable UX, it makes things more complex.
-   * - We can use RouteContextedState to separate single experiment filter selection to be
+   * - We can use NamespaceContextedState to separate single experiment filter selection to be
    *    separate for the list and the dashboard views, but them shared is not too bad.
    */
   filters: {

@@ -20,7 +20,7 @@ import {
   on,
 } from '@ngrx/store';
 import {stateRehydratedFromUrl} from '../../app_routing/actions';
-import {createRouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
+import {createNamespaceContextedState} from '../../app_routing/route_contexted_reducer_helper';
 import {RouteKind} from '../../app_routing/types';
 import {DataLoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
@@ -29,58 +29,66 @@ import * as runsActions from '../actions';
 import {GroupByKey, URLDeserializedState} from '../types';
 import {
   MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT,
-  RunsDataRoutefulState,
-  RunsDataRoutelessState,
+  RunsDataNamespacedState,
+  RunsDataNonNamespacedState,
   RunsDataState,
   RunsState,
-  RunsUiRoutefulState,
+  RunsUiNamespacedState,
   RunsUiState,
 } from './runs_types';
 import {createGroupBy, groupRuns, serializeExperimentIds} from './utils';
 
-const {initialState: dataInitialState, reducers: dataRouteContextReducers} =
-  createRouteContextedState<RunsDataRoutefulState, RunsDataRoutelessState>(
-    {
-      runColorOverrideForGroupBy: new Map(),
-      defaultRunColorIdForGroupBy: new Map(),
-      groupKeyToColorId: new Map(),
-      initialGroupBy: {key: GroupByKey.RUN},
-      userSetGroupByKey: null,
-      colorGroupRegexString: '',
-      regexFilter: '',
-    },
-    {
-      runIds: {},
-      runIdToExpId: {},
-      runMetadata: {},
-      runsLoadState: {},
-      selectionState: new Map<string, Map<string, boolean>>(),
-    },
-    (state, route) => {
-      return {
-        ...state,
-        initialGroupBy: {
-          key:
-            route.routeKind === RouteKind.COMPARE_EXPERIMENT
-              ? GroupByKey.EXPERIMENT
-              : GroupByKey.RUN,
-        },
-      };
-    }
-  );
+const {
+  initialState: dataInitialState,
+  reducers: dataNamespaceContextedReducers,
+} = createNamespaceContextedState<
+  RunsDataNamespacedState,
+  RunsDataNonNamespacedState
+>(
+  {
+    runColorOverrideForGroupBy: new Map(),
+    defaultRunColorIdForGroupBy: new Map(),
+    groupKeyToColorId: new Map(),
+    initialGroupBy: {key: GroupByKey.RUN},
+    userSetGroupByKey: null,
+    colorGroupRegexString: '',
+    regexFilter: '',
+  },
+  {
+    runIds: {},
+    runIdToExpId: {},
+    runMetadata: {},
+    runsLoadState: {},
+    selectionState: new Map<string, Map<string, boolean>>(),
+  },
+  /* onRouteKindOrExperimentsChanged() */
+  (state, route) => {
+    return {
+      ...state,
+      initialGroupBy: {
+        key:
+          route.routeKind === RouteKind.COMPARE_EXPERIMENT
+            ? GroupByKey.EXPERIMENT
+            : GroupByKey.RUN,
+      },
+    };
+  }
+);
 
 const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
   dataInitialState,
   // Color grouping potentially is an expensive operation and assigning colors
   // on route changes may not actually be effective at all. Because we are
-  // using RouteContextedState, color assignment and groupBy information should
-  // not go out of sync. That is, for a given route, the condition in which the
-  // colors get assigned are (1) when user changes groupBy and (2) when new
-  // runs are fetched (new runs added or runs removed). Both of those cases
-  // are handled by their respective reducer functions and, while there is no
-  // strong guarantees at the moment, because we are using RouteContextedState,
-  // even if new runs are fetched for a route that is not active, refresh of
-  // a background experiment data will not result in correct state update.
+  // using NamespaceContextedState, color assignment and groupBy information
+  // should not go out of sync. That is, for a given route, the condition in
+  // which the colors get assigned are (1) when user changes groupBy and (2)
+  // when new runs are fetched (new runs added or runs removed). Both of those
+  // cases are handled by their respective reducer functions and, while there is
+  // no strong guarantees at the moment, because we are using
+  // NamespaceContextedState, even if new runs are fetched for a route that is
+  // not active, refresh of a background experiment data will not result in
+  // correct state update.
+  //
   // While user can change groupBy state in the URL to trigger (1), that will
   // result in browser postback and the app will rebootstrap anyways.
   //
@@ -334,17 +342,17 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
   })
 );
 
-const routeStatefulDataReducers = composeReducers(
+const dataReducers = composeReducers(
   dataReducer,
-  dataRouteContextReducers
+  dataNamespaceContextedReducers
 );
 
-const initialSort: RunsUiRoutefulState['sort'] = {
+const initialSort: RunsUiNamespacedState['sort'] = {
   key: null,
   direction: SortDirection.UNSET,
 };
-const {initialState: uiInitialState, reducers: uiRouteContextReducers} =
-  createRouteContextedState(
+const {initialState: uiInitialState, reducers: uiNamespaceContextedReducers} =
+  createNamespaceContextedState(
     {
       paginationOption: {
         pageIndex: 0,
@@ -390,17 +398,14 @@ const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
   })
 );
 
-const routeStatefulUiReducers = composeReducers(
-  uiReducer,
-  uiRouteContextReducers
-);
+const uiReducers = composeReducers(uiReducer, uiNamespaceContextedReducers);
 
 /**
  * Reducers for the experiments.
  */
 export function reducers(state: RunsState, action: Action) {
   return combineReducers({
-    data: routeStatefulDataReducers,
-    ui: routeStatefulUiReducers,
+    data: dataReducers,
+    ui: uiReducers,
   })(state, action);
 }

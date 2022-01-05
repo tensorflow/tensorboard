@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
 import {stateRehydratedFromUrl} from '../../app_routing/actions';
-import {createRouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
+import {createNamespaceContextedState} from '../../app_routing/route_contexted_reducer_helper';
 import {RouteKind} from '../../app_routing/types';
 import * as coreActions from '../../core/actions';
 import {globalSettingsLoaded} from '../../persistent_settings';
@@ -59,8 +59,8 @@ import {
 import {
   CardMetadataMap,
   CardStepIndexMap,
-  MetricsRoutefulState,
-  MetricsRoutelessState,
+  MetricsNamespacedState,
+  MetricsNonNamespacedState,
   MetricsSettings,
   MetricsState,
   METRICS_SETTINGS_DEFAULT,
@@ -219,81 +219,82 @@ function serializeCardUniqueInfo(
   return JSON.stringify([plugin, tag, runId || '', sample]);
 }
 
-const {initialState, reducers: routeContextReducer} = createRouteContextedState<
-  MetricsRoutefulState,
-  MetricsRoutelessState
->(
-  {
-    // Backend data.
-    tagMetadataLoadState: {
-      state: DataLoadState.NOT_LOADED,
-      lastLoadedTimeInMs: null,
-    },
-    tagMetadata: {
-      scalars: {
-        tagDescriptions: {},
-        tagToRuns: {},
-      },
-      histograms: {
-        tagDescriptions: {},
-        tagToRuns: {},
-      },
-      images: {
-        tagDescriptions: {},
-        tagRunSampledInfo: {},
-      },
-    },
-
-    // Cards.
-    cardList: [],
-    cardToPinnedCopy: new Map(),
-    pinnedCardToOriginal: new Map(),
-    unresolvedImportedPinnedCards: [],
-    cardMetadataMap: {},
-    cardStepIndex: {},
-
-    tagFilter: '',
-    tagGroupExpanded: new Map<string, boolean>(),
-    selectedTime: null,
-    selectTimeEnabled: false,
-    useRangeSelectTime: false,
-    filteredPluginTypes: new Set(),
-    stepMinMax: {
-      min: Infinity,
-      max: -Infinity,
-    },
-  },
-  {
-    isSettingsPaneOpen: true,
-    promoteTimeSeries: true,
-    timeSeriesData: {
-      scalars: {},
-      histograms: {},
-      images: {},
-    },
-    settings: METRICS_SETTINGS_DEFAULT,
-    settingOverrides: {},
-    visibleCardMap: new Map<ElementId, CardId>(),
-  },
-
-  /** onRouteKindOrExperimentsChanged */
-  (state) => {
-    return {
-      ...state,
-      // We want to trigger tag metadata to reload every time route id changed, which is
-      // needed within the same namespace.
-      // TODO(japie1235813):moves the reload triggering to a proper place.
+const {initialState, reducers: namespaceContextedReducer} =
+  createNamespaceContextedState<
+    MetricsNamespacedState,
+    MetricsNonNamespacedState
+  >(
+    {
+      // Backend data.
       tagMetadataLoadState: {
         state: DataLoadState.NOT_LOADED,
         lastLoadedTimeInMs: null,
       },
-      // Reset visible cards in case we resume a route that was left dirty.
-      // Since visibility tracking is async, the state may not have received
-      // 'exited card' updates when it was cached by the router.
+      tagMetadata: {
+        scalars: {
+          tagDescriptions: {},
+          tagToRuns: {},
+        },
+        histograms: {
+          tagDescriptions: {},
+          tagToRuns: {},
+        },
+        images: {
+          tagDescriptions: {},
+          tagRunSampledInfo: {},
+        },
+      },
+
+      // Cards.
+      cardList: [],
+      cardToPinnedCopy: new Map(),
+      pinnedCardToOriginal: new Map(),
+      unresolvedImportedPinnedCards: [],
+      cardMetadataMap: {},
+      cardStepIndex: {},
+
+      tagFilter: '',
+      tagGroupExpanded: new Map<string, boolean>(),
+      selectedTime: null,
+      selectTimeEnabled: false,
+      useRangeSelectTime: false,
+      filteredPluginTypes: new Set(),
+      stepMinMax: {
+        min: Infinity,
+        max: -Infinity,
+      },
+    },
+    {
+      isSettingsPaneOpen: true,
+      promoteTimeSeries: true,
+      timeSeriesData: {
+        scalars: {},
+        histograms: {},
+        images: {},
+      },
+      settings: METRICS_SETTINGS_DEFAULT,
+      settingOverrides: {},
       visibleCardMap: new Map<ElementId, CardId>(),
-    };
-  }
-);
+    },
+
+    /** onRouteKindOrExperimentsChanged */
+    (state) => {
+      return {
+        ...state,
+        // We want to trigger tag metadata to reload every time route id changed, which is
+        // needed within the same namespace.
+        // TODO(japie1235813):moves the reload triggering to a proper place.
+        tagMetadataLoadState: {
+          state: DataLoadState.NOT_LOADED,
+          lastLoadedTimeInMs: null,
+        },
+        // Reset visible cards in case we resume a route that was left dirty.
+        // Since visibility tracking is async, the state may not have received
+        // 'exited card' updates when it was cached by the router.
+        visibleCardMap: new Map<ElementId, CardId>(),
+      };
+    }
+  );
 
 export const INITIAL_STATE = initialState;
 
@@ -514,7 +515,7 @@ const reducer = createReducer(
         }
       }
 
-      // Generates next pinned/original card id mapping because they are routeful
+      // Generates next pinned/original card id mapping because they are namespaced
       // state and remain unchanged under the same namespace.
       const {
         nextCardToPinnedCopy,
@@ -987,7 +988,7 @@ const reducer = createReducer(
 );
 
 export function reducers(state: MetricsState | undefined, action: Action) {
-  return composeReducers(reducer, routeContextReducer)(state, action);
+  return composeReducers(reducer, namespaceContextedReducer)(state, action);
 }
 
 function buildPluginTagData(

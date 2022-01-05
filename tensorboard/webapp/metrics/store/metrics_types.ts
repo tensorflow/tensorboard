@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {RouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
+import {NamespaceContextedState} from '../../app_routing/route_contexted_reducer_helper';
 import {DataLoadState, LoadState} from '../../types/data';
 import {ElementId} from '../../util/dom';
 import {
@@ -132,7 +132,7 @@ export interface StoreInternalLinkedTime {
   end: {step: number};
 }
 
-export interface MetricsRoutefulState {
+export interface MetricsNamespacedState {
   tagMetadataLoadState: LoadState;
   tagMetadata: TagMetadata;
   // A list of card ids in the main content area, excluding pinned copies.
@@ -196,7 +196,7 @@ export interface MetricsSettings {
   histogramMode: HistogramMode;
 }
 
-export interface MetricsRoutelessState {
+export interface MetricsNonNamespacedState {
   promoteTimeSeries: boolean;
   timeSeriesData: TimeSeriesData;
   isSettingsPaneOpen: boolean;
@@ -210,9 +210,9 @@ export interface MetricsRoutelessState {
   visibleCardMap: Map<ElementId, CardId>;
 }
 
-export type MetricsState = RouteContextedState<
-  MetricsRoutefulState,
-  MetricsRoutelessState
+export type MetricsState = NamespaceContextedState<
+  MetricsNamespacedState,
+  MetricsNonNamespacedState
 >;
 
 export interface State {
