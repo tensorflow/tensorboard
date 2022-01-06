@@ -1,3 +1,45 @@
+# Release 2.6.0
+
+The 2.8 minor series tracks TensorFlow 2.8.
+
+## Features
+
+- Histograms
+  - TensorFlow 2 tf.summary.histogram API is now fully compatible with TPUs (#5356, #5392, #5404, #5409, #5415, #5443)
+- Text
+  - Add checkbox to enable or disable markdown rendering (#5378)
+- Time Series
+  - Add more horizontal space by restyling resize bar (#5390)
+  - Preserve run regex filter string in URL (#5412)
+  - Collapse some chart groups by default (#5408)
+  - Introduce "Alphabetical" tooltip sort and make it the default (#5442)
+- Mesh
+  - Allow camera properties to be specified in config (#5452)
+
+## Bug fixes
+
+- Time Series
+  - Fix line chart dark mode bug (#5305)
+  - Fix scalars/image/histogram button toggle issues (#5398)
+  - Fix subtle SVG chart update issue (#5423)
+  - Dark mode fix for collapsible groups (#5426)
+  - Font fix for collapsible groups (#5429)
+  - Optimize paints triggered by mouse movements (#5461)
+  - Fix subtle settings bugs (#5458)
+- Documentation and Examples
+  - Update scalars_and_keras demo notebook to use `learning_rate` instead of `lr` (#5363)
+  - Fix example_basic plugin (#5366)
+- Misc
+  - Update tests for Python 3.11 compatibility (#5380) - thanks [@tirkarthi](https://github.com/tirkarthi)
+
+## TensorBoard.dev updates
+
+- Support delete of multiple experiments at the same time (#5471)
+
+## Breaking changes
+
+- Fast WebGL charts have been turned off for the Time Series dashboard. SVG charts are used instead. We plan to bring back WebGL charts in a future release (#5397)
+
 # Release 2.7.0
 
 The 2.7 minor series tracks TensorFlow 2.7.
