@@ -1,4 +1,4 @@
-# Release 2.6.0
+# Release 2.8.0
 
 The 2.8 minor series tracks TensorFlow 2.8.
 
