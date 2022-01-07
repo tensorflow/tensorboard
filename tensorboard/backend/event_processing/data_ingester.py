@@ -88,7 +88,7 @@ class LocalDataIngester(ingester.DataIngester):
         if not getattr(tf, "__version__", "stub") == "stub":
             if not _cloud_fs_supported():
                 try:
-                    import tensorflow_io as tfio
+                    import tensorflow_io  # pylint: disable=unused-import
                 except:
                     warning_msg = (
                         "`tensorflow_io` is not installed, for additional file "
