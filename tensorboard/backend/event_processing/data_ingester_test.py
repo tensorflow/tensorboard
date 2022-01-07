@@ -22,6 +22,7 @@ from unittest import mock
 
 from tensorboard import test as tb_test
 from tensorboard.backend.event_processing import data_ingester
+from tensorboard.compat import tf
 
 
 class FakeFlags(object):
@@ -249,6 +250,25 @@ class ParseEventFilesSpecTest(tb_test.TestCase):
             self.assertPlatformSpecificLogdirParsing(
                 ntpath, "A:C:\\foo\\path", {"C:\\foo\\path": "A"}
             )
+
+
+class CloudFileSystemsSupport(tb_test.TestCase):
+    def testCloudFsSupported(self):
+        with mock.patch.object(
+            tf.io.gfile, "get_registered_schemes", return_value=["gs", "s3"]
+        ):
+            self.assertTrue(data_ingester._cloud_fs_supported())
+
+    def testCloudFsNotSupported(self):
+        with mock.patch.object(
+            tf.io.gfile, "get_registered_schemes", side_effect=Exception("oops")
+        ):
+            with mock.patch.object(
+                tf.io.gfile,
+                "exists",
+                side_effect=tf.errors.UnimplementedError(None, None, "noop"),
+            ):
+                self.assertFalse(data_ingester._cloud_fs_supported())
 
 
 if __name__ == "__main__":

@@ -30,6 +30,7 @@ from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.pr_curve import metadata as pr_curve_metadata
 from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.util import tb_logging
+from tensorboard.compat import tf
 
 
 DEFAULT_SIZE_GUIDANCE = {
@@ -44,6 +45,10 @@ DEFAULT_TENSOR_SIZE_GUIDANCE = {
     histogram_metadata.PLUGIN_NAME: 500,
     pr_curve_metadata.PLUGIN_NAME: 100,
 }
+
+# TensorFlow I/O file systems of interest (not available in TensorFlow's
+# built-in support).
+_CLOUD_FILESYSTEMS = ["s3"]
 
 logger = tb_logging.get_logger()
 
@@ -78,6 +83,19 @@ class LocalDataIngester(ingester.DataIngester):
             self._path_to_run = {os.path.expanduser(flags.logdir): None}
         else:
             self._path_to_run = _parse_event_files_spec(flags.logdir_spec)
+
+        # Conditionally import tensorflow_io.
+        if not getattr(tf, "__version__", "stub") == "stub":
+            if not _cloud_fs_supported():
+                try:
+                    import tensorflow_io
+                except:
+                    warning_msg = (
+                        "`tensorflow_io` is not installed, for additional file "
+                        + "system support (https://www.tensorflow.org/io), "
+                        + "run `pip install tensorflow_io`."
+                    )
+                    print(warning_msg)
 
     @property
     def data_provider(self):
@@ -196,3 +214,19 @@ def _parse_event_files_spec(logdir_spec):
             path = os.path.realpath(os.path.expanduser(path))
         files[path] = run_name
     return files
+
+
+def _cloud_fs_supported() -> bool:
+    """Checks if the cloud filesystems are supported."""
+    for fs in _CLOUD_FILESYSTEMS:
+        try:
+            if fs not in tf.io.gfile.get_registered_schemes():
+                return False
+        except:
+            # `tf.io.gfile.get_registered_schemes` API is not available,
+            # fall back to `tf.io.gfile.exists`.
+            try:
+                tf.io.gfile.exists(fs + "://tmp")
+            except (tf.errors.UnimplementedError, NotImplementedError):
+                return False
+    return True
