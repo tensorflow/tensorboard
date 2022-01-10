@@ -47,10 +47,11 @@ def tensorboard_python_workspace():
     http_archive(
         name = "org_html5lib",
         urls = [
-            "https://files.pythonhosted.org/packages/ac/b6/b55c3f49042f1df3dcd422b7f224f939892ee94f22abcf503a9b7339eaf2/html5lib-1.1.tar.gz",
+            "http://mirror.tensorflow.org/github.com/html5lib/html5lib-python/archive/1.1.tar.gz",
+            "https://github.com/html5lib/html5lib-python/archive/1.1.tar.gz",
         ],
-        sha256 = "b2e5b40261e20f354d198eae92afc10d750afb487ed5e50f9c4eaf07c184146f",
-        strip_prefix = "html5lib-1.1",
+        sha256 = "66e9e24a53c10c27abb6be8a3cf2cf55824c6ea1cef8570a633cb223ec46e894",
+        strip_prefix = "html5lib-python-1.1",
         build_file = str(Label("//third_party:html5lib.BUILD")),
     )
 
