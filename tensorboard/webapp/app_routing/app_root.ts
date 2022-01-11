@@ -21,6 +21,15 @@ export class AppRootProvider {
 
   constructor(location: Location) {
     this.appRoot = this.getAppRootFromMetaElement(location);
+
+    // These secret query parameters are here to allow users having trouble with
+    // our WebGL renderer to force the use of our SVG renderer.
+    if (window.location.href.includes('_ForceSVG')) {
+      window.localStorage.setItem('forcedRenderer', 'SVG');
+    }
+    if (window.location.href.includes('_DefaultRenderer')) {
+      window.localStorage.removeItem('forcedRenderer');
+    }
   }
 
   /**
