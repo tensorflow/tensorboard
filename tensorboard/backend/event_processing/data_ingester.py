@@ -48,7 +48,7 @@ DEFAULT_TENSOR_SIZE_GUIDANCE = {
 
 # TensorFlow I/O file systems of interest (not available in TensorFlow's
 # built-in support).
-_CLOUD_FILESYSTEMS = ["s3"]
+_CLOUD_FILESYSTEMS = {"gs", "s3"}
 
 logger = tb_logging.get_logger()
 
@@ -86,16 +86,10 @@ class LocalDataIngester(ingester.DataIngester):
 
         # Conditionally import tensorflow_io.
         if not getattr(tf, "__version__", "stub") == "stub":
-            if not _cloud_fs_supported():
-                try:
-                    import tensorflow_io  # noqa: F401
-                except:
-                    warning_msg = (
-                        "`tensorflow_io` is not installed, for additional file "
-                        + "system support (https://www.tensorflow.org/io), "
-                        + "run `pip install tensorflow_io`."
-                    )
-                    print(warning_msg)
+            tfio_filesystems = _check_filesystem_support(
+                self._path_to_run.keys()
+            )
+            _try_to_support_tfio(self._path_to_run.keys())
 
     @property
     def data_provider(self):
@@ -216,17 +210,81 @@ def _parse_event_files_spec(logdir_spec):
     return files
 
 
-def _cloud_fs_supported() -> bool:
-    """Checks if the cloud filesystems are supported."""
-    for fs in _CLOUD_FILESYSTEMS:
-        try:
-            if fs not in tf.io.gfile.get_registered_schemes():
-                return False
-        except:
-            # `tf.io.gfile.get_registered_schemes` API is not available,
-            # fall back to `tf.io.gfile.exists`.
+def _get_filesystem_scheme(path):
+    """Extracts filesystem from a given path.
+
+    Args:
+        path: A strings representing an input log directory.
+    Returns:
+        Filesystem scheme (followed by `://`), None if the path doesn't contain
+        a scheme.
+    """
+    if "://" not in path:
+        return None
+    return path.split("://")[0]
+
+
+def _check_filesystem_support(paths):
+    """Examines the list of filesystems user requested.
+
+    Args:
+        paths: A list of strings representing input log directories.
+    Returns:
+        A list of TF I/O filesystems of interest.
+    """
+    tfio_filesystems = []
+    for path in paths:
+        fs = _get_filesystem_scheme(path)
+        if fs is not None and fs in _CLOUD_FILESYSTEMS:
+            tfio_filesystems.append(fs)
+    return tfio_filesystems
+
+
+def _try_to_support_tfio(paths):
+    """Try to support TF I/O.
+
+    Args:
+        paths: A list of strings representing input log directories.
+    """
+    get_registered_schemes = getattr(
+        tf.io.gfile, "get_registered_schemes", None
+    )
+    registered_schemes = (
+        None if get_registered_schemes is None else get_registered_schemes()
+    )
+    missing_fs = None
+    for path in paths:
+        fs = _get_filesystem_scheme(path)
+        if fs is None:
+            continue
+        # Use `tf.io.gfile.exists.get_registered_schemes` if possible.
+        if registered_schemes is not None:
+            if fs not in registered_schemes:
+                missing_fs = fs
+                break
+        else:
+            # Fall back to `tf.io.gfile.exists`.
             try:
-                tf.io.gfile.exists(fs + "://tmp")
-            except (tf.errors.UnimplementedError, NotImplementedError):
-                return False
-    return True
+                tf.io.gfile.exists(path)
+            except tf.errors.UnimplementedError:
+                missing_fs = fs
+                break
+
+    if missing_fs:
+        try:
+            import tensorflow_io  # noqa: F401
+        except ImportError:
+            supported_schemes_msg = (
+                " (supported schemes: {})".format(registered_schemes)
+                if registered_schemes
+                else ""
+            )
+            raise tf.errors.UnimplementedError(
+                None,
+                None,
+                (
+                    "Error: Unsupported filename scheme '{}'{}. For additional"
+                    + " filesystem support, consider installing TensorFlow I/O"
+                    + " (https://www.tensorflow.org/io) via `pip install tensorflow-io`."
+                ).format(missing_fs, supported_schemes_msg),
+            )

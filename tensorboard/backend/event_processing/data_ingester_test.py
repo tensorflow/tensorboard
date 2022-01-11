@@ -252,23 +252,119 @@ class ParseEventFilesSpecTest(tb_test.TestCase):
             )
 
 
-class CloudFileSystemsSupport(tb_test.TestCase):
-    def testCloudFsSupported(self):
-        with mock.patch.object(
-            tf.io.gfile, "get_registered_schemes", return_value=["gs", "s3"]
-        ):
-            self.assertTrue(data_ingester._cloud_fs_supported())
+class TfioSupport(tb_test.TestCase):
+    def testCheckFilesystemSupport(self):
+        self.assertEqual(
+            ["s3"],
+            data_ingester._check_filesystem_support(
+                ["tmp/demo", "s3://bucket/123", "file://tmp"]
+            ),
+        )
 
-    def testCloudFsNotSupported(self):
+    def testTryToSupportTfio(self):
+        with mock.patch.object(tf.io, "gfile") as gfile_mock:
+            gfile_mock.return_value.get_registered_schemes = mock.MagicMock()
+            with mock.patch(
+                "builtins.__import__", side_effect=mock.MagicMock()
+            ) as mock_import:
+                with mock.patch.object(
+                    gfile_mock,
+                    "get_registered_schemes",
+                    return_value=["gs", "s3"],
+                ) as mock_get_registered_schemes:
+                    data_ingester._try_to_support_tfio(
+                        ["tmp/demo", "s3://bucket/123"]
+                    )
+        mock_import.assert_not_called()
+        mock_get_registered_schemes.assert_called_once()
+
+    def testTryToSupportTfio_import(self):
+        with mock.patch.object(tf.io, "gfile") as gfile_mock:
+            gfile_mock.return_value.get_registered_schemes = mock.MagicMock()
+            with mock.patch(
+                "builtins.__import__", side_effect=mock.MagicMock()
+            ) as mock_import:
+                with mock.patch.object(
+                    gfile_mock,
+                    "get_registered_schemes",
+                    return_value=["file", ""],
+                ) as mock_get_registered_schemes:
+                    data_ingester._try_to_support_tfio(
+                        ["tmp/demo", "s3://bucket/123"]
+                    )
+        self.assertEqual("tensorflow_io", mock_import.call_args[0][0])
+        mock_get_registered_schemes.assert_called_once()
+
+    def testTryToSupportTfio_raiseError(self):
+        with mock.patch.object(tf.io, "gfile") as gfile_mock:
+            gfile_mock.return_value.get_registered_schemes = mock.MagicMock()
+            with mock.patch(
+                "builtins.__import__",
+                side_effect=ImportError,
+            ) as mock_import:
+                with mock.patch.object(
+                    gfile_mock,
+                    "get_registered_schemes",
+                    return_value=["file", "ram"],
+                ) as mock_get_registered_schemes:
+                    err_msg = (
+                        "Error: Unsupported filename scheme 's3' (supported schemes: ['file', 'ram'])."
+                        + " For additional filesystem support, consider installing TensorFlow I/O"
+                        + " (https://www.tensorflow.org/io) via `pip install tensorflow-io`."
+                    )
+                    with self.assertRaisesWithLiteralMatch(
+                        tf.errors.UnimplementedError, err_msg
+                    ):
+                        data_ingester._try_to_support_tfio(
+                            ["tmp/demo", "s3://bucket/123"]
+                        )
+        self.assertEqual("tensorflow_io", mock_import.call_args[0][0])
+        mock_get_registered_schemes.assert_called_once()
+
+    def testTryToSupportTfio_fallback(self):
         with mock.patch.object(
-            tf.io.gfile, "get_registered_schemes", side_effect=Exception("oops")
-        ):
-            with mock.patch.object(
-                tf.io.gfile,
-                "exists",
-                side_effect=tf.errors.UnimplementedError(None, None, "noop"),
-            ):
-                self.assertFalse(data_ingester._cloud_fs_supported())
+            tf.io.gfile, "get_registered_schemes"
+        ) as mock_get_registered_schemes:
+            mock_get_registered_schemes.return_value = None
+            with mock.patch(
+                "builtins.__import__", side_effect=mock.MagicMock()
+            ) as mock_import:
+                with mock.patch.object(
+                    tf.io.gfile,
+                    "exists",
+                    return_value=True,
+                ) as mock_gfile_exists:
+                    data_ingester._try_to_support_tfio(["gs://bucket/abc"])
+        mock_import.assert_not_called()
+        mock_gfile_exists.assert_called_once_with("gs://bucket/abc")
+
+    def testTryToSupportTfio_fallback_raiseError(self):
+        with mock.patch.object(
+            tf.io.gfile, "get_registered_schemes"
+        ) as mock_get_registered_schemes:
+            mock_get_registered_schemes.return_value = None
+            with mock.patch(
+                "builtins.__import__",
+                side_effect=ImportError,
+            ) as mock_import:
+                with mock.patch.object(
+                    tf.io.gfile,
+                    "exists",
+                    side_effect=tf.errors.UnimplementedError(
+                        None, None, "oops"
+                    ),
+                ) as mock_gfile_exists:
+                    err_msg = (
+                        "Error: Unsupported filename scheme 'gs'."
+                        + " For additional filesystem support, consider installing TensorFlow I/O"
+                        + " (https://www.tensorflow.org/io) via `pip install tensorflow-io`."
+                    )
+                    with self.assertRaisesWithLiteralMatch(
+                        tf.errors.UnimplementedError, err_msg
+                    ):
+                        data_ingester._try_to_support_tfio(["gs://bucket/abc"])
+        self.assertEqual("tensorflow_io", mock_import.call_args[0][0])
+        mock_gfile_exists.assert_called_once_with("gs://bucket/abc")
 
 
 if __name__ == "__main__":
