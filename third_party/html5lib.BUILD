@@ -16,7 +16,6 @@ py_library(
         "html5lib/_tokenizer.py",
         "html5lib/_trie/__init__.py",
         "html5lib/_trie/_base.py",
-        "html5lib/_trie/datrie.py",
         "html5lib/_trie/py.py",
         "html5lib/_utils.py",
         "html5lib/constants.py",
