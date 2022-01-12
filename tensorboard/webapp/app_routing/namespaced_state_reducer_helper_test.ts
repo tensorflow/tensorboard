@@ -28,7 +28,7 @@ import {navigated} from './actions';
 import {
   createNamespaceContextedState,
   NamespaceContextedState,
-} from './route_contexted_reducer_helper';
+} from './namespaced_state_reducer_helper';
 import {buildNavigatedToNewExperimentAction, buildRoute} from './testing';
 import {RouteKind} from './types';
 

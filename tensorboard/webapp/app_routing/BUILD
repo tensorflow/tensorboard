@@ -161,9 +161,9 @@ tf_ng_module(
 )
 
 tf_ts_library(
-    name = "route_contexted_reducer_helper",
+    name = "namespaced_state_reducer_helper",
     srcs = [
-        "route_contexted_reducer_helper.ts",
+        "namespaced_state_reducer_helper.ts",
     ],
     deps = [
         ":internal_utils",
@@ -209,8 +209,8 @@ tf_ng_module(
         "dirty_updates_registry_module_test.ts",
         "internal_utils_test.ts",
         "location_test.ts",
+        "namespaced_state_reducer_helper_test.ts",
         "programmatical_navigation_module_test.ts",
-        "route_contexted_reducer_helper_test.ts",
         "route_registry_module_test.ts",
         "store_only_utils_test.ts",
     ],
@@ -219,8 +219,8 @@ tf_ng_module(
         ":dirty_updates_registry",
         ":internal_utils",
         ":location",
+        ":namespaced_state_reducer_helper",
         ":programmatical_navigation_module",
-        ":route_contexted_reducer_helper",
         ":route_registry",
         ":store_only_utils",
         ":testing",

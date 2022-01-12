@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
 import {stateRehydratedFromUrl} from '../../app_routing/actions';
-import {createNamespaceContextedState} from '../../app_routing/route_contexted_reducer_helper';
+import {createNamespaceContextedState} from '../../app_routing/namespaced_state_reducer_helper';
 import {RouteKind} from '../../app_routing/types';
 import * as coreActions from '../../core/actions';
 import {globalSettingsLoaded} from '../../persistent_settings';

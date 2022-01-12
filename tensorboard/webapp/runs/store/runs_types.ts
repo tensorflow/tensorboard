@@ -16,7 +16,7 @@ limitations under the License.
  * @fileoverview Types of experiments that come from the backend.
  */
 
-import {NamespaceContextedState} from '../../app_routing/route_contexted_reducer_helper';
+import {NamespaceContextedState} from '../../app_routing/namespaced_state_reducer_helper';
 import {LoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
 import {HparamValue} from '../data_source/runs_data_source_types';

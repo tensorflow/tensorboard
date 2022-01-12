@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
-import {createNamespaceContextedState} from '../../app_routing/route_contexted_reducer_helper';
+import {createNamespaceContextedState} from '../../app_routing/namespaced_state_reducer_helper';
 import {metricsPromoGoToScalars} from '../../metrics/actions';
 import {globalSettingsLoaded} from '../../persistent_settings';
 import {DataLoadState} from '../../types/data';

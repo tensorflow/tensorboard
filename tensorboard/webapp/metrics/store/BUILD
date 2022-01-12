@@ -13,7 +13,7 @@ tf_ts_library(
         ":internal_utils",
         ":types",
         "//tensorboard/webapp:app_state",
-        "//tensorboard/webapp/app_routing:route_contexted_reducer_helper",
+        "//tensorboard/webapp/app_routing:namespaced_state_reducer_helper",
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/app_routing/actions",
         "//tensorboard/webapp/core/actions",
@@ -64,7 +64,7 @@ tf_ts_library(
         "metrics_types.ts",
     ],
     deps = [
-        "//tensorboard/webapp/app_routing:route_contexted_reducer_helper",
+        "//tensorboard/webapp/app_routing:namespaced_state_reducer_helper",
         "//tensorboard/webapp/metrics:internal_types",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/types",
