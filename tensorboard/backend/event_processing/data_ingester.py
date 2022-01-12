@@ -82,10 +82,7 @@ class LocalDataIngester(ingester.DataIngester):
 
         # Conditionally import tensorflow_io.
         if not getattr(tf, "__version__", "stub") == "stub":
-            tfio_filesystems = _check_filesystem_support(
-                self._path_to_run.keys()
-            )
-            _try_to_support_tfio(self._path_to_run.keys())
+            _check_filesystem_support(self._path_to_run.keys())
 
     @property
     def data_provider(self):
