@@ -46,10 +46,6 @@ DEFAULT_TENSOR_SIZE_GUIDANCE = {
     pr_curve_metadata.PLUGIN_NAME: 100,
 }
 
-# TensorFlow I/O file systems of interest (not available in TensorFlow's
-# built-in support).
-_CLOUD_FILESYSTEMS = {"gs", "s3"}
-
 logger = tb_logging.get_logger()
 
 
@@ -216,8 +212,9 @@ def _get_filesystem_scheme(path):
     Args:
         path: A strings representing an input log directory.
     Returns:
-        Filesystem scheme (followed by `://`), None if the path doesn't contain
-        a scheme.
+        Filesystem scheme, None if the path doesn't contain one. The filesystem
+        scheme is usually separated by `://` from the local filesystem path if
+        given. For example, the scheme of `file://tmp/tf` is `file`.
     """
     if "://" not in path:
         return None
@@ -227,21 +224,7 @@ def _get_filesystem_scheme(path):
 def _check_filesystem_support(paths):
     """Examines the list of filesystems user requested.
 
-    Args:
-        paths: A list of strings representing input log directories.
-    Returns:
-        A list of TF I/O filesystems of interest.
-    """
-    tfio_filesystems = []
-    for path in paths:
-        fs = _get_filesystem_scheme(path)
-        if fs is not None and fs in _CLOUD_FILESYSTEMS:
-            tfio_filesystems.append(fs)
-    return tfio_filesystems
-
-
-def _try_to_support_tfio(paths):
-    """Try to support TF I/O.
+    If TF I/O schemes are requested, try to import tensorflow_io module.
 
     Args:
         paths: A list of strings representing input log directories.
@@ -252,25 +235,30 @@ def _try_to_support_tfio(paths):
     registered_schemes = (
         None if get_registered_schemes is None else get_registered_schemes()
     )
-    missing_fs = None
-    for path in paths:
-        fs = _get_filesystem_scheme(path)
-        if fs is None:
+
+    # Only need to check one path for each scheme.
+    scheme_to_path = {_get_filesystem_scheme(path): path for path in paths}
+    missing_scheme = None
+    for scheme, path in scheme_to_path.items():
+        if scheme is None:
             continue
         # Use `tf.io.gfile.exists.get_registered_schemes` if possible.
         if registered_schemes is not None:
-            if fs not in registered_schemes:
-                missing_fs = fs
+            if scheme not in registered_schemes:
+                missing_scheme = scheme
                 break
         else:
             # Fall back to `tf.io.gfile.exists`.
             try:
                 tf.io.gfile.exists(path)
             except tf.errors.UnimplementedError:
-                missing_fs = fs
+                missing_scheme = scheme
                 break
+            except tf.errors.OpError:
+                # Swallow other errors; we aren't concerned about them at this point.
+                pass
 
-    if missing_fs:
+    if missing_scheme:
         try:
             import tensorflow_io  # noqa: F401
         except ImportError:
@@ -286,5 +274,5 @@ def _try_to_support_tfio(paths):
                     "Error: Unsupported filename scheme '{}'{}. For additional"
                     + " filesystem support, consider installing TensorFlow I/O"
                     + " (https://www.tensorflow.org/io) via `pip install tensorflow-io`."
-                ).format(missing_fs, supported_schemes_msg),
+                ).format(missing_scheme, supported_schemes_msg),
             )
