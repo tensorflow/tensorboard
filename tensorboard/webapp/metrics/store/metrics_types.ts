@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NamespaceContextedState} from '../../app_routing/route_contexted_reducer_helper';
+import {NamespaceContextedState} from '../../app_routing/namespaced_state_reducer_helper';
 import {DataLoadState, LoadState} from '../../types/data';
 import {ElementId} from '../../util/dom';
 import {

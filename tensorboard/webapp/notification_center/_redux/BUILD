@@ -16,7 +16,6 @@ tf_ng_module(
         ":actions",
         ":types",
         "//tensorboard/webapp:app_state",
-        "//tensorboard/webapp/app_routing:route_contexted_reducer_helper",
         "//tensorboard/webapp/notification_center:types",
         "//tensorboard/webapp/notification_center/_data_source",
         "//tensorboard/webapp/persistent_settings",

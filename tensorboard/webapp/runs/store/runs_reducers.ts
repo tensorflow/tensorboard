@@ -20,7 +20,7 @@ import {
   on,
 } from '@ngrx/store';
 import {stateRehydratedFromUrl} from '../../app_routing/actions';
-import {createNamespaceContextedState} from '../../app_routing/route_contexted_reducer_helper';
+import {createNamespaceContextedState} from '../../app_routing/namespaced_state_reducer_helper';
 import {RouteKind} from '../../app_routing/types';
 import {DataLoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';

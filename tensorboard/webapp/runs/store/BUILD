@@ -13,7 +13,7 @@ tf_ts_library(
     deps = [
         ":types",
         ":utils",
-        "//tensorboard/webapp/app_routing:route_contexted_reducer_helper",
+        "//tensorboard/webapp/app_routing:namespaced_state_reducer_helper",
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/app_routing/actions",
         "//tensorboard/webapp/runs:types",
@@ -56,7 +56,7 @@ tf_ts_library(
         "runs_types.ts",
     ],
     deps = [
-        "//tensorboard/webapp/app_routing:route_contexted_reducer_helper",
+        "//tensorboard/webapp/app_routing:namespaced_state_reducer_helper",
         "//tensorboard/webapp/runs:types",
         "//tensorboard/webapp/runs/data_source",
         "//tensorboard/webapp/types",
