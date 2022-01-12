@@ -254,37 +254,34 @@ class ParseEventFilesSpecTest(tb_test.TestCase):
 
 class FileSystemSupport(tb_test.TestCase):
     def testCheckFilesystemSupport(self):
-        with mock.patch.object(
-            tf.io.gfile,
-            "get_registered_schemes",
-            return_value=["gs", "s3"],
-        ) as mock_get_registered_schemes:
+        with mock.patch.object(tf.io, "gfile", autospec=True) as mock_gfile:
+            mock_gfile.get_registered_schemes = mock.MagicMock(
+                return_value=["gs", "s3"]
+            )
             with mock.patch("builtins.__import__") as mock_import:
                 data_ingester._check_filesystem_support(
                     ["tmp/demo", "s3://bucket/123"]
                 )
         mock_import.assert_not_called()
-        mock_get_registered_schemes.assert_called_once()
+        mock_gfile.get_registered_schemes.assert_called_once()
 
     def testCheckFilesystemSupport_importTFIO(self):
-        with mock.patch.object(
-            tf.io.gfile,
-            "get_registered_schemes",
-            return_value=["file", ""],
-        ) as mock_get_registered_schemes:
+        with mock.patch.object(tf.io, "gfile", autospec=True) as mock_gfile:
+            mock_gfile.get_registered_schemes = mock.MagicMock(
+                return_value=["file", ""]
+            )
             with mock.patch("builtins.__import__") as mock_import:
                 data_ingester._check_filesystem_support(
                     ["tmp/demo", "s3://bucket/123"]
                 )
         self.assertEqual("tensorflow_io", mock_import.call_args[0][0])
-        mock_get_registered_schemes.assert_called_once()
+        mock_gfile.get_registered_schemes.assert_called_once()
 
     def testCheckFilesystemSupport_raiseError(self):
-        with mock.patch.object(
-            tf.io.gfile,
-            "get_registered_schemes",
-            return_value=["file", "ram"],
-        ) as mock_get_registered_schemes:
+        with mock.patch.object(tf.io, "gfile", autospec=True) as mock_gfile:
+            mock_gfile.get_registered_schemes = mock.MagicMock(
+                return_value=["file", "ram"]
+            )
             with mock.patch(
                 "builtins.__import__",
                 side_effect=ImportError,
@@ -301,7 +298,7 @@ class FileSystemSupport(tb_test.TestCase):
                         ["tmp/demo", "s3://bucket/123"]
                     )
         self.assertEqual("tensorflow_io", mock_import.call_args[0][0])
-        mock_get_registered_schemes.assert_called_once()
+        mock_gfile.get_registered_schemes.assert_called_once()
 
     def testCheckFilesystemSupport_fallback(self):
         with mock.patch.object(tf.io, "gfile", autospec=True) as mock_gfile:
