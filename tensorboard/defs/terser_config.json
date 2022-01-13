@@ -4,7 +4,7 @@
   },
   "compress": {
     "keep_fnames": true,
-    "passes": 3,
+    "passes": 1,
     "pure_getters": true,
     "reduce_funcs": true,
     "reduce_vars": true,
