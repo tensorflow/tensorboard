@@ -22,6 +22,7 @@ from unittest import mock
 
 from tensorboard import test as tb_test
 from tensorboard.backend.event_processing import data_ingester
+from tensorboard.compat import tf
 
 
 class FakeFlags(object):
@@ -249,6 +250,92 @@ class ParseEventFilesSpecTest(tb_test.TestCase):
             self.assertPlatformSpecificLogdirParsing(
                 ntpath, "A:C:\\foo\\path", {"C:\\foo\\path": "A"}
             )
+
+
+class FileSystemSupport(tb_test.TestCase):
+    def testCheckFilesystemSupport(self):
+        with mock.patch.object(
+            tf.io.gfile,
+            "get_registered_schemes",
+            autospec=True,
+            return_value=["g3", "s3"],
+        ) as mock_get_registered_schemes:
+            with mock.patch("builtins.__import__") as mock_import:
+                data_ingester._check_filesystem_support(
+                    ["tmp/demo", "s3://bucket/123"]
+                )
+        mock_import.assert_not_called()
+        mock_get_registered_schemes.assert_called_once()
+
+    def testCheckFilesystemSupport_importTFIO(self):
+        with mock.patch.object(
+            tf.io.gfile,
+            "get_registered_schemes",
+            autospec=True,
+            return_value=["file", ""],
+        ) as mock_get_registered_schemes:
+            with mock.patch("builtins.__import__") as mock_import:
+                data_ingester._check_filesystem_support(
+                    ["tmp/demo", "s3://bucket/123"]
+                )
+        self.assertEqual("tensorflow_io", mock_import.call_args[0][0])
+        mock_get_registered_schemes.assert_called_once()
+
+    def testCheckFilesystemSupport_raiseError(self):
+        with mock.patch.object(
+            tf.io.gfile,
+            "get_registered_schemes",
+            autospec=True,
+            return_value=["file", "ram"],
+        ) as mock_get_registered_schemes:
+            with mock.patch(
+                "builtins.__import__",
+                side_effect=ImportError,
+            ) as mock_import:
+                err_msg = (
+                    "Error: Unsupported filename scheme 's3' (supported schemes: ['file', 'ram'])."
+                    + " For additional filesystem support, consider installing TensorFlow I/O"
+                    + " (https://www.tensorflow.org/io) via `pip install tensorflow-io`."
+                )
+                with self.assertRaisesWithLiteralMatch(
+                    tf.errors.UnimplementedError, err_msg
+                ):
+                    data_ingester._check_filesystem_support(
+                        ["tmp/demo", "s3://bucket/123"]
+                    )
+        self.assertEqual("tensorflow_io", mock_import.call_args[0][0])
+        mock_get_registered_schemes.assert_called_once()
+
+    def testCheckFilesystemSupport_fallback(self):
+        with mock.patch.object(tf.io, "gfile", autospec=True) as mock_gfile:
+            del mock_gfile.get_registered_schemes
+            with mock.patch("builtins.__import__") as mock_import:
+                mock_gfile.exists.return_value = True
+                data_ingester._check_filesystem_support(["gs://bucket/abc"])
+        mock_import.assert_not_called()
+        mock_gfile.exists.assert_called_once_with("gs://bucket/abc")
+
+    def testCheckFilesystemSupport_fallback_raiseError(self):
+        with mock.patch.object(tf.io, "gfile", autospec=True) as mock_gfile:
+            del mock_gfile.get_registered_schemes
+            with mock.patch(
+                "builtins.__import__",
+                side_effect=ImportError,
+            ) as mock_import:
+                mock_gfile.exists.side_effect = tf.errors.UnimplementedError(
+                    None, None, "oops"
+                )
+                err_msg = (
+                    "Error: Unsupported filename scheme 'gs'."
+                    + " For additional filesystem support, consider installing TensorFlow I/O"
+                    + " (https://www.tensorflow.org/io) via `pip install tensorflow-io`."
+                )
+                with self.assertRaisesWithLiteralMatch(
+                    tf.errors.UnimplementedError, err_msg
+                ):
+                    data_ingester._check_filesystem_support(["gs://bucket/abc"])
+        self.assertEqual("tensorflow_io", mock_import.call_args[0][0])
+        mock_gfile.exists.assert_called_once_with("gs://bucket/abc")
 
 
 if __name__ == "__main__":
