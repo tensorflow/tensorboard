@@ -30,6 +30,7 @@ from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.pr_curve import metadata as pr_curve_metadata
 from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.util import tb_logging
+from tensorboard.compat import tf
 
 
 DEFAULT_SIZE_GUIDANCE = {
@@ -78,6 +79,10 @@ class LocalDataIngester(ingester.DataIngester):
             self._path_to_run = {os.path.expanduser(flags.logdir): None}
         else:
             self._path_to_run = _parse_event_files_spec(flags.logdir_spec)
+
+        # Conditionally import tensorflow_io.
+        if not getattr(tf, "__version__", "stub") == "stub":
+            _check_filesystem_support(self._path_to_run.keys())
 
     @property
     def data_provider(self):
@@ -196,3 +201,76 @@ def _parse_event_files_spec(logdir_spec):
             path = os.path.realpath(os.path.expanduser(path))
         files[path] = run_name
     return files
+
+
+def _get_filesystem_scheme(path):
+    """Extracts filesystem scheme from a given path.
+
+    The filesystem scheme is usually separated by `://` from the local filesystem
+    path if given. For example, the scheme of `file://tmp/tf` is `file`.
+
+    Args:
+        path: A strings representing an input log directory.
+    Returns:
+        Filesystem scheme, None if the path doesn't contain one.
+    """
+    if "://" not in path:
+        return None
+    return path.split("://")[0]
+
+
+def _check_filesystem_support(paths):
+    """Examines the list of filesystems user requested.
+
+    If TF I/O schemes are requested, try to import tensorflow_io module.
+
+    Args:
+        paths: A list of strings representing input log directories.
+    """
+    get_registered_schemes = getattr(
+        tf.io.gfile, "get_registered_schemes", None
+    )
+    registered_schemes = (
+        None if get_registered_schemes is None else get_registered_schemes()
+    )
+
+    # Only need to check one path for each scheme.
+    scheme_to_path = {_get_filesystem_scheme(path): path for path in paths}
+    missing_scheme = None
+    for scheme, path in scheme_to_path.items():
+        if scheme is None:
+            continue
+        # Use `tf.io.gfile.exists.get_registered_schemes` if possible.
+        if registered_schemes is not None:
+            if scheme not in registered_schemes:
+                missing_scheme = scheme
+                break
+        else:
+            # Fall back to `tf.io.gfile.exists`.
+            try:
+                tf.io.gfile.exists(path)
+            except tf.errors.UnimplementedError:
+                missing_scheme = scheme
+                break
+            except tf.errors.OpError:
+                # Swallow other errors; we aren't concerned about them at this point.
+                pass
+
+    if missing_scheme:
+        try:
+            import tensorflow_io  # noqa: F401
+        except ImportError:
+            supported_schemes_msg = (
+                " (supported schemes: {})".format(registered_schemes)
+                if registered_schemes
+                else ""
+            )
+            raise tf.errors.UnimplementedError(
+                None,
+                None,
+                (
+                    "Error: Unsupported filename scheme '{}'{}. For additional"
+                    + " filesystem support, consider installing TensorFlow I/O"
+                    + " (https://www.tensorflow.org/io) via `pip install tensorflow-io`."
+                ).format(missing_scheme, supported_schemes_msg),
+            )
