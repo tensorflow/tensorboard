@@ -77,6 +77,10 @@ def tf_js_binary(
         terser_minified(
             name = internal_result_name,
             src = internal_rollup_name,
+            # Notes about the terser config:
+            # compress.passes - this is set to '1' to workaround issue with
+            #   terser and threejs. In practice it (surprisingly) generates
+            #   smaller results than when it was previously set to '3'.
             config_file = "//tensorboard/defs:terser_config.json",
             visibility = ["//visibility:private"],
             sourcemap = False,
