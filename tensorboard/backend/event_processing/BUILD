@@ -36,6 +36,7 @@ py_library(
         ":data_provider",
         ":event_multiplexer",
         ":tag_types",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/data:ingester",
         "//tensorboard/plugins/audio:metadata",
         "//tensorboard/plugins/histogram:metadata",
@@ -53,7 +54,9 @@ py_test(
     srcs_version = "PY3",
     deps = [
         ":data_ingester",
+        "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:test",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 

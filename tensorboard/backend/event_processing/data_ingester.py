@@ -204,14 +204,15 @@ def _parse_event_files_spec(logdir_spec):
 
 
 def _get_filesystem_scheme(path):
-    """Extracts filesystem from a given path.
+    """Extracts filesystem scheme from a given path.
+
+    The filesystem scheme is usually separated by `://` from the local filesystem
+    path if given. For example, the scheme of `file://tmp/tf` is `file`.
 
     Args:
         path: A strings representing an input log directory.
     Returns:
-        Filesystem scheme, None if the path doesn't contain one. The filesystem
-        scheme is usually separated by `://` from the local filesystem path if
-        given. For example, the scheme of `file://tmp/tf` is `file`.
+        Filesystem scheme, None if the path doesn't contain one.
     """
     if "://" not in path:
         return None
