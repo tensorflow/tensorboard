@@ -23,6 +23,8 @@ import time
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import plugin_event_multiplexer
 from tensorboard.backend.event_processing import tag_types
+from tensorboard.compat import tf
+from tensorboard.compat.tensorflow_stub import errors
 from tensorboard.data import ingester
 from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.histogram import metadata as histogram_metadata
@@ -30,7 +32,6 @@ from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.pr_curve import metadata as pr_curve_metadata
 from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.util import tb_logging
-from tensorboard.compat import tf
 
 
 DEFAULT_SIZE_GUIDANCE = {
@@ -249,10 +250,10 @@ def _check_filesystem_support(paths):
             # Fall back to `tf.io.gfile.exists`.
             try:
                 tf.io.gfile.exists(path)
-            except tf.errors.UnimplementedError:
+            except errors.UnimplementedError:
                 missing_scheme = scheme
                 break
-            except tf.errors.OpError:
+            except errors.OpError:
                 # Swallow other errors; we aren't concerned about them at this point.
                 pass
 
@@ -265,7 +266,7 @@ def _check_filesystem_support(paths):
                 if registered_schemes
                 else ""
             )
-            raise tf.errors.UnimplementedError(
+            raise errors.UnimplementedError(
                 None,
                 None,
                 (

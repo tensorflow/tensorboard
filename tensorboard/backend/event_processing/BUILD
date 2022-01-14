@@ -37,6 +37,7 @@ py_library(
         ":event_multiplexer",
         ":tag_types",
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/compat/tensorflow_stub",
         "//tensorboard/data:ingester",
         "//tensorboard/plugins/audio:metadata",
         "//tensorboard/plugins/histogram:metadata",
@@ -57,6 +58,7 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard:test",
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/compat/tensorflow_stub",
     ],
 )
 
