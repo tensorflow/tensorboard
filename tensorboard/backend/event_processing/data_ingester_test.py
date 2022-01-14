@@ -23,7 +23,6 @@ from unittest import mock
 from tensorboard import test as tb_test
 from tensorboard.backend.event_processing import data_ingester
 from tensorboard.compat import tf
-from tensorboard.compat.tensorflow_stub import errors
 
 
 _TENSORFLOW_IO_MODULE = "tensorflow_io"
@@ -316,7 +315,7 @@ class FileSystemSupportTest(tb_test.TestCase):
                     + " (https://www.tensorflow.org/io) via `pip install tensorflow-io`."
                 )
                 with self.assertRaisesWithLiteralMatch(
-                    errors.UnimplementedError, err_msg
+                    tf.errors.UnimplementedError, err_msg
                 ):
                     data_ingester._check_filesystem_support(
                         ["tmp/demo", "s3://bucket/123"]
@@ -340,7 +339,7 @@ class FileSystemSupportTest(tb_test.TestCase):
                 "builtins.__import__",
                 side_effect=self.import_mock.mock_import_error,
             ) as mock_import:
-                mock_gfile.exists.side_effect = errors.UnimplementedError(
+                mock_gfile.exists.side_effect = tf.errors.UnimplementedError(
                     None, None, "oops"
                 )
                 err_msg = (
@@ -349,7 +348,7 @@ class FileSystemSupportTest(tb_test.TestCase):
                     + " (https://www.tensorflow.org/io) via `pip install tensorflow-io`."
                 )
                 with self.assertRaisesWithLiteralMatch(
-                    errors.UnimplementedError, err_msg
+                    tf.errors.UnimplementedError, err_msg
                 ):
                     data_ingester._check_filesystem_support(["gs://bucket/abc"])
         self.assertEqual("tensorflow_io", mock_import.call_args[0][0])
