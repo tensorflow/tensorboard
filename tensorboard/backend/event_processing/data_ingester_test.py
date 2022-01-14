@@ -26,6 +26,9 @@ from tensorboard import test as tb_test
 from tensorboard.backend.event_processing import data_ingester
 
 
+_TENSORFLOW_IO_MODULE = "tensorflow_io"
+
+
 class FakeFlags(object):
     def __init__(
         self,
@@ -253,7 +256,21 @@ class ParseEventFilesSpecTest(tb_test.TestCase):
             )
 
 
-class FileSystemSupport(tb_test.TestCase):
+class ImportMock(object):
+    def __init__(self):
+        self.orig_import = __import__
+
+    def mock_import_error(self, name, *args, **kwargs):
+        if name == _TENSORFLOW_IO_MODULE:
+            raise ImportError("Pretending I'm missing ;)")
+        return self.orig_import(name, *args, **kwargs)
+
+
+class FileSystemSupportTest(tb_test.TestCase):
+    def setUp(self):
+        super(FileSystemSupportTest, self).setUp()
+        self.import_mock = ImportMock()
+
     def testCheckFilesystemSupport(self):
         with mock.patch.object(
             tf.io.gfile,
@@ -291,7 +308,7 @@ class FileSystemSupport(tb_test.TestCase):
         ) as mock_get_registered_schemes:
             with mock.patch(
                 "builtins.__import__",
-                side_effect=ImportError,
+                side_effect=self.import_mock.mock_import_error,
             ) as mock_import:
                 err_msg = (
                     "Error: Unsupported filename scheme 's3' (supported schemes: ['file', 'ram'])."
@@ -321,7 +338,7 @@ class FileSystemSupport(tb_test.TestCase):
             del mock_gfile.get_registered_schemes
             with mock.patch(
                 "builtins.__import__",
-                side_effect=ImportError,
+                side_effect=self.import_mock.mock_import_error,
             ) as mock_import:
                 mock_gfile.exists.side_effect = tf.errors.UnimplementedError(
                     None, None, "oops"
