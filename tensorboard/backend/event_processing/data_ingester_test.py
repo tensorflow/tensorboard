@@ -20,9 +20,10 @@ import posixpath
 import time
 from unittest import mock
 
+import tensorflow as tf
+
 from tensorboard import test as tb_test
 from tensorboard.backend.event_processing import data_ingester
-from tensorboard.compat import tf
 
 
 class FakeFlags(object):
