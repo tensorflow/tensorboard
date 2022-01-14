@@ -286,10 +286,10 @@ class FileSystemSupportTest(tb_test.TestCase):
         mock_get_registered_schemes.assert_called_once()
 
     def testCheckFilesystemSupport_importTFIO(self):
+        # autospec=True doesn't work for this test internally.
         with mock.patch.object(
             tf.io.gfile,
             "get_registered_schemes",
-            autospec=True,
             return_value=["file", ""],
         ) as mock_get_registered_schemes:
             with mock.patch("builtins.__import__") as mock_import:
@@ -300,10 +300,10 @@ class FileSystemSupportTest(tb_test.TestCase):
         mock_get_registered_schemes.assert_called_once()
 
     def testCheckFilesystemSupport_raiseError(self):
+        # autospec=True doesn't work for this test internally.
         with mock.patch.object(
             tf.io.gfile,
             "get_registered_schemes",
-            autospec=True,
             return_value=["file", "ram"],
         ) as mock_get_registered_schemes:
             with mock.patch(
