@@ -259,7 +259,7 @@ def _check_filesystem_support(paths):
     if missing_scheme:
         try:
             import tensorflow_io  # noqa: F401
-        except ImportError:
+        except (ImportError, ModuleNotFoundError):
             supported_schemes_msg = (
                 " (supported schemes: {})".format(registered_schemes)
                 if registered_schemes

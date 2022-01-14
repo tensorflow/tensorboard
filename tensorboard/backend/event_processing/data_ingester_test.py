@@ -259,6 +259,12 @@ class ImportMock(object):
     def __init__(self):
         self.orig_import = __import__
 
+    def mock_import(self, name, *args, **kwargs):
+        if name == _TENSORFLOW_IO_MODULE:
+            # Pretend import succeeds.
+            return
+        return self.orig_import(name, *args, **kwargs)
+
     def mock_import_error(self, name, *args, **kwargs):
         if name == _TENSORFLOW_IO_MODULE:
             raise ImportError("Pretending I'm missing ;)")
@@ -277,7 +283,10 @@ class FileSystemSupportTest(tb_test.TestCase):
             autospec=True,
             return_value=["g3", "s3"],
         ) as mock_get_registered_schemes:
-            with mock.patch("builtins.__import__") as mock_import:
+            with mock.patch(
+                "builtins.__import__",
+                side_effect=self.import_mock.mock_import,
+            ) as mock_import:
                 data_ingester._check_filesystem_support(
                     ["tmp/demo", "s3://bucket/123"]
                 )
@@ -291,7 +300,10 @@ class FileSystemSupportTest(tb_test.TestCase):
             "get_registered_schemes",
             return_value=["file", ""],
         ) as mock_get_registered_schemes:
-            with mock.patch("builtins.__import__") as mock_import:
+            with mock.patch(
+                "builtins.__import__",
+                side_effect=self.import_mock.mock_import,
+            ) as mock_import:
                 data_ingester._check_filesystem_support(
                     ["tmp/demo", "s3://bucket/123"]
                 )
@@ -326,7 +338,10 @@ class FileSystemSupportTest(tb_test.TestCase):
     def testCheckFilesystemSupport_fallback(self):
         with mock.patch.object(tf.io, "gfile", autospec=True) as mock_gfile:
             del mock_gfile.get_registered_schemes
-            with mock.patch("builtins.__import__") as mock_import:
+            with mock.patch(
+                "builtins.__import__",
+                side_effect=self.import_mock.mock_import,
+            ) as mock_import:
                 mock_gfile.exists.return_value = True
                 data_ingester._check_filesystem_support(["gs://bucket/abc"])
         mock_import.assert_not_called()
