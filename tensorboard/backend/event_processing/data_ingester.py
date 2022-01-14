@@ -259,7 +259,7 @@ def _check_filesystem_support(paths):
     if missing_scheme:
         try:
             import tensorflow_io  # noqa: F401
-        except (ImportError, ModuleNotFoundError):
+        except ImportError:
             supported_schemes_msg = (
                 " (supported schemes: {})".format(registered_schemes)
                 if registered_schemes
@@ -273,4 +273,4 @@ def _check_filesystem_support(paths):
                     + " filesystem support, consider installing TensorFlow I/O"
                     + " (https://www.tensorflow.org/io) via `pip install tensorflow-io`."
                 ).format(missing_scheme, supported_schemes_msg),
-            )
+            ) from None
