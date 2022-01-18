@@ -23,6 +23,7 @@ import time
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import plugin_event_multiplexer
 from tensorboard.backend.event_processing import tag_types
+from tensorboard.compat import tf
 from tensorboard.data import ingester
 from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.histogram import metadata as histogram_metadata
@@ -30,7 +31,6 @@ from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.pr_curve import metadata as pr_curve_metadata
 from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.util import tb_logging
-from tensorboard.compat import tf
 
 
 DEFAULT_SIZE_GUIDANCE = {
@@ -81,7 +81,7 @@ class LocalDataIngester(ingester.DataIngester):
             self._path_to_run = _parse_event_files_spec(flags.logdir_spec)
 
         # Conditionally import tensorflow_io.
-        if not getattr(tf, "__version__", "stub") == "stub":
+        if getattr(tf, "__version__", "stub") != "stub":
             _check_filesystem_support(self._path_to_run.keys())
 
     @property
