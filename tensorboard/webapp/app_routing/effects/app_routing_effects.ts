@@ -464,6 +464,7 @@ export class AppRoutingEffects {
                         ...options,
                         replaceState: true,
                         resetNamespacedState: false,
+                        namespaceUpdate: {option: NamespaceUpdateOption.UNCHANGED},
                       },
               };
             })
