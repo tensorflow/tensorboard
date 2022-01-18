@@ -25,6 +25,10 @@ from tensorboard.backend.event_processing import data_ingester
 from tensorboard.compat import tf
 
 
+_ORIGINAL_IMPORT = __import__
+_TENSORFLOW_IO_MODULE = "tensorflow_io"
+
+
 class FakeFlags(object):
     def __init__(
         self,
@@ -252,7 +256,20 @@ class ParseEventFilesSpecTest(tb_test.TestCase):
             )
 
 
-class FileSystemSupport(tb_test.TestCase):
+class FileSystemSupportTest(tb_test.TestCase):
+    def fake_import(self, affected_name, success=True):
+        """Fakes import for a given module."""
+
+        def fake(name, *args, **kwargs):
+            if name == affected_name:
+                if success:
+                    return
+                else:
+                    raise ImportError("Pretending I'm missing ;)")
+            return _ORIGINAL_IMPORT(name, *args, **kwargs)
+
+        return fake
+
     def testCheckFilesystemSupport(self):
         with mock.patch.object(
             tf.io.gfile,
@@ -260,7 +277,12 @@ class FileSystemSupport(tb_test.TestCase):
             autospec=True,
             return_value=["g3", "s3"],
         ) as mock_get_registered_schemes:
-            with mock.patch("builtins.__import__") as mock_import:
+            with mock.patch(
+                "builtins.__import__",
+                side_effect=self.fake_import(
+                    _TENSORFLOW_IO_MODULE, success=True
+                ),
+            ) as mock_import:
                 data_ingester._check_filesystem_support(
                     ["tmp/demo", "s3://bucket/123"]
                 )
@@ -268,13 +290,18 @@ class FileSystemSupport(tb_test.TestCase):
         mock_get_registered_schemes.assert_called_once()
 
     def testCheckFilesystemSupport_importTFIO(self):
+        # autospec=True doesn't work for this test internally.
         with mock.patch.object(
             tf.io.gfile,
             "get_registered_schemes",
-            autospec=True,
             return_value=["file", ""],
         ) as mock_get_registered_schemes:
-            with mock.patch("builtins.__import__") as mock_import:
+            with mock.patch(
+                "builtins.__import__",
+                side_effect=self.fake_import(
+                    _TENSORFLOW_IO_MODULE, success=True
+                ),
+            ) as mock_import:
                 data_ingester._check_filesystem_support(
                     ["tmp/demo", "s3://bucket/123"]
                 )
@@ -282,15 +309,17 @@ class FileSystemSupport(tb_test.TestCase):
         mock_get_registered_schemes.assert_called_once()
 
     def testCheckFilesystemSupport_raiseError(self):
+        # autospec=True doesn't work for this test internally.
         with mock.patch.object(
             tf.io.gfile,
             "get_registered_schemes",
-            autospec=True,
             return_value=["file", "ram"],
         ) as mock_get_registered_schemes:
             with mock.patch(
                 "builtins.__import__",
-                side_effect=ImportError,
+                side_effect=self.fake_import(
+                    _TENSORFLOW_IO_MODULE, success=False
+                ),
             ) as mock_import:
                 err_msg = (
                     "Error: Unsupported filename scheme 's3' (supported schemes: ['file', 'ram'])."
@@ -309,7 +338,12 @@ class FileSystemSupport(tb_test.TestCase):
     def testCheckFilesystemSupport_fallback(self):
         with mock.patch.object(tf.io, "gfile", autospec=True) as mock_gfile:
             del mock_gfile.get_registered_schemes
-            with mock.patch("builtins.__import__") as mock_import:
+            with mock.patch(
+                "builtins.__import__",
+                side_effect=self.fake_import(
+                    _TENSORFLOW_IO_MODULE, success=True
+                ),
+            ) as mock_import:
                 mock_gfile.exists.return_value = True
                 data_ingester._check_filesystem_support(["gs://bucket/abc"])
         mock_import.assert_not_called()
@@ -320,7 +354,9 @@ class FileSystemSupport(tb_test.TestCase):
             del mock_gfile.get_registered_schemes
             with mock.patch(
                 "builtins.__import__",
-                side_effect=ImportError,
+                side_effect=self.fake_import(
+                    _TENSORFLOW_IO_MODULE, success=False
+                ),
             ) as mock_import:
                 mock_gfile.exists.side_effect = tf.errors.UnimplementedError(
                     None, None, "oops"
