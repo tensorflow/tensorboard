@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {NgModule} from '@angular/core';
+import {ForceSVGDataSource} from './force_SVG_data_source';
 import {QueryParams} from './query_params';
 import {QueryParamsFeatureFlagDataSource} from './tb_feature_flag_data_source';
 import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
@@ -22,6 +23,7 @@ import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
   providers: [
     // Provide as injectable for other app-level implementations of
     // TBFeatureFlagDataSource.
+    ForceSVGDataSource,
     QueryParamsFeatureFlagDataSource,
     QueryParams,
     // Provide as the TBFeatureFlagDataSource implementation for the OSS app.

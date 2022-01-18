@@ -11,6 +11,7 @@ tf_ng_module(
         "//tensorboard/webapp/feature_flag/actions",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/feature_flag/store:types",
+        "//tensorboard/webapp/webapp_data_source:feature_flag",
         "//tensorboard/webapp/webapp_data_source:feature_flag_types",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",

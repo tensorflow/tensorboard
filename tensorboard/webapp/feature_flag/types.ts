@@ -50,4 +50,6 @@ export interface FeatureFlags {
   // Whether to enable time-namespaced state and how it impacts how user
   // settings are kept during navigation.
   enabledTimeNamespacedState: boolean;
+
+  forceSVG: boolean;
 }

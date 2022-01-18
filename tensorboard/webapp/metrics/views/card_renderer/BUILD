@@ -268,6 +268,7 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_menu",
         "//tensorboard/webapp/angular:expect_angular_material_progress_spinner",
         "//tensorboard/webapp/experiments:types",
+        "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",

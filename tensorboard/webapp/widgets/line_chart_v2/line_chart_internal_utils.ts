@@ -75,10 +75,6 @@ export function computeDataSeriesExtent(
 export function getRendererType(
   preferredRendererType: RendererType
 ): RendererType {
-  if (window.localStorage.getItem('forcedRenderer') == 'SVG') {
-    return RendererType.SVG;
-  }
-
   switch (preferredRendererType) {
     case RendererType.SVG:
       return RendererType.SVG;
