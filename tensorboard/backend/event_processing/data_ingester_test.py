@@ -373,6 +373,22 @@ class FileSystemSupportTest(tb_test.TestCase):
         self.assertEqual("tensorflow_io", mock_import.call_args[0][0])
         mock_gfile.exists.assert_called_once_with("gs://bucket/abc")
 
+    def testCheckFilesystemSupport_Called(self):
+        with mock.patch.object(tf, "__version__", new="2.2.2"):
+            with mock.patch.object(
+                data_ingester, "_check_filesystem_support", autospec=True
+            ) as mock_check_filesystem_support:
+                data_ingester.LocalDataIngester(flags=FakeFlags("logdir"))
+        mock_check_filesystem_support.assert_called_once_with({"logdir"})
+
+    def testCheckFilesystemSupport_notCalled(self):
+        with mock.patch.object(tf, "__version__", new="stub"):
+            with mock.patch.object(
+                data_ingester, "_check_filesystem_support", autospec=True
+            ) as mock_check_filesystem_support:
+                data_ingester.LocalDataIngester(flags=FakeFlags("logdir"))
+        mock_check_filesystem_support.assert_not_called()
+
 
 if __name__ == "__main__":
     tb_test.main()
