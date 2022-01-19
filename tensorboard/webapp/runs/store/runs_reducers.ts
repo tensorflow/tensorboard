@@ -19,6 +19,7 @@ import {
   createReducer,
   on,
 } from '@ngrx/store';
+import {areSameRouteKindAndExperiments} from '../../app_routing';
 import {stateRehydratedFromUrl} from '../../app_routing/actions';
 import {createNamespaceContextedState} from '../../app_routing/namespaced_state_reducer_helper';
 import {RouteKind} from '../../app_routing/types';
@@ -61,17 +62,20 @@ const {
     runsLoadState: {},
     selectionState: new Map<string, Map<string, boolean>>(),
   },
-  /* onRouteKindOrExperimentsChanged() */
-  (state, route) => {
-    return {
-      ...state,
-      initialGroupBy: {
-        key:
-          route.routeKind === RouteKind.COMPARE_EXPERIMENT
-            ? GroupByKey.EXPERIMENT
-            : GroupByKey.RUN,
-      },
-    };
+  /* onNavigated() */
+  (state, oldRoute, newRoute) => {
+    if (!areSameRouteKindAndExperiments(oldRoute, newRoute)) {
+      return {
+        ...state,
+        initialGroupBy: {
+          key:
+            newRoute.routeKind === RouteKind.COMPARE_EXPERIMENT
+              ? GroupByKey.EXPERIMENT
+              : GroupByKey.RUN,
+        },
+      };
+    }
+    return state;
   }
 );
 

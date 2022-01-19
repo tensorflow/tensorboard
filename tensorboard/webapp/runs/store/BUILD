@@ -13,6 +13,7 @@ tf_ts_library(
     deps = [
         ":types",
         ":utils",
+        "//tensorboard/webapp/app_routing",
         "//tensorboard/webapp/app_routing:namespaced_state_reducer_helper",
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/app_routing/actions",

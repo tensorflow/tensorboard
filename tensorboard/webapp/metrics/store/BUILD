@@ -13,6 +13,7 @@ tf_ts_library(
         ":internal_utils",
         ":types",
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/app_routing",
         "//tensorboard/webapp/app_routing:namespaced_state_reducer_helper",
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/app_routing/actions",
