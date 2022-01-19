@@ -20,6 +20,17 @@ tf_ng_module(
 )
 
 tf_ts_library(
+    name = "force_svg_util",
+    srcs = [
+        "force_svg_util.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/webapp_data_source:feature_flag_types",
+        "@npm//@angular/core",
+    ],
+)
+
+tf_ts_library(
     name = "types",
     srcs = [
         "types.ts",

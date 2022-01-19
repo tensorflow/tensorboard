@@ -51,5 +51,5 @@ export interface FeatureFlags {
   // settings are kept during navigation.
   enabledTimeNamespacedState: boolean;
 
-  forceSVG: boolean;
+  forceSvg: boolean;
 }

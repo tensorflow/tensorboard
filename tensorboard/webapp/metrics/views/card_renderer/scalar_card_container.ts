@@ -37,7 +37,7 @@ import {
 } from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {ExperimentAlias} from '../../../experiments/types';
-import {getForceSVGFeatureFlag} from '../../../feature_flag/store/feature_flag_selectors';
+import {getForceSvgFeatureFlag} from '../../../feature_flag/store/feature_flag_selectors';
 import {
   getCardPinnedState,
   getCurrentRouteRunSelection,
@@ -128,7 +128,7 @@ function areSeriesEqual(
       [xScaleType]="xScaleType$ | async"
       [useDarkMode]="useDarkMode$ | async"
       [selectedTime]="selectedTime$ | async"
-      [forceSVG]="forceSVG$ | async"
+      [forceSvg]="forceSvg$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
       observeIntersection
@@ -176,7 +176,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   readonly ignoreOutliers$ = this.store.select(getMetricsIgnoreOutliers);
   readonly tooltipSort$ = this.store.select(getMetricsTooltipSort);
   readonly xAxisType$ = this.store.select(getMetricsXAxisType);
-  readonly forceSVG$ = this.store.select(getForceSVGFeatureFlag);
+  readonly forceSvg$ = this.store.select(getForceSvgFeatureFlag);
   readonly xScaleType$ = this.store.select(getMetricsXAxisType).pipe(
     map((xAxisType) => {
       switch (xAxisType) {

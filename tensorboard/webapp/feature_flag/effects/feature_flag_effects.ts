@@ -17,9 +17,9 @@ import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Action, createAction, Store} from '@ngrx/store';
 import {combineLatestWith, map} from 'rxjs/operators';
-import {ForceSVGDataSource} from '../../webapp_data_source/force_SVG_data_source';
 import {TBFeatureFlagDataSource} from '../../webapp_data_source/tb_feature_flag_data_source_types';
 import {partialFeatureFlagsLoaded} from '../actions/feature_flag_actions';
+import {getForceSvgFlag, updateForceSvg} from '../force_svg_util';
 import {getIsAutoDarkModeAllowed} from '../store/feature_flag_selectors';
 import {State} from '../store/feature_flag_types';
 
@@ -34,7 +34,13 @@ export class FeatureFlagEffects {
       combineLatestWith(this.store.select(getIsAutoDarkModeAllowed)),
       map(([, isDarkModeAllowed]) => {
         const features = this.dataSource.getFeatures(isDarkModeAllowed);
-        features.forceSVG = this.ForceSVGDataSource.getAndUpdateForceSVGFlag();
+
+        if (features.forceSvg != null) {
+          updateForceSvg(features.forceSvg);
+        } else {
+          features.forceSvg = getForceSvgFlag();
+        }
+
         return partialFeatureFlagsLoaded({features});
       })
     )
@@ -43,8 +49,7 @@ export class FeatureFlagEffects {
   constructor(
     private readonly actions$: Actions,
     private readonly store: Store<State>,
-    private readonly dataSource: TBFeatureFlagDataSource,
-    private readonly ForceSVGDataSource: ForceSVGDataSource
+    private readonly dataSource: TBFeatureFlagDataSource
   ) {}
 
   /** @export */
