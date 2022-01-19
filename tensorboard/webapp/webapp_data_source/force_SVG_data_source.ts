@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,9 +30,7 @@ export class ForceSVGDataSource {
 
   private updateLocalStorage() {
     const params = this.queryParams.getParams();
-    console.log('checking force param');
     if (params.has(FORCE_SVG_RENDERER)) {
-      console.log('has query param');
       if (params.get(FORCE_SVG_RENDERER) !== 'false') {
         localStorage.setItem(FORCE_SVG_RENDERER, 'true');
       } else {
