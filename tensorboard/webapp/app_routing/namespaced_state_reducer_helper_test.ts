@@ -23,6 +23,7 @@ import {
   StoreModule,
 } from '@ngrx/store';
 import {firstValueFrom} from 'rxjs';
+import {areSameRouteKindAndExperiments} from './internal_utils';
 import {composeReducers} from '../util/ngrx';
 import {navigated} from './actions';
 import {
@@ -305,7 +306,7 @@ describe('route_contexted_reducer_helper', () => {
     });
   });
 
-  describe('onRouteKindOrExperimentsChanged', () => {
+  describe('onNavigated', () => {
     it('transforms the state', () => {
       const {reducers: namespacedReducers} = createNamespaceContextedState<
         NamespacedState,
@@ -331,7 +332,7 @@ describe('route_contexted_reducer_helper', () => {
         createNamespaceContextedState<NamespacedState, NonNamespacedState>(
           {namespaced: 0},
           {nonNamespaced: 1},
-          (state, route) => {
+          (state, oldRoute, newRoute) => {
             return {...state, namespaced: 999};
           }
         );
@@ -358,10 +359,10 @@ describe('route_contexted_reducer_helper', () => {
         createNamespaceContextedState<NamespacedState, NonNamespacedState>(
           {namespaced: 0},
           {nonNamespaced: 1},
-          (state, route) => {
+          (state, oldRoute, newRoute) => {
             return {
               ...state,
-              namespaced: route.routeKind === RouteKind.EXPERIMENTS ? 7 : 999,
+              namespaced: newRoute.routeKind === RouteKind.EXPERIMENTS ? 7 : 999,
             };
           }
         );
@@ -403,6 +404,63 @@ describe('route_contexted_reducer_helper', () => {
       );
       expect(state3.namespaced).toBe(999);
     });
+
+    it('allows transformation based on route changes', () => {
+      const {initialState, reducers: namespacedReducers} =
+        createNamespaceContextedState<NamespacedState, NonNamespacedState>(
+          {namespaced: 0},
+          {nonNamespaced: 1},
+          (state, oldRoute, newRoute) => {
+            if (areSameRouteKindAndExperiments(oldRoute, newRoute)) {
+              return {
+                ...state,
+                namespaced: 1000,
+              }
+            }
+            return {
+              ...state,
+              namespaced: -1000,
+            };
+          }
+        );
+
+      const noopReducer = createReducer<ContextedState>(initialState);
+      const reducers = composeReducers(namespacedReducers, noopReducer);
+
+      const state1 = {
+        namespaced: 0,
+        nonNamespaced: 1,
+      };
+      const state2 = reducers(
+        state1,
+        navigated({
+          before: null,
+          after: buildRoute({
+            routeKind: RouteKind.EXPERIMENTS,
+          }),
+          beforeNamespaceId: null,
+          afterNamespaceId: 'namespace1',
+        })
+      );
+      expect(state2.namespaced).toEqual(-1000);
+
+      const state3 = reducers(
+        state1,
+        navigated({
+          before: buildRoute({
+            routeKind: RouteKind.EXPERIMENTS,
+          }),
+          after: buildRoute({
+            routeKind: RouteKind.EXPERIMENTS,
+          }),
+          beforeNamespaceId: 'namespace1',
+          afterNamespaceId: 'namespace2',
+        })
+      );
+      expect(state3.namespaced).toEqual(1000);
+
+    });
+
   });
 });
 
