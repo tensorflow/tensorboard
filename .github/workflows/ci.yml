@@ -32,8 +32,7 @@ env:
   BUILDTOOLS_VERSION: '3.0.0'
   BUILDIFIER_SHA256SUM: 'e92a6793c7134c5431c58fbc34700664f101e5c9b1c1fcd93b97978e8b7f88db'
   BUILDOZER_SHA256SUM: '3d58a0b6972e4535718cdd6c12778170ea7382de7c75bc3728f5719437ffb84d'
-  # See https://github.com/tensorflow/tensorboard/pull/5499.
-  TENSORFLOW_VERSION: 'tf-nightly==2.9.0.dev20220111'
+  TENSORFLOW_VERSION: 'tf-nightly'
 
 jobs:
   build:
