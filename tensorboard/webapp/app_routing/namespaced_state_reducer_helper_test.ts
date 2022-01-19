@@ -23,9 +23,9 @@ import {
   StoreModule,
 } from '@ngrx/store';
 import {firstValueFrom} from 'rxjs';
-import {areSameRouteKindAndExperiments} from './internal_utils';
 import {composeReducers} from '../util/ngrx';
 import {navigated} from './actions';
+import {areSameRouteKindAndExperiments} from './internal_utils';
 import {
   createNamespaceContextedState,
   NamespaceContextedState,
@@ -362,7 +362,8 @@ describe('route_contexted_reducer_helper', () => {
           (state, oldRoute, newRoute) => {
             return {
               ...state,
-              namespaced: newRoute.routeKind === RouteKind.EXPERIMENTS ? 7 : 999,
+              namespaced:
+                newRoute.routeKind === RouteKind.EXPERIMENTS ? 7 : 999,
             };
           }
         );
@@ -415,7 +416,7 @@ describe('route_contexted_reducer_helper', () => {
               return {
                 ...state,
                 namespaced: 1000,
-              }
+              };
             }
             return {
               ...state,
@@ -458,9 +459,7 @@ describe('route_contexted_reducer_helper', () => {
         })
       );
       expect(state3.namespaced).toEqual(1000);
-
     });
-
   });
 });
 
