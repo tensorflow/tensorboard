@@ -1,3 +1,49 @@
+# Release 2.8.0
+
+The 2.8 minor series tracks TensorFlow 2.8.
+
+## Features
+
+- Histograms
+  - TensorFlow 2 tf.summary.histogram API is now fully compatible with TPUs (#5356, #5392, #5404, #5409, #5415, #5443)
+- Text
+  - Add checkbox to enable or disable markdown rendering (#5378)
+- Time Series
+  - Add more horizontal space by restyling resize bar (#5390)
+  - Preserve run regex filter string in URL (#5412)
+  - Collapse some chart groups by default (#5408)
+  - Introduce "Alphabetical" tooltip sort and make it the default (#5442)
+  - Allow card width to be customized (#5496)
+- Mesh
+  - Allow camera properties to be specified in config (#5452)
+- Misc
+  - Better support for cloud file systems by conditionally importing tensorflow_io (#5491)
+
+## Bug fixes
+
+- Time Series
+  - Fix line chart dark mode bug (#5305)
+  - Fix scalars/image/histogram button toggle issues (#5398)
+  - Fix subtle SVG chart update issue (#5423)
+  - Dark mode fix for collapsible groups (#5426)
+  - Font fix for collapsible groups (#5429)
+  - Optimize paints triggered by mouse movements (#5461)
+  - Improve fallback to SVG charts when WebGL context can't be created (#5465)
+  - Improve management of WebGL contexts by freeing them more frequently (#5465)
+  - Fix subtle settings bugs (#5458)
+  - Fix bug with run selector expander disappearing (#5503)
+- Documentation and Examples
+  - Update scalars_and_keras demo notebook to use `learning_rate` instead of `lr` (#5363)
+  - Fix example_basic plugin (#5366)
+- Misc
+  - Successfully load in Safari and iOS browsers (#5495)
+  - Allow tensorboard to be run with Python 3.10 (#5490) - thanks [@simonkrenger](https://github.com/simonkrenger)
+  - Update tests for Python 3.11 compatibility (#5380) - thanks [@tirkarthi](https://github.com/tirkarthi)
+
+## TensorBoard.dev updates
+
+- Support delete of multiple experiments at the same time (#5471)
+
 # Release 2.7.0
 
 The 2.7 minor series tracks TensorFlow 2.7.
