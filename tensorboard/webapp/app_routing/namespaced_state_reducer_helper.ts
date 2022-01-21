@@ -85,10 +85,9 @@ export type NamespaceContextedState<
  * `initialState` and `reducers` that help manage the namespaced state.
  *
  * An optional `onNavigated` function allows more fine-grained changes to state
- * based on the routes information. This function gurantees in app navigation
- * happens and has finished. Instead of listening to navigated action on feature
- * reducers, we should implement this `OnNavigated` function, which guarantees
- * that the implmentation runs after route completely navigated.
+ * based on the routes information. Instead of listening to `navigated` action
+ * on feature reducers, we should implement this `onNavigated` function, which
+ * guarantees that the implementation runs after route completely navigated.
  * It guarantees that the change happens after namespaced state has
  * been properly cached or reset, if appropriate. Note that this callback may be
  * called even when namespace is not changed -- not all navigations to Routes
@@ -104,7 +103,7 @@ export type NamespaceContextedState<
  *          // Perform more complex state transformations based on route kind
  *          // or the set of experiments.
  *          if (!areSameRouteKindAndExperiments(oldRoute, newRoute)) {
- *            return {nonNamespacedState: 'one'};
+ *            return {myState: 'one'};
  *          }
  *          return state;
  *        }
