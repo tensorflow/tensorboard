@@ -50,6 +50,7 @@ export interface FeatureFlags {
   // Whether to enable time-namespaced state and how it impacts how user
   // settings are kept during navigation.
   enabledTimeNamespacedState: boolean;
-
+  // Flag for the escape hatch from webGL. This only effects the TimeSeries
+  // Scalar cards.
   forceSvg: boolean;
 }

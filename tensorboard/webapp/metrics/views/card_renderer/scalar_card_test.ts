@@ -500,6 +500,25 @@ describe('scalar card', () => {
 
       expect(lineChartEl.componentInstance.useDarkMode).toBe(true);
     }));
+
+    it('sets preferredRendererType to SVG when getForceSvgFeatureFlag returns true', fakeAsync(() => {
+      store.overrideSelector(selectors.getForceSvgFeatureFlag, false);
+      const fixture = createComponent('card1');
+      fixture.detectChanges();
+
+      const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
+      expect(lineChartEl.componentInstance.preferredRendererType).toBe(
+        RendererType.WEBGL
+      );
+
+      store.overrideSelector(selectors.getForceSvgFeatureFlag, true);
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(lineChartEl.componentInstance.preferredRendererType).toBe(
+        RendererType.SVG
+      );
+    }));
   });
 
   describe('displayName', () => {

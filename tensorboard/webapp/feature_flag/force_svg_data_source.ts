@@ -13,14 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {FORCE_SVG_RENDERER} from '../webapp_data_source/tb_feature_flag_data_source_types';
+
+const FORCE_SVG_RENDERER_KEY = '_tb_force_svg';
 
 @Injectable()
 export class ForceSvgDataSource {
   constructor() {}
 
   getForceSvgFlag(): boolean {
-    if (localStorage.getItem(FORCE_SVG_RENDERER)) {
+    if (localStorage.getItem(FORCE_SVG_RENDERER_KEY)) {
       return true;
     }
     return false;
@@ -28,9 +29,13 @@ export class ForceSvgDataSource {
 
   updateForceSvgFlag(forceSvgFlag: boolean) {
     if (forceSvgFlag) {
-      localStorage.setItem(FORCE_SVG_RENDERER, 'true');
+      localStorage.setItem(FORCE_SVG_RENDERER_KEY, 'present');
     } else {
-      localStorage.removeItem(FORCE_SVG_RENDERER);
+      localStorage.removeItem(FORCE_SVG_RENDERER_KEY);
     }
   }
 }
+
+export const TEST_ONLY = {
+  FORCE_SVG_RENDERER_KEY,
+};

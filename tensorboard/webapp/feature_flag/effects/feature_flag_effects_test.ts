@@ -31,7 +31,7 @@ import {buildFeatureFlag} from '../testing';
 import {FeatureFlags} from '../types';
 import {FeatureFlagEffects} from './feature_flag_effects';
 
-fdescribe('feature_flag_effects', () => {
+describe('feature_flag_effects', () => {
   let actions: ReplaySubject<Action>;
   let store: MockStore<State>;
   let dataSource: TestingTBFeatureFlagDataSource;
@@ -109,10 +109,14 @@ fdescribe('feature_flag_effects', () => {
       expect(updateSpy).toHaveBeenCalledOnceWith(true);
     });
 
-    fit('gets forceSVG flag from ForceSvgDataSource when getFeatures returns no value for forceSvg', () => {
+    it('gets forceSVG flag from ForceSvgDataSource when getFeatures returns no value for forceSvg', () => {
       let featureFlags: Partial<FeatureFlags> = buildFeatureFlag();
       delete featureFlags.forceSvg;
       spyOn(dataSource, 'getFeatures').and.returnValue(featureFlags);
+      let updateSpy = spyOn(
+        forceSvgDataSource,
+        'updateForceSvgFlag'
+      ).and.stub();
       let getSpy = spyOn(forceSvgDataSource, 'getForceSvgFlag').and.returnValue(
         true
       );
@@ -128,6 +132,7 @@ fdescribe('feature_flag_effects', () => {
       ]);
 
       expect(getSpy).toHaveBeenCalledOnceWith();
+      expect(updateSpy).toHaveBeenCalledTimes(0);
     });
   });
 });

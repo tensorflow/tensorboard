@@ -183,6 +183,28 @@ describe('tb_feature_flag_data_source', () => {
         });
       });
 
+      it('returns forceSVG from the query params', () => {
+        getParamsSpy.and.returnValues(
+          new URLSearchParams('forceSVG=false'),
+          new URLSearchParams('forceSVG='),
+          new URLSearchParams('forceSVG=true'),
+          new URLSearchParams('forceSVG=foo')
+        );
+
+        expect(dataSource.getFeatures()).toEqual({
+          forceSvg: false,
+        });
+        expect(dataSource.getFeatures()).toEqual({
+          forceSvg: true,
+        });
+        expect(dataSource.getFeatures()).toEqual({
+          forceSvg: true,
+        });
+        expect(dataSource.getFeatures()).toEqual({
+          forceSvg: true,
+        });
+      });
+
       it('returns all flag values when they are all set', () => {
         getParamsSpy.and.returnValue(
           new URLSearchParams(
