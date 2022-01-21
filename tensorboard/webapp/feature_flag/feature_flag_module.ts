@@ -23,6 +23,7 @@ import {
 } from '../persistent_settings';
 import {TBFeatureFlagModule} from '../webapp_data_source/tb_feature_flag_module';
 import {FeatureFlagEffects} from './effects/feature_flag_effects';
+import {ForceSvgDataSourceModule} from './force_svg_data_source_module';
 import {reducers} from './store/feature_flag_reducers';
 import {getEnableDarkModeOverride} from './store/feature_flag_selectors';
 import {
@@ -44,6 +45,7 @@ export function getThemeSettingSelector() {
 
 @NgModule({
   imports: [
+    ForceSvgDataSourceModule,
     TBFeatureFlagModule,
     StoreModule.forFeature(
       FEATURE_FLAG_FEATURE_KEY,

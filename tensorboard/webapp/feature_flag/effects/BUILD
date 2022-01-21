@@ -8,7 +8,7 @@ tf_ng_module(
         "feature_flag_effects.ts",
     ],
     deps = [
-        "//tensorboard/webapp/feature_flag:force_svg_util",
+        "//tensorboard/webapp/feature_flag:force_svg_data_source",
         "//tensorboard/webapp/feature_flag/actions",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/feature_flag/store:types",
@@ -31,7 +31,9 @@ tf_ng_module(
         ":effects",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
+        "//tensorboard/webapp/feature_flag:force_svg_data_source",
         "//tensorboard/webapp/feature_flag:testing",
+        "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/actions",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/feature_flag/store:types",

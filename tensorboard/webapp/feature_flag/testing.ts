@@ -32,6 +32,7 @@ export function buildFeatureFlag(
     enableTimeSeriesPromotion: false,
     enabledCardWidthSetting: false,
     enabledTimeNamespacedState: false,
+    forceSvg: false,
     ...override,
   };
 }

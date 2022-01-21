@@ -1,4 +1,4 @@
-/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,19 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {FORCE_SVG_RENDERER} from '../webapp_data_source/tb_feature_flag_data_source_types';
 
-export function getForceSvgFlag(): boolean {
-  if (localStorage.getItem(FORCE_SVG_RENDERER)) {
-    return true;
-  }
-  return false;
-}
+import {NgModule} from '@angular/core';
+import {ForceSvgDataSource} from './force_svg_data_source';
 
-export function updateForceSvg(forceSvgFlag: boolean) {
-  if (forceSvgFlag) {
-    localStorage.setItem(FORCE_SVG_RENDERER, 'true');
-  } else {
-    localStorage.removeItem(FORCE_SVG_RENDERER);
-  }
-}
+@NgModule({
+  providers: [ForceSvgDataSource],
+})
+export class ForceSvgDataSourceModule {}
