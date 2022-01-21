@@ -288,6 +288,7 @@ export class AppRoutingEffects {
     map((programmaticalNavigation) => {
       const nav = programmaticalNavigation!;
       const routeKind = nav.routeKind;
+      const resetNamespacedState = nav.resetNamespacedState;
 
       // TODO(stephanwlee): currently, the RouteParams is ill-typed and you can
       // currently add any property without any type error. Better type it.
@@ -303,9 +304,9 @@ export class AppRoutingEffects {
         default:
           routeParams = nav.routeParams;
       }
-      return {routeKind, routeParams};
+      return {routeKind, routeParams, resetNamespacedState};
     }),
-    map(({routeKind, routeParams}) => {
+    map(({routeKind, routeParams, resetNamespacedState}) => {
       const routeMatch = this.routeConfigs
         ? this.routeConfigs.matchByRouteKind(routeKind, routeParams)
         : null;
@@ -314,7 +315,11 @@ export class AppRoutingEffects {
         options: {
           replaceState: false,
           browserInitiated: false,
-          namespaceUpdate: {option: NamespaceUpdateOption.UNCHANGED},
+          namespaceUpdate: {
+            option: resetNamespacedState
+              ? NamespaceUpdateOption.NEW
+              : NamespaceUpdateOption.UNCHANGED,
+          },
         } as NavigationOptions,
       };
     })

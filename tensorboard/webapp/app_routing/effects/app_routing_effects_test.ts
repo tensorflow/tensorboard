@@ -51,7 +51,11 @@ import {AppRoutingEffects, TEST_ONLY} from './app_routing_effects';
 @Component({selector: 'test', template: ''})
 class TestableComponent {}
 
-const testAction = createAction('[TEST] test actions');
+const testAction = createAction('[TEST] test action');
+const testResetNamespacedStateAction = createAction(
+  '[TEST] test action with resetNamespacedState',
+  props<{resetNamespacedState?: boolean}>()
+);
 const testNavToCompareAction = createAction(
   '[TEST] test nav to compare',
   props<NavigateToCompare['routeParams']>()
@@ -139,10 +143,23 @@ describe('app_routing_effects', () => {
     function programmaticalNavToListviewFactory() {
       return {
         actionCreator: testAction,
-        lambda: (action: ReturnType<typeof testAction>) => {
+        lambda: () => {
           return {
             routeKind: RouteKind.EXPERIMENTS,
             routeParams: {},
+          } as NavigateToExperiments;
+        },
+      };
+    }
+
+    function programmaticalNavWithResetNamespacedState() {
+      return {
+        actionCreator: testResetNamespacedStateAction,
+        lambda: (action: ReturnType<typeof testResetNamespacedStateAction>) => {
+          return {
+            routeKind: RouteKind.EXPERIMENTS,
+            routeParams: {},
+            resetNamespacedState: action.resetNamespacedState,
           } as NavigateToExperiments;
         },
       };
@@ -169,6 +186,9 @@ describe('app_routing_effects', () => {
         RouteRegistryModule.registerRoutes(routeFactory),
         ProgrammaticalNavigationModule.registerProgrammaticalNavigation(
           programmaticalNavToListviewFactory
+        ),
+        ProgrammaticalNavigationModule.registerProgrammaticalNavigation(
+          programmaticalNavWithResetNamespacedState
         ),
         ProgrammaticalNavigationModule.registerProgrammaticalNavigation(
           programmaticalCompareNavigationFactory
@@ -606,7 +626,7 @@ describe('app_routing_effects', () => {
         });
       }));
 
-      it('are generated when resetNamespacedState is true', fakeAsync(() => {
+      it('are generated on navigationRequested when resetNamespacedState is true', fakeAsync(() => {
         // Record initial time for use later.
         const before = Date.now();
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
@@ -642,7 +662,7 @@ describe('app_routing_effects', () => {
         ]);
       }));
 
-      it('are reused when resetNamespacedState is false', fakeAsync(() => {
+      it('are reused on navigationRequested when resetNamespacedState is false', fakeAsync(() => {
         // Record initial time for use later.
         const before = Date.now();
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
@@ -678,7 +698,7 @@ describe('app_routing_effects', () => {
         ]);
       }));
 
-      it('are reused when resetNamespacedState is unspecified', fakeAsync(() => {
+      it('are reused on navigationRequested when resetNamespacedState is unspecified', fakeAsync(() => {
         // Record initial time for use later.
         const before = Date.now();
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
@@ -738,6 +758,100 @@ describe('app_routing_effects', () => {
             beforeNamespaceId: 'before',
             // From popstate event.
             afterNamespaceId: 'some_id_from_history',
+          }),
+        ]);
+      }));
+
+      it('are generated on programmatical navigation when resetNamespacedState is true', fakeAsync(() => {
+        // Record initial time for use later.
+        const before = Date.now();
+        // Move the clock forward a bit to generate somewhat less arbitrary ids.
+        tick(5000);
+
+        store.overrideSelector(getActiveRoute, buildRoute());
+        store.overrideSelector(getActiveNamespaceId, before.toString());
+        store.overrideSelector(getEnabledTimeNamespacedState, true);
+        store.refreshState();
+
+        action.next(
+          testResetNamespacedStateAction({resetNamespacedState: true})
+        );
+
+        tick();
+        expect(actualActions).toEqual([
+          jasmine.any(Object),
+          actions.navigated({
+            before: buildRoute(),
+            after: buildRoute({
+              routeKind: RouteKind.EXPERIMENTS,
+              pathname: '/experiments',
+            }),
+            // From getActiveNamespaceId().
+            beforeNamespaceId: before.toString(),
+            // Value of before + the 5000 milliseconds from tick(5000).
+            afterNamespaceId: (before + 5000).toString(),
+          }),
+        ]);
+      }));
+
+      it('are reused on programmatical navigation when resetNamespacedState is false', fakeAsync(() => {
+        // Record initial time for use later.
+        const before = Date.now();
+        // Move the clock forward a bit to generate somewhat less arbitrary ids.
+        tick(5000);
+
+        store.overrideSelector(getActiveRoute, buildRoute());
+        store.overrideSelector(getActiveNamespaceId, before.toString());
+        store.overrideSelector(getEnabledTimeNamespacedState, true);
+        store.refreshState();
+
+        action.next(
+          testResetNamespacedStateAction({resetNamespacedState: false})
+        );
+
+        tick();
+        expect(actualActions).toEqual([
+          jasmine.any(Object),
+          actions.navigated({
+            before: buildRoute(),
+            after: buildRoute({
+              routeKind: RouteKind.EXPERIMENTS,
+              pathname: '/experiments',
+            }),
+            // From getActiveNamespaceId().
+            beforeNamespaceId: before.toString(),
+            // Same as beforeNamespaceId.
+            afterNamespaceId: before.toString(),
+          }),
+        ]);
+      }));
+
+      it('are reused on programmatical navigation when resetNamespacedState is unspecified', fakeAsync(() => {
+        // Record initial time for use later.
+        const before = Date.now();
+        // Move the clock forward a bit to generate somewhat less arbitrary ids.
+        tick(5000);
+
+        store.overrideSelector(getActiveRoute, buildRoute());
+        store.overrideSelector(getActiveNamespaceId, before.toString());
+        store.overrideSelector(getEnabledTimeNamespacedState, true);
+        store.refreshState();
+
+        action.next(testResetNamespacedStateAction({}));
+
+        tick();
+        expect(actualActions).toEqual([
+          jasmine.any(Object),
+          actions.navigated({
+            before: buildRoute(),
+            after: buildRoute({
+              routeKind: RouteKind.EXPERIMENTS,
+              pathname: '/experiments',
+            }),
+            // From getActiveNamespaceId().
+            beforeNamespaceId: before.toString(),
+            // Same as beforeNamespaceId.
+            afterNamespaceId: before.toString(),
           }),
         ]);
       }));
