@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
+import {areSameRouteKindAndExperiments} from '../../app_routing';
 import {stateRehydratedFromUrl} from '../../app_routing/actions';
 import {createNamespaceContextedState} from '../../app_routing/namespaced_state_reducer_helper';
 import {RouteKind} from '../../app_routing/types';
@@ -277,22 +278,24 @@ const {initialState, reducers: namespaceContextedReducer} =
       visibleCardMap: new Map<ElementId, CardId>(),
     },
 
-    /** onRouteKindOrExperimentsChanged */
-    (state) => {
-      return {
-        ...state,
-        // We want to trigger tag metadata to reload every time route id changed, which is
-        // needed within the same namespace.
-        // TODO(japie1235813):moves the reload triggering to a proper place.
-        tagMetadataLoadState: {
-          state: DataLoadState.NOT_LOADED,
-          lastLoadedTimeInMs: null,
-        },
-        // Reset visible cards in case we resume a route that was left dirty.
-        // Since visibility tracking is async, the state may not have received
-        // 'exited card' updates when it was cached by the router.
-        visibleCardMap: new Map<ElementId, CardId>(),
-      };
+    /** onNavigated */
+    (state, oldRoute, newRoute) => {
+      if (!areSameRouteKindAndExperiments(oldRoute, newRoute)) {
+        return {
+          ...state,
+          // The route changes, we want to trigger tag metadata to reload.
+          tagMetadataLoadState: {
+            state: DataLoadState.NOT_LOADED,
+            lastLoadedTimeInMs: null,
+          },
+          // Reset visible cards in case we resume a route that was left dirty.
+          // Since visibility tracking is async, the state may not have received
+          // 'exited card' updates when it was cached by the router.
+          visibleCardMap: new Map<ElementId, CardId>(),
+        };
+      }
+
+      return state;
     }
   );
 

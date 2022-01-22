@@ -53,7 +53,6 @@ limitations under the License.
 
 import {ActionReducer, createReducer, on} from '@ngrx/store';
 import {navigated} from './actions';
-import {areSameRouteKindAndExperiments} from './internal_utils';
 import {Route} from './types';
 
 // `privateNamespacedState` loosely typed only for ease of writing tests.
@@ -85,10 +84,11 @@ export type NamespaceContextedState<
  * Utility for managing namespaced state. It returns namespace-contexted
  * `initialState` and `reducers` that help manage the namespaced state.
  *
- * An optional `onRouteKindOrExperimentsChanged` function allows more
- * fine-grained changes on state after a key change in Route - that is, after
- * navigating to a Route with either a change in route kind or in the set of
- * experiments. It guarantees that the change happens after namespaced state has
+ * An optional `onNavigated` function allows more fine-grained changes to state
+ * based on the routes information. Instead of listening to `navigated` action
+ * on feature reducers, we should implement this `onNavigated` function, which
+ * guarantees that the implementation runs after route completely navigated.
+ * It guarantees that the change happens after namespaced state has
  * been properly cached or reset, if appropriate. Note that this callback may be
  * called even when namespace is not changed -- not all navigations to Routes
  * lead to namespaces changes.
@@ -99,10 +99,13 @@ export type NamespaceContextedState<
  *    createNamespaceContextedState(
  *        {myNamespacedState: 0},
  *        {nonNamespacedState: 'one'},
- *        (state) => {
+ *        (state, oldRoute, newRoute) => {
  *          // Perform more complex state transformations based on route kind
  *          // or the set of experiments.
- *          return {nonNamespacedState: 'one'};
+ *          if (!areSameRouteKindAndExperiments(oldRoute, newRoute)) {
+ *            return {myState: 'one'};
+ *          }
+ *          return state;
  *        }
  *    );
  *
@@ -114,8 +117,9 @@ export function createNamespaceContextedState<
 >(
   namespacedInitialState: NamespacedState,
   nonNamespacedInitialState: NonNamespacedState,
-  onRouteKindOrExperimentsChanged?: (
+  onNavigated?: (
     state: NamespaceContextedState<NamespacedState, NonNamespacedState>,
+    oldRoute: Route | null,
     newRoute: Route
   ) => NamespaceContextedState<NamespacedState, NonNamespacedState>
 ): {
@@ -205,13 +209,8 @@ export function createNamespaceContextedState<
           );
         }
 
-        if (
-          !areSameRouteKindAndExperiments(before, after) &&
-          onRouteKindOrExperimentsChanged
-        ) {
-          // RouteKind or Experiments have changed. Delegate additional changes
-          // to the caller.
-          nextFullState = onRouteKindOrExperimentsChanged(nextFullState, after);
+        if (onNavigated) {
+          nextFullState = onNavigated(nextFullState, before, after);
         }
 
         return nextFullState;
