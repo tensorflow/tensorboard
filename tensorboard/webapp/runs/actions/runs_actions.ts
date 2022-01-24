@@ -50,12 +50,12 @@ export const fetchRunsFailed = createAction(
 
 export const runSelectionToggled = createAction(
   '[Runs] Run Selection Toggled',
-  props<{experimentIds: string[]; runId: string}>()
+  props<{runId: string}>()
 );
 
 export const runPageSelectionToggled = createAction(
   '[Runs] Run Page Selection Toggled',
-  props<{experimentIds: string[]; runIds: string[]}>()
+  props<{runIds: string[]}>()
 );
 
 export const runSelectorPaginationOptionChanged = createAction(

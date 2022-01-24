@@ -262,23 +262,18 @@ describe('runs_selectors', () => {
 
     it('returns selection map of runId passed', () => {
       const state = buildStateFromRunsState(
-        buildRunsState({
-          runIds: {eid: ['r1', 'r2']},
-          selectionState: new Map([
-            [
-              '["eid"]',
-              new Map([
-                ['r1', false],
-                ['r2', true],
-              ]),
-            ],
-          ]),
-        })
+        buildRunsState(
+          {},
+          {
+            selectionState: new Map([
+              ['r1', false],
+              ['r2', true],
+            ]),
+          }
+        )
       );
 
-      const actual = selectors.getRunSelectionMap(state, {
-        experimentIds: ['eid'],
-      });
+      const actual = selectors.getRunSelectionMap(state);
       expect(actual).toEqual(
         new Map([
           ['r1', false],

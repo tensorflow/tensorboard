@@ -24,7 +24,7 @@ import {
   RUNS_FEATURE_KEY,
   State,
 } from './runs_types';
-import {createGroupBy, serializeExperimentIds} from './utils';
+import {createGroupBy} from './utils';
 
 const getRunsState = createFeatureSelector<State, RunsState>(RUNS_FEATURE_KEY);
 
@@ -105,22 +105,6 @@ export const getRunsLoadState = createSelector(
 );
 
 /**
- * Returns Observable that emits selection state of runs. If the runs for the
- * current route are desired, please see ui_selectors.ts's
- * getCurrentRouteRunSelection instead.
- */
-export const getRunSelectionMap = createSelector(
-  getDataState,
-  (
-    dataState: RunsDataState,
-    props: {experimentIds: string[]}
-  ): Map<string, boolean> => {
-    const stateKey = serializeExperimentIds(props.experimentIds);
-    return dataState.selectionState.get(stateKey) || new Map();
-  }
-);
-
-/**
  * Returns user defined run grouping setting.
  *
  * User can define it by either specifying it in URL or by interacting with the
@@ -187,6 +171,18 @@ export const getRunSelectorSort = createSelector(
   getUiState,
   (state: RunsUiState): {key: SortKey | null; direction: SortDirection} => {
     return state.sort;
+  }
+);
+
+/**
+ * Returns Observable that emits selection state of runs. If the runs for the
+ * current route are desired, please see ui_selectors.ts's
+ * getCurrentRouteRunSelection instead.
+ */
+export const getRunSelectionMap = createSelector(
+  getUiState,
+  (uiState: RunsUiState): Map<string, boolean> => {
+    return uiState.selectionState;
   }
 );
 

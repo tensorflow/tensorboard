@@ -37,7 +37,7 @@ import {
   RunsUiNamespacedState,
   RunsUiState,
 } from './runs_types';
-import {createGroupBy, groupRuns, serializeExperimentIds} from './utils';
+import {createGroupBy, groupRuns} from './utils';
 
 const {
   initialState: dataInitialState,
@@ -60,7 +60,6 @@ const {
     runIdToExpId: {},
     runMetadata: {},
     runsLoadState: {},
-    selectionState: new Map<string, Map<string, boolean>>(),
   },
   /* onNavigated() */
   (state, oldRoute, newRoute) => {
@@ -155,7 +154,6 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     const nextRunMetadata = {...state.runMetadata};
     const nextRunIdToExpId = {...state.runIdToExpId};
     const nextRunsLoadState = {...state.runsLoadState};
-    const nextSelectionState = new Map(state.selectionState);
 
     for (const eid of Object.keys(action.newRunsAndMetadata)) {
       const {runs, metadata} = action.newRunsAndMetadata[eid];
@@ -177,25 +175,12 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
       }
     }
 
-    // Populate selection states for previously unseen runs.
-    const eidsBasedKey = serializeExperimentIds(action.experimentIds);
-    const selectionMap = new Map(nextSelectionState.get(eidsBasedKey) ?? []);
-    const runSelected =
-      action.runsForAllExperiments.length <= MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT;
-    for (const run of action.runsForAllExperiments) {
-      if (!selectionMap.has(run.id)) {
-        selectionMap.set(run.id, runSelected);
-      }
-    }
-    nextSelectionState.set(eidsBasedKey, selectionMap);
-
     return {
       ...state,
       runIds: nextRunIds,
       runIdToExpId: nextRunIdToExpId,
       runMetadata: nextRunMetadata,
       runsLoadState: nextRunsLoadState,
-      selectionState: nextSelectionState,
     };
   }),
   on(runsActions.fetchRunsFailed, (state, action) => {
@@ -214,38 +199,6 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
       }
     }
     return {...state, runsLoadState: nextRunsLoadState};
-  }),
-  on(runsActions.runSelectionToggled, (state, {experimentIds, runId}) => {
-    const stateKey = serializeExperimentIds(experimentIds);
-    const nextSelectionState = new Map(state.selectionState);
-    const subSelectionState = new Map(nextSelectionState.get(stateKey) ?? []);
-
-    subSelectionState.set(runId, !Boolean(subSelectionState.get(runId)));
-    nextSelectionState.set(stateKey, subSelectionState);
-
-    return {
-      ...state,
-      selectionState: nextSelectionState,
-    };
-  }),
-  on(runsActions.runPageSelectionToggled, (state, {experimentIds, runIds}) => {
-    const stateKey = serializeExperimentIds(experimentIds);
-    const nextSelectionState = new Map(state.selectionState);
-    const subSelectionState = new Map(nextSelectionState.get(stateKey) ?? []);
-
-    const nextValue = !runIds.every((runId) => {
-      return Boolean(subSelectionState.get(runId));
-    });
-    for (const runId of runIds) {
-      subSelectionState.set(runId, nextValue);
-    }
-
-    nextSelectionState.set(stateKey, subSelectionState);
-
-    return {
-      ...state,
-      selectionState: nextSelectionState,
-    };
   }),
   on(runsActions.fetchRunsSucceeded, (state, {runsForAllExperiments}) => {
     const groupKeyToColorId = new Map(state.groupKeyToColorId);
@@ -363,6 +316,7 @@ const {initialState: uiInitialState, reducers: uiNamespaceContextedReducers} =
         pageSize: 10,
       },
       sort: initialSort,
+      selectionState: new Map<string, boolean>(),
     },
     {}
   );
@@ -398,6 +352,47 @@ const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
         key: action.key,
         direction: action.direction,
       },
+    };
+  }),
+  on(runsActions.fetchRunsSucceeded, (state, action) => {
+    const nextSelectionState = new Map(state.selectionState);
+
+    // Populate selection states for previously unseen runs.
+    const runSelected =
+      action.runsForAllExperiments.length <= MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT;
+    for (const run of action.runsForAllExperiments) {
+      if (!nextSelectionState.has(run.id)) {
+        nextSelectionState.set(run.id, runSelected);
+      }
+    }
+
+    return {
+      ...state,
+      selectionState: nextSelectionState,
+    };
+  }),
+  on(runsActions.runSelectionToggled, (state, {runId}) => {
+    const nextSelectionState = new Map(state.selectionState);
+    nextSelectionState.set(runId, !Boolean(nextSelectionState.get(runId)));
+
+    return {
+      ...state,
+      selectionState: nextSelectionState,
+    };
+  }),
+  on(runsActions.runPageSelectionToggled, (state, {runIds}) => {
+    const nextSelectionState = new Map(state.selectionState);
+
+    const nextValue = !runIds.every((runId) => {
+      return Boolean(nextSelectionState.get(runId));
+    });
+    for (const runId of runIds) {
+      nextSelectionState.set(runId, nextValue);
+    }
+
+    return {
+      ...state,
+      selectionState: nextSelectionState,
     };
   })
 );
