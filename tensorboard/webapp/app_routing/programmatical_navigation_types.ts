@@ -23,6 +23,7 @@ export const NAVIGATION_PROVIDER = new InjectionToken<NavigationLambda[]>(
 export interface NavigateToExperiment {
   routeKind: RouteKind.EXPERIMENT;
   routeParams: ExperimentRouteParams;
+  resetNamespacedState?: boolean;
 }
 
 export interface NavigateToCompare {
@@ -30,11 +31,13 @@ export interface NavigateToCompare {
   routeParams: {
     aliasAndExperimentIds: Array<{alias: string; id: string}>;
   };
+  resetNamespacedState?: boolean;
 }
 
 export interface NavigateToExperiments {
   routeKind: RouteKind.EXPERIMENTS;
   routeParams: {};
+  resetNamespacedState?: boolean;
 }
 
 export type ProgrammaticalNavigation =
