@@ -3,6 +3,30 @@ workspace(name = "org_tensorflow_tensorboard")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
+    name = "build_bazel_rules_apple",
+    sha256 = "0052d452af7742c8f3a4e0929763388a66403de363775db7e90adecb2ba4944b",
+    urls = [
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_apple/releases/download/0.31.3/rules_apple.0.31.3.tar.gz",
+        "https://github.com/bazelbuild/rules_apple/releases/download/0.31.3/rules_apple.0.31.3.tar.gz",
+    ],
+)
+
+http_archive(
+    name = "bazel_skylib",
+    sha256 = "c6966ec828da198c5d9adbaa94c05e3a1c7f21bd012a0b29ba8ddbccb2c93b0d",
+    urls = [
+        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.0.3/bazel-skylib-1.1.1.tar.gz",
+    ],
+)
+
+load("@bazel_skylib//lib:versions.bzl", "versions")
+
+# Keep this version in sync with the BAZEL environment variable defined
+# in our .github/workflows/ci.yml config.
+versions.check(minimum_bazel_version = "4.0.0")
+
+http_archive(
     name = "io_bazel_rules_webtesting",
     sha256 = "9bb461d5ef08e850025480bab185fd269242d4e533bca75bfb748001ceb343c3",
     urls = [
@@ -73,35 +97,6 @@ http_archive(
     ],
 )
 
-http_archive(
-    name = "org_tensorflow",
-    patches = [
-        # Patch TF's python_configure.bzl to ensure it reconfigures its python
-        # toolchain when environment variables like `PATH` and `PYTHONPATH`
-        # change, to avoid the stale genrule py_binary issue described in:
-        # https://github.com/tensorflow/tensorboard/issues/4862
-        "//third_party:tensorflow.patch",
-    ],
-    # NOTE: when updating this, MAKE SURE to also update the protobuf_js runtime version
-    # in third_party/workspace.bzl to >= the protobuf/protoc version provided by TF.
-    sha256 = "2595a5c401521f20a2734c4e5d54120996f8391f00bb62a57267d930bce95350",
-    strip_prefix = "tensorflow-2.3.0",
-    urls = [
-        "http://mirror.tensorflow.org/github.com/tensorflow/tensorflow/archive/v2.3.0.tar.gz",  # 2020-07-23
-        "https://github.com/tensorflow/tensorflow/archive/v2.3.0.tar.gz",
-    ],
-)
-
-load("@org_tensorflow//tensorflow:workspace.bzl", "tf_workspace")
-
-tf_workspace()
-
-load("@bazel_skylib//lib:versions.bzl", "versions")
-
-# Keep this version in sync with the BAZEL environment variable defined
-# in our .github/workflows/ci.yml config.
-versions.check(minimum_bazel_version = "3.7.0")
-
 load("@io_bazel_rules_sass//:package.bzl", "rules_sass_dependencies")
 
 rules_sass_dependencies()
@@ -110,9 +105,38 @@ load("@io_bazel_rules_sass//:defs.bzl", "sass_repositories")
 
 sass_repositories()
 
+# Needed by gRPC.
+http_archive(
+    name = "build_bazel_rules_swift",
+    sha256 = "2245d21ba740f2b877d28fe97f77dbc7622942e09a7593ed748ce90afd95afd3",
+    strip_prefix = "rules_swift-0.25.0",
+    urls = [
+        "https://github.com/bazelbuild/rules_swift/archive/0.25.0.tar.gz",
+    ],
+)
+
+# gRPC.
+http_archive(
+    name = "com_github_grpc_grpc",
+    sha256 = "0f0b3a74af65049fbc6ef3072415ba96d73a7417bfa641fb85f43af9a158f57c",
+    strip_prefix = "grpc-2d8546a3c4ed8fa0a801770e58fd284cf4a70d7a",
+    urls = [
+        "https://github.com/grpc/grpc/archive/2d8546a3c4ed8fa0a801770e58fd284cf4a70d7a.tar.gz",
+    ],
+)
+
 load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
 
 grpc_deps()
+
+http_archive(
+    name = "upb",
+    sha256 = "e9f281c56ab1eb1f97a80ca8a83bb7ef73d230eabb8591f83876f4e7b85d9b47",
+    strip_prefix = "upb-8a3ae1ef3e3e3f26b45dec735c5776737fc7247f",
+    urls = [
+        "https://github.com/protocolbuffers/upb/archive/8a3ae1ef3e3e3f26b45dec735c5776737fc7247f.tar.gz",
+    ],
+)
 
 load("@upb//bazel:repository_defs.bzl", "bazel_version_repository")
 
@@ -120,12 +144,11 @@ bazel_version_repository(name = "bazel_version")
 
 http_archive(
     name = "rules_rust",
-    sha256 = "9c7d7fd4378d75232858423d574cff677b16ac9a49cd1a11df545a6e72a315ca",
-    strip_prefix = "rules_rust-42a674093251fb6a603a2652980c9be28a6fea50",
+    sha256 = "531bdd470728b61ce41cf7604dc4f9a115983e455d46ac1d0c1632f613ab9fc3",
+    strip_prefix = "rules_rust-d8238877c0e552639d3e057aadd6bfcf37592408",
     urls = [
-        # Master branch as of 2021-04-14
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_rust/archive/42a674093251fb6a603a2652980c9be28a6fea50.tar.gz",
-        "https://github.com/bazelbuild/rules_rust/archive/42a674093251fb6a603a2652980c9be28a6fea50.tar.gz",
+        # Master branch as of 2021-08-23
+        "https://github.com/bazelbuild/rules_rust/archive/d8238877c0e552639d3e057aadd6bfcf37592408.tar.gz",
     ],
 )
 
