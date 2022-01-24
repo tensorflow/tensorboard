@@ -432,16 +432,7 @@ class TensorBoard(object):
                 sys.stderr.write(msg)
                 sys.exit(1)
 
-        if flags.load_fast == "auto" and _should_use_data_server(flags.logdir):
-            if flags.logdir_spec and not flags.logdir:
-                logger.info(
-                    "Warning: --logdir_spec is not supported with --load_fast "
-                    + "behavior; falling back to multiplexer. To use the data "
-                    + "server, replace --logdir_spec with --logdir."
-                )
-                ingester = local_ingester.LocalDataIngester(flags)
-                ingester.start()
-                return ingester
+        if flags.load_fast == "auto" and _should_use_data_server(flags):
             try:
                 ingester = self._start_subprocess_data_ingester()
                 sys.stderr.write(_DATA_SERVER_ADVISORY_MESSAGE)
@@ -483,15 +474,24 @@ class TensorBoard(object):
         return self.server_class(app, self.flags)
 
 
-def _should_use_data_server(logdir):
-    if not logdir:
-        # Maybe using `--logdir_spec` or something. Not supported.
+def _should_use_data_server(flags):
+    if flags.logdir_spec and not flags.logdir:
+        logger.info(
+            "Note: --logdir_spec is not supported with --load_fast behavior; "
+            "falling back to slower Python-only load path. To use the data "
+            "server, replace --logdir_spec with --logdir."
+        )
         return False
-    if "://" not in logdir:
-        return True
-    if logdir.startswith("gs://"):
-        return True
-    return False
+    if not flags.logdir:
+        # Using some other legacy mode; not supported.
+        return False
+    if "://" in flags.logdir and not flags.logdir.startswith("gs://"):
+        logger.info(
+            "Note: --load_fast behavior only supports local and GCS (gs://) "
+            "paths; falling back to slower Python-only load path."
+        )
+        return False
+    return True
 
 
 class TensorBoardSubcommand(metaclass=ABCMeta):
