@@ -16,7 +16,6 @@ http_archive(
     sha256 = "c6966ec828da198c5d9adbaa94c05e3a1c7f21bd012a0b29ba8ddbccb2c93b0d",
     urls = [
         "https://github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.0.3/bazel-skylib-1.1.1.tar.gz",
     ],
 )
 
@@ -24,7 +23,7 @@ load("@bazel_skylib//lib:versions.bzl", "versions")
 
 # Keep this version in sync with the BAZEL environment variable defined
 # in our .github/workflows/ci.yml config.
-versions.check(minimum_bazel_version = "4.0.0")
+versions.check(minimum_bazel_version = "3.7.0")
 
 http_archive(
     name = "io_bazel_rules_webtesting",
