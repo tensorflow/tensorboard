@@ -20,9 +20,7 @@ import abc
 import io
 import os
 
-import tensorflow as tf
-
-
+from tensorboard import test as tb_test
 from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.compat.proto import event_pb2
 from tensorboard.summary.writer import record_writer
@@ -98,7 +96,7 @@ class EventFileLoaderTestBase(metaclass=abc.ABCMeta):
         self.assertEventWallTimes(loader.Load(), [1.0])
 
 
-class RawEventFileLoaderTest(EventFileLoaderTestBase, tf.test.TestCase):
+class RawEventFileLoaderTest(EventFileLoaderTestBase, tb_test.TestCase):
     @property
     def _loader_class(self):
         return event_file_loader.RawEventFileLoader
@@ -113,7 +111,7 @@ class RawEventFileLoaderTest(EventFileLoaderTestBase, tf.test.TestCase):
         )
 
 
-class EventFileLoaderTest(EventFileLoaderTestBase, tf.test.TestCase):
+class EventFileLoaderTest(EventFileLoaderTestBase, tb_test.TestCase):
     @property
     def _loader_class(self):
         return event_file_loader.EventFileLoader
@@ -125,7 +123,7 @@ class EventFileLoaderTest(EventFileLoaderTestBase, tf.test.TestCase):
         )
 
 
-class TimestampedEventFileLoaderTest(EventFileLoaderTestBase, tf.test.TestCase):
+class TimestampedEventFileLoaderTest(EventFileLoaderTestBase, tb_test.TestCase):
     @property
     def _loader_class(self):
         return event_file_loader.TimestampedEventFileLoader
@@ -148,4 +146,4 @@ def _make_event(**kwargs):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    tb_test.main()
