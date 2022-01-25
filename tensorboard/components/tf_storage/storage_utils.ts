@@ -114,8 +114,8 @@ export function dictToComponent(items: StringDict): string {
 /**
  * Delete a key from the URI.
  */
-export function unsetFromURI(key) {
+export function unsetFromURI(key, useLocationReplace = false) {
   const items = componentToDict(readComponent());
   delete items[key];
-  writeComponent(dictToComponent(items));
+  writeComponent(dictToComponent(items), useLocationReplace);
 }
