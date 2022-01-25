@@ -129,3 +129,10 @@ export const getEnabledTimeNamespacedState = createSelector(
     return flags.enabledTimeNamespacedState;
   }
 );
+
+export const getForceSvgFeatureFlag = createSelector(
+  getFeatureFlags,
+  (flags: FeatureFlags): boolean => {
+    return flags.forceSvg;
+  }
+);

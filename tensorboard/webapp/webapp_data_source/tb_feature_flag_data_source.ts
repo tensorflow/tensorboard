@@ -23,6 +23,7 @@ import {
   ENABLE_LINK_TIME_PARAM_KEY,
   ENABLE_TIME_NAMESPACED_STATE,
   EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
+  FORCE_SVG_RENDERER,
   SCALARS_BATCH_SIZE_PARAM_KEY,
   TBFeatureFlagDataSource,
 } from './tb_feature_flag_data_source_types';
@@ -88,6 +89,10 @@ export class QueryParamsFeatureFlagDataSource
     if (params.has(ENABLE_TIME_NAMESPACED_STATE)) {
       featureFlags.enabledTimeNamespacedState =
         params.get(ENABLE_TIME_NAMESPACED_STATE) !== 'false';
+    }
+
+    if (params.has(FORCE_SVG_RENDERER)) {
+      featureFlags.forceSvg = params.get(FORCE_SVG_RENDERER) !== 'false';
     }
 
     return featureFlags;
