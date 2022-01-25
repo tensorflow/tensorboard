@@ -15,10 +15,6 @@ limitations under the License.
 import {GroupBy, GroupByKey, Run, RunGroup} from '../types';
 import {ExperimentId, RunId} from './runs_types';
 
-export function serializeExperimentIds(experimentIds: string[]): string {
-  return JSON.stringify(experimentIds.slice().sort());
-}
-
 export function groupRuns(
   groupBy: GroupBy,
   runs: Run[],

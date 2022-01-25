@@ -51,10 +51,11 @@ import {matchRunToRegex, RunMatchable} from './matcher';
  * Note that emits null when current route is not about an experiment.
  */
 export const getCurrentRouteRunSelection = createSelector(
-  (state: State): Map<string, boolean> | null => {
-    const experimentIds = getExperimentIdsFromRoute(state);
-    return experimentIds ? getRunSelectionMap(state, {experimentIds}) : null;
+  (state: State): boolean => {
+    return !!getExperimentIdsFromRoute(state);
   },
+
+  getRunSelectionMap,
   getRunSelectorRegexFilter,
   (state: State): Map<string, RunMatchable> => {
     const experimentIds = getExperimentIdsFromRoute(state) ?? [];
@@ -73,8 +74,11 @@ export const getCurrentRouteRunSelection = createSelector(
     return runMatchableMap;
   },
   getRouteKind,
-  (runSelection, regexFilter, runMatchableMap, routeKind) => {
-    if (!runSelection) return null;
+  (hasExperiments, runSelection, regexFilter, runMatchableMap, routeKind) => {
+    if (!hasExperiments) {
+      // There are no experiments in the route. Return null.
+      return null;
+    }
     const includeExperimentInfo = routeKind === RouteKind.COMPARE_EXPERIMENT;
     const filteredSelection = new Map<string, boolean>();
 

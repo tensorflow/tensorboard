@@ -14,24 +14,9 @@ limitations under the License.
 ==============================================================================*/
 import {GroupByKey} from '../types';
 import {buildRun} from './testing';
-import {createGroupBy, groupRuns, serializeExperimentIds} from './utils';
+import {createGroupBy, groupRuns} from './utils';
 
 describe('run store utils test', () => {
-  describe('#serializeExperimentIds', () => {
-    it('serializes experiment ids into a string', () => {
-      const actual = serializeExperimentIds(['b', 'c', 'd']);
-
-      expect(actual).toBe('["b","c","d"]');
-    });
-
-    it('sorts the experiment ids so order does not matter', () => {
-      const a = serializeExperimentIds(['a', 'c', 'b']);
-      const b = serializeExperimentIds(['b', 'a', 'c']);
-
-      expect(a).toBe(b);
-    });
-  });
-
   describe('#groupRuns', () => {
     describe('by runs', () => {
       it('groups runs by run ids', () => {

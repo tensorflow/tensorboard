@@ -43,9 +43,6 @@ export const RUNS_FEATURE_KEY = 'runs';
 export type ExperimentId = string;
 export type RunId = string;
 
-// 'RouteKey' is a serialization of multiple experiment IDs.
-export type RouteKey = string;
-
 export interface RunsDataNamespacedState {
   defaultRunColorIdForGroupBy: Map<RunId, number>;
   // Monotonically increasing opaque id that uniquely identifies color that can
@@ -65,17 +62,6 @@ export interface RunsDataNonNamespacedState {
   runIdToExpId: Record<RunId, ExperimentId>;
   runMetadata: Record<RunId, Run>;
   runsLoadState: Record<ExperimentId, LoadState>;
-  /**
-   * Map from a 'key' to a `RunId` to boolean whether the run is selected.
-   *
-   * Run selection is tied to a list of experimentIds which is somewhat related
-   * to route but not strictly. For instance, if we want to render the
-   * run-selector in both experiment list and dashboard routes sharing the
-   * state, they need to share a key.
-   *
-   * TODO(psybuzz): this belongs in UI state not data state.
-   */
-  selectionState: Map<RouteKey, Map<RunId, boolean>>;
 }
 
 /**
@@ -89,6 +75,10 @@ export type RunsDataState = NamespaceContextedState<
 export interface RunsUiNamespacedState {
   paginationOption: {pageIndex: number; pageSize: number};
   sort: {key: SortKey | null; direction: SortDirection};
+  /**
+   * Indicates whether the run is selected.
+   */
+  selectionState: Map<RunId, boolean>;
 }
 
 export interface RunsUiNonNamespacedState {}

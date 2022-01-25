@@ -559,7 +559,6 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   onRunSelectionToggle(item: RunTableItem) {
     this.store.dispatch(
       runSelectionToggled({
-        experimentIds: this.experimentIds,
         runId: item.run.id,
       })
     );
@@ -573,7 +572,6 @@ export class RunsTableContainer implements OnInit, OnDestroy {
 
     this.store.dispatch(
       runPageSelectionToggled({
-        experimentIds: this.experimentIds,
         runIds,
       })
     );
