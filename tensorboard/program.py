@@ -491,6 +491,13 @@ def _should_use_data_server(flags):
             "paths; falling back to slower Python-only load path."
         )
         return False
+    if flags.detect_file_replacement is True:
+        logger.info(
+            "Note: --detect_file_replacement=true is not supported with "
+            "--load_fast behavior; falling back to slower Python-only load "
+            "path."
+        )
+        return False
     return True
 
 
