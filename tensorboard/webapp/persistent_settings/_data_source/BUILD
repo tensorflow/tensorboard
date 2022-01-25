@@ -10,7 +10,6 @@ tf_ng_module(
     ],
     deps = [
         ":types",
-        "//tensorboard/webapp/util:local_storage",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",
@@ -49,7 +48,6 @@ tf_ng_module(
         ":_data_source",
         ":types",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
-        "//tensorboard/webapp/util:local_storage_testing",
         "@npm//@angular/core",
         "@npm//@types/jasmine",
         "@npm//rxjs",

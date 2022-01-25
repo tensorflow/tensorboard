@@ -33,7 +33,7 @@ import {
   TEST_ONLY,
 } from './persistent_settings_effects';
 
-describe('persistent_settings effects test', () => {
+fdescribe('persistent_settings effects test', () => {
   let action: ReplaySubject<Action>;
   let dispatchSpy: jasmine.Spy;
   let store: MockStore<any>;
