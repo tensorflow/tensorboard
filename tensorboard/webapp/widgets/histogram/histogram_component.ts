@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {CdkDrag, CdkDragMove} from '@angular/cdk/drag-drop';
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -90,6 +91,7 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
   @ViewChild('yAxis') private readonly yAxis!: ElementRef;
   @ViewChild('content') private readonly content!: ElementRef;
   @ViewChild('histograms') private readonly histograms!: ElementRef;
+  @ViewChild('startFob') private readonly startFob!: CdkDrag;
 
   @Input() mode: HistogramMode = HistogramMode.OFFSET;
 
@@ -138,7 +140,12 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges() {
+    console.log('changes');
     this.updateChartIfVisible();
+    console.log('this.startFob', this.startFob);
+    if (this.startFob) {
+      this.startFob.boundaryElement = this.yAxis;
+    }
   }
 
   ngOnDestroy() {
@@ -152,6 +159,8 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     })
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((event) => this.onMouseMove(event));
+    // this.startFob.boundaryElement = this.yAxis;
+    console.log('this.startFob', this.startFob);
   }
 
   getCssTranslatePx(x: number, y: number): string {
@@ -223,6 +232,11 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
       0,
       this.scales.temporalScale(this.getTimeValue(datum))
     );
+  }
+
+  startFobMoved(test: CdkDragMove) {
+    console.log('got move event', test);
+    console.log('y axis', this.yAxis);
   }
 
   isLinkedTimeEnabled(linkedTime: LinkedTime | null): linkedTime is LinkedTime {

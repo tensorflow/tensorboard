@@ -52,6 +52,11 @@ limitations under the License.
     <!-- Disable the feature when in non-offset and non-step mode. -->
     <ng-container *ngIf="isLinkedTimeEnabled(linkedTime)">
       <div
+        cdkDrag
+        cdkDragLockAxis="y"
+        cdkDragBoundary=".yaxisbounds"
+        (cdkDragMoved)="startFobMoved($event)"
+        #startFob
         class="linked-time"
         [style.transform]="getCssTranslatePx(0, scales.temporalScale(linkedTime.startStep))"
       >
