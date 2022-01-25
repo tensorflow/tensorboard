@@ -83,11 +83,19 @@ class TensorBoardTest(tb_test.TestCase):
             tb.configure(foo="bar")
 
     def test_should_use_data_server(self):
-        f = program._should_use_data_server
-        self.assertTrue(f("logs/mnist/"))
-        self.assertTrue(f("gs://logs"))
-        self.assertFalse(f(""))
-        self.assertFalse(f("notgs://logs"))
+        def f(**kwargs):
+            kwargs.setdefault("logdir", "")
+            kwargs.setdefault("logdir_spec", "")
+            flags = argparse.Namespace()
+            for k, v in kwargs.items():
+                setattr(flags, k, v)
+            return program._should_use_data_server(flags)
+
+        self.assertFalse(f())
+        self.assertFalse(f(logdir_spec="a:foo,b:bar"))
+        self.assertTrue(f(logdir="logs/mnist/"))
+        self.assertTrue(f(logdir="gs://logs"))
+        self.assertFalse(f(logdir="notgs://logs"))
 
 
 class WerkzeugServerTest(tb_test.TestCase):
