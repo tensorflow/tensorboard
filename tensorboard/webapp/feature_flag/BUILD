@@ -50,7 +50,6 @@ tf_ts_library(
         ":force_svg_data_source",
         ":types",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
-        "//tensorboard/webapp/util:local_storage_testing",
         "//tensorboard/webapp/webapp_data_source:feature_flag_types",
         "@npm//@types/jasmine",
     ],

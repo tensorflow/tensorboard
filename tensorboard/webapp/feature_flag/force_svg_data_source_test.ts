@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
-import {LocalStorageTestingModule} from '../util/local_storage_testing';
 import {ForceSvgDataSource, TEST_ONLY} from './force_svg_data_source';
 
 describe('feature_flag/force_svg_util test', () => {
@@ -25,7 +24,6 @@ describe('feature_flag/force_svg_util test', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LocalStorageTestingModule],
       providers: [ForceSvgDataSource],
     }).compileComponents();
 
