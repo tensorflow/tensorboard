@@ -649,6 +649,26 @@ flag.\
 """,
         )
 
+        parser.add_argument(
+            "--detect_file_replacement",
+            metavar="BOOL",
+            # Custom str-to-bool converter since regular bool() doesn't work.
+            type=lambda v: {"true": True, "false": False}.get(v.lower(), v),
+            choices=[True, False],
+            default=None,
+            help="""\
+[experimental] If true, this enables experimental support for detecting when
+event files are replaced with new versions that contain additional data. This is
+not needed in the normal case where new data is either appended to an existing
+file or written to a brand new file, but it arises, for example, when using
+rsync without the --inplace option, in which new versions of the original file
+are first written to a temporary file, then swapped into the final location.
+
+This option is currently incompatible with --load_fast=true, and if passed will
+disable fast-loading mode. (default: false)\
+""",
+        )
+
     def fix_flags(self, flags):
         """Fixes standard TensorBoard CLI flags to parser."""
         FlagsError = base_plugin.FlagsError
@@ -683,6 +703,13 @@ flag.\
             )
         elif flags.host is not None and flags.bind_all:
             raise FlagsError("Must not specify both --host and --bind_all.")
+        elif (
+            flags.load_fast == "true" and flags.detect_file_replacement is True
+        ):
+            raise FlagsError(
+                "Must not specify both --load_fast=true and"
+                "--detect_file_replacement=true"
+            )
 
         flags.path_prefix = flags.path_prefix.rstrip("/")
         if flags.path_prefix and not flags.path_prefix.startswith("/"):

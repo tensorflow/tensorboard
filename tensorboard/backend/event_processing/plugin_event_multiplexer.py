@@ -77,6 +77,7 @@ class EventMultiplexer(object):
         purge_orphaned_data=True,
         max_reload_threads=None,
         event_file_active_filter=None,
+        detect_file_replacement=None,
     ):
         """Constructor for the `EventMultiplexer`.
 
@@ -98,6 +99,9 @@ class EventMultiplexer(object):
           event_file_active_filter: Optional predicate for determining whether an
             event file latest load timestamp should be considered active. If passed,
             this will enable multifile directory loading.
+          detect_file_replacement: Optional boolean; if True, event file loading
+            will try to detect when a file has been replaced with a new version
+            that contains additional data, by monitoring the file size.
         """
         logger.info("Event Multiplexer initializing.")
         self._accumulators_mutex = threading.Lock()
@@ -111,6 +115,7 @@ class EventMultiplexer(object):
         self.purge_orphaned_data = purge_orphaned_data
         self._max_reload_threads = max_reload_threads or 1
         self._event_file_active_filter = event_file_active_filter
+        self._detect_file_replacement = detect_file_replacement
         if run_path_map is not None:
             logger.info(
                 "Event Multplexer doing initialization load for %s",
@@ -159,6 +164,7 @@ class EventMultiplexer(object):
                     tensor_size_guidance=self._tensor_size_guidance,
                     purge_orphaned_data=self.purge_orphaned_data,
                     event_file_active_filter=self._event_file_active_filter,
+                    detect_file_replacement=self._detect_file_replacement,
                 )
                 self._accumulators[name] = accumulator
                 self._paths[name] = path
