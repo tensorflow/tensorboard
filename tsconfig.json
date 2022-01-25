@@ -8,7 +8,7 @@
     "inlineSourceMap": true,
     "lib": ["dom", "es2021", "dom.iterable"],
     "moduleResolution": "node",
-    "module": "es2020",
+    "module": "es2022",
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noImplicitOverride": true,
