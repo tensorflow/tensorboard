@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {FeatureFlags} from '../feature_flag/types';
+import {FeatureFlags} from '../types';
 import {QueryParams} from './query_params';
 import {
   ENABLE_CARD_WIDTH_SETTING_PARAM_KEY,

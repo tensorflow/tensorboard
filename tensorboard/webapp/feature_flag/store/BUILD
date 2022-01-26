@@ -14,7 +14,7 @@ tf_ng_module(
         "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/actions",
         "//tensorboard/webapp/persistent_settings",
-        "//tensorboard/webapp/webapp_data_source:feature_flag",
+        # "//tensorboard/webapp/feature_flag/data_source:feature_flag",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",

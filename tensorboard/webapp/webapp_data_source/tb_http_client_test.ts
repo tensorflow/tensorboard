@@ -20,12 +20,12 @@ import {
   AppRootProvider,
   TestableAppRootProvider,
 } from '../app_routing/app_root';
+import {TBFeatureFlagTestingModule} from '../feature_flag/data_source/tb_feature_flag_testing';
 import {
   getIsFeatureFlagsLoaded,
   getIsInColab,
 } from '../feature_flag/store/feature_flag_selectors';
 import {State} from '../feature_flag/store/feature_flag_types';
-import {TBFeatureFlagTestingModule} from './tb_feature_flag_testing';
 import {TBHttpClient, XSRF_REQUIRED_HEADER} from './tb_http_client';
 import {
   HttpTestingController,

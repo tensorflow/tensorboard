@@ -18,11 +18,11 @@ import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {ReplaySubject} from 'rxjs';
+import {partialFeatureFlagsLoaded} from '../actions/feature_flag_actions';
 import {
   TBFeatureFlagTestingModule,
   TestingTBFeatureFlagDataSource,
-} from '../../webapp_data_source/tb_feature_flag_testing';
-import {partialFeatureFlagsLoaded} from '../actions/feature_flag_actions';
+} from '../data_source/tb_feature_flag_testing';
 import {ForceSvgDataSource} from '../force_svg_data_source';
 import {ForceSvgDataSourceModule} from '../force_svg_data_source_module';
 import {getIsAutoDarkModeAllowed} from '../store/feature_flag_selectors';

@@ -14,8 +14,8 @@ limitations under the License.
 ==============================================================================*/
 
 import {Injectable, NgModule} from '@angular/core';
-import {buildFeatureFlag} from '../feature_flag/testing';
-import {FeatureFlags} from '../feature_flag/types';
+import {buildFeatureFlag} from '../testing';
+import {FeatureFlags} from '../types';
 import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
 
 @Injectable()
