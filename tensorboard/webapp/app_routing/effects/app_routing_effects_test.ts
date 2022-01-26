@@ -243,6 +243,7 @@ describe('app_routing_effects', () => {
     }
    //spyOn(window.crypto, 'getRandomValues').and.callFake(mockRandomValuesFunction);
    spyOn(TEST_ONLY, 'generate32bitRandomId').and.returnValue('123456');
+   spyOn(TEST_ONLY, 'getRandomValues').and.returnValue(new Uint8Array([3,4,5]));
   });
 
   describe('bootstrapReducers$', () => {

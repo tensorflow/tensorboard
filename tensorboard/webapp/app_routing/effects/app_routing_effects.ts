@@ -105,10 +105,15 @@ type NavigationOptions = {
   namespaceUpdate: NamespaceUpdate;
 };
 
-function generate32bitRandomId() {
-  const arr = new Uint8Array(32);
-
+function getRandomValues(arr: Uint8Array) {
   crypto.getRandomValues(arr);
+  return arr;
+}
+
+function generate32bitRandomId() {
+  let arr = new Uint8Array(32);
+
+  arr = getRandomValues(arr);
 
   let ret = '';
   for (const el of arr) {
@@ -643,4 +648,4 @@ function getAfterNamespaceId(
   }
 }
 
-export const TEST_ONLY = {initAction, generate32bitRandomId};
+export const TEST_ONLY = {initAction, generate32bitRandomId, getRandomValues};
