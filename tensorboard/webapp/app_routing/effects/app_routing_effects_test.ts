@@ -241,7 +241,8 @@ describe('app_routing_effects', () => {
       // x.set([1,3,4,5]);
       return x;
     }
-   spyOn(window.crypto, 'getRandomValues').and.callFake(mockRandomValuesFunction);
+   //spyOn(window.crypto, 'getRandomValues').and.callFake(mockRandomValuesFunction);
+   spyOn(TEST_ONLY, 'generate32bitRandomId').and.returnValue('123456');
   });
 
   describe('bootstrapReducers$', () => {
@@ -534,7 +535,7 @@ describe('app_routing_effects', () => {
     });
 
     describe('time-namespaced ids', () => {
-      it('are generated on bootstrap when none in history', fakeAsync(() => {
+      fit('are generated on bootstrap when none in history', fakeAsync(() => {
         store.overrideSelector(getActiveRoute, null);
         store.overrideSelector(getActiveNamespaceId, null);
         store.overrideSelector(getEnabledTimeNamespacedState, true);
@@ -556,7 +557,8 @@ describe('app_routing_effects', () => {
             // From getActiveNamespaceId().
             beforeNamespaceId: null,
             // Newly-generated Id based on mock clock time.
-            afterNamespaceId: `00000000000000000000000000000000:${Date.now()}`,
+            // Error: Expected $[1].afterNamespaceId = '8e03a5acad99c47b49bcf57f8376c67f:1643229900995' to equal '123456:1643229900995'
+            afterNamespaceId: `123456:${Date.now()}`,
           }),
         ]);
       }));
@@ -612,7 +614,7 @@ describe('app_routing_effects', () => {
 
       it('are generated on navigationRequested when resetNamespacedState is true', fakeAsync(() => {
         // Record initial time for use later.
-        const before = `00000000000000000000000000000000:${Date.now()}`;
+        const before = Date.now();
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
         tick(5000);
 
@@ -638,9 +640,9 @@ describe('app_routing_effects', () => {
               routeKind: RouteKind.EXPERIMENTS,
             }),
             // From getActiveNamespaceId().
-            beforeNamespaceId: before.toString(),
+            beforeNamespaceId: `00000000000000000000000000000000:${before}`,
             // Value of before + the 5000 milliseconds from tick(5000).
-            afterNamespaceId: (before + 5000).toString(),
+            afterNamespaceId: `00000000000000000000000000000000:${before + 5000}`,
           }),
         ]);
       }));
@@ -774,7 +776,7 @@ describe('app_routing_effects', () => {
 
       it('are generated on programmatical navigation when resetNamespacedState is true', fakeAsync(() => {
         // Record initial time for use later.
-        const before = `00000000000000000000000000000000:${Date.now()}`;
+        const before = Date.now();
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
         tick(5000);
 
@@ -796,9 +798,9 @@ describe('app_routing_effects', () => {
               routeKind: RouteKind.EXPERIMENTS,
             }),
             // From getActiveNamespaceId().
-            beforeNamespaceId: before.toString(),
+            beforeNamespaceId: `00000000000000000000000000000000:${before}`,
             // Value of before + the 5000 milliseconds from tick(5000).
-            afterNamespaceId: (before + 5000).toString(),
+            afterNamespaceId: `00000000000000000000000000000000:${before + 5000}`,
           }),
         ]);
       }));

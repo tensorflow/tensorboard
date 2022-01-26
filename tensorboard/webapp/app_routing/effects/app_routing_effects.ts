@@ -643,4 +643,4 @@ function getAfterNamespaceId(
   }
 }
 
-export const TEST_ONLY = {initAction};
+export const TEST_ONLY = {initAction, generate32bitRandomId};
