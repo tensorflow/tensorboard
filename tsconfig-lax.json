@@ -14,6 +14,7 @@
     "preserveConstEnums": false,
     "skipLibCheck": true,
     "sourceMap": false,
-    "target": "es5"
+    "target": "es5",
+    "useUnknownInCatchVariables": true,
   }
 }
