@@ -105,6 +105,19 @@ type NavigationOptions = {
   namespaceUpdate: NamespaceUpdate;
 };
 
+function generate32bitRandomId() {
+  const arr = new Uint8Array(32);
+
+  crypto.getRandomValues(arr);
+
+  let ret = '';
+  for (const el of arr) {
+   ret += (el >> 4).toString(16)
+  }
+
+  return ret;
+}
+
 /**
  * Effects to translate attempted app navigations into Route navigation actions.
  *
@@ -623,7 +636,7 @@ function getAfterNamespaceId(
       beforeNamespaceId == null ||
       options.namespaceUpdate.option === NamespaceUpdateOption.NEW
     ) {
-      return Date.now().toString();
+      return `${generate32bitRandomId()}:${Date.now().toString()}`;
     } else {
       return beforeNamespaceId;
     }

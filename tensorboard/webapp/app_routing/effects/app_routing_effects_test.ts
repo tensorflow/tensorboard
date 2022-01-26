@@ -235,6 +235,13 @@ describe('app_routing_effects', () => {
     spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
     });
+    const mockRandomValuesFunction = function<Uint8Array>(x: Uint8Array): Uint8Array {
+      // TODO(japie1235813): return testable value for `getRandomValues`.
+      // This causes error:  Property 'set' does not exist on type 'Uint8Array'.
+      // x.set([1,3,4,5]);
+      return x;
+    }
+   spyOn(window.crypto, 'getRandomValues').and.callFake(mockRandomValuesFunction);
   });
 
   describe('bootstrapReducers$', () => {
@@ -549,7 +556,7 @@ describe('app_routing_effects', () => {
             // From getActiveNamespaceId().
             beforeNamespaceId: null,
             // Newly-generated Id based on mock clock time.
-            afterNamespaceId: Date.now().toString(),
+            afterNamespaceId: `00000000000000000000000000000000:${Date.now()}`,
           }),
         ]);
       }));
@@ -598,14 +605,14 @@ describe('app_routing_effects', () => {
         tick();
 
         expect(replaceStateDataSpy).toHaveBeenCalledWith({
-          namespaceId: Date.now().toString(),
+          namespaceId: `00000000000000000000000000000000:${Date.now()}`,
           other: 'data',
         });
       }));
 
       it('are generated on navigationRequested when resetNamespacedState is true', fakeAsync(() => {
         // Record initial time for use later.
-        const before = Date.now();
+        const before = `00000000000000000000000000000000:${Date.now()}`;
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
         tick(5000);
 
@@ -640,7 +647,7 @@ describe('app_routing_effects', () => {
 
       it('are unchanged on navigationRequested when resetNamespacedState is false', fakeAsync(() => {
         // Record initial time for use later.
-        const before = Date.now();
+        const before = `00000000000000000000000000000000:${Date.now()}`;
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
         tick(5000);
 
@@ -675,7 +682,7 @@ describe('app_routing_effects', () => {
 
       it('are unchanged on navigationRequested when resetNamespacedState is unspecified', fakeAsync(() => {
         // Record initial time for use later.
-        const before = Date.now();
+        const before = `00000000000000000000000000000000:${Date.now()}`;
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
         tick(5000);
 
@@ -767,7 +774,7 @@ describe('app_routing_effects', () => {
 
       it('are generated on programmatical navigation when resetNamespacedState is true', fakeAsync(() => {
         // Record initial time for use later.
-        const before = Date.now();
+        const before = `00000000000000000000000000000000:${Date.now()}`;
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
         tick(5000);
 
@@ -798,7 +805,7 @@ describe('app_routing_effects', () => {
 
       it('are unchanged on programmatical navigation when resetNamespacedState is false', fakeAsync(() => {
         // Record initial time for use later.
-        const before = Date.now();
+        const before = `00000000000000000000000000000000:${Date.now()}`;
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
         tick(5000);
 
@@ -829,7 +836,7 @@ describe('app_routing_effects', () => {
 
       it('are unchanged on programmatical navigation when resetNamespacedState is unspecified', fakeAsync(() => {
         // Record initial time for use later.
-        const before = Date.now();
+        const before = `00000000000000000000000000000000:${Date.now()}`;
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
         tick(5000);
 
@@ -1112,7 +1119,7 @@ describe('app_routing_effects', () => {
         store.refreshState();
 
         // Record the current time from the mocked clock.
-        const firstActionTime = Date.now();
+        const firstActionTime = `00000000000000000000000000000000:${Date.now()}`;
         // Mimic initial navigation.
         action.next(
           actions.navigationRequested({
