@@ -123,6 +123,19 @@ function generate32bitRandomId() {
   return ret;
 }
 
+const generate32bitRandomId2 = { call: () => {
+  const arr = new Uint8Array(32);
+
+  getRandomValues(arr);
+
+  let ret = '';
+  for (const el of arr) {
+   ret += (el >> 4).toString(16)
+  }
+
+  return ret;
+}}
+
 /**
  * Effects to translate attempted app navigations into Route navigation actions.
  *
@@ -641,11 +654,11 @@ function getAfterNamespaceId(
       beforeNamespaceId == null ||
       options.namespaceUpdate.option === NamespaceUpdateOption.NEW
     ) {
-      return `${generate32bitRandomId()}:${Date.now().toString()}`;
+      return `${generate32bitRandomId2.call()}:${Date.now().toString()}`;
     } else {
       return beforeNamespaceId;
     }
   }
 }
 
-export const TEST_ONLY = {initAction, generate32bitRandomId, getRandomValues};
+export const TEST_ONLY = {initAction, generate32bitRandomId, getRandomValues, generate32bitRandomId2};

@@ -243,6 +243,7 @@ describe('app_routing_effects', () => {
     }
    //spyOn(window.crypto, 'getRandomValues').and.callFake(mockRandomValuesFunction);
    spyOn(TEST_ONLY, 'generate32bitRandomId').and.returnValue('123456');
+   spyOn(TEST_ONLY.generate32bitRandomId2, 'call').and.returnValue('123456');
    spyOn(TEST_ONLY, 'getRandomValues').and.returnValue(new Uint8Array([3,4,5]));
   });
 
@@ -558,7 +559,7 @@ describe('app_routing_effects', () => {
             // From getActiveNamespaceId().
             beforeNamespaceId: null,
             // Newly-generated Id based on mock clock time.
-            // Error: Expected $[1].afterNamespaceId = '8e03a5acad99c47b49bcf57f8376c67f:1643229900995' to equal '123456:1643229900995'
+            // Pass!
             afterNamespaceId: `123456:${Date.now()}`,
           }),
         ]);
