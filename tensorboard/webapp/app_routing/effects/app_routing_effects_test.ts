@@ -609,12 +609,12 @@ describe('app_routing_effects', () => {
 
       it('are generated on navigationRequested when resetNamespacedState is true', fakeAsync(() => {
         // Record initial time for use later.
-        const before = Date.now();
+        const beforeDate = Date.now();
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
         tick(5000);
 
         store.overrideSelector(getActiveRoute, buildRoute());
-        store.overrideSelector(getActiveNamespaceId, before.toString());
+        store.overrideSelector(getActiveNamespaceId, `1234:${beforeDate}`);
         store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
@@ -635,10 +635,9 @@ describe('app_routing_effects', () => {
               routeKind: RouteKind.EXPERIMENTS,
             }),
             // From getActiveNamespaceId().
-            // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
-            beforeNamespaceId: `023c:${before}`,
+            beforeNamespaceId: `1234:${beforeDate}`,
             // Value of before + the 5000 milliseconds from tick(5000).
-            afterNamespaceId: `023c:${before + 5000}`,
+            afterNamespaceId: `023c:${beforeDate + 5000}`,
           }),
         ]);
       }));
@@ -774,12 +773,12 @@ describe('app_routing_effects', () => {
 
       it('are generated on programmatical navigation when resetNamespacedState is true', fakeAsync(() => {
         // Record initial time for use later.
-        const before = Date.now();
+        const beforeDate = Date.now();
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
         tick(5000);
 
         store.overrideSelector(getActiveRoute, buildRoute());
-        store.overrideSelector(getActiveNamespaceId, before.toString());
+        store.overrideSelector(getActiveNamespaceId, `1234:${beforeDate}`);
         store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
@@ -796,11 +795,10 @@ describe('app_routing_effects', () => {
               routeKind: RouteKind.EXPERIMENTS,
             }),
             // From getActiveNamespaceId().
-            // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
-            beforeNamespaceId: `023c:${before}`,
+            beforeNamespaceId: `1234:${beforeDate}`,
             // Value of before + the 5000 milliseconds from tick(5000).
             // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
-            afterNamespaceId: `023c:${before + 5000}`,
+            afterNamespaceId: `023c:${beforeDate + 5000}`,
           }),
         ]);
       }));
