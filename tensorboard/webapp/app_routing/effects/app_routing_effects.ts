@@ -190,13 +190,13 @@ export class AppRoutingEffects {
           namespaceId === undefined
             ? // There is no namespace id in the browser history entry. This is,
               // therefore, some sort of new navigation to the app. Set options
-              // so that a new namespace id is set downstream.
+              // so that a new namespace id is generated downstream.
               {
                 option: NamespaceUpdateOption.NEW,
               }
             : // There is a namespace id in the browser history entry. This is,
               // therefore, a page reload. Set options so that the namespace id
-              // is reused downstream.
+              // is taken from browser history state downstream.
               {
                 option: NamespaceUpdateOption.FROM_HISTORY,
                 namespaceId: namespaceId,
@@ -220,15 +220,34 @@ export class AppRoutingEffects {
     .onPopState()
     .pipe(
       map((navigation) => {
+        const namespaceUpdate: NamespaceUpdate =
+          navigation.state?.namespaceId === undefined
+            ? // There is no namespace id in browser history entry. In our
+              // experience this happens when the application navigates forward
+              // by modifying the URL hash -- it generates a new entry in
+              // browser history and fires a popstate event with that new entry.
+              //
+              // We treat these types of navigations as being within the same
+              // namespace. Set options so that the namespace id is unchanged
+              // downstream.
+              {
+                option: NamespaceUpdateOption.UNCHANGED,
+              }
+            : // There is a namespace id in the browser history entry. This is,
+              // therefore, a navigation using browser back/forward buttons to
+              // an existing entry in browser history. Set options so that the
+              // namespace id is taken from browser history state downstream.
+              {
+                option: NamespaceUpdateOption.FROM_HISTORY,
+                namespaceId: navigation.state.namespaceId,
+              };
+
         return {
           pathname: navigation.pathname,
           options: {
             browserInitiated: true,
             replaceState: true,
-            namespaceUpdate: {
-              option: NamespaceUpdateOption.FROM_HISTORY,
-              namespaceId: navigation.state?.namespaceId,
-            },
+            namespaceUpdate,
           },
         };
       })
