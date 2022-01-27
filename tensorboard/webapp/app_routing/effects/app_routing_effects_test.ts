@@ -69,6 +69,7 @@ const testDirtyExperimentsSelector = createSelector(
     } as DirtyUpdates;
   }
 );
+const TEST_UINT8ARRAY = new Uint8Array([12, 34, 50, 200]);
 
 describe('app_routing_effects', () => {
   let effects: AppRoutingEffects;
@@ -235,16 +236,7 @@ describe('app_routing_effects', () => {
     spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
     });
-    const mockRandomValuesFunction = function<Uint8Array>(x: Uint8Array): Uint8Array {
-      // TODO(japie1235813): return testable value for `getRandomValues`.
-      // This causes error:  Property 'set' does not exist on type 'Uint8Array'.
-      // x.set([1,3,4,5]);
-      return x;
-    }
-   //spyOn(window.crypto, 'getRandomValues').and.callFake(mockRandomValuesFunction);
-   spyOn(TEST_ONLY, 'generate32bitRandomId').and.returnValue('123456');
-   spyOn(TEST_ONLY.generate32bitRandomId2, 'call').and.returnValue('123456');
-   spyOn(TEST_ONLY, 'getRandomValues').and.returnValue(new Uint8Array([3,4,5]));
+    spyOn(window.crypto, 'getRandomValues').and.returnValue(TEST_UINT8ARRAY);
   });
 
   describe('bootstrapReducers$', () => {
@@ -537,7 +529,7 @@ describe('app_routing_effects', () => {
     });
 
     describe('time-namespaced ids', () => {
-      fit('are generated on bootstrap when none in history', fakeAsync(() => {
+      it('are generated on bootstrap when none in history', fakeAsync(() => {
         store.overrideSelector(getActiveRoute, null);
         store.overrideSelector(getActiveNamespaceId, null);
         store.overrideSelector(getEnabledTimeNamespacedState, true);
@@ -559,8 +551,8 @@ describe('app_routing_effects', () => {
             // From getActiveNamespaceId().
             beforeNamespaceId: null,
             // Newly-generated Id based on mock clock time.
-            // Pass!
-            afterNamespaceId: `123456:${Date.now()}`,
+            // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
+            afterNamespaceId: `023c:${Date.now()}`,
           }),
         ]);
       }));
@@ -609,7 +601,8 @@ describe('app_routing_effects', () => {
         tick();
 
         expect(replaceStateDataSpy).toHaveBeenCalledWith({
-          namespaceId: `00000000000000000000000000000000:${Date.now()}`,
+          // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
+          namespaceId: `023c:${Date.now()}`,
           other: 'data',
         });
       }));
@@ -642,16 +635,18 @@ describe('app_routing_effects', () => {
               routeKind: RouteKind.EXPERIMENTS,
             }),
             // From getActiveNamespaceId().
-            beforeNamespaceId: `00000000000000000000000000000000:${before}`,
+            // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
+            beforeNamespaceId: `023c:${before}`,
             // Value of before + the 5000 milliseconds from tick(5000).
-            afterNamespaceId: `00000000000000000000000000000000:${before + 5000}`,
+            afterNamespaceId: `023c:${before + 5000}`,
           }),
         ]);
       }));
 
       it('are unchanged on navigationRequested when resetNamespacedState is false', fakeAsync(() => {
         // Record initial time for use later.
-        const before = `00000000000000000000000000000000:${Date.now()}`;
+        // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
+        const before = `023c:${Date.now()}`;
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
         tick(5000);
 
@@ -686,7 +681,8 @@ describe('app_routing_effects', () => {
 
       it('are unchanged on navigationRequested when resetNamespacedState is unspecified', fakeAsync(() => {
         // Record initial time for use later.
-        const before = `00000000000000000000000000000000:${Date.now()}`;
+        // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
+        const before = `023c:${Date.now()}`;
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
         tick(5000);
 
@@ -800,16 +796,19 @@ describe('app_routing_effects', () => {
               routeKind: RouteKind.EXPERIMENTS,
             }),
             // From getActiveNamespaceId().
-            beforeNamespaceId: `00000000000000000000000000000000:${before}`,
+            // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
+            beforeNamespaceId: `023c:${before}`,
             // Value of before + the 5000 milliseconds from tick(5000).
-            afterNamespaceId: `00000000000000000000000000000000:${before + 5000}`,
+            // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
+            afterNamespaceId: `023c:${before + 5000}`,
           }),
         ]);
       }));
 
       it('are unchanged on programmatical navigation when resetNamespacedState is false', fakeAsync(() => {
         // Record initial time for use later.
-        const before = `00000000000000000000000000000000:${Date.now()}`;
+        // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
+        const before = `023c:${Date.now()}`;
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
         tick(5000);
 
@@ -840,7 +839,8 @@ describe('app_routing_effects', () => {
 
       it('are unchanged on programmatical navigation when resetNamespacedState is unspecified', fakeAsync(() => {
         // Record initial time for use later.
-        const before = `00000000000000000000000000000000:${Date.now()}`;
+        // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
+        const before = `023c:${Date.now()}`;
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
         tick(5000);
 
@@ -1123,7 +1123,8 @@ describe('app_routing_effects', () => {
         store.refreshState();
 
         // Record the current time from the mocked clock.
-        const firstActionTime = `00000000000000000000000000000000:${Date.now()}`;
+        // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
+        const firstActionTime = `023c:${Date.now()}`;
         // Mimic initial navigation.
         action.next(
           actions.navigationRequested({

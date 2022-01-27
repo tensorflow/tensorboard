@@ -105,36 +105,25 @@ type NavigationOptions = {
   namespaceUpdate: NamespaceUpdate;
 };
 
-function getRandomValues(arr: Uint8Array) {
-  crypto.getRandomValues(arr);
+const getRandomValues = (arr: Uint8Array) => {
+  // The usage of Crypto `getRandomValues` does not require return array.
+  // This is for the convenience of mock the funciton in testing.
+  arr = crypto.getRandomValues(arr);
   return arr;
-}
+};
 
-function generate32bitRandomId() {
+const generate32bitRandomId = () => {
   let arr = new Uint8Array(32);
 
   arr = getRandomValues(arr);
 
   let ret = '';
   for (const el of arr) {
-   ret += (el >> 4).toString(16)
+    ret += (el >> 4).toString(16);
   }
 
   return ret;
-}
-
-const generate32bitRandomId2 = { call: () => {
-  const arr = new Uint8Array(32);
-
-  getRandomValues(arr);
-
-  let ret = '';
-  for (const el of arr) {
-   ret += (el >> 4).toString(16)
-  }
-
-  return ret;
-}}
+};
 
 /**
  * Effects to translate attempted app navigations into Route navigation actions.
@@ -654,11 +643,11 @@ function getAfterNamespaceId(
       beforeNamespaceId == null ||
       options.namespaceUpdate.option === NamespaceUpdateOption.NEW
     ) {
-      return `${generate32bitRandomId2.call()}:${Date.now().toString()}`;
+      return `${generate32bitRandomId()}:${Date.now().toString()}`;
     } else {
       return beforeNamespaceId;
     }
   }
 }
 
-export const TEST_ONLY = {initAction, generate32bitRandomId, getRandomValues, generate32bitRandomId2};
+export const TEST_ONLY = {initAction};
