@@ -90,7 +90,6 @@ describe('app_routing_effects', () => {
   let getSearchSpy: jasmine.Spy;
   let serializeStateToQueryParamsSpy: jasmine.Spy;
   let deserializeQueryParamsSpy: jasmine.Spy;
-  let cryptoGetRandomValuesSpy: jasmine.Spy;
 
   beforeEach(async () => {
     action = new ReplaySubject<Action>(1);
@@ -242,12 +241,12 @@ describe('app_routing_effects', () => {
     });
 
     const mockRandomValuesFunction = function <Uint8Array>(
-      x: Uint8Array
+      arr: Uint8Array
     ): Uint8Array {
-      if (x instanceof Uint8Array) {
-        x.set(TEST_UINT8ARRAY);
+      if (arr instanceof Uint8Array) {
+        arr.set(TEST_UINT8ARRAY);
       }
-      return x;
+      return arr;
     };
     spyOn(window.crypto, 'getRandomValues').and.callFake(
       mockRandomValuesFunction
@@ -657,12 +656,12 @@ describe('app_routing_effects', () => {
 
       it('are unchanged on navigationRequested when resetNamespacedState is false', fakeAsync(() => {
         // Record initial time for use later.
-        const beforeDate = `${Date.now()}:${TEST_RANDOMID_STRING}`;
+        const beforeDate = Date.now();
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
         tick(5000);
 
         store.overrideSelector(getActiveRoute, buildRoute());
-        store.overrideSelector(getActiveNamespaceId, beforeDate.toString());
+        store.overrideSelector(getActiveNamespaceId, `${beforeDate}:1234`);
         store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
@@ -683,9 +682,9 @@ describe('app_routing_effects', () => {
               routeKind: RouteKind.EXPERIMENTS,
             }),
             // From getActiveNamespaceId().
-            beforeNamespaceId: beforeDate.toString(),
+            beforeNamespaceId: `${beforeDate}:1234`,
             // Same as beforeNamespaceId.
-            afterNamespaceId: beforeDate.toString(),
+            afterNamespaceId: `${beforeDate}:1234`,
           }),
         ]);
       }));
@@ -823,10 +822,7 @@ describe('app_routing_effects', () => {
         tick(5000);
 
         store.overrideSelector(getActiveRoute, buildRoute());
-        store.overrideSelector(
-          getActiveNamespaceId,
-          `${beforeDate}:${TEST_RANDOMID_STRING}`
-        );
+        store.overrideSelector(getActiveNamespaceId, `${beforeDate}:1234`);
         store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
@@ -843,9 +839,9 @@ describe('app_routing_effects', () => {
               routeKind: RouteKind.EXPERIMENTS,
             }),
             // From getActiveNamespaceId().
-            beforeNamespaceId: `${beforeDate}:${TEST_RANDOMID_STRING}`,
+            beforeNamespaceId: `${beforeDate}:1234`,
             // Same as beforeNamespaceId.
-            afterNamespaceId: `${beforeDate}:${TEST_RANDOMID_STRING}`,
+            afterNamespaceId: `${beforeDate}:1234`,
           }),
         ]);
       }));
@@ -857,10 +853,7 @@ describe('app_routing_effects', () => {
         tick(5000);
 
         store.overrideSelector(getActiveRoute, buildRoute());
-        store.overrideSelector(
-          getActiveNamespaceId,
-          `${beforeDate}:${TEST_RANDOMID_STRING}`
-        );
+        store.overrideSelector(getActiveNamespaceId, `${beforeDate}:1234`);
         store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
@@ -875,9 +868,9 @@ describe('app_routing_effects', () => {
               routeKind: RouteKind.EXPERIMENTS,
             }),
             // From getActiveNamespaceId().
-            beforeNamespaceId: `${beforeDate}:${TEST_RANDOMID_STRING}`,
+            beforeNamespaceId: `${beforeDate}:1234`,
             // Same as beforeNamespaceId.
-            afterNamespaceId: `${beforeDate}:${TEST_RANDOMID_STRING}`,
+            afterNamespaceId: `${beforeDate}:1234`,
           }),
         ]);
       }));
@@ -1138,7 +1131,7 @@ describe('app_routing_effects', () => {
         store.refreshState();
 
         // Record the current time from the mocked clock.
-        const firstActionTime = `${Date.now()}:${TEST_RANDOMID_STRING}`;
+        const firstActionTime = Date.now();
         // Mimic initial navigation.
         action.next(
           actions.navigationRequested({
@@ -1158,7 +1151,7 @@ describe('app_routing_effects', () => {
             }),
             beforeNamespaceId: null,
             // Newly generated id based on mock clock time.
-            afterNamespaceId: firstActionTime.toString(),
+            afterNamespaceId: `${firstActionTime}:${TEST_RANDOMID_STRING}`,
           }),
         ]);
 
@@ -1172,7 +1165,7 @@ describe('app_routing_effects', () => {
         );
         store.overrideSelector(
           getActiveNamespaceId,
-          firstActionTime.toString()
+          `${firstActionTime}:${TEST_RANDOMID_STRING}`
         );
         store.refreshState();
         // Mimic subsequent change in query parameter.
@@ -1193,9 +1186,9 @@ describe('app_routing_effects', () => {
               params: {experimentIds: 'a:b'},
             }),
             // From updated getActiveNamespaceId().
-            beforeNamespaceId: firstActionTime.toString(),
+            beforeNamespaceId: `${firstActionTime}:${TEST_RANDOMID_STRING}`,
             // Same as beforeNamespaceId. (no reset took place)
-            afterNamespaceId: firstActionTime.toString(),
+            afterNamespaceId: `${firstActionTime}:${TEST_RANDOMID_STRING}`,
           }),
         ]);
       }));

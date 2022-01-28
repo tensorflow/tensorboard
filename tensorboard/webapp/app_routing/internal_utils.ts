@@ -249,13 +249,11 @@ export function canRehydrateDeepLink(
  * Generates a 32-character long random id for name space suffix to avoid
  * collision of timestamp.
  */
- export function generateRandomIdForNamespace() {
+export function generateRandomIdForNamespace() {
   // Generates id with 32 numbers/charaters.
   let arr = new Uint8Array(32);
 
-  // The usage of Crypto `getRandomValues` does not require return an array.
-  // This is for the convenience of mock the funciton in testing.
-  arr = crypto.getRandomValues(arr);
+  crypto.getRandomValues(arr);
 
   let ret = '';
   for (const el of arr) {

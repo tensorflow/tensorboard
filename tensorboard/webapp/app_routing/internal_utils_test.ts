@@ -21,6 +21,15 @@ import {
 } from './testing';
 import {DeepLinkGroup, RouteKind} from './types';
 
+function getMockReturnValuesFuntion(testUint8array: Uint8Array) {
+  return function <Uint8Array>(arr: Uint8Array): Uint8Array {
+    if (arr instanceof Uint8Array) {
+      arr.set(testUint8array);
+    }
+    return arr;
+  };
+}
+
 describe('app_routing/utils', () => {
   describe('#parseCompareExperimentStr', () => {
     it('parses the map correctly', () => {
@@ -496,31 +505,41 @@ describe('app_routing/utils', () => {
 
     it('returns id witd base 16', () => {
       cryptoGetRandomValuesSpy = spyOn(window.crypto, 'getRandomValues');
-      cryptoGetRandomValuesSpy.and.returnValue(new Uint8Array([1]));
+      cryptoGetRandomValuesSpy.and.callFake(
+        getMockReturnValuesFuntion(new Uint8Array([1]))
+      );
       let result = utils.generateRandomIdForNamespace();
-      expect(result).toEqual('0');
+      expect(result).toEqual('00000000000000000000000000000000');
 
-      cryptoGetRandomValuesSpy.and.returnValue(new Uint8Array([15]));
-      result = utils.generateRandomIdForNamespace();
-      expect(result).toEqual('0');
-
-      cryptoGetRandomValuesSpy.and.returnValue(new Uint8Array([17]));
-      result = utils.generateRandomIdForNamespace();
-      expect(result).toEqual('1');
-
-      cryptoGetRandomValuesSpy.and.returnValue(new Uint8Array([32]));
-      result = utils.generateRandomIdForNamespace();
-      expect(result).toEqual('2');
-
-      cryptoGetRandomValuesSpy.and.returnValue(new Uint8Array([160]));
-      result = utils.generateRandomIdForNamespace();
-      expect(result).toEqual('a');
-
-      cryptoGetRandomValuesSpy.and.returnValue(
-        new Uint8Array([0, 16, 32, 160, 320])
+      cryptoGetRandomValuesSpy.and.callFake(
+        getMockReturnValuesFuntion(new Uint8Array([15]))
       );
       result = utils.generateRandomIdForNamespace();
-      expect(result).toEqual('012a4');
+      expect(result).toEqual('00000000000000000000000000000000');
+
+      cryptoGetRandomValuesSpy.and.callFake(
+        getMockReturnValuesFuntion(new Uint8Array([17]))
+      );
+      result = utils.generateRandomIdForNamespace();
+      expect(result).toEqual('10000000000000000000000000000000');
+
+      cryptoGetRandomValuesSpy.and.callFake(
+        getMockReturnValuesFuntion(new Uint8Array([32]))
+      );
+      result = utils.generateRandomIdForNamespace();
+      expect(result).toEqual('20000000000000000000000000000000');
+
+      cryptoGetRandomValuesSpy.and.callFake(
+        getMockReturnValuesFuntion(new Uint8Array([160]))
+      );
+      result = utils.generateRandomIdForNamespace();
+      expect(result).toEqual('a0000000000000000000000000000000');
+
+      cryptoGetRandomValuesSpy.and.callFake(
+        getMockReturnValuesFuntion(new Uint8Array([0, 16, 32, 160, 320]))
+      );
+      result = utils.generateRandomIdForNamespace();
+      expect(result).toEqual('012a4000000000000000000000000000');
     });
   });
 });
