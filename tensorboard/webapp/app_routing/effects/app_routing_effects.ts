@@ -43,6 +43,7 @@ import {
   arePathsAndQueryParamsEqual,
   areSameRouteKindAndExperiments,
   canRehydrateDeepLink,
+  generateRandomIdForNamespace,
   getRouteNamespaceId,
   serializeCompareExperimentParams,
 } from '../internal_utils';
@@ -103,21 +104,6 @@ type NavigationOptions = {
   browserInitiated: boolean;
   replaceState: boolean;
   namespaceUpdate: NamespaceUpdate;
-};
-
-const generate32bitRandomId = () => {
-  let arr = new Uint8Array(32);
-
-  // The usage of Crypto `getRandomValues` does not require return an array.
-  // This is for the convenience of mock the funciton in testing.
-  arr = crypto.getRandomValues(arr);
-
-  let ret = '';
-  for (const el of arr) {
-    ret += (el >> 4).toString(16);
-  }
-
-  return ret;
 };
 
 /**
@@ -638,11 +624,11 @@ function getAfterNamespaceId(
       beforeNamespaceId == null ||
       options.namespaceUpdate.option === NamespaceUpdateOption.NEW
     ) {
-      return `${generate32bitRandomId()}:${Date.now().toString()}`;
+      return `${Date.now().toString()}:${generateRandomIdForNamespace()}`;
     } else {
       return beforeNamespaceId;
     }
   }
 }
 
-export const TEST_ONLY = {initAction, generate32bitRandomId};
+export const TEST_ONLY = {initAction};

@@ -484,4 +484,43 @@ describe('app_routing/utils', () => {
       ).toBeFalse();
     });
   });
+
+  describe('#generateRandomIdForNamespace', () => {
+    let cryptoGetRandomValuesSpy: jasmine.Spy;
+
+    it('returns 32-long id', () => {
+      const result = utils.generateRandomIdForNamespace();
+
+      expect(result.length).toEqual(32);
+    });
+
+    it('returns id witd base 16', () => {
+      cryptoGetRandomValuesSpy = spyOn(window.crypto, 'getRandomValues');
+      cryptoGetRandomValuesSpy.and.returnValue(new Uint8Array([1]));
+      let result = utils.generateRandomIdForNamespace();
+      expect(result).toEqual('0');
+
+      cryptoGetRandomValuesSpy.and.returnValue(new Uint8Array([15]));
+      result = utils.generateRandomIdForNamespace();
+      expect(result).toEqual('0');
+
+      cryptoGetRandomValuesSpy.and.returnValue(new Uint8Array([17]));
+      result = utils.generateRandomIdForNamespace();
+      expect(result).toEqual('1');
+
+      cryptoGetRandomValuesSpy.and.returnValue(new Uint8Array([32]));
+      result = utils.generateRandomIdForNamespace();
+      expect(result).toEqual('2');
+
+      cryptoGetRandomValuesSpy.and.returnValue(new Uint8Array([160]));
+      result = utils.generateRandomIdForNamespace();
+      expect(result).toEqual('a');
+
+      cryptoGetRandomValuesSpy.and.returnValue(
+        new Uint8Array([0, 16, 32, 160, 320])
+      );
+      result = utils.generateRandomIdForNamespace();
+      expect(result).toEqual('012a4');
+    });
+  });
 });

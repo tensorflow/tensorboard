@@ -69,7 +69,10 @@ const testDirtyExperimentsSelector = createSelector(
     } as DirtyUpdates;
   }
 );
-const TEST_UINT8ARRAY = new Uint8Array([12, 34, 50, 200]);
+const TEST_UINT8ARRAY = new Uint8Array([12, 34, 50, 160, 200]);
+// '023ac' is the string with base 16 convertd from TEST_UNIT8ARRAY
+// leave thr rest of the string to be 0
+const TEST_RANDOMID_STRING = '023ac000000000000000000000000000';
 
 describe('app_routing_effects', () => {
   let effects: AppRoutingEffects;
@@ -237,6 +240,18 @@ describe('app_routing_effects', () => {
     spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
     });
+
+    const mockRandomValuesFunction = function <Uint8Array>(
+      x: Uint8Array
+    ): Uint8Array {
+      if (x instanceof Uint8Array) {
+        x.set(TEST_UINT8ARRAY);
+      }
+      return x;
+    };
+    spyOn(window.crypto, 'getRandomValues').and.callFake(
+      mockRandomValuesFunction
+    );
   });
 
   describe('bootstrapReducers$', () => {
@@ -529,12 +544,6 @@ describe('app_routing_effects', () => {
     });
 
     describe('time-namespaced ids', () => {
-      beforeEach(() => {
-        spyOn(window.crypto, 'getRandomValues').and.returnValue(
-          TEST_UINT8ARRAY
-        );
-      });
-
       it('are generated on bootstrap when none in history', fakeAsync(() => {
         store.overrideSelector(getActiveRoute, null);
         store.overrideSelector(getActiveNamespaceId, null);
@@ -557,8 +566,7 @@ describe('app_routing_effects', () => {
             // From getActiveNamespaceId().
             beforeNamespaceId: null,
             // Newly-generated Id based on mock clock time.
-            // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
-            afterNamespaceId: `023c:${Date.now()}`,
+            afterNamespaceId: `${Date.now()}:${TEST_RANDOMID_STRING}`,
           }),
         ]);
       }));
@@ -607,8 +615,7 @@ describe('app_routing_effects', () => {
         tick();
 
         expect(replaceStateDataSpy).toHaveBeenCalledWith({
-          // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
-          namespaceId: `023c:${Date.now()}`,
+          namespaceId: `${Date.now()}:${TEST_RANDOMID_STRING}`,
           other: 'data',
         });
       }));
@@ -620,7 +627,7 @@ describe('app_routing_effects', () => {
         tick(5000);
 
         store.overrideSelector(getActiveRoute, buildRoute());
-        store.overrideSelector(getActiveNamespaceId, `1234:${beforeDate}`);
+        store.overrideSelector(getActiveNamespaceId, `${beforeDate}:1234`);
         store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
@@ -641,22 +648,21 @@ describe('app_routing_effects', () => {
               routeKind: RouteKind.EXPERIMENTS,
             }),
             // From getActiveNamespaceId().
-            beforeNamespaceId: `1234:${beforeDate}`,
+            beforeNamespaceId: `${beforeDate}:1234`,
             // Value of before + the 5000 milliseconds from tick(5000).
-            afterNamespaceId: `023c:${beforeDate + 5000}`,
+            afterNamespaceId: `${beforeDate + 5000}:${TEST_RANDOMID_STRING}`,
           }),
         ]);
       }));
 
       it('are unchanged on navigationRequested when resetNamespacedState is false', fakeAsync(() => {
         // Record initial time for use later.
-        // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
-        const before = `023c:${Date.now()}`;
+        const beforeDate = `${Date.now()}:${TEST_RANDOMID_STRING}`;
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
         tick(5000);
 
         store.overrideSelector(getActiveRoute, buildRoute());
-        store.overrideSelector(getActiveNamespaceId, before.toString());
+        store.overrideSelector(getActiveNamespaceId, beforeDate.toString());
         store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
@@ -677,22 +683,24 @@ describe('app_routing_effects', () => {
               routeKind: RouteKind.EXPERIMENTS,
             }),
             // From getActiveNamespaceId().
-            beforeNamespaceId: before.toString(),
+            beforeNamespaceId: beforeDate.toString(),
             // Same as beforeNamespaceId.
-            afterNamespaceId: before.toString(),
+            afterNamespaceId: beforeDate.toString(),
           }),
         ]);
       }));
 
       it('are unchanged on navigationRequested when resetNamespacedState is unspecified', fakeAsync(() => {
         // Record initial time for use later.
-        // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
-        const before = `023c:${Date.now()}`;
+        const beforeDate = Date.now();
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
         tick(5000);
 
         store.overrideSelector(getActiveRoute, buildRoute());
-        store.overrideSelector(getActiveNamespaceId, before.toString());
+        store.overrideSelector(
+          getActiveNamespaceId,
+          `${beforeDate}:${TEST_RANDOMID_STRING}`
+        );
         store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
@@ -712,9 +720,9 @@ describe('app_routing_effects', () => {
               routeKind: RouteKind.EXPERIMENTS,
             }),
             // From getActiveNamespaceId().
-            beforeNamespaceId: before.toString(),
+            beforeNamespaceId: `${beforeDate}:${TEST_RANDOMID_STRING}`,
             // Same as beforeNamespaceId.
-            afterNamespaceId: before.toString(),
+            afterNamespaceId: `${beforeDate}:${TEST_RANDOMID_STRING}`,
           }),
         ]);
       }));
@@ -784,7 +792,7 @@ describe('app_routing_effects', () => {
         tick(5000);
 
         store.overrideSelector(getActiveRoute, buildRoute());
-        store.overrideSelector(getActiveNamespaceId, `1234:${beforeDate}`);
+        store.overrideSelector(getActiveNamespaceId, `${beforeDate}:1234`);
         store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
@@ -801,23 +809,24 @@ describe('app_routing_effects', () => {
               routeKind: RouteKind.EXPERIMENTS,
             }),
             // From getActiveNamespaceId().
-            beforeNamespaceId: `1234:${beforeDate}`,
+            beforeNamespaceId: `${beforeDate}:1234`,
             // Value of before + the 5000 milliseconds from tick(5000).
-            // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
-            afterNamespaceId: `023c:${beforeDate + 5000}`,
+            afterNamespaceId: `${beforeDate + 5000}:${TEST_RANDOMID_STRING}`,
           }),
         ]);
       }));
 
       it('are unchanged on programmatical navigation when resetNamespacedState is false', fakeAsync(() => {
         // Record initial time for use later.
-        // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
-        const before = `023c:${Date.now()}`;
+        const beforeDate = Date.now();
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
         tick(5000);
 
         store.overrideSelector(getActiveRoute, buildRoute());
-        store.overrideSelector(getActiveNamespaceId, before.toString());
+        store.overrideSelector(
+          getActiveNamespaceId,
+          `${beforeDate}:${TEST_RANDOMID_STRING}`
+        );
         store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
@@ -834,22 +843,24 @@ describe('app_routing_effects', () => {
               routeKind: RouteKind.EXPERIMENTS,
             }),
             // From getActiveNamespaceId().
-            beforeNamespaceId: before.toString(),
+            beforeNamespaceId: `${beforeDate}:${TEST_RANDOMID_STRING}`,
             // Same as beforeNamespaceId.
-            afterNamespaceId: before.toString(),
+            afterNamespaceId: `${beforeDate}:${TEST_RANDOMID_STRING}`,
           }),
         ]);
       }));
 
       it('are unchanged on programmatical navigation when resetNamespacedState is unspecified', fakeAsync(() => {
         // Record initial time for use later.
-        // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
-        const before = `023c:${Date.now()}`;
+        const beforeDate = Date.now();
         // Move the clock forward a bit to generate somewhat less arbitrary ids.
         tick(5000);
 
         store.overrideSelector(getActiveRoute, buildRoute());
-        store.overrideSelector(getActiveNamespaceId, before.toString());
+        store.overrideSelector(
+          getActiveNamespaceId,
+          `${beforeDate}:${TEST_RANDOMID_STRING}`
+        );
         store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
@@ -864,48 +875,12 @@ describe('app_routing_effects', () => {
               routeKind: RouteKind.EXPERIMENTS,
             }),
             // From getActiveNamespaceId().
-            beforeNamespaceId: before.toString(),
+            beforeNamespaceId: `${beforeDate}:${TEST_RANDOMID_STRING}`,
             // Same as beforeNamespaceId.
-            afterNamespaceId: before.toString(),
+            afterNamespaceId: `${beforeDate}:${TEST_RANDOMID_STRING}`,
           }),
         ]);
       }));
-    });
-    describe('#generate32bitRandomId', () => {
-      it('returns 32bit id', () => {
-        const result = TEST_ONLY.generate32bitRandomId();
-
-        expect(result.length).toEqual(32);
-      });
-
-      it('returns id witd base 16', () => {
-        cryptoGetRandomValuesSpy = spyOn(window.crypto, 'getRandomValues');
-        cryptoGetRandomValuesSpy.and.returnValue(new Uint8Array([1]));
-        let result = TEST_ONLY.generate32bitRandomId();
-        expect(result).toEqual('0');
-
-        cryptoGetRandomValuesSpy.and.returnValue(new Uint8Array([15]));
-        result = TEST_ONLY.generate32bitRandomId();
-        expect(result).toEqual('0');
-
-        cryptoGetRandomValuesSpy.and.returnValue(new Uint8Array([17]));
-        result = TEST_ONLY.generate32bitRandomId();
-        expect(result).toEqual('1');
-
-        cryptoGetRandomValuesSpy.and.returnValue(new Uint8Array([32]));
-        result = TEST_ONLY.generate32bitRandomId();
-        expect(result).toEqual('2');
-
-        cryptoGetRandomValuesSpy.and.returnValue(new Uint8Array([160]));
-        result = TEST_ONLY.generate32bitRandomId();
-        expect(result).toEqual('a');
-
-        cryptoGetRandomValuesSpy.and.returnValue(
-          new Uint8Array([0, 16, 32, 160, 320])
-        );
-        result = TEST_ONLY.generate32bitRandomId();
-        expect(result).toEqual('012a4');
-      });
     });
 
     describe('deeplink reads', () => {
@@ -1159,15 +1134,11 @@ describe('app_routing_effects', () => {
       );
 
       it('does not reset namespace state on subsequent query param changes', fakeAsync(() => {
-        spyOn(window.crypto, 'getRandomValues').and.returnValue(
-          TEST_UINT8ARRAY
-        );
         store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
         // Record the current time from the mocked clock.
-        // '023c' is the string with base 16 convertd from TEST_UNIT8ARRAY
-        const firstActionTime = `023c:${Date.now()}`;
+        const firstActionTime = `${Date.now()}:${TEST_RANDOMID_STRING}`;
         // Mimic initial navigation.
         action.next(
           actions.navigationRequested({
