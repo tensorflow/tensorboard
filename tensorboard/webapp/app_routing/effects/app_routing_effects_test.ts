@@ -87,6 +87,7 @@ describe('app_routing_effects', () => {
   let getSearchSpy: jasmine.Spy;
   let serializeStateToQueryParamsSpy: jasmine.Spy;
   let deserializeQueryParamsSpy: jasmine.Spy;
+  let cryptoGetRandomValuesSpy: jasmine.Spy;
 
   beforeEach(async () => {
     action = new ReplaySubject<Action>(1);
@@ -236,7 +237,6 @@ describe('app_routing_effects', () => {
     spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
     });
-    spyOn(window.crypto, 'getRandomValues').and.returnValue(TEST_UINT8ARRAY);
   });
 
   describe('bootstrapReducers$', () => {
@@ -529,6 +529,12 @@ describe('app_routing_effects', () => {
     });
 
     describe('time-namespaced ids', () => {
+      beforeEach(() => {
+        spyOn(window.crypto, 'getRandomValues').and.returnValue(
+          TEST_UINT8ARRAY
+        );
+      });
+
       it('are generated on bootstrap when none in history', fakeAsync(() => {
         store.overrideSelector(getActiveRoute, null);
         store.overrideSelector(getActiveNamespaceId, null);
@@ -865,6 +871,42 @@ describe('app_routing_effects', () => {
         ]);
       }));
     });
+    describe('#generate32bitRandomId', () => {
+      it('returns 32bit id', () => {
+        const result = TEST_ONLY.generate32bitRandomId();
+
+        expect(result.length).toEqual(32);
+      });
+
+      it('returns id witd base 16', () => {
+        cryptoGetRandomValuesSpy = spyOn(window.crypto, 'getRandomValues');
+        cryptoGetRandomValuesSpy.and.returnValue(new Uint8Array([1]));
+        let result = TEST_ONLY.generate32bitRandomId();
+        expect(result).toEqual('0');
+
+        cryptoGetRandomValuesSpy.and.returnValue(new Uint8Array([15]));
+        result = TEST_ONLY.generate32bitRandomId();
+        expect(result).toEqual('0');
+
+        cryptoGetRandomValuesSpy.and.returnValue(new Uint8Array([17]));
+        result = TEST_ONLY.generate32bitRandomId();
+        expect(result).toEqual('1');
+
+        cryptoGetRandomValuesSpy.and.returnValue(new Uint8Array([32]));
+        result = TEST_ONLY.generate32bitRandomId();
+        expect(result).toEqual('2');
+
+        cryptoGetRandomValuesSpy.and.returnValue(new Uint8Array([160]));
+        result = TEST_ONLY.generate32bitRandomId();
+        expect(result).toEqual('a');
+
+        cryptoGetRandomValuesSpy.and.returnValue(
+          new Uint8Array([0, 16, 32, 160, 320])
+        );
+        result = TEST_ONLY.generate32bitRandomId();
+        expect(result).toEqual('012a4');
+      });
+    });
 
     describe('deeplink reads', () => {
       beforeEach(() => {
@@ -1117,6 +1159,9 @@ describe('app_routing_effects', () => {
       );
 
       it('does not reset namespace state on subsequent query param changes', fakeAsync(() => {
+        spyOn(window.crypto, 'getRandomValues').and.returnValue(
+          TEST_UINT8ARRAY
+        );
         store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 

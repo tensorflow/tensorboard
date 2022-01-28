@@ -105,7 +105,6 @@ type NavigationOptions = {
   namespaceUpdate: NamespaceUpdate;
 };
 
-
 const generate32bitRandomId = () => {
   let arr = new Uint8Array(32);
 
@@ -646,4 +645,4 @@ function getAfterNamespaceId(
   }
 }
 
-export const TEST_ONLY = {initAction};
+export const TEST_ONLY = {initAction, generate32bitRandomId};
