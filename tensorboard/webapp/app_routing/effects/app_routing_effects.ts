@@ -105,17 +105,13 @@ type NavigationOptions = {
   namespaceUpdate: NamespaceUpdate;
 };
 
-const getRandomValues = (arr: Uint8Array) => {
-  // The usage of Crypto `getRandomValues` does not require return array.
-  // This is for the convenience of mock the funciton in testing.
-  arr = crypto.getRandomValues(arr);
-  return arr;
-};
 
 const generate32bitRandomId = () => {
   let arr = new Uint8Array(32);
 
-  arr = getRandomValues(arr);
+  // The usage of Crypto `getRandomValues` does not require return an array.
+  // This is for the convenience of mock the funciton in testing.
+  arr = crypto.getRandomValues(arr);
 
   let ret = '';
   for (const el of arr) {
