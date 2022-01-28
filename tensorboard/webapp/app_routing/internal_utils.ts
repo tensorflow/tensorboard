@@ -251,7 +251,7 @@ export function canRehydrateDeepLink(
  */
 export function generateRandomIdForNamespace() {
   // Generates id with 32 numbers/charaters.
-  let arr = new Uint8Array(32);
+  const arr = new Uint8Array(32);
 
   crypto.getRandomValues(arr);
 
