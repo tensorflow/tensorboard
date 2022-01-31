@@ -3,19 +3,11 @@ workspace(name = "org_tensorflow_tensorboard")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
-    name = "build_bazel_rules_apple",
-    sha256 = "0052d452af7742c8f3a4e0929763388a66403de363775db7e90adecb2ba4944b",
-    urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_apple/releases/download/0.31.3/rules_apple.0.31.3.tar.gz",
-        "https://github.com/bazelbuild/rules_apple/releases/download/0.31.3/rules_apple.0.31.3.tar.gz",
-    ],
-)
-
-http_archive(
     name = "bazel_skylib",
     sha256 = "c6966ec828da198c5d9adbaa94c05e3a1c7f21bd012a0b29ba8ddbccb2c93b0d",
     urls = [
-        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",
+        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",  # 2021-09-27
     ],
 )
 
@@ -23,7 +15,7 @@ load("@bazel_skylib//lib:versions.bzl", "versions")
 
 # Keep this version in sync with the BAZEL environment variable defined
 # in our .github/workflows/ci.yml config.
-versions.check(minimum_bazel_version = "5.0.0")
+versions.check(minimum_bazel_version = "3.7.0")
 
 http_archive(
     name = "io_bazel_rules_webtesting",
@@ -104,23 +96,13 @@ load("@io_bazel_rules_sass//:defs.bzl", "sass_repositories")
 
 sass_repositories()
 
-# Needed by gRPC.
-http_archive(
-    name = "build_bazel_rules_swift",
-    sha256 = "2245d21ba740f2b877d28fe97f77dbc7622942e09a7593ed748ce90afd95afd3",
-    strip_prefix = "rules_swift-0.25.0",
-    urls = [
-        "https://github.com/bazelbuild/rules_swift/archive/0.25.0.tar.gz",
-    ],
-)
-
 # gRPC.
 http_archive(
     name = "com_github_grpc_grpc",
-    sha256 = "0f0b3a74af65049fbc6ef3072415ba96d73a7417bfa641fb85f43af9a158f57c",
-    strip_prefix = "grpc-2d8546a3c4ed8fa0a801770e58fd284cf4a70d7a",
+    sha256 = "b2f2620c762427bfeeef96a68c1924319f384e877bc0e084487601e4cc6e434c",
+    strip_prefix = "grpc-1.42.0",
     urls = [
-        "https://github.com/grpc/grpc/archive/2d8546a3c4ed8fa0a801770e58fd284cf4a70d7a.tar.gz",
+        "https://github.com/grpc/grpc/archive/v1.42.0.tar.gz",  # 2021-11-17
     ],
 )
 
@@ -128,18 +110,9 @@ load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
 
 grpc_deps()
 
-http_archive(
-    name = "upb",
-    sha256 = "e9f281c56ab1eb1f97a80ca8a83bb7ef73d230eabb8591f83876f4e7b85d9b47",
-    strip_prefix = "upb-8a3ae1ef3e3e3f26b45dec735c5776737fc7247f",
-    urls = [
-        "https://github.com/protocolbuffers/upb/archive/8a3ae1ef3e3e3f26b45dec735c5776737fc7247f.tar.gz",
-    ],
-)
+load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
 
-load("@upb//bazel:repository_defs.bzl", "bazel_version_repository")
-
-bazel_version_repository(name = "bazel_version")
+grpc_extra_deps()
 
 http_archive(
     name = "rules_rust",
