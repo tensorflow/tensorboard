@@ -536,6 +536,18 @@ based routing of an ELB when the website base_url is not available e.g.
 """,
         )
 
+parser.add_argument(
+            "--path_prefix_from_file",
+            metavar="PATH",
+            type=str,
+            default="",
+            help="""\
+Read the path_prefix from the specified file; avoids the path being
+visible by ps or top - and, thus, is useful to improve security on
+multi-user systems.\
+""",
+        )
+
         parser.add_argument(
             "--window_title",
             metavar="TEXT",
@@ -683,6 +695,16 @@ flag.\
             )
         elif flags.host is not None and flags.bind_all:
             raise FlagsError("Must not specify both --host and --bind_all.")
+
+	if flags.path_prefix_from_file and flags.path_prefix is None:
+            try:
+                with open(flags.path_prefix_from_file, 'r') as f:
+                    flags.path_prefix = (f.read()).rstrip()
+                    print("NOTE: using path_prefix=" +  flags.path_prefix + " as read from file")
+            except IOError:
+                raise FlagsError("Cannot read prefix_from_file")
+        elif:
+	    print("NOTE: Skipping prefix_from_file input due to overwrite by path_prefix")    
 
         flags.path_prefix = flags.path_prefix.rstrip("/")
         if flags.path_prefix and not flags.path_prefix.startswith("/"):
