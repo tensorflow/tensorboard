@@ -120,6 +120,8 @@ http_archive(
     strip_prefix = "rules_rust-d8238877c0e552639d3e057aadd6bfcf37592408",
     urls = [
         # Master branch as of 2021-08-23
+        # As of 2022-01-31, existing tagged releases does not work with bazel 5.0.0.
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_rust/archive/d8238877c0e552639d3e057aadd6bfcf37592408.tar.gz",
         "https://github.com/bazelbuild/rules_rust/archive/d8238877c0e552639d3e057aadd6bfcf37592408.tar.gz",
     ],
 )
