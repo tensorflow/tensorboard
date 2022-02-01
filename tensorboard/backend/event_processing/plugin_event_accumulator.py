@@ -99,6 +99,7 @@ class EventAccumulator(object):
         tensor_size_guidance=None,
         purge_orphaned_data=True,
         event_file_active_filter=None,
+        detect_file_replacement=None,
     ):
         """Construct the `EventAccumulator`.
 
@@ -122,6 +123,9 @@ class EventAccumulator(object):
           event_file_active_filter: Optional predicate for determining whether an
             event file latest load timestamp should be considered active. If passed,
             this will enable multifile directory loading.
+          detect_file_replacement: Optional boolean; if True, event file loading
+            will try to detect when a file has been replaced with a new version
+            that contains additional data, by monitoring the file size.
         """
         size_guidance = dict(size_guidance or DEFAULT_SIZE_GUIDANCE)
         sizes = {}
@@ -155,7 +159,9 @@ class EventAccumulator(object):
         self._plugin_tag_lock = threading.Lock()
 
         self.path = path
-        self._generator = _GeneratorFromPath(path, event_file_active_filter)
+        self._generator = _GeneratorFromPath(
+            path, event_file_active_filter, detect_file_replacement
+        )
         self._generator_mutex = threading.Lock()
 
         self.purge_orphaned_data = purge_orphaned_data
@@ -639,23 +645,33 @@ def _GetPurgeMessage(
     )
 
 
-def _GeneratorFromPath(path, event_file_active_filter=None):
+def _GeneratorFromPath(
+    path, event_file_active_filter=None, detect_file_replacement=None
+):
     """Create an event generator for file or directory at given path string."""
     if not path:
         raise ValueError("path must be a valid string")
     if io_wrapper.IsSummaryEventsFile(path):
-        return event_file_loader.EventFileLoader(path)
+        return event_file_loader.EventFileLoader(path, detect_file_replacement)
     elif event_file_active_filter:
+        loader_factory = (
+            lambda path: event_file_loader.TimestampedEventFileLoader(
+                path, detect_file_replacement
+            )
+        )
         return directory_loader.DirectoryLoader(
             path,
-            event_file_loader.TimestampedEventFileLoader,
+            loader_factory,
             path_filter=io_wrapper.IsSummaryEventsFile,
             active_filter=event_file_active_filter,
         )
     else:
+        loader_factory = lambda path: event_file_loader.EventFileLoader(
+            path, detect_file_replacement
+        )
         return directory_watcher.DirectoryWatcher(
             path,
-            event_file_loader.EventFileLoader,
+            loader_factory,
             io_wrapper.IsSummaryEventsFile,
         )
 
