@@ -40,7 +40,7 @@ import {
 import {AppRootProvider} from '../app_root';
 import {DirtyUpdatesRegistryModule} from '../dirty_updates_registry_module';
 import {
-  areRoutesEqual,
+  arePathsAndQueryParamsEqual,
   areSameRouteKindAndExperiments,
   getRouteNamespaceId,
   serializeCompareExperimentParams,
@@ -54,7 +54,7 @@ import {
   getActiveRoute,
   getKnownNamespaceIds,
 } from '../store/app_routing_selectors';
-import {Route, RouteKind, RouteParams} from '../types';
+import {Route, RouteKind, RouteParams, SerializableQueryParams} from '../types';
 
 const initAction = createAction('[App Routing] Effects Init');
 
@@ -70,6 +70,8 @@ interface InternalRouteMatch {
 
 interface InternalRoute {
   route: Route;
+  pathname: string;
+  queryParams: SerializableQueryParams;
   options: NavigationOptions;
 }
 
@@ -459,9 +461,9 @@ export class AppRoutingEffects {
             route: {
               routeKind: routeMatch.routeKind,
               params: routeMatch.params,
-              pathname: routeMatch.pathname,
-              queryParams: [],
             },
+            pathname: routeMatch.pathname,
+            queryParams: [],
             options,
           });
         }
@@ -476,9 +478,9 @@ export class AppRoutingEffects {
                 route: {
                   routeKind: routeMatch.routeKind,
                   params: routeMatch.params,
-                  pathname: routeMatch.pathname,
-                  queryParams,
                 },
+                pathname: routeMatch.pathname,
+                queryParams,
                 // Only honor replaceState value on first emit. On subsequent
                 // emits we always want to replaceState rather than pushState.
                 options:
@@ -510,7 +512,7 @@ export class AppRoutingEffects {
 
     const changeUrl$ = dispatchNavigating$.pipe(
       withLatestFrom(this.store.select(getActiveRoute)),
-      map(([{route, options}, oldRoute]) => {
+      map(([newRoute, oldRoute]) => {
         // The URL hash can be set via HashStorageComponent (which uses
         // Polymer's tf-storage). DeepLinkProviders also modify the URL when
         // a provider's serializeStateToQueryParams() emits. These result in
@@ -526,33 +528,35 @@ export class AppRoutingEffects {
         // See https://github.com/tensorflow/tensorboard/issues/4207.
         const preserveHash =
           oldRoute === null ||
-          route === null ||
-          areSameRouteKindAndExperiments(oldRoute, route);
+          newRoute.route === null ||
+          areSameRouteKindAndExperiments(oldRoute, newRoute.route);
         return {
+          ...newRoute,
           preserveHash,
-          route,
-          options,
         };
       }),
-      tap(({preserveHash, route, options}) => {
-        const shouldUpdateHistory = !areRoutesEqual(route, {
-          pathname: this.appRootProvider.getAppRootlessPathname(
-            this.location.getPath()
-          ),
-          queryParams: this.location.getSearch(),
-        });
+      tap(({preserveHash, pathname, queryParams, options}) => {
+        const shouldUpdateHistory = !arePathsAndQueryParamsEqual(
+          {pathname, queryParams},
+          {
+            pathname: this.appRootProvider.getAppRootlessPathname(
+              this.location.getPath()
+            ),
+            queryParams: this.location.getSearch(),
+          }
+        );
         if (!shouldUpdateHistory) return;
 
         if (options.replaceState) {
           this.location.replaceStateUrl(
             this.appRootProvider.getAbsPathnameWithAppRoot(
-              this.location.getFullPathFromRoute(route, preserveHash)
+              this.location.getFullPath(pathname, queryParams, preserveHash)
             )
           );
         } else {
           this.location.pushStateUrl(
             this.appRootProvider.getAbsPathnameWithAppRoot(
-              this.location.getFullPathFromRoute(route, preserveHash)
+              this.location.getFullPath(pathname, queryParams, preserveHash)
             )
           );
         }

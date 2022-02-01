@@ -87,8 +87,6 @@ describe('app_routing store_only_utils test', () => {
         buildRoute({
           routeKind: RouteKind.COMPARE_EXPERIMENT,
           params: {experimentIds: 'e1:1,e2:2'},
-          pathname: '/compare',
-          queryParams: [],
         })
       );
       expect(actual).toEqual(['1', '2']);
@@ -99,8 +97,6 @@ describe('app_routing store_only_utils test', () => {
         buildRoute({
           routeKind: RouteKind.EXPERIMENT,
           params: {experimentId: '1234'},
-          pathname: '/experiment',
-          queryParams: [],
         })
       );
       expect(actual).toEqual(['1234']);
@@ -111,8 +107,6 @@ describe('app_routing store_only_utils test', () => {
         buildRoute({
           routeKind: RouteKind.EXPERIMENTS,
           params: {},
-          pathname: '/experiments',
-          queryParams: [],
         })
       );
       expect(actual).toBeNull();

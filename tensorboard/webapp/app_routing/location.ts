@@ -16,7 +16,7 @@ import {Injectable} from '@angular/core';
 import {fromEvent, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {createURLSearchParamsFromSerializableQueryParams} from './internal_utils';
-import {NavigationFromHistory, Route, SerializableQueryParams} from './types';
+import {NavigationFromHistory, SerializableQueryParams} from './types';
 
 export interface LocationInterface {
   getHref(): string;
@@ -37,7 +37,11 @@ export interface LocationInterface {
 
   getResolvedPath(relativePath: string): string;
 
-  getFullPathFromRoute(route: Route): string;
+  getFullPath(
+    pathname: string,
+    queryParams: SerializableQueryParams,
+    shouldPreserveHash?: boolean
+  ): string;
 }
 
 const utils = {
@@ -107,19 +111,22 @@ export class Location implements LocationInterface {
     return url.pathname;
   }
 
-  getFullPathFromRoute(route: Route, shouldPreserveHash?: boolean): string {
-    // TODO(stephanwlee): support hashes in the route.
-    const pathname = this.getResolvedPath(route.pathname);
+  getFullPath(
+    pathname: string,
+    queryParams: SerializableQueryParams,
+    shouldPreserveHash?: boolean
+  ): string {
+    const resolvedPathname = this.getResolvedPath(pathname);
     let search = '';
-    if (route.queryParams.length) {
+    if (queryParams.length) {
       search =
         '?' +
         createURLSearchParamsFromSerializableQueryParams(
-          route.queryParams
+          queryParams
         ).toString();
     }
     const hash = shouldPreserveHash ? this.getHash() : '';
-    return `${pathname}${search}${hash}`;
+    return `${resolvedPathname}${search}${hash}`;
   }
 }
 
