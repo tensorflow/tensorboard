@@ -27,9 +27,7 @@ function getMockReturnValuesFuntion(testUint8array: Uint8Array) {
       arr.set(testUint8array);
       return arr;
     }
-    throw new Error(
-      `'getMockReturnValuesFuntion' input type invalid: ${arr}`
-    );
+    throw new Error(`'getMockReturnValuesFuntion' input type invalid: ${arr}`);
   };
 }
 
