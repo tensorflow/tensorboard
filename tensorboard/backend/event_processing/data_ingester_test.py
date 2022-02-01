@@ -32,6 +32,7 @@ _TENSORFLOW_IO_MODULE = "tensorflow_io"
 class FakeFlags(object):
     def __init__(
         self,
+        detect_file_replacement=None,
         generic_data="auto",
         logdir="",
         logdir_spec="",
@@ -45,6 +46,7 @@ class FakeFlags(object):
         samples_per_plugin=None,
         window_title="",
     ):
+        self.detect_file_replacement = detect_file_replacement
         self.generic_data = generic_data
         self.logdir = logdir
         self.logdir_spec = logdir_spec
