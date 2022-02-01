@@ -53,6 +53,7 @@ class FakeFlags(object):
         grpc_data_provider="",
         host=None,
         inspect=False,
+        load_fast="auto",
         logdir="",
         logdir_spec="",
         path_prefix="",
@@ -66,6 +67,7 @@ class FakeFlags(object):
         self.grpc_data_provider = grpc_data_provider
         self.host = host
         self.inspect = inspect
+        self.load_fast = load_fast
         self.logdir = logdir
         self.logdir_spec = logdir_spec
         self.path_prefix = path_prefix
