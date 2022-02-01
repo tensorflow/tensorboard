@@ -94,13 +94,9 @@ class _FakeAccumulator(object):
 
 def _GetFakeAccumulator(
     path,
-    size_guidance=None,
-    tensor_size_guidance=None,
-    purge_orphaned_data=None,
-    event_file_active_filter=None,
+    **unused_kwargs,
 ):
-    del size_guidance, tensor_size_guidance, purge_orphaned_data  # Unused.
-    del event_file_active_filter  # unused
+    del unused_kwargs
     return _FakeAccumulator(path)
 
 
