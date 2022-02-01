@@ -503,7 +503,7 @@ describe('app_routing/utils', () => {
       expect(result.length).toEqual(32);
     });
 
-    it('returns id witd base 16', () => {
+    it('returns id width base 16', () => {
       cryptoGetRandomValuesSpy = spyOn(window.crypto, 'getRandomValues');
       cryptoGetRandomValuesSpy.and.callFake(
         getMockReturnValuesFuntion(new Uint8Array([1]))

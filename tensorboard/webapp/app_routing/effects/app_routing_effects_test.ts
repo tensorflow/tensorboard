@@ -70,8 +70,8 @@ const testDirtyExperimentsSelector = createSelector(
   }
 );
 const TEST_UINT8ARRAY = new Uint8Array([12, 34, 50, 160, 200]);
-// '023ac' is the string with base 16 convertd from TEST_UNIT8ARRAY
-// leave thr rest of the string to be 0
+// '023ac' is the string with base 16 converted from TEST_UNIT8ARRAY
+// leave the rest of the string to be 0
 const TEST_RANDOMID_STRING = '023ac000000000000000000000000000';
 
 describe('app_routing_effects', () => {
@@ -245,8 +245,11 @@ describe('app_routing_effects', () => {
     ): Uint8Array {
       if (arr instanceof Uint8Array) {
         arr.set(TEST_UINT8ARRAY);
+        return arr;
       }
-      return arr;
+      throw new Error(
+        `Crypto 'getRandomValues' mock function input type invalid: ${arr}`
+      );
     };
     spyOn(window.crypto, 'getRandomValues').and.callFake(
       mockRandomValuesFunction

@@ -246,11 +246,10 @@ export function canRehydrateDeepLink(
 }
 
 /**
- * Generates a 32-character long random id for name space suffix to avoid
+ * Generates a 32-character long random id for namespace suffix to avoid
  * collision of timestamp.
  */
 export function generateRandomIdForNamespace() {
-  // Generates id with 32 numbers/charaters.
   const arr = new Uint8Array(32);
 
   crypto.getRandomValues(arr);
@@ -258,9 +257,9 @@ export function generateRandomIdForNamespace() {
   let ret = '';
   for (const el of arr) {
     // We select base 16 which means the character of id is [0-9a-d].
-    // We only need four bit to convert to base 16 string (2^4) from Uint8array.
-    // Thus we get ride of the last 4 bit and then covert the rest of it.
-    // For example, number 162 woudl be 10100010 in binary. After dropping
+    // We only need four bits to convert to base 16 string (2^4) from Uint8array.
+    // Thus we get rid of the last 4 bit and then convert the rest of it.
+    // For example, number 162 is 10100010 in binary. After dropping
     // the rightest 4 bit, it is 1010, which is 10 in decimal number. Converts
     // 10 to base 16 it is 'a'.
     ret += (el >> 4).toString(16);
