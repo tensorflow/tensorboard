@@ -102,6 +102,7 @@ http_archive(
     sha256 = "b2f2620c762427bfeeef96a68c1924319f384e877bc0e084487601e4cc6e434c",
     strip_prefix = "grpc-1.42.0",
     urls = [
+        "http://mirror.tensorflow.org/github.com/grpc/grpc/archive/v1.42.0.tar.gz",
         "https://github.com/grpc/grpc/archive/v1.42.0.tar.gz",  # 2021-11-17
     ],
 )
