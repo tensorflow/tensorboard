@@ -16,7 +16,7 @@ load("@bazel_skylib//lib:versions.bzl", "versions")
 
 # Keep this version in sync with the BAZEL environment variable defined
 # in our .github/workflows/ci.yml config.
-versions.check(minimum_bazel_version = "3.7.0")
+versions.check(minimum_bazel_version = "4.0.0")
 
 http_archive(
     name = "io_bazel_rules_webtesting",
