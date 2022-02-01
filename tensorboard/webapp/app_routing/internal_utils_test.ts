@@ -25,8 +25,11 @@ function getMockReturnValuesFuntion(testUint8array: Uint8Array) {
   return function <Uint8Array>(arr: Uint8Array): Uint8Array {
     if (arr instanceof Uint8Array) {
       arr.set(testUint8array);
+      return arr;
     }
-    return arr;
+    throw new Error(
+      `'getMockReturnValuesFuntion' input type invalid: ${arr}`
+    );
   };
 }
 

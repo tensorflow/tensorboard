@@ -245,11 +245,8 @@ describe('app_routing_effects', () => {
     ): Uint8Array {
       if (arr instanceof Uint8Array) {
         arr.set(TEST_UINT8ARRAY);
-        return arr;
       }
-      throw new Error(
-        `Crypto 'getRandomValues' mock function input type invalid: ${arr}`
-      );
+      return arr;
     };
     spyOn(window.crypto, 'getRandomValues').and.callFake(
       mockRandomValuesFunction
