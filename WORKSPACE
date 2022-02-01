@@ -117,13 +117,12 @@ grpc_extra_deps()
 
 http_archive(
     name = "rules_rust",
-    sha256 = "531bdd470728b61ce41cf7604dc4f9a115983e455d46ac1d0c1632f613ab9fc3",
-    strip_prefix = "rules_rust-d8238877c0e552639d3e057aadd6bfcf37592408",
+    sha256 = "08109dccfa5bbf674ff4dba82b15d40d85b07436b02e62ab27e0b894f45bb4a3",
+    strip_prefix = "rules_rust-d5ab4143245af8b33d1947813d411a6cae838409",
     urls = [
-        # Master branch as of 2021-08-23
-        # As of 2022-01-31, existing tagged releases does not work with bazel 5.0.0.
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_rust/archive/d8238877c0e552639d3e057aadd6bfcf37592408.tar.gz",
-        "https://github.com/bazelbuild/rules_rust/archive/d8238877c0e552639d3e057aadd6bfcf37592408.tar.gz",
+        # Master branch as of 2022-01-31
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_rust/archive/d5ab4143245af8b33d1947813d411a6cae838409.tar.gz",
+        "https://github.com/bazelbuild/rules_rust/archive/d5ab4143245af8b33d1947813d411a6cae838409.tar.gz",
     ],
 )
 
