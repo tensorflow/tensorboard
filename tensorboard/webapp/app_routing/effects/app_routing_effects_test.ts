@@ -35,10 +35,11 @@ import {RouteRegistryModule} from '../route_registry_module';
 import {
   getActiveNamespaceId,
   getActiveRoute,
-  getKnownNamespaceIds,
+  getRehydratedDeepLinks,
 } from '../store/app_routing_selectors';
 import {buildRoute, provideLocationTesting, TestableLocation} from '../testing';
 import {
+  DeepLinkGroup,
   DirtyUpdates,
   Navigation,
   NavigationFromHistory,
@@ -227,7 +228,7 @@ describe('app_routing_effects', () => {
 
     store.overrideSelector(getActiveRoute, null);
     store.overrideSelector(getActiveNamespaceId, null);
-    store.overrideSelector(getKnownNamespaceIds, new Set<string>());
+    store.overrideSelector(getRehydratedDeepLinks, []);
     store.overrideSelector(getEnabledTimeNamespacedState, false);
     actualActions = [];
 
@@ -890,7 +891,7 @@ describe('app_routing_effects', () => {
 
     describe('deeplink reads', () => {
       beforeEach(() => {
-        store.overrideSelector(getKnownNamespaceIds, new Set<string>());
+        store.overrideSelector(getRehydratedDeepLinks, []);
         store.refreshState();
       });
 
@@ -951,14 +952,20 @@ describe('app_routing_effects', () => {
         }));
       });
 
-      it('dispatches stateRehydratedFromUrl when unknown namespace id', fakeAsync(() => {
+      it('dispatches stateRehydratedFromUrl if canBeRehydrated()', fakeAsync(() => {
         deserializeQueryParamsSpy.and.returnValue({a: 'A', b: 'B'});
         getPathSpy.and.returnValue('/compare/a:b');
 
-        store.overrideSelector(
-          getKnownNamespaceIds,
-          new Set(['namespaceA', 'namespaceC'])
-        );
+        store.overrideSelector(getRehydratedDeepLinks, [
+          {
+            namespaceId: 'namespaceA',
+            deepLinkGroup: DeepLinkGroup.DASHBOARD,
+          },
+          {
+            namespaceId: 'namespaceB',
+            deepLinkGroup: DeepLinkGroup.EXPERIMENTS,
+          },
+        ]);
         store.refreshState();
 
         onPopStateSubject.next({
@@ -984,14 +991,20 @@ describe('app_routing_effects', () => {
         ]);
       }));
 
-      it('does not dispatch stateRehydratedFromUrl when known namespace id', fakeAsync(() => {
+      it('does not dispatch stateRehydratedFromUrl if not canBeRehydrated()', fakeAsync(() => {
         deserializeQueryParamsSpy.and.returnValue({a: 'A', b: 'B'});
         getPathSpy.and.returnValue('/compare/a:b');
 
-        store.overrideSelector(
-          getKnownNamespaceIds,
-          new Set(['namespaceA', 'namespaceB', 'namespaceC'])
-        );
+        store.overrideSelector(getRehydratedDeepLinks, [
+          {
+            namespaceId: 'namespaceA',
+            deepLinkGroup: DeepLinkGroup.DASHBOARD,
+          },
+          {
+            namespaceId: 'namespaceB',
+            deepLinkGroup: DeepLinkGroup.DASHBOARD,
+          },
+        ]);
         store.refreshState();
 
         onPopStateSubject.next({

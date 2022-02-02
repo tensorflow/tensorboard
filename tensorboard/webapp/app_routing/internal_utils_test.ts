@@ -19,7 +19,7 @@ import {
   buildExperimentRouteFromId,
   buildRoute,
 } from './testing';
-import {RouteKind} from './types';
+import {DeepLinkGroup, RouteKind} from './types';
 
 describe('app_routing/utils', () => {
   describe('#parseCompareExperimentStr', () => {
@@ -123,7 +123,7 @@ describe('app_routing/utils', () => {
     });
   });
 
-  describe('getRouteNamespaceId', () => {
+  describe('#getRouteNamespaceId', () => {
     [
       {
         kind: RouteKind.COMPARE_EXPERIMENT,
@@ -175,7 +175,7 @@ describe('app_routing/utils', () => {
     });
   });
 
-  describe('areSameRouteKindAndExperiments', () => {
+  describe('#areSameRouteKindAndExperiments', () => {
     it('returns true when both routes are null', () => {
       expect(utils.areSameRouteKindAndExperiments(null, null)).toBeTrue();
     });
@@ -404,6 +404,69 @@ describe('app_routing/utils', () => {
           }
         )
       ).toBe(false);
+    });
+  });
+
+  describe('#getDeepLinkGroup', () => {
+    it('maps RouteKind to DeepLinkGroup', () => {
+      expect(utils.getDeepLinkGroup(RouteKind.EXPERIMENTS)).toEqual(
+        DeepLinkGroup.EXPERIMENTS
+      );
+      expect(utils.getDeepLinkGroup(RouteKind.EXPERIMENT)).toEqual(
+        DeepLinkGroup.DASHBOARD
+      );
+      expect(utils.getDeepLinkGroup(RouteKind.COMPARE_EXPERIMENT)).toEqual(
+        DeepLinkGroup.DASHBOARD
+      );
+      expect(utils.getDeepLinkGroup(RouteKind.UNKNOWN)).toBeNull();
+      expect(utils.getDeepLinkGroup(RouteKind.NOT_SET)).toBeNull();
+    });
+  });
+
+  describe('#canBeRehydrated', () => {
+    it('allows rehydration if namespaceId does not match', () => {
+      expect(
+        utils.canBeRehydrated(RouteKind.EXPERIMENTS, 'namespaceC', [
+          {
+            deepLinkGroup: DeepLinkGroup.EXPERIMENTS,
+            namespaceId: 'namespaceA',
+          },
+          {
+            deepLinkGroup: DeepLinkGroup.EXPERIMENTS,
+            namespaceId: 'namespaceB',
+          },
+        ])
+      ).toBeTrue();
+    });
+
+    it('allows rehydration if deepLinkGroup does not match', () => {
+      expect(
+        utils.canBeRehydrated(RouteKind.COMPARE_EXPERIMENT, 'namespaceA', [
+          {
+            deepLinkGroup: DeepLinkGroup.EXPERIMENTS,
+            namespaceId: 'namespaceA',
+          },
+          {
+            deepLinkGroup: DeepLinkGroup.EXPERIMENTS,
+            namespaceId: 'namespaceB',
+          },
+        ])
+      ).toBeTrue();
+    });
+
+    it('does not allow rehydration if match is found', () => {
+      expect(
+        utils.canBeRehydrated(RouteKind.EXPERIMENTS, 'namespaceA', [
+          {
+            deepLinkGroup: DeepLinkGroup.EXPERIMENTS,
+            namespaceId: 'namespaceA',
+          },
+          {
+            deepLinkGroup: DeepLinkGroup.EXPERIMENTS,
+            namespaceId: 'namespaceB',
+          },
+        ])
+      ).toBeFalse();
     });
   });
 });

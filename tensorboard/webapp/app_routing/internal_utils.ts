@@ -14,8 +14,10 @@ limitations under the License.
 ==============================================================================*/
 import {
   CompareRouteParams,
+  DeepLinkGroup,
   DEFAULT_EXPERIMENT_ID,
   ExperimentRouteParams,
+  RehydratedDeepLink,
   Route,
   RouteKind,
   RouteParams,
@@ -191,4 +193,56 @@ export function areRoutesEqual(
     const paramB = bRoute.queryParams[index];
     return paramA.key === paramB.key && paramA.value === paramB.value;
   });
+}
+
+/**
+ * Maps route kinds to their deep link groups.
+ */
+export function getDeepLinkGroup(routeKind: RouteKind): DeepLinkGroup | null {
+  switch (routeKind) {
+    case RouteKind.EXPERIMENTS:
+      return DeepLinkGroup.EXPERIMENTS;
+    case RouteKind.EXPERIMENT:
+    case RouteKind.COMPARE_EXPERIMENT:
+      return DeepLinkGroup.DASHBOARD;
+    case RouteKind.UNKNOWN:
+    case RouteKind.NOT_SET:
+      return null;
+  }
+}
+
+/**
+ * Determines whether a combination of route kind and namespace id should have
+ * a URL deep link rehydrated into state.
+ *
+ * We limit the number of times we rehydrate deep links as a user navigates
+ * through browser history using back and forward buttons -- rehydrating only
+ * one time for each combination of namespaceId and deepLinkGroup.
+ *
+ * So, for example, when:
+ *
+ * 1. User reloads page into experiment list, rehydrate state for the
+ *    EXPERIMENTS deep link group.
+ * 2. User then navigates back to a compare view, rehydrate state for the
+ *    DASHBOARD deep link group.
+ * 3. User then navigates back to an experiment view, DO NOT rehydrate state
+ *    again for the DASHBOARD deep link group as it was rehydrated in step (2).
+ * 4. If user then navigates back to an experiment view but in a different
+ *    namespace, then once again rehydrate state for the DASHBOARD deep link
+ *    group.
+ */
+export function canBeRehydrated(
+  routeKind: RouteKind,
+  namespaceId: string,
+  rehydratedDeepLinks: RehydratedDeepLink[]
+) {
+  const deepLinkGroup = getDeepLinkGroup(routeKind);
+  return (
+    deepLinkGroup !== null &&
+    !rehydratedDeepLinks.some(
+      (rehydratedDeepLink) =>
+        rehydratedDeepLink.deepLinkGroup === deepLinkGroup &&
+        rehydratedDeepLink.namespaceId === namespaceId
+    )
+  );
 }

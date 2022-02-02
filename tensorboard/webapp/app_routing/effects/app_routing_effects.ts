@@ -42,6 +42,7 @@ import {DirtyUpdatesRegistryModule} from '../dirty_updates_registry_module';
 import {
   areRoutesEqual,
   areSameRouteKindAndExperiments,
+  canBeRehydrated,
   getRouteNamespaceId,
   serializeCompareExperimentParams,
 } from '../internal_utils';
@@ -52,7 +53,7 @@ import {RouteRegistryModule} from '../route_registry_module';
 import {
   getActiveNamespaceId,
   getActiveRoute,
-  getKnownNamespaceIds,
+  getRehydratedDeepLinks,
 } from '../store/app_routing_selectors';
 import {Route, RouteKind, RouteParams} from '../types';
 
@@ -410,23 +411,22 @@ export class AppRoutingEffects {
           })
         );
       }),
-      withLatestFrom(this.store.select(getKnownNamespaceIds)),
-      tap(([{routeMatch, options}, knownNamespaceIds]) => {
+      withLatestFrom(this.store.select(getRehydratedDeepLinks)),
+      tap(([{routeMatch, options}, rehydratedDeepLinks]) => {
         // Possibly rehydrate state from the URL.
-        //
-        // We do this on "browser initiated" events (like a page load or
-        // navigation in browser history) but we only do this when we don't yet
-        // have in-memory state for the namespace being navigated to.
 
-        const isKnownNamespace =
-          options.namespaceUpdate.option ===
-            NamespaceUpdateOption.FROM_HISTORY &&
-          knownNamespaceIds.has(options.namespaceUpdate.namespaceId);
+        if (!options.browserInitiated || !routeMatch.deepLinkProvider) {
+          return;
+        }
 
         if (
-          !options.browserInitiated ||
-          isKnownNamespace ||
-          !routeMatch.deepLinkProvider
+          options.namespaceUpdate.option ===
+            NamespaceUpdateOption.FROM_HISTORY &&
+          !canBeRehydrated(
+            routeMatch.routeKind,
+            options.namespaceUpdate.namespaceId,
+            rehydratedDeepLinks
+          )
         ) {
           return;
         }

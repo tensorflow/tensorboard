@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {buildRoute} from '../testing';
-import {RouteKind} from '../types';
+import {DeepLinkGroup, RouteKind} from '../types';
 import * as selectors from './app_routing_selectors';
 import {buildAppRoutingState, buildStateFromAppRoutingState} from './testing';
 
@@ -65,21 +65,25 @@ describe('app_routing_selectors', () => {
     });
   });
 
-  describe('getKnownNamespaceIds', () => {
+  describe('getRehydratedDeepLinks', () => {
     beforeEach(() => {
-      selectors.getKnownNamespaceIds.release();
+      selectors.getRehydratedDeepLinks.release();
     });
 
     it('returns knownNamespaceIds', () => {
       const state = buildStateFromAppRoutingState(
         buildAppRoutingState({
-          knownNamespaceIds: new Set<string>(['n1', 'n2', 'n3']),
+          rehydratedDeepLinks: [
+            {namespaceId: 'n1', deepLinkGroup: DeepLinkGroup.EXPERIMENTS},
+            {namespaceId: 'n2', deepLinkGroup: DeepLinkGroup.DASHBOARD},
+          ],
         })
       );
 
-      expect(selectors.getKnownNamespaceIds(state)).toEqual(
-        new Set<string>(['n1', 'n2', 'n3'])
-      );
+      expect(selectors.getRehydratedDeepLinks(state)).toEqual([
+        {namespaceId: 'n1', deepLinkGroup: DeepLinkGroup.EXPERIMENTS},
+        {namespaceId: 'n2', deepLinkGroup: DeepLinkGroup.DASHBOARD},
+      ]);
     });
   });
 
