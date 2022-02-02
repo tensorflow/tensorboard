@@ -231,7 +231,7 @@ export function getDeepLinkGroup(routeKind: RouteKind): DeepLinkGroup | null {
  *    namespace, then once again rehydrate state for the DASHBOARD deep link
  *    group.
  */
-export function canBeRehydrated(
+export function canRehydrateDeepLink(
   routeKind: RouteKind,
   namespaceId: string,
   rehydratedDeepLinks: RehydratedDeepLink[]

@@ -42,7 +42,7 @@ import {DirtyUpdatesRegistryModule} from '../dirty_updates_registry_module';
 import {
   areRoutesEqual,
   areSameRouteKindAndExperiments,
-  canBeRehydrated,
+  canRehydrateDeepLink,
   getRouteNamespaceId,
   serializeCompareExperimentParams,
 } from '../internal_utils';
@@ -422,7 +422,7 @@ export class AppRoutingEffects {
         if (
           options.namespaceUpdate.option ===
             NamespaceUpdateOption.FROM_HISTORY &&
-          !canBeRehydrated(
+          !canRehydrateDeepLink(
             routeMatch.routeKind,
             options.namespaceUpdate.namespaceId,
             rehydratedDeepLinks

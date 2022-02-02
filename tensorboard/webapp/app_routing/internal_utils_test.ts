@@ -423,10 +423,10 @@ describe('app_routing/utils', () => {
     });
   });
 
-  describe('#canBeRehydrated', () => {
+  describe('#canRehydrateDeepLink', () => {
     it('allows rehydration if namespaceId does not match', () => {
       expect(
-        utils.canBeRehydrated(RouteKind.EXPERIMENTS, 'namespaceC', [
+        utils.canRehydrateDeepLink(RouteKind.EXPERIMENTS, 'namespaceC', [
           {
             deepLinkGroup: DeepLinkGroup.EXPERIMENTS,
             namespaceId: 'namespaceA',
@@ -441,7 +441,7 @@ describe('app_routing/utils', () => {
 
     it('allows rehydration if deepLinkGroup does not match', () => {
       expect(
-        utils.canBeRehydrated(RouteKind.COMPARE_EXPERIMENT, 'namespaceA', [
+        utils.canRehydrateDeepLink(RouteKind.COMPARE_EXPERIMENT, 'namespaceA', [
           {
             deepLinkGroup: DeepLinkGroup.EXPERIMENTS,
             namespaceId: 'namespaceA',
@@ -456,7 +456,7 @@ describe('app_routing/utils', () => {
 
     it('does not allow rehydration if match is found', () => {
       expect(
-        utils.canBeRehydrated(RouteKind.EXPERIMENTS, 'namespaceA', [
+        utils.canRehydrateDeepLink(RouteKind.EXPERIMENTS, 'namespaceA', [
           {
             deepLinkGroup: DeepLinkGroup.EXPERIMENTS,
             namespaceId: 'namespaceA',

@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
 import * as actions from '../actions';
-import {canBeRehydrated, getDeepLinkGroup} from '../internal_utils';
+import {canRehydrateDeepLink, getDeepLinkGroup} from '../internal_utils';
 import {AppRoutingState} from './app_routing_types';
 
 const initialState: AppRoutingState = {
@@ -33,7 +33,11 @@ const reducer = createReducer(
   on(actions.navigated, (state, {after, afterNamespaceId}) => {
     let rehydratedDeepLinks = state.rehydratedDeepLinks;
     if (
-      canBeRehydrated(after.routeKind, afterNamespaceId, rehydratedDeepLinks)
+      canRehydrateDeepLink(
+        after.routeKind,
+        afterNamespaceId,
+        rehydratedDeepLinks
+      )
     ) {
       rehydratedDeepLinks = [...rehydratedDeepLinks];
       rehydratedDeepLinks.push({
