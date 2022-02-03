@@ -12,16 +12,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {CdkDrag, CdkDragMove} from '@angular/cdk/drag-drop';
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ElementRef,
+  EventEmitter,
   Input,
   OnChanges,
   OnDestroy,
+  Output,
   ViewChild,
 } from '@angular/core';
 import {fromEvent, Subject} from 'rxjs';
@@ -91,7 +92,7 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
   @ViewChild('yAxis') private readonly yAxis!: ElementRef;
   @ViewChild('content') private readonly content!: ElementRef;
   @ViewChild('histograms') private readonly histograms!: ElementRef;
-  @ViewChild('startFob') private readonly startFob!: CdkDrag;
+  @ViewChild('startFobWrapper') private readonly startFobWrapper!: ElementRef;
 
   @Input() mode: HistogramMode = HistogramMode.OFFSET;
 
@@ -102,6 +103,10 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() data!: HistogramData;
 
   @Input() linkedTime: LinkedTime | null = null;
+
+  @Output() onSelectTimeChanged = new EventEmitter<number>();
+
+  private draggingFob = false;
 
   readonly HistogramMode = HistogramMode;
   readonly TimeProperty = TimeProperty;
@@ -140,12 +145,7 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges() {
-    console.log('changes');
     this.updateChartIfVisible();
-    console.log('this.startFob', this.startFob);
-    if (this.startFob) {
-      this.startFob.boundaryElement = this.yAxis;
-    }
   }
 
   ngOnDestroy() {
@@ -159,8 +159,6 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     })
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((event) => this.onMouseMove(event));
-    // this.startFob.boundaryElement = this.yAxis;
-    console.log('this.startFob', this.startFob);
   }
 
   getCssTranslatePx(x: number, y: number): string {
@@ -234,9 +232,77 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     );
   }
 
-  startFobMoved(test: CdkDragMove) {
-    console.log('got move event', test);
-    console.log('y axis', this.yAxis);
+  stopFobDrag() {
+    this.draggingFob = false;
+  }
+
+  startFobDrag() {
+    // Fob dragging is not yet implemented for linked time ranges.
+    if (!this.linkedTime?.endStep) {
+      this.draggingFob = true;
+    }
+  }
+
+  mouseMove(event: MouseEvent) {
+    if (!this.draggingFob) return;
+
+    if (this.isDraggingUp(event.clientY, event.movementY)) {
+      this.onSelectTimeChanged.emit(
+        this.data[this.getStepIndexAboveMousePosition(event.clientY)].step
+      );
+    }
+
+    if (this.isDraggingDown(event.clientY, event.movementY)) {
+      this.onSelectTimeChanged.emit(
+        this.data[this.getStepIndexBelowMousePosition(event.clientY)].step
+      );
+    }
+  }
+
+  isDraggingDown(position: number, movement: number): boolean {
+    return (
+      position <
+        this.startFobWrapper.nativeElement.getBoundingClientRect().top &&
+      movement < 0 &&
+      this.linkedTime!.startStep > this.data[0].step
+    );
+  }
+
+  isDraggingUp(position: number, movement: number): boolean {
+    return (
+      position >
+        this.startFobWrapper.nativeElement.getBoundingClientRect().top &&
+      movement > 0 &&
+      this.linkedTime!.startStep < this.data[this.data.length - 1].step
+    );
+  }
+
+  getStepIndexAboveMousePosition(position: number) {
+    let stepIndex = 0;
+    while (
+      position -
+        this.main.nativeElement.getBoundingClientRect().top -
+        this.scales!.temporalScale(this.data[stepIndex].step) >
+        1 &&
+      stepIndex + 1 < this.data.length
+    ) {
+      stepIndex++;
+    }
+    return stepIndex;
+  }
+
+  getStepIndexBelowMousePosition(position: number) {
+    let stepIndex = this.data.length - 1;
+    while (
+      position -
+        this.main.nativeElement.getBoundingClientRect().top -
+        this.scales!.temporalScale(this.data[stepIndex].step) <
+        1 &&
+      stepIndex > 0
+    ) {
+      stepIndex--;
+    }
+    return stepIndex;
   }
 
   isLinkedTimeEnabled(linkedTime: LinkedTime | null): linkedTime is LinkedTime {

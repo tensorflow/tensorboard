@@ -21,6 +21,9 @@ limitations under the License.
   (onResize)="onResize()"
   observeIntersection
   (onVisibilityChange)="onVisibilityChange($event)"
+  (mousemove)="mouseMove($event)"
+  (mouseup)="stopFobDrag()"
+  (mouseleave)="stopFobDrag()"
 >
   <svg class="axis x-axis">
     <g #xAxis></g>
@@ -52,15 +55,13 @@ limitations under the License.
     <!-- Disable the feature when in non-offset and non-step mode. -->
     <ng-container *ngIf="isLinkedTimeEnabled(linkedTime)">
       <div
-        cdkDrag
-        cdkDragLockAxis="y"
-        cdkDragBoundary=".yaxisbounds"
-        (cdkDragMoved)="startFobMoved($event)"
-        #startFob
+        #fobWrapper
         class="linked-time"
         [style.transform]="getCssTranslatePx(0, scales.temporalScale(linkedTime.startStep))"
       >
         <linked-time-fob
+          #startFob
+          (mousedown)="startFobDrag()"
           class="linked-time-fob"
           [step]="linkedTime.startStep"
         ></linked-time-fob>

@@ -28,6 +28,7 @@ import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
 import {HistogramDatum} from '../../../widgets/histogram/histogram_types';
 import {buildNormalizedHistograms} from '../../../widgets/histogram/histogram_util';
+import {timeSelectionChanged} from '../../actions';
 import {HistogramStepDatum, PluginType} from '../../data_source';
 import {
   getCardLoadState,
@@ -65,6 +66,7 @@ type HistogramCardMetadata = CardMetadata & {
       [selectedTime]="selectedTime$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
+      (onSelectTimeChanged)="onSelectTimeChanged($event)"
     ></histogram-card-component>
   `,
   styles: [
@@ -184,5 +186,14 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
     );
 
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
+  }
+
+  onSelectTimeChanged(startStep: number, endStep?: number) {
+    this.store.dispatch(
+      timeSelectionChanged({
+        startStep: startStep,
+        endStep: endStep,
+      })
+    );
   }
 }
