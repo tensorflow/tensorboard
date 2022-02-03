@@ -42,7 +42,7 @@ const reducer = createReducer(
       rehydratedDeepLinks = [...rehydratedDeepLinks];
       rehydratedDeepLinks.push({
         // Note: getDeepLinkGroup() should return non-null given that
-        // canBeRehydrated() returned true.
+        // canRehydrateDeepLink() returned true.
         deepLinkGroup: getDeepLinkGroup(after.routeKind)!,
         namespaceId: afterNamespaceId,
       });

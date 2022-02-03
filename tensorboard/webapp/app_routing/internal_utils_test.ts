@@ -468,5 +468,20 @@ describe('app_routing/utils', () => {
         ])
       ).toBeFalse();
     });
+
+    it('does not allow rehydration if route kind has null deep link group', () => {
+      expect(
+        utils.canRehydrateDeepLink(RouteKind.UNKNOWN, 'namespaceA', [
+          {
+            deepLinkGroup: DeepLinkGroup.EXPERIMENTS,
+            namespaceId: 'namespaceA',
+          },
+          {
+            deepLinkGroup: DeepLinkGroup.EXPERIMENTS,
+            namespaceId: 'namespaceB',
+          },
+        ])
+      ).toBeFalse();
+    });
   });
 });

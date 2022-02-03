@@ -430,6 +430,8 @@ export class AppRoutingEffects {
             rehydratedDeepLinks
           )
         ) {
+          // A deeplink has already been rehydrated for this RouteKind/Namespace
+          // combination so don't do it again.
           return;
         }
 

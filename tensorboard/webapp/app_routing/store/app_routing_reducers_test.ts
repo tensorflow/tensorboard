@@ -83,7 +83,7 @@ describe('app_routing_reducers', () => {
       expect(nextState.activeNamespaceId).toEqual('namespace1');
     });
 
-    it('replaces and adds to rehydratedDeepLinks if canBeRehydrated()', () => {
+    it('replaces and adds to rehydratedDeepLinks if canRehydrateDeepLink()', () => {
       const originalRehydratedDeepLinks = [
         {namespaceId: 'n1', deepLinkGroup: DeepLinkGroup.EXPERIMENTS},
         {namespaceId: 'n2', deepLinkGroup: DeepLinkGroup.EXPERIMENTS},
@@ -112,7 +112,7 @@ describe('app_routing_reducers', () => {
       );
     });
 
-    it('does not replace or add to rehydratedDeepLinks if not canBeRehydrated()', () => {
+    it('does not replace or add to rehydratedDeepLinks if not canRehydrateDeepLink()', () => {
       const originalRehydratedDeepLinks = [
         {namespaceId: 'n1', deepLinkGroup: DeepLinkGroup.EXPERIMENTS},
         {namespaceId: 'n2', deepLinkGroup: DeepLinkGroup.EXPERIMENTS},

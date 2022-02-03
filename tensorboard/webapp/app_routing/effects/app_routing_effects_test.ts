@@ -916,7 +916,7 @@ describe('app_routing_effects', () => {
         }));
       });
 
-      it('dispatches stateRehydratedFromUrl if canBeRehydrated()', fakeAsync(() => {
+      it('dispatches stateRehydratedFromUrl if canRehydrateDeepLink()', fakeAsync(() => {
         deserializeQueryParamsSpy.and.returnValue({a: 'A', b: 'B'});
         getPathSpy.and.returnValue('/compare/a:b');
 
@@ -953,7 +953,7 @@ describe('app_routing_effects', () => {
         ]);
       }));
 
-      it('does not dispatch stateRehydratedFromUrl if not canBeRehydrated()', fakeAsync(() => {
+      it('does not dispatch stateRehydratedFromUrl if not canRehydrateDeepLink()', fakeAsync(() => {
         deserializeQueryParamsSpy.and.returnValue({a: 'A', b: 'B'});
         getPathSpy.and.returnValue('/compare/a:b');
 
