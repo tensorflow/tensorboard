@@ -154,7 +154,7 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
             "@npm//:node_modules/d3/dist/d3.js",
             "@npm//:node_modules/three/build/three.js",
             "@npm//:node_modules/dagre/dist/dagre.js",
-            "@npm//:node_modules/marked/lib/marked.js",
+            "@npm//:node_modules/marked/marked.min.js",
         ],
         **kwargs
     )
