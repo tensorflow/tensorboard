@@ -235,7 +235,6 @@ def keras_model_to_graph_def(keras_layer):
             node_def.attr["keras_class"].s = keras_cls_name
 
         dtype_or_policy = layer_config.get("dtype")
-        print(dtype_or_policy)
         # Skip dtype processing if this is a dict, since it's presumably a instance of
         # tf/keras/mixed_precision/Policy rather than a single dtype.
         # TODO(#5548): parse the policy dict and populate the dtype attr with the variable dtype.
