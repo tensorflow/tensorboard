@@ -32,11 +32,9 @@ describe('app_routing_reducers', () => {
         actions.navigating({
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
-            pathname: '/experiment/234',
             params: {
               experimentId: '234',
             },
-            queryParams: [],
           }),
         })
       );
@@ -44,11 +42,9 @@ describe('app_routing_reducers', () => {
       expect(nextState.nextRoute).toEqual(
         buildRoute({
           routeKind: RouteKind.EXPERIMENT,
-          pathname: '/experiment/234',
           params: {
             experimentId: '234',
           },
-          queryParams: [],
         })
       );
     });
@@ -67,11 +63,9 @@ describe('app_routing_reducers', () => {
           before: null,
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
-            pathname: '/experiment/234',
             params: {
               experimentId: '234',
             },
-            queryParams: [],
           }),
           beforeNamespaceId: null,
           afterNamespaceId: 'namespace1',
@@ -81,11 +75,9 @@ describe('app_routing_reducers', () => {
       expect(nextState.activeRoute).toEqual(
         buildRoute({
           routeKind: RouteKind.EXPERIMENT,
-          pathname: '/experiment/234',
           params: {
             experimentId: '234',
           },
-          queryParams: [],
         })
       );
       expect(nextState.activeNamespaceId).toEqual('namespace1');

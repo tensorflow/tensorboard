@@ -68,7 +68,6 @@ describe('ui_selectors test', () => {
           buildAppRoutingState({
             activeRoute: buildRoute({
               routeKind: RouteKind.COMPARE_EXPERIMENT,
-              pathname: '/compare/exp1:123,exp2:234/',
               params: {experimentIds: 'exp1:123,exp2:234'},
             }),
           })
@@ -108,7 +107,6 @@ describe('ui_selectors test', () => {
           buildAppRoutingState({
             activeRoute: buildRoute({
               routeKind: RouteKind.UNKNOWN,
-              pathname: '/foobar/234',
               params: {},
             }),
           })
@@ -143,7 +141,6 @@ describe('ui_selectors test', () => {
             buildAppRoutingState({
               activeRoute: buildRoute({
                 routeKind: RouteKind.EXPERIMENT,
-                pathname: '/experiment/234/',
                 params: {experimentId: '234'},
               }),
             })
@@ -194,7 +191,6 @@ describe('ui_selectors test', () => {
             buildAppRoutingState({
               activeRoute: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
-                pathname: '/compare/apple:123,banana:234/',
                 params: {experimentIds: 'apple:123,banana:234'},
               }),
             })
@@ -264,7 +260,6 @@ describe('ui_selectors test', () => {
             buildAppRoutingState({
               activeRoute: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
-                pathname: '/compare/apple:123,banana:234/',
                 params: {experimentIds: 'apple:123,banana:234'},
               }),
             })
