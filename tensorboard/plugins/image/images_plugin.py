@@ -65,6 +65,11 @@ class ImagesPlugin(base_plugin.TBPlugin):
         self._downsample_to = (context.sampling_hints or {}).get(
             self.plugin_name, _DEFAULT_DOWNSAMPLING
         )
+        self._downsample_to = (
+            _DEFAULT_DOWNSAMPLING
+            if self._downsample_to == 0
+            else self._downsample_to
+        )
         self._data_provider = context.data_provider
         self._version_checker = plugin_util._MetadataVersionChecker(
             data_kind="image",
