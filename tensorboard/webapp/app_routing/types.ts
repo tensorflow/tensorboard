@@ -80,8 +80,6 @@ export interface NavigationFromHistory {
 export interface Route {
   routeKind: RouteKind;
   params: RouteParams;
-  pathname: string;
-  queryParams: SerializableQueryParams;
 }
 
 /**

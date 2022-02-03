@@ -242,7 +242,7 @@ class TfMeshLoaderImpl
       );
       currentStep.mesh = meshData[0];
       this.notifyPath('_currentStep.mesh');
-    } catch (error) {
+    } catch (error: any) {
       if (!error || !error.code || error.code != ErrorCodes.CANCELLED) {
         error = error || 'Response processing failed.';
         throw new Error(error);

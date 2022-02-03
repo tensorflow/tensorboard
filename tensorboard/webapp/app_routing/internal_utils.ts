@@ -171,17 +171,15 @@ export function createURLSearchParamsFromSerializableQueryParams(
 }
 
 /**
- * Checks whether two RouteOrNavs are equal. RouteOrNav is defined to be Route
- * or Navigation.
+ * Checks whether two sets of URL path and query parameters are equal.
  *
- * Limitations: currently, they only match pathname and query parameter (order
- * of the params have to be equal too; e.g., a=1&b=2 will not equal b=2&a=1).
+ * Limitations: order of the params have to be equal too; e.g., a=1&b=2 will not
+ * equal b=2&a=1).
  */
-export function areRoutesEqual(
-  aRoute: Pick<Route, 'pathname' | 'queryParams'>,
-  bRoute: Pick<Route, 'pathname' | 'queryParams'>
+export function arePathsAndQueryParamsEqual(
+  aRoute: {pathname: string; queryParams: SerializableQueryParams},
+  bRoute: {pathname: string; queryParams: SerializableQueryParams}
 ): boolean {
-  // TODO(stephanwlee): support hashes.
   if (
     aRoute.pathname !== bRoute.pathname ||
     aRoute.queryParams.length !== bRoute.queryParams.length

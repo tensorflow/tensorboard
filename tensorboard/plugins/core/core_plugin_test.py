@@ -47,30 +47,32 @@ class FakeFlags(object):
     def __init__(
         self,
         bind_all=False,
-        host=None,
-        inspect=False,
-        version_tb=False,
-        logdir="",
-        logdir_spec="",
-        event_file="",
         db="",
-        path_prefix="",
+        event_file="",
         generic_data="true",
         grpc_data_provider="",
+        host=None,
+        inspect=False,
+        load_fast="auto",
+        logdir="",
+        logdir_spec="",
+        path_prefix="",
         reuse_port=False,
+        version_tb=False,
     ):
         self.bind_all = bind_all
-        self.host = host
-        self.inspect = inspect
-        self.version_tb = version_tb
-        self.logdir = logdir
-        self.logdir_spec = logdir_spec
-        self.event_file = event_file
         self.db = db
-        self.path_prefix = path_prefix
+        self.event_file = event_file
         self.generic_data = generic_data
         self.grpc_data_provider = grpc_data_provider
+        self.host = host
+        self.inspect = inspect
+        self.load_fast = load_fast
+        self.logdir = logdir
+        self.logdir_spec = logdir_spec
+        self.path_prefix = path_prefix
         self.reuse_port = reuse_port
+        self.version_tb = version_tb
 
 
 class CorePluginFlagsTest(tf.test.TestCase):

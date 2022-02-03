@@ -296,8 +296,6 @@ describe('app_routing_effects', () => {
             after: buildRoute({
               routeKind: RouteKind.EXPERIMENTS,
               params: {},
-              pathname: '/experiments',
-              queryParams: [],
             }),
           }),
         ]);
@@ -310,8 +308,6 @@ describe('app_routing_effects', () => {
             after: buildRoute({
               routeKind: RouteKind.EXPERIMENTS,
               params: {},
-              pathname: '/experiments',
-              queryParams: [],
             }),
             beforeNamespaceId: null,
             afterNamespaceId: getRouteNamespaceId(RouteKind.EXPERIMENTS, {}),
@@ -331,8 +327,6 @@ describe('app_routing_effects', () => {
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENTS,
             params: {},
-            pathname: '/experiments',
-            queryParams: [],
           }),
         }),
       ]);
@@ -342,8 +336,6 @@ describe('app_routing_effects', () => {
       beforeEach(() => {
         const activeRoute = buildRoute({
           routeKind: RouteKind.EXPERIMENTS,
-          pathname: '/experiments',
-          queryParams: [],
         });
         const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENTS, {});
         const dirtyExperimentsFactory = () => {
@@ -374,8 +366,6 @@ describe('app_routing_effects', () => {
             after: buildRoute({
               routeKind: RouteKind.EXPERIMENT,
               params: {experimentId: 'meow'},
-              pathname: '/experiment/meow',
-              queryParams: [],
             }),
           }),
         ]);
@@ -399,8 +389,6 @@ describe('app_routing_effects', () => {
         const activeRoute = buildRoute({
           routeKind: RouteKind.EXPERIMENT,
           params: {experimentId: 'meow'},
-          pathname: '/experiment/meow',
-          queryParams: [],
         });
         const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENT, {
           experimentId: 'meow',
@@ -411,7 +399,9 @@ describe('app_routing_effects', () => {
         getPathSpy.and.returnValue('/experiment/meow');
         // Changing tab.
         getHashSpy.and.returnValue('#foo');
-        action.next(actions.navigationRequested(activeRoute));
+        action.next(
+          actions.navigationRequested({pathname: '/experiment/meow'})
+        );
         tick();
 
         expect(window.confirm).not.toHaveBeenCalled();
@@ -459,8 +449,6 @@ describe('app_routing_effects', () => {
               after: buildRoute({
                 routeKind: RouteKind.EXPERIMENT,
                 params: {experimentId: 'meow'},
-                pathname: '/experiment/meow',
-                queryParams: [],
               }),
             }),
           ]);
@@ -472,22 +460,16 @@ describe('app_routing_effects', () => {
               after: buildRoute({
                 routeKind: RouteKind.EXPERIMENT,
                 params: {experimentId: 'meow'},
-                pathname: '/experiment/meow',
-                queryParams: [],
               }),
             }),
             actions.navigated({
               before: buildRoute({
                 routeKind: RouteKind.EXPERIMENTS,
                 params: {},
-                pathname: '/experiments',
-                queryParams: [],
               }),
               after: buildRoute({
                 routeKind: RouteKind.EXPERIMENT,
                 params: {experimentId: 'meow'},
-                pathname: '/experiment/meow',
-                queryParams: [],
               }),
               beforeNamespaceId: getRouteNamespaceId(RouteKind.EXPERIMENTS, {}),
               afterNamespaceId: getRouteNamespaceId(RouteKind.EXPERIMENT, {
@@ -519,8 +501,6 @@ describe('app_routing_effects', () => {
               after: buildRoute({
                 routeKind: RouteKind.EXPERIMENTS,
                 params: {},
-                pathname: '/experiments',
-                queryParams: [],
               }),
             }),
           ]);
@@ -537,8 +517,6 @@ describe('app_routing_effects', () => {
               after: buildRoute({
                 routeKind: RouteKind.EXPERIMENTS,
                 params: {},
-                pathname: '/experiments',
-                queryParams: [],
               }),
               beforeNamespaceId: null,
               afterNamespaceId: getRouteNamespaceId(RouteKind.EXPERIMENTS, {}),
@@ -567,7 +545,6 @@ describe('app_routing_effects', () => {
             before: null,
             after: buildRoute({
               routeKind: RouteKind.EXPERIMENTS,
-              pathname: '/experiments',
             }),
             // From getActiveNamespaceId().
             beforeNamespaceId: null,
@@ -596,7 +573,6 @@ describe('app_routing_effects', () => {
             before: null,
             after: buildRoute({
               routeKind: RouteKind.EXPERIMENTS,
-              pathname: '/experiments',
             }),
             // From getActiveNamespaceId().
             beforeNamespaceId: null,
@@ -653,7 +629,6 @@ describe('app_routing_effects', () => {
             before: buildRoute(),
             after: buildRoute({
               routeKind: RouteKind.EXPERIMENTS,
-              pathname: '/experiments',
             }),
             // From getActiveNamespaceId().
             beforeNamespaceId: before.toString(),
@@ -689,7 +664,6 @@ describe('app_routing_effects', () => {
             before: buildRoute(),
             after: buildRoute({
               routeKind: RouteKind.EXPERIMENTS,
-              pathname: '/experiments',
             }),
             // From getActiveNamespaceId().
             beforeNamespaceId: before.toString(),
@@ -724,7 +698,6 @@ describe('app_routing_effects', () => {
             before: buildRoute(),
             after: buildRoute({
               routeKind: RouteKind.EXPERIMENTS,
-              pathname: '/experiments',
             }),
             // From getActiveNamespaceId().
             beforeNamespaceId: before.toString(),
@@ -753,7 +726,6 @@ describe('app_routing_effects', () => {
             before: buildRoute(),
             after: buildRoute({
               routeKind: RouteKind.EXPERIMENTS,
-              pathname: '/experiments',
             }),
             // From getActiveNamespaceId().
             beforeNamespaceId: 'before',
@@ -784,7 +756,6 @@ describe('app_routing_effects', () => {
             before: buildRoute(),
             after: buildRoute({
               routeKind: RouteKind.EXPERIMENTS,
-              pathname: '/experiments',
             }),
             // From getActiveNamespaceId().
             beforeNamespaceId: 'before',
@@ -816,7 +787,6 @@ describe('app_routing_effects', () => {
             before: buildRoute(),
             after: buildRoute({
               routeKind: RouteKind.EXPERIMENTS,
-              pathname: '/experiments',
             }),
             // From getActiveNamespaceId().
             beforeNamespaceId: before.toString(),
@@ -848,7 +818,6 @@ describe('app_routing_effects', () => {
             before: buildRoute(),
             after: buildRoute({
               routeKind: RouteKind.EXPERIMENTS,
-              pathname: '/experiments',
             }),
             // From getActiveNamespaceId().
             beforeNamespaceId: before.toString(),
@@ -878,7 +847,6 @@ describe('app_routing_effects', () => {
             before: buildRoute(),
             after: buildRoute({
               routeKind: RouteKind.EXPERIMENTS,
-              pathname: '/experiments',
             }),
             // From getActiveNamespaceId().
             beforeNamespaceId: before.toString(),
@@ -928,8 +896,6 @@ describe('app_routing_effects', () => {
               after: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
                 params: {experimentIds: 'a:b'},
-                pathname: '/compare/a:b',
-                queryParams: [],
               } as unknown as Route),
             }),
             actions.navigated({
@@ -937,8 +903,6 @@ describe('app_routing_effects', () => {
               after: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
                 params: {experimentIds: 'a:b'},
-                pathname: '/compare/a:b',
-                queryParams: [],
               } as unknown as Route),
               beforeNamespaceId: null,
               afterNamespaceId: getRouteNamespaceId(
@@ -983,8 +947,6 @@ describe('app_routing_effects', () => {
             after: buildRoute({
               routeKind: RouteKind.COMPARE_EXPERIMENT,
               params: {experimentIds: 'a:b'},
-              pathname: '/compare/a:b',
-              queryParams: [],
             } as unknown as Route),
           }),
           jasmine.any(Object), // actions.navigated
@@ -1019,8 +981,6 @@ describe('app_routing_effects', () => {
             after: buildRoute({
               routeKind: RouteKind.COMPARE_EXPERIMENT,
               params: {experimentIds: 'a:b'},
-              pathname: '/compare/a:b',
-              queryParams: [],
             } as unknown as Route),
           }),
           jasmine.any(Object), // actions.navigated
@@ -1057,8 +1017,6 @@ describe('app_routing_effects', () => {
               after: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
                 params: {experimentIds: 'a:b'},
-                pathname: '/compare/a:b',
-                queryParams: [],
               }),
             }),
             actions.navigated({
@@ -1066,8 +1024,6 @@ describe('app_routing_effects', () => {
               after: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
                 params: {experimentIds: 'a:b'},
-                pathname: '/compare/a:b',
-                queryParams: [],
               }),
               beforeNamespaceId: null,
               afterNamespaceId: getRouteNamespaceId(
@@ -1098,8 +1054,6 @@ describe('app_routing_effects', () => {
             after: buildRoute({
               routeKind: RouteKind.COMPARE_EXPERIMENT,
               params: {experimentIds: 'a:b'},
-              pathname: '/compare/a:b',
-              queryParams: [{key: 'a', value: 'a_value'}],
             }),
           }),
           actions.navigated({
@@ -1107,8 +1061,6 @@ describe('app_routing_effects', () => {
             after: buildRoute({
               routeKind: RouteKind.COMPARE_EXPERIMENT,
               params: {experimentIds: 'a:b'},
-              pathname: '/compare/a:b',
-              queryParams: [{key: 'a', value: 'a_value'}],
             }),
             beforeNamespaceId: null,
             afterNamespaceId: getRouteNamespaceId(
@@ -1176,7 +1128,6 @@ describe('app_routing_effects', () => {
             before: null,
             after: buildRoute({
               routeKind: RouteKind.COMPARE_EXPERIMENT,
-              pathname: '/compare/a:b',
               params: {experimentIds: 'a:b'},
             }),
             beforeNamespaceId: null,
@@ -1190,7 +1141,6 @@ describe('app_routing_effects', () => {
           getActiveRoute,
           buildRoute({
             routeKind: RouteKind.COMPARE_EXPERIMENT,
-            pathname: '/compare/a:b',
             params: {experimentIds: 'a:b'},
           })
         );
@@ -1210,12 +1160,10 @@ describe('app_routing_effects', () => {
           actions.navigated({
             before: buildRoute({
               routeKind: RouteKind.COMPARE_EXPERIMENT,
-              pathname: '/compare/a:b',
               params: {experimentIds: 'a:b'},
             }),
             after: buildRoute({
               routeKind: RouteKind.COMPARE_EXPERIMENT,
-              pathname: '/compare/a:b',
               params: {experimentIds: 'a:b'},
             }),
             // From updated getActiveNamespaceId().
@@ -1282,8 +1230,6 @@ describe('app_routing_effects', () => {
               after: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
                 params: {experimentIds: 'a:b'},
-                pathname: '/compare/a:b',
-                queryParams: [],
               }),
             }),
             // Third action is of type actions.navigated but we ignore it.
@@ -1320,12 +1266,6 @@ describe('app_routing_effects', () => {
               after: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
                 params: {experimentIds: 'a:b'},
-                pathname: '/compare/a:b',
-                // Query parameter comes from DeepLinkProvider
-                // (serializeStateToQueryParamsSpy) in this case, not
-                // redirector. Query parameter of redirector is fed into
-                // deserializer instead.
-                queryParams: [],
               }),
             }),
             // Third action is of type actions.navigated but we ignore it.
@@ -1350,8 +1290,6 @@ describe('app_routing_effects', () => {
               after: buildRoute({
                 routeKind: RouteKind.UNKNOWN,
                 params: {},
-                pathname: '/no_deeplink_unknown/route',
-                queryParams: [],
               }),
             }),
             // Second action is of type actions.navigated but we ignore it.
@@ -1381,8 +1319,6 @@ describe('app_routing_effects', () => {
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENTS,
             params: {},
-            pathname: '/experiments',
-            queryParams: [],
           }),
         }),
       ]);
@@ -1394,8 +1330,6 @@ describe('app_routing_effects', () => {
         getActiveRoute,
         buildRoute({
           routeKind: RouteKind.EXPERIMENTS,
-          pathname: '/experiments',
-          queryParams: [],
         })
       );
       store.overrideSelector(
@@ -1415,20 +1349,14 @@ describe('app_routing_effects', () => {
         actions.navigating({
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENTS,
-            pathname: '/experiments',
-            queryParams: [],
           }),
         }),
         actions.navigated({
           before: buildRoute({
             routeKind: RouteKind.EXPERIMENTS,
-            pathname: '/experiments',
-            queryParams: [],
           }),
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENTS,
-            pathname: '/experiments',
-            queryParams: [],
           }),
           beforeNamespaceId: getRouteNamespaceId(RouteKind.EXPERIMENTS, {}),
           afterNamespaceId: getRouteNamespaceId(RouteKind.EXPERIMENTS, {}),
@@ -1449,8 +1377,6 @@ describe('app_routing_effects', () => {
             after: buildRoute({
               routeKind: RouteKind.EXPERIMENTS,
               params: {},
-              pathname: '/experiments',
-              queryParams: [],
             }),
           }),
         ]);
@@ -1477,8 +1403,6 @@ describe('app_routing_effects', () => {
               params: {
                 experimentIds: 'bar:foo,omega:alpha',
               },
-              pathname: '/compare/bar:foo,omega:alpha',
-              queryParams: [],
             }),
           }),
         ]);
@@ -1487,7 +1411,7 @@ describe('app_routing_effects', () => {
 
     describe('url changes', () => {
       function navigateAndExpect(
-        navigation: Navigation | Route,
+        navigation: Navigation,
         expected: {pushStateUrl: null | string; replaceStateUrl: null | string}
       ) {
         fakeAsync(() => {
@@ -1513,8 +1437,6 @@ describe('app_routing_effects', () => {
       it('noops if the new route matches current URL', () => {
         const activeRoute = buildRoute({
           routeKind: RouteKind.EXPERIMENTS,
-          pathname: '/experiments',
-          queryParams: [],
         });
         const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENTS, {});
         store.overrideSelector(getActiveRoute, activeRoute);
@@ -1524,17 +1446,18 @@ describe('app_routing_effects', () => {
         getPathSpy.and.returnValue('/experiments');
         getSearchSpy.and.returnValue([]);
 
-        navigateAndExpect(activeRoute, {
-          pushStateUrl: null,
-          replaceStateUrl: null,
-        });
+        navigateAndExpect(
+          {pathname: '/experiments'},
+          {
+            pushStateUrl: null,
+            replaceStateUrl: null,
+          }
+        );
       });
 
       it('pushes state if path and search do not match new route on navigated', () => {
         const activeRoute = buildRoute({
           routeKind: RouteKind.EXPERIMENTS,
-          pathname: '/experiments',
-          queryParams: [],
         });
         const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENTS, {});
         store.overrideSelector(getActiveRoute, activeRoute);
@@ -1556,8 +1479,6 @@ describe('app_routing_effects', () => {
       it('replaces state if navigationRequested says so', () => {
         const activeRoute = buildRoute({
           routeKind: RouteKind.EXPERIMENTS,
-          pathname: '/experiments',
-          queryParams: [],
         });
         const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENTS, {});
         store.overrideSelector(getActiveRoute, activeRoute);
@@ -1599,9 +1520,7 @@ describe('app_routing_effects', () => {
       it('preserves hash upon navigations to the same experiment', () => {
         const activeRoute = buildRoute({
           routeKind: RouteKind.EXPERIMENT,
-          pathname: '/experiment',
           params: {experimentId: '123'},
-          queryParams: [],
         });
         const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENT, {});
         store.overrideSelector(getActiveRoute, activeRoute);
@@ -1623,8 +1542,6 @@ describe('app_routing_effects', () => {
       it('discards hash upon navigations to a new experiment', () => {
         const activeRoute = buildRoute({
           routeKind: RouteKind.EXPERIMENTS,
-          pathname: '/experiments',
-          queryParams: [],
         });
         const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENT, {});
 
@@ -1682,8 +1599,6 @@ describe('app_routing_effects', () => {
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENTS,
             params: {},
-            pathname: '/experiments',
-            queryParams: [],
           }),
         }),
       ]);
@@ -1704,8 +1619,6 @@ describe('app_routing_effects', () => {
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
             params: {experimentId: '123'},
-            pathname: '/experiment/123',
-            queryParams: [],
           }),
         }),
       ]);
@@ -1724,8 +1637,6 @@ describe('app_routing_effects', () => {
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
             params: {experimentId: '123'},
-            pathname: '/experiment/123',
-            queryParams: [],
           }),
         }),
       ]);
@@ -1748,8 +1659,6 @@ describe('app_routing_effects', () => {
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
             params: {experimentId: '123'},
-            pathname: '/experiment/123',
-            queryParams: [],
           }),
         }),
       ]);

@@ -29,22 +29,18 @@ describe('app_routing_selectors', () => {
         buildAppRoutingState({
           activeRoute: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
-            pathname: '/experiment/234',
             params: {
               experimentId: '234',
             },
-            queryParams: [],
           }),
         })
       );
 
       expect(selectors.getActiveRoute(state)).toEqual({
         routeKind: RouteKind.EXPERIMENT,
-        pathname: '/experiment/234',
         params: {
           experimentId: '234',
         },
-        queryParams: [],
       });
     });
   });
@@ -97,11 +93,9 @@ describe('app_routing_selectors', () => {
         buildAppRoutingState({
           activeRoute: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
-            pathname: '/experiment/234',
             params: {
               experimentId: '234',
             },
-            queryParams: [],
           }),
         })
       );
@@ -130,11 +124,9 @@ describe('app_routing_selectors', () => {
         buildAppRoutingState({
           activeRoute: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
-            pathname: '/experiment/234',
             params: {
               experimentId: '234',
             },
-            queryParams: [],
           }),
         })
       );
@@ -157,11 +149,9 @@ describe('app_routing_selectors', () => {
             routeKind: RouteKind.COMPARE_EXPERIMENT,
             // exp2 maps to two experiment ids. This is illegal but FE should not
             // break because of it.
-            pathname: '/compare/exp1:123,exp2:234,exp2:345',
             params: {
               experimentIds: 'exp1:123,exp2:234,exp2:345',
             },
-            queryParams: [],
           }),
         })
       );
@@ -178,9 +168,7 @@ describe('app_routing_selectors', () => {
         buildAppRoutingState({
           activeRoute: buildRoute({
             routeKind: RouteKind.UNKNOWN,
-            pathname: '/foob',
             params: {},
-            queryParams: [],
           }),
         })
       );

@@ -32,47 +32,53 @@ _TENSORFLOW_IO_MODULE = "tensorflow_io"
 class FakeFlags(object):
     def __init__(
         self,
-        logdir,
+        detect_file_replacement=None,
+        generic_data="auto",
+        logdir="",
         logdir_spec="",
+        max_reload_threads=1,
+        path_prefix="",
         purge_orphaned_data=True,
         reload_interval=60,
-        samples_per_plugin=None,
-        max_reload_threads=1,
-        reload_task="auto",
-        window_title="",
-        path_prefix="",
         reload_multifile=False,
         reload_multifile_inactive_secs=4000,
-        generic_data="auto",
+        reload_task="auto",
+        samples_per_plugin=None,
+        window_title="",
     ):
+        self.detect_file_replacement = detect_file_replacement
+        self.generic_data = generic_data
         self.logdir = logdir
         self.logdir_spec = logdir_spec
+        self.max_reload_threads = max_reload_threads
+        self.path_prefix = path_prefix
         self.purge_orphaned_data = purge_orphaned_data
         self.reload_interval = reload_interval
-        self.samples_per_plugin = samples_per_plugin or {}
-        self.max_reload_threads = max_reload_threads
-        self.reload_task = reload_task
-        self.window_title = window_title
-        self.path_prefix = path_prefix
         self.reload_multifile = reload_multifile
         self.reload_multifile_inactive_secs = reload_multifile_inactive_secs
-        self.generic_data = generic_data
+        self.reload_task = reload_task
+        self.samples_per_plugin = samples_per_plugin or {}
+        self.window_title = window_title
 
 
 class GetEventFileActiveFilterTest(tb_test.TestCase):
     def testDisabled(self):
-        flags = FakeFlags("logdir", reload_multifile=False)
+        flags = FakeFlags(logdir="logdir", reload_multifile=False)
         self.assertIsNone(data_ingester._get_event_file_active_filter(flags))
 
     def testInactiveSecsZero(self):
         flags = FakeFlags(
-            "logdir", reload_multifile=True, reload_multifile_inactive_secs=0
+            logdir="logdir",
+            reload_multifile=True,
+            reload_multifile_inactive_secs=0,
         )
         self.assertIsNone(data_ingester._get_event_file_active_filter(flags))
 
     def testInactiveSecsNegative(self):
         flags = FakeFlags(
-            "logdir", reload_multifile=True, reload_multifile_inactive_secs=-1
+            logdir="logdir",
+            reload_multifile=True,
+            reload_multifile_inactive_secs=-1,
         )
         filter_fn = data_ingester._get_event_file_active_filter(flags)
         self.assertTrue(filter_fn(0))
@@ -81,7 +87,9 @@ class GetEventFileActiveFilterTest(tb_test.TestCase):
 
     def testInactiveSecs(self):
         flags = FakeFlags(
-            "logdir", reload_multifile=True, reload_multifile_inactive_secs=10
+            logdir="logdir",
+            reload_multifile=True,
+            reload_multifile_inactive_secs=10,
         )
         filter_fn = data_ingester._get_event_file_active_filter(flags)
         with mock.patch.object(time, "time") as mock_time:
@@ -378,7 +386,9 @@ class FileSystemSupportTest(tb_test.TestCase):
             with mock.patch.object(
                 data_ingester, "_check_filesystem_support", autospec=True
             ) as mock_check_filesystem_support:
-                data_ingester.LocalDataIngester(flags=FakeFlags("logdir"))
+                data_ingester.LocalDataIngester(
+                    flags=FakeFlags(logdir="logdir")
+                )
         mock_check_filesystem_support.assert_called_once_with({"logdir"})
 
     def testCheckFilesystemSupport_notCalled(self):
@@ -386,7 +396,9 @@ class FileSystemSupportTest(tb_test.TestCase):
             with mock.patch.object(
                 data_ingester, "_check_filesystem_support", autospec=True
             ) as mock_check_filesystem_support:
-                data_ingester.LocalDataIngester(flags=FakeFlags("logdir"))
+                data_ingester.LocalDataIngester(
+                    flags=FakeFlags(logdir="logdir")
+                )
         mock_check_filesystem_support.assert_not_called()
 
 

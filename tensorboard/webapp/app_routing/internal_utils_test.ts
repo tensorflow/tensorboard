@@ -308,10 +308,10 @@ describe('app_routing/utils', () => {
     });
   });
 
-  describe('#areRoutesEqual', () => {
+  describe('#arePathsAndQueryParamsEqual', () => {
     it('returns true if they are equal', () => {
       expect(
-        utils.areRoutesEqual(
+        utils.arePathsAndQueryParamsEqual(
           {
             pathname: '/foo',
             queryParams: [],
@@ -324,7 +324,7 @@ describe('app_routing/utils', () => {
       ).toBe(true);
 
       expect(
-        utils.areRoutesEqual(
+        utils.arePathsAndQueryParamsEqual(
           {
             pathname: '/foo/bar',
             queryParams: [{key: 'a', value: '1'}],
@@ -339,7 +339,7 @@ describe('app_routing/utils', () => {
 
     it('returns false if paths are different', () => {
       expect(
-        utils.areRoutesEqual(
+        utils.arePathsAndQueryParamsEqual(
           {
             pathname: '/foo/bar',
             queryParams: [],
@@ -354,7 +354,7 @@ describe('app_routing/utils', () => {
 
     it('returns false if query params values are different', () => {
       expect(
-        utils.areRoutesEqual(
+        utils.arePathsAndQueryParamsEqual(
           {
             pathname: '/foo/bar',
             queryParams: [{key: 'a', value: '1'}],
@@ -369,7 +369,7 @@ describe('app_routing/utils', () => {
 
     it('returns false if query params has more values', () => {
       expect(
-        utils.areRoutesEqual(
+        utils.arePathsAndQueryParamsEqual(
           {
             pathname: '/foo/bar',
             queryParams: [{key: 'a', value: '1'}],
@@ -387,7 +387,7 @@ describe('app_routing/utils', () => {
 
     it('returns false when orders are different', () => {
       expect(
-        utils.areRoutesEqual(
+        utils.arePathsAndQueryParamsEqual(
           {
             pathname: '/foo/bar',
             queryParams: [
