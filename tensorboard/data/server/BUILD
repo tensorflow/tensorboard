@@ -1,4 +1,4 @@
-load("@rules_rust//rust:rust.bzl", "rust_binary", "rust_doc", "rust_doc_test", "rust_library", "rust_test")
+load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_doc", "rust_doc_test", "rust_library", "rust_test")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -117,13 +117,13 @@ rust_binary(
 
 rust_doc_test(
     name = "rustboard_core_doc_test",
-    dep = ":rustboard_core",
+    crate = ":rustboard_core",
     tags = ["manual"],  # https://github.com/bazelbuild/rules_rust/issues/689
 )
 
 rust_doc(
     name = "rustboard_core_doc",
-    dep = ":rustboard_core",
+    crate = ":rustboard_core",
     tags = ["manual"],  # https://github.com/bazelbuild/rules_rust/issues/689
 )
 

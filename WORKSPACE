@@ -3,6 +3,22 @@ workspace(name = "org_tensorflow_tensorboard")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
+    name = "bazel_skylib",
+    sha256 = "07b4117379dde7ab382345c3b0f5edfc6b7cff6c93756eac63da121e0bbcc5de",
+    strip_prefix = "bazel-skylib-1.1.1",
+    urls = [
+        "http://mirror.tensorflow.org/github.com/bazelbuild/bazel-skylib/archive/1.1.1.tar.gz",
+        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",  # 2021-09-27
+    ],
+)
+
+load("@bazel_skylib//lib:versions.bzl", "versions")
+
+# Keep this version in sync with the BAZEL environment variable defined
+# in our .github/workflows/ci.yml config.
+versions.check(minimum_bazel_version = "4.0.0")
+
+http_archive(
     name = "io_bazel_rules_webtesting",
     sha256 = "9bb461d5ef08e850025480bab185fd269242d4e533bca75bfb748001ceb343c3",
     urls = [
@@ -73,35 +89,6 @@ http_archive(
     ],
 )
 
-http_archive(
-    name = "org_tensorflow",
-    patches = [
-        # Patch TF's python_configure.bzl to ensure it reconfigures its python
-        # toolchain when environment variables like `PATH` and `PYTHONPATH`
-        # change, to avoid the stale genrule py_binary issue described in:
-        # https://github.com/tensorflow/tensorboard/issues/4862
-        "//third_party:tensorflow.patch",
-    ],
-    # NOTE: when updating this, MAKE SURE to also update the protobuf_js runtime version
-    # in third_party/workspace.bzl to >= the protobuf/protoc version provided by TF.
-    sha256 = "2595a5c401521f20a2734c4e5d54120996f8391f00bb62a57267d930bce95350",
-    strip_prefix = "tensorflow-2.3.0",
-    urls = [
-        "http://mirror.tensorflow.org/github.com/tensorflow/tensorflow/archive/v2.3.0.tar.gz",  # 2020-07-23
-        "https://github.com/tensorflow/tensorflow/archive/v2.3.0.tar.gz",
-    ],
-)
-
-load("@org_tensorflow//tensorflow:workspace.bzl", "tf_workspace")
-
-tf_workspace()
-
-load("@bazel_skylib//lib:versions.bzl", "versions")
-
-# Keep this version in sync with the BAZEL environment variable defined
-# in our .github/workflows/ci.yml config.
-versions.check(minimum_bazel_version = "3.7.0")
-
 load("@io_bazel_rules_sass//:package.bzl", "rules_sass_dependencies")
 
 rules_sass_dependencies()
@@ -110,22 +97,33 @@ load("@io_bazel_rules_sass//:defs.bzl", "sass_repositories")
 
 sass_repositories()
 
+# gRPC.
+http_archive(
+    name = "com_github_grpc_grpc",
+    sha256 = "b2f2620c762427bfeeef96a68c1924319f384e877bc0e084487601e4cc6e434c",
+    strip_prefix = "grpc-1.42.0",
+    urls = [
+        "http://mirror.tensorflow.org/github.com/grpc/grpc/archive/v1.42.0.tar.gz",
+        "https://github.com/grpc/grpc/archive/v1.42.0.tar.gz",  # 2021-11-17
+    ],
+)
+
 load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
 
 grpc_deps()
 
-load("@upb//bazel:repository_defs.bzl", "bazel_version_repository")
+load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
 
-bazel_version_repository(name = "bazel_version")
+grpc_extra_deps()
 
 http_archive(
     name = "rules_rust",
-    sha256 = "9c7d7fd4378d75232858423d574cff677b16ac9a49cd1a11df545a6e72a315ca",
-    strip_prefix = "rules_rust-42a674093251fb6a603a2652980c9be28a6fea50",
+    sha256 = "08109dccfa5bbf674ff4dba82b15d40d85b07436b02e62ab27e0b894f45bb4a3",
+    strip_prefix = "rules_rust-d5ab4143245af8b33d1947813d411a6cae838409",
     urls = [
-        # Master branch as of 2021-04-14
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_rust/archive/42a674093251fb6a603a2652980c9be28a6fea50.tar.gz",
-        "https://github.com/bazelbuild/rules_rust/archive/42a674093251fb6a603a2652980c9be28a6fea50.tar.gz",
+        # Master branch as of 2022-01-31
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_rust/archive/d5ab4143245af8b33d1947813d411a6cae838409.tar.gz",
+        "https://github.com/bazelbuild/rules_rust/archive/d5ab4143245af8b33d1947813d411a6cae838409.tar.gz",
     ],
 )
 
