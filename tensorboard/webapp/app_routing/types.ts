@@ -83,6 +83,24 @@ export interface Route {
 }
 
 /**
+ * Identifies groups of routes where we wish to only rehydrate deep links one
+ * time for each group.
+ */
+export enum DeepLinkGroup {
+  EXPERIMENTS,
+  DASHBOARD,
+}
+
+/**
+ * Represents a DeepLinkGroup/NamespaceId combination that has been rehydrated
+ * since last browser (re)load.
+ */
+export interface RehydratedDeepLink {
+  deepLinkGroup: DeepLinkGroup;
+  namespaceId: string;
+}
+
+/**
  * Information about unsaved metadata updates to experiments.
  */
 export interface DirtyUpdates {
