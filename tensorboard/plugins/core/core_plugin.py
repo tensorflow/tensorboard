@@ -643,8 +643,8 @@ explicitly specify how many samples to keep per tag for that plugin. For
 unspecified plugins, TensorBoard randomly downsamples logged summaries
 to reasonable values to prevent out-of-memory errors for long running
 jobs. This flag allows fine control over that downsampling. Note that
-downsampling is required for all plugins. Without specifying the number
-it would be set to default number (10 for images, 500 for historgrams,
+downsampling is required for all plugins. Without specifying the numbers
+it would be set as the default numbers (10 for images, 500 for historgrams,
 and 1000 for scalars). Most users should not need to set this flag.\
 """,
         )
