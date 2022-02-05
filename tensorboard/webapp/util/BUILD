@@ -80,6 +80,7 @@ tf_ts_library(
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/runs:types",
         "//tensorboard/webapp/runs/store:selectors",
+        "//tensorboard/webapp/runs/store:types",
         "//tensorboard/webapp/settings",
         "@npm//@ngrx/store",
     ],
