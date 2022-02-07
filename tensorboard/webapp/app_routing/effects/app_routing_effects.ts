@@ -43,6 +43,7 @@ import {
   arePathsAndQueryParamsEqual,
   areSameRouteKindAndExperiments,
   canRehydrateDeepLink,
+  generateRandomIdForNamespace,
   getRouteNamespaceId,
   serializeCompareExperimentParams,
 } from '../internal_utils';
@@ -623,7 +624,7 @@ function getAfterNamespaceId(
       beforeNamespaceId == null ||
       options.namespaceUpdate.option === NamespaceUpdateOption.NEW
     ) {
-      return Date.now().toString();
+      return `${Date.now().toString()}:${generateRandomIdForNamespace()}`;
     } else {
       return beforeNamespaceId;
     }
