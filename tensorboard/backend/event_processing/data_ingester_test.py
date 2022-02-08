@@ -265,6 +265,17 @@ class ParseEventFilesSpecTest(tb_test.TestCase):
 
 
 class FileSystemSupportTest(tb_test.TestCase):
+    def setUp(self):
+        super(FileSystemSupportTest, self).setUp()
+        try:
+            # Do a dummy call to triger lazy loading of `get_registered_schemes`
+            # before mocking it in tests, otherwise it won't be able to unmock
+            # properly (see b/150299895 for more details).
+            # TODO(ytjing): Avoid mocking lazy-loaded TF symbols.
+            tf.io.gfile.get_registered_schemes()
+        except Exception:
+            pass
+
     def fake_import(self, affected_name, success=True):
         """Fakes import for a given module."""
 
@@ -298,10 +309,10 @@ class FileSystemSupportTest(tb_test.TestCase):
         mock_get_registered_schemes.assert_called_once()
 
     def testCheckFilesystemSupport_importTFIO(self):
-        # autospec=True doesn't work for this test internally.
         with mock.patch.object(
             tf.io.gfile,
             "get_registered_schemes",
+            autospec=True,
             return_value=["file", ""],
         ) as mock_get_registered_schemes:
             with mock.patch(
@@ -317,10 +328,10 @@ class FileSystemSupportTest(tb_test.TestCase):
         mock_get_registered_schemes.assert_called_once()
 
     def testCheckFilesystemSupport_raiseError(self):
-        # autospec=True doesn't work for this test internally.
         with mock.patch.object(
             tf.io.gfile,
             "get_registered_schemes",
+            autospec=True,
             return_value=["file", "ram"],
         ) as mock_get_registered_schemes:
             with mock.patch(
