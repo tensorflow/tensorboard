@@ -97,6 +97,16 @@ load("@io_bazel_rules_sass//:defs.bzl", "sass_repositories")
 
 sass_repositories()
 
+http_archive(
+    name = "com_google_protobuf",
+    sha256 = "cfcba2df10feec52a84208693937c17a4b5df7775e1635c1e3baffc487b24c9b",
+    strip_prefix = "protobuf-3.9.2",
+    urls = [
+        "http://mirror.tensorflow.org/github.com/protocolbuffers/protobuf/archive/v3.9.2.tar.gz",
+        "https://github.com/protocolbuffers/protobuf/archive/v3.9.2.tar.gz",  # 2019-09-23
+    ],
+)
+
 # gRPC.
 http_archive(
     name = "com_github_grpc_grpc",
@@ -115,16 +125,6 @@ grpc_deps()
 load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
 
 grpc_extra_deps()
-
-http_archive(
-    name = "com_google_protobuf",
-    sha256 = "cfcba2df10feec52a84208693937c17a4b5df7775e1635c1e3baffc487b24c9b",
-    strip_prefix = "protobuf-3.9.2",
-    urls = [
-        "http://mirror.tensorflow.org/github.com/protocolbuffers/protobuf/archive/v3.9.2.tar.gz",
-        "https://github.com/protocolbuffers/protobuf/archive/v3.9.2.tar.gz",  # 2019-09-23
-    ],
-)
 
 http_archive(
     name = "rules_rust",
