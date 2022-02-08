@@ -26,6 +26,7 @@ span {
   display: inline-block;
   font-size: 11px;
   padding: 2px 5px;
+  transform: translateY(-50%);
 
   &:hover,
   &:active {

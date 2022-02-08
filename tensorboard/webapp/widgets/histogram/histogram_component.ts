@@ -27,8 +27,11 @@ import {
 } from '@angular/core';
 import {fromEvent, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
+import {LinkedTime} from '../../metrics/types';
+import {ViewSelectedTime} from '../../metrics/views/card_renderer/utils';
 import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
+import {AxisDirection} from '../linked_time_fob/linked_time_fob_controller_component';
 import {
   Bin,
   HistogramData,
@@ -75,11 +78,6 @@ export interface TooltipData {
   };
 }
 
-export interface LinkedTime {
-  startStep: number;
-  endStep: number | null;
-}
-
 @Component({
   selector: 'tb-histogram',
   templateUrl: 'histogram_component.ng.html',
@@ -102,11 +100,11 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   @Input() data!: HistogramData;
 
-  @Input() linkedTime: LinkedTime | null = null;
+  @Input() linkedTime: ViewSelectedTime | null = null;
 
-  @Output() onSelectTimeChanged = new EventEmitter<number>();
+  @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
 
-  private draggingFob = false;
+  readonly axisDirection = AxisDirection.vertical;
 
   readonly HistogramMode = HistogramMode;
   readonly TimeProperty = TimeProperty;
@@ -232,80 +230,20 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     );
   }
 
-  stopFobDrag() {
-    this.draggingFob = false;
+  getSteps(): Array<number> {
+    return this.data.map((datum) => datum.step);
   }
 
-  startFobDrag() {
-    // Fob dragging is not yet implemented for linked time ranges.
-    if (!this.linkedTime?.endStep) {
-      this.draggingFob = true;
-    }
+  convertToLinkedTime(selectedTime: ViewSelectedTime): LinkedTime {
+    return {
+      start: {step: selectedTime.startStep},
+      end: selectedTime.endStep ? {step: selectedTime.endStep} : null,
+    };
   }
 
-  mouseMove(event: MouseEvent) {
-    if (!this.draggingFob) return;
-
-    if (this.isDraggingUp(event.clientY, event.movementY)) {
-      this.onSelectTimeChanged.emit(
-        this.data[this.getStepIndexAboveMousePosition(event.clientY)].step
-      );
-    }
-
-    if (this.isDraggingDown(event.clientY, event.movementY)) {
-      this.onSelectTimeChanged.emit(
-        this.data[this.getStepIndexBelowMousePosition(event.clientY)].step
-      );
-    }
-  }
-
-  isDraggingDown(position: number, movement: number): boolean {
-    return (
-      position <
-        this.startFobWrapper.nativeElement.getBoundingClientRect().top &&
-      movement < 0 &&
-      this.linkedTime!.startStep > this.data[0].step
-    );
-  }
-
-  isDraggingUp(position: number, movement: number): boolean {
-    return (
-      position >
-        this.startFobWrapper.nativeElement.getBoundingClientRect().top &&
-      movement > 0 &&
-      this.linkedTime!.startStep < this.data[this.data.length - 1].step
-    );
-  }
-
-  getStepIndexAboveMousePosition(position: number) {
-    let stepIndex = 0;
-    while (
-      position -
-        this.main.nativeElement.getBoundingClientRect().top -
-        this.scales!.temporalScale(this.data[stepIndex].step) >
-        1 &&
-      stepIndex + 1 < this.data.length
-    ) {
-      stepIndex++;
-    }
-    return stepIndex;
-  }
-
-  getStepIndexBelowMousePosition(position: number) {
-    let stepIndex = this.data.length - 1;
-    while (
-      position -
-        this.main.nativeElement.getBoundingClientRect().top -
-        this.scales!.temporalScale(this.data[stepIndex].step) <
-        1 &&
-      stepIndex > 0
-    ) {
-      stepIndex--;
-    }
-    return stepIndex;
-  }
-
-  isLinkedTimeEnabled(linkedTime: LinkedTime | null): linkedTime is LinkedTime {
+  isLinkedTimeEnabled(
+    linkedTime: ViewSelectedTime | null
+  ): linkedTime is ViewSelectedTime {
     return Boolean(
       this.mode === HistogramMode.OFFSET &&
         this.timeProperty === TimeProperty.STEP &&

@@ -39,7 +39,7 @@ import {
   getMetricsSelectedTime,
   getMetricsXAxisType,
 } from '../../store';
-import {CardId, CardMetadata} from '../../types';
+import {CardId, CardMetadata, LinkedTime} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {maybeClipSelectedTime, ViewSelectedTime} from './utils';
@@ -188,11 +188,11 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
   }
 
-  onSelectTimeChanged(startStep: number, endStep?: number) {
+  onSelectTimeChanged(linkedTime: LinkedTime) {
     this.store.dispatch(
       timeSelectionChanged({
-        startStep: startStep,
-        endStep: endStep,
+        startStep: linkedTime.start.step,
+        endStep: linkedTime.end ? linkedTime.end.step : undefined,
       })
     );
   }

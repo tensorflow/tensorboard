@@ -21,9 +21,6 @@ limitations under the License.
   (onResize)="onResize()"
   observeIntersection
   (onVisibilityChange)="onVisibilityChange($event)"
-  (mousemove)="mouseMove($event)"
-  (mouseup)="stopFobDrag()"
-  (mouseleave)="stopFobDrag()"
 >
   <svg class="axis x-axis">
     <g #xAxis></g>
@@ -54,28 +51,13 @@ limitations under the License.
     </svg>
     <!-- Disable the feature when in non-offset and non-step mode. -->
     <ng-container *ngIf="isLinkedTimeEnabled(linkedTime)">
-      <div
-        #fobWrapper
-        class="linked-time"
-        [style.transform]="getCssTranslatePx(0, scales.temporalScale(linkedTime.startStep))"
-      >
-        <linked-time-fob
-          #startFob
-          (mousedown)="startFobDrag()"
-          class="linked-time-fob"
-          [step]="linkedTime.startStep"
-        ></linked-time-fob>
-      </div>
-      <div
-        *ngIf="linkedTime.endStep"
-        class="linked-time"
-        [style.transform]="getCssTranslatePx(0, scales.temporalScale(linkedTime.endStep))"
-      >
-        <linked-time-fob
-          class="linked-time-fob"
-          [step]="linkedTime.endStep"
-        ></linked-time-fob>
-      </div>
+      <linked-time-fob-controller
+        [axisDirection]="axisDirection"
+        [linkedTime]="convertToLinkedTime(linkedTime)"
+        [steps]="getSteps()"
+        [temporalScale]="scales.temporalScale"
+        (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
+      ></linked-time-fob-controller>
     </ng-container>
   </div>
   <svg #content class="content">
