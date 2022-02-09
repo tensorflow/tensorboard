@@ -3,6 +3,15 @@ workspace(name = "org_tensorflow_tensorboard")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
+    name = "build_bazel_rules_apple",
+    sha256 = "0052d452af7742c8f3a4e0929763388a66403de363775db7e90adecb2ba4944b",
+    urls = [
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_apple/releases/download/0.31.3/rules_apple.0.31.3.tar.gz",
+        "https://github.com/bazelbuild/rules_apple/releases/download/0.31.3/rules_apple.0.31.3.tar.gz",
+    ],
+)
+
+http_archive(
     name = "bazel_skylib",
     sha256 = "07b4117379dde7ab382345c3b0f5edfc6b7cff6c93756eac63da121e0bbcc5de",
     strip_prefix = "bazel-skylib-1.1.1",
@@ -116,11 +125,12 @@ http_archive(
 # gRPC.
 http_archive(
     name = "com_github_grpc_grpc",
-    sha256 = "b2f2620c762427bfeeef96a68c1924319f384e877bc0e084487601e4cc6e434c",
-    strip_prefix = "grpc-1.42.0",
+    sha256 = "b956598d8cbe168b5ee717b5dafa56563eb5201a947856a6688bbeac9cac4e1f",
+    strip_prefix = "grpc-b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd",
     urls = [
-        "http://mirror.tensorflow.org/github.com/grpc/grpc/archive/v1.42.0.tar.gz",
-        "https://github.com/grpc/grpc/archive/v1.42.0.tar.gz",  # 2021-11-17
+        # Same as TF: https://github.com/tensorflow/tensorflow/blob/master/tensorflow/workspace2.bzl#L492
+        "http://mirror.tensorflow.org/github.com/grpc/grpc/archive/b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd.tar.gz",
+        "https://github.com/grpc/grpc/archive/b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd.tar.gz",
     ],
 )
 
