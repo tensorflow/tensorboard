@@ -97,6 +97,12 @@ load("@io_bazel_rules_sass//:defs.bzl", "sass_repositories")
 
 sass_repositories()
 
+# Always bump the requirements.txt protobuf dep to be >= the version here.
+# Keep this version to be in sync with TensorFlow:
+# https://github.com/tensorflow/tensorflow/blob/master/tensorflow/workspace2.bzl#L446
+# For other projects (e.g. Keras) depending on tb-nightly, generating protobuf code at
+# a more recent version than the protobuf runtime supplied by TF's bazel build tooling
+# might lead to test failures.
 http_archive(
     name = "com_google_protobuf",
     sha256 = "1fbf1c2962af287607232b2eddeaec9b4f4a7a6f5934e1a9276e9af76952f7e0",
