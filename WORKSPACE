@@ -129,6 +129,8 @@ http_archive(
     strip_prefix = "grpc-b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd",
     urls = [
         # Same as TF: https://github.com/tensorflow/tensorflow/blob/master/tensorflow/workspace2.bzl#L492
+        # Currently we can't upgrade gRPC past 1.30.0 without also bumping protobuf to 3.12.0+:
+        # https://github.com/grpc/grpc/issues/23311.
         "http://mirror.tensorflow.org/github.com/grpc/grpc/archive/b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd.tar.gz",
         "https://github.com/grpc/grpc/archive/b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd.tar.gz",
     ],
