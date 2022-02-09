@@ -24,6 +24,7 @@ import {
 import {Store} from '@ngrx/store';
 import {BehaviorSubject, combineLatest, Observable, Subject} from 'rxjs';
 import {
+  combineLatestWith,
   distinctUntilChanged,
   filter,
   map,
@@ -49,10 +50,12 @@ import {
   getMetricsImageBrightnessInMilli,
   getMetricsImageContrastInMilli,
   getMetricsImageShowActualSize,
+  getMetricsSelectedTime,
 } from '../../store';
 import {CardId, CardMetadata} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
+import {maybeClipSelectedTime, ViewSelectedTime} from './utils';
 
 type ImageCardMetadata = CardMetadata & {
   plugin: PluginType.IMAGES;
@@ -81,6 +84,8 @@ type ImageCardMetadata = CardMetadata & {
       [showActualSize]="showActualSize"
       [allowToggleActualSize]="(actualSizeGlobalSetting$ | async) === false"
       [isPinned]="isPinned$ | async"
+      [selectedTime]="selectedTime$ | async"
+      [selectedSteps]="selectedSteps$ | async"
       (onActualSizeToggle)="onActualSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
     ></image-card-component>
@@ -118,6 +123,8 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
   stepIndex$?: Observable<number | null>;
   stepValues$?: Observable<number[]>;
   isPinned$?: Observable<boolean>;
+  selectedTime$?: Observable<ViewSelectedTime | null>;
+  selectedSteps$?: Observable<number[]>;
   brightnessInMilli$ = this.store.select(getMetricsImageBrightnessInMilli);
   contrastInMilli$ = this.store.select(getMetricsImageContrastInMilli);
   actualSizeGlobalSetting$ = this.store.select(getMetricsImageShowActualSize);
@@ -256,6 +263,42 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
     );
 
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
+
+    this.selectedTime$ = this.store.select(getMetricsSelectedTime).pipe(
+      combineLatestWith(this.stepValues$),
+      map(([selectedTime, stepValues]) => {
+        if (!selectedTime) return null;
+
+        let minStep = Infinity;
+        let maxStep = -Infinity;
+        for (const step of stepValues) {
+          minStep = Math.min(step, minStep);
+          maxStep = Math.max(step, maxStep);
+        }
+        return maybeClipSelectedTime(selectedTime, minStep, maxStep);
+      })
+    );
+
+    this.selectedSteps$ = this.selectedTime$.pipe(
+      combineLatestWith(this.stepValues$),
+      map(([selectedTime, stepValues]) => {
+        if (!selectedTime) return [];
+
+        if (!selectedTime.endStep) {
+          if (stepValues.indexOf(selectedTime.startStep) !== -1)
+            return [selectedTime.startStep];
+          return [];
+        }
+
+        const selectedStepsInRange = [];
+        for (const step of stepValues) {
+          if (step >= selectedTime.startStep && step <= selectedTime.endStep) {
+            selectedStepsInRange.push(step);
+          }
+        }
+        return selectedStepsInRange;
+      })
+    );
   }
 
   ngOnDestroy() {
