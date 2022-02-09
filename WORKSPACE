@@ -99,7 +99,7 @@ sass_repositories()
 
 http_archive(
     name = "com_google_protobuf",
-    sha256 = "cfcba2df10feec52a84208693937c17a4b5df7775e1635c1e3baffc487b24c9b",
+    sha256 = "1fbf1c2962af287607232b2eddeaec9b4f4a7a6f5934e1a9276e9af76952f7e0",
     strip_prefix = "protobuf-3.9.2",
     urls = [
         "http://mirror.tensorflow.org/github.com/protocolbuffers/protobuf/archive/v3.9.2.tar.gz",
