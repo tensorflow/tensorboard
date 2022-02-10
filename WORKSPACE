@@ -3,6 +3,15 @@ workspace(name = "org_tensorflow_tensorboard")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
+    name = "build_bazel_rules_apple",
+    sha256 = "0052d452af7742c8f3a4e0929763388a66403de363775db7e90adecb2ba4944b",
+    urls = [
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_apple/releases/download/0.31.3/rules_apple.0.31.3.tar.gz",
+        "https://github.com/bazelbuild/rules_apple/releases/download/0.31.3/rules_apple.0.31.3.tar.gz",
+    ],
+)
+
+http_archive(
     name = "bazel_skylib",
     sha256 = "07b4117379dde7ab382345c3b0f5edfc6b7cff6c93756eac63da121e0bbcc5de",
     strip_prefix = "bazel-skylib-1.1.1",
@@ -97,14 +106,33 @@ load("@io_bazel_rules_sass//:defs.bzl", "sass_repositories")
 
 sass_repositories()
 
+# Always bump the requirements.txt protobuf dep to be >= the version here.
+# Keep this version to be in sync with TensorFlow:
+# https://github.com/tensorflow/tensorflow/blob/master/tensorflow/workspace2.bzl#L446
+# For other projects (e.g. Keras) depending on tb-nightly, generating protobuf code at
+# a more recent version than the protobuf runtime supplied by TF's bazel build tooling
+# might lead to test failures.
+http_archive(
+    name = "com_google_protobuf",
+    sha256 = "1fbf1c2962af287607232b2eddeaec9b4f4a7a6f5934e1a9276e9af76952f7e0",
+    strip_prefix = "protobuf-3.9.2",
+    urls = [
+        "http://mirror.tensorflow.org/github.com/protocolbuffers/protobuf/archive/v3.9.2.tar.gz",
+        "https://github.com/protocolbuffers/protobuf/archive/v3.9.2.tar.gz",  # 2019-09-23
+    ],
+)
+
 # gRPC.
 http_archive(
     name = "com_github_grpc_grpc",
-    sha256 = "b2f2620c762427bfeeef96a68c1924319f384e877bc0e084487601e4cc6e434c",
-    strip_prefix = "grpc-1.42.0",
+    sha256 = "b956598d8cbe168b5ee717b5dafa56563eb5201a947856a6688bbeac9cac4e1f",
+    strip_prefix = "grpc-b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd",
     urls = [
-        "http://mirror.tensorflow.org/github.com/grpc/grpc/archive/v1.42.0.tar.gz",
-        "https://github.com/grpc/grpc/archive/v1.42.0.tar.gz",  # 2021-11-17
+        # Same as TF: https://github.com/tensorflow/tensorflow/blob/master/tensorflow/workspace2.bzl#L492
+        # Currently we can't upgrade gRPC past 1.30.0 without also bumping protobuf to 3.12.0+:
+        # https://github.com/grpc/grpc/issues/23311.
+        "http://mirror.tensorflow.org/github.com/grpc/grpc/archive/b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd.tar.gz",
+        "https://github.com/grpc/grpc/archive/b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd.tar.gz",
     ],
 )
 
