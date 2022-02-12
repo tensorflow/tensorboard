@@ -72,7 +72,7 @@ enum Position {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RangeInputComponent implements OnInit, OnDestroy {
-  @ViewChild('container', {static: true, read: ElementRef})
+  @ViewChild('container', {static: false, read: ElementRef})
   container!: ElementRef<HTMLElement>;
 
   /**
@@ -105,9 +105,21 @@ export class RangeInputComponent implements OnInit, OnDestroy {
    * `null` denotes contiguous "ticks"
    */
   @Input() tickCount: number | null = 20;
+  /**
+   * Renders single or range slider. Sets default to range slider for compatibility.
+   */
+  @Input() useRange: boolean = true;
+  /**
+   * Whether the text input is editable. Default enabled for compatibility.
+   */
+  @Input() inputEnabled: boolean = true;
 
   @Output()
-  value = new EventEmitter<{lowerValue: number; upperValue: number}>();
+  rangeValues = new EventEmitter<{lowerValue: number; upperValue: number}>();
+
+  @Output() singleValue = new EventEmitter<number>();
+
+  @Output() upperValueRemoved = new EventEmitter<void>();
 
   readonly Position = Position;
 
@@ -263,14 +275,14 @@ export class RangeInputComponent implements OnInit, OnDestroy {
       nextValues = [this.lowerValue, newValue];
     }
 
-    this.maybeNotifyNextValue(nextValues);
+    this.maybeNotifyNextRangeValues(nextValues);
     this.changeDetector.markForCheck();
   }
 
-  private maybeNotifyNextValue(minAndMax: [number, number]) {
+  private maybeNotifyNextRangeValues(minAndMax: [number, number]) {
     const [lowerValue, upperValue] = minAndMax.sort((a, b) => a - b);
     if (this.lowerValue !== lowerValue || this.upperValue !== upperValue) {
-      this.value.emit({lowerValue, upperValue});
+      this.rangeValues.emit({lowerValue, upperValue});
     }
   }
 
@@ -281,10 +293,37 @@ export class RangeInputComponent implements OnInit, OnDestroy {
     }
   }
 
+  private isUpperVauleRemoved(input: HTMLInputElement, position: Position) {
+    return input.value === '' && position === Position.RIGHT;
+  }
+
+  private isLowerVauleUpdatedOnSingleSelection(
+    position: Position,
+    useRangeSelectTime: boolean
+  ) {
+    return position === Position.LEFT && !useRangeSelectTime;
+  }
+
   handleInputChange(event: InputEvent, position: Position) {
     const input = event.target! as HTMLInputElement;
     const numValue = this.getClippedValue(Number(input.value));
     if (isNaN(numValue)) {
+      return;
+    }
+
+    // Cleans input value. If the upper value is removed, we go from range to
+    // single selection. If the lower value is removed, we set it to the min
+    // for both single ang range seleciton.
+    // For example, for min=50, max=1000,
+    // range  [100, 500]  → delete upper value → single [100, X]
+    // single [100, X]    → delete lower value → single [50, X]
+    // range  [100, 500]  → delete lower value → range  [50, 500]
+    if (this.isUpperVauleRemoved(input, position)) {
+      this.upperValueRemoved.emit();
+      return;
+    }
+    if (this.isLowerVauleUpdatedOnSingleSelection(position, this.useRange)) {
+      this.singleValue.emit(numValue);
       return;
     }
 
@@ -294,7 +333,7 @@ export class RangeInputComponent implements OnInit, OnDestroy {
     } else {
       nextValues = [this.lowerValue, numValue];
     }
-    this.maybeNotifyNextValue(nextValues);
+    this.maybeNotifyNextRangeValues(nextValues);
   }
 
   isThumbActive(position: Position) {

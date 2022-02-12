@@ -20,6 +20,7 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp/angular:expect_angular_cdk_drag_drop",
+        "//tensorboard/webapp/angular:expect_angular_material_slider",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//rxjs",
@@ -34,6 +35,7 @@ tf_ts_library(
         ":range_input",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
+        "//tensorboard/webapp/angular:expect_angular_material_slider",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@types/jasmine",

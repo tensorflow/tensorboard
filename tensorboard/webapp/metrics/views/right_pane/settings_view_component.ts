@@ -187,6 +187,11 @@ export class SettingsViewComponent {
     lowerValue: number;
     upperValue: number;
   }) {
+    // When range values are updated but useRange is still false, this means the
+    // current selection state is single. We flip it to range selection.
+    if (!this.useRangeSelectTime) {
+      this.useRangeSelectTimeToggled.emit();
+    }
     this.selectTimeChanged.emit({
       start: {step: lowerValue},
       end: {step: upperValue},
