@@ -12,7 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {DragDropModule} from '@angular/cdk/drag-drop';
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {IntersectionObserverModule} from '../intersection_observer/intersection_observer_module';
@@ -28,7 +27,6 @@ import {HistogramComponent} from './histogram_component';
     ResizeDetectorModule,
     IntersectionObserverModule,
     LinkedTimeFobModule,
-    DragDropModule,
   ],
 })
 export class HistogramModule {}

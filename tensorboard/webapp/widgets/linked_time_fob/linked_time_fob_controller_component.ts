@@ -1,4 +1,4 @@
-/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,14 +26,14 @@ import {LinkedTime} from '../../metrics/types';
 import {ScaleLinear, ScaleTime} from '../../third_party/d3';
 
 export enum AxisDirection {
-  horizontal = 0,
-  vertical,
+  HORIZONTAL = 0,
+  VERTICAL,
 }
 
-export enum DraggingFob {
-  none = 0,
-  startFob,
-  endFob,
+export enum Fobs {
+  NONE = 0,
+  START,
+  END,
 }
 
 type TemporalScale = ScaleLinear<number, number> | ScaleTime<number, number>;
@@ -45,44 +45,45 @@ type TemporalScale = ScaleLinear<number, number> | ScaleTime<number, number>;
 })
 export class LinkedTimeFobControllerComponent {
   @ViewChild('axisOverlay') private readonly axisOverlay!: ElementRef;
-  @ViewChild('startFobWrapper') private readonly startFobWrapper!: ElementRef;
-  @ViewChild('endFobWrapper') private readonly endFobWrapper!: ElementRef;
+  @ViewChild('startFobWrapper') readonly startFobWrapper!: ElementRef;
+  @ViewChild('endFobWrapper') readonly endFobWrapper!: ElementRef;
   @Input() axisDirection!: AxisDirection;
-  @Input() steps!: Array<number>;
+  @Input() steps!: number[];
   @Input() linkedTime!: LinkedTime;
   @Input() temporalScale!: TemporalScale;
   @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
 
-  private currentDraggingFob: DraggingFob = DraggingFob.none;
+  private currentDraggingFob: Fobs = Fobs.NONE;
 
-  public DraggingFobType(): typeof DraggingFob {
-    return DraggingFob;
+  // Helper function to check enum in template.
+  public FobsType(): typeof Fobs {
+    return Fobs;
   }
 
   getCssTranslatePx(step: number): string {
-    if (this.axisDirection == AxisDirection.vertical) {
+    if (this.axisDirection == AxisDirection.VERTICAL) {
       return `translate(0px, ${this.temporalScale(step)}px)`;
     }
 
     return `translate(${this.temporalScale(step)}px, 0px)`;
   }
 
-  startDrag(fob: DraggingFob) {
+  startDrag(fob: Fobs) {
     this.currentDraggingFob = fob;
   }
 
   stopDrag() {
-    this.currentDraggingFob = DraggingFob.none;
+    this.currentDraggingFob = Fobs.NONE;
   }
 
   mouseMove(event: MouseEvent) {
-    if (this.currentDraggingFob === DraggingFob.none) return;
+    if (this.currentDraggingFob === Fobs.NONE) return;
 
     let newLinkedTime = this.linkedTime;
     if (this.isDraggingUp(event.clientY, event.movementY)) {
       const stepAbove =
         this.steps[this.getStepIndexAboveMousePosition(event.clientY)];
-      if (this.currentDraggingFob == DraggingFob.startFob) {
+      if (this.currentDraggingFob == Fobs.START) {
         newLinkedTime.start.step = stepAbove;
       } else {
         newLinkedTime.end!.step = stepAbove;
@@ -93,7 +94,7 @@ export class LinkedTimeFobControllerComponent {
     if (this.isDraggingDown(event.clientY, event.movementY)) {
       const stepBelow =
         this.steps[this.getStepIndexBelowMousePosition(event.clientY)];
-      if (this.currentDraggingFob == DraggingFob.startFob) {
+      if (this.currentDraggingFob == Fobs.START) {
         newLinkedTime.start.step = stepBelow;
       } else {
         newLinkedTime.end!.step = stepBelow;
@@ -119,13 +120,13 @@ export class LinkedTimeFobControllerComponent {
   }
 
   getDraggingFobTop(): number {
-    return this.currentDraggingFob !== DraggingFob.endFob
+    return this.currentDraggingFob !== Fobs.END
       ? this.startFobWrapper.nativeElement.getBoundingClientRect().top
       : this.endFobWrapper.nativeElement.getBoundingClientRect().top;
   }
 
   getDraggingFobStep(): number {
-    return this.currentDraggingFob !== DraggingFob.endFob
+    return this.currentDraggingFob !== Fobs.END
       ? this.linkedTime!.start.step
       : this.linkedTime!.end!.step;
   }
@@ -133,10 +134,8 @@ export class LinkedTimeFobControllerComponent {
   getStepIndexAboveMousePosition(position: number) {
     let stepIndex = 0;
     while (
-      position -
-        this.axisOverlay.nativeElement.getBoundingClientRect().top -
-        this.temporalScale(this.steps[stepIndex]) >
-        1 &&
+      position - this.axisOverlay.nativeElement.getBoundingClientRect().top >
+        this.temporalScale(this.steps[stepIndex]) &&
       stepIndex < this.getDraggingFobUpperBound()
     ) {
       stepIndex++;
@@ -147,10 +146,8 @@ export class LinkedTimeFobControllerComponent {
   getStepIndexBelowMousePosition(position: number) {
     let stepIndex = this.steps.length - 1;
     while (
-      position -
-        this.axisOverlay.nativeElement.getBoundingClientRect().top -
-        this.temporalScale(this.steps[stepIndex]) <
-        1 &&
+      position - this.axisOverlay.nativeElement.getBoundingClientRect().top <
+        this.temporalScale(this.steps[stepIndex]) &&
       stepIndex > this.getDraggingFobLowerBound()
     ) {
       stepIndex--;
@@ -160,7 +157,7 @@ export class LinkedTimeFobControllerComponent {
 
   getDraggingFobUpperBound() {
     if (
-      this.currentDraggingFob === DraggingFob.startFob &&
+      this.currentDraggingFob === Fobs.START &&
       this.linkedTime.end !== null
     ) {
       let index = 0;
@@ -174,14 +171,11 @@ export class LinkedTimeFobControllerComponent {
   }
 
   getDraggingFobLowerBound() {
-    if (this.currentDraggingFob === DraggingFob.endFob) {
+    if (this.currentDraggingFob === Fobs.END) {
       let index = this.steps.length - 1;
       while (this.steps[index] > this.linkedTime.start.step) {
         index--;
       }
-      console.log('getDraggingFobLowerBound');
-      console.log('returning index for step: ', this.steps[index]);
-      console.log('decreasing until: ', this.linkedTime.start.step);
       return index;
     }
 

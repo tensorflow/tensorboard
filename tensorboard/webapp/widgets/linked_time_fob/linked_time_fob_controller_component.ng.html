@@ -29,7 +29,7 @@ limitations under the License.
   >
     <linked-time-fob
       [step]="linkedTime.start.step"
-      (mousedown)="startDrag(DraggingFobType().startFob)"
+      (mousedown)="startDrag(FobsType().START)"
     ></linked-time-fob>
   </div>
   <div
@@ -40,7 +40,7 @@ limitations under the License.
   >
     <linked-time-fob
       [step]="linkedTime.end.step"
-      (mousedown)="startDrag(DraggingFobType().endFob)"
+      (mousedown)="startDrag(FobsType().END)"
     ></linked-time-fob>
   </div>
 </div>

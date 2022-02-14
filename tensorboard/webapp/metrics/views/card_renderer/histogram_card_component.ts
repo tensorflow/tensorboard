@@ -66,4 +66,16 @@ export class HistogramCardComponent {
         throw new Error('Invalid xAxisType for histogram time property.');
     }
   }
+
+  convertToLinkedTime(
+    selectedTime: ViewSelectedTime | null
+  ): LinkedTime | null {
+    if (selectedTime === null) {
+      return null;
+    }
+    return {
+      start: {step: selectedTime.startStep},
+      end: selectedTime.endStep ? {step: selectedTime.endStep} : null,
+    };
+  }
 }

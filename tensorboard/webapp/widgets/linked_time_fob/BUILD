@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -31,5 +31,20 @@ tf_ng_module(
         "//tensorboard/webapp/third_party:d3",
         "@npm//@angular/common",
         "@npm//@angular/core",
+    ],
+)
+
+tf_ts_library(
+    name = "linked_time_fob_test",
+    testonly = True,
+    srcs = [
+        "linked_time_fob_test.ts",
+    ],
+    deps = [
+        ":linked_time_fob",
+        "//tensorboard/webapp/metrics:types",
+        "//tensorboard/webapp/third_party:d3",
+        "@npm//@angular/core",
+        "@npm//@types/jasmine",
     ],
 )
