@@ -24,7 +24,8 @@ http_archive(
 load("@bazel_skylib//lib:versions.bzl", "versions")
 
 # Keep this version in sync with the BAZEL environment variable defined
-# in our .github/workflows/ci.yml config.
+# in our .github/workflows/ci.yml config, and the Bazel version on our
+# Tomservo (go/tb-tomservo).
 versions.check(minimum_bazel_version = "4.0.0")
 
 http_archive(
