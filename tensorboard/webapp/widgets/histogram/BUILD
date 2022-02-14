@@ -22,12 +22,10 @@ tf_ng_module(
     deps = [
         ":types",
         "//tensorboard/webapp/metrics:types",
-        "//tensorboard/webapp/metrics/views/card_renderer:utils",
         "//tensorboard/webapp/third_party:d3",
         "//tensorboard/webapp/widgets:resize_detector",
         "//tensorboard/webapp/widgets/intersection_observer",
         "//tensorboard/webapp/widgets/linked_time_fob",
-        "@npm//@angular/cdk",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//rxjs",

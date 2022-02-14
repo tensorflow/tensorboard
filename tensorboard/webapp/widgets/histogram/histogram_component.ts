@@ -228,7 +228,7 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     );
   }
 
-  getSteps(): Array<number> {
+  getSteps(): number[] {
     return this.data.map((datum) => datum.step);
   }
 
