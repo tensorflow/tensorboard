@@ -78,7 +78,7 @@ function createHistogramCardContainer(): ComponentFixture<HistogramCardContainer
   return fixture;
 }
 
-fdescribe('histogram card', () => {
+describe('histogram card', () => {
   let store: MockStore<State>;
   let selectSpy: jasmine.Spy;
 

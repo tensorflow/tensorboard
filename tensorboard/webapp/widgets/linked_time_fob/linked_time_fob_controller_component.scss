@@ -13,13 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 .axis-overlay {
-  position: absolute;
-  left: 9px;
-  top: 0;
   height: 100%;
+  left: 9px;
+  position: absolute;
   right: 0;
   .time-fob-wrapper {
     display: inline-block;
     position: absolute;
   }
+  top: 0;
 }
