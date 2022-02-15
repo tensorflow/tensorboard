@@ -281,13 +281,13 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       this.store.select(getCardStepIndex, this.cardId),
       this.selectedTime$,
       this.selectedSteps$,
-      this.stepValues$,
+      this.stepValues$
     ).pipe(
       map(([stepIndex, selectedTime, selectedSteps, stepValues]) => {
         if (!selectedTime || selectedTime.endStep) return stepIndex;
 
         const nextStepInex = stepValues.indexOf(selectedSteps[0]);
-        if (nextStepInex === -1 ) return stepIndex;
+        if (nextStepInex === -1) return stepIndex;
         return nextStepInex;
       })
     );

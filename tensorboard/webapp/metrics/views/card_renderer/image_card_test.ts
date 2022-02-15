@@ -686,7 +686,6 @@ describe('image card', () => {
       let slider = fixture.debugElement.query(By.css('mat-slider'));
       expect(slider.nativeElement.getAttribute('aria-valuenow')).toBe('1');
 
-
       store.overrideSelector(selectors.getMetricsSelectedTime, {
         start: {step: 30},
         end: null,
