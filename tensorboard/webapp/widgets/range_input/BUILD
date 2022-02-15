@@ -34,8 +34,8 @@ tf_ts_library(
     deps = [
         ":range_input",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
-        "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/angular:expect_angular_material_slider",
+        "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@types/jasmine",
