@@ -283,14 +283,10 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
 
     this.renderer = new THREE.WebGLRenderer({
       canvas: canvas as HTMLCanvasElement,
-      context: canvas.getContext('webgl2', {
-        antialias: true,
-        precision: 'highp',
-        alpha: true,
-      } as WebGLContextAttributes) as WebGLRenderingContext,
+      context: canvas.getContext('webgl2') as WebGLRenderingContext,
+      antialias: true,
+      alpha: true,
     });
-    // Workaround to fix background transparency is not set propoerly in threejs WebGLRenderer.
-    this.renderer.setClearColor(0x000000, 0);
     this.renderer.setPixelRatio(devicePixelRatio);
   }
 
