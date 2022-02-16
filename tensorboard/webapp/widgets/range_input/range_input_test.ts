@@ -30,8 +30,8 @@ import {RangeInputComponent, TEST_ONLY} from './range_input_component';
       [useRange]="useRange"
       [inputEnabled]="inputEnabled"
       [tickCount]="tickCount"
-      (rangeValues)="onRangeValues($event)"
-      (singleValue)="onSingleValue($event)"
+      (rangeValuesChanged)="onRangeValuesChanged($event)"
+      (singleValueChanged)="onSingleValueChanged($event)"
       (upperValueRemoved)="onUpperValueRemoved()"
     ></tb-range-input>
   `,
@@ -62,12 +62,12 @@ class TestableComponent {
 
   @Input() tickCount!: number | null;
 
-  @Input() onRangeValues!: (event: {
+  @Input() onRangeValuesChanged!: (event: {
     lowerValue: number;
     upperValue: number;
   }) => void;
 
-  @Input() onSingleValue!: (event: {value: number}) => void;
+  @Input() onSingleValueChanged!: (event: {value: number}) => void;
 
   @Input() onUpperValueRemoved!: () => void;
 }
@@ -93,8 +93,8 @@ describe('range input test', () => {
     };
     const fixture = TestBed.createComponent(TestableComponent);
 
-    const onRangeValues = jasmine.createSpy();
-    const onSingleValue = jasmine.createSpy();
+    const onRangeValuesChanged = jasmine.createSpy();
+    const onSingleValueChanged = jasmine.createSpy();
     const onUpperValueRemoved = jasmine.createSpy();
     fixture.componentInstance.lowerValue = propsWithDefault.lowerValue;
     if (propsWithDefault.upperValue !== undefined) {
@@ -104,11 +104,11 @@ describe('range input test', () => {
     fixture.componentInstance.min = propsWithDefault.min;
     fixture.componentInstance.max = propsWithDefault.max;
     fixture.componentInstance.tickCount = propsWithDefault.tickCount;
-    fixture.componentInstance.onRangeValues = onRangeValues;
-    fixture.componentInstance.onSingleValue = onSingleValue;
+    fixture.componentInstance.onRangeValuesChanged = onRangeValuesChanged;
+    fixture.componentInstance.onSingleValueChanged = onSingleValueChanged;
     fixture.componentInstance.onUpperValueRemoved = onUpperValueRemoved;
     fixture.detectChanges();
-    return {fixture, onRangeValues, onSingleValue, onUpperValueRemoved};
+    return {fixture, onRangeValuesChanged, onSingleValueChanged, onUpperValueRemoved};
   }
 
   function getThumbsOnRange(
@@ -222,7 +222,7 @@ describe('range input test', () => {
 
     describe('single selection', () => {
       it('dispatches actions when step changes when making single step change', () => {
-        const {fixture, onSingleValue} = createComponent({
+        const {fixture, onSingleValueChanged} = createComponent({
           lowerValue: -1,
           tickCount: null,
           useRange: false,
@@ -234,13 +234,13 @@ describe('range input test', () => {
           value: 5,
         });
 
-        expect(onSingleValue).toHaveBeenCalledOnceWith(5);
+        expect(onSingleValueChanged).toHaveBeenCalledOnceWith(5);
       });
     });
 
     describe('range selection', () => {
       it('calls `value` when thumb is dragged', () => {
-        const {fixture, onRangeValues} = createComponent({
+        const {fixture, onRangeValuesChanged} = createComponent({
           lowerValue: -1,
           upperValue: 1,
           tickCount: null,
@@ -250,14 +250,14 @@ describe('range input test', () => {
         startMovingThumb(leftThumb);
         // range-input starts from 100px and ends at 300px.
         moveThumb(leftThumb, 120);
-        expect(onRangeValues).toHaveBeenCalledWith({
+        expect(onRangeValuesChanged).toHaveBeenCalledWith({
           lowerValue: -4,
           upperValue: 1,
         });
       });
 
       it('rounds number to filter out floating point math noise', () => {
-        const {fixture, onRangeValues} = createComponent({
+        const {fixture, onRangeValuesChanged} = createComponent({
           min: 0.1,
           max: 0.3,
           lowerValue: 0.1,
@@ -271,21 +271,21 @@ describe('range input test', () => {
         // from left edge.
         moveThumb(leftThumb, 102);
         // Without our logic to round, lowerValue would be 0.10200000000000001.
-        expect(onRangeValues).toHaveBeenCalledWith({
+        expect(onRangeValuesChanged).toHaveBeenCalledWith({
           lowerValue: 0.102,
           upperValue: 0.3,
         });
       });
 
       it('compensates position of mousedown relative to thumb center', () => {
-        const {fixture, onRangeValues} = createComponent({
+        const {fixture, onRangeValuesChanged} = createComponent({
           lowerValue: -1,
           upperValue: 1,
           tickCount: null,
           useRange: true,
         });
         const values: Array<{lowerValue: number; upperValue: number}> = [];
-        onRangeValues.and.callFake(
+        onRangeValuesChanged.and.callFake(
           (value: {lowerValue: number; upperValue: number}) => {
             values.push(value);
           }
@@ -310,7 +310,7 @@ describe('range input test', () => {
       });
 
       it('ignores mousemove when mousedown never happened', () => {
-        const {fixture, onRangeValues} = createComponent({
+        const {fixture, onRangeValuesChanged} = createComponent({
           lowerValue: -1,
           upperValue: 1,
           useRange: true,
@@ -318,14 +318,14 @@ describe('range input test', () => {
         const [leftThumb] = getThumbsOnRange(fixture);
 
         moveThumb(leftThumb, 0);
-        expect(onRangeValues).not.toHaveBeenCalled();
+        expect(onRangeValuesChanged).not.toHaveBeenCalled();
 
         moveThumb(leftThumb, 1000);
-        expect(onRangeValues).not.toHaveBeenCalled();
+        expect(onRangeValuesChanged).not.toHaveBeenCalled();
       });
 
       it('does not trigger change when value does not change', () => {
-        const {fixture, onRangeValues} = createComponent({
+        const {fixture, onRangeValuesChanged} = createComponent({
           lowerValue: -5,
           upperValue: 1,
           tickCount: 10,
@@ -335,11 +335,11 @@ describe('range input test', () => {
         startMovingThumb(leftThumb);
 
         moveThumb(leftThumb, 101);
-        expect(onRangeValues).not.toHaveBeenCalled();
+        expect(onRangeValuesChanged).not.toHaveBeenCalled();
       });
 
       it('emits change when moved by more than one', () => {
-        const {fixture, onRangeValues} = createComponent({
+        const {fixture, onRangeValuesChanged} = createComponent({
           lowerValue: -5,
           upperValue: 1,
           tickCount: 10,
@@ -349,20 +349,20 @@ describe('range input test', () => {
         startMovingThumb(leftThumb);
 
         moveThumb(leftThumb, 109);
-        expect(onRangeValues).not.toHaveBeenCalled();
+        expect(onRangeValuesChanged).not.toHaveBeenCalled();
 
         // In 200px wide slider, we have 10 ticks which means every tick should
         // occupy 20px. When you move the cursor a little bit left/right between
         // two ticks, we change the value.
         moveThumb(leftThumb, 111);
-        expect(onRangeValues).toHaveBeenCalledWith({
+        expect(onRangeValuesChanged).toHaveBeenCalledWith({
           lowerValue: -4,
           upperValue: 1,
         });
       });
 
       it('triggers change for minute movement when tickCount is null', () => {
-        const {fixture, onRangeValues} = createComponent({
+        const {fixture, onRangeValuesChanged} = createComponent({
           lowerValue: -5,
           upperValue: 1,
           tickCount: null,
@@ -372,14 +372,14 @@ describe('range input test', () => {
         startMovingThumb(leftThumb);
 
         moveThumb(leftThumb, 101);
-        expect(onRangeValues).toHaveBeenCalledWith({
+        expect(onRangeValuesChanged).toHaveBeenCalledWith({
           lowerValue: -4.95,
           upperValue: 1,
         });
       });
 
       it('changes upperValue when min knob crosses upperValue', () => {
-        const {fixture, onRangeValues} = createComponent({
+        const {fixture, onRangeValuesChanged} = createComponent({
           lowerValue: -5,
           upperValue: 0,
           tickCount: null,
@@ -389,14 +389,14 @@ describe('range input test', () => {
         startMovingThumb(leftThumb);
 
         moveThumb(leftThumb, 250);
-        expect(onRangeValues).toHaveBeenCalledWith({
+        expect(onRangeValuesChanged).toHaveBeenCalledWith({
           lowerValue: 0,
           upperValue: 2.5,
         });
       });
 
       it('does not change anything when min === max', () => {
-        const {fixture, onRangeValues} = createComponent({
+        const {fixture, onRangeValuesChanged} = createComponent({
           min: 10,
           max: 10,
           lowerValue: 10,
@@ -408,17 +408,17 @@ describe('range input test', () => {
         startMovingThumb(leftThumb);
 
         moveThumb(leftThumb, 250);
-        expect(onRangeValues).not.toHaveBeenCalled();
+        expect(onRangeValuesChanged).not.toHaveBeenCalled();
       });
     });
   });
 
   describe('input control', () => {
     let fixture: ComponentFixture<TestableComponent>;
-    let onRangeValues: jasmine.Spy;
+    let onRangeValuesChanged: jasmine.Spy;
 
     function createRangeComponent() {
-      const fixtureAndonRangeValues = createComponent({
+      const fixtureAndonRangeValuesChanged = createComponent({
         min: 0,
         max: 10,
         lowerValue: 5,
@@ -426,101 +426,101 @@ describe('range input test', () => {
         useRange: true,
       });
 
-      const fixture = fixtureAndonRangeValues.fixture;
-      const onRangeValues = fixtureAndonRangeValues.onRangeValues;
-      const onSingleValue = fixtureAndonRangeValues.onSingleValue;
-      const onUpperValueRemoved = fixtureAndonRangeValues.onUpperValueRemoved;
+      const fixture = fixtureAndonRangeValuesChanged.fixture;
+      const onRangeValuesChanged = fixtureAndonRangeValuesChanged.onRangeValuesChanged;
+      const onSingleValueChanged = fixtureAndonRangeValuesChanged.onSingleValueChanged;
+      const onUpperValueRemoved = fixtureAndonRangeValuesChanged.onUpperValueRemoved;
 
-      return {fixture, onRangeValues, onSingleValue, onUpperValueRemoved};
+      return {fixture, onRangeValuesChanged, onSingleValueChanged, onUpperValueRemoved};
     }
 
     function createSingleComponent() {
-      const fixtureAndonRangeValues = createComponent({
+      const fixtureAndonRangeValuesChanged = createComponent({
         min: 0,
         max: 10,
         lowerValue: 5,
         useRange: false,
       });
 
-      const fixture = fixtureAndonRangeValues.fixture;
-      const onRangeValues = fixtureAndonRangeValues.onRangeValues;
-      const onSingleValue = fixtureAndonRangeValues.onSingleValue;
+      const fixture = fixtureAndonRangeValuesChanged.fixture;
+      const onRangeValuesChanged = fixtureAndonRangeValuesChanged.onRangeValuesChanged;
+      const onSingleValueChanged = fixtureAndonRangeValuesChanged.onSingleValueChanged;
 
-      return {fixture, onRangeValues, onSingleValue};
+      return {fixture, onRangeValuesChanged, onSingleValueChanged};
     }
 
     it('emits change when user changes input', () => {
-      const {fixture, onRangeValues} = createRangeComponent();
+      const {fixture, onRangeValuesChanged} = createRangeComponent();
       const [minInput] = getInputs(fixture);
       minInput.value = '0';
       minInput.dispatchEvent(new InputEvent('change'));
 
-      expect(onRangeValues).toHaveBeenCalledWith({
+      expect(onRangeValuesChanged).toHaveBeenCalledWith({
         lowerValue: 0,
         upperValue: 5,
       });
     });
 
     it('does not react to keydown or input', () => {
-      const {fixture, onRangeValues} = createRangeComponent();
+      const {fixture, onRangeValuesChanged} = createRangeComponent();
       const [minInput] = getInputs(fixture);
       minInput.value = '0';
       minInput.dispatchEvent(new InputEvent('keydown'));
       minInput.dispatchEvent(new InputEvent('input'));
       minInput.dispatchEvent(new InputEvent('up'));
 
-      expect(onRangeValues).not.toHaveBeenCalled();
+      expect(onRangeValuesChanged).not.toHaveBeenCalled();
     });
 
     it('swaps min and max when new upperValue is smaller than lowerValue', () => {
-      const {fixture, onRangeValues} = createRangeComponent();
+      const {fixture, onRangeValuesChanged} = createRangeComponent();
       const [, maxInput] = getInputs(fixture);
       maxInput.value = '2';
       maxInput.dispatchEvent(new InputEvent('change'));
 
-      expect(onRangeValues).toHaveBeenCalledWith({
+      expect(onRangeValuesChanged).toHaveBeenCalledWith({
         lowerValue: 2,
         upperValue: 5,
       });
     });
 
     it('updates value on single slider', () => {
-      const {fixture, onSingleValue} = createSingleComponent();
+      const {fixture, onSingleValueChanged} = createSingleComponent();
       const [minInput] = getInputs(fixture);
       minInput.value = '2';
       minInput.dispatchEvent(new InputEvent('change'));
 
-      expect(onSingleValue).toHaveBeenCalledWith(2);
+      expect(onSingleValueChanged).toHaveBeenCalledWith(2);
     });
 
     it('updates value to be min in single slider on input cleared', () => {
-      const {fixture, onSingleValue} = createSingleComponent();
+      const {fixture, onSingleValueChanged} = createSingleComponent();
       const [minInput] = getInputs(fixture);
       minInput.value = '';
       minInput.dispatchEvent(new InputEvent('change'));
 
-      expect(onSingleValue).toHaveBeenCalledWith(0);
+      expect(onSingleValueChanged).toHaveBeenCalledWith(0);
     });
 
     it('updates value to be min in range slider on lower value cleared', () => {
-      const {fixture, onRangeValues} = createRangeComponent();
+      const {fixture, onRangeValuesChanged} = createRangeComponent();
       const [minInput] = getInputs(fixture);
       minInput.value = '';
       minInput.dispatchEvent(new InputEvent('change'));
 
-      expect(onRangeValues).toHaveBeenCalledWith({
+      expect(onRangeValuesChanged).toHaveBeenCalledWith({
         lowerValue: 0,
         upperValue: 5,
       });
     });
 
     it('renders range slider on adding upper value to single slider', () => {
-      const {fixture, onRangeValues} = createSingleComponent();
+      const {fixture, onRangeValuesChanged} = createSingleComponent();
       const [, maxInput] = getInputs(fixture);
       maxInput.value = '7';
       maxInput.dispatchEvent(new InputEvent('change'));
 
-      expect(onRangeValues).toHaveBeenCalledWith({
+      expect(onRangeValuesChanged).toHaveBeenCalledWith({
         lowerValue: 5,
         upperValue: 7,
       });

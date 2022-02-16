@@ -173,25 +173,20 @@ export class SettingsViewComponent {
     );
   }
 
-  onStepStartChanged(stepValue: number) {
+  onSingleValueChanged(stepValue: number) {
     this.selectTimeChanged.emit({
       start: {step: stepValue},
       end: null,
     });
   }
 
-  onStepRangeChanged({
+  onRangeValuesChanged({
     lowerValue,
     upperValue,
   }: {
     lowerValue: number;
     upperValue: number;
   }) {
-    // When range values are updated but useRange is still false, this means the
-    // current selection state is single. We flip it to range selection.
-    if (!this.useRangeSelectTime) {
-      this.useRangeSelectTimeToggled.emit();
-    }
     this.selectTimeChanged.emit({
       start: {step: lowerValue},
       end: {step: upperValue},

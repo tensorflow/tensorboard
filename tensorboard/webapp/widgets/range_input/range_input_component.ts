@@ -37,9 +37,29 @@ enum Position {
 }
 
 /**
- * Double thumbed slider component used for selecting a numeric range.
+ * Supports a single or double thumbed slider component used for selecting a single
+ * value or a numeric range. It renders one of the two sliders.
  *
  * Anatomy of the component:
+ *
+ * Single slider:
+ *
+ *        left input             right input
+ *   +-----------------+     +----------------+
+ *   |                 |     |       X        |
+ *   +-----------------+     +----------------+
+ *       <lowerValue>           <no upperValue
+ *
+ *                 thumb
+ *                 +---+
+ *                 |   |
+ *   x+==============+------------------------+x
+ * <min>           |   |                    <max>
+ *                 +---+
+ *              <lowerValue>
+ *
+ *
+ * Double thumbed slider:
  *
  *       left input             right input
  *   +-----------------+     +----------------+
@@ -56,14 +76,17 @@ enum Position {
  *        <lowerValue>        <upperValue>
  *
  * Features:
+ * - `useRange` controlls it renders a single or double thumbed slider
  * - you can drag a thumb to change lowerValue or upperValue
- * - you cannot click on track to change any value
+ * - you cannot click on track to change any value on double thumbed slider
+ *   but click anywhere in a single slider sets the value to where clicked.
  * - a thumb is centered (origin of the circle) w.r.t a value.
  * - when lowerValue cross upperValue, lowerValue = upperValue and upperValue
  *     changes. Converse is true, too.
  * - does not validate input (e.g., lowerValue can be lower than min) but thumbs
  *   are clipped to `min` and `max`. Also, when emitting changes, the values can
  *   never exceed `min` and `max`.
+ * - emits actions on uppper value removed
  */
 @Component({
   selector: 'tb-range-input',
@@ -115,9 +138,9 @@ export class RangeInputComponent implements OnInit, OnDestroy {
   @Input() inputEnabled: boolean = true;
 
   @Output()
-  rangeValues = new EventEmitter<{lowerValue: number; upperValue: number}>();
+  rangeValuesChanged = new EventEmitter<{lowerValue: number; upperValue: number}>();
 
-  @Output() singleValue = new EventEmitter<number>();
+  @Output() singleValueChanged = new EventEmitter<number>();
 
   @Output() upperValueRemoved = new EventEmitter<void>();
 
@@ -282,7 +305,7 @@ export class RangeInputComponent implements OnInit, OnDestroy {
   private maybeNotifyNextRangeValues(minAndMax: [number, number]) {
     const [lowerValue, upperValue] = minAndMax.sort((a, b) => a - b);
     if (this.lowerValue !== lowerValue || this.upperValue !== upperValue) {
-      this.rangeValues.emit({lowerValue, upperValue});
+      this.rangeValuesChanged.emit({lowerValue, upperValue});
     }
   }
 
@@ -293,11 +316,11 @@ export class RangeInputComponent implements OnInit, OnDestroy {
     }
   }
 
-  private isUpperVauleRemoved(input: HTMLInputElement, position: Position) {
+  private isUpperValueRemoved(input: HTMLInputElement, position: Position) {
     return input.value === '' && position === Position.RIGHT;
   }
 
-  private isLowerVauleUpdatedOnSingleSelection(
+  private isLowerValueUpdatedOnSingleSelection(
     position: Position,
     useRangeSelectTime: boolean
   ) {
@@ -318,12 +341,12 @@ export class RangeInputComponent implements OnInit, OnDestroy {
     // range  [100, 500]  → delete upper value → single [100, X]
     // single [100, X]    → delete lower value → single [50, X]
     // range  [100, 500]  → delete lower value → range  [50, 500]
-    if (this.isUpperVauleRemoved(input, position)) {
+    if (this.isUpperValueRemoved(input, position)) {
       this.upperValueRemoved.emit();
       return;
     }
-    if (this.isLowerVauleUpdatedOnSingleSelection(position, this.useRange)) {
-      this.singleValue.emit(numValue);
+    if (this.isLowerValueUpdatedOnSingleSelection(position, this.useRange)) {
+      this.singleValueChanged.emit(numValue);
       return;
     }
 

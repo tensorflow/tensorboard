@@ -451,7 +451,7 @@ describe('metrics right_pane', () => {
           const el = fixture.debugElement.query(By.css('.linked-time'));
           const rangeInput = el.query(By.css('tb-range-input'));
 
-          rangeInput.triggerEventHandler('rangeValues', {
+          rangeInput.triggerEventHandler('rangeValuesChanged', {
             lowerValue: 10,
             upperValue: 200,
           });
@@ -476,7 +476,7 @@ describe('metrics right_pane', () => {
           const el = fixture.debugElement.query(By.css('.linked-time'));
           const rangeInput = el.query(By.css('tb-range-input'));
 
-          rangeInput.triggerEventHandler('singleValue', 10);
+          rangeInput.triggerEventHandler('singleValueChanged', 10);
 
           expect(dispatchSpy).toHaveBeenCalledOnceWith(
             actions.timeSelectionChanged({

@@ -144,9 +144,7 @@ limitations under the License.
                   [max]="column.filter.maxValue"
                   [lowerValue]="column.filter.filterLowerValue"
                   [upperValue]="column.filter.filterUpperValue"
-                  [useRange]="true"
-                  [inputEnabled]="true"
-                  (rangeValues)="handleHparamIntervalChanged(column, $event)"
+                  (rangeValuesChanged)="handleHparamIntervalChanged(column, $event)"
                 ></tb-range-input>
               </div>
             </ng-container>
@@ -213,9 +211,7 @@ limitations under the License.
                 [max]="column.filter.maxValue"
                 [lowerValue]="column.filter.filterLowerValue"
                 [upperValue]="column.filter.filterUpperValue"
-                [useRange]="true"
-                [inputEnabled]="true"
-                (rangeValues)="handleMetricFilterChanged(column, $event)"
+                (rangeValuesChanged)="handleMetricFilterChanged(column, $event)"
               ></tb-range-input>
             </div>
           </mat-menu>

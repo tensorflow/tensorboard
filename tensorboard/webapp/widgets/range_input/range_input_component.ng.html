@@ -39,7 +39,7 @@ limitations under the License.
   [step]="1"
   [value]="lowerValue"
   [thumbLabel]="false"
-  (input)="singleValue.emit($event.value)"
+  (input)="singleValueChanged.emit($event.value)"
 ></mat-slider>
 
 <ng-template #range>
