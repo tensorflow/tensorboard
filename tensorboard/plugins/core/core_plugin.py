@@ -22,6 +22,8 @@ import io
 import mimetypes
 import posixpath
 import zipfile
+import os
+import binascii
 
 from werkzeug import utils
 from werkzeug import wrappers
@@ -536,19 +538,15 @@ based routing of an ELB when the website base_url is not available e.g.
 """,
         )
 
-parser.add_argument(
-            "--path_prefix_from_file",
-            metavar="PATH",
-            type=str,
-            default="",
+	parser.add_argument(
+            "--gen_path_prefix",
+            action="store_true",
             help="""\
-Read the path_prefix from the specified file; avoids the path being
-visible by ps or top - and, thus, is useful to improve security on
-multi-user systems.\
+automatically generate path_prefix and print it to STDOUT; in case --path_prefix is also given on the command line, the auto-generated path_prefix will have priority and overwrite the value from the --path_prefix command line\
 """,
         )
-
-        parser.add_argument(
+        
+	parser.add_argument(
             "--window_title",
             metavar="TEXT",
             type=str,
@@ -723,17 +721,11 @@ disable fast-loading mode. (default: false)\
                 "--detect_file_replacement=true"
             )
 
-	if flags.path_prefix_from_file and flags.path_prefix is None:
-            try:
-                with open(flags.path_prefix_from_file, 'r') as f:
-                    flags.path_prefix = (f.read()).rstrip()
-                    print("NOTE: using path_prefix=" +  flags.path_prefix + " as read from file")
-            except IOError:
-                raise FlagsError("Cannot read prefix_from_file")
-        elif:
-	    print("NOTE: Skipping prefix_from_file input due to overwrite by path_prefix")    
-
-        flags.path_prefix = flags.path_prefix.rstrip("/")
+	if flags.gen_path_prefix:
+                    flags.path_prefix = "/" + binascii.hexlify(os.urandom(32)).decode()
+                    print("NOTE: using auto-generated path_prefix=" +  flags.path_prefix)
+        
+	flags.path_prefix = flags.path_prefix.rstrip("/")
         if flags.path_prefix and not flags.path_prefix.startswith("/"):
             raise FlagsError(
                 "Path prefix must start with slash, but got: %r."
