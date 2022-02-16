@@ -234,10 +234,15 @@ def keras_model_to_graph_def(keras_layer):
             keras_cls_name = layer.get("class_name").encode("ascii")
             node_def.attr["keras_class"].s = keras_cls_name
 
-        if layer_config.get("dtype") is not None:
+        dtype_or_policy = layer_config.get("dtype")
+        # Skip dtype processing if this is a dict, since it's presumably a instance of
+        # tf/keras/mixed_precision/Policy rather than a single dtype.
+        # TODO(#5548): parse the policy dict and populate the dtype attr with the variable dtype.
+        if dtype_or_policy is not None and not isinstance(
+            dtype_or_policy, dict
+        ):
             tf_dtype = dtypes.as_dtype(layer_config.get("dtype"))
             node_def.attr["dtype"].type = tf_dtype.as_datatype_enum
-
         if layer.get("inbound_nodes") is not None:
             for maybe_inbound_node in layer.get("inbound_nodes"):
                 inbound_nodes = _norm_to_list_of_layers(maybe_inbound_node)

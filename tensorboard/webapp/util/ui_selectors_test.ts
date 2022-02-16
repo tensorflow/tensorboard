@@ -62,24 +62,31 @@ describe('ui_selectors test', () => {
   });
 
   describe('#getCurrentRouteRunSelection', () => {
-    it('returns selection map of current eid', () => {
+    it('returns selection map of current experiments', () => {
       const state = {
         ...buildStateFromAppRoutingState(
+          // The route only contains experiments 123 and 234
           buildAppRoutingState({
             activeRoute: buildRoute({
               routeKind: RouteKind.COMPARE_EXPERIMENT,
-              pathname: '/compare/exp1:123,exp2:234/',
               params: {experimentIds: 'exp1:123,exp2:234'},
             }),
           })
         ),
         ...buildStateFromRunsState(
           buildRunsState(
-            {},
+            {
+              runIdToExpId: {
+                r1: '123',
+                r2: '234',
+                r3: '345',
+              },
+            },
             {
               selectionState: new Map([
                 ['r1', true],
                 ['r2', false],
+                ['r3', true],
               ]),
             }
           )
@@ -89,11 +96,13 @@ describe('ui_selectors test', () => {
             experimentMap: {
               '123': buildExperiment({id: '123', name: 'Experiment 123'}),
               '234': buildExperiment({id: '234', name: 'Experiment 234'}),
+              '345': buildExperiment({id: '345', name: 'Experiment 345'}),
             },
           })
         ),
       };
 
+      // Runs form experiment 345 are not included in the final result.
       expect(getCurrentRouteRunSelection(state)).toEqual(
         new Map([
           ['r1', true],
@@ -108,14 +117,18 @@ describe('ui_selectors test', () => {
           buildAppRoutingState({
             activeRoute: buildRoute({
               routeKind: RouteKind.UNKNOWN,
-              pathname: '/foobar/234',
               params: {},
             }),
           })
         ),
         ...buildStateFromRunsState(
           buildRunsState(
-            {},
+            {
+              runIdToExpId: {
+                r1: '234',
+                r2: '234',
+              },
+            },
             {
               selectionState: new Map([
                 ['r1', true],
@@ -143,7 +156,6 @@ describe('ui_selectors test', () => {
             buildAppRoutingState({
               activeRoute: buildRoute({
                 routeKind: RouteKind.EXPERIMENT,
-                pathname: '/experiment/234/',
                 params: {experimentId: '234'},
               }),
             })
@@ -153,6 +165,11 @@ describe('ui_selectors test', () => {
               {
                 runIds: {
                   '234': ['234/run1', '234/run2', '234/run3'],
+                },
+                runIdToExpId: {
+                  '234/run1': '234',
+                  '234/run2': '234',
+                  '234/run3': '234',
                 },
                 runMetadata: {
                   '234/run1': buildRun({id: '234/run1', name: 'run1'}),
@@ -194,7 +211,6 @@ describe('ui_selectors test', () => {
             buildAppRoutingState({
               activeRoute: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
-                pathname: '/compare/apple:123,banana:234/',
                 params: {experimentIds: 'apple:123,banana:234'},
               }),
             })
@@ -205,6 +221,14 @@ describe('ui_selectors test', () => {
                 runIds: {
                   '123': ['123/run1', '123/run2', '123/run3'],
                   '234': ['234/run1', '234/run2', '234/run3'],
+                },
+                runIdToExpId: {
+                  '123/run1': '123',
+                  '123/run2': '123',
+                  '123/run3': '123',
+                  '234/run1': '234',
+                  '234/run2': '234',
+                  '234/run3': '234',
                 },
                 runMetadata: {
                   '123/run1': buildRun({id: '123/run1', name: 'run1'}),
@@ -264,7 +288,6 @@ describe('ui_selectors test', () => {
             buildAppRoutingState({
               activeRoute: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
-                pathname: '/compare/apple:123,banana:234/',
                 params: {experimentIds: 'apple:123,banana:234'},
               }),
             })
@@ -275,6 +298,12 @@ describe('ui_selectors test', () => {
                 runIds: {
                   '123': ['123/run1', '123/run2'],
                   '234': ['234/run1', '234/run2'],
+                },
+                runIdToExpId: {
+                  '123/run1': '123',
+                  '123/run2': '123',
+                  '234/run1': '234',
+                  '234/run2': '234',
                 },
                 runMetadata: {
                   '123/run1': buildRun({id: '123/run1', name: 'run1'}),

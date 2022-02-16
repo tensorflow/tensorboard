@@ -86,6 +86,17 @@ limitations under the License.
       [value]="stepIndex"
       (input)="onSliderInput($event)"
     ></mat-slider>
+    <div
+      class="linked-time-ticks-wrapper"
+      *ngIf="selectedTime && !selectedTime.clipped"
+    >
+      <div
+        class="linked-time-tick"
+        *ngFor="let step of selectedSteps"
+        [style.left]="getLinkedTimeTickLeftStyle(step)"
+        [style.margin-left]="getLinkedTimeTickMarginLeftStyle(step)"
+      ></div>
+    </div>
   </div>
   <div class="img-container">
     <img

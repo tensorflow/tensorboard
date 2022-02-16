@@ -21,6 +21,9 @@ import {
 } from '@angular/core';
 import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
+import {ViewSelectedTime} from './utils';
+
+const TICK_WIDTH = 14; // In px
 
 @Component({
   selector: 'image-card-component',
@@ -49,6 +52,8 @@ export class ImageCardComponent {
   @Input() runColorScale!: RunColorScale;
   @Input() allowToggleActualSize!: boolean;
   @Input() isPinned!: boolean;
+  @Input() selectedSteps!: number[];
+  @Input() selectedTime?: ViewSelectedTime | null = null;
 
   @Output() onActualSizeToggle = new EventEmitter<void>();
   @Output() stepIndexChange = new EventEmitter<number>();
@@ -66,5 +71,30 @@ export class ImageCardComponent {
     // `number` on input events.
     // https://github.com/angular/components/blob/master/src/material/slider/slider.ts
     this.stepIndexChange.emit($event.value as number);
+  }
+
+  getLinkedTimeTickLeftStyle(step: number) {
+    if (this.stepValues.indexOf(step) == -1) {
+      throw new Error(
+        'Invalid stepIndex: stepIndex value is not included in stepValues'
+      );
+    }
+    return `${
+      (this.stepValues.indexOf(step) / (this.stepValues.length - 1)) * 100
+    }%`;
+  }
+
+  getLinkedTimeTickMarginLeftStyle(step: number) {
+    if (this.stepValues.indexOf(step) == -1) {
+      throw new Error(
+        'Invalid stepIndex: stepIndex value is not included in stepValues'
+      );
+    }
+    // Moves the tick position to the left for a fixed value because of the tick width.
+    // The length is correlated to the slider proportion.
+    return `-${
+      (this.stepValues.indexOf(step) / (this.stepValues.length - 1)) *
+      TICK_WIDTH
+    }px`;
   }
 }

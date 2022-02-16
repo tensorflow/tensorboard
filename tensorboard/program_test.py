@@ -86,6 +86,7 @@ class TensorBoardTest(tb_test.TestCase):
         def f(**kwargs):
             kwargs.setdefault("logdir", "")
             kwargs.setdefault("logdir_spec", "")
+            kwargs.setdefault("detect_file_replacement", None)
             flags = argparse.Namespace()
             for k, v in kwargs.items():
                 setattr(flags, k, v)
@@ -96,6 +97,7 @@ class TensorBoardTest(tb_test.TestCase):
         self.assertTrue(f(logdir="logs/mnist/"))
         self.assertTrue(f(logdir="gs://logs"))
         self.assertFalse(f(logdir="notgs://logs"))
+        self.assertFalse(f(logdir="foo", detect_file_replacement=True))
 
 
 class WerkzeugServerTest(tb_test.TestCase):

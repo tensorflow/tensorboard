@@ -17,7 +17,9 @@ import {DataLoadState, LoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
 import {GroupBy, SortKey} from '../types';
 import {
+  ExperimentId,
   Run,
+  RunId,
   RunsDataState,
   RunsState,
   RunsUiState,
@@ -36,7 +38,17 @@ const getDataState = createSelector(
 );
 
 /**
- * Returns Observable that emits run object.
+ * Returns Observable that emits map of RunId to ExperimentId.
+ */
+export const getRunIdToExperimentId = createSelector(
+  getDataState,
+  (state: RunsDataState): Record<RunId, ExperimentId> => {
+    return state.runIdToExpId;
+  }
+);
+
+/**
+ * Returns Observable that emits ExperimentId of given Run.
  */
 export const getExperimentIdForRunId = createSelector(
   getDataState,

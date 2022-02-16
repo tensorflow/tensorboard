@@ -19,6 +19,29 @@ import * as selectors from './runs_selectors';
 import {buildRun, buildRunsState, buildStateFromRunsState} from './testing';
 
 describe('runs_selectors', () => {
+  describe('#getRunIdToExperimentId', () => {
+    beforeEach(() => {
+      // Clear the memoization.
+      selectors.getRunIdToExperimentId.release();
+    });
+
+    it('returns runIdToExpId', () => {
+      const state = buildStateFromRunsState(
+        buildRunsState({
+          runIdToExpId: {
+            run1: 'eid1',
+            run2: 'eid1',
+            run3: 'eid2',
+          },
+        })
+      );
+      expect(selectors.getRunIdToExperimentId(state)).toEqual({
+        run1: 'eid1',
+        run2: 'eid1',
+        run3: 'eid2',
+      });
+    });
+  });
   describe('#getExperimentIdForRunId', () => {
     beforeEach(() => {
       // Clear the memoization.
