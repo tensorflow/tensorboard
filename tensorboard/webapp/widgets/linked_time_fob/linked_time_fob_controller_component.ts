@@ -55,6 +55,9 @@ export class LinkedTimeFobControllerComponent {
 
   private currentDraggingFob: Fob = Fob.NONE;
 
+  private currentDraggingFobUpperBoundIndex: number = -1;
+  private currentDraggingFobLowerBoundIndex: number = -1;
+
   // Helper function to check enum in template.
   public FobType(): typeof Fob {
     return Fob;
@@ -70,19 +73,25 @@ export class LinkedTimeFobControllerComponent {
 
   startDrag(fob: Fob) {
     this.currentDraggingFob = fob;
+    this.currentDraggingFobUpperBoundIndex =
+      this.getDraggingFobUpperBoundIndex();
+    this.currentDraggingFobLowerBoundIndex =
+      this.getDraggingFobLowerBoundIndex();
   }
 
   stopDrag() {
     this.currentDraggingFob = Fob.NONE;
+    this.currentDraggingFobUpperBoundIndex = -1;
+    this.currentDraggingFobLowerBoundIndex = -1;
   }
 
   mouseMove(event: MouseEvent) {
     if (this.currentDraggingFob === Fob.NONE) return;
 
     let newLinkedTime = this.linkedTime;
-    if (this.isDraggingUp(event.clientY, event.movementY)) {
+    if (this.isDraggingHigher(event.clientY, event.movementY)) {
       const stepAbove =
-        this.steps[this.getStepIndexAboveMousePosition(event.clientY)];
+        this.steps[this.getStepIndexHigherThanMousePosition(event.clientY)];
       if (this.currentDraggingFob === Fob.END) {
         newLinkedTime.end!.step = stepAbove;
       } else {
@@ -91,9 +100,9 @@ export class LinkedTimeFobControllerComponent {
       this.onSelectTimeChanged.emit(newLinkedTime);
     }
 
-    if (this.isDraggingDown(event.clientY, event.movementY)) {
+    if (this.isDraggingLower(event.clientY, event.movementY)) {
       const stepBelow =
-        this.steps[this.getStepIndexBelowMousePosition(event.clientY)];
+        this.steps[this.getStepIndexLowerThanMousePosition(event.clientY)];
       if (this.currentDraggingFob === Fob.END) {
         newLinkedTime.end!.step = stepBelow;
       } else {
@@ -103,7 +112,7 @@ export class LinkedTimeFobControllerComponent {
     }
   }
 
-  isDraggingDown(position: number, movement: number): boolean {
+  isDraggingLower(position: number, movement: number): boolean {
     return (
       position < this.getDraggingFobTop() &&
       movement < 0 &&
@@ -111,7 +120,7 @@ export class LinkedTimeFobControllerComponent {
     );
   }
 
-  isDraggingUp(position: number, movement: number): boolean {
+  isDraggingHigher(position: number, movement: number): boolean {
     return (
       position > this.getDraggingFobTop() &&
       movement > 0 &&
@@ -131,24 +140,24 @@ export class LinkedTimeFobControllerComponent {
       : this.linkedTime!.end!.step;
   }
 
-  getStepIndexAboveMousePosition(position: number) {
+  getStepIndexHigherThanMousePosition(position: number) {
     let stepIndex = 0;
     while (
       position - this.axisOverlay.nativeElement.getBoundingClientRect().top >
         this.temporalScale(this.steps[stepIndex]) &&
-      stepIndex < this.getDraggingFobUpperBound()
+      stepIndex < this.currentDraggingFobUpperBoundIndex
     ) {
       stepIndex++;
     }
     return stepIndex;
   }
 
-  getStepIndexBelowMousePosition(position: number) {
+  getStepIndexLowerThanMousePosition(position: number) {
     let stepIndex = this.steps.length - 1;
     while (
       position - this.axisOverlay.nativeElement.getBoundingClientRect().top <
         this.temporalScale(this.steps[stepIndex]) &&
-      stepIndex > this.getDraggingFobLowerBound()
+      stepIndex > this.currentDraggingFobLowerBoundIndex
     ) {
       stepIndex--;
     }
@@ -156,7 +165,7 @@ export class LinkedTimeFobControllerComponent {
   }
 
   // Get the index of largest step that the currentDraggingFob is allowed to go.
-  getDraggingFobUpperBound() {
+  getDraggingFobUpperBoundIndex() {
     // When dragging the START fob while there is an END fob the upper bound is
     // the step before or equal to the endFob's step.
     if (this.currentDraggingFob === Fob.START && this.linkedTime.end !== null) {
@@ -166,12 +175,13 @@ export class LinkedTimeFobControllerComponent {
       }
       return index;
     }
+
     // In all other cases the largest step is the upper bound.
     return this.steps.length - 1;
   }
 
   // Get the index of smallest step that the currentDraggingFob is allowed to go.
-  getDraggingFobLowerBound() {
+  getDraggingFobLowerBoundIndex() {
     // The END fob cannot pass the START fob.
     if (this.currentDraggingFob === Fob.END) {
       let index = this.steps.length - 1;
