@@ -98,7 +98,7 @@ export class QueryParamsFeatureFlagDataSource
     return featureFlags;
   }
 
-  protected getPartialFeaturesFromMediaQuery(): {
+  getPartialFeaturesFromMediaQuery(): {
     defaultEnableDarkMode?: boolean;
   } {
     const featureFlags: {defaultEnableDarkMode?: boolean} = {};

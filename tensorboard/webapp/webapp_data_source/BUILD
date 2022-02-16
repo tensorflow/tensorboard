@@ -56,6 +56,22 @@ tf_ng_module(
 )
 
 tf_ng_module(
+    name = "feature_flag",
+    srcs = [
+        "tb_feature_flag_data_source.ts",
+        "tb_feature_flag_module.ts",
+    ],
+    deps = [
+        ":feature_flag_types",
+        "//tensorboard/webapp/feature_flag:types",
+        "//tensorboard/webapp/types",
+        "@npm//@angular/common",
+        "@npm//@angular/core",
+        "@npm//rxjs",
+    ],
+)
+
+tf_ng_module(
     name = "http_client_test",
     testonly = True,
     srcs = [
