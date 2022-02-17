@@ -168,7 +168,7 @@ export function runTask<T>(
     tracker.updateProgress(incProgressValue);
     // Return the result to be used by other tasks.
     return result;
-  } catch (e) {
+  } catch (e: any) {
     // Errors that happen inside asynchronous tasks are
     // reported to the tracker using a user-friendly message.
     tracker.reportError('Failed ' + msg, e);
@@ -196,7 +196,7 @@ export function runAsyncTask<T>(
         tracker.updateProgress(incProgressValue);
         // Return the result to be used by other tasks.
         resolve(result);
-      } catch (e) {
+      } catch (e: any) {
         // Errors that happen inside asynchronous tasks are
         // reported to the tracker using a user-friendly message.
         tracker.reportError('Failed ' + msg, e);

@@ -19,6 +19,7 @@ import {Action, createAction, Store} from '@ngrx/store';
 import {combineLatestWith, map} from 'rxjs/operators';
 import {TBFeatureFlagDataSource} from '../../webapp_data_source/tb_feature_flag_data_source_types';
 import {partialFeatureFlagsLoaded} from '../actions/feature_flag_actions';
+import {ForceSvgDataSource} from '../force_svg_data_source';
 import {getIsAutoDarkModeAllowed} from '../store/feature_flag_selectors';
 import {State} from '../store/feature_flag_types';
 
@@ -33,6 +34,13 @@ export class FeatureFlagEffects {
       combineLatestWith(this.store.select(getIsAutoDarkModeAllowed)),
       map(([, isDarkModeAllowed]) => {
         const features = this.dataSource.getFeatures(isDarkModeAllowed);
+
+        if (features.forceSvg != null) {
+          this.forceSvgDataSource.updateForceSvgFlag(features.forceSvg);
+        } else {
+          features.forceSvg = this.forceSvgDataSource.getForceSvgFlag();
+        }
+
         return partialFeatureFlagsLoaded({features});
       })
     )
@@ -41,7 +49,8 @@ export class FeatureFlagEffects {
   constructor(
     private readonly actions$: Actions,
     private readonly store: Store<State>,
-    private readonly dataSource: TBFeatureFlagDataSource
+    private readonly dataSource: TBFeatureFlagDataSource,
+    private readonly forceSvgDataSource: ForceSvgDataSource
   ) {}
 
   /** @export */

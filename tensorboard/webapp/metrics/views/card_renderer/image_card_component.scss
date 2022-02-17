@@ -136,6 +136,7 @@ $_title-to-heading-gap: 12px;
   // Reset mat-slider's internal extra space on top
   // https://github.com/angular/components/blob/master/src/material/slider/slider.scss#L10
   height: 24px;
+  position: relative;
 }
 
 .step-slider {
@@ -149,4 +150,18 @@ $_title-to-heading-gap: 12px;
 .empty-message {
   margin-top: 1em;
   font-size: 13px;
+}
+
+.linked-time-ticks-wrapper {
+  position: absolute;
+  top: 5px;
+  width: 100%;
+}
+
+.linked-time-tick {
+  @include tb-theme-background-prop(background-color, selected-button);
+  border-radius: 50%;
+  height: 14px;
+  position: absolute;
+  width: 14px;
 }

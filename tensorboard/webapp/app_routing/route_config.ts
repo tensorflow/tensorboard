@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {DeepLinkProvider} from './deep_link_provider';
 import {
   ConcreteRouteDef,
   isConcreteRouteDef,
@@ -20,7 +21,7 @@ import {
   RedirectionRouteDef,
   RouteDef,
 } from './route_config_types';
-import {Route, RouteKind, RouteParams, SerializableQueryParams} from './types';
+import {RouteKind, RouteParams, SerializableQueryParams} from './types';
 
 interface NegativeMatch {
   result: false;
@@ -273,12 +274,12 @@ class ProgrammaticalRedirectionRouteConfigMatcher extends RouteConfigMatcher {
 }
 
 interface BaseRedirectionRouteMatch {
-  routeKind: Route['routeKind'];
-  pathname: Route['pathname'];
+  routeKind: RouteKind;
+  pathname: string;
   // Route parameters. An object. Its keys are defined to be parameter defined
   // in the path spec while their respective values are string.
-  params: Route['params'];
-  deepLinkProvider: ConcreteRouteDef['deepLinkProvider'] | null;
+  params: RouteParams;
+  deepLinkProvider: DeepLinkProvider | null;
   originateFromRedirection: boolean;
 }
 
@@ -288,7 +289,7 @@ export interface NonRedirectionRouteMatch extends BaseRedirectionRouteMatch {
 
 export interface RedirectionRouteMatch extends BaseRedirectionRouteMatch {
   originateFromRedirection: true;
-  redirectionOnlyQueryParams: Route['queryParams'] | undefined;
+  redirectionOnlyQueryParams: SerializableQueryParams | undefined;
 }
 
 export type RouteMatch = NonRedirectionRouteMatch | RedirectionRouteMatch;

@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Route, RouteKind} from '../types';
+import {RehydratedDeepLink, Route, RouteKind} from '../types';
 
 export const APP_ROUTING_FEATURE_KEY = 'app_routing';
 
@@ -24,9 +24,9 @@ export interface AppRoutingState {
   nextRoute: Route | null;
   // The id of the namespace that is currently active.
   activeNamespaceId: string | null;
-  // All namespaces that currently have a representation in state. This includes
-  // the active namespace but also any cached namespaces.
-  knownNamespaceIds: Set<string>;
+  // The set of deep links that have been rehydrated since the page was last
+  // (re)loaded by the browser.
+  rehydratedDeepLinks: RehydratedDeepLink[];
   registeredRouteKeys: Set<RouteKind>;
 }
 

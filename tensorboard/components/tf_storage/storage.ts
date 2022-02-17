@@ -135,7 +135,7 @@ export function makeBindings<T>(
       fireStorageChanged();
     } else if (!_.isEqual(value, get(key, {useLocalStorage}))) {
       if (_.isEqual(value, defaultValue)) {
-        unsetFromURI(key);
+        unsetFromURI(key, useLocationReplace);
       } else {
         const items = componentToDict(readComponent());
         items[key] = stringValue;

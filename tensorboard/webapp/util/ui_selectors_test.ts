@@ -62,40 +62,47 @@ describe('ui_selectors test', () => {
   });
 
   describe('#getCurrentRouteRunSelection', () => {
-    it('returns selection map of current eid', () => {
+    it('returns selection map of current experiments', () => {
       const state = {
         ...buildStateFromAppRoutingState(
+          // The route only contains experiments 123 and 234
           buildAppRoutingState({
             activeRoute: buildRoute({
               routeKind: RouteKind.COMPARE_EXPERIMENT,
-              pathname: '/compare/exp1:123,exp2:234/',
               params: {experimentIds: 'exp1:123,exp2:234'},
             }),
           })
         ),
         ...buildStateFromRunsState(
-          buildRunsState({
-            selectionState: new Map([
-              [
-                '["123","234"]',
-                new Map([
-                  ['r1', true],
-                  ['r2', false],
-                ]),
-              ],
-            ]),
-          })
+          buildRunsState(
+            {
+              runIdToExpId: {
+                r1: '123',
+                r2: '234',
+                r3: '345',
+              },
+            },
+            {
+              selectionState: new Map([
+                ['r1', true],
+                ['r2', false],
+                ['r3', true],
+              ]),
+            }
+          )
         ),
         ...buildStateFromExperimentsState(
           buildExperimentState({
             experimentMap: {
               '123': buildExperiment({id: '123', name: 'Experiment 123'}),
               '234': buildExperiment({id: '234', name: 'Experiment 234'}),
+              '345': buildExperiment({id: '345', name: 'Experiment 345'}),
             },
           })
         ),
       };
 
+      // Runs form experiment 345 are not included in the final result.
       expect(getCurrentRouteRunSelection(state)).toEqual(
         new Map([
           ['r1', true],
@@ -110,23 +117,25 @@ describe('ui_selectors test', () => {
           buildAppRoutingState({
             activeRoute: buildRoute({
               routeKind: RouteKind.UNKNOWN,
-              pathname: '/foobar/234',
               params: {},
             }),
           })
         ),
         ...buildStateFromRunsState(
-          buildRunsState({
-            selectionState: new Map([
-              [
-                '["234"]',
-                new Map([
-                  ['r1', true],
-                  ['r2', false],
-                ]),
-              ],
-            ]),
-          })
+          buildRunsState(
+            {
+              runIdToExpId: {
+                r1: '234',
+                r2: '234',
+              },
+            },
+            {
+              selectionState: new Map([
+                ['r1', true],
+                ['r2', false],
+              ]),
+            }
+          )
         ),
         ...buildStateFromExperimentsState(
           buildExperimentState({
@@ -147,33 +156,36 @@ describe('ui_selectors test', () => {
             buildAppRoutingState({
               activeRoute: buildRoute({
                 routeKind: RouteKind.EXPERIMENT,
-                pathname: '/experiment/234/',
                 params: {experimentId: '234'},
               }),
             })
           ),
           ...buildStateFromRunsState(
-            buildRunsState({
-              selectionState: new Map([
-                [
-                  '["234"]',
-                  new Map([
-                    ['234/run1', true],
-                    ['234/run2', true],
-                    ['234/run3', false],
-                  ]),
-                ],
-              ]),
-              runIds: {
-                '234': ['234/run1', '234/run2', '234/run3'],
+            buildRunsState(
+              {
+                runIds: {
+                  '234': ['234/run1', '234/run2', '234/run3'],
+                },
+                runIdToExpId: {
+                  '234/run1': '234',
+                  '234/run2': '234',
+                  '234/run3': '234',
+                },
+                runMetadata: {
+                  '234/run1': buildRun({id: '234/run1', name: 'run1'}),
+                  '234/run2': buildRun({id: '234/run2', name: 'run2'}),
+                  '234/run3': buildRun({id: '234/run3', name: 'run3'}),
+                },
+                regexFilter: '^r.n[1]',
               },
-              runMetadata: {
-                '234/run1': buildRun({id: '234/run1', name: 'run1'}),
-                '234/run2': buildRun({id: '234/run2', name: 'run2'}),
-                '234/run3': buildRun({id: '234/run3', name: 'run3'}),
-              },
-              regexFilter: '^r.n[1]',
-            })
+              {
+                selectionState: new Map([
+                  ['234/run1', true],
+                  ['234/run2', true],
+                  ['234/run3', false],
+                ]),
+              }
+            )
           ),
           ...buildStateFromExperimentsState(
             buildExperimentState({
@@ -199,40 +211,46 @@ describe('ui_selectors test', () => {
             buildAppRoutingState({
               activeRoute: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
-                pathname: '/compare/apple:123,banana:234/',
                 params: {experimentIds: 'apple:123,banana:234'},
               }),
             })
           ),
           ...buildStateFromRunsState(
-            buildRunsState({
-              selectionState: new Map([
-                [
-                  '["123","234"]',
-                  new Map([
-                    ['123/run1', false],
-                    ['123/run2', true],
-                    ['123/run3', true],
-                    ['234/run1', true],
-                    ['234/run2', true],
-                    ['234/run3', false],
-                  ]),
-                ],
-              ]),
-              runIds: {
-                '123': ['123/run1', '123/run2', '123/run3'],
-                '234': ['234/run1', '234/run2', '234/run3'],
+            buildRunsState(
+              {
+                runIds: {
+                  '123': ['123/run1', '123/run2', '123/run3'],
+                  '234': ['234/run1', '234/run2', '234/run3'],
+                },
+                runIdToExpId: {
+                  '123/run1': '123',
+                  '123/run2': '123',
+                  '123/run3': '123',
+                  '234/run1': '234',
+                  '234/run2': '234',
+                  '234/run3': '234',
+                },
+                runMetadata: {
+                  '123/run1': buildRun({id: '123/run1', name: 'run1'}),
+                  '123/run2': buildRun({id: '123/run2', name: 'run2'}),
+                  '123/run3': buildRun({id: '123/run3', name: 'run3'}),
+                  '234/run1': buildRun({id: '234/run1', name: 'run1'}),
+                  '234/run2': buildRun({id: '234/run2', name: 'run2'}),
+                  '234/run3': buildRun({id: '234/run3', name: 'run3'}),
+                },
+                regexFilter: '^(apple/r..3|r.n[1])',
               },
-              runMetadata: {
-                '123/run1': buildRun({id: '123/run1', name: 'run1'}),
-                '123/run2': buildRun({id: '123/run2', name: 'run2'}),
-                '123/run3': buildRun({id: '123/run3', name: 'run3'}),
-                '234/run1': buildRun({id: '234/run1', name: 'run1'}),
-                '234/run2': buildRun({id: '234/run2', name: 'run2'}),
-                '234/run3': buildRun({id: '234/run3', name: 'run3'}),
-              },
-              regexFilter: '^(apple/r..3|r.n[1])',
-            })
+              {
+                selectionState: new Map([
+                  ['123/run1', false],
+                  ['123/run2', true],
+                  ['123/run3', true],
+                  ['234/run1', true],
+                  ['234/run2', true],
+                  ['234/run3', false],
+                ]),
+              }
+            )
           ),
           ...buildStateFromExperimentsState(
             buildExperimentState({
@@ -270,36 +288,40 @@ describe('ui_selectors test', () => {
             buildAppRoutingState({
               activeRoute: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
-                pathname: '/compare/apple:123,banana:234/',
                 params: {experimentIds: 'apple:123,banana:234'},
               }),
             })
           ),
           ...buildStateFromRunsState(
-            buildRunsState({
-              selectionState: new Map([
-                [
-                  '["123","234"]',
-                  new Map([
-                    ['123/run1', true],
-                    ['123/run2', true],
-                    ['234/run1', true],
-                    ['234/run2', true],
-                  ]),
-                ],
-              ]),
-              runIds: {
-                '123': ['123/run1', '123/run2'],
-                '234': ['234/run1', '234/run2'],
+            buildRunsState(
+              {
+                runIds: {
+                  '123': ['123/run1', '123/run2'],
+                  '234': ['234/run1', '234/run2'],
+                },
+                runIdToExpId: {
+                  '123/run1': '123',
+                  '123/run2': '123',
+                  '234/run1': '234',
+                  '234/run2': '234',
+                },
+                runMetadata: {
+                  '123/run1': buildRun({id: '123/run1', name: 'run1'}),
+                  '123/run2': buildRun({id: '123/run2', name: 'run2'}),
+                  '234/run1': buildRun({id: '234/run1', name: 'run1'}),
+                  '234/run2': buildRun({id: '234/run2', name: 'run2'}),
+                },
+                regexFilter: 'run1',
               },
-              runMetadata: {
-                '123/run1': buildRun({id: '123/run1', name: 'run1'}),
-                '123/run2': buildRun({id: '123/run2', name: 'run2'}),
-                '234/run1': buildRun({id: '234/run1', name: 'run1'}),
-                '234/run2': buildRun({id: '234/run2', name: 'run2'}),
-              },
-              regexFilter: 'run1',
-            })
+              {
+                selectionState: new Map([
+                  ['123/run1', true],
+                  ['123/run2', true],
+                  ['234/run1', true],
+                  ['234/run2', true],
+                ]),
+              }
+            )
           ),
           ...buildStateFromExperimentsState(
             buildExperimentState({

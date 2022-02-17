@@ -102,7 +102,7 @@ limitations under the License.
   ></mat-spinner>
   <line-chart
     [disableUpdate]="!isCardVisible"
-    [preferredRendererType]="RendererType.WEBGL"
+    [preferredRendererType]="forceSvg ? RendererType.SVG : RendererType.WEBGL"
     [seriesData]="dataSeries"
     [seriesMetadataMap]="chartMetadataMap"
     [xScaleType]="xScaleType"

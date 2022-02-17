@@ -40,8 +40,10 @@ import {
 import {AppRootProvider} from '../app_root';
 import {DirtyUpdatesRegistryModule} from '../dirty_updates_registry_module';
 import {
-  areRoutesEqual,
+  arePathsAndQueryParamsEqual,
   areSameRouteKindAndExperiments,
+  canRehydrateDeepLink,
+  generateRandomIdForNamespace,
   getRouteNamespaceId,
   serializeCompareExperimentParams,
 } from '../internal_utils';
@@ -52,9 +54,9 @@ import {RouteRegistryModule} from '../route_registry_module';
 import {
   getActiveNamespaceId,
   getActiveRoute,
-  getKnownNamespaceIds,
+  getRehydratedDeepLinks,
 } from '../store/app_routing_selectors';
-import {Route, RouteKind, RouteParams} from '../types';
+import {Route, RouteKind, RouteParams, SerializableQueryParams} from '../types';
 
 const initAction = createAction('[App Routing] Effects Init');
 
@@ -70,6 +72,8 @@ interface InternalRouteMatch {
 
 interface InternalRoute {
   route: Route;
+  pathname: string;
+  queryParams: SerializableQueryParams;
   options: NavigationOptions;
 }
 
@@ -190,13 +194,13 @@ export class AppRoutingEffects {
           namespaceId === undefined
             ? // There is no namespace id in the browser history entry. This is,
               // therefore, some sort of new navigation to the app. Set options
-              // so that a new namespace id is set downstream.
+              // so that a new namespace id is generated downstream.
               {
                 option: NamespaceUpdateOption.NEW,
               }
             : // There is a namespace id in the browser history entry. This is,
               // therefore, a page reload. Set options so that the namespace id
-              // is reused downstream.
+              // is taken from browser history state downstream.
               {
                 option: NamespaceUpdateOption.FROM_HISTORY,
                 namespaceId: namespaceId,
@@ -220,15 +224,34 @@ export class AppRoutingEffects {
     .onPopState()
     .pipe(
       map((navigation) => {
+        const namespaceUpdate: NamespaceUpdate =
+          navigation.state?.namespaceId === undefined
+            ? // There is no namespace id in browser history entry. In our
+              // experience this happens when the application navigates forward
+              // by modifying the URL hash -- it generates a new entry in
+              // browser history and fires a popstate event with that new entry.
+              //
+              // We treat these types of navigations as being within the same
+              // namespace. Set options so that the namespace id is unchanged
+              // downstream.
+              {
+                option: NamespaceUpdateOption.UNCHANGED,
+              }
+            : // There is a namespace id in the browser history entry. This is,
+              // therefore, a navigation using browser back/forward buttons to
+              // an existing entry in browser history. Set options so that the
+              // namespace id is taken from browser history state downstream.
+              {
+                option: NamespaceUpdateOption.FROM_HISTORY,
+                namespaceId: navigation.state.namespaceId,
+              };
+
         return {
           pathname: navigation.pathname,
           options: {
             browserInitiated: true,
             replaceState: true,
-            namespaceUpdate: {
-              option: NamespaceUpdateOption.FROM_HISTORY,
-              namespaceId: navigation.state?.namespaceId,
-            },
+            namespaceUpdate,
           },
         };
       })
@@ -391,24 +414,25 @@ export class AppRoutingEffects {
           })
         );
       }),
-      withLatestFrom(this.store.select(getKnownNamespaceIds)),
-      tap(([{routeMatch, options}, knownNamespaceIds]) => {
+      withLatestFrom(this.store.select(getRehydratedDeepLinks)),
+      tap(([{routeMatch, options}, rehydratedDeepLinks]) => {
         // Possibly rehydrate state from the URL.
-        //
-        // We do this on "browser initiated" events (like a page load or
-        // navigation in browser history) but we only do this when we don't yet
-        // have in-memory state for the namespace being navigated to.
 
-        const isKnownNamespace =
-          options.namespaceUpdate.option ===
-            NamespaceUpdateOption.FROM_HISTORY &&
-          knownNamespaceIds.has(options.namespaceUpdate.namespaceId);
+        if (!options.browserInitiated || !routeMatch.deepLinkProvider) {
+          return;
+        }
 
         if (
-          !options.browserInitiated ||
-          isKnownNamespace ||
-          !routeMatch.deepLinkProvider
+          options.namespaceUpdate.option ===
+            NamespaceUpdateOption.FROM_HISTORY &&
+          !canRehydrateDeepLink(
+            routeMatch.routeKind,
+            options.namespaceUpdate.namespaceId,
+            rehydratedDeepLinks
+          )
         ) {
+          // A deeplink has already been rehydrated for this RouteKind/Namespace
+          // combination so don't do it again.
           return;
         }
 
@@ -440,9 +464,9 @@ export class AppRoutingEffects {
             route: {
               routeKind: routeMatch.routeKind,
               params: routeMatch.params,
-              pathname: routeMatch.pathname,
-              queryParams: [],
             },
+            pathname: routeMatch.pathname,
+            queryParams: [],
             options,
           });
         }
@@ -457,9 +481,9 @@ export class AppRoutingEffects {
                 route: {
                   routeKind: routeMatch.routeKind,
                   params: routeMatch.params,
-                  pathname: routeMatch.pathname,
-                  queryParams,
                 },
+                pathname: routeMatch.pathname,
+                queryParams,
                 // Only honor replaceState value on first emit. On subsequent
                 // emits we always want to replaceState rather than pushState.
                 options:
@@ -491,7 +515,7 @@ export class AppRoutingEffects {
 
     const changeUrl$ = dispatchNavigating$.pipe(
       withLatestFrom(this.store.select(getActiveRoute)),
-      map(([{route, options}, oldRoute]) => {
+      map(([newRoute, oldRoute]) => {
         // The URL hash can be set via HashStorageComponent (which uses
         // Polymer's tf-storage). DeepLinkProviders also modify the URL when
         // a provider's serializeStateToQueryParams() emits. These result in
@@ -507,33 +531,35 @@ export class AppRoutingEffects {
         // See https://github.com/tensorflow/tensorboard/issues/4207.
         const preserveHash =
           oldRoute === null ||
-          route === null ||
-          areSameRouteKindAndExperiments(oldRoute, route);
+          newRoute.route === null ||
+          areSameRouteKindAndExperiments(oldRoute, newRoute.route);
         return {
+          ...newRoute,
           preserveHash,
-          route,
-          options,
         };
       }),
-      tap(({preserveHash, route, options}) => {
-        const shouldUpdateHistory = !areRoutesEqual(route, {
-          pathname: this.appRootProvider.getAppRootlessPathname(
-            this.location.getPath()
-          ),
-          queryParams: this.location.getSearch(),
-        });
+      tap(({preserveHash, pathname, queryParams, options}) => {
+        const shouldUpdateHistory = !arePathsAndQueryParamsEqual(
+          {pathname, queryParams},
+          {
+            pathname: this.appRootProvider.getAppRootlessPathname(
+              this.location.getPath()
+            ),
+            queryParams: this.location.getSearch(),
+          }
+        );
         if (!shouldUpdateHistory) return;
 
         if (options.replaceState) {
           this.location.replaceStateUrl(
             this.appRootProvider.getAbsPathnameWithAppRoot(
-              this.location.getFullPathFromRoute(route, preserveHash)
+              this.location.getFullPath(pathname, queryParams, preserveHash)
             )
           );
         } else {
           this.location.pushStateUrl(
             this.appRootProvider.getAbsPathnameWithAppRoot(
-              this.location.getFullPathFromRoute(route, preserveHash)
+              this.location.getFullPath(pathname, queryParams, preserveHash)
             )
           );
         }
@@ -598,7 +624,7 @@ function getAfterNamespaceId(
       beforeNamespaceId == null ||
       options.namespaceUpdate.option === NamespaceUpdateOption.NEW
     ) {
-      return Date.now().toString();
+      return `${Date.now().toString()}:${generateRandomIdForNamespace()}`;
     } else {
       return beforeNamespaceId;
     }

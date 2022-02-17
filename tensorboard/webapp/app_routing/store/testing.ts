@@ -25,7 +25,7 @@ export function buildAppRoutingState(
     activeRoute: null,
     nextRoute: null,
     activeNamespaceId: null,
-    knownNamespaceIds: new Set(),
+    rehydratedDeepLinks: [],
     registeredRouteKeys: new Set(),
     ...override,
   };

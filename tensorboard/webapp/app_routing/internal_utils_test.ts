@@ -19,7 +19,17 @@ import {
   buildExperimentRouteFromId,
   buildRoute,
 } from './testing';
-import {RouteKind} from './types';
+import {DeepLinkGroup, RouteKind} from './types';
+
+function getMockReturnValuesFuntion(testUint8array: Uint8Array) {
+  return function <Uint8Array>(arr: Uint8Array): Uint8Array {
+    if (arr instanceof Uint8Array) {
+      arr.set(testUint8array);
+      return arr;
+    }
+    throw new Error(`'getMockReturnValuesFuntion' input type invalid: ${arr}`);
+  };
+}
 
 describe('app_routing/utils', () => {
   describe('#parseCompareExperimentStr', () => {
@@ -123,7 +133,7 @@ describe('app_routing/utils', () => {
     });
   });
 
-  describe('getRouteNamespaceId', () => {
+  describe('#getRouteNamespaceId', () => {
     [
       {
         kind: RouteKind.COMPARE_EXPERIMENT,
@@ -175,7 +185,7 @@ describe('app_routing/utils', () => {
     });
   });
 
-  describe('areSameRouteKindAndExperiments', () => {
+  describe('#areSameRouteKindAndExperiments', () => {
     it('returns true when both routes are null', () => {
       expect(utils.areSameRouteKindAndExperiments(null, null)).toBeTrue();
     });
@@ -308,10 +318,10 @@ describe('app_routing/utils', () => {
     });
   });
 
-  describe('#areRoutesEqual', () => {
+  describe('#arePathsAndQueryParamsEqual', () => {
     it('returns true if they are equal', () => {
       expect(
-        utils.areRoutesEqual(
+        utils.arePathsAndQueryParamsEqual(
           {
             pathname: '/foo',
             queryParams: [],
@@ -324,7 +334,7 @@ describe('app_routing/utils', () => {
       ).toBe(true);
 
       expect(
-        utils.areRoutesEqual(
+        utils.arePathsAndQueryParamsEqual(
           {
             pathname: '/foo/bar',
             queryParams: [{key: 'a', value: '1'}],
@@ -339,7 +349,7 @@ describe('app_routing/utils', () => {
 
     it('returns false if paths are different', () => {
       expect(
-        utils.areRoutesEqual(
+        utils.arePathsAndQueryParamsEqual(
           {
             pathname: '/foo/bar',
             queryParams: [],
@@ -354,7 +364,7 @@ describe('app_routing/utils', () => {
 
     it('returns false if query params values are different', () => {
       expect(
-        utils.areRoutesEqual(
+        utils.arePathsAndQueryParamsEqual(
           {
             pathname: '/foo/bar',
             queryParams: [{key: 'a', value: '1'}],
@@ -369,7 +379,7 @@ describe('app_routing/utils', () => {
 
     it('returns false if query params has more values', () => {
       expect(
-        utils.areRoutesEqual(
+        utils.arePathsAndQueryParamsEqual(
           {
             pathname: '/foo/bar',
             queryParams: [{key: 'a', value: '1'}],
@@ -387,7 +397,7 @@ describe('app_routing/utils', () => {
 
     it('returns false when orders are different', () => {
       expect(
-        utils.areRoutesEqual(
+        utils.arePathsAndQueryParamsEqual(
           {
             pathname: '/foo/bar',
             queryParams: [
@@ -404,6 +414,133 @@ describe('app_routing/utils', () => {
           }
         )
       ).toBe(false);
+    });
+  });
+
+  describe('#getDeepLinkGroup', () => {
+    it('maps RouteKind to DeepLinkGroup', () => {
+      expect(utils.getDeepLinkGroup(RouteKind.EXPERIMENTS)).toEqual(
+        DeepLinkGroup.EXPERIMENTS
+      );
+      expect(utils.getDeepLinkGroup(RouteKind.EXPERIMENT)).toEqual(
+        DeepLinkGroup.DASHBOARD
+      );
+      expect(utils.getDeepLinkGroup(RouteKind.COMPARE_EXPERIMENT)).toEqual(
+        DeepLinkGroup.DASHBOARD
+      );
+      expect(utils.getDeepLinkGroup(RouteKind.UNKNOWN)).toBeNull();
+      expect(utils.getDeepLinkGroup(RouteKind.NOT_SET)).toBeNull();
+    });
+  });
+
+  describe('#canRehydrateDeepLink', () => {
+    it('allows rehydration if namespaceId does not match', () => {
+      expect(
+        utils.canRehydrateDeepLink(RouteKind.EXPERIMENTS, 'namespaceC', [
+          {
+            deepLinkGroup: DeepLinkGroup.EXPERIMENTS,
+            namespaceId: 'namespaceA',
+          },
+          {
+            deepLinkGroup: DeepLinkGroup.EXPERIMENTS,
+            namespaceId: 'namespaceB',
+          },
+        ])
+      ).toBeTrue();
+    });
+
+    it('allows rehydration if deepLinkGroup does not match', () => {
+      expect(
+        utils.canRehydrateDeepLink(RouteKind.COMPARE_EXPERIMENT, 'namespaceA', [
+          {
+            deepLinkGroup: DeepLinkGroup.EXPERIMENTS,
+            namespaceId: 'namespaceA',
+          },
+          {
+            deepLinkGroup: DeepLinkGroup.EXPERIMENTS,
+            namespaceId: 'namespaceB',
+          },
+        ])
+      ).toBeTrue();
+    });
+
+    it('does not allow rehydration if match is found', () => {
+      expect(
+        utils.canRehydrateDeepLink(RouteKind.EXPERIMENTS, 'namespaceA', [
+          {
+            deepLinkGroup: DeepLinkGroup.EXPERIMENTS,
+            namespaceId: 'namespaceA',
+          },
+          {
+            deepLinkGroup: DeepLinkGroup.EXPERIMENTS,
+            namespaceId: 'namespaceB',
+          },
+        ])
+      ).toBeFalse();
+    });
+
+    it('does not allow rehydration if route kind has null deep link group', () => {
+      expect(
+        utils.canRehydrateDeepLink(RouteKind.UNKNOWN, 'namespaceA', [
+          {
+            deepLinkGroup: DeepLinkGroup.EXPERIMENTS,
+            namespaceId: 'namespaceA',
+          },
+          {
+            deepLinkGroup: DeepLinkGroup.EXPERIMENTS,
+            namespaceId: 'namespaceB',
+          },
+        ])
+      ).toBeFalse();
+    });
+  });
+
+  describe('#generateRandomIdForNamespace', () => {
+    let cryptoGetRandomValuesSpy: jasmine.Spy;
+
+    it('returns 32-long id', () => {
+      const result = utils.generateRandomIdForNamespace();
+
+      expect(result.length).toEqual(32);
+    });
+
+    it('returns id width base 16', () => {
+      cryptoGetRandomValuesSpy = spyOn(window.crypto, 'getRandomValues');
+      cryptoGetRandomValuesSpy.and.callFake(
+        getMockReturnValuesFuntion(new Uint8Array([1]))
+      );
+      let result = utils.generateRandomIdForNamespace();
+      expect(result).toEqual('00000000000000000000000000000000');
+
+      cryptoGetRandomValuesSpy.and.callFake(
+        getMockReturnValuesFuntion(new Uint8Array([15]))
+      );
+      result = utils.generateRandomIdForNamespace();
+      expect(result).toEqual('00000000000000000000000000000000');
+
+      cryptoGetRandomValuesSpy.and.callFake(
+        getMockReturnValuesFuntion(new Uint8Array([17]))
+      );
+      result = utils.generateRandomIdForNamespace();
+      expect(result).toEqual('10000000000000000000000000000000');
+
+      cryptoGetRandomValuesSpy.and.callFake(
+        getMockReturnValuesFuntion(new Uint8Array([32]))
+      );
+      result = utils.generateRandomIdForNamespace();
+      expect(result).toEqual('20000000000000000000000000000000');
+
+      cryptoGetRandomValuesSpy.and.callFake(
+        getMockReturnValuesFuntion(new Uint8Array([160]))
+      );
+      result = utils.generateRandomIdForNamespace();
+      expect(result).toEqual('a0000000000000000000000000000000');
+
+      cryptoGetRandomValuesSpy.and.callFake(
+        getMockReturnValuesFuntion(new Uint8Array([0, 16, 32, 160, 320]))
+      );
+      result = utils.generateRandomIdForNamespace();
+      expect(result).toEqual('012a4000000000000000000000000000');
     });
   });
 });

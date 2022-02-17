@@ -480,4 +480,186 @@ describe('image card', () => {
       expect(fullWidthSpy.calls.mostRecent().args).toEqual([true]);
     });
   });
+
+  describe('linked time', () => {
+    // The left and margin-left style for an image card with 4 ticks.
+    const TICKS_STYLE = [
+      'left: 0%; margin-left: 0px;',
+      'left: 33.3333%; margin-left: -4.66667px;',
+      'left: 66.6667%; margin-left: -9.33333px;',
+      'left: 100%; margin-left: -14px;',
+    ];
+
+    it('renders a single tick on selected time', () => {
+      store.overrideSelector(selectors.getMetricsSelectedTime, {
+        start: {step: 10},
+        end: null,
+      });
+
+      const timeSeries = [
+        {wallTime: 100, imageId: 'ImageId1', step: 10},
+        {wallTime: 101, imageId: 'ImageId2', step: 20},
+        {wallTime: 102, imageId: 'ImageId3', step: 30},
+        {wallTime: 103, imageId: 'ImageId4', step: 40},
+      ];
+      provideMockCardSeriesData(
+        selectSpy,
+        PluginType.IMAGES,
+        'card1',
+        null /* metadataOverride */,
+        timeSeries
+      );
+
+      const fixture = createImageCardContainer('card1');
+      fixture.detectChanges();
+
+      const dots = fixture.debugElement.queryAll(
+        By.css('.linked-time-ticks-wrapper .linked-time-tick')
+      );
+      expect(dots.length).toBe(1);
+      expect(dots[0].nativeElement.getAttribute('style')).toBe(TICKS_STYLE[0]);
+    });
+
+    it('renders a single tick at correct propositional position', () => {
+      store.overrideSelector(selectors.getMetricsSelectedTime, {
+        start: {step: 20},
+        end: null,
+      });
+      const timeSeries = [
+        {wallTime: 100, imageId: 'ImageId1', step: 10},
+        {wallTime: 101, imageId: 'ImageId2', step: 20},
+        {wallTime: 102, imageId: 'ImageId3', step: 30},
+        {wallTime: 103, imageId: 'ImageId4', step: 40},
+      ];
+      provideMockCardSeriesData(
+        selectSpy,
+        PluginType.IMAGES,
+        'card1',
+        null /* metadataOverride */,
+        timeSeries
+      );
+      const fixture = createImageCardContainer('card1');
+      fixture.detectChanges();
+      const dot = fixture.debugElement.query(
+        By.css('.linked-time-ticks-wrapper .linked-time-tick')
+      );
+
+      expect(dot.nativeElement.getAttribute('style')).toBe(TICKS_STYLE[1]);
+    });
+
+    it('renders ticks when steps are within selected time', () => {
+      store.overrideSelector(selectors.getMetricsSelectedTime, {
+        start: {step: 15},
+        end: {step: 35},
+      });
+      const timeSeries = [
+        {wallTime: 100, imageId: 'ImageId1', step: 10},
+        {wallTime: 101, imageId: 'ImageId2', step: 20},
+        {wallTime: 102, imageId: 'ImageId3', step: 30},
+        {wallTime: 103, imageId: 'ImageId4', step: 40},
+      ];
+      provideMockCardSeriesData(
+        selectSpy,
+        PluginType.IMAGES,
+        'card1',
+        null /* metadataOverride */,
+        timeSeries
+      );
+      const fixture = createImageCardContainer('card1');
+      fixture.detectChanges();
+
+      const dots = fixture.debugElement.queryAll(
+        By.css('.linked-time-ticks-wrapper .linked-time-tick')
+      );
+      expect(dots.length).toBe(2);
+      // The second and third tick is selected.
+      expect(dots[0].nativeElement.getAttribute('style')).toBe(TICKS_STYLE[1]);
+      expect(dots[1].nativeElement.getAttribute('style')).toBe(TICKS_STYLE[2]);
+    });
+
+    it('renders ticks on steps are particially in range', () => {
+      store.overrideSelector(selectors.getMetricsSelectedTime, {
+        start: {step: 25},
+        end: {step: 350},
+      });
+      const timeSeries = [
+        {wallTime: 100, imageId: 'ImageId1', step: 10},
+        {wallTime: 101, imageId: 'ImageId2', step: 20},
+        {wallTime: 102, imageId: 'ImageId3', step: 30},
+        {wallTime: 103, imageId: 'ImageId4', step: 40},
+      ];
+      provideMockCardSeriesData(
+        selectSpy,
+        PluginType.IMAGES,
+        'card1',
+        null /* metadataOverride */,
+        timeSeries
+      );
+      const fixture = createImageCardContainer('card1');
+      fixture.detectChanges();
+
+      const dots = fixture.debugElement.queryAll(
+        By.css('.linked-time-ticks-wrapper .linked-time-tick')
+      );
+      // The third and fourth ticks are selected.
+      expect(dots[0].nativeElement.getAttribute('style')).toBe(TICKS_STYLE[2]);
+      expect(dots[1].nativeElement.getAttribute('style')).toBe(TICKS_STYLE[3]);
+    });
+
+    it('does not render ticks on slected range wrapped between steps ', () => {
+      store.overrideSelector(selectors.getMetricsSelectedTime, {
+        start: {step: 11},
+        end: {step: 14},
+      });
+      const timeSeries = [
+        {wallTime: 100, imageId: 'ImageId1', step: 10},
+        {wallTime: 101, imageId: 'ImageId2', step: 20},
+        {wallTime: 102, imageId: 'ImageId3', step: 30},
+        {wallTime: 103, imageId: 'ImageId4', step: 40},
+      ];
+      provideMockCardSeriesData(
+        selectSpy,
+        PluginType.IMAGES,
+        'card1',
+        null /* metadataOverride */,
+        timeSeries
+      );
+      const fixture = createImageCardContainer('card1');
+      fixture.detectChanges();
+
+      const dots = fixture.debugElement.queryAll(
+        By.css('.linked-time-ticks-wrapper .linked-time-tick')
+      );
+      // The third and fourth ticks are selected.
+      expect(dots.length).toBe(0);
+    });
+
+    it('does not render ticks when the slected range is clipped', () => {
+      store.overrideSelector(selectors.getMetricsSelectedTime, {
+        start: {step: 45},
+        end: {step: 55},
+      });
+      const timeSeries = [
+        {wallTime: 100, imageId: 'ImageId1', step: 10},
+        {wallTime: 101, imageId: 'ImageId2', step: 20},
+        {wallTime: 102, imageId: 'ImageId3', step: 30},
+        {wallTime: 103, imageId: 'ImageId4', step: 40},
+      ];
+      provideMockCardSeriesData(
+        selectSpy,
+        PluginType.IMAGES,
+        'card1',
+        null /* metadataOverride */,
+        timeSeries
+      );
+      const fixture = createImageCardContainer('card1');
+      fixture.detectChanges();
+
+      const dots = fixture.debugElement.queryAll(
+        By.css('.linked-time-ticks-wrapper .linked-time-tick')
+      );
+      // The third and fourth ticks are selected.
+      expect(dots.length).toBe(0);
+    });
+  });
 });

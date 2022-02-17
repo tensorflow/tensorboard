@@ -371,11 +371,12 @@ describe('runs_reducers', () => {
 
     it('auto-selects new runs if total num <= N', () => {
       const existingRuns = [buildRun({id: 'existingRun1'})];
-      let state = buildRunsState({
-        selectionState: new Map([
-          ['["b"]', new Map([['existingRun1', false]])],
-        ]),
-      });
+      let state = buildRunsState(
+        {},
+        {
+          selectionState: new Map([['existingRun1', false]]),
+        }
+      );
 
       const fewNewRuns = createFakeRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT - 1);
       state = runsReducers.reducers(
@@ -392,7 +393,7 @@ describe('runs_reducers', () => {
         })
       );
 
-      const selections = [...state.data.selectionState.get('["b"]')!.entries()];
+      const selections = [...state.ui.selectionState.entries()];
       expect(selections.length).toBe(fewNewRuns.length + existingRuns.length);
       // Existing runs that were unselected should remain so.
       const selectedAsExpected = selections.every(([runId, isSelected]) => {
@@ -403,9 +404,12 @@ describe('runs_reducers', () => {
 
     it('does not auto-select new runs if total num > N', () => {
       const existingRuns = [buildRun({id: 'existingRun1'})];
-      let state = buildRunsState({
-        selectionState: new Map([['["b"]', new Map([['existingRun1', true]])]]),
-      });
+      let state = buildRunsState(
+        {},
+        {
+          selectionState: new Map([['existingRun1', true]]),
+        }
+      );
 
       const manyNewRuns = createFakeRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT);
       state = runsReducers.reducers(
@@ -422,7 +426,7 @@ describe('runs_reducers', () => {
         })
       );
 
-      const selections = [...state.data.selectionState.get('["b"]')!.entries()];
+      const selections = [...state.ui.selectionState.entries()];
       expect(selections.length).toBe(manyNewRuns.length + existingRuns.length);
       // Existing runs that were selected should remain so.
       const selectedAsExpected = selections.every(([runId, isSelected]) => {
@@ -434,47 +438,42 @@ describe('runs_reducers', () => {
 
   describe('runSelectionToggled', () => {
     it('toggles the run selection state for a runId', () => {
-      const state = buildRunsState({
-        runIds: {eid1: ['r1', 'r2']},
-        selectionState: new Map([['["eid1"]', new Map([['foo', true]])]]),
-      });
+      const state = buildRunsState(
+        {},
+        {
+          selectionState: new Map([['foo', true]]),
+        }
+      );
 
       const nextState = runsReducers.reducers(
         state,
         actions.runSelectionToggled({
-          experimentIds: ['eid1'],
           runId: 'foo',
         })
       );
 
-      expect(nextState.data.selectionState).toEqual(
-        new Map([['["eid1"]', new Map([['foo', false]])]])
-      );
+      expect(nextState.ui.selectionState).toEqual(new Map([['foo', false]]));
     });
 
     it('sets true for previously un-set runId', () => {
-      const state = buildRunsState({
-        runIds: {eid1: ['r1', 'r2']},
-        selectionState: new Map([['["eid1"]', new Map([['foo', true]])]]),
-      });
+      const state = buildRunsState(
+        {},
+        {
+          selectionState: new Map([['foo', true]]),
+        }
+      );
 
       const nextState = runsReducers.reducers(
         state,
         actions.runSelectionToggled({
-          experimentIds: ['eid1'],
           runId: 'bar',
         })
       );
 
-      expect(nextState.data.selectionState).toEqual(
+      expect(nextState.ui.selectionState).toEqual(
         new Map([
-          [
-            '["eid1"]',
-            new Map([
-              ['foo', true],
-              ['bar', true],
-            ]),
-          ],
+          ['foo', true],
+          ['bar', true],
         ])
       );
     });
@@ -482,53 +481,47 @@ describe('runs_reducers', () => {
 
   describe('runPageSelectionToggled', () => {
     it('toggles all items to on when they were all previously off', () => {
-      const state = buildRunsState({
-        selectionState: new Map([['["eid"]', new Map([['foo', false]])]]),
-      });
+      const state = buildRunsState(
+        {},
+        {
+          selectionState: new Map([['foo', false]]),
+        }
+      );
 
       const nextState = runsReducers.reducers(
         state,
         actions.runPageSelectionToggled({
-          experimentIds: ['eid'],
           runIds: ['foo', 'bar'],
         })
       );
 
-      expect(nextState.data.selectionState).toEqual(
+      expect(nextState.ui.selectionState).toEqual(
         new Map([
-          [
-            '["eid"]',
-            new Map([
-              ['foo', true],
-              ['bar', true],
-            ]),
-          ],
+          ['foo', true],
+          ['bar', true],
         ])
       );
     });
 
     it('toggles all items to on when they were partially off', () => {
-      const state = buildRunsState({
-        selectionState: new Map([['["eid"]', new Map([['foo', true]])]]),
-      });
+      const state = buildRunsState(
+        {},
+        {
+          selectionState: new Map([['foo', true]]),
+        }
+      );
 
       const nextState = runsReducers.reducers(
         state,
         actions.runPageSelectionToggled({
-          experimentIds: ['eid'],
           runIds: ['foo', 'bar'],
         })
       );
 
-      expect(nextState.data.selectionState).toEqual(
+      expect(nextState.ui.selectionState).toEqual(
         new Map([
-          [
-            '["eid"]',
-            new Map([
-              ['foo', true],
-              ['bar', true],
-            ]),
-          ],
+          ['foo', true],
+          ['bar', true],
         ])
       );
     });
@@ -537,70 +530,54 @@ describe('runs_reducers', () => {
       'toggles all items to on when they were partially off (bar explicitly' +
         'off)',
       () => {
-        const state = buildRunsState({
-          selectionState: new Map([
-            [
-              '["eid"]',
-              new Map([
-                ['foo', true],
-                ['bar', false],
-              ]),
-            ],
-          ]),
-        });
+        const state = buildRunsState(
+          {},
+          {
+            selectionState: new Map([
+              ['foo', true],
+              ['bar', false],
+            ]),
+          }
+        );
 
         const nextState = runsReducers.reducers(
           state,
           actions.runPageSelectionToggled({
-            experimentIds: ['eid'],
             runIds: ['foo', 'bar'],
           })
         );
 
-        expect(nextState.data.selectionState).toEqual(
+        expect(nextState.ui.selectionState).toEqual(
           new Map([
-            [
-              '["eid"]',
-              new Map([
-                ['foo', true],
-                ['bar', true],
-              ]),
-            ],
+            ['foo', true],
+            ['bar', true],
           ])
         );
       }
     );
 
     it('deselects all items if they were on', () => {
-      const state = buildRunsState({
-        selectionState: new Map([
-          [
-            '["eid"]',
-            new Map([
-              ['foo', true],
-              ['bar', true],
-            ]),
-          ],
-        ]),
-      });
+      const state = buildRunsState(
+        {},
+        {
+          selectionState: new Map([
+            ['foo', true],
+            ['bar', true],
+          ]),
+        }
+      );
 
       const nextState = runsReducers.reducers(
         state,
         actions.runPageSelectionToggled({
-          experimentIds: ['eid'],
           runIds: ['foo', 'bar'],
         })
       );
 
-      expect(nextState.data.selectionState).toEqual(
+      expect(nextState.ui.selectionState).toEqual(
         new Map([
-          [
-            '["eid"]',
-            new Map([
-              ['foo', false],
-              ['bar', false],
-            ]),
-          ],
+          ['foo', false],
+          ['bar', false],
         ])
       );
     });

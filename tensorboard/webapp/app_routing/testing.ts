@@ -21,9 +21,7 @@ import {Route, RouteKind} from './types';
 export function buildRoute(routeOverride: Partial<Route> = {}): Route {
   return {
     routeKind: RouteKind.EXPERIMENTS,
-    pathname: '/experiments',
     params: {},
-    queryParams: [],
     ...routeOverride,
   };
 }
@@ -34,9 +32,7 @@ export function buildCompareRoute(
 ): Route {
   return {
     routeKind: RouteKind.COMPARE_EXPERIMENT,
-    pathname: '/compare',
     params: {experimentIds: aliasAndExperimentIds.join(',')},
-    queryParams: [],
     ...routeOverride,
   };
 }
@@ -44,9 +40,7 @@ export function buildCompareRoute(
 export function buildExperimentRouteFromId(experimentId: string): Route {
   return {
     routeKind: RouteKind.EXPERIMENT,
-    pathname: '/experiment',
     params: {experimentId},
-    queryParams: [],
   };
 }
 

@@ -15,7 +15,6 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {EMPTY, Observable, of} from 'rxjs';
 import {map, tap} from 'rxjs/operators';
-import {LocalStorage} from '../../util/local_storage';
 import {BackendSettings, PersistableSettings, ThemeValue} from './types';
 
 const LEGACY_METRICS_LOCAL_STORAGE_KEY = '_tb_global_settings.timeseries';
@@ -195,7 +194,6 @@ export class PersistentSettingsDataSourceImpl<UiSettings, StorageSettings>
   implements PersistentSettingsDataSource<UiSettings>
 {
   constructor(
-    private readonly localStorage: LocalStorage,
     private readonly converter: SettingsConverter<UiSettings, StorageSettings>
   ) {}
 
@@ -206,7 +204,7 @@ export class PersistentSettingsDataSourceImpl<UiSettings, StorageSettings>
 
     return this.getSettings().pipe(
       tap((currentPartialSettings) => {
-        this.localStorage.setItem(
+        localStorage.setItem(
           GLOBAL_LOCAL_STORAGE_KEY,
           JSON.stringify(
             this.converter.uiToBackend({
@@ -215,8 +213,8 @@ export class PersistentSettingsDataSourceImpl<UiSettings, StorageSettings>
             })
           )
         );
-        this.localStorage.removeItem(LEGACY_METRICS_LOCAL_STORAGE_KEY);
-        this.localStorage.removeItem(NOTIFICATION_LAST_READ_TIME_KEY);
+        localStorage.removeItem(LEGACY_METRICS_LOCAL_STORAGE_KEY);
+        localStorage.removeItem(NOTIFICATION_LAST_READ_TIME_KEY);
       }),
       map(() => void null)
     );
@@ -231,9 +229,7 @@ export class PersistentSettingsDataSourceImpl<UiSettings, StorageSettings>
   }
 
   getSettings(): Observable<Partial<UiSettings>> {
-    const lastReadTime = this.localStorage.getItem(
-      NOTIFICATION_LAST_READ_TIME_KEY
-    );
+    const lastReadTime = localStorage.getItem(NOTIFICATION_LAST_READ_TIME_KEY);
     const notificationSettings = this.converter.backendToUi(
       this.deserialize(
         lastReadTime
@@ -245,13 +241,11 @@ export class PersistentSettingsDataSourceImpl<UiSettings, StorageSettings>
     );
     const legacySettings = this.converter.backendToUi(
       this.deserialize(
-        this.localStorage.getItem(LEGACY_METRICS_LOCAL_STORAGE_KEY) ?? '{}'
+        localStorage.getItem(LEGACY_METRICS_LOCAL_STORAGE_KEY) ?? '{}'
       )
     );
     const settings = this.converter.backendToUi(
-      this.deserialize(
-        this.localStorage.getItem(GLOBAL_LOCAL_STORAGE_KEY) ?? '{}'
-      )
+      this.deserialize(localStorage.getItem(GLOBAL_LOCAL_STORAGE_KEY) ?? '{}')
     );
     return of({
       ...notificationSettings,

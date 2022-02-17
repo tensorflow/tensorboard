@@ -19,6 +19,29 @@ import * as selectors from './runs_selectors';
 import {buildRun, buildRunsState, buildStateFromRunsState} from './testing';
 
 describe('runs_selectors', () => {
+  describe('#getRunIdToExperimentId', () => {
+    beforeEach(() => {
+      // Clear the memoization.
+      selectors.getRunIdToExperimentId.release();
+    });
+
+    it('returns runIdToExpId', () => {
+      const state = buildStateFromRunsState(
+        buildRunsState({
+          runIdToExpId: {
+            run1: 'eid1',
+            run2: 'eid1',
+            run3: 'eid2',
+          },
+        })
+      );
+      expect(selectors.getRunIdToExperimentId(state)).toEqual({
+        run1: 'eid1',
+        run2: 'eid1',
+        run3: 'eid2',
+      });
+    });
+  });
   describe('#getExperimentIdForRunId', () => {
     beforeEach(() => {
       // Clear the memoization.
@@ -262,23 +285,18 @@ describe('runs_selectors', () => {
 
     it('returns selection map of runId passed', () => {
       const state = buildStateFromRunsState(
-        buildRunsState({
-          runIds: {eid: ['r1', 'r2']},
-          selectionState: new Map([
-            [
-              '["eid"]',
-              new Map([
-                ['r1', false],
-                ['r2', true],
-              ]),
-            ],
-          ]),
-        })
+        buildRunsState(
+          {},
+          {
+            selectionState: new Map([
+              ['r1', false],
+              ['r2', true],
+            ]),
+          }
+        )
       );
 
-      const actual = selectors.getRunSelectionMap(state, {
-        experimentIds: ['eid'],
-      });
+      const actual = selectors.getRunSelectionMap(state);
       expect(actual).toEqual(
         new Map([
           ['r1', false],

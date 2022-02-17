@@ -80,8 +80,24 @@ export interface NavigationFromHistory {
 export interface Route {
   routeKind: RouteKind;
   params: RouteParams;
-  pathname: string;
-  queryParams: SerializableQueryParams;
+}
+
+/**
+ * Identifies groups of routes where we wish to only rehydrate deep links one
+ * time for each group.
+ */
+export enum DeepLinkGroup {
+  EXPERIMENTS,
+  DASHBOARD,
+}
+
+/**
+ * Represents a DeepLinkGroup/NamespaceId combination that has been rehydrated
+ * since last browser (re)load.
+ */
+export interface RehydratedDeepLink {
+  deepLinkGroup: DeepLinkGroup;
+  namespaceId: string;
 }
 
 /**

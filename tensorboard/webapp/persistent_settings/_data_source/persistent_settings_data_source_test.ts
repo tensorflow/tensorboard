@@ -16,10 +16,6 @@ import {Injectable} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {firstValueFrom} from 'rxjs';
 import {
-  LocalStorageTestingModule,
-  TestingLocalStorage,
-} from '../../util/local_storage_testing';
-import {
   OSSSettingsConverter,
   PersistentSettingsDataSourceImpl,
   SettingsConverter,
@@ -28,7 +24,6 @@ import {
 import {BackendSettings, PersistableSettings, ThemeValue} from './types';
 
 describe('persistent_settings data_source test', () => {
-  let localStorage: TestingLocalStorage;
   let getItemSpy: jasmine.Spy;
   let setItemSpy: jasmine.Spy;
 
@@ -36,16 +31,14 @@ describe('persistent_settings data_source test', () => {
     Converter: new () => SettingsConverter<UiSettings, StorageSettings>
   ) {
     await TestBed.configureTestingModule({
-      imports: [LocalStorageTestingModule],
       providers: [
         PersistentSettingsDataSourceImpl,
         {provide: SettingsConverter, useClass: Converter},
       ],
     });
 
-    localStorage = TestBed.inject(TestingLocalStorage);
-    getItemSpy = spyOn(localStorage, 'getItem').and.callThrough();
-    setItemSpy = spyOn(localStorage, 'setItem').and.callThrough();
+    getItemSpy = spyOn(window.localStorage, 'getItem').and.stub();
+    setItemSpy = spyOn(window.localStorage, 'setItem').and.stub();
     return TestBed.inject(PersistentSettingsDataSourceImpl);
   }
 
@@ -180,7 +173,7 @@ describe('persistent_settings data_source test', () => {
       let removeItemSpy: jasmine.Spy;
 
       beforeEach(() => {
-        removeItemSpy = spyOn(localStorage, 'removeItem').and.callThrough();
+        removeItemSpy = spyOn(window.localStorage, 'removeItem').and.stub();
       });
 
       describe('#getSettings', () => {

@@ -79,8 +79,6 @@ describe('router_outlet', () => {
       getActiveRoute,
       buildRoute({
         routeKind,
-        pathname: 'test',
-        queryParams: [],
         params: {},
       })
     );
@@ -127,8 +125,6 @@ describe('router_outlet', () => {
       getActiveRoute,
       buildRoute({
         routeKind: RouteKind.EXPERIMENT,
-        pathname: 'test',
-        queryParams: [],
         params: {experimentId: 'foobar'},
       })
     );
@@ -136,8 +132,6 @@ describe('router_outlet', () => {
       getNextRouteForRouterOutletOnly,
       buildRoute({
         routeKind: RouteKind.EXPERIMENT,
-        pathname: 'test',
-        queryParams: [],
         params: {experimentId: 'foobarbaz'},
       })
     );
@@ -159,8 +153,6 @@ describe('router_outlet', () => {
       getActiveRoute,
       buildRoute({
         routeKind: RouteKind.EXPERIMENT,
-        pathname: 'test',
-        queryParams: [],
         params: {experimentId: 'foobar'},
       })
     );
@@ -168,8 +160,6 @@ describe('router_outlet', () => {
       getNextRouteForRouterOutletOnly,
       buildRoute({
         routeKind: RouteKind.EXPERIMENT,
-        pathname: 'test',
-        queryParams: [],
         params: {experimentId: 'foobar'},
       })
     );
@@ -183,8 +173,6 @@ describe('router_outlet', () => {
       getNextRouteForRouterOutletOnly,
       buildRoute({
         routeKind: RouteKind.EXPERIMENT,
-        pathname: 'test',
-        queryParams: [],
         params: {experimentId: 'foobarbaz'},
       })
     );

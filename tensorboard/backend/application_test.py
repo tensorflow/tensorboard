@@ -33,31 +33,31 @@ from tensorboard.plugins import base_plugin
 class FakeFlags(object):
     def __init__(
         self,
-        logdir,
+        generic_data="auto",
+        logdir="",
         logdir_spec="",
+        max_reload_threads=1,
+        path_prefix="",
         purge_orphaned_data=True,
         reload_interval=60,
-        samples_per_plugin=None,
-        max_reload_threads=1,
-        reload_task="auto",
-        window_title="",
-        path_prefix="",
         reload_multifile=False,
         reload_multifile_inactive_secs=4000,
-        generic_data="auto",
+        reload_task="auto",
+        samples_per_plugin=None,
+        window_title="",
     ):
+        self.generic_data = generic_data
         self.logdir = logdir
         self.logdir_spec = logdir_spec
+        self.max_reload_threads = max_reload_threads
+        self.path_prefix = path_prefix
         self.purge_orphaned_data = purge_orphaned_data
         self.reload_interval = reload_interval
-        self.samples_per_plugin = samples_per_plugin or {}
-        self.max_reload_threads = max_reload_threads
-        self.reload_task = reload_task
-        self.window_title = window_title
-        self.path_prefix = path_prefix
         self.reload_multifile = reload_multifile
         self.reload_multifile_inactive_secs = reload_multifile_inactive_secs
-        self.generic_data = generic_data
+        self.reload_task = reload_task
+        self.samples_per_plugin = samples_per_plugin or {}
+        self.window_title = window_title
 
 
 class FakePlugin(base_plugin.TBPlugin):

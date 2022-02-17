@@ -86,12 +86,10 @@ describe('route_contexted_reducer_helper', () => {
           before: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
             params: {experimentId: 'xyz'},
-            queryParams: [],
           }),
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
             params: {experimentId: 'abc'},
-            queryParams: [],
           }),
           beforeNamespaceId: 'namespace1',
           afterNamespaceId: 'namespace2',
@@ -106,12 +104,10 @@ describe('route_contexted_reducer_helper', () => {
           before: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
             params: {experimentId: 'abc'},
-            queryParams: [],
           }),
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
             params: {experimentId: 'xyz'},
-            queryParams: [],
           }),
           beforeNamespaceId: 'namespace2',
           afterNamespaceId: 'namespace1',
@@ -134,12 +130,10 @@ describe('route_contexted_reducer_helper', () => {
           before: buildRoute({
             routeKind: RouteKind.EXPERIMENTS,
             params: {},
-            queryParams: [],
           }),
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
             params: {experimentId: 'xyz'},
-            queryParams: [],
           }),
           beforeNamespaceId: 'namespace1',
           afterNamespaceId: 'namespace2',
@@ -166,7 +160,6 @@ describe('route_contexted_reducer_helper', () => {
             after: buildRoute({
               routeKind: RouteKind.EXPERIMENT,
               params: {experimentId: 'xyz'},
-              queryParams: [],
             }),
             beforeNamespaceId: null,
             afterNamespaceId: 'namespace1',
@@ -195,7 +188,6 @@ describe('route_contexted_reducer_helper', () => {
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
             params: {experimentId: 'abc'},
-            queryParams: [],
           }),
           beforeNamespaceId: null,
           afterNamespaceId: 'namespace1',
@@ -222,12 +214,10 @@ describe('route_contexted_reducer_helper', () => {
           before: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
             params: {experimentId: 'abc'},
-            queryParams: [],
           }),
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
             params: {experimentId: 'xyz'},
-            queryParams: [],
           }),
           beforeNamespaceId: 'namespace1',
           afterNamespaceId: 'namespace1',
@@ -270,12 +260,10 @@ describe('route_contexted_reducer_helper', () => {
           before: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
             params: {experimentId: 'xyz'},
-            queryParams: [],
           }),
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
             params: {experimentId: 'abc'},
-            queryParams: [],
           }),
           beforeNamespaceId: 'namespace1',
           afterNamespaceId: 'namespace2',
@@ -290,12 +278,10 @@ describe('route_contexted_reducer_helper', () => {
           before: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
             params: {experimentId: 'abc'},
-            queryParams: [],
           }),
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
             params: {experimentId: 'xyz'},
-            queryParams: [],
           }),
           beforeNamespaceId: 'namespace2',
           afterNamespaceId: 'namespace1',

@@ -14,8 +14,10 @@ limitations under the License.
 ==============================================================================*/
 import {
   CompareRouteParams,
+  DeepLinkGroup,
   DEFAULT_EXPERIMENT_ID,
   ExperimentRouteParams,
+  RehydratedDeepLink,
   Route,
   RouteKind,
   RouteParams,
@@ -169,17 +171,15 @@ export function createURLSearchParamsFromSerializableQueryParams(
 }
 
 /**
- * Checks whether two RouteOrNavs are equal. RouteOrNav is defined to be Route
- * or Navigation.
+ * Checks whether two sets of URL path and query parameters are equal.
  *
- * Limitations: currently, they only match pathname and query parameter (order
- * of the params have to be equal too; e.g., a=1&b=2 will not equal b=2&a=1).
+ * Limitations: order of the params have to be equal too; e.g., a=1&b=2 will not
+ * equal b=2&a=1).
  */
-export function areRoutesEqual(
-  aRoute: Pick<Route, 'pathname' | 'queryParams'>,
-  bRoute: Pick<Route, 'pathname' | 'queryParams'>
+export function arePathsAndQueryParamsEqual(
+  aRoute: {pathname: string; queryParams: SerializableQueryParams},
+  bRoute: {pathname: string; queryParams: SerializableQueryParams}
 ): boolean {
-  // TODO(stephanwlee): support hashes.
   if (
     aRoute.pathname !== bRoute.pathname ||
     aRoute.queryParams.length !== bRoute.queryParams.length
@@ -191,4 +191,79 @@ export function areRoutesEqual(
     const paramB = bRoute.queryParams[index];
     return paramA.key === paramB.key && paramA.value === paramB.value;
   });
+}
+
+/**
+ * Maps route kinds to their deep link groups.
+ */
+export function getDeepLinkGroup(routeKind: RouteKind): DeepLinkGroup | null {
+  switch (routeKind) {
+    case RouteKind.EXPERIMENTS:
+      return DeepLinkGroup.EXPERIMENTS;
+    case RouteKind.EXPERIMENT:
+    case RouteKind.COMPARE_EXPERIMENT:
+      return DeepLinkGroup.DASHBOARD;
+    case RouteKind.UNKNOWN:
+    case RouteKind.NOT_SET:
+      return null;
+  }
+}
+
+/**
+ * Determines whether a combination of route kind and namespace id should have
+ * a URL deep link rehydrated into state.
+ *
+ * We limit the number of times we rehydrate deep links as a user navigates
+ * through browser history using back and forward buttons -- rehydrating only
+ * one time for each combination of namespaceId and deepLinkGroup.
+ *
+ * So, for example, when:
+ *
+ * 1. User reloads page into experiment list, rehydrate state for the
+ *    EXPERIMENTS deep link group.
+ * 2. User then navigates back to a compare view, rehydrate state for the
+ *    DASHBOARD deep link group.
+ * 3. User then navigates back to an experiment view, DO NOT rehydrate state
+ *    again for the DASHBOARD deep link group as it was rehydrated in step (2).
+ * 4. If user then navigates back to an experiment view but in a different
+ *    namespace, then once again rehydrate state for the DASHBOARD deep link
+ *    group.
+ */
+export function canRehydrateDeepLink(
+  routeKind: RouteKind,
+  namespaceId: string,
+  rehydratedDeepLinks: RehydratedDeepLink[]
+) {
+  const deepLinkGroup = getDeepLinkGroup(routeKind);
+  return (
+    deepLinkGroup !== null &&
+    !rehydratedDeepLinks.some(
+      (rehydratedDeepLink) =>
+        rehydratedDeepLink.deepLinkGroup === deepLinkGroup &&
+        rehydratedDeepLink.namespaceId === namespaceId
+    )
+  );
+}
+
+/**
+ * Generates a 32-character long random id for namespace suffix to avoid
+ * collision of timestamp.
+ */
+export function generateRandomIdForNamespace() {
+  const arr = new Uint8Array(32);
+
+  crypto.getRandomValues(arr);
+
+  let ret = '';
+  for (const el of arr) {
+    // We select base 16 which means the character of id is [0-9a-d].
+    // We only need four bits to convert to base 16 string (2^4) from Uint8array.
+    // Thus we get rid of the last 4 bit and then convert the rest of it.
+    // For example, number 162 is 10100010 in binary. After dropping
+    // the rightest 4 bit, it is 1010, which is 10 in decimal number. Converts
+    // 10 to base 16 it is 'a'.
+    ret += (el >> 4).toString(16);
+  }
+
+  return ret;
 }

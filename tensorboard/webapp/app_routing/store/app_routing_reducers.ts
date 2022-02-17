@@ -14,13 +14,14 @@ limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
 import * as actions from '../actions';
+import {canRehydrateDeepLink, getDeepLinkGroup} from '../internal_utils';
 import {AppRoutingState} from './app_routing_types';
 
 const initialState: AppRoutingState = {
   activeRoute: null,
   nextRoute: null,
   activeNamespaceId: null,
-  knownNamespaceIds: new Set(),
+  rehydratedDeepLinks: [],
   registeredRouteKeys: new Set(),
 };
 
@@ -30,17 +31,28 @@ const reducer = createReducer(
     return {...state, nextRoute: after};
   }),
   on(actions.navigated, (state, {after, afterNamespaceId}) => {
-    let knownNamespaceIds = state.knownNamespaceIds;
-    if (!state.knownNamespaceIds.has(afterNamespaceId)) {
-      knownNamespaceIds = new Set(state.knownNamespaceIds);
-      knownNamespaceIds.add(afterNamespaceId);
+    let rehydratedDeepLinks = state.rehydratedDeepLinks;
+    if (
+      canRehydrateDeepLink(
+        after.routeKind,
+        afterNamespaceId,
+        rehydratedDeepLinks
+      )
+    ) {
+      rehydratedDeepLinks = [...rehydratedDeepLinks];
+      rehydratedDeepLinks.push({
+        // Note: getDeepLinkGroup() should return non-null given that
+        // canRehydrateDeepLink() returned true.
+        deepLinkGroup: getDeepLinkGroup(after.routeKind)!,
+        namespaceId: afterNamespaceId,
+      });
     }
     return {
       ...state,
       activeRoute: after,
       nextRoute: null,
       activeNamespaceId: afterNamespaceId,
-      knownNamespaceIds,
+      rehydratedDeepLinks,
     };
   }),
   on(actions.routeConfigLoaded, (state, {routeKinds}) => {

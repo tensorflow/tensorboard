@@ -17,14 +17,16 @@ import {DataLoadState, LoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
 import {GroupBy, SortKey} from '../types';
 import {
+  ExperimentId,
   Run,
+  RunId,
   RunsDataState,
   RunsState,
   RunsUiState,
   RUNS_FEATURE_KEY,
   State,
 } from './runs_types';
-import {createGroupBy, serializeExperimentIds} from './utils';
+import {createGroupBy} from './utils';
 
 const getRunsState = createFeatureSelector<State, RunsState>(RUNS_FEATURE_KEY);
 
@@ -36,7 +38,17 @@ const getDataState = createSelector(
 );
 
 /**
- * Returns Observable that emits run object.
+ * Returns Observable that emits map of RunId to ExperimentId.
+ */
+export const getRunIdToExperimentId = createSelector(
+  getDataState,
+  (state: RunsDataState): Record<RunId, ExperimentId> => {
+    return state.runIdToExpId;
+  }
+);
+
+/**
+ * Returns Observable that emits ExperimentId of given Run.
  */
 export const getExperimentIdForRunId = createSelector(
   getDataState,
@@ -101,22 +113,6 @@ export const getRunsLoadState = createSelector(
         state: DataLoadState.NOT_LOADED,
       }
     );
-  }
-);
-
-/**
- * Returns Observable that emits selection state of runs. If the runs for the
- * current route are desired, please see ui_selectors.ts's
- * getCurrentRouteRunSelection instead.
- */
-export const getRunSelectionMap = createSelector(
-  getDataState,
-  (
-    dataState: RunsDataState,
-    props: {experimentIds: string[]}
-  ): Map<string, boolean> => {
-    const stateKey = serializeExperimentIds(props.experimentIds);
-    return dataState.selectionState.get(stateKey) || new Map();
   }
 );
 
@@ -187,6 +183,18 @@ export const getRunSelectorSort = createSelector(
   getUiState,
   (state: RunsUiState): {key: SortKey | null; direction: SortDirection} => {
     return state.sort;
+  }
+);
+
+/**
+ * Returns Observable that emits selection state of runs. If the runs for the
+ * current route are desired, please see ui_selectors.ts's
+ * getCurrentRouteRunSelection instead.
+ */
+export const getRunSelectionMap = createSelector(
+  getUiState,
+  (uiState: RunsUiState): Map<string, boolean> => {
+    return uiState.selectionState;
   }
 );
 

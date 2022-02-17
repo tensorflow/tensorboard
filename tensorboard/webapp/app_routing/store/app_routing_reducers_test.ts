@@ -15,7 +15,7 @@ limitations under the License.
 
 import * as actions from '../actions';
 import {buildRoute} from '../testing';
-import {RouteKind} from '../types';
+import {DeepLinkGroup, RouteKind} from '../types';
 import * as appRoutingReducers from './app_routing_reducers';
 import {buildAppRoutingState} from './testing';
 
@@ -32,11 +32,9 @@ describe('app_routing_reducers', () => {
         actions.navigating({
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
-            pathname: '/experiment/234',
             params: {
               experimentId: '234',
             },
-            queryParams: [],
           }),
         })
       );
@@ -44,11 +42,9 @@ describe('app_routing_reducers', () => {
       expect(nextState.nextRoute).toEqual(
         buildRoute({
           routeKind: RouteKind.EXPERIMENT,
-          pathname: '/experiment/234',
           params: {
             experimentId: '234',
           },
-          queryParams: [],
         })
       );
     });
@@ -67,11 +63,9 @@ describe('app_routing_reducers', () => {
           before: null,
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
-            pathname: '/experiment/234',
             params: {
               experimentId: '234',
             },
-            queryParams: [],
           }),
           beforeNamespaceId: null,
           afterNamespaceId: 'namespace1',
@@ -81,20 +75,21 @@ describe('app_routing_reducers', () => {
       expect(nextState.activeRoute).toEqual(
         buildRoute({
           routeKind: RouteKind.EXPERIMENT,
-          pathname: '/experiment/234',
           params: {
             experimentId: '234',
           },
-          queryParams: [],
         })
       );
       expect(nextState.activeNamespaceId).toEqual('namespace1');
     });
 
-    it('adds to knownNamespaceIds', () => {
-      const originalKnownNamespaceIds = new Set<string>(['n1', 'n2']);
+    it('replaces and adds to rehydratedDeepLinks if canRehydrateDeepLink()', () => {
+      const originalRehydratedDeepLinks = [
+        {namespaceId: 'n1', deepLinkGroup: DeepLinkGroup.EXPERIMENTS},
+        {namespaceId: 'n2', deepLinkGroup: DeepLinkGroup.EXPERIMENTS},
+      ];
       const state = buildAppRoutingState({
-        knownNamespaceIds: originalKnownNamespaceIds,
+        rehydratedDeepLinks: originalRehydratedDeepLinks,
       });
 
       const nextState = appRoutingReducers.reducers(
@@ -107,16 +102,23 @@ describe('app_routing_reducers', () => {
         })
       );
 
-      expect(nextState.knownNamespaceIds).toEqual(
-        new Set<string>(['n1', 'n2', 'n3'])
+      expect(nextState.rehydratedDeepLinks).toEqual([
+        {namespaceId: 'n1', deepLinkGroup: DeepLinkGroup.EXPERIMENTS},
+        {namespaceId: 'n2', deepLinkGroup: DeepLinkGroup.EXPERIMENTS},
+        {namespaceId: 'n3', deepLinkGroup: DeepLinkGroup.EXPERIMENTS},
+      ]);
+      expect(nextState.rehydratedDeepLinks).not.toBe(
+        originalRehydratedDeepLinks
       );
-      expect(nextState.knownNamespaceIds).not.toBe(originalKnownNamespaceIds);
     });
 
-    it('does not create new knownNamespaceIds when no changes necessary', () => {
-      const originalKnownNamespaceIds = new Set<string>(['n1', 'n2']);
+    it('does not replace or add to rehydratedDeepLinks if not canRehydrateDeepLink()', () => {
+      const originalRehydratedDeepLinks = [
+        {namespaceId: 'n1', deepLinkGroup: DeepLinkGroup.EXPERIMENTS},
+        {namespaceId: 'n2', deepLinkGroup: DeepLinkGroup.EXPERIMENTS},
+      ];
       const state = buildAppRoutingState({
-        knownNamespaceIds: originalKnownNamespaceIds,
+        rehydratedDeepLinks: originalRehydratedDeepLinks,
       });
 
       const nextState = appRoutingReducers.reducers(
@@ -129,10 +131,11 @@ describe('app_routing_reducers', () => {
         })
       );
 
-      expect(nextState.knownNamespaceIds).toEqual(
-        new Set<string>(['n1', 'n2'])
-      );
-      expect(nextState.knownNamespaceIds).toBe(originalKnownNamespaceIds);
+      expect(nextState.rehydratedDeepLinks).toEqual([
+        {namespaceId: 'n1', deepLinkGroup: DeepLinkGroup.EXPERIMENTS},
+        {namespaceId: 'n2', deepLinkGroup: DeepLinkGroup.EXPERIMENTS},
+      ]);
+      expect(nextState.rehydratedDeepLinks).toBe(originalRehydratedDeepLinks);
     });
   });
 

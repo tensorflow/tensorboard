@@ -40,6 +40,12 @@ def tensorboard_workspace(name = ""):
         actual = "@org_pythonhosted_six",
     )
 
+    # Needed by Protobuf.
+    native.bind(
+        name = "grpc_python_plugin",
+        actual = "@com_github_grpc_grpc//src/compiler:grpc_python_plugin",
+    )
+
     platform_http_file(
         name = "org_chromium_chromium",  # pinned to Chromium 84.0.4147.0
         licenses = ["notice"],  # BSD 3-clause (maybe more?)

@@ -37,13 +37,48 @@ import {getDarkModeEnabled} from '../feature_flag/store/feature_flag_selectors';
 import {
   getDefaultRunColorIdMap,
   getRunColorOverride,
+  getRunIdToExperimentId,
   getRuns,
   getRunSelectionMap,
   getRunSelectorRegexFilter,
 } from '../runs/store/runs_selectors';
+import {ExperimentId, RunId} from '../runs/store/runs_types';
 import {selectors} from '../settings';
 import {ColorPalette} from './colors';
 import {matchRunToRegex, RunMatchable} from './matcher';
+
+/**
+ * Creates a copy of RunSelectionMap with entries filtered to runs that
+ * belong to one of the current experiments in the route.
+ */
+const getRunSelectionMapFilteredToCurrentRoute = createSelector<
+  State,
+  string[] | null,
+  Map<string, boolean>,
+  Record<RunId, ExperimentId>,
+  Map<string, boolean>
+>(
+  getExperimentIdsFromRoute,
+  getRunSelectionMap,
+  getRunIdToExperimentId,
+  (experimentIds, runSelectionMap, runIds) => {
+    if (!experimentIds) {
+      // No experiments in the route means there are no runs to select.
+      return new Map<string, boolean>();
+    }
+
+    const filteredRunSelectionMap = new Map<string, boolean>();
+    for (const [runId, value] of runSelectionMap.entries()) {
+      const experimentId = runIds[runId];
+      if (experimentId && experimentIds.indexOf(experimentId) >= 0) {
+        // Run belongs to one of the Route's experiments. Add it to the filtered
+        // result.
+        filteredRunSelectionMap.set(runId, value);
+      }
+    }
+    return filteredRunSelectionMap;
+  }
+);
 
 /**
  * Selects the run selection (runId to boolean) of current set of experiments.
@@ -51,10 +86,8 @@ import {matchRunToRegex, RunMatchable} from './matcher';
  * Note that emits null when current route is not about an experiment.
  */
 export const getCurrentRouteRunSelection = createSelector(
-  (state: State): Map<string, boolean> | null => {
-    const experimentIds = getExperimentIdsFromRoute(state);
-    return experimentIds ? getRunSelectionMap(state, {experimentIds}) : null;
-  },
+  getExperimentIdsFromRoute,
+  getRunSelectionMapFilteredToCurrentRoute,
   getRunSelectorRegexFilter,
   (state: State): Map<string, RunMatchable> => {
     const experimentIds = getExperimentIdsFromRoute(state) ?? [];
@@ -73,8 +106,11 @@ export const getCurrentRouteRunSelection = createSelector(
     return runMatchableMap;
   },
   getRouteKind,
-  (runSelection, regexFilter, runMatchableMap, routeKind) => {
-    if (!runSelection) return null;
+  (experimentIds, runSelection, regexFilter, runMatchableMap, routeKind) => {
+    if (!experimentIds) {
+      // There are no experiments in the route. Return null.
+      return null;
+    }
     const includeExperimentInfo = routeKind === RouteKind.COMPARE_EXPERIMENT;
     const filteredSelection = new Map<string, boolean>();
 

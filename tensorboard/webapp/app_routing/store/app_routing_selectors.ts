@@ -19,7 +19,12 @@ import {
   getCompareExperimentIdAliasSpec,
   getCompareExperimentIdAliasWithNumberSpec,
 } from '../store_only_utils';
-import {CompareRouteParams, Route, RouteKind} from '../types';
+import {
+  CompareRouteParams,
+  RehydratedDeepLink,
+  Route,
+  RouteKind,
+} from '../types';
 import {
   AppRoutingState,
   APP_ROUTING_FEATURE_KEY,
@@ -51,10 +56,10 @@ export const getActiveNamespaceId = createSelector(
   }
 );
 
-export const getKnownNamespaceIds = createSelector(
+export const getRehydratedDeepLinks = createSelector(
   getAppRoutingState,
-  (state): Set<string> => {
-    return state.knownNamespaceIds;
+  (state): RehydratedDeepLink[] => {
+    return state.rehydratedDeepLinks;
   }
 );
 

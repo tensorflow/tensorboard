@@ -69,6 +69,7 @@ class LocalDataIngester(ingester.DataIngester):
             purge_orphaned_data=flags.purge_orphaned_data,
             max_reload_threads=flags.max_reload_threads,
             event_file_active_filter=_get_event_file_active_filter(flags),
+            detect_file_replacement=flags.detect_file_replacement,
         )
         self._data_provider = data_provider.MultiplexerDataProvider(
             self._multiplexer, flags.logdir or flags.logdir_spec

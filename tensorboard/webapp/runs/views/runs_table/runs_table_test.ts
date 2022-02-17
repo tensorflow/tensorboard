@@ -1818,13 +1818,11 @@ describe('runs_table', () => {
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         runSelectionToggled({
-          experimentIds: ['rowling'],
           runId: 'book2',
         })
       );
       expect(dispatchSpy).toHaveBeenCalledWith(
         runSelectionToggled({
-          experimentIds: ['rowling'],
           runId: 'book1',
         })
       );
@@ -1858,7 +1856,6 @@ describe('runs_table', () => {
 
         expect(dispatchSpy).toHaveBeenCalledWith(
           runPageSelectionToggled({
-            experimentIds: ['rowling'],
             runIds: ['book1', 'book2'],
           })
         );

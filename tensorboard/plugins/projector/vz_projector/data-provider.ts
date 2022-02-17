@@ -123,7 +123,7 @@ export function retrieveTensorAsBytes(
     let data: Float32Array;
     try {
       data = new Float32Array(xhr.response);
-    } catch (e) {
+    } catch (e: any) {
       logging.setErrorMessage(e, 'parsing tensor bytes');
       return;
     }

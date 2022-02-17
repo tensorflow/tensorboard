@@ -55,7 +55,6 @@ export function buildRunsState(
       runIdToExpId: {},
       runMetadata: {},
       runsLoadState: {},
-      selectionState: new Map(),
       runColorOverrideForGroupBy: new Map(),
       defaultRunColorIdForGroupBy: new Map(),
       groupKeyToColorId: new Map(),
@@ -68,6 +67,7 @@ export function buildRunsState(
     ui: {
       paginationOption: {pageIndex: 0, pageSize: 0},
       sort: {key: null, direction: SortDirection.UNSET},
+      selectionState: new Map(),
       ...uiOverride,
     },
   };

@@ -14,7 +14,6 @@ tf_ng_module(
         "//tensorboard/webapp/persistent_settings/_data_source:types",
         "//tensorboard/webapp/persistent_settings/_redux:persistent_settings_actions",
         "//tensorboard/webapp/persistent_settings/_redux:persistent_settings_effects",
-        "//tensorboard/webapp/util:local_storage",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
