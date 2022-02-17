@@ -164,7 +164,7 @@ export class LinkedTimeFobControllerComponent {
     return stepIndex;
   }
 
-  // Get the index of largest step that the currentDraggingFob is allowed to go.
+  // Gets the index of largest step that the currentDraggingFob is allowed to go.
   getDraggingFobUpperBoundIndex() {
     // When dragging the START fob while there is an END fob the upper bound is
     // the step before or equal to the endFob's step.
@@ -180,7 +180,7 @@ export class LinkedTimeFobControllerComponent {
     return this.steps.length - 1;
   }
 
-  // Get the index of smallest step that the currentDraggingFob is allowed to go.
+  // Gets the index of smallest step that the currentDraggingFob is allowed to go.
   getDraggingFobLowerBoundIndex() {
     // The END fob cannot pass the START fob.
     if (this.currentDraggingFob === Fob.END) {

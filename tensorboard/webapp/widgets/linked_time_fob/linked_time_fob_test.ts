@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Component, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
+import {Component, NO_ERRORS_SCHEMA, ViewChild, Input} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {LinkedTime} from '../../metrics/types';
 import {ScaleLinear, ScaleTime} from '../../third_party/d3';
@@ -43,14 +43,12 @@ class TestableComponent {
   @ViewChild('FobController')
   fobController!: LinkedTimeFobControllerComponent;
 
-  steps!: number[];
-  axisDirection!: AxisDirection;
-  linkedTime!: LinkedTime;
-  temporalScale!: TemporalScale;
+  @Input() steps!: number[];
+  @Input() axisDirection!: AxisDirection;
+  @Input() linkedTime!: LinkedTime;
+  @Input() temporalScale!: TemporalScale;
 
-  onSelectTimeChanged(newLinkedTime: LinkedTime) {
-    this.linkedTime = newLinkedTime;
-  }
+  @Input() onSelectTimeChanged!: (newLinkedTime: LinkedTime) => void;
 }
 
 describe('linked_time_fob_controller', () => {
@@ -97,221 +95,231 @@ describe('linked_time_fob_controller', () => {
     return fixture;
   }
 
-  it('moves the start fob down to mouse when mouse is dragging down and is below fob', () => {
-    let fixture = createComponent({});
-    fixture.detectChanges();
-    let fobController = fixture.componentInstance.fobController;
-    expect(
-      fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(1);
-    fobController.startDrag(Fob.START);
-    let fakeEvent = new MouseEvent('mousemove', {clientY: 3, movementY: 1});
-    fobController.mouseMove(fakeEvent);
-    fixture.detectChanges();
-    expect(
-      fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(3);
-    expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
-      start: {step: 3},
-      end: null,
+  describe('vertical dragging', () => {
+    it('moves the start fob down to mouse when mouse is dragging down and is below fob', () => {
+      let fixture = createComponent({});
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(1);
+      fobController.startDrag(Fob.START);
+      let fakeEvent = new MouseEvent('mousemove', {clientY: 3, movementY: 1});
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(3);
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 3},
+        end: null,
+      });
     });
-  });
 
-  it('moves the start fob above mouse when mouse is dragging up and above the fob', () => {
-    let fixture = createComponent({linkedTime: {start: {step: 4}, end: null}});
-    fixture.detectChanges();
-    let fobController = fixture.componentInstance.fobController;
-    expect(
-      fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(4);
-    fobController.startDrag(Fob.START);
-    let fakeEvent = new MouseEvent('mousemove', {clientY: 2, movementY: -1});
-    fobController.mouseMove(fakeEvent);
-    fixture.detectChanges();
-    expect(
-      fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(2);
-    expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
-      start: {step: 2},
-      end: null,
+    it('moves the start fob above mouse when mouse is dragging up and above the fob', () => {
+      let fixture = createComponent({
+        linkedTime: {start: {step: 4}, end: null},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(4);
+      fobController.startDrag(Fob.START);
+      let fakeEvent = new MouseEvent('mousemove', {clientY: 2, movementY: -1});
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(2);
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 2},
+        end: null,
+      });
     });
-  });
 
-  it('does not move the start fob when mouse is dragging up but, is below the fob', () => {
-    let fixture = createComponent({linkedTime: {start: {step: 2}, end: null}});
-    fixture.detectChanges();
-    let fobController = fixture.componentInstance.fobController;
-    expect(
-      fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(2);
-    fobController.startDrag(Fob.START);
-    let fakeEvent = new MouseEvent('mousemove', {clientY: 4, movementY: -1});
-    fobController.mouseMove(fakeEvent);
-    fixture.detectChanges();
-    expect(
-      fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(2);
-    expect(onSelectTimeChanged).toHaveBeenCalledTimes(0);
-  });
+    it('does not move the start fob when mouse is dragging up but, is below the fob', () => {
+      let fixture = createComponent({
+        linkedTime: {start: {step: 2}, end: null},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(2);
+      fobController.startDrag(Fob.START);
+      let fakeEvent = new MouseEvent('mousemove', {clientY: 4, movementY: -1});
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(2);
+      expect(onSelectTimeChanged).toHaveBeenCalledTimes(0);
+    });
 
-  it('does not move the start fob when mouse is dragging down but, is above the fob', () => {
-    let fixture = createComponent({linkedTime: {start: {step: 4}, end: null}});
-    fixture.detectChanges();
-    let fobController = fixture.componentInstance.fobController;
-    expect(
-      fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(4);
-    fobController.startDrag(Fob.START);
-    let fakeEvent = new MouseEvent('mousemove', {clientY: 2, movementY: 1});
-    fobController.mouseMove(fakeEvent);
-    fixture.detectChanges();
-    expect(
-      fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(4);
-    expect(onSelectTimeChanged).toHaveBeenCalledTimes(0);
-  });
+    it('does not move the start fob when mouse is dragging down but, is above the fob', () => {
+      let fixture = createComponent({
+        linkedTime: {start: {step: 4}, end: null},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(4);
+      fobController.startDrag(Fob.START);
+      let fakeEvent = new MouseEvent('mousemove', {clientY: 2, movementY: 1});
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(4);
+      expect(onSelectTimeChanged).toHaveBeenCalledTimes(0);
+    });
 
-  it('does not move the start fob when mouse is dragging down but, the fob is already on the final step', () => {
-    let fixture = createComponent({linkedTime: {start: {step: 4}, end: null}});
-    fixture.detectChanges();
-    let fobController = fixture.componentInstance.fobController;
-    expect(
-      fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(4);
-    fobController.startDrag(Fob.START);
-    let fakeEvent = new MouseEvent('mousemove', {clientY: 8, movementY: 1});
-    fobController.mouseMove(fakeEvent);
-    fixture.detectChanges();
-    expect(
-      fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(4);
-    expect(onSelectTimeChanged).toHaveBeenCalledTimes(0);
-  });
+    it('does not move the start fob when mouse is dragging down but, the fob is already on the final step', () => {
+      let fixture = createComponent({
+        linkedTime: {start: {step: 4}, end: null},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(4);
+      fobController.startDrag(Fob.START);
+      let fakeEvent = new MouseEvent('mousemove', {clientY: 8, movementY: 1});
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(4);
+      expect(onSelectTimeChanged).toHaveBeenCalledTimes(0);
+    });
 
-  it('start fob moves does not pass the end fob when being dragged passed it.', () => {
-    let fixture = createComponent({
-      linkedTime: {start: {step: 2}, end: {step: 3}},
+    it('start fob moves does not pass the end fob when being dragged passed it.', () => {
+      let fixture = createComponent({
+        linkedTime: {start: {step: 2}, end: {step: 3}},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(2);
+      fobController.startDrag(Fob.START);
+      let fakeEvent = new MouseEvent('mousemove', {clientY: 4, movementY: 1});
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(3);
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 3},
+        end: {step: 3},
+      });
     });
-    fixture.detectChanges();
-    let fobController = fixture.componentInstance.fobController;
-    expect(
-      fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(2);
-    fobController.startDrag(Fob.START);
-    let fakeEvent = new MouseEvent('mousemove', {clientY: 4, movementY: 1});
-    fobController.mouseMove(fakeEvent);
-    fixture.detectChanges();
-    expect(
-      fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(3);
-    expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
-      start: {step: 3},
-      end: {step: 3},
-    });
-  });
 
-  it('end fob moves to the mouse when mouse is dragging up and mouse is above the fob', () => {
-    let fixture = createComponent({
-      linkedTime: {start: {step: 1}, end: {step: 1}},
+    it('end fob moves to the mouse when mouse is dragging up and mouse is above the fob', () => {
+      let fixture = createComponent({
+        linkedTime: {start: {step: 1}, end: {step: 1}},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      expect(
+        fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(1);
+      fobController.startDrag(Fob.END);
+      onSelectTimeChanged.calls.reset();
+      let fakeEvent = new MouseEvent('mousemove', {clientY: 3, movementY: 1});
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(3);
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 1},
+        end: {step: 3},
+      });
     });
-    fixture.detectChanges();
-    let fobController = fixture.componentInstance.fobController;
-    expect(
-      fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(1);
-    fobController.startDrag(Fob.END);
-    onSelectTimeChanged.calls.reset();
-    let fakeEvent = new MouseEvent('mousemove', {clientY: 3, movementY: 1});
-    fobController.mouseMove(fakeEvent);
-    fixture.detectChanges();
-    expect(
-      fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(3);
-    expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
-      start: {step: 1},
-      end: {step: 3},
-    });
-  });
 
-  it('end fob moves to the mouse when mouse is dragging down and mouse is below the fob', () => {
-    let fixture = createComponent({
-      linkedTime: {start: {step: 1}, end: {step: 4}},
+    it('end fob moves to the mouse when mouse is dragging down and mouse is below the fob', () => {
+      let fixture = createComponent({
+        linkedTime: {start: {step: 1}, end: {step: 4}},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      expect(
+        fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(4);
+      fobController.startDrag(Fob.END);
+      let fakeEvent = new MouseEvent('mousemove', {clientY: 2, movementY: -1});
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(2);
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 1},
+        end: {step: 2},
+      });
     });
-    fixture.detectChanges();
-    let fobController = fixture.componentInstance.fobController;
-    expect(
-      fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(4);
-    fobController.startDrag(Fob.END);
-    let fakeEvent = new MouseEvent('mousemove', {clientY: 2, movementY: -1});
-    fobController.mouseMove(fakeEvent);
-    fixture.detectChanges();
-    expect(
-      fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(2);
-    expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
-      start: {step: 1},
-      end: {step: 2},
-    });
-  });
 
-  it('end fob does not move when mouse is dragging down but, mouse is above the fob', () => {
-    let fixture = createComponent({
-      linkedTime: {start: {step: 1}, end: {step: 2}},
+    it('end fob does not move when mouse is dragging down but, mouse is above the fob', () => {
+      let fixture = createComponent({
+        linkedTime: {start: {step: 1}, end: {step: 2}},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      expect(
+        fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(2);
+      fobController.startDrag(Fob.END);
+      let fakeEvent = new MouseEvent('mousemove', {clientY: 3, movementY: -1});
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(2);
+      expect(onSelectTimeChanged).toHaveBeenCalledTimes(0);
     });
-    fixture.detectChanges();
-    let fobController = fixture.componentInstance.fobController;
-    expect(
-      fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(2);
-    fobController.startDrag(Fob.END);
-    let fakeEvent = new MouseEvent('mousemove', {clientY: 3, movementY: -1});
-    fobController.mouseMove(fakeEvent);
-    fixture.detectChanges();
-    expect(
-      fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(2);
-    expect(onSelectTimeChanged).toHaveBeenCalledTimes(0);
-  });
 
-  it('end fob does not move when mouse is dragging up but, mouse is below the fob', () => {
-    let fixture = createComponent({
-      linkedTime: {start: {step: 1}, end: {step: 3}},
+    it('end fob does not move when mouse is dragging up but, mouse is below the fob', () => {
+      let fixture = createComponent({
+        linkedTime: {start: {step: 1}, end: {step: 3}},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      expect(
+        fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(3);
+      fobController.startDrag(Fob.END);
+      let fakeEvent = new MouseEvent('mousemove', {clientY: 2, movementY: 1});
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(3);
+      expect(onSelectTimeChanged).toHaveBeenCalledTimes(0);
     });
-    fixture.detectChanges();
-    let fobController = fixture.componentInstance.fobController;
-    expect(
-      fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(3);
-    fobController.startDrag(Fob.END);
-    let fakeEvent = new MouseEvent('mousemove', {clientY: 2, movementY: 1});
-    fobController.mouseMove(fakeEvent);
-    fixture.detectChanges();
-    expect(
-      fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(3);
-    expect(onSelectTimeChanged).toHaveBeenCalledTimes(0);
-  });
 
-  it('end fob does not pass the start fob when being dragged passed it.', () => {
-    let fixture = createComponent({
-      linkedTime: {start: {step: 2}, end: {step: 3}},
-    });
-    fixture.detectChanges();
-    let fobController = fixture.componentInstance.fobController;
-    expect(
-      fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(3);
-    fobController.startDrag(Fob.END);
-    let fakeEvent = new MouseEvent('mousemove', {clientY: 1, movementY: -1});
-    fobController.mouseMove(fakeEvent);
-    fixture.detectChanges();
-    expect(
-      fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
-    ).toEqual(2);
-    expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
-      start: {step: 2},
-      end: {step: 2},
+    it('end fob does not pass the start fob when being dragged passed it.', () => {
+      let fixture = createComponent({
+        linkedTime: {start: {step: 2}, end: {step: 3}},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      expect(
+        fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(3);
+      fobController.startDrag(Fob.END);
+      let fakeEvent = new MouseEvent('mousemove', {clientY: 1, movementY: -1});
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(2);
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 2},
+        end: {step: 2},
+      });
     });
   });
 });
