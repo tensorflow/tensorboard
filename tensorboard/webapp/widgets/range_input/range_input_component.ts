@@ -138,7 +138,10 @@ export class RangeInputComponent implements OnInit, OnDestroy {
   @Input() inputEnabled: boolean = true;
 
   @Output()
-  rangeValuesChanged = new EventEmitter<{lowerValue: number; upperValue: number}>();
+  rangeValuesChanged = new EventEmitter<{
+    lowerValue: number;
+    upperValue: number;
+  }>();
 
   @Output() singleValueChanged = new EventEmitter<number>();
 

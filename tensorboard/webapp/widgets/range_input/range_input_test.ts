@@ -108,7 +108,12 @@ describe('range input test', () => {
     fixture.componentInstance.onSingleValueChanged = onSingleValueChanged;
     fixture.componentInstance.onUpperValueRemoved = onUpperValueRemoved;
     fixture.detectChanges();
-    return {fixture, onRangeValuesChanged, onSingleValueChanged, onUpperValueRemoved};
+    return {
+      fixture,
+      onRangeValuesChanged,
+      onSingleValueChanged,
+      onUpperValueRemoved,
+    };
   }
 
   function getThumbsOnRange(
@@ -427,11 +432,19 @@ describe('range input test', () => {
       });
 
       const fixture = fixtureAndonRangeValuesChanged.fixture;
-      const onRangeValuesChanged = fixtureAndonRangeValuesChanged.onRangeValuesChanged;
-      const onSingleValueChanged = fixtureAndonRangeValuesChanged.onSingleValueChanged;
-      const onUpperValueRemoved = fixtureAndonRangeValuesChanged.onUpperValueRemoved;
+      const onRangeValuesChanged =
+        fixtureAndonRangeValuesChanged.onRangeValuesChanged;
+      const onSingleValueChanged =
+        fixtureAndonRangeValuesChanged.onSingleValueChanged;
+      const onUpperValueRemoved =
+        fixtureAndonRangeValuesChanged.onUpperValueRemoved;
 
-      return {fixture, onRangeValuesChanged, onSingleValueChanged, onUpperValueRemoved};
+      return {
+        fixture,
+        onRangeValuesChanged,
+        onSingleValueChanged,
+        onUpperValueRemoved,
+      };
     }
 
     function createSingleComponent() {
@@ -443,8 +456,10 @@ describe('range input test', () => {
       });
 
       const fixture = fixtureAndonRangeValuesChanged.fixture;
-      const onRangeValuesChanged = fixtureAndonRangeValuesChanged.onRangeValuesChanged;
-      const onSingleValueChanged = fixtureAndonRangeValuesChanged.onSingleValueChanged;
+      const onRangeValuesChanged =
+        fixtureAndonRangeValuesChanged.onRangeValuesChanged;
+      const onSingleValueChanged =
+        fixtureAndonRangeValuesChanged.onSingleValueChanged;
 
       return {fixture, onRangeValuesChanged, onSingleValueChanged};
     }
