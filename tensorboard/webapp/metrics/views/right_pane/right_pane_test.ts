@@ -376,6 +376,15 @@ describe('metrics right_pane', () => {
       });
     });
 
+    it('does not display link time setting on link time disnabled', () => {
+      store.overrideSelector(selectors.getIsLinkedTimeEnabled, false);
+      const fixture = TestBed.createComponent(SettingsViewContainer);
+      fixture.detectChanges();
+
+      const el = fixture.debugElement.query(By.css('.linked-time'));
+      expect(el).toBeFalsy();
+    });
+
     describe('linked time feature enabled', () => {
       beforeEach(() => {
         store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
@@ -439,7 +448,35 @@ describe('metrics right_pane', () => {
           expect(el.query(By.css('tb-range-input'))).toBeTruthy();
         });
 
-        it('dispatches actions when step changes when making range step change', () => {
+        it('disables tb-range-input on select time disabled', () => {
+          store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
+          store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+          store.overrideSelector(selectors.getMetricsSelectTimeEnabled, false);
+          store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
+          const fixture = TestBed.createComponent(SettingsViewContainer);
+          fixture.detectChanges();
+
+          const el = fixture.debugElement.query(
+            By.css('.linked-time tb-range-input')
+          );
+          expect(el.nativeElement.getAttribute('disabled')).toBe('true');
+        });
+
+        it('enables tb-range-input on select time enabled', () => {
+          store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
+          store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+          store.overrideSelector(selectors.getMetricsSelectTimeEnabled, true);
+          store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
+          const fixture = TestBed.createComponent(SettingsViewContainer);
+          fixture.detectChanges();
+
+          const el = fixture.debugElement.query(
+            By.css('.linked-time tb-range-input')
+          );
+          expect(el.nativeElement.getAttribute('disabled')).toBe('false');
+        });
+
+        it('dispatches actions when making range step change', () => {
           store.overrideSelector(selectors.getMetricsUseRangeSelectTime, true);
           store.overrideSelector(selectors.getMetricsSelectedTimeSetting, {
             start: {step: 0},
@@ -464,7 +501,7 @@ describe('metrics right_pane', () => {
           );
         });
 
-        it('dispatches actions when step changes when making single step change', () => {
+        it('dispatches actions when making single step change', () => {
           store.overrideSelector(selectors.getMetricsUseRangeSelectTime, true);
           store.overrideSelector(selectors.getMetricsSelectedTimeSetting, {
             start: {step: 0},

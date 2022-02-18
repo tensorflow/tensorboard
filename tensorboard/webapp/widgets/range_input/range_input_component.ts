@@ -46,9 +46,9 @@ enum Position {
  *
  *        left input             right input
  *   +-----------------+     +----------------+
- *   |                 |     |       X        |
+ *   |                 |     |    [empty]     |
  *   +-----------------+     +----------------+
- *       <lowerValue>           <no upperValue
+ *       <lowerValue>          <no upperValue>
  *
  *                 thumb
  *                 +---+
@@ -76,7 +76,7 @@ enum Position {
  *        <lowerValue>        <upperValue>
  *
  * Features:
- * - `useRange` controlls it renders a single or double thumbed slider
+ * - `useRange` controls whether renders a single or double thumbed slider
  * - you can drag a thumb to change lowerValue or upperValue
  * - you cannot click on track to change any value on double thumbed slider
  *   but click anywhere in a single slider sets the value to where clicked.
@@ -86,7 +86,8 @@ enum Position {
  * - does not validate input (e.g., lowerValue can be lower than min) but thumbs
  *   are clipped to `min` and `max`. Also, when emitting changes, the values can
  *   never exceed `min` and `max`.
- * - emits actions on uppper value removed
+ * - emits actions on both single and range value changed
+ * - emits actions on upper value removed
  */
 @Component({
   selector: 'tb-range-input',
@@ -129,13 +130,13 @@ export class RangeInputComponent implements OnInit, OnDestroy {
    */
   @Input() tickCount: number | null = 20;
   /**
-   * Renders single or range slider. Sets default to range slider for compatibility.
+   * Renders single or range slider.
    */
   @Input() useRange: boolean = true;
   /**
-   * Whether the text input is editable. Default enabled for compatibility.
+   * Whether the text input is editable.
    */
-  @Input() inputEnabled: boolean = true;
+  @Input() enabled: boolean = true;
 
   @Output()
   rangeValuesChanged = new EventEmitter<{
@@ -339,7 +340,7 @@ export class RangeInputComponent implements OnInit, OnDestroy {
 
     // Cleans input value. If the upper value is removed, we go from range to
     // single selection. If the lower value is removed, we set it to the min
-    // for both single ang range seleciton.
+    // for both single and range seleciton.
     // For example, for min=50, max=1000,
     // range  [100, 500]  → delete upper value → single [100, X]
     // single [100, X]    → delete lower value → single [50, X]

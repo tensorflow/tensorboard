@@ -28,7 +28,7 @@ import {RangeInputComponent, TEST_ONLY} from './range_input_component';
       [lowerValue]="lowerValue"
       [upperValue]="upperValue"
       [useRange]="useRange"
-      [inputEnabled]="inputEnabled"
+      [enabled]="enabled"
       [tickCount]="tickCount"
       (rangeValuesChanged)="onRangeValuesChanged($event)"
       (singleValueChanged)="onSingleValueChanged($event)"
@@ -58,7 +58,7 @@ class TestableComponent {
 
   @Input() useRange!: boolean;
 
-  @Input() inputEnabled!: boolean;
+  @Input() enabled!: boolean;
 
   @Input() tickCount!: number | null;
 
@@ -88,7 +88,7 @@ describe('range input test', () => {
       max: 5,
       tickCount: 10,
       useRange: false,
-      inputEnabled: true,
+      enabled: true,
       ...props,
     };
     const fixture = TestBed.createComponent(TestableComponent);
@@ -226,7 +226,7 @@ describe('range input test', () => {
     }
 
     describe('single selection', () => {
-      it('dispatches actions when step changes when making single step change', () => {
+      it('dispatches actions when making single step change', () => {
         const {fixture, onSingleValueChanged} = createComponent({
           lowerValue: -1,
           tickCount: null,
@@ -244,7 +244,7 @@ describe('range input test', () => {
     });
 
     describe('range selection', () => {
-      it('calls `value` when thumb is dragged', () => {
+      it('dispatches actions when making range step change', () => {
         const {fixture, onRangeValuesChanged} = createComponent({
           lowerValue: -1,
           upperValue: 1,
@@ -422,50 +422,14 @@ describe('range input test', () => {
     let fixture: ComponentFixture<TestableComponent>;
     let onRangeValuesChanged: jasmine.Spy;
 
-    function createRangeComponent() {
-      const fixtureAndonRangeValuesChanged = createComponent({
+    it('emits change when user changes input on range slider', () => {
+      const {fixture, onRangeValuesChanged} = createComponent({
         min: 0,
         max: 10,
         lowerValue: 5,
         upperValue: 5,
         useRange: true,
       });
-
-      const fixture = fixtureAndonRangeValuesChanged.fixture;
-      const onRangeValuesChanged =
-        fixtureAndonRangeValuesChanged.onRangeValuesChanged;
-      const onSingleValueChanged =
-        fixtureAndonRangeValuesChanged.onSingleValueChanged;
-      const onUpperValueRemoved =
-        fixtureAndonRangeValuesChanged.onUpperValueRemoved;
-
-      return {
-        fixture,
-        onRangeValuesChanged,
-        onSingleValueChanged,
-        onUpperValueRemoved,
-      };
-    }
-
-    function createSingleComponent() {
-      const fixtureAndonRangeValuesChanged = createComponent({
-        min: 0,
-        max: 10,
-        lowerValue: 5,
-        useRange: false,
-      });
-
-      const fixture = fixtureAndonRangeValuesChanged.fixture;
-      const onRangeValuesChanged =
-        fixtureAndonRangeValuesChanged.onRangeValuesChanged;
-      const onSingleValueChanged =
-        fixtureAndonRangeValuesChanged.onSingleValueChanged;
-
-      return {fixture, onRangeValuesChanged, onSingleValueChanged};
-    }
-
-    it('emits change when user changes input', () => {
-      const {fixture, onRangeValuesChanged} = createRangeComponent();
       const [minInput] = getInputs(fixture);
       minInput.value = '0';
       minInput.dispatchEvent(new InputEvent('change'));
@@ -476,8 +440,28 @@ describe('range input test', () => {
       });
     });
 
+    it('emits change when user changes input on single slider', () => {
+      const {fixture, onSingleValueChanged} = createComponent({
+        min: 0,
+        max: 10,
+        lowerValue: 5,
+        useRange: false,
+      });
+      const [minInput] = getInputs(fixture);
+      minInput.value = '2';
+      minInput.dispatchEvent(new InputEvent('change'));
+
+      expect(onSingleValueChanged).toHaveBeenCalledWith(2);
+    });
+
     it('does not react to keydown or input', () => {
-      const {fixture, onRangeValuesChanged} = createRangeComponent();
+      const {fixture, onRangeValuesChanged} = createComponent({
+        min: 0,
+        max: 10,
+        lowerValue: 5,
+        upperValue: 5,
+        useRange: true,
+      });
       const [minInput] = getInputs(fixture);
       minInput.value = '0';
       minInput.dispatchEvent(new InputEvent('keydown'));
@@ -485,10 +469,30 @@ describe('range input test', () => {
       minInput.dispatchEvent(new InputEvent('up'));
 
       expect(onRangeValuesChanged).not.toHaveBeenCalled();
+
+      const {fixture: fixture2, onSingleValueChanged} = createComponent({
+        min: 0,
+        max: 10,
+        lowerValue: 5,
+        useRange: false,
+      });
+      const [minInput2] = getInputs(fixture2);
+      minInput2.value = '0';
+      minInput2.dispatchEvent(new InputEvent('keydown'));
+      minInput2.dispatchEvent(new InputEvent('input'));
+      minInput2.dispatchEvent(new InputEvent('up'));
+
+      expect(onSingleValueChanged).not.toHaveBeenCalled();
     });
 
     it('swaps min and max when new upperValue is smaller than lowerValue', () => {
-      const {fixture, onRangeValuesChanged} = createRangeComponent();
+      const {fixture, onRangeValuesChanged} = createComponent({
+        min: 0,
+        max: 10,
+        lowerValue: 5,
+        upperValue: 5,
+        useRange: true,
+      });
       const [, maxInput] = getInputs(fixture);
       maxInput.value = '2';
       maxInput.dispatchEvent(new InputEvent('change'));
@@ -499,17 +503,13 @@ describe('range input test', () => {
       });
     });
 
-    it('updates value on single slider', () => {
-      const {fixture, onSingleValueChanged} = createSingleComponent();
-      const [minInput] = getInputs(fixture);
-      minInput.value = '2';
-      minInput.dispatchEvent(new InputEvent('change'));
-
-      expect(onSingleValueChanged).toHaveBeenCalledWith(2);
-    });
-
     it('updates value to be min in single slider on input cleared', () => {
-      const {fixture, onSingleValueChanged} = createSingleComponent();
+      const {fixture, onSingleValueChanged} = createComponent({
+        min: 0,
+        max: 10,
+        lowerValue: 5,
+        useRange: false,
+      });
       const [minInput] = getInputs(fixture);
       minInput.value = '';
       minInput.dispatchEvent(new InputEvent('change'));
@@ -518,7 +518,13 @@ describe('range input test', () => {
     });
 
     it('updates value to be min in range slider on lower value cleared', () => {
-      const {fixture, onRangeValuesChanged} = createRangeComponent();
+      const {fixture, onRangeValuesChanged} = createComponent({
+        min: 0,
+        max: 10,
+        lowerValue: 5,
+        upperValue: 5,
+        useRange: true,
+      });
       const [minInput] = getInputs(fixture);
       minInput.value = '';
       minInput.dispatchEvent(new InputEvent('change'));
@@ -529,8 +535,13 @@ describe('range input test', () => {
       });
     });
 
-    it('renders range slider on adding upper value to single slider', () => {
-      const {fixture, onRangeValuesChanged} = createSingleComponent();
+    it('dispatches actions on range value changed when adding upper value to single slider', () => {
+      const {fixture, onRangeValuesChanged} = createComponent({
+        min: 0,
+        max: 10,
+        lowerValue: 5,
+        useRange: false,
+      });
       const [, maxInput] = getInputs(fixture);
       maxInput.value = '7';
       maxInput.dispatchEvent(new InputEvent('change'));
@@ -541,8 +552,14 @@ describe('range input test', () => {
       });
     });
 
-    it('dispatches action on upper value removed in range selection', () => {
-      const {fixture, onUpperValueRemoved} = createRangeComponent();
+    it('dispatches action when upper value removed on range slider', () => {
+      const {fixture, onUpperValueRemoved} = createComponent({
+        min: 0,
+        max: 10,
+        lowerValue: 5,
+        upperValue: 5,
+        useRange: true,
+      });
       const [, maxInput] = getInputs(fixture);
       maxInput.value = '';
       maxInput.dispatchEvent(new InputEvent('change'));

@@ -2411,6 +2411,60 @@ describe('metrics reducers', () => {
           });
         }
       );
+
+      it('sets `useRangeSelectTime` to true when `endStep` is present', () => {
+        const beforeState = buildMetricsState({
+          useRangeSelectTime: false,
+          selectedTime: null,
+        });
+
+        const nextState = reducers(
+          beforeState,
+          actions.timeSelectionChanged({
+            startStep: 2,
+            endStep: 5,
+          })
+        );
+
+        expect(nextState.useRangeSelectTime).toEqual(true);
+      });
+
+      it('sets `useRangeSelectTime` to true when `endStep` is 0', () => {
+        const beforeState = buildMetricsState({
+          useRangeSelectTime: false,
+          selectedTime: {
+            start: {step: 2},
+            end: {step: 100},
+          },
+        });
+
+        const nextState = reducers(
+          beforeState,
+          actions.timeSelectionChanged({
+            startStep: 2,
+            endStep: 0,
+          })
+        );
+
+        expect(nextState.useRangeSelectTime).toEqual(true);
+      });
+
+      it('remains `useRangeSelectTime` the same when only sets `startStep`', () => {
+        const beforeState = buildMetricsState({
+          useRangeSelectTime: false,
+          selectedTime: null,
+        });
+
+        const nextState = reducers(
+          beforeState,
+          actions.timeSelectionChanged({
+            startStep: 2,
+            endStep: undefined,
+          })
+        );
+
+        expect(nextState.useRangeSelectTime).toEqual(false);
+      });
     });
 
     describe('#timeSelectionCleared', () => {
