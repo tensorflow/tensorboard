@@ -2412,10 +2412,33 @@ describe('metrics reducers', () => {
         }
       );
 
-      it('sets `useRangeSelectTime` to true when `endStep` is present', () => {
+      it('sets `useRangeSelectTime` to true when `endStep` is present and selected time is null', () => {
         const beforeState = buildMetricsState({
           useRangeSelectTime: false,
           selectedTime: null,
+        });
+
+        const nextState = reducers(
+          beforeState,
+          actions.timeSelectionChanged({
+            startStep: 2,
+            endStep: 5,
+          })
+        );
+
+        expect(nextState.useRangeSelectTime).toEqual(true);
+      });
+
+      // This test case represents <tb-range-input> renders range slider from single slider.
+      it('sets `useRangeSelectTime` to true when `endStep` is present selected time is not null', () => {
+        const beforeState = buildMetricsState({
+          useRangeSelectTime: false,
+          selectedTime: {
+            start: {step: 0},
+            // When single slider is rendered, the end step is set to step max.
+            // Here set it as an arbitrary number.
+            end: {step: 100},
+          },
         });
 
         const nextState = reducers(
@@ -2449,22 +2472,42 @@ describe('metrics reducers', () => {
         expect(nextState.useRangeSelectTime).toEqual(true);
       });
 
-      it('remains `useRangeSelectTime` the same when only sets `startStep`', () => {
-        const beforeState = buildMetricsState({
+      it('keeps `useRangeSelectTime` to be false when only sets `startStep`', () => {
+        const beforeState1 = buildMetricsState({
           useRangeSelectTime: false,
           selectedTime: null,
         });
 
-        const nextState = reducers(
-          beforeState,
+        const nextState1 = reducers(
+          beforeState1,
           actions.timeSelectionChanged({
             startStep: 2,
             endStep: undefined,
           })
         );
 
-        expect(nextState.useRangeSelectTime).toEqual(false);
+        expect(nextState1.useRangeSelectTime).toEqual(false);
       });
+    });
+
+    it('sets `useRangeSelectTime` to false when `endStep` is undefinded', () => {
+      const beforeState = buildMetricsState({
+        useRangeSelectTime: true,
+        selectedTime: {
+          start: {step: 2},
+          end: {step: 100},
+        },
+      });
+
+      const nextState = reducers(
+        beforeState,
+        actions.timeSelectionChanged({
+          startStep: 3,
+          endStep: undefined,
+        })
+      );
+
+      expect(nextState.useRangeSelectTime).toEqual(false);
     });
 
     describe('#timeSelectionCleared', () => {
