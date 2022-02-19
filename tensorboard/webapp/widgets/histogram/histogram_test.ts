@@ -23,7 +23,6 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {IntersectionObserverTestingModule} from '../intersection_observer/intersection_observer_testing_module';
-import {LinkedTimeFobModule} from '../linked_time_fob/linked_time_fob_module';
 import {HistogramComponent, TooltipData} from './histogram_component';
 import {
   Bin,
@@ -87,7 +86,10 @@ class TestableComponent {
   @Input() color!: string;
   @Input() name!: string;
   @Input() data!: HistogramData;
-  @Input() linkedTime!: {startStep: number; endStep: number | null} | null;
+  @Input() linkedTime!: {
+    start: {step: number};
+    end: {step: number} | null;
+  } | null;
 
   simulateMouseMove(event: {
     target: SVGElement;
@@ -114,11 +116,7 @@ describe('histogram test', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        NoopAnimationsModule,
-        IntersectionObserverTestingModule,
-        LinkedTimeFobModule,
-      ],
+      imports: [NoopAnimationsModule, IntersectionObserverTestingModule],
       declarations: [HistogramComponent, TestableComponent],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -864,7 +862,7 @@ describe('histogram test', () => {
         ]);
         fixture.componentInstance.mode = HistogramMode.OVERLAY;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
-        fixture.componentInstance.linkedTime = {startStep: 5, endStep: null};
+        fixture.componentInstance.linkedTime = {start: {step: 5}, end: null};
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
@@ -880,7 +878,7 @@ describe('histogram test', () => {
         ]);
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.WALL_TIME;
-        fixture.componentInstance.linkedTime = {startStep: 5, endStep: null};
+        fixture.componentInstance.linkedTime = {start: {step: 5}, end: null};
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
@@ -890,43 +888,6 @@ describe('histogram test', () => {
     });
 
     describe('single step', () => {
-      it('shows a fob when a single time selection is present', () => {
-        const fixture = createComponent('foo', [
-          buildHistogramDatum({step: 0, wallTime: 100}),
-          buildHistogramDatum({step: 5, wallTime: -200}),
-          buildHistogramDatum({step: 10, wallTime: 400}),
-        ]);
-        fixture.componentInstance.mode = HistogramMode.OFFSET;
-        fixture.componentInstance.timeProperty = TimeProperty.STEP;
-        fixture.componentInstance.linkedTime = {startStep: 5, endStep: null};
-        fixture.detectChanges();
-        intersectionObserver.simulateVisibilityChange(fixture, true);
-
-        const controls = fixture.debugElement.queryAll(byCss.LINKED_TIME_FOB);
-        expect(controls.map((el) => el.nativeElement.textContent)).toEqual([
-          '5',
-        ]);
-      });
-
-      it('positions fob according to the scale', () => {
-        const fixture = createComponent('foo', [
-          buildHistogramDatum({step: 0, wallTime: 100}),
-          buildHistogramDatum({step: 10, wallTime: 400}),
-        ]);
-        fixture.componentInstance.mode = HistogramMode.OFFSET;
-        fixture.componentInstance.timeProperty = TimeProperty.STEP;
-        fixture.componentInstance.linkedTime = {startStep: 5, endStep: null};
-        fixture.detectChanges();
-        intersectionObserver.simulateVisibilityChange(fixture, true);
-
-        const controls = fixture.debugElement.queryAll(byCss.LINKED_TIME_FOB);
-        expect(controls.map((el) => el.nativeElement.style.transform)).toEqual([
-          // In 100px by 100px view, in the offset view, the main content spans 0
-          // to 70px and startStep=5 is right in the middle, thus, 35px.
-          'translate(0px, 35px)',
-        ]);
-      });
-
       it('puts color on histogram that has the matching step', () => {
         const fixture = createComponent('foo', [
           buildHistogramDatum({step: 0, wallTime: 100}),
@@ -935,38 +896,19 @@ describe('histogram test', () => {
         ]);
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
-        fixture.componentInstance.linkedTime = {startStep: 5, endStep: null};
+        fixture.componentInstance.linkedTime = {start: {step: 5}, end: null};
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
         expect(doHistogramsHaveColor(fixture)).toEqual([false, true, false]);
 
-        fixture.componentInstance.linkedTime = {startStep: 7, endStep: null};
+        fixture.componentInstance.linkedTime = {start: {step: 7}, end: null};
         fixture.detectChanges();
         expect(doHistogramsHaveColor(fixture)).toEqual([false, false, false]);
       });
     });
 
     describe('multi step', () => {
-      it('shows a fob when a range time selection is present', () => {
-        const fixture = createComponent('foo', [
-          buildHistogramDatum({step: 0, wallTime: 100}),
-          buildHistogramDatum({step: 5, wallTime: -200}),
-          buildHistogramDatum({step: 10, wallTime: 400}),
-        ]);
-        fixture.componentInstance.mode = HistogramMode.OFFSET;
-        fixture.componentInstance.timeProperty = TimeProperty.STEP;
-        fixture.componentInstance.linkedTime = {startStep: 5, endStep: 10};
-        fixture.detectChanges();
-        intersectionObserver.simulateVisibilityChange(fixture, true);
-
-        const controls = fixture.debugElement.queryAll(byCss.LINKED_TIME_FOB);
-        expect(controls.map((el) => el.nativeElement.textContent)).toEqual([
-          '5',
-          '10',
-        ]);
-      });
-
       it('puts color on histogram that is in the range (inclusive)', () => {
         const fixture = createComponent('foo', [
           buildHistogramDatum({step: 0, wallTime: 100}),
@@ -975,17 +917,26 @@ describe('histogram test', () => {
         ]);
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
-        fixture.componentInstance.linkedTime = {startStep: 5, endStep: 10};
+        fixture.componentInstance.linkedTime = {
+          start: {step: 5},
+          end: {step: 10},
+        };
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
         expect(doHistogramsHaveColor(fixture)).toEqual([false, true, true]);
 
-        fixture.componentInstance.linkedTime = {startStep: 0, endStep: 7};
+        fixture.componentInstance.linkedTime = {
+          start: {step: 0},
+          end: {step: 7},
+        };
         fixture.detectChanges();
         expect(doHistogramsHaveColor(fixture)).toEqual([true, true, false]);
 
-        fixture.componentInstance.linkedTime = {startStep: 6, endStep: 7};
+        fixture.componentInstance.linkedTime = {
+          start: {step: 6},
+          end: {step: 7},
+        };
         fixture.detectChanges();
         expect(doHistogramsHaveColor(fixture)).toEqual([false, false, false]);
       });

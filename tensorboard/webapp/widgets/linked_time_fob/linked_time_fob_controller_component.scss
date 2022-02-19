@@ -1,4 +1,4 @@
-/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,15 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {CommonModule} from '@angular/common';
-import {NgModule} from '@angular/core';
-import {LinkedTimeFobComponent} from './linked_time_fob_component';
-import {LinkedTimeFobControllerComponent} from './linked_time_fob_controller_component';
-
-@NgModule({
-  declarations: [LinkedTimeFobComponent, LinkedTimeFobControllerComponent],
-  exports: [LinkedTimeFobComponent, LinkedTimeFobControllerComponent],
-  imports: [CommonModule],
-})
-export class LinkedTimeFobModule {}
+.axis-overlay {
+  height: 100%;
+  left: 9px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  .time-fob-wrapper {
+    display: inline-block;
+    position: absolute;
+  }
+}

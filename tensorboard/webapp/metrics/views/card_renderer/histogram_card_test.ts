@@ -58,7 +58,10 @@ class TestableHistogramWidget {
   @Input() color!: string;
   @Input() name!: string;
   @Input() data!: HistogramData;
-  @Input() linkedTime!: {startStep: number; endStep: number | null} | null;
+  @Input() linkedTime!: {
+    start: {step: number};
+    end: {step: number} | null;
+  } | null;
 
   element = {
     setSeriesData: () => {},
@@ -295,8 +298,8 @@ describe('histogram card', () => {
         By.directive(TestableHistogramWidget)
       );
       expect(viz.componentInstance.linkedTime).toEqual({
-        startStep: 5,
-        endStep: null,
+        start: {step: 5},
+        end: null,
       });
     });
 
@@ -313,8 +316,8 @@ describe('histogram card', () => {
         By.directive(TestableHistogramWidget)
       );
       expect(viz.componentInstance.linkedTime).toEqual({
-        startStep: 5,
-        endStep: 10,
+        start: {step: 5},
+        end: {step: 10},
       });
     });
 
@@ -342,8 +345,8 @@ describe('histogram card', () => {
           By.directive(TestableHistogramWidget)
         );
         expect(viz.componentInstance.linkedTime).toEqual({
-          startStep: 15,
-          endStep: null,
+          start: {step: 15},
+          end: null,
         });
       });
 
@@ -370,8 +373,8 @@ describe('histogram card', () => {
           By.directive(TestableHistogramWidget)
         );
         expect(viz.componentInstance.linkedTime).toEqual({
-          startStep: 50,
-          endStep: null,
+          start: {step: 50},
+          end: null,
         });
       });
 

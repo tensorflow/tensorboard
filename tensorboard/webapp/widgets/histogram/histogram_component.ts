@@ -18,15 +18,19 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  EventEmitter,
   Input,
   OnChanges,
   OnDestroy,
+  Output,
   ViewChild,
 } from '@angular/core';
 import {fromEvent, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
+import {LinkedTime} from '../../metrics/types';
 import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
+import {AxisDirection} from '../linked_time_fob/linked_time_fob_controller_component';
 import {
   Bin,
   HistogramData,
@@ -73,11 +77,6 @@ export interface TooltipData {
   };
 }
 
-export interface LinkedTime {
-  startStep: number;
-  endStep: number | null;
-}
-
 @Component({
   selector: 'tb-histogram',
   templateUrl: 'histogram_component.ng.html',
@@ -100,6 +99,10 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() data!: HistogramData;
 
   @Input() linkedTime: LinkedTime | null = null;
+
+  @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
+
+  readonly axisDirection = AxisDirection.VERTICAL;
 
   readonly HistogramMode = HistogramMode;
   readonly TimeProperty = TimeProperty;
@@ -225,6 +228,10 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     );
   }
 
+  getSteps(): number[] {
+    return this.data.map((datum) => datum.step);
+  }
+
   isLinkedTimeEnabled(linkedTime: LinkedTime | null): linkedTime is LinkedTime {
     return Boolean(
       this.mode === HistogramMode.OFFSET &&
@@ -238,12 +245,12 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     if (!this.isLinkedTimeEnabled(this.linkedTime)) {
       return true;
     }
-    if (this.linkedTime.endStep === null) {
-      return this.linkedTime.startStep === datum.step;
+    if (this.linkedTime.end === null) {
+      return this.linkedTime.start.step === datum.step;
     }
     return (
-      this.linkedTime.startStep <= datum.step &&
-      this.linkedTime.endStep >= datum.step
+      this.linkedTime.start.step <= datum.step &&
+      this.linkedTime.end.step >= datum.step
     );
   }
 

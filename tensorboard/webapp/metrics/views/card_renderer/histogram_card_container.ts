@@ -28,6 +28,7 @@ import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
 import {HistogramDatum} from '../../../widgets/histogram/histogram_types';
 import {buildNormalizedHistograms} from '../../../widgets/histogram/histogram_util';
+import {timeSelectionChanged} from '../../actions';
 import {HistogramStepDatum, PluginType} from '../../data_source';
 import {
   getCardLoadState,
@@ -38,7 +39,7 @@ import {
   getMetricsSelectedTime,
   getMetricsXAxisType,
 } from '../../store';
-import {CardId, CardMetadata} from '../../types';
+import {CardId, CardMetadata, LinkedTime} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {maybeClipSelectedTime, ViewSelectedTime} from './utils';
@@ -65,6 +66,7 @@ type HistogramCardMetadata = CardMetadata & {
       [selectedTime]="selectedTime$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
+      (onSelectTimeChanged)="onSelectTimeChanged($event)"
     ></histogram-card-component>
   `,
   styles: [
@@ -184,5 +186,14 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
     );
 
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
+  }
+
+  onSelectTimeChanged(linkedTime: LinkedTime) {
+    this.store.dispatch(
+      timeSelectionChanged({
+        startStep: linkedTime.start.step,
+        endStep: linkedTime.end ? linkedTime.end.step : undefined,
+      })
+    );
   }
 }

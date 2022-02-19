@@ -26,7 +26,7 @@ import {
   HistogramMode,
   TimeProperty,
 } from '../../../widgets/histogram/histogram_types';
-import {XAxisType} from '../../types';
+import {LinkedTime, XAxisType} from '../../types';
 import {ViewSelectedTime} from './utils';
 
 @Component({
@@ -52,6 +52,7 @@ export class HistogramCardComponent {
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
+  @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
 
   timeProperty(xAxisType: XAxisType) {
     switch (xAxisType) {
@@ -64,5 +65,17 @@ export class HistogramCardComponent {
       default:
         throw new Error('Invalid xAxisType for histogram time property.');
     }
+  }
+
+  convertToLinkedTime(
+    selectedTime: ViewSelectedTime | null
+  ): LinkedTime | null {
+    if (selectedTime === null) {
+      return null;
+    }
+    return {
+      start: {step: selectedTime.startStep},
+      end: selectedTime.endStep ? {step: selectedTime.endStep} : null,
+    };
   }
 }

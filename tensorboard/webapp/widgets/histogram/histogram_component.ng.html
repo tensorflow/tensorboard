@@ -51,25 +51,13 @@ limitations under the License.
     </svg>
     <!-- Disable the feature when in non-offset and non-step mode. -->
     <ng-container *ngIf="isLinkedTimeEnabled(linkedTime)">
-      <div
-        class="linked-time"
-        [style.transform]="getCssTranslatePx(0, scales.temporalScale(linkedTime.startStep))"
-      >
-        <linked-time-fob
-          class="linked-time-fob"
-          [step]="linkedTime.startStep"
-        ></linked-time-fob>
-      </div>
-      <div
-        *ngIf="linkedTime.endStep"
-        class="linked-time"
-        [style.transform]="getCssTranslatePx(0, scales.temporalScale(linkedTime.endStep))"
-      >
-        <linked-time-fob
-          class="linked-time-fob"
-          [step]="linkedTime.endStep"
-        ></linked-time-fob>
-      </div>
+      <linked-time-fob-controller
+        [axisDirection]="axisDirection"
+        [linkedTime]="linkedTime"
+        [steps]="getSteps()"
+        [temporalScale]="scales.temporalScale"
+        (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
+      ></linked-time-fob-controller>
     </ng-container>
   </div>
   <svg #content class="content">
@@ -86,7 +74,7 @@ limitations under the License.
       #histograms
       [class.histograms]="true"
       [class.linked-time-enabled]="linkedTime"
-      [class.linked-time-single-step]="linkedTime && !linkedTime.endStep"
+      [class.linked-time-single-step]="linkedTime && !linkedTime.end"
     >
       <g
         *ngFor="let datum of data; trackBy: trackByWallTime;"

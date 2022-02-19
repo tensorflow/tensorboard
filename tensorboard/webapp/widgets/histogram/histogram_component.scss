@@ -66,19 +66,6 @@ limitations under the License.
   }
 }
 
-.linked-time {
-  position: absolute;
-  left: 9px;
-  top: 0;
-  height: 100%;
-  right: 0;
-
-  .linked-time-fob {
-    display: inline-block;
-    transform: translateY(-50%);
-  }
-}
-
 .axis ::ng-deep {
   @include tb-theme-foreground-prop(color, secondary-text);
   position: relative;

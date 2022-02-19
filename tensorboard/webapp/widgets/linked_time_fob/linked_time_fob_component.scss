@@ -32,6 +32,15 @@ span {
     border-color: mat.get-color-from-palette(mat.$gray-palette, 700);
   }
 
+  // Do not allow text selection as it messed up the dragging functionality
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+
   @include tb-dark-theme {
     background-color: mat.get-color-from-palette(mat.$gray-palette, 700);
     border-color: mat.get-color-from-palette($tf-slate, 500);
