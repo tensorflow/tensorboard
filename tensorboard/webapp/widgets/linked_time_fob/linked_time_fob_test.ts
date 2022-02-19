@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Component, NO_ERRORS_SCHEMA, ViewChild, Input} from '@angular/core';
+import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {LinkedTime} from '../../metrics/types';
 import {ScaleLinear, ScaleTime} from '../../third_party/d3';
