@@ -18,8 +18,6 @@ import {
   Component,
   Input,
   Output,
-  ViewChild,
-  ElementRef,
   EventEmitter,
 } from '@angular/core';
 import {AxisDirection} from './linked_time_fob_controller_component';
@@ -39,6 +37,7 @@ export class LinkedTimeFobComponent {
   isTyping = false;
 
   getCenteringTransform() {
+    console.log('centering');
     if (this.axisDirection === AxisDirection.VERTICAL) {
       return 'translateY(-50%)';
     } else {
@@ -47,6 +46,7 @@ export class LinkedTimeFobComponent {
   }
 
   typeStepRequested() {
+    console.log('typeStepRequested');
     this.isTyping = true;
   }
 

@@ -30,6 +30,8 @@ input {
   border-bottom: 2px solid darkgrey;
 }
 
+// Removes the arrows that appear on number input's in all browsers.
+
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
