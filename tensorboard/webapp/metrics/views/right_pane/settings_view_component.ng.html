@@ -65,35 +65,19 @@ limitations under the License.
           >Enabled</mat-checkbox
         >
       </div>
-      <div>
-        <mat-checkbox
-          [checked]="useRangeSelectTime"
-          (change)="useRangeSelectTimeToggled.emit()"
-          >Use range</mat-checkbox
-        >
-      </div>
       <div class="step-selector">
-        <mat-slider
-          *ngIf="!useRangeSelectTime; else range"
-          [disabled]="!selectTimeEnabled"
-          color="primary"
+        <tb-range-input
+          [attr.disabled]="!selectTimeEnabled"
           [min]="stepMinMax.min"
           [max]="stepMinMax.max"
-          [step]="1"
-          [value]="selectedTime?.start.step"
-          [thumbLabel]="true"
-          (input)="onStepStartChanged($event.value)"
-        ></mat-slider>
-        <ng-template #range>
-          <tb-range-input
-            [attr.disabled]="!selectTimeEnabled"
-            [min]="stepMinMax.min"
-            [max]="stepMinMax.max"
-            [lowerValue]="selectedTime?.start.step"
-            [upperValue]="selectedTime?.end?.step "
-            (value)="onStepRangeChanged($event)"
-          ></tb-range-input>
-        </ng-template>
+          [lowerValue]="selectedTime?.start.step"
+          [upperValue]="selectedTime?.end?.step"
+          [useRange]="useRangeSelectTime"
+          [inputEnabled]="selectTimeEnabled"
+          (singleValueChanged)="onSingleValueChanged($event)"
+          (rangeValuesChanged)="onRangeValuesChanged($event)"
+          (upperValueRemoved)="useRangeSelectTimeToggled.emit()"
+        ></tb-range-input>
       </div>
     </div>
   </div>

@@ -25,6 +25,7 @@ $_thumb-size: 12px;
   grid-template-areas:
     'lower-input upper-input'
     'slider slider';
+  grid-template-columns: 1fr 1fr;
   font-size: 0;
   min-width: 100px;
   padding: $_thumb-size * 0.5;
@@ -46,6 +47,19 @@ input {
 .upper-input {
   grid-area: upper-input;
   justify-self: flex-end;
+}
+
+.single-slider {
+  grid-area: slider;
+  padding: 0px;
+  ::ng-deep .mat-slider-wrapper {
+    top: 5px;
+    left: 0px;
+    right: 0px;
+  }
+}
+::ng-deep .single-slider.mat-slider-horizontal {
+  height: 12px;
 }
 
 .container {

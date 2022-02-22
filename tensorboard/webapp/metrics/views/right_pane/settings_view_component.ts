@@ -173,14 +173,14 @@ export class SettingsViewComponent {
     );
   }
 
-  onStepStartChanged(stepValue: number) {
+  onSingleValueChanged(stepValue: number) {
     this.selectTimeChanged.emit({
       start: {step: stepValue},
       end: null,
     });
   }
 
-  onStepRangeChanged({
+  onRangeValuesChanged({
     lowerValue,
     upperValue,
   }: {

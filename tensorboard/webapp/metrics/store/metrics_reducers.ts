@@ -934,6 +934,10 @@ const reducer = createReducer(
       nextEndStep = nextStartStep;
     }
 
+    // If there is no endStep then current selection state is single.
+    // Otherwise selection state is range.
+    const useRangeSelectTime = change.endStep !== undefined;
+
     return {
       ...state,
       selectTimeEnabled: true,
@@ -945,6 +949,7 @@ const reducer = createReducer(
           step: nextEndStep,
         },
       },
+      useRangeSelectTime,
     };
   }),
   on(actions.useRangeSelectTimeToggled, (state) => {

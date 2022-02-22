@@ -17,33 +17,49 @@ limitations under the License.
 <input
   class="lower-input"
   type="number"
+  [disabled]="!enabled"
   [value]="lowerValue"
   (change)="handleInputChange($event, Position.LEFT)"
 />
 <input
   class="upper-input"
   type="number"
-  [value]="upperValue"
+  [disabled]="!enabled"
+  [value]="useRange ? upperValue : ''"
   (change)="handleInputChange($event, Position.RIGHT)"
 />
 
-<span class="container" #container>
-  <span class="slider-track"></span>
-  <span
-    class="slider-track-fill"
-    [style.left]="getThumbPosition(lowerValue)"
-    [style.width]="getTrackWidth()"
-  ></span>
-  <span
-    class="thumb"
-    (mousedown)="handleMouseDown($event, Position.LEFT)"
-    [style.left]="getThumbPosition(lowerValue)"
-    [class.active]="isThumbActive(Position.LEFT)"
-  ></span>
-  <span
-    class="thumb"
-    (mousedown)="handleMouseDown($event, Position.RIGHT)"
-    [style.left]="getThumbPosition(upperValue)"
-    [class.active]="isThumbActive(Position.RIGHT)"
-  ></span>
-</span>
+<mat-slider
+  class="single-slider"
+  *ngIf="!useRange; else range"
+  [disabled]="!enabled"
+  color="primary"
+  [min]="min"
+  [max]="max"
+  [step]="1"
+  [value]="lowerValue"
+  (input)="singleValueChanged.emit($event.value)"
+></mat-slider>
+
+<ng-template #range>
+  <span class="container" #container>
+    <span class="slider-track"></span>
+    <span
+      class="slider-track-fill"
+      [style.left]="getThumbPosition(lowerValue)"
+      [style.width]="getTrackWidth()"
+    ></span>
+    <span
+      class="thumb"
+      (mousedown)="handleMouseDown($event, Position.LEFT)"
+      [style.left]="getThumbPosition(lowerValue)"
+      [class.active]="isThumbActive(Position.LEFT)"
+    ></span>
+    <span
+      class="thumb"
+      (mousedown)="handleMouseDown($event, Position.RIGHT)"
+      [style.left]="getThumbPosition(upperValue)"
+      [class.active]="isThumbActive(Position.RIGHT)"
+    ></span>
+  </span>
+</ng-template>
