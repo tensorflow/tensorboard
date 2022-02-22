@@ -376,7 +376,7 @@ describe('metrics right_pane', () => {
       });
     });
 
-    it('does not display link time setting on link time disnabled', () => {
+    it('does not display link time setting on link time disabled', () => {
       store.overrideSelector(selectors.getIsLinkedTimeEnabled, false);
       const fixture = TestBed.createComponent(SettingsViewContainer);
       fixture.detectChanges();

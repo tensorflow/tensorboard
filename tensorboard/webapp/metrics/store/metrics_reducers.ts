@@ -934,8 +934,8 @@ const reducer = createReducer(
       nextEndStep = nextStartStep;
     }
 
-    // When end step value is provided but useRangeSelectTime is still false,
-    // this means the current selection state is single. We flip it to range selection.
+    // If there is no endStep then current selection state is single.
+    // Otherwise selection state is range.
     const useRangeSelectTime = change.endStep !== undefined;
 
     return {

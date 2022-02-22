@@ -2490,7 +2490,7 @@ describe('metrics reducers', () => {
       });
     });
 
-    it('sets `useRangeSelectTime` to false when `endStep` is undefinded', () => {
+    it('sets `useRangeSelectTime` to false when `endStep` is undefined', () => {
       const beforeState = buildMetricsState({
         useRangeSelectTime: true,
         selectedTime: {
