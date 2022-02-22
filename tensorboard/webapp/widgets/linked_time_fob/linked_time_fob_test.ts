@@ -322,4 +322,74 @@ describe('linked_time_fob_controller', () => {
       });
     });
   });
+
+  fdescribe('typing step into fob', () => {
+    it('single time selection changed with fob typing', () => {
+      let fixture = createComponent({});
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      fobController.stepTyped(Fob.START, 3);
+      fixture.detectChanges();
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 3},
+        end: null,
+      });
+    });
+
+    it('range selection start fob step typed which is less than end fob step', () => {
+      let fixture = createComponent({
+        linkedTime: {start: {step: 1}, end: {step: 4}},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      fobController.stepTyped(Fob.START, 3);
+      fixture.detectChanges();
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 3},
+        end: {step: 4},
+      });
+    });
+
+    it('range selection end fob step typed which is greater than start fob step', () => {
+      let fixture = createComponent({
+        linkedTime: {start: {step: 1}, end: {step: 4}},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      fobController.stepTyped(Fob.END, 3);
+      fixture.detectChanges();
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 1},
+        end: {step: 3},
+      });
+    });
+
+    it('range selection swaps when start step is typed in which is greater than end step', () => {
+      let fixture = createComponent({
+        linkedTime: {start: {step: 1}, end: {step: 2}},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      fobController.stepTyped(Fob.START, 3);
+      fixture.detectChanges();
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 2},
+        end: {step: 3},
+      });
+    });
+
+    it('range selection swaps when end step is typed in which is less than start step', () => {
+      let fixture = createComponent({
+        linkedTime: {start: {step: 3}, end: {step: 4}},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      fobController.stepTyped(Fob.END, 2);
+      fixture.detectChanges();
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 2},
+        end: {step: 3},
+      });
+    });
+  });
 });

@@ -194,4 +194,31 @@ export class LinkedTimeFobControllerComponent {
     // No fobs can pass the lowest step in this graph.
     return 0;
   }
+
+  stepTyped(fob: Fob, step: number) {
+    let newLinkedTime = this.linkedTime;
+    if (!newLinkedTime.end) {
+      newLinkedTime.start.step = step;
+      this.onSelectTimeChanged.emit(newLinkedTime);
+      return;
+    }
+
+    if (fob === Fob.START) {
+      newLinkedTime.start.step = step;
+      if (step > newLinkedTime.end.step) {
+        newLinkedTime.start.step = newLinkedTime.end.step;
+        newLinkedTime.end.step = step;
+      }
+    }
+
+    if (fob === Fob.END) {
+      newLinkedTime.end.step = step;
+      if (step < newLinkedTime.start.step) {
+        newLinkedTime.end.step = newLinkedTime.start.step;
+        newLinkedTime.start.step = step;
+      }
+    }
+
+    this.onSelectTimeChanged.emit(newLinkedTime);
+  }
 }

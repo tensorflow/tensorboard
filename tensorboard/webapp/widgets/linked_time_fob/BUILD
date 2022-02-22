@@ -23,6 +23,7 @@ tf_ng_module(
     ],
     assets = [
         "linked_time_fob_controller_component.ng.html",
+        "linked_time_fob_component.ng.html",
         ":linked_time_fob_styles",
         ":linked_time_fob_controller_styles",
     ],
