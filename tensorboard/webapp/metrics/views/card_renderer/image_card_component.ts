@@ -18,6 +18,8 @@ import {
   EventEmitter,
   Input,
   Output,
+  SimpleChange,
+  SimpleChanges,
 } from '@angular/core';
 import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
@@ -36,6 +38,8 @@ const TICK_WIDTH = 14; // In px
 })
 export class ImageCardComponent {
   readonly DataLoadState = DataLoadState;
+  sliderStartPosition = '';
+  sliderTrackWidth = '';
 
   @Input() loadState!: DataLoadState;
   @Input() title!: string;
@@ -71,6 +75,91 @@ export class ImageCardComponent {
     // `number` on input events.
     // https://github.com/angular/components/blob/master/src/material/slider/slider.ts
     this.stepIndexChange.emit($event.value as number);
+  }
+
+  changeDistinct(change: SimpleChange) {
+    return change.currentValue !== change.previousValue;
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (
+      !this.changeDistinct(changes['selectedSteps']) ||
+      !this.changeDistinct(changes['selectedTime'])
+    ) {
+      return;
+    }
+    if (
+      !this.selectedTime ||
+      !this.selectedTime.endStep ||
+      this.selectedTime.clipped
+    ) {
+      return;
+    }
+
+    const boundSize = this.stepValues.length - 1;
+    const sliderUnit = 1 / boundSize;
+    const startStep =
+      this.selectedTime.startStep < this.stepValues[0]
+        ? this.stepValues[0]
+        : this.selectedTime.startStep;
+    const endStep =
+      this.selectedTime.endStep > this.stepValues[boundSize]
+        ? this.stepValues[boundSize]
+        : this.selectedTime.endStep;
+    let startPosition = 0;
+    let width = 0;
+
+    let i = 0;
+    for (; i < this.stepValues.length - 1; i++) {
+      const currentStep = this.stepValues[i];
+      const nextStep = this.stepValues[i + 1];
+      if (startStep > nextStep) {
+        startPosition += sliderUnit;
+      } else if (currentStep <= startStep && startStep <= nextStep) {
+        startPosition +=
+          ((startStep - currentStep) / (nextStep - currentStep)) * sliderUnit;
+        break;
+      } else {
+        break;
+      }
+    }
+
+    for (; i < this.stepValues.length - 1; i++) {
+      const currentStep = this.stepValues[i];
+      const nextStep = this.stepValues[i + 1];
+      // --o--S====E--o--
+      //  cur        next
+      if (startStep >= currentStep && endStep <= nextStep) {
+        width = ((endStep - startStep) / (nextStep - currentStep)) * sliderUnit;
+        break;
+      }
+      // --o--S==o==E--o--
+      //  cur   next
+      if (startStep >= currentStep && endStep >= nextStep) {
+        width +=
+          ((nextStep - startStep) / (nextStep - currentStep)) * sliderUnit;
+        continue;
+      }
+
+      // -=o=====o==E--o--
+      //  cur   next
+      if (endStep >= nextStep) {
+        width += sliderUnit;
+      } else {
+        // -=o==E--o--
+        //  cur   next
+        width +=
+          ((endStep - currentStep) / (nextStep - currentStep)) * sliderUnit;
+        break;
+      }
+    }
+
+    if (startPosition > 1 || startPosition < 0) {
+      startPosition = 0;
+    }
+
+    this.sliderStartPosition = `${startPosition * 100}%`;
+    this.sliderTrackWidth = `${width * 100}%`;
   }
 
   getLinkedTimeTickLeftStyle(step: number) {
