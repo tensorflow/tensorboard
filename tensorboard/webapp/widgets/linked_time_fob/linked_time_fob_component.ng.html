@@ -1,0 +1,13 @@
+<div (dblclick)="typeStepRequested()">
+  <span [style.transform]="getCenteringTransform()">
+    <input
+      *ngIf="isTyping"
+      type="text"
+      type="number"
+      [value]="step"
+      (change)="stepTyped($event)"
+      (focusout)="lostFocus()"
+    />
+    <div *ngIf="!isTyping">{{ step | number }}</div>
+  </span>
+</div>
