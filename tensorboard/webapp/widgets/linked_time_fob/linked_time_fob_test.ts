@@ -323,7 +323,7 @@ describe('linked_time_fob_controller', () => {
     });
   });
 
-  fdescribe('typing step into fob', () => {
+  describe('typing step into fob', () => {
     it('single time selection changed with fob typing', () => {
       let fixture = createComponent({});
       fixture.detectChanges();
