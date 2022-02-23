@@ -448,6 +448,34 @@ describe('metrics right_pane', () => {
           expect(el.query(By.css('tb-range-input'))).toBeTruthy();
         });
 
+        it('disables tb-range-input on select time disabled', () => {
+          store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
+          store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+          store.overrideSelector(selectors.getMetricsSelectTimeEnabled, false);
+          store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
+          const fixture = TestBed.createComponent(SettingsViewContainer);
+          fixture.detectChanges();
+
+          const el = fixture.debugElement.query(
+            By.css('.linked-time tb-range-input')
+          );
+          expect(el.properties.enabled).toBe(false);
+        });
+
+        it('disables tb-range-input on select time disabled', () => {
+          store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
+          store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+          store.overrideSelector(selectors.getMetricsSelectTimeEnabled, true);
+          store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
+          const fixture = TestBed.createComponent(SettingsViewContainer);
+          fixture.detectChanges();
+
+          const el = fixture.debugElement.query(
+            By.css('.linked-time tb-range-input')
+          );
+          expect(el.properties.enabled).toBe(true);
+        });
+
         it('dispatches actions when making range step change', () => {
           store.overrideSelector(selectors.getMetricsUseRangeSelectTime, true);
           store.overrideSelector(selectors.getMetricsSelectedTimeSetting, {
