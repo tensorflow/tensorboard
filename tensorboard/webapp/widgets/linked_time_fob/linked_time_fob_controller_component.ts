@@ -196,27 +196,22 @@ export class LinkedTimeFobControllerComponent {
   }
 
   stepTyped(fob: Fob, step: number) {
-    let newLinkedTime = this.linkedTime;
-    if (!newLinkedTime.end) {
-      newLinkedTime.start.step = step;
-      this.onSelectTimeChanged.emit(newLinkedTime);
-      return;
-    }
-
+    let newLinkedTime = {...this.linkedTime};
     if (fob === Fob.START) {
-      newLinkedTime.start.step = step;
-      if (step > newLinkedTime.end.step) {
-        newLinkedTime.start.step = newLinkedTime.end.step;
-        newLinkedTime.end.step = step;
-      }
+      newLinkedTime.start = {step};
+    } else if (fob === Fob.END) {
+      newLinkedTime.end = {step};
     }
 
-    if (fob === Fob.END) {
-      newLinkedTime.end.step = step;
-      if (step < newLinkedTime.start.step) {
-        newLinkedTime.end.step = newLinkedTime.start.step;
-        newLinkedTime.start.step = step;
-      }
+    if (
+      newLinkedTime.end !== null &&
+      newLinkedTime.start.step > newLinkedTime.end.step
+    ) {
+      // The Start Step is now greater than the End Step - flip them.
+      newLinkedTime = {
+        start: newLinkedTime.end,
+        end: newLinkedTime.start,
+      };
     }
 
     this.onSelectTimeChanged.emit(newLinkedTime);

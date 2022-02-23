@@ -19,7 +19,6 @@ limitations under the License.
   <span [style.transform]="getCenteringTransform()">
     <input
       *ngIf="isTyping"
-      type="text"
       type="number"
       [value]="step"
       (change)="stepTyped($event)"

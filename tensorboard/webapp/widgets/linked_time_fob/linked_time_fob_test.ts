@@ -51,7 +51,7 @@ class TestableComponent {
   @Input() onSelectTimeChanged!: (newLinkedTime: LinkedTime) => void;
 }
 
-describe('linked_time_fob_controller', () => {
+fdescribe('linked_time_fob_controller', () => {
   let onSelectTimeChanged: jasmine.Spy;
   let temporalScaleSpy: jasmine.Spy;
   beforeEach(async () => {
@@ -388,6 +388,20 @@ describe('linked_time_fob_controller', () => {
       fixture.detectChanges();
       expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
         start: {step: 2},
+        end: {step: 3},
+      });
+    });
+
+    it('properly handles a 0 step', () => {
+      let fixture = createComponent({
+        linkedTime: {start: {step: 3}, end: {step: 4}},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      fobController.stepTyped(Fob.END, 0);
+      fixture.detectChanges();
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 0},
         end: {step: 3},
       });
     });

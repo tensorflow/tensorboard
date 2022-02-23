@@ -37,7 +37,6 @@ export class LinkedTimeFobComponent {
   isTyping = false;
 
   getCenteringTransform() {
-    console.log('centering');
     if (this.axisDirection === AxisDirection.VERTICAL) {
       return 'translateY(-50%)';
     } else {
@@ -46,7 +45,6 @@ export class LinkedTimeFobComponent {
   }
 
   typeStepRequested() {
-    console.log('typeStepRequested');
     this.isTyping = true;
   }
 
