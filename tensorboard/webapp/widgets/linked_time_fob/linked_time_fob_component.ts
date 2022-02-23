@@ -16,9 +16,9 @@ limitations under the License.
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
   Output,
-  EventEmitter,
 } from '@angular/core';
 import {AxisDirection} from './linked_time_fob_controller_component';
 
