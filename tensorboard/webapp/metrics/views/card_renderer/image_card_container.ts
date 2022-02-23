@@ -286,9 +286,9 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       map(([stepIndex, selectedTime, selectedSteps, stepValues]) => {
         if (!selectedTime || selectedTime.endStep) return stepIndex;
 
-        const nextStepInex = stepValues.indexOf(selectedSteps[0]);
-        if (nextStepInex === -1) return stepIndex;
-        return nextStepInex;
+        const nextStepIndex = stepValues.indexOf(selectedSteps[0]);
+        if (nextStepIndex === -1) return stepIndex;
+        return nextStepIndex;
       })
     );
 

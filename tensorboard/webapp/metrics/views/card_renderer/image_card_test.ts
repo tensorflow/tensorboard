@@ -697,7 +697,7 @@ describe('image card', () => {
       expect(slider.nativeElement.getAttribute('aria-valuenow')).toBe('2');
     });
 
-    it('dose not move slider thumb to selected time on single selection', () => {
+    it('dose not move slider thumb to selected time on range selection', () => {
       store.overrideSelector(selectors.getMetricsSelectedTime, {
         start: {step: 15},
         end: {step: 55},
