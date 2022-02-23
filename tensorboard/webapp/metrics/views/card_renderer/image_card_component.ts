@@ -83,8 +83,9 @@ export class ImageCardComponent {
 
   ngOnChanges(changes: SimpleChanges) {
     if (
-      this.changeDistinct(changes['selectedSteps']) ||
-      this.changeDistinct(changes['selectedTime'])
+      (changes['selectedSteps'] &&
+        this.changeDistinct(changes['selectedSteps'])) ||
+      (changes['selectedTime'] && this.changeDistinct(changes['selectedTime']))
     ) {
       this.renderRangeSlider();
     }
