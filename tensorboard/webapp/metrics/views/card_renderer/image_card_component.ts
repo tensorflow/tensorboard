@@ -83,11 +83,14 @@ export class ImageCardComponent {
 
   ngOnChanges(changes: SimpleChanges) {
     if (
-      !this.changeDistinct(changes['selectedSteps']) ||
-      !this.changeDistinct(changes['selectedTime'])
+      this.changeDistinct(changes['selectedSteps']) ||
+      this.changeDistinct(changes['selectedTime'])
     ) {
-      return;
+      this.renderRangeSlider();
     }
+  }
+
+  renderRangeSlider() {
     if (
       !this.selectedTime ||
       !this.selectedTime.endStep ||
@@ -161,7 +164,6 @@ export class ImageCardComponent {
     this.sliderStartPosition = `${startPosition * 100}%`;
     this.sliderTrackWidth = `${width * 100}%`;
   }
-
   getLinkedTimeTickLeftStyle(step: number) {
     if (this.stepValues.indexOf(step) == -1) {
       throw new Error(
