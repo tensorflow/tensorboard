@@ -73,7 +73,7 @@ limitations under the License.
           [lowerValue]="selectedTime?.start.step"
           [upperValue]="selectedTime?.end?.step"
           [useRange]="useRangeSelectTime"
-          [inputEnabled]="selectTimeEnabled"
+          [enabled]="selectTimeEnabled"
           (singleValueChanged)="onSingleValueChanged($event)"
           (rangeValuesChanged)="onRangeValuesChanged($event)"
           (upperValueRemoved)="useRangeSelectTimeToggled.emit()"
