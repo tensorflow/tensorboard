@@ -462,7 +462,7 @@ describe('metrics right_pane', () => {
           expect(el.properties.enabled).toBe(false);
         });
 
-        it('disables tb-range-input on select time disabled', () => {
+        it('enables tb-range-input on select time enabled', () => {
           store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
           store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
           store.overrideSelector(selectors.getMetricsSelectTimeEnabled, true);
