@@ -616,7 +616,7 @@ describe('image card', () => {
       });
     });
 
-    fdescribe('sliders', () => {
+    describe('sliders', () => {
       beforeEach(() => {
         const timeSeries = [
           {wallTime: 100, imageId: 'ImageId1', step: 10},
