@@ -201,21 +201,7 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       shareReplay(1)
     );
 
-    this.stepIndex$ = this.store.select(getCardStepIndex, this.cardId);
     this.loadState$ = this.store.select(getCardLoadState, this.cardId);
-
-    const timeSeriesAndStepIndex$ = combineLatest([
-      timeSeries$,
-      this.stepIndex$,
-    ]);
-    const stepDatum$ = timeSeriesAndStepIndex$.pipe(
-      map(([timeSeries, stepIndex]) => {
-        if (stepIndex === null || !timeSeries[stepIndex]) {
-          return null;
-        }
-        return timeSeries[stepIndex];
-      })
-    );
 
     this.tag$ = cardMetadata$.pipe(
       map((cardMetadata) => {
@@ -243,15 +229,6 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
 
     this.numSample$ = cardMetadata$.pipe(
       map((cardMetadata) => cardMetadata.numSample)
-    );
-
-    this.imageUrl$ = stepDatum$.pipe(
-      map((stepDatum: ImageStepDatum | null) => {
-        if (!stepDatum) {
-          return null;
-        }
-        return this.dataSource.imageUrl(stepDatum.imageId);
-      })
     );
 
     this.stepValues$ = timeSeries$.pipe(
@@ -297,6 +274,43 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
           }
         }
         return selectedStepsInRange;
+      })
+    );
+
+    this.stepIndex$ = combineLatest(
+      this.store.select(getCardStepIndex, this.cardId),
+      this.selectedTime$,
+      this.selectedSteps$,
+      this.stepValues$
+    ).pipe(
+      map(([stepIndex, selectedTime, selectedSteps, stepValues]) => {
+        if (!selectedTime || selectedTime.endStep) return stepIndex;
+
+        const nextStepIndex = stepValues.indexOf(selectedSteps[0]);
+        if (nextStepIndex === -1) return stepIndex;
+        return nextStepIndex;
+      })
+    );
+
+    const timeSeriesAndStepIndex$ = combineLatest([
+      timeSeries$,
+      this.stepIndex$,
+    ]);
+    const stepDatum$ = timeSeriesAndStepIndex$.pipe(
+      map(([timeSeries, stepIndex]) => {
+        if (stepIndex === null || !timeSeries[stepIndex]) {
+          return null;
+        }
+        return timeSeries[stepIndex];
+      })
+    );
+
+    this.imageUrl$ = stepDatum$.pipe(
+      map((stepDatum: ImageStepDatum | null) => {
+        if (!stepDatum) {
+          return null;
+        }
+        return this.dataSource.imageUrl(stepDatum.imageId);
       })
     );
   }
