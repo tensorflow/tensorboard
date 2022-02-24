@@ -459,7 +459,7 @@ describe('metrics right_pane', () => {
           const el = fixture.debugElement.query(
             By.css('.linked-time tb-range-input')
           );
-          expect(el.properties.enabled).toBe(false);
+          expect(el.properties['enabled']).toBe(false);
         });
 
         it('enables tb-range-input on select time enabled', () => {
@@ -473,7 +473,7 @@ describe('metrics right_pane', () => {
           const el = fixture.debugElement.query(
             By.css('.linked-time tb-range-input')
           );
-          expect(el.properties.enabled).toBe(true);
+          expect(el.properties['enabled']).toBe(true);
         });
 
         it('dispatches actions when making range step change', () => {
