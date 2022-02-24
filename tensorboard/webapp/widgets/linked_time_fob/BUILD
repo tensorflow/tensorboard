@@ -42,6 +42,7 @@ tf_ts_library(
     ],
     deps = [
         ":linked_time_fob",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/third_party:d3",
         "@npm//@angular/core",
