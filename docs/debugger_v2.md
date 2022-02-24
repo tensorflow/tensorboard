@@ -273,7 +273,7 @@ The debugging API introduces performance overhead to the instrumented TensorFlow
 program. The overhead varies by `tensor_debug_mode`, hardware type, and nature
 of the instrumented TensorFlow program. As a reference point, on a GPU, the
 `NO_TENSOR` mode adds a 15% overhead during the training of a
-[Transformer model](https://github.com/tensorflow/models/tree/master/official/nlp/transformer)
+[Transformer model](https://github.com/tensorflow/models/tree/master/official/legacy/transformer)
 under batch size 64. The percent overhead for other tensor_debug_modes are
 higher: approximately 50% for the `CURT_HEALTH`, `CONCISE_HEALTH`, `FULL_HEALTH`
 and `SHAPE` modes. On CPUs, the overhead is slightly lower. On TPUs, the
