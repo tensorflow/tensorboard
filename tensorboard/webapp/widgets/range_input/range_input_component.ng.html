@@ -25,13 +25,13 @@ limitations under the License.
   class="upper-input"
   type="number"
   [disabled]="!enabled"
-  [value]="useRange ? upperValue : ''"
+  [value]="upperValue !== null ? upperValue : ''"
   (change)="handleInputChange($event, Position.RIGHT)"
 />
 
 <mat-slider
   class="single-slider"
-  *ngIf="!useRange; else range"
+  *ngIf="upperValue === null; else range"
   [disabled]="!enabled"
   color="primary"
   [min]="min"

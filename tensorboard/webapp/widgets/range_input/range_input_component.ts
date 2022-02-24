@@ -123,16 +123,13 @@ export class RangeInputComponent implements OnInit, OnDestroy {
    * or equal to `max`. If lower, the thumb will still be clipped to the `max`
    * value.
    */
-  @Input() upperValue!: number;
+  @Input() upperValue!: number | null;
 
   /**
    * `null` denotes contiguous "ticks"
    */
   @Input() tickCount: number | null = 20;
-  /**
-   * Renders single or range slider.
-   */
-  @Input() useRange: boolean = true;
+
   /**
    * Whether the text input is editable.
    */
@@ -183,6 +180,9 @@ export class RangeInputComponent implements OnInit, OnDestroy {
   }
 
   getTrackWidth(): string {
+    if (this.upperValue === null) {
+      return '0%';
+    }
     const boundSize = this.max - this.min;
 
     if (boundSize <= 0) {
@@ -285,6 +285,9 @@ export class RangeInputComponent implements OnInit, OnDestroy {
     if (this.activeThumb === Position.NONE) {
       return;
     }
+    if (this.upperValue === null) {
+      return;
+    }
 
     const newValue = this.calculateValueFromMouseEvent(event);
 
@@ -324,11 +327,8 @@ export class RangeInputComponent implements OnInit, OnDestroy {
     return input.value === '' && position === Position.RIGHT;
   }
 
-  private isLowerValueUpdatedOnSingleSelection(
-    position: Position,
-    useRangeSelectTime: boolean
-  ) {
-    return position === Position.LEFT && !useRangeSelectTime;
+  private isLowerValueUpdatedOnSingleSelection(position: Position) {
+    return position === Position.LEFT && this.upperValue === null;
   }
 
   handleInputChange(event: InputEvent, position: Position) {
@@ -345,12 +345,19 @@ export class RangeInputComponent implements OnInit, OnDestroy {
     // range  [100, 500]  → delete upper value → single [100, X]
     // single [100, X]    → delete lower value → single [50, X]
     // range  [100, 500]  → delete lower value → range  [50, 500]
+    // single [100, X]    → add    upper value → range  [100, 500]
     if (this.isUpperValueRemoved(input, position)) {
+      this.upperValue = null;
+      this.singleValueChanged.emit(this.lowerValue);
       this.upperValueRemoved.emit();
       return;
     }
-    if (this.isLowerValueUpdatedOnSingleSelection(position, this.useRange)) {
+    if (this.isLowerValueUpdatedOnSingleSelection(position)) {
       this.singleValueChanged.emit(numValue);
+      return;
+    }
+    if (this.upperValue === null) {
+      this.maybeNotifyNextRangeValues([this.lowerValue, numValue]);
       return;
     }
 

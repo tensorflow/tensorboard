@@ -27,7 +27,6 @@ import {RangeInputComponent, TEST_ONLY} from './range_input_component';
       [max]="max"
       [lowerValue]="lowerValue"
       [upperValue]="upperValue"
-      [useRange]="useRange"
       [enabled]="enabled"
       [tickCount]="tickCount"
       (rangeValuesChanged)="onRangeValuesChanged($event)"
@@ -54,9 +53,7 @@ class TestableComponent {
 
   @Input() lowerValue!: number;
 
-  @Input() upperValue!: number;
-
-  @Input() useRange!: boolean;
+  @Input() upperValue!: number | null;
 
   @Input() enabled!: boolean;
 
@@ -87,7 +84,6 @@ describe('range input test', () => {
       min: -5,
       max: 5,
       tickCount: 10,
-      useRange: false,
       enabled: true,
       ...props,
     };
@@ -99,8 +95,9 @@ describe('range input test', () => {
     fixture.componentInstance.lowerValue = propsWithDefault.lowerValue;
     if (propsWithDefault.upperValue !== undefined) {
       fixture.componentInstance.upperValue = propsWithDefault.upperValue;
+    } else {
+      fixture.componentInstance.upperValue = null;
     }
-    fixture.componentInstance.useRange = propsWithDefault.useRange;
     fixture.componentInstance.min = propsWithDefault.min;
     fixture.componentInstance.max = propsWithDefault.max;
     fixture.componentInstance.tickCount = propsWithDefault.tickCount;
@@ -152,7 +149,7 @@ describe('range input test', () => {
     }
     describe('single selection', () => {
       it('renders correct slider value', () => {
-        const {fixture} = createComponent({lowerValue: 2, useRange: false});
+        const {fixture} = createComponent({lowerValue: 2});
         expect(getMatSliderValue(fixture.debugElement)).toEqual('2');
       });
     });
@@ -162,7 +159,6 @@ describe('range input test', () => {
         const {fixture} = createComponent({
           lowerValue: 2,
           upperValue: 3,
-          useRange: true,
         });
 
         expect(getRangeThumbsStyleLeft(fixture)).toEqual(['70%', '80%']);
@@ -172,7 +168,6 @@ describe('range input test', () => {
         const {fixture} = createComponent({
           lowerValue: -100,
           upperValue: 100,
-          useRange: true,
         });
 
         expect(getRangeThumbsStyleLeft(fixture)).toEqual(['0%', '100%']);
@@ -182,7 +177,6 @@ describe('range input test', () => {
         const {fixture} = createComponent({
           lowerValue: 3,
           upperValue: -1,
-          useRange: true,
         });
 
         expect(getRangeThumbsStyleLeft(fixture)).toEqual(['80%', '40%']);
@@ -194,7 +188,6 @@ describe('range input test', () => {
           max: 10,
           lowerValue: 10,
           upperValue: 10,
-          useRange: true,
         });
 
         expect(getRangeThumbsStyleLeft(fixture)).toEqual(['50%', '50%']);
@@ -230,7 +223,6 @@ describe('range input test', () => {
         const {fixture, onSingleValueChanged} = createComponent({
           lowerValue: -1,
           tickCount: null,
-          useRange: false,
         });
 
         const slider = fixture.debugElement.query(By.css('mat-slider'));
@@ -249,7 +241,6 @@ describe('range input test', () => {
           lowerValue: -1,
           upperValue: 1,
           tickCount: null,
-          useRange: true,
         });
         const [leftThumb] = getThumbsOnRange(fixture);
         startMovingThumb(leftThumb);
@@ -268,7 +259,6 @@ describe('range input test', () => {
           lowerValue: 0.1,
           upperValue: 0.3,
           tickCount: null,
-          useRange: true,
         });
         const [leftThumb] = getThumbsOnRange(fixture);
         startMovingThumb(leftThumb);
@@ -287,7 +277,6 @@ describe('range input test', () => {
           lowerValue: -1,
           upperValue: 1,
           tickCount: null,
-          useRange: true,
         });
         const values: Array<{lowerValue: number; upperValue: number}> = [];
         onRangeValuesChanged.and.callFake(
@@ -318,7 +307,6 @@ describe('range input test', () => {
         const {fixture, onRangeValuesChanged} = createComponent({
           lowerValue: -1,
           upperValue: 1,
-          useRange: true,
         });
         const [leftThumb] = getThumbsOnRange(fixture);
 
@@ -334,7 +322,6 @@ describe('range input test', () => {
           lowerValue: -5,
           upperValue: 1,
           tickCount: 10,
-          useRange: true,
         });
         const [leftThumb] = getThumbsOnRange(fixture);
         startMovingThumb(leftThumb);
@@ -348,7 +335,6 @@ describe('range input test', () => {
           lowerValue: -5,
           upperValue: 1,
           tickCount: 10,
-          useRange: true,
         });
         const [leftThumb] = getThumbsOnRange(fixture);
         startMovingThumb(leftThumb);
@@ -371,7 +357,6 @@ describe('range input test', () => {
           lowerValue: -5,
           upperValue: 1,
           tickCount: null,
-          useRange: true,
         });
         const [leftThumb] = getThumbsOnRange(fixture);
         startMovingThumb(leftThumb);
@@ -388,7 +373,6 @@ describe('range input test', () => {
           lowerValue: -5,
           upperValue: 0,
           tickCount: null,
-          useRange: true,
         });
         const [leftThumb] = getThumbsOnRange(fixture);
         startMovingThumb(leftThumb);
@@ -406,7 +390,6 @@ describe('range input test', () => {
           max: 10,
           lowerValue: 10,
           upperValue: 10,
-          useRange: true,
         });
 
         const [leftThumb] = getThumbsOnRange(fixture);
@@ -428,7 +411,6 @@ describe('range input test', () => {
         max: 10,
         lowerValue: 5,
         upperValue: 5,
-        useRange: true,
       });
       const [minInput] = getInputs(fixture);
       minInput.value = '0';
@@ -445,7 +427,6 @@ describe('range input test', () => {
         min: 0,
         max: 10,
         lowerValue: 5,
-        useRange: false,
       });
       const [minInput] = getInputs(fixture);
       minInput.value = '2';
@@ -460,7 +441,6 @@ describe('range input test', () => {
         max: 10,
         lowerValue: 5,
         upperValue: 5,
-        useRange: true,
       });
       const [minInput] = getInputs(fixture);
       minInput.value = '0';
@@ -474,7 +454,6 @@ describe('range input test', () => {
         min: 0,
         max: 10,
         lowerValue: 5,
-        useRange: false,
       });
       const [minInput2] = getInputs(fixture2);
       minInput2.value = '0';
@@ -491,7 +470,6 @@ describe('range input test', () => {
         max: 10,
         lowerValue: 5,
         upperValue: 5,
-        useRange: true,
       });
       const [, maxInput] = getInputs(fixture);
       maxInput.value = '2';
@@ -508,7 +486,6 @@ describe('range input test', () => {
         min: 0,
         max: 10,
         lowerValue: 5,
-        useRange: false,
       });
       const [minInput] = getInputs(fixture);
       minInput.value = '';
@@ -523,7 +500,6 @@ describe('range input test', () => {
         max: 10,
         lowerValue: 5,
         upperValue: 5,
-        useRange: true,
       });
       const [minInput] = getInputs(fixture);
       minInput.value = '';
@@ -540,7 +516,6 @@ describe('range input test', () => {
         min: 0,
         max: 10,
         lowerValue: 5,
-        useRange: false,
       });
       const [, maxInput] = getInputs(fixture);
       maxInput.value = '7';
@@ -558,7 +533,6 @@ describe('range input test', () => {
         max: 10,
         lowerValue: 5,
         upperValue: 5,
-        useRange: true,
       });
       const [, maxInput] = getInputs(fixture);
       maxInput.value = '';

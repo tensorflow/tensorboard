@@ -761,7 +761,7 @@ describe('metrics selectors', () => {
       selectors.getMetricsSelectedTimeSetting.release();
     });
 
-    it('returns value from the dataset when selected time is null', () => {
+    it('returns value with start step from the dataset when selected time is null', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
           selectedTime: null,
@@ -773,7 +773,7 @@ describe('metrics selectors', () => {
       );
       expect(selectors.getMetricsSelectedTimeSetting(state)).toEqual({
         start: {step: 0},
-        end: {step: 1000},
+        end: null,
       });
     });
 

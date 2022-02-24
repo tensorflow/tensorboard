@@ -2300,7 +2300,7 @@ describe('metrics reducers', () => {
         });
       });
 
-      it('sets `end` to max step from data when `endStep` is not present', () => {
+      it('sets `end` to null from data when `endStep` is not present', () => {
         const before = buildMetricsState({
           selectedTime: null,
           stepMinMax: {min: 0, max: 100},
@@ -2313,7 +2313,7 @@ describe('metrics reducers', () => {
 
         expect(after.selectedTime).toEqual({
           start: {step: 2},
-          end: {step: 100},
+          end: null,
         });
       });
 
@@ -2336,27 +2336,6 @@ describe('metrics reducers', () => {
           end: {step: 50},
         });
       });
-
-      it(
-        'sets `end` to previous end if selectedTime was present and `endStep` ' +
-          'does not exist',
-        () => {
-          const before = buildMetricsState({
-            selectedTime: {start: {step: 0}, end: {step: 100}},
-            stepMinMax: {min: 0, max: 100},
-          });
-
-          const after = reducers(
-            before,
-            actions.timeSelectionChanged({startStep: 2, endStep: undefined})
-          );
-
-          expect(after.selectedTime).toEqual({
-            start: {step: 2},
-            end: {step: 100},
-          });
-        }
-      );
 
       it('enables selectTimeEnabled if previously disabled', () => {
         const beforeState = buildMetricsState({
@@ -2390,27 +2369,6 @@ describe('metrics reducers', () => {
           end: {step: 150},
         });
       });
-
-      it(
-        'sets `end` to `start` if new start is greater than current end and ' +
-          'there is no `endStep',
-        () => {
-          const beforeState = buildMetricsState({
-            selectedTime: null,
-            stepMinMax: {min: 0, max: 100},
-          });
-
-          const nextState = reducers(
-            beforeState,
-            actions.timeSelectionChanged({startStep: 150, endStep: undefined})
-          );
-
-          expect(nextState.selectedTime).toEqual({
-            start: {step: 150},
-            end: {step: 150},
-          });
-        }
-      );
 
       it('sets `useRangeSelectTime` to true when `endStep` is present and selected time is null', () => {
         const beforeState = buildMetricsState({

@@ -927,16 +927,15 @@ const reducer = createReducer(
   }),
   on(actions.timeSelectionChanged, (state, change) => {
     const nextStartStep = change.startStep;
-    let nextEndStep =
-      change.endStep ?? state.selectedTime?.end?.step ?? state.stepMinMax.max;
-
-    if (nextStartStep > nextEndStep) {
-      nextEndStep = nextStartStep;
-    }
+    const nextEndStep = change.endStep;
+    const end =
+      nextEndStep === undefined
+        ? null
+        : {step: nextStartStep > nextEndStep ? nextStartStep : nextEndStep};
 
     // If there is no endStep then current selection state is single.
     // Otherwise selection state is range.
-    const useRangeSelectTime = change.endStep !== undefined;
+    const useRangeSelectTime = nextEndStep !== undefined;
 
     return {
       ...state,
@@ -945,9 +944,7 @@ const reducer = createReducer(
         start: {
           step: nextStartStep,
         },
-        end: {
-          step: nextEndStep,
-        },
+        end,
       },
       useRangeSelectTime,
     };
