@@ -938,6 +938,12 @@ const reducer = createReducer(
     // Otherwise selection state is range.
     const useRangeSelectTime = change.endStep !== undefined;
 
+    const nextCardStepIndex = {...state.cardStepIndex};
+    Object.keys(state.cardStepIndex).forEach((cardId) => {
+      // Getting the 'closet' stepIndex is not trivial.
+      nextCardStepIndex[cardId] = 1;
+    })
+
     return {
       ...state,
       selectTimeEnabled: true,
