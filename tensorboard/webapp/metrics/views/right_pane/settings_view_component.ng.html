@@ -67,13 +67,12 @@ limitations under the License.
       </div>
       <div class="step-selector">
         <tb-range-input
-          [attr.disabled]="!selectTimeEnabled"
           [min]="stepMinMax.min"
           [max]="stepMinMax.max"
           [lowerValue]="selectedTime?.start.step"
           [upperValue]="selectedTime?.end?.step"
           [useRange]="useRangeSelectTime"
-          [inputEnabled]="selectTimeEnabled"
+          [enabled]="selectTimeEnabled"
           (singleValueChanged)="onSingleValueChanged($event)"
           (rangeValuesChanged)="onRangeValuesChanged($event)"
           (upperValueRemoved)="useRangeSelectTimeToggled.emit()"
