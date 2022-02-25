@@ -670,6 +670,42 @@ describe('image card', () => {
         );
       });
 
+      it('renders range slider with end step at no data step', () => {
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 20},
+          end: {step: 35},
+        });
+
+        const fixture = createImageCardContainer('card1');
+        fixture.detectChanges();
+
+        const sliderTrackFill = fixture.debugElement.query(
+          By.css('.linked-time-wrapper .slider-track-fill')
+        );
+        expect(sliderTrackFill).toBeTruthy();
+        expect(sliderTrackFill.nativeElement.getAttribute('style')).toBe(
+          'left: 25%; width: 37.5%;'
+        );
+      });
+
+      it('renders range slider with start step at no data step', () => {
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 15},
+          end: {step: 30},
+        });
+
+        const fixture = createImageCardContainer('card1');
+        fixture.detectChanges();
+
+        const sliderTrackFill = fixture.debugElement.query(
+          By.css('.linked-time-wrapper .slider-track-fill')
+        );
+        expect(sliderTrackFill).toBeTruthy();
+        expect(sliderTrackFill.nativeElement.getAttribute('style')).toBe(
+          'left: 12.5%; width: 37.5%;'
+        );
+      });
+
       it('renders range slider on no data steps with propotion of the unit', () => {
         store.overrideSelector(selectors.getMetricsSelectedTime, {
           start: {step: 20},
