@@ -87,7 +87,6 @@ enum Position {
  *   are clipped to `min` and `max`. Also, when emitting changes, the values can
  *   never exceed `min` and `max`.
  * - emits actions on both single and range value changed
- * - emits actions on upper value removed
  */
 @Component({
   selector: 'tb-range-input',
@@ -142,8 +141,6 @@ export class RangeInputComponent implements OnInit, OnDestroy {
   }>();
 
   @Output() singleValueChanged = new EventEmitter<number>();
-
-  @Output() upperValueRemoved = new EventEmitter<void>();
 
   readonly Position = Position;
 
@@ -347,9 +344,7 @@ export class RangeInputComponent implements OnInit, OnDestroy {
     // range  [100, 500]  → delete lower value → range  [50, 500]
     // single [100, X]    → add    upper value → range  [100, 500]
     if (this.isUpperValueRemoved(input, position)) {
-      this.upperValue = null;
       this.singleValueChanged.emit(this.lowerValue);
-      this.upperValueRemoved.emit();
       return;
     }
     if (this.isLowerValueUpdatedOnSingleSelection(position)) {

@@ -31,7 +31,6 @@ import {RangeInputComponent, TEST_ONLY} from './range_input_component';
       [tickCount]="tickCount"
       (rangeValuesChanged)="onRangeValuesChanged($event)"
       (singleValueChanged)="onSingleValueChanged($event)"
-      (upperValueRemoved)="onUpperValueRemoved()"
     ></tb-range-input>
   `,
   styles: [
@@ -65,8 +64,6 @@ class TestableComponent {
   }) => void;
 
   @Input() onSingleValueChanged!: (event: {value: number}) => void;
-
-  @Input() onUpperValueRemoved!: () => void;
 }
 
 describe('range input test', () => {
@@ -91,7 +88,6 @@ describe('range input test', () => {
 
     const onRangeValuesChanged = jasmine.createSpy();
     const onSingleValueChanged = jasmine.createSpy();
-    const onUpperValueRemoved = jasmine.createSpy();
     fixture.componentInstance.lowerValue = propsWithDefault.lowerValue;
     if (propsWithDefault.upperValue !== undefined) {
       fixture.componentInstance.upperValue = propsWithDefault.upperValue;
@@ -103,13 +99,11 @@ describe('range input test', () => {
     fixture.componentInstance.tickCount = propsWithDefault.tickCount;
     fixture.componentInstance.onRangeValuesChanged = onRangeValuesChanged;
     fixture.componentInstance.onSingleValueChanged = onSingleValueChanged;
-    fixture.componentInstance.onUpperValueRemoved = onUpperValueRemoved;
     fixture.detectChanges();
     return {
       fixture,
       onRangeValuesChanged,
       onSingleValueChanged,
-      onUpperValueRemoved,
     };
   }
 
@@ -528,17 +522,17 @@ describe('range input test', () => {
     });
 
     it('dispatches action when upper value removed on range slider', () => {
-      const {fixture, onUpperValueRemoved} = createComponent({
+      const {fixture, onSingleValueChanged} = createComponent({
         min: 0,
         max: 10,
         lowerValue: 5,
-        upperValue: 5,
+        upperValue: 6,
       });
       const [, maxInput] = getInputs(fixture);
       maxInput.value = '';
       maxInput.dispatchEvent(new InputEvent('change'));
 
-      expect(onUpperValueRemoved).toHaveBeenCalled();
+      expect(onSingleValueChanged).toHaveBeenCalledWith(5);
     });
   });
 });
