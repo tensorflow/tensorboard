@@ -759,7 +759,7 @@ describe('image card', () => {
     });
 
     describe('range selection', () => {
-      function createCardWithStepIndex(stepIndex: number) {
+      function createImageCardContainerWithStepIndex(stepIndex: number) {
         const timeSeries = [
           {wallTime: 100, imageId: 'ImageId1', step: 10},
           {wallTime: 101, imageId: 'ImageId2', step: 20},
@@ -792,7 +792,7 @@ describe('image card', () => {
           start: {step: 15},
           end: {step: 35},
         });
-        const fixture = createCardWithStepIndex(3);
+        const fixture = createImageCardContainerWithStepIndex(3);
 
         expect(getSliderThumbPosition(fixture)).toBe('2');
       });
@@ -802,7 +802,7 @@ describe('image card', () => {
           start: {step: 15},
           end: {step: 35},
         });
-        const fixture = createCardWithStepIndex(0);
+        const fixture = createImageCardContainerWithStepIndex(0);
 
         expect(getSliderThumbPosition(fixture)).toBe('1');
       });
@@ -812,7 +812,7 @@ describe('image card', () => {
           start: {step: 15},
           end: {step: 35},
         });
-        const fixture = createCardWithStepIndex(2);
+        const fixture = createImageCardContainerWithStepIndex(2);
 
         expect(getSliderThumbPosition(fixture)).toBe('2');
       });
@@ -822,7 +822,7 @@ describe('image card', () => {
           start: {step: 55},
           end: {step: 65},
         });
-        const fixture = createCardWithStepIndex(2);
+        const fixture = createImageCardContainerWithStepIndex(2);
 
         expect(getSliderThumbPosition(fixture)).toBe('2');
 
@@ -830,7 +830,7 @@ describe('image card', () => {
           start: {step: 5},
           end: {step: 9},
         });
-        const fixture2 = createCardWithStepIndex(2);
+        const fixture2 = createImageCardContainerWithStepIndex(2);
 
         expect(getSliderThumbPosition(fixture2)).toBe('2');
       });
