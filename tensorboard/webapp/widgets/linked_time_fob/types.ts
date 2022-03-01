@@ -12,16 +12,35 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-.axis-overlay {
-  height: 100%;
-  width: 100%;
-  pointer-events: all;
-  left: 0px;
-  position: absolute;
-  right: 0;
-  top: 0;
-  .time-fob-wrapper {
-    display: inline-block;
-    position: absolute;
-  }
+
+import {ScaleLinear, ScaleTime} from '../../third_party/d3';
+import {Scale} from '../line_chart_v2/lib/public_types';
+import {PluginType} from '../../metrics/types';
+
+export {Scale} from '../line_chart_v2/lib/public_types';
+
+export enum AxisDirection {
+  HORIZONTAL,
+  VERTICAL,
+}
+
+export enum Fob {
+  NONE,
+  START,
+  END,
+}
+
+export type TemporalScale =
+  | ScaleLinear<number, number>
+  | ScaleTime<number, number>;
+
+export interface FobCardData {
+  [PluginType.HISTOGRAMS]?: {
+    scale: TemporalScale;
+    steps: number[];
+  };
+  [PluginType.SCALARS]?: {
+    scale: Scale;
+    minMax: [number, number];
+  };
 }

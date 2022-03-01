@@ -2114,15 +2114,18 @@ describe('scalar card', () => {
         const fixture = createComponent('card1');
         fixture.detectChanges();
 
-        const fobs = fixture.debugElement.queryAll(
-          Selector.LINKED_TIME_AXIS_FOB
+        const scalarCardComponent = fixture.debugElement.query(
+          By.directive(ScalarCardComponent)
         );
-        expect(
-          fobs.map((debugEl) => debugEl.nativeElement.textContent.trim())
-        ).toEqual(['10']);
+
+        expect(scalarCardComponent.componentInstance.selectedTime).toEqual({
+          startStep: 10,
+          endStep: null,
+          clipped: true,
+        });
       }));
 
-      it('selects selectedTime to max extent when global setting is too large', fakeAsync(() => {
+      fit('selects selectedTime to max extent when global setting is too large', fakeAsync(() => {
         const runToSeries = {
           run1: [buildScalarStepData({step: 10})],
           run2: [buildScalarStepData({step: 20})],
@@ -2141,13 +2144,15 @@ describe('scalar card', () => {
         });
         const fixture = createComponent('card1');
         fixture.detectChanges();
-
-        const fobs = fixture.debugElement.queryAll(
-          Selector.LINKED_TIME_AXIS_FOB
+        const scalarCardComponent = fixture.debugElement.query(
+          By.directive(ScalarCardComponent)
         );
-        expect(
-          fobs.map((debugEl) => debugEl.nativeElement.textContent.trim())
-        ).toEqual(['30']);
+
+        expect(scalarCardComponent.componentInstance.selectedTime).toEqual({
+          startStep: 30,
+          endStep: null,
+          clipped: true,
+        });
       }));
     });
   });

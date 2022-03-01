@@ -27,10 +27,10 @@ import {
 } from '@angular/core';
 import {fromEvent, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
-import {LinkedTime} from '../../metrics/types';
+import {LinkedTime, PluginType} from '../../metrics/types';
 import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
-import {AxisDirection} from '../linked_time_fob/linked_time_fob_controller_component';
+import {FobCardData} from '../linked_time_fob/types';
 import {
   Bin,
   HistogramData,
@@ -101,8 +101,6 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() linkedTime: LinkedTime | null = null;
 
   @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
-
-  readonly axisDirection = AxisDirection.VERTICAL;
 
   readonly HistogramMode = HistogramMode;
   readonly TimeProperty = TimeProperty;
@@ -252,6 +250,17 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.linkedTime.start.step <= datum.step &&
       this.linkedTime.end.step >= datum.step
     );
+  }
+
+  getFobData(): FobCardData {
+    if (!this.scales) return {};
+
+    let fobData: FobCardData = {};
+    fobData[PluginType.HISTOGRAMS] = {
+      scale: this.scales.temporalScale,
+      steps: this.getSteps(),
+    };
+    return fobData;
   }
 
   getHistogramFill(datum: HistogramDatum): string {

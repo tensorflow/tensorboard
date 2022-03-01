@@ -26,6 +26,7 @@ tf_ng_module(
         "//tensorboard/webapp/widgets:resize_detector",
         "//tensorboard/webapp/widgets/intersection_observer",
         "//tensorboard/webapp/widgets/linked_time_fob",
+        "//tensorboard/webapp/widgets/linked_time_fob:types",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//rxjs",

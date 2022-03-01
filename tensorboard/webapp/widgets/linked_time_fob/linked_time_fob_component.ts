@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {AxisDirection} from './linked_time_fob_controller_component';
+import {AxisDirection} from './types';
 
 @Component({
   selector: 'linked-time-fob',

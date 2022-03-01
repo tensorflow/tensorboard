@@ -16,15 +16,11 @@ limitations under the License.
 import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {LinkedTime} from '../../metrics/types';
-import {ScaleLinear, ScaleTime} from '../../third_party/d3';
+import {ScaleLinear} from '../../third_party/d3';
 import {LinkedTimeFobComponent} from './linked_time_fob_component';
-import {
-  AxisDirection,
-  Fob,
-  LinkedTimeFobControllerComponent,
-} from './linked_time_fob_controller_component';
-
-type TemporalScale = ScaleLinear<number, number> | ScaleTime<number, number>;
+import {LinkedTimeFobControllerComponent} from './linked_time_fob_controller_component';
+import {AxisDirection, Fob, FobCardData, Scale} from './types';
+import {LinearScale} from '../line_chart_v2/lib/scale';
 
 @Component({
   selector: 'testable-comp',
@@ -35,6 +31,7 @@ type TemporalScale = ScaleLinear<number, number> | ScaleTime<number, number>;
       [linkedTime]="linkedTime"
       [steps]="steps"
       [temporalScale]="temporalScale"
+      [fobCardData]="fobCardData"
       (onSelectTimeChanged)="onSelectTimeChanged($event)"
     ></linked-time-fob-controller>
   `,
@@ -43,10 +40,8 @@ class TestableComponent {
   @ViewChild('FobController')
   fobController!: LinkedTimeFobControllerComponent;
 
-  @Input() steps!: number[];
-  @Input() axisDirection!: AxisDirection;
   @Input() linkedTime!: LinkedTime;
-  @Input() temporalScale!: TemporalScale;
+  @Input() fobCardData!: FobCardData;
 
   @Input() onSelectTimeChanged!: (newLinkedTime: LinkedTime) => void;
 }
@@ -54,6 +49,8 @@ class TestableComponent {
 describe('linked_time_fob_controller', () => {
   let onSelectTimeChanged: jasmine.Spy;
   let temporalScaleSpy: jasmine.Spy;
+  let forwardScaleSpy: jasmine.Spy;
+  let reverseScaleSpy: jasmine.Spy;
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [
@@ -66,28 +63,53 @@ describe('linked_time_fob_controller', () => {
   });
 
   function createComponent(input: {
+    axisDirection: AxisDirection;
     steps?: number[];
-    axisDirection?: AxisDirection;
+    minMax?: [number, number];
     linkedTime?: LinkedTime;
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
-    fixture.componentInstance.steps = input.steps || [1, 2, 3, 4];
+    if (input.axisDirection === AxisDirection.VERTICAL) {
+      temporalScaleSpy = jasmine.createSpy();
+      fixture.componentInstance.fobCardData = {
+        histograms: {
+          steps: input.steps || [1, 2, 3, 4],
+          scale: temporalScaleSpy as unknown as ScaleLinear<number, number>,
+        },
+      };
+      temporalScaleSpy.and.callFake((step: number) => {
+        return step;
+      });
+    }
 
-    fixture.componentInstance.axisDirection =
-      input.axisDirection || AxisDirection.VERTICAL;
+    if (input.axisDirection === AxisDirection.HORIZONTAL) {
+      let fakeScale = new LinearScale();
+      forwardScaleSpy = jasmine.createSpy();
+      reverseScaleSpy = jasmine.createSpy();
+      fakeScale.forward = forwardScaleSpy;
+      fakeScale.reverse = reverseScaleSpy;
+      forwardScaleSpy.and.callFake(
+        (domain: [number, number], range: [number, number], x: number) => {
+          return x;
+        }
+      );
+      reverseScaleSpy.and.callFake(
+        (domain: [number, number], range: [number, number], x: number) => {
+          return x;
+        }
+      );
+      fixture.componentInstance.fobCardData = {
+        scalars: {
+          scale: fakeScale,
+          minMax: input.minMax || [0, 4],
+        },
+      };
+    }
 
     fixture.componentInstance.linkedTime = input.linkedTime || {
       start: {step: 1},
       end: null,
     };
-
-    temporalScaleSpy = jasmine.createSpy();
-    fixture.componentInstance.temporalScale =
-      temporalScaleSpy as unknown as ScaleLinear<number, number>;
-
-    temporalScaleSpy.and.callFake((step: number) => {
-      return step;
-    });
 
     onSelectTimeChanged = jasmine.createSpy();
     fixture.componentInstance.onSelectTimeChanged = onSelectTimeChanged;
@@ -97,7 +119,7 @@ describe('linked_time_fob_controller', () => {
 
   describe('vertical dragging', () => {
     it('moves the start fob down to mouse when mouse is dragging down and is below fob', () => {
-      let fixture = createComponent({});
+      let fixture = createComponent({axisDirection: AxisDirection.VERTICAL});
       fixture.detectChanges();
       let fobController = fixture.componentInstance.fobController;
       expect(
@@ -118,6 +140,7 @@ describe('linked_time_fob_controller', () => {
 
     it('moves the start fob above mouse when mouse is dragging up and above the fob', () => {
       let fixture = createComponent({
+        axisDirection: AxisDirection.VERTICAL,
         linkedTime: {start: {step: 4}, end: null},
       });
       fixture.detectChanges();
@@ -140,6 +163,7 @@ describe('linked_time_fob_controller', () => {
 
     it('does not move the start fob when mouse is dragging up but, is below the fob', () => {
       let fixture = createComponent({
+        axisDirection: AxisDirection.VERTICAL,
         linkedTime: {start: {step: 2}, end: null},
       });
       fixture.detectChanges();
@@ -159,6 +183,7 @@ describe('linked_time_fob_controller', () => {
 
     it('does not move the start fob when mouse is dragging down but, is above the fob', () => {
       let fixture = createComponent({
+        axisDirection: AxisDirection.VERTICAL,
         linkedTime: {start: {step: 4}, end: null},
       });
       fixture.detectChanges();
@@ -178,6 +203,7 @@ describe('linked_time_fob_controller', () => {
 
     it('does not move the start fob when mouse is dragging down but, the fob is already on the final step', () => {
       let fixture = createComponent({
+        axisDirection: AxisDirection.VERTICAL,
         linkedTime: {start: {step: 4}, end: null},
       });
       fixture.detectChanges();
@@ -197,6 +223,7 @@ describe('linked_time_fob_controller', () => {
 
     it('start fob moves does not pass the end fob when being dragged passed it.', () => {
       let fixture = createComponent({
+        axisDirection: AxisDirection.VERTICAL,
         linkedTime: {start: {step: 2}, end: {step: 3}},
       });
       fixture.detectChanges();
@@ -219,6 +246,7 @@ describe('linked_time_fob_controller', () => {
 
     it('end fob moves to the mouse when mouse is dragging up and mouse is above the fob', () => {
       let fixture = createComponent({
+        axisDirection: AxisDirection.VERTICAL,
         linkedTime: {start: {step: 1}, end: {step: 1}},
       });
       fixture.detectChanges();
@@ -242,6 +270,7 @@ describe('linked_time_fob_controller', () => {
 
     it('end fob moves to the mouse when mouse is dragging down and mouse is below the fob', () => {
       let fixture = createComponent({
+        axisDirection: AxisDirection.VERTICAL,
         linkedTime: {start: {step: 1}, end: {step: 4}},
       });
       fixture.detectChanges();
@@ -264,6 +293,7 @@ describe('linked_time_fob_controller', () => {
 
     it('end fob does not move when mouse is dragging down but, mouse is above the fob', () => {
       let fixture = createComponent({
+        axisDirection: AxisDirection.VERTICAL,
         linkedTime: {start: {step: 1}, end: {step: 2}},
       });
       fixture.detectChanges();
@@ -283,6 +313,7 @@ describe('linked_time_fob_controller', () => {
 
     it('end fob does not move when mouse is dragging up but, mouse is below the fob', () => {
       let fixture = createComponent({
+        axisDirection: AxisDirection.VERTICAL,
         linkedTime: {start: {step: 1}, end: {step: 3}},
       });
       fixture.detectChanges();
@@ -302,6 +333,7 @@ describe('linked_time_fob_controller', () => {
 
     it('end fob does not pass the start fob when being dragged passed it.', () => {
       let fixture = createComponent({
+        axisDirection: AxisDirection.VERTICAL,
         linkedTime: {start: {step: 2}, end: {step: 3}},
       });
       fixture.detectChanges();
@@ -315,6 +347,185 @@ describe('linked_time_fob_controller', () => {
       fixture.detectChanges();
       expect(
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(2);
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 2},
+        end: {step: 2},
+      });
+    });
+  });
+  fdescribe('horizontal dragging fob', () => {
+    it('moves to mouse when dragging to the right', () => {
+      let fixture = createComponent({
+        axisDirection: AxisDirection.HORIZONTAL,
+        linkedTime: {start: {step: 1}, end: null},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
+      ).toEqual(1);
+      fobController.startDrag(Fob.START);
+      let fakeEvent = new MouseEvent('mousemove', {clientX: 3, movementX: 1});
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
+      ).toEqual(3);
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 3},
+        end: null,
+      });
+    });
+
+    it('moves to mouse when dragging to the left', () => {
+      let fixture = createComponent({
+        axisDirection: AxisDirection.HORIZONTAL,
+        linkedTime: {start: {step: 3}, end: null},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
+      ).toEqual(3);
+      fobController.startDrag(Fob.START);
+      let fakeEvent = new MouseEvent('mousemove', {clientX: 1, movementX: -1});
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
+      ).toEqual(1);
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 1},
+        end: null,
+      });
+    });
+
+    it('does not move when dragging to the left but the mouse is on the right of the fob', () => {
+      let fixture = createComponent({
+        axisDirection: AxisDirection.HORIZONTAL,
+        linkedTime: {start: {step: 1}, end: null},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
+      ).toEqual(1);
+      fobController.startDrag(Fob.START);
+      let fakeEvent = new MouseEvent('mousemove', {clientX: 3, movementX: -1});
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
+      ).toEqual(1);
+      expect(onSelectTimeChanged).toHaveBeenCalledTimes(0);
+    });
+
+    it('does not move when dragging to the right but the mouse is on the left of the fob', () => {
+      let fixture = createComponent({
+        axisDirection: AxisDirection.HORIZONTAL,
+        linkedTime: {start: {step: 3}, end: null},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
+      ).toEqual(3);
+      fobController.startDrag(Fob.START);
+      let fakeEvent = new MouseEvent('mousemove', {clientX: 1, movementX: 1});
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
+      ).toEqual(3);
+      expect(onSelectTimeChanged).toHaveBeenCalledTimes(0);
+    });
+
+    it('endFob moves to mouse when dragged to the right', () => {
+      let fixture = createComponent({
+        axisDirection: AxisDirection.HORIZONTAL,
+        linkedTime: {start: {step: 1}, end: {step: 2}},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      expect(
+        fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
+      ).toEqual(2);
+      fobController.startDrag(Fob.END);
+      let fakeEvent = new MouseEvent('mousemove', {clientX: 4, movementX: 1});
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
+      ).toEqual(4);
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 1},
+        end: {step: 4},
+      });
+    });
+
+    it('endFob moves to mouse when dragged to the left', () => {
+      let fixture = createComponent({
+        axisDirection: AxisDirection.HORIZONTAL,
+        linkedTime: {start: {step: 1}, end: {step: 4}},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      expect(
+        fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
+      ).toEqual(4);
+      fobController.startDrag(Fob.END);
+      let fakeEvent = new MouseEvent('mousemove', {clientX: 2, movementX: -1});
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
+      ).toEqual(2);
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 1},
+        end: {step: 2},
+      });
+    });
+
+    it('endFob does not pass startFob when dragging to the left', () => {
+      let fixture = createComponent({
+        axisDirection: AxisDirection.HORIZONTAL,
+        linkedTime: {start: {step: 2}, end: {step: 4}},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      expect(
+        fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
+      ).toEqual(4);
+      fobController.startDrag(Fob.END);
+      let fakeEvent = new MouseEvent('mousemove', {clientX: 1, movementX: -1});
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
+      ).toEqual(2);
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 2},
+        end: {step: 2},
+      });
+    });
+
+    it('startFob does not pass endFob when dragging to the right', () => {
+      let fixture = createComponent({
+        axisDirection: AxisDirection.HORIZONTAL,
+        linkedTime: {start: {step: 2}, end: {step: 4}},
+      });
+      fixture.detectChanges();
+      let fobController = fixture.componentInstance.fobController;
+      expect(
+        fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
+      ).toEqual(4);
+      fobController.startDrag(Fob.END);
+      let fakeEvent = new MouseEvent('mousemove', {clientX: 1, movementX: -1});
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(2);
       expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
         start: {step: 2},
