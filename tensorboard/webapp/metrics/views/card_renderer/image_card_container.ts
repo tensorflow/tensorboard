@@ -261,7 +261,7 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       map(([selectedTime, stepValues]) => {
         if (!selectedTime) return [];
 
-        if (!selectedTime.endStep) {
+        if (selectedTime.endStep === null) {
           if (stepValues.indexOf(selectedTime.startStep) !== -1)
             return [selectedTime.startStep];
           return [];
@@ -284,9 +284,10 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       this.stepValues$
     ).pipe(
       map(([stepIndex, selectedTime, selectedSteps, stepValues]) => {
+        if (!selectedTime || selectedTime.clipped || selectedSteps.length === 0)
+          return stepIndex;
         const firstSelectedStep = selectedSteps[0];
         const lastSelectedStep = selectedSteps[selectedSteps.length - 1];
-        if (!selectedTime || selectedTime.clipped) return stepIndex;
 
         // Range selection
         if (selectedTime.endStep !== null && stepIndex !== null) {

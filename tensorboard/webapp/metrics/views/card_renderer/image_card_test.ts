@@ -834,6 +834,16 @@ describe('image card', () => {
 
         expect(getSliderThumbPosition(fixture2)).toBe('2');
       });
+
+      it('dose not moves slider thumb when selected range had no image', () => {
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 15},
+          end: {step: 18},
+        });
+        const fixture = createImageCardContainerWithStepIndex(2);
+
+        expect(getSliderThumbPosition(fixture)).toBe('2');
+      });
     });
   });
 });
