@@ -20,7 +20,7 @@ tf_ts_library(
     srcs = [
         "public_types.ts",
     ],
-    visibility = ["//tensorboard/webapp/widgets:__subpackages__", ],
+    visibility = ["//tensorboard/webapp/widgets:__subpackages__"],
     deps = [
         ":chart_types",
         ":formatter",

@@ -35,7 +35,6 @@ import {
   switchMap,
   takeUntil,
 } from 'rxjs/operators';
-import {timeSelectionChanged} from '../../actions';
 import {State} from '../../../app_state';
 import {ExperimentAlias} from '../../../experiments/types';
 import {getForceSvgFeatureFlag} from '../../../feature_flag/store/feature_flag_selectors';
@@ -52,6 +51,7 @@ import {
 import {DataLoadState} from '../../../types/data';
 import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
+import {timeSelectionChanged} from '../../actions';
 import {PluginType, ScalarStepDatum} from '../../data_source';
 import {
   getCardLoadState,

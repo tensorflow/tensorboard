@@ -17,10 +17,10 @@ import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {LinkedTime} from '../../metrics/types';
 import {ScaleLinear} from '../../third_party/d3';
+import {LinearScale} from '../line_chart_v2/lib/scale';
 import {LinkedTimeFobComponent} from './linked_time_fob_component';
 import {LinkedTimeFobControllerComponent} from './linked_time_fob_controller_component';
-import {AxisDirection, Fob, FobCardData, Scale} from './types';
-import {LinearScale} from '../line_chart_v2/lib/scale';
+import {AxisDirection, Fob, FobCardData} from './types';
 
 @Component({
   selector: 'testable-comp',

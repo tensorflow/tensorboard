@@ -59,8 +59,8 @@ tf_ts_library(
         "types.ts",
     ],
     deps = [
-        "//tensorboard/webapp/third_party:d3",
         "//tensorboard/webapp/metrics:types",
+        "//tensorboard/webapp/third_party:d3",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
     ],
 )
