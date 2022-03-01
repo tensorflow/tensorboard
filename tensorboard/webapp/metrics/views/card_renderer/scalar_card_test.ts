@@ -2094,7 +2094,7 @@ describe('scalar card', () => {
         expect(fixture.debugElement.query(Selector.HEADER_WARNING)).toBeNull();
       }));
 
-      it('selects selectedTime to min extent when global setting is too small', fakeAsync(() => {
+      fit('selects selectedTime to min extent when global setting is too small', fakeAsync(() => {
         const runToSeries = {
           run1: [buildScalarStepData({step: 10})],
           run2: [buildScalarStepData({step: 20})],
@@ -2125,7 +2125,7 @@ describe('scalar card', () => {
         });
       }));
 
-      fit('selects selectedTime to max extent when global setting is too large', fakeAsync(() => {
+      it('selects selectedTime to max extent when global setting is too large', fakeAsync(() => {
         const runToSeries = {
           run1: [buildScalarStepData({step: 10})],
           run2: [buildScalarStepData({step: 20})],

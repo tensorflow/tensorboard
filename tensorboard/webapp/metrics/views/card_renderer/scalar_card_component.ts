@@ -38,7 +38,7 @@ import {
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
 import {FobCardData, Scale} from '../../../widgets/linked_time_fob/types';
-import {LinkedTime, PluginType} from '../../types';
+import {LinkedTime} from '../../types';
 import {TooltipSort, XAxisType} from '../../types';
 import {
   ScalarCardDataSeries,
@@ -188,27 +188,21 @@ export class ScalarCardComponent<Downloader> {
     });
   }
 
-  convertToLinkedTime(selectedTime: ViewSelectedTime) {
-    console.log('selectedTime.startStep', selectedTime.startStep);
-    let thisLinkedTime: LinkedTime = {
+  convertToLinkedTime(selectedTime: ViewSelectedTime): LinkedTime {
+    return {
       start: {
         step: selectedTime.startStep,
       },
-      end: null,
+      end: selectedTime.endStep ? {step: selectedTime.endStep} : null,
     };
-    if (selectedTime.endStep) {
-      thisLinkedTime.end = {step: selectedTime.endStep};
-    }
-
-    return thisLinkedTime;
   }
 
-  getFobData(scale: Scale, minMax: [number, number]) {
-    let fobData: FobCardData = {};
-    fobData[PluginType.SCALARS] = {
-      minMax,
-      scale,
+  getFobData(scale: Scale, minMax: [number, number]): FobCardData {
+    return {
+      scalars: {
+        minMax,
+        scale,
+      },
     };
-    return fobData;
   }
 }

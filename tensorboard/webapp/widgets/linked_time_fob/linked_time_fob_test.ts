@@ -354,7 +354,7 @@ describe('linked_time_fob_controller', () => {
       });
     });
   });
-  fdescribe('horizontal dragging fob', () => {
+  describe('horizontal dragging fob', () => {
     it('moves to mouse when dragging to the right', () => {
       let fixture = createComponent({
         axisDirection: AxisDirection.HORIZONTAL,

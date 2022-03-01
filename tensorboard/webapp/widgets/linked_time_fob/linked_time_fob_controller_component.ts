@@ -75,7 +75,7 @@ export class LinkedTimeFobControllerComponent {
       [
         0,
         // axisOverlay does not exist the first time getCssTranslatePx is called
-        // so we make out best approximation. It is immediately corrected before
+        // so we make a simple approximation. It is immediately corrected before
         // any user will notice.
         this.axisOverlay
           ? this.axisOverlay.nativeElement.getBoundingClientRect().width
@@ -169,7 +169,7 @@ export class LinkedTimeFobControllerComponent {
   getDraggingFobCenter(): number {
     // the fob is centered around the top when in the vertical direction and
     // around the left when in the horizontal.
-    if (this.fobCardData.histograms) {
+    if (this.getAxisDirection() === AxisDirection.VERTICAL) {
       return this.currentDraggingFob !== Fob.END
         ? this.startFobWrapper.nativeElement.getBoundingClientRect().top
         : this.endFobWrapper.nativeElement.getBoundingClientRect().top;
@@ -188,22 +188,10 @@ export class LinkedTimeFobControllerComponent {
 
   getStepHigherThanMousePosition(event: MouseEvent): number {
     let position = this.fobCardData.histograms ? event.clientY : event.clientX;
-    if (this.fobCardData.scalars) {
-      let stepAtMouse = Math.round(
-        this.fobCardData.scalars.scale.reverse(
-          this.fobCardData.scalars.minMax,
-          [
-            this.axisOverlay.nativeElement.getBoundingClientRect().left,
-            this.axisOverlay.nativeElement.getBoundingClientRect().right,
-          ],
-          position
-        )
-      );
-      if (stepAtMouse <= this.currentDraggingFobUpperBound) {
-        return stepAtMouse;
-      }
-      return this.currentDraggingFobUpperBound;
-    }
+
+    let StepAtMouseIfScalar = this.getScalarStepWithBounds(position);
+    if (StepAtMouseIfScalar) return StepAtMouseIfScalar;
+
     let stepIndex = 0;
     let steps = this.fobCardData.histograms!.steps;
     while (
@@ -218,22 +206,9 @@ export class LinkedTimeFobControllerComponent {
 
   getStepLowerThanMousePosition(event: MouseEvent) {
     let position = this.fobCardData.histograms ? event.clientY : event.clientX;
-    if (this.fobCardData.scalars) {
-      let stepAtMouse = Math.round(
-        this.fobCardData.scalars.scale.reverse(
-          this.fobCardData.scalars.minMax,
-          [
-            this.axisOverlay.nativeElement.getBoundingClientRect().left,
-            this.axisOverlay.nativeElement.getBoundingClientRect().right,
-          ],
-          position
-        )
-      );
-      if (stepAtMouse >= this.currentDraggingFobLowerBound) {
-        return stepAtMouse;
-      }
-      return this.currentDraggingFobLowerBound;
-    }
+
+    let StepAtMouseIfScalar = this.getScalarStepWithBounds(position);
+    if (StepAtMouseIfScalar) return StepAtMouseIfScalar;
 
     let steps = this.fobCardData.histograms!.steps;
     let stepIndex = steps.length - 1;
@@ -245,6 +220,29 @@ export class LinkedTimeFobControllerComponent {
       stepIndex--;
     }
     return steps[stepIndex];
+  }
+
+  getScalarStepWithBounds(position: number) {
+    if (this.fobCardData.scalars) {
+      let stepAtMouse = Math.round(
+        this.fobCardData.scalars.scale.reverse(
+          this.fobCardData.scalars.minMax,
+          [
+            this.axisOverlay.nativeElement.getBoundingClientRect().left,
+            this.axisOverlay.nativeElement.getBoundingClientRect().right,
+          ],
+          position
+        )
+      );
+      if (stepAtMouse > this.currentDraggingFobUpperBound) {
+        return this.currentDraggingFobUpperBound;
+      }
+      if (stepAtMouse < this.currentDraggingFobLowerBound) {
+        return this.currentDraggingFobLowerBound;
+      }
+      return stepAtMouse;
+    }
+    return null;
   }
 
   // Gets the index of largest step that the currentDraggingFob is allowed to go.
