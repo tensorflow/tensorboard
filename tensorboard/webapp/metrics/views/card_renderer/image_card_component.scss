@@ -17,6 +17,7 @@ limitations under the License.
 @import '../common';
 
 $_title-to-heading-gap: 12px;
+$_tick_width: 14px;
 
 :host {
   display: flex;
@@ -147,12 +148,16 @@ $_title-to-heading-gap: 12px;
   background-color: mat.get-color-from-palette($tb-primary);
 }
 
+:host ::ng-deep .hide-slider.mat-slider-horizontal .mat-slider-track-wrapper {
+  height: 0;
+}
+
 .empty-message {
   margin-top: 1em;
   font-size: 13px;
 }
 
-.linked-time-ticks-wrapper {
+.linked-time-wrapper {
   position: absolute;
   top: 5px;
   width: 100%;
@@ -164,4 +169,25 @@ $_title-to-heading-gap: 12px;
   height: 14px;
   position: absolute;
   width: 14px;
+}
+
+.slider-track,
+.slider-track-fill {
+  height: 2px;
+  top: 6px;
+  position: absolute;
+}
+
+.slider-track {
+  @include tb-theme-foreground-prop(background, slider-off);
+  left: $_tick_width / 2;
+  width: calc(100% - #{$_tick_width});
+}
+
+.slider-track-fill {
+  background: mat.get-color-from-palette($tb-primary);
+
+  @include tb-dark-theme {
+    background: mat.get-color-from-palette($tb-dark-primary);
+  }
 }

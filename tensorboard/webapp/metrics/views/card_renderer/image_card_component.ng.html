@@ -78,6 +78,7 @@ limitations under the License.
     <mat-slider
       class="step-slider"
       color="primary"
+      [ngClass]="[selectedTime && !selectedTime.clipped && selectedTime.endStep !== null ? 'hide-slider' : '']"
       [disabled]="stepValues.length <= 1"
       [min]="0"
       [max]="stepValues.length - 1"
@@ -87,9 +88,17 @@ limitations under the License.
       (input)="onSliderInput($event)"
     ></mat-slider>
     <div
-      class="linked-time-ticks-wrapper"
+      class="linked-time-wrapper"
       *ngIf="selectedTime && !selectedTime.clipped"
     >
+      <span *ngIf="selectedTime.endStep !== null">
+        <span class="slider-track"></span>
+        <span
+          class="slider-track-fill"
+          [style.left]="sliderStartPosition"
+          [style.width]="sliderTrackWidth"
+        ></span>
+      </span>
       <div
         class="linked-time-tick"
         *ngFor="let step of selectedSteps"
