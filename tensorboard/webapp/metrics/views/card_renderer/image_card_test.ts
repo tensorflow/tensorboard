@@ -869,7 +869,7 @@ describe('image card', () => {
       expect(slider.nativeElement.getAttribute('aria-valuenow')).toBe('2');
     });
 
-    it('dose not move slider thumb to selected time on range selection', () => {
+    it('does not move slider thumb to selected time on range selection', () => {
       store.overrideSelector(selectors.getMetricsSelectedTime, {
         start: {step: 15},
         end: {step: 55},
@@ -903,6 +903,94 @@ describe('image card', () => {
 
       slider = fixture.debugElement.query(By.css('mat-slider'));
       expect(slider.nativeElement.getAttribute('aria-valuenow')).toBe('2');
+    });
+
+    describe('range selection', () => {
+      function createImageCardContainerWithStepIndex(stepIndex: number) {
+        const timeSeries = [
+          {wallTime: 100, imageId: 'ImageId1', step: 10},
+          {wallTime: 101, imageId: 'ImageId2', step: 20},
+          {wallTime: 102, imageId: 'ImageId3', step: 30},
+          {wallTime: 103, imageId: 'ImageId4', step: 40},
+        ];
+        provideMockCardSeriesData(
+          selectSpy,
+          PluginType.IMAGES,
+          'card1',
+          null /* metadataOverride */,
+          timeSeries,
+          stepIndex /* stepIndex */
+        );
+        const fixture = createImageCardContainer('card1');
+        fixture.detectChanges();
+
+        return fixture;
+      }
+
+      function getSliderThumbPosition(
+        fixture: ComponentFixture<ImageCardContainer>
+      ) {
+        const slider = fixture.debugElement.query(By.css('mat-slider'));
+        return slider.nativeElement.getAttribute('aria-valuenow');
+      }
+
+      it('moves slider thumb to the highest step in range when the thumb is larger than end step', () => {
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 15},
+          end: {step: 35},
+        });
+        const fixture = createImageCardContainerWithStepIndex(3);
+
+        expect(getSliderThumbPosition(fixture)).toBe('2');
+      });
+
+      it('moves slider thumb to the lowest step in range when the thumb is smaller than start step', () => {
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 15},
+          end: {step: 35},
+        });
+        const fixture = createImageCardContainerWithStepIndex(0);
+
+        expect(getSliderThumbPosition(fixture)).toBe('1');
+      });
+
+      it('does not moves slider thumb when the thumb is in range', () => {
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 15},
+          end: {step: 35},
+        });
+        const fixture = createImageCardContainerWithStepIndex(2);
+
+        expect(getSliderThumbPosition(fixture)).toBe('2');
+      });
+
+      it('does not moves slider thumb when selected time is clipped', () => {
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 55},
+          end: {step: 65},
+        });
+        const fixture = createImageCardContainerWithStepIndex(2);
+
+        expect(getSliderThumbPosition(fixture)).toBe('2');
+
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 5},
+          end: {step: 9},
+        });
+        const fixture2 = createImageCardContainerWithStepIndex(2);
+
+        expect(getSliderThumbPosition(fixture2)).toBe('2');
+      });
+
+      it('does not moves slider thumb when selected range had no image', () => {
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 15},
+          end: {step: 18},
+        });
+        const fixture = createImageCardContainerWithStepIndex(2);
+
+        expect(getSliderThumbPosition(fixture)).toBe('2');
+      });
     });
   });
 });
