@@ -87,7 +87,6 @@ enum Position {
  *   are clipped to `min` and `max`. Also, when emitting changes, the values can
  *   never exceed `min` and `max`.
  * - emits actions on both single and range value changed
- * - emits actions on upper value removed
  */
 @Component({
   selector: 'tb-range-input',
@@ -123,16 +122,13 @@ export class RangeInputComponent implements OnInit, OnDestroy {
    * or equal to `max`. If lower, the thumb will still be clipped to the `max`
    * value.
    */
-  @Input() upperValue!: number;
+  @Input() upperValue!: number | null;
 
   /**
    * `null` denotes contiguous "ticks"
    */
   @Input() tickCount: number | null = 20;
-  /**
-   * Renders single or range slider.
-   */
-  @Input() useRange: boolean = true;
+
   /**
    * Whether the text input is editable.
    */
@@ -145,8 +141,6 @@ export class RangeInputComponent implements OnInit, OnDestroy {
   }>();
 
   @Output() singleValueChanged = new EventEmitter<number>();
-
-  @Output() upperValueRemoved = new EventEmitter<void>();
 
   readonly Position = Position;
 
@@ -183,6 +177,9 @@ export class RangeInputComponent implements OnInit, OnDestroy {
   }
 
   getTrackWidth(): string {
+    if (this.upperValue === null) {
+      return '0%';
+    }
     const boundSize = this.max - this.min;
 
     if (boundSize <= 0) {
@@ -285,6 +282,9 @@ export class RangeInputComponent implements OnInit, OnDestroy {
     if (this.activeThumb === Position.NONE) {
       return;
     }
+    if (this.upperValue === null) {
+      return;
+    }
 
     const newValue = this.calculateValueFromMouseEvent(event);
 
@@ -320,17 +320,6 @@ export class RangeInputComponent implements OnInit, OnDestroy {
     }
   }
 
-  private isUpperValueRemoved(input: HTMLInputElement, position: Position) {
-    return input.value === '' && position === Position.RIGHT;
-  }
-
-  private isLowerValueUpdatedOnSingleSelection(
-    position: Position,
-    useRangeSelectTime: boolean
-  ) {
-    return position === Position.LEFT && !useRangeSelectTime;
-  }
-
   handleInputChange(event: InputEvent, position: Position) {
     const input = event.target! as HTMLInputElement;
     const numValue = this.getClippedValue(Number(input.value));
@@ -338,29 +327,25 @@ export class RangeInputComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Cleans input value. If the upper value is removed, we go from range to
-    // single selection. If the lower value is removed, we set it to the min
-    // for both single and range seleciton.
-    // For example, for min=50, max=1000,
-    // range  [100, 500]  → delete upper value → single [100, X]
-    // single [100, X]    → delete lower value → single [50, X]
-    // range  [100, 500]  → delete lower value → range  [50, 500]
-    if (this.isUpperValueRemoved(input, position)) {
-      this.upperValueRemoved.emit();
-      return;
-    }
-    if (this.isLowerValueUpdatedOnSingleSelection(position, this.useRange)) {
-      this.singleValueChanged.emit(numValue);
-      return;
-    }
-
-    let nextValues: [number, number] = [this.lowerValue, this.upperValue];
     if (position === Position.LEFT) {
-      nextValues = [numValue, this.upperValue];
+      // Lower value has changed.
+      if (this.upperValue === null) {
+        // There is currently no upper value so we are already in single selection mode
+        // and can update just the single value.
+        this.singleValueChanged.emit(numValue);
+      } else {
+        this.maybeNotifyNextRangeValues([numValue, this.upperValue]);
+      }
     } else {
-      nextValues = [this.lowerValue, numValue];
+      // Upper value has changed.
+      if (input.value === '') {
+        // Upper value is being deleted so we now enter single selection mode, using the current
+        // lower value.
+        this.singleValueChanged.emit(this.lowerValue);
+      } else {
+        this.maybeNotifyNextRangeValues([this.lowerValue, numValue]);
+      }
     }
-    this.maybeNotifyNextRangeValues(nextValues);
   }
 
   isThumbActive(position: Position) {

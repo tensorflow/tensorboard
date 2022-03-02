@@ -71,7 +71,6 @@ export class SettingsViewComponent {
   @Input() stepMinMax!: {min: number; max: number};
 
   @Output() selectTimeEnableToggled = new EventEmitter<void>();
-  @Output() useRangeSelectTimeToggled = new EventEmitter<void>();
   @Output() selectTimeChanged = new EventEmitter<LinkedTime>();
 
   @Input() isImageSupportEnabled!: boolean;

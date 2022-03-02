@@ -34,7 +34,6 @@ import {
   metricsToggleImageShowActualSize,
   selectTimeEnableToggled,
   timeSelectionChanged,
-  useRangeSelectTimeToggled,
 } from '../../actions';
 import {HistogramMode, LinkedTime, TooltipSort, XAxisType} from '../../types';
 
@@ -73,7 +72,6 @@ import {HistogramMode, LinkedTime, TooltipSort, XAxisType} from '../../types';
       [useRangeSelectTime]="useRangeSelectTime$ | async"
       [stepMinMax]="stepMinMax$ | async"
       (selectTimeEnableToggled)="onSelectTimeEnableToggled()"
-      (useRangeSelectTimeToggled)="onUseRangeSelectTimeToggled()"
       (selectTimeChanged)="onSelectTimeChanged($event)"
     >
     </metrics-dashboard-settings-component>
@@ -192,10 +190,6 @@ export class SettingsViewContainer {
 
   onSelectTimeEnableToggled() {
     this.store.dispatch(selectTimeEnableToggled());
-  }
-
-  onUseRangeSelectTimeToggled() {
-    this.store.dispatch(useRangeSelectTimeToggled());
   }
 
   onSelectTimeChanged(newValue: LinkedTime) {

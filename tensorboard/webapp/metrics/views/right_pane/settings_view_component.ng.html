@@ -71,11 +71,9 @@ limitations under the License.
           [max]="stepMinMax.max"
           [lowerValue]="selectedTime?.start.step"
           [upperValue]="selectedTime?.end?.step"
-          [useRange]="useRangeSelectTime"
           [enabled]="selectTimeEnabled"
           (singleValueChanged)="onSingleValueChanged($event)"
           (rangeValuesChanged)="onRangeValuesChanged($event)"
-          (upperValueRemoved)="useRangeSelectTimeToggled.emit()"
         ></tb-range-input>
       </div>
     </div>

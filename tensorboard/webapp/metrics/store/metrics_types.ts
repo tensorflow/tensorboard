@@ -30,6 +30,7 @@ import {
   CardMetadata,
   CardUniqueInfo,
   HistogramMode,
+  LinkedTime,
   NonPinnedCardId,
   PinnedCardId,
   TooltipSort,
@@ -127,11 +128,6 @@ export type CardToPinnedCard = Map<NonPinnedCardId, PinnedCardId>;
 
 export type PinnedCardToCard = Map<PinnedCardId, NonPinnedCardId>;
 
-export interface StoreInternalLinkedTime {
-  start: {step: number};
-  end: {step: number};
-}
-
 export interface MetricsNamespacedState {
   tagMetadataLoadState: LoadState;
   tagMetadata: TagMetadata;
@@ -153,7 +149,7 @@ export interface MetricsNamespacedState {
   cardStepIndex: CardStepIndexMap;
   tagFilter: string;
   tagGroupExpanded: Map<string, boolean>;
-  selectedTime: StoreInternalLinkedTime | null;
+  selectedTime: LinkedTime | null;
   selectTimeEnabled: boolean;
   useRangeSelectTime: boolean;
   // Empty Set would signify "show all". `filteredPluginTypes` will never have

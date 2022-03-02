@@ -384,18 +384,11 @@ export const getMetricsSelectedTimeSetting = createSelector(
         start: {
           step: stepMinMax.min,
         },
-        end: {
-          step: stepMinMax.max,
-        },
+        end: null,
       };
     }
 
-    return {
-      ...state.selectedTime,
-      end: state.selectedTime.end ?? {
-        step: stepMinMax.max,
-      },
-    };
+    return state.selectedTime;
   }
 );
 
