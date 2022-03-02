@@ -722,7 +722,7 @@ describe('image card', () => {
       expect(slider.nativeElement.getAttribute('aria-valuenow')).toBe('2');
     });
 
-    it('dose not move slider thumb to selected time on range selection', () => {
+    it('does not move slider thumb to selected time on range selection', () => {
       store.overrideSelector(selectors.getMetricsSelectedTime, {
         start: {step: 15},
         end: {step: 55},
@@ -807,7 +807,7 @@ describe('image card', () => {
         expect(getSliderThumbPosition(fixture)).toBe('1');
       });
 
-      it('dose not moves slider thumb when the thumb is in range', () => {
+      it('does not moves slider thumb when the thumb is in range', () => {
         store.overrideSelector(selectors.getMetricsSelectedTime, {
           start: {step: 15},
           end: {step: 35},
@@ -817,7 +817,7 @@ describe('image card', () => {
         expect(getSliderThumbPosition(fixture)).toBe('2');
       });
 
-      it('dose not moves slider thumb when selected time is clipped', () => {
+      it('does not moves slider thumb when selected time is clipped', () => {
         store.overrideSelector(selectors.getMetricsSelectedTime, {
           start: {step: 55},
           end: {step: 65},
@@ -835,7 +835,7 @@ describe('image card', () => {
         expect(getSliderThumbPosition(fixture2)).toBe('2');
       });
 
-      it('dose not moves slider thumb when selected range had no image', () => {
+      it('does not moves slider thumb when selected range had no image', () => {
         store.overrideSelector(selectors.getMetricsSelectedTime, {
           start: {step: 15},
           end: {step: 18},
