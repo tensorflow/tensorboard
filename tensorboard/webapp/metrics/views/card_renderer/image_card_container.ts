@@ -261,7 +261,7 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       map(([selectedTime, stepValues]) => {
         if (!selectedTime) return [];
 
-        if (!selectedTime.endStep) {
+        if (selectedTime.endStep === null) {
           if (stepValues.indexOf(selectedTime.startStep) !== -1)
             return [selectedTime.startStep];
           return [];
@@ -284,9 +284,31 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       this.stepValues$
     ).pipe(
       map(([stepIndex, selectedTime, selectedSteps, stepValues]) => {
-        if (!selectedTime || selectedTime.endStep) return stepIndex;
+        if (!selectedTime || selectedTime.clipped || selectedSteps.length === 0)
+          return stepIndex;
+        const firstSelectedStep = selectedSteps[0];
+        const lastSelectedStep = selectedSteps[selectedSteps.length - 1];
 
-        const nextStepIndex = stepValues.indexOf(selectedSteps[0]);
+        // Range selection
+        if (selectedTime.endStep !== null && stepIndex !== null) {
+          const step = stepValues[stepIndex];
+
+          // Does not move index when it is already in selected range.
+          if (selectedTime.startStep <= step && step <= selectedTime.endStep) {
+            return stepIndex;
+          }
+
+          // Moves thumb to the closest stepIndex.
+          if (step >= lastSelectedStep) {
+            return stepValues.indexOf(lastSelectedStep);
+          }
+          if (step <= firstSelectedStep) {
+            return stepValues.indexOf(firstSelectedStep);
+          }
+        }
+
+        // Single selection
+        const nextStepIndex = stepValues.indexOf(firstSelectedStep);
         if (nextStepIndex === -1) return stepIndex;
         return nextStepIndex;
       })
