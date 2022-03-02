@@ -13,8 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {By} from '@angular/platform-browser';
 import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {KeyType, sendKey, sendKeys} from '../../testing/dom';
 import {LinkedTime} from '../../metrics/types';
 import {ScaleLinear, ScaleTime} from '../../third_party/d3';
 import {LinkedTimeFobComponent} from './linked_time_fob_component';
@@ -25,6 +27,27 @@ import {
 } from './linked_time_fob_controller_component';
 
 type TemporalScale = ScaleLinear<number, number> | ScaleTime<number, number>;
+
+@Component({
+  selector: 'testable-fob-comp',
+  template: `
+    <linked-time-fob
+      #Fob
+      [axisDirection]="axisDirection"
+      [step]="step"
+      (stepChange)="stepChange($event)"
+    ></linked-time-fob>
+  `,
+})
+class TestableFobComponent {
+  @ViewChild('Fob')
+  fob!: LinkedTimeFobComponent;
+
+  @Input() step!: number;
+  @Input() axisDirection!: AxisDirection;
+
+  @Input() stepChange!: (newStep: number) => void;
+}
 
 @Component({
   selector: 'testable-comp',
@@ -54,10 +77,12 @@ class TestableComponent {
 describe('linked_time_fob_controller', () => {
   let onSelectTimeChanged: jasmine.Spy;
   let temporalScaleSpy: jasmine.Spy;
+  let stepTypedSpy: jasmine.Spy;
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [
         TestableComponent,
+        TestableFobComponent,
         LinkedTimeFobControllerComponent,
         LinkedTimeFobComponent,
       ],
@@ -65,10 +90,25 @@ describe('linked_time_fob_controller', () => {
     }).compileComponents();
   });
 
+  function createFobComponent(input: {
+    step?: number;
+    axisDirection?: AxisDirection;
+  }): ComponentFixture<TestableFobComponent> {
+    const fixture = TestBed.createComponent(TestableFobComponent);
+    fixture.componentInstance.step = input.step ? input.step : 1;
+    fixture.componentInstance.axisDirection = input.axisDirection
+      ? input.axisDirection
+      : AxisDirection.HORIZONTAL;
+
+    stepTypedSpy = jasmine.createSpy();
+    fixture.componentInstance.stepChange = stepTypedSpy;
+    return fixture;
+  }
+
   function createComponent(input: {
     steps?: number[];
     axisDirection?: AxisDirection;
-    linkedTime?: LinkedTime;
+    linkedTime: LinkedTime;
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
     fixture.componentInstance.steps = input.steps || [1, 2, 3, 4];
@@ -76,10 +116,7 @@ describe('linked_time_fob_controller', () => {
     fixture.componentInstance.axisDirection =
       input.axisDirection || AxisDirection.VERTICAL;
 
-    fixture.componentInstance.linkedTime = input.linkedTime || {
-      start: {step: 1},
-      end: null,
-    };
+    fixture.componentInstance.linkedTime = input.linkedTime;
 
     temporalScaleSpy = jasmine.createSpy();
     fixture.componentInstance.temporalScale =
@@ -97,7 +134,9 @@ describe('linked_time_fob_controller', () => {
 
   describe('vertical dragging', () => {
     it('moves the start fob down to mouse when mouse is dragging down and is below fob', () => {
-      let fixture = createComponent({});
+      let fixture = createComponent({
+        linkedTime: {start: {step: 1}, end: null},
+      });
       fixture.detectChanges();
       let fobController = fixture.componentInstance.fobController;
       expect(
@@ -325,7 +364,9 @@ describe('linked_time_fob_controller', () => {
 
   describe('typing step into fob', () => {
     it('single time selection changed with fob typing', () => {
-      let fixture = createComponent({});
+      let fixture = createComponent({
+        linkedTime: {start: {step: 1}, end: null},
+      });
       fixture.detectChanges();
       let fobController = fixture.componentInstance.fobController;
       fobController.stepTyped(Fob.START, 3);
@@ -404,6 +445,68 @@ describe('linked_time_fob_controller', () => {
         start: {step: 0},
         end: {step: 3},
       });
+    });
+
+    it('double clicking fob changes to input', () => {
+      let fixture = createFobComponent({});
+      fixture.detectChanges();
+      expect(
+        fixture.debugElement.nativeElement.querySelector('input')
+      ).toBeFalsy();
+
+      let mainDiv = fixture.debugElement.query(By.css('div'));
+      mainDiv.triggerEventHandler('dblclick', {});
+      fixture.detectChanges();
+
+      expect(
+        fixture.debugElement.nativeElement.querySelector('input')
+      ).toBeTruthy();
+    });
+
+    it('input element holds step value when activated', () => {
+      let fixture = createFobComponent({step: 3});
+      fixture.detectChanges();
+      expect(
+        fixture.debugElement.nativeElement.querySelector('input')
+      ).toBeFalsy();
+
+      let mainDiv = fixture.debugElement.query(By.css('div'));
+      mainDiv.triggerEventHandler('dblclick', {});
+      fixture.detectChanges();
+
+      let input = fixture.debugElement.nativeElement.querySelector('input');
+      expect(input).toBeTruthy();
+      expect(input.value).toEqual('3');
+    });
+
+    it('Entering input after double clicking emits the proper event', () => {
+      let fixture = createFobComponent({});
+      fixture.detectChanges();
+      expect(
+        fixture.debugElement.nativeElement.querySelector('input')
+      ).toBeFalsy();
+
+      let mainDiv = fixture.debugElement.query(By.css('div'));
+      mainDiv.triggerEventHandler('dblclick', {});
+      fixture.detectChanges();
+
+      let input = fixture.debugElement.query(By.css('input'));
+      expect(input).toBeTruthy();
+
+      sendKeys(fixture, input, '3');
+      sendKey(fixture, input, {
+        type: KeyType.SPECIAL,
+        prevString: '3',
+        key: 'Enter',
+        startingCursorIndex: 0,
+      });
+      input.triggerEventHandler('change', {target: input.nativeElement});
+      fixture.detectChanges();
+
+      expect(stepTypedSpy).toHaveBeenCalledOnceWith(3);
+      expect(
+        fixture.debugElement.nativeElement.querySelector('input')
+      ).toBeFalsy();
     });
   });
 });

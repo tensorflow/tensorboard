@@ -45,8 +45,10 @@ tf_ts_library(
         ":linked_time_fob",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/metrics:types",
+        "//tensorboard/webapp/testing:dom",
         "//tensorboard/webapp/third_party:d3",
         "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
         "@npm//@types/jasmine",
     ],
 )
