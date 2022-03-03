@@ -37,12 +37,8 @@ import {
   ScaleType,
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
-import {
-  FobCardData,
-  ScalarFobData,
-  Scale,
-} from '../../../widgets/linked_time_fob/types';
-import {LinkedTime, TooltipSort, XAxisType, PluginType} from '../../types';
+import {ScalarFobData, Scale} from '../../../widgets/linked_time_fob/types';
+import {LinkedTime, PluginType, TooltipSort, XAxisType} from '../../types';
 import {
   ScalarCardDataSeries,
   ScalarCardSeriesMetadata,

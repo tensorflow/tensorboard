@@ -26,8 +26,8 @@ import {
   ViewChild,
 } from '@angular/core';
 import {fromEvent, Subject} from 'rxjs';
-import {LinkedTime, PluginType} from '../../metrics/types';
 import {takeUntil} from 'rxjs/operators';
+import {LinkedTime, PluginType} from '../../metrics/types';
 import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
 import {HistogramFobData} from '../linked_time_fob/types';

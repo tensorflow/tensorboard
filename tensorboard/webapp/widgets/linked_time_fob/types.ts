@@ -14,8 +14,8 @@ limitations under the License.
 ==============================================================================*/
 
 import {PluginType} from '../../metrics/types';
-import {Scale} from '../line_chart_v2/lib/public_types';
 import {TemporalScale} from '../histogram/histogram_types';
+import {Scale} from '../line_chart_v2/lib/public_types';
 
 export {Scale} from '../line_chart_v2/lib/public_types';
 
