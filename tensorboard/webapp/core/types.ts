@@ -24,6 +24,7 @@ export interface Run {
 export enum PluginsListFailureCode {
   UNKNOWN = 'UNKNOWN',
   NOT_FOUND = 'NOT_FOUND',
+  PERMISSION_DENIED = 'PERMISSION_DENIED',
 }
 
 export const TB_BRAND_NAME = new InjectionToken<string>(
