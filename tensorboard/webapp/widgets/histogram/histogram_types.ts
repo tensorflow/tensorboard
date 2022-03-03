@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 export {HistogramMode, TimeProperty} from '../../tb_polymer_interop_types';
+import {ScaleLinear, ScaleTime} from '../../third_party/d3';
 
 export interface ColorScale {
   (runName: string): string;
@@ -34,3 +35,7 @@ export interface HistogramDatum {
 }
 
 export type HistogramData = HistogramDatum[];
+
+export type TemporalScale =
+  | ScaleLinear<number, number>
+  | ScaleTime<number, number>;

@@ -37,8 +37,12 @@ import {
   ScaleType,
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
-import {FobCardData, Scale} from '../../../widgets/linked_time_fob/types';
-import {LinkedTime, TooltipSort, XAxisType} from '../../types';
+import {
+  FobCardData,
+  ScalarFobData,
+  Scale,
+} from '../../../widgets/linked_time_fob/types';
+import {LinkedTime, TooltipSort, XAxisType, PluginType} from '../../types';
 import {
   ScalarCardDataSeries,
   ScalarCardSeriesMetadata,
@@ -196,12 +200,11 @@ export class ScalarCardComponent<Downloader> {
     };
   }
 
-  getFobData(scale: Scale, minMax: [number, number]): FobCardData {
+  getFobData(scale: Scale, minMax: [number, number]): ScalarFobData {
     return {
-      scalars: {
-        minMax,
-        scale,
-      },
+      type: PluginType.SCALARS,
+      minMax,
+      scale,
     };
   }
 }

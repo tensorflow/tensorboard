@@ -524,7 +524,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.store.dispatch(
       timeSelectionChanged({
         startStep: linkedTime.start.step,
-        endStep: linkedTime.end ? linkedTime.end.step : undefined,
+        endStep: linkedTime.end?.step,
       })
     );
   }

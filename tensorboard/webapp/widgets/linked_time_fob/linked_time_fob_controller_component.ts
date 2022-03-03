@@ -22,8 +22,8 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {LinkedTime} from '../../metrics/types';
-import {AxisDirection, Fob, FobCardData} from './types';
+import {LinkedTime, PluginType} from '../../metrics/types';
+import {AxisDirection, Fob, FobCardData, ScalarFobData} from './types';
 
 @Component({
   selector: 'linked-time-fob-controller',
@@ -52,13 +52,13 @@ export class LinkedTimeFobControllerComponent {
   }
 
   public getAxisDirection() {
-    return this.fobCardData.histograms
-      ? AxisDirection.VERTICAL
-      : AxisDirection.HORIZONTAL;
+    return this.fobCardData.type === PluginType.SCALARS
+      ? AxisDirection.HORIZONTAL
+      : AxisDirection.VERTICAL;
   }
 
   getCssTranslatePx(step: number): string {
-    if (this.fobCardData.histograms) {
+    if (this.getAxisDirection() === AxisDirection.VERTICAL) {
       return `translate(0px, ${this.translateStepToPixel(step)}px)`;
     }
 
@@ -66,23 +66,23 @@ export class LinkedTimeFobControllerComponent {
   }
 
   translateStepToPixel(step: number) {
-    if (this.fobCardData.histograms) {
-      return this.fobCardData.histograms.scale(step);
+    if (this.fobCardData.type === PluginType.SCALARS) {
+      return this.fobCardData.scale.forward(
+        this.fobCardData.minMax,
+        [
+          0,
+          // axisOverlay does not exist the first time getCssTranslatePx is called
+          // so we make a simple approximation. It is immediately corrected before
+          // any user will notice.
+          this.axisOverlay
+            ? this.axisOverlay.nativeElement.getBoundingClientRect().width
+            : 10,
+        ],
+        step
+      );
     }
 
-    return this.fobCardData.scalars!.scale.forward(
-      this.fobCardData.scalars!.minMax,
-      [
-        0,
-        // axisOverlay does not exist the first time getCssTranslatePx is called
-        // so we make a simple approximation. It is immediately corrected before
-        // any user will notice.
-        this.axisOverlay
-          ? this.axisOverlay.nativeElement.getBoundingClientRect().width
-          : 10,
-      ],
-      step
-    );
+    return this.fobCardData.scale(step);
   }
 
   startDrag(fob: Fob) {
@@ -123,10 +123,14 @@ export class LinkedTimeFobControllerComponent {
   }
 
   isDraggingLower(event: MouseEvent): boolean {
-    let position = this.fobCardData.histograms ? event.clientY : event.clientX;
-    let movement = this.fobCardData.histograms
-      ? event.movementY
-      : event.movementX;
+    let position =
+      this.getAxisDirection() === AxisDirection.VERTICAL
+        ? event.clientY
+        : event.clientX;
+    let movement =
+      this.getAxisDirection() === AxisDirection.VERTICAL
+        ? event.movementY
+        : event.movementX;
     return (
       position < this.getDraggingFobCenter() &&
       movement < 0 &&
@@ -135,10 +139,14 @@ export class LinkedTimeFobControllerComponent {
   }
 
   isDraggingHigher(event: MouseEvent): boolean {
-    let position = this.fobCardData.histograms ? event.clientY : event.clientX;
-    let movement = this.fobCardData.histograms
-      ? event.movementY
-      : event.movementX;
+    let position =
+      this.getAxisDirection() === AxisDirection.VERTICAL
+        ? event.clientY
+        : event.clientX;
+    let movement =
+      this.getAxisDirection() === AxisDirection.VERTICAL
+        ? event.movementY
+        : event.movementX;
     return (
       position > this.getDraggingFobCenter() &&
       movement > 0 &&
@@ -147,23 +155,21 @@ export class LinkedTimeFobControllerComponent {
   }
 
   getMaxStep(): number {
-    if (this.fobCardData.scalars) {
-      let minMax = this.fobCardData.scalars.minMax;
+    if (this.fobCardData.type === PluginType.SCALARS) {
+      let minMax = this.fobCardData.minMax;
       return minMax[0] < minMax[1] ? minMax[1] : minMax[0];
     }
 
-    return this.fobCardData.histograms!.steps[
-      this.fobCardData.histograms!.steps.length - 1
-    ];
+    return this.fobCardData.steps[this.fobCardData.steps.length - 1];
   }
 
   getMinStep(): number {
-    if (this.fobCardData.scalars) {
-      let minMax = this.fobCardData.scalars.minMax;
+    if (this.fobCardData.type === PluginType.SCALARS) {
+      let minMax = this.fobCardData.minMax;
       return minMax[0] < minMax[1] ? minMax[0] : minMax[1];
     }
 
-    return this.fobCardData.histograms!.steps[0];
+    return this.fobCardData.steps[0];
   }
 
   getDraggingFobCenter(): number {
@@ -187,13 +193,17 @@ export class LinkedTimeFobControllerComponent {
   }
 
   getStepHigherThanMousePosition(event: MouseEvent): number {
-    let position = this.fobCardData.histograms ? event.clientY : event.clientX;
+    let position =
+      this.getAxisDirection() === AxisDirection.VERTICAL
+        ? event.clientY
+        : event.clientX;
 
-    let StepAtMouseIfScalar = this.getScalarStepWithBounds(position);
-    if (StepAtMouseIfScalar) return StepAtMouseIfScalar;
+    if (this.fobCardData.type === PluginType.SCALARS) {
+      return this.getScalarStepWithBounds(this.fobCardData, position);
+    }
 
     let stepIndex = 0;
-    let steps = this.fobCardData.histograms!.steps;
+    let steps = this.fobCardData.steps;
     while (
       position - this.axisOverlay.nativeElement.getBoundingClientRect().top >
         this.translateStepToPixel(steps[stepIndex]) &&
@@ -205,12 +215,16 @@ export class LinkedTimeFobControllerComponent {
   }
 
   getStepLowerThanMousePosition(event: MouseEvent) {
-    let position = this.fobCardData.histograms ? event.clientY : event.clientX;
+    let position =
+      this.getAxisDirection() === AxisDirection.VERTICAL
+        ? event.clientY
+        : event.clientX;
 
-    let StepAtMouseIfScalar = this.getScalarStepWithBounds(position);
-    if (StepAtMouseIfScalar) return StepAtMouseIfScalar;
+    if (this.fobCardData.type === PluginType.SCALARS) {
+      return this.getScalarStepWithBounds(this.fobCardData, position);
+    }
 
-    let steps = this.fobCardData.histograms!.steps;
+    let steps = this.fobCardData.steps;
     let stepIndex = steps.length - 1;
     while (
       position - this.axisOverlay.nativeElement.getBoundingClientRect().top <
@@ -222,27 +236,24 @@ export class LinkedTimeFobControllerComponent {
     return steps[stepIndex];
   }
 
-  getScalarStepWithBounds(position: number) {
-    if (this.fobCardData.scalars) {
-      let stepAtMouse = Math.round(
-        this.fobCardData.scalars.scale.reverse(
-          this.fobCardData.scalars.minMax,
-          [
-            this.axisOverlay.nativeElement.getBoundingClientRect().left,
-            this.axisOverlay.nativeElement.getBoundingClientRect().right,
-          ],
-          position
-        )
-      );
-      if (stepAtMouse > this.currentDraggingFobUpperBound) {
-        return this.currentDraggingFobUpperBound;
-      }
-      if (stepAtMouse < this.currentDraggingFobLowerBound) {
-        return this.currentDraggingFobLowerBound;
-      }
-      return stepAtMouse;
+  getScalarStepWithBounds(scalarData: ScalarFobData, position: number) {
+    let stepAtMouse = Math.round(
+      scalarData.scale.reverse(
+        scalarData.minMax,
+        [
+          this.axisOverlay.nativeElement.getBoundingClientRect().left,
+          this.axisOverlay.nativeElement.getBoundingClientRect().right,
+        ],
+        position
+      )
+    );
+    if (stepAtMouse > this.currentDraggingFobUpperBound) {
+      return this.currentDraggingFobUpperBound;
     }
-    return null;
+    if (stepAtMouse < this.currentDraggingFobLowerBound) {
+      return this.currentDraggingFobLowerBound;
+    }
+    return stepAtMouse;
   }
 
   // Gets the index of largest step that the currentDraggingFob is allowed to go.
@@ -250,49 +261,39 @@ export class LinkedTimeFobControllerComponent {
     // When dragging the START fob while there is an END fob the upper bound is
     // the step before or equal to the endFob's step.
     if (this.currentDraggingFob === Fob.START && this.linkedTime.end !== null) {
-      if (this.fobCardData.histograms) {
-        let index = 0;
-        let steps = this.fobCardData.histograms.steps;
-        while (steps[index] < this.linkedTime.end.step) {
-          index++;
-        }
-        return steps[index];
+      if (this.fobCardData.type === PluginType.SCALARS) {
+        return this.linkedTime.end.step;
       }
 
-      return this.linkedTime.end.step;
+      let index = 0;
+      let steps = this.fobCardData.steps;
+      while (steps[index] < this.linkedTime.end.step) {
+        index++;
+      }
+      return steps[index];
     }
 
     // In all other cases the largest step is the upper bound.
-    if (this.fobCardData.scalars) {
-      let minMax = this.fobCardData.scalars.minMax;
-      return minMax[0] < minMax[1] ? minMax[1] : minMax[0];
-    }
-
-    let steps = this.fobCardData.histograms!.steps;
-    return steps[steps.length - 1];
+    return this.getMaxStep();
   }
 
   // Gets the index of smallest step that the currentDraggingFob is allowed to go.
   getDraggingFobLowerBound() {
     // The END fob cannot pass the START fob.
     if (this.currentDraggingFob === Fob.END) {
-      if (this.fobCardData.histograms) {
-        let steps = this.fobCardData.histograms.steps;
-        let index = steps.length - 1;
-        while (steps[index] > this.linkedTime.start.step) {
-          index--;
-        }
-        return steps[index];
+      if (this.fobCardData.type === PluginType.SCALARS) {
+        return this.linkedTime.start.step;
       }
 
-      return this.linkedTime.start.step;
+      let steps = this.fobCardData.steps;
+      let index = steps.length - 1;
+      while (steps[index] > this.linkedTime.start.step) {
+        index--;
+      }
+      return steps[index];
     }
 
     // No fobs can pass the lowest step in this graph.
-    if (this.fobCardData.scalars) {
-      let minMax = this.fobCardData.scalars.minMax;
-      return minMax[0] < minMax[1] ? minMax[0] : minMax[1];
-    }
-    return this.fobCardData.histograms!.steps[0];
+    return this.getMinStep();
   }
 }

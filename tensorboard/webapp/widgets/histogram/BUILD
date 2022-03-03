@@ -61,5 +61,6 @@ tf_ts_library(
     ],
     deps = [
         "//tensorboard/webapp:tb_polymer_interop_types",
+        "//tensorboard/webapp/third_party:d3",
     ],
 )

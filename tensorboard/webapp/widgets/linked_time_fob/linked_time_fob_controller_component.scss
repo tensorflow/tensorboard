@@ -14,12 +14,12 @@ limitations under the License.
 ==============================================================================*/
 .axis-overlay {
   height: 100%;
-  width: 100%;
-  pointer-events: all;
   left: 0px;
+  pointer-events: all;
   position: absolute;
   right: 0;
   top: 0;
+  width: 100%;
   .time-fob-wrapper {
     display: inline-block;
     position: absolute;

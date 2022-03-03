@@ -15,7 +15,7 @@ limitations under the License.
 
 import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {LinkedTime} from '../../metrics/types';
+import {LinkedTime, PluginType} from '../../metrics/types';
 import {ScaleLinear} from '../../third_party/d3';
 import {LinearScale} from '../line_chart_v2/lib/scale';
 import {LinkedTimeFobComponent} from './linked_time_fob_component';
@@ -72,10 +72,9 @@ describe('linked_time_fob_controller', () => {
     if (input.axisDirection === AxisDirection.VERTICAL) {
       temporalScaleSpy = jasmine.createSpy();
       fixture.componentInstance.fobCardData = {
-        histograms: {
-          steps: input.steps || [1, 2, 3, 4],
-          scale: temporalScaleSpy as unknown as ScaleLinear<number, number>,
-        },
+        type: PluginType.HISTOGRAMS,
+        steps: input.steps || [1, 2, 3, 4],
+        scale: temporalScaleSpy as unknown as ScaleLinear<number, number>,
       };
       temporalScaleSpy.and.callFake((step: number) => {
         return step;
@@ -99,10 +98,9 @@ describe('linked_time_fob_controller', () => {
         }
       );
       fixture.componentInstance.fobCardData = {
-        scalars: {
-          scale: fakeScale,
-          minMax: input.minMax || [0, 4],
-        },
+        type: PluginType.SCALARS,
+        scale: fakeScale,
+        minMax: input.minMax || [0, 4],
       };
     }
 

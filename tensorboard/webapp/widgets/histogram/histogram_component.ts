@@ -26,24 +26,22 @@ import {
   ViewChild,
 } from '@angular/core';
 import {fromEvent, Subject} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
 import {LinkedTime, PluginType} from '../../metrics/types';
+import {takeUntil} from 'rxjs/operators';
 import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
-import {FobCardData} from '../linked_time_fob/types';
+import {HistogramFobData} from '../linked_time_fob/types';
 import {
   Bin,
   HistogramData,
   HistogramDatum,
   HistogramMode,
+  TemporalScale,
   TimeProperty,
 } from './histogram_types';
 
 type BinScale = d3.ScaleLinear<number, number>;
 type CountScale = d3.ScaleLinear<number, number>;
-type TemporalScale =
-  | d3.ScaleLinear<number, number>
-  | d3.ScaleTime<number, number>;
 type D3ColorScale = d3.ScaleLinear<HCLColor, string>;
 
 interface Layout {
@@ -252,15 +250,12 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     );
   }
 
-  getFobData(): FobCardData {
-    if (!this.scales) return {};
-
-    let fobData: FobCardData = {};
-    fobData[PluginType.HISTOGRAMS] = {
-      scale: this.scales.temporalScale,
+  getFobData(): HistogramFobData {
+    return {
+      type: PluginType.HISTOGRAMS,
+      scale: this.scales!.temporalScale,
       steps: this.getSteps(),
     };
-    return fobData;
   }
 
   getHistogramFill(datum: HistogramDatum): string {

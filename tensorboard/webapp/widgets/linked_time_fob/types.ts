@@ -14,8 +14,8 @@ limitations under the License.
 ==============================================================================*/
 
 import {PluginType} from '../../metrics/types';
-import {ScaleLinear, ScaleTime} from '../../third_party/d3';
 import {Scale} from '../line_chart_v2/lib/public_types';
+import {TemporalScale} from '../histogram/histogram_types';
 
 export {Scale} from '../line_chart_v2/lib/public_types';
 
@@ -30,17 +30,16 @@ export enum Fob {
   END,
 }
 
-export type TemporalScale =
-  | ScaleLinear<number, number>
-  | ScaleTime<number, number>;
-
-export interface FobCardData {
-  [PluginType.HISTOGRAMS]?: {
-    scale: TemporalScale;
-    steps: number[];
-  };
-  [PluginType.SCALARS]?: {
-    scale: Scale;
-    minMax: [number, number];
-  };
+export interface HistogramFobData {
+  type: PluginType.HISTOGRAMS;
+  scale: TemporalScale;
+  steps: number[];
 }
+
+export interface ScalarFobData {
+  type: PluginType.SCALARS;
+  scale: Scale;
+  minMax: [number, number];
+}
+
+export type FobCardData = ScalarFobData | HistogramFobData;
