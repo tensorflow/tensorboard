@@ -67,11 +67,17 @@ function expectPluginIframe(element: HTMLElement, name: string) {
     <ng-template #environmentFailureNotFoundTemplate>
       <h3 class="custom-not-found-template">Custom Not Found Error</h3>
     </ng-template>
+    <ng-template #environmentFailurePermissionDeniedTemplate>
+      <h3 class="custom-not-found-template">Custom Permission Denied Error</h3>
+    </ng-template>
     <ng-template #environmentFailureUnknownTemplate>
       <h3 class="custom-unknown-template">Custom Unknown Error</h3>
     </ng-template>
     <plugins
       [environmentFailureNotFoundTemplate]="environmentFailureNotFoundTemplate"
+      [environmentFailurePermissionDeniedTemplate]="
+        environmentFailurePermissionDeniedTemplate
+      "
       [environmentFailureUnknownTemplate]="environmentFailureUnknownTemplate"
     >
     </plugins>
@@ -689,6 +695,21 @@ describe('plugins_component', () => {
       );
     });
 
+    it('shows warning when environment failed PERMISSION_DENIED', () => {
+      store.overrideSelector(getActivePlugin, null);
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.FAILED,
+        lastLoadedTimeInMs: null,
+        failureCode: PluginsListFailureCode.PERMISSION_DENIED,
+      });
+      const fixture = TestBed.createComponent(PluginsContainer);
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.nativeElement.textContent).toContain(
+        'Data could not be loaded.'
+      );
+    });
+
     it('shows warning when environment failed UNKNOWN', () => {
       store.overrideSelector(getActivePlugin, null);
       store.overrideSelector(getPluginsListLoaded, {
@@ -753,6 +774,23 @@ describe('plugins_component', () => {
 
         expect(fixture.debugElement.nativeElement.textContent).toBe(
           'Custom Not Found Error'
+        );
+      });
+
+      it('shows warning when environment failed PERMISSION_DENIED', () => {
+        store.overrideSelector(getActivePlugin, null);
+        store.overrideSelector(getPluginsListLoaded, {
+          state: DataLoadState.FAILED,
+          lastLoadedTimeInMs: null,
+          failureCode: PluginsListFailureCode.PERMISSION_DENIED,
+        });
+        const fixture = TestBed.createComponent(
+          CustomizedErrorTemplatesComponent
+        );
+        fixture.detectChanges();
+
+        expect(fixture.debugElement.nativeElement.textContent).toBe(
+          'Custom Permission Denied Error'
         );
       });
 

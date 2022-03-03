@@ -65,6 +65,9 @@ const activePlugin = createSelector(
       [settingsLoadState]="settingsLoadState$ | async"
       [featureFlags]="featureFlags$ | async"
       [environmentFailureNotFoundTemplate]="environmentFailureNotFoundTemplate"
+      [environmentFailurePermissionDeniedTemplate]="
+        environmentFailurePermissionDeniedTemplate
+      "
       [environmentFailureUnknownTemplate]="environmentFailureUnknownTemplate"
     ></plugins-component>
   `,
@@ -77,6 +80,9 @@ export class PluginsContainer {
 
   @Input()
   environmentFailureNotFoundTemplate?: TemplateRef<any>;
+
+  @Input()
+  environmentFailurePermissionDeniedTemplate?: TemplateRef<any>;
 
   @Input()
   environmentFailureUnknownTemplate?: TemplateRef<any>;
@@ -93,6 +99,10 @@ export class PluginsContainer {
         // environment.
         if (loadState.failureCode === PluginsListFailureCode.NOT_FOUND) {
           return PluginLoadState.ENVIRONMENT_FAILURE_NOT_FOUND;
+        } else if (
+          loadState.failureCode === PluginsListFailureCode.PERMISSION_DENIED
+        ) {
+          return PluginLoadState.ENVIRONMENT_FAILURE_PERMISSION_DENIED;
         } else {
           return PluginLoadState.ENVIRONMENT_FAILURE_UNKNOWN;
         }

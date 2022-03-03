@@ -47,6 +47,7 @@ interface PolymerDashboard extends HTMLElement {
 
 export enum PluginLoadState {
   ENVIRONMENT_FAILURE_NOT_FOUND,
+  ENVIRONMENT_FAILURE_PERMISSION_DENIED,
   ENVIRONMENT_FAILURE_UNKNOWN,
   NO_ENABLED_PLUGINS,
   UNKNOWN_PLUGIN_ID,
@@ -104,6 +105,9 @@ export class PluginsComponent implements OnChanges {
 
   @Input()
   environmentFailureNotFoundTemplate?: TemplateRef<any>;
+
+  @Input()
+  environmentFailurePermissionDeniedTemplate?: TemplateRef<any>;
 
   @Input()
   environmentFailureUnknownTemplate?: TemplateRef<any>;

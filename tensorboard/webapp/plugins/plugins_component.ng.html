@@ -47,6 +47,18 @@ limitations under the License.
       </ng-container>
     </ng-container>
 
+    <ng-container
+      *ngSwitchCase="PluginLoadState.ENVIRONMENT_FAILURE_PERMISSION_DENIED"
+    >
+      <!-- This error template can be injected by the parent component. -->
+      <ng-container
+        *ngTemplateOutlet="environmentFailurePermissionDeniedTemplate ?
+                             environmentFailurePermissionDeniedTemplate :
+                             environmentFailureDefaultTemplate"
+      >
+      </ng-container>
+    </ng-container>
+
     <ng-container *ngSwitchCase="PluginLoadState.ENVIRONMENT_FAILURE_UNKNOWN">
       <!-- This error template can be injected by the parent component. -->
       <ng-container
