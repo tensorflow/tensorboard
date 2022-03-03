@@ -16,7 +16,7 @@ limitations under the License.
 import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-import {KeyType, sendKey, sendKeys} from '../../testing/dom';
+import {sendKeys} from '../../testing/dom';
 import {LinkedTimeFobComponent} from './linked_time_fob_component';
 import {AxisDirection} from './linked_time_fob_controller_component';
 
@@ -112,12 +112,6 @@ describe('linked time fob', () => {
     expect(input).toBeTruthy();
 
     sendKeys(fixture, input, '3');
-    sendKey(fixture, input, {
-      type: KeyType.SPECIAL,
-      prevString: '3',
-      key: 'Enter',
-      startingCursorIndex: 0,
-    });
     input.triggerEventHandler('change', {target: input.nativeElement});
     fixture.detectChanges();
 

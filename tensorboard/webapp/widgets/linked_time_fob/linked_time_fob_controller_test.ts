@@ -15,8 +15,11 @@ limitations under the License.
 
 import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {By} from '@angular/platform-browser';
 import {LinkedTime} from '../../metrics/types';
+import {sendKeys} from '../../testing/dom';
 import {ScaleLinear, ScaleTime} from '../../third_party/d3';
+import {LinkedTimeFobComponent} from './linked_time_fob_component';
 import {
   AxisDirection,
   Fob,
@@ -55,7 +58,11 @@ describe('linked_time_fob_controller', () => {
   let temporalScaleSpy: jasmine.Spy;
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [TestableComponent, LinkedTimeFobControllerComponent],
+      declarations: [
+        TestableComponent,
+        LinkedTimeFobComponent,
+        LinkedTimeFobControllerComponent,
+      ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
@@ -399,6 +406,53 @@ describe('linked_time_fob_controller', () => {
       expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
         start: {step: 0},
         end: {step: 3},
+      });
+    });
+
+    it('changing start input modifies start step', () => {
+      let fixture = createComponent({
+        linkedTime: {start: {step: 1}, end: null},
+      });
+      fixture.detectChanges();
+
+      let mainDiv = fixture.debugElement.query(By.css('linked-time-fob div'));
+      mainDiv.triggerEventHandler('dblclick', {});
+      fixture.detectChanges();
+
+      let input = fixture.debugElement.query(By.css('linked-time-fob input'));
+
+      sendKeys(fixture, input, '8');
+      input.triggerEventHandler('change', {target: input.nativeElement});
+      fixture.detectChanges();
+
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 8},
+        end: null,
+      });
+    });
+
+    it('changing end fob input modifies end step', () => {
+      let fixture = createComponent({
+        linkedTime: {start: {step: 1}, end: {step: 3}},
+      });
+      fixture.detectChanges();
+
+      let fobDivs = fixture.debugElement.queryAll(
+        By.css('linked-time-fob div')
+      );
+      expect(fobDivs.length).toEqual(4);
+      fobDivs[2].triggerEventHandler('dblclick', {});
+      fixture.detectChanges();
+
+      let input = fixture.debugElement.query(By.css('linked-time-fob input'));
+
+      sendKeys(fixture, input, '8');
+      input.triggerEventHandler('change', {target: input.nativeElement});
+      fixture.detectChanges();
+
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 1},
+        end: {step: 8},
       });
     });
   });
