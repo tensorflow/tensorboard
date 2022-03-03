@@ -39,8 +39,8 @@ tf_ts_library(
     name = "linked_time_fob_test",
     testonly = True,
     srcs = [
-        "linked_time_fob_test.ts",
         "linked_time_fob_controller_test.ts",
+        "linked_time_fob_test.ts",
     ],
     deps = [
         ":linked_time_fob",

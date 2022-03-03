@@ -119,6 +119,8 @@
     "@vaadin/vaadin-grid": "^20.0.2",
     "d3": "5.7.0",
     "dagre": "^0.8.5",
+    "lint": "^0.7.0",
+    "lint-fix": "^0.24.0",
     "lodash": "^4.17.19",
     "marked": "^4.0.10",
     "monaco-editor-core": "^0.26.0",
