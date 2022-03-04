@@ -919,13 +919,19 @@ describe('histogram test', () => {
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
-        const firstHistogram = fixture.debugElement.queryAll(By.css('g.histogram'))[0];
+        const firstHistogram = fixture.debugElement.queryAll(
+          By.css('g.histogram')
+        )[0];
 
-        firstHistogram.triggerEventHandler('mouseenter', {target: firstHistogram.nativeElement});
+        firstHistogram.triggerEventHandler('mouseenter', {
+          target: firstHistogram.nativeElement,
+        });
         fixture.detectChanges();
         expect(doHistogramsHaveColor(fixture)).toEqual([true, true, false]);
 
-        firstHistogram.triggerEventHandler('mouseleave', {target: firstHistogram.nativeElement});
+        firstHistogram.triggerEventHandler('mouseleave', {
+          target: firstHistogram.nativeElement,
+        });
         fixture.detectChanges();
         expect(doHistogramsHaveColor(fixture)).toEqual([false, true, false]);
       });
