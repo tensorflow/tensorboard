@@ -906,6 +906,29 @@ describe('histogram test', () => {
         fixture.detectChanges();
         expect(doHistogramsHaveColor(fixture)).toEqual([false, false, false]);
       });
+
+      it('puts color on histogram that mouse hovers over', () => {
+        const fixture = createComponent('foo', [
+          buildHistogramDatum({step: 0, wallTime: 100}),
+          buildHistogramDatum({step: 5, wallTime: 400}),
+          buildHistogramDatum({step: 10, wallTime: 400}),
+        ]);
+        fixture.componentInstance.mode = HistogramMode.OFFSET;
+        fixture.componentInstance.timeProperty = TimeProperty.STEP;
+        fixture.componentInstance.linkedTime = {start: {step: 5}, end: null};
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+
+        const gs = fixture.debugElement.queryAll(By.css('g.histogram'));
+
+        gs[0].triggerEventHandler('mouseenter', {target: gs[0].nativeElement});
+        fixture.detectChanges();
+        expect(doHistogramsHaveColor(fixture)).toEqual([true, true, false]);
+
+        gs[0].triggerEventHandler('mouseleave', {target: gs[0].nativeElement});
+        fixture.detectChanges();
+        expect(doHistogramsHaveColor(fixture)).toEqual([false, true, false]);
+      });
     });
 
     describe('multi step', () => {
