@@ -23,7 +23,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {LinkedTime} from '../../metrics/types';
-import {AxisDirection, Fob, HistogramFobData} from './types';
+import {AxisDirection, Fob, DiscreteFobData} from './types';
 
 @Component({
   selector: 'linked-time-fob-controller',
@@ -37,7 +37,7 @@ export class LinkedTimeFobControllerComponent {
   @ViewChild('endFobWrapper') readonly endFobWrapper!: ElementRef;
   @Input() axisDirection!: AxisDirection;
   @Input() linkedTime!: LinkedTime;
-  @Input() histogramFobData!: HistogramFobData;
+  @Input() discreteFobData!: DiscreteFobData;
   @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
 
   private currentDraggingFob: Fob = Fob.NONE;
@@ -52,10 +52,10 @@ export class LinkedTimeFobControllerComponent {
 
   getCssTranslatePx(step: number): string {
     if (this.axisDirection === AxisDirection.VERTICAL) {
-      return `translate(0px, ${this.histogramFobData.scale(step)}px)`;
+      return `translate(0px, ${this.discreteFobData.scale(step)}px)`;
     }
 
-    return `translate(${this.histogramFobData.scale(step)}px, 0px)`;
+    return `translate(${this.discreteFobData.scale(step)}px, 0px)`;
   }
 
   startDrag(fob: Fob) {
@@ -78,7 +78,7 @@ export class LinkedTimeFobControllerComponent {
     let newLinkedTime = this.linkedTime;
     if (this.isDraggingHigher(event.clientY, event.movementY)) {
       const stepAbove =
-        this.histogramFobData.steps[
+        this.discreteFobData.steps[
           this.getStepIndexHigherThanMousePosition(event.clientY)
         ];
       if (this.currentDraggingFob === Fob.END) {
@@ -91,7 +91,7 @@ export class LinkedTimeFobControllerComponent {
 
     if (this.isDraggingLower(event.clientY, event.movementY)) {
       const stepBelow =
-        this.histogramFobData.steps[
+        this.discreteFobData.steps[
           this.getStepIndexLowerThanMousePosition(event.clientY)
         ];
       if (this.currentDraggingFob === Fob.END) {
@@ -107,7 +107,7 @@ export class LinkedTimeFobControllerComponent {
     return (
       position < this.getDraggingFobTop() &&
       movement < 0 &&
-      this.getDraggingFobStep() > this.histogramFobData.steps[0]
+      this.getDraggingFobStep() > this.discreteFobData.steps[0]
     );
   }
 
@@ -116,7 +116,7 @@ export class LinkedTimeFobControllerComponent {
       position > this.getDraggingFobTop() &&
       movement > 0 &&
       this.getDraggingFobStep() <
-        this.histogramFobData.steps[this.histogramFobData.steps.length - 1]
+        this.discreteFobData.steps[this.discreteFobData.steps.length - 1]
     );
   }
 
@@ -136,7 +136,7 @@ export class LinkedTimeFobControllerComponent {
     let stepIndex = 0;
     while (
       position - this.axisOverlay.nativeElement.getBoundingClientRect().top >
-        this.histogramFobData.scale(this.histogramFobData.steps[stepIndex]) &&
+        this.discreteFobData.scale(this.discreteFobData.steps[stepIndex]) &&
       stepIndex < this.currentDraggingFobUpperBoundIndex
     ) {
       stepIndex++;
@@ -145,10 +145,10 @@ export class LinkedTimeFobControllerComponent {
   }
 
   getStepIndexLowerThanMousePosition(position: number) {
-    let stepIndex = this.histogramFobData.steps.length - 1;
+    let stepIndex = this.discreteFobData.steps.length - 1;
     while (
       position - this.axisOverlay.nativeElement.getBoundingClientRect().top <
-        this.histogramFobData.scale(this.histogramFobData.steps[stepIndex]) &&
+        this.discreteFobData.scale(this.discreteFobData.steps[stepIndex]) &&
       stepIndex > this.currentDraggingFobLowerBoundIndex
     ) {
       stepIndex--;
@@ -162,22 +162,22 @@ export class LinkedTimeFobControllerComponent {
     // the step before or equal to the endFob's step.
     if (this.currentDraggingFob === Fob.START && this.linkedTime.end !== null) {
       let index = 0;
-      while (this.histogramFobData.steps[index] < this.linkedTime.end.step) {
+      while (this.discreteFobData.steps[index] < this.linkedTime.end.step) {
         index++;
       }
       return index;
     }
 
     // In all other cases the largest step is the upper bound.
-    return this.histogramFobData.steps.length - 1;
+    return this.discreteFobData.steps.length - 1;
   }
 
   // Gets the index of smallest step that the currentDraggingFob is allowed to go.
   getDraggingFobLowerBoundIndex() {
     // The END fob cannot pass the START fob.
     if (this.currentDraggingFob === Fob.END) {
-      let index = this.histogramFobData.steps.length - 1;
-      while (this.histogramFobData.steps[index] > this.linkedTime.start.step) {
+      let index = this.discreteFobData.steps.length - 1;
+      while (this.discreteFobData.steps[index] > this.linkedTime.start.step) {
         index--;
       }
       return index;

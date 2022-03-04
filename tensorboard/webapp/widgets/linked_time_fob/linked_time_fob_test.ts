@@ -19,7 +19,7 @@ import {LinkedTime} from '../../metrics/types';
 import {ScaleLinear} from '../../third_party/d3';
 import {LinkedTimeFobComponent} from './linked_time_fob_component';
 import {LinkedTimeFobControllerComponent} from './linked_time_fob_controller_component';
-import {AxisDirection, Fob, HistogramFobData} from './types';
+import {AxisDirection, Fob, DiscreteFobData} from './types';
 
 @Component({
   selector: 'testable-comp',
@@ -28,7 +28,7 @@ import {AxisDirection, Fob, HistogramFobData} from './types';
       #FobController
       [axisDirection]="axisDirection"
       [linkedTime]="linkedTime"
-      [histogramFobData]="histogramFobData"
+      [discreteFobData]="discreteFobData"
       (onSelectTimeChanged)="onSelectTimeChanged($event)"
     ></linked-time-fob-controller>
   `,
@@ -38,7 +38,7 @@ class TestableComponent {
   fobController!: LinkedTimeFobControllerComponent;
 
   @Input() axisDirection!: AxisDirection;
-  @Input() histogramFobData!: HistogramFobData;
+  @Input() discreteFobData!: DiscreteFobData;
   @Input() linkedTime!: LinkedTime;
 
   @Input() onSelectTimeChanged!: (newLinkedTime: LinkedTime) => void;
@@ -65,7 +65,7 @@ describe('linked_time_fob_controller', () => {
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
     temporalScaleSpy = jasmine.createSpy();
-    fixture.componentInstance.histogramFobData = {
+    fixture.componentInstance.discreteFobData = {
       steps: input.steps || [1, 2, 3, 4],
       scale: temporalScaleSpy as unknown as ScaleLinear<number, number>,
     };

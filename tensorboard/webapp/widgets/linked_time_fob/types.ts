@@ -23,7 +23,7 @@ export enum Fob {
   END,
 }
 
-export interface HistogramFobData {
+export interface DiscreteFobData {
   scale: TemporalScale;
   steps: number[];
 }
