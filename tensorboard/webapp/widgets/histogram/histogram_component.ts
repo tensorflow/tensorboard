@@ -30,20 +30,18 @@ import {takeUntil} from 'rxjs/operators';
 import {LinkedTime} from '../../metrics/types';
 import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
-import {AxisDirection} from '../linked_time_fob/linked_time_fob_controller_component';
+import {AxisDirection} from '../linked_time_fob/types';
 import {
   Bin,
   HistogramData,
   HistogramDatum,
   HistogramMode,
   TimeProperty,
+  TemporalScale,
 } from './histogram_types';
 
 type BinScale = d3.ScaleLinear<number, number>;
 type CountScale = d3.ScaleLinear<number, number>;
-type TemporalScale =
-  | d3.ScaleLinear<number, number>
-  | d3.ScaleTime<number, number>;
 type D3ColorScale = d3.ScaleLinear<HCLColor, string>;
 
 interface Layout {
@@ -239,6 +237,13 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
         this.scales &&
         linkedTime
     );
+  }
+
+  getFobData() {
+    return {
+      steps: this.getSteps(),
+      scale: this.scales!.temporalScale,
+    };
   }
 
   isDatumInLinkedTimeRange(datum: HistogramDatum): boolean {

@@ -16,15 +16,10 @@ limitations under the License.
 import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {LinkedTime} from '../../metrics/types';
-import {ScaleLinear, ScaleTime} from '../../third_party/d3';
+import {ScaleLinear} from '../../third_party/d3';
 import {LinkedTimeFobComponent} from './linked_time_fob_component';
-import {
-  AxisDirection,
-  Fob,
-  LinkedTimeFobControllerComponent,
-} from './linked_time_fob_controller_component';
-
-type TemporalScale = ScaleLinear<number, number> | ScaleTime<number, number>;
+import {LinkedTimeFobControllerComponent} from './linked_time_fob_controller_component';
+import {AxisDirection, Fob, HistogramFobData} from './types';
 
 @Component({
   selector: 'testable-comp',
@@ -33,8 +28,7 @@ type TemporalScale = ScaleLinear<number, number> | ScaleTime<number, number>;
       #FobController
       [axisDirection]="axisDirection"
       [linkedTime]="linkedTime"
-      [steps]="steps"
-      [temporalScale]="temporalScale"
+      [histogramFobData]="histogramFobData"
       (onSelectTimeChanged)="onSelectTimeChanged($event)"
     ></linked-time-fob-controller>
   `,
@@ -43,10 +37,9 @@ class TestableComponent {
   @ViewChild('FobController')
   fobController!: LinkedTimeFobControllerComponent;
 
-  @Input() steps!: number[];
   @Input() axisDirection!: AxisDirection;
+  @Input() histogramFobData!: HistogramFobData;
   @Input() linkedTime!: LinkedTime;
-  @Input() temporalScale!: TemporalScale;
 
   @Input() onSelectTimeChanged!: (newLinkedTime: LinkedTime) => void;
 }
@@ -71,7 +64,11 @@ describe('linked_time_fob_controller', () => {
     linkedTime?: LinkedTime;
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
-    fixture.componentInstance.steps = input.steps || [1, 2, 3, 4];
+    temporalScaleSpy = jasmine.createSpy();
+    fixture.componentInstance.histogramFobData = {
+      steps: input.steps || [1, 2, 3, 4],
+      scale: temporalScaleSpy as unknown as ScaleLinear<number, number>,
+    };
 
     fixture.componentInstance.axisDirection =
       input.axisDirection || AxisDirection.VERTICAL;
@@ -80,10 +77,6 @@ describe('linked_time_fob_controller', () => {
       start: {step: 1},
       end: null,
     };
-
-    temporalScaleSpy = jasmine.createSpy();
-    fixture.componentInstance.temporalScale =
-      temporalScaleSpy as unknown as ScaleLinear<number, number>;
 
     temporalScaleSpy.and.callFake((step: number) => {
       return step;

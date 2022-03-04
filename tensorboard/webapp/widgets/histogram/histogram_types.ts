@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {ScaleLinear, ScaleTime} from '../../third_party/d3';
+
 export {HistogramMode, TimeProperty} from '../../tb_polymer_interop_types';
 
 export interface ColorScale {
@@ -34,3 +36,7 @@ export interface HistogramDatum {
 }
 
 export type HistogramData = HistogramDatum[];
+
+export type TemporalScale =
+  | ScaleLinear<number, number>
+  | ScaleTime<number, number>;
