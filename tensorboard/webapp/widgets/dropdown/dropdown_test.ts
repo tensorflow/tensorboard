@@ -14,9 +14,9 @@ limitations under the License.
 ==============================================================================*/
 import {Component, Input} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {By} from '@angular/platform-browser';
 import {MatSelectModule} from '@angular/material/select';
-import {DropdownOption, DropdownComponent} from './dropdown_component';
+import {By} from '@angular/platform-browser';
+import {DropdownComponent, DropdownOption} from './dropdown_component';
 
 /**
  * Test class that uses the <tb-dropdown> component.
