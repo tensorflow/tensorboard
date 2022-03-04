@@ -36,8 +36,8 @@ import {
   HistogramData,
   HistogramDatum,
   HistogramMode,
-  TimeProperty,
   TemporalScale,
+  TimeProperty,
 } from './histogram_types';
 
 type BinScale = d3.ScaleLinear<number, number>;
