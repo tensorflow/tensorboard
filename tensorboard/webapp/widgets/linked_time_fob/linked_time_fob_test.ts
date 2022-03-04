@@ -66,49 +66,41 @@ describe('linked time fob', () => {
   }
 
   it('double clicking fob changes to input', () => {
-    let fixture = createFobComponent({});
+    const fixture = createFobComponent({});
     fixture.detectChanges();
-    expect(
-      fixture.debugElement.nativeElement.querySelector('input')
-    ).toBeFalsy();
+    expect(fixture.debugElement.query(By.css('input'))).toBeFalsy();
 
-    let mainDiv = fixture.debugElement.query(By.css('div'));
+    const mainDiv = fixture.debugElement.query(By.css('div'));
     mainDiv.triggerEventHandler('dblclick', {});
     fixture.detectChanges();
 
-    expect(
-      fixture.debugElement.nativeElement.querySelector('input')
-    ).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('input'))).toBeTruthy();
   });
 
   it('input element holds step value when activated', () => {
-    let fixture = createFobComponent({step: 3});
+    const fixture = createFobComponent({step: 3});
     fixture.detectChanges();
-    expect(
-      fixture.debugElement.nativeElement.querySelector('input')
-    ).toBeFalsy();
+    expect(fixture.debugElement.query(By.css('input'))).toBeFalsy();
 
-    let mainDiv = fixture.debugElement.query(By.css('div'));
+    const mainDiv = fixture.debugElement.query(By.css('div'));
     mainDiv.triggerEventHandler('dblclick', {});
     fixture.detectChanges();
 
-    let input = fixture.debugElement.nativeElement.querySelector('input');
+    const input = fixture.debugElement.query(By.css('input'));
     expect(input).toBeTruthy();
-    expect(input.value).toEqual('3');
+    expect(input.nativeElement.value).toEqual('3');
   });
 
   it('Entering input after double clicking emits the proper event', () => {
-    let fixture = createFobComponent({});
+    const fixture = createFobComponent({});
     fixture.detectChanges();
-    expect(
-      fixture.debugElement.nativeElement.querySelector('input')
-    ).toBeFalsy();
+    expect(fixture.debugElement.query(By.css('input'))).toBeFalsy();
 
-    let mainDiv = fixture.debugElement.query(By.css('div'));
+    const mainDiv = fixture.debugElement.query(By.css('div'));
     mainDiv.triggerEventHandler('dblclick', {});
     fixture.detectChanges();
 
-    let input = fixture.debugElement.query(By.css('input'));
+    const input = fixture.debugElement.query(By.css('input'));
     expect(input).toBeTruthy();
 
     sendKeys(fixture, input, '3');
@@ -116,8 +108,6 @@ describe('linked time fob', () => {
     fixture.detectChanges();
 
     expect(stepTypedSpy).toHaveBeenCalledOnceWith(3);
-    expect(
-      fixture.debugElement.nativeElement.querySelector('input')
-    ).toBeFalsy();
+    expect(fixture.debugElement.query(By.css('input'))).toBeFalsy();
   });
 });
