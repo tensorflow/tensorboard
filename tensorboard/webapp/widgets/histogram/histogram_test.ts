@@ -1005,5 +1005,37 @@ describe('histogram test', () => {
         expect(doHistogramsHaveColor(fixture)).toEqual([false, false, false]);
       });
     });
+
+    fdescribe('multi step range updated on click', () => {
+      function createHistogramComponent() {
+        const fixture = createComponent('foo', [
+          buildHistogramDatum({step: 0, wallTime: 100}),
+          buildHistogramDatum({step: 5, wallTime: 400}),
+          buildHistogramDatum({step: 10, wallTime: 400}),
+          buildHistogramDatum({step: 20, wallTime: 400}),
+        ]);
+        fixture.componentInstance.mode = HistogramMode.OFFSET;
+        fixture.componentInstance.timeProperty = TimeProperty.STEP;
+
+        return fixture;
+      }
+      it('changes from single step to multi step', () => {
+        const fixture = createHistogramComponent();
+        fixture.componentInstance.linkedTime = {start: {step: 5}, end: null};
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+
+        const histograms = fixture.debugElement.queryAll(By.css('g.histogram'));
+
+        histograms[3].triggerEventHandler('click', null);
+        fixture.detectChanges();
+        expect(doHistogramsHaveColor(fixture)).toEqual([
+          false,
+          true,
+          true,
+          true,
+        ]);
+      });
+    });
   });
 });

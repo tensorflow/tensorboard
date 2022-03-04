@@ -290,6 +290,30 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.updateChartIfVisible();
   }
 
+  onSelectTimeRangeChange(datum: HistogramDatum) {
+    if (!this.isLinkedTimeEnabled(this.linkedTime)) {
+      return;
+    }
+
+    const startStep = this.linkedTime.start.step;
+    const endStep = this.linkedTime.end?.step;
+    const nextStartStep = datum.step < startStep ? datum.step : startStep;
+    let nextEndStep = endStep;
+
+    if (nextEndStep === undefined) {
+      nextEndStep = datum.step > startStep ? datum.step : startStep;
+    } else {
+      nextEndStep = datum.step > nextEndStep ? datum.step : nextEndStep;
+    }
+
+    if (nextStartStep !== startStep || nextEndStep !== endStep) {
+      this.onSelectTimeChanged.emit({
+        start: {step: nextStartStep},
+        end: {step: nextEndStep},
+      });
+    }
+  }
+
   private getTimeValue(datum: HistogramDatum): number {
     switch (this.timeProperty) {
       case TimeProperty.WALL_TIME:
