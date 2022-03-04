@@ -291,21 +291,22 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
         // When there is no selected steps. We check if start step is
         // "close" enough to a step value and move it.
         if (selectedSteps.length === 0) {
+          if (stepValues.length === 1) return stepIndex;
+
           const step = selectedTime.startStep;
           for (let i = 0; i < stepValues.length - 2; i++) {
             const currentSelectedStep = stepValues[i];
             const nextSelectedStep = stepValues[i + 1];
             const distance =
               (nextSelectedStep - currentSelectedStep) * DISTANCE_RATIO;
+            if (step < currentSelectedStep) return stepIndex;
 
-            if (Math.abs(step - currentSelectedStep) <= distance) {
+            if (step - currentSelectedStep <= distance) {
               return stepValues.indexOf(currentSelectedStep);
             }
-            if (Math.abs(step - nextSelectedStep) <= distance) {
+            if (nextSelectedStep - step <= distance) {
               return stepValues.indexOf(nextSelectedStep);
             }
-
-            if (step < currentSelectedStep) return stepIndex;
           }
         }
 
