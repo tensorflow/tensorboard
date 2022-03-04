@@ -21,6 +21,10 @@ export interface DropdownOption {
    * Whether the option should appear non-interactable. 'enabled' by default.
    */
   disabled?: boolean;
+  /**
+   * Optional alias for the displayText.
+   */
+  displayAlias?: string;
 }
 
 /**
@@ -38,7 +42,13 @@ export interface DropdownOption {
         [value]="option.value"
         [disabled]="option.disabled"
       >
-        {{ option.displayText }}
+        <p *ngIf="option.displayAlias; else noAlias">
+          <b>{{ option.displayAlias }}</b
+          >: {{ option.displayText }}
+        </p>
+        <ng-template #noAlias>
+          {{ option.displayText }}
+        </ng-template>
       </mat-option>
     </mat-select>
   `,
