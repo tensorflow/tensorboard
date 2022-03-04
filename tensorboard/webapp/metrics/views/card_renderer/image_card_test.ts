@@ -976,9 +976,7 @@ describe('image card', () => {
             start: {step: 15},
             end: null,
           });
-          const timeSeries = [
-            {wallTime: 100, imageId: 'ImageId1', step: 10},
-          ];
+          const timeSeries = [{wallTime: 100, imageId: 'ImageId1', step: 10}];
           provideMockCardSeriesData(
             selectSpy,
             PluginType.IMAGES,
