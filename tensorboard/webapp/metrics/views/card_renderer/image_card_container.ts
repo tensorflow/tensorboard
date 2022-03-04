@@ -57,6 +57,8 @@ import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {maybeClipSelectedTime, ViewSelectedTime} from './utils';
 
+const DISTANCE_RATIO = 0.1;
+
 type ImageCardMetadata = CardMetadata & {
   plugin: PluginType.IMAGES;
   sample: number;
@@ -284,8 +286,29 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       this.stepValues$
     ).pipe(
       map(([stepIndex, selectedTime, selectedSteps, stepValues]) => {
-        if (!selectedTime || selectedTime.clipped || selectedSteps.length === 0)
-          return stepIndex;
+        if (!selectedTime || selectedTime.clipped) return stepIndex;
+
+        // When there is no selected steps. We check if start step is
+        // "close" enough to a step value and move it.
+        if (selectedSteps.length === 0) {
+          const step = selectedTime.startStep;
+          for (let i = 0; i < stepValues.length - 2; i++) {
+            const currentSelectedStep = stepValues[i];
+            const nextSelectedStep = stepValues[i + 1];
+            const distance =
+              (nextSelectedStep - currentSelectedStep) * DISTANCE_RATIO;
+
+            if (Math.abs(step - currentSelectedStep) <= distance) {
+              return stepValues.indexOf(currentSelectedStep);
+            }
+            if (Math.abs(step - nextSelectedStep) <= distance) {
+              return stepValues.indexOf(nextSelectedStep);
+            }
+
+            if (step < currentSelectedStep) return stepIndex;
+          }
+        }
+
         const firstSelectedStep = selectedSteps[0];
         const lastSelectedStep = selectedSteps[selectedSteps.length - 1];
 
@@ -309,8 +332,9 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
 
         // Single selection
         const nextStepIndex = stepValues.indexOf(firstSelectedStep);
-        if (nextStepIndex === -1) return stepIndex;
-        return nextStepIndex;
+        if (nextStepIndex !== -1) return nextStepIndex;
+
+        return stepIndex;
       })
     );
 

@@ -616,7 +616,7 @@ describe('image card', () => {
       });
     });
 
-    describe('sliders', () => {
+    describe('render sliders', () => {
       beforeEach(() => {
         const timeSeries = [
           {wallTime: 100, imageId: 'ImageId1', step: 10},
@@ -809,187 +809,255 @@ describe('image card', () => {
       });
     });
 
-    it('moves slider thumb to selected time on single selection', () => {
-      store.overrideSelector(selectors.getMetricsSelectedTime, {
-        start: {step: 20},
-        end: null,
-      });
-      const timeSeries = [
-        {wallTime: 100, imageId: 'ImageId1', step: 10},
-        {wallTime: 101, imageId: 'ImageId2', step: 20},
-        {wallTime: 102, imageId: 'ImageId3', step: 30},
-        {wallTime: 103, imageId: 'ImageId4', step: 40},
-      ];
-      provideMockCardSeriesData(
-        selectSpy,
-        PluginType.IMAGES,
-        'card1',
-        null /* metadataOverride */,
-        timeSeries,
-        2 /* stepIndex */
-      );
-      const fixture = createImageCardContainer('card1');
-      fixture.detectChanges();
-      let slider = fixture.debugElement.query(By.css('mat-slider'));
-      expect(slider.nativeElement.getAttribute('aria-valuenow')).toBe('1');
+    describe('thumb movement', () => {
+      describe('single selection', () => {
+        it('moves slider thumb to matched selected time', () => {
+          store.overrideSelector(selectors.getMetricsSelectedTime, {
+            start: {step: 20},
+            end: null,
+          });
+          const timeSeries = [
+            {wallTime: 100, imageId: 'ImageId1', step: 10},
+            {wallTime: 101, imageId: 'ImageId2', step: 20},
+            {wallTime: 102, imageId: 'ImageId3', step: 30},
+            {wallTime: 103, imageId: 'ImageId4', step: 40},
+          ];
+          provideMockCardSeriesData(
+            selectSpy,
+            PluginType.IMAGES,
+            'card1',
+            null /* metadataOverride */,
+            timeSeries,
+            2 /* stepIndex */
+          );
+          const fixture = createImageCardContainer('card1');
+          fixture.detectChanges();
+          let slider = fixture.debugElement.query(By.css('mat-slider'));
+          expect(slider.nativeElement.getAttribute('aria-valuenow')).toBe('1');
 
-      store.overrideSelector(selectors.getMetricsSelectedTime, {
-        start: {step: 30},
-        end: null,
-      });
-      store.refreshState();
-      fixture.detectChanges();
+          store.overrideSelector(selectors.getMetricsSelectedTime, {
+            start: {step: 30},
+            end: null,
+          });
+          store.refreshState();
+          fixture.detectChanges();
 
-      slider = fixture.debugElement.query(By.css('mat-slider'));
-      expect(slider.nativeElement.getAttribute('aria-valuenow')).toBe('2');
-    });
-
-    it('does not move slider thumb on selected step with no image', () => {
-      store.overrideSelector(selectors.getMetricsSelectedTime, {
-        start: {step: 15},
-        end: null,
-      });
-      const timeSeries = [
-        {wallTime: 100, imageId: 'ImageId1', step: 10},
-        {wallTime: 101, imageId: 'ImageId2', step: 20},
-        {wallTime: 102, imageId: 'ImageId3', step: 30},
-        {wallTime: 103, imageId: 'ImageId4', step: 40},
-      ];
-      provideMockCardSeriesData(
-        selectSpy,
-        PluginType.IMAGES,
-        'card1',
-        null /* metadataOverride */,
-        timeSeries,
-        2 /* stepIndex */
-      );
-      const fixture = createImageCardContainer('card1');
-      fixture.detectChanges();
-      let slider = fixture.debugElement.query(By.css('mat-slider'));
-      expect(slider.nativeElement.getAttribute('aria-valuenow')).toBe('2');
-    });
-
-    it('does not move slider thumb to selected time on range selection', () => {
-      store.overrideSelector(selectors.getMetricsSelectedTime, {
-        start: {step: 15},
-        end: {step: 55},
-      });
-      const timeSeries = [
-        {wallTime: 100, imageId: 'ImageId1', step: 10},
-        {wallTime: 101, imageId: 'ImageId2', step: 20},
-        {wallTime: 102, imageId: 'ImageId3', step: 30},
-        {wallTime: 103, imageId: 'ImageId4', step: 40},
-      ];
-      provideMockCardSeriesData(
-        selectSpy,
-        PluginType.IMAGES,
-        'card1',
-        null /* metadataOverride */,
-        timeSeries,
-        2 /* stepIndex */
-      );
-      const fixture = createImageCardContainer('card1');
-      fixture.detectChanges();
-
-      let slider = fixture.debugElement.query(By.css('mat-slider'));
-      expect(slider.nativeElement.getAttribute('aria-valuenow')).toBe('2');
-
-      store.overrideSelector(selectors.getMetricsSelectedTime, {
-        start: {step: 25},
-        end: {step: 35},
-      });
-      store.refreshState();
-      fixture.detectChanges();
-
-      slider = fixture.debugElement.query(By.css('mat-slider'));
-      expect(slider.nativeElement.getAttribute('aria-valuenow')).toBe('2');
-    });
-
-    describe('range selection', () => {
-      function createImageCardContainerWithStepIndex(stepIndex: number) {
-        const timeSeries = [
-          {wallTime: 100, imageId: 'ImageId1', step: 10},
-          {wallTime: 101, imageId: 'ImageId2', step: 20},
-          {wallTime: 102, imageId: 'ImageId3', step: 30},
-          {wallTime: 103, imageId: 'ImageId4', step: 40},
-        ];
-        provideMockCardSeriesData(
-          selectSpy,
-          PluginType.IMAGES,
-          'card1',
-          null /* metadataOverride */,
-          timeSeries,
-          stepIndex /* stepIndex */
-        );
-        const fixture = createImageCardContainer('card1');
-        fixture.detectChanges();
-
-        return fixture;
-      }
-
-      function getSliderThumbPosition(
-        fixture: ComponentFixture<ImageCardContainer>
-      ) {
-        const slider = fixture.debugElement.query(By.css('mat-slider'));
-        return slider.nativeElement.getAttribute('aria-valuenow');
-      }
-
-      it('moves slider thumb to the highest step in range when the thumb is larger than end step', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
-          start: {step: 15},
-          end: {step: 35},
+          slider = fixture.debugElement.query(By.css('mat-slider'));
+          expect(slider.nativeElement.getAttribute('aria-valuenow')).toBe('2');
         });
-        const fixture = createImageCardContainerWithStepIndex(3);
 
-        expect(getSliderThumbPosition(fixture)).toBe('2');
+        it('does not move slider thumb on selected step with no image', () => {
+          store.overrideSelector(selectors.getMetricsSelectedTime, {
+            start: {step: 15},
+            end: null,
+          });
+          const timeSeries = [
+            {wallTime: 100, imageId: 'ImageId1', step: 10},
+            {wallTime: 101, imageId: 'ImageId2', step: 20},
+            {wallTime: 102, imageId: 'ImageId3', step: 30},
+            {wallTime: 103, imageId: 'ImageId4', step: 40},
+          ];
+          provideMockCardSeriesData(
+            selectSpy,
+            PluginType.IMAGES,
+            'card1',
+            null /* metadataOverride */,
+            timeSeries,
+            2 /* stepIndex */
+          );
+          const fixture = createImageCardContainer('card1');
+          fixture.detectChanges();
+          let slider = fixture.debugElement.query(By.css('mat-slider'));
+          expect(slider.nativeElement.getAttribute('aria-valuenow')).toBe('2');
+        });
+
+        it('moves slider thumb to smaller closest step when they are close enough', () => {
+          store.overrideSelector(selectors.getMetricsSelectedTime, {
+            start: {step: 11},
+            end: null,
+          });
+          const timeSeries = [
+            {wallTime: 100, imageId: 'ImageId1', step: 10},
+            {wallTime: 101, imageId: 'ImageId2', step: 20},
+            {wallTime: 102, imageId: 'ImageId3', step: 30},
+            {wallTime: 103, imageId: 'ImageId4', step: 40},
+          ];
+          provideMockCardSeriesData(
+            selectSpy,
+            PluginType.IMAGES,
+            'card1',
+            null /* metadataOverride */,
+            timeSeries,
+            2 /* stepIndex */
+          );
+          const fixture = createImageCardContainer('card1');
+          fixture.detectChanges();
+          let slider = fixture.debugElement.query(By.css('mat-slider'));
+          expect(slider.nativeElement.getAttribute('aria-valuenow')).toBe('0');
+        });
+
+        it('moves slider thumb to larger closest step when they are close enough', () => {
+          store.overrideSelector(selectors.getMetricsSelectedTime, {
+            start: {step: 19},
+            end: null,
+          });
+          const timeSeries = [
+            {wallTime: 100, imageId: 'ImageId1', step: 10},
+            {wallTime: 101, imageId: 'ImageId2', step: 20},
+            {wallTime: 102, imageId: 'ImageId3', step: 30},
+            {wallTime: 103, imageId: 'ImageId4', step: 40},
+          ];
+          provideMockCardSeriesData(
+            selectSpy,
+            PluginType.IMAGES,
+            'card1',
+            null /* metadataOverride */,
+            timeSeries,
+            2 /* stepIndex */
+          );
+          const fixture = createImageCardContainer('card1');
+          fixture.detectChanges();
+          let slider = fixture.debugElement.query(By.css('mat-slider'));
+          expect(slider.nativeElement.getAttribute('aria-valuenow')).toBe('1');
+        });
+
+        it('does not move slider thumb to larger closest step when it is clipped', () => {
+          store.overrideSelector(selectors.getMetricsSelectedTime, {
+            start: {step: 9},
+            end: null,
+          });
+          const timeSeries = [
+            {wallTime: 100, imageId: 'ImageId1', step: 10},
+            {wallTime: 101, imageId: 'ImageId2', step: 20},
+            {wallTime: 102, imageId: 'ImageId3', step: 30},
+            {wallTime: 103, imageId: 'ImageId4', step: 40},
+          ];
+          provideMockCardSeriesData(
+            selectSpy,
+            PluginType.IMAGES,
+            'card1',
+            null /* metadataOverride */,
+            timeSeries,
+            2 /* stepIndex */
+          );
+          const fixture = createImageCardContainer('card1');
+          fixture.detectChanges();
+          let slider = fixture.debugElement.query(By.css('mat-slider'));
+          expect(slider.nativeElement.getAttribute('aria-valuenow')).toBe('2');
+        });
+
+        it('does not move slider thumb to smaller closest step when it is clipped', () => {
+          store.overrideSelector(selectors.getMetricsSelectedTime, {
+            start: {step: 41},
+            end: null,
+          });
+          const timeSeries = [
+            {wallTime: 100, imageId: 'ImageId1', step: 10},
+            {wallTime: 101, imageId: 'ImageId2', step: 20},
+            {wallTime: 102, imageId: 'ImageId3', step: 30},
+            {wallTime: 103, imageId: 'ImageId4', step: 40},
+          ];
+          provideMockCardSeriesData(
+            selectSpy,
+            PluginType.IMAGES,
+            'card1',
+            null /* metadataOverride */,
+            timeSeries,
+            2 /* stepIndex */
+          );
+          const fixture = createImageCardContainer('card1');
+          fixture.detectChanges();
+          let slider = fixture.debugElement.query(By.css('mat-slider'));
+          expect(slider.nativeElement.getAttribute('aria-valuenow')).toBe('2');
+        });
       });
 
-      it('moves slider thumb to the lowest step in range when the thumb is smaller than start step', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
-          start: {step: 15},
-          end: {step: 35},
+      describe('range selection', () => {
+        function createImageCardContainerWithStepIndex(stepIndex: number) {
+          const timeSeries = [
+            {wallTime: 100, imageId: 'ImageId1', step: 10},
+            {wallTime: 101, imageId: 'ImageId2', step: 20},
+            {wallTime: 102, imageId: 'ImageId3', step: 30},
+            {wallTime: 103, imageId: 'ImageId4', step: 40},
+          ];
+          provideMockCardSeriesData(
+            selectSpy,
+            PluginType.IMAGES,
+            'card1',
+            null /* metadataOverride */,
+            timeSeries,
+            stepIndex /* stepIndex */
+          );
+          const fixture = createImageCardContainer('card1');
+          fixture.detectChanges();
+
+          return fixture;
+        }
+
+        function getSliderThumbPosition(
+          fixture: ComponentFixture<ImageCardContainer>
+        ) {
+          const slider = fixture.debugElement.query(By.css('mat-slider'));
+          return slider.nativeElement.getAttribute('aria-valuenow');
+        }
+
+        it('moves slider thumb to the highest step in range when the thumb is larger than end step', () => {
+          store.overrideSelector(selectors.getMetricsSelectedTime, {
+            start: {step: 15},
+            end: {step: 35},
+          });
+          const fixture = createImageCardContainerWithStepIndex(3);
+
+          expect(getSliderThumbPosition(fixture)).toBe('2');
         });
-        const fixture = createImageCardContainerWithStepIndex(0);
 
-        expect(getSliderThumbPosition(fixture)).toBe('1');
-      });
+        it('moves slider thumb to the lowest step in range when the thumb is smaller than start step', () => {
+          store.overrideSelector(selectors.getMetricsSelectedTime, {
+            start: {step: 15},
+            end: {step: 35},
+          });
+          const fixture = createImageCardContainerWithStepIndex(0);
 
-      it('does not moves slider thumb when the thumb is in range', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
-          start: {step: 15},
-          end: {step: 35},
+          expect(getSliderThumbPosition(fixture)).toBe('1');
         });
-        const fixture = createImageCardContainerWithStepIndex(2);
 
-        expect(getSliderThumbPosition(fixture)).toBe('2');
-      });
+        it('does not moves slider thumb when the thumb is in range', () => {
+          store.overrideSelector(selectors.getMetricsSelectedTime, {
+            start: {step: 15},
+            end: {step: 35},
+          });
+          const fixture = createImageCardContainerWithStepIndex(2);
 
-      it('does not moves slider thumb when selected time is clipped', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
-          start: {step: 55},
-          end: {step: 65},
+          expect(getSliderThumbPosition(fixture)).toBe('2');
         });
-        const fixture = createImageCardContainerWithStepIndex(2);
 
-        expect(getSliderThumbPosition(fixture)).toBe('2');
+        it('does not moves slider thumb when selected time is clipped', () => {
+          store.overrideSelector(selectors.getMetricsSelectedTime, {
+            start: {step: 55},
+            end: {step: 65},
+          });
+          const fixture = createImageCardContainerWithStepIndex(2);
 
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
-          start: {step: 5},
-          end: {step: 9},
+          expect(getSliderThumbPosition(fixture)).toBe('2');
+
+          store.overrideSelector(selectors.getMetricsSelectedTime, {
+            start: {step: 5},
+            end: {step: 9},
+          });
+          const fixture2 = createImageCardContainerWithStepIndex(2);
+
+          expect(getSliderThumbPosition(fixture2)).toBe('2');
         });
-        const fixture2 = createImageCardContainerWithStepIndex(2);
 
-        expect(getSliderThumbPosition(fixture2)).toBe('2');
-      });
+        it('does not moves slider thumb when selected range had no image', () => {
+          store.overrideSelector(selectors.getMetricsSelectedTime, {
+            start: {step: 15},
+            end: {step: 18},
+          });
+          const fixture = createImageCardContainerWithStepIndex(2);
 
-      it('does not moves slider thumb when selected range had no image', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
-          start: {step: 15},
-          end: {step: 18},
+          expect(getSliderThumbPosition(fixture)).toBe('2');
         });
-        const fixture = createImageCardContainerWithStepIndex(2);
-
-        expect(getSliderThumbPosition(fixture)).toBe('2');
       });
     });
   });
