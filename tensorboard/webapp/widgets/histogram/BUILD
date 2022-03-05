@@ -44,6 +44,7 @@ tf_ts_library(
         ":types",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
+        "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/widgets/intersection_observer:intersection_observer_testing",
         "//tensorboard/webapp/widgets/linked_time_fob",
         "@npm//@angular/core",

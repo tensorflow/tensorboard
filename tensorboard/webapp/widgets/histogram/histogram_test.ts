@@ -22,6 +22,7 @@ import {
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
+import {LinkedTime} from '../../metrics/types';
 import {IntersectionObserverTestingModule} from '../intersection_observer/intersection_observer_testing_module';
 import {HistogramComponent, TooltipData} from './histogram_component';
 import {
@@ -65,6 +66,7 @@ function buildHistogramDatum(
       [name]="name"
       [data]="data"
       [linkedTime]="linkedTime"
+      (onSelectTimeChanged)="onSelectTimeChanged($event)"
     >
     </tb-histogram>
   `,
@@ -90,6 +92,7 @@ class TestableComponent {
     start: {step: number};
     end: {step: number} | null;
   } | null;
+  @Input() onSelectTimeChanged!: (linkedTime: LinkedTime) => void;
 
   simulateMouseMove(event: {
     target: SVGElement;
@@ -1006,8 +1009,10 @@ describe('histogram test', () => {
       });
     });
 
-    fdescribe('multi step range updated on click', () => {
+    describe('multi step range updated on click', () => {
+      let onSelectTimeChangedSpy: jasmine.Spy;
       function createHistogramComponent() {
+        onSelectTimeChangedSpy = jasmine.createSpy();
         const fixture = createComponent('foo', [
           buildHistogramDatum({step: 0, wallTime: 100}),
           buildHistogramDatum({step: 5, wallTime: 400}),
@@ -1016,10 +1021,12 @@ describe('histogram test', () => {
         ]);
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
+        fixture.componentInstance.onSelectTimeChanged = onSelectTimeChangedSpy;
 
         return fixture;
       }
-      it('changes from single step to multi step', () => {
+
+      it('triggers select time action from single step to multi step', () => {
         const fixture = createHistogramComponent();
         fixture.componentInstance.linkedTime = {start: {step: 5}, end: null};
         fixture.detectChanges();
@@ -1029,12 +1036,80 @@ describe('histogram test', () => {
 
         histograms[3].triggerEventHandler('click', null);
         fixture.detectChanges();
-        expect(doHistogramsHaveColor(fixture)).toEqual([
-          false,
-          true,
-          true,
-          true,
-        ]);
+        expect(onSelectTimeChangedSpy).toHaveBeenCalledWith({
+          start: {step: 5},
+          end: {step: 20},
+        });
+      });
+
+      it('triggers select time action when clicked step is smaller than selected step', () => {
+        const fixture = createHistogramComponent();
+        fixture.componentInstance.linkedTime = {start: {step: 5}, end: null};
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+
+        const histograms = fixture.debugElement.queryAll(By.css('g.histogram'));
+
+        histograms[0].triggerEventHandler('click', null);
+        fixture.detectChanges();
+        expect(onSelectTimeChangedSpy).toHaveBeenCalledWith({
+          start: {step: 0},
+          end: {step: 5},
+        });
+      });
+
+      it('triggers select time action when clicked step is smaller than start step', () => {
+        const fixture = createHistogramComponent();
+        fixture.componentInstance.linkedTime = {
+          start: {step: 5},
+          end: {step: 10},
+        };
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+
+        const histograms = fixture.debugElement.queryAll(By.css('g.histogram'));
+
+        histograms[0].triggerEventHandler('click', null);
+        fixture.detectChanges();
+        expect(onSelectTimeChangedSpy).toHaveBeenCalledWith({
+          start: {step: 0},
+          end: {step: 10},
+        });
+      });
+
+      it('triggers select time action when clicked step is larger than end step', () => {
+        const fixture = createHistogramComponent();
+        fixture.componentInstance.linkedTime = {
+          start: {step: 5},
+          end: {step: 10},
+        };
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+
+        const histograms = fixture.debugElement.queryAll(By.css('g.histogram'));
+
+        histograms[3].triggerEventHandler('click', null);
+        fixture.detectChanges();
+        expect(onSelectTimeChangedSpy).toHaveBeenCalledWith({
+          start: {step: 5},
+          end: {step: 20},
+        });
+      });
+
+      it('does not trigger select time action when clicked step is within range', () => {
+        const fixture = createHistogramComponent();
+        fixture.componentInstance.linkedTime = {
+          start: {step: 5},
+          end: {step: 20},
+        };
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+
+        const histograms = fixture.debugElement.queryAll(By.css('g.histogram'));
+
+        histograms[2].triggerEventHandler('click', null);
+        fixture.detectChanges();
+        expect(onSelectTimeChangedSpy).not.toHaveBeenCalled();
       });
     });
   });
