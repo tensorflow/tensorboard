@@ -13,22 +13,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 import {AxisDirection} from './linked_time_fob_controller_component';
 
 @Component({
   selector: 'linked-time-fob',
-  template: `<span [style.transform]="getCenteringTransform()">{{
-    step | number
-  }}</span>`,
+  templateUrl: 'linked_time_fob_component.ng.html',
   styleUrls: ['linked_time_fob_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LinkedTimeFobComponent {
-  @Input()
-  step!: number;
-
+  @Input() step!: number;
   @Input() axisDirection!: AxisDirection;
+
+  @Output() stepChange = new EventEmitter<number>();
+
+  isTyping = false;
 
   getCenteringTransform() {
     if (this.axisDirection === AxisDirection.VERTICAL) {
@@ -36,5 +42,21 @@ export class LinkedTimeFobComponent {
     } else {
       return 'translateX(-50%)';
     }
+  }
+
+  typeStepRequested() {
+    this.isTyping = true;
+  }
+
+  stepTyped(event: InputEvent) {
+    const input = event.target! as HTMLInputElement;
+    let newStep = Number(input.value);
+    if (isNaN(newStep)) return;
+    this.stepChange.emit(newStep);
+    this.isTyping = false;
+  }
+
+  lostFocus() {
+    this.isTyping = false;
   }
 }

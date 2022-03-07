@@ -28,9 +28,11 @@ limitations under the License.
     [style.transform]="getCssTranslatePx(linkedTime.start.step)"
   >
     <linked-time-fob
+      class="startFob"
       [step]="linkedTime.start.step"
       [axisDirection]="axisDirection"
       (mousedown)="startDrag(FobType().START)"
+      (stepChange)="stepTyped(FobType().START, $event)"
     ></linked-time-fob>
   </div>
   <div
@@ -40,9 +42,11 @@ limitations under the License.
     [style.transform]="getCssTranslatePx(linkedTime.end.step)"
   >
     <linked-time-fob
+      class="endFob"
       [step]="linkedTime.end.step"
       [axisDirection]="axisDirection"
       (mousedown)="startDrag(FobType().END)"
+      (stepChange)="stepTyped(FobType().END, $event)"
     ></linked-time-fob>
   </div>
 </div>

@@ -23,6 +23,7 @@ tf_ng_module(
     ],
     assets = [
         "linked_time_fob_controller_component.ng.html",
+        "linked_time_fob_component.ng.html",
         ":linked_time_fob_styles",
         ":linked_time_fob_controller_styles",
     ],
@@ -38,14 +39,17 @@ tf_ts_library(
     name = "linked_time_fob_test",
     testonly = True,
     srcs = [
+        "linked_time_fob_controller_test.ts",
         "linked_time_fob_test.ts",
     ],
     deps = [
         ":linked_time_fob",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/metrics:types",
+        "//tensorboard/webapp/testing:dom",
         "//tensorboard/webapp/third_party:d3",
         "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
         "@npm//@types/jasmine",
     ],
 )
