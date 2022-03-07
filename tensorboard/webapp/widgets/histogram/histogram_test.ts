@@ -927,13 +927,48 @@ describe('histogram test', () => {
           target: firstHistogram.nativeElement,
         });
         fixture.detectChanges();
+        // StepIndex 1 is hightlight on selected step;  stepIndex 0 is hightlight on
+        // mouse hovering.
         expect(doHistogramsHaveColor(fixture)).toEqual([true, true, false]);
 
         firstHistogram.triggerEventHandler('mouseleave', {
           target: firstHistogram.nativeElement,
         });
         fixture.detectChanges();
+        // StepIndex 1 is hightlight on selected step;  stepIndex 0 is not hightlight
+        // because the mouse has left.
         expect(doHistogramsHaveColor(fixture)).toEqual([false, true, false]);
+      });
+
+      it('does not affect colored histogram on linked time disabled', () => {
+        const fixture = createComponent('foo', [
+          buildHistogramDatum({step: 0, wallTime: 100}),
+          buildHistogramDatum({step: 5, wallTime: 400}),
+          buildHistogramDatum({step: 10, wallTime: 400}),
+        ]);
+        fixture.componentInstance.mode = HistogramMode.OFFSET;
+        fixture.componentInstance.timeProperty = TimeProperty.STEP;
+        fixture.componentInstance.linkedTime = null;
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+
+        const firstHistogram = fixture.debugElement.queryAll(
+          By.css('g.histogram')
+        )[0];
+
+        firstHistogram.triggerEventHandler('mouseenter', {
+          target: firstHistogram.nativeElement,
+        });
+        fixture.detectChanges();
+        // All histograms are colored.
+        expect(doHistogramsHaveColor(fixture)).toEqual([true, true, true]);
+
+        firstHistogram.triggerEventHandler('mouseleave', {
+          target: firstHistogram.nativeElement,
+        });
+        fixture.detectChanges();
+        // All histograms are colored.
+        expect(doHistogramsHaveColor(fixture)).toEqual([true, true, true]);
       });
     });
 
