@@ -293,19 +293,19 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
         if (selectedSteps.length === 0) {
           if (stepValues.length === 1) return stepIndex;
 
-          const step = selectedTime.startStep;
+          const selectedTimeStepValue = selectedTime.startStep;
           for (let i = 0; i < stepValues.length - 2; i++) {
-            const currentSelectedStep = stepValues[i];
-            const nextSelectedStep = stepValues[i + 1];
+            const currentStepValue = stepValues[i];
+            const nextStepValue = stepValues[i + 1];
             const distance =
-              (nextSelectedStep - currentSelectedStep) * DISTANCE_RATIO;
-            if (step < currentSelectedStep) return stepIndex;
+              (nextStepValue - currentStepValue) * DISTANCE_RATIO;
+            if (selectedTimeStepValue < currentStepValue) return stepIndex;
 
-            if (step - currentSelectedStep <= distance) {
-              return stepValues.indexOf(currentSelectedStep);
+            if (selectedTimeStepValue - currentStepValue <= distance) {
+              return i;
             }
-            if (nextSelectedStep - step <= distance) {
-              return stepValues.indexOf(nextSelectedStep);
+            if (nextStepValue - selectedTimeStepValue <= distance) {
+              return i + 1;
             }
           }
         }
