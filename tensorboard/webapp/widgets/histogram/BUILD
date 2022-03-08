@@ -14,6 +14,7 @@ tf_ng_module(
     srcs = [
         "histogram_component.ts",
         "histogram_module.ts",
+        "histogram_fob_interface.ts",
     ],
     assets = [
         "histogram_component.ng.html",
@@ -26,6 +27,7 @@ tf_ng_module(
         "//tensorboard/webapp/widgets:resize_detector",
         "//tensorboard/webapp/widgets/intersection_observer",
         "//tensorboard/webapp/widgets/linked_time_fob",
+        "//tensorboard/webapp/widgets/linked_time_fob:types",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//rxjs",
@@ -38,14 +40,16 @@ tf_ts_library(
     srcs = [
         "histogram_test.ts",
         "histogram_util_test.ts",
+        "histogram_fob_interface_test.ts",
     ],
     deps = [
         ":histogram",
         ":types",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
+        "//tensorboard/webapp/third_party:d3",
         "//tensorboard/webapp/widgets/intersection_observer:intersection_observer_testing",
-        "//tensorboard/webapp/widgets/linked_time_fob",
+        "//tensorboard/webapp/widgets/linked_time_fob:types",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@types/jasmine",

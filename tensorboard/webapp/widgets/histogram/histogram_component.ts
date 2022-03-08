@@ -30,7 +30,8 @@ import {takeUntil} from 'rxjs/operators';
 import {LinkedTime} from '../../metrics/types';
 import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
-import {AxisDirection} from '../linked_time_fob/linked_time_fob_controller_component';
+import {AxisDirection} from '../linked_time_fob/types';
+import {HistogramFobInterface} from './histogram_fob_interface';
 import {
   Bin,
   HistogramData,
@@ -41,7 +42,7 @@ import {
 
 type BinScale = d3.ScaleLinear<number, number>;
 type CountScale = d3.ScaleLinear<number, number>;
-type TemporalScale =
+export type TemporalScale =
   | d3.ScaleLinear<number, number>
   | d3.ScaleTime<number, number>;
 type D3ColorScale = d3.ScaleLinear<HCLColor, string>;
@@ -106,6 +107,8 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   readonly HistogramMode = HistogramMode;
   readonly TimeProperty = TimeProperty;
+
+  private fobInterface: HistogramFobInterface | null = null;
 
   tooltipData: null | TooltipData = null;
 
@@ -300,11 +303,20 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
   private updateChartIfVisible() {
     if (!this.domVisible) return;
     this.scales = this.computeScales(this.data);
+
     // Update axes DOM directly using d3 API.
     this.renderXAxis();
     this.renderYAxis();
     // Update Angular rendered part of the histogram.
     this.changeDetector.detectChanges();
+    if (this.fobInterface === null) {
+      this.fobInterface = new HistogramFobInterface(
+        this.scales!.temporalScale,
+        this.getSteps()
+      );
+    } else {
+      this.fobInterface.scale = this.scales.temporalScale;
+    }
   }
 
   private computeScales(data: HistogramData): Scales {

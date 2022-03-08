@@ -53,3 +53,13 @@ tf_ts_library(
         "@npm//@types/jasmine",
     ],
 )
+
+tf_ts_library(
+    name = "types",
+    srcs = [
+        "types.ts",
+    ],
+    deps = [
+        "@npm//@angular/core",
+    ],
+)
