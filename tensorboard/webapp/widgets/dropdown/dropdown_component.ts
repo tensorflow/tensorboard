@@ -42,13 +42,8 @@ export interface DropdownOption {
         [value]="option.value"
         [disabled]="option.disabled"
       >
-        <p *ngIf="option.displayAlias; else noAlias">
-          <b>{{ option.displayAlias }}</b
-          >: {{ option.displayText }}
-        </p>
-        <ng-template #noAlias>
-          {{ option.displayText }}
-        </ng-template>
+        <b *ngIf="option.displayAlias">{{ option.displayAlias }}: </b>
+        {{ option.displayText }}
       </mat-option>
     </mat-select>
   `,

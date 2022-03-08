@@ -34,15 +34,16 @@ import {DropdownComponent, DropdownOption} from './dropdown_component';
 class TestableComponent {
   @Input() expId!: string;
   @Input() configOptions!: DropdownOption[];
-  @Input() expChanged!: (event: {value: string}) => void;
+
+  expChanged(value: string) {
+    this.expId = value;
+  }
 }
 
 describe('tb-dropdown', () => {
-  let expChangedSpy: jasmine.Spy;
-
   const byCss = {
     DROPDOWN: By.directive(DropdownComponent),
-    OPTION: By.css('.mat-option-text'),
+    MAT_SELECT: By.css('mat-select'),
   };
 
   beforeEach(async () => {
@@ -59,66 +60,91 @@ describe('tb-dropdown', () => {
     const fixture = TestBed.createComponent(TestableComponent);
     fixture.componentInstance.expId = input.expId || '';
     fixture.componentInstance.configOptions = input.configOptions || [];
-    expChangedSpy = jasmine.createSpy();
-    fixture.componentInstance.expChanged = expChangedSpy;
     return fixture;
   }
 
-  describe('renders options', () => {
-    it(' with no aliases', () => {
-      let fixture = createTestableComponent({
-        expId: '1',
-        configOptions: [
-          {
-            value: '',
-            displayText: 'none',
-            disabled: true,
-          },
-          {
-            value: '1',
-            displayText: 'abc',
-            disabled: false,
-            displayAlias: '', // empty aliases will be ignored
-          },
-        ],
-      });
-      fixture.detectChanges();
-
-      const dropdown = fixture.debugElement.query(byCss.DROPDOWN);
-      expect(dropdown.componentInstance.value).toEqual('1');
-      expect(dropdown.componentInstance.options).toEqual([
-        jasmine.objectContaining({
+  it('renders options with no aliases', () => {
+    let fixture = createTestableComponent({
+      expId: '1',
+      configOptions: [
+        {
           value: '',
           displayText: 'none',
           disabled: true,
-        }),
-        jasmine.objectContaining({value: '1', displayText: 'abc'}),
-      ]);
+        },
+        {
+          value: '1',
+          displayText: 'abc',
+          disabled: false,
+          displayAlias: '', // empty aliases will be ignored
+        },
+      ],
     });
+    fixture.detectChanges();
 
-    it(' with valid aliases', () => {
-      let fixture = createTestableComponent({
-        expId: '2',
-        configOptions: [
-          {
-            value: '2',
-            displayText: 'loooonnnnngggggg',
-            disabled: false,
-            displayAlias: 'long',
-          },
-        ],
-      });
-      fixture.detectChanges();
+    const dropdown = fixture.debugElement.query(byCss.DROPDOWN);
+    expect(dropdown.componentInstance.value).toEqual('1');
+    expect(dropdown.componentInstance.options).toEqual([
+      jasmine.objectContaining({
+        value: '',
+        displayText: 'none',
+        disabled: true,
+      }),
+      jasmine.objectContaining({value: '1', displayText: 'abc'}),
+    ]);
+    // TODO(ytjing): Figure out how to test DOM content.
+  });
 
-      const dropdown = fixture.debugElement.query(byCss.DROPDOWN);
-      expect(dropdown.componentInstance.value).toEqual('2');
-      expect(dropdown.componentInstance.options).toEqual([
-        jasmine.objectContaining({
+  it('renders options with valid aliases', () => {
+    let fixture = createTestableComponent({
+      expId: '2',
+      configOptions: [
+        {
           value: '2',
-          displayText: 'loooonnnnngggggg',
-          displayAlias: 'long',
-        }),
-      ]);
+          displayText: 'test experiment name',
+          disabled: false,
+          displayAlias: 'test alias',
+        },
+      ],
     });
+    fixture.detectChanges();
+
+    const dropdown = fixture.debugElement.query(byCss.DROPDOWN);
+    expect(dropdown.componentInstance.value).toEqual('2');
+    expect(dropdown.componentInstance.options).toEqual([
+      jasmine.objectContaining({
+        value: '2',
+        displayText: 'test experiment name',
+        displayAlias: 'test alias',
+      }),
+    ]);
+    // TODO(ytjing): Figure out how to test DOM content.
+  });
+
+  it('changes selection', async () => {
+    let fixture = createTestableComponent({
+      expId: '1',
+      configOptions: [
+        {
+          value: '1',
+          displayText: 'abc',
+        },
+        {
+          value: '2',
+          displayText: 'efg',
+        },
+      ],
+    });
+    fixture.detectChanges();
+
+    const dropdown = fixture.debugElement.query(byCss.DROPDOWN);
+    expect(dropdown.componentInstance.value).toEqual('1');
+
+    // Triggers selection change event.
+    const matSelect = fixture.debugElement.query(byCss.MAT_SELECT);
+    matSelect.triggerEventHandler('selectionChange', {value: '2'});
+    fixture.detectChanges();
+
+    expect(dropdown.componentInstance.value).toEqual('2');
   });
 });
