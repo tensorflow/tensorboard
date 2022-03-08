@@ -260,18 +260,6 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
       : '';
   }
 
-  updateColorOnHover(event: MouseEvent, isHover: boolean) {
-    // When link time is disabled all histogram should be colored.
-    if (!this.isLinkedTimeEnabled(this.linkedTime)) {
-      return;
-    }
-    if (isHover) {
-      (event.target! as HTMLElement).classList.remove('no-color');
-    } else {
-      (event.target! as HTMLElement).classList.add('no-color');
-    }
-  }
-
   getGridTickYLocs(): number[] {
     if (!this.scales || this.mode === HistogramMode.OFFSET) return [];
     const yScale = this.scales.countScale;
