@@ -27,14 +27,14 @@ import {DropdownComponent, DropdownOption} from './dropdown_component';
     <tb-dropdown
       [value]="expId"
       [options]="configOptions"
-      (selectionChange)="expChanged($event)"
+      (selectionChange)="onSelectionChange($event)"
     ></tb-dropdown>
   `,
 })
 class TestableComponent {
   @Input() expId!: string;
   @Input() configOptions!: DropdownOption[];
-  @Input() expChanged!: (event: {value: string}) => void;
+  @Input() onSelectionChange!: (event: {value: string}) => void;
 }
 
 describe('tb-dropdown', () => {
@@ -60,7 +60,7 @@ describe('tb-dropdown', () => {
     fixture.componentInstance.expId = input.expId || '';
     fixture.componentInstance.configOptions = input.configOptions || [];
     selectionChangeSpy = jasmine.createSpy();
-    fixture.componentInstance.expChanged = selectionChangeSpy;
+    fixture.componentInstance.onSelectionChange = selectionChangeSpy;
     return fixture;
   }
 
