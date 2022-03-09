@@ -34,13 +34,12 @@ import {DropdownComponent, DropdownOption} from './dropdown_component';
 class TestableComponent {
   @Input() expId!: string;
   @Input() configOptions!: DropdownOption[];
-
-  expChanged(value: string) {
-    this.expId = value;
-  }
+  @Input() expChanged!: (event: {value: string}) => void;
 }
 
 describe('tb-dropdown', () => {
+  let selectionChangeSpy: jasmine.Spy;
+
   const byCss = {
     DROPDOWN: By.directive(DropdownComponent),
     MAT_SELECT: By.css('mat-select'),
@@ -60,6 +59,8 @@ describe('tb-dropdown', () => {
     const fixture = TestBed.createComponent(TestableComponent);
     fixture.componentInstance.expId = input.expId || '';
     fixture.componentInstance.configOptions = input.configOptions || [];
+    selectionChangeSpy = jasmine.createSpy();
+    fixture.componentInstance.expChanged = selectionChangeSpy;
     return fixture;
   }
 
@@ -137,14 +138,11 @@ describe('tb-dropdown', () => {
     });
     fixture.detectChanges();
 
-    const dropdown = fixture.debugElement.query(byCss.DROPDOWN);
-    expect(dropdown.componentInstance.value).toEqual('1');
-
     // Triggers selection change event.
     const matSelect = fixture.debugElement.query(byCss.MAT_SELECT);
     matSelect.triggerEventHandler('selectionChange', {value: '2'});
     fixture.detectChanges();
 
-    expect(dropdown.componentInstance.value).toEqual('2');
+    expect(selectionChangeSpy).toHaveBeenCalledOnceWith('2');
   });
 });
