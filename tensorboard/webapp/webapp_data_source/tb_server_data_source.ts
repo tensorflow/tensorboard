@@ -38,6 +38,9 @@ function handleError(e: any) {
     if (e.status === 404) {
       status = PluginsListFailureCode.NOT_FOUND;
     }
+    if (e.status === 403) {
+      status = PluginsListFailureCode.PERMISSION_DENIED;
+    }
   }
   return throwError(new TBServerError(status));
 }

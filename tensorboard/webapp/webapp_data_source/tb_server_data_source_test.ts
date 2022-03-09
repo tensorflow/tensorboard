@@ -145,6 +145,23 @@ describe('tb_server_data_source', () => {
         );
       }));
 
+      it('handles 403 failures as PERMISSION_DENIED', fakeAsync(() => {
+        const error = jasmine.createSpy();
+        dataSource
+          .fetchPluginsListing([])
+          .subscribe(jasmine.createSpy(), error);
+
+        httpMock
+          .expectOne('data/plugins_listing')
+          .error(new ErrorEvent('FakeError'), {status: 403});
+        // Flush the promise in the microtask.
+        flush();
+
+        expect(error).toHaveBeenCalledWith(
+          new TBServerError(PluginsListFailureCode.PERMISSION_DENIED)
+        );
+      }));
+
       it('handles other failures as UNKNOWN', fakeAsync(() => {
         const error = jasmine.createSpy();
         dataSource
