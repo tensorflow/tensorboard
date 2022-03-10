@@ -29,9 +29,14 @@ import {fromEvent, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
+<<<<<<< HEAD
 import {HistogramFobAdapter} from './histogram_fob_adapter';
 import {AxisDirection} from '../linked_time_fob/types';
+=======
+>>>>>>> dcda3f4a0 (create shared adapter interface that will be used in multiple cards and use it in histogram card)
 import {LinkedTime} from '../linked_time_fob/linked_time_types';
+import {AxisDirection} from '../linked_time_fob/types';
+import {HistogramFobAdapter} from './histogram_fob_adapter';
 import {
   Bin,
   HistogramData,
@@ -367,6 +372,7 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     if (this.cardAdapter === null) {
       this.cardAdapter = new HistogramFobAdapter(
         this.scales!.temporalScale,
+<<<<<<< HEAD
         this.getSteps(),
         this.yAxisOverlay?.nativeElement.getBoundingClientRect()
       );
@@ -375,6 +381,11 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
         this.cardAdapter.containerRect =
           this.yAxisOverlay.nativeElement.getBoundingClientRect();
       }
+=======
+        this.getSteps()
+      );
+    } else {
+>>>>>>> dcda3f4a0 (create shared adapter interface that will be used in multiple cards and use it in histogram card)
       this.cardAdapter.scale = this.scales.temporalScale;
     }
   }

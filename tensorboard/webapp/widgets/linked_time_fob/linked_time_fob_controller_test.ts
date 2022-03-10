@@ -26,6 +26,7 @@ import {
 } from './linked_time_fob_controller_component';
 import {FobCardAdapter} from './types';
 import {LinkedTime} from './linked_time_types';
+import {FobCardAdapter} from './types';
 
 @Component({
   selector: 'testable-comp',
@@ -50,7 +51,7 @@ class TestableComponent {
   @Input() onSelectTimeChanged!: (newLinkedTime: LinkedTime) => void;
 }
 
-describe('linked_time_fob_controller', () => {
+fdescribe('linked_time_fob_controller', () => {
   let onSelectTimeChanged: jasmine.Spy;
   let setBoundsSpy: jasmine.Spy;
   let stepToPixelSpy: jasmine.Spy;

@@ -60,6 +60,10 @@ tf_ts_library(
     srcs = [
         "types.ts",
         "linked_time_types.ts",
+        "types.ts",
+    ],
+    deps = [
+        "@npm//@angular/core",
     ],
     deps = [
         "@npm//@angular/core",

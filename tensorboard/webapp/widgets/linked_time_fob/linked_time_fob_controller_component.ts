@@ -25,6 +25,7 @@ import {
 import {ScaleLinear, ScaleTime} from '../../third_party/d3';
 import {FobCardAdapter} from './types';
 import {LinkedTime} from './linked_time_types';
+import {FobCardAdapter} from './types';
 
 export enum AxisDirection {
   HORIZONTAL,
