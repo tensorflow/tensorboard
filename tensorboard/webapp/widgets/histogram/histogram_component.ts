@@ -290,6 +290,12 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.updateChartIfVisible();
   }
 
+  /**
+   * When a single step is currently selected, clicking on a histogram step will
+   * create a range incorporating the currently selected step and the clicked
+   * step. When a range is currently selected, clicking on a histogram step outside
+   * that range will expand the range to include the clicked step.
+   */
   onSelectTimeRangeChange(datum: HistogramDatum) {
     if (!this.isLinkedTimeEnabled(this.linkedTime)) {
       return;
@@ -306,7 +312,10 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
       nextEndStep = datum.step > nextEndStep ? datum.step : nextEndStep;
     }
 
-    if (nextStartStep !== startStep || nextEndStep !== endStep) {
+    if (
+      (nextStartStep !== startStep || nextEndStep !== endStep) &&
+      nextStartStep !== nextEndStep
+    ) {
       this.onSelectTimeChanged.emit({
         start: {step: nextStartStep},
         end: {step: nextEndStep},

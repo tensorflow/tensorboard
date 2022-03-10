@@ -1111,6 +1111,22 @@ describe('histogram test', () => {
         fixture.detectChanges();
         expect(onSelectTimeChangedSpy).not.toHaveBeenCalled();
       });
+
+      it('does not trigger select time action when clicked step is same as start step', () => {
+        const fixture = createHistogramComponent();
+        fixture.componentInstance.linkedTime = {
+          start: {step: 5},
+          end: null,
+        };
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+
+        const histograms = fixture.debugElement.queryAll(By.css('g.histogram'));
+
+        histograms[1].triggerEventHandler('click', null);
+        fixture.detectChanges();
+        expect(onSelectTimeChangedSpy).not.toHaveBeenCalled();
+      });
     });
   });
 });
