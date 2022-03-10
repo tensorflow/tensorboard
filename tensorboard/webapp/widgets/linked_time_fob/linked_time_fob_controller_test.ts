@@ -18,7 +18,7 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {sendKeys} from '../../testing/dom';
 import {ScaleLinear, ScaleTime} from '../../third_party/d3';
-import {LinkedTime} from '../linked_time_types/types';
+import {LinkedTime} from './linked_time_types';
 import {LinkedTimeFobComponent} from './linked_time_fob_component';
 import {
   AxisDirection,
