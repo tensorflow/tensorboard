@@ -143,9 +143,7 @@ describe('tb-dropdown', () => {
     const options = await selectHarness.getOptions();
     expect(options.length).toBe(1);
 
-    expect(await options[0].getText()).toBe(
-      'test alias:  test experiment name'
-    );
+    expect(await options[0].getText()).toBe('test alias: test experiment name');
     expect(await options[0].isDisabled()).toBeFalsy();
   });
 
