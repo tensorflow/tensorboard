@@ -52,5 +52,5 @@ export interface DropdownOption {
 export class DropdownComponent {
   @Input() value = '';
   @Input() options: DropdownOption[] = [];
-  @Output() selectionChange = new EventEmitter<any>();
+  @Output() readonly selectionChange = new EventEmitter<any>();
 }
