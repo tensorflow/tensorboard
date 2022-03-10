@@ -28,6 +28,7 @@ tf_ng_module(
         ":linked_time_fob_controller_styles",
     ],
     deps = [
+        ":types",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/third_party:d3",
         "@npm//@angular/common",
@@ -44,6 +45,7 @@ tf_ts_library(
     ],
     deps = [
         ":linked_time_fob",
+        ":types",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/testing:dom",
@@ -51,5 +53,15 @@ tf_ts_library(
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@types/jasmine",
+    ],
+)
+
+tf_ts_library(
+    name = "types",
+    srcs = [
+        "types.ts",
+    ],
+    deps = [
+        "@npm//@angular/core",
     ],
 )

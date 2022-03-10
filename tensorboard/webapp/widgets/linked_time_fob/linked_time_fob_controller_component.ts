@@ -24,6 +24,7 @@ import {
 } from '@angular/core';
 import {LinkedTime} from '../../metrics/types';
 import {ScaleLinear, ScaleTime} from '../../third_party/d3';
+import {FobCardAdapter} from './types';
 
 export enum AxisDirection {
   HORIZONTAL,
@@ -48,15 +49,11 @@ export class LinkedTimeFobControllerComponent {
   @ViewChild('startFobWrapper') readonly startFobWrapper!: ElementRef;
   @ViewChild('endFobWrapper') readonly endFobWrapper!: ElementRef;
   @Input() axisDirection!: AxisDirection;
-  @Input() steps!: number[];
   @Input() linkedTime!: LinkedTime;
-  @Input() temporalScale!: TemporalScale;
+  @Input() cardAdapter!: FobCardAdapter;
   @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
 
   private currentDraggingFob: Fob = Fob.NONE;
-
-  private currentDraggingFobUpperBoundIndex: number = -1;
-  private currentDraggingFobLowerBoundIndex: number = -1;
 
   // Helper function to check enum in template.
   public FobType(): typeof Fob {
@@ -65,58 +62,67 @@ export class LinkedTimeFobControllerComponent {
 
   getCssTranslatePx(step: number): string {
     if (this.axisDirection === AxisDirection.VERTICAL) {
-      return `translate(0px, ${this.temporalScale(step)}px)`;
+      return `translate(0px, ${this.cardAdapter.stepToPixel(step, [
+        0,
+        this.axisOverlay?.nativeElement.getBoundingClientRect().height || 10,
+      ])}px)`;
     }
 
-    return `translate(${this.temporalScale(step)}px, 0px)`;
+    return `translate(${this.cardAdapter.stepToPixel(step, [
+      0,
+      this.axisOverlay?.nativeElement.getBoundingClientRect().width || 10,
+    ])}px, 0px)`;
   }
 
   startDrag(fob: Fob) {
     this.currentDraggingFob = fob;
-    this.currentDraggingFobUpperBoundIndex =
-      this.getDraggingFobUpperBoundIndex();
-    this.currentDraggingFobLowerBoundIndex =
-      this.getDraggingFobLowerBoundIndex();
+
+    if (this.currentDraggingFob === Fob.START && this.linkedTime.end !== null) {
+      this.cardAdapter.setBounds({higherOverride: this.linkedTime.end.step});
+    }
+
+    if (this.currentDraggingFob === Fob.END) {
+      this.cardAdapter.setBounds({lowerOverride: this.linkedTime.start.step});
+    }
   }
 
   stopDrag() {
     this.currentDraggingFob = Fob.NONE;
-    this.currentDraggingFobUpperBoundIndex = -1;
-    this.currentDraggingFobLowerBoundIndex = -1;
+    this.cardAdapter.setBounds({});
   }
 
   mouseMove(event: MouseEvent) {
     if (this.currentDraggingFob === Fob.NONE) return;
 
     let newLinkedTime = this.linkedTime;
+    let newStep: number;
     if (this.isDraggingHigher(event.clientY, event.movementY)) {
-      const stepAbove =
-        this.steps[this.getStepIndexHigherThanMousePosition(event.clientY)];
-      if (this.currentDraggingFob === Fob.END) {
-        newLinkedTime.end!.step = stepAbove;
-      } else {
-        newLinkedTime.start.step = stepAbove;
-      }
-      this.onSelectTimeChanged.emit(newLinkedTime);
+      newStep = this.cardAdapter.getStepHigherThanMousePosition(
+        event.clientY,
+        this.axisOverlay
+      );
+    } else if (this.isDraggingLower(event.clientY, event.movementY)) {
+      newStep = this.cardAdapter.getStepLowerThanMousePosition(
+        event.clientY,
+        this.axisOverlay
+      );
+    } else {
+      return;
     }
 
-    if (this.isDraggingLower(event.clientY, event.movementY)) {
-      const stepBelow =
-        this.steps[this.getStepIndexLowerThanMousePosition(event.clientY)];
-      if (this.currentDraggingFob === Fob.END) {
-        newLinkedTime.end!.step = stepBelow;
-      } else {
-        newLinkedTime.start.step = stepBelow;
-      }
-      this.onSelectTimeChanged.emit(newLinkedTime);
+    if (this.currentDraggingFob === Fob.END) {
+      newLinkedTime.end!.step = newStep;
+    } else {
+      newLinkedTime.start.step = newStep;
     }
+    this.onSelectTimeChanged.emit(newLinkedTime);
   }
 
   isDraggingLower(position: number, movement: number): boolean {
     return (
       position < this.getDraggingFobTop() &&
       movement < 0 &&
-      this.getDraggingFobStep() > this.steps[0]
+      this.getDraggingFobStep() > this.cardAdapter.lowerBound
     );
   }
 
@@ -124,7 +130,7 @@ export class LinkedTimeFobControllerComponent {
     return (
       position > this.getDraggingFobTop() &&
       movement > 0 &&
-      this.getDraggingFobStep() < this.steps[this.steps.length - 1]
+      this.getDraggingFobStep() < this.cardAdapter.upperBound
     );
   }
 
@@ -138,61 +144,6 @@ export class LinkedTimeFobControllerComponent {
     return this.currentDraggingFob !== Fob.END
       ? this.linkedTime!.start.step
       : this.linkedTime!.end!.step;
-  }
-
-  getStepIndexHigherThanMousePosition(position: number) {
-    let stepIndex = 0;
-    while (
-      position - this.axisOverlay.nativeElement.getBoundingClientRect().top >
-        this.temporalScale(this.steps[stepIndex]) &&
-      stepIndex < this.currentDraggingFobUpperBoundIndex
-    ) {
-      stepIndex++;
-    }
-    return stepIndex;
-  }
-
-  getStepIndexLowerThanMousePosition(position: number) {
-    let stepIndex = this.steps.length - 1;
-    while (
-      position - this.axisOverlay.nativeElement.getBoundingClientRect().top <
-        this.temporalScale(this.steps[stepIndex]) &&
-      stepIndex > this.currentDraggingFobLowerBoundIndex
-    ) {
-      stepIndex--;
-    }
-    return stepIndex;
-  }
-
-  // Gets the index of largest step that the currentDraggingFob is allowed to go.
-  getDraggingFobUpperBoundIndex() {
-    // When dragging the START fob while there is an END fob the upper bound is
-    // the step before or equal to the endFob's step.
-    if (this.currentDraggingFob === Fob.START && this.linkedTime.end !== null) {
-      let index = 0;
-      while (this.steps[index] < this.linkedTime.end.step) {
-        index++;
-      }
-      return index;
-    }
-
-    // In all other cases the largest step is the upper bound.
-    return this.steps.length - 1;
-  }
-
-  // Gets the index of smallest step that the currentDraggingFob is allowed to go.
-  getDraggingFobLowerBoundIndex() {
-    // The END fob cannot pass the START fob.
-    if (this.currentDraggingFob === Fob.END) {
-      let index = this.steps.length - 1;
-      while (this.steps[index] > this.linkedTime.start.step) {
-        index--;
-      }
-      return index;
-    }
-
-    // No fobs can pass the lowest step in this graph.
-    return 0;
   }
 
   stepTyped(fob: Fob, step: number) {
