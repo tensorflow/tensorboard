@@ -26,12 +26,22 @@ export enum Fob {
 export interface FobCardAdapter {
   upperBound: number;
   lowerBound: number;
+  // Set the upper and lower bounds. Implementation can determine lower and
+  // upper bounds as it needs to. However, if the overrides are set those must
+  // be used.
   setBounds(overrides: {lowerOverride?: number; higherOverride?: number}): void;
+  // Uses whatever underlying scale is need to translate the proper pixel offset
   stepToPixel(step: number, domain: [number, number]): number;
+  // Using the same scale that is used in the stepToPixel function return a step
+  // that is greater than or equal to the step that would be at the given mouse
+  // position.
   getStepHigherThanMousePosition(
     position: number,
     axisOverlay: ElementRef
   ): number;
+  // Using the same scale that is used in the stepToPixel function return a step
+  // that is less than or equal to the step that would be at the given mouse
+  // position.
   getStepLowerThanMousePosition(
     position: number,
     axisOverlay: ElementRef
