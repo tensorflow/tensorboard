@@ -31,6 +31,7 @@ import {
   relativeTimeFormatter,
   siNumberFormatter,
 } from '../../../widgets/line_chart_v2/lib/formatter';
+import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
 import {LineChartComponent} from '../../../widgets/line_chart_v2/line_chart_component';
 import {
   RendererType,
@@ -38,7 +39,8 @@ import {
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
 import {AxisDirection} from '../../../widgets/linked_time_fob/linked_time_fob_controller_component';
-import {TooltipSort, XAxisType} from '../../types';
+import {LinkedTime, TooltipSort, XAxisType} from '../../types';
+import {ScalarCardFobAdapter} from './scalar_card_fob_adapter';
 import {
   ScalarCardDataSeries,
   ScalarCardSeriesMetadata,
@@ -64,6 +66,7 @@ export class ScalarCardComponent<Downloader> {
   readonly RendererType = RendererType;
   readonly ScaleType = ScaleType;
   readonly axisDirection = AxisDirection.HORIZONTAL;
+  fobAdapter?: ScalarCardFobAdapter;
 
   @Input() cardId!: string;
   @Input() chartMetadataMap!: ScalarCardSeriesMetadataMap;
@@ -86,6 +89,7 @@ export class ScalarCardComponent<Downloader> {
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
+  @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
 
   // Line chart may not exist when was never visible (*ngIf).
   @ViewChild(LineChartComponent)
@@ -185,5 +189,22 @@ export class ScalarCardComponent<Downloader> {
     this.dialog.open(this.DataDownloadComponent, {
       data: {cardId: this.cardId},
     });
+  }
+
+  convertToLinkedTime(selectedTime: ViewSelectedTime): LinkedTime {
+    return {
+      start: {
+        step: selectedTime.startStep,
+      },
+      end: selectedTime.endStep ? {step: selectedTime.endStep} : null,
+    };
+  }
+
+  getFobAdapter(scale: Scale, minMax: [number, number]): ScalarCardFobAdapter {
+    if (!this.fobAdapter) {
+      console.log('creating new adapter');
+      this.fobAdapter = new ScalarCardFobAdapter(scale, minMax);
+    }
+    return this.fobAdapter!;
   }
 }

@@ -251,6 +251,7 @@ tf_ng_module(
         "scalar_card_component.ts",
         "scalar_card_container.ts",
         "scalar_card_module.ts",
+        "scalar_card_fob_adapter.ts"
     ],
     assets = [
         ":scalar_card_styles",
@@ -272,6 +273,7 @@ tf_ng_module(
         "//tensorboard/webapp/experiments:types",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/metrics:types",
+        "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",
         "//tensorboard/webapp/metrics/views:types",
@@ -286,7 +288,9 @@ tf_ng_module(
         "//tensorboard/webapp/widgets/line_chart_v2",
         "//tensorboard/webapp/widgets/line_chart_v2:line_chart_utils",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:formatter",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
         "//tensorboard/webapp/widgets/linked_time_fob",
+        "//tensorboard/webapp/widgets/linked_time_fob:types",
         "//tensorboard/webapp/widgets/text:truncated_path",
         "@npm//@angular/common",
         "@npm//@angular/core",

@@ -51,6 +51,7 @@ import {
 import {DataLoadState} from '../../../types/data';
 import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
+import {timeSelectionChanged} from '../../actions';
 import {PluginType, ScalarStepDatum} from '../../data_source';
 import {
   getCardLoadState,
@@ -63,7 +64,7 @@ import {
   getMetricsXAxisType,
   RunToSeries,
 } from '../../store';
-import {CardId, CardMetadata, XAxisType} from '../../types';
+import {CardId, CardMetadata, LinkedTime, XAxisType} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {DataDownloadDialogContainer} from './data_download_dialog_container';
@@ -133,6 +134,7 @@ function areSeriesEqual(
       (onPinClicked)="pinStateChanged.emit($event)"
       observeIntersection
       (onVisibilityChange)="onVisibilityChange($event)"
+      (onSelectTimeChanged)="onSelectTimeChanged($event)"
     ></scalar-card-component>
   `,
   styles: [
@@ -516,5 +518,14 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
         relativeTimeInMs: 0,
       };
     });
+  }
+
+  onSelectTimeChanged(linkedTime: LinkedTime) {
+    this.store.dispatch(
+      timeSelectionChanged({
+        startStep: linkedTime.start.step,
+        endStep: linkedTime.end?.step,
+      })
+    );
   }
 }
