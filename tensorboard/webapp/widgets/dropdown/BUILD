@@ -32,8 +32,11 @@ tf_ts_library(
     srcs = ["dropdown_test.ts"],
     deps = [
         ":dropdown",
+        "//tensorboard/webapp/angular:expect_angular_cdk_testing_testbed",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_select",
+        "//tensorboard/webapp/angular:expect_angular_material_select_testing",
+        "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@types/jasmine",

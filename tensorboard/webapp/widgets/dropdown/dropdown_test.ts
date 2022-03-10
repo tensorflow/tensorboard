@@ -12,10 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {TestbedHarnessEnvironment} from '@angular/cdk/testing/testbed';
 import {Component, Input} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatSelectModule} from '@angular/material/select';
+import {MatSelectHarness} from '@angular/material/select/testing';
 import {By} from '@angular/platform-browser';
+import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {DropdownComponent, DropdownOption} from './dropdown_component';
 
 /**
@@ -47,7 +50,7 @@ describe('tb-dropdown', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MatSelectModule],
+      imports: [MatSelectModule, NoopAnimationsModule],
       declarations: [DropdownComponent, TestableComponent],
     }).compileComponents();
   });
@@ -64,8 +67,8 @@ describe('tb-dropdown', () => {
     return fixture;
   }
 
-  it('renders options with no aliases', () => {
-    let fixture = createTestableComponent({
+  it('renders options with no aliases', async () => {
+    const fixture = createTestableComponent({
       expId: '1',
       configOptions: [
         {
@@ -81,6 +84,7 @@ describe('tb-dropdown', () => {
         },
       ],
     });
+    const loader = TestbedHarnessEnvironment.loader(fixture);
     fixture.detectChanges();
 
     const dropdown = fixture.debugElement.query(byCss.DROPDOWN);
@@ -93,21 +97,33 @@ describe('tb-dropdown', () => {
       }),
       jasmine.objectContaining({value: '1', displayText: 'abc'}),
     ]);
-    // TODO(ytjing): Figure out how to test DOM content.
+
+    // Test DOM content.
+    const selectHarness = await loader.getHarness(MatSelectHarness);
+    await selectHarness.open();
+
+    const options = await selectHarness.getOptions();
+    expect(options.length).toBe(2);
+
+    expect(await options[0].getText()).toBe('none');
+    expect(await options[0].isDisabled()).toBeTrue();
+
+    expect(await options[1].getText()).toBe('abc');
+    expect(await options[1].isDisabled()).toBeFalsy();
   });
 
-  it('renders options with valid aliases', () => {
-    let fixture = createTestableComponent({
+  it('renders options with valid aliases', async () => {
+    const fixture = createTestableComponent({
       expId: '2',
       configOptions: [
         {
           value: '2',
           displayText: 'test experiment name',
-          disabled: false,
           displayAlias: 'test alias',
         },
       ],
     });
+    const loader = TestbedHarnessEnvironment.loader(fixture);
     fixture.detectChanges();
 
     const dropdown = fixture.debugElement.query(byCss.DROPDOWN);
@@ -119,11 +135,20 @@ describe('tb-dropdown', () => {
         displayAlias: 'test alias',
       }),
     ]);
-    // TODO(ytjing): Figure out how to test DOM content.
+
+    // Test DOM content.
+    const selectHarness = await loader.getHarness(MatSelectHarness);
+    await selectHarness.open();
+
+    const options = await selectHarness.getOptions();
+    expect(options.length).toBe(1);
+
+    expect(await options[0].getText()).toBe('test alias: test experiment name');
+    expect(await options[0].isDisabled()).toBeFalsy();
   });
 
   it('changes selection', async () => {
-    let fixture = createTestableComponent({
+    const fixture = createTestableComponent({
       expId: '1',
       configOptions: [
         {
