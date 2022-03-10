@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -23,5 +23,19 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_select",
         "@npm//@angular/common",
         "@npm//@angular/core",
+    ],
+)
+
+tf_ts_library(
+    name = "dropdown_tests",
+    testonly = True,
+    srcs = ["dropdown_test.ts"],
+    deps = [
+        ":dropdown",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_angular_material_select",
+        "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
+        "@npm//@types/jasmine",
     ],
 )
