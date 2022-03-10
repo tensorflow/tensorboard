@@ -18,13 +18,13 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {sendKeys} from '../../testing/dom';
 import {ScaleLinear, ScaleTime} from '../../third_party/d3';
-import {LinkedTime} from './linked_time_types';
 import {LinkedTimeFobComponent} from './linked_time_fob_component';
 import {
   AxisDirection,
   Fob,
   LinkedTimeFobControllerComponent,
 } from './linked_time_fob_controller_component';
+import {LinkedTime} from './linked_time_types';
 
 type TemporalScale = ScaleLinear<number, number> | ScaleTime<number, number>;
 
