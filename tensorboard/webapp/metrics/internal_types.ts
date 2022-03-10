@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {HistogramMode} from '../widgets/histogram/histogram_types';
-import {LinkedTime} from '../widgets/linked_time_types/types';
+import {LinkedTime} from '../widgets/linked_time_fob/linked_time_types';
 
 export {HistogramMode, LinkedTime};
 

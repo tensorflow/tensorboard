@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 /**
- * The start ane end points to define a linked time.
+ * The start and end time to define a linked time.
  */
-export interface LinkedTime {
-  start: {step: number};
-  end: {step: number} | null;
-}
+ export interface LinkedTime {
+    start: {step: number};
+    end: {step: number} | null;
+  }
