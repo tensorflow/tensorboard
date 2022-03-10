@@ -42,7 +42,7 @@ export interface DropdownOption {
         [value]="option.value"
         [disabled]="option.disabled"
       >
-        <b *ngIf="option.displayAlias">{{ option.displayAlias }}: </b>
+        <b *ngIf="option.displayAlias">{{ option.displayAlias }}:</b>
         {{ option.displayText }}
       </mat-option>
     </mat-select>
@@ -52,5 +52,5 @@ export interface DropdownOption {
 export class DropdownComponent {
   @Input() value = '';
   @Input() options: DropdownOption[] = [];
-  @Output() selectionChange = new EventEmitter<any>();
+  @Output() readonly selectionChange = new EventEmitter<any>();
 }
