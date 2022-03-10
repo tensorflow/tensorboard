@@ -13,8 +13,8 @@ tf_ng_module(
     name = "histogram",
     srcs = [
         "histogram_component.ts",
-        "histogram_module.ts",
         "histogram_fob_adapter.ts",
+        "histogram_module.ts",
     ],
     assets = [
         "histogram_component.ng.html",
@@ -38,9 +38,9 @@ tf_ts_library(
     name = "histogram_test",
     testonly = True,
     srcs = [
+        "histogram_fob_adapter_test.ts",
         "histogram_test.ts",
         "histogram_util_test.ts",
-        "histogram_fob_adapter_test.ts"
     ],
     deps = [
         ":histogram",

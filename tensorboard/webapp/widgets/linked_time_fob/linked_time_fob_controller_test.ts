@@ -52,7 +52,7 @@ class TestableComponent {
   @Input() onSelectTimeChanged!: (newLinkedTime: LinkedTime) => void;
 }
 
-fdescribe('linked_time_fob_controller', () => {
+describe('linked_time_fob_controller', () => {
   let onSelectTimeChanged: jasmine.Spy;
   let setBoundsSpy: jasmine.Spy;
   let stepToPixelSpy: jasmine.Spy;
