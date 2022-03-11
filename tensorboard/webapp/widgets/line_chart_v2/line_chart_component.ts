@@ -422,6 +422,7 @@ export class LineChartComponent
    * with `recoverRendererIfNeeded`.
    */
   private updateLineChart() {
+    console.log('update line chart');
     this.recoverRendererIfNeeded();
     if (!this.lineChart || this.disableUpdate) return;
 
@@ -437,6 +438,7 @@ export class LineChartComponent
     }
 
     if (this.isDataUpdated) {
+      console.log('is data updated', this.seriesData);
       this.isDataUpdated = false;
       this.lineChart.setData(this.seriesData);
     }

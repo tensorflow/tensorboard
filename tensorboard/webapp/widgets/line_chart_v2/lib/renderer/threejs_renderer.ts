@@ -287,6 +287,7 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
       alpha: true,
     });
     this.renderer.setPixelRatio(devicePixelRatio);
+    this.renderer.sortObjects = false;
   }
 
   onResize(rect: Rect) {
@@ -323,7 +324,7 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
     if (!cachedLine && !paintOpt.visible) return null;
 
     const {visible, width} = paintOpt;
-
+    let line: THREE.Mesh;
     if (!cachedLine) {
       const newColor = createOpacityAdjustedColor(
         this.backgroundColor,
@@ -332,37 +333,33 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
       );
       const geometry = new THREE.BufferGeometry();
       const material = new THREE.LineBasicMaterial({color: newColor});
-      const line = new THREE.Mesh(geometry, material);
+      line = new THREE.Mesh(geometry, material);
       material.visible = visible;
       updateThickPolylineGeometry(geometry, polyline, width);
-      this.scene.add(line);
-      return {type: CacheType.LINE, data: polyline, obj3d: line, width};
+    } else {
+      line = cachedLine.obj3d;
+      const {data: prevPolyline, width: prevWidth} = cachedLine;
+      this.scene.remove(line);
+      const geomUpdated = updateObject(
+        this.backgroundColor,
+        line,
+        (geometry) => {
+          if (
+            width !== prevWidth ||
+            !prevPolyline ||
+            !arePolylinesEqual(prevPolyline, polyline)
+          ) {
+            updateThickPolylineGeometry(geometry, polyline, width);
+          }
+          return geometry;
+        },
+        paintOpt
+      );
+      if (!geomUpdated) return cachedLine;
     }
 
-    const {data: prevPolyline, obj3d: line, width: prevWidth} = cachedLine;
-    const geomUpdated = updateObject(
-      this.backgroundColor,
-      line,
-      (geometry) => {
-        if (
-          width !== prevWidth ||
-          !prevPolyline ||
-          !arePolylinesEqual(prevPolyline, polyline)
-        ) {
-          updateThickPolylineGeometry(geometry, polyline, width);
-        }
-        return geometry;
-      },
-      paintOpt
-    );
-    if (!geomUpdated) return cachedLine;
-
-    return {
-      type: CacheType.LINE,
-      data: polyline,
-      obj3d: line,
-      width,
-    };
+    this.scene.add(line);
+    return {type: CacheType.LINE, data: polyline, obj3d: line, width};
   }
 
   private createMesh(

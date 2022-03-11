@@ -95,6 +95,7 @@ export class SeriesLineView extends DataDrawable {
   }
 
   redraw() {
+    console.log('redrawing', this.series);
     for (const series of this.series) {
       const map = this.getMetadataMap();
       const metadata = map[series.id];
