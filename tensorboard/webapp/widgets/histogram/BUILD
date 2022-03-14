@@ -46,6 +46,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/widgets/intersection_observer:intersection_observer_testing",
         "//tensorboard/webapp/widgets/linked_time_fob",
+        "//tensorboard/webapp/widgets/linked_time_fob:types",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@types/jasmine",
