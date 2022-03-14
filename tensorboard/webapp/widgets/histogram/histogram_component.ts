@@ -291,10 +291,11 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   /**
-   * When a single step is currently selected, clicking on a histogram step will
-   * create a range incorporating the currently selected step and the clicked
-   * step. When a range is currently selected, clicking on a histogram step outside
-   * that range will expand the range to include the clicked step.
+   * Handles linked time range change on clicking a histogram.When a single step is
+   * currently selected, clicking on a histogram step will create a range incorporating
+   * the currently selected step and the clicked step. When a range is currently
+   * selected, clicking on a histogram step outside that range will expand the range to
+   * include the clicked step.
    */
   onSelectTimeRangeChange(datum: HistogramDatum) {
     if (!this.isLinkedTimeEnabled(this.linkedTime)) {
