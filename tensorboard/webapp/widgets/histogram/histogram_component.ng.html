@@ -83,6 +83,7 @@ limitations under the License.
         [style.color]="getHistogramFill(datum)"
         (mouseenter)="updateColorOnHover($event, true)"
         (mouseleave)="updateColorOnHover($event, false)"
+        (click)="onSelectTimeRangeChange(datum)"
       >
         <line
           *ngIf="mode === HistogramMode.OFFSET"

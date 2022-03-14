@@ -295,6 +295,40 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.updateChartIfVisible();
   }
 
+  /**
+   * Handles linked time range change on clicking a histogram. When a single step is
+   * currently selected, clicking on a histogram step will create a range incorporating
+   * the currently selected step and the clicked step. When a range is currently
+   * selected, clicking on a histogram step outside that range will expand the range to
+   * include the clicked step.
+   */
+  onSelectTimeRangeChange(datum: HistogramDatum) {
+    if (!this.isLinkedTimeEnabled(this.linkedTime)) {
+      return;
+    }
+
+    const startStep = this.linkedTime.start.step;
+    const endStep = this.linkedTime.end?.step;
+    const nextStartStep = datum.step < startStep ? datum.step : startStep;
+    let nextEndStep = endStep;
+
+    if (nextEndStep === undefined) {
+      nextEndStep = datum.step > startStep ? datum.step : startStep;
+    } else {
+      nextEndStep = datum.step > nextEndStep ? datum.step : nextEndStep;
+    }
+
+    if (
+      (nextStartStep !== startStep || nextEndStep !== endStep) &&
+      nextStartStep !== nextEndStep
+    ) {
+      this.onSelectTimeChanged.emit({
+        start: {step: nextStartStep},
+        end: {step: nextEndStep},
+      });
+    }
+  }
+
   private getTimeValue(datum: HistogramDatum): number {
     switch (this.timeProperty) {
       case TimeProperty.WALL_TIME:
