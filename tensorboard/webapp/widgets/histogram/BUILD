@@ -22,7 +22,6 @@ tf_ng_module(
     ],
     deps = [
         ":types",
-        "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/third_party:d3",
         "//tensorboard/webapp/widgets:resize_detector",
         "//tensorboard/webapp/widgets/intersection_observer",

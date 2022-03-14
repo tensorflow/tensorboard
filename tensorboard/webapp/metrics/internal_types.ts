@@ -13,8 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {HistogramMode} from '../widgets/histogram/histogram_types';
+import {LinkedTime} from '../widgets/linked_time_fob/linked_time_types';
 
-export {HistogramMode};
+export {HistogramMode, LinkedTime};
 
 export enum PluginType {
   SCALARS = 'scalars',
@@ -102,8 +103,3 @@ export interface URLDeserializedState {
 
 export const SCALARS_SMOOTHING_MIN = 0;
 export const SCALARS_SMOOTHING_MAX = 0.999;
-
-export interface LinkedTime {
-  start: {step: number};
-  end: {step: number} | null;
-}

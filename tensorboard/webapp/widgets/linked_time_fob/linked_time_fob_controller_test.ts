@@ -16,7 +16,6 @@ limitations under the License.
 import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-import {LinkedTime} from '../../metrics/types';
 import {sendKeys} from '../../testing/dom';
 import {ScaleLinear, ScaleTime} from '../../third_party/d3';
 import {LinkedTimeFobComponent} from './linked_time_fob_component';
@@ -26,8 +25,7 @@ import {
   LinkedTimeFobControllerComponent,
 } from './linked_time_fob_controller_component';
 import {FobCardAdapter} from './types';
-
-type TemporalScale = ScaleLinear<number, number> | ScaleTime<number, number>;
+import {LinkedTime} from './linked_time_types';
 
 @Component({
   selector: 'testable-comp',
