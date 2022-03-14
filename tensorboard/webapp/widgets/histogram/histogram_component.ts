@@ -27,10 +27,10 @@ import {
 } from '@angular/core';
 import {fromEvent, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
-import {LinkedTime} from '../../metrics/types';
 import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
 import {AxisDirection} from '../linked_time_fob/linked_time_fob_controller_component';
+import {LinkedTime} from '../linked_time_fob/linked_time_types';
 import {
   Bin,
   HistogramData,
