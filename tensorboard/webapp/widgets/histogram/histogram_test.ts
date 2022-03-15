@@ -1007,6 +1007,76 @@ describe('histogram test', () => {
         fixture.detectChanges();
         expect(doHistogramsHaveColor(fixture)).toEqual([false, false, false]);
       });
+
+      it('puts color on none-ranged histogram when mouse hovers over', () => {
+        const fixture = createComponent('foo', [
+          buildHistogramDatum({step: 0, wallTime: 100}),
+          buildHistogramDatum({step: 5, wallTime: 400}),
+          buildHistogramDatum({step: 10, wallTime: 400}),
+        ]);
+        fixture.componentInstance.mode = HistogramMode.OFFSET;
+        fixture.componentInstance.timeProperty = TimeProperty.STEP;
+        fixture.componentInstance.linkedTime = {
+          start: {step: 5},
+          end: {step: 10},
+        };
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+
+        const firstHistogram = fixture.debugElement.queryAll(
+          By.css('g.histogram')
+        )[0];
+
+        firstHistogram.triggerEventHandler('mouseenter', {
+          target: firstHistogram.nativeElement,
+        });
+        fixture.detectChanges();
+        // StepIndex 1,2 are hightlight because of selected range; stepIndex 0 is hightlight on
+        // mouse hovering.
+        expect(doHistogramsHaveColor(fixture)).toEqual([true, true, true]);
+
+        firstHistogram.triggerEventHandler('mouseleave', {
+          target: firstHistogram.nativeElement,
+        });
+        fixture.detectChanges();
+        // StepIndex 1,2 are hightlight because of selected range; stepIndex 0 is not hightlight
+        // because the mouse has left.
+        expect(doHistogramsHaveColor(fixture)).toEqual([false, true, true]);
+      });
+
+      it('does not update color on ranged histogram when mouse hovers over', () => {
+        const fixture = createComponent('foo', [
+          buildHistogramDatum({step: 0, wallTime: 100}),
+          buildHistogramDatum({step: 5, wallTime: 400}),
+          buildHistogramDatum({step: 10, wallTime: 400}),
+        ]);
+        fixture.componentInstance.mode = HistogramMode.OFFSET;
+        fixture.componentInstance.timeProperty = TimeProperty.STEP;
+        fixture.componentInstance.linkedTime = {
+          start: {step: 5},
+          end: {step: 10},
+        };
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+
+        const inRangeHistogram = fixture.debugElement.queryAll(
+          By.css('g.histogram')
+        )[1];
+
+        inRangeHistogram.triggerEventHandler('mouseenter', {
+          target: inRangeHistogram.nativeElement,
+        });
+        fixture.detectChanges();
+        // StepIndex 1,2 are hightlight because of selected range;
+        expect(doHistogramsHaveColor(fixture)).toEqual([false, true, true]);
+
+        inRangeHistogram.triggerEventHandler('mouseleave', {
+          target: inRangeHistogram.nativeElement,
+        });
+        fixture.detectChanges();
+        // StepIndex 1,2 are hightlight because of selected range;
+        expect(doHistogramsHaveColor(fixture)).toEqual([false, true, true]);
+      });
     });
 
     describe('multi step range updated on click', () => {

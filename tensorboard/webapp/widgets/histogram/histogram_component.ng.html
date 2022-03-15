@@ -82,8 +82,8 @@ limitations under the License.
         [class.histogram]="true"
         [class.no-color]="!isDatumInLinkedTimeRange(datum)"
         [style.color]="getHistogramFill(datum)"
-        (mouseenter)="updateColorOnHover($event, true)"
-        (mouseleave)="updateColorOnHover($event, false)"
+        (mouseenter)="updateColorOnHover($event, datum, true)"
+        (mouseleave)="updateColorOnHover($event, datum, false)"
         (click)="onSelectTimeRangeChange(datum)"
       >
         <line
