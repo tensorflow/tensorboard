@@ -265,9 +265,17 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
       : '';
   }
 
-  updateColorOnHover(event: MouseEvent, isHover: boolean) {
+  updateColorOnHover(
+    event: MouseEvent,
+    datum: HistogramDatum,
+    isHover: boolean
+  ) {
     // When link time is disabled all histogram should be colored.
     if (!this.isLinkedTimeEnabled(this.linkedTime)) {
+      return;
+    }
+    // Target histogram should be colored When datum is in range.
+    if (this.isDatumInLinkedTimeRange(datum)) {
       return;
     }
     if (isHover) {
