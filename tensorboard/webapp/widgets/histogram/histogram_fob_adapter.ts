@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,16 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-=======
->>>>>>> dcda3f4a0 (create shared adapter interface that will be used in multiple cards and use it in histogram card)
-import {ElementRef} from '@angular/core';
 import {FobCardAdapter} from '../linked_time_fob/types';
 import {TemporalScale} from './histogram_component';
 
 export class HistogramFobAdapter implements FobCardAdapter {
   scale: TemporalScale;
   steps: number[];
-<<<<<<< HEAD
   containerRect: DOMRect;
   upperBound: number;
   lowerBound: number;
@@ -31,13 +26,6 @@ export class HistogramFobAdapter implements FobCardAdapter {
     this.scale = scale;
     this.steps = steps;
     this.containerRect = containerRect;
-=======
-  upperBound: number;
-  lowerBound: number;
-  constructor(scale: TemporalScale, steps: number[]) {
-    this.scale = scale;
-    this.steps = steps;
->>>>>>> dcda3f4a0 (create shared adapter interface that will be used in multiple cards and use it in histogram card)
     this.lowerBound = steps[0];
     this.upperBound = steps[steps.length - 1];
   }
@@ -49,21 +37,11 @@ export class HistogramFobAdapter implements FobCardAdapter {
   stepToPixel(step: number, domain: [number, number]): number {
     return this.scale(step);
   }
-<<<<<<< HEAD
+
   getStepHigherThanMousePosition(position: number): number {
     let stepIndex = 0;
     while (
       position - this.containerRect.top > this.scale(this.steps[stepIndex]) &&
-=======
-  getStepHigherThanMousePosition(
-    position: number,
-    axisOverlay: ElementRef
-  ): number {
-    let stepIndex = 0;
-    while (
-      position - axisOverlay.nativeElement.getBoundingClientRect().top >
-        this.scale(this.steps[stepIndex]) &&
->>>>>>> dcda3f4a0 (create shared adapter interface that will be used in multiple cards and use it in histogram card)
       this.steps[stepIndex] < this.upperBound
     ) {
       stepIndex++;
@@ -71,21 +49,10 @@ export class HistogramFobAdapter implements FobCardAdapter {
     return this.steps[stepIndex];
   }
 
-<<<<<<< HEAD
   getStepLowerThanMousePosition(position: number): number {
     let stepIndex = this.steps.length - 1;
     while (
       position - this.containerRect.top < this.scale(this.steps[stepIndex]) &&
-=======
-  getStepLowerThanMousePosition(
-    position: number,
-    axisOverlay: ElementRef
-  ): number {
-    let stepIndex = this.steps.length - 1;
-    while (
-      position - axisOverlay.nativeElement.getBoundingClientRect().top <
-        this.scale(this.steps[stepIndex]) &&
->>>>>>> dcda3f4a0 (create shared adapter interface that will be used in multiple cards and use it in histogram card)
       this.steps[stepIndex] > this.lowerBound
     ) {
       stepIndex--;

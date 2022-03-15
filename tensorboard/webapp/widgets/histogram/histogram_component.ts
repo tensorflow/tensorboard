@@ -29,11 +29,6 @@ import {fromEvent, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
-<<<<<<< HEAD
-import {HistogramFobAdapter} from './histogram_fob_adapter';
-import {AxisDirection} from '../linked_time_fob/types';
-=======
->>>>>>> dcda3f4a0 (create shared adapter interface that will be used in multiple cards and use it in histogram card)
 import {LinkedTime} from '../linked_time_fob/linked_time_types';
 import {AxisDirection} from '../linked_time_fob/types';
 import {HistogramFobAdapter} from './histogram_fob_adapter';
@@ -373,6 +368,7 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.cardAdapter = new HistogramFobAdapter(
         this.scales!.temporalScale,
 <<<<<<< HEAD
+<<<<<<< HEAD
         this.getSteps(),
         this.yAxisOverlay?.nativeElement.getBoundingClientRect()
       );
@@ -383,6 +379,10 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
       }
 =======
         this.getSteps()
+=======
+        this.getSteps(),
+        this.yAxisOverlay!.nativeElement.getBoundingClientRect()
+>>>>>>> d4a26bf02 (remove AxisOverlay dependency)
       );
     } else {
 >>>>>>> dcda3f4a0 (create shared adapter interface that will be used in multiple cards and use it in histogram card)
