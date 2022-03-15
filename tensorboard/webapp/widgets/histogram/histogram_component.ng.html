@@ -34,7 +34,7 @@ limitations under the License.
       </g>
     </g>
   </svg>
-  <div class="axis y-axis">
+  <div #yAxisOverlay class="axis y-axis">
     <svg>
       <g #yAxis></g>
       <!-- d3 places axis label at 9px right from the left edge. -->
@@ -54,8 +54,6 @@ limitations under the License.
       <linked-time-fob-controller
         [axisDirection]="axisDirection"
         [linkedTime]="linkedTime"
-        [steps]="getSteps()"
-        [temporalScale]="scales.temporalScale"
         [cardAdapter]="cardAdapter"
         (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
       ></linked-time-fob-controller>

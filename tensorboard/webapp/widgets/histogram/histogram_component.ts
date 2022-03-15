@@ -90,6 +90,8 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
   @ViewChild('yAxis') private readonly yAxis!: ElementRef;
   @ViewChild('content') private readonly content!: ElementRef;
   @ViewChild('histograms') private readonly histograms!: ElementRef;
+  @ViewChild('yAxisOverlay')
+  private readonly yAxisOverlay!: ElementRef;
 
   @Input() mode: HistogramMode = HistogramMode.OFFSET;
 
@@ -323,9 +325,14 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     if (this.cardAdapter === null) {
       this.cardAdapter = new HistogramFobAdapter(
         this.scales!.temporalScale,
-        this.getSteps()
+        this.getSteps(),
+        this.yAxisOverlay?.nativeElement.getBoundingClientRect()
       );
     } else {
+      if (this.yAxisOverlay) {
+        this.cardAdapter.containerRect =
+          this.yAxisOverlay.nativeElement.getBoundingClientRect();
+      }
       this.cardAdapter.scale = this.scales.temporalScale;
     }
   }

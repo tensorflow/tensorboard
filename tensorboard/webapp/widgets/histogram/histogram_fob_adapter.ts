@@ -20,11 +20,13 @@ import {TemporalScale} from './histogram_component';
 export class HistogramFobAdapter implements FobCardAdapter {
   scale: TemporalScale;
   steps: number[];
+  containerRect: DOMRect;
   upperBound: number;
   lowerBound: number;
-  constructor(scale: TemporalScale, steps: number[]) {
+  constructor(scale: TemporalScale, steps: number[], containerRect: DOMRect) {
     this.scale = scale;
     this.steps = steps;
+    this.containerRect = containerRect;
     this.lowerBound = steps[0];
     this.upperBound = steps[steps.length - 1];
   }
@@ -36,14 +38,10 @@ export class HistogramFobAdapter implements FobCardAdapter {
   stepToPixel(step: number, domain: [number, number]): number {
     return this.scale(step);
   }
-  getStepHigherThanMousePosition(
-    position: number,
-    axisOverlay: ElementRef
-  ): number {
+  getStepHigherThanMousePosition(position: number): number {
     let stepIndex = 0;
     while (
-      position - axisOverlay.nativeElement.getBoundingClientRect().top >
-        this.scale(this.steps[stepIndex]) &&
+      position - this.containerRect.top > this.scale(this.steps[stepIndex]) &&
       this.steps[stepIndex] < this.upperBound
     ) {
       stepIndex++;
@@ -51,14 +49,10 @@ export class HistogramFobAdapter implements FobCardAdapter {
     return this.steps[stepIndex];
   }
 
-  getStepLowerThanMousePosition(
-    position: number,
-    axisOverlay: ElementRef
-  ): number {
+  getStepLowerThanMousePosition(position: number): number {
     let stepIndex = this.steps.length - 1;
     while (
-      position - axisOverlay.nativeElement.getBoundingClientRect().top <
-        this.scale(this.steps[stepIndex]) &&
+      position - this.containerRect.top < this.scale(this.steps[stepIndex]) &&
       this.steps[stepIndex] > this.lowerBound
     ) {
       stepIndex--;

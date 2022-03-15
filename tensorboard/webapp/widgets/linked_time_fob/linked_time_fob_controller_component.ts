@@ -97,15 +97,9 @@ export class LinkedTimeFobControllerComponent {
     let newLinkedTime = this.linkedTime;
     let newStep: number;
     if (this.isDraggingHigher(event.clientY, event.movementY)) {
-      newStep = this.cardAdapter.getStepHigherThanMousePosition(
-        event.clientY,
-        this.axisOverlay
-      );
+      newStep = this.cardAdapter.getStepHigherThanMousePosition(event.clientY);
     } else if (this.isDraggingLower(event.clientY, event.movementY)) {
-      newStep = this.cardAdapter.getStepLowerThanMousePosition(
-        event.clientY,
-        this.axisOverlay
-      );
+      newStep = this.cardAdapter.getStepLowerThanMousePosition(event.clientY);
     } else {
       return;
     }
