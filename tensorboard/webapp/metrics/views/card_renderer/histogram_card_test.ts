@@ -46,7 +46,7 @@ import {XAxisType} from '../../types';
 import {HistogramCardComponent} from './histogram_card_component';
 import {HistogramCardContainer} from './histogram_card_container';
 import {RunNameModule} from './run_name_module';
-import {VisSelectedTimeWarningModule} from './vis_selected_time_clipped_module';
+import {VisSelectedTimeWarningModule} from './vis_selected_time_warning_module';
 
 @Component({
   selector: 'tb-histogram',
