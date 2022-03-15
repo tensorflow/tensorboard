@@ -21,6 +21,7 @@ limitations under the License.
       mat-button
       class="filter-view-button"
       role="checkbox"
+      data-value="all"
       [attr.aria-checked]="filteredPluginTypes.size === 0"
       (click)="onPluginTypeAllToggled.emit()"
     >
@@ -30,6 +31,7 @@ limitations under the License.
       mat-button
       class="filter-view-button"
       role="checkbox"
+      data-value="scalars"
       [attr.aria-checked]="filteredPluginTypes.has(PluginType.SCALARS)"
       (click)="onPluginTypeToggled.emit(PluginType.SCALARS)"
     >
@@ -39,6 +41,7 @@ limitations under the License.
       mat-button
       class="filter-view-button"
       role="checkbox"
+      data-value="image"
       [attr.aria-checked]="filteredPluginTypes.has(PluginType.IMAGES)"
       (click)="onPluginTypeToggled.emit(PluginType.IMAGES)"
     >
@@ -48,6 +51,7 @@ limitations under the License.
       mat-button
       class="filter-view-button"
       role="checkbox"
+      data-value="histogram"
       [attr.aria-checked]="filteredPluginTypes.has(PluginType.HISTOGRAMS)"
       (click)="onPluginTypeToggled.emit(PluginType.HISTOGRAMS)"
     >
