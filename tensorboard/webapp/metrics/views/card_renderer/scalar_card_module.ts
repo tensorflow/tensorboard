@@ -27,7 +27,7 @@ import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {DataDownloadModule} from './data_download_module';
 import {ScalarCardComponent} from './scalar_card_component';
 import {ScalarCardContainer} from './scalar_card_container';
-import {VisSelectedTimeClippedModule} from './vis_selected_time_clipped_module';
+import {VisSelectedTimeWarningModule} from './vis_selected_time_warning_module';
 
 @NgModule({
   declarations: [ScalarCardContainer, ScalarCardComponent],
@@ -45,7 +45,7 @@ import {VisSelectedTimeClippedModule} from './vis_selected_time_clipped_module';
     MatProgressSpinnerModule,
     ResizeDetectorModule,
     TruncatedPathModule,
-    VisSelectedTimeClippedModule,
+    VisSelectedTimeWarningModule,
   ],
 })
 export class ScalarCardModule {}

@@ -12,14 +12,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {CommonModule} from '@angular/common';
-import {NgModule} from '@angular/core';
-import {MatIconModule} from '@angular/material/icon';
-import {VisSelectedTimeClippedComponent} from './vis_selected_time_clipped_component';
+@use '@angular/material' as mat;
+@import 'tensorboard/webapp/theme/tb_theme';
 
-@NgModule({
-  declarations: [VisSelectedTimeClippedComponent],
-  exports: [VisSelectedTimeClippedComponent],
-  imports: [CommonModule, MatIconModule],
-})
-export class VisSelectedTimeClippedModule {}
+:host {
+  color: mat.get-color-from-palette(map-get($tb-theme, warn), 700);
+  height: 1em;
+  line-height: 0;
+  display: inline-flex;
+
+  @include tb-dark-theme {
+    color: mat.get-color-from-palette(map-get($tb-dark-theme, warn), 700);
+  }
+
+  mat-icon {
+    height: 100%;
+    width: 100%;
+  }
+}
