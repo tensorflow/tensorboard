@@ -382,7 +382,7 @@ export function canCreateNewPins(state: MetricsState) {
 /**
  * Sets cardStepIndex for image card based on selected time.
  */
-export function generateNexCardStepIndexFromSelectTime(
+export function generateNextCardStepIndexFromSelectTime(
   nextStartStep: number,
   nextEndStep: number | undefined,
   endTime: {step: number} | null,
@@ -426,6 +426,7 @@ export function generateNexCardStepIndexFromSelectTime(
       );
     }
   });
+
   return nextCardStepIndex;
 }
 
@@ -535,7 +536,6 @@ export const TEST_ONLY = {
   util,
   getSelectedSteps,
   getImageCardStepValues,
-  generateNexCardStepIndexFromSelectTime,
   updateNextCardStepIndexOnSingleSelection,
   updateNextCardStepIndexOnRangeSelection,
 };

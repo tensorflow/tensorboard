@@ -26,6 +26,7 @@ import {
   createPluginDataWithLoadable,
   createRunToLoadState,
   generateNextCardStepIndex,
+  generateNextCardStepIndexFromSelectTime,
   generateNextPinnedCardMappings,
   getCardId,
   getPinnedCardId,
@@ -651,10 +652,6 @@ describe('metrics store utils', () => {
     });
   });
 
-  describe('generateNexCardStepIndexFromSelectTime', () => {
-    it(`sets cardStepIndex to the highest step in range when the step is larger than end step`, () => {});
-  });
-
   describe('getSelectedSteps', () => {
     it(`gets one selected step on single selection`, () => {
       const selectedTime = {start: {step: 10}, end: null};
@@ -924,6 +921,192 @@ describe('metrics store utils', () => {
       );
 
       expect(nextCardStepIndex).toEqual({'test card Id': 2});
+    });
+  });
+
+  describe('generateNextCardStepIndexFromSelectTime', () => {
+    it(`does not update cardStepIndex with no image cards data`, () => {
+      const previousCardStepIndex = {
+        'test card id withought image': null,
+      };
+      const cardMetadataMap = {
+        'test-card-id': {
+          runId: 'test run Id',
+          plugin: PluginType.IMAGES,
+          tag: 'tagC',
+          sample: 0,
+        },
+      };
+      const loadables = {
+        scalars: {runToLoadState: {}, runToSeries: {}},
+        histograms: {runToLoadState: {}, runToSeries: {}},
+        images: {runToLoadState: {}, runToSeries: {}},
+      };
+      const timeSeriesData = {
+        scalars: {tagA: loadables.scalars},
+        histograms: {tagB: loadables.histograms},
+        images: {tagC: {0: loadables.images}},
+      };
+
+      const nextCardStepIndex = generateNextCardStepIndexFromSelectTime(
+        10,
+        undefined,
+        null,
+        previousCardStepIndex,
+        cardMetadataMap,
+        timeSeriesData
+      );
+      expect(nextCardStepIndex).toEqual({'test card id withought image': null});
+    });
+
+    it(`updates cardStepIndex on image cards on single selection`, () => {
+      const previousCardStepIndex = {
+        'test card id with image plugin name "plugin":"images"': null,
+      };
+      const cardMetadataMap = {
+        'test card id with image plugin name "plugin":"images"': {
+          runId: 'test run Id',
+          plugin: PluginType.IMAGES,
+          tag: 'tagC',
+          sample: 0,
+        },
+      };
+      const loadables = {
+        scalars: {runToLoadState: {}, runToSeries: {}},
+        histograms: {runToLoadState: {}, runToSeries: {}},
+        images: {
+          runToLoadState: {},
+          runToSeries: {
+            'test run Id': [
+              {step: 10, wallTime: 0, imageId: 'ImageId1'},
+              {step: 20, wallTime: 0, imageId: 'ImageId2'},
+            ],
+          },
+        },
+      };
+      const timeSeriesData = {
+        scalars: {tagA: loadables.scalars},
+        histograms: {tagB: loadables.histograms},
+        images: {tagC: {0: loadables.images}},
+      };
+
+      const nextCardStepIndex = generateNextCardStepIndexFromSelectTime(
+        10,
+        undefined,
+        null,
+        previousCardStepIndex,
+        cardMetadataMap,
+        timeSeriesData
+      );
+      expect(nextCardStepIndex).toEqual({
+        'test card id with image plugin name "plugin":"images"': 0,
+      });
+    });
+
+    it(`updates cardStepIndex on image cards on range selection`, () => {
+      const previousCardStepIndex = {
+        'test card id with image plugin name "plugin":"images"': null,
+      };
+      const cardMetadataMap = {
+        'test card id with image plugin name "plugin":"images"': {
+          runId: 'test run Id',
+          plugin: PluginType.IMAGES,
+          tag: 'tagC',
+          sample: 0,
+        },
+      };
+      const loadables = {
+        scalars: {runToLoadState: {}, runToSeries: {}},
+        histograms: {runToLoadState: {}, runToSeries: {}},
+        images: {
+          runToLoadState: {},
+          runToSeries: {
+            'test run Id': [
+              {step: 10, wallTime: 0, imageId: 'ImageId1'},
+              {step: 20, wallTime: 100, imageId: 'ImageId2'},
+              {step: 30, wallTime: 200, imageId: 'ImageId3'},
+            ],
+          },
+        },
+      };
+      const timeSeriesData = {
+        scalars: {tagA: loadables.scalars},
+        histograms: {tagB: loadables.histograms},
+        images: {tagC: {0: loadables.images}},
+      };
+
+      const nextCardStepIndex = generateNextCardStepIndexFromSelectTime(
+        10,
+        20,
+        null,
+        previousCardStepIndex,
+        cardMetadataMap,
+        timeSeriesData
+      );
+      expect(nextCardStepIndex).not.toEqual({
+        'test card id with image plugin name "plugin":"images"': 1,
+      });
+    });
+
+    it(`updates to different cardStepIndex for differnt image card`, () => {
+      const previousCardStepIndex = {
+        'test card id with image plugin name "plugin":"images"': 3,
+        'another test card id with image plugin name "plugin":"images"': 2,
+      };
+      const cardMetadataMap = {
+        'test card id with image plugin name "plugin":"images"': {
+          runId: 'test run Id',
+          plugin: PluginType.IMAGES,
+          tag: 'tagC',
+          sample: 0,
+        },
+        'another test card id with image plugin name "plugin":"images"': {
+          runId: 'another test run Id',
+          plugin: PluginType.IMAGES,
+          tag: 'tagC',
+          sample: 1,
+        },
+      };
+      const loadables = {
+        scalars: {runToLoadState: {}, runToSeries: {}},
+        histograms: {runToLoadState: {}, runToSeries: {}},
+        images: {
+          runToLoadState: {},
+          runToSeries: {
+            'test run Id': [
+              {step: 10, wallTime: 0, imageId: 'ImageId1'},
+              {step: 20, wallTime: 0, imageId: 'ImageId2'},
+            ],
+            'test run Id 2': [
+              {step: 5, wallTime: 0, imageId: 'ImageId1'},
+              {step: 10, wallTime: 0, imageId: 'ImageId2'},
+            ],
+          },
+        },
+      };
+      const timeSeriesData = {
+        scalars: {tagA: loadables.scalars},
+        histograms: {tagB: loadables.histograms},
+        images: {tagC: {0: loadables.images}},
+      };
+
+      const nextCardStepIndex = generateNextCardStepIndexFromSelectTime(
+        10,
+        undefined,
+        null,
+        previousCardStepIndex,
+        cardMetadataMap,
+        timeSeriesData
+      );
+      expect(
+        nextCardStepIndex[
+          'test card id with image plugin name "plugin":"images"'
+        ]
+      ).not.toBe(
+        nextCardStepIndex[
+          'another test card id with image plugin name "plugin":"images"'
+        ]
+      );
     });
   });
 });

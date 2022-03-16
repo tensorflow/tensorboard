@@ -51,8 +51,8 @@ import {
   canCreateNewPins,
   createPluginDataWithLoadable,
   createRunToLoadState,
-  generateNexCardStepIndexFromSelectTime,
   generateNextCardStepIndex,
+  generateNextCardStepIndexFromSelectTime,
   generateNextPinnedCardMappings,
   getCardId,
   getRunIds,
@@ -924,7 +924,7 @@ const reducer = createReducer(
     const {min} = state.stepMinMax;
     const startStep = min === Infinity ? 0 : min;
 
-    const nextCardStepIndex = generateNexCardStepIndexFromSelectTime(
+    const nextCardStepIndex = generateNextCardStepIndexFromSelectTime(
       startStep,
       undefined,
       null,
@@ -952,7 +952,7 @@ const reducer = createReducer(
     const useRangeSelectTime = nextEndStep !== undefined;
 
     // Updates cardStepIndex for image cards.
-    const nextCardStepIndex = generateNexCardStepIndexFromSelectTime(
+    const nextCardStepIndex = generateNextCardStepIndexFromSelectTime(
       nextStartStep,
       nextEndStep,
       end,
