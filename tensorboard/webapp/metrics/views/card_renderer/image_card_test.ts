@@ -42,7 +42,7 @@ import {CardId} from '../../types';
 import {ImageCardComponent} from './image_card_component';
 import {ImageCardContainer} from './image_card_container';
 import {RunNameModule} from './run_name_module';
-import {VisSelectedTimeClippedModule} from './vis_selected_time_clipped_module';
+import {VisSelectedTimeWarningModule} from './vis_selected_time_warning_module';
 
 @Component({
   selector: 'card-view',
@@ -91,7 +91,7 @@ describe('image card', () => {
         MatSliderModule,
         RunNameModule,
         TruncatedPathModule,
-        VisSelectedTimeClippedModule,
+        VisSelectedTimeWarningModule,
       ],
       declarations: [ImageCardContainer, ImageCardComponent, TestableCardView],
       providers: [
@@ -1233,7 +1233,7 @@ describe('image card', () => {
         fixture.detectChanges();
 
         const indicatorBefore = fixture.debugElement.query(
-          By.css('vis-selected-time-clipped')
+          By.css('vis-selected-time-warning')
         );
         expect(indicatorBefore).toBeTruthy();
 
@@ -1244,7 +1244,7 @@ describe('image card', () => {
         store.refreshState();
         fixture.detectChanges();
         const indicatorAfter = fixture.debugElement.query(
-          By.css('vis-selected-time-clipped')
+          By.css('vis-selected-time-warning')
         );
         expect(indicatorAfter).toBeNull();
       });
