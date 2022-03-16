@@ -853,4 +853,77 @@ describe('metrics store utils', () => {
       expect(nextCardStepIndex).toEqual({'test card Id': 3});
     });
   });
+
+  describe('updateNextCardStepIndexOnRangeSelection', () => {
+    const cardId = 'test card Id';
+    const stepValues = [10, 20, 30, 40];
+
+    it('updates cardStepIndex to the highest step in range when the thumb is larger than end step', () => {
+      const nextStartStep = 15;
+      const nextEndStep = 35;
+      const selectedSteps = [20, 30];
+      const nextCardStepIndex = {'test card Id': 3};
+      updateNextCardStepIndexOnRangeSelection(
+        cardId,
+        nextStartStep,
+        nextEndStep,
+        selectedSteps,
+        stepValues,
+        nextCardStepIndex
+      );
+
+      expect(nextCardStepIndex).toEqual({'test card Id': 2});
+    });
+
+    it('updates cardStepIndex to the lowest step in range when the thumb is smaller than start step', () => {
+      const nextStartStep = 15;
+      const nextEndStep = 35;
+      const selectedSteps = [20, 30];
+      const nextCardStepIndex = {'test card Id': 0};
+      updateNextCardStepIndexOnRangeSelection(
+        cardId,
+        nextStartStep,
+        nextEndStep,
+        selectedSteps,
+        stepValues,
+        nextCardStepIndex
+      );
+
+      expect(nextCardStepIndex).toEqual({'test card Id': 1});
+    });
+
+    it('does not update cardStepIndex when the thumb is in range', () => {
+      const nextStartStep = 15;
+      const nextEndStep = 35;
+      const selectedSteps = [20, 30];
+      const nextCardStepIndex = {'test card Id': 2};
+      updateNextCardStepIndexOnRangeSelection(
+        cardId,
+        nextStartStep,
+        nextEndStep,
+        selectedSteps,
+        stepValues,
+        nextCardStepIndex
+      );
+
+      expect(nextCardStepIndex).toEqual({'test card Id': 2});
+    });
+
+    it('does not update cardStepIndex when selected range had no image', () => {
+      const nextStartStep = 15;
+      const nextEndStep = 18;
+      const selectedSteps: number[] = [];
+      const nextCardStepIndex = {'test card Id': 2};
+      updateNextCardStepIndexOnRangeSelection(
+        cardId,
+        nextStartStep,
+        nextEndStep,
+        selectedSteps,
+        stepValues,
+        nextCardStepIndex
+      );
+
+      expect(nextCardStepIndex).toEqual({'test card Id': 2});
+    });
+  });
 });
