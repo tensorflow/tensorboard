@@ -34,9 +34,9 @@ import {
   TEST_ONLY,
 } from './metrics_store_internal_utils';
 import {
+  ImageTimeSeriesData,
   TimeSeriesData,
   TimeSeriesLoadables,
-  ImageTimeSeriesData
 } from './metrics_types';
 
 const {
@@ -700,9 +700,9 @@ describe('metrics store utils', () => {
         plugin: PluginType.IMAGES,
         tag: 'tagC',
         sample: 0,
-      }
-    }
-    let loadables: TimeSeriesLoadables =  {
+      },
+    };
+    let loadables: TimeSeriesLoadables = {
       scalars: {runToLoadState: {}, runToSeries: {}},
       histograms: {runToLoadState: {}, runToSeries: {}},
       images: {runToLoadState: {}, runToSeries: {}},
@@ -713,7 +713,7 @@ describe('metrics store utils', () => {
       images: {},
     };
 
-    beforeEach(()=> {
+    beforeEach(() => {
       loadables = {
         scalars: {runToLoadState: {}, runToSeries: {}},
         histograms: {runToLoadState: {}, runToSeries: {}},
@@ -724,39 +724,133 @@ describe('metrics store utils', () => {
         histograms: {tagB: loadables.histograms},
         images: {tagC: {0: loadables.images}},
       };
-    })
+    });
 
     it(`gets empty step value when no run id in time series data`, () => {
-      expect(getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)).toEqual([]);
+      expect(
+        getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)
+      ).toEqual([]);
     });
 
     it(`gets empty step value when no steps in image time series data`, () => {
       loadables.images = {runToLoadState: {}, runToSeries: {'test run Id': []}};
       timeSeriesData.images = {tagC: {0: loadables.images}};
 
-      expect(getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)).toEqual([]);
+      expect(
+        getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)
+      ).toEqual([]);
     });
 
     it(`gets single step value`, () => {
-      loadables.images = {runToLoadState: {}, runToSeries: {'test run Id': [{step: 10, wallTime: 0, imageId: ''}]}};
+      loadables.images = {
+        runToLoadState: {},
+        runToSeries: {'test run Id': [{step: 10, wallTime: 0, imageId: ''}]},
+      };
       timeSeriesData.images = {tagC: {0: loadables.images}};
 
-      expect(getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)).toEqual([10]);
-
+      expect(
+        getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)
+      ).toEqual([10]);
     });
 
     it(`gets multi step value`, () => {
-      loadables.images = {runToLoadState: {}, runToSeries: {'test run Id': [{step: 10, wallTime: 0, imageId: '1'}, {step: 20, wallTime: 10, imageId: '2'}, {step: 30, wallTime: 15, imageId: '3'}]}};
+      loadables.images = {
+        runToLoadState: {},
+        runToSeries: {
+          'test run Id': [
+            {step: 10, wallTime: 0, imageId: '1'},
+            {step: 20, wallTime: 10, imageId: '2'},
+            {step: 30, wallTime: 15, imageId: '3'},
+          ],
+        },
+      };
       timeSeriesData.images = {tagC: {0: loadables.images}};
 
-      expect(getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)).toEqual([10, 20, 30]);
+      expect(
+        getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)
+      ).toEqual([10, 20, 30]);
     });
   });
+
   describe('updateNextCardStepIndexOnSingleSelection', () => {
+    const cardId = 'test card Id';
+    const stepValues = [10, 20, 30, 40];
+    let nextCardStepIndex = {'test card Id': 3};
+    beforeEach(() => {
+      nextCardStepIndex = {'test card Id': 3};
+    });
+
     it(`updates cardStepIndex to matched selected time`, () => {
+      const nextStartStep = 20;
+      updateNextCardStepIndexOnSingleSelection(
+        cardId,
+        nextStartStep,
+        stepValues,
+        nextCardStepIndex
+      );
+
+      expect(nextCardStepIndex).toEqual({'test card Id': 1});
     });
 
     it(`does not update cardStepIndex on selected step with no image`, () => {
+      const nextStartStep = 15;
+      updateNextCardStepIndexOnSingleSelection(
+        cardId,
+        nextStartStep,
+        stepValues,
+        nextCardStepIndex
+      );
+
+      expect(nextCardStepIndex).toEqual({'test card Id': 3});
+    });
+
+    it('updates cardStepIndex to smaller closest stepIndexIndex when they are close enough', () => {
+      const nextStartStep = 11;
+      updateNextCardStepIndexOnSingleSelection(
+        cardId,
+        nextStartStep,
+        stepValues,
+        nextCardStepIndex
+      );
+
+      expect(nextCardStepIndex).toEqual({'test card Id': 0});
+    });
+
+    it('dose not update cardStepIndex when selected step is not close to any step values', () => {
+      const nextStartStep = 12;
+      updateNextCardStepIndexOnSingleSelection(
+        cardId,
+        nextStartStep,
+        stepValues,
+        nextCardStepIndex
+      );
+
+      expect(nextCardStepIndex).toEqual({'test card Id': 3});
+    });
+
+    it('updates cardStepIndex to larger closest stepIndex when they are close enough', () => {
+      const nextStartStep = 19;
+      updateNextCardStepIndexOnSingleSelection(
+        cardId,
+        nextStartStep,
+        stepValues,
+        nextCardStepIndex
+      );
+
+      expect(nextCardStepIndex).toEqual({'test card Id': 1});
+    });
+
+    it('dose not update cardStepIndex when there is only one unmatched step', () => {
+      const nextStartStep = 15;
+      const unmatchedStepValues = [10];
+      updateNextCardStepIndexOnSingleSelection(
+        cardId,
+        nextStartStep,
+        unmatchedStepValues,
+        nextCardStepIndex
+      );
+
+      expect(nextCardStepIndex).toEqual({'test card Id': 3});
     });
   });
 });
