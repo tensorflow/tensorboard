@@ -259,7 +259,7 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       })
     );
 
-    // TODO(jieweiwu): Reuse store utils `getSelectedStepsForImageCard`
+    // TODO(jieweiwu): Reuses store utils `getSelectedStepsForImageCard`
     this.selectedSteps$ = this.selectedTime$.pipe(
       combineLatestWith(this.stepValues$),
       map(([selectedTime, stepValues]) => {
