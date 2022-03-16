@@ -12,22 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {LinkedTime} from '../../types';
+import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
+import {MatIconModule} from '@angular/material/icon';
+import {VisSelectedTimeWarningComponent} from './vis_selected_time_warning_component';
 
-export type LinkedTimeWithClipped = LinkedTime & {clipped: boolean};
-
-@Component({
-  selector: 'vis-selected-time-clipped',
-  template: `
-    <mat-icon
-      svgIcon="info_outline_24px"
-      title="Linked step is not found in this visualization. We highlighted the closest step for you."
-    ></mat-icon>
-  `,
-  styleUrls: ['vis_selected_time_clipped_component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+@NgModule({
+  declarations: [VisSelectedTimeWarningComponent],
+  exports: [VisSelectedTimeWarningComponent],
+  imports: [CommonModule, MatIconModule],
 })
-export class VisSelectedTimeClippedComponent {
-  @Input() selectedTime!: LinkedTimeWithClipped | null;
-}
+export class VisSelectedTimeWarningModule {}
