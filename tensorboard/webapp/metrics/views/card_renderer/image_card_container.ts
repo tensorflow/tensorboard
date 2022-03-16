@@ -203,6 +203,7 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       shareReplay(1)
     );
 
+    this.stepIndex$ = this.store.select(getCardStepIndex, this.cardId);
     this.loadState$ = this.store.select(getCardLoadState, this.cardId);
 
     this.tag$ = cardMetadata$.pipe(
@@ -258,6 +259,7 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       })
     );
 
+    // TODO(jieweiwu): Reuse store utils `getSelectedStepsForImageCard`
     this.selectedSteps$ = this.selectedTime$.pipe(
       combineLatestWith(this.stepValues$),
       map(([selectedTime, stepValues]) => {
@@ -276,66 +278,6 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
           }
         }
         return selectedStepsInRange;
-      })
-    );
-
-    this.stepIndex$ = combineLatest(
-      this.store.select(getCardStepIndex, this.cardId),
-      this.selectedTime$,
-      this.selectedSteps$,
-      this.stepValues$
-    ).pipe(
-      map(([stepIndex, selectedTime, selectedSteps, stepValues]) => {
-        if (!selectedTime || selectedTime.clipped) return stepIndex;
-
-        // When there is no selected steps. We check if start step is
-        // "close" enough to a step value and move it.
-        if (selectedSteps.length === 0) {
-          if (stepValues.length === 1) return stepIndex;
-
-          const selectedTimeStepValue = selectedTime.startStep;
-          for (let i = 0; i < stepValues.length - 2; i++) {
-            const currentStepValue = stepValues[i];
-            const nextStepValue = stepValues[i + 1];
-            const distance =
-              (nextStepValue - currentStepValue) * DISTANCE_RATIO;
-            if (selectedTimeStepValue < currentStepValue) return stepIndex;
-
-            if (selectedTimeStepValue - currentStepValue <= distance) {
-              return i;
-            }
-            if (nextStepValue - selectedTimeStepValue <= distance) {
-              return i + 1;
-            }
-          }
-        }
-
-        const firstSelectedStep = selectedSteps[0];
-        const lastSelectedStep = selectedSteps[selectedSteps.length - 1];
-
-        // Range selection
-        if (selectedTime.endStep !== null && stepIndex !== null) {
-          const step = stepValues[stepIndex];
-
-          // Does not move index when it is already in selected range.
-          if (selectedTime.startStep <= step && step <= selectedTime.endStep) {
-            return stepIndex;
-          }
-
-          // Moves thumb to the closest stepIndex.
-          if (step >= lastSelectedStep) {
-            return stepValues.indexOf(lastSelectedStep);
-          }
-          if (step <= firstSelectedStep) {
-            return stepValues.indexOf(firstSelectedStep);
-          }
-        }
-
-        // Single selection
-        const nextStepIndex = stepValues.indexOf(firstSelectedStep);
-        if (nextStepIndex !== -1) return nextStepIndex;
-
-        return stepIndex;
       })
     );
 

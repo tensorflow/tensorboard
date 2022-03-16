@@ -17,11 +17,17 @@ limitations under the License.
  */
 
 import {DataLoadState} from '../../types/data';
-import {isSampledPlugin, PluginType, SampledPluginType} from '../data_source';
+import {
+  ImageStepDatum,
+  isSampledPlugin,
+  PluginType,
+  SampledPluginType,
+} from '../data_source';
 import {
   CardId,
   CardMetadata,
   CardUniqueInfo,
+  LinkedTime,
   NonPinnedCardId,
 } from '../internal_types';
 import {
@@ -35,6 +41,8 @@ import {
   TimeSeriesData,
   TimeSeriesLoadables,
 } from './metrics_types';
+
+const DISTANCE_RATIO = 0.1;
 
 type ResolvedPinPartialState = Pick<
   MetricsState,
@@ -371,4 +379,163 @@ export function canCreateNewPins(state: MetricsState) {
   return pinCountInURL < util.MAX_PIN_COUNT;
 }
 
-export const TEST_ONLY = {util};
+/**
+ * Sets cardStepIndex for image card based on selected time.
+ */
+export function generateNexCardStepIndexFromSelectTime(
+  nextStartStep: number,
+  nextEndStep: number | undefined,
+  endTime: {step: number} | null,
+  previousCardStepIndex: CardStepIndexMap,
+  cardMetadataMap: CardMetadataMap,
+  timeSeriesData: TimeSeriesData
+): CardStepIndexMap {
+  const nextCardStepIndex = {...previousCardStepIndex};
+
+  Object.keys(previousCardStepIndex).forEach((cardId) => {
+    if (!cardId.includes('"plugin":"images"')) return;
+
+    const stepValues = getImageCardStepValues(
+      cardId,
+      cardMetadataMap,
+      timeSeriesData
+    );
+    const selectedSteps = getSelectedSteps(
+      {
+        start: {step: nextStartStep},
+        end: endTime,
+      },
+      stepValues
+    );
+
+    if (nextEndStep === undefined) {
+      updateNextCardStepIndexOnSingleSelection(
+        cardId,
+        nextStartStep,
+        stepValues,
+        nextCardStepIndex
+      );
+    } else {
+      updateNextCardStepIndexOnRangeSelection(
+        cardId,
+        nextStartStep,
+        nextEndStep,
+        selectedSteps,
+        stepValues,
+        nextCardStepIndex
+      );
+    }
+  });
+  return nextCardStepIndex;
+}
+
+/**
+ * Returns selected steps that are within selected time given a list of step
+ */
+function getSelectedSteps(
+  selectedTime: LinkedTime | null,
+  stepValues: number[]
+) {
+  if (!selectedTime) return [];
+
+  if (selectedTime.end === null) {
+    if (stepValues.indexOf(selectedTime.start.step) !== -1)
+      return [selectedTime.start.step];
+    return [];
+  }
+
+  const selectedStepsInRange = [];
+  for (const step of stepValues) {
+    if (step >= selectedTime.start.step && step <= selectedTime.end.step) {
+      selectedStepsInRange.push(step);
+    }
+  }
+  return selectedStepsInRange;
+}
+
+/**
+ * Returns step values of a image card.
+ */
+function getImageCardStepValues(
+  cardId: string,
+  cardMetadataMap: CardMetadataMap,
+  timeSeriesData: TimeSeriesData
+): number[] {
+  const {plugin, tag, sample, runId} = cardMetadataMap[cardId];
+  const loadable = getTimeSeriesLoadable(timeSeriesData, plugin, tag, sample);
+  const runToSeries = loadable ? loadable.runToSeries : null;
+  const timeSeries =
+    runToSeries && runId && runToSeries.hasOwnProperty(runId)
+      ? (runToSeries[runId] as ImageStepDatum[])
+      : [];
+  return timeSeries.map((stepDatum) => stepDatum.step);
+}
+
+function updateNextCardStepIndexOnSingleSelection(
+  cardId: string,
+  nextStartStep: number,
+  stepValues: number[],
+  nextCardStepIndex: CardStepIndexMap
+) {
+  if (stepValues.length === 1) return;
+
+  // Checks exact match.
+  const maybeMatchedStepIndex = stepValues.indexOf(nextStartStep);
+  if (maybeMatchedStepIndex !== -1) {
+    nextCardStepIndex[cardId] = maybeMatchedStepIndex;
+    return;
+  }
+
+  // Checks if start step is "close" enough to a step value and move it
+  for (let i = 0; i < stepValues.length - 2; i++) {
+    const currentStepValue = stepValues[i];
+    const nextStepValue = stepValues[i + 1];
+    const distance = (nextStepValue - currentStepValue) * DISTANCE_RATIO;
+
+    if (nextStartStep < currentStepValue) return;
+    if (nextStartStep - currentStepValue <= distance) {
+      nextCardStepIndex[cardId] = i;
+    }
+    if (nextStepValue - nextStartStep <= distance) {
+      nextCardStepIndex[cardId] = i + 1;
+    }
+  }
+}
+
+function updateNextCardStepIndexOnRangeSelection(
+  cardId: string,
+  nextStartStep: number,
+  nextEndStep: number,
+  selectedSteps: number[],
+  stepValues: number[],
+  nextCardStepIndex: CardStepIndexMap
+) {
+  const firstSelectedStep = selectedSteps[0];
+  const lastSelectedStep = selectedSteps[selectedSteps.length - 1];
+  const currentStepIndex = nextCardStepIndex[cardId];
+
+  if (currentStepIndex !== null) {
+    const currentStepValue = stepValues[currentStepIndex];
+
+    // Does not update index when it is already in selected range.
+    if (nextStartStep <= currentStepValue && currentStepValue <= nextEndStep)
+      return;
+
+    // Updates thumb stepIndex to the closest stepIndex.
+    if (currentStepValue >= lastSelectedStep) {
+      nextCardStepIndex[cardId] = stepValues.indexOf(lastSelectedStep);
+    }
+    if (currentStepValue <= firstSelectedStep) {
+      nextCardStepIndex[cardId] = stepValues.indexOf(firstSelectedStep);
+    }
+  }
+}
+
+export const TEST_ONLY = {
+  util,
+  getSelectedSteps,
+  getImageCardStepValues,
+  generateNexCardStepIndexFromSelectTime,
+  updateNextCardStepIndexOnSingleSelection,
+  updateNextCardStepIndexOnRangeSelection,
+};

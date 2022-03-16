@@ -51,6 +51,7 @@ import {
   canCreateNewPins,
   createPluginDataWithLoadable,
   createRunToLoadState,
+  generateNexCardStepIndexFromSelectTime,
   generateNextCardStepIndex,
   generateNextPinnedCardMappings,
   getCardId,
@@ -920,8 +921,21 @@ const reducer = createReducer(
     };
   }),
   on(actions.selectTimeEnableToggled, (state) => {
+    const {min} = state.stepMinMax;
+    const startStep = min === Infinity ? 0 : min;
+
+    const nextCardStepIndex = generateNexCardStepIndexFromSelectTime(
+      startStep,
+      undefined,
+      null,
+      state.cardStepIndex,
+      state.cardMetadataMap,
+      state.timeSeriesData
+    );
+
     return {
       ...state,
+      cardStepIndex: nextCardStepIndex,
       selectTimeEnabled: !state.selectTimeEnabled,
     };
   }),
@@ -937,8 +951,19 @@ const reducer = createReducer(
     // Otherwise selection state is range.
     const useRangeSelectTime = nextEndStep !== undefined;
 
+    // Updates cardStepIndex for image cards.
+    const nextCardStepIndex = generateNexCardStepIndexFromSelectTime(
+      nextStartStep,
+      nextEndStep,
+      end,
+      state.cardStepIndex,
+      state.cardMetadataMap,
+      state.timeSeriesData
+    );
+
     return {
       ...state,
+      cardStepIndex: nextCardStepIndex,
       selectTimeEnabled: true,
       selectedTime: {
         start: {

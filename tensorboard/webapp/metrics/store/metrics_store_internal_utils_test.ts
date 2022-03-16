@@ -33,7 +33,18 @@ import {
   getTimeSeriesLoadable,
   TEST_ONLY,
 } from './metrics_store_internal_utils';
-import {ImageTimeSeriesData} from './metrics_types';
+import {
+  TimeSeriesData,
+  TimeSeriesLoadables,
+  ImageTimeSeriesData
+} from './metrics_types';
+
+const {
+  getSelectedSteps,
+  getImageCardStepValues,
+  updateNextCardStepIndexOnSingleSelection,
+  updateNextCardStepIndexOnRangeSelection,
+} = TEST_ONLY;
 
 describe('metrics store utils', () => {
   it('getTimeSeriesLoadable properly gets loadables', () => {
@@ -637,6 +648,115 @@ describe('metrics store utils', () => {
       );
 
       expect(nextCardStepIndexMap).toEqual({card1: 1});
+    });
+  });
+
+  describe('generateNexCardStepIndexFromSelectTime', () => {
+    it(`sets cardStepIndex to the highest step in range when the step is larger than end step`, () => {});
+  });
+
+  describe('getSelectedSteps', () => {
+    it(`gets one selected step on single selection`, () => {
+      const selectedTime = {start: {step: 10}, end: null};
+      const stepValues = [10];
+
+      expect(getSelectedSteps(selectedTime, stepValues)).toEqual([10]);
+    });
+
+    it(`gets selected steps on range selection`, () => {
+      const selectedTime = {start: {step: 10}, end: {step: 40}};
+      const stepValues = [5, 10, 20, 40];
+
+      expect(getSelectedSteps(selectedTime, stepValues)).toEqual([10, 20, 40]);
+    });
+
+    it(`gets empty selected steps when select time is null`, () => {
+      const selectedTime = null;
+      const stepValues = [5, 10, 20, 40];
+
+      expect(getSelectedSteps(selectedTime, stepValues)).toEqual([]);
+    });
+
+    it(`gets empty selected steps when single select time does not contain any steps`, () => {
+      const selectedTime = {start: {step: 10}, end: null};
+      const stepValues = [5, 20, 30];
+
+      expect(getSelectedSteps(selectedTime, stepValues)).toEqual([]);
+    });
+
+    it(`gets empty selected steps when range select time does not contain any steps`, () => {
+      const selectedTime = {start: {step: 50}, end: {step: 60}};
+      const stepValues = [5, 10, 20, 40];
+
+      expect(getSelectedSteps(selectedTime, stepValues)).toEqual([]);
+    });
+  });
+
+  describe('getImageCardStepValues', () => {
+    const cardId = 'test-card-id';
+    const cardMetadataMap = {
+      'test-card-id': {
+        runId: 'test run Id',
+        plugin: PluginType.IMAGES,
+        tag: 'tagC',
+        sample: 0,
+      }
+    }
+    let loadables: TimeSeriesLoadables =  {
+      scalars: {runToLoadState: {}, runToSeries: {}},
+      histograms: {runToLoadState: {}, runToSeries: {}},
+      images: {runToLoadState: {}, runToSeries: {}},
+    };
+    let timeSeriesData: TimeSeriesData = {
+      scalars: {},
+      histograms: {},
+      images: {},
+    };
+
+    beforeEach(()=> {
+      loadables = {
+        scalars: {runToLoadState: {}, runToSeries: {}},
+        histograms: {runToLoadState: {}, runToSeries: {}},
+        images: {runToLoadState: {}, runToSeries: {}},
+      };
+      timeSeriesData = {
+        scalars: {tagA: loadables.scalars},
+        histograms: {tagB: loadables.histograms},
+        images: {tagC: {0: loadables.images}},
+      };
+    })
+
+    it(`gets empty step value when no run id in time series data`, () => {
+      expect(getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)).toEqual([]);
+    });
+
+    it(`gets empty step value when no steps in image time series data`, () => {
+      loadables.images = {runToLoadState: {}, runToSeries: {'test run Id': []}};
+      timeSeriesData.images = {tagC: {0: loadables.images}};
+
+      expect(getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)).toEqual([]);
+    });
+
+    it(`gets single step value`, () => {
+      loadables.images = {runToLoadState: {}, runToSeries: {'test run Id': [{step: 10, wallTime: 0, imageId: ''}]}};
+      timeSeriesData.images = {tagC: {0: loadables.images}};
+
+      expect(getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)).toEqual([10]);
+
+    });
+
+    it(`gets multi step value`, () => {
+      loadables.images = {runToLoadState: {}, runToSeries: {'test run Id': [{step: 10, wallTime: 0, imageId: '1'}, {step: 20, wallTime: 10, imageId: '2'}, {step: 30, wallTime: 15, imageId: '3'}]}};
+      timeSeriesData.images = {tagC: {0: loadables.images}};
+
+      expect(getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)).toEqual([10, 20, 30]);
+    });
+  });
+  describe('updateNextCardStepIndexOnSingleSelection', () => {
+    it(`updates cardStepIndex to matched selected time`, () => {
+    });
+
+    it(`does not update cardStepIndex on selected step with no image`, () => {
     });
   });
 });
