@@ -938,9 +938,9 @@ const reducer = createReducer(
     // Otherwise selection state is range.
     const useRangeSelectTime = nextEndStep !== undefined;
 
-    const nextCardStepIndexMap = generateNextCardStepIndexFromSelectTime({
-      ...state.cardStepIndex,
-    });
+    const nextCardStepIndexMap = generateNextCardStepIndexFromSelectTime(
+      state.cardStepIndex
+    );
 
     return {
       ...state,
