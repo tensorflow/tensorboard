@@ -31,6 +31,7 @@ import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
 import {AxisDirection} from '../linked_time_fob/linked_time_fob_controller_component';
 import {LinkedTime} from '../linked_time_fob/linked_time_types';
+import {HistogramFobAdapter} from './histogram_fob_adapter';
 import {
   Bin,
   HistogramData,
@@ -41,7 +42,7 @@ import {
 
 type BinScale = d3.ScaleLinear<number, number>;
 type CountScale = d3.ScaleLinear<number, number>;
-type TemporalScale =
+export type TemporalScale =
   | d3.ScaleLinear<number, number>
   | d3.ScaleTime<number, number>;
 type D3ColorScale = d3.ScaleLinear<HCLColor, string>;
@@ -89,6 +90,8 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
   @ViewChild('yAxis') private readonly yAxis!: ElementRef;
   @ViewChild('content') private readonly content!: ElementRef;
   @ViewChild('histograms') private readonly histograms!: ElementRef;
+  @ViewChild('yAxisOverlay')
+  private readonly yAxisOverlay!: ElementRef;
 
   @Input() mode: HistogramMode = HistogramMode.OFFSET;
 
@@ -132,6 +135,7 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     },
   };
   private domVisible = false;
+  private cardAdapter: HistogramFobAdapter | null = null;
 
   constructor(private readonly changeDetector: ChangeDetectorRef) {
     // `data` and layout are not be available at the constructor time. Since we
@@ -359,6 +363,17 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.renderYAxis();
     // Update Angular rendered part of the histogram.
     this.changeDetector.detectChanges();
+    if (this.cardAdapter === null) {
+      this.cardAdapter = new HistogramFobAdapter(
+        this.scales!.temporalScale,
+        this.getSteps(),
+        this.yAxisOverlay!.nativeElement.getBoundingClientRect()
+      );
+    } else {
+      this.cardAdapter.scale = this.scales.temporalScale;
+      this.cardAdapter.containerRect =
+        this.yAxisOverlay!.nativeElement.getBoundingClientRect();
+    }
   }
 
   private computeScales(data: HistogramData): Scales {
