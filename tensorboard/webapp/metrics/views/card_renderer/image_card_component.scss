@@ -45,7 +45,13 @@ $_tick_width: 14px;
 .line {
   align-items: center;
   display: grid;
-  grid-template-columns: 1fr 1fr max-content;
+  grid-template-columns: 1fr max-content;
+}
+
+.tag {
+  align-items: center;
+  display: flex;
+  gap: 5px;
 }
 
 .metadata {
