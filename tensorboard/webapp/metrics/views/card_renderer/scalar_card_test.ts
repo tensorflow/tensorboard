@@ -179,7 +179,7 @@ describe('scalar card', () => {
     LINE_CHART: By.directive(TestableLineChart),
     TOOLTIP_HEADER_COLUMN: By.css('table.tooltip th'),
     TOOLTIP_ROW: By.css('table.tooltip .tooltip-row'),
-    HEADER_WARNING: By.css('vis-selected-time-clipped'),
+    HEADER_WARNING: By.css('vis-selected-time-warning'),
     LINKED_TIME_AXIS_FOB: By.css('.selected-time-fob'),
   };
 

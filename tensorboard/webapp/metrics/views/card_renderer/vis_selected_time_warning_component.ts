@@ -18,8 +18,7 @@ import {LinkedTime} from '../../types';
 export type LinkedTimeWithClipped = LinkedTime & {clipped: boolean};
 
 @Component({
-  // TODO(japie1235813): Renames to `vis-selected-time-warning` on module applied to cards.
-  selector: 'vis-selected-time-clipped',
+  selector: 'vis-selected-time-warning',
   template: `
     <mat-icon
       *ngIf="isClipped"
@@ -36,7 +35,6 @@ export type LinkedTimeWithClipped = LinkedTime & {clipped: boolean};
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VisSelectedTimeWarningComponent {
-  // TODO(japie1235813): Switch default to false on module applied to cards.
-  @Input() isClipped?: boolean = true;
+  @Input() isClipped?: boolean = false;
   @Input() isClosestStepHighlighted?: boolean = false;
 }

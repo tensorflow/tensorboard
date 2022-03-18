@@ -17,9 +17,9 @@ limitations under the License.
 <div class="heading">
   <div class="tag">
     <tb-truncated-path [title]="tag" [value]="title"></tb-truncated-path>
-    <vis-selected-time-clipped
-      *ngIf="selectedTime && selectedTime.clipped"
-    ></vis-selected-time-clipped>
+    <vis-selected-time-warning
+      [isClipped]="selectedTime && selectedTime.clipped"
+    ></vis-selected-time-warning>
   </div>
   <div class="run">
     <span

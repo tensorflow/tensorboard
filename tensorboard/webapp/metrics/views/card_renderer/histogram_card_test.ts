@@ -398,7 +398,7 @@ describe('histogram card', () => {
         fixture.detectChanges();
 
         const indicatorBefore = fixture.debugElement.query(
-          By.css('vis-selected-time-clipped')
+          By.css('vis-selected-time-warning')
         );
         expect(indicatorBefore).toBeTruthy();
 
@@ -409,7 +409,7 @@ describe('histogram card', () => {
         store.refreshState();
         fixture.detectChanges();
         const indicatorAfter = fixture.debugElement.query(
-          By.css('vis-selected-time-clipped')
+          By.css('vis-selected-time-warning')
         );
         expect(indicatorAfter).toBeNull();
       });
