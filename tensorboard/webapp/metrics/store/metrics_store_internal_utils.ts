@@ -370,5 +370,15 @@ export function canCreateNewPins(state: MetricsState) {
     state.unresolvedImportedPinnedCards.length;
   return pinCountInURL < util.MAX_PIN_COUNT;
 }
+/**
+ * Sets cardStepIndex for image card based on selected time.
+ */
+export function generateNextCardStepIndexFromSelectTime(
+  previousCardStepIndex: CardStepIndexMap
+): CardStepIndexMap {
+  const nextCardStepIndex = {...previousCardStepIndex};
+
+  return nextCardStepIndex;
+}
 
 export const TEST_ONLY = {util};

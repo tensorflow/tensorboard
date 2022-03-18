@@ -52,6 +52,7 @@ import {
   createPluginDataWithLoadable,
   createRunToLoadState,
   generateNextCardStepIndex,
+  generateNextCardStepIndexFromSelectTime,
   generateNextPinnedCardMappings,
   getCardId,
   getRunIds,
@@ -937,6 +938,10 @@ const reducer = createReducer(
     // Otherwise selection state is range.
     const useRangeSelectTime = nextEndStep !== undefined;
 
+    const nextCardStepIndexMap = generateNextCardStepIndexFromSelectTime(
+      state.cardStepIndex
+    );
+
     return {
       ...state,
       selectTimeEnabled: true,
@@ -946,6 +951,7 @@ const reducer = createReducer(
         },
         end,
       },
+      cardStepIndex: nextCardStepIndexMap,
       useRangeSelectTime,
     };
   }),
