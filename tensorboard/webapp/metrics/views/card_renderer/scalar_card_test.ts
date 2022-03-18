@@ -78,6 +78,7 @@ import {
   ScalarCardSeriesMetadata,
   SeriesType,
 } from './scalar_card_types';
+import {VisSelectedTimeWarningModule} from './vis_selected_time_warning_module';
 
 @Component({
   selector: 'line-chart',
@@ -179,7 +180,9 @@ describe('scalar card', () => {
     LINE_CHART: By.directive(TestableLineChart),
     TOOLTIP_HEADER_COLUMN: By.css('table.tooltip th'),
     TOOLTIP_ROW: By.css('table.tooltip .tooltip-row'),
-    HEADER_WARNING: By.css('vis-selected-time-warning'),
+    HEADER_WARNING_CLIPPED: By.css(
+      'vis-selected-time-warning mat-icon[data-value="clipped"]'
+    ),
     LINKED_TIME_AXIS_FOB: By.css('.selected-time-fob'),
   };
 
@@ -254,6 +257,7 @@ describe('scalar card', () => {
         NoopAnimationsModule,
         ResizeDetectorTestingModule,
         TruncatedPathModule,
+        VisSelectedTimeWarningModule,
       ],
       declarations: [
         ScalarCardContainer,
@@ -2031,7 +2035,7 @@ describe('scalar card', () => {
 
   describe('linked time feature integration', () => {
     describe('selectedTime and dataset', () => {
-      it('shows warning when selectedTime is outside the extent of dataset', fakeAsync(() => {
+      it('shows clipped warning when selectedTime is outside the extent of dataset', fakeAsync(() => {
         const runToSeries = {
           run1: [buildScalarStepData({step: 10})],
           run2: [buildScalarStepData({step: 20})],
@@ -2052,11 +2056,11 @@ describe('scalar card', () => {
         fixture.detectChanges();
 
         expect(
-          fixture.debugElement.query(Selector.HEADER_WARNING)
+          fixture.debugElement.query(Selector.HEADER_WARNING_CLIPPED)
         ).toBeTruthy();
       }));
 
-      it('does not show warning if there is an overlap', fakeAsync(() => {
+      it('does not show clipped warning if there is an overlap', fakeAsync(() => {
         const runToSeries = {
           run1: [buildScalarStepData({step: 10})],
           run2: [buildScalarStepData({step: 20})],
@@ -2075,7 +2079,9 @@ describe('scalar card', () => {
         });
         const fixture = createComponent('card1');
         fixture.detectChanges();
-        expect(fixture.debugElement.query(Selector.HEADER_WARNING)).toBeNull();
+        expect(
+          fixture.debugElement.query(Selector.HEADER_WARNING_CLIPPED)
+        ).toBeNull();
 
         store.overrideSelector(getMetricsSelectedTime, {
           start: {step: -10},
@@ -2083,7 +2089,9 @@ describe('scalar card', () => {
         });
         store.refreshState();
         fixture.detectChanges();
-        expect(fixture.debugElement.query(Selector.HEADER_WARNING)).toBeNull();
+        expect(
+          fixture.debugElement.query(Selector.HEADER_WARNING_CLIPPED)
+        ).toBeNull();
 
         store.overrideSelector(getMetricsSelectedTime, {
           start: {step: -1000},
@@ -2091,7 +2099,9 @@ describe('scalar card', () => {
         });
         store.refreshState();
         fixture.detectChanges();
-        expect(fixture.debugElement.query(Selector.HEADER_WARNING)).toBeNull();
+        expect(
+          fixture.debugElement.query(Selector.HEADER_WARNING_CLIPPED)
+        ).toBeNull();
       }));
 
       it('selects selectedTime to min extent when global setting is too small', fakeAsync(() => {

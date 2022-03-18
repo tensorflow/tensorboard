@@ -22,11 +22,13 @@ export type LinkedTimeWithClipped = LinkedTime & {clipped: boolean};
   template: `
     <mat-icon
       *ngIf="isClipped"
+      data-value="clipped"
       svgIcon="info_outline_24px"
       title="Linked step is not found in this visualization. We highlighted the closest step for you."
     ></mat-icon>
     <mat-icon
       *ngIf="isClosestStepHighlighted"
+      data-value="closestStepHighlighted"
       svgIcon="info_outline_24px"
       title="Data is not found on selected step(s). We highlighted the closest step for you."
     ></mat-icon>
