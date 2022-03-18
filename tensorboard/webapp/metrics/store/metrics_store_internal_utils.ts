@@ -378,10 +378,6 @@ export function generateNextCardStepIndexFromSelectTime(
 ): CardStepIndexMap {
   const nextCardStepIndex = {...previousCardStepIndex};
 
-  Object.keys(previousCardStepIndex).forEach((cardId) => {
-    if (!cardId.includes('"plugin":"images"')) return;
-  });
-
   return nextCardStepIndex;
 }
 
