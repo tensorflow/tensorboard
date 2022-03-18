@@ -16,11 +16,16 @@ limitations under the License.
 -->
 <div class="heading">
   <div class="line">
-    <tb-truncated-path
-      class="tag"
-      title="{{ tag }}"
-      value="{{ title }}"
-    ></tb-truncated-path>
+    <span class="tag">
+      <tb-truncated-path
+        class="tag"
+        title="{{ tag }}"
+        value="{{ title }}"
+      ></tb-truncated-path>
+      <vis-selected-time-clipped
+        *ngIf="selectedTime && selectedTime.clipped"
+      ></vis-selected-time-clipped>
+    </span>
     <span class="controls">
       <button
         mat-icon-button

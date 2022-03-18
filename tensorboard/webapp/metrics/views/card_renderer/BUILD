@@ -141,6 +141,7 @@ tf_ng_module(
     deps = [
         ":run_name",
         ":utils",
+        ":vis_selected_time_warning",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_icon",

@@ -48,6 +48,12 @@ $_tick_width: 14px;
   grid-template-columns: 1fr max-content;
 }
 
+.tag {
+  align-items: center;
+  display: flex;
+  gap: 5px;
+}
+
 .metadata {
   display: flex;
   flex-wrap: wrap;

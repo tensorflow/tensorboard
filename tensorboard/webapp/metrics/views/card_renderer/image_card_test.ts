@@ -42,6 +42,7 @@ import {CardId} from '../../types';
 import {ImageCardComponent} from './image_card_component';
 import {ImageCardContainer} from './image_card_container';
 import {RunNameModule} from './run_name_module';
+import {VisSelectedTimeWarningModule} from './vis_selected_time_warning_module';
 
 @Component({
   selector: 'card-view',
@@ -90,6 +91,7 @@ describe('image card', () => {
         MatSliderModule,
         RunNameModule,
         TruncatedPathModule,
+        VisSelectedTimeWarningModule,
       ],
       declarations: [ImageCardContainer, ImageCardComponent, TestableCardView],
       providers: [
@@ -1139,6 +1141,112 @@ describe('image card', () => {
 
           expect(getSliderThumbPosition(fixture)).toBe('2');
         });
+      });
+    });
+
+    describe('selectedTime beyond range of data', () => {
+      it('clips the selectedTime to max step', () => {
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 45},
+          end: {step: 50},
+        });
+        const timeSeries = [
+          {wallTime: 100, imageId: 'ImageId1', step: 10},
+          {wallTime: 101, imageId: 'ImageId2', step: 20},
+          {wallTime: 102, imageId: 'ImageId3', step: 30},
+          {wallTime: 103, imageId: 'ImageId4', step: 40},
+        ];
+        provideMockCardSeriesData(
+          selectSpy,
+          PluginType.IMAGES,
+          'card1',
+          null /* metadataOverride */,
+          timeSeries
+        );
+        const fixture = createImageCardContainer('card1');
+        fixture.detectChanges();
+        const selectedTimeChangeSpy = jasmine.createSpy();
+        fixture.componentInstance.selectedTime$!.subscribe(
+          selectedTimeChangeSpy
+        );
+        fixture.detectChanges();
+
+        expect(selectedTimeChangeSpy).toHaveBeenCalledWith({
+          startStep: 40,
+          endStep: null,
+          clipped: true,
+        });
+      });
+
+      it('clips the selectedTime to min step when it is too small', () => {
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 5},
+          end: {step: 8},
+        });
+        const timeSeries = [
+          {wallTime: 100, imageId: 'ImageId1', step: 10},
+          {wallTime: 101, imageId: 'ImageId2', step: 20},
+          {wallTime: 102, imageId: 'ImageId3', step: 30},
+          {wallTime: 103, imageId: 'ImageId4', step: 40},
+        ];
+        provideMockCardSeriesData(
+          selectSpy,
+          PluginType.IMAGES,
+          'card1',
+          null /* metadataOverride */,
+          timeSeries
+        );
+        const fixture = createImageCardContainer('card1');
+        fixture.detectChanges();
+
+        const selectedTimeChangeSpy = jasmine.createSpy();
+        fixture.componentInstance.selectedTime$!.subscribe(
+          selectedTimeChangeSpy
+        );
+
+        expect(selectedTimeChangeSpy).toHaveBeenCalledWith({
+          startStep: 10,
+          endStep: null,
+          clipped: true,
+        });
+      });
+
+      it('renders warning when the selectedTime is clipped', () => {
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 5},
+          end: {step: 8},
+        });
+        const timeSeries = [
+          {wallTime: 100, imageId: 'ImageId1', step: 10},
+          {wallTime: 101, imageId: 'ImageId2', step: 20},
+          {wallTime: 102, imageId: 'ImageId3', step: 30},
+          {wallTime: 103, imageId: 'ImageId4', step: 40},
+        ];
+        provideMockCardSeriesData(
+          selectSpy,
+          PluginType.IMAGES,
+          'card1',
+          null /* metadataOverride */,
+          timeSeries
+        );
+        const fixture = createImageCardContainer('card1');
+        fixture.detectChanges();
+
+        const indicatorBefore = fixture.debugElement.query(
+          By.css('vis-selected-time-clipped')
+        );
+        expect(indicatorBefore).toBeTruthy();
+
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 0},
+          end: {step: 100},
+        });
+        store.refreshState();
+        fixture.detectChanges();
+        const indicatorAfter = fixture.debugElement.query(
+          By.css('vis-selected-time-clipped')
+        );
+        expect(indicatorAfter).toBeNull();
       });
     });
   });
