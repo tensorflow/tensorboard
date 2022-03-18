@@ -17,7 +17,12 @@ limitations under the License.
  */
 
 import {DataLoadState} from '../../types/data';
-import {isSampledPlugin, PluginType, SampledPluginType} from '../data_source';
+import {
+  ImageStepDatum,
+  isSampledPlugin,
+  PluginType,
+  SampledPluginType,
+} from '../data_source';
 import {
   CardId,
   CardMetadata,
@@ -374,11 +379,41 @@ export function canCreateNewPins(state: MetricsState) {
  * Sets cardStepIndex for image card based on selected time.
  */
 export function generateNextCardStepIndexFromSelectTime(
-  previousCardStepIndex: CardStepIndexMap
+  previousCardStepIndex: CardStepIndexMap,
+  cardMetadataMap: CardMetadataMap,
+  timeSeriesData: TimeSeriesData
 ): CardStepIndexMap {
   const nextCardStepIndex = {...previousCardStepIndex};
+
+  Object.keys(previousCardStepIndex).forEach((cardId) => {
+    if (!cardId.includes('"plugin":"images"')) return;
+
+    const stepValues = getImageCardStepValues(
+      cardId,
+      cardMetadataMap,
+      timeSeriesData
+    );
+  });
 
   return nextCardStepIndex;
 }
 
-export const TEST_ONLY = {util};
+/**
+ * Returns step values of a image card.
+ */
+export function getImageCardStepValues(
+  cardId: string,
+  cardMetadataMap: CardMetadataMap,
+  timeSeriesData: TimeSeriesData
+): number[] {
+  const {plugin, tag, sample, runId} = cardMetadataMap[cardId];
+  const loadable = getTimeSeriesLoadable(timeSeriesData, plugin, tag, sample);
+  const runToSeries = loadable ? loadable.runToSeries : null;
+  const timeSeries =
+    runToSeries && runId && runToSeries.hasOwnProperty(runId)
+      ? (runToSeries[runId] as ImageStepDatum[])
+      : [];
+  return timeSeries.map((stepDatum) => stepDatum.step);
+}
+
+export const TEST_ONLY = {getImageCardStepValues, util};

@@ -939,7 +939,9 @@ const reducer = createReducer(
     const useRangeSelectTime = nextEndStep !== undefined;
 
     const nextCardStepIndexMap = generateNextCardStepIndexFromSelectTime(
-      state.cardStepIndex
+      state.cardStepIndex,
+      state.cardMetadataMap,
+      state.timeSeriesData
     );
 
     return {
