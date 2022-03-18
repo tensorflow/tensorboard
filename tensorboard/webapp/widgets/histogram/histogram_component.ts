@@ -30,8 +30,7 @@ import {takeUntil} from 'rxjs/operators';
 import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
 import {AxisDirection} from '../linked_time_fob/linked_time_fob_controller_component';
-import {LinkedTime} from '../linked_time_fob/linked_time_types';
-import {HistogramFobAdapter} from './histogram_fob_adapter';
+import {FobCardAdapter, LinkedTime} from '../linked_time_fob/linked_time_types';
 import {
   Bin,
   HistogramData,
@@ -84,7 +83,9 @@ export interface TooltipData {
   styleUrls: ['histogram_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
+export class HistogramComponent
+  implements AfterViewInit, OnChanges, OnDestroy, FobCardAdapter
+{
   @ViewChild('main') private readonly main!: ElementRef;
   @ViewChild('xAxis') private readonly xAxis!: ElementRef;
   @ViewChild('yAxis') private readonly yAxis!: ElementRef;
@@ -135,7 +136,6 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     },
   };
   private domVisible = false;
-  private cardAdapter: HistogramFobAdapter | null = null;
 
   constructor(private readonly changeDetector: ChangeDetectorRef) {
     // `data` and layout are not be available at the constructor time. Since we
@@ -363,17 +363,6 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.renderYAxis();
     // Update Angular rendered part of the histogram.
     this.changeDetector.detectChanges();
-    if (this.cardAdapter === null) {
-      this.cardAdapter = new HistogramFobAdapter(
-        this.scales!.temporalScale,
-        this.getSteps(),
-        this.yAxisOverlay!.nativeElement.getBoundingClientRect()
-      );
-    } else {
-      this.cardAdapter.scale = this.scales.temporalScale;
-      this.cardAdapter.containerRect =
-        this.yAxisOverlay!.nativeElement.getBoundingClientRect();
-    }
   }
 
   private computeScales(data: HistogramData): Scales {
@@ -550,6 +539,47 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     this.changeDetector.detectChanges();
   }
+
+  /*************************************************************
+   *              FobCardAdapter Implementation                *
+   *************************************************************/
+  getHighestStep(): number {
+    const steps = this.getSteps();
+    return steps[steps.length - 1];
+  }
+  getLowestStep(): number {
+    return this.getSteps()[0];
+  }
+  stepToPixel(step: number): number {
+    return this.scales!.temporalScale(step);
+  }
+  getStepHigherThanMousePosition(position: number): number {
+    let steps = this.getSteps();
+    let stepIndex = 0;
+    while (
+      position - this.yAxisOverlay.nativeElement.getBoundingClientRect().top >
+        this.scales!.temporalScale(steps[stepIndex]) &&
+      stepIndex < steps.length
+    ) {
+      stepIndex++;
+    }
+    return steps[stepIndex];
+  }
+  getStepLowerThanMousePosition(position: number): number {
+    let steps = this.getSteps();
+    let stepIndex = steps.length - 1;
+    while (
+      position - this.yAxisOverlay.nativeElement.getBoundingClientRect().top <
+        this.scales!.temporalScale(steps[stepIndex]) &&
+      stepIndex > 0
+    ) {
+      stepIndex--;
+    }
+    return steps[stepIndex];
+  }
+  /*************************************************************
+   *          end FobCardAdapter Implementation                *
+   *************************************************************/
 }
 
 function getMin<T>(data: T[], valueAccessor: (val: T) => number): number {

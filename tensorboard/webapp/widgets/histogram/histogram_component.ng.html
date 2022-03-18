@@ -54,7 +54,7 @@ limitations under the License.
       <linked-time-fob-controller
         [axisDirection]="axisDirection"
         [linkedTime]="linkedTime"
-        [cardAdapter]="cardAdapter"
+        [cardAdapter]="this"
         (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
       ></linked-time-fob-controller>
     </ng-container>

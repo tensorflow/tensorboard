@@ -13,7 +13,6 @@ tf_ng_module(
     name = "histogram",
     srcs = [
         "histogram_component.ts",
-        "histogram_fob_adapter.ts",
         "histogram_module.ts",
     ],
     assets = [
