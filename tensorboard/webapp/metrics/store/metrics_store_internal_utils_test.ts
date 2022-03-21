@@ -39,7 +39,7 @@ import {
   TimeSeriesLoadables,
 } from './metrics_types';
 
-const {getImageCardStepValues} = TEST_ONLY;
+const {getImageCardStepValues, getSelectedSteps} = TEST_ONLY;
 
 describe('metrics store utils', () => {
   it('getTimeSeriesLoadable properly gets loadables', () => {
@@ -740,6 +740,43 @@ describe('metrics store utils', () => {
       expect(
         getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)
       ).toEqual([10, 20, 30]);
+    });
+  });
+
+  describe('getSelectedSteps', () => {
+    it(`gets one selected step on single selection`, () => {
+      const selectedTime = {start: {step: 10}, end: null};
+      const stepValues = [10];
+
+      expect(getSelectedSteps(selectedTime, stepValues)).toEqual([10]);
+    });
+
+    it(`gets selected steps on range selection`, () => {
+      const selectedTime = {start: {step: 10}, end: {step: 40}};
+      const stepValues = [5, 10, 20, 40];
+
+      expect(getSelectedSteps(selectedTime, stepValues)).toEqual([10, 20, 40]);
+    });
+
+    it(`gets empty selected steps when select time is null`, () => {
+      const selectedTime = null;
+      const stepValues = [5, 10, 20, 40];
+
+      expect(getSelectedSteps(selectedTime, stepValues)).toEqual([]);
+    });
+
+    it(`gets empty selected steps when single select time does not contain any steps`, () => {
+      const selectedTime = {start: {step: 10}, end: null};
+      const stepValues = [5, 20, 30];
+
+      expect(getSelectedSteps(selectedTime, stepValues)).toEqual([]);
+    });
+
+    it(`gets empty selected steps when range select time does not contain any steps`, () => {
+      const selectedTime = {start: {step: 50}, end: {step: 60}};
+      const stepValues = [5, 10, 20, 40];
+
+      expect(getSelectedSteps(selectedTime, stepValues)).toEqual([]);
     });
   });
 });
