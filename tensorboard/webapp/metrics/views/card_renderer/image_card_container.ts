@@ -48,6 +48,7 @@ import {
   getCardStepIndex,
   getCardTimeSeries,
   getMetricsImageBrightnessInMilli,
+  getMetricsImageCardStepValues,
   getMetricsImageContrastInMilli,
   getMetricsImageShowActualSize,
   getMetricsSelectedTime,
@@ -233,13 +234,9 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       map((cardMetadata) => cardMetadata.numSample)
     );
 
-    // TODO(japie1235813): Reuses `getImageCardStepValues` in store_utils.
-    this.stepValues$ = timeSeries$.pipe(
-      map((series: ImageStepDatum[]) => {
-        return series.map((stepDatum) => {
-          return stepDatum.step;
-        });
-      })
+    this.stepValues$ = this.store.select(
+      getMetricsImageCardStepValues,
+      this.cardId
     );
 
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);

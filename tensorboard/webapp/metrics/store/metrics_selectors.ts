@@ -189,6 +189,23 @@ export const getCardStepIndex = createSelector(
   }
 );
 
+/**
+ * Returns step values of a card.
+ */
+export const getMetricsImageCardStepValues = createSelector(
+  selectMetricsState,
+  (state: MetricsState, cardId: CardId): number[] => {
+    if (!state.cardMetadataMap.hasOwnProperty(cardId)) {
+      return [];
+    }
+    return storeUtils.getImageCardStepValues(
+      cardId,
+      state.cardMetadataMap,
+      state.timeSeriesData
+    );
+  }
+);
+
 const getCardToPinnedCopy = createSelector(
   selectMetricsState,
   (state): Map<NonPinnedCardId, PinnedCardId> => {
