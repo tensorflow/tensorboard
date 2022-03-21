@@ -373,12 +373,35 @@ export function canCreateNewPins(state: MetricsState) {
 /**
  * Sets cardStepIndex for image card based on selected time.
  */
-export function generateNextCardStepIndexFromSelectTime(
-  previousCardStepIndex: CardStepIndexMap
+export function generateNextCardStepIndexFromSelectedTime(
+  previousCardStepIndex: CardStepIndexMap,
+  cardMetadataMap: CardMetadataMap,
+  timeSeriesData: TimeSeriesData
 ): CardStepIndexMap {
   const nextCardStepIndex = {...previousCardStepIndex};
 
   return nextCardStepIndex;
 }
 
-export const TEST_ONLY = {util};
+/**
+ * Returns step values of an image card.
+ */
+export function getImageCardStepValues(
+  cardId: string,
+  cardMetadataMap: CardMetadataMap,
+  timeSeriesData: TimeSeriesData
+): number[] {
+  const {plugin, tag, sample, runId} = cardMetadataMap[cardId];
+  if (runId === null) {
+    return [];
+  }
+
+  const loadable = getTimeSeriesLoadable(timeSeriesData, plugin, tag, sample);
+  if (loadable === null || !loadable.runToSeries.hasOwnProperty(runId)) {
+    return [];
+  }
+
+  return loadable.runToSeries[runId].map((stepDatum) => stepDatum.step);
+}
+
+export const TEST_ONLY = {getImageCardStepValues, util};

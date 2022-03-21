@@ -33,7 +33,13 @@ import {
   getTimeSeriesLoadable,
   TEST_ONLY,
 } from './metrics_store_internal_utils';
-import {ImageTimeSeriesData} from './metrics_types';
+import {
+  ImageTimeSeriesData,
+  TimeSeriesData,
+  TimeSeriesLoadables,
+} from './metrics_types';
+
+const {getImageCardStepValues} = TEST_ONLY;
 
 describe('metrics store utils', () => {
   it('getTimeSeriesLoadable properly gets loadables', () => {
@@ -637,6 +643,103 @@ describe('metrics store utils', () => {
       );
 
       expect(nextCardStepIndexMap).toEqual({card1: 1});
+    });
+  });
+
+  describe('getImageCardStepValues', () => {
+    const cardId = 'test-card-id';
+    const cardId2 = 'test-card-id-non-image';
+    const cardMetadataMap = {
+      [cardId]: {
+        runId: 'test run Id',
+        plugin: PluginType.IMAGES,
+        tag: 'tagC',
+        sample: 1111,
+      },
+      [cardId2]: {
+        runId: 'test run Id2',
+        plugin: PluginType.IMAGES,
+        tag: 'tagA',
+        sample: 0,
+      },
+    };
+    let loadables: TimeSeriesLoadables = {
+      scalars: {runToLoadState: {}, runToSeries: {}},
+      histograms: {runToLoadState: {}, runToSeries: {}},
+      images: {runToLoadState: {}, runToSeries: {}},
+    };
+    let timeSeriesData: TimeSeriesData = {
+      scalars: {},
+      histograms: {},
+      images: {},
+    };
+
+    beforeEach(() => {
+      timeSeriesData = {
+        scalars: {},
+        histograms: {},
+        images: {tagC: {1111: {runToLoadState: {}, runToSeries: {}}}},
+      };
+    });
+
+    it(`gets empty step value when no run id in time series data`, () => {
+      expect(
+        getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)
+      ).toEqual([]);
+    });
+
+    it(`gets empty step value when no steps in image time series data`, () => {
+      timeSeriesData.images = {
+        tagC: {1111: {runToLoadState: {}, runToSeries: {'test run Id': []}}},
+      };
+
+      expect(
+        getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)
+      ).toEqual([]);
+    });
+
+    it(`gets empty step value when time series loadable returns null`, () => {
+      expect(
+        getImageCardStepValues(cardId2, cardMetadataMap, timeSeriesData)
+      ).toEqual([]);
+    });
+
+    it(`gets single step value`, () => {
+      timeSeriesData.images = {
+        tagC: {
+          1111: {
+            runToLoadState: {},
+            runToSeries: {
+              'test run Id': [{step: 10, wallTime: 0, imageId: ''}],
+            },
+          },
+        },
+      };
+
+      expect(
+        getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)
+      ).toEqual([10]);
+    });
+
+    it(`gets multi step value`, () => {
+      timeSeriesData.images = {
+        tagC: {
+          1111: {
+            runToLoadState: {},
+            runToSeries: {
+              'test run Id': [
+                {step: 10, wallTime: 0, imageId: '1'},
+                {step: 20, wallTime: 10, imageId: '2'},
+                {step: 30, wallTime: 15, imageId: '3'},
+              ],
+            },
+          },
+        },
+      };
+
+      expect(
+        getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)
+      ).toEqual([10, 20, 30]);
     });
   });
 });

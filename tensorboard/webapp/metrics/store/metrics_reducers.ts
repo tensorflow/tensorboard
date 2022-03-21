@@ -52,7 +52,7 @@ import {
   createPluginDataWithLoadable,
   createRunToLoadState,
   generateNextCardStepIndex,
-  generateNextCardStepIndexFromSelectTime,
+  generateNextCardStepIndexFromSelectedTime,
   generateNextPinnedCardMappings,
   getCardId,
   getRunIds,
@@ -938,8 +938,10 @@ const reducer = createReducer(
     // Otherwise selection state is range.
     const useRangeSelectTime = nextEndStep !== undefined;
 
-    const nextCardStepIndexMap = generateNextCardStepIndexFromSelectTime(
-      state.cardStepIndex
+    const nextCardStepIndexMap = generateNextCardStepIndexFromSelectedTime(
+      state.cardStepIndex,
+      state.cardMetadataMap,
+      state.timeSeriesData
     );
 
     return {
