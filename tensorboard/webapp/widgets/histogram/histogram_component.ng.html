@@ -34,7 +34,7 @@ limitations under the License.
       </g>
     </g>
   </svg>
-  <div class="axis y-axis">
+  <div #yAxisOverlay class="axis y-axis">
     <svg>
       <g #yAxis></g>
       <!-- d3 places axis label at 9px right from the left edge. -->
@@ -51,13 +51,14 @@ limitations under the License.
     </svg>
     <!-- Disable the feature when in non-offset and non-step mode. -->
     <ng-container *ngIf="isLinkedTimeEnabled(linkedTime)">
-      <linked-time-fob-controller
+      <histogram-linked-time-fob-controller
         [axisDirection]="axisDirection"
         [linkedTime]="linkedTime"
         [steps]="getSteps()"
         [temporalScale]="scales.temporalScale"
+        [startingPosition]="getAxisTop()"
         (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
-      ></linked-time-fob-controller>
+      ></histogram-linked-time-fob-controller>
     </ng-container>
   </div>
   <svg #content class="content">

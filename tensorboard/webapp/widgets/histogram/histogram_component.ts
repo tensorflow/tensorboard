@@ -89,6 +89,8 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
   @ViewChild('yAxis') private readonly yAxis!: ElementRef;
   @ViewChild('content') private readonly content!: ElementRef;
   @ViewChild('histograms') private readonly histograms!: ElementRef;
+  @ViewChild('yAxisOverlay')
+  private readonly yAxisOverlay!: ElementRef;
 
   @Input() mode: HistogramMode = HistogramMode.OFFSET;
 
@@ -330,6 +332,10 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
         end: {step: nextEndStep},
       });
     }
+  }
+
+  getAxisTop() {
+    return this.yAxisOverlay.nativeElement.getBoundingClientRect().top;
   }
 
   private getTimeValue(datum: HistogramDatum): number {
