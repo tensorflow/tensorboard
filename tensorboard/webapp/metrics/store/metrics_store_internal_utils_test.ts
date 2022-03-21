@@ -648,11 +648,18 @@ describe('metrics store utils', () => {
 
   describe('getImageCardStepValues', () => {
     const cardId = 'test-card-id';
+    const cardId2 = 'test-card-id-non-image';
     const cardMetadataMap = {
       [cardId]: {
         runId: 'test run Id',
         plugin: PluginType.IMAGES,
         tag: 'tagC',
+        sample: 1111,
+      },
+      [cardId2]: {
+        runId: 'test run Id2',
+        plugin: PluginType.IMAGES,
+        tag: 'tagA',
         sample: 0,
       },
     };
@@ -668,15 +675,10 @@ describe('metrics store utils', () => {
     };
 
     beforeEach(() => {
-      loadables = {
-        scalars: {runToLoadState: {}, runToSeries: {}},
-        histograms: {runToLoadState: {}, runToSeries: {}},
-        images: {runToLoadState: {}, runToSeries: {}},
-      };
       timeSeriesData = {
-        scalars: {tagA: loadables.scalars},
-        histograms: {tagB: loadables.histograms},
-        images: {tagC: {0: loadables.images}},
+        scalars: {},
+        histograms: {},
+        images: {tagC: {1111: {runToLoadState: {}, runToSeries: {}}}},
       };
     });
 
@@ -687,20 +689,32 @@ describe('metrics store utils', () => {
     });
 
     it(`gets empty step value when no steps in image time series data`, () => {
-      loadables.images = {runToLoadState: {}, runToSeries: {'test run Id': []}};
-      timeSeriesData.images = {tagC: {0: loadables.images}};
+      timeSeriesData.images = {
+        tagC: {1111: {runToLoadState: {}, runToSeries: {'test run Id': []}}},
+      };
 
       expect(
         getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)
       ).toEqual([]);
     });
 
+    it(`gets empty step value when time series loadable returns null`, () => {
+      expect(
+        getImageCardStepValues(cardId2, cardMetadataMap, timeSeriesData)
+      ).toEqual([]);
+    });
+
     it(`gets single step value`, () => {
-      loadables.images = {
-        runToLoadState: {},
-        runToSeries: {'test run Id': [{step: 10, wallTime: 0, imageId: ''}]},
+      timeSeriesData.images = {
+        tagC: {
+          1111: {
+            runToLoadState: {},
+            runToSeries: {
+              'test run Id': [{step: 10, wallTime: 0, imageId: ''}],
+            },
+          },
+        },
       };
-      timeSeriesData.images = {tagC: {0: loadables.images}};
 
       expect(
         getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)
@@ -708,17 +722,20 @@ describe('metrics store utils', () => {
     });
 
     it(`gets multi step value`, () => {
-      loadables.images = {
-        runToLoadState: {},
-        runToSeries: {
-          'test run Id': [
-            {step: 10, wallTime: 0, imageId: '1'},
-            {step: 20, wallTime: 10, imageId: '2'},
-            {step: 30, wallTime: 15, imageId: '3'},
-          ],
+      timeSeriesData.images = {
+        tagC: {
+          1111: {
+            runToLoadState: {},
+            runToSeries: {
+              'test run Id': [
+                {step: 10, wallTime: 0, imageId: '1'},
+                {step: 20, wallTime: 10, imageId: '2'},
+                {step: 30, wallTime: 15, imageId: '3'},
+              ],
+            },
+          },
         },
       };
-      timeSeriesData.images = {tagC: {0: loadables.images}};
 
       expect(
         getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)
