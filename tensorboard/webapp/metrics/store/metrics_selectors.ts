@@ -190,7 +190,7 @@ export const getCardStepIndex = createSelector(
 );
 
 /**
- * Returns step values of a card.
+ * Returns step values of an image card.
  */
 export const getMetricsImageCardStepValues = createSelector(
   selectMetricsState,
