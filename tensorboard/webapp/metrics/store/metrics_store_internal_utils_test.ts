@@ -39,7 +39,11 @@ import {
   TimeSeriesLoadables,
 } from './metrics_types';
 
-const {getImageCardStepValues, getSelectedSteps} = TEST_ONLY;
+const {
+  getImageCardStepValues,
+  getSelectedSteps,
+  getNextCardStepIndexOnSingleSelection,
+} = TEST_ONLY;
 
 describe('metrics store utils', () => {
   it('getTimeSeriesLoadable properly gets loadables', () => {
@@ -784,6 +788,89 @@ describe('metrics store utils', () => {
       const steps = [5, 10, 20, 40];
 
       expect(getSelectedSteps(selectedTime, steps)).toEqual([]);
+    });
+  });
+
+  describe('getNextCardStepIndexOnSingleSelection', () => {
+    const cardId = 'test card Id';
+    const stepValues = [10, 20, 30, 40];
+    let previousCardStepIndex = {'test card Id': 3};
+
+    beforeEach(() => {
+      previousCardStepIndex = {'test card Id': 3};
+    });
+
+    it(`updates cardStepIndex to matched selected time`, () => {
+      const nextStartStep = 20;
+      const nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
+        cardId,
+        nextStartStep,
+        stepValues,
+        previousCardStepIndex
+      );
+
+      expect(nextCardStepIndex).toEqual({'test card Id': 1});
+    });
+
+    it(`does not update cardStepIndex on selected step with no image`, () => {
+      const nextStartStep = 15;
+      const nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
+        cardId,
+        nextStartStep,
+        stepValues,
+        previousCardStepIndex
+      );
+
+      expect(nextCardStepIndex).toEqual({'test card Id': 3});
+    });
+
+    it('updates cardStepIndex to smaller closest stepIndexIndex when they are close enough', () => {
+      const nextStartStep = 11;
+      const nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
+        cardId,
+        nextStartStep,
+        stepValues,
+        previousCardStepIndex
+      );
+
+      expect(nextCardStepIndex).toEqual({'test card Id': 0});
+    });
+
+    it('dose not update cardStepIndex when selected step is not close to any step values', () => {
+      const nextStartStep = 12;
+      const nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
+        cardId,
+        nextStartStep,
+        stepValues,
+        previousCardStepIndex
+      );
+
+      expect(nextCardStepIndex).toEqual({'test card Id': 3});
+    });
+
+    it('updates cardStepIndex to larger closest stepIndex when they are close enough', () => {
+      const nextStartStep = 19;
+      const nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
+        cardId,
+        nextStartStep,
+        stepValues,
+        previousCardStepIndex
+      );
+
+      expect(nextCardStepIndex).toEqual({'test card Id': 1});
+    });
+
+    it('dose not update cardStepIndex when there is only one unmatched step', () => {
+      const nextStartStep = 15;
+      const unmatchedStepValues = [10];
+      const nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
+        cardId,
+        nextStartStep,
+        unmatchedStepValues,
+        previousCardStepIndex
+      );
+
+      expect(nextCardStepIndex).toEqual({'test card Id': 3});
     });
   });
 });

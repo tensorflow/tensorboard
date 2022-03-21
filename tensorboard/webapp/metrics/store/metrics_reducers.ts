@@ -961,7 +961,13 @@ const reducer = createReducer(
     const nextCardStepIndexMap = generateNextCardStepIndexFromSelectedTime(
       state.cardStepIndex,
       state.cardMetadataMap,
-      state.timeSeriesData
+      state.timeSeriesData,
+      {
+        start: {
+          step: nextStartStep,
+        },
+        end,
+      }
     );
 
     return {

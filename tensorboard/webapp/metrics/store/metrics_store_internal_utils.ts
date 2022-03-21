@@ -45,6 +45,8 @@ type ResolvedPinPartialState = Pick<
   | 'cardStepIndex'
 >;
 
+const DISTANCE_RATIO = 0.1;
+
 /**
  * Returns the loadable information for a specific tag, containing its series
  * data and load state. Returns `null` when the requested tag has no initial
@@ -377,9 +379,29 @@ export function canCreateNewPins(state: MetricsState) {
 export function generateNextCardStepIndexFromSelectedTime(
   previousCardStepIndex: CardStepIndexMap,
   cardMetadataMap: CardMetadataMap,
-  timeSeriesData: TimeSeriesData
+  timeSeriesData: TimeSeriesData,
+  selectedTime: LinkedTime
 ): CardStepIndexMap {
-  const nextCardStepIndex = {...previousCardStepIndex};
+  let nextCardStepIndex = {...previousCardStepIndex};
+
+  Object.keys(previousCardStepIndex).forEach((cardId) => {
+    if (!cardId.includes('"plugin":"images"')) return;
+
+    const stepValues = getImageCardStepValues(
+      cardId,
+      cardMetadataMap,
+      timeSeriesData
+    );
+
+    if (selectedTime.end === null) {
+      nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
+        cardId,
+        selectedTime.start.step,
+        stepValues,
+        previousCardStepIndex
+      );
+    }
+  });
 
   return nextCardStepIndex;
 }
@@ -428,4 +450,49 @@ function getSelectedSteps(selectedTime: LinkedTime | null, steps: number[]) {
   return selectedStepsInRange;
 }
 
-export const TEST_ONLY = {getImageCardStepValues, getSelectedSteps, util};
+/**
+ * Gets cardStepIndex updated based on single selection.
+ */
+function getNextCardStepIndexOnSingleSelection(
+  cardId: string,
+  startStep: number,
+  stepValues: number[],
+  previousCardStepIndex: CardStepIndexMap
+) {
+  const nextCardStepIndex = {...previousCardStepIndex};
+
+  if (stepValues.length === 1) return nextCardStepIndex;
+
+  // Checks exact match.
+  const maybeMatchedStepIndex = stepValues.indexOf(startStep);
+  if (maybeMatchedStepIndex !== -1) {
+    nextCardStepIndex[cardId] = maybeMatchedStepIndex;
+    return nextCardStepIndex;
+  }
+
+  // Checks if start step is "close" enough to a step value and move it
+  for (let i = 0; i < stepValues.length - 2; i++) {
+    const currentStepValue = stepValues[i];
+    const nextStepValue = stepValues[i + 1];
+    const distance = (nextStepValue - currentStepValue) * DISTANCE_RATIO;
+
+    if (startStep < currentStepValue) return nextCardStepIndex;
+    if (startStep > nextStepValue) continue;
+
+    if (startStep - currentStepValue <= distance) {
+      nextCardStepIndex[cardId] = i;
+    }
+    if (nextStepValue - startStep <= distance) {
+      nextCardStepIndex[cardId] = i + 1;
+    }
+  }
+
+  return nextCardStepIndex;
+}
+
+export const TEST_ONLY = {
+  getImageCardStepValues,
+  getSelectedSteps,
+  getNextCardStepIndexOnSingleSelection,
+  util,
+};
