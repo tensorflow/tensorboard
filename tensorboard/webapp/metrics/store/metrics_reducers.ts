@@ -250,6 +250,7 @@ const {initialState, reducers: namespaceContextedReducer} =
       // Cards.
       cardList: [],
       cardToPinnedCopy: new Map(),
+      cardToPinnedCopyCache: new Map(),
       pinnedCardToOriginal: new Map(),
       unresolvedImportedPinnedCards: [],
       cardMetadataMap: {},
@@ -526,8 +527,7 @@ const reducer = createReducer(
         nextPinnedCardToOriginal,
         pinnedCardMetadataMap,
       } = generateNextPinnedCardMappings(
-        state.cardToPinnedCopy,
-        state.pinnedCardToOriginal,
+        state.cardToPinnedCopyCache,
         newCardMetadataMap,
         nextCardList
       );
@@ -881,6 +881,7 @@ const reducer = createReducer(
     }
 
     let nextCardToPinnedCopy = new Map(state.cardToPinnedCopy);
+    let nextCardToPinnedCopyCache = new Map(state.cardToPinnedCopyCache);
     let nextPinnedCardToOriginal = new Map(state.pinnedCardToOriginal);
     let nextCardMetadataMap = {...state.cardMetadataMap};
     let nextCardStepIndexMap = {...state.cardStepIndex};
@@ -901,12 +902,14 @@ const reducer = createReducer(
           nextCardMetadataMap
         );
         nextCardToPinnedCopy = resolvedResult.cardToPinnedCopy;
+        nextCardToPinnedCopyCache = resolvedResult.cardToPinnedCopy;
         nextPinnedCardToOriginal = resolvedResult.pinnedCardToOriginal;
         nextCardMetadataMap = resolvedResult.cardMetadataMap;
         nextCardStepIndexMap = resolvedResult.cardStepIndex;
       } else {
         const pinnedCardId = state.cardToPinnedCopy.get(cardId)!;
         nextCardToPinnedCopy.delete(cardId);
+        nextCardToPinnedCopyCache.delete(cardId);
         nextPinnedCardToOriginal.delete(pinnedCardId);
         delete nextCardMetadataMap[pinnedCardId];
         delete nextCardStepIndexMap[pinnedCardId];

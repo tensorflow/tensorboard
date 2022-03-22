@@ -134,6 +134,7 @@ export interface MetricsNamespacedState {
   // A list of card ids in the main content area, excluding pinned copies.
   cardList: NonPinnedCardId[];
   cardToPinnedCopy: CardToPinnedCard;
+  cardToPinnedCopyCache: CardToPinnedCard;
   pinnedCardToOriginal: PinnedCardToCard;
   /**
    * Pinned cards imported from storage that do not yet have a corresponding
