@@ -753,9 +753,16 @@ describe('metrics store utils', () => {
 
     it(`gets selected steps on range selection`, () => {
       const selectedTime = {start: {step: 10}, end: {step: 40}};
-      const stepValues = [5, 10, 20, 40];
+      const stepValues = [5, 10, 20, 40, 50];
 
       expect(getSelectedSteps(selectedTime, stepValues)).toEqual([10, 20, 40]);
+    });
+
+    it(`gets selected steps on clipped range selection`, () => {
+      const selectedTime = {start: {step: 10}, end: {step: 40}};
+      const stepValues = [5, 10, 20];
+
+      expect(getSelectedSteps(selectedTime, stepValues)).toEqual([10, 20]);
     });
 
     it(`gets empty selected steps when select time is null`, () => {

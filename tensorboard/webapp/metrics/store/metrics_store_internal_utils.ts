@@ -406,22 +406,24 @@ export function getImageCardStepValues(
 }
 
 /**
- * Returns selected steps that are within selected time given a list of step
+ * Returns the subset of steps that are within selected time given a list of steps
  */
 function getSelectedSteps(
   selectedTime: LinkedTime | null,
-  stepValues: number[]
+  steps: number[]
 ) {
   if (!selectedTime) return [];
 
+  // Single selection: returns start step if matching any step in the list, otherwise returns nothing.
   if (selectedTime.end === null) {
-    if (stepValues.indexOf(selectedTime.start.step) !== -1)
+    if (steps.indexOf(selectedTime.start.step) !== -1)
       return [selectedTime.start.step];
     return [];
   }
 
+  // Range selection.
   const selectedStepsInRange = [];
-  for (const step of stepValues) {
+  for (const step of steps) {
     if (step >= selectedTime.start.step && step <= selectedTime.end.step) {
       selectedStepsInRange.push(step);
     }
