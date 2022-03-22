@@ -43,10 +43,10 @@ export class HistogramLinkedTimeFobController implements FobCardAdapter {
   getLowestStep(): number {
     return this.steps[0];
   }
-  stepToPixel(step: number): number {
+  getAxisPositionFromStep(step: number): number {
     return this.temporalScale(step);
   }
-  getStepHigherThanMousePosition(position: number): number {
+  getStepHigherThanAxisPosition(position: number): number {
     let steps = this.steps;
     let stepIndex = 0;
     while (
@@ -57,7 +57,7 @@ export class HistogramLinkedTimeFobController implements FobCardAdapter {
     }
     return steps[stepIndex];
   }
-  getStepLowerThanMousePosition(position: number): number {
+  getStepLowerThanAxisPosition(position: number): number {
     let steps = this.steps;
     let stepIndex = steps.length - 1;
     while (

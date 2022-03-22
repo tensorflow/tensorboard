@@ -36,7 +36,6 @@ export enum Fob {
   END,
 }
 
-type TemporalScale = ScaleLinear<number, number> | ScaleTime<number, number>;
 @Component({
   selector: 'linked-time-fob-controller',
   templateUrl: 'linked_time_fob_controller_component.ng.html',
@@ -61,10 +60,14 @@ export class LinkedTimeFobControllerComponent {
 
   getCssTranslatePx(step: number): string {
     if (this.axisDirection === AxisDirection.VERTICAL) {
-      return `translate(0px, ${this.cardAdapter.stepToPixel(step)}px)`;
+      return `translate(0px, ${this.cardAdapter.getAxisPositionFromStep(
+        step
+      )}px)`;
     }
 
-    return `translate(${this.cardAdapter.stepToPixel(step)}px, 0px)`;
+    return `translate(${this.cardAdapter.getAxisPositionFromStep(
+      step
+    )}px, 0px)`;
   }
 
   startDrag(fob: Fob) {
@@ -81,9 +84,9 @@ export class LinkedTimeFobControllerComponent {
     let newLinkedTime = this.linkedTime;
     let newStep: number;
     if (this.isDraggingHigher(event.clientY, event.movementY)) {
-      newStep = this.cardAdapter.getStepHigherThanMousePosition(event.clientY);
+      newStep = this.cardAdapter.getStepHigherThanAxisPosition(event.clientY);
     } else if (this.isDraggingLower(event.clientY, event.movementY)) {
-      newStep = this.cardAdapter.getStepLowerThanMousePosition(event.clientY);
+      newStep = this.cardAdapter.getStepLowerThanAxisPosition(event.clientY);
     } else {
       return;
     }
