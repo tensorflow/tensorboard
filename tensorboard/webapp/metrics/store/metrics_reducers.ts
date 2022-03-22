@@ -283,11 +283,31 @@ const {initialState, reducers: namespaceContextedReducer} =
       if (!areSameRouteKindAndExperiments(oldRoute, newRoute)) {
         return {
           ...state,
-          // The route changes, we want to trigger tag metadata to reload.
+          // When the route changes we want to trigger tag metadata reload and
+          // clear some of the metadata that is derived from that request:
+          // tagMetadata, cardList, cardMetadataMap. These are the key inputs
+          // for deciding which cards to render and which runs to render on
+          // those cards (See b/225162725).
           tagMetadataLoadState: {
             state: DataLoadState.NOT_LOADED,
             lastLoadedTimeInMs: null,
           },
+          tagMetadata: {
+            scalars: {
+              tagDescriptions: {},
+              tagToRuns: {},
+            },
+            histograms: {
+              tagDescriptions: {},
+              tagToRuns: {},
+            },
+            images: {
+              tagDescriptions: {},
+              tagRunSampledInfo: {},
+            },
+          },
+          cardList: [],
+          cardMetadataMap: {},
           // Reset visible cards in case we resume a route that was left dirty.
           // Since visibility tracking is async, the state may not have received
           // 'exited card' updates when it was cached by the router.

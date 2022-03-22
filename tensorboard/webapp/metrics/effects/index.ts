@@ -224,8 +224,8 @@ export class MetricsEffects implements OnInitEffects {
 
   private readonly visibleCardsWithoutDataChanged$ = this.actions$.pipe(
     ofType(actions.cardVisibilityChanged),
-    switchMap(() => this.getVisibleCardFetchInfos().pipe(take(1))),
-    map((fetchInfos) => {
+    withLatestFrom(this.getVisibleCardFetchInfos()),
+    map(([, fetchInfos]) => {
       return fetchInfos.filter((fetchInfo) => {
         return fetchInfo.loadState === DataLoadState.NOT_LOADED;
       });
@@ -233,8 +233,8 @@ export class MetricsEffects implements OnInitEffects {
   );
 
   private readonly visibleCardsReloaded$ = this.reloadRequestedWhileShown$.pipe(
-    switchMap(() => this.getVisibleCardFetchInfos().pipe(take(1))),
-    map((fetchInfos) => {
+    withLatestFrom(this.getVisibleCardFetchInfos()),
+    map(([, fetchInfos]) => {
       return fetchInfos.filter((fetchInfo) => {
         return fetchInfo.loadState !== DataLoadState.LOADING;
       });
@@ -262,8 +262,10 @@ export class MetricsEffects implements OnInitEffects {
   /**
    * In general, this effect dispatch the following actions:
    *
-   * On dashboard shown with visible cards:
+   * On dashboard shown without data loaded:
    * - metricsTagMetadataRequested
+   *
+   * On changes to the set of cards that are visible:
    * - multipleTimeSeriesRequested
    *
    * On reloads:

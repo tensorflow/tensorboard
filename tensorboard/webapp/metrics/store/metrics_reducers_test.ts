@@ -848,44 +848,52 @@ describe('metrics reducers', () => {
     }
   });
 
-  describe('experiment set changes', () => {
-    it('resets data when mounting a new route', () => {
-      const prevState = buildMetricsState({
-        visibleCardMap: new Map([
-          [nextElementId(), 'card1'],
-          [nextElementId(), 'card2'],
-        ]),
-      });
-
-      const navigateFrom1to2 = buildNavigatedAction({
-        before: buildRoute({
-          routeKind: RouteKind.EXPERIMENT,
-          params: {experimentId: 'exp1'},
-        }),
-        after: buildRoute({
-          routeKind: RouteKind.EXPERIMENT,
-          params: {experimentId: 'exp2'},
-        }),
-      });
-      const navigateFrom2to1 = buildNavigatedAction({
-        before: buildRoute({
-          routeKind: RouteKind.EXPERIMENT,
-          params: {experimentId: 'exp2'},
-        }),
-        after: buildRoute({
-          routeKind: RouteKind.EXPERIMENT,
-          params: {experimentId: 'exp1'},
-        }),
-      });
-
-      let nextState = reducers(prevState, navigateFrom1to2);
-      nextState = reducers(nextState, navigateFrom2to1);
-
-      const expectedState = buildMetricsState({
-        visibleCardMap: new Map(),
-      });
-      expect(nextState.visibleCardMap).toEqual(expectedState.visibleCardMap);
+  it('navigating to new set of experiments resets data', () => {
+    const prevState = buildMetricsState({
+      tagMetadataLoadState: {
+        state: DataLoadState.LOADED,
+        lastLoadedTimeInMs: 3,
+      },
+      tagMetadata: {
+        ...buildTagMetadata(),
+        scalars: {
+          tagDescriptions: {},
+          tagToRuns: {tagA: ['exp1/run1', 'exp1/run2']},
+        },
+      },
+      cardList: ['tagA'],
+      cardMetadataMap: {
+        tagA: createScalarCardMetadata(),
+      },
+      visibleCardMap: new Map([
+        [nextElementId(), 'card1'],
+        [nextElementId(), 'card2'],
+      ]),
     });
+
+    const navigate = buildNavigatedAction({
+      before: buildRoute({
+        routeKind: RouteKind.EXPERIMENT,
+        params: {experimentId: 'exp1'},
+      }),
+      after: buildRoute({
+        routeKind: RouteKind.EXPERIMENT,
+        params: {experimentId: 'exp2'},
+      }),
+    });
+    let nextState = reducers(prevState, navigate);
+
+    const expectedState = buildMetricsState({
+      tagMetadataLoadState: {
+        state: DataLoadState.NOT_LOADED,
+        lastLoadedTimeInMs: null,
+      },
+      tagMetadata: buildTagMetadata(),
+      cardList: [],
+      cardMetadataMap: {},
+      visibleCardMap: new Map(),
+    });
+    expect(nextState).toEqual(expectedState);
   });
 
   describe('settings', () => {
