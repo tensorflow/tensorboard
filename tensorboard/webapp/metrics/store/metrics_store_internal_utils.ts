@@ -22,6 +22,7 @@ import {
   CardId,
   CardMetadata,
   CardUniqueInfo,
+  LinkedTime,
   NonPinnedCardId,
 } from '../internal_types';
 import {
@@ -404,4 +405,27 @@ export function getImageCardStepValues(
   return loadable.runToSeries[runId].map((stepDatum) => stepDatum.step);
 }
 
-export const TEST_ONLY = {getImageCardStepValues, util};
+/**
+ * Returns the subset of steps that are within selected time given a list of steps
+ */
+function getSelectedSteps(selectedTime: LinkedTime | null, steps: number[]) {
+  if (!selectedTime) return [];
+
+  // Single selection: returns start step if matching any step in the list, otherwise returns nothing.
+  if (selectedTime.end === null) {
+    if (steps.indexOf(selectedTime.start.step) !== -1)
+      return [selectedTime.start.step];
+    return [];
+  }
+
+  // Range selection.
+  const selectedStepsInRange = [];
+  for (const step of steps) {
+    if (step >= selectedTime.start.step && step <= selectedTime.end.step) {
+      selectedStepsInRange.push(step);
+    }
+  }
+  return selectedStepsInRange;
+}
+
+export const TEST_ONLY = {getImageCardStepValues, getSelectedSteps, util};

@@ -259,6 +259,7 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       })
     );
 
+    // TODO(japie1235813): Reuses `getSelectedSteps` in store_utils.
     this.selectedSteps$ = this.selectedTime$.pipe(
       combineLatestWith(this.stepValues$),
       map(([selectedTime, stepValues]) => {
