@@ -393,6 +393,7 @@ export function generateNextCardStepIndexFromSelectedTime(
       timeSeriesData
     );
 
+    // Single Selection
     if (selectedTime.end === null) {
       nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
         cardId,
@@ -494,5 +495,6 @@ export const TEST_ONLY = {
   getImageCardStepValues,
   getSelectedSteps,
   getNextCardStepIndexOnSingleSelection,
+  generateNextCardStepIndexFromSelectedTime,
   util,
 };

@@ -33,16 +33,13 @@ import {
   getTimeSeriesLoadable,
   TEST_ONLY,
 } from './metrics_store_internal_utils';
-import {
-  ImageTimeSeriesData,
-  TimeSeriesData,
-  TimeSeriesLoadables,
-} from './metrics_types';
+import {ImageTimeSeriesData, TimeSeriesData} from './metrics_types';
 
 const {
   getImageCardStepValues,
   getSelectedSteps,
   getNextCardStepIndexOnSingleSelection,
+  generateNextCardStepIndexFromSelectedTime,
 } = TEST_ONLY;
 
 describe('metrics store utils', () => {
@@ -650,6 +647,173 @@ describe('metrics store utils', () => {
     });
   });
 
+  describe('generateNextCardStepIndexFromSelectedTime', () => {
+    const imageCardId = 'test imagee card id "plugin":"images"';
+    const previousCardStepIndex = {[imageCardId]: null};
+    const cardMetadataMap = {
+      [imageCardId]: {
+        runId: 'test run Id',
+        plugin: PluginType.IMAGES,
+        tag: 'tagC',
+        sample: 111,
+      },
+    };
+    let timeSeriesData: TimeSeriesData = {
+      scalars: {},
+      histograms: {},
+      images: {},
+    };
+
+    beforeEach(() => {
+      timeSeriesData = {
+        scalars: {},
+        histograms: {},
+        images: {
+          tagC: {
+            111: {
+              runToLoadState: {},
+              runToSeries: {
+                'test run Id': [
+                  {step: 10, wallTime: 0, imageId: '1'},
+                  {step: 20, wallTime: 10, imageId: '2'},
+                  {step: 30, wallTime: 15, imageId: '3'},
+                ],
+              },
+            },
+          },
+        },
+      };
+    });
+
+    it(`updates cardStepIndex to matched selected time`, () => {
+      const selectedTime = {start: {step: 20}, end: null};
+      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
+        previousCardStepIndex,
+        cardMetadataMap,
+        timeSeriesData,
+        selectedTime
+      );
+
+      expect(nextCardStepIndex).toEqual({[imageCardId]: 1});
+    });
+
+    it(`does not update cardStepIndex on other non-image plugin`, () => {
+      const histogramCardId = 'test histogram card id "plugin":"histogram"';
+      const previousCardStepIndexWtihHistogram = {
+        [histogramCardId]: null,
+      };
+      const cardMetadataMapWtihHistogram = {
+        [histogramCardId]: {
+          runId: 'test run Id',
+          plugin: PluginType.HISTOGRAMS,
+          tag: 'tagB',
+          sample: 111,
+        },
+      };
+      const timeSeriesDataWtihHistogram = {
+        scalars: {},
+        histograms: {
+          tagB: {
+            runToLoadState: {},
+            runToSeries: {
+              'test run Id': [
+                {step: 10, wallTime: 0, bins: [{min: 0, max: 10, count: 2}]},
+                {step: 20, wallTime: 10, bins: [{min: 0, max: 10, count: 2}]},
+                {step: 30, wallTime: 15, bins: [{min: 0, max: 10, count: 2}]},
+              ],
+            },
+          },
+        },
+        images: {},
+      };
+      const selectedTime = {start: {step: 20}, end: null};
+
+      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
+        previousCardStepIndexWtihHistogram,
+        cardMetadataMapWtihHistogram,
+        timeSeriesDataWtihHistogram,
+        selectedTime
+      );
+      expect(nextCardStepIndex).toEqual({
+        [histogramCardId]: null,
+      });
+    });
+
+    it(`does not update cardStepIndex on selected step with no image`, () => {
+      const selectedTime = {start: {step: 15}, end: null};
+      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
+        previousCardStepIndex,
+        cardMetadataMap,
+        timeSeriesData,
+        selectedTime
+      );
+
+      expect(nextCardStepIndex).toEqual({[imageCardId]: null});
+    });
+    it('updates cardStepIndex to smaller closest stepIndexIndex when they are close enough', () => {
+      const selectedTime = {start: {step: 11}, end: null};
+      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
+        previousCardStepIndex,
+        cardMetadataMap,
+        timeSeriesData,
+        selectedTime
+      );
+
+      expect(nextCardStepIndex).toEqual({[imageCardId]: 0});
+    });
+
+    it('dose not update cardStepIndex when selected step is not close to any step values', () => {
+      const selectedTime = {start: {step: 12}, end: null};
+      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
+        previousCardStepIndex,
+        cardMetadataMap,
+        timeSeriesData,
+        selectedTime
+      );
+
+      expect(nextCardStepIndex).toEqual({[imageCardId]: null});
+    });
+
+    it('updates cardStepIndex to larger closest stepIndex when they are close enough', () => {
+      const selectedTime = {start: {step: 19}, end: null};
+      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
+        previousCardStepIndex,
+        cardMetadataMap,
+        timeSeriesData,
+        selectedTime
+      );
+
+      expect(nextCardStepIndex).toEqual({[imageCardId]: 1});
+    });
+
+    it('dose not update cardStepIndex when there is only one unmatched step', () => {
+      const selectedTime = {start: {step: 15}, end: null};
+      let timeSeriesData = {
+        scalars: {},
+        histograms: {},
+        images: {
+          tagC: {
+            111: {
+              runToLoadState: {},
+              runToSeries: {
+                'test run Id': [{step: 10, wallTime: 0, imageId: '1'}],
+              },
+            },
+          },
+        },
+      };
+
+      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
+        previousCardStepIndex,
+        cardMetadataMap,
+        timeSeriesData,
+        selectedTime
+      );
+
+      expect(nextCardStepIndex).toEqual({[imageCardId]: null});
+    });
+  });
+
   describe('getImageCardStepValues', () => {
     const cardId = 'test-card-id';
     const cardId2 = 'test-card-id-non-image';
@@ -666,11 +830,6 @@ describe('metrics store utils', () => {
         tag: 'tagA',
         sample: 0,
       },
-    };
-    let loadables: TimeSeriesLoadables = {
-      scalars: {runToLoadState: {}, runToSeries: {}},
-      histograms: {runToLoadState: {}, runToSeries: {}},
-      images: {runToLoadState: {}, runToSeries: {}},
     };
     let timeSeriesData: TimeSeriesData = {
       scalars: {},
