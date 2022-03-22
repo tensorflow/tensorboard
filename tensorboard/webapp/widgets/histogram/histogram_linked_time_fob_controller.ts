@@ -33,7 +33,6 @@ export class HistogramLinkedTimeFobController implements FobCardAdapter {
   @Input() steps!: number[];
   @Input() linkedTime!: LinkedTime;
   @Input() temporalScale!: TemporalScale;
-  @Input() startingPosition!: number;
   @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
 
   getHighestStep(): number {
@@ -50,7 +49,7 @@ export class HistogramLinkedTimeFobController implements FobCardAdapter {
     let steps = this.steps;
     let stepIndex = 0;
     while (
-      position - this.startingPosition > this.temporalScale(steps[stepIndex]) &&
+      position > this.temporalScale(steps[stepIndex]) &&
       stepIndex < steps.length
     ) {
       stepIndex++;
@@ -60,10 +59,7 @@ export class HistogramLinkedTimeFobController implements FobCardAdapter {
   getStepLowerThanAxisPosition(position: number): number {
     let steps = this.steps;
     let stepIndex = steps.length - 1;
-    while (
-      position - this.startingPosition < this.temporalScale(steps[stepIndex]) &&
-      stepIndex > 0
-    ) {
+    while (position < this.temporalScale(steps[stepIndex]) && stepIndex > 0) {
       stepIndex--;
     }
     return steps[stepIndex];
