@@ -408,10 +408,7 @@ export function getImageCardStepValues(
 /**
  * Returns the subset of steps that are within selected time given a list of steps
  */
-function getSelectedSteps(
-  selectedTime: LinkedTime | null,
-  steps: number[]
-) {
+function getSelectedSteps(selectedTime: LinkedTime | null, steps: number[]) {
   if (!selectedTime) return [];
 
   // Single selection: returns start step if matching any step in the list, otherwise returns nothing.
