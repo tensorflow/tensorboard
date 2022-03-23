@@ -38,6 +38,7 @@ tf_ts_library(
     testonly = True,
     srcs = [
         "histogram_test.ts",
+        "histogram_linked_time_fob_test.ts",
         "histogram_util_test.ts",
     ],
     deps = [
@@ -45,6 +46,7 @@ tf_ts_library(
         ":types",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
+        "//tensorboard/webapp/third_party:d3",
         "//tensorboard/webapp/widgets/intersection_observer:intersection_observer_testing",
         "//tensorboard/webapp/widgets/linked_time_fob",
         "//tensorboard/webapp/widgets/linked_time_fob:types",

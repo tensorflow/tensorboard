@@ -11,11 +11,9 @@ limitations under the License.
 ==============================================================================*/
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {ScaleLinear, ScaleTime} from '../../third_party/d3';
+import {TemporalScale} from './histogram_component';
 import {AxisDirection} from '../linked_time_fob/linked_time_fob_controller_component';
 import {FobCardAdapter, LinkedTime} from '../linked_time_fob/linked_time_types';
-
-type TemporalScale = ScaleLinear<number, number> | ScaleTime<number, number>;
 
 @Component({
   selector: 'histogram-linked-time-fob-controller',
@@ -46,22 +44,23 @@ export class HistogramLinkedTimeFobController implements FobCardAdapter {
     return this.temporalScale(step);
   }
   getStepHigherThanAxisPosition(position: number): number {
-    let steps = this.steps;
     let stepIndex = 0;
     while (
-      position > this.temporalScale(steps[stepIndex]) &&
-      stepIndex < steps.length
+      position > this.temporalScale(this.steps[stepIndex]) &&
+      stepIndex < this.steps.length - 1
     ) {
       stepIndex++;
     }
-    return steps[stepIndex];
+    return this.steps[stepIndex];
   }
   getStepLowerThanAxisPosition(position: number): number {
-    let steps = this.steps;
-    let stepIndex = steps.length - 1;
-    while (position < this.temporalScale(steps[stepIndex]) && stepIndex > 0) {
+    let stepIndex = this.steps.length - 1;
+    while (
+      position < this.temporalScale(this.steps[stepIndex]) &&
+      stepIndex > 0
+    ) {
       stepIndex--;
     }
-    return steps[stepIndex];
+    return this.steps[stepIndex];
   }
 }

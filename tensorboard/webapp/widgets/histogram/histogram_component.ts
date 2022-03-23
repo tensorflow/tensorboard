@@ -41,7 +41,7 @@ import {
 
 type BinScale = d3.ScaleLinear<number, number>;
 type CountScale = d3.ScaleLinear<number, number>;
-type TemporalScale =
+export type TemporalScale =
   | d3.ScaleLinear<number, number>
   | d3.ScaleTime<number, number>;
 type D3ColorScale = d3.ScaleLinear<HCLColor, string>;
