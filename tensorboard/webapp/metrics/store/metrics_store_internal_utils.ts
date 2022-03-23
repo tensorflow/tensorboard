@@ -397,7 +397,6 @@ export function generateNextCardStepIndexFromSelectedTime(
     // Single Selection
     if (selectedTime.end === null) {
       nextStepIndex = getNextImageCardStepIndexFromSingleSelection(
-        cardId,
         selectedTime.start.step,
         steps
       );
@@ -457,16 +456,15 @@ function getSelectedSteps(selectedTime: LinkedTime | null, steps: number[]) {
 
 /**
  * Gets next stepIndex for a card based on single selection. Returns null if nothing should change.
+ * @param selectedStep The selected step from selected time. It is equivalent to start step here
+ *  since there is no `end` in selected time when it is single seleciton.
  */
 function getNextImageCardStepIndexFromSingleSelection(
-  cardId: string,
-  startStep: number,
+  selectedStep: number,
   steps: number[]
 ): number | null {
-  if (steps.length === 1) return null;
-
   // Checks exact match.
-  const maybeMatchedStepIndex = steps.indexOf(startStep);
+  const maybeMatchedStepIndex = steps.indexOf(selectedStep);
   if (maybeMatchedStepIndex !== -1) {
     return maybeMatchedStepIndex;
   }
@@ -477,13 +475,13 @@ function getNextImageCardStepIndexFromSingleSelection(
     const nextStep = steps[i + 1];
     const distance = (nextStep - currentStep) * DISTANCE_RATIO;
 
-    if (startStep < currentStep) return null;
-    if (startStep > nextStep) continue;
+    if (selectedStep < currentStep) return null;
+    if (selectedStep > nextStep) continue;
 
-    if (startStep - currentStep <= distance) {
+    if (selectedStep - currentStep <= distance) {
       return i;
     }
-    if (nextStep - startStep <= distance) {
+    if (nextStep - selectedStep <= distance) {
       return i + 1;
     }
   }

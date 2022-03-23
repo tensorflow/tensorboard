@@ -17,7 +17,9 @@ import {PluginType} from '../data_source';
 import {
   buildMetricsState,
   buildTagMetadata,
+  buildTimeSeriesData,
   createCardMetadata,
+  createCutomizedTimeSeriesData,
 } from '../testing';
 import {
   buildOrReturnStateWithPinnedCopy,
@@ -648,8 +650,8 @@ describe('metrics store utils', () => {
   });
 
   describe('generateNextCardStepIndexFromSelectedTime', () => {
-    const imageCardId = 'test imagee card id "plugin":"images"';
-    const previousCardStepIndex = {[imageCardId]: null};
+    const imageCardId = 'test image card id "plugin":"images"';
+    const previousCardStepIndex = {[imageCardId]: 3};
     const cardMetadataMap = {
       [imageCardId]: {
         runId: 'test run Id',
@@ -658,16 +660,10 @@ describe('metrics store utils', () => {
         sample: 111,
       },
     };
-    let timeSeriesData: TimeSeriesData = {
-      scalars: {},
-      histograms: {},
-      images: {},
-    };
+    let timeSeriesData: TimeSeriesData = buildTimeSeriesData();
 
     beforeEach(() => {
-      timeSeriesData = {
-        scalars: {},
-        histograms: {},
+      timeSeriesData = createCutomizedTimeSeriesData({
         images: {
           tagC: {
             111: {
@@ -682,7 +678,7 @@ describe('metrics store utils', () => {
             },
           },
         },
-      };
+      });
     });
 
     it(`updates cardStepIndex to matched selected time`, () => {
@@ -748,9 +744,10 @@ describe('metrics store utils', () => {
         selectedTime
       );
 
-      expect(nextCardStepIndex).toEqual({[imageCardId]: null});
+      expect(nextCardStepIndex).toEqual({[imageCardId]: 3});
     });
-    it('updates cardStepIndex to smaller closest stepIndexIndex when they are close enough', () => {
+
+    it('updates cardStepIndex to smaller closest stepIndex when they are close enough', () => {
       const selectedTime = {start: {step: 11}, end: null};
       const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
         previousCardStepIndex,
@@ -771,7 +768,7 @@ describe('metrics store utils', () => {
         selectedTime
       );
 
-      expect(nextCardStepIndex).toEqual({[imageCardId]: null});
+      expect(nextCardStepIndex).toEqual({[imageCardId]: 3});
     });
 
     it('updates cardStepIndex to larger closest stepIndex when they are close enough', () => {
@@ -788,9 +785,7 @@ describe('metrics store utils', () => {
 
     it('dose not update cardStepIndex when there is only one unmatched step', () => {
       const selectedTime = {start: {step: 15}, end: null};
-      let timeSeriesData = {
-        scalars: {},
-        histograms: {},
+      timeSeriesData = createCutomizedTimeSeriesData({
         images: {
           tagC: {
             111: {
@@ -801,7 +796,7 @@ describe('metrics store utils', () => {
             },
           },
         },
-      };
+      });
 
       const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
         previousCardStepIndex,
@@ -810,7 +805,7 @@ describe('metrics store utils', () => {
         selectedTime
       );
 
-      expect(nextCardStepIndex).toEqual({[imageCardId]: null});
+      expect(nextCardStepIndex).toEqual({[imageCardId]: 3});
     });
   });
 
@@ -951,72 +946,60 @@ describe('metrics store utils', () => {
   });
 
   describe('getNextImageCardStepIndexFromSingleSelection', () => {
-    const cardId = 'test card Id';
-    const steps = [10, 20, 30, 40];
-
-    it(`updates nextStepIndex to matched selected time`, () => {
-      const nextStartStep = 20;
+    it(`returns step index to matched selected time`, () => {
       const nextStepIndex = getNextImageCardStepIndexFromSingleSelection(
-        cardId,
-        nextStartStep,
-        steps
+        20,
+        [10, 20, 30, 40]
       );
 
       expect(nextStepIndex).toEqual(1);
     });
 
-    it(`does not update nextStepIndex on selected step with no image`, () => {
-      const nextStartStep = 15;
+    it(`does not return step Index on selected step with no image`, () => {
       const nextStepIndex = getNextImageCardStepIndexFromSingleSelection(
-        cardId,
-        nextStartStep,
-        steps
+        15,
+        [10, 20, 30, 40]
       );
 
       expect(nextStepIndex).toEqual(null);
     });
 
-    it('updates nextStepIndex to smaller closest stepIndexIndex when they are close enough', () => {
-      const nextStartStep = 11;
+    it('returns step index to smaller closest stepIndex when they are close enough', () => {
       const nextStepIndex = getNextImageCardStepIndexFromSingleSelection(
-        cardId,
-        nextStartStep,
-        steps
+        11,
+        [10, 20, 30, 40]
       );
 
       expect(nextStepIndex).toEqual(0);
     });
 
-    it('dose not update nextStepIndex when selected step is not close to any step values', () => {
-      const nextStartStep = 12;
+    it('does not return step Index when selected step is not close to any step values', () => {
       const nextStepIndex = getNextImageCardStepIndexFromSingleSelection(
-        cardId,
-        nextStartStep,
-        steps
+        12,
+        [10, 20, 30, 40]
       );
 
       expect(nextStepIndex).toEqual(null);
     });
 
-    it('updates nextStepIndex to larger closest stepIndex when they are close enough', () => {
-      const nextStartStep = 19;
+    it('returns step index to larger closest stepIndex when they are close enough', () => {
       const nextStepIndex = getNextImageCardStepIndexFromSingleSelection(
-        cardId,
-        nextStartStep,
-        steps
+        19,
+        [10, 20, 30, 40]
       );
 
       expect(nextStepIndex).toEqual(1);
     });
 
-    it('dose not update nextStepIndex when there is only one unmatched step', () => {
-      const nextStartStep = 15;
-      const unmatchedSteps = [10];
-      const nextStepIndex = getNextImageCardStepIndexFromSingleSelection(
-        cardId,
-        nextStartStep,
-        unmatchedSteps
-      );
+    it('does not return step Index when there is only one unmatched step', () => {
+      const nextStepIndex = getNextImageCardStepIndexFromSingleSelection(15, [10]);
+
+      expect(nextStepIndex).toEqual(null);
+    });
+
+
+    it('does not return step Index when there is no selected step', () => {
+      const nextStepIndex = getNextImageCardStepIndexFromSingleSelection(15, []);
 
       expect(nextStepIndex).toEqual(null);
     });
