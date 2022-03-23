@@ -952,7 +952,7 @@ describe('metrics store utils', () => {
 
   describe('getNextCardStepIndexOnSingleSelection', () => {
     const cardId = 'test card Id';
-    const stepValues = [10, 20, 30, 40];
+    const steps = [10, 20, 30, 40];
     let previousCardStepIndex = {'test card Id': 3};
 
     beforeEach(() => {
@@ -964,7 +964,7 @@ describe('metrics store utils', () => {
       const nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
         cardId,
         nextStartStep,
-        stepValues,
+        steps,
         previousCardStepIndex
       );
 
@@ -976,7 +976,7 @@ describe('metrics store utils', () => {
       const nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
         cardId,
         nextStartStep,
-        stepValues,
+        steps,
         previousCardStepIndex
       );
 
@@ -988,7 +988,7 @@ describe('metrics store utils', () => {
       const nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
         cardId,
         nextStartStep,
-        stepValues,
+        steps,
         previousCardStepIndex
       );
 
@@ -1000,7 +1000,7 @@ describe('metrics store utils', () => {
       const nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
         cardId,
         nextStartStep,
-        stepValues,
+        steps,
         previousCardStepIndex
       );
 
@@ -1012,7 +1012,7 @@ describe('metrics store utils', () => {
       const nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
         cardId,
         nextStartStep,
-        stepValues,
+        steps,
         previousCardStepIndex
       );
 
@@ -1021,11 +1021,11 @@ describe('metrics store utils', () => {
 
     it('dose not update cardStepIndex when there is only one unmatched step', () => {
       const nextStartStep = 15;
-      const unmatchedStepValues = [10];
+      const unmatchedSteps = [10];
       const nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
         cardId,
         nextStartStep,
-        unmatchedStepValues,
+        unmatchedSteps,
         previousCardStepIndex
       );
 

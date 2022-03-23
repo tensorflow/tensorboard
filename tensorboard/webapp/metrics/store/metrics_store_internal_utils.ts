@@ -387,7 +387,7 @@ export function generateNextCardStepIndexFromSelectedTime(
   Object.keys(previousCardStepIndex).forEach((cardId) => {
     if (!cardId.includes('"plugin":"images"')) return;
 
-    const stepValues = getImageCardStepValues(
+    const steps = getImageCardStepValues(
       cardId,
       cardMetadataMap,
       timeSeriesData
@@ -398,7 +398,7 @@ export function generateNextCardStepIndexFromSelectedTime(
       nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
         cardId,
         selectedTime.start.step,
-        stepValues,
+        steps,
         previousCardStepIndex
       );
     }
@@ -457,33 +457,33 @@ function getSelectedSteps(selectedTime: LinkedTime | null, steps: number[]) {
 function getNextCardStepIndexOnSingleSelection(
   cardId: string,
   startStep: number,
-  stepValues: number[],
+  steps: number[],
   previousCardStepIndex: CardStepIndexMap
 ) {
   const nextCardStepIndex = {...previousCardStepIndex};
 
-  if (stepValues.length === 1) return nextCardStepIndex;
+  if (steps.length === 1) return nextCardStepIndex;
 
   // Checks exact match.
-  const maybeMatchedStepIndex = stepValues.indexOf(startStep);
+  const maybeMatchedStepIndex = steps.indexOf(startStep);
   if (maybeMatchedStepIndex !== -1) {
     nextCardStepIndex[cardId] = maybeMatchedStepIndex;
     return nextCardStepIndex;
   }
 
   // Checks if start step is "close" enough to a step value and move it
-  for (let i = 0; i < stepValues.length - 2; i++) {
-    const currentStepValue = stepValues[i];
-    const nextStepValue = stepValues[i + 1];
-    const distance = (nextStepValue - currentStepValue) * DISTANCE_RATIO;
+  for (let i = 0; i < steps.length - 1; i++) {
+    const currentStep = steps[i];
+    const nextStep = steps[i + 1];
+    const distance = (nextStep - currentStep) * DISTANCE_RATIO;
 
-    if (startStep < currentStepValue) return nextCardStepIndex;
-    if (startStep > nextStepValue) continue;
+    if (startStep < currentStep) return nextCardStepIndex;
+    if (startStep > nextStep) continue;
 
-    if (startStep - currentStepValue <= distance) {
+    if (startStep - currentStep <= distance) {
       nextCardStepIndex[cardId] = i;
     }
-    if (nextStepValue - startStep <= distance) {
+    if (nextStep - startStep <= distance) {
       nextCardStepIndex[cardId] = i + 1;
     }
   }
