@@ -393,14 +393,18 @@ export function generateNextCardStepIndexFromSelectedTime(
       timeSeriesData
     );
 
+    let nextStepIndex = null;
     // Single Selection
     if (selectedTime.end === null) {
-      nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
+      nextStepIndex = getNextStepIndexOnSingleSelection(
         cardId,
         selectedTime.start.step,
-        steps,
-        previousCardStepIndex
+        steps
       );
+    }
+
+    if (nextStepIndex !== null) {
+      nextCardStepIndex[cardId] = nextStepIndex;
     }
   });
 
@@ -452,23 +456,19 @@ function getSelectedSteps(selectedTime: LinkedTime | null, steps: number[]) {
 }
 
 /**
- * Gets cardStepIndex updated based on single selection.
+ * Gets next stepIndex for a card based on single selection. Returns null if nothing should change.
  */
-function getNextCardStepIndexOnSingleSelection(
+function getNextStepIndexOnSingleSelection(
   cardId: string,
   startStep: number,
-  steps: number[],
-  previousCardStepIndex: CardStepIndexMap
-) {
-  const nextCardStepIndex = {...previousCardStepIndex};
-
-  if (steps.length === 1) return nextCardStepIndex;
+  steps: number[]
+): number | null {
+  if (steps.length === 1) return null;
 
   // Checks exact match.
   const maybeMatchedStepIndex = steps.indexOf(startStep);
   if (maybeMatchedStepIndex !== -1) {
-    nextCardStepIndex[cardId] = maybeMatchedStepIndex;
-    return nextCardStepIndex;
+    return maybeMatchedStepIndex;
   }
 
   // Checks if start step is "close" enough to a step value and move it
@@ -477,24 +477,24 @@ function getNextCardStepIndexOnSingleSelection(
     const nextStep = steps[i + 1];
     const distance = (nextStep - currentStep) * DISTANCE_RATIO;
 
-    if (startStep < currentStep) return nextCardStepIndex;
+    if (startStep < currentStep) return null;
     if (startStep > nextStep) continue;
 
     if (startStep - currentStep <= distance) {
-      nextCardStepIndex[cardId] = i;
+      return i;
     }
     if (nextStep - startStep <= distance) {
-      nextCardStepIndex[cardId] = i + 1;
+      return i + 1;
     }
   }
 
-  return nextCardStepIndex;
+  return null;
 }
 
 export const TEST_ONLY = {
   getImageCardStepValues,
   getSelectedSteps,
-  getNextCardStepIndexOnSingleSelection,
+  getNextStepIndexOnSingleSelection,
   generateNextCardStepIndexFromSelectedTime,
   util,
 };

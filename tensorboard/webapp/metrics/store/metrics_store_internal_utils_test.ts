@@ -38,7 +38,7 @@ import {ImageTimeSeriesData, TimeSeriesData} from './metrics_types';
 const {
   getImageCardStepValues,
   getSelectedSteps,
-  getNextCardStepIndexOnSingleSelection,
+  getNextStepIndexOnSingleSelection,
   generateNextCardStepIndexFromSelectedTime,
 } = TEST_ONLY;
 
@@ -950,86 +950,75 @@ describe('metrics store utils', () => {
     });
   });
 
-  describe('getNextCardStepIndexOnSingleSelection', () => {
+  describe('getNextStepIndexOnSingleSelection', () => {
     const cardId = 'test card Id';
     const steps = [10, 20, 30, 40];
-    let previousCardStepIndex = {'test card Id': 3};
 
-    beforeEach(() => {
-      previousCardStepIndex = {'test card Id': 3};
-    });
-
-    it(`updates cardStepIndex to matched selected time`, () => {
+    it(`updates nextStepIndex to matched selected time`, () => {
       const nextStartStep = 20;
-      const nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
+      const nextStepIndex = getNextStepIndexOnSingleSelection(
         cardId,
         nextStartStep,
-        steps,
-        previousCardStepIndex
+        steps
       );
 
-      expect(nextCardStepIndex).toEqual({'test card Id': 1});
+      expect(nextStepIndex).toEqual(1);
     });
 
-    it(`does not update cardStepIndex on selected step with no image`, () => {
+    it(`does not update nextStepIndex on selected step with no image`, () => {
       const nextStartStep = 15;
-      const nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
+      const nextStepIndex = getNextStepIndexOnSingleSelection(
         cardId,
         nextStartStep,
-        steps,
-        previousCardStepIndex
+        steps
       );
 
-      expect(nextCardStepIndex).toEqual({'test card Id': 3});
+      expect(nextStepIndex).toEqual(null);
     });
 
-    it('updates cardStepIndex to smaller closest stepIndexIndex when they are close enough', () => {
+    it('updates nextStepIndex to smaller closest stepIndexIndex when they are close enough', () => {
       const nextStartStep = 11;
-      const nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
+      const nextStepIndex = getNextStepIndexOnSingleSelection(
         cardId,
         nextStartStep,
-        steps,
-        previousCardStepIndex
+        steps
       );
 
-      expect(nextCardStepIndex).toEqual({'test card Id': 0});
+      expect(nextStepIndex).toEqual(0);
     });
 
-    it('dose not update cardStepIndex when selected step is not close to any step values', () => {
+    it('dose not update nextStepIndex when selected step is not close to any step values', () => {
       const nextStartStep = 12;
-      const nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
+      const nextStepIndex = getNextStepIndexOnSingleSelection(
         cardId,
         nextStartStep,
-        steps,
-        previousCardStepIndex
+        steps
       );
 
-      expect(nextCardStepIndex).toEqual({'test card Id': 3});
+      expect(nextStepIndex).toEqual(null);
     });
 
-    it('updates cardStepIndex to larger closest stepIndex when they are close enough', () => {
+    it('updates nextStepIndex to larger closest stepIndex when they are close enough', () => {
       const nextStartStep = 19;
-      const nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
+      const nextStepIndex = getNextStepIndexOnSingleSelection(
         cardId,
         nextStartStep,
-        steps,
-        previousCardStepIndex
+        steps
       );
 
-      expect(nextCardStepIndex).toEqual({'test card Id': 1});
+      expect(nextStepIndex).toEqual(1);
     });
 
-    it('dose not update cardStepIndex when there is only one unmatched step', () => {
+    it('dose not update nextStepIndex when there is only one unmatched step', () => {
       const nextStartStep = 15;
       const unmatchedSteps = [10];
-      const nextCardStepIndex = getNextCardStepIndexOnSingleSelection(
+      const nextStepIndex = getNextStepIndexOnSingleSelection(
         cardId,
         nextStartStep,
-        unmatchedSteps,
-        previousCardStepIndex
+        unmatchedSteps
       );
 
-      expect(nextCardStepIndex).toEqual({'test card Id': 3});
+      expect(nextStepIndex).toEqual(null);
     });
   });
 });
