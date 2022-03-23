@@ -396,7 +396,7 @@ export function generateNextCardStepIndexFromSelectedTime(
     let nextStepIndex = null;
     // Single Selection
     if (selectedTime.end === null) {
-      nextStepIndex = getNextStepIndexOnSingleSelection(
+      nextStepIndex = getNextImageCardStepIndexFromSingleSelection(
         cardId,
         selectedTime.start.step,
         steps
@@ -458,7 +458,7 @@ function getSelectedSteps(selectedTime: LinkedTime | null, steps: number[]) {
 /**
  * Gets next stepIndex for a card based on single selection. Returns null if nothing should change.
  */
-function getNextStepIndexOnSingleSelection(
+function getNextImageCardStepIndexFromSingleSelection(
   cardId: string,
   startStep: number,
   steps: number[]
@@ -494,7 +494,7 @@ function getNextStepIndexOnSingleSelection(
 export const TEST_ONLY = {
   getImageCardStepValues,
   getSelectedSteps,
-  getNextStepIndexOnSingleSelection,
+  getNextImageCardStepIndexFromSingleSelection,
   generateNextCardStepIndexFromSelectedTime,
   util,
 };
