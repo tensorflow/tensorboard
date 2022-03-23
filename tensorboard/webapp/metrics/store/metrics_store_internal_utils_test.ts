@@ -38,8 +38,8 @@ import {ImageTimeSeriesData, TimeSeriesData} from './metrics_types';
 const {
   getImageCardStepValues,
   getSelectedSteps,
-  getNextStepIndexOnSingleSelection,
   getNextImageCardStepIndexFromSingleSelection,
+  generateNextCardStepIndexFromSelectedTime,
 } = TEST_ONLY;
 
 describe('metrics store utils', () => {
@@ -647,7 +647,7 @@ describe('metrics store utils', () => {
     });
   });
 
-  describe('getNextImageCardStepIndexFromSingleSelection', () => {
+  describe('generateNextCardStepIndexFromSelectedTime', () => {
     const imageCardId = 'test imagee card id "plugin":"images"';
     const previousCardStepIndex = {[imageCardId]: null};
     const cardMetadataMap = {
@@ -687,7 +687,7 @@ describe('metrics store utils', () => {
 
     it(`updates cardStepIndex to matched selected time`, () => {
       const selectedTime = {start: {step: 20}, end: null};
-      const nextCardStepIndex = getNextImageCardStepIndexFromSingleSelection(
+      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
         previousCardStepIndex,
         cardMetadataMap,
         timeSeriesData,
@@ -728,7 +728,7 @@ describe('metrics store utils', () => {
       };
       const selectedTime = {start: {step: 20}, end: null};
 
-      const nextCardStepIndex = getNextImageCardStepIndexFromSingleSelection(
+      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
         previousCardStepIndexWtihHistogram,
         cardMetadataMapWtihHistogram,
         timeSeriesDataWtihHistogram,
@@ -741,7 +741,7 @@ describe('metrics store utils', () => {
 
     it(`does not update cardStepIndex on selected step with no image`, () => {
       const selectedTime = {start: {step: 15}, end: null};
-      const nextCardStepIndex = getNextImageCardStepIndexFromSingleSelection(
+      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
         previousCardStepIndex,
         cardMetadataMap,
         timeSeriesData,
@@ -752,7 +752,7 @@ describe('metrics store utils', () => {
     });
     it('updates cardStepIndex to smaller closest stepIndexIndex when they are close enough', () => {
       const selectedTime = {start: {step: 11}, end: null};
-      const nextCardStepIndex = getNextImageCardStepIndexFromSingleSelection(
+      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
         previousCardStepIndex,
         cardMetadataMap,
         timeSeriesData,
@@ -764,7 +764,7 @@ describe('metrics store utils', () => {
 
     it('dose not update cardStepIndex when selected step is not close to any step values', () => {
       const selectedTime = {start: {step: 12}, end: null};
-      const nextCardStepIndex = getNextImageCardStepIndexFromSingleSelection(
+      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
         previousCardStepIndex,
         cardMetadataMap,
         timeSeriesData,
@@ -776,7 +776,7 @@ describe('metrics store utils', () => {
 
     it('updates cardStepIndex to larger closest stepIndex when they are close enough', () => {
       const selectedTime = {start: {step: 19}, end: null};
-      const nextCardStepIndex = getNextImageCardStepIndexFromSingleSelection(
+      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
         previousCardStepIndex,
         cardMetadataMap,
         timeSeriesData,
@@ -803,7 +803,7 @@ describe('metrics store utils', () => {
         },
       };
 
-      const nextCardStepIndex = getNextImageCardStepIndexFromSingleSelection(
+      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
         previousCardStepIndex,
         cardMetadataMap,
         timeSeriesData,
@@ -950,13 +950,13 @@ describe('metrics store utils', () => {
     });
   });
 
-  describe('getNextStepIndexOnSingleSelection', () => {
+  describe('getNextImageCardStepIndexFromSingleSelection', () => {
     const cardId = 'test card Id';
     const steps = [10, 20, 30, 40];
 
     it(`updates nextStepIndex to matched selected time`, () => {
       const nextStartStep = 20;
-      const nextStepIndex = getNextStepIndexOnSingleSelection(
+      const nextStepIndex = getNextImageCardStepIndexFromSingleSelection(
         cardId,
         nextStartStep,
         steps
@@ -967,7 +967,7 @@ describe('metrics store utils', () => {
 
     it(`does not update nextStepIndex on selected step with no image`, () => {
       const nextStartStep = 15;
-      const nextStepIndex = getNextStepIndexOnSingleSelection(
+      const nextStepIndex = getNextImageCardStepIndexFromSingleSelection(
         cardId,
         nextStartStep,
         steps
@@ -978,7 +978,7 @@ describe('metrics store utils', () => {
 
     it('updates nextStepIndex to smaller closest stepIndexIndex when they are close enough', () => {
       const nextStartStep = 11;
-      const nextStepIndex = getNextStepIndexOnSingleSelection(
+      const nextStepIndex = getNextImageCardStepIndexFromSingleSelection(
         cardId,
         nextStartStep,
         steps
@@ -989,7 +989,7 @@ describe('metrics store utils', () => {
 
     it('dose not update nextStepIndex when selected step is not close to any step values', () => {
       const nextStartStep = 12;
-      const nextStepIndex = getNextStepIndexOnSingleSelection(
+      const nextStepIndex = getNextImageCardStepIndexFromSingleSelection(
         cardId,
         nextStartStep,
         steps
@@ -1000,7 +1000,7 @@ describe('metrics store utils', () => {
 
     it('updates nextStepIndex to larger closest stepIndex when they are close enough', () => {
       const nextStartStep = 19;
-      const nextStepIndex = getNextStepIndexOnSingleSelection(
+      const nextStepIndex = getNextImageCardStepIndexFromSingleSelection(
         cardId,
         nextStartStep,
         steps
@@ -1012,7 +1012,7 @@ describe('metrics store utils', () => {
     it('dose not update nextStepIndex when there is only one unmatched step', () => {
       const nextStartStep = 15;
       const unmatchedSteps = [10];
-      const nextStepIndex = getNextStepIndexOnSingleSelection(
+      const nextStepIndex = getNextImageCardStepIndexFromSingleSelection(
         cardId,
         nextStartStep,
         unmatchedSteps
