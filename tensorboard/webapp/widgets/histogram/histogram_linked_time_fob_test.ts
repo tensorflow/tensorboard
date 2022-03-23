@@ -10,40 +10,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Component, Input, NO_ERRORS_SCHEMA} from '@angular/core';
+import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {ScaleLinear} from '../../third_party/d3';
 import {AxisDirection} from '../linked_time_fob/linked_time_fob_controller_component';
-import {LinkedTime} from '../linked_time_fob/linked_time_types';
-import {TemporalScale} from './histogram_component';
 import {HistogramLinkedTimeFobController} from './histogram_linked_time_fob_controller';
-
-@Component({
-  selector: 'testable-tb-histogram-linked-time-fob',
-  template: `
-    <histogram-linked-time-fob-controller
-      [axisDirection]="axisDirection"
-      [linkedTime]="linkedTime"
-      [steps]="steps"
-      [temporalScale]="temporalScale"
-      (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
-    >
-    </histogram-linked-time-fob-controller>
-  `,
-})
-class TestableComponent {
-  @Input() axisDirection!: AxisDirection;
-  @Input() steps!: number[];
-  @Input() linkedTime!: LinkedTime;
-  @Input() temporalScale!: TemporalScale;
-  @Input() onSelectTimeChanged!: (linkedTime: LinkedTime) => void;
-}
 
 describe('HistogramLinkedTimeFobController', () => {
   let temporalScaleSpy: jasmine.Spy;
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [HistogramLinkedTimeFobController, TestableComponent],
+      declarations: [HistogramLinkedTimeFobController],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });

@@ -37,8 +37,8 @@ tf_ts_library(
     name = "histogram_test",
     testonly = True,
     srcs = [
-        "histogram_test.ts",
         "histogram_linked_time_fob_test.ts",
+        "histogram_test.ts",
         "histogram_util_test.ts",
     ],
     deps = [

@@ -22,8 +22,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {ScaleLinear, ScaleTime} from '../../third_party/d3';
-import {LinkedTime, FobCardAdapter} from './linked_time_types';
+import {FobCardAdapter, LinkedTime} from './linked_time_types';
 
 export enum AxisDirection {
   HORIZONTAL,
