@@ -195,9 +195,6 @@ export const getCardStepIndex = createSelector(
 export const getMetricsImageCardStepValues = createSelector(
   selectMetricsState,
   (state: MetricsState, cardId: CardId): number[] => {
-    if (!state.cardMetadataMap.hasOwnProperty(cardId)) {
-      return [];
-    }
     return storeUtils.getImageCardStepValues(
       cardId,
       state.cardMetadataMap,

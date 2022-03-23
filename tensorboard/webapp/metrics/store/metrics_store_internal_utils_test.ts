@@ -741,5 +741,15 @@ describe('metrics store utils', () => {
         getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)
       ).toEqual([10, 20, 30]);
     });
+
+    it('gets empty step value if no card id exists in cardMetadataMap', () => {
+      expect(
+        getImageCardStepValues(
+          'card id not in cardMetadataMap',
+          cardMetadataMap,
+          timeSeriesData
+        )
+      ).toEqual([]);
+    });
   });
 });
