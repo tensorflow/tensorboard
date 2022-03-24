@@ -80,16 +80,18 @@ export class LinkedTimeFobControllerComponent {
   mouseMove(event: MouseEvent) {
     if (this.currentDraggingFob === Fob.NONE) return;
 
-    let newLinkedTime = this.linkedTime;
-    let newStep: number;
-    let mousePosition =
+    const newLinkedTime = this.linkedTime;
+    let newStep: number | null = null;
+    const mousePosition =
       event.clientY -
       this.axisOverlay.nativeElement.getBoundingClientRect().top;
     if (this.isDraggingHigher(mousePosition, event.movementY)) {
       newStep = this.cardAdapter.getStepHigherThanAxisPosition(mousePosition);
     } else if (this.isDraggingLower(mousePosition, event.movementY)) {
       newStep = this.cardAdapter.getStepLowerThanAxisPosition(mousePosition);
-    } else {
+    }
+
+    if (newStep === null) {
       return;
     }
 
@@ -128,7 +130,7 @@ export class LinkedTimeFobControllerComponent {
   }
 
   getDraggingFobTop(): number {
-    let absoluteTop =
+    const absoluteTop =
       this.currentDraggingFob !== Fob.END
         ? this.startFobWrapper.nativeElement.getBoundingClientRect().top
         : this.endFobWrapper.nativeElement.getBoundingClientRect().top;
