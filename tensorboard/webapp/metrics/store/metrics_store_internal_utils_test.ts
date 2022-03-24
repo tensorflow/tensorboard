@@ -19,7 +19,6 @@ import {
   buildTagMetadata,
   buildTimeSeriesData,
   createCardMetadata,
-  createCutomizedTimeSeriesData,
 } from '../testing';
 import {
   buildOrReturnStateWithPinnedCopy,
@@ -663,7 +662,8 @@ describe('metrics store utils', () => {
     let timeSeriesData: TimeSeriesData = buildTimeSeriesData();
 
     beforeEach(() => {
-      timeSeriesData = createCutomizedTimeSeriesData({
+      timeSeriesData = {
+        ...buildTimeSeriesData(),
         images: {
           tagC: {
             111: {
@@ -678,7 +678,7 @@ describe('metrics store utils', () => {
             },
           },
         },
-      });
+      };
     });
 
     it(`updates cardStepIndex to matched selected time`, () => {
@@ -737,67 +737,6 @@ describe('metrics store utils', () => {
 
     it(`does not update cardStepIndex on selected step with no image`, () => {
       const selectedTime = {start: {step: 15}, end: null};
-      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
-        previousCardStepIndex,
-        cardMetadataMap,
-        timeSeriesData,
-        selectedTime
-      );
-
-      expect(nextCardStepIndex).toEqual({[imageCardId]: 3});
-    });
-
-    it('updates cardStepIndex to smaller closest stepIndex when they are close enough', () => {
-      const selectedTime = {start: {step: 11}, end: null};
-      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
-        previousCardStepIndex,
-        cardMetadataMap,
-        timeSeriesData,
-        selectedTime
-      );
-
-      expect(nextCardStepIndex).toEqual({[imageCardId]: 0});
-    });
-
-    it('dose not update cardStepIndex when selected step is not close to any step values', () => {
-      const selectedTime = {start: {step: 12}, end: null};
-      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
-        previousCardStepIndex,
-        cardMetadataMap,
-        timeSeriesData,
-        selectedTime
-      );
-
-      expect(nextCardStepIndex).toEqual({[imageCardId]: 3});
-    });
-
-    it('updates cardStepIndex to larger closest stepIndex when they are close enough', () => {
-      const selectedTime = {start: {step: 19}, end: null};
-      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
-        previousCardStepIndex,
-        cardMetadataMap,
-        timeSeriesData,
-        selectedTime
-      );
-
-      expect(nextCardStepIndex).toEqual({[imageCardId]: 1});
-    });
-
-    it('dose not update cardStepIndex when there is only one unmatched step', () => {
-      const selectedTime = {start: {step: 15}, end: null};
-      timeSeriesData = createCutomizedTimeSeriesData({
-        images: {
-          tagC: {
-            111: {
-              runToLoadState: {},
-              runToSeries: {
-                'test run Id': [{step: 10, wallTime: 0, imageId: '1'}],
-              },
-            },
-          },
-        },
-      });
-
       const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
         previousCardStepIndex,
         cardMetadataMap,
@@ -999,7 +938,7 @@ describe('metrics store utils', () => {
       expect(nextStepIndex).toEqual(null);
     });
 
-    it('does not return step Index when there is no selected step', () => {
+    it('does not return step Index when there are no steps', () => {
       const nextStepIndex = getNextImageCardStepIndexFromSingleSelection(
         15,
         []

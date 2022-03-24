@@ -222,15 +222,6 @@ export function buildTimeSeriesData(): TimeSeriesData {
   };
 }
 
-export function createCutomizedTimeSeriesData(
-  override: Partial<TimeSeriesData>
-): TimeSeriesData {
-  return {
-    ...buildTimeSeriesData(),
-    ...override,
-  };
-}
-
 export function createTimeSeriesData(): TimeSeriesData {
   return {
     scalars: {
