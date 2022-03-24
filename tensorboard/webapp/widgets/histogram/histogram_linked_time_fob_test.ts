@@ -14,13 +14,13 @@ import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {ScaleLinear} from '../../third_party/d3';
-import {AxisDirection} from '../linked_time_fob/linked_time_fob_controller_component';
-import {HistogramLinkedTimeFobController} from './histogram_linked_time_fob_controller';
 import {
-  LinkedTimeFobControllerComponent,
+  AxisDirection,
   Fob,
+  LinkedTimeFobControllerComponent,
 } from '../linked_time_fob/linked_time_fob_controller_component';
 import {LinkedTime} from '../linked_time_fob/linked_time_types';
+import {HistogramLinkedTimeFobController} from './histogram_linked_time_fob_controller';
 
 describe('HistogramLinkedTimeFobController', () => {
   let temporalScaleSpy: jasmine.Spy;
@@ -107,6 +107,7 @@ describe('HistogramLinkedTimeFobController', () => {
       expect(stepLower).toEqual(100);
     });
   });
+
   describe('getAxisPositionFromStep', () => {
     it('calls the scale function', () => {
       let fixture = createComponent({steps: [100, 200, 300, 400]});
@@ -114,6 +115,7 @@ describe('HistogramLinkedTimeFobController', () => {
       expect(temporalScaleSpy).toHaveBeenCalledOnceWith(150);
     });
   });
+
   describe('interaction with base controller', () => {
     it('properly uses scale when setting fob position', () => {
       let fixture = createComponent({
@@ -130,7 +132,6 @@ describe('HistogramLinkedTimeFobController', () => {
         testController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(600);
     });
-
     it('moves the fob to the next highest step when draggin down', () => {
       let fixture = createComponent({
         steps: [100, 200, 300, 400],
@@ -151,7 +152,6 @@ describe('HistogramLinkedTimeFobController', () => {
         testController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(400);
     });
-
     it('moves the fob to the next lowest step when draggin up', () => {
       let fixture = createComponent({
         steps: [100, 200, 300, 400],
