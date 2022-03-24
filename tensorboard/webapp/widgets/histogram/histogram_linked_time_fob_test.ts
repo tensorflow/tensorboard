@@ -41,12 +41,6 @@ describe('HistogramLinkedTimeFobController', () => {
     return fixture;
   }
 
-  it('builds a component', () => {
-    let fixture = createComponent({});
-    console.log(fixture);
-    expect(fixture).toBeTruthy;
-  });
-
   describe('getStepHigherThanAxisPosition', () => {
     it('gets step higher when position is not on a step', () => {
       let fixture = createComponent({steps: [100, 200, 300, 400]});

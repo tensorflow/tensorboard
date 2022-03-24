@@ -34,8 +34,7 @@ export class HistogramLinkedTimeFobController implements FobCardAdapter {
   @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
 
   getHighestStep(): number {
-    const steps = this.steps;
-    return steps[steps.length - 1];
+    return this.steps[this.steps.length - 1];
   }
   getLowestStep(): number {
     return this.steps[0];
