@@ -12,26 +12,39 @@ limitations under the License.
 
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {By} from '@angular/platform-browser';
 import {ScaleLinear} from '../../third_party/d3';
 import {AxisDirection} from '../linked_time_fob/linked_time_fob_controller_component';
 import {HistogramLinkedTimeFobController} from './histogram_linked_time_fob_controller';
+import {
+  LinkedTimeFobControllerComponent,
+  Fob,
+} from '../linked_time_fob/linked_time_fob_controller_component';
+import {LinkedTime} from '../linked_time_fob/linked_time_types';
 
 describe('HistogramLinkedTimeFobController', () => {
   let temporalScaleSpy: jasmine.Spy;
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [HistogramLinkedTimeFobController],
+      declarations: [
+        HistogramLinkedTimeFobController,
+        LinkedTimeFobControllerComponent,
+      ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
 
   function createComponent(input: {
     steps?: number[];
+    linkedTime?: LinkedTime;
   }): ComponentFixture<HistogramLinkedTimeFobController> {
     const fixture = TestBed.createComponent(HistogramLinkedTimeFobController);
     fixture.componentInstance.axisDirection = AxisDirection.VERTICAL;
-    fixture.componentInstance.steps = input.steps || [1, 2, 3, 4];
-    fixture.componentInstance.linkedTime = {start: {step: 2}, end: null};
+    fixture.componentInstance.steps = input.steps || [100, 200, 300, 400];
+    fixture.componentInstance.linkedTime = input.linkedTime || {
+      start: {step: 200},
+      end: null,
+    };
     temporalScaleSpy = jasmine.createSpy();
     fixture.componentInstance.temporalScale =
       temporalScaleSpy as unknown as ScaleLinear<number, number>;
@@ -99,6 +112,65 @@ describe('HistogramLinkedTimeFobController', () => {
       let fixture = createComponent({steps: [100, 200, 300, 400]});
       fixture.componentInstance.getAxisPositionFromStep(150);
       expect(temporalScaleSpy).toHaveBeenCalledOnceWith(150);
+    });
+  });
+  describe('interaction with base controller', () => {
+    it('properly uses scale when setting fob position', () => {
+      let fixture = createComponent({
+        linkedTime: {start: {step: 300}, end: null},
+      });
+      temporalScaleSpy.and.callFake((step) => {
+        return step * 2;
+      });
+      fixture.detectChanges();
+      let testController = fixture.debugElement.query(
+        By.directive(LinkedTimeFobControllerComponent)
+      ).componentInstance;
+      expect(
+        testController.startFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(600);
+    });
+
+    it('moves the fob to the next highest step when draggin down', () => {
+      let fixture = createComponent({
+        steps: [100, 200, 300, 400],
+        linkedTime: {start: {step: 300}, end: null},
+      });
+      fixture.detectChanges();
+      let testController = fixture.debugElement.query(
+        By.directive(LinkedTimeFobControllerComponent)
+      ).componentInstance;
+      testController.startDrag(Fob.START);
+      const fakeEvent = new MouseEvent('mousemove', {
+        clientY: 302,
+        movementY: 1,
+      });
+      testController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        testController.startFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(400);
+    });
+
+    it('moves the fob to the next lowest step when draggin up', () => {
+      let fixture = createComponent({
+        steps: [100, 200, 300, 400],
+        linkedTime: {start: {step: 300}, end: null},
+      });
+      fixture.detectChanges();
+      let testController = fixture.debugElement.query(
+        By.directive(LinkedTimeFobControllerComponent)
+      ).componentInstance;
+      testController.startDrag(Fob.START);
+      const fakeEvent = new MouseEvent('mousemove', {
+        clientY: 298,
+        movementY: -1,
+      });
+      testController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+      expect(
+        testController.startFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(200);
     });
   });
 });
