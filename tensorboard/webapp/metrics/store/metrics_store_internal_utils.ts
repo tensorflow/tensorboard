@@ -418,6 +418,10 @@ export function getImageCardStepValues(
   cardMetadataMap: CardMetadataMap,
   timeSeriesData: TimeSeriesData
 ): number[] {
+  if (!cardMetadataMap.hasOwnProperty(cardId)) {
+    return [];
+  }
+
   const {plugin, tag, sample, runId} = cardMetadataMap[cardId];
   if (runId === null) {
     return [];
