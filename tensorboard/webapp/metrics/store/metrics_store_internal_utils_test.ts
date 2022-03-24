@@ -992,14 +992,18 @@ describe('metrics store utils', () => {
     });
 
     it('does not return step Index when there is only one unmatched step', () => {
-      const nextStepIndex = getNextImageCardStepIndexFromSingleSelection(15, [10]);
+      const nextStepIndex = getNextImageCardStepIndexFromSingleSelection(15, [
+        10,
+      ]);
 
       expect(nextStepIndex).toEqual(null);
     });
 
-
     it('does not return step Index when there is no selected step', () => {
-      const nextStepIndex = getNextImageCardStepIndexFromSingleSelection(15, []);
+      const nextStepIndex = getNextImageCardStepIndexFromSingleSelection(
+        15,
+        []
+      );
 
       expect(nextStepIndex).toEqual(null);
     });
