@@ -45,6 +45,8 @@ type ResolvedPinPartialState = Pick<
   | 'cardStepIndex'
 >;
 
+const DISTANCE_RATIO = 0.1;
+
 /**
  * Returns the loadable information for a specific tag, containing its series
  * data and load state. Returns `null` when the requested tag has no initial
@@ -377,9 +379,33 @@ export function canCreateNewPins(state: MetricsState) {
 export function generateNextCardStepIndexFromSelectedTime(
   previousCardStepIndex: CardStepIndexMap,
   cardMetadataMap: CardMetadataMap,
-  timeSeriesData: TimeSeriesData
+  timeSeriesData: TimeSeriesData,
+  selectedTime: LinkedTime
 ): CardStepIndexMap {
-  const nextCardStepIndex = {...previousCardStepIndex};
+  let nextCardStepIndex = {...previousCardStepIndex};
+
+  Object.keys(previousCardStepIndex).forEach((cardId) => {
+    if (!cardId.includes('"plugin":"images"')) return;
+
+    const steps = getImageCardStepValues(
+      cardId,
+      cardMetadataMap,
+      timeSeriesData
+    );
+
+    let nextStepIndex = null;
+    // Single Selection
+    if (selectedTime.end === null) {
+      nextStepIndex = getNextImageCardStepIndexFromSingleSelection(
+        selectedTime.start.step,
+        steps
+      );
+    }
+
+    if (nextStepIndex !== null) {
+      nextCardStepIndex[cardId] = nextStepIndex;
+    }
+  });
 
   return nextCardStepIndex;
 }
@@ -428,4 +454,45 @@ function getSelectedSteps(selectedTime: LinkedTime | null, steps: number[]) {
   return selectedStepsInRange;
 }
 
-export const TEST_ONLY = {getImageCardStepValues, getSelectedSteps, util};
+/**
+ * Gets next stepIndex for a card based on single selection. Returns null if nothing should change.
+ * @param selectedStep The selected step from selected time. It is equivalent to start step here
+ *  since there is no `end` in selected time when it is single seleciton.
+ */
+function getNextImageCardStepIndexFromSingleSelection(
+  selectedStep: number,
+  steps: number[]
+): number | null {
+  // Checks exact match.
+  const maybeMatchedStepIndex = steps.indexOf(selectedStep);
+  if (maybeMatchedStepIndex !== -1) {
+    return maybeMatchedStepIndex;
+  }
+
+  // Checks if start step is "close" enough to a step value and move it
+  for (let i = 0; i < steps.length - 1; i++) {
+    const currentStep = steps[i];
+    const nextStep = steps[i + 1];
+    const distance = (nextStep - currentStep) * DISTANCE_RATIO;
+
+    if (selectedStep < currentStep) return null;
+    if (selectedStep > nextStep) continue;
+
+    if (selectedStep - currentStep <= distance) {
+      return i;
+    }
+    if (nextStep - selectedStep <= distance) {
+      return i + 1;
+    }
+  }
+
+  return null;
+}
+
+export const TEST_ONLY = {
+  getImageCardStepValues,
+  getSelectedSteps,
+  getNextImageCardStepIndexFromSingleSelection,
+  generateNextCardStepIndexFromSelectedTime,
+  util,
+};

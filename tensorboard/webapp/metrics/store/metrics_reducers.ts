@@ -958,21 +958,23 @@ const reducer = createReducer(
     // Otherwise selection state is range.
     const useRangeSelectTime = nextEndStep !== undefined;
 
+    const selectedTime = {
+      start: {
+        step: nextStartStep,
+      },
+      end,
+    };
     const nextCardStepIndexMap = generateNextCardStepIndexFromSelectedTime(
       state.cardStepIndex,
       state.cardMetadataMap,
-      state.timeSeriesData
+      state.timeSeriesData,
+      selectedTime
     );
 
     return {
       ...state,
       selectTimeEnabled: true,
-      selectedTime: {
-        start: {
-          step: nextStartStep,
-        },
-        end,
-      },
+      selectedTime,
       cardStepIndex: nextCardStepIndexMap,
       useRangeSelectTime,
     };
