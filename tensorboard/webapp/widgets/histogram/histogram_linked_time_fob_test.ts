@@ -38,8 +38,8 @@ describe('HistogramLinkedTimeFobController', () => {
     linkedTime?: LinkedTime;
   }): ComponentFixture<HistogramLinkedTimeFobController> {
     const fixture = TestBed.createComponent(HistogramLinkedTimeFobController);
-    fixture.componentInstance.steps = input.steps || [100, 200, 300, 400];
-    fixture.componentInstance.linkedTime = input.linkedTime || {
+    fixture.componentInstance.steps = input.steps ?? [100, 200, 300, 400];
+    fixture.componentInstance.linkedTime = input.linkedTime ?? {
       start: {step: 200},
       end: null,
     };
@@ -47,7 +47,7 @@ describe('HistogramLinkedTimeFobController', () => {
     fixture.componentInstance.temporalScale =
       temporalScaleSpy as unknown as TemporalScale;
     temporalScaleSpy.and.callFake((step: number) => {
-      // imitate a 10 to 1 scale.
+      // Imitate a 10 to 1 scale.
       return step * 10;
     });
     return fixture;
