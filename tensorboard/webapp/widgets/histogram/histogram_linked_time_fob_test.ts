@@ -14,7 +14,6 @@ import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {
-  AxisDirection,
   Fob,
   LinkedTimeFobControllerComponent,
 } from '../linked_time_fob/linked_time_fob_controller_component';
