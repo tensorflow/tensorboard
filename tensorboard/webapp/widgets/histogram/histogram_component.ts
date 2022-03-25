@@ -29,7 +29,6 @@ import {fromEvent, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
-import {AxisDirection} from '../linked_time_fob/linked_time_fob_controller_component';
 import {LinkedTime} from '../linked_time_fob/linked_time_types';
 import {
   Bin,
@@ -41,7 +40,7 @@ import {
 
 type BinScale = d3.ScaleLinear<number, number>;
 type CountScale = d3.ScaleLinear<number, number>;
-type TemporalScale =
+export type TemporalScale =
   | d3.ScaleLinear<number, number>
   | d3.ScaleTime<number, number>;
 type D3ColorScale = d3.ScaleLinear<HCLColor, string>;
@@ -101,8 +100,6 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() linkedTime: LinkedTime | null = null;
 
   @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
-
-  readonly axisDirection = AxisDirection.VERTICAL;
 
   readonly HistogramMode = HistogramMode;
   readonly TimeProperty = TimeProperty;

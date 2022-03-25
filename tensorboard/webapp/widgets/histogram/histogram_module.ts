@@ -18,9 +18,10 @@ import {IntersectionObserverModule} from '../intersection_observer/intersection_
 import {LinkedTimeFobModule} from '../linked_time_fob/linked_time_fob_module';
 import {ResizeDetectorModule} from '../resize_detector_module';
 import {HistogramComponent} from './histogram_component';
+import {HistogramLinkedTimeFobController} from './histogram_linked_time_fob_controller';
 
 @NgModule({
-  declarations: [HistogramComponent],
+  declarations: [HistogramComponent, HistogramLinkedTimeFobController],
   exports: [HistogramComponent],
   imports: [
     CommonModule,

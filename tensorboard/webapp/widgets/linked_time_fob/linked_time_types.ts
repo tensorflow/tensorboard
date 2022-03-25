@@ -53,14 +53,14 @@ export interface FobCardAdapter {
   /**
    * Uses ImplementerScale to determine the step that is at the current mouse
    * position or the closest step that is higher than the current mouse position.
-   * @param position The mouse position
+   * @param position The mouse position relative to the start of the axis
    */
   getStepHigherThanAxisPosition(position: number): number;
 
   /**
    * Uses ImplementerScale to determine the step that is at the current mouse
    * position or the closest step that is lower than the current mouse position.
-   * @param position The mouse position
+   * @param position The mouse position relative to the start of the axis
    */
   getStepLowerThanAxisPosition(position: number): number;
 }
