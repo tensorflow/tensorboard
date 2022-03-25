@@ -920,36 +920,6 @@ describe('image card', () => {
           return slider.nativeElement.getAttribute('aria-valuenow');
         }
 
-        it('moves slider thumb to the highest step in range when the thumb is larger than end step', () => {
-          store.overrideSelector(selectors.getMetricsSelectedTime, {
-            start: {step: 15},
-            end: {step: 35},
-          });
-          const fixture = createImageCardContainerWithStepIndex(3);
-
-          expect(getSliderThumbPosition(fixture)).toBe('2');
-        });
-
-        it('moves slider thumb to the lowest step in range when the thumb is smaller than start step', () => {
-          store.overrideSelector(selectors.getMetricsSelectedTime, {
-            start: {step: 15},
-            end: {step: 35},
-          });
-          const fixture = createImageCardContainerWithStepIndex(0);
-
-          expect(getSliderThumbPosition(fixture)).toBe('1');
-        });
-
-        it('does not moves slider thumb when the thumb is in range', () => {
-          store.overrideSelector(selectors.getMetricsSelectedTime, {
-            start: {step: 15},
-            end: {step: 35},
-          });
-          const fixture = createImageCardContainerWithStepIndex(2);
-
-          expect(getSliderThumbPosition(fixture)).toBe('2');
-        });
-
         it('does not moves slider thumb when selected time is clipped', () => {
           store.overrideSelector(selectors.getMetricsSelectedTime, {
             start: {step: 55},
@@ -966,16 +936,6 @@ describe('image card', () => {
           const fixture2 = createImageCardContainerWithStepIndex(2);
 
           expect(getSliderThumbPosition(fixture2)).toBe('2');
-        });
-
-        it('does not moves slider thumb when selected range had no image', () => {
-          store.overrideSelector(selectors.getMetricsSelectedTime, {
-            start: {step: 15},
-            end: {step: 18},
-          });
-          const fixture = createImageCardContainerWithStepIndex(2);
-
-          expect(getSliderThumbPosition(fixture)).toBe('2');
         });
       });
     });

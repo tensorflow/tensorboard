@@ -39,6 +39,7 @@ import {ImageTimeSeriesData, TimeSeriesData} from './metrics_types';
 const {
   getImageCardStepValues,
   getSelectedSteps,
+  getNextImageCardStepIndexFromRangeSelection,
   getNextImageCardStepIndexFromSingleSelection,
   generateNextCardStepIndexFromSelectedTime,
 } = TEST_ONLY;
@@ -650,7 +651,6 @@ describe('metrics store utils', () => {
 
   describe('generateNextCardStepIndexFromSelectedTime', () => {
     const imageCardId = 'test image card id "plugin":"images"';
-    const previousCardStepIndex = {[imageCardId]: 3};
     const cardMetadataMap = {
       [imageCardId]: {
         runId: 'test run Id',
@@ -673,6 +673,7 @@ describe('metrics store utils', () => {
                   {step: 10, wallTime: 0, imageId: '1'},
                   {step: 20, wallTime: 10, imageId: '2'},
                   {step: 30, wallTime: 15, imageId: '3'},
+                  {step: 50, wallTime: 35, imageId: '4'},
                 ],
               },
             },
@@ -682,12 +683,11 @@ describe('metrics store utils', () => {
     });
 
     it(`updates cardStepIndex to matched selected time`, () => {
-      const selectedTime = {start: {step: 20}, end: null};
       const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
-        previousCardStepIndex,
+        {[imageCardId]: 3},
         cardMetadataMap,
         timeSeriesData,
-        selectedTime
+        {start: {step: 20}, end: null}
       );
 
       expect(nextCardStepIndex).toEqual({[imageCardId]: 1});
@@ -736,12 +736,34 @@ describe('metrics store utils', () => {
     });
 
     it(`does not update cardStepIndex on selected step with no image`, () => {
-      const selectedTime = {start: {step: 15}, end: null};
       const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
-        previousCardStepIndex,
+        {[imageCardId]: 3},
         cardMetadataMap,
         timeSeriesData,
-        selectedTime
+        {start: {step: 15}, end: null}
+      );
+
+      expect(nextCardStepIndex).toEqual({[imageCardId]: 3});
+    });
+
+    it(`updates cardStepIndex in range selection`, () => {
+      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
+        {[imageCardId]: 3},
+        cardMetadataMap,
+        timeSeriesData,
+        {start: {step: 15}, end: {step: 35}}
+      );
+
+      // Updates index to 2, which is the highest step with image data in range
+      expect(nextCardStepIndex).toEqual({[imageCardId]: 2});
+    });
+
+    it(`does not update cardStepIndex when there is no image in range`, () => {
+      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
+        {[imageCardId]: 3},
+        cardMetadataMap,
+        timeSeriesData,
+        {start: {step: 15}, end: {step: 18}}
       );
 
       expect(nextCardStepIndex).toEqual({[imageCardId]: 3});
@@ -955,6 +977,68 @@ describe('metrics store utils', () => {
       );
 
       expect(nextStepIndex).toEqual(null);
+    });
+  });
+
+  describe('getNextImageCardStepIndexFromRangeSelection', () => {
+    it('returns cardStepIndex to the highest step in range when current step is larger than last selected step', () => {
+      const nextCardStepIndex = getNextImageCardStepIndexFromRangeSelection(
+        [20, 30],
+        [10, 20, 30, 40],
+        35
+      );
+
+      expect(nextCardStepIndex).toEqual(2);
+    });
+
+    it('returns cardStepIndex to the lowest step in range when current step is smaller than first selected step', () => {
+      const nextCardStepIndex = getNextImageCardStepIndexFromRangeSelection(
+        [20, 30],
+        [10, 20, 30, 40],
+        10
+      );
+
+      expect(nextCardStepIndex).toEqual(1);
+    });
+
+    it('returns null when current step is in range', () => {
+      const nextCardStepIndex = getNextImageCardStepIndexFromRangeSelection(
+        [20, 30],
+        [10, 20, 30, 40],
+        30
+      );
+
+      expect(nextCardStepIndex).toEqual(null);
+    });
+
+    it('returns null on empty selected steps', () => {
+      const nextCardStepIndex = getNextImageCardStepIndexFromRangeSelection(
+        [],
+        [10, 20, 30, 40],
+        20
+      );
+
+      expect(nextCardStepIndex).toEqual(null);
+    });
+
+    it('returns null when step is smaller than first selected step and selected steps not in steps', () => {
+      const nextCardStepIndex = getNextImageCardStepIndexFromRangeSelection(
+        [25, 29],
+        [10, 20, 30, 40],
+        20
+      );
+
+      expect(nextCardStepIndex).toEqual(null);
+    });
+
+    it('returns null when step is larger than last selected step and selected steps not in steps', () => {
+      const nextCardStepIndex = getNextImageCardStepIndexFromRangeSelection(
+        [25, 29],
+        [10, 20, 30, 40],
+        30
+      );
+
+      expect(nextCardStepIndex).toEqual(null);
     });
   });
 });

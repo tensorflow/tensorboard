@@ -400,6 +400,17 @@ export function generateNextCardStepIndexFromSelectedTime(
         selectedTime.start.step,
         steps
       );
+    } else {
+      // Range Selection
+      const currentStepIndex = previousCardStepIndex[cardId]!;
+      const step = steps[currentStepIndex];
+      const selectedSteps = getSelectedSteps(selectedTime, steps);
+
+      nextStepIndex = getNextImageCardStepIndexFromRangeSelection(
+        selectedSteps,
+        steps,
+        step
+      );
     }
 
     if (nextStepIndex !== null) {
@@ -459,7 +470,7 @@ function getSelectedSteps(selectedTime: LinkedTime | null, steps: number[]) {
 }
 
 /**
- * Gets next stepIndex for a card based on single selection. Returns null if nothing should change.
+ * Gets next stepIndex for an image card based on single selection. Returns null if nothing should change.
  * @param selectedStep The selected step from selected time. It is equivalent to start step here
  *  since there is no `end` in selected time when it is single seleciton.
  */
@@ -493,9 +504,40 @@ function getNextImageCardStepIndexFromSingleSelection(
   return null;
 }
 
+/**
+ * Gets next stepIndex for an image card based on range selection. Returns null if nothing should change.
+ * @param selectedSteps The selected steps from selected time. It should contain one or mutliple steps.
+ * @param steps The steps in an image card.
+ * @param step The step where the current step index locates.
+ */
+function getNextImageCardStepIndexFromRangeSelection(
+  selectedSteps: number[],
+  steps: number[],
+  step: number
+): number | null {
+  const firstSelectedStep = selectedSteps[0];
+  const lastSelectedStep = selectedSteps[selectedSteps.length - 1];
+
+  // Updates step index to the closest index if it is outside the range.
+  if (step > lastSelectedStep) {
+    return steps.indexOf(lastSelectedStep) !== -1
+      ? steps.indexOf(lastSelectedStep)
+      : null;
+  }
+  if (step < firstSelectedStep) {
+    return steps.indexOf(firstSelectedStep) !== -1
+      ? steps.indexOf(firstSelectedStep)
+      : null;
+  }
+
+  // Does not update index when it is in selected range.
+  return null;
+}
+
 export const TEST_ONLY = {
   getImageCardStepValues,
   getSelectedSteps,
+  getNextImageCardStepIndexFromRangeSelection,
   getNextImageCardStepIndexFromSingleSelection,
   generateNextCardStepIndexFromSelectedTime,
   util,
