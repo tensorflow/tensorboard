@@ -39,7 +39,6 @@ describe('HistogramLinkedTimeFobController', () => {
     linkedTime?: LinkedTime;
   }): ComponentFixture<HistogramLinkedTimeFobController> {
     const fixture = TestBed.createComponent(HistogramLinkedTimeFobController);
-    fixture.componentInstance.axisDirection = AxisDirection.VERTICAL;
     fixture.componentInstance.steps = input.steps || [100, 200, 300, 400];
     fixture.componentInstance.linkedTime = input.linkedTime || {
       start: {step: 200},

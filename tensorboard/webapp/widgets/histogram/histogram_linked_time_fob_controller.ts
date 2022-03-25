@@ -27,11 +27,12 @@ import {TemporalScale} from './histogram_component';
   `,
 })
 export class HistogramLinkedTimeFobController implements FobCardAdapter {
-  @Input() axisDirection!: AxisDirection;
   @Input() steps!: number[];
   @Input() linkedTime!: LinkedTime;
   @Input() temporalScale!: TemporalScale;
   @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
+
+  readonly axisDirection = AxisDirection.VERTICAL;
 
   getHighestStep(): number {
     return this.steps[this.steps.length - 1];
