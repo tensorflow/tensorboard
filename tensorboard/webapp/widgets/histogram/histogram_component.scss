@@ -140,6 +140,12 @@ svg {
 
 .content {
   grid-area: content;
+  // Allow overflow to be visible so that the tooltip can be shown for points
+  // near the edges.
+  overflow: visible;
+  // Raise the content area above the axes so that the tooltip can be shown over
+  // the axes marks.
+  z-index: 1;
 
   .tick {
     stroke-width: 1px;
