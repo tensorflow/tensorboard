@@ -69,6 +69,13 @@ export class LinkedTimeFobControllerComponent {
     )}px, 0px)`;
   }
 
+  getAxisOffset() {
+    if (this.axisDirection === AxisDirection.VERTICAL) {
+      return '9px';
+    }
+    return '0';
+  }
+
   startDrag(fob: Fob) {
     this.currentDraggingFob = fob;
   }
@@ -82,12 +89,14 @@ export class LinkedTimeFobControllerComponent {
 
     const newLinkedTime = this.linkedTime;
     let newStep: number | null = null;
-    const mousePosition =
-      event.clientY -
-      this.axisOverlay.nativeElement.getBoundingClientRect().top;
-    if (this.isDraggingHigher(mousePosition, event.movementY)) {
+    const mousePosition = this.getMousePositionFromEvent(event);
+    const movement =
+      this.axisDirection === AxisDirection.VERTICAL
+        ? event.movementY
+        : event.movementX;
+    if (this.isDraggingHigher(mousePosition, movement)) {
       newStep = this.cardAdapter.getStepHigherThanAxisPosition(mousePosition);
-    } else if (this.isDraggingLower(mousePosition, event.movementY)) {
+    } else if (this.isDraggingLower(mousePosition, movement)) {
       newStep = this.cardAdapter.getStepLowerThanAxisPosition(mousePosition);
     }
 
@@ -115,7 +124,7 @@ export class LinkedTimeFobControllerComponent {
 
   isDraggingLower(position: number, movement: number): boolean {
     return (
-      position < this.getDraggingFobTop() &&
+      position < this.getDraggingFobCenter() &&
       movement < 0 &&
       this.getDraggingFobStep() > this.cardAdapter.getLowestStep()
     );
@@ -123,26 +132,44 @@ export class LinkedTimeFobControllerComponent {
 
   isDraggingHigher(position: number, movement: number): boolean {
     return (
-      position > this.getDraggingFobTop() &&
+      position > this.getDraggingFobCenter() &&
       movement > 0 &&
       this.getDraggingFobStep() < this.cardAdapter.getHighestStep()
     );
   }
 
-  getDraggingFobTop(): number {
-    const absoluteTop =
-      this.currentDraggingFob !== Fob.END
-        ? this.startFobWrapper.nativeElement.getBoundingClientRect().top
-        : this.endFobWrapper.nativeElement.getBoundingClientRect().top;
-    return (
-      absoluteTop - this.axisOverlay.nativeElement.getBoundingClientRect().top
-    );
+  getDraggingFobCenter(): number {
+    // the fob is centered around the top when in the vertical direction and
+    // around the left when in the horizontal.
+    if (this.axisDirection === AxisDirection.VERTICAL) {
+      return (
+        (this.currentDraggingFob !== Fob.END
+          ? this.startFobWrapper.nativeElement.getBoundingClientRect().top
+          : this.endFobWrapper.nativeElement.getBoundingClientRect().top) -
+        this.axisOverlay.nativeElement.getBoundingClientRect().top
+      );
+    } else {
+      return (
+        (this.currentDraggingFob !== Fob.END
+          ? this.startFobWrapper.nativeElement.getBoundingClientRect().left
+          : this.endFobWrapper.nativeElement.getBoundingClientRect().left) -
+        this.axisOverlay.nativeElement.getBoundingClientRect().left
+      );
+    }
   }
 
   getDraggingFobStep(): number {
     return this.currentDraggingFob !== Fob.END
       ? this.linkedTime!.start.step
       : this.linkedTime!.end!.step;
+  }
+
+  getMousePositionFromEvent(event: MouseEvent): number {
+    return this.axisDirection === AxisDirection.VERTICAL
+      ? event.clientY -
+          this.axisOverlay.nativeElement.getBoundingClientRect().top
+      : event.clientX -
+          this.axisOverlay.nativeElement.getBoundingClientRect().left;
   }
 
   stepTyped(fob: Fob, step: number) {
