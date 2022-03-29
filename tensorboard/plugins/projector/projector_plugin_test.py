@@ -281,7 +281,7 @@ class ProjectorAppTest(tf.test.TestCase):
         context = base_plugin.TBContext(logdir=logdir, data_provider=provider)
         self.plugin = projector_plugin.ProjectorPlugin(context)
         wsgi_app = application.TensorBoardWSGI([self.plugin])
-        self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+        self.server = werkzeug_test.Client(wsgi_app, wrappers.Response)
 
     def _Get(self, path):
         return self.server.get(path)

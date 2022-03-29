@@ -34,7 +34,7 @@ class EmptyPathRedirectMiddlewareTest(tb_test.TestCase):
         app = self._lax_strip_foo_middleware(app)
         self.app = app
         self.server = werkzeug_test.Client(
-            self.app, werkzeug.wrappers.BaseResponse
+            self.app, werkzeug.wrappers.Response
         )
 
     def _lax_strip_foo_middleware(self, app):

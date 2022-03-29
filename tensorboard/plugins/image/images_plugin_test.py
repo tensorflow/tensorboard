@@ -48,7 +48,7 @@ class ImagesPluginTest(tf.test.TestCase):
         ctx = base_plugin.TBContext(logdir=logdir, data_provider=provider)
         plugin = images_plugin.ImagesPlugin(ctx)
         wsgi_app = application.TensorBoardWSGI([plugin])
-        self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+        self.server = werkzeug_test.Client(wsgi_app, wrappers.Response)
         self.routes = plugin.get_plugin_apps()
 
     def _create_data(self):

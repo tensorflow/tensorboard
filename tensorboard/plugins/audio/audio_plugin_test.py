@@ -127,7 +127,7 @@ class AudioPluginTest(tf.test.TestCase):
         )
         self.plugin = audio_plugin.AudioPlugin(context)
         wsgi_app = application.TensorBoardWSGI([self.plugin])
-        self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+        self.server = werkzeug_test.Client(wsgi_app, wrappers.Response)
 
     def tearDown(self):
         shutil.rmtree(self.log_dir, ignore_errors=True)

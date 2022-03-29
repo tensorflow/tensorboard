@@ -148,7 +148,7 @@ class CorePluginTest(tf.test.TestCase):
         )
         self.plugin = core_plugin.CorePlugin(context)
         app = application.TensorBoardWSGI([self.plugin])
-        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
+        self.server = werkzeug_test.Client(app, wrappers.Response)
 
     def _add_run(self, run_name):
         run_path = os.path.join(self.logdir, run_name)
@@ -240,7 +240,7 @@ class CorePluginTest(tf.test.TestCase):
 
         self.plugin = core_plugin.CorePlugin(self.context)
         app = application.TensorBoardWSGI([self.plugin])
-        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
+        self.server = werkzeug_test.Client(app, wrappers.Response)
 
         parsed_object = self._get_json(self.server, "/data/environment")
         self.assertEqual(parsed_object["data_location"], "/tmp/logs")
@@ -269,7 +269,7 @@ class CorePluginTest(tf.test.TestCase):
         )
         plugin = core_plugin.CorePlugin(context, include_debug_info=True)
         app = application.TensorBoardWSGI([plugin])
-        server = werkzeug_test.Client(app, wrappers.BaseResponse)
+        server = werkzeug_test.Client(app, wrappers.Response)
 
         parsed_object = self._get_json(server, "/data/environment")
         self.assertIn("debug", parsed_object)
@@ -375,7 +375,7 @@ class CorePluginPathPrefixTest(tf.test.TestCase):
         )
         plugin = core_plugin.CorePlugin(context)
         app = application.TensorBoardWSGI([plugin], path_prefix=path_prefix)
-        server = werkzeug_test.Client(app, wrappers.BaseResponse)
+        server = werkzeug_test.Client(app, wrappers.Response)
         return server.get(pathname)
 
     def _assert_index(self, response, expected_tb_relative_root):
