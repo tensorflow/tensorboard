@@ -87,8 +87,8 @@ export const {
   getObserver: getObjectObserver,
   disposeBinding: disposeObjectBinding,
 } = makeBindings(
-  (s) => JSON.parse(atob(s)) as Record<string, string>,
-  (o) => btoa(JSON.stringify(o))
+  (s) => JSON.parse(decodeURIComponent(escape(window.atob(s)))) as Record<string, string>,
+  (o) => btoa(unescape(encodeURIComponent(JSON.stringify(o))))
 );
 export interface StorageOptions<T> {
   defaultValue?: T;
