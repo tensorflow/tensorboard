@@ -60,7 +60,7 @@ class FetchServerInfoTest(tb_test.TestCase):
         expected_result.url_format.template = "http://localhost:8080/{{eid}}"
         expected_result.url_format.id_placeholder = "{{eid}}"
 
-        @wrappers.BaseRequest.application
+        @wrappers.Request.application
         def app(request):
             self.assertEqual(request.method, "POST")
             self.assertEqual(request.path, "/api/uploader")
@@ -75,7 +75,7 @@ class FetchServerInfoTest(tb_test.TestCase):
         self.assertEqual(result, expected_result)
 
     def test_fetches_with_plugins(self):
-        @wrappers.BaseRequest.application
+        @wrappers.Request.application
         def app(request):
             body = request.get_data()
             request_pb = server_info_pb2.ServerInfoRequest.FromString(body)
@@ -106,7 +106,7 @@ class FetchServerInfoTest(tb_test.TestCase):
             self.assertIn(os.strerror(errno.ECONNREFUSED), msg)
 
     def test_non_ok_response(self):
-        @wrappers.BaseRequest.application
+        @wrappers.Request.application
         def app(request):
             del request  # unused
             return wrappers.Response(b"very sad", status="502 Bad Gateway")
@@ -119,7 +119,7 @@ class FetchServerInfoTest(tb_test.TestCase):
         self.assertIn("very sad", msg)
 
     def test_corrupt_response(self):
-        @wrappers.BaseRequest.application
+        @wrappers.Request.application
         def app(request):
             del request  # unused
             return wrappers.Response(b"\x7a\x7ftruncated proto")
@@ -132,7 +132,7 @@ class FetchServerInfoTest(tb_test.TestCase):
         self.assertIn("truncated proto", msg)
 
     def test_user_agent(self):
-        @wrappers.BaseRequest.application
+        @wrappers.Request.application
         def app(request):
             result = server_info_pb2.ServerInfoResponse()
             result.compatibility.details = request.headers["User-Agent"]

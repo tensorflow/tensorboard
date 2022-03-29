@@ -45,9 +45,7 @@ class BaseTest(object):
         super(BaseTest, self).setUp()
 
         self.app = self._create_app()
-        self.server = werkzeug_test.Client(
-            self.app, werkzeug.wrappers.Response
-        )
+        self.server = werkzeug_test.Client(self.app, werkzeug.wrappers.Response)
 
     def _assert_ok(self, response, eid, path, script):
         self.assertEqual(response.status_code, 200)

@@ -20,7 +20,7 @@ from unittest import mock
 import werkzeug
 from werkzeug import test as werkzeug_test
 from werkzeug.datastructures import Headers
-from werkzeug.wrappers import BaseResponse
+from werkzeug.wrappers import Response
 
 from tensorboard import test as tb_test
 from tensorboard.backend import security_validator
@@ -58,7 +58,7 @@ class SecurityValidatorMiddlewareTest(tb_test.TestCase):
             return werkzeug.Response("OK", headers=headers)
 
         app = security_validator.SecurityValidatorMiddleware(_simple_app)
-        server = werkzeug_test.Client(app, BaseResponse)
+        server = werkzeug_test.Client(app, Response)
 
         with mock.patch.object(logger, "warning") as mock_warn:
             server.get("")
