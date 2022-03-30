@@ -20,7 +20,6 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import {AxisDirection} from './linked_time_fob_controller_component';
 
 @Component({
   selector: 'linked-time-fob',
@@ -30,19 +29,10 @@ import {AxisDirection} from './linked_time_fob_controller_component';
 })
 export class LinkedTimeFobComponent {
   @Input() step!: number;
-  @Input() axisDirection!: AxisDirection;
 
   @Output() stepChange = new EventEmitter<number>();
 
   isTyping = false;
-
-  getCenteringTransform() {
-    if (this.axisDirection === AxisDirection.VERTICAL) {
-      return 'translateY(-50%)';
-    } else {
-      return 'translateX(-50%)';
-    }
-  }
 
   typeStepRequested() {
     this.isTyping = true;

@@ -69,19 +69,16 @@ export class LinkedTimeFobControllerComponent {
     )}px, 0px)`;
   }
 
-  getAxisOffset() {
-    if (this.axisDirection === AxisDirection.VERTICAL) {
-      return '9px';
-    }
-    return '0';
-  }
-
   startDrag(fob: Fob) {
     this.currentDraggingFob = fob;
   }
 
   stopDrag() {
     this.currentDraggingFob = Fob.NONE;
+  }
+
+  isVertical() {
+    return this.axisDirection === AxisDirection.VERTICAL;
   }
 
   mouseMove(event: MouseEvent) {
@@ -139,8 +136,12 @@ export class LinkedTimeFobControllerComponent {
   }
 
   getDraggingFobCenter(): number {
-    // the fob is centered around the top when in the vertical direction and
-    // around the left when in the horizontal.
+    // To calculate the "center" position of a fob we actually must look at the
+    // "top" or "left" properties of it. When the axis is in a vertical
+    // direction the visible fob's center is actually rendered over the "top" of
+    // the element's natural position(using translateY(-50%)). While in the
+    // horizontal direction the fob's center is actually rendered over the left
+    // of the element's natural position (using translateX(-50%)).
     if (this.axisDirection === AxisDirection.VERTICAL) {
       return (
         (this.currentDraggingFob !== Fob.END
