@@ -24,6 +24,7 @@ py_library(
     name = "summary_minimal",
     srcs = ["__init__.py"],
     srcs_version = "PY3",
+    visibility = ["//visibility:public"],
     deps = [
         ":writer",
     ],
