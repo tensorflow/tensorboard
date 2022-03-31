@@ -21,6 +21,26 @@ export interface LinkedTime {
 }
 
 /**
+ * The linked time fob controller can be used inside both horizontal and
+ * vertical axis. This enum is a utility used to inform to the controller of
+ * that direction.
+ */
+export enum AxisDirection {
+  HORIZONTAL,
+  VERTICAL,
+}
+
+/**
+ * Each chart can have up to 2 fobs. This enum is used to help distinguish
+ * between the two.
+ */
+export enum Fob {
+  NONE,
+  START,
+  END,
+}
+
+/**
  * This class is intended to be implemented by the card that has a
  * LinkedTimeFobControllerComponent.
  *

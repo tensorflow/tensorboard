@@ -37,7 +37,6 @@ import {
   ScaleType,
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
-import {AxisDirection} from '../../../widgets/linked_time_fob/linked_time_fob_controller_component';
 import {TooltipSort, XAxisType} from '../../types';
 import {
   ScalarCardDataSeries,
@@ -63,7 +62,6 @@ export class ScalarCardComponent<Downloader> {
   readonly DataLoadState = DataLoadState;
   readonly RendererType = RendererType;
   readonly ScaleType = ScaleType;
-  readonly axisDirection = AxisDirection.HORIZONTAL;
 
   @Input() cardId!: string;
   @Input() chartMetadataMap!: ScalarCardSeriesMetadataMap;

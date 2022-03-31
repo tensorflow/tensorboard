@@ -11,8 +11,11 @@ limitations under the License.
 ==============================================================================*/
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {AxisDirection} from '../linked_time_fob/linked_time_fob_controller_component';
-import {FobCardAdapter, LinkedTime} from '../linked_time_fob/linked_time_types';
+import {
+  AxisDirection,
+  FobCardAdapter,
+  LinkedTime,
+} from '../linked_time_fob/linked_time_types';
 import {TemporalScale} from './histogram_component';
 
 @Component({
