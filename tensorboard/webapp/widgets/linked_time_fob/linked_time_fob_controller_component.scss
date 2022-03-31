@@ -14,12 +14,25 @@ limitations under the License.
 ==============================================================================*/
 .axis-overlay {
   height: 100%;
-  left: 9px;
+  left: 0;
   position: absolute;
   right: 0;
   top: 0;
+  &.vertical {
+    // To avoid a cluttered feeling on vertical charts a 9px gap is added
+    // between the fob and the edge of the chart
+    left: 9px;
+  }
   .time-fob-wrapper {
     display: inline-block;
     position: absolute;
   }
+}
+
+.verticalFob {
+  transform: translateY(-50%);
+}
+
+.horizontalFob {
+  transform: translateY(-50%);
 }

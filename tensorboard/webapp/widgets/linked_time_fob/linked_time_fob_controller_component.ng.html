@@ -18,6 +18,7 @@ limitations under the License.
 <div
   #axisOverlay
   class="axis-overlay"
+  [ngClass]="{'vertical' : isVertical()}"
   (mousemove)="mouseMove($event)"
   (mouseup)="stopDrag()"
   (mouseleave)="stopDrag()"
@@ -29,8 +30,8 @@ limitations under the License.
   >
     <linked-time-fob
       class="startFob"
+      [ngClass]="isVertical() ? 'verticalFob' : 'horizontalFob'"
       [step]="linkedTime.start.step"
-      [axisDirection]="axisDirection"
       (mousedown)="startDrag(FobType().START)"
       (stepChange)="stepTyped(FobType().START, $event)"
     ></linked-time-fob>
@@ -43,8 +44,8 @@ limitations under the License.
   >
     <linked-time-fob
       class="endFob"
+      [ngClass]="isVertical() ? 'verticalFob' : 'horizontalFob'"
       [step]="linkedTime.end.step"
-      [axisDirection]="axisDirection"
       (mousedown)="startDrag(FobType().END)"
       (stepChange)="stepTyped(FobType().END, $event)"
     ></linked-time-fob>
