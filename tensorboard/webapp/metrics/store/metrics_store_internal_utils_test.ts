@@ -1020,25 +1020,5 @@ describe('metrics store utils', () => {
 
       expect(nextCardStepIndex).toEqual(null);
     });
-
-    it('returns null when step is smaller than first selected step and selected steps not in steps', () => {
-      const nextCardStepIndex = getNextImageCardStepIndexFromRangeSelection(
-        [25, 29],
-        [10, 20, 30, 40],
-        20
-      );
-
-      expect(nextCardStepIndex).toEqual(null);
-    });
-
-    it('returns null when step is larger than last selected step and selected steps not in steps', () => {
-      const nextCardStepIndex = getNextImageCardStepIndexFromRangeSelection(
-        [25, 29],
-        [10, 20, 30, 40],
-        30
-      );
-
-      expect(nextCardStepIndex).toEqual(null);
-    });
   });
 });

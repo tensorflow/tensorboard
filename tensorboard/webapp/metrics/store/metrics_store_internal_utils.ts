@@ -394,8 +394,8 @@ export function generateNextCardStepIndexFromSelectedTime(
     );
 
     let nextStepIndex = null;
-    // Single Selection
     if (selectedTime.end === null) {
+      // Single Selection
       nextStepIndex = getNextImageCardStepIndexFromSingleSelection(
         selectedTime.start.step,
         steps
@@ -506,7 +506,7 @@ function getNextImageCardStepIndexFromSingleSelection(
 
 /**
  * Gets next stepIndex for an image card based on range selection. Returns null if nothing should change.
- * @param selectedSteps The selected steps from selected time. It should contain one or mutliple steps.
+ * @param selectedSteps The selected steps from selected time. It should contain empty or one to multple steps.
  * @param steps The steps in an image card.
  * @param step The step where the current step index locates.
  */
@@ -515,19 +515,17 @@ function getNextImageCardStepIndexFromRangeSelection(
   steps: number[],
   step: number
 ): number | null {
+  if (selectedSteps.length === 0) return null;
+
   const firstSelectedStep = selectedSteps[0];
   const lastSelectedStep = selectedSteps[selectedSteps.length - 1];
 
   // Updates step index to the closest index if it is outside the range.
   if (step > lastSelectedStep) {
-    return steps.indexOf(lastSelectedStep) !== -1
-      ? steps.indexOf(lastSelectedStep)
-      : null;
+    return steps.indexOf(lastSelectedStep);
   }
   if (step < firstSelectedStep) {
-    return steps.indexOf(firstSelectedStep) !== -1
-      ? steps.indexOf(firstSelectedStep)
-      : null;
+    return steps.indexOf(firstSelectedStep);
   }
 
   // Does not update index when it is in selected range.
