@@ -2511,7 +2511,7 @@ describe('metrics reducers', () => {
         expect(state3.selectTimeEnabled).toBe(false);
       });
 
-      it('sets cardStepIndex to step 0 when there is no selectedTime in state', () => {
+      it('sets cardStepIndex to step 0 when selectedTime is null before toggling', () => {
         const state1 = buildMetricsState({
           selectTimeEnabled: false,
           cardMetadataMap,
@@ -2538,10 +2538,11 @@ describe('metrics reducers', () => {
         });
 
         const state2 = reducers(state1, actions.selectTimeEnableToggled());
+
         expect(state2.cardStepIndex).toEqual({[imageCardId]: 0});
       });
 
-      it('sets cardStepIndex to min step when there is no selectedTime in state', () => {
+      it('sets cardStepIndex to min step when selectedTime is null before toggling', () => {
         const state1 = buildMetricsState({
           selectTimeEnabled: false,
           cardMetadataMap,
@@ -2571,7 +2572,7 @@ describe('metrics reducers', () => {
         expect(state2.cardStepIndex).toEqual({[imageCardId]: 1});
       });
 
-      it('does not update step index when there is no selectedTime and no matched min step', () => {
+      it('does not update step index when selectedTime is null before toggling and no matched min step', () => {
         const state1 = buildMetricsState({
           selectTimeEnabled: false,
           cardMetadataMap,
@@ -2662,6 +2663,35 @@ describe('metrics reducers', () => {
 
         const state2 = reducers(state1, actions.selectTimeEnableToggled());
         expect(state2.cardStepIndex).toEqual({[imageCardId]: 2});
+      });
+
+      it('sets selectedTime to step 0 when selectedTime is null before toggling', () => {
+        const state1 = buildMetricsState({
+          stepMinMax: {min: Infinity, max: -Infinity},
+        });
+
+        const state2 = reducers(state1, actions.selectTimeEnableToggled());
+
+        expect(state2.selectedTime).toEqual({start: {step: 0}, end: null});
+      });
+
+      it('sets selectedTime to min step when selectedTime is null before toggling', () => {
+        const state1 = buildMetricsState({
+          stepMinMax: {min: 10, max: 100},
+        });
+
+        const state2 = reducers(state1, actions.selectTimeEnableToggled());
+
+        expect(state2.selectedTime).toEqual({start: {step: 10}, end: null});
+      });
+
+      it('dose not update selectedTime on toggling when it is pre-existed', () => {
+        const state1 = buildMetricsState({
+          selectedTime: {start: {step: 20}, end: null},
+        });
+
+        const state2 = reducers(state1, actions.selectTimeEnableToggled());
+        expect(state2.selectedTime).toEqual({start: {step: 20}, end: null});
       });
     });
 
