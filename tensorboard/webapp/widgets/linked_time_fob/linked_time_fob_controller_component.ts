@@ -22,12 +22,13 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {
-  AxisDirection,
-  Fob,
-  FobCardAdapter,
-  LinkedTime,
-} from './linked_time_types';
+import {AxisDirection, FobCardAdapter, LinkedTime} from './linked_time_types';
+
+export enum Fob {
+  NONE,
+  START,
+  END,
+}
 
 @Component({
   selector: 'linked-time-fob-controller',

@@ -31,16 +31,6 @@ export enum AxisDirection {
 }
 
 /**
- * Each chart can have up to 2 fobs. This enum is used to help distinguish
- * between the two.
- */
-export enum Fob {
-  NONE,
-  START,
-  END,
-}
-
-/**
  * This class is intended to be implemented by the card that has a
  * LinkedTimeFobControllerComponent.
  *
