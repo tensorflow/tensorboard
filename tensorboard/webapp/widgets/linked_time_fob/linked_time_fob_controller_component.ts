@@ -22,12 +22,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {FobCardAdapter, LinkedTime} from './linked_time_types';
-
-export enum AxisDirection {
-  HORIZONTAL,
-  VERTICAL,
-}
+import {AxisDirection, FobCardAdapter, LinkedTime} from './linked_time_types';
 
 export enum Fob {
   NONE,

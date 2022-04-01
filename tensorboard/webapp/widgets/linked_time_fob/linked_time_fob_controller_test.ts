@@ -19,11 +19,10 @@ import {By} from '@angular/platform-browser';
 import {sendKeys} from '../../testing/dom';
 import {LinkedTimeFobComponent} from './linked_time_fob_component';
 import {
-  AxisDirection,
   Fob,
   LinkedTimeFobControllerComponent,
 } from './linked_time_fob_controller_component';
-import {FobCardAdapter, LinkedTime} from './linked_time_types';
+import {AxisDirection, FobCardAdapter, LinkedTime} from './linked_time_types';
 
 @Component({
   selector: 'testable-comp',

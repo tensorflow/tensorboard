@@ -21,6 +21,14 @@ export interface LinkedTime {
 }
 
 /**
+ * The direction of the axis used to control the fob movements.
+ */
+export enum AxisDirection {
+  HORIZONTAL,
+  VERTICAL,
+}
+
+/**
  * This class is intended to be implemented by the card that has a
  * LinkedTimeFobControllerComponent.
  *

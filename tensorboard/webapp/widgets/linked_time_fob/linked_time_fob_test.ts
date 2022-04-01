@@ -18,7 +18,7 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {sendKeys} from '../../testing/dom';
 import {LinkedTimeFobComponent} from './linked_time_fob_component';
-import {AxisDirection} from './linked_time_fob_controller_component';
+import {AxisDirection} from './linked_time_types';
 
 @Component({
   selector: 'testable-fob-comp',
