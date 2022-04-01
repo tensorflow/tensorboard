@@ -21,9 +21,7 @@ export interface LinkedTime {
 }
 
 /**
- * The linked time fob controller can be used inside both horizontal and
- * vertical axis. This enum is a utility used to inform to the controller of
- * that direction.
+ * The direction of the axis used to control the fob movements.
  */
 export enum AxisDirection {
   HORIZONTAL,
