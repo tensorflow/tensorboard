@@ -31,7 +31,7 @@ def is_path_safe(path):
     example_plugin = plugin.ExampleRawScalarsPlugin(base_plugin.TBContext())
     serve_static_file = example_plugin._serve_static_file
 
-    client = test.Client(serve_static_file, wrappers.BaseResponse)
+    client = test.Client(serve_static_file, wrappers.Response)
     response = client.get(plugin._PLUGIN_DIRECTORY_PATH_PART + path)
     return response.status_code == 200
 

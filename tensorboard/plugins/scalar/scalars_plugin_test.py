@@ -81,7 +81,7 @@ class ScalarsPluginTest(tf.test.TestCase):
     def load_server(self, run_names):
         plugin = self.load_plugin(run_names)
         wsgi_app = application.TensorBoardWSGI([plugin])
-        server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+        server = werkzeug_test.Client(wsgi_app, wrappers.Response)
         return server
 
     def generate_run(self, logdir, run_name):
@@ -337,7 +337,7 @@ class ScalarsPluginTest(tf.test.TestCase):
     def test_download_url_json(self):
         plugin = self.load_plugin([self._RUN_WITH_SCALARS])
         wsgi_app = application.TensorBoardWSGI([plugin])
-        server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+        server = werkzeug_test.Client(wsgi_app, wrappers.Response)
         response = server.get(
             "/data/plugin/scalars/scalars?run=%s&tag=%s"
             % (
@@ -353,7 +353,7 @@ class ScalarsPluginTest(tf.test.TestCase):
     def test_download_url_csv(self):
         plugin = self.load_plugin([self._RUN_WITH_SCALARS])
         wsgi_app = application.TensorBoardWSGI([plugin])
-        server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+        server = werkzeug_test.Client(wsgi_app, wrappers.Response)
         response = server.get(
             "/data/plugin/scalars/scalars?run=%s&tag=%s&format=csv"
             % (

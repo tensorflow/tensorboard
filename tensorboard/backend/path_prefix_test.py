@@ -60,7 +60,7 @@ class PathPrefixMiddlewareTest(tb_test.TestCase):
 
     def test_empty_path_prefix(self):
         app = path_prefix.PathPrefixMiddleware(self._echo_app, "")
-        server = werkzeug_test.Client(app, werkzeug.wrappers.BaseResponse)
+        server = werkzeug_test.Client(app, werkzeug.wrappers.Response)
 
         with self.subTest("at empty"):
             self._assert_ok(server.get(""), path="", script="")
@@ -74,7 +74,7 @@ class PathPrefixMiddlewareTest(tb_test.TestCase):
 
     def test_nonempty_path_prefix(self):
         app = path_prefix.PathPrefixMiddleware(self._echo_app, "/pfx")
-        server = werkzeug_test.Client(app, werkzeug.wrappers.BaseResponse)
+        server = werkzeug_test.Client(app, werkzeug.wrappers.Response)
 
         with self.subTest("at root"):
             response = server.get("/pfx")
@@ -100,7 +100,7 @@ class PathPrefixMiddlewareTest(tb_test.TestCase):
         app = self._echo_app
         app = path_prefix.PathPrefixMiddleware(app, "/bar")
         app = path_prefix.PathPrefixMiddleware(app, "/foo")
-        server = werkzeug_test.Client(app, werkzeug.wrappers.BaseResponse)
+        server = werkzeug_test.Client(app, werkzeug.wrappers.Response)
 
         response = server.get("/foo/bar/baz/quux")
         self._assert_ok(response, path="/baz/quux", script="/foo/bar")

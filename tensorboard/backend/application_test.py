@@ -163,7 +163,7 @@ class HandlingErrorsTest(tb_test.TestCase):
                 "All is well", 200, content_type="text/html"
             )
 
-        server = werkzeug_test.Client(app, wrappers.BaseResponse)
+        server = werkzeug_test.Client(app, wrappers.Response)
         response = server.get("/")
         self.assertEqual(response.get_data(), b"All is well")
         self.assertEqual(response.status_code, 200)
@@ -177,7 +177,7 @@ class HandlingErrorsTest(tb_test.TestCase):
                 "who are you?", challenge='Digest realm="https://example.com"'
             )
 
-        server = werkzeug_test.Client(app, wrappers.BaseResponse)
+        server = werkzeug_test.Client(app, wrappers.Response)
         response = server.get("/")
         self.assertEqual(
             response.get_data(),
@@ -198,7 +198,7 @@ class HandlingErrorsTest(tb_test.TestCase):
         def app(request):
             raise ValueError("something borked internally")
 
-        server = werkzeug_test.Client(app, wrappers.BaseResponse)
+        server = werkzeug_test.Client(app, wrappers.Response)
         with self.assertRaises(ValueError) as cm:
             response = server.get("/")
         self.assertEqual(str(cm.exception), "something borked internally")
@@ -230,7 +230,7 @@ class ApplicationTest(tb_test.TestCase):
         self._install_server(app)
 
     def _install_server(self, app):
-        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
+        self.server = werkzeug_test.Client(app, wrappers.Response)
 
     def _get_json(self, path):
         response = self.server.get(path)
@@ -444,7 +444,7 @@ class ApplicationTest(tb_test.TestCase):
             ),
         ]
         app = application.TensorBoardWSGI(plugins)
-        server = werkzeug_test.Client(app, wrappers.BaseResponse)
+        server = werkzeug_test.Client(app, wrappers.Response)
         with self.assertRaisesRegex(
             ValueError, "Expected es_module_path to be non-absolute path"
         ):
@@ -459,7 +459,7 @@ class ApplicationTest(tb_test.TestCase):
             ),
         ]
         app = application.TensorBoardWSGI(plugins)
-        server = werkzeug_test.Client(app, wrappers.BaseResponse)
+        server = werkzeug_test.Client(app, wrappers.Response)
         with self.assertRaisesRegex(
             ValueError, "quux.*declared.*both Angular.*legacy"
         ):
@@ -474,7 +474,7 @@ class ApplicationTest(tb_test.TestCase):
             ),
         ]
         app = application.TensorBoardWSGI(plugins)
-        server = werkzeug_test.Client(app, wrappers.BaseResponse)
+        server = werkzeug_test.Client(app, wrappers.Response)
         with self.assertRaisesRegex(
             ValueError, "quux.*declared.*both Angular.*iframed"
         ):
@@ -501,7 +501,7 @@ class ApplicationBaseUrlTest(tb_test.TestCase):
             ),
         ]
         app = application.TensorBoardWSGI(plugins, path_prefix=self.path_prefix)
-        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
+        self.server = werkzeug_test.Client(app, wrappers.Response)
 
     def _get_json(self, path):
         response = self.server.get(path)
@@ -706,7 +706,7 @@ class TensorBoardPluginsTest(tb_test.TestCase):
             experimental_middlewares=[self._auth_check_middleware],
         )
 
-        self.server = werkzeug_test.Client(self.app, wrappers.BaseResponse)
+        self.server = werkzeug_test.Client(self.app, wrappers.Response)
 
     def _auth_check_middleware(self, app):
         def auth_check_app(environ, start_response):

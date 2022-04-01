@@ -158,7 +158,7 @@ class MeshPluginTest(tf.test.TestCase):
         # after the multiplexer is created.
         multiplexer.Reload()
         wsgi_app = application.TensorBoardWSGI([self.plugin])
-        self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+        self.server = werkzeug_test.Client(wsgi_app, wrappers.Response)
         self.routes = self.plugin.get_plugin_apps()
 
     def tearDown(self):

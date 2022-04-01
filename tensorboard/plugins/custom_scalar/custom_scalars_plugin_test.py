@@ -184,7 +184,7 @@ class CustomScalarsPluginTest(tf.test.TestCase):
 
     def test_download_url_json(self):
         wsgi_app = application.TensorBoardWSGI([self.plugin])
-        server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+        server = werkzeug_test.Client(wsgi_app, wrappers.Response)
         response = server.get(
             "/data/plugin/custom_scalars/download_data?run=%s&tag=%s"
             % ("foo", "squares/scalar_summary")
@@ -201,7 +201,7 @@ class CustomScalarsPluginTest(tf.test.TestCase):
 
     def test_download_url_csv(self):
         wsgi_app = application.TensorBoardWSGI([self.plugin])
-        server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+        server = werkzeug_test.Client(wsgi_app, wrappers.Response)
         response = server.get(
             "/data/plugin/custom_scalars/download_data?run=%s&tag=%s&format=csv"
             % ("foo", "squares/scalar_summary")

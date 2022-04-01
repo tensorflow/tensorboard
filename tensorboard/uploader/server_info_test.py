@@ -60,7 +60,7 @@ class FetchServerInfoTest(tb_test.TestCase):
         expected_result.url_format.template = "http://localhost:8080/{{eid}}"
         expected_result.url_format.id_placeholder = "{{eid}}"
 
-        @wrappers.BaseRequest.application
+        @wrappers.Request.application
         def app(request):
             self.assertEqual(request.method, "POST")
             self.assertEqual(request.path, "/api/uploader")
@@ -68,14 +68,14 @@ class FetchServerInfoTest(tb_test.TestCase):
             request_pb = server_info_pb2.ServerInfoRequest.FromString(body)
             self.assertEqual(request_pb.version, version.VERSION)
             self.assertEqual(request_pb.plugin_specification.upload_plugins, [])
-            return wrappers.BaseResponse(expected_result.SerializeToString())
+            return wrappers.Response(expected_result.SerializeToString())
 
         origin = self._start_server(app)
         result = server_info.fetch_server_info(origin, [])
         self.assertEqual(result, expected_result)
 
     def test_fetches_with_plugins(self):
-        @wrappers.BaseRequest.application
+        @wrappers.Request.application
         def app(request):
             body = request.get_data()
             request_pb = server_info_pb2.ServerInfoRequest.FromString(body)
@@ -84,7 +84,7 @@ class FetchServerInfoTest(tb_test.TestCase):
                 request_pb.plugin_specification.upload_plugins,
                 ["plugin1", "plugin2"],
             )
-            return wrappers.BaseResponse(
+            return wrappers.Response(
                 server_info_pb2.ServerInfoResponse().SerializeToString()
             )
 
@@ -106,10 +106,10 @@ class FetchServerInfoTest(tb_test.TestCase):
             self.assertIn(os.strerror(errno.ECONNREFUSED), msg)
 
     def test_non_ok_response(self):
-        @wrappers.BaseRequest.application
+        @wrappers.Request.application
         def app(request):
             del request  # unused
-            return wrappers.BaseResponse(b"very sad", status="502 Bad Gateway")
+            return wrappers.Response(b"very sad", status="502 Bad Gateway")
 
         origin = self._start_server(app)
         with self.assertRaises(server_info.CommunicationError) as cm:
@@ -119,10 +119,10 @@ class FetchServerInfoTest(tb_test.TestCase):
         self.assertIn("very sad", msg)
 
     def test_corrupt_response(self):
-        @wrappers.BaseRequest.application
+        @wrappers.Request.application
         def app(request):
             del request  # unused
-            return wrappers.BaseResponse(b"\x7a\x7ftruncated proto")
+            return wrappers.Response(b"\x7a\x7ftruncated proto")
 
         origin = self._start_server(app)
         with self.assertRaises(server_info.CommunicationError) as cm:
@@ -132,11 +132,11 @@ class FetchServerInfoTest(tb_test.TestCase):
         self.assertIn("truncated proto", msg)
 
     def test_user_agent(self):
-        @wrappers.BaseRequest.application
+        @wrappers.Request.application
         def app(request):
             result = server_info_pb2.ServerInfoResponse()
             result.compatibility.details = request.headers["User-Agent"]
-            return wrappers.BaseResponse(result.SerializeToString())
+            return wrappers.Response(result.SerializeToString())
 
         origin = self._start_server(app)
         result = server_info.fetch_server_info(origin, [])
