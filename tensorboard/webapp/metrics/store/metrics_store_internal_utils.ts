@@ -506,7 +506,7 @@ function getNextImageCardStepIndexFromSingleSelection(
 
 /**
  * Gets next stepIndex for an image card based on range selection. Returns null if nothing should change.
- * @param selectedSteps The selected steps from selected time. It should contain empty or one to multple steps.
+ * @param selectedSteps The selected steps from selected time. Empty array means no steps within range.
  * @param steps The steps in an image card.
  * @param step The step where the current step index locates.
  */
