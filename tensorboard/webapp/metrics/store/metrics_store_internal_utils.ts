@@ -300,14 +300,13 @@ export function buildOrReturnStateWithPinnedCopy(
  * state after an update to the set of experiments/tags/cards. Pinned cards are
  * removed if their corresponding card is no longer present in the state (perhaps
  * because the corresponding experiment and tag have been removed from the
- * comparison). Pinned cards are added if they are pinned before. It generates new
- * cardToPinnedCopy, pinnedCardToOriginal maps to reflect the new set of pinned
- * cards. It generates a cardMetadataMap object that is a combination of the input
- * nextCardMetadataMap as well as metadata for the new set of pinned cards.
- * @param previousCardToPinnedCopyCache The set of pinned cards that were present
- *  before within the same time-namespace. This is a superset of pinned cards in
- *  cardToPinnedCopy and a superset of pinned cards that may continue to be present
- *  after the update.
+ * comparison). Pinned cards are added if they are previously pinned by the user.
+ * It generates new cardToPinnedCopy, pinnedCardToOriginal maps to reflect the new
+ * set of pinned cards. It generates a cardMetadataMap object that is a combination
+ * of the input nextCardMetadataMap as well as metadata for the new set of pinned cards.
+ * @param previousCardToPinnedCopyCache The set of pinned cards that were previously
+ *  pinned by the user within the same time-namespace. This is a superset of pinned
+ *  cards in cardToPinnedCopy and the set remains the same after the update.
  * @param nextCardMetadataMap Metadata for all cards that will be present after
  *  the update (we assume it does not yet include metadata for pinned copies of cards).
  * @param nextCardList The set of base cards that will continue to be present in the
