@@ -60,9 +60,7 @@ limitations under the License.
       <card-run-name class="run-text" [runId]="runId"></card-run-name>
     </span>
     <div class="metadata">
-      <span
-        class="step"
-        *ngIf="stepIndex !== null && stepIndex < steps.length"
+      <span class="step" *ngIf="stepIndex !== null && stepIndex < steps.length"
         >Step {{ steps[stepIndex] | number }}</span
       >
       <span class="sample" *ngIf="numSample > 1"
