@@ -385,11 +385,7 @@ export function generateNextCardStepIndexFromSelectedTime(
   Object.keys(previousCardStepIndex).forEach((cardId) => {
     if (!cardId.includes('"plugin":"images"')) return;
 
-    const steps = getImageCardStepValues(
-      cardId,
-      cardMetadataMap,
-      timeSeriesData
-    );
+    const steps = getImageCardSteps(cardId, cardMetadataMap, timeSeriesData);
 
     let nextStepIndex = null;
     if (selectedTime.end === null) {
@@ -422,7 +418,7 @@ export function generateNextCardStepIndexFromSelectedTime(
 /**
  * Returns step values of an image card.
  */
-export function getImageCardStepValues(
+export function getImageCardSteps(
   cardId: string,
   cardMetadataMap: CardMetadataMap,
   timeSeriesData: TimeSeriesData
@@ -531,7 +527,7 @@ function getNextImageCardStepIndexFromRangeSelection(
 }
 
 export const TEST_ONLY = {
-  getImageCardStepValues,
+  getImageCardSteps,
   getSelectedSteps,
   getNextImageCardStepIndexFromRangeSelection,
   getNextImageCardStepIndexFromSingleSelection,
