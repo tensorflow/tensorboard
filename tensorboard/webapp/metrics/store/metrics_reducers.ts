@@ -941,17 +941,18 @@ const reducer = createReducer(
     };
   }),
   on(actions.selectTimeEnableToggled, (state) => {
-    let nextCardStepIndexMap = {...state.cardStepIndex};
     const nextSelectTimeEnabled = !state.selectTimeEnabled;
-    const {min} = state.stepMinMax;
-    const startStep = min === Infinity ? 0 : min;
-    const nextSelectedTime = state.selectedTime ?? {
-      start: {step: startStep},
-      end: null,
-    };
+    let nextCardStepIndexMap = {...state.cardStepIndex};
+    let nextSelectedTime = state.selectedTime;
 
     // Updates cardStepIndex only when toggle to enable selectedTime.
     if (nextSelectTimeEnabled) {
+      const {min} = state.stepMinMax;
+      const startStep = min === Infinity ? 0 : min;
+      nextSelectedTime = state.selectedTime ?? {
+        start: {step: startStep},
+        end: null,
+      };
       nextCardStepIndexMap = generateNextCardStepIndexFromSelectedTime(
         state.cardStepIndex,
         state.cardMetadataMap,

@@ -2542,65 +2542,7 @@ describe('metrics reducers', () => {
         expect(state2.cardStepIndex).toEqual({[imageCardId]: 0});
       });
 
-      it('sets cardStepIndex to min step when selectedTime is null before toggling', () => {
-        const state1 = buildMetricsState({
-          selectTimeEnabled: false,
-          cardMetadataMap,
-          stepMinMax: {min: 10, max: 100},
-          timeSeriesData: {
-            ...buildTimeSeriesData(),
-            images: {
-              tagC: {
-                111: {
-                  runToLoadState: {},
-                  runToSeries: {
-                    'test run Id': [
-                      {step: 0, wallTime: 0, imageId: '1'},
-                      {step: 10, wallTime: 0, imageId: '1'},
-                      {step: 20, wallTime: 10, imageId: '2'},
-                      {step: 30, wallTime: 15, imageId: '3'},
-                    ],
-                  },
-                },
-              },
-            },
-          },
-          cardStepIndex: {[imageCardId]: 2},
-        });
-
-        const state2 = reducers(state1, actions.selectTimeEnableToggled());
-        expect(state2.cardStepIndex).toEqual({[imageCardId]: 1});
-      });
-
-      it('does not update step index when selectedTime is null before toggling and no matched min step', () => {
-        const state1 = buildMetricsState({
-          selectTimeEnabled: false,
-          cardMetadataMap,
-          timeSeriesData: {
-            ...buildTimeSeriesData(),
-            images: {
-              tagC: {
-                111: {
-                  runToLoadState: {},
-                  runToSeries: {
-                    'test run Id': [
-                      {step: 10, wallTime: 0, imageId: '1'},
-                      {step: 20, wallTime: 10, imageId: '2'},
-                      {step: 30, wallTime: 15, imageId: '3'},
-                    ],
-                  },
-                },
-              },
-            },
-          },
-          cardStepIndex: {[imageCardId]: 2},
-        });
-
-        const state2 = reducers(state1, actions.selectTimeEnableToggled());
-        expect(state2.cardStepIndex).toEqual({[imageCardId]: 2});
-      });
-
-      it('updates step index to pre-existed selectedTime', () => {
+      it('updates step index using pre-existing selectedTime', () => {
         const state1 = buildMetricsState({
           selectTimeEnabled: false,
           cardMetadataMap,
@@ -2629,7 +2571,7 @@ describe('metrics reducers', () => {
         expect(state2.cardStepIndex).toEqual({[imageCardId]: 1});
       });
 
-      it('dose not update step index when toggle to disable selectedTime', () => {
+      it('does not update step index when toggle to disable selectedTime', () => {
         const state1 = buildMetricsState({
           selectTimeEnabled: true,
           cardMetadataMap: {
