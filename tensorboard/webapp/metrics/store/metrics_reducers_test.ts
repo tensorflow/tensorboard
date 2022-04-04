@@ -2519,6 +2519,16 @@ describe('metrics reducers', () => {
     });
 
     describe('#selectTimeEnableToggled', () => {
+      const imageCardId = 'test image card id "plugin":"images"';
+      const cardMetadataMap = {
+        [imageCardId]: {
+          runId: 'test run Id',
+          plugin: PluginType.IMAGES,
+          tag: 'tagC',
+          sample: 111,
+        },
+      };
+
       it('toggles whether selectTime is enabled or not', () => {
         const state1 = buildMetricsState({
           selectTimeEnabled: false,
@@ -2529,6 +2539,131 @@ describe('metrics reducers', () => {
 
         const state3 = reducers(state2, actions.selectTimeEnableToggled());
         expect(state3.selectTimeEnabled).toBe(false);
+      });
+
+      it('sets cardStepIndex to step 0 when selectedTime is null before toggling', () => {
+        const state1 = buildMetricsState({
+          selectTimeEnabled: false,
+          cardMetadataMap,
+          stepMinMax: {min: Infinity, max: -Infinity},
+          timeSeriesData: {
+            ...buildTimeSeriesData(),
+            images: {
+              tagC: {
+                111: {
+                  runToLoadState: {},
+                  runToSeries: {
+                    'test run Id': [
+                      {step: 0, wallTime: 0, imageId: '1'},
+                      {step: 10, wallTime: 0, imageId: '1'},
+                      {step: 20, wallTime: 10, imageId: '2'},
+                      {step: 30, wallTime: 15, imageId: '3'},
+                    ],
+                  },
+                },
+              },
+            },
+          },
+          cardStepIndex: {[imageCardId]: 2},
+        });
+
+        const state2 = reducers(state1, actions.selectTimeEnableToggled());
+
+        expect(state2.cardStepIndex).toEqual({[imageCardId]: 0});
+      });
+
+      it('updates step index using pre-existing selectedTime', () => {
+        const state1 = buildMetricsState({
+          selectTimeEnabled: false,
+          cardMetadataMap,
+          timeSeriesData: {
+            ...buildTimeSeriesData(),
+            images: {
+              tagC: {
+                111: {
+                  runToLoadState: {},
+                  runToSeries: {
+                    'test run Id': [
+                      {step: 10, wallTime: 0, imageId: '1'},
+                      {step: 20, wallTime: 10, imageId: '2'},
+                      {step: 30, wallTime: 15, imageId: '3'},
+                    ],
+                  },
+                },
+              },
+            },
+          },
+          selectedTime: {start: {step: 20}, end: null},
+          cardStepIndex: {[imageCardId]: 2},
+        });
+
+        const state2 = reducers(state1, actions.selectTimeEnableToggled());
+        expect(state2.cardStepIndex).toEqual({[imageCardId]: 1});
+      });
+
+      it('does not update step index when toggle to disable selectedTime', () => {
+        const state1 = buildMetricsState({
+          selectTimeEnabled: true,
+          cardMetadataMap: {
+            [imageCardId]: {
+              runId: 'test run Id',
+              plugin: PluginType.IMAGES,
+              tag: 'tagC',
+              sample: 111,
+            },
+          },
+          timeSeriesData: {
+            ...buildTimeSeriesData(),
+            images: {
+              tagC: {
+                111: {
+                  runToLoadState: {},
+                  runToSeries: {
+                    'test run Id': [
+                      {step: 10, wallTime: 0, imageId: '1'},
+                      {step: 20, wallTime: 10, imageId: '2'},
+                      {step: 30, wallTime: 15, imageId: '3'},
+                    ],
+                  },
+                },
+              },
+            },
+          },
+          selectedTime: {start: {step: 20}, end: null},
+          cardStepIndex: {[imageCardId]: 2},
+        });
+
+        const state2 = reducers(state1, actions.selectTimeEnableToggled());
+        expect(state2.cardStepIndex).toEqual({[imageCardId]: 2});
+      });
+
+      it('sets selectedTime to step 0 when selectedTime is null before toggling', () => {
+        const state1 = buildMetricsState({
+          stepMinMax: {min: Infinity, max: -Infinity},
+        });
+
+        const state2 = reducers(state1, actions.selectTimeEnableToggled());
+
+        expect(state2.selectedTime).toEqual({start: {step: 0}, end: null});
+      });
+
+      it('sets selectedTime to min step when selectedTime is null before toggling', () => {
+        const state1 = buildMetricsState({
+          stepMinMax: {min: 10, max: 100},
+        });
+
+        const state2 = reducers(state1, actions.selectTimeEnableToggled());
+
+        expect(state2.selectedTime).toEqual({start: {step: 10}, end: null});
+      });
+
+      it('dose not update selectedTime on toggling when it is pre-existed', () => {
+        const state1 = buildMetricsState({
+          selectedTime: {start: {step: 20}, end: null},
+        });
+
+        const state2 = reducers(state1, actions.selectTimeEnableToggled());
+        expect(state2.selectedTime).toEqual({start: {step: 20}, end: null});
       });
     });
 

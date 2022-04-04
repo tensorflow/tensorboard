@@ -944,9 +944,31 @@ const reducer = createReducer(
     };
   }),
   on(actions.selectTimeEnableToggled, (state) => {
+    const nextSelectTimeEnabled = !state.selectTimeEnabled;
+    let nextCardStepIndexMap = {...state.cardStepIndex};
+    let nextSelectedTime = state.selectedTime;
+
+    // Updates cardStepIndex only when toggle to enable selectedTime.
+    if (nextSelectTimeEnabled) {
+      const {min} = state.stepMinMax;
+      const startStep = min === Infinity ? 0 : min;
+      nextSelectedTime = state.selectedTime ?? {
+        start: {step: startStep},
+        end: null,
+      };
+      nextCardStepIndexMap = generateNextCardStepIndexFromSelectedTime(
+        state.cardStepIndex,
+        state.cardMetadataMap,
+        state.timeSeriesData,
+        nextSelectedTime
+      );
+    }
+
     return {
       ...state,
-      selectTimeEnabled: !state.selectTimeEnabled,
+      cardStepIndex: nextCardStepIndexMap,
+      selectTimeEnabled: nextSelectTimeEnabled,
+      selectedTime: nextSelectedTime,
     };
   }),
   on(actions.timeSelectionChanged, (state, change) => {
