@@ -61,6 +61,7 @@ import {
 import {
   CardMetadataMap,
   CardStepIndexMap,
+  CardStepIndexMetaData,
   MetricsNamespacedState,
   MetricsNonNamespacedState,
   MetricsSettings,
@@ -174,7 +175,7 @@ function buildNormalizedCardStepIndexMap(
       continue;
     }
     const stepIndex = cardStepIndex.hasOwnProperty(cardId)
-      ? cardStepIndex[cardId]
+      ? cardStepIndex[cardId]!.index
       : null;
     const prevMaxStepIndex = getMaxStepIndex(
       cardId,
@@ -186,7 +187,7 @@ function buildNormalizedCardStepIndexMap(
     const shouldClamp = stepIndex !== null && stepIndex > maxStepIndex;
     const shouldAutoSelectMax = stepIndex === null || prevWasMax;
     if (shouldClamp || shouldAutoSelectMax) {
-      result[cardId] = maxStepIndex;
+      result[cardId] = {index: maxStepIndex, closest: false};
     }
   }
   return result;
@@ -255,7 +256,6 @@ const {initialState, reducers: namespaceContextedReducer} =
       unresolvedImportedPinnedCards: [],
       cardMetadataMap: {},
       cardStepIndex: {},
-
       tagFilter: '',
       tagGroupExpanded: new Map<string, boolean>(),
       selectedTime: null,
@@ -861,7 +861,7 @@ const reducer = createReducer(
     }
     return {
       ...state,
-      cardStepIndex: {...state.cardStepIndex, [cardId]: nextStepIndex},
+      cardStepIndex: {...state.cardStepIndex, [cardId]: {index: nextStepIndex, closest: false}},
     };
   }),
   on(actions.metricsTagGroupExpansionChanged, (state, {tagGroup}) => {

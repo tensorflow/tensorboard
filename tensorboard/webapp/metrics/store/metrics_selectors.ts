@@ -33,6 +33,7 @@ import {
 import * as storeUtils from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
+  CardStepIndexMetaData,
   MetricsSettings,
   MetricsState,
   METRICS_FEATURE_KEY,
@@ -176,12 +177,12 @@ export const getNonEmptyCardIdsWithMetadata = createSelector(
 );
 
 /**
- * The index into the step values array for a card's UI. This may be greater
+ * The index metadata into the step values array for a card's UI. This may be greater
  * than the number of step values available, if time series data is not loaded.
  */
-export const getCardStepIndex = createSelector(
+export const getCardStepIndexMetaData = createSelector(
   selectMetricsState,
-  (state: MetricsState, cardId: CardId): number | null => {
+  (state: MetricsState, cardId: CardId): CardStepIndexMetaData | null => {
     if (!state.cardStepIndex.hasOwnProperty(cardId)) {
       return null;
     }

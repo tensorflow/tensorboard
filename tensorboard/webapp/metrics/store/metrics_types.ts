@@ -116,12 +116,21 @@ export type CardMetadataMap = Record<
 >;
 
 /**
+ * A step index in a card could be the index set from view or the closest step index
+ * set when selected time changed. When it is set from selected time, closest is true.
+ */
+export type CardStepIndexMetaData = {
+  index: number | null;
+  closest: boolean | null;
+}
+
+/**
  * Map from cards to their step index into the time series. Step index may be
  * null when the time series becomes empty.
  */
 export type CardStepIndexMap = Record<
   NonPinnedCardId | PinnedCardId,
-  number | null
+  CardStepIndexMetaData | null
 >;
 
 export type CardToPinnedCard = Map<NonPinnedCardId, PinnedCardId>;

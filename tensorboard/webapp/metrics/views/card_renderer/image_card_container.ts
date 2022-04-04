@@ -45,7 +45,7 @@ import {
   getCardLoadState,
   getCardMetadata,
   getCardPinnedState,
-  getCardStepIndex,
+  getCardStepIndexMetaData,
   getCardTimeSeries,
   getMetricsImageBrightnessInMilli,
   getMetricsImageCardSteps,
@@ -80,6 +80,7 @@ type ImageCardMetadata = CardMetadata & {
       [imageUrl]="imageUrl$ | async"
       [stepIndex]="stepIndex$ | async"
       [steps]="steps$ | async"
+      [isClosestStepHighlighted]="isClosestStepHighlighted$ | async"
       (stepIndexChange)="onStepIndexChanged($event)"
       [brightnessInMilli]="brightnessInMilli$ | async"
       [contrastInMilli]="contrastInMilli$ | async"
@@ -124,6 +125,7 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
   numSample$?: Observable<number>;
   imageUrl$?: Observable<string | null>;
   stepIndex$?: Observable<number | null>;
+  isClosestStepHighlighted$?: Observable<boolean | null>;
   steps$?: Observable<number[]>;
   isPinned$?: Observable<boolean>;
   selectedTime$?: Observable<ViewSelectedTime | null>;
@@ -204,7 +206,12 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       shareReplay(1)
     );
 
-    this.stepIndex$ = this.store.select(getCardStepIndex, this.cardId);
+    this.stepIndex$ = this.store.select(getCardStepIndexMetaData, this.cardId).pipe(
+      map((stepIndexMetaData) => stepIndexMetaData ? stepIndexMetaData.index : null )
+    );
+    this.isClosestStepHighlighted$ = this.store.select(getCardStepIndexMetaData, this.cardId).pipe(
+      map((stepIndexMetaData) => stepIndexMetaData ? stepIndexMetaData.closest : false)
+    );
     this.loadState$ = this.store.select(getCardLoadState, this.cardId);
 
     this.tag$ = cardMetadata$.pipe(
