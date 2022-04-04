@@ -85,6 +85,7 @@ function buildBlankState(): MetricsState {
     settingOverrides: {},
     cardList: [],
     cardToPinnedCopy: new Map(),
+    cardToPinnedCopyCache: new Map(),
     pinnedCardToOriginal: new Map(),
     unresolvedImportedPinnedCards: [],
     cardMetadataMap: {},

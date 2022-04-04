@@ -299,26 +299,24 @@ export function buildOrReturnStateWithPinnedCopy(
 }
 
 /**
- * preserving the previous map, which might also contain outdated mapping due to
  * Determines which pinned cards should continue to be present in the metrics
  * state after an update to the set of experiments/tags/cards. Pinned cards are
  * removed if their corresponding card is no longer present in the state (perhaps
  * because the corresponding experiment and tag have been removed from the
- * comparison). No new pinned cards are added by this function. It generates new
- * cardToPinnedCopy, pinnedCardToOriginal maps to reflect the new set of pinned
- * cards. It generates a cardMetadataMap object that is a combination of the input
- * nextCardMetadataMap as well as metadata for the new set of pinned cards.
- * @param previousCardToPinnedCopy The set of pinned cards that were present before
- *  the update. This is a superset of pinned cards that may continue to be present
- *  after the update.
+ * comparison). Pinned cards are added if they are previously pinned by the user.
+ * It generates new cardToPinnedCopy, pinnedCardToOriginal maps to reflect the new
+ * set of pinned cards. It generates a cardMetadataMap object that is a combination
+ * of the input nextCardMetadataMap as well as metadata for the new set of pinned cards.
+ * @param previousCardToPinnedCopyCache The set of pinned cards that were previously
+ *  pinned by the user within the same time-namespace. This is a superset of pinned
+ *  cards in cardToPinnedCopy and the set remains the same after the update.
  * @param nextCardMetadataMap Metadata for all cards that will be present after
  *  the update (we assume it does not yet include metadata for pinned copies of cards).
  * @param nextCardList The set of base cards that will continue to be present in the
  *  dashboard after the update.
  */
 export function generateNextPinnedCardMappings(
-  previousCardToPinnedCopy: CardToPinnedCard,
-  previousPinnedCardToOriginal: PinnedCardToCard,
+  previousCardToPinnedCopyCache: CardToPinnedCard,
   nextCardMetadataMap: CardMetadataMap,
   nextCardList: CardId[]
 ) {
@@ -326,8 +324,8 @@ export function generateNextPinnedCardMappings(
   const nextPinnedCardToOriginal = new Map() as PinnedCardToCard;
   const pinnedCardMetadataMap = {} as CardMetadataMap;
   for (const cardId of nextCardList) {
-    if (previousCardToPinnedCopy.has(cardId)) {
-      const pinnedCardId = previousCardToPinnedCopy.get(cardId)!;
+    if (previousCardToPinnedCopyCache.has(cardId)) {
+      const pinnedCardId = previousCardToPinnedCopyCache.get(cardId)!;
       nextCardToPinnedCopy.set(cardId, pinnedCardId);
       nextPinnedCardToOriginal.set(pinnedCardId, cardId);
       pinnedCardMetadataMap[pinnedCardId] = nextCardMetadataMap[cardId];

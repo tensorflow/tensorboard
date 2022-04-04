@@ -275,6 +275,7 @@ describe('metrics reducers', () => {
         },
         cardList: [cardId],
         cardToPinnedCopy: new Map([[cardId, pinnedCopyId]]),
+        cardToPinnedCopyCache: new Map([[cardId, pinnedCopyId]]),
         pinnedCardToOriginal: new Map([[pinnedCopyId, cardId]]),
       });
       const action = actions.metricsTagMetadataLoaded({
@@ -295,11 +296,15 @@ describe('metrics reducers', () => {
         },
         cardList: [cardId],
         cardToPinnedCopy: new Map([[cardId, pinnedCopyId]]),
+        cardToPinnedCopyCache: new Map([[cardId, pinnedCopyId]]),
       });
       expect(nextState.cardMetadataMap).toEqual(expectedState.cardMetadataMap);
       expect(nextState.cardList).toEqual(expectedState.cardList);
       expect(nextState.cardToPinnedCopy).toEqual(
         expectedState.cardToPinnedCopy
+      );
+      expect(nextState.cardToPinnedCopyCache).toEqual(
+        expectedState.cardToPinnedCopyCache
       );
     });
 
@@ -330,6 +335,10 @@ describe('metrics reducers', () => {
           [cardId1, pinnedCopyId1],
           [cardId2, pinnedCopyId2],
         ]),
+        cardToPinnedCopyCache: new Map([
+          [cardId1, pinnedCopyId1],
+          [cardId2, pinnedCopyId2],
+        ]),
         pinnedCardToOriginal: new Map([
           [pinnedCopyId1, cardId1],
           [pinnedCopyId2, cardId2],
@@ -353,12 +362,19 @@ describe('metrics reducers', () => {
         },
         cardList: [cardId1],
         cardToPinnedCopy: new Map([[cardId1, pinnedCopyId1]]),
+        cardToPinnedCopyCache: new Map([
+          [cardId1, pinnedCopyId1],
+          [cardId2, pinnedCopyId2],
+        ]),
         pinnedCardToOriginal: new Map([[pinnedCopyId1, cardId1]]),
       });
       expect(nextState.cardMetadataMap).toEqual(expectedState.cardMetadataMap);
       expect(nextState.cardList).toEqual(expectedState.cardList);
       expect(nextState.cardToPinnedCopy).toEqual(
         expectedState.cardToPinnedCopy
+      );
+      expect(nextState.cardToPinnedCopyCache).toEqual(
+        expectedState.cardToPinnedCopyCache
       );
       expect(nextState.pinnedCardToOriginal).toEqual(
         expectedState.pinnedCardToOriginal
@@ -387,6 +403,7 @@ describe('metrics reducers', () => {
         },
         cardList: [cardId1, cardId2],
         cardToPinnedCopy: new Map([[cardId1, pinnedCopyId1]]),
+        cardToPinnedCopyCache: new Map([[cardId1, pinnedCopyId1]]),
         pinnedCardToOriginal: new Map([[pinnedCopyId1, cardId1]]),
       });
       const action = actions.metricsTagMetadataLoaded({
@@ -407,12 +424,16 @@ describe('metrics reducers', () => {
         },
         cardList: [cardId1],
         cardToPinnedCopy: new Map([[cardId1, pinnedCopyId1]]),
+        cardToPinnedCopyCache: new Map([[cardId1, pinnedCopyId1]]),
         pinnedCardToOriginal: new Map([[pinnedCopyId1, cardId1]]),
       });
       expect(nextState.cardMetadataMap).toEqual(expectedState.cardMetadataMap);
       expect(nextState.cardList).toEqual(expectedState.cardList);
       expect(nextState.cardToPinnedCopy).toEqual(
         expectedState.cardToPinnedCopy
+      );
+      expect(nextState.cardToPinnedCopyCache).toEqual(
+        expectedState.cardToPinnedCopyCache
       );
       expect(nextState.pinnedCardToOriginal).toEqual(
         expectedState.pinnedCardToOriginal
@@ -440,6 +461,7 @@ describe('metrics reducers', () => {
         },
         cardList: [cardId1],
         cardToPinnedCopy: new Map([[cardId1, pinnedCopyId1]]),
+        cardToPinnedCopyCache: new Map([[cardId1, pinnedCopyId1]]),
         pinnedCardToOriginal: new Map([[pinnedCopyId1, cardId1]]),
       });
       const action = actions.metricsTagMetadataLoaded({
@@ -461,12 +483,16 @@ describe('metrics reducers', () => {
         },
         cardList: [cardId1, cardId2],
         cardToPinnedCopy: new Map([[cardId1, pinnedCopyId1]]),
+        cardToPinnedCopyCache: new Map([[cardId1, pinnedCopyId1]]),
         pinnedCardToOriginal: new Map([[pinnedCopyId1, cardId1]]),
       });
       expect(nextState.cardMetadataMap).toEqual(expectedState.cardMetadataMap);
       expect(nextState.cardList).toEqual(expectedState.cardList);
       expect(nextState.cardToPinnedCopy).toEqual(
         expectedState.cardToPinnedCopy
+      );
+      expect(nextState.cardToPinnedCopyCache).toEqual(
+        expectedState.cardToPinnedCopyCache
       );
       expect(nextState.pinnedCardToOriginal).toEqual(
         expectedState.pinnedCardToOriginal
@@ -502,6 +528,10 @@ describe('metrics reducers', () => {
           [cardId2]: 2,
         },
         cardToPinnedCopy: new Map([
+          [cardId1, pinnedCopyId1],
+          [cardId2, pinnedCopyId2],
+        ]),
+        cardToPinnedCopyCache: new Map([
           [cardId1, pinnedCopyId1],
           [cardId2, pinnedCopyId2],
         ]),

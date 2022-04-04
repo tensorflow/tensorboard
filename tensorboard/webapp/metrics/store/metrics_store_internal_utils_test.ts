@@ -518,10 +518,6 @@ describe('metrics store utils', () => {
         ['card1', 'card-pin1'],
         ['card2', 'card-pin2'],
       ]);
-      const pinnedCardToOriginal = new Map([
-        ['card-pin1', 'card1'],
-        ['card-pin2', 'card2'],
-      ]);
       const cardList = ['card1', 'card2'];
       const cardMetadataMap = {
         card1: createCardMetadata(),
@@ -531,7 +527,6 @@ describe('metrics store utils', () => {
       const {nextCardToPinnedCopy, nextPinnedCardToOriginal} =
         generateNextPinnedCardMappings(
           cardToPinnedCopy,
-          pinnedCardToOriginal,
           cardMetadataMap,
           cardList
         );
@@ -555,10 +550,6 @@ describe('metrics store utils', () => {
         ['card1', 'card-pin1'],
         ['card2', 'card-pin2'],
       ]);
-      const pinnedCardToOriginal = new Map([
-        ['card-pin1', 'card1'],
-        ['card-pin2', 'card2'],
-      ]);
       const cardList = ['card1', 'card3'];
       const cardMetadataMap = {
         card1: createCardMetadata(),
@@ -571,7 +562,6 @@ describe('metrics store utils', () => {
         pinnedCardMetadataMap,
       } = generateNextPinnedCardMappings(
         cardToPinnedCopy,
-        pinnedCardToOriginal,
         cardMetadataMap,
         cardList
       );
@@ -584,21 +574,59 @@ describe('metrics store utils', () => {
 
     it('preserves pinned cards mapping in cardMetadataMap', () => {
       const cardToPinnedCopy = new Map([['card1', 'card-pin1']]);
-      const pinnedCardToOriginal = new Map([['card-pin1', 'card1']]);
       const cardMetadataMap = {card1: createCardMetadata()};
       const cardList = ['card1'];
 
       const {pinnedCardMetadataMap} = generateNextPinnedCardMappings(
         cardToPinnedCopy,
-        pinnedCardToOriginal,
         cardMetadataMap,
         cardList
       );
 
-      const expectedCardMetadataMap = {
+      const expectedPinnedCardMetadataMap = {
         'card-pin1': createCardMetadata(),
       };
-      expect(pinnedCardMetadataMap).toEqual(expectedCardMetadataMap);
+      expect(pinnedCardMetadataMap).toEqual(expectedPinnedCardMetadataMap);
+    });
+
+    it('adds pinned cards mapping in cardMetadataMap, cardToPinnedCopy, pinnedCardToOriginal if the cards have been pinned before', () => {
+      const cardToPinnedCopyCache = new Map([
+        ['card1', 'card-pin1'],
+        ['card2', 'card-pin2'],
+      ]);
+      const cardMetadataMap = {
+        card1: createCardMetadata(),
+        card2: createCardMetadata(),
+      };
+      const cardList = ['card1', 'card2'];
+
+      const {
+        pinnedCardMetadataMap,
+        nextCardToPinnedCopy,
+        nextPinnedCardToOriginal,
+      } = generateNextPinnedCardMappings(
+        cardToPinnedCopyCache,
+        cardMetadataMap,
+        cardList
+      );
+
+      const expectedPinnedCardMetadataMap = {
+        'card-pin1': createCardMetadata(),
+        'card-pin2': createCardMetadata(),
+      };
+      expect(pinnedCardMetadataMap).toEqual(expectedPinnedCardMetadataMap);
+      expect(nextCardToPinnedCopy).toEqual(
+        new Map([
+          ['card1', 'card-pin1'],
+          ['card2', 'card-pin2'],
+        ])
+      );
+      expect(nextPinnedCardToOriginal).toEqual(
+        new Map([
+          ['card-pin1', 'card1'],
+          ['card-pin2', 'card2'],
+        ])
+      );
     });
   });
 
