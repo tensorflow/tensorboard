@@ -65,6 +65,7 @@ export class LinkedTimeFobControllerComponent {
   }
 
   startDrag(fob: Fob) {
+    console.log('starting drag?');
     this.currentDraggingFob = fob;
   }
 
@@ -73,6 +74,7 @@ export class LinkedTimeFobControllerComponent {
   }
 
   isVertical() {
+    console.log('isvertical', this.axisDirection === AxisDirection.VERTICAL);
     return this.axisDirection === AxisDirection.VERTICAL;
   }
 

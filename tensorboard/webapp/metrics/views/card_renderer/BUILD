@@ -251,6 +251,7 @@ tf_ng_module(
     srcs = [
         "scalar_card_component.ts",
         "scalar_card_container.ts",
+        "scalar_card_linked_time_fob_controller.ts",
         "scalar_card_module.ts",
     ],
     assets = [
@@ -287,7 +288,9 @@ tf_ng_module(
         "//tensorboard/webapp/widgets/line_chart_v2",
         "//tensorboard/webapp/widgets/line_chart_v2:line_chart_utils",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:formatter",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
         "//tensorboard/webapp/widgets/linked_time_fob",
+        "//tensorboard/webapp/widgets/linked_time_fob:types",
         "//tensorboard/webapp/widgets/text:truncated_path",
         "@npm//@angular/common",
         "@npm//@angular/core",
