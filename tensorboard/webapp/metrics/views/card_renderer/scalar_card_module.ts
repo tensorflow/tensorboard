@@ -27,10 +27,15 @@ import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {DataDownloadModule} from './data_download_module';
 import {ScalarCardComponent} from './scalar_card_component';
 import {ScalarCardContainer} from './scalar_card_container';
+import {ScalarCardLinkedTimeFobController} from './scalar_card_linked_time_fob_controller';
 import {VisSelectedTimeWarningModule} from './vis_selected_time_warning_module';
 
 @NgModule({
-  declarations: [ScalarCardContainer, ScalarCardComponent],
+  declarations: [
+    ScalarCardContainer,
+    ScalarCardComponent,
+    ScalarCardLinkedTimeFobController,
+  ],
   exports: [ScalarCardContainer],
   imports: [
     CommonModule,
