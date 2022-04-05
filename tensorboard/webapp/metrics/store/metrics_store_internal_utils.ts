@@ -416,7 +416,7 @@ export function generateNextCardStepIndexFromSelectedTime(
 }
 
 /**
- * Returns step values of an image card.
+ * Returns steps of an image card.
  */
 export function getImageCardSteps(
   cardId: string,
