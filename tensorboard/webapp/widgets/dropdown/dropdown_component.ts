@@ -42,8 +42,9 @@ export interface DropdownOption {
         [value]="option.value"
         [disabled]="option.disabled"
       >
-        <span class="option-content"
-          title="{{option.displayAlias}}: {{option.displayText}}"
+        <span
+          class="option-content"
+          title="{{ option.displayAlias }}: {{ option.displayText }}"
         >
           <b *ngIf="option.displayAlias">{{ option.displayAlias }}:</b>
           {{ option.displayText }}
