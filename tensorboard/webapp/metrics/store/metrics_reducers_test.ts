@@ -2495,7 +2495,7 @@ describe('metrics reducers', () => {
         expect(nextState1.useRangeSelectTime).toEqual(false);
       });
 
-      it('sets `cardStepIndexMap` on selected time changed', () => {
+      it('sets `cardStepIndex` when step matches selected time', () => {
         const beforeState = buildMetricsState({
           selectTimeEnabled: false,
           cardMetadataMap,
@@ -2530,7 +2530,7 @@ describe('metrics reducers', () => {
         expect(nextState.cardStepIndex).toEqual({[imageCardId]: 0});
       });
 
-      it('does not set `cardStepIndexMap` on selected time changed', () => {
+      it('does not set `cardStepIndex` when steps do not match selected time', () => {
         const beforeState = buildMetricsState({
           selectTimeEnabled: false,
           cardMetadataMap,
