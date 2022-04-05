@@ -2319,6 +2319,16 @@ describe('metrics reducers', () => {
 
   describe('linked time features', () => {
     describe('#timeSelectionChanged', () => {
+      const imageCardId = 'test image card id "plugin":"images"';
+      const cardMetadataMap = {
+        [imageCardId]: {
+          runId: 'test run Id',
+          plugin: PluginType.IMAGES,
+          tag: 'tagC',
+          sample: 111,
+        },
+      };
+
       it('sets the selected times value', () => {
         const beforeState = buildMetricsState({
           selectedTime: null,
@@ -2483,6 +2493,77 @@ describe('metrics reducers', () => {
         );
 
         expect(nextState1.useRangeSelectTime).toEqual(false);
+      });
+
+      it('sets `cardStepIndex` when step matches selected time', () => {
+        const beforeState = buildMetricsState({
+          selectTimeEnabled: false,
+          cardMetadataMap,
+          timeSeriesData: {
+            ...buildTimeSeriesData(),
+            images: {
+              tagC: {
+                111: {
+                  runToLoadState: {},
+                  runToSeries: {
+                    'test run Id': [
+                      {step: 10, wallTime: 0, imageId: '1'},
+                      {step: 20, wallTime: 10, imageId: '2'},
+                      {step: 30, wallTime: 15, imageId: '3'},
+                    ],
+                  },
+                },
+              },
+            },
+          },
+          cardStepIndex: {[imageCardId]: 2},
+        });
+
+        const nextState = reducers(
+          beforeState,
+          actions.timeSelectionChanged({
+            startStep: 10,
+            endStep: undefined,
+          })
+        );
+
+        expect(nextState.cardStepIndex).toEqual({[imageCardId]: 0});
+      });
+
+      it('does not set `cardStepIndex` when steps do not match selected time', () => {
+        const beforeState = buildMetricsState({
+          selectTimeEnabled: false,
+          cardMetadataMap,
+          stepMinMax: {min: Infinity, max: -Infinity},
+          timeSeriesData: {
+            ...buildTimeSeriesData(),
+            images: {
+              tagC: {
+                111: {
+                  runToLoadState: {},
+                  runToSeries: {
+                    'test run Id': [
+                      {step: 10, wallTime: 0, imageId: '1'},
+                      {step: 20, wallTime: 10, imageId: '2'},
+                      {step: 30, wallTime: 15, imageId: '3'},
+                    ],
+                  },
+                },
+              },
+            },
+          },
+          cardStepIndex: {[imageCardId]: 2},
+        });
+
+        const nextState = reducers(
+          beforeState,
+          actions.timeSelectionChanged({
+            startStep: 15,
+            endStep: undefined,
+          })
+        );
+
+        expect(nextState.cardStepIndex).toEqual({[imageCardId]: 2});
       });
     });
 
