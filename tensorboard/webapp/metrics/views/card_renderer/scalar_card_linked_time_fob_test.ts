@@ -12,12 +12,12 @@ limitations under the License.
 
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {LinearScale} from '../../../widgets/line_chart_v2/lib/scale';
 import {LinkedTimeFobControllerComponent} from '../../../widgets/linked_time_fob/linked_time_fob_controller_component';
 import {LinkedTime} from '../../../widgets/linked_time_fob/linked_time_types';
-import {LinearScale} from '../../../widgets/line_chart_v2/lib/scale';
 import {ScalarCardLinkedTimeFobController} from './scalar_card_linked_time_fob_controller';
 
-fdescribe('ScalarLinkedTimeFobController', () => {
+describe('ScalarLinkedTimeFobController', () => {
   let forwardScaleSpy: jasmine.Spy;
   let reverseScaleSpy: jasmine.Spy;
   beforeEach(async () => {

@@ -11,12 +11,12 @@ limitations under the License.
 ==============================================================================*/
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
 import {
   AxisDirection,
   FobCardAdapter,
   LinkedTime,
 } from '../../../widgets/linked_time_fob/linked_time_types';
-import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
 
 @Component({
   selector: 'scalar-card-linked-time-fob-controller',

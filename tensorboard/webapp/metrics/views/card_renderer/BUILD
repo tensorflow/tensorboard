@@ -310,8 +310,8 @@ tf_ts_library(
         "histogram_card_test.ts",
         "image_card_test.ts",
         "run_name_test.ts",
-        "scalar_card_test.ts",
         "scalar_card_linked_time_fob_test.ts",
+        "scalar_card_test.ts",
         "utils_test.ts",
     ],
     deps = [
