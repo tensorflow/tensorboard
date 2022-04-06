@@ -311,6 +311,7 @@ tf_ts_library(
         "image_card_test.ts",
         "run_name_test.ts",
         "scalar_card_test.ts",
+        "scalar_card_linked_time_fob_test.ts",
         "utils_test.ts",
     ],
     deps = [
@@ -354,7 +355,9 @@ tf_ts_library(
         "//tensorboard/webapp/widgets/intersection_observer:intersection_observer_testing",
         "//tensorboard/webapp/widgets/line_chart_v2",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:formatter",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:scale",
         "//tensorboard/webapp/widgets/linked_time_fob",
+        "//tensorboard/webapp/widgets/linked_time_fob:types",
         "//tensorboard/webapp/widgets/text:truncated_path",
         "@npm//@angular/core",
         "@npm//@angular/forms",
