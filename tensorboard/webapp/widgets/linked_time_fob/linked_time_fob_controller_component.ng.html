@@ -30,7 +30,7 @@ limitations under the License.
   >
     <linked-time-fob
       class="startFob"
-      [ngClass]="isVertical() ? 'verticalFob' : 'horizontalFob'"
+      [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
       [step]="linkedTime.start.step"
       (mousedown)="startDrag(FobType().START)"
       (stepChange)="stepTyped(FobType().START, $event)"
@@ -44,7 +44,7 @@ limitations under the License.
   >
     <linked-time-fob
       class="endFob"
-      [ngClass]="isVertical() ? 'verticalFob' : 'horizontalFob'"
+      [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
       [step]="linkedTime.end.step"
       (mousedown)="startDrag(FobType().END)"
       (stepChange)="stepTyped(FobType().END, $event)"
