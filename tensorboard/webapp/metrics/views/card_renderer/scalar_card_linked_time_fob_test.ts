@@ -76,7 +76,7 @@ fdescribe('ScalarLinkedTimeFobController', () => {
       const axisSize = 20;
       const fixture = createComponent({minMax, axisSize});
 
-      let position = fixture.componentInstance.getAxisPositionFromStep(1);
+      const position = fixture.componentInstance.getAxisPositionFromStep(1);
 
       expect(position).toBe(1 * SCALE_RATIO);
       expect(forwardScaleSpy).toHaveBeenCalledOnceWith(
