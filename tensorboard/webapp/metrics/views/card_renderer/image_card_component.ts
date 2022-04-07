@@ -49,7 +49,7 @@ export class ImageCardComponent {
   @Input() numSample!: number;
   @Input() imageUrl!: string | null;
   @Input() stepIndex!: number | null;
-  @Input() stepValues!: number[];
+  @Input() steps!: number[];
   @Input() brightnessInMilli!: number;
   @Input() contrastInMilli!: number;
   @Input() showActualSize!: boolean;
@@ -100,14 +100,14 @@ export class ImageCardComponent {
       return;
     }
 
-    const boundSize = this.stepValues.length - 1;
+    const boundSize = this.steps.length - 1;
     const startStep =
-      this.selectedTime.startStep < this.stepValues[0]
-        ? this.stepValues[0]
+      this.selectedTime.startStep < this.steps[0]
+        ? this.steps[0]
         : this.selectedTime.startStep;
     const endStep =
-      this.selectedTime.endStep > this.stepValues[boundSize]
-        ? this.stepValues[boundSize]
+      this.selectedTime.endStep > this.steps[boundSize]
+        ? this.steps[boundSize]
         : this.selectedTime.endStep;
 
     const {startPosition, width} = this.getTrackStartPositionAndWidth(
@@ -131,9 +131,9 @@ export class ImageCardComponent {
     let i = 0;
 
     // Calculates the track start position
-    for (; i < this.stepValues.length - 1; i++) {
-      const currentStep = this.stepValues[i];
-      const nextStep = this.stepValues[i + 1];
+    for (; i < this.steps.length - 1; i++) {
+      const currentStep = this.steps[i];
+      const nextStep = this.steps[i + 1];
       if (currentStep <= startStep && startStep <= nextStep) {
         startPosition += (startStep - currentStep) / (nextStep - currentStep);
         break;
@@ -142,9 +142,9 @@ export class ImageCardComponent {
     startPosition = (startPosition + i) * sliderUnit;
 
     // Calculates the track width
-    for (; i < this.stepValues.length - 1; i++) {
-      const currentStep = this.stepValues[i];
-      const nextStep = this.stepValues[i + 1];
+    for (; i < this.steps.length - 1; i++) {
+      const currentStep = this.steps[i];
+      const nextStep = this.steps[i + 1];
       // --o--S====E--o--
       //  cur        next
       if (startStep >= currentStep && endStep <= nextStep) {
@@ -179,27 +179,24 @@ export class ImageCardComponent {
   }
 
   getLinkedTimeTickLeftStyle(step: number) {
-    if (this.stepValues.indexOf(step) == -1) {
+    if (this.steps.indexOf(step) == -1) {
       throw new Error(
-        'Invalid stepIndex: stepIndex value is not included in stepValues'
+        'Invalid stepIndex: stepIndex value is not included in steps'
       );
     }
-    return `${
-      (this.stepValues.indexOf(step) / (this.stepValues.length - 1)) * 100
-    }%`;
+    return `${(this.steps.indexOf(step) / (this.steps.length - 1)) * 100}%`;
   }
 
   getLinkedTimeTickMarginLeftStyle(step: number) {
-    if (this.stepValues.indexOf(step) == -1) {
+    if (this.steps.indexOf(step) == -1) {
       throw new Error(
-        'Invalid stepIndex: stepIndex value is not included in stepValues'
+        'Invalid stepIndex: stepIndex value is not included in steps'
       );
     }
     // Moves the tick position to the left for a fixed value because of the tick width.
     // The length is correlated to the slider proportion.
     return `-${
-      (this.stepValues.indexOf(step) / (this.stepValues.length - 1)) *
-      TICK_WIDTH
+      (this.steps.indexOf(step) / (this.steps.length - 1)) * TICK_WIDTH
     }px`;
   }
 }

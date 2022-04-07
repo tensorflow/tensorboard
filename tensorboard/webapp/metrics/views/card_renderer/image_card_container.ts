@@ -48,7 +48,7 @@ import {
   getCardStepIndex,
   getCardTimeSeries,
   getMetricsImageBrightnessInMilli,
-  getMetricsImageCardStepValues,
+  getMetricsImageCardSteps,
   getMetricsImageContrastInMilli,
   getMetricsImageShowActualSize,
   getMetricsSelectedTime,
@@ -79,7 +79,7 @@ type ImageCardMetadata = CardMetadata & {
       [numSample]="numSample$ | async"
       [imageUrl]="imageUrl$ | async"
       [stepIndex]="stepIndex$ | async"
-      [stepValues]="stepValues$ | async"
+      [steps]="steps$ | async"
       (stepIndexChange)="onStepIndexChanged($event)"
       [brightnessInMilli]="brightnessInMilli$ | async"
       [contrastInMilli]="contrastInMilli$ | async"
@@ -124,7 +124,7 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
   numSample$?: Observable<number>;
   imageUrl$?: Observable<string | null>;
   stepIndex$?: Observable<number | null>;
-  stepValues$?: Observable<number[]>;
+  steps$?: Observable<number[]>;
   isPinned$?: Observable<boolean>;
   selectedTime$?: Observable<ViewSelectedTime | null>;
   selectedSteps$?: Observable<number[]>;
@@ -235,21 +235,18 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       map((cardMetadata) => cardMetadata.numSample)
     );
 
-    this.stepValues$ = this.store.select(
-      getMetricsImageCardStepValues,
-      this.cardId
-    );
+    this.steps$ = this.store.select(getMetricsImageCardSteps, this.cardId);
 
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
 
     this.selectedTime$ = this.store.select(getMetricsSelectedTime).pipe(
-      combineLatestWith(this.stepValues$),
-      map(([selectedTime, stepValues]) => {
+      combineLatestWith(this.steps$),
+      map(([selectedTime, steps]) => {
         if (!selectedTime) return null;
 
         let minStep = Infinity;
         let maxStep = -Infinity;
-        for (const step of stepValues) {
+        for (const step of steps) {
           minStep = Math.min(step, minStep);
           maxStep = Math.max(step, maxStep);
         }
@@ -259,18 +256,18 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
 
     // TODO(japie1235813): Reuses `getSelectedSteps` in store_utils.
     this.selectedSteps$ = this.selectedTime$.pipe(
-      combineLatestWith(this.stepValues$),
-      map(([selectedTime, stepValues]) => {
+      combineLatestWith(this.steps$),
+      map(([selectedTime, steps]) => {
         if (!selectedTime) return [];
 
         if (selectedTime.endStep === null) {
-          if (stepValues.indexOf(selectedTime.startStep) !== -1)
+          if (steps.indexOf(selectedTime.startStep) !== -1)
             return [selectedTime.startStep];
           return [];
         }
 
         const selectedStepsInRange = [];
-        for (const step of stepValues) {
+        for (const step of steps) {
           if (step >= selectedTime.startStep && step <= selectedTime.endStep) {
             selectedStepsInRange.push(step);
           }

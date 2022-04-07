@@ -60,10 +60,8 @@ limitations under the License.
       <card-run-name class="run-text" [runId]="runId"></card-run-name>
     </span>
     <div class="metadata">
-      <span
-        class="step"
-        *ngIf="stepIndex !== null && stepIndex < stepValues.length"
-        >Step {{ stepValues[stepIndex] | number }}</span
+      <span class="step" *ngIf="stepIndex !== null && stepIndex < steps.length"
+        >Step {{ steps[stepIndex] | number }}</span
       >
       <span class="sample" *ngIf="numSample > 1"
         >Sample {{ sample + 1 | number }}/{{ numSample | number}}</span
@@ -77,16 +75,16 @@ limitations under the License.
   </div>
 </div>
 <ng-container
-  *ngIf="stepIndex !== null && stepIndex < stepValues.length; else noImageData"
+  *ngIf="stepIndex !== null && stepIndex < steps.length; else noImageData"
 >
   <div class="slider-row">
     <mat-slider
       class="step-slider"
       color="primary"
       [ngClass]="[selectedTime && !selectedTime.clipped && selectedTime.endStep !== null ? 'hide-slider' : '']"
-      [disabled]="stepValues.length <= 1"
+      [disabled]="steps.length <= 1"
       [min]="0"
-      [max]="stepValues.length - 1"
+      [max]="steps.length - 1"
       [step]="1"
       [tickInterval]="1"
       [value]="stepIndex"
@@ -114,7 +112,7 @@ limitations under the License.
   </div>
   <div class="img-container">
     <img
-      alt="Image at step {{ stepValues[stepIndex] }}"
+      alt="Image at step {{ steps[stepIndex] }}"
       src="{{ imageUrl }}"
       [ngStyle]="{'filter': cssFilter()}"
     />

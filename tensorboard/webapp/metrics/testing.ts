@@ -279,14 +279,14 @@ export function provideMockCardSeriesData(
   const cardMetadata = {...createCardMetadata(plugin), ...metadataOverride};
   const runId = cardMetadata.runId;
   let runToSeries = null;
-  let stepValues: number[] = [];
+  let steps: number[] = [];
 
   if (timeSeries !== null) {
     runToSeries = {
       [runId as string]: timeSeries || createStepData(plugin),
     };
     if (runId !== null) {
-      stepValues = runToSeries[runId].map((stepDatum) => stepDatum.step);
+      steps = runToSeries[runId].map((stepDatum) => stepDatum.step);
     }
   }
 
@@ -300,8 +300,8 @@ export function provideMockCardSeriesData(
     .withArgs(selectors.getCardStepIndex, cardId)
     .and.returnValue(of(stepIndex));
   storeSelectSpy
-    .withArgs(selectors.getMetricsImageCardStepValues, cardId)
-    .and.returnValue(of(stepValues));
+    .withArgs(selectors.getMetricsImageCardSteps, cardId)
+    .and.returnValue(of(steps));
 }
 
 export function provideMockCardRunToSeriesData(

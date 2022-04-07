@@ -192,10 +192,10 @@ export const getCardStepIndex = createSelector(
 /**
  * Returns step values of an image card.
  */
-export const getMetricsImageCardStepValues = createSelector(
+export const getMetricsImageCardSteps = createSelector(
   selectMetricsState,
   (state: MetricsState, cardId: CardId): number[] => {
-    return storeUtils.getImageCardStepValues(
+    return storeUtils.getImageCardSteps(
       cardId,
       state.cardMetadataMap,
       state.timeSeriesData

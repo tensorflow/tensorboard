@@ -37,7 +37,7 @@ import {
 import {ImageTimeSeriesData, TimeSeriesData} from './metrics_types';
 
 const {
-  getImageCardStepValues,
+  getImageCardSteps,
   getSelectedSteps,
   getNextImageCardStepIndexFromRangeSelection,
   getNextImageCardStepIndexFromSingleSelection,
@@ -798,7 +798,7 @@ describe('metrics store utils', () => {
     });
   });
 
-  describe('getImageCardStepValues', () => {
+  describe('getImageCardSteps', () => {
     const cardId = 'test-card-id';
     const cardId2 = 'test-card-id-non-image';
     const cardMetadataMap = {
@@ -831,7 +831,7 @@ describe('metrics store utils', () => {
 
     it(`gets empty step value when no run id in time series data`, () => {
       expect(
-        getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)
+        getImageCardSteps(cardId, cardMetadataMap, timeSeriesData)
       ).toEqual([]);
     });
 
@@ -841,13 +841,13 @@ describe('metrics store utils', () => {
       };
 
       expect(
-        getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)
+        getImageCardSteps(cardId, cardMetadataMap, timeSeriesData)
       ).toEqual([]);
     });
 
     it(`gets empty step value when time series loadable returns null`, () => {
       expect(
-        getImageCardStepValues(cardId2, cardMetadataMap, timeSeriesData)
+        getImageCardSteps(cardId2, cardMetadataMap, timeSeriesData)
       ).toEqual([]);
     });
 
@@ -864,7 +864,7 @@ describe('metrics store utils', () => {
       };
 
       expect(
-        getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)
+        getImageCardSteps(cardId, cardMetadataMap, timeSeriesData)
       ).toEqual([10]);
     });
 
@@ -885,13 +885,13 @@ describe('metrics store utils', () => {
       };
 
       expect(
-        getImageCardStepValues(cardId, cardMetadataMap, timeSeriesData)
+        getImageCardSteps(cardId, cardMetadataMap, timeSeriesData)
       ).toEqual([10, 20, 30]);
     });
 
     it('gets empty step value if no card id exists in cardMetadataMap', () => {
       expect(
-        getImageCardStepValues(
+        getImageCardSteps(
           'card id not in cardMetadataMap',
           cardMetadataMap,
           timeSeriesData
