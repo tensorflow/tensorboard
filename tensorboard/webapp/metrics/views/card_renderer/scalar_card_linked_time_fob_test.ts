@@ -19,7 +19,7 @@ import {ScalarCardLinkedTimeFobController} from './scalar_card_linked_time_fob_c
 
 const SCALE_RATIO = 10;
 
-fdescribe('ScalarLinkedTimeFobController', () => {
+describe('ScalarLinkedTimeFobController', () => {
   let forwardScaleSpy: jasmine.Spy;
   let reverseScaleSpy: jasmine.Spy;
 
