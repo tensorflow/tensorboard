@@ -17,9 +17,12 @@ import {LinkedTimeFobControllerComponent} from '../../../widgets/linked_time_fob
 import {LinkedTime} from '../../../widgets/linked_time_fob/linked_time_types';
 import {ScalarCardLinkedTimeFobController} from './scalar_card_linked_time_fob_controller';
 
-describe('ScalarLinkedTimeFobController', () => {
+const SCALE_RATIO = 10;
+
+fdescribe('ScalarLinkedTimeFobController', () => {
   let forwardScaleSpy: jasmine.Spy;
   let reverseScaleSpy: jasmine.Spy;
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [
@@ -41,23 +44,26 @@ describe('ScalarLinkedTimeFobController', () => {
       end: null,
     };
 
-    fixture.componentInstance.minMax = input.minMax ?? [0, 10];
-    fixture.componentInstance.axisSize = input.axisSize ?? 100;
+    fixture.componentInstance.minMax = input.minMax ?? [0, 1];
+    fixture.componentInstance.axisSize = input.axisSize ?? 1;
 
     const fakeScale = new LinearScale();
     forwardScaleSpy = jasmine.createSpy();
     reverseScaleSpy = jasmine.createSpy();
     fakeScale.forward = forwardScaleSpy;
     fakeScale.reverse = reverseScaleSpy;
-    // Imitate a 10:1 scale.
     forwardScaleSpy.and.callFake(
-      (domain: [number, number], range: [number, number], x: number) => {
-        return x * 10;
+      (domain: [number, number], range: [number, number], step: number) => {
+        return step * SCALE_RATIO;
       }
     );
     reverseScaleSpy.and.callFake(
-      (domain: [number, number], range: [number, number], x: number) => {
-        return x / 10;
+      (
+        domain: [number, number],
+        range: [number, number],
+        axisPosition: number
+      ) => {
+        return axisPosition / SCALE_RATIO;
       }
     );
     fixture.componentInstance.scale = fakeScale;
@@ -68,8 +74,11 @@ describe('ScalarLinkedTimeFobController', () => {
     it('calls the scale function', () => {
       const minMax: [number, number] = [0, 2];
       const axisSize = 20;
-      let fixture = createComponent({minMax, axisSize});
-      expect(fixture.componentInstance.getAxisPositionFromStep(1)).toBe(10);
+      const fixture = createComponent({minMax, axisSize});
+
+      let position = fixture.componentInstance.getAxisPositionFromStep(1);
+
+      expect(position).toBe(1 * SCALE_RATIO);
       expect(forwardScaleSpy).toHaveBeenCalledOnceWith(
         minMax,
         [0, axisSize],

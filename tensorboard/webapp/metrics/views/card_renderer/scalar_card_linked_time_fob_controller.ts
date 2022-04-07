@@ -34,28 +34,29 @@ export class ScalarCardLinkedTimeFobController implements FobCardAdapter {
   @Input() scale!: Scale;
   @Input() minMax!: [number, number];
   @Input() axisSize!: number;
+
   @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
 
   readonly axisDirection = AxisDirection.HORIZONTAL;
 
-  // FobCardAdapter implementation.
+  // TODO(jameshollyer): Implements remaining methods for scalar card fob controller.
+  getHighestStep(): number {
+    return -1;
+  }
+
+  getLowestStep(): number {
+    return -1;
+  }
+
   getAxisPositionFromStep(step: number): number {
     return this.scale.forward(this.minMax, [0, this.axisSize], step);
   }
-  getHighestStep(): number {
-    // TODO: Implement Dragging features.
-    return -1;
-  }
-  getLowestStep(): number {
-    // TODO: Implement Dragging features.
-    return -1;
-  }
+
   getStepHigherThanAxisPosition(position: number): number {
-    // TODO: Implement Dragging features.
     return -1;
   }
+
   getStepLowerThanAxisPosition(position: number): number {
-    // TODO: Implement Dragging features.
     return -1;
   }
 }
