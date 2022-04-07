@@ -65,10 +65,10 @@ rules_closure_dependencies(
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "1134ec9b7baee008f1d54f0483049a97e53a57cd3913ec9d6db625549c98395a",
+    sha256 = "d63ecec7192394f5cc4ad95a115f8a6c9de55c60d56c1f08da79c306355e4654",
     urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_nodejs/releases/download/3.4.0/rules_nodejs-3.4.0.tar.gz",
-        "https://github.com/bazelbuild/rules_nodejs/releases/download/3.4.0/rules_nodejs-3.4.0.tar.gz",
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_nodejs/releases/download/4.6.1/rules_nodejs-4.6.1.tar.gz",
+        "https://github.com/bazelbuild/rules_nodejs/releases/download/4.6.1/rules_nodejs-4.6.1.tar.gz",
     ],
 )
 
@@ -91,17 +91,13 @@ yarn_install(
 
 http_archive(
     name = "io_bazel_rules_sass",
-    sha256 = "60fa023fe694848acf769d816ad9fee970a27a37489aaf5443a7ccffaac805e9",
-    strip_prefix = "rules_sass-1.38.2",
+    sha256 = "ee6d527550d42af182673c3718da98bb9205cabdeb08eacc0e3767fa3f2b051a",
+    strip_prefix = "rules_sass-1.49.11",
     urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_sass/archive/1.38.2.zip",
-        "https://github.com/bazelbuild/rules_sass/archive/1.38.2.zip",
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_sass/archive/1.49.11.zip",
+        "https://github.com/bazelbuild/rules_sass/archive/1.49.11.zip",
     ],
 )
-
-load("@io_bazel_rules_sass//:package.bzl", "rules_sass_dependencies")
-
-rules_sass_dependencies()
 
 load("@io_bazel_rules_sass//:defs.bzl", "sass_repositories")
 
