@@ -122,7 +122,7 @@ export type CardMetadataMap = Record<
 export type CardStepIndexMetaData = {
   index: number | null;
   closest: boolean | null;
-}
+};
 
 /**
  * Map from cards to their step index into the time series. Step index may be

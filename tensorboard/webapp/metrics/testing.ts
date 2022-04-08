@@ -35,7 +35,12 @@ import {
   TimeSeriesData,
 } from './store';
 import * as selectors from './store/metrics_selectors';
-import {MetricsSettings, RunToSeries, StepDatum} from './store/metrics_types';
+import {
+  CardStepIndexMetaData,
+  MetricsSettings,
+  RunToSeries,
+  StepDatum,
+} from './store/metrics_types';
 import {CardId, CardMetadata, TooltipSort, XAxisType} from './types';
 
 export function buildMetricsSettingsState(
@@ -298,7 +303,7 @@ export function provideMockCardSeriesData(
     .and.returnValue(of(runToSeries));
   storeSelectSpy
     .withArgs(selectors.getCardStepIndexMetaData, cardId)
-    .and.returnValue(of(stepIndex));
+    .and.returnValue(of({index: stepIndex, closest: false}));
   storeSelectSpy
     .withArgs(selectors.getMetricsImageCardSteps, cardId)
     .and.returnValue(of(steps));
@@ -327,7 +332,7 @@ export function provideMockCardRunToSeriesData(
     .and.returnValue(of(runToSeries));
   storeSelectSpy
     .withArgs(selectors.getCardStepIndexMetaData, cardId)
-    .and.returnValue(of(stepIndex));
+    .and.returnValue(of({index: stepIndex, closest: false}));
 }
 
 @Injectable()
@@ -361,4 +366,14 @@ export function provideTestingMetricsDataSource() {
     TestingMetricsDataSource,
     {provide: MetricsDataSource, useExisting: TestingMetricsDataSource},
   ];
+}
+
+export function buildStepIndexMetadata(
+  override: Partial<CardStepIndexMetaData> | null
+) {
+  return {
+    index: 0,
+    closest: false,
+    ...override,
+  };
 }

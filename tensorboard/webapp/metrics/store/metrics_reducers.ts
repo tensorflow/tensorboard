@@ -61,7 +61,6 @@ import {
 import {
   CardMetadataMap,
   CardStepIndexMap,
-  CardStepIndexMetaData,
   MetricsNamespacedState,
   MetricsNonNamespacedState,
   MetricsSettings,
@@ -861,7 +860,10 @@ const reducer = createReducer(
     }
     return {
       ...state,
-      cardStepIndex: {...state.cardStepIndex, [cardId]: {index: nextStepIndex, closest: false}},
+      cardStepIndex: {
+        ...state.cardStepIndex,
+        [cardId]: {index: nextStepIndex, closest: false},
+      },
     };
   }),
   on(actions.metricsTagGroupExpansionChanged, (state, {tagGroup}) => {

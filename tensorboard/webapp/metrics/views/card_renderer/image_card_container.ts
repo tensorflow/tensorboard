@@ -206,12 +206,20 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       shareReplay(1)
     );
 
-    this.stepIndex$ = this.store.select(getCardStepIndexMetaData, this.cardId).pipe(
-      map((stepIndexMetaData) => stepIndexMetaData ? stepIndexMetaData.index : null )
-    );
-    this.isClosestStepHighlighted$ = this.store.select(getCardStepIndexMetaData, this.cardId).pipe(
-      map((stepIndexMetaData) => stepIndexMetaData ? stepIndexMetaData.closest : false)
-    );
+    this.stepIndex$ = this.store
+      .select(getCardStepIndexMetaData, this.cardId)
+      .pipe(
+        map((stepIndexMetaData) =>
+          stepIndexMetaData ? stepIndexMetaData.index : null
+        )
+      );
+    this.isClosestStepHighlighted$ = this.store
+      .select(getCardStepIndexMetaData, this.cardId)
+      .pipe(
+        map((stepIndexMetaData) =>
+          stepIndexMetaData ? stepIndexMetaData.closest : false
+        )
+      );
     this.loadState$ = this.store.select(getCardLoadState, this.cardId);
 
     this.tag$ = cardMetadata$.pipe(

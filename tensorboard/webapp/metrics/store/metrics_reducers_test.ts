@@ -37,6 +37,7 @@ import {
   buildDataSourceTagMetadata,
   buildMetricsSettingsState,
   buildMetricsState,
+  buildStepIndexMetadata,
   buildTagMetadata,
   buildTimeSeriesData,
   createCardMetadata,
@@ -522,10 +523,10 @@ describe('metrics reducers', () => {
           [pinnedCopyId2]: cardMetadata2,
         },
         cardStepIndex: {
-          [pinnedCopyId1]: 1,
-          [pinnedCopyId2]: 2,
-          [cardId1]: 1,
-          [cardId2]: 2,
+          [pinnedCopyId1]: buildStepIndexMetadata({index: 1}),
+          [pinnedCopyId2]: buildStepIndexMetadata({index: 2}),
+          [cardId1]: buildStepIndexMetadata({index: 1}),
+          [cardId2]: buildStepIndexMetadata({index: 2}),
         },
         cardToPinnedCopy: new Map([
           [cardId1, pinnedCopyId1],
@@ -557,8 +558,8 @@ describe('metrics reducers', () => {
           [pinnedCopyId1]: cardMetadata1,
         },
         cardStepIndex: {
-          [pinnedCopyId1]: 1,
-          [cardId1]: 1,
+          [pinnedCopyId1]: buildStepIndexMetadata({index: 1}),
+          [cardId1]: buildStepIndexMetadata({index: 1}),
         },
       });
       expect(nextState.cardMetadataMap).toEqual(expectedState.cardMetadataMap);
@@ -586,7 +587,7 @@ describe('metrics reducers', () => {
           [cardId2]: cardMetadata2,
         },
         cardStepIndex: {
-          [cardId1]: 1,
+          [cardId1]: buildStepIndexMetadata({index: 1}),
         },
       });
       const action = actions.metricsTagMetadataLoaded({
@@ -605,7 +606,7 @@ describe('metrics reducers', () => {
           [cardId1]: cardMetadata1,
         },
         cardStepIndex: {
-          [cardId1]: 1,
+          [cardId1]: buildStepIndexMetadata({index: 1}),
         },
       });
       expect(nextState.cardMetadataMap).toEqual(expectedState.cardMetadataMap);
@@ -625,7 +626,7 @@ describe('metrics reducers', () => {
         cardMetadataMap: {},
         cardList: [],
         cardStepIndex: {
-          [expectedCardId]: stepCount - 1,
+          [expectedCardId]: buildStepIndexMetadata({index: stepCount - 1}),
         },
         cardToPinnedCopy: new Map(),
         pinnedCardToOriginal: new Map(),
@@ -669,8 +670,10 @@ describe('metrics reducers', () => {
         },
         cardList: [expectedCardId],
         cardStepIndex: {
-          [expectedCardId]: stepCount - 1,
-          [expectedPinnedCopyId]: stepCount - 1,
+          [expectedCardId]: buildStepIndexMetadata({index: stepCount - 1}),
+          [expectedPinnedCopyId]: buildStepIndexMetadata({
+            index: stepCount - 1,
+          }),
         },
         cardToPinnedCopy: new Map([[expectedCardId, expectedPinnedCopyId]]),
         pinnedCardToOriginal: new Map([[expectedPinnedCopyId, expectedCardId]]),
@@ -1456,7 +1459,9 @@ describe('metrics reducers', () => {
           stepIndex: nextStepIndex,
         });
         const nextState = reducers(beforeState, action);
-        expect(nextState.cardStepIndex).toEqual({card1: nextStepIndex});
+        expect(nextState.cardStepIndex).toEqual({
+          card1: {index: nextStepIndex, closest: false},
+        });
       });
 
       it('slider value clamps to time series length', () => {
@@ -1470,7 +1475,9 @@ describe('metrics reducers', () => {
           stepIndex: 100,
         });
         const nextState = reducers(beforeState, action);
-        expect(nextState.cardStepIndex).toEqual({card1: 2});
+        expect(nextState.cardStepIndex).toEqual({
+          card1: buildStepIndexMetadata({index: 2}),
+        });
       });
 
       it('sets step index to null when there is no time series', () => {
@@ -1482,7 +1489,9 @@ describe('metrics reducers', () => {
           stepIndex: 100,
         });
         const nextState = reducers(beforeState, action);
-        expect(nextState.cardStepIndex).toEqual({card1: null});
+        expect(nextState.cardStepIndex).toEqual({
+          card1: buildStepIndexMetadata({index: null}),
+        });
       });
     });
 
@@ -1512,7 +1521,10 @@ describe('metrics reducers', () => {
         );
         beforeState = {
           ...stateWithPinnedCopy(beforeState, 'card1', 'pinnedCopy1'),
-          cardStepIndex: {card1: 2, pinnedCopy1: 2},
+          cardStepIndex: {
+            card1: buildStepIndexMetadata({index: 2}),
+            pinnedCopy1: buildStepIndexMetadata({index: 2}),
+          },
         };
 
         const action = actions.fetchTimeSeriesLoaded({
@@ -1524,8 +1536,8 @@ describe('metrics reducers', () => {
         });
         const nextState = reducers(beforeState, action);
         expect(nextState.cardStepIndex).toEqual({
-          card1: 2,
-          pinnedCopy1: 2,
+          card1: buildStepIndexMetadata({index: 2}),
+          pinnedCopy1: buildStepIndexMetadata({index: 2}),
         });
       });
 
@@ -1539,7 +1551,10 @@ describe('metrics reducers', () => {
         );
         beforeState = {
           ...stateWithPinnedCopy(beforeState, 'card1', 'pinnedCopy1'),
-          cardStepIndex: {card1: stepCount - 1, pinnedCopy1: stepCount - 1},
+          cardStepIndex: {
+            card1: buildStepIndexMetadata({index: stepCount - 1}),
+            pinnedCopy1: buildStepIndexMetadata({index: stepCount - 1}),
+          },
         };
 
         const newStepCount = 10;
@@ -1552,8 +1567,8 @@ describe('metrics reducers', () => {
         });
         const nextState = reducers(beforeState, action);
         expect(nextState.cardStepIndex).toEqual({
-          card1: newStepCount - 1,
-          pinnedCopy1: newStepCount - 1,
+          card1: buildStepIndexMetadata({index: newStepCount - 1}),
+          pinnedCopy1: buildStepIndexMetadata({index: newStepCount - 1}),
         });
       });
 
@@ -1569,7 +1584,10 @@ describe('metrics reducers', () => {
         );
         beforeState = {
           ...stateWithPinnedCopy(beforeState, 'card1', 'pinnedCopy1'),
-          cardStepIndex: {card1: 9, pinnedCopy1: 9},
+          cardStepIndex: {
+            card1: buildStepIndexMetadata({index: 9}),
+            pinnedCopy1: buildStepIndexMetadata({index: 9}),
+          },
         };
 
         const action = actions.fetchTimeSeriesLoaded({
@@ -1584,8 +1602,8 @@ describe('metrics reducers', () => {
         });
         const nextState = reducers(beforeState, action);
         expect(nextState.cardStepIndex).toEqual({
-          card1: 2,
-          pinnedCopy1: 2,
+          card1: buildStepIndexMetadata({index: 2}),
+          pinnedCopy1: buildStepIndexMetadata({index: 2}),
         });
       });
 
@@ -1613,8 +1631,8 @@ describe('metrics reducers', () => {
         });
         const nextState = reducers(beforeState, action);
         expect(nextState.cardStepIndex).toEqual({
-          card1: 2,
-          pinnedCopy1: 2,
+          card1: buildStepIndexMetadata({index: 2}),
+          pinnedCopy1: buildStepIndexMetadata({index: 2}),
         });
       });
 
@@ -1627,7 +1645,10 @@ describe('metrics reducers', () => {
         );
         beforeState = {
           ...stateWithPinnedCopy(beforeState, 'card1', 'pinnedCopy1'),
-          cardStepIndex: {card1: 5, pinnedCopy1: 5},
+          cardStepIndex: {
+            card1: buildStepIndexMetadata({index: 5}),
+            pinnedCopy1: buildStepIndexMetadata({index: 5}),
+          },
         };
 
         const action = actions.fetchTimeSeriesLoaded({
@@ -1743,8 +1764,8 @@ describe('metrics reducers', () => {
         },
         cardList: ['card1'],
         cardStepIndex: {
-          card1: 10,
-          pinnedCopy1: 20,
+          card1: buildStepIndexMetadata({index: 10}),
+          pinnedCopy1: buildStepIndexMetadata({index: 20}),
         },
         cardToPinnedCopy: new Map([['card1', 'pinnedCopy1']]),
         pinnedCardToOriginal: new Map([['pinnedCopy1', 'card1']]),
@@ -1764,7 +1785,7 @@ describe('metrics reducers', () => {
         },
         cardList: ['card1'],
         cardStepIndex: {
-          card1: 10,
+          card1: buildStepIndexMetadata({index: 10}),
         },
         cardToPinnedCopy: new Map(),
         pinnedCardToOriginal: new Map(),
@@ -1780,8 +1801,8 @@ describe('metrics reducers', () => {
         },
         cardList: ['card1'],
         cardStepIndex: {
-          card1: 10,
-          pinnedCopy1: 20,
+          card1: buildStepIndexMetadata({index: 10}),
+          pinnedCopy1: buildStepIndexMetadata({index: 20}),
         },
         cardToPinnedCopy: new Map([['card1', 'pinnedCopy1']]),
         pinnedCardToOriginal: new Map([['pinnedCopy1', 'card1']]),
@@ -1801,7 +1822,7 @@ describe('metrics reducers', () => {
         },
         cardList: ['card1'],
         cardStepIndex: {
-          card1: 10,
+          card1: buildStepIndexMetadata({index: 10}),
         },
         cardToPinnedCopy: new Map(),
         pinnedCardToOriginal: new Map(),
@@ -1831,7 +1852,7 @@ describe('metrics reducers', () => {
         },
         cardList: ['card1'],
         cardStepIndex: {
-          card1: stepCount - 1,
+          card1: buildStepIndexMetadata({index: stepCount - 1}),
         },
         cardToPinnedCopy: new Map(),
         pinnedCardToOriginal: new Map(),
@@ -1854,8 +1875,10 @@ describe('metrics reducers', () => {
         },
         cardList: ['card1'],
         cardStepIndex: {
-          card1: stepCount - 1,
-          [expectedPinnedCopyId]: stepCount - 1,
+          card1: buildStepIndexMetadata({index: stepCount - 1}),
+          [expectedPinnedCopyId]: buildStepIndexMetadata({
+            index: stepCount - 1,
+          }),
         },
         cardToPinnedCopy: new Map([['card1', expectedPinnedCopyId]]),
         pinnedCardToOriginal: new Map([[expectedPinnedCopyId, 'card1']]),
@@ -2516,7 +2539,7 @@ describe('metrics reducers', () => {
               },
             },
           },
-          cardStepIndex: {[imageCardId]: 2},
+          cardStepIndex: {[imageCardId]: buildStepIndexMetadata({index: 2})},
         });
 
         const nextState = reducers(
@@ -2527,7 +2550,9 @@ describe('metrics reducers', () => {
           })
         );
 
-        expect(nextState.cardStepIndex).toEqual({[imageCardId]: 0});
+        expect(nextState.cardStepIndex).toEqual({
+          [imageCardId]: buildStepIndexMetadata({index: 0}),
+        });
       });
 
       it('does not set `cardStepIndex` when steps do not match selected time', () => {
@@ -2552,7 +2577,7 @@ describe('metrics reducers', () => {
               },
             },
           },
-          cardStepIndex: {[imageCardId]: 2},
+          cardStepIndex: {[imageCardId]: buildStepIndexMetadata({index: 2})},
         });
 
         const nextState = reducers(
@@ -2563,7 +2588,9 @@ describe('metrics reducers', () => {
           })
         );
 
-        expect(nextState.cardStepIndex).toEqual({[imageCardId]: 2});
+        expect(nextState.cardStepIndex).toEqual({
+          [imageCardId]: buildStepIndexMetadata({index: 2}),
+        });
       });
     });
 
@@ -2645,12 +2672,14 @@ describe('metrics reducers', () => {
               },
             },
           },
-          cardStepIndex: {[imageCardId]: 2},
+          cardStepIndex: {[imageCardId]: buildStepIndexMetadata({index: 2})},
         });
 
         const state2 = reducers(state1, actions.selectTimeEnableToggled());
 
-        expect(state2.cardStepIndex).toEqual({[imageCardId]: 0});
+        expect(state2.cardStepIndex).toEqual({
+          [imageCardId]: buildStepIndexMetadata({index: 0}),
+        });
       });
 
       it('updates step index using pre-existing selectedTime', () => {
@@ -2675,11 +2704,13 @@ describe('metrics reducers', () => {
             },
           },
           selectedTime: {start: {step: 20}, end: null},
-          cardStepIndex: {[imageCardId]: 2},
+          cardStepIndex: {[imageCardId]: buildStepIndexMetadata({index: 2})},
         });
 
         const state2 = reducers(state1, actions.selectTimeEnableToggled());
-        expect(state2.cardStepIndex).toEqual({[imageCardId]: 1});
+        expect(state2.cardStepIndex).toEqual({
+          [imageCardId]: buildStepIndexMetadata({index: 1}),
+        });
       });
 
       it('does not update step index when toggle to disable selectedTime', () => {
@@ -2711,11 +2742,13 @@ describe('metrics reducers', () => {
             },
           },
           selectedTime: {start: {step: 20}, end: null},
-          cardStepIndex: {[imageCardId]: 2},
+          cardStepIndex: {[imageCardId]: buildStepIndexMetadata({index: 2})},
         });
 
         const state2 = reducers(state1, actions.selectTimeEnableToggled());
-        expect(state2.cardStepIndex).toEqual({[imageCardId]: 2});
+        expect(state2.cardStepIndex).toEqual({
+          [imageCardId]: buildStepIndexMetadata({index: 2}),
+        });
       });
 
       it('sets selectedTime to step 0 when selectedTime is null before toggling', () => {

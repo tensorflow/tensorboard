@@ -20,6 +20,7 @@ import {
   appStateFromMetricsState,
   buildMetricsSettingsState,
   buildMetricsState,
+  buildStepIndexMetadata,
   createCardMetadata,
   createImageStepData,
   createScalarStepData,
@@ -395,10 +396,12 @@ describe('metrics selectors', () => {
 
       const state = appStateFromMetricsState(
         buildMetricsState({
-          cardStepIndex: {card1: 5},
+          cardStepIndex: {card1: buildStepIndexMetadata({index: 5})},
         })
       );
-      expect(selectors.getCardStepIndexMetaData(state, 'card1')).toBe(5);
+      expect(selectors.getCardStepIndexMetaData(state, 'card1')).toEqual(
+        buildStepIndexMetadata({index: 5})
+      );
     });
   });
 

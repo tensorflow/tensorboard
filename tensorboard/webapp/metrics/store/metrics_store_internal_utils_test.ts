@@ -16,6 +16,7 @@ import {DataLoadState} from '../../types/data';
 import {PluginType} from '../data_source';
 import {
   buildMetricsState,
+  buildStepIndexMetadata,
   buildTagMetadata,
   buildTimeSeriesData,
   createCardMetadata,
@@ -372,7 +373,7 @@ describe('metrics store utils', () => {
         {card1: {plugin: PluginType.SCALARS, tag: 'accuracy', runId: null}},
         new Map(),
         new Map(),
-        {card1: 2}
+        {card1: buildStepIndexMetadata({index: 2})}
       );
 
       const pinnedCardId = getPinnedCardId('card1');
@@ -397,7 +398,7 @@ describe('metrics store utils', () => {
         'card1',
         new Map(),
         new Map(),
-        {card1: 2},
+        {card1: buildStepIndexMetadata({index: 2})},
         {card1: createCardMetadata()}
       );
       const pinnedCardId = getPinnedCardId('card1');
@@ -405,8 +406,8 @@ describe('metrics store utils', () => {
       expect(cardToPinnedCopy).toEqual(new Map([['card1', pinnedCardId]]));
       expect(pinnedCardToOriginal).toEqual(new Map([[pinnedCardId, 'card1']]));
       expect(cardStepIndex).toEqual({
-        card1: 2,
-        [pinnedCardId]: 2,
+        card1: buildStepIndexMetadata({index: 2}),
+        [pinnedCardId]: buildStepIndexMetadata({index: 2}),
       });
       expect(cardMetadataMap).toEqual({
         card1: createCardMetadata(),
@@ -632,7 +633,10 @@ describe('metrics store utils', () => {
 
   describe('generateNextCardStepIndex', () => {
     it(`keeps nextCardStepIndexMap unchanged on cards included in cardMetadataMap`, () => {
-      const cardStepIndex = {card1: 1, card2: 2};
+      const cardStepIndex = {
+        card1: buildStepIndexMetadata({index: 1}),
+        card2: buildStepIndexMetadata({index: 2}),
+      };
       const cardMetadataMap = {
         card1: createCardMetadata(),
         card2: createCardMetadata(),
@@ -643,11 +647,17 @@ describe('metrics store utils', () => {
         cardMetadataMap
       );
 
-      expect(nextCardStepIndexMap).toEqual({card1: 1, card2: 2});
+      expect(nextCardStepIndexMap).toEqual({
+        card1: buildStepIndexMetadata({index: 1}),
+        card2: buildStepIndexMetadata({index: 2}),
+      });
     });
 
     it(`removes card mapping from nextCardStepIndexMap on cards not in cardMetadataMap`, () => {
-      const cardStepIndex = {card1: 1, card4: 2};
+      const cardStepIndex = {
+        card1: buildStepIndexMetadata({index: 1}),
+        card4: buildStepIndexMetadata({index: 2}),
+      };
       const cardMetadataMap = {
         card1: createCardMetadata(),
         card2: createCardMetadata(),
@@ -658,11 +668,13 @@ describe('metrics store utils', () => {
         cardMetadataMap
       );
 
-      expect(nextCardStepIndexMap).toEqual({card1: 1});
+      expect(nextCardStepIndexMap).toEqual({
+        card1: buildStepIndexMetadata({index: 1}),
+      });
     });
 
     it(`keeps nextCardStepIndexMap unchanged on cards not in nextCardStepIndexMap but in cardMetadataMap`, () => {
-      const cardStepIndex = {card1: 1};
+      const cardStepIndex = {card1: buildStepIndexMetadata({index: 1})};
       const cardMetadataMap = {
         card1: createCardMetadata(),
         card2: createCardMetadata(),
@@ -673,7 +685,9 @@ describe('metrics store utils', () => {
         cardMetadataMap
       );
 
-      expect(nextCardStepIndexMap).toEqual({card1: 1});
+      expect(nextCardStepIndexMap).toEqual({
+        card1: buildStepIndexMetadata({index: 1}),
+      });
     });
   });
 
@@ -712,13 +726,15 @@ describe('metrics store utils', () => {
 
     it(`updates cardStepIndex to matched selected time`, () => {
       const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
-        {[imageCardId]: 3},
+        {[imageCardId]: buildStepIndexMetadata({index: 3})},
         cardMetadataMap,
         timeSeriesData,
         {start: {step: 20}, end: null}
       );
 
-      expect(nextCardStepIndex).toEqual({[imageCardId]: 1});
+      expect(nextCardStepIndex).toEqual({
+        [imageCardId]: buildStepIndexMetadata({index: 1}),
+      });
     });
 
     it(`does not update cardStepIndex on other non-image plugin`, () => {
@@ -765,36 +781,42 @@ describe('metrics store utils', () => {
 
     it(`does not update cardStepIndex on selected step with no image`, () => {
       const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
-        {[imageCardId]: 3},
+        {[imageCardId]: buildStepIndexMetadata({index: 3})},
         cardMetadataMap,
         timeSeriesData,
         {start: {step: 15}, end: null}
       );
 
-      expect(nextCardStepIndex).toEqual({[imageCardId]: 3});
+      expect(nextCardStepIndex).toEqual({
+        [imageCardId]: buildStepIndexMetadata({index: 3}),
+      });
     });
 
     it(`updates cardStepIndex in range selection`, () => {
       const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
-        {[imageCardId]: 3},
+        {[imageCardId]: buildStepIndexMetadata({index: 3})},
         cardMetadataMap,
         timeSeriesData,
         {start: {step: 15}, end: {step: 35}}
       );
 
       // Updates index to 2, which is the highest step with image data in range
-      expect(nextCardStepIndex).toEqual({[imageCardId]: 2});
+      expect(nextCardStepIndex).toEqual({
+        [imageCardId]: buildStepIndexMetadata({index: 2}),
+      });
     });
 
     it(`does not update cardStepIndex when there is no image in range`, () => {
       const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
-        {[imageCardId]: 3},
+        {[imageCardId]: buildStepIndexMetadata({index: 3})},
         cardMetadataMap,
         timeSeriesData,
         {start: {step: 15}, end: {step: 18}}
       );
 
-      expect(nextCardStepIndex).toEqual({[imageCardId]: 3});
+      expect(nextCardStepIndex).toEqual({
+        [imageCardId]: buildStepIndexMetadata({index: 3}),
+      });
     });
   });
 
@@ -951,7 +973,7 @@ describe('metrics store utils', () => {
         [10, 20, 30, 40]
       );
 
-      expect(nextStepIndex).toEqual(1);
+      expect(nextStepIndex).toEqual({index: 1, closest: false});
     });
 
     it(`does not return step Index on selected step with no image`, () => {
@@ -969,7 +991,7 @@ describe('metrics store utils', () => {
         [10, 20, 30, 40]
       );
 
-      expect(nextStepIndex).toEqual(0);
+      expect(nextStepIndex).toEqual({index: 0, closest: true});
     });
 
     it('does not return step Index when selected step is not close to any step values', () => {
@@ -987,7 +1009,7 @@ describe('metrics store utils', () => {
         [10, 20, 30, 40]
       );
 
-      expect(nextStepIndex).toEqual(1);
+      expect(nextStepIndex).toEqual({index: 1, closest: true});
     });
 
     it('does not return step Index when there is only one unmatched step', () => {
@@ -1016,7 +1038,7 @@ describe('metrics store utils', () => {
         35
       );
 
-      expect(nextCardStepIndex).toEqual(2);
+      expect(nextCardStepIndex).toEqual({index: 2, closest: false});
     });
 
     it('returns cardStepIndex to the lowest step in range when current step is smaller than first selected step', () => {
@@ -1026,7 +1048,7 @@ describe('metrics store utils', () => {
         10
       );
 
-      expect(nextCardStepIndex).toEqual(1);
+      expect(nextCardStepIndex).toEqual({index: 1, closest: false});
     });
 
     it('returns null when current step is in range', () => {
