@@ -60,6 +60,7 @@ import {
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
 import {LinkedTimeFobModule} from '../../../widgets/linked_time_fob/linked_time_fob_module';
+import {LinkedTimeFobControllerComponent} from '../../../widgets/linked_time_fob/linked_time_fob_controller_component';
 import {ResizeDetectorTestingModule} from '../../../widgets/resize_detector_testing_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {PluginType} from '../../data_source';
@@ -73,6 +74,7 @@ import {
 import {TooltipSort, XAxisType} from '../../types';
 import {ScalarCardComponent} from './scalar_card_component';
 import {ScalarCardContainer} from './scalar_card_container';
+import {ScalarCardLinkedTimeFobController} from './scalar_card_linked_time_fob_controller';
 import {
   ScalarCardPoint,
   ScalarCardSeriesMetadata,
@@ -169,7 +171,7 @@ function buildAlias(override: Partial<ExperimentAlias> = {}): ExperimentAlias {
   };
 }
 
-describe('scalar card', () => {
+fdescribe('scalar card', () => {
   let store: MockStore<State>;
   let selectSpy: jasmine.Spy;
   let overlayContainer: OverlayContainer;
@@ -262,6 +264,7 @@ describe('scalar card', () => {
       declarations: [
         ScalarCardContainer,
         ScalarCardComponent,
+        ScalarCardLinkedTimeFobController,
         TestableDataDownload,
         TestableLineChart,
       ],
@@ -2033,7 +2036,7 @@ describe('scalar card', () => {
     }));
   });
 
-  describe('linked time feature integration', () => {
+  fdescribe('linked time feature integration', () => {
     describe('selectedTime and dataset', () => {
       it('shows clipped warning when selectedTime is outside the extent of dataset', fakeAsync(() => {
         const runToSeries = {
@@ -2124,12 +2127,12 @@ describe('scalar card', () => {
         const fixture = createComponent('card1');
         fixture.detectChanges();
 
-        const fobs = fixture.debugElement.queryAll(
-          Selector.LINKED_TIME_AXIS_FOB
-        );
+        let testController = fixture.debugElement.query(
+          By.directive(LinkedTimeFobControllerComponent)
+        ).componentInstance;
         expect(
-          fobs.map((debugEl) => debugEl.nativeElement.textContent.trim())
-        ).toEqual(['10']);
+          testController.startFobWrapper.nativeElement.textContent.trim()
+        ).toEqual('10');
       }));
 
       it('selects selectedTime to max extent when global setting is too large', fakeAsync(() => {
@@ -2152,12 +2155,12 @@ describe('scalar card', () => {
         const fixture = createComponent('card1');
         fixture.detectChanges();
 
-        const fobs = fixture.debugElement.queryAll(
-          Selector.LINKED_TIME_AXIS_FOB
-        );
+        let testController = fixture.debugElement.query(
+          By.directive(LinkedTimeFobControllerComponent)
+        ).componentInstance;
         expect(
-          fobs.map((debugEl) => debugEl.nativeElement.textContent.trim())
-        ).toEqual(['30']);
+          testController.startFobWrapper.nativeElement.textContent.trim()
+        ).toEqual('30');
       }));
     });
   });
