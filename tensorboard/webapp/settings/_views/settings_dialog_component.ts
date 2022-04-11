@@ -57,12 +57,12 @@ export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
   readonly reloadPeriodControl = new FormControl(this.MIN_RELOAD_PERIOD_IN_S, [
     Validators.required,
     Validators.min(this.MIN_RELOAD_PERIOD_IN_S),
-  ]);
+  ]) as FormControl;
   readonly paginationControl = new FormControl(1, [
     Validators.required,
     Validators.min(1),
     createIntegerValidator(),
-  ]);
+  ]) as FormControl;
 
   private ngUnsubscribe = new Subject<void>();
 
