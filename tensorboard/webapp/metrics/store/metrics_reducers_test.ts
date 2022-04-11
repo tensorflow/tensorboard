@@ -362,10 +362,7 @@ describe('metrics reducers', () => {
         },
         cardList: [cardId1],
         cardToPinnedCopy: new Map([[cardId1, pinnedCopyId1]]),
-        cardToPinnedCopyCache: new Map([
-          [cardId1, pinnedCopyId1],
-          [cardId2, pinnedCopyId2],
-        ]),
+        cardToPinnedCopyCache: new Map([[cardId1, pinnedCopyId1]]),
         pinnedCardToOriginal: new Map([[pinnedCopyId1, cardId1]]),
       });
       expect(nextState.cardMetadataMap).toEqual(expectedState.cardMetadataMap);
@@ -1747,6 +1744,7 @@ describe('metrics reducers', () => {
           pinnedCopy1: 20,
         },
         cardToPinnedCopy: new Map([['card1', 'pinnedCopy1']]),
+        cardToPinnedCopyCache: new Map([['card1', 'pinnedCopy1']]),
         pinnedCardToOriginal: new Map([['pinnedCopy1', 'card1']]),
       });
       const nextState = reducers(
@@ -1767,6 +1765,7 @@ describe('metrics reducers', () => {
           card1: 10,
         },
         cardToPinnedCopy: new Map(),
+        cardToPinnedCopyCache: new Map(),
         pinnedCardToOriginal: new Map(),
       });
       expect(nextState).toEqual(expectedState);
@@ -1784,6 +1783,7 @@ describe('metrics reducers', () => {
           pinnedCopy1: 20,
         },
         cardToPinnedCopy: new Map([['card1', 'pinnedCopy1']]),
+        cardToPinnedCopyCache: new Map([['card1', 'pinnedCopy1']]),
         pinnedCardToOriginal: new Map([['pinnedCopy1', 'card1']]),
       });
       const nextState = reducers(
@@ -1804,6 +1804,7 @@ describe('metrics reducers', () => {
           card1: 10,
         },
         cardToPinnedCopy: new Map(),
+        cardToPinnedCopyCache: new Map(),
         pinnedCardToOriginal: new Map(),
       });
       expect(nextState).toEqual(expectedState);
@@ -1834,6 +1835,7 @@ describe('metrics reducers', () => {
           card1: stepCount - 1,
         },
         cardToPinnedCopy: new Map(),
+        cardToPinnedCopyCache: new Map(),
         pinnedCardToOriginal: new Map(),
         timeSeriesData,
       });
@@ -1858,6 +1860,7 @@ describe('metrics reducers', () => {
           [expectedPinnedCopyId]: stepCount - 1,
         },
         cardToPinnedCopy: new Map([['card1', expectedPinnedCopyId]]),
+        cardToPinnedCopyCache: new Map([['card1', expectedPinnedCopyId]]),
         pinnedCardToOriginal: new Map([[expectedPinnedCopyId, 'card1']]),
         timeSeriesData,
       });
@@ -2016,6 +2019,9 @@ describe('metrics reducers', () => {
         new Map([[pinnedCopyId, 'card1']])
       );
       expect(nextState.cardToPinnedCopy).toEqual(
+        new Map([['card1', pinnedCopyId]])
+      );
+      expect(nextState.cardToPinnedCopyCache).toEqual(
         new Map([['card1', pinnedCopyId]])
       );
       expect(nextState.unresolvedImportedPinnedCards).toEqual([]);
