@@ -171,7 +171,7 @@ function buildAlias(override: Partial<ExperimentAlias> = {}): ExperimentAlias {
   };
 }
 
-fdescribe('scalar card', () => {
+describe('scalar card', () => {
   let store: MockStore<State>;
   let selectSpy: jasmine.Spy;
   let overlayContainer: OverlayContainer;
@@ -2036,7 +2036,7 @@ fdescribe('scalar card', () => {
     }));
   });
 
-  fdescribe('linked time feature integration', () => {
+  describe('linked time feature integration', () => {
     describe('selectedTime and dataset', () => {
       it('shows clipped warning when selectedTime is outside the extent of dataset', fakeAsync(() => {
         const runToSeries = {
