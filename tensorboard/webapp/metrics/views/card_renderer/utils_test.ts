@@ -257,7 +257,7 @@ describe('metrics card_renderer utils test', () => {
         clipped: false,
       };
 
-      expect(maybeSetClosestStartStep(viewSelectedTime, 3)).toBe({
+      expect(maybeSetClosestStartStep(viewSelectedTime, 3)).toEqual({
         startStep: 3,
         endStep: null,
         clipped: false,
@@ -271,7 +271,7 @@ describe('metrics card_renderer utils test', () => {
         clipped: false,
       };
 
-      expect(maybeSetClosestStartStep(viewSelectedTime, null)).toBe({
+      expect(maybeSetClosestStartStep(viewSelectedTime, null)).toEqual({
         startStep: 0,
         endStep: null,
         clipped: false,
@@ -285,7 +285,7 @@ describe('metrics card_renderer utils test', () => {
         clipped: false,
       };
 
-      expect(maybeSetClosestStartStep(viewSelectedTime, 4)).toBe({
+      expect(maybeSetClosestStartStep(viewSelectedTime, 4)).toEqual({
         startStep: 0,
         endStep: 3,
         clipped: false,
