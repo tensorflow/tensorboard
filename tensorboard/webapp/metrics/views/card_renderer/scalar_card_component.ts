@@ -37,6 +37,7 @@ import {
   ScaleType,
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
+import {LinkedTime} from '../../../widgets/linked_time_fob/linked_time_types';
 import {TooltipSort, XAxisType} from '../../types';
 import {
   ScalarCardDataSeries,
@@ -183,5 +184,19 @@ export class ScalarCardComponent<Downloader> {
     this.dialog.open(this.DataDownloadComponent, {
       data: {cardId: this.cardId},
     });
+  }
+
+  getLinkedTime(): LinkedTime | null {
+    if (this.selectedTime === null) {
+      return null;
+    }
+    return {
+      start: {
+        step: this.selectedTime!.startStep,
+      },
+      end: this.selectedTime!.endStep
+        ? {step: this.selectedTime!.endStep}
+        : null,
+    };
   }
 }

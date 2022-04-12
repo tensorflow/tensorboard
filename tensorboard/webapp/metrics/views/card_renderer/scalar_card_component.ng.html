@@ -216,36 +216,12 @@ limitations under the License.
   let-formatter="formatter"
 >
   <ng-container *ngIf="selectedTime">
-    <div
-      class="linked-time-fob-container"
-      [style.transform]="'translate(' +
-        xScale.forward(
-          viewExtent.x,
-          [0, domDim.width],
-          selectedTime.startStep
-        ) + 'px, 0)'
-      "
-    >
-      <linked-time-fob
-        class="selected-time-fob"
-        [step]="selectedTime.startStep"
-      ></linked-time-fob>
-    </div>
-    <div
-      *ngIf="selectedTime.endStep"
-      class="linked-time-fob-container"
-      [style.transform]="'translate(' +
-        xScale.forward(
-          viewExtent.x,
-          [0, domDim.width],
-          selectedTime.endStep
-        ) + 'px, 0)'
-      "
-    >
-      <linked-time-fob
-        class="selected-time-fob"
-        [step]="selectedTime.endStep"
-      ></linked-time-fob>
-    </div>
+    <scalar-card-linked-time-fob-controller
+      [linkedTime]="getLinkedTime()"
+      [scale]="xScale"
+      [minMax]="viewExtent.x"
+      [axisSize]="domDim.width"
+      (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
+    ></scalar-card-linked-time-fob-controller>
   </ng-container>
 </ng-template>
