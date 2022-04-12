@@ -186,7 +186,10 @@ export class ScalarCardComponent<Downloader> {
     });
   }
 
-  getLinkedTime(): LinkedTime {
+  getLinkedTime(): LinkedTime | null {
+    if (this.selectedTime === null) {
+      return null;
+    }
     return {
       start: {
         step: this.selectedTime!.startStep,

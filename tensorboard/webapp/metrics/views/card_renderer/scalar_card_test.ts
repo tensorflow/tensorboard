@@ -2127,7 +2127,7 @@ describe('scalar card', () => {
         const fixture = createComponent('card1');
         fixture.detectChanges();
 
-        let testController = fixture.debugElement.query(
+        const testController = fixture.debugElement.query(
           By.directive(LinkedTimeFobControllerComponent)
         ).componentInstance;
         expect(
@@ -2155,7 +2155,7 @@ describe('scalar card', () => {
         const fixture = createComponent('card1');
         fixture.detectChanges();
 
-        let testController = fixture.debugElement.query(
+        const testController = fixture.debugElement.query(
           By.directive(LinkedTimeFobControllerComponent)
         ).componentInstance;
         expect(
