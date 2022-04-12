@@ -137,3 +137,45 @@ export function maybeClipSelectedTime(
     clipped: true,
   };
 }
+
+/**
+ * Sets startStep of ViewSelectedTime to the closest step if the closeset step is not null.
+ */
+export function maybeSetClosestStartStep(
+  viewSelectedTime: ViewSelectedTime,
+  closestStep: number | null
+): ViewSelectedTime {
+  if (closestStep === null || viewSelectedTime.endStep !== null) {
+    return viewSelectedTime;
+  }
+
+  viewSelectedTime.startStep = closestStep;
+
+  return viewSelectedTime;
+}
+
+/**
+ * Given an array of steps, returns the closest step to the target step. Returns null
+ * if target step has existed in the array.
+ */
+export function getClosestNonTargetStep(
+  targetStep: number,
+  steps: number[]
+): number | null {
+  if (steps.length === 0 || steps.indexOf(targetStep) !== -1) {
+    return null;
+  }
+
+  let minDistance = Infinity;
+  let closestStep = null;
+  for (const step of steps) {
+    const distance = Math.abs(targetStep - step);
+    // With the same distance between two steps, this method favors smaller step than larger
+    // step. It is chosen unintentionally.
+    if (distance < minDistance) {
+      minDistance = distance;
+      closestStep = step;
+    }
+  }
+  return closestStep;
+}

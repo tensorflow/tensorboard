@@ -14,7 +14,12 @@ limitations under the License.
 ==============================================================================*/
 import {buildRun} from '../../../runs/store/testing';
 import {PartialSeries} from './scalar_card_types';
-import {getDisplayNameForRun, partitionSeries} from './utils';
+import {
+  getClosestNonTargetStep,
+  getDisplayNameForRun,
+  maybeSetClosestStartStep,
+  partitionSeries,
+} from './utils';
 
 describe('metrics card_renderer utils test', () => {
   describe('#getDisplayNameForRun', () => {
@@ -241,6 +246,64 @@ describe('metrics card_renderer utils test', () => {
           },
         ]);
       });
+    });
+  });
+
+  describe('#maybeSetClosestStartStep', () => {
+    it('sets startStep to closest step', () => {
+      const viewSelectedTime = {
+        startStep: 0,
+        endStep: null,
+        clipped: false,
+      };
+
+      expect(maybeSetClosestStartStep(viewSelectedTime, 3)).toBe({
+        startStep: 3,
+        endStep: null,
+        clipped: false,
+      });
+    });
+
+    it('does not set startStep when closest step is null', () => {
+      const viewSelectedTime = {
+        startStep: 0,
+        endStep: null,
+        clipped: false,
+      };
+
+      expect(maybeSetClosestStartStep(viewSelectedTime, null)).toBe({
+        startStep: 0,
+        endStep: null,
+        clipped: false,
+      });
+    });
+
+    it('does not set startStep when selected time is range selection', () => {
+      const viewSelectedTime = {
+        startStep: 0,
+        endStep: 3,
+        clipped: false,
+      };
+
+      expect(maybeSetClosestStartStep(viewSelectedTime, 4)).toBe({
+        startStep: 0,
+        endStep: 3,
+        clipped: false,
+      });
+    });
+  });
+
+  describe('#getClosestNonTargetStep', () => {
+    it('gets closest step', () => {
+      expect(getClosestNonTargetStep(11, [0, 10, 20])).toBe(10);
+    });
+
+    it('gets null on empty steps', () => {
+      expect(getClosestNonTargetStep(11, [])).toBe(null);
+    });
+
+    it('gets null on target step existing in steps', () => {
+      expect(getClosestNonTargetStep(10, [0, 10, 20])).toBe(null);
     });
   });
 });
