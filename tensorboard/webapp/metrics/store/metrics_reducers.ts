@@ -396,6 +396,7 @@ const reducer = createReducer(
     const newState = {
       ...state,
       ...resolvedResult,
+      cardToPinnedCopyCache: resolvedResult.cardToPinnedCopy,
       settingOverrides: newSettings,
     };
 
@@ -573,6 +574,7 @@ const reducer = createReducer(
       return {
         ...state,
         ...resolvedResult,
+        cardToPinnedCopyCache: resolvedResult.cardToPinnedCopy,
         tagGroupExpanded,
         tagMetadataLoadState: {
           state: DataLoadState.LOADED,
@@ -909,6 +911,7 @@ const reducer = createReducer(
     if (isPinnedCopy) {
       const originalCardId = state.pinnedCardToOriginal.get(cardId);
       nextCardToPinnedCopy.delete(originalCardId!);
+      nextCardToPinnedCopyCache.delete(originalCardId!);
       nextPinnedCardToOriginal.delete(cardId);
       delete nextCardMetadataMap[cardId];
       delete nextCardStepIndexMap[cardId];
@@ -940,6 +943,7 @@ const reducer = createReducer(
       cardMetadataMap: nextCardMetadataMap,
       cardStepIndex: nextCardStepIndexMap,
       cardToPinnedCopy: nextCardToPinnedCopy,
+      cardToPinnedCopyCache: nextCardToPinnedCopyCache,
       pinnedCardToOriginal: nextPinnedCardToOriginal,
     };
   }),
