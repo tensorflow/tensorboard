@@ -86,4 +86,41 @@ describe('ScalarLinkedTimeFobController', () => {
       );
     });
   });
+
+  describe('getHighestStep', () => {
+    it('gets the highest step when minMax is in order', () => {
+      const minMax: [number, number] = [0, 2];
+      const fixture = createComponent({minMax});
+
+      const highestStep = fixture.componentInstance.getHighestStep();
+
+      expect(highestStep).toBe(2);
+    });
+    it('gets the highest step when minMax is not in order', () => {
+      const minMax: [number, number] = [2, 0];
+      const fixture = createComponent({minMax});
+
+      const highestStep = fixture.componentInstance.getHighestStep();
+
+      expect(highestStep).toBe(2);
+    });
+  });
+  describe('getLowestStep', () => {
+    it('gets the lowest step when minMax is in order', () => {
+      const minMax: [number, number] = [0, 2];
+      const fixture = createComponent({minMax});
+
+      const lowestStep = fixture.componentInstance.getLowestStep();
+
+      expect(lowestStep).toBe(0);
+    });
+    it('gets the lowest step when minMax is not in order', () => {
+      const minMax: [number, number] = [2, 0];
+      const fixture = createComponent({minMax});
+
+      const lowestStep = fixture.componentInstance.getLowestStep();
+
+      expect(lowestStep).toBe(0);
+    });
+  });
 });
