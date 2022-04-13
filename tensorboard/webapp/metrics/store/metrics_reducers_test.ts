@@ -1460,7 +1460,7 @@ describe('metrics reducers', () => {
         });
         const nextState = reducers(beforeState, action);
         expect(nextState.cardStepIndex).toEqual({
-          card1: {index: nextStepIndex, closest: false},
+          card1: {index: nextStepIndex, isClosest: false},
         });
       });
 

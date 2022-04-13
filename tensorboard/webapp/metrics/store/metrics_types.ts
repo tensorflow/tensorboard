@@ -116,16 +116,19 @@ export type CardMetadataMap = Record<
 >;
 
 /**
- * A step index in a card could be the index set from view or the closest step index
+ * A step index in a card could be set from actions or "modified" from the closest step index
  * set when selected time changed. When it is set from selected time, closest is true.
+ * index: The step index
+ * isClosest: Only used in linked time. When the index is adjusted on selected time changed, we
+ * set this attribute to true.
  */
 export type CardStepIndexMetaData = {
   index: number | null;
-  closest: boolean | null;
+  isClosest: boolean | null;
 };
 
 /**
- * Map from cards to their step index into the time series. Step index may be
+ * Map from cards to their step index metadata into the time series. Step index may be
  * null when the time series becomes empty.
  */
 export type CardStepIndexMap = Record<

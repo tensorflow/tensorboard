@@ -373,7 +373,7 @@ export function buildStepIndexMetadata(
 ) {
   return {
     index: 0,
-    closest: false,
+    isClosest: false,
     ...override,
   };
 }

@@ -973,7 +973,7 @@ describe('metrics store utils', () => {
         [10, 20, 30, 40]
       );
 
-      expect(nextStepIndex).toEqual({index: 1, closest: false});
+      expect(nextStepIndex).toEqual({index: 1, isClosest: false});
     });
 
     it(`does not return step Index on selected step with no image`, () => {
@@ -991,7 +991,7 @@ describe('metrics store utils', () => {
         [10, 20, 30, 40]
       );
 
-      expect(nextStepIndex).toEqual({index: 0, closest: true});
+      expect(nextStepIndex).toEqual({index: 0, isClosest: true});
     });
 
     it('does not return step Index when selected step is not close to any step values', () => {
@@ -1009,7 +1009,7 @@ describe('metrics store utils', () => {
         [10, 20, 30, 40]
       );
 
-      expect(nextStepIndex).toEqual({index: 1, closest: true});
+      expect(nextStepIndex).toEqual({index: 1, isClosest: true});
     });
 
     it('does not return step Index when there is only one unmatched step', () => {
@@ -1038,7 +1038,7 @@ describe('metrics store utils', () => {
         35
       );
 
-      expect(nextCardStepIndex).toEqual({index: 2, closest: false});
+      expect(nextCardStepIndex).toEqual({index: 2, isClosest: false});
     });
 
     it('returns cardStepIndex to the lowest step in range when current step is smaller than first selected step', () => {
@@ -1048,7 +1048,7 @@ describe('metrics store utils', () => {
         10
       );
 
-      expect(nextCardStepIndex).toEqual({index: 1, closest: false});
+      expect(nextCardStepIndex).toEqual({index: 1, isClosest: false});
     });
 
     it('returns null when current step is in range', () => {

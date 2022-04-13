@@ -217,7 +217,7 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       .select(getCardStepIndexMetaData, this.cardId)
       .pipe(
         map((stepIndexMetaData) =>
-          stepIndexMetaData ? stepIndexMetaData.closest : false
+          stepIndexMetaData ? stepIndexMetaData.isClosest : false
         )
       );
     this.loadState$ = this.store.select(getCardLoadState, this.cardId);

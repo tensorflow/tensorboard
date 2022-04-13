@@ -186,7 +186,7 @@ function buildNormalizedCardStepIndexMap(
     const shouldClamp = stepIndex !== null && stepIndex > maxStepIndex;
     const shouldAutoSelectMax = stepIndex === null || prevWasMax;
     if (shouldClamp || shouldAutoSelectMax) {
-      result[cardId] = {index: maxStepIndex, closest: false};
+      result[cardId] = {index: maxStepIndex, isClosest: false};
     }
   }
   return result;
@@ -862,7 +862,7 @@ const reducer = createReducer(
       ...state,
       cardStepIndex: {
         ...state.cardStepIndex,
-        [cardId]: {index: nextStepIndex, closest: false},
+        [cardId]: {index: nextStepIndex, isClosest: false},
       },
     };
   }),

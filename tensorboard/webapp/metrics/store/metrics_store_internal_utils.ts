@@ -476,7 +476,7 @@ function getNextImageCardStepIndexFromSingleSelection(
   // Checks exact match.
   const maybeMatchedStepIndex = steps.indexOf(selectedStep);
   if (maybeMatchedStepIndex !== -1) {
-    return {index: maybeMatchedStepIndex, closest: false};
+    return {index: maybeMatchedStepIndex, isClosest: false};
   }
 
   // Checks if start step is "close" enough to a step value and move it
@@ -489,10 +489,10 @@ function getNextImageCardStepIndexFromSingleSelection(
     if (selectedStep > nextStep) continue;
 
     if (selectedStep - currentStep <= distance) {
-      return {index: i, closest: true};
+      return {index: i, isClosest: true};
     }
     if (nextStep - selectedStep <= distance) {
-      return {index: i + 1, closest: true};
+      return {index: i + 1, isClosest: true};
     }
   }
 
@@ -517,10 +517,10 @@ function getNextImageCardStepIndexFromRangeSelection(
 
   // Updates step index to the closest index if it is outside the range.
   if (step > lastSelectedStep) {
-    return {index: steps.indexOf(lastSelectedStep), closest: false};
+    return {index: steps.indexOf(lastSelectedStep), isClosest: false};
   }
   if (step < firstSelectedStep) {
-    return {index: steps.indexOf(firstSelectedStep), closest: false};
+    return {index: steps.indexOf(firstSelectedStep), isClosest: false};
   }
 
   // Does not update index when it is in selected range.
