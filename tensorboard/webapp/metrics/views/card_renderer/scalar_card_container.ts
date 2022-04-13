@@ -51,6 +51,8 @@ import {
 import {DataLoadState} from '../../../types/data';
 import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
+import {LinkedTime} from '../../../widgets/linked_time_fob/linked_time_types';
+import {timeSelectionChanged} from '../../actions';
 import {PluginType, ScalarStepDatum} from '../../data_source';
 import {
   getCardLoadState,
@@ -133,6 +135,7 @@ function areSeriesEqual(
       (onPinClicked)="pinStateChanged.emit($event)"
       observeIntersection
       (onVisibilityChange)="onVisibilityChange($event)"
+      (onSelectTimeChanged)="onSelectTimeChanged($event)"
     ></scalar-card-component>
   `,
   styles: [
@@ -516,5 +519,14 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
         relativeTimeInMs: 0,
       };
     });
+  }
+
+  onSelectTimeChanged(linkedTime: LinkedTime) {
+    this.store.dispatch(
+      timeSelectionChanged({
+        startStep: linkedTime.start.step,
+        endStep: linkedTime.end ? linkedTime.end.step : undefined,
+      })
+    );
   }
 }

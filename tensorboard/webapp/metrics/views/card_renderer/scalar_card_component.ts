@@ -85,6 +85,7 @@ export class ScalarCardComponent<Downloader> {
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
+  @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
 
   // Line chart may not exist when was never visible (*ngIf).
   @ViewChild(LineChartComponent)
