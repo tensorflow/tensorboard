@@ -155,21 +155,21 @@ export function maybeSetClosestStartStep(
 }
 
 /**
- * Given an array of steps, returns the closest step to the target step. Returns null
- * if target step has existed in the array.
+ * Given an array of steps, returns the closest step to the selected step. Returns null
+ * if selected step has existed in the array.
  */
-export function getClosestNonTargetStep(
-  targetStep: number,
+export function getClosestNonSelectedStep(
+  selectedStep: number,
   steps: number[]
 ): number | null {
-  if (steps.length === 0 || steps.indexOf(targetStep) !== -1) {
+  if (steps.length === 0 || steps.indexOf(selectedStep) !== -1) {
     return null;
   }
 
   let minDistance = Infinity;
   let closestStep = null;
   for (const step of steps) {
-    const distance = Math.abs(targetStep - step);
+    const distance = Math.abs(selectedStep - step);
     // With the same distance between two steps, this method favors smaller step than larger
     // step. It is chosen unintentionally.
     if (distance < minDistance) {

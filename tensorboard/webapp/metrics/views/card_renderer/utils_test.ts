@@ -15,7 +15,7 @@ limitations under the License.
 import {buildRun} from '../../../runs/store/testing';
 import {PartialSeries} from './scalar_card_types';
 import {
-  getClosestNonTargetStep,
+  getClosestNonSelectedStep,
   getDisplayNameForRun,
   maybeSetClosestStartStep,
   partitionSeries,
@@ -293,17 +293,17 @@ describe('metrics card_renderer utils test', () => {
     });
   });
 
-  describe('#getClosestNonTargetStep', () => {
+  describe('#getClosestNonSelectedStep', () => {
     it('gets closest step', () => {
-      expect(getClosestNonTargetStep(11, [0, 10, 20])).toBe(10);
+      expect(getClosestNonSelectedStep(11, [0, 10, 20])).toBe(10);
     });
 
     it('gets null on empty steps', () => {
-      expect(getClosestNonTargetStep(11, [])).toBe(null);
+      expect(getClosestNonSelectedStep(11, [])).toBe(null);
     });
 
-    it('gets null on target step existing in steps', () => {
-      expect(getClosestNonTargetStep(10, [0, 10, 20])).toBe(null);
+    it('gets null on selected step existing in steps', () => {
+      expect(getClosestNonSelectedStep(10, [0, 10, 20])).toBe(null);
     });
   });
 });
