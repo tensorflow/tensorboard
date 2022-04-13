@@ -41,12 +41,12 @@ export class ScalarCardLinkedTimeFobController implements FobCardAdapter {
 
   // TODO(jameshollyer): Implements remaining methods for scalar card fob controller.
   getHighestStep(): number {
-    let minMax = this.minMax;
+    const minMax = this.minMax;
     return minMax[0] < minMax[1] ? minMax[1] : minMax[0];
   }
 
   getLowestStep(): number {
-    let minMax = this.minMax;
+    const minMax = this.minMax;
     return minMax[0] < minMax[1] ? minMax[0] : minMax[1];
   }
 
