@@ -20,6 +20,7 @@ import {
   appStateFromMetricsState,
   buildMetricsSettingsState,
   buildMetricsState,
+  buildStepIndexMetadata,
   createCardMetadata,
   createImageStepData,
   createScalarStepData,
@@ -380,25 +381,27 @@ describe('metrics selectors', () => {
 
   describe('getCardStepIndex', () => {
     it('returns null if no card exists', () => {
-      selectors.getCardStepIndex.release();
+      selectors.getCardStepIndexMetaData.release();
 
       const state = appStateFromMetricsState(
         buildMetricsState({
           cardStepIndex: {},
         })
       );
-      expect(selectors.getCardStepIndex(state, 'card1')).toBe(null);
+      expect(selectors.getCardStepIndexMetaData(state, 'card1')).toBe(null);
     });
 
     it('properly returns card ids', () => {
-      selectors.getCardStepIndex.release();
+      selectors.getCardStepIndexMetaData.release();
 
       const state = appStateFromMetricsState(
         buildMetricsState({
-          cardStepIndex: {card1: 5},
+          cardStepIndex: {card1: buildStepIndexMetadata({index: 5})},
         })
       );
-      expect(selectors.getCardStepIndex(state, 'card1')).toBe(5);
+      expect(selectors.getCardStepIndexMetaData(state, 'card1')).toEqual(
+        buildStepIndexMetadata({index: 5})
+      );
     });
   });
 

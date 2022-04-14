@@ -58,6 +58,7 @@ export class ImageCardComponent {
   @Input() isPinned!: boolean;
   @Input() selectedSteps!: number[];
   @Input() selectedTime?: ViewSelectedTime | null = null;
+  @Input() isClosestStepHighlighted?: boolean = false;
 
   @Output() onActualSizeToggle = new EventEmitter<void>();
   @Output() stepIndexChange = new EventEmitter<number>();

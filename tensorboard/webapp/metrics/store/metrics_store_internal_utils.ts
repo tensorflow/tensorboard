@@ -28,6 +28,7 @@ import {
 import {
   CardMetadataMap,
   CardStepIndexMap,
+  CardStepIndexMetaData,
   CardToPinnedCard,
   MetricsState,
   PinnedCardToCard,
@@ -387,28 +388,28 @@ export function generateNextCardStepIndexFromSelectedTime(
 
     const steps = getImageCardSteps(cardId, cardMetadataMap, timeSeriesData);
 
-    let nextStepIndex = null;
+    let nextStepIndexMetaData = null;
     if (selectedTime.end === null) {
       // Single Selection
-      nextStepIndex = getNextImageCardStepIndexFromSingleSelection(
+      nextStepIndexMetaData = getNextImageCardStepIndexFromSingleSelection(
         selectedTime.start.step,
         steps
       );
     } else {
       // Range Selection
-      const currentStepIndex = previousCardStepIndex[cardId]!;
+      const currentStepIndex = previousCardStepIndex[cardId]!.index!;
       const step = steps[currentStepIndex];
       const selectedSteps = getSelectedSteps(selectedTime, steps);
 
-      nextStepIndex = getNextImageCardStepIndexFromRangeSelection(
+      nextStepIndexMetaData = getNextImageCardStepIndexFromRangeSelection(
         selectedSteps,
         steps,
         step
       );
     }
 
-    if (nextStepIndex !== null) {
-      nextCardStepIndex[cardId] = nextStepIndex;
+    if (nextStepIndexMetaData !== null) {
+      nextCardStepIndex[cardId] = nextStepIndexMetaData;
     }
   });
 
@@ -471,11 +472,11 @@ function getSelectedSteps(selectedTime: LinkedTime | null, steps: number[]) {
 function getNextImageCardStepIndexFromSingleSelection(
   selectedStep: number,
   steps: number[]
-): number | null {
+): CardStepIndexMetaData | null {
   // Checks exact match.
   const maybeMatchedStepIndex = steps.indexOf(selectedStep);
   if (maybeMatchedStepIndex !== -1) {
-    return maybeMatchedStepIndex;
+    return {index: maybeMatchedStepIndex, isClosest: false};
   }
 
   // Checks if start step is "close" enough to a step value and move it
@@ -488,10 +489,10 @@ function getNextImageCardStepIndexFromSingleSelection(
     if (selectedStep > nextStep) continue;
 
     if (selectedStep - currentStep <= distance) {
-      return i;
+      return {index: i, isClosest: true};
     }
     if (nextStep - selectedStep <= distance) {
-      return i + 1;
+      return {index: i + 1, isClosest: true};
     }
   }
 
@@ -508,7 +509,7 @@ function getNextImageCardStepIndexFromRangeSelection(
   selectedSteps: number[],
   steps: number[],
   step: number
-): number | null {
+): CardStepIndexMetaData | null {
   if (selectedSteps.length === 0) return null;
 
   const firstSelectedStep = selectedSteps[0];
@@ -516,10 +517,10 @@ function getNextImageCardStepIndexFromRangeSelection(
 
   // Updates step index to the closest index if it is outside the range.
   if (step > lastSelectedStep) {
-    return steps.indexOf(lastSelectedStep);
+    return {index: steps.indexOf(lastSelectedStep), isClosest: false};
   }
   if (step < firstSelectedStep) {
-    return steps.indexOf(firstSelectedStep);
+    return {index: steps.indexOf(firstSelectedStep), isClosest: false};
   }
 
   // Does not update index when it is in selected range.
