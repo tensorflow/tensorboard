@@ -324,14 +324,13 @@ export function generateNextPinnedCardMappings(
   const nextCardToPinnedCopy = new Map() as CardToPinnedCard;
   const nextPinnedCardToOriginal = new Map() as PinnedCardToCard;
   const pinnedCardMetadataMap = {} as CardMetadataMap;
-  for (const cardId of nextCardList) {
-    if (previousCardToPinnedCopyCache.has(cardId)) {
-      const pinnedCardId = previousCardToPinnedCopyCache.get(cardId)!;
+  previousCardToPinnedCopyCache.forEach((pinnedCardId, cardId) => {
+    if (nextCardList.indexOf(cardId) !== -1) {
       nextCardToPinnedCopy.set(cardId, pinnedCardId);
       nextPinnedCardToOriginal.set(pinnedCardId, cardId);
       pinnedCardMetadataMap[pinnedCardId] = nextCardMetadataMap[cardId];
     }
-  }
+  });
 
   return {
     nextCardToPinnedCopy,
