@@ -39,7 +39,7 @@ export class ScalarCardLinkedTimeFobController implements FobCardAdapter {
 
   readonly axisDirection = AxisDirection.HORIZONTAL;
 
-  // TODO(jameshollyer): Implements remaining methods for scalar card fob controller.
+  // FobCardAdapter implementation.
   getHighestStep(): number {
     const minMax = this.minMax;
     return minMax[0] < minMax[1] ? minMax[1] : minMax[0];
@@ -55,10 +55,24 @@ export class ScalarCardLinkedTimeFobController implements FobCardAdapter {
   }
 
   getStepHigherThanAxisPosition(position: number): number {
-    return -1;
+    return this.getStepAtMousePostion(position);
   }
 
   getStepLowerThanAxisPosition(position: number): number {
-    return -1;
+    return this.getStepAtMousePostion(position);
+  }
+
+  // Utility functions.
+  getStepAtMousePostion(position: number): number {
+    let stepAtMouse = Math.round(
+      this.scale.reverse(this.minMax, [0, this.axisSize], position)
+    );
+    if (stepAtMouse > this.getHighestStep()) {
+      return this.getHighestStep();
+    }
+    if (stepAtMouse < this.getLowestStep()) {
+      return this.getLowestStep();
+    }
+    return stepAtMouse;
   }
 }
