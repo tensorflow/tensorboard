@@ -143,26 +143,33 @@ export function maybeClipSelectedTime(
  */
 export function maybeSetClosestStartStep(
   viewSelectedTime: ViewSelectedTime,
-  closestStep: number | null
+  steps: number[]
 ): ViewSelectedTime {
-  if (closestStep === null || viewSelectedTime.endStep !== null) {
+  // Only sets start step on single selection.
+  if (viewSelectedTime.endStep !== null) {
     return viewSelectedTime;
   }
 
-  viewSelectedTime.startStep = closestStep;
+  const closestStep = getClosestStep(viewSelectedTime.startStep, steps);
+  if (closestStep !== null) {
+    return {
+      ...viewSelectedTime,
+      startStep: closestStep,
+    };
+  }
 
   return viewSelectedTime;
 }
 
 /**
  * Given an array of steps, returns the closest step to the selected step. Returns null
- * if selected step has existed in the array.
+ * if there is no closest step, which only happens with empty steps array.
  */
-export function getClosestNonSelectedStep(
+export function getClosestStep(
   selectedStep: number,
   steps: number[]
 ): number | null {
-  if (steps.length === 0 || steps.indexOf(selectedStep) !== -1) {
+  if (steps.length === 0) {
     return null;
   }
 

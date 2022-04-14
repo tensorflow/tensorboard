@@ -15,7 +15,7 @@ limitations under the License.
 import {buildRun} from '../../../runs/store/testing';
 import {PartialSeries} from './scalar_card_types';
 import {
-  getClosestNonSelectedStep,
+  getClosestStep,
   getDisplayNameForRun,
   maybeSetClosestStartStep,
   partitionSeries,
@@ -257,8 +257,8 @@ describe('metrics card_renderer utils test', () => {
         clipped: false,
       };
 
-      expect(maybeSetClosestStartStep(viewSelectedTime, 3)).toEqual({
-        startStep: 3,
+      expect(maybeSetClosestStartStep(viewSelectedTime, [10, 20, 30])).toEqual({
+        startStep: 10,
         endStep: null,
         clipped: false,
       });
@@ -271,7 +271,7 @@ describe('metrics card_renderer utils test', () => {
         clipped: false,
       };
 
-      expect(maybeSetClosestStartStep(viewSelectedTime, null)).toEqual({
+      expect(maybeSetClosestStartStep(viewSelectedTime, [])).toEqual({
         startStep: 0,
         endStep: null,
         clipped: false,
@@ -285,7 +285,7 @@ describe('metrics card_renderer utils test', () => {
         clipped: false,
       };
 
-      expect(maybeSetClosestStartStep(viewSelectedTime, 4)).toEqual({
+      expect(maybeSetClosestStartStep(viewSelectedTime, [10, 20, 30])).toEqual({
         startStep: 0,
         endStep: 3,
         clipped: false,
@@ -293,17 +293,17 @@ describe('metrics card_renderer utils test', () => {
     });
   });
 
-  describe('#getClosestNonSelectedStep', () => {
+  describe('#getClosestStep', () => {
     it('gets closest step', () => {
-      expect(getClosestNonSelectedStep(11, [0, 10, 20])).toBe(10);
+      expect(getClosestStep(11, [0, 10, 20])).toBe(10);
     });
 
     it('gets null on empty steps', () => {
-      expect(getClosestNonSelectedStep(11, [])).toBe(null);
+      expect(getClosestStep(11, [])).toBe(null);
     });
 
-    it('gets null on selected step existing in steps', () => {
-      expect(getClosestNonSelectedStep(10, [0, 10, 20])).toBe(null);
+    it('gets closeset step equal to selected step', () => {
+      expect(getClosestStep(10, [0, 10, 20])).toBe(10);
     });
   });
 });

@@ -43,7 +43,6 @@ import {CardId, CardMetadata, LinkedTime} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {
-  getClosestNonSelectedStep,
   maybeClipSelectedTime,
   maybeSetClosestStartStep,
   ViewSelectedTime,
@@ -106,7 +105,6 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
   selectedTime$?: Observable<ViewSelectedTime | null>;
   isSelectedTimeClipped$?: Observable<boolean>;
   steps$?: Observable<number[]>;
-  closestNonSelectedStep$?: Observable<number | null>;
 
   private isHistogramCardMetadata(
     cardMetadata: CardMetadata
@@ -161,25 +159,11 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
       map((data) => data.map((datum) => datum.step))
     );
 
-    this.closestNonSelectedStep$ = combineLatest([
+    this.selectedTime$ = combineLatest([
       this.store.select(getMetricsSelectedTime),
       this.steps$,
     ]).pipe(
       map(([selectedTime, steps]) => {
-        // Only calculates the closest step in single selection.
-        if (!selectedTime || !selectedTime.start || selectedTime.end !== null)
-          return null;
-
-        return getClosestNonSelectedStep(selectedTime.start.step, steps);
-      })
-    );
-
-    this.selectedTime$ = combineLatest([
-      this.store.select(getMetricsSelectedTime),
-      this.steps$,
-      this.closestNonSelectedStep$,
-    ]).pipe(
-      map(([selectedTime, steps, closestStep]) => {
         if (!selectedTime) return null;
 
         let minStep = Infinity;
@@ -193,7 +177,8 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
           minStep,
           maxStep
         );
-        return maybeSetClosestStartStep(viewSelectedTime, closestStep);
+
+        return maybeSetClosestStartStep(viewSelectedTime, steps);
       })
     );
 
