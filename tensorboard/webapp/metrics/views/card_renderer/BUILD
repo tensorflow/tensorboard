@@ -274,6 +274,7 @@ tf_ng_module(
         "//tensorboard/webapp/experiments:types",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/metrics:types",
+        "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",
         "//tensorboard/webapp/metrics/views:types",
