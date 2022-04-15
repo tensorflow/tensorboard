@@ -91,7 +91,7 @@ jobs:
         run: bazel fetch //tensorboard/...
       - name: 'Bazel: build'
         run: |
-          ( set -o pipefail; 
+          ( set -o pipefail;
             bazel build //tensorboard/... |&\
             grep -v 'external/com_google_protobuf/python: warning: directory' )
       - name: 'Bazel: test (with TensorFlow support)'
