@@ -91,7 +91,7 @@ jobs:
         run: bazel fetch //tensorboard/...
       - name: 'Bazel: build'
         run: |
-          bazel build //tensorboard/... |\
+          bazel build //tensorboard/... |&\
           grep -v 'external/com_google_protobuf/python: warning: directory'
       - name: 'Bazel: test (with TensorFlow support)'
         run: bazel test //tensorboard/...
