@@ -123,7 +123,7 @@ describe('ScalarLinkedTimeFobController', () => {
     });
   });
 
-  fdescribe('getStepHigherThanAxisPosition', () => {
+  describe('getStepHigherThanAxisPosition', () => {
     it('gets step at given position', () => {
       const fixture = createComponent({});
 
@@ -148,7 +148,8 @@ describe('ScalarLinkedTimeFobController', () => {
       expect(step).toBe(1);
     });
   });
-  fdescribe('getStepLowerThanAxisPosition', () => {
+
+  describe('getStepLowerThanAxisPosition', () => {
     it('gets step at given position', () => {
       const fixture = createComponent({});
 
