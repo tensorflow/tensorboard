@@ -264,7 +264,7 @@ describe('metrics card_renderer utils test', () => {
       });
     });
 
-    it('does not set startStep when closest step is null', () => {
+    it('does not set startStep on an empty array of steps', () => {
       const viewSelectedTime = {
         startStep: 0,
         endStep: null,

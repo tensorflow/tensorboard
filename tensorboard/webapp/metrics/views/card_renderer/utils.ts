@@ -170,10 +170,6 @@ export function getClosestStep(
   selectedStep: number,
   steps: number[]
 ): number | null {
-  if (steps.length === 0) {
-    return null;
-  }
-
   let minDistance = Infinity;
   let closestStep = null;
   for (const step of steps) {

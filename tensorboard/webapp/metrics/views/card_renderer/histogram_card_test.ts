@@ -298,6 +298,7 @@ describe('histogram card', () => {
         By.directive(TestableHistogramWidget)
       );
       expect(viz.componentInstance.linkedTime).toEqual({
+        // Steps in mock data is [0, 1, 99]
         start: {step: 1},
         end: null,
       });
