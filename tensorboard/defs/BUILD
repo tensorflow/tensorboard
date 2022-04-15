@@ -63,5 +63,10 @@ nodejs_binary(
         "@npm//@bazel/typescript",
     ],
     entry_point = "@npm//:node_modules/@bazel/typescript/internal/tsc_wrapped/tsc_wrapped.js",
+    # Disables the Bazel node modules linker. The node module linker is unreliable for the
+    # persistent worker executable, as it would rely on the `node_modules/` folder in the
+    # execroot that can be shared in non-sandbox environments or for persistent workers.
+    # https://docs.bazel.build/versions/main/command-line-reference.html#flag--worker_sandboxing.
+    templated_args = ["--nobazel_run_linker"],
     visibility = ["//tensorboard:__subpackages__"],
 )
