@@ -26,6 +26,7 @@ import {TemporalScale} from './histogram_component';
       [linkedTime]="linkedTime"
       [cardAdapter]="this"
       (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
+      (onSelectTimeToggle)="onSelectTimeToggle.emit()"
     ></linked-time-fob-controller>
   `,
 })
@@ -33,7 +34,9 @@ export class HistogramLinkedTimeFobController implements FobCardAdapter {
   @Input() steps!: number[];
   @Input() linkedTime!: LinkedTime;
   @Input() temporalScale!: TemporalScale;
+
   @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
+  @Output() onSelectTimeToggle = new EventEmitter<LinkedTime>();
 
   readonly axisDirection = AxisDirection.VERTICAL;
 

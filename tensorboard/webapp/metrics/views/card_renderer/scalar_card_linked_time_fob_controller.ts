@@ -26,6 +26,7 @@ import {
       [linkedTime]="linkedTime"
       [cardAdapter]="this"
       (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
+      (onSelectTimeToggle)="onSelectTimeToggle.emit($event)"
     ></linked-time-fob-controller>
   `,
 })
@@ -36,6 +37,7 @@ export class ScalarCardLinkedTimeFobController implements FobCardAdapter {
   @Input() axisSize!: number;
 
   @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
+  @Output() onSelectTimeToggle = new EventEmitter<LinkedTime>();
 
   readonly axisDirection = AxisDirection.HORIZONTAL;
 

@@ -43,7 +43,9 @@ export class LinkedTimeFobControllerComponent {
   @Input() axisDirection!: AxisDirection;
   @Input() linkedTime!: LinkedTime;
   @Input() cardAdapter!: FobCardAdapter;
+
   @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
+  @Output() onSelectTimeToggle = new EventEmitter();
 
   private currentDraggingFob: Fob = Fob.NONE;
 

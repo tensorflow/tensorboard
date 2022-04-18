@@ -53,6 +53,7 @@ export class HistogramCardComponent {
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
   @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
+  @Output() onSelectTimeToggle = new EventEmitter<LinkedTime>();
 
   timeProperty(xAxisType: XAxisType) {
     switch (xAxisType) {
