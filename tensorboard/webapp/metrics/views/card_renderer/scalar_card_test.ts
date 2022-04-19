@@ -35,7 +35,7 @@ import {MatMenuModule} from '@angular/material/menu';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {Store} from '@ngrx/store';
+import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {Observable, of, ReplaySubject} from 'rxjs';
 import {State} from '../../../app_state';
@@ -59,10 +59,14 @@ import {
   ScaleType,
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
-import {LinkedTimeFobControllerComponent} from '../../../widgets/linked_time_fob/linked_time_fob_controller_component';
+import {
+  Fob,
+  LinkedTimeFobControllerComponent,
+} from '../../../widgets/linked_time_fob/linked_time_fob_controller_component';
 import {LinkedTimeFobModule} from '../../../widgets/linked_time_fob/linked_time_fob_module';
 import {ResizeDetectorTestingModule} from '../../../widgets/resize_detector_testing_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
+import {timeSelectionChanged} from '../../actions';
 import {PluginType} from '../../data_source';
 import {getMetricsScalarSmoothing, getMetricsSelectedTime} from '../../store';
 import {
@@ -122,7 +126,16 @@ class TestableLineChart {
     viewExtent: {x: [0, 100], y: [0, 1000]},
     domDimension: {width: 200, height: 200},
     xScale: {
-      forward: () => 0,
+      forward: (
+        domain: [number, number],
+        range: [number, number],
+        step: number
+      ) => step,
+      reverse: (
+        domain: [number, number],
+        range: [number, number],
+        axisPosition: number
+      ) => axisPosition,
     },
     formatter: {
       formatTick: (num: number) => String(num),
@@ -2161,6 +2174,52 @@ describe('scalar card', () => {
         expect(
           testController.startFobWrapper.nativeElement.textContent.trim()
         ).toEqual('30');
+      }));
+
+      it('dispatches timeSelectionChanged action when fob is dragged', fakeAsync(() => {
+        const runToSeries = {
+          run1: [buildScalarStepData({step: 10})],
+          run2: [buildScalarStepData({step: 20})],
+          run3: [buildScalarStepData({step: 30})],
+        };
+        const dispatchedActions: Action[] = [];
+        spyOn(store, 'dispatch').and.callFake((action: Action) => {
+          dispatchedActions.push(action);
+        });
+        provideMockCardRunToSeriesData(
+          selectSpy,
+          PluginType.SCALARS,
+          'card1',
+          null /* metadataOverride */,
+          runToSeries
+        );
+        store.overrideSelector(getMetricsSelectedTime, {
+          start: {step: 20},
+          end: null,
+        });
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+        const testController = fixture.debugElement.query(
+          By.directive(LinkedTimeFobControllerComponent)
+        ).componentInstance;
+        const controllerStartPosition =
+          testController.axisOverlay.nativeElement.getBoundingClientRect().left;
+
+        // Simulate dragging fob to step 25.
+        testController.startDrag(Fob.START);
+        const fakeEvent = new MouseEvent('mousemove', {
+          clientX: 25 + controllerStartPosition,
+          movementX: 1,
+        });
+        testController.mouseMove(fakeEvent);
+        fixture.detectChanges();
+
+        expect(dispatchedActions).toEqual([
+          timeSelectionChanged({
+            startStep: 25,
+            endStep: undefined,
+          }),
+        ]);
       }));
     });
   });

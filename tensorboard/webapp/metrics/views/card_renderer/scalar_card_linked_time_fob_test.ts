@@ -122,4 +122,56 @@ describe('ScalarLinkedTimeFobController', () => {
       expect(lowestStep).toBe(0);
     });
   });
+
+  describe('getStepHigherThanAxisPosition', () => {
+    it('gets step at given position', () => {
+      const fixture = createComponent({});
+
+      const step = fixture.componentInstance.getStepHigherThanAxisPosition(10);
+
+      expect(step).toBe(10 / SCALE_RATIO);
+    });
+
+    it('gets highest step if given position is higher than the position at highest step', () => {
+      const fixture = createComponent({minMax: [0, 2]});
+
+      const step = fixture.componentInstance.getStepHigherThanAxisPosition(30);
+
+      expect(step).toBe(2);
+    });
+
+    it('gets lowest step if given position is lower than the position at lowest step', () => {
+      const fixture = createComponent({minMax: [1, 3]});
+
+      const step = fixture.componentInstance.getStepHigherThanAxisPosition(0);
+
+      expect(step).toBe(1);
+    });
+  });
+
+  describe('getStepLowerThanAxisPosition', () => {
+    it('gets step at given position', () => {
+      const fixture = createComponent({});
+
+      const step = fixture.componentInstance.getStepLowerThanAxisPosition(10);
+
+      expect(step).toBe(10 / SCALE_RATIO);
+    });
+
+    it('gets highest step if given position is higher than the position at highest step', () => {
+      const fixture = createComponent({minMax: [0, 2]});
+
+      const step = fixture.componentInstance.getStepLowerThanAxisPosition(30);
+
+      expect(step).toBe(2);
+    });
+
+    it('gets lowest step if given position is lower than the position at lowest step', () => {
+      const fixture = createComponent({minMax: [1, 3]});
+
+      const step = fixture.componentInstance.getStepLowerThanAxisPosition(0);
+
+      expect(step).toBe(1);
+    });
+  });
 });
