@@ -285,7 +285,7 @@ describe('histogram card', () => {
       expect(viz.componentInstance.linkedTime).toBeNull();
     });
 
-    it('passes single step linked time parameter to histogram viz', () => {
+    it('passes closest step linked time parameter to histogram viz', () => {
       provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
       store.overrideSelector(selectors.getMetricsSelectedTime, {
         start: {step: 5},
@@ -298,7 +298,8 @@ describe('histogram card', () => {
         By.directive(TestableHistogramWidget)
       );
       expect(viz.componentInstance.linkedTime).toEqual({
-        start: {step: 5},
+        // Steps are [0, 1, 99] in mock data
+        start: {step: 1},
         end: null,
       });
     });

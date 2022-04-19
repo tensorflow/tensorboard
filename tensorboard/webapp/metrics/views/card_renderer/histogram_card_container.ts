@@ -22,7 +22,7 @@ import {
 } from '@angular/core';
 import {Store} from '@ngrx/store';
 import {combineLatest, Observable} from 'rxjs';
-import {combineLatestWith, filter, map} from 'rxjs/operators';
+import {filter, map} from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
@@ -42,7 +42,11 @@ import {
 import {CardId, CardMetadata, LinkedTime} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
-import {maybeClipSelectedTime, ViewSelectedTime} from './utils';
+import {
+  maybeClipSelectedTime,
+  maybeSetClosestStartStep,
+  ViewSelectedTime,
+} from './utils';
 
 type HistogramCardMetadata = CardMetadata & {
   plugin: PluginType.HISTOGRAMS;
@@ -100,6 +104,7 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
   isPinned$?: Observable<boolean>;
   selectedTime$?: Observable<ViewSelectedTime | null>;
   isSelectedTimeClipped$?: Observable<boolean>;
+  steps$?: Observable<number[]>;
 
   private isHistogramCardMetadata(
     cardMetadata: CardMetadata
@@ -150,18 +155,30 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
       })
     );
 
-    this.selectedTime$ = this.store.select(getMetricsSelectedTime).pipe(
-      combineLatestWith(this.data$),
-      map(([selectedTime, data]) => {
+    this.steps$ = this.data$.pipe(
+      map((data) => data.map((datum) => datum.step))
+    );
+
+    this.selectedTime$ = combineLatest([
+      this.store.select(getMetricsSelectedTime),
+      this.steps$,
+    ]).pipe(
+      map(([selectedTime, steps]) => {
         if (!selectedTime) return null;
 
         let minStep = Infinity;
         let maxStep = -Infinity;
-        for (const datum of data) {
-          minStep = Math.min(datum.step, minStep);
-          maxStep = Math.max(datum.step, maxStep);
+        for (const step of steps) {
+          minStep = Math.min(step, minStep);
+          maxStep = Math.max(step, maxStep);
         }
-        return maybeClipSelectedTime(selectedTime, minStep, maxStep);
+        const viewSelectedTime = maybeClipSelectedTime(
+          selectedTime,
+          minStep,
+          maxStep
+        );
+
+        return maybeSetClosestStartStep(viewSelectedTime, steps);
       })
     );
 
