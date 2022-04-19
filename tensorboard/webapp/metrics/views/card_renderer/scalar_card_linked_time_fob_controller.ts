@@ -63,8 +63,18 @@ export class ScalarCardLinkedTimeFobController implements FobCardAdapter {
   }
 
   // Utility functions.
+  /**
+   * For the purposes of linked time Scalar charts are considered continuous.
+   * This means that we assume there is a step at any point along the chart.
+   * getStepHigherThanAxisPosition and getStepLowerThanAxisPosition are actually
+   * defined in the FobCardAdapter as getting the step higher than or equal to
+   * and less than or equal to, respectivelty. Therefore since we assume there
+   * is data at each step we always return the step at the position. This means
+   * both getStepHigherThanAxisPosition and getStepLowerThanAxisPosition will
+   * always return the same thing.
+   */
   getStepAtMousePostion(position: number): number {
-    let stepAtMouse = Math.round(
+    const stepAtMouse = Math.round(
       this.scale.reverse(this.minMax, [0, this.axisSize], position)
     );
     if (stepAtMouse > this.getHighestStep()) {
