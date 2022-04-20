@@ -83,7 +83,7 @@ import {
   `,
 })
 export class CustomizableComponent implements OnInit {
-  @Input() customizableComponent!: {constructor: Type<unknown>} | undefined;
+  @Input() customizableComponent!: Type<Component> | undefined;
 
   constructor(
     private readonly viewContainerRef: ViewContainerRef,
@@ -94,7 +94,7 @@ export class CustomizableComponent implements OnInit {
     if (this.customizableComponent) {
       const componentFactory =
         this.componentFactoryResolver.resolveComponentFactory(
-          this.customizableComponent.constructor
+          this.customizableComponent.constructor as Type<unknown>
         );
       this.viewContainerRef.createComponent(componentFactory);
     }
