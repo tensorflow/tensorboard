@@ -309,6 +309,68 @@ describe('metrics reducers', () => {
       );
     });
 
+    it('does not change pinned card order', () => {
+      const cardMetadata1 = {
+        plugin: PluginType.IMAGES,
+        tag: 'tagA',
+        runId: 'run1',
+        sample: 1,
+        numSample: 3,
+      };
+      const cardMetadata2 = {
+        plugin: PluginType.HISTOGRAMS,
+        tag: 'tagB',
+        runId: 'run2',
+      };
+      const cardId1 = getCardId(cardMetadata1);
+      const cardId2 = getCardId(cardMetadata2);
+      const pinnedCopyId1 = getPinnedCardId(cardId1);
+      const pinnedCopyId2 = getPinnedCardId(cardId2);
+      const beforeState = buildMetricsState({
+        cardMetadataMap: {
+          [cardId1]: cardMetadata1,
+          [cardId1]: cardMetadata2,
+          [pinnedCopyId1]: cardMetadata1,
+          [pinnedCopyId2]: cardMetadata2,
+        },
+        cardList: [cardId1, cardId2],
+        cardToPinnedCopy: new Map([
+          [cardId1, pinnedCopyId1],
+          [cardId2, pinnedCopyId2],
+        ]),
+        cardToPinnedCopyCache: new Map([
+          [cardId1, pinnedCopyId1],
+          [cardId2, pinnedCopyId2],
+        ]),
+        pinnedCardToOriginal: new Map([
+          [pinnedCopyId1, cardId1],
+          [pinnedCopyId2, cardId2],
+        ]),
+      });
+      const action = actions.metricsTagMetadataLoaded({
+        tagMetadata: {
+          ...buildDataSourceTagMetadata(),
+          [PluginType.IMAGES]: {
+            tagDescriptions: {},
+            tagRunSampledInfo: {tagA: {run1: {maxSamplesPerStep: 1}}},
+          },
+          [PluginType.HISTOGRAMS]: {
+            tagDescriptions: {},
+            runTagInfo: {run1: ['tagB']},
+          },
+        },
+      });
+
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.pinnedCardToOriginal.keys()).toEqual(
+        new Map([
+          [pinnedCopyId1, cardId1],
+          [pinnedCopyId2, cardId2],
+        ]).keys()
+      );
+    });
+
     it('updates pinned/original cards mapping on pinned cards removal', () => {
       const cardMetadata1 = {
         plugin: PluginType.HISTOGRAMS,
