@@ -447,7 +447,7 @@ describe('histogram card', () => {
         expect(indicator).toBeTruthy();
       });
 
-      it('dose not render warning when data exist on selected step', () => {
+      it('does not render warning when data exist on selected step', () => {
         store.overrideSelector(selectors.getMetricsSelectedTime, {
           start: {step: 100},
           end: null,
@@ -463,7 +463,7 @@ describe('histogram card', () => {
         expect(indicator).toBeFalsy();
       });
 
-      it('dose not render warning when selectedTime is clipped', () => {
+      it('does not render warning when selectedTime is clipped', () => {
         store.overrideSelector(selectors.getMetricsSelectedTime, {
           start: {step: 49},
           end: null,
@@ -479,7 +479,7 @@ describe('histogram card', () => {
         expect(indicator).toBeFalsy();
       });
 
-      it('dose not render warning on range selection', () => {
+      it('does not render warning on range selection', () => {
         store.overrideSelector(selectors.getMetricsSelectedTime, {
           start: {step: 99},
           end: {step: 102},
