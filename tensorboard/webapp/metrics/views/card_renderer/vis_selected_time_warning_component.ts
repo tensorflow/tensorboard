@@ -30,7 +30,7 @@ export type LinkedTimeWithClipped = LinkedTime & {clipped: boolean};
       *ngIf="isClosestStepHighlighted"
       data-value="closestStepHighlighted"
       svgIcon="info_outline_24px"
-      title="Data is not found on selected step(s). We highlighted the closest step for you."
+      title="Data is not found on selected step. We highlighted the closest step for you."
     ></mat-icon>
   `,
   styleUrls: ['vis_selected_time_warning_component.css'],
