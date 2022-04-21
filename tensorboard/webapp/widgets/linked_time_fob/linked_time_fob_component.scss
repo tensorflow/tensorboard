@@ -19,8 +19,18 @@ limitations under the License.
   display: inline-block;
 }
 
+.fob {
+  display: inline-flex;
+  background-color: mat.get-color-from-palette(mat.$gray-palette, 300);
+  border-radius: 25px;
+  padding: 2px 2px 2px 4px;
+  font-size: 11px;
+  width: min-content;
+}
+
 input {
-  width: 80%;
+  width: 30px;
+  margin-right: 2px;
   font-size: 11px;
   background-color: inherit;
   border: none;
@@ -43,13 +53,8 @@ input[type='number'] {
 }
 
 span {
-  background-color: mat.get-color-from-palette(mat.$gray-palette, 300);
-  border-radius: 25px;
   color: inherit;
   display: inline-block;
-  font-size: 11px;
-  padding: 2px 5px;
-
   &:hover,
   &:active {
     border-color: mat.get-color-from-palette(mat.$gray-palette, 700);
@@ -73,4 +78,20 @@ span {
       border-color: mat.get-color-from-palette(mat.$gray-palette, 200);
     }
   }
+}
+
+button {
+  display: inline;
+  margin-left: 2px;
+  padding: 1px 3px 1px 3px;
+  border: 0;
+  border-radius: 50%;
+  font-size: 9px;
+  background-color: inherit;
+  color: inherit;
+}
+
+button:hover {
+  background-color: mat.get-color-from-palette(mat.$gray-palette, 500);
+  color: mat.get-color-from-palette(mat.$gray-palette, 200);
 }

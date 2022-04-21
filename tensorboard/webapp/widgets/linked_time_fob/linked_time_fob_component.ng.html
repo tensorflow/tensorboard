@@ -15,15 +15,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div (dblclick)="typeStepRequested()">
-  <span>
-    <input
-      *ngIf="isTyping"
-      type="number"
-      [value]="step"
-      (change)="stepTyped($event)"
-      (focusout)="lostFocus()"
-    />
-    <div *ngIf="!isTyping">{{ step | number }}</div>
+<div class="fob" (dblclick)="typeStepRequested()">
+  <span *ngIf="!isTyping">
+    <div>{{ step | number }}</div>
   </span>
+  <button *ngIf="!isTyping" (click)="removeStep.emit()">X</button>
+  <input
+    *ngIf="isTyping"
+    type="number"
+    [value]="step"
+    (change)="stepTyped($event)"
+    (focusout)="lostFocus()"
+  />
 </div>
