@@ -19,6 +19,7 @@ load("@npm//@bazel/typescript:index.bzl", "ts_config", "ts_library")
 load("@io_bazel_rules_sass//:defs.bzl", "npm_sass_library", "sass_binary", "sass_library")
 load("@npm//@bazel/terser:index.bzl", "terser_minified")
 load("//tensorboard/defs/internal:js.bzl", _tf_dev_js_binary = "tf_dev_js_binary")
+load("//tensorboard/defs/angular_bundler:index.bzl", "FRAMEWORK_AMD_FILES")
 
 tf_dev_js_binary = _tf_dev_js_binary
 
@@ -133,7 +134,7 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
         bootstrap = bootstrap + [
             "@npm//:node_modules/zone.js/dist/zone-testing-bundle.js",
             "@npm//:node_modules/reflect-metadata/Reflect.js",
-            "@npm//:node_modules/@angular/localize/bundles/localize-init.umd.js",
+            # "@npm//:node_modules/@angular/localize/bundles/localize-init.umd.js",
         ],
         runtime_deps = runtime_deps + [
             "//tensorboard/webapp/testing:initialize_testbed",
@@ -155,7 +156,7 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
             "@npm//:node_modules/three/build/three.js",
             "@npm//:node_modules/dagre/dist/dagre.js",
             "@npm//:node_modules/marked/marked.min.js",
-        ],
+        ] + FRAMEWORK_AMD_FILES,
         **kwargs
     )
 
