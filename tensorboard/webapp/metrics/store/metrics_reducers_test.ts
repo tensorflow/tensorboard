@@ -425,7 +425,10 @@ describe('metrics reducers', () => {
         },
         cardList: [cardId1],
         cardToPinnedCopy: new Map([[cardId1, pinnedCopyId1]]),
-        cardToPinnedCopyCache: new Map([[cardId1, pinnedCopyId1]]),
+        cardToPinnedCopyCache: new Map([
+          [cardId1, pinnedCopyId1],
+          [cardId2, pinnedCopyId2],
+        ]),
         pinnedCardToOriginal: new Map([[pinnedCopyId1, cardId1]]),
       });
       expect(nextState.cardMetadataMap).toEqual(expectedState.cardMetadataMap);

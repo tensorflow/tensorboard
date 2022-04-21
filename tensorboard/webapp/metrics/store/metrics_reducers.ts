@@ -573,7 +573,6 @@ const reducer = createReducer(
       return {
         ...state,
         ...resolvedResult,
-        cardToPinnedCopyCache: resolvedResult.cardToPinnedCopy,
         tagGroupExpanded,
         tagMetadataLoadState: {
           state: DataLoadState.LOADED,
