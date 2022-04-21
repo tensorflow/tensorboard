@@ -67,7 +67,8 @@ type HistogramCardMetadata = CardMetadata & {
       [runColorScale]="runColorScale"
       [showFullSize]="showFullSize"
       [isPinned]="isPinned$ | async"
-      [selectedTime]="selectedTime$ | async"
+      [isClosestStepHighlighted]="isClosestStepHighlighted$ | async"
+      [selectedTime]="viewSelectedTime$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
       (onSelectTimeChanged)="onSelectTimeChanged($event)"
@@ -102,7 +103,8 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
   xAxisType$ = this.store.select(getMetricsXAxisType);
   showFullSize = false;
   isPinned$?: Observable<boolean>;
-  selectedTime$?: Observable<ViewSelectedTime | null>;
+  viewSelectedTime$?: Observable<ViewSelectedTime | null>;
+  isClosestStepHighlighted$?: Observable<boolean | null>;
   isSelectedTimeClipped$?: Observable<boolean>;
   steps$?: Observable<number[]>;
 
@@ -159,7 +161,7 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
       map((data) => data.map((datum) => datum.step))
     );
 
-    this.selectedTime$ = combineLatest([
+    this.viewSelectedTime$ = combineLatest([
       this.store.select(getMetricsSelectedTime),
       this.steps$,
     ]).pipe(
@@ -179,6 +181,21 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
         );
 
         return maybeSetClosestStartStep(viewSelectedTime, steps);
+      })
+    );
+
+    this.isClosestStepHighlighted$ = combineLatest([
+      this.store.select(getMetricsSelectedTime),
+      this.viewSelectedTime$,
+    ]).pipe(
+      map(([selectedTime, viewSelectedTime]) => {
+        return (
+          selectedTime &&
+          viewSelectedTime &&
+          !viewSelectedTime.clipped &&
+          selectedTime.end === null &&
+          selectedTime.start.step !== viewSelectedTime.startStep
+        );
       })
     );
 

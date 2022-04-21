@@ -415,5 +415,85 @@ describe('histogram card', () => {
         expect(indicatorAfter).toBeNull();
       });
     });
+
+    describe('closest step warning', () => {
+      beforeEach(() => {
+        provideMockCardSeriesData(
+          selectSpy,
+          PluginType.HISTOGRAMS,
+          'card1',
+          undefined,
+          [
+            buildHistogramStepData({step: 50}),
+            buildHistogramStepData({step: 100}),
+            buildHistogramStepData({step: 200}),
+          ]
+        );
+      });
+
+      it('renders warning when no data on the selected step', () => {
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 99},
+          end: null,
+        });
+        const fixture = createHistogramCardContainer();
+        fixture.detectChanges();
+
+        const indicator = fixture.debugElement.query(
+          By.css(
+            'vis-selected-time-warning mat-icon[data-value="closestStepHighlighted"]'
+          )
+        );
+        expect(indicator).toBeTruthy();
+      });
+
+      it('does not render warning when data exist on selected step', () => {
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 100},
+          end: null,
+        });
+        const fixture = createHistogramCardContainer();
+        fixture.detectChanges();
+
+        const indicator = fixture.debugElement.query(
+          By.css(
+            'vis-selected-time-warning mat-icon[data-value="closestStepHighlighted"]'
+          )
+        );
+        expect(indicator).toBeFalsy();
+      });
+
+      it('does not render warning when selectedTime is clipped', () => {
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 49},
+          end: null,
+        });
+        const fixture = createHistogramCardContainer();
+        fixture.detectChanges();
+
+        const indicator = fixture.debugElement.query(
+          By.css(
+            'vis-selected-time-warning mat-icon[data-value="closestStepHighlighted"]'
+          )
+        );
+        expect(indicator).toBeFalsy();
+      });
+
+      it('does not render warning on range selection', () => {
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 99},
+          end: {step: 102},
+        });
+        const fixture = createHistogramCardContainer();
+        fixture.detectChanges();
+
+        const indicator = fixture.debugElement.query(
+          By.css(
+            'vis-selected-time-warning mat-icon[data-value="closestStepHighlighted"]'
+          )
+        );
+        expect(indicator).toBeFalsy();
+      });
+    });
   });
 });
