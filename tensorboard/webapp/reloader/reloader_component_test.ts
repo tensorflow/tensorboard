@@ -175,7 +175,6 @@ describe('reloader_component', () => {
         })
       )
     );
-    fixture.detectChanges();
     expect(dispatchSpy).not.toHaveBeenCalled();
 
     tick(1);
@@ -200,6 +199,41 @@ describe('reloader_component', () => {
     expect(dispatchSpy).toHaveBeenCalledTimes(2);
 
     fixture.destroy();
+  }));
+
+  it('ignores store value changes after destroy', fakeAsync(() => {
+    store.setState(
+      createState(
+        createSettingsState({
+          settings: createSettings({
+            reloadPeriodInMs: 0,
+            reloadEnabled: false,
+          }),
+        })
+      )
+    );
+    const fixture = TestBed.createComponent(ReloaderComponent);
+    fixture.detectChanges();
+
+    // Destroy the component.
+    fixture.destroy();
+
+    // Enable auto reload after the component has been destroyed.
+    store.setState(
+      createState(
+        createSettingsState({
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: true,
+          }),
+        })
+      )
+    );
+
+    // Advance clock to trigger auto reload.
+    tick(5);
+    // But reload should not have been triggered.
+    expect(dispatchSpy).toHaveBeenCalledTimes(0);
   }));
 
   it('does not reload if document is not visible', fakeAsync(() => {
