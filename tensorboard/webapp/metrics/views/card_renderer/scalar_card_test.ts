@@ -59,6 +59,7 @@ import {
   ScaleType,
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
+import {LinkedTimeFobComponent} from '../../../widgets/linked_time_fob/linked_time_fob_component';
 import {
   Fob,
   LinkedTimeFobControllerComponent,
@@ -2140,11 +2141,11 @@ describe('scalar card', () => {
         const fixture = createComponent('card1');
         fixture.detectChanges();
 
-        const testController = fixture.debugElement.query(
-          By.directive(LinkedTimeFobControllerComponent)
-        ).componentInstance;
+        const fobs = fixture.debugElement.queryAll(
+          By.directive(LinkedTimeFobComponent)
+        );
         expect(
-          testController.startFobWrapper.nativeElement.textContent.trim()
+          fobs[0].query(By.css('span')).nativeElement.textContent.trim()
         ).toEqual('10');
       }));
 
@@ -2168,11 +2169,11 @@ describe('scalar card', () => {
         const fixture = createComponent('card1');
         fixture.detectChanges();
 
-        const testController = fixture.debugElement.query(
-          By.directive(LinkedTimeFobControllerComponent)
-        ).componentInstance;
+        const fobs = fixture.debugElement.queryAll(
+          By.directive(LinkedTimeFobComponent)
+        );
         expect(
-          testController.startFobWrapper.nativeElement.textContent.trim()
+          fobs[0].query(By.css('span')).nativeElement.textContent.trim()
         ).toEqual('30');
       }));
 

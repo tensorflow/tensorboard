@@ -16,10 +16,10 @@ limitations under the License.
 -->
 
 <div class="fob" (dblclick)="typeStepRequested()">
-  <span *ngIf="!isTyping">
-    <div>{{ step | number }}</div>
-  </span>
-  <button *ngIf="!isTyping" (click)="removeStep.emit()">X</button>
+  <span *ngIf="!isTyping"> {{ step | number }} </span>
+  <button aria-label="close" *ngIf="!isTyping" (click)="removeStep.emit()">
+    <mat-icon svgIcon="close_24px"></mat-icon>
+  </button>
   <input
     *ngIf="isTyping"
     type="number"
