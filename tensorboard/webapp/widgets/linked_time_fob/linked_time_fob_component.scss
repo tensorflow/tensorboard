@@ -91,6 +91,9 @@ button {
   color: inherit;
   .mat-icon {
     width: 100%;
+    // The close icon is not a proportioned to fit nicely inside a circle.
+    // Stretching the height to 110% helps it sit closer to the center of the
+    // circular button.
     height: 110%;
   }
 }
