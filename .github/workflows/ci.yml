@@ -90,7 +90,14 @@ jobs:
       - name: 'Bazel: fetch'
         run: bazel fetch //tensorboard/...
       - name: 'Bazel: build'
-        run: bazel build //tensorboard/...
+        # Note we suppress a flood of warnings from the proto compiler.
+        # Googlers see b/222706811 & b/182876485 discussion and preconditions
+        # for removing this kludge.
+        run: |
+          ( set -o pipefail;
+            bazel build //tensorboard/... |&\
+            grep -v 'external/com_google_protobuf/python: warning: directory' |&\
+            grep -v 'INFO: From ProtoCompile ' )
       - name: 'Bazel: test (with TensorFlow support)'
         run: bazel test //tensorboard/...
         if: matrix.tf_version_id != 'notf'
