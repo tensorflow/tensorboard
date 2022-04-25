@@ -97,7 +97,7 @@ jobs:
           ( set -o pipefail;
             bazel build //tensorboard/... |&\
             grep -v 'external/com_google_protobuf/python: warning: directory' |&\
-            grep -v 'INFO: From ProtoCompile external/com_google_protobuf/python/google/protobuf/' )
+            grep -v 'INFO: From ProtoCompile ' )
       - name: 'Bazel: test (with TensorFlow support)'
         run: bazel test //tensorboard/...
         if: matrix.tf_version_id != 'notf'
