@@ -170,6 +170,22 @@ export class LinkedTimeFobControllerComponent {
           this.axisOverlay.nativeElement.getBoundingClientRect().left;
   }
 
+  stepRemoved(fob: Fob, step: number) {
+    const newLinkedTime = {...this.linkedTime};
+
+    if (fob === Fob.START) {
+      if (this.linkedTime.end === null) {
+        // TODO(jieweiwu): Set start step to min step
+        return;
+      } else {
+        newLinkedTime.start = {step: this.linkedTime.end.step};
+      }
+    }
+    newLinkedTime.end = null;
+
+    this.onSelectTimeChanged.emit(newLinkedTime);
+  }
+
   stepTyped(fob: Fob, step: number) {
     let newLinkedTime = {...this.linkedTime};
     if (fob === Fob.START) {
@@ -189,6 +205,7 @@ export class LinkedTimeFobControllerComponent {
       };
     }
 
+    // TODO(jieweiwu): Only emits action when linked time is changed.
     this.onSelectTimeChanged.emit(newLinkedTime);
   }
 
@@ -201,7 +218,7 @@ export class LinkedTimeFobControllerComponent {
    * start fob was remove. Lastly when in single selection deselecting the fob
    * toggles the feature entirely.
    */
-  deselectFob(fob: Fob) {
+   fobRemoved(fob: Fob) {
     if (fob === Fob.END) {
       this.onSelectTimeChanged.emit({...this.linkedTime, end: null});
       return;
