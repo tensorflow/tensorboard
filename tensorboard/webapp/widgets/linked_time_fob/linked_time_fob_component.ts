@@ -31,6 +31,7 @@ export class LinkedTimeFobComponent {
   @Input() step!: number;
 
   @Output() stepChange = new EventEmitter<number>();
+  @Output() removeStep = new EventEmitter();
 
   isTyping = false;
 
