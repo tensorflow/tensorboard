@@ -43,6 +43,8 @@ export class LinkedTimeFobControllerComponent {
   @Input() axisDirection!: AxisDirection;
   @Input() linkedTime!: LinkedTime;
   @Input() cardAdapter!: FobCardAdapter;
+
+  @Output() onSelectTimeToggle = new EventEmitter();
   @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
 
   private currentDraggingFob: Fob = Fob.NONE;
@@ -188,5 +190,19 @@ export class LinkedTimeFobControllerComponent {
     }
 
     this.onSelectTimeChanged.emit(newLinkedTime);
+  }
+
+  deselectFob(fob: Fob) {
+    if (fob === Fob.END) {
+      this.onSelectTimeChanged.emit({...this.linkedTime, end: null});
+      return;
+    }
+
+    if (this.linkedTime.end !== null) {
+      this.onSelectTimeChanged.emit({start: this.linkedTime.end, end: null});
+      return;
+    }
+
+    this.onSelectTimeToggle.emit();
   }
 }

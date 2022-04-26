@@ -33,6 +33,7 @@ import {AxisDirection, FobCardAdapter, LinkedTime} from './linked_time_types';
       [linkedTime]="linkedTime"
       [cardAdapter]="fobCardAdapter"
       (onSelectTimeChanged)="onSelectTimeChanged($event)"
+      (onSelectTimeToggle)="onSelectTimeToggle()"
     ></linked-time-fob-controller>
   `,
 })
@@ -45,10 +46,12 @@ class TestableComponent {
   @Input() fobCardAdapter!: FobCardAdapter;
 
   @Input() onSelectTimeChanged!: (newLinkedTime: LinkedTime) => void;
+  @Input() onSelectTimeToggle!: () => void;
 }
 
 describe('linked_time_fob_controller', () => {
   let onSelectTimeChanged: jasmine.Spy;
+  let onSelectTimeToggle: jasmine.Spy;
   let getHighestStepSpy: jasmine.Spy;
   let getLowestStepSpy: jasmine.Spy;
   let getAxisPositionFromStepSpy: jasmine.Spy;
@@ -105,6 +108,9 @@ describe('linked_time_fob_controller', () => {
 
     onSelectTimeChanged = jasmine.createSpy();
     fixture.componentInstance.onSelectTimeChanged = onSelectTimeChanged;
+
+    onSelectTimeToggle = jasmine.createSpy();
+    fixture.componentInstance.onSelectTimeToggle = onSelectTimeToggle;
 
     return fixture;
   }
@@ -668,6 +674,58 @@ describe('linked_time_fob_controller', () => {
       expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
         start: {step: 1},
         end: {step: 8},
+      });
+    });
+  });
+  describe('deselecting fob', () => {
+    it('fires onSelectTimeToggle when in single selection', () => {
+      const fixture = createComponent({
+        linkedTime: {start: {step: 1}, end: null},
+      });
+      fixture.detectChanges();
+
+      const deselectButton = fixture.debugElement.query(
+        By.css('linked-time-fob.startFob button')
+      );
+      deselectButton.triggerEventHandler('click', {});
+      fixture.detectChanges();
+
+      expect(onSelectTimeToggle).toHaveBeenCalledOnceWith();
+    });
+
+    it('fires onSelectTimeChanged to remove end fob when end fob is deselected', () => {
+      const fixture = createComponent({
+        linkedTime: {start: {step: 1}, end: {step: 3}},
+      });
+      fixture.detectChanges();
+
+      const deselectButton = fixture.debugElement.query(
+        By.css('linked-time-fob.endFob button')
+      );
+      deselectButton.triggerEventHandler('click', {});
+      fixture.detectChanges();
+
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 1},
+        end: null,
+      });
+    });
+
+    it('fires onSelectTimeChanged to change the start fob step to the current end fob step and the end fob step to null when start fob is deselected in a range selection', () => {
+      const fixture = createComponent({
+        linkedTime: {start: {step: 1}, end: {step: 3}},
+      });
+      fixture.detectChanges();
+
+      const deselectButton = fixture.debugElement.query(
+        By.css('linked-time-fob.startFob button')
+      );
+      deselectButton.triggerEventHandler('click', {});
+      fixture.detectChanges();
+
+      expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
+        start: {step: 3},
+        end: null,
       });
     });
   });
