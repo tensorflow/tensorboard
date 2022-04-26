@@ -28,30 +28,6 @@ limitations under the License.
   width: min-content;
 }
 
-input {
-  width: 30px;
-  margin-right: 2px;
-  font-size: 11px;
-  background-color: inherit;
-  border: none;
-  color: inherit;
-  border-bottom: 2px solid darkgrey;
-}
-
-// Removes the arrows that appear on number input's in all browsers.
-
-/* Chrome, Safari, Edge, Opera */
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-/* Firefox */
-input[type='number'] {
-  -moz-appearance: textfield;
-}
-
 span {
   color: inherit;
   display: inline-block;

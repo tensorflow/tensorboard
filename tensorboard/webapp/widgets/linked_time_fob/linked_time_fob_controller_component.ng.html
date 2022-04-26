@@ -34,7 +34,7 @@ limitations under the License.
       [step]="linkedTime.start.step"
       (mousedown)="startDrag(FobType().START)"
       (stepChange)="stepTyped(FobType().START, $event)"
-      (removeStep)="deselectFob(FobType().START)"
+      (fobRemoved)="fobRemoved(FobType().START)"
     ></linked-time-fob>
   </div>
   <div
@@ -49,7 +49,7 @@ limitations under the License.
       [step]="linkedTime.end.step"
       (mousedown)="startDrag(FobType().END)"
       (stepChange)="stepTyped(FobType().END, $event)"
-      (removeStep)="deselectFob(FobType().END)"
+      (fobRemoved)="fobRemoved(FobType().END)"
     ></linked-time-fob>
   </div>
 </div>
