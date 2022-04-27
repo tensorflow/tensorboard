@@ -38,7 +38,6 @@ class TestableFobComponent {
   @Input() axisDirection!: AxisDirection;
 
   @Input() stepChanged!: (newStep: number) => void;
-  @Input() stepRemoved!: () => void;
 }
 
 describe('linked time fob', () => {
