@@ -31,7 +31,7 @@ export const initialState: FeatureFlagState = {
     enabledLinkedTime: false,
     enableTimeSeriesPromotion: false,
     enabledCardWidthSetting: true,
-    enabledTimeNamespacedState: false,
+    enabledTimeNamespacedState: true,
     forceSvg: false,
   },
   flagOverrides: {},
