@@ -170,7 +170,7 @@ export class LinkedTimeFobControllerComponent {
           this.axisOverlay.nativeElement.getBoundingClientRect().left;
   }
 
-  stepRemoved(fob: Fob, step: number) {
+  stepRemoved(fob: Fob) {
     const newLinkedTime = {...this.linkedTime};
 
     if (fob === Fob.START) {
