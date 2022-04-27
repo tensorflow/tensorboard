@@ -36,8 +36,8 @@ export class LinkedTimeFobComponent {
 
   @Input() step!: number;
 
-  @Output() stepChange = new EventEmitter<number>();
-  @Output() stepRemoved = new EventEmitter();
+  @Output() stepChanged = new EventEmitter<number | null>();
+  @Output() fobRemoved = new EventEmitter();
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['step']) {
@@ -56,9 +56,10 @@ export class LinkedTimeFobComponent {
     const stepString = (event.target! as HTMLInputElement).innerText;
 
     if (stepString === '') {
-      this.stepRemoved.emit();
+      this.stepChanged.emit(null);
       return;
     }
-    this.stepChange.emit(Number(stepString));
+
+    this.stepChanged.emit(Number(stepString));
   }
 }
