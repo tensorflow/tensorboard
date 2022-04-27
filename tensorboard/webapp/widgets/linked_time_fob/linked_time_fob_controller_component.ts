@@ -43,6 +43,8 @@ export class LinkedTimeFobControllerComponent {
   @Input() axisDirection!: AxisDirection;
   @Input() linkedTime!: LinkedTime;
   @Input() cardAdapter!: FobCardAdapter;
+
+  @Output() onSelectTimeToggle = new EventEmitter();
   @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
 
   private currentDraggingFob: Fob = Fob.NONE;
@@ -188,5 +190,28 @@ export class LinkedTimeFobControllerComponent {
     }
 
     this.onSelectTimeChanged.emit(newLinkedTime);
+  }
+
+  /**
+   * When in range selection(which means we have a start and an end
+   * fob) deselecting a fob will leave the remaining fob in place. This means we
+   * switch to single selection. If the end fob is deselected we simply remove
+   * it. However, if the start fob is deselected we must change the end fob to
+   * the start fob before removing the end fob. This gives the effect that the
+   * start fob was remove. Lastly when in single selection deselecting the fob
+   * toggles the feature entirely.
+   */
+  deselectFob(fob: Fob) {
+    if (fob === Fob.END) {
+      this.onSelectTimeChanged.emit({...this.linkedTime, end: null});
+      return;
+    }
+
+    if (this.linkedTime.end !== null) {
+      this.onSelectTimeChanged.emit({start: this.linkedTime.end, end: null});
+      return;
+    }
+
+    this.onSelectTimeToggle.emit();
   }
 }
