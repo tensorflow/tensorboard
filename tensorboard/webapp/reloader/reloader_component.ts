@@ -15,8 +15,8 @@ limitations under the License.
 import {DOCUMENT} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Inject} from '@angular/core';
 import {select, Store} from '@ngrx/store';
-import {combineLatest} from 'rxjs';
-import {distinctUntilChanged} from 'rxjs/operators';
+import {combineLatest, Subject} from 'rxjs';
+import {distinctUntilChanged, takeUntil} from 'rxjs/operators';
 import {reload} from '../core/actions';
 import {selectors as settingsSelectors, State} from '../settings';
 
@@ -35,6 +35,7 @@ export class ReloaderComponent {
   );
   private reloadTimerId: ReturnType<typeof setTimeout> | null = null;
   private missedAutoReload: boolean = false;
+  private ngUnsubscribe = new Subject<void>();
 
   constructor(
     private store: Store<State>,
@@ -46,12 +47,14 @@ export class ReloaderComponent {
     combineLatest(
       this.reloadEnabled$.pipe(distinctUntilChanged()),
       this.reloadPeriodInMs$.pipe(distinctUntilChanged())
-    ).subscribe(([enabled, reloadPeriodInMs]) => {
-      this.cancelLoad();
-      if (enabled) {
-        this.load(reloadPeriodInMs as number);
-      }
-    });
+    )
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(([enabled, reloadPeriodInMs]) => {
+        this.cancelLoad();
+        if (enabled) {
+          this.load(reloadPeriodInMs as number);
+        }
+      });
   }
 
   private onVisibilityChangeImpl() {
@@ -85,5 +88,7 @@ export class ReloaderComponent {
       'visibilitychange',
       this.onVisibilityChange
     );
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }
