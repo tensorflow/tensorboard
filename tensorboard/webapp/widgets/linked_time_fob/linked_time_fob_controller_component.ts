@@ -186,7 +186,19 @@ export class LinkedTimeFobControllerComponent {
     this.onSelectTimeChanged.emit(newLinkedTime);
   }
 
-  stepTyped(fob: Fob, step: number) {
+  stepTyped(fob: Fob, step: number | null) {
+    // Types empty string in fob.
+    if (step === null) {
+      // Removes fob on range selection and sets step to minimum on single selection.
+      if (this.linkedTime.end !== null) {
+        this.onFobRemoved(fob);
+      } else {
+        // TODO(jieweiwu): sets start step to minum.
+      }
+
+      return;
+    }
+
     let newLinkedTime = {...this.linkedTime};
     if (fob === Fob.START) {
       newLinkedTime.start = {step};
@@ -218,7 +230,7 @@ export class LinkedTimeFobControllerComponent {
    * start fob was remove. Lastly when in single selection deselecting the fob
    * toggles the feature entirely.
    */
-   fobRemoved(fob: Fob) {
+  onFobRemoved(fob: Fob) {
     if (fob === Fob.END) {
       this.onSelectTimeChanged.emit({...this.linkedTime, end: null});
       return;

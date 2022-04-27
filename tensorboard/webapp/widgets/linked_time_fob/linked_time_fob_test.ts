@@ -26,8 +26,7 @@ import {AxisDirection} from './linked_time_types';
       #Fob
       [axisDirection]="axisDirection"
       [step]="step"
-      (stepChange)="stepChange($event)"
-      (stepRemoved)="stepRemoved($event)"
+      (stepChanged)="stepChanged($event)"
     ></linked-time-fob>
   `,
 })
@@ -38,13 +37,12 @@ class TestableFobComponent {
   @Input() step!: number;
   @Input() axisDirection!: AxisDirection;
 
-  @Input() stepChange!: (newStep: number) => void;
+  @Input() stepChanged!: (newStep: number) => void;
   @Input() stepRemoved!: () => void;
 }
 
 describe('linked time fob', () => {
   let stepChangedSpy: jasmine.Spy;
-  let stepRemovedSpy: jasmine.Spy;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -64,9 +62,7 @@ describe('linked time fob', () => {
       : AxisDirection.HORIZONTAL;
 
     stepChangedSpy = jasmine.createSpy();
-    stepRemovedSpy = jasmine.createSpy();
-    fixture.componentInstance.stepChange = stepChangedSpy;
-    fixture.componentInstance.stepRemoved = stepRemovedSpy;
+    fixture.componentInstance.stepChanged = stepChangedSpy;
 
     return fixture;
   }
@@ -107,7 +103,7 @@ describe('linked time fob', () => {
     expect(stepChangedSpy).toHaveBeenCalledWith(3);
   });
 
-  it('emits stepRemoved when pressing enter key on empty string', () => {
+  it('emits stepChange with null when entering empty string', () => {
     const fixture = createFobComponent({});
     fixture.detectChanges();
 
@@ -118,7 +114,7 @@ describe('linked time fob', () => {
       preventDefault: () => {},
     });
 
-    expect(stepRemovedSpy).toHaveBeenCalled();
+    expect(stepChangedSpy).toHaveBeenCalledWith(null);
   });
 
   it('does not emit preventDefault when pressing number', () => {
