@@ -170,22 +170,6 @@ export class LinkedTimeFobControllerComponent {
           this.axisOverlay.nativeElement.getBoundingClientRect().left;
   }
 
-  stepRemoved(fob: Fob) {
-    const newLinkedTime = {...this.linkedTime};
-
-    if (fob === Fob.START) {
-      if (this.linkedTime.end === null) {
-        // TODO(jieweiwu): Set start step to min step
-        return;
-      } else {
-        newLinkedTime.start = {step: this.linkedTime.end.step};
-      }
-    }
-    newLinkedTime.end = null;
-
-    this.onSelectTimeChanged.emit(newLinkedTime);
-  }
-
   stepTyped(fob: Fob, step: number | null) {
     // Types empty string in fob.
     if (step === null) {
