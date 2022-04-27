@@ -43,8 +43,13 @@ def _create_bundle_targets(pkg, entry_point, module_name):
     # RxJS are not bundled.
     rollup_bundle(
         name = "%s_bundle" % target_name_base,
-        config_file = "//tensorboard/defs/angular_bundler:angular_rollup_config.js",
+        config_file = "//tensorboard/defs/angular_bundler:rollup.config.mjs",
         entry_point = "@npm//:node_modules/@angular/%s/%s" % (pkg.name, fesm_bundle_path),
+        deps = [
+            "@npm//@rollup/plugin-babel",
+            "@npm//@rollup/plugin-node-resolve",
+            "@npm//@angular/compiler-cli",
+        ],
         args = ["--amd.id", module_name],
         silent = True,
         format = "amd",

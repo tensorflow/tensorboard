@@ -5,5 +5,5 @@ package(default_visibility = ["//visibility:public"])
 create_angular_bundle_targets()
 
 exports_files([
-    "angular_rollup_config.js",
+    "rollup.config.mjs",
 ])
