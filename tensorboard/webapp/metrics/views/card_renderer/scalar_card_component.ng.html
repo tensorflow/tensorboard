@@ -222,6 +222,7 @@ limitations under the License.
       [minMax]="viewExtent.x"
       [axisSize]="domDim.width"
       (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
+      (onSelectTimeToggle)="onSelectTimeToggle.emit()"
     ></scalar-card-linked-time-fob-controller>
   </ng-container>
 </ng-template>

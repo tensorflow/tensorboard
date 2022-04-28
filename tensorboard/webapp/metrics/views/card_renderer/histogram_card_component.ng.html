@@ -66,6 +66,7 @@ limitations under the License.
   [color]="runColorScale(runId)"
   [linkedTime]="convertToLinkedTime(selectedTime)"
   (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
+  (onSelectTimeToggle)="onSelectTimeToggle.emit()"
 ></tb-histogram>
 <ng-template #noData>
   <div *ngIf="loadState === DataLoadState.FAILED" class="empty-message">

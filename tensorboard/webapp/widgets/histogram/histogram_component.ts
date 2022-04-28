@@ -100,6 +100,7 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() linkedTime: LinkedTime | null = null;
 
   @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
+  @Output() onSelectTimeToggle = new EventEmitter();
 
   readonly HistogramMode = HistogramMode;
   readonly TimeProperty = TimeProperty;

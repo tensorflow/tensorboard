@@ -23,8 +23,11 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {IntersectionObserverTestingModule} from '../intersection_observer/intersection_observer_testing_module';
+import {LinkedTimeFobComponent} from '../linked_time_fob/linked_time_fob_component';
+import {LinkedTimeFobControllerComponent} from '../linked_time_fob/linked_time_fob_controller_component';
 import {LinkedTime} from '../linked_time_fob/linked_time_types';
 import {HistogramComponent, TooltipData} from './histogram_component';
+import {HistogramLinkedTimeFobController} from './histogram_linked_time_fob_controller';
 import {
   Bin,
   HistogramData,
@@ -67,6 +70,7 @@ function buildHistogramDatum(
       [data]="data"
       [linkedTime]="linkedTime"
       (onSelectTimeChanged)="onSelectTimeChanged($event)"
+      (onSelectTimeToggle)="onSelectTimeToggle()"
     >
     </tb-histogram>
   `,
@@ -93,6 +97,7 @@ class TestableComponent {
     end: {step: number} | null;
   } | null;
   @Input() onSelectTimeChanged!: (linkedTime: LinkedTime) => void;
+  @Input() onSelectTimeToggle!: () => void;
 
   simulateMouseMove(event: {
     target: SVGElement;
@@ -120,7 +125,13 @@ describe('histogram test', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [NoopAnimationsModule, IntersectionObserverTestingModule],
-      declarations: [HistogramComponent, TestableComponent],
+      declarations: [
+        HistogramComponent,
+        HistogramLinkedTimeFobController,
+        LinkedTimeFobComponent,
+        LinkedTimeFobControllerComponent,
+        TestableComponent,
+      ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
@@ -1196,6 +1207,33 @@ describe('histogram test', () => {
         histograms[1].triggerEventHandler('click', null);
         fixture.detectChanges();
         expect(onSelectTimeChangedSpy).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('fob deselect', () => {
+      it('toggles SelectTime when in single selection', () => {
+        const fixture = createComponent('foo', [
+          buildHistogramDatum({step: 0, wallTime: 100}),
+          buildHistogramDatum({step: 5, wallTime: 400}),
+          buildHistogramDatum({step: 10, wallTime: 400}),
+        ]);
+        let onSelectTimeToggleSpy = jasmine.createSpy();
+        fixture.componentInstance.mode = HistogramMode.OFFSET;
+        fixture.componentInstance.timeProperty = TimeProperty.STEP;
+        fixture.componentInstance.linkedTime = {
+          start: {step: 5},
+          end: null,
+        };
+        fixture.componentInstance.onSelectTimeToggle = onSelectTimeToggleSpy;
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+
+        const fobComponent = fixture.debugElement.query(
+          By.directive(LinkedTimeFobComponent)
+        ).componentInstance;
+        fobComponent.removeStep.emit();
+
+        expect(onSelectTimeToggleSpy).toHaveBeenCalledOnceWith();
       });
     });
   });

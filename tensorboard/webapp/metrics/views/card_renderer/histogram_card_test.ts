@@ -12,12 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {Store} from '@ngrx/store';
+import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
 import {
@@ -34,6 +34,7 @@ import {
 } from '../../../widgets/histogram/histogram_types';
 import {buildNormalizedHistograms} from '../../../widgets/histogram/histogram_util';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
+import {selectTimeEnableToggled} from '../../actions';
 import {PluginType} from '../../data_source';
 import * as selectors from '../../store/metrics_selectors';
 import {
@@ -62,6 +63,8 @@ class TestableHistogramWidget {
     start: {step: number};
     end: {step: number} | null;
   } | null;
+
+  @Output() onSelectTimeToggle = new EventEmitter();
 
   element = {
     setSeriesData: () => {},
@@ -493,6 +496,27 @@ describe('histogram card', () => {
           )
         );
         expect(indicator).toBeFalsy();
+      });
+
+      it('dispatches selectTimeEnableToggled when HistogramComponent emits the onSelectTimeToggle event', () => {
+        provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 5},
+          end: null,
+        });
+        const fixture = createHistogramCardContainer();
+        fixture.detectChanges();
+        const dispatchedActions: Action[] = [];
+        spyOn(store, 'dispatch').and.callFake((action: Action) => {
+          dispatchedActions.push(action);
+        });
+
+        const HistogramWidget = fixture.debugElement.query(
+          By.directive(TestableHistogramWidget)
+        ).componentInstance;
+        HistogramWidget.onSelectTimeToggle.emit();
+
+        expect(dispatchedActions).toEqual([selectTimeEnableToggled()]);
       });
     });
   });
