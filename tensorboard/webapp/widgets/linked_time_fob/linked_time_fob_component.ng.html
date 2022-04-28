@@ -15,16 +15,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div class="fob">
+<div class="fob" aria-label="Drag fob to change selected step" role="button">
   <span
     contenteditable
     #stepSpan
+    role="textbox"
+    aria-label="Edit step"
     (blur)="stepTyped($event)"
     (keypress)="validateStep($event)"
     (keydown.enter)="stepTyped($event)"
     (keydown.shift.enter)="$event.preventDefault()"
   ></span>
-  <button aria-label="deselect fob" (click)="fobRemoved.emit()">
+  <button aria-label="Deselect fob" (click)="fobRemoved.emit()">
     <mat-icon svgIcon="close_24px"></mat-icon>
   </button>
 </div>
