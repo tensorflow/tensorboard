@@ -41,8 +41,7 @@ span {
   display: inline-block;
 
   @include tb-dark-theme {
-    background-color: mat.get-color-from-palette(mat.$gray-palette, 700);
-    border-color: mat.get-color-from-palette($tf-slate, 500);
+    color: mat.get-color-from-palette(mat.$gray-palette, 700);
   }
 }
 
@@ -62,9 +61,19 @@ button {
     // circular button.
     height: 110%;
   }
+
+  @include tb-dark-theme {
+    color: mat.get-color-from-palette(mat.$gray-palette, 700);
+  }
 }
 
 button:hover {
   background-color: mat.get-color-from-palette(mat.$gray-palette, 500);
   color: mat.get-color-from-palette(mat.$gray-palette, 200);
+  cursor: pointer;
+
+  @include tb-dark-theme {
+    background-color: mat.get-color-from-palette(mat.$gray-palette, 700);
+    color: mat.get-color-from-palette(mat.$gray-palette, 300);
+  }
 }
