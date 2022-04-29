@@ -1217,9 +1217,7 @@ describe('histogram test', () => {
           buildHistogramDatum({step: 5, wallTime: 400}),
           buildHistogramDatum({step: 10, wallTime: 400}),
         ]);
-        let onSelectTimeToggleSpy = jasmine.createSpy();
-        fixture.componentInstance.mode = HistogramMode.OFFSET;
-        fixture.componentInstance.timeProperty = TimeProperty.STEP;
+        const onSelectTimeToggleSpy = jasmine.createSpy();
         fixture.componentInstance.linkedTime = {
           start: {step: 5},
           end: null,

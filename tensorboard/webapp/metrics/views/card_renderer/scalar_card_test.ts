@@ -2177,14 +2177,16 @@ describe('scalar card', () => {
         ).toEqual('30');
       }));
     });
+
     describe('fob controls', () => {
-      it('dispatches timeSelectionChanged action when fob is dragged', fakeAsync(() => {
+      let dispatchedActions: Action[] = [];
+      beforeEach(() => {
+        dispatchedActions = [];
         const runToSeries = {
           run1: [buildScalarStepData({step: 10})],
           run2: [buildScalarStepData({step: 20})],
           run3: [buildScalarStepData({step: 30})],
         };
-        const dispatchedActions: Action[] = [];
         spyOn(store, 'dispatch').and.callFake((action: Action) => {
           dispatchedActions.push(action);
         });
@@ -2195,6 +2197,9 @@ describe('scalar card', () => {
           null /* metadataOverride */,
           runToSeries
         );
+      });
+
+      it('dispatches timeSelectionChanged action when fob is dragged', fakeAsync(() => {
         store.overrideSelector(getMetricsSelectedTime, {
           start: {step: 20},
           end: null,
@@ -2225,22 +2230,6 @@ describe('scalar card', () => {
       }));
 
       it('toggles selected time when single fob is deselected', fakeAsync(() => {
-        const runToSeries = {
-          run1: [buildScalarStepData({step: 10})],
-          run2: [buildScalarStepData({step: 20})],
-          run3: [buildScalarStepData({step: 30})],
-        };
-        const dispatchedActions: Action[] = [];
-        spyOn(store, 'dispatch').and.callFake((action: Action) => {
-          dispatchedActions.push(action);
-        });
-        provideMockCardRunToSeriesData(
-          selectSpy,
-          PluginType.SCALARS,
-          'card1',
-          null /* metadataOverride */,
-          runToSeries
-        );
         store.overrideSelector(getMetricsSelectedTime, {
           start: {step: 20},
           end: null,
