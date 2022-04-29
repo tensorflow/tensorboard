@@ -1,3 +1,19 @@
+# Release 2.9.0
+
+The 2.9 minor series tracks TensorFlow 2.9.
+
+## Features
+
+- Prefer the WebGL Renderer (#5492, #5494)
+- New --detect_file_replacement flag allows showing new data even when event files are replaced entirely rather than appended to. Useful for rsync and some cloud filesystems (#5529, #5546, see also #349)
+- Support for s3://, hdfs://, and other cloud filesystems no longer included in TensorFlow 2.6+ - requires installing tensorflow-io package (#5491)
+
+## Bug fixes
+-  Fix for incorrect alpha-channel layering (#5571, #5567)
+-  Fix histogram tooltips that bleed out of content box. (#5631)
+-  Fix for run table overlapping text (#5468)
+-  Numerous internal fixes & refactorings related to navigation & state management
+
 # Release 2.8.0
 
 The 2.8 minor series tracks TensorFlow 2.8.
