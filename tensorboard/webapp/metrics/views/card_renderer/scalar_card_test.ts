@@ -67,7 +67,7 @@ import {
 import {LinkedTimeFobModule} from '../../../widgets/linked_time_fob/linked_time_fob_module';
 import {ResizeDetectorTestingModule} from '../../../widgets/resize_detector_testing_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
-import {timeSelectionChanged} from '../../actions';
+import {selectTimeEnableToggled, timeSelectionChanged} from '../../actions';
 import {PluginType} from '../../data_source';
 import {getMetricsScalarSmoothing, getMetricsSelectedTime} from '../../store';
 import {
@@ -2176,14 +2176,17 @@ describe('scalar card', () => {
           fobs[0].query(By.css('span')).nativeElement.textContent.trim()
         ).toEqual('30');
       }));
+    });
 
-      it('dispatches timeSelectionChanged action when fob is dragged', fakeAsync(() => {
+    describe('fob controls', () => {
+      let dispatchedActions: Action[] = [];
+      beforeEach(() => {
+        dispatchedActions = [];
         const runToSeries = {
           run1: [buildScalarStepData({step: 10})],
           run2: [buildScalarStepData({step: 20})],
           run3: [buildScalarStepData({step: 30})],
         };
-        const dispatchedActions: Action[] = [];
         spyOn(store, 'dispatch').and.callFake((action: Action) => {
           dispatchedActions.push(action);
         });
@@ -2194,6 +2197,9 @@ describe('scalar card', () => {
           null /* metadataOverride */,
           runToSeries
         );
+      });
+
+      it('dispatches timeSelectionChanged action when fob is dragged', fakeAsync(() => {
         store.overrideSelector(getMetricsSelectedTime, {
           start: {step: 20},
           end: null,
@@ -2221,6 +2227,21 @@ describe('scalar card', () => {
             endStep: undefined,
           }),
         ]);
+      }));
+
+      it('toggles selected time when single fob is deselected', fakeAsync(() => {
+        store.overrideSelector(getMetricsSelectedTime, {
+          start: {step: 20},
+          end: null,
+        });
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+        const fobComponent = fixture.debugElement.query(
+          By.directive(LinkedTimeFobComponent)
+        ).componentInstance;
+        fobComponent.removeStep.emit();
+
+        expect(dispatchedActions).toEqual([selectTimeEnableToggled()]);
       }));
     });
   });

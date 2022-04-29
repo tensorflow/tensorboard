@@ -56,6 +56,7 @@ limitations under the License.
         [steps]="getSteps()"
         [temporalScale]="scales.temporalScale"
         (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
+        (onSelectTimeToggle)="onSelectTimeToggle.emit()"
       ></histogram-linked-time-fob-controller>
     </ng-container>
   </div>
