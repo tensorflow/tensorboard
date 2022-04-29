@@ -207,12 +207,12 @@ export class LinkedTimeFobControllerComponent {
 
   /**
    * When in range selection(which means we have a start and an end
-   * fob) deselecting a fob will leave the remaining fob in place. This means we
-   * switch to single selection. If the end fob is deselected we simply remove
-   * it. However, if the start fob is deselected we must change the end fob to
-   * the start fob before removing the end fob. This gives the effect that the
-   * start fob was remove. Lastly when in single selection deselecting the fob
-   * toggles the feature entirely.
+   * fob) clicking "X" to remove a fob will leave the remaining fob in place.
+   * This means we switch to single selection. If the end fob is removed we
+   * simply remove it. However, if the start fob is removed we must change the
+   * end fob to the start fob before removing the end fob. This gives the effect
+   * that the start fob was removed. Lastly when in single selection removing the
+   * fob toggles the feature entirely.
    */
   onFobRemoved(fob: Fob) {
     if (fob === Fob.END) {
