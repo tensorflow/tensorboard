@@ -42,6 +42,7 @@ export class LinkedTimeFobComponent {
   ngOnChanges(changes: SimpleChanges) {
     if (changes['step']) {
       this.stepSpan.nativeElement.innerHTML = `${this.step}`;
+      this.stepSpan.nativeElement.blur();
     }
   }
 
