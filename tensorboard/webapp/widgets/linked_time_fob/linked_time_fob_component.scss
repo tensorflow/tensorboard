@@ -28,7 +28,10 @@ limitations under the License.
   width: min-content;
 
   &:hover {
-    cursor: pointer;
+    cursor: grab;
+  }
+  &:active {
+    cursor: grabbing;
   }
 }
 
