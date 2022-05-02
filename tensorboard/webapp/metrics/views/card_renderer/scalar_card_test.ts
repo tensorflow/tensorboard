@@ -2239,7 +2239,7 @@ describe('scalar card', () => {
         const fobComponent = fixture.debugElement.query(
           By.directive(LinkedTimeFobComponent)
         ).componentInstance;
-        fobComponent.removeStep.emit();
+        fobComponent.fobRemoved.emit();
 
         expect(dispatchedActions).toEqual([selectTimeEnableToggled()]);
       }));

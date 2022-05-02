@@ -1229,7 +1229,7 @@ describe('histogram test', () => {
         const fobComponent = fixture.debugElement.query(
           By.directive(LinkedTimeFobComponent)
         ).componentInstance;
-        fobComponent.removeStep.emit();
+        fobComponent.fobRemoved.emit();
 
         expect(onSelectTimeToggleSpy).toHaveBeenCalledOnceWith();
       });
