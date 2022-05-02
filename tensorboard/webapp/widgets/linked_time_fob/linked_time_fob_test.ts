@@ -16,7 +16,6 @@ limitations under the License.
 import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-import {sendKeys} from '../../testing/dom';
 import {LinkedTimeFobComponent} from './linked_time_fob_component';
 import {AxisDirection} from './linked_time_types';
 
@@ -27,7 +26,7 @@ import {AxisDirection} from './linked_time_types';
       #Fob
       [axisDirection]="axisDirection"
       [step]="step"
-      (stepChange)="stepChange($event)"
+      (stepChanged)="stepChanged($event)"
     ></linked-time-fob>
   `,
 })
@@ -38,11 +37,12 @@ class TestableFobComponent {
   @Input() step!: number;
   @Input() axisDirection!: AxisDirection;
 
-  @Input() stepChange!: (newStep: number) => void;
+  @Input() stepChanged!: (newStep: number) => void;
 }
 
 describe('linked time fob', () => {
-  let stepTypedSpy: jasmine.Spy;
+  let stepChangedSpy: jasmine.Spy;
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [TestableFobComponent, LinkedTimeFobComponent],
@@ -60,54 +60,124 @@ describe('linked time fob', () => {
       ? input.axisDirection
       : AxisDirection.HORIZONTAL;
 
-    stepTypedSpy = jasmine.createSpy();
-    fixture.componentInstance.stepChange = stepTypedSpy;
+    stepChangedSpy = jasmine.createSpy();
+    fixture.componentInstance.stepChanged = stepChangedSpy;
+
     return fixture;
   }
 
-  it('double clicking fob changes to input', () => {
-    const fixture = createFobComponent({});
-    fixture.detectChanges();
-    expect(fixture.debugElement.query(By.css('input'))).toBeFalsy();
-
-    const mainDiv = fixture.debugElement.query(By.css('div'));
-    mainDiv.triggerEventHandler('dblclick', {});
-    fixture.detectChanges();
-
-    expect(fixture.debugElement.query(By.css('input'))).toBeTruthy();
-  });
-
-  it('input element holds step value when activated', () => {
+  it('renders step span in fob', () => {
     const fixture = createFobComponent({step: 3});
     fixture.detectChanges();
-    expect(fixture.debugElement.query(By.css('input'))).toBeFalsy();
 
-    const mainDiv = fixture.debugElement.query(By.css('div'));
-    mainDiv.triggerEventHandler('dblclick', {});
-    fixture.detectChanges();
-
-    const input = fixture.debugElement.query(By.css('input'));
-    expect(input).toBeTruthy();
-    expect(input.nativeElement.value).toEqual('3');
+    const stepSpan = fixture.debugElement.query(By.css('span'));
+    expect(stepSpan.nativeElement.innerText).toBe('3');
   });
 
-  it('Entering input after double clicking emits the proper event', () => {
+  it('emits stepChange when pressing enter key', () => {
     const fixture = createFobComponent({});
     fixture.detectChanges();
-    expect(fixture.debugElement.query(By.css('input'))).toBeFalsy();
 
-    const mainDiv = fixture.debugElement.query(By.css('div'));
-    mainDiv.triggerEventHandler('dblclick', {});
+    const stepSpan = fixture.debugElement.query(By.css('span'));
+    stepSpan.nativeElement.innerText = '3';
+    stepSpan.triggerEventHandler('keydown.enter', {
+      target: stepSpan.nativeElement,
+      preventDefault: () => {},
+    });
+
+    expect(stepChangedSpy).toHaveBeenCalledWith(3);
+  });
+
+  it('emits stepChange on blur', () => {
+    const fixture = createFobComponent({});
     fixture.detectChanges();
 
-    const input = fixture.debugElement.query(By.css('input'));
-    expect(input).toBeTruthy();
+    const stepSpan = fixture.debugElement.query(By.css('span'));
+    stepSpan.nativeElement.innerText = '3';
+    stepSpan.triggerEventHandler('blur', {
+      target: stepSpan.nativeElement,
+      preventDefault: () => {},
+    });
 
-    sendKeys(fixture, input, '3');
-    input.triggerEventHandler('change', {target: input.nativeElement});
+    expect(stepChangedSpy).toHaveBeenCalledWith(3);
+  });
+
+  it('emits stepChange with null when entering empty string', () => {
+    const fixture = createFobComponent({});
     fixture.detectChanges();
 
-    expect(stepTypedSpy).toHaveBeenCalledOnceWith(3);
-    expect(fixture.debugElement.query(By.css('input'))).toBeFalsy();
+    const stepSpan = fixture.debugElement.query(By.css('span'));
+    stepSpan.nativeElement.innerText = '';
+    stepSpan.triggerEventHandler('keydown.enter', {
+      target: stepSpan.nativeElement,
+      preventDefault: () => {},
+    });
+
+    expect(stepChangedSpy).toHaveBeenCalledWith(null);
+  });
+
+  it('does not emit preventDefault when pressing number', () => {
+    const fixture = createFobComponent({});
+    fixture.detectChanges();
+
+    const stepSpan = fixture.debugElement.query(By.css('span'));
+    const keyboardEvent = new KeyboardEvent('keypress', {
+      key: '2',
+      keyCode: 50,
+    });
+    const preventDefaultSpy = jasmine.createSpy();
+    keyboardEvent.preventDefault = preventDefaultSpy;
+
+    stepSpan.triggerEventHandler('keypress', keyboardEvent);
+
+    expect(preventDefaultSpy).not.toHaveBeenCalled();
+  });
+
+  it('emits preventDefault when pressing space key', () => {
+    const fixture = createFobComponent({});
+    fixture.detectChanges();
+
+    const stepSpan = fixture.debugElement.query(By.css('span'));
+    const keyboardEvent = new KeyboardEvent('keypress', {
+      key: ' ',
+      keyCode: 32,
+    });
+    const preventDefaultSpy = jasmine.createSpy();
+    keyboardEvent.preventDefault = preventDefaultSpy;
+
+    stepSpan.triggerEventHandler('keypress', keyboardEvent);
+
+    expect(preventDefaultSpy).toHaveBeenCalled();
+  });
+
+  it('emits preventDefault when pressing character key', () => {
+    const fixture = createFobComponent({});
+    fixture.detectChanges();
+
+    const stepSpan = fixture.debugElement.query(By.css('span'));
+    const keyboardEvent = new KeyboardEvent('keypress', {
+      key: 'd',
+      keyCode: 100,
+    });
+    const preventDefaultSpy = jasmine.createSpy();
+    keyboardEvent.preventDefault = preventDefaultSpy;
+
+    stepSpan.triggerEventHandler('keypress', keyboardEvent);
+
+    expect(preventDefaultSpy).toHaveBeenCalled();
+  });
+
+  it('emits preventDefault when pressing shift enter key', () => {
+    const fixture = createFobComponent({});
+    fixture.detectChanges();
+
+    const stepSpan = fixture.debugElement.query(By.css('span'));
+    const preventDefaultSpy = jasmine.createSpy();
+
+    stepSpan.triggerEventHandler('keydown.shift.enter', {
+      preventDefault: preventDefaultSpy,
+    });
+
+    expect(preventDefaultSpy).toHaveBeenCalled();
   });
 });

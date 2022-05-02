@@ -33,8 +33,8 @@ limitations under the License.
       [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
       [step]="linkedTime.start.step"
       (mousedown)="startDrag(FobType().START)"
-      (stepChange)="stepTyped(FobType().START, $event)"
-      (removeStep)="deselectFob(FobType().START)"
+      (stepChanged)="stepTyped(FobType().START, $event)"
+      (fobRemoved)="onFobRemoved(FobType().START)"
     ></linked-time-fob>
   </div>
   <div
@@ -48,8 +48,8 @@ limitations under the License.
       [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
       [step]="linkedTime.end.step"
       (mousedown)="startDrag(FobType().END)"
-      (stepChange)="stepTyped(FobType().END, $event)"
-      (removeStep)="deselectFob(FobType().END)"
+      (stepChanged)="stepTyped(FobType().END, $event)"
+      (fobRemoved)="onFobRemoved(FobType().END)"
     ></linked-time-fob>
   </div>
 </div>

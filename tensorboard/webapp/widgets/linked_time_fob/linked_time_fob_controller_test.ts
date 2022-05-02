@@ -16,7 +16,6 @@ limitations under the License.
 import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-import {sendKeys} from '../../testing/dom';
 import {LinkedTimeFobComponent} from './linked_time_fob_component';
 import {
   Fob,
@@ -635,17 +634,14 @@ describe('linked_time_fob_controller', () => {
       });
       fixture.detectChanges();
 
-      const fobDiv = fixture.debugElement.query(
-        By.css('linked-time-fob.startFob div')
+      const stepSpan = fixture.debugElement.query(
+        By.css('linked-time-fob.startFob span')
       );
-      fobDiv.triggerEventHandler('dblclick', {});
-      fixture.detectChanges();
-
-      const input = fobDiv.query(By.css('input'));
-
-      sendKeys(fixture, input, '8');
-      input.triggerEventHandler('change', {target: input.nativeElement});
-      fixture.detectChanges();
+      stepSpan.nativeElement.innerText = '8';
+      stepSpan.triggerEventHandler('keydown.enter', {
+        target: stepSpan.nativeElement,
+        preventDefault: () => {},
+      });
 
       expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
         start: {step: 8},
@@ -659,22 +655,21 @@ describe('linked_time_fob_controller', () => {
       });
       fixture.detectChanges();
 
-      const fobDiv = fixture.debugElement.query(
-        By.css('linked-time-fob.endFob div')
+      const stepSpan = fixture.debugElement.query(
+        By.css('linked-time-fob.endFob span')
       );
-      fobDiv.triggerEventHandler('dblclick', {});
-      fixture.detectChanges();
-
-      const input = fobDiv.query(By.css('input'));
-
-      sendKeys(fixture, input, '8');
-      input.triggerEventHandler('change', {target: input.nativeElement});
-      fixture.detectChanges();
+      stepSpan.nativeElement.innerText = '8';
+      const preventDefaultSpy = jasmine.createSpy();
+      stepSpan.triggerEventHandler('keydown.enter', {
+        target: stepSpan.nativeElement,
+        preventDefault: preventDefaultSpy,
+      });
 
       expect(onSelectTimeChanged).toHaveBeenCalledOnceWith({
         start: {step: 1},
         end: {step: 8},
       });
+      expect(preventDefaultSpy).toHaveBeenCalled();
     });
   });
   describe('deselecting fob', () => {

@@ -170,7 +170,19 @@ export class LinkedTimeFobControllerComponent {
           this.axisOverlay.nativeElement.getBoundingClientRect().left;
   }
 
-  stepTyped(fob: Fob, step: number) {
+  stepTyped(fob: Fob, step: number | null) {
+    // Types empty string in fob.
+    if (step === null) {
+      // Removes fob on range selection and sets step to minimum on single selection.
+      if (this.linkedTime.end !== null) {
+        this.onFobRemoved(fob);
+      } else {
+        // TODO(jieweiwu): sets start step to minum.
+      }
+
+      return;
+    }
+
     let newLinkedTime = {...this.linkedTime};
     if (fob === Fob.START) {
       newLinkedTime.start = {step};
@@ -189,19 +201,20 @@ export class LinkedTimeFobControllerComponent {
       };
     }
 
+    // TODO(jieweiwu): Only emits action when linked time is changed.
     this.onSelectTimeChanged.emit(newLinkedTime);
   }
 
   /**
    * When in range selection(which means we have a start and an end
-   * fob) deselecting a fob will leave the remaining fob in place. This means we
-   * switch to single selection. If the end fob is deselected we simply remove
-   * it. However, if the start fob is deselected we must change the end fob to
-   * the start fob before removing the end fob. This gives the effect that the
-   * start fob was remove. Lastly when in single selection deselecting the fob
-   * toggles the feature entirely.
+   * fob) clicking "X" to remove a fob will leave the remaining fob in place.
+   * This means we switch to single selection. If the end fob is removed we
+   * simply remove it. However, if the start fob is removed we must change the
+   * end fob to the start fob before removing the end fob. This gives the effect
+   * that the start fob was removed. Lastly when in single selection removing the
+   * fob toggles the feature entirely.
    */
-  deselectFob(fob: Fob) {
+  onFobRemoved(fob: Fob) {
     if (fob === Fob.END) {
       this.onSelectTimeChanged.emit({...this.linkedTime, end: null});
       return;

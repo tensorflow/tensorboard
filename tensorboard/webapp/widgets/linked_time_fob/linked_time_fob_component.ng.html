@@ -15,20 +15,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div class="fob" (dblclick)="typeStepRequested()">
-  <span *ngIf="!isTyping"> {{ step | number }} </span>
-  <button
-    aria-label="deselect fob"
-    *ngIf="!isTyping"
-    (click)="removeStep.emit()"
-  >
+<div class="fob">
+  <span
+    contenteditable
+    #stepSpan
+    role="textbox"
+    aria-label="Edit step"
+    (blur)="stepTyped($event)"
+    (keypress)="validateStep($event)"
+    (keydown.enter)="stepTyped($event)"
+    (keydown.shift.enter)="$event.preventDefault()"
+  ></span>
+  <button aria-label="Deselect fob" (click)="fobRemoved.emit()">
     <mat-icon svgIcon="close_24px"></mat-icon>
   </button>
-  <input
-    *ngIf="isTyping"
-    type="number"
-    [value]="step"
-    (change)="stepTyped($event)"
-    (focusout)="lostFocus()"
-  />
 </div>

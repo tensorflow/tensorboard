@@ -16,9 +16,12 @@ limitations under the License.
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   EventEmitter,
   Input,
   Output,
+  SimpleChanges,
+  ViewChild,
 } from '@angular/core';
 
 @Component({
@@ -28,26 +31,38 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LinkedTimeFobComponent {
+  @ViewChild('stepSpan', {static: true, read: ElementRef})
+  private readonly stepSpan!: ElementRef<HTMLInputElement>;
+
   @Input() step!: number;
 
-  @Output() stepChange = new EventEmitter<number>();
-  @Output() removeStep = new EventEmitter();
+  @Output() stepChanged = new EventEmitter<number | null>();
+  @Output() fobRemoved = new EventEmitter();
 
-  isTyping = false;
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['step']) {
+      this.stepSpan.nativeElement.innerHTML = `${this.step}`;
+      if (document.activeElement === this.stepSpan.nativeElement) {
+        this.stepSpan.nativeElement.blur();
+      }
+    }
+  }
 
-  typeStepRequested() {
-    this.isTyping = true;
+  validateStep(event: KeyboardEvent) {
+    const charcode = String.fromCharCode(event.which);
+    // Handles space separately because the charcode is 32, which is converted to 0 in Number().
+    if (event.key === ' ' || isNaN(Number(charcode))) event.preventDefault();
   }
 
   stepTyped(event: InputEvent) {
-    const input = event.target! as HTMLInputElement;
-    let newStep = Number(input.value);
-    if (isNaN(newStep)) return;
-    this.stepChange.emit(newStep);
-    this.isTyping = false;
-  }
+    event.preventDefault();
+    const stepString = (event.target! as HTMLInputElement).innerText;
 
-  lostFocus() {
-    this.isTyping = false;
+    if (stepString === '') {
+      this.stepChanged.emit(null);
+      return;
+    }
+
+    this.stepChanged.emit(Number(stepString));
   }
 }

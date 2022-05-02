@@ -26,57 +26,21 @@ limitations under the License.
   padding: 2px 2px 2px 4px;
   font-size: 11px;
   width: min-content;
-}
 
-input {
-  width: 30px;
-  margin-right: 2px;
-  font-size: 11px;
-  background-color: inherit;
-  border: none;
-  color: inherit;
-  border-bottom: 2px solid darkgrey;
-}
-
-// Removes the arrows that appear on number input's in all browsers.
-
-/* Chrome, Safari, Edge, Opera */
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-/* Firefox */
-input[type='number'] {
-  -moz-appearance: textfield;
+  &:hover {
+    cursor: grab;
+  }
+  &:active {
+    cursor: grabbing;
+  }
 }
 
 span {
   color: inherit;
   display: inline-block;
-  &:hover,
-  &:active {
-    border-color: mat.get-color-from-palette(mat.$gray-palette, 700);
-  }
-
-  // Do not allow text selection as it messed up the dragging functionality
-  -webkit-touch-callout: none; /* iOS Safari */
-  -webkit-user-select: none; /* Safari */
-  -khtml-user-select: none; /* Konqueror HTML */
-  -moz-user-select: none; /* Old versions of Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
-  user-select: none; /* Non-prefixed version, currently
-                                  supported by Chrome, Edge, Opera and Firefox */
 
   @include tb-dark-theme {
-    background-color: mat.get-color-from-palette(mat.$gray-palette, 700);
-    border-color: mat.get-color-from-palette($tf-slate, 500);
-
-    &:hover,
-    &:active {
-      border-color: mat.get-color-from-palette(mat.$gray-palette, 200);
-    }
+    color: mat.get-color-from-palette(mat.$gray-palette, 700);
   }
 }
 
@@ -96,9 +60,19 @@ button {
     // circular button.
     height: 110%;
   }
+
+  @include tb-dark-theme {
+    color: mat.get-color-from-palette(mat.$gray-palette, 700);
+  }
 }
 
 button:hover {
   background-color: mat.get-color-from-palette(mat.$gray-palette, 500);
   color: mat.get-color-from-palette(mat.$gray-palette, 200);
+  cursor: pointer;
+
+  @include tb-dark-theme {
+    background-color: mat.get-color-from-palette(mat.$gray-palette, 700);
+    color: mat.get-color-from-palette(mat.$gray-palette, 300);
+  }
 }
