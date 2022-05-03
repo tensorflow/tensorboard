@@ -438,9 +438,11 @@ Note: building a Hierarchy modifies the SlimGraph's OpNodes in place!
 
 ### Rendering the view
 
-#### **XLA Cluster Visualization**
+TODO: Elaborate here for all rendering options.
 
-To visualiza XLA coloring in graph plugin, generate the graph visualizing the embedding of XLA clusters (in `pbtxt` format) as described [here](https://www.tensorflow.org/xla#inspect_compiled_programs). Then upload the generated `pbtxt` files using `Upload file` option:
+#### XLA Cluster Visualization
+
+To visualize XLA coloring in graph plugin, generate the graph visualizing the embedding of XLA clusters (in `pbtxt` format) as described [here](https://www.tensorflow.org/xla#inspect_compiled_programs). Then upload the generated `pbtxt` files using `Upload file` option:
 
 ![XLA example](images/xla_graph.png)
 
