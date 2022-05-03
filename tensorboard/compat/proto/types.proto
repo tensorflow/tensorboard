@@ -9,7 +9,7 @@ option java_package = "org.tensorflow.framework";
 option go_package = "github.com/tensorflow/tensorflow/tensorflow/go/core/framework/types_go_proto";
 
 // (== suppress_warning documentation-presence ==)
-// LINT.IfChange
+// DISABLED.IfChange
 enum DataType {
   // Not a legal value for DataType.  Used to indicate a DataType field
   // has not been set.
@@ -67,7 +67,7 @@ enum DataType {
   DT_UINT32_REF = 122;
   DT_UINT64_REF = 123;
 }
-// LINT.ThenChange(
+// DISABLED.ThenChange(
 //    https://www.tensorflow.org/code/tensorflow/c/tf_datatype.h,
 //    https://www.tensorflow.org/code/tensorflow/go/tensor.go,
 //    https://www.tensorflow.org/code/tensorboard/compat/proto/tensor.cc,
