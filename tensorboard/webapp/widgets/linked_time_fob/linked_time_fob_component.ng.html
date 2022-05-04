@@ -21,6 +21,7 @@ limitations under the License.
     #stepSpan
     role="textbox"
     aria-label="Edit step"
+    [innerHTML]="step"
     (blur)="stepTyped($event)"
     (keypress)="validateStep($event)"
     (keydown.enter)="stepTyped($event)"
