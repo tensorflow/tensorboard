@@ -55,7 +55,7 @@ pub mod tensor_shape_proto {
     }
 }
 /// (== suppress_warning documentation-presence ==)
-/// LINT.IfChange
+/// DISABLED.IfChange
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
 pub enum DataType {

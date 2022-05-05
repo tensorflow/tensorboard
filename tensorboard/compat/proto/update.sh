@@ -27,7 +27,7 @@ rsync --existing "$1"/tensorflow/core/profiler/*.proto tensorboard/compat/proto/
 rsync --existing "$1"/tensorflow/core/util/*.proto tensorboard/compat/proto/
 rsync --existing "$1"/tensorflow/python/framework/*.proto tensorboard/compat/proto/
 
-# Rewrite file paths and package names.
+# Rewrite file paths and package names and disable LINT checks.
 find tensorboard/compat/proto/ -type f  -name '*.proto' -exec perl -pi \
   -e 's|tensorflow/core/framework|tensorboard/compat/proto|g;' \
   -e 's|tensorflow/core/protobuf|tensorboard/compat/proto|g;' \
@@ -39,7 +39,9 @@ find tensorboard/compat/proto/ -type f  -name '*.proto' -exec perl -pi \
   -e 's|tensorflow\.DataType|tensorboard.DataType|g;' \
   -e 's|tensorflow\.TensorProto|tensorboard.TensorProto|g;' \
   -e 's|tensorflow\.TensorShapeProto|tensorboard.TensorShapeProto|g;' \
+  -e 's|\/\/ LINT\.|// DISABLED.|g;' \
   {} +
+
 
 # Update dependency graph.
 (

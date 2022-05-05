@@ -16,7 +16,7 @@ option go_package = "github.com/tensorflow/tensorflow/tensorflow/go/core/framewo
 // Comment indicates the corresponding attr type.  Only the field matching the
 // attr type may be filled.
 message AttrValue {
-  // LINT.IfChange
+  // DISABLED.IfChange
   message ListValue {
     repeated bytes s = 2;                        // "list(string)"
     repeated int64 i = 3 [packed = true];        // "list(int)"
@@ -27,7 +27,7 @@ message AttrValue {
     repeated TensorProto tensor = 8;             // "list(tensor)"
     repeated NameAttrList func = 9;              // "list(attr)"
   }
-  // LINT.ThenChange(//tensorflow/c/c_api.cc)
+  // DISABLED.ThenChange(//tensorflow/c/c_api.cc)
 
   oneof value {
     bytes s = 2;                 // "string"
