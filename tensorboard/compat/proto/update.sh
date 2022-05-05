@@ -39,7 +39,7 @@ find tensorboard/compat/proto/ -type f  -name '*.proto' -exec perl -pi \
   -e 's|tensorflow\.DataType|tensorboard.DataType|g;' \
   -e 's|tensorflow\.TensorProto|tensorboard.TensorProto|g;' \
   -e 's|tensorflow\.TensorShapeProto|tensorboard.TensorShapeProto|g;' \
-  -e 's|LINT\.|DISABLED.|g;' \
+  -e 's|\/\/ LINT\.|// DISABLED.|g;' \
   {} +
 
 
