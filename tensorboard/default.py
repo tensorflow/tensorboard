@@ -72,6 +72,7 @@ class ExperimentalNpmiPlugin(
 # ordering of tabs in TensorBoard's GUI.
 _PLUGINS = [
     core_plugin.CorePluginLoader(include_debug_info=True),
+    metrics_plugin.MetricsPlugin,
     scalars_plugin.ScalarsPlugin,
     custom_scalars_plugin.CustomScalarsPlugin,
     images_plugin.ImagesPlugin,
@@ -85,7 +86,6 @@ _PLUGINS = [
     profile_redirect_plugin.ProfileRedirectPluginLoader,
     hparams_plugin.HParamsPlugin,
     mesh_plugin.MeshPlugin,
-    metrics_plugin.MetricsPlugin,
     ExperimentalTextV2Plugin,
     ExperimentalNpmiPlugin,
 ]
