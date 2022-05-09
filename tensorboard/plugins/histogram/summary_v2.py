@@ -49,7 +49,8 @@ def histogram_pb(tag, data, buckets=None, description=None):
         [buckets, 3]. If there is no data, then an all-zero array of shape
         [buckets, 3] will be returned. If there is data but all points have
         the same value, then all buckets' left and right endpoints are the
-        same and only the last bucket has nonzero count.
+        same and only the last bucket has nonzero count. Defaults to 30 if
+        not specified.
       description: Optional long-form description for this summary, as a
         `str`. Markdown is supported. Defaults to empty.
 
@@ -154,7 +155,8 @@ def histogram(name, data, step=None, buckets=None, description=None):
         many buckets, except in two edge cases. If there is no data, then
         there are no buckets. If there is data but all points have the
         same value, then all buckets' left and right endpoints are the same
-        and only the last bucket has nonzero count.
+        and only the last bucket has nonzero count. Defaults to 30 if not
+        specified.
       description: Optional long-form description for this summary, as a
         constant `str`. Markdown is supported. Defaults to empty.
 
