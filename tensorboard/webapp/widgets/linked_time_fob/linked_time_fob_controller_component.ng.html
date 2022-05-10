@@ -28,6 +28,10 @@ limitations under the License.
     class="time-fob-wrapper"
     [style.transform]="getCssTranslatePx(linkedTime.start.step)"
   >
+    <div *ngIf="showVerticalLine"
+      class="vertical-line"
+      (mousedown)="startDrag(FobType().START)"
+    ></div>
     <linked-time-fob
       class="startFob"
       [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
@@ -43,6 +47,10 @@ limitations under the License.
     class="time-fob-wrapper"
     [style.transform]="getCssTranslatePx(linkedTime.end.step)"
   >
+    <div *ngIf="showVerticalLine"
+         class="vertical-line"
+         (mousedown)="startDrag(FobType().END)"
+    ></div>
     <linked-time-fob
       class="endFob"
       [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"

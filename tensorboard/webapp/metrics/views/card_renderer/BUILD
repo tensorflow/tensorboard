@@ -246,6 +246,14 @@ tf_sass_binary(
     ],
 )
 
+tf_sass_binary(
+    name = "scalar_card_linked_time_fob_controller_styles",
+    src = "scalar_card_linked_time_fob_controller.scss",
+    deps = [
+        "//tensorboard/webapp/metrics/views:metrics_common_styles",
+    ],
+)
+
 tf_ng_module(
     name = "scalar_card",
     srcs = [
@@ -256,6 +264,7 @@ tf_ng_module(
     ],
     assets = [
         ":scalar_card_styles",
+        ":scalar_card_linked_time_fob_controller_styles",
         "scalar_card_component.ng.html",
     ],
     deps = [

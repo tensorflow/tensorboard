@@ -25,10 +25,12 @@ import {
       [axisDirection]="axisDirection"
       [linkedTime]="linkedTime"
       [cardAdapter]="this"
+      [showVerticalLine]="true"
       (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
       (onSelectTimeToggle)="onSelectTimeToggle.emit($event)"
     ></linked-time-fob-controller>
   `,
+  styleUrls: ['scalar_card_linked_time_fob_controller.css'],
 })
 export class ScalarCardLinkedTimeFobController implements FobCardAdapter {
   @Input() linkedTime!: LinkedTime;

@@ -37,3 +37,17 @@ limitations under the License.
 .horizontal-fob {
   transform: translateX(-50%);
 }
+
+.vertical-line {
+  border-style: dashed;
+  border-width: 0 1px;
+  height: calc(100% - 30px);
+
+  &:hover {
+    background: linear-gradient(to right, transparent 19px, #ccc 18px, #ccc 22px, transparent 22px);
+    border: 0;
+    cursor: ew-resize;
+    margin-left: -20px;
+    padding: 0 20px;
+  }
+}
