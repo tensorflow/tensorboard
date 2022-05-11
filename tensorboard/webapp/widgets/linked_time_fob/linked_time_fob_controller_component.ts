@@ -43,6 +43,7 @@ export class LinkedTimeFobControllerComponent {
   @Input() axisDirection!: AxisDirection;
   @Input() linkedTime!: LinkedTime;
   @Input() cardAdapter!: FobCardAdapter;
+  @Input() showExtendedLine?: Boolean = false;
 
   @Output() onSelectTimeToggle = new EventEmitter();
   @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
