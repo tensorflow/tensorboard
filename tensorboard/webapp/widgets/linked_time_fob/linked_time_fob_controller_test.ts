@@ -550,7 +550,7 @@ describe('linked_time_fob_controller', () => {
   });
 
   describe('extended line', () => {
-    it('renders single line on horizontal axis', () => {
+    it('renders single line on setting showExtendedLine true', () => {
       const fixture = createComponent({
         linkedTime: {start: {step: 1}, end: null},
         showExtendedLine: true,
