@@ -129,6 +129,12 @@ svg {
   }
 }
 
+.linked-time {
+  // Shift the linked time fobs slightly away from the axis to reduce crowding.
+  left: 9px;
+  position: absolute;
+}
+
 .content .tick,
 .axis ::ng-deep .tick line {
   stroke: #ddd;

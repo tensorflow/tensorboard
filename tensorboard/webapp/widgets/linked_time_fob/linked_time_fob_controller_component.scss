@@ -12,22 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-.axis-overlay {
-  height: 100%;
-  left: 0;
-  position: absolute;
+:host {
   pointer-events: all;
-  right: 0;
-  top: 0;
-  &.vertical {
-    // To avoid a cluttered feeling on vertical charts a 9px gap is added
-    // between the fob and the edge of the chart
-    left: 9px;
-  }
-  .time-fob-wrapper {
-    display: inline-block;
-    position: absolute;
-  }
+}
+
+.time-fob-wrapper {
+  display: inline-block;
+  position: absolute;
 }
 
 .vertical-fob {

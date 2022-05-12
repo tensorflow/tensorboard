@@ -37,7 +37,6 @@ export enum Fob {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LinkedTimeFobControllerComponent {
-  @ViewChild('axisOverlay') private readonly axisOverlay!: ElementRef;
   @ViewChild('startFobWrapper') readonly startFobWrapper!: ElementRef;
   @ViewChild('endFobWrapper') readonly endFobWrapper!: ElementRef;
   @Input() axisDirection!: AxisDirection;
@@ -48,6 +47,8 @@ export class LinkedTimeFobControllerComponent {
   @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
 
   private currentDraggingFob: Fob = Fob.NONE;
+
+  constructor(private readonly root: ElementRef) {}
 
   // Helper function to check enum in template.
   public FobType(): typeof Fob {
@@ -144,14 +145,14 @@ export class LinkedTimeFobControllerComponent {
         (this.currentDraggingFob !== Fob.END
           ? this.startFobWrapper.nativeElement.getBoundingClientRect().top
           : this.endFobWrapper.nativeElement.getBoundingClientRect().top) -
-        this.axisOverlay.nativeElement.getBoundingClientRect().top
+        this.root.nativeElement.getBoundingClientRect().top
       );
     } else {
       return (
         (this.currentDraggingFob !== Fob.END
           ? this.startFobWrapper.nativeElement.getBoundingClientRect().left
           : this.endFobWrapper.nativeElement.getBoundingClientRect().left) -
-        this.axisOverlay.nativeElement.getBoundingClientRect().left
+        this.root.nativeElement.getBoundingClientRect().left
       );
     }
   }
@@ -164,10 +165,8 @@ export class LinkedTimeFobControllerComponent {
 
   getMousePositionFromEvent(event: MouseEvent): number {
     return this.axisDirection === AxisDirection.VERTICAL
-      ? event.clientY -
-          this.axisOverlay.nativeElement.getBoundingClientRect().top
-      : event.clientX -
-          this.axisOverlay.nativeElement.getBoundingClientRect().left;
+      ? event.clientY - this.root.nativeElement.getBoundingClientRect().top
+      : event.clientX - this.root.nativeElement.getBoundingClientRect().left;
   }
 
   stepTyped(fob: Fob, step: number | null) {

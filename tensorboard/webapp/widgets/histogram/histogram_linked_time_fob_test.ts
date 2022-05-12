@@ -38,6 +38,13 @@ describe('HistogramLinkedTimeFobController', () => {
     linkedTime?: LinkedTime;
   }): ComponentFixture<HistogramLinkedTimeFobController> {
     const fixture = TestBed.createComponent(HistogramLinkedTimeFobController);
+
+    // Absolutely place the fixture at the top left of the page to keep
+    // position calculations in the test easier.
+    fixture.debugElement.nativeElement.style.position = 'absolute';
+    fixture.debugElement.nativeElement.style.left = '0';
+    fixture.debugElement.nativeElement.style.top = '0';
+
     fixture.componentInstance.steps = input.steps ?? [100, 200, 300, 400];
     fixture.componentInstance.linkedTime = input.linkedTime ?? {
       start: {step: 200},
@@ -138,7 +145,7 @@ describe('HistogramLinkedTimeFobController', () => {
         testController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(3000);
     });
-    it('moves the fob to the next highest step when draggin down', () => {
+    it('moves the fob to the next highest step when dragging down', () => {
       let fixture = createComponent({
         steps: [100, 200, 300, 400],
         linkedTime: {start: {step: 300}, end: null},
@@ -148,17 +155,20 @@ describe('HistogramLinkedTimeFobController', () => {
         By.directive(LinkedTimeFobControllerComponent)
       ).componentInstance;
       testController.startDrag(Fob.START);
+      // Starting step '300' renders the fob at 3000px. Mouse event at 3020px
+      // mimics a drag down (towards higher steps).
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 3020,
         movementY: 1,
       });
       testController.mouseMove(fakeEvent);
       fixture.detectChanges();
+      // Move to next step '400', which renders the fob at 4000px.
       expect(
         testController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(4000);
     });
-    it('moves the fob to the next lowest step when draggin up', () => {
+    it('moves the fob to the next lowest step when dragging up', () => {
       let fixture = createComponent({
         steps: [100, 200, 300, 400],
         linkedTime: {start: {step: 300}, end: null},
@@ -168,12 +178,15 @@ describe('HistogramLinkedTimeFobController', () => {
         By.directive(LinkedTimeFobControllerComponent)
       ).componentInstance;
       testController.startDrag(Fob.START);
+      // Starting step '300' renders the fob at 3000px. Mouse event at 2980px
+      // mimics a drag up (towards lower steps).
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 2980,
         movementY: -1,
       });
       testController.mouseMove(fakeEvent);
       fixture.detectChanges();
+      // Move to previous step '200', which renders the fob at 2000px.
       expect(
         testController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(2000);
