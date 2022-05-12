@@ -31,6 +31,7 @@ import {AxisDirection, FobCardAdapter, LinkedTime} from './linked_time_types';
       [axisDirection]="axisDirection"
       [linkedTime]="linkedTime"
       [cardAdapter]="fobCardAdapter"
+      [showExtendedLine]="showExtendedLine"
       (onSelectTimeChanged)="onSelectTimeChanged($event)"
       (onSelectTimeToggle)="onSelectTimeToggle()"
     ></linked-time-fob-controller>
@@ -43,6 +44,7 @@ class TestableComponent {
   @Input() axisDirection!: AxisDirection;
   @Input() linkedTime!: LinkedTime;
   @Input() fobCardAdapter!: FobCardAdapter;
+  @Input() showExtendedLine?: Boolean;
 
   @Input() onSelectTimeChanged!: (newLinkedTime: LinkedTime) => void;
   @Input() onSelectTimeToggle!: () => void;
@@ -69,9 +71,10 @@ describe('linked_time_fob_controller', () => {
   });
 
   function createComponent(input: {
-    steps?: number[];
     axisDirection?: AxisDirection;
     linkedTime: LinkedTime;
+    showExtendedLine?: Boolean;
+    steps?: number[];
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
     getHighestStepSpy = jasmine.createSpy();
@@ -104,6 +107,9 @@ describe('linked_time_fob_controller', () => {
       input.axisDirection ?? AxisDirection.VERTICAL;
 
     fixture.componentInstance.linkedTime = input.linkedTime;
+
+    fixture.componentInstance.showExtendedLine =
+      input.showExtendedLine ?? false;
 
     onSelectTimeChanged = jasmine.createSpy();
     fixture.componentInstance.onSelectTimeChanged = onSelectTimeChanged;
@@ -543,6 +549,32 @@ describe('linked_time_fob_controller', () => {
     });
   });
 
+  describe('extended line', () => {
+    it('renders single line on setting showExtendedLine true', () => {
+      const fixture = createComponent({
+        linkedTime: {start: {step: 1}, end: null},
+        showExtendedLine: true,
+      });
+      fixture.detectChanges();
+
+      const extendedLine = fixture.debugElement.query(By.css('.extended-line'));
+      expect(extendedLine).toBeTruthy();
+    });
+
+    it('renders two lines on range selection', () => {
+      const fixture = createComponent({
+        linkedTime: {start: {step: 1}, end: {step: 4}},
+        showExtendedLine: true,
+      });
+      fixture.detectChanges();
+
+      const extendedLines = fixture.debugElement.queryAll(
+        By.css('.extended-line')
+      );
+      expect(extendedLines.length).toBe(2);
+    });
+  });
+
   describe('typing step into fob', () => {
     it('single time selection changed with fob typing', () => {
       const fixture = createComponent({
@@ -672,6 +704,7 @@ describe('linked_time_fob_controller', () => {
       expect(preventDefaultSpy).toHaveBeenCalled();
     });
   });
+
   describe('deselecting fob', () => {
     it('fires onSelectTimeToggle when in single selection', () => {
       const fixture = createComponent({
