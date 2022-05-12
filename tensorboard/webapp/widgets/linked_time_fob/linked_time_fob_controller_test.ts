@@ -77,6 +77,13 @@ describe('linked_time_fob_controller', () => {
     steps?: number[];
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
+
+    // Absolutely place the fixture at the top left of the page to keep
+    // position calculations in the test easier.
+    fixture.debugElement.nativeElement.style.position = 'absolute';
+    fixture.debugElement.nativeElement.style.left = '0';
+    fixture.debugElement.nativeElement.style.top = '0';
+
     getHighestStepSpy = jasmine.createSpy();
     getLowestStepSpy = jasmine.createSpy();
     getAxisPositionFromStepSpy = jasmine.createSpy();

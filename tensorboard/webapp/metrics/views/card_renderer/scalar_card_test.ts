@@ -2210,7 +2210,7 @@ describe('scalar card', () => {
           By.directive(LinkedTimeFobControllerComponent)
         ).componentInstance;
         const controllerStartPosition =
-          testController.axisOverlay.nativeElement.getBoundingClientRect().left;
+          testController.root.nativeElement.getBoundingClientRect().left;
 
         // Simulate dragging fob to step 25.
         testController.startDrag(Fob.START);

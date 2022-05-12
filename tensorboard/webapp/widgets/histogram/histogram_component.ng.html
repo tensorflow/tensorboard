@@ -52,6 +52,7 @@ limitations under the License.
     <!-- Disable the feature when in non-offset and non-step mode. -->
     <ng-container *ngIf="isLinkedTimeEnabled(linkedTime)">
       <histogram-linked-time-fob-controller
+        class="linked-time"
         [linkedTime]="linkedTime"
         [steps]="getSteps()"
         [temporalScale]="scales.temporalScale"
