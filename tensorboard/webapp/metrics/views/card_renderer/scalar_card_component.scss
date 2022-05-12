@@ -127,7 +127,6 @@ $_title-to-heading-gap: 12px;
 }
 
 .out-of-selected-time {
-  border: 0 dashed currentColor;
   height: 100%;
   position: absolute;
 
@@ -156,11 +155,4 @@ $_title-to-heading-gap: 12px;
       background-color: rgba(0, 0, 0, 0.4);
     }
   }
-}
-
-.linked-time-fob-container {
-  display: inline-block;
-  left: 0;
-  position: absolute;
-  top: 0;
 }

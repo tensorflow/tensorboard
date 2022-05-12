@@ -580,6 +580,67 @@ describe('linked_time_fob_controller', () => {
       );
       expect(extendedLines.length).toBe(2);
     });
+
+    it('clicks and drags the line to change selected step in horizontal axis', () => {
+      const fixture = createComponent({
+        linkedTime: {start: {step: 1}, end: {step: 3}},
+        axisDirection: AxisDirection.HORIZONTAL,
+        showExtendedLine: true,
+      });
+      fixture.detectChanges();
+
+      const fobController = fixture.componentInstance.fobController;
+      const extendedLines = fixture.debugElement.queryAll(
+        By.css('.extended-line')
+      );
+      const startFobExtendedLine = extendedLines[0];
+      const endFobExtendedLine = extendedLines[1];
+      expect(
+        startFobExtendedLine.nativeElement.getBoundingClientRect().left
+      ).toEqual(1);
+      expect(
+        endFobExtendedLine.nativeElement.getBoundingClientRect().left
+      ).toEqual(3);
+
+      // Clicks and drags extended line from start fob
+      startFobExtendedLine.nativeElement.dispatchEvent(
+        new MouseEvent('mousedown', {bubbles: true})
+      );
+      fobController.mouseMove(
+        new MouseEvent('mousemove', {clientX: 3, movementX: 1})
+      );
+      fixture.detectChanges();
+
+      expect(getStepHigherSpy).toHaveBeenCalledWith(3);
+      expect(
+        startFobExtendedLine.nativeElement.getBoundingClientRect().left
+      ).toEqual(3);
+      expect(onSelectTimeChanged).toHaveBeenCalledWith({
+        start: {step: 3},
+        end: {step: 3},
+      });
+
+      // Clicks and drags extended line from end fob
+      startFobExtendedLine.nativeElement.dispatchEvent(
+        new MouseEvent('mouseup', {bubbles: true})
+      );
+      endFobExtendedLine.nativeElement.dispatchEvent(
+        new MouseEvent('mousedown', {bubbles: true})
+      );
+      fobController.mouseMove(
+        new MouseEvent('mousemove', {clientX: 5, movementX: 1})
+      );
+      fixture.detectChanges();
+
+      expect(getStepHigherSpy).toHaveBeenCalledWith(5);
+      expect(
+        endFobExtendedLine.nativeElement.getBoundingClientRect().left
+      ).toEqual(5);
+      expect(onSelectTimeChanged).toHaveBeenCalledWith({
+        start: {step: 3},
+        end: {step: 5},
+      });
+    });
   });
 
   describe('typing step into fob', () => {
