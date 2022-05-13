@@ -88,18 +88,21 @@ limitations under the License.
       [scale]="xScale"
       (onViewExtentChange)="onViewBoxChangedFromAxis($event, 'x')"
     ></line-chart-axis>
-    <div *ngIf="customXAxisTemplate" class="custom-vis">
-      <ng-container
-        [ngTemplateOutlet]="customXAxisTemplate"
-        [ngTemplateOutletContext]="{
-          xScale: xScale,
-          yScale: yScale,
-          domDimension: domDimensions.xAxis,
-          viewExtent: viewBox,
-          formatter: customXFormatter || xScale.defaultFormatter
-        }"
-      ></ng-container>
-    </div>
   </div>
   <div class="dot" *ngIf="!lineOnly"><span class="rect"></span></div>
+  <div
+    *ngIf="customChartOverlayTemplate"
+    class="custom-vis custom-chart-overlay-vis"
+    #customChartOverlay
+  >
+    <ng-container
+      [ngTemplateOutlet]="customChartOverlayTemplate"
+      [ngTemplateOutletContext]="{
+        xScale: xScale,
+        yScale: yScale,
+        domDimension: domDimensions.main,
+        viewExtent: viewBox
+      }"
+    ></ng-container>
+  </div>
 </div>

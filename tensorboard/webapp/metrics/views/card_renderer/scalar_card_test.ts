@@ -100,8 +100,8 @@ import {VisSelectedTimeWarningModule} from './vis_selected_time_warning_module';
       }"
     ></ng-container>
     <ng-container
-      *ngIf="customXAxisTemplate"
-      [ngTemplateOutlet]="customXAxisTemplate"
+      *ngIf="customChartOverlayTemplate"
+      [ngTemplateOutlet]="customChartOverlayTemplate"
       [ngTemplateOutletContext]="axisTemplateContext"
     >
     </ng-container>
@@ -121,7 +121,7 @@ class TestableLineChart {
   tooltipTemplate!: TemplateRef<{data: TooltipDatum[]}>;
 
   @Input()
-  customXAxisTemplate!: TemplateRef<{}>;
+  customChartOverlayTemplate!: TemplateRef<{}>;
 
   axisTemplateContext = {
     viewExtent: {x: [0, 100], y: [0, 1000]},
