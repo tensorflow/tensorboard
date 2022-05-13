@@ -35,7 +35,7 @@ limitations under the License.
   grid-template-areas:
     'yaxis series'
     'dot xaxis'
-    '. customXAxis';
+    '. customChartOverlay';
   grid-template-columns: 50px 1fr;
   grid-auto-rows: 1fr 30px 0px;
 
@@ -106,12 +106,6 @@ limitations under the License.
   position: relative;
 }
 
-.custom-x-axis-vis {
-  grid-area: customXAxis;
-  grid-row-end: 2;
-  grid-row-start: 1;
-}
-
 .y-axis {
   grid-area: yaxis;
 }
@@ -127,4 +121,10 @@ limitations under the License.
     width: 1px;
     background-color: #aaa;
   }
+}
+
+.custom-chart-overlay-vis {
+  grid-area: customChartOverlay;
+  grid-row-end: 2;
+  grid-row-start: 1;
 }

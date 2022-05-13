@@ -113,7 +113,7 @@ limitations under the License.
     [useDarkMode]="useDarkMode"
     (onViewBoxOverridden)="isViewBoxOverridden = $event"
     [customVisTemplate]="lineChartCustomVis"
-    [customXAxisTemplate]="lineChartCustomXAxisVis"
+    [customChartOverlayTemplate]="lineChartCustomXAxisVis"
   ></line-chart>
   <ng-template
     #tooltip
@@ -213,7 +213,6 @@ limitations under the License.
   let-viewExtent="viewExtent"
   let-domDim="domDimension"
   let-xScale="xScale"
-  let-formatter="formatter"
 >
   <ng-container *ngIf="selectedTime">
     <scalar-card-linked-time-fob-controller
