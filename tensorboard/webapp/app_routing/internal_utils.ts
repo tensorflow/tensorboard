@@ -87,32 +87,6 @@ export function getExperimentIdsFromRouteParams(
 }
 
 /**
- * Generates a namespace id based on route information.
- *
- * To be used only by app_routing_effects.ts (and only temporarily).
- */
-export function getRouteNamespaceId(
-  routeKind: RouteKind,
-  params: RouteParams
-): string {
-  switch (routeKind) {
-    case RouteKind.COMPARE_EXPERIMENT:
-    case RouteKind.EXPERIMENT: {
-      const experimentIds =
-        getExperimentIdsFromRouteParams(routeKind, params) ?? [];
-      experimentIds.sort();
-      return `${routeKind}/${experimentIds.join(',')}`;
-    }
-    case RouteKind.EXPERIMENTS:
-      return String(routeKind);
-    case RouteKind.NOT_SET:
-      return '__not_set';
-    default:
-      return '';
-  }
-}
-
-/**
  * Returns whether two routes are of the same kind and point to the same set of
  * experiments.
  *
