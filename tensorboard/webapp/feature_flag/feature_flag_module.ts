@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {HTTP_INTERCEPTORS} from '@angular/common/http';
 import {NgModule} from '@angular/core';
 import {EffectsModule} from '@ngrx/effects';
 import {createSelector, StoreModule} from '@ngrx/store';
@@ -24,6 +25,7 @@ import {
 import {TBFeatureFlagModule} from '../webapp_data_source/tb_feature_flag_module';
 import {FeatureFlagEffects} from './effects/feature_flag_effects';
 import {ForceSvgDataSourceModule} from './force_svg_data_source_module';
+import {FeatureFlagHttpInterceptor} from './http/feature_flag_http_interceptor';
 import {reducers} from './store/feature_flag_reducers';
 import {getEnableDarkModeOverride} from './store/feature_flag_selectors';
 import {
@@ -62,6 +64,11 @@ export function getThemeSettingSelector() {
     {
       provide: FEATURE_FLAG_STORE_CONFIG_TOKEN,
       useFactory: getConfig,
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: FeatureFlagHttpInterceptor,
+      multi: true,
     },
   ],
 })
