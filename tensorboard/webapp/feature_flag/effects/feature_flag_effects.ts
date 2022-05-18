@@ -16,17 +16,27 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Action, createAction, Store} from '@ngrx/store';
-import {combineLatestWith, map} from 'rxjs/operators';
+import {combineLatestWith, map, tap, withLatestFrom} from 'rxjs/operators';
+import '../../tb_polymer_interop_types';
 import {TBFeatureFlagDataSource} from '../../webapp_data_source/tb_feature_flag_data_source_types';
 import {partialFeatureFlagsLoaded} from '../actions/feature_flag_actions';
 import {ForceSvgDataSource} from '../force_svg_data_source';
-import {getIsAutoDarkModeAllowed} from '../store/feature_flag_selectors';
+import {
+  getFeatureFlags,
+  getIsAutoDarkModeAllowed,
+} from '../store/feature_flag_selectors';
 import {State} from '../store/feature_flag_types';
 
 const effectsInitialized = createAction('[FEATURE FLAG] Effects Init');
 
 @Injectable()
 export class FeatureFlagEffects {
+  // Ngrx assumes all Effect classes have properties that inherit from the base
+  // JS Object. `tf_feature_flags` does not, so we wrap it.
+  private readonly tfFeatureFlags = {
+    ref: document.createElement('tf-feature-flags').tf_feature_flags,
+  };
+
   /** @export */
   readonly getFeatureFlags$ = createEffect(() =>
     this.actions$.pipe(
@@ -44,6 +54,27 @@ export class FeatureFlagEffects {
         return partialFeatureFlagsLoaded({features});
       })
     )
+  );
+
+  /**
+   * Pass FeatureFlags to the Polymer portion of the code base immediately after
+   * feature flags have been finalized.
+   *
+   * @export
+   */
+  readonly updatePolymerFeatureFlags$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        // partialFeatureFlagsLoaded triggers this effect but the actual
+        // feature flag values used are from the Store, given that it contains
+        // the finalized merged feature flags.
+        ofType(partialFeatureFlagsLoaded),
+        withLatestFrom(this.store.select(getFeatureFlags)),
+        tap(([, featureFlags]) => {
+          this.tfFeatureFlags.ref.setFeatureFlags(featureFlags);
+        })
+      ),
+    {dispatch: false}
   );
 
   constructor(

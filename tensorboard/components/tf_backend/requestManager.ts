@@ -1,3 +1,5 @@
+import {getFeatureFlags} from '../tf_feature_flags/feature-flags';
+
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the 'License');
@@ -239,6 +241,11 @@ export class RequestManager {
         url,
         requestOptions.withCredentials,
         requestOptions.contentType
+      );
+      // BDTODO: Use a constant.
+      req.setRequestHeader(
+        'X-TensorBoard-Feature-Flags',
+        JSON.stringify(getFeatureFlags())
       );
       req.onload = function () {
         if (req.status === 200) {

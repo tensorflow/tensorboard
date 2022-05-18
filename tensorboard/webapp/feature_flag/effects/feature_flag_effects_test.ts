@@ -25,7 +25,10 @@ import {
 import {partialFeatureFlagsLoaded} from '../actions/feature_flag_actions';
 import {ForceSvgDataSource} from '../force_svg_data_source';
 import {ForceSvgDataSourceModule} from '../force_svg_data_source_module';
-import {getIsAutoDarkModeAllowed} from '../store/feature_flag_selectors';
+import {
+  getFeatureFlags,
+  getIsAutoDarkModeAllowed,
+} from '../store/feature_flag_selectors';
 import {State} from '../store/feature_flag_types';
 import {buildFeatureFlag} from '../testing';
 import {FeatureFlags} from '../types';
@@ -37,6 +40,7 @@ describe('feature_flag_effects', () => {
   let dataSource: TestingTBFeatureFlagDataSource;
   let forceSvgDataSource: ForceSvgDataSource;
   let effects: FeatureFlagEffects;
+  let setPolymerFeatureFlagsSpy: jasmine.Spy;
 
   beforeEach(async () => {
     actions = new ReplaySubject<Action>(1);
@@ -48,6 +52,16 @@ describe('feature_flag_effects', () => {
         provideMockStore(),
       ],
     }).compileComponents();
+
+    setPolymerFeatureFlagsSpy = jasmine.createSpy('setFeatureFlags');
+    const createElementSpy = spyOn(document, 'createElement');
+    createElementSpy.withArgs('tf-feature-flags').and.returnValue({
+      tf_feature_flags: {
+        setFeatureFlags: setPolymerFeatureFlagsSpy,
+      },
+    } as unknown as HTMLElement);
+    createElementSpy.and.callThrough();
+
     effects = TestBed.inject(FeatureFlagEffects);
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     dataSource = TestBed.inject(TestingTBFeatureFlagDataSource);
@@ -133,6 +147,34 @@ describe('feature_flag_effects', () => {
 
       expect(getSpy).toHaveBeenCalledOnceWith();
       expect(updateSpy).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe('updatePolymerFeatureFlags$', () => {
+    it('sets polymer feature flags features from the data source on init', () => {
+      // This represents the final state of the FeatureFlags object as
+      // calculated by the Store.
+      store.overrideSelector(
+        getFeatureFlags,
+        buildFeatureFlag({inColab: true})
+      );
+      store.refreshState();
+
+      effects.updatePolymerFeatureFlags$.subscribe();
+
+      // This represents the incomplete FeatureFlags object that has just been
+      // loaded from the feature flags data source.
+      actions.next(
+        partialFeatureFlagsLoaded({
+          features: buildFeatureFlag({inColab: false}),
+        })
+      );
+
+      // Expect tf_feature_flags.setFeatureFlags() to be called using the
+      // FeatureFlags object from the Store (and not from the action).
+      expect(setPolymerFeatureFlagsSpy).toHaveBeenCalledOnceWith(
+        buildFeatureFlag({inColab: true})
+      );
     });
   });
 });

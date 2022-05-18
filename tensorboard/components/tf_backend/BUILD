@@ -22,6 +22,7 @@ tf_ts_library(
     strict_checks = False,
     deps = [
         ":type",
+        "//tensorboard/components/tf_feature_flags",
         "//tensorboard/components/vz_sorting",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",

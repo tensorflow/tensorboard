@@ -12,13 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {customElement} from '@polymer/decorators';
+import {PolymerElement} from '@polymer/polymer';
+import * as tf_feature_flags from './feature-flags';
 
 /**
- * Exports components necessary for Polymer <-> Angular interop.
+ * This Polymer component allows the underlying API to be accessible from
+ * Angular TensorBoard by exposing otherwise mangled smybols.
  */
-import './tf_backend/tf-backend-polymer';
-import './tf_color_scale/tf-color-scale-polymer';
-import './tf_feature_flags/tf-feature-flags-polymer';
-import './tf_globals/globals-polymer';
-import './tf_paginated_view/tf-paginated-view-store';
-import './tf_storage/tf-storage-polymer';
+@customElement('tf-feature-flags')
+class TfFeatureFlags extends PolymerElement {
+  override _template = null;
+  tf_feature_flags = tf_feature_flags;
+}

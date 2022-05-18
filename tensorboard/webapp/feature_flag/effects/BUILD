@@ -14,6 +14,7 @@ tf_ng_module(
         "//tensorboard/webapp/feature_flag/store:types",
         "//tensorboard/webapp/webapp_data_source:feature_flag",
         "//tensorboard/webapp/webapp_data_source:feature_flag_types",
+        "//tensorboard/webapp:tb_polymer_interop_types",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
