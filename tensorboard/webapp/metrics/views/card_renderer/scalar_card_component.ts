@@ -43,6 +43,8 @@ import {
   ScalarCardDataSeries,
   ScalarCardSeriesMetadata,
   ScalarCardSeriesMetadataMap,
+  RunData,
+  ScalarCardPoint,
 } from './scalar_card_types';
 import {ViewSelectedTime} from './utils';
 
@@ -96,6 +98,7 @@ export class ScalarCardComponent<Downloader> {
 
   yScaleType = ScaleType.LINEAR;
   isViewBoxOverridden: boolean = false;
+  dataHeaders = ['run', 'value', 'step'];
 
   toggleYScaleType() {
     this.yScaleType =
@@ -132,6 +135,7 @@ export class ScalarCardComponent<Downloader> {
     tooltipData: TooltipDatum<ScalarCardSeriesMetadata>[],
     cursorLoc: {x: number; y: number}
   ): ScalarTooltipDatum[] {
+    console.log('tooltipData', tooltipData);
     const scalarTooltipData = tooltipData.map((datum) => {
       return {
         ...datum,
@@ -180,6 +184,98 @@ export class ScalarCardComponent<Downloader> {
           return 0;
         });
     }
+  }
+
+  getSelectedTimeTableData(): RunData[] {
+    if (this.selectedTime === null) {
+      return [];
+    }
+    const dataTableData = this.dataSeries
+      .map((datum) => {
+        const metadata = this.chartMetadataMap[datum.id];
+        const closestPoint = this.getClosestPointIndex(
+          datum.points,
+          this.selectedTime!.startStep
+        );
+        return {
+          data: [
+            metadata.displayName,
+            datum.points[closestPoint].value,
+            datum.points[closestPoint].step,
+          ],
+          metadata,
+        };
+      })
+      .filter(({metadata}) => {
+        return metadata && metadata.visible && !Boolean(metadata.aux);
+      });
+    console.log('dataseries', this.dataSeries);
+    console.log('dataTableData', dataTableData);
+    return dataTableData;
+
+    // let minDist = Infinity;
+    // let minIndex = 0;
+    // for (let index = 0; index < scalarTooltipData.length; index++) {
+    //   if (minDist > scalarTooltipData[index].metadata.distSqToCursor) {
+    //     minDist = scalarTooltipData[index].metadata.distSqToCursor;
+    //     minIndex = index;
+    //   }
+    // }
+
+    // if (scalarTooltipData.length) {
+    //   scalarTooltipData[minIndex].metadata.closest = true;
+    // }
+
+    // switch (this.tooltipSort) {
+    //   case TooltipSort.ASCENDING:
+    //     return scalarTooltipData.sort((a, b) => a.point.y - b.point.y);
+    //   case TooltipSort.DESCENDING:
+    //     return scalarTooltipData.sort((a, b) => b.point.y - a.point.y);
+    //   case TooltipSort.NEAREST:
+    //     return scalarTooltipData.sort((a, b) => {
+    //       return a.metadata.distSqToCursor - b.metadata.distSqToCursor;
+    //     });
+    //   case TooltipSort.DEFAULT:
+    //   case TooltipSort.ALPHABETICAL:
+    //     return scalarTooltipData.sort((a, b) => {
+    //       if (a.metadata.displayName < b.metadata.displayName) {
+    //         return -1;
+    //       }
+    //       if (a.metadata.displayName > b.metadata.displayName) {
+    //         return 1;
+    //       }
+    //       return 0;
+    //     });
+    // }
+  }
+
+  getClosestPointIndex(points: ScalarCardPoint[], step: number) {
+    let minDist = Math.abs(points[0].step - step);
+    let currentMinIndex = 0;
+    for (let i = 0; i < points.length; i++) {
+      const distance = Math.abs(points[0].step - step);
+      if (distance < minDist) {
+        minDist = distance;
+        currentMinIndex = i;
+      }
+    }
+
+    return currentMinIndex;
+
+    // TODO optimize algorithm
+    // if (points.length == 2) {
+    //   const dist1 = Math.abs(points[0].step - step);
+    //   const dist2 = Math.abs(points[1].step - step);
+    //   return dist1 < dist2 ? points[0].step : points[1].step;
+    // }
+
+    // const middleIndex = Math.round(points.length / 2);
+
+    // if (points[middleIndex].step < step) {
+    //   return this.getClosestPoint(points.slice(0, middleIndex), step);
+    // }
+
+    // return this.getClosestPoint(points.slice(middleIndex), step);
   }
 
   openDataDownloadDialog(): void {

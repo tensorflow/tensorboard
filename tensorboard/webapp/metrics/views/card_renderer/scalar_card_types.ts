@@ -56,6 +56,11 @@ export interface ScalarCardPoint extends Point {
 
 export type ScalarCardDataSeries = DataSeries<ScalarCardPoint>;
 
+export interface RunData {
+  metadata: ScalarCardSeriesMetadata;
+  data: (string | number)[];
+}
+
 export interface PartialSeries {
   runId: string;
   points: ScalarCardPoint[];

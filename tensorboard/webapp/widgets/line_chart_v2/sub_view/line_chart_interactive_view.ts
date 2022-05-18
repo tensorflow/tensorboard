@@ -519,10 +519,15 @@ export class LineChartInteractiveViewComponent
       this.tooltipDisplayAttached = false;
       return;
     }
-
+    console.log(
+      'seriesData used for cursoredData',
+      JSON.parse(JSON.stringify(this.seriesData)) as DataSeries[]
+    );
     this.cursoredData = this.isCursorInside
       ? (this.seriesData
           .map((seriesDatum) => {
+            console.log('seriesDatum', seriesDatum);
+            console.log('metadata', this.seriesMetadataMap[seriesDatum.id]);
             return {
               seriesDatum: seriesDatum,
               metadata: this.seriesMetadataMap[seriesDatum.id],
@@ -542,6 +547,10 @@ export class LineChartInteractiveViewComponent
           })
           .filter((tooltipDatumOrNull) => tooltipDatumOrNull) as TooltipDatum[])
       : [];
+    console.log(
+      'this.cursoredData',
+      JSON.parse(JSON.stringify(this.cursoredData)) as TooltipDatum[]
+    );
     this.tooltipDisplayAttached = Boolean(this.cursoredData.length);
   }
 }
