@@ -75,16 +75,19 @@ def main():
     if args.universal:
         platform_tag = "any"
     else:
+        cpu_name = platform.machine()
+        mac_platform = "macosx_10_9"
+        if cpu_name == "arm64":
+            mac_platform = "macosx_11_0"
         platform_name = {
             # using platform tag values from TensorFlow releases
             "Linux": "manylinux2010",
-            "Darwin": "macosx_10_9",
+            "Darwin": mac_platform
         }.get(platform.system())
         if platform_name is None:
             raise RuntimeError(
                 "Unsupported platform: %r" % (platform.system(),)
             )
-        cpu_name = "x86_64"
         platform_tag = "%s_%s" % (platform_name, cpu_name)
 
     os.chdir(tmpdir)
