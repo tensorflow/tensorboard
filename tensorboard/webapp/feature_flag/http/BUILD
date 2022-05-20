@@ -34,7 +34,7 @@ tf_ts_library(
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
-        "@npm//rxjs",
         "@npm//@types/jasmine",
+        "@npm//rxjs",
     ],
 )

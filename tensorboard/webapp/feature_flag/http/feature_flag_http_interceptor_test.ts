@@ -28,8 +28,6 @@ import {State as FeatureFlagState} from '../store/feature_flag_types';
 import {buildFeatureFlag} from '../testing';
 import {FeatureFlagHttpInterceptor} from './feature_flag_http_interceptor';
 
-console.log(FeatureFlagHttpInterceptor.prototype);
-
 describe('FeatureFlagHttpInterceptor', () => {
   let store: MockStore<FeatureFlagState>;
   let httpClient: HttpClient;
