@@ -644,7 +644,7 @@ unspecified plugins, TensorBoard randomly downsamples logged summaries
 to reasonable values to prevent out-of-memory errors for long running
 jobs. This flag allows fine control over that downsampling. Note that if a
 plugin is not specified in this list, a plugin-specific default number of
-samples will be enforced. (for example, 10 for images, 500 for historgrams,
+samples will be enforced. (for example, 10 for images, 500 for histograms,
 and 1000 for scalars). Most users should not need to set this flag.\
 """,
         )
