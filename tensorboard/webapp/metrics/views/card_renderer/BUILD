@@ -293,6 +293,7 @@ tf_ng_module(
         "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/util:value_formatter",
         "//tensorboard/webapp/widgets:resize_detector",
+        "//tensorboard/webapp/widgets/data_table",
         "//tensorboard/webapp/widgets/experiment_alias",
         "//tensorboard/webapp/widgets/intersection_observer",
         "//tensorboard/webapp/widgets/line_chart_v2",
