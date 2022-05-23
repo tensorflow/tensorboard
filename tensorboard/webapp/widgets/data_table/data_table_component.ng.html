@@ -21,7 +21,7 @@ limitations under the License.
       <tr>
         <th class="circle-header"></th>
         <ng-container *ngFor="let header of headers;">
-          <th>{{header}}</th>
+          <th>{{getHeaderTextColumn(header)}}</th>
         </ng-container>
       </tr>
     </thead>
@@ -31,9 +31,9 @@ limitations under the License.
           <td class="row-circle">
             <span [style.backgroundColor]="runData.metadata.color"></span>
           </td>
-          <ng-container *ngFor="let datum of runData.data;">
+          <ng-container *ngFor="let header of headers;">
             <td>
-              <span>{{datum}}</span>
+              <span>{{getFormattedDataForColumn(header, runData)}}</span>
             </td>
           </ng-container>
         </tr>

@@ -43,8 +43,9 @@ import {
   ScalarCardDataSeries,
   ScalarCardSeriesMetadata,
   ScalarCardSeriesMetadataMap,
-  RunData,
+  RunStepData,
   ScalarCardPoint,
+  ColumnHeaders,
 } from './scalar_card_types';
 import {ViewSelectedTime} from './utils';
 
@@ -98,7 +99,13 @@ export class ScalarCardComponent<Downloader> {
 
   yScaleType = ScaleType.LINEAR;
   isViewBoxOverridden: boolean = false;
-  dataHeaders = ['run', 'value', 'step'];
+  dataHeaders: ColumnHeaders[] = [
+    ColumnHeaders.RUN,
+    ColumnHeaders.VALUE,
+    ColumnHeaders.STEP,
+    ColumnHeaders.TIME,
+    ColumnHeaders.RELATIVE_TIME,
+  ];
 
   toggleYScaleType() {
     this.yScaleType =
@@ -135,7 +142,6 @@ export class ScalarCardComponent<Downloader> {
     tooltipData: TooltipDatum<ScalarCardSeriesMetadata>[],
     cursorLoc: {x: number; y: number}
   ): ScalarTooltipDatum[] {
-    console.log('tooltipData', tooltipData);
     const scalarTooltipData = tooltipData.map((datum) => {
       return {
         ...datum,
@@ -186,31 +192,29 @@ export class ScalarCardComponent<Downloader> {
     }
   }
 
-  getSelectedTimeTableData(): RunData[] {
+  getSelectedTimeTableData(): RunStepData[] {
     if (this.selectedTime === null) {
       return [];
     }
     const dataTableData = this.dataSeries
       .map((datum) => {
         const metadata = this.chartMetadataMap[datum.id];
-        const closestPoint = this.getClosestPointIndex(
+        const closestStartPoint = this.getClosestPoint(
           datum.points,
           this.selectedTime!.startStep
         );
+        const closestEndPoint = this.selectedTime!.endStep
+          ? this.getClosestPoint(datum.points, this.selectedTime!.endStep)
+          : null;
         return {
-          data: [
-            metadata.displayName,
-            datum.points[closestPoint].value,
-            datum.points[closestPoint].step,
-          ],
           metadata,
+          closestStartPoint,
+          closestEndPoint,
         };
       })
       .filter(({metadata}) => {
         return metadata && metadata.visible && !Boolean(metadata.aux);
       });
-    console.log('dataseries', this.dataSeries);
-    console.log('dataTableData', dataTableData);
     return dataTableData;
 
     // let minDist = Infinity;
@@ -249,18 +253,18 @@ export class ScalarCardComponent<Downloader> {
     // }
   }
 
-  getClosestPointIndex(points: ScalarCardPoint[], step: number) {
+  getClosestPoint(points: ScalarCardPoint[], step: number): ScalarCardPoint {
     let minDist = Math.abs(points[0].step - step);
     let currentMinIndex = 0;
     for (let i = 0; i < points.length; i++) {
-      const distance = Math.abs(points[0].step - step);
+      const distance = Math.abs(points[i].step - step);
       if (distance < minDist) {
         minDist = distance;
         currentMinIndex = i;
       }
     }
 
-    return currentMinIndex;
+    return points[currentMinIndex];
 
     // TODO optimize algorithm
     // if (points.length == 2) {

@@ -95,12 +95,6 @@ limitations under the License.
     </mat-menu>
   </span>
 </div>
-<div class="data-table-container">
-  <tb-data-table
-    [headers]="dataHeaders"
-    [data]="getSelectedTimeTableData()"
-  ></tb-data-table>
-</div>
 <div class="chart-container">
   <mat-spinner
     diameter="18"
@@ -174,7 +168,14 @@ limitations under the License.
     </table>
   </ng-template>
 </div>
-
+<ng-container *ngIf="selectedTime">
+  <div class="data-table-container">
+    <tb-data-table
+      [headers]="dataHeaders"
+      [data]="getSelectedTimeTableData()"
+    ></tb-data-table>
+  </div>
+</ng-container>
 <ng-template
   #lineChartCustomVis
   let-viewExtent="viewExtent"

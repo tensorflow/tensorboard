@@ -26,6 +26,19 @@ export enum SeriesType {
   DERIVED,
 }
 
+export enum ColumnHeaders {
+  RUN,
+  VALUE,
+  STEP,
+  START_STEP,
+  END_STEP,
+  START_VALUE,
+  END_VALUE,
+  SMOOTHED,
+  TIME,
+  RELATIVE_TIME,
+}
+
 // Smoothed series is derived from a data serie. The additional information on the
 // metadata allows us to render smoothed value and its original value in the tooltip.
 export interface SmoothedSeriesMetadata extends DataSeriesMetadata {
@@ -56,9 +69,10 @@ export interface ScalarCardPoint extends Point {
 
 export type ScalarCardDataSeries = DataSeries<ScalarCardPoint>;
 
-export interface RunData {
+export interface RunStepData {
   metadata: ScalarCardSeriesMetadata;
-  data: (string | number)[];
+  closestStartPoint: ScalarCardPoint;
+  closestEndPoint: ScalarCardPoint | null;
 }
 
 export interface PartialSeries {

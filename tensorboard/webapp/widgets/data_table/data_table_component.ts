@@ -14,7 +14,18 @@ limitations under the License.
 ==============================================================================*/
 
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {RunData} from '../../metrics/views/card_renderer/scalar_card_types';
+import {
+  ColumnHeaders,
+  RunStepData,
+} from '../../metrics/views/card_renderer/scalar_card_types';
+
+import {
+  // Formatter,
+  // intlNumberFormatter,
+  numberFormatter,
+  relativeTimeFormatter,
+  // relativeTimeFormatter,
+} from '../../widgets/line_chart_v2/lib/formatter';
 
 @Component({
   selector: 'tb-data-table',
@@ -23,6 +34,47 @@ import {RunData} from '../../metrics/views/card_renderer/scalar_card_types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DataTableComponent {
-  @Input() headers!: string[];
-  @Input() data!: RunData[];
+  @Input() headers!: ColumnHeaders[];
+  @Input() data!: RunStepData[];
+
+  getHeaderTextColumn(columnHeader: ColumnHeaders): string {
+    switch (columnHeader) {
+      case ColumnHeaders.RUN:
+        return 'Run';
+      case ColumnHeaders.VALUE:
+        return 'Value';
+      case ColumnHeaders.STEP:
+        return 'Step';
+      case ColumnHeaders.TIME:
+        return 'Time';
+      case ColumnHeaders.RELATIVE_TIME:
+        return 'Relative';
+      default:
+        return '';
+    }
+  }
+
+  getFormattedDataForColumn(
+    columnHeader: ColumnHeaders,
+    runStepData: RunStepData
+  ): string {
+    console.log('getFormattedDataForColumn', columnHeader, ', ', runStepData);
+    switch (columnHeader) {
+      case ColumnHeaders.RUN:
+        return runStepData.metadata.displayName;
+      case ColumnHeaders.VALUE:
+        return numberFormatter.formatShort(runStepData.closestStartPoint.value);
+      case ColumnHeaders.STEP:
+        return numberFormatter.formatShort(runStepData.closestStartPoint.step);
+      case ColumnHeaders.TIME:
+        const time = new Date(runStepData.closestStartPoint.wallTime);
+        return time.toISOString();
+      case ColumnHeaders.RELATIVE_TIME:
+        return relativeTimeFormatter.formatReadable(
+          runStepData.closestStartPoint.relativeTimeInMs
+        );
+      default:
+        return '';
+    }
+  }
 }
