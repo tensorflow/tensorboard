@@ -53,6 +53,7 @@ py_library(
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
+        ":client_feature_flags",
         ":empty_path_redirect",
         ":experiment_id",
         ":experimental_plugin",
@@ -179,6 +180,28 @@ py_test(
         ":security_validator",
         "//tensorboard:test",
         "//tensorboard/util:tb_logging",
+        "@org_pocoo_werkzeug",
+    ],
+)
+
+py_library(
+    name = "client_feature_flags",
+    srcs = ["client_feature_flags.py"],
+    srcs_version = "PY3",
+    deps = [
+        "//tensorboard:context",
+    ]
+)
+
+py_test(
+    name = "client_feature_flags_test",
+    size = "small",
+    srcs = ["client_feature_flags_test.py"],
+    srcs_version = "PY3",
+    tags = ["support_notf"],
+    deps = [
+        ":client_feature_flags",
+        "//tensorboard:test",
         "@org_pocoo_werkzeug",
     ],
 )

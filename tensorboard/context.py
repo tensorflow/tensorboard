@@ -37,9 +37,20 @@ class RequestContext(object):
       x_forwarded_for: A tuple of `ipaddress.IPv4Address` or `ipaddress.IPv6Address`,
         which may be empty but is never None. This should be parsed value of X-Forwarded-For
         HTTP header from the request.
+      client_feature_flags: A dict of string to arbitrary type. These represent
+        feature flag key/value pairs sent by the client application. Usage of
+        client_feature_flags should know the name of the feature flag key and
+        should know its value type (typically a boolean but sometimes an array
+        of strings).
     """
 
-    def __init__(self, auth=None, remote_ip=None, x_forwarded_for=None):
+    def __init__(
+        self,
+        auth=None,
+        remote_ip=None,
+        x_forwarded_for=None,
+        client_feature_flags=None,
+    ):
         """Create a request context.
 
         The argument list is sorted and may be extended in the future;
@@ -53,6 +64,7 @@ class RequestContext(object):
         self._auth = auth if auth is not None else auth_lib.AuthContext.empty()
         self._remote_ip = remote_ip
         self._x_forwarded_for = x_forwarded_for or ()
+        self._client_feature_flags = client_feature_flags or {}
 
     @property
     def auth(self):
@@ -65,6 +77,10 @@ class RequestContext(object):
     @property
     def x_forwarded_for(self):
         return self._x_forwarded_for
+
+    @property
+    def client_feature_flags(self):
+        return self._client_feature_flags
 
     def replace(self, **kwargs):
         """Create a copy of this context with updated key-value pairs.
@@ -82,6 +98,7 @@ class RequestContext(object):
         kwargs.setdefault("auth", self.auth)
         kwargs.setdefault("remote_ip", self.remote_ip)
         kwargs.setdefault("x_forwarded_for", self.x_forwarded_for)
+        kwargs.setdefault("client_feature_flags", self.client_feature_flags)
         return type(self)(**kwargs)
 
 
