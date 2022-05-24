@@ -51,9 +51,9 @@ describe('FeatureFlagHttpInterceptor', () => {
     ) as MockStore<FeatureFlagState>;
     store.overrideSelector(getFeatureFlags, buildFeatureFlag());
 
-    // Note that we do not test AuthHttpInterceptor directly. We instead test it
-    // indirectly by firing Http requests and examining the final request
-    // recorded by the HttpTestingController.
+    // Note that we do not test FeatureFlagHttpInterceptor directly. We instead
+    // test it indirectly by firing Http requests and examining the final
+    // request recorded by the HttpTestingController.
     httpClient = TestBed.inject(HttpClient);
   });
 

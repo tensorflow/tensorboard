@@ -31,7 +31,7 @@ export const FEATURE_FLAGS_HEADER_NAME = 'X-TensorBoard-Feature-Flags';
  * HttpInterceptor for injecting feature flags into each HTTP request
  * originating from the Angular TensorBoard code base.
  */
-@Injectable({providedIn: 'root'})
+@Injectable()
 export class FeatureFlagHttpInterceptor implements HttpInterceptor {
   constructor(private readonly store: Store<FeatureFlagState>) {}
 
