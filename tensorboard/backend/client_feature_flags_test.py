@@ -16,7 +16,6 @@
 
 
 import json
-import werkzeug
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
@@ -47,21 +46,21 @@ class ClientFeatureFlagsMiddlewareTest(tb_test.TestCase):
 
     def test_no_header(self):
         app = client_feature_flags.ClientFeatureFlagsMiddleware(self._echo_app)
-        server = werkzeug_test.Client(app, werkzeug.wrappers.Response)
+        server = werkzeug_test.Client(app, wrappers.Response)
 
         response = server.get("")
         self._assert_ok(response, {})
 
     def test_header_with_no_value(self):
         app = client_feature_flags.ClientFeatureFlagsMiddleware(self._echo_app)
-        server = werkzeug_test.Client(app, werkzeug.wrappers.Response)
+        server = werkzeug_test.Client(app, wrappers.Response)
 
         response = server.get("", headers=[("X-TensorBoard-Feature-Flags", "")])
         self._assert_ok(response, {})
 
     def test_header_with_no_flags(self):
         app = client_feature_flags.ClientFeatureFlagsMiddleware(self._echo_app)
-        server = werkzeug_test.Client(app, werkzeug.wrappers.Response)
+        server = werkzeug_test.Client(app, wrappers.Response)
 
         response = server.get(
             "", headers=[("X-TensorBoard-Feature-Flags", "{}")]
@@ -70,7 +69,7 @@ class ClientFeatureFlagsMiddlewareTest(tb_test.TestCase):
 
     def test_header_with_client_feature_flags(self):
         app = client_feature_flags.ClientFeatureFlagsMiddleware(self._echo_app)
-        server = werkzeug_test.Client(app, werkzeug.wrappers.Response)
+        server = werkzeug_test.Client(app, wrappers.Response)
 
         response = server.get(
             "",

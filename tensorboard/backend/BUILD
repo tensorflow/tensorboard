@@ -190,7 +190,7 @@ py_library(
     srcs_version = "PY3",
     deps = [
         "//tensorboard:context",
-    ]
+    ],
 )
 
 py_test(
