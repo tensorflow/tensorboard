@@ -21,7 +21,6 @@ import {
   ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
   ENABLE_DARK_MODE_QUERY_PARAM_KEY,
   ENABLE_LINK_TIME_PARAM_KEY,
-  ENABLE_TIME_NAMESPACED_STATE,
   EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
   FORCE_SVG_RENDERER,
   SCALARS_BATCH_SIZE_PARAM_KEY,
@@ -84,11 +83,6 @@ export class QueryParamsFeatureFlagDataSource
     if (params.has(ENABLE_CARD_WIDTH_SETTING_PARAM_KEY)) {
       featureFlags.enabledCardWidthSetting =
         params.get(ENABLE_CARD_WIDTH_SETTING_PARAM_KEY) !== 'false';
-    }
-
-    if (params.has(ENABLE_TIME_NAMESPACED_STATE)) {
-      featureFlags.enabledTimeNamespacedState =
-        params.get(ENABLE_TIME_NAMESPACED_STATE) !== 'false';
     }
 
     if (params.has(FORCE_SVG_RENDERER)) {

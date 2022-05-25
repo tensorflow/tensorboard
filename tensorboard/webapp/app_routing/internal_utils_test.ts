@@ -133,58 +133,6 @@ describe('app_routing/utils', () => {
     });
   });
 
-  describe('#getRouteNamespaceId', () => {
-    [
-      {
-        kind: RouteKind.COMPARE_EXPERIMENT,
-        params: {experimentIds: 'bar:123'},
-        expectedVal: `${RouteKind.COMPARE_EXPERIMENT}/123`,
-      },
-      {
-        kind: RouteKind.EXPERIMENTS,
-        params: {},
-        expectedVal: `${RouteKind.EXPERIMENTS}`,
-      },
-      {
-        kind: RouteKind.EXPERIMENT,
-        params: {experimentId: '123'},
-        expectedVal: `${RouteKind.EXPERIMENT}/123`,
-      },
-      {
-        kind: RouteKind.UNKNOWN,
-        params: {random: 1},
-        expectedVal: '',
-      },
-    ].forEach(({kind, params, expectedVal}) => {
-      it(`returns unique identifier for ${RouteKind[kind]}`, () => {
-        const actual = utils.getRouteNamespaceId(kind, params);
-        expect(actual).toBe(expectedVal);
-      });
-    });
-
-    describe('COMPARE route', () => {
-      it('returns stable id as long as id sets are the same', () => {
-        const id1 = utils.getRouteNamespaceId(RouteKind.COMPARE_EXPERIMENT, {
-          experimentIds: 'foo:123,bar:456',
-        });
-        const id2 = utils.getRouteNamespaceId(RouteKind.COMPARE_EXPERIMENT, {
-          experimentIds: 'bar:456,foo:123',
-        });
-        expect(id1).toBe(id2);
-      });
-
-      it('does not differentiate compare of same eids with different display names', () => {
-        const id1 = utils.getRouteNamespaceId(RouteKind.COMPARE_EXPERIMENT, {
-          experimentIds: 'foo:123',
-        });
-        const id2 = utils.getRouteNamespaceId(RouteKind.COMPARE_EXPERIMENT, {
-          experimentIds: 'bar:123',
-        });
-        expect(id1).toBe(id2);
-      });
-    });
-  });
-
   describe('#areSameRouteKindAndExperiments', () => {
     it('returns true when both routes are null', () => {
       expect(utils.areSameRouteKindAndExperiments(null, null)).toBeTrue();

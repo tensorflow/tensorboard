@@ -161,28 +161,6 @@ describe('tb_feature_flag_data_source', () => {
         });
       });
 
-      it('returns enabledTimeNamespacedState from the query params', () => {
-        getParamsSpy.and.returnValues(
-          new URLSearchParams('enableTimeNamespacedState=false'),
-          new URLSearchParams('enableTimeNamespacedState='),
-          new URLSearchParams('enableTimeNamespacedState=true'),
-          new URLSearchParams('enableTimeNamespacedState=foo')
-        );
-
-        expect(dataSource.getFeatures()).toEqual({
-          enabledTimeNamespacedState: false,
-        });
-        expect(dataSource.getFeatures()).toEqual({
-          enabledTimeNamespacedState: true,
-        });
-        expect(dataSource.getFeatures()).toEqual({
-          enabledTimeNamespacedState: true,
-        });
-        expect(dataSource.getFeatures()).toEqual({
-          enabledTimeNamespacedState: true,
-        });
-      });
-
       it('returns forceSVG from the query params', () => {
         getParamsSpy.and.returnValues(
           new URLSearchParams('forceSVG=false'),
