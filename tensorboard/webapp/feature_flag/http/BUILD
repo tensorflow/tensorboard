@@ -25,7 +25,9 @@ tf_ts_library(
     ],
     deps = [
         ":http",
+        "//tensorboard/webapp/angular:expect_angular_common_http",
         "//tensorboard/webapp/angular:expect_angular_common_http_testing",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/feature_flag:testing",
         "//tensorboard/webapp/feature_flag:types",
