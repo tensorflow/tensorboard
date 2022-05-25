@@ -46,3 +46,5 @@ export const ENABLE_DARK_MODE_QUERY_PARAM_KEY = 'darkMode';
 export const ENABLE_LINK_TIME_PARAM_KEY = 'enableLinkTime';
 
 export const FORCE_SVG_RENDERER = 'forceSVG';
+
+export const ENABLE_DATA_TABLE_PARAM_KEY = 'enableDataTable';

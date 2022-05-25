@@ -81,6 +81,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() xScaleType!: ScaleType;
   @Input() useDarkMode!: boolean;
   @Input() forceSvg!: boolean;
+  @Input() isDataTableEnabled!: boolean;
   @Input() selectedTime!: ViewSelectedTime | null;
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
