@@ -183,6 +183,27 @@ describe('tb_feature_flag_data_source', () => {
         });
       });
 
+      it('returns enableDataTable from the query params', () => {
+        getParamsSpy.and.returnValues(
+          new URLSearchParams('enableDataTable=false'),
+          new URLSearchParams('enableDataTable='),
+          new URLSearchParams('enableDataTable=true'),
+          new URLSearchParams('enableDataTable=foo')
+        );
+        expect(dataSource.getFeatures()).toEqual({
+          enabledDataTable: false,
+        });
+        expect(dataSource.getFeatures()).toEqual({
+          enabledDataTable: true,
+        });
+        expect(dataSource.getFeatures()).toEqual({
+          enabledDataTable: true,
+        });
+        expect(dataSource.getFeatures()).toEqual({
+          enabledDataTable: true,
+        });
+      });
+
       it('returns all flag values when they are all set', () => {
         getParamsSpy.and.returnValue(
           new URLSearchParams(
