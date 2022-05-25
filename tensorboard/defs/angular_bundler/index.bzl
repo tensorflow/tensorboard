@@ -43,7 +43,7 @@ def _create_bundle_targets(pkg, entry_point, module_name):
     # RxJS are not bundled.
     rollup_bundle(
         name = "%s_bundle" % target_name_base,
-        config_file = "//tensorboard/defs/angular_bundler:rollup.config.js",
+        config_file = "//tensorboard/defs/angular_bundler:rollup.config.cjs",
         entry_point = "@npm//:node_modules/@angular/%s/%s" % (pkg.name, fesm_bundle_path),
         deps = [
             "@npm//@rollup/plugin-babel",
