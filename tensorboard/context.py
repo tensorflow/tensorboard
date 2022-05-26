@@ -40,8 +40,7 @@ class RequestContext(object):
       client_feature_flags: A dict of string to arbitrary type. These represent
         feature flag key/value pairs sent by the client application. Usage of
         client_feature_flags should know the name of the feature flag key and
-        should know its value type (typically a boolean but sometimes an array
-        of strings).
+        should know and validate the type of the value.
     """
 
     def __init__(

@@ -89,6 +89,25 @@ class ClientFeatureFlagsMiddlewareTest(tb_test.TestCase):
             },
         )
 
+    def test_header_with_invalid_json(self):
+        app = client_feature_flags.ClientFeatureFlagsMiddleware(self._echo_app)
+        server = werkzeug_test.Client(app, wrappers.Response)
+
+        response = server.get(
+            "",
+            headers=[
+                (
+                    "X-TensorBoard-Feature-Flags",
+                    "some_invalid_json {} {}",
+                )
+            ],
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.get_data().decode(),
+            "Invalid X-TensorBoard-Feature-Flags Header",
+        )
+
 
 if __name__ == "__main__":
     tb_test.main()

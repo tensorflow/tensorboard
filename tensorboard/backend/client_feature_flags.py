@@ -42,7 +42,12 @@ class ClientFeatureFlagsMiddleware(object):
         if not possible_feature_flags:
             return self._application(environ, start_response)
 
-        client_feature_flags = json.loads(possible_feature_flags)
+        try:
+            client_feature_flags = json.loads(possible_feature_flags)
+        except json.JSONDecodeError:
+            start_response("400 Bad Request", [("Content-Type", "text/plain")])
+            return ["Invalid X-TensorBoard-Feature-Flags Header"]
+
         ctx = context.from_environ(environ).replace(
             client_feature_flags=client_feature_flags
         )
