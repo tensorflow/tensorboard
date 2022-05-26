@@ -55,7 +55,6 @@ class ClientFeatureFlagsMiddleware(object):
                 "X-TensorBoard-Feature-Flags cannot be decoded to a dict."
             )
 
-
         ctx = context.from_environ(environ).replace(
             client_feature_flags=client_feature_flags
         )
