@@ -95,7 +95,7 @@ class ClientFeatureFlagsMiddlewareTest(tb_test.TestCase):
         server = werkzeug_test.Client(app, wrappers.Response)
 
         with self.assertRaisesRegex(
-            errors.InvalidArgumentError, "X-TensorBoard-Feature-Flags"
+            errors.InvalidArgumentError, "cannot be JSON decoded."
         ):
             response = server.get(
                 "",
@@ -103,6 +103,23 @@ class ClientFeatureFlagsMiddlewareTest(tb_test.TestCase):
                     (
                         "X-TensorBoard-Feature-Flags",
                         "some_invalid_json {} {}",
+                    )
+                ],
+            )
+
+    def test_header_with_json_not_dict(self):
+        app = client_feature_flags.ClientFeatureFlagsMiddleware(self._echo_app)
+        server = werkzeug_test.Client(app, wrappers.Response)
+
+        with self.assertRaisesRegex(
+            errors.InvalidArgumentError, "cannot be decoded to a dict"
+        ):
+            response = server.get(
+                "",
+                headers=[
+                    (
+                        "X-TensorBoard-Feature-Flags",
+                        '["not", "a", "dict"]',
                     )
                 ],
             )
