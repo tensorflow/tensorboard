@@ -28,7 +28,6 @@ import {
   withLatestFrom,
 } from 'rxjs/operators';
 import {State} from '../../app_state';
-import {getEnabledTimeNamespacedState} from '../../feature_flag/store/feature_flag_selectors';
 import {
   discardDirtyUpdates,
   navigated,
@@ -44,7 +43,6 @@ import {
   areSameRouteKindAndExperiments,
   canRehydrateDeepLink,
   generateRandomIdForNamespace,
-  getRouteNamespaceId,
   serializeCompareExperimentParams,
 } from '../internal_utils';
 import {Location} from '../location';
@@ -569,36 +567,27 @@ export class AppRoutingEffects {
     return changeUrl$.pipe(
       withLatestFrom(
         this.store.select(getActiveRoute),
-        this.store.select(getActiveNamespaceId),
-        this.store.select(getEnabledTimeNamespacedState)
+        this.store.select(getActiveNamespaceId)
       ),
-      map(
-        ([
-          {route, options},
-          oldRoute,
+      map(([{route, options}, oldRoute, beforeNamespaceId]) => {
+        const afterNamespaceId = getAfterNamespaceId(
+          route,
+          options,
+          beforeNamespaceId
+        );
+
+        this.location.replaceStateData({
+          ...this.location.getHistoryState(),
+          namespaceId: afterNamespaceId,
+        });
+
+        return navigated({
+          before: oldRoute,
+          after: route,
           beforeNamespaceId,
-          enabledTimeNamespacedState,
-        ]) => {
-          const afterNamespaceId = getAfterNamespaceId(
-            enabledTimeNamespacedState,
-            route,
-            options,
-            beforeNamespaceId
-          );
-
-          this.location.replaceStateData({
-            ...this.location.getHistoryState(),
-            namespaceId: afterNamespaceId,
-          });
-
-          return navigated({
-            before: oldRoute,
-            after: route,
-            beforeNamespaceId,
-            afterNamespaceId,
-          });
-        }
-      )
+          afterNamespaceId,
+        });
+      })
     );
   });
 
@@ -609,25 +598,19 @@ export class AppRoutingEffects {
 }
 
 function getAfterNamespaceId(
-  enabledTimeNamespacedState: boolean,
   route: Route,
   options: NavigationOptions,
   beforeNamespaceId: string | null
 ): string {
-  if (!enabledTimeNamespacedState) {
-    return getRouteNamespaceId(route.routeKind, route.params);
+  if (options.namespaceUpdate.option === NamespaceUpdateOption.FROM_HISTORY) {
+    return options.namespaceUpdate.namespaceId;
+  } else if (
+    beforeNamespaceId == null ||
+    options.namespaceUpdate.option === NamespaceUpdateOption.NEW
+  ) {
+    return `${Date.now().toString()}:${generateRandomIdForNamespace()}`;
   } else {
-    // Time-namespaced state is enabled.
-    if (options.namespaceUpdate.option === NamespaceUpdateOption.FROM_HISTORY) {
-      return options.namespaceUpdate.namespaceId;
-    } else if (
-      beforeNamespaceId == null ||
-      options.namespaceUpdate.option === NamespaceUpdateOption.NEW
-    ) {
-      return `${Date.now().toString()}:${generateRandomIdForNamespace()}`;
-    } else {
-      return beforeNamespaceId;
-    }
+    return beforeNamespaceId;
   }
 }
 

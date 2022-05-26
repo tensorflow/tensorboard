@@ -123,13 +123,6 @@ export const getEnabledCardWidthSetting = createSelector(
   }
 );
 
-export const getEnabledTimeNamespacedState = createSelector(
-  getFeatureFlags,
-  (flags: FeatureFlags): boolean => {
-    return flags.enabledTimeNamespacedState;
-  }
-);
-
 export const getForceSvgFeatureFlag = createSelector(
   getFeatureFlags,
   (flags: FeatureFlags): boolean => {

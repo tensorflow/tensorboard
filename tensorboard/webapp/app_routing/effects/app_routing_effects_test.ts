@@ -20,11 +20,9 @@ import {Action, createAction, createSelector, props, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {of, ReplaySubject} from 'rxjs';
 import {State} from '../../app_state';
-import {getEnabledTimeNamespacedState} from '../../feature_flag/store/feature_flag_selectors';
 import * as actions from '../actions';
 import {AppRootProvider, TestableAppRootProvider} from '../app_root';
 import {DirtyUpdatesRegistryModule} from '../dirty_updates_registry_module';
-import {getRouteNamespaceId} from '../internal_utils';
 import {Location} from '../location';
 import {
   NavigateToCompare,
@@ -233,7 +231,6 @@ describe('app_routing_effects', () => {
     store.overrideSelector(getActiveRoute, null);
     store.overrideSelector(getActiveNamespaceId, null);
     store.overrideSelector(getRehydratedDeepLinks, []);
-    store.overrideSelector(getEnabledTimeNamespacedState, false);
     actualActions = [];
 
     spyOn(store, 'dispatch').and.callFake((action: Action) => {
@@ -326,7 +323,7 @@ describe('app_routing_effects', () => {
               params: {},
             }),
             beforeNamespaceId: null,
-            afterNamespaceId: getRouteNamespaceId(RouteKind.EXPERIMENTS, {}),
+            afterNamespaceId: `${Date.now()}:${TEST_RANDOMID_STRING}`,
           }),
         ]);
       })
@@ -353,13 +350,11 @@ describe('app_routing_effects', () => {
         const activeRoute = buildRoute({
           routeKind: RouteKind.EXPERIMENTS,
         });
-        const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENTS, {});
         const dirtyExperimentsFactory = () => {
           return {experimentIds: ['otter']};
         };
 
         store.overrideSelector(getActiveRoute, activeRoute);
-        store.overrideSelector(getActiveNamespaceId, namespaceId);
         store.overrideSelector(
           testDirtyExperimentsSelector,
           dirtyExperimentsFactory()
@@ -406,11 +401,7 @@ describe('app_routing_effects', () => {
           routeKind: RouteKind.EXPERIMENT,
           params: {experimentId: 'meow'},
         });
-        const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENT, {
-          experimentId: 'meow',
-        });
         store.overrideSelector(getActiveRoute, activeRoute);
-        store.overrideSelector(getActiveNamespaceId, namespaceId);
         store.refreshState();
         getPathSpy.and.returnValue('/experiment/meow');
         // Changing tab.
@@ -428,8 +419,8 @@ describe('app_routing_effects', () => {
           actions.navigated({
             before: activeRoute,
             after: activeRoute,
-            beforeNamespaceId: namespaceId,
-            afterNamespaceId: namespaceId,
+            beforeNamespaceId: null,
+            afterNamespaceId: `${Date.now()}:${TEST_RANDOMID_STRING}`,
           }),
         ]);
       }));
@@ -487,10 +478,8 @@ describe('app_routing_effects', () => {
                 routeKind: RouteKind.EXPERIMENT,
                 params: {experimentId: 'meow'},
               }),
-              beforeNamespaceId: getRouteNamespaceId(RouteKind.EXPERIMENTS, {}),
-              afterNamespaceId: getRouteNamespaceId(RouteKind.EXPERIMENT, {
-                experimentId: 'meow',
-              }),
+              beforeNamespaceId: null,
+              afterNamespaceId: `${Date.now()}:${TEST_RANDOMID_STRING}`,
             }),
           ]);
         })
@@ -535,18 +524,17 @@ describe('app_routing_effects', () => {
                 params: {},
               }),
               beforeNamespaceId: null,
-              afterNamespaceId: getRouteNamespaceId(RouteKind.EXPERIMENTS, {}),
+              afterNamespaceId: `${Date.now()}:${TEST_RANDOMID_STRING}`,
             }),
           ]);
         })
       );
     });
 
-    describe('time-namespaced ids', () => {
+    describe('namespace ids', () => {
       it('are generated on bootstrap when none in history', fakeAsync(() => {
         store.overrideSelector(getActiveRoute, null);
         store.overrideSelector(getActiveNamespaceId, null);
-        store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
         getPathSpy.and.returnValue('/experiments');
@@ -573,7 +561,6 @@ describe('app_routing_effects', () => {
       it('are determined from history state on bootstrap', fakeAsync(() => {
         store.overrideSelector(getActiveRoute, null);
         store.overrideSelector(getActiveNamespaceId, null);
-        store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
         getPathSpy.and.returnValue('/experiments');
@@ -601,7 +588,6 @@ describe('app_routing_effects', () => {
       it('are set in browser history state', fakeAsync(() => {
         store.overrideSelector(getActiveRoute, null);
         store.overrideSelector(getActiveNamespaceId, null);
-        store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
         // Fake data in history state to show we don't override existing data.
@@ -627,7 +613,6 @@ describe('app_routing_effects', () => {
 
         store.overrideSelector(getActiveRoute, buildRoute());
         store.overrideSelector(getActiveNamespaceId, `${beforeDate}:1234`);
-        store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
         // Request navigation with resetNamespacedState set to true.
@@ -662,7 +647,6 @@ describe('app_routing_effects', () => {
 
         store.overrideSelector(getActiveRoute, buildRoute());
         store.overrideSelector(getActiveNamespaceId, `${beforeDate}:1234`);
-        store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
         // Request navigation with resetNamespacedState set to false.
@@ -700,7 +684,6 @@ describe('app_routing_effects', () => {
           getActiveNamespaceId,
           `${beforeDate}:${TEST_RANDOMID_STRING}`
         );
-        store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
         // Request navigation with resetNamespacedState unspecified.
@@ -729,7 +712,6 @@ describe('app_routing_effects', () => {
       it('are determined from history state on popstate', fakeAsync(() => {
         store.overrideSelector(getActiveRoute, buildRoute());
         store.overrideSelector(getActiveNamespaceId, 'before');
-        store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
         // History change signalled by popstate event.
@@ -757,7 +739,6 @@ describe('app_routing_effects', () => {
       it('are unchanged on popstate when none in history', fakeAsync(() => {
         store.overrideSelector(getActiveRoute, buildRoute());
         store.overrideSelector(getActiveNamespaceId, 'before');
-        store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
         // History change signalled by popstate event.
@@ -792,7 +773,6 @@ describe('app_routing_effects', () => {
 
         store.overrideSelector(getActiveRoute, buildRoute());
         store.overrideSelector(getActiveNamespaceId, `${beforeDate}:1234`);
-        store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
         action.next(
@@ -823,7 +803,6 @@ describe('app_routing_effects', () => {
 
         store.overrideSelector(getActiveRoute, buildRoute());
         store.overrideSelector(getActiveNamespaceId, `${beforeDate}:1234`);
-        store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
         action.next(
@@ -854,7 +833,6 @@ describe('app_routing_effects', () => {
 
         store.overrideSelector(getActiveRoute, buildRoute());
         store.overrideSelector(getActiveNamespaceId, `${beforeDate}:1234`);
-        store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
         action.next(testResetNamespacedStateAction({}));
@@ -924,12 +902,7 @@ describe('app_routing_effects', () => {
                 params: {experimentIds: 'a:b'},
               } as unknown as Route),
               beforeNamespaceId: null,
-              afterNamespaceId: getRouteNamespaceId(
-                RouteKind.COMPARE_EXPERIMENT,
-                {
-                  experimentIds: 'a:b',
-                }
-              ),
+              afterNamespaceId: `${Date.now()}:${TEST_RANDOMID_STRING}`,
             }),
           ]);
         }));
@@ -1045,12 +1018,7 @@ describe('app_routing_effects', () => {
                 params: {experimentIds: 'a:b'},
               }),
               beforeNamespaceId: null,
-              afterNamespaceId: getRouteNamespaceId(
-                RouteKind.COMPARE_EXPERIMENT,
-                {
-                  experimentIds: 'a:b',
-                }
-              ),
+              afterNamespaceId: `${Date.now()}:${TEST_RANDOMID_STRING}`,
             }),
           ]);
         })
@@ -1082,12 +1050,7 @@ describe('app_routing_effects', () => {
               params: {experimentIds: 'a:b'},
             }),
             beforeNamespaceId: null,
-            afterNamespaceId: getRouteNamespaceId(
-              RouteKind.COMPARE_EXPERIMENT,
-              {
-                experimentIds: 'a:b',
-              }
-            ),
+            afterNamespaceId: `${Date.now()}:${TEST_RANDOMID_STRING}`,
           }),
         ]);
       }));
@@ -1127,7 +1090,6 @@ describe('app_routing_effects', () => {
       );
 
       it('does not reset namespace state on subsequent query param changes', fakeAsync(() => {
-        store.overrideSelector(getEnabledTimeNamespacedState, true);
         store.refreshState();
 
         // Record the current time from the mocked clock.
@@ -1351,10 +1313,6 @@ describe('app_routing_effects', () => {
           routeKind: RouteKind.EXPERIMENTS,
         })
       );
-      store.overrideSelector(
-        getActiveNamespaceId,
-        getRouteNamespaceId(RouteKind.EXPERIMENTS, {})
-      );
       store.refreshState();
 
       action.next(
@@ -1377,8 +1335,8 @@ describe('app_routing_effects', () => {
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENTS,
           }),
-          beforeNamespaceId: getRouteNamespaceId(RouteKind.EXPERIMENTS, {}),
-          afterNamespaceId: getRouteNamespaceId(RouteKind.EXPERIMENTS, {}),
+          beforeNamespaceId: null,
+          afterNamespaceId: `${Date.now()}:${TEST_RANDOMID_STRING}`,
         }),
       ]);
     }));
@@ -1457,9 +1415,7 @@ describe('app_routing_effects', () => {
         const activeRoute = buildRoute({
           routeKind: RouteKind.EXPERIMENTS,
         });
-        const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENTS, {});
         store.overrideSelector(getActiveRoute, activeRoute);
-        store.overrideSelector(getActiveNamespaceId, namespaceId);
         store.refreshState();
         getHashSpy.and.returnValue('');
         getPathSpy.and.returnValue('/experiments');
@@ -1478,9 +1434,7 @@ describe('app_routing_effects', () => {
         const activeRoute = buildRoute({
           routeKind: RouteKind.EXPERIMENTS,
         });
-        const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENTS, {});
         store.overrideSelector(getActiveRoute, activeRoute);
-        store.overrideSelector(getActiveNamespaceId, namespaceId);
         store.refreshState();
         getHashSpy.and.returnValue('');
         getPathSpy.and.returnValue('meow');
@@ -1499,9 +1453,7 @@ describe('app_routing_effects', () => {
         const activeRoute = buildRoute({
           routeKind: RouteKind.EXPERIMENTS,
         });
-        const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENTS, {});
         store.overrideSelector(getActiveRoute, activeRoute);
-        store.overrideSelector(getActiveNamespaceId, namespaceId);
         store.refreshState();
         getHashSpy.and.returnValue('');
         getPathSpy.and.returnValue('meow');
@@ -1541,9 +1493,7 @@ describe('app_routing_effects', () => {
           routeKind: RouteKind.EXPERIMENT,
           params: {experimentId: '123'},
         });
-        const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENT, {});
         store.overrideSelector(getActiveRoute, activeRoute);
-        store.overrideSelector(getActiveNamespaceId, namespaceId);
         store.refreshState();
         getHashSpy.and.returnValue('#foo');
         getPathSpy.and.returnValue('meow');
@@ -1562,10 +1512,7 @@ describe('app_routing_effects', () => {
         const activeRoute = buildRoute({
           routeKind: RouteKind.EXPERIMENTS,
         });
-        const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENT, {});
-
         store.overrideSelector(getActiveRoute, activeRoute);
-        store.overrideSelector(getActiveNamespaceId, namespaceId);
         store.refreshState();
         getHashSpy.and.returnValue('#foo');
         getPathSpy.and.returnValue('meow');
