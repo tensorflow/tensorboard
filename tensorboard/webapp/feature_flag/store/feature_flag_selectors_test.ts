@@ -346,7 +346,7 @@ describe('feature_flag_selectors', () => {
       let state = buildState(
         buildFeatureFlagState({
           defaultFlags: buildFeatureFlag({
-            enabledDataTable: false,
+            enabledScalarDataTable: false,
           }),
         })
       );
@@ -355,10 +355,10 @@ describe('feature_flag_selectors', () => {
       state = buildState(
         buildFeatureFlagState({
           defaultFlags: buildFeatureFlag({
-            enabledDataTable: false,
+            enabledScalarDataTable: false,
           }),
           flagOverrides: {
-            enabledDataTable: true,
+            enabledScalarDataTable: true,
           },
         })
       );

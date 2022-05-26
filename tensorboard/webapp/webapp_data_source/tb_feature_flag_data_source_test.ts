@@ -191,16 +191,16 @@ describe('tb_feature_flag_data_source', () => {
           new URLSearchParams('enableDataTable=foo')
         );
         expect(dataSource.getFeatures()).toEqual({
-          enabledDataTable: false,
+          enabledScalarDataTable: false,
         });
         expect(dataSource.getFeatures()).toEqual({
-          enabledDataTable: true,
+          enabledScalarDataTable: true,
         });
         expect(dataSource.getFeatures()).toEqual({
-          enabledDataTable: true,
+          enabledScalarDataTable: true,
         });
         expect(dataSource.getFeatures()).toEqual({
-          enabledDataTable: true,
+          enabledScalarDataTable: true,
         });
       });
 

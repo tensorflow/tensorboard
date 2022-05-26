@@ -32,7 +32,7 @@ export const initialState: FeatureFlagState = {
     enableTimeSeriesPromotion: false,
     enabledCardWidthSetting: true,
     forceSvg: false,
-    enabledDataTable: false,
+    enabledScalarDataTable: false,
   },
   flagOverrides: {},
 };

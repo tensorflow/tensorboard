@@ -91,7 +91,7 @@ export class QueryParamsFeatureFlagDataSource
     }
 
     if (params.has(ENABLE_DATA_TABLE_PARAM_KEY)) {
-      featureFlags.enabledDataTable =
+      featureFlags.enabledScalarDataTable =
         params.get(ENABLE_DATA_TABLE_PARAM_KEY) !== 'false';
     }
 
