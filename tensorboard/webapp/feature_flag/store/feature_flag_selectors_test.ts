@@ -340,29 +340,4 @@ describe('feature_flag_selectors', () => {
       expect(selectors.getEnabledCardWidthSetting(state)).toEqual(true);
     });
   });
-
-  describe('#getEnabledTimeNamespacedState', () => {
-    it('returns the proper value', () => {
-      let state = buildState(
-        buildFeatureFlagState({
-          defaultFlags: buildFeatureFlag({
-            enabledTimeNamespacedState: false,
-          }),
-        })
-      );
-      expect(selectors.getEnabledTimeNamespacedState(state)).toEqual(false);
-
-      state = buildState(
-        buildFeatureFlagState({
-          defaultFlags: buildFeatureFlag({
-            enabledTimeNamespacedState: false,
-          }),
-          flagOverrides: {
-            enabledTimeNamespacedState: true,
-          },
-        })
-      );
-      expect(selectors.getEnabledTimeNamespacedState(state)).toEqual(true);
-    });
-  });
 });

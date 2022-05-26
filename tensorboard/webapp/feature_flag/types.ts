@@ -47,9 +47,6 @@ export interface FeatureFlags {
   enableTimeSeriesPromotion: boolean;
   // Whether to enable card width adjustment on the right panle.
   enabledCardWidthSetting: boolean;
-  // Whether to enable time-namespaced state and how it impacts how user
-  // settings are kept during navigation.
-  enabledTimeNamespacedState: boolean;
   // Flag for the escape hatch from WebGL. This only effects the TimeSeries
   // Scalar cards.
   forceSvg: boolean;
