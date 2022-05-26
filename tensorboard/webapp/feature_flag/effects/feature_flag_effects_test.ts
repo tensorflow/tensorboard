@@ -151,9 +151,9 @@ describe('feature_flag_effects', () => {
   });
 
   describe('updatePolymerFeatureFlags$', () => {
-    it('sets polymer feature flags features from the data source on init', () => {
-      // This represents the final state of the FeatureFlags object as
-      // calculated by the Store.
+    it('sets polymer feature flags after data source fetch', () => {
+      // This represents the complete FeatureFlags object as calculated by the
+      // Store after the feature flags data source fetch.
       store.overrideSelector(
         getFeatureFlags,
         buildFeatureFlag({inColab: true})
@@ -162,10 +162,10 @@ describe('feature_flag_effects', () => {
 
       effects.updatePolymerFeatureFlags$.subscribe();
 
-      // This represents the incomplete FeatureFlags object that has just been
-      // loaded from the feature flags data source.
       actions.next(
         partialFeatureFlagsLoaded({
+          // This represents the incomplete FeatureFlags object that has just
+          // been fetched by the feature flags data source.
           features: buildFeatureFlag({inColab: false}),
         })
       );
