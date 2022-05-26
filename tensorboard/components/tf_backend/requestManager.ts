@@ -1,5 +1,3 @@
-import {getFeatureFlags} from '../tf_feature_flags/feature-flags';
-
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the 'License');
@@ -14,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {FEATURE_FLAGS_HEADER_NAME} from '../../webapp/feature_flag/http/const';
+import {getFeatureFlags} from '../tf_feature_flags/feature-flags';
+
 interface ResolveReject {
   resolve: (x: unknown) => void;
   reject: (x: unknown) => void;
@@ -242,9 +243,8 @@ export class RequestManager {
         requestOptions.withCredentials,
         requestOptions.contentType
       );
-      // BDTODO: Use a constant.
       req.setRequestHeader(
-        'X-TensorBoard-Feature-Flags',
+        FEATURE_FLAGS_HEADER_NAME,
         JSON.stringify(getFeatureFlags())
       );
       req.onload = function () {

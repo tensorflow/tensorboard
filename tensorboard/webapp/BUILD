@@ -81,7 +81,7 @@ tf_ts_library(
     ],
     deps = [
         "//tensorboard/webapp/feature_flag:types",
-    ]
+    ],
 )
 
 tf_sass_binary(
