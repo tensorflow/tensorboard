@@ -50,6 +50,11 @@ class ClientFeatureFlagsMiddleware(object):
                 "X-TensorBoard-Feature-Flags cannot be JSON decoded."
             )
 
+        if not isinstance(client_feature_flags, dict):
+            raise errors.InvalidArgumentError(
+                "X-TensorBoard-Feature-Flags cannot be decoded to a dict."
+            )
+
         ctx = context.from_environ(environ).replace(
             client_feature_flags=client_feature_flags
         )
