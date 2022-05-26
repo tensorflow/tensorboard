@@ -190,6 +190,7 @@ py_library(
     srcs_version = "PY3",
     deps = [
         "//tensorboard:context",
+        "//tensorboard:errors",
     ],
 )
 
@@ -201,6 +202,7 @@ py_test(
     tags = ["support_notf"],
     deps = [
         ":client_feature_flags",
+        "//tensorboard:errors",
         "//tensorboard:test",
         "@org_pocoo_werkzeug",
     ],

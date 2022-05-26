@@ -17,6 +17,7 @@
 import json
 
 from tensorboard import context
+from tensorboard import errors
 
 
 class ClientFeatureFlagsMiddleware(object):
@@ -45,8 +46,9 @@ class ClientFeatureFlagsMiddleware(object):
         try:
             client_feature_flags = json.loads(possible_feature_flags)
         except json.JSONDecodeError:
-            start_response("400 Bad Request", [("Content-Type", "text/plain")])
-            return ["Invalid X-TensorBoard-Feature-Flags Header"]
+            raise errors.InvalidArgumentError(
+                "X-TensorBoard-Feature-Flags cannot be JSON decoded."
+            )
 
         ctx = context.from_environ(environ).replace(
             client_feature_flags=client_feature_flags
