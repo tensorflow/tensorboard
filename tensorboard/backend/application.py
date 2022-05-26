@@ -34,6 +34,7 @@ from tensorboard import errors
 from tensorboard import plugin_util
 from tensorboard import auth
 from tensorboard import context
+from tensorboard.backend import client_feature_flags
 from tensorboard.backend import empty_path_redirect
 from tensorboard.backend import experiment_id
 from tensorboard.backend import experimental_plugin
@@ -326,6 +327,7 @@ class TensorBoardWSGI(object):
         for middleware in self._extra_middlewares:
             app = middleware(app)
         app = _auth_context_middleware(app, self._auth_providers)
+        app = client_feature_flags.ClientFeatureFlagsMiddleware(app)
         app = empty_path_redirect.EmptyPathRedirectMiddleware(app)
         app = experiment_id.ExperimentIdMiddleware(app)
         app = path_prefix.PathPrefixMiddleware(app, self._path_prefix)
