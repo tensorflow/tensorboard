@@ -340,4 +340,29 @@ describe('feature_flag_selectors', () => {
       expect(selectors.getEnabledCardWidthSetting(state)).toEqual(true);
     });
   });
+
+  describe('#getIsDataTableEnabled', () => {
+    it('returns the proper value', () => {
+      let state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            enabledScalarDataTable: false,
+          }),
+        })
+      );
+      expect(selectors.getIsDataTableEnabled(state)).toEqual(false);
+
+      state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            enabledScalarDataTable: false,
+          }),
+          flagOverrides: {
+            enabledScalarDataTable: true,
+          },
+        })
+      );
+      expect(selectors.getIsDataTableEnabled(state)).toEqual(true);
+    });
+  });
 });

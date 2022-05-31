@@ -20,6 +20,7 @@ import {
   ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY,
   ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
   ENABLE_DARK_MODE_QUERY_PARAM_KEY,
+  ENABLE_DATA_TABLE_PARAM_KEY,
   ENABLE_LINK_TIME_PARAM_KEY,
   EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
   FORCE_SVG_RENDERER,
@@ -87,6 +88,11 @@ export class QueryParamsFeatureFlagDataSource
 
     if (params.has(FORCE_SVG_RENDERER)) {
       featureFlags.forceSvg = params.get(FORCE_SVG_RENDERER) !== 'false';
+    }
+
+    if (params.has(ENABLE_DATA_TABLE_PARAM_KEY)) {
+      featureFlags.enabledScalarDataTable =
+        params.get(ENABLE_DATA_TABLE_PARAM_KEY) !== 'false';
     }
 
     return featureFlags;

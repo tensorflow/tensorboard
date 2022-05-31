@@ -129,3 +129,10 @@ export const getForceSvgFeatureFlag = createSelector(
     return flags.forceSvg;
   }
 );
+
+export const getIsDataTableEnabled = createSelector(
+  getFeatureFlags,
+  (flags: FeatureFlags): boolean => {
+    return flags.enabledScalarDataTable;
+  }
+);

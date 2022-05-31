@@ -50,4 +50,6 @@ export interface FeatureFlags {
   // Flag for the escape hatch from WebGL. This only effects the TimeSeries
   // Scalar cards.
   forceSvg: boolean;
+  // Whether to enable the "sticky" data table in scalar cards.
+  enabledScalarDataTable: boolean;
 }

@@ -316,6 +316,7 @@ describe('scalar card', () => {
     store.overrideSelector(selectors.getRunColorMap, {});
     store.overrideSelector(selectors.getDarkModeEnabled, false);
     store.overrideSelector(selectors.getForceSvgFeatureFlag, false);
+    store.overrideSelector(selectors.getIsDataTableEnabled, false);
   });
 
   describe('basic renders', () => {

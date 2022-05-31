@@ -32,6 +32,7 @@ export function buildFeatureFlag(
     enableTimeSeriesPromotion: false,
     enabledCardWidthSetting: false,
     forceSvg: false,
+    enabledScalarDataTable: false,
     ...override,
   };
 }
