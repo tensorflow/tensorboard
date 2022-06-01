@@ -14,21 +14,18 @@ import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {
+  CardFobControllerComponent,
   Fob,
-  LinkedTimeFobControllerComponent,
-} from '../linked_time_fob/linked_time_fob_controller_component';
-import {LinkedTime} from '../linked_time_fob/linked_time_types';
+} from '../card_fob/card_fob_controller_component';
+import {LinkedTime} from '../card_fob/card_fob_types';
+import {HistogramCardFobController} from './histogram_card_fob_controller';
 import {TemporalScale} from './histogram_component';
-import {HistogramLinkedTimeFobController} from './histogram_linked_time_fob_controller';
 
-describe('HistogramLinkedTimeFobController', () => {
+describe('HistogramCardFobController', () => {
   let temporalScaleSpy: jasmine.Spy;
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [
-        HistogramLinkedTimeFobController,
-        LinkedTimeFobControllerComponent,
-      ],
+      declarations: [HistogramCardFobController, CardFobControllerComponent],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
@@ -36,8 +33,8 @@ describe('HistogramLinkedTimeFobController', () => {
   function createComponent(input: {
     steps?: number[];
     linkedTime?: LinkedTime;
-  }): ComponentFixture<HistogramLinkedTimeFobController> {
-    const fixture = TestBed.createComponent(HistogramLinkedTimeFobController);
+  }): ComponentFixture<HistogramCardFobController> {
+    const fixture = TestBed.createComponent(HistogramCardFobController);
 
     // Absolutely place the fixture at the top left of the page to keep
     // position calculations in the test easier.
@@ -139,7 +136,7 @@ describe('HistogramLinkedTimeFobController', () => {
       });
       fixture.detectChanges();
       let testController = fixture.debugElement.query(
-        By.directive(LinkedTimeFobControllerComponent)
+        By.directive(CardFobControllerComponent)
       ).componentInstance;
       expect(
         testController.startFobWrapper.nativeElement.getBoundingClientRect().top
@@ -152,7 +149,7 @@ describe('HistogramLinkedTimeFobController', () => {
       });
       fixture.detectChanges();
       let testController = fixture.debugElement.query(
-        By.directive(LinkedTimeFobControllerComponent)
+        By.directive(CardFobControllerComponent)
       ).componentInstance;
       testController.startDrag(Fob.START);
       // Starting step '300' renders the fob at 3000px. Mouse event at 3020px
@@ -175,7 +172,7 @@ describe('HistogramLinkedTimeFobController', () => {
       });
       fixture.detectChanges();
       let testController = fixture.debugElement.query(
-        By.directive(LinkedTimeFobControllerComponent)
+        By.directive(CardFobControllerComponent)
       ).componentInstance;
       testController.startDrag(Fob.START);
       // Starting step '300' renders the fob at 3000px. Mouse event at 2980px

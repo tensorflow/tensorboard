@@ -30,7 +30,7 @@ export enum AxisDirection {
 
 /**
  * This class is intended to be implemented by the card that has a
- * LinkedTimeFobControllerComponent.
+ * CardFobControllerComponent.
  *
  * Each implementer will have some sort of Scale that is used to convert between
  * step and pixel so that the fob lines up with the axis properly. In future
@@ -41,7 +41,7 @@ export enum AxisDirection {
  * and getStepLowerThanMousePosition functions the implementer can decide if the
  * fob "snaps" to certain steps or drags in in a smooth continuous way.
  */
-export interface FobCardAdapter {
+export interface CardFobAdapter {
   /**
    * Gets the highest step for this card.
    */

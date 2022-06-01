@@ -45,6 +45,12 @@ import {buildRun} from '../../../runs/store/testing';
 import * as selectors from '../../../selectors';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {DataLoadState} from '../../../types/data';
+import {CardFobComponent} from '../../../widgets/card_fob/card_fob_component';
+import {
+  CardFobControllerComponent,
+  Fob,
+} from '../../../widgets/card_fob/card_fob_controller_component';
+import {CardFobModule} from '../../../widgets/card_fob/card_fob_module';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {IntersectionObserverTestingModule} from '../../../widgets/intersection_observer/intersection_observer_testing_module';
 import {
@@ -59,12 +65,6 @@ import {
   ScaleType,
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
-import {LinkedTimeFobComponent} from '../../../widgets/linked_time_fob/linked_time_fob_component';
-import {
-  Fob,
-  LinkedTimeFobControllerComponent,
-} from '../../../widgets/linked_time_fob/linked_time_fob_controller_component';
-import {LinkedTimeFobModule} from '../../../widgets/linked_time_fob/linked_time_fob_module';
 import {ResizeDetectorTestingModule} from '../../../widgets/resize_detector_testing_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {selectTimeEnableToggled, timeSelectionChanged} from '../../actions';
@@ -79,7 +79,7 @@ import {
 import {TooltipSort, XAxisType} from '../../types';
 import {ScalarCardComponent} from './scalar_card_component';
 import {ScalarCardContainer} from './scalar_card_container';
-import {ScalarCardLinkedTimeFobController} from './scalar_card_linked_time_fob_controller';
+import {ScalarCardFobController} from './scalar_card_fob_controller';
 import {
   ScalarCardPoint,
   ScalarCardSeriesMetadata,
@@ -265,7 +265,7 @@ describe('scalar card', () => {
       imports: [
         ExperimentAliasModule,
         IntersectionObserverTestingModule,
-        LinkedTimeFobModule,
+        CardFobModule,
         MatDialogModule,
         MatIconTestingModule,
         MatMenuModule,
@@ -278,7 +278,7 @@ describe('scalar card', () => {
       declarations: [
         ScalarCardContainer,
         ScalarCardComponent,
-        ScalarCardLinkedTimeFobController,
+        ScalarCardFobController,
         TestableDataDownload,
         TestableLineChart,
       ],
@@ -2143,7 +2143,7 @@ describe('scalar card', () => {
         fixture.detectChanges();
 
         const fobs = fixture.debugElement.queryAll(
-          By.directive(LinkedTimeFobComponent)
+          By.directive(CardFobComponent)
         );
         expect(
           fobs[0].query(By.css('span')).nativeElement.textContent.trim()
@@ -2171,7 +2171,7 @@ describe('scalar card', () => {
         fixture.detectChanges();
 
         const fobs = fixture.debugElement.queryAll(
-          By.directive(LinkedTimeFobComponent)
+          By.directive(CardFobComponent)
         );
         expect(
           fobs[0].query(By.css('span')).nativeElement.textContent.trim()
@@ -2208,7 +2208,7 @@ describe('scalar card', () => {
         const fixture = createComponent('card1');
         fixture.detectChanges();
         const testController = fixture.debugElement.query(
-          By.directive(LinkedTimeFobControllerComponent)
+          By.directive(CardFobControllerComponent)
         ).componentInstance;
         const controllerStartPosition =
           testController.root.nativeElement.getBoundingClientRect().left;
@@ -2238,7 +2238,7 @@ describe('scalar card', () => {
         const fixture = createComponent('card1');
         fixture.detectChanges();
         const fobComponent = fixture.debugElement.query(
-          By.directive(LinkedTimeFobComponent)
+          By.directive(CardFobComponent)
         ).componentInstance;
         fobComponent.fobRemoved.emit();
 

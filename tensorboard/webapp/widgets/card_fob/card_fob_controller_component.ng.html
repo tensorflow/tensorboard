@@ -30,14 +30,14 @@ limitations under the License.
       class="extended-line"
       (mousedown)="startDrag(FobType().START)"
     ></div>
-    <linked-time-fob
+    <card-fob
       class="startFob"
       [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
       [step]="linkedTime.start.step"
       (mousedown)="startDrag(FobType().START)"
       (stepChanged)="stepTyped(FobType().START, $event)"
       (fobRemoved)="onFobRemoved(FobType().START)"
-    ></linked-time-fob>
+    ></card-fob>
   </div>
   <div
     #endFobWrapper
@@ -50,13 +50,13 @@ limitations under the License.
       class="extended-line"
       (mousedown)="startDrag(FobType().END)"
     ></div>
-    <linked-time-fob
+    <card-fob
       class="endFob"
       [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
       [step]="linkedTime.end.step"
       (mousedown)="startDrag(FobType().END)"
       (stepChanged)="stepTyped(FobType().END, $event)"
       (fobRemoved)="onFobRemoved(FobType().END)"
-    ></linked-time-fob>
+    ></card-fob>
   </div>
 </div>

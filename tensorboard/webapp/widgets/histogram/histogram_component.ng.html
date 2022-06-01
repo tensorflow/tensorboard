@@ -51,14 +51,14 @@ limitations under the License.
     </svg>
     <!-- Disable the feature when in non-offset and non-step mode. -->
     <ng-container *ngIf="isLinkedTimeEnabled(linkedTime)">
-      <histogram-linked-time-fob-controller
+      <histogram-card-fob-controller
         class="linked-time"
         [linkedTime]="linkedTime"
         [steps]="getSteps()"
         [temporalScale]="scales.temporalScale"
         (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
         (onSelectTimeToggle)="onSelectTimeToggle.emit()"
-      ></histogram-linked-time-fob-controller>
+      ></histogram-card-fob-controller>
     </ng-container>
   </div>
   <svg #content class="content">

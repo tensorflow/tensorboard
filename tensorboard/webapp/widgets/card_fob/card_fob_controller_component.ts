@@ -22,7 +22,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {AxisDirection, FobCardAdapter, LinkedTime} from './linked_time_types';
+import {AxisDirection, CardFobAdapter, LinkedTime} from './card_fob_types';
 
 export enum Fob {
   NONE,
@@ -31,17 +31,17 @@ export enum Fob {
 }
 
 @Component({
-  selector: 'linked-time-fob-controller',
-  templateUrl: 'linked_time_fob_controller_component.ng.html',
-  styleUrls: ['linked_time_fob_controller_component.css'],
+  selector: 'card-fob-controller',
+  templateUrl: 'card_fob_controller_component.ng.html',
+  styleUrls: ['card_fob_controller_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LinkedTimeFobControllerComponent {
+export class CardFobControllerComponent {
   @ViewChild('startFobWrapper') readonly startFobWrapper!: ElementRef;
   @ViewChild('endFobWrapper') readonly endFobWrapper!: ElementRef;
   @Input() axisDirection!: AxisDirection;
   @Input() linkedTime!: LinkedTime;
-  @Input() cardAdapter!: FobCardAdapter;
+  @Input() cardAdapter!: CardFobAdapter;
   @Input() showExtendedLine?: Boolean = false;
 
   @Output() onSelectTimeToggle = new EventEmitter();

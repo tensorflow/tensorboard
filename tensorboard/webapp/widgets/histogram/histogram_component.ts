@@ -29,7 +29,7 @@ import {fromEvent, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
-import {LinkedTime} from '../linked_time_fob/linked_time_types';
+import {LinkedTime} from '../card_fob/card_fob_types';
 import {
   Bin,
   HistogramData,

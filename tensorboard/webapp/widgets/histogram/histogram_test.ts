@@ -22,12 +22,12 @@ import {
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
+import {CardFobComponent} from '../card_fob/card_fob_component';
+import {CardFobControllerComponent} from '../card_fob/card_fob_controller_component';
+import {LinkedTime} from '../card_fob/card_fob_types';
 import {IntersectionObserverTestingModule} from '../intersection_observer/intersection_observer_testing_module';
-import {LinkedTimeFobComponent} from '../linked_time_fob/linked_time_fob_component';
-import {LinkedTimeFobControllerComponent} from '../linked_time_fob/linked_time_fob_controller_component';
-import {LinkedTime} from '../linked_time_fob/linked_time_types';
+import {HistogramCardFobController} from './histogram_card_fob_controller';
 import {HistogramComponent, TooltipData} from './histogram_component';
-import {HistogramLinkedTimeFobController} from './histogram_linked_time_fob_controller';
 import {
   Bin,
   HistogramData,
@@ -118,7 +118,7 @@ describe('histogram test', () => {
     Y_AXIS: By.css('.y-axis'),
     HISTOGRAMS: By.css('.histograms'),
     HISTOGRAM: By.css('.histogram'),
-    LINKED_TIME_FOB: By.css('.axis .linked-time'),
+    CARD_FOB: By.css('.axis .linked-time'),
   };
   let intersectionObserver: IntersectionObserverTestingModule;
 
@@ -127,9 +127,9 @@ describe('histogram test', () => {
       imports: [NoopAnimationsModule, IntersectionObserverTestingModule],
       declarations: [
         HistogramComponent,
-        HistogramLinkedTimeFobController,
-        LinkedTimeFobComponent,
-        LinkedTimeFobControllerComponent,
+        HistogramCardFobController,
+        CardFobComponent,
+        CardFobControllerComponent,
         TestableComponent,
       ],
       schemas: [NO_ERRORS_SCHEMA],
@@ -880,7 +880,7 @@ describe('histogram test', () => {
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
-        const controls = fixture.debugElement.queryAll(byCss.LINKED_TIME_FOB);
+        const controls = fixture.debugElement.queryAll(byCss.CARD_FOB);
         expect(controls.length).toBe(0);
       });
 
@@ -896,7 +896,7 @@ describe('histogram test', () => {
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
-        const controls = fixture.debugElement.queryAll(byCss.LINKED_TIME_FOB);
+        const controls = fixture.debugElement.queryAll(byCss.CARD_FOB);
         expect(controls.length).toBe(0);
       });
     });
@@ -1227,7 +1227,7 @@ describe('histogram test', () => {
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
         const fobComponent = fixture.debugElement.query(
-          By.directive(LinkedTimeFobComponent)
+          By.directive(CardFobComponent)
         ).componentInstance;
         fobComponent.fobRemoved.emit();
 

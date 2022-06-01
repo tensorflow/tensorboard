@@ -12,23 +12,20 @@ limitations under the License.
 
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {CardFobControllerComponent} from '../../../widgets/card_fob/card_fob_controller_component';
+import {LinkedTime} from '../../../widgets/card_fob/card_fob_types';
 import {LinearScale} from '../../../widgets/line_chart_v2/lib/scale';
-import {LinkedTimeFobControllerComponent} from '../../../widgets/linked_time_fob/linked_time_fob_controller_component';
-import {LinkedTime} from '../../../widgets/linked_time_fob/linked_time_types';
-import {ScalarCardLinkedTimeFobController} from './scalar_card_linked_time_fob_controller';
+import {ScalarCardFobController} from './scalar_card_fob_controller';
 
 const SCALE_RATIO = 10;
 
-describe('ScalarLinkedTimeFobController', () => {
+describe('ScalarFobController', () => {
   let forwardScaleSpy: jasmine.Spy;
   let reverseScaleSpy: jasmine.Spy;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [
-        ScalarCardLinkedTimeFobController,
-        LinkedTimeFobControllerComponent,
-      ],
+      declarations: [ScalarCardFobController, CardFobControllerComponent],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
@@ -37,8 +34,8 @@ describe('ScalarLinkedTimeFobController', () => {
     linkedTime?: LinkedTime;
     minMax?: [number, number];
     axisSize?: number;
-  }): ComponentFixture<ScalarCardLinkedTimeFobController> {
-    const fixture = TestBed.createComponent(ScalarCardLinkedTimeFobController);
+  }): ComponentFixture<ScalarCardFobController> {
+    const fixture = TestBed.createComponent(ScalarCardFobController);
     fixture.componentInstance.linkedTime = input.linkedTime ?? {
       start: {step: 200},
       end: null,

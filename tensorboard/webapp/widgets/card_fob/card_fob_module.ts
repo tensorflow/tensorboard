@@ -16,12 +16,12 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {MatIconModule} from '@angular/material/icon';
-import {LinkedTimeFobComponent} from './linked_time_fob_component';
-import {LinkedTimeFobControllerComponent} from './linked_time_fob_controller_component';
+import {CardFobComponent} from './card_fob_component';
+import {CardFobControllerComponent} from './card_fob_controller_component';
 
 @NgModule({
-  declarations: [LinkedTimeFobComponent, LinkedTimeFobControllerComponent],
-  exports: [LinkedTimeFobComponent, LinkedTimeFobControllerComponent],
+  declarations: [CardFobComponent, CardFobControllerComponent],
+  exports: [CardFobComponent, CardFobControllerComponent],
   imports: [CommonModule, MatIconModule],
 })
-export class LinkedTimeFobModule {}
+export class CardFobModule {}

@@ -219,13 +219,13 @@ limitations under the License.
   let-xScale="xScale"
 >
   <ng-container *ngIf="selectedTime">
-    <scalar-card-linked-time-fob-controller
+    <scalar-card-fob-controller
       [linkedTime]="getLinkedTime()"
       [scale]="xScale"
       [minMax]="viewExtent.x"
       [axisSize]="domDim.width"
       (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
       (onSelectTimeToggle)="onSelectTimeToggle.emit()"
-    ></scalar-card-linked-time-fob-controller>
+    ></scalar-card-fob-controller>
   </ng-container>
 </ng-template>

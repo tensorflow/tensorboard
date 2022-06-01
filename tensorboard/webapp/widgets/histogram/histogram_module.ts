@@ -14,20 +14,20 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
+import {CardFobModule} from '../card_fob/card_fob_module';
 import {IntersectionObserverModule} from '../intersection_observer/intersection_observer_module';
-import {LinkedTimeFobModule} from '../linked_time_fob/linked_time_fob_module';
 import {ResizeDetectorModule} from '../resize_detector_module';
+import {HistogramCardFobController} from './histogram_card_fob_controller';
 import {HistogramComponent} from './histogram_component';
-import {HistogramLinkedTimeFobController} from './histogram_linked_time_fob_controller';
 
 @NgModule({
-  declarations: [HistogramComponent, HistogramLinkedTimeFobController],
+  declarations: [HistogramComponent, HistogramCardFobController],
   exports: [HistogramComponent],
   imports: [
+    CardFobModule,
     CommonModule,
     ResizeDetectorModule,
     IntersectionObserverModule,
-    LinkedTimeFobModule,
   ],
 })
 export class HistogramModule {}

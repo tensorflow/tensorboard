@@ -25,12 +25,12 @@ import {
 } from '@angular/core';
 
 @Component({
-  selector: 'linked-time-fob',
-  templateUrl: 'linked_time_fob_component.ng.html',
-  styleUrls: ['linked_time_fob_component.css'],
+  selector: 'card-fob',
+  templateUrl: 'card_fob_component.ng.html',
+  styleUrls: ['card_fob_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LinkedTimeFobComponent {
+export class CardFobComponent {
   @ViewChild('stepSpan', {static: true, read: ElementRef})
   private readonly stepSpan!: ElementRef<HTMLInputElement>;
 

@@ -24,6 +24,7 @@ import {
 } from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {DataLoadState} from '../../../types/data';
+import {LinkedTime} from '../../../widgets/card_fob/card_fob_types';
 import {
   Formatter,
   intlNumberFormatter,
@@ -37,7 +38,6 @@ import {
   ScaleType,
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
-import {LinkedTime} from '../../../widgets/linked_time_fob/linked_time_types';
 import {TooltipSort, XAxisType} from '../../types';
 import {
   ScalarCardDataSeries,

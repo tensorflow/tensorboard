@@ -52,9 +52,9 @@ import {
   getRunColorMap,
 } from '../../../selectors';
 import {DataLoadState} from '../../../types/data';
+import {LinkedTime} from '../../../widgets/card_fob/card_fob_types';
 import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
-import {LinkedTime} from '../../../widgets/linked_time_fob/linked_time_types';
 import {selectTimeEnableToggled, timeSelectionChanged} from '../../actions';
 import {PluginType, ScalarStepDatum} from '../../data_source';
 import {

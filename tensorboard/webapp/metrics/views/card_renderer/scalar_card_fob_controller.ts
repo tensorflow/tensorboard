@@ -11,28 +11,28 @@ limitations under the License.
 ==============================================================================*/
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
 import {
   AxisDirection,
-  FobCardAdapter,
+  CardFobAdapter,
   LinkedTime,
-} from '../../../widgets/linked_time_fob/linked_time_types';
+} from '../../../widgets/card_fob/card_fob_types';
+import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
 
 @Component({
-  selector: 'scalar-card-linked-time-fob-controller',
+  selector: 'scalar-card-fob-controller',
   template: `
-    <linked-time-fob-controller
+    <card-fob-controller
       [axisDirection]="axisDirection"
       [linkedTime]="linkedTime"
       [cardAdapter]="this"
       [showExtendedLine]="true"
       (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
       (onSelectTimeToggle)="onSelectTimeToggle.emit($event)"
-    ></linked-time-fob-controller>
+    ></card-fob-controller>
   `,
   styleUrls: ['scalar_card_linked_time_fob_controller.css'],
 })
-export class ScalarCardLinkedTimeFobController implements FobCardAdapter {
+export class ScalarCardFobController implements CardFobAdapter {
   @Input() linkedTime!: LinkedTime;
   @Input() scale!: Scale;
   @Input() minMax!: [number, number];
