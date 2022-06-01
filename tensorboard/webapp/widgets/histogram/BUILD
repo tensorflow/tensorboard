@@ -12,8 +12,8 @@ tf_sass_binary(
 tf_ng_module(
     name = "histogram",
     srcs = [
-        "histogram_component.ts",
         "histogram_card_fob_controller.ts",
+        "histogram_component.ts",
         "histogram_module.ts",
     ],
     assets = [
@@ -24,9 +24,9 @@ tf_ng_module(
         ":types",
         "//tensorboard/webapp/third_party:d3",
         "//tensorboard/webapp/widgets:resize_detector",
-        "//tensorboard/webapp/widgets/intersection_observer",
         "//tensorboard/webapp/widgets/card_fob",
         "//tensorboard/webapp/widgets/card_fob:types",
+        "//tensorboard/webapp/widgets/intersection_observer",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//rxjs",
@@ -47,9 +47,9 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/third_party:d3",
-        "//tensorboard/webapp/widgets/intersection_observer:intersection_observer_testing",
         "//tensorboard/webapp/widgets/card_fob",
         "//tensorboard/webapp/widgets/card_fob:types",
+        "//tensorboard/webapp/widgets/intersection_observer:intersection_observer_testing",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@types/jasmine",

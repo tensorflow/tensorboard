@@ -46,8 +46,8 @@ tf_ts_library(
     ],
     visibility = ["//tensorboard/webapp/metrics:__subpackages__"],
     deps = [
-        "//tensorboard/webapp/widgets/histogram:types",
         "//tensorboard/webapp/widgets/card_fob:types",
+        "//tensorboard/webapp/widgets/histogram:types",
     ],
 )
 
