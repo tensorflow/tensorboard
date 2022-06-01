@@ -17,9 +17,6 @@
 You are expected to bring a pre-built copy of the actual underlying data
 server binary and pass it as an argument to this script. In return, this
 script will generate a wheel and print its path to stdout.
-
-The given data server binary should be for the same platform on which
-this script is run. This script does not cross-compile.
 """
 
 # Only standard library dependencies, to make this easy to run without Bazel.
@@ -35,11 +32,31 @@ import tempfile
 
 
 def main():
+    cpu_name = platform.machine()
+    mac_platform = "macosx_10_9"
+    if cpu_name == "arm64":
+        mac_platform = "macosx_11_0"
+    platform_name = {
+        # using platform tag values from TensorFlow releases
+        "Linux": "manylinux2010",
+        "Darwin": mac_platform
+    }.get(platform.system())
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--out-dir",
         help="Output directory into which to place the wheel; should already exist",
         required=True,
+    )
+    parser.add_argument(
+        "--platform",
+        default=platform_name,
+        help="Platform to build a wheel for",
+    )
+    parser.add_argument(
+        "--cpu",
+        default=cpu_name,
+        help="CPU to build a wheel for",
     )
     binary_group = parser.add_mutually_exclusive_group(required=True)
     binary_group.add_argument(
@@ -75,20 +92,11 @@ def main():
     if args.universal:
         platform_tag = "any"
     else:
-        cpu_name = platform.machine()
-        mac_platform = "macosx_10_9"
-        if cpu_name == "arm64":
-            mac_platform = "macosx_11_0"
-        platform_name = {
-            # using platform tag values from TensorFlow releases
-            "Linux": "manylinux2010",
-            "Darwin": mac_platform
-        }.get(platform.system())
-        if platform_name is None:
+        if args.platform is None:
             raise RuntimeError(
                 "Unsupported platform: %r" % (platform.system(),)
             )
-        platform_tag = "%s_%s" % (platform_name, cpu_name)
+        platform_tag = "%s_%s" % (args.platform, args.cpu)
 
     os.chdir(tmpdir)
     subprocess.run(
