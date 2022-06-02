@@ -13,24 +13,24 @@ limitations under the License.
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {
   AxisDirection,
-  FobCardAdapter,
+  CardFobAdapter,
   LinkedTime,
-} from '../linked_time_fob/linked_time_types';
+} from '../card_fob/card_fob_types';
 import {TemporalScale} from './histogram_component';
 
 @Component({
-  selector: 'histogram-linked-time-fob-controller',
+  selector: 'histogram-card-fob-controller',
   template: `
-    <linked-time-fob-controller
+    <card-fob-controller
       [axisDirection]="axisDirection"
       [linkedTime]="linkedTime"
       [cardAdapter]="this"
       (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
       (onSelectTimeToggle)="onSelectTimeToggle.emit()"
-    ></linked-time-fob-controller>
+    ></card-fob-controller>
   `,
 })
-export class HistogramLinkedTimeFobController implements FobCardAdapter {
+export class HistogramCardFobController implements CardFobAdapter {
   @Input() steps!: number[];
   @Input() linkedTime!: LinkedTime;
   @Input() temporalScale!: TemporalScale;

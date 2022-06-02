@@ -18,34 +18,34 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {CardFobModule} from '../../../widgets/card_fob/card_fob_module';
 import {DataTableModule} from '../../../widgets/data_table/data_table_module';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {IntersectionObserverModule} from '../../../widgets/intersection_observer/intersection_observer_module';
 import {LineChartModule as LineChartV2Module} from '../../../widgets/line_chart_v2/line_chart_module';
-import {LinkedTimeFobModule} from '../../../widgets/linked_time_fob/linked_time_fob_module';
 import {ResizeDetectorModule} from '../../../widgets/resize_detector_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {DataDownloadModule} from './data_download_module';
 import {ScalarCardComponent} from './scalar_card_component';
 import {ScalarCardContainer} from './scalar_card_container';
-import {ScalarCardLinkedTimeFobController} from './scalar_card_linked_time_fob_controller';
+import {ScalarCardFobController} from './scalar_card_fob_controller';
 import {VisSelectedTimeWarningModule} from './vis_selected_time_warning_module';
 
 @NgModule({
   declarations: [
     ScalarCardContainer,
     ScalarCardComponent,
-    ScalarCardLinkedTimeFobController,
+    ScalarCardFobController,
   ],
   exports: [ScalarCardContainer],
   imports: [
+    CardFobModule,
     CommonModule,
     DataDownloadModule,
     DataTableModule,
     ExperimentAliasModule,
     IntersectionObserverModule,
     LineChartV2Module,
-    LinkedTimeFobModule,
     MatButtonModule,
     MatIconModule,
     MatMenuModule,

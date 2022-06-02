@@ -16,41 +16,38 @@ limitations under the License.
 import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-import {LinkedTimeFobComponent} from './linked_time_fob_component';
-import {
-  Fob,
-  LinkedTimeFobControllerComponent,
-} from './linked_time_fob_controller_component';
-import {AxisDirection, FobCardAdapter, LinkedTime} from './linked_time_types';
+import {CardFobComponent} from './card_fob_component';
+import {CardFobControllerComponent, Fob} from './card_fob_controller_component';
+import {AxisDirection, CardFobAdapter, LinkedTime} from './card_fob_types';
 
 @Component({
   selector: 'testable-comp',
   template: `
-    <linked-time-fob-controller
+    <card-fob-controller
       #FobController
       [axisDirection]="axisDirection"
       [linkedTime]="linkedTime"
-      [cardAdapter]="fobCardAdapter"
+      [cardAdapter]="cardFobAdapter"
       [showExtendedLine]="showExtendedLine"
       (onSelectTimeChanged)="onSelectTimeChanged($event)"
       (onSelectTimeToggle)="onSelectTimeToggle()"
-    ></linked-time-fob-controller>
+    ></card-fob-controller>
   `,
 })
 class TestableComponent {
   @ViewChild('FobController')
-  fobController!: LinkedTimeFobControllerComponent;
+  fobController!: CardFobControllerComponent;
 
   @Input() axisDirection!: AxisDirection;
   @Input() linkedTime!: LinkedTime;
-  @Input() fobCardAdapter!: FobCardAdapter;
+  @Input() cardFobAdapter!: CardFobAdapter;
   @Input() showExtendedLine?: Boolean;
 
   @Input() onSelectTimeChanged!: (newLinkedTime: LinkedTime) => void;
   @Input() onSelectTimeToggle!: () => void;
 }
 
-describe('linked_time_fob_controller', () => {
+describe('card_fob_controller', () => {
   let onSelectTimeChanged: jasmine.Spy;
   let onSelectTimeToggle: jasmine.Spy;
   let getHighestStepSpy: jasmine.Spy;
@@ -58,13 +55,13 @@ describe('linked_time_fob_controller', () => {
   let getAxisPositionFromStepSpy: jasmine.Spy;
   let getStepHigherSpy: jasmine.Spy;
   let getStepLowerSpy: jasmine.Spy;
-  let fobCardAdapter: FobCardAdapter;
+  let cardFobAdapter: CardFobAdapter;
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [
         TestableComponent,
-        LinkedTimeFobComponent,
-        LinkedTimeFobControllerComponent,
+        CardFobComponent,
+        CardFobControllerComponent,
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -89,7 +86,7 @@ describe('linked_time_fob_controller', () => {
     getAxisPositionFromStepSpy = jasmine.createSpy();
     getStepHigherSpy = jasmine.createSpy();
     getStepLowerSpy = jasmine.createSpy();
-    fobCardAdapter = {
+    cardFobAdapter = {
       getHighestStep: getHighestStepSpy,
       getLowestStep: getLowestStepSpy,
       getAxisPositionFromStep: getAxisPositionFromStepSpy,
@@ -108,7 +105,7 @@ describe('linked_time_fob_controller', () => {
     getStepLowerSpy.and.callFake((step: number) => {
       return step;
     });
-    fixture.componentInstance.fobCardAdapter = fobCardAdapter;
+    fixture.componentInstance.cardFobAdapter = cardFobAdapter;
 
     fixture.componentInstance.axisDirection =
       input.axisDirection ?? AxisDirection.VERTICAL;
@@ -145,10 +142,12 @@ describe('linked_time_fob_controller', () => {
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(1);
+
       fobController.startDrag(Fob.START);
       const fakeEvent = new MouseEvent('mousemove', {clientY: 3, movementY: 1});
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
+
       expect(getStepHigherSpy).toHaveBeenCalledOnceWith(3);
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
@@ -168,6 +167,7 @@ describe('linked_time_fob_controller', () => {
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(4);
+
       fobController.startDrag(Fob.START);
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 2,
@@ -175,6 +175,7 @@ describe('linked_time_fob_controller', () => {
       });
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
+
       expect(getStepLowerSpy).toHaveBeenCalledOnceWith(2);
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
@@ -184,6 +185,7 @@ describe('linked_time_fob_controller', () => {
         end: null,
       });
     });
+
     it('does not call getStepLowerThanMousePosition or getStepHigherThanMousePosition when mouse is dragging up but, is below the fob', () => {
       const fixture = createComponent({
         linkedTime: {start: {step: 2}, end: null},
@@ -193,6 +195,7 @@ describe('linked_time_fob_controller', () => {
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(2);
+
       fobController.startDrag(Fob.START);
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 4,
@@ -200,6 +203,7 @@ describe('linked_time_fob_controller', () => {
       });
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
+
       expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
       expect(getStepHigherSpy).toHaveBeenCalledTimes(0);
       expect(
@@ -207,6 +211,7 @@ describe('linked_time_fob_controller', () => {
       ).toEqual(2);
       expect(onSelectTimeChanged).toHaveBeenCalledTimes(0);
     });
+
     it('does not call getStepLowerThanMousePosition or getStepHigherThanMousePosition when mouse is dragging down but, is above the fob', () => {
       const fixture = createComponent({
         linkedTime: {start: {step: 4}, end: null},
@@ -216,10 +221,12 @@ describe('linked_time_fob_controller', () => {
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(4);
+
       fobController.startDrag(Fob.START);
       const fakeEvent = new MouseEvent('mousemove', {clientY: 2, movementY: 1});
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
+
       expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
       expect(getStepHigherSpy).toHaveBeenCalledTimes(0);
       expect(
@@ -227,6 +234,7 @@ describe('linked_time_fob_controller', () => {
       ).toEqual(4);
       expect(onSelectTimeChanged).toHaveBeenCalledTimes(0);
     });
+
     it('does not move the start fob or call call getStepLowerThanMousePosition or getStepHigherThanMousePosition when mouse is dragging down but, the fob is already on the final step', () => {
       const fixture = createComponent({
         linkedTime: {start: {step: 4}, end: null},
@@ -237,10 +245,12 @@ describe('linked_time_fob_controller', () => {
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(4);
+
       fobController.startDrag(Fob.START);
       const fakeEvent = new MouseEvent('mousemove', {clientY: 8, movementY: 1});
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
+
       expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
       expect(getStepHigherSpy).toHaveBeenCalledTimes(0);
       expect(
@@ -248,6 +258,7 @@ describe('linked_time_fob_controller', () => {
       ).toEqual(4);
       expect(onSelectTimeChanged).toHaveBeenCalledTimes(0);
     });
+
     it('end fob moves to the mouse when mouse is dragging up and mouse is above the fob', () => {
       const fixture = createComponent({
         linkedTime: {start: {step: 1}, end: {step: 1}},
@@ -257,11 +268,13 @@ describe('linked_time_fob_controller', () => {
       expect(
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(1);
+
       fobController.startDrag(Fob.END);
       onSelectTimeChanged.calls.reset();
       const fakeEvent = new MouseEvent('mousemove', {clientY: 3, movementY: 1});
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
+
       expect(getStepHigherSpy).toHaveBeenCalledOnceWith(3);
       expect(
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
@@ -271,6 +284,7 @@ describe('linked_time_fob_controller', () => {
         end: {step: 3},
       });
     });
+
     it('end fob moves to the mouse when mouse is dragging down and mouse is below the fob', () => {
       const fixture = createComponent({
         linkedTime: {start: {step: 1}, end: {step: 4}},
@@ -280,6 +294,7 @@ describe('linked_time_fob_controller', () => {
       expect(
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(4);
+
       fobController.startDrag(Fob.END);
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 2,
@@ -287,6 +302,7 @@ describe('linked_time_fob_controller', () => {
       });
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
+
       expect(getStepLowerSpy).toHaveBeenCalledOnceWith(2);
       expect(
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
@@ -296,6 +312,7 @@ describe('linked_time_fob_controller', () => {
         end: {step: 2},
       });
     });
+
     it('end fob does not move when mouse is dragging down but, mouse is above the fob', () => {
       const fixture = createComponent({
         linkedTime: {start: {step: 1}, end: {step: 2}},
@@ -305,6 +322,7 @@ describe('linked_time_fob_controller', () => {
       expect(
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(2);
+
       fobController.startDrag(Fob.END);
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 3,
@@ -312,6 +330,7 @@ describe('linked_time_fob_controller', () => {
       });
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
+
       expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
       expect(getStepHigherSpy).toHaveBeenCalledTimes(0);
       expect(
@@ -319,6 +338,7 @@ describe('linked_time_fob_controller', () => {
       ).toEqual(2);
       expect(onSelectTimeChanged).toHaveBeenCalledTimes(0);
     });
+
     it('end fob does not move when mouse is dragging up but, mouse is below the fob', () => {
       const fixture = createComponent({
         linkedTime: {start: {step: 1}, end: {step: 3}},
@@ -328,10 +348,12 @@ describe('linked_time_fob_controller', () => {
       expect(
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(3);
+
       fobController.startDrag(Fob.END);
       const fakeEvent = new MouseEvent('mousemove', {clientY: 2, movementY: 1});
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
+
       expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
       expect(getStepHigherSpy).toHaveBeenCalledTimes(0);
       expect(
@@ -352,10 +374,12 @@ describe('linked_time_fob_controller', () => {
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(1);
+
       fobController.startDrag(Fob.START);
       const fakeEvent = new MouseEvent('mousemove', {clientX: 3, movementX: 1});
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
+
       expect(getStepHigherSpy).toHaveBeenCalledOnceWith(3);
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
@@ -376,6 +400,7 @@ describe('linked_time_fob_controller', () => {
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(4);
+
       fobController.startDrag(Fob.START);
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 2,
@@ -383,6 +408,7 @@ describe('linked_time_fob_controller', () => {
       });
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
+
       expect(getStepLowerSpy).toHaveBeenCalledOnceWith(2);
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
@@ -392,6 +418,7 @@ describe('linked_time_fob_controller', () => {
         end: null,
       });
     });
+
     it('does not call getStepLowerThanMousePosition or getStepHigherThanMousePosition when mouse is dragging left but, is right of the fob', () => {
       const fixture = createComponent({
         linkedTime: {start: {step: 2}, end: null},
@@ -402,6 +429,7 @@ describe('linked_time_fob_controller', () => {
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(2);
+
       fobController.startDrag(Fob.START);
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 4,
@@ -409,6 +437,7 @@ describe('linked_time_fob_controller', () => {
       });
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
+
       expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
       expect(getStepHigherSpy).toHaveBeenCalledTimes(0);
       expect(
@@ -416,6 +445,7 @@ describe('linked_time_fob_controller', () => {
       ).toEqual(2);
       expect(onSelectTimeChanged).toHaveBeenCalledTimes(0);
     });
+
     it('does not call getStepLowerThanMousePosition or getStepHigherThanMousePosition when mouse is dragging right but, is left of the fob', () => {
       const fixture = createComponent({
         linkedTime: {start: {step: 4}, end: null},
@@ -426,10 +456,12 @@ describe('linked_time_fob_controller', () => {
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(4);
+
       fobController.startDrag(Fob.START);
       const fakeEvent = new MouseEvent('mousemove', {clientX: 2, movementX: 1});
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
+
       expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
       expect(getStepHigherSpy).toHaveBeenCalledTimes(0);
       expect(
@@ -437,6 +469,7 @@ describe('linked_time_fob_controller', () => {
       ).toEqual(4);
       expect(onSelectTimeChanged).toHaveBeenCalledTimes(0);
     });
+
     it('does not move the start fob or call call getStepLowerThanMousePosition or getStepHigherThanMousePosition when mouse is dragging right but, the fob is already on the final step', () => {
       const fixture = createComponent({
         linkedTime: {start: {step: 4}, end: null},
@@ -444,14 +477,17 @@ describe('linked_time_fob_controller', () => {
       });
       getHighestStepSpy.and.callFake(() => 4);
       fixture.detectChanges();
+
       const fobController = fixture.componentInstance.fobController;
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(4);
+
       fobController.startDrag(Fob.START);
       const fakeEvent = new MouseEvent('mousemove', {clientX: 8, movementX: 1});
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
+
       expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
       expect(getStepHigherSpy).toHaveBeenCalledTimes(0);
       expect(
@@ -459,6 +495,7 @@ describe('linked_time_fob_controller', () => {
       ).toEqual(4);
       expect(onSelectTimeChanged).toHaveBeenCalledTimes(0);
     });
+
     it('end fob moves to the mouse when mouse is dragging left and mouse is left of the fob', () => {
       const fixture = createComponent({
         linkedTime: {start: {step: 1}, end: {step: 1}},
@@ -469,11 +506,13 @@ describe('linked_time_fob_controller', () => {
       expect(
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(1);
+
       fobController.startDrag(Fob.END);
       onSelectTimeChanged.calls.reset();
       const fakeEvent = new MouseEvent('mousemove', {clientX: 3, movementX: 1});
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
+
       expect(getStepHigherSpy).toHaveBeenCalledOnceWith(3);
       expect(
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
@@ -483,6 +522,7 @@ describe('linked_time_fob_controller', () => {
         end: {step: 3},
       });
     });
+
     it('end fob moves to the mouse when mouse is dragging right and mouse is right of the fob', () => {
       const fixture = createComponent({
         linkedTime: {start: {step: 1}, end: {step: 4}},
@@ -493,6 +533,7 @@ describe('linked_time_fob_controller', () => {
       expect(
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(4);
+
       fobController.startDrag(Fob.END);
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 2,
@@ -500,6 +541,7 @@ describe('linked_time_fob_controller', () => {
       });
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
+
       expect(getStepLowerSpy).toHaveBeenCalledOnceWith(2);
       expect(
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
@@ -509,6 +551,7 @@ describe('linked_time_fob_controller', () => {
         end: {step: 2},
       });
     });
+
     it('end fob does not move when mouse is dragging right but, mouse is left of the fob', () => {
       const fixture = createComponent({
         linkedTime: {start: {step: 1}, end: {step: 2}},
@@ -519,6 +562,7 @@ describe('linked_time_fob_controller', () => {
       expect(
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(2);
+
       fobController.startDrag(Fob.END);
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 3,
@@ -526,6 +570,7 @@ describe('linked_time_fob_controller', () => {
       });
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
+
       expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
       expect(getStepHigherSpy).toHaveBeenCalledTimes(0);
       expect(
@@ -533,12 +578,14 @@ describe('linked_time_fob_controller', () => {
       ).toEqual(2);
       expect(onSelectTimeChanged).toHaveBeenCalledTimes(0);
     });
+
     it('end fob does not move when mouse is dragging left but, mouse is right of the fob', () => {
       const fixture = createComponent({
         linkedTime: {start: {step: 1}, end: {step: 3}},
         axisDirection: AxisDirection.HORIZONTAL,
       });
       fixture.detectChanges();
+
       const fobController = fixture.componentInstance.fobController;
       expect(
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
@@ -547,6 +594,7 @@ describe('linked_time_fob_controller', () => {
       const fakeEvent = new MouseEvent('mousemove', {clientX: 2, movementX: 1});
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
+
       expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
       expect(getStepHigherSpy).toHaveBeenCalledTimes(0);
       expect(
@@ -735,7 +783,7 @@ describe('linked_time_fob_controller', () => {
       fixture.detectChanges();
 
       const stepSpan = fixture.debugElement.query(
-        By.css('linked-time-fob.startFob span')
+        By.css('card-fob.startFob span')
       );
       stepSpan.nativeElement.innerText = '8';
       stepSpan.triggerEventHandler('keydown.enter', {
@@ -756,7 +804,7 @@ describe('linked_time_fob_controller', () => {
       fixture.detectChanges();
 
       const stepSpan = fixture.debugElement.query(
-        By.css('linked-time-fob.endFob span')
+        By.css('card-fob.endFob span')
       );
       stepSpan.nativeElement.innerText = '8';
       const preventDefaultSpy = jasmine.createSpy();
@@ -781,7 +829,7 @@ describe('linked_time_fob_controller', () => {
       fixture.detectChanges();
 
       const deselectButton = fixture.debugElement.query(
-        By.css('linked-time-fob.startFob button')
+        By.css('card-fob.startFob button')
       );
       deselectButton.triggerEventHandler('click', {});
       fixture.detectChanges();
@@ -796,7 +844,7 @@ describe('linked_time_fob_controller', () => {
       fixture.detectChanges();
 
       const deselectButton = fixture.debugElement.query(
-        By.css('linked-time-fob.endFob button')
+        By.css('card-fob.endFob button')
       );
       deselectButton.triggerEventHandler('click', {});
       fixture.detectChanges();
@@ -814,7 +862,7 @@ describe('linked_time_fob_controller', () => {
       fixture.detectChanges();
 
       const deselectButton = fixture.debugElement.query(
-        By.css('linked-time-fob.startFob button')
+        By.css('card-fob.startFob button')
       );
       deselectButton.triggerEventHandler('click', {});
       fixture.detectChanges();

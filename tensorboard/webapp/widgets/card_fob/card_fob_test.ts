@@ -16,23 +16,23 @@ limitations under the License.
 import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-import {LinkedTimeFobComponent} from './linked_time_fob_component';
-import {AxisDirection} from './linked_time_types';
+import {CardFobComponent} from './card_fob_component';
+import {AxisDirection} from './card_fob_types';
 
 @Component({
   selector: 'testable-fob-comp',
   template: `
-    <linked-time-fob
+    <card-fob
       #Fob
       [axisDirection]="axisDirection"
       [step]="step"
       (stepChanged)="stepChanged($event)"
-    ></linked-time-fob>
+    ></card-fob>
   `,
 })
 class TestableFobComponent {
   @ViewChild('Fob')
-  fob!: LinkedTimeFobComponent;
+  fob!: CardFobComponent;
 
   @Input() step!: number;
   @Input() axisDirection!: AxisDirection;
@@ -40,12 +40,12 @@ class TestableFobComponent {
   @Input() stepChanged!: (newStep: number) => void;
 }
 
-describe('linked time fob', () => {
+describe('card fob', () => {
   let stepChangedSpy: jasmine.Spy;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [TestableFobComponent, LinkedTimeFobComponent],
+      declarations: [TestableFobComponent, CardFobComponent],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
