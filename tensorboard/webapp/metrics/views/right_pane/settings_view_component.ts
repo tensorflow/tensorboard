@@ -65,7 +65,7 @@ export class SettingsViewComponent {
 
   @Input() isCardWidthSettingEnabled!: boolean;
   @Input() isLinkedTimeFeatureEnabled!: boolean;
-  @Input() isScalarTimeSelectorEnabled!: boolean;
+  @Input() isScalarStepSelectorEnabled!: boolean;
   @Input() selectTimeEnabled!: boolean;
   @Input() useRangeSelectTime!: boolean;
   @Input() selectedTime!: LinkedTime | null;
@@ -74,7 +74,7 @@ export class SettingsViewComponent {
   @Output() selectTimeEnableToggled = new EventEmitter<void>();
   @Output() selectTimeChanged = new EventEmitter<LinkedTime>();
 
-  @Output() timeSelectorEnableToggled = new EventEmitter<void>();
+  @Output() stepSelectorEnableToggled = new EventEmitter<void>();
 
   @Input() isImageSupportEnabled!: boolean;
 

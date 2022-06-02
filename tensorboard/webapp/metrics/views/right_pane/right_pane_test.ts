@@ -526,7 +526,7 @@ describe('metrics right_pane', () => {
       });
     });
 
-    describe('time selector feature enabled', () => {
+    describe('step selector feature enabled', () => {
       beforeEach(() => {
         store.overrideSelector(selectors.getIsDataTableEnabled, true);
       });
@@ -536,7 +536,7 @@ describe('metrics right_pane', () => {
         fixture.detectChanges();
 
         expect(
-          select(fixture, '.scalars-time-selector input').attributes[
+          select(fixture, '.scalars-step-selector input').attributes[
             'aria-checked'
           ]
         ).toBe('false');

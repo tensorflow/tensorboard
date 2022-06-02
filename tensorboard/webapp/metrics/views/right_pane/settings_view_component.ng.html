@@ -128,13 +128,13 @@ limitations under the License.
   </div>
 
   <div
-    class="control-row scalars-time-selector"
-    *ngIf="isScalarTimeSelectorEnabled"
+    class="control-row scalars-step-selector"
+    *ngIf="isScalarStepSelectorEnabled"
   >
     <mat-checkbox
-      [checked]="timeSelectorEnabled"
-      (change)="timeSelectorEnableToggled.emit()"
-      >Time Selector</mat-checkbox
+      [checked]="stepSelectorEnabled"
+      (change)="stepSelectorEnableToggled.emit()"
+      >Step Selector</mat-checkbox
     >
   </div>
 
