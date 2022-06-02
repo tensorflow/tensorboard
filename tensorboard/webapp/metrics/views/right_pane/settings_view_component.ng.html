@@ -127,6 +127,17 @@ limitations under the License.
     >
   </div>
 
+  <div
+    class="control-row scalars-time-selector"
+    *ngIf="isScalarTimeSelectorEnabled"
+  >
+    <mat-checkbox
+      [checked]="timeSelectorEnabled"
+      (change)="timeSelectorEnableToggled.emit()"
+      >Time Selector</mat-checkbox
+    >
+  </div>
+
   <div class="control-row scalars-partition-x">
     <mat-checkbox
       [checked]="scalarPartitionX"

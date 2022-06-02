@@ -88,6 +88,7 @@ describe('metrics right_pane', () => {
       store.overrideSelector(selectors.getIsFeatureFlagsLoaded, true);
       store.overrideSelector(selectors.getIsMetricsImageSupportEnabled, true);
       store.overrideSelector(selectors.getIsLinkedTimeEnabled, false);
+      store.overrideSelector(selectors.getIsDataTableEnabled, false);
       store.overrideSelector(selectors.getEnabledCardWidthSetting, false);
       store.overrideSelector(selectors.getMetricsCardMinWidth, null);
       store.overrideSelector(selectors.getMetricsSelectTimeEnabled, false);
@@ -522,6 +523,23 @@ describe('metrics right_pane', () => {
             })
           );
         });
+      });
+    });
+
+    describe('time selector feature enabled', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectors.getIsDataTableEnabled, true);
+      });
+
+      it('renders', () => {
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+
+        expect(
+          select(fixture, '.scalars-time-selector input').attributes[
+            'aria-checked'
+          ]
+        ).toBe('false');
       });
     });
   });
