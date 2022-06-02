@@ -40,7 +40,10 @@ import {
 import {LinkedTime} from '../../../widgets/linked_time_fob/linked_time_types';
 import {TooltipSort, XAxisType} from '../../types';
 import {
+  ColumnHeaders,
+  RunStepData,
   ScalarCardDataSeries,
+  ScalarCardPoint,
   ScalarCardSeriesMetadata,
   ScalarCardSeriesMetadataMap,
 } from './scalar_card_types';
@@ -97,6 +100,12 @@ export class ScalarCardComponent<Downloader> {
 
   yScaleType = ScaleType.LINEAR;
   isViewBoxOverridden: boolean = false;
+  dataHeaders: ColumnHeaders[] = [
+    ColumnHeaders.RUN,
+    ColumnHeaders.VALUE,
+    ColumnHeaders.STEP,
+    ColumnHeaders.RELATIVE_TIME,
+  ];
 
   toggleYScaleType() {
     this.yScaleType =
@@ -181,6 +190,48 @@ export class ScalarCardComponent<Downloader> {
           return 0;
         });
     }
+  }
+
+  getSelectedTimeTableData(): RunStepData[] {
+    if (this.selectedTime === null) {
+      return [];
+    }
+    const dataTableData = this.dataSeries
+      .map((datum) => {
+        const metadata = this.chartMetadataMap[datum.id];
+        const closestStartPoint = this.getClosestPoint(
+          datum.points,
+          this.selectedTime!.startStep
+        );
+        const closestEndPoint = null;
+        return {
+          metadata,
+          closestStartPoint,
+          closestEndPoint,
+        };
+      })
+      .filter(({metadata}) => {
+        return metadata && metadata.visible && !Boolean(metadata.aux);
+      });
+    return dataTableData;
+  }
+
+  getClosestPoint(points: ScalarCardPoint[], step: number): ScalarCardPoint {
+    let minDist = Math.abs(points[0].step - step);
+    let currentMinIndex = 0;
+    for (let i = 1; i < points.length; i++) {
+      const distance = Math.abs(points[i].step - step);
+      if (distance <= minDist) {
+        minDist = distance;
+        currentMinIndex = i;
+      } else {
+        // Since the points are in order if the distance is growing we have
+        // already hit the closest point.
+        break;
+      }
+    }
+
+    return points[currentMinIndex];
   }
 
   openDataDownloadDialog(): void {
