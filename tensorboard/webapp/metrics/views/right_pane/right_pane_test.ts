@@ -550,6 +550,17 @@ describe('metrics right_pane', () => {
           ]
         ).toBe('false');
       });
+
+      it('dispatches stepSelectorEnableToggled on toggle', () => {
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+
+        select(fixture, '.scalars-step-selector input').nativeElement.click();
+
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          actions.stepSelectorEnableToggled()
+        );
+      });
     });
   });
 });

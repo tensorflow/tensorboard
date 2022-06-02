@@ -165,6 +165,7 @@ export interface MetricsNamespacedState {
   tagGroupExpanded: Map<string, boolean>;
   selectedTime: LinkedTime | null;
   selectTimeEnabled: boolean;
+  stepSelectorEnabled: boolean;
   useRangeSelectTime: boolean;
   // Empty Set would signify "show all". `filteredPluginTypes` will never have
   // all pluginTypes in the Set.
