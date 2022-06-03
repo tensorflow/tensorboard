@@ -30,7 +30,7 @@ import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
       (onSelectTimeToggle)="onSelectTimeToggle.emit($event)"
     ></card-fob-controller>
   `,
-  styleUrls: ['scalar_card_linked_time_fob_controller.css'],
+  styleUrls: ['scalar_card_fob_controller.css'],
 })
 export class ScalarCardFobController implements CardFobAdapter {
   @Input() linkedTime!: LinkedTime;
