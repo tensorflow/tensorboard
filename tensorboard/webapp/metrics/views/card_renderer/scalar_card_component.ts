@@ -32,6 +32,7 @@ import {
   siNumberFormatter,
 } from '../../../widgets/line_chart_v2/lib/formatter';
 import {LineChartComponent} from '../../../widgets/line_chart_v2/line_chart_component';
+import {findClosestIndex} from '../../../widgets/line_chart_v2/sub_view/line_chart_interactive_utils';
 import {
   RendererType,
   ScaleType,
@@ -100,6 +101,8 @@ export class ScalarCardComponent<Downloader> {
 
   yScaleType = ScaleType.LINEAR;
   isViewBoxOverridden: boolean = false;
+  // array of columns that will be displayed in the Data Table when enabled. The
+  // order of this array will be the order displayed on the table.
   dataHeaders: ColumnHeaders[] = [
     ColumnHeaders.RUN,
     ColumnHeaders.VALUE,
@@ -199,20 +202,19 @@ export class ScalarCardComponent<Downloader> {
     const dataTableData = this.dataSeries
       .map((datum) => {
         const metadata = this.chartMetadataMap[datum.id];
-        const closestStartPoint = this.getClosestPoint(
-          datum.points,
-          this.selectedTime!.startStep
-        );
-        const closestEndPoint = null;
+        const closestStartPoint =
+          datum.points[
+            findClosestIndex(datum.points, this.selectedTime!.startStep)
+          ];
         return {
           metadata,
           closestStartPoint,
-          closestEndPoint,
         };
       })
       .filter(({metadata}) => {
         return metadata && metadata.visible && !Boolean(metadata.aux);
       });
+
     return dataTableData;
   }
 

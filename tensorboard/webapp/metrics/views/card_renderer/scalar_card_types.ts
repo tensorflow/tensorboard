@@ -69,7 +69,6 @@ export type ScalarCardDataSeries = DataSeries<ScalarCardPoint>;
 export interface RunStepData {
   metadata: ScalarCardSeriesMetadata;
   closestStartPoint: ScalarCardPoint;
-  closestEndPoint: ScalarCardPoint | null;
 }
 
 export interface PartialSeries {

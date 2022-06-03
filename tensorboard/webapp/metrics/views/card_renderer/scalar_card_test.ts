@@ -2248,7 +2248,7 @@ describe('scalar card', () => {
   });
 
   describe('getSelectedTimeTableData', () => {
-    it('Correctly builds data object', fakeAsync(() => {
+    it('builds data object', fakeAsync(() => {
       const runToSeries = {
         run1: [
           {wallTime: 1, value: 1, step: 1},
@@ -2310,7 +2310,6 @@ describe('scalar card', () => {
             y: 10,
             relativeTimeInMs: 1000,
           },
-          closestEndPoint: null,
         },
         {
           metadata: {
@@ -2331,10 +2330,10 @@ describe('scalar card', () => {
             y: 10,
             relativeTimeInMs: 1000,
           },
-          closestEndPoint: null,
         },
       ]);
     }));
+
     it('Selects closest points to selectedTime', fakeAsync(() => {
       const runToSeries = {
         run1: [
@@ -2380,6 +2379,7 @@ describe('scalar card', () => {
       expect(data[0].closestStartPoint.step).toEqual(20);
       expect(data[1].closestStartPoint.step).toEqual(15);
     }));
+
     it('Selects largest points when selectedTime startStep is greater than any points step', fakeAsync(() => {
       const runToSeries = {
         run1: [
@@ -2425,6 +2425,7 @@ describe('scalar card', () => {
       expect(data[0].closestStartPoint.step).toEqual(35);
       expect(data[1].closestStartPoint.step).toEqual(50);
     }));
+
     it('Selects smallest points when selectedTime startStep is less than any points step', fakeAsync(() => {
       const runToSeries = {
         run1: [
