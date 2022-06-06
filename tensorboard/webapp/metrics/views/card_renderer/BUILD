@@ -302,6 +302,7 @@ tf_ng_module(
         "//tensorboard/webapp/widgets/line_chart_v2:line_chart_utils",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:formatter",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
+        "//tensorboard/webapp/widgets/line_chart_v2/sub_view",
         "//tensorboard/webapp/widgets/text:truncated_path",
         "@npm//@angular/common",
         "@npm//@angular/core",

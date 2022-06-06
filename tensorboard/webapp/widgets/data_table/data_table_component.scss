@@ -12,3 +12,32 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+
+.data-table {
+  font-size: 13px;
+}
+th {
+  text-align: left;
+}
+
+.row {
+  white-space: nowrap;
+}
+
+$_circle-size: 12px;
+
+.row-circle {
+  align-items: center;
+  display: inline-flex;
+  height: $_circle-size;
+  width: $_circle-size;
+}
+
+.row-circle > span {
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  display: inline-block;
+  // Subtract by border width (1px on both sides)
+  height: $_circle-size - 2px;
+  width: $_circle-size - 2px;
+}

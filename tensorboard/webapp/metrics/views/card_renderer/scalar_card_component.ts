@@ -33,6 +33,7 @@ import {
   siNumberFormatter,
 } from '../../../widgets/line_chart_v2/lib/formatter';
 import {LineChartComponent} from '../../../widgets/line_chart_v2/line_chart_component';
+import {findClosestIndex} from '../../../widgets/line_chart_v2/sub_view/line_chart_interactive_utils';
 import {
   RendererType,
   ScaleType,
@@ -40,9 +41,11 @@ import {
 } from '../../../widgets/line_chart_v2/types';
 import {TooltipSort, XAxisType} from '../../types';
 import {
+  ColumnHeaders,
   ScalarCardDataSeries,
   ScalarCardSeriesMetadata,
   ScalarCardSeriesMetadataMap,
+  SelectedStepRunData,
 } from './scalar_card_types';
 import {ViewSelectedTime} from './utils';
 
@@ -97,6 +100,12 @@ export class ScalarCardComponent<Downloader> {
 
   yScaleType = ScaleType.LINEAR;
   isViewBoxOverridden: boolean = false;
+  dataHeaders: ColumnHeaders[] = [
+    ColumnHeaders.RUN,
+    ColumnHeaders.VALUE,
+    ColumnHeaders.STEP,
+    ColumnHeaders.RELATIVE_TIME,
+  ];
 
   toggleYScaleType() {
     this.yScaleType =
@@ -201,5 +210,47 @@ export class ScalarCardComponent<Downloader> {
         ? {step: this.selectedTime!.endStep}
         : null,
     };
+  }
+
+  getSelectedTimeTableData(): SelectedStepRunData[] {
+    if (this.selectedTime === null) {
+      return [];
+    }
+    const dataTableData: SelectedStepRunData[] = this.dataSeries
+      .filter((datum) => {
+        const metadata = this.chartMetadataMap[datum.id];
+        return metadata && metadata.visible && !Boolean(metadata.aux);
+      })
+      .map((datum) => {
+        const metadata = this.chartMetadataMap[datum.id];
+        const closestStartPoint =
+          datum.points[
+            findClosestIndex(datum.points, this.selectedTime!.startStep)
+          ];
+        let selectedStepData: SelectedStepRunData = {};
+        selectedStepData.COLOR = metadata.color;
+        for (let header of this.dataHeaders) {
+          switch (header) {
+            case ColumnHeaders.RUN:
+              selectedStepData.RUN = metadata.displayName;
+              continue;
+            case ColumnHeaders.STEP:
+              selectedStepData.STEP = closestStartPoint.step;
+              continue;
+            case ColumnHeaders.VALUE:
+              selectedStepData.VALUE = closestStartPoint.value;
+              continue;
+            case ColumnHeaders.RELATIVE_TIME:
+              selectedStepData.RELATIVE_TIME =
+                closestStartPoint.relativeTimeInMs;
+              continue;
+            default:
+              continue;
+          }
+        }
+        return selectedStepData;
+      });
+
+    return dataTableData;
   }
 }

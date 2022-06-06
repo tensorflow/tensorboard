@@ -26,6 +26,20 @@ export enum SeriesType {
   DERIVED,
 }
 
+export enum ColumnHeaders {
+  COLOR = 'COLOR',
+  RUN = 'RUN',
+  VALUE = 'VALUE',
+  STEP = 'STEP',
+  START_STEP = 'START_STEP',
+  END_STEP = 'END_STEP',
+  START_VALUE = 'START_VALUE',
+  END_VALUE = 'END_VALUE',
+  SMOOTHED = 'SMOOTHED',
+  TIME = 'TIME',
+  RELATIVE_TIME = 'RELATIVE_TIME',
+}
+
 // Smoothed series is derived from a data serie. The additional information on the
 // metadata allows us to render smoothed value and its original value in the tooltip.
 export interface SmoothedSeriesMetadata extends DataSeriesMetadata {
@@ -70,3 +84,13 @@ export interface PartitionedSeries {
   runId: string;
   points: ScalarCardPoint[];
 }
+
+// export interface DataTableDatum {
+
+// }
+
+export type SelectedStepRunData = {
+  [key in ColumnHeaders]?: string | number;
+  // runColor: string;
+  // data: string[];
+};

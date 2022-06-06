@@ -1,4 +1,4 @@
-/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,7 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {
+  ColumnHeaders,
+  SelectedStepRunData,
+} from '../../metrics/views/card_renderer/scalar_card_types';
+
+import {
+  numberFormatter,
+  relativeTimeFormatter,
+} from '../../widgets/line_chart_v2/lib/formatter';
 
 @Component({
   selector: 'tb-data-table',
@@ -21,4 +30,47 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
   styleUrls: ['data_table_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DataTableComponent {}
+export class DataTableComponent {
+  @Input() headers!: ColumnHeaders[];
+  @Input() data!: SelectedStepRunData[];
+
+  getHeaderTextColumn(columnHeader: ColumnHeaders): string {
+    switch (columnHeader) {
+      case ColumnHeaders.RUN:
+        return 'Run';
+      case ColumnHeaders.VALUE:
+        return 'Value';
+      case ColumnHeaders.STEP:
+        return 'Step';
+      case ColumnHeaders.TIME:
+        return 'Time';
+      case ColumnHeaders.RELATIVE_TIME:
+        return 'Relative';
+      default:
+        return '';
+    }
+  }
+
+  getFormattedDataForColumn(
+    columnHeader: ColumnHeaders,
+    selectedStepRunData: SelectedStepRunData
+  ): string {
+    switch (columnHeader) {
+      case ColumnHeaders.RUN:
+        return selectedStepRunData.RUN as string;
+      case ColumnHeaders.VALUE:
+        return numberFormatter.formatShort(selectedStepRunData.VALUE as number);
+      case ColumnHeaders.STEP:
+        return numberFormatter.formatShort(selectedStepRunData.STEP as number);
+      case ColumnHeaders.TIME:
+        const time = new Date(selectedStepRunData.TIME!);
+        return time.toISOString();
+      case ColumnHeaders.RELATIVE_TIME:
+        return relativeTimeFormatter.formatReadable(
+          selectedStepRunData.RELATIVE_TIME as number
+        );
+      default:
+        return '';
+    }
+  }
+}
