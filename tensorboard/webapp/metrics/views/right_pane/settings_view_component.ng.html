@@ -127,6 +127,17 @@ limitations under the License.
     >
   </div>
 
+  <div
+    class="control-row scalars-step-selector"
+    *ngIf="isScalarStepSelectorEnabled"
+  >
+    <mat-checkbox
+      [checked]="stepSelectorEnabled"
+      (change)="stepSelectorEnableToggled.emit()"
+      >Step Selector</mat-checkbox
+    >
+  </div>
+
   <div class="control-row scalars-partition-x">
     <mat-checkbox
       [checked]="scalarPartitionX"

@@ -67,12 +67,14 @@ import {HistogramMode, LinkedTime, TooltipSort, XAxisType} from '../../types';
       [imageShowActualSize]="imageShowActualSize$ | async"
       (imageShowActualSizeChanged)="onImageShowActualSizeChanged()"
       [isLinkedTimeFeatureEnabled]="isLinkedTimeFeatureEnabled$ | async"
+      [isScalarStepSelectorEnabled]="isScalarStepSelectorEnabled$ | async"
       [selectTimeEnabled]="selectTimeEnabled$ | async"
       [selectedTime]="selectedTime$ | async"
       [useRangeSelectTime]="useRangeSelectTime$ | async"
       [stepMinMax]="stepMinMax$ | async"
       (selectTimeEnableToggled)="onSelectTimeEnableToggled()"
       (selectTimeChanged)="onSelectTimeChanged($event)"
+      (stepSelectorEnableToggled)="onStepSelectorEnableToggled()"
     >
     </metrics-dashboard-settings-component>
   `,
@@ -87,6 +89,8 @@ export class SettingsViewContainer {
   readonly isLinkedTimeFeatureEnabled$: Observable<boolean> = this.store.select(
     selectors.getIsLinkedTimeEnabled
   );
+  readonly isScalarStepSelectorEnabled$: Observable<boolean> =
+    this.store.select(selectors.getIsDataTableEnabled);
   readonly selectTimeEnabled$: Observable<boolean> = this.store.select(
     selectors.getMetricsSelectTimeEnabled
   );
@@ -190,6 +194,10 @@ export class SettingsViewContainer {
 
   onSelectTimeEnableToggled() {
     this.store.dispatch(selectTimeEnableToggled());
+  }
+
+  onStepSelectorEnableToggled() {
+    // TODO(japie1235813): Dispatch toggled event to update ngrx state.
   }
 
   onSelectTimeChanged(newValue: LinkedTime) {

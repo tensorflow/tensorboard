@@ -88,6 +88,7 @@ describe('metrics right_pane', () => {
       store.overrideSelector(selectors.getIsFeatureFlagsLoaded, true);
       store.overrideSelector(selectors.getIsMetricsImageSupportEnabled, true);
       store.overrideSelector(selectors.getIsLinkedTimeEnabled, false);
+      store.overrideSelector(selectors.getIsDataTableEnabled, false);
       store.overrideSelector(selectors.getEnabledCardWidthSetting, false);
       store.overrideSelector(selectors.getMetricsCardMinWidth, null);
       store.overrideSelector(selectors.getMetricsSelectTimeEnabled, false);
@@ -385,6 +386,15 @@ describe('metrics right_pane', () => {
       expect(el).toBeFalsy();
     });
 
+    it('does not display step selector setting on step selector disabled', () => {
+      store.overrideSelector(selectors.getIsDataTableEnabled, false);
+      const fixture = TestBed.createComponent(SettingsViewContainer);
+      fixture.detectChanges();
+
+      const el = fixture.debugElement.query(By.css('.scalars-step-selector'));
+      expect(el).toBeFalsy();
+    });
+
     describe('linked time feature enabled', () => {
       beforeEach(() => {
         store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
@@ -522,6 +532,23 @@ describe('metrics right_pane', () => {
             })
           );
         });
+      });
+    });
+
+    describe('step selector feature enabled', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectors.getIsDataTableEnabled, true);
+      });
+
+      it('renders', () => {
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+
+        expect(
+          select(fixture, '.scalars-step-selector input').attributes[
+            'aria-checked'
+          ]
+        ).toBe('false');
       });
     });
   });
