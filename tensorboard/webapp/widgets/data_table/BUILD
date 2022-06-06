@@ -20,6 +20,7 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp/widgets/line_chart_v2/lib:formatter",
+        "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",
         "@npm//@angular/common",
         "@npm//@angular/core",
     ],

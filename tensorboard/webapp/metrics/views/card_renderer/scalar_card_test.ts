@@ -2246,4 +2246,202 @@ describe('scalar card', () => {
       }));
     });
   });
+  describe('getSelectedTimeTableData', () => {
+    it('builds data object', fakeAsync(() => {
+      const runToSeries = {
+        run1: [
+          {wallTime: 1, value: 1, step: 1},
+          {wallTime: 2, value: 10, step: 2},
+          {wallTime: 3, value: 20, step: 3},
+        ],
+        run2: [
+          {wallTime: 1, value: 1, step: 1},
+          {wallTime: 2, value: 10, step: 2},
+          {wallTime: 3, value: 20, step: 3},
+        ],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([
+          ['run1', true],
+          ['run2', true],
+        ])
+      );
+
+      store.overrideSelector(getMetricsSelectedTime, {
+        start: {step: 2},
+        end: {step: 50},
+      });
+
+      const fixture = createComponent('card1');
+      const scalarCardComponent = fixture.debugElement.query(
+        By.directive(ScalarCardComponent)
+      );
+      fixture.detectChanges();
+
+      const data =
+        scalarCardComponent.componentInstance.getSelectedTimeTableData();
+
+      expect(data).toEqual([
+        {
+          COLOR: '#fff',
+          RELATIVE_TIME: 1000,
+          RUN: 'run1',
+          STEP: 2,
+          VALUE: 10,
+        },
+        {
+          COLOR: '#fff',
+          RELATIVE_TIME: 1000,
+          RUN: 'run2',
+          STEP: 2,
+          VALUE: 10,
+        },
+      ]);
+    }));
+
+    it('Selects closest points to selectedTime', fakeAsync(() => {
+      const runToSeries = {
+        run1: [
+          {wallTime: 1, value: 1, step: 1},
+          {wallTime: 2, value: 10, step: 20},
+          {wallTime: 3, value: 20, step: 35},
+        ],
+        run2: [
+          {wallTime: 1, value: 1, step: 1},
+          {wallTime: 2, value: 10, step: 15},
+          {wallTime: 3, value: 20, step: 50},
+        ],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([
+          ['run1', true],
+          ['run2', true],
+        ])
+      );
+
+      store.overrideSelector(getMetricsSelectedTime, {
+        start: {step: 18},
+        end: null,
+      });
+
+      const fixture = createComponent('card1');
+      const scalarCardComponent = fixture.debugElement.query(
+        By.directive(ScalarCardComponent)
+      );
+      fixture.detectChanges();
+
+      const data =
+        scalarCardComponent.componentInstance.getSelectedTimeTableData();
+
+      expect(data[0].STEP).toEqual(20);
+      expect(data[1].STEP).toEqual(15);
+    }));
+
+    it('Selects largest points when selectedTime startStep is greater than any points step', fakeAsync(() => {
+      const runToSeries = {
+        run1: [
+          {wallTime: 1, value: 1, step: 1},
+          {wallTime: 2, value: 10, step: 20},
+          {wallTime: 3, value: 20, step: 35},
+        ],
+        run2: [
+          {wallTime: 1, value: 1, step: 1},
+          {wallTime: 2, value: 10, step: 15},
+          {wallTime: 3, value: 20, step: 50},
+        ],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([
+          ['run1', true],
+          ['run2', true],
+        ])
+      );
+
+      store.overrideSelector(getMetricsSelectedTime, {
+        start: {step: 100},
+        end: null,
+      });
+
+      const fixture = createComponent('card1');
+      const scalarCardComponent = fixture.debugElement.query(
+        By.directive(ScalarCardComponent)
+      );
+      fixture.detectChanges();
+
+      const data =
+        scalarCardComponent.componentInstance.getSelectedTimeTableData();
+
+      expect(data[0].STEP).toEqual(35);
+      expect(data[1].STEP).toEqual(50);
+    }));
+
+    it('Selects smallest points when selectedTime startStep is less than any points step', fakeAsync(() => {
+      const runToSeries = {
+        run1: [
+          {wallTime: 1, value: 1, step: 10},
+          {wallTime: 2, value: 10, step: 20},
+          {wallTime: 3, value: 20, step: 35},
+        ],
+        run2: [
+          {wallTime: 1, value: 1, step: 8},
+          {wallTime: 2, value: 10, step: 15},
+          {wallTime: 3, value: 20, step: 50},
+        ],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([
+          ['run1', true],
+          ['run2', true],
+        ])
+      );
+      store.overrideSelector(getMetricsSelectedTime, {
+        start: {step: 1},
+        end: null,
+      });
+
+      const fixture = createComponent('card1');
+      const scalarCardComponent = fixture.debugElement.query(
+        By.directive(ScalarCardComponent)
+      );
+      fixture.detectChanges();
+
+      const data =
+        scalarCardComponent.componentInstance.getSelectedTimeTableData();
+
+      expect(data[0].STEP).toEqual(10);
+      expect(data[1].STEP).toEqual(8);
+    }));
+  });
 });

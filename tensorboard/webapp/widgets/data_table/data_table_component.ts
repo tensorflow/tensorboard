@@ -13,7 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {
+  ColumnHeaders,
+  SelectedStepRunData,
+} from '../../metrics/views/card_renderer/scalar_card_types';
 
 @Component({
   selector: 'tb-data-table',
@@ -21,4 +25,7 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
   styleUrls: ['data_table_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DataTableComponent {}
+export class DataTableComponent {
+  @Input() headers!: ColumnHeaders[];
+  @Input() data!: SelectedStepRunData[];
+}
