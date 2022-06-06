@@ -1,3 +1,10 @@
+# Release 2.9.1
+
+## Bug fixes
+
+- Force protobuf dependency < 3.20 to workaround incompatibilities with newer protobuf versions (#5726)
+- Recognize text/javascript as valid js mimetype for caching purposes (#5746)
+
 # Release 2.9.0
 
 The 2.9 minor series tracks TensorFlow 2.9.
