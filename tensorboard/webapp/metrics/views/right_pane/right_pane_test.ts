@@ -386,6 +386,15 @@ describe('metrics right_pane', () => {
       expect(el).toBeFalsy();
     });
 
+    it('does not display step selector setting on step selector disabled', () => {
+      store.overrideSelector(selectors.getIsDataTableEnabled, false);
+      const fixture = TestBed.createComponent(SettingsViewContainer);
+      fixture.detectChanges();
+
+      const el = fixture.debugElement.query(By.css('.scalars-step-selector'));
+      expect(el).toBeFalsy();
+    });
+
     describe('linked time feature enabled', () => {
       beforeEach(() => {
         store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
