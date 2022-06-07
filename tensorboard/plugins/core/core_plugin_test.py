@@ -152,7 +152,7 @@ class CorePluginTest(tf.test.TestCase):
         self.server = werkzeug_test.Client(app, wrappers.Response)
 
     def tearDown(self):
-      mimetypes.init()
+        mimetypes.init()
 
     def _add_run(self, run_name):
         run_path = os.path.join(self.logdir, run_name)

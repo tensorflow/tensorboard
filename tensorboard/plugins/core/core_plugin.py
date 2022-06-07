@@ -138,8 +138,7 @@ class CorePlugin(base_plugin.TBPlugin):
         # Cache JS resources while keep others do not cache.
         expires = (
             JS_CACHE_EXPIRATION_IN_SECS
-            if request.args.get("_file_hash")
-            and mimetype in JS_MIMETYPES
+            if request.args.get("_file_hash") and mimetype in JS_MIMETYPES
             else 0
         )
 
