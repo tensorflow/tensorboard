@@ -100,6 +100,7 @@ function buildBlankState(): MetricsState {
     tagGroupExpanded: new Map(),
     selectedTime: null,
     selectTimeEnabled: false,
+    stepSelectorEnabled: false,
     useRangeSelectTime: false,
     filteredPluginTypes: new Set(),
     stepMinMax: {min: Infinity, max: -Infinity},

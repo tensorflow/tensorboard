@@ -2867,6 +2867,20 @@ describe('metrics reducers', () => {
     });
   });
 
+  describe('step selector features', () => {
+    it('toggles whether stepSelector is enabled or not', () => {
+      const state1 = buildMetricsState({
+        stepSelectorEnabled: false,
+      });
+
+      const state2 = reducers(state1, actions.stepSelectorEnableToggled());
+      expect(state2.stepSelectorEnabled).toBe(true);
+
+      const state3 = reducers(state2, actions.stepSelectorEnableToggled());
+      expect(state3.stepSelectorEnabled).toBe(false);
+    });
+  });
+
   describe('plugin filtering feature', () => {
     describe('#metricsToggleVisiblePlugin', () => {
       it('toggles plugin types', () => {

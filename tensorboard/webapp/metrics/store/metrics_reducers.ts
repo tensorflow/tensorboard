@@ -259,6 +259,7 @@ const {initialState, reducers: namespaceContextedReducer} =
       tagGroupExpanded: new Map<string, boolean>(),
       selectedTime: null,
       selectTimeEnabled: false,
+      stepSelectorEnabled: false,
       useRangeSelectTime: false,
       filteredPluginTypes: new Set(),
       stepMinMax: {
@@ -1007,6 +1008,12 @@ const reducer = createReducer(
       selectedTime,
       cardStepIndex: nextCardStepIndexMap,
       useRangeSelectTime,
+    };
+  }),
+  on(actions.stepSelectorEnableToggled, (state) => {
+    return {
+      ...state,
+      stepSelectorEnabled: !state.stepSelectorEnabled,
     };
   }),
   on(actions.useRangeSelectTimeToggled, (state) => {

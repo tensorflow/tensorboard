@@ -189,6 +189,10 @@ export const useRangeSelectTimeToggled = createAction(
   '[Metrics] Use Range Select Time Toggle'
 );
 
+export const stepSelectorEnableToggled = createAction(
+  '[Metrics] Time Selector Enable Toggle'
+);
+
 export const metricsPromoDismissed = createAction(
   '[Metrics] Metrics Promo Dismissed'
 );

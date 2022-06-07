@@ -33,6 +33,7 @@ import {
   metricsToggleIgnoreOutliers,
   metricsToggleImageShowActualSize,
   selectTimeEnableToggled,
+  stepSelectorEnableToggled,
   timeSelectionChanged,
 } from '../../actions';
 import {HistogramMode, LinkedTime, TooltipSort, XAxisType} from '../../types';
@@ -197,7 +198,7 @@ export class SettingsViewContainer {
   }
 
   onStepSelectorEnableToggled() {
-    // TODO(japie1235813): Dispatch toggled event to update ngrx state.
+    this.store.dispatch(stepSelectorEnableToggled());
   }
 
   onSelectTimeChanged(newValue: LinkedTime) {
