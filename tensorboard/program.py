@@ -389,7 +389,7 @@ class TensorBoard(object):
         """
         # Known to be problematic when Visual Studio is installed:
         # <https://github.com/tensorflow/tensorboard/issues/3120>
-        mimetypes.add_type("text/javascript", ".js")
+        mimetypes.add_type("application/javascript", ".js")
         # Not known to be problematic, but used by TensorBoard:
         mimetypes.add_type("font/woff2", ".woff2")
         mimetypes.add_type("text/html", ".html")
