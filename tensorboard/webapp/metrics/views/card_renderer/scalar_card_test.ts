@@ -316,7 +316,7 @@ describe('scalar card', () => {
     store.overrideSelector(selectors.getRunColorMap, {});
     store.overrideSelector(selectors.getDarkModeEnabled, false);
     store.overrideSelector(selectors.getForceSvgFeatureFlag, false);
-    store.overrideSelector(selectors.getIsDataTableEnabled, false);
+    store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
   });
 
   describe('basic renders', () => {
@@ -2444,5 +2444,67 @@ describe('scalar card', () => {
       expect(data[0].STEP).toEqual(10);
       expect(data[1].STEP).toEqual(8);
     }));
+  });
+
+  describe('step selector feature integration', () => {
+    describe('fob controls', () => {
+      let dispatchedActions: Action[] = [];
+      beforeEach(() => {
+        dispatchedActions = [];
+        const runToSeries = {
+          run1: [buildScalarStepData({step: 10})],
+          run2: [buildScalarStepData({step: 20})],
+          run3: [buildScalarStepData({step: 30})],
+        };
+        spyOn(store, 'dispatch').and.callFake((action: Action) => {
+          dispatchedActions.push(action);
+        });
+        provideMockCardRunToSeriesData(
+          selectSpy,
+          PluginType.SCALARS,
+          'card1',
+          null /* metadataOverride */,
+          runToSeries
+        );
+        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);
+      });
+
+      it('renders fobs', fakeAsync(() => {
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+        const testController = fixture.debugElement.query(
+          By.directive(CardFobControllerComponent)
+        ).componentInstance;
+
+        expect(testController).toBeTruthy();
+      }));
+
+      it('dose not dispatch timeSelectionChanged action when fob is dragged', fakeAsync(() => {
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+        const testController = fixture.debugElement.query(
+          By.directive(CardFobControllerComponent)
+        ).componentInstance;
+        const controllerStartPosition =
+          testController.root.nativeElement.getBoundingClientRect().left;
+
+        // Simulate dragging fob to step 25.
+        testController.startDrag(Fob.START);
+        const fakeEvent = new MouseEvent('mousemove', {
+          clientX: 25 + controllerStartPosition,
+          movementX: 1,
+        });
+        testController.mouseMove(fakeEvent);
+        fixture.detectChanges();
+
+        const fobs = fixture.debugElement.queryAll(
+          By.directive(CardFobComponent)
+        );
+        expect(
+          fobs[0].query(By.css('span')).nativeElement.textContent.trim()
+        ).toEqual('25');
+        expect(dispatchedActions).toEqual([]);
+      }));
+    });
   });
 });

@@ -168,7 +168,7 @@ limitations under the License.
     </table>
   </ng-template>
 </div>
-<ng-container *ngIf="isDataTableEnabled && selectedTime">
+<ng-container *ngIf="selectedTime">
   <div>
     <tb-data-table
       [headers]="dataHeaders"
@@ -221,13 +221,13 @@ limitations under the License.
   let-domDim="domDimension"
   let-xScale="xScale"
 >
-  <ng-container *ngIf="selectedTime">
+  <ng-container *ngIf="internalSelectedTime || selectedTime">
     <scalar-card-fob-controller
       [linkedTime]="getLinkedTime()"
       [scale]="xScale"
       [minMax]="viewExtent.x"
       [axisSize]="domDim.width"
-      (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
+      (onSelectTimeChanged)="onFobSelectTimeChanged($event)"
       (onSelectTimeToggle)="onSelectTimeToggle.emit()"
     ></scalar-card-fob-controller>
   </ng-container>

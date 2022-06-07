@@ -37,10 +37,7 @@ import {
 } from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {ExperimentAlias} from '../../../experiments/types';
-import {
-  getForceSvgFeatureFlag,
-  getIsDataTableEnabled,
-} from '../../../feature_flag/store/feature_flag_selectors';
+import {getForceSvgFeatureFlag} from '../../../feature_flag/store/feature_flag_selectors';
 import {
   getCardPinnedState,
   getCurrentRouteRunSelection,
@@ -48,6 +45,7 @@ import {
   getExperimentIdForRunId,
   getExperimentIdToExperimentAliasMap,
   getMetricsSelectedTime,
+  getMetricsStepSelectorEnabled,
   getRun,
   getRunColorMap,
 } from '../../../selectors';
@@ -133,8 +131,8 @@ function areSeriesEqual(
       [xScaleType]="xScaleType$ | async"
       [useDarkMode]="useDarkMode$ | async"
       [selectedTime]="selectedTime$ | async"
+      [internalSelectedTime]="internalSelectedTime$ | async"
       [forceSvg]="forceSvg$ | async"
-      [isDataTableEnabled]="isDataTableEnabled$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
       observeIntersection
@@ -175,6 +173,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   dataSeries$?: Observable<ScalarCardDataSeries[]>;
   chartMetadataMap$?: Observable<ScalarCardSeriesMetadataMap>;
   selectedTime$?: Observable<ViewSelectedTime | null>;
+  internalSelectedTime$?: Observable<LinkedTime | null>;
 
   onVisibilityChange({visible}: {visible: boolean}) {
     this.isVisible = visible;
@@ -185,7 +184,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   readonly tooltipSort$ = this.store.select(getMetricsTooltipSort);
   readonly xAxisType$ = this.store.select(getMetricsXAxisType);
   readonly forceSvg$ = this.store.select(getForceSvgFeatureFlag);
-  readonly isDataTableEnabled$ = this.store.select(getIsDataTableEnabled);
   readonly xScaleType$ = this.store.select(getMetricsXAxisType).pipe(
     map((xAxisType) => {
       switch (xAxisType) {
@@ -221,6 +219,18 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.showFullSize = !this.showFullSize;
     this.fullWidthChanged.emit(this.showFullSize);
     this.fullHeightChanged.emit(this.showFullSize);
+  }
+
+  getMinMaxStepInSerise(series: PartitionedSeries[]) {
+    let minStep = Infinity;
+    let maxStep = -Infinity;
+    for (const {points} of series) {
+      for (const point of points) {
+        minStep = minStep > point.x ? point.x : minStep;
+        maxStep = maxStep < point.x ? point.x : maxStep;
+      }
+    }
+    return {minStep, maxStep};
   }
 
   /**
@@ -366,14 +376,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       map(([series, selectedTime, xAxisType]) => {
         if (xAxisType !== XAxisType.STEP || !selectedTime) return null;
 
-        let minStep = Infinity;
-        let maxStep = -Infinity;
-        for (const {points} of series) {
-          for (const point of points) {
-            minStep = minStep > point.x ? point.x : minStep;
-            maxStep = maxStep < point.x ? point.x : maxStep;
-          }
-        }
+        const {minStep, maxStep} = this.getMinMaxStepInSerise(series);
 
         return maybeClipSelectedTime(selectedTime, minStep, maxStep);
       })
@@ -478,6 +481,17 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     );
 
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
+
+    this.internalSelectedTime$ = combineLatest([
+      partitionedSeries$,
+      this.store.select(getMetricsStepSelectorEnabled),
+    ]).pipe(
+      map(([partitionedSeries, enableStepSelector]) => {
+        const {minStep} = this.getMinMaxStepInSerise(partitionedSeries);
+
+        return enableStepSelector ? {start: {step: minStep}, end: null} : null;
+      })
+    );
   }
 
   ngOnDestroy() {

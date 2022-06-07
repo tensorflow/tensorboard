@@ -84,8 +84,8 @@ export class ScalarCardComponent<Downloader> {
   @Input() xScaleType!: ScaleType;
   @Input() useDarkMode!: boolean;
   @Input() forceSvg!: boolean;
-  @Input() isDataTableEnabled!: boolean;
   @Input() selectedTime!: ViewSelectedTime | null;
+  @Input() internalSelectedTime!: LinkedTime;
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
@@ -200,8 +200,9 @@ export class ScalarCardComponent<Downloader> {
 
   getLinkedTime(): LinkedTime | null {
     if (this.selectedTime === null) {
-      return null;
+      return this.internalSelectedTime;
     }
+
     return {
       start: {
         step: this.selectedTime!.startStep,
@@ -252,5 +253,13 @@ export class ScalarCardComponent<Downloader> {
       });
 
     return dataTableData;
+  }
+
+  onFobSelectTimeChanged(newSelectedTime: LinkedTime) {
+    this.internalSelectedTime = newSelectedTime;
+
+    if (this.selectedTime !== null) {
+      this.onSelectTimeChanged.emit(newSelectedTime);
+    }
   }
 }
