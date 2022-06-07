@@ -19,6 +19,7 @@ import collections.abc
 import contextlib
 import io
 import json
+import mimetypes
 import os
 from unittest import mock
 import zipfile
@@ -150,6 +151,9 @@ class CorePluginTest(tf.test.TestCase):
         app = application.TensorBoardWSGI([self.plugin])
         self.server = werkzeug_test.Client(app, wrappers.Response)
 
+    def tearDown(self):
+      mimetypes.init()
+
     def _add_run(self, run_name):
         run_path = os.path.join(self.logdir, run_name)
         with test_util.FileWriter(run_path) as writer:
@@ -191,6 +195,34 @@ class CorePluginTest(tf.test.TestCase):
         )
 
     def test_js_cache(self):
+        """Tests cache header for js files marked for caching.
+
+        The test relies on local system's defaults for the javascript mimetype
+        which, in practice, should be one of 'text/javascript' or
+        'application/javascript'. It could be either, depending on the system.
+
+        See test_js_cache_with_text_javascript() and
+        test_js_cache_with_application_javascript() for test cases where
+        the javascript mimetype have been explicitly configured.
+        """
+        response = self.server.get("/index.js?_file_hash=meow")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            ONE_DAY_CACHE_CONTROL_VALUE, response.headers.get("Cache-Control")
+        )
+
+    def test_js_cache_with_text_javascript(self):
+        """Tests cache header when js mimetype is 'text/javascript'."""
+        mimetypes.add_type("text/javascript", ".js")
+        response = self.server.get("/index.js?_file_hash=meow")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            ONE_DAY_CACHE_CONTROL_VALUE, response.headers.get("Cache-Control")
+        )
+
+    def test_js_cache_with_application_javascript(self):
+        """Tests cache header when js mimetype is 'application/javascript'."""
+        mimetypes.add_type("application/javascript", ".js")
         response = self.server.get("/index.js?_file_hash=meow")
         self.assertEqual(200, response.status_code)
         self.assertEqual(
