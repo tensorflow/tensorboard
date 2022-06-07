@@ -70,3 +70,26 @@ export interface PartitionedSeries {
   runId: string;
   points: ScalarCardPoint[];
 }
+
+/**
+ * This enum defines the columns available in the data table. The
+ * ScalarCardComponent must know which piece of data is associated with each
+ * value and the DataTable widget must know how to display each value.
+ */
+export enum ColumnHeaders {
+  COLOR = 'COLOR',
+  RELATIVE_TIME = 'RELATIVE_TIME',
+  RUN = 'RUN',
+  STEP = 'STEP',
+  TIME = 'TIME',
+  VALUE = 'VALUE',
+}
+
+/**
+ * An object which essentially contains the data for an entire row in the
+ * DataTable. It will have a value for each required ColumnHeader for a given
+ * run.
+ */
+export type SelectedStepRunData = {
+  [key in ColumnHeaders]?: string | number;
+};
