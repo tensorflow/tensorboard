@@ -227,9 +227,9 @@ export class ScalarCardComponent<Downloader> {
           datum.points[
             findClosestIndex(datum.points, this.selectedTime!.startStep)
           ];
-        let selectedStepData: SelectedStepRunData = {};
+        const selectedStepData: SelectedStepRunData = {};
         selectedStepData.COLOR = metadata.color;
-        for (let header of this.dataHeaders) {
+        for (const header of this.dataHeaders) {
           switch (header) {
             case ColumnHeaders.RUN:
               selectedStepData.RUN = metadata.displayName;

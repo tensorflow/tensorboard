@@ -2246,8 +2246,9 @@ describe('scalar card', () => {
       }));
     });
   });
+
   describe('getSelectedTimeTableData', () => {
-    it('builds data object', fakeAsync(() => {
+    it('builds single selected step data object', fakeAsync(() => {
       const runToSeries = {
         run1: [
           {wallTime: 1, value: 1, step: 1},
@@ -2307,7 +2308,7 @@ describe('scalar card', () => {
       ]);
     }));
 
-    it('Selects closest points to selectedTime', fakeAsync(() => {
+    it('selects closest points to selectedTime', fakeAsync(() => {
       const runToSeries = {
         run1: [
           {wallTime: 1, value: 1, step: 1},

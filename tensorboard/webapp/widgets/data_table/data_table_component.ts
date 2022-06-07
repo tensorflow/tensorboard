@@ -26,6 +26,8 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DataTableComponent {
+  // The order of this array of headers determines the order which they are
+  // displayed in the table.
   @Input() headers!: ColumnHeaders[];
   @Input() data!: SelectedStepRunData[];
 }

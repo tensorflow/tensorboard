@@ -26,20 +26,6 @@ export enum SeriesType {
   DERIVED,
 }
 
-export enum ColumnHeaders {
-  COLOR = 'COLOR',
-  RUN = 'RUN',
-  VALUE = 'VALUE',
-  STEP = 'STEP',
-  START_STEP = 'START_STEP',
-  END_STEP = 'END_STEP',
-  START_VALUE = 'START_VALUE',
-  END_VALUE = 'END_VALUE',
-  SMOOTHED = 'SMOOTHED',
-  TIME = 'TIME',
-  RELATIVE_TIME = 'RELATIVE_TIME',
-}
-
 // Smoothed series is derived from a data serie. The additional information on the
 // metadata allows us to render smoothed value and its original value in the tooltip.
 export interface SmoothedSeriesMetadata extends DataSeriesMetadata {
@@ -85,6 +71,25 @@ export interface PartitionedSeries {
   points: ScalarCardPoint[];
 }
 
+/**
+ * This enum defines the columns available in the data table. The
+ * ScalarCardComponent must know which piece of data is associated with each
+ * value and the DataTable widget must know how to display each value.
+ */
+export enum ColumnHeaders {
+  COLOR = 'COLOR',
+  RELATIVE_TIME = 'RELATIVE_TIME',
+  RUN = 'RUN',
+  STEP = 'STEP',
+  TIME = 'TIME',
+  VALUE = 'VALUE',
+}
+
+/**
+ * An object which essentially contains the data for an entire row in the
+ * DataTable. It will have a value for each required ColumnHeader for a given
+ * run.
+ */
 export type SelectedStepRunData = {
   [key in ColumnHeaders]?: string | number;
 };
