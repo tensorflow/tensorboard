@@ -168,7 +168,7 @@ limitations under the License.
     </table>
   </ng-template>
 </div>
-<ng-container *ngIf="selectedTime">
+<ng-container *ngIf="internalSelectedTime || selectedTime">
   <div>
     <tb-data-table
       [headers]="dataHeaders"

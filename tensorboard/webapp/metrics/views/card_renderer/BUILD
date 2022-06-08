@@ -364,6 +364,7 @@ tf_ts_library(
         "//tensorboard/webapp/widgets:resize_detector_testing",
         "//tensorboard/webapp/widgets/card_fob",
         "//tensorboard/webapp/widgets/card_fob:types",
+        "//tensorboard/webapp/widgets/data_table",
         "//tensorboard/webapp/widgets/experiment_alias",
         "//tensorboard/webapp/widgets/histogram:types",
         "//tensorboard/webapp/widgets/intersection_observer:intersection_observer_testing",

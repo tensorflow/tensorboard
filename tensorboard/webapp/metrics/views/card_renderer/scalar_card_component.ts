@@ -214,9 +214,12 @@ export class ScalarCardComponent<Downloader> {
   }
 
   getSelectedTimeTableData(): SelectedStepRunData[] {
-    if (this.selectedTime === null) {
+    if (this.selectedTime === null && this.internalSelectedTime === null) {
       return [];
     }
+    const startStep = this.selectedTime
+      ? this.selectedTime.startStep
+      : this.internalSelectedTime.start.step;
     const dataTableData: SelectedStepRunData[] = this.dataSeries
       .filter((datum) => {
         const metadata = this.chartMetadataMap[datum.id];
@@ -225,9 +228,7 @@ export class ScalarCardComponent<Downloader> {
       .map((datum) => {
         const metadata = this.chartMetadataMap[datum.id];
         const closestStartPoint =
-          datum.points[
-            findClosestIndex(datum.points, this.selectedTime!.startStep)
-          ];
+          datum.points[findClosestIndex(datum.points, startStep)];
         const selectedStepData: SelectedStepRunData = {};
         selectedStepData.COLOR = metadata.color;
         for (const header of this.dataHeaders) {
