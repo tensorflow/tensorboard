@@ -39,6 +39,11 @@ logger = tb_logging.get_logger()
 # If no port is specified, try to bind to this port. See help for --port
 # for more details.
 DEFAULT_PORT = 6006
+# Valid javascript mimetypes that we have seen configured, in practice.
+# Historically (~2020-2022) we saw "application/javascript" exclusively but with
+# RFC 9239 (https://www.rfc-editor.org/rfc/rfc9239) we saw some systems quickly
+# transition to 'text/javascript'.
+JS_MIMETYPES = ["text/javascript", "application/javascript"]
 JS_CACHE_EXPIRATION_IN_SECS = 86400
 
 
@@ -133,8 +138,7 @@ class CorePlugin(base_plugin.TBPlugin):
         # Cache JS resources while keep others do not cache.
         expires = (
             JS_CACHE_EXPIRATION_IN_SECS
-            if request.args.get("_file_hash")
-            and mimetype == "application/javascript"
+            if request.args.get("_file_hash") and mimetype in JS_MIMETYPES
             else 0
         )
 
