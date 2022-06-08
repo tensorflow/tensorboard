@@ -62,9 +62,7 @@ class ExamplePlugin(base_plugin.TBPlugin):
         filepath = os.path.join(os.path.dirname(__file__), "static", "index.js")
         with open(filepath) as infile:
             contents = infile.read()
-        return werkzeug.Response(
-            contents, content_type="text/javascript"
-        )
+        return werkzeug.Response(contents, content_type="text/javascript")
 
     @wrappers.Request.application
     def _serve_tags(self, request):
