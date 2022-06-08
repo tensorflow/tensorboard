@@ -361,6 +361,13 @@ export const getMetricsSelectTimeEnabled = createSelector(
   }
 );
 
+export const getMetricsStepSelectorEnabled = createSelector(
+  selectMetricsState,
+  (state: MetricsState): boolean => {
+    return state.stepSelectorEnabled;
+  }
+);
+
 export const getMetricsUseRangeSelectTime = createSelector(
   selectMetricsState,
   (state: MetricsState): boolean => {
