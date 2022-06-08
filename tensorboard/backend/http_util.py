@@ -63,6 +63,7 @@ _TEXTUAL_MIMETYPES = set(
         "text/css",
         "text/csv",
         "text/html",
+        "text/javascript",
         "text/plain",
         "text/tab-separated-values",
         "text/x-protobuf",
