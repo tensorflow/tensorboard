@@ -58,7 +58,7 @@ rust_library(
     deps = [
         "@raze__cfg_if__1_0_0//:cfg_if",
         "@raze__crossbeam_channel__0_5_0//:crossbeam_channel",
-        "@raze__crossbeam_deque__0_8_0//:crossbeam_deque",
+        "@raze__crossbeam_deque__0_8_1//:crossbeam_deque",
         "@raze__crossbeam_epoch__0_9_1//:crossbeam_epoch",
         "@raze__crossbeam_queue__0_3_1//:crossbeam_queue",
         "@raze__crossbeam_utils__0_8_1//:crossbeam_utils",

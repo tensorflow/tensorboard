@@ -53,7 +53,7 @@ rust_library(
     version = "1.5.0",
     # buildifier: leave-alone
     deps = [
-        "@raze__crossbeam_deque__0_8_0//:crossbeam_deque",
+        "@raze__crossbeam_deque__0_8_1//:crossbeam_deque",
         "@raze__either__1_6_1//:either",
         "@raze__rayon_core__1_9_0//:rayon_core",
     ],

@@ -243,12 +243,12 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
-        name = "raze__crossbeam_deque__0_8_0",
-        url = "https://crates.io/api/v1/crates/crossbeam-deque/0.8.0/download",
+        name = "raze__crossbeam_deque__0_8_1",
+        url = "https://crates.io/api/v1/crates/crossbeam-deque/0.8.1/download",
         type = "tar.gz",
-        sha256 = "94af6efb46fef72616855b036a624cf27ba656ffc9be1b9a3c931cfc7749a9a9",
-        strip_prefix = "crossbeam-deque-0.8.0",
-        build_file = Label("//third_party/rust/remote:BUILD.crossbeam-deque-0.8.0.bazel"),
+        sha256 = "6455c0ca19f0d2fbf751b908d5c55c1f5cbc65e03c4225427254b46890bdde1e",
+        strip_prefix = "crossbeam-deque-0.8.1",
+        build_file = Label("//third_party/rust/remote:BUILD.crossbeam-deque-0.8.1.bazel"),
     )
 
     maybe(
