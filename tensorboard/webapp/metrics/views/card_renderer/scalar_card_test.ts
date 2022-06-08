@@ -2354,7 +2354,7 @@ describe('scalar card', () => {
       expect(data[1].STEP).toEqual(15);
     }));
 
-    it('Selects largest points when selectedTime startStep is greater than any points step', fakeAsync(() => {
+    it('selects largest points when selectedTime startStep is greater than any points step', fakeAsync(() => {
       const runToSeries = {
         run1: [
           {wallTime: 1, value: 1, step: 1},
@@ -2400,7 +2400,7 @@ describe('scalar card', () => {
       expect(data[1].STEP).toEqual(50);
     }));
 
-    it('Selects smallest points when selectedTime startStep is less than any points step', fakeAsync(() => {
+    it('selects smallest points when selectedTime startStep is less than any points step', fakeAsync(() => {
       const runToSeries = {
         run1: [
           {wallTime: 1, value: 1, step: 10},
@@ -2479,7 +2479,7 @@ describe('scalar card', () => {
         expect(testController).toBeTruthy();
       }));
 
-      it('dose not dispatch timeSelectionChanged action when fob is dragged', fakeAsync(() => {
+      it('does not dispatch timeSelectionChanged action when fob is dragged', fakeAsync(() => {
         const fixture = createComponent('card1');
         fixture.detectChanges();
         const testController = fixture.debugElement.query(
@@ -2504,6 +2504,15 @@ describe('scalar card', () => {
           fobs[0].query(By.css('span')).nativeElement.textContent.trim()
         ).toEqual('25');
         expect(dispatchedActions).toEqual([]);
+        const scalarCardComponent = fixture.debugElement.query(
+          By.directive(ScalarCardComponent)
+        );
+        expect(
+          scalarCardComponent.componentInstance.internalSelectedTime
+        ).toEqual({
+          start: {step: 25},
+          end: null,
+        });
       }));
     });
   });

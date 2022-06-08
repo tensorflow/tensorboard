@@ -221,7 +221,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.fullHeightChanged.emit(this.showFullSize);
   }
 
-  getMinMaxStepInSerise(series: PartitionedSeries[]) {
+  getMinMaxStepInSeries(series: PartitionedSeries[]) {
     let minStep = Infinity;
     let maxStep = -Infinity;
     for (const {points} of series) {
@@ -376,7 +376,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       map(([series, selectedTime, xAxisType]) => {
         if (xAxisType !== XAxisType.STEP || !selectedTime) return null;
 
-        const {minStep, maxStep} = this.getMinMaxStepInSerise(series);
+        const {minStep, maxStep} = this.getMinMaxStepInSeries(series);
 
         return maybeClipSelectedTime(selectedTime, minStep, maxStep);
       })
@@ -487,7 +487,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       this.store.select(getMetricsStepSelectorEnabled),
     ]).pipe(
       map(([partitionedSeries, enableStepSelector]) => {
-        const {minStep} = this.getMinMaxStepInSerise(partitionedSeries);
+        const {minStep} = this.getMinMaxStepInSeries(partitionedSeries);
 
         return enableStepSelector ? {start: {step: minStep}, end: null} : null;
       })
