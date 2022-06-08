@@ -221,11 +221,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.fullHeightChanged.emit(this.showFullSize);
   }
 
-<<<<<<< HEAD
   getMinMaxStepInSeries(series: PartitionedSeries[]) {
-=======
-  getMinMaxStepInSerise(series: PartitionedSeries[]) {
->>>>>>> 0722d2093 (add internalSelectedTime)
     let minStep = Infinity;
     let maxStep = -Infinity;
     for (const {points} of series) {
