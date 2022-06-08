@@ -63,7 +63,7 @@ class ExamplePlugin(base_plugin.TBPlugin):
         with open(filepath) as infile:
             contents = infile.read()
         return werkzeug.Response(
-            contents, content_type="application/javascript"
+            contents, content_type="text/javascript"
         )
 
     @wrappers.Request.application
