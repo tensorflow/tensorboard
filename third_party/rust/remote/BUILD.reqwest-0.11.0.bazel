@@ -101,7 +101,7 @@ rust_library(
             "@raze__percent_encoding__2_1_0//:percent_encoding",
             "@raze__pin_project_lite__0_2_4//:pin_project_lite",
             "@raze__rustls__0_19_0//:rustls",
-            "@raze__tokio__1_0_2//:tokio",
+            "@raze__tokio__1_8_4//:tokio",
             "@raze__tokio_rustls__0_22_0//:tokio_rustls",
             "@raze__webpki_roots__0_21_1//:webpki_roots",
         ],
