@@ -131,7 +131,7 @@ alias(
 
 alias(
     name = "prost_types",
-    actual = "@raze__prost_types__0_7_0//:prost_types",
+    actual = "@raze__prost_types__0_8_0//:prost_types",
     tags = [
         "cargo-raze",
         "manual",

@@ -573,6 +573,16 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
+        name = "raze__itertools__0_10_3",
+        url = "https://crates.io/api/v1/crates/itertools/0.10.3/download",
+        type = "tar.gz",
+        sha256 = "a9a9d19fa1e79b6215ff29b9d6880b706147f16e9b1dbb1e4e5947b5b02bc5e3",
+        strip_prefix = "itertools-0.10.3",
+        build_file = Label("//third_party/rust/remote:BUILD.itertools-0.10.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "raze__itertools__0_9_0",
         url = "https://crates.io/api/v1/crates/itertools/0.9.0/download",
         type = "tar.gz",
@@ -903,6 +913,16 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
+        name = "raze__prost__0_8_0",
+        url = "https://crates.io/api/v1/crates/prost/0.8.0/download",
+        type = "tar.gz",
+        sha256 = "de5e2533f59d08fcf364fd374ebda0692a70bd6d7e66ef97f306f45c6c5d8020",
+        strip_prefix = "prost-0.8.0",
+        build_file = Label("//third_party/rust/remote:BUILD.prost-0.8.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "raze__prost_build__0_7_0",
         url = "https://crates.io/api/v1/crates/prost-build/0.7.0/download",
         type = "tar.gz",
@@ -923,12 +943,32 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
+        name = "raze__prost_derive__0_8_0",
+        url = "https://crates.io/api/v1/crates/prost-derive/0.8.0/download",
+        type = "tar.gz",
+        sha256 = "600d2f334aa05acb02a755e217ef1ab6dea4d51b58b7846588b747edec04efba",
+        strip_prefix = "prost-derive-0.8.0",
+        build_file = Label("//third_party/rust/remote:BUILD.prost-derive-0.8.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "raze__prost_types__0_7_0",
         url = "https://crates.io/api/v1/crates/prost-types/0.7.0/download",
         type = "tar.gz",
         sha256 = "b518d7cdd93dab1d1122cf07fa9a60771836c668dde9d9e2a139f957f0d9f1bb",
         strip_prefix = "prost-types-0.7.0",
         build_file = Label("//third_party/rust/remote:BUILD.prost-types-0.7.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__prost_types__0_8_0",
+        url = "https://crates.io/api/v1/crates/prost-types/0.8.0/download",
+        type = "tar.gz",
+        sha256 = "603bbd6394701d13f3f25aada59c7de9d35a6a5887cfc156181234a44002771b",
+        strip_prefix = "prost-types-0.8.0",
+        build_file = Label("//third_party/rust/remote:BUILD.prost-types-0.8.0.bazel"),
     )
 
     maybe(
