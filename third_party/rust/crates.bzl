@@ -273,12 +273,12 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
-        name = "raze__crossbeam_utils__0_8_1",
-        url = "https://crates.io/api/v1/crates/crossbeam-utils/0.8.1/download",
+        name = "raze__crossbeam_utils__0_8_8",
+        url = "https://crates.io/api/v1/crates/crossbeam-utils/0.8.8/download",
         type = "tar.gz",
-        sha256 = "02d96d1e189ef58269ebe5b97953da3274d83a93af647c2ddd6f9dab28cedb8d",
-        strip_prefix = "crossbeam-utils-0.8.1",
-        build_file = Label("//third_party/rust/remote:BUILD.crossbeam-utils-0.8.1.bazel"),
+        sha256 = "0bf124c720b7686e3c2663cf54062ab0f68a88af2fb6a030e87e30bf721fcb38",
+        strip_prefix = "crossbeam-utils-0.8.8",
+        build_file = Label("//third_party/rust/remote:BUILD.crossbeam-utils-0.8.8.bazel"),
     )
 
     maybe(
