@@ -256,7 +256,11 @@ export class ScalarCardComponent<Downloader> {
   }
 
   onFobSelectTimeChanged(newSelectedTime: LinkedTime) {
-    this.internalSelectedTime = newSelectedTime;
+    // Updates step selector to single selection.
+    this.internalSelectedTime = {
+      start: {step: newSelectedTime.start.step},
+      end: null,
+    };
 
     if (this.selectedTime !== null) {
       this.onSelectTimeChanged.emit(newSelectedTime);
