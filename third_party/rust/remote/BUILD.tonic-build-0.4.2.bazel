@@ -57,6 +57,6 @@ rust_library(
         "@raze__proc_macro2__1_0_24//:proc_macro2",
         "@raze__prost_build__0_7_0//:prost_build",
         "@raze__quote__1_0_7//:quote",
-        "@raze__syn__1_0_48//:syn",
+        "@raze__syn__1_0_67//:syn",
     ],
 )

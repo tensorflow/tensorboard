@@ -82,7 +82,7 @@ rust_library(
         "@raze__percent_encoding__2_1_0//:percent_encoding",
         "@raze__pin_project__1_0_1//:pin_project",
         "@raze__prost__0_7_0//:prost",
-        "@raze__tokio__1_0_2//:tokio",
+        "@raze__tokio__1_8_4//:tokio",
         "@raze__tokio_stream__0_1_2//:tokio_stream",
         "@raze__tokio_util__0_6_6//:tokio_util",
         "@raze__tower__0_4_6//:tower",

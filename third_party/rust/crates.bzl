@@ -1233,12 +1233,12 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
-        name = "raze__syn__1_0_48",
-        url = "https://crates.io/api/v1/crates/syn/1.0.48/download",
+        name = "raze__syn__1_0_67",
+        url = "https://crates.io/api/v1/crates/syn/1.0.67/download",
         type = "tar.gz",
-        sha256 = "cc371affeffc477f42a221a1e4297aedcea33d47d19b61455588bd9d8f6b19ac",
-        strip_prefix = "syn-1.0.48",
-        build_file = Label("//third_party/rust/remote:BUILD.syn-1.0.48.bazel"),
+        sha256 = "6498a9efc342871f91cc2d0d694c674368b4ceb40f62b65a7a08c3792935e702",
+        strip_prefix = "syn-1.0.67",
+        build_file = Label("//third_party/rust/remote:BUILD.syn-1.0.67.bazel"),
     )
 
     maybe(
@@ -1323,22 +1323,22 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
-        name = "raze__tokio__1_0_2",
-        url = "https://crates.io/api/v1/crates/tokio/1.0.2/download",
+        name = "raze__tokio__1_8_4",
+        url = "https://crates.io/api/v1/crates/tokio/1.8.4/download",
         type = "tar.gz",
-        sha256 = "0ca04cec6ff2474c638057b65798f60ac183e5e79d3448bb7163d36a39cff6ec",
-        strip_prefix = "tokio-1.0.2",
-        build_file = Label("//third_party/rust/remote:BUILD.tokio-1.0.2.bazel"),
+        sha256 = "50dae83881bc9b0403dd5b44ea9deed3e939856cc8722d5be37f0d6e5c6d53dd",
+        strip_prefix = "tokio-1.8.4",
+        build_file = Label("//third_party/rust/remote:BUILD.tokio-1.8.4.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "raze__tokio_macros__1_0_0",
-        url = "https://crates.io/api/v1/crates/tokio-macros/1.0.0/download",
+        name = "raze__tokio_macros__1_8_0",
+        url = "https://crates.io/api/v1/crates/tokio-macros/1.8.0/download",
         type = "tar.gz",
-        sha256 = "42517d2975ca3114b22a16192634e8241dc5cc1f130be194645970cc1c371494",
-        strip_prefix = "tokio-macros-1.0.0",
-        build_file = Label("//third_party/rust/remote:BUILD.tokio-macros-1.0.0.bazel"),
+        sha256 = "9724f9a975fb987ef7a3cd9be0350edcbe130698af5b8f7a631e23d42d052484",
+        strip_prefix = "tokio-macros-1.8.0",
+        build_file = Label("//third_party/rust/remote:BUILD.tokio-macros-1.8.0.bazel"),
     )
 
     maybe(
