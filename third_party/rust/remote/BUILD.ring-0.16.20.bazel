@@ -130,7 +130,7 @@ rust_library(
         (
             "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",
         ): [
-            "@raze__libc__0_2_80//:libc",
+            "@raze__libc__0_2_126//:libc",
             "@raze__once_cell__1_5_2//:once_cell",
         ],
         "//conditions:default": [],

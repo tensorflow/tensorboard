@@ -78,7 +78,7 @@ rust_library(
         "@raze__h2__0_3_0//:h2",
         "@raze__http__0_2_1//:http",
         "@raze__http_body__0_4_0//:http_body",
-        "@raze__hyper__0_14_2//:hyper",
+        "@raze__hyper__0_14_7//:hyper",
         "@raze__percent_encoding__2_1_0//:percent_encoding",
         "@raze__pin_project__1_0_1//:pin_project",
         "@raze__prost__0_7_0//:prost",
