@@ -35,8 +35,8 @@ crossbeam = "0.8.0"
 env_logger = "0.8.2"
 futures-core = "0.3.12"
 log = "0.4.11"
-prost = "0.7.0"
-prost-types = "0.7.0"
+prost = "0.9.0"
+prost-types = "0.9.0"
 rand = "0.7.3"
 rand_chacha = "0.2.2"
 rayon = "1.5.0"
@@ -46,14 +46,14 @@ serde_json = "1.0.59"
 thiserror = "1.0.21"
 tokio = { version = "1.8.4", features = ["macros", "rt-multi-thread"] }
 tokio-stream = { version = "0.1.2", features = ["net"] }
-tonic = "0.4.2"
-tonic-reflection = "0.1.0"
+tonic = "0.6.2"
+tonic-reflection = "0.3.0"
 walkdir = "2.3.1"
 
 [dev-dependencies]
-prost-build = "0.7.0"
+prost-build = "0.9.0"
 tempfile = "3.1.0"
-tonic-build = "0.4.2"
+tonic-build = "0.6.2"
 
 [[bin]]
 name = "rustboard"
@@ -86,13 +86,13 @@ targets = [
 [package.metadata.raze.crates.crc.'1.8.1']
 gen_buildrs = true
 
-[package.metadata.raze.crates.libc.'0.2.80']
+[package.metadata.raze.crates.libc.'0.2.126']
 gen_buildrs = true
 
 [package.metadata.raze.crates.log.'0.4.11']
 gen_buildrs = true
 
-[package.metadata.raze.crates.indexmap.'1.6.0']
+[package.metadata.raze.crates.indexmap.'1.8.2']
 additional_flags = [
     "--cfg=has_std",
 ]
@@ -109,18 +109,18 @@ additional_flags = [
     "--cfg=wrap_proc_macro",
 ]
 
-[package.metadata.raze.crates.prost-build.'0.7.0']
+[package.metadata.raze.crates.prost-build.'0.9.0']
 gen_buildrs = true
 
 [package.metadata.raze.crates.ring.'0.16.20']
 gen_buildrs = true
 data_attr = "glob([\"src/**/*.der\"])"
 
-[package.metadata.raze.crates.tonic-reflection.'0.1.0']
+[package.metadata.raze.crates.tonic-reflection.'0.3.0']
 gen_buildrs = true
 build_data_dependencies = ["@com_google_protobuf//:protoc"]
 
-[package.metadata.raze.crates.tonic-reflection.'0.1.0'.buildrs_additional_environment_variables]
+[package.metadata.raze.crates.tonic-reflection.'0.3.0'.buildrs_additional_environment_variables]
 PROTOC = "$(execpath @com_google_protobuf//:protoc)"
 # We don't have easy access to a rustfmt binary, so make it a no-op.
 # https://github.com/bazelbuild/rules_rust/issues/87

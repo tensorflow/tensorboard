@@ -77,7 +77,7 @@ rust_library(
     deps = [
         "@raze__atty__0_2_14//:atty",
         "@raze__bitflags__1_2_1//:bitflags",
-        "@raze__indexmap__1_6_0//:indexmap",
+        "@raze__indexmap__1_8_2//:indexmap",
         "@raze__lazy_static__1_4_0//:lazy_static",
         "@raze__os_str_bytes__2_4_0//:os_str_bytes",
         "@raze__strsim__0_10_0//:strsim",

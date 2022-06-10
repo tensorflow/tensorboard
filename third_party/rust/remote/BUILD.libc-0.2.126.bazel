@@ -43,7 +43,6 @@ cargo_build_script(
     build_script_env = {
     },
     crate_features = [
-        "align",
         "default",
         "std",
     ],
@@ -67,7 +66,6 @@ rust_library(
     name = "libc",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "align",
         "default",
         "std",
     ],

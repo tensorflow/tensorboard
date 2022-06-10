@@ -593,7 +593,7 @@ pub struct AudioPluginData {
     ///   - If the tensor shape is rank-2, then `t[:, 0]` represent encoded
     ///     audio data, and `t[:, 1]` represent corresponding UTF-8 encoded
     ///     Markdown labels.
-    ///   - If the tensor shape is rank-1, then `t[:]` represent encoded
+    ///   - If the tensor shape is rank-1, then `t\[:\]` represent encoded
     ///     audio data. There are no labels.
     #[prost(int32, tag="1")]
     pub version: i32,
