@@ -113,7 +113,7 @@ alias(
 
 alias(
     name = "prost",
-    actual = "@raze__prost__0_7_0//:prost",
+    actual = "@raze__prost__0_9_0//:prost",
     tags = [
         "cargo-raze",
         "manual",
@@ -122,7 +122,7 @@ alias(
 
 alias(
     name = "prost_build",
-    actual = "@raze__prost_build__0_7_0//:prost_build",
+    actual = "@raze__prost_build__0_9_0//:prost_build",
     tags = [
         "cargo-raze",
         "manual",
@@ -131,7 +131,7 @@ alias(
 
 alias(
     name = "prost_types",
-    actual = "@raze__prost_types__0_7_0//:prost_types",
+    actual = "@raze__prost_types__0_9_0//:prost_types",
     tags = [
         "cargo-raze",
         "manual",
@@ -212,7 +212,7 @@ alias(
 
 alias(
     name = "tokio",
-    actual = "@raze__tokio__1_8_4//:tokio",
+    actual = "@raze__tokio__1_19_2//:tokio",
     tags = [
         "cargo-raze",
         "manual",
@@ -230,7 +230,7 @@ alias(
 
 alias(
     name = "tonic",
-    actual = "@raze__tonic__0_4_2//:tonic",
+    actual = "@raze__tonic__0_6_2//:tonic",
     tags = [
         "cargo-raze",
         "manual",
@@ -239,7 +239,7 @@ alias(
 
 alias(
     name = "tonic_build",
-    actual = "@raze__tonic_build__0_4_2//:tonic_build",
+    actual = "@raze__tonic_build__0_6_2//:tonic_build",
     tags = [
         "cargo-raze",
         "manual",
@@ -248,7 +248,7 @@ alias(
 
 alias(
     name = "tonic_reflection",
-    actual = "@raze__tonic_reflection__0_1_0//:tonic_reflection",
+    actual = "@raze__tonic_reflection__0_3_0//:tonic_reflection",
     tags = [
         "cargo-raze",
         "manual",

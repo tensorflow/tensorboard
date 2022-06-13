@@ -53,8 +53,8 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         "@raze__futures_core__0_3_12//:futures_core",
-        "@raze__pin_project_lite__0_2_4//:pin_project_lite",
-        "@raze__tokio__1_8_4//:tokio",
+        "@raze__pin_project_lite__0_2_9//:pin_project_lite",
+        "@raze__tokio__1_19_2//:tokio",
     ],
 )
 
