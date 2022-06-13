@@ -24,8 +24,7 @@ import {Observable} from 'rxjs';
 import {first, switchMap} from 'rxjs/operators';
 import {getFeatureFlags} from '../store/feature_flag_selectors';
 import {State as FeatureFlagState} from '../store/feature_flag_types';
-
-export const FEATURE_FLAGS_HEADER_NAME = 'X-TensorBoard-Feature-Flags';
+import {FEATURE_FLAGS_HEADER_NAME} from './const';
 
 /**
  * HttpInterceptor for injecting feature flags into each HTTP request

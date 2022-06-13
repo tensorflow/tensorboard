@@ -22,7 +22,9 @@ tf_ts_library(
     strict_checks = False,
     deps = [
         ":type",
+        "//tensorboard/components/tf_feature_flags",
         "//tensorboard/components/vz_sorting",
+        "//tensorboard/webapp/feature_flag/http:const",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
         "@npm//@types/lodash",

@@ -26,6 +26,7 @@ import {of} from 'rxjs';
 import {getFeatureFlags} from '../store/feature_flag_selectors';
 import {State as FeatureFlagState} from '../store/feature_flag_types';
 import {buildFeatureFlag} from '../testing';
+import {FEATURE_FLAGS_HEADER_NAME} from './const';
 import {FeatureFlagHttpInterceptor} from './feature_flag_http_interceptor';
 
 describe('FeatureFlagHttpInterceptor', () => {
@@ -65,7 +66,7 @@ describe('FeatureFlagHttpInterceptor', () => {
     );
     expect(request.request.headers).toEqual(
       new HttpHeaders().set(
-        'X-TensorBoard-Feature-Flags',
+        FEATURE_FLAGS_HEADER_NAME,
         JSON.stringify(buildFeatureFlag({inColab: true}))
       )
     );

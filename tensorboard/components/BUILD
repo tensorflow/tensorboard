@@ -30,6 +30,7 @@ tf_ts_library(
     deps = [
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_color_scale",
+        "//tensorboard/components/tf_feature_flags",
         "//tensorboard/components/tf_globals",
         "//tensorboard/components/tf_markdown_view",
         "//tensorboard/components/tf_paginated_view",

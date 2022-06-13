@@ -12,11 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {FeatureFlags} from './feature_flag/types';
+
 declare global {
   // createElement type uses the TagNameMap underneath and returns the right type.
   interface HTMLElementTagNameMap {
     'tf-backend': TfBackendElement;
     'tf-globals': TfGlobalsElement;
+    'tf-feature-flags': TfFeatureFlagsElement;
     'tf-storage': TfStorageElement;
     'tf-paginated-view-store': TfPaginatedViewStoreElement;
     'vz-histogram-timeseries': VzHistogramTimeSeriesElement;
@@ -38,6 +41,14 @@ export declare interface SetStringOption {
    * i.e., it uses `history.replaceState` instead of `history.pushState`.
    */
   useLocationReplace?: boolean;
+}
+
+export declare interface TfFeatureFlags {
+  setFeatureFlags(featureFlags: FeatureFlags): void;
+}
+
+export declare interface TfFeatureFlagsElement extends HTMLElement {
+  tf_feature_flags: TfFeatureFlags;
 }
 
 export declare interface TfStorage {

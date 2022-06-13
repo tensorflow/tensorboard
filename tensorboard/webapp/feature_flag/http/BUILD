@@ -3,11 +3,19 @@ load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 package(default_visibility = ["//tensorboard:internal"])
 
 tf_ng_module(
+    name = "const",
+    srcs = [
+        "const.ts",
+    ],
+)
+
+tf_ng_module(
     name = "http",
     srcs = [
         "feature_flag_http_interceptor.ts",
     ],
     deps = [
+        ":const",
         "//tensorboard/webapp/angular:expect_angular_common_http",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/feature_flag/store:types",
@@ -24,6 +32,7 @@ tf_ts_library(
         "feature_flag_http_interceptor_test.ts",
     ],
     deps = [
+        ":const",
         ":http",
         "//tensorboard/webapp/angular:expect_angular_common_http",
         "//tensorboard/webapp/angular:expect_angular_common_http_testing",

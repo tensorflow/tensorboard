@@ -79,6 +79,9 @@ tf_ts_library(
     srcs = [
         "tb_polymer_interop_types.ts",
     ],
+    deps = [
+        "//tensorboard/webapp/feature_flag:types",
+    ],
 )
 
 tf_sass_binary(

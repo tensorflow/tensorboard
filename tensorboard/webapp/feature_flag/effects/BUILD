@@ -8,6 +8,7 @@ tf_ng_module(
         "feature_flag_effects.ts",
     ],
     deps = [
+        "//tensorboard/webapp:tb_polymer_interop_types",
         "//tensorboard/webapp/feature_flag:force_svg_data_source",
         "//tensorboard/webapp/feature_flag/actions",
         "//tensorboard/webapp/feature_flag/store",
