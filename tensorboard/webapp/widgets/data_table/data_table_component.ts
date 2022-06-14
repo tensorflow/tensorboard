@@ -18,6 +18,10 @@ import {
   ColumnHeaders,
   SelectedStepRunData,
 } from '../../metrics/views/card_renderer/scalar_card_types';
+import {
+  numberFormatter,
+  relativeTimeFormatter,
+} from '../line_chart_v2/lib/formatter';
 
 @Component({
   selector: 'tb-data-table',
@@ -30,4 +34,44 @@ export class DataTableComponent {
   // displayed in the table.
   @Input() headers!: ColumnHeaders[];
   @Input() data!: SelectedStepRunData[];
+
+  getHeaderTextColumn(columnHeader: ColumnHeaders): string {
+    switch (columnHeader) {
+      case ColumnHeaders.RUN:
+        return 'Run';
+      case ColumnHeaders.VALUE:
+        return 'Value';
+      case ColumnHeaders.STEP:
+        return 'Step';
+      case ColumnHeaders.TIME:
+        return 'Time';
+      case ColumnHeaders.RELATIVE_TIME:
+        return 'Relative';
+      default:
+        return '';
+    }
+  }
+
+  getFormattedDataForColumn(
+    columnHeader: ColumnHeaders,
+    selectedStepRunData: SelectedStepRunData
+  ): string {
+    switch (columnHeader) {
+      case ColumnHeaders.RUN:
+        return selectedStepRunData.RUN as string;
+      case ColumnHeaders.VALUE:
+        return numberFormatter.formatShort(selectedStepRunData.VALUE as number);
+      case ColumnHeaders.STEP:
+        return numberFormatter.formatShort(selectedStepRunData.STEP as number);
+      case ColumnHeaders.TIME:
+        const time = new Date(selectedStepRunData.TIME!);
+        return time.toISOString();
+      case ColumnHeaders.RELATIVE_TIME:
+        return relativeTimeFormatter.formatReadable(
+          selectedStepRunData.RELATIVE_TIME as number
+        );
+      default:
+        return '';
+    }
+  }
 }

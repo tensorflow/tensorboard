@@ -49,6 +49,9 @@ card-view {
   &.full-height {
     min-height: $metrics-min-card-height * 1.5;
   }
+  &.height-with-table {
+    min-height: $metrics-min-card-height + 100px;
+  }
 }
 
 .group-controls {
