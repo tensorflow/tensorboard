@@ -14,6 +14,7 @@ tf_ts_library(
         "//tensorboard/webapp/app_routing:route_config",
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/tb_wrapper",
+        "//tensorboard/webapp/feature_flag/feature_flag_page",
         "@npm//@angular/core",
     ],
 )
