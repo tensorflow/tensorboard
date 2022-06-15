@@ -1664,7 +1664,7 @@ describe('metrics main view', () => {
         expect(indicator).toBeTruthy();
       });
 
-      it('shows the indicator when the same card gets pinned toggled', () => {
+      it('shows the indicator when the same card gets pinned toggled', async () => {
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
@@ -1678,9 +1678,12 @@ describe('metrics main view', () => {
         const card2IndicatorBefore = fixture.debugElement.query(
           byCss.INDICATOR
         );
+        // Unpin card2.
         updatePinnedCards(fixture, [
           {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
         ]);
+        // Wait for the indicator to fade completely before repinning card2.
+        await fixture.whenStable();
         updatePinnedCards(fixture, [
           {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
           {cardId: 'card2', ...createCardMetadata(PluginType.SCALARS)},
