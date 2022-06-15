@@ -1625,7 +1625,7 @@ describe('metrics main view', () => {
         INDICATOR: By.css('.new-card-pinned'),
       };
 
-      async function updatePinnedCards(
+      function updatePinnedCards(
         fixture: ComponentFixture<MainViewContainer>,
         pinnedCardMetadata: CardIdWithMetadata[]
       ) {
@@ -1635,28 +1635,27 @@ describe('metrics main view', () => {
         );
         store.refreshState();
         fixture.detectChanges();
-        await fixture.whenStable();
       }
 
-      it('does not show any indicator initially', async () => {
+      it('does not show any indicator initially', () => {
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
-        await updatePinnedCards(fixture, [
+        updatePinnedCards(fixture, [
           {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
         ]);
         const indicator = fixture.debugElement.query(byCss.INDICATOR);
         expect(indicator).toBeNull();
       });
 
-      it('shows an indication when pin a new card', async () => {
+      it('shows an indication when pin a new card', () => {
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
-        await updatePinnedCards(fixture, [
+        updatePinnedCards(fixture, [
           {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
         ]);
-        await updatePinnedCards(fixture, [
+        updatePinnedCards(fixture, [
           {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
           {cardId: 'card2', ...createCardMetadata(PluginType.SCALARS)},
         ]);
@@ -1665,24 +1664,24 @@ describe('metrics main view', () => {
         expect(indicator).toBeTruthy();
       });
 
-      it('shows the indicator when the same card gets pinned toggled', async () => {
+      it('shows the indicator when the same card gets pinned toggled', () => {
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
-        await updatePinnedCards(fixture, [
+        updatePinnedCards(fixture, [
           {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
         ]);
-        await updatePinnedCards(fixture, [
+        updatePinnedCards(fixture, [
           {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
           {cardId: 'card2', ...createCardMetadata(PluginType.SCALARS)},
         ]);
         const card2IndicatorBefore = fixture.debugElement.query(
           byCss.INDICATOR
         );
-        await updatePinnedCards(fixture, [
+        updatePinnedCards(fixture, [
           {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
         ]);
-        await updatePinnedCards(fixture, [
+        updatePinnedCards(fixture, [
           {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
           {cardId: 'card2', ...createCardMetadata(PluginType.SCALARS)},
         ]);
@@ -1696,15 +1695,15 @@ describe('metrics main view', () => {
         );
       });
 
-      it('does not show indicator when you remove a pin', async () => {
+      it('does not show indicator when you remove a pin', () => {
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
-        await updatePinnedCards(fixture, [
+        updatePinnedCards(fixture, [
           {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
           {cardId: 'card2', ...createCardMetadata(PluginType.SCALARS)},
         ]);
-        await updatePinnedCards(fixture, [
+        updatePinnedCards(fixture, [
           {cardId: 'card2', ...createCardMetadata(PluginType.SCALARS)},
         ]);
 
@@ -1712,15 +1711,15 @@ describe('metrics main view', () => {
         expect(indicator).toBeNull();
       });
 
-      it('shows an indicator a change contains both removal and addition', async () => {
+      it('shows an indicator a change contains both removal and addition', () => {
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
-        await updatePinnedCards(fixture, [
+        updatePinnedCards(fixture, [
           {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
           {cardId: 'card2', ...createCardMetadata(PluginType.SCALARS)},
         ]);
-        await updatePinnedCards(fixture, [
+        updatePinnedCards(fixture, [
           {cardId: 'card2', ...createCardMetadata(PluginType.SCALARS)},
           {cardId: 'card3', ...createCardMetadata(PluginType.SCALARS)},
         ]);
