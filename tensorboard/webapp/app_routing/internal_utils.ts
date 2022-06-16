@@ -179,6 +179,7 @@ export function getDeepLinkGroup(routeKind: RouteKind): DeepLinkGroup | null {
       return DeepLinkGroup.DASHBOARD;
     case RouteKind.UNKNOWN:
     case RouteKind.NOT_SET:
+    case RouteKind.FLAGS:
       return null;
   }
 }

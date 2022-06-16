@@ -12,19 +12,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {CommonModule} from '@angular/common';
-import {NgModule} from '@angular/core';
-import {MatCheckboxModule} from '@angular/material/checkbox';
-import {FeatureFlagPageComponent} from './feature_flag_page_component';
-import {FeatureFlagPageContainer} from './feature_flag_page_container';
-
-/**
- * Provides the wrapper component that renders the main dashboard page.
- */
-@NgModule({
-  declarations: [FeatureFlagPageComponent, FeatureFlagPageContainer],
-  imports: [CommonModule, MatCheckboxModule],
-  exports: [FeatureFlagPageComponent],
-  entryComponents: [FeatureFlagPageComponent],
+import {Component} from '@angular/core';
+import {Store} from '@ngrx/store';
+import {State} from '../../app_state';
+import {getFeatureFlags} from '../store/feature_flag_selectors';
+@Component({
+  selector: 'feature-flag-page',
+  template: `<feature-flag-page-component
+    [featureFlags]="featureFlags$ | async"
+  ></feature-flag-page-component>`,
 })
-export class FeatureFlagPageModule {}
+export class FeatureFlagPageContainer {
+  constructor(private readonly store: Store<State>) {}
+  readonly featureFlags$ = this.store.select(getFeatureFlags);
+}

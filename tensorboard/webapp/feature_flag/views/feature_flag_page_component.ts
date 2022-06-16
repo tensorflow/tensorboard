@@ -15,7 +15,7 @@ limitations under the License.
 import {Component, Input} from '@angular/core';
 import {FeatureFlagState} from '../store/feature_flag_types';
 @Component({
-  selector: 'feature_flag_page_component',
+  selector: 'feature-flag-page-component',
   templateUrl: `feature_flag_page.ng.html`,
 })
 export class FeatureFlagPageComponent {
