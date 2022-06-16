@@ -26,8 +26,8 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_checkbox",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/feature_flag/store:types",
-        "@npm//@ngrx/store",
         "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//@ngrx/store",
     ],
 )
