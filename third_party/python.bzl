@@ -109,14 +109,3 @@ def tensorboard_python_workspace():
         strip_prefix = "six-1.13.0",
         build_file = str(Label("//third_party:six.BUILD")),
     )
-
-    http_archive(
-        name = "org_python_pypi_portpicker",
-        urls = [
-            "http://mirror.tensorflow.org/pypi.python.org/packages/96/48/0e1f20fdc0b85cc8722284da3c5b80222ae4036ad73210a97d5362beaa6d/portpicker-1.1.1.tar.gz",
-            "https://pypi.python.org/packages/96/48/0e1f20fdc0b85cc8722284da3c5b80222ae4036ad73210a97d5362beaa6d/portpicker-1.1.1.tar.gz",
-        ],
-        sha256 = "2f88edf7c6406034d7577846f224aff6e53c5f4250e3294b1904d8db250f27ec",
-        strip_prefix = "portpicker-1.1.1/src",
-        build_file = str(Label("//third_party:portpicker.BUILD")),
-    )
