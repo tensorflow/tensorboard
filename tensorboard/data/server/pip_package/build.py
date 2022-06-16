@@ -39,7 +39,7 @@ def main():
     platform_name = {
         # using platform tag values from TensorFlow releases
         "Linux": "manylinux2010",
-        "Darwin": mac_platform
+        "Darwin": mac_platform,
     }.get(platform.system())
 
     parser = argparse.ArgumentParser()
