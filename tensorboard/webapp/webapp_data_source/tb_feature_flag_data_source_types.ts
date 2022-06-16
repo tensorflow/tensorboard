@@ -36,7 +36,7 @@ export abstract class TBFeatureFlagDataSource {
    * @param flagKey the key for the flag whose status is being stored
    * @param value A boolean establishing
    */
-  abstract storeFeatureFlag(flagKey: string, value: boolean);
+  abstract storeFeatureFlag(flagKey: string, value: boolean): void;
 
   /**
    * Gets the value stored in localStorage for the given key. If no state exists
