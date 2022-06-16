@@ -83,9 +83,6 @@ export class FeatureFlagEffects {
   readonly storeFeatureFlag$ = createEffect(
     () =>
       this.actions$.pipe(
-        // partialFeatureFlagsLoaded triggers this effect but the actual
-        // feature flag values used are from the Store, given that it contains
-        // the finalized merged feature flags.
         ofType(storeFeatureFlag),
         tap((flagInfo) => {
           this.dataSource.storeFeatureFlag(flagInfo.flagKey, flagInfo.value);
