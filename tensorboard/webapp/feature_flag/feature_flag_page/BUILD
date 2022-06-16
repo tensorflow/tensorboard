@@ -22,8 +22,8 @@ tf_ng_module(
         "feature_flag_page.ng.html",
     ],
     deps = [
-        "//tensorboard/webapp/angular:expect_angular_material_checkbox",
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/angular:expect_angular_material_checkbox",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/feature_flag/store:types",
         "@npm//@ngrx/store",
