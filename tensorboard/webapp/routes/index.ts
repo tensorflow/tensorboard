@@ -15,9 +15,9 @@ limitations under the License.
 import {Component, Type} from '@angular/core';
 import {RouteDef} from '../app_routing/route_config_types';
 import {RouteKind} from '../app_routing/types';
+import {FeatureFlagPageContainer} from '../feature_flag/feature_flag_page/feature_flag_page_container';
 import {TensorBoardWrapperComponent} from '../tb_wrapper/tb_wrapper_component';
 import {DashboardDeepLinkProvider} from './dashboard_deeplink_provider';
-import {FeatureFlagPageContainer} from '../feature_flag/feature_flag_page/feature_flag_page_container';
 
 export function routesFactory(): RouteDef[] {
   return [
