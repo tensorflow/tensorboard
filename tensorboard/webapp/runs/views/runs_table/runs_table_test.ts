@@ -831,10 +831,10 @@ describe('runs_table', () => {
           })
         );
 
-        const dialogInputDebugElement: DebugElement = new DebugElement(
+        const dialogInputDebugElement = new DebugElement(
           overlayContainer
             .getContainerElement()
-            .querySelector('mat-dialog-container input')
+            .querySelector('mat-dialog-container input')!
         );
         sendKeys(fixture, dialogInputDebugElement, 'foo(\\d+)');
 
@@ -864,10 +864,10 @@ describe('runs_table', () => {
         const [cancelButton, saveButton] =
           dialogContainer!.querySelectorAll('button');
 
-        const dialogInputDebugElement: DebugElement = new DebugElement(
+        const dialogInputDebugElement = new DebugElement(
           overlayContainer
             .getContainerElement()
-            .querySelector('mat-dialog-container input')
+            .querySelector('mat-dialog-container input')!
         );
         sendKeys(fixture, dialogInputDebugElement, 'foo(\\d+)');
 
