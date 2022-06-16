@@ -50,6 +50,23 @@ export class QueryParamsFeatureFlagDataSource
     } as Partial<FeatureFlags>;
   }
 
+  storeFeatureFlag(flagKey: string, value: boolean) {
+    if (value) {
+      localStorage.setItem(flagKey, 'true');
+    } else {
+      localStorage.setItem(flagKey, 'false');
+    }
+  }
+
+  getPersistentFeatureFlagState(flagKey: string): boolean | null {
+    const value = localStorage.getItem(flagKey);
+    if (!value) {
+      return null;
+    }
+
+    return value === 'true';
+  }
+
   protected getPartialFeaturesFromMediaQuery(): {
     defaultEnableDarkMode?: boolean;
   } {

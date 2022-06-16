@@ -28,4 +28,21 @@ export abstract class TBFeatureFlagDataSource {
    * not have enough information to provide values.
    */
   abstract getFeatures(enableMediaQuery?: boolean): Partial<FeatureFlags>;
+
+  /**
+   * Stores the given feature flag state in localStorage to allow for more
+   * persistent flag state.
+   *
+   * @param flagKey the key for the flag whose status is being stored
+   * @param value A boolean establishing
+   */
+  abstract storeFeatureFlag(flagKey: string, value: boolean);
+
+  /**
+   * Gets the value stored in localStorage for the given key. If no state exists
+   * in localStorage it returns null
+   *
+   * @param flagKey the key for the flag whose status is being checked
+   */
+  abstract getPersistentFeatureFlagState(flagKey: string): boolean | null;
 }

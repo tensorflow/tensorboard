@@ -19,7 +19,10 @@ import {Action, createAction, Store} from '@ngrx/store';
 import {combineLatestWith, map, tap, withLatestFrom} from 'rxjs/operators';
 import '../../tb_polymer_interop_types';
 import {TBFeatureFlagDataSource} from '../../webapp_data_source/tb_feature_flag_data_source_types';
-import {partialFeatureFlagsLoaded} from '../actions/feature_flag_actions';
+import {
+  partialFeatureFlagsLoaded,
+  storeFeatureFlag,
+} from '../actions/feature_flag_actions';
 import {ForceSvgDataSource} from '../force_svg_data_source';
 import {
   getFeatureFlags,
@@ -72,6 +75,20 @@ export class FeatureFlagEffects {
         withLatestFrom(this.store.select(getFeatureFlags)),
         tap(([, featureFlags]) => {
           this.tfFeatureFlags.ref.setFeatureFlags(featureFlags);
+        })
+      ),
+    {dispatch: false}
+  );
+
+  readonly storeFeatureFlag$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        // partialFeatureFlagsLoaded triggers this effect but the actual
+        // feature flag values used are from the Store, given that it contains
+        // the finalized merged feature flags.
+        ofType(storeFeatureFlag),
+        tap((flagInfo) => {
+          this.dataSource.storeFeatureFlag(flagInfo.flagKey, flagInfo.value);
         })
       ),
     {dispatch: false}
