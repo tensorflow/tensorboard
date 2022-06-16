@@ -11,12 +11,13 @@ Follow either of the two links above to access the appropriate CLA and instructi
 
 ***NOTE***: Only original source code from you and other people that have signed the CLA can be accepted into the main repository.
 
-
 ### Working with the team
+
 If you're planning a larger contribution, please get in touch with the team through a GitHub issue before starting work - we can help guide you, and coordinating up front will make the process smoother.
 
 If you want to add a major feature, it may be a good candidate for adding a plugin. Let us know via a GitHub issue, and we can guide you in the process.
 
 ### Code reviews
+
 All submissions, including submissions by project members, require review. We
 use GitHub pull requests for this purpose.

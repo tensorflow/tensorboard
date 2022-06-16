@@ -16,6 +16,7 @@ The 2.9 minor series tracks TensorFlow 2.9.
 - Support for s3://, hdfs://, and other cloud filesystems no longer included in TensorFlow 2.6+ - requires installing tensorflow-io package (#5491)
 
 ## Bug fixes
+
 -  Fix for incorrect alpha-channel layering (#5571, #5567)
 -  Fix histogram tooltips that bleed out of content box. (#5631)
 -  Fix for run table overlapping text in npmi plugin (#5468)
@@ -163,6 +164,7 @@ The 2.6 minor series tracks TensorFlow 2.6.
 # Release 2.5.0
 
 ## Features
+
 - New data loading mode: typically loads between 100× and 350× faster
   - On by default when applicable; pass `--load_fast false` to disable
   - For details, or to provide feedback, see #4784
@@ -182,6 +184,7 @@ The 2.6 minor series tracks TensorFlow 2.6.
 - Support http server port reuse (#4616) – thanks @zuston.
 
 ## Bug fixes
+
 - Graphs
   - Fixed "Download as PNG" button (#4759)
   - Fixed "Ungroup this series" button (#4817)
@@ -195,9 +198,11 @@ The 2.6 minor series tracks TensorFlow 2.6.
 - Graph events inconsistently evicted after session log START event (#4743)
 
 ## TensorBoard.dev updates
+
 - Text summaries now uploaded
 
 ## Breaking changes
+
 - Projector plugin will not work with `--logdir_spec` (#4494) (may not have worked before)
 - Drop support for negative `--reload_interval`, which instructed TensorBoard to not read any data at all
 
@@ -270,6 +275,7 @@ The 2.3 minor series tracks TensorFlow 2.3.
   related lines in the Python source code (#3821)
 
 ## TensorBoard.dev updates
+
 - Added support for showing the Distributions tab (#3762)
 - Uploader now displays data statistics in the console while uploading data
   (#3678)
@@ -288,6 +294,7 @@ The 2.3 minor series tracks TensorFlow 2.3.
 [dataframe-tutorial]: https://www.tensorflow.org/tensorboard/dataframe_api
 
 ## Bug fixes
+
 - Projector plugin
   - Shows data when logs exist in both logdir root and subdirectory (#3694)
   - Fixed incorrect embeddings from TF2 checkpoints (#3679)
@@ -424,10 +431,10 @@ plot (#3347)
 - Fixes to profiling tutorial (#3372 & #3381)
 
 ## Breaking Changes
+
 - Note: As of TensorBoard 2.1.1+, only Python 3 is supported. There will be no
 further releases for Python 2 as per
 https://groups.google.com/a/tensorflow.org/forum/#!topic/developers/ifEAGK3aPls
-
 
 # Release 2.1.1
 
@@ -440,7 +447,6 @@ https://groups.google.com/a/tensorflow.org/forum/#!topic/developers/ifEAGK3aPls
 - As per
   https://groups.google.com/a/tensorflow.org/forum/#!topic/developers/ifEAGK3aPls
   this patch does not support Python 2.  Only Python 3 is supported
-
 
 # Release 2.1.0
 
@@ -492,6 +498,7 @@ The 2.1 minor series tracks TensorFlow 2.1.
 # Release 2.0.1
 
 ## Features
+
 - Preview of TensorBoard.dev uploader! Check out <https://tensorboard.dev/> for
   information and usage instructions.
 
@@ -535,12 +542,12 @@ The 2.0 minor series tracks TensorFlow 2.0.
 
 - What-If Tool now can sort PD plots by interestingness (#2461)
 
-
 # Release 1.15.0
 
 The 1.15 minor series tracks TensorFlow 1.15.
 
 ## Features
+
 - Embeddings projector now shows sprite images in the nearest neighbors list
   (#2543) - thanks @beasteers
 - When recording hyperparameters, the trial ID can now be customized, for easier
@@ -577,6 +584,7 @@ The 1.15 minor series tracks TensorFlow 1.15.
 [example-plugin]: https://github.com/tensorflow/tensorboard/tree/1.15/tensorboard/examples/plugins/example_basic#readme
 
 ## Bug fixes
+
 - #2614 - "Toggle All Runs" button now behaves correctly on the first click when
   many runs are loaded (PR #2633)
 - Scalar charts should no longer "become tiny" on certain kinds of rendering
@@ -587,10 +595,10 @@ The 1.15 minor series tracks TensorFlow 1.15.
   Facets Dive view (PR #2414)
 - Embedding projector metadata view now wraps long strings correctly (PR #2198)
 
-
 # Release 1.14.0
 
 ## Features
+
 - New hyperparameters dashboard: see [tutorial and demo][hparams-docs] and
   [summary APIs][hparams-apis]
 - New dashboard for visualizing meshes and point clouds: see
@@ -623,6 +631,7 @@ The 1.15 minor series tracks TensorFlow 1.15.
   `tensorboard.version.VERSION` (#2026)
 
 ## Bug fixes
+
 - Projector metadata card now formats long words properly (PR #2016) - thanks
   @makseq
 - #2010 - `.tensorboard-info` is now world-writable for multi-user \*nix systems
@@ -638,10 +647,10 @@ The 1.15 minor series tracks TensorFlow 1.15.
 [umap]: https://github.com/lmcinnes/umap#umap
 [witwidget-demo]: https://colab.research.google.com/github/tensorflow/tensorboard/blob/1.14/tensorboard/plugins/interactive_inference/What_If_Tool_Notebook_Usage.ipynb
 
-
 # Release 1.13.1
 
 ## Bug fixes
+
 - #1895 - Fix `strftime`-related launch error on Windows (PR #1900)
 - #1794 - Fix What-If Tool loading examples without inference (PR #1898)
 - #1914 - Disable the profile dashboard inside Colab, where it doesn’t work
@@ -657,6 +666,7 @@ of some TensorFlow APIs to align with their naming in TF 2.0, and as a result
 TensorBoard 1.13+ strictly requires TensorFlow 1.13+.
 
 ## Features
+
 - What-If tool notebook mode and general improvements
   - Now usable directly inside Jupyter and Colab notebooks (#1662, #1745, #1788)
   - Added comparison of multiple models (#1589, #1672)
@@ -671,9 +681,11 @@ TensorBoard 1.13+ strictly requires TensorFlow 1.13+.
   near the default port (6006) if that port is already in use (#1851)
 
 ## Performance improvements
+
 - Faster event file loading by caching runtime check (PR #1686) - thanks @abiro
 
 ## Bug fixes
+
 - #786 (partial) - Avoid trying to smooth plots of constant y-value (PR #1698)
 - #1515 - Fix image right-click accessiblity in non-Chromium browsers (PR #1561)
 - #1541 - Fix --event_file flag when using --inspect
@@ -684,27 +696,27 @@ TensorBoard 1.13+ strictly requires TensorFlow 1.13+.
 - #1623 - Fix --path_prefix interpretation
 - #1838 - Fix run selector synchronization across already-loaded dashboards
 
-
 # Release 1.12.2
 
 ## Bug fixes
+
 - #1620 - Fix path_prefix flag regression (PR #1623)
 - #1704 - Fix debugger sidebar resizer
-
 
 # Release 1.12.1
 
 ## Bug fixes
+
 - #1549 - Run names wrap at all character (PR #1602) - thanks @dgrahn
 - #1610 - Fix Download as PNG for large graph
 - #1684 - Fix bug rendering debugger plugin (PR #1550) - thanks @longouyang
-
 
 # Release 1.12.0
 
 The 1.12 minor series tracks TensorFlow 1.12.
 
 ## Features
+
 - New download-as-SVG option for scalar dashboard charts (#1446)
 - Image dashboard should now detect and render SVG images (#1440)
 - What-If Tool example viewer/loader improvements:
@@ -714,6 +726,7 @@ The 1.12 minor series tracks TensorFlow 1.12.
 - Profile tool shows per-program breakdown, idle time, and ops left out (#1470)
 
 ## Bug fixes
+
 - #1463 - What-If tool now handles classes with blank labels (PR #1471)
 - #1468 - Reduce clipping in graph plugin sidebar
 - #1475 - Restore tag filter persistence to URL param and across dashboards
@@ -726,28 +739,31 @@ The 1.12 minor series tracks TensorFlow 1.12.
 - #1508 - Make custom scalars chart ignore outliers functionality work
 - #1524 - Preserve line chart zoom level when data refreshes
 
-
 # Release 1.11.0
 
 The 1.11 minor series tracks TensorFlow 1.11.
 
 ## Highlights
+
 - New What-If Tool dashboard, which provides a simple, intuitive, and powerful
   visual interface to play with a trained ML model on a set of data with
   absolutely no code required. See for details:
   https://github.com/tensorflow/tensorboard/tree/1.11/tensorboard/plugins/interactive_inference
 
 ## Features
+
 - Graph dashboard now supports coloring nodes by XLA cluster (PR #1336)
 - Last updated time appears in tooltip for refresh button (PR #1362)
 - Line charts support pan w/ shift key, zoom w/ scroll wheel (PR #1429, #1456)
 
 ## Performance improvements
+
 - Better UI animation/scrolling performance (#1311, #1357)
 - Reduced Plottable MouseInteraction overhead on hover (#1333/#1329)
 - Optimized line chart tooltip redraw behavior (#1355)
 
 ## Bug fixes
+
 - #982  - Fix spurious 404s for /[[_dataImageSrc]] or /[[_imageURL]] (PR #1315)
 - #1320 - Fix port binding to disallow confusing IPv4/IPv6 port reuse (PR #1449)
 - #1397 - Fix multi-part logdirs to correct expand ~ for user homedir
@@ -756,12 +772,12 @@ The 1.11 minor series tracks TensorFlow 1.11.
 - #1403 - Fix scalar chart shrinking problem on fast page changes
 - #1406 - Fix scalar chart tooltip display to better avoid clipping
 
-
 # Release 1.10.0
 
 The 1.10 minor series tracks TensorFlow 1.10.
 
 ## Changes
+
 - New logic for loading/launching TensorBoard (PR #1240)
   - Plugin loading now uses new TBLoader API
   - Argument parsing now uses argparse
@@ -771,11 +787,11 @@ The 1.10 minor series tracks TensorFlow 1.10.
 - New TPU profile dashboard progress bar for loading tools (PR #1286)
 
 ## Bug fixes
+
 - #1260 - Fix missing pie chart in TPU profile input pipeline analyzer
 - #1280 - Fix TPU profile memory viewer issue with XLA compatibility
 - #1287 - Fix dangling UI interaction layer issue in vz-line-chart
 - #1294 - Fix custom scalar dashboard to de-duplicate charts - thanks @lgeiger
-
 
 # Release 1.9.0
 
@@ -793,12 +809,14 @@ The 1.9 minor series tracks TensorFlow 1.9.
   - Profile dashboard now supports visualizing data from multiple hosts (#1117)
 
 ## Features
+
 - Graph dashboard now allows searching nodes by regex (#1130)
 - New --samples_per_plugin flag to control how many samples are kept (#1138)
 - Better error when --logdir/--db flag is omitted (#1189) - thanks @oxinabox
 - Debugger plugin can now show single elements of string tensors (#1131)
 
 ## Bug fixes
+
 - #1107 - Beholder plugin should no longer reserve GPU (PR #1114)
 - #1190 - Beholder plugin summary placeholder no longer interferes with normal
           summary use and/or Estimator - thanks @TanUkkii007 (PR #1148)
@@ -806,7 +824,6 @@ The 1.9 minor series tracks TensorFlow 1.9.
 - #1191 - fixed debugger plugin UnboundLocalError - thanks @cfroehli
 - #1200 - fixed debugger plugin binary-valued string tensor issues
 - #1201 - fixed "dictionary changed size" race condition in reloader (PR #1235)
-
 
 # Release 1.8.0
 
@@ -817,7 +834,6 @@ The 1.8 minor series tracks TensorFlow 1.8.
 - #1082 - fixes rendering for certain graphs with metaedges/function nodes
 - #1097 - correction to debugger plugin keras code snippet (PR #1100)
 - #1111 - event reader logic now supports TF 1.8 GetNext() API (PR #1086)
-
 
 # Release 1.7.0
 
@@ -852,7 +868,6 @@ The 1.7 minor series tracks TensorFlow 1.7.
 - #1016 - CTRL+C now exits TensorBoard even with debugger enabled (PR #975)
 - #1021 - text plugin no longer always shows as inactive on first page load
 
-
 # Release 1.6.0
 
 NOTICE: TensorBoard 1.6.0+ has moved to the `tensorboard` package name on PyPI:
@@ -883,7 +898,6 @@ The 1.6 minor series tracks TensorFlow 1.6.
 - Bazel 0.9.0+ required to build from source - this change was necessary in order
   to add support for building at Bazel 0.10.0 and above. Please update Bazel.
 
-
 # Release 1.5.1
 
 NOTICE: TensorBoard 1.6.0+ will move to the `tensorboard` package name on PyPI,
@@ -907,7 +921,6 @@ The 1.5 minor series tracks TensorFlow 1.5.
 
 - Custom scalars documentation now documents margin plots feature (#878)
 - FAQ updated to describe custom scalars plugin use cases
-
 
 # Release 1.5.0
 
@@ -946,7 +959,6 @@ The 1.5 minor series tracks TensorFlow 1.5.
   - correctly render function nodes (#817)
   - pan to nodes more reliably (#824, #837)
   - rebuild hierarchy if callbacks change to avoid race in rendering (#879)
-
 
 # Release 0.4.0
 
