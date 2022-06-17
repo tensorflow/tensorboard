@@ -23,6 +23,11 @@ export class TestingTBFeatureFlagDataSource extends TBFeatureFlagDataSource {
   getFeatures(): Partial<FeatureFlags> {
     return buildFeatureFlag();
   }
+  storeFeatureFlag(flagKey: string, value: boolean): void {}
+
+  getPersistentFeatureFlagState(flagKey: string): boolean | null {
+    return null;
+  }
 }
 
 @NgModule({
