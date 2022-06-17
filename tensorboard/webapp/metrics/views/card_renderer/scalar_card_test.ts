@@ -51,6 +51,8 @@ import {
   Fob,
 } from '../../../widgets/card_fob/card_fob_controller_component';
 import {CardFobModule} from '../../../widgets/card_fob/card_fob_module';
+import {DataTableComponent} from '../../../widgets/data_table/data_table_component';
+import {DataTableModule} from '../../../widgets/data_table/data_table_module';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {IntersectionObserverTestingModule} from '../../../widgets/intersection_observer/intersection_observer_testing_module';
 import {
@@ -266,6 +268,7 @@ describe('scalar card', () => {
         ExperimentAliasModule,
         IntersectionObserverTestingModule,
         CardFobModule,
+        DataTableModule,
         MatDialogModule,
         MatIconTestingModule,
         MatMenuModule,
@@ -2245,6 +2248,50 @@ describe('scalar card', () => {
         expect(dispatchedActions).toEqual([selectTimeEnableToggled()]);
       }));
     });
+
+    describe('scalar card data table', () => {
+      beforeEach(() => {
+        const runToSeries = {
+          run1: [buildScalarStepData({step: 10})],
+          run2: [buildScalarStepData({step: 20})],
+          run3: [buildScalarStepData({step: 30})],
+        };
+        provideMockCardRunToSeriesData(
+          selectSpy,
+          PluginType.SCALARS,
+          'card1',
+          null /* metadataOverride */,
+          runToSeries
+        );
+      });
+
+      it('renders table', fakeAsync(() => {
+        store.overrideSelector(getMetricsSelectedTime, {
+          start: {step: 20},
+          end: null,
+        });
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        const dataTableComponentInstance = fixture.debugElement.query(
+          By.directive(DataTableComponent)
+        ).componentInstance;
+
+        expect(dataTableComponentInstance).toBeTruthy();
+      }));
+
+      it('does not render table when disabled', fakeAsync(() => {
+        store.overrideSelector(getMetricsSelectedTime, null);
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        const dataTableComponent = fixture.debugElement.query(
+          By.directive(DataTableComponent)
+        );
+
+        expect(dataTableComponent).toBeFalsy();
+      }));
+    });
   });
 
   describe('getSelectedTimeTableData', () => {
@@ -2513,6 +2560,47 @@ describe('scalar card', () => {
           start: {step: 25},
           end: null,
         });
+      }));
+    });
+
+    describe('scalar card data table', () => {
+      beforeEach(() => {
+        const runToSeries = {
+          run1: [buildScalarStepData({step: 10})],
+          run2: [buildScalarStepData({step: 20})],
+          run3: [buildScalarStepData({step: 30})],
+        };
+        provideMockCardRunToSeriesData(
+          selectSpy,
+          PluginType.SCALARS,
+          'card1',
+          null /* metadataOverride */,
+          runToSeries
+        );
+      });
+
+      it('renders data table', fakeAsync(() => {
+        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        const dataTableComponentInstance = fixture.debugElement.query(
+          By.directive(DataTableComponent)
+        ).componentInstance;
+
+        expect(dataTableComponentInstance).toBeTruthy();
+      }));
+
+      it('does not render table when disabled', fakeAsync(() => {
+        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        const dataTableComponent = fixture.debugElement.query(
+          By.directive(DataTableComponent)
+        );
+
+        expect(dataTableComponent).toBeFalsy();
       }));
     });
   });
