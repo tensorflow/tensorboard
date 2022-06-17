@@ -1664,7 +1664,7 @@ describe('metrics main view', () => {
         expect(indicator).toBeTruthy();
       });
 
-      it('shows the indicator when the same card gets pinned toggled', async () => {
+      it('shows the indicator when the same card gets pinned toggled', fakeAsync(() => {
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
@@ -1682,8 +1682,9 @@ describe('metrics main view', () => {
         updatePinnedCards(fixture, [
           {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
         ]);
-        // Wait for the indicator to fade completely before repinning card2.
-        await fixture.whenStable();
+        // Wait for 3s + 100ms for the new card indicator animation to complete:
+        // https://github.com/tensorflow/tensorboard/blob/master/tensorboard/webapp/metrics/views/main_view/pinned_view_component.scss#L48
+        tick(3100);
         updatePinnedCards(fixture, [
           {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
           {cardId: 'card2', ...createCardMetadata(PluginType.SCALARS)},
@@ -1696,7 +1697,7 @@ describe('metrics main view', () => {
         expect(card2IndicatorBefore.attributes['data-id']).not.toBe(
           card2IndicatorAfter.attributes['data-id']
         );
-      });
+      }));
 
       it('does not show indicator when you remove a pin', () => {
         const fixture = TestBed.createComponent(MainViewContainer);
