@@ -32,7 +32,6 @@ export function routesFactory(): RouteDef[] {
       routeKind: RouteKind.FLAGS,
       path: '/flags/',
       ngComponent: FeatureFlagPageContainer as Type<Component>,
-      deepLinkProvider: new DashboardDeepLinkProvider(),
     },
   ];
 }

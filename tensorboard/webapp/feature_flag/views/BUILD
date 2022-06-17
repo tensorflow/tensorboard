@@ -11,11 +11,11 @@ tf_sass_binary(
 )
 
 tf_ng_module(
-    name = "feature_flag_page",
+    name = "views",
     srcs = [
         "feature_flag_page_component.ts",
         "feature_flag_page_container.ts",
-        "feature_flag_page_module.ts",
+        "feature_flag_module.ts",
     ],
     assets = [
         ":style",
