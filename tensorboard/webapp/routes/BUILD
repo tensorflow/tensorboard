@@ -13,6 +13,7 @@ tf_ts_library(
         ":dashboard_deeplink_provider",
         "//tensorboard/webapp/app_routing:route_config",
         "//tensorboard/webapp/app_routing:types",
+        "//tensorboard/webapp/feature_flag/views",
         "//tensorboard/webapp/tb_wrapper",
         "@npm//@angular/core",
     ],
