@@ -123,6 +123,7 @@ jobs:
       - name: 'Bazel: build Pip package (with TensorFlow only)'
         if: matrix.tf_version_id == 'tf'
         run: |
+          chmod a+x tensorboard/tools/update_version.sh
           ./tensorboard/tools/update_version.sh
           rm -rf /tmp/tb_nightly_pip_package && mkdir /tmp/tb_nightly_pip_package
           bazel run //tensorboard/pip_package:build_pip_package -- /tmp/tb_nightly_pip_package
