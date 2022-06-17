@@ -1682,15 +1682,15 @@ describe('metrics main view', () => {
         updatePinnedCards(fixture, [
           {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
         ]);
-        // Wait for 3s + 100ms for the new card indicator animation to complete:
-        // https://github.com/tensorflow/tensorboard/blob/master/tensorboard/webapp/metrics/views/main_view/pinned_view_component.scss#L48
-        tick(3100);
+        // Wait for 100ms before repinning to avoid flakiness.
+        tick(100);
         updatePinnedCards(fixture, [
           {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
           {cardId: 'card2', ...createCardMetadata(PluginType.SCALARS)},
         ]);
         const card2IndicatorAfter = fixture.debugElement.query(byCss.INDICATOR);
 
+        // It should be a different new-card-pinned indicator instance.
         expect(card2IndicatorBefore.nativeElement).not.toBe(
           card2IndicatorAfter.nativeElement
         );
