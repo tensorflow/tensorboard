@@ -90,6 +90,30 @@ below.
 yarn run ibazel run tensorboard -- -- --logdir [LOG_DIR]
 ```
 
+#### Running TensorBoard on dev target with iBazel
+
+```shell
+(tf)$ ibazel run tensorboard:dev -- \
+--logdir gs://tensorboard-bench-logs \
+[--bind_all] \
+[--port 6008]
+```
+
+*   `ibazel`: File watcher for bazel; automatically rebuild and start the server
+    when files change.
+*   `:dev`: A target to bundle all dev assets with no vulcanization, which makes
+    the build faster
+*   `--logdir`: A folder where event file exists and TensorBoard read logs from.
+*   `--bind_all`: Used to view the running TensorBoard over the network than
+    from `localhost`, necessary when running at a remote desktop and accessing
+    the server from your local chrome browser.
+*   `--port`: followed by a port number to customize the port (the default port
+    is `6006`).
+
+Access your server at `http://<YOUR_SERVER_ADDRESS>:<PORT_NUMBER>/` if you are
+running TensorBoard at a remote desktop. Otherwise `localhost` should work.
+
+
 ### Debugging UI Tests Locally
 
 Our UI tests (e.g., //tensorboard/components/vz_sorting/test) use HTML import
@@ -115,3 +139,49 @@ bazel build third_party/chromium
 
 # Lastly, put the address returnd by the web server into the Chromium.
 ```
+
+#### Running webapp tests
+
+tl;dr. Use `ibazel test` for regular work (supports limiting the test amount with
+`fit/fdescript` and `console.log` usage) and `ibazel run` for karma console breakpoint
+debugging.
+
+We use karma testing chromium target for our UI unit tests in webapp. However,
+depending on the environments (OSS or internal TB.corp), the commands we use and
+the functionalities are slightly different.
+
+1.  Just run all webapp tests. The jos stops after tests are finished.
+    `console.log` is not supported. Not handy on development.
+
+    ```shell
+    (tf)$ bazel test //tensorboard/webapp:karma_test_chromium-local
+    ```
+
+2.  Using `ibazel` to auto detect the file changes and use target
+    `karma_test_chromium-local` for running on *all* tests. Practically
+    `console.log` and `fit, fdescript` (used to narrow down the test amount) are
+    effective.
+
+    ```shell
+    (tf)$ ibazel test //tensorboard/webapp:karma_test_chromium-local --test_output=all
+    ```
+
+    *   `--test_output=all`: for displaying number of tests if using '`fit`'.
+
+3.  To run on a specific test, we can change the target (with `chromium-local`
+    surfix). For example, run tests only on `notification_center_test` target.
+
+    ```shell
+    (tf)$ ibazel test //tensorboard/webapp/notification_center:notification_center_test_chromium-local
+    ```
+
+4.  For having a karma console to set break points for debugging purpose, use
+    `ibazel run`. Access the karma console at port `9876` and click 'DEBUG'
+    button. For example, `http://<YOUR_SERVER_ADDRESS>:9876/`.
+
+    ```shell
+    (tf)$ ibazel run //tensorboard/webapp:karma_test_chromium-local
+    ```
+
+    However, with `ibazel run` the file watcher is glitchy on running the tests
+    when detecting changes. It then becomes for karma console purpose only.
