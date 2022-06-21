@@ -2528,10 +2528,21 @@ describe('scalar card', () => {
         const controllerStartPosition =
           testController.root.nativeElement.getBoundingClientRect().left;
 
-        // Simulate dragging fob to step 25.
+        // Simulate dragging start fob to step 25
         testController.startDrag(Fob.START);
         const fakeEvent = new MouseEvent('mousemove', {
           clientX: 25 + controllerStartPosition,
+          movementX: 1,
+        });
+        testController.mouseMove(fakeEvent);
+        fixture.detectChanges();
+
+        // Simulate dragging end fob to step 28
+        testControllerstopDrag();
+        testController.(Fob.END);
+        testController.startDrag(Fob.END);
+        const fakeEvent = new MouseEvent('mousemove', {
+          clientX: 28 + controllerStartPosition,
           movementX: 1,
         });
         testController.mouseMove(fakeEvent);
