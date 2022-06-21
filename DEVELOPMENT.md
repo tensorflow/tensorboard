@@ -150,8 +150,8 @@ We use karma testing chromium target for our UI unit tests in webapp. However,
 depending on the environments (OSS or internal TB.corp), the commands we use and
 the functionalities are slightly different.
 
-1.  Just run all webapp tests. The jos stops after tests are finished.
-    `console.log` is not supported. Not handy on development.
+1.  Just run all webapp tests. The job stops after finished. `console.log` is not
+    supported. Not handy on development.
 
     ```shell
     (tf)$ bazel test //tensorboard/webapp:karma_test_chromium-local
@@ -159,8 +159,8 @@ the functionalities are slightly different.
 
 2.  Using `ibazel` to auto detect the file changes and use target
     `karma_test_chromium-local` for running on *all* tests. Practically
-    `console.log` and `fit, fdescript` (used to narrow down the test amount) are
-    effective.
+    `console.log` and `fit/fdescript` (which areused to narrow down the test amount) are
+    working.
 
     ```shell
     (tf)$ ibazel test //tensorboard/webapp:karma_test_chromium-local --test_output=all
@@ -169,7 +169,7 @@ the functionalities are slightly different.
     *   `--test_output=all`: for displaying number of tests if using '`fit`'.
 
 3.  To run on a specific test, we can change the target (with `chromium-local`
-    surfix). For example, run tests only on `notification_center_test` target.
+    surfix). For example, run notification center tests on `notification_center_test` target:
 
     ```shell
     (tf)$ ibazel test //tensorboard/webapp/notification_center:notification_center_test_chromium-local
@@ -184,4 +184,4 @@ the functionalities are slightly different.
     ```
 
     However, with `ibazel run` the file watcher is glitchy on running the tests
-    when detecting changes. It then becomes for karma console purpose only.
+    when detecting changes. It shows '`a broken pipe`' in terminal. We need to terminate and restart the program manually.
