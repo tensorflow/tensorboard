@@ -88,7 +88,7 @@ describe('data_table', () => {
     expect(headerElements[4].nativeElement.innerText).toBe('Relative');
   });
 
-  fit('properly displays data in order', () => {
+  it('properly displays data in order', () => {
     const fixture = createComponent({
       headers: [
         ColumnHeaders.VALUE,
