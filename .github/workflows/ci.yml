@@ -17,12 +17,7 @@ on:
     tags:
       - '*'
   pull_request: {}
-  schedule:
-    # 13:00 UTC is 05:00 in Pacific standard time (UTC-8), which is well
-    # after nightly TensorFlow wheels are released (around 2--3 AM) and
-    # just after nightly TensorBoard wheels are released (around 04:15).
-    # (cron syntax: minute hour day-of-month month day-of-week)
-    - cron: '0 13 * * *'
+  workflow_call: {}
 
 env:
   # Keep this Bazel version in sync with the `versions.check` directive
@@ -123,12 +118,12 @@ jobs:
       - name: 'Bazel: build Pip package (with TensorFlow only)'
         if: matrix.tf_version_id == 'tf'
         run: |
-          chmod a+x tensorboard/tools/update_version.sh
           ./tensorboard/tools/update_version.sh
           rm -rf /tmp/tb_nightly_pip_package && mkdir /tmp/tb_nightly_pip_package
           bazel run //tensorboard/pip_package:build_pip_package -- /tmp/tb_nightly_pip_package
       - name: 'Upload Pip package as an artifact (with TensorFlow only)'
-        if: matrix.tf_version_id == 'tf'
+        # Prevent uploads when running on forks or non-master branch.
+        if: matrix.tf_version_id == 'tf' && github.repository == 'tensorflow/tensorboard' && github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v3
         with:
           name: tb-nightly
@@ -182,7 +177,7 @@ jobs:
           pip install \
             -c ./tensorboard/pip_package/requirements.txt \
             -c ./tensorboard/pip_package/requirements_dev.txt \
-            setuptools wheel
+            setuptools wheel twine
       - name: 'Build'
         if: matrix.mode == 'native'
         run: cd tensorboard/data/server/ && cargo build --release

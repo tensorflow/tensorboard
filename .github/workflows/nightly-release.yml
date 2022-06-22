@@ -1,0 +1,25 @@
+name: nightly-release
+
+on:
+  schedule:
+    # 13:00 UTC is 05:00 in Pacific standard time (UTC-8), which is well
+    # after nightly TensorFlow wheels are released (around 2--3 AM).
+    # (cron syntax: minute hour day-of-month month day-of-week)
+    - cron: '0 13 * * *'
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  nightly-release:
+    runs-on: ubuntu-18.04
+    needs: ci
+    if: github.repository == 'tensorflow/tensorboard'
+    steps:
+      - name: Publish the package
+        run: |
+          twine check /tmp/tb_nightly_pip_package/tb_nightly*.whl
+          twine upload -r testpypi /tmp/tb_nightly_pip_package/tb_nightly*.whl
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.NIGHTLY_TEST_PYPI_PASSWORD }}
