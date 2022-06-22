@@ -177,7 +177,7 @@ jobs:
           pip install \
             -c ./tensorboard/pip_package/requirements.txt \
             -c ./tensorboard/pip_package/requirements_dev.txt \
-            setuptools wheel twine
+            setuptools wheel
       - name: 'Build'
         if: matrix.mode == 'native'
         run: cd tensorboard/data/server/ && cargo build --release

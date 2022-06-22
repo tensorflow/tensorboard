@@ -16,10 +16,19 @@ jobs:
     needs: ci
     if: github.repository == 'tensorflow/tensorboard'
     steps:
+      - name: Download pip package
+        uses: actions/download-artifact@v3
+        with:
+          name: tb-nightly
+          path: wheels
+      - name: Install Twine
+        run: pip install twine
       - name: Publish the package
+        # TODO: Migrate to pypi.python.org instead of testpypi.python.org after validation
         run: |
-          twine check /tmp/tb_nightly_pip_package/tb_nightly*.whl
-          twine upload -r testpypi /tmp/tb_nightly_pip_package/tb_nightly*.whl
+          twine check tb_nightly*.whl
+          twine upload -r testpypi tb_nightly*.whl
+        working-directory: wheels
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.NIGHTLY_TEST_PYPI_PASSWORD }}
