@@ -13,5 +13,30 @@ limitations under the License.
 -->
 
 <div>
-  <!-- TODO(JamesHollyer) implement data table -->
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>
+          <!-- This header is intentionally left blank for the color column -->
+        </th>
+        <ng-container *ngFor="let header of headers;">
+          <th>{{ getHeaderTextColumn(header) }}</th>
+        </ng-container>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let runData of data;">
+        <tr class="row">
+          <td class="row-circle">
+            <span [style.backgroundColor]="runData.COLOR"></span>
+          </td>
+          <ng-container *ngFor="let header of headers;">
+            <td>
+              <span>{{ getFormattedDataForColumn(header, runData) }}</span>
+            </td>
+          </ng-container>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
 </div>
