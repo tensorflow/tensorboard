@@ -2561,6 +2561,61 @@ describe('scalar card', () => {
           end: null,
         });
       }));
+
+      it('sets internalSelectedTime to single selection', fakeAsync(() => {
+        store.overrideSelector(getMetricsSelectedTime, {
+          start: {step: 20},
+          end: {step: 40},
+        });
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+        const testController = fixture.debugElement.query(
+          By.directive(CardFobControllerComponent)
+        ).componentInstance;
+        const controllerStartPosition =
+          testController.root.nativeElement.getBoundingClientRect().left;
+
+        // Simulate dragging start fob to step 25
+        testController.startDrag(Fob.START);
+        let fakeEvent = new MouseEvent('mousemove', {
+          clientX: 25 + controllerStartPosition,
+          movementX: 1,
+        });
+        testController.mouseMove(fakeEvent);
+        fixture.detectChanges();
+
+        // Simulate dragging end fob to step 28
+        testController.stopDrag();
+        testController.startDrag(Fob.END);
+        fakeEvent = new MouseEvent('mousemove', {
+          clientX: 28 + controllerStartPosition,
+          movementX: 1,
+        });
+        testController.mouseMove(fakeEvent);
+        fixture.detectChanges();
+
+        // Disable linked time
+        store.overrideSelector(getMetricsSelectedTime, null);
+        store.refreshState();
+        fixture.detectChanges();
+
+        const fobs = fixture.debugElement.queryAll(
+          By.directive(CardFobComponent)
+        );
+        expect(fobs.length).toBe(1);
+        expect(
+          fobs[0].query(By.css('span')).nativeElement.textContent.trim()
+        ).toEqual('25');
+        const scalarCardComponent = fixture.debugElement.query(
+          By.directive(ScalarCardComponent)
+        );
+        expect(
+          scalarCardComponent.componentInstance.internalSelectedTime
+        ).toEqual({
+          start: {step: 25},
+          end: null,
+        });
+      }));
     });
 
     describe('scalar card data table', () => {
