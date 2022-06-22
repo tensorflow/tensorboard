@@ -82,7 +82,7 @@ To make the devleopment faster, we can use run TensorBoard on dev target with iB
 (tf)$ ibazel run tensorboard:dev -- \
 --logdir path/to/logs \
 [--bind_all] \
-[--port 6008]
+[--port PORT_NUMBER]
 ```
 
 * `ibazel`: Bazel is capable of performing incremental builds where it builds only
@@ -168,7 +168,7 @@ debugging.
     *   `--test_output=all`: for displaying number of tests if using '`fit`'.
 
 3.  To run on a specific test, we can change the target (with `chromium-local`
-    suffix). For example,:
+    suffix). For example,
 
     ```sh
     //  Run webapp tests on `karma_test` target
