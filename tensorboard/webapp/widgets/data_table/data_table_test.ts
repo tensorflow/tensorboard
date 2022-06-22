@@ -36,7 +36,7 @@ class TestableComponent {
   @Input() data!: SelectedStepRunData[];
 }
 
-describe('data_table', () => {
+describe('data table', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [TestableComponent, DataTableComponent],
@@ -48,15 +48,9 @@ describe('data_table', () => {
     data?: SelectedStepRunData[];
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
-    const defaultHeaders: ColumnHeaders[] = [
-      ColumnHeaders.RUN,
-      ColumnHeaders.VALUE,
-    ];
 
-    fixture.componentInstance.headers = input.headers || defaultHeaders;
-    fixture.componentInstance.data = input.data || [
-      {RUN: 'run name', VALUE: '123'},
-    ];
+    fixture.componentInstance.headers = input.headers || [];
+    fixture.componentInstance.data = input.data || [];
 
     return fixture;
   }
@@ -88,7 +82,7 @@ describe('data_table', () => {
     expect(headerElements[4].nativeElement.innerText).toBe('Relative');
   });
 
-  it('properly displays data in order', () => {
+  it('displays data in order', () => {
     const fixture = createComponent({
       headers: [
         ColumnHeaders.VALUE,
@@ -107,5 +101,26 @@ describe('data_table', () => {
     expect(dataElements[2].nativeElement.innerText).toBe('run name');
     expect(dataElements[3].nativeElement.innerText).toBe('1');
     expect(dataElements[4].nativeElement.innerText).toBe('123 ms');
+  });
+
+  it('displays nothing when no data is available', () => {
+    const fixture = createComponent({
+      headers: [
+        ColumnHeaders.VALUE,
+        ColumnHeaders.RUN,
+        ColumnHeaders.STEP,
+        ColumnHeaders.RELATIVE_TIME,
+      ],
+      data: [{}],
+    });
+    fixture.detectChanges();
+    const dataElements = fixture.debugElement.queryAll(By.css('td'));
+
+    // The first header should always be blank as it is the run color column.
+    expect(dataElements[0].nativeElement.innerText).toBe('');
+    expect(dataElements[1].nativeElement.innerText).toBe('');
+    expect(dataElements[2].nativeElement.innerText).toBe('');
+    expect(dataElements[3].nativeElement.innerText).toBe('');
+    expect(dataElements[4].nativeElement.innerText).toBe('');
   });
 });

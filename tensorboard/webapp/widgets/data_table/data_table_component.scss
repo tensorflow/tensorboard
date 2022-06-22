@@ -16,29 +16,30 @@ limitations under the License.
 .data-table {
   border-spacing: 4px;
   font-size: 13px;
-}
-th {
-  text-align: left;
-}
 
-.row {
-  white-space: nowrap;
-}
+  th {
+    text-align: left;
+  }
 
-$_circle-size: 12px;
+  .row {
+    white-space: nowrap;
+  }
 
-.row-circle {
-  align-items: center;
-  display: inline-flex;
-  height: $_circle-size;
-  width: $_circle-size;
-}
+  $_circle-size: 12px;
 
-.row-circle > span {
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  display: inline-block;
-  // Subtract by border width (1px on both sides)
-  height: $_circle-size - 2px;
-  width: $_circle-size - 2px;
+  .row-circle {
+    align-items: center;
+    display: inline-flex;
+    height: $_circle-size;
+    width: $_circle-size;
+  }
+
+  .row-circle > span {
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    display: inline-block;
+    // Subtract by border width (1px on both sides)
+    height: $_circle-size - 2px;
+    width: $_circle-size - 2px;
+  }
 }

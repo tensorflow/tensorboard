@@ -58,15 +58,30 @@ export class DataTableComponent {
   ): string {
     switch (columnHeader) {
       case ColumnHeaders.RUN:
+        if (selectedStepRunData.RUN === undefined) {
+          return '';
+        }
         return selectedStepRunData.RUN as string;
       case ColumnHeaders.VALUE:
+        if (selectedStepRunData.VALUE === undefined) {
+          return '';
+        }
         return numberFormatter.formatShort(selectedStepRunData.VALUE as number);
       case ColumnHeaders.STEP:
+        if (selectedStepRunData.STEP === undefined) {
+          return '';
+        }
         return numberFormatter.formatShort(selectedStepRunData.STEP as number);
       case ColumnHeaders.TIME:
+        if (selectedStepRunData.TIME === undefined) {
+          return '';
+        }
         const time = new Date(selectedStepRunData.TIME!);
         return time.toISOString();
       case ColumnHeaders.RELATIVE_TIME:
+        if (selectedStepRunData.RELATIVE_TIME === undefined) {
+          return '';
+        }
         return relativeTimeFormatter.formatReadable(
           selectedStepRunData.RELATIVE_TIME as number
         );
