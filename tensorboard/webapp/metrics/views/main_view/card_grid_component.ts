@@ -46,6 +46,7 @@ export class CardGridComponent {
   @Input() cardMinWidth!: number | null;
   @Input() cardObserver!: CardObserver;
   @Input() showPaginationControls!: boolean;
+  @Input() isStepSelectorEnabled!: boolean;
 
   @Output() pageIndexChanged = new EventEmitter<number>();
 

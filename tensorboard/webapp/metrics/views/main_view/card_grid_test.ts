@@ -29,6 +29,7 @@ import * as selectors from '../../../selectors';
 import {
   getEnabledCardWidthSetting,
   getMetricsCardMinWidth,
+  getMetricsStepSelectorEnabled,
   getMetricsTagGroupExpansionState,
 } from '../../../selectors';
 import {selectors as settingsSelectors} from '../../../settings';
@@ -89,6 +90,7 @@ describe('card grid', () => {
     store.overrideSelector(getMetricsTagGroupExpansionState, true);
     store.overrideSelector(getEnabledCardWidthSetting, false);
     store.overrideSelector(getMetricsCardMinWidth, 30);
+    store.overrideSelector(settingsSelectors.getPageSize, 10);
   });
 
   it('keeps pagination button position when page size changes', fakeAsync(() => {
@@ -206,4 +208,84 @@ describe('card grid', () => {
     );
     discardPeriodicTasks();
   }));
+
+  describe('step selector', () => {
+    it('updates scalar card height when step selector is enabled', fakeAsync(() => {
+      store.overrideSelector(getMetricsStepSelectorEnabled, true);
+      const fixture = TestBed.createComponent(TestableScrollingContainer);
+      fixture.componentInstance.cardIdsWithMetadata = [
+        {
+          cardId: 'card1',
+          plugin: PluginType.SCALARS,
+          tag: 'tagA',
+          runId: null,
+        },
+      ];
+      fixture.detectChanges();
+
+      const scalarCardViewElement = fixture.debugElement.query(
+        By.css('card-view')
+      ).nativeElement;
+
+      expect(scalarCardViewElement.classList).toContain('height-with-table');
+    }));
+
+    it('does not update card height when step selector is disabled', fakeAsync(() => {
+      store.overrideSelector(getMetricsStepSelectorEnabled, false);
+      const fixture = TestBed.createComponent(TestableScrollingContainer);
+      fixture.componentInstance.cardIdsWithMetadata = [
+        {
+          cardId: 'card1',
+          plugin: PluginType.SCALARS,
+          tag: 'tagA',
+          runId: null,
+        },
+        {
+          cardId: 'card1',
+          plugin: PluginType.IMAGES,
+          tag: 'tagB',
+          runId: 'run1',
+        },
+      ];
+      fixture.detectChanges();
+
+      const cardViewElements = fixture.debugElement
+        .queryAll(By.css('card-view'))
+        .map((debugElement) => debugElement.nativeElement);
+
+      expect(cardViewElements[0].classList).not.toContain('height-with-table');
+      expect(cardViewElements[1].classList).not.toContain('height-with-table');
+    }));
+
+    it('does not update non-scalar card height when step selector is enabled', fakeAsync(() => {
+      store.overrideSelector(getMetricsStepSelectorEnabled, true);
+      const fixture = TestBed.createComponent(TestableScrollingContainer);
+      fixture.componentInstance.cardIdsWithMetadata = [
+        {
+          cardId: 'card1',
+          plugin: PluginType.IMAGES,
+          tag: 'tagB',
+          runId: 'run1',
+        },
+        {
+          cardId: 'card2',
+          plugin: PluginType.HISTOGRAMS,
+          tag: 'tagA',
+          runId: 'run2',
+        },
+      ];
+      fixture.detectChanges();
+
+      const nonScalarCardViewElements = fixture.debugElement
+        .queryAll(By.css('card-view'))
+        .map((debugElement) => debugElement.nativeElement);
+
+      expect(nonScalarCardViewElements[0].classList).not.toContain(
+        'height-with-table'
+      );
+      expect(nonScalarCardViewElements[1].classList).not.toContain(
+        'height-with-table'
+      );
+    }));
+  });
 });
