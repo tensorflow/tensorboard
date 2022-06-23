@@ -91,6 +91,7 @@ describe('card grid', () => {
     store.overrideSelector(getEnabledCardWidthSetting, false);
     store.overrideSelector(getMetricsCardMinWidth, 30);
     store.overrideSelector(settingsSelectors.getPageSize, 10);
+    store.overrideSelector(getMetricsStepSelectorEnabled, false);
   });
 
   it('keeps pagination button position when page size changes', fakeAsync(() => {
