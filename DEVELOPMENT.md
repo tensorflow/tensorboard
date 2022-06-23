@@ -85,11 +85,11 @@ To make the devleopment faster, we can use run TensorBoard on dev target with iB
 [--port PORT_NUMBER]
 ```
 
-* `ibazel`: Bazel is capable of performing incremental builds where it builds only
-   the subset of files that are impacted by file changes. However, it does not come
-   with a file watcher. For an improved developer experience, start TensorBoard
-   with `ibazel` instead of `bazel` which will automatically re-build and start the
-   server when files change.
+*  `ibazel`: Bazel is capable of performing incremental builds where it builds only
+    the subset of files that are impacted by file changes. However, it does not come
+    with a file watcher. For an improved developer experience, start TensorBoard
+    with `ibazel` instead of `bazel` which will automatically re-build and start the
+    server when files change.
 *   `:dev`: A target to bundle all dev assets with no vulcanization, which makes
     the build faster.
 *   `--bind_all`: Used to view the running TensorBoard over the network than
@@ -110,8 +110,9 @@ yarn run ibazel run tensorboard:dev -- -- --logdir path/to/logs
 
 ### Debugging Polymer UI Tests Locally
 
-Our UI tests (e.g., //tensorboard/components/vz_sorting/test) for our polymer plugin
-use HTML import which is now deprecated from all browsers (Chrome 79- had the native support) and is run without any polyfills. In order to debug tests, you may want to
+Our UI tests (e.g., //tensorboard/components/vz_sorting/test) for our polymer code base
+use HTML import which is now deprecated from all browsers (Chrome 79- had the native
+support)and is run without any polyfills. In order to debug tests, you may want to
 run a a Chromium used by our CI that supports HTML import. It can be found in
 `./bazel-bin/third_party/chromium/chromium.out` (exact path to binary will
 differ by OS you are on; for Linux, the full path is
@@ -135,9 +136,12 @@ bazel build third_party/chromium
 
 ### Debugging Angular UI Tests Locally
 
-tl;dr. Use `ibazel test` for regular work (supports limiting the test amount with
-`fit/fdescribe` and `console.log` usage) and `ibazel run` for karma console breakpoint
-debugging.
+Here is a short summary of the various commands and their primary function. Please see below for more details. We recommand using `ibazle test` for regular work and `ibazel run` for deep dive debugging.
+* `bazel test/run`: runs tests once and done.
+* `ibazel test`: supports file watching.
+* `ibazle run`: provides karma console breakpoint debugging; does not support file watching.
+* Both `ibazel test` and `ibazel run` supports `console.log` and `fit/fdescribe`, which are used to narrow down the test amount.
+
 
 1.  Just run all webapp tests. The job stops after finished. `console.log` is not
     supported. Not handy on debugging.
@@ -146,20 +150,8 @@ debugging.
     (tf)$ bazel test //tensorboard/webapp/...
     ```
 
-    It runs the following tests:
-
-    ```sh
-    //tensorboard/webapp:karma_test_chromium-local PASSED in 42.3s
-    //tensorboard/webapp/feature_flag:karma_test_chromium-local PASSED in 5.8s
-    //tensorboard/webapp/hparams:karma_test_chromium-local PASSED in 5.7s
-    //tensorboard/webapp/notification_center:notification_center_test_chromium-local PASSED in 10.1s
-    //tensorboard/webapp/persistent_settings:karma_test_chromium-local PASSED in 10.9s
-    //tensorboard/webapp/settings:karma_test_chromium-local PASSED in 6.9s
-    ```
-
 2.  Using `ibazel` to auto detect the file changes and use target
-    `karma_test_chromium-local` for running on *webapp* tests. Practically we can add
-    `console.log` and `fit/fdescribe` (which areused to narrow down the test amount) and no need to restart the tests.
+    `karma_test_chromium-local` for running on *webapp* tests.
 
     ```sh
     (tf)$ ibazel test //tensorboard/webapp/... --test_output=all
@@ -178,8 +170,8 @@ debugging.
     (tf)$ ibazel test //tensorboard/webapp/notification_center:notification_center_test_chromium-local
     ```
 
-4.  For having a karma console to set break points for debugging purpose, use
-    `ibazel run`. Access the karma console at port `9876` (For example, `http://<YOUR_SERVER_ADDRESS>:9876/`) and click 'DEBUG' button, it pops up another page, where you have to look at the browser developer console to see the logs for debugging.
+4.  For running a karma console to set break points for debugging purpose, use
+    `ibazel run`. Access the karma console at port `9876` (For example, `http://<YOUR_SERVER_ADDRESS>:9876/`) and click 'DEBUG' button, it pops up another page, where you have to use browser developer console for better debugging.
 
     ```sh
     (tf)$ ibazel run //tensorboard/webapp:karma_test_chromium-local
