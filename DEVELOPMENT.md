@@ -59,7 +59,7 @@ You may find the following optional tips useful for development.
 
 ### Ignoring large cleanup commits in `git blame`
 
-```shell
+```sh
 git config blame.ignoreRevsFile .git-blame-ignore-revs  # requires Git >= 2.23
 ```
 
@@ -74,28 +74,46 @@ When enabled by default, this also works with editor plugins like
 
 [vim-fugitive]: https://github.com/tpope/vim-fugitive
 
-### iBazel: A file watcher for Bazel.
+### iBazel and dev target
 
-Bazel is capable of performing incremental builds where it builds only the
-subset of files that are impacted by file changes. However, it does not come
-with a file watcher. For an improved developer experience, start TensorBoard
-with `ibazel` instead of `bazel` which will automatically re-build and start the
-server when files change.
+To make the devleopment faster, we can use run TensorBoard on dev target with iBazel.
+
+```sh
+(tf)$ ibazel run tensorboard:dev -- \
+--logdir path/to/logs \
+[--bind_all] \
+[--port PORT_NUMBER]
+```
+
+*  `ibazel`: Bazel is capable of performing incremental builds where it builds only
+    the subset of files that are impacted by file changes. However, it does not come
+    with a file watcher. For an improved developer experience, start TensorBoard
+    with `ibazel` instead of `bazel` which will automatically re-build and start the
+    server when files change.
+*   `:dev`: A target to bundle all dev assets with no vulcanization, which makes
+    the build faster.
+*   `--bind_all`: Used to view the running TensorBoard over the network than
+    from `localhost`, necessary when running at a remote machine and accessing
+    the server from your local chrome browser.
+
+Access your server at `http://<YOUR_SERVER_ADDRESS>:<PORT_NUMBER>/` if you are
+running TensorBoard at a remote machine. Otherwise `localhost:<PORT_NUMBER>` should
+work.
 
 If you do not have the ibazel binary on your system, you can use the command
 below.
 
 ```sh
 # Optionally run `yarn` to keep `node_modules` up-to-date.
-yarn run ibazel run tensorboard -- -- --logdir [LOG_DIR]
+yarn run ibazel run tensorboard:dev -- -- --logdir path/to/logs
 ```
 
-### Debugging UI Tests Locally
+### Debugging Polymer UI Tests Locally
 
-Our UI tests (e.g., //tensorboard/components/vz_sorting/test) use HTML import
-which is now deprecated from all browsers (Chrome 79- had the native support)
-and is run without any polyfills. In order to debug tests, you may want to run a
-a Chromium used by our CI that supports HTML import. It can be found in
+Our UI tests (e.g., //tensorboard/components/vz_sorting/test) for our polymer code base
+use HTML import which is now deprecated from all browsers (Chrome 79- had the native
+support)and is run without any polyfills. In order to debug tests, you may want to
+run a a Chromium used by our CI that supports HTML import. It can be found in
 `./bazel-bin/third_party/chromium/chromium.out` (exact path to binary will
 differ by OS you are on; for Linux, the full path is
 `./bazel-bin/third_party/chromium/chromium.out/chrome-linux/chrome`).
@@ -115,3 +133,49 @@ bazel build third_party/chromium
 
 # Lastly, put the address returnd by the web server into the Chromium.
 ```
+
+### Debugging Angular UI Tests Locally
+
+Here is a short summary of the various commands and their primary function. Please see below for more details. We recommand using `ibazle test` for regular work and `bazel run` for deep dive debugging.
+* `bazel test/run`: runs tests once and done.
+* `ibazel test`: supports file watching.
+* `ibazle run`: provides karma console breakpoint debugging; does not support file watching.
+* Both `ibazel test` and `ibazel run` supports `console.log` and `fit/fdescribe`, which are used to narrow down the test amount.
+
+
+1.  Just run all webapp tests. The job stops after finished. `console.log` is not
+    supported. Not handy on debugging.
+
+    ```sh
+    (tf)$ bazel test //tensorboard/webapp/...
+    ```
+
+2.  Using `ibazel` to auto detect the file changes and use target
+    `karma_test_chromium-local` for running on *webapp* tests.
+
+    ```sh
+    (tf)$ ibazel test //tensorboard/webapp/... --test_output=all
+    ```
+
+    *   `--test_output=all`: for displaying number of tests if using '`fit`'.
+
+3.  To run on a specific test, we can change the target (with `chromium-local`
+    suffix). For example,
+
+    ```sh
+    //  Run webapp tests on `karma_test` target
+    (tf)$ ibazel test //tensorboard/webapp:karma_test_chromium-local
+
+    //  Run notification center tests on `notification_center_test` target
+    (tf)$ ibazel test //tensorboard/webapp/notification_center:notification_center_test_chromium-local
+    ```
+
+4.  For running a karma console to set break points for debugging purpose, use
+    `bazel run`. Access the karma console at port `9876` (For example, `http://<YOUR_SERVER_ADDRESS>:9876/`) and click 'DEBUG' button, it pops up another page, where you have to use browser developer console for better debugging.
+
+    ```sh
+    (tf)$ bazel run //tensorboard/webapp:karma_test_chromium-local
+    ```
+
+    However, you cannot use `ibazel run` in this case. The file watcher is glitchy on running the tests
+    when detecting changes. It shows '`a broken pipe`' in terminal. We need to terminate and restart the program manually.
