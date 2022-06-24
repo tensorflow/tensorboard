@@ -136,7 +136,7 @@ bazel build third_party/chromium
 
 ### Debugging Angular UI Tests Locally
 
-Here is a short summary of the various commands and their primary function. Please see below for more details. We recommand using `ibazle test` for regular work and `ibazel run` for deep dive debugging.
+Here is a short summary of the various commands and their primary function. Please see below for more details. We recommand using `ibazle test` for regular work and `bazel run` for deep dive debugging.
 * `bazel test/run`: runs tests once and done.
 * `ibazel test`: supports file watching.
 * `ibazle run`: provides karma console breakpoint debugging; does not support file watching.
@@ -171,11 +171,11 @@ Here is a short summary of the various commands and their primary function. Plea
     ```
 
 4.  For running a karma console to set break points for debugging purpose, use
-    `ibazel run`. Access the karma console at port `9876` (For example, `http://<YOUR_SERVER_ADDRESS>:9876/`) and click 'DEBUG' button, it pops up another page, where you have to use browser developer console for better debugging.
+    `bazel run`. Access the karma console at port `9876` (For example, `http://<YOUR_SERVER_ADDRESS>:9876/`) and click 'DEBUG' button, it pops up another page, where you have to use browser developer console for better debugging.
 
     ```sh
-    (tf)$ ibazel run //tensorboard/webapp:karma_test_chromium-local
+    (tf)$ bazel run //tensorboard/webapp:karma_test_chromium-local
     ```
 
-    However, with `ibazel run` the file watcher is glitchy on running the tests
+    However, you cannot use `ibazel run` in this case. The file watcher is glitchy on running the tests
     when detecting changes. It shows '`a broken pipe`' in terminal. We need to terminate and restart the program manually.
