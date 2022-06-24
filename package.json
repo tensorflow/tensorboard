@@ -28,7 +28,6 @@
   },
   "homepage": "https://github.com/tensorflow/tensorboard#readme",
   "devDependencies": {
-    "@angular/bazel": "12.2.0",
     "@angular/cli": "^12.2.0",
     "@angular/compiler": "^12.2.0",
     "@angular/compiler-cli": "^12.2.0",
