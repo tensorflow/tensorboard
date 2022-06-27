@@ -24,11 +24,10 @@ jobs:
       - name: Install Twine
         run: pip install twine
       - name: Publish the package
-        # TODO: Migrate to pypi.python.org instead of testpypi.python.org after validation
         run: |
           twine check tb_nightly*.whl
-          twine upload -r testpypi tb_nightly*.whl
+          twine upload tb_nightly*.whl
         working-directory: wheels
         env:
           TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.NIGHTLY_TEST_PYPI_PASSWORD }}
+          TWINE_PASSWORD: ${{ secrets.NIGHTLY_PYPI_PASSWORD }}
