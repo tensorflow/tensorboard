@@ -189,24 +189,28 @@ class DispatchingDataProviderTest(tb_test.TestCase):
         self.foo_provider = PlaceholderDataProvider("foo", ["123", "456"])
         self.bar_provider = PlaceholderDataProvider("Bar", ["a:b:c", "@xyz@"])
         self.baz_provider = PlaceholderDataProvider("BAZ", ["baz"])
-        providers = {"foo": self.foo_provider, "bar": self.bar_provider}
+        providers = {
+            "foo": self.foo_provider,
+            "bar": self.bar_provider,
+            "baz": self.baz_provider,
+        }
         unprefixed = self.baz_provider
-        self.with_unpfx = dispatching_provider.DispatchingDataProvider(
-            providers, unprefixed_provider=unprefixed
+        self.with_default_pfx = dispatching_provider.DispatchingDataProvider(
+            providers, default_prefix="baz"
         )
-        self.without_unpfx = dispatching_provider.DispatchingDataProvider(
+        self.without_default_pfx = dispatching_provider.DispatchingDataProvider(
             providers
         )
 
     def test_experiment_metadata(self):
         self.assertEqual(
-            self.with_unpfx.experiment_metadata(
+            self.with_default_pfx.experiment_metadata(
                 _ctx(), experiment_id="foo:123"
             ),
             self.foo_provider.experiment_metadata(_ctx(), experiment_id="123"),
         )
         self.assertEqual(
-            self.with_unpfx.experiment_metadata(
+            self.with_default_pfx.experiment_metadata(
                 _ctx(), experiment_id="bar:a:b:c"
             ),
             self.bar_provider.experiment_metadata(
@@ -214,23 +218,27 @@ class DispatchingDataProviderTest(tb_test.TestCase):
             ),
         )
         self.assertEqual(
-            self.with_unpfx.experiment_metadata(_ctx(), experiment_id="baz"),
+            self.with_default_pfx.experiment_metadata(
+                _ctx(), experiment_id="baz"
+            ),
             self.baz_provider.experiment_metadata(_ctx(), experiment_id="baz"),
         )
         with self.assertRaisesRegex(
             errors.NotFoundError, "Unknown prefix in experiment ID: 'quux:hmm'"
         ):
-            self.with_unpfx.experiment_metadata(
+            self.with_default_pfx.experiment_metadata(
                 _ctx(), experiment_id="quux:hmm"
             )
         with self.assertRaisesRegex(
             errors.NotFoundError,
             "No data provider found for unprefixed experiment ID: 'quux'",
         ):
-            self.without_unpfx.experiment_metadata(_ctx(), experiment_id="quux")
+            self.without_default_pfx.experiment_metadata(
+                _ctx(), experiment_id="quux"
+            )
 
     def test_scalars(self):
-        listing = self.with_unpfx.list_scalars(
+        listing = self.with_default_pfx.list_scalars(
             _ctx(), experiment_id="foo:123", plugin_name="scalars"
         )
         self.assertEqual(
@@ -240,7 +248,7 @@ class DispatchingDataProviderTest(tb_test.TestCase):
             ),
         )
 
-        reading = self.with_unpfx.read_scalars(
+        reading = self.with_default_pfx.read_scalars(
             _ctx(),
             experiment_id="foo:123",
             plugin_name="scalars",
@@ -284,7 +292,7 @@ class DispatchingDataProviderTest(tb_test.TestCase):
         return result
 
     def test_blob_sequences_prefixed(self):
-        listing = self.with_unpfx.list_blob_sequences(
+        listing = self.with_default_pfx.list_blob_sequences(
             _ctx(), experiment_id="bar:a:b:c", plugin_name="images"
         )
         expected_listing = self.bar_provider.list_blob_sequences(
@@ -292,12 +300,12 @@ class DispatchingDataProviderTest(tb_test.TestCase):
         )
         self.assertEqual(listing, expected_listing)
 
-        blobs = self._get_blobs(self.with_unpfx, "bar:a:b:c")
+        blobs = self._get_blobs(self.with_default_pfx, "bar:a:b:c")
         expected_blobs = self._get_blobs(self.bar_provider, "a:b:c")
         self.assertEqual(blobs, expected_blobs)
 
     def test_blob_sequences_unprefixed(self):
-        listing = self.with_unpfx.list_blob_sequences(
+        listing = self.with_default_pfx.list_blob_sequences(
             _ctx(), experiment_id="baz", plugin_name="images"
         )
         expected_listing = self.baz_provider.list_blob_sequences(
@@ -305,7 +313,7 @@ class DispatchingDataProviderTest(tb_test.TestCase):
         )
         self.assertEqual(listing, expected_listing)
 
-        blobs = self._get_blobs(self.with_unpfx, "baz")
+        blobs = self._get_blobs(self.with_default_pfx, "baz")
         expected_blobs = self._get_blobs(self.baz_provider, "baz")
         self.assertEqual(blobs, expected_blobs)
 
@@ -314,12 +322,12 @@ class DispatchingDataProviderTest(tb_test.TestCase):
             errors.NotFoundError,
             "Unknown prefix in experiment ID: 'quux:hmm'",
         ):
-            self._get_blobs(self.with_unpfx, "quux:hmm")
+            self._get_blobs(self.with_default_pfx, "quux:hmm")
         with self.assertRaisesRegex(
             errors.NotFoundError,
             "No data provider found for unprefixed experiment ID: 'baz'",
         ):
-            result = self._get_blobs(self.without_unpfx, "baz")
+            result = self._get_blobs(self.without_default_pfx, "baz")
 
 
 def _ctx():
