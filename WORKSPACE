@@ -24,8 +24,7 @@ http_archive(
 load("@bazel_skylib//lib:versions.bzl", "versions")
 
 # Keep this version in sync with:
-#  * The BAZEL environment variable defined in .github/workflows/ci.yml.
-#  * The Bazel version installed for nightly builds (Googlers, see go/tb-tomservo).
+#  * The BAZEL environment variable defined in .github/workflows/ci.yml, which is used for CI and nightly builds.
 versions.check(minimum_bazel_version = "4.0.0")
 
 http_archive(
