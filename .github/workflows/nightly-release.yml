@@ -2,10 +2,10 @@ name: nightly-release
 
 on:
   schedule:
-    # 13:00 UTC is 05:00 in Pacific standard time (UTC-8), which is well
-    # after nightly TensorFlow wheels are released (around 2--3 AM).
+    # 11:00 UTC is 03:00 in Pacific standard time (UTC-8), which is well
+    # after nightly TensorFlow wheels are released (around 1--2 AM).
     # (cron syntax: minute hour day-of-month month day-of-week)
-    - cron: '0 13 * * *'
+    - cron: '0 11 * * *'
 
 jobs:
   ci:
