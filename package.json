@@ -61,7 +61,8 @@
     "rollup": "^2.56.2",
     "terser": "^5.7.1",
     "tslib": "^2.3.0",
-    "typescript": "4.5.4"
+    "typescript": "4.5.4",
+    "yarn-deduplicate": "^5.0.0"
   },
   "dependencies": {
     "@angular/animations": "^12.2.0",
