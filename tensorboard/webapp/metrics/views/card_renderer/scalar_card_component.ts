@@ -91,6 +91,7 @@ export class ScalarCardComponent<Downloader> {
   @Output() onPinClicked = new EventEmitter<boolean>();
   @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
   @Output() onSelectTimeToggle = new EventEmitter();
+  @Output() onStepSelectorToggle = new EventEmitter();
 
   // Line chart may not exist when was never visible (*ngIf).
   @ViewChild(LineChartComponent)
@@ -265,6 +266,14 @@ export class ScalarCardComponent<Downloader> {
 
     if (this.selectedTime !== null) {
       this.onSelectTimeChanged.emit(newSelectedTime);
+    }
+  }
+
+  onFobRemoved() {
+    if (this.selectedTime !== null) {
+      this.onSelectTimeToggle.emit();
+    } else {
+      this.onStepSelectorToggle.emit();
     }
   }
 }

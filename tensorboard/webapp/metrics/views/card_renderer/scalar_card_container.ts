@@ -53,7 +53,11 @@ import {DataLoadState} from '../../../types/data';
 import {LinkedTime} from '../../../widgets/card_fob/card_fob_types';
 import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
-import {selectTimeEnableToggled, timeSelectionChanged} from '../../actions';
+import {
+  selectTimeEnableToggled,
+  stepSelectorEnableToggled,
+  timeSelectionChanged,
+} from '../../actions';
 import {PluginType, ScalarStepDatum} from '../../data_source';
 import {
   getCardLoadState,
@@ -139,6 +143,7 @@ function areSeriesEqual(
       (onVisibilityChange)="onVisibilityChange($event)"
       (onSelectTimeChanged)="onSelectTimeChanged($event)"
       (onSelectTimeToggle)="onSelectTimeToggle()"
+      (onStepSelectorToggle)="onStepSelectorToggle()"
     ></scalar-card-component>
   `,
   styles: [
@@ -552,5 +557,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
   onSelectTimeToggle() {
     this.store.dispatch(selectTimeEnableToggled());
+  }
+
+  onStepSelectorToggle() {
+    this.store.dispatch(stepSelectorEnableToggled());
   }
 }

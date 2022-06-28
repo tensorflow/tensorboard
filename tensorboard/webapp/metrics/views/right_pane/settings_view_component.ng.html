@@ -129,10 +129,10 @@ limitations under the License.
 
   <div
     class="control-row scalars-step-selector"
-    *ngIf="isScalarStepSelectorEnabled"
+    *ngIf="isScalarStepSelectorFeatureEnabled"
   >
     <mat-checkbox
-      [checked]="stepSelectorEnabled"
+      [checked]="isScalarStepSelectorEnabled"
       (change)="stepSelectorEnableToggled.emit()"
       >Step Selector</mat-checkbox
     >
