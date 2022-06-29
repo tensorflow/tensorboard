@@ -79,6 +79,7 @@ class DispatchingDataProvider(provider.DataProvider):
             raise ValueError(
                 "Unknown data provider prefix: %s" % default_prefix
             )
+        self._default_prefix = default_prefix
         self._default_provider = self._providers.get(default_prefix)
 
         # TODO(b/237101984): Remove unprefixed provider.
