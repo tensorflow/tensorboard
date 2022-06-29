@@ -53,25 +53,6 @@ describe('app_routing store_only_utils test', () => {
       );
     });
 
-    it('does not include empty aliases', () => {
-      const map = getCompareExperimentIdAliasWithNumberSpec({
-        experimentIds: 'a:123,:345',
-      });
-      expect(map).toEqual(new Map([['123', {aliasText: 'a', aliasNumber: 1}]]));
-    });
-
-    it('does not include empty aliases', () => {
-      const map = getCompareExperimentIdAliasWithNumberSpec({
-        experimentIds: 'a:123,:345,c:567',
-      });
-      expect(map).toEqual(
-        new Map([
-          ['123', {aliasText: 'a', aliasNumber: 1}],
-          ['567', {aliasText: 'c', aliasNumber: 3}],
-        ])
-      );
-    });
-
     it('throws when it is empty', () => {
       expect(() =>
         getCompareExperimentIdAliasWithNumberSpec({

@@ -38,7 +38,7 @@ export function getCompareExperimentIdAliasWithNumberSpec(
   let aliasNumber = 0;
   for (const {id, name} of nameAndIds) {
     aliasNumber++;
-    if (idToDisplayName.has(id) || !name) {
+    if (idToDisplayName.has(id)) {
       continue;
     }
     idToDisplayName.set(id, {aliasText: name, aliasNumber: aliasNumber});
