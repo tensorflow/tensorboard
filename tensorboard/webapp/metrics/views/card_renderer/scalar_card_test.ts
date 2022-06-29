@@ -2621,7 +2621,7 @@ describe('scalar card', () => {
         });
       }));
 
-      it('toggles selected time when single fob is deselected in step selector', fakeAsync(() => {
+      it('toggles when single fob is deselected', fakeAsync(() => {
         const fixture = createComponent('card1');
         fixture.detectChanges();
         const fobComponent = fixture.debugElement.query(
