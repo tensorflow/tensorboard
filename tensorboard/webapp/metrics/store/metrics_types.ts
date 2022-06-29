@@ -30,9 +30,9 @@ import {
   CardMetadata,
   CardUniqueInfo,
   HistogramMode,
-  LinkedTime,
   NonPinnedCardId,
   PinnedCardId,
+  TimeSelection,
   TooltipSort,
   XAxisType,
 } from '../internal_types';
@@ -163,7 +163,7 @@ export interface MetricsNamespacedState {
   cardStepIndex: CardStepIndexMap;
   tagFilter: string;
   tagGroupExpanded: Map<string, boolean>;
-  selectedTime: LinkedTime | null;
+  selectedTime: TimeSelection | null;
   selectTimeEnabled: boolean;
   stepSelectorEnabled: boolean;
   useRangeSelectTime: boolean;

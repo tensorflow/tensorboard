@@ -26,7 +26,7 @@ import {
   HistogramMode,
   TimeProperty,
 } from '../../../widgets/histogram/histogram_types';
-import {LinkedTime, XAxisType} from '../../types';
+import {TimeSelection, XAxisType} from '../../types';
 import {ViewSelectedTime} from './utils';
 
 @Component({
@@ -48,13 +48,13 @@ export class HistogramCardComponent {
   @Input() runColorScale!: RunColorScale;
   @Input() showFullSize!: boolean;
   @Input() isPinned!: boolean;
-  @Input() selectedTime!: ViewSelectedTime | null;
+  @Input() linkedTimeSelection!: ViewSelectedTime | null;
   @Input() isClosestStepHighlighted!: boolean | null;
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
-  @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
-  @Output() onSelectTimeToggle = new EventEmitter();
+  @Output() onLinkedTimeSelectionChanged = new EventEmitter<TimeSelection>();
+  @Output() onLinkedTimeToggled = new EventEmitter();
 
   timeProperty(xAxisType: XAxisType) {
     switch (xAxisType) {
@@ -69,9 +69,9 @@ export class HistogramCardComponent {
     }
   }
 
-  convertToLinkedTime(
+  convertToTimeSelection(
     selectedTime: ViewSelectedTime | null
-  ): LinkedTime | null {
+  ): TimeSelection | null {
     if (selectedTime === null) {
       return null;
     }

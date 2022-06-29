@@ -432,7 +432,7 @@ describe('metrics right_pane', () => {
           enabled.nativeElement.click();
 
           expect(dispatchSpy).toHaveBeenCalledOnceWith(
-            actions.selectTimeEnableToggled()
+            actions.linkedTimeToggled()
           );
 
           store.overrideSelector(selectors.getMetricsSelectTimeEnabled, true);
@@ -505,7 +505,7 @@ describe('metrics right_pane', () => {
           });
 
           expect(dispatchSpy).toHaveBeenCalledOnceWith(
-            actions.timeSelectionChanged({
+            actions.linkedTimeSelectionChanged({
               startStep: 10,
               endStep: 200,
             })
@@ -527,7 +527,7 @@ describe('metrics right_pane', () => {
           rangeInput.triggerEventHandler('singleValueChanged', 10);
 
           expect(dispatchSpy).toHaveBeenCalledOnceWith(
-            actions.timeSelectionChanged({
+            actions.linkedTimeSelectionChanged({
               startStep: 10,
               endStep: undefined,
             })
@@ -570,9 +570,7 @@ describe('metrics right_pane', () => {
 
         select(fixture, '.scalars-step-selector input').nativeElement.click();
 
-        expect(dispatchSpy).toHaveBeenCalledWith(
-          actions.stepSelectorEnableToggled()
-        );
+        expect(dispatchSpy).toHaveBeenCalledWith(actions.stepSelectorToggled());
       });
     });
   });

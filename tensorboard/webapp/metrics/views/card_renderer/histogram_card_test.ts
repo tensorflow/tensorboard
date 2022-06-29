@@ -34,7 +34,7 @@ import {
 } from '../../../widgets/histogram/histogram_types';
 import {buildNormalizedHistograms} from '../../../widgets/histogram/histogram_util';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
-import {selectTimeEnableToggled} from '../../actions';
+import {linkedTimeToggled} from '../../actions';
 import {PluginType} from '../../data_source';
 import * as selectors from '../../store/metrics_selectors';
 import {
@@ -59,12 +59,12 @@ class TestableHistogramWidget {
   @Input() color!: string;
   @Input() name!: string;
   @Input() data!: HistogramData;
-  @Input() linkedTime!: {
+  @Input() timeSelection!: {
     start: {step: number};
     end: {step: number} | null;
   } | null;
 
-  @Output() onSelectTimeToggle = new EventEmitter();
+  @Output() onLinkedTimeToggled = new EventEmitter();
 
   element = {
     setSeriesData: () => {},
@@ -285,7 +285,7 @@ describe('histogram card', () => {
       const viz = fixture.debugElement.query(
         By.directive(TestableHistogramWidget)
       );
-      expect(viz.componentInstance.linkedTime).toBeNull();
+      expect(viz.componentInstance.timeSelection).toBeNull();
     });
 
     it('passes closest step linked time parameter to histogram viz', () => {
@@ -300,7 +300,7 @@ describe('histogram card', () => {
       const viz = fixture.debugElement.query(
         By.directive(TestableHistogramWidget)
       );
-      expect(viz.componentInstance.linkedTime).toEqual({
+      expect(viz.componentInstance.timeSelection).toEqual({
         // Steps are [0, 1, 99] in mock data
         start: {step: 1},
         end: null,
@@ -319,7 +319,7 @@ describe('histogram card', () => {
       const viz = fixture.debugElement.query(
         By.directive(TestableHistogramWidget)
       );
-      expect(viz.componentInstance.linkedTime).toEqual({
+      expect(viz.componentInstance.timeSelection).toEqual({
         start: {step: 5},
         end: {step: 10},
       });
@@ -348,7 +348,7 @@ describe('histogram card', () => {
         const viz = fixture.debugElement.query(
           By.directive(TestableHistogramWidget)
         );
-        expect(viz.componentInstance.linkedTime).toEqual({
+        expect(viz.componentInstance.timeSelection).toEqual({
           start: {step: 15},
           end: null,
         });
@@ -376,7 +376,7 @@ describe('histogram card', () => {
         const viz = fixture.debugElement.query(
           By.directive(TestableHistogramWidget)
         );
-        expect(viz.componentInstance.linkedTime).toEqual({
+        expect(viz.componentInstance.timeSelection).toEqual({
           start: {step: 50},
           end: null,
         });
@@ -498,7 +498,7 @@ describe('histogram card', () => {
         expect(indicator).toBeFalsy();
       });
 
-      it('dispatches selectTimeEnableToggled when HistogramComponent emits the onSelectTimeToggle event', () => {
+      it('dispatches linkedTimeToggled when HistogramComponent emits the onLinkedTimeToggled event', () => {
         provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
         store.overrideSelector(selectors.getMetricsSelectedTime, {
           start: {step: 5},
@@ -514,9 +514,9 @@ describe('histogram card', () => {
         const HistogramWidget = fixture.debugElement.query(
           By.directive(TestableHistogramWidget)
         ).componentInstance;
-        HistogramWidget.onSelectTimeToggle.emit();
+        HistogramWidget.onLinkedTimeToggled.emit();
 
-        expect(dispatchedActions).toEqual([selectTimeEnableToggled()]);
+        expect(dispatchedActions).toEqual([linkedTimeToggled()]);
       });
     });
   });

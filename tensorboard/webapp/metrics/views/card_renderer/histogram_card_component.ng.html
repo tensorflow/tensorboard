@@ -18,7 +18,7 @@ limitations under the License.
   <div class="tag">
     <tb-truncated-path [title]="tag" [value]="title"></tb-truncated-path>
     <vis-selected-time-warning
-      [isClipped]="selectedTime && selectedTime.clipped"
+      [isClipped]="linkedTimeSelection && linkedTimeSelection.clipped"
       [isClosestStepHighlighted]="isClosestStepHighlighted"
     ></vis-selected-time-warning>
   </div>
@@ -64,9 +64,9 @@ limitations under the License.
   [mode]="mode"
   [timeProperty]="timeProperty(xAxisType)"
   [color]="runColorScale(runId)"
-  [linkedTime]="convertToLinkedTime(selectedTime)"
-  (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
-  (onSelectTimeToggle)="onSelectTimeToggle.emit()"
+  [timeSelection]="convertToTimeSelection(linkedTimeSelection)"
+  (onLinkedTimeSelectionChanged)="onLinkedTimeSelectionChanged.emit($event)"
+  (onLinkedTimeToggled)="onLinkedTimeToggled.emit()"
 ></tb-histogram>
 <ng-template #noData>
   <div *ngIf="loadState === DataLoadState.FAILED" class="empty-message">

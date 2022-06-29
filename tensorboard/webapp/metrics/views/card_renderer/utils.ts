@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {ExperimentAlias} from '../../../experiments/types';
 import {Run} from '../../../runs/store/runs_types';
-import {LinkedTime} from '../../types';
+import {TimeSelection} from '../../types';
 import {PartialSeries, PartitionedSeries} from './scalar_card_types';
 
 export function getDisplayNameForRun(
@@ -92,7 +92,7 @@ export interface ViewSelectedTime {
 }
 
 export function maybeClipSelectedTime(
-  selectedTime: LinkedTime,
+  selectedTime: TimeSelection,
   minStep: number,
   maxStep: number
 ): ViewSelectedTime {

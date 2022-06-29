@@ -22,7 +22,7 @@ limitations under the License.
       value="{{ title }}"
     ></tb-truncated-path>
     <vis-selected-time-warning
-      [isClipped]="selectedTime && selectedTime.clipped"
+      [isClipped]="linkedTimeSelection && linkedTimeSelection.clipped"
     ></vis-selected-time-warning>
   </span>
   <span class="controls">
@@ -168,7 +168,7 @@ limitations under the License.
     </table>
   </ng-template>
 </div>
-<ng-container *ngIf="internalSelectedTime || selectedTime">
+<ng-container *ngIf="stepSelectorTimeSelection || linkedTimeSelection">
   <div class="data-table-container">
     <tb-data-table
       [headers]="dataHeaders"
@@ -182,23 +182,23 @@ limitations under the License.
   let-domDim="domDimension"
   let-xScale="xScale"
 >
-  <ng-container *ngIf="selectedTime">
+  <ng-container *ngIf="linkedTimeSelection">
     <div
       [ngClass]="{
         'out-of-selected-time': true,
         start: true,
-        range: !!selectedTime.endStep
+        range: !!linkedTimeSelection.endStep
       }"
       [style.right]="
         xScale.forward(
           viewExtent.x,
           [domDim.width, 0],
-          selectedTime.startStep
+          linkedTimeSelection.startStep
         ) + 'px'
       "
     ></div>
     <div
-      *ngIf="selectedTime.endStep"
+      *ngIf="linkedTimeSelection.endStep"
       [ngClass]="{
         'out-of-selected-time': true,
         end: true,
@@ -208,7 +208,7 @@ limitations under the License.
         xScale.forward(
           viewExtent.x,
           [0, domDim.width],
-          selectedTime.endStep
+          linkedTimeSelection.endStep
         ) + 'px'
       "
     ></div>
@@ -221,14 +221,14 @@ limitations under the License.
   let-domDim="domDimension"
   let-xScale="xScale"
 >
-  <ng-container *ngIf="internalSelectedTime || selectedTime">
+  <ng-container *ngIf="stepSelectorTimeSelection || linkedTimeSelection">
     <scalar-card-fob-controller
-      [linkedTime]="getLinkedTime()"
+      [timeSelection]="getTimeSelection()"
       [scale]="xScale"
       [minMax]="viewExtent.x"
       [axisSize]="domDim.width"
-      (onSelectTimeChanged)="onFobSelectTimeChanged($event)"
-      (onSelectTimeToggle)="onFobRemoved()"
+      (onTimeSelectionChanged)="onFobTimeSelectionChanged($event)"
+      (onTimeSelectionToggled)="onFobRemoved()"
     ></scalar-card-fob-controller>
   </ng-container>
 </ng-template>

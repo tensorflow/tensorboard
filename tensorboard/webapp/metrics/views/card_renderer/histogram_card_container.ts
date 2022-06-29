@@ -28,7 +28,7 @@ import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
 import {HistogramDatum} from '../../../widgets/histogram/histogram_types';
 import {buildNormalizedHistograms} from '../../../widgets/histogram/histogram_util';
-import {selectTimeEnableToggled, timeSelectionChanged} from '../../actions';
+import {linkedTimeSelectionChanged, linkedTimeToggled} from '../../actions';
 import {HistogramStepDatum, PluginType} from '../../data_source';
 import {
   getCardLoadState,
@@ -39,7 +39,7 @@ import {
   getMetricsSelectedTime,
   getMetricsXAxisType,
 } from '../../store';
-import {CardId, CardMetadata, LinkedTime} from '../../types';
+import {CardId, CardMetadata, TimeSelection} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {
@@ -68,11 +68,11 @@ type HistogramCardMetadata = CardMetadata & {
       [showFullSize]="showFullSize"
       [isPinned]="isPinned$ | async"
       [isClosestStepHighlighted]="isClosestStepHighlighted$ | async"
-      [selectedTime]="viewSelectedTime$ | async"
+      [linkedTimeSelection]="linkedTimeSelection$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
-      (onSelectTimeChanged)="onSelectTimeChanged($event)"
-      (onSelectTimeToggle)="onSelectTimeToggle()"
+      (onLinkedTimeSelectionChanged)="onLinkedTimeSelectionChanged($event)"
+      (onLinkedTimeToggled)="onLinkedTimeToggled()"
     ></histogram-card-component>
   `,
   styles: [
@@ -104,7 +104,7 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
   xAxisType$ = this.store.select(getMetricsXAxisType);
   showFullSize = false;
   isPinned$?: Observable<boolean>;
-  viewSelectedTime$?: Observable<ViewSelectedTime | null>;
+  linkedTimeSelection$?: Observable<ViewSelectedTime | null>;
   isClosestStepHighlighted$?: Observable<boolean | null>;
   isSelectedTimeClipped$?: Observable<boolean>;
   steps$?: Observable<number[]>;
@@ -162,7 +162,7 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
       map((data) => data.map((datum) => datum.step))
     );
 
-    this.viewSelectedTime$ = combineLatest([
+    this.linkedTimeSelection$ = combineLatest([
       this.store.select(getMetricsSelectedTime),
       this.steps$,
     ]).pipe(
@@ -187,7 +187,7 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
 
     this.isClosestStepHighlighted$ = combineLatest([
       this.store.select(getMetricsSelectedTime),
-      this.viewSelectedTime$,
+      this.linkedTimeSelection$,
     ]).pipe(
       map(([selectedTime, viewSelectedTime]) => {
         return (
@@ -223,16 +223,16 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
   }
 
-  onSelectTimeChanged(newLinkedTime: LinkedTime) {
+  onLinkedTimeSelectionChanged(newLinkedTime: TimeSelection) {
     this.store.dispatch(
-      timeSelectionChanged({
+      linkedTimeSelectionChanged({
         startStep: newLinkedTime.start.step,
         endStep: newLinkedTime.end ? newLinkedTime.end.step : undefined,
       })
     );
   }
 
-  onSelectTimeToggle() {
-    this.store.dispatch(selectTimeEnableToggled());
+  onLinkedTimeToggled() {
+    this.store.dispatch(linkedTimeToggled());
   }
 }

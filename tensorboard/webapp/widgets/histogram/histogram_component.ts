@@ -29,7 +29,7 @@ import {fromEvent, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
-import {LinkedTime} from '../card_fob/card_fob_types';
+import {TimeSelection} from '../card_fob/card_fob_types';
 import {
   Bin,
   HistogramData,
@@ -97,10 +97,10 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   @Input() data!: HistogramData;
 
-  @Input() linkedTime: LinkedTime | null = null;
+  @Input() timeSelection: TimeSelection | null = null;
 
-  @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
-  @Output() onSelectTimeToggle = new EventEmitter();
+  @Output() onLinkedTimeSelectionChanged = new EventEmitter<TimeSelection>();
+  @Output() onLinkedTimeToggled = new EventEmitter();
 
   readonly HistogramMode = HistogramMode;
   readonly TimeProperty = TimeProperty;
@@ -230,7 +230,9 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     return this.data.map((datum) => datum.step);
   }
 
-  isLinkedTimeEnabled(linkedTime: LinkedTime | null): linkedTime is LinkedTime {
+  isTimeSelectionEnabled(
+    linkedTime: TimeSelection | null
+  ): linkedTime is TimeSelection {
     return Boolean(
       this.mode === HistogramMode.OFFSET &&
         this.timeProperty === TimeProperty.STEP &&
@@ -239,16 +241,16 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     );
   }
 
-  isDatumInLinkedTimeRange(datum: HistogramDatum): boolean {
-    if (!this.isLinkedTimeEnabled(this.linkedTime)) {
+  isDatumInTimeSelectionRange(datum: HistogramDatum): boolean {
+    if (!this.isTimeSelectionEnabled(this.timeSelection)) {
       return true;
     }
-    if (this.linkedTime.end === null) {
-      return this.linkedTime.start.step === datum.step;
+    if (this.timeSelection.end === null) {
+      return this.timeSelection.start.step === datum.step;
     }
     return (
-      this.linkedTime.start.step <= datum.step &&
-      this.linkedTime.end.step >= datum.step
+      this.timeSelection.start.step <= datum.step &&
+      this.timeSelection.end.step >= datum.step
     );
   }
 
@@ -264,11 +266,11 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     isHover: boolean
   ) {
     // When link time is disabled all histogram should be colored.
-    if (!this.isLinkedTimeEnabled(this.linkedTime)) {
+    if (!this.isTimeSelectionEnabled(this.timeSelection)) {
       return;
     }
     // Target histogram should be colored When datum is in range.
-    if (this.isDatumInLinkedTimeRange(datum)) {
+    if (this.isDatumInTimeSelectionRange(datum)) {
       return;
     }
     if (isHover) {
@@ -304,12 +306,12 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
    * include the clicked step.
    */
   onSelectTimeRangeChange(datum: HistogramDatum) {
-    if (!this.isLinkedTimeEnabled(this.linkedTime)) {
+    if (!this.isTimeSelectionEnabled(this.timeSelection)) {
       return;
     }
 
-    const startStep = this.linkedTime.start.step;
-    const endStep = this.linkedTime.end?.step;
+    const startStep = this.timeSelection.start.step;
+    const endStep = this.timeSelection.end?.step;
     const nextStartStep = datum.step < startStep ? datum.step : startStep;
     let nextEndStep = endStep;
 
@@ -323,7 +325,7 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
       (nextStartStep !== startStep || nextEndStep !== endStep) &&
       nextStartStep !== nextEndStep
     ) {
-      this.onSelectTimeChanged.emit({
+      this.onLinkedTimeSelectionChanged.emit({
         start: {step: nextStartStep},
         end: {step: nextEndStep},
       });

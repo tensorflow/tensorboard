@@ -57,7 +57,7 @@ export class ImageCardComponent {
   @Input() allowToggleActualSize!: boolean;
   @Input() isPinned!: boolean;
   @Input() selectedSteps!: number[];
-  @Input() selectedTime?: ViewSelectedTime | null = null;
+  @Input() linkedTimeSelection?: ViewSelectedTime | null = null;
   @Input() isClosestStepHighlighted?: boolean = false;
 
   @Output() onActualSizeToggle = new EventEmitter<void>();
@@ -86,7 +86,8 @@ export class ImageCardComponent {
     if (
       (changes['selectedSteps'] &&
         this.changeDistinct(changes['selectedSteps'])) ||
-      (changes['selectedTime'] && this.changeDistinct(changes['selectedTime']))
+      (changes['linkedTimeSelection'] &&
+        this.changeDistinct(changes['linkedTimeSelection']))
     ) {
       this.renderRangeSlider();
     }
@@ -94,22 +95,22 @@ export class ImageCardComponent {
 
   renderRangeSlider() {
     if (
-      !this.selectedTime ||
-      !this.selectedTime.endStep ||
-      this.selectedTime.clipped
+      !this.linkedTimeSelection ||
+      !this.linkedTimeSelection.endStep ||
+      this.linkedTimeSelection.clipped
     ) {
       return;
     }
 
     const boundSize = this.steps.length - 1;
     const startStep =
-      this.selectedTime.startStep < this.steps[0]
+      this.linkedTimeSelection.startStep < this.steps[0]
         ? this.steps[0]
-        : this.selectedTime.startStep;
+        : this.linkedTimeSelection.startStep;
     const endStep =
-      this.selectedTime.endStep > this.steps[boundSize]
+      this.linkedTimeSelection.endStep > this.steps[boundSize]
         ? this.steps[boundSize]
-        : this.selectedTime.endStep;
+        : this.linkedTimeSelection.endStep;
 
     const {startPosition, width} = this.getTrackStartPositionAndWidth(
       startStep,

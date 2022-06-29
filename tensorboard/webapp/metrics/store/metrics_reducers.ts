@@ -949,7 +949,7 @@ const reducer = createReducer(
       pinnedCardToOriginal: nextPinnedCardToOriginal,
     };
   }),
-  on(actions.selectTimeEnableToggled, (state) => {
+  on(actions.linkedTimeToggled, (state) => {
     const nextSelectTimeEnabled = !state.selectTimeEnabled;
     let nextCardStepIndexMap = {...state.cardStepIndex};
     let nextSelectedTime = state.selectedTime;
@@ -977,7 +977,7 @@ const reducer = createReducer(
       selectedTime: nextSelectedTime,
     };
   }),
-  on(actions.timeSelectionChanged, (state, change) => {
+  on(actions.linkedTimeSelectionChanged, (state, change) => {
     const nextStartStep = change.startStep;
     const nextEndStep = change.endStep;
     const end =
@@ -1010,7 +1010,7 @@ const reducer = createReducer(
       useRangeSelectTime,
     };
   }),
-  on(actions.stepSelectorEnableToggled, (state) => {
+  on(actions.stepSelectorToggled, (state) => {
     return {
       ...state,
       stepSelectorEnabled: !state.stepSelectorEnabled,
