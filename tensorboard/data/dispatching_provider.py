@@ -72,19 +72,6 @@ class DispatchingDataProvider(provider.DataProvider):
         if invalid_names:
             raise ValueError("Invalid provider key(s): %r" % invalid_names)
 
-        # TODO(b/237101984): Remove unprefixed provider.
-        self._unprefixed_provider = unprefixed_provider
-        # Derives default_prefix from unprefixed_provider.
-        if unprefixed_provider and not default_prefix:
-            default_prefix = next(
-                (
-                    k
-                    for (k, v) in self._providers.items()
-                    if v is unprefixed_provider
-                ),
-                None,
-            )
-
         if (
             default_prefix is not None
             and default_prefix not in self._providers.keys()
@@ -93,6 +80,11 @@ class DispatchingDataProvider(provider.DataProvider):
                 "Unknown data provider prefix: %s" % default_prefix
             )
         self._default_provider = self._providers.get(default_prefix)
+
+        # TODO(b/237101984): Remove unprefixed provider.
+        self._unprefixed_provider = unprefixed_provider
+        if not self._default_provider and unprefixed_provider:
+            self._default_provider = unprefixed_provider
 
     def _parse_eid(self, experiment_id):
         """Parse an experiment ID into prefix, sub-ID, and sub-provider.
