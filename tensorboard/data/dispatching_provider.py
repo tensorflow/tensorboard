@@ -73,7 +73,16 @@ class DispatchingDataProvider(provider.DataProvider):
             raise ValueError("Invalid provider key(s): %r" % invalid_names)
 
         # TODO(b/237101984): Remove unprefixed provider.
-        self._unprefixed_provider = unprefixed_provider
+        # Derives default_prefix from unprefixed_provider.
+        if unprefixed_provider and not default_prefix:
+            default_prefix = next(
+                (
+                    k
+                    for (k, v) in self._providers.items()
+                    if v is unprefixed_provider
+                ),
+                None,
+            )
 
         if (
             default_prefix is not None
