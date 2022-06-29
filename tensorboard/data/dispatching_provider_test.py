@@ -202,6 +202,15 @@ class DispatchingDataProviderTest(tb_test.TestCase):
             providers
         )
 
+    def test_unknown_default_prefix__raises_error(self):
+        self.foo_provider = PlaceholderDataProvider("foo", ["123", "456"])
+        with self.assertRaisesRegex(
+            ValueError, "Unknown data provider prefix: bar"
+        ):
+            dispatching_provider.DispatchingDataProvider(
+                {"foo": self.foo_provider}, default_prefix="bar"
+            )
+
     def test_experiment_metadata(self):
         self.assertEqual(
             self.with_default_pfx.experiment_metadata(

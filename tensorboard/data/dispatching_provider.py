@@ -49,13 +49,17 @@ class DispatchingDataProvider(provider.DataProvider):
     # related to blob keys, where we need to annotate or extract the
     # associated sub-provider.
 
-    def __init__(self, providers, default_prefix=None):
+    def __init__(
+        self, providers, unprefixed_provider=None, default_prefix=None
+    ):
         """Initialize a `DispatchingDataProvider`.
 
         Args:
           providers: Dict mapping prefix (`str`) to sub-provider
             instance (`provider.DataProvider`). Keys will appear in
             experiment IDs and so must be URL-safe.
+          unprefixed_provider: Deprecated, optional `provider.DataProvider`
+            instance to use with experiment IDs that do not have a prefix.
           default_prefix: Optional string that refers to one of the existing data
             provider prefixes, used for unprefixed experiment IDs.
 
@@ -67,7 +71,17 @@ class DispatchingDataProvider(provider.DataProvider):
         invalid_names = sorted(k for k in self._providers if _SEPARATOR in k)
         if invalid_names:
             raise ValueError("Invalid provider key(s): %r" % invalid_names)
-        self._default_prefix = default_prefix
+
+        # TODO(b/237101984): Remove unprefixed provider.
+        self._unprefixed_provider = unprefixed_provider
+
+        if (
+            default_prefix is not None
+            and default_prefix not in self._providers.keys()
+        ):
+            raise ValueError(
+                "Unknown data provider prefix: %s" % default_prefix
+            )
         self._default_provider = self._providers.get(default_prefix)
 
     def _parse_eid(self, experiment_id):
@@ -135,7 +149,7 @@ class DispatchingDataProvider(provider.DataProvider):
         if prefix is None:
             if self._default_provider is None:
                 raise errors.NotFoundError(
-                    "Invalid blob key: no provider for unprefixed blob key"
+                    "Invalid blob key: no default provider for unprefixed blob key"
                 )
             return self._default_provider.read_blob(ctx, blob_key=sub_key)
         sub_provider = self._providers.get(prefix)
