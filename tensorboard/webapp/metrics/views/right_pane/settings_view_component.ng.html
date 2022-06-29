@@ -60,8 +60,8 @@ limitations under the License.
     <div class="controls">
       <div>
         <mat-checkbox
-          [checked]="selectTimeEnabled"
-          (change)="selectTimeEnableToggled.emit()"
+          [checked]="isLinkedTimeEnabled"
+          (change)="linkedTimeToggled.emit()"
           >Enabled</mat-checkbox
         >
       </div>
@@ -71,7 +71,7 @@ limitations under the License.
           [max]="stepMinMax.max"
           [lowerValue]="selectedTime?.start.step"
           [upperValue]="selectedTime?.end?.step"
-          [enabled]="selectTimeEnabled"
+          [enabled]="isLinkedTimeEnabled"
           (singleValueChanged)="onSingleValueChanged($event)"
           (rangeValuesChanged)="onRangeValuesChanged($event)"
         ></tb-range-input>
@@ -133,7 +133,7 @@ limitations under the License.
   >
     <mat-checkbox
       [checked]="isScalarStepSelectorEnabled"
-      (change)="stepSelectorEnableToggled.emit()"
+      (change)="stepSelectorToggled.emit()"
       >Step Selector</mat-checkbox
     >
   </div>

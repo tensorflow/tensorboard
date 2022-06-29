@@ -2430,7 +2430,7 @@ describe('metrics reducers', () => {
 
         const nextState = reducers(
           beforeState,
-          actions.timeSelectionChanged({
+          actions.linkedTimeSelectionChanged({
             startStep: 2,
             endStep: 5,
           })
@@ -2450,7 +2450,7 @@ describe('metrics reducers', () => {
 
         const after = reducers(
           before,
-          actions.timeSelectionChanged({startStep: 2, endStep: undefined})
+          actions.linkedTimeSelectionChanged({startStep: 2, endStep: undefined})
         );
 
         expect(after.selectedTime).toEqual({
@@ -2467,7 +2467,7 @@ describe('metrics reducers', () => {
 
         const after = reducers(
           before,
-          actions.timeSelectionChanged({
+          actions.linkedTimeSelectionChanged({
             startStep: 2,
             endStep: 50,
           })
@@ -2486,7 +2486,7 @@ describe('metrics reducers', () => {
 
         const nextState = reducers(
           beforeState,
-          actions.timeSelectionChanged({startStep: 2, endStep: undefined})
+          actions.linkedTimeSelectionChanged({startStep: 2, endStep: undefined})
         );
 
         expect(nextState.selectTimeEnabled).toBe(true);
@@ -2500,7 +2500,7 @@ describe('metrics reducers', () => {
 
         const nextState = reducers(
           beforeState,
-          actions.timeSelectionChanged({
+          actions.linkedTimeSelectionChanged({
             startStep: 150,
             endStep: 0,
           })
@@ -2520,7 +2520,7 @@ describe('metrics reducers', () => {
 
         const nextState = reducers(
           beforeState,
-          actions.timeSelectionChanged({
+          actions.linkedTimeSelectionChanged({
             startStep: 2,
             endStep: 5,
           })
@@ -2543,7 +2543,7 @@ describe('metrics reducers', () => {
 
         const nextState = reducers(
           beforeState,
-          actions.timeSelectionChanged({
+          actions.linkedTimeSelectionChanged({
             startStep: 2,
             endStep: 5,
           })
@@ -2563,7 +2563,7 @@ describe('metrics reducers', () => {
 
         const nextState = reducers(
           beforeState,
-          actions.timeSelectionChanged({
+          actions.linkedTimeSelectionChanged({
             startStep: 2,
             endStep: 0,
           })
@@ -2580,7 +2580,7 @@ describe('metrics reducers', () => {
 
         const nextState1 = reducers(
           beforeState1,
-          actions.timeSelectionChanged({
+          actions.linkedTimeSelectionChanged({
             startStep: 2,
             endStep: undefined,
           })
@@ -2615,7 +2615,7 @@ describe('metrics reducers', () => {
 
         const nextState = reducers(
           beforeState,
-          actions.timeSelectionChanged({
+          actions.linkedTimeSelectionChanged({
             startStep: 10,
             endStep: undefined,
           })
@@ -2653,7 +2653,7 @@ describe('metrics reducers', () => {
 
         const nextState = reducers(
           beforeState,
-          actions.timeSelectionChanged({
+          actions.linkedTimeSelectionChanged({
             startStep: 15,
             endStep: undefined,
           })
@@ -2676,7 +2676,7 @@ describe('metrics reducers', () => {
 
       const nextState = reducers(
         beforeState,
-        actions.timeSelectionChanged({
+        actions.linkedTimeSelectionChanged({
           startStep: 3,
           endStep: undefined,
         })
@@ -2713,10 +2713,10 @@ describe('metrics reducers', () => {
           selectTimeEnabled: false,
         });
 
-        const state2 = reducers(state1, actions.selectTimeEnableToggled());
+        const state2 = reducers(state1, actions.linkedTimeToggled());
         expect(state2.selectTimeEnabled).toBe(true);
 
-        const state3 = reducers(state2, actions.selectTimeEnableToggled());
+        const state3 = reducers(state2, actions.linkedTimeToggled());
         expect(state3.selectTimeEnabled).toBe(false);
       });
 
@@ -2746,7 +2746,7 @@ describe('metrics reducers', () => {
           cardStepIndex: {[imageCardId]: buildStepIndexMetadata({index: 2})},
         });
 
-        const state2 = reducers(state1, actions.selectTimeEnableToggled());
+        const state2 = reducers(state1, actions.linkedTimeToggled());
 
         expect(state2.cardStepIndex).toEqual({
           [imageCardId]: buildStepIndexMetadata({index: 0}),
@@ -2778,7 +2778,7 @@ describe('metrics reducers', () => {
           cardStepIndex: {[imageCardId]: buildStepIndexMetadata({index: 2})},
         });
 
-        const state2 = reducers(state1, actions.selectTimeEnableToggled());
+        const state2 = reducers(state1, actions.linkedTimeToggled());
         expect(state2.cardStepIndex).toEqual({
           [imageCardId]: buildStepIndexMetadata({index: 1}),
         });
@@ -2816,7 +2816,7 @@ describe('metrics reducers', () => {
           cardStepIndex: {[imageCardId]: buildStepIndexMetadata({index: 2})},
         });
 
-        const state2 = reducers(state1, actions.selectTimeEnableToggled());
+        const state2 = reducers(state1, actions.linkedTimeToggled());
         expect(state2.cardStepIndex).toEqual({
           [imageCardId]: buildStepIndexMetadata({index: 2}),
         });
@@ -2827,7 +2827,7 @@ describe('metrics reducers', () => {
           stepMinMax: {min: Infinity, max: -Infinity},
         });
 
-        const state2 = reducers(state1, actions.selectTimeEnableToggled());
+        const state2 = reducers(state1, actions.linkedTimeToggled());
 
         expect(state2.selectedTime).toEqual({start: {step: 0}, end: null});
       });
@@ -2837,7 +2837,7 @@ describe('metrics reducers', () => {
           stepMinMax: {min: 10, max: 100},
         });
 
-        const state2 = reducers(state1, actions.selectTimeEnableToggled());
+        const state2 = reducers(state1, actions.linkedTimeToggled());
 
         expect(state2.selectedTime).toEqual({start: {step: 10}, end: null});
       });
@@ -2847,7 +2847,7 @@ describe('metrics reducers', () => {
           selectedTime: {start: {step: 20}, end: null},
         });
 
-        const state2 = reducers(state1, actions.selectTimeEnableToggled());
+        const state2 = reducers(state1, actions.linkedTimeToggled());
         expect(state2.selectedTime).toEqual({start: {step: 20}, end: null});
       });
     });
@@ -2873,10 +2873,10 @@ describe('metrics reducers', () => {
         stepSelectorEnabled: false,
       });
 
-      const state2 = reducers(state1, actions.stepSelectorEnableToggled());
+      const state2 = reducers(state1, actions.stepSelectorToggled());
       expect(state2.stepSelectorEnabled).toBe(true);
 
-      const state3 = reducers(state2, actions.stepSelectorEnableToggled());
+      const state3 = reducers(state2, actions.stepSelectorToggled());
       expect(state3.stepSelectorEnabled).toBe(false);
     });
   });

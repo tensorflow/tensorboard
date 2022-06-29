@@ -24,7 +24,7 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {CardFobComponent} from '../card_fob/card_fob_component';
 import {CardFobControllerComponent} from '../card_fob/card_fob_controller_component';
-import {LinkedTime} from '../card_fob/card_fob_types';
+import {TimeSelection} from '../card_fob/card_fob_types';
 import {IntersectionObserverTestingModule} from '../intersection_observer/intersection_observer_testing_module';
 import {HistogramCardFobController} from './histogram_card_fob_controller';
 import {HistogramComponent, TooltipData} from './histogram_component';
@@ -68,9 +68,9 @@ function buildHistogramDatum(
       [color]="color"
       [name]="name"
       [data]="data"
-      [linkedTime]="linkedTime"
-      (onSelectTimeChanged)="onSelectTimeChanged($event)"
-      (onSelectTimeToggle)="onSelectTimeToggle()"
+      [timeSelection]="timeSelection"
+      (onLinkedTimeSelectionChanged)="onLinkedTimeSelectionChanged($event)"
+      (onLinkedTimeToggled)="onLinkedTimeToggled()"
     >
     </tb-histogram>
   `,
@@ -92,12 +92,14 @@ class TestableComponent {
   @Input() color!: string;
   @Input() name!: string;
   @Input() data!: HistogramData;
-  @Input() linkedTime!: {
+  @Input() timeSelection!: {
     start: {step: number};
     end: {step: number} | null;
   } | null;
-  @Input() onSelectTimeChanged!: (linkedTime: LinkedTime) => void;
-  @Input() onSelectTimeToggle!: () => void;
+  @Input() onLinkedTimeSelectionChanged!: (
+    timeSelection: TimeSelection
+  ) => void;
+  @Input() onLinkedTimeToggled!: () => void;
 
   simulateMouseMove(event: {
     target: SVGElement;
@@ -876,7 +878,7 @@ describe('histogram test', () => {
         ]);
         fixture.componentInstance.mode = HistogramMode.OVERLAY;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
-        fixture.componentInstance.linkedTime = {start: {step: 5}, end: null};
+        fixture.componentInstance.timeSelection = {start: {step: 5}, end: null};
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
@@ -892,7 +894,7 @@ describe('histogram test', () => {
         ]);
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.WALL_TIME;
-        fixture.componentInstance.linkedTime = {start: {step: 5}, end: null};
+        fixture.componentInstance.timeSelection = {start: {step: 5}, end: null};
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
@@ -910,13 +912,13 @@ describe('histogram test', () => {
         ]);
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
-        fixture.componentInstance.linkedTime = {start: {step: 5}, end: null};
+        fixture.componentInstance.timeSelection = {start: {step: 5}, end: null};
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
         expect(doHistogramsHaveColor(fixture)).toEqual([false, true, false]);
 
-        fixture.componentInstance.linkedTime = {start: {step: 7}, end: null};
+        fixture.componentInstance.timeSelection = {start: {step: 7}, end: null};
         fixture.detectChanges();
         expect(doHistogramsHaveColor(fixture)).toEqual([false, false, false]);
       });
@@ -929,7 +931,7 @@ describe('histogram test', () => {
         ]);
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
-        fixture.componentInstance.linkedTime = {start: {step: 5}, end: null};
+        fixture.componentInstance.timeSelection = {start: {step: 5}, end: null};
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
@@ -962,7 +964,7 @@ describe('histogram test', () => {
         ]);
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
-        fixture.componentInstance.linkedTime = null;
+        fixture.componentInstance.timeSelection = null;
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
@@ -995,7 +997,7 @@ describe('histogram test', () => {
         ]);
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
-        fixture.componentInstance.linkedTime = {
+        fixture.componentInstance.timeSelection = {
           start: {step: 5},
           end: {step: 10},
         };
@@ -1004,14 +1006,14 @@ describe('histogram test', () => {
 
         expect(doHistogramsHaveColor(fixture)).toEqual([false, true, true]);
 
-        fixture.componentInstance.linkedTime = {
+        fixture.componentInstance.timeSelection = {
           start: {step: 0},
           end: {step: 7},
         };
         fixture.detectChanges();
         expect(doHistogramsHaveColor(fixture)).toEqual([true, true, false]);
 
-        fixture.componentInstance.linkedTime = {
+        fixture.componentInstance.timeSelection = {
           start: {step: 6},
           end: {step: 7},
         };
@@ -1027,7 +1029,7 @@ describe('histogram test', () => {
         ]);
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
-        fixture.componentInstance.linkedTime = {
+        fixture.componentInstance.timeSelection = {
           start: {step: 5},
           end: {step: 10},
         };
@@ -1063,7 +1065,7 @@ describe('histogram test', () => {
         ]);
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
-        fixture.componentInstance.linkedTime = {
+        fixture.componentInstance.timeSelection = {
           start: {step: 5},
           end: {step: 10},
         };
@@ -1102,14 +1104,15 @@ describe('histogram test', () => {
         ]);
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
-        fixture.componentInstance.onSelectTimeChanged = onSelectTimeChangedSpy;
+        fixture.componentInstance.onLinkedTimeSelectionChanged =
+          onSelectTimeChangedSpy;
 
         return fixture;
       }
 
       it('triggers select time action from single step to multi step', () => {
         const fixture = createHistogramComponent();
-        fixture.componentInstance.linkedTime = {start: {step: 5}, end: null};
+        fixture.componentInstance.timeSelection = {start: {step: 5}, end: null};
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
@@ -1125,7 +1128,7 @@ describe('histogram test', () => {
 
       it('triggers select time action when clicked step is smaller than selected step', () => {
         const fixture = createHistogramComponent();
-        fixture.componentInstance.linkedTime = {start: {step: 5}, end: null};
+        fixture.componentInstance.timeSelection = {start: {step: 5}, end: null};
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
@@ -1141,7 +1144,7 @@ describe('histogram test', () => {
 
       it('triggers select time action when clicked step is smaller than start step', () => {
         const fixture = createHistogramComponent();
-        fixture.componentInstance.linkedTime = {
+        fixture.componentInstance.timeSelection = {
           start: {step: 5},
           end: {step: 10},
         };
@@ -1160,7 +1163,7 @@ describe('histogram test', () => {
 
       it('triggers select time action when clicked step is larger than end step', () => {
         const fixture = createHistogramComponent();
-        fixture.componentInstance.linkedTime = {
+        fixture.componentInstance.timeSelection = {
           start: {step: 5},
           end: {step: 10},
         };
@@ -1179,7 +1182,7 @@ describe('histogram test', () => {
 
       it('does not trigger select time action when clicked step is within range', () => {
         const fixture = createHistogramComponent();
-        fixture.componentInstance.linkedTime = {
+        fixture.componentInstance.timeSelection = {
           start: {step: 5},
           end: {step: 20},
         };
@@ -1195,7 +1198,7 @@ describe('histogram test', () => {
 
       it('does not trigger select time action when clicked step is same as start step', () => {
         const fixture = createHistogramComponent();
-        fixture.componentInstance.linkedTime = {
+        fixture.componentInstance.timeSelection = {
           start: {step: 5},
           end: null,
         };
@@ -1217,12 +1220,12 @@ describe('histogram test', () => {
           buildHistogramDatum({step: 5, wallTime: 400}),
           buildHistogramDatum({step: 10, wallTime: 400}),
         ]);
-        const onSelectTimeToggleSpy = jasmine.createSpy();
-        fixture.componentInstance.linkedTime = {
+        const onLinkedTimeToggleSpy = jasmine.createSpy();
+        fixture.componentInstance.timeSelection = {
           start: {step: 5},
           end: null,
         };
-        fixture.componentInstance.onSelectTimeToggle = onSelectTimeToggleSpy;
+        fixture.componentInstance.onLinkedTimeToggled = onLinkedTimeToggleSpy;
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
@@ -1231,7 +1234,7 @@ describe('histogram test', () => {
         ).componentInstance;
         fobComponent.fobRemoved.emit();
 
-        expect(onSelectTimeToggleSpy).toHaveBeenCalledOnceWith();
+        expect(onLinkedTimeToggleSpy).toHaveBeenCalledOnceWith();
       });
     });
   });

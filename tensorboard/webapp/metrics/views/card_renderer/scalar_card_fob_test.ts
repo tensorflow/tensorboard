@@ -13,7 +13,7 @@ limitations under the License.
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {CardFobControllerComponent} from '../../../widgets/card_fob/card_fob_controller_component';
-import {LinkedTime} from '../../../widgets/card_fob/card_fob_types';
+import {TimeSelection} from '../../../widgets/card_fob/card_fob_types';
 import {LinearScale} from '../../../widgets/line_chart_v2/lib/scale';
 import {ScalarCardFobController} from './scalar_card_fob_controller';
 
@@ -31,12 +31,12 @@ describe('ScalarFobController', () => {
   });
 
   function createComponent(input: {
-    linkedTime?: LinkedTime;
+    timeSelection?: TimeSelection;
     minMax?: [number, number];
     axisSize?: number;
   }): ComponentFixture<ScalarCardFobController> {
     const fixture = TestBed.createComponent(ScalarCardFobController);
-    fixture.componentInstance.linkedTime = input.linkedTime ?? {
+    fixture.componentInstance.timeSelection = input.timeSelection ?? {
       start: {step: 200},
       end: null,
     };

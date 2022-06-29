@@ -940,8 +940,8 @@ describe('image card', () => {
       });
     });
 
-    describe('selectedTime beyond range of data', () => {
-      it('clips the selectedTime to max step', () => {
+    describe('linkedTimeSelection beyond range of data', () => {
+      it('clips the linkedTimeSelection to max step', () => {
         store.overrideSelector(selectors.getMetricsSelectedTime, {
           start: {step: 45},
           end: {step: 50},
@@ -962,7 +962,7 @@ describe('image card', () => {
         const fixture = createImageCardContainer('card1');
         fixture.detectChanges();
         const selectedTimeChangeSpy = jasmine.createSpy();
-        fixture.componentInstance.selectedTime$!.subscribe(
+        fixture.componentInstance.linkedTimeSelection$!.subscribe(
           selectedTimeChangeSpy
         );
         fixture.detectChanges();
@@ -974,7 +974,7 @@ describe('image card', () => {
         });
       });
 
-      it('clips the selectedTime to min step when it is too small', () => {
+      it('clips the linkedTimeSelection to min step when it is too small', () => {
         store.overrideSelector(selectors.getMetricsSelectedTime, {
           start: {step: 5},
           end: {step: 8},
@@ -996,7 +996,7 @@ describe('image card', () => {
         fixture.detectChanges();
 
         const selectedTimeChangeSpy = jasmine.createSpy();
-        fixture.componentInstance.selectedTime$!.subscribe(
+        fixture.componentInstance.linkedTimeSelection$!.subscribe(
           selectedTimeChangeSpy
         );
 
@@ -1007,7 +1007,7 @@ describe('image card', () => {
         });
       });
 
-      it('renders warning when the selectedTime is clipped', () => {
+      it('renders warning when the linkedTimeSelection is clipped', () => {
         store.overrideSelector(selectors.getMetricsSelectedTime, {
           start: {step: 5},
           end: {step: 8},

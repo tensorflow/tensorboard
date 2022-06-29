@@ -88,7 +88,7 @@ type ImageCardMetadata = CardMetadata & {
       [showActualSize]="showActualSize"
       [allowToggleActualSize]="(actualSizeGlobalSetting$ | async) === false"
       [isPinned]="isPinned$ | async"
-      [selectedTime]="selectedTime$ | async"
+      [linkedTimeSelection]="linkedTimeSelection$ | async"
       [selectedSteps]="selectedSteps$ | async"
       (onActualSizeToggle)="onActualSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
@@ -128,7 +128,7 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
   isClosestStepHighlighted$?: Observable<boolean | null>;
   steps$?: Observable<number[]>;
   isPinned$?: Observable<boolean>;
-  selectedTime$?: Observable<ViewSelectedTime | null>;
+  linkedTimeSelection$?: Observable<ViewSelectedTime | null>;
   selectedSteps$?: Observable<number[]>;
   brightnessInMilli$ = this.store.select(getMetricsImageBrightnessInMilli);
   contrastInMilli$ = this.store.select(getMetricsImageContrastInMilli);
@@ -254,10 +254,10 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
 
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
 
-    this.selectedTime$ = this.store.select(getMetricsSelectedTime).pipe(
+    this.linkedTimeSelection$ = this.store.select(getMetricsSelectedTime).pipe(
       combineLatestWith(this.steps$),
-      map(([selectedTime, steps]) => {
-        if (!selectedTime) return null;
+      map(([linkedTimeSelection, steps]) => {
+        if (!linkedTimeSelection) return null;
 
         let minStep = Infinity;
         let maxStep = -Infinity;
@@ -265,25 +265,28 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
           minStep = Math.min(step, minStep);
           maxStep = Math.max(step, maxStep);
         }
-        return maybeClipSelectedTime(selectedTime, minStep, maxStep);
+        return maybeClipSelectedTime(linkedTimeSelection, minStep, maxStep);
       })
     );
 
     // TODO(japie1235813): Reuses `getSelectedSteps` in store_utils.
-    this.selectedSteps$ = this.selectedTime$.pipe(
+    this.selectedSteps$ = this.linkedTimeSelection$.pipe(
       combineLatestWith(this.steps$),
-      map(([selectedTime, steps]) => {
-        if (!selectedTime) return [];
+      map(([linkedTimeSelection, steps]) => {
+        if (!linkedTimeSelection) return [];
 
-        if (selectedTime.endStep === null) {
-          if (steps.indexOf(selectedTime.startStep) !== -1)
-            return [selectedTime.startStep];
+        if (linkedTimeSelection.endStep === null) {
+          if (steps.indexOf(linkedTimeSelection.startStep) !== -1)
+            return [linkedTimeSelection.startStep];
           return [];
         }
 
         const selectedStepsInRange = [];
         for (const step of steps) {
-          if (step >= selectedTime.startStep && step <= selectedTime.endStep) {
+          if (
+            step >= linkedTimeSelection.startStep &&
+            step <= linkedTimeSelection.endStep
+          ) {
             selectedStepsInRange.push(step);
           }
         }

@@ -24,7 +24,7 @@ import {
 } from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {DataLoadState} from '../../../types/data';
-import {LinkedTime} from '../../../widgets/card_fob/card_fob_types';
+import {TimeSelection} from '../../../widgets/card_fob/card_fob_types';
 import {
   Formatter,
   intlNumberFormatter,
@@ -84,14 +84,14 @@ export class ScalarCardComponent<Downloader> {
   @Input() xScaleType!: ScaleType;
   @Input() useDarkMode!: boolean;
   @Input() forceSvg!: boolean;
-  @Input() selectedTime!: ViewSelectedTime | null;
-  @Input() internalSelectedTime!: LinkedTime;
+  @Input() linkedTimeSelection!: ViewSelectedTime | null;
+  @Input() stepSelectorTimeSelection!: TimeSelection;
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
-  @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
-  @Output() onSelectTimeToggle = new EventEmitter();
-  @Output() onStepSelectorToggle = new EventEmitter();
+  @Output() onLinkedTimeSelectionChanged = new EventEmitter<TimeSelection>();
+  @Output() onLinkedTimeToggled = new EventEmitter();
+  @Output() onStepSelectorToggled = new EventEmitter();
 
   // Line chart may not exist when was never visible (*ngIf).
   @ViewChild(LineChartComponent)
@@ -199,28 +199,31 @@ export class ScalarCardComponent<Downloader> {
     });
   }
 
-  getLinkedTime(): LinkedTime | null {
-    if (this.selectedTime === null) {
-      return this.internalSelectedTime;
+  getTimeSelection(): TimeSelection | null {
+    if (this.linkedTimeSelection === null) {
+      return this.stepSelectorTimeSelection;
     }
 
     return {
       start: {
-        step: this.selectedTime!.startStep,
+        step: this.linkedTimeSelection!.startStep,
       },
-      end: this.selectedTime!.endStep
-        ? {step: this.selectedTime!.endStep}
+      end: this.linkedTimeSelection!.endStep
+        ? {step: this.linkedTimeSelection!.endStep}
         : null,
     };
   }
 
   getSelectedTimeTableData(): SelectedStepRunData[] {
-    if (this.selectedTime === null && this.internalSelectedTime === null) {
+    if (
+      this.linkedTimeSelection === null &&
+      this.stepSelectorTimeSelection === null
+    ) {
       return [];
     }
-    const startStep = this.selectedTime
-      ? this.selectedTime.startStep
-      : this.internalSelectedTime.start.step;
+    const startStep = this.linkedTimeSelection
+      ? this.linkedTimeSelection.startStep
+      : this.stepSelectorTimeSelection.start.step;
     const dataTableData: SelectedStepRunData[] = this.dataSeries
       .filter((datum) => {
         const metadata = this.chartMetadataMap[datum.id];
@@ -257,23 +260,23 @@ export class ScalarCardComponent<Downloader> {
     return dataTableData;
   }
 
-  onFobSelectTimeChanged(newSelectedTime: LinkedTime) {
+  onFobTimeSelectionChanged(newTimeSelection: TimeSelection) {
     // Updates step selector to single selection.
-    this.internalSelectedTime = {
-      start: {step: newSelectedTime.start.step},
+    this.stepSelectorTimeSelection = {
+      start: {step: newTimeSelection.start.step},
       end: null,
     };
 
-    if (this.selectedTime !== null) {
-      this.onSelectTimeChanged.emit(newSelectedTime);
+    if (this.linkedTimeSelection !== null) {
+      this.onLinkedTimeSelectionChanged.emit(newTimeSelection);
     }
   }
 
   onFobRemoved() {
-    if (this.selectedTime !== null) {
-      this.onSelectTimeToggle.emit();
+    if (this.linkedTimeSelection !== null) {
+      this.onLinkedTimeToggled.emit();
     } else {
-      this.onStepSelectorToggle.emit();
+      this.onStepSelectorToggled.emit();
     }
   }
 }

@@ -70,9 +70,9 @@ import {
 import {ResizeDetectorTestingModule} from '../../../widgets/resize_detector_testing_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {
-  selectTimeEnableToggled,
-  stepSelectorEnableToggled,
-  timeSelectionChanged,
+  linkedTimeSelectionChanged,
+  linkedTimeToggled,
+  stepSelectorToggled,
 } from '../../actions';
 import {PluginType} from '../../data_source';
 import {getMetricsScalarSmoothing, getMetricsSelectedTime} from '../../store';
@@ -2207,7 +2207,7 @@ describe('scalar card', () => {
         );
       });
 
-      it('dispatches timeSelectionChanged action when fob is dragged', fakeAsync(() => {
+      it('dispatches linkedTimeSelectionChanged action when fob is dragged', fakeAsync(() => {
         store.overrideSelector(getMetricsSelectedTime, {
           start: {step: 20},
           end: null,
@@ -2230,14 +2230,14 @@ describe('scalar card', () => {
         fixture.detectChanges();
 
         expect(dispatchedActions).toEqual([
-          timeSelectionChanged({
+          linkedTimeSelectionChanged({
             startStep: 25,
             endStep: undefined,
           }),
         ]);
       }));
 
-      it('toggles selected time when single fob is deselected', fakeAsync(() => {
+      it('toggles linked time when single fob is deselected', fakeAsync(() => {
         store.overrideSelector(getMetricsSelectedTime, {
           start: {step: 20},
           end: null,
@@ -2249,7 +2249,7 @@ describe('scalar card', () => {
         ).componentInstance;
         fobComponent.fobRemoved.emit();
 
-        expect(dispatchedActions).toEqual([selectTimeEnableToggled()]);
+        expect(dispatchedActions).toEqual([linkedTimeToggled()]);
       }));
     });
 
@@ -2530,7 +2530,7 @@ describe('scalar card', () => {
         expect(testController).toBeTruthy();
       }));
 
-      it('does not dispatch timeSelectionChanged action when fob is dragged', fakeAsync(() => {
+      it('does not dispatch linkedTimeSelectionChanged action when fob is dragged', fakeAsync(() => {
         const fixture = createComponent('card1');
         fixture.detectChanges();
         const testController = fixture.debugElement.query(
@@ -2559,14 +2559,14 @@ describe('scalar card', () => {
           By.directive(ScalarCardComponent)
         );
         expect(
-          scalarCardComponent.componentInstance.internalSelectedTime
+          scalarCardComponent.componentInstance.stepSelectorTimeSelection
         ).toEqual({
           start: {step: 25},
           end: null,
         });
       }));
 
-      it('sets internalSelectedTime to single selection', fakeAsync(() => {
+      it('sets stepSelectorTimeSelection to single selection', fakeAsync(() => {
         store.overrideSelector(getMetricsSelectedTime, {
           start: {step: 20},
           end: {step: 40},
@@ -2614,7 +2614,7 @@ describe('scalar card', () => {
           By.directive(ScalarCardComponent)
         );
         expect(
-          scalarCardComponent.componentInstance.internalSelectedTime
+          scalarCardComponent.componentInstance.stepSelectorTimeSelection
         ).toEqual({
           start: {step: 25},
           end: null,
@@ -2629,7 +2629,7 @@ describe('scalar card', () => {
         ).componentInstance;
         fobComponent.fobRemoved.emit();
 
-        expect(dispatchedActions).toEqual([stepSelectorEnableToggled()]);
+        expect(dispatchedActions).toEqual([stepSelectorToggled()]);
       }));
     });
 

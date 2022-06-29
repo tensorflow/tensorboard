@@ -50,14 +50,14 @@ limitations under the License.
       </g>
     </svg>
     <!-- Disable the feature when in non-offset and non-step mode. -->
-    <ng-container *ngIf="isLinkedTimeEnabled(linkedTime)">
+    <ng-container *ngIf="isTimeSelectionEnabled(timeSelection)">
       <histogram-card-fob-controller
         class="linked-time"
-        [linkedTime]="linkedTime"
+        [timeSelection]="timeSelection"
         [steps]="getSteps()"
         [temporalScale]="scales.temporalScale"
-        (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
-        (onSelectTimeToggle)="onSelectTimeToggle.emit()"
+        (onTimeSelectionChanged)="onLinkedTimeSelectionChanged.emit($event)"
+        (onTimeSelectionToggled)="onLinkedTimeToggled.emit()"
       ></histogram-card-fob-controller>
     </ng-container>
   </div>
@@ -74,14 +74,14 @@ limitations under the License.
     <g
       #histograms
       [class.histograms]="true"
-      [class.linked-time-enabled]="linkedTime"
-      [class.linked-time-single-step]="linkedTime && !linkedTime.end"
+      [class.linked-time-enabled]="timeSelection"
+      [class.linked-time-single-step]="timeSelection && !timeSelection.end"
     >
       <g
         *ngFor="let datum of data; trackBy: trackByWallTime;"
         [style.transform]="getGroupTransform(datum)"
         [class.histogram]="true"
-        [class.no-color]="!isDatumInLinkedTimeRange(datum)"
+        [class.no-color]="!isDatumInTimeSelectionRange(datum)"
         [style.color]="getHistogramFill(datum)"
         (mouseenter)="updateColorOnHover($event, datum, true)"
         (mouseleave)="updateColorOnHover($event, datum, false)"

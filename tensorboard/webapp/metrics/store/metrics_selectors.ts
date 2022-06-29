@@ -23,10 +23,10 @@ import {
   CardMetadata,
   CardUniqueInfo,
   HistogramMode,
-  LinkedTime,
   NonPinnedCardId,
   PinnedCardId,
   PluginType,
+  TimeSelection,
   TooltipSort,
   XAxisType,
 } from '../internal_types';
@@ -392,7 +392,7 @@ export const getMetricsStepMinMax = createSelector(
  * loaded thus far.
  *
  * This selector is intended to used by settings panel only. Other views should
- * use `getMetricsSelectedTime` that returns `LinkedTime` value according to
+ * use `getMetricsSelectedTime` that returns `TimeSelection` value according to
  * the setting.
  *
  * @see getMetricsSelectedTime For most views.
@@ -400,7 +400,7 @@ export const getMetricsStepMinMax = createSelector(
 export const getMetricsSelectedTimeSetting = createSelector(
   selectMetricsState,
   getMetricsStepMinMax,
-  (state, stepMinMax): LinkedTime => {
+  (state, stepMinMax): TimeSelection => {
     if (!state.selectedTime) {
       return {
         start: {
@@ -424,7 +424,7 @@ export const getMetricsSelectedTimeSetting = createSelector(
 export const getMetricsSelectedTime = createSelector(
   selectMetricsState,
   getMetricsSelectedTimeSetting,
-  (state: MetricsState, selectedTime: LinkedTime): LinkedTime | null => {
+  (state: MetricsState, selectedTime: TimeSelection): TimeSelection | null => {
     if (!state.selectTimeEnabled) return null;
     if (state.useRangeSelectTime) {
       return selectedTime;

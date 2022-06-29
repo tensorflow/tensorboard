@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {LinkedTime} from '../../types';
+import {TimeSelection} from '../../types';
 
-export type LinkedTimeWithClipped = LinkedTime & {clipped: boolean};
+export type TimeSelectionWithClipped = TimeSelection & {clipped: boolean};
 
 @Component({
   selector: 'vis-selected-time-warning',

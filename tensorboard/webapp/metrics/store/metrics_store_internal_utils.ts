@@ -22,8 +22,8 @@ import {
   CardId,
   CardMetadata,
   CardUniqueInfo,
-  LinkedTime,
   NonPinnedCardId,
+  TimeSelection,
 } from '../internal_types';
 import {
   CardMetadataMap,
@@ -378,7 +378,7 @@ export function generateNextCardStepIndexFromSelectedTime(
   previousCardStepIndex: CardStepIndexMap,
   cardMetadataMap: CardMetadataMap,
   timeSeriesData: TimeSeriesData,
-  selectedTime: LinkedTime
+  selectedTime: TimeSelection
 ): CardStepIndexMap {
   let nextCardStepIndex = {...previousCardStepIndex};
 
@@ -443,7 +443,7 @@ export function getImageCardSteps(
 /**
  * Returns the subset of steps that are within selected time given a list of steps
  */
-function getSelectedSteps(selectedTime: LinkedTime | null, steps: number[]) {
+function getSelectedSteps(selectedTime: TimeSelection | null, steps: number[]) {
   if (!selectedTime) return [];
 
   // Single selection: returns start step if matching any step in the list, otherwise returns nothing.

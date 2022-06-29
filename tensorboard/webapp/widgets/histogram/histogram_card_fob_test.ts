@@ -17,7 +17,7 @@ import {
   CardFobControllerComponent,
   Fob,
 } from '../card_fob/card_fob_controller_component';
-import {LinkedTime} from '../card_fob/card_fob_types';
+import {TimeSelection} from '../card_fob/card_fob_types';
 import {HistogramCardFobController} from './histogram_card_fob_controller';
 import {TemporalScale} from './histogram_component';
 
@@ -32,7 +32,7 @@ describe('HistogramCardFobController', () => {
 
   function createComponent(input: {
     steps?: number[];
-    linkedTime?: LinkedTime;
+    timeSelection?: TimeSelection;
   }): ComponentFixture<HistogramCardFobController> {
     const fixture = TestBed.createComponent(HistogramCardFobController);
 
@@ -43,7 +43,7 @@ describe('HistogramCardFobController', () => {
     fixture.debugElement.nativeElement.style.top = '0';
 
     fixture.componentInstance.steps = input.steps ?? [100, 200, 300, 400];
-    fixture.componentInstance.linkedTime = input.linkedTime ?? {
+    fixture.componentInstance.timeSelection = input.timeSelection ?? {
       start: {step: 200},
       end: null,
     };
@@ -132,7 +132,7 @@ describe('HistogramCardFobController', () => {
   describe('interaction with base controller', () => {
     it('properly uses scale when setting fob position', () => {
       let fixture = createComponent({
-        linkedTime: {start: {step: 300}, end: null},
+        timeSelection: {start: {step: 300}, end: null},
       });
       fixture.detectChanges();
       let testController = fixture.debugElement.query(
@@ -145,7 +145,7 @@ describe('HistogramCardFobController', () => {
     it('moves the fob to the next highest step when dragging down', () => {
       let fixture = createComponent({
         steps: [100, 200, 300, 400],
-        linkedTime: {start: {step: 300}, end: null},
+        timeSelection: {start: {step: 300}, end: null},
       });
       fixture.detectChanges();
       let testController = fixture.debugElement.query(
@@ -168,7 +168,7 @@ describe('HistogramCardFobController', () => {
     it('moves the fob to the next lowest step when dragging up', () => {
       let fixture = createComponent({
         steps: [100, 200, 300, 400],
-        linkedTime: {start: {step: 300}, end: null},
+        timeSelection: {start: {step: 300}, end: null},
       });
       fixture.detectChanges();
       let testController = fixture.debugElement.query(

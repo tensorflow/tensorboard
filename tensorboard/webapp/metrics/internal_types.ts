@@ -12,10 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {LinkedTime} from '../widgets/card_fob/card_fob_types';
+import {TimeSelection} from '../widgets/card_fob/card_fob_types';
 import {HistogramMode} from '../widgets/histogram/histogram_types';
 
-export {HistogramMode, LinkedTime};
+export {HistogramMode, TimeSelection};
 
 export enum PluginType {
   SCALARS = 'scalars',

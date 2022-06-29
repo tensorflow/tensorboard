@@ -26,8 +26,8 @@ import {auditTime} from 'rxjs/operators';
 import {DropdownOption} from '../../../widgets/dropdown/dropdown_component';
 import {
   HistogramMode,
-  LinkedTime,
   SCALARS_SMOOTHING_MAX,
+  TimeSelection,
   TooltipSort,
   XAxisType,
 } from '../../types';
@@ -65,17 +65,17 @@ export class SettingsViewComponent {
 
   @Input() isCardWidthSettingEnabled!: boolean;
   @Input() isLinkedTimeFeatureEnabled!: boolean;
+  @Input() isLinkedTimeEnabled!: boolean;
   @Input() isScalarStepSelectorFeatureEnabled!: boolean;
   @Input() isScalarStepSelectorEnabled!: boolean;
-  @Input() selectTimeEnabled!: boolean;
   @Input() useRangeSelectTime!: boolean;
-  @Input() selectedTime!: LinkedTime | null;
+  @Input() selectedTime!: TimeSelection | null;
   @Input() stepMinMax!: {min: number; max: number};
 
-  @Output() selectTimeEnableToggled = new EventEmitter<void>();
-  @Output() selectTimeChanged = new EventEmitter<LinkedTime>();
+  @Output() linkedTimeToggled = new EventEmitter<void>();
+  @Output() linkedTimeSelectionChanged = new EventEmitter<TimeSelection>();
 
-  @Output() stepSelectorEnableToggled = new EventEmitter<void>();
+  @Output() stepSelectorToggled = new EventEmitter<void>();
 
   @Input() isImageSupportEnabled!: boolean;
 
@@ -177,7 +177,7 @@ export class SettingsViewComponent {
   }
 
   onSingleValueChanged(stepValue: number) {
-    this.selectTimeChanged.emit({
+    this.linkedTimeSelectionChanged.emit({
       start: {step: stepValue},
       end: null,
     });
@@ -190,7 +190,7 @@ export class SettingsViewComponent {
     lowerValue: number;
     upperValue: number;
   }) {
-    this.selectTimeChanged.emit({
+    this.linkedTimeSelectionChanged.emit({
       start: {step: lowerValue},
       end: {step: upperValue},
     });
