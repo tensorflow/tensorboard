@@ -49,17 +49,13 @@ class DispatchingDataProvider(provider.DataProvider):
     # related to blob keys, where we need to annotate or extract the
     # associated sub-provider.
 
-    def __init__(
-        self, providers, unprefixed_provider=None, default_prefix=None
-    ):
+    def __init__(self, providers, default_prefix=None):
         """Initialize a `DispatchingDataProvider`.
 
         Args:
           providers: Dict mapping prefix (`str`) to sub-provider
             instance (`provider.DataProvider`). Keys will appear in
             experiment IDs and so must be URL-safe.
-          unprefixed_provider: Deprecated, optional `provider.DataProvider`
-            instance to use with experiment IDs that do not have a prefix.
           default_prefix: Optional string that refers to one of the existing data
             provider prefixes, used for unprefixed experiment IDs.
 
@@ -81,11 +77,6 @@ class DispatchingDataProvider(provider.DataProvider):
             )
         self._default_prefix = default_prefix
         self._default_provider = self._providers.get(default_prefix)
-
-        # TODO(b/237101984): Remove unprefixed provider.
-        self._unprefixed_provider = unprefixed_provider
-        if not self._default_provider and unprefixed_provider:
-            self._default_provider = unprefixed_provider
 
     def _parse_eid(self, experiment_id):
         """Parse an experiment ID into prefix, sub-ID, and sub-provider.
