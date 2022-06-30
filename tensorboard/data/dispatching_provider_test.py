@@ -194,20 +194,12 @@ class DispatchingDataProviderTest(tb_test.TestCase):
             "bar": self.bar_provider,
             "baz": self.baz_provider,
         }
-        unprefixed = self.baz_provider
         self.with_default_pfx = dispatching_provider.DispatchingDataProvider(
             providers, default_prefix="baz"
         )
         self.without_default_pfx = dispatching_provider.DispatchingDataProvider(
             providers
         )
-
-    def test_get_default_prefix_from_unprefixed_provider(self):
-        dp = dispatching_provider.DispatchingDataProvider(
-            {"foo": self.foo_provider, "bar": self.bar_provider},
-            unprefixed_provider=self.bar_provider,
-        )
-        self.assertEqual(dp._default_provider, self.bar_provider)
 
     def test_unknown_default_prefix__raises_error(self):
         with self.assertRaisesRegex(
