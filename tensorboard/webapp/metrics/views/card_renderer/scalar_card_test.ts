@@ -69,7 +69,11 @@ import {
 } from '../../../widgets/line_chart_v2/types';
 import {ResizeDetectorTestingModule} from '../../../widgets/resize_detector_testing_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
-import {selectTimeEnableToggled, timeSelectionChanged} from '../../actions';
+import {
+  selectTimeEnableToggled,
+  stepSelectorEnableToggled,
+  timeSelectionChanged,
+} from '../../actions';
 import {PluginType} from '../../data_source';
 import {getMetricsScalarSmoothing, getMetricsSelectedTime} from '../../store';
 import {
@@ -2615,6 +2619,17 @@ describe('scalar card', () => {
           start: {step: 25},
           end: null,
         });
+      }));
+
+      it('toggles when single fob is deselected', fakeAsync(() => {
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+        const fobComponent = fixture.debugElement.query(
+          By.directive(CardFobComponent)
+        ).componentInstance;
+        fobComponent.fobRemoved.emit();
+
+        expect(dispatchedActions).toEqual([stepSelectorEnableToggled()]);
       }));
     });
 

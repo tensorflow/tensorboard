@@ -68,6 +68,9 @@ import {HistogramMode, LinkedTime, TooltipSort, XAxisType} from '../../types';
       [imageShowActualSize]="imageShowActualSize$ | async"
       (imageShowActualSizeChanged)="onImageShowActualSizeChanged()"
       [isLinkedTimeFeatureEnabled]="isLinkedTimeFeatureEnabled$ | async"
+      [isScalarStepSelectorFeatureEnabled]="
+        isScalarStepSelectorFeatureEnabled$ | async
+      "
       [isScalarStepSelectorEnabled]="isScalarStepSelectorEnabled$ | async"
       [selectTimeEnabled]="selectTimeEnabled$ | async"
       [selectedTime]="selectedTime$ | async"
@@ -90,8 +93,10 @@ export class SettingsViewContainer {
   readonly isLinkedTimeFeatureEnabled$: Observable<boolean> = this.store.select(
     selectors.getIsLinkedTimeEnabled
   );
-  readonly isScalarStepSelectorEnabled$: Observable<boolean> =
+  readonly isScalarStepSelectorFeatureEnabled$: Observable<boolean> =
     this.store.select(selectors.getIsDataTableEnabled);
+  readonly isScalarStepSelectorEnabled$: Observable<boolean> =
+    this.store.select(selectors.getMetricsStepSelectorEnabled);
   readonly selectTimeEnabled$: Observable<boolean> = this.store.select(
     selectors.getMetricsSelectTimeEnabled
   );

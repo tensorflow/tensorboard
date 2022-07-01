@@ -92,6 +92,7 @@ describe('metrics right_pane', () => {
       store.overrideSelector(selectors.getEnabledCardWidthSetting, false);
       store.overrideSelector(selectors.getMetricsCardMinWidth, null);
       store.overrideSelector(selectors.getMetricsSelectTimeEnabled, false);
+      store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
       store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
       store.overrideSelector(selectors.getMetricsSelectedTimeSetting, {
         start: {step: 0},
@@ -441,7 +442,7 @@ describe('metrics right_pane', () => {
         });
       });
 
-      describe('step selector', () => {
+      describe('range input', () => {
         it('displays tb-range-input on both single and range step selection mode', () => {
           store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
           store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
@@ -549,6 +550,18 @@ describe('metrics right_pane', () => {
             'aria-checked'
           ]
         ).toBe('false');
+      });
+
+      it('renders checked feature', () => {
+        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+
+        expect(
+          select(fixture, '.scalars-step-selector input').attributes[
+            'aria-checked'
+          ]
+        ).toBe('true');
       });
 
       it('dispatches stepSelectorEnableToggled on toggle', () => {

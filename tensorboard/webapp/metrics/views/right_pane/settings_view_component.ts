@@ -65,6 +65,7 @@ export class SettingsViewComponent {
 
   @Input() isCardWidthSettingEnabled!: boolean;
   @Input() isLinkedTimeFeatureEnabled!: boolean;
+  @Input() isScalarStepSelectorFeatureEnabled!: boolean;
   @Input() isScalarStepSelectorEnabled!: boolean;
   @Input() selectTimeEnabled!: boolean;
   @Input() useRangeSelectTime!: boolean;
