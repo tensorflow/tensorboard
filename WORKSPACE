@@ -110,6 +110,24 @@ sass_repositories()
 # might lead to test failures.
 http_archive(
     name = "com_google_protobuf",
+    patch_args = ["-p1"],
+    patches = [
+        # To maintain compatibility with python 3.10 and greater, we need to patch
+        # in the following protobuf change:
+        # https://github.com/grpc/grpc/commit/9d61eada0f47d7be793983638c4a29707b192d0c
+        #
+        # To reproduce the patch:
+        # ```
+        # $ git clone https://github.com/protocolbuffers/protobuf.git
+        # $ cd protobuf
+        # $ git checkout tags/v3.9.2 -b my-patch
+        # $ git cherry-pick 9d61eada0f47d7be793983638c4a29707b192d0c
+        # $ git diff HEAD~1 > protobuf.patch
+        # # Remove trailing whitespace to satisify whitespace_hygiene_test.py.
+        # $ sed -i 's/[[:space:]]*$//' protobuf.patch
+        # ```
+        "//third_party:protobuf.patch",
+    ],
     sha256 = "1fbf1c2962af287607232b2eddeaec9b4f4a7a6f5934e1a9276e9af76952f7e0",
     strip_prefix = "protobuf-3.9.2",
     urls = [
@@ -121,12 +139,34 @@ http_archive(
 # gRPC.
 http_archive(
     name = "com_github_grpc_grpc",
+    patch_args = ["-p1"],
+    patches = [
+        # To maintain compatibility with python 3.10 and greater, we need to patch
+        # in the following grpc change:
+        # https://github.com/grpc/grpc/commit/dbe73c9004e483d24168c220cd589fe1824e72bc
+        #
+        # To reproduce the patch:
+        # ```
+        # $ git clone https://github.com/grpc/grpc.git
+        # $ cd grpc
+        # $ git checkout tags/v1.27.0-pre1 -b my-patch
+        # $ git cherry-pick dbe73c9004e483d24168c220cd589fe1824e72bc
+        # $ git diff HEAD~1 > grpc.patch
+        # ```
+        #
+        # Note that we choose tags/v1.27.0-pre1 as the base since the version in
+        # the archive is 1.27.0-dev. It's not necessarily an exact match but is
+        # the best guess we can make for a match.
+        "//third_party:grpc.patch",
+    ],
     sha256 = "b956598d8cbe168b5ee717b5dafa56563eb5201a947856a6688bbeac9cac4e1f",
     strip_prefix = "grpc-b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd",
     urls = [
         # Same as TF: https://github.com/tensorflow/tensorflow/blob/master/tensorflow/workspace2.bzl#L492
         # Currently we can't upgrade gRPC past 1.30.0 without also bumping protobuf to 3.12.0+:
         # https://github.com/grpc/grpc/issues/23311.
+        #
+        # Inspecting the contents of this archive, the version is 1.27.0-dev.
         "http://mirror.tensorflow.org/github.com/grpc/grpc/archive/b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd.tar.gz",
         "https://github.com/grpc/grpc/archive/b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd.tar.gz",
     ],
