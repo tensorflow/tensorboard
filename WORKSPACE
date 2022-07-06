@@ -123,6 +123,8 @@ http_archive(
         # $ git checkout tags/v3.9.2 -b my-patch
         # $ git cherry-pick 9d61eada0f47d7be793983638c4a29707b192d0c
         # $ git diff HEAD~1 > protobuf.patch
+        # # Remove trailing whitespace to satisify whitespace_hygiene_test.py.
+        # $ sed -i 's/[[:space:]]*$//' protobuf.patch
         # ```
         "//third_party:protobuf.patch",
     ],
