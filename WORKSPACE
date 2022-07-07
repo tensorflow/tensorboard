@@ -149,14 +149,15 @@ http_archive(
         # ```
         # $ git clone https://github.com/grpc/grpc.git
         # $ cd grpc
-        # $ git checkout tags/v1.27.0-pre1 -b my-patch
+        # $ git checkout b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd -b my-patch
         # $ git cherry-pick dbe73c9004e483d24168c220cd589fe1824e72bc
         # $ git diff HEAD~1 > grpc.patch
         # ```
         #
-        # Note that we choose tags/v1.27.0-pre1 as the base since the version in
-        # the archive is 1.27.0-dev. It's not necessarily an exact match but is
-        # the best guess we can make for a match.
+        # Note that we choose b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd as the
+        # base since it matches the archive (the commit number is in the archive
+        # file's name). There is no exact corresponding tag to use but the
+        # nearest might be v1.27.0-pre1.
         "//third_party:grpc.patch",
     ],
     sha256 = "b956598d8cbe168b5ee717b5dafa56563eb5201a947856a6688bbeac9cac4e1f",
@@ -166,7 +167,7 @@ http_archive(
         # Currently we can't upgrade gRPC past 1.30.0 without also bumping protobuf to 3.12.0+:
         # https://github.com/grpc/grpc/issues/23311.
         #
-        # Inspecting the contents of this archive, the version is 1.27.0-dev.
+        # Inspecting the contents of this archive, the version is v1.27.0-dev.
         "http://mirror.tensorflow.org/github.com/grpc/grpc/archive/b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd.tar.gz",
         "https://github.com/grpc/grpc/archive/b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd.tar.gz",
     ],
