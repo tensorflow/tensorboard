@@ -6,7 +6,7 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "inlineSourceMap": true,
-    "lib": ["dom", "dom.iterable", "es2021"],
+    "lib": ["dom", "es2021", "dom.iterable"],
     "moduleResolution": "node",
     "module": "es2022",
     "noFallthroughCasesInSwitch": true,
