@@ -45,6 +45,10 @@ DEFAULT_PORT = 6006
 # transition to 'text/javascript'.
 JS_MIMETYPES = ["text/javascript", "application/javascript"]
 JS_CACHE_EXPIRATION_IN_SECS = 86400
+# Th paths that the application should be served at
+# Note that paths other than "/" should NOT end in '/' because trailing '/'
+# characters are removed by the serving logic in tensorboard/backend/application.py
+APP_PATHS = ["/", "/flags"]
 
 
 class CorePlugin(base_plugin.TBPlugin):
@@ -109,17 +113,34 @@ class CorePlugin(base_plugin.TBPlugin):
                     content = zip_.read(path)
                     # Opt out of gzipping index.html
                     if path == "index.html":
-                        apps["/" + path] = functools.partial(
-                            self._serve_index, content
-                        )
+                        for app_path in APP_PATHS:
+                            path_with_slash = (
+                                app_path
+                                if app_path.endswith("/")
+                                else app_path + "/"
+                            )
+                            apps[path_with_slash + path] = functools.partial(
+                                self._serve_index, content, app_path
+                            )
                         continue
 
                     gzipped_asset_bytes = _gzip(content)
                     wsgi_app = functools.partial(
                         self._serve_asset, path, gzipped_asset_bytes
                     )
-                    apps["/" + path] = wsgi_app
-        apps["/"] = apps["/index.html"]
+                    for app_path in APP_PATHS:
+                        path_with_slash = (
+                            app_path
+                            if app_path.endswith("/")
+                            else app_path + "/"
+                        )
+                        apps[path_with_slash + path] = wsgi_app
+        for app_path in APP_PATHS:
+            if app_path.endswith("/"):
+                apps[app_path] = apps[app_path + "index.html"]
+            else:
+                apps[app_path] = apps[app_path + "/index.html"]
+                apps[app_path] = apps[app_path]
         return apps
 
     @wrappers.Request.application
@@ -151,21 +172,23 @@ class CorePlugin(base_plugin.TBPlugin):
         )
 
     @wrappers.Request.application
-    def _serve_index(self, index_asset_bytes, request):
+    def _serve_index(self, index_asset_bytes, content_path, request):
         """Serves index.html content.
 
         Note that we opt out of gzipping index.html to write preamble before the
         resource content. This inflates the resource size from 2x kiB to 1xx
         kiB, but we require an ability to flush preamble with the HTML content.
         """
+        if not request.path.endswith("/"):
+            return utils.redirect(request.path + "/")
         relpath = (
             posixpath.relpath(self._path_prefix, request.script_root)
             if self._path_prefix
             else "."
         )
         meta_header = (
-            '<!doctype html><meta name="tb-relative-root" content="%s/">'
-            % relpath
+            '<!doctype html><meta name="tb-relative-root" content="%s%s">'
+            % (relpath, content_path)
         )
         content = meta_header.encode("utf-8") + index_asset_bytes
         # By passing content_encoding, disallow gzipping. Bloats the content

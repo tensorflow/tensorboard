@@ -40,10 +40,17 @@ export interface NavigateToExperiments {
   resetNamespacedState?: boolean;
 }
 
+export interface NavigateToFlags {
+  routeKind: RouteKind.FLAGS;
+  routeParams: {},
+  resetNamespacedState?: boolean;
+}
+
 export type ProgrammaticalNavigation =
   | NavigateToExperiment
   | NavigateToCompare
-  | NavigateToExperiments;
+  | NavigateToExperiments
+  | NavigateToFlags;
 
 export interface NavigationLambda {
   actionCreator: ActionCreator<string, Creator>;
