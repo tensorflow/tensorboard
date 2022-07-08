@@ -15,11 +15,11 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {MatIconModule} from '@angular/material/icon';
-import {VisSelectedTimeWarningComponent} from './vis_selected_time_warning_component';
+import {VisLinkedTimeSelectionWarningComponent} from './vis_linked_time_selection_warning_component';
 
 @NgModule({
-  declarations: [VisSelectedTimeWarningComponent],
-  exports: [VisSelectedTimeWarningComponent],
+  declarations: [VisLinkedTimeSelectionWarningComponent],
+  exports: [VisLinkedTimeSelectionWarningComponent],
   imports: [CommonModule, MatIconModule],
 })
-export class VisSelectedTimeWarningModule {}
+export class VisLinkedTimeSelectionWarningModule {}

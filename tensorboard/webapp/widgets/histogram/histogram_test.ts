@@ -1093,9 +1093,9 @@ describe('histogram test', () => {
     });
 
     describe('multi step range updated on click', () => {
-      let onSelectTimeChangedSpy: jasmine.Spy;
+      let onLinkedTimeSelectionChangedSpy: jasmine.Spy;
       function createHistogramComponent() {
-        onSelectTimeChangedSpy = jasmine.createSpy();
+        onLinkedTimeSelectionChangedSpy = jasmine.createSpy();
         const fixture = createComponent('foo', [
           buildHistogramDatum({step: 0, wallTime: 100}),
           buildHistogramDatum({step: 5, wallTime: 400}),
@@ -1105,7 +1105,7 @@ describe('histogram test', () => {
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
         fixture.componentInstance.onLinkedTimeSelectionChanged =
-          onSelectTimeChangedSpy;
+          onLinkedTimeSelectionChangedSpy;
 
         return fixture;
       }
@@ -1120,7 +1120,7 @@ describe('histogram test', () => {
 
         histograms[3].triggerEventHandler('click', null);
         fixture.detectChanges();
-        expect(onSelectTimeChangedSpy).toHaveBeenCalledWith({
+        expect(onLinkedTimeSelectionChangedSpy).toHaveBeenCalledWith({
           start: {step: 5},
           end: {step: 20},
         });
@@ -1136,7 +1136,7 @@ describe('histogram test', () => {
 
         histograms[0].triggerEventHandler('click', null);
         fixture.detectChanges();
-        expect(onSelectTimeChangedSpy).toHaveBeenCalledWith({
+        expect(onLinkedTimeSelectionChangedSpy).toHaveBeenCalledWith({
           start: {step: 0},
           end: {step: 5},
         });
@@ -1155,7 +1155,7 @@ describe('histogram test', () => {
 
         histograms[0].triggerEventHandler('click', null);
         fixture.detectChanges();
-        expect(onSelectTimeChangedSpy).toHaveBeenCalledWith({
+        expect(onLinkedTimeSelectionChangedSpy).toHaveBeenCalledWith({
           start: {step: 0},
           end: {step: 10},
         });
@@ -1174,7 +1174,7 @@ describe('histogram test', () => {
 
         histograms[3].triggerEventHandler('click', null);
         fixture.detectChanges();
-        expect(onSelectTimeChangedSpy).toHaveBeenCalledWith({
+        expect(onLinkedTimeSelectionChangedSpy).toHaveBeenCalledWith({
           start: {step: 5},
           end: {step: 20},
         });
@@ -1193,7 +1193,7 @@ describe('histogram test', () => {
 
         histograms[2].triggerEventHandler('click', null);
         fixture.detectChanges();
-        expect(onSelectTimeChangedSpy).not.toHaveBeenCalled();
+        expect(onLinkedTimeSelectionChangedSpy).not.toHaveBeenCalled();
       });
 
       it('does not trigger select time action when clicked step is same as start step', () => {
@@ -1209,23 +1209,23 @@ describe('histogram test', () => {
 
         histograms[1].triggerEventHandler('click', null);
         fixture.detectChanges();
-        expect(onSelectTimeChangedSpy).not.toHaveBeenCalled();
+        expect(onLinkedTimeSelectionChangedSpy).not.toHaveBeenCalled();
       });
     });
 
     describe('fob deselect', () => {
-      it('toggles SelectTime when in single selection', () => {
+      it('toggles linked time when in single selection', () => {
         const fixture = createComponent('foo', [
           buildHistogramDatum({step: 0, wallTime: 100}),
           buildHistogramDatum({step: 5, wallTime: 400}),
           buildHistogramDatum({step: 10, wallTime: 400}),
         ]);
-        const onLinkedTimeToggleSpy = jasmine.createSpy();
+        const onLinkedTimeToggledSpy = jasmine.createSpy();
         fixture.componentInstance.timeSelection = {
           start: {step: 5},
           end: null,
         };
-        fixture.componentInstance.onLinkedTimeToggled = onLinkedTimeToggleSpy;
+        fixture.componentInstance.onLinkedTimeToggled = onLinkedTimeToggledSpy;
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
@@ -1234,7 +1234,7 @@ describe('histogram test', () => {
         ).componentInstance;
         fobComponent.fobRemoved.emit();
 
-        expect(onLinkedTimeToggleSpy).toHaveBeenCalledOnceWith();
+        expect(onLinkedTimeToggledSpy).toHaveBeenCalledOnceWith();
       });
     });
   });

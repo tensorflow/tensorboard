@@ -305,7 +305,7 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
    * selected, clicking on a histogram step outside that range will expand the range to
    * include the clicked step.
    */
-  onSelectTimeRangeChange(datum: HistogramDatum) {
+   onLinkedTimeRangeChanged(datum: HistogramDatum) {
     if (!this.isTimeSelectionEnabled(this.timeSelection)) {
       return;
     }

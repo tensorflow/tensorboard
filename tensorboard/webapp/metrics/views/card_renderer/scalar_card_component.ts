@@ -47,7 +47,7 @@ import {
   ScalarCardSeriesMetadataMap,
   SelectedStepRunData,
 } from './scalar_card_types';
-import {ViewSelectedTime} from './utils';
+import {TimeSelectionView} from './utils';
 
 type ScalarTooltipDatum = TooltipDatum<
   ScalarCardSeriesMetadata & {
@@ -84,7 +84,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() xScaleType!: ScaleType;
   @Input() useDarkMode!: boolean;
   @Input() forceSvg!: boolean;
-  @Input() linkedTimeSelection!: ViewSelectedTime | null;
+  @Input() linkedTimeSelection!: TimeSelectionView | null;
   @Input() stepSelectorTimeSelection!: TimeSelection;
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
@@ -214,7 +214,7 @@ export class ScalarCardComponent<Downloader> {
     };
   }
 
-  getSelectedTimeTableData(): SelectedStepRunData[] {
+  getTimeSelectionTableData(): SelectedStepRunData[] {
     if (
       this.linkedTimeSelection === null &&
       this.stepSelectorTimeSelection === null

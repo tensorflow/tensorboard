@@ -78,8 +78,7 @@ import {
       "
       [isScalarStepSelectorEnabled]="isScalarStepSelectorEnabled$ | async"
       [isLinkedTimeEnabled]="isLinkedTimeEnabled$ | async"
-      [selectedTime]="selectedTime$ | async"
-      [useRangeSelectTime]="useRangeSelectTime$ | async"
+      [linkedTimeSelection]="linkedTimeSelection$ | async"
       [stepMinMax]="stepMinMax$ | async"
       (linkedTimeToggled)="onLinkedTimeToggled()"
       (linkedTimeSelectionChanged)="onLinkedTimeSelectionChanged($event)"
@@ -103,13 +102,10 @@ export class SettingsViewContainer {
   readonly isScalarStepSelectorEnabled$: Observable<boolean> =
     this.store.select(selectors.getMetricsStepSelectorEnabled);
   readonly isLinkedTimeEnabled$: Observable<boolean> = this.store.select(
-    selectors.getMetricsSelectTimeEnabled
+    selectors.getMetricsLinkedTimeEnabled
   );
-  readonly useRangeSelectTime$: Observable<boolean> = this.store.select(
-    selectors.getMetricsUseRangeSelectTime
-  );
-  readonly selectedTime$ = this.store.select(
-    selectors.getMetricsSelectedTimeSetting
+  readonly linkedTimeSelection$ = this.store.select(
+    selectors.getMetricsLinkedTimeSelectionSetting
   );
   readonly stepMinMax$ = this.store.select(selectors.getMetricsStepMinMax);
 

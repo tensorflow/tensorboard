@@ -83,7 +83,7 @@ export class CardFobControllerComponent {
   mouseMove(event: MouseEvent) {
     if (this.currentDraggingFob === Fob.NONE) return;
 
-    const newLinkedTime = this.timeSelection;
+    const newLinkedTimeSelection = this.timeSelection;
     let newStep: number | null = null;
     const mousePosition = this.getMousePositionFromEvent(event);
     const movement =
@@ -106,16 +106,16 @@ export class CardFobControllerComponent {
       if (newStep <= this.timeSelection.start.step) {
         newStep = this.timeSelection.start.step;
       }
-      newLinkedTime.end!.step = newStep;
+      newLinkedTimeSelection.end!.step = newStep;
     } else {
       // Do not let the start fob pass the end fob.
       // TODO: add swapping logic here to allow continued dragging
       if (this.timeSelection.end && newStep >= this.timeSelection.end.step) {
         newStep = this.timeSelection.end.step;
       }
-      newLinkedTime.start.step = newStep;
+      newLinkedTimeSelection.start.step = newStep;
     }
-    this.onTimeSelectionChanged.emit(newLinkedTime);
+    this.onTimeSelectionChanged.emit(newLinkedTimeSelection);
   }
 
   isDraggingLower(position: number, movement: number): boolean {
@@ -174,7 +174,7 @@ export class CardFobControllerComponent {
     // Types empty string in fob.
     if (step === null) {
       // Removes fob on range selection and sets step to minimum on single selection.
-      if (this.timeSelection.end !== null) {
+    if (this.timeSelection.end !== null) {
         this.onFobRemoved(fob);
       } else {
         // TODO(jieweiwu): sets start step to minum.
@@ -183,26 +183,26 @@ export class CardFobControllerComponent {
       return;
     }
 
-    let newSelectedTime = {...this.timeSelection};
+    let newTimeSelection = {...this.timeSelection};
     if (fob === Fob.START) {
-      newSelectedTime.start = {step};
+      newTimeSelection.start = {step};
     } else if (fob === Fob.END) {
-      newSelectedTime.end = {step};
+      newTimeSelection.end = {step};
     }
 
     if (
-      newSelectedTime.end !== null &&
-      newSelectedTime.start.step > newSelectedTime.end.step
+      newTimeSelection.end !== null &&
+      newTimeSelection.start.step > newTimeSelection.end.step
     ) {
       // The Start Step is now greater than the End Step - flip them.
-      newSelectedTime = {
-        start: newSelectedTime.end,
-        end: newSelectedTime.start,
+      newTimeSelection = {
+        start: newTimeSelection.end,
+        end: newTimeSelection.start,
       };
     }
 
     // TODO(jieweiwu): Only emits action when selected time is changed.
-    this.onTimeSelectionChanged.emit(newSelectedTime);
+    this.onTimeSelectionChanged.emit(newTimeSelection);
   }
 
   /**

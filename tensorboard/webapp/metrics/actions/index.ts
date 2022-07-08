@@ -185,10 +185,6 @@ export const linkedTimeToggled = createAction(
   '[Metrics] Linked Time Enable Toggle'
 );
 
-export const useRangeSelectTimeToggled = createAction(
-  '[Metrics] Use Range Select Time Toggle'
-);
-
 export const stepSelectorToggled = createAction(
   '[Metrics] Time Selector Enable Toggle'
 );

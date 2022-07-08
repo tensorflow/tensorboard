@@ -29,7 +29,7 @@ import {DataDownloadModule} from './data_download_module';
 import {ScalarCardComponent} from './scalar_card_component';
 import {ScalarCardContainer} from './scalar_card_container';
 import {ScalarCardFobController} from './scalar_card_fob_controller';
-import {VisSelectedTimeWarningModule} from './vis_selected_time_warning_module';
+import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_warning_module';
 
 @NgModule({
   declarations: [
@@ -52,7 +52,7 @@ import {VisSelectedTimeWarningModule} from './vis_selected_time_warning_module';
     MatProgressSpinnerModule,
     ResizeDetectorModule,
     TruncatedPathModule,
-    VisSelectedTimeWarningModule,
+    VisLinkedTimeSelectionWarningModule,
   ],
 })
 export class ScalarCardModule {}

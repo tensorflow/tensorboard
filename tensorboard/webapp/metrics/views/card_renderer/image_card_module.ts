@@ -22,7 +22,7 @@ import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {ImageCardComponent} from './image_card_component';
 import {ImageCardContainer} from './image_card_container';
 import {RunNameModule} from './run_name_module';
-import {VisSelectedTimeWarningModule} from './vis_selected_time_warning_module';
+import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_warning_module';
 
 @NgModule({
   declarations: [ImageCardContainer, ImageCardComponent],
@@ -35,7 +35,7 @@ import {VisSelectedTimeWarningModule} from './vis_selected_time_warning_module';
     MatSliderModule,
     RunNameModule,
     TruncatedPathModule,
-    VisSelectedTimeWarningModule,
+    VisLinkedTimeSelectionWarningModule,
   ],
 })
 export class ImageCardModule {}

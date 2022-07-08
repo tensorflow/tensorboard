@@ -44,7 +44,7 @@ import {
   getDarkModeEnabled,
   getExperimentIdForRunId,
   getExperimentIdToExperimentAliasMap,
-  getMetricsSelectedTime,
+  getMetricsLinkedTimeSelection,
   getMetricsStepSelectorEnabled,
   getRun,
   getRunColorMap,
@@ -83,9 +83,9 @@ import {
   SeriesType,
 } from './scalar_card_types';
 import {
-  maybeClipSelectedTime,
+  maybeClipLinkedTimeSelection,
   partitionSeries,
-  ViewSelectedTime,
+  TimeSelectionView,
 } from './utils';
 
 type ScalarCardMetadata = CardMetadata & {
@@ -177,7 +177,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   isPinned$?: Observable<boolean>;
   dataSeries$?: Observable<ScalarCardDataSeries[]>;
   chartMetadataMap$?: Observable<ScalarCardSeriesMetadataMap>;
-  linkedTimeSelection$?: Observable<ViewSelectedTime | null>;
+  linkedTimeSelection$?: Observable<TimeSelectionView | null>;
   stepSelectorTimeSelection$?: Observable<TimeSelection | null>;
 
   onVisibilityChange({visible}: {visible: boolean}) {
@@ -375,15 +375,15 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
     this.linkedTimeSelection$ = combineLatest([
       partitionedSeries$,
-      this.store.select(getMetricsSelectedTime),
+      this.store.select(getMetricsLinkedTimeSelection),
       this.store.select(getMetricsXAxisType),
     ]).pipe(
-      map(([series, selectedTime, xAxisType]) => {
-        if (xAxisType !== XAxisType.STEP || !selectedTime) return null;
+      map(([series, timeSelection, xAxisType]) => {
+        if (xAxisType !== XAxisType.STEP || !timeSelection) return null;
 
         const {minStep, maxStep} = this.getMinMaxStepInSeries(series);
 
-        return maybeClipSelectedTime(selectedTime, minStep, maxStep);
+        return maybeClipLinkedTimeSelection(timeSelection, minStep, maxStep);
       })
     );
 

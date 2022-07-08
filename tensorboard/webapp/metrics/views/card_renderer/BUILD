@@ -95,7 +95,7 @@ tf_ng_module(
     deps = [
         ":run_name",
         ":utils",
-        ":vis_selected_time_warning",
+        ":vis_linked_time_selection_warning",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
@@ -141,7 +141,7 @@ tf_ng_module(
     deps = [
         ":run_name",
         ":utils",
-        ":vis_selected_time_warning",
+        ":vis_linked_time_selection_warning",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
@@ -192,19 +192,19 @@ tf_ng_module(
 )
 
 tf_sass_binary(
-    name = "vis_selected_time_warning_styles",
-    src = "vis_selected_time_warning_component.scss",
+    name = "vis_linked_time_selection_warning_styles",
+    src = "vis_linked_time_selection_warning_component.scss",
     deps = ["//tensorboard/webapp:angular_material_sass_deps"],
 )
 
 tf_ng_module(
-    name = "vis_selected_time_warning",
+    name = "vis_linked_time_selection_warning",
     srcs = [
-        "vis_selected_time_warning_component.ts",
-        "vis_selected_time_warning_module.ts",
+        "vis_linked_time_selection_warning_component.ts",
+        "vis_linked_time_selection_warning_module.ts",
     ],
     assets = [
-        ":vis_selected_time_warning_styles",
+        ":vis_linked_time_selection_warning_styles",
     ],
     deps = [
         "//tensorboard/webapp/angular:expect_angular_material_icon",
@@ -271,7 +271,7 @@ tf_ng_module(
         ":data_download_dialog",
         ":scalar_card_types",
         ":utils",
-        ":vis_selected_time_warning",
+        ":vis_linked_time_selection_warning",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
@@ -335,7 +335,7 @@ tf_ts_library(
         ":scalar_card",
         ":scalar_card_types",
         ":utils",
-        ":vis_selected_time_warning",
+        ":vis_linked_time_selection_warning",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",

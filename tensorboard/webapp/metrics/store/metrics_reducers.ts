@@ -52,7 +52,7 @@ import {
   createPluginDataWithLoadable,
   createRunToLoadState,
   generateNextCardStepIndex,
-  generateNextCardStepIndexFromSelectedTime,
+  generateNextCardStepIndexFromLinkedTimeSelection,
   generateNextPinnedCardMappings,
   getCardId,
   getRunIds,
@@ -257,10 +257,10 @@ const {initialState, reducers: namespaceContextedReducer} =
       cardStepIndex: {},
       tagFilter: '',
       tagGroupExpanded: new Map<string, boolean>(),
-      selectedTime: null,
-      selectTimeEnabled: false,
+      linkedTimeSelection: null,
+      linkedTimeEnabled: false,
       stepSelectorEnabled: false,
-      useRangeSelectTime: false,
+      linkedTimeRangeEnabled: false,
       filteredPluginTypes: new Set(),
       stepMinMax: {
         min: Infinity,
@@ -950,31 +950,31 @@ const reducer = createReducer(
     };
   }),
   on(actions.linkedTimeToggled, (state) => {
-    const nextSelectTimeEnabled = !state.selectTimeEnabled;
+    const nextLinkediTimeEnabled = !state.linkedTimeEnabled;
     let nextCardStepIndexMap = {...state.cardStepIndex};
-    let nextSelectedTime = state.selectedTime;
+    let nextLinkedTimeSelection = state.linkedTimeSelection;
 
-    // Updates cardStepIndex only when toggle to enable selectedTime.
-    if (nextSelectTimeEnabled) {
+    // Updates cardStepIndex only when toggle to enable linked time.
+    if (nextLinkediTimeEnabled) {
       const {min} = state.stepMinMax;
       const startStep = min === Infinity ? 0 : min;
-      nextSelectedTime = state.selectedTime ?? {
+      nextLinkedTimeSelection = state.linkedTimeSelection ?? {
         start: {step: startStep},
         end: null,
       };
-      nextCardStepIndexMap = generateNextCardStepIndexFromSelectedTime(
+      nextCardStepIndexMap = generateNextCardStepIndexFromLinkedTimeSelection(
         state.cardStepIndex,
         state.cardMetadataMap,
         state.timeSeriesData,
-        nextSelectedTime
+        nextLinkedTimeSelection
       );
     }
 
     return {
       ...state,
       cardStepIndex: nextCardStepIndexMap,
-      selectTimeEnabled: nextSelectTimeEnabled,
-      selectedTime: nextSelectedTime,
+      linkedTimeEnabled: nextLinkediTimeEnabled,
+      linkedTimeSelection: nextLinkedTimeSelection,
     };
   }),
   on(actions.linkedTimeSelectionChanged, (state, change) => {
@@ -987,27 +987,28 @@ const reducer = createReducer(
 
     // If there is no endStep then current selection state is single.
     // Otherwise selection state is range.
-    const useRangeSelectTime = nextEndStep !== undefined;
+    const linkedTimeRangeEnabled = nextEndStep !== undefined;
 
-    const selectedTime = {
+    const linkedTimeSelection = {
       start: {
         step: nextStartStep,
       },
       end,
     };
-    const nextCardStepIndexMap = generateNextCardStepIndexFromSelectedTime(
-      state.cardStepIndex,
-      state.cardMetadataMap,
-      state.timeSeriesData,
-      selectedTime
-    );
+    const nextCardStepIndexMap =
+      generateNextCardStepIndexFromLinkedTimeSelection(
+        state.cardStepIndex,
+        state.cardMetadataMap,
+        state.timeSeriesData,
+        linkedTimeSelection
+      );
 
     return {
       ...state,
-      selectTimeEnabled: true,
-      selectedTime,
+      linkedTimeEnabled: true,
+      linkedTimeSelection,
       cardStepIndex: nextCardStepIndexMap,
-      useRangeSelectTime,
+      linkedTimeRangeEnabled,
     };
   }),
   on(actions.stepSelectorToggled, (state) => {
@@ -1016,16 +1017,10 @@ const reducer = createReducer(
       stepSelectorEnabled: !state.stepSelectorEnabled,
     };
   }),
-  on(actions.useRangeSelectTimeToggled, (state) => {
-    return {
-      ...state,
-      useRangeSelectTime: !state.useRangeSelectTime,
-    };
-  }),
   on(actions.timeSelectionCleared, (state) => {
     return {
       ...state,
-      selectedTime: null,
+      linkedTimeSelection: null,
     };
   }),
   on(actions.metricsToggleVisiblePlugin, (state, {plugin}) => {

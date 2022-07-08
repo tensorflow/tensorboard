@@ -51,12 +51,12 @@ import {
   getMetricsImageCardSteps,
   getMetricsImageContrastInMilli,
   getMetricsImageShowActualSize,
-  getMetricsSelectedTime,
+  getMetricsLinkedTimeSelection,
 } from '../../store';
 import {CardId, CardMetadata} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
-import {maybeClipSelectedTime, ViewSelectedTime} from './utils';
+import {maybeClipLinkedTimeSelection, TimeSelectionView} from './utils';
 
 const DISTANCE_RATIO = 0.1;
 
@@ -128,7 +128,7 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
   isClosestStepHighlighted$?: Observable<boolean | null>;
   steps$?: Observable<number[]>;
   isPinned$?: Observable<boolean>;
-  linkedTimeSelection$?: Observable<ViewSelectedTime | null>;
+  linkedTimeSelection$?: Observable<TimeSelectionView | null>;
   selectedSteps$?: Observable<number[]>;
   brightnessInMilli$ = this.store.select(getMetricsImageBrightnessInMilli);
   contrastInMilli$ = this.store.select(getMetricsImageContrastInMilli);
@@ -254,20 +254,26 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
 
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
 
-    this.linkedTimeSelection$ = this.store.select(getMetricsSelectedTime).pipe(
-      combineLatestWith(this.steps$),
-      map(([linkedTimeSelection, steps]) => {
-        if (!linkedTimeSelection) return null;
+    this.linkedTimeSelection$ = this.store
+      .select(getMetricsLinkedTimeSelection)
+      .pipe(
+        combineLatestWith(this.steps$),
+        map(([linkedTimeSelection, steps]) => {
+          if (!linkedTimeSelection) return null;
 
-        let minStep = Infinity;
-        let maxStep = -Infinity;
-        for (const step of steps) {
-          minStep = Math.min(step, minStep);
-          maxStep = Math.max(step, maxStep);
-        }
-        return maybeClipSelectedTime(linkedTimeSelection, minStep, maxStep);
-      })
-    );
+          let minStep = Infinity;
+          let maxStep = -Infinity;
+          for (const step of steps) {
+            minStep = Math.min(step, minStep);
+            maxStep = Math.max(step, maxStep);
+          }
+          return maybeClipLinkedTimeSelection(
+            linkedTimeSelection,
+            minStep,
+            maxStep
+          );
+        })
+      );
 
     // TODO(japie1235813): Reuses `getSelectedSteps` in store_utils.
     this.selectedSteps$ = this.linkedTimeSelection$.pipe(

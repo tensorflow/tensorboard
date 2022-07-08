@@ -43,7 +43,7 @@ class TestableComponent {
   @Input() cardFobAdapter!: CardFobAdapter;
   @Input() showExtendedLine?: Boolean;
 
-  @Input() onTimeSelectionChanged!: (newLinkedTime: TimeSelection) => void;
+  @Input() onTimeSelectionChanged!: (newTimeSelection: TimeSelection) => void;
   @Input() onTimeSelectionToggled!: () => void;
 }
 

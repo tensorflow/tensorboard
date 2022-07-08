@@ -21,9 +21,9 @@ limitations under the License.
       title="{{ tag }}"
       value="{{ title }}"
     ></tb-truncated-path>
-    <vis-selected-time-warning
+    <vis-linked-time-selection-warning
       [isClipped]="linkedTimeSelection && linkedTimeSelection.clipped"
-    ></vis-selected-time-warning>
+    ></vis-linked-time-selection-warning>
   </span>
   <span class="controls">
     <button
@@ -172,7 +172,7 @@ limitations under the License.
   <div class="data-table-container">
     <tb-data-table
       [headers]="dataHeaders"
-      [data]="getSelectedTimeTableData()"
+      [data]="getTimeSelectionTableData()"
     ></tb-data-table>
   </div>
 </ng-container>
