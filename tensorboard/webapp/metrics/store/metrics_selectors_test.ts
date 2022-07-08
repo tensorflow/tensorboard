@@ -759,70 +759,70 @@ describe('metrics selectors', () => {
     });
   });
 
-  describe('getMetricsSelectedTimeSetting', () => {
+  describe('getMetricsLinkedTimeSelectionSetting', () => {
     beforeEach(() => {
-      selectors.getMetricsSelectedTimeSetting.release();
+      selectors.getMetricsLinkedTimeSelectionSetting.release();
     });
 
-    it('returns value with start step from the dataset when selected time is null', () => {
+    it('returns value with start step from the dataset when linked time selection is null', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
-          selectedTime: null,
+          linkedTimeSelection: null,
           stepMinMax: {
             min: 0,
             max: 1000,
           },
         })
       );
-      expect(selectors.getMetricsSelectedTimeSetting(state)).toEqual({
+      expect(selectors.getMetricsLinkedTimeSelectionSetting(state)).toEqual({
         start: {step: 0},
         end: null,
       });
     });
 
-    it('returns value when selected time is present', () => {
+    it('returns value when linked time selection is present', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
-          selectedTime: {
+          linkedTimeSelection: {
             start: {step: 0},
             end: {step: 1},
           },
         })
       );
-      expect(selectors.getMetricsSelectedTimeSetting(state)).toEqual({
+      expect(selectors.getMetricsLinkedTimeSelectionSetting(state)).toEqual({
         start: {step: 0},
         end: {step: 1},
       });
     });
   });
 
-  describe('getMetricsSelectedTime', () => {
+  describe('getMetricsLinkedTimeSelection', () => {
     beforeEach(() => {
-      selectors.getMetricsSelectedTime.release();
+      selectors.getMetricsLinkedTimeSelection.release();
     });
 
-    it('returns `null` when selectTime is disabled even when value exists', () => {
+    it('returns `null` when linkedTime is disabled even when value exists', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
-          selectedTime: {start: {step: 1}, end: {step: 1}},
-          selectTimeEnabled: false,
+          linkedTimeSelection: {start: {step: 1}, end: {step: 1}},
+          linkedTimeEnabled: false,
         })
       );
-      expect(selectors.getMetricsSelectedTime(state)).toBeNull();
+      expect(selectors.getMetricsLinkedTimeSelection(state)).toBeNull();
     });
 
-    it('returns value when selected time is present', () => {
+    it('returns value when linked time selection is present', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
-          selectedTime: {
+          linkedTimeSelection: {
             start: {step: 0},
             end: {step: 100},
           },
-          selectTimeEnabled: true,
-          useRangeSelectTime: true,
+          linkedTimeEnabled: true,
+          linkedTimeRangeEnabled: true,
         })
       );
-      expect(selectors.getMetricsSelectedTime(state)).toEqual({
+      expect(selectors.getMetricsLinkedTimeSelection(state)).toEqual({
         start: {step: 0},
         end: {step: 100},
       });
@@ -831,15 +831,15 @@ describe('metrics selectors', () => {
     it('removes `end` when using single step mode', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
-          selectedTime: {
+          linkedTimeSelection: {
             start: {step: 0},
             end: {step: 100},
           },
-          selectTimeEnabled: true,
-          useRangeSelectTime: false,
+          linkedTimeEnabled: true,
+          linkedTimeRangeEnabled: false,
         })
       );
-      expect(selectors.getMetricsSelectedTime(state)).toEqual({
+      expect(selectors.getMetricsLinkedTimeSelection(state)).toEqual({
         start: {step: 0},
         end: null,
       });

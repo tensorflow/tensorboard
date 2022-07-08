@@ -68,8 +68,7 @@ export class SettingsViewComponent {
   @Input() isLinkedTimeEnabled!: boolean;
   @Input() isScalarStepSelectorFeatureEnabled!: boolean;
   @Input() isScalarStepSelectorEnabled!: boolean;
-  @Input() useRangeSelectTime!: boolean;
-  @Input() selectedTime!: TimeSelection | null;
+  @Input() linkedTimeSelection!: TimeSelection | null;
   @Input() stepMinMax!: {min: number; max: number};
 
   @Output() linkedTimeToggled = new EventEmitter<void>();

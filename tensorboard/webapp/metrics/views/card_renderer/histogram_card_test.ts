@@ -47,7 +47,7 @@ import {XAxisType} from '../../types';
 import {HistogramCardComponent} from './histogram_card_component';
 import {HistogramCardContainer} from './histogram_card_container';
 import {RunNameModule} from './run_name_module';
-import {VisSelectedTimeWarningModule} from './vis_selected_time_warning_module';
+import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_warning_module';
 
 @Component({
   selector: 'tb-histogram',
@@ -93,7 +93,7 @@ describe('histogram card', () => {
         MatProgressSpinnerModule,
         RunNameModule,
         TruncatedPathModule,
-        VisSelectedTimeWarningModule,
+        VisLinkedTimeSelectionWarningModule,
       ],
       declarations: [
         HistogramCardComponent,
@@ -112,7 +112,7 @@ describe('histogram card', () => {
     store.overrideSelector(getExperimentIdForRunId, null);
     store.overrideSelector(getExperimentIdToExperimentAliasMap, {});
     store.overrideSelector(getRun, null);
-    store.overrideSelector(selectors.getMetricsSelectedTime, null);
+    store.overrideSelector(selectors.getMetricsLinkedTimeSelection, null);
   });
 
   it('renders empty message when there is no data', () => {
@@ -278,7 +278,7 @@ describe('histogram card', () => {
   describe('linked time', () => {
     it('passes null when no time is selected', () => {
       provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
-      store.overrideSelector(selectors.getMetricsSelectedTime, null);
+      store.overrideSelector(selectors.getMetricsLinkedTimeSelection, null);
       const fixture = createHistogramCardContainer();
       fixture.detectChanges();
 
@@ -290,7 +290,7 @@ describe('histogram card', () => {
 
     it('passes closest step linked time parameter to histogram viz', () => {
       provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
-      store.overrideSelector(selectors.getMetricsSelectedTime, {
+      store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
         start: {step: 5},
         end: null,
       });
@@ -309,7 +309,7 @@ describe('histogram card', () => {
 
     it('passes range step linked time parameter', () => {
       provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
-      store.overrideSelector(selectors.getMetricsSelectedTime, {
+      store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
         start: {step: 5},
         end: {step: 10},
       });
@@ -325,8 +325,8 @@ describe('histogram card', () => {
       });
     });
 
-    describe('selectedTime beyond range of data', () => {
-      it('clips the selectedTime to max step', () => {
+    describe('time selection beyond range of data', () => {
+      it('clips the time selection to max step', () => {
         provideMockCardSeriesData(
           selectSpy,
           PluginType.HISTOGRAMS,
@@ -338,7 +338,7 @@ describe('histogram card', () => {
             buildHistogramStepData({step: 15}),
           ]
         );
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 18},
           end: {step: 20},
         });
@@ -354,7 +354,7 @@ describe('histogram card', () => {
         });
       });
 
-      it('clips the selectedTime to min step when it is too small', () => {
+      it('clips the time selection to min step when it is too small', () => {
         provideMockCardSeriesData(
           selectSpy,
           PluginType.HISTOGRAMS,
@@ -366,7 +366,7 @@ describe('histogram card', () => {
             buildHistogramStepData({step: 200}),
           ]
         );
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 18},
           end: {step: 20},
         });
@@ -382,7 +382,7 @@ describe('histogram card', () => {
         });
       });
 
-      it('renders warning when the selectedTime is clipped', () => {
+      it('renders warning when the time selection is clipped', () => {
         provideMockCardSeriesData(
           selectSpy,
           PluginType.HISTOGRAMS,
@@ -394,7 +394,7 @@ describe('histogram card', () => {
             buildHistogramStepData({step: 200}),
           ]
         );
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 18},
           end: {step: 20},
         });
@@ -402,18 +402,22 @@ describe('histogram card', () => {
         fixture.detectChanges();
 
         const indicatorBefore = fixture.debugElement.query(
-          By.css('vis-selected-time-warning mat-icon[data-value="clipped"]')
+          By.css(
+            'vis-linked-time-selection-warning mat-icon[data-value="clipped"]'
+          )
         );
         expect(indicatorBefore).toBeTruthy();
 
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 0},
           end: {step: 100},
         });
         store.refreshState();
         fixture.detectChanges();
         const indicatorAfter = fixture.debugElement.query(
-          By.css('vis-selected-time-warning mat-icon[data-value="clipped"]')
+          By.css(
+            'vis-linked-time-selection-warning mat-icon[data-value="clipped"]'
+          )
         );
         expect(indicatorAfter).toBeNull();
       });
@@ -435,7 +439,7 @@ describe('histogram card', () => {
       });
 
       it('renders warning when no data on the selected step', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 99},
           end: null,
         });
@@ -444,14 +448,14 @@ describe('histogram card', () => {
 
         const indicator = fixture.debugElement.query(
           By.css(
-            'vis-selected-time-warning mat-icon[data-value="closestStepHighlighted"]'
+            'vis-linked-time-selection-warning mat-icon[data-value="closestStepHighlighted"]'
           )
         );
         expect(indicator).toBeTruthy();
       });
 
       it('does not render warning when data exist on selected step', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 100},
           end: null,
         });
@@ -460,14 +464,14 @@ describe('histogram card', () => {
 
         const indicator = fixture.debugElement.query(
           By.css(
-            'vis-selected-time-warning mat-icon[data-value="closestStepHighlighted"]'
+            'vis-linked-time-selection-warning mat-icon[data-value="closestStepHighlighted"]'
           )
         );
         expect(indicator).toBeFalsy();
       });
 
-      it('does not render warning when selectedTime is clipped', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+      it('does not render warning when time selection is clipped', () => {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 49},
           end: null,
         });
@@ -476,14 +480,14 @@ describe('histogram card', () => {
 
         const indicator = fixture.debugElement.query(
           By.css(
-            'vis-selected-time-warning mat-icon[data-value="closestStepHighlighted"]'
+            'vis-linked-time-selection-warning mat-icon[data-value="closestStepHighlighted"]'
           )
         );
         expect(indicator).toBeFalsy();
       });
 
       it('does not render warning on range selection', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 99},
           end: {step: 102},
         });
@@ -492,7 +496,7 @@ describe('histogram card', () => {
 
         const indicator = fixture.debugElement.query(
           By.css(
-            'vis-selected-time-warning mat-icon[data-value="closestStepHighlighted"]'
+            'vis-linked-time-selection-warning mat-icon[data-value="closestStepHighlighted"]'
           )
         );
         expect(indicator).toBeFalsy();
@@ -500,7 +504,7 @@ describe('histogram card', () => {
 
       it('dispatches linkedTimeToggled when HistogramComponent emits the onLinkedTimeToggled event', () => {
         provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 5},
           end: null,
         });

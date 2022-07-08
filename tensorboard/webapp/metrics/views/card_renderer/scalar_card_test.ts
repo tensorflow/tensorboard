@@ -75,7 +75,10 @@ import {
   stepSelectorToggled,
 } from '../../actions';
 import {PluginType} from '../../data_source';
-import {getMetricsScalarSmoothing, getMetricsSelectedTime} from '../../store';
+import {
+  getMetricsLinkedTimeSelection,
+  getMetricsScalarSmoothing,
+} from '../../store';
 import {
   appStateFromMetricsState,
   buildMetricsState,
@@ -91,7 +94,7 @@ import {
   ScalarCardSeriesMetadata,
   SeriesType,
 } from './scalar_card_types';
-import {VisSelectedTimeWarningModule} from './vis_selected_time_warning_module';
+import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_warning_module';
 
 @Component({
   selector: 'line-chart',
@@ -203,7 +206,7 @@ describe('scalar card', () => {
     TOOLTIP_HEADER_COLUMN: By.css('table.tooltip th'),
     TOOLTIP_ROW: By.css('table.tooltip .tooltip-row'),
     HEADER_WARNING_CLIPPED: By.css(
-      'vis-selected-time-warning mat-icon[data-value="clipped"]'
+      'vis-linked-time-selection-warning mat-icon[data-value="clipped"]'
     ),
     LINKED_TIME_AXIS_FOB: By.css('.selected-time-fob'),
   };
@@ -280,7 +283,7 @@ describe('scalar card', () => {
         NoopAnimationsModule,
         ResizeDetectorTestingModule,
         TruncatedPathModule,
-        VisSelectedTimeWarningModule,
+        VisLinkedTimeSelectionWarningModule,
       ],
       declarations: [
         ScalarCardContainer,
@@ -2059,8 +2062,8 @@ describe('scalar card', () => {
   });
 
   describe('linked time feature integration', () => {
-    describe('selectedTime and dataset', () => {
-      it('shows clipped warning when selectedTime is outside the extent of dataset', fakeAsync(() => {
+    describe('time selection and dataset', () => {
+      it('shows clipped warning when time selection is outside the extent of dataset', fakeAsync(() => {
         const runToSeries = {
           run1: [buildScalarStepData({step: 10})],
           run2: [buildScalarStepData({step: 20})],
@@ -2073,7 +2076,7 @@ describe('scalar card', () => {
           null /* metadataOverride */,
           runToSeries
         );
-        store.overrideSelector(getMetricsSelectedTime, {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 0},
           end: {step: 5},
         });
@@ -2098,7 +2101,7 @@ describe('scalar card', () => {
           null /* metadataOverride */,
           runToSeries
         );
-        store.overrideSelector(getMetricsSelectedTime, {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 25},
           end: {step: 50},
         });
@@ -2108,7 +2111,7 @@ describe('scalar card', () => {
           fixture.debugElement.query(Selector.HEADER_WARNING_CLIPPED)
         ).toBeNull();
 
-        store.overrideSelector(getMetricsSelectedTime, {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: -10},
           end: {step: 15},
         });
@@ -2118,7 +2121,7 @@ describe('scalar card', () => {
           fixture.debugElement.query(Selector.HEADER_WARNING_CLIPPED)
         ).toBeNull();
 
-        store.overrideSelector(getMetricsSelectedTime, {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: -1000},
           end: {step: 1000},
         });
@@ -2129,7 +2132,7 @@ describe('scalar card', () => {
         ).toBeNull();
       }));
 
-      it('selects selectedTime to min extent when global setting is too small', fakeAsync(() => {
+      it('selects time selection to min extent when global setting is too small', fakeAsync(() => {
         const runToSeries = {
           run1: [buildScalarStepData({step: 10})],
           run2: [buildScalarStepData({step: 20})],
@@ -2142,7 +2145,7 @@ describe('scalar card', () => {
           null /* metadataOverride */,
           runToSeries
         );
-        store.overrideSelector(getMetricsSelectedTime, {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: -100},
           end: {step: 0},
         });
@@ -2157,7 +2160,7 @@ describe('scalar card', () => {
         ).toEqual('10');
       }));
 
-      it('selects selectedTime to max extent when global setting is too large', fakeAsync(() => {
+      it('selects time selection to max extent when global setting is too large', fakeAsync(() => {
         const runToSeries = {
           run1: [buildScalarStepData({step: 10})],
           run2: [buildScalarStepData({step: 20})],
@@ -2170,7 +2173,7 @@ describe('scalar card', () => {
           null /* metadataOverride */,
           runToSeries
         );
-        store.overrideSelector(getMetricsSelectedTime, {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 50},
           end: {step: 100},
         });
@@ -2208,7 +2211,7 @@ describe('scalar card', () => {
       });
 
       it('dispatches linkedTimeSelectionChanged action when fob is dragged', fakeAsync(() => {
-        store.overrideSelector(getMetricsSelectedTime, {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 20},
           end: null,
         });
@@ -2238,7 +2241,7 @@ describe('scalar card', () => {
       }));
 
       it('toggles linked time when single fob is deselected', fakeAsync(() => {
-        store.overrideSelector(getMetricsSelectedTime, {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 20},
           end: null,
         });
@@ -2270,7 +2273,7 @@ describe('scalar card', () => {
       });
 
       it('renders table', fakeAsync(() => {
-        store.overrideSelector(getMetricsSelectedTime, {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 20},
           end: null,
         });
@@ -2285,7 +2288,7 @@ describe('scalar card', () => {
       }));
 
       it('does not render table when disabled', fakeAsync(() => {
-        store.overrideSelector(getMetricsSelectedTime, null);
+        store.overrideSelector(getMetricsLinkedTimeSelection, null);
         const fixture = createComponent('card1');
         fixture.detectChanges();
 
@@ -2298,7 +2301,7 @@ describe('scalar card', () => {
     });
   });
 
-  describe('getSelectedTimeTableData', () => {
+  describe('getTimeSelectionTableData', () => {
     it('builds single selected step data object', fakeAsync(() => {
       const runToSeries = {
         run1: [
@@ -2327,7 +2330,7 @@ describe('scalar card', () => {
         ])
       );
 
-      store.overrideSelector(getMetricsSelectedTime, {
+      store.overrideSelector(getMetricsLinkedTimeSelection, {
         start: {step: 2},
         end: {step: 50},
       });
@@ -2339,7 +2342,7 @@ describe('scalar card', () => {
       fixture.detectChanges();
 
       const data =
-        scalarCardComponent.componentInstance.getSelectedTimeTableData();
+        scalarCardComponent.componentInstance.getTimeSelectionTableData();
 
       expect(data).toEqual([
         {
@@ -2359,7 +2362,7 @@ describe('scalar card', () => {
       ]);
     }));
 
-    it('selects closest points to selectedTime', fakeAsync(() => {
+    it('selects closest points to time selection', fakeAsync(() => {
       const runToSeries = {
         run1: [
           {wallTime: 1, value: 1, step: 1},
@@ -2387,7 +2390,7 @@ describe('scalar card', () => {
         ])
       );
 
-      store.overrideSelector(getMetricsSelectedTime, {
+      store.overrideSelector(getMetricsLinkedTimeSelection, {
         start: {step: 18},
         end: null,
       });
@@ -2399,13 +2402,13 @@ describe('scalar card', () => {
       fixture.detectChanges();
 
       const data =
-        scalarCardComponent.componentInstance.getSelectedTimeTableData();
+        scalarCardComponent.componentInstance.getTimeSelectionTableData();
 
       expect(data[0].STEP).toEqual(20);
       expect(data[1].STEP).toEqual(15);
     }));
 
-    it('selects largest points when selectedTime startStep is greater than any points step', fakeAsync(() => {
+    it('selects largest points when time selection startStep is greater than any points step', fakeAsync(() => {
       const runToSeries = {
         run1: [
           {wallTime: 1, value: 1, step: 1},
@@ -2433,7 +2436,7 @@ describe('scalar card', () => {
         ])
       );
 
-      store.overrideSelector(getMetricsSelectedTime, {
+      store.overrideSelector(getMetricsLinkedTimeSelection, {
         start: {step: 100},
         end: null,
       });
@@ -2445,13 +2448,13 @@ describe('scalar card', () => {
       fixture.detectChanges();
 
       const data =
-        scalarCardComponent.componentInstance.getSelectedTimeTableData();
+        scalarCardComponent.componentInstance.getTimeSelectionTableData();
 
       expect(data[0].STEP).toEqual(35);
       expect(data[1].STEP).toEqual(50);
     }));
 
-    it('selects smallest points when selectedTime startStep is less than any points step', fakeAsync(() => {
+    it('selects smallest points when time selection startStep is less than any points step', fakeAsync(() => {
       const runToSeries = {
         run1: [
           {wallTime: 1, value: 1, step: 10},
@@ -2478,7 +2481,7 @@ describe('scalar card', () => {
           ['run2', true],
         ])
       );
-      store.overrideSelector(getMetricsSelectedTime, {
+      store.overrideSelector(getMetricsLinkedTimeSelection, {
         start: {step: 1},
         end: null,
       });
@@ -2490,7 +2493,7 @@ describe('scalar card', () => {
       fixture.detectChanges();
 
       const data =
-        scalarCardComponent.componentInstance.getSelectedTimeTableData();
+        scalarCardComponent.componentInstance.getTimeSelectionTableData();
 
       expect(data[0].STEP).toEqual(10);
       expect(data[1].STEP).toEqual(8);
@@ -2567,7 +2570,7 @@ describe('scalar card', () => {
       }));
 
       it('sets stepSelectorTimeSelection to single selection', fakeAsync(() => {
-        store.overrideSelector(getMetricsSelectedTime, {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 20},
           end: {step: 40},
         });
@@ -2599,7 +2602,7 @@ describe('scalar card', () => {
         fixture.detectChanges();
 
         // Disable linked time
-        store.overrideSelector(getMetricsSelectedTime, null);
+        store.overrideSelector(getMetricsLinkedTimeSelection, null);
         store.refreshState();
         fixture.detectChanges();
 

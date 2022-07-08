@@ -23,7 +23,7 @@ import {
 } from '@angular/core';
 import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
-import {ViewSelectedTime} from './utils';
+import {TimeSelectionView} from './utils';
 
 const TICK_WIDTH = 14; // In px
 
@@ -57,7 +57,7 @@ export class ImageCardComponent {
   @Input() allowToggleActualSize!: boolean;
   @Input() isPinned!: boolean;
   @Input() selectedSteps!: number[];
-  @Input() linkedTimeSelection?: ViewSelectedTime | null = null;
+  @Input() linkedTimeSelection?: TimeSelectionView | null = null;
   @Input() isClosestStepHighlighted?: boolean = false;
 
   @Output() onActualSizeToggle = new EventEmitter<void>();

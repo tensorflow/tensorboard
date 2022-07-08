@@ -42,7 +42,7 @@ const {
   getSelectedSteps,
   getNextImageCardStepIndexFromRangeSelection,
   getNextImageCardStepIndexFromSingleSelection,
-  generateNextCardStepIndexFromSelectedTime,
+  generateNextCardStepIndexFromLinkedTimeSelection,
 } = TEST_ONLY;
 
 describe('metrics store utils', () => {
@@ -691,7 +691,7 @@ describe('metrics store utils', () => {
     });
   });
 
-  describe('generateNextCardStepIndexFromSelectedTime', () => {
+  describe('generateNextCardStepIndexFromLinkedTimeSelection', () => {
     const imageCardId = 'test image card id "plugin":"images"';
     const cardMetadataMap = {
       [imageCardId]: {
@@ -724,13 +724,14 @@ describe('metrics store utils', () => {
       };
     });
 
-    it(`updates cardStepIndex to matched selected time`, () => {
-      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
-        {[imageCardId]: buildStepIndexMetadata({index: 3})},
-        cardMetadataMap,
-        timeSeriesData,
-        {start: {step: 20}, end: null}
-      );
+    it(`updates cardStepIndex to matched linked time selection`, () => {
+      const nextCardStepIndex =
+        generateNextCardStepIndexFromLinkedTimeSelection(
+          {[imageCardId]: buildStepIndexMetadata({index: 3})},
+          cardMetadataMap,
+          timeSeriesData,
+          {start: {step: 20}, end: null}
+        );
 
       expect(nextCardStepIndex).toEqual({
         [imageCardId]: buildStepIndexMetadata({index: 1}),
@@ -766,26 +767,28 @@ describe('metrics store utils', () => {
         },
         images: {},
       };
-      const selectedTime = {start: {step: 20}, end: null};
+      const linkedTimeSelection = {start: {step: 20}, end: null};
 
-      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
-        previousCardStepIndexWtihHistogram,
-        cardMetadataMapWtihHistogram,
-        timeSeriesDataWtihHistogram,
-        selectedTime
-      );
+      const nextCardStepIndex =
+        generateNextCardStepIndexFromLinkedTimeSelection(
+          previousCardStepIndexWtihHistogram,
+          cardMetadataMapWtihHistogram,
+          timeSeriesDataWtihHistogram,
+          linkedTimeSelection
+        );
       expect(nextCardStepIndex).toEqual({
         [histogramCardId]: null,
       });
     });
 
     it(`does not update cardStepIndex on selected step with no image`, () => {
-      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
-        {[imageCardId]: buildStepIndexMetadata({index: 3})},
-        cardMetadataMap,
-        timeSeriesData,
-        {start: {step: 15}, end: null}
-      );
+      const nextCardStepIndex =
+        generateNextCardStepIndexFromLinkedTimeSelection(
+          {[imageCardId]: buildStepIndexMetadata({index: 3})},
+          cardMetadataMap,
+          timeSeriesData,
+          {start: {step: 15}, end: null}
+        );
 
       expect(nextCardStepIndex).toEqual({
         [imageCardId]: buildStepIndexMetadata({index: 3}),
@@ -793,12 +796,13 @@ describe('metrics store utils', () => {
     });
 
     it(`updates cardStepIndex in range selection`, () => {
-      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
-        {[imageCardId]: buildStepIndexMetadata({index: 3})},
-        cardMetadataMap,
-        timeSeriesData,
-        {start: {step: 15}, end: {step: 35}}
-      );
+      const nextCardStepIndex =
+        generateNextCardStepIndexFromLinkedTimeSelection(
+          {[imageCardId]: buildStepIndexMetadata({index: 3})},
+          cardMetadataMap,
+          timeSeriesData,
+          {start: {step: 15}, end: {step: 35}}
+        );
 
       // Updates index to 2, which is the highest step with image data in range
       expect(nextCardStepIndex).toEqual({
@@ -807,12 +811,13 @@ describe('metrics store utils', () => {
     });
 
     it(`does not update cardStepIndex when there is no image in range`, () => {
-      const nextCardStepIndex = generateNextCardStepIndexFromSelectedTime(
-        {[imageCardId]: buildStepIndexMetadata({index: 3})},
-        cardMetadataMap,
-        timeSeriesData,
-        {start: {step: 15}, end: {step: 18}}
-      );
+      const nextCardStepIndex =
+        generateNextCardStepIndexFromLinkedTimeSelection(
+          {[imageCardId]: buildStepIndexMetadata({index: 3})},
+          cardMetadataMap,
+          timeSeriesData,
+          {start: {step: 15}, end: {step: 18}}
+        );
 
       expect(nextCardStepIndex).toEqual({
         [imageCardId]: buildStepIndexMetadata({index: 3}),
@@ -924,50 +929,52 @@ describe('metrics store utils', () => {
 
   describe('getSelectedSteps', () => {
     it(`gets one selected step on single selection`, () => {
-      const selectedTime = {start: {step: 10}, end: null};
+      const linkedTimeSelection = {start: {step: 10}, end: null};
       const steps = [10];
 
-      expect(getSelectedSteps(selectedTime, steps)).toEqual([10]);
+      expect(getSelectedSteps(linkedTimeSelection, steps)).toEqual([10]);
     });
 
     it(`gets selected steps on range selection`, () => {
-      const selectedTime = {start: {step: 10}, end: {step: 40}};
+      const linkedTimeSelection = {start: {step: 10}, end: {step: 40}};
       const steps = [5, 10, 20, 40, 50];
 
-      expect(getSelectedSteps(selectedTime, steps)).toEqual([10, 20, 40]);
+      expect(getSelectedSteps(linkedTimeSelection, steps)).toEqual([
+        10, 20, 40,
+      ]);
     });
 
     it(`gets selected steps on clipped range selection`, () => {
-      const selectedTime = {start: {step: 10}, end: {step: 40}};
+      const linkedTimeSelection = {start: {step: 10}, end: {step: 40}};
       const steps = [5, 10, 20];
 
-      expect(getSelectedSteps(selectedTime, steps)).toEqual([10, 20]);
+      expect(getSelectedSteps(linkedTimeSelection, steps)).toEqual([10, 20]);
     });
 
-    it(`gets empty selected steps when select time is null`, () => {
-      const selectedTime = null;
+    it(`gets empty selected steps when linked time selection is null`, () => {
+      const linkedTimeSelection = null;
       const steps = [5, 10, 20, 40];
 
-      expect(getSelectedSteps(selectedTime, steps)).toEqual([]);
+      expect(getSelectedSteps(linkedTimeSelection, steps)).toEqual([]);
     });
 
-    it(`gets empty selected steps when single select time does not contain any steps`, () => {
-      const selectedTime = {start: {step: 10}, end: null};
+    it(`gets empty selected steps when single linked time selection does not contain any steps`, () => {
+      const linkedTimeSelection = {start: {step: 10}, end: null};
       const steps = [5, 20, 30];
 
-      expect(getSelectedSteps(selectedTime, steps)).toEqual([]);
+      expect(getSelectedSteps(linkedTimeSelection, steps)).toEqual([]);
     });
 
-    it(`gets empty selected steps when range select time does not contain any steps`, () => {
-      const selectedTime = {start: {step: 50}, end: {step: 60}};
+    it(`gets empty selected steps when range linked time selection does not contain any steps`, () => {
+      const linkedTimeSelection = {start: {step: 50}, end: {step: 60}};
       const steps = [5, 10, 20, 40];
 
-      expect(getSelectedSteps(selectedTime, steps)).toEqual([]);
+      expect(getSelectedSteps(linkedTimeSelection, steps)).toEqual([]);
     });
   });
 
   describe('getNextImageCardStepIndexFromSingleSelection', () => {
-    it(`returns step index to matched selected time`, () => {
+    it(`returns step index to matched linked time selection`, () => {
       const nextStepIndex = getNextImageCardStepIndexFromSingleSelection(
         20,
         [10, 20, 30, 40]

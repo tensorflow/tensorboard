@@ -12,8 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Injectable} from '@angular/core';
-import {FeatureFlags} from '../feature_flag/types';
+import { Injectable } from '@angular/core';
+import { FeatureFlags } from '../feature_flag/types';
 
 @Injectable()
 export abstract class TBFeatureFlagDataSource {
@@ -43,7 +43,7 @@ export const ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY =
 
 export const ENABLE_DARK_MODE_QUERY_PARAM_KEY = 'darkMode';
 
-export const ENABLE_LINK_TIME_PARAM_KEY = 'enableLinkTime';
+export const ENABLE_LINKED_TIME_PARAM_KEY = 'enableLinkedTime';
 
 export const FORCE_SVG_RENDERER = 'forceSVG';
 

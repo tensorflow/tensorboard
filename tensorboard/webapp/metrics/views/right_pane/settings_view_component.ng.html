@@ -69,8 +69,8 @@ limitations under the License.
         <tb-range-input
           [min]="stepMinMax.min"
           [max]="stepMinMax.max"
-          [lowerValue]="selectedTime?.start.step"
-          [upperValue]="selectedTime?.end?.step"
+          [lowerValue]="linkedTimeSelection?.start.step"
+          [upperValue]="linkedTimeSelection?.end?.step"
           [enabled]="isLinkedTimeEnabled"
           (singleValueChanged)="onSingleValueChanged($event)"
           (rangeValuesChanged)="onRangeValuesChanged($event)"
