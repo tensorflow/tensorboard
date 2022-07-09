@@ -262,8 +262,17 @@ export class ScalarCardComponent<Downloader> {
 
   onFobTimeSelectionChanged(newTimeSelection: TimeSelection) {
     // Updates step selector to single selection.
+    const {minStep, maxStep} = this.getMinMaxStepInSeries();
+    const givenStartStep = newTimeSelection.start.step;
+    const newStartStep =
+      givenStartStep < minStep
+        ? minStep
+        : givenStartStep > maxStep
+        ? maxStep
+        : givenStartStep;
+    // Updates step selector to single selection.
     this.stepSelectorTimeSelection = {
-      start: {step: newTimeSelection.start.step},
+      start: {step: newStartStep},
       end: null,
     };
 
