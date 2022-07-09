@@ -107,6 +107,8 @@ export class ScalarCardComponent<Downloader> {
     ColumnHeaders.STEP,
     ColumnHeaders.RELATIVE_TIME,
   ];
+  minStep: number | null = null;
+  maxStep: number | null = null;
 
   toggleYScaleType() {
     this.yScaleType =
@@ -260,18 +262,50 @@ export class ScalarCardComponent<Downloader> {
     return dataTableData;
   }
 
+<<<<<<< HEAD
   onFobTimeSelectionChanged(newTimeSelection: TimeSelection) {
     // Updates step selector to single selection.
     const {minStep, maxStep} = this.getMinMaxStepInSeries();
     const givenStartStep = newTimeSelection.start.step;
+=======
+  getMinMaxStepInSeries() {
+    let minStep = Infinity;
+    let maxStep = -Infinity;
+    for (const {points} of this.dataSeries) {
+      for (const point of points) {
+        minStep = minStep > point.x ? point.x : minStep;
+        maxStep = maxStep < point.x ? point.x : maxStep;
+      }
+    }
+    return {minStep, maxStep};
+  }
+
+  onFobSelectTimeChanged(newSelectedTime: LinkedTime) {
+    // Lazy load minStep and maxStep
+    if (this.minStep == null || this.maxStep == null) {
+      const {minStep, maxStep} = this.getMinMaxStepInSeries();
+      this.minStep = minStep;
+      this.maxStep = maxStep;
+    }
+
+    // Get the closes step to the provided start step within the min and max
+    // steps.
+    const givenStartStep = newSelectedTime.start.step;
+>>>>>>> f34595594 (Lazy load min and max steps)
     const newStartStep =
-      givenStartStep < minStep
-        ? minStep
-        : givenStartStep > maxStep
-        ? maxStep
+      givenStartStep < this.minStep
+        ? this.minStep
+        : givenStartStep > this.maxStep
+        ? this.maxStep
         : givenStartStep;
+<<<<<<< HEAD
     // Updates step selector to single selection.
     this.stepSelectorTimeSelection = {
+=======
+
+    // Updates step selector to single selection.
+    this.internalSelectedTime = {
+>>>>>>> f34595594 (Lazy load min and max steps)
       start: {step: newStartStep},
       end: null,
     };
