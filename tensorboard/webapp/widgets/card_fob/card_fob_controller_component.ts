@@ -174,7 +174,7 @@ export class CardFobControllerComponent {
     // Types empty string in fob.
     if (step === null) {
       // Removes fob on range selection and sets step to minimum on single selection.
-    if (this.timeSelection.end !== null) {
+      if (this.timeSelection.end !== null) {
         this.onFobRemoved(fob);
       } else {
         // TODO(jieweiwu): sets start step to minum.

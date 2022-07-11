@@ -55,10 +55,9 @@ export interface SampledPluginTagMetadata {
 
 export type TagMetadata = {
   [NSPT in NonSampledPluginType]: NonSampledPluginTagMetadata;
-} &
-  {
-    [SPT in SampledPluginType]: SampledPluginTagMetadata;
-  };
+} & {
+  [SPT in SampledPluginType]: SampledPluginTagMetadata;
+};
 
 export interface StepDatum {
   [PluginType.SCALARS]: ScalarStepDatum;
