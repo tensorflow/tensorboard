@@ -950,12 +950,12 @@ const reducer = createReducer(
     };
   }),
   on(actions.linkedTimeToggled, (state) => {
-    const nextLinkediTimeEnabled = !state.linkedTimeEnabled;
+    const nextLinkedTimeEnabled = !state.linkedTimeEnabled;
     let nextCardStepIndexMap = {...state.cardStepIndex};
     let nextLinkedTimeSelection = state.linkedTimeSelection;
 
     // Updates cardStepIndex only when toggle to enable linked time.
-    if (nextLinkediTimeEnabled) {
+    if (nextLinkedTimeEnabled) {
       const {min} = state.stepMinMax;
       const startStep = min === Infinity ? 0 : min;
       nextLinkedTimeSelection = state.linkedTimeSelection ?? {
@@ -973,7 +973,7 @@ const reducer = createReducer(
     return {
       ...state,
       cardStepIndex: nextCardStepIndexMap,
-      linkedTimeEnabled: nextLinkediTimeEnabled,
+      linkedTimeEnabled: nextLinkedTimeEnabled,
       linkedTimeSelection: nextLinkedTimeSelection,
     };
   }),
