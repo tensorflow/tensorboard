@@ -53,6 +53,18 @@ limitations under the License.
   </div>
 
   <div
+    class="control-row scalars-step-selector"
+    *ngIf="isScalarStepSelectorFeatureEnabled"
+  >
+    <mat-checkbox
+      [checked]="isScalarStepSelectorEnabled"
+      (change)="stepSelectorEnableToggled.emit()"
+      >Enable step selection and data table
+    </mat-checkbox>
+    <span class="indent">(Scalars only)</span>
+  </div>
+
+  <div
     class="control-row linked-time"
     *ngIf="isLinkedTimeFeatureEnabled && xAxisType == XAxisType.STEP"
   >
@@ -124,17 +136,6 @@ limitations under the License.
       [checked]="ignoreOutliers"
       (change)="ignoreOutliersChanged.emit($event.checked)"
       >Ignore outliers in chart scaling</mat-checkbox
-    >
-  </div>
-
-  <div
-    class="control-row scalars-step-selector"
-    *ngIf="isScalarStepSelectorFeatureEnabled"
-  >
-    <mat-checkbox
-      [checked]="isScalarStepSelectorEnabled"
-      (change)="stepSelectorEnableToggled.emit()"
-      >Step Selector</mat-checkbox
     >
   </div>
 
