@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 /**
- * The start and end time to define a time selection.
+ * The start and end time to define a time selection, used for linked time and step selector.
  */
 export interface TimeSelection {
   start: {step: number};

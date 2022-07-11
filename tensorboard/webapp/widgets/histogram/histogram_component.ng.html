@@ -52,7 +52,7 @@ limitations under the License.
     <!-- Disable the feature when in non-offset and non-step mode. -->
     <ng-container *ngIf="isTimeSelectionEnabled(timeSelection)">
       <histogram-card-fob-controller
-        class="linked-time"
+        class="histogram-card-fob"
         [timeSelection]="timeSelection"
         [steps]="getSteps()"
         [temporalScale]="scales.temporalScale"
@@ -74,7 +74,6 @@ limitations under the License.
     <g
       #histograms
       [class.histograms]="true"
-      [class.linked-time-enabled]="timeSelection"
       [class.linked-time-single-step]="timeSelection && !timeSelection.end"
     >
       <g
