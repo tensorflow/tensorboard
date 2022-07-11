@@ -78,6 +78,18 @@ tf_ng_module(
 )
 
 tf_ng_module(
+    name = "feature_flag_query_parameters",
+    srcs = [
+        "tb_feature_flag_query_parameters.ts",
+    ],
+    deps = [
+        ":feature_flag_types",
+        "//tensorboard/webapp/feature_flag:types",
+        "@npm//@angular/core",
+    ],
+)
+
+tf_ng_module(
     name = "feature_flag_types",
     srcs = [
         "tb_feature_flag_data_source_types.ts",
@@ -96,6 +108,7 @@ tf_ng_module(
         "tb_feature_flag_module.ts",
     ],
     deps = [
+        ":feature_flag_query_parameters",
         ":feature_flag_types",
         "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/types",
@@ -124,9 +137,11 @@ tf_ng_module(
     testonly = True,
     srcs = [
         "tb_feature_flag_data_source_test.ts",
+        "tb_feature_flag_query_parameters_test.ts",
     ],
     deps = [
         ":feature_flag",
+        ":feature_flag_query_parameters",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "@npm//@angular/core",
         "@npm//@types/jasmine",

@@ -37,6 +37,7 @@ tf_ts_library(
     ],
     deps = [
         ":dashboard_deeplink_provider_types",
+        ":feature_flag_serializer",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/app_routing:deep_link_provider",
@@ -46,6 +47,24 @@ tf_ts_library(
         "//tensorboard/webapp/metrics/data_source:types",
         "//tensorboard/webapp/runs:types",
         "//tensorboard/webapp/tb_wrapper",
+        "//tensorboard/webapp/webapp_data_source:feature_flag_types",
+        "@npm//@angular/core",
+        "@npm//@ngrx/store",
+        "@npm//rxjs",
+    ],
+)
+
+tf_ts_library(
+    name = "feature_flag_serializer",
+    srcs = [
+        "feature_flag_serializer.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp/app_routing:location",
+        "//tensorboard/webapp/app_routing:types",
+        "//tensorboard/webapp/webapp_data_source:feature_flag_query_parameters",
         "//tensorboard/webapp/webapp_data_source:feature_flag_types",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
@@ -69,10 +88,13 @@ tf_ts_library(
     testonly = True,
     srcs = [
         "dashboard_deeplink_provider_test.ts",
+        "feature_flag_serializer_test.ts",
     ],
     deps = [
         ":dashboard_deeplink_provider",
+        ":feature_flag_serializer",
         ":testing",
+        "//tensorboard/webapp/app_routing:location",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_core_testing",

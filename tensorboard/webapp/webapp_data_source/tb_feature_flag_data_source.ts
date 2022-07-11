@@ -15,18 +15,13 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {FeatureFlags} from '../feature_flag/types';
 import {QueryParams} from './query_params';
+import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
 import {
-  ENABLE_CARD_WIDTH_SETTING_PARAM_KEY,
-  ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY,
-  ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
-  ENABLE_DARK_MODE_QUERY_PARAM_KEY,
-  ENABLE_DATA_TABLE_PARAM_KEY,
-  ENABLE_LINKED_TIME_PARAM_KEY,
-  EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
-  FORCE_SVG_RENDERER,
-  SCALARS_BATCH_SIZE_PARAM_KEY,
-  TBFeatureFlagDataSource,
-} from './tb_feature_flag_data_source_types';
+  BaseFeatureFlagType,
+  FeatureFlagMetadata,
+  FeatureFlagQueryParameters,
+  FeatureFlagType,
+} from './tb_feature_flag_query_parameters';
 
 const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 
@@ -40,62 +35,39 @@ export class QueryParamsFeatureFlagDataSource
   constructor(readonly queryParams: QueryParams) {}
 
   getFeatures(enableMediaQuery: boolean = false) {
-    const params = this.queryParams.getParams();
     // Set feature flag value for query parameters that are explicitly
     // specified. Feature flags for unspecified query parameters remain unset so
     // their values in the underlying state are not inadvertently changed.
-    const featureFlags: Partial<FeatureFlags> = enableMediaQuery
-      ? this.getPartialFeaturesFromMediaQuery()
-      : {};
-    if (params.has(EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY)) {
-      featureFlags.enabledExperimentalPlugins = params.getAll(
-        EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY
-      );
-    }
-    if (params.has('tensorboardColab')) {
-      featureFlags.inColab = params.get('tensorboardColab') === 'true';
-    }
-    if (params.has(SCALARS_BATCH_SIZE_PARAM_KEY)) {
-      featureFlags.scalarsBatchSize = Number(
-        params.get(SCALARS_BATCH_SIZE_PARAM_KEY)
-      );
-    }
+    const featureFlags: Partial<Record<keyof FeatureFlags, FeatureFlagType>> =
+      enableMediaQuery ? this.getPartialFeaturesFromMediaQuery() : {};
+    Object.entries(FeatureFlagQueryParameters).forEach(
+      ([flagName, flagMetadata]) => {
+        const featureValue = this.getFeatureValue(flagMetadata);
+        if (featureValue !== null) {
+          const f = flagName as keyof FeatureFlags;
+          featureFlags[f] = featureValue;
+        }
+      }
+    );
+    return featureFlags as Partial<FeatureFlags>;
+  }
 
-    if (params.has(ENABLE_COLOR_GROUP_QUERY_PARAM_KEY)) {
-      featureFlags.enabledColorGroup =
-        params.get(ENABLE_COLOR_GROUP_QUERY_PARAM_KEY) !== 'false';
+  protected getFeatureValue(
+    flagMetadata: FeatureFlagMetadata
+  ): FeatureFlagType {
+    const params = this.queryParams.getParams();
+    const queryParamOverride = flagMetadata.queryParamOverride;
+    if (!queryParamOverride || !params.has(queryParamOverride)) {
+      return null;
     }
-
-    if (params.has(ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY)) {
-      featureFlags.enabledColorGroupByRegex =
-        params.get(ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY) !== 'false';
+    const paramValues: BaseFeatureFlagType[] = this.queryParams
+      .getParams()
+      .getAll(queryParamOverride)
+      .map(flagMetadata.parseValue);
+    if (!paramValues.length) {
+      return null;
     }
-
-    if (params.has(ENABLE_DARK_MODE_QUERY_PARAM_KEY)) {
-      featureFlags.defaultEnableDarkMode =
-        params.get(ENABLE_DARK_MODE_QUERY_PARAM_KEY) !== 'false';
-    }
-
-    if (params.has(ENABLE_LINKED_TIME_PARAM_KEY)) {
-      featureFlags.enabledLinkedTime =
-        params.get(ENABLE_LINKED_TIME_PARAM_KEY) !== 'false';
-    }
-
-    if (params.has(ENABLE_CARD_WIDTH_SETTING_PARAM_KEY)) {
-      featureFlags.enabledCardWidthSetting =
-        params.get(ENABLE_CARD_WIDTH_SETTING_PARAM_KEY) !== 'false';
-    }
-
-    if (params.has(FORCE_SVG_RENDERER)) {
-      featureFlags.forceSvg = params.get(FORCE_SVG_RENDERER) !== 'false';
-    }
-
-    if (params.has(ENABLE_DATA_TABLE_PARAM_KEY)) {
-      featureFlags.enabledScalarDataTable =
-        params.get(ENABLE_DATA_TABLE_PARAM_KEY) !== 'false';
-    }
-
-    return featureFlags;
+    return paramValues.length > 1 ? paramValues : paramValues[0];
   }
 
   protected getPartialFeaturesFromMediaQuery(): {
