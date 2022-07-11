@@ -109,8 +109,6 @@ export class ScalarCardComponent<Downloader> {
     ColumnHeaders.STEP,
     ColumnHeaders.RELATIVE_TIME,
   ];
-  minStep: number | null = null;
-  maxStep: number | null = null;
 
   toggleYScaleType() {
     this.yScaleType =
