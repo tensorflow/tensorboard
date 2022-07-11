@@ -93,3 +93,8 @@ export enum ColumnHeaders {
 export type SelectedStepRunData = {
   [key in ColumnHeaders]?: string | number;
 };
+
+export type MinMaxStep = {
+  minStep: number;
+  maxStep: number;
+};

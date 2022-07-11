@@ -42,6 +42,7 @@ import {
 import {TooltipSort, XAxisType} from '../../types';
 import {
   ColumnHeaders,
+  MinMaxStep,
   ScalarCardDataSeries,
   ScalarCardSeriesMetadata,
   ScalarCardSeriesMetadataMap,
@@ -86,6 +87,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() forceSvg!: boolean;
   @Input() linkedTimeSelection!: TimeSelectionView | null;
   @Input() stepSelectorTimeSelection!: TimeSelection;
+  @Input() minMaxStep!: MinMaxStep;
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
@@ -266,10 +268,10 @@ export class ScalarCardComponent<Downloader> {
     // Updates step selector to single selection.
     const givenStartStep = newTimeSelection.start.step;
     const newStartStep =
-      givenStartStep < this.minStep
-        ? this.minStep
-        : givenStartStep > this.maxStep
-        ? this.maxStep
+      givenStartStep < this.minMaxStep.minStep
+        ? this.minMaxStep.minStep
+        : givenStartStep > this.minMaxStep.maxStep
+        ? this.minMaxStep.maxStep
         : givenStartStep;
     // Updates step selector to single selection.
     this.stepSelectorTimeSelection = {
