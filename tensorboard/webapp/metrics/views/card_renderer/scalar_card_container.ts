@@ -75,6 +75,7 @@ import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {DataDownloadDialogContainer} from './data_download_dialog_container';
 import {
+  MinMaxStep,
   PartialSeries,
   PartitionedSeries,
   ScalarCardDataSeries,
@@ -137,6 +138,7 @@ function areSeriesEqual(
       [linkedTimeSelection]="linkedTimeSelection$ | async"
       [stepSelectorTimeSelection]="stepSelectorTimeSelection$ | async"
       [forceSvg]="forceSvg$ | async"
+      [minMaxStep]="minMaxSteps$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
       observeIntersection
@@ -179,6 +181,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   chartMetadataMap$?: Observable<ScalarCardSeriesMetadataMap>;
   linkedTimeSelection$?: Observable<TimeSelectionView | null>;
   stepSelectorTimeSelection$?: Observable<TimeSelection | null>;
+  minMaxSteps$?: Observable<MinMaxStep | null>;
 
   onVisibilityChange({visible}: {visible: boolean}) {
     this.isVisible = visible;
@@ -226,7 +229,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.fullHeightChanged.emit(this.showFullSize);
   }
 
-  getMinMaxStepInSeries(series: PartitionedSeries[]) {
+  getMinMaxStepInSeries(series: PartitionedSeries[]): MinMaxStep {
     let minStep = Infinity;
     let maxStep = -Infinity;
     for (const {points} of series) {
@@ -337,6 +340,12 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
         });
       }),
       shareReplay(1)
+    );
+
+    this.minMaxSteps$ = partitionedSeries$.pipe(
+      map((partialSeries) => {
+        return this.getMinMaxStepInSeries(partialSeries);
+      })
     );
 
     this.dataSeries$ = partitionedSeries$.pipe(
