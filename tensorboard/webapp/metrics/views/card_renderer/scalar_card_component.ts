@@ -271,6 +271,7 @@ export class ScalarCardComponent<Downloader> {
         : givenStartStep > this.minMaxStep.maxStep
         ? this.minMaxStep.maxStep
         : givenStartStep;
+
     // Updates step selector to single selection.
     this.stepSelectorTimeSelection = {
       start: {step: newStartStep},
