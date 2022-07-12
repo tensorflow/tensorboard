@@ -32,7 +32,6 @@ The backend and frontend operate within a plugin lifecycle:
 
   - **4) Plugin handles routes**: When a plugin's frontend makes URL requests to its backend, route handlers can respond with collected data.
 
-
 ### Backend: How the plugin processes data, and sends it to the browser
 
 #### Terminology
@@ -72,6 +71,7 @@ class MyPlugin(base_plugin.TBPlugin):
 ```
 
 #### TBPlugin
+
   - `plugin_name`: Required field used as a unique ID for the plugin. This must only contain alphanumeric characters, hyphens, and underscores.
   - `get_plugin_apps()`: This should return a `dict` mapping route paths to WSGI applications: e.g., `"/tags"` might map to `self._serve_tags`.
   - `is_active()`: This should return whether the plugin is active (whether there exists relevant data for the plugin to process). TensorBoard will hide inactive plugins from the main navigation bar. We strongly recommend this to be a cheap operation.
@@ -99,13 +99,12 @@ class MyLoader(base_plugin.TBLoader):
 ```
 
 #### TBLoader
+
   - `define_flags(parser)`: Optional method that takes an argparse.Namespace and exposes command-line flags. Please prefix flags with the name of the plugin to avoid collision.
   - `fix_flags(flags)`: Optional method needed to fix or sanitize command-line flags.
   - `load(context)`: Required method that takes a TBContext and returns a TBPlugin instance.
 
 It's recommended that plugins using flags call the `parser.add_argument_group(plugin_name)`. To learn more about the flag definition, see [docs](https://docs.python.org/library/argparse.html#adding-arguments)
-
-
 
 ## Reading data from event files
 
@@ -163,7 +162,6 @@ Consistency in user interface and experience, we believe, is important for happy
 [dynamic-plugin-tracking-bug]: https://github.com/tensorflow/tensorboard/issues/2357
 
 We recommend that you vendor all resources required to use your plugin, including scripts, stylesheets, fonts, and images. All built-in TensorBoard plugins follow this policy.
-
 
 ### Summaries: How the plugin gets data
 

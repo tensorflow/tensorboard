@@ -656,7 +656,6 @@ The 1.15 minor series tracks TensorFlow 1.15.
 - #1914 - Disable the profile dashboard inside Colab, where it doesn’t work
 - #1945 - Fix profile dashboard loading behavior
 
-
 # Release 1.13.0
 
 The 1.13 minor series tracks TensorFlow 1.13.
