@@ -58,7 +58,7 @@ limitations under the License.
   >
     <mat-checkbox
       [checked]="isScalarStepSelectorEnabled"
-      (change)="stepSelectorEnableToggled.emit()"
+      (change)="stepSelectorToggled.emit()"
       >Enable step selection and data table
     </mat-checkbox>
     <span class="indent">(Scalars only)</span>
@@ -72,8 +72,8 @@ limitations under the License.
     <div class="controls">
       <div>
         <mat-checkbox
-          [checked]="selectTimeEnabled"
-          (change)="selectTimeEnableToggled.emit()"
+          [checked]="isLinkedTimeEnabled"
+          (change)="linkedTimeToggled.emit()"
           >Enabled</mat-checkbox
         >
       </div>
@@ -81,9 +81,9 @@ limitations under the License.
         <tb-range-input
           [min]="stepMinMax.min"
           [max]="stepMinMax.max"
-          [lowerValue]="selectedTime?.start.step"
-          [upperValue]="selectedTime?.end?.step"
-          [enabled]="selectTimeEnabled"
+          [lowerValue]="linkedTimeSelection?.start.step"
+          [upperValue]="linkedTimeSelection?.end?.step"
+          [enabled]="isLinkedTimeEnabled"
           (singleValueChanged)="onSingleValueChanged($event)"
           (rangeValuesChanged)="onRangeValuesChanged($event)"
         ></tb-range-input>

@@ -19,6 +19,8 @@ import {filter, map, take, withLatestFrom} from 'rxjs/operators';
 import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';
 import {
+  linkedTimeSelectionChanged,
+  linkedTimeToggled,
   metricsChangeCardWidth,
   metricsChangeHistogramMode,
   metricsChangeImageBrightness,
@@ -32,11 +34,14 @@ import {
   metricsScalarPartitionNonMonotonicXToggled,
   metricsToggleIgnoreOutliers,
   metricsToggleImageShowActualSize,
-  selectTimeEnableToggled,
-  stepSelectorEnableToggled,
-  timeSelectionChanged,
+  stepSelectorToggled,
 } from '../../actions';
-import {HistogramMode, LinkedTime, TooltipSort, XAxisType} from '../../types';
+import {
+  HistogramMode,
+  TimeSelection,
+  TooltipSort,
+  XAxisType,
+} from '../../types';
 
 @Component({
   selector: 'metrics-dashboard-settings',
@@ -72,13 +77,12 @@ import {HistogramMode, LinkedTime, TooltipSort, XAxisType} from '../../types';
         isScalarStepSelectorFeatureEnabled$ | async
       "
       [isScalarStepSelectorEnabled]="isScalarStepSelectorEnabled$ | async"
-      [selectTimeEnabled]="selectTimeEnabled$ | async"
-      [selectedTime]="selectedTime$ | async"
-      [useRangeSelectTime]="useRangeSelectTime$ | async"
+      [isLinkedTimeEnabled]="isLinkedTimeEnabled$ | async"
+      [linkedTimeSelection]="linkedTimeSelection$ | async"
       [stepMinMax]="stepMinMax$ | async"
-      (selectTimeEnableToggled)="onSelectTimeEnableToggled()"
-      (selectTimeChanged)="onSelectTimeChanged($event)"
-      (stepSelectorEnableToggled)="onStepSelectorEnableToggled()"
+      (linkedTimeToggled)="onLinkedTimeToggled()"
+      (linkedTimeSelectionChanged)="onLinkedTimeSelectionChanged($event)"
+      (stepSelectorToggled)="onStepSelectorToggled()"
     >
     </metrics-dashboard-settings-component>
   `,
@@ -97,14 +101,11 @@ export class SettingsViewContainer {
     this.store.select(selectors.getIsDataTableEnabled);
   readonly isScalarStepSelectorEnabled$: Observable<boolean> =
     this.store.select(selectors.getMetricsStepSelectorEnabled);
-  readonly selectTimeEnabled$: Observable<boolean> = this.store.select(
-    selectors.getMetricsSelectTimeEnabled
+  readonly isLinkedTimeEnabled$: Observable<boolean> = this.store.select(
+    selectors.getMetricsLinkedTimeEnabled
   );
-  readonly useRangeSelectTime$: Observable<boolean> = this.store.select(
-    selectors.getMetricsUseRangeSelectTime
-  );
-  readonly selectedTime$ = this.store.select(
-    selectors.getMetricsSelectedTimeSetting
+  readonly linkedTimeSelection$ = this.store.select(
+    selectors.getMetricsLinkedTimeSelectionSetting
   );
   readonly stepMinMax$ = this.store.select(selectors.getMetricsStepMinMax);
 
@@ -198,17 +199,17 @@ export class SettingsViewContainer {
     this.store.dispatch(metricsToggleImageShowActualSize());
   }
 
-  onSelectTimeEnableToggled() {
-    this.store.dispatch(selectTimeEnableToggled());
+  onLinkedTimeToggled() {
+    this.store.dispatch(linkedTimeToggled());
   }
 
-  onStepSelectorEnableToggled() {
-    this.store.dispatch(stepSelectorEnableToggled());
+  onStepSelectorToggled() {
+    this.store.dispatch(stepSelectorToggled());
   }
 
-  onSelectTimeChanged(newValue: LinkedTime) {
+  onLinkedTimeSelectionChanged(newValue: TimeSelection) {
     this.store.dispatch(
-      timeSelectionChanged({
+      linkedTimeSelectionChanged({
         startStep: newValue.start.step,
         endStep: newValue.end?.step,
       })

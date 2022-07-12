@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {ExperimentAlias} from '../../../experiments/types';
 import {Run} from '../../../runs/store/runs_types';
-import {LinkedTime} from '../../types';
+import {TimeSelection} from '../../types';
 import {PartialSeries, PartitionedSeries} from './scalar_card_types';
 
 export function getDisplayNameForRun(
@@ -85,51 +85,51 @@ export function partitionSeries(series: PartialSeries[]): PartitionedSeries[] {
   return partitionedSeries;
 }
 
-export interface ViewSelectedTime {
+export interface TimeSelectionView {
   startStep: number;
   endStep: number | null;
   clipped: boolean;
 }
 
-export function maybeClipSelectedTime(
-  selectedTime: LinkedTime,
+export function maybeClipLinkedTimeSelection(
+  timeSelection: TimeSelection,
   minStep: number,
   maxStep: number
-): ViewSelectedTime {
+): TimeSelectionView {
   if (
-    // Case when selectedTime contains extents.
-    (selectedTime.start.step <= minStep &&
-      selectedTime.end &&
-      maxStep <= selectedTime.end.step) ||
-    // Case when start of selectedTime is within extent.
-    (minStep <= selectedTime.start.step &&
-      selectedTime.start.step <= maxStep) ||
-    // Case when end of selectedTime is within extent.
-    (selectedTime.end &&
-      minStep <= selectedTime.end?.step &&
-      selectedTime.end?.step <= maxStep)
+    // Case when timeSelection contains extents.
+    (timeSelection.start.step <= minStep &&
+      timeSelection.end &&
+      maxStep <= timeSelection.end.step) ||
+    // Case when start of timeSelection is within extent.
+    (minStep <= timeSelection.start.step &&
+      timeSelection.start.step <= maxStep) ||
+    // Case when end of timeSelection is within extent.
+    (timeSelection.end &&
+      minStep <= timeSelection.end?.step &&
+      timeSelection.end?.step <= maxStep)
   ) {
     return {
-      startStep: selectedTime.start.step,
-      endStep: selectedTime.end?.step ?? null,
+      startStep: timeSelection.start.step,
+      endStep: timeSelection.end?.step ?? null,
       clipped: false,
     };
   }
 
-  // When selectedTime and data extent (in step axis) do not overlap,
+  // When time selection and data extent (in step axis) do not overlap,
   // default single select min or max data extent depending on which side
-  // the selectedTime is at.
+  // the time selection is at.
 
-  // Case when selectedTime is on the right of the maximum of the
+  // Case when time selection is on the right of the maximum of the
   // time series.
-  if (maxStep <= selectedTime.start.step) {
+  if (maxStep <= timeSelection.start.step) {
     return {
       startStep: maxStep,
       endStep: null,
       clipped: true,
     };
   }
-  // Case when selectedtime is on the left of the minimum of the time
+  // Case when time selection is on the left of the minimum of the time
   // series.
   return {
     startStep: minStep,
@@ -139,27 +139,27 @@ export function maybeClipSelectedTime(
 }
 
 /**
- * Sets startStep of ViewSelectedTime to the closest step if the closeset step is not null.
+ * Sets startStep of TimeSelectionView to the closest step if the closeset step is not null.
  */
 export function maybeSetClosestStartStep(
-  viewSelectedTime: ViewSelectedTime,
+  timeSelectionView: TimeSelectionView,
   steps: number[]
-): ViewSelectedTime {
+): TimeSelectionView {
   // Only sets start step on single selection.
-  if (viewSelectedTime.endStep !== null) {
-    return viewSelectedTime;
+  if (timeSelectionView.endStep !== null) {
+    return timeSelectionView;
   }
 
-  const closestStep = getClosestStep(viewSelectedTime.startStep, steps);
+  const closestStep = getClosestStep(timeSelectionView.startStep, steps);
   if (closestStep !== null) {
-    // If the closest step is startStep itself, this is equvalent to viewSelectedTime.
+    // If the closest step is startStep itself, this is equvalent to timeSelectionView.
     return {
-      ...viewSelectedTime,
+      ...timeSelectionView,
       startStep: closestStep,
     };
   }
 
-  return viewSelectedTime;
+  return timeSelectionView;
 }
 
 /**

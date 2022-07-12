@@ -14,7 +14,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {
   AxisDirection,
   CardFobAdapter,
-  LinkedTime,
+  TimeSelection,
 } from '../card_fob/card_fob_types';
 import {TemporalScale} from './histogram_component';
 
@@ -23,19 +23,19 @@ import {TemporalScale} from './histogram_component';
   template: `
     <card-fob-controller
       [axisDirection]="axisDirection"
-      [linkedTime]="linkedTime"
+      [timeSelection]="timeSelection"
       [cardAdapter]="this"
-      (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
-      (onSelectTimeToggle)="onSelectTimeToggle.emit()"
+      (onTimeSelectionChanged)="onTimeSelectionChanged.emit($event)"
+      (onTimeSelectionToggled)="onTimeSelectionToggled.emit()"
     ></card-fob-controller>
   `,
 })
 export class HistogramCardFobController implements CardFobAdapter {
   @Input() steps!: number[];
-  @Input() linkedTime!: LinkedTime;
+  @Input() timeSelection!: TimeSelection;
   @Input() temporalScale!: TemporalScale;
-  @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
-  @Output() onSelectTimeToggle = new EventEmitter();
+  @Output() onTimeSelectionChanged = new EventEmitter<TimeSelection>();
+  @Output() onTimeSelectionToggled = new EventEmitter();
 
   readonly axisDirection = AxisDirection.VERTICAL;
 

@@ -44,19 +44,19 @@ import {
   getDarkModeEnabled,
   getExperimentIdForRunId,
   getExperimentIdToExperimentAliasMap,
-  getMetricsSelectedTime,
+  getMetricsLinkedTimeSelection,
   getMetricsStepSelectorEnabled,
   getRun,
   getRunColorMap,
 } from '../../../selectors';
 import {DataLoadState} from '../../../types/data';
-import {LinkedTime} from '../../../widgets/card_fob/card_fob_types';
+import {TimeSelection} from '../../../widgets/card_fob/card_fob_types';
 import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
-  selectTimeEnableToggled,
-  stepSelectorEnableToggled,
-  timeSelectionChanged,
+  linkedTimeSelectionChanged,
+  linkedTimeToggled,
+  stepSelectorToggled,
 } from '../../actions';
 import {PluginType, ScalarStepDatum} from '../../data_source';
 import {
@@ -83,9 +83,9 @@ import {
   SeriesType,
 } from './scalar_card_types';
 import {
-  maybeClipSelectedTime,
+  maybeClipLinkedTimeSelection,
   partitionSeries,
-  ViewSelectedTime,
+  TimeSelectionView,
 } from './utils';
 
 type ScalarCardMetadata = CardMetadata & {
@@ -134,16 +134,16 @@ function areSeriesEqual(
       [xAxisType]="xAxisType$ | async"
       [xScaleType]="xScaleType$ | async"
       [useDarkMode]="useDarkMode$ | async"
-      [selectedTime]="selectedTime$ | async"
-      [internalSelectedTime]="internalSelectedTime$ | async"
+      [linkedTimeSelection]="linkedTimeSelection$ | async"
+      [stepSelectorTimeSelection]="stepSelectorTimeSelection$ | async"
       [forceSvg]="forceSvg$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
       observeIntersection
       (onVisibilityChange)="onVisibilityChange($event)"
-      (onSelectTimeChanged)="onSelectTimeChanged($event)"
-      (onSelectTimeToggle)="onSelectTimeToggle()"
-      (onStepSelectorToggle)="onStepSelectorToggle()"
+      (onLinkedTimeSelectionChanged)="onLinkedTimeSelectionChanged($event)"
+      (onLinkedTimeToggled)="onLinkedTimeToggled()"
+      (onStepSelectorToggled)="onStepSelectorToggled()"
     ></scalar-card-component>
   `,
   styles: [
@@ -177,8 +177,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   isPinned$?: Observable<boolean>;
   dataSeries$?: Observable<ScalarCardDataSeries[]>;
   chartMetadataMap$?: Observable<ScalarCardSeriesMetadataMap>;
-  selectedTime$?: Observable<ViewSelectedTime | null>;
-  internalSelectedTime$?: Observable<LinkedTime | null>;
+  linkedTimeSelection$?: Observable<TimeSelectionView | null>;
+  stepSelectorTimeSelection$?: Observable<TimeSelection | null>;
 
   onVisibilityChange({visible}: {visible: boolean}) {
     this.isVisible = visible;
@@ -373,17 +373,17 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       startWith([] as ScalarCardDataSeries[])
     );
 
-    this.selectedTime$ = combineLatest([
+    this.linkedTimeSelection$ = combineLatest([
       partitionedSeries$,
-      this.store.select(getMetricsSelectedTime),
+      this.store.select(getMetricsLinkedTimeSelection),
       this.store.select(getMetricsXAxisType),
     ]).pipe(
-      map(([series, selectedTime, xAxisType]) => {
-        if (xAxisType !== XAxisType.STEP || !selectedTime) return null;
+      map(([series, timeSelection, xAxisType]) => {
+        if (xAxisType !== XAxisType.STEP || !timeSelection) return null;
 
         const {minStep, maxStep} = this.getMinMaxStepInSeries(series);
 
-        return maybeClipSelectedTime(selectedTime, minStep, maxStep);
+        return maybeClipLinkedTimeSelection(timeSelection, minStep, maxStep);
       })
     );
 
@@ -487,7 +487,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
 
-    this.internalSelectedTime$ = combineLatest([
+    this.stepSelectorTimeSelection$ = combineLatest([
       partitionedSeries$,
       this.store.select(getMetricsStepSelectorEnabled),
     ]).pipe(
@@ -546,20 +546,20 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     });
   }
 
-  onSelectTimeChanged(newLinkedTime: LinkedTime) {
+  onLinkedTimeSelectionChanged(newLinkedTime: TimeSelection) {
     this.store.dispatch(
-      timeSelectionChanged({
+      linkedTimeSelectionChanged({
         startStep: newLinkedTime.start.step,
         endStep: newLinkedTime.end ? newLinkedTime.end.step : undefined,
       })
     );
   }
 
-  onSelectTimeToggle() {
-    this.store.dispatch(selectTimeEnableToggled());
+  onLinkedTimeToggled() {
+    this.store.dispatch(linkedTimeToggled());
   }
 
-  onStepSelectorToggle() {
-    this.store.dispatch(stepSelectorEnableToggled());
+  onStepSelectorToggled() {
+    this.store.dispatch(stepSelectorToggled());
   }
 }

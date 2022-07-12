@@ -22,8 +22,8 @@ import {
   CardId,
   CardMetadata,
   CardUniqueInfo,
-  LinkedTime,
   NonPinnedCardId,
+  TimeSelection,
 } from '../internal_types';
 import {
   CardMetadataMap,
@@ -372,13 +372,13 @@ export function canCreateNewPins(state: MetricsState) {
   return pinCountInURL < util.MAX_PIN_COUNT;
 }
 /**
- * Sets cardStepIndex for image card based on selected time.
+ * Sets cardStepIndex for image card based on linked time selection.
  */
-export function generateNextCardStepIndexFromSelectedTime(
+export function generateNextCardStepIndexFromLinkedTimeSelection(
   previousCardStepIndex: CardStepIndexMap,
   cardMetadataMap: CardMetadataMap,
   timeSeriesData: TimeSeriesData,
-  selectedTime: LinkedTime
+  timeSelection: TimeSelection
 ): CardStepIndexMap {
   let nextCardStepIndex = {...previousCardStepIndex};
 
@@ -388,17 +388,17 @@ export function generateNextCardStepIndexFromSelectedTime(
     const steps = getImageCardSteps(cardId, cardMetadataMap, timeSeriesData);
 
     let nextStepIndexMetaData = null;
-    if (selectedTime.end === null) {
+    if (timeSelection.end === null) {
       // Single Selection
       nextStepIndexMetaData = getNextImageCardStepIndexFromSingleSelection(
-        selectedTime.start.step,
+        timeSelection.start.step,
         steps
       );
     } else {
       // Range Selection
       const currentStepIndex = previousCardStepIndex[cardId]!.index!;
       const step = steps[currentStepIndex];
-      const selectedSteps = getSelectedSteps(selectedTime, steps);
+      const selectedSteps = getSelectedSteps(timeSelection, steps);
 
       nextStepIndexMetaData = getNextImageCardStepIndexFromRangeSelection(
         selectedSteps,
@@ -441,22 +441,25 @@ export function getImageCardSteps(
 }
 
 /**
- * Returns the subset of steps that are within selected time given a list of steps
+ * Returns the subset of steps that are within linked time selection given a list of steps
  */
-function getSelectedSteps(selectedTime: LinkedTime | null, steps: number[]) {
-  if (!selectedTime) return [];
+function getSelectedSteps(
+  timeSelection: TimeSelection | null,
+  steps: number[]
+) {
+  if (!timeSelection) return [];
 
   // Single selection: returns start step if matching any step in the list, otherwise returns nothing.
-  if (selectedTime.end === null) {
-    if (steps.indexOf(selectedTime.start.step) !== -1)
-      return [selectedTime.start.step];
+  if (timeSelection.end === null) {
+    if (steps.indexOf(timeSelection.start.step) !== -1)
+      return [timeSelection.start.step];
     return [];
   }
 
   // Range selection.
   const selectedStepsInRange = [];
   for (const step of steps) {
-    if (step >= selectedTime.start.step && step <= selectedTime.end.step) {
+    if (step >= timeSelection.start.step && step <= timeSelection.end.step) {
       selectedStepsInRange.push(step);
     }
   }
@@ -465,8 +468,8 @@ function getSelectedSteps(selectedTime: LinkedTime | null, steps: number[]) {
 
 /**
  * Gets next stepIndex for an image card based on single selection. Returns null if nothing should change.
- * @param selectedStep The selected step from selected time. It is equivalent to start step here
- *  since there is no `end` in selected time when it is single seleciton.
+ * @param selectedStep The selected step from linked time selection. It is equivalent to start step here
+ *  since there is no `end` in linked time selection when it is single seleciton.
  */
 function getNextImageCardStepIndexFromSingleSelection(
   selectedStep: number,
@@ -500,7 +503,7 @@ function getNextImageCardStepIndexFromSingleSelection(
 
 /**
  * Gets next stepIndex for an image card based on range selection. Returns null if nothing should change.
- * @param selectedSteps The selected steps from selected time. Empty array means no steps within range.
+ * @param selectedSteps The selected steps from linked time selection. Empty array means no steps within range.
  * @param steps The steps in an image card.
  * @param step The step where the current step index locates.
  */
@@ -531,6 +534,6 @@ export const TEST_ONLY = {
   getSelectedSteps,
   getNextImageCardStepIndexFromRangeSelection,
   getNextImageCardStepIndexFromSingleSelection,
-  generateNextCardStepIndexFromSelectedTime,
+  generateNextCardStepIndexFromLinkedTimeSelection,
   util,
 };

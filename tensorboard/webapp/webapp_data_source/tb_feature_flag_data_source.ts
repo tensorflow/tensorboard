@@ -21,7 +21,7 @@ import {
   ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
   ENABLE_DARK_MODE_QUERY_PARAM_KEY,
   ENABLE_DATA_TABLE_PARAM_KEY,
-  ENABLE_LINK_TIME_PARAM_KEY,
+  ENABLE_LINKED_TIME_PARAM_KEY,
   EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
   FORCE_SVG_RENDERER,
   SCALARS_BATCH_SIZE_PARAM_KEY,
@@ -76,9 +76,9 @@ export class QueryParamsFeatureFlagDataSource
         params.get(ENABLE_DARK_MODE_QUERY_PARAM_KEY) !== 'false';
     }
 
-    if (params.has(ENABLE_LINK_TIME_PARAM_KEY)) {
+    if (params.has(ENABLE_LINKED_TIME_PARAM_KEY)) {
       featureFlags.enabledLinkedTime =
-        params.get(ENABLE_LINK_TIME_PARAM_KEY) !== 'false';
+        params.get(ENABLE_LINKED_TIME_PARAM_KEY) !== 'false';
     }
 
     if (params.has(ENABLE_CARD_WIDTH_SETTING_PARAM_KEY)) {

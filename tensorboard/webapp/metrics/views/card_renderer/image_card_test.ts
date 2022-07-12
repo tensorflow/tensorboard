@@ -42,7 +42,7 @@ import {CardId} from '../../types';
 import {ImageCardComponent} from './image_card_component';
 import {ImageCardContainer} from './image_card_container';
 import {RunNameModule} from './run_name_module';
-import {VisSelectedTimeWarningModule} from './vis_selected_time_warning_module';
+import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_warning_module';
 
 @Component({
   selector: 'card-view',
@@ -91,7 +91,7 @@ describe('image card', () => {
         MatSliderModule,
         RunNameModule,
         TruncatedPathModule,
-        VisSelectedTimeWarningModule,
+        VisLinkedTimeSelectionWarningModule,
       ],
       declarations: [ImageCardContainer, ImageCardComponent, TestableCardView],
       providers: [
@@ -509,8 +509,8 @@ describe('image card', () => {
         );
       });
 
-      it('renders a single tick on selected time', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+      it('renders a single tick on linked time selection', () => {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 10},
           end: null,
         });
@@ -528,7 +528,7 @@ describe('image card', () => {
       });
 
       it('renders a single tick at correct propositional position', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 20},
           end: null,
         });
@@ -542,8 +542,8 @@ describe('image card', () => {
         expect(dot.nativeElement.getAttribute('style')).toBe(TICKS_STYLE[1]);
       });
 
-      it('renders ticks when steps are within selected time', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+      it('renders ticks when steps are within linked time selection', () => {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 15},
           end: {step: 35},
         });
@@ -565,7 +565,7 @@ describe('image card', () => {
       });
 
       it('renders ticks on selected steps are particially in range', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 25},
           end: {step: 350},
         });
@@ -586,7 +586,7 @@ describe('image card', () => {
       });
 
       it('does not render ticks on slected range wrapped between steps ', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 11},
           end: {step: 14},
         });
@@ -602,7 +602,7 @@ describe('image card', () => {
       });
 
       it('does not render ticks when the slected range is clipped', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 45},
           end: {step: 55},
         });
@@ -637,7 +637,7 @@ describe('image card', () => {
       });
 
       it('renders range slider on selected range', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 20},
           end: {step: 30},
         });
@@ -655,7 +655,7 @@ describe('image card', () => {
       });
 
       it('renders range slider on no data steps', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 15},
           end: {step: 35},
         });
@@ -673,7 +673,7 @@ describe('image card', () => {
       });
 
       it('renders range slider with end step at no data step', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 20},
           end: {step: 35},
         });
@@ -691,7 +691,7 @@ describe('image card', () => {
       });
 
       it('renders range slider with start step at no data step', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 15},
           end: {step: 30},
         });
@@ -709,7 +709,7 @@ describe('image card', () => {
       });
 
       it('renders range slider on no data steps with propotion of the unit', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 20},
           end: {step: 32.5},
         });
@@ -727,7 +727,7 @@ describe('image card', () => {
       });
 
       it('renders range slider on selected steps which end step is out of range, ', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 15},
           end: {step: 55},
         });
@@ -745,7 +745,7 @@ describe('image card', () => {
       });
 
       it('renders range slider on selected steps which start step is out of range, ', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 5},
           end: {step: 35},
         });
@@ -763,7 +763,7 @@ describe('image card', () => {
       });
 
       it('renders range slider where range is between two steps, ', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 12.5},
           end: {step: 17.5},
         });
@@ -781,7 +781,7 @@ describe('image card', () => {
       });
 
       it('does not render range slider on single selection', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 15},
           end: null,
         });
@@ -796,7 +796,7 @@ describe('image card', () => {
       });
 
       it('does not render range slider when the slected range is clipped', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 55},
           end: {step: 60},
         });
@@ -814,7 +814,7 @@ describe('image card', () => {
     describe('thumb movement', () => {
       describe('single selection', () => {
         it('does not move slider thumb to larger closest step when it is clipped', () => {
-          store.overrideSelector(selectors.getMetricsSelectedTime, {
+          store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
             start: {step: 9},
             end: null,
           });
@@ -839,7 +839,7 @@ describe('image card', () => {
         });
 
         it('does not move slider thumb to smaller closest step when it is clipped', () => {
-          store.overrideSelector(selectors.getMetricsSelectedTime, {
+          store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
             // Linked time is clipped since step 41 is larger than the largest step 40.
             start: {step: 41},
             end: null,
@@ -865,7 +865,7 @@ describe('image card', () => {
         });
 
         it('does not move slider thumb to larger closest step when it is clipped', () => {
-          store.overrideSelector(selectors.getMetricsSelectedTime, {
+          store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
             // Linked time is clipped since step 9 is smaller than the smallest step 10.
             start: {step: 9},
             end: null,
@@ -920,8 +920,8 @@ describe('image card', () => {
           return slider.nativeElement.getAttribute('aria-valuenow');
         }
 
-        it('does not moves slider thumb when selected time is clipped', () => {
-          store.overrideSelector(selectors.getMetricsSelectedTime, {
+        it('does not moves slider thumb when linked time selection is clipped', () => {
+          store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
             start: {step: 55},
             end: {step: 65},
           });
@@ -929,7 +929,7 @@ describe('image card', () => {
 
           expect(getSliderThumbPosition(fixture)).toBe('2');
 
-          store.overrideSelector(selectors.getMetricsSelectedTime, {
+          store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
             start: {step: 5},
             end: {step: 9},
           });
@@ -940,9 +940,9 @@ describe('image card', () => {
       });
     });
 
-    describe('selectedTime beyond range of data', () => {
-      it('clips the selectedTime to max step', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+    describe('linkedTimeSelection beyond range of data', () => {
+      it('clips the linkedTimeSelection to max step', () => {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 45},
           end: {step: 50},
         });
@@ -961,21 +961,21 @@ describe('image card', () => {
         );
         const fixture = createImageCardContainer('card1');
         fixture.detectChanges();
-        const selectedTimeChangeSpy = jasmine.createSpy();
-        fixture.componentInstance.selectedTime$!.subscribe(
-          selectedTimeChangeSpy
+        const timeSelectionChangeSpy = jasmine.createSpy();
+        fixture.componentInstance.linkedTimeSelection$!.subscribe(
+          timeSelectionChangeSpy
         );
         fixture.detectChanges();
 
-        expect(selectedTimeChangeSpy).toHaveBeenCalledWith({
+        expect(timeSelectionChangeSpy).toHaveBeenCalledWith({
           startStep: 40,
           endStep: null,
           clipped: true,
         });
       });
 
-      it('clips the selectedTime to min step when it is too small', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+      it('clips the linkedTimeSelection to min step when it is too small', () => {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 5},
           end: {step: 8},
         });
@@ -995,20 +995,20 @@ describe('image card', () => {
         const fixture = createImageCardContainer('card1');
         fixture.detectChanges();
 
-        const selectedTimeChangeSpy = jasmine.createSpy();
-        fixture.componentInstance.selectedTime$!.subscribe(
-          selectedTimeChangeSpy
+        const timeSelectionChangeSpy = jasmine.createSpy();
+        fixture.componentInstance.linkedTimeSelection$!.subscribe(
+          timeSelectionChangeSpy
         );
 
-        expect(selectedTimeChangeSpy).toHaveBeenCalledWith({
+        expect(timeSelectionChangeSpy).toHaveBeenCalledWith({
           startStep: 10,
           endStep: null,
           clipped: true,
         });
       });
 
-      it('renders warning when the selectedTime is clipped', () => {
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+      it('renders warning when the linkedTimeSelection is clipped', () => {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 5},
           end: {step: 8},
         });
@@ -1029,18 +1029,22 @@ describe('image card', () => {
         fixture.detectChanges();
 
         const indicatorBefore = fixture.debugElement.query(
-          By.css('vis-selected-time-warning mat-icon[data-value="clipped"]')
+          By.css(
+            'vis-linked-time-selection-warning mat-icon[data-value="clipped"]'
+          )
         );
         expect(indicatorBefore).toBeTruthy();
 
-        store.overrideSelector(selectors.getMetricsSelectedTime, {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 0},
           end: {step: 100},
         });
         store.refreshState();
         fixture.detectChanges();
         const indicatorAfter = fixture.debugElement.query(
-          By.css('vis-selected-time-warning mat-icon[data-value="clipped"]')
+          By.css(
+            'vis-linked-time-selection-warningmat-icon[data-value="clipped"]'
+          )
         );
         expect(indicatorAfter).toBeNull();
       });

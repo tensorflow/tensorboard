@@ -22,7 +22,7 @@ import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {HistogramCardComponent} from './histogram_card_component';
 import {HistogramCardContainer} from './histogram_card_container';
 import {RunNameModule} from './run_name_module';
-import {VisSelectedTimeWarningModule} from './vis_selected_time_warning_module';
+import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_warning_module';
 
 @NgModule({
   declarations: [HistogramCardContainer, HistogramCardComponent],
@@ -35,7 +35,7 @@ import {VisSelectedTimeWarningModule} from './vis_selected_time_warning_module';
     MatProgressSpinnerModule,
     RunNameModule,
     TruncatedPathModule,
-    VisSelectedTimeWarningModule,
+    VisLinkedTimeSelectionWarningModule,
   ],
 })
 export class HistogramCardModule {}

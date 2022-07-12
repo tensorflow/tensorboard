@@ -30,9 +30,9 @@ import {
   CardMetadata,
   CardUniqueInfo,
   HistogramMode,
-  LinkedTime,
   NonPinnedCardId,
   PinnedCardId,
+  TimeSelection,
   TooltipSort,
   XAxisType,
 } from '../internal_types';
@@ -117,9 +117,9 @@ export type CardMetadataMap = Record<
 
 /**
  * A step index in a card could be set from actions or "modified" from the closest step index
- * set when selected time changed. When it is set from selected time, closest is true.
+ * set when linked time selection changed. When it is set from linked time selection, closest is true.
  * index: The step index
- * isClosest: Only used in linked time. When the index is adjusted on selected time changed, we
+ * isClosest: Only used in linked time. When the index is adjusted on linked time selection changed, we
  * set this attribute to true.
  */
 export type CardStepIndexMetaData = {
@@ -163,10 +163,10 @@ export interface MetricsNamespacedState {
   cardStepIndex: CardStepIndexMap;
   tagFilter: string;
   tagGroupExpanded: Map<string, boolean>;
-  selectedTime: LinkedTime | null;
-  selectTimeEnabled: boolean;
+  linkedTimeSelection: TimeSelection | null;
+  linkedTimeEnabled: boolean;
   stepSelectorEnabled: boolean;
-  useRangeSelectTime: boolean;
+  linkedTimeRangeEnabled: boolean;
   // Empty Set would signify "show all". `filteredPluginTypes` will never have
   // all pluginTypes in the Set.
   filteredPluginTypes: Set<PluginType>;

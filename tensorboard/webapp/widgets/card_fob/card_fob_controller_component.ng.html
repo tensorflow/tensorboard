@@ -23,7 +23,7 @@ limitations under the License.
   <div
     #startFobWrapper
     class="time-fob-wrapper"
-    [style.transform]="getCssTranslatePx(linkedTime.start.step)"
+    [style.transform]="getCssTranslatePx(timeSelection.start.step)"
   >
     <div
       *ngIf="showExtendedLine"
@@ -33,7 +33,7 @@ limitations under the License.
     <card-fob
       class="startFob"
       [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
-      [step]="linkedTime.start.step"
+      [step]="timeSelection.start.step"
       (mousedown)="startDrag(FobType().START)"
       (stepChanged)="stepTyped(FobType().START, $event)"
       (fobRemoved)="onFobRemoved(FobType().START)"
@@ -41,9 +41,9 @@ limitations under the License.
   </div>
   <div
     #endFobWrapper
-    *ngIf="linkedTime.end"
+    *ngIf="timeSelection.end"
     class="time-fob-wrapper"
-    [style.transform]="getCssTranslatePx(linkedTime.end.step)"
+    [style.transform]="getCssTranslatePx(timeSelection.end.step)"
   >
     <div
       *ngIf="showExtendedLine"
@@ -53,7 +53,7 @@ limitations under the License.
     <card-fob
       class="endFob"
       [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
-      [step]="linkedTime.end.step"
+      [step]="timeSelection.end.step"
       (mousedown)="startDrag(FobType().END)"
       (stepChanged)="stepTyped(FobType().END, $event)"
       (fobRemoved)="onFobRemoved(FobType().END)"

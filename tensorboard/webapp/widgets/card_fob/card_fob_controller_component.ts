@@ -22,7 +22,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {AxisDirection, CardFobAdapter, LinkedTime} from './card_fob_types';
+import {AxisDirection, CardFobAdapter, TimeSelection} from './card_fob_types';
 
 export enum Fob {
   NONE,
@@ -40,12 +40,12 @@ export class CardFobControllerComponent {
   @ViewChild('startFobWrapper') readonly startFobWrapper!: ElementRef;
   @ViewChild('endFobWrapper') readonly endFobWrapper!: ElementRef;
   @Input() axisDirection!: AxisDirection;
-  @Input() linkedTime!: LinkedTime;
+  @Input() timeSelection!: TimeSelection;
   @Input() cardAdapter!: CardFobAdapter;
   @Input() showExtendedLine?: Boolean = false;
 
-  @Output() onSelectTimeToggle = new EventEmitter();
-  @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
+  @Output() onTimeSelectionChanged = new EventEmitter<TimeSelection>();
+  @Output() onTimeSelectionToggled = new EventEmitter();
 
   private currentDraggingFob: Fob = Fob.NONE;
 
@@ -83,7 +83,7 @@ export class CardFobControllerComponent {
   mouseMove(event: MouseEvent) {
     if (this.currentDraggingFob === Fob.NONE) return;
 
-    const newLinkedTime = this.linkedTime;
+    const newLinkedTimeSelection = this.timeSelection;
     let newStep: number | null = null;
     const mousePosition = this.getMousePositionFromEvent(event);
     const movement =
@@ -103,19 +103,19 @@ export class CardFobControllerComponent {
     if (this.currentDraggingFob === Fob.END) {
       // Do not let the end fob pass the start fob.
       // TODO: add swapping logic here to allow continued dragging
-      if (newStep <= this.linkedTime.start.step) {
-        newStep = this.linkedTime.start.step;
+      if (newStep <= this.timeSelection.start.step) {
+        newStep = this.timeSelection.start.step;
       }
-      newLinkedTime.end!.step = newStep;
+      newLinkedTimeSelection.end!.step = newStep;
     } else {
       // Do not let the start fob pass the end fob.
       // TODO: add swapping logic here to allow continued dragging
-      if (this.linkedTime.end && newStep >= this.linkedTime.end.step) {
-        newStep = this.linkedTime.end.step;
+      if (this.timeSelection.end && newStep >= this.timeSelection.end.step) {
+        newStep = this.timeSelection.end.step;
       }
-      newLinkedTime.start.step = newStep;
+      newLinkedTimeSelection.start.step = newStep;
     }
-    this.onSelectTimeChanged.emit(newLinkedTime);
+    this.onTimeSelectionChanged.emit(newLinkedTimeSelection);
   }
 
   isDraggingLower(position: number, movement: number): boolean {
@@ -160,8 +160,8 @@ export class CardFobControllerComponent {
 
   getDraggingFobStep(): number {
     return this.currentDraggingFob !== Fob.END
-      ? this.linkedTime!.start.step
-      : this.linkedTime!.end!.step;
+      ? this.timeSelection!.start.step
+      : this.timeSelection!.end!.step;
   }
 
   getMousePositionFromEvent(event: MouseEvent): number {
@@ -174,7 +174,7 @@ export class CardFobControllerComponent {
     // Types empty string in fob.
     if (step === null) {
       // Removes fob on range selection and sets step to minimum on single selection.
-      if (this.linkedTime.end !== null) {
+      if (this.timeSelection.end !== null) {
         this.onFobRemoved(fob);
       } else {
         // TODO(jieweiwu): sets start step to minum.
@@ -183,26 +183,26 @@ export class CardFobControllerComponent {
       return;
     }
 
-    let newLinkedTime = {...this.linkedTime};
+    let newTimeSelection = {...this.timeSelection};
     if (fob === Fob.START) {
-      newLinkedTime.start = {step};
+      newTimeSelection.start = {step};
     } else if (fob === Fob.END) {
-      newLinkedTime.end = {step};
+      newTimeSelection.end = {step};
     }
 
     if (
-      newLinkedTime.end !== null &&
-      newLinkedTime.start.step > newLinkedTime.end.step
+      newTimeSelection.end !== null &&
+      newTimeSelection.start.step > newTimeSelection.end.step
     ) {
       // The Start Step is now greater than the End Step - flip them.
-      newLinkedTime = {
-        start: newLinkedTime.end,
-        end: newLinkedTime.start,
+      newTimeSelection = {
+        start: newTimeSelection.end,
+        end: newTimeSelection.start,
       };
     }
 
-    // TODO(jieweiwu): Only emits action when linked time is changed.
-    this.onSelectTimeChanged.emit(newLinkedTime);
+    // TODO(jieweiwu): Only emits action when selected time is changed.
+    this.onTimeSelectionChanged.emit(newTimeSelection);
   }
 
   /**
@@ -216,15 +216,18 @@ export class CardFobControllerComponent {
    */
   onFobRemoved(fob: Fob) {
     if (fob === Fob.END) {
-      this.onSelectTimeChanged.emit({...this.linkedTime, end: null});
+      this.onTimeSelectionChanged.emit({...this.timeSelection, end: null});
       return;
     }
 
-    if (this.linkedTime.end !== null) {
-      this.onSelectTimeChanged.emit({start: this.linkedTime.end, end: null});
+    if (this.timeSelection.end !== null) {
+      this.onTimeSelectionChanged.emit({
+        start: this.timeSelection.end,
+        end: null,
+      });
       return;
     }
 
-    this.onSelectTimeToggle.emit();
+    this.onTimeSelectionToggled.emit();
   }
 }

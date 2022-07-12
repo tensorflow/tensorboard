@@ -91,10 +91,10 @@ describe('metrics right_pane', () => {
       store.overrideSelector(selectors.getIsDataTableEnabled, false);
       store.overrideSelector(selectors.getEnabledCardWidthSetting, false);
       store.overrideSelector(selectors.getMetricsCardMinWidth, null);
-      store.overrideSelector(selectors.getMetricsSelectTimeEnabled, false);
+      store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, false);
       store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
-      store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
-      store.overrideSelector(selectors.getMetricsSelectedTimeSetting, {
+      store.overrideSelector(selectors.getMetricsLinkedTimeRangeEnabled, false);
+      store.overrideSelector(selectors.getMetricsLinkedTimeSelectionSetting, {
         start: {step: 0},
         end: {step: 1000},
       });
@@ -421,7 +421,7 @@ describe('metrics right_pane', () => {
 
       describe('toggles', () => {
         it('renders and dispatches action when toggling the feature', () => {
-          store.overrideSelector(selectors.getMetricsSelectTimeEnabled, false);
+          store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, false);
           const fixture = TestBed.createComponent(SettingsViewContainer);
           fixture.detectChanges();
 
@@ -432,10 +432,10 @@ describe('metrics right_pane', () => {
           enabled.nativeElement.click();
 
           expect(dispatchSpy).toHaveBeenCalledOnceWith(
-            actions.selectTimeEnableToggled()
+            actions.linkedTimeToggled()
           );
 
-          store.overrideSelector(selectors.getMetricsSelectTimeEnabled, true);
+          store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, true);
           store.refreshState();
           fixture.detectChanges();
           expect(enabled.nativeElement.ariaChecked).toBe('true');
@@ -446,14 +446,20 @@ describe('metrics right_pane', () => {
         it('displays tb-range-input on both single and range step selection mode', () => {
           store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
           store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
-          store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
+          store.overrideSelector(
+            selectors.getMetricsLinkedTimeRangeEnabled,
+            false
+          );
           const fixture = TestBed.createComponent(SettingsViewContainer);
           fixture.detectChanges();
 
           const el = fixture.debugElement.query(By.css('.linked-time'));
           expect(el.query(By.css('tb-range-input'))).toBeTruthy();
 
-          store.overrideSelector(selectors.getMetricsUseRangeSelectTime, true);
+          store.overrideSelector(
+            selectors.getMetricsLinkedTimeRangeEnabled,
+            true
+          );
           store.refreshState();
           fixture.detectChanges();
           expect(el.query(By.css('tb-range-input'))).toBeTruthy();
@@ -462,8 +468,11 @@ describe('metrics right_pane', () => {
         it('disables tb-range-input on select time disabled', () => {
           store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
           store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
-          store.overrideSelector(selectors.getMetricsSelectTimeEnabled, false);
-          store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
+          store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, false);
+          store.overrideSelector(
+            selectors.getMetricsLinkedTimeRangeEnabled,
+            false
+          );
           const fixture = TestBed.createComponent(SettingsViewContainer);
           fixture.detectChanges();
 
@@ -476,8 +485,11 @@ describe('metrics right_pane', () => {
         it('enables tb-range-input on select time enabled', () => {
           store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
           store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
-          store.overrideSelector(selectors.getMetricsSelectTimeEnabled, true);
-          store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
+          store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, true);
+          store.overrideSelector(
+            selectors.getMetricsLinkedTimeRangeEnabled,
+            false
+          );
           const fixture = TestBed.createComponent(SettingsViewContainer);
           fixture.detectChanges();
 
@@ -488,11 +500,17 @@ describe('metrics right_pane', () => {
         });
 
         it('dispatches actions when making range step change', () => {
-          store.overrideSelector(selectors.getMetricsUseRangeSelectTime, true);
-          store.overrideSelector(selectors.getMetricsSelectedTimeSetting, {
-            start: {step: 0},
-            end: {step: 0},
-          });
+          store.overrideSelector(
+            selectors.getMetricsLinkedTimeRangeEnabled,
+            true
+          );
+          store.overrideSelector(
+            selectors.getMetricsLinkedTimeSelectionSetting,
+            {
+              start: {step: 0},
+              end: {step: 0},
+            }
+          );
           const fixture = TestBed.createComponent(SettingsViewContainer);
           fixture.detectChanges();
 
@@ -505,7 +523,7 @@ describe('metrics right_pane', () => {
           });
 
           expect(dispatchSpy).toHaveBeenCalledOnceWith(
-            actions.timeSelectionChanged({
+            actions.linkedTimeSelectionChanged({
               startStep: 10,
               endStep: 200,
             })
@@ -513,11 +531,17 @@ describe('metrics right_pane', () => {
         });
 
         it('dispatches actions when making single step change', () => {
-          store.overrideSelector(selectors.getMetricsUseRangeSelectTime, true);
-          store.overrideSelector(selectors.getMetricsSelectedTimeSetting, {
-            start: {step: 0},
-            end: null,
-          });
+          store.overrideSelector(
+            selectors.getMetricsLinkedTimeRangeEnabled,
+            true
+          );
+          store.overrideSelector(
+            selectors.getMetricsLinkedTimeSelectionSetting,
+            {
+              start: {step: 0},
+              end: null,
+            }
+          );
           const fixture = TestBed.createComponent(SettingsViewContainer);
           fixture.detectChanges();
 
@@ -527,7 +551,7 @@ describe('metrics right_pane', () => {
           rangeInput.triggerEventHandler('singleValueChanged', 10);
 
           expect(dispatchSpy).toHaveBeenCalledOnceWith(
-            actions.timeSelectionChanged({
+            actions.linkedTimeSelectionChanged({
               startStep: 10,
               endStep: undefined,
             })
@@ -570,9 +594,7 @@ describe('metrics right_pane', () => {
 
         select(fixture, '.scalars-step-selector input').nativeElement.click();
 
-        expect(dispatchSpy).toHaveBeenCalledWith(
-          actions.stepSelectorEnableToggled()
-        );
+        expect(dispatchSpy).toHaveBeenCalledWith(actions.stepSelectorToggled());
       });
     });
   });

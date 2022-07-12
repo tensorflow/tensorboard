@@ -169,7 +169,7 @@ export const metricsShowAllPlugins = createAction(
   '[Metrics] Toggle Show All Plugins'
 );
 
-export const timeSelectionChanged = createAction(
+export const linkedTimeSelectionChanged = createAction(
   '[Metrics] Linked Time Selection Changed',
   props<{
     startStep: number;
@@ -181,15 +181,11 @@ export const timeSelectionCleared = createAction(
   '[Metrics] Linked Time Selection Cleared'
 );
 
-export const selectTimeEnableToggled = createAction(
-  '[Metrics] Select Time Enable Toggle'
+export const linkedTimeToggled = createAction(
+  '[Metrics] Linked Time Enable Toggle'
 );
 
-export const useRangeSelectTimeToggled = createAction(
-  '[Metrics] Use Range Select Time Toggle'
-);
-
-export const stepSelectorEnableToggled = createAction(
+export const stepSelectorToggled = createAction(
   '[Metrics] Time Selector Enable Toggle'
 );
 

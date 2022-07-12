@@ -23,10 +23,10 @@ import {
   CardMetadata,
   CardUniqueInfo,
   HistogramMode,
-  LinkedTime,
   NonPinnedCardId,
   PinnedCardId,
   PluginType,
+  TimeSelection,
   TooltipSort,
   XAxisType,
 } from '../internal_types';
@@ -354,10 +354,10 @@ export const getMetricsTagGroupExpansionState = createSelector(
   }
 );
 
-export const getMetricsSelectTimeEnabled = createSelector(
+export const getMetricsLinkedTimeEnabled = createSelector(
   selectMetricsState,
   (state: MetricsState): boolean => {
-    return state.selectTimeEnabled;
+    return state.linkedTimeEnabled;
   }
 );
 
@@ -368,10 +368,10 @@ export const getMetricsStepSelectorEnabled = createSelector(
   }
 );
 
-export const getMetricsUseRangeSelectTime = createSelector(
+export const getMetricsLinkedTimeRangeEnabled = createSelector(
   selectMetricsState,
   (state: MetricsState): boolean => {
-    return state.useRangeSelectTime;
+    return state.linkedTimeRangeEnabled;
   }
 );
 
@@ -387,21 +387,21 @@ export const getMetricsStepMinMax = createSelector(
 );
 
 /**
- * Returns value of the selected time set by user. When selected time is never
+ * Returns value of the linked time set by user. When linked time selection is never
  * set, it returns the default value which is derived from the timeseries data
  * loaded thus far.
  *
  * This selector is intended to used by settings panel only. Other views should
- * use `getMetricsSelectedTime` that returns `LinkedTime` value according to
+ * use `getMetricsLinkedTimeSelection` that returns `TimeSelection` value according to
  * the setting.
  *
- * @see getMetricsSelectedTime For most views.
+ * @see getMetricsLinkedTimeSelection For most views.
  */
-export const getMetricsSelectedTimeSetting = createSelector(
+export const getMetricsLinkedTimeSelectionSetting = createSelector(
   selectMetricsState,
   getMetricsStepMinMax,
-  (state, stepMinMax): LinkedTime => {
-    if (!state.selectedTime) {
+  (state, stepMinMax): TimeSelection => {
+    if (!state.linkedTimeSelection) {
       return {
         start: {
           step: stepMinMax.min,
@@ -410,26 +410,29 @@ export const getMetricsSelectedTimeSetting = createSelector(
       };
     }
 
-    return state.selectedTime;
+    return state.linkedTimeSelection;
   }
 );
 
 /**
- * Returns selected time set by user. If selectTime is disabled, it returns
+ * Returns linked time selection set by user. If linkedTime is disabled, it returns
  * `null`. Also, when range selection mode is disabled, it returns `end=null`
  * even if it has value set.
  *
  * Virtually all views should use this selector.
  */
-export const getMetricsSelectedTime = createSelector(
+export const getMetricsLinkedTimeSelection = createSelector(
   selectMetricsState,
-  getMetricsSelectedTimeSetting,
-  (state: MetricsState, selectedTime: LinkedTime): LinkedTime | null => {
-    if (!state.selectTimeEnabled) return null;
-    if (state.useRangeSelectTime) {
-      return selectedTime;
+  getMetricsLinkedTimeSelectionSetting,
+  (
+    state: MetricsState,
+    linkedTimeSelection: TimeSelection
+  ): TimeSelection | null => {
+    if (!state.linkedTimeEnabled) return null;
+    if (state.linkedTimeRangeEnabled) {
+      return linkedTimeSelection;
     }
-    return {...selectedTime, end: null};
+    return {...linkedTimeSelection, end: null};
   }
 );
 

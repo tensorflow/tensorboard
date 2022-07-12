@@ -13,12 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {LinkedTime} from '../../types';
+import {TimeSelection} from '../../types';
 
-export type LinkedTimeWithClipped = LinkedTime & {clipped: boolean};
+export type TimeSelectionWithClipped = TimeSelection & {clipped: boolean};
 
 @Component({
-  selector: 'vis-selected-time-warning',
+  selector: 'vis-linked-time-selection-warning',
   template: `
     <mat-icon
       *ngIf="isClipped"
@@ -33,10 +33,10 @@ export type LinkedTimeWithClipped = LinkedTime & {clipped: boolean};
       title="Data is not found on selected step. We highlighted the closest step for you."
     ></mat-icon>
   `,
-  styleUrls: ['vis_selected_time_warning_component.css'],
+  styleUrls: ['vis_linked_time_selection_warning_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class VisSelectedTimeWarningComponent {
+export class VisLinkedTimeSelectionWarningComponent {
   @Input() isClipped?: boolean = false;
   @Input() isClosestStepHighlighted?: boolean = false;
 }

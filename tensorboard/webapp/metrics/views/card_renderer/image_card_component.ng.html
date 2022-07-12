@@ -22,10 +22,10 @@ limitations under the License.
         title="{{ tag }}"
         value="{{ title }}"
       ></tb-truncated-path>
-      <vis-selected-time-warning
-        [isClipped]="selectedTime && selectedTime.clipped"
+      <vis-linked-time-selection-warning
+        [isClipped]="linkedTimeSelection && linkedTimeSelection.clipped"
         [isClosestStepHighlighted]="isClosestStepHighlighted"
-      ></vis-selected-time-warning>
+      ></vis-linked-time-selection-warning>
     </span>
     <span class="controls">
       <button
@@ -82,7 +82,7 @@ limitations under the License.
     <mat-slider
       class="step-slider"
       color="primary"
-      [ngClass]="[selectedTime && !selectedTime.clipped && selectedTime.endStep !== null ? 'hide-slider' : '']"
+      [ngClass]="[linkedTimeSelection && !linkedTimeSelection.clipped && linkedTimeSelection.endStep !== null ? 'hide-slider' : '']"
       [disabled]="steps.length <= 1"
       [min]="0"
       [max]="steps.length - 1"
@@ -93,9 +93,9 @@ limitations under the License.
     ></mat-slider>
     <div
       class="linked-time-wrapper"
-      *ngIf="selectedTime && !selectedTime.clipped"
+      *ngIf="linkedTimeSelection && !linkedTimeSelection.clipped"
     >
-      <span *ngIf="selectedTime.endStep !== null">
+      <span *ngIf="linkedTimeSelection.endStep !== null">
         <span class="slider-track"></span>
         <span
           class="slider-track-fill"

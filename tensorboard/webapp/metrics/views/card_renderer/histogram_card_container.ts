@@ -28,7 +28,7 @@ import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
 import {HistogramDatum} from '../../../widgets/histogram/histogram_types';
 import {buildNormalizedHistograms} from '../../../widgets/histogram/histogram_util';
-import {selectTimeEnableToggled, timeSelectionChanged} from '../../actions';
+import {linkedTimeSelectionChanged, linkedTimeToggled} from '../../actions';
 import {HistogramStepDatum, PluginType} from '../../data_source';
 import {
   getCardLoadState,
@@ -36,16 +36,16 @@ import {
   getCardPinnedState,
   getCardTimeSeries,
   getMetricsHistogramMode,
-  getMetricsSelectedTime,
+  getMetricsLinkedTimeSelection,
   getMetricsXAxisType,
 } from '../../store';
-import {CardId, CardMetadata, LinkedTime} from '../../types';
+import {CardId, CardMetadata, TimeSelection} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {
-  maybeClipSelectedTime,
+  maybeClipLinkedTimeSelection,
   maybeSetClosestStartStep,
-  ViewSelectedTime,
+  TimeSelectionView,
 } from './utils';
 
 type HistogramCardMetadata = CardMetadata & {
@@ -68,11 +68,11 @@ type HistogramCardMetadata = CardMetadata & {
       [showFullSize]="showFullSize"
       [isPinned]="isPinned$ | async"
       [isClosestStepHighlighted]="isClosestStepHighlighted$ | async"
-      [selectedTime]="viewSelectedTime$ | async"
+      [linkedTimeSelection]="linkedTimeSelection$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
-      (onSelectTimeChanged)="onSelectTimeChanged($event)"
-      (onSelectTimeToggle)="onSelectTimeToggle()"
+      (onLinkedTimeSelectionChanged)="onLinkedTimeSelectionChanged($event)"
+      (onLinkedTimeToggled)="onLinkedTimeToggled()"
     ></histogram-card-component>
   `,
   styles: [
@@ -104,9 +104,9 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
   xAxisType$ = this.store.select(getMetricsXAxisType);
   showFullSize = false;
   isPinned$?: Observable<boolean>;
-  viewSelectedTime$?: Observable<ViewSelectedTime | null>;
+  linkedTimeSelection$?: Observable<TimeSelectionView | null>;
   isClosestStepHighlighted$?: Observable<boolean | null>;
-  isSelectedTimeClipped$?: Observable<boolean>;
+  isTimeSelectionClipped$?: Observable<boolean>;
   steps$?: Observable<number[]>;
 
   private isHistogramCardMetadata(
@@ -162,12 +162,12 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
       map((data) => data.map((datum) => datum.step))
     );
 
-    this.viewSelectedTime$ = combineLatest([
-      this.store.select(getMetricsSelectedTime),
+    this.linkedTimeSelection$ = combineLatest([
+      this.store.select(getMetricsLinkedTimeSelection),
       this.steps$,
     ]).pipe(
-      map(([selectedTime, steps]) => {
-        if (!selectedTime) return null;
+      map(([linkedTimeSelection, steps]) => {
+        if (!linkedTimeSelection) return null;
 
         let minStep = Infinity;
         let maxStep = -Infinity;
@@ -175,27 +175,27 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
           minStep = Math.min(step, minStep);
           maxStep = Math.max(step, maxStep);
         }
-        const viewSelectedTime = maybeClipSelectedTime(
-          selectedTime,
+        const linkedTimeSelectionView = maybeClipLinkedTimeSelection(
+          linkedTimeSelection,
           minStep,
           maxStep
         );
 
-        return maybeSetClosestStartStep(viewSelectedTime, steps);
+        return maybeSetClosestStartStep(linkedTimeSelectionView, steps);
       })
     );
 
     this.isClosestStepHighlighted$ = combineLatest([
-      this.store.select(getMetricsSelectedTime),
-      this.viewSelectedTime$,
+      this.store.select(getMetricsLinkedTimeSelection),
+      this.linkedTimeSelection$,
     ]).pipe(
-      map(([selectedTime, viewSelectedTime]) => {
+      map(([linkedTimeSelection, linkedTimeSelectionView]) => {
         return (
-          selectedTime &&
-          viewSelectedTime &&
-          !viewSelectedTime.clipped &&
-          selectedTime.end === null &&
-          selectedTime.start.step !== viewSelectedTime.startStep
+          linkedTimeSelection &&
+          linkedTimeSelectionView &&
+          !linkedTimeSelectionView.clipped &&
+          linkedTimeSelection.end === null &&
+          linkedTimeSelection.start.step !== linkedTimeSelectionView.startStep
         );
       })
     );
@@ -223,16 +223,18 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
   }
 
-  onSelectTimeChanged(newLinkedTime: LinkedTime) {
+  onLinkedTimeSelectionChanged(newLinkedTimeSelection: TimeSelection) {
     this.store.dispatch(
-      timeSelectionChanged({
-        startStep: newLinkedTime.start.step,
-        endStep: newLinkedTime.end ? newLinkedTime.end.step : undefined,
+      linkedTimeSelectionChanged({
+        startStep: newLinkedTimeSelection.start.step,
+        endStep: newLinkedTimeSelection.end
+          ? newLinkedTimeSelection.end.step
+          : undefined,
       })
     );
   }
 
-  onSelectTimeToggle() {
-    this.store.dispatch(selectTimeEnableToggled());
+  onLinkedTimeToggled() {
+    this.store.dispatch(linkedTimeToggled());
   }
 }

@@ -118,12 +118,12 @@ describe('tb_feature_flag_data_source', () => {
         });
       });
 
-      it('returns enableLinkTime from the query params', () => {
+      it('returns enableLinkedTime from the query params', () => {
         getParamsSpy.and.returnValues(
-          new URLSearchParams('enableLinkTime=false'),
-          new URLSearchParams('enableLinkTime='),
-          new URLSearchParams('enableLinkTime=true'),
-          new URLSearchParams('enableLinkTime=foo')
+          new URLSearchParams('enableLinkedTime=false'),
+          new URLSearchParams('enableLinkedTime='),
+          new URLSearchParams('enableLinkedTime=true'),
+          new URLSearchParams('enableLinkedTime=foo')
         );
         expect(dataSource.getFeatures()).toEqual({
           enabledLinkedTime: false,

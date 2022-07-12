@@ -14,7 +14,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {
   AxisDirection,
   CardFobAdapter,
-  LinkedTime,
+  TimeSelection,
 } from '../../../widgets/card_fob/card_fob_types';
 import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
 
@@ -23,23 +23,23 @@ import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
   template: `
     <card-fob-controller
       [axisDirection]="axisDirection"
-      [linkedTime]="linkedTime"
+      [timeSelection]="timeSelection"
       [cardAdapter]="this"
       [showExtendedLine]="true"
-      (onSelectTimeChanged)="onSelectTimeChanged.emit($event)"
-      (onSelectTimeToggle)="onSelectTimeToggle.emit($event)"
+      (onTimeSelectionChanged)="onTimeSelectionChanged.emit($event)"
+      (onTimeSelectionToggled)="onTimeSelectionToggled.emit($event)"
     ></card-fob-controller>
   `,
   styleUrls: ['scalar_card_fob_controller.css'],
 })
 export class ScalarCardFobController implements CardFobAdapter {
-  @Input() linkedTime!: LinkedTime;
+  @Input() timeSelection!: TimeSelection;
   @Input() scale!: Scale;
   @Input() minMax!: [number, number];
   @Input() axisSize!: number;
 
-  @Output() onSelectTimeChanged = new EventEmitter<LinkedTime>();
-  @Output() onSelectTimeToggle = new EventEmitter();
+  @Output() onTimeSelectionChanged = new EventEmitter<TimeSelection>();
+  @Output() onTimeSelectionToggled = new EventEmitter();
 
   readonly axisDirection = AxisDirection.HORIZONTAL;
 
