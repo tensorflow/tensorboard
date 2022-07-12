@@ -152,7 +152,7 @@ export function maybeSetClosestStartStep(
 
   const closestStep = getClosestStep(timeSelectionView.startStep, steps);
   if (closestStep !== null) {
-    // If the closest step is startStep itself, this is equvalent to timeSelectionView.
+    // If the closest step is startStep itself, this is equivalent to timeSelectionView.
     return {
       ...timeSelectionView,
       startStep: closestStep,
