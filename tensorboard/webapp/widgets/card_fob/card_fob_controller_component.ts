@@ -160,8 +160,8 @@ export class CardFobControllerComponent {
 
   getDraggingFobStep(): number {
     return this.currentDraggingFob !== Fob.END
-      ? this.timeSelection!.start.step
-      : this.timeSelection!.end!.step;
+      ? this.timeSelection.start.step
+      : this.timeSelection.end!.step;
   }
 
   getMousePositionFromEvent(event: MouseEvent): number {
