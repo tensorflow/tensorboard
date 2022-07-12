@@ -208,10 +208,10 @@ export class ScalarCardComponent<Downloader> {
 
     return {
       start: {
-        step: this.linkedTimeSelection!.startStep,
+        step: this.linkedTimeSelection.startStep,
       },
-      end: this.linkedTimeSelection!.endStep
-        ? {step: this.linkedTimeSelection!.endStep}
+      end: this.linkedTimeSelection.endStep
+        ? {step: this.linkedTimeSelection.endStep}
         : null,
     };
   }
