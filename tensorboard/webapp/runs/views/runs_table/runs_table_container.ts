@@ -66,6 +66,7 @@ import {
   runColorChanged,
   runPageSelectionToggled,
   runSelectionToggled,
+  runSelectionToggledOnly,
   runSelectorPaginationOptionChanged,
   runSelectorRegexFilterChanged,
   runSelectorSortChanged,
@@ -205,6 +206,7 @@ function matchFilter(
       [sortOption]="sortOption$ | async"
       [usePagination]="usePagination"
       (onSelectionToggle)="onRunSelectionToggle($event)"
+      (onSelectionDblClick)="onRunSelectionDblClick($event)"
       (onPageSelectionToggle)="onPageSelectionToggle($event)"
       (onPaginationChange)="onPaginationChange($event)"
       (onRegexFilterChange)="onRegexFilterChange($event)"
@@ -559,6 +561,20 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   onRunSelectionToggle(item: RunTableItem) {
     this.store.dispatch(
       runSelectionToggled({
+        runId: item.run.id,
+      })
+    );
+  }
+
+  // BDTODO: Fill out the doc.
+  // We are relying on the change event consistently being fired before the
+  // dblclick event. We know the click event is fired before the dblclick event
+  // (see https://www.quirksmode.org/dom/events/click.html) so we presume we
+  // can also rely on the change event being fired before the dblclick event.
+  onRunSelectionDblClick(item: RunTableItem) {
+    this.store.dispatch(
+      // BDTODO: Rename this action.
+      runSelectionToggledOnly({
         runId: item.run.id,
       })
     );

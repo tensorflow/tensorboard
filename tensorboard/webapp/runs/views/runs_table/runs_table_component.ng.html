@@ -233,6 +233,7 @@ limitations under the License.
           <mat-checkbox
             [checked]="item.selected"
             (change)="onSelectionToggle.emit(item)"
+            (dblclick)="onSelectionDblClick.emit(item)"
           ></mat-checkbox>
         </span>
         <tb-experiment-alias

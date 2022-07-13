@@ -380,6 +380,19 @@ const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
       selectionState: nextSelectionState,
     };
   }),
+  on(runsActions.runSelectionToggledOnly, (state, {runId}) => {
+    const nextSelectionState = new Map<string, boolean>();
+
+    for (const runId of state.selectionState.keys()) {
+      nextSelectionState.set(runId, false);
+    }
+    nextSelectionState.set(runId, true);
+
+    return {
+      ...state,
+      selectionState: nextSelectionState,
+    };
+  }),
   on(runsActions.runPageSelectionToggled, (state, {runIds}) => {
     const nextSelectionState = new Map(state.selectionState);
 

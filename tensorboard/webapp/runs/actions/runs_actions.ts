@@ -53,6 +53,11 @@ export const runSelectionToggled = createAction(
   props<{runId: string}>()
 );
 
+export const runSelectionToggledOnly = createAction(
+  '[Runs] Run Selection Toggled to be Only',
+  props<{runId: string}>()
+);
+
 export const runPageSelectionToggled = createAction(
   '[Runs] Run Page Selection Toggled',
   props<{runIds: string[]}>()
