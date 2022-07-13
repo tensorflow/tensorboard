@@ -210,8 +210,10 @@ export class SettingsViewContainer {
   onLinkedTimeSelectionChanged(newValue: TimeSelection) {
     this.store.dispatch(
       linkedTimeSelectionChanged({
-        startStep: newValue.start.step,
-        endStep: newValue.end?.step,
+        timeSelection: {
+          startStep: newValue.start.step,
+          endStep: newValue.end?.step,
+        },
       })
     );
   }

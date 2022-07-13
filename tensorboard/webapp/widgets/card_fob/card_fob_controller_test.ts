@@ -18,7 +18,12 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {CardFobComponent} from './card_fob_component';
 import {CardFobControllerComponent, Fob} from './card_fob_controller_component';
-import {AxisDirection, CardFobAdapter, TimeSelection} from './card_fob_types';
+import {
+  AxisDirection,
+  CardFobAdapter,
+  TimeSelection,
+  TimeSelectionAffordance,
+} from './card_fob_types';
 
 @Component({
   selector: 'testable-comp',
@@ -143,7 +148,7 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(1);
 
-      fobController.startDrag(Fob.START);
+      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {clientY: 3, movementY: 1});
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
@@ -152,9 +157,12 @@ describe('card_fob_controller', () => {
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(3);
-      expect(onTimeSelectionChanged).toHaveBeenCalledOnceWith({
-        start: {step: 3},
-        end: null,
+      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
+        timeSelection: {
+          start: {step: 3},
+          end: null,
+        },
+        affordance: TimeSelectionAffordance.FOB,
       });
     });
 
@@ -168,7 +176,7 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(4);
 
-      fobController.startDrag(Fob.START);
+      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 2,
         movementY: -1,
@@ -180,9 +188,12 @@ describe('card_fob_controller', () => {
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(2);
-      expect(onTimeSelectionChanged).toHaveBeenCalledOnceWith({
-        start: {step: 2},
-        end: null,
+      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
+        timeSelection: {
+          start: {step: 2},
+          end: null,
+        },
+        affordance: TimeSelectionAffordance.FOB,
       });
     });
 
@@ -196,7 +207,7 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(2);
 
-      fobController.startDrag(Fob.START);
+      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 4,
         movementY: -1,
@@ -222,7 +233,7 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(4);
 
-      fobController.startDrag(Fob.START);
+      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {clientY: 2, movementY: 1});
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
@@ -246,7 +257,7 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(4);
 
-      fobController.startDrag(Fob.START);
+      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {clientY: 8, movementY: 1});
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
@@ -269,7 +280,7 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(1);
 
-      fobController.startDrag(Fob.END);
+      fobController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
       onTimeSelectionChanged.calls.reset();
       const fakeEvent = new MouseEvent('mousemove', {clientY: 3, movementY: 1});
       fobController.mouseMove(fakeEvent);
@@ -280,8 +291,11 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(3);
       expect(onTimeSelectionChanged).toHaveBeenCalledOnceWith({
-        start: {step: 1},
-        end: {step: 3},
+        timeSelection: {
+          start: {step: 1},
+          end: {step: 3},
+        },
+        affordance: TimeSelectionAffordance.FOB,
       });
     });
 
@@ -295,7 +309,7 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(4);
 
-      fobController.startDrag(Fob.END);
+      fobController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 2,
         movementY: -1,
@@ -308,8 +322,11 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(2);
       expect(onTimeSelectionChanged).toHaveBeenCalledOnceWith({
-        start: {step: 1},
-        end: {step: 2},
+        timeSelection: {
+          start: {step: 1},
+          end: {step: 2},
+        },
+        affordance: TimeSelectionAffordance.FOB,
       });
     });
 
@@ -323,7 +340,7 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(2);
 
-      fobController.startDrag(Fob.END);
+      fobController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 3,
         movementY: -1,
@@ -349,7 +366,7 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(3);
 
-      fobController.startDrag(Fob.END);
+      fobController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {clientY: 2, movementY: 1});
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
@@ -375,7 +392,7 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(1);
 
-      fobController.startDrag(Fob.START);
+      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {clientX: 3, movementX: 1});
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
@@ -385,8 +402,11 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(3);
       expect(onTimeSelectionChanged).toHaveBeenCalledOnceWith({
-        start: {step: 3},
-        end: null,
+        timeSelection: {
+          start: {step: 3},
+          end: null,
+        },
+        affordance: TimeSelectionAffordance.FOB,
       });
     });
 
@@ -401,7 +421,7 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(4);
 
-      fobController.startDrag(Fob.START);
+      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 2,
         movementX: -1,
@@ -414,8 +434,11 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(2);
       expect(onTimeSelectionChanged).toHaveBeenCalledOnceWith({
-        start: {step: 2},
-        end: null,
+        timeSelection: {
+          start: {step: 2},
+          end: null,
+        },
+        affordance: TimeSelectionAffordance.FOB,
       });
     });
 
@@ -430,7 +453,7 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(2);
 
-      fobController.startDrag(Fob.START);
+      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 4,
         movementX: -1,
@@ -457,7 +480,7 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(4);
 
-      fobController.startDrag(Fob.START);
+      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {clientX: 2, movementX: 1});
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
@@ -483,7 +506,7 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(4);
 
-      fobController.startDrag(Fob.START);
+      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {clientX: 8, movementX: 1});
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
@@ -507,7 +530,7 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(1);
 
-      fobController.startDrag(Fob.END);
+      fobController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
       onTimeSelectionChanged.calls.reset();
       const fakeEvent = new MouseEvent('mousemove', {clientX: 3, movementX: 1});
       fobController.mouseMove(fakeEvent);
@@ -518,8 +541,11 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(3);
       expect(onTimeSelectionChanged).toHaveBeenCalledOnceWith({
-        start: {step: 1},
-        end: {step: 3},
+        timeSelection: {
+          start: {step: 1},
+          end: {step: 3},
+        },
+        affordance: TimeSelectionAffordance.FOB,
       });
     });
 
@@ -534,7 +560,7 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(4);
 
-      fobController.startDrag(Fob.END);
+      fobController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 2,
         movementX: -1,
@@ -547,8 +573,11 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(2);
       expect(onTimeSelectionChanged).toHaveBeenCalledOnceWith({
-        start: {step: 1},
-        end: {step: 2},
+        timeSelection: {
+          start: {step: 1},
+          end: {step: 2},
+        },
+        affordance: TimeSelectionAffordance.FOB,
       });
     });
 
@@ -563,7 +592,7 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(2);
 
-      fobController.startDrag(Fob.END);
+      fobController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 3,
         movementX: -1,
@@ -590,7 +619,7 @@ describe('card_fob_controller', () => {
       expect(
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(3);
-      fobController.startDrag(Fob.END);
+      fobController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {clientX: 2, movementX: 1});
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
@@ -664,8 +693,11 @@ describe('card_fob_controller', () => {
         startFobExtendedLine.nativeElement.getBoundingClientRect().left
       ).toEqual(3);
       expect(onTimeSelectionChanged).toHaveBeenCalledWith({
-        start: {step: 3},
-        end: {step: 3},
+        timeSelection: {
+          start: {step: 3},
+          end: {step: 3},
+        },
+        affordance: TimeSelectionAffordance.EXTENDED_LINE,
       });
 
       // Clicks and drags extended line from end fob
@@ -683,10 +715,13 @@ describe('card_fob_controller', () => {
       expect(getStepHigherSpy).toHaveBeenCalledWith(5);
       expect(
         endFobExtendedLine.nativeElement.getBoundingClientRect().left
-      ).toEqual(5);
+      ).toBe(5);
       expect(onTimeSelectionChanged).toHaveBeenCalledWith({
-        start: {step: 3},
-        end: {step: 5},
+        timeSelection: {
+          start: {step: 3},
+          end: {step: 5},
+        },
+        affordance: TimeSelectionAffordance.EXTENDED_LINE,
       });
     });
   });
@@ -700,9 +735,12 @@ describe('card_fob_controller', () => {
       const fobController = fixture.componentInstance.fobController;
       fobController.stepTyped(Fob.START, 3);
       fixture.detectChanges();
-      expect(onTimeSelectionChanged).toHaveBeenCalledOnceWith({
-        start: {step: 3},
-        end: null,
+      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
+        timeSelection: {
+          start: {step: 3},
+          end: null,
+        },
+        affordance: TimeSelectionAffordance.FOB_TEXT,
       });
     });
 
@@ -714,9 +752,12 @@ describe('card_fob_controller', () => {
       const fobController = fixture.componentInstance.fobController;
       fobController.stepTyped(Fob.START, 3);
       fixture.detectChanges();
-      expect(onTimeSelectionChanged).toHaveBeenCalledOnceWith({
-        start: {step: 3},
-        end: {step: 4},
+      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
+        timeSelection: {
+          start: {step: 3},
+          end: {step: 4},
+        },
+        affordance: TimeSelectionAffordance.FOB_TEXT,
       });
     });
 
@@ -728,9 +769,12 @@ describe('card_fob_controller', () => {
       const fobController = fixture.componentInstance.fobController;
       fobController.stepTyped(Fob.END, 3);
       fixture.detectChanges();
-      expect(onTimeSelectionChanged).toHaveBeenCalledOnceWith({
-        start: {step: 1},
-        end: {step: 3},
+      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
+        timeSelection: {
+          start: {step: 1},
+          end: {step: 3},
+        },
+        affordance: TimeSelectionAffordance.FOB_TEXT,
       });
     });
 
@@ -742,9 +786,12 @@ describe('card_fob_controller', () => {
       const fobController = fixture.componentInstance.fobController;
       fobController.stepTyped(Fob.START, 3);
       fixture.detectChanges();
-      expect(onTimeSelectionChanged).toHaveBeenCalledOnceWith({
-        start: {step: 2},
-        end: {step: 3},
+      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
+        timeSelection: {
+          start: {step: 2},
+          end: {step: 3},
+        },
+        affordance: TimeSelectionAffordance.FOB_TEXT,
       });
     });
 
@@ -756,9 +803,12 @@ describe('card_fob_controller', () => {
       const fobController = fixture.componentInstance.fobController;
       fobController.stepTyped(Fob.END, 2);
       fixture.detectChanges();
-      expect(onTimeSelectionChanged).toHaveBeenCalledOnceWith({
-        start: {step: 2},
-        end: {step: 3},
+      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
+        timeSelection: {
+          start: {step: 2},
+          end: {step: 3},
+        },
+        affordance: TimeSelectionAffordance.FOB_TEXT,
       });
     });
 
@@ -770,9 +820,12 @@ describe('card_fob_controller', () => {
       const fobController = fixture.componentInstance.fobController;
       fobController.stepTyped(Fob.END, 0);
       fixture.detectChanges();
-      expect(onTimeSelectionChanged).toHaveBeenCalledOnceWith({
-        start: {step: 0},
-        end: {step: 3},
+      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
+        timeSelection: {
+          start: {step: 0},
+          end: {step: 3},
+        },
+        affordance: TimeSelectionAffordance.FOB_TEXT,
       });
     });
 
@@ -791,9 +844,12 @@ describe('card_fob_controller', () => {
         preventDefault: () => {},
       });
 
-      expect(onTimeSelectionChanged).toHaveBeenCalledOnceWith({
-        start: {step: 8},
-        end: null,
+      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
+        timeSelection: {
+          start: {step: 8},
+          end: null,
+        },
+        affordance: TimeSelectionAffordance.FOB_TEXT,
       });
     });
 
@@ -813,9 +869,12 @@ describe('card_fob_controller', () => {
         preventDefault: preventDefaultSpy,
       });
 
-      expect(onTimeSelectionChanged).toHaveBeenCalledOnceWith({
-        start: {step: 1},
-        end: {step: 8},
+      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
+        timeSelection: {
+          start: {step: 1},
+          end: {step: 8},
+        },
+        affordance: TimeSelectionAffordance.FOB_TEXT,
       });
       expect(preventDefaultSpy).toHaveBeenCalled();
     });
@@ -849,9 +908,12 @@ describe('card_fob_controller', () => {
       deselectButton.triggerEventHandler('click', {});
       fixture.detectChanges();
 
-      expect(onTimeSelectionChanged).toHaveBeenCalledOnceWith({
-        start: {step: 1},
-        end: null,
+      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
+        timeSelection: {
+          start: {step: 1},
+          end: null,
+        },
+        affordance: TimeSelectionAffordance.FOB_REMOVED,
       });
     });
 
@@ -867,9 +929,12 @@ describe('card_fob_controller', () => {
       deselectButton.triggerEventHandler('click', {});
       fixture.detectChanges();
 
-      expect(onTimeSelectionChanged).toHaveBeenCalledOnceWith({
-        start: {step: 3},
-        end: null,
+      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
+        timeSelection: {
+          start: {step: 3},
+          end: null,
+        },
+        affordance: TimeSelectionAffordance.FOB_REMOVED,
       });
     });
   });

@@ -22,7 +22,12 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {AxisDirection, CardFobAdapter, TimeSelection} from './card_fob_types';
+import {
+  AxisDirection,
+  CardFobAdapter,
+  TimeSelection,
+  TimeSelectionAffordance,
+} from './card_fob_types';
 
 export enum Fob {
   NONE,
@@ -44,16 +49,23 @@ export class CardFobControllerComponent {
   @Input() cardAdapter!: CardFobAdapter;
   @Input() showExtendedLine?: Boolean = false;
 
-  @Output() onTimeSelectionChanged = new EventEmitter<TimeSelection>();
+  @Output() onTimeSelectionChanged = new EventEmitter<{
+    timeSelection: TimeSelection;
+    affordance: TimeSelectionAffordance;
+  }>();
   @Output() onTimeSelectionToggled = new EventEmitter();
 
   private currentDraggingFob: Fob = Fob.NONE;
+  private affordance: TimeSelectionAffordance = TimeSelectionAffordance.NONE;
 
   constructor(private readonly root: ElementRef) {}
 
   // Helper function to check enum in template.
   public FobType(): typeof Fob {
     return Fob;
+  }
+  public TimeSelectionAffordanceType(): typeof TimeSelectionAffordance {
+    return TimeSelectionAffordance;
   }
 
   getCssTranslatePx(step: number): string {
@@ -68,8 +80,9 @@ export class CardFobControllerComponent {
     )}px, 0px)`;
   }
 
-  startDrag(fob: Fob) {
+  startDrag(fob: Fob, affordance: TimeSelectionAffordance) {
     this.currentDraggingFob = fob;
+    this.affordance = affordance;
   }
 
   stopDrag() {
@@ -83,7 +96,7 @@ export class CardFobControllerComponent {
   mouseMove(event: MouseEvent) {
     if (this.currentDraggingFob === Fob.NONE) return;
 
-    const newLinkedTimeSelection = this.timeSelection;
+    const newTimeSelection = this.timeSelection;
     let newStep: number | null = null;
     const mousePosition = this.getMousePositionFromEvent(event);
     const movement =
@@ -106,16 +119,19 @@ export class CardFobControllerComponent {
       if (newStep <= this.timeSelection.start.step) {
         newStep = this.timeSelection.start.step;
       }
-      newLinkedTimeSelection.end!.step = newStep;
+      newTimeSelection.end!.step = newStep;
     } else {
       // Do not let the start fob pass the end fob.
       // TODO: add swapping logic here to allow continued dragging
       if (this.timeSelection.end && newStep >= this.timeSelection.end.step) {
         newStep = this.timeSelection.end.step;
       }
-      newLinkedTimeSelection.start.step = newStep;
+      newTimeSelection.start.step = newStep;
     }
-    this.onTimeSelectionChanged.emit(newLinkedTimeSelection);
+    this.onTimeSelectionChanged.emit({
+      timeSelection: newTimeSelection,
+      affordance: this.affordance,
+    });
   }
 
   isDraggingLower(position: number, movement: number): boolean {
@@ -201,8 +217,11 @@ export class CardFobControllerComponent {
       };
     }
 
-    // TODO(jieweiwu): Only emits action when selected time is changed.
-    this.onTimeSelectionChanged.emit(newTimeSelection);
+    // TODO(jieweiwu): Only emits action when time selection is changed.
+    this.onTimeSelectionChanged.emit({
+      timeSelection: newTimeSelection,
+      affordance: TimeSelectionAffordance.FOB_TEXT,
+    });
   }
 
   /**
@@ -216,14 +235,20 @@ export class CardFobControllerComponent {
    */
   onFobRemoved(fob: Fob) {
     if (fob === Fob.END) {
-      this.onTimeSelectionChanged.emit({...this.timeSelection, end: null});
+      this.onTimeSelectionChanged.emit({
+        timeSelection: {...this.timeSelection, end: null},
+        affordance: TimeSelectionAffordance.FOB_REMOVED,
+      });
       return;
     }
 
     if (this.timeSelection.end !== null) {
       this.onTimeSelectionChanged.emit({
-        start: this.timeSelection.end,
-        end: null,
+        timeSelection: {
+          start: this.timeSelection.end,
+          end: null,
+        },
+        affordance: TimeSelectionAffordance.FOB_REMOVED,
       });
       return;
     }

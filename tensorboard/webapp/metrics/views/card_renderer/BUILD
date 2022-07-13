@@ -110,6 +110,7 @@ tf_ng_module(
         "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/widgets/histogram",
         "//tensorboard/webapp/widgets/histogram:types",
+        "//tensorboard/webapp/widgets/card_fob:types",
         "//tensorboard/webapp/widgets/text:truncated_path",
         "@npm//@angular/common",
         "@npm//@angular/core",

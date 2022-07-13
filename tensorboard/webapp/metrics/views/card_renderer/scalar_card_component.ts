@@ -24,7 +24,10 @@ import {
 } from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {DataLoadState} from '../../../types/data';
-import {TimeSelection} from '../../../widgets/card_fob/card_fob_types';
+import {
+  TimeSelection,
+  TimeSelectionAffordance,
+} from '../../../widgets/card_fob/card_fob_types';
 import {
   Formatter,
   intlNumberFormatter,
@@ -91,7 +94,10 @@ export class ScalarCardComponent<Downloader> {
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
-  @Output() onLinkedTimeSelectionChanged = new EventEmitter<TimeSelection>();
+  @Output() onLinkedTimeSelectionChanged = new EventEmitter<{
+    timeSelection: TimeSelection;
+    affordance: TimeSelectionAffordance;
+  }>();
   @Output() onLinkedTimeToggled = new EventEmitter();
   @Output() onStepSelectorToggled = new EventEmitter();
 
@@ -262,9 +268,13 @@ export class ScalarCardComponent<Downloader> {
     return dataTableData;
   }
 
-  onFobTimeSelectionChanged(newTimeSelection: TimeSelection) {
+  onFobTimeSelectionChanged(newTimeSelectionWithAffordance: {
+    timeSelection: TimeSelection;
+    affordance: TimeSelectionAffordance;
+  }) {
     // Updates step selector to single selection.
-    const givenStartStep = newTimeSelection.start.step;
+    const {timeSelection, affordance} = newTimeSelectionWithAffordance;
+    const givenStartStep = timeSelection.start.step;
     const newStartStep =
       givenStartStep < this.minMaxStep.minStep
         ? this.minMaxStep.minStep
@@ -279,7 +289,7 @@ export class ScalarCardComponent<Downloader> {
     };
 
     if (this.linkedTimeSelection !== null) {
-      this.onLinkedTimeSelectionChanged.emit(newTimeSelection);
+      this.onLinkedTimeSelectionChanged.emit({timeSelection, affordance});
     }
   }
 

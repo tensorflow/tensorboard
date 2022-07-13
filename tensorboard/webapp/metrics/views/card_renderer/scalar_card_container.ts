@@ -50,7 +50,10 @@ import {
   getRunColorMap,
 } from '../../../selectors';
 import {DataLoadState} from '../../../types/data';
-import {TimeSelection} from '../../../widgets/card_fob/card_fob_types';
+import {
+  TimeSelection,
+  TimeSelectionAffordance,
+} from '../../../widgets/card_fob/card_fob_types';
 import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
@@ -555,11 +558,18 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     });
   }
 
-  onLinkedTimeSelectionChanged(newLinkedTime: TimeSelection) {
+  onLinkedTimeSelectionChanged(newTimeSelectionWithAffordance: {
+    timeSelection: TimeSelection;
+    affordance: TimeSelectionAffordance;
+  }) {
+    const {timeSelection, affordance} = newTimeSelectionWithAffordance;
     this.store.dispatch(
       linkedTimeSelectionChanged({
-        startStep: newLinkedTime.start.step,
-        endStep: newLinkedTime.end ? newLinkedTime.end.step : undefined,
+        timeSelection: {
+          startStep: timeSelection.start.step,
+          endStep: timeSelection.end ? timeSelection.end.step : undefined,
+        },
+        affordance,
       })
     );
   }

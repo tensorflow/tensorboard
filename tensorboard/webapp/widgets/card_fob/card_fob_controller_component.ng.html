@@ -28,13 +28,13 @@ limitations under the License.
     <div
       *ngIf="showExtendedLine"
       class="extended-line"
-      (mousedown)="startDrag(FobType().START)"
+      (mousedown)="startDrag(FobType().START, TimeSelectionAffordanceType().EXTENDED_LINE)"
     ></div>
     <card-fob
       class="startFob"
       [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
       [step]="timeSelection.start.step"
-      (mousedown)="startDrag(FobType().START)"
+      (mousedown)="startDrag(FobType().START, TimeSelectionAffordanceType().FOB)"
       (stepChanged)="stepTyped(FobType().START, $event)"
       (fobRemoved)="onFobRemoved(FobType().START)"
     ></card-fob>

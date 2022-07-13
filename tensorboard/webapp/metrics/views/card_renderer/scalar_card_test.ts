@@ -51,6 +51,7 @@ import {
   Fob,
 } from '../../../widgets/card_fob/card_fob_controller_component';
 import {CardFobModule} from '../../../widgets/card_fob/card_fob_module';
+import {TimeSelectionAffordance} from '../../../widgets/card_fob/card_fob_types';
 import {DataTableComponent} from '../../../widgets/data_table/data_table_component';
 import {DataTableModule} from '../../../widgets/data_table/data_table_module';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
@@ -2224,7 +2225,7 @@ describe('scalar card', () => {
           testController.root.nativeElement.getBoundingClientRect().left;
 
         // Simulate dragging fob to step 25.
-        testController.startDrag(Fob.START);
+        testController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
         const fakeEvent = new MouseEvent('mousemove', {
           clientX: 25 + controllerStartPosition,
           movementX: 1,
@@ -2234,8 +2235,11 @@ describe('scalar card', () => {
 
         expect(dispatchedActions).toEqual([
           linkedTimeSelectionChanged({
-            startStep: 25,
-            endStep: undefined,
+            timeSelection: {
+              startStep: 25,
+              endStep: undefined,
+            },
+            affordance: TimeSelectionAffordance.FOB,
           }),
         ]);
       }));
@@ -2543,7 +2547,7 @@ describe('scalar card', () => {
           testController.root.nativeElement.getBoundingClientRect().left;
 
         // Simulate dragging fob to step 25.
-        testController.startDrag(Fob.START);
+        testController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
         const fakeEvent = new MouseEvent('mousemove', {
           clientX: 25 + controllerStartPosition,
           movementX: 1,
@@ -2583,7 +2587,7 @@ describe('scalar card', () => {
           testController.root.nativeElement.getBoundingClientRect().left;
 
         // Simulate dragging start fob to step 25
-        testController.startDrag(Fob.START);
+        testController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
         let fakeEvent = new MouseEvent('mousemove', {
           clientX: 25 + controllerStartPosition,
           movementX: 1,
@@ -2593,7 +2597,7 @@ describe('scalar card', () => {
 
         // Simulate dragging end fob to step 28
         testController.stopDrag();
-        testController.startDrag(Fob.END);
+        testController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
         fakeEvent = new MouseEvent('mousemove', {
           clientX: 28 + controllerStartPosition,
           movementX: 1,
