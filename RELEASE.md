@@ -513,20 +513,17 @@ The 2.0 minor series tracks TensorFlow 2.0.
   to a specific hostname or IP address by using the `--host` flag, or explicitly
   enable the previous behavior of binding on all network interfaces by passing
   the flag `--bind_all`. See PR #2589.
-
 - The `--logdir` flag no longer supports passing multiple comma-delimited paths,
   which means that it now *supports* paths containing literal comma and colon
   characters, like `./logs/m=10,n=20,lr=0.001` or `./logs/run_12:30:15`. To
   mimic the old behavior, prefer using a tree of symlinks as it works with more
   plugins, but as a fallback the flag `--logdir_spec` exposes the old behavior.
   See PR #2664.
-
 - Projector plugin `visualize_embeddings()` API now takes `logdir` as its first
   parameter rather than `writer` (which only supported TF 1.x summary writers).
   For backwards compatibility TF 1.x writers will still be accepted, but passing
   the logdir explicitly is preferred since it works without any dependency on
   TF 1.x or 2.x summary writing. See PR #2665.
-
 - The namespace `tensorboard.summary.*` now aliases the summary API symbols in
   `tensorboard.summary.v2.*` rather than those in `tensorboard.summary.v1.*`.
   The old symbols can still be accessed under the `.v1` names. Note that the
