@@ -274,17 +274,17 @@ export class ScalarCardComponent<Downloader> {
   }) {
     // Updates step selector to single selection.
     const {timeSelection, affordance} = newTimeSelectionWithAffordance;
-    const givenStartStep = timeSelection.start.step;
-    const newStartStep =
-      givenStartStep < this.minMaxStep.minStep
+    const newStartStep = timeSelection.start.step;
+    const nextStartStep =
+      newStartStep < this.minMaxStep.minStep
         ? this.minMaxStep.minStep
-        : givenStartStep > this.minMaxStep.maxStep
+        : newStartStep > this.minMaxStep.maxStep
         ? this.minMaxStep.maxStep
-        : givenStartStep;
+        : newStartStep;
 
     // Updates step selector to single selection.
     this.stepSelectorTimeSelection = {
-      start: {step: newStartStep},
+      start: {step: nextStartStep},
       end: null,
     };
 
