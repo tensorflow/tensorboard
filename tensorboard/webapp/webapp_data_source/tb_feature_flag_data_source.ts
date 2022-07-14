@@ -13,15 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
+import {
+  FeatureFlagMetadata,
+  FeatureFlagMetadataMap,
+  FeatureFlagType,
+} from '../feature_flag/store/feature_flag_metadata';
 import {FeatureFlags} from '../feature_flag/types';
 import {QueryParams} from './query_params';
 import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
-import {
-  BaseFeatureFlagType,
-  FeatureFlagMetadata,
-  FeatureFlagQueryParameters,
-  FeatureFlagType,
-} from './tb_feature_flag_query_parameters';
 
 const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 
@@ -40,9 +39,9 @@ export class QueryParamsFeatureFlagDataSource
     // their values in the underlying state are not inadvertently changed.
     const featureFlags: Partial<Record<keyof FeatureFlags, FeatureFlagType>> =
       enableMediaQuery ? this.getPartialFeaturesFromMediaQuery() : {};
-    Object.entries(FeatureFlagQueryParameters).forEach(
+    Object.entries(FeatureFlagMetadataMap).forEach(
       ([flagName, flagMetadata]) => {
-        const featureValue = this.getFeatureValue(flagMetadata);
+        const featureValue = this.getFeatureValue(flagMetadata as FeatureFlagMetadata<boolean>);
         if (featureValue !== null) {
           const f = flagName as keyof FeatureFlags;
           featureFlags[f] = featureValue;
@@ -52,15 +51,15 @@ export class QueryParamsFeatureFlagDataSource
     return featureFlags as Partial<FeatureFlags>;
   }
 
-  protected getFeatureValue(
-    flagMetadata: FeatureFlagMetadata
-  ): FeatureFlagType {
+  protected getFeatureValue<T>(
+    flagMetadata: FeatureFlagMetadata<T>
+  ) {
     const params = this.queryParams.getParams();
     const queryParamOverride = flagMetadata.queryParamOverride;
     if (!queryParamOverride || !params.has(queryParamOverride)) {
       return null;
     }
-    const paramValues: BaseFeatureFlagType[] = this.queryParams
+    const paramValues: T[] = this.queryParams
       .getParams()
       .getAll(queryParamOverride)
       .map(flagMetadata.parseValue);

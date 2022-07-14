@@ -12,7 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {FeatureFlags} from '../feature_flag/types';
 import {
   ENABLE_CARD_WIDTH_SETTING_PARAM_KEY,
   ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY,
@@ -23,31 +22,32 @@ import {
   EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
   FORCE_SVG_RENDERER,
   SCALARS_BATCH_SIZE_PARAM_KEY,
-} from './tb_feature_flag_data_source_types';
+} from '../../webapp_data_source/tb_feature_flag_data_source_types';
+import {FeatureFlags} from '../types';
 
-export type BaseFeatureFlagType = Boolean | Number | String | null | undefined;
+export type BaseFeatureFlagType = boolean | number | string | null | undefined;
 
 export type FeatureFlagType = BaseFeatureFlagType | Array<BaseFeatureFlagType>;
 
-export type FeatureFlagMetadata = {
+export type FeatureFlagMetadata<T> = {
   displayName: string;
   queryParamOverride?: string;
-  parseValue: (str: string) => BaseFeatureFlagType;
+  parseValue: (str: string) => T;
 };
 
-export function parseBoolean(str: string): Boolean {
+export function parseBoolean(str: string): boolean {
   return str !== 'false';
 }
 
-export function parseBooleanOrNull(str: string): Boolean | null {
+export function parseBooleanOrNull(str: string): boolean | null {
   if (str === 'null') {
     return null;
   }
   return parseBoolean(str);
 }
 
-export const FeatureFlagQueryParameters: {
-  [FlagName in keyof FeatureFlags]: FeatureFlagMetadata;
+export const FeatureFlagMetadataMap: {
+  [FlagName in keyof FeatureFlags]: FeatureFlagMetadata<FeatureFlags[FlagName]>;
 } = {
   scalarsBatchSize: {
     displayName: 'scalarsBatchSize',
@@ -67,7 +67,7 @@ export const FeatureFlagQueryParameters: {
   enabledExperimentalPlugins: {
     displayName: 'enabledExperimentalPlugins',
     queryParamOverride: EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
-    parseValue: (str) => str,
+    parseValue: (str: string) => [str],
   },
   enabledLinkedTime: {
     displayName: 'enabledLinkedTime',

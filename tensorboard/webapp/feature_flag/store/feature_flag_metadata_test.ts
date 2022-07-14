@@ -1,7 +1,7 @@
 import {
   parseBoolean,
   parseBooleanOrNull,
-} from './tb_feature_flag_query_parameters';
+} from './feature_flag_metadata';
 
 /* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 

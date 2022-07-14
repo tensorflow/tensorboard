@@ -19,6 +19,7 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {Location} from '../app_routing/location';
 import {SerializableQueryParams} from '../app_routing/types';
 import {State} from '../app_state';
+import {FeatureFlagMetadata, FeatureFlagType, FeatureFlagMetadataMap} from '../feature_flag/store/feature_flag_metadata';
 import {appStateFromMetricsState, buildMetricsState} from '../metrics/testing';
 import * as selectors from '../selectors';
 
@@ -76,7 +77,7 @@ describe('feature flag serializer', () => {
 function promiseGetFeatureFlagStates(store: Store<State>):
     Promise<SerializableQueryParams> {
   return new Promise<SerializableQueryParams>((resolve) => {
-    getFeatureFlagStates(store)
+    getFeatureFlagStates(store, FeatureFlagMetadataMap as Record<string, FeatureFlagMetadata<FeatureFlagType>>)
         .subscribe((queryParams) => {
           resolve(queryParams);
         })

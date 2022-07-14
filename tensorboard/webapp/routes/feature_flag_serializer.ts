@@ -19,11 +19,11 @@ import {map} from 'rxjs/operators';
 import {Location} from '../app_routing/location';
 import {SerializableQueryParams} from '../app_routing/types';
 import {State} from '../app_state';
+import {FeatureFlagMetadata} from '../feature_flag/store/feature_flag_metadata';
 import * as selectors from '../selectors';
 import {EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY} from '../webapp_data_source/tb_feature_flag_data_source_types';
-import {FeatureFlagMetadata, FeatureFlagQueryParameters,} from '../webapp_data_source/tb_feature_flag_query_parameters';
 
-export function getFeatureFlagStates(store: Store<State>):
+export function getFeatureFlagStates<T>(store: Store<State>, featureFlagQueryParameters: Record<string, FeatureFlagMetadata<T>>):
     Observable<SerializableQueryParams> {
   return store.select(selectors.getEnabledExperimentalPlugins)
       .pipe(map((experimentalPlugins) => {
@@ -34,7 +34,7 @@ export function getFeatureFlagStates(store: Store<State>):
         const currentQueryParams = Object.fromEntries(
             serializableQueryParamsToEntries(new Location().getSearch() || []));
 
-        Object.values(FeatureFlagQueryParameters)
+        Object.values(featureFlagQueryParameters)
             .forEach((overriddenFeatureFlag: FeatureFlagMetadata) => {
               const queryParamOverride =
                   overriddenFeatureFlag.queryParamOverride;
