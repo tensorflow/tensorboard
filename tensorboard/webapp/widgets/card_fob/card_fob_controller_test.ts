@@ -45,7 +45,7 @@ class TestableComponent {
 
   @Input() axisDirection!: AxisDirection;
   @Input() timeSelection!: TimeSelection;
-  @Input() cardFobAdapter!: CardFobAdapter;
+  @Input() cardFobAdapter!: CardFobGetStepHelper;
   @Input() showExtendedLine?: Boolean;
 
   @Input() onTimeSelectionChanged!: (newTimeSelection: TimeSelection) => void;
@@ -56,11 +56,11 @@ describe('card_fob_controller', () => {
   let onTimeSelectionChanged: jasmine.Spy;
   let onTimeSelectionToggled: jasmine.Spy;
   let getHighestStepSpy: jasmine.Spy;
-  let getLowestStepSpy: jasmine.Spy;
+  let getLowestStepSpyCardFobGetStepHelper;
   let getAxisPositionFromStepSpy: jasmine.Spy;
   let getStepHigherSpy: jasmine.Spy;
   let getStepLowerSpy: jasmine.Spy;
-  let cardFobAdapter: CardFobAdapter;
+  let cardFobAdapter: CardFobGetStepHelper;
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [
