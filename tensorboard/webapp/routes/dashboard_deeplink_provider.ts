@@ -36,7 +36,7 @@ import {
   SMOOTHING_KEY,
   TAG_FILTER_KEY,
 } from './dashboard_deeplink_provider_types';
-import {getFeatureFlagStates} from './feature_flag_serializer';
+import {getOverriddenFeatureFlagStates} from './feature_flag_serializer';
 
 const COLOR_GROUP_REGEX_VALUE_PREFIX = 'regex:';
 
@@ -93,7 +93,7 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
           return [{key: TAG_FILTER_KEY, value: filterText}];
         })
       ),
-      getFeatureFlagStates(store, FeatureFlagMetadataMap as Record<string, FeatureFlagMetadata<FeatureFlagType>>),
+      getOverriddenFeatureFlagStates(FeatureFlagMetadataMap as Record<string, FeatureFlagMetadata<FeatureFlagType>>),
       store.select(selectors.getMetricsSettingOverrides).pipe(
         map((settingOverrides) => {
           if (Number.isFinite(settingOverrides.scalarSmoothing)) {

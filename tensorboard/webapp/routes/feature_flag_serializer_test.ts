@@ -13,20 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
-import {Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
-
 import {Location} from '../app_routing/location';
-import {SerializableQueryParams} from '../app_routing/types';
-import {State} from '../app_state';
 import {FeatureFlagMetadata, FeatureFlagType, FeatureFlagMetadataMap} from '../feature_flag/store/feature_flag_metadata';
-import {appStateFromMetricsState, buildMetricsState} from '../metrics/testing';
-import * as selectors from '../selectors';
-
-import {getFeatureFlagStates} from './feature_flag_serializer';
+import {getOverriddenFeatureFlagStates} from './feature_flag_serializer';
 
 describe('feature flag serializer', () => {
-  let store: MockStore<State>;
   let location: Location;
   let getSearchSpy: jasmine.Spy;
 
@@ -34,53 +25,33 @@ describe('feature flag serializer', () => {
     await TestBed
         .configureTestingModule({
           providers: [
-            provideMockStore({
-              initialState: {
-                ...appStateFromMetricsState(buildMetricsState()),
-              },
-            }),
           ],
         })
         .compileComponents();
-
-    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    store.overrideSelector(selectors.getEnabledExperimentalPlugins, []);
 
     location = TestBed.inject(Location);
     getSearchSpy = spyOn(location, 'getSearch').and.returnValue([]);
   });
 
-  describe('getFeatureFlagStates', () => {
-    it('returns empty list when no feature flags are active', async () => {
-      const queryParams = await promiseGetFeatureFlagStates(store);
+  describe('getOverriddenFeatureFlagStates', () => {
+    it('returns empty list when no feature flags are active', () => {
+      const queryParams = getOverriddenFeatureFlagStates(FeatureFlagMetadataMap as Record<string, FeatureFlagMetadata<FeatureFlagType>>);
       expect(queryParams.length).toEqual(0);
     });
 
     it('persists values of enabled experimental plugins', () => {});
 
     it('persists flag states overridden by query params', async () => {
-      store.overrideSelector(selectors.getEnabledExperimentalPlugins, []);
       getSearchSpy = spyOn(location, 'getSearch').and.returnValue([
         {
           key: 'defaultEnableDarkMode',
           value: 'true',
         },
       ]);
-      const queryParams = await promiseGetFeatureFlagStates(store);
+      const queryParams = getOverriddenFeatureFlagStates(FeatureFlagMetadataMap as Record<string, FeatureFlagMetadata<FeatureFlagType>>);
       expect(queryParams.length).toEqual(1);
       expect(queryParams[0].key).toEqual('defaultEnableDarkMode');
       expect(queryParams[0].value).toEqual('true');
     });
   });
 });
-
-function promiseGetFeatureFlagStates(store: Store<State>):
-    Promise<SerializableQueryParams> {
-  return new Promise<SerializableQueryParams>((resolve) => {
-    getFeatureFlagStates(store, FeatureFlagMetadataMap as Record<string, FeatureFlagMetadata<FeatureFlagType>>)
-        .subscribe((queryParams) => {
-          resolve(queryParams);
-        })
-        .unsubscribe();
-  });
-}
