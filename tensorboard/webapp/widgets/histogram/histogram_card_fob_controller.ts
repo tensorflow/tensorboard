@@ -10,11 +10,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 import {
   AxisDirection,
-  CardFobAdapter,
   TimeSelection,
+  CardFobGetStepHelper,
 } from '../card_fob/card_fob_types';
 import {TemporalScale} from './histogram_component';
 
@@ -24,13 +30,16 @@ import {TemporalScale} from './histogram_component';
     <card-fob-controller
       [axisDirection]="axisDirection"
       [timeSelection]="timeSelection"
-      [cardAdapter]="this"
+      [getAxisPositionFromStartStep]="getAxisPositionFromStartStep()"
+      [getAxisPositionFromEndStep]="getAxisPositionFromEndStep()"
+      [cardFobHelper]="cardFobHelper"
       (onTimeSelectionChanged)="onTimeSelectionChanged.emit($event)"
       (onTimeSelectionToggled)="onTimeSelectionToggled.emit()"
     ></card-fob-controller>
   `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HistogramCardFobController implements CardFobAdapter {
+export class HistogramCardFobController {
   @Input() steps!: number[];
   @Input() timeSelection!: TimeSelection;
   @Input() temporalScale!: TemporalScale;
@@ -38,16 +47,33 @@ export class HistogramCardFobController implements CardFobAdapter {
   @Output() onTimeSelectionToggled = new EventEmitter();
 
   readonly axisDirection = AxisDirection.VERTICAL;
+  readonly cardFobHelper: CardFobGetStepHelper = {
+    getHighestStep: this.getHighestStep.bind(this),
+    getLowestStep: this.getLowestStep.bind(this),
+    getStepHigherThanAxisPosition:
+      this.getStepHigherThanAxisPosition.bind(this),
+    getStepLowerThanAxisPosition: this.getStepLowerThanAxisPosition.bind(this),
+  };
+
+  getAxisPositionFromStartStep() {
+    return this.temporalScale(this.timeSelection.start.step);
+  }
+
+  getAxisPositionFromEndStep() {
+    if (this.timeSelection.end === null) {
+      return null;
+    }
+    return this.temporalScale(this.timeSelection.end.step);
+  }
 
   getHighestStep(): number {
     return this.steps[this.steps.length - 1];
   }
+
   getLowestStep(): number {
     return this.steps[0];
   }
-  getAxisPositionFromStep(step: number): number {
-    return this.temporalScale(step);
-  }
+
   getStepHigherThanAxisPosition(position: number): number {
     let stepIndex = 0;
     while (
@@ -58,6 +84,7 @@ export class HistogramCardFobController implements CardFobAdapter {
     }
     return this.steps[stepIndex];
   }
+
   getStepLowerThanAxisPosition(position: number): number {
     let stepIndex = this.steps.length - 1;
     while (

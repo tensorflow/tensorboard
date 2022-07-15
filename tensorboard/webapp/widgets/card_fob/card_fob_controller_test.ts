@@ -18,7 +18,11 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {CardFobComponent} from './card_fob_component';
 import {CardFobControllerComponent, Fob} from './card_fob_controller_component';
-import {AxisDirection, CardFobAdapter, TimeSelection} from './card_fob_types';
+import {
+  AxisDirection,
+  CardFobGetStepHelper,
+  TimeSelection,
+} from './card_fob_types';
 
 @Component({
   selector: 'testable-comp',
@@ -40,7 +44,7 @@ class TestableComponent {
 
   @Input() axisDirection!: AxisDirection;
   @Input() timeSelection!: TimeSelection;
-  @Input() cardFobAdapter!: CardFobAdapter;
+  @Input() cardFobAdapter!: CardFobGetStepHelper;
   @Input() showExtendedLine?: Boolean;
 
   @Input() onTimeSelectionChanged!: (newTimeSelection: TimeSelection) => void;
@@ -51,11 +55,11 @@ describe('card_fob_controller', () => {
   let onTimeSelectionChanged: jasmine.Spy;
   let onTimeSelectionToggled: jasmine.Spy;
   let getHighestStepSpy: jasmine.Spy;
-  let getLowestStepSpy: jasmine.Spy;
+  let getLowestStepSpyCardFobGetStepHelper;
   let getAxisPositionFromStepSpy: jasmine.Spy;
   let getStepHigherSpy: jasmine.Spy;
   let getStepLowerSpy: jasmine.Spy;
-  let cardFobAdapter: CardFobAdapter;
+  let cardFobAdapter: CardFobGetStepHelper;
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [
