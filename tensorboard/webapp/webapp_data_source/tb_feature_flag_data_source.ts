@@ -62,7 +62,12 @@ export class QueryParamsFeatureFlagDataSource
     const paramValues: T[] = this.queryParams
       .getParams()
       .getAll(queryParamOverride)
-      .map(flagMetadata.parseValue);
+      .map((value) => {
+        if (value === '' && flagMetadata.defaultValue !== undefined) {
+          return flagMetadata.defaultValue;
+        }
+        return flagMetadata.parseValue(value);
+      });
     if (!paramValues.length) {
       return null;
     }

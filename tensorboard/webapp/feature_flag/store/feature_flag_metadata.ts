@@ -31,6 +31,7 @@ export type FeatureFlagType = BaseFeatureFlagType | Array<BaseFeatureFlagType>;
 
 export type FeatureFlagMetadata<T> = {
   displayName: string;
+  defaultValue?: T;
   queryParamOverride?: string;
   parseValue: (str: string) => T;
   isArray?: boolean;
@@ -106,6 +107,8 @@ export const FeatureFlagMetadataMap: {
   },
   inColab: {
     displayName: 'inColab',
+    defaultValue: false,
+    queryParamOverride: 'tensorboardColab',
     parseValue: parseBoolean,
   },
   metricsImageSupportEnabled: {

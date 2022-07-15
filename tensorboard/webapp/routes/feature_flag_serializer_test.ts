@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
-import {Location} from '../app_routing/location';
+import {Location, TEST_ONLY} from '../app_routing/location';
 import {
   FeatureFlagMetadata,
   FeatureFlagMetadataMap,
@@ -23,15 +23,13 @@ import {getOverriddenFeatureFlagStates} from './feature_flag_serializer';
 
 describe('feature flag serializer', () => {
   let location: Location;
-  let getSearchSpy: jasmine.Spy;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [],
+      providers: [Location],
     }).compileComponents();
 
     location = TestBed.inject(Location);
-    getSearchSpy = spyOn(location, 'getSearch').and.returnValue([]);
   });
 
   describe('getOverriddenFeatureFlagStates', () => {
@@ -45,15 +43,26 @@ describe('feature flag serializer', () => {
       expect(queryParams.length).toEqual(0);
     });
 
-    it('persists values of enabled experimental plugins', () => {});
+    it('persists values of enabled experimental plugins', () => {
+      spyOn(TEST_ONLY.utils, 'getSearch').and.returnValue(
+        '?experimentalPlugin=0&experimentalPlugin=1&experimentalPlugin=2'
+      );
+      const queryParams = getOverriddenFeatureFlagStates(
+        FeatureFlagMetadataMap as Record<
+          string,
+          FeatureFlagMetadata<FeatureFlagType>
+        >
+      );
+      expect(queryParams.length).toEqual(3);
+      expect(queryParams[0].key).toEqual('experimentalPlugin');
+      expect(queryParams[0].value).toEqual('0');
+    });
 
     it('persists flag states overridden by query params', async () => {
-      getSearchSpy = spyOn(location, 'getSearch').and.returnValue([
-        {
-          key: 'defaultEnableDarkMode',
-          value: 'true',
-        },
-      ]);
+      spyOn(TEST_ONLY.utils, 'getSearch').and.returnValue(
+        '?darkMode=true'
+      );
+      console.log(location.getSearch());
       const queryParams = getOverriddenFeatureFlagStates(
         FeatureFlagMetadataMap as Record<
           string,
@@ -61,7 +70,7 @@ describe('feature flag serializer', () => {
         >
       );
       expect(queryParams.length).toEqual(1);
-      expect(queryParams[0].key).toEqual('defaultEnableDarkMode');
+      expect(queryParams[0].key).toEqual('darkMode');
       expect(queryParams[0].value).toEqual('true');
     });
   });
