@@ -473,6 +473,8 @@ export class LineChartComponent
       this.isViewBoxChanged = false;
       this.lineChart.setViewBox(this.viewBox);
     }
+
+    this.changeDetector.detectChanges();
   }
 
   onViewBoxChanged({dataExtent}: {dataExtent: Extent}) {
