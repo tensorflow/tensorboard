@@ -19,7 +19,11 @@ import {map} from 'rxjs/operators';
 import {DeepLinkProvider} from '../app_routing/deep_link_provider';
 import {SerializableQueryParams} from '../app_routing/types';
 import {State} from '../app_state';
-import {FeatureFlagMetadata, FeatureFlagType, FeatureFlagMetadataMap} from '../feature_flag/store/feature_flag_metadata';
+import {
+  FeatureFlagMetadata,
+  FeatureFlagMetadataMap,
+  FeatureFlagType,
+} from '../feature_flag/store/feature_flag_metadata';
 import {
   isPluginType,
   isSampledPlugin,
@@ -93,7 +97,12 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
           return [{key: TAG_FILTER_KEY, value: filterText}];
         })
       ),
-      getOverriddenFeatureFlagStates(FeatureFlagMetadataMap as Record<string, FeatureFlagMetadata<FeatureFlagType>>),
+      getOverriddenFeatureFlagStates(
+        FeatureFlagMetadataMap as Record<
+          string,
+          FeatureFlagMetadata<FeatureFlagType>
+        >
+      ),
       store.select(selectors.getMetricsSettingOverrides).pipe(
         map((settingOverrides) => {
           if (Number.isFinite(settingOverrides.scalarSmoothing)) {

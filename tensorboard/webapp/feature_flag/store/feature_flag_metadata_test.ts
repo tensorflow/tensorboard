@@ -1,7 +1,4 @@
-import {
-  parseBoolean,
-  parseBooleanOrNull,
-} from './feature_flag_metadata';
+import {parseBoolean, parseBooleanOrNull} from './feature_flag_metadata';
 
 /* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 

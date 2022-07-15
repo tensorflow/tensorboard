@@ -16,24 +16,31 @@ import {Location} from '../app_routing/location';
 import {SerializableQueryParams} from '../app_routing/types';
 import {FeatureFlagMetadata} from '../feature_flag/store/feature_flag_metadata';
 
-export function getOverriddenFeatureFlagStates<T>(featureFlagQueryParameters: Record<string, FeatureFlagMetadata<T>>): SerializableQueryParams {
+export function getOverriddenFeatureFlagStates<T>(
+  featureFlagQueryParameters: Record<string, FeatureFlagMetadata<T>>
+): SerializableQueryParams {
   const currentQueryParams = Object.fromEntries(
-      serializableQueryParamsToEntries(new Location().getSearch() || []));
+    serializableQueryParamsToEntries(new Location().getSearch() || [])
+  );
 
-  const currentlyOverriddenQueryParams = Object.values(featureFlagQueryParameters)
-      .map(({queryParamOverride}: FeatureFlagMetadata<T>) => queryParamOverride)
-      .filter((queryParamOverride) => 
-        (queryParamOverride &&
-            queryParamOverride in currentQueryParams)) as string[];
+  const currentlyOverriddenQueryParams = Object.values(
+    featureFlagQueryParameters
+  )
+    .map(({queryParamOverride}: FeatureFlagMetadata<T>) => queryParamOverride)
+    .filter(
+      (queryParamOverride) =>
+        queryParamOverride && queryParamOverride in currentQueryParams
+    ) as string[];
   return currentlyOverriddenQueryParams.map((queryParamOverride) => {
-        return {
-            key: queryParamOverride,
-            value: currentQueryParams[queryParamOverride],
-          };
-      });
+    return {
+      key: queryParamOverride,
+      value: currentQueryParams[queryParamOverride],
+    };
+  });
 
   function serializableQueryParamsToEntries(
-      params: SerializableQueryParams): [string, string][] {
+    params: SerializableQueryParams
+  ): [string, string][] {
     return params.map(({key, value}) => [key, value]);
   }
 }

@@ -14,7 +14,11 @@ limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
 import {Location} from '../app_routing/location';
-import {FeatureFlagMetadata, FeatureFlagType, FeatureFlagMetadataMap} from '../feature_flag/store/feature_flag_metadata';
+import {
+  FeatureFlagMetadata,
+  FeatureFlagMetadataMap,
+  FeatureFlagType,
+} from '../feature_flag/store/feature_flag_metadata';
 import {getOverriddenFeatureFlagStates} from './feature_flag_serializer';
 
 describe('feature flag serializer', () => {
@@ -22,12 +26,9 @@ describe('feature flag serializer', () => {
   let getSearchSpy: jasmine.Spy;
 
   beforeEach(async () => {
-    await TestBed
-        .configureTestingModule({
-          providers: [
-          ],
-        })
-        .compileComponents();
+    await TestBed.configureTestingModule({
+      providers: [],
+    }).compileComponents();
 
     location = TestBed.inject(Location);
     getSearchSpy = spyOn(location, 'getSearch').and.returnValue([]);
@@ -35,7 +36,12 @@ describe('feature flag serializer', () => {
 
   describe('getOverriddenFeatureFlagStates', () => {
     it('returns empty list when no feature flags are active', () => {
-      const queryParams = getOverriddenFeatureFlagStates(FeatureFlagMetadataMap as Record<string, FeatureFlagMetadata<FeatureFlagType>>);
+      const queryParams = getOverriddenFeatureFlagStates(
+        FeatureFlagMetadataMap as Record<
+          string,
+          FeatureFlagMetadata<FeatureFlagType>
+        >
+      );
       expect(queryParams.length).toEqual(0);
     });
 
@@ -48,7 +54,12 @@ describe('feature flag serializer', () => {
           value: 'true',
         },
       ]);
-      const queryParams = getOverriddenFeatureFlagStates(FeatureFlagMetadataMap as Record<string, FeatureFlagMetadata<FeatureFlagType>>);
+      const queryParams = getOverriddenFeatureFlagStates(
+        FeatureFlagMetadataMap as Record<
+          string,
+          FeatureFlagMetadata<FeatureFlagType>
+        >
+      );
       expect(queryParams.length).toEqual(1);
       expect(queryParams[0].key).toEqual('defaultEnableDarkMode');
       expect(queryParams[0].value).toEqual('true');

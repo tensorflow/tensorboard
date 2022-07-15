@@ -41,7 +41,9 @@ export class QueryParamsFeatureFlagDataSource
       enableMediaQuery ? this.getPartialFeaturesFromMediaQuery() : {};
     Object.entries(FeatureFlagMetadataMap).forEach(
       ([flagName, flagMetadata]) => {
-        const featureValue = this.getFeatureValue(flagMetadata as FeatureFlagMetadata<boolean>);
+        const featureValue = this.getFeatureValue(
+          flagMetadata as FeatureFlagMetadata<boolean>
+        );
         if (featureValue !== null) {
           const f = flagName as keyof FeatureFlags;
           featureFlags[f] = featureValue;
@@ -51,9 +53,7 @@ export class QueryParamsFeatureFlagDataSource
     return featureFlags as Partial<FeatureFlags>;
   }
 
-  protected getFeatureValue<T>(
-    flagMetadata: FeatureFlagMetadata<T>
-  ) {
+  protected getFeatureValue<T>(flagMetadata: FeatureFlagMetadata<T>) {
     const params = this.queryParams.getParams();
     const queryParamOverride = flagMetadata.queryParamOverride;
     if (!queryParamOverride || !params.has(queryParamOverride)) {
@@ -66,7 +66,8 @@ export class QueryParamsFeatureFlagDataSource
     if (!paramValues.length) {
       return null;
     }
-    return paramValues.length > 1 ? paramValues : paramValues[0];
+
+    return flagMetadata.isArray ? paramValues : paramValues[0];
   }
 
   protected getPartialFeaturesFromMediaQuery(): {

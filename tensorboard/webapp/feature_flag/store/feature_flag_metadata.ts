@@ -33,6 +33,7 @@ export type FeatureFlagMetadata<T> = {
   displayName: string;
   queryParamOverride?: string;
   parseValue: (str: string) => T;
+  isArray?: boolean;
 };
 
 export function parseBoolean(str: string): boolean {
@@ -68,6 +69,7 @@ export const FeatureFlagMetadataMap: {
     displayName: 'enabledExperimentalPlugins',
     queryParamOverride: EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
     parseValue: (str: string) => [str],
+    isArray: true,
   },
   enabledLinkedTime: {
     displayName: 'enabledLinkedTime',
