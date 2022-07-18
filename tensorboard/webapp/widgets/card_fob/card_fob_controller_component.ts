@@ -86,7 +86,6 @@ export class CardFobControllerComponent {
 
   startDrag(fob: Fob, affordance: TimeSelectionAffordance) {
     document.body.addEventListener('mousemove', this.mouseMove.bind(this));
-    document.body.addEventListener('mouseup', this.stopDrag.bind(this), true);
     this.currentDraggingFob = fob;
     this.affordance = affordance;
   }
@@ -114,6 +113,9 @@ export class CardFobControllerComponent {
   }
 
   mouseMove(event: MouseEvent) {
+    if (event.buttons == 0) {
+      this.stopDrag();
+    }
     if (this.currentDraggingFob === Fob.NONE) return;
 
     const newTimeSelection = this.timeSelection;
