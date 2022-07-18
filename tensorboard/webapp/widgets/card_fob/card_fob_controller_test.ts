@@ -151,6 +151,7 @@ describe('card_fob_controller', () => {
       fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {clientY: 3, movementY: 1});
       fobController.mouseMove(fakeEvent);
+      fobController.stopDrag();
       fixture.detectChanges();
 
       expect(getStepHigherSpy).toHaveBeenCalledOnceWith(3);
@@ -182,6 +183,7 @@ describe('card_fob_controller', () => {
         movementY: -1,
       });
       fobController.mouseMove(fakeEvent);
+      fobController.stopDrag();
       fixture.detectChanges();
 
       expect(getStepLowerSpy).toHaveBeenCalledOnceWith(2);
@@ -236,6 +238,7 @@ describe('card_fob_controller', () => {
       fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {clientY: 2, movementY: 1});
       fobController.mouseMove(fakeEvent);
+      fobController.stopDrag();
       fixture.detectChanges();
 
       expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
@@ -284,6 +287,7 @@ describe('card_fob_controller', () => {
       onTimeSelectionChanged.calls.reset();
       const fakeEvent = new MouseEvent('mousemove', {clientY: 3, movementY: 1});
       fobController.mouseMove(fakeEvent);
+      fobController.stopDrag();
       fixture.detectChanges();
 
       expect(getStepHigherSpy).toHaveBeenCalledOnceWith(3);
@@ -395,6 +399,7 @@ describe('card_fob_controller', () => {
       fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {clientX: 3, movementX: 1});
       fobController.mouseMove(fakeEvent);
+      fobController.stopDrag();
       fixture.detectChanges();
 
       expect(getStepHigherSpy).toHaveBeenCalledOnceWith(3);
@@ -427,6 +432,7 @@ describe('card_fob_controller', () => {
         movementX: -1,
       });
       fobController.mouseMove(fakeEvent);
+      fobController.stopDrag();
       fixture.detectChanges();
 
       expect(getStepLowerSpy).toHaveBeenCalledOnceWith(2);
@@ -459,6 +465,7 @@ describe('card_fob_controller', () => {
         movementX: -1,
       });
       fobController.mouseMove(fakeEvent);
+      fobController.stopDrag();
       fixture.detectChanges();
 
       expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
@@ -483,6 +490,7 @@ describe('card_fob_controller', () => {
       fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {clientX: 2, movementX: 1});
       fobController.mouseMove(fakeEvent);
+      fobController.stopDrag();
       fixture.detectChanges();
 
       expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
@@ -509,6 +517,7 @@ describe('card_fob_controller', () => {
       fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {clientX: 8, movementX: 1});
       fobController.mouseMove(fakeEvent);
+      fobController.stopDrag();
       fixture.detectChanges();
 
       expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
@@ -534,6 +543,7 @@ describe('card_fob_controller', () => {
       onTimeSelectionChanged.calls.reset();
       const fakeEvent = new MouseEvent('mousemove', {clientX: 3, movementX: 1});
       fobController.mouseMove(fakeEvent);
+      fobController.stopDrag();
       fixture.detectChanges();
 
       expect(getStepHigherSpy).toHaveBeenCalledOnceWith(3);
@@ -566,6 +576,7 @@ describe('card_fob_controller', () => {
         movementX: -1,
       });
       fobController.mouseMove(fakeEvent);
+      fobController.stopDrag();
       fixture.detectChanges();
 
       expect(getStepLowerSpy).toHaveBeenCalledOnceWith(2);
@@ -710,13 +721,14 @@ describe('card_fob_controller', () => {
       fobController.mouseMove(
         new MouseEvent('mousemove', {clientX: 5, movementX: 1})
       );
+      fobController.stopDrag();
       fixture.detectChanges();
 
       expect(getStepHigherSpy).toHaveBeenCalledWith(5);
       expect(
         endFobExtendedLine.nativeElement.getBoundingClientRect().left
       ).toBe(5);
-      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
+      expect(onTimeSelectionChanged).toHaveBeenCalledOnceWith({
         timeSelection: {
           start: {step: 3},
           end: {step: 5},

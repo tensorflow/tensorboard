@@ -2226,12 +2226,24 @@ describe('scalar card', () => {
 
         // Simulate dragging fob to step 25.
         testController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
-        const fakeEvent = new MouseEvent('mousemove', {
+        let fakeEvent = new MouseEvent('mousemove', {
           clientX: 25 + controllerStartPosition,
           movementX: 1,
         });
         testController.mouseMove(fakeEvent);
+        testController.stopDrag();
         fixture.detectChanges();
+
+        testController.startDrag(Fob.START, TimeSelectionAffordance.EXTENDED_LINE);
+        fakeEvent = new MouseEvent('mousemove', {
+          clientX: 30 + controllerStartPosition,
+          movementX: 1,
+        });
+        testController.mouseMove(fakeEvent);
+        testController.stopDrag();
+        fixture.detectChanges();
+
+        console.log(dispatchedActions);
 
         expect(dispatchedActions).toEqual([
           linkedTimeSelectionChanged({
@@ -2239,7 +2251,28 @@ describe('scalar card', () => {
               startStep: 25,
               endStep: undefined,
             },
+            affordance: TimeSelectionAffordance.NONE,
+          }),
+          linkedTimeSelectionChanged({
+            timeSelection: {
+              startStep: 25,
+              endStep: undefined,
+            },
             affordance: TimeSelectionAffordance.FOB,
+          }),
+          linkedTimeSelectionChanged({
+            timeSelection: {
+              startStep: 30,
+              endStep: undefined,
+            },
+            affordance: TimeSelectionAffordance.NONE,
+          }),
+          linkedTimeSelectionChanged({
+            timeSelection: {
+              startStep: 30,
+              endStep: undefined,
+            },
+            affordance: TimeSelectionAffordance.EXTENDED_LINE,
           }),
         ]);
       }));

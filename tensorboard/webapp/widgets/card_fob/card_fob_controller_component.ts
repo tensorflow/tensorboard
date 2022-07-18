@@ -60,13 +60,8 @@ export class CardFobControllerComponent {
 
   constructor(private readonly root: ElementRef) {}
 
-  // Helper function to check enum in template.
-  public FobType(): typeof Fob {
-    return Fob;
-  }
-  public TimeSelectionAffordanceType(): typeof TimeSelectionAffordance {
-    return TimeSelectionAffordance;
-  }
+  readonly Fob = Fob;
+  readonly TimeSelectionAffordance = TimeSelectionAffordance;
 
   getCssTranslatePx(step: number): string {
     if (this.axisDirection === AxisDirection.VERTICAL) {
@@ -87,6 +82,11 @@ export class CardFobControllerComponent {
 
   stopDrag() {
     this.currentDraggingFob = Fob.NONE;
+    this.onTimeSelectionChanged.emit({
+      timeSelection: this.timeSelection,
+      affordance: this.affordance,
+    });
+    this.affordance = TimeSelectionAffordance.NONE;
   }
 
   isVertical() {
@@ -130,7 +130,7 @@ export class CardFobControllerComponent {
     }
     this.onTimeSelectionChanged.emit({
       timeSelection: newTimeSelection,
-      affordance: this.affordance,
+      affordance: TimeSelectionAffordance.NONE,
     });
   }
 

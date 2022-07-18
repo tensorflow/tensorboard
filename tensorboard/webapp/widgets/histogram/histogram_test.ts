@@ -23,8 +23,14 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {CardFobComponent} from '../card_fob/card_fob_component';
-import {CardFobControllerComponent} from '../card_fob/card_fob_controller_component';
-import {TimeSelection} from '../card_fob/card_fob_types';
+import {
+  Fob,
+  CardFobControllerComponent,
+} from '../card_fob/card_fob_controller_component';
+import {
+  TimeSelection,
+  TimeSelectionAffordance,
+} from '../card_fob/card_fob_types';
 import {IntersectionObserverTestingModule} from '../intersection_observer/intersection_observer_testing_module';
 import {HistogramCardFobController} from './histogram_card_fob_controller';
 import {HistogramComponent, TooltipData} from './histogram_component';
@@ -1213,8 +1219,8 @@ describe('histogram test', () => {
       });
     });
 
-    describe('fob deselect', () => {
-      it('toggles linked time when in single selection', () => {
+    describe('fob control', () => {
+      it('toggles linked time when deselect fob in single selection', () => {
         const fixture = createComponent('foo', [
           buildHistogramDatum({step: 0, wallTime: 100}),
           buildHistogramDatum({step: 5, wallTime: 400}),
@@ -1235,6 +1241,45 @@ describe('histogram test', () => {
         fobComponent.fobRemoved.emit();
 
         expect(onLinkedTimeToggledSpy).toHaveBeenCalledOnceWith();
+      });
+
+      it('emits linked time change event when fob is dragged', () => {
+        const fixture = createComponent('foo', [
+          buildHistogramDatum({step: 0, wallTime: 100}),
+          buildHistogramDatum({step: 5, wallTime: 400}),
+          buildHistogramDatum({step: 10, wallTime: 400}),
+        ]);
+        const onLinkedTimeSelectionChanged = jasmine.createSpy();
+        fixture.componentInstance.timeSelection = {
+          start: {step: 5},
+          end: null,
+        };
+        fixture.componentInstance.onLinkedTimeSelectionChanged =
+          onLinkedTimeSelectionChanged;
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+        const testController = fixture.debugElement.query(
+          By.directive(CardFobControllerComponent)
+        ).componentInstance;
+        const controllerStartPosition =
+          testController.root.nativeElement.getBoundingClientRect().left;
+
+        // Simulate dragging fob to step 25.
+        testController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
+        const fakeEvent = new MouseEvent('mousemove', {
+          clientX: 25 + controllerStartPosition,
+          movementX: 1,
+        });
+        testController.mouseMove(fakeEvent);
+        fixture.detectChanges();
+
+        expect(onLinkedTimeSelectionChanged).toHaveBeenCalledOnceWith({
+          timeSelection: {
+            startStep: 25,
+            endStep: undefined,
+          },
+          affordance: TimeSelectionAffordance.FOB,
+        });
       });
     });
   });
