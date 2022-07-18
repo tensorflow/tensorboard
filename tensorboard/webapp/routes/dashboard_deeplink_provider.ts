@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {combineLatest, of, Observable} from 'rxjs';
+import {combineLatest, Observable, of} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {DeepLinkProvider} from '../app_routing/deep_link_provider';
 import {SerializableQueryParams} from '../app_routing/types';
@@ -97,12 +97,14 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
           return [{key: TAG_FILTER_KEY, value: filterText}];
         })
       ),
-      of(getOverriddenFeatureFlagStates(
-        FeatureFlagMetadataMap as Record<
-          string,
-          FeatureFlagMetadata<FeatureFlagType>
-        >
-      )),
+      of(
+        getOverriddenFeatureFlagStates(
+          FeatureFlagMetadataMap as Record<
+            string,
+            FeatureFlagMetadata<FeatureFlagType>
+          >
+        )
+      ),
       store.select(selectors.getMetricsSettingOverrides).pipe(
         map((settingOverrides) => {
           if (Number.isFinite(settingOverrides.scalarSmoothing)) {

@@ -16,31 +16,48 @@ import {Location} from '../app_routing/location';
 import {SerializableQueryParams} from '../app_routing/types';
 import {FeatureFlagMetadata} from '../feature_flag/store/feature_flag_metadata';
 
+/**
+ * Finds all FeatureFlags from the provided FeatureFlagMetadata that are present in the
+ * query params and returns their overridden values.
+ * Note: If a flag has multiple values in the query params it will be returned multiple
+ * times.
+ *
+ * i.e. The query params '?experimentalPlugin=0&experimentalPlugin=1&experimentalPlugin=2'
+ * will result in a return value of
+ * [
+ *   { key: 'experimentalPlugin', value: '0' },
+ *   { key: 'experimentalPlugin', value: '1' },
+ *   { key: 'experimentalPlugin', value: '2' },
+ * ]
+ */
 export function getOverriddenFeatureFlagStates<T>(
-  featureFlagQueryParameters: Record<string, FeatureFlagMetadata<T>>
+  featureFlagMetadataMap: Record<string, FeatureFlagMetadata<T>>
 ): SerializableQueryParams {
-  const currentQueryParams = Object.fromEntries(
-    serializableQueryParamsToEntries(new Location().getSearch() || [])
+  // Converting the array to a map allows for a more efficient filter function below.
+  const currentQueryParams = (new Location().getSearch() || []).reduce(
+    (map, {key, value}) => {
+      if (!map[key]) {
+        map[key] = [];
+      }
+      map[key].push(value);
+
+      return map;
+    },
+    {} as Record<string, string[]>
   );
 
-  const currentlyOverriddenQueryParams = Object.values(
-    featureFlagQueryParameters
-  )
+  const currentlyOverriddenQueryParams = Object.values(featureFlagMetadataMap)
     .map(({queryParamOverride}: FeatureFlagMetadata<T>) => queryParamOverride)
     .filter(
       (queryParamOverride) =>
         queryParamOverride && queryParamOverride in currentQueryParams
     ) as string[];
-  return currentlyOverriddenQueryParams.map((queryParamOverride) => {
-    return {
-      key: queryParamOverride,
-      value: currentQueryParams[queryParamOverride],
-    };
-  });
-
-  function serializableQueryParamsToEntries(
-    params: SerializableQueryParams
-  ): [string, string][] {
-    return params.map(({key, value}) => [key, value]);
-  }
+  return currentlyOverriddenQueryParams
+    .map((queryParamOverride) => {
+      return currentQueryParams[queryParamOverride].map((value) => ({
+        key: queryParamOverride,
+        value,
+      }));
+    })
+    .flat();
 }

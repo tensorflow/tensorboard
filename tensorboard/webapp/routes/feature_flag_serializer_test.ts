@@ -59,9 +59,7 @@ describe('feature flag serializer', () => {
     });
 
     it('persists flag states overridden by query params', async () => {
-      spyOn(TEST_ONLY.utils, 'getSearch').and.returnValue(
-        '?darkMode=true'
-      );
+      spyOn(TEST_ONLY.utils, 'getSearch').and.returnValue('?darkMode=true');
       console.log(location.getSearch());
       const queryParams = getOverriddenFeatureFlagStates(
         FeatureFlagMetadataMap as Record<

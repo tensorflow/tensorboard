@@ -50,7 +50,7 @@ const utils = {
   },
   getSearch() {
     return window.location.search;
-  }
+  },
 };
 
 @Injectable()

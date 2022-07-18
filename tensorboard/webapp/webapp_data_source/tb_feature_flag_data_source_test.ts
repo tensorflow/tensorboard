@@ -84,123 +84,197 @@ describe('tb_feature_flag_data_source', () => {
         });
       });
 
-      it('returns enableColorGroup from the query params', () => {
-        getParamsSpy.and.returnValues(
-          new URLSearchParams('enableColorGroup=false'),
-          new URLSearchParams('enableColorGroup='),
-          new URLSearchParams('enableColorGroup=true'),
-          new URLSearchParams('enableColorGroup=foo')
-        );
-        expect(dataSource.getFeatures()).toEqual({enabledColorGroup: false});
-        expect(dataSource.getFeatures()).toEqual({enabledColorGroup: true});
-        expect(dataSource.getFeatures()).toEqual({enabledColorGroup: true});
-        expect(dataSource.getFeatures()).toEqual({enabledColorGroup: true});
-      });
+      describe('returns enableColorGroup from the query params', () => {
+        it('when set to false', () => {
+          getParamsSpy.and.returnValue(
+            new URLSearchParams('enableColorGroup=false')
+          );
+          expect(dataSource.getFeatures()).toEqual({enabledColorGroup: false});
+        });
 
-      it('returns enableColorGroupByRegex from the query params', () => {
-        getParamsSpy.and.returnValues(
-          new URLSearchParams('enableColorGroupByRegex=false'),
-          new URLSearchParams('enableColorGroupByRegex='),
-          new URLSearchParams('enableColorGroupByRegex=true'),
-          new URLSearchParams('enableColorGroupByRegex=foo')
-        );
-        expect(dataSource.getFeatures()).toEqual({
-          enabledColorGroupByRegex: false,
+        it('when set to empty string', () => {
+          getParamsSpy.and.returnValue(
+            new URLSearchParams('enableColorGroup=')
+          );
+          expect(dataSource.getFeatures()).toEqual({enabledColorGroup: true});
         });
-        expect(dataSource.getFeatures()).toEqual({
-          enabledColorGroupByRegex: true,
+
+        it('when set to true', () => {
+          getParamsSpy.and.returnValue(
+            new URLSearchParams('enableColorGroup=true')
+          );
+          expect(dataSource.getFeatures()).toEqual({enabledColorGroup: true});
         });
-        expect(dataSource.getFeatures()).toEqual({
-          enabledColorGroupByRegex: true,
-        });
-        expect(dataSource.getFeatures()).toEqual({
-          enabledColorGroupByRegex: true,
+
+        it('when set to an arbitrary string', () => {
+          getParamsSpy.and.returnValue(
+            new URLSearchParams('enableColorGroup=foo')
+          );
+          expect(dataSource.getFeatures()).toEqual({enabledColorGroup: true});
         });
       });
 
-      it('returns enableLinkedTime from the query params', () => {
-        getParamsSpy.and.returnValues(
-          new URLSearchParams('enableLinkedTime=false'),
-          new URLSearchParams('enableLinkedTime='),
-          new URLSearchParams('enableLinkedTime=true'),
-          new URLSearchParams('enableLinkedTime=foo')
-        );
-        expect(dataSource.getFeatures()).toEqual({
-          enabledLinkedTime: false,
+      describe('returns enabledColorGroupByRegex from the query params', () => {
+        it('when set to false', () => {
+          getParamsSpy.and.returnValue(
+            new URLSearchParams('enableColorGroupByRegex=false')
+          );
+          expect(dataSource.getFeatures()).toEqual({
+            enabledColorGroupByRegex: false,
+          });
         });
-        expect(dataSource.getFeatures()).toEqual({
-          enabledLinkedTime: true,
+
+        it('when set to empty string', () => {
+          getParamsSpy.and.returnValue(
+            new URLSearchParams('enableColorGroupByRegex=')
+          );
+          expect(dataSource.getFeatures()).toEqual({
+            enabledColorGroupByRegex: true,
+          });
         });
-        expect(dataSource.getFeatures()).toEqual({
-          enabledLinkedTime: true,
+
+        it('when set to true', () => {
+          getParamsSpy.and.returnValue(
+            new URLSearchParams('enableColorGroupByRegex=true')
+          );
+          expect(dataSource.getFeatures()).toEqual({
+            enabledColorGroupByRegex: true,
+          });
         });
-        expect(dataSource.getFeatures()).toEqual({
-          enabledLinkedTime: true,
+
+        it('when set to an arbitrary string', () => {
+          getParamsSpy.and.returnValue(
+            new URLSearchParams('enableColorGroupByRegex=foo')
+          );
+          expect(dataSource.getFeatures()).toEqual({
+            enabledColorGroupByRegex: true,
+          });
         });
       });
 
-      it('returns enableCardWidthSetting from the query params', () => {
-        getParamsSpy.and.returnValues(
-          new URLSearchParams('enableCardWidthSetting=false'),
-          new URLSearchParams('enableCardWidthSetting='),
-          new URLSearchParams('enableCardWidthSetting=true'),
-          new URLSearchParams('enableCardWidthSetting=foo')
-        );
+      describe('returns enabledLinkedTime from the query params', () => {
+        it('when set to false', () => {
+          getParamsSpy.and.returnValue(
+            new URLSearchParams('enableLinkedTime=false')
+          );
+          expect(dataSource.getFeatures()).toEqual({enabledLinkedTime: false});
+        });
 
-        expect(dataSource.getFeatures()).toEqual({
-          enabledCardWidthSetting: false,
+        it('when set to empty string', () => {
+          getParamsSpy.and.returnValue(
+            new URLSearchParams('enableLinkedTime=')
+          );
+          expect(dataSource.getFeatures()).toEqual({enabledLinkedTime: true});
         });
-        expect(dataSource.getFeatures()).toEqual({
-          enabledCardWidthSetting: true,
+
+        it('when set to true', () => {
+          getParamsSpy.and.returnValue(
+            new URLSearchParams('enableLinkedTime=true')
+          );
+          expect(dataSource.getFeatures()).toEqual({enabledLinkedTime: true});
         });
-        expect(dataSource.getFeatures()).toEqual({
-          enabledCardWidthSetting: true,
-        });
-        expect(dataSource.getFeatures()).toEqual({
-          enabledCardWidthSetting: true,
+
+        it('when set to an arbitrary string', () => {
+          getParamsSpy.and.returnValue(
+            new URLSearchParams('enableLinkedTime=foo')
+          );
+          expect(dataSource.getFeatures()).toEqual({enabledLinkedTime: true});
         });
       });
 
-      it('returns forceSVG from the query params', () => {
-        getParamsSpy.and.returnValues(
-          new URLSearchParams('forceSVG=false'),
-          new URLSearchParams('forceSVG='),
-          new URLSearchParams('forceSVG=true'),
-          new URLSearchParams('forceSVG=foo')
-        );
+      describe('returns enabledCardWidthSetting from the query params', () => {
+        it('when set to false', () => {
+          getParamsSpy.and.returnValue(
+            new URLSearchParams('enableCardWidthSetting=false')
+          );
+          expect(dataSource.getFeatures()).toEqual({
+            enabledCardWidthSetting: false,
+          });
+        });
 
-        expect(dataSource.getFeatures()).toEqual({
-          forceSvg: false,
+        it('when set to empty string', () => {
+          getParamsSpy.and.returnValue(
+            new URLSearchParams('enableCardWidthSetting=')
+          );
+          expect(dataSource.getFeatures()).toEqual({
+            enabledCardWidthSetting: true,
+          });
         });
-        expect(dataSource.getFeatures()).toEqual({
-          forceSvg: true,
+
+        it('when set to true', () => {
+          getParamsSpy.and.returnValue(
+            new URLSearchParams('enableCardWidthSetting=true')
+          );
+          expect(dataSource.getFeatures()).toEqual({
+            enabledCardWidthSetting: true,
+          });
         });
-        expect(dataSource.getFeatures()).toEqual({
-          forceSvg: true,
-        });
-        expect(dataSource.getFeatures()).toEqual({
-          forceSvg: true,
+
+        it('when set to an arbitrary string', () => {
+          getParamsSpy.and.returnValue(
+            new URLSearchParams('enableCardWidthSetting=foo')
+          );
+          expect(dataSource.getFeatures()).toEqual({
+            enabledCardWidthSetting: true,
+          });
         });
       });
 
-      it('returns enableDataTable from the query params', () => {
-        getParamsSpy.and.returnValues(
-          new URLSearchParams('enableDataTable=false'),
-          new URLSearchParams('enableDataTable='),
-          new URLSearchParams('enableDataTable=true'),
-          new URLSearchParams('enableDataTable=foo')
-        );
-        expect(dataSource.getFeatures()).toEqual({
-          enabledScalarDataTable: false,
+      describe('returns forceSvg from the query params', () => {
+        it('when set to false', () => {
+          getParamsSpy.and.returnValue(new URLSearchParams('forceSVG=false'));
+          expect(dataSource.getFeatures()).toEqual({forceSvg: false});
         });
-        expect(dataSource.getFeatures()).toEqual({
-          enabledScalarDataTable: true,
+
+        it('when set to empty string', () => {
+          getParamsSpy.and.returnValue(new URLSearchParams('forceSVG='));
+          expect(dataSource.getFeatures()).toEqual({forceSvg: true});
         });
-        expect(dataSource.getFeatures()).toEqual({
-          enabledScalarDataTable: true,
+
+        it('when set to true', () => {
+          getParamsSpy.and.returnValue(new URLSearchParams('forceSVG=true'));
+          expect(dataSource.getFeatures()).toEqual({forceSvg: true});
         });
-        expect(dataSource.getFeatures()).toEqual({
-          enabledScalarDataTable: true,
+
+        it('when set to an arbitrary string', () => {
+          getParamsSpy.and.returnValue(new URLSearchParams('forceSVG=foo'));
+          expect(dataSource.getFeatures()).toEqual({forceSvg: true});
+        });
+      });
+
+      describe('returns enabledDataTable from the query params', () => {
+        it('when set to false', () => {
+          getParamsSpy.and.returnValue(
+            new URLSearchParams('enableDataTable=false')
+          );
+          expect(dataSource.getFeatures()).toEqual({
+            enabledScalarDataTable: false,
+          });
+        });
+
+        it('when set to empty string', () => {
+          getParamsSpy.and.returnValue(new URLSearchParams('enableDataTable='));
+          expect(dataSource.getFeatures()).toEqual({
+            enabledScalarDataTable: true,
+          });
+        });
+
+        it('when set to true', () => {
+          getParamsSpy.and.returnValue(
+            new URLSearchParams('enableDataTable=true')
+          );
+          expect(dataSource.getFeatures()).toEqual({
+            enabledScalarDataTable: true,
+          });
+        });
+
+        it('when set to an arbitrary string', () => {
+          getParamsSpy.and.returnValue(
+            new URLSearchParams('enableDataTable=foo')
+          );
+          expect(dataSource.getFeatures()).toEqual({
+            enabledScalarDataTable: true,
+          });
         });
       });
 

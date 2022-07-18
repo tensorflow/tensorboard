@@ -59,20 +59,17 @@ export class QueryParamsFeatureFlagDataSource
     if (!queryParamOverride || !params.has(queryParamOverride)) {
       return null;
     }
-    const paramValues: T[] = this.queryParams
-      .getParams()
-      .getAll(queryParamOverride)
-      .map((value) => {
-        if (value === '' && flagMetadata.defaultValue !== undefined) {
-          return flagMetadata.defaultValue;
-        }
-        return flagMetadata.parseValue(value);
-      });
+    const paramValues: T[] = params.getAll(queryParamOverride).map((value) => {
+      if (value === '' && flagMetadata.defaultValue !== undefined) {
+        return flagMetadata.defaultValue;
+      }
+      return flagMetadata.parseValue(value);
+    });
     if (!paramValues.length) {
       return null;
     }
 
-    return flagMetadata.isArray ? paramValues : paramValues[0];
+    return flagMetadata.isArray ? paramValues.flat() : paramValues[0];
   }
 
   protected getPartialFeaturesFromMediaQuery(): {
