@@ -72,7 +72,7 @@ build() (
   [ -d "${RUNFILES}" ]
 
   cp -LR "${RUNFILES}/org_tensorflow_tensorboard/tensorboard" .
-  mv -f "tensorboard/pip_package/LICENSE" .
+  mv -f "tensorboard/pip_package/LICENSE.tensorflow" "./LICENSE"
   mv -f "tensorboard/pip_package/MANIFEST.in" .
   mv -f "tensorboard/pip_package/README.rst" .
   mv -f "tensorboard/pip_package/requirements.txt" .
@@ -80,9 +80,9 @@ build() (
   mv -f "tensorboard/pip_package/setup.py" .
   rm -rf "tensorboard/pip_package"
 
-  rm -f tensorboard/tensorboard  # bazel py_binary sh wrapper
-  chmod -x LICENSE  # bazel symlinks confuse cp
-  find . -name __init__.py -exec chmod -x {} +  # which goes for all genfiles
+  rm -f tensorboard/tensorboard                # bazel py_binary sh wrapper
+  chmod -x LICENSE                             # bazel symlinks confuse cp
+  find . -name __init__.py -exec chmod -x {} + # which goes for all genfiles
 
   mkdir -p tensorboard/_vendor
   >tensorboard/_vendor/__init__.py
@@ -108,30 +108,30 @@ build() (
 
   # Require wheel for bdist_wheel command, and setuptools 36.2.0+ so that
   # env markers are handled (https://github.com/pypa/setuptools/pull/1081)
-  export PYTHONWARNINGS=ignore:DEPRECATION  # suppress Python 2.7 deprecation spam
+  export PYTHONWARNINGS=ignore:DEPRECATION # suppress Python 2.7 deprecation spam
   pip install -qU wheel 'setuptools>=36.2.0'
 
   # Overrides file timestamps in the zip archive to make the build
   # reproducible. (Date is mostly arbitrary, but must be past 1980 to be
   # representable in a zip archive.)
-  export SOURCE_DATE_EPOCH=1577836800  # 2020-01-01T00:00:00Z
+  export SOURCE_DATE_EPOCH=1577836800 # 2020-01-01T00:00:00Z
 
   python setup.py bdist_wheel --python-tag py3 >/dev/null
 
-  cd "${original_wd}"  # Bazel gives "${output}" as a relative path >_>
+  cd "${original_wd}" # Bazel gives "${output}" as a relative path >_>
   case "${output}" in
-    *.tar.gz)
-      mkdir -p "$(dirname "${output}")"
-      "${RUNFILES}/org_tensorflow_tensorboard/tensorboard/pip_package/deterministic_tar_gz" \
-          "${output}" "${workdir}"/dist/*.whl
-      ;;
-    *)
-      if ! [ -d "${output}" ]; then
-        printf >&2 'fatal: no such output directory: %s\n' "${output}"
-        return 1
-      fi
-      mv "${workdir}"/dist/*.whl "${output}"
-      ;;
+  *.tar.gz)
+    mkdir -p "$(dirname "${output}")"
+    "${RUNFILES}/org_tensorflow_tensorboard/tensorboard/pip_package/deterministic_tar_gz" \
+      "${output}" "${workdir}"/dist/*.whl
+    ;;
+  *)
+    if ! [ -d "${output}" ]; then
+      printf >&2 'fatal: no such output directory: %s\n' "${output}"
+      return 1
+    fi
+    mv "${workdir}"/dist/*.whl "${output}"
+    ;;
   esac
 )
 
