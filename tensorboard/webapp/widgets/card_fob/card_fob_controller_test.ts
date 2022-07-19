@@ -60,7 +60,7 @@ class TestableComponent {
   @Input() onTimeSelectionToggled!: () => void;
 }
 
-fdescribe('card_fob_controller', () => {
+describe('card_fob_controller', () => {
   let onTimeSelectionChanged: jasmine.Spy;
   let onTimeSelectionToggled: jasmine.Spy;
   let getStepHigherSpy: jasmine.Spy;
@@ -797,7 +797,7 @@ fdescribe('card_fob_controller', () => {
       expect(onTimeSelectionChanged).toHaveBeenCalledTimes(0);
     });
 
-    fit('start fob stops dragging when mouse moves without button press', () => {
+    it('start fob stops dragging when mouse moves without button press', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 1}, end: {step: 3}},
         axisDirection: AxisDirection.HORIZONTAL,
@@ -840,7 +840,7 @@ fdescribe('card_fob_controller', () => {
       expect(onTimeSelectionChanged).toHaveBeenCalledTimes(0);
     });
 
-    fit('end fob stops dragging when mouse moves without button press', () => {
+    it('end fob stops dragging when mouse moves without button press', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 1}, end: {step: 2}},
         axisDirection: AxisDirection.HORIZONTAL,
