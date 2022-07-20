@@ -502,6 +502,42 @@ describe('card_fob_controller', () => {
       ).toEqual(2);
       expect(onTimeSelectionChanged).toHaveBeenCalledTimes(0);
     });
+
+    it('adds and removes event listener', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 4}, end: null},
+      });
+      const addListenerSpy = jasmine.createSpy();
+      const removeListenerSpy = jasmine.createSpy();
+      document.body.addEventListener = addListenerSpy;
+      let mouseMoveListener;
+      addListenerSpy.and.callFake((type, listener) => {
+        mouseMoveListener = listener;
+      });
+      document.body.removeEventListener = removeListenerSpy;
+      removeListenerSpy.and.callThrough();
+      fixture.detectChanges();
+      const fobController = fixture.componentInstance.fobController;
+
+      fobController.startDrag(Fob.START);
+      expect(addListenerSpy).toHaveBeenCalledOnceWith(
+        'mousemove',
+        mouseMoveListener
+      );
+
+      const fakeEvent = new MouseEvent('mousemove', {
+        clientY: 2,
+        movementY: -1,
+        buttons: 0,
+      });
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+
+      expect(removeListenerSpy).toHaveBeenCalledOnceWith(
+        'mousemove',
+        mouseMoveListener
+      );
+    });
   });
 
   describe('horizontal dragging', () => {
@@ -881,6 +917,43 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(2);
       expect(onTimeSelectionChanged).toHaveBeenCalledTimes(0);
+    });
+
+    it('adds and removes event listener', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 4}, end: null},
+        axisDirection: AxisDirection.HORIZONTAL,
+      });
+      const addListenerSpy = jasmine.createSpy();
+      const removeListenerSpy = jasmine.createSpy();
+      document.body.addEventListener = addListenerSpy;
+      let mouseMoveListener;
+      addListenerSpy.and.callFake((type, listener) => {
+        mouseMoveListener = listener;
+      });
+      document.body.removeEventListener = removeListenerSpy;
+      removeListenerSpy.and.callThrough();
+      fixture.detectChanges();
+      const fobController = fixture.componentInstance.fobController;
+
+      fobController.startDrag(Fob.START);
+      expect(addListenerSpy).toHaveBeenCalledOnceWith(
+        'mousemove',
+        mouseMoveListener
+      );
+
+      const fakeEvent = new MouseEvent('mousemove', {
+        clientY: 2,
+        movementY: -1,
+        buttons: 0,
+      });
+      fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
+
+      expect(removeListenerSpy).toHaveBeenCalledOnceWith(
+        'mousemove',
+        mouseMoveListener
+      );
     });
   });
 
