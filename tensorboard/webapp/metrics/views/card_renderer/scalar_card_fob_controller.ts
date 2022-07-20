@@ -41,7 +41,8 @@ export class ScalarCardFobController implements CardFobAdapter {
 
   @Output() onTimeSelectionChanged = new EventEmitter<{
     timeSelection: TimeSelection;
-    affordance: TimeSelectionAffordance;
+    affordance?: TimeSelectionAffordance;
+    isDragging?: boolean;
   }>();
   @Output() onTimeSelectionToggled = new EventEmitter();
 

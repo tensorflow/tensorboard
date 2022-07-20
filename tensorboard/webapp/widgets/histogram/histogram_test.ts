@@ -103,7 +103,9 @@ class TestableComponent {
     end: {step: number} | null;
   } | null;
   @Input() onLinkedTimeSelectionChanged!: (
-    timeSelection: TimeSelection
+    timeSelection: TimeSelection,
+    affordance?: TimeSelectionAffordance,
+    isDragging?: boolean
   ) => void;
   @Input() onLinkedTimeToggled!: () => void;
 
@@ -1243,42 +1245,45 @@ describe('histogram test', () => {
         expect(onLinkedTimeToggledSpy).toHaveBeenCalledOnceWith();
       });
 
-      it('emits linked time change event when fob is dragged', () => {
+      it('emits linked time change event when fob is dragged in single selection', () => {
         const fixture = createComponent('foo', [
           buildHistogramDatum({step: 0, wallTime: 100}),
           buildHistogramDatum({step: 5, wallTime: 400}),
           buildHistogramDatum({step: 10, wallTime: 400}),
+          buildHistogramDatum({step: 40, wallTime: 400}),
         ]);
-        const onLinkedTimeSelectionChanged = jasmine.createSpy();
+        const onLinkedTimeSelectionChangedSpy = jasmine.createSpy();
         fixture.componentInstance.timeSelection = {
-          start: {step: 5},
+          start: {step: 0},
           end: null,
         };
         fixture.componentInstance.onLinkedTimeSelectionChanged =
-          onLinkedTimeSelectionChanged;
+          onLinkedTimeSelectionChangedSpy;
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
         const testController = fixture.debugElement.query(
           By.directive(CardFobControllerComponent)
         ).componentInstance;
-        const controllerStartPosition =
-          testController.root.nativeElement.getBoundingClientRect().left;
+        const fobStartPosition = testController.root.nativeElement
+          .querySelector('.time-fob-wrapper')
+          .getBoundingClientRect().top;
 
-        // Simulate dragging fob to step 25.
+        // Simulate dragging fob to step 10.
         testController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
         const fakeEvent = new MouseEvent('mousemove', {
-          clientX: 25 + controllerStartPosition,
-          movementX: 1,
+          clientY: 5 + fobStartPosition, // Add the difference between step 5 and 10, which is equal to 5.
+          movementY: 1,
         });
         testController.mouseMove(fakeEvent);
+        testController.stopDrag();
         fixture.detectChanges();
 
-        expect(onLinkedTimeSelectionChanged).toHaveBeenCalledOnceWith({
+        expect(onLinkedTimeSelectionChangedSpy).toHaveBeenCalledWith({
           timeSelection: {
-            startStep: 25,
-            endStep: undefined,
+            start: {step: 10},
+            end: null,
           },
-          affordance: TimeSelectionAffordance.FOB,
+          isDragging: true,
         });
       });
     });

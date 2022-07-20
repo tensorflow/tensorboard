@@ -97,6 +97,7 @@ export class ScalarCardComponent<Downloader> {
   @Output() onLinkedTimeSelectionChanged = new EventEmitter<{
     timeSelection: TimeSelection;
     affordance: TimeSelectionAffordance;
+    isDragging: boolean;
   }>();
   @Output() onLinkedTimeToggled = new EventEmitter();
   @Output() onStepSelectorToggled = new EventEmitter();
@@ -271,9 +272,11 @@ export class ScalarCardComponent<Downloader> {
   onFobTimeSelectionChanged(newTimeSelectionWithAffordance: {
     timeSelection: TimeSelection;
     affordance: TimeSelectionAffordance;
+    isDragging: boolean;
   }) {
     // Updates step selector to single selection.
-    const {timeSelection, affordance} = newTimeSelectionWithAffordance;
+    const {timeSelection, affordance, isDragging} =
+      newTimeSelectionWithAffordance;
     const newStartStep = timeSelection.start.step;
     const nextStartStep =
       newStartStep < this.minMaxStep.minStep
@@ -289,7 +292,11 @@ export class ScalarCardComponent<Downloader> {
     };
 
     if (this.linkedTimeSelection !== null) {
-      this.onLinkedTimeSelectionChanged.emit({timeSelection, affordance});
+      this.onLinkedTimeSelectionChanged.emit({
+        timeSelection,
+        affordance,
+        isDragging,
+      });
     }
   }
 

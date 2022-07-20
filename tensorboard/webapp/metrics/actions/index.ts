@@ -177,8 +177,8 @@ export const linkedTimeSelectionChanged = createAction(
       startStep: number;
       endStep: number | undefined;
     };
-    // TODO(jieweiwu): Make it non-optional after migrating change from settings.
-    affordance?: TimeSelectionAffordance;
+    affordance?: TimeSelectionAffordance | undefined;
+    isDragging?: boolean | undefined;
   }>()
 );
 
