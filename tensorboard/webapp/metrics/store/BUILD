@@ -17,7 +17,6 @@ tf_ts_library(
         "//tensorboard/webapp/app_routing:namespaced_state_reducer_helper",
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/app_routing/actions",
-        "//tensorboard/webapp/widgets/card_fob:types",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/metrics:internal_types",
         "//tensorboard/webapp/metrics:utils",
@@ -29,6 +28,7 @@ tf_ts_library(
         "//tensorboard/webapp/util:lang",
         "//tensorboard/webapp/util:ngrx",
         "//tensorboard/webapp/util:types",
+        "//tensorboard/webapp/widgets/card_fob:types",
         "@npm//@ngrx/store",
     ],
 )

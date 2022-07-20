@@ -2246,8 +2246,6 @@ describe('scalar card', () => {
         testController.stopDrag();
         fixture.detectChanges();
 
-        console.log(dispatchedActions);
-
         expect(dispatchedActions).toEqual([
           linkedTimeSelectionChanged({
             timeSelection: {
@@ -2625,7 +2623,7 @@ describe('scalar card', () => {
         const controllerStartPosition =
           testController.root.nativeElement.getBoundingClientRect().left;
 
-        // Simulate dragging start fob to step 25
+        // Simulates dragging start fob to step 25
         testController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
         let fakeEvent = new MouseEvent('mousemove', {
           clientX: 25 + controllerStartPosition,
@@ -2635,7 +2633,26 @@ describe('scalar card', () => {
         testController.stopDrag();
         fixture.detectChanges();
 
-        // Refresh linked time selection changes.
+        expect(dispatchedActions).toEqual([
+          linkedTimeSelectionChanged({
+            timeSelection: {
+              startStep: 25,
+              endStep: 40,
+            },
+            isDragging: true,
+            affordance: undefined,
+          }),
+          linkedTimeSelectionChanged({
+            timeSelection: {
+              startStep: 25,
+              endStep: 40,
+            },
+            isDragging: undefined,
+            affordance: TimeSelectionAffordance.FOB,
+          }),
+        ]);
+
+        // Reflects linked time selection changes above.
         store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 25},
           end: {step: 40},
