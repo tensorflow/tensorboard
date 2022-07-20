@@ -48,10 +48,6 @@ class TestableComponent {
 
   @Input() axisDirection!: AxisDirection;
   @Input() timeSelection!: TimeSelection;
-  @Input() axisPositionFromStartStep!: number;
-  @Input() axisPositionFromEndStep!: number;
-  @Input() highestStep!: number;
-  @Input() lowestStep!: number;
   @Input() cardFobHelper!: CardFobGetStepFromPositionHelper;
   @Input() showExtendedLine?: Boolean;
 
