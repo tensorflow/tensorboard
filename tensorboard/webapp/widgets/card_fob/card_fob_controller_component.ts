@@ -62,6 +62,10 @@ export class CardFobControllerComponent {
   private currentDraggingFob: Fob = Fob.NONE;
   private affordance: TimeSelectionAffordance = TimeSelectionAffordance.NONE;
 
+  // mouseListener is used to keep a reference to the EventListener used to
+  // track mouse movement in order to remove that listener.
+  private mouseListener: any = this.mouseMove.bind(this);
+
   constructor(private readonly root: ElementRef) {}
 
   readonly Fob = Fob;
@@ -85,21 +89,22 @@ export class CardFobControllerComponent {
   }
 
   startDrag(fob: Fob, affordance: TimeSelectionAffordance) {
-    document.body.addEventListener('mousemove', this.mouseMove.bind(this));
+    document.body.addEventListener('mousemove', this.mouseListener);
     this.currentDraggingFob = fob;
     this.affordance = affordance;
   }
 
   stopDrag() {
-    // This function might be overtrigged by both mouseup and mouseleave.
-    // We only want to fire one onTimeSelectionChanged event.
-    if (
-      this.currentDraggingFob === Fob.NONE ||
-      this.affordance === TimeSelectionAffordance.NONE
-    ) {
-      return;
-    }
+    // // This function might be overtrigged by both mouseup and mouseleave.
+    // // We only want to fire one onTimeSelectionChanged event.
+    // if (
+    //   this.currentDraggingFob === Fob.NONE ||
+    //   this.affordance === TimeSelectionAffordance.NONE
+    // ) {
+    //   return;
+    // }
 
+    document.body.removeEventListener('mousemove', this.mouseListener);
     this.currentDraggingFob = Fob.NONE;
     this.onTimeSelectionChanged.emit({
       timeSelection: this.timeSelection,
