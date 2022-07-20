@@ -67,20 +67,25 @@ describe('ScalarFobController', () => {
     return fixture;
   }
 
-  describe('getAxisPositionFromStep', () => {
+  describe('getAxisPositionFromStartStep/EndStep', () => {
     it('calls the scale function', () => {
       const minMax: [number, number] = [0, 2];
       const axisSize = 20;
-      const fixture = createComponent({minMax, axisSize});
-
-      const position = fixture.componentInstance.getAxisPositionFromStep(1);
-
-      expect(position).toBe(1 * SCALE_RATIO);
-      expect(forwardScaleSpy).toHaveBeenCalledOnceWith(
+      const fixture = createComponent({
         minMax,
-        [0, axisSize],
-        1
-      );
+        axisSize,
+        timeSelection: {start: {step: 1}, end: {step: 3}},
+      });
+
+      const startPosition =
+        fixture.componentInstance.getAxisPositionFromStartStep();
+      const endPosition =
+        fixture.componentInstance.getAxisPositionFromEndStep();
+
+      expect(startPosition).toBe(1 * SCALE_RATIO);
+      expect(endPosition).toBe(3 * SCALE_RATIO);
+      expect(forwardScaleSpy).toHaveBeenCalledWith(minMax, [0, axisSize], 1);
+      expect(forwardScaleSpy).toHaveBeenCalledWith(minMax, [0, axisSize], 3);
     });
   });
 

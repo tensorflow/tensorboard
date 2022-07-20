@@ -19,8 +19,8 @@ import {
 } from '@angular/core';
 import {
   AxisDirection,
+  CardFobGetStepFromPositionHelper,
   TimeSelection,
-  CardFobGetStepHelper,
 } from '../card_fob/card_fob_types';
 import {TemporalScale} from './histogram_component';
 
@@ -30,8 +30,10 @@ import {TemporalScale} from './histogram_component';
     <card-fob-controller
       [axisDirection]="axisDirection"
       [timeSelection]="timeSelection"
-      [getAxisPositionFromStartStep]="getAxisPositionFromStartStep()"
-      [getAxisPositionFromEndStep]="getAxisPositionFromEndStep()"
+      [axisPositionFromStartStep]="getAxisPositionFromStartStep()"
+      [axisPositionFromEndStep]="getAxisPositionFromEndStep()"
+      [highestStep]="getHighestStep()"
+      [lowestStep]="getLowestStep()"
       [cardFobHelper]="cardFobHelper"
       (onTimeSelectionChanged)="onTimeSelectionChanged.emit($event)"
       (onTimeSelectionToggled)="onTimeSelectionToggled.emit()"
@@ -47,9 +49,7 @@ export class HistogramCardFobController {
   @Output() onTimeSelectionToggled = new EventEmitter();
 
   readonly axisDirection = AxisDirection.VERTICAL;
-  readonly cardFobHelper: CardFobGetStepHelper = {
-    getHighestStep: this.getHighestStep.bind(this),
-    getLowestStep: this.getLowestStep.bind(this),
+  readonly cardFobHelper: CardFobGetStepFromPositionHelper = {
     getStepHigherThanAxisPosition:
       this.getStepHigherThanAxisPosition.bind(this),
     getStepLowerThanAxisPosition: this.getStepLowerThanAxisPosition.bind(this),
