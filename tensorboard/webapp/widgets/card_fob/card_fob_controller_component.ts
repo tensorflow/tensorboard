@@ -15,18 +15,16 @@ limitations under the License.
 
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
   Input,
   Output,
-  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import {
   AxisDirection,
-  CardFobAdapter,
+  CardFobGetStepFromPositionHelper,
   TimeSelection,
   TimeSelectionAffordance,
 } from './card_fob_types';
@@ -48,9 +46,11 @@ export class CardFobControllerComponent {
   @ViewChild('endFobWrapper') readonly endFobWrapper!: ElementRef;
   @Input() axisDirection!: AxisDirection;
   @Input() timeSelection!: TimeSelection;
-  @Input() cardFobHelper!: CardFobGetStepHelper;
-  @Input() getAxisPositionFromStartStep!: number;
-  @Input() getAxisPositionFromEndStep!: number;
+  @Input() cardFobHelper!: CardFobGetStepFromPositionHelper;
+  @Input() axisPositionFromStartStep!: number;
+  @Input() axisPositionFromEndStep!: number;
+  @Input() highestStep!: number;
+  @Input() lowestStep!: number;
   @Input() showExtendedLine?: Boolean = false;
 
   @Output() onTimeSelectionChanged = new EventEmitter<{
@@ -69,16 +69,16 @@ export class CardFobControllerComponent {
 
   getCssTranslatePxForStartFob() {
     if (this.axisDirection === AxisDirection.VERTICAL) {
-      return `translate(0px, ${this.getAxisPositionFromStartStep}px)`;
+      return `translate(0px, ${this.axisPositionFromStartStep}px)`;
     }
-    return `translate(${this.getAxisPositionFromStartStep}px, 0px)`;
+    return `translate(${this.axisPositionFromStartStep}px, 0px)`;
   }
 
   getCssTranslatePxForEndFob() {
     if (this.axisDirection === AxisDirection.VERTICAL) {
-      return `translate(0px, ${this.getAxisPositionFromEndStep}px)`;
+      return `translate(0px, ${this.axisPositionFromEndStep}px)`;
     }
-    return `translate(${this.getAxisPositionFromEndStep}px, 0px)`;
+    return `translate(${this.axisPositionFromEndStep}px, 0px)`;
   }
 
   startDrag(fob: Fob, affordance: TimeSelectionAffordance) {
@@ -150,7 +150,7 @@ export class CardFobControllerComponent {
     return (
       position < this.getDraggingFobCenter() &&
       movement < 0 &&
-      this.getDraggingFobStep() > this.cardFobHelper.getLowestStep()
+      this.getDraggingFobStep() > this.lowestStep
     );
   }
 
@@ -158,7 +158,7 @@ export class CardFobControllerComponent {
     return (
       position > this.getDraggingFobCenter() &&
       movement > 0 &&
-      this.getDraggingFobStep() < this.cardFobHelper.getHighestStep()
+      this.getDraggingFobStep() < this.highestStep
     );
   }
 

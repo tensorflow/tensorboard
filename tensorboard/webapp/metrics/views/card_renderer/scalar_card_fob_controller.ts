@@ -11,17 +11,17 @@ limitations under the License.
 ==============================================================================*/
 
 import {
-  Component,
   ChangeDetectionStrategy,
+  Component,
   EventEmitter,
   Input,
   Output,
 } from '@angular/core';
 import {
-  CardFobGetStepHelper,
+  AxisDirection,
+  CardFobGetStepFromPositionHelper,
   TimeSelection,
   TimeSelectionAffordance,
-  AxisDirection,
 } from '../../../widgets/card_fob/card_fob_types';
 import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
 
@@ -31,8 +31,10 @@ import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
     <card-fob-controller
       [axisDirection]="axisDirection"
       [timeSelection]="timeSelection"
-      [getAxisPositionFromStartStep]="getAxisPositionFromStartStep()"
-      [getAxisPositionFromEndStep]="getAxisPositionFromEndStep()"
+      [axisPositionFromStartStep]="getAxisPositionFromStartStep()"
+      [axisPositionFromEndStep]="getAxisPositionFromEndStep()"
+      [highestStep]="getHighestStep()"
+      [lowestStep]="getLowestStep()"
       [cardFobHelper]="cardFobHelper"
       [showExtendedLine]="true"
       (onTimeSelectionChanged)="onTimeSelectionChanged.emit($event)"
@@ -55,9 +57,7 @@ export class ScalarCardFobController {
   @Output() onTimeSelectionToggled = new EventEmitter();
 
   readonly axisDirection = AxisDirection.HORIZONTAL;
-  readonly cardFobHelper: CardFobGetStepHelper = {
-    getHighestStep: this.getHighestStep.bind(this),
-    getLowestStep: this.getLowestStep.bind(this),
+  readonly cardFobHelper: CardFobGetStepFromPositionHelper = {
     getStepHigherThanAxisPosition:
       this.getStepHigherThanAxisPosition.bind(this),
     getStepLowerThanAxisPosition: this.getStepLowerThanAxisPosition.bind(this),
@@ -82,7 +82,6 @@ export class ScalarCardFobController {
     );
   }
 
-  // CardFobGetStepHelper
   getHighestStep(): number {
     const minMax = this.minMax;
     return minMax[0] < minMax[1] ? minMax[1] : minMax[0];
