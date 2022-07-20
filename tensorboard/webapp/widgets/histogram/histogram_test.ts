@@ -24,8 +24,8 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {CardFobComponent} from '../card_fob/card_fob_component';
 import {
-  Fob,
   CardFobControllerComponent,
+  Fob,
 } from '../card_fob/card_fob_controller_component';
 import {
   TimeSelection,

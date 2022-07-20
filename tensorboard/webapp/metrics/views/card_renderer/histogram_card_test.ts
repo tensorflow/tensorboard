@@ -27,16 +27,12 @@ import {
 } from '../../../selectors';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {DataLoadState} from '../../../types/data';
+import {TimeSelectionAffordance} from '../../../widgets/card_fob/card_fob_types';
 import {
   HistogramData,
   HistogramMode,
   TimeProperty,
 } from '../../../widgets/histogram/histogram_types';
-import {
-  CardFobControllerComponent,
-  Fob,
-} from '../../../widgets/card_fob/card_fob_controller_component';
-import {TimeSelectionAffordance} from '../../../widgets/card_fob/card_fob_types';
 import {buildNormalizedHistograms} from '../../../widgets/histogram/histogram_util';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {linkedTimeSelectionChanged, linkedTimeToggled} from '../../actions';
