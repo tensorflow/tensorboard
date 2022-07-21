@@ -83,7 +83,10 @@ export class CardFobControllerComponent {
   stopDrag() {
     // This function might be overtrigged by both mouseup and mouseleave.
     // We only want to fire one onTimeSelectionChanged event.
-    if (this.currentDraggingFob === Fob.NONE || this.affordance === TimeSelectionAffordance.NONE) {
+    if (
+      this.currentDraggingFob === Fob.NONE ||
+      this.affordance === TimeSelectionAffordance.NONE
+    ) {
       return;
     }
 
