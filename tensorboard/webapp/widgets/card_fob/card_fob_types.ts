@@ -48,17 +48,12 @@ export enum AxisDirection {
 }
 
 /**
- * These helper functions are intended to be used in the card that has a
- * CardFobControllerComponent.
+ * These helper functions are intended to be defined by the card that is a parent
+ * of CardFobControllerComponent.
  *
  * Each helper function will have some sort of Scale that is used to convert from
  * pixel to step so that the fob lines up with the axis properly. In future
  * comments this scale will be refered to as ImplementerScale.
- *
- * These helper functions use ImplementerScale, minMax, and axisSize from the card to
- * determine the step. The changes of minMax and axisSize will not be reflected as changes
- * of functions. (Functions are like pointers and as far as Angular concerns, it does not
- * get changed even thought the return values might be cahnged based on minMax, and axisSize.)
  *
  * It also allows cards to implement the dragging functionality in different
  * ways. By deciding which step to return in the getStepHigherThanMousePosition
