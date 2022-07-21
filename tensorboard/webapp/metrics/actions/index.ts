@@ -177,6 +177,8 @@ export const linkedTimeSelectionChanged = createAction(
       startStep: number;
       endStep: number | undefined;
     };
+    // When affordance is undefined, it means the container does not care about
+    // the affordance and does not provide any.
     affordance?: TimeSelectionAffordance | undefined;
   }>()
 );

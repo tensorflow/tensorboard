@@ -23,7 +23,6 @@ import {DataLoadState} from '../../types/data';
 import {ElementId} from '../../util/dom';
 import {mapObjectValues} from '../../util/lang';
 import {composeReducers} from '../../util/ngrx';
-import {TimeSelectionAffordance} from '../../widgets/card_fob/card_fob_types';
 import * as actions from '../actions';
 import {
   isFailedTimeSeriesResponse,
@@ -979,10 +978,7 @@ const reducer = createReducer(
     };
   }),
   on(actions.linkedTimeSelectionChanged, (state, change) => {
-    const {timeSelection, affordance} = change;
-    if (affordance === TimeSelectionAffordance.NONE) {
-      return state;
-    }
+    const {timeSelection} = change;
     const nextStartStep = timeSelection.startStep;
     const nextEndStep = timeSelection.endStep;
     const end =
