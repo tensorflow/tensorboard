@@ -145,7 +145,7 @@ describe('card_fob_controller', () => {
     return fixture;
   }
 
-  fit('sets fob position based on time selection and getAxisPositionFromStartStep/EndStep call', () => {
+  it('sets fob position based on time selection', () => {
     const fixture = createComponent({
       timeSelection: {start: {step: 2}, end: {step: 5}},
       axisDirection: AxisDirection.HORIZONTAL,
