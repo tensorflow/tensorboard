@@ -2252,7 +2252,6 @@ describe('scalar card', () => {
               startStep: 25,
               endStep: undefined,
             },
-            isDragging: true,
             affordance: undefined,
           }),
           linkedTimeSelectionChanged({
@@ -2260,7 +2259,6 @@ describe('scalar card', () => {
               startStep: 25,
               endStep: undefined,
             },
-            isDragging: undefined,
             affordance: TimeSelectionAffordance.FOB,
           }),
           linkedTimeSelectionChanged({
@@ -2268,7 +2266,6 @@ describe('scalar card', () => {
               startStep: 30,
               endStep: undefined,
             },
-            isDragging: true,
             affordance: undefined,
           }),
           linkedTimeSelectionChanged({
@@ -2276,7 +2273,6 @@ describe('scalar card', () => {
               startStep: 30,
               endStep: undefined,
             },
-            isDragging: undefined,
             affordance: TimeSelectionAffordance.EXTENDED_LINE,
           }),
         ]);
@@ -2639,7 +2635,6 @@ describe('scalar card', () => {
               startStep: 25,
               endStep: 40,
             },
-            isDragging: true,
             affordance: undefined,
           }),
           linkedTimeSelectionChanged({
@@ -2647,7 +2642,6 @@ describe('scalar card', () => {
               startStep: 25,
               endStep: 40,
             },
-            isDragging: undefined,
             affordance: TimeSelectionAffordance.FOB,
           }),
         ]);

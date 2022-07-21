@@ -178,7 +178,6 @@ export const linkedTimeSelectionChanged = createAction(
       endStep: number | undefined;
     };
     affordance?: TimeSelectionAffordance | undefined;
-    isDragging?: boolean | undefined;
   }>()
 );
 

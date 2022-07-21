@@ -52,7 +52,6 @@ export class CardFobControllerComponent {
   @Output() onTimeSelectionChanged = new EventEmitter<{
     timeSelection: TimeSelection;
     affordance?: TimeSelectionAffordance;
-    isDragging?: boolean;
   }>();
   @Output() onTimeSelectionToggled = new EventEmitter();
 
@@ -129,10 +128,7 @@ export class CardFobControllerComponent {
       }
       newTimeSelection.start.step = newStep;
     }
-    this.onTimeSelectionChanged.emit({
-      timeSelection: newTimeSelection,
-      isDragging: true,
-    });
+    this.onTimeSelectionChanged.emit({timeSelection: newTimeSelection});
   }
 
   isDraggingLower(position: number, movement: number): boolean {

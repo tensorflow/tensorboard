@@ -979,8 +979,8 @@ const reducer = createReducer(
     };
   }),
   on(actions.linkedTimeSelectionChanged, (state, change) => {
-    const {timeSelection, affordance, isDragging} = change;
-    if (affordance === TimeSelectionAffordance.NONE && !isDragging) {
+    const {timeSelection, affordance} = change;
+    if (affordance === TimeSelectionAffordance.NONE) {
       return state;
     }
     const nextStartStep = timeSelection.startStep;

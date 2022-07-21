@@ -104,8 +104,7 @@ class TestableComponent {
   } | null;
   @Input() onLinkedTimeSelectionChanged!: (
     timeSelection: TimeSelection,
-    affordance?: TimeSelectionAffordance,
-    isDragging?: boolean
+    affordance?: TimeSelectionAffordance
   ) => void;
   @Input() onLinkedTimeToggled!: () => void;
 
@@ -1283,7 +1282,13 @@ describe('histogram test', () => {
             start: {step: 10},
             end: null,
           },
-          isDragging: true,
+        });
+        expect(onLinkedTimeSelectionChangedSpy).toHaveBeenCalledWith({
+          timeSelection: {
+            start: {step: 10},
+            end: null,
+          },
+          affordance: TimeSelectionAffordance.FOB,
         });
       });
     });

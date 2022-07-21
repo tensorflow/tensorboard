@@ -561,10 +561,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   onLinkedTimeSelectionChanged(newTimeSelectionWithAffordance: {
     timeSelection: TimeSelection;
     affordance: TimeSelectionAffordance;
-    isDragging: boolean;
   }) {
-    const {timeSelection, affordance, isDragging} =
-      newTimeSelectionWithAffordance;
+    const {timeSelection, affordance} = newTimeSelectionWithAffordance;
     this.store.dispatch(
       linkedTimeSelectionChanged({
         timeSelection: {
@@ -572,7 +570,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
           endStep: timeSelection.end ? timeSelection.end.step : undefined,
         },
         affordance,
-        isDragging,
       })
     );
   }
