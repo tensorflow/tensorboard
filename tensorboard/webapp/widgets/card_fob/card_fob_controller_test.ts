@@ -32,8 +32,8 @@ import {
       #FobController
       [axisDirection]="axisDirection"
       [timeSelection]="timeSelection"
-      [axisPositionFromStartStep]="getAxisPositionFromStartStep()"
-      [axisPositionFromEndStep]="getAxisPositionFromEndStep()"
+      [startStepAxisPosition]="getAxisPositionFromStartStep()"
+      [endStepAxisPosition]="getAxisPositionFromEndStep()"
       [highestStep]="getHighestStep()"
       [lowestStep]="getLowestStep()"
       [cardFobHelper]="cardFobHelper"
@@ -145,13 +145,22 @@ describe('card_fob_controller', () => {
     return fixture;
   }
 
-  it('sets fob position based on time selection and getAxisPositionFromStartStep/EndStep call', () => {
+  fit('sets fob position based on time selection and getAxisPositionFromStartStep/EndStep call', () => {
     const fixture = createComponent({
       timeSelection: {start: {step: 2}, end: {step: 5}},
+      axisDirection: AxisDirection.HORIZONTAL,
     });
     fixture.detectChanges();
+
     expect(getAxisPositionFromStartStepSpy).toHaveBeenCalled();
     expect(getAxisPositionFromEndStepSpy).toHaveBeenCalled();
+    const fobController = fixture.componentInstance.fobController;
+    expect(
+      fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
+    ).toEqual(2);
+    expect(
+      fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
+    ).toEqual(5);
   });
 
   describe('vertical dragging', () => {

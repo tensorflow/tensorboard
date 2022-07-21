@@ -30,8 +30,8 @@ import {TemporalScale} from './histogram_component';
     <card-fob-controller
       [axisDirection]="axisDirection"
       [timeSelection]="timeSelection"
-      [axisPositionFromStartStep]="getAxisPositionFromStartStep()"
-      [axisPositionFromEndStep]="getAxisPositionFromEndStep()"
+      [startStepAxisPosition]="getAxisPositionFromStartStep()"
+      [endStepAxisPosition]="getAxisPositionFromEndStep()"
       [highestStep]="getHighestStep()"
       [lowestStep]="getLowestStep()"
       [cardFobHelper]="cardFobHelper"
@@ -55,11 +55,11 @@ export class HistogramCardFobController {
     getStepLowerThanAxisPosition: this.getStepLowerThanAxisPosition.bind(this),
   };
 
-  getAxisPositionFromStartStep() {
+  getAxisPositionFromStartStep(): number {
     return this.temporalScale(this.timeSelection.start.step);
   }
 
-  getAxisPositionFromEndStep() {
+  getAxisPositionFromEndStep(): number | null {
     if (this.timeSelection.end === null) {
       return null;
     }

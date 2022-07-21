@@ -31,8 +31,8 @@ import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
     <card-fob-controller
       [axisDirection]="axisDirection"
       [timeSelection]="timeSelection"
-      [axisPositionFromStartStep]="getAxisPositionFromStartStep()"
-      [axisPositionFromEndStep]="getAxisPositionFromEndStep()"
+      [startStepAxisPosition]="getAxisPositionFromStartStep()"
+      [endStepAxisPosition]="getAxisPositionFromEndStep()"
       [highestStep]="getHighestStep()"
       [lowestStep]="getLowestStep()"
       [cardFobHelper]="cardFobHelper"

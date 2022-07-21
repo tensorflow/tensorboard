@@ -47,8 +47,8 @@ export class CardFobControllerComponent {
   @Input() axisDirection!: AxisDirection;
   @Input() timeSelection!: TimeSelection;
   @Input() cardFobHelper!: CardFobGetStepFromPositionHelper;
-  @Input() axisPositionFromStartStep!: number;
-  @Input() axisPositionFromEndStep!: number;
+  @Input() startStepAxisPosition!: number;
+  @Input() endStepAxisPosition!: number | null;
   @Input() highestStep!: number;
   @Input() lowestStep!: number;
   @Input() showExtendedLine?: Boolean = false;
@@ -69,16 +69,19 @@ export class CardFobControllerComponent {
 
   getCssTranslatePxForStartFob() {
     if (this.axisDirection === AxisDirection.VERTICAL) {
-      return `translate(0px, ${this.axisPositionFromStartStep}px)`;
+      return `translate(0px, ${this.startStepAxisPosition}px)`;
     }
-    return `translate(${this.axisPositionFromStartStep}px, 0px)`;
+    return `translate(${this.startStepAxisPosition}px, 0px)`;
   }
 
   getCssTranslatePxForEndFob() {
-    if (this.axisDirection === AxisDirection.VERTICAL) {
-      return `translate(0px, ${this.axisPositionFromEndStep}px)`;
+    if (this.endStepAxisPosition === null) {
+      return '';
     }
-    return `translate(${this.axisPositionFromEndStep}px, 0px)`;
+    if (this.axisDirection === AxisDirection.VERTICAL) {
+      return `translate(0px, ${this.endStepAxisPosition}px)`;
+    }
+    return `translate(${this.endStepAxisPosition}px, 0px)`;
   }
 
   startDrag(fob: Fob, affordance: TimeSelectionAffordance) {
