@@ -2263,20 +2263,11 @@ describe('scalar card', () => {
           run2: [buildScalarStepData({step: 20})],
           run3: [buildScalarStepData({step: 30})],
         };
-        const cardMetadata = {
-          plugin: PluginType.SCALARS,
-          tag: 'tagA',
-          run: null,
-          alias: {
-            aliasNumber: 100,
-            aliastText: 'test alias',
-          },
-        };
         provideMockCardRunToSeriesData(
           selectSpy,
           PluginType.SCALARS,
           'card1',
-          cardMetadata /* metadataOverride */,
+          null /* metadataOverride */,
           runToSeries
         );
       });
