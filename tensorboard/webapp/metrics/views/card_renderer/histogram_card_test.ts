@@ -291,10 +291,10 @@ describe('histogram card', () => {
         dispatchedActions.push(action);
       });
 
-      const HistogramWidget = fixture.debugElement.query(
+      const histogramWidget = fixture.debugElement.query(
         By.directive(TestableHistogramWidget)
       ).componentInstance;
-      HistogramWidget.onLinkedTimeSelectionChanged.emit({
+      histogramWidget.onLinkedTimeSelectionChanged.emit({
         timeSelection: {start: {step: 5}, end: null},
         affordance: TimeSelectionAffordance.FOB,
       });
@@ -549,10 +549,10 @@ describe('histogram card', () => {
           dispatchedActions.push(action);
         });
 
-        const HistogramWidget = fixture.debugElement.query(
+        const histogramWidget = fixture.debugElement.query(
           By.directive(TestableHistogramWidget)
         ).componentInstance;
-        HistogramWidget.onLinkedTimeToggled.emit();
+        histogramWidget.onLinkedTimeToggled.emit();
 
         expect(dispatchedActions).toEqual([linkedTimeToggled()]);
       });
