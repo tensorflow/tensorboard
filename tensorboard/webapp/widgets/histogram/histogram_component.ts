@@ -76,6 +76,34 @@ export interface TooltipData {
   };
 }
 
+const LARGE_NUMBER = 10000;
+const SMALL_NUMBER = 0.001;
+
+const d3LargeFormatter = d3.format('.2~s');
+const d3SmallFormatter = d3.format('.2~e');
+const d3MiddleFormatter = d3.format('.4~r');
+
+function formatNumberShort(x: number | {valueOf(): number} ): string {
+    /**
+    *  Formats very large nubmers using SI notation, very small numbers
+    *  using exponential notation, and mid-sized numbers using their
+    *  natural printout.
+    */
+    if (x === 0) {
+        return '0';
+    }
+    const absNum = Math.abs(x as number);
+    if (absNum >= LARGE_NUMBER){
+        return d3LargeFormatter(x);
+    }
+    if (absNum < SMALL_NUMBER){
+        return d3SmallFormatter(x);
+    }
+    return d3MiddleFormatter(x);
+}
+
+
+
 @Component({
   selector: 'tb-histogram',
   templateUrl: 'histogram_component.ng.html',
@@ -113,8 +141,9 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     contentClientRect: {height: 0, width: 0},
   };
   scales: Scales | null = null;
+
   private formatters = {
-    binNumber: d3.format('.3~s'),
+    binNumber: formatNumberShort,
     count: d3.format('.3n'),
     // DefinitelyTyped is incorrect that the `timeFormat` only takes `Date` as
     // an input. Better type it for downstream types.
