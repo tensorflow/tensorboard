@@ -1277,12 +1277,14 @@ describe('histogram test', () => {
         testController.stopDrag();
         fixture.detectChanges();
 
+        // Event emitted from mouseMove
         expect(onLinkedTimeSelectionChangedSpy).toHaveBeenCalledWith({
           timeSelection: {
             start: {step: 10},
             end: null,
           },
         });
+        // Event emitted from stopDrag
         expect(onLinkedTimeSelectionChangedSpy).toHaveBeenCalledWith({
           timeSelection: {
             start: {step: 10},
