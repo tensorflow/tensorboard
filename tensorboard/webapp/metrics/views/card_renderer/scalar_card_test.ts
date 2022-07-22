@@ -2498,6 +2498,66 @@ describe('scalar card', () => {
       expect(data[0].STEP).toEqual(10);
       expect(data[1].STEP).toEqual(8);
     }));
+
+    it('renders alias', fakeAsync(() => {
+      const runToSeries = {
+        run1: [
+          {wallTime: 1, value: 1, step: 10},
+          {wallTime: 2, value: 10, step: 20},
+          {wallTime: 3, value: 20, step: 35},
+        ],
+        run2: [
+          {wallTime: 1, value: 1, step: 8},
+          {wallTime: 2, value: 10, step: 15},
+          {wallTime: 3, value: 20, step: 50},
+        ],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([
+          ['run1', true],
+          ['run2', true],
+        ])
+      );
+      store.overrideSelector(selectors.getExperimentIdToExperimentAliasMap, {
+        eid1: {aliasText: 'test alias 1', aliasNumber: 100},
+        eid2: {aliasText: 'test alias 2', aliasNumber: 200},
+      });
+      store.overrideSelector(getMetricsLinkedTimeSelection, {
+        start: {step: 1},
+        end: null,
+      });
+      selectSpy
+        .withArgs(selectors.getExperimentIdForRunId, {runId: 'run1'})
+        .and.returnValue(of('eid1'));
+      selectSpy
+        .withArgs(selectors.getExperimentIdForRunId, {runId: 'run2'})
+        .and.returnValue(of('eid2'));
+      selectSpy
+        .withArgs(selectors.getRun, {runId: 'run1'})
+        .and.returnValue(of(buildRun({name: 'Run1 name'})));
+      selectSpy
+        .withArgs(selectors.getRun, {runId: 'run2'})
+        .and.returnValue(of(buildRun({name: 'Run2 name'})));
+
+      const fixture = createComponent('card1');
+      const scalarCardComponent = fixture.debugElement.query(
+        By.directive(ScalarCardComponent)
+      );
+      fixture.detectChanges();
+
+      const data =
+        scalarCardComponent.componentInstance.getTimeSelectionTableData();
+      expect(data[0].RUN).toEqual('100 test alias 1/Run1 name');
+      expect(data[1].RUN).toEqual('200 test alias 2/Run2 name');
+    }));
   });
 
   describe('step selector feature integration', () => {

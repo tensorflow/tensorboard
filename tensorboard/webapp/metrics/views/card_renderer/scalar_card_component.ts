@@ -240,7 +240,11 @@ export class ScalarCardComponent<Downloader> {
         for (const header of this.dataHeaders) {
           switch (header) {
             case ColumnHeaders.RUN:
-              selectedStepData.RUN = metadata.displayName;
+              let alias = '';
+              if (metadata.alias) {
+                alias = `${metadata.alias.aliasNumber} ${metadata.alias.aliasText}/`;
+              }
+              selectedStepData.RUN = `${alias}${metadata.displayName}`;
               continue;
             case ColumnHeaders.STEP:
               selectedStepData.STEP = closestStartPoint.step;
