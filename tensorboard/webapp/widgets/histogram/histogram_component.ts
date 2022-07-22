@@ -83,26 +83,24 @@ const d3LargeFormatter = d3.format('.2~s');
 const d3SmallFormatter = d3.format('.2~e');
 const d3MiddleFormatter = d3.format('.4~r');
 
-function formatNumberShort(x: number | {valueOf(): number} ): string {
-    /**
-    *  Formats very large nubmers using SI notation, very small numbers
-    *  using exponential notation, and mid-sized numbers using their
-    *  natural printout.
-    */
-    if (x === 0) {
-        return '0';
-    }
-    const absNum = Math.abs(x as number);
-    if (absNum >= LARGE_NUMBER){
-        return d3LargeFormatter(x);
-    }
-    if (absNum < SMALL_NUMBER){
-        return d3SmallFormatter(x);
-    }
-    return d3MiddleFormatter(x);
+function formatNumberShort(x: number | {valueOf(): number}): string {
+  /**
+   *  Formats very large nubmers using SI notation, very small numbers
+   *  using exponential notation, and mid-sized numbers using their
+   *  natural printout.
+   */
+  if (x === 0) {
+    return '0';
+  }
+  const absNum = Math.abs(x as number);
+  if (absNum >= LARGE_NUMBER) {
+    return d3LargeFormatter(x);
+  }
+  if (absNum < SMALL_NUMBER) {
+    return d3SmallFormatter(x);
+  }
+  return d3MiddleFormatter(x);
 }
-
-
 
 @Component({
   selector: 'tb-histogram',
