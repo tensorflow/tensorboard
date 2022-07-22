@@ -368,6 +368,11 @@
     source-map-support "0.5.9"
     tsutils "3.21.0"
 
+"@bazel/esbuild@^4.6.2":
+  version "4.6.2"
+  resolved "https://registry.yarnpkg.com/@bazel/esbuild/-/esbuild-4.6.2.tgz#1be88b6c4c07cabb2dd84a698d5be0f32de934f4"
+  integrity sha512-VqmeIlEDq7tVNpIk88zS3DZSAV1F1VN92IBPekKuQqIU6PTt3+iID/v4lkK80SwFBthF4pi/PG0PPaulIe/qGA==
+
 "@bazel/ibazel@^0.15.9":
   version "0.15.10"
   resolved "https://registry.yarnpkg.com/@bazel/ibazel/-/ibazel-0.15.10.tgz#cf0cff1aec6d8e7bb23e1fc618d09fbd39b7a13f"

@@ -88,6 +88,10 @@ yarn_install(
     yarn_lock = "//:yarn.lock",
 )
 
+load("@build_bazel_rules_nodejs//toolchains/esbuild:esbuild_repositories.bzl", "esbuild_repositories")
+
+esbuild_repositories(npm_repository = "npm")
+
 http_archive(
     name = "io_bazel_rules_sass",
     sha256 = "ee6d527550d42af182673c3718da98bb9205cabdeb08eacc0e3767fa3f2b051a",
