@@ -6,9 +6,8 @@
 # //tensorboard/webapp:index.html, we had to create the dev_assets version in
 # a different package. Once we can get rid of zip asset provider and a way to
 # alias asset, we would not need the enitrely different Bazel package.
-load("//tensorboard/defs:defs.bzl", "tf_dev_js_binary", "tf_js_binary", "tf_ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_module")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("@npm//@bazel/esbuild:index.bzl", "esbuild")
 
 package(default_visibility = ["//tensorboard:__pkg__"])
 
@@ -25,18 +24,12 @@ tf_ng_module(
     ],
 )
 
-esbuild(
+tf_js_binary(
     name = "tb_webapp_binary",
+    compile = True,
+    dev_mode_only = True,
     entry_point = "main_dev.ts",
-    format="iife",
-    minify=False,
-    deps = [
-      ":ng_main",
-    ],
-    args = {
-        "resolveExtensions": [".mjs", ".js"],
-        "mainFields": ["browser", "es2015", "module", "jsnext:main", "main"]
-    },
+    deps = [":ng_main"],
 )
 
 tf_web_library(
@@ -47,18 +40,12 @@ tf_web_library(
     path = "/tb-webapp",
 )
 
-esbuild(
+tf_js_binary(
     name = "polymer3_lib_binary_no_shim_dev",
+    compile = True,
+    dev_mode_only = True,
     entry_point = "//tensorboard/components:polymer3_lib.ts",
-    format="iife",
-    minify=False,
-    deps = [
-      "//tensorboard/components:polymer3_ts_lib",
-    ],
-    args = {
-        "resolveExtensions": [".mjs", ".js"],
-        "mainFields": ["browser", "es2015", "module", "jsnext:main", "main"]
-    },
+    deps = ["//tensorboard/components:polymer3_ts_lib"],
 )
 
 # Keep in sync with //tensorboard/components:polymer3_lib_binary.

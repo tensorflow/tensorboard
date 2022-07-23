@@ -1,5 +1,4 @@
 load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
-load("@npm//@bazel/esbuild:index.bzl", "esbuild")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -39,18 +38,12 @@ tf_ts_library(
     ],
 )
 
-esbuild(
+tf_js_binary(
     name = "polymer3_lib_binary_no_shim",
+    compile = True,
     entry_point = ":polymer3_lib.ts",
-    format="iife",
-    minify=True,
-    deps = [
-      ":polymer3_ts_lib",
-    ],
-    args = {
-        "resolveExtensions": [".mjs", ".js"],
-        "mainFields": ["browser", "es2015", "module", "jsnext:main", "main"]
-    },
+    includes_polymer = True,
+    deps = [":polymer3_ts_lib"],
 )
 
 # Keep in sync with //tensorboard/webapp/dev_assets:polymer3_lib_binary_dev
