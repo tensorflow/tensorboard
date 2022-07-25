@@ -30,6 +30,7 @@ import {takeUntil} from 'rxjs/operators';
 import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
 import {TimeSelection} from '../card_fob/card_fob_types';
+import {formatTickNumber} from './formatter';
 import {
   Bin,
   HistogramData,
@@ -37,7 +38,6 @@ import {
   HistogramMode,
   TimeProperty,
 } from './histogram_types';
-import {formatTickNumber} from './formatter';
 
 type BinScale = d3.ScaleLinear<number, number>;
 type CountScale = d3.ScaleLinear<number, number>;
