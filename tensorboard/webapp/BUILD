@@ -222,8 +222,7 @@ tf_web_library(
     deps = [
         ":tb_webapp",
         "//tensorboard/components/tf_imports:roboto",
-# BDTODO: Is this needed? For debugger_v2?
-#        "//tensorboard/webapp/widgets/source_code/monaco:requirejs",
+        "//tensorboard/webapp/widgets/source_code/monaco:requirejs",
     ],
 )
 
