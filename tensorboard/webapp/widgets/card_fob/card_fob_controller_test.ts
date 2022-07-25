@@ -20,7 +20,7 @@ import {CardFobComponent} from './card_fob_component';
 import {CardFobControllerComponent, Fob} from './card_fob_controller_component';
 import {
   AxisDirection,
-  CardFobAdapter,
+  CardFobGetStepFromPositionHelper,
   TimeSelection,
   TimeSelectionAffordance,
 } from './card_fob_types';
@@ -32,7 +32,11 @@ import {
       #FobController
       [axisDirection]="axisDirection"
       [timeSelection]="timeSelection"
-      [cardAdapter]="cardFobAdapter"
+      [startStepAxisPosition]="getAxisPositionFromStartStep()"
+      [endStepAxisPosition]="getAxisPositionFromEndStep()"
+      [highestStep]="highestStep"
+      [lowestStep]="lowestStep"
+      [cardFobHelper]="cardFobHelper"
       [showExtendedLine]="showExtendedLine"
       (onTimeSelectionChanged)="onTimeSelectionChanged($event)"
       (onTimeSelectionToggled)="onTimeSelectionToggled()"
@@ -45,8 +49,12 @@ class TestableComponent {
 
   @Input() axisDirection!: AxisDirection;
   @Input() timeSelection!: TimeSelection;
-  @Input() cardFobAdapter!: CardFobAdapter;
+  @Input() cardFobHelper!: CardFobGetStepFromPositionHelper;
   @Input() showExtendedLine?: Boolean;
+  @Input() highestStep!: number;
+  @Input() lowestStep!: number;
+  @Input() getAxisPositionFromStartStep!: () => number;
+  @Input() getAxisPositionFromEndStep!: () => number;
 
   @Input() onTimeSelectionChanged!: (newTimeSelection: TimeSelection) => void;
   @Input() onTimeSelectionToggled!: () => void;
@@ -55,12 +63,11 @@ class TestableComponent {
 describe('card_fob_controller', () => {
   let onTimeSelectionChanged: jasmine.Spy;
   let onTimeSelectionToggled: jasmine.Spy;
-  let getHighestStepSpy: jasmine.Spy;
-  let getLowestStepSpy: jasmine.Spy;
-  let getAxisPositionFromStepSpy: jasmine.Spy;
   let getStepHigherSpy: jasmine.Spy;
   let getStepLowerSpy: jasmine.Spy;
-  let cardFobAdapter: CardFobAdapter;
+  let getAxisPositionFromStartStepSpy: jasmine.Spy;
+  let getAxisPositionFromEndStepSpy: jasmine.Spy;
+  let cardFobHelper: CardFobGetStepFromPositionHelper;
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [
@@ -86,31 +93,34 @@ describe('card_fob_controller', () => {
     fixture.debugElement.nativeElement.style.left = '0';
     fixture.debugElement.nativeElement.style.top = '0';
 
-    getHighestStepSpy = jasmine.createSpy();
-    getLowestStepSpy = jasmine.createSpy();
-    getAxisPositionFromStepSpy = jasmine.createSpy();
     getStepHigherSpy = jasmine.createSpy();
     getStepLowerSpy = jasmine.createSpy();
-    cardFobAdapter = {
-      getHighestStep: getHighestStepSpy,
-      getLowestStep: getLowestStepSpy,
-      getAxisPositionFromStep: getAxisPositionFromStepSpy,
-      getStepHigherThanAxisPosition: getStepHigherSpy,
-      getStepLowerThanAxisPosition: getStepLowerSpy,
-    };
-
-    getHighestStepSpy.and.callFake(() => 4);
-    getLowestStepSpy.and.callFake(() => 0);
-    getAxisPositionFromStepSpy.and.callFake((step: number) => {
-      return step;
-    });
+    getAxisPositionFromStartStepSpy = jasmine.createSpy();
+    getAxisPositionFromEndStepSpy = jasmine.createSpy();
     getStepHigherSpy.and.callFake((step: number) => {
       return step;
     });
     getStepLowerSpy.and.callFake((step: number) => {
       return step;
     });
-    fixture.componentInstance.cardFobAdapter = cardFobAdapter;
+    getAxisPositionFromStartStepSpy.and.callFake(() => {
+      return input.timeSelection.start.step;
+    });
+    getAxisPositionFromEndStepSpy.and.callFake(() => {
+      return input.timeSelection.end ? input.timeSelection.end.step : null;
+    });
+    cardFobHelper = {
+      getStepHigherThanAxisPosition: getStepHigherSpy,
+      getStepLowerThanAxisPosition: getStepLowerSpy,
+    };
+
+    fixture.componentInstance.getAxisPositionFromStartStep =
+      getAxisPositionFromStartStepSpy;
+    fixture.componentInstance.getAxisPositionFromEndStep =
+      getAxisPositionFromEndStepSpy;
+    fixture.componentInstance.highestStep = 4;
+    fixture.componentInstance.lowestStep = 0;
+    fixture.componentInstance.cardFobHelper = cardFobHelper;
 
     fixture.componentInstance.axisDirection =
       input.axisDirection ?? AxisDirection.VERTICAL;
@@ -125,16 +135,23 @@ describe('card_fob_controller', () => {
 
     onTimeSelectionToggled = jasmine.createSpy();
     fixture.componentInstance.onTimeSelectionToggled = onTimeSelectionToggled;
-
     return fixture;
   }
 
-  it('sets fob position based on time selection and getAxisPositionFromStep call', () => {
+  it('sets fob position based on time selection', () => {
     const fixture = createComponent({
-      timeSelection: {start: {step: 2}, end: null},
+      timeSelection: {start: {step: 2}, end: {step: 5}},
+      axisDirection: AxisDirection.HORIZONTAL,
     });
     fixture.detectChanges();
-    expect(getAxisPositionFromStepSpy).toHaveBeenCalledOnceWith(2);
+
+    const fobController = fixture.componentInstance.fobController;
+    expect(
+      fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
+    ).toEqual(2);
+    expect(
+      fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
+    ).toEqual(5);
   });
 
   describe('vertical dragging', () => {
@@ -252,7 +269,6 @@ describe('card_fob_controller', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 4}, end: null},
       });
-      getHighestStepSpy.and.callFake(() => 4);
       fixture.detectChanges();
       const fobController = fixture.componentInstance.fobController;
       expect(
@@ -518,7 +534,6 @@ describe('card_fob_controller', () => {
         timeSelection: {start: {step: 4}, end: null},
         axisDirection: AxisDirection.HORIZONTAL,
       });
-      getHighestStepSpy.and.callFake(() => 4);
       fixture.detectChanges();
 
       const fobController = fixture.componentInstance.fobController;

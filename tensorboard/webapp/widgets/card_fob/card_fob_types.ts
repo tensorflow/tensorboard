@@ -48,11 +48,11 @@ export enum AxisDirection {
 }
 
 /**
- * This class is intended to be implemented by the card that has a
- * CardFobControllerComponent.
+ * These helper functions are intended to be defined by the card that is a parent
+ * of CardFobControllerComponent.
  *
- * Each implementer will have some sort of Scale that is used to convert between
- * step and pixel so that the fob lines up with the axis properly. In future
+ * Each helper function will have some sort of Scale that is used to convert from
+ * pixel to step so that the fob lines up with the axis properly. In future
  * comments this scale will be refered to as ImplementerScale.
  *
  * It also allows cards to implement the dragging functionality in different
@@ -60,23 +60,7 @@ export enum AxisDirection {
  * and getStepLowerThanMousePosition functions the implementer can decide if the
  * fob "snaps" to certain steps or drags in in a smooth continuous way.
  */
-export interface CardFobAdapter {
-  /**
-   * Gets the highest step for this card.
-   */
-  getHighestStep(): number;
-
-  /**
-   * Gets the lowest step for this card.
-   */
-  getLowestStep(): number;
-
-  /**
-   * Uses ImplementerScale to translate the proper pixel offset.
-   * @param step the step which needs to be translated.
-   */
-  getAxisPositionFromStep(step: number): number;
-
+export interface CardFobGetStepFromPositionHelper {
   /**
    * Uses ImplementerScale to determine the step that is at the current mouse
    * position or the closest step that is higher than the current mouse position.

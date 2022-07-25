@@ -24,7 +24,7 @@ import {
 } from '@angular/core';
 import {
   AxisDirection,
-  CardFobAdapter,
+  CardFobGetStepFromPositionHelper,
   TimeSelection,
   TimeSelectionAffordance,
 } from './card_fob_types';
@@ -46,7 +46,11 @@ export class CardFobControllerComponent {
   @ViewChild('endFobWrapper') readonly endFobWrapper!: ElementRef;
   @Input() axisDirection!: AxisDirection;
   @Input() timeSelection!: TimeSelection;
-  @Input() cardAdapter!: CardFobAdapter;
+  @Input() cardFobHelper!: CardFobGetStepFromPositionHelper;
+  @Input() startStepAxisPosition!: number;
+  @Input() endStepAxisPosition!: number | null;
+  @Input() highestStep!: number;
+  @Input() lowestStep!: number;
   @Input() showExtendedLine?: Boolean = false;
 
   @Output() onTimeSelectionChanged = new EventEmitter<{
@@ -63,16 +67,21 @@ export class CardFobControllerComponent {
   readonly Fob = Fob;
   readonly TimeSelectionAffordance = TimeSelectionAffordance;
 
-  getCssTranslatePx(step: number): string {
+  getCssTranslatePxForStartFob() {
     if (this.axisDirection === AxisDirection.VERTICAL) {
-      return `translate(0px, ${this.cardAdapter.getAxisPositionFromStep(
-        step
-      )}px)`;
+      return `translate(0px, ${this.startStepAxisPosition}px)`;
     }
+    return `translate(${this.startStepAxisPosition}px, 0px)`;
+  }
 
-    return `translate(${this.cardAdapter.getAxisPositionFromStep(
-      step
-    )}px, 0px)`;
+  getCssTranslatePxForEndFob() {
+    if (this.endStepAxisPosition === null) {
+      return '';
+    }
+    if (this.axisDirection === AxisDirection.VERTICAL) {
+      return `translate(0px, ${this.endStepAxisPosition}px)`;
+    }
+    return `translate(${this.endStepAxisPosition}px, 0px)`;
   }
 
   startDrag(fob: Fob, affordance: TimeSelectionAffordance) {
@@ -113,9 +122,9 @@ export class CardFobControllerComponent {
         ? event.movementY
         : event.movementX;
     if (this.isDraggingHigher(mousePosition, movement)) {
-      newStep = this.cardAdapter.getStepHigherThanAxisPosition(mousePosition);
+      newStep = this.cardFobHelper.getStepHigherThanAxisPosition(mousePosition);
     } else if (this.isDraggingLower(mousePosition, movement)) {
-      newStep = this.cardAdapter.getStepLowerThanAxisPosition(mousePosition);
+      newStep = this.cardFobHelper.getStepLowerThanAxisPosition(mousePosition);
     }
 
     if (newStep === null) {
@@ -144,7 +153,7 @@ export class CardFobControllerComponent {
     return (
       position < this.getDraggingFobCenter() &&
       movement < 0 &&
-      this.getDraggingFobStep() > this.cardAdapter.getLowestStep()
+      this.getDraggingFobStep() > this.lowestStep
     );
   }
 
@@ -152,7 +161,7 @@ export class CardFobControllerComponent {
     return (
       position > this.getDraggingFobCenter() &&
       movement > 0 &&
-      this.getDraggingFobStep() < this.cardAdapter.getHighestStep()
+      this.getDraggingFobStep() < this.highestStep
     );
   }
 
