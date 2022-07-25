@@ -15,6 +15,7 @@ import {
   AxisDirection,
   CardFobAdapter,
   TimeSelection,
+  TimeSelectionAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
 import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
 
@@ -38,7 +39,10 @@ export class ScalarCardFobController implements CardFobAdapter {
   @Input() minMax!: [number, number];
   @Input() axisSize!: number;
 
-  @Output() onTimeSelectionChanged = new EventEmitter<TimeSelection>();
+  @Output() onTimeSelectionChanged = new EventEmitter<{
+    timeSelection: TimeSelection;
+    affordance?: TimeSelectionAffordance;
+  }>();
   @Output() onTimeSelectionToggled = new EventEmitter();
 
   readonly axisDirection = AxisDirection.HORIZONTAL;

@@ -51,6 +51,7 @@ import {
   Fob,
 } from '../../../widgets/card_fob/card_fob_controller_component';
 import {CardFobModule} from '../../../widgets/card_fob/card_fob_module';
+import {TimeSelectionAffordance} from '../../../widgets/card_fob/card_fob_types';
 import {DataTableComponent} from '../../../widgets/data_table/data_table_component';
 import {DataTableModule} from '../../../widgets/data_table/data_table_module';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
@@ -2224,18 +2225,55 @@ describe('scalar card', () => {
           testController.root.nativeElement.getBoundingClientRect().left;
 
         // Simulate dragging fob to step 25.
-        testController.startDrag(Fob.START);
-        const fakeEvent = new MouseEvent('mousemove', {
+        testController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
+        let fakeEvent = new MouseEvent('mousemove', {
           clientX: 25 + controllerStartPosition,
           movementX: 1,
         });
         testController.mouseMove(fakeEvent);
+        testController.stopDrag();
+        fixture.detectChanges();
+
+        testController.startDrag(
+          Fob.START,
+          TimeSelectionAffordance.EXTENDED_LINE
+        );
+        fakeEvent = new MouseEvent('mousemove', {
+          clientX: 30 + controllerStartPosition,
+          movementX: 1,
+        });
+        testController.mouseMove(fakeEvent);
+        testController.stopDrag();
         fixture.detectChanges();
 
         expect(dispatchedActions).toEqual([
           linkedTimeSelectionChanged({
-            startStep: 25,
-            endStep: undefined,
+            timeSelection: {
+              startStep: 25,
+              endStep: undefined,
+            },
+            affordance: undefined,
+          }),
+          linkedTimeSelectionChanged({
+            timeSelection: {
+              startStep: 25,
+              endStep: undefined,
+            },
+            affordance: TimeSelectionAffordance.FOB,
+          }),
+          linkedTimeSelectionChanged({
+            timeSelection: {
+              startStep: 30,
+              endStep: undefined,
+            },
+            affordance: undefined,
+          }),
+          linkedTimeSelectionChanged({
+            timeSelection: {
+              startStep: 30,
+              endStep: undefined,
+            },
+            affordance: TimeSelectionAffordance.EXTENDED_LINE,
           }),
         ]);
       }));
@@ -2603,7 +2641,7 @@ describe('scalar card', () => {
           testController.root.nativeElement.getBoundingClientRect().left;
 
         // Simulate dragging fob to step 25.
-        testController.startDrag(Fob.START);
+        testController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
         const fakeEvent = new MouseEvent('mousemove', {
           clientX: 25 + controllerStartPosition,
           movementX: 1,
@@ -2617,7 +2655,6 @@ describe('scalar card', () => {
         expect(
           fobs[0].query(By.css('span')).nativeElement.textContent.trim()
         ).toEqual('25');
-        expect(dispatchedActions).toEqual([]);
         const scalarCardComponent = fixture.debugElement.query(
           By.directive(ScalarCardComponent)
         );
@@ -2636,29 +2673,58 @@ describe('scalar card', () => {
         });
         const fixture = createComponent('card1');
         fixture.detectChanges();
-        const testController = fixture.debugElement.query(
+        let testController = fixture.debugElement.query(
           By.directive(CardFobControllerComponent)
         ).componentInstance;
         const controllerStartPosition =
           testController.root.nativeElement.getBoundingClientRect().left;
 
-        // Simulate dragging start fob to step 25
-        testController.startDrag(Fob.START);
+        // Simulates dragging start fob to step 25
+        testController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
         let fakeEvent = new MouseEvent('mousemove', {
           clientX: 25 + controllerStartPosition,
           movementX: 1,
         });
         testController.mouseMove(fakeEvent);
+        testController.stopDrag();
+        fixture.detectChanges();
+
+        expect(dispatchedActions).toEqual([
+          linkedTimeSelectionChanged({
+            timeSelection: {
+              startStep: 25,
+              endStep: 40,
+            },
+            affordance: undefined,
+          }),
+          linkedTimeSelectionChanged({
+            timeSelection: {
+              startStep: 25,
+              endStep: 40,
+            },
+            affordance: TimeSelectionAffordance.FOB,
+          }),
+        ]);
+
+        // Reflects linked time selection changes above.
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
+          start: {step: 25},
+          end: {step: 40},
+        });
+        store.refreshState();
         fixture.detectChanges();
 
         // Simulate dragging end fob to step 28
-        testController.stopDrag();
-        testController.startDrag(Fob.END);
+        testController = fixture.debugElement.query(
+          By.directive(CardFobControllerComponent)
+        ).componentInstance;
+        testController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
         fakeEvent = new MouseEvent('mousemove', {
           clientX: 28 + controllerStartPosition,
-          movementX: 1,
+          movementX: -1,
         });
         testController.mouseMove(fakeEvent);
+        testController.stopDrag();
         fixture.detectChanges();
 
         // Disable linked time

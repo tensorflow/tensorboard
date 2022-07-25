@@ -23,8 +23,14 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {CardFobComponent} from '../card_fob/card_fob_component';
-import {CardFobControllerComponent} from '../card_fob/card_fob_controller_component';
-import {TimeSelection} from '../card_fob/card_fob_types';
+import {
+  CardFobControllerComponent,
+  Fob,
+} from '../card_fob/card_fob_controller_component';
+import {
+  TimeSelection,
+  TimeSelectionAffordance,
+} from '../card_fob/card_fob_types';
 import {IntersectionObserverTestingModule} from '../intersection_observer/intersection_observer_testing_module';
 import {HistogramCardFobController} from './histogram_card_fob_controller';
 import {HistogramComponent, TooltipData} from './histogram_component';
@@ -97,7 +103,8 @@ class TestableComponent {
     end: {step: number} | null;
   } | null;
   @Input() onLinkedTimeSelectionChanged!: (
-    timeSelection: TimeSelection
+    timeSelection: TimeSelection,
+    affordance?: TimeSelectionAffordance
   ) => void;
   @Input() onLinkedTimeToggled!: () => void;
 
@@ -1213,8 +1220,8 @@ describe('histogram test', () => {
       });
     });
 
-    describe('fob deselect', () => {
-      it('toggles linked time when in single selection', () => {
+    describe('fob control', () => {
+      it('toggles linked time when deselect fob in single selection', () => {
         const fixture = createComponent('foo', [
           buildHistogramDatum({step: 0, wallTime: 100}),
           buildHistogramDatum({step: 5, wallTime: 400}),
@@ -1235,6 +1242,56 @@ describe('histogram test', () => {
         fobComponent.fobRemoved.emit();
 
         expect(onLinkedTimeToggledSpy).toHaveBeenCalledOnceWith();
+      });
+
+      it('emits linked time change event when fob is dragged in single selection', () => {
+        const fixture = createComponent('foo', [
+          buildHistogramDatum({step: 0, wallTime: 100}),
+          buildHistogramDatum({step: 5, wallTime: 400}),
+          buildHistogramDatum({step: 10, wallTime: 400}),
+          buildHistogramDatum({step: 40, wallTime: 400}),
+        ]);
+        const onLinkedTimeSelectionChangedSpy = jasmine.createSpy();
+        fixture.componentInstance.timeSelection = {
+          start: {step: 0},
+          end: null,
+        };
+        fixture.componentInstance.onLinkedTimeSelectionChanged =
+          onLinkedTimeSelectionChangedSpy;
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+        const testController = fixture.debugElement.query(
+          By.directive(CardFobControllerComponent)
+        ).componentInstance;
+        const fobStartPosition = testController.root.nativeElement
+          .querySelector('.time-fob-wrapper')
+          .getBoundingClientRect().top;
+
+        // Simulate dragging fob to step 10.
+        testController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
+        const fakeEvent = new MouseEvent('mousemove', {
+          clientY: 5 + fobStartPosition, // Add the difference between step 5 and 10, which is equal to 5.
+          movementY: 1,
+        });
+        testController.mouseMove(fakeEvent);
+        testController.stopDrag();
+        fixture.detectChanges();
+
+        // Event emitted from mouseMove
+        expect(onLinkedTimeSelectionChangedSpy).toHaveBeenCalledWith({
+          timeSelection: {
+            start: {step: 10},
+            end: null,
+          },
+        });
+        // Event emitted from stopDrag
+        expect(onLinkedTimeSelectionChangedSpy).toHaveBeenCalledWith({
+          timeSelection: {
+            start: {step: 10},
+            end: null,
+          },
+          affordance: TimeSelectionAffordance.FOB,
+        });
       });
     });
   });

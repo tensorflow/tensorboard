@@ -978,8 +978,9 @@ const reducer = createReducer(
     };
   }),
   on(actions.linkedTimeSelectionChanged, (state, change) => {
-    const nextStartStep = change.startStep;
-    const nextEndStep = change.endStep;
+    const {timeSelection} = change;
+    const nextStartStep = timeSelection.startStep;
+    const nextEndStep = timeSelection.endStep;
     const end =
       nextEndStep === undefined
         ? null

@@ -2431,8 +2431,10 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.linkedTimeSelectionChanged({
-            startStep: 2,
-            endStep: 5,
+            timeSelection: {
+              startStep: 2,
+              endStep: 5,
+            },
           })
         );
 
@@ -2450,7 +2452,9 @@ describe('metrics reducers', () => {
 
         const after = reducers(
           before,
-          actions.linkedTimeSelectionChanged({startStep: 2, endStep: undefined})
+          actions.linkedTimeSelectionChanged({
+            timeSelection: {startStep: 2, endStep: undefined},
+          })
         );
 
         expect(after.linkedTimeSelection).toEqual({
@@ -2468,8 +2472,10 @@ describe('metrics reducers', () => {
         const after = reducers(
           before,
           actions.linkedTimeSelectionChanged({
-            startStep: 2,
-            endStep: 50,
+            timeSelection: {
+              startStep: 2,
+              endStep: 50,
+            },
           })
         );
 
@@ -2486,7 +2492,9 @@ describe('metrics reducers', () => {
 
         const nextState = reducers(
           beforeState,
-          actions.linkedTimeSelectionChanged({startStep: 2, endStep: undefined})
+          actions.linkedTimeSelectionChanged({
+            timeSelection: {startStep: 2, endStep: undefined},
+          })
         );
 
         expect(nextState.linkedTimeEnabled).toBe(true);
@@ -2501,8 +2509,10 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.linkedTimeSelectionChanged({
-            startStep: 150,
-            endStep: 0,
+            timeSelection: {
+              startStep: 150,
+              endStep: 0,
+            },
           })
         );
 
@@ -2521,8 +2531,10 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.linkedTimeSelectionChanged({
-            startStep: 2,
-            endStep: 5,
+            timeSelection: {
+              startStep: 2,
+              endStep: 5,
+            },
           })
         );
 
@@ -2544,8 +2556,10 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.linkedTimeSelectionChanged({
-            startStep: 2,
-            endStep: 5,
+            timeSelection: {
+              startStep: 2,
+              endStep: 5,
+            },
           })
         );
 
@@ -2564,8 +2578,10 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.linkedTimeSelectionChanged({
-            startStep: 2,
-            endStep: 0,
+            timeSelection: {
+              startStep: 2,
+              endStep: 0,
+            },
           })
         );
 
@@ -2581,8 +2597,10 @@ describe('metrics reducers', () => {
         const nextState1 = reducers(
           beforeState1,
           actions.linkedTimeSelectionChanged({
-            startStep: 2,
-            endStep: undefined,
+            timeSelection: {
+              startStep: 2,
+              endStep: undefined,
+            },
           })
         );
 
@@ -2616,8 +2634,10 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.linkedTimeSelectionChanged({
-            startStep: 10,
-            endStep: undefined,
+            timeSelection: {
+              startStep: 10,
+              endStep: undefined,
+            },
           })
         );
 
@@ -2654,8 +2674,10 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.linkedTimeSelectionChanged({
-            startStep: 15,
-            endStep: undefined,
+            timeSelection: {
+              startStep: 15,
+              endStep: undefined,
+            },
           })
         );
 
@@ -2677,8 +2699,10 @@ describe('metrics reducers', () => {
       const nextState = reducers(
         beforeState,
         actions.linkedTimeSelectionChanged({
-          startStep: 3,
-          endStep: undefined,
+          timeSelection: {
+            startStep: 3,
+            endStep: undefined,
+          },
         })
       );
 

@@ -108,6 +108,7 @@ tf_ng_module(
         "//tensorboard/webapp/metrics/views:utils",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/types:ui",
+        "//tensorboard/webapp/widgets/card_fob:types",
         "//tensorboard/webapp/widgets/histogram",
         "//tensorboard/webapp/widgets/histogram:types",
         "//tensorboard/webapp/widgets/text:truncated_path",

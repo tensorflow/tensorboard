@@ -21,6 +21,25 @@ export interface TimeSelection {
 }
 
 /**
+ * The affordance supported to update the time selection.
+ */
+export enum TimeSelectionAffordance {
+  NONE,
+  // Dragging the extended line above a fob.
+  EXTENDED_LINE,
+  // Dragging the fob.
+  FOB,
+  // Clicking the deselect button.
+  FOB_REMOVED,
+  // Typing the step in fob.
+  FOB_TEXT,
+  // Typing the step in setting pane.
+  SETTINGS_TEXT,
+  // Dragging the slider in setting pane.
+  SETTINGS_SLIDER,
+}
+
+/**
  * The direction of the axis used to control the fob movements.
  */
 export enum AxisDirection {

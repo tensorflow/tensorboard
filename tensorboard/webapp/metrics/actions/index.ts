@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {createAction, props} from '@ngrx/store';
 import {ElementId} from '../../util/dom';
+import {TimeSelectionAffordance} from '../../widgets/card_fob/card_fob_types';
 import {
   TagMetadata,
   TimeSeriesRequest,
@@ -172,8 +173,13 @@ export const metricsShowAllPlugins = createAction(
 export const linkedTimeSelectionChanged = createAction(
   '[Metrics] Linked Time Selection Changed',
   props<{
-    startStep: number;
-    endStep: number | undefined;
+    timeSelection: {
+      startStep: number;
+      endStep: number | undefined;
+    };
+    // Affordance for analytics purpose. When no affordance is specified or is
+    // undefined we do not want to log an analytics event.
+    affordance?: TimeSelectionAffordance | undefined;
   }>()
 );
 

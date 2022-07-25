@@ -28,15 +28,15 @@ limitations under the License.
     <div
       *ngIf="showExtendedLine"
       class="extended-line"
-      (mousedown)="startDrag(FobType().START)"
+      (mousedown)="startDrag(Fob.START, TimeSelectionAffordance.EXTENDED_LINE)"
     ></div>
     <card-fob
       class="startFob"
       [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
       [step]="timeSelection.start.step"
-      (mousedown)="startDrag(FobType().START)"
-      (stepChanged)="stepTyped(FobType().START, $event)"
-      (fobRemoved)="onFobRemoved(FobType().START)"
+      (mousedown)="startDrag(Fob.START, TimeSelectionAffordance.FOB)"
+      (stepChanged)="stepTyped(Fob.START, $event)"
+      (fobRemoved)="onFobRemoved(Fob.START)"
     ></card-fob>
   </div>
   <div
@@ -48,15 +48,15 @@ limitations under the License.
     <div
       *ngIf="showExtendedLine"
       class="extended-line"
-      (mousedown)="startDrag(FobType().END)"
+      (mousedown)="startDrag(Fob.END, TimeSelectionAffordance.EXTENDED_LINE)"
     ></div>
     <card-fob
       class="endFob"
       [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
       [step]="timeSelection.end.step"
-      (mousedown)="startDrag(FobType().END)"
-      (stepChanged)="stepTyped(FobType().END, $event)"
-      (fobRemoved)="onFobRemoved(FobType().END)"
+      (mousedown)="startDrag(Fob.END, TimeSelectionAffordance.FOB)"
+      (stepChanged)="stepTyped(Fob.END, $event)"
+      (fobRemoved)="onFobRemoved(Fob.END)"
     ></card-fob>
   </div>
 </div>

@@ -27,6 +27,7 @@ import {
 } from '../../../selectors';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {DataLoadState} from '../../../types/data';
+import {TimeSelectionAffordance} from '../../../widgets/card_fob/card_fob_types';
 import {
   HistogramData,
   HistogramMode,
@@ -34,7 +35,7 @@ import {
 } from '../../../widgets/histogram/histogram_types';
 import {buildNormalizedHistograms} from '../../../widgets/histogram/histogram_util';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
-import {linkedTimeToggled} from '../../actions';
+import {linkedTimeSelectionChanged, linkedTimeToggled} from '../../actions';
 import {PluginType} from '../../data_source';
 import * as selectors from '../../store/metrics_selectors';
 import {
@@ -65,6 +66,7 @@ class TestableHistogramWidget {
   } | null;
 
   @Output() onLinkedTimeToggled = new EventEmitter();
+  @Output() onLinkedTimeSelectionChanged = new EventEmitter();
 
   element = {
     setSeriesData: () => {},
@@ -276,6 +278,38 @@ describe('histogram card', () => {
   });
 
   describe('linked time', () => {
+    it('dispatches linkedTimeSelectionChanged when HistogramComponent emits onLinkedTimeSelectionChanged event', () => {
+      provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
+      store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
+        start: {step: 5},
+        end: null,
+      });
+      const fixture = createHistogramCardContainer();
+      fixture.detectChanges();
+      const dispatchedActions: Action[] = [];
+      spyOn(store, 'dispatch').and.callFake((action: Action) => {
+        dispatchedActions.push(action);
+      });
+
+      const histogramWidget = fixture.debugElement.query(
+        By.directive(TestableHistogramWidget)
+      ).componentInstance;
+      histogramWidget.onLinkedTimeSelectionChanged.emit({
+        timeSelection: {start: {step: 5}, end: null},
+        affordance: TimeSelectionAffordance.FOB,
+      });
+
+      expect(dispatchedActions).toEqual([
+        linkedTimeSelectionChanged({
+          timeSelection: {
+            startStep: 5,
+            endStep: undefined,
+          },
+          affordance: TimeSelectionAffordance.FOB,
+        }),
+      ]);
+    });
+
     it('passes null when no time is selected', () => {
       provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
       store.overrideSelector(selectors.getMetricsLinkedTimeSelection, null);
@@ -515,10 +549,10 @@ describe('histogram card', () => {
           dispatchedActions.push(action);
         });
 
-        const HistogramWidget = fixture.debugElement.query(
+        const histogramWidget = fixture.debugElement.query(
           By.directive(TestableHistogramWidget)
         ).componentInstance;
-        HistogramWidget.onLinkedTimeToggled.emit();
+        histogramWidget.onLinkedTimeToggled.emit();
 
         expect(dispatchedActions).toEqual([linkedTimeToggled()]);
       });
