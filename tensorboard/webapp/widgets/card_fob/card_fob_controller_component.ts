@@ -84,6 +84,16 @@ export class CardFobControllerComponent {
     return `translate(${this.endStepAxisPosition}px, 0px)`;
   }
 
+  getCssTranslatePxForEndFob() {
+    if (this.endStepAxisPosition === null) {
+      return '';
+    }
+    if (this.axisDirection === AxisDirection.VERTICAL) {
+      return `translate(0px, ${this.endStepAxisPosition}px)`;
+    }
+    return `translate(${this.endStepAxisPosition}px, 0px)`;
+  }
+
   startDrag(fob: Fob, affordance: TimeSelectionAffordance) {
     this.currentDraggingFob = fob;
     this.affordance = affordance;
