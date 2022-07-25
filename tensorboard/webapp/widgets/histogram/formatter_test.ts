@@ -16,9 +16,10 @@ import {formatTickNumber} from './formatter';
 
 describe('histogram/formatter test', () => {
   describe('formatTickNumber', () => {
-    it('formats small numbers without trailing decimals', () => {
+    it('formats small numbers with 4 sig. digits', () => {
       expect(formatTickNumber(0)).toBe('0');
       expect(formatTickNumber(1)).toBe('1');
+      expect(formatTickNumber(1.000000000001)).toBe('1');
       expect(formatTickNumber(5)).toBe('5');
       expect(formatTickNumber(-100.4)).toBe('-100.4');
       expect(formatTickNumber(3.01)).toBe('3.01');
@@ -33,7 +34,7 @@ describe('histogram/formatter test', () => {
       expect(formatTickNumber(-2.3411e-14)).toBe('-2.34e-14');
     });
 
-    it('formats large numbers in SI format', () => {
+    it('formats large numbers in SI format with 2 sig. digits', () => {
       expect(formatTickNumber(1.004e6)).toBe('1M');
       expect(formatTickNumber(-1.004e6)).toBe('-1M');
       expect(formatTickNumber(1.004e13)).toBe('10T');
@@ -43,7 +44,7 @@ describe('histogram/formatter test', () => {
     it('fails to format large number with many decimals nicely', () => {
       // This causes TensorBoard to format axis in less than ideal when spread of a
       // viewBox is miniscule compared to the number. e.g., you see axis that says,
-      // "1e9", "1e9", "1e9" which is quite meaningless. It will be addressed in the future.
+      // "1G", "1G", "1G" which is quite meaningless. It will be addressed in the future.
       expect(formatTickNumber(1e9 + 0.00000001)).toBe('1G');
       expect(formatTickNumber(1e9 - 0.00000001)).toBe('1G');
     });
