@@ -14,16 +14,17 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {combineLatest, Observable, of} from 'rxjs';
+import {combineLatest, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {DeepLinkProvider} from '../app_routing/deep_link_provider';
 import {SerializableQueryParams} from '../app_routing/types';
 import {State} from '../app_state';
+import {FeatureFlagMetadataMap} from '../feature_flag/store/feature_flag_metadata';
 import {
-  FeatureFlagMetadata,
-  FeatureFlagMetadataMap,
-  FeatureFlagType,
-} from '../feature_flag/store/feature_flag_metadata';
+  getEnabledExperimentalPlugins,
+  getOverriddenFeatureFlags,
+} from '../feature_flag/store/feature_flag_selectors';
+import {FeatureFlags} from '../feature_flag/types';
 import {
   isPluginType,
   isSampledPlugin,
@@ -40,7 +41,6 @@ import {
   SMOOTHING_KEY,
   TAG_FILTER_KEY,
 } from './dashboard_deeplink_provider_types';
-import {getOverriddenFeatureFlagStates} from './feature_flag_serializer';
 
 const COLOR_GROUP_REGEX_VALUE_PREFIX = 'regex:';
 
@@ -97,13 +97,51 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
           return [{key: TAG_FILTER_KEY, value: filterText}];
         })
       ),
-      of(
-        getOverriddenFeatureFlagStates(
-          FeatureFlagMetadataMap as Record<
-            string,
-            FeatureFlagMetadata<FeatureFlagType>
-          >
-        )
+      store.select(getEnabledExperimentalPlugins).pipe(
+        map((enabledExperimentalPlugins) => {
+          return enabledExperimentalPlugins.map((pluginName) => ({
+            key: FeatureFlagMetadataMap.enabledExperimentalPlugins
+              .queryParamOverride!,
+            value: pluginName,
+          }));
+        })
+      ),
+      store.select(getOverriddenFeatureFlags).pipe(
+        map((featureFlags) => {
+          return Object.entries(featureFlags)
+            .map(([featureFlag, featureValue]) => {
+              const key =
+                FeatureFlagMetadataMap[featureFlag as keyof FeatureFlags]
+                  ?.queryParamOverride;
+              if (!key || !featureValue) {
+                return [];
+              }
+              /**
+               * Features with array values should be serialized as multiple query params, e.g.
+               * enabledExperimentalPlugins: {
+               *    queryParamOverride: 'experimentalPlugin',
+               *    values: ['foo', 'bar'],
+               *  }
+               *    Should be serialized to:
+               * ?experimentalPlugin=foo&experimentalPlugin=bar
+               *
+               * Because values can be arrays it is easiest to convert non array values to an
+               * array, then flatten the result.
+               */
+              const values = Array.isArray(featureValue)
+                ? featureValue
+                : [featureValue];
+              return values.map((value) => ({
+                key,
+                value: value?.toString(),
+              }));
+            })
+            .flat()
+            .filter(({key, value}) => key && value !== undefined) as Array<{
+            key: string;
+            value: string;
+          }>;
+        })
       ),
       store.select(selectors.getMetricsSettingOverrides).pipe(
         map((settingOverrides) => {
