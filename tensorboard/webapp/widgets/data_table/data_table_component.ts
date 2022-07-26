@@ -19,8 +19,8 @@ import {
   SelectedStepRunData,
 } from '../../metrics/views/card_renderer/scalar_card_types';
 import {
-  numberFormatter,
   intlNumberFormatter,
+  numberFormatter,
   relativeTimeFormatter,
 } from '../line_chart_v2/lib/formatter';
 
