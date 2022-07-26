@@ -471,7 +471,7 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(2);
 
-      fobController.startDrag(Fob.END);
+      fobController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 3,
         movementY: 1,
@@ -519,7 +519,7 @@ describe('card_fob_controller', () => {
       fixture.detectChanges();
       const fobController = fixture.componentInstance.fobController;
 
-      fobController.startDrag(Fob.START);
+      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
       expect(addListenerSpy).toHaveBeenCalledOnceWith(
         'mousemove',
         mouseMoveListener
@@ -936,7 +936,7 @@ describe('card_fob_controller', () => {
       fixture.detectChanges();
       const fobController = fixture.componentInstance.fobController;
 
-      fobController.startDrag(Fob.START);
+      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
       expect(addListenerSpy).toHaveBeenCalledOnceWith(
         'mousemove',
         mouseMoveListener
