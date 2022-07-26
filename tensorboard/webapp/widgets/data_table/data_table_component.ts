@@ -20,6 +20,7 @@ import {
 } from '../../metrics/views/card_renderer/scalar_card_types';
 import {
   numberFormatter,
+  intlNumberFormatter,
   relativeTimeFormatter,
 } from '../line_chart_v2/lib/formatter';
 
@@ -71,7 +72,9 @@ export class DataTableComponent {
         if (selectedStepRunData.STEP === undefined) {
           return '';
         }
-        return numberFormatter.formatShort(selectedStepRunData.STEP as number);
+        return intlNumberFormatter.formatShort(
+          selectedStepRunData.STEP as number
+        );
       case ColumnHeaders.TIME:
         if (selectedStepRunData.TIME === undefined) {
           return '';
