@@ -95,15 +95,6 @@ export class CardFobControllerComponent {
   }
 
   stopDrag() {
-    // // This function might be overtrigged by both mouseup and mouseleave.
-    // // We only want to fire one onTimeSelectionChanged event.
-    // if (
-    //   this.currentDraggingFob === Fob.NONE ||
-    //   this.affordance === TimeSelectionAffordance.NONE
-    // ) {
-    //   return;
-    // }
-
     document.body.removeEventListener('mousemove', this.mouseListener);
     this.currentDraggingFob = Fob.NONE;
     this.onTimeSelectionChanged.emit({
@@ -118,7 +109,7 @@ export class CardFobControllerComponent {
   }
 
   mouseMove(event: MouseEvent) {
-    if (event.buttons == 0) {
+    if (event.buttons !== 1) {
       this.stopDrag();
     }
     if (this.currentDraggingFob === Fob.NONE) return;
