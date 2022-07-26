@@ -14,7 +14,10 @@ limitations under the License.
 ==============================================================================*/
 import {createAction, props} from '@ngrx/store';
 import {ElementId} from '../../util/dom';
-import {TimeSelectionAffordance} from '../../widgets/card_fob/card_fob_types';
+import {
+  TimeSelectionAffordance,
+  TimeSelectionToggleAffordance,
+} from '../../widgets/card_fob/card_fob_types';
 import {
   TagMetadata,
   TimeSeriesRequest,
@@ -188,11 +191,17 @@ export const timeSelectionCleared = createAction(
 );
 
 export const linkedTimeToggled = createAction(
-  '[Metrics] Linked Time Enable Toggle'
+  '[Metrics] Linked Time Enable Toggle',
+  props<{
+    affordance?: TimeSelectionToggleAffordance;
+  }>()
 );
 
 export const stepSelectorToggled = createAction(
-  '[Metrics] Time Selector Enable Toggle'
+  '[Metrics] Time Selector Enable Toggle',
+  props<{
+    affordance?: TimeSelectionToggleAffordance;
+  }>()
 );
 
 export const metricsPromoDismissed = createAction(

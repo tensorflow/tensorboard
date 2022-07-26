@@ -29,6 +29,7 @@ import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';
+import {TimeSelectionToggleAffordance} from '../../../widgets/card_fob/card_fob_types';
 import {DropdownModule} from '../../../widgets/dropdown/dropdown_module';
 import * as actions from '../../actions';
 import {HistogramMode, TooltipSort, XAxisType} from '../../types';
@@ -432,7 +433,9 @@ describe('metrics right_pane', () => {
           enabled.nativeElement.click();
 
           expect(dispatchSpy).toHaveBeenCalledOnceWith(
-            actions.linkedTimeToggled()
+            actions.linkedTimeToggled({
+              affordance: TimeSelectionToggleAffordance.CHECK_BOX,
+            })
           );
 
           store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, true);
@@ -598,7 +601,11 @@ describe('metrics right_pane', () => {
 
         select(fixture, '.scalars-step-selector input').nativeElement.click();
 
-        expect(dispatchSpy).toHaveBeenCalledWith(actions.stepSelectorToggled());
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          actions.stepSelectorToggled({
+            affordance: TimeSelectionToggleAffordance.CHECK_BOX,
+          })
+        );
       });
     });
   });

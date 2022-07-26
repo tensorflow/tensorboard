@@ -51,7 +51,10 @@ import {
   Fob,
 } from '../../../widgets/card_fob/card_fob_controller_component';
 import {CardFobModule} from '../../../widgets/card_fob/card_fob_module';
-import {TimeSelectionAffordance} from '../../../widgets/card_fob/card_fob_types';
+import {
+  TimeSelectionAffordance,
+  TimeSelectionToggleAffordance,
+} from '../../../widgets/card_fob/card_fob_types';
 import {DataTableComponent} from '../../../widgets/data_table/data_table_component';
 import {DataTableModule} from '../../../widgets/data_table/data_table_module';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
@@ -2290,7 +2293,11 @@ describe('scalar card', () => {
         ).componentInstance;
         fobComponent.fobRemoved.emit();
 
-        expect(dispatchedActions).toEqual([linkedTimeToggled()]);
+        expect(dispatchedActions).toEqual([
+          linkedTimeToggled({
+            affordance: TimeSelectionToggleAffordance.FOB_DESELECT,
+          }),
+        ]);
       }));
     });
 
@@ -2758,7 +2765,11 @@ describe('scalar card', () => {
         ).componentInstance;
         fobComponent.fobRemoved.emit();
 
-        expect(dispatchedActions).toEqual([stepSelectorToggled()]);
+        expect(dispatchedActions).toEqual([
+          stepSelectorToggled({
+            affordance: TimeSelectionToggleAffordance.FOB_DESELECT,
+          }),
+        ]);
       }));
     });
 

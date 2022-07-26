@@ -26,7 +26,10 @@ import {filter, map} from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
-import {TimeSelectionAffordance} from '../../../widgets/card_fob/card_fob_types';
+import {
+  TimeSelectionAffordance,
+  TimeSelectionToggleAffordance,
+} from '../../../widgets/card_fob/card_fob_types';
 import {HistogramDatum} from '../../../widgets/histogram/histogram_types';
 import {buildNormalizedHistograms} from '../../../widgets/histogram/histogram_util';
 import {linkedTimeSelectionChanged, linkedTimeToggled} from '../../actions';
@@ -241,6 +244,10 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
   }
 
   onLinkedTimeToggled() {
-    this.store.dispatch(linkedTimeToggled());
+    this.store.dispatch(
+      linkedTimeToggled({
+        affordance: TimeSelectionToggleAffordance.FOB_DESELECT,
+      })
+    );
   }
 }

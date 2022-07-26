@@ -40,6 +40,18 @@ export enum TimeSelectionAffordance {
 }
 
 /**
+ * The affordance supported to toggle step selector and linked time.
+ * Only used for analytics.
+ */
+export enum TimeSelectionToggleAffordance {
+  NONE,
+  // Clicking cross sign in fob.
+  FOB_DESELECT,
+  // Clicking check box in settings pane.
+  CHECK_BOX,
+}
+
+/**
  * The direction of the axis used to control the fob movements.
  */
 export enum AxisDirection {

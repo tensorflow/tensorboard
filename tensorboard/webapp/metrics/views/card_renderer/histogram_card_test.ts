@@ -27,7 +27,10 @@ import {
 } from '../../../selectors';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {DataLoadState} from '../../../types/data';
-import {TimeSelectionAffordance} from '../../../widgets/card_fob/card_fob_types';
+import {
+  TimeSelectionAffordance,
+  TimeSelectionToggleAffordance,
+} from '../../../widgets/card_fob/card_fob_types';
 import {
   HistogramData,
   HistogramMode,
@@ -554,7 +557,11 @@ describe('histogram card', () => {
         ).componentInstance;
         histogramWidget.onLinkedTimeToggled.emit();
 
-        expect(dispatchedActions).toEqual([linkedTimeToggled()]);
+        expect(dispatchedActions).toEqual([
+          linkedTimeToggled({
+            affordance: TimeSelectionToggleAffordance.FOB_DESELECT,
+          }),
+        ]);
       });
     });
   });
