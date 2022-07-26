@@ -419,123 +419,48 @@ describe('card_fob_controller', () => {
       expect(onTimeSelectionChanged).toHaveBeenCalledTimes(0);
     });
 
-    it('start fob stops dragging when mouse moves without button press', () => {
-      const fixture = createComponent({
-        timeSelection: {start: {step: 1}, end: {step: 3}},
-      });
-      fixture.detectChanges();
-      const fobController = fixture.componentInstance.fobController;
-      expect(
-        fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
-      ).toEqual(1);
-
-      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
-      const fakeEvent = new MouseEvent('mousemove', {
-        clientY: 3,
-        movementY: 1,
-        buttons: 0,
-      });
-      fobController.mouseMove(fakeEvent);
-      fixture.detectChanges();
-
-      expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
-      expect(getStepHigherSpy).toHaveBeenCalledTimes(0);
-      expect(
-        fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
-      ).toEqual(1);
-      expect(onTimeSelectionChanged).toHaveBeenCalledTimes(0);
-
-      const fakeDragEvent = new MouseEvent('mousemove', {
-        clientY: 2,
-        movementY: 1,
-        buttons: 1,
-      });
-      fobController.mouseMove(fakeDragEvent);
-      fixture.detectChanges();
-
-      expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
-      expect(getStepHigherSpy).toHaveBeenCalledTimes(0);
-      expect(
-        fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
-      ).toEqual(1);
-      expect(onTimeSelectionChanged).toHaveBeenCalledTimes(0);
-    });
-
-    it('end fob stops dragging when mouse moves without button press', () => {
-      const fixture = createComponent({
-        timeSelection: {start: {step: 1}, end: {step: 2}},
-      });
-      fixture.detectChanges();
-      const fobController = fixture.componentInstance.fobController;
-      expect(
-        fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
-      ).toEqual(2);
-
-      fobController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
-      const fakeEvent = new MouseEvent('mousemove', {
-        clientY: 3,
-        movementY: 1,
-        buttons: 0,
-      });
-      fobController.mouseMove(fakeEvent);
-      fixture.detectChanges();
-
-      expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
-      expect(getStepHigherSpy).toHaveBeenCalledTimes(0);
-      expect(
-        fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
-      ).toEqual(2);
-      expect(onTimeSelectionChanged).toHaveBeenCalledTimes(0);
-
-      const fakeDragEvent = new MouseEvent('mousemove', {
-        clientY: 3,
-        movementY: 1,
-        buttons: 1,
-      });
-      fobController.mouseMove(fakeDragEvent);
-      fixture.detectChanges();
-
-      expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
-      expect(getStepHigherSpy).toHaveBeenCalledTimes(0);
-      expect(
-        fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
-      ).toEqual(2);
-      expect(onTimeSelectionChanged).toHaveBeenCalledTimes(0);
-    });
-
     it('adds and removes event listener', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 4}, end: null},
       });
       const addListenerSpy = jasmine.createSpy();
       const removeListenerSpy = jasmine.createSpy();
-      document.body.addEventListener = addListenerSpy;
+      document.addEventListener = addListenerSpy;
       let mouseMoveListener;
+      let mouseUpListener;
       addListenerSpy.and.callFake((type, listener) => {
-        mouseMoveListener = listener;
+        if (type === 'mousemove') {
+          mouseMoveListener = listener;
+        }
+
+        if (type === 'mouseup') {
+          mouseUpListener = listener;
+        }
       });
-      document.body.removeEventListener = removeListenerSpy;
+      document.removeEventListener = removeListenerSpy;
       removeListenerSpy.and.callThrough();
       fixture.detectChanges();
       const fobController = fixture.componentInstance.fobController;
 
       fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
-      expect(addListenerSpy).toHaveBeenCalledOnceWith(
+      expect(addListenerSpy).toHaveBeenCalledWith(
         'mousemove',
         mouseMoveListener
       );
 
-      const fakeEvent = new MouseEvent('mousemove', {
-        clientY: 2,
-        movementY: -1,
-        buttons: 0,
-      });
-      fobController.mouseMove(fakeEvent);
+      expect(addListenerSpy).toHaveBeenCalledWith('mouseup', mouseUpListener);
+
+      fobController.stopDrag();
       fixture.detectChanges();
 
-      expect(removeListenerSpy).toHaveBeenCalledOnceWith(
+      expect(removeListenerSpy).toHaveBeenCalledWith(
         'mousemove',
         mouseMoveListener
+      );
+
+      expect(removeListenerSpy).toHaveBeenCalledWith(
+        'mouseup',
+        mouseUpListener
       );
     });
   });
@@ -833,92 +758,6 @@ describe('card_fob_controller', () => {
       expect(onTimeSelectionChanged).toHaveBeenCalledTimes(0);
     });
 
-    it('start fob stops dragging when mouse moves without button press', () => {
-      const fixture = createComponent({
-        timeSelection: {start: {step: 1}, end: {step: 3}},
-        axisDirection: AxisDirection.HORIZONTAL,
-      });
-      fixture.detectChanges();
-      const fobController = fixture.componentInstance.fobController;
-      expect(
-        fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
-      ).toEqual(1);
-
-      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
-      const fakeEvent = new MouseEvent('mousemove', {
-        clientY: 3,
-        movementY: 1,
-        buttons: 0,
-      });
-      fobController.mouseMove(fakeEvent);
-      fixture.detectChanges();
-
-      expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
-      expect(getStepHigherSpy).toHaveBeenCalledTimes(0);
-      expect(
-        fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
-      ).toEqual(1);
-      expect(onTimeSelectionChanged).toHaveBeenCalledTimes(0);
-
-      const fakeDragEvent = new MouseEvent('mousemove', {
-        clientY: 2,
-        movementY: 1,
-        buttons: 1,
-      });
-      fobController.mouseMove(fakeDragEvent);
-      fixture.detectChanges();
-
-      expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
-      expect(getStepHigherSpy).toHaveBeenCalledTimes(0);
-      expect(
-        fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
-      ).toEqual(1);
-      expect(onTimeSelectionChanged).toHaveBeenCalledTimes(0);
-    });
-
-    it('end fob stops dragging when mouse moves without button press', () => {
-      const fixture = createComponent({
-        timeSelection: {start: {step: 1}, end: {step: 2}},
-        axisDirection: AxisDirection.HORIZONTAL,
-      });
-      fixture.detectChanges();
-      const fobController = fixture.componentInstance.fobController;
-      expect(
-        fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
-      ).toEqual(2);
-
-      fobController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
-      const fakeEvent = new MouseEvent('mousemove', {
-        clientY: 3,
-        movementY: 1,
-        buttons: 0,
-      });
-      fobController.mouseMove(fakeEvent);
-      fixture.detectChanges();
-
-      expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
-      expect(getStepHigherSpy).toHaveBeenCalledTimes(0);
-      expect(
-        fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
-      ).toEqual(2);
-      expect(onTimeSelectionChanged).toHaveBeenCalledTimes(0);
-
-      const fakeDragEvent = new MouseEvent('mousemove', {
-        clientY: 3,
-        movementY: 1,
-        buttons: 1,
-      });
-      fobController.mouseMove(fakeDragEvent);
-      fixture.detectChanges();
-
-      expect(getStepLowerSpy).toHaveBeenCalledTimes(0);
-      expect(getStepHigherSpy).toHaveBeenCalledTimes(0);
-      expect(
-        fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
-      ).toEqual(2);
-      expect(onTimeSelectionChanged).toHaveBeenCalledTimes(0);
-    });
-
     it('adds and removes event listener', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 4}, end: null},
@@ -926,33 +765,42 @@ describe('card_fob_controller', () => {
       });
       const addListenerSpy = jasmine.createSpy();
       const removeListenerSpy = jasmine.createSpy();
-      document.body.addEventListener = addListenerSpy;
+      document.addEventListener = addListenerSpy;
       let mouseMoveListener;
+      let mouseUpListener;
       addListenerSpy.and.callFake((type, listener) => {
-        mouseMoveListener = listener;
+        if (type === 'mousemove') {
+          mouseMoveListener = listener;
+        }
+
+        if (type === 'mouseup') {
+          mouseUpListener = listener;
+        }
       });
-      document.body.removeEventListener = removeListenerSpy;
+      document.removeEventListener = removeListenerSpy;
       removeListenerSpy.and.callThrough();
       fixture.detectChanges();
       const fobController = fixture.componentInstance.fobController;
 
       fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
-      expect(addListenerSpy).toHaveBeenCalledOnceWith(
+      expect(addListenerSpy).toHaveBeenCalledWith(
         'mousemove',
         mouseMoveListener
       );
 
-      const fakeEvent = new MouseEvent('mousemove', {
-        clientY: 2,
-        movementY: -1,
-        buttons: 0,
-      });
-      fobController.mouseMove(fakeEvent);
+      expect(addListenerSpy).toHaveBeenCalledWith('mouseup', mouseUpListener);
+
+      fobController.stopDrag();
       fixture.detectChanges();
 
-      expect(removeListenerSpy).toHaveBeenCalledOnceWith(
+      expect(removeListenerSpy).toHaveBeenCalledWith(
         'mousemove',
         mouseMoveListener
+      );
+
+      expect(removeListenerSpy).toHaveBeenCalledWith(
+        'mouseup',
+        mouseUpListener
       );
     });
   });
