@@ -94,12 +94,16 @@ export class ScalarCardComponent<Downloader> {
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
+  @Output() onLinkedTimeToggled = new EventEmitter();
   @Output() onLinkedTimeSelectionChanged = new EventEmitter<{
     timeSelection: TimeSelection;
     affordance: TimeSelectionAffordance;
   }>();
-  @Output() onLinkedTimeToggled = new EventEmitter();
   @Output() onStepSelectorToggled = new EventEmitter();
+  @Output() onStepSelectorTimeSelectionChanged = new EventEmitter<{
+    timeSelection: TimeSelection;
+    affordance: TimeSelectionAffordance;
+  }>();
 
   // Line chart may not exist when was never visible (*ngIf).
   @ViewChild(LineChartComponent)
@@ -297,6 +301,8 @@ export class ScalarCardComponent<Downloader> {
         timeSelection,
         affordance,
       });
+    } else {
+      this.onStepSelectorTimeSelectionChanged.emit({timeSelection, affordance});
     }
   }
 

@@ -195,6 +195,23 @@ export const stepSelectorToggled = createAction(
   '[Metrics] Time Selector Enable Toggle'
 );
 
+/**
+ * Fired when step selector time selection is changed. This event is
+ * used for internal analytics only and will not cause state changes.
+ */
+export const stepSelectorTimeSelectionChanged = createAction(
+  '[Metrics] Ｓtep Selector Time Selection Changed',
+  props<{
+    timeSelection: {
+      startStep: number;
+      endStep: number | undefined;
+    };
+    // Affordance for internal analytics purpose. When no affordance is specified or is
+    // undefined we do not want to log an analytics event.
+    affordance?: TimeSelectionAffordance | undefined;
+  }>()
+);
+
 export const metricsPromoDismissed = createAction(
   '[Metrics] Metrics Promo Dismissed'
 );
