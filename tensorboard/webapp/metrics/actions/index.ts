@@ -180,7 +180,7 @@ export const linkedTimeSelectionChanged = createAction(
       startStep: number;
       endStep: number | undefined;
     };
-    // Affordance for analytics purpose. When no affordance is specified or is
+    // Affordance for internal analytics purpose. When no affordance is specified or is
     // undefined we do not want to log an analytics event.
     affordance?: TimeSelectionAffordance | undefined;
   }>()
@@ -193,6 +193,8 @@ export const timeSelectionCleared = createAction(
 export const linkedTimeToggled = createAction(
   '[Metrics] Linked Time Enable Toggle',
   props<{
+    // Affordance for internal analytics purpose. When no affordance is specified or is
+    // undefined we do not want to log an analytics event.
     affordance?: TimeSelectionToggleAffordance;
   }>()
 );
@@ -200,6 +202,8 @@ export const linkedTimeToggled = createAction(
 export const stepSelectorToggled = createAction(
   '[Metrics] Time Selector Enable Toggle',
   props<{
+    // Affordance for internal analytics purpose. When no affordance is specified or is
+    // undefined we do not want to log an analytics event.
     affordance?: TimeSelectionToggleAffordance;
   }>()
 );
