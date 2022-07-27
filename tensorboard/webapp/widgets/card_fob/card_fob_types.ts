@@ -21,7 +21,8 @@ export interface TimeSelection {
 }
 
 /**
- * The affordance supported to update the time selection.
+ * The affordance supported to update the time selection in  step selector and linked time.
+ * Only used for internal analytics.
  */
 export enum TimeSelectionAffordance {
   NONE,
@@ -37,6 +38,18 @@ export enum TimeSelectionAffordance {
   SETTINGS_TEXT,
   // Dragging the slider in setting pane.
   SETTINGS_SLIDER,
+}
+
+/**
+ * The affordance supported to toggle step selector and linked time.
+ * Only used for internal analytics.
+ */
+export enum TimeSelectionToggleAffordance {
+  NONE,
+  // Clicking cross sign in fob.
+  FOB_DESELECT,
+  // Clicking check box in settings pane.
+  CHECK_BOX,
 }
 
 /**

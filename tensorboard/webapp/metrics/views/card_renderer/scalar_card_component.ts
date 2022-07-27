@@ -27,6 +27,7 @@ import {DataLoadState} from '../../../types/data';
 import {
   TimeSelection,
   TimeSelectionAffordance,
+  TimeSelectionToggleAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
 import {
   Formatter,
@@ -94,12 +95,14 @@ export class ScalarCardComponent<Downloader> {
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
-  @Output() onLinkedTimeToggled = new EventEmitter();
+  @Output() onLinkedTimeToggled =
+    new EventEmitter<TimeSelectionToggleAffordance>();
   @Output() onLinkedTimeSelectionChanged = new EventEmitter<{
     timeSelection: TimeSelection;
     affordance: TimeSelectionAffordance;
   }>();
-  @Output() onStepSelectorToggled = new EventEmitter();
+  @Output() onStepSelectorToggled =
+    new EventEmitter<TimeSelectionToggleAffordance>();
   @Output() onStepSelectorTimeSelectionChanged = new EventEmitter<{
     timeSelection: TimeSelection;
     affordance: TimeSelectionAffordance;
@@ -308,9 +311,11 @@ export class ScalarCardComponent<Downloader> {
 
   onFobRemoved() {
     if (this.linkedTimeSelection !== null) {
-      this.onLinkedTimeToggled.emit();
+      this.onLinkedTimeToggled.emit(TimeSelectionToggleAffordance.FOB_DESELECT);
     } else {
-      this.onStepSelectorToggled.emit();
+      this.onStepSelectorToggled.emit(
+        TimeSelectionToggleAffordance.FOB_DESELECT
+      );
     }
   }
 }

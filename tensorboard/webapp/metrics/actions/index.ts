@@ -14,7 +14,10 @@ limitations under the License.
 ==============================================================================*/
 import {createAction, props} from '@ngrx/store';
 import {ElementId} from '../../util/dom';
-import {TimeSelectionAffordance} from '../../widgets/card_fob/card_fob_types';
+import {
+  TimeSelectionAffordance,
+  TimeSelectionToggleAffordance,
+} from '../../widgets/card_fob/card_fob_types';
 import {
   TagMetadata,
   TimeSeriesRequest,
@@ -177,7 +180,7 @@ export const linkedTimeSelectionChanged = createAction(
       startStep: number;
       endStep: number | undefined;
     };
-    // Affordance for analytics purpose. When no affordance is specified or is
+    // Affordance for internal analytics purpose. When no affordance is specified or is
     // undefined we do not want to log an analytics event.
     affordance?: TimeSelectionAffordance | undefined;
   }>()
@@ -188,11 +191,21 @@ export const timeSelectionCleared = createAction(
 );
 
 export const linkedTimeToggled = createAction(
-  '[Metrics] Linked Time Enable Toggle'
+  '[Metrics] Linked Time Enable Toggle',
+  props<{
+    // Affordance for internal analytics purpose. When no affordance is specified or is
+    // undefined we do not want to log an analytics event.
+    affordance?: TimeSelectionToggleAffordance;
+  }>()
 );
 
 export const stepSelectorToggled = createAction(
-  '[Metrics] Time Selector Enable Toggle'
+  '[Metrics] Time Selector Enable Toggle',
+  props<{
+    // Affordance for internal analytics purpose. When no affordance is specified or is
+    // undefined we do not want to log an analytics event.
+    affordance?: TimeSelectionToggleAffordance;
+  }>()
 );
 
 /**

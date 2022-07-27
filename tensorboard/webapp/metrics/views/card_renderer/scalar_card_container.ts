@@ -54,6 +54,7 @@ import {DataLoadState} from '../../../types/data';
 import {
   TimeSelection,
   TimeSelectionAffordance,
+  TimeSelectionToggleAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
 import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
@@ -152,8 +153,8 @@ function areSeriesEqual(
       (onStepSelectorTimeSelectionChanged)="
         onStepSelectorTimeSelectionChanged($event)
       "
-      (onLinkedTimeToggled)="onLinkedTimeToggled()"
-      (onStepSelectorToggled)="onStepSelectorToggled()"
+      (onLinkedTimeToggled)="onLinkedTimeToggled($event)"
+      (onStepSelectorToggled)="onStepSelectorToggled($event)"
     ></scalar-card-component>
   `,
   styles: [
@@ -602,11 +603,11 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     );
   }
 
-  onLinkedTimeToggled() {
-    this.store.dispatch(linkedTimeToggled());
+  onLinkedTimeToggled(affordance: TimeSelectionToggleAffordance) {
+    this.store.dispatch(linkedTimeToggled({affordance}));
   }
 
-  onStepSelectorToggled() {
-    this.store.dispatch(stepSelectorToggled());
+  onStepSelectorToggled(affordance: TimeSelectionToggleAffordance) {
+    this.store.dispatch(stepSelectorToggled({affordance}));
   }
 }

@@ -2737,10 +2737,10 @@ describe('metrics reducers', () => {
           linkedTimeEnabled: false,
         });
 
-        const state2 = reducers(state1, actions.linkedTimeToggled());
+        const state2 = reducers(state1, actions.linkedTimeToggled({}));
         expect(state2.linkedTimeEnabled).toBe(true);
 
-        const state3 = reducers(state2, actions.linkedTimeToggled());
+        const state3 = reducers(state2, actions.linkedTimeToggled({}));
         expect(state3.linkedTimeEnabled).toBe(false);
       });
 
@@ -2770,7 +2770,7 @@ describe('metrics reducers', () => {
           cardStepIndex: {[imageCardId]: buildStepIndexMetadata({index: 2})},
         });
 
-        const state2 = reducers(state1, actions.linkedTimeToggled());
+        const state2 = reducers(state1, actions.linkedTimeToggled({}));
 
         expect(state2.cardStepIndex).toEqual({
           [imageCardId]: buildStepIndexMetadata({index: 0}),
@@ -2802,7 +2802,7 @@ describe('metrics reducers', () => {
           cardStepIndex: {[imageCardId]: buildStepIndexMetadata({index: 2})},
         });
 
-        const state2 = reducers(state1, actions.linkedTimeToggled());
+        const state2 = reducers(state1, actions.linkedTimeToggled({}));
         expect(state2.cardStepIndex).toEqual({
           [imageCardId]: buildStepIndexMetadata({index: 1}),
         });
@@ -2840,7 +2840,7 @@ describe('metrics reducers', () => {
           cardStepIndex: {[imageCardId]: buildStepIndexMetadata({index: 2})},
         });
 
-        const state2 = reducers(state1, actions.linkedTimeToggled());
+        const state2 = reducers(state1, actions.linkedTimeToggled({}));
         expect(state2.cardStepIndex).toEqual({
           [imageCardId]: buildStepIndexMetadata({index: 2}),
         });
@@ -2851,7 +2851,7 @@ describe('metrics reducers', () => {
           stepMinMax: {min: Infinity, max: -Infinity},
         });
 
-        const state2 = reducers(state1, actions.linkedTimeToggled());
+        const state2 = reducers(state1, actions.linkedTimeToggled({}));
 
         expect(state2.linkedTimeSelection).toEqual({
           start: {step: 0},
@@ -2864,7 +2864,7 @@ describe('metrics reducers', () => {
           stepMinMax: {min: 10, max: 100},
         });
 
-        const state2 = reducers(state1, actions.linkedTimeToggled());
+        const state2 = reducers(state1, actions.linkedTimeToggled({}));
 
         expect(state2.linkedTimeSelection).toEqual({
           start: {step: 10},
@@ -2877,7 +2877,7 @@ describe('metrics reducers', () => {
           linkedTimeSelection: {start: {step: 20}, end: null},
         });
 
-        const state2 = reducers(state1, actions.linkedTimeToggled());
+        const state2 = reducers(state1, actions.linkedTimeToggled({}));
         expect(state2.linkedTimeSelection).toEqual({
           start: {step: 20},
           end: null,
@@ -2892,10 +2892,10 @@ describe('metrics reducers', () => {
         stepSelectorEnabled: false,
       });
 
-      const state2 = reducers(state1, actions.stepSelectorToggled());
+      const state2 = reducers(state1, actions.stepSelectorToggled({}));
       expect(state2.stepSelectorEnabled).toBe(true);
 
-      const state3 = reducers(state2, actions.stepSelectorToggled());
+      const state3 = reducers(state2, actions.stepSelectorToggled({}));
       expect(state3.stepSelectorEnabled).toBe(false);
     });
   });
