@@ -21,6 +21,7 @@ tf_ng_module(
         ":histogram_styles",
     ],
     deps = [
+        ":formatter",
         ":types",
         "//tensorboard/webapp/third_party:d3",
         "//tensorboard/webapp/widgets:resize_detector",
@@ -37,11 +38,13 @@ tf_ts_library(
     name = "histogram_test",
     testonly = True,
     srcs = [
+        "formatter_test.ts",
         "histogram_card_fob_test.ts",
         "histogram_test.ts",
         "histogram_util_test.ts",
     ],
     deps = [
+        ":formatter",
         ":histogram",
         ":types",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
@@ -64,5 +67,16 @@ tf_ts_library(
     ],
     deps = [
         "//tensorboard/webapp:tb_polymer_interop_types",
+    ],
+)
+
+tf_ts_library(
+    name = "formatter",
+    srcs = [
+        "formatter.ts",
+    ],
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        "//tensorboard/webapp/third_party:d3",
     ],
 )
