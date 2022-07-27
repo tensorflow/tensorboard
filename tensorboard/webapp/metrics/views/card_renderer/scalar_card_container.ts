@@ -148,8 +148,8 @@ function areSeriesEqual(
       observeIntersection
       (onVisibilityChange)="onVisibilityChange($event)"
       (onLinkedTimeSelectionChanged)="onLinkedTimeSelectionChanged($event)"
-      (onLinkedTimeToggled)="onLinkedTimeToggled()"
-      (onStepSelectorToggled)="onStepSelectorToggled()"
+      (onLinkedTimeToggled)="onLinkedTimeToggled($event)"
+      (onStepSelectorToggled)="onStepSelectorToggled($event)"
     ></scalar-card-component>
   `,
   styles: [
@@ -575,19 +575,11 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     );
   }
 
-  onLinkedTimeToggled() {
-    this.store.dispatch(
-      linkedTimeToggled({
-        affordance: TimeSelectionToggleAffordance.FOB_DESELECT,
-      })
-    );
+  onLinkedTimeToggled(affordance: TimeSelectionToggleAffordance) {
+    this.store.dispatch(linkedTimeToggled({affordance}));
   }
 
-  onStepSelectorToggled() {
-    this.store.dispatch(
-      stepSelectorToggled({
-        affordance: TimeSelectionToggleAffordance.FOB_DESELECT,
-      })
-    );
+  onStepSelectorToggled(affordance: TimeSelectionToggleAffordance) {
+    this.store.dispatch(stepSelectorToggled({affordance}));
   }
 }

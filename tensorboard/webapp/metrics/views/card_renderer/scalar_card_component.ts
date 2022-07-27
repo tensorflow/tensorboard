@@ -27,6 +27,7 @@ import {DataLoadState} from '../../../types/data';
 import {
   TimeSelection,
   TimeSelectionAffordance,
+  TimeSelectionToggleAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
 import {
   Formatter,
@@ -98,8 +99,10 @@ export class ScalarCardComponent<Downloader> {
     timeSelection: TimeSelection;
     affordance: TimeSelectionAffordance;
   }>();
-  @Output() onLinkedTimeToggled = new EventEmitter();
-  @Output() onStepSelectorToggled = new EventEmitter();
+  @Output() onLinkedTimeToggled =
+    new EventEmitter<TimeSelectionToggleAffordance>();
+  @Output() onStepSelectorToggled =
+    new EventEmitter<TimeSelectionToggleAffordance>();
 
   // Line chart may not exist when was never visible (*ngIf).
   @ViewChild(LineChartComponent)
@@ -302,9 +305,11 @@ export class ScalarCardComponent<Downloader> {
 
   onFobRemoved() {
     if (this.linkedTimeSelection !== null) {
-      this.onLinkedTimeToggled.emit();
+      this.onLinkedTimeToggled.emit(TimeSelectionToggleAffordance.FOB_DESELECT);
     } else {
-      this.onStepSelectorToggled.emit();
+      this.onStepSelectorToggled.emit(
+        TimeSelectionToggleAffordance.FOB_DESELECT
+      );
     }
   }
 }
