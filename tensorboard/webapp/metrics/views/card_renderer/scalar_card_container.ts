@@ -44,6 +44,7 @@ import {
   getDarkModeEnabled,
   getExperimentIdForRunId,
   getExperimentIdToExperimentAliasMap,
+  getMetricsLinkedTimeEnabled,
   getMetricsLinkedTimeSelection,
   getMetricsStepSelectorEnabled,
   getRun,
@@ -60,6 +61,7 @@ import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
   linkedTimeSelectionChanged,
   linkedTimeToggled,
+  stepSelectorTimeSelectionChanged,
   stepSelectorToggled,
 } from '../../actions';
 import {PluginType, ScalarStepDatum} from '../../data_source';
@@ -148,6 +150,9 @@ function areSeriesEqual(
       observeIntersection
       (onVisibilityChange)="onVisibilityChange($event)"
       (onLinkedTimeSelectionChanged)="onLinkedTimeSelectionChanged($event)"
+      (onStepSelectorTimeSelectionChanged)="
+        onStepSelectorTimeSelectionChanged($event)
+      "
       (onLinkedTimeToggled)="onLinkedTimeToggled($event)"
       (onStepSelectorToggled)="onStepSelectorToggled($event)"
     ></scalar-card-component>
@@ -388,11 +393,17 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
     this.linkedTimeSelection$ = combineLatest([
       partitionedSeries$,
+      this.store.select(getMetricsLinkedTimeEnabled),
       this.store.select(getMetricsLinkedTimeSelection),
       this.store.select(getMetricsXAxisType),
     ]).pipe(
-      map(([series, timeSelection, xAxisType]) => {
-        if (xAxisType !== XAxisType.STEP || !timeSelection) return null;
+      map(([series, linkedTimeEnabled, timeSelection, xAxisType]) => {
+        if (
+          !linkedTimeEnabled ||
+          xAxisType !== XAxisType.STEP ||
+          !timeSelection
+        )
+          return null;
 
         const {minStep, maxStep} = this.getMinMaxStepInSeries(series);
 
@@ -566,6 +577,23 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     const {timeSelection, affordance} = newTimeSelectionWithAffordance;
     this.store.dispatch(
       linkedTimeSelectionChanged({
+        timeSelection: {
+          startStep: timeSelection.start.step,
+          endStep: timeSelection.end ? timeSelection.end.step : undefined,
+        },
+        affordance,
+      })
+    );
+  }
+
+  onStepSelectorTimeSelectionChanged(newStepSelectorTimeSelectionWthAffordance: {
+    timeSelection: TimeSelection;
+    affordance: TimeSelectionAffordance;
+  }) {
+    const {timeSelection, affordance} =
+      newStepSelectorTimeSelectionWthAffordance;
+    this.store.dispatch(
+      stepSelectorTimeSelectionChanged({
         timeSelection: {
           startStep: timeSelection.start.step,
           endStep: timeSelection.end ? timeSelection.end.step : undefined,

@@ -76,10 +76,12 @@ import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {
   linkedTimeSelectionChanged,
   linkedTimeToggled,
+  stepSelectorTimeSelectionChanged,
   stepSelectorToggled,
 } from '../../actions';
 import {PluginType} from '../../data_source';
 import {
+  getMetricsLinkedTimeEnabled,
   getMetricsLinkedTimeSelection,
   getMetricsScalarSmoothing,
 } from '../../store';
@@ -2066,6 +2068,10 @@ describe('scalar card', () => {
   });
 
   describe('linked time feature integration', () => {
+    beforeEach(() => {
+      store.overrideSelector(getMetricsLinkedTimeEnabled, true);
+    });
+
     describe('time selection and dataset', () => {
       it('shows clipped warning when time selection is outside the extent of dataset', fakeAsync(() => {
         const runToSeries = {
@@ -2347,6 +2353,10 @@ describe('scalar card', () => {
   });
 
   describe('getTimeSelectionTableData', () => {
+    beforeEach(() => {
+      store.overrideSelector(getMetricsLinkedTimeEnabled, true);
+    });
+
     it('builds single selected step data object', fakeAsync(() => {
       const runToSeries = {
         run1: [
@@ -2638,7 +2648,7 @@ describe('scalar card', () => {
         expect(testController).toBeTruthy();
       }));
 
-      it('does not dispatch linkedTimeSelectionChanged action when fob is dragged', fakeAsync(() => {
+      it('dispatches stepSelectorTimeSelectionChanged action when fob is dragged', fakeAsync(() => {
         const fixture = createComponent('card1');
         fixture.detectChanges();
         const testController = fixture.debugElement.query(
@@ -2654,6 +2664,7 @@ describe('scalar card', () => {
           movementX: 1,
         });
         testController.mouseMove(fakeEvent);
+        testController.stopDrag();
         fixture.detectChanges();
 
         const fobs = fixture.debugElement.queryAll(
@@ -2662,6 +2673,22 @@ describe('scalar card', () => {
         expect(
           fobs[0].query(By.css('span')).nativeElement.textContent.trim()
         ).toEqual('25');
+        expect(dispatchedActions).toEqual([
+          stepSelectorTimeSelectionChanged({
+            timeSelection: {
+              startStep: 25,
+              endStep: undefined,
+            },
+            affordance: undefined,
+          }),
+          stepSelectorTimeSelectionChanged({
+            timeSelection: {
+              startStep: 25,
+              endStep: undefined,
+            },
+            affordance: TimeSelectionAffordance.FOB,
+          }),
+        ]);
         const scalarCardComponent = fixture.debugElement.query(
           By.directive(ScalarCardComponent)
         );
@@ -2678,6 +2705,7 @@ describe('scalar card', () => {
           start: {step: 20},
           end: {step: 40},
         });
+        store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, true);
         const fixture = createComponent('card1');
         fixture.detectChanges();
         let testController = fixture.debugElement.query(
@@ -2735,7 +2763,7 @@ describe('scalar card', () => {
         fixture.detectChanges();
 
         // Disable linked time
-        store.overrideSelector(getMetricsLinkedTimeSelection, null);
+        store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, false);
         store.refreshState();
         fixture.detectChanges();
 
