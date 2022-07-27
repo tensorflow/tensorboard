@@ -206,6 +206,8 @@ export const stepSelectorTimeSelectionChanged = createAction(
       startStep: number;
       endStep: number | undefined;
     };
+    // Affordance for internal analytics purpose. When no affordance is specified or is
+    // undefined we do not want to log an analytics event.
     affordance?: TimeSelectionAffordance | undefined;
   }>()
 );

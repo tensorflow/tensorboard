@@ -398,9 +398,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     ]).pipe(
       map(([series, linkedTimeEnabled, timeSelection, xAxisType]) => {
         if (
+          !linkedTimeEnabled ||
           xAxisType !== XAxisType.STEP ||
-          !timeSelection ||
-          !linkedTimeEnabled
+          !timeSelection
         )
           return null;
 
