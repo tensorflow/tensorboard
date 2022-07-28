@@ -58,7 +58,7 @@ describe('tb_feature_flag_data_source', () => {
 
       it('returns inColab=false when `tensorboardColab` is empty', () => {
         getParamsSpy.and.returnValue(new URLSearchParams('tensorboardColab'));
-        expect(dataSource.getFeatures()).toEqual({inColab: false});
+        expect(dataSource.getFeatures()).toEqual({inColab: true});
       });
 
       it('returns inColab=true when `tensorboardColab` is`true`', () => {
@@ -289,7 +289,7 @@ describe('tb_feature_flag_data_source', () => {
         );
         expect(dataSource.getFeatures()).toEqual({
           enabledExperimentalPlugins: ['a'],
-          inColab: false,
+          inColab: true,
           scalarsBatchSize: 16,
         });
       });

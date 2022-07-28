@@ -30,7 +30,7 @@ export type BaseFeatureFlagType = boolean | number | string | null | undefined;
 export type FeatureFlagType = BaseFeatureFlagType | Array<BaseFeatureFlagType>;
 
 export type FeatureFlagMetadata<T> = {
-  defaultValue?: T;
+  defaultValue: T;
   queryParamOverride?: string;
   parseValue: (str: string) => T;
   isArray?: boolean;
@@ -51,46 +51,57 @@ export const FeatureFlagMetadataMap: {
   [FlagName in keyof FeatureFlags]: FeatureFlagMetadata<FeatureFlags[FlagName]>;
 } = {
   scalarsBatchSize: {
+    defaultValue: undefined,
     queryParamOverride: SCALARS_BATCH_SIZE_PARAM_KEY,
     parseValue: parseInt,
   },
   enabledColorGroup: {
+    defaultValue: true,
     queryParamOverride: ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
     parseValue: parseBoolean,
   },
   enabledColorGroupByRegex: {
+    defaultValue: true,
     queryParamOverride: ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY,
     parseValue: parseBoolean,
   },
   enabledExperimentalPlugins: {
+    defaultValue: [],
     queryParamOverride: EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
     parseValue: (str: string) => [str],
     isArray: true,
   },
   enabledLinkedTime: {
+    defaultValue: false,
     queryParamOverride: ENABLE_LINKED_TIME_PARAM_KEY,
     parseValue: parseBoolean,
   },
   enabledCardWidthSetting: {
+    defaultValue: true,
     queryParamOverride: ENABLE_CARD_WIDTH_SETTING_PARAM_KEY,
     parseValue: parseBoolean,
   },
   enabledScalarDataTable: {
+    defaultValue: false,
     queryParamOverride: ENABLE_DATA_TABLE_PARAM_KEY,
     parseValue: parseBoolean,
   },
   forceSvg: {
+    defaultValue: false,
     queryParamOverride: FORCE_SVG_RENDERER,
     parseValue: parseBoolean,
   },
   enableDarkModeOverride: {
+    defaultValue: null,
     parseValue: parseBooleanOrNull,
   },
   defaultEnableDarkMode: {
+    defaultValue: false,
     queryParamOverride: ENABLE_DARK_MODE_QUERY_PARAM_KEY,
     parseValue: parseBoolean,
   },
   isAutoDarkModeAllowed: {
+    defaultValue: true,
     parseValue: parseBoolean,
   },
   inColab: {
@@ -99,9 +110,11 @@ export const FeatureFlagMetadataMap: {
     parseValue: parseBoolean,
   },
   metricsImageSupportEnabled: {
+    defaultValue: true,
     parseValue: parseBoolean,
   },
   enableTimeSeriesPromotion: {
+    defaultValue: false,
     parseValue: parseBoolean,
   },
 };

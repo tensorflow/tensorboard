@@ -13,10 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {SerializableQueryParams} from '../app_routing/types';
-import {FeatureFlagMetadata} from '../feature_flag/store/feature_flag_metadata';
+import {
+  FeatureFlagMetadata,
+  FeatureFlagType,
+} from '../feature_flag/store/feature_flag_metadata';
 import {FeatureFlags} from '../feature_flag/types';
 
-export function featureFlagsToSerializableQueryParams<T>(
+export function featureFlagsToSerializableQueryParams<
+  T extends FeatureFlagType
+>(
   overriddenFeatureFlags: Partial<FeatureFlags>,
   featureFlagMetadataMap: Record<string, FeatureFlagMetadata<T>>
 ): SerializableQueryParams {
@@ -25,7 +30,9 @@ export function featureFlagsToSerializableQueryParams<T>(
       const key =
         featureFlagMetadataMap[featureFlag as keyof FeatureFlags]
           ?.queryParamOverride;
-      if (!key || featureValue === undefined) {
+      const defaultValue =
+        featureFlagMetadataMap[featureFlag as keyof FeatureFlags]?.defaultValue;
+      if (!key || featureValue === undefined || featureValue === defaultValue) {
         return [];
       }
       /**

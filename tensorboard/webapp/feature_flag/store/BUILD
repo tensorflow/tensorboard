@@ -10,6 +10,7 @@ tf_ng_module(
         "feature_flag_store_config_provider.ts",
     ],
     deps = [
+        ":feature_flag_metadata",
         ":types",
         "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/actions",

@@ -60,9 +60,6 @@ export class QueryParamsFeatureFlagDataSource
       return null;
     }
     const paramValues: T[] = params.getAll(queryParamOverride).map((value) => {
-      if (value === '' && flagMetadata.defaultValue !== undefined) {
-        return flagMetadata.defaultValue;
-      }
       return flagMetadata.parseValue(value);
     });
     if (!paramValues.length) {
