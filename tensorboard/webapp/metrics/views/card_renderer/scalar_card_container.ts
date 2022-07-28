@@ -393,17 +393,19 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       this.store.select(getMetricsLinkedTimeSelection),
       this.store.select(getMetricsXAxisType),
     ]).pipe(
-      map(([{minStep, maxStep}, linkedTimeEnabled, timeSelection, xAxisType]) => {
-        if (
-          !linkedTimeEnabled ||
-          xAxisType !== XAxisType.STEP ||
-          !timeSelection
-        ) {
-          return null;
-        }
+      map(
+        ([{minStep, maxStep}, linkedTimeEnabled, timeSelection, xAxisType]) => {
+          if (
+            !linkedTimeEnabled ||
+            xAxisType !== XAxisType.STEP ||
+            !timeSelection
+          ) {
+            return null;
+          }
 
-        return maybeClipLinkedTimeSelection(timeSelection, minStep, maxStep);
-      })
+          return maybeClipLinkedTimeSelection(timeSelection, minStep, maxStep);
+        }
+      )
     );
 
     this.chartMetadataMap$ = partitionedSeries$.pipe(
