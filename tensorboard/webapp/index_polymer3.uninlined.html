@@ -69,8 +69,11 @@ limitations under the License.
   -->
   <script jscomp-nocompile src="polymer3_lib_binary.js"></script>
   <script jscomp-nocompile src="tb-webapp/tb_webapp_binary.js"></script>
-  <!-- require.js is needed by Monaco code editor dependency -->
-  <!-- BDTODO: Document that we have to load require.js afterwards. https://stackoverflow.com/questions/15371918/mismatched-anonymous-define-module -->
+  <!--
+    require.js is needed by Monaco code editor dependency.
+    It must be loaded after esbuild-bundled binaries:
+    https://stackoverflow.com/questions/15371918/mismatched-anonymous-define-module
+  -->
   <script jscomp-nocompile src="tf-imports/require.js"></script>
   <tb-webapp></tb-webapp>
 </body>
