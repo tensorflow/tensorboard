@@ -62,8 +62,9 @@ export class CardFobControllerComponent {
   private currentDraggingFob: Fob = Fob.NONE;
   private affordance: TimeSelectionAffordance = TimeSelectionAffordance.NONE;
 
-  // mouseListener is used to keep a reference to the EventListener used to
-  // track mouse movement in order to remove that listener.
+  // mouseListener and stopListener are used to keep a reference to the
+  // EventListeners used to track mouse movement and mouse up in order to
+  // remove those listener when dragging is finished.
   private mouseListener: any = this.mouseMove.bind(this);
   private stopListener: any = this.stopDrag.bind(this);
 

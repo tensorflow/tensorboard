@@ -2238,7 +2238,6 @@ describe('scalar card', () => {
         let fakeEvent = new MouseEvent('mousemove', {
           clientX: 25 + controllerStartPosition,
           movementX: 1,
-          buttons: 1,
         });
         testController.mouseMove(fakeEvent);
         testController.stopDrag();
@@ -2663,7 +2662,6 @@ describe('scalar card', () => {
         const fakeEvent = new MouseEvent('mousemove', {
           clientX: 25 + controllerStartPosition,
           movementX: 1,
-          buttons: 1,
         });
         testController.mouseMove(fakeEvent);
         testController.stopDrag();
@@ -2721,7 +2719,6 @@ describe('scalar card', () => {
         let fakeEvent = new MouseEvent('mousemove', {
           clientX: 25 + controllerStartPosition,
           movementX: 1,
-          buttons: 1,
         });
         testController.mouseMove(fakeEvent);
         testController.stopDrag();
@@ -2760,7 +2757,6 @@ describe('scalar card', () => {
         fakeEvent = new MouseEvent('mousemove', {
           clientX: 28 + controllerStartPosition,
           movementX: -1,
-          buttons: 1,
         });
         testController.mouseMove(fakeEvent);
         testController.stopDrag();

@@ -163,7 +163,6 @@ describe('HistogramCardFobController', () => {
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 3020,
         movementY: 1,
-        buttons: 1,
       });
       testController.mouseMove(fakeEvent);
       fixture.detectChanges();
@@ -187,7 +186,6 @@ describe('HistogramCardFobController', () => {
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 2980,
         movementY: -1,
-        buttons: 1,
       });
       testController.mouseMove(fakeEvent);
       fixture.detectChanges();

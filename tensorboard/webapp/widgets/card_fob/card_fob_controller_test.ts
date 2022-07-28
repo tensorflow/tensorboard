@@ -154,6 +154,57 @@ describe('card_fob_controller', () => {
     ).toEqual(5);
   });
 
+  describe('dragging', () => {
+    let mouseMoveListener: any;
+    let mouseUpListener: any;
+    beforeEach(() => {
+      spyOn(document, 'addEventListener').and.callFake(
+        (type: string, listener: any) => {
+          if (type === 'mousemove') {
+            mouseMoveListener = listener;
+          }
+
+          if (type === 'mouseup') {
+            mouseUpListener = listener;
+          }
+        }
+      );
+      spyOn(document, 'removeEventListener').and.callThrough;
+    });
+
+    it('adds and removes event listener', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 4}, end: null},
+      });
+      fixture.detectChanges();
+      const fobController = fixture.componentInstance.fobController;
+
+      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
+      expect(document.addEventListener).toHaveBeenCalledWith(
+        'mousemove',
+        mouseMoveListener
+      );
+
+      expect(document.addEventListener).toHaveBeenCalledWith(
+        'mouseup',
+        mouseUpListener
+      );
+
+      fobController.stopDrag();
+      fixture.detectChanges();
+
+      expect(document.removeEventListener).toHaveBeenCalledWith(
+        'mousemove',
+        mouseMoveListener
+      );
+
+      expect(document.removeEventListener).toHaveBeenCalledWith(
+        'mouseup',
+        mouseUpListener
+      );
+    });
+  });
+
   describe('vertical dragging', () => {
     it('moves the start fob based on adapter getStepHigherThanMousePosition when mouse is dragging down and is below fob', () => {
       const fixture = createComponent({
@@ -169,7 +220,6 @@ describe('card_fob_controller', () => {
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 3,
         movementY: 1,
-        buttons: 1,
       });
       fobController.mouseMove(fakeEvent);
       fobController.stopDrag();
@@ -202,7 +252,6 @@ describe('card_fob_controller', () => {
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 2,
         movementY: -1,
-        buttons: 1,
       });
       fobController.mouseMove(fakeEvent);
       fobController.stopDrag();
@@ -235,7 +284,6 @@ describe('card_fob_controller', () => {
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 4,
         movementY: -1,
-        buttons: 1,
       });
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
@@ -285,7 +333,6 @@ describe('card_fob_controller', () => {
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 8,
         movementY: 1,
-        buttons: 1,
       });
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
@@ -313,7 +360,6 @@ describe('card_fob_controller', () => {
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 3,
         movementY: 1,
-        buttons: 1,
       });
       fobController.mouseMove(fakeEvent);
       fobController.stopDrag();
@@ -346,7 +392,6 @@ describe('card_fob_controller', () => {
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 2,
         movementY: -1,
-        buttons: 1,
       });
       fobController.mouseMove(fakeEvent);
       fobController.stopDrag();
@@ -379,7 +424,6 @@ describe('card_fob_controller', () => {
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 3,
         movementY: -1,
-        buttons: 1,
       });
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
@@ -406,7 +450,6 @@ describe('card_fob_controller', () => {
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 2,
         movementY: 1,
-        buttons: 1,
       });
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
@@ -417,51 +460,6 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(3);
       expect(onTimeSelectionChanged).toHaveBeenCalledTimes(0);
-    });
-
-    it('adds and removes event listener', () => {
-      const fixture = createComponent({
-        timeSelection: {start: {step: 4}, end: null},
-      });
-      const addListenerSpy = jasmine.createSpy();
-      const removeListenerSpy = jasmine.createSpy();
-      document.addEventListener = addListenerSpy;
-      let mouseMoveListener;
-      let mouseUpListener;
-      addListenerSpy.and.callFake((type, listener) => {
-        if (type === 'mousemove') {
-          mouseMoveListener = listener;
-        }
-
-        if (type === 'mouseup') {
-          mouseUpListener = listener;
-        }
-      });
-      document.removeEventListener = removeListenerSpy;
-      removeListenerSpy.and.callThrough();
-      fixture.detectChanges();
-      const fobController = fixture.componentInstance.fobController;
-
-      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
-      expect(addListenerSpy).toHaveBeenCalledWith(
-        'mousemove',
-        mouseMoveListener
-      );
-
-      expect(addListenerSpy).toHaveBeenCalledWith('mouseup', mouseUpListener);
-
-      fobController.stopDrag();
-      fixture.detectChanges();
-
-      expect(removeListenerSpy).toHaveBeenCalledWith(
-        'mousemove',
-        mouseMoveListener
-      );
-
-      expect(removeListenerSpy).toHaveBeenCalledWith(
-        'mouseup',
-        mouseUpListener
-      );
     });
   });
 
@@ -481,7 +479,6 @@ describe('card_fob_controller', () => {
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 3,
         movementX: 1,
-        buttons: 1,
       });
       fobController.mouseMove(fakeEvent);
       fobController.stopDrag();
@@ -515,7 +512,6 @@ describe('card_fob_controller', () => {
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 2,
         movementX: -1,
-        buttons: 1,
       });
       fobController.mouseMove(fakeEvent);
       fobController.stopDrag();
@@ -549,7 +545,6 @@ describe('card_fob_controller', () => {
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 4,
         movementX: -1,
-        buttons: 1,
       });
       fobController.mouseMove(fakeEvent);
       fobController.stopDrag();
@@ -584,7 +579,6 @@ describe('card_fob_controller', () => {
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 2,
         movementX: 1,
-        buttons: 1,
       });
       fobController.mouseMove(fakeEvent);
       fobController.stopDrag();
@@ -620,7 +614,6 @@ describe('card_fob_controller', () => {
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 8,
         movementX: 1,
-        buttons: 1,
       });
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
@@ -649,7 +642,6 @@ describe('card_fob_controller', () => {
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 3,
         movementX: 1,
-        buttons: 1,
       });
       fobController.mouseMove(fakeEvent);
       fobController.stopDrag();
@@ -683,7 +675,6 @@ describe('card_fob_controller', () => {
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 2,
         movementX: -1,
-        buttons: 1,
       });
       fobController.mouseMove(fakeEvent);
       fobController.stopDrag();
@@ -717,7 +708,6 @@ describe('card_fob_controller', () => {
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 3,
         movementX: -1,
-        buttons: 1,
       });
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
@@ -745,7 +735,6 @@ describe('card_fob_controller', () => {
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 2,
         movementX: 1,
-        buttons: 1,
       });
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
@@ -756,52 +745,6 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(3);
       expect(onTimeSelectionChanged).toHaveBeenCalledTimes(0);
-    });
-
-    it('adds and removes event listener', () => {
-      const fixture = createComponent({
-        timeSelection: {start: {step: 4}, end: null},
-        axisDirection: AxisDirection.HORIZONTAL,
-      });
-      const addListenerSpy = jasmine.createSpy();
-      const removeListenerSpy = jasmine.createSpy();
-      document.addEventListener = addListenerSpy;
-      let mouseMoveListener;
-      let mouseUpListener;
-      addListenerSpy.and.callFake((type, listener) => {
-        if (type === 'mousemove') {
-          mouseMoveListener = listener;
-        }
-
-        if (type === 'mouseup') {
-          mouseUpListener = listener;
-        }
-      });
-      document.removeEventListener = removeListenerSpy;
-      removeListenerSpy.and.callThrough();
-      fixture.detectChanges();
-      const fobController = fixture.componentInstance.fobController;
-
-      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
-      expect(addListenerSpy).toHaveBeenCalledWith(
-        'mousemove',
-        mouseMoveListener
-      );
-
-      expect(addListenerSpy).toHaveBeenCalledWith('mouseup', mouseUpListener);
-
-      fobController.stopDrag();
-      fixture.detectChanges();
-
-      expect(removeListenerSpy).toHaveBeenCalledWith(
-        'mousemove',
-        mouseMoveListener
-      );
-
-      expect(removeListenerSpy).toHaveBeenCalledWith(
-        'mouseup',
-        mouseUpListener
-      );
     });
   });
 
@@ -856,7 +799,7 @@ describe('card_fob_controller', () => {
         new MouseEvent('mousedown', {bubbles: true})
       );
       fobController.mouseMove(
-        new MouseEvent('mousemove', {clientX: 3, movementX: 1, buttons: 1})
+        new MouseEvent('mousemove', {clientX: 3, movementX: 1})
       );
       fobController.stopDrag();
       fixture.detectChanges();
@@ -881,7 +824,7 @@ describe('card_fob_controller', () => {
         new MouseEvent('mousedown', {bubbles: true})
       );
       fobController.mouseMove(
-        new MouseEvent('mousemove', {clientX: 5, movementX: 1, buttons: 1})
+        new MouseEvent('mousemove', {clientX: 5, movementX: 1})
       );
       fobController.stopDrag();
       fixture.detectChanges();
