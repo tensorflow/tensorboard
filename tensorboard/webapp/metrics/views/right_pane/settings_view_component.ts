@@ -182,6 +182,10 @@ export class SettingsViewComponent {
     });
   }
 
+  isAxisTypeStep(): boolean {
+    return this.xAxisType === XAxisType.STEP;
+  }
+
   onRangeValuesChanged({
     lowerValue,
     upperValue,

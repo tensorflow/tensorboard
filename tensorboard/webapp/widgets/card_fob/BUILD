@@ -31,6 +31,7 @@ tf_ng_module(
         ":types",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/third_party:d3",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
         "@npm//@angular/common",
         "@npm//@angular/core",
     ],

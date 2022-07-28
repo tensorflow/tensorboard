@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {RtlScrollAxisType} from '@angular/cdk/platform';
 import {CdkScrollable} from '@angular/cdk/scrolling';
 import {
   ChangeDetectionStrategy,
@@ -23,6 +24,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {PluginType} from '../../data_source';
+import {XAxisType} from '../../types';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
 
@@ -47,6 +49,7 @@ export class CardGridComponent {
   @Input() cardObserver!: CardObserver;
   @Input() showPaginationControls!: boolean;
   @Input() isStepSelectorEnabled!: boolean;
+  @Input() getMetricsXAxisType!: XAxisType;
 
   @Output() pageIndexChanged = new EventEmitter<number>();
 
@@ -132,5 +135,23 @@ export class CardGridComponent {
     }
 
     this.handlePageChange(nextValue, input);
+  }
+
+  isShowingDataTable(item: CardIdWithMetadata) {
+    console.log(
+      'this.getMetricsXAxisType === XAxisType.STEP',
+      this.getMetricsXAxisType === XAxisType.STEP
+    );
+    console.log(
+      'isShowingDataTable',
+      this.isStepSelectorEnabled &&
+        item.plugin === PluginType.SCALARS &&
+        this.getMetricsXAxisType === XAxisType.STEP
+    );
+    return (
+      this.isStepSelectorEnabled &&
+      item.plugin === PluginType.SCALARS &&
+      this.getMetricsXAxisType === XAxisType.STEP
+    );
   }
 }

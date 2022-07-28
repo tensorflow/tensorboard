@@ -23,6 +23,7 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
+import {Formatter} from '../line_chart_v2/lib/public_types';
 
 @Component({
   selector: 'card-fob',

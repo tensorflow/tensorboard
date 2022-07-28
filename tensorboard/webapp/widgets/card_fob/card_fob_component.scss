@@ -21,6 +21,7 @@ limitations under the License.
 
 .fob {
   display: inline-flex;
+  white-space: nowrap;
   background-color: mat.get-color-from-palette(mat.$gray-palette, 300);
   border-radius: 25px;
   padding: 2px 2px 2px 4px;

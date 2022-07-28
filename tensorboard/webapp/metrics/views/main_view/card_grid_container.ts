@@ -29,6 +29,7 @@ import {
   getMetricsCardMinWidth,
   getMetricsStepSelectorEnabled,
   getMetricsTagGroupExpansionState,
+  getMetricsXAxisType,
 } from '../../../selectors';
 import {selectors as settingsSelectors} from '../../../settings';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
@@ -46,6 +47,7 @@ import {CardIdWithMetadata} from '../metrics_view_types';
       [cardMinWidth]="cardMinWidth$ | async"
       [cardObserver]="cardObserver"
       [isStepSelectorEnabled]="isStepSelectorEnabled$ | async"
+      [getMetricsXAxisType]="getMetricsXAxisType$ | async"
       (pageIndexChanged)="onPageIndexChanged($event)"
     >
     </metrics-card-grid-component>
@@ -66,6 +68,7 @@ export class CardGridContainer implements OnChanges, OnDestroy {
   readonly isStepSelectorEnabled$ = this.store.select(
     getMetricsStepSelectorEnabled
   );
+  readonly getMetricsXAxisType$ = this.store.select(getMetricsXAxisType);
 
   readonly numPages$ = combineLatest([
     this.items$,

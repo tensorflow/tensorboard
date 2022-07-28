@@ -23,7 +23,10 @@ import {
   TimeSelection,
   TimeSelectionAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
-import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
+import {
+  Formatter,
+  Scale,
+} from '../../../widgets/line_chart_v2/lib/public_types';
 
 @Component({
   selector: 'scalar-card-fob-controller',
@@ -49,6 +52,7 @@ export class ScalarCardFobController {
   @Input() scale!: Scale;
   @Input() minMax!: [number, number];
   @Input() axisSize!: number;
+  @Input() customStepFormatter!: Formatter;
 
   @Output() onTimeSelectionChanged = new EventEmitter<{
     timeSelection: TimeSelection;
