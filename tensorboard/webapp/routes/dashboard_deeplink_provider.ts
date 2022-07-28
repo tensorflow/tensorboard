@@ -24,10 +24,7 @@ import {
   FeatureFlagMetadataMap,
   FeatureFlagType,
 } from '../feature_flag/store/feature_flag_metadata';
-import {
-  getEnabledExperimentalPlugins,
-  getOverriddenFeatureFlags,
-} from '../feature_flag/store/feature_flag_selectors';
+import {getOverriddenFeatureFlags} from '../feature_flag/store/feature_flag_selectors';
 import {
   isPluginType,
   isSampledPlugin,
@@ -99,15 +96,6 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
             return [];
           }
           return [{key: TAG_FILTER_KEY, value: filterText}];
-        })
-      ),
-      store.select(getEnabledExperimentalPlugins).pipe(
-        map((enabledExperimentalPlugins) => {
-          return enabledExperimentalPlugins.map((pluginName) => ({
-            key: FeatureFlagMetadataMap.enabledExperimentalPlugins
-              .queryParamOverride!,
-            value: pluginName,
-          }));
         })
       ),
       store.select(getOverriddenFeatureFlags).pipe(

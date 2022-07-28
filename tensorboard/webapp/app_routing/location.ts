@@ -48,9 +48,6 @@ const utils = {
   getHref() {
     return window.location.href;
   },
-  getSearch() {
-    return window.location.search;
-  },
 };
 
 @Injectable()
@@ -60,7 +57,7 @@ export class Location implements LocationInterface {
   }
 
   getSearch(): SerializableQueryParams {
-    const searchParams = new URLSearchParams(utils.getSearch());
+    const searchParams = new URLSearchParams(window.location.search);
     const serializableSearchParams: SerializableQueryParams = [];
 
     // URLSearchParams is a Iterable but TypeScript does not know about that.

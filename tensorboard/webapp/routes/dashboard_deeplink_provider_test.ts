@@ -347,13 +347,15 @@ describe('core deeplink provider', () => {
     });
   });
 
+  /**
+   * These tests are intended to verify that feature flags are correctly serialized using
+   * featureFlagsToSerializableQueryParams
+   */
   describe('feature flag', () => {
     it('serializes enabled experimental plugins', () => {
-      store.overrideSelector(selectors.getEnabledExperimentalPlugins, [
-        'foo',
-        'bar',
-        'baz',
-      ]);
+      store.overrideSelector(selectors.getOverriddenFeatureFlags, {
+        enabledExperimentalPlugins: ['foo', 'bar', 'baz'],
+      });
       store.refreshState();
 
       expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
@@ -378,9 +380,9 @@ describe('core deeplink provider', () => {
       });
       store.refreshState();
 
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
-        []
-      );
+      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
+        {key: 'enableColorGroup', value: 'false'},
+      ]);
 
       store.overrideSelector(selectors.getOverriddenFeatureFlags, {});
       store.refreshState();
@@ -405,9 +407,9 @@ describe('core deeplink provider', () => {
       });
       store.refreshState();
 
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
-        []
-      );
+      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
+        {key: 'enableColorGroupByRegex', value: 'false'},
+      ]);
 
       store.overrideSelector(selectors.getOverriddenFeatureFlags, {});
       store.refreshState();

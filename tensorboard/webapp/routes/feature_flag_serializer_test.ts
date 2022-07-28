@@ -1,3 +1,17 @@
+/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
 import {featureFlagsToSerializableQueryParams} from './feature_flag_serializer';
 
 describe('feature flag serializer', () => {
@@ -18,6 +32,7 @@ describe('feature flag serializer', () => {
         },
       };
     });
+
     it('should return empty list when no flags are overridden', () => {
       const serializableQueryParams = featureFlagsToSerializableQueryParams(
         {},
@@ -40,6 +55,23 @@ describe('feature flag serializer', () => {
         {
           key: 'feature_a',
           value: 'a',
+        },
+      ]);
+    });
+
+    it('should serialize feature flags with falsy values', () => {
+      const serializableQueryParams = featureFlagsToSerializableQueryParams(
+        {featureB: false, featureA: ''} as any,
+        featureFlagsMetadata
+      );
+      expect(serializableQueryParams).toEqual([
+        {
+          key: 'feature_b',
+          value: 'false',
+        },
+        {
+          key: 'feature_a',
+          value: '',
         },
       ]);
     });

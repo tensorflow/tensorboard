@@ -30,7 +30,6 @@ export type BaseFeatureFlagType = boolean | number | string | null | undefined;
 export type FeatureFlagType = BaseFeatureFlagType | Array<BaseFeatureFlagType>;
 
 export type FeatureFlagMetadata<T> = {
-  displayName: string;
   defaultValue?: T;
   queryParamOverride?: string;
   parseValue: (str: string) => T;
@@ -52,71 +51,57 @@ export const FeatureFlagMetadataMap: {
   [FlagName in keyof FeatureFlags]: FeatureFlagMetadata<FeatureFlags[FlagName]>;
 } = {
   scalarsBatchSize: {
-    displayName: 'scalarsBatchSize',
     queryParamOverride: SCALARS_BATCH_SIZE_PARAM_KEY,
     parseValue: parseInt,
   },
   enabledColorGroup: {
-    displayName: 'enabledColorGroup',
     queryParamOverride: ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
     parseValue: parseBoolean,
   },
   enabledColorGroupByRegex: {
-    displayName: 'enabledColorGroupByRegex',
     queryParamOverride: ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY,
     parseValue: parseBoolean,
   },
   enabledExperimentalPlugins: {
-    displayName: 'enabledExperimentalPlugins',
     queryParamOverride: EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
     parseValue: (str: string) => [str],
     isArray: true,
   },
   enabledLinkedTime: {
-    displayName: 'enabledLinkedTime',
     queryParamOverride: ENABLE_LINKED_TIME_PARAM_KEY,
     parseValue: parseBoolean,
   },
   enabledCardWidthSetting: {
-    displayName: 'enabledCardWidthSetting',
     queryParamOverride: ENABLE_CARD_WIDTH_SETTING_PARAM_KEY,
     parseValue: parseBoolean,
   },
   enabledScalarDataTable: {
-    displayName: 'enabledScalarDataTable',
     queryParamOverride: ENABLE_DATA_TABLE_PARAM_KEY,
     parseValue: parseBoolean,
   },
   forceSvg: {
-    displayName: 'forceSvg',
     queryParamOverride: FORCE_SVG_RENDERER,
     parseValue: parseBoolean,
   },
   enableDarkModeOverride: {
-    displayName: 'enableDarkModeOverride',
     parseValue: parseBooleanOrNull,
   },
   defaultEnableDarkMode: {
-    displayName: 'defaultEnableDarkMode',
     queryParamOverride: ENABLE_DARK_MODE_QUERY_PARAM_KEY,
     parseValue: parseBoolean,
   },
   isAutoDarkModeAllowed: {
-    displayName: 'isAutoDarkModeAllowed',
     parseValue: parseBoolean,
   },
   inColab: {
-    displayName: 'inColab',
     defaultValue: false,
     queryParamOverride: 'tensorboardColab',
     parseValue: parseBoolean,
   },
   metricsImageSupportEnabled: {
-    displayName: 'metricsImageSupportEnabled',
     parseValue: parseBoolean,
   },
   enableTimeSeriesPromotion: {
-    displayName: 'enableTimeSeriesPromotion',
     parseValue: parseBoolean,
   },
 };
