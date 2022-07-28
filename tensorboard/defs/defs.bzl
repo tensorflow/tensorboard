@@ -13,23 +13,10 @@
 # limitations under the License.
 """External-only delegates for various BUILD rules."""
 
-# BDTODO: Delete.
-load("@npm//@bazel/rollup:index.bzl", "rollup_bundle")
 load("@npm//@bazel/concatjs:index.bzl", "karma_web_test_suite")
 load("@npm//@bazel/typescript:index.bzl", "ts_config", "ts_library")
 load("@io_bazel_rules_sass//:defs.bzl", "npm_sass_library", "sass_binary", "sass_library")
-# BDTODO: Delete.
-load("@npm//@bazel/terser:index.bzl", "terser_minified")
 load("@npm//@bazel/esbuild:index.bzl", "esbuild")
-# BDTODO: Delete.
-load("//tensorboard/defs/internal:js.bzl", _tf_dev_js_binary = "tf_dev_js_binary")
-
-# BDTODO: Delete the old rollup config. Delete rollup from the project entirely (remove from WORKSPACE and elsewhere?)
-
-# BDTODO: Delete the definition of _tf_dev_js_binary.
-
-# BDTODO: Delete.
-tf_dev_js_binary = _tf_dev_js_binary
 
 def tensorboard_webcomponent_library(**kwargs):
     """Rules referencing this will be deleted from the codebase soon."""
@@ -43,32 +30,30 @@ def tf_js_binary(
         **kwargs):
     """Rules for creating a JavaScript bundle.
 
-    BDTODO: Revisit documentation and the choice of properties.
-
     Args:
         name: Name of the target.
         compile: whether to compile when bundling. Only used internally.
         dev_mode_only: whether the binary is for development. When True, it will
-          omit the Terser.
+          omit the minification step.
         includes_polymer: whether this binary contains Polymer. Only used
           internally.
-        **kwargs: keyword arguments to rollup_bundle. Please refer to
-          https://bazelbuild.github.io/rules_nodejs/Built-ins.html#rollup_bundle
-          for more details.
-          BDTODO: Used for entry_point, deps, visibility
+        **kwargs: Other keyword arguments to esbuild(). Typically used for
+          entry_point, deps, and visibility. Please refer to
+          https://esbuild.github.io/api/ for more details.
     """
 
-    # BDTODO: Document the fact that bazel only has first-class support for
-    # esbuild bundling. Examples (find one online) suggest using it with ts_project
-    # but we were able to make it work with ts_library.
+    # Bazel's integration with esbuild is limited to bundling. Bazel documents
+    # how to use esbuild with ts_project[1] but we use ts_library instead of
+    # ts_project. We've managed to get esbuild working with ts_library but its
+    # support is tenuous.
+    #
+    # [1]: (https://www.npmjs.com/package/@bazel/esbuild)
     esbuild(
         name = name,
-        # BDTODO: Document why we can't use "esm" (d3's dispatchEvent placed into
-        # global scope conflicts with window.dispathEvent)
-        # BDTODO: Also note that we could use "esm" with minify since names are
-        # largely mangled but given the small possibility of generating a
-        # global-scope conflict, and given the very very small saving in size (11 bytes), we
-        # do iife anyways.
+        # Use "iife" format instead of "esm" because "esm" writes symbols at
+        # the global level and tends to overwrite `window` functions. "iife" is
+        # just a thing wrapper around "esm" (it adds 11 bytes) and doesn't
+        # suffer from the same problem.
         format="iife",
         minify= False if dev_mode_only else True,
         args = {
@@ -77,12 +62,13 @@ def tf_js_binary(
             # https://github.com/bazelbuild/rules_nodejs/issues/2691#issuecomment-846429871
             # BDTODO: Can we be rid of this with usage of mainFields?
             "resolveExtensions": [".mjs", ".js"],
-            # BDTODO: Can we document who is using each main field?
-            # BDTODO: Document the fact that we don't really know the best order
-            # here. We picked this up from the "old" rollup config. Note that the
-            # default values definitely don't work (for some reason some deps, like
-            # d3, give us the "node" version of their files that require the
-            # node version of xmlhttprequest)
+            # The reasoning for these particular mainFields values are lost to
+            # history. These come from the old rollup bundler configuration.
+            # We do know that the esbuild default values for mainFields don't
+            # work for us. In particular we ran into problems with
+            # esbuild pulling in browser-unfriendly versions of some libraries.
+            # For example, the "node" version of d3 transitively pulls in the
+            # node implementation of XmlHttpRequest.
             "mainFields": ["browser", "es2015", "module", "jsnext:main", "main"],
         },
         **kwargs

@@ -2,6 +2,8 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
+# BDTODO: Can we delete these other things?
+
 py_binary(
     name = "resource_digest_suffixer",
     srcs = ["resource_digest_suffixer.py"],
