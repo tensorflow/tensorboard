@@ -18,6 +18,7 @@ import {Observable} from 'rxjs';
 import {filter, map, take, withLatestFrom} from 'rxjs/operators';
 import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';
+import {TimeSelectionToggleAffordance} from '../../../widgets/card_fob/card_fob_types';
 import {
   linkedTimeSelectionChanged,
   linkedTimeToggled,
@@ -200,18 +201,24 @@ export class SettingsViewContainer {
   }
 
   onLinkedTimeToggled() {
-    this.store.dispatch(linkedTimeToggled());
+    this.store.dispatch(
+      linkedTimeToggled({affordance: TimeSelectionToggleAffordance.CHECK_BOX})
+    );
   }
 
   onStepSelectorToggled() {
-    this.store.dispatch(stepSelectorToggled());
+    this.store.dispatch(
+      stepSelectorToggled({affordance: TimeSelectionToggleAffordance.CHECK_BOX})
+    );
   }
 
   onLinkedTimeSelectionChanged(newValue: TimeSelection) {
     this.store.dispatch(
       linkedTimeSelectionChanged({
-        startStep: newValue.start.step,
-        endStep: newValue.end?.step,
+        timeSelection: {
+          startStep: newValue.start.step,
+          endStep: newValue.end?.step,
+        },
       })
     );
   }

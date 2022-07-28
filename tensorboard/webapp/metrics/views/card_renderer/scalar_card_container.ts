@@ -44,18 +44,24 @@ import {
   getDarkModeEnabled,
   getExperimentIdForRunId,
   getExperimentIdToExperimentAliasMap,
+  getMetricsLinkedTimeEnabled,
   getMetricsLinkedTimeSelection,
   getMetricsStepSelectorEnabled,
   getRun,
   getRunColorMap,
 } from '../../../selectors';
 import {DataLoadState} from '../../../types/data';
-import {TimeSelection} from '../../../widgets/card_fob/card_fob_types';
+import {
+  TimeSelection,
+  TimeSelectionAffordance,
+  TimeSelectionToggleAffordance,
+} from '../../../widgets/card_fob/card_fob_types';
 import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
   linkedTimeSelectionChanged,
   linkedTimeToggled,
+  stepSelectorTimeSelectionChanged,
   stepSelectorToggled,
 } from '../../actions';
 import {PluginType, ScalarStepDatum} from '../../data_source';
@@ -144,8 +150,11 @@ function areSeriesEqual(
       observeIntersection
       (onVisibilityChange)="onVisibilityChange($event)"
       (onLinkedTimeSelectionChanged)="onLinkedTimeSelectionChanged($event)"
-      (onLinkedTimeToggled)="onLinkedTimeToggled()"
-      (onStepSelectorToggled)="onStepSelectorToggled()"
+      (onStepSelectorTimeSelectionChanged)="
+        onStepSelectorTimeSelectionChanged($event)
+      "
+      (onLinkedTimeToggled)="onLinkedTimeToggled($event)"
+      (onStepSelectorToggled)="onStepSelectorToggled($event)"
     ></scalar-card-component>
   `,
   styles: [
@@ -380,11 +389,18 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
     this.linkedTimeSelection$ = combineLatest([
       this.minMaxSteps$,
+      this.store.select(getMetricsLinkedTimeEnabled),
       this.store.select(getMetricsLinkedTimeSelection),
       this.store.select(getMetricsXAxisType),
     ]).pipe(
-      map(([{minStep, maxStep}, timeSelection, xAxisType]) => {
-        if (xAxisType !== XAxisType.STEP || !timeSelection) return null;
+      map(([{minStep, maxStep}, linkedTimeEnabled, timeSelection, xAxisType]) => {
+        if (
+          !linkedTimeEnabled ||
+          xAxisType !== XAxisType.STEP ||
+          !timeSelection
+        ) {
+          return null;
+        }
 
         return maybeClipLinkedTimeSelection(timeSelection, minStep, maxStep);
       })
@@ -547,20 +563,44 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     });
   }
 
-  onLinkedTimeSelectionChanged(newLinkedTime: TimeSelection) {
+  onLinkedTimeSelectionChanged(newTimeSelectionWithAffordance: {
+    timeSelection: TimeSelection;
+    affordance: TimeSelectionAffordance;
+  }) {
+    const {timeSelection, affordance} = newTimeSelectionWithAffordance;
     this.store.dispatch(
       linkedTimeSelectionChanged({
-        startStep: newLinkedTime.start.step,
-        endStep: newLinkedTime.end ? newLinkedTime.end.step : undefined,
+        timeSelection: {
+          startStep: timeSelection.start.step,
+          endStep: timeSelection.end ? timeSelection.end.step : undefined,
+        },
+        affordance,
       })
     );
   }
 
-  onLinkedTimeToggled() {
-    this.store.dispatch(linkedTimeToggled());
+  onStepSelectorTimeSelectionChanged(newStepSelectorTimeSelectionWthAffordance: {
+    timeSelection: TimeSelection;
+    affordance: TimeSelectionAffordance;
+  }) {
+    const {timeSelection, affordance} =
+      newStepSelectorTimeSelectionWthAffordance;
+    this.store.dispatch(
+      stepSelectorTimeSelectionChanged({
+        timeSelection: {
+          startStep: timeSelection.start.step,
+          endStep: timeSelection.end ? timeSelection.end.step : undefined,
+        },
+        affordance,
+      })
+    );
   }
 
-  onStepSelectorToggled() {
-    this.store.dispatch(stepSelectorToggled());
+  onLinkedTimeToggled(affordance: TimeSelectionToggleAffordance) {
+    this.store.dispatch(linkedTimeToggled({affordance}));
+  }
+
+  onStepSelectorToggled(affordance: TimeSelectionToggleAffordance) {
+    this.store.dispatch(stepSelectorToggled({affordance}));
   }
 }

@@ -30,6 +30,7 @@ import {takeUntil} from 'rxjs/operators';
 import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
 import {TimeSelection} from '../card_fob/card_fob_types';
+import {formatTickNumber} from './formatter';
 import {
   Bin,
   HistogramData,
@@ -113,8 +114,9 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     contentClientRect: {height: 0, width: 0},
   };
   scales: Scales | null = null;
+
   private formatters = {
-    binNumber: d3.format('.3~s'),
+    binNumber: formatTickNumber,
     count: d3.format('.3n'),
     // DefinitelyTyped is incorrect that the `timeFormat` only takes `Date` as
     // an input. Better type it for downstream types.

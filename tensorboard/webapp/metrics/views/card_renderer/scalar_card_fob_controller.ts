@@ -10,11 +10,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 import {
   AxisDirection,
-  CardFobAdapter,
+  CardFobGetStepFromPositionHelper,
   TimeSelection,
+  TimeSelectionAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
 import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
 
@@ -24,26 +31,57 @@ import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
     <card-fob-controller
       [axisDirection]="axisDirection"
       [timeSelection]="timeSelection"
-      [cardAdapter]="this"
+      [startStepAxisPosition]="getAxisPositionFromStartStep()"
+      [endStepAxisPosition]="getAxisPositionFromEndStep()"
+      [highestStep]="getHighestStep()"
+      [lowestStep]="getLowestStep()"
+      [cardFobHelper]="cardFobHelper"
       [showExtendedLine]="true"
       (onTimeSelectionChanged)="onTimeSelectionChanged.emit($event)"
       (onTimeSelectionToggled)="onTimeSelectionToggled.emit($event)"
     ></card-fob-controller>
   `,
   styleUrls: ['scalar_card_fob_controller.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ScalarCardFobController implements CardFobAdapter {
+export class ScalarCardFobController {
   @Input() timeSelection!: TimeSelection;
   @Input() scale!: Scale;
   @Input() minMax!: [number, number];
   @Input() axisSize!: number;
 
-  @Output() onTimeSelectionChanged = new EventEmitter<TimeSelection>();
+  @Output() onTimeSelectionChanged = new EventEmitter<{
+    timeSelection: TimeSelection;
+    affordance?: TimeSelectionAffordance;
+  }>();
   @Output() onTimeSelectionToggled = new EventEmitter();
 
   readonly axisDirection = AxisDirection.HORIZONTAL;
+  readonly cardFobHelper: CardFobGetStepFromPositionHelper = {
+    getStepHigherThanAxisPosition:
+      this.getStepHigherThanAxisPosition.bind(this),
+    getStepLowerThanAxisPosition: this.getStepLowerThanAxisPosition.bind(this),
+  };
 
-  // FobCardAdapter implementation.
+  getAxisPositionFromStartStep() {
+    return this.scale.forward(
+      this.minMax,
+      [0, this.axisSize],
+      this.timeSelection.start.step
+    );
+  }
+
+  getAxisPositionFromEndStep() {
+    if (this.timeSelection.end === null) {
+      return null;
+    }
+    return this.scale.forward(
+      this.minMax,
+      [0, this.axisSize],
+      this.timeSelection.end.step
+    );
+  }
+
   getHighestStep(): number {
     const minMax = this.minMax;
     return minMax[0] < minMax[1] ? minMax[1] : minMax[0];
@@ -52,10 +90,6 @@ export class ScalarCardFobController implements CardFobAdapter {
   getLowestStep(): number {
     const minMax = this.minMax;
     return minMax[0] < minMax[1] ? minMax[0] : minMax[1];
-  }
-
-  getAxisPositionFromStep(step: number): number {
-    return this.scale.forward(this.minMax, [0, this.axisSize], step);
   }
 
   getStepHigherThanAxisPosition(position: number): number {

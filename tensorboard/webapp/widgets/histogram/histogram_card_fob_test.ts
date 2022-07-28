@@ -121,11 +121,17 @@ describe('HistogramCardFobController', () => {
     });
   });
 
-  describe('getAxisPositionFromStep', () => {
+  describe('getAxisPositionFromStartStep/EndStep', () => {
     it('calls the scale function', () => {
-      let fixture = createComponent({});
-      expect(fixture.componentInstance.getAxisPositionFromStep(150)).toBe(1500);
-      expect(temporalScaleSpy).toHaveBeenCalledOnceWith(150);
+      let fixture = createComponent({
+        timeSelection: {start: {step: 150}, end: {step: 300}},
+      });
+      expect(fixture.componentInstance.getAxisPositionFromStartStep()).toBe(
+        1500
+      );
+      expect(fixture.componentInstance.getAxisPositionFromEndStep()).toBe(3000);
+      expect(temporalScaleSpy).toHaveBeenCalledWith(150);
+      expect(temporalScaleSpy).toHaveBeenCalledWith(300);
     });
   });
 

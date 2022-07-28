@@ -24,7 +24,11 @@ import {
 } from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {DataLoadState} from '../../../types/data';
-import {TimeSelection} from '../../../widgets/card_fob/card_fob_types';
+import {
+  TimeSelection,
+  TimeSelectionAffordance,
+  TimeSelectionToggleAffordance,
+} from '../../../widgets/card_fob/card_fob_types';
 import {
   Formatter,
   intlNumberFormatter,
@@ -91,9 +95,18 @@ export class ScalarCardComponent<Downloader> {
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
-  @Output() onLinkedTimeSelectionChanged = new EventEmitter<TimeSelection>();
-  @Output() onLinkedTimeToggled = new EventEmitter();
-  @Output() onStepSelectorToggled = new EventEmitter();
+  @Output() onLinkedTimeToggled =
+    new EventEmitter<TimeSelectionToggleAffordance>();
+  @Output() onLinkedTimeSelectionChanged = new EventEmitter<{
+    timeSelection: TimeSelection;
+    affordance: TimeSelectionAffordance;
+  }>();
+  @Output() onStepSelectorToggled =
+    new EventEmitter<TimeSelectionToggleAffordance>();
+  @Output() onStepSelectorTimeSelectionChanged = new EventEmitter<{
+    timeSelection: TimeSelection;
+    affordance: TimeSelectionAffordance;
+  }>();
 
   // Line chart may not exist when was never visible (*ngIf).
   @ViewChild(LineChartComponent)
@@ -208,10 +221,10 @@ export class ScalarCardComponent<Downloader> {
 
     return {
       start: {
-        step: this.linkedTimeSelection!.startStep,
+        step: this.linkedTimeSelection.startStep,
       },
-      end: this.linkedTimeSelection!.endStep
-        ? {step: this.linkedTimeSelection!.endStep}
+      end: this.linkedTimeSelection.endStep
+        ? {step: this.linkedTimeSelection.endStep}
         : null,
     };
   }
@@ -240,7 +253,11 @@ export class ScalarCardComponent<Downloader> {
         for (const header of this.dataHeaders) {
           switch (header) {
             case ColumnHeaders.RUN:
-              selectedStepData.RUN = metadata.displayName;
+              let alias = '';
+              if (metadata.alias) {
+                alias = `${metadata.alias.aliasNumber} ${metadata.alias.aliasText}/`;
+              }
+              selectedStepData.RUN = `${alias}${metadata.displayName}`;
               continue;
             case ColumnHeaders.STEP:
               selectedStepData.STEP = closestStartPoint.step;
@@ -262,32 +279,43 @@ export class ScalarCardComponent<Downloader> {
     return dataTableData;
   }
 
-  onFobTimeSelectionChanged(newTimeSelection: TimeSelection) {
+  onFobTimeSelectionChanged(newTimeSelectionWithAffordance: {
+    timeSelection: TimeSelection;
+    affordance: TimeSelectionAffordance;
+  }) {
     // Updates step selector to single selection.
-    const givenStartStep = newTimeSelection.start.step;
-    const newStartStep =
-      givenStartStep < this.minMaxStep.minStep
+    const {timeSelection, affordance} = newTimeSelectionWithAffordance;
+    const newStartStep = timeSelection.start.step;
+    const nextStartStep =
+      newStartStep < this.minMaxStep.minStep
         ? this.minMaxStep.minStep
-        : givenStartStep > this.minMaxStep.maxStep
+        : newStartStep > this.minMaxStep.maxStep
         ? this.minMaxStep.maxStep
-        : givenStartStep;
+        : newStartStep;
 
     // Updates step selector to single selection.
     this.stepSelectorTimeSelection = {
-      start: {step: newStartStep},
+      start: {step: nextStartStep},
       end: null,
     };
 
     if (this.linkedTimeSelection !== null) {
-      this.onLinkedTimeSelectionChanged.emit(newTimeSelection);
+      this.onLinkedTimeSelectionChanged.emit({
+        timeSelection,
+        affordance,
+      });
+    } else {
+      this.onStepSelectorTimeSelectionChanged.emit({timeSelection, affordance});
     }
   }
 
   onFobRemoved() {
     if (this.linkedTimeSelection !== null) {
-      this.onLinkedTimeToggled.emit();
+      this.onLinkedTimeToggled.emit(TimeSelectionToggleAffordance.FOB_DESELECT);
     } else {
-      this.onStepSelectorToggled.emit();
+      this.onStepSelectorToggled.emit(
+        TimeSelectionToggleAffordance.FOB_DESELECT
+      );
     }
   }
 }

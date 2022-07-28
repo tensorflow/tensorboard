@@ -472,6 +472,8 @@ export class LineChartComponent
       this.isFixedViewBoxUpdated = false;
       this.isViewBoxChanged = false;
       this.lineChart.setViewBox(this.viewBox);
+      // When viewBox is updated, we should also detect changes in child components.
+      this.changeDetector.detectChanges();
     }
   }
 

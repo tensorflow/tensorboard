@@ -21,6 +21,38 @@ export interface TimeSelection {
 }
 
 /**
+ * The affordance supported to update the time selection in  step selector and linked time.
+ * Only used for internal analytics.
+ */
+export enum TimeSelectionAffordance {
+  NONE,
+  // Dragging the extended line above a fob.
+  EXTENDED_LINE,
+  // Dragging the fob.
+  FOB,
+  // Clicking the deselect button.
+  FOB_REMOVED,
+  // Typing the step in fob.
+  FOB_TEXT,
+  // Typing the step in setting pane.
+  SETTINGS_TEXT,
+  // Dragging the slider in setting pane.
+  SETTINGS_SLIDER,
+}
+
+/**
+ * The affordance supported to toggle step selector and linked time.
+ * Only used for internal analytics.
+ */
+export enum TimeSelectionToggleAffordance {
+  NONE,
+  // Clicking cross sign in fob.
+  FOB_DESELECT,
+  // Clicking check box in settings pane.
+  CHECK_BOX,
+}
+
+/**
  * The direction of the axis used to control the fob movements.
  */
 export enum AxisDirection {
@@ -29,11 +61,11 @@ export enum AxisDirection {
 }
 
 /**
- * This class is intended to be implemented by the card that has a
- * CardFobControllerComponent.
+ * These helper functions are intended to be defined by the card that is a parent
+ * of CardFobControllerComponent.
  *
- * Each implementer will have some sort of Scale that is used to convert between
- * step and pixel so that the fob lines up with the axis properly. In future
+ * Each helper function will have some sort of Scale that is used to convert from
+ * pixel to step so that the fob lines up with the axis properly. In future
  * comments this scale will be refered to as ImplementerScale.
  *
  * It also allows cards to implement the dragging functionality in different
@@ -41,23 +73,7 @@ export enum AxisDirection {
  * and getStepLowerThanMousePosition functions the implementer can decide if the
  * fob "snaps" to certain steps or drags in in a smooth continuous way.
  */
-export interface CardFobAdapter {
-  /**
-   * Gets the highest step for this card.
-   */
-  getHighestStep(): number;
-
-  /**
-   * Gets the lowest step for this card.
-   */
-  getLowestStep(): number;
-
-  /**
-   * Uses ImplementerScale to translate the proper pixel offset.
-   * @param step the step which needs to be translated.
-   */
-  getAxisPositionFromStep(step: number): number;
-
+export interface CardFobGetStepFromPositionHelper {
   /**
    * Uses ImplementerScale to determine the step that is at the current mouse
    * position or the closest step that is higher than the current mouse position.

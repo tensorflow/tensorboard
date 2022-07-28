@@ -15,6 +15,10 @@ limitations under the License.
 import {createAction, props} from '@ngrx/store';
 import {ElementId} from '../../util/dom';
 import {
+  TimeSelectionAffordance,
+  TimeSelectionToggleAffordance,
+} from '../../widgets/card_fob/card_fob_types';
+import {
   TagMetadata,
   TimeSeriesRequest,
   TimeSeriesResponse,
@@ -172,8 +176,13 @@ export const metricsShowAllPlugins = createAction(
 export const linkedTimeSelectionChanged = createAction(
   '[Metrics] Linked Time Selection Changed',
   props<{
-    startStep: number;
-    endStep: number | undefined;
+    timeSelection: {
+      startStep: number;
+      endStep: number | undefined;
+    };
+    // Affordance for internal analytics purpose. When no affordance is specified or is
+    // undefined we do not want to log an analytics event.
+    affordance?: TimeSelectionAffordance | undefined;
   }>()
 );
 
@@ -182,11 +191,38 @@ export const timeSelectionCleared = createAction(
 );
 
 export const linkedTimeToggled = createAction(
-  '[Metrics] Linked Time Enable Toggle'
+  '[Metrics] Linked Time Enable Toggle',
+  props<{
+    // Affordance for internal analytics purpose. When no affordance is specified or is
+    // undefined we do not want to log an analytics event.
+    affordance?: TimeSelectionToggleAffordance;
+  }>()
 );
 
 export const stepSelectorToggled = createAction(
-  '[Metrics] Time Selector Enable Toggle'
+  '[Metrics] Time Selector Enable Toggle',
+  props<{
+    // Affordance for internal analytics purpose. When no affordance is specified or is
+    // undefined we do not want to log an analytics event.
+    affordance?: TimeSelectionToggleAffordance;
+  }>()
+);
+
+/**
+ * Fired when step selector time selection is changed. This event is
+ * used for internal analytics only and will not cause state changes.
+ */
+export const stepSelectorTimeSelectionChanged = createAction(
+  '[Metrics] Ｓtep Selector Time Selection Changed',
+  props<{
+    timeSelection: {
+      startStep: number;
+      endStep: number | undefined;
+    };
+    // Affordance for internal analytics purpose. When no affordance is specified or is
+    // undefined we do not want to log an analytics event.
+    affordance?: TimeSelectionAffordance | undefined;
+  }>()
 );
 
 export const metricsPromoDismissed = createAction(
