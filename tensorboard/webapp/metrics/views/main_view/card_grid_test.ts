@@ -31,9 +31,11 @@ import {
   getMetricsCardMinWidth,
   getMetricsStepSelectorEnabled,
   getMetricsTagGroupExpansionState,
+  getMetricsXAxisType,
 } from '../../../selectors';
 import {selectors as settingsSelectors} from '../../../settings';
 import {PluginType} from '../../data_source';
+import {XAxisType} from '../../types';
 import {CardIdWithMetadata} from '../metrics_view_types';
 import {CardGridComponent} from './card_grid_component';
 import {CardGridContainer} from './card_grid_container';
@@ -92,6 +94,7 @@ describe('card grid', () => {
     store.overrideSelector(getMetricsCardMinWidth, 30);
     store.overrideSelector(settingsSelectors.getPageSize, 10);
     store.overrideSelector(getMetricsStepSelectorEnabled, false);
+    store.overrideSelector(getMetricsXAxisType, XAxisType.STEP);
   });
 
   it('keeps pagination button position when page size changes', fakeAsync(() => {
@@ -233,6 +236,62 @@ describe('card grid', () => {
 
     it('does not update card height when step selector is disabled', fakeAsync(() => {
       store.overrideSelector(getMetricsStepSelectorEnabled, false);
+      const fixture = TestBed.createComponent(TestableScrollingContainer);
+      fixture.componentInstance.cardIdsWithMetadata = [
+        {
+          cardId: 'card1',
+          plugin: PluginType.SCALARS,
+          tag: 'tagA',
+          runId: null,
+        },
+        {
+          cardId: 'card1',
+          plugin: PluginType.IMAGES,
+          tag: 'tagB',
+          runId: 'run1',
+        },
+      ];
+      fixture.detectChanges();
+
+      const cardViewElements = fixture.debugElement
+        .queryAll(By.css('card-view'))
+        .map((debugElement) => debugElement.nativeElement);
+
+      expect(cardViewElements[0].classList).not.toContain('height-with-table');
+      expect(cardViewElements[1].classList).not.toContain('height-with-table');
+    }));
+
+    it('does not update card height when step selector is enabled but axis type is RELATIVE', fakeAsync(() => {
+      store.overrideSelector(getMetricsStepSelectorEnabled, true);
+      store.overrideSelector(getMetricsXAxisType, XAxisType.RELATIVE);
+      const fixture = TestBed.createComponent(TestableScrollingContainer);
+      fixture.componentInstance.cardIdsWithMetadata = [
+        {
+          cardId: 'card1',
+          plugin: PluginType.SCALARS,
+          tag: 'tagA',
+          runId: null,
+        },
+        {
+          cardId: 'card1',
+          plugin: PluginType.IMAGES,
+          tag: 'tagB',
+          runId: 'run1',
+        },
+      ];
+      fixture.detectChanges();
+
+      const cardViewElements = fixture.debugElement
+        .queryAll(By.css('card-view'))
+        .map((debugElement) => debugElement.nativeElement);
+
+      expect(cardViewElements[0].classList).not.toContain('height-with-table');
+      expect(cardViewElements[1].classList).not.toContain('height-with-table');
+    }));
+
+    it('does not update card height when step selector is enabled but axis type is WALL_TIME', fakeAsync(() => {
+      store.overrideSelector(getMetricsStepSelectorEnabled, true);
+      store.overrideSelector(getMetricsXAxisType, XAxisType.WALL_TIME);
       const fixture = TestBed.createComponent(TestableScrollingContainer);
       fixture.componentInstance.cardIdsWithMetadata = [
         {

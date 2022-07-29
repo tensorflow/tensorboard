@@ -138,16 +138,6 @@ export class CardGridComponent {
   }
 
   isShowingDataTable(item: CardIdWithMetadata) {
-    console.log(
-      'this.getMetricsXAxisType === XAxisType.STEP',
-      this.getMetricsXAxisType === XAxisType.STEP
-    );
-    console.log(
-      'isShowingDataTable',
-      this.isStepSelectorEnabled &&
-        item.plugin === PluginType.SCALARS &&
-        this.getMetricsXAxisType === XAxisType.STEP
-    );
     return (
       this.isStepSelectorEnabled &&
       item.plugin === PluginType.SCALARS &&

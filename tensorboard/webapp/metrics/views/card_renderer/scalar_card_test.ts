@@ -2349,6 +2349,44 @@ describe('scalar card', () => {
 
         expect(dataTableComponent).toBeFalsy();
       }));
+
+      it('does not render table when axis type is RELATIVE', fakeAsync(() => {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
+          start: {step: 20},
+          end: null,
+        });
+        store.overrideSelector(
+          selectors.getMetricsXAxisType,
+          XAxisType.RELATIVE
+        );
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        const dataTableComponent = fixture.debugElement.query(
+          By.directive(DataTableComponent)
+        );
+
+        expect(dataTableComponent).toBeFalsy();
+      }));
+
+      it('does not render table when axis type is WALL_TIME', fakeAsync(() => {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
+          start: {step: 20},
+          end: null,
+        });
+        store.overrideSelector(
+          selectors.getMetricsXAxisType,
+          XAxisType.WALL_TIME
+        );
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        const dataTableComponent = fixture.debugElement.query(
+          By.directive(DataTableComponent)
+        );
+
+        expect(dataTableComponent).toBeFalsy();
+      }));
     });
   });
 
@@ -2646,6 +2684,32 @@ describe('scalar card', () => {
         ).componentInstance;
 
         expect(testController).toBeTruthy();
+      }));
+
+      it('Does not render fobs when axis type is RELATIVE', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getMetricsXAxisType,
+          XAxisType.RELATIVE
+        );
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        expect(
+          fixture.debugElement.query(By.directive(CardFobControllerComponent))
+        ).toBeFalsy();
+      }));
+
+      it('Does not render fobs when axis type is WALL_TIME', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getMetricsXAxisType,
+          XAxisType.WALL_TIME
+        );
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        expect(
+          fixture.debugElement.query(By.directive(CardFobControllerComponent))
+        ).toBeFalsy();
       }));
 
       it('dispatches stepSelectorTimeSelectionChanged action when fob is dragged', fakeAsync(() => {
