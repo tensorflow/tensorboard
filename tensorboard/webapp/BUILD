@@ -177,7 +177,7 @@ tf_js_binary(
     compile = 1,
     entry_point = "main_prod.ts",
     deps = [
-      ":ng_main",
+        ":ng_main",
     ],
 )
 
