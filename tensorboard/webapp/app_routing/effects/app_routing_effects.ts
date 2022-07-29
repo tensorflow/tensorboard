@@ -308,11 +308,11 @@ export class AppRoutingEffects {
     }),
     map((programmaticalNavigation) => {
       const nav = programmaticalNavigation!;
-      const routeKind = nav.routeKind;
-      const resetNamespacedState = nav.resetNamespacedState;
+      const {replaceState = false, resetNamespacedState, routeKind} = nav;
 
-      // TODO(stephanwlee): currently, the RouteParams is ill-typed and you can
-      // currently add any property without any type error. Better type it.
+      // TODO(stephanwlee): currently, the RouteParams is ill-typed and you
+      // can currently add any property without any type error. Better type
+      // it.
       let routeParams: RouteParams;
       switch (nav.routeKind) {
         case RouteKind.COMPARE_EXPERIMENT:
@@ -325,16 +325,16 @@ export class AppRoutingEffects {
         default:
           routeParams = nav.routeParams;
       }
-      return {routeKind, routeParams, resetNamespacedState};
+      return {replaceState, routeKind, routeParams, resetNamespacedState};
     }),
-    map(({routeKind, routeParams, resetNamespacedState}) => {
+    map(({replaceState, routeKind, routeParams, resetNamespacedState}) => {
       const routeMatch = this.routeConfigs
         ? this.routeConfigs.matchByRouteKind(routeKind, routeParams)
         : null;
       return {
         routeMatch,
         options: {
-          replaceState: false,
+          replaceState,
           browserInitiated: false,
           namespaceUpdate: {
             option: resetNamespacedState

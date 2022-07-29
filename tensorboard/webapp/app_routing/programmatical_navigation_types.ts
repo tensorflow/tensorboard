@@ -24,9 +24,11 @@ export interface NavigateToExperiment {
   routeKind: RouteKind.EXPERIMENT;
   routeParams: ExperimentRouteParams;
   resetNamespacedState?: boolean;
+  replaceState?: boolean;
 }
 
 export interface NavigateToCompare {
+  replaceState?: boolean;
   routeKind: RouteKind.COMPARE_EXPERIMENT;
   routeParams: {
     aliasAndExperimentIds: Array<{alias: string; id: string}>;
@@ -35,6 +37,7 @@ export interface NavigateToCompare {
 }
 
 export interface NavigateToExperiments {
+  replaceState?: boolean;
   routeKind: RouteKind.EXPERIMENTS;
   routeParams: {};
   resetNamespacedState?: boolean;
