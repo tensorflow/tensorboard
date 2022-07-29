@@ -14,11 +14,11 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 import {
-  FeatureFlagMetadata,
   FeatureFlagMetadataMap,
   FeatureFlagType,
 } from '../feature_flag/store/feature_flag_metadata';
 import {FeatureFlags} from '../feature_flag/types';
+import {getOverriddenFeatureFlagValuesFromSearchParams} from '../routes/feature_flag_serializer';
 import {QueryParams} from './query_params';
 import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
 
@@ -37,36 +37,17 @@ export class QueryParamsFeatureFlagDataSource
     // Set feature flag value for query parameters that are explicitly
     // specified. Feature flags for unspecified query parameters remain unset so
     // their values in the underlying state are not inadvertently changed.
-    const featureFlags: Partial<Record<keyof FeatureFlags, FeatureFlagType>> =
-      enableMediaQuery ? this.getPartialFeaturesFromMediaQuery() : {};
-    Object.entries(FeatureFlagMetadataMap).forEach(
-      ([flagName, flagMetadata]) => {
-        const featureValue = this.getFeatureValue(
-          flagMetadata as FeatureFlagMetadata<boolean>
-        );
-        if (featureValue !== null) {
-          const f = flagName as keyof FeatureFlags;
-          featureFlags[f] = featureValue;
-        }
-      }
+    const featuresFromMediaQuery: Partial<
+      Record<keyof FeatureFlags, FeatureFlagType>
+    > = enableMediaQuery ? this.getPartialFeaturesFromMediaQuery() : {};
+    const overriddenFeatures = getOverriddenFeatureFlagValuesFromSearchParams(
+      FeatureFlagMetadataMap,
+      this.queryParams.getParams()
     );
-    return featureFlags as Partial<FeatureFlags>;
-  }
-
-  protected getFeatureValue<T>(flagMetadata: FeatureFlagMetadata<T>) {
-    const params = this.queryParams.getParams();
-    const queryParamOverride = flagMetadata.queryParamOverride;
-    if (!queryParamOverride || !params.has(queryParamOverride)) {
-      return null;
-    }
-    const paramValues: T[] = params.getAll(queryParamOverride).map((value) => {
-      return flagMetadata.parseValue(value);
-    });
-    if (!paramValues.length) {
-      return null;
-    }
-
-    return flagMetadata.isArray ? paramValues.flat() : paramValues[0];
+    return {
+      ...featuresFromMediaQuery,
+      ...overriddenFeatures,
+    } as Partial<FeatureFlags>;
   }
 
   protected getPartialFeaturesFromMediaQuery(): {

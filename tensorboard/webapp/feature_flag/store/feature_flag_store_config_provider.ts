@@ -14,21 +14,15 @@ limitations under the License.
 ==============================================================================*/
 import {InjectionToken} from '@angular/core';
 import {StoreConfig} from '@ngrx/store';
-import {FeatureFlags} from '../types';
-import {FeatureFlagMetadataMap} from './feature_flag_metadata';
+import {
+  FeatureFlagMetadataMap,
+  generateFeatureFlagDefaults,
+} from './feature_flag_metadata';
 import {FeatureFlagState} from './feature_flag_types';
-
-const defaultFlags = Object.entries(FeatureFlagMetadataMap).reduce(
-  (map, [key, {defaultValue}]) => {
-    map[key] = defaultValue;
-    return map;
-  },
-  {} as Record<string, any>
-) as FeatureFlags;
 
 export const initialState: FeatureFlagState = {
   isFeatureFlagsLoaded: false,
-  defaultFlags,
+  defaultFlags: generateFeatureFlagDefaults(FeatureFlagMetadataMap),
   flagOverrides: {},
 };
 

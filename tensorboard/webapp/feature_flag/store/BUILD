@@ -29,7 +29,6 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp/feature_flag:types",
-        "//tensorboard/webapp/webapp_data_source:feature_flag_types",
         "@npm//@angular/core",
     ],
 )

@@ -63,16 +63,9 @@ tf_ts_library(
         "feature_flag_serializer.ts",
     ],
     deps = [
-        "//tensorboard/webapp:app_state",
-        "//tensorboard/webapp:selectors",
-        "//tensorboard/webapp/app_routing:location",
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/store:feature_flag_metadata",
-        "//tensorboard/webapp/webapp_data_source:feature_flag_types",
-        "@npm//@angular/core",
-        "@npm//@ngrx/store",
-        "@npm//rxjs",
     ],
 )
 

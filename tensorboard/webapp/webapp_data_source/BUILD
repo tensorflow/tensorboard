@@ -99,6 +99,7 @@ tf_ng_module(
         ":feature_flag_types",
         "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/store:feature_flag_metadata",
+        "//tensorboard/webapp/routes:feature_flag_serializer",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",
         "@npm//@angular/core",

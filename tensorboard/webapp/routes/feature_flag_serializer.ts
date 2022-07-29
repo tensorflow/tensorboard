@@ -15,6 +15,7 @@ limitations under the License.
 import {SerializableQueryParams} from '../app_routing/types';
 import {
   FeatureFlagMetadata,
+  FeatureFlagMetadataMapType,
   FeatureFlagType,
 } from '../feature_flag/store/feature_flag_metadata';
 import {FeatureFlags} from '../feature_flag/types';
@@ -57,4 +58,58 @@ export function featureFlagsToSerializableQueryParams<
     .filter(
       ({key, value}) => key && value !== undefined
     ) as SerializableQueryParams;
+}
+
+/**
+ * Parses the value of a feature flag from the query params.
+ */
+export function getFeatureFlagValueFromSearchParams<T extends FeatureFlagType>(
+  flagMetadata: FeatureFlagMetadata<T>,
+  params: URLSearchParams
+): T | T[] | null {
+  const queryParamOverride = flagMetadata.queryParamOverride;
+  if (!queryParamOverride || !params.has(queryParamOverride)) {
+    return null;
+  }
+  /**
+   * Array type feature flags are intended to be overridden multiple times
+   * i.e. ?experimentalPlugin=foo&experimentalPlugin=bar
+   * By using get params.getAll we can reuse the logic between array and non array types.
+   */
+  const paramValues: T[] = params.getAll(queryParamOverride).map((value) => {
+    return flagMetadata.parseValue(value) as T;
+  });
+  if (!paramValues.length) {
+    return null;
+  }
+
+  // There will always be an array of values but if the flag is not declared to be an array
+  // there SHOULD only be a single value which should then be returned.
+  return flagMetadata.isArray ? paramValues : paramValues[0];
+}
+
+/**
+ * Parses all feature flags from the query params.
+ */
+export function getOverriddenFeatureFlagValuesFromSearchParams<
+  T extends FeatureFlags
+>(
+  featureFlagMetadataMap: FeatureFlagMetadataMapType<T>,
+  params: URLSearchParams
+) {
+  return Object.entries(featureFlagMetadataMap).reduce(
+    (overrides, [flagName, flagMetadata]) => {
+      const featureValue = getFeatureFlagValueFromSearchParams(
+        flagMetadata as FeatureFlagMetadata<any>,
+        params
+      );
+
+      if (featureValue !== null) {
+        const f = flagName as keyof FeatureFlags;
+        overrides[f] = featureValue;
+      }
+      return overrides;
+    },
+    {} as Partial<Record<keyof FeatureFlags, FeatureFlagType>>
+  );
 }
