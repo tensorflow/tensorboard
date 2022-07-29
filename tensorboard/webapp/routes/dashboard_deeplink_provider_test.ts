@@ -371,9 +371,9 @@ describe('core deeplink provider', () => {
       });
       store.refreshState();
 
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
-        []
-      );
+      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
+        {key: 'enableColorGroup', value: 'true'},
+      ]);
 
       store.overrideSelector(selectors.getOverriddenFeatureFlags, {
         enabledColorGroup: false,
@@ -398,9 +398,9 @@ describe('core deeplink provider', () => {
       });
       store.refreshState();
 
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
-        []
-      );
+      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
+        {key: 'enableColorGroupByRegex', value: 'true'},
+      ]);
 
       store.overrideSelector(selectors.getOverriddenFeatureFlags, {
         enabledColorGroupByRegex: false,

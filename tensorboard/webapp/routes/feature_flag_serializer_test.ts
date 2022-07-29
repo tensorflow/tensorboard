@@ -23,14 +23,12 @@ describe('feature flag serializer', () => {
           displayName: 'featureA',
           queryParamOverride: 'feature_a',
           parseValue: (s: string) => s,
-          defaultValue: 'feature_a_123',
         },
         featureB: {
           displayName: 'featureB',
           queryParamOverride: 'feature_b',
           isArray: true,
           parseValue: (s: string) => s,
-          defaultValue: 'feature_b_456',
         },
       };
     });
@@ -95,19 +93,6 @@ describe('feature flag serializer', () => {
         {
           key: 'feature_b',
           value: 'bar',
-        },
-      ]);
-    });
-
-    it('should not serialize feaure flags with default values', () => {
-      const serializableQueryParams = featureFlagsToSerializableQueryParams(
-        {featureA: 'feature_a_123', featureB: 'foo'} as any,
-        featureFlagsMetadata
-      );
-      expect(serializableQueryParams).toEqual([
-        {
-          key: 'feature_b',
-          value: 'foo',
         },
       ]);
     });

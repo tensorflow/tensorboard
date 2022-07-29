@@ -30,9 +30,7 @@ export function featureFlagsToSerializableQueryParams<
       const key =
         featureFlagMetadataMap[featureFlag as keyof FeatureFlags]
           ?.queryParamOverride;
-      const defaultValue =
-        featureFlagMetadataMap[featureFlag as keyof FeatureFlags]?.defaultValue;
-      if (!key || featureValue === undefined || featureValue === defaultValue) {
+      if (!key || featureValue === undefined) {
         return [];
       }
       /**
