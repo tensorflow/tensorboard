@@ -190,7 +190,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   chartMetadataMap$?: Observable<ScalarCardSeriesMetadataMap>;
   linkedTimeSelection$?: Observable<TimeSelectionView | null>;
   stepSelectorTimeSelection$?: Observable<TimeSelection | null>;
-  minMaxSteps$?: Observable<MinMaxStep | null>;
+  minMaxSteps$?: Observable<MinMaxStep>;
 
   onVisibilityChange({visible}: {visible: boolean}) {
     this.isVisible = visible;
@@ -236,18 +236,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.showFullSize = !this.showFullSize;
     this.fullWidthChanged.emit(this.showFullSize);
     this.fullHeightChanged.emit(this.showFullSize);
-  }
-
-  getMinMaxStepInSeries(series: PartitionedSeries[]): MinMaxStep {
-    let minStep = Infinity;
-    let maxStep = -Infinity;
-    for (const {points} of series) {
-      for (const point of points) {
-        minStep = minStep > point.x ? point.x : minStep;
-        maxStep = maxStep < point.x ? point.x : maxStep;
-      }
-    }
-    return {minStep, maxStep};
   }
 
   /**
@@ -352,8 +340,16 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     );
 
     this.minMaxSteps$ = partitionedSeries$.pipe(
-      map((partialSeries) => {
-        return this.getMinMaxStepInSeries(partialSeries);
+      map((series) => {
+        let minStep = Infinity;
+        let maxStep = -Infinity;
+        for (const {points} of series) {
+          for (const point of points) {
+            minStep = minStep > point.x ? point.x : minStep;
+            maxStep = maxStep < point.x ? point.x : maxStep;
+          }
+        }
+        return {minStep, maxStep};
       })
     );
 
@@ -392,23 +388,24 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     );
 
     this.linkedTimeSelection$ = combineLatest([
-      partitionedSeries$,
+      this.minMaxSteps$,
       this.store.select(getMetricsLinkedTimeEnabled),
       this.store.select(getMetricsLinkedTimeSelection),
       this.store.select(getMetricsXAxisType),
     ]).pipe(
-      map(([series, linkedTimeEnabled, timeSelection, xAxisType]) => {
-        if (
-          !linkedTimeEnabled ||
-          xAxisType !== XAxisType.STEP ||
-          !timeSelection
-        )
-          return null;
+      map(
+        ([{minStep, maxStep}, linkedTimeEnabled, timeSelection, xAxisType]) => {
+          if (
+            !linkedTimeEnabled ||
+            xAxisType !== XAxisType.STEP ||
+            !timeSelection
+          ) {
+            return null;
+          }
 
-        const {minStep, maxStep} = this.getMinMaxStepInSeries(series);
-
-        return maybeClipLinkedTimeSelection(timeSelection, minStep, maxStep);
-      })
+          return maybeClipLinkedTimeSelection(timeSelection, minStep, maxStep);
+        }
+      )
     );
 
     this.chartMetadataMap$ = partitionedSeries$.pipe(
@@ -512,12 +509,10 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
 
     this.stepSelectorTimeSelection$ = combineLatest([
-      partitionedSeries$,
+      this.minMaxSteps$,
       this.store.select(getMetricsStepSelectorEnabled),
     ]).pipe(
-      map(([partitionedSeries, enableStepSelector]) => {
-        const {minStep} = this.getMinMaxStepInSeries(partitionedSeries);
-
+      map(([{minStep}, enableStepSelector]) => {
         return enableStepSelector ? {start: {step: minStep}, end: null} : null;
       })
     );
