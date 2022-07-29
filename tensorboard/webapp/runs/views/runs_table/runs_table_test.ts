@@ -92,6 +92,7 @@ import {
   runSelectorRegexFilterChanged,
   runSelectorSortChanged,
   runTableShown,
+  singleRunSelected,
 } from '../../actions';
 import {DomainType} from '../../data_source/runs_data_source_types';
 import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT, Run} from '../../store/runs_types';
@@ -1824,6 +1825,32 @@ describe('runs_table', () => {
       expect(dispatchSpy).toHaveBeenCalledWith(
         runSelectionToggled({
           runId: 'book1',
+        })
+      );
+    });
+
+    it('dispatches singleRunSelected on checkbox double click', async () => {
+      store.overrideSelector(getRuns, [
+        buildRun({id: 'book1', name: "The Philosopher's Stone"}),
+        buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
+        buildRun({id: 'book3', name: 'The Prisoner of Azkaban'}),
+      ]);
+
+      const fixture = createComponent(
+        ['rowling'],
+        [RunsTableColumn.CHECKBOX, RunsTableColumn.RUN_NAME],
+        true /* usePagination */
+      );
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const rows = fixture.nativeElement.querySelectorAll(Selector.ITEM_ROW);
+      const book2 = rows[1].querySelector('mat-checkbox');
+      book2.dispatchEvent(new MouseEvent('dblclick', {relatedTarget: book2}));
+
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        singleRunSelected({
+          runId: 'book2',
         })
       );
     });

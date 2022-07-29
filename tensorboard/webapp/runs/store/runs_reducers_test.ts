@@ -479,6 +479,106 @@ describe('runs_reducers', () => {
     });
   });
 
+  describe('singleRunSelected', () => {
+    it('selects run when it is only run', () => {
+      const state = buildRunsState(
+        {},
+        {
+          selectionState: new Map([['run1', false]]),
+        }
+      );
+      const nextState = runsReducers.reducers(
+        state,
+        actions.singleRunSelected({
+          runId: 'run1',
+        })
+      );
+      expect(nextState.ui.selectionState).toEqual(new Map([['run1', true]]));
+    });
+
+    it('selects run and deselects others', () => {
+      const state = buildRunsState(
+        {},
+        {
+          selectionState: new Map([
+            ['run1', true],
+            ['run2', true],
+            ['run3', false],
+            ['run4', false],
+            ['run5', true],
+          ]),
+        }
+      );
+      const nextState = runsReducers.reducers(
+        state,
+        actions.singleRunSelected({
+          runId: 'run4',
+        })
+      );
+      expect(nextState.ui.selectionState).toEqual(
+        new Map([
+          ['run1', false],
+          ['run2', false],
+          ['run3', false],
+          ['run4', true],
+          ['run5', false],
+        ])
+      );
+    });
+
+    it('keeps run selected if already selected', () => {
+      const state = buildRunsState(
+        {},
+        {
+          selectionState: new Map([
+            ['run1', true],
+            ['run2', true],
+            ['run3', true],
+          ]),
+        }
+      );
+      const nextState = runsReducers.reducers(
+        state,
+        actions.singleRunSelected({
+          runId: 'run2',
+        })
+      );
+      expect(nextState.ui.selectionState).toEqual(
+        new Map([
+          ['run1', false],
+          ['run2', true],
+          ['run3', false],
+        ])
+      );
+    });
+
+    it('keeps run selected if only already selected', () => {
+      const state = buildRunsState(
+        {},
+        {
+          selectionState: new Map([
+            ['run1', false],
+            ['run2', true],
+            ['run3', false],
+          ]),
+        }
+      );
+      const nextState = runsReducers.reducers(
+        state,
+        actions.singleRunSelected({
+          runId: 'run2',
+        })
+      );
+      expect(nextState.ui.selectionState).toEqual(
+        new Map([
+          ['run1', false],
+          ['run2', true],
+          ['run3', false],
+        ])
+      );
+    });
+  });
+
   describe('runPageSelectionToggled', () => {
     it('toggles all items to on when they were all previously off', () => {
       const state = buildRunsState(
