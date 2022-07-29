@@ -88,6 +88,8 @@ yarn_install(
     yarn_lock = "//:yarn.lock",
 )
 
+# Load esbuild rules for bazel.
+# https://bazelbuild.github.io/rules_nodejs/esbuild.html
 load("@build_bazel_rules_nodejs//toolchains/esbuild:esbuild_repositories.bzl", "esbuild_repositories")
 
 esbuild_repositories(npm_repository = "npm")
