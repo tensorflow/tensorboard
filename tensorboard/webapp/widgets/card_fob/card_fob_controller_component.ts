@@ -22,7 +22,6 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {Formatter} from '../line_chart_v2/lib/public_types';
 import {
   AxisDirection,
   CardFobGetStepFromPositionHelper,
