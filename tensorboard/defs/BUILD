@@ -42,11 +42,6 @@ tb_proto_library(
     ],
 )
 
-exports_files([
-    "rollup_config.js",
-    "terser_config.json",
-])
-
 ts_library(
     name = "strict_types",
     srcs = ["strict_type_check.d.ts"],

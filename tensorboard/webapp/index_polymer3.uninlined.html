@@ -63,12 +63,17 @@ limitations under the License.
     <h1>TensorBoard requires JavaScript</h1>
     <p>Please enable JavaScript and reload this page.</p>
   </noscript>
-  <script jscomp-nocompile src="tf-imports/require.js"></script>
   <!--
     Targets like '//tensorboard:dev' may replace the Polymer bundle with a
     'dev mode' variant.
   -->
   <script jscomp-nocompile src="polymer3_lib_binary.js"></script>
   <script jscomp-nocompile src="tb-webapp/tb_webapp_binary.js"></script>
+  <!--
+    require.js is needed by Monaco code editor dependency.
+    It must be loaded after esbuild-bundled binaries:
+    https://stackoverflow.com/questions/15371918/mismatched-anonymous-define-module
+  -->
+  <script jscomp-nocompile src="tf-imports/require.js"></script>
   <tb-webapp></tb-webapp>
 </body>
