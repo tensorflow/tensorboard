@@ -233,6 +233,8 @@ limitations under the License.
           <mat-checkbox
             [checked]="item.selected"
             (change)="onSelectionToggle.emit(item)"
+            // Note that user double click will emit both change and dblclick
+            // events.
             (dblclick)="onSelectionDblClick.emit(item)"
           ></mat-checkbox>
         </span>
