@@ -380,6 +380,19 @@ const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
       selectionState: nextSelectionState,
     };
   }),
+  on(runsActions.singleRunSelected, (state, {runId}) => {
+    const nextSelectionState = new Map<string, boolean>();
+
+    // Select the specified run and deselect the others.
+    for (const stateRunId of state.selectionState.keys()) {
+      nextSelectionState.set(stateRunId, runId === stateRunId);
+    }
+
+    return {
+      ...state,
+      selectionState: nextSelectionState,
+    };
+  }),
   on(runsActions.runPageSelectionToggled, (state, {runIds}) => {
     const nextSelectionState = new Map(state.selectionState);
 

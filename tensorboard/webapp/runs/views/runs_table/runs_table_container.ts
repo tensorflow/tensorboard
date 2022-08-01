@@ -70,6 +70,7 @@ import {
   runSelectorRegexFilterChanged,
   runSelectorSortChanged,
   runTableShown,
+  singleRunSelected,
 } from '../../actions';
 import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT} from '../../store/runs_types';
 import {SortKey, SortType} from '../../types';
@@ -205,6 +206,7 @@ function matchFilter(
       [sortOption]="sortOption$ | async"
       [usePagination]="usePagination"
       (onSelectionToggle)="onRunSelectionToggle($event)"
+      (onSelectionDblClick)="onRunSelectionDblClick($event)"
       (onPageSelectionToggle)="onPageSelectionToggle($event)"
       (onPaginationChange)="onPaginationChange($event)"
       (onRegexFilterChange)="onRegexFilterChange($event)"
@@ -559,6 +561,26 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   onRunSelectionToggle(item: RunTableItem) {
     this.store.dispatch(
       runSelectionToggled({
+        runId: item.run.id,
+      })
+    );
+  }
+
+  onRunSelectionDblClick(item: RunTableItem) {
+    // Note that a user's double click will trigger both 'change' and 'dblclick'
+    // events so onRunSelectionToggle() will also be called and we will fire
+    // two somewhat conflicting actions: runSelectionToggled and
+    // singleRunSelected. This is ok as long as singleRunSelected is fired last.
+    //
+    // We are therefore relying on the mat-checkbox 'change' event consistently
+    // being fired before the 'dblclick' event. Although we don't have any
+    // documentation that guarantees this order, we do have documentation that
+    // states that 'click' is guaranteed to occur before 'dblclick'
+    // (see https://www.quirksmode.org/dom/events/click.html). We presume, then,
+    // that we can rely on the 'change' event being fired before the 'dblclick'
+    // event.
+    this.store.dispatch(
+      singleRunSelected({
         runId: item.run.id,
       })
     );

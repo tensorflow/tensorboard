@@ -53,6 +53,15 @@ export const runSelectionToggled = createAction(
   props<{runId: string}>()
 );
 
+/**
+ * An action to indicate a single run being selected while all other runs are to
+ * be deselected.
+ */
+export const singleRunSelected = createAction(
+  '[Runs] Single Run Selected',
+  props<{runId: string}>()
+);
+
 export const runPageSelectionToggled = createAction(
   '[Runs] Run Page Selection Toggled',
   props<{runIds: string[]}>()
