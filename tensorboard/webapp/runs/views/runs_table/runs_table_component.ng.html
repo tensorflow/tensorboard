@@ -230,11 +230,14 @@ limitations under the License.
     >
       <ng-container [ngSwitch]="columnId">
         <span *ngSwitchCase="RunsTableColumn.CHECKBOX">
+          <!--
+            Single click toggles the run while double click selects only that
+            run and deselects the rest. The double click will emit both the
+            (change) and the (dblclick) events.
+          -->
           <mat-checkbox
             [checked]="item.selected"
             (change)="onSelectionToggle.emit(item)"
-            // Note that user double click will emit both change and dblclick
-            // events.
             (dblclick)="onSelectionDblClick.emit(item)"
           ></mat-checkbox>
         </span>
