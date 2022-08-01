@@ -235,17 +235,14 @@ Then, provide the following APIs:
         Colab at all). It returns a value indicating whether the instance
         started, was reused, or failed to start, providing the new process’s
         `TensorboardInfo` if appropriate.
-
     -   `tb.manager.get_all()`: Return `TensorboardInfo`s for all known
         TensorBoards. (This backs `tb.notebook.list()`.) This does not perform
         liveness checks: stale info entries may be returned.
-
     -   `tb.manager.ensure_live(pid, timeout_seconds=10)`: Ensures that a
         TensorBoard on the specified process can actually be reached, by hitting
         an endpoint (say, `/data/logdir`) on the server. If the request fails,
         the info file will be deleted. Returns a boolean indicating whether the
         server was live.
-
     -   Some internal utilities like `tb.manager.write_info_file` and
         `tb.manager.cache_key`, to be called by `main`. See section
         “`TensorboardInfo` format” below.

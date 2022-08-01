@@ -184,7 +184,6 @@ normal distribution: `[maximum, μ+1.5σ, μ+σ, μ+0.5σ, μ, μ-0.5σ, μ-σ, 
 minimum]` so that the colored regions, read from inside to outside, have widths
 `[σ, 2σ, 3σ]` respectively.
 
-
 ### Image Dashboard
 
 The Image Dashboard can display pngs that were saved via a `tf.summary.image`.

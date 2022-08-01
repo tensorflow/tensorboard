@@ -226,13 +226,17 @@ for step in range(N):
   summ = sess.run(summaries, feed_dict={k: k_val})
   writer.add_summary(summ, global_step=step)
 ```
+
 ### Gamma Distribution
+
 ![](https://www.tensorflow.org/images/tensorboard/histogram_dashboard/8_gamma.png)
 
 ### Uniform Distribution
+
 ![](https://www.tensorflow.org/images/tensorboard/histogram_dashboard/9_uniform.png)
 
 ### Poisson Distribution
+
 ![](https://www.tensorflow.org/images/tensorboard/histogram_dashboard/10_poisson.png)
 The poisson distribution is defined over the integers. So, all of the values
 being generated are perfect integers. The histogram compression moves the data
@@ -240,6 +244,6 @@ into floating-point bins, causing the visualization to show little
 bumps over the integer values rather than perfect spikes.
 
 ### All Together Now
+
 Finally, we can concatenate all of the data into one funny-looking curve.
 ![](https://www.tensorflow.org/images/tensorboard/histogram_dashboard/11_all_combined.png)
-

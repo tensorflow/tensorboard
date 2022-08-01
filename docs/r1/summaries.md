@@ -198,7 +198,6 @@ for i in range(FLAGS.max_steps):
 
 You're now all set to visualize this data using TensorBoard.
 
-
 ## Launching TensorBoard
 
 To run TensorBoard, use the following command (alternatively `python -m
