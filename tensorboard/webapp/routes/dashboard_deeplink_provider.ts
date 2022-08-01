@@ -19,11 +19,7 @@ import {map} from 'rxjs/operators';
 import {DeepLinkProvider} from '../app_routing/deep_link_provider';
 import {SerializableQueryParams} from '../app_routing/types';
 import {State} from '../app_state';
-import {
-  FeatureFlagMetadata,
-  FeatureFlagMetadataMap,
-  FeatureFlagType,
-} from '../feature_flag/store/feature_flag_metadata';
+import {FeatureFlagMetadataMap} from '../feature_flag/store/feature_flag_metadata';
 import {getOverriddenFeatureFlags} from '../feature_flag/store/feature_flag_selectors';
 import {
   isPluginType,
@@ -102,10 +98,7 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
         map((featureFlags) => {
           return featureFlagsToSerializableQueryParams(
             featureFlags,
-            FeatureFlagMetadataMap as Record<
-              string,
-              FeatureFlagMetadata<FeatureFlagType>
-            >
+            FeatureFlagMetadataMap
           );
         })
       ),
