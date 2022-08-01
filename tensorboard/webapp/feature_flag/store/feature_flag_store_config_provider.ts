@@ -14,26 +14,15 @@ limitations under the License.
 ==============================================================================*/
 import {InjectionToken} from '@angular/core';
 import {StoreConfig} from '@ngrx/store';
+import {
+  FeatureFlagMetadataMap,
+  generateFeatureFlagDefaults,
+} from './feature_flag_metadata';
 import {FeatureFlagState} from './feature_flag_types';
 
 export const initialState: FeatureFlagState = {
   isFeatureFlagsLoaded: false,
-  defaultFlags: {
-    isAutoDarkModeAllowed: true,
-    defaultEnableDarkMode: false,
-    enableDarkModeOverride: null,
-    enabledColorGroup: true,
-    enabledColorGroupByRegex: true,
-    enabledExperimentalPlugins: [],
-    inColab: false,
-    scalarsBatchSize: undefined,
-    metricsImageSupportEnabled: true,
-    enabledLinkedTime: false,
-    enableTimeSeriesPromotion: false,
-    enabledCardWidthSetting: true,
-    forceSvg: false,
-    enabledScalarDataTable: false,
-  },
+  defaultFlags: generateFeatureFlagDefaults(FeatureFlagMetadataMap),
   flagOverrides: {},
 };
 

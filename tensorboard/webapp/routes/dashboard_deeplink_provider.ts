@@ -20,6 +20,12 @@ import {DeepLinkProvider} from '../app_routing/deep_link_provider';
 import {SerializableQueryParams} from '../app_routing/types';
 import {State} from '../app_state';
 import {
+  FeatureFlagMetadata,
+  FeatureFlagMetadataMap,
+  FeatureFlagType,
+} from '../feature_flag/store/feature_flag_metadata';
+import {getOverriddenFeatureFlags} from '../feature_flag/store/feature_flag_selectors';
+import {
   isPluginType,
   isSampledPlugin,
   isSingleRunPlugin,
@@ -28,11 +34,6 @@ import {CardUniqueInfo} from '../metrics/types';
 import {GroupBy, GroupByKey} from '../runs/types';
 import * as selectors from '../selectors';
 import {
-  ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY,
-  ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
-  EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
-} from '../webapp_data_source/tb_feature_flag_data_source_types';
-import {
   DeserializedState,
   PINNED_CARDS_KEY,
   RUN_COLOR_GROUP_KEY,
@@ -40,6 +41,7 @@ import {
   SMOOTHING_KEY,
   TAG_FILTER_KEY,
 } from './dashboard_deeplink_provider_types';
+import {featureFlagsToSerializableQueryParams} from './feature_flag_serializer';
 
 const COLOR_GROUP_REGEX_VALUE_PREFIX = 'regex:';
 
@@ -83,36 +85,6 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
     );
   }
 
-  private getFeatureFlagStates(
-    store: Store<State>
-  ): Observable<SerializableQueryParams> {
-    return combineLatest([
-      store.select(selectors.getEnabledExperimentalPlugins),
-      store.select(selectors.getOverriddenFeatureFlags),
-    ]).pipe(
-      map(([experimentalPlugins, overriddenFeatureFlags]) => {
-        const queryParams = experimentalPlugins.map((pluginId) => {
-          return {key: EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY, value: pluginId};
-        });
-        if (typeof overriddenFeatureFlags.enabledColorGroup === 'boolean') {
-          queryParams.push({
-            key: ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
-            value: String(overriddenFeatureFlags.enabledColorGroup),
-          });
-        }
-        if (
-          typeof overriddenFeatureFlags.enabledColorGroupByRegex === 'boolean'
-        ) {
-          queryParams.push({
-            key: ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY,
-            value: String(overriddenFeatureFlags.enabledColorGroupByRegex),
-          });
-        }
-        return queryParams;
-      })
-    );
-  }
-
   serializeStateToQueryParams(
     store: Store<State>
   ): Observable<SerializableQueryParams> {
@@ -126,7 +98,17 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
           return [{key: TAG_FILTER_KEY, value: filterText}];
         })
       ),
-      this.getFeatureFlagStates(store),
+      store.select(getOverriddenFeatureFlags).pipe(
+        map((featureFlags) => {
+          return featureFlagsToSerializableQueryParams(
+            featureFlags,
+            FeatureFlagMetadataMap as Record<
+              string,
+              FeatureFlagMetadata<FeatureFlagType>
+            >
+          );
+        })
+      ),
       store.select(selectors.getMetricsSettingOverrides).pipe(
         map((settingOverrides) => {
           if (Number.isFinite(settingOverrides.scalarSmoothing)) {

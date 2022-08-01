@@ -10,6 +10,7 @@ tf_ng_module(
         "feature_flag_store_config_provider.ts",
     ],
     deps = [
+        ":feature_flag_metadata",
         ":types",
         "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/actions",
@@ -18,6 +19,17 @@ tf_ng_module(
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",
+    ],
+)
+
+tf_ng_module(
+    name = "feature_flag_metadata",
+    srcs = [
+        "feature_flag_metadata.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/feature_flag:types",
+        "@npm//@angular/core",
     ],
 )
 
@@ -45,10 +57,12 @@ tf_ng_module(
     name = "store_test_lib",
     testonly = True,
     srcs = [
+        "feature_flag_metadata_test.ts",
         "feature_flag_reducers_test.ts",
         "feature_flag_selectors_test.ts",
     ],
     deps = [
+        ":feature_flag_metadata",
         ":store",
         ":testing",
         ":types",

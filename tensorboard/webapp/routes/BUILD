@@ -37,11 +37,15 @@ tf_ts_library(
     ],
     deps = [
         ":dashboard_deeplink_provider_types",
+        ":feature_flag_serializer",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/app_routing:deep_link_provider",
         "//tensorboard/webapp/app_routing:route_config",
         "//tensorboard/webapp/app_routing:types",
+        "//tensorboard/webapp/feature_flag:types",
+        "//tensorboard/webapp/feature_flag/store",
+        "//tensorboard/webapp/feature_flag/store:feature_flag_metadata",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/data_source:types",
         "//tensorboard/webapp/runs:types",
@@ -50,6 +54,18 @@ tf_ts_library(
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",
+    ],
+)
+
+tf_ts_library(
+    name = "feature_flag_serializer",
+    srcs = [
+        "feature_flag_serializer.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/app_routing:types",
+        "//tensorboard/webapp/feature_flag:types",
+        "//tensorboard/webapp/feature_flag/store:feature_flag_metadata",
     ],
 )
 
@@ -69,16 +85,20 @@ tf_ts_library(
     testonly = True,
     srcs = [
         "dashboard_deeplink_provider_test.ts",
+        "feature_flag_serializer_test.ts",
     ],
     deps = [
         ":dashboard_deeplink_provider",
+        ":feature_flag_serializer",
         ":testing",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/app_routing:deep_link_provider",
+        "//tensorboard/webapp/app_routing:location",
         "//tensorboard/webapp/app_routing:types",
+        "//tensorboard/webapp/feature_flag/store:feature_flag_metadata",
         "//tensorboard/webapp/metrics:test_lib",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/data_source:types",

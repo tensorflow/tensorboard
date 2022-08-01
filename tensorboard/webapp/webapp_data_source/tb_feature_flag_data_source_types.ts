@@ -29,22 +29,3 @@ export abstract class TBFeatureFlagDataSource {
    */
   abstract getFeatures(enableMediaQuery?: boolean): Partial<FeatureFlags>;
 }
-
-export const EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY = 'experimentalPlugin';
-
-export const SCALARS_BATCH_SIZE_PARAM_KEY = 'scalarsBatchSize';
-
-export const ENABLE_CARD_WIDTH_SETTING_PARAM_KEY = 'enableCardWidthSetting';
-
-export const ENABLE_COLOR_GROUP_QUERY_PARAM_KEY = 'enableColorGroup';
-
-export const ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY =
-  'enableColorGroupByRegex';
-
-export const ENABLE_DARK_MODE_QUERY_PARAM_KEY = 'darkMode';
-
-export const ENABLE_LINKED_TIME_PARAM_KEY = 'enableLinkedTime';
-
-export const FORCE_SVG_RENDERER = 'forceSVG';
-
-export const ENABLE_DATA_TABLE_PARAM_KEY = 'enableDataTable';

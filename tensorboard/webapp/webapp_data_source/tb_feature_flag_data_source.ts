@@ -13,20 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {FeatureFlags} from '../feature_flag/types';
-import {QueryParams} from './query_params';
 import {
-  ENABLE_CARD_WIDTH_SETTING_PARAM_KEY,
-  ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY,
-  ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
-  ENABLE_DARK_MODE_QUERY_PARAM_KEY,
-  ENABLE_DATA_TABLE_PARAM_KEY,
-  ENABLE_LINKED_TIME_PARAM_KEY,
-  EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
-  FORCE_SVG_RENDERER,
-  SCALARS_BATCH_SIZE_PARAM_KEY,
-  TBFeatureFlagDataSource,
-} from './tb_feature_flag_data_source_types';
+  FeatureFlagMetadataMap,
+  FeatureFlagType,
+} from '../feature_flag/store/feature_flag_metadata';
+import {FeatureFlags} from '../feature_flag/types';
+import {getOverriddenFeatureFlagValuesFromSearchParams} from '../routes/feature_flag_serializer';
+import {QueryParams} from './query_params';
+import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
 
 const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 
@@ -40,62 +34,20 @@ export class QueryParamsFeatureFlagDataSource
   constructor(readonly queryParams: QueryParams) {}
 
   getFeatures(enableMediaQuery: boolean = false) {
-    const params = this.queryParams.getParams();
     // Set feature flag value for query parameters that are explicitly
     // specified. Feature flags for unspecified query parameters remain unset so
     // their values in the underlying state are not inadvertently changed.
-    const featureFlags: Partial<FeatureFlags> = enableMediaQuery
-      ? this.getPartialFeaturesFromMediaQuery()
-      : {};
-    if (params.has(EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY)) {
-      featureFlags.enabledExperimentalPlugins = params.getAll(
-        EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY
-      );
-    }
-    if (params.has('tensorboardColab')) {
-      featureFlags.inColab = params.get('tensorboardColab') === 'true';
-    }
-    if (params.has(SCALARS_BATCH_SIZE_PARAM_KEY)) {
-      featureFlags.scalarsBatchSize = Number(
-        params.get(SCALARS_BATCH_SIZE_PARAM_KEY)
-      );
-    }
-
-    if (params.has(ENABLE_COLOR_GROUP_QUERY_PARAM_KEY)) {
-      featureFlags.enabledColorGroup =
-        params.get(ENABLE_COLOR_GROUP_QUERY_PARAM_KEY) !== 'false';
-    }
-
-    if (params.has(ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY)) {
-      featureFlags.enabledColorGroupByRegex =
-        params.get(ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY) !== 'false';
-    }
-
-    if (params.has(ENABLE_DARK_MODE_QUERY_PARAM_KEY)) {
-      featureFlags.defaultEnableDarkMode =
-        params.get(ENABLE_DARK_MODE_QUERY_PARAM_KEY) !== 'false';
-    }
-
-    if (params.has(ENABLE_LINKED_TIME_PARAM_KEY)) {
-      featureFlags.enabledLinkedTime =
-        params.get(ENABLE_LINKED_TIME_PARAM_KEY) !== 'false';
-    }
-
-    if (params.has(ENABLE_CARD_WIDTH_SETTING_PARAM_KEY)) {
-      featureFlags.enabledCardWidthSetting =
-        params.get(ENABLE_CARD_WIDTH_SETTING_PARAM_KEY) !== 'false';
-    }
-
-    if (params.has(FORCE_SVG_RENDERER)) {
-      featureFlags.forceSvg = params.get(FORCE_SVG_RENDERER) !== 'false';
-    }
-
-    if (params.has(ENABLE_DATA_TABLE_PARAM_KEY)) {
-      featureFlags.enabledScalarDataTable =
-        params.get(ENABLE_DATA_TABLE_PARAM_KEY) !== 'false';
-    }
-
-    return featureFlags;
+    const featuresFromMediaQuery: Partial<
+      Record<keyof FeatureFlags, FeatureFlagType>
+    > = enableMediaQuery ? this.getPartialFeaturesFromMediaQuery() : {};
+    const overriddenFeatures = getOverriddenFeatureFlagValuesFromSearchParams(
+      FeatureFlagMetadataMap,
+      this.queryParams.getParams()
+    );
+    return {
+      ...featuresFromMediaQuery,
+      ...overriddenFeatures,
+    } as Partial<FeatureFlags>;
   }
 
   protected getPartialFeaturesFromMediaQuery(): {
