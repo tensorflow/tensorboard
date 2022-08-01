@@ -179,3 +179,45 @@ Here is a short summary of the various commands and their primary function. Plea
 
     However, you cannot use `ibazel run` in this case. The file watcher is glitchy on running the tests
     when detecting changes. It shows '`a broken pipe`' in terminal. We need to terminate and restart the program manually.
+
+## Adding, Updating, or Removing Frontend Dependencies
+
+For the most part, frontend-specific third-party dependencies are hosted by
+[npm](https://docs.npmjs.com/about-npm) and managed by
+[yarn](https://classic.yarnpkg.com/). Some of our build-time dependencies are
+managed by [bazel](https://bazel.build/).
+
+The source of truth for `yarn` is a combination of the `package.json` and
+`yarn.lock` files. `package.json` is maintained by us developers and describes
+direct dependencies while `yarn.lock` is maintained by the system and describes
+the entire tree of transitive dependencies. In reality both files are often
+edited automatically by calls to `yarn` and `package.json` only sometimes needs
+to be edited by hand.
+
+1.  Install [yarn](https://classic.yarnpkg.com/lang/en/docs/install).
+
+2.  Add or modify an entry in the `[dependencies]` or `[devDependencies]`
+    section of `package.json`. You can do this manually but often it's preferred
+    to use `yarn` from the command line:
+    * `yarn add`
+      * https://classic.yarnpkg.com/lang/en/docs/cli/add/
+    * `yarn upgrade`
+      * See: https://classic.yarnpkg.com/lang/en/docs/cli/upgrade/
+      * Alternatively, use `yarn upgrade-interactive`, possibly with the
+        `--latest` flag to use an interactive shell tool to hand pick
+        dependencies to upgrade.
+      * See: https://classic.yarnpkg.com/lang/en/docs/cli/upgrade-interactive/
+    * `yarn remove`
+      * https://classic.yarnpkg.com/lang/en/docs/cli/remove/
+
+3.  Run `yarn run yarn-deduplicate`.
+
+4.  Cross reference your updates with the bazel `WORKSPACE` file and determine if any
+    bazel dependencies should also be updated.
+    * Googlers, for information on how to mirror WORKSPACE dependencies that
+      need to be downloaded, refer to go/tensorboard-tf-mirror.
+
+5.  Rebuild and test TensorBoard to make sure it works:
+    * `rm -rf node_modules; bazel clean --expunge; yarn`
+    * `bazel run tensorboard --logdir <your favorite logdir>`
+    * `bazel test --test_output=errors tensorboard/webapp/...`
