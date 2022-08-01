@@ -194,7 +194,7 @@ the entire tree of transitive dependencies. In reality both files are often
 edited automatically by calls to `yarn` and `package.json` only sometimes needs
 to be edited by hand.
 
-1.  Install yarn.
+1.  Install [yarn](https://classic.yarnpkg.com/lang/en/docs/install).
 
 2.  Add or modify an entry in the `[dependencies]` or `[devDependencies]`
     section of `package.json`. You can do this manually but often it's preferred
@@ -214,8 +214,10 @@ to be edited by hand.
 
 4.  Cross reference your updates with the bazel `WORKSPACE` file and determine if any
     bazel dependencies should also be updated.
+    * Googlers, for information on how to mirror WORKSPACE dependencies that
+      need to be downloaded, refer to go/tensorboard-tf-mirror.
 
 5.  Rebuild and test TensorBoard to make sure it works:
-    * `rm -rf node_modules; bazel clean --expunge; yarn`.
+    * `rm -rf node_modules; bazel clean --expunge; yarn`
     * `bazel run tensorboard --logdir <your favorite logdir>`
     * `bazel test --test_output=errors tensorboard/webapp/...`
