@@ -20,11 +20,9 @@ import {
 } from '../feature_flag/store/feature_flag_metadata';
 import {FeatureFlags} from '../feature_flag/types';
 
-export function featureFlagsToSerializableQueryParams<
-  T extends FeatureFlagType
->(
+export function featureFlagsToSerializableQueryParams<T extends FeatureFlags>(
   overriddenFeatureFlags: Partial<FeatureFlags>,
-  featureFlagMetadataMap: Record<string, FeatureFlagMetadata<T>>
+  featureFlagMetadataMap: FeatureFlagMetadataMapType<T>
 ): SerializableQueryParams {
   return Object.entries(overriddenFeatureFlags)
     .map(([featureFlag, featureValue]) => {

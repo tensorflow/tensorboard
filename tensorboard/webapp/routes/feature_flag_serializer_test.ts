@@ -22,16 +22,19 @@ import {
   getOverriddenFeatureFlagValuesFromSearchParams,
 } from './feature_flag_serializer';
 
+const FEATURE_A_NAME = 'featureA';
+const FEATURE_B_NAME = 'featureB';
+
 describe('feature flag serializer', () => {
-  let featureFlagsMetadata: Record<string, FeatureFlagMetadata<any>> = {};
+  let featureFlagsMetadata: FeatureFlagMetadataMapType<any> = {};
   beforeEach(() => {
     featureFlagsMetadata = {
-      featureA: {
+      [FEATURE_A_NAME]: {
         defaultValue: 'feature_a_123',
         queryParamOverride: 'feature_a',
         parseValue: (s: string) => s,
       },
-      featureB: {
+      [FEATURE_B_NAME]: {
         defaultValue: 'feature_b_456',
         queryParamOverride: 'feature_b',
         isArray: true,
@@ -109,7 +112,7 @@ describe('feature flag serializer', () => {
   describe('getFeatureFlagValueFromSearchParams', () => {
     it('returns null when provided feature flag not present in search params', () => {
       const value = getFeatureFlagValueFromSearchParams(
-        featureFlagsMetadata.featureA,
+        featureFlagsMetadata[FEATURE_A_NAME],
         new URLSearchParams('')
       );
       expect(value).toBeNull();
@@ -128,7 +131,7 @@ describe('feature flag serializer', () => {
 
     it('returns first value when feature flag is not an array', () => {
       const value = getFeatureFlagValueFromSearchParams(
-        featureFlagsMetadata.featureA,
+        featureFlagsMetadata[FEATURE_A_NAME],
         new URLSearchParams('?feature_a=foo&feature_a=bar')
       );
       expect(value).toEqual('foo');
@@ -136,7 +139,7 @@ describe('feature flag serializer', () => {
 
     it('returns array of values when feature flag is an array', () => {
       const value = getFeatureFlagValueFromSearchParams(
-        featureFlagsMetadata.featureB,
+        featureFlagsMetadata[FEATURE_B_NAME],
         new URLSearchParams('?feature_b=foo&feature_b=bar')
       );
       expect(value).toEqual(['foo', 'bar']);
@@ -154,7 +157,7 @@ describe('feature flag serializer', () => {
 
     it('returns empty object when url search params are empty', () => {
       const featureFlags = getOverriddenFeatureFlagValuesFromSearchParams(
-        featureFlagsMetadata as FeatureFlagMetadataMapType<any>,
+        featureFlagsMetadata,
         new URLSearchParams('')
       );
       expect(featureFlags).toEqual({});
@@ -162,7 +165,7 @@ describe('feature flag serializer', () => {
 
     it('parses flag values correctly', () => {
       const featureFlags = getOverriddenFeatureFlagValuesFromSearchParams(
-        featureFlagsMetadata as FeatureFlagMetadataMapType<any>,
+        featureFlagsMetadata,
         new URLSearchParams('?feature_a=foo&feature_b=bar')
       );
       expect(featureFlags).toEqual({
