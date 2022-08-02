@@ -47,8 +47,8 @@ export class FeatureFlagEffects {
 
         if (features.forceSvg != null) {
           this.forceSvgDataSource.updateForceSvgFlag(features.forceSvg);
-        } else {
-          features.forceSvg = this.forceSvgDataSource.getForceSvgFlag();
+        } else if (this.forceSvgDataSource.getForceSvgFlag()) {
+          features.forceSvg = true;
         }
 
         return partialFeatureFlagsLoaded({features});
