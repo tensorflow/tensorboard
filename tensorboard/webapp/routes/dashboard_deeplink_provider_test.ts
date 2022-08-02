@@ -18,6 +18,7 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {skip} from 'rxjs/operators';
 import {SerializableQueryParams} from '../app_routing/types';
 import {State} from '../app_state';
+import {FeatureFlagMetadataMap} from '../feature_flag/store/feature_flag_metadata';
 import {PluginType} from '../metrics/data_source/types';
 import {appStateFromMetricsState, buildMetricsState} from '../metrics/testing';
 import {GroupBy, GroupByKey} from '../runs/types';
@@ -52,7 +53,7 @@ describe('core deeplink provider', () => {
 
     queryParamsSerialized = [];
 
-    provider = new DashboardDeepLinkProvider();
+    provider = new DashboardDeepLinkProvider(FeatureFlagMetadataMap);
     provider
       .serializeStateToQueryParams(store)
       .pipe(
