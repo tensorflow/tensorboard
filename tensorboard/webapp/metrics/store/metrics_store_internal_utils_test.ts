@@ -373,12 +373,16 @@ describe('metrics store utils', () => {
         {card1: {plugin: PluginType.SCALARS, tag: 'accuracy', runId: null}},
         new Map(),
         new Map(),
+        new Map(),
         {card1: buildStepIndexMetadata({index: 2})}
       );
 
       const pinnedCardId = getPinnedCardId('card1');
       expect(result.unresolvedImportedPinnedCards).toEqual([nonMatchingInfo]);
       expect(result.cardToPinnedCopy).toEqual(
+        new Map([['card1', pinnedCardId]])
+      );
+      expect(result.cardToPinnedCopyCache).toEqual(
         new Map([['card1', pinnedCardId]])
       );
       expect(result.pinnedCardToOriginal).toEqual(
@@ -391,11 +395,13 @@ describe('metrics store utils', () => {
     it('adds a pinned copy properly', () => {
       const {
         cardToPinnedCopy,
+        cardToPinnedCopyCache,
         pinnedCardToOriginal,
         cardStepIndex,
         cardMetadataMap,
       } = buildOrReturnStateWithPinnedCopy(
         'card1',
+        new Map(),
         new Map(),
         new Map(),
         {card1: buildStepIndexMetadata({index: 2})},
@@ -404,6 +410,7 @@ describe('metrics store utils', () => {
       const pinnedCardId = getPinnedCardId('card1');
 
       expect(cardToPinnedCopy).toEqual(new Map([['card1', pinnedCardId]]));
+      expect(cardToPinnedCopyCache).toEqual(new Map([['card1', pinnedCardId]]));
       expect(pinnedCardToOriginal).toEqual(new Map([[pinnedCardId, 'card1']]));
       expect(cardStepIndex).toEqual({
         card1: buildStepIndexMetadata({index: 2}),
@@ -417,17 +424,26 @@ describe('metrics store utils', () => {
 
     it('throws if the original card does not have metadata', () => {
       expect(() => {
-        buildOrReturnStateWithPinnedCopy('card1', new Map(), new Map(), {}, {});
+        buildOrReturnStateWithPinnedCopy(
+          'card1',
+          new Map(),
+          new Map(),
+          new Map(),
+          {},
+          {}
+        );
       }).toThrow();
     });
 
     it('no-ops if the card already has a pinned copy', () => {
       const cardToPinnedCopy = new Map([['card1', 'card-pin1']]);
+      const cardToPinnedCopyCache = new Map([['card1', 'card-pin1']]);
       const pinnedCardToOriginal = new Map([['card-pin1', 'card1']]);
       const cardStepIndexMap = {};
       const cardMetadataMap = {card1: createCardMetadata()};
       const originals = {
         cardToPinnedCopy: new Map(cardToPinnedCopy),
+        cardToPinnedCopyCache: new Map(cardToPinnedCopyCache),
         pinnedCardToOriginal: new Map(pinnedCardToOriginal),
         cardStepIndexMap: {...cardStepIndexMap},
         cardMetadataMap: {...cardMetadataMap},
@@ -436,12 +452,16 @@ describe('metrics store utils', () => {
       const result = buildOrReturnStateWithPinnedCopy(
         'card1',
         cardToPinnedCopy,
+        cardToPinnedCopyCache,
         pinnedCardToOriginal,
         cardStepIndexMap,
         cardMetadataMap
       );
 
       expect(result.cardToPinnedCopy).toEqual(originals.cardToPinnedCopy);
+      expect(result.cardToPinnedCopyCache).toEqual(
+        originals.cardToPinnedCopyCache
+      );
       expect(result.pinnedCardToOriginal).toEqual(
         originals.pinnedCardToOriginal
       );

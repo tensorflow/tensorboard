@@ -42,6 +42,7 @@ type ResolvedPinPartialState = Pick<
   MetricsState,
   | 'cardMetadataMap'
   | 'cardToPinnedCopy'
+  | 'cardToPinnedCopyCache'
   | 'pinnedCardToOriginal'
   | 'cardStepIndex'
 >;
@@ -203,6 +204,7 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
   nonPinnedCards: NonPinnedCardId[],
   cardMetadataMap: CardMetadataMap,
   cardToPinnedCopy: CardToPinnedCard,
+  cardToPinnedCopyCache: CardToPinnedCard,
   pinnedCardToOriginal: PinnedCardToCard,
   cardStepIndexMap: CardStepIndexMap
 ): ResolvedPinPartialState & {unresolvedImportedPinnedCards: CardUniqueInfo[]} {
@@ -224,6 +226,7 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
       unresolvedImportedPinnedCards,
       cardMetadataMap,
       cardToPinnedCopy,
+      cardToPinnedCopyCache,
       pinnedCardToOriginal,
       cardStepIndex: cardStepIndexMap,
     };
@@ -231,6 +234,7 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
 
   let stateWithResolvedPins = {
     cardToPinnedCopy,
+    cardToPinnedCopyCache,
     pinnedCardToOriginal,
     cardStepIndex: cardStepIndexMap,
     cardMetadataMap,
@@ -239,6 +243,7 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
     stateWithResolvedPins = buildOrReturnStateWithPinnedCopy(
       cardToPin,
       stateWithResolvedPins.cardToPinnedCopy,
+      stateWithResolvedPins.cardToPinnedCopyCache,
       stateWithResolvedPins.pinnedCardToOriginal,
       stateWithResolvedPins.cardStepIndex,
       stateWithResolvedPins.cardMetadataMap
@@ -258,6 +263,7 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
 export function buildOrReturnStateWithPinnedCopy(
   cardId: NonPinnedCardId,
   cardToPinnedCopy: CardToPinnedCard,
+  cardToPinnedCopyCache: CardToPinnedCard,
   pinnedCardToOriginal: PinnedCardToCard,
   cardStepIndexMap: CardStepIndexMap,
   cardMetadataMap: CardMetadataMap
@@ -266,6 +272,7 @@ export function buildOrReturnStateWithPinnedCopy(
   if (cardToPinnedCopy.has(cardId)) {
     return {
       cardToPinnedCopy,
+      cardToPinnedCopyCache,
       pinnedCardToOriginal,
       cardStepIndex: cardStepIndexMap,
       cardMetadataMap,
@@ -273,6 +280,7 @@ export function buildOrReturnStateWithPinnedCopy(
   }
 
   const nextCardToPinnedCopy = new Map(cardToPinnedCopy);
+  const nextCardToPinnedCopyCache = new Map(cardToPinnedCopyCache);
   const nextPinnedCardToOriginal = new Map(pinnedCardToOriginal);
   const nextCardStepIndexMap = {...cardStepIndexMap};
   const nextCardMetadataMap = {...cardMetadataMap};
@@ -280,6 +288,7 @@ export function buildOrReturnStateWithPinnedCopy(
   // Create a pinned copy. Copies step index from the original card.
   const pinnedCardId = getPinnedCardId(cardId);
   nextCardToPinnedCopy.set(cardId, pinnedCardId);
+  nextCardToPinnedCopyCache.set(cardId, pinnedCardId);
   nextPinnedCardToOriginal.set(pinnedCardId, cardId);
   if (cardStepIndexMap.hasOwnProperty(cardId)) {
     nextCardStepIndexMap[pinnedCardId] = cardStepIndexMap[cardId];
@@ -293,6 +302,7 @@ export function buildOrReturnStateWithPinnedCopy(
 
   return {
     cardToPinnedCopy: nextCardToPinnedCopy,
+    cardToPinnedCopyCache: nextCardToPinnedCopyCache,
     pinnedCardToOriginal: nextPinnedCardToOriginal,
     cardStepIndex: nextCardStepIndexMap,
     cardMetadataMap: nextCardMetadataMap,
