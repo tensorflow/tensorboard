@@ -28,19 +28,19 @@ export interface NavigateToExperiment {
 }
 
 export interface NavigateToCompare {
-  replaceState?: boolean;
   routeKind: RouteKind.COMPARE_EXPERIMENT;
   routeParams: {
     aliasAndExperimentIds: Array<{alias: string; id: string}>;
   };
   resetNamespacedState?: boolean;
+  replaceState?: boolean;
 }
 
 export interface NavigateToExperiments {
-  replaceState?: boolean;
   routeKind: RouteKind.EXPERIMENTS;
   routeParams: {};
   resetNamespacedState?: boolean;
+  replaceState?: boolean;
 }
 
 export type ProgrammaticalNavigation =
