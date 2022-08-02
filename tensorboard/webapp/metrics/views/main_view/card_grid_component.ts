@@ -48,7 +48,7 @@ export class CardGridComponent {
   @Input() cardObserver!: CardObserver;
   @Input() showPaginationControls!: boolean;
   @Input() isStepSelectorEnabled!: boolean;
-  @Input() getMetricsXAxisType!: XAxisType;
+  @Input() xAxisType!: XAxisType;
 
   @Output() pageIndexChanged = new EventEmitter<number>();
 
@@ -140,7 +140,7 @@ export class CardGridComponent {
     return (
       this.isStepSelectorEnabled &&
       item.plugin === PluginType.SCALARS &&
-      this.getMetricsXAxisType === XAxisType.STEP
+      this.xAxisType === XAxisType.STEP
     );
   }
 }

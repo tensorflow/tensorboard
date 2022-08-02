@@ -168,7 +168,7 @@ limitations under the License.
     </table>
   </ng-template>
 </div>
-<ng-container *ngIf="isInStepSelectorMode()">
+<ng-container *ngIf="inTimeSelectionMode()">
   <div class="data-table-container">
     <tb-data-table
       [headers]="dataHeaders"
@@ -221,7 +221,7 @@ limitations under the License.
   let-domDim="domDimension"
   let-xScale="xScale"
 >
-  <ng-container *ngIf="isInStepSelectorMode()">
+  <ng-container *ngIf="inTimeSelectionMode()">
     <scalar-card-fob-controller
       [timeSelection]="getTimeSelection()"
       [scale]="xScale"

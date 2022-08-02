@@ -319,7 +319,7 @@ export class ScalarCardComponent<Downloader> {
     }
   }
 
-  isInStepSelectorMode(): boolean {
+  inTimeSelectionMode(): boolean {
     return (
       this.xAxisType === XAxisType.STEP &&
       (this.stepSelectorTimeSelection !== null ||

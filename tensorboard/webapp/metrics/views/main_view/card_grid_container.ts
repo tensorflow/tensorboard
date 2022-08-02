@@ -47,7 +47,7 @@ import {CardIdWithMetadata} from '../metrics_view_types';
       [cardMinWidth]="cardMinWidth$ | async"
       [cardObserver]="cardObserver"
       [isStepSelectorEnabled]="isStepSelectorEnabled$ | async"
-      [getMetricsXAxisType]="getMetricsXAxisType$ | async"
+      [xAxisType]="getMetricsXAxisType$ | async"
       (pageIndexChanged)="onPageIndexChanged($event)"
     >
     </metrics-card-grid-component>
