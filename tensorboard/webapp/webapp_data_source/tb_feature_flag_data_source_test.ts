@@ -49,7 +49,7 @@ describe('tb_feature_flag_data_source', () => {
 
       it('returns enabledExperimentalPlugins from the query params', () => {
         getParamsSpy.and.returnValue(
-          new URLSearchParams('experimentalPlugin=a&experimentalPlugin=b')
+          new URLSearchParams('experimentalPlugin=a,b')
         );
         expect(dataSource.getFeatures()).toEqual({
           enabledExperimentalPlugins: ['a', 'b'],

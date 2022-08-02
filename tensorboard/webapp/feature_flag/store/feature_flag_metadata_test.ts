@@ -1,5 +1,3 @@
-import {parseBoolean, parseBooleanOrNull} from './feature_flag_metadata';
-
 /* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {
+  encodeStringArray,
+  parseBoolean,
+  parseBooleanOrNull,
+  parseStringArray,
+} from './feature_flag_metadata';
+
 describe('feature flag query parameters', () => {
   describe('parseBoolean', () => {
     it('"false" should evaluate to false', () => {
@@ -40,6 +45,41 @@ describe('feature flag query parameters', () => {
       expect(parseBooleanOrNull('true')).toBeTrue();
       expect(parseBooleanOrNull('foo bar')).toBeTrue();
       expect(parseBooleanOrNull('')).toBeTrue();
+    });
+  });
+
+  describe('parseStringArray', () => {
+    it('parses empty value to empty array', () => {
+      expect(parseStringArray('')).toEqual([]);
+    });
+
+    it('parses single value to single element array', () => {
+      expect(parseStringArray('value1')).toEqual(['value1']);
+    });
+
+    it('parses multiple values to array', () => {
+      expect(parseStringArray('value1,value2,,value3')).toEqual([
+        'value1',
+        'value2',
+        '',
+        'value3',
+      ]);
+    });
+  });
+
+  describe('encodeStringArray', () => {
+    it('parses empty array to empty value', () => {
+      expect(encodeStringArray([])).toEqual('');
+    });
+
+    it('parses single element array to single value', () => {
+      expect(encodeStringArray(['value1'])).toEqual('value1');
+    });
+
+    it('parses array to comma-delimited list of multiple values', () => {
+      expect(encodeStringArray(['value1', 'value2', '', 'value3'])).toEqual(
+        'value1,value2,,value3'
+      );
     });
   });
 });
