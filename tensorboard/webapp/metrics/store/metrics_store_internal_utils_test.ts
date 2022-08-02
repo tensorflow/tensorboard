@@ -424,7 +424,14 @@ describe('metrics store utils', () => {
 
     it('throws if the original card does not have metadata', () => {
       expect(() => {
-        buildOrReturnStateWithPinnedCopy('card1', new Map(), new Map(), new Map(), {}, {});
+        buildOrReturnStateWithPinnedCopy(
+          'card1',
+          new Map(),
+          new Map(),
+          new Map(),
+          {},
+          {}
+        );
       }).toThrow();
     });
 
@@ -452,7 +459,9 @@ describe('metrics store utils', () => {
       );
 
       expect(result.cardToPinnedCopy).toEqual(originals.cardToPinnedCopy);
-      expect(result.cardToPinnedCopyCache).toEqual(originals.cardToPinnedCopyCache);
+      expect(result.cardToPinnedCopyCache).toEqual(
+        originals.cardToPinnedCopyCache
+      );
       expect(result.pinnedCardToOriginal).toEqual(
         originals.pinnedCardToOriginal
       );
