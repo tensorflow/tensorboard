@@ -29,8 +29,8 @@ export function featureFlagsToSerializableQueryParams<T extends FeatureFlags>(
       const featureFlagMetadata: FeatureFlagMetadata<any> =
         featureFlagMetadataMap[featureFlag as keyof FeatureFlags];
       if (!featureFlagMetadata) {
-        // No metadata for this feature flag. Shouldn't happen but you never
-        // know.
+        // No metadata for this feature flag. Shouldn't happen but we must
+        // include the check for the compiler.
         // Return empty item. Will be filtered out.
         return {};
       }
@@ -44,7 +44,10 @@ export function featureFlagsToSerializableQueryParams<T extends FeatureFlags>(
       return {
         key,
         value: featureFlagMetadata.encodeValue
+          // Feature flag has custom encoder.
           ? featureFlagMetadata.encodeValue(featureValue)
+          // Feature flag has no custom encoder, just convert simple type to a
+          // string.
           : featureValue?.toString(),
       };
     })
