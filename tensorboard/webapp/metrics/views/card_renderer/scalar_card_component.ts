@@ -318,4 +318,12 @@ export class ScalarCardComponent<Downloader> {
       );
     }
   }
+
+  inTimeSelectionMode(): boolean {
+    return (
+      this.xAxisType === XAxisType.STEP &&
+      (this.stepSelectorTimeSelection !== null ||
+        this.linkedTimeSelection !== null)
+    );
+  }
 }

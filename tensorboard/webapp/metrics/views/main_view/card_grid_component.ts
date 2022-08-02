@@ -23,6 +23,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {PluginType} from '../../data_source';
+import {XAxisType} from '../../types';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
 
@@ -47,6 +48,7 @@ export class CardGridComponent {
   @Input() cardObserver!: CardObserver;
   @Input() showPaginationControls!: boolean;
   @Input() isStepSelectorEnabled!: boolean;
+  @Input() xAxisType!: XAxisType;
 
   @Output() pageIndexChanged = new EventEmitter<number>();
 
@@ -132,5 +134,13 @@ export class CardGridComponent {
     }
 
     this.handlePageChange(nextValue, input);
+  }
+
+  isShowingDataTable(item: CardIdWithMetadata) {
+    return (
+      this.isStepSelectorEnabled &&
+      item.plugin === PluginType.SCALARS &&
+      this.xAxisType === XAxisType.STEP
+    );
   }
 }

@@ -23,7 +23,7 @@ limitations under the License.
   <div class="card-grid" [style.grid-template-columns]="gridTemplateColumn">
     <card-view
       *ngFor="let item of cardIdsWithMetadata; trackBy: trackByCards"
-      [ngClass]="isStepSelectorEnabled && item.plugin === PluginType.SCALARS ? 'height-with-table' : ''"
+      [ngClass]="isShowingDataTable(item) ? 'height-with-table' : ''"
       [cardId]="item.cardId"
       [groupName]="groupName"
       [pluginType]="item.plugin"
