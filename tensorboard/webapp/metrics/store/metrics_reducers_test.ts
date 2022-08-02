@@ -715,6 +715,7 @@ describe('metrics reducers', () => {
         cardList,
         cardStepIndex,
         cardToPinnedCopy,
+        cardToPinnedCopyCache,
         pinnedCardToOriginal,
         unresolvedImportedPinnedCards,
       } = nextState;
@@ -723,6 +724,7 @@ describe('metrics reducers', () => {
         cardList,
         cardStepIndex,
         cardToPinnedCopy,
+        cardToPinnedCopyCache,
         pinnedCardToOriginal,
         unresolvedImportedPinnedCards,
       }).toEqual({
@@ -738,6 +740,7 @@ describe('metrics reducers', () => {
           }),
         },
         cardToPinnedCopy: new Map([[expectedCardId, expectedPinnedCopyId]]),
+        cardToPinnedCopyCache: new Map([[expectedCardId, expectedPinnedCopyId]]),
         pinnedCardToOriginal: new Map([[expectedPinnedCopyId, expectedCardId]]),
         unresolvedImportedPinnedCards: [
           {plugin: PluginType.SCALARS, tag: 'tagB'},

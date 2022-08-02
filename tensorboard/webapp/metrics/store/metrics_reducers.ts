@@ -372,6 +372,7 @@ const reducer = createReducer(
       state.cardList,
       state.cardMetadataMap,
       state.cardToPinnedCopy,
+      state.cardToPinnedCopyCache,
       state.pinnedCardToOriginal,
       state.cardStepIndex
     );
@@ -396,7 +397,6 @@ const reducer = createReducer(
     const newState = {
       ...state,
       ...resolvedResult,
-      cardToPinnedCopyCache: resolvedResult.cardToPinnedCopy,
       settingOverrides: newSettings,
     };
 
@@ -567,6 +567,7 @@ const reducer = createReducer(
         nextCardList,
         nextCardMetadataMap,
         nextCardToPinnedCopy,
+        state.cardToPinnedCopyCache,
         nextPinnedCardToOriginal,
         nextCardStepIndex
       );
@@ -922,12 +923,13 @@ const reducer = createReducer(
         const resolvedResult = buildOrReturnStateWithPinnedCopy(
           cardId,
           nextCardToPinnedCopy,
+          nextCardToPinnedCopyCache,
           nextPinnedCardToOriginal,
           nextCardStepIndexMap,
           nextCardMetadataMap
         );
         nextCardToPinnedCopy = resolvedResult.cardToPinnedCopy;
-        nextCardToPinnedCopyCache = resolvedResult.cardToPinnedCopy;
+        nextCardToPinnedCopyCache = resolvedResult.cardToPinnedCopyCache;
         nextPinnedCardToOriginal = resolvedResult.pinnedCardToOriginal;
         nextCardMetadataMap = resolvedResult.cardMetadataMap;
         nextCardStepIndexMap = resolvedResult.cardStepIndex;
