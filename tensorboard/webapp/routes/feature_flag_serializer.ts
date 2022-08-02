@@ -43,12 +43,12 @@ export function featureFlagsToSerializableQueryParams<T extends FeatureFlags>(
       }
       return {
         key,
-        value: featureFlagMetadata.encodeValue
-          // Feature flag has custom encoder.
-          ? featureFlagMetadata.encodeValue(featureValue)
-          // Feature flag has no custom encoder, just convert simple type to a
-          // string.
-          : featureValue?.toString(),
+        // Note that all FeatureFlagType (string | number | boolean | string[])
+        // support toString() and toString() happens to output the format we
+        // want. Mostly notably, string[].toString() effectively does join(',').
+        // If this does hold when we add new types then consider adding support
+        // for custom encoders.
+        value: featureValue?.toString(),
       };
     })
     .filter(

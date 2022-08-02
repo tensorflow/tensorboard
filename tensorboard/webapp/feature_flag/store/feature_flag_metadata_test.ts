@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
-  encodeStringArray,
   parseBoolean,
   parseBooleanOrNull,
   parseStringArray,
@@ -64,22 +63,6 @@ describe('feature flag query parameters', () => {
         '',
         'value3',
       ]);
-    });
-  });
-
-  describe('encodeStringArray', () => {
-    it('parses empty array to empty value', () => {
-      expect(encodeStringArray([])).toEqual('');
-    });
-
-    it('parses single element array to single value', () => {
-      expect(encodeStringArray(['value1'])).toEqual('value1');
-    });
-
-    it('parses array to comma-delimited list of multiple values', () => {
-      expect(encodeStringArray(['value1', 'value2', '', 'value3'])).toEqual(
-        'value1,value2,,value3'
-      );
     });
   });
 });

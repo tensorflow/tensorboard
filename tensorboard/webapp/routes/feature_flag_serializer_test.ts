@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
-  encodeStringArray,
   FeatureFlagMetadata,
   FeatureFlagMetadataMapType,
   parseBoolean,
@@ -42,7 +41,6 @@ describe('feature flag serializer', () => {
         defaultValue: ['feature_b_456'],
         queryParamOverride: 'feature_b',
         parseValue: parseStringArray,
-        encodeValue: encodeStringArray,
       },
       [FEATURE_C_NAME]: {
         defaultValue: true,
@@ -100,7 +98,7 @@ describe('feature flag serializer', () => {
       ]);
     });
 
-    it('should return single entry for features with array encoder', () => {
+    it('should return single entry for features with string[] type', () => {
       const serializableQueryParams = featureFlagsToSerializableQueryParams(
         {featureA: 'a', featureB: ['foo', 'bar']} as any,
         featureFlagsMetadata

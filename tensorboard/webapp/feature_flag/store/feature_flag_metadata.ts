@@ -29,10 +29,6 @@ export type FeatureFlagMetadata<T> = {
   queryParamOverride?: string;
   // Function that translates a query param value into the feature flag value.
   parseValue: (str: string) => T;
-  // Optional function that translates a feature flag value into a query param
-  // value. If unspecified then any query param value will be encoded using
-  // value.toString().
-  encodeValue?: (value: T) => string;
 };
 
 export type FeatureFlagMetadataMapType<T extends FeatureFlags> = {
@@ -57,10 +53,6 @@ export function parseStringArray(str: string): string[] {
   return str.split(',');
 }
 
-export function encodeStringArray(stringArray: string[]): string {
-  return stringArray.join(',');
-}
-
 export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
   {
     scalarsBatchSize: {
@@ -82,7 +74,6 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       defaultValue: [],
       queryParamOverride: 'experimentalPlugin',
       parseValue: parseStringArray,
-      encodeValue: encodeStringArray,
     },
     enabledLinkedTime: {
       defaultValue: false,
