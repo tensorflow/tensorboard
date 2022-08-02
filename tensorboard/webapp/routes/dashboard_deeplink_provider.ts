@@ -19,8 +19,9 @@ import {map} from 'rxjs/operators';
 import {DeepLinkProvider} from '../app_routing/deep_link_provider';
 import {SerializableQueryParams} from '../app_routing/types';
 import {State} from '../app_state';
-import {FeatureFlagMetadataMap} from '../feature_flag/store/feature_flag_metadata';
+import {FeatureFlagMetadataMapType} from '../feature_flag/store/feature_flag_metadata';
 import {getOverriddenFeatureFlags} from '../feature_flag/store/feature_flag_selectors';
+import {FeatureFlags} from '../feature_flag/types';
 import {
   isPluginType,
   isSampledPlugin,
@@ -45,7 +46,12 @@ const COLOR_GROUP_REGEX_VALUE_PREFIX = 'regex:';
  * Provides deeplinking for the core dashboards page.
  */
 @Injectable()
-export class DashboardDeepLinkProvider extends DeepLinkProvider {
+export class DashboardDeepLinkProvider<
+  T extends FeatureFlags = FeatureFlags
+> extends DeepLinkProvider {
+  constructor(readonly featureFlagMetadataMap: FeatureFlagMetadataMapType<T>) {
+    super();
+  }
   private getMetricsPinnedCards(
     store: Store<State>
   ): Observable<SerializableQueryParams> {
@@ -98,7 +104,7 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
         map((featureFlags) => {
           return featureFlagsToSerializableQueryParams(
             featureFlags,
-            FeatureFlagMetadataMap
+            this.featureFlagMetadataMap
           );
         })
       ),

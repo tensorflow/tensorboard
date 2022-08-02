@@ -15,6 +15,7 @@ limitations under the License.
 import {Component, Type} from '@angular/core';
 import {RouteDef} from '../app_routing/route_config_types';
 import {RouteKind} from '../app_routing/types';
+import {FeatureFlagMetadataMap} from '../feature_flag/store/feature_flag_metadata';
 import {FeatureFlagPageContainer} from '../feature_flag/views/feature_flag_page_container';
 import {TensorBoardWrapperComponent} from '../tb_wrapper/tb_wrapper_component';
 import {DashboardDeepLinkProvider} from './dashboard_deeplink_provider';
@@ -26,7 +27,7 @@ export function routesFactory(): RouteDef[] {
       path: '/',
       ngComponent: TensorBoardWrapperComponent as Type<Component>,
       defaultRoute: true,
-      deepLinkProvider: new DashboardDeepLinkProvider(),
+      deepLinkProvider: new DashboardDeepLinkProvider(FeatureFlagMetadataMap),
     },
     {
       routeKind: RouteKind.FLAGS,
