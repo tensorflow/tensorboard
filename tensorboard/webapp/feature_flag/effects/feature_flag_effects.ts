@@ -20,8 +20,8 @@ import {combineLatestWith, map, tap, withLatestFrom} from 'rxjs/operators';
 import '../../tb_polymer_interop_types';
 import {TBFeatureFlagDataSource} from '../../webapp_data_source/tb_feature_flag_data_source_types';
 import {
-  partialFeatureFlagsLoaded,
   FeatureFlagOverrideChanged,
+  partialFeatureFlagsLoaded,
 } from '../actions/feature_flag_actions';
 import {ForceSvgDataSource} from '../force_svg_data_source';
 import {
