@@ -21,7 +21,7 @@ import '../../tb_polymer_interop_types';
 import {TBFeatureFlagDataSource} from '../../webapp_data_source/tb_feature_flag_data_source_types';
 import {
   partialFeatureFlagsLoaded,
-  storeFeatureFlag,
+  FeatureFlagOverrideChanged,
 } from '../actions/feature_flag_actions';
 import {ForceSvgDataSource} from '../force_svg_data_source';
 import {
@@ -83,9 +83,9 @@ export class FeatureFlagEffects {
   readonly storeFeatureFlag$ = createEffect(
     () =>
       this.actions$.pipe(
-        ofType(storeFeatureFlag),
-        tap((flagInfo) => {
-          this.dataSource.storeFeatureFlag(flagInfo.flagKey, flagInfo.value);
+        ofType(FeatureFlagOverrideChanged),
+        tap(({flags}) => {
+          this.dataSource.persistFeatureFlags(flags);
         })
       ),
     {dispatch: false}

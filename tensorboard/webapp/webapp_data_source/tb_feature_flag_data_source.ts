@@ -23,14 +23,13 @@ import {QueryParams} from './query_params';
 import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
 
 const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
+const FEATURE_FLAG_STORAGE_KEY = 'tb_feature_flag_storage_key';
 
 // TODO(tensorboard-team): QueryParamsFeatureFlagDataSource now is a misnomer as
 // it also sources the data from media query as well as the query parameter.
 // Decide how to move forward with more sources of the data + composability.
 @Injectable()
-export class QueryParamsFeatureFlagDataSource
-  implements TBFeatureFlagDataSource
-{
+export class FeatureFlagOverrideDataSource implements TBFeatureFlagDataSource {
   constructor(readonly queryParams: QueryParams) {}
 
   getFeatures(enableMediaQuery: boolean = false) {
@@ -50,21 +49,34 @@ export class QueryParamsFeatureFlagDataSource
     } as Partial<FeatureFlags>;
   }
 
-  storeFeatureFlag(flagKey: string, value: boolean) {
-    if (value) {
-      localStorage.setItem(flagKey, 'true');
-    } else {
-      localStorage.setItem(flagKey, 'false');
-    }
+  persistFeatureFlags(flags: Partial<FeatureFlags>) {
+    const currentState = this.getPersistentFeatureFlags();
+    const newState = {
+      ...currentState,
+      ...flags,
+    };
+    localStorage.setItem(FEATURE_FLAG_STORAGE_KEY, JSON.stringify(newState));
   }
 
-  getPersistentFeatureFlagState(flagKey: string): boolean | null {
-    const value = localStorage.getItem(flagKey);
-    if (!value) {
-      return null;
+  resetPersistentFeatureFlag<K extends keyof FeatureFlags>(featureFlag: K) {
+    const currentState = this.getPersistentFeatureFlags();
+    if (!currentState[featureFlag]) {
+      return;
+    }
+    delete currentState[featureFlag];
+    localStorage.setItem(
+      FEATURE_FLAG_STORAGE_KEY,
+      JSON.stringify(currentState)
+    );
+  }
+
+  getPersistentFeatureFlags(): Partial<FeatureFlags> {
+    const currentState = localStorage.getItem(FEATURE_FLAG_STORAGE_KEY);
+    if (currentState == null) {
+      return {};
     }
 
-    return value === 'true';
+    return JSON.parse(currentState) as Partial<FeatureFlags>;
   }
 
   protected getPartialFeaturesFromMediaQuery(): {
