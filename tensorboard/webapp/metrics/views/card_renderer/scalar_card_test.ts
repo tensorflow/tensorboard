@@ -96,6 +96,7 @@ import {ScalarCardComponent} from './scalar_card_component';
 import {ScalarCardContainer} from './scalar_card_container';
 import {ScalarCardFobController} from './scalar_card_fob_controller';
 import {
+  ColumnHeaders,
   ScalarCardPoint,
   ScalarCardSeriesMetadata,
   SeriesType,
@@ -1120,6 +1121,34 @@ describe('scalar card', () => {
         alias: null,
       },
     });
+  }));
+
+  it('adds smoothed column header when smoothed is enabled', fakeAsync(() => {
+    store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.1);
+
+    const fixture = createComponent('card1');
+    fixture.detectChanges();
+    const scalarCardComponent = fixture.debugElement.query(
+      By.directive(ScalarCardComponent)
+    );
+
+    expect(scalarCardComponent.componentInstance.dataHeaders).toContain(
+      ColumnHeaders.SMOOTHED
+    );
+  }));
+
+  it('does not add smoothed column header when smoothed is disabled', fakeAsync(() => {
+    store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+
+    const fixture = createComponent('card1');
+    fixture.detectChanges();
+    const scalarCardComponent = fixture.debugElement.query(
+      By.directive(ScalarCardComponent)
+    );
+
+    expect(scalarCardComponent.componentInstance.dataHeaders).not.toContain(
+      ColumnHeaders.SMOOTHED
+    );
   }));
 
   describe('tooltip', () => {
