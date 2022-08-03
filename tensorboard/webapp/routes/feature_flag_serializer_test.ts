@@ -15,6 +15,8 @@ limitations under the License.
 import {
   FeatureFlagMetadata,
   FeatureFlagMetadataMapType,
+  parseBoolean,
+  parseStringArray,
 } from '../feature_flag/store/feature_flag_metadata';
 import {
   featureFlagsToSerializableQueryParams,
@@ -24,6 +26,7 @@ import {
 
 const FEATURE_A_NAME = 'featureA';
 const FEATURE_B_NAME = 'featureB';
+const FEATURE_C_NAME = 'featureC';
 
 describe('feature flag serializer', () => {
   let featureFlagsMetadata: FeatureFlagMetadataMapType<any> = {};
@@ -35,10 +38,14 @@ describe('feature flag serializer', () => {
         parseValue: (s: string) => s,
       },
       [FEATURE_B_NAME]: {
-        defaultValue: 'feature_b_456',
+        defaultValue: ['feature_b_456'],
         queryParamOverride: 'feature_b',
-        isArray: true,
-        parseValue: (s: string) => s,
+        parseValue: parseStringArray,
+      },
+      [FEATURE_C_NAME]: {
+        defaultValue: true,
+        queryParamOverride: 'feature_c',
+        parseValue: parseBoolean,
       },
     };
   });
@@ -54,12 +61,12 @@ describe('feature flag serializer', () => {
 
     it('should not serialize feature flags with missing metadata', () => {
       let serializableQueryParams = featureFlagsToSerializableQueryParams(
-        {featureC: 'c'} as any,
+        {featureD: 'd'} as any,
         featureFlagsMetadata
       );
       expect(serializableQueryParams).toEqual([]);
       serializableQueryParams = featureFlagsToSerializableQueryParams(
-        {featureC: 'c', featureA: 'a'} as any,
+        {featureD: 'd', featureA: 'a'} as any,
         featureFlagsMetadata
       );
       expect(serializableQueryParams).toEqual([
@@ -72,22 +79,26 @@ describe('feature flag serializer', () => {
 
     it('should serialize feature flags with falsy values', () => {
       const serializableQueryParams = featureFlagsToSerializableQueryParams(
-        {featureB: false, featureA: ''} as any,
+        {featureB: [''], featureA: '', featureC: false} as any,
         featureFlagsMetadata
       );
       expect(serializableQueryParams).toEqual([
         {
           key: 'feature_b',
-          value: 'false',
+          value: '',
         },
         {
           key: 'feature_a',
           value: '',
         },
+        {
+          key: 'feature_c',
+          value: 'false',
+        },
       ]);
     });
 
-    it('should return multiple entries for features with array values', () => {
+    it('should return single entry for features with string[] type', () => {
       const serializableQueryParams = featureFlagsToSerializableQueryParams(
         {featureA: 'a', featureB: ['foo', 'bar']} as any,
         featureFlagsMetadata
@@ -99,11 +110,7 @@ describe('feature flag serializer', () => {
         },
         {
           key: 'feature_b',
-          value: 'foo',
-        },
-        {
-          key: 'feature_b',
-          value: 'bar',
+          value: 'foo,bar',
         },
       ]);
     });
@@ -129,7 +136,7 @@ describe('feature flag serializer', () => {
       expect(value).toBeNull();
     });
 
-    it('returns first value when feature flag is not an array', () => {
+    it('returns first value when multiple matching query params', () => {
       const value = getFeatureFlagValueFromSearchParams(
         featureFlagsMetadata[FEATURE_A_NAME],
         new URLSearchParams('?feature_a=foo&feature_a=bar')
@@ -137,10 +144,10 @@ describe('feature flag serializer', () => {
       expect(value).toEqual('foo');
     });
 
-    it('returns array of values when feature flag is an array', () => {
+    it('returns array of values when feature flag has array decoder', () => {
       const value = getFeatureFlagValueFromSearchParams(
         featureFlagsMetadata[FEATURE_B_NAME],
-        new URLSearchParams('?feature_b=foo&feature_b=bar')
+        new URLSearchParams('?feature_b=foo,bar')
       );
       expect(value).toEqual(['foo', 'bar']);
     });
@@ -166,11 +173,12 @@ describe('feature flag serializer', () => {
     it('parses flag values correctly', () => {
       const featureFlags = getOverriddenFeatureFlagValuesFromSearchParams(
         featureFlagsMetadata,
-        new URLSearchParams('?feature_a=foo&feature_b=bar')
+        new URLSearchParams('?feature_a=foo&feature_b=bar&feature_c=false')
       );
       expect(featureFlags).toEqual({
         featureA: 'foo',
         featureB: ['bar'],
+        featureC: false,
       } as any);
     });
   });

@@ -360,9 +360,7 @@ describe('core deeplink provider', () => {
       store.refreshState();
 
       expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'experimentalPlugin', value: 'foo'},
-        {key: 'experimentalPlugin', value: 'bar'},
-        {key: 'experimentalPlugin', value: 'baz'},
+        {key: 'experimentalPlugin', value: 'foo,bar,baz'},
       ]);
     });
 

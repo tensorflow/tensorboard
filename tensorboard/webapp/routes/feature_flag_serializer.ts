@@ -26,33 +26,31 @@ export function featureFlagsToSerializableQueryParams<T extends FeatureFlags>(
 ): SerializableQueryParams {
   return Object.entries(overriddenFeatureFlags)
     .map(([featureFlag, featureValue]) => {
-      const key =
-        featureFlagMetadataMap[featureFlag as keyof FeatureFlags]
-          ?.queryParamOverride;
-      if (!key || featureValue === undefined) {
-        return [];
+      const featureFlagMetadata: FeatureFlagMetadata<any> =
+        featureFlagMetadataMap[featureFlag as keyof FeatureFlags];
+      if (!featureFlagMetadata) {
+        // No metadata for this feature flag. Shouldn't happen but we must
+        // include the check for the compiler.
+        // Return empty item. Will be filtered out.
+        return {};
       }
-      /**
-       * Features with array values should be serialized as multiple query params, e.g.
-       * enabledExperimentalPlugins: {
-       *    queryParamOverride: 'experimentalPlugin',
-       *    values: ['foo', 'bar'],
-       *  }
-       *    Should be serialized to:
-       * ?experimentalPlugin=foo&experimentalPlugin=bar
-       *
-       * Because values can be arrays it is easiest to convert non array values to an
-       * array, then flatten the result.
-       */
-      const values = Array.isArray(featureValue)
-        ? featureValue
-        : [featureValue];
-      return values.map((value) => ({
+      const key = featureFlagMetadata.queryParamOverride;
+      if (!key || featureValue === undefined) {
+        // Feature flag has no query param or there was no overriden value
+        // specified.
+        // Return empty item. Will be filtered out.
+        return {};
+      }
+      return {
         key,
-        value: value?.toString(),
-      }));
+        // Note that all FeatureFlagType (string | number | boolean | string[])
+        // support toString() and toString() happens to output the format we
+        // want. Mostly notably, string[].toString() effectively does join(',').
+        // If this does hold when we add new types then consider adding support
+        // for custom encoders.
+        value: featureValue?.toString(),
+      };
     })
-    .flat()
     .filter(
       ({key, value}) => key && value !== undefined
     ) as SerializableQueryParams;
@@ -64,26 +62,16 @@ export function featureFlagsToSerializableQueryParams<T extends FeatureFlags>(
 export function getFeatureFlagValueFromSearchParams<T extends FeatureFlagType>(
   flagMetadata: FeatureFlagMetadata<T>,
   params: URLSearchParams
-): T | T[] | null {
+): T | null {
   const queryParamOverride = flagMetadata.queryParamOverride;
   if (!queryParamOverride || !params.has(queryParamOverride)) {
     return null;
   }
-  /**
-   * Array type feature flags are intended to be overridden multiple times
-   * i.e. ?experimentalPlugin=foo&experimentalPlugin=bar
-   * By using get params.getAll we can reuse the logic between array and non array types.
-   */
-  const paramValues: T[] = params.getAll(queryParamOverride).map((value) => {
-    return flagMetadata.parseValue(value) as T;
-  });
-  if (!paramValues.length) {
+  const paramValue = params.get(queryParamOverride);
+  if (paramValue == null) {
     return null;
   }
-
-  // There will always be an array of values but if the flag is not declared to be an array
-  // there SHOULD only be a single value which should then be returned.
-  return flagMetadata.isArray ? paramValues : paramValues[0];
+  return flagMetadata.parseValue(paramValue);
 }
 
 /**

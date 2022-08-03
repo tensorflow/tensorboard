@@ -14,15 +14,21 @@ limitations under the License.
 ==============================================================================*/
 import {FeatureFlags} from '../types';
 
-export type BaseFeatureFlagType = boolean | number | string | null | undefined;
-
-export type FeatureFlagType = BaseFeatureFlagType | Array<BaseFeatureFlagType>;
+export type FeatureFlagType =
+  | boolean
+  | number
+  | string
+  | string[]
+  | null
+  | undefined;
 
 export type FeatureFlagMetadata<T> = {
   defaultValue: T;
+  // The name of the query param users can use to override the feature flag
+  // value. If unspecified then users cannot override the feature flag value.
   queryParamOverride?: string;
-  parseValue: (str: string) => T extends (infer U)[] ? U : T; // The type, or, if the type is an array, the type of the array contents
-  isArray?: boolean;
+  // Function that translates a query param value into the feature flag value.
+  parseValue: (str: string) => T;
 };
 
 export type FeatureFlagMetadataMapType<T extends FeatureFlags> = {
@@ -38,6 +44,13 @@ export function parseBooleanOrNull(str: string): boolean | null {
     return null;
   }
   return parseBoolean(str);
+}
+
+export function parseStringArray(str: string): string[] {
+  if (!str) {
+    return [];
+  }
+  return str.split(',');
 }
 
 export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
@@ -60,8 +73,7 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
     enabledExperimentalPlugins: {
       defaultValue: [],
       queryParamOverride: 'experimentalPlugin',
-      parseValue: (str: string) => str,
-      isArray: true,
+      parseValue: parseStringArray,
     },
     enabledLinkedTime: {
       defaultValue: false,
