@@ -149,7 +149,7 @@ def reduce_to_2d(arr):
         raise ValueError("reduce_to_2d requires an array of dimensionality >=2")
     # slice(None) is equivalent to `:`, so we take arr[0,0,...0,:,:]
     slices = ([0] * (ndims - 2)) + [slice(None), slice(None)]
-    return arr[slices]
+    return arr[tuple(slices)]
 
 
 def text_array_to_html(text_arr, enable_markdown):
