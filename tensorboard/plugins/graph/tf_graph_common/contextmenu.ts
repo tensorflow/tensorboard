@@ -87,7 +87,7 @@ export function getMenu(sceneElement: TfGraphScene, menu: ContextMenuItem[]) {
       capture: true,
     });
     // Add provided items to the context menu.
-    menuSelection.html('');
+    menuSelection.text('');
     let list = menuSelection.append('ul');
     list
       .selectAll('li')
@@ -98,7 +98,7 @@ export function getMenu(sceneElement: TfGraphScene, menu: ContextMenuItem[]) {
         d.action(this, data, index);
         maybeCloseMenu();
       })
-      .html(function (d) {
+      .text(function (d) {
         return d.title(data);
       });
   };
