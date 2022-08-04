@@ -37,8 +37,8 @@ export const overrideEnableDarkModeChanged = createAction(
   }>()
 );
 
-export const FeatureFlagOverrideChanged = createAction(
-  '[FEATURE FLAG] Store the feature flag in persistant localStorage',
+export const featureFlagOverrideChanged = createAction(
+  '[FEATURE FLAG] Store the feature flags in persistent localStorage',
   props<{
     flags: Partial<FeatureFlags>;
   }>()
