@@ -48,6 +48,8 @@ export class DataTableComponent {
         return 'Time';
       case ColumnHeaders.RELATIVE_TIME:
         return 'Relative';
+      case ColumnHeaders.SMOOTHED:
+        return 'Smoothed';
       default:
         return '';
     }
@@ -87,6 +89,13 @@ export class DataTableComponent {
         }
         return relativeTimeFormatter.formatReadable(
           selectedStepRunData.RELATIVE_TIME as number
+        );
+      case ColumnHeaders.SMOOTHED:
+        if (selectedStepRunData.SMOOTHED === undefined) {
+          return '';
+        }
+        return numberFormatter.formatShort(
+          selectedStepRunData.SMOOTHED as number
         );
       default:
         return '';

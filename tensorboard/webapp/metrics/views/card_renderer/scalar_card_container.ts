@@ -81,6 +81,7 @@ import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {DataDownloadDialogContainer} from './data_download_dialog_container';
 import {
+  ColumnHeaders,
   MinMaxStep,
   PartialSeries,
   PartitionedSeries,
@@ -145,6 +146,7 @@ function areSeriesEqual(
       [stepSelectorTimeSelection]="stepSelectorTimeSelection$ | async"
       [forceSvg]="forceSvg$ | async"
       [minMaxStep]="minMaxSteps$ | async"
+      [dataHeaders]="columnHeaders$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
       observeIntersection
@@ -191,6 +193,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   linkedTimeSelection$?: Observable<TimeSelectionView | null>;
   stepSelectorTimeSelection$?: Observable<TimeSelection | null>;
   minMaxSteps$?: Observable<MinMaxStep>;
+  columnHeaders$?: Observable<ColumnHeaders[]>;
 
   onVisibilityChange({visible}: {visible: boolean}) {
     this.isVisible = visible;
@@ -350,6 +353,21 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
           }
         }
         return {minStep, maxStep};
+      })
+    );
+
+    this.columnHeaders$ = this.smoothingEnabled$.pipe(
+      map((smoothingEnabled) => {
+        const headers = [
+          ColumnHeaders.RUN,
+          ColumnHeaders.VALUE,
+          ColumnHeaders.STEP,
+          ColumnHeaders.RELATIVE_TIME,
+        ];
+        if (smoothingEnabled) {
+          headers.splice(1, 0, ColumnHeaders.SMOOTHED);
+        }
+        return headers;
       })
     );
 

@@ -92,6 +92,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() linkedTimeSelection!: TimeSelectionView | null;
   @Input() stepSelectorTimeSelection!: TimeSelection;
   @Input() minMaxStep!: MinMaxStep;
+  @Input() dataHeaders!: ColumnHeaders[];
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
@@ -116,12 +117,6 @@ export class ScalarCardComponent<Downloader> {
 
   yScaleType = ScaleType.LINEAR;
   isViewBoxOverridden: boolean = false;
-  dataHeaders: ColumnHeaders[] = [
-    ColumnHeaders.RUN,
-    ColumnHeaders.VALUE,
-    ColumnHeaders.STEP,
-    ColumnHeaders.RELATIVE_TIME,
-  ];
 
   toggleYScaleType() {
     this.yScaleType =
@@ -268,6 +263,9 @@ export class ScalarCardComponent<Downloader> {
             case ColumnHeaders.RELATIVE_TIME:
               selectedStepData.RELATIVE_TIME =
                 closestStartPoint.relativeTimeInMs;
+              continue;
+            case ColumnHeaders.SMOOTHED:
+              selectedStepData.SMOOTHED = closestStartPoint.y;
               continue;
             default:
               continue;

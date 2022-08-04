@@ -96,6 +96,7 @@ import {ScalarCardComponent} from './scalar_card_component';
 import {ScalarCardContainer} from './scalar_card_container';
 import {ScalarCardFobController} from './scalar_card_fob_controller';
 import {
+  ColumnHeaders,
   ScalarCardPoint,
   ScalarCardSeriesMetadata,
   SeriesType,
@@ -2650,6 +2651,62 @@ describe('scalar card', () => {
         scalarCardComponent.componentInstance.getTimeSelectionTableData();
       expect(data[0].RUN).toEqual('100 test alias 1/Run1 name');
       expect(data[1].RUN).toEqual('200 test alias 2/Run2 name');
+    }));
+
+    it('adds smoothed column header when smoothed is enabled', fakeAsync(() => {
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.8);
+
+      const runToSeries = {
+        run1: [
+          {wallTime: 1, value: 1, step: 10},
+          {wallTime: 2, value: 10, step: 20},
+          {wallTime: 3, value: 20, step: 35},
+        ],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([['run1', true]])
+      );
+      store.overrideSelector(getMetricsLinkedTimeSelection, {
+        start: {step: 20},
+        end: null,
+      });
+
+      const fixture = createComponent('card1');
+      fixture.detectChanges();
+      const scalarCardComponent = fixture.debugElement.query(
+        By.directive(ScalarCardComponent)
+      );
+
+      expect(scalarCardComponent.componentInstance.dataHeaders).toContain(
+        ColumnHeaders.SMOOTHED
+      );
+
+      expect(
+        scalarCardComponent.componentInstance.getTimeSelectionTableData()[0]
+          .SMOOTHED
+      ).toBe(6.000000000000001);
+    }));
+
+    it('does not add smoothed column header when smoothed is disabled', fakeAsync(() => {
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+
+      const fixture = createComponent('card1');
+      fixture.detectChanges();
+      const scalarCardComponent = fixture.debugElement.query(
+        By.directive(ScalarCardComponent)
+      );
+
+      expect(scalarCardComponent.componentInstance.dataHeaders).not.toContain(
+        ColumnHeaders.SMOOTHED
+      );
     }));
   });
 
