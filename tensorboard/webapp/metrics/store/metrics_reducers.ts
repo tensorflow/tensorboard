@@ -707,10 +707,12 @@ const reducer = createReducer(
     };
   }),
   on(actions.metricsResetCardWidth, (state) => {
-    const {cardMinWidth, ...nextOverride} = state.settingOverrides;
     return {
       ...state,
-      settingOverrides: nextOverride,
+      settingOverrides: {
+        ...state.settingOverrides,
+        cardMinWidth: null,
+      },
     };
   }),
   on(

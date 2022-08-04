@@ -1201,9 +1201,7 @@ describe('metrics reducers', () => {
       });
       const nextState = reducers(prevState, actions.metricsResetCardWidth());
       expect(nextState.settings.cardMinWidth).toBe(400);
-      expect(nextState.settingOverrides.hasOwnProperty('cardMinWidth')).toBe(
-        false
-      );
+      expect(nextState.settingOverrides.cardMinWidth).toBeNull();
     });
   });
 
