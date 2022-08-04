@@ -2692,7 +2692,7 @@ describe('scalar card', () => {
       expect(
         scalarCardComponent.componentInstance.getTimeSelectionTableData()[0]
           .SMOOTHED
-      ).toBe(scalarCardComponent.componentInstance.dataSeries[1].points[1].y);
+      ).toBe(6.000000000000001);
     }));
 
     it('does not add smoothed column header when smoothed is disabled', fakeAsync(() => {
