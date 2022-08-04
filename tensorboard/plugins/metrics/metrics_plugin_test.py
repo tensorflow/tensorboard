@@ -16,7 +16,7 @@
 
 
 import argparse
-import collections
+import collections.abc
 import os.path
 
 import tensorflow.compat.v1 as tf1
@@ -165,7 +165,7 @@ class MetricsPluginTest(tf.test.TestCase):
     def test_routes_provided(self):
         """Tests that the plugin offers the correct routes."""
         routes = self._plugin.get_plugin_apps()
-        self.assertIsInstance(routes["/tags"], collections.Callable)
+        self.assertIsInstance(routes["/tags"], collections.abc.Callable)
 
     def test_tags_empty(self):
         response = self._plugin._tags_impl(context.RequestContext(), "eid")
