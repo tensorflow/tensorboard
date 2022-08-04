@@ -60,10 +60,14 @@ export class FeatureFlagOverrideDataSource implements TBFeatureFlagDataSource {
 
   resetPersistentFeatureFlag<K extends keyof FeatureFlags>(featureFlag: K) {
     const currentState = this.getPersistentFeatureFlags();
-    if (!currentState[featureFlag]) {
+    if (currentState[featureFlag] == undefined) {
       return;
     }
     delete currentState[featureFlag];
+    if (Object.keys(currentState).length === 0) {
+      localStorage.removeItem(FEATURE_FLAG_STORAGE_KEY);
+      return;
+    }
     localStorage.setItem(
       FEATURE_FLAG_STORAGE_KEY,
       JSON.stringify(currentState)

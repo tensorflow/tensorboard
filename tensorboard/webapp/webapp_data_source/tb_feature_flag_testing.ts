@@ -23,10 +23,12 @@ export class TestingTBFeatureFlagDataSource extends TBFeatureFlagDataSource {
   getFeatures(): Partial<FeatureFlags> {
     return buildFeatureFlag();
   }
-  storeFeatureFlag(flagKey: string, value: boolean): void {}
+  persistFeatureFlags(flags: Partial<FeatureFlags>) {}
 
-  getPersistentFeatureFlagState(flagKey: string): boolean | null {
-    return null;
+  resetPersistentFeatureFlag<K extends keyof FeatureFlags>(featureFlag: K) {}
+
+  getPersistentFeatureFlags(): Partial<FeatureFlags> {
+    return {};
   }
 }
 

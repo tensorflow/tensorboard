@@ -15,22 +15,22 @@ limitations under the License.
 import {TestBed} from '@angular/core/testing';
 import {QueryParams} from './query_params';
 import {
-  QueryParamsFeatureFlagDataSource,
+  FeatureFlagOverrideDataSource,
   TEST_ONLY,
 } from './tb_feature_flag_data_source';
 
 describe('tb_feature_flag_data_source', () => {
-  describe('QueryParamsFeatureFlagDataSource', () => {
-    let dataSource: QueryParamsFeatureFlagDataSource;
+  describe('FeatureFlagOverrideDataSource', () => {
+    let dataSource: FeatureFlagOverrideDataSource;
     let matchMediaSpy: jasmine.Spy;
     let getParamsSpy: jasmine.Spy;
 
     beforeEach(async () => {
       await TestBed.configureTestingModule({
-        providers: [QueryParamsFeatureFlagDataSource, QueryParams],
+        providers: [FeatureFlagOverrideDataSource, QueryParams],
       }).compileComponents();
 
-      dataSource = TestBed.inject(QueryParamsFeatureFlagDataSource);
+      dataSource = TestBed.inject(FeatureFlagOverrideDataSource);
       matchMediaSpy = spyOn(window, 'matchMedia').and.returnValue({
         matches: false,
       } as MediaQueryList);
@@ -318,6 +318,173 @@ describe('tb_feature_flag_data_source', () => {
             fakeMediaQuery(false);
             expect(dataSource.getFeatures(true)).toEqual({});
           }
+        );
+      });
+    });
+
+    describe('persistFeatureFlags', () => {
+      it('calls getPersistentFeatureFlags and stores new flag', () => {
+        const getPersistentFeatureFlagsSpy = spyOn(
+          dataSource,
+          'getPersistentFeatureFlags'
+        ).and.callThrough();
+
+        spyOn(localStorage, 'getItem').and.returnValue(null);
+
+        const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
+
+        dataSource.persistFeatureFlags({enabledScalarDataTable: true});
+
+        expect(getPersistentFeatureFlagsSpy).toHaveBeenCalled();
+        expect(setItemSpy).toHaveBeenCalledOnceWith(
+          'tb_feature_flag_storage_key',
+          '{"enabledScalarDataTable":true}'
+        );
+      });
+
+      it('adds new flag when some flags already exist', () => {
+        const getPersistentFeatureFlagsSpy = spyOn(
+          dataSource,
+          'getPersistentFeatureFlags'
+        ).and.callThrough();
+
+        spyOn(localStorage, 'getItem').and.returnValue(
+          '{"enabledScalarDataTable":true}'
+        );
+
+        const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
+
+        dataSource.persistFeatureFlags({enableTimeSeriesPromotion: true});
+
+        expect(getPersistentFeatureFlagsSpy).toHaveBeenCalled();
+        expect(setItemSpy).toHaveBeenCalledOnceWith(
+          'tb_feature_flag_storage_key',
+          '{"enabledScalarDataTable":true,"enableTimeSeriesPromotion":true}'
+        );
+      });
+
+      it('Overrides flag if it is already persisted', () => {
+        const getPersistentFeatureFlagsSpy = spyOn(
+          dataSource,
+          'getPersistentFeatureFlags'
+        ).and.callThrough();
+
+        spyOn(localStorage, 'getItem').and.returnValue(
+          '{"enabledScalarDataTable":true,"enableTimeSeriesPromotion":true}'
+        );
+
+        const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
+
+        dataSource.persistFeatureFlags({enableTimeSeriesPromotion: false});
+
+        expect(getPersistentFeatureFlagsSpy).toHaveBeenCalled();
+        expect(setItemSpy).toHaveBeenCalledOnceWith(
+          'tb_feature_flag_storage_key',
+          '{"enabledScalarDataTable":true,"enableTimeSeriesPromotion":false}'
+        );
+      });
+    });
+
+    describe('getPersistentFeatureFlags', () => {
+      it('returns an empty object when localStorage returns null', () => {
+        const getItemSpy = spyOn(localStorage, 'getItem').and.returnValue(null);
+
+        expect(dataSource.getPersistentFeatureFlags()).toEqual({});
+        expect(getItemSpy).toHaveBeenCalledOnceWith(
+          'tb_feature_flag_storage_key'
+        );
+      });
+
+      it('returns a properly parsed object when getItem gives one', () => {
+        const getItemSpy = spyOn(localStorage, 'getItem').and.returnValue(
+          '{"enabledScalarDataTable":true,"enableTimeSeriesPromotion":false}'
+        );
+
+        expect(dataSource.getPersistentFeatureFlags()).toEqual({
+          enabledScalarDataTable: true,
+          enableTimeSeriesPromotion: false,
+        });
+        expect(getItemSpy).toHaveBeenCalledOnceWith(
+          'tb_feature_flag_storage_key'
+        );
+      });
+    });
+
+    describe('resetPersistentFeatureFlag', () => {
+      it('does nothing there is no flags are persisted', () => {
+        const getPersistentFeatureFlagsSpy = spyOn(
+          dataSource,
+          'getPersistentFeatureFlags'
+        ).and.callThrough();
+
+        spyOn(localStorage, 'getItem').and.returnValue(null);
+
+        const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
+
+        dataSource.resetPersistentFeatureFlag('enableTimeSeriesPromotion');
+
+        expect(getPersistentFeatureFlagsSpy).toHaveBeenCalled();
+        expect(setItemSpy).not.toHaveBeenCalled();
+      });
+
+      it('does nothing when featureFlag passed is not persisted', () => {
+        const getPersistentFeatureFlagsSpy = spyOn(
+          dataSource,
+          'getPersistentFeatureFlags'
+        ).and.callThrough();
+
+        spyOn(localStorage, 'getItem').and.returnValue(
+          '{"enabledScalarDataTable":true}'
+        );
+
+        const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
+
+        dataSource.resetPersistentFeatureFlag('enableTimeSeriesPromotion');
+
+        expect(getPersistentFeatureFlagsSpy).toHaveBeenCalled();
+        expect(setItemSpy).not.toHaveBeenCalled();
+      });
+
+      it('stores a new object with given flag removed', () => {
+        const getPersistentFeatureFlagsSpy = spyOn(
+          dataSource,
+          'getPersistentFeatureFlags'
+        ).and.callThrough();
+
+        spyOn(localStorage, 'getItem').and.returnValue(
+          '{"enabledScalarDataTable":true,"enableTimeSeriesPromotion":false}'
+        );
+
+        const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
+
+        dataSource.resetPersistentFeatureFlag('enableTimeSeriesPromotion');
+
+        expect(getPersistentFeatureFlagsSpy).toHaveBeenCalled();
+        expect(setItemSpy).toHaveBeenCalledOnceWith(
+          'tb_feature_flag_storage_key',
+          '{"enabledScalarDataTable":true}'
+        );
+      });
+
+      it('removes item when reseting the only flag', () => {
+        const getPersistentFeatureFlagsSpy = spyOn(
+          dataSource,
+          'getPersistentFeatureFlags'
+        ).and.callThrough();
+
+        spyOn(localStorage, 'getItem').and.returnValue(
+          '{"enabledScalarDataTable":true}'
+        );
+
+        const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
+        const removeItemSpy = spyOn(localStorage, 'removeItem').and.stub();
+
+        dataSource.resetPersistentFeatureFlag('enabledScalarDataTable');
+
+        expect(getPersistentFeatureFlagsSpy).toHaveBeenCalled();
+        expect(setItemSpy).not.toHaveBeenCalled();
+        expect(removeItemSpy).toHaveBeenCalledOnceWith(
+          'tb_feature_flag_storage_key'
         );
       });
     });
