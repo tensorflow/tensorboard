@@ -83,6 +83,7 @@ export enum ColumnHeaders {
   STEP = 'STEP',
   TIME = 'TIME',
   VALUE = 'VALUE',
+  SMOOTHED = 'SMOOTHED',
 }
 
 /**
