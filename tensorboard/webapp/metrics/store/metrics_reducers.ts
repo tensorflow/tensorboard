@@ -712,7 +712,7 @@ const reducer = createReducer(
       settingOverrides: {
         ...state.settingOverrides,
         cardMinWidth: null,
-      }
+      },
     };
   }),
   on(
