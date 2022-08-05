@@ -50,6 +50,8 @@ export class DataTableComponent {
         return 'Relative';
       case ColumnHeaders.SMOOTHED:
         return 'Smoothed';
+      case ColumnHeaders.VALUE_CHANGE:
+        return 'value delta';
       default:
         return '';
     }
@@ -96,6 +98,13 @@ export class DataTableComponent {
         }
         return numberFormatter.formatShort(
           selectedStepRunData.SMOOTHED as number
+        );
+      case ColumnHeaders.VALUE_CHANGE:
+        if (selectedStepRunData.VALUE_CHANGE === undefined) {
+          return '';
+        }
+        return numberFormatter.formatShort(
+          selectedStepRunData.VALUE_CHANGE as number
         );
       default:
         return '';

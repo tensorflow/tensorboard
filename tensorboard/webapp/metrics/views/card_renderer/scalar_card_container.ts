@@ -356,20 +356,20 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       })
     );
 
-    this.columnHeaders$ = this.smoothingEnabled$.pipe(
-      map((smoothingEnabled) => {
-        const headers = [
-          ColumnHeaders.RUN,
-          ColumnHeaders.VALUE,
-          ColumnHeaders.STEP,
-          ColumnHeaders.RELATIVE_TIME,
-        ];
-        if (smoothingEnabled) {
-          headers.splice(1, 0, ColumnHeaders.SMOOTHED);
-        }
-        return headers;
-      })
-    );
+    // this.smoothingEnabled$.pipe(
+    //   map((smoothingEnabled) => {
+    //     const headers = [
+    //       ColumnHeaders.RUN,
+    //       ColumnHeaders.VALUE,
+    //       ColumnHeaders.STEP,
+    //       ColumnHeaders.RELATIVE_TIME,
+    //     ];
+    //     if (smoothingEnabled) {
+    //       headers.splice(1, 0, ColumnHeaders.SMOOTHED);
+    //     }
+    //     return headers;
+    //   })
+    // );
 
     this.dataSeries$ = partitionedSeries$.pipe(
       // Smooth
@@ -424,6 +424,25 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
           return maybeClipLinkedTimeSelection(timeSelection, minStep, maxStep);
         }
       )
+    );
+
+    this.columnHeaders$ = combineLatest([
+      this.smoothingEnabled$,
+      this.linkedTimeSelection$,
+    ]).pipe(
+      map(([smoothingEnabled, timeSelection]) => {
+        const headers = [ColumnHeaders.RUN, ColumnHeaders.STEP];
+        if (timeSelection === null || timeSelection.endStep === null) {
+          headers.splice(1, 0, ColumnHeaders.VALUE);
+          headers.push(ColumnHeaders.RELATIVE_TIME);
+          if (smoothingEnabled) {
+            headers.splice(1, 0, ColumnHeaders.SMOOTHED);
+          }
+        } else {
+          headers.push(ColumnHeaders.VALUE_CHANGE);
+        }
+        return headers;
+      })
     );
 
     this.chartMetadataMap$ = partitionedSeries$.pipe(

@@ -48,6 +48,7 @@ import {
   ColumnHeaders,
   MinMaxStep,
   ScalarCardDataSeries,
+  ScalarCardPoint,
   ScalarCardSeriesMetadata,
   ScalarCardSeriesMetadataMap,
   SelectedStepRunData,
@@ -225,6 +226,7 @@ export class ScalarCardComponent<Downloader> {
   }
 
   getTimeSelectionTableData(): SelectedStepRunData[] {
+    console.log('this.dataHeaders', this.dataHeaders);
     if (
       this.linkedTimeSelection === null &&
       this.stepSelectorTimeSelection === null
@@ -234,6 +236,9 @@ export class ScalarCardComponent<Downloader> {
     const startStep = this.linkedTimeSelection
       ? this.linkedTimeSelection.startStep
       : this.stepSelectorTimeSelection.start.step;
+    const endStep = this.linkedTimeSelection
+      ? this.linkedTimeSelection.endStep
+      : this.stepSelectorTimeSelection.end?.step;
     const dataTableData: SelectedStepRunData[] = this.dataSeries
       .filter((datum) => {
         const metadata = this.chartMetadataMap[datum.id];
@@ -243,6 +248,11 @@ export class ScalarCardComponent<Downloader> {
         const metadata = this.chartMetadataMap[datum.id];
         const closestStartPoint =
           datum.points[findClosestIndex(datum.points, startStep)];
+        let closestEndPoint: ScalarCardPoint | null = null;
+        if (endStep !== null && endStep !== undefined) {
+          closestEndPoint =
+            datum.points[findClosestIndex(datum.points, endStep)];
+        }
         const selectedStepData: SelectedStepRunData = {};
         selectedStepData.COLOR = metadata.color;
         for (const header of this.dataHeaders) {
@@ -266,6 +276,13 @@ export class ScalarCardComponent<Downloader> {
               continue;
             case ColumnHeaders.SMOOTHED:
               selectedStepData.SMOOTHED = closestStartPoint.y;
+              continue;
+            case ColumnHeaders.VALUE_CHANGE:
+              if (!closestEndPoint) {
+                continue;
+              }
+              selectedStepData.VALUE_CHANGE =
+                closestEndPoint!.value - closestStartPoint.value;
               continue;
             default:
               continue;
