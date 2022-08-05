@@ -239,6 +239,7 @@ limitations under the License.
             [checked]="item.selected"
             (change)="onSelectionToggle.emit(item)"
             (dblclick)="onSelectionDblClick.emit(item)"
+            title="Click to toggle run selection or double click to select only this run."
           ></mat-checkbox>
         </span>
         <tb-experiment-alias
