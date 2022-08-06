@@ -38,13 +38,13 @@ export abstract class TBFeatureFlagDataSource {
   abstract persistFeatureFlags(flags: Partial<FeatureFlags>): void;
 
   /**
-   * Removes the local storage override of the given flag. If the flag is not
+   * Removes the localStorage override of the given flag. If the flag is not
    * overriden no changes should occur.
    *
    * @param featureFlag The featureFlag to be reset. It must be a key in the
    * FeatureFlags object.
    */
-  abstract resetPersistentFeatureFlag<K extends keyof FeatureFlags>(
+  abstract resetPersistedFeatureFlag<K extends keyof FeatureFlags>(
     featureFlag: K
   ): void;
 

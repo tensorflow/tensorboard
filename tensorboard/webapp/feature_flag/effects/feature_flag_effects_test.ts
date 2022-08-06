@@ -22,7 +22,10 @@ import {
   TBFeatureFlagTestingModule,
   TestingTBFeatureFlagDataSource,
 } from '../../webapp_data_source/tb_feature_flag_testing';
-import {partialFeatureFlagsLoaded} from '../actions/feature_flag_actions';
+import {
+  featureFlagOverrideChanged,
+  partialFeatureFlagsLoaded,
+} from '../actions/feature_flag_actions';
 import {ForceSvgDataSource} from '../force_svg_data_source';
 import {ForceSvgDataSourceModule} from '../force_svg_data_source_module';
 import {
@@ -175,6 +178,26 @@ describe('feature_flag_effects', () => {
       expect(setPolymerFeatureFlagsSpy).toHaveBeenCalledOnceWith(
         buildFeatureFlag({inColab: true})
       );
+    });
+  });
+
+  describe('storeFeatureFlag', () => {
+    it('calls persistFeatureFlags', () => {
+      const persistFlagSpy = spyOn(
+        dataSource,
+        'persistFeatureFlags'
+      ).and.stub();
+      effects.storeFeatureFlag$.subscribe();
+
+      actions.next(
+        featureFlagOverrideChanged({
+          flags: {enabledScalarDataTable: true},
+        })
+      );
+
+      expect(persistFlagSpy).toHaveBeenCalledOnceWith({
+        enabledScalarDataTable: true,
+      });
     });
   });
 });

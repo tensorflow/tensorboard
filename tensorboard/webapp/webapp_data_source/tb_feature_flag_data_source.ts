@@ -25,9 +25,6 @@ import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
 const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 const FEATURE_FLAG_STORAGE_KEY = 'tb_feature_flag_storage_key';
 
-// TODO(tensorboard-team): QueryParamsFeatureFlagDataSource now is a misnomer as
-// it also sources the data from media query as well as the query parameter.
-// Decide how to move forward with more sources of the data + composability.
 @Injectable()
 export class FeatureFlagOverrideDataSource implements TBFeatureFlagDataSource {
   constructor(readonly queryParams: QueryParams) {}
@@ -58,12 +55,15 @@ export class FeatureFlagOverrideDataSource implements TBFeatureFlagDataSource {
     localStorage.setItem(FEATURE_FLAG_STORAGE_KEY, JSON.stringify(newState));
   }
 
-  resetPersistentFeatureFlag<K extends keyof FeatureFlags>(featureFlag: K) {
+  resetPersistedFeatureFlag<K extends keyof FeatureFlags>(featureFlag: K) {
     const currentState = this.getPersistentFeatureFlags();
     if (currentState[featureFlag] == undefined) {
       return;
     }
     delete currentState[featureFlag];
+
+    // Remove the entire key-value from localStorage when there are no more
+    // overrides.
     if (Object.keys(currentState).length === 0) {
       localStorage.removeItem(FEATURE_FLAG_STORAGE_KEY);
       return;
@@ -100,5 +100,8 @@ export class FeatureFlagOverrideDataSource implements TBFeatureFlagDataSource {
     return featureFlags;
   }
 }
+
+// Temporary naming for internal code.
+export const QueryParamsFeatureFlagDataSource = FeatureFlagOverrideDataSource;
 
 export const TEST_ONLY = {DARK_MODE_MEDIA_QUERY};

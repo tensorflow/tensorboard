@@ -323,19 +323,12 @@ describe('tb_feature_flag_data_source', () => {
     });
 
     describe('persistFeatureFlags', () => {
-      it('calls getPersistentFeatureFlags and stores new flag', () => {
-        const getPersistentFeatureFlagsSpy = spyOn(
-          dataSource,
-          'getPersistentFeatureFlags'
-        ).and.callThrough();
-
+      it('setsflag values', () => {
         spyOn(localStorage, 'getItem').and.returnValue(null);
-
         const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
 
         dataSource.persistFeatureFlags({enabledScalarDataTable: true});
 
-        expect(getPersistentFeatureFlagsSpy).toHaveBeenCalled();
         expect(setItemSpy).toHaveBeenCalledOnceWith(
           'tb_feature_flag_storage_key',
           '{"enabledScalarDataTable":true}'
@@ -343,11 +336,6 @@ describe('tb_feature_flag_data_source', () => {
       });
 
       it('adds new flag when some flags already exist', () => {
-        const getPersistentFeatureFlagsSpy = spyOn(
-          dataSource,
-          'getPersistentFeatureFlags'
-        ).and.callThrough();
-
         spyOn(localStorage, 'getItem').and.returnValue(
           '{"enabledScalarDataTable":true}'
         );
@@ -356,7 +344,6 @@ describe('tb_feature_flag_data_source', () => {
 
         dataSource.persistFeatureFlags({enableTimeSeriesPromotion: true});
 
-        expect(getPersistentFeatureFlagsSpy).toHaveBeenCalled();
         expect(setItemSpy).toHaveBeenCalledOnceWith(
           'tb_feature_flag_storage_key',
           '{"enabledScalarDataTable":true,"enableTimeSeriesPromotion":true}'
@@ -364,20 +351,28 @@ describe('tb_feature_flag_data_source', () => {
       });
 
       it('Overrides flag if it is already persisted', () => {
-        const getPersistentFeatureFlagsSpy = spyOn(
-          dataSource,
-          'getPersistentFeatureFlags'
-        ).and.callThrough();
-
         spyOn(localStorage, 'getItem').and.returnValue(
           '{"enabledScalarDataTable":true,"enableTimeSeriesPromotion":true}'
         );
-
         const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
 
         dataSource.persistFeatureFlags({enableTimeSeriesPromotion: false});
 
-        expect(getPersistentFeatureFlagsSpy).toHaveBeenCalled();
+        expect(setItemSpy).toHaveBeenCalledOnceWith(
+          'tb_feature_flag_storage_key',
+          '{"enabledScalarDataTable":true,"enableTimeSeriesPromotion":false}'
+        );
+      });
+
+      it('sets multiple flags when passed', () => {
+        spyOn(localStorage, 'getItem').and.returnValue(null);
+        const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
+
+        dataSource.persistFeatureFlags({
+          enabledScalarDataTable: true,
+          enableTimeSeriesPromotion: false,
+        });
+
         expect(setItemSpy).toHaveBeenCalledOnceWith(
           'tb_feature_flag_storage_key',
           '{"enabledScalarDataTable":true,"enableTimeSeriesPromotion":false}'
@@ -410,56 +405,35 @@ describe('tb_feature_flag_data_source', () => {
       });
     });
 
-    describe('resetPersistentFeatureFlag', () => {
-      it('does nothing there is no flags are persisted', () => {
-        const getPersistentFeatureFlagsSpy = spyOn(
-          dataSource,
-          'getPersistentFeatureFlags'
-        ).and.callThrough();
-
+    describe('resetPersistedFeatureFlag', () => {
+      it('does nothing if there is no flags are persisted', () => {
         spyOn(localStorage, 'getItem').and.returnValue(null);
-
         const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
 
-        dataSource.resetPersistentFeatureFlag('enableTimeSeriesPromotion');
+        dataSource.resetPersistedFeatureFlag('enableTimeSeriesPromotion');
 
-        expect(getPersistentFeatureFlagsSpy).toHaveBeenCalled();
         expect(setItemSpy).not.toHaveBeenCalled();
       });
 
       it('does nothing when featureFlag passed is not persisted', () => {
-        const getPersistentFeatureFlagsSpy = spyOn(
-          dataSource,
-          'getPersistentFeatureFlags'
-        ).and.callThrough();
-
         spyOn(localStorage, 'getItem').and.returnValue(
           '{"enabledScalarDataTable":true}'
         );
-
         const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
 
-        dataSource.resetPersistentFeatureFlag('enableTimeSeriesPromotion');
+        dataSource.resetPersistedFeatureFlag('enableTimeSeriesPromotion');
 
-        expect(getPersistentFeatureFlagsSpy).toHaveBeenCalled();
         expect(setItemSpy).not.toHaveBeenCalled();
       });
 
       it('stores a new object with given flag removed', () => {
-        const getPersistentFeatureFlagsSpy = spyOn(
-          dataSource,
-          'getPersistentFeatureFlags'
-        ).and.callThrough();
-
         spyOn(localStorage, 'getItem').and.returnValue(
           '{"enabledScalarDataTable":true,"enableTimeSeriesPromotion":false}'
         );
-
         const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
 
-        dataSource.resetPersistentFeatureFlag('enableTimeSeriesPromotion');
+        dataSource.resetPersistedFeatureFlag('enableTimeSeriesPromotion');
 
-        expect(getPersistentFeatureFlagsSpy).toHaveBeenCalled();
         expect(setItemSpy).toHaveBeenCalledOnceWith(
           'tb_feature_flag_storage_key',
           '{"enabledScalarDataTable":true}'
@@ -467,21 +441,14 @@ describe('tb_feature_flag_data_source', () => {
       });
 
       it('removes item when reseting the only flag', () => {
-        const getPersistentFeatureFlagsSpy = spyOn(
-          dataSource,
-          'getPersistentFeatureFlags'
-        ).and.callThrough();
-
         spyOn(localStorage, 'getItem').and.returnValue(
           '{"enabledScalarDataTable":true}'
         );
-
         const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
         const removeItemSpy = spyOn(localStorage, 'removeItem').and.stub();
 
-        dataSource.resetPersistentFeatureFlag('enabledScalarDataTable');
+        dataSource.resetPersistedFeatureFlag('enabledScalarDataTable');
 
-        expect(getPersistentFeatureFlagsSpy).toHaveBeenCalled();
         expect(setItemSpy).not.toHaveBeenCalled();
         expect(removeItemSpy).toHaveBeenCalledOnceWith(
           'tb_feature_flag_storage_key'
