@@ -226,7 +226,6 @@ export class ScalarCardComponent<Downloader> {
   }
 
   getTimeSelectionTableData(): SelectedStepRunData[] {
-    console.log('this.dataHeaders', this.dataHeaders);
     if (
       this.linkedTimeSelection === null &&
       this.stepSelectorTimeSelection === null

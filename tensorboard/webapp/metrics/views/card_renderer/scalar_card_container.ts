@@ -356,21 +356,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       })
     );
 
-    // this.smoothingEnabled$.pipe(
-    //   map((smoothingEnabled) => {
-    //     const headers = [
-    //       ColumnHeaders.RUN,
-    //       ColumnHeaders.VALUE,
-    //       ColumnHeaders.STEP,
-    //       ColumnHeaders.RELATIVE_TIME,
-    //     ];
-    //     if (smoothingEnabled) {
-    //       headers.splice(1, 0, ColumnHeaders.SMOOTHED);
-    //     }
-    //     return headers;
-    //   })
-    // );
-
     this.dataSeries$ = partitionedSeries$.pipe(
       // Smooth
       combineLatestWith(this.store.select(getMetricsScalarSmoothing)),
