@@ -54,6 +54,12 @@ pub mod tensor_shape_proto {
         pub name: ::prost::alloc::string::String,
     }
 }
+/// Represents a serialized tf.dtypes.Dtype
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct SerializedDType {
+    #[prost(enumeration="DataType", tag="1")]
+    pub datatype: i32,
+}
 /// (== suppress_warning documentation-presence ==)
 /// DISABLED.IfChange
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
