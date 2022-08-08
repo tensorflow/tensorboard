@@ -51,7 +51,7 @@ export class DataTableComponent {
       case ColumnHeaders.SMOOTHED:
         return 'Smoothed';
       case ColumnHeaders.VALUE_CHANGE:
-        return 'value delta';
+        return 'Value Change';
       default:
         return '';
     }
@@ -104,7 +104,7 @@ export class DataTableComponent {
           return '';
         }
         return numberFormatter.formatShort(
-          selectedStepRunData.VALUE_CHANGE as number
+          Math.abs(selectedStepRunData.VALUE_CHANGE as number)
         );
       default:
         return '';
