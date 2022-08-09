@@ -36,6 +36,7 @@ tf_ts_library(
     deps = [
         ":data_table",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",

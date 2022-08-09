@@ -15,6 +15,7 @@ limitations under the License.
 
 import {Component, Input, ViewChild} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {MatIconModule} from '@angular/material/icon';
 import {By} from '@angular/platform-browser';
 import {
   ColumnHeaders,
@@ -40,6 +41,7 @@ describe('data table', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [TestableComponent, DataTableComponent],
+      imports: [MatIconModule],
     }).compileComponents();
   });
 
@@ -69,6 +71,7 @@ describe('data table', () => {
         ColumnHeaders.RUN,
         ColumnHeaders.STEP,
         ColumnHeaders.RELATIVE_TIME,
+        ColumnHeaders.VALUE_CHANGE,
       ],
     });
     fixture.detectChanges();
@@ -80,6 +83,7 @@ describe('data table', () => {
     expect(headerElements[2].nativeElement.innerText).toBe('Run');
     expect(headerElements[3].nativeElement.innerText).toBe('Step');
     expect(headerElements[4].nativeElement.innerText).toBe('Relative');
+    expect(headerElements[5].nativeElement.innerText).toBe('Value Change');
   });
 
   it('displays data in order', () => {
@@ -89,8 +93,17 @@ describe('data table', () => {
         ColumnHeaders.RUN,
         ColumnHeaders.STEP,
         ColumnHeaders.RELATIVE_TIME,
+        ColumnHeaders.VALUE_CHANGE,
       ],
-      data: [{RUN: 'run name', VALUE: 3, STEP: 1, RELATIVE_TIME: 123}],
+      data: [
+        {
+          RUN: 'run name',
+          VALUE: 3,
+          STEP: 1,
+          RELATIVE_TIME: 123,
+          VALUE_CHANGE: 20,
+        },
+      ],
     });
     fixture.detectChanges();
     const dataElements = fixture.debugElement.queryAll(By.css('td'));
@@ -101,6 +114,7 @@ describe('data table', () => {
     expect(dataElements[2].nativeElement.innerText).toBe('run name');
     expect(dataElements[3].nativeElement.innerText).toBe('1');
     expect(dataElements[4].nativeElement.innerText).toBe('123 ms');
+    expect(dataElements[5].nativeElement.innerText).toBe(' 20'); // space before the value is kept for down or up arrow
   });
 
   it('displays nothing when no data is available', () => {
