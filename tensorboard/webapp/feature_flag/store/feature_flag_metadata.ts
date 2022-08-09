@@ -22,14 +22,22 @@ export type FeatureFlagType =
   | null
   | undefined;
 
-export type FeatureFlagMetadata<T> = {
-  defaultValue: T;
-  // The name of the query param users can use to override the feature flag
-  // value. If unspecified then users cannot override the feature flag value.
-  queryParamOverride?: string;
-  // Function that translates a query param value into the feature flag value.
-  parseValue: (str: string) => T;
-};
+export type FeatureFlagMetadata<T> =
+  | {
+      defaultValue: T;
+      // Some feature flags cannot be overridden by query params in the URL. They
+      // should specify null here.
+      queryParamOverride: null;
+    }
+  | {
+      defaultValue: T;
+      // Some feature flags can be overridden by query params in the URL. They
+      // should specify the name of the query param here.
+      queryParamOverride: string;
+      // Additionally they should specify a way to parse the query param string
+      // values into the feature flag value.
+      parseValue: (str: string) => T;
+    };
 
 export type FeatureFlagMetadataMapType<T extends FeatureFlags> = {
   [FlagName in keyof T]: FeatureFlagMetadata<T[FlagName]>;
@@ -37,13 +45,6 @@ export type FeatureFlagMetadataMapType<T extends FeatureFlags> = {
 
 export function parseBoolean(str: string): boolean {
   return str !== 'false';
-}
-
-export function parseBooleanOrNull(str: string): boolean | null {
-  if (str === 'null') {
-    return null;
-  }
-  return parseBoolean(str);
 }
 
 export function parseStringArray(str: string): string[] {
@@ -97,7 +98,7 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
     },
     enableDarkModeOverride: {
       defaultValue: null,
-      parseValue: parseBooleanOrNull,
+      queryParamOverride: null,
     },
     defaultEnableDarkMode: {
       defaultValue: false,
@@ -106,7 +107,7 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
     },
     isAutoDarkModeAllowed: {
       defaultValue: true,
-      parseValue: parseBoolean,
+      queryParamOverride: null,
     },
     inColab: {
       defaultValue: false,
@@ -115,11 +116,11 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
     },
     metricsImageSupportEnabled: {
       defaultValue: true,
-      parseValue: parseBoolean,
+      queryParamOverride: null,
     },
     enableTimeSeriesPromotion: {
       defaultValue: false,
-      parseValue: parseBoolean,
+      queryParamOverride: null,
     },
   };
 

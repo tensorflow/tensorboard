@@ -26,23 +26,22 @@ export function featureFlagsToSerializableQueryParams<T extends FeatureFlags>(
 ): SerializableQueryParams {
   return Object.entries(overriddenFeatureFlags)
     .map(([featureFlag, featureValue]) => {
+      if (featureValue === undefined) {
+        // Feature flag has no overriden value specified.
+        // Return empty item. Will be filtered out.
+        return {};
+      }
       const featureFlagMetadata: FeatureFlagMetadata<any> =
         featureFlagMetadataMap[featureFlag as keyof FeatureFlags];
-      if (!featureFlagMetadata) {
-        // No metadata for this feature flag. Shouldn't happen but we must
-        // include the check for the compiler.
+      if (!featureFlagMetadata || !featureFlagMetadata.queryParamOverride) {
+        // No metadata for this feature flag or no query param support specified
+        // by the metadata.
         // Return empty item. Will be filtered out.
         return {};
       }
-      const key = featureFlagMetadata.queryParamOverride;
-      if (!key || featureValue === undefined) {
-        // Feature flag has no query param or there was no overriden value
-        // specified.
-        // Return empty item. Will be filtered out.
-        return {};
-      }
+
       return {
-        key,
+        key: featureFlagMetadata.queryParamOverride,
         // Note that all FeatureFlagType (string | number | boolean | string[])
         // support toString() and toString() happens to output the format we
         // want. Mostly notably, string[].toString() effectively does join(',').
