@@ -102,6 +102,6 @@ export class FeatureFlagOverrideDataSource implements TBFeatureFlagDataSource {
 }
 
 // Temporary naming for internal code.
-export const QueryParamsFeatureFlagDataSource = FeatureFlagOverrideDataSource;
+export {FeatureFlagOverrideDataSource as QueryParamsFeatureFlagDataSource};
 
 export const TEST_ONLY = {DARK_MODE_MEDIA_QUERY};
