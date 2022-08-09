@@ -13,7 +13,6 @@ The 2.10 minor series tracks TensorFlow 2.10.
 - Fix "Card Width" property reset button (#5841)
 - Numerous fixes for dependencies and unit tests
 
-
 # Release 2.9.1
 
 ## Bug fixes
