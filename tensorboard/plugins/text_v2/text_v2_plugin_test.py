@@ -132,7 +132,7 @@ class TextPluginTest(tf.test.TestCase):
 
             Example: rangeArray(2) results in [[0,1],[2,3]].
             """
-            return np.array(range(2 ** dim)).reshape([2] * dim)
+            return np.array(range(2**dim)).reshape([2] * dim)
 
         for i in range(2, 5):
             actual = text_v2_plugin.reduce_to_2d(make_range_array(i))

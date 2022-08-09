@@ -92,7 +92,7 @@ class SummaryBaseTest(object):
         self.assertEqual(buckets[:, 0].min(), self.gaussian.min())
         # Assert near, not equal, since TF's linspace op introduces floating point
         # error in the upper bound of the result.
-        self.assertNear(buckets[:, 1].max(), self.gaussian.max(), 1.0 ** -10)
+        self.assertNear(buckets[:, 1].max(), self.gaussian.max(), 1.0**-10)
         self.assertEqual(buckets[:, 2].sum(), self.gaussian.size)
         np.testing.assert_allclose(buckets[1:, 0], buckets[:-1, 1])
 

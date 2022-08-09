@@ -557,22 +557,19 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
                 continue
             output[run] = dict()
             for tag in run_tag_filter.tags:
-                if (
-                    tag.startswith(
-                        (
-                            ALERTS_BLOB_TAG_PREFIX,
-                            EXECUTION_DIGESTS_BLOB_TAG_PREFIX,
-                            EXECUTION_DATA_BLOB_TAG_PREFIX,
-                            GRAPH_EXECUTION_DIGESTS_BLOB_TAG_PREFIX,
-                            GRAPH_EXECUTION_DATA_BLOB_TAG_PREFIX,
-                            GRAPH_INFO_BLOB_TAG_PREFIX,
-                            GRAPH_OP_INFO_BLOB_TAG_PREFIX,
-                            SOURCE_FILE_BLOB_TAG_PREFIX,
-                            STACK_FRAMES_BLOB_TAG_PREFIX,
-                        )
+                if tag.startswith(
+                    (
+                        ALERTS_BLOB_TAG_PREFIX,
+                        EXECUTION_DIGESTS_BLOB_TAG_PREFIX,
+                        EXECUTION_DATA_BLOB_TAG_PREFIX,
+                        GRAPH_EXECUTION_DIGESTS_BLOB_TAG_PREFIX,
+                        GRAPH_EXECUTION_DATA_BLOB_TAG_PREFIX,
+                        GRAPH_INFO_BLOB_TAG_PREFIX,
+                        GRAPH_OP_INFO_BLOB_TAG_PREFIX,
+                        SOURCE_FILE_BLOB_TAG_PREFIX,
+                        STACK_FRAMES_BLOB_TAG_PREFIX,
                     )
-                    or tag in (SOURCE_FILE_LIST_BLOB_TAG,)
-                ):
+                ) or tag in (SOURCE_FILE_LIST_BLOB_TAG,):
                     output[run][tag] = [
                         provider.BlobReference(blob_key="%s.%s" % (tag, run))
                     ]
