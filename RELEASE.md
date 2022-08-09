@@ -1,3 +1,19 @@
+# Release 2.10.0 
+
+The 2.10 minor series tracks TensorFlow 2.10.
+
+## Features
+- Time Series is now the default dashboard when you log scalar, histogram, or image events (#5698). If you have feedback or find any bugs you can leave a comment [here](https://github.com/tensorflow/tensorboard/issues/5704) (#5704) or create a new issue
+- Time Series now supports selecting a single run using double click (#5831, #5842)
+
+## Bug Fixes
+- Stop removing experiment related query parameters (#5717, #5834)
+- Fix the histogram x-axis tick format (#5818)
+- Keep pinned cards when refreshing UI (#5837)
+- Fix "Card Width" property reset button (#5841)
+- Numerous fixes for dependencies and unit tests
+
+
 # Release 2.9.1
 
 ## Bug fixes
