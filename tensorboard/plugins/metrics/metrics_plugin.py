@@ -292,7 +292,11 @@ class MetricsPlugin(base_plugin.TBPlugin):
         }
 
     def data_plugin_names(self):
-        return (scalar_metadata.PLUGIN_NAME, histogram_metadata.PLUGIN_NAME)
+        return (
+            scalar_metadata.PLUGIN_NAME,
+            histogram_metadata.PLUGIN_NAME,
+            image_metadata.PLUGIN_NAME,
+        )
 
     def is_active(self):
         return False  # 'data_plugin_names' suffices.
