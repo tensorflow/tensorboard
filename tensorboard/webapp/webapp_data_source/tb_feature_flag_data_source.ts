@@ -23,14 +23,10 @@ import {QueryParams} from './query_params';
 import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
 
 const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
+const FEATURE_FLAG_STORAGE_KEY = 'tb_feature_flag_storage_key';
 
-// TODO(tensorboard-team): QueryParamsFeatureFlagDataSource now is a misnomer as
-// it also sources the data from media query as well as the query parameter.
-// Decide how to move forward with more sources of the data + composability.
 @Injectable()
-export class QueryParamsFeatureFlagDataSource
-  implements TBFeatureFlagDataSource
-{
+export class FeatureFlagOverrideDataSource implements TBFeatureFlagDataSource {
   constructor(readonly queryParams: QueryParams) {}
 
   getFeatures(enableMediaQuery: boolean = false) {
@@ -50,6 +46,43 @@ export class QueryParamsFeatureFlagDataSource
     } as Partial<FeatureFlags>;
   }
 
+  persistFeatureFlags(flags: Partial<FeatureFlags>) {
+    const currentState = this.getPersistentFeatureFlags();
+    const newState = {
+      ...currentState,
+      ...flags,
+    };
+    localStorage.setItem(FEATURE_FLAG_STORAGE_KEY, JSON.stringify(newState));
+  }
+
+  resetPersistedFeatureFlag<K extends keyof FeatureFlags>(featureFlag: K) {
+    const currentState = this.getPersistentFeatureFlags();
+    if (currentState[featureFlag] == undefined) {
+      return;
+    }
+    delete currentState[featureFlag];
+
+    // Remove the entire key-value from localStorage when there are no more
+    // overrides.
+    if (Object.keys(currentState).length === 0) {
+      localStorage.removeItem(FEATURE_FLAG_STORAGE_KEY);
+      return;
+    }
+    localStorage.setItem(
+      FEATURE_FLAG_STORAGE_KEY,
+      JSON.stringify(currentState)
+    );
+  }
+
+  getPersistentFeatureFlags(): Partial<FeatureFlags> {
+    const currentState = localStorage.getItem(FEATURE_FLAG_STORAGE_KEY);
+    if (currentState == null) {
+      return {};
+    }
+
+    return JSON.parse(currentState) as Partial<FeatureFlags>;
+  }
+
   protected getPartialFeaturesFromMediaQuery(): {
     defaultEnableDarkMode?: boolean;
   } {
@@ -67,5 +100,8 @@ export class QueryParamsFeatureFlagDataSource
     return featureFlags;
   }
 }
+
+// Temporary naming for internal code.
+export {FeatureFlagOverrideDataSource as QueryParamsFeatureFlagDataSource};
 
 export const TEST_ONLY = {DARK_MODE_MEDIA_QUERY};

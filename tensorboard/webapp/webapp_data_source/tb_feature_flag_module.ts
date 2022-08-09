@@ -15,19 +15,19 @@ limitations under the License.
 
 import {NgModule} from '@angular/core';
 import {QueryParams} from './query_params';
-import {QueryParamsFeatureFlagDataSource} from './tb_feature_flag_data_source';
+import {FeatureFlagOverrideDataSource} from './tb_feature_flag_data_source';
 import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
 
 @NgModule({
   providers: [
     // Provide as injectable for other app-level implementations of
     // TBFeatureFlagDataSource.
-    QueryParamsFeatureFlagDataSource,
+    FeatureFlagOverrideDataSource,
     QueryParams,
     // Provide as the TBFeatureFlagDataSource implementation for the OSS app.
     {
       provide: TBFeatureFlagDataSource,
-      useClass: QueryParamsFeatureFlagDataSource,
+      useClass: FeatureFlagOverrideDataSource,
     },
   ],
 })

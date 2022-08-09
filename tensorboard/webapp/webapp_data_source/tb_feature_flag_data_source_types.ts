@@ -28,4 +28,29 @@ export abstract class TBFeatureFlagDataSource {
    * not have enough information to provide values.
    */
   abstract getFeatures(enableMediaQuery?: boolean): Partial<FeatureFlags>;
+
+  /**
+   * Stores the given feature flag values in localStorage to allow for more
+   * persistent flag state.
+   *
+   * @param flags An object holding the feature flags that are to be stored.
+   */
+  abstract persistFeatureFlags(flags: Partial<FeatureFlags>): void;
+
+  /**
+   * Removes the localStorage override of the given flag. If the flag is not
+   * overriden no changes should occur.
+   *
+   * @param featureFlag The featureFlag to be reset. It must be a key in the
+   * FeatureFlags object.
+   */
+  abstract resetPersistedFeatureFlag<K extends keyof FeatureFlags>(
+    featureFlag: K
+  ): void;
+
+  /**
+   * Gets the serialized data stored in localStorage for the stored feature
+   * flags.
+   */
+  abstract getPersistentFeatureFlags(): Partial<FeatureFlags>;
 }

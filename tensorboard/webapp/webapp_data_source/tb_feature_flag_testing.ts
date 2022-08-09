@@ -23,6 +23,13 @@ export class TestingTBFeatureFlagDataSource extends TBFeatureFlagDataSource {
   getFeatures(): Partial<FeatureFlags> {
     return buildFeatureFlag();
   }
+  persistFeatureFlags(flags: Partial<FeatureFlags>) {}
+
+  resetPersistedFeatureFlag<K extends keyof FeatureFlags>(featureFlag: K) {}
+
+  getPersistentFeatureFlags(): Partial<FeatureFlags> {
+    return {};
+  }
 }
 
 @NgModule({

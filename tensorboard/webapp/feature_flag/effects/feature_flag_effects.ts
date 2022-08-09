@@ -19,7 +19,10 @@ import {Action, createAction, Store} from '@ngrx/store';
 import {combineLatestWith, map, tap, withLatestFrom} from 'rxjs/operators';
 import '../../tb_polymer_interop_types';
 import {TBFeatureFlagDataSource} from '../../webapp_data_source/tb_feature_flag_data_source_types';
-import {partialFeatureFlagsLoaded} from '../actions/feature_flag_actions';
+import {
+  featureFlagOverrideChanged,
+  partialFeatureFlagsLoaded,
+} from '../actions/feature_flag_actions';
 import {ForceSvgDataSource} from '../force_svg_data_source';
 import {
   getFeatureFlags,
@@ -72,6 +75,21 @@ export class FeatureFlagEffects {
         withLatestFrom(this.store.select(getFeatureFlags)),
         tap(([, featureFlags]) => {
           this.tfFeatureFlags.ref.setFeatureFlags(featureFlags);
+        })
+      ),
+    {dispatch: false}
+  );
+
+  /**
+   * When a feature flag is overriden this effect persists that override by
+   * putting it in local storage using the dataSource.
+   */
+  readonly storeFeatureFlag$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(featureFlagOverrideChanged),
+        tap(({flags}) => {
+          this.dataSource.persistFeatureFlags(flags);
         })
       ),
     {dispatch: false}
