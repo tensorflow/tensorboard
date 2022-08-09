@@ -90,7 +90,14 @@ export class CardFobControllerComponent {
     return `translate(${this.endStepAxisPosition}px, 0px)`;
   }
 
-  startDrag(fob: Fob, affordance: TimeSelectionAffordance) {
+  stopEventPropagation(e: Event) {
+    if (e.stopPropagation) e.stopPropagation();
+    if (e.preventDefault) e.preventDefault();
+    e.cancelBubble = true;
+  }
+
+  startDrag(fob: Fob, affordance: TimeSelectionAffordance, event: MouseEvent) {
+    this.stopEventPropagation(event);
     document.addEventListener('mousemove', this.mouseListener);
     document.addEventListener('mouseup', this.stopListener);
     this.currentDraggingFob = fob;
