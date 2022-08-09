@@ -112,7 +112,7 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
         tf.compat.v1.reset_default_graph()
         k1 = tf.constant(math.pi, name="k1")
         k2 = tf.constant(math.e, name="k2")
-        result = (k1 ** k2) - k1
+        result = (k1**k2) - k1
         expected = tf.constant(20.0, name="expected")
         error = tf.abs(result - expected, name="error")
         message_prefix_value = "error " * 1000

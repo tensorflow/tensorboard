@@ -113,7 +113,7 @@ def set_timestamp(pb, seconds_since_epoch):
       seconds_since_epoch: A `float`, as returned by `time.time`.
     """
     pb.seconds = int(seconds_since_epoch)
-    pb.nanos = int(round((seconds_since_epoch % 1) * 10 ** 9))
+    pb.nanos = int(round((seconds_since_epoch % 1) * 10**9))
 
 
 def format_time(timestamp_pb, now=None):

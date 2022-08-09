@@ -43,7 +43,7 @@ from tensorboard.util import tensor_util
 _FILENAME_SAFE_CHARS = frozenset(string.ascii_letters + string.digits + "-_")
 
 # Maximum value of a signed 64-bit integer.
-_MAX_INT64 = 2 ** 63 - 1
+_MAX_INT64 = 2**63 - 1
 
 # Output filename for experiment metadata (creation time, description,
 # etc.) within an experiment directory.

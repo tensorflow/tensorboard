@@ -51,9 +51,9 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         with tf.summary.create_file_writer(logdir).as_default():
             for i in range(10):
                 scalar_summary.scalar(
-                    "square", i ** 2, step=2 * i, description="boxen"
+                    "square", i**2, step=2 * i, description="boxen"
                 )
-                scalar_summary.scalar("cube", i ** 3, step=3 * i)
+                scalar_summary.scalar("cube", i**3, step=3 * i)
 
         logdir = os.path.join(self.logdir, "waves")
         with tf.summary.create_file_writer(logdir).as_default():

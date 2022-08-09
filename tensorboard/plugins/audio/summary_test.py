@@ -87,7 +87,7 @@ class SummaryBaseTest(object):
         # WAV roundtrip goes from float32 to int16 and back, so expect some
         # precision loss, but not more than 2 applications of rounding error from
         # mapping the range [-1.0, 1.0] to 2^16.
-        epsilon = 2 * 2.0 / (2 ** 16)
+        epsilon = 2 * 2.0 / (2**16)
         self.assertAllClose(audio[0], decoded, atol=epsilon)
         self.assertEqual(44100, sample_rate.numpy())
 
