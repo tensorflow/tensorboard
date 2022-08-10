@@ -416,15 +416,20 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       this.linkedTimeSelection$,
     ]).pipe(
       map(([smoothingEnabled, timeSelection]) => {
-        const headers = [ColumnHeaders.RUN, ColumnHeaders.STEP];
+        const headers: ColumnHeaders[] = [];
         if (timeSelection === null || timeSelection.endStep === null) {
-          headers.splice(1, 0, ColumnHeaders.VALUE);
-          headers.push(ColumnHeaders.RELATIVE_TIME);
+          // Single Step Selected
+          headers.push(ColumnHeaders.RUN);
           if (smoothingEnabled) {
-            headers.splice(1, 0, ColumnHeaders.SMOOTHED);
+            headers.push(ColumnHeaders.SMOOTHED);
           }
+          headers.push(ColumnHeaders.VALUE);
+          headers.push(ColumnHeaders.STEP);
+          headers.push(ColumnHeaders.RELATIVE_TIME);
         } else {
+          headers.push(ColumnHeaders.RUN);
           headers.push(ColumnHeaders.VALUE_CHANGE);
+          headers.push(ColumnHeaders.STEP);
         }
         return headers;
       })

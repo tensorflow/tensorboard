@@ -32,7 +32,7 @@ limitations under the License.
           </td>
           <ng-container *ngFor="let header of headers;">
             <td [ngSwitch]="header">
-              <span *ngSwitchCase="'VALUE_CHANGE'">
+              <span *ngSwitchCase="ColumnHeaders.VALUE_CHANGE">
                 <mat-icon
                   *ngIf="runData.VALUE_CHANGE >= 0"
                   class="delta-arrow"

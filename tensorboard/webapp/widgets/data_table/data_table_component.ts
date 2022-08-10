@@ -36,6 +36,8 @@ export class DataTableComponent {
   @Input() headers!: ColumnHeaders[];
   @Input() data!: SelectedStepRunData[];
 
+  readonly ColumnHeaders = ColumnHeaders;
+
   getHeaderTextColumn(columnHeader: ColumnHeaders): string {
     switch (columnHeader) {
       case ColumnHeaders.RUN:
