@@ -399,6 +399,7 @@ describe('metrics right_pane', () => {
 
     describe('linked time feature enabled', () => {
       beforeEach(() => {
+        store.overrideSelector(selectors.getIsDataTableEnabled, true);
         store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
         store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
       });
@@ -408,7 +409,8 @@ describe('metrics right_pane', () => {
         const fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
 
-        expect(fixture.debugElement.query(By.css('.linked-time'))).toBeTruthy();
+        const el = fixture.debugElement.query(By.css('.linked-time mat-checkbox input'));
+        expect(el.properties['disabled']).toBe(false);
 
         store.overrideSelector(
           selectors.getMetricsXAxisType,
@@ -417,7 +419,7 @@ describe('metrics right_pane', () => {
         store.refreshState();
         fixture.detectChanges();
 
-        expect(fixture.debugElement.query(By.css('.linked-time'))).toBeFalsy();
+        expect(el.properties['disabled']).toBe(true);
       });
 
       describe('toggles', () => {
