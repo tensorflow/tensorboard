@@ -17,7 +17,10 @@ import {
   CardFobControllerComponent,
   Fob,
 } from '../card_fob/card_fob_controller_component';
-import {TimeSelection} from '../card_fob/card_fob_types';
+import {
+  TimeSelection,
+  TimeSelectionAffordance,
+} from '../card_fob/card_fob_types';
 import {HistogramCardFobController} from './histogram_card_fob_controller';
 import {TemporalScale} from './histogram_component';
 
@@ -157,7 +160,11 @@ describe('HistogramCardFobController', () => {
       let testController = fixture.debugElement.query(
         By.directive(CardFobControllerComponent)
       ).componentInstance;
-      testController.startDrag(Fob.START);
+      testController.startDrag(
+        Fob.START,
+        TimeSelectionAffordance.NONE,
+        new MouseEvent('mouseDown')
+      );
       // Starting step '300' renders the fob at 3000px. Mouse event at 3020px
       // mimics a drag down (towards higher steps).
       const fakeEvent = new MouseEvent('mousemove', {
@@ -180,7 +187,11 @@ describe('HistogramCardFobController', () => {
       let testController = fixture.debugElement.query(
         By.directive(CardFobControllerComponent)
       ).componentInstance;
-      testController.startDrag(Fob.START);
+      testController.startDrag(
+        Fob.START,
+        TimeSelectionAffordance.NONE,
+        new MouseEvent('mouseDown')
+      );
       // Starting step '300' renders the fob at 3000px. Mouse event at 2980px
       // mimics a drag up (towards lower steps).
       const fakeEvent = new MouseEvent('mousemove', {

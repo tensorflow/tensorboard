@@ -1268,7 +1268,11 @@ describe('histogram test', () => {
           .getBoundingClientRect().top;
 
         // Simulate dragging fob to step 10.
-        testController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
+        testController.startDrag(
+          Fob.START,
+          TimeSelectionAffordance.FOB,
+          new MouseEvent('mouseDown')
+        );
         const fakeEvent = new MouseEvent('mousemove', {
           clientY: 5 + fobStartPosition, // Add the difference between step 5 and 10, which is equal to 5.
           movementY: 1,
