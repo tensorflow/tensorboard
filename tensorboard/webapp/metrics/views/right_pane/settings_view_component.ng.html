@@ -74,13 +74,13 @@ limitations under the License.
             >Link by step</mat-checkbox
           >
         </div>
-        <div class="indent">
+        <div class="indent" *ngIf="isLinkedTimeEnabled">
           <tb-range-input
             [min]="stepMinMax.min"
             [max]="stepMinMax.max"
             [lowerValue]="linkedTimeSelection?.start.step"
             [upperValue]="linkedTimeSelection?.end?.step"
-            [enabled]="isLinkedTimeEnabled"
+            [enabled]="isLinkedTimeEnabled && isAxisTypeStep()"
             (singleValueChanged)="onSingleValueChanged($event)"
             (rangeValuesChanged)="onRangeValuesChanged($event)"
           ></tb-range-input>
