@@ -283,6 +283,18 @@ export class ScalarCardComponent<Downloader> {
               selectedStepData.VALUE_CHANGE =
                 closestEndPoint!.value - closestStartPoint.value;
               continue;
+            case ColumnHeaders.START_STEP:
+              if (!closestEndPoint) {
+                continue;
+              }
+              selectedStepData.START_STEP = closestStartPoint.step;
+              continue;
+            case ColumnHeaders.END_STEP:
+              if (!closestEndPoint) {
+                continue;
+              }
+              selectedStepData.END_STEP = closestEndPoint?.step;
+              continue;
             default:
               continue;
           }
