@@ -409,7 +409,9 @@ describe('metrics right_pane', () => {
         const fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
 
-        const el = fixture.debugElement.query(By.css('.linked-time mat-checkbox input'));
+        const el = fixture.debugElement.query(
+          By.css('.linked-time mat-checkbox input')
+        );
         expect(el.properties['disabled']).toBe(false);
 
         store.overrideSelector(
