@@ -356,21 +356,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       })
     );
 
-    this.columnHeaders$ = this.smoothingEnabled$.pipe(
-      map((smoothingEnabled) => {
-        const headers = [
-          ColumnHeaders.RUN,
-          ColumnHeaders.VALUE,
-          ColumnHeaders.STEP,
-          ColumnHeaders.RELATIVE_TIME,
-        ];
-        if (smoothingEnabled) {
-          headers.splice(1, 0, ColumnHeaders.SMOOTHED);
-        }
-        return headers;
-      })
-    );
-
     this.dataSeries$ = partitionedSeries$.pipe(
       // Smooth
       combineLatestWith(this.store.select(getMetricsScalarSmoothing)),
@@ -424,6 +409,30 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
           return maybeClipLinkedTimeSelection(timeSelection, minStep, maxStep);
         }
       )
+    );
+
+    this.columnHeaders$ = combineLatest([
+      this.smoothingEnabled$,
+      this.linkedTimeSelection$,
+    ]).pipe(
+      map(([smoothingEnabled, timeSelection]) => {
+        const headers: ColumnHeaders[] = [];
+        if (timeSelection === null || timeSelection.endStep === null) {
+          // Single Step Selected
+          headers.push(ColumnHeaders.RUN);
+          if (smoothingEnabled) {
+            headers.push(ColumnHeaders.SMOOTHED);
+          }
+          headers.push(ColumnHeaders.VALUE);
+          headers.push(ColumnHeaders.STEP);
+          headers.push(ColumnHeaders.RELATIVE_TIME);
+        } else {
+          headers.push(ColumnHeaders.RUN);
+          headers.push(ColumnHeaders.VALUE_CHANGE);
+          headers.push(ColumnHeaders.STEP);
+        }
+        return headers;
+      })
     );
 
     this.chartMetadataMap$ = partitionedSeries$.pipe(

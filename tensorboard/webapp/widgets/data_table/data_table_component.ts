@@ -36,6 +36,8 @@ export class DataTableComponent {
   @Input() headers!: ColumnHeaders[];
   @Input() data!: SelectedStepRunData[];
 
+  readonly ColumnHeaders = ColumnHeaders;
+
   getHeaderTextColumn(columnHeader: ColumnHeaders): string {
     switch (columnHeader) {
       case ColumnHeaders.RUN:
@@ -50,6 +52,8 @@ export class DataTableComponent {
         return 'Relative';
       case ColumnHeaders.SMOOTHED:
         return 'Smoothed';
+      case ColumnHeaders.VALUE_CHANGE:
+        return 'Value Change';
       default:
         return '';
     }
@@ -96,6 +100,13 @@ export class DataTableComponent {
         }
         return numberFormatter.formatShort(
           selectedStepRunData.SMOOTHED as number
+        );
+      case ColumnHeaders.VALUE_CHANGE:
+        if (selectedStepRunData.VALUE_CHANGE === undefined) {
+          return '';
+        }
+        return numberFormatter.formatShort(
+          Math.abs(selectedStepRunData.VALUE_CHANGE as number)
         );
       default:
         return '';

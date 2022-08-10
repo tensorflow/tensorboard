@@ -2426,7 +2426,7 @@ describe('scalar card', () => {
 
       store.overrideSelector(getMetricsLinkedTimeSelection, {
         start: {step: 2},
-        end: {step: 50},
+        end: null,
       });
 
       const fixture = createComponent('card1');
@@ -2452,6 +2452,64 @@ describe('scalar card', () => {
           RUN: 'run2',
           STEP: 2,
           VALUE: 10,
+        },
+      ]);
+    }));
+
+    it('builds range selected step data object', fakeAsync(() => {
+      const runToSeries = {
+        run1: [
+          {wallTime: 1, value: 1, step: 1},
+          {wallTime: 2, value: 10, step: 2},
+          {wallTime: 3, value: 20, step: 3},
+        ],
+        run2: [
+          {wallTime: 1, value: 1, step: 1},
+          {wallTime: 2, value: 10, step: 2},
+          {wallTime: 3, value: 25, step: 3},
+        ],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([
+          ['run1', true],
+          ['run2', true],
+        ])
+      );
+
+      store.overrideSelector(getMetricsLinkedTimeSelection, {
+        start: {step: 1},
+        end: {step: 3},
+      });
+
+      const fixture = createComponent('card1');
+      const scalarCardComponent = fixture.debugElement.query(
+        By.directive(ScalarCardComponent)
+      );
+      fixture.detectChanges();
+
+      const data =
+        scalarCardComponent.componentInstance.getTimeSelectionTableData();
+
+      expect(data).toEqual([
+        {
+          COLOR: '#fff',
+          RUN: 'run1',
+          STEP: 1,
+          VALUE_CHANGE: 19,
+        },
+        {
+          COLOR: '#fff',
+          RUN: 'run2',
+          STEP: 1,
+          VALUE_CHANGE: 24,
         },
       ]);
     }));

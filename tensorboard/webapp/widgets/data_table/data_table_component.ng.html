@@ -31,8 +31,23 @@ limitations under the License.
             <span [style.backgroundColor]="runData.COLOR"></span>
           </td>
           <ng-container *ngFor="let header of headers;">
-            <td>
-              <span>{{ getFormattedDataForColumn(header, runData) }}</span>
+            <td [ngSwitch]="header">
+              <span *ngSwitchCase="ColumnHeaders.VALUE_CHANGE">
+                <mat-icon
+                  *ngIf="runData.VALUE_CHANGE >= 0"
+                  class="delta-arrow"
+                  svgIcon="arrow_upward_24px"
+                ></mat-icon>
+                <mat-icon
+                  *ngIf="runData.VALUE_CHANGE < 0"
+                  class="delta-arrow"
+                  svgIcon="arrow_downward_24px"
+                ></mat-icon>
+                {{ getFormattedDataForColumn(header, runData) }}
+              </span>
+              <span *ngSwitchDefault
+                >{{ getFormattedDataForColumn(header, runData) }}</span
+              >
             </td>
           </ng-container>
         </tr>
