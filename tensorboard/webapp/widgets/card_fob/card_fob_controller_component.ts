@@ -91,9 +91,8 @@ export class CardFobControllerComponent {
   }
 
   stopEventPropagation(e: Event) {
-    if (e.stopPropagation) e.stopPropagation();
-    if (e.preventDefault) e.preventDefault();
-    e.cancelBubble = true;
+    e.stopPropagation();
+    e.preventDefault();
   }
 
   startDrag(fob: Fob, affordance: TimeSelectionAffordance, event: MouseEvent) {
