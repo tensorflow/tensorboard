@@ -68,14 +68,12 @@ limitations under the License.
       class="control-row linked-time indent"
       *ngIf="isLinkedTimeFeatureEnabled"
     >
-      <div>
-        <mat-checkbox
-          [checked]="isLinkedTimeEnabled"
-          (change)="linkedTimeToggled.emit()"
-          [disabled]="!isAxisTypeStep()"
-          >Link by step</mat-checkbox
-        >
-      </div>
+      <mat-checkbox
+        [checked]="isLinkedTimeEnabled"
+        (change)="linkedTimeToggled.emit()"
+        [disabled]="!isAxisTypeStep()"
+        >Link by step</mat-checkbox
+      >
       <div class="indent" *ngIf="isLinkedTimeEnabled">
         <tb-range-input
           [min]="stepMinMax.min"
