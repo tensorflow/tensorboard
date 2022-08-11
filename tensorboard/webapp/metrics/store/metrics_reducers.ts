@@ -1028,8 +1028,8 @@ const reducer = createReducer(
 
     return {
       ...state,
-      stepSelectorEnabled: nextStepSelectorEnabled,
       linkedTimeEnabled: nextLinkedTimeEnabled,
+      stepSelectorEnabled: nextStepSelectorEnabled,
     };
   }),
   on(actions.timeSelectionCleared, (state) => {
