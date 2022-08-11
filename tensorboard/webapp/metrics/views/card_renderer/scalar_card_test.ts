@@ -2235,7 +2235,11 @@ describe('scalar card', () => {
           testController.root.nativeElement.getBoundingClientRect().left;
 
         // Simulate dragging fob to step 25.
-        testController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
+        testController.startDrag(
+          Fob.START,
+          TimeSelectionAffordance.FOB,
+          new MouseEvent('mouseDown')
+        );
         let fakeEvent = new MouseEvent('mousemove', {
           clientX: 25 + controllerStartPosition,
           movementX: 1,
@@ -2246,7 +2250,8 @@ describe('scalar card', () => {
 
         testController.startDrag(
           Fob.START,
-          TimeSelectionAffordance.EXTENDED_LINE
+          TimeSelectionAffordance.EXTENDED_LINE,
+          new MouseEvent('mouseDown')
         );
         fakeEvent = new MouseEvent('mousemove', {
           clientX: 30 + controllerStartPosition,
@@ -2837,7 +2842,11 @@ describe('scalar card', () => {
           testController.root.nativeElement.getBoundingClientRect().left;
 
         // Simulate dragging fob to step 25.
-        testController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
+        testController.startDrag(
+          Fob.START,
+          TimeSelectionAffordance.FOB,
+          new MouseEvent('mouseDown')
+        );
         const fakeEvent = new MouseEvent('mousemove', {
           clientX: 25 + controllerStartPosition,
           movementX: 1,
@@ -2894,7 +2903,11 @@ describe('scalar card', () => {
           testController.root.nativeElement.getBoundingClientRect().left;
 
         // Simulates dragging start fob to step 25
-        testController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
+        testController.startDrag(
+          Fob.START,
+          TimeSelectionAffordance.FOB,
+          new MouseEvent('mouseDown')
+        );
         let fakeEvent = new MouseEvent('mousemove', {
           clientX: 25 + controllerStartPosition,
           movementX: 1,
@@ -2932,7 +2945,11 @@ describe('scalar card', () => {
         testController = fixture.debugElement.query(
           By.directive(CardFobControllerComponent)
         ).componentInstance;
-        testController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
+        testController.startDrag(
+          Fob.END,
+          TimeSelectionAffordance.FOB,
+          new MouseEvent('mouseDown')
+        );
         fakeEvent = new MouseEvent('mousemove', {
           clientX: 28 + controllerStartPosition,
           movementX: -1,

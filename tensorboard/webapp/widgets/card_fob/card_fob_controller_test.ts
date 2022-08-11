@@ -179,7 +179,11 @@ describe('card_fob_controller', () => {
       fixture.detectChanges();
       const fobController = fixture.componentInstance.fobController;
 
-      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
+      fobController.startDrag(
+        Fob.START,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
       expect(document.addEventListener).toHaveBeenCalledWith(
         'mousemove',
         mouseMoveListener
@@ -216,7 +220,11 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(1);
 
-      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
+      fobController.startDrag(
+        Fob.START,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 3,
         movementY: 1,
@@ -248,7 +256,11 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(4);
 
-      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
+      fobController.startDrag(
+        Fob.START,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 2,
         movementY: -1,
@@ -280,7 +292,11 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(2);
 
-      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
+      fobController.startDrag(
+        Fob.START,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 4,
         movementY: -1,
@@ -306,7 +322,11 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(4);
 
-      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
+      fobController.startDrag(
+        Fob.START,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
       const fakeEvent = new MouseEvent('mousemove', {clientY: 2, movementY: 1});
       fobController.mouseMove(fakeEvent);
       fixture.detectChanges();
@@ -329,7 +349,11 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(4);
 
-      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
+      fobController.startDrag(
+        Fob.START,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 8,
         movementY: 1,
@@ -355,7 +379,11 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(1);
 
-      fobController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
+      fobController.startDrag(
+        Fob.END,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
       onTimeSelectionChanged.calls.reset();
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 3,
@@ -388,7 +416,11 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(4);
 
-      fobController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
+      fobController.startDrag(
+        Fob.END,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 2,
         movementY: -1,
@@ -420,7 +452,11 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(2);
 
-      fobController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
+      fobController.startDrag(
+        Fob.END,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 3,
         movementY: -1,
@@ -446,7 +482,11 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(3);
 
-      fobController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
+      fobController.startDrag(
+        Fob.END,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 2,
         movementY: 1,
@@ -475,7 +515,11 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(1);
 
-      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
+      fobController.startDrag(
+        Fob.START,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 3,
         movementX: 1,
@@ -508,7 +552,11 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(4);
 
-      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
+      fobController.startDrag(
+        Fob.START,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 2,
         movementX: -1,
@@ -541,7 +589,11 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(2);
 
-      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
+      fobController.startDrag(
+        Fob.START,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 4,
         movementX: -1,
@@ -575,7 +627,11 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(4);
 
-      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
+      fobController.startDrag(
+        Fob.START,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 2,
         movementX: 1,
@@ -610,7 +666,11 @@ describe('card_fob_controller', () => {
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(4);
 
-      fobController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
+      fobController.startDrag(
+        Fob.START,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 8,
         movementX: 1,
@@ -637,7 +697,11 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(1);
 
-      fobController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
+      fobController.startDrag(
+        Fob.END,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
       onTimeSelectionChanged.calls.reset();
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 3,
@@ -671,7 +735,11 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(4);
 
-      fobController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
+      fobController.startDrag(
+        Fob.END,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 2,
         movementX: -1,
@@ -704,7 +772,11 @@ describe('card_fob_controller', () => {
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(2);
 
-      fobController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
+      fobController.startDrag(
+        Fob.END,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 3,
         movementX: -1,
@@ -731,7 +803,12 @@ describe('card_fob_controller', () => {
       expect(
         fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(3);
-      fobController.startDrag(Fob.END, TimeSelectionAffordance.FOB);
+
+      fobController.startDrag(
+        Fob.END,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
       const fakeEvent = new MouseEvent('mousemove', {
         clientX: 2,
         movementX: 1,
