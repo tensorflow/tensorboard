@@ -957,6 +957,7 @@ const reducer = createReducer(
     const nextLinkedTimeEnabled = !state.linkedTimeEnabled;
     let nextCardStepIndexMap = {...state.cardStepIndex};
     let nextLinkedTimeSelection = state.linkedTimeSelection;
+    let nextStepSelectorEnabled = state.stepSelectorEnabled;
 
     // Updates cardStepIndex only when toggle to enable linked time.
     if (nextLinkedTimeEnabled) {
@@ -972,6 +973,8 @@ const reducer = createReducer(
         state.timeSeriesData,
         nextLinkedTimeSelection
       );
+
+      nextStepSelectorEnabled = nextLinkedTimeEnabled;
     }
 
     return {
@@ -979,6 +982,7 @@ const reducer = createReducer(
       cardStepIndex: nextCardStepIndexMap,
       linkedTimeEnabled: nextLinkedTimeEnabled,
       linkedTimeSelection: nextLinkedTimeSelection,
+      stepSelectorEnabled: nextStepSelectorEnabled,
     };
   }),
   on(actions.linkedTimeSelectionChanged, (state, change) => {
@@ -1017,9 +1021,15 @@ const reducer = createReducer(
     };
   }),
   on(actions.stepSelectorToggled, (state) => {
+    const nextStepSelectorEnabled = !state.stepSelectorEnabled;
+    const nextLinkedTimeEnabled = nextStepSelectorEnabled
+      ? state.linkedTimeEnabled
+      : nextStepSelectorEnabled;
+
     return {
       ...state,
-      stepSelectorEnabled: !state.stepSelectorEnabled,
+      stepSelectorEnabled: nextStepSelectorEnabled,
+      linkedTimeEnabled: nextLinkedTimeEnabled,
     };
   }),
   on(actions.timeSelectionCleared, (state) => {
