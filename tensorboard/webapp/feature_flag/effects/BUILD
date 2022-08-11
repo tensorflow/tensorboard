@@ -10,6 +10,7 @@ tf_ng_module(
     deps = [
         "//tensorboard/webapp:tb_polymer_interop_types",
         "//tensorboard/webapp/feature_flag:force_svg_data_source",
+        "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/actions",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/feature_flag/store:types",

@@ -74,6 +74,10 @@ export class FeatureFlagOverrideDataSource implements TBFeatureFlagDataSource {
     );
   }
 
+  resetAllPersistedFeatureFlags() {
+    localStorage.removeItem(FEATURE_FLAG_STORAGE_KEY);
+  }
+
   getPersistentFeatureFlags(): Partial<FeatureFlags> {
     const currentState = localStorage.getItem(FEATURE_FLAG_STORAGE_KEY);
     if (currentState == null) {

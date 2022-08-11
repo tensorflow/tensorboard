@@ -349,5 +349,33 @@ describe('tb_feature_flag_data_source', () => {
         );
       });
     });
+
+    describe('resetAllPersistedFeatureFlags', () => {
+      it('removes entry from localStorage', () => {
+        const mockStorage: Record<string, string> = {};
+        spyOn(localStorage, 'getItem').and.callFake((key: string) => {
+          return mockStorage[key];
+        });
+        spyOn(localStorage, 'setItem').and.callFake(
+          (key: string, value: string) => {
+            mockStorage[key] = value;
+          }
+        );
+        const removeItemSpy = spyOn(localStorage, 'removeItem').and.callFake(
+          (key: string) => {
+            delete mockStorage[key];
+          }
+        );
+
+        dataSource.persistFeatureFlags({
+          inColab: true,
+        });
+        expect(mockStorage).toEqual({
+          tb_feature_flag_storage_key: '{"inColab":true}',
+        });
+        dataSource.resetAllPersistedFeatureFlags();
+        expect(mockStorage).toEqual({});
+      });
+    });
   });
 });

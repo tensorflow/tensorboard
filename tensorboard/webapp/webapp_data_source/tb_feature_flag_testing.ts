@@ -27,6 +27,8 @@ export class TestingTBFeatureFlagDataSource extends TBFeatureFlagDataSource {
 
   resetPersistedFeatureFlag<K extends keyof FeatureFlags>(featureFlag: K) {}
 
+  resetAllPersistedFeatureFlags(): void {}
+
   getPersistentFeatureFlags(): Partial<FeatureFlags> {
     return {};
   }

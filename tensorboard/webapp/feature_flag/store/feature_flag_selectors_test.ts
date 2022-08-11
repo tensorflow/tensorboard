@@ -55,6 +55,29 @@ describe('feature_flag_selectors', () => {
     });
   });
 
+  describe('#getDefaultFeatureFlags', () => {
+    it('returns exact copy of the default feature flags', () => {
+      const initialState = buildFeatureFlagState();
+      const state = buildState(initialState);
+      const actual = selectors.getDefaultFeatureFlags(state);
+
+      expect(actual).toEqual(initialState.defaultFlags);
+    });
+
+    it('is uneffected by feature flag overrides', () => {
+      const initialState = buildFeatureFlagState({
+        flagOverrides: {
+          forceSvg: true,
+          inColab: true,
+        },
+      });
+      const state = buildState(initialState);
+      const actual = selectors.getDefaultFeatureFlags(state);
+
+      expect(actual).toEqual(initialState.defaultFlags);
+    });
+  });
+
   describe('#getOverriddenFeatureFlags', () => {
     it('returns empty object if it is not overridden', () => {
       const state = buildState(buildFeatureFlagState());

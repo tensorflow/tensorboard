@@ -42,6 +42,13 @@ export const getFeatureFlags = createSelector(
   }
 );
 
+export const getDefaultFeatureFlags = createSelector(
+  selectFeatureFlagState,
+  (state: FeatureFlagState): FeatureFlags => {
+    return state.defaultFlags;
+  }
+);
+
 export const getOverriddenFeatureFlags = createSelector(
   selectFeatureFlagState,
   (state: FeatureFlagState): Partial<FeatureFlags> => {
