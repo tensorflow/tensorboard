@@ -39,7 +39,7 @@ export type FeatureFlagMetadata<T> =
       parseValue: (str: string) => T;
     };
 
-export type FeatureFlagMetadataMapType<T extends FeatureFlags> = {
+export type FeatureFlagMetadataMapType<T> = {
   [FlagName in keyof T]: FeatureFlagMetadata<T[FlagName]>;
 };
 
@@ -127,12 +127,12 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
 /**
  * Gets gets just the default values of each feature flag from the provided metadata.
  */
-export function generateFeatureFlagDefaults<T extends FeatureFlags>(
+export function generateFeatureFlagDefaults<T>(
   featureFlagMetadataMap: FeatureFlagMetadataMapType<T>
 ): T {
   return Object.entries(featureFlagMetadataMap).reduce(
-    (map, [key, {defaultValue}]) => {
-      map[key] = defaultValue;
+    (map, [key, metadata]) => {
+      map[key] = (metadata as FeatureFlagMetadata<T>).defaultValue;
       return map;
     },
     {} as Record<string, any>
