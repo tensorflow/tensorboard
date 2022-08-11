@@ -55,37 +55,32 @@ limitations under the License.
   <div
     class="control-row scalars-step-selector"
     *ngIf="isScalarStepSelectorFeatureEnabled"
+    [title]="!isAxisTypeStep()? 'Only available when Horizontal Axis is set to step': ''"
   >
     <mat-checkbox
       [checked]="isScalarStepSelectorEnabled"
       (change)="stepSelectorToggled.emit()"
       [disabled]="!isAxisTypeStep()"
-      [title]="!isAxisTypeStep()? 'Only available When Horizontal Axis is set to step': ''"
       >Enable step selection and data table
     </mat-checkbox>
     <span class="indent">(Scalars only)</span>
-  </div>
-
-  <div
-    class="control-row linked-time"
-    *ngIf="isLinkedTimeFeatureEnabled && xAxisType == XAxisType.STEP"
-  >
-    <label>Link visualization by step</label>
-    <div class="controls">
-      <div>
-        <mat-checkbox
-          [checked]="isLinkedTimeEnabled"
-          (change)="linkedTimeToggled.emit()"
-          >Enabled</mat-checkbox
-        >
-      </div>
-      <div class="step-selector">
+    <div
+      class="control-row linked-time indent"
+      *ngIf="isLinkedTimeFeatureEnabled"
+    >
+      <mat-checkbox
+        [checked]="isLinkedTimeEnabled"
+        (change)="linkedTimeToggled.emit()"
+        [disabled]="!isAxisTypeStep()"
+        >Link by step</mat-checkbox
+      >
+      <div class="indent" *ngIf="isLinkedTimeEnabled">
         <tb-range-input
           [min]="stepMinMax.min"
           [max]="stepMinMax.max"
           [lowerValue]="linkedTimeSelection?.start.step"
           [upperValue]="linkedTimeSelection?.end?.step"
-          [enabled]="isLinkedTimeEnabled"
+          [enabled]="isLinkedTimeEnabled && isAxisTypeStep()"
           (singleValueChanged)="onSingleValueChanged($event)"
           (rangeValuesChanged)="onRangeValuesChanged($event)"
         ></tb-range-input>

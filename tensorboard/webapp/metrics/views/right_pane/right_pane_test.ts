@@ -94,7 +94,6 @@ describe('metrics right_pane', () => {
       store.overrideSelector(selectors.getMetricsCardMinWidth, null);
       store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, false);
       store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
-      store.overrideSelector(selectors.getMetricsLinkedTimeRangeEnabled, false);
       store.overrideSelector(selectors.getMetricsLinkedTimeSelectionSetting, {
         start: {step: 0},
         end: {step: 1000},
@@ -399,8 +398,8 @@ describe('metrics right_pane', () => {
 
     describe('linked time feature enabled', () => {
       beforeEach(() => {
+        store.overrideSelector(selectors.getIsDataTableEnabled, true);
         store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
-        store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
       });
 
       it('enables the feature only when xAxisType=STEP', () => {
@@ -408,7 +407,10 @@ describe('metrics right_pane', () => {
         const fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
 
-        expect(fixture.debugElement.query(By.css('.linked-time'))).toBeTruthy();
+        const el = fixture.debugElement.query(
+          By.css('.linked-time mat-checkbox input')
+        );
+        expect(el.properties['disabled']).toBe(false);
 
         store.overrideSelector(
           selectors.getMetricsXAxisType,
@@ -417,7 +419,7 @@ describe('metrics right_pane', () => {
         store.refreshState();
         fixture.detectChanges();
 
-        expect(fixture.debugElement.query(By.css('.linked-time'))).toBeFalsy();
+        expect(el.properties['disabled']).toBe(true);
       });
 
       describe('toggles', () => {
@@ -446,12 +448,19 @@ describe('metrics right_pane', () => {
       });
 
       describe('range input', () => {
-        it('displays tb-range-input on both single and range step selection mode', () => {
-          store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
+        beforeEach(() => {
+          store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);
+          store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, true);
           store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+        });
+
+        it('displays tb-range-input on both single and range step selection mode', () => {
           store.overrideSelector(
-            selectors.getMetricsLinkedTimeRangeEnabled,
-            false
+            selectors.getMetricsLinkedTimeSelectionSetting,
+            {
+              start: {step: 0},
+              end: null,
+            }
           );
           const fixture = TestBed.createComponent(SettingsViewContainer);
           fixture.detectChanges();
@@ -460,39 +469,29 @@ describe('metrics right_pane', () => {
           expect(el.query(By.css('tb-range-input'))).toBeTruthy();
 
           store.overrideSelector(
-            selectors.getMetricsLinkedTimeRangeEnabled,
-            true
+            selectors.getMetricsLinkedTimeSelectionSetting,
+            {
+              start: {step: 2},
+              end: {step: 5},
+            }
           );
           store.refreshState();
           fixture.detectChanges();
           expect(el.query(By.css('tb-range-input'))).toBeTruthy();
         });
 
-        it('disables tb-range-input on select time disabled', () => {
-          store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
-          store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+        it('does not render tb-range-input on linked time disabled', () => {
           store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, false);
-          store.overrideSelector(
-            selectors.getMetricsLinkedTimeRangeEnabled,
-            false
-          );
           const fixture = TestBed.createComponent(SettingsViewContainer);
           fixture.detectChanges();
 
-          const el = fixture.debugElement.query(
-            By.css('.linked-time tb-range-input')
-          );
-          expect(el.properties['enabled']).toBe(false);
+          expect(
+            fixture.debugElement.query(By.css('.linked-time tb-range-input'))
+          ).toBeNull();
         });
 
-        it('enables tb-range-input on select time enabled', () => {
-          store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
+        it('enable tb-range-input only when xAxisType=STEP', () => {
           store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
-          store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, true);
-          store.overrideSelector(
-            selectors.getMetricsLinkedTimeRangeEnabled,
-            false
-          );
           const fixture = TestBed.createComponent(SettingsViewContainer);
           fixture.detectChanges();
 
@@ -500,13 +499,17 @@ describe('metrics right_pane', () => {
             By.css('.linked-time tb-range-input')
           );
           expect(el.properties['enabled']).toBe(true);
+
+          store.overrideSelector(
+            selectors.getMetricsXAxisType,
+            XAxisType.RELATIVE
+          );
+          store.refreshState();
+          fixture.detectChanges();
+          expect(el.properties['enabled']).toBe(false);
         });
 
         it('dispatches actions when making range step change', () => {
-          store.overrideSelector(
-            selectors.getMetricsLinkedTimeRangeEnabled,
-            true
-          );
           store.overrideSelector(
             selectors.getMetricsLinkedTimeSelectionSetting,
             {
@@ -536,10 +539,6 @@ describe('metrics right_pane', () => {
         });
 
         it('dispatches actions when making single step change', () => {
-          store.overrideSelector(
-            selectors.getMetricsLinkedTimeRangeEnabled,
-            true
-          );
           store.overrideSelector(
             selectors.getMetricsLinkedTimeSelectionSetting,
             {
