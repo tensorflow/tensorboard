@@ -2747,6 +2747,28 @@ describe('metrics reducers', () => {
         expect(state3.linkedTimeEnabled).toBe(false);
       });
 
+      it('enables stepSelector when linkedTime is enabled', () => {
+        const state1 = buildMetricsState({
+          stepSelectorEnabled: false,
+          linkedTimeEnabled: false,
+        });
+
+        const state2 = reducers(state1, actions.linkedTimeToggled({}));
+        expect(state2.stepSelectorEnabled).toBe(true);
+        expect(state2.linkedTimeEnabled).toBe(true);
+      });
+
+      it('keeps stepSelector enabled when linkedTime is disabled', () => {
+        const state1 = buildMetricsState({
+          stepSelectorEnabled: true,
+          linkedTimeEnabled: true,
+        });
+
+        const state2 = reducers(state1, actions.linkedTimeToggled({}));
+        expect(state2.stepSelectorEnabled).toBe(true);
+        expect(state2.linkedTimeEnabled).toBe(false);
+      });
+
       it('sets cardStepIndex to step 0 when linkedTimeSelection is null before toggling', () => {
         const state1 = buildMetricsState({
           linkedTimeEnabled: false,
@@ -2900,6 +2922,25 @@ describe('metrics reducers', () => {
 
       const state3 = reducers(state2, actions.stepSelectorToggled({}));
       expect(state3.stepSelectorEnabled).toBe(false);
+    });
+
+    it('disables linkedTime when stepSelector is disabled', () => {
+      const state1 = buildMetricsState({
+        stepSelectorEnabled: false,
+        linkedTimeEnabled: false,
+      });
+
+      const state2 = reducers(state1, actions.stepSelectorToggled({}));
+      expect(state2.stepSelectorEnabled).toBe(true);
+      expect(state2.linkedTimeEnabled).toBe(false);
+
+      const state3 = buildMetricsState({
+        stepSelectorEnabled: true,
+        linkedTimeEnabled: true,
+      });
+      const state4 = reducers(state3, actions.stepSelectorToggled({}));
+      expect(state4.stepSelectorEnabled).toBe(false);
+      expect(state2.linkedTimeEnabled).toBe(false);
     });
   });
 
