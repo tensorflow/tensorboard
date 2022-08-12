@@ -28,12 +28,13 @@ STEPS = 1000
 
 
 @tf.function
-def one_step(temp, ambient_temperature, heat_coefficient, step):
+def one_step(writer, temp, ambient_temperature, heat_coefficient, step):
     """Runs one step of the temperature simulation.
 
     Will update the `temperature` argument with one step of heat diffusion.
 
     Arguments:
+      writer: The tf.summary.SummaryWriter object.
       temp: The tf.Variable containing the value being updated.  Akin
         to a weight in a model.
       ambient_temperature: The `tf.Constant` value the temperature is being
@@ -42,45 +43,46 @@ def one_step(temp, ambient_temperature, heat_coefficient, step):
       step: tf.int64 value of the current step number.  Used in the
         `summary.scalar` API.
     """
-    with tf.name_scope("temperature"):
+    with writer.as_default():
+        with tf.name_scope("temperature"):
+            tf.summary.scalar(
+                name="current",
+                data=temp,
+                step=step,
+                description="The temperature of the object, in Kelvins.",
+            )
+            # Compute how much the object's temperature differs from that of
+            #  its environment, and track this, too: likewise, as
+            # "temperature/difference_to_ambient".
+            ambient_difference = temp - ambient_temperature
+            tf.summary.scalar(
+                name="difference_to_ambient",
+                data=ambient_difference,
+                step=step,
+                description="The difference between the ambient "
+                "temperature and the temperature of the "
+                "object under simulation, in Kelvins.",
+            )
+        # Newton suggested that the rate of change of the temperature of
+        # an object is directly proportional to this
+        # `ambient_difference` above, where the proportionality constant
+        # is what we called the heat coefficient. But in real life, not
+        # everything is quite so clean, so we'll add in some noise. (The
+        # value of 50 is arbitrary, chosen to
+        # make the data look somewhat interesting. :-) )
+        noise = 50 * tf.random.normal([])
+        delta = -heat_coefficient * (ambient_difference + noise)
         tf.summary.scalar(
-            name="current",
-            data=temp,
+            name="delta",
+            data=delta,
             step=step,
-            description="The temperature of the object, in Kelvins.",
+            description="The change in temperature from the previous "
+            "step, in Kelvins.",
         )
-        # Compute how much the object's temperature differs from that of
-        #  its environment, and track this, too: likewise, as
-        # "temperature/difference_to_ambient".
-        ambient_difference = temp - ambient_temperature
-        tf.summary.scalar(
-            name="difference_to_ambient",
-            data=ambient_difference,
-            step=step,
-            description="The difference between the ambient "
-            "temperature and the temperature of the "
-            "object under simulation, in Kelvins.",
-        )
-    # Newton suggested that the rate of change of the temperature of
-    # an object is directly proportional to this
-    # `ambient_difference` above, where the proportionality constant
-    # is what we called the heat coefficient. But in real life, not
-    # everything is quite so clean, so we'll add in some noise. (The
-    # value of 50 is arbitrary, chosen to
-    # make the data look somewhat interesting. :-) )
-    noise = 50 * tf.random.normal([])
-    delta = -heat_coefficient * (ambient_difference + noise)
-    tf.summary.scalar(
-        name="delta",
-        data=delta,
-        step=step,
-        description="The change in temperature from the previous "
-        "step, in Kelvins.",
-    )
-    temp.assign_add(delta)
+        temp.assign_add(delta)
 
 
-def run(initial_temperature, ambient_temperature, heat_coefficient):
+def run(writer, initial_temperature, ambient_temperature, heat_coefficient):
     """Run a temperature simulation.
 
     This will simulate an object at temperature `initial_temperature`
@@ -95,6 +97,7 @@ def run(initial_temperature, ambient_temperature, heat_coefficient):
     each time step.
 
     Arguments:
+      writer: tf.summary.SummaryWriter; summary writer object
       initial_temperature: float; the object's initial temperature
       ambient_temperature: float; the temperature of the enclosing room
       heat_coefficient: float; a measure of the object's thermal
@@ -103,7 +106,7 @@ def run(initial_temperature, ambient_temperature, heat_coefficient):
     tf.random.set_seed(0)
     temp = tf.Variable(initial_temperature)
     for step in tf.range(STEPS, dtype=tf.int64):
-        one_step(temp, ambient_temperature, heat_coefficient, step)
+        one_step(writer, temp, ambient_temperature, heat_coefficient, step)
 
 
 def run_all(logdir, verbose=False):
@@ -126,15 +129,15 @@ def run_all(logdir, verbose=False):
                 writer = tf.summary.create_file_writer(
                     os.path.join(logdir, run_name)
                 )
-                with writer.as_default():
-                    # Arguments wrapped in tf.constant to prevent unwanted
-                    # retracing.  See retracing logic details at
-                    # https://www.tensorflow.org/guide/function
-                    run(
-                        tf.constant(initial_temperature),
-                        tf.constant(ambient_temperature),
-                        tf.constant(heat_coefficient),
-                    )
+                # Arguments wrapped in tf.constant to prevent unwanted
+                # retracing.  See retracing logic details at
+                # https://www.tensorflow.org/guide/function
+                run(
+                    writer,
+                    tf.constant(initial_temperature),
+                    tf.constant(ambient_temperature),
+                    tf.constant(heat_coefficient),
+                )
 
 
 def main(unused_argv):
