@@ -4,6 +4,8 @@ The TensorBoard Histogram Dashboard displays how the distribution of some
 `Tensor` in your TensorFlow graph has changed over time. It does this by showing
 many histograms visualizations of your tensor at different points in time.
 
+Note that due to frontend limitation and for visualization purpose, by default the histogram data would be rebinned into 30 bins using linear binning, where `y` counts from the original input bins are distributed among the new (increasing and non-overlapping) bins based on the amount of overlap (see existing [issue](https://github.com/tensorflow/tensorboard/issues/1803)).
+
 ## A Basic Example
 
 Let's start with a simple case: a normally-distributed variable, where the mean
