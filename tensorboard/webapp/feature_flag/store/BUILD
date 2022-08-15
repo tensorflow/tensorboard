@@ -39,6 +39,7 @@ tf_ng_module(
         "feature_flag_types.ts",
     ],
     deps = [
+        ":feature_flag_metadata",
         "//tensorboard/webapp/feature_flag:types",
     ],
 )
@@ -48,6 +49,7 @@ tf_ts_library(
     testonly = True,
     srcs = ["testing.ts"],
     deps = [
+        ":feature_flag_metadata",
         ":types",
         "//tensorboard/webapp/feature_flag:testing",
     ],
