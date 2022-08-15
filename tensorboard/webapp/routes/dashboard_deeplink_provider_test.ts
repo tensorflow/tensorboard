@@ -50,7 +50,10 @@ describe('core deeplink provider', () => {
     store.overrideSelector(selectors.getMetricsSettingOverrides, {});
     store.overrideSelector(selectors.getRunUserSetGroupBy, null);
     store.overrideSelector(selectors.getRunSelectorRegexFilter, '');
-    store.overrideSelector(selectors.getFeatureFlagsMetadata, FeatureFlagMetadataMap);
+    store.overrideSelector(
+      selectors.getFeatureFlagsMetadata,
+      FeatureFlagMetadataMap
+    );
 
     queryParamsSerialized = [];
 
@@ -404,7 +407,7 @@ describe('core deeplink provider', () => {
 
       store.overrideSelector(selectors.getOverriddenFeatureFlags, {
         enabledColorGroupByRegex: false,
-    });
+      });
       store.refreshState();
 
       expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([

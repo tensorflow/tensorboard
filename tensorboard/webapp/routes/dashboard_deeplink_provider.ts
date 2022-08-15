@@ -20,7 +20,10 @@ import {DeepLinkProvider} from '../app_routing/deep_link_provider';
 import {SerializableQueryParams} from '../app_routing/types';
 import {State} from '../app_state';
 import {FeatureFlagMetadataMapType} from '../feature_flag/store/feature_flag_metadata';
-import {getFeatureFlagsMetadata, getOverriddenFeatureFlags} from '../feature_flag/store/feature_flag_selectors';
+import {
+  getFeatureFlagsMetadata,
+  getOverriddenFeatureFlags,
+} from '../feature_flag/store/feature_flag_selectors';
 import {FeatureFlags} from '../feature_flag/types';
 import {
   isPluginType,
@@ -49,7 +52,6 @@ const COLOR_GROUP_REGEX_VALUE_PREFIX = 'regex:';
 export class DashboardDeepLinkProvider<
   T extends FeatureFlags = FeatureFlags
 > extends DeepLinkProvider {
-
   // TODO(bmd3k@): Remove featureFlagMetadataMap as a constructor argument when
   //   all internal code has been updated to no longer pass it.
   constructor(readonly featureFlagMetadataMap?: FeatureFlagMetadataMapType<T>) {
@@ -106,13 +108,14 @@ export class DashboardDeepLinkProvider<
       ),
       combineLatest([
         store.select(getOverriddenFeatureFlags),
-        store.select(getFeatureFlagsMetadata)]).pipe(
-          map(([overriddenFeatureFlags, featureFlagsMetadata]) => {
-            return featureFlagsToSerializableQueryParams(
-              overriddenFeatureFlags,
-              featureFlagsMetadata
-            );
-          })
+        store.select(getFeatureFlagsMetadata),
+      ]).pipe(
+        map(([overriddenFeatureFlags, featureFlagsMetadata]) => {
+          return featureFlagsToSerializableQueryParams(
+            overriddenFeatureFlags,
+            featureFlagsMetadata
+          );
+        })
       ),
       store.select(selectors.getMetricsSettingOverrides).pipe(
         map((settingOverrides) => {
