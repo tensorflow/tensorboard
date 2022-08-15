@@ -21,9 +21,9 @@ import '../../tb_polymer_interop_types';
 import {TBFeatureFlagDataSource} from '../../webapp_data_source/tb_feature_flag_data_source_types';
 import {
   featureFlagOverrideChanged,
+  featureFlagOverridesReset,
+  featureFlagsOverridesAllSetToDefault,
   partialFeatureFlagsLoaded,
-  resetAllFeatureFlagOverrides,
-  resetFeatureFlagOverrides,
 } from '../actions/feature_flag_actions';
 import {ForceSvgDataSource} from '../force_svg_data_source';
 import {
@@ -31,7 +31,6 @@ import {
   getIsAutoDarkModeAllowed,
 } from '../store/feature_flag_selectors';
 import {State} from '../store/feature_flag_types';
-import {FeatureFlags} from '../types';
 
 const effectsInitialized = createAction('[FEATURE FLAG] Effects Init');
 
@@ -101,12 +100,10 @@ export class FeatureFlagEffects {
   readonly resetFeatureFlagOverrides$ = createEffect(
     () =>
       this.actions$.pipe(
-        ofType(resetFeatureFlagOverrides),
+        ofType(featureFlagOverridesReset),
         tap(({flags}) => {
           flags.forEach((flag) => {
-            this.dataSource.resetPersistedFeatureFlag(
-              flag as keyof FeatureFlags
-            );
+            this.dataSource.resetPersistedFeatureFlag(flag);
           });
         })
       ),
@@ -116,7 +113,7 @@ export class FeatureFlagEffects {
   readonly resetAllFeatureFlagOverrides$ = createEffect(
     () =>
       this.actions$.pipe(
-        ofType(resetAllFeatureFlagOverrides),
+        ofType(featureFlagsOverridesAllSetToDefault),
         tap(() => {
           this.dataSource.resetAllPersistedFeatureFlags();
         })

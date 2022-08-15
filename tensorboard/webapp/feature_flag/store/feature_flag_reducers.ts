@@ -53,7 +53,7 @@ const reducer = createReducer<FeatureFlagState>(
       },
     };
   }),
-  on(actions.resetFeatureFlagOverrides, (state, overrides) => {
+  on(actions.featureFlagOverridesReset, (state, overrides) => {
     if (!overrides || !overrides.flags || !overrides.flags.length) {
       return state;
     }
@@ -66,7 +66,7 @@ const reducer = createReducer<FeatureFlagState>(
       flagOverrides,
     };
   }),
-  on(actions.resetAllFeatureFlagOverrides, (state) => {
+  on(actions.featureFlagsOverridesAllSetToDefault, (state) => {
     return {
       ...state,
       flagOverrides: {},

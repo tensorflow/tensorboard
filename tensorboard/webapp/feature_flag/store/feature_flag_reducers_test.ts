@@ -108,12 +108,12 @@ describe('feature_flag_reducers', () => {
     });
   });
 
-  describe('#resetFeatureFlagOverrides', () => {
+  describe('#featureFlagOverridesReset', () => {
     it('does nothing when no overrides are provided', () => {
       const prevState = buildFeatureFlagState();
       const nextState = reducers(
         prevState,
-        actions.resetFeatureFlagOverrides({flags: []})
+        actions.featureFlagOverridesReset({flags: []})
       );
       // Intentionally using toBe rather than toEqual to ensure the object is the SAME object (not a copy).
       expect(nextState).toBe(prevState);
@@ -127,7 +127,7 @@ describe('feature_flag_reducers', () => {
       });
       reducers(
         prevState,
-        actions.resetFeatureFlagOverrides({flags: ['inColab']})
+        actions.featureFlagOverridesReset({flags: ['inColab']})
       );
       expect(prevState.flagOverrides).toEqual({
         inColab: true,
@@ -145,7 +145,7 @@ describe('feature_flag_reducers', () => {
       });
       const nextState = reducers(
         prevState,
-        actions.resetFeatureFlagOverrides({flags: ['forceSvg', 'inColab']})
+        actions.featureFlagOverridesReset({flags: ['forceSvg', 'inColab']})
       );
       expect(nextState.flagOverrides).toEqual({
         enabledColorGroup: true,
@@ -163,21 +163,21 @@ describe('feature_flag_reducers', () => {
       prevState.defaultFlags.inColab = true;
       const nextState = reducers(
         prevState,
-        actions.resetFeatureFlagOverrides({flags: ['inColab']})
+        actions.featureFlagOverridesReset({flags: ['inColab']})
       );
       expect(nextState.flagOverrides).toEqual({});
       expect(nextState.defaultFlags).toBe(prevState.defaultFlags);
     });
   });
 
-  describe('#resetAllFeatureFlagOverrides', () => {
+  describe('#featureFlagsOverridesAllSetToDefault', () => {
     it('does not modify previous state', () => {
       const prevState = buildFeatureFlagState({
         flagOverrides: {
           inColab: true,
         },
       });
-      reducers(prevState, actions.resetAllFeatureFlagOverrides());
+      reducers(prevState, actions.featureFlagsOverridesAllSetToDefault());
       expect(prevState.flagOverrides).toEqual({
         inColab: true,
       });
@@ -187,7 +187,7 @@ describe('feature_flag_reducers', () => {
       const prevState = buildFeatureFlagState({flagOverrides: {}});
       const nextState = reducers(
         prevState,
-        actions.resetAllFeatureFlagOverrides()
+        actions.featureFlagsOverridesAllSetToDefault()
       );
       expect(nextState.flagOverrides).not.toBe(prevState.flagOverrides);
       expect(nextState.flagOverrides).toEqual({});
@@ -204,7 +204,7 @@ describe('feature_flag_reducers', () => {
       });
       const nextState = reducers(
         prevState,
-        actions.resetAllFeatureFlagOverrides()
+        actions.featureFlagsOverridesAllSetToDefault()
       );
       expect(nextState.flagOverrides).toEqual({});
     });

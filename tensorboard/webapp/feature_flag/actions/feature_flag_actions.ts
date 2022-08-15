@@ -44,14 +44,14 @@ export const featureFlagOverrideChanged = createAction(
   }>()
 );
 
-export const resetFeatureFlagOverrides = createAction(
+export const featureFlagOverridesReset = createAction(
   '[FEATURE FLAG] Resetting feature flag overrides',
   props<{
     flags: Array<keyof FeatureFlags>;
   }>()
 );
 
-export const resetAllFeatureFlagOverrides = createAction(
+export const featureFlagsOverridesAllSetToDefault = createAction(
   '[FEATURE FLAG] Resetting all feature flag overrides',
   // NgRx does not allow actions without props.
   (props = undefined) => props
