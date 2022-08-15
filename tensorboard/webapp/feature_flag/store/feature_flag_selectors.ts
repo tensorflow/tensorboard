@@ -116,13 +116,6 @@ export const getIsTimeSeriesPromotionEnabled = createSelector(
   }
 );
 
-export const getEnabledCardWidthSetting = createSelector(
-  getFeatureFlags,
-  (flags: FeatureFlags): boolean => {
-    return flags.enabledCardWidthSetting;
-  }
-);
-
 export const getForceSvgFeatureFlag = createSelector(
   getFeatureFlags,
   (flags: FeatureFlags): boolean => {
