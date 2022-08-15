@@ -90,7 +90,6 @@ export class RunsTableComponent implements OnChanges {
   @Input() filteredItemsLength!: number;
   @Input() useFlexibleLayout!: boolean;
   @Input() usePagination!: boolean;
-  @Input() showGroupControl!: boolean;
 
   /**
    * `RunTableItem`s for a given page.

@@ -61,16 +61,6 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       queryParamOverride: 'scalarsBatchSize',
       parseValue: parseInt,
     },
-    enabledColorGroup: {
-      defaultValue: true,
-      queryParamOverride: 'enableColorGroup',
-      parseValue: parseBoolean,
-    },
-    enabledColorGroupByRegex: {
-      defaultValue: true,
-      queryParamOverride: 'enableColorGroupByRegex',
-      parseValue: parseBoolean,
-    },
     enabledExperimentalPlugins: {
       defaultValue: [],
       queryParamOverride: 'experimentalPlugin',

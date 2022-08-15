@@ -36,7 +36,6 @@ export class RunsGroupMenuButtonComponent {
   @Input() experimentIds!: string[];
   @Input() regexString!: string;
   @Input() selectedGroupBy!: GroupBy;
-  @Input() showGroupByRegex!: boolean;
 
   @Output()
   onGroupByChange = new EventEmitter<GroupBy>();
