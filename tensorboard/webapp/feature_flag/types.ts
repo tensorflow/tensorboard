@@ -43,8 +43,6 @@ export interface FeatureFlags {
   metricsImageSupportEnabled: boolean;
   // Whether TimeSeries linked time feature is enabled or not.
   enabledLinkedTime: boolean;
-  // Whether to enable TimeSeries promotion butter bar.
-  enableTimeSeriesPromotion: boolean;
   // Whether to enable card width adjustment on the right panle.
   enabledCardWidthSetting: boolean;
   // Flag for the escape hatch from WebGL. This only effects the TimeSeries

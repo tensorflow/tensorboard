@@ -36,7 +36,6 @@ export declare interface BackendSettings {
   theme?: ThemeValue;
   notificationLastReadTimeInMs?: number;
   sideBarWidthInPercent?: number;
-  timeSeriesPromotionDismissed?: boolean;
   timeSeriesSettingsPaneOpened?: boolean;
   timeSeriesCardMinWidth?: number;
 }
@@ -56,7 +55,6 @@ export interface PersistableSettings {
   themeOverride?: ThemeValue;
   notificationLastReadTimeInMs?: number;
   sideBarWidthInPercent?: number;
-  timeSeriesPromotionDismissed?: boolean;
   timeSeriesSettingsPaneOpened?: boolean;
   timeSeriesCardMinWidth?: number;
 }

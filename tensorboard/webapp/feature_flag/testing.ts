@@ -29,7 +29,6 @@ export function buildFeatureFlag(
     scalarsBatchSize: undefined,
     metricsImageSupportEnabled: true,
     enabledLinkedTime: false,
-    enableTimeSeriesPromotion: false,
     enabledCardWidthSetting: false,
     forceSvg: false,
     enabledScalarDataTable: false,

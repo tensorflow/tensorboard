@@ -863,29 +863,16 @@ describe('metrics selectors', () => {
     });
   });
 
-  describe('#getPromoteTimeSeries', () => {
-    beforeEach(() => {
-      selectors.getPromoteTimeSeries.release();
-    });
-
-    it('returns current visualization filters', () => {
-      const state = appStateFromMetricsState(
-        buildMetricsState({promoteTimeSeries: false})
-      );
-      expect(selectors.getPromoteTimeSeries(state)).toEqual(false);
-    });
-  });
-
   describe('#isMetricsSettingsPaneOpen', () => {
     beforeEach(() => {
-      selectors.getPromoteTimeSeries.release();
+      selectors.isMetricsSettingsPaneOpen.release();
     });
 
-    it('returns current visualization filters', () => {
+    it('returns current settings pane open state', () => {
       const state = appStateFromMetricsState(
-        buildMetricsState({promoteTimeSeries: false})
+        buildMetricsState({isSettingsPaneOpen: false})
       );
-      expect(selectors.getPromoteTimeSeries(state)).toEqual(false);
+      expect(selectors.isMetricsSettingsPaneOpen(state)).toEqual(false);
     });
   });
 });
