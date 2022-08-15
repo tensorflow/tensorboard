@@ -15,6 +15,7 @@ limitations under the License.
 
 import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {FeatureFlags} from '../types';
+import {FeatureFlagMetadataMapType} from './feature_flag_metadata';
 import {
   FeatureFlagState,
   FEATURE_FLAG_FEATURE_KEY,
@@ -47,6 +48,13 @@ export const getOverriddenFeatureFlags = createSelector(
   (state: FeatureFlagState): Partial<FeatureFlags> => {
     // Temporarily assume state.flagOverrides can be undefined for sync purposes.
     return state.flagOverrides || {};
+  }
+);
+
+export const getFeatureFlagsMetadata = createSelector(
+  selectFeatureFlagState,
+  (state: FeatureFlagState): FeatureFlagMetadataMapType<FeatureFlags> => {
+    return state.metadata;
   }
 );
 

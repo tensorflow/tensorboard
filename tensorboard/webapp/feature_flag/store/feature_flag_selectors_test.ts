@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {buildFeatureFlag} from '../testing';
+import {FeatureFlagMetadataMap, FeatureFlagMetadataMapType} from './feature_flag_metadata';
 import * as selectors from './feature_flag_selectors';
 import {buildFeatureFlagState, buildState} from './testing';
 
@@ -77,6 +78,18 @@ describe('feature_flag_selectors', () => {
       const actual = selectors.getOverriddenFeatureFlags(state);
 
       expect(actual).toEqual({enabledExperimentalPlugins: ['foo']});
+    });
+  });
+
+  describe('#getFeatureFlagsMetadata', () => {
+    it('returns metadata', () => {
+      // Modify the default value for one of the properties. inColab is a good
+      // one because the defaultValue is unlikely to ever change.
+      const metadata = {...FeatureFlagMetadataMap, inColab: {...FeatureFlagMetadataMap.inColab, defaultValue: true}};
+      const state = buildState(buildFeatureFlagState({metadata}));
+      const actual = selectors.getFeatureFlagsMetadata(state);
+
+      expect(actual).toEqual(metadata);
     });
   });
 
