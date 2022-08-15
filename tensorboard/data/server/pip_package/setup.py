@@ -32,7 +32,7 @@ setuptools.setup(
             "bin/*",
         ],
     },
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     install_requires=[],
     tests_require=[],
     # PyPI package information. <https://pypi.org/classifiers/>
@@ -43,7 +43,6 @@ setuptools.setup(
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Rust",
