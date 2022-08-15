@@ -108,6 +108,47 @@ describe('feature_flag_reducers', () => {
     });
   });
 
+  describe('#featureFlagOverrideChanged', () => {
+    it('does not remove existing overrides', () => {
+      const prevState = buildFeatureFlagState({
+        flagOverrides: {
+          inColab: true,
+          defaultEnableDarkMode: true,
+        },
+      });
+      const nextState = reducers(
+        prevState,
+        actions.featureFlagOverrideChanged({
+          flags: {enabledLinkedTime: true},
+        })
+      );
+      expect(nextState.flagOverrides).toEqual({
+        inColab: true,
+        defaultEnableDarkMode: true,
+        enabledLinkedTime: true,
+      });
+    });
+
+    it('changes values of existing overrides', () => {
+      const prevState = buildFeatureFlagState({
+        flagOverrides: {
+          inColab: true,
+          defaultEnableDarkMode: true,
+        },
+      });
+      const nextState = reducers(
+        prevState,
+        actions.featureFlagOverrideChanged({
+          flags: {inColab: false},
+        })
+      );
+      expect(nextState.flagOverrides).toEqual({
+        inColab: false,
+        defaultEnableDarkMode: true,
+      });
+    });
+  });
+
   describe('#featureFlagOverridesReset', () => {
     it('does nothing when no overrides are provided', () => {
       const prevState = buildFeatureFlagState();
@@ -177,7 +218,7 @@ describe('feature_flag_reducers', () => {
           inColab: true,
         },
       });
-      reducers(prevState, actions.featureFlagsOverridesAllSetToDefault());
+      reducers(prevState, actions.featureFlagOverridesAllReset());
       expect(prevState.flagOverrides).toEqual({
         inColab: true,
       });
@@ -187,7 +228,7 @@ describe('feature_flag_reducers', () => {
       const prevState = buildFeatureFlagState({flagOverrides: {}});
       const nextState = reducers(
         prevState,
-        actions.featureFlagsOverridesAllSetToDefault()
+        actions.featureFlagOverridesAllReset()
       );
       expect(nextState.flagOverrides).not.toBe(prevState.flagOverrides);
       expect(nextState.flagOverrides).toEqual({});
@@ -204,7 +245,7 @@ describe('feature_flag_reducers', () => {
       });
       const nextState = reducers(
         prevState,
-        actions.featureFlagsOverridesAllSetToDefault()
+        actions.featureFlagOverridesAllReset()
       );
       expect(nextState.flagOverrides).toEqual({});
     });

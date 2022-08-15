@@ -21,8 +21,8 @@ import '../../tb_polymer_interop_types';
 import {TBFeatureFlagDataSource} from '../../webapp_data_source/tb_feature_flag_data_source_types';
 import {
   featureFlagOverrideChanged,
+  featureFlagOverridesAllReset,
   featureFlagOverridesReset,
-  featureFlagsOverridesAllSetToDefault,
   partialFeatureFlagsLoaded,
 } from '../actions/feature_flag_actions';
 import {ForceSvgDataSource} from '../force_svg_data_source';
@@ -113,7 +113,7 @@ export class FeatureFlagEffects {
   readonly resetAllFeatureFlagOverrides$ = createEffect(
     () =>
       this.actions$.pipe(
-        ofType(featureFlagsOverridesAllSetToDefault),
+        ofType(featureFlagOverridesAllReset),
         tap(() => {
           this.dataSource.resetAllPersistedFeatureFlags();
         })

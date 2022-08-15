@@ -24,6 +24,8 @@ import {
 } from '../../webapp_data_source/tb_feature_flag_testing';
 import {
   featureFlagOverrideChanged,
+  featureFlagOverridesAllReset,
+  featureFlagOverridesReset,
   partialFeatureFlagsLoaded,
 } from '../actions/feature_flag_actions';
 import {ForceSvgDataSource} from '../force_svg_data_source';
@@ -198,6 +200,30 @@ describe('feature_flag_effects', () => {
       expect(persistFlagSpy).toHaveBeenCalledOnceWith({
         enabledScalarDataTable: true,
       });
+    });
+  });
+
+  describe('resetFeatureFlagOverrides', () => {
+    it('calls resetPersistedFeatureFlag', () => {
+      const resetFlagSpy = spyOn(
+        dataSource,
+        'resetPersistedFeatureFlag'
+      ).and.stub();
+      effects.resetFeatureFlagOverrides$.subscribe();
+      actions.next(featureFlagOverridesReset({flags: ['inColab']}));
+      expect(resetFlagSpy).toHaveBeenCalledOnceWith('inColab');
+    });
+  });
+
+  describe('resetAllFeatureFlagOverrides', () => {
+    it('calls resetAllPersistedFeatureFlags', () => {
+      const resetAllFlagsSpy = spyOn(
+        dataSource,
+        'resetAllPersistedFeatureFlags'
+      ).and.stub();
+      effects.resetAllFeatureFlagOverrides$.subscribe();
+      actions.next(featureFlagOverridesAllReset());
+      expect(resetAllFlagsSpy).toHaveBeenCalledOnceWith();
     });
   });
 });
