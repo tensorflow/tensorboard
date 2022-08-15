@@ -2510,6 +2510,8 @@ describe('scalar card', () => {
           VALUE_CHANGE: 19,
           START_STEP: 1,
           END_STEP: 3,
+          START_VALUE: 1,
+          END_VALUE: 20,
         },
         {
           COLOR: '#fff',
@@ -2517,6 +2519,8 @@ describe('scalar card', () => {
           VALUE_CHANGE: 24,
           START_STEP: 1,
           END_STEP: 3,
+          START_VALUE: 1,
+          END_VALUE: 25,
         },
       ]);
     }));

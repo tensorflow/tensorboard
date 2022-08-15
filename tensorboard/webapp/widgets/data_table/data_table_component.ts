@@ -58,6 +58,10 @@ export class DataTableComponent {
         return 'Start Step';
       case ColumnHeaders.END_STEP:
         return 'End Step';
+      case ColumnHeaders.START_VALUE:
+        return 'Start';
+      case ColumnHeaders.END_VALUE:
+        return 'End';
       default:
         return '';
     }
@@ -125,6 +129,20 @@ export class DataTableComponent {
         }
         return intlNumberFormatter.formatShort(
           selectedStepRunData.END_STEP as number
+        );
+      case ColumnHeaders.START_VALUE:
+        if (selectedStepRunData.START_VALUE === undefined) {
+          return '';
+        }
+        return intlNumberFormatter.formatShort(
+          selectedStepRunData.START_VALUE as number
+        );
+      case ColumnHeaders.END_VALUE:
+        if (selectedStepRunData.END_VALUE === undefined) {
+          return '';
+        }
+        return intlNumberFormatter.formatShort(
+          selectedStepRunData.END_VALUE as number
         );
       default:
         return '';
