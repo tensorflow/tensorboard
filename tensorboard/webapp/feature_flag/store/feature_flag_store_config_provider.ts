@@ -23,6 +23,7 @@ import {FeatureFlagState} from './feature_flag_types';
 export const initialState: FeatureFlagState = {
   isFeatureFlagsLoaded: false,
   defaultFlags: generateFeatureFlagDefaults(FeatureFlagMetadataMap),
+  metadata: FeatureFlagMetadataMap,
   flagOverrides: {},
 };
 
