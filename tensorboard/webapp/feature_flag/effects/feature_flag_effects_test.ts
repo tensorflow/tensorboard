@@ -23,8 +23,8 @@ import {
   TestingTBFeatureFlagDataSource,
 } from '../../webapp_data_source/tb_feature_flag_testing';
 import {
+  allFeatureFlagOverridesReset,
   featureFlagOverrideChanged,
-  featureFlagOverridesAllReset,
   featureFlagOverridesReset,
   partialFeatureFlagsLoaded,
 } from '../actions/feature_flag_actions';
@@ -222,7 +222,7 @@ describe('feature_flag_effects', () => {
         'resetAllPersistedFeatureFlags'
       ).and.stub();
       effects.resetAllFeatureFlagOverrides$.subscribe();
-      actions.next(featureFlagOverridesAllReset());
+      actions.next(allFeatureFlagOverridesReset());
       expect(resetAllFlagsSpy).toHaveBeenCalledOnceWith();
     });
   });

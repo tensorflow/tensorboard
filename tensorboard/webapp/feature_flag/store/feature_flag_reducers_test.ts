@@ -196,12 +196,12 @@ describe('feature_flag_reducers', () => {
     });
   });
 
-  describe('#featureFlagsOverridesAllSetToDefault', () => {
+  describe('#allFeatureFlagOverridesReset', () => {
     it('always generates a new state', () => {
       const prevState = buildFeatureFlagState({flagOverrides: {}});
       const nextState = reducers(
         prevState,
-        actions.featureFlagOverridesAllReset()
+        actions.allFeatureFlagOverridesReset()
       );
       expect(nextState.flagOverrides).not.toBe(prevState.flagOverrides);
       expect(nextState.flagOverrides).toEqual({});
@@ -218,7 +218,7 @@ describe('feature_flag_reducers', () => {
       });
       const nextState = reducers(
         prevState,
-        actions.featureFlagOverridesAllReset()
+        actions.allFeatureFlagOverridesReset()
       );
       expect(nextState.flagOverrides).toEqual({});
     });

@@ -51,6 +51,6 @@ export const featureFlagOverridesReset = createAction(
   }>()
 );
 
-export const featureFlagOverridesAllReset = createAction(
+export const allFeatureFlagOverridesReset = createAction(
   '[FEATURE FLAG] Reset all feature flag overrides'
 );

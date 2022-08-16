@@ -66,7 +66,7 @@ const reducer = createReducer<FeatureFlagState>(
       flagOverrides,
     };
   }),
-  on(actions.featureFlagOverridesAllReset, (state) => {
+  on(actions.allFeatureFlagOverridesReset, (state) => {
     return {
       ...state,
       flagOverrides: {},
