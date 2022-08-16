@@ -27,7 +27,6 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';
 import {
-  getEnabledCardWidthSetting,
   getMetricsCardMinWidth,
   getMetricsStepSelectorEnabled,
   getMetricsTagGroupExpansionState,
@@ -90,7 +89,6 @@ describe('card grid', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(selectors.getRunColorMap, {});
     store.overrideSelector(getMetricsTagGroupExpansionState, true);
-    store.overrideSelector(getEnabledCardWidthSetting, false);
     store.overrideSelector(getMetricsCardMinWidth, 30);
     store.overrideSelector(settingsSelectors.getPageSize, 10);
     store.overrideSelector(getMetricsStepSelectorEnabled, false);

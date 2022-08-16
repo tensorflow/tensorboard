@@ -71,11 +71,6 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       queryParamOverride: 'enableLinkedTime',
       parseValue: parseBoolean,
     },
-    enabledCardWidthSetting: {
-      defaultValue: true,
-      queryParamOverride: 'enableCardWidthSetting',
-      parseValue: parseBoolean,
-    },
     enabledScalarDataTable: {
       defaultValue: false,
       queryParamOverride: 'enableDataTable',
@@ -106,10 +101,6 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
     },
     metricsImageSupportEnabled: {
       defaultValue: true,
-      queryParamOverride: null,
-    },
-    enableTimeSeriesPromotion: {
-      defaultValue: false,
       queryParamOverride: null,
     },
   };

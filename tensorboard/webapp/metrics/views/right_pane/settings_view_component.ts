@@ -63,7 +63,6 @@ const MAX_SMOOTHING_SLIDER_VALUE = 0.99;
 export class SettingsViewComponent {
   constructor(@Inject(LOCALE_ID) private readonly locale: string) {}
 
-  @Input() isCardWidthSettingEnabled!: boolean;
   @Input() isLinkedTimeFeatureEnabled!: boolean;
   @Input() isLinkedTimeEnabled!: boolean;
   @Input() isScalarStepSelectorFeatureEnabled!: boolean;

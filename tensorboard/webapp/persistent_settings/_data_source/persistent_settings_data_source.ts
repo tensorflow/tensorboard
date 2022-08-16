@@ -76,10 +76,6 @@ export class OSSSettingsConverter extends SettingsConverter<
       serializableSettings.sideBarWidthInPercent =
         settings.sideBarWidthInPercent;
     }
-    if (settings.timeSeriesPromotionDismissed !== undefined) {
-      serializableSettings.timeSeriesPromotionDismissed =
-        settings.timeSeriesPromotionDismissed;
-    }
     if (settings.timeSeriesSettingsPaneOpened !== undefined) {
       serializableSettings.timeSeriesSettingsPaneOpened =
         settings.timeSeriesSettingsPaneOpened;
@@ -156,14 +152,6 @@ export class OSSSettingsConverter extends SettingsConverter<
       typeof backendSettings.sideBarWidthInPercent === 'number'
     ) {
       settings.sideBarWidthInPercent = backendSettings.sideBarWidthInPercent;
-    }
-
-    if (
-      backendSettings.hasOwnProperty('timeSeriesPromotionDismissed') &&
-      typeof backendSettings.timeSeriesPromotionDismissed === 'boolean'
-    ) {
-      settings.timeSeriesPromotionDismissed =
-        backendSettings.timeSeriesPromotionDismissed;
     }
 
     if (

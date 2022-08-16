@@ -54,6 +54,10 @@ export class DataTableComponent {
         return 'Smoothed';
       case ColumnHeaders.VALUE_CHANGE:
         return 'Value Change';
+      case ColumnHeaders.START_STEP:
+        return 'Start Step';
+      case ColumnHeaders.END_STEP:
+        return 'End Step';
       default:
         return '';
     }
@@ -107,6 +111,20 @@ export class DataTableComponent {
         }
         return numberFormatter.formatShort(
           Math.abs(selectedStepRunData.VALUE_CHANGE as number)
+        );
+      case ColumnHeaders.START_STEP:
+        if (selectedStepRunData.START_STEP === undefined) {
+          return '';
+        }
+        return intlNumberFormatter.formatShort(
+          selectedStepRunData.START_STEP as number
+        );
+      case ColumnHeaders.END_STEP:
+        if (selectedStepRunData.END_STEP === undefined) {
+          return '';
+        }
+        return intlNumberFormatter.formatShort(
+          selectedStepRunData.END_STEP as number
         );
       default:
         return '';

@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
 import {createNamespaceContextedState} from '../../app_routing/namespaced_state_reducer_helper';
-import {metricsPromoGoToScalars} from '../../metrics/actions';
 import {globalSettingsLoaded} from '../../persistent_settings';
 import {DataLoadState} from '../../types/data';
 import {composeReducers} from '../../util/ngrx';
@@ -168,9 +167,6 @@ const reducer = createReducer(
     }
 
     return nextState;
-  }),
-  on(metricsPromoGoToScalars, (state) => {
-    return {...state, activePlugin: 'scalars'};
   })
 );
 

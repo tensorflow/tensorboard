@@ -208,7 +208,6 @@ export interface MetricsSettings {
 }
 
 export interface MetricsNonNamespacedState {
-  promoteTimeSeries: boolean;
   timeSeriesData: TimeSeriesData;
   isSettingsPaneOpen: boolean;
   // Default settings. For the legacy reasons, we cannot change the name of the

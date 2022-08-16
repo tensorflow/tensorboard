@@ -29,7 +29,6 @@ import {
   getMetricsIgnoreOutliers,
   getMetricsScalarSmoothing,
   getMetricsTooltipSort,
-  getPromoteTimeSeries,
   isMetricsSettingsPaneOpen,
   METRICS_FEATURE_KEY,
   METRICS_SETTINGS_DEFAULT,
@@ -85,12 +84,6 @@ export function getMetricsTooltipSortSettingFactory() {
   });
 }
 
-export function getMetricsTimeSeriesPromotionDismissed() {
-  return createSelector(getPromoteTimeSeries, (promoteTimeSeries) => {
-    return {timeSeriesPromotionDismissed: !promoteTimeSeries};
-  });
-}
-
 export function getMetricsTimeSeriesSettingsPaneOpen() {
   return createSelector(isMetricsSettingsPaneOpen, (isOpened) => {
     return {timeSeriesSettingsPaneOpened: isOpened};
@@ -129,9 +122,6 @@ export function getMetricsTimeSeriesCardMinWidth() {
     ),
     PersistentSettingsConfigModule.defineGlobalSetting(
       getMetricsTooltipSortSettingFactory
-    ),
-    PersistentSettingsConfigModule.defineGlobalSetting(
-      getMetricsTimeSeriesPromotionDismissed
     ),
     PersistentSettingsConfigModule.defineGlobalSetting(
       getMetricsTimeSeriesSettingsPaneOpen

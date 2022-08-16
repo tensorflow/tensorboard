@@ -443,13 +443,6 @@ export const getMetricsFilteredPluginTypes = createSelector(
   }
 );
 
-export const getPromoteTimeSeries = createSelector(
-  selectMetricsState,
-  (state: MetricsState): boolean => {
-    return state.promoteTimeSeries;
-  }
-);
-
 export const isMetricsSettingsPaneOpen = createSelector(
   selectMetricsState,
   (state): boolean => state.isSettingsPaneOpen

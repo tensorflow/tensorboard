@@ -55,7 +55,6 @@ import {
       (ignoreOutliersChanged)="onIgnoreOutliersChanged()"
       [xAxisType]="xAxisType$ | async"
       (xAxisTypeChanged)="onXAxisTypeChanged($event)"
-      [isCardWidthSettingEnabled]="isCardWidthSettingEnabled$ | async"
       [cardMinWidth]="cardMinWidth$ | async"
       (cardWidthChanged)="onCardWidthChanged($event)"
       (cardWidthReset)="onCardWidthReset()"
@@ -92,9 +91,6 @@ import {
 export class SettingsViewContainer {
   constructor(private readonly store: Store<State>) {}
 
-  readonly isCardWidthSettingEnabled$: Observable<boolean> = this.store.select(
-    selectors.getEnabledCardWidthSetting
-  );
   readonly isLinkedTimeFeatureEnabled$: Observable<boolean> = this.store.select(
     selectors.getIsLinkedTimeEnabled
   );
