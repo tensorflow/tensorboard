@@ -109,13 +109,6 @@ export const getIsLinkedTimeEnabled = createSelector(
   }
 );
 
-export const getIsTimeSeriesPromotionEnabled = createSelector(
-  getFeatureFlags,
-  (flags: FeatureFlags): boolean => {
-    return flags.enableTimeSeriesPromotion;
-  }
-);
-
 export const getEnabledCardWidthSetting = createSelector(
   getFeatureFlags,
   (flags: FeatureFlags): boolean => {

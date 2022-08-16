@@ -269,7 +269,6 @@ const {initialState, reducers: namespaceContextedReducer} =
     },
     {
       isSettingsPaneOpen: true,
-      promoteTimeSeries: true,
       timeSeriesData: {
         scalars: {},
         histograms: {},
@@ -435,17 +434,11 @@ const reducer = createReducer(
       metricsSettings.scalarSmoothing = partialSettings.scalarSmoothing;
     }
 
-    const promoteTimeSeries =
-      typeof partialSettings.timeSeriesPromotionDismissed === 'boolean'
-        ? !partialSettings.timeSeriesPromotionDismissed
-        : state.promoteTimeSeries;
-
     const isSettingsPaneOpen =
       partialSettings.timeSeriesSettingsPaneOpened ?? state.isSettingsPaneOpen;
 
     return {
       ...state,
-      promoteTimeSeries,
       isSettingsPaneOpen,
       settings: {
         ...state.settings,
@@ -1057,9 +1050,6 @@ const reducer = createReducer(
   }),
   on(actions.metricsShowAllPlugins, (state): MetricsState => {
     return {...state, filteredPluginTypes: new Set()};
-  }),
-  on(actions.metricsPromoDismissed, (state) => {
-    return {...state, promoteTimeSeries: false};
   }),
   on(actions.metricsSettingsPaneToggled, (state) => {
     return {...state, isSettingsPaneOpen: !state.isSettingsPaneOpen};

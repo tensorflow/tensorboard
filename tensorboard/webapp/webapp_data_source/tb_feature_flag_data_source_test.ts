@@ -342,25 +342,25 @@ describe('tb_feature_flag_data_source', () => {
 
         const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
 
-        dataSource.persistFeatureFlags({enableTimeSeriesPromotion: true});
+        dataSource.persistFeatureFlags({inColab: true});
 
         expect(setItemSpy).toHaveBeenCalledOnceWith(
           'tb_feature_flag_storage_key',
-          '{"enabledScalarDataTable":true,"enableTimeSeriesPromotion":true}'
+          '{"enabledScalarDataTable":true,"inColab":true}'
         );
       });
 
       it('Overrides flag if it is already persisted', () => {
         spyOn(localStorage, 'getItem').and.returnValue(
-          '{"enabledScalarDataTable":true,"enableTimeSeriesPromotion":true}'
+          '{"enabledScalarDataTable":true,"inColab":true}'
         );
         const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
 
-        dataSource.persistFeatureFlags({enableTimeSeriesPromotion: false});
+        dataSource.persistFeatureFlags({inColab: false});
 
         expect(setItemSpy).toHaveBeenCalledOnceWith(
           'tb_feature_flag_storage_key',
-          '{"enabledScalarDataTable":true,"enableTimeSeriesPromotion":false}'
+          '{"enabledScalarDataTable":true,"inColab":false}'
         );
       });
 
@@ -370,12 +370,12 @@ describe('tb_feature_flag_data_source', () => {
 
         dataSource.persistFeatureFlags({
           enabledScalarDataTable: true,
-          enableTimeSeriesPromotion: false,
+          inColab: false,
         });
 
         expect(setItemSpy).toHaveBeenCalledOnceWith(
           'tb_feature_flag_storage_key',
-          '{"enabledScalarDataTable":true,"enableTimeSeriesPromotion":false}'
+          '{"enabledScalarDataTable":true,"inColab":false}'
         );
       });
     });
@@ -392,12 +392,12 @@ describe('tb_feature_flag_data_source', () => {
 
       it('returns a properly parsed object when getItem gives one', () => {
         const getItemSpy = spyOn(localStorage, 'getItem').and.returnValue(
-          '{"enabledScalarDataTable":true,"enableTimeSeriesPromotion":false}'
+          '{"enabledScalarDataTable":true,"inColab":false}'
         );
 
         expect(dataSource.getPersistentFeatureFlags()).toEqual({
           enabledScalarDataTable: true,
-          enableTimeSeriesPromotion: false,
+          inColab: false,
         });
         expect(getItemSpy).toHaveBeenCalledOnceWith(
           'tb_feature_flag_storage_key'
@@ -410,7 +410,7 @@ describe('tb_feature_flag_data_source', () => {
         spyOn(localStorage, 'getItem').and.returnValue(null);
         const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
 
-        dataSource.resetPersistedFeatureFlag('enableTimeSeriesPromotion');
+        dataSource.resetPersistedFeatureFlag('inColab');
 
         expect(setItemSpy).not.toHaveBeenCalled();
       });
@@ -421,18 +421,18 @@ describe('tb_feature_flag_data_source', () => {
         );
         const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
 
-        dataSource.resetPersistedFeatureFlag('enableTimeSeriesPromotion');
+        dataSource.resetPersistedFeatureFlag('inColab');
 
         expect(setItemSpy).not.toHaveBeenCalled();
       });
 
       it('stores a new object with given flag removed', () => {
         spyOn(localStorage, 'getItem').and.returnValue(
-          '{"enabledScalarDataTable":true,"enableTimeSeriesPromotion":false}'
+          '{"enabledScalarDataTable":true,"inColab":false}'
         );
         const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
 
-        dataSource.resetPersistedFeatureFlag('enableTimeSeriesPromotion');
+        dataSource.resetPersistedFeatureFlag('inColab');
 
         expect(setItemSpy).toHaveBeenCalledOnceWith(
           'tb_feature_flag_storage_key',
