@@ -87,6 +87,8 @@ export enum ColumnHeaders {
   VALUE_CHANGE = 'VALUE_CHANGE',
   START_STEP = 'START_STEP',
   END_STEP = 'END_STEP',
+  START_VALUE = 'START_VALUE',
+  END_VALUE = 'END_VALUE',
 }
 
 /**
