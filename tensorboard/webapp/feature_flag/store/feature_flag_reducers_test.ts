@@ -163,7 +163,6 @@ describe('feature_flag_reducers', () => {
     it('removes all provided overrides', () => {
       const prevState = buildFeatureFlagState({
         flagOverrides: {
-          enabledColorGroup: true,
           inColab: true,
           forceSvg: true,
           scalarsBatchSize: 5,
@@ -174,7 +173,6 @@ describe('feature_flag_reducers', () => {
         actions.featureFlagOverridesReset({flags: ['forceSvg', 'inColab']})
       );
       expect(nextState.flagOverrides).toEqual({
-        enabledColorGroup: true,
         scalarsBatchSize: 5,
       });
     });
@@ -210,7 +208,6 @@ describe('feature_flag_reducers', () => {
     it('removes all overridden feature flags', () => {
       const prevState = buildFeatureFlagState({
         flagOverrides: {
-          enabledColorGroup: true,
           inColab: true,
           forceSvg: true,
           scalarsBatchSize: 5,
