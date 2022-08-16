@@ -349,74 +349,18 @@ describe('core deeplink provider', () => {
   });
 
   /**
-   * These tests are intended to verify that feature flags are correctly serialized using
-   * featureFlagsToSerializableQueryParams
+   * One test to verify that feature flags are correctly serialized using
+   * featureFlagsToSerializableQueryParams.
    */
-  describe('feature flag', () => {
-    it('serializes enabled experimental plugins', () => {
-      store.overrideSelector(selectors.getOverriddenFeatureFlags, {
-        enabledExperimentalPlugins: ['foo', 'bar', 'baz'],
-      });
-      store.refreshState();
-
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'experimentalPlugin', value: 'foo,bar,baz'},
-      ]);
+  it('serializes feature flags', () => {
+    store.overrideSelector(selectors.getOverriddenFeatureFlags, {
+      enabledExperimentalPlugins: ['foo', 'bar', 'baz'],
     });
+    store.refreshState();
 
-    it('serializes enableColorGroup state', () => {
-      store.overrideSelector(selectors.getOverriddenFeatureFlags, {
-        enabledColorGroup: true,
-      });
-      store.refreshState();
-
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'enableColorGroup', value: 'true'},
-      ]);
-
-      store.overrideSelector(selectors.getOverriddenFeatureFlags, {
-        enabledColorGroup: false,
-      });
-      store.refreshState();
-
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'enableColorGroup', value: 'false'},
-      ]);
-
-      store.overrideSelector(selectors.getOverriddenFeatureFlags, {});
-      store.refreshState();
-
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
-        []
-      );
-    });
-
-    it('serializes enableColorGroupByRegex state', () => {
-      store.overrideSelector(selectors.getOverriddenFeatureFlags, {
-        enabledColorGroupByRegex: true,
-      });
-      store.refreshState();
-
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'enableColorGroupByRegex', value: 'true'},
-      ]);
-
-      store.overrideSelector(selectors.getOverriddenFeatureFlags, {
-        enabledColorGroupByRegex: false,
-      });
-      store.refreshState();
-
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'enableColorGroupByRegex', value: 'false'},
-      ]);
-
-      store.overrideSelector(selectors.getOverriddenFeatureFlags, {});
-      store.refreshState();
-
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
-        []
-      );
-    });
+    expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
+      {key: 'experimentalPlugin', value: 'foo,bar,baz'},
+    ]);
   });
 
   describe('runs', () => {

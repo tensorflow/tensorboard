@@ -58,7 +58,6 @@ limitations under the License.
     mat-menu-item
     role="menuitemradio"
     data-value="regex"
-    *ngIf="showGroupByRegex"
     [attr.aria-checked]="selectedGroupBy.key === GroupByKey.REGEX"
     (click)="onGroupByRegexClick()"
   >
@@ -74,7 +73,6 @@ limitations under the License.
     mat-menu-item
     role="menuitem"
     data-value="regex-edit"
-    *ngIf="showGroupByRegex"
     (click)="onRegexStringEdit()"
     class="display-regex-string"
   >

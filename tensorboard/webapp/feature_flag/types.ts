@@ -25,10 +25,6 @@ export interface FeatureFlags {
   // complete (it is badly broken on Firefox). The feature is still available
   // when using the query parameter, `?darkMode`.
   isAutoDarkModeAllowed: boolean;
-  // Whether to enable experimental semantic color grouping feature.
-  enabledColorGroup: boolean;
-  // Whether to enable color grouping by regex.
-  enabledColorGroupByRegex: boolean;
   // experimental plugins to manually enable.
   enabledExperimentalPlugins: string[];
   // Whether the TensorBoard is being run inside Colab output cell.
