@@ -182,44 +182,6 @@ describe('tb_feature_flag_data_source', () => {
         });
       });
 
-      describe('returns enabledCardWidthSetting from the query params', () => {
-        it('when set to false', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableCardWidthSetting=false')
-          );
-          expect(dataSource.getFeatures()).toEqual({
-            enabledCardWidthSetting: false,
-          });
-        });
-
-        it('when set to empty string', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableCardWidthSetting=')
-          );
-          expect(dataSource.getFeatures()).toEqual({
-            enabledCardWidthSetting: true,
-          });
-        });
-
-        it('when set to true', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableCardWidthSetting=true')
-          );
-          expect(dataSource.getFeatures()).toEqual({
-            enabledCardWidthSetting: true,
-          });
-        });
-
-        it('when set to an arbitrary string', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableCardWidthSetting=foo')
-          );
-          expect(dataSource.getFeatures()).toEqual({
-            enabledCardWidthSetting: true,
-          });
-        });
-      });
-
       describe('returns forceSvg from the query params', () => {
         it('when set to false', () => {
           getParamsSpy.and.returnValue(new URLSearchParams('forceSVG=false'));

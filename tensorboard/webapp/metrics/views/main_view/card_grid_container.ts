@@ -25,7 +25,6 @@ import {BehaviorSubject, combineLatest, Observable, of, Subject} from 'rxjs';
 import {map, shareReplay, switchMap, takeUntil, tap} from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {
-  getEnabledCardWidthSetting,
   getMetricsCardMinWidth,
   getMetricsStepSelectorEnabled,
   getMetricsTagGroupExpansionState,
@@ -127,14 +126,7 @@ export class CardGridContainer implements OnChanges, OnDestroy {
     })
   );
 
-  readonly cardMinWidth$ = combineLatest([
-    this.store.select(getMetricsCardMinWidth),
-    this.store.select(getEnabledCardWidthSetting),
-  ]).pipe(
-    map(([cardMinWidth, isCardWidthSettingEnabled]) =>
-      isCardWidthSettingEnabled ? cardMinWidth : null
-    )
-  );
+  readonly cardMinWidth$ = this.store.select(getMetricsCardMinWidth);
 
   constructor(private readonly store: Store<State>) {}
 

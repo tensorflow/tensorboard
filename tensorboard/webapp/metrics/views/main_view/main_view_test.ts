@@ -203,7 +203,6 @@ describe('metrics main view', () => {
       lastLoadedTimeInMs: null,
     });
     store.overrideSelector(selectors.isMetricsSettingsPaneOpen, false);
-    store.overrideSelector(selectors.getEnabledCardWidthSetting, false);
   });
 
   describe('toolbar', () => {
@@ -909,19 +908,7 @@ describe('metrics main view', () => {
         ]);
       });
 
-      it('does not set the min width without feature flag enabled', () => {
-        const fixture = TestBed.createComponent(MainViewContainer);
-        fixture.detectChanges();
-
-        expect(
-          fixture.debugElement.query(By.css('.card-grid')).styles[
-            'grid-template-columns'
-          ]
-        ).toBe('');
-      });
-
       it('sets the min width to be cardMinWidth', () => {
-        store.overrideSelector(selectors.getEnabledCardWidthSetting, true);
         store.overrideSelector(selectors.getMetricsCardMinWidth, 500);
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
@@ -934,8 +921,6 @@ describe('metrics main view', () => {
       });
 
       it('does not set the max width with invalid width value', () => {
-        store.overrideSelector(selectors.getEnabledCardWidthSetting, true);
-
         store.overrideSelector(selectors.getMetricsCardMinWidth, null);
         let fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
@@ -977,7 +962,6 @@ describe('metrics main view', () => {
       });
 
       it('resets the card min width', () => {
-        store.overrideSelector(selectors.getEnabledCardWidthSetting, true);
         const getMetricsCardMinWidthSubject = new ReplaySubject<number | null>(
           1
         );
