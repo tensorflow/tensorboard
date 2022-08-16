@@ -2507,14 +2507,16 @@ describe('scalar card', () => {
         {
           COLOR: '#fff',
           RUN: 'run1',
-          STEP: 1,
           VALUE_CHANGE: 19,
+          START_STEP: 1,
+          END_STEP: 3,
         },
         {
           COLOR: '#fff',
           RUN: 'run2',
-          STEP: 1,
           VALUE_CHANGE: 24,
+          START_STEP: 1,
+          END_STEP: 3,
         },
       ]);
     }));
@@ -2563,6 +2565,54 @@ describe('scalar card', () => {
 
       expect(data[0].STEP).toEqual(20);
       expect(data[1].STEP).toEqual(15);
+    }));
+
+    it('selects closest start and end points to ranged time selection', fakeAsync(() => {
+      const runToSeries = {
+        run1: [
+          {wallTime: 1, value: 1, step: 1},
+          {wallTime: 2, value: 10, step: 20},
+          {wallTime: 3, value: 20, step: 35},
+        ],
+        run2: [
+          {wallTime: 1, value: 1, step: 3},
+          {wallTime: 2, value: 10, step: 5},
+          {wallTime: 3, value: 20, step: 25},
+        ],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([
+          ['run1', true],
+          ['run2', true],
+        ])
+      );
+
+      store.overrideSelector(getMetricsLinkedTimeSelection, {
+        start: {step: 2},
+        end: {step: 18},
+      });
+
+      const fixture = createComponent('card1');
+      const scalarCardComponent = fixture.debugElement.query(
+        By.directive(ScalarCardComponent)
+      );
+      fixture.detectChanges();
+
+      const data =
+        scalarCardComponent.componentInstance.getTimeSelectionTableData();
+
+      expect(data[0].START_STEP).toEqual(1);
+      expect(data[1].START_STEP).toEqual(3);
+      expect(data[0].END_STEP).toEqual(20);
+      expect(data[1].END_STEP).toEqual(25);
     }));
 
     it('selects largest points when time selection startStep is greater than any points step', fakeAsync(() => {

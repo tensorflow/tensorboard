@@ -113,10 +113,6 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       defaultValue: true,
       queryParamOverride: null,
     },
-    enableTimeSeriesPromotion: {
-      defaultValue: false,
-      queryParamOverride: null,
-    },
   };
 
 /**

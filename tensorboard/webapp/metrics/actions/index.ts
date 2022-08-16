@@ -224,11 +224,3 @@ export const stepSelectorTimeSelectionChanged = createAction(
     affordance?: TimeSelectionAffordance | undefined;
   }>()
 );
-
-export const metricsPromoDismissed = createAction(
-  '[Metrics] Metrics Promo Dismissed'
-);
-
-export const metricsPromoGoToScalars = createAction(
-  '[Metrics] Metrics Promo Go To Scalars'
-);

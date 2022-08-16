@@ -72,6 +72,8 @@ describe('data table', () => {
         ColumnHeaders.STEP,
         ColumnHeaders.RELATIVE_TIME,
         ColumnHeaders.VALUE_CHANGE,
+        ColumnHeaders.START_STEP,
+        ColumnHeaders.END_STEP,
       ],
     });
     fixture.detectChanges();
@@ -84,6 +86,8 @@ describe('data table', () => {
     expect(headerElements[3].nativeElement.innerText).toBe('Step');
     expect(headerElements[4].nativeElement.innerText).toBe('Relative');
     expect(headerElements[5].nativeElement.innerText).toBe('Value Change');
+    expect(headerElements[6].nativeElement.innerText).toBe('Start Step');
+    expect(headerElements[7].nativeElement.innerText).toBe('End Step');
   });
 
   it('displays data in order', () => {
@@ -94,6 +98,8 @@ describe('data table', () => {
         ColumnHeaders.STEP,
         ColumnHeaders.RELATIVE_TIME,
         ColumnHeaders.VALUE_CHANGE,
+        ColumnHeaders.START_STEP,
+        ColumnHeaders.END_STEP,
       ],
       data: [
         {
@@ -102,6 +108,8 @@ describe('data table', () => {
           STEP: 1,
           RELATIVE_TIME: 123,
           VALUE_CHANGE: 20,
+          START_STEP: 5,
+          END_STEP: 30,
         },
       ],
     });
@@ -115,6 +123,8 @@ describe('data table', () => {
     expect(dataElements[3].nativeElement.innerText).toBe('1');
     expect(dataElements[4].nativeElement.innerText).toBe('123 ms');
     expect(dataElements[5].nativeElement.innerText).toBe(' 20'); // space before the value is kept for down or up arrow
+    expect(dataElements[6].nativeElement.innerText).toBe('5');
+    expect(dataElements[7].nativeElement.innerText).toBe('30');
   });
 
   it('displays nothing when no data is available', () => {

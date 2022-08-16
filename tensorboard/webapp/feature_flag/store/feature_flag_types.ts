@@ -14,12 +14,19 @@ limitations under the License.
 ==============================================================================*/
 
 import {FeatureFlags} from '../types';
+import {FeatureFlagMetadataMapType} from './feature_flag_metadata';
 
 export const FEATURE_FLAG_FEATURE_KEY = 'feature';
 
 export interface FeatureFlagState {
   isFeatureFlagsLoaded: boolean;
   defaultFlags: FeatureFlags;
+  // TODO(bmd3k@): `metadata` is temporarily an optional property of
+  //   `FeatureFlagState`.
+  //
+  //   The property will become required once all internal code is updated to
+  //   specify `metadata` as part of `FeatureFlagState`.
+  metadata?: FeatureFlagMetadataMapType<FeatureFlags>;
   flagOverrides?: Partial<FeatureFlags>;
 }
 export interface State {

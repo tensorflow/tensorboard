@@ -3002,17 +3002,6 @@ describe('metrics reducers', () => {
     });
   });
 
-  describe('#metricsPromoDismissed', () => {
-    it('flips off `promotTimeSeries`', () => {
-      const before = buildMetricsState({
-        promoteTimeSeries: true,
-      });
-
-      const after = reducers(before, actions.metricsPromoDismissed());
-      expect(after.promoteTimeSeries).toBe(false);
-    });
-  });
-
   describe('#metricsSettingsPaneToggled', () => {
     it('toggles the settings pane opened state', () => {
       const state1 = buildMetricsState({

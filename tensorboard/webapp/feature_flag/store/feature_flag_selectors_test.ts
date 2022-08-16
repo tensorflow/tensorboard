@@ -291,31 +291,6 @@ describe('feature_flag_selectors', () => {
     });
   });
 
-  describe('#getIsTimeSeriesPromotionEnabled', () => {
-    it('returns the proper value', () => {
-      let state = buildState(
-        buildFeatureFlagState({
-          defaultFlags: buildFeatureFlag({
-            enableTimeSeriesPromotion: false,
-          }),
-        })
-      );
-      expect(selectors.getIsTimeSeriesPromotionEnabled(state)).toEqual(false);
-
-      state = buildState(
-        buildFeatureFlagState({
-          defaultFlags: buildFeatureFlag({
-            enableTimeSeriesPromotion: false,
-          }),
-          flagOverrides: {
-            enableTimeSeriesPromotion: true,
-          },
-        })
-      );
-      expect(selectors.getIsTimeSeriesPromotionEnabled(state)).toEqual(true);
-    });
-  });
-
   describe('#getIsDataTableEnabled', () => {
     it('returns the proper value', () => {
       let state = buildState(

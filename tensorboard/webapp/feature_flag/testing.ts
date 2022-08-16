@@ -13,25 +13,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {
+  FeatureFlagMetadataMap,
+  generateFeatureFlagDefaults,
+} from './store/feature_flag_metadata';
 import {FeatureFlags} from './types';
 
 export function buildFeatureFlag(
   override: Partial<FeatureFlags> = {}
 ): FeatureFlags {
   return {
-    isAutoDarkModeAllowed: false,
-    defaultEnableDarkMode: false,
-    enableDarkModeOverride: null,
-    enabledColorGroup: false,
-    enabledColorGroupByRegex: false,
-    enabledExperimentalPlugins: [],
-    inColab: false,
-    scalarsBatchSize: undefined,
-    metricsImageSupportEnabled: true,
-    enabledLinkedTime: false,
-    enableTimeSeriesPromotion: false,
-    forceSvg: false,
-    enabledScalarDataTable: false,
+    ...generateFeatureFlagDefaults(FeatureFlagMetadataMap),
     ...override,
   };
 }
