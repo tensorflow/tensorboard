@@ -58,6 +58,24 @@ export const getFeatureFlagsMetadata = createSelector(
   }
 );
 
+export const getFeatureFlagsToSendToServer = createSelector(
+  selectFeatureFlagState,
+  (state: FeatureFlagState): Partial<FeatureFlags> => {
+    let featureFlagsToSendToServer: Partial<FeatureFlags> = {};
+    for (const entry in state.flagOverrides) {
+      const entryMetadata = state.metadata[entry as keyof FeatureFlags];
+      if (!entryMetadata.queryParamOverride || !entryMetadata.sendToServer) {
+        continue;
+      }
+      featureFlagsToSendToServer = {
+        ...featureFlagsToSendToServer,
+        [entry]: state.flagOverrides[entry as keyof FeatureFlags],
+      };
+    }
+    return featureFlagsToSendToServer;
+  }
+);
+
 export const getIsAutoDarkModeAllowed = createSelector(
   getFeatureFlags,
   (flags): boolean => {

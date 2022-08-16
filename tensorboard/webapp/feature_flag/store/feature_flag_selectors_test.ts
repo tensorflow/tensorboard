@@ -96,6 +96,117 @@ describe('feature_flag_selectors', () => {
     });
   });
 
+  describe('#getFeatureFlagsToSendToServer', () => {
+    it('returns overriden flags to send to server', () => {
+      // Give explicit defaultValues and modify sendToServer value for some of
+      // the properties.
+      const metadata = {
+        ...FeatureFlagMetadataMap,
+        inColab: {
+          ...FeatureFlagMetadataMap.inColab,
+          defaultValue: true,
+          sendToServer: true,
+        },
+        scalarsBatchSize: {
+          ...FeatureFlagMetadataMap.scalarsBatchSize,
+          defaultValue: 5,
+          sendToServer: true,
+        },
+      };
+      const state = buildState(
+        buildFeatureFlagState({
+          metadata,
+          flagOverrides: {inColab: false, scalarsBatchSize: 10},
+        })
+      );
+      const actual = selectors.getFeatureFlagsToSendToServer(state);
+
+      expect(actual).toEqual({inColab: false, scalarsBatchSize: 10});
+    });
+
+    it('returns flags even if overridden is same as default value', () => {
+      // Give explicit defaultValues and modify sendToServer value for some of
+      // the properties.
+      const metadata = {
+        ...FeatureFlagMetadataMap,
+        inColab: {
+          ...FeatureFlagMetadataMap.inColab,
+          defaultValue: true,
+          sendToServer: true,
+        },
+      };
+      const state = buildState(
+        buildFeatureFlagState({metadata, flagOverrides: {inColab: true}})
+      );
+      const actual = selectors.getFeatureFlagsToSendToServer(state);
+      expect(actual).toEqual({inColab: true});
+    });
+
+    it('ignores overriden flags that should not be sent to server', () => {
+      // Give explicit defaultValues and modify sendToServer value for some of
+      // the properties.
+      const metadata = {
+        ...FeatureFlagMetadataMap,
+        inColab: {
+          ...FeatureFlagMetadataMap.inColab,
+          defaultValue: true,
+          sendToServer: true,
+        },
+        scalarsBatchSize: {
+          ...FeatureFlagMetadataMap.scalarsBatchSize,
+          defaultValue: 5,
+          sendToServer: false,
+        },
+        // Omit sendToServer property to show that unset is equivalent to false.
+        forceSvg: {...FeatureFlagMetadataMap.forceSvg, defaultValue: true},
+      };
+      const state = buildState(
+        buildFeatureFlagState({
+          metadata,
+          flagOverrides: {
+            inColab: false,
+            scalarsBatchSize: 10,
+            forceSvg: false,
+          },
+        })
+      );
+      // scalarsBatchSize and forceSvg are not included in the result.
+      const actual = selectors.getFeatureFlagsToSendToServer(state);
+      expect(actual).toEqual({inColab: false});
+    });
+
+    it('ignores sendToServer flags that have not been overridden', () => {
+      // Give explicit defaultValues and modify sendToServer value for some of
+      // the properties.
+      const metadata = {
+        ...FeatureFlagMetadataMap,
+        inColab: {
+          ...FeatureFlagMetadataMap.inColab,
+          defaultValue: true,
+          sendToServer: true,
+        },
+        scalarsBatchSize: {
+          ...FeatureFlagMetadataMap.scalarsBatchSize,
+          defaultValue: 5,
+          sendToServer: true,
+        },
+      };
+      const state = buildState(
+        buildFeatureFlagState({
+          metadata,
+          // Note: inColab does not have an overridden value.
+          flagOverrides: {
+            scalarsBatchSize: 10,
+          },
+        })
+      );
+
+      const actual = selectors.getFeatureFlagsToSendToServer(state);
+      // inColab is not included in the result.
+      expect(actual).toEqual({scalarsBatchSize: 10});
+    });
+  });
+
   describe('#getDarkModeEnabled', () => {
     it('returns the proper value', () => {
       let state = buildState(
