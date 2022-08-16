@@ -160,21 +160,6 @@ describe('feature_flag_reducers', () => {
       expect(nextState).toBe(prevState);
     });
 
-    it('does not modify previous state', () => {
-      const prevState = buildFeatureFlagState({
-        flagOverrides: {
-          inColab: true,
-        },
-      });
-      reducers(
-        prevState,
-        actions.featureFlagOverridesReset({flags: ['inColab']})
-      );
-      expect(prevState.flagOverrides).toEqual({
-        inColab: true,
-      });
-    });
-
     it('removes all provided overrides', () => {
       const prevState = buildFeatureFlagState({
         flagOverrides: {
@@ -212,18 +197,6 @@ describe('feature_flag_reducers', () => {
   });
 
   describe('#featureFlagsOverridesAllSetToDefault', () => {
-    it('does not modify previous state', () => {
-      const prevState = buildFeatureFlagState({
-        flagOverrides: {
-          inColab: true,
-        },
-      });
-      reducers(prevState, actions.featureFlagOverridesAllReset());
-      expect(prevState.flagOverrides).toEqual({
-        inColab: true,
-      });
-    });
-
     it('always generates a new state', () => {
       const prevState = buildFeatureFlagState({flagOverrides: {}});
       const nextState = reducers(
