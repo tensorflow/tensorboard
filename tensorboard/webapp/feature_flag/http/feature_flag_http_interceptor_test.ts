@@ -25,7 +25,6 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {of} from 'rxjs';
 import {getFeatureFlagsToSendToServer} from '../store/feature_flag_selectors';
 import {State as FeatureFlagState} from '../store/feature_flag_types';
-import {buildFeatureFlag} from '../testing';
 import {FEATURE_FLAGS_HEADER_NAME} from './const';
 import {FeatureFlagHttpInterceptor} from './feature_flag_http_interceptor';
 
@@ -59,10 +58,10 @@ describe('FeatureFlagHttpInterceptor', () => {
   });
 
   it('injects feature flags into the HTTP request', () => {
-    store.overrideSelector(
-      getFeatureFlagsToSendToServer,
-      {inColab: true, scalarsBatchSize: 5}
-    );
+    store.overrideSelector(getFeatureFlagsToSendToServer, {
+      inColab: true,
+      scalarsBatchSize: 5,
+    });
     httpClient.get('/data/hello').subscribe();
     const request = TestBed.inject(HttpTestingController).expectOne(
       '/data/hello'
@@ -76,18 +75,13 @@ describe('FeatureFlagHttpInterceptor', () => {
   });
 
   it('injects empty feature flags into the HTTP request', () => {
-    store.overrideSelector(
-      getFeatureFlagsToSendToServer, {}
-    );
+    store.overrideSelector(getFeatureFlagsToSendToServer, {});
     httpClient.get('/data/hello').subscribe();
     const request = TestBed.inject(HttpTestingController).expectOne(
       '/data/hello'
     );
     expect(request.request.headers).toEqual(
-      new HttpHeaders().set(
-        FEATURE_FLAGS_HEADER_NAME,
-        "{}"
-      )
+      new HttpHeaders().set(FEATURE_FLAGS_HEADER_NAME, '{}')
     );
   });
 });
