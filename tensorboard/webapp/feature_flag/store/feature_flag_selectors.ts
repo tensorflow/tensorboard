@@ -61,18 +61,18 @@ export const getFeatureFlagsMetadata = createSelector(
 export const getFeatureFlagsToSendToServer = createSelector(
   selectFeatureFlagState,
   (state: FeatureFlagState): Partial<FeatureFlags> => {
-    let featureFlagsToSendToServer: Partial<FeatureFlags> = {};
+    let featureFlagsToSendToServer: any = {};
     for (const entry in state.flagOverrides) {
       const entryMetadata = state.metadata[entry as keyof FeatureFlags];
-      if (!entryMetadata.queryParamOverride || !entryMetadata.sendToServer) {
-        continue;
+      if (
+        entryMetadata.queryParamOverride &&
+        entryMetadata.sendToServerWhenOverridden
+      ) {
+        featureFlagsToSendToServer[entry] =
+          state.flagOverrides[entry as keyof FeatureFlags];
       }
-      featureFlagsToSendToServer = {
-        ...featureFlagsToSendToServer,
-        [entry]: state.flagOverrides[entry as keyof FeatureFlags],
-      };
     }
-    return featureFlagsToSendToServer;
+    return featureFlagsToSendToServer as Partial<FeatureFlags>;
   }
 );
 

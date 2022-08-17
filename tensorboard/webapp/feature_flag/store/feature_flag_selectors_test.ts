@@ -105,12 +105,12 @@ describe('feature_flag_selectors', () => {
         inColab: {
           ...FeatureFlagMetadataMap.inColab,
           defaultValue: true,
-          sendToServer: true,
+          sendToServerWhenOverridden: true,
         },
         scalarsBatchSize: {
           ...FeatureFlagMetadataMap.scalarsBatchSize,
           defaultValue: 5,
-          sendToServer: true,
+          sendToServerWhenOverridden: true,
         },
       };
       const state = buildState(
@@ -132,7 +132,7 @@ describe('feature_flag_selectors', () => {
         inColab: {
           ...FeatureFlagMetadataMap.inColab,
           defaultValue: true,
-          sendToServer: true,
+          sendToServerWhenOverridden: true,
         },
       };
       const state = buildState(
@@ -150,12 +150,12 @@ describe('feature_flag_selectors', () => {
         inColab: {
           ...FeatureFlagMetadataMap.inColab,
           defaultValue: true,
-          sendToServer: true,
+          sendToServerWhenOverridden: true,
         },
         scalarsBatchSize: {
           ...FeatureFlagMetadataMap.scalarsBatchSize,
           defaultValue: 5,
-          sendToServer: false,
+          sendToServerWhenOverridden: false,
         },
         // Omit sendToServer property to show that unset is equivalent to false.
         forceSvg: {...FeatureFlagMetadataMap.forceSvg, defaultValue: true},
@@ -183,12 +183,12 @@ describe('feature_flag_selectors', () => {
         inColab: {
           ...FeatureFlagMetadataMap.inColab,
           defaultValue: true,
-          sendToServer: true,
+          sendToServerWhenOverridden: true,
         },
         scalarsBatchSize: {
           ...FeatureFlagMetadataMap.scalarsBatchSize,
           defaultValue: 5,
-          sendToServer: true,
+          sendToServerWhenOverridden: true,
         },
       };
       const state = buildState(

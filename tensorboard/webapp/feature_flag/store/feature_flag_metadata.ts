@@ -37,9 +37,9 @@ export type FeatureFlagMetadata<T> =
       // Additionally they should specify a way to parse the query param string
       // values into the feature flag value.
       parseValue: (str: string) => T;
-      // Some overridable feature flags should be sent to the server if the user
-      // has specified an override value.
-      sendToServer?: boolean;
+      // Indicates that the feature flag and value should be sent to the server
+      // if the user has specified an override value.
+      sendToServerWhenOverridden?: boolean;
     };
 
 export type FeatureFlagMetadataMapType<T> = {
