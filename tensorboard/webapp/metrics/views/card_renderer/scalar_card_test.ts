@@ -2825,6 +2825,40 @@ describe('scalar card', () => {
         ColumnHeaders.SMOOTHED
       );
     }));
+
+    it('returns the same object when nothing has changed', fakeAsync(() => {
+      const runToSeries = {
+        run1: [{wallTime: 1, value: 1, step: 1}],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([['run1', true]])
+      );
+
+      store.overrideSelector(getMetricsLinkedTimeSelection, {
+        start: {step: 2},
+        end: null,
+      });
+
+      const fixture = createComponent('card1');
+      const scalarCardComponent = fixture.debugElement.query(
+        By.directive(ScalarCardComponent)
+      );
+      fixture.detectChanges();
+
+      const data =
+        scalarCardComponent.componentInstance.getTimeSelectionTableData();
+      const secondData =
+        scalarCardComponent.componentInstance.getTimeSelectionTableData();
+      expect(data).toBe(secondData);
+    }));
   });
 
   describe('step selector feature integration', () => {

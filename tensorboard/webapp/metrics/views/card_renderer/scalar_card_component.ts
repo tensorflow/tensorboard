@@ -72,6 +72,7 @@ export class ScalarCardComponent<Downloader> {
   readonly DataLoadState = DataLoadState;
   readonly RendererType = RendererType;
   readonly ScaleType = ScaleType;
+  table_data: SelectedStepRunData[] = [];
 
   @Input() cardId!: string;
   @Input() chartMetadataMap!: ScalarCardSeriesMetadataMap;
@@ -308,6 +309,13 @@ export class ScalarCardComponent<Downloader> {
         return selectedStepData;
       });
 
+    // Send the same object as before is nothing has changed so the table does
+    // not re-render.
+    if (JSON.stringify(this.table_data) === JSON.stringify(dataTableData)) {
+      return this.table_data;
+    }
+
+    this.table_data = dataTableData;
     return dataTableData;
   }
 
