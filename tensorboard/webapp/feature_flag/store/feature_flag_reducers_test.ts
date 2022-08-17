@@ -108,6 +108,119 @@ describe('feature_flag_reducers', () => {
     });
   });
 
+  describe('#featureFlagOverrideChanged', () => {
+    it('does not remove existing overrides', () => {
+      const prevState = buildFeatureFlagState({
+        flagOverrides: {
+          inColab: true,
+          defaultEnableDarkMode: true,
+        },
+      });
+      const nextState = reducers(
+        prevState,
+        actions.featureFlagOverrideChanged({
+          flags: {enabledLinkedTime: true},
+        })
+      );
+      expect(nextState.flagOverrides).toEqual({
+        inColab: true,
+        defaultEnableDarkMode: true,
+        enabledLinkedTime: true,
+      });
+    });
+
+    it('changes values of existing overrides', () => {
+      const prevState = buildFeatureFlagState({
+        flagOverrides: {
+          inColab: true,
+          defaultEnableDarkMode: true,
+        },
+      });
+      const nextState = reducers(
+        prevState,
+        actions.featureFlagOverrideChanged({
+          flags: {inColab: false},
+        })
+      );
+      expect(nextState.flagOverrides).toEqual({
+        inColab: false,
+        defaultEnableDarkMode: true,
+      });
+    });
+  });
+
+  describe('#featureFlagOverridesReset', () => {
+    it('does nothing when no overrides are provided', () => {
+      const prevState = buildFeatureFlagState();
+      const nextState = reducers(
+        prevState,
+        actions.featureFlagOverridesReset({flags: []})
+      );
+      // Intentionally using toBe rather than toEqual to ensure the object is the SAME object (not a copy).
+      expect(nextState).toBe(prevState);
+    });
+
+    it('removes all provided overrides', () => {
+      const prevState = buildFeatureFlagState({
+        flagOverrides: {
+          inColab: true,
+          forceSvg: true,
+          scalarsBatchSize: 5,
+        },
+      });
+      const nextState = reducers(
+        prevState,
+        actions.featureFlagOverridesReset({flags: ['forceSvg', 'inColab']})
+      );
+      expect(nextState.flagOverrides).toEqual({
+        scalarsBatchSize: 5,
+      });
+    });
+
+    it('does not effect default flags', () => {
+      const prevState = buildFeatureFlagState({
+        flagOverrides: {
+          inColab: true,
+        },
+      });
+
+      prevState.defaultFlags.inColab = true;
+      const nextState = reducers(
+        prevState,
+        actions.featureFlagOverridesReset({flags: ['inColab']})
+      );
+      expect(nextState.flagOverrides).toEqual({});
+      expect(nextState.defaultFlags).toBe(prevState.defaultFlags);
+    });
+  });
+
+  describe('#allFeatureFlagOverridesReset', () => {
+    it('always generates a new state', () => {
+      const prevState = buildFeatureFlagState({flagOverrides: {}});
+      const nextState = reducers(
+        prevState,
+        actions.allFeatureFlagOverridesReset()
+      );
+      expect(nextState.flagOverrides).not.toBe(prevState.flagOverrides);
+      expect(nextState.flagOverrides).toEqual({});
+    });
+
+    it('removes all overridden feature flags', () => {
+      const prevState = buildFeatureFlagState({
+        flagOverrides: {
+          inColab: true,
+          forceSvg: true,
+          scalarsBatchSize: 5,
+        },
+      });
+      const nextState = reducers(
+        prevState,
+        actions.allFeatureFlagOverridesReset()
+      );
+      expect(nextState.flagOverrides).toEqual({});
+    });
+  });
+
   describe('#globalSettingsLoaded', () => {
     it('sets dark mode overrides when global settings include it', () => {
       const prevState = buildFeatureFlagState({

@@ -20,7 +20,9 @@ import {combineLatestWith, map, tap, withLatestFrom} from 'rxjs/operators';
 import '../../tb_polymer_interop_types';
 import {TBFeatureFlagDataSource} from '../../webapp_data_source/tb_feature_flag_data_source_types';
 import {
+  allFeatureFlagOverridesReset,
   featureFlagOverrideChanged,
+  featureFlagOverridesReset,
   partialFeatureFlagsLoaded,
 } from '../actions/feature_flag_actions';
 import {ForceSvgDataSource} from '../force_svg_data_source';
@@ -90,6 +92,30 @@ export class FeatureFlagEffects {
         ofType(featureFlagOverrideChanged),
         tap(({flags}) => {
           this.dataSource.persistFeatureFlags(flags);
+        })
+      ),
+    {dispatch: false}
+  );
+
+  readonly resetFeatureFlagOverrides$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(featureFlagOverridesReset),
+        tap(({flags}) => {
+          flags.forEach((flag) => {
+            this.dataSource.resetPersistedFeatureFlag(flag);
+          });
+        })
+      ),
+    {dispatch: false}
+  );
+
+  readonly resetAllFeatureFlagOverrides$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(allFeatureFlagOverridesReset),
+        tap(() => {
+          this.dataSource.resetAllPersistedFeatureFlags();
         })
       ),
     {dispatch: false}

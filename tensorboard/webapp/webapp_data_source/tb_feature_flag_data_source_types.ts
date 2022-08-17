@@ -49,6 +49,11 @@ export abstract class TBFeatureFlagDataSource {
   ): void;
 
   /**
+   * Removes all feature flags overridden in localStorage.
+   */
+  abstract resetAllPersistedFeatureFlags(): void;
+
+  /**
    * Gets the serialized data stored in localStorage for the stored feature
    * flags.
    */

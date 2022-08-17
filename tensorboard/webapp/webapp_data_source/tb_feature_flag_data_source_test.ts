@@ -349,5 +349,20 @@ describe('tb_feature_flag_data_source', () => {
         );
       });
     });
+
+    describe('resetAllPersistedFeatureFlags', () => {
+      it('removes entry from localStorage', () => {
+        spyOn(localStorage, 'getItem').and.returnValue(
+          '{"enabledScalarDataTable":true}'
+        );
+        const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
+        const removeItemSpy = spyOn(localStorage, 'removeItem').and.stub();
+
+        dataSource.resetAllPersistedFeatureFlags();
+        expect(removeItemSpy).toHaveBeenCalledOnceWith(
+          'tb_feature_flag_storage_key'
+        );
+      });
+    });
   });
 });
