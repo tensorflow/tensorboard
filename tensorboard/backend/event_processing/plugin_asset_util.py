@@ -29,7 +29,8 @@ def _IsDirectory(parent, item):
 
 def PluginDirectory(logdir, plugin_name):
     """Returns the plugin directory for plugin_name."""
-    return os.path.join(logdir, _PLUGINS_DIR, plugin_name)
+    # Normalize file path for cloud filesystems that utilize a flat namespace.
+    return os.path.normpath(os.path.join(logdir, _PLUGINS_DIR, plugin_name))
 
 
 def ListPlugins(logdir):
@@ -44,7 +45,8 @@ def ListPlugins(logdir):
     Returns:
       a list of plugin names, as strings
     """
-    plugins_dir = os.path.join(logdir, _PLUGINS_DIR)
+    # Normalize file path for cloud filesystems that utilize a flat namespace.
+    plugins_dir = os.path.normpath(os.path.join(logdir, _PLUGINS_DIR))
     try:
         entries = tf.io.gfile.listdir(plugins_dir)
     except tf.errors.NotFoundError:
