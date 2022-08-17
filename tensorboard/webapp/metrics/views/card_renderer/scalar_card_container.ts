@@ -428,7 +428,10 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
           headers.push(ColumnHeaders.RELATIVE_TIME);
         } else {
           headers.push(ColumnHeaders.RUN);
+          headers.push(ColumnHeaders.MIN_VALUE);
+          headers.push(ColumnHeaders.MAX_VALUE);
           headers.push(ColumnHeaders.VALUE_CHANGE);
+          headers.push(ColumnHeaders.PERCENTAGE_CHANGE);
           headers.push(ColumnHeaders.START_VALUE);
           headers.push(ColumnHeaders.END_VALUE);
           headers.push(ColumnHeaders.START_STEP);

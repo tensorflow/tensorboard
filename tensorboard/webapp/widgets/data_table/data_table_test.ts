@@ -76,6 +76,9 @@ describe('data table', () => {
         ColumnHeaders.END_STEP,
         ColumnHeaders.START_VALUE,
         ColumnHeaders.END_VALUE,
+        ColumnHeaders.MIN_VALUE,
+        ColumnHeaders.MAX_VALUE,
+        ColumnHeaders.PERCENTAGE_CHANGE,
       ],
     });
     fixture.detectChanges();
@@ -92,6 +95,11 @@ describe('data table', () => {
     expect(headerElements[7].nativeElement.innerText).toBe('End Step');
     expect(headerElements[8].nativeElement.innerText).toBe('Start');
     expect(headerElements[9].nativeElement.innerText).toBe('End');
+    expect(headerElements[10].nativeElement.innerText).toBe('Min');
+    expect(headerElements[11].nativeElement.innerText).toBe('Max');
+    expect(headerElements[12].nativeElement.innerText).toBe(
+      'Percentage Change'
+    );
   });
 
   it('displays data in order', () => {
@@ -106,6 +114,9 @@ describe('data table', () => {
         ColumnHeaders.END_STEP,
         ColumnHeaders.START_VALUE,
         ColumnHeaders.END_VALUE,
+        ColumnHeaders.MIN_VALUE,
+        ColumnHeaders.MAX_VALUE,
+        ColumnHeaders.PERCENTAGE_CHANGE,
       ],
       data: [
         {
@@ -118,6 +129,9 @@ describe('data table', () => {
           END_STEP: 30,
           START_VALUE: 13,
           END_VALUE: 23,
+          MIN_VALUE: 1,
+          MAX_VALUE: 500,
+          PERCENTAGE_CHANGE: 0.3,
         },
       ],
     });
@@ -135,6 +149,10 @@ describe('data table', () => {
     expect(dataElements[7].nativeElement.innerText).toBe('30');
     expect(dataElements[8].nativeElement.innerText).toBe('13');
     expect(dataElements[9].nativeElement.innerText).toBe('23');
+    expect(dataElements[10].nativeElement.innerText).toBe('1');
+    expect(dataElements[11].nativeElement.innerText).toBe('500');
+    expect(dataElements[12].nativeElement.innerText).toBe(' 30%'); // space before the percentage is kept for down or up arrow
+    expect;
   });
 
   it('displays nothing when no data is available', () => {

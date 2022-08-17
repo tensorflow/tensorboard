@@ -2514,6 +2514,9 @@ describe('scalar card', () => {
           END_STEP: 3,
           START_VALUE: 1,
           END_VALUE: 20,
+          MIN_VALUE: 1,
+          MAX_VALUE: 20,
+          PERCENTAGE_CHANGE: 19, // percentage change from 1 to 20 is 1900%
         },
         {
           COLOR: '#fff',
@@ -2523,6 +2526,9 @@ describe('scalar card', () => {
           END_STEP: 3,
           START_VALUE: 1,
           END_VALUE: 25,
+          MIN_VALUE: 1,
+          MAX_VALUE: 25,
+          PERCENTAGE_CHANGE: 24, // percentage change from 1 to 25 is 2400%
         },
       ]);
     }));
