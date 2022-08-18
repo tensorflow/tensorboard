@@ -21,15 +21,26 @@ describe('feature-flags', () => {
     feature_flags.initializeFeatureFlags();
   });
 
-  it('sets and gets FeatureFlags', () => {
-    feature_flags.setFeatureFlags(buildFeatureFlag({inColab: true}));
+  it('sets and gets FeatureFlags and getFeatureFlagsToSendToServer', () => {
+    feature_flags.setFeatureFlags(buildFeatureFlag({inColab: true}), {
+      scalarsBatchSize: 10,
+    });
     expect(feature_flags.getFeatureFlags()).toEqual(
       buildFeatureFlag({inColab: true})
     );
+    expect(feature_flags.getFeatureFlagsToSendToServer()).toEqual({
+      scalarsBatchSize: 10,
+    });
   });
 
   it('throws Error if getFeatureFlags is called before setFeatureFlags', () => {
     expect(() => feature_flags.getFeatureFlags()).toThrow(
+      new Error('FeatureFlags have not yet been determined by TensorBoard.')
+    );
+  });
+
+  it('throws Error if getFeatureFlagsToSendToServer is called before setFeatureFlags', () => {
+    expect(() => feature_flags.getFeatureFlagsToSendToServer()).toThrow(
       new Error('FeatureFlags have not yet been determined by TensorBoard.')
     );
   });

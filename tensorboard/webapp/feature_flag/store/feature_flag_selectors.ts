@@ -15,7 +15,10 @@ limitations under the License.
 
 import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {FeatureFlags} from '../types';
-import {FeatureFlagMetadataMapType} from './feature_flag_metadata';
+import {
+  FeatureFlagMetadataMapType,
+  FeatureFlagType,
+} from './feature_flag_metadata';
 import {
   FeatureFlagState,
   FEATURE_FLAG_FEATURE_KEY,
@@ -62,6 +65,26 @@ export const getFeatureFlagsMetadata = createSelector(
   selectFeatureFlagState,
   (state: FeatureFlagState): FeatureFlagMetadataMapType<FeatureFlags> => {
     return state.metadata;
+  }
+);
+
+export const getFeatureFlagsToSendToServer = createSelector(
+  selectFeatureFlagState,
+  (state: FeatureFlagState): Partial<FeatureFlags> => {
+    const featureFlagsToSendToServer: Partial<
+      Record<keyof FeatureFlags, FeatureFlagType>
+    > = {};
+    for (const entry in state.flagOverrides) {
+      const entryMetadata = state.metadata[entry as keyof FeatureFlags];
+      if (
+        entryMetadata.queryParamOverride &&
+        entryMetadata.sendToServerWhenOverridden
+      ) {
+        featureFlagsToSendToServer[entry as keyof FeatureFlags] =
+          state.flagOverrides[entry as keyof FeatureFlags];
+      }
+    }
+    return featureFlagsToSendToServer as Partial<FeatureFlags>;
   }
 );
 

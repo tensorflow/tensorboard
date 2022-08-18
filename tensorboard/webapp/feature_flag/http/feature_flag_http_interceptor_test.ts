@@ -23,9 +23,8 @@ import {provideMockActions} from '@ngrx/effects/testing';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {of} from 'rxjs';
-import {getFeatureFlags} from '../store/feature_flag_selectors';
+import {getFeatureFlagsToSendToServer} from '../store/feature_flag_selectors';
 import {State as FeatureFlagState} from '../store/feature_flag_types';
-import {buildFeatureFlag} from '../testing';
 import {FEATURE_FLAGS_HEADER_NAME} from './const';
 import {FeatureFlagHttpInterceptor} from './feature_flag_http_interceptor';
 
@@ -50,7 +49,7 @@ describe('FeatureFlagHttpInterceptor', () => {
     store = TestBed.inject<Store<FeatureFlagState>>(
       Store
     ) as MockStore<FeatureFlagState>;
-    store.overrideSelector(getFeatureFlags, buildFeatureFlag());
+    store.overrideSelector(getFeatureFlagsToSendToServer, {});
 
     // Note that we do not test FeatureFlagHttpInterceptor directly. We instead
     // test it indirectly by firing Http requests and examining the final
@@ -59,7 +58,10 @@ describe('FeatureFlagHttpInterceptor', () => {
   });
 
   it('injects feature flags into the HTTP request', () => {
-    store.overrideSelector(getFeatureFlags, buildFeatureFlag({inColab: true}));
+    store.overrideSelector(getFeatureFlagsToSendToServer, {
+      inColab: true,
+      scalarsBatchSize: 5,
+    });
     httpClient.get('/data/hello').subscribe();
     const request = TestBed.inject(HttpTestingController).expectOne(
       '/data/hello'
@@ -67,8 +69,19 @@ describe('FeatureFlagHttpInterceptor', () => {
     expect(request.request.headers).toEqual(
       new HttpHeaders().set(
         FEATURE_FLAGS_HEADER_NAME,
-        JSON.stringify(buildFeatureFlag({inColab: true}))
+        JSON.stringify({inColab: true, scalarsBatchSize: 5})
       )
+    );
+  });
+
+  it('injects empty feature flags into the HTTP request', () => {
+    store.overrideSelector(getFeatureFlagsToSendToServer, {});
+    httpClient.get('/data/hello').subscribe();
+    const request = TestBed.inject(HttpTestingController).expectOne(
+      '/data/hello'
+    );
+    expect(request.request.headers).toEqual(
+      new HttpHeaders().set(FEATURE_FLAGS_HEADER_NAME, '{}')
     );
   });
 });

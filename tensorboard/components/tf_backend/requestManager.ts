@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {FEATURE_FLAGS_HEADER_NAME} from '../../webapp/feature_flag/http/const';
-import {getFeatureFlags} from '../tf_feature_flags/feature-flags';
+import {getFeatureFlagsToSendToServer} from '../tf_feature_flags/feature-flags';
 
 interface ResolveReject {
   resolve: (x: unknown) => void;
@@ -245,7 +245,7 @@ export class RequestManager {
       );
       req.setRequestHeader(
         FEATURE_FLAGS_HEADER_NAME,
-        JSON.stringify(getFeatureFlags())
+        JSON.stringify(getFeatureFlagsToSendToServer())
       );
       req.onload = function () {
         if (req.status === 200) {

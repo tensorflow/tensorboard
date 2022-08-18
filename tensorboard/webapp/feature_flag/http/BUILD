@@ -17,6 +17,7 @@ tf_ng_module(
     deps = [
         ":const",
         "//tensorboard/webapp/angular:expect_angular_common_http",
+        "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/feature_flag/store:types",
         "@npm//@angular/core",

@@ -28,6 +28,7 @@ import {
 import {ForceSvgDataSource} from '../force_svg_data_source';
 import {
   getFeatureFlags,
+  getFeatureFlagsToSendToServer,
   getIsAutoDarkModeAllowed,
 } from '../store/feature_flag_selectors';
 import {State} from '../store/feature_flag_types';
@@ -74,9 +75,15 @@ export class FeatureFlagEffects {
         // feature flag values used are from the Store, given that it contains
         // the finalized merged feature flags.
         ofType(partialFeatureFlagsLoaded),
-        withLatestFrom(this.store.select(getFeatureFlags)),
-        tap(([, featureFlags]) => {
-          this.tfFeatureFlags.ref.setFeatureFlags(featureFlags);
+        withLatestFrom(
+          this.store.select(getFeatureFlags),
+          this.store.select(getFeatureFlagsToSendToServer)
+        ),
+        tap(([, featureFlags, featureFlagsToSendToServer]) => {
+          this.tfFeatureFlags.ref.setFeatureFlags(
+            featureFlags,
+            featureFlagsToSendToServer
+          );
         })
       ),
     {dispatch: false}

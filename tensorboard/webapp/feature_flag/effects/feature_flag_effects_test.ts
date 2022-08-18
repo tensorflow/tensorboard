@@ -32,6 +32,7 @@ import {ForceSvgDataSource} from '../force_svg_data_source';
 import {ForceSvgDataSourceModule} from '../force_svg_data_source_module';
 import {
   getFeatureFlags,
+  getFeatureFlagsToSendToServer,
   getIsAutoDarkModeAllowed,
 } from '../store/feature_flag_selectors';
 import {State} from '../store/feature_flag_types';
@@ -163,6 +164,9 @@ describe('feature_flag_effects', () => {
         getFeatureFlags,
         buildFeatureFlag({inColab: true})
       );
+      store.overrideSelector(getFeatureFlagsToSendToServer, {
+        scalarsBatchSize: 10,
+      });
       store.refreshState();
 
       effects.updatePolymerFeatureFlags$.subscribe();
@@ -175,10 +179,10 @@ describe('feature_flag_effects', () => {
         })
       );
 
-      // Expect tf_feature_flags.setFeatureFlags() to be called using the
-      // FeatureFlags object from the Store (and not from the action).
       expect(setPolymerFeatureFlagsSpy).toHaveBeenCalledOnceWith(
-        buildFeatureFlag({inColab: true})
+        // Uses the FeatureFlags object from the Store and not from the action.
+        buildFeatureFlag({inColab: true}),
+        {scalarsBatchSize: 10}
       );
     });
   });

@@ -44,7 +44,10 @@ export declare interface SetStringOption {
 }
 
 export declare interface TfFeatureFlags {
-  setFeatureFlags(featureFlags: FeatureFlags): void;
+  setFeatureFlags(
+    featureFlags: FeatureFlags,
+    featureFlagsToSendToServer: Partial<FeatureFlags>
+  ): void;
 }
 
 export declare interface TfFeatureFlagsElement extends HTMLElement {
