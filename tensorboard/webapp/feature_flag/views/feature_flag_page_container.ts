@@ -38,7 +38,7 @@ import {
   template: `<feature-flag-page-component
     [featureFlagStatuses]="featureFlags$ | async"
     (flagChanged)="onFlagChanged($event)"
-    (flagsReset)="onFlagsReset()"
+    (allFlagsReset)="onAllFlagsReset()"
   ></feature-flag-page-component>`,
 })
 export class FeatureFlagPageContainer {
@@ -48,7 +48,6 @@ export class FeatureFlagPageContainer {
     this.store.select(getDefaultFeatureFlags).pipe(
       withLatestFrom(this.store.select(getOverriddenFeatureFlags)),
       map(([defaultFeatureFlags, overriddenFeatureFlags]) => {
-        console.log(defaultFeatureFlags);
         return Object.entries(defaultFeatureFlags).map(
           ([flagName, defaultValue]) => {
             const status = this.getFlagStatus(
@@ -85,7 +84,7 @@ export class FeatureFlagPageContainer {
     }
   }
 
-  onFlagsReset() {
+  onAllFlagsReset() {
     this.store.dispatch(allFeatureFlagOverridesReset());
   }
 

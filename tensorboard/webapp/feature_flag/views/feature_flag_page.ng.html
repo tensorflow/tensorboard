@@ -27,7 +27,7 @@ limitations under the License.
         <td>
           <mat-select
             [value]="state.status"
-            (selectionChange)="setFlag(state.flag, $event.value)"
+            (selectionChange)="flagChanged.emit({flag: state.flag, status: $event.value})"
           >
             <mat-option value="default"
               >Default - {{state.defaultValue}}</mat-option
@@ -41,6 +41,6 @@ limitations under the License.
         </td>
       </tr>
     </ng-container>
-    <button mat-button (click)="resetFlags()">Reset</button>
+    <button mat-button (click)="allFlagsReset.emit()">Reset All</button>
   </table>
 </div>

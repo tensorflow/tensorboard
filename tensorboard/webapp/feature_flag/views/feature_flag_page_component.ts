@@ -26,17 +26,13 @@ import {
   templateUrl: `feature_flag_page.ng.html`,
 })
 export class FeatureFlagPageComponent {
-  @Input() featureFlagStatuses!: Array<FeatureFlagState<keyof FeatureFlags>>;
+  @Input() featureFlagStatuses!: FeatureFlagState<keyof FeatureFlags>[];
 
   @Output() flagChanged = new EventEmitter<FeatureFlagStatusEvent>();
 
-  @Output() flagsReset = new EventEmitter();
+  @Output() allFlagsReset = new EventEmitter();
 
   setFlag(flag: keyof FeatureFlags, status: FeatureFlagStatus) {
     this.flagChanged.emit({flag, status});
-  }
-
-  resetFlags() {
-    this.flagsReset.emit();
   }
 }
