@@ -260,6 +260,7 @@ tf_ng_module(
     srcs = [
         "scalar_card_component.ts",
         "scalar_card_container.ts",
+        "scalar_card_data_table.ts",
         "scalar_card_fob_controller.ts",
         "scalar_card_module.ts",
     ],

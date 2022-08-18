@@ -94,6 +94,7 @@ import {
 import {TooltipSort, XAxisType} from '../../types';
 import {ScalarCardComponent} from './scalar_card_component';
 import {ScalarCardContainer} from './scalar_card_container';
+import {ScalarCardDataTable} from './scalar_card_data_table';
 import {ScalarCardFobController} from './scalar_card_fob_controller';
 import {
   ColumnHeaders,
@@ -295,6 +296,7 @@ describe('scalar card', () => {
       declarations: [
         ScalarCardContainer,
         ScalarCardComponent,
+        ScalarCardDataTable,
         ScalarCardFobController,
         TestableDataDownload,
         TestableLineChart,
@@ -2435,13 +2437,13 @@ describe('scalar card', () => {
       });
 
       const fixture = createComponent('card1');
-      const scalarCardComponent = fixture.debugElement.query(
-        By.directive(ScalarCardComponent)
+      const scalarCardDataTable = fixture.debugElement.query(
+        By.directive(ScalarCardDataTable)
       );
       fixture.detectChanges();
 
       const data =
-        scalarCardComponent.componentInstance.getTimeSelectionTableData();
+        scalarCardDataTable.componentInstance.getTimeSelectionTableData();
 
       expect(data).toEqual([
         {
@@ -2495,13 +2497,13 @@ describe('scalar card', () => {
       });
 
       const fixture = createComponent('card1');
-      const scalarCardComponent = fixture.debugElement.query(
-        By.directive(ScalarCardComponent)
+      const scalarCardDataTable = fixture.debugElement.query(
+        By.directive(ScalarCardDataTable)
       );
       fixture.detectChanges();
 
       const data =
-        scalarCardComponent.componentInstance.getTimeSelectionTableData();
+        scalarCardDataTable.componentInstance.getTimeSelectionTableData();
 
       expect(data).toEqual([
         {
@@ -2559,13 +2561,13 @@ describe('scalar card', () => {
       });
 
       const fixture = createComponent('card1');
-      const scalarCardComponent = fixture.debugElement.query(
-        By.directive(ScalarCardComponent)
+      const scalarCardDataTable = fixture.debugElement.query(
+        By.directive(ScalarCardDataTable)
       );
       fixture.detectChanges();
 
       const data =
-        scalarCardComponent.componentInstance.getTimeSelectionTableData();
+        scalarCardDataTable.componentInstance.getTimeSelectionTableData();
 
       expect(data[0].STEP).toEqual(20);
       expect(data[1].STEP).toEqual(15);
@@ -2605,13 +2607,13 @@ describe('scalar card', () => {
       });
 
       const fixture = createComponent('card1');
-      const scalarCardComponent = fixture.debugElement.query(
-        By.directive(ScalarCardComponent)
+      const scalarCardDataTable = fixture.debugElement.query(
+        By.directive(ScalarCardDataTable)
       );
       fixture.detectChanges();
 
       const data =
-        scalarCardComponent.componentInstance.getTimeSelectionTableData();
+        scalarCardDataTable.componentInstance.getTimeSelectionTableData();
 
       expect(data[0].START_STEP).toEqual(1);
       expect(data[1].START_STEP).toEqual(3);
@@ -2653,13 +2655,13 @@ describe('scalar card', () => {
       });
 
       const fixture = createComponent('card1');
-      const scalarCardComponent = fixture.debugElement.query(
-        By.directive(ScalarCardComponent)
+      const scalarCardDataTable = fixture.debugElement.query(
+        By.directive(ScalarCardDataTable)
       );
       fixture.detectChanges();
 
       const data =
-        scalarCardComponent.componentInstance.getTimeSelectionTableData();
+        scalarCardDataTable.componentInstance.getTimeSelectionTableData();
 
       expect(data[0].STEP).toEqual(35);
       expect(data[1].STEP).toEqual(50);
@@ -2698,13 +2700,13 @@ describe('scalar card', () => {
       });
 
       const fixture = createComponent('card1');
-      const scalarCardComponent = fixture.debugElement.query(
-        By.directive(ScalarCardComponent)
+      const scalarCardDataTable = fixture.debugElement.query(
+        By.directive(ScalarCardDataTable)
       );
       fixture.detectChanges();
 
       const data =
-        scalarCardComponent.componentInstance.getTimeSelectionTableData();
+        scalarCardDataTable.componentInstance.getTimeSelectionTableData();
 
       expect(data[0].STEP).toEqual(10);
       expect(data[1].STEP).toEqual(8);
@@ -2759,13 +2761,13 @@ describe('scalar card', () => {
         .and.returnValue(of(buildRun({name: 'Run2 name'})));
 
       const fixture = createComponent('card1');
-      const scalarCardComponent = fixture.debugElement.query(
-        By.directive(ScalarCardComponent)
+      const scalarCardDataTable = fixture.debugElement.query(
+        By.directive(ScalarCardDataTable)
       );
       fixture.detectChanges();
 
       const data =
-        scalarCardComponent.componentInstance.getTimeSelectionTableData();
+        scalarCardDataTable.componentInstance.getTimeSelectionTableData();
       expect(data[0].RUN).toEqual('100 test alias 1/Run1 name');
       expect(data[1].RUN).toEqual('200 test alias 2/Run2 name');
     }));
@@ -2798,16 +2800,16 @@ describe('scalar card', () => {
 
       const fixture = createComponent('card1');
       fixture.detectChanges();
-      const scalarCardComponent = fixture.debugElement.query(
-        By.directive(ScalarCardComponent)
+      const scalarCardDataTable = fixture.debugElement.query(
+        By.directive(ScalarCardDataTable)
       );
 
-      expect(scalarCardComponent.componentInstance.dataHeaders).toContain(
+      expect(scalarCardDataTable.componentInstance.dataHeaders).toContain(
         ColumnHeaders.SMOOTHED
       );
 
       expect(
-        scalarCardComponent.componentInstance.getTimeSelectionTableData()[0]
+        scalarCardDataTable.componentInstance.getTimeSelectionTableData()[0]
           .SMOOTHED
       ).toBe(6.000000000000001);
     }));
@@ -2815,13 +2817,32 @@ describe('scalar card', () => {
     it('does not add smoothed column header when smoothed is disabled', fakeAsync(() => {
       store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
 
+      const runToSeries = {
+        run1: [{wallTime: 1, value: 1, step: 10}],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([['run1', true]])
+      );
+      store.overrideSelector(getMetricsLinkedTimeSelection, {
+        start: {step: 20},
+        end: null,
+      });
+
       const fixture = createComponent('card1');
       fixture.detectChanges();
-      const scalarCardComponent = fixture.debugElement.query(
-        By.directive(ScalarCardComponent)
+      const scalarCardDataTable = fixture.debugElement.query(
+        By.directive(ScalarCardDataTable)
       );
 
-      expect(scalarCardComponent.componentInstance.dataHeaders).not.toContain(
+      expect(scalarCardDataTable.componentInstance.dataHeaders).not.toContain(
         ColumnHeaders.SMOOTHED
       );
     }));

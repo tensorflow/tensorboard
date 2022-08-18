@@ -37,7 +37,6 @@ import {
   siNumberFormatter,
 } from '../../../widgets/line_chart_v2/lib/formatter';
 import {LineChartComponent} from '../../../widgets/line_chart_v2/line_chart_component';
-import {findClosestIndex} from '../../../widgets/line_chart_v2/sub_view/line_chart_interactive_utils';
 import {
   RendererType,
   ScaleType,
@@ -48,10 +47,8 @@ import {
   ColumnHeaders,
   MinMaxStep,
   ScalarCardDataSeries,
-  ScalarCardPoint,
   ScalarCardSeriesMetadata,
   ScalarCardSeriesMetadataMap,
-  SelectedStepRunData,
 } from './scalar_card_types';
 import {TimeSelectionView} from './utils';
 
@@ -223,92 +220,6 @@ export class ScalarCardComponent<Downloader> {
         ? {step: this.linkedTimeSelection.endStep}
         : null,
     };
-  }
-
-  getTimeSelectionTableData(): SelectedStepRunData[] {
-    if (
-      this.linkedTimeSelection === null &&
-      this.stepSelectorTimeSelection === null
-    ) {
-      return [];
-    }
-    const startStep = this.linkedTimeSelection
-      ? this.linkedTimeSelection.startStep
-      : this.stepSelectorTimeSelection.start.step;
-    const endStep = this.linkedTimeSelection
-      ? this.linkedTimeSelection.endStep
-      : this.stepSelectorTimeSelection.end?.step;
-    const dataTableData: SelectedStepRunData[] = this.dataSeries
-      .filter((datum) => {
-        const metadata = this.chartMetadataMap[datum.id];
-        return metadata && metadata.visible && !Boolean(metadata.aux);
-      })
-      .map((datum) => {
-        const metadata = this.chartMetadataMap[datum.id];
-        const closestStartPoint =
-          datum.points[findClosestIndex(datum.points, startStep)];
-        let closestEndPoint: ScalarCardPoint | null = null;
-        if (endStep !== null && endStep !== undefined) {
-          closestEndPoint =
-            datum.points[findClosestIndex(datum.points, endStep)];
-        }
-        const selectedStepData: SelectedStepRunData = {};
-        selectedStepData.COLOR = metadata.color;
-        for (const header of this.dataHeaders) {
-          switch (header) {
-            case ColumnHeaders.RUN:
-              let alias = '';
-              if (metadata.alias) {
-                alias = `${metadata.alias.aliasNumber} ${metadata.alias.aliasText}/`;
-              }
-              selectedStepData.RUN = `${alias}${metadata.displayName}`;
-              continue;
-            case ColumnHeaders.STEP:
-              selectedStepData.STEP = closestStartPoint.step;
-              continue;
-            case ColumnHeaders.VALUE:
-              selectedStepData.VALUE = closestStartPoint.value;
-              continue;
-            case ColumnHeaders.RELATIVE_TIME:
-              selectedStepData.RELATIVE_TIME =
-                closestStartPoint.relativeTimeInMs;
-              continue;
-            case ColumnHeaders.SMOOTHED:
-              selectedStepData.SMOOTHED = closestStartPoint.y;
-              continue;
-            case ColumnHeaders.VALUE_CHANGE:
-              if (!closestEndPoint) {
-                continue;
-              }
-              selectedStepData.VALUE_CHANGE =
-                closestEndPoint.value - closestStartPoint.value;
-              continue;
-            case ColumnHeaders.START_STEP:
-              selectedStepData.START_STEP = closestStartPoint.step;
-              continue;
-            case ColumnHeaders.END_STEP:
-              if (!closestEndPoint) {
-                continue;
-              }
-              selectedStepData.END_STEP = closestEndPoint.step;
-              continue;
-            case ColumnHeaders.START_VALUE:
-              selectedStepData.START_VALUE = closestStartPoint.value;
-              continue;
-            case ColumnHeaders.END_VALUE:
-              if (!closestEndPoint) {
-                continue;
-              }
-              selectedStepData.END_VALUE = closestEndPoint.value;
-              continue;
-            default:
-              continue;
-          }
-        }
-        return selectedStepData;
-      });
-
-    return dataTableData;
   }
 
   onFobTimeSelectionChanged(newTimeSelectionWithAffordance: {
