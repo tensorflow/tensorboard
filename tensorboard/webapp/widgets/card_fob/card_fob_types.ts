@@ -25,19 +25,19 @@ export interface TimeSelection {
  * Only used for internal analytics.
  */
 export enum TimeSelectionAffordance {
-  NONE,
+  NONE = 'NO_AFFORDANCE',
   // Dragging the extended line above a fob.
-  EXTENDED_LINE,
+  EXTENDED_LINE = 'EXTENDED_LINE',
   // Dragging the fob.
-  FOB,
+  FOB = 'FOB',
   // Clicking the deselect button.
-  FOB_REMOVED,
+  FOB_REMOVED = 'FOB_REMOVED',
   // Typing the step in fob.
-  FOB_TEXT,
+  FOB_TEXT = 'FOB_TEXT',
   // Typing the step in setting pane.
-  SETTINGS_TEXT,
+  SETTINGS_TEXT = 'SETTINGS_TEXT',
   // Dragging the slider in setting pane.
-  SETTINGS_SLIDER,
+  SETTINGS_SLIDER = 'SETTINGS_SLIDER',
 }
 
 /**
@@ -45,11 +45,11 @@ export enum TimeSelectionAffordance {
  * Only used for internal analytics.
  */
 export enum TimeSelectionToggleAffordance {
-  NONE,
+  NONE = 'NO_TOGGLE_AFFORDANCE',
   // Clicking cross sign in fob.
-  FOB_DESELECT,
+  FOB_DESELECT = 'FOB_DESELECT',
   // Clicking check box in settings pane.
-  CHECK_BOX,
+  CHECK_BOX = 'CHECK_BOX',
 }
 
 /**
