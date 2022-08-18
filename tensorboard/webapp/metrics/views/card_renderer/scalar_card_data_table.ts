@@ -41,6 +41,34 @@ export class ScalarCardDataTable {
   @Input() stepSelectorTimeSelection!: TimeSelection;
   @Input() dataHeaders!: ColumnHeaders[];
 
+  getMinValueInRange(
+    points: ScalarCardPoint[],
+    startPointIndex: number,
+    endPointIndex: number
+  ): number {
+    let minValue = points[startPointIndex].value;
+    for (let i = startPointIndex; i <= endPointIndex; i++) {
+      if (minValue > points[i].value) {
+        minValue = points[i].value;
+      }
+    }
+    return minValue;
+  }
+
+  getMaxValueInRange(
+    points: ScalarCardPoint[],
+    startPointIndex: number,
+    endPointIndex: number
+  ): number {
+    let maxValue = points[startPointIndex].value;
+    for (let i = startPointIndex; i <= endPointIndex; i++) {
+      if (maxValue < points[i].value) {
+        maxValue = points[i].value;
+      }
+    }
+    return maxValue;
+  }
+
   getTimeSelectionTableData(): SelectedStepRunData[] {
     if (
       this.linkedTimeSelection === null &&
@@ -61,12 +89,16 @@ export class ScalarCardDataTable {
       })
       .map((datum) => {
         const metadata = this.chartMetadataMap[datum.id];
-        const closestStartPoint =
-          datum.points[findClosestIndex(datum.points, startStep)];
+        const closestStartPointIndex = findClosestIndex(
+          datum.points,
+          startStep
+        );
+        const closestStartPoint = datum.points[closestStartPointIndex];
         let closestEndPoint: ScalarCardPoint | null = null;
+        let closestEndPointIndex: number | null = null;
         if (endStep !== null && endStep !== undefined) {
-          closestEndPoint =
-            datum.points[findClosestIndex(datum.points, endStep)];
+          closestEndPointIndex = findClosestIndex(datum.points, endStep);
+          closestEndPoint = datum.points[closestEndPointIndex];
         }
         const selectedStepData: SelectedStepRunData = {};
         selectedStepData.COLOR = metadata.color;
@@ -116,6 +148,34 @@ export class ScalarCardDataTable {
                 continue;
               }
               selectedStepData.END_VALUE = closestEndPoint.value;
+              continue;
+            case ColumnHeaders.MIN_VALUE:
+              if (!closestEndPointIndex) {
+                continue;
+              }
+              selectedStepData.MIN_VALUE = this.getMinValueInRange(
+                datum.points,
+                closestStartPointIndex,
+                closestEndPointIndex
+              );
+              continue;
+            case ColumnHeaders.MAX_VALUE:
+              if (!closestEndPointIndex) {
+                continue;
+              }
+              selectedStepData.MAX_VALUE = this.getMaxValueInRange(
+                datum.points,
+                closestStartPointIndex,
+                closestEndPointIndex
+              );
+              continue;
+            case ColumnHeaders.PERCENTAGE_CHANGE:
+              if (!closestEndPoint) {
+                continue;
+              }
+              selectedStepData.PERCENTAGE_CHANGE =
+                (closestEndPoint.value - closestStartPoint.value) /
+                closestStartPoint.value;
               continue;
             default:
               continue;
