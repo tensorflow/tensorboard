@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
+import {FeatureFlagPageModule} from '../feature_flag/views/feature_flag_module';
 import {PluginsModule} from '../plugins/plugins_module';
 import {ReloaderModule} from '../reloader/reloader_module';
 import {TensorBoardWrapperComponent} from './tb_wrapper_component';
@@ -23,7 +24,7 @@ import {TensorBoardWrapperComponent} from './tb_wrapper_component';
  */
 @NgModule({
   declarations: [TensorBoardWrapperComponent],
-  imports: [CommonModule, PluginsModule, ReloaderModule],
+  imports: [CommonModule, FeatureFlagPageModule, PluginsModule, ReloaderModule],
   exports: [TensorBoardWrapperComponent],
   entryComponents: [TensorBoardWrapperComponent],
 })

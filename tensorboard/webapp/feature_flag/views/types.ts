@@ -12,16 +12,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@use '@angular/material' as mat;
-@import 'tensorboard/webapp/theme/tb_theme';
+import {FeatureFlags} from '../types';
 
-.message {
-  .warning {
-    color: mat.get-color-from-palette($tb-primary);
-  }
-  margin-bottom: 16px;
+export const enum FeatureFlagStatus {
+  ENABLED = 'enabled',
+  DISABLED = 'disabled',
+  DEFAULT = 'default',
 }
 
-.feature-flag-table {
-  width: 100%;
-}
+export type FeatureFlagState<K extends keyof FeatureFlags> = {
+  flag: K;
+  status: FeatureFlagStatus;
+  defaultValue: FeatureFlags[K];
+};
+
+export type FeatureFlagStatusEvent = {
+  flag: keyof FeatureFlags;
+  status: FeatureFlagStatus;
+};

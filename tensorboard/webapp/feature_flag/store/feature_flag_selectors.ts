@@ -149,3 +149,10 @@ export const getIsDataTableEnabled = createSelector(
     return flags.enabledScalarDataTable;
   }
 );
+
+export const getShowFlagsEnabled = createSelector(
+  getFeatureFlags,
+  (flags: FeatureFlags): boolean => {
+    return flags.enableShowFlags;
+  }
+);

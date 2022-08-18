@@ -13,6 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {Store} from '@ngrx/store';
+import {State} from '../app_state';
+import {featureFlagOverrideChanged} from '../feature_flag/actions/feature_flag_actions';
+import {
+  getFeatureFlags,
+  getShowFlagsEnabled,
+} from '../feature_flag/store/feature_flag_selectors';
+import {FeatureFlagPageContainer} from '../feature_flag/views/feature_flag_page_container';
 
 @Component({
   selector: 'tensorboard-wrapper-component',
@@ -37,4 +46,27 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TensorBoardWrapperComponent {}
+export class TensorBoardWrapperComponent {
+  readonly showFeatureFlags$ = this.store.select(getShowFlagsEnabled);
+  readonly featureFlags$ = this.store.select(getFeatureFlags);
+  private featureFlagsDialog?: MatDialogRef<FeatureFlagPageContainer>;
+
+  constructor(private readonly store: Store<State>, private dialog: MatDialog) {
+    this.showFeatureFlags$.subscribe((showFeatureFlags: boolean) => {
+      if (showFeatureFlags) {
+        this.featureFlagsDialog = this.dialog.open(FeatureFlagPageContainer);
+        this.featureFlagsDialog.afterClosed().subscribe(() => {
+          this.store.dispatch(
+            featureFlagOverrideChanged({
+              flags: {enableShowFlags: false},
+            })
+          );
+        });
+        return;
+      }
+      if (this.featureFlagsDialog) {
+        this.featureFlagsDialog.close();
+      }
+    });
+  }
+}

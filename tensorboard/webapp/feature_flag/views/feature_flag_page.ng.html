@@ -16,16 +16,31 @@ limitations under the License.
 -->
 
 <div>
-  <table>
-    <ng-container *ngFor="let flag of getFlagKeys();">
+  <div class="message">
+    <h2 class="warning">WARNING: EXPERIMENTAL FEATURES AHEAD!</h2>
+    By enabling these features, you could put the application in an unusable
+    state or expose yourself to untested features or potential bugs.
+  </div>
+  <table class="feature-flag-table">
+    <ng-container *ngFor="let state of featureFlagStatuses;">
       <tr>
-        <mat-checkbox
-          [checked]="featureFlags[flag]"
-          (change)="flagChanged(flag)"
-          >Enabled</mat-checkbox
-        >
-        {{flag}}
+        <td>
+          <mat-select
+            [value]="state.status"
+            (selectionChange)="setFlag(state.flag, $event.value)"
+          >
+            <mat-option value="default"
+              >Default - {{state.defaultValue}}</mat-option
+            >
+            <mat-option value="enabled">Enabled</mat-option>
+            <mat-option value="disabled">Disabled</mat-option>
+          </mat-select>
+        </td>
+        <td>
+          <div>{{state.flag}}</div>
+        </td>
       </tr>
     </ng-container>
+    <button mat-button (click)="resetFlags()">Reset</button>
   </table>
 </div>

@@ -14,7 +14,8 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatButtonModule} from '@angular/material/button';
+import {MatSelectModule} from '@angular/material/select';
 import {FeatureFlagPageComponent} from './feature_flag_page_component';
 import {FeatureFlagPageContainer} from './feature_flag_page_container';
 
@@ -23,7 +24,7 @@ import {FeatureFlagPageContainer} from './feature_flag_page_container';
  */
 @NgModule({
   declarations: [FeatureFlagPageComponent, FeatureFlagPageContainer],
-  imports: [CommonModule, MatCheckboxModule],
+  imports: [CommonModule, MatButtonModule, MatSelectModule],
   exports: [FeatureFlagPageContainer],
   entryComponents: [FeatureFlagPageContainer],
 })
