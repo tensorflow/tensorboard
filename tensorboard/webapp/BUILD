@@ -120,6 +120,7 @@ tf_ng_module(
         "//tensorboard/webapp/core/views:page_title",
         "//tensorboard/webapp/experiments",
         "//tensorboard/webapp/feature_flag",
+        "//tensorboard/webapp/feature_flag/views:feature_flag_modal_trigger_module",
         "//tensorboard/webapp/header",
         "//tensorboard/webapp/hparams",
         "//tensorboard/webapp/persistent_settings",

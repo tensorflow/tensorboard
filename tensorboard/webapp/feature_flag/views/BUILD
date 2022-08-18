@@ -11,6 +11,25 @@ tf_sass_binary(
 )
 
 tf_ng_module(
+    name = "feature_flag_modal_trigger_module",
+    srcs = [
+        "feature_flag_modal_trigger_component.ts",
+        "feature_flag_modal_trigger_module.ts",
+    ],
+    deps = [
+        ":views",
+        "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/angular:expect_angular_material_checkbox",
+        "//tensorboard/webapp/feature_flag/actions",
+        "//tensorboard/webapp/feature_flag/store",
+        "@npm//@angular/common",
+        "@npm//@angular/core",
+        "@npm//@ngrx/store",
+        "@npm//rxjs",
+    ],
+)
+
+tf_ng_module(
     name = "views",
     srcs = [
         "feature_flag_module.ts",

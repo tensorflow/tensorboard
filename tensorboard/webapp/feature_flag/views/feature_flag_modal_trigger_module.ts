@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,17 +14,16 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {PluginsModule} from '../plugins/plugins_module';
-import {ReloaderModule} from '../reloader/reloader_module';
-import {TensorBoardWrapperComponent} from './tb_wrapper_component';
+import {FeatureFlagModalTriggerComponent} from './feature_flag_modal_trigger_component';
+import {FeatureFlagPageModule} from './feature_flag_module';
 
 /**
  * Provides the wrapper component that renders the main dashboard page.
  */
 @NgModule({
-  declarations: [TensorBoardWrapperComponent],
-  imports: [CommonModule, PluginsModule, ReloaderModule],
-  exports: [TensorBoardWrapperComponent],
-  entryComponents: [TensorBoardWrapperComponent],
+  declarations: [FeatureFlagModalTriggerComponent],
+  imports: [CommonModule, FeatureFlagPageModule],
+  exports: [FeatureFlagModalTriggerComponent],
+  entryComponents: [FeatureFlagModalTriggerComponent],
 })
-export class TensorBoardWrapperModule {}
+export class FeatureFlagModalTriggerModule {}

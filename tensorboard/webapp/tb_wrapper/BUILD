@@ -11,15 +11,9 @@ tf_ng_module(
         "tb_wrapper_module.ts",
     ],
     deps = [
-        "//tensorboard/webapp:app_state",
-        "//tensorboard/webapp/angular:expect_angular_material_dialog",
-        "//tensorboard/webapp/feature_flag/actions",
-        "//tensorboard/webapp/feature_flag/store",
-        "//tensorboard/webapp/feature_flag/views",
         "//tensorboard/webapp/plugins",
         "//tensorboard/webapp/reloader",
         "@npm//@angular/common",
         "@npm//@angular/core",
-        "@npm//@ngrx/store",
     ],
 )
