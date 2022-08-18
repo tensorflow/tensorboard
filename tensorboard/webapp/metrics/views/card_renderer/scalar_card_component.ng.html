@@ -170,10 +170,14 @@ limitations under the License.
 </div>
 <ng-container *ngIf="inTimeSelectionMode()">
   <div class="data-table-container">
-    <tb-data-table
-      [headers]="dataHeaders"
-      [data]="getTimeSelectionTableData()"
-    ></tb-data-table>
+    <scalar-card-data-table
+      [chartMetadataMap]="chartMetadataMap"
+      [dataSeries]="dataSeries"
+      [linkedTimeSelection]="linkedTimeSelection"
+      [stepSelectorTimeSelection]="stepSelectorTimeSelection"
+      [dataHeaders]="dataHeaders"
+    >
+    </scalar-card-data-table>
   </div>
 </ng-container>
 <ng-template
