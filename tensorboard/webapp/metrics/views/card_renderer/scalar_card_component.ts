@@ -37,7 +37,6 @@ import {
   siNumberFormatter,
 } from '../../../widgets/line_chart_v2/lib/formatter';
 import {LineChartComponent} from '../../../widgets/line_chart_v2/line_chart_component';
-import {findClosestIndex} from '../../../widgets/line_chart_v2/sub_view/line_chart_interactive_utils';
 import {
   RendererType,
   ScaleType,
@@ -48,10 +47,8 @@ import {
   ColumnHeaders,
   MinMaxStep,
   ScalarCardDataSeries,
-  ScalarCardPoint,
   ScalarCardSeriesMetadata,
   ScalarCardSeriesMetadataMap,
-  SelectedStepRunData,
 } from './scalar_card_types';
 import {TimeSelectionView} from './utils';
 
