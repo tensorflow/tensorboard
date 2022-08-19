@@ -48,21 +48,21 @@ limitations under the License.
                 >{{ getFormattedDataForColumn(header, runData) }}</span
               >
             </td>
-            <ng-template #arrow let-value>
-              <mat-icon
-                *ngIf="value >= 0"
-                class="delta-arrow"
-                svgIcon="arrow_upward_24px"
-              ></mat-icon>
-              <mat-icon
-                *ngIf="value < 0"
-                class="delta-arrow"
-                svgIcon="arrow_downward_24px"
-              ></mat-icon>
-            </ng-template>
           </ng-container>
         </tr>
       </ng-container>
     </tbody>
   </table>
 </div>
+<ng-template #arrow let-value>
+  <mat-icon
+    *ngIf="value >= 0"
+    class="delta-arrow"
+    svgIcon="arrow_upward_24px"
+  ></mat-icon>
+  <mat-icon
+    *ngIf="value < 0"
+    class="delta-arrow"
+    svgIcon="arrow_downward_24px"
+  ></mat-icon>
+</ng-template>
