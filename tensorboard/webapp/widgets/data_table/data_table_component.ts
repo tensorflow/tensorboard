@@ -62,6 +62,12 @@ export class DataTableComponent {
         return 'Start';
       case ColumnHeaders.END_VALUE:
         return 'End';
+      case ColumnHeaders.MIN_VALUE:
+        return 'Min';
+      case ColumnHeaders.MAX_VALUE:
+        return 'Max';
+      case ColumnHeaders.PERCENTAGE_CHANGE:
+        return 'Percentage Change';
       default:
         return '';
     }
@@ -143,6 +149,29 @@ export class DataTableComponent {
         }
         return intlNumberFormatter.formatShort(
           selectedStepRunData.END_VALUE as number
+        );
+      case ColumnHeaders.MIN_VALUE:
+        if (selectedStepRunData.MIN_VALUE === undefined) {
+          return '';
+        }
+        return intlNumberFormatter.formatShort(
+          selectedStepRunData.MIN_VALUE as number
+        );
+      case ColumnHeaders.MAX_VALUE:
+        if (selectedStepRunData.MAX_VALUE === undefined) {
+          return '';
+        }
+        return intlNumberFormatter.formatShort(
+          selectedStepRunData.MAX_VALUE as number
+        );
+      case ColumnHeaders.PERCENTAGE_CHANGE:
+        if (selectedStepRunData.PERCENTAGE_CHANGE === undefined) {
+          return '';
+        }
+        return (
+          Math.round(
+            (selectedStepRunData.PERCENTAGE_CHANGE as number) * 100
+          ).toString() + '%'
         );
       default:
         return '';
