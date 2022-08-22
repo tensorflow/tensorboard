@@ -38,6 +38,7 @@ tf_ng_module(
         "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/actions",
         "//tensorboard/webapp/feature_flag/store",
+        "//tensorboard/webapp/feature_flag/store:feature_flag_metadata",
         "//tensorboard/webapp/feature_flag/store:types",
         "//tensorboard/webapp/webapp_data_source:feature_flag_testing",
         "@npm//@ngrx/effects",

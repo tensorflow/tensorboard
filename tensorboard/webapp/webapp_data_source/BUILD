@@ -84,6 +84,7 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp/feature_flag:types",
+        "//tensorboard/webapp/feature_flag/store:feature_flag_metadata",
         "@npm//@angular/core",
     ],
 )
@@ -130,6 +131,7 @@ tf_ng_module(
     deps = [
         ":feature_flag",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/store:feature_flag_metadata",
         "@npm//@angular/core",
         "@npm//@types/jasmine",

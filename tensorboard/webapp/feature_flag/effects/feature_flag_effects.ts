@@ -28,6 +28,7 @@ import {
 import {ForceSvgDataSource} from '../force_svg_data_source';
 import {
   getFeatureFlags,
+  getFeatureFlagsMetadata,
   getFeatureFlagsToSendToServer,
   getIsAutoDarkModeAllowed,
 } from '../store/feature_flag_selectors';
@@ -47,9 +48,15 @@ export class FeatureFlagEffects {
   readonly getFeatureFlags$ = createEffect(() =>
     this.actions$.pipe(
       ofType(effectsInitialized),
-      combineLatestWith(this.store.select(getIsAutoDarkModeAllowed)),
-      map(([, isDarkModeAllowed]) => {
-        const features = this.dataSource.getFeatures(isDarkModeAllowed);
+      combineLatestWith(
+        this.store.select(getIsAutoDarkModeAllowed),
+        this.store.select(getFeatureFlagsMetadata)
+      ),
+      map(([, isDarkModeAllowed, featureFlagsMetadata]) => {
+        const features = this.dataSource.getFeatures(
+          isDarkModeAllowed,
+          featureFlagsMetadata
+        );
 
         if (features.forceSvg != null) {
           this.forceSvgDataSource.updateForceSvgFlag(features.forceSvg);
