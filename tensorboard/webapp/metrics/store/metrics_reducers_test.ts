@@ -2488,7 +2488,7 @@ describe('metrics reducers', () => {
         });
       });
 
-      it('enables linkedTimeEnabled if previously disabled', () => {
+      it('keeps linkedTimeEnabled disabled if previously disabled', () => {
         const beforeState = buildMetricsState({
           linkedTimeEnabled: false,
         });
@@ -2500,7 +2500,7 @@ describe('metrics reducers', () => {
           })
         );
 
-        expect(nextState.linkedTimeEnabled).toBe(true);
+        expect(nextState.linkedTimeEnabled).toBe(false);
       });
 
       it('flips `end` to `start` if new start is greater than new end', () => {

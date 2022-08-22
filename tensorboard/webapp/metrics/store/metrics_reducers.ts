@@ -1007,7 +1007,6 @@ const reducer = createReducer(
 
     return {
       ...state,
-      linkedTimeEnabled: true,
       linkedTimeSelection,
       cardStepIndex: nextCardStepIndexMap,
       linkedTimeRangeEnabled,

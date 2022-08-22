@@ -2913,7 +2913,7 @@ describe('scalar card', () => {
         ).toBeFalsy();
       }));
 
-      it('dispatches stepSelectorTimeSelectionChanged action when fob is dragged', fakeAsync(() => {
+      it('dispatches stepSelectorTimeSelectionChanged actions when fob is dragged', fakeAsync(() => {
         const fixture = createComponent('card1');
         fixture.detectChanges();
         const testController = fixture.debugElement.query(
@@ -2942,22 +2942,15 @@ describe('scalar card', () => {
         expect(
           fobs[0].query(By.css('span')).nativeElement.textContent.trim()
         ).toEqual('25');
-        expect(dispatchedActions).toEqual([
-          stepSelectorTimeSelectionChanged({
-            timeSelection: {
-              startStep: 25,
-              endStep: undefined,
-            },
-            affordance: undefined,
-          }),
+        expect(dispatchedActions).toContain(
           stepSelectorTimeSelectionChanged({
             timeSelection: {
               startStep: 25,
               endStep: undefined,
             },
             affordance: TimeSelectionAffordance.FOB,
-          }),
-        ]);
+          })
+        );
         const scalarCardComponent = fixture.debugElement.query(
           By.directive(ScalarCardComponent)
         );
@@ -2967,6 +2960,45 @@ describe('scalar card', () => {
           start: {step: 25},
           end: null,
         });
+      }));
+
+      it('dispatches linkedTimeSelectionChanged actions when fob is dragged under linkedTime disabled', fakeAsync(() => {
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+        const testController = fixture.debugElement.query(
+          By.directive(CardFobControllerComponent)
+        ).componentInstance;
+        const controllerStartPosition =
+          testController.root.nativeElement.getBoundingClientRect().left;
+
+        // Simulate dragging fob to step 25.
+        testController.startDrag(
+          Fob.START,
+          TimeSelectionAffordance.FOB,
+          new MouseEvent('mouseDown')
+        );
+        const fakeEvent = new MouseEvent('mousemove', {
+          clientX: 25 + controllerStartPosition,
+          movementX: 1,
+        });
+        testController.mouseMove(fakeEvent);
+        testController.stopDrag();
+        fixture.detectChanges();
+
+        const fobs = fixture.debugElement.queryAll(
+          By.directive(CardFobComponent)
+        );
+        expect(dispatchedActions).toContain(
+          linkedTimeSelectionChanged({
+            timeSelection: {
+              startStep: 25,
+              endStep: undefined,
+            },
+            // linkedTime is disabled, therefore there should be no affordance
+            // and this is not logged in internal analytics
+            affordance: undefined,
+          })
+        );
       }));
 
       it('sets stepSelectorTimeSelection to single selection', fakeAsync(() => {

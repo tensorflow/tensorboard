@@ -601,7 +601,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
   onLinkedTimeSelectionChanged(newTimeSelectionWithAffordance: {
     timeSelection: TimeSelection;
-    affordance: TimeSelectionAffordance;
+    affordance?: TimeSelectionAffordance;
   }) {
     const {timeSelection, affordance} = newTimeSelectionWithAffordance;
     this.store.dispatch(
