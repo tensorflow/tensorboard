@@ -28,7 +28,7 @@ import {
 } from '../store/feature_flag_selectors';
 import {FeatureFlags} from '../types';
 import {
-  FeatureFlagState,
+  FeatureFlagOverrideStatus,
   FeatureFlagStatus,
   FeatureFlagStatusEvent,
 } from './types';
@@ -44,7 +44,7 @@ import {
 export class FeatureFlagPageContainer {
   constructor(private readonly store: Store<State>) {}
 
-  readonly featureFlags$: Observable<FeatureFlagState<keyof FeatureFlags>[]> =
+  readonly featureFlags$: Observable<FeatureFlagStatus<keyof FeatureFlags>[]> =
     this.store.select(getDefaultFeatureFlags).pipe(
       withLatestFrom(this.store.select(getOverriddenFeatureFlags)),
       map(([defaultFeatureFlags, overriddenFeatureFlags]) => {
@@ -58,7 +58,7 @@ export class FeatureFlagPageContainer {
               flag: flagName,
               defaultValue,
               status,
-            } as FeatureFlagState<keyof FeatureFlags>;
+            } as FeatureFlagStatus<keyof FeatureFlags>;
           }
         );
       })
@@ -66,15 +66,15 @@ export class FeatureFlagPageContainer {
 
   onFlagChanged({flag, status}: FeatureFlagStatusEvent) {
     switch (status) {
-      case FeatureFlagStatus.DEFAULT:
+      case FeatureFlagOverrideStatus.DEFAULT:
         this.store.dispatch(featureFlagOverridesReset({flags: [flag]}));
         break;
-      case FeatureFlagStatus.ENABLED:
+      case FeatureFlagOverrideStatus.ENABLED:
         this.store.dispatch(
           featureFlagOverrideChanged({flags: {[flag]: true}})
         );
         break;
-      case FeatureFlagStatus.DISABLED:
+      case FeatureFlagOverrideStatus.DISABLED:
         this.store.dispatch(
           featureFlagOverrideChanged({flags: {[flag]: false}})
         );
@@ -91,12 +91,12 @@ export class FeatureFlagPageContainer {
   private getFlagStatus(
     flagName: keyof FeatureFlags,
     overriddenFeatureFlags: Partial<FeatureFlags>
-  ): FeatureFlagStatus {
+  ): FeatureFlagOverrideStatus {
     if (overriddenFeatureFlags[flagName] === undefined) {
-      return FeatureFlagStatus.DEFAULT;
+      return FeatureFlagOverrideStatus.DEFAULT;
     }
     return overriddenFeatureFlags[flagName]
-      ? FeatureFlagStatus.ENABLED
-      : FeatureFlagStatus.DISABLED;
+      ? FeatureFlagOverrideStatus.ENABLED
+      : FeatureFlagOverrideStatus.DISABLED;
   }
 }

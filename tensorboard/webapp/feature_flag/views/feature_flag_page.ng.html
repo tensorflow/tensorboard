@@ -22,23 +22,29 @@ limitations under the License.
     state or expose yourself to untested features or potential bugs.
   </div>
   <table class="feature-flag-table">
-    <ng-container *ngFor="let state of featureFlagStatuses;">
+    <ng-container *ngFor="let flagStatus of featureFlagStatuses;">
       <tr>
         <td>
+          <div>{{flagStatus.flag}}</div>
+        </td>
+        <ng-container
+          *ngIf="flagStatus.defaultValue === true || flagStatus.defaultValue === false; then selectBlock else staticBlock"
+        ></ng-container>
+        <ng-template #selectBlock>
           <mat-select
-            [value]="state.status"
-            (selectionChange)="flagChanged.emit({flag: state.flag, status: $event.value})"
+            [value]="flagStatus.status"
+            (selectionChange)="flagChanged.emit({flag: flagStatus.flag, status: $event.value})"
           >
             <mat-option value="default"
-              >Default - {{state.defaultValue}}</mat-option
+              >Default {{formatFlagValue(flagStatus.defaultValue)}}</mat-option
             >
             <mat-option value="enabled">Enabled</mat-option>
             <mat-option value="disabled">Disabled</mat-option>
           </mat-select>
-        </td>
-        <td>
-          <div>{{state.flag}}</div>
-        </td>
+        </ng-template>
+        <ng-template #staticBlock>
+          <td>Unsupported By UI {{formatFlagValue(flagStatus.value)}}</td>
+        </ng-template>
       </tr>
     </ng-container>
     <button mat-button (click)="allFlagsReset.emit()">Reset All</button>

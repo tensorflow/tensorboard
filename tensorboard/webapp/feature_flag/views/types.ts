@@ -14,19 +14,19 @@ limitations under the License.
 ==============================================================================*/
 import {FeatureFlags} from '../types';
 
-export const enum FeatureFlagStatus {
+export const enum FeatureFlagOverrideStatus {
   ENABLED = 'enabled',
   DISABLED = 'disabled',
   DEFAULT = 'default',
 }
 
-export type FeatureFlagState<K extends keyof FeatureFlags> = {
+export type FeatureFlagStatus<K extends keyof FeatureFlags> = {
   flag: K;
-  status: FeatureFlagStatus;
+  status: FeatureFlagOverrideStatus;
   defaultValue: FeatureFlags[K];
 };
 
 export type FeatureFlagStatusEvent = {
   flag: keyof FeatureFlags;
-  status: FeatureFlagStatus;
+  status: FeatureFlagOverrideStatus;
 };

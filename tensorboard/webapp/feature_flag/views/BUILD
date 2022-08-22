@@ -13,7 +13,7 @@ tf_sass_binary(
 tf_ng_module(
     name = "feature_flag_modal_trigger_module",
     srcs = [
-        "feature_flag_modal_trigger_component.ts",
+        "feature_flag_modal_trigger_container.ts",
         "feature_flag_modal_trigger_module.ts",
     ],
     deps = [
@@ -47,6 +47,7 @@ tf_ng_module(
         "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/actions",
         "//tensorboard/webapp/feature_flag/store",
+        "//tensorboard/webapp/feature_flag/store:feature_flag_metadata",
         "//tensorboard/webapp/feature_flag/store:types",
         "@npm//@angular/common",
         "@npm//@angular/core",

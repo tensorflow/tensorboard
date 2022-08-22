@@ -21,14 +21,14 @@ import {
   getFeatureFlags,
   getShowFlagsEnabled,
 } from '../store/feature_flag_selectors';
-import {FeatureFlagPageContainer} from '../views/feature_flag_page_container';
+import {FeatureFlagPageContainer} from './feature_flag_page_container';
 
 @Component({
-  selector: 'feature-flag-modal-trigger-component',
+  selector: 'feature-flag-modal-trigger',
   template: ``,
   styles: [],
 })
-export class FeatureFlagModalTriggerComponent {
+export class FeatureFlagModalTriggerContainer {
   readonly showFeatureFlags$ = this.store.select(getShowFlagsEnabled);
   readonly featureFlags$ = this.store.select(getFeatureFlags);
   private featureFlagsDialog?: MatDialogRef<FeatureFlagPageContainer>;
@@ -38,6 +38,7 @@ export class FeatureFlagModalTriggerComponent {
       if (showFeatureFlags) {
         this.featureFlagsDialog = this.dialog.open(FeatureFlagPageContainer);
         this.featureFlagsDialog.afterClosed().subscribe(() => {
+          // By disabling the flag when the dialog is closed to prevent it from appearing again after the page is refreshed.
           this.store.dispatch(
             featureFlagOverrideChanged({
               flags: {enableShowFlags: false},

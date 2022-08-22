@@ -14,16 +14,17 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {FeatureFlagModalTriggerComponent} from './feature_flag_modal_trigger_component';
+import {FeatureFlagModalTriggerContainer} from './feature_flag_modal_trigger_container';
 import {FeatureFlagPageModule} from './feature_flag_module';
 
 /**
- * Provides the wrapper component that renders the main dashboard page.
+ * Provides the wrapper component that triggers the opening of the feature flag modal.
+ * The modal appears based on the value of the enableShowFlags feature flag.
  */
 @NgModule({
-  declarations: [FeatureFlagModalTriggerComponent],
+  declarations: [FeatureFlagModalTriggerContainer],
   imports: [CommonModule, FeatureFlagPageModule],
-  exports: [FeatureFlagModalTriggerComponent],
-  entryComponents: [FeatureFlagModalTriggerComponent],
+  exports: [FeatureFlagModalTriggerContainer],
+  entryComponents: [FeatureFlagModalTriggerContainer],
 })
 export class FeatureFlagModalTriggerModule {}
