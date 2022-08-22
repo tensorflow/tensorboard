@@ -50,7 +50,7 @@ export class FeatureFlagPageContainer {
       map(([defaultFeatureFlags, overriddenFeatureFlags]) => {
         return Object.entries(defaultFeatureFlags).map(
           ([flagName, defaultValue]) => {
-            const status = this.getFlagStatus(
+            const status = getFlagStatus(
               flagName as keyof FeatureFlags,
               overriddenFeatureFlags
             );
@@ -87,16 +87,20 @@ export class FeatureFlagPageContainer {
   onAllFlagsReset() {
     this.store.dispatch(allFeatureFlagOverridesReset());
   }
-
-  private getFlagStatus(
-    flagName: keyof FeatureFlags,
-    overriddenFeatureFlags: Partial<FeatureFlags>
-  ): FeatureFlagOverrideStatus {
-    if (overriddenFeatureFlags[flagName] === undefined) {
-      return FeatureFlagOverrideStatus.DEFAULT;
-    }
-    return overriddenFeatureFlags[flagName]
-      ? FeatureFlagOverrideStatus.ENABLED
-      : FeatureFlagOverrideStatus.DISABLED;
-  }
 }
+
+function getFlagStatus(
+  flagName: keyof FeatureFlags,
+  overriddenFeatureFlags: Partial<FeatureFlags>
+): FeatureFlagOverrideStatus {
+  if (overriddenFeatureFlags[flagName] === undefined) {
+    return FeatureFlagOverrideStatus.DEFAULT;
+  }
+  return overriddenFeatureFlags[flagName]
+    ? FeatureFlagOverrideStatus.ENABLED
+    : FeatureFlagOverrideStatus.DISABLED;
+}
+
+export const TEST_ONLY = {
+  getFlagStatus,
+};

@@ -15,11 +15,7 @@ limitations under the License.
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {FeatureFlagType} from '../store/feature_flag_metadata';
 import {FeatureFlags} from '../types';
-import {
-  FeatureFlagOverrideStatus,
-  FeatureFlagStatus,
-  FeatureFlagStatusEvent,
-} from './types';
+import {FeatureFlagStatus, FeatureFlagStatusEvent} from './types';
 
 @Component({
   selector: 'feature-flag-page-component',
@@ -33,10 +29,6 @@ export class FeatureFlagPageComponent {
 
   @Output() allFlagsReset = new EventEmitter();
 
-  setFlag(flag: keyof FeatureFlags, status: FeatureFlagOverrideStatus) {
-    this.flagChanged.emit({flag, status});
-  }
-
   private getFormattedFlagValue(value: FeatureFlagType): string {
     if (value === true) {
       return 'Enabled';
@@ -48,6 +40,10 @@ export class FeatureFlagPageComponent {
 
     if (value === null || value === undefined) {
       return 'null';
+    }
+
+    if (Array.isArray(value)) {
+      return JSON.stringify(value);
     }
 
     return value.toString();
