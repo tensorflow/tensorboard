@@ -24,6 +24,7 @@ limitations under the License.
     position: sticky;
     text-align: left;
     top: 0;
+
     @include tb-dark-theme {
       background-color: map-get($tb-dark-background, background);
     }
