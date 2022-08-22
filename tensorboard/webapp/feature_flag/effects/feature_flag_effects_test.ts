@@ -30,8 +30,10 @@ import {
 } from '../actions/feature_flag_actions';
 import {ForceSvgDataSource} from '../force_svg_data_source';
 import {ForceSvgDataSourceModule} from '../force_svg_data_source_module';
+import {FeatureFlagMetadataMap} from '../store/feature_flag_metadata';
 import {
   getFeatureFlags,
+  getFeatureFlagsMetadata,
   getFeatureFlagsToSendToServer,
   getIsAutoDarkModeAllowed,
 } from '../store/feature_flag_selectors';
@@ -73,6 +75,7 @@ describe('feature_flag_effects', () => {
     dataSource = TestBed.inject(TestingTBFeatureFlagDataSource);
     forceSvgDataSource = TestBed.inject(ForceSvgDataSource);
     store.overrideSelector(getIsAutoDarkModeAllowed, false);
+    store.overrideSelector(getFeatureFlagsMetadata, FeatureFlagMetadataMap);
   });
 
   describe('getFeatureFlags$', () => {

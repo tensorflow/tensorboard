@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
+import {FeatureFlagMetadataMapType} from '../feature_flag/store/feature_flag_metadata';
 import {FeatureFlags} from '../feature_flag/types';
 
 @Injectable()
@@ -27,7 +28,10 @@ export abstract class TBFeatureFlagDataSource {
    * The data source may leave some or all feature flags unspecified if it does
    * not have enough information to provide values.
    */
-  abstract getFeatures(enableMediaQuery?: boolean): Partial<FeatureFlags>;
+  abstract getFeatures(
+    enableMediaQuery: boolean,
+    featureFlagsMetadata: FeatureFlagMetadataMapType<FeatureFlags>
+  ): Partial<FeatureFlags>;
 
   /**
    * Stores the given feature flag values in localStorage to allow for more

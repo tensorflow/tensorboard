@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 import {
-  FeatureFlagMetadataMap,
+  FeatureFlagMetadataMapType,
   FeatureFlagType,
 } from '../feature_flag/store/feature_flag_metadata';
 import {FeatureFlags} from '../feature_flag/types';
@@ -29,7 +29,10 @@ const FEATURE_FLAG_STORAGE_KEY = 'tb_feature_flag_storage_key';
 export class FeatureFlagOverrideDataSource implements TBFeatureFlagDataSource {
   constructor(readonly queryParams: QueryParams) {}
 
-  getFeatures(enableMediaQuery: boolean = false) {
+  getFeatures(
+    enableMediaQuery: boolean,
+    featureFlagsMetadata: FeatureFlagMetadataMapType<FeatureFlags>
+  ) {
     // Set feature flag value for query parameters that are explicitly
     // specified. Feature flags for unspecified query parameters remain unset so
     // their values in the underlying state are not inadvertently changed.
@@ -37,7 +40,7 @@ export class FeatureFlagOverrideDataSource implements TBFeatureFlagDataSource {
       Record<keyof FeatureFlags, FeatureFlagType>
     > = enableMediaQuery ? this.getPartialFeaturesFromMediaQuery() : {};
     const overriddenFeatures = getOverriddenFeatureFlagValuesFromSearchParams(
-      FeatureFlagMetadataMap,
+      featureFlagsMetadata,
       this.queryParams.getParams()
     );
     return {
