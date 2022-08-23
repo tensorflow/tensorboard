@@ -33,7 +33,7 @@ class TensorFlowPngEncoderTest(tf.test.TestCase):
         # assume it did the right thing. We trust the underlying
         # `encode_png` op.
         self.assertEqual(b"\x89PNG", data[:4])
-        self.assertGreater(len(data), 128)
+        self.assertGreater(len(data), 125)
 
     def test_invalid_non_numpy(self):
         with self.assertRaisesRegex(ValueError, "must be a numpy array"):
