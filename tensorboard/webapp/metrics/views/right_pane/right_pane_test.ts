@@ -29,8 +29,12 @@ import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';
-import {TimeSelectionToggleAffordance} from '../../../widgets/card_fob/card_fob_types';
+import {
+  TimeSelectionAffordance,
+  TimeSelectionToggleAffordance,
+} from '../../../widgets/card_fob/card_fob_types';
 import {DropdownModule} from '../../../widgets/dropdown/dropdown_module';
+import {RangeInputSource} from '../../../widgets/range_input/types';
 import * as actions from '../../actions';
 import {HistogramMode, TooltipSort, XAxisType} from '../../types';
 import {RightPaneComponent} from './right_pane_component';
@@ -513,6 +517,7 @@ describe('metrics right_pane', () => {
           rangeInput.triggerEventHandler('rangeValuesChanged', {
             lowerValue: 10,
             upperValue: 200,
+            source: RangeInputSource.SLIDER,
           });
 
           expect(dispatchSpy).toHaveBeenCalledOnceWith(
@@ -521,6 +526,7 @@ describe('metrics right_pane', () => {
                 start: {step: 10},
                 end: {step: 200},
               },
+              affordance: TimeSelectionAffordance.SETTINGS_SLIDER,
             })
           );
         });
@@ -539,7 +545,10 @@ describe('metrics right_pane', () => {
           const el = fixture.debugElement.query(By.css('.linked-time'));
           const rangeInput = el.query(By.css('tb-range-input'));
 
-          rangeInput.triggerEventHandler('singleValueChanged', 10);
+          rangeInput.triggerEventHandler('singleValueChanged', {
+            value: 10,
+            source: RangeInputSource.TEXT,
+          });
 
           expect(dispatchSpy).toHaveBeenCalledOnceWith(
             actions.timeSelectionChanged({
@@ -547,6 +556,7 @@ describe('metrics right_pane', () => {
                 start: {step: 10},
                 end: null,
               },
+              affordance: TimeSelectionAffordance.SETTINGS_TEXT,
             })
           );
         });

@@ -25,6 +25,11 @@ import {
 import {auditTime} from 'rxjs/operators';
 import {DropdownOption} from '../../../widgets/dropdown/dropdown_component';
 import {
+  RangeInputSource,
+  RangeValues,
+  SingleValue,
+} from '../../../widgets/range_input/types';
+import {
   HistogramMode,
   SCALARS_SMOOTHING_MAX,
   TimeSelection,
@@ -71,7 +76,10 @@ export class SettingsViewComponent {
   @Input() stepMinMax!: {min: number; max: number};
 
   @Output() linkedTimeToggled = new EventEmitter<void>();
-  @Output() linkedTimeSelectionChanged = new EventEmitter<TimeSelection>();
+  @Output()
+  linkedTimeSelectionChanged = new EventEmitter<
+    TimeSelection & {source: RangeInputSource}
+  >();
 
   @Output() stepSelectorToggled = new EventEmitter<void>();
 
@@ -185,10 +193,11 @@ export class SettingsViewComponent {
     return '';
   }
 
-  onSingleValueChanged(stepValue: number) {
+  onSingleValueChanged({value, source}: SingleValue) {
     this.linkedTimeSelectionChanged.emit({
-      start: {step: stepValue},
+      start: {step: value},
       end: null,
+      source,
     });
   }
 
@@ -196,16 +205,11 @@ export class SettingsViewComponent {
     return this.xAxisType === XAxisType.STEP;
   }
 
-  onRangeValuesChanged({
-    lowerValue,
-    upperValue,
-  }: {
-    lowerValue: number;
-    upperValue: number;
-  }) {
+  onRangeValuesChanged({lowerValue, upperValue, source}: RangeValues) {
     this.linkedTimeSelectionChanged.emit({
       start: {step: lowerValue},
       end: {step: upperValue},
+      source,
     });
   }
 }

@@ -26,6 +26,7 @@ import {
 } from '@angular/core';
 import {fromEvent, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
+import {RangeInputSource, RangeValuesEvent, SingleValueEvent} from './types';
 
 // Keep this in sync with range_input_component.scss's `$_thumb-size`.
 const THUMB_SIZE_PX = 12;
@@ -135,12 +136,10 @@ export class RangeInputComponent implements OnInit, OnDestroy {
   @Input() enabled: boolean = true;
 
   @Output()
-  rangeValuesChanged = new EventEmitter<{
-    lowerValue: number;
-    upperValue: number;
-  }>();
+  rangeValuesChanged = new EventEmitter<RangeValuesEvent>();
 
-  @Output() singleValueChanged = new EventEmitter<number>();
+  @Output()
+  singleValueChanged = new EventEmitter<SingleValueEvent>();
 
   readonly Position = Position;
 
@@ -302,14 +301,17 @@ export class RangeInputComponent implements OnInit, OnDestroy {
       nextValues = [this.lowerValue, newValue];
     }
 
-    this.maybeNotifyNextRangeValues(nextValues);
+    this.maybeNotifyNextRangeValues(nextValues, RangeInputSource.SLIDER);
     this.changeDetector.markForCheck();
   }
 
-  private maybeNotifyNextRangeValues(minAndMax: [number, number]) {
+  private maybeNotifyNextRangeValues(
+    minAndMax: [number, number],
+    source: RangeInputSource
+  ) {
     const [lowerValue, upperValue] = minAndMax.sort((a, b) => a - b);
     if (this.lowerValue !== lowerValue || this.upperValue !== upperValue) {
-      this.rangeValuesChanged.emit({lowerValue, upperValue});
+      this.rangeValuesChanged.emit({lowerValue, upperValue, source});
     }
   }
 
@@ -332,18 +334,30 @@ export class RangeInputComponent implements OnInit, OnDestroy {
       if (this.upperValue === null) {
         // There is currently no upper value so we are already in single selection mode
         // and can update just the single value.
-        this.singleValueChanged.emit(numValue);
+        this.singleValueChanged.emit({
+          value: numValue,
+          source: RangeInputSource.TEXT,
+        });
       } else {
-        this.maybeNotifyNextRangeValues([numValue, this.upperValue]);
+        this.maybeNotifyNextRangeValues(
+          [numValue, this.upperValue],
+          RangeInputSource.TEXT
+        );
       }
     } else {
       // Upper value has changed.
       if (input.value === '') {
         // Upper value is being deleted so we now enter single selection mode, using the current
         // lower value.
-        this.singleValueChanged.emit(this.lowerValue);
+        this.singleValueChanged.emit({
+          value: this.lowerValue,
+          source: RangeInputSource.TEXT,
+        });
       } else {
-        this.maybeNotifyNextRangeValues([this.lowerValue, numValue]);
+        this.maybeNotifyNextRangeValues(
+          [this.lowerValue, numValue],
+          RangeInputSource.TEXT
+        );
       }
     }
   }
