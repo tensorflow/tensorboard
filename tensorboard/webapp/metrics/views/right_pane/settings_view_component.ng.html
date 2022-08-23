@@ -26,31 +26,6 @@ limitations under the License.
     >
     </tb-dropdown>
   </div>
-  <div class="control-row card-width">
-    <div class="control-name" id="card-width-label">Card Width</div>
-    <div class="slider-row">
-      <mat-slider
-        aria-labelledby="card-width-label"
-        color="primary"
-        [max]="MAX_CARD_WIDTH_SLIDER_VALUE"
-        [min]="MIN_CARD_WIDTH_SLIDER_VALUE"
-        [step]="50"
-        [value]="cardMinWidth"
-        [thumbLabel]="false"
-        (input)="cardWidthSliderChanged$.emit($event.value)"
-      ></mat-slider>
-      <button
-        class="reset-button"
-        mat-icon-button
-        i18n-aria-label="A button to reset the card width setting"
-        aria-label="Reset card width"
-        title="Reset card width"
-        (click)="cardWidthReset.emit()"
-      >
-        <mat-icon svgIcon="settings_backup_restore_24px"></mat-icon>
-      </button>
-    </div>
-  </div>
 
   <div
     class="control-row scalars-step-selector"
@@ -85,6 +60,32 @@ limitations under the License.
           (rangeValuesChanged)="onRangeValuesChanged($event)"
         ></tb-range-input>
       </div>
+    </div>
+  </div>
+
+  <div class="control-row card-width">
+    <div class="control-name" id="card-width-label">Card Width</div>
+    <div class="slider-row">
+      <mat-slider
+        aria-labelledby="card-width-label"
+        color="primary"
+        [max]="MAX_CARD_WIDTH_SLIDER_VALUE"
+        [min]="MIN_CARD_WIDTH_SLIDER_VALUE"
+        [step]="50"
+        [value]="cardMinWidth"
+        [thumbLabel]="false"
+        (input)="cardWidthSliderChanged$.emit($event.value)"
+      ></mat-slider>
+      <button
+        class="reset-button"
+        mat-icon-button
+        i18n-aria-label="A button to reset the card width setting"
+        aria-label="Reset card width"
+        title="Reset card width"
+        (click)="cardWidthReset.emit()"
+      >
+        <mat-icon svgIcon="settings_backup_restore_24px"></mat-icon>
+      </button>
     </div>
   </div>
 </section>
