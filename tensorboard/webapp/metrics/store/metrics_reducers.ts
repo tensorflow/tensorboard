@@ -978,7 +978,7 @@ const reducer = createReducer(
       stepSelectorEnabled: nextStepSelectorEnabled,
     };
   }),
-  on(actions.linkedTimeSelectionChanged, (state, change) => {
+  on(actions.timeSelectionChanged, (state, change) => {
     const {timeSelection} = change;
     const nextStartStep = timeSelection.startStep;
     const nextEndStep = timeSelection.endStep;

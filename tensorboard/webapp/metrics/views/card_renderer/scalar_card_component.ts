@@ -96,16 +96,12 @@ export class ScalarCardComponent<Downloader> {
   @Output() onPinClicked = new EventEmitter<boolean>();
   @Output() onLinkedTimeToggled =
     new EventEmitter<TimeSelectionToggleAffordance>();
-  @Output() onLinkedTimeSelectionChanged = new EventEmitter<{
+  @Output() onTimeSelectionChanged = new EventEmitter<{
     timeSelection: TimeSelection;
     affordance?: TimeSelectionAffordance;
   }>();
   @Output() onStepSelectorToggled =
     new EventEmitter<TimeSelectionToggleAffordance>();
-  @Output() onStepSelectorTimeSelectionChanged = new EventEmitter<{
-    timeSelection: TimeSelection;
-    affordance?: TimeSelectionAffordance;
-  }>();
 
   // Line chart may not exist when was never visible (*ngIf).
   @ViewChild(LineChartComponent)
@@ -242,21 +238,11 @@ export class ScalarCardComponent<Downloader> {
       end: null,
     };
 
-    // Updates linked time selection regardless of linked time enableness.
-    // This enables the app to use the lastest step selector update as linked time selection
-    this.onLinkedTimeSelectionChanged.emit({
+    this.onTimeSelectionChanged.emit({
       timeSelection,
-      // When linkedTime is not enabled, we only update time selection state.
-      ...(this.linkedTimeSelection !== null && {affordance}),
+      // Only sets affordance when it's not undefined.
+      ...(affordance && {affordance}),
     });
-
-    // Fires onStepSelectorTimeSelectionChanged for internal analysis
-    if (this.linkedTimeSelection === null) {
-      this.onStepSelectorTimeSelectionChanged.emit({
-        timeSelection,
-        ...(affordance !== null && {affordance}),
-      });
-    }
   }
 
   onFobRemoved() {

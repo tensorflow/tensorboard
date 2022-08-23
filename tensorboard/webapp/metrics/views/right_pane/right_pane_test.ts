@@ -516,7 +516,7 @@ describe('metrics right_pane', () => {
           });
 
           expect(dispatchSpy).toHaveBeenCalledOnceWith(
-            actions.linkedTimeSelectionChanged({
+            actions.timeSelectionChanged({
               timeSelection: {
                 startStep: 10,
                 endStep: 200,
@@ -542,7 +542,7 @@ describe('metrics right_pane', () => {
           rangeInput.triggerEventHandler('singleValueChanged', 10);
 
           expect(dispatchSpy).toHaveBeenCalledOnceWith(
-            actions.linkedTimeSelectionChanged({
+            actions.timeSelectionChanged({
               timeSelection: {
                 startStep: 10,
                 endStep: undefined,

@@ -32,7 +32,7 @@ import {
 } from '../../../widgets/card_fob/card_fob_types';
 import {HistogramDatum} from '../../../widgets/histogram/histogram_types';
 import {buildNormalizedHistograms} from '../../../widgets/histogram/histogram_util';
-import {linkedTimeSelectionChanged, linkedTimeToggled} from '../../actions';
+import {linkedTimeToggled, timeSelectionChanged} from '../../actions';
 import {HistogramStepDatum, PluginType} from '../../data_source';
 import {
   getCardLoadState,
@@ -233,7 +233,7 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
   }) {
     const {timeSelection, affordance} = newLinkedTimeSelectionWithAffordance;
     this.store.dispatch(
-      linkedTimeSelectionChanged({
+      timeSelectionChanged({
         timeSelection: {
           startStep: timeSelection.start.step,
           endStep: timeSelection.end ? timeSelection.end.step : undefined,

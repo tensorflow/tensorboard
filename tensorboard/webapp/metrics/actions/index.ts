@@ -173,8 +173,8 @@ export const metricsShowAllPlugins = createAction(
   '[Metrics] Toggle Show All Plugins'
 );
 
-export const linkedTimeSelectionChanged = createAction(
-  '[Metrics] Linked Time Selection Changed',
+export const timeSelectionChanged = createAction(
+  '[Metrics] Time Selection Changed',
   props<{
     timeSelection: {
       startStep: number;
@@ -205,22 +205,5 @@ export const stepSelectorToggled = createAction(
     // Affordance for internal analytics purpose. When no affordance is specified or is
     // undefined we do not want to log an analytics event.
     affordance?: TimeSelectionToggleAffordance;
-  }>()
-);
-
-/**
- * Fired when step selector time selection is changed. This event is
- * used for internal analytics only and will not cause state changes.
- */
-export const stepSelectorTimeSelectionChanged = createAction(
-  '[Metrics] Ｓtep Selector Time Selection Changed',
-  props<{
-    timeSelection: {
-      startStep: number;
-      endStep: number | undefined;
-    };
-    // Affordance for internal analytics purpose. When no affordance is specified or is
-    // undefined we do not want to log an analytics event.
-    affordance?: TimeSelectionAffordance | undefined;
   }>()
 );
