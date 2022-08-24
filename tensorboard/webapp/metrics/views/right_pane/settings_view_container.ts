@@ -41,19 +41,16 @@ import {
   stepSelectorToggled,
   timeSelectionChanged,
 } from '../../actions';
-import {
-  HistogramMode,
-  TimeSelection,
-  TooltipSort,
-  XAxisType,
-} from '../../types';
+import {HistogramMode, TooltipSort, XAxisType} from '../../types';
+import {TimeSelectionChanged} from './types';
 
 const RANGE_INPUT_SOURCE_TO_AFFORDANCE: Record<
   RangeInputSource,
   TimeSelectionAffordance
 > = Object.freeze({
-  [RangeInputSource.TEXT]: TimeSelectionAffordance.SETTINGS_TEXT,
   [RangeInputSource.SLIDER]: TimeSelectionAffordance.SETTINGS_SLIDER,
+  [RangeInputSource.TEXT]: TimeSelectionAffordance.SETTINGS_TEXT,
+  [RangeInputSource.TEXT_DELETED]: TimeSelectionAffordance.CHANGE_TO_SINGLE,
 });
 
 @Component({
@@ -221,10 +218,9 @@ export class SettingsViewContainer {
   }
 
   onLinkedTimeSelectionChanged({
-    start,
-    end,
+    timeSelection: {start, end},
     source,
-  }: TimeSelection & {source: RangeInputSource}) {
+  }: TimeSelectionChanged) {
     this.store.dispatch(
       timeSelectionChanged({
         timeSelection: {

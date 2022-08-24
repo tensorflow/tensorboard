@@ -18,7 +18,7 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatSliderModule} from '@angular/material/slider';
 import {By} from '@angular/platform-browser';
 import {RangeInputComponent, TEST_ONLY} from './range_input_component';
-import {RangeInputSource, RangeValuesEvent, SingleValueEvent} from './types';
+import {RangeInputSource, RangeValues, SingleValue} from './types';
 
 @Component({
   selector: 'testable-range-input',
@@ -60,10 +60,10 @@ class TestableComponent {
   @Input() tickCount!: number | null;
 
   @Input()
-  onRangeValuesChanged!: (event: RangeValuesEvent) => void;
+  onRangeValuesChanged!: (event: RangeValues) => void;
 
   @Input()
-  onSingleValueChanged!: (event: SingleValueEvent) => void;
+  onSingleValueChanged!: (event: SingleValue) => void;
 }
 
 describe('range input test', () => {
@@ -274,8 +274,8 @@ describe('range input test', () => {
           upperValue: 1,
           tickCount: null,
         });
-        const values: Array<RangeValuesEvent> = [];
-        onRangeValuesChanged.and.callFake((value: RangeValuesEvent) => {
+        const values: Array<RangeValues> = [];
+        onRangeValuesChanged.and.callFake((value: RangeValues) => {
           values.push(value);
         });
         const [leftThumb] = getThumbsOnRange(fixture);
@@ -561,7 +561,7 @@ describe('range input test', () => {
 
       expect(onSingleValueChanged).toHaveBeenCalledWith({
         value: 5,
-        source: RangeInputSource.TEXT,
+        source: RangeInputSource.TEXT_DELETED,
       });
     });
   });

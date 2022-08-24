@@ -12,34 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {RangeInputSource} from '../../../widgets/range_input/types';
+import {TimeSelection} from '../../types';
 
-/**
- * Types of range input changes
- *
- * TEXT: the user has updated a text field
- * SLIDER: the user has moved a slider
- * TEXT_DELETED: the user has deleted the contents of a text field
- *
- */
-export const enum RangeInputSource {
-  TEXT = 'TEXT',
-  SLIDER = 'SLIDER',
-  TEXT_DELETED = 'TEXT_DELETED',
-}
-
-/**
- * Type of event emitted when only editing a single value.
- */
-export type SingleValue = {
-  value: number;
-  source: RangeInputSource;
-};
-
-/**
- * Type of event emitted when editing a range of values.
- */
-export type RangeValues = {
-  lowerValue: number;
-  upperValue: number;
+export type TimeSelectionChanged = {
+  timeSelection: TimeSelection;
   source: RangeInputSource;
 };

@@ -21,6 +21,7 @@ tf_ng_module(
         "settings_view_component.ng.html",
     ],
     deps = [
+        ":types",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_material_button",
@@ -40,6 +41,17 @@ tf_ng_module(
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",
+    ],
+)
+
+tf_ts_library(
+    name = "types",
+    srcs = [
+        "types.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/metrics:types",
+        "//tensorboard/webapp/widgets/range_input:types",
     ],
 )
 

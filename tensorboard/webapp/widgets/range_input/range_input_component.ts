@@ -26,7 +26,7 @@ import {
 } from '@angular/core';
 import {fromEvent, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
-import {RangeInputSource, RangeValuesEvent, SingleValueEvent} from './types';
+import {RangeInputSource, RangeValues, SingleValue} from './types';
 
 // Keep this in sync with range_input_component.scss's `$_thumb-size`.
 const THUMB_SIZE_PX = 12;
@@ -136,10 +136,10 @@ export class RangeInputComponent implements OnInit, OnDestroy {
   @Input() enabled: boolean = true;
 
   @Output()
-  rangeValuesChanged = new EventEmitter<RangeValuesEvent>();
+  rangeValuesChanged = new EventEmitter<RangeValues>();
 
   @Output()
-  singleValueChanged = new EventEmitter<SingleValueEvent>();
+  singleValueChanged = new EventEmitter<SingleValue>();
 
   readonly Position = Position;
 
@@ -351,7 +351,7 @@ export class RangeInputComponent implements OnInit, OnDestroy {
         // lower value.
         this.singleValueChanged.emit({
           value: this.lowerValue,
-          source: RangeInputSource.TEXT,
+          source: RangeInputSource.TEXT_DELETED,
         });
       } else {
         this.maybeNotifyNextRangeValues(
