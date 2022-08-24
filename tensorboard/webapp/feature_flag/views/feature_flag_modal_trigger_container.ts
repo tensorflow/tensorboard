@@ -49,9 +49,6 @@ export class FeatureFlagModalTriggerContainer implements OnInit {
         });
         return;
       }
-      if (this.featureFlagsDialog) {
-        this.featureFlagsDialog.close();
-      }
     });
   }
 }

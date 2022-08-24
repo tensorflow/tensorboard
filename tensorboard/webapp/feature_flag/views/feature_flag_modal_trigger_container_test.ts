@@ -89,7 +89,6 @@ describe('feature_flag_modal_trigger_container', () => {
     store.overrideSelector(getOverriddenFeatureFlags, {});
     store.overrideSelector(getShowFlagsEnabled, false);
     createComponent();
-    await expectAsync(rootLoader.getHarness(MatDialogHarness)).toBeRejected();
     expect(
       (fixture.componentInstance as any).featureFlagsDialog
     ).toBeUndefined();
