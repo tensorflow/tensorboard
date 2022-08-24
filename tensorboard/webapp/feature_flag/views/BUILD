@@ -11,7 +11,7 @@ tf_sass_binary(
 )
 
 tf_ng_module(
-    name = "feature_flag_modal_trigger_module",
+    name = "feature_flag_modal_trigger",
     srcs = [
         "feature_flag_modal_trigger_container.ts",
         "feature_flag_modal_trigger_module.ts",
@@ -65,9 +65,10 @@ tf_ts_library(
         "feature_flag_page_container_test.ts",
     ],
     deps = [
-        ":feature_flag_modal_trigger_module",
+        ":feature_flag_modal_trigger",
         ":views",
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/angular:expect_angular_cdk_testing_testbed",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_checkbox",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",

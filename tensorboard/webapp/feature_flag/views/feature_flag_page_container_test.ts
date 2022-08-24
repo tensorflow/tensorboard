@@ -49,13 +49,10 @@ describe('feature_flag_page_container', () => {
   });
 
   function getComponent() {
-    return new FeatureFlagPageContainer(store);
+    return TestBed.createComponent(FeatureFlagPageContainer).componentInstance;
   }
 
   describe('onFlagChanged', () => {
-    //     featureFlagOverrideChanged
-    //     featureFlagOverridesReset
-    // allFeatureFlagOverridesReset
     it('creates override status is set to enabled or disabled not set', () => {
       store.overrideSelector(getDefaultFeatureFlags, {} as FeatureFlags);
       store.overrideSelector(getOverriddenFeatureFlags, {});

@@ -12,17 +12,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {HarnessLoader} from '@angular/cdk/testing';
+import {TestbedHarnessEnvironment} from '@angular/cdk/testing/testbed';
 import {NO_ERRORS_SCHEMA} from '@angular/core';
-import {TestBed} from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {
+  MatDialog,
   MatDialogModule,
   MatDialogRef,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
+import {MatDialogHarness} from '@angular/material/dialog/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {Observable, Subscriber} from 'rxjs';
 import {State} from '../../app_state';
 import {
   getDefaultFeatureFlags,
@@ -33,34 +36,14 @@ import {FeatureFlags} from '../types';
 import {FeatureFlagModalTriggerContainer} from './feature_flag_modal_trigger_container';
 import {FeatureFlagPageContainer} from './feature_flag_page_container';
 
-class MatDialogMock {
-  private onCloseSubscriptions: Subscriber<void>[] = [];
-  private afterCloseObserable = new Observable<void>((subscriber) => {
-    this.onCloseSubscriptions.push(subscriber);
-  });
-
-  isOpen = false;
-  open(_component: any) {
-    this.isOpen = true;
-    return this;
-  }
-
-  afterClosed(): Observable<void> {
-    return this.afterCloseObserable;
-  }
-
-  close() {
-    this.isOpen = false;
-    this.onCloseSubscriptions.forEach((subscriber) => {
-      subscriber.next();
-    });
-  }
-}
-
 describe('feature_flag_modal_trigger_container', () => {
   let actualActions: Action[];
   let dispatchSpy: jasmine.Spy;
   let store: MockStore<State>;
+
+  let fixture: ComponentFixture<FeatureFlagModalTriggerContainer>;
+  let loader: HarnessLoader;
+  let rootLoader: HarnessLoader;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -68,7 +51,7 @@ describe('feature_flag_modal_trigger_container', () => {
       declarations: [FeatureFlagPageContainer],
       providers: [
         provideMockStore(),
-        {provide: MatDialogRef, useValue: MatDialogMock},
+        {provide: MatDialogRef, useValue: MatDialog},
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -82,21 +65,33 @@ describe('feature_flag_modal_trigger_container', () => {
     });
   });
 
-  it('creates modal when enableShowFlags is true', () => {
+  function createComponent() {
+    fixture = TestBed.createComponent(FeatureFlagModalTriggerContainer);
+    loader = TestbedHarnessEnvironment.loader(fixture);
+    rootLoader = TestbedHarnessEnvironment.documentRootLoader(fixture);
+  }
+
+  it('creates modal when enableShowFlags is true', async () => {
     store.overrideSelector(getDefaultFeatureFlags, {} as FeatureFlags);
     store.overrideSelector(getOverriddenFeatureFlags, {});
     store.overrideSelector(getShowFlagsEnabled, true);
-    const dialogMock = new MatDialogMock();
-    new FeatureFlagModalTriggerContainer(store, dialogMock as any);
-    expect(dialogMock.isOpen).toBeTrue();
+    createComponent();
+    const dialog = await rootLoader.getHarness(MatDialogHarness);
+    expect(
+      (fixture.componentInstance as any).featureFlagsDialog
+    ).not.toBeUndefined();
+
+    expect(dialog).toBeDefined();
   });
 
-  it('does not create modal when enableShowFlags is false', () => {
+  it('does not create modal when enableShowFlags is false', async () => {
     store.overrideSelector(getDefaultFeatureFlags, {} as FeatureFlags);
     store.overrideSelector(getOverriddenFeatureFlags, {});
     store.overrideSelector(getShowFlagsEnabled, false);
-    const dialogMock = new MatDialogMock();
-    new FeatureFlagModalTriggerContainer(store, dialogMock as any);
-    expect(dialogMock.isOpen).toBeFalse();
+    createComponent();
+    await expectAsync(rootLoader.getHarness(MatDialogHarness)).toBeRejected();
+    expect(
+      (fixture.componentInstance as any).featureFlagsDialog
+    ).toBeUndefined();
   });
 });
