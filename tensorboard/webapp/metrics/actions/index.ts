@@ -207,3 +207,6 @@ export const stepSelectorToggled = createAction(
     affordance?: TimeSelectionToggleAffordance;
   }>()
 );
+
+// TODO(jieweiwu): Delete after internal code is updated.
+export const stepSelectorTimeSelectionChanged = timeSelectionChanged;
