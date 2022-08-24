@@ -29,11 +29,9 @@ class TensorFlowPngEncoderTest(tf.test.TestCase):
         )
 
     def _check_png(self, data):
-        # If it has a valid PNG header and is of a reasonable size, we can
-        # assume it did the right thing. We trust the underlying
-        # `encode_png` op.
+        # If it has a valid PNG header, we can assume it did the right thing.
+        # We trust the underlying `encode_png` op.
         self.assertEqual(b"\x89PNG", data[:4])
-        self.assertGreater(len(data), 125)
 
     def test_invalid_non_numpy(self):
         with self.assertRaisesRegex(ValueError, "must be a numpy array"):
