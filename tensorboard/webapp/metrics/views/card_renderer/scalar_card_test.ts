@@ -74,10 +74,9 @@ import {
 import {ResizeDetectorTestingModule} from '../../../widgets/resize_detector_testing_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {
-  linkedTimeSelectionChanged,
   linkedTimeToggled,
-  stepSelectorTimeSelectionChanged,
   stepSelectorToggled,
+  timeSelectionChanged,
 } from '../../actions';
 import {PluginType} from '../../data_source';
 import {
@@ -2223,7 +2222,7 @@ describe('scalar card', () => {
         );
       });
 
-      it('dispatches linkedTimeSelectionChanged action when fob is dragged', fakeAsync(() => {
+      it('dispatches timeSelectionChanged action when fob is dragged', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 20},
           end: null,
@@ -2264,28 +2263,28 @@ describe('scalar card', () => {
         fixture.detectChanges();
 
         expect(dispatchedActions).toEqual([
-          linkedTimeSelectionChanged({
+          timeSelectionChanged({
             timeSelection: {
               startStep: 25,
               endStep: undefined,
             },
             affordance: undefined,
           }),
-          linkedTimeSelectionChanged({
+          timeSelectionChanged({
             timeSelection: {
               startStep: 25,
               endStep: undefined,
             },
             affordance: TimeSelectionAffordance.FOB,
           }),
-          linkedTimeSelectionChanged({
+          timeSelectionChanged({
             timeSelection: {
               startStep: 30,
               endStep: undefined,
             },
             affordance: undefined,
           }),
-          linkedTimeSelectionChanged({
+          timeSelectionChanged({
             timeSelection: {
               startStep: 30,
               endStep: undefined,
@@ -2913,7 +2912,7 @@ describe('scalar card', () => {
         ).toBeFalsy();
       }));
 
-      it('dispatches stepSelectorTimeSelectionChanged action when fob is dragged', fakeAsync(() => {
+      it('dispatches timeSelectionChanged actions when fob is dragged', fakeAsync(() => {
         const fixture = createComponent('card1');
         fixture.detectChanges();
         const testController = fixture.debugElement.query(
@@ -2942,22 +2941,15 @@ describe('scalar card', () => {
         expect(
           fobs[0].query(By.css('span')).nativeElement.textContent.trim()
         ).toEqual('25');
-        expect(dispatchedActions).toEqual([
-          stepSelectorTimeSelectionChanged({
-            timeSelection: {
-              startStep: 25,
-              endStep: undefined,
-            },
-            affordance: undefined,
-          }),
-          stepSelectorTimeSelectionChanged({
+        expect(dispatchedActions).toContain(
+          timeSelectionChanged({
             timeSelection: {
               startStep: 25,
               endStep: undefined,
             },
             affordance: TimeSelectionAffordance.FOB,
-          }),
-        ]);
+          })
+        );
         const scalarCardComponent = fixture.debugElement.query(
           By.directive(ScalarCardComponent)
         );
@@ -2967,6 +2959,45 @@ describe('scalar card', () => {
           start: {step: 25},
           end: null,
         });
+      }));
+
+      it('dispatches timeSelectionChanged actions when fob is dragged under linkedTime disabled', fakeAsync(() => {
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+        const testController = fixture.debugElement.query(
+          By.directive(CardFobControllerComponent)
+        ).componentInstance;
+        const controllerStartPosition =
+          testController.root.nativeElement.getBoundingClientRect().left;
+
+        // Simulate dragging fob to step 25.
+        testController.startDrag(
+          Fob.START,
+          TimeSelectionAffordance.FOB,
+          new MouseEvent('mouseDown')
+        );
+        const fakeEvent = new MouseEvent('mousemove', {
+          clientX: 25 + controllerStartPosition,
+          movementX: 1,
+        });
+        testController.mouseMove(fakeEvent);
+        testController.stopDrag();
+        fixture.detectChanges();
+
+        const fobs = fixture.debugElement.queryAll(
+          By.directive(CardFobComponent)
+        );
+        expect(dispatchedActions).toContain(
+          timeSelectionChanged({
+            timeSelection: {
+              startStep: 25,
+              endStep: undefined,
+            },
+            // linkedTime is disabled, therefore there should be no affordance
+            // and this is not logged in internal analytics
+            affordance: undefined,
+          })
+        );
       }));
 
       it('sets stepSelectorTimeSelection to single selection', fakeAsync(() => {
@@ -2998,14 +3029,14 @@ describe('scalar card', () => {
         fixture.detectChanges();
 
         expect(dispatchedActions).toEqual([
-          linkedTimeSelectionChanged({
+          timeSelectionChanged({
             timeSelection: {
               startStep: 25,
               endStep: 40,
             },
             affordance: undefined,
           }),
-          linkedTimeSelectionChanged({
+          timeSelectionChanged({
             timeSelection: {
               startStep: 25,
               endStep: 40,

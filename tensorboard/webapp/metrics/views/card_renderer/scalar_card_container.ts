@@ -59,10 +59,9 @@ import {
 import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
-  linkedTimeSelectionChanged,
   linkedTimeToggled,
-  stepSelectorTimeSelectionChanged,
   stepSelectorToggled,
+  timeSelectionChanged,
 } from '../../actions';
 import {PluginType, ScalarStepDatum} from '../../data_source';
 import {
@@ -151,10 +150,7 @@ function areSeriesEqual(
       (onPinClicked)="pinStateChanged.emit($event)"
       observeIntersection
       (onVisibilityChange)="onVisibilityChange($event)"
-      (onLinkedTimeSelectionChanged)="onLinkedTimeSelectionChanged($event)"
-      (onStepSelectorTimeSelectionChanged)="
-        onStepSelectorTimeSelectionChanged($event)
-      "
+      (onTimeSelectionChanged)="onTimeSelectionChanged($event)"
       (onLinkedTimeToggled)="onLinkedTimeToggled($event)"
       (onStepSelectorToggled)="onStepSelectorToggled($event)"
     ></scalar-card-component>
@@ -599,30 +595,13 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     });
   }
 
-  onLinkedTimeSelectionChanged(newTimeSelectionWithAffordance: {
+  onTimeSelectionChanged(newTimeSelectionWithAffordance: {
     timeSelection: TimeSelection;
-    affordance: TimeSelectionAffordance;
+    affordance?: TimeSelectionAffordance;
   }) {
     const {timeSelection, affordance} = newTimeSelectionWithAffordance;
     this.store.dispatch(
-      linkedTimeSelectionChanged({
-        timeSelection: {
-          startStep: timeSelection.start.step,
-          endStep: timeSelection.end ? timeSelection.end.step : undefined,
-        },
-        affordance,
-      })
-    );
-  }
-
-  onStepSelectorTimeSelectionChanged(newStepSelectorTimeSelectionWthAffordance: {
-    timeSelection: TimeSelection;
-    affordance: TimeSelectionAffordance;
-  }) {
-    const {timeSelection, affordance} =
-      newStepSelectorTimeSelectionWthAffordance;
-    this.store.dispatch(
-      stepSelectorTimeSelectionChanged({
+      timeSelectionChanged({
         timeSelection: {
           startStep: timeSelection.start.step,
           endStep: timeSelection.end ? timeSelection.end.step : undefined,

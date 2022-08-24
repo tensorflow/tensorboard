@@ -96,16 +96,12 @@ export class ScalarCardComponent<Downloader> {
   @Output() onPinClicked = new EventEmitter<boolean>();
   @Output() onLinkedTimeToggled =
     new EventEmitter<TimeSelectionToggleAffordance>();
-  @Output() onLinkedTimeSelectionChanged = new EventEmitter<{
+  @Output() onTimeSelectionChanged = new EventEmitter<{
     timeSelection: TimeSelection;
-    affordance: TimeSelectionAffordance;
+    affordance?: TimeSelectionAffordance;
   }>();
   @Output() onStepSelectorToggled =
     new EventEmitter<TimeSelectionToggleAffordance>();
-  @Output() onStepSelectorTimeSelectionChanged = new EventEmitter<{
-    timeSelection: TimeSelection;
-    affordance: TimeSelectionAffordance;
-  }>();
 
   // Line chart may not exist when was never visible (*ngIf).
   @ViewChild(LineChartComponent)
@@ -224,7 +220,7 @@ export class ScalarCardComponent<Downloader> {
 
   onFobTimeSelectionChanged(newTimeSelectionWithAffordance: {
     timeSelection: TimeSelection;
-    affordance: TimeSelectionAffordance;
+    affordance?: TimeSelectionAffordance;
   }) {
     // Updates step selector to single selection.
     const {timeSelection, affordance} = newTimeSelectionWithAffordance;
@@ -242,14 +238,11 @@ export class ScalarCardComponent<Downloader> {
       end: null,
     };
 
-    if (this.linkedTimeSelection !== null) {
-      this.onLinkedTimeSelectionChanged.emit({
-        timeSelection,
-        affordance,
-      });
-    } else {
-      this.onStepSelectorTimeSelectionChanged.emit({timeSelection, affordance});
-    }
+    this.onTimeSelectionChanged.emit({
+      timeSelection,
+      // Only sets affordance when it's not undefined.
+      ...(affordance && {affordance}),
+    });
   }
 
   onFobRemoved() {

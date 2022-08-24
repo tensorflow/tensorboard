@@ -20,7 +20,6 @@ import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';
 import {TimeSelectionToggleAffordance} from '../../../widgets/card_fob/card_fob_types';
 import {
-  linkedTimeSelectionChanged,
   linkedTimeToggled,
   metricsChangeCardWidth,
   metricsChangeHistogramMode,
@@ -36,6 +35,7 @@ import {
   metricsToggleIgnoreOutliers,
   metricsToggleImageShowActualSize,
   stepSelectorToggled,
+  timeSelectionChanged,
 } from '../../actions';
 import {
   HistogramMode,
@@ -210,7 +210,7 @@ export class SettingsViewContainer {
 
   onLinkedTimeSelectionChanged(newValue: TimeSelection) {
     this.store.dispatch(
-      linkedTimeSelectionChanged({
+      timeSelectionChanged({
         timeSelection: {
           startStep: newValue.start.step,
           endStep: newValue.end?.step,

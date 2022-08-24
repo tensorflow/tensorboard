@@ -2433,7 +2433,7 @@ describe('metrics reducers', () => {
 
         const nextState = reducers(
           beforeState,
-          actions.linkedTimeSelectionChanged({
+          actions.timeSelectionChanged({
             timeSelection: {
               startStep: 2,
               endStep: 5,
@@ -2455,7 +2455,7 @@ describe('metrics reducers', () => {
 
         const after = reducers(
           before,
-          actions.linkedTimeSelectionChanged({
+          actions.timeSelectionChanged({
             timeSelection: {startStep: 2, endStep: undefined},
           })
         );
@@ -2474,7 +2474,7 @@ describe('metrics reducers', () => {
 
         const after = reducers(
           before,
-          actions.linkedTimeSelectionChanged({
+          actions.timeSelectionChanged({
             timeSelection: {
               startStep: 2,
               endStep: 50,
@@ -2488,19 +2488,19 @@ describe('metrics reducers', () => {
         });
       });
 
-      it('enables linkedTimeEnabled if previously disabled', () => {
+      it('keeps linkedTimeEnabled disabled if previously disabled', () => {
         const beforeState = buildMetricsState({
           linkedTimeEnabled: false,
         });
 
         const nextState = reducers(
           beforeState,
-          actions.linkedTimeSelectionChanged({
+          actions.timeSelectionChanged({
             timeSelection: {startStep: 2, endStep: undefined},
           })
         );
 
-        expect(nextState.linkedTimeEnabled).toBe(true);
+        expect(nextState.linkedTimeEnabled).toBe(false);
       });
 
       it('flips `end` to `start` if new start is greater than new end', () => {
@@ -2511,7 +2511,7 @@ describe('metrics reducers', () => {
 
         const nextState = reducers(
           beforeState,
-          actions.linkedTimeSelectionChanged({
+          actions.timeSelectionChanged({
             timeSelection: {
               startStep: 150,
               endStep: 0,
@@ -2533,7 +2533,7 @@ describe('metrics reducers', () => {
 
         const nextState = reducers(
           beforeState,
-          actions.linkedTimeSelectionChanged({
+          actions.timeSelectionChanged({
             timeSelection: {
               startStep: 2,
               endStep: 5,
@@ -2558,7 +2558,7 @@ describe('metrics reducers', () => {
 
         const nextState = reducers(
           beforeState,
-          actions.linkedTimeSelectionChanged({
+          actions.timeSelectionChanged({
             timeSelection: {
               startStep: 2,
               endStep: 5,
@@ -2580,7 +2580,7 @@ describe('metrics reducers', () => {
 
         const nextState = reducers(
           beforeState,
-          actions.linkedTimeSelectionChanged({
+          actions.timeSelectionChanged({
             timeSelection: {
               startStep: 2,
               endStep: 0,
@@ -2599,7 +2599,7 @@ describe('metrics reducers', () => {
 
         const nextState1 = reducers(
           beforeState1,
-          actions.linkedTimeSelectionChanged({
+          actions.timeSelectionChanged({
             timeSelection: {
               startStep: 2,
               endStep: undefined,
@@ -2636,7 +2636,7 @@ describe('metrics reducers', () => {
 
         const nextState = reducers(
           beforeState,
-          actions.linkedTimeSelectionChanged({
+          actions.timeSelectionChanged({
             timeSelection: {
               startStep: 10,
               endStep: undefined,
@@ -2676,7 +2676,7 @@ describe('metrics reducers', () => {
 
         const nextState = reducers(
           beforeState,
-          actions.linkedTimeSelectionChanged({
+          actions.timeSelectionChanged({
             timeSelection: {
               startStep: 15,
               endStep: undefined,
@@ -2701,7 +2701,7 @@ describe('metrics reducers', () => {
 
       const nextState = reducers(
         beforeState,
-        actions.linkedTimeSelectionChanged({
+        actions.timeSelectionChanged({
           timeSelection: {
             startStep: 3,
             endStep: undefined,

@@ -38,7 +38,7 @@ import {
 } from '../../../widgets/histogram/histogram_types';
 import {buildNormalizedHistograms} from '../../../widgets/histogram/histogram_util';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
-import {linkedTimeSelectionChanged, linkedTimeToggled} from '../../actions';
+import {linkedTimeToggled, timeSelectionChanged} from '../../actions';
 import {PluginType} from '../../data_source';
 import * as selectors from '../../store/metrics_selectors';
 import {
@@ -281,7 +281,7 @@ describe('histogram card', () => {
   });
 
   describe('linked time', () => {
-    it('dispatches linkedTimeSelectionChanged when HistogramComponent emits onLinkedTimeSelectionChanged event', () => {
+    it('dispatches timeSelectionChanged when HistogramComponent emits onLinkedTimeSelectionChanged event', () => {
       provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
       store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
         start: {step: 5},
@@ -303,7 +303,7 @@ describe('histogram card', () => {
       });
 
       expect(dispatchedActions).toEqual([
-        linkedTimeSelectionChanged({
+        timeSelectionChanged({
           timeSelection: {
             startStep: 5,
             endStep: undefined,
