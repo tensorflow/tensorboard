@@ -20,7 +20,25 @@ limitations under the License.
           <!-- This header is intentionally left blank for the color column -->
         </th>
         <ng-container *ngFor="let header of headers;">
-          <th>{{ getHeaderTextColumn(header) }}</th>
+          <th [ngSwitch]="header">
+            <div *ngSwitchCase="ColumnHeaders.VALUE_CHANGE" class="cell">
+              <mat-icon
+                class="delta-arrow"
+                svgIcon="change_history_24px"
+              ></mat-icon>
+              <div>{{ getHeaderTextColumn(header) }}</div>
+            </div>
+            <div *ngSwitchCase="ColumnHeaders.PERCENTAGE_CHANGE" class="cell">
+              <mat-icon
+                class="delta-arrow"
+                svgIcon="change_history_24px"
+              ></mat-icon>
+              <div>{{ getHeaderTextColumn(header) }}</div>
+            </div>
+            <div *ngSwitchDefault class="cell without-icon">
+              {{ getHeaderTextColumn(header) }}
+            </div>
+          </th>
         </ng-container>
       </tr>
     </thead>
@@ -32,21 +50,21 @@ limitations under the License.
           </td>
           <ng-container *ngFor="let header of headers;">
             <td [ngSwitch]="header">
-              <span *ngSwitchCase="ColumnHeaders.VALUE_CHANGE">
+              <div *ngSwitchCase="ColumnHeaders.VALUE_CHANGE" class="cell">
                 <ng-container
                   *ngTemplateOutlet="arrow; context: {$implicit:runData.VALUE_CHANGE}"
                 ></ng-container>
                 {{ getFormattedDataForColumn(header, runData) }}
-              </span>
-              <span *ngSwitchCase="ColumnHeaders.PERCENTAGE_CHANGE">
+              </div>
+              <div *ngSwitchCase="ColumnHeaders.PERCENTAGE_CHANGE" class="cell">
                 <ng-container
                   *ngTemplateOutlet="arrow; context: {$implicit:runData.PERCENTAGE_CHANGE}"
                 ></ng-container>
                 {{ getFormattedDataForColumn(header, runData) }}
-              </span>
-              <span *ngSwitchDefault
-                >{{ getFormattedDataForColumn(header, runData) }}</span
-              >
+              </div>
+              <div *ngSwitchDefault class="cell without-icon">
+                {{ getFormattedDataForColumn(header, runData) }}
+              </div>
             </td>
           </ng-container>
         </tr>

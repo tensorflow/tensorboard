@@ -90,16 +90,16 @@ describe('data table', () => {
     expect(headerElements[2].nativeElement.innerText).toBe('Run');
     expect(headerElements[3].nativeElement.innerText).toBe('Step');
     expect(headerElements[4].nativeElement.innerText).toBe('Relative');
-    expect(headerElements[5].nativeElement.innerText).toBe('Value Change');
+    expect(headerElements[5].nativeElement.innerText).toBe('Value');
+    expect(headerElements[5].queryAll(By.css('mat-icon')).length).toBe(1);
     expect(headerElements[6].nativeElement.innerText).toBe('Start Step');
     expect(headerElements[7].nativeElement.innerText).toBe('End Step');
-    expect(headerElements[8].nativeElement.innerText).toBe('Start');
-    expect(headerElements[9].nativeElement.innerText).toBe('End');
+    expect(headerElements[8].nativeElement.innerText).toBe('Start Value');
+    expect(headerElements[9].nativeElement.innerText).toBe('End Value');
     expect(headerElements[10].nativeElement.innerText).toBe('Min');
     expect(headerElements[11].nativeElement.innerText).toBe('Max');
-    expect(headerElements[12].nativeElement.innerText).toBe(
-      'Percentage Change'
-    );
+    expect(headerElements[12].nativeElement.innerText).toBe('%');
+    expect(headerElements[12].queryAll(By.css('mat-icon')).length).toBe(1);
   });
 
   it('displays data in order', () => {
@@ -144,14 +144,16 @@ describe('data table', () => {
     expect(dataElements[2].nativeElement.innerText).toBe('run name');
     expect(dataElements[3].nativeElement.innerText).toBe('1');
     expect(dataElements[4].nativeElement.innerText).toBe('123 ms');
-    expect(dataElements[5].nativeElement.innerText).toBe(' 20'); // space before the value is kept for down or up arrow
+    expect(dataElements[5].nativeElement.innerText).toBe('20');
+    expect(dataElements[5].queryAll(By.css('mat-icon')).length).toBe(1);
     expect(dataElements[6].nativeElement.innerText).toBe('5');
     expect(dataElements[7].nativeElement.innerText).toBe('30');
     expect(dataElements[8].nativeElement.innerText).toBe('13');
     expect(dataElements[9].nativeElement.innerText).toBe('23');
     expect(dataElements[10].nativeElement.innerText).toBe('1');
     expect(dataElements[11].nativeElement.innerText).toBe('500');
-    expect(dataElements[12].nativeElement.innerText).toBe(' 30%'); // space before the percentage is kept for down or up arrow
+    expect(dataElements[12].nativeElement.innerText).toBe('30%');
+    expect(dataElements[12].queryAll(By.css('mat-icon')).length).toBe(1);
     expect;
   });
 

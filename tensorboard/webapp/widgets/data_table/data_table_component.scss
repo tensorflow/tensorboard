@@ -24,10 +24,21 @@ limitations under the License.
     position: sticky;
     text-align: left;
     top: 0;
+    vertical-align: bottom;
 
     @include tb-dark-theme {
       background-color: map-get($tb-dark-background, background);
     }
+  }
+
+  .cell {
+    display: flex;
+    align-items: center;
+  }
+
+  .without-icon {
+    // Add artificial padding to keep consistent with icons which have whitespace
+    padding-right: 1px;
   }
 
   .row {
