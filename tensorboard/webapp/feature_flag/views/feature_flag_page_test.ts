@@ -182,6 +182,7 @@ describe('feature_flag_page_container', () => {
     expect(dataCells.length).toEqual(3);
     const selectors = component.querySelectorAll('mat-select');
     expect(selectors.length).toEqual(1);
+    expect(dataCells[2].innerText).toBe('Unsupported By UI - null');
   });
 
   describe('formatFlagValue', () => {

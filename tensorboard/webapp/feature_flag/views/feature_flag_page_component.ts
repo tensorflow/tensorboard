@@ -29,7 +29,7 @@ export class FeatureFlagPageComponent {
 
   @Output() allFlagsReset = new EventEmitter();
 
-  private getFormattedFlagValue(value: FeatureFlagType): string {
+  private serializeFlagValue(value: FeatureFlagType): string {
     if (value === true) {
       return 'Enabled';
     }
@@ -54,7 +54,7 @@ export class FeatureFlagPageComponent {
   }
 
   formatFlagValue(value: FeatureFlagType): string {
-    const formattedValue = this.getFormattedFlagValue(value);
+    const formattedValue = this.serializeFlagValue(value);
     if (formattedValue.length === 0) {
       return '';
     }
