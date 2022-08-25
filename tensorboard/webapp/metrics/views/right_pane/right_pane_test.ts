@@ -566,7 +566,7 @@ describe('metrics right_pane', () => {
           const el = fixture.debugElement.query(
             By.css('.linked-time mat-checkbox')
           );
-          expect(el.nativeElement.textContent).toContain('20');
+          expect(el.nativeElement.textContent).toContain('Link by step 20');
 
           store.overrideSelector(
             selectors.getMetricsLinkedTimeSelectionSetting,
@@ -577,7 +577,7 @@ describe('metrics right_pane', () => {
           );
           store.refreshState();
           fixture.detectChanges();
-          expect(el.nativeElement.textContent).toContain('40');
+          expect(el.nativeElement.textContent).toContain('Link by step 40');
         });
 
         it('does not display expected linked time start step when linked time is enabled', () => {
