@@ -174,6 +174,17 @@ export class SettingsViewComponent {
     );
   }
 
+  getLinkedTimeSelectionStartStep() {
+    if (
+      !this.isLinkedTimeEnabled &&
+      this.linkedTimeSelection !== null &&
+      this.linkedTimeSelection.end === null
+    ) {
+      return this.linkedTimeSelection.start.step;
+    }
+    return '';
+  }
+
   onSingleValueChanged(stepValue: number) {
     this.linkedTimeSelectionChanged.emit({
       start: {step: stepValue},
