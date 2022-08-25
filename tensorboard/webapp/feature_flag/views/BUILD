@@ -6,7 +6,7 @@ licenses(["notice"])
 
 tf_sass_binary(
     name = "style",
-    src = "feature_flag_page_style.scss",
+    src = "feature_flag_page_component.scss",
     deps = ["//tensorboard/webapp:angular_material_sass_deps"],
 )
 
@@ -39,7 +39,7 @@ tf_ng_module(
     ],
     assets = [
         ":style",
-        "feature_flag_page.ng.html",
+        "feature_flag_page_component.ng.html",
     ],
     deps = [
         "//tensorboard/webapp:app_state",
@@ -61,8 +61,7 @@ tf_ts_library(
     testonly = True,
     srcs = [
         "feature_flag_modal_trigger_container_test.ts",
-        "feature_flag_page_component_test.ts",
-        "feature_flag_page_container_test.ts",
+        "feature_flag_page_test.ts",
     ],
     deps = [
         ":feature_flag_modal_trigger",
@@ -75,6 +74,7 @@ tf_ts_library(
         "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/actions",
         "//tensorboard/webapp/feature_flag/store",
+        "//tensorboard/webapp/feature_flag/store:testing",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",

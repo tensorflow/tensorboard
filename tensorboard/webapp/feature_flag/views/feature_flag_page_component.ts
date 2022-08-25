@@ -19,8 +19,8 @@ import {FeatureFlagStatus, FeatureFlagStatusEvent} from './types';
 
 @Component({
   selector: 'feature-flag-page-component',
-  styleUrls: ['feature_flag_page_style.css'],
-  templateUrl: `feature_flag_page.ng.html`,
+  styleUrls: ['feature_flag_page_component.css'],
+  templateUrl: `feature_flag_page_component.ng.html`,
 })
 export class FeatureFlagPageComponent {
   @Input() featureFlagStatuses!: FeatureFlagStatus<keyof FeatureFlags>[];
@@ -47,6 +47,10 @@ export class FeatureFlagPageComponent {
     }
 
     return value.toString();
+  }
+
+  isEditable(flagStatus: FeatureFlagStatus<keyof FeatureFlags>) {
+    return typeof flagStatus.defaultValue === 'boolean';
   }
 
   formatFlagValue(value: FeatureFlagType): string {

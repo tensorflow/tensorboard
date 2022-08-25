@@ -28,7 +28,7 @@ limitations under the License.
           <div>{{flagStatus.flag}}</div>
         </td>
         <ng-container
-          *ngIf="flagStatus.defaultValue === true || flagStatus.defaultValue === false; then selectBlock else staticBlock"
+          *ngIf="isEditable(flagStatus); then selectBlock else unsupportedBlock"
         ></ng-container>
         <ng-template #selectBlock>
           <mat-select
@@ -42,7 +42,7 @@ limitations under the License.
             <mat-option value="disabled">Disabled</mat-option>
           </mat-select>
         </ng-template>
-        <ng-template #staticBlock>
+        <ng-template #unsupportedBlock>
           <td>Unsupported By UI {{formatFlagValue(flagStatus.value)}}</td>
         </ng-template>
       </tr>

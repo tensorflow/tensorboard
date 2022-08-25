@@ -24,7 +24,7 @@ import {
 } from '@angular/material/dialog';
 import {MatDialogHarness} from '@angular/material/dialog/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {Action, Store} from '@ngrx/store';
+import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../app_state';
 import {
@@ -37,8 +37,6 @@ import {FeatureFlagModalTriggerContainer} from './feature_flag_modal_trigger_con
 import {FeatureFlagPageContainer} from './feature_flag_page_container';
 
 describe('feature_flag_modal_trigger_container', () => {
-  let actualActions: Action[];
-  let dispatchSpy: jasmine.Spy;
   let store: MockStore<State>;
 
   let fixture: ComponentFixture<FeatureFlagModalTriggerContainer>;
@@ -59,10 +57,7 @@ describe('feature_flag_modal_trigger_container', () => {
     TestBed.overrideProvider(MAT_DIALOG_DATA, {useValue: {}});
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
 
-    actualActions = [];
-    dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
-      actualActions.push(action);
-    });
+    spyOn(store, 'dispatch').and.stub();
   });
 
   function createComponent() {

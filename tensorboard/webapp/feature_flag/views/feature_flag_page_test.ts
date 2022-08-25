@@ -13,7 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
-import {TestBed} from '@angular/core/testing';
+import {NO_ERRORS_SCHEMA} from '@angular/core';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../app_state';
@@ -26,8 +27,10 @@ import {
   getDefaultFeatureFlags,
   getOverriddenFeatureFlags,
 } from '../store/feature_flag_selectors';
+import {buildFeatureFlagState, buildState} from '../store/testing';
 import {FeatureFlags} from '../types';
 import {FeatureFlagPageModule} from './feature_flag_module';
+import {FeatureFlagPageComponent} from './feature_flag_page_component';
 import {
   FeatureFlagPageContainer,
   TEST_ONLY,
@@ -37,26 +40,45 @@ import {FeatureFlagOverrideStatus} from './types';
 describe('feature_flag_page_container', () => {
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;
+  let fixture: ComponentFixture<FeatureFlagPageContainer>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [FeatureFlagPageContainer],
       imports: [CommonModule, FeatureFlagPageModule],
-      providers: [provideMockStore(), FeatureFlagPageContainer],
+      providers: [
+        provideMockStore({
+          initialState: buildState(
+            buildFeatureFlagState({
+              defaultFlags: {} as FeatureFlags,
+              flagOverrides: {},
+            })
+          ),
+        }),
+        FeatureFlagPageContainer,
+      ],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     dispatchSpy = spyOn(store, 'dispatch');
   });
 
-  function getComponent() {
-    return TestBed.createComponent(FeatureFlagPageContainer).componentInstance;
+  function createComponent() {
+    fixture = TestBed.createComponent(FeatureFlagPageContainer);
+    fixture.detectChanges();
   }
 
+  function getComponent(): HTMLElement {
+    return fixture.nativeElement.querySelector('feature-flag-page-component');
+  }
+
+  // Tests for feature_flag_page_container
   describe('onFlagChanged', () => {
     it('creates override status is set to enabled or disabled not set', () => {
       store.overrideSelector(getDefaultFeatureFlags, {} as FeatureFlags);
       store.overrideSelector(getOverriddenFeatureFlags, {});
-      const component = getComponent();
+      createComponent();
+      const component = fixture.componentInstance;
       component.onFlagChanged({
         flag: 'inColab',
         status: FeatureFlagOverrideStatus.ENABLED,
@@ -84,7 +106,8 @@ describe('feature_flag_page_container', () => {
     it('creates removes override when status is set to default', () => {
       store.overrideSelector(getDefaultFeatureFlags, {} as FeatureFlags);
       store.overrideSelector(getOverriddenFeatureFlags, {});
-      const component = getComponent();
+      createComponent();
+      const component = fixture.componentInstance;
       component.onFlagChanged({
         flag: 'inColab',
         status: FeatureFlagOverrideStatus.DEFAULT,
@@ -101,7 +124,8 @@ describe('feature_flag_page_container', () => {
     it('resets all feature flags', () => {
       store.overrideSelector(getDefaultFeatureFlags, {} as FeatureFlags);
       store.overrideSelector(getOverriddenFeatureFlags, {});
-      const component = getComponent();
+      createComponent();
+      const component = fixture.componentInstance;
       component.onAllFlagsReset();
       expect(dispatchSpy).toHaveBeenCalledWith(allFeatureFlagOverridesReset());
     });
@@ -125,6 +149,85 @@ describe('feature_flag_page_container', () => {
         inColab: false,
       });
       expect(status).toEqual(FeatureFlagOverrideStatus.DISABLED);
+    });
+  });
+
+  // Tests for feature_flag_page_component
+  it('creates rows for each feature flag', () => {
+    store.overrideSelector(getDefaultFeatureFlags, {
+      inColab: false,
+      enabledExperimentalPlugins: [] as string[],
+    } as FeatureFlags);
+    store.overrideSelector(getOverriddenFeatureFlags, {
+      inColab: true,
+    });
+    createComponent();
+    const component = getComponent();
+
+    const rows = component.querySelectorAll('tr');
+    expect(rows.length).toEqual(2);
+  });
+
+  it('creates table data for non editable flags and mat-selects for editable flags', () => {
+    store.overrideSelector(getDefaultFeatureFlags, {
+      inColab: false,
+      enabledExperimentalPlugins: [] as string[],
+    } as FeatureFlags);
+    store.overrideSelector(getOverriddenFeatureFlags, {
+      inColab: true,
+    });
+    createComponent();
+    const component = getComponent();
+
+    const dataCells = component.querySelectorAll('td');
+    expect(dataCells.length).toEqual(3);
+    const selectors = component.querySelectorAll('mat-select');
+    expect(selectors.length).toEqual(1);
+  });
+
+  describe('formatFlagValue', () => {
+    it('converts true to "Enabled"', () => {
+      const component = TestBed.createComponent(
+        FeatureFlagPageComponent
+      ).componentInstance;
+      expect(component.formatFlagValue(true)).toEqual('- Enabled');
+    });
+
+    it('converts false to "Disabled"', () => {
+      const component = TestBed.createComponent(
+        FeatureFlagPageComponent
+      ).componentInstance;
+      expect(component.formatFlagValue(false)).toEqual('- Disabled');
+    });
+
+    it('converts null and undefined to "null"', () => {
+      const component = TestBed.createComponent(
+        FeatureFlagPageComponent
+      ).componentInstance;
+      expect(component.formatFlagValue(null)).toEqual('- null');
+      expect(component.formatFlagValue(undefined)).toEqual('- null');
+    });
+
+    it('serializes arrays', () => {
+      const component = TestBed.createComponent(
+        FeatureFlagPageComponent
+      ).componentInstance;
+      expect(component.formatFlagValue([])).toEqual('- []');
+    });
+
+    it('serializes numbers and strings', () => {
+      const component = TestBed.createComponent(
+        FeatureFlagPageComponent
+      ).componentInstance;
+      expect(component.formatFlagValue(1)).toEqual('- 1');
+      expect(component.formatFlagValue('foo')).toEqual('- foo');
+    });
+
+    it('does not include hyphen when value has length 0', () => {
+      const component = TestBed.createComponent(
+        FeatureFlagPageComponent
+      ).componentInstance;
+      expect(component.formatFlagValue('')).toEqual('');
     });
   });
 });
