@@ -35,9 +35,9 @@ limitations under the License.
             [value]="flagStatus.status"
             (selectionChange)="flagChanged.emit({flag: flagStatus.flag, status: $event.value})"
           >
-            <mat-option value="default"
-              >Default {{formatFlagValue(flagStatus.defaultValue)}}</mat-option
-            >
+            <mat-option value="default">
+              Default {{formatFlagValue(flagStatus.defaultValue)}}
+            </mat-option>
             <mat-option value="enabled">Enabled</mat-option>
             <mat-option value="disabled">Disabled</mat-option>
           </mat-select>

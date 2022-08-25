@@ -15,6 +15,7 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../app_state';
@@ -75,14 +76,14 @@ describe('feature_flag_page_container', () => {
   // Tests for feature_flag_page_container
   describe('onFlagChanged', () => {
     it('creates override status is set to enabled or disabled not set', () => {
-      store.overrideSelector(getDefaultFeatureFlags, {} as FeatureFlags);
+      store.overrideSelector(getDefaultFeatureFlags, {
+        inColab: false,
+      } as FeatureFlags);
       store.overrideSelector(getOverriddenFeatureFlags, {});
       createComponent();
-      const component = fixture.componentInstance;
-      component.onFlagChanged({
-        flag: 'inColab',
-        status: FeatureFlagOverrideStatus.ENABLED,
-      });
+      const matSelect = fixture.debugElement.query(By.css('mat-select'));
+      matSelect.triggerEventHandler('selectionChange', {value: 'enabled'});
+
       expect(dispatchSpy).toHaveBeenCalledWith(
         featureFlagOverrideChanged({
           flags: {
@@ -90,10 +91,8 @@ describe('feature_flag_page_container', () => {
           },
         })
       );
-      component.onFlagChanged({
-        flag: 'inColab',
-        status: FeatureFlagOverrideStatus.DISABLED,
-      });
+
+      matSelect.triggerEventHandler('selectionChange', {value: 'disabled'});
       expect(dispatchSpy).toHaveBeenCalledWith(
         featureFlagOverrideChanged({
           flags: {
@@ -104,14 +103,14 @@ describe('feature_flag_page_container', () => {
     });
 
     it('creates removes override when status is set to default', () => {
-      store.overrideSelector(getDefaultFeatureFlags, {} as FeatureFlags);
+      store.overrideSelector(getDefaultFeatureFlags, {
+        inColab: false,
+      } as FeatureFlags);
       store.overrideSelector(getOverriddenFeatureFlags, {});
       createComponent();
-      const component = fixture.componentInstance;
-      component.onFlagChanged({
-        flag: 'inColab',
-        status: FeatureFlagOverrideStatus.DEFAULT,
-      });
+      const matSelect = fixture.debugElement.query(By.css('mat-select'));
+      matSelect.triggerEventHandler('selectionChange', {value: 'default'});
+
       expect(dispatchSpy).toHaveBeenCalledWith(
         featureFlagOverridesReset({
           flags: ['inColab'],
@@ -125,8 +124,8 @@ describe('feature_flag_page_container', () => {
       store.overrideSelector(getDefaultFeatureFlags, {} as FeatureFlags);
       store.overrideSelector(getOverriddenFeatureFlags, {});
       createComponent();
-      const component = fixture.componentInstance;
-      component.onAllFlagsReset();
+      const button = fixture.debugElement.query(By.css('button'));
+      button.triggerEventHandler('click', {});
       expect(dispatchSpy).toHaveBeenCalledWith(allFeatureFlagOverridesReset());
     });
   });
