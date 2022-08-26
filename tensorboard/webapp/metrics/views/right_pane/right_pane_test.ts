@@ -550,53 +550,6 @@ describe('metrics right_pane', () => {
             })
           );
         });
-
-        it('displays expected linked time start step when linked time is not enabled', () => {
-          store.overrideSelector(
-            selectors.getMetricsLinkedTimeSelectionSetting,
-            {
-              start: {step: 20},
-              end: null,
-            }
-          );
-          store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, false);
-          const fixture = TestBed.createComponent(SettingsViewContainer);
-          fixture.detectChanges();
-
-          const el = fixture.debugElement.query(
-            By.css('.linked-time mat-checkbox')
-          );
-          expect(el.nativeElement.textContent).toContain('Link by step 20');
-
-          store.overrideSelector(
-            selectors.getMetricsLinkedTimeSelectionSetting,
-            {
-              start: {step: 40},
-              end: null,
-            }
-          );
-          store.refreshState();
-          fixture.detectChanges();
-          expect(el.nativeElement.textContent).toContain('Link by step 40');
-        });
-
-        it('does not display expected linked time start step when linked time is enabled', () => {
-          store.overrideSelector(
-            selectors.getMetricsLinkedTimeSelectionSetting,
-            {
-              start: {step: 20},
-              end: null,
-            }
-          );
-          store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, true);
-          const fixture = TestBed.createComponent(SettingsViewContainer);
-          fixture.detectChanges();
-
-          const el = fixture.debugElement.query(
-            By.css('.linked-time mat-checkbox')
-          );
-          expect(el.nativeElement.textContent.trim()).toBe('Link by step');
-        });
       });
     });
 
