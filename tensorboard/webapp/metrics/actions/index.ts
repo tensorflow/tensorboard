@@ -15,7 +15,7 @@ limitations under the License.
 import {createAction, props} from '@ngrx/store';
 import {ElementId} from '../../util/dom';
 import {
-  TimeSelectionAffordance,
+  TimeSelectionChanged,
   TimeSelectionToggleAffordance,
 } from '../../widgets/card_fob/card_fob_types';
 import {
@@ -175,15 +175,7 @@ export const metricsShowAllPlugins = createAction(
 
 export const timeSelectionChanged = createAction(
   '[Metrics] Time Selection Changed',
-  props<{
-    timeSelection: {
-      startStep: number;
-      endStep: number | undefined;
-    };
-    // Affordance for internal analytics purpose. When no affordance is specified or is
-    // undefined we do not want to log an analytics event.
-    affordance?: TimeSelectionAffordance | undefined;
-  }>()
+  props<TimeSelectionChanged>()
 );
 
 export const timeSelectionCleared = createAction(

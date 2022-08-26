@@ -27,7 +27,7 @@ import {State} from '../../../app_state';
 import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
 import {
-  TimeSelectionAffordance,
+  TimeSelectionChanged,
   TimeSelectionToggleAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
 import {HistogramDatum} from '../../../widgets/histogram/histogram_types';
@@ -43,7 +43,7 @@ import {
   getMetricsLinkedTimeSelection,
   getMetricsXAxisType,
 } from '../../store';
-import {CardId, CardMetadata, TimeSelection} from '../../types';
+import {CardId, CardMetadata} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {
@@ -227,19 +227,11 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
   }
 
-  onLinkedTimeSelectionChanged(newLinkedTimeSelectionWithAffordance: {
-    timeSelection: TimeSelection;
-    affordance: TimeSelectionAffordance;
-  }) {
-    const {timeSelection, affordance} = newLinkedTimeSelectionWithAffordance;
+  onLinkedTimeSelectionChanged(
+    newLinkedTimeSelectionWithAffordance: TimeSelectionChanged
+  ) {
     this.store.dispatch(
-      timeSelectionChanged({
-        timeSelection: {
-          startStep: timeSelection.start.step,
-          endStep: timeSelection.end ? timeSelection.end.step : undefined,
-        },
-        affordance,
-      })
+      timeSelectionChanged(newLinkedTimeSelectionWithAffordance)
     );
   }
 

@@ -27,6 +27,7 @@ import {
   CardFobGetStepFromPositionHelper,
   TimeSelection,
   TimeSelectionAffordance,
+  TimeSelectionChanged,
 } from './card_fob_types';
 
 export enum Fob {
@@ -53,10 +54,7 @@ export class CardFobControllerComponent {
   @Input() lowestStep!: number;
   @Input() showExtendedLine?: Boolean = false;
 
-  @Output() onTimeSelectionChanged = new EventEmitter<{
-    timeSelection: TimeSelection;
-    affordance?: TimeSelectionAffordance;
-  }>();
+  @Output() onTimeSelectionChanged = new EventEmitter<TimeSelectionChanged>();
   @Output() onTimeSelectionToggled = new EventEmitter();
 
   private currentDraggingFob: Fob = Fob.NONE;
@@ -108,8 +106,8 @@ export class CardFobControllerComponent {
     document.removeEventListener('mouseup', this.stopListener);
     this.currentDraggingFob = Fob.NONE;
     this.onTimeSelectionChanged.emit({
-      timeSelection: this.timeSelection,
       affordance: this.affordance,
+      timeSelection: this.timeSelection,
     });
     this.affordance = TimeSelectionAffordance.NONE;
   }
@@ -153,7 +151,9 @@ export class CardFobControllerComponent {
       }
       newTimeSelection.start.step = newStep;
     }
-    this.onTimeSelectionChanged.emit({timeSelection: newTimeSelection});
+    this.onTimeSelectionChanged.emit({
+      timeSelection: newTimeSelection,
+    });
   }
 
   isDraggingLower(position: number, movement: number): boolean {
@@ -241,8 +241,8 @@ export class CardFobControllerComponent {
 
     // TODO(jieweiwu): Only emits action when time selection is changed.
     this.onTimeSelectionChanged.emit({
-      timeSelection: newTimeSelection,
       affordance: TimeSelectionAffordance.FOB_TEXT,
+      timeSelection: newTimeSelection,
     });
   }
 
@@ -258,19 +258,19 @@ export class CardFobControllerComponent {
   onFobRemoved(fob: Fob) {
     if (fob === Fob.END) {
       this.onTimeSelectionChanged.emit({
-        timeSelection: {...this.timeSelection, end: null},
         affordance: TimeSelectionAffordance.FOB_REMOVED,
+        timeSelection: {...this.timeSelection, end: null},
       });
       return;
     }
 
     if (this.timeSelection.end !== null) {
       this.onTimeSelectionChanged.emit({
+        affordance: TimeSelectionAffordance.FOB_REMOVED,
         timeSelection: {
           start: this.timeSelection.end,
           end: null,
         },
-        affordance: TimeSelectionAffordance.FOB_REMOVED,
       });
       return;
     }

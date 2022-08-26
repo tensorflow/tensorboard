@@ -2265,29 +2265,27 @@ describe('scalar card', () => {
         expect(dispatchedActions).toEqual([
           timeSelectionChanged({
             timeSelection: {
-              startStep: 25,
-              endStep: undefined,
+              start: {step: 25},
+              end: null,
             },
-            affordance: undefined,
           }),
           timeSelectionChanged({
             timeSelection: {
-              startStep: 25,
-              endStep: undefined,
+              start: {step: 25},
+              end: null,
             },
             affordance: TimeSelectionAffordance.FOB,
           }),
           timeSelectionChanged({
             timeSelection: {
-              startStep: 30,
-              endStep: undefined,
+              start: {step: 30},
+              end: null,
             },
-            affordance: undefined,
           }),
           timeSelectionChanged({
             timeSelection: {
-              startStep: 30,
-              endStep: undefined,
+              start: {step: 30},
+              end: null,
             },
             affordance: TimeSelectionAffordance.EXTENDED_LINE,
           }),
@@ -2944,8 +2942,8 @@ describe('scalar card', () => {
         expect(dispatchedActions).toContain(
           timeSelectionChanged({
             timeSelection: {
-              startStep: 25,
-              endStep: undefined,
+              start: {step: 25},
+              end: null,
             },
             affordance: TimeSelectionAffordance.FOB,
           })
@@ -2990,12 +2988,11 @@ describe('scalar card', () => {
         expect(dispatchedActions).toContain(
           timeSelectionChanged({
             timeSelection: {
-              startStep: 25,
-              endStep: undefined,
+              start: {step: 25},
+              end: null,
             },
             // linkedTime is disabled, therefore there should be no affordance
             // and this is not logged in internal analytics
-            affordance: undefined,
           })
         );
       }));
@@ -3031,15 +3028,14 @@ describe('scalar card', () => {
         expect(dispatchedActions).toEqual([
           timeSelectionChanged({
             timeSelection: {
-              startStep: 25,
-              endStep: 40,
+              start: {step: 25},
+              end: {step: 40},
             },
-            affordance: undefined,
           }),
           timeSelectionChanged({
             timeSelection: {
-              startStep: 25,
-              endStep: 40,
+              start: {step: 25},
+              end: {step: 40},
             },
             affordance: TimeSelectionAffordance.FOB,
           }),

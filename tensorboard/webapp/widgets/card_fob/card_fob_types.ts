@@ -88,3 +88,13 @@ export interface CardFobGetStepFromPositionHelper {
    */
   getStepLowerThanAxisPosition(position: number): number;
 }
+
+/**
+ * Contents of the timeSelectionChanged event.
+ */
+export type TimeSelectionChanged = {
+  // Affordance for internal analytics purpose. When no affordance is specified or is
+  // undefined we do not want to log an analytics event.
+  affordance?: TimeSelectionAffordance;
+  timeSelection: TimeSelection;
+};
