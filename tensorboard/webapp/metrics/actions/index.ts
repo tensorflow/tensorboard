@@ -15,7 +15,7 @@ limitations under the License.
 import {createAction, props} from '@ngrx/store';
 import {ElementId} from '../../util/dom';
 import {
-  TimeSelectionChanged,
+  TimeSelectionWithAffordance,
   TimeSelectionToggleAffordance,
 } from '../../widgets/card_fob/card_fob_types';
 import {
@@ -175,7 +175,7 @@ export const metricsShowAllPlugins = createAction(
 
 export const timeSelectionChanged = createAction(
   '[Metrics] Time Selection Changed',
-  props<TimeSelectionChanged>()
+  props<TimeSelectionWithAffordance>()
 );
 
 export const timeSelectionCleared = createAction(

@@ -53,7 +53,7 @@ import {
 import {DataLoadState} from '../../../types/data';
 import {
   TimeSelection,
-  TimeSelectionChanged,
+  TimeSelectionWithAffordance,
   TimeSelectionToggleAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
 import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer';
@@ -595,7 +595,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     });
   }
 
-  onTimeSelectionChanged(newTimeSelectionWithAffordance: TimeSelectionChanged) {
+  onTimeSelectionChanged(
+    newTimeSelectionWithAffordance: TimeSelectionWithAffordance
+  ) {
     this.store.dispatch(timeSelectionChanged(newTimeSelectionWithAffordance));
   }
 

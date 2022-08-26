@@ -27,7 +27,7 @@ import {State} from '../../../app_state';
 import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
 import {
-  TimeSelectionChanged,
+  TimeSelectionWithAffordance,
   TimeSelectionToggleAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
 import {HistogramDatum} from '../../../widgets/histogram/histogram_types';
@@ -228,7 +228,7 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
   }
 
   onLinkedTimeSelectionChanged(
-    newLinkedTimeSelectionWithAffordance: TimeSelectionChanged
+    newLinkedTimeSelectionWithAffordance: TimeSelectionWithAffordance
   ) {
     this.store.dispatch(
       timeSelectionChanged(newLinkedTimeSelectionWithAffordance)

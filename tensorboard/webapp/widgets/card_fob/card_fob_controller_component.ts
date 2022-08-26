@@ -27,7 +27,7 @@ import {
   CardFobGetStepFromPositionHelper,
   TimeSelection,
   TimeSelectionAffordance,
-  TimeSelectionChanged,
+  TimeSelectionWithAffordance,
 } from './card_fob_types';
 
 export enum Fob {
@@ -54,7 +54,8 @@ export class CardFobControllerComponent {
   @Input() lowestStep!: number;
   @Input() showExtendedLine?: Boolean = false;
 
-  @Output() onTimeSelectionChanged = new EventEmitter<TimeSelectionChanged>();
+  @Output() onTimeSelectionChanged =
+    new EventEmitter<TimeSelectionWithAffordance>();
   @Output() onTimeSelectionToggled = new EventEmitter();
 
   private currentDraggingFob: Fob = Fob.NONE;

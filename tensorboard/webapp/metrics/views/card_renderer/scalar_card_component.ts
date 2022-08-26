@@ -27,7 +27,7 @@ import {DataLoadState} from '../../../types/data';
 import {
   TimeSelection,
   TimeSelectionAffordance,
-  TimeSelectionChanged,
+  TimeSelectionWithAffordance,
   TimeSelectionToggleAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
 import {
@@ -220,7 +220,7 @@ export class ScalarCardComponent<Downloader> {
   }
 
   onFobTimeSelectionChanged(
-    newTimeSelectionWithAffordance: TimeSelectionChanged
+    newTimeSelectionWithAffordance: TimeSelectionWithAffordance
   ) {
     // Updates step selector to single selection.
     const {timeSelection, affordance} = newTimeSelectionWithAffordance;
