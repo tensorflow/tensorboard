@@ -107,8 +107,8 @@ export class CardFobControllerComponent {
     document.removeEventListener('mouseup', this.stopListener);
     this.currentDraggingFob = Fob.NONE;
     this.onTimeSelectionChanged.emit({
-      affordance: this.affordance,
       timeSelection: this.timeSelection,
+      affordance: this.affordance,
     });
     this.affordance = TimeSelectionAffordance.NONE;
   }
@@ -242,8 +242,8 @@ export class CardFobControllerComponent {
 
     // TODO(jieweiwu): Only emits action when time selection is changed.
     this.onTimeSelectionChanged.emit({
-      affordance: TimeSelectionAffordance.FOB_TEXT,
       timeSelection: newTimeSelection,
+      affordance: TimeSelectionAffordance.FOB_TEXT,
     });
   }
 
