@@ -35,7 +35,7 @@ limitations under the License.
               ></mat-icon>
               <div>{{ getHeaderTextColumn(header) }}</div>
             </div>
-            <div *ngSwitchDefault class="cell without-icon">
+            <div *ngSwitchDefault class="cell extra-right-padding">
               {{ getHeaderTextColumn(header) }}
             </div>
           </th>
@@ -62,7 +62,7 @@ limitations under the License.
                 ></ng-container>
                 {{ getFormattedDataForColumn(header, runData) }}
               </div>
-              <div *ngSwitchDefault class="cell without-icon">
+              <div *ngSwitchDefault class="cell extra-right-padding">
                 {{ getFormattedDataForColumn(header, runData) }}
               </div>
             </td>

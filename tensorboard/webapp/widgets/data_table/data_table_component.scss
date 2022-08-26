@@ -32,11 +32,11 @@ limitations under the License.
   }
 
   .cell {
-    display: flex;
     align-items: center;
+    display: flex;
   }
 
-  .without-icon {
+  .extra-right-padding {
     // Add artificial padding to keep consistent with icons which have whitespace
     padding-right: 1px;
   }
