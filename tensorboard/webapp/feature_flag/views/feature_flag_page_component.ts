@@ -12,20 +12,52 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input} from '@angular/core';
-import {FeatureFlagState} from '../store/feature_flag_types';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {FeatureFlagType} from '../store/feature_flag_metadata';
+import {FeatureFlags} from '../types';
+import {FeatureFlagStatus, FeatureFlagStatusEvent} from './types';
+
 @Component({
   selector: 'feature-flag-page-component',
-  templateUrl: `feature_flag_page.ng.html`,
+  styleUrls: ['feature_flag_page_component.css'],
+  templateUrl: `feature_flag_page_component.ng.html`,
 })
 export class FeatureFlagPageComponent {
-  @Input() featureFlags!: FeatureFlagState;
+  @Input() featureFlagStatuses!: FeatureFlagStatus<keyof FeatureFlags>[];
 
-  getFlagKeys(): string[] {
-    return Object.keys(this.featureFlags);
+  @Output() flagChanged = new EventEmitter<FeatureFlagStatusEvent>();
+
+  @Output() allFlagsReset = new EventEmitter();
+
+  private serializeFlagValue(value: FeatureFlagType): string {
+    if (value === true) {
+      return 'Enabled';
+    }
+
+    if (value === false) {
+      return 'Disabled';
+    }
+
+    if (value === null || value === undefined) {
+      return 'null';
+    }
+
+    if (Array.isArray(value)) {
+      return JSON.stringify(value);
+    }
+
+    return value.toString();
   }
 
-  flagChanged(flag: string) {
-    // TODO: dispatch action which stores new flag states and updates state.
+  isEditable(flagStatus: FeatureFlagStatus<keyof FeatureFlags>) {
+    return typeof flagStatus.defaultValue === 'boolean';
+  }
+
+  formatFlagValue(value: FeatureFlagType): string {
+    const formattedValue = this.serializeFlagValue(value);
+    if (formattedValue.length === 0) {
+      return '';
+    }
+    return `- ${formattedValue}`;
   }
 }

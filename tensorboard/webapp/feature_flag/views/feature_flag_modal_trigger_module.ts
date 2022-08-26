@@ -14,18 +14,17 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatButtonModule} from '@angular/material/button';
-import {MatSelectModule} from '@angular/material/select';
-import {FeatureFlagPageComponent} from './feature_flag_page_component';
-import {FeatureFlagPageContainer} from './feature_flag_page_container';
+import {FeatureFlagModalTriggerContainer} from './feature_flag_modal_trigger_container';
+import {FeatureFlagPageModule} from './feature_flag_module';
 
 /**
- * Provides the wrapper component that renders the main dashboard page.
+ * Provides the wrapper component that triggers the opening of the feature flag modal.
+ * The modal appears based on the value of the enableShowFlags feature flag.
  */
 @NgModule({
-  declarations: [FeatureFlagPageComponent, FeatureFlagPageContainer],
-  imports: [CommonModule, MatButtonModule, MatSelectModule],
-  exports: [FeatureFlagPageContainer],
-  entryComponents: [FeatureFlagPageContainer],
+  declarations: [FeatureFlagModalTriggerContainer],
+  imports: [CommonModule, FeatureFlagPageModule],
+  exports: [FeatureFlagModalTriggerContainer],
+  entryComponents: [FeatureFlagModalTriggerContainer],
 })
-export class FeatureFlagPageModule {}
+export class FeatureFlagModalTriggerModule {}

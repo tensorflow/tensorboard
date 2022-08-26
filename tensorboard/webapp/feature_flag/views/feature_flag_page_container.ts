@@ -14,15 +14,93 @@ limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
 import {Store} from '@ngrx/store';
+import {Observable} from 'rxjs';
+import {map, withLatestFrom} from 'rxjs/operators';
 import {State} from '../../app_state';
-import {getFeatureFlags} from '../store/feature_flag_selectors';
+import {
+  allFeatureFlagOverridesReset,
+  featureFlagOverrideChanged,
+  featureFlagOverridesReset,
+} from '../actions/feature_flag_actions';
+import {
+  getDefaultFeatureFlags,
+  getOverriddenFeatureFlags,
+} from '../store/feature_flag_selectors';
+import {FeatureFlags} from '../types';
+import {
+  FeatureFlagOverrideStatus,
+  FeatureFlagStatus,
+  FeatureFlagStatusEvent,
+} from './types';
+
 @Component({
   selector: 'feature-flag-page',
   template: `<feature-flag-page-component
-    [featureFlags]="featureFlags$ | async"
+    [featureFlagStatuses]="featureFlags$ | async"
+    (flagChanged)="onFlagChanged($event)"
+    (allFlagsReset)="onAllFlagsReset()"
   ></feature-flag-page-component>`,
 })
 export class FeatureFlagPageContainer {
   constructor(private readonly store: Store<State>) {}
-  readonly featureFlags$ = this.store.select(getFeatureFlags);
+
+  readonly featureFlags$: Observable<FeatureFlagStatus<keyof FeatureFlags>[]> =
+    this.store.select(getDefaultFeatureFlags).pipe(
+      withLatestFrom(this.store.select(getOverriddenFeatureFlags)),
+      map(([defaultFeatureFlags, overriddenFeatureFlags]) => {
+        return Object.entries(defaultFeatureFlags).map(
+          ([flagName, defaultValue]) => {
+            const status = getFlagStatus(
+              flagName as keyof FeatureFlags,
+              overriddenFeatureFlags
+            );
+            return {
+              flag: flagName,
+              defaultValue,
+              status,
+            } as FeatureFlagStatus<keyof FeatureFlags>;
+          }
+        );
+      })
+    );
+
+  onFlagChanged({flag, status}: FeatureFlagStatusEvent) {
+    switch (status) {
+      case FeatureFlagOverrideStatus.DEFAULT:
+        this.store.dispatch(featureFlagOverridesReset({flags: [flag]}));
+        break;
+      case FeatureFlagOverrideStatus.ENABLED:
+        this.store.dispatch(
+          featureFlagOverrideChanged({flags: {[flag]: true}})
+        );
+        break;
+      case FeatureFlagOverrideStatus.DISABLED:
+        this.store.dispatch(
+          featureFlagOverrideChanged({flags: {[flag]: false}})
+        );
+        break;
+      default:
+        throw new Error('Flag changed to invalid status');
+    }
+  }
+
+  onAllFlagsReset() {
+    this.store.dispatch(allFeatureFlagOverridesReset());
+  }
 }
+
+function getFlagStatus(
+  flagName: keyof FeatureFlags,
+  overriddenFeatureFlags: Partial<FeatureFlags>
+): FeatureFlagOverrideStatus {
+  if (overriddenFeatureFlags[flagName] === undefined) {
+    return FeatureFlagOverrideStatus.DEFAULT;
+  }
+  return overriddenFeatureFlags[flagName]
+    ? FeatureFlagOverrideStatus.ENABLED
+    : FeatureFlagOverrideStatus.DISABLED;
+}
+
+export const TEST_ONLY = {
+  getFlagStatus,
+};

@@ -12,3 +12,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {FeatureFlags} from '../types';
+
+export const enum FeatureFlagOverrideStatus {
+  ENABLED = 'enabled',
+  DISABLED = 'disabled',
+  DEFAULT = 'default',
+}
+
+export type FeatureFlagStatus<K extends keyof FeatureFlags> = {
+  flag: K;
+  status: FeatureFlagOverrideStatus;
+  defaultValue: FeatureFlags[K];
+};
+
+export type FeatureFlagStatusEvent = {
+  flag: keyof FeatureFlags;
+  status: FeatureFlagOverrideStatus;
+};
