@@ -31,6 +31,7 @@ from abc import abstractmethod
 import argparse
 import atexit
 from collections import defaultdict
+from contextlib import suppress
 import errno
 import logging
 import mimetypes
@@ -43,6 +44,10 @@ import threading
 import time
 import urllib.parse
 
+try:
+    import shtab
+except ImportError:
+    from . import _shtab as shtab
 from absl import flags as absl_flags
 from absl.flags import argparse_flags
 from werkzeug import serving
@@ -153,6 +158,52 @@ class TensorBoard(object):
             self.subcommands[name] = subcommand
         self.flags = None
 
+    def get_parser(self, serve_parser_name="all"):
+        """Get parser in order to generate shell completion script."""
+        base_parser = argparse_flags.ArgumentParser(
+            prog="tensorboard",
+            description=(
+                "TensorBoard is a suite of web applications for "
+                "inspecting and understanding your TensorFlow runs "
+                "and graphs. https://github.com/tensorflow/tensorboard "
+            ),
+        )
+        shtab.add_argument_to(base_parser)
+        subparsers = base_parser.add_subparsers(
+            metavar="subcommand",
+            help="TensorBoard subcommand (defaults to %r)"
+            % _SERVE_SUBCOMMAND_NAME
+        )
+
+        serve_subparser = subparsers.add_parser(
+            _SERVE_SUBCOMMAND_NAME,
+            help="start local TensorBoard server (default subcommand)",
+        )
+        serve_subparser.set_defaults(
+            **{_SUBCOMMAND_FLAG: _SERVE_SUBCOMMAND_NAME}
+        )
+
+        for (name, subcommand) in self.subcommands.items():
+            subparser = subparsers.add_parser(
+                name,
+                help=subcommand.help(),
+                description=subcommand.description(),
+            )
+            subparser.set_defaults(**{_SUBCOMMAND_FLAG: name})
+            subcommand.define_flags(subparser)
+
+        serve_parsers = []
+        if serve_parser_name in ["base_parser", "all"]:
+            serve_parsers += [base_parser]
+        if serve_parser_name in ["serve_subparser", "all"]:
+            serve_parsers += [serve_subparser]
+
+        for serve_parser in serve_parsers:
+            for loader in self.plugin_loaders:
+                loader.define_flags(serve_parser)
+
+        return base_parser
+
     def configure(self, argv=("",), **kwargs):
         """Configures TensorBoard behavior via flags.
 
@@ -174,48 +225,18 @@ class TensorBoard(object):
         Raises:
           ValueError: If flag values are invalid.
         """
-
-        base_parser = argparse_flags.ArgumentParser(
-            prog="tensorboard",
-            description=(
-                "TensorBoard is a suite of web applications for "
-                "inspecting and understanding your TensorFlow runs "
-                "and graphs. https://github.com/tensorflow/tensorboard "
-            ),
-        )
-        subparsers = base_parser.add_subparsers(
-            help="TensorBoard subcommand (defaults to %r)"
-            % _SERVE_SUBCOMMAND_NAME
-        )
-
-        serve_subparser = subparsers.add_parser(
-            _SERVE_SUBCOMMAND_NAME,
-            help="start local TensorBoard server (default subcommand)",
-        )
-        serve_subparser.set_defaults(
-            **{_SUBCOMMAND_FLAG: _SERVE_SUBCOMMAND_NAME}
-        )
-
         if len(argv) < 2 or argv[1].startswith("-"):
             # This invocation, if valid, must not use any subcommands: we
             # don't permit flags before the subcommand name.
-            serve_parser = base_parser
+            serve_parser_name = "base_parser"
         else:
             # This invocation, if valid, must use a subcommand: we don't take
             # any positional arguments to `serve`.
-            serve_parser = serve_subparser
-
-        for (name, subcommand) in self.subcommands.items():
-            subparser = subparsers.add_parser(
-                name,
-                help=subcommand.help(),
-                description=subcommand.description(),
-            )
-            subparser.set_defaults(**{_SUBCOMMAND_FLAG: name})
-            subcommand.define_flags(subparser)
-
-        for loader in self.plugin_loaders:
-            loader.define_flags(serve_parser)
+            serve_parser_name = "serve_subparser"
+        with suppress(ValueError):
+            if argv.index("--print-completion"):
+                serve_parser_name = "all"
+        base_parser = self.get_parser(serve_parser_name)
 
         arg0 = argv[0] if argv else ""
 

@@ -63,6 +63,9 @@ setup(
         ],
     },
     install_requires=REQUIRED_PACKAGES,
+    extras_require={
+        "shtab": ["completion"],
+    },
     tests_require=REQUIRED_PACKAGES,
     python_requires=">=3.7",
     # PyPI package information.
