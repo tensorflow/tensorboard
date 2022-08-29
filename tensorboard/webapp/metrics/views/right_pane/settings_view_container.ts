@@ -42,7 +42,7 @@ import {
   timeSelectionChanged,
 } from '../../actions';
 import {HistogramMode, TooltipSort, XAxisType} from '../../types';
-import {TimeSelectionChanged} from './types';
+import {LinkedTimeSelectionChanged} from './types';
 
 const RANGE_INPUT_SOURCE_TO_AFFORDANCE: Record<
   RangeInputSource,
@@ -218,15 +218,12 @@ export class SettingsViewContainer {
   }
 
   onLinkedTimeSelectionChanged({
-    timeSelection: {start, end},
+    timeSelection,
     source,
-  }: TimeSelectionChanged) {
+  }: LinkedTimeSelectionChanged) {
     this.store.dispatch(
       timeSelectionChanged({
-        timeSelection: {
-          startStep: start.step,
-          endStep: end?.step,
-        },
+        timeSelection,
         affordance: RANGE_INPUT_SOURCE_TO_AFFORDANCE[source],
       })
     );

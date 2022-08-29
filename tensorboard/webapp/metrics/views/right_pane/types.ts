@@ -15,7 +15,7 @@ limitations under the License.
 import {RangeInputSource} from '../../../widgets/range_input/types';
 import {TimeSelection} from '../../types';
 
-export type TimeSelectionChanged = {
+export type LinkedTimeSelectionChanged = {
   timeSelection: TimeSelection;
   source: RangeInputSource;
 };

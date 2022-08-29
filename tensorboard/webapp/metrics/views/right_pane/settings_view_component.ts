@@ -24,11 +24,7 @@ import {
 } from '@angular/core';
 import {auditTime} from 'rxjs/operators';
 import {DropdownOption} from '../../../widgets/dropdown/dropdown_component';
-import {
-  RangeInputSource,
-  RangeValues,
-  SingleValue,
-} from '../../../widgets/range_input/types';
+import {RangeValues, SingleValue} from '../../../widgets/range_input/types';
 import {
   HistogramMode,
   SCALARS_SMOOTHING_MAX,
@@ -36,7 +32,7 @@ import {
   TooltipSort,
   XAxisType,
 } from '../../types';
-import {TimeSelectionChanged} from './types';
+import {LinkedTimeSelectionChanged} from './types';
 
 const SLIDER_AUDIT_TIME_MS = 250;
 
@@ -78,7 +74,7 @@ export class SettingsViewComponent {
 
   @Output() linkedTimeToggled = new EventEmitter<void>();
   @Output()
-  linkedTimeSelectionChanged = new EventEmitter<TimeSelectionChanged>();
+  linkedTimeSelectionChanged = new EventEmitter<LinkedTimeSelectionChanged>();
 
   @Output() stepSelectorToggled = new EventEmitter<void>();
 
@@ -194,8 +190,10 @@ export class SettingsViewComponent {
 
   onSingleValueChanged({value, source}: SingleValue) {
     this.linkedTimeSelectionChanged.emit({
-      start: {step: value},
-      end: null,
+      timeSelection: {
+        start: {step: value},
+        end: null,
+      },
       source,
     });
   }
@@ -206,8 +204,10 @@ export class SettingsViewComponent {
 
   onRangeValuesChanged({lowerValue, upperValue, source}: RangeValues) {
     this.linkedTimeSelectionChanged.emit({
-      start: {step: lowerValue},
-      end: {step: upperValue},
+      timeSelection: {
+        start: {step: lowerValue},
+        end: {step: upperValue},
+      },
       source,
     });
   }
