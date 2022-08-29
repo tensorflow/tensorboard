@@ -20,8 +20,9 @@ limitations under the License.
           <!-- This header is intentionally left blank for the color column -->
         </th>
         <ng-container *ngFor="let header of headers;">
-          <th>
+          <th (click)="headerClicked(header)">
             <div [ngSwitch]="header" class="cell">
+              <!-- order icon -->
               <mat-icon
                 *ngSwitchCase="ColumnHeaders.VALUE_CHANGE"
                 class="delta-arrow"
@@ -35,6 +36,19 @@ limitations under the License.
               <div *ngSwitchDefault class="extra-right-padding"></div>
 
               <span>{{ getHeaderTextColumn(header) }}</span>
+
+              <div *ngIf="header === sortingInfo.header">
+                <mat-icon
+                  *ngIf="sortingInfo.order === SortingOrder.ASCENDING"
+                  class="delta-arrow"
+                  svgIcon="expand_more_24px"
+                ></mat-icon>
+                <mat-icon
+                  *ngIf="sortingInfo.order === SortingOrder.DESCENDING"
+                  class="delta-arrow"
+                  svgIcon="expand_less_24px"
+                ></mat-icon>
+              </div>
             </div>
           </th>
         </ng-container>

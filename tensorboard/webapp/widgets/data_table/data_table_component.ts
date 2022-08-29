@@ -13,10 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 import {
   ColumnHeaders,
   SelectedStepRunData,
+  SortingInfo,
+  SortingOrder,
 } from '../../metrics/views/card_renderer/scalar_card_types';
 import {
   intlNumberFormatter,
@@ -35,8 +43,12 @@ export class DataTableComponent {
   // displayed in the table.
   @Input() headers!: ColumnHeaders[];
   @Input() data!: SelectedStepRunData[];
+  @Input() sortingInfo!: SortingInfo;
+
+  @Output() sortDataBy = new EventEmitter<SortingInfo>();
 
   readonly ColumnHeaders = ColumnHeaders;
+  readonly SortingOrder = SortingOrder;
 
   getHeaderTextColumn(columnHeader: ColumnHeaders): string {
     switch (columnHeader) {
@@ -176,5 +188,16 @@ export class DataTableComponent {
       default:
         return '';
     }
+  }
+
+  headerClicked(header: ColumnHeaders) {
+    let sortingOrder = SortingOrder.ASCENDING;
+    if (
+      this.sortingInfo.header === header &&
+      this.sortingInfo.order === SortingOrder.ASCENDING
+    ) {
+      sortingOrder = SortingOrder.DESCENDING;
+    }
+    this.sortDataBy.emit({header, order: sortingOrder});
   }
 }

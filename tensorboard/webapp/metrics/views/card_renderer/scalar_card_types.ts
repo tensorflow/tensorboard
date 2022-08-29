@@ -94,6 +94,16 @@ export enum ColumnHeaders {
   PERCENTAGE_CHANGE = 'PERCENTAGE_CHANGE',
 }
 
+export enum SortingOrder {
+  ASCENDING,
+  DESCENDING,
+}
+
+export interface SortingInfo {
+  header: ColumnHeaders;
+  order: SortingOrder;
+}
+
 /**
  * An object which essentially contains the data for an entire row in the
  * DataTable. It will have a value for each required ColumnHeader for a given

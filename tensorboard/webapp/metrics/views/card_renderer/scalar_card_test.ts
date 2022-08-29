@@ -100,6 +100,7 @@ import {
   ScalarCardPoint,
   ScalarCardSeriesMetadata,
   SeriesType,
+  SortingOrder,
 } from './scalar_card_types';
 import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_warning_module';
 
@@ -2848,6 +2849,96 @@ describe('scalar card', () => {
       expect(scalarCardDataTable.componentInstance.dataHeaders).not.toContain(
         ColumnHeaders.SMOOTHED
       );
+    }));
+
+    it('orders data ascending', fakeAsync(() => {
+      const runToSeries = {
+        run1: [{wallTime: 1, value: 2, step: 1}],
+        run2: [{wallTime: 1, value: 1, step: 1}],
+        run3: [{wallTime: 1, value: 3, step: 1}],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([
+          ['run1', true],
+          ['run2', true],
+          ['run3', true],
+        ])
+      );
+
+      store.overrideSelector(getMetricsLinkedTimeSelection, {
+        start: {step: 1},
+        end: null,
+      });
+
+      const fixture = createComponent('card1');
+      const scalarCardDataTable = fixture.debugElement.query(
+        By.directive(ScalarCardDataTable)
+      );
+      scalarCardDataTable.componentInstance.sortingInfo = {
+        header: ColumnHeaders.VALUE,
+        order: SortingOrder.ASCENDING,
+      };
+      fixture.detectChanges();
+
+      const data =
+        scalarCardDataTable.componentInstance.getTimeSelectionTableData();
+
+      expect(data[0].RUN).toEqual('run2');
+      expect(data[1].RUN).toEqual('run1');
+      expect(data[2].RUN).toEqual('run3');
+    }));
+
+    it('orders data descending', fakeAsync(() => {
+      const runToSeries = {
+        run1: [{wallTime: 1, value: 2, step: 1}],
+        run2: [{wallTime: 1, value: 1, step: 1}],
+        run3: [{wallTime: 1, value: 3, step: 1}],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([
+          ['run1', true],
+          ['run2', true],
+          ['run3', true],
+        ])
+      );
+
+      store.overrideSelector(getMetricsLinkedTimeSelection, {
+        start: {step: 1},
+        end: null,
+      });
+
+      const fixture = createComponent('card1');
+      const scalarCardDataTable = fixture.debugElement.query(
+        By.directive(ScalarCardDataTable)
+      );
+      scalarCardDataTable.componentInstance.sortingInfo = {
+        header: ColumnHeaders.VALUE,
+        order: SortingOrder.DESCENDING,
+      };
+      fixture.detectChanges();
+
+      const data =
+        scalarCardDataTable.componentInstance.getTimeSelectionTableData();
+
+      expect(data[0].RUN).toEqual('run3');
+      expect(data[1].RUN).toEqual('run1');
+      expect(data[2].RUN).toEqual('run2');
     }));
   });
 

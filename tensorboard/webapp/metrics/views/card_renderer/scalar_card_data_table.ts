@@ -12,7 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 import {TimeSelection} from '../../../widgets/card_fob/card_fob_types';
 import {findClosestIndex} from '../../../widgets/line_chart_v2/sub_view/line_chart_interactive_utils';
 import {
@@ -21,6 +27,8 @@ import {
   ScalarCardPoint,
   ScalarCardSeriesMetadataMap,
   SelectedStepRunData,
+  SortingInfo,
+  SortingOrder,
 } from './scalar_card_types';
 import {TimeSelectionView} from './utils';
 
@@ -30,6 +38,8 @@ import {TimeSelectionView} from './utils';
     <tb-data-table
       [headers]="dataHeaders"
       [data]="getTimeSelectionTableData()"
+      [sortingInfo]="sortingInfo"
+      (sortDataBy)="sortDataBy.emit($event)"
     ></tb-data-table>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,6 +50,9 @@ export class ScalarCardDataTable {
   @Input() linkedTimeSelection!: TimeSelectionView | null;
   @Input() stepSelectorTimeSelection!: TimeSelection;
   @Input() dataHeaders!: ColumnHeaders[];
+  @Input() sortingInfo!: SortingInfo;
+
+  @Output() sortDataBy = new EventEmitter<SortingInfo>();
 
   getMinValueInRange(
     points: ScalarCardPoint[],
@@ -183,7 +196,22 @@ export class ScalarCardDataTable {
         }
         return selectedStepData;
       });
+    dataTableData.sort(
+      (point1: SelectedStepRunData, point2: SelectedStepRunData) => {
+        if (
+          point1[this.sortingInfo.header]! < point2[this.sortingInfo.header]!
+        ) {
+          return this.sortingInfo.order === SortingOrder.ASCENDING ? -1 : 1;
+        }
+        if (
+          point1[this.sortingInfo.header]! > point2[this.sortingInfo.header]!
+        ) {
+          return this.sortingInfo.order === SortingOrder.ASCENDING ? 1 : -1;
+        }
 
+        return 0;
+      }
+    );
     return dataTableData;
   }
 }

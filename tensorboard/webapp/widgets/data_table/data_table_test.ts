@@ -20,13 +20,21 @@ import {By} from '@angular/platform-browser';
 import {
   ColumnHeaders,
   SelectedStepRunData,
+  SortingInfo,
+  SortingOrder,
 } from '../../metrics/views/card_renderer/scalar_card_types';
 import {DataTableComponent} from './data_table_component';
 
 @Component({
   selector: 'testable-comp',
   template: `
-    <tb-data-table #DataTable [headers]="headers" [data]="data"></tb-data-table>
+    <tb-data-table
+      #DataTable
+      [headers]="headers"
+      [data]="data"
+      [sortingInfo]="sortingInfo"
+      (sortDataBy)="sortDataBy($event)"
+    ></tb-data-table>
   `,
 })
 class TestableComponent {
@@ -35,9 +43,13 @@ class TestableComponent {
 
   @Input() headers!: ColumnHeaders[];
   @Input() data!: SelectedStepRunData[];
+  @Input() sortingInfo!: SortingInfo;
+
+  @Input() sortDataBy!: (sortingInfo: SortingInfo) => void;
 }
 
 describe('data table', () => {
+  let sortDataBySpy: jasmine.Spy;
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [TestableComponent, DataTableComponent],
@@ -48,11 +60,19 @@ describe('data table', () => {
   function createComponent(input: {
     headers?: ColumnHeaders[];
     data?: SelectedStepRunData[];
+    sortingInfo?: SortingInfo;
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
 
     fixture.componentInstance.headers = input.headers || [];
     fixture.componentInstance.data = input.data || [];
+    fixture.componentInstance.sortingInfo = input.sortingInfo || {
+      header: ColumnHeaders.RUN,
+      order: SortingOrder.ASCENDING,
+    };
+
+    sortDataBySpy = jasmine.createSpy();
+    fixture.componentInstance.sortDataBy = sortDataBySpy;
 
     return fixture;
   }
@@ -195,5 +215,44 @@ describe('data table', () => {
     expect(dataElements[2].nativeElement.innerText).toBe('');
     expect(dataElements[3].nativeElement.innerText).toBe('');
     expect(dataElements[4].nativeElement.innerText).toBe('');
+  });
+
+  it('emits sortDataBy event when header clicked', () => {
+    const fixture = createComponent({
+      headers: [
+        ColumnHeaders.VALUE,
+        ColumnHeaders.RUN,
+        ColumnHeaders.STEP,
+        ColumnHeaders.RELATIVE_TIME,
+      ],
+    });
+    fixture.detectChanges();
+    const headerElements = fixture.debugElement.queryAll(By.css('th'));
+
+    headerElements[3].triggerEventHandler('click', {});
+    expect(sortDataBySpy).toHaveBeenCalledOnceWith({
+      header: ColumnHeaders.STEP,
+      order: SortingOrder.ASCENDING,
+    });
+  });
+
+  it('emits sortDataBy event with DESCENDING when header that is currently sorted is clicked', () => {
+    const fixture = createComponent({
+      headers: [
+        ColumnHeaders.VALUE,
+        ColumnHeaders.RUN,
+        ColumnHeaders.STEP,
+        ColumnHeaders.RELATIVE_TIME,
+      ],
+      sortingInfo: {header: ColumnHeaders.STEP, order: SortingOrder.ASCENDING},
+    });
+    fixture.detectChanges();
+    const headerElements = fixture.debugElement.queryAll(By.css('th'));
+
+    headerElements[3].triggerEventHandler('click', {});
+    expect(sortDataBySpy).toHaveBeenCalledOnceWith({
+      header: ColumnHeaders.STEP,
+      order: SortingOrder.DESCENDING,
+    });
   });
 });

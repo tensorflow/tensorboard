@@ -50,6 +50,8 @@ import {
   ScalarCardDataSeries,
   ScalarCardSeriesMetadata,
   ScalarCardSeriesMetadataMap,
+  SortingInfo,
+  SortingOrder,
 } from './scalar_card_types';
 import {TimeSelectionView} from './utils';
 
@@ -107,6 +109,10 @@ export class ScalarCardComponent<Downloader> {
   // Line chart may not exist when was never visible (*ngIf).
   @ViewChild(LineChartComponent)
   lineChart?: LineChartComponent;
+  sortingInfo: SortingInfo = {
+    header: ColumnHeaders.RUN,
+    order: SortingOrder.ASCENDING,
+  };
 
   constructor(private readonly ref: ElementRef, private dialog: MatDialog) {}
 
@@ -116,6 +122,10 @@ export class ScalarCardComponent<Downloader> {
   toggleYScaleType() {
     this.yScaleType =
       this.yScaleType === ScaleType.LINEAR ? ScaleType.LOG10 : ScaleType.LINEAR;
+  }
+
+  sortDataBy(sortingInfo: SortingInfo) {
+    this.sortingInfo = sortingInfo;
   }
 
   resetDomain() {
