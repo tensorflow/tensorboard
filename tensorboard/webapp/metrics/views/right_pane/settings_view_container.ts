@@ -208,14 +208,7 @@ export class SettingsViewContainer {
     );
   }
 
-  onLinkedTimeSelectionChanged(newValue: TimeSelection) {
-    this.store.dispatch(
-      timeSelectionChanged({
-        timeSelection: {
-          startStep: newValue.start.step,
-          endStep: newValue.end?.step,
-        },
-      })
-    );
+  onLinkedTimeSelectionChanged(timeSelection: TimeSelection) {
+    this.store.dispatch(timeSelectionChanged({timeSelection}));
   }
 }

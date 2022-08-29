@@ -53,8 +53,8 @@ import {
 import {DataLoadState} from '../../../types/data';
 import {
   TimeSelection,
-  TimeSelectionAffordance,
   TimeSelectionToggleAffordance,
+  TimeSelectionWithAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
 import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
@@ -595,20 +595,10 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     });
   }
 
-  onTimeSelectionChanged(newTimeSelectionWithAffordance: {
-    timeSelection: TimeSelection;
-    affordance?: TimeSelectionAffordance;
-  }) {
-    const {timeSelection, affordance} = newTimeSelectionWithAffordance;
-    this.store.dispatch(
-      timeSelectionChanged({
-        timeSelection: {
-          startStep: timeSelection.start.step,
-          endStep: timeSelection.end ? timeSelection.end.step : undefined,
-        },
-        affordance,
-      })
-    );
+  onTimeSelectionChanged(
+    newTimeSelectionWithAffordance: TimeSelectionWithAffordance
+  ) {
+    this.store.dispatch(timeSelectionChanged(newTimeSelectionWithAffordance));
   }
 
   onLinkedTimeToggled(affordance: TimeSelectionToggleAffordance) {

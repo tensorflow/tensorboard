@@ -305,8 +305,8 @@ describe('histogram card', () => {
       expect(dispatchedActions).toEqual([
         timeSelectionChanged({
           timeSelection: {
-            startStep: 5,
-            endStep: undefined,
+            start: {step: 5},
+            end: null,
           },
           affordance: TimeSelectionAffordance.FOB,
         }),

@@ -518,8 +518,8 @@ describe('metrics right_pane', () => {
           expect(dispatchSpy).toHaveBeenCalledOnceWith(
             actions.timeSelectionChanged({
               timeSelection: {
-                startStep: 10,
-                endStep: 200,
+                start: {step: 10},
+                end: {step: 200},
               },
             })
           );
@@ -544,8 +544,8 @@ describe('metrics right_pane', () => {
           expect(dispatchSpy).toHaveBeenCalledOnceWith(
             actions.timeSelectionChanged({
               timeSelection: {
-                startStep: 10,
-                endStep: undefined,
+                start: {step: 10},
+                end: null,
               },
             })
           );

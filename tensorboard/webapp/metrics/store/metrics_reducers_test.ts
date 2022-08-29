@@ -63,7 +63,7 @@ function createScalarCardMetadata(): CardMetadata {
  * Creates a fake array of time series data of the desired length.
  */
 function createScalarStepSeries(length: number): ScalarStepDatum[] {
-  const series = [];
+  const series: Array<{step: number; wallTime: number; value: number}> = [];
   for (let i = 0; i < length; i++) {
     series.push({step: i, wallTime: i + 100, value: Math.random()});
   }
@@ -2435,8 +2435,8 @@ describe('metrics reducers', () => {
           beforeState,
           actions.timeSelectionChanged({
             timeSelection: {
-              startStep: 2,
-              endStep: 5,
+              start: {step: 2},
+              end: {step: 5},
             },
           })
         );
@@ -2456,7 +2456,7 @@ describe('metrics reducers', () => {
         const after = reducers(
           before,
           actions.timeSelectionChanged({
-            timeSelection: {startStep: 2, endStep: undefined},
+            timeSelection: {start: {step: 2}, end: null},
           })
         );
 
@@ -2476,8 +2476,8 @@ describe('metrics reducers', () => {
           before,
           actions.timeSelectionChanged({
             timeSelection: {
-              startStep: 2,
-              endStep: 50,
+              start: {step: 2},
+              end: {step: 50},
             },
           })
         );
@@ -2496,7 +2496,7 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.timeSelectionChanged({
-            timeSelection: {startStep: 2, endStep: undefined},
+            timeSelection: {start: {step: 2}, end: null},
           })
         );
 
@@ -2513,8 +2513,8 @@ describe('metrics reducers', () => {
           beforeState,
           actions.timeSelectionChanged({
             timeSelection: {
-              startStep: 150,
-              endStep: 0,
+              start: {step: 150},
+              end: {step: 0},
             },
           })
         );
@@ -2535,8 +2535,8 @@ describe('metrics reducers', () => {
           beforeState,
           actions.timeSelectionChanged({
             timeSelection: {
-              startStep: 2,
-              endStep: 5,
+              start: {step: 2},
+              end: {step: 5},
             },
           })
         );
@@ -2560,8 +2560,8 @@ describe('metrics reducers', () => {
           beforeState,
           actions.timeSelectionChanged({
             timeSelection: {
-              startStep: 2,
-              endStep: 5,
+              start: {step: 2},
+              end: {step: 5},
             },
           })
         );
@@ -2582,8 +2582,8 @@ describe('metrics reducers', () => {
           beforeState,
           actions.timeSelectionChanged({
             timeSelection: {
-              startStep: 2,
-              endStep: 0,
+              start: {step: 2},
+              end: {step: 0},
             },
           })
         );
@@ -2601,8 +2601,8 @@ describe('metrics reducers', () => {
           beforeState1,
           actions.timeSelectionChanged({
             timeSelection: {
-              startStep: 2,
-              endStep: undefined,
+              start: {step: 2},
+              end: null,
             },
           })
         );
@@ -2638,8 +2638,8 @@ describe('metrics reducers', () => {
           beforeState,
           actions.timeSelectionChanged({
             timeSelection: {
-              startStep: 10,
-              endStep: undefined,
+              start: {step: 10},
+              end: null,
             },
           })
         );
@@ -2678,8 +2678,8 @@ describe('metrics reducers', () => {
           beforeState,
           actions.timeSelectionChanged({
             timeSelection: {
-              startStep: 15,
-              endStep: undefined,
+              start: {step: 15},
+              end: null,
             },
           })
         );
@@ -2703,8 +2703,8 @@ describe('metrics reducers', () => {
         beforeState,
         actions.timeSelectionChanged({
           timeSelection: {
-            startStep: 3,
-            endStep: undefined,
+            start: {step: 3},
+            end: null,
           },
         })
       );

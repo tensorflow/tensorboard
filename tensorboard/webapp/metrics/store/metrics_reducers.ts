@@ -510,7 +510,7 @@ const reducer = createReducer(
 
       const newCardMetadataMap = {} as CardMetadataMap;
       const nextCardMetadataList = buildCardMetadataList(nextTagMetadata);
-      const nextCardList = [];
+      const nextCardList: string[] = [];
 
       // Create new cards for unseen metadata.
       for (const cardMetadata of nextCardMetadataList) {
@@ -980,8 +980,8 @@ const reducer = createReducer(
   }),
   on(actions.timeSelectionChanged, (state, change) => {
     const {timeSelection} = change;
-    const nextStartStep = timeSelection.startStep;
-    const nextEndStep = timeSelection.endStep;
+    const nextStartStep = timeSelection.start.step;
+    const nextEndStep = timeSelection.end?.step;
     const end =
       nextEndStep === undefined
         ? null
