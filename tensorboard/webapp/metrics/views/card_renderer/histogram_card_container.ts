@@ -27,8 +27,8 @@ import {State} from '../../../app_state';
 import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
 import {
-  TimeSelectionWithAffordance,
   TimeSelectionToggleAffordance,
+  TimeSelectionWithAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
 import {HistogramDatum} from '../../../widgets/histogram/histogram_types';
 import {buildNormalizedHistograms} from '../../../widgets/histogram/histogram_util';

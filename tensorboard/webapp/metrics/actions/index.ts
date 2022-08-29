@@ -15,8 +15,8 @@ limitations under the License.
 import {createAction, props} from '@ngrx/store';
 import {ElementId} from '../../util/dom';
 import {
-  TimeSelectionWithAffordance,
   TimeSelectionToggleAffordance,
+  TimeSelectionWithAffordance,
 } from '../../widgets/card_fob/card_fob_types';
 import {
   TagMetadata,

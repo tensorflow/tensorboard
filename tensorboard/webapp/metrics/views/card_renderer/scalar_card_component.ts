@@ -27,8 +27,8 @@ import {DataLoadState} from '../../../types/data';
 import {
   TimeSelection,
   TimeSelectionAffordance,
-  TimeSelectionWithAffordance,
   TimeSelectionToggleAffordance,
+  TimeSelectionWithAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
 import {
   Formatter,
