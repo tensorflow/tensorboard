@@ -20,23 +20,21 @@ limitations under the License.
           <!-- This header is intentionally left blank for the color column -->
         </th>
         <ng-container *ngFor="let header of headers;">
-          <th [ngSwitch]="header">
-            <div *ngSwitchCase="ColumnHeaders.VALUE_CHANGE" class="cell">
+          <th>
+            <div [ngSwitch]="header" class="cell">
               <mat-icon
+                *ngSwitchCase="ColumnHeaders.VALUE_CHANGE"
                 class="delta-arrow"
                 svgIcon="change_history_24px"
               ></mat-icon>
-              <div>{{ getHeaderTextColumn(header) }}</div>
-            </div>
-            <div *ngSwitchCase="ColumnHeaders.PERCENTAGE_CHANGE" class="cell">
               <mat-icon
+                *ngSwitchCase="ColumnHeaders.PERCENTAGE_CHANGE"
                 class="delta-arrow"
                 svgIcon="change_history_24px"
               ></mat-icon>
-              <div>{{ getHeaderTextColumn(header) }}</div>
-            </div>
-            <div *ngSwitchDefault class="cell extra-right-padding">
-              {{ getHeaderTextColumn(header) }}
+              <div *ngSwitchDefault class="extra-right-padding"></div>
+
+              <span>{{ getHeaderTextColumn(header) }}</span>
             </div>
           </th>
         </ng-container>
