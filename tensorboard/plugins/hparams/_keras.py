@@ -17,7 +17,7 @@
 Use `tensorboard.plugins.hparams.api` to access this module's contents.
 """
 
-
+import os 
 import tensorflow as tf
 
 from tensorboard.plugins.hparams import api_pb2
@@ -39,7 +39,7 @@ class Callback(tf.keras.callbacks.Callback):
 
         Args:
           writer: The `SummaryWriter` object to which hparams should be
-            written, or a logdir (as a `str`) to be passed to
+            written, or a logdir (as a `str` or `PathLike`) to be passed to
             `tf.summary.create_file_writer` to create such a writer.
           hparams: A `dict` mapping hyperparameters to the values used in
             this session. Keys should be the names of `HParam` objects used
@@ -62,10 +62,12 @@ class Callback(tf.keras.callbacks.Callback):
         summary_v2.hparams_pb(self._hparams, trial_id=self._trial_id)
         if writer is None:
             raise TypeError(
-                "writer must be a `SummaryWriter` or `str`, not None"
+                "writer must be a `SummaryWriter`, `str` or `PathLike`, not None"
             )
         elif isinstance(writer, str):
             self._writer = tf.compat.v2.summary.create_file_writer(writer)
+        elif isinstance(writer, os.PathLike):
+            self._writer = tf.compat.v2.summary.create_file_writer(os.fsdecode(writer))
         else:
             self._writer = writer
 
