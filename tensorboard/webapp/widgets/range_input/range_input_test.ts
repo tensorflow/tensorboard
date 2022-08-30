@@ -225,7 +225,10 @@ describe('range input test', () => {
           value: 5,
         });
 
-        expect(onSingleValueChanged).toHaveBeenCalledOnceWith(5);
+        expect(onSingleValueChanged).toHaveBeenCalledOnceWith({
+          value: 5,
+          source: RangeInputSource.SLIDER,
+        });
       });
     });
 

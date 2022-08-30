@@ -322,6 +322,13 @@ export class RangeInputComponent implements OnInit, OnDestroy {
     }
   }
 
+  handleSingleSliderChange(value: number) {
+    this.singleValueChanged.emit({
+      value,
+      source: RangeInputSource.SLIDER,
+    });
+  }
+
   handleInputChange(event: InputEvent, position: Position) {
     const input = event.target! as HTMLInputElement;
     const numValue = this.getClippedValue(Number(input.value));

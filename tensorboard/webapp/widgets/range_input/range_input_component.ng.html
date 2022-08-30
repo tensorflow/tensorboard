@@ -38,7 +38,7 @@ limitations under the License.
   [max]="max"
   [step]="1"
   [value]="lowerValue"
-  (input)="singleValueChanged.emit($event.value)"
+  (input)="handleSingleSliderChange($event.value)"
 ></mat-slider>
 
 <ng-template #range>
