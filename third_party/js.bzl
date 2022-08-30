@@ -198,11 +198,16 @@ def tensorboard_js_workspace():
                 "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/d3d4aca5a7cf50bc68bbd401cefa708e364194e8/src/action/drag_indicator/materialicons/24px.svg",
                 "https://raw.githubusercontent.com/google/material-design-icons/d3d4aca5a7cf50bc68bbd401cefa708e364194e8/src/action/drag_indicator/materialicons/24px.svg",
             ],
+            "93a10e36c7550ecd220d36c33ad822f2d31e520ee9fba0c9cb6c1eb44042e9f0": [
+                "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_change_history_24px.svg",
+                "https://raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_change_history_24px.svg",
+            ],
         },
         rename = {
             "ic_arrow_downward_24px.svg": "arrow_downward_24px.svg",
             "ic_arrow_upward_24px.svg": "arrow_upward_24px.svg",
             "ic_cancel_24px.svg": "cancel_24px.svg",
+            "ic_change_history_24px.svg": "change_history_24px.svg",
             "ic_chevron_left_24px.svg": "chevron_left_24px.svg",
             "ic_chevron_right_24px.svg": "chevron_right_24px.svg",
             "ic_clear_24px.svg": "clear_24px.svg",

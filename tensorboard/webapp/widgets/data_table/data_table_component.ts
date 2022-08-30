@@ -53,21 +53,21 @@ export class DataTableComponent {
       case ColumnHeaders.SMOOTHED:
         return 'Smoothed';
       case ColumnHeaders.VALUE_CHANGE:
-        return 'Value Change';
+        return 'Value';
       case ColumnHeaders.START_STEP:
         return 'Start Step';
       case ColumnHeaders.END_STEP:
         return 'End Step';
       case ColumnHeaders.START_VALUE:
-        return 'Start';
+        return 'Start Value';
       case ColumnHeaders.END_VALUE:
-        return 'End';
+        return 'End Value';
       case ColumnHeaders.MIN_VALUE:
         return 'Min';
       case ColumnHeaders.MAX_VALUE:
         return 'Max';
       case ColumnHeaders.PERCENTAGE_CHANGE:
-        return 'Percentage Change';
+        return '%';
       default:
         return '';
     }

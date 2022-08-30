@@ -360,6 +360,7 @@ tf_svg_bundle(
         "@com_google_material_design_icon//:brightness_6_24px.svg",
         "@com_google_material_design_icon//:bug_report_24px.svg",
         "@com_google_material_design_icon//:cancel_24px.svg",
+        "@com_google_material_design_icon//:change_history_24px.svg",
         "@com_google_material_design_icon//:chevron_left_24px.svg",
         "@com_google_material_design_icon//:chevron_right_24px.svg",
         "@com_google_material_design_icon//:clear_24px.svg",
