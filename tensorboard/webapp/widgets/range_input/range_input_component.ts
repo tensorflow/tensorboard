@@ -135,6 +135,11 @@ export class RangeInputComponent implements OnInit, OnDestroy {
    */
   @Input() enabled: boolean = true;
 
+  /**
+   * Whether the slider returns discrete integers or allows for floating points.
+   */
+  @Input() returnIntegers: boolean = false;
+
   @Output()
   rangeValuesChanged = new EventEmitter<RangeValues>();
 
@@ -245,9 +250,13 @@ export class RangeInputComponent implements OnInit, OnDestroy {
       xPositionInPercent = compensatedRelativeXInPx / (right - left);
     }
 
-    const newValue = this.getClippedValue(
+    let newValue = this.getClippedValue(
       this.min + (this.max - this.min) * xPositionInPercent
     );
+
+    if (this.returnIntegers) {
+      newValue = Math.round(newValue);
+    }
 
     // Make sure floating point arithmatic does not pollute the number with
     // noise (e.g., 0.2 + 0.1 = 0.30000000000000004; we don't want 4e-17). Clip
