@@ -38,6 +38,8 @@ export enum TimeSelectionAffordance {
   SETTINGS_TEXT = 'settingsText',
   // Dragging the slider in setting pane.
   SETTINGS_SLIDER = 'settingsSlider',
+  // User changes from multi selection to single selection.
+  CHANGE_TO_SINGLE = 'changeToSingle',
 }
 
 /**

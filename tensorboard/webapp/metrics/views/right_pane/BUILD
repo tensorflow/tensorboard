@@ -21,6 +21,7 @@ tf_ng_module(
         "settings_view_component.ng.html",
     ],
     deps = [
+        ":types",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_material_button",
@@ -35,10 +36,22 @@ tf_ng_module(
         "//tensorboard/webapp/widgets/card_fob:types",
         "//tensorboard/webapp/widgets/dropdown",
         "//tensorboard/webapp/widgets/range_input",
+        "//tensorboard/webapp/widgets/range_input:types",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",
+    ],
+)
+
+tf_ts_library(
+    name = "types",
+    srcs = [
+        "types.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/metrics:types",
+        "//tensorboard/webapp/widgets/range_input:types",
     ],
 )
 
@@ -64,6 +77,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics/store",
         "//tensorboard/webapp/widgets/card_fob:types",
         "//tensorboard/webapp/widgets/dropdown",
+        "//tensorboard/webapp/widgets/range_input:types",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",

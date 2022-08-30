@@ -18,6 +18,7 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatSliderModule} from '@angular/material/slider';
 import {By} from '@angular/platform-browser';
 import {RangeInputComponent, TEST_ONLY} from './range_input_component';
+import {RangeInputSource, RangeValues, SingleValue} from './types';
 
 @Component({
   selector: 'testable-range-input',
@@ -58,12 +59,11 @@ class TestableComponent {
 
   @Input() tickCount!: number | null;
 
-  @Input() onRangeValuesChanged!: (event: {
-    lowerValue: number;
-    upperValue: number;
-  }) => void;
+  @Input()
+  onRangeValuesChanged!: (event: RangeValues) => void;
 
-  @Input() onSingleValueChanged!: (event: {value: number}) => void;
+  @Input()
+  onSingleValueChanged!: (event: SingleValue) => void;
 }
 
 describe('range input test', () => {
@@ -225,7 +225,10 @@ describe('range input test', () => {
           value: 5,
         });
 
-        expect(onSingleValueChanged).toHaveBeenCalledOnceWith(5);
+        expect(onSingleValueChanged).toHaveBeenCalledOnceWith({
+          value: 5,
+          source: RangeInputSource.SLIDER,
+        });
       });
     });
 
@@ -243,6 +246,7 @@ describe('range input test', () => {
         expect(onRangeValuesChanged).toHaveBeenCalledWith({
           lowerValue: -4,
           upperValue: 1,
+          source: RangeInputSource.SLIDER,
         });
       });
 
@@ -263,6 +267,7 @@ describe('range input test', () => {
         expect(onRangeValuesChanged).toHaveBeenCalledWith({
           lowerValue: 0.102,
           upperValue: 0.3,
+          source: RangeInputSource.SLIDER,
         });
       });
 
@@ -272,19 +277,23 @@ describe('range input test', () => {
           upperValue: 1,
           tickCount: null,
         });
-        const values: Array<{lowerValue: number; upperValue: number}> = [];
-        onRangeValuesChanged.and.callFake(
-          (value: {lowerValue: number; upperValue: number}) => {
-            values.push(value);
-          }
-        );
+        const values: Array<RangeValues> = [];
+        onRangeValuesChanged.and.callFake((value: RangeValues) => {
+          values.push(value);
+        });
         const [leftThumb] = getThumbsOnRange(fixture);
         startMovingThumb(leftThumb, TEST_ONLY.THUMB_SIZE_PX);
         // Because we started to drag from right edge of the thumb, moving the
         // thumb to 120 is equivalent to putting it at 126px (thumb radius is
         // 6px).
         moveThumb(leftThumb, 120);
-        expect(values).toEqual([{lowerValue: -4.3, upperValue: 1}]);
+        expect(values).toEqual([
+          {
+            lowerValue: -4.3,
+            upperValue: 1,
+            source: RangeInputSource.SLIDER,
+          },
+        ]);
 
         startMovingThumb(leftThumb, 0);
         // Because we started to drag from left edge of the thumb, moving the
@@ -292,8 +301,16 @@ describe('range input test', () => {
         // 6px).
         moveThumb(leftThumb, 120);
         expect(values).toEqual([
-          {lowerValue: -4.3, upperValue: 1},
-          {lowerValue: -3.7, upperValue: 1},
+          {
+            lowerValue: -4.3,
+            upperValue: 1,
+            source: RangeInputSource.SLIDER,
+          },
+          {
+            lowerValue: -3.7,
+            upperValue: 1,
+            source: RangeInputSource.SLIDER,
+          },
         ]);
       });
 
@@ -343,6 +360,7 @@ describe('range input test', () => {
         expect(onRangeValuesChanged).toHaveBeenCalledWith({
           lowerValue: -4,
           upperValue: 1,
+          source: RangeInputSource.SLIDER,
         });
       });
 
@@ -359,6 +377,7 @@ describe('range input test', () => {
         expect(onRangeValuesChanged).toHaveBeenCalledWith({
           lowerValue: -4.95,
           upperValue: 1,
+          source: RangeInputSource.SLIDER,
         });
       });
 
@@ -375,6 +394,7 @@ describe('range input test', () => {
         expect(onRangeValuesChanged).toHaveBeenCalledWith({
           lowerValue: 0,
           upperValue: 2.5,
+          source: RangeInputSource.SLIDER,
         });
       });
 
@@ -413,6 +433,7 @@ describe('range input test', () => {
       expect(onRangeValuesChanged).toHaveBeenCalledWith({
         lowerValue: 0,
         upperValue: 5,
+        source: RangeInputSource.TEXT,
       });
     });
 
@@ -426,7 +447,10 @@ describe('range input test', () => {
       minInput.value = '2';
       minInput.dispatchEvent(new InputEvent('change'));
 
-      expect(onSingleValueChanged).toHaveBeenCalledWith(2);
+      expect(onSingleValueChanged).toHaveBeenCalledWith({
+        value: 2,
+        source: RangeInputSource.TEXT,
+      });
     });
 
     it('does not react to keydown or input', () => {
@@ -472,6 +496,7 @@ describe('range input test', () => {
       expect(onRangeValuesChanged).toHaveBeenCalledWith({
         lowerValue: 2,
         upperValue: 5,
+        source: RangeInputSource.TEXT,
       });
     });
 
@@ -485,7 +510,10 @@ describe('range input test', () => {
       minInput.value = '';
       minInput.dispatchEvent(new InputEvent('change'));
 
-      expect(onSingleValueChanged).toHaveBeenCalledWith(0);
+      expect(onSingleValueChanged).toHaveBeenCalledWith({
+        value: 0,
+        source: RangeInputSource.TEXT,
+      });
     });
 
     it('updates value to be min in range slider on lower value cleared', () => {
@@ -502,6 +530,7 @@ describe('range input test', () => {
       expect(onRangeValuesChanged).toHaveBeenCalledWith({
         lowerValue: 0,
         upperValue: 5,
+        source: RangeInputSource.TEXT,
       });
     });
 
@@ -518,6 +547,7 @@ describe('range input test', () => {
       expect(onRangeValuesChanged).toHaveBeenCalledWith({
         lowerValue: 5,
         upperValue: 7,
+        source: RangeInputSource.TEXT,
       });
     });
 
@@ -532,7 +562,10 @@ describe('range input test', () => {
       maxInput.value = '';
       maxInput.dispatchEvent(new InputEvent('change'));
 
-      expect(onSingleValueChanged).toHaveBeenCalledWith(5);
+      expect(onSingleValueChanged).toHaveBeenCalledWith({
+        value: 5,
+        source: RangeInputSource.TEXT_DELETED,
+      });
     });
   });
 });
