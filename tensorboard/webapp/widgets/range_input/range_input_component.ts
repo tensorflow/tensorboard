@@ -215,6 +215,8 @@ export class RangeInputComponent implements OnInit, OnDestroy {
   }
 
   handleMouseDown(event: MouseEvent, position: Position) {
+    event.stopPropagation();
+    event.preventDefault();
     this.activeThumb = position;
     // Mouse event reports cursor position w.r.t the top left edge of the target
     // (in this case, a thumb) element.
