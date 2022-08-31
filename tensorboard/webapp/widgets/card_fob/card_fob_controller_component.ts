@@ -95,6 +95,9 @@ export class CardFobControllerComponent {
   }
 
   startDrag(fob: Fob, affordance: TimeSelectionAffordance, event: MouseEvent) {
+    // The Fob has the contenteditable attribute. This needs the event to
+    // propagate. The contenteditable attribute also stops MouseEvent from
+    // causing the strange behavior we are avoiding by stopping propagation.
     if (affordance !== TimeSelectionAffordance.FOB) {
       this.stopEventPropagation(event);
     }
