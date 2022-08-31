@@ -82,8 +82,20 @@ jobs:
             ;
       - name: 'Check Pip state'
         run: pip freeze --all
+      - name: 'Restore Bazel Cache'
+        uses: actions/cache@1a9e2138d905efd099035b49d8b7a3888c653ca8
+        with:
+          path: |
+            bazel-bin
+          key: bazel-fetch-${{ runner.os }}-${{ hashFiles('.github/workflows/ci.yml') }}
       - name: 'Bazel: fetch'
         run: bazel fetch //tensorboard/...
+      - name: 'Update Bazel Cache'
+        uses: actions/cache@1a9e2138d905efd099035b49d8b7a3888c653ca8
+        with:
+          path: |
+            bazel-bin
+          key: bazel-fetch-${{ runner.os }}-${{ hashFiles('.github/workflows/ci.yml') }}
       - name: 'Bazel: build'
         # Note we suppress a flood of warnings from the proto compiler.
         # Googlers see b/222706811 & b/182876485 discussion and preconditions
