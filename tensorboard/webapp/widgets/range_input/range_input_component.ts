@@ -250,12 +250,12 @@ export class RangeInputComponent implements OnInit, OnDestroy {
       xPositionInPercent = compensatedRelativeXInPx / (right - left);
     }
 
-    let newValue = this.getClippedValue(
+    const newValue = this.getClippedValue(
       this.min + (this.max - this.min) * xPositionInPercent
     );
 
     if (this.returnIntegers) {
-      newValue = Math.round(newValue);
+      return Math.round(newValue);
     }
 
     // Make sure floating point arithmatic does not pollute the number with

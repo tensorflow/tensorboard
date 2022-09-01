@@ -277,7 +277,7 @@ describe('range input test', () => {
         });
       });
 
-      it('rounds to integer when returnIntegers is set to true', () => {
+      it('rounds down to integer when returnIntegers is set to true', () => {
         const {fixture, onRangeValuesChanged} = createComponent({
           min: 0,
           max: 6,
@@ -292,6 +292,46 @@ describe('range input test', () => {
         // Without rounding, lowerValue would be 2.4.
         expect(onRangeValuesChanged).toHaveBeenCalledWith({
           lowerValue: 2,
+          upperValue: 5,
+          source: 'SLIDER',
+        });
+      });
+
+      it('rounds up to integer when returnIntegers is set to true', () => {
+        const {fixture, onRangeValuesChanged} = createComponent({
+          min: 0,
+          max: 6,
+          lowerValue: 1,
+          upperValue: 5,
+          tickCount: 20,
+          returnIntegers: true,
+        });
+        const [leftThumb] = getThumbsOnRange(fixture);
+        startMovingThumb(leftThumb);
+        moveThumb(leftThumb, 190);
+        // Without rounding, lowerValue would be 2.7.
+        expect(onRangeValuesChanged).toHaveBeenCalledWith({
+          lowerValue: 3,
+          upperValue: 5,
+          source: 'SLIDER',
+        });
+      });
+
+      it('Keeps integer value if already an integer when returnIntegers is set to true', () => {
+        const {fixture, onRangeValuesChanged} = createComponent({
+          min: 0,
+          max: 6,
+          lowerValue: 1,
+          upperValue: 5,
+          tickCount: 10,
+          returnIntegers: true,
+        });
+        const [leftThumb] = getThumbsOnRange(fixture);
+        startMovingThumb(leftThumb);
+        moveThumb(leftThumb, 200);
+        // Without rounding, lowerValue is 3.
+        expect(onRangeValuesChanged).toHaveBeenCalledWith({
+          lowerValue: 3,
           upperValue: 5,
           source: 'SLIDER',
         });
