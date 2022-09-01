@@ -191,13 +191,13 @@ export class DataTableComponent {
   }
 
   headerClicked(header: ColumnHeaders) {
-    let sortingOrder = SortingOrder.ASCENDING;
     if (
       this.sortingInfo.header === header &&
       this.sortingInfo.order === SortingOrder.ASCENDING
     ) {
-      sortingOrder = SortingOrder.DESCENDING;
+      this.sortDataBy.emit({header, order: SortingOrder.DESCENDING});
+      return;
     }
-    this.sortDataBy.emit({header, order: sortingOrder});
+    this.sortDataBy.emit({header, order: SortingOrder.ASCENDING});
   }
 }
