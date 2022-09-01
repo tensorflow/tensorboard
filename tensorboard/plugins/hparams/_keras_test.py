@@ -15,6 +15,7 @@
 
 
 import os
+from pathlib import Path
 from unittest import mock
 
 from google.protobuf import text_format
@@ -144,6 +145,15 @@ class CallbackTest(tf.test.TestCase):
         self.assertTrue(filename.endswith(".magic"), filename)
         # We'll assume that the contents are correct, as in the case where
         # the file writer was constructed implicitly.
+
+    def test_pathlib_writer(self):
+ 
+        writer = Path(self.logdir)
+        self._initialize_model(writer=writer)
+        self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+
+        files = os.listdir(self.logdir)
+        self.assertEqual(len(files), 1, files)
 
     def test_non_eager_failure(self):
         with tf.compat.v1.Graph().as_default():
