@@ -95,7 +95,13 @@ export class CardFobControllerComponent {
   }
 
   startDrag(fob: Fob, affordance: TimeSelectionAffordance, event: MouseEvent) {
-    this.stopEventPropagation(event);
+    // When clicking on the fob, we needs to allow MouseEvent propagate to the
+    // text span in the fob for editing. The contenteditable attribute also
+    // stops the event from propagating which satisfies our need to call
+    // stopEventPropagation regardless of affordance.
+    if (affordance !== TimeSelectionAffordance.FOB) {
+      this.stopEventPropagation(event);
+    }
     document.addEventListener('mousemove', this.mouseListener);
     document.addEventListener('mouseup', this.stopListener);
     this.currentDraggingFob = fob;
