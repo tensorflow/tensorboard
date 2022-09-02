@@ -45,6 +45,7 @@ export class FeatureFlagOverrideDataSource implements TBFeatureFlagDataSource {
     );
     return {
       ...featuresFromMediaQuery,
+      ...this.getPersistentFeatureFlags(),
       ...overriddenFeatures,
     } as Partial<FeatureFlags>;
   }
