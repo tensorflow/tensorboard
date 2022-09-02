@@ -43,8 +43,12 @@ describe('tb_feature_flag_data_source', () => {
     });
 
     describe('getFeatures', () => {
-      function getFeatures(options?: {enableMediaQuery?: boolean, localStorageOverrides?: string|null}) {
-        const {enableMediaQuery = false, localStorageOverrides = null} = options || {};
+      function getFeatures(options?: {
+        enableMediaQuery?: boolean;
+        localStorageOverrides?: string | null;
+      }) {
+        const {enableMediaQuery = false, localStorageOverrides = null} =
+          options || {};
         spyOn(localStorage, 'getItem').and.returnValue(localStorageOverrides);
         return dataSource.getFeatures(enableMediaQuery, FeatureFlagMetadataMap);
       }
@@ -131,8 +135,10 @@ describe('tb_feature_flag_data_source', () => {
         );
 
         it('retrieves values from localStorage', () => {
-          expect(getFeatures({localStorageOverrides: '{"inColab": true}'})).toEqual({
-            inColab: true
+          expect(
+            getFeatures({localStorageOverrides: '{"inColab": true}'})
+          ).toEqual({
+            inColab: true,
           });
         });
       });
