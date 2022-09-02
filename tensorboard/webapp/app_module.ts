@@ -73,4 +73,6 @@ import {TensorBoardWrapperModule} from './tb_wrapper/tb_wrapper_module';
   ],
   bootstrap: [AppContainer],
 })
-export class AppModule {}
+export class AppModule {
+  // noop
+}
