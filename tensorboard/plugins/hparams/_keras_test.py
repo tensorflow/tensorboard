@@ -147,7 +147,6 @@ class CallbackTest(tf.test.TestCase):
         # the file writer was constructed implicitly.
 
     def test_pathlib_writer(self):
- 
         writer = Path(self.logdir)
         self._initialize_model(writer=writer)
         self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
