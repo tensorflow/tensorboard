@@ -123,10 +123,39 @@ export class CardFobControllerComponent {
     return this.axisDirection === AxisDirection.VERTICAL;
   }
 
+  private moveCurrentFob(
+    newStep: number,
+    timeSelection: TimeSelection
+  ): TimeSelection {
+    if (!this.timeSelection.end) {
+      timeSelection.start.step = newStep;
+      return timeSelection;
+    }
+
+    if (this.currentDraggingFob === Fob.END) {
+      if (newStep < this.timeSelection.start.step) {
+        timeSelection.end!.step = this.timeSelection.start.step;
+        this.currentDraggingFob = Fob.START;
+        return this.moveCurrentFob(newStep, timeSelection);
+      }
+      timeSelection.end!.step = newStep;
+
+      return timeSelection;
+    }
+
+    if (this.timeSelection.end && newStep > this.timeSelection.end.step) {
+      timeSelection.start.step = this.timeSelection.end.step;
+      this.currentDraggingFob = Fob.END;
+      return this.moveCurrentFob(newStep, timeSelection);
+    }
+    timeSelection.start.step = newStep;
+
+    return timeSelection;
+  }
+
   mouseMove(event: MouseEvent) {
     if (this.currentDraggingFob === Fob.NONE) return;
 
-    const newTimeSelection = this.timeSelection;
     let newStep: number | null = null;
     const mousePosition = this.getMousePositionFromEvent(event);
     const movement =
@@ -143,21 +172,7 @@ export class CardFobControllerComponent {
       return;
     }
 
-    if (this.currentDraggingFob === Fob.END) {
-      // Do not let the end fob pass the start fob.
-      // TODO: add swapping logic here to allow continued dragging
-      if (newStep <= this.timeSelection.start.step) {
-        newStep = this.timeSelection.start.step;
-      }
-      newTimeSelection.end!.step = newStep;
-    } else {
-      // Do not let the start fob pass the end fob.
-      // TODO: add swapping logic here to allow continued dragging
-      if (this.timeSelection.end && newStep >= this.timeSelection.end.step) {
-        newStep = this.timeSelection.end.step;
-      }
-      newTimeSelection.start.step = newStep;
-    }
+    const newTimeSelection = this.moveCurrentFob(newStep, this.timeSelection);
     this.onTimeSelectionChanged.emit({
       timeSelection: newTimeSelection,
     });

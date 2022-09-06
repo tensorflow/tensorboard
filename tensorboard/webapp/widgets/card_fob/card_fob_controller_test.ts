@@ -207,6 +207,46 @@ describe('card_fob_controller', () => {
         mouseUpListener
       );
     });
+
+    it('swaps fobs being dragged when one fobs collide', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 1}, end: {step: 2}},
+      });
+      fixture.detectChanges();
+      const fobController = fixture.componentInstance.fobController;
+      expect(
+        fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
+      ).toEqual(1);
+
+      fobController.startDrag(
+        Fob.START,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
+      expect((fobController as any).currentDraggingFob).toEqual(Fob.START);
+
+      const fakeEvent = new MouseEvent('mousemove', {
+        clientY: 3,
+        movementY: 2,
+      });
+      fobController.mouseMove(fakeEvent);
+      expect((fobController as any).currentDraggingFob).toEqual(Fob.END);
+
+      fobController.stopDrag();
+      fixture.detectChanges();
+
+      // expect(getStepHigherSpy).toHaveBeenCalledOnceWith(3);
+      // expect(
+      //   fobController.startFobWrapper.nativeElement.getBoundingClientRect().top
+      // ).toEqual(3);
+      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
+        timeSelection: {
+          start: {step: 2},
+          end: {step: 3},
+        },
+        affordance: TimeSelectionAffordance.FOB,
+      });
+    });
   });
 
   describe('vertical dragging', () => {
