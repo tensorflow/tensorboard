@@ -111,7 +111,6 @@ describe('data table', () => {
     expect(headerElements[3].nativeElement.innerText).toBe('Step');
     expect(headerElements[4].nativeElement.innerText).toBe('Relative');
     expect(headerElements[5].nativeElement.innerText).toBe('Value');
-    expect(headerElements[5].queryAll(By.css('mat-icon')).length).toBe(1);
     expect(
       headerElements[5]
         .queryAll(By.css('mat-icon'))[0]
@@ -124,7 +123,6 @@ describe('data table', () => {
     expect(headerElements[10].nativeElement.innerText).toBe('Min');
     expect(headerElements[11].nativeElement.innerText).toBe('Max');
     expect(headerElements[12].nativeElement.innerText).toBe('%');
-    expect(headerElements[12].queryAll(By.css('mat-icon')).length).toBe(1);
     expect(
       headerElements[12]
         .queryAll(By.css('mat-icon'))[0]
@@ -254,5 +252,33 @@ describe('data table', () => {
       header: ColumnHeaders.STEP,
       order: SortingOrder.DESCENDING,
     });
+  });
+
+  it('keeps sorting arrow invisible unless sorting on that header', () => {
+    const fixture = createComponent({
+      headers: [ColumnHeaders.VALUE, ColumnHeaders.RUN, ColumnHeaders.STEP],
+      sortingInfo: {header: ColumnHeaders.VALUE, order: SortingOrder.ASCENDING},
+    });
+    fixture.detectChanges();
+    const headerElements = fixture.debugElement.queryAll(By.css('th'));
+
+    expect(
+      window.getComputedStyle(
+        headerElements[1].queryAll(By.css('.sorting-icon-container'))[0]
+          .nativeElement
+      ).opacity
+    ).toBe('1');
+    expect(
+      window.getComputedStyle(
+        headerElements[2].queryAll(By.css('.sorting-icon-container'))[0]
+          .nativeElement
+      ).opacity
+    ).toBe('0');
+    expect(
+      window.getComputedStyle(
+        headerElements[3].queryAll(By.css('.sorting-icon-container'))[0]
+          .nativeElement
+      ).opacity
+    ).toBe('0');
   });
 });
