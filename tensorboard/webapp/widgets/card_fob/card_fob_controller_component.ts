@@ -129,9 +129,17 @@ export class CardFobControllerComponent {
   }
 
   private shouldSwapFobs(newStep: number) {
-    return this.currentDraggingFob === Fob.END
-      ? newStep < this.timeSelection.start.step
-      : this.timeSelection.end && newStep > this.timeSelection.end.step;
+    if (!this.timeSelection.end) {
+      return false;
+    }
+    if (this.currentDraggingFob === Fob.END) {
+      return newStep < this.timeSelection.start.step;
+    }
+    if (this.currentDraggingFob === Fob.START) {
+      return newStep > this.timeSelection.end.step;
+    }
+
+    return false;
   }
 
   private getNewTimeSelection(
