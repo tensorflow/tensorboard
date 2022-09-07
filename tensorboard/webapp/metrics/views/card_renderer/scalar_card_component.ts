@@ -97,8 +97,6 @@ export class ScalarCardComponent<Downloader> {
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
-  @Output() onLinkedTimeToggled =
-    new EventEmitter<TimeSelectionToggleAffordance>();
   @Output() onTimeSelectionChanged = new EventEmitter<{
     timeSelection: TimeSelection;
     affordance?: TimeSelectionAffordance;
@@ -256,13 +254,7 @@ export class ScalarCardComponent<Downloader> {
   }
 
   onFobRemoved() {
-    if (this.linkedTimeSelection !== null) {
-      this.onLinkedTimeToggled.emit(TimeSelectionToggleAffordance.FOB_DESELECT);
-    } else {
-      this.onStepSelectorToggled.emit(
-        TimeSelectionToggleAffordance.FOB_DESELECT
-      );
-    }
+    this.onStepSelectorToggled.emit(TimeSelectionToggleAffordance.FOB_DESELECT);
   }
 
   inTimeSelectionMode(): boolean {

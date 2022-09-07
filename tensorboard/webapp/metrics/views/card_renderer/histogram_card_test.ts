@@ -38,7 +38,7 @@ import {
 } from '../../../widgets/histogram/histogram_types';
 import {buildNormalizedHistograms} from '../../../widgets/histogram/histogram_util';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
-import {linkedTimeToggled, timeSelectionChanged} from '../../actions';
+import {stepSelectorToggled, timeSelectionChanged} from '../../actions';
 import {PluginType} from '../../data_source';
 import * as selectors from '../../store/metrics_selectors';
 import {
@@ -539,7 +539,7 @@ describe('histogram card', () => {
         expect(indicator).toBeFalsy();
       });
 
-      it('dispatches linkedTimeToggled when HistogramComponent emits the onLinkedTimeToggled event', () => {
+      it('dispatches stepSelectorToggled when HistogramComponent emits the onLinkedTimeToggled event', () => {
         provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
         store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 5},
@@ -558,7 +558,7 @@ describe('histogram card', () => {
         histogramWidget.onLinkedTimeToggled.emit();
 
         expect(dispatchedActions).toEqual([
-          linkedTimeToggled({
+          stepSelectorToggled({
             affordance: TimeSelectionToggleAffordance.FOB_DESELECT,
           }),
         ]);

@@ -73,11 +73,7 @@ import {
 } from '../../../widgets/line_chart_v2/types';
 import {ResizeDetectorTestingModule} from '../../../widgets/resize_detector_testing_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
-import {
-  linkedTimeToggled,
-  stepSelectorToggled,
-  timeSelectionChanged,
-} from '../../actions';
+import {stepSelectorToggled, timeSelectionChanged} from '../../actions';
 import {PluginType} from '../../data_source';
 import {
   getMetricsLinkedTimeEnabled,
@@ -2293,7 +2289,7 @@ describe('scalar card', () => {
         ]);
       }));
 
-      it('toggles linked time when single fob is deselected', fakeAsync(() => {
+      it('toggles step selection when single fob is deselected', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 20},
           end: null,
@@ -2306,7 +2302,7 @@ describe('scalar card', () => {
         fobComponent.fobRemoved.emit();
 
         expect(dispatchedActions).toEqual([
-          linkedTimeToggled({
+          stepSelectorToggled({
             affordance: TimeSelectionToggleAffordance.FOB_DESELECT,
           }),
         ]);
