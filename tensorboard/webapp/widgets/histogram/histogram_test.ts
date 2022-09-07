@@ -1128,8 +1128,11 @@ describe('histogram test', () => {
         histograms[3].triggerEventHandler('click', null);
         fixture.detectChanges();
         expect(onLinkedTimeSelectionChangedSpy).toHaveBeenCalledWith({
-          start: {step: 5},
-          end: {step: 20},
+          timeSelection: {
+            start: {step: 5},
+            end: {step: 20},
+          },
+          affordance: TimeSelectionAffordance.HISTOGRAM_CLICK_TO_RANGE,
         });
       });
 
@@ -1144,8 +1147,11 @@ describe('histogram test', () => {
         histograms[0].triggerEventHandler('click', null);
         fixture.detectChanges();
         expect(onLinkedTimeSelectionChangedSpy).toHaveBeenCalledWith({
-          start: {step: 0},
-          end: {step: 5},
+          timeSelection: {
+            start: {step: 0},
+            end: {step: 5},
+          },
+          affordance: TimeSelectionAffordance.HISTOGRAM_CLICK_TO_RANGE,
         });
       });
 
@@ -1163,8 +1169,11 @@ describe('histogram test', () => {
         histograms[0].triggerEventHandler('click', null);
         fixture.detectChanges();
         expect(onLinkedTimeSelectionChangedSpy).toHaveBeenCalledWith({
-          start: {step: 0},
-          end: {step: 10},
+          timeSelection: {
+            start: {step: 0},
+            end: {step: 10},
+          },
+          affordance: TimeSelectionAffordance.HISTOGRAM_CLICK_TO_RANGE,
         });
       });
 
@@ -1182,8 +1191,11 @@ describe('histogram test', () => {
         histograms[3].triggerEventHandler('click', null);
         fixture.detectChanges();
         expect(onLinkedTimeSelectionChangedSpy).toHaveBeenCalledWith({
-          start: {step: 5},
-          end: {step: 20},
+          timeSelection: {
+            start: {step: 5},
+            end: {step: 20},
+          },
+          affordance: TimeSelectionAffordance.HISTOGRAM_CLICK_TO_RANGE,
         });
       });
 

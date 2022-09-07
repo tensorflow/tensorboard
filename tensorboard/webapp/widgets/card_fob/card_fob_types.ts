@@ -40,6 +40,8 @@ export enum TimeSelectionAffordance {
   SETTINGS_SLIDER = 'settingsSlider',
   // User changes from multi selection to single selection.
   CHANGE_TO_SINGLE = 'changeToSingle',
+  // User clicks on Histogram Chart to change to range selection.
+  HISTOGRAM_CLICK_TO_RANGE = 'histogramClickToRange',
 }
 
 /**
