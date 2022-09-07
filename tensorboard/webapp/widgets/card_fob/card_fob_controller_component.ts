@@ -123,7 +123,7 @@ export class CardFobControllerComponent {
     return this.axisDirection === AxisDirection.VERTICAL;
   }
 
-  private moveCurrentFob(
+  private getNewTimeSelection(
     newStep: number,
     timeSelection: TimeSelection
   ): TimeSelection {
@@ -136,7 +136,7 @@ export class CardFobControllerComponent {
       if (newStep < this.timeSelection.start.step) {
         timeSelection.end!.step = this.timeSelection.start.step;
         this.currentDraggingFob = Fob.START;
-        return this.moveCurrentFob(newStep, timeSelection);
+        return this.getNewTimeSelection(newStep, timeSelection);
       }
       timeSelection.end!.step = newStep;
 
@@ -146,7 +146,7 @@ export class CardFobControllerComponent {
     if (this.timeSelection.end && newStep > this.timeSelection.end.step) {
       timeSelection.start.step = this.timeSelection.end.step;
       this.currentDraggingFob = Fob.END;
-      return this.moveCurrentFob(newStep, timeSelection);
+      return this.getNewTimeSelection(newStep, timeSelection);
     }
     timeSelection.start.step = newStep;
 
@@ -172,7 +172,10 @@ export class CardFobControllerComponent {
       return;
     }
 
-    const newTimeSelection = this.moveCurrentFob(newStep, this.timeSelection);
+    const newTimeSelection = this.getNewTimeSelection(
+      newStep,
+      this.timeSelection
+    );
     this.onTimeSelectionChanged.emit({
       timeSelection: newTimeSelection,
     });
