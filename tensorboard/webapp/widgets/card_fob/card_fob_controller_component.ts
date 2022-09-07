@@ -123,33 +123,42 @@ export class CardFobControllerComponent {
     return this.axisDirection === AxisDirection.VERTICAL;
   }
 
+  private shouldSwapFobs(newStep: number) {
+    return this.currentDraggingFob === Fob.END
+      ? newStep < this.timeSelection.start.step
+      : this.timeSelection.end && newStep > this.timeSelection.end.step;
+  }
+
   private getNewTimeSelection(
     newStep: number,
     timeSelection: TimeSelection
   ): TimeSelection {
+    // Single Selection
     if (!this.timeSelection.end) {
       timeSelection.start.step = newStep;
       return timeSelection;
     }
 
-    if (this.currentDraggingFob === Fob.END) {
-      if (newStep < this.timeSelection.start.step) {
-        timeSelection.end!.step = this.timeSelection.start.step;
-        this.currentDraggingFob = Fob.START;
-        return this.getNewTimeSelection(newStep, timeSelection);
-      }
-      timeSelection.end!.step = newStep;
-
+    // Range Selection
+    // Swapping if fobs pass each other
+    if (this.shouldSwapFobs(newStep)) {
+      const [oldDraggingFob, newDraggingFob] =
+        this.currentDraggingFob === Fob.END
+          ? [Fob.END, Fob.START]
+          : [Fob.START, Fob.END];
+      timeSelection[oldDraggingFob].step =
+        this.timeSelection[newDraggingFob].step;
+      this.currentDraggingFob = newDraggingFob;
+      timeSelection[newDraggingFob].step = newStep;
       return timeSelection;
     }
 
-    if (this.timeSelection.end && newStep > this.timeSelection.end.step) {
-      timeSelection.start.step = this.timeSelection.end.step;
-      this.currentDraggingFob = Fob.END;
-      return this.getNewTimeSelection(newStep, timeSelection);
+    if (this.currentDraggingFob === Fob.END) {
+      timeSelection.end = {step: newStep};
+      return timeSelection;
     }
-    timeSelection.start.step = newStep;
 
+    timeSelection.start.step = newStep;
     return timeSelection;
   }
 
