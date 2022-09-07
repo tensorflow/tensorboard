@@ -36,6 +36,11 @@ export enum Fob {
   END,
 }
 
+const TIME_SELECTION_TO_FOB: Record<keyof TimeSelection, Fob> = {
+  start: Fob.START,
+  end: Fob.END,
+};
+
 @Component({
   selector: 'card-fob-controller',
   templateUrl: 'card_fob_controller_component.ng.html',
@@ -123,10 +128,56 @@ export class CardFobControllerComponent {
     return this.axisDirection === AxisDirection.VERTICAL;
   }
 
+  private shouldSwapFobs(newStep: number) {
+    if (!this.timeSelection.end) {
+      return false;
+    }
+    if (this.currentDraggingFob === Fob.END) {
+      return newStep < this.timeSelection.start.step;
+    }
+    if (this.currentDraggingFob === Fob.START) {
+      return newStep > this.timeSelection.end.step;
+    }
+
+    return false;
+  }
+
+  private getNewTimeSelection(
+    newStep: number,
+    timeSelection: TimeSelection
+  ): TimeSelection {
+    // Single Selection
+    if (!this.timeSelection.end) {
+      timeSelection.start.step = newStep;
+      return timeSelection;
+    }
+
+    // Range Selection
+    // Swapping if fobs pass each other
+    if (this.shouldSwapFobs(newStep)) {
+      const [oldDraggingFob, newDraggingFob]: Array<keyof TimeSelection> =
+        this.currentDraggingFob === Fob.END
+          ? ['end', 'start']
+          : ['start', 'end'];
+      this.currentDraggingFob = TIME_SELECTION_TO_FOB[newDraggingFob];
+      timeSelection[oldDraggingFob]!.step =
+        this.timeSelection[newDraggingFob]!.step;
+      timeSelection[newDraggingFob]!.step = newStep;
+      return timeSelection;
+    }
+
+    if (this.currentDraggingFob === Fob.END) {
+      timeSelection.end = {step: newStep};
+      return timeSelection;
+    }
+
+    timeSelection.start.step = newStep;
+    return timeSelection;
+  }
+
   mouseMove(event: MouseEvent) {
     if (this.currentDraggingFob === Fob.NONE) return;
 
-    const newTimeSelection = this.timeSelection;
     let newStep: number | null = null;
     const mousePosition = this.getMousePositionFromEvent(event);
     const movement =
@@ -143,21 +194,10 @@ export class CardFobControllerComponent {
       return;
     }
 
-    if (this.currentDraggingFob === Fob.END) {
-      // Do not let the end fob pass the start fob.
-      // TODO: add swapping logic here to allow continued dragging
-      if (newStep <= this.timeSelection.start.step) {
-        newStep = this.timeSelection.start.step;
-      }
-      newTimeSelection.end!.step = newStep;
-    } else {
-      // Do not let the start fob pass the end fob.
-      // TODO: add swapping logic here to allow continued dragging
-      if (this.timeSelection.end && newStep >= this.timeSelection.end.step) {
-        newStep = this.timeSelection.end.step;
-      }
-      newTimeSelection.start.step = newStep;
-    }
+    const newTimeSelection = this.getNewTimeSelection(
+      newStep,
+      this.timeSelection
+    );
     this.onTimeSelectionChanged.emit({
       timeSelection: newTimeSelection,
     });
