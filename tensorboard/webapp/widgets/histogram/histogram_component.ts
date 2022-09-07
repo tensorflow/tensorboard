@@ -29,7 +29,11 @@ import {fromEvent, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
-import {TimeSelection} from '../card_fob/card_fob_types';
+import {
+  TimeSelection,
+  TimeSelectionAffordance,
+  TimeSelectionWithAffordance,
+} from '../card_fob/card_fob_types';
 import {formatTickNumber} from './formatter';
 import {
   Bin,
@@ -100,7 +104,8 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   @Input() timeSelection: TimeSelection | null = null;
 
-  @Output() onLinkedTimeSelectionChanged = new EventEmitter<TimeSelection>();
+  @Output() onLinkedTimeSelectionChanged =
+    new EventEmitter<TimeSelectionWithAffordance>();
   @Output() onLinkedTimeToggled = new EventEmitter();
 
   readonly HistogramMode = HistogramMode;
@@ -328,8 +333,11 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
       nextStartStep !== nextEndStep
     ) {
       this.onLinkedTimeSelectionChanged.emit({
-        start: {step: nextStartStep},
-        end: {step: nextEndStep},
+        timeSelection: {
+          start: {step: nextStartStep},
+          end: {step: nextEndStep},
+        },
+        affordance: TimeSelectionAffordance.HISTOGRAM_CLICK_TO_RANGE,
       });
     }
   }

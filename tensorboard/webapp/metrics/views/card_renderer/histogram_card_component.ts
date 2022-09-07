@@ -21,6 +21,7 @@ import {
 } from '@angular/core';
 import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
+import {TimeSelectionWithAffordance} from '../../../widgets/card_fob/card_fob_types';
 import {
   HistogramDatum,
   HistogramMode,
@@ -53,7 +54,8 @@ export class HistogramCardComponent {
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
-  @Output() onLinkedTimeSelectionChanged = new EventEmitter<TimeSelection>();
+  @Output() onLinkedTimeSelectionChanged =
+    new EventEmitter<TimeSelectionWithAffordance>();
   @Output() onLinkedTimeToggled = new EventEmitter();
 
   timeProperty(xAxisType: XAxisType) {
