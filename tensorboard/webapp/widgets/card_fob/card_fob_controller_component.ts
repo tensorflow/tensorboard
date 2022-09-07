@@ -36,6 +36,11 @@ export enum Fob {
   END,
 }
 
+const TIME_SELECTION_TO_FOB: Record<keyof TimeSelection, Fob> = {
+  start: Fob.START,
+  end: Fob.END,
+};
+
 @Component({
   selector: 'card-fob-controller',
   templateUrl: 'card_fob_controller_component.ng.html',
@@ -142,14 +147,14 @@ export class CardFobControllerComponent {
     // Range Selection
     // Swapping if fobs pass each other
     if (this.shouldSwapFobs(newStep)) {
-      const [oldDraggingFob, newDraggingFob] =
+      const [oldDraggingFob, newDraggingFob]: Array<keyof TimeSelection> =
         this.currentDraggingFob === Fob.END
-          ? [Fob.END, Fob.START]
-          : [Fob.START, Fob.END];
-      timeSelection[oldDraggingFob].step =
-        this.timeSelection[newDraggingFob].step;
-      this.currentDraggingFob = newDraggingFob;
-      timeSelection[newDraggingFob].step = newStep;
+          ? ['end', 'start']
+          : ['start', 'end'];
+      this.currentDraggingFob = TIME_SELECTION_TO_FOB[newDraggingFob];
+      timeSelection[oldDraggingFob]!.step =
+        this.timeSelection[newDraggingFob]!.step;
+      timeSelection[newDraggingFob]!.step = newStep;
       return timeSelection;
     }
 
