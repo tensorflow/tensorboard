@@ -84,12 +84,12 @@ export class ScalarCardFobController {
 
   getHighestStep(): number {
     const minMax = this.minMax;
-    return minMax[0] < minMax[1] ? minMax[1] : minMax[0];
+    return Math.floor(minMax[0] < minMax[1] ? minMax[1] : minMax[0]);
   }
 
   getLowestStep(): number {
     const minMax = this.minMax;
-    return minMax[0] < minMax[1] ? minMax[0] : minMax[1];
+    return Math.ceil(minMax[0] < minMax[1] ? minMax[0] : minMax[1]);
   }
 
   getStepHigherThanAxisPosition(position: number): number {
