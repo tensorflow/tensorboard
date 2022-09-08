@@ -269,6 +269,11 @@ describe('data table', () => {
       ).opacity
     ).toBe('1');
     expect(
+      headerElements[1]
+        .queryAll(By.css('mat-icon'))[0]
+        .nativeElement.getAttribute('svgIcon')
+    ).toBe('arrow_upward_24px');
+    expect(
       window.getComputedStyle(
         headerElements[2].queryAll(By.css('.sorting-icon-container'))[0]
           .nativeElement
@@ -280,5 +285,38 @@ describe('data table', () => {
           .nativeElement
       ).opacity
     ).toBe('0');
+  });
+
+  it('shows downward arrow when order is DESCENDING', () => {
+    const fixture = createComponent({
+      headers: [ColumnHeaders.VALUE, ColumnHeaders.RUN, ColumnHeaders.STEP],
+      sortingInfo: {header: ColumnHeaders.STEP, order: SortingOrder.DESCENDING},
+    });
+    fixture.detectChanges();
+    const headerElements = fixture.debugElement.queryAll(By.css('th'));
+
+    expect(
+      window.getComputedStyle(
+        headerElements[1].queryAll(By.css('.sorting-icon-container'))[0]
+          .nativeElement
+      ).opacity
+    ).toBe('0');
+    expect(
+      window.getComputedStyle(
+        headerElements[2].queryAll(By.css('.sorting-icon-container'))[0]
+          .nativeElement
+      ).opacity
+    ).toBe('0');
+    expect(
+      window.getComputedStyle(
+        headerElements[3].queryAll(By.css('.sorting-icon-container'))[0]
+          .nativeElement
+      ).opacity
+    ).toBe('1');
+    expect(
+      headerElements[3]
+        .queryAll(By.css('mat-icon'))[0]
+        .nativeElement.getAttribute('svgIcon')
+    ).toBe('arrow_downward_24px');
   });
 });

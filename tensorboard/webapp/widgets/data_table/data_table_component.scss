@@ -26,12 +26,12 @@ limitations under the License.
     top: 0;
     vertical-align: bottom;
 
-    @include tb-dark-theme {
-      background-color: map-get($tb-dark-background, background);
-    }
-
     &:hover {
       cursor: pointer;
+    }
+
+    @include tb-dark-theme {
+      background-color: map-get($tb-dark-background, background);
     }
   }
 
@@ -67,7 +67,7 @@ limitations under the License.
     width: $_circle-size - 2px;
   }
 
-  mat-icon {
+  .cell mat-icon {
     height: 12px;
     width: 12px;
   }
@@ -77,7 +77,7 @@ limitations under the License.
     height: 12px;
   }
 
-  .opaque {
+  .show {
     opacity: 1;
   }
 

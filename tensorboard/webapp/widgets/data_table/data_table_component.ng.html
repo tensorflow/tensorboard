@@ -37,15 +37,15 @@ limitations under the License.
 
               <div
                 class="sorting-icon-container"
-                [ngClass]="header === sortingInfo.header ? 'opaque' : 'show-on-hover'"
+                [ngClass]="header === sortingInfo.header ? 'show' : 'show-on-hover'"
               >
                 <mat-icon
                   *ngIf="sortingInfo.order === SortingOrder.ASCENDING || header !== sortingInfo.header"
-                  svgIcon="arrow_downward_24px"
+                  svgIcon="arrow_upward_24px"
                 ></mat-icon>
                 <mat-icon
                   *ngIf="sortingInfo.order === SortingOrder.DESCENDING && header === sortingInfo.header"
-                  svgIcon="arrow_upward_24px"
+                  svgIcon="arrow_downward_24px"
                 ></mat-icon>
               </div>
             </div>
@@ -84,14 +84,6 @@ limitations under the License.
   </table>
 </div>
 <ng-template #arrow let-value>
-  <mat-icon
-    *ngIf="value >= 0"
-    class="delta-arrow"
-    svgIcon="arrow_upward_24px"
-  ></mat-icon>
-  <mat-icon
-    *ngIf="value < 0"
-    class="delta-arrow"
-    svgIcon="arrow_downward_24px"
-  ></mat-icon>
+  <mat-icon *ngIf="value >= 0" svgIcon="arrow_upward_24px"></mat-icon>
+  <mat-icon *ngIf="value < 0" svgIcon="arrow_downward_24px"></mat-icon>
 </ng-template>
