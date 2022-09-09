@@ -21,7 +21,7 @@ use std::io::{self, Read};
 use std::path::PathBuf;
 
 use crate::disk_logdir::DiskLogdir;
-use crate::gcs;
+use crate::gcs::{self, Credentials};
 use crate::logdir::{EventFileBuf, Logdir};
 use crate::types::Run;
 
@@ -105,7 +105,16 @@ impl DynLogdir {
         match ParsedLogdir::from_path(path)? {
             ParsedLogdir::Disk(path) => Ok(DynLogdir::Disk(DiskLogdir::new(path))),
             ParsedLogdir::Gcs { bucket, prefix } => {
-                let client = gcs::Client::new(gcs::Credentials::from_disk()?)?;
+                let creds_from_disk = gcs::Credentials::from_disk()?;
+                let creds = match creds_from_disk {
+                    // Try to fetch ServiceToken if it could not be loaded from disk
+                    gcs::Credentials::Anonymous => match Credentials::can_fetch_service_token() {
+                        true => gcs::Credentials::ServiceToken,
+                        false => creds_from_disk,
+                    },
+                    _ => creds_from_disk,
+                };
+                let client = gcs::Client::new(creds)?;
                 Ok(DynLogdir::Gcs(gcs::Logdir::new(client, bucket, prefix)))
             }
         }

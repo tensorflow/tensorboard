@@ -153,6 +153,7 @@ impl BoundedToken {
 pub enum Credentials {
     Anonymous,
     RefreshToken(RefreshToken),
+    ServiceToken,
 }
 // public wrapper struct to hide private implementation details
 pub struct RefreshToken(RefreshTokenCreds);
@@ -171,6 +172,28 @@ pub enum CredentialsError {
     Unparseable(PathBuf, serde_json::Error),
     #[error("{1} (credentials file {0})")]
     Unsupported(PathBuf, UnsupportedCredentialsError),
+}
+
+const SCOPES: &[&str] = &["https://www.googleapis.com/auth/cloud-platform"];
+
+async fn service_account_token() -> Result<gcp_auth::Token, gcp_auth::Error> {
+    let authentication_manager = gcp_auth::AuthenticationManager::new().await?;
+    let token_res = authentication_manager.get_token(SCOPES).await;
+    token_res
+}
+
+fn gce_service_auth_token() -> Result<BoundedToken, gcp_auth::Error> {
+    let service_token = tokio::runtime::Builder::new_current_thread()
+        .build()
+        .unwrap()
+        .block_on(service_account_token())?;
+    let serialized = serde_json::to_string(&service_token).unwrap();
+    // PK: Not sure if this will work.
+    let deserialized: OauthTokenResponse = serde_json::from_str(&serialized).unwrap();
+    Ok(BoundedToken {
+        access_token: deserialized.access_token,
+        expires: Instant::now() + Duration::from_secs(6000),
+    })
 }
 
 impl Credentials {
@@ -238,6 +261,24 @@ impl Credentials {
                     None
                 }
             },
+            Credentials::ServiceToken => Credentials::fetch_service_token(),
+        }
+    }
+
+    pub fn can_fetch_service_token() -> bool {
+        match Credentials::fetch_service_token() {
+            Some(_) => true,
+            None => false,
+        }
+    }
+
+    fn fetch_service_token() -> Option<BoundedToken> {
+        match gce_service_auth_token() {
+            Ok(t) => Some(t),
+            Err(e) => {
+                warn!("GCS authentication failed: {}", e);
+                None
+            }
         }
     }
 }
