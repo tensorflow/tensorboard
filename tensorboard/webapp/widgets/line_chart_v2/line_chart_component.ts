@@ -51,7 +51,12 @@ import {TooltipTemplate} from './sub_view/line_chart_interactive_view';
 
 export {TooltipTemplate} from './sub_view/line_chart_interactive_view';
 
-const DEFAULT_EXTENT: Extent = {x: [0, 0], y: [0, 0]};
+// The default extent should be functionally invalid for easy detection.
+// If you need to unfreeze this object update isViewBoxInitialized.
+const DEFAULT_EXTENT: Readonly<Extent> = Object.freeze({
+  x: [0, 0],
+  y: [0, 0],
+} as Extent);
 
 interface DomDimensions {
   main: {width: number; height: number};
@@ -240,8 +245,7 @@ export class LineChartComponent
   }
 
   isViewBoxInitialized() {
-    // DO_NOT_SUBMIT add a really good test for this.
-    // Comparing by reference is fine here.
+    // Comparing by reference is fine here because DEFAULT_EXTENT is frozen.
     return this.viewBox !== DEFAULT_EXTENT;
   }
 
@@ -516,3 +520,7 @@ export class LineChartComponent
     this.onViewBoxChanged({dataExtent: nextDataExtent});
   }
 }
+
+export const TEST_ONLY = {
+  DEFAULT_EXTENT,
+};

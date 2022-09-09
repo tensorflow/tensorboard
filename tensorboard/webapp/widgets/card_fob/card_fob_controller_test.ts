@@ -84,6 +84,8 @@ describe('card_fob_controller', () => {
     timeSelection: TimeSelection;
     showExtendedLine?: Boolean;
     steps?: number[];
+    lowestStep?: number;
+    highestStep?: number;
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
 
@@ -118,8 +120,8 @@ describe('card_fob_controller', () => {
       getAxisPositionFromStartStepSpy;
     fixture.componentInstance.getAxisPositionFromEndStep =
       getAxisPositionFromEndStepSpy;
-    fixture.componentInstance.highestStep = 4;
-    fixture.componentInstance.lowestStep = 0;
+    fixture.componentInstance.highestStep = input.highestStep ?? 4;
+    fixture.componentInstance.lowestStep = input.lowestStep ?? 0;
     fixture.componentInstance.cardFobHelper = cardFobHelper;
 
     fixture.componentInstance.axisDirection =
@@ -152,6 +154,26 @@ describe('card_fob_controller', () => {
     expect(
       fobController.endFobWrapper.nativeElement.getBoundingClientRect().left
     ).toEqual(5);
+  });
+
+  it('updates time selection when lowest or hightest step changes', () => {
+    const fixture = createComponent({
+      timeSelection: {start: {step: 1}, end: null},
+      lowestStep: 0,
+      highestStep: 4,
+    });
+    fixture.detectChanges();
+
+    fixture.componentInstance.lowestStep = 2;
+
+    fixture.detectChanges();
+    expect(onTimeSelectionChanged).toHaveBeenCalledWith({
+      timeSelection: {
+        start: {step: 2},
+        end: null,
+      },
+      affordance: TimeSelectionAffordance.SCALAR_CARD_ZOOM,
+    });
   });
 
   describe('dragging', () => {

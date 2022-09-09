@@ -90,6 +90,7 @@ limitations under the License.
     ></line-chart-axis>
   </div>
   <div class="dot" *ngIf="!lineOnly"><span class="rect"></span></div>
+  {{isViewBoxInitialized()}}
   <div
     *ngIf="customChartOverlayTemplate && isViewBoxInitialized()"
     class="custom-vis custom-chart-overlay-vis"

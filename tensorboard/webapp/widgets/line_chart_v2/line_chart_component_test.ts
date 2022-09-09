@@ -15,7 +15,13 @@ limitations under the License.
 
 import {OverlayModule} from '@angular/cdk/overlay';
 import {CommonModule} from '@angular/common';
-import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
+import {
+  Component,
+  Input,
+  NO_ERRORS_SCHEMA,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {ChartImpl} from './lib/chart';
@@ -28,7 +34,7 @@ import {
   ScaleType,
 } from './lib/public_types';
 import {buildMetadata, buildSeries} from './lib/testing';
-import {LineChartComponent} from './line_chart_component';
+import {LineChartComponent, TEST_ONLY} from './line_chart_component';
 
 @Component({
   selector: 'line-chart-grid-view',
@@ -55,7 +61,9 @@ class FakeGridComponent {
       [yScaleType]="yScaleType"
       [fixedViewBox]="fixedViewBox"
       [useDarkMode]="useDarkMode"
+      [customChartOverlayTemplate]="customChartOverlayTemplate"
     ></line-chart>
+    <ng-template #customTemplate><div #someElement>Foo Bar</div></ng-template>
   `,
   styles: [
     `
@@ -70,6 +78,9 @@ class FakeGridComponent {
 class TestableComponent {
   @ViewChild(LineChartComponent)
   chart!: LineChartComponent;
+
+  @ViewChild('customTemplate')
+  customTemplate!: TemplateRef<any>;
 
   @Input()
   seriesData!: DataSeries[];
@@ -91,6 +102,9 @@ class TestableComponent {
 
   @Input()
   lineOnly: boolean = false;
+
+  @Input()
+  customChartOverlayTemplate?: TemplateRef<{}>;
 
   // WebGL one is harder to test.
   preferredRendererType = RendererType.SVG;
@@ -523,7 +537,7 @@ describe('line_chart_v2/line_chart test', () => {
     });
   });
 
-  it('sets [0, 1] viewBox when seriesData is empty', () => {
+  it('sets [0, 0] viewBox when seriesData is empty', () => {
     const fixture = createComponent({
       seriesData: [],
       seriesMetadataMap: {},
@@ -533,8 +547,8 @@ describe('line_chart_v2/line_chart test', () => {
 
     expect(updateViewBoxSpy).toHaveBeenCalledTimes(1);
     expect(updateViewBoxSpy).toHaveBeenCalledWith({
-      x: [-0.1, 1.1],
-      y: [-0.1, 1.1],
+      x: [-1, 1],
+      y: [-1, 1],
     });
   });
 
@@ -646,8 +660,8 @@ describe('line_chart_v2/line_chart test', () => {
       // No runs are current visible so we set the default view extent.
       expect(updateViewBoxSpy.calls.argsFor(1)).toEqual([
         {
-          x: [-0.1, 1.1],
-          y: [-0.1, 1.1],
+          x: [-1, 1],
+          y: [-1, 1],
         },
       ]);
     });
@@ -941,6 +955,83 @@ describe('line_chart_v2/line_chart test', () => {
       expect(
         fixture.debugElement.query(By.css('.x-axis line-chart-axis'))
       ).toBeNull();
+    });
+
+    it('renders customChartOverlayTemplate after chart is initialized', () => {
+      const fixture = createComponent({
+        seriesData: [
+          buildSeries({
+            id: 'foo',
+            points: [
+              {x: 0, y: 0},
+              {x: 1, y: -1},
+              {x: 2, y: 1},
+            ],
+          }),
+        ],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+
+      expect(fixture.debugElement.query(By.css('#someElement'))).toBeNull();
+      fixture.componentInstance.customChartOverlayTemplate =
+        fixture.componentInstance.customTemplate;
+      expect(fixture.debugElement.query(By.css('#someElement'))).toBeNull();
+
+      fixture.detectChanges();
+      expect(fixture.debugElement.query(By.css('#someElement'))).toBeDefined();
+    });
+
+    it('does not render customChartOverlayTemplate when chart is not initialized', () => {
+      spyOn(
+        LineChartComponent.prototype,
+        'isViewBoxInitialized'
+      ).and.returnValue(false);
+
+      const fixture = createComponent({
+        seriesData: [
+          buildSeries({
+            id: 'foo',
+            points: [
+              {x: 0, y: 0},
+              {x: 1, y: -1},
+              {x: 2, y: 1},
+            ],
+          }),
+        ],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+
+      expect(fixture.debugElement.query(By.css('#someElement'))).toBeNull();
+      fixture.componentInstance.customChartOverlayTemplate =
+        fixture.componentInstance.customTemplate;
+      expect(fixture.debugElement.query(By.css('#someElement'))).toBeNull();
+
+      fixture.detectChanges();
+      expect(fixture.debugElement.query(By.css('#someElement'))).toBeNull();
+    });
+
+    it('cannot mutate DEFAULT_EXTENT', () => {
+      const fixture = createComponent({
+        seriesData: [
+          buildSeries({
+            id: 'foo',
+            points: [
+              {x: 0, y: 0},
+              {x: 1, y: -1},
+              {x: 2, y: 1},
+            ],
+          }),
+        ],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+
+      fixture.detectChanges();
+      expect(fixture.componentInstance.chart.viewBox).not.toBe(
+        TEST_ONLY.DEFAULT_EXTENT
+      );
     });
   });
 });
