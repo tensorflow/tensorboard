@@ -19,7 +19,10 @@ import {
   ElementRef,
   EventEmitter,
   Input,
+  OnChanges,
   Output,
+  SimpleChange,
+  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import {
@@ -47,7 +50,7 @@ const TIME_SELECTION_TO_FOB: Record<keyof TimeSelection, Fob> = {
   styleUrls: ['card_fob_controller_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CardFobControllerComponent {
+export class CardFobControllerComponent implements OnChanges {
   @ViewChild('startFobWrapper') readonly startFobWrapper!: ElementRef;
   @ViewChild('endFobWrapper') readonly endFobWrapper!: ElementRef;
   @Input() axisDirection!: AxisDirection;
@@ -76,6 +79,58 @@ export class CardFobControllerComponent {
 
   readonly Fob = Fob;
   readonly TimeSelectionAffordance = TimeSelectionAffordance;
+
+  private hasValueChanged(change?: SimpleChange) {
+    return (
+      change &&
+      change.currentValue !== change.previousValue &&
+      !change.isFirstChange()
+    );
+  }
+
+  private getBoundTimeSelection(
+    selectionType: keyof TimeSelection,
+    min: number,
+    max: number
+  ) {
+    const selection = this.timeSelection[selectionType];
+    if (!selection) return null;
+
+    if (selection.step < min) {
+      return min;
+    }
+    if (selection.step > max) {
+      return max;
+    }
+
+    return selection.step;
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (
+      this.hasValueChanged(changes['lowestStep']) ||
+      this.hasValueChanged(changes['highestStep'])
+    ) {
+      const min: number =
+        changes['lowestStep']?.currentValue ?? this.lowestStep;
+      const max: number =
+        changes['highestStep']?.currentValue ?? this.highestStep;
+      const start = this.getBoundTimeSelection('start', min, max);
+      const end = this.getBoundTimeSelection('end', min, max);
+      const stepHasChanged =
+        start !== this.timeSelection.start.step ||
+        end !== this.timeSelection.end?.step;
+      if (stepHasChanged && min !== max) {
+        this.onTimeSelectionChanged.emit({
+          timeSelection: {
+            start: {step: start!},
+            end: end === null ? null : {step: end},
+          },
+          affordance: TimeSelectionAffordance.SCALAR_CARD_ZOOM,
+        });
+      }
+    }
+  }
 
   getCssTranslatePxForStartFob() {
     if (this.axisDirection === AxisDirection.VERTICAL) {

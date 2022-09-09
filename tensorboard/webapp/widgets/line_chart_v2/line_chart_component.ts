@@ -51,7 +51,7 @@ import {TooltipTemplate} from './sub_view/line_chart_interactive_view';
 
 export {TooltipTemplate} from './sub_view/line_chart_interactive_view';
 
-const DEFAULT_EXTENT: Extent = {x: [0, 1], y: [0, 1]};
+const DEFAULT_EXTENT: Extent = {x: [0, 0], y: [0, 0]};
 
 interface DomDimensions {
   main: {width: number; height: number};
@@ -237,6 +237,12 @@ export class LineChartComponent
     // After view is initialized, if we ever change the Angular prop that should propagate
     // to children, we need to retrigger the Angular change.
     this.changeDetector.detectChanges();
+  }
+
+  isViewBoxInitialized() {
+    // DO_NOT_SUBMIT add a really good test for this.
+    // Comparing by reference is fine here.
+    return this.viewBox !== DEFAULT_EXTENT;
   }
 
   /**
