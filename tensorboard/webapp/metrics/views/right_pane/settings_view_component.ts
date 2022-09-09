@@ -66,6 +66,7 @@ export class SettingsViewComponent {
   constructor(@Inject(LOCALE_ID) private readonly locale: string) {}
 
   @Input() isLinkedTimeFeatureEnabled!: boolean;
+  @Input() isRangeSelectionAllowed!: boolean;
   @Input() isLinkedTimeEnabled!: boolean;
   @Input() isScalarStepSelectorFeatureEnabled!: boolean;
   @Input() isScalarStepSelectorEnabled!: boolean;

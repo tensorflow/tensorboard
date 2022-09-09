@@ -82,6 +82,7 @@ const RANGE_INPUT_SOURCE_TO_AFFORDANCE: Record<
       [imageShowActualSize]="imageShowActualSize$ | async"
       (imageShowActualSizeChanged)="onImageShowActualSizeChanged()"
       [isLinkedTimeFeatureEnabled]="isLinkedTimeFeatureEnabled$ | async"
+      [isRangeSelectionAllowed]="isRangeSelectionAllowed$ | async"
       [isScalarStepSelectorFeatureEnabled]="
         isScalarStepSelectorFeatureEnabled$ | async
       "
@@ -102,6 +103,9 @@ export class SettingsViewContainer {
 
   readonly isLinkedTimeFeatureEnabled$: Observable<boolean> = this.store.select(
     selectors.getIsLinkedTimeEnabled
+  );
+  readonly isRangeSelectionAllowed$: Observable<boolean> = this.store.select(
+    selectors.getAllowRangeSelection
   );
   readonly isScalarStepSelectorFeatureEnabled$: Observable<boolean> =
     this.store.select(selectors.getIsDataTableEnabled);

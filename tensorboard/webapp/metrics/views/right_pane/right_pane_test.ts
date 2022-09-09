@@ -97,6 +97,7 @@ describe('metrics right_pane', () => {
       store.overrideSelector(selectors.getMetricsCardMinWidth, null);
       store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, false);
       store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
+      store.overrideSelector(selectors.getAllowRangeSelection, false);
       store.overrideSelector(selectors.getMetricsLinkedTimeSelectionSetting, {
         start: {step: 0},
         end: {step: 1000},
@@ -649,6 +650,21 @@ describe('metrics right_pane', () => {
             affordance: TimeSelectionToggleAffordance.CHECK_BOX,
           })
         );
+      });
+
+      describe('range selection', () => {
+        beforeEach(() => {
+          store.overrideSelector(selectors.getAllowRangeSelection, true);
+        });
+
+        it('renders the Range Selection checkbox', () => {
+          const fixture = TestBed.createComponent(SettingsViewContainer);
+          fixture.detectChanges();
+
+          expect(
+            fixture.debugElement.query(By.css('.range-selection mat-checkbox'))
+          ).toBeTruthy();
+        });
       });
     });
   });
