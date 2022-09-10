@@ -21,7 +21,7 @@ grpcio >= 1.24.3
 # Until this issue is closed
 # https://github.com/googleapis/google-cloud-python/issues/10566
 google-auth >= 1.6.3, < 3
-google-auth-oauthlib >= 0.4.1, < 0.5
+google-auth-oauthlib >= 0.4.1
 markdown >= 2.6.8
 numpy >= 1.12.0
 # Protobuf 4.0 is incompatible with TF. Force < 3.20 until they unblock upgrade.
