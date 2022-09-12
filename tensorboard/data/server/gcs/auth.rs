@@ -184,7 +184,7 @@ async fn service_account_token() -> Result<gcp_auth::Token, gcp_auth::Error> {
 
 fn gce_service_auth_token() -> Result<BoundedToken, gcp_auth::Error> {
     let service_token = tokio::runtime::Builder::new_current_thread()
-        .enable_io()
+        .enable_all()
         .build()
         .unwrap()
         .block_on(service_account_token())?;
