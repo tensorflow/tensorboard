@@ -113,7 +113,7 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
     },
     allowRangeSelection: {
       defaultValue: false,
-      queryParamOverride: 'allowRange',
+      queryParamOverride: 'allowRangeSelection',
       parseValue: parseBoolean,
     },
   };
