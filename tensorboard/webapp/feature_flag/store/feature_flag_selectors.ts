@@ -156,3 +156,10 @@ export const getShowFlagsEnabled = createSelector(
     return flags.enableShowFlags;
   }
 );
+
+export const getAllowRangeSelection = createSelector(
+  getFeatureFlags,
+  (flags: FeatureFlags): boolean => {
+    return flags.allowRangeSelection;
+  }
+);
