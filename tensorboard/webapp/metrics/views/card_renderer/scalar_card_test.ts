@@ -2289,7 +2289,7 @@ describe('scalar card', () => {
         ]);
       }));
 
-      it('toggles step selection when single fob is deselected', fakeAsync(() => {
+      it('toggles step selection when single fob is deselected even when linked time is enabled', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 20},
           end: null,
