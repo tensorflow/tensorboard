@@ -263,28 +263,35 @@ describe('data table', () => {
     const headerElements = fixture.debugElement.queryAll(By.css('th'));
 
     expect(
-      window.getComputedStyle(
-        headerElements[1].queryAll(By.css('.sorting-icon-container'))[0]
-          .nativeElement
-      ).opacity
-    ).toBe('1');
+      headerElements[1]
+        .queryAll(By.css('.sorting-icon-container'))[0]
+        .nativeElement.classList.contains('show')
+    ).toBe(true);
     expect(
       headerElements[1]
         .queryAll(By.css('mat-icon'))[0]
         .nativeElement.getAttribute('svgIcon')
     ).toBe('arrow_upward_24px');
     expect(
-      window.getComputedStyle(
-        headerElements[2].queryAll(By.css('.sorting-icon-container'))[0]
-          .nativeElement
-      ).opacity
-    ).toBe('0');
+      headerElements[2]
+        .queryAll(By.css('.sorting-icon-container'))[0]
+        .nativeElement.classList.contains('show')
+    ).toBe(false);
     expect(
-      window.getComputedStyle(
-        headerElements[3].queryAll(By.css('.sorting-icon-container'))[0]
-          .nativeElement
-      ).opacity
-    ).toBe('0');
+      headerElements[2]
+        .queryAll(By.css('.sorting-icon-container'))[0]
+        .nativeElement.classList.contains('show-on-hover')
+    ).toBe(true);
+    expect(
+      headerElements[3]
+        .queryAll(By.css('.sorting-icon-container'))[0]
+        .nativeElement.classList.contains('show')
+    ).toBe(false);
+    expect(
+      headerElements[3]
+        .queryAll(By.css('.sorting-icon-container'))[0]
+        .nativeElement.classList.contains('show-on-hover')
+    ).toBe(true);
   });
 
   it('shows downward arrow when order is DESCENDING', () => {
@@ -296,23 +303,30 @@ describe('data table', () => {
     const headerElements = fixture.debugElement.queryAll(By.css('th'));
 
     expect(
-      window.getComputedStyle(
-        headerElements[1].queryAll(By.css('.sorting-icon-container'))[0]
-          .nativeElement
-      ).opacity
-    ).toBe('0');
+      headerElements[1]
+        .queryAll(By.css('.sorting-icon-container'))[0]
+        .nativeElement.classList.contains('show')
+    ).toBe(false);
     expect(
-      window.getComputedStyle(
-        headerElements[2].queryAll(By.css('.sorting-icon-container'))[0]
-          .nativeElement
-      ).opacity
-    ).toBe('0');
+      headerElements[1]
+        .queryAll(By.css('.sorting-icon-container'))[0]
+        .nativeElement.classList.contains('show-on-hover')
+    ).toBe(true);
     expect(
-      window.getComputedStyle(
-        headerElements[3].queryAll(By.css('.sorting-icon-container'))[0]
-          .nativeElement
-      ).opacity
-    ).toBe('1');
+      headerElements[2]
+        .queryAll(By.css('.sorting-icon-container'))[0]
+        .nativeElement.classList.contains('show')
+    ).toBe(false);
+    expect(
+      headerElements[2]
+        .queryAll(By.css('.sorting-icon-container'))[0]
+        .nativeElement.classList.contains('show-on-hover')
+    ).toBe(true);
+    expect(
+      headerElements[3]
+        .queryAll(By.css('.sorting-icon-container'))[0]
+        .nativeElement.classList.contains('show')
+    ).toBe(true);
     expect(
       headerElements[3]
         .queryAll(By.css('mat-icon'))[0]
