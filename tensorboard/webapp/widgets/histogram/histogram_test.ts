@@ -301,6 +301,43 @@ describe('histogram test', () => {
         ).toEqual(['0', '20', '40', '60', '80', '100']);
       });
 
+      it('cannot have fractional steps in STEP mode', () => {
+        const fixture = createComponent('foo', [
+          buildHistogramDatum({
+            step: 0,
+          }),
+          buildHistogramDatum({
+            step: 1,
+          }),
+          buildHistogramDatum({
+            step: 2,
+          }),
+          buildHistogramDatum({
+            step: 3,
+          }),
+          buildHistogramDatum({
+            step: 4,
+          }),
+          buildHistogramDatum({
+            step: 5,
+          }),
+          buildHistogramDatum({
+            step: 6,
+          }),
+          buildHistogramDatum({
+            step: 7,
+          }),
+        ]);
+        fixture.componentInstance.mode = HistogramMode.OFFSET;
+        fixture.componentInstance.timeProperty = TimeProperty.STEP;
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+
+        expect(
+          getAxisLabelText(fixture.debugElement.query(byCss.Y_AXIS))
+        ).toEqual(['0', '2', '4', '6']);
+      });
+
       it('renders wallTime in WALL_TIME mode', () => {
         const fixture = createComponent('foo', [
           buildHistogramDatum({

@@ -469,12 +469,13 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     }
   }
 
-  private getMaxTicks() {
+  private getMaxTicks(yScale: Scales[keyof Scales]) {
     const {height} = this.layout.contentClientRect;
     const maxPerHeight = height / 15;
-
     if (this.timeProperty === TimeProperty.STEP) {
-      return Math.min(this.data.length, maxPerHeight);
+      const [min, max] = yScale.domain() as [number, number];
+      const numberOfSteps = Math.max(max - min + 1, 1);
+      return Math.min(numberOfSteps, maxPerHeight);
     }
 
     return maxPerHeight;
@@ -486,7 +487,7 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.mode === HistogramMode.OVERLAY
         ? this.scales.countScale
         : this.scales.temporalScale;
-    const maxTicks = this.getMaxTicks();
+    const maxTicks = this.getMaxTicks(yScale);
     const yAxis = d3.axisRight(yScale).ticks(Math.max(2, maxTicks));
     // d3 on DefinitelyTyped is typed incorrectly and it does not allow
     // function that takes (d: Data) => string to be specified in the
