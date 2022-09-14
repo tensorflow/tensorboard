@@ -111,7 +111,6 @@ describe('data table', () => {
     expect(headerElements[3].nativeElement.innerText).toBe('Step');
     expect(headerElements[4].nativeElement.innerText).toBe('Relative');
     expect(headerElements[5].nativeElement.innerText).toBe('Value');
-    expect(headerElements[5].queryAll(By.css('mat-icon')).length).toBe(1);
     expect(
       headerElements[5]
         .queryAll(By.css('mat-icon'))[0]
@@ -124,7 +123,6 @@ describe('data table', () => {
     expect(headerElements[10].nativeElement.innerText).toBe('Min');
     expect(headerElements[11].nativeElement.innerText).toBe('Max');
     expect(headerElements[12].nativeElement.innerText).toBe('%');
-    expect(headerElements[12].queryAll(By.css('mat-icon')).length).toBe(1);
     expect(
       headerElements[12]
         .queryAll(By.css('mat-icon'))[0]
@@ -254,5 +252,85 @@ describe('data table', () => {
       header: ColumnHeaders.STEP,
       order: SortingOrder.DESCENDING,
     });
+  });
+
+  it('keeps sorting arrow invisible unless sorting on that header', () => {
+    const fixture = createComponent({
+      headers: [ColumnHeaders.VALUE, ColumnHeaders.RUN, ColumnHeaders.STEP],
+      sortingInfo: {header: ColumnHeaders.VALUE, order: SortingOrder.ASCENDING},
+    });
+    fixture.detectChanges();
+    const headerElements = fixture.debugElement.queryAll(By.css('th'));
+
+    expect(
+      headerElements[1]
+        .queryAll(By.css('.sorting-icon-container'))[0]
+        .nativeElement.classList.contains('show')
+    ).toBe(true);
+    expect(
+      headerElements[1]
+        .queryAll(By.css('mat-icon'))[0]
+        .nativeElement.getAttribute('svgIcon')
+    ).toBe('arrow_upward_24px');
+    expect(
+      headerElements[2]
+        .queryAll(By.css('.sorting-icon-container'))[0]
+        .nativeElement.classList.contains('show')
+    ).toBe(false);
+    expect(
+      headerElements[2]
+        .queryAll(By.css('.sorting-icon-container'))[0]
+        .nativeElement.classList.contains('show-on-hover')
+    ).toBe(true);
+    expect(
+      headerElements[3]
+        .queryAll(By.css('.sorting-icon-container'))[0]
+        .nativeElement.classList.contains('show')
+    ).toBe(false);
+    expect(
+      headerElements[3]
+        .queryAll(By.css('.sorting-icon-container'))[0]
+        .nativeElement.classList.contains('show-on-hover')
+    ).toBe(true);
+  });
+
+  it('shows downward arrow when order is DESCENDING', () => {
+    const fixture = createComponent({
+      headers: [ColumnHeaders.VALUE, ColumnHeaders.RUN, ColumnHeaders.STEP],
+      sortingInfo: {header: ColumnHeaders.STEP, order: SortingOrder.DESCENDING},
+    });
+    fixture.detectChanges();
+    const headerElements = fixture.debugElement.queryAll(By.css('th'));
+
+    expect(
+      headerElements[1]
+        .queryAll(By.css('.sorting-icon-container'))[0]
+        .nativeElement.classList.contains('show')
+    ).toBe(false);
+    expect(
+      headerElements[1]
+        .queryAll(By.css('.sorting-icon-container'))[0]
+        .nativeElement.classList.contains('show-on-hover')
+    ).toBe(true);
+    expect(
+      headerElements[2]
+        .queryAll(By.css('.sorting-icon-container'))[0]
+        .nativeElement.classList.contains('show')
+    ).toBe(false);
+    expect(
+      headerElements[2]
+        .queryAll(By.css('.sorting-icon-container'))[0]
+        .nativeElement.classList.contains('show-on-hover')
+    ).toBe(true);
+    expect(
+      headerElements[3]
+        .queryAll(By.css('.sorting-icon-container'))[0]
+        .nativeElement.classList.contains('show')
+    ).toBe(true);
+    expect(
+      headerElements[3]
+        .queryAll(By.css('mat-icon'))[0]
+        .nativeElement.getAttribute('svgIcon')
+    ).toBe('arrow_downward_24px');
   });
 });
