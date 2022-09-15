@@ -260,6 +260,7 @@ const {initialState, reducers: namespaceContextedReducer} =
       linkedTimeSelection: null,
       linkedTimeEnabled: false,
       stepSelectorEnabled: false,
+      stepSelectorRangeEnabled: false,
       linkedTimeRangeEnabled: false,
       filteredPluginTypes: new Set(),
       stepMinMax: {
@@ -976,6 +977,20 @@ const reducer = createReducer(
       linkedTimeEnabled: nextLinkedTimeEnabled,
       linkedTimeSelection: nextLinkedTimeSelection,
       stepSelectorEnabled: nextStepSelectorEnabled,
+    };
+  }),
+  on(actions.stepSelectorRangeToggled, (state) => {
+    const nextStepSelectorRangeEnabled = !state.stepSelectorRangeEnabled;
+    let nextStepSelectorEnabled = state.stepSelectorEnabled;
+
+    if (nextStepSelectorRangeEnabled) {
+      nextStepSelectorEnabled = nextStepSelectorRangeEnabled;
+    }
+
+    return {
+      ...state,
+      stepSelectorEnabled: nextStepSelectorEnabled,
+      stepSelectorRangeEnabled: nextStepSelectorRangeEnabled,
     };
   }),
   on(actions.timeSelectionChanged, (state, change) => {

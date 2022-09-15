@@ -368,6 +368,13 @@ export const getMetricsStepSelectorEnabled = createSelector(
   }
 );
 
+export const getMetricsStepSelectorRangeEnabled = createSelector(
+  selectMetricsState,
+  (state: MetricsState): boolean => {
+    return state.stepSelectorRangeEnabled;
+  }
+);
+
 export const getMetricsLinkedTimeRangeEnabled = createSelector(
   selectMetricsState,
   (state: MetricsState): boolean => {

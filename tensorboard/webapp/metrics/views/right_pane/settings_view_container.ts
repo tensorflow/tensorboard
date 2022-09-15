@@ -38,6 +38,7 @@ import {
   metricsScalarPartitionNonMonotonicXToggled,
   metricsToggleIgnoreOutliers,
   metricsToggleImageShowActualSize,
+  stepSelectorRangeToggled,
   stepSelectorToggled,
   timeSelectionChanged,
 } from '../../actions';
@@ -87,12 +88,16 @@ const RANGE_INPUT_SOURCE_TO_AFFORDANCE: Record<
         isScalarStepSelectorFeatureEnabled$ | async
       "
       [isScalarStepSelectorEnabled]="isScalarStepSelectorEnabled$ | async"
+      [isScalarStepSelectorRangeEnabled]="
+        isScalarStepSelectorRangeEnabled$ | async
+      "
       [isLinkedTimeEnabled]="isLinkedTimeEnabled$ | async"
       [linkedTimeSelection]="linkedTimeSelection$ | async"
       [stepMinMax]="stepMinMax$ | async"
       (linkedTimeToggled)="onLinkedTimeToggled()"
       (linkedTimeSelectionChanged)="onLinkedTimeSelectionChanged($event)"
       (stepSelectorToggled)="onStepSelectorToggled()"
+      (stepSelectorRangeToggled)="onStepSelectorRangeToggled()"
     >
     </metrics-dashboard-settings-component>
   `,
@@ -111,6 +116,8 @@ export class SettingsViewContainer {
     this.store.select(selectors.getIsDataTableEnabled);
   readonly isScalarStepSelectorEnabled$: Observable<boolean> =
     this.store.select(selectors.getMetricsStepSelectorEnabled);
+  readonly isScalarStepSelectorRangeEnabled$: Observable<boolean> =
+    this.store.select(selectors.getMetricsStepSelectorRangeEnabled);
   readonly isLinkedTimeEnabled$: Observable<boolean> = this.store.select(
     selectors.getMetricsLinkedTimeEnabled
   );
@@ -218,6 +225,14 @@ export class SettingsViewContainer {
   onStepSelectorToggled() {
     this.store.dispatch(
       stepSelectorToggled({affordance: TimeSelectionToggleAffordance.CHECK_BOX})
+    );
+  }
+
+  onStepSelectorRangeToggled() {
+    this.store.dispatch(
+      stepSelectorRangeToggled({
+        affordance: TimeSelectionToggleAffordance.CHECK_BOX,
+      })
     );
   }
 

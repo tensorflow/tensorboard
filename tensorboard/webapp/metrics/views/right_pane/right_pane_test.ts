@@ -97,6 +97,10 @@ describe('metrics right_pane', () => {
       store.overrideSelector(selectors.getMetricsCardMinWidth, null);
       store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, false);
       store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
+      store.overrideSelector(
+        selectors.getMetricsStepSelectorRangeEnabled,
+        false
+      );
       store.overrideSelector(selectors.getAllowRangeSelection, false);
       store.overrideSelector(selectors.getMetricsLinkedTimeSelectionSetting, {
         start: {step: 0},
@@ -664,6 +668,19 @@ describe('metrics right_pane', () => {
           expect(
             fixture.debugElement.query(By.css('.range-selection mat-checkbox'))
           ).toBeTruthy();
+        });
+
+        it('dispatches stepSelectorRangeEnableToggled on toggle', () => {
+          const fixture = TestBed.createComponent(SettingsViewContainer);
+          fixture.detectChanges();
+
+          select(fixture, '.range-selection input').nativeElement.click();
+
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            actions.stepSelectorRangeToggled({
+              affordance: TimeSelectionToggleAffordance.CHECK_BOX,
+            })
+          );
         });
       });
     });

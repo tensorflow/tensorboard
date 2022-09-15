@@ -2724,6 +2724,42 @@ describe('metrics reducers', () => {
       });
     });
 
+    describe('#stepSelectorRangeToggled', () => {
+      it('toggles whether stepSelectorRange is enabled or not', () => {
+        const state1 = buildMetricsState({
+          stepSelectorRangeEnabled: false,
+        });
+
+        const state2 = reducers(state1, actions.stepSelectorRangeToggled({}));
+        expect(state2.stepSelectorRangeEnabled).toBe(true);
+
+        const state3 = reducers(state2, actions.stepSelectorRangeToggled({}));
+        expect(state3.stepSelectorRangeEnabled).toBe(false);
+      });
+
+      it('enables stepSelector if disabled when enabling stepSelectorRange', () => {
+        const state1 = buildMetricsState({
+          stepSelectorEnabled: false,
+          stepSelectorRangeEnabled: false,
+        });
+
+        const state2 = reducers(state1, actions.stepSelectorRangeToggled({}));
+        expect(state2.stepSelectorEnabled).toBe(true);
+        expect(state2.stepSelectorRangeEnabled).toBe(true);
+      });
+
+      it('keeps stepSelector enabled when disabling stepSelectorRange', () => {
+        const state1 = buildMetricsState({
+          stepSelectorEnabled: true,
+          stepSelectorRangeEnabled: true,
+        });
+
+        const state2 = reducers(state1, actions.stepSelectorRangeToggled({}));
+        expect(state2.stepSelectorEnabled).toBe(true);
+        expect(state2.stepSelectorRangeEnabled).toBe(false);
+      });
+    });
+
     describe('#linkedTimeEnabled', () => {
       const imageCardId = 'test image card id "plugin":"images"';
       const cardMetadataMap = {
