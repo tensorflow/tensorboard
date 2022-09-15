@@ -23,7 +23,15 @@ import {
   Output,
 } from '@angular/core';
 import {Store} from '@ngrx/store';
-import {combineLatest, from, Observable, of, Subject} from 'rxjs';
+import {
+  combineLatest,
+  from,
+  Observable,
+  of,
+  Subject,
+  Subscriber,
+  zip,
+} from 'rxjs';
 import {
   combineLatestWith,
   debounceTime,
@@ -57,6 +65,7 @@ import {
   TimeSelectionWithAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
 import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer';
+import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
   linkedTimeToggled,
@@ -153,6 +162,7 @@ function areSeriesEqual(
       (onTimeSelectionChanged)="onTimeSelectionChanged($event)"
       (onLinkedTimeToggled)="onLinkedTimeToggled($event)"
       (onStepSelectorToggled)="onStepSelectorToggled($event)"
+      (onLineChartZoom)="onLineChartZoom($event)"
     ></scalar-card-component>
   `,
   styles: [
@@ -190,6 +200,11 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   stepSelectorTimeSelection$?: Observable<TimeSelection | null>;
   minMaxSteps$?: Observable<MinMaxStep>;
   columnHeaders$?: Observable<ColumnHeaders[]>;
+
+  private lineChartZoomObservers: Subscriber<Extent>[] = [];
+  lineChartZoom$: Observable<Extent> = new Observable((observer) => {
+    this.lineChartZoomObservers.push(observer);
+  });
 
   onVisibilityChange({visible}: {visible: boolean}) {
     this.isVisible = visible;
@@ -338,16 +353,18 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       shareReplay(1)
     );
 
-    this.minMaxSteps$ = partitionedSeries$.pipe(
-      map((series) => {
-        let minStep = Infinity;
-        let maxStep = -Infinity;
-        for (const {points} of series) {
-          for (const point of points) {
-            minStep = minStep > point.x ? point.x : minStep;
-            maxStep = maxStep < point.x ? point.x : maxStep;
-          }
-        }
+    this.minMaxSteps$ = zip(partitionedSeries$, this.lineChartZoom$).pipe(
+      map(([series, lineChartViewBox]) => {
+        const minMax = lineChartViewBox.x;
+        const minInViewPort = Math.ceil(Math.min(...minMax));
+        const maxInViewPort = Math.floor(Math.max(...minMax));
+        const allPoints = series
+          .map(({points}) => points.map(({x}) => x))
+          .flat();
+        const min = Math.min(...allPoints);
+        const max = Math.max(...allPoints);
+        const minStep = Math.max(min, minInViewPort);
+        const maxStep = Math.min(max, maxInViewPort);
         return {minStep, maxStep};
       })
     );
@@ -607,5 +624,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
   onStepSelectorToggled(affordance: TimeSelectionToggleAffordance) {
     this.store.dispatch(stepSelectorToggled({affordance}));
+  }
+
+  onLineChartZoom(extent: Extent) {
+    this.lineChartZoomObservers.forEach((observer) => observer.next(extent));
   }
 }
