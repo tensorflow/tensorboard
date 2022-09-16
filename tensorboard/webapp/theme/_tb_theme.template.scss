@@ -38,7 +38,15 @@ $tb-dark-app-bar-color: mat.get-color-from-palette(
   default
 ) !default;
 
-$tb-theme: mat.define-light-theme($tb-primary, $tb-accent, $tb-warn);
+$tb-theme: mat.define-light-theme(
+  (
+    color: (
+      primary: $tb-primary,
+      accent: $tb-accent,
+      warn: $tb-warn,
+    ),
+  )
+);
 
 // Overriding mat-light-theme-foreground variables.
 $tb-foreground: map_merge(
@@ -70,10 +78,28 @@ $tb-theme: map_merge(
   )
 );
 
+$color: map_merge(
+  map_get($tb-theme, 'color'),
+  (
+    foreground: $tb-foreground,
+    background: $tb-background,
+  )
+);
+$tb-theme: map_merge(
+  $tb-theme,
+  (
+    color: $color,
+  )
+);
+
 $tb-dark-theme: mat.define-dark-theme(
-  $tb-dark-primary,
-  $tb-dark-accent,
-  $tb-dark-warn
+  (
+    color: (
+      primary: $tb-dark-primary,
+      accent: $tb-dark-accent,
+      warn: $tb-dark-warn,
+    ),
+  )
 );
 $tb-dark-foreground: map_merge(
   map-get($tb-dark-theme, foreground),
@@ -95,6 +121,20 @@ $tb-dark-theme: map_merge(
   (
     background: $tb-dark-background,
     foreground: $tb-dark-foreground,
+  )
+);
+
+$color-dark: map_merge(
+  map_get($tb-dark-theme, 'color'),
+  (
+    foreground: $tb-dark-foreground,
+    background: $tb-dark-background,
+  )
+);
+$tb-dark-theme: map_merge(
+  $tb-dark-theme,
+  (
+    color: $color-dark,
   )
 );
 
