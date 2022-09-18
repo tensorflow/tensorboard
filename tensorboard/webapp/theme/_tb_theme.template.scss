@@ -45,6 +45,8 @@ $tb-theme: mat.define-light-theme(
       accent: $tb-accent,
       warn: $tb-warn,
     ),
+    typography: null,
+    density: 0,
   )
 );
 
@@ -99,6 +101,8 @@ $tb-dark-theme: mat.define-dark-theme(
       accent: $tb-dark-accent,
       warn: $tb-dark-warn,
     ),
+    typography: null,
+    density: 0,
   )
 );
 $tb-dark-foreground: map_merge(
