@@ -469,17 +469,29 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     }
   }
 
+  private getMaxTicks(yScale: Scales[keyof Scales]) {
+    const {height} = this.layout.contentClientRect;
+    const maxPerHeight = height / 15;
+    if (this.timeProperty === TimeProperty.STEP) {
+      const [min, max] = yScale.domain() as [number, number];
+      const numberOfSteps = Math.max(max - min + 1, 1);
+      return Math.min(numberOfSteps, maxPerHeight);
+    }
+
+    return maxPerHeight;
+  }
+
   private renderYAxis() {
     if (!this.scales) return;
     const yScale =
       this.mode === HistogramMode.OVERLAY
         ? this.scales.countScale
         : this.scales.temporalScale;
-    const {height} = this.layout.contentClientRect;
-    const yAxis = d3.axisRight(yScale).ticks(Math.max(2, height / 15));
-    // d3 on DefinitelyTyped is typed incorrectly and it does not allow function
-    // that takes (d: Data) => string to be specified in the parameter unlike
-    // the real d3.
+    const maxTicks = this.getMaxTicks(yScale);
+    const yAxis = d3.axisRight(yScale).ticks(Math.max(2, maxTicks));
+    // d3 on DefinitelyTyped is typed incorrectly and it does not allow
+    // function that takes (d: Data) => string to be specified in the
+    // parameter unlike the real d3.
     const anyYAxis = yAxis as any;
     anyYAxis.tickFormat(this.getYAxisFormatter());
     yAxis(d3.select(this.yAxis.nativeElement));
