@@ -494,6 +494,7 @@ export class LineChartComponent
     this.setIsViewBoxOverridden(false);
     this.isViewBoxChanged = true;
     this.updateLineChart();
+    this.viewBoxChanged.emit(this.viewBox);
   }
 
   private setIsViewBoxOverridden(newValue: boolean): void {

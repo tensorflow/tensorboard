@@ -24,13 +24,12 @@ import {
 } from '@angular/core';
 import {Store} from '@ngrx/store';
 import {
+  BehaviorSubject,
   combineLatest,
   from,
   Observable,
   of,
   Subject,
-  Subscriber,
-  zip,
 } from 'rxjs';
 import {
   combineLatestWith,
@@ -201,9 +200,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   minMaxSteps$?: Observable<MinMaxStep>;
   columnHeaders$?: Observable<ColumnHeaders[]>;
 
-  private lineChartZoomObservers: Subscriber<Extent>[] = [];
-  lineChartZoom$: Observable<Extent> = new Observable((observer) => {
-    this.lineChartZoomObservers.push(observer);
+  lineChartZoom$ = new BehaviorSubject<MinMaxStep>({
+    minStep: -Infinity,
+    maxStep: Infinity,
   });
 
   onVisibilityChange({visible}: {visible: boolean}) {
@@ -353,18 +352,19 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       shareReplay(1)
     );
 
-    this.minMaxSteps$ = zip(partitionedSeries$, this.lineChartZoom$).pipe(
-      map(([series, lineChartViewBox]) => {
-        const minMax = lineChartViewBox.x;
-        const minInViewPort = Math.ceil(Math.min(...minMax));
-        const maxInViewPort = Math.floor(Math.max(...minMax));
+    this.minMaxSteps$ = combineLatest([
+      partitionedSeries$,
+      this.lineChartZoom$,
+    ]).pipe(
+      map(([series, viewPort]) => {
         const allPoints = series
           .map(({points}) => points.map(({x}) => x))
           .flat();
         const min = Math.min(...allPoints);
         const max = Math.max(...allPoints);
-        const minStep = Math.max(min, minInViewPort);
-        const maxStep = Math.min(max, maxInViewPort);
+        const minStep = Math.max(min, viewPort.minStep);
+        const maxStep = Math.min(max, viewPort.maxStep);
+
         return {minStep, maxStep};
       })
     );
@@ -626,7 +626,12 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.store.dispatch(stepSelectorToggled({affordance}));
   }
 
-  onLineChartZoom(extent: Extent) {
-    this.lineChartZoomObservers.forEach((observer) => observer.next(extent));
+  onLineChartZoom(lineChartViewBox: Extent) {
+    const minMax = lineChartViewBox.x;
+    const minMaxStepInViewPort: MinMaxStep = {
+      minStep: Math.ceil(Math.min(...minMax)),
+      maxStep: Math.floor(Math.max(...minMax)),
+    };
+    this.lineChartZoom$.next(minMaxStepInViewPort);
   }
 }
