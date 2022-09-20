@@ -234,22 +234,28 @@ export class ScalarCardComponent<Downloader> {
   ) {
     // Updates step selector to single selection.
     const {timeSelection, affordance} = newTimeSelectionWithAffordance;
-    const newStartStep = timeSelection.start.step;
-    const nextStartStep =
-      newStartStep < this.minMaxStep.minStep
-        ? this.minMaxStep.minStep
-        : newStartStep > this.minMaxStep.maxStep
-        ? this.minMaxStep.maxStep
-        : newStartStep;
 
-    // Updates step selector to single selection.
-    this.stepSelectorTimeSelection = {
-      start: {step: nextStartStep},
-      end: null,
-    };
+    let newStart: {step: number} = {step: timeSelection.start.step};
+    newStart.step =
+      timeSelection.start.step < this.minMaxStep.minStep
+        ? this.minMaxStep.minStep
+        : timeSelection.start.step > this.minMaxStep.maxStep
+        ? this.minMaxStep.maxStep
+        : timeSelection.start.step;
+
+    let newEnd: null | {step: number} = null;
+    if (timeSelection.end) {
+      newEnd = timeSelection.end;
+      newEnd.step =
+        timeSelection.end.step < this.minMaxStep.minStep
+          ? this.minMaxStep.minStep
+          : timeSelection.end.step > this.minMaxStep.maxStep
+          ? this.minMaxStep.maxStep
+          : timeSelection.end.step;
+    }
 
     this.onTimeSelectionChanged.emit({
-      timeSelection,
+      timeSelection: {start: newStart, end: newEnd},
       // Only sets affordance when it's not undefined.
       ...(affordance && {affordance}),
     });

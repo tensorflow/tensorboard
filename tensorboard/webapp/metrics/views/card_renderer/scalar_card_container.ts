@@ -44,6 +44,7 @@ import {
   getDarkModeEnabled,
   getExperimentIdForRunId,
   getExperimentIdToExperimentAliasMap,
+  getMetricsCardStepSelections,
   getMetricsLinkedTimeEnabled,
   getMetricsLinkedTimeSelection,
   getMetricsStepSelectorEnabled,
@@ -59,6 +60,7 @@ import {
 import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
+  cardTimeSelectionChanged,
   linkedTimeToggled,
   stepSelectorToggled,
   timeSelectionChanged,
@@ -541,9 +543,17 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.stepSelectorTimeSelection$ = combineLatest([
       this.minMaxSteps$,
       this.store.select(getMetricsStepSelectorEnabled),
+      this.store.select(getMetricsCardStepSelections),
     ]).pipe(
-      map(([{minStep}, enableStepSelector]) => {
-        return enableStepSelector ? {start: {step: minStep}, end: null} : null;
+      map(([{minStep}, enableStepSelector, currentSelections]) => {
+        if (!enableStepSelector) {
+          return null;
+        }
+        const thisSelection = currentSelections.get(this.cardId);
+        if (thisSelection) {
+          return thisSelection;
+        }
+        return {start: {step: minStep}, end: null};
       })
     );
   }
@@ -598,7 +608,12 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   onTimeSelectionChanged(
     newTimeSelectionWithAffordance: TimeSelectionWithAffordance
   ) {
-    this.store.dispatch(timeSelectionChanged(newTimeSelectionWithAffordance));
+    this.store.dispatch(
+      cardTimeSelectionChanged({
+        cardId: this.cardId,
+        timeSelection: newTimeSelectionWithAffordance.timeSelection,
+      })
+    );
   }
 
   onLinkedTimeToggled(affordance: TimeSelectionToggleAffordance) {

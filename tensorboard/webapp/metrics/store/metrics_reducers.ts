@@ -41,6 +41,7 @@ import {
   CardUniqueInfo,
   SCALARS_SMOOTHING_MAX,
   SCALARS_SMOOTHING_MIN,
+  TimeSelection,
   TooltipSort,
   URLDeserializedState,
 } from '../internal_types';
@@ -260,6 +261,7 @@ const {initialState, reducers: namespaceContextedReducer} =
       linkedTimeSelection: null,
       linkedTimeEnabled: false,
       stepSelectorEnabled: false,
+      cardTimeSelections: new Map<CardId, TimeSelection>(),
       linkedTimeRangeEnabled: false,
       filteredPluginTypes: new Set(),
       stepMinMax: {
@@ -1010,6 +1012,42 @@ const reducer = createReducer(
       linkedTimeSelection,
       cardStepIndex: nextCardStepIndexMap,
       linkedTimeRangeEnabled,
+    };
+  }),
+  on(actions.cardTimeSelectionChanged, (state, change) => {
+    const {cardId, timeSelection} = change;
+    const newCardTimeSelections = new Map(state.cardTimeSelections);
+
+    const nextStartStep = timeSelection.start.step;
+    const nextEndStep = timeSelection.end?.step;
+    const end =
+      nextEndStep === undefined
+        ? null
+        : {step: nextStartStep > nextEndStep ? nextStartStep : nextEndStep};
+
+    const newTimeSelection = {
+      start: {
+        step: nextStartStep,
+      },
+      end,
+    };
+
+    newCardTimeSelections.set(cardId, newTimeSelection);
+
+    // Keep cardStepIndex up to date in case we are in a situation where linked
+    // time is enabled.
+    const nextCardStepIndexMap =
+      generateNextCardStepIndexFromLinkedTimeSelection(
+        state.cardStepIndex,
+        state.cardMetadataMap,
+        state.timeSeriesData,
+        newTimeSelection
+      );
+    return {
+      ...state,
+      cardTimeSelections: newCardTimeSelections,
+      linkedTimeSelection: newTimeSelection,
+      cardStepIndex: nextCardStepIndexMap,
     };
   }),
   on(actions.stepSelectorToggled, (state) => {

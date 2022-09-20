@@ -146,10 +146,11 @@ export class CardFobControllerComponent {
     newStep: number,
     timeSelection: TimeSelection
   ): TimeSelection {
+    let newTimeSelection = {start: {step: timeSelection.start.step}, end: null};
     // Single Selection
     if (!this.timeSelection.end) {
-      timeSelection.start.step = newStep;
-      return timeSelection;
+      newTimeSelection.start.step = newStep;
+      return newTimeSelection;
     }
 
     // Range Selection

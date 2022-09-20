@@ -368,6 +368,13 @@ export const getMetricsStepSelectorEnabled = createSelector(
   }
 );
 
+export const getMetricsCardStepSelections = createSelector(
+  selectMetricsState,
+  (state: MetricsState): Map<CardId, TimeSelection> => {
+    return state.cardTimeSelections;
+  }
+);
+
 export const getMetricsLinkedTimeRangeEnabled = createSelector(
   selectMetricsState,
   (state: MetricsState): boolean => {
