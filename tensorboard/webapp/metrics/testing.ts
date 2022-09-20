@@ -101,6 +101,7 @@ function buildBlankState(): MetricsState {
     linkedTimeSelection: null,
     linkedTimeEnabled: false,
     stepSelectorEnabled: false,
+    stepSelectorRangeEnabled: false,
     linkedTimeRangeEnabled: false,
     filteredPluginTypes: new Set(),
     stepMinMax: {min: Infinity, max: -Infinity},

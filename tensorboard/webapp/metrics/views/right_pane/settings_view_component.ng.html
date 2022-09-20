@@ -40,7 +40,10 @@ limitations under the License.
     </mat-checkbox>
     <span class="indent">(Scalars only)</span>
     <div class="indent range-selection" *ngIf="isRangeSelectionAllowed">
-      <mat-checkbox [disabled]="!isAxisTypeStep()"
+      <mat-checkbox
+        [checked]="isScalarStepSelectorRangeEnabled"
+        (change)="stepSelectorRangeToggled.emit()"
+        [disabled]="!isAxisTypeStep()"
         >Enable Range Selection
       </mat-checkbox>
     </div>
