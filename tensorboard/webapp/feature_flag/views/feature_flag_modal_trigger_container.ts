@@ -16,7 +16,7 @@ import {Component, OnInit} from '@angular/core';
 import {MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {Store} from '@ngrx/store';
 import {State} from '../../app_state';
-import {featureFlagOverrideChanged} from '../actions/feature_flag_actions';
+import {featureFlagOverridesReset} from '../actions/feature_flag_actions';
 import {getShowFlagsEnabled} from '../store/feature_flag_selectors';
 import {FeatureFlagPageContainer} from './feature_flag_page_container';
 
@@ -39,13 +39,20 @@ export class FeatureFlagModalTriggerContainer implements OnInit {
       if (showFeatureFlags) {
         this.featureFlagsDialog = this.dialog.open(FeatureFlagPageContainer);
         this.featureFlagsDialog.afterClosed().subscribe(() => {
-          // Disable the flag when the dialog is closed to prevent it from
-          // appearing again after the page is refreshed.
+          // Reset the 'showFlags' flag when the dialog is closed to prevent the
+          // dialog from appearing again after the page is refreshed.
           this.store.dispatch(
-            featureFlagOverrideChanged({
-              flags: {enableShowFlags: false},
+            featureFlagOverridesReset({
+              flags: ['enableShowFlags'],
             })
           );
+          // Reload the page so that the application restarts with stable
+          // feature flag values.
+          // Wait one tick before reloading the page so the 'enableShowFlags'
+          // reset has a chance to be reflected in the URL before page reload.
+          setTimeout(() => {
+            window.location.reload();
+          }, 1);
         });
         return;
       }
