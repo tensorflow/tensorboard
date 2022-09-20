@@ -670,6 +670,30 @@ describe('metrics right_pane', () => {
           ).toBeTruthy();
         });
 
+        it('only enables checkbox when X Axis Type is Step', () => {
+          store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+          const fixture = TestBed.createComponent(SettingsViewContainer);
+          fixture.detectChanges();
+          console.log(
+            'properties',
+            fixture.debugElement.query(By.css('.range-selection mat-checkbox'))
+              .properties
+          );
+          const checkbox = fixture.debugElement.query(
+            By.css('.range-selection mat-checkbox input')
+          );
+          expect(checkbox.properties['disabled']).toBe(false);
+
+          store.overrideSelector(
+            selectors.getMetricsXAxisType,
+            XAxisType.WALL_TIME
+          );
+          store.refreshState();
+          fixture.detectChanges();
+
+          expect(checkbox.properties['disabled']).toBe(true);
+        });
+
         it('dispatches stepSelectorRangeEnableToggled on toggle', () => {
           const fixture = TestBed.createComponent(SettingsViewContainer);
           fixture.detectChanges();
