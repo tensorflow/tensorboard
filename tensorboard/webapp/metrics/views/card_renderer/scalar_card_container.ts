@@ -23,7 +23,14 @@ import {
   Output,
 } from '@angular/core';
 import {Store} from '@ngrx/store';
-import {combineLatest, from, Observable, of, Subject} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  from,
+  Observable,
+  of,
+  Subject,
+} from 'rxjs';
 import {
   combineLatestWith,
   debounceTime,
@@ -182,7 +189,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   dataSeries$?: Observable<ScalarCardDataSeries[]>;
   chartMetadataMap$?: Observable<ScalarCardSeriesMetadataMap>;
   linkedTimeSelection$?: Observable<TimeSelectionView | null>;
-  stepSelectorTimeSelection$?: Observable<TimeSelection | null>;
+  stepSelectorTimeSelection$ = new BehaviorSubject<TimeSelection | null>(null);
   minMaxSteps$?: Observable<MinMaxStep>;
   columnHeaders$?: Observable<ColumnHeaders[]>;
 
@@ -533,14 +540,14 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
 
-    this.stepSelectorTimeSelection$ = combineLatest([
+    combineLatest([
       this.minMaxSteps$,
       this.store.select(getMetricsStepSelectorEnabled),
-    ]).pipe(
-      map(([{minStep}, enableStepSelector]) => {
-        return enableStepSelector ? {start: {step: minStep}, end: null} : null;
-      })
-    );
+    ]).subscribe(([{minStep}, enableStepSelector]) => {
+      this.stepSelectorTimeSelection$.next(
+        enableStepSelector ? {start: {step: minStep}, end: null} : null
+      );
+    });
   }
 
   ngOnDestroy() {
@@ -594,6 +601,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     newTimeSelectionWithAffordance: TimeSelectionWithAffordance
   ) {
     this.store.dispatch(timeSelectionChanged(newTimeSelectionWithAffordance));
+    this.stepSelectorTimeSelection$.next(
+      newTimeSelectionWithAffordance.timeSelection
+    );
   }
 
   onStepSelectorToggled(affordance: TimeSelectionToggleAffordance) {
