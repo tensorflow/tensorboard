@@ -166,6 +166,7 @@ export interface MetricsNamespacedState {
   linkedTimeSelection: TimeSelection | null;
   linkedTimeEnabled: boolean;
   stepSelectorEnabled: boolean;
+  stepSelectorRangeEnabled: boolean;
   linkedTimeRangeEnabled: boolean;
   // Empty Set would signify "show all". `filteredPluginTypes` will never have
   // all pluginTypes in the Set.

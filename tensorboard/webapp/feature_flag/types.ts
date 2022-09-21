@@ -46,4 +46,6 @@ export interface FeatureFlags {
   enabledScalarDataTable: boolean;
   // If enabled causes the feature flags modal to appear.
   enableShowFlags: boolean;
+  // Adds check box in settings which allows users to enter step selection range.
+  allowRangeSelection: boolean;
 }

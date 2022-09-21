@@ -66,9 +66,11 @@ export class SettingsViewComponent {
   constructor(@Inject(LOCALE_ID) private readonly locale: string) {}
 
   @Input() isLinkedTimeFeatureEnabled!: boolean;
+  @Input() isRangeSelectionAllowed!: boolean;
   @Input() isLinkedTimeEnabled!: boolean;
   @Input() isScalarStepSelectorFeatureEnabled!: boolean;
   @Input() isScalarStepSelectorEnabled!: boolean;
+  @Input() isScalarStepSelectorRangeEnabled!: boolean;
   @Input() linkedTimeSelection!: TimeSelection | null;
   @Input() stepMinMax!: {min: number; max: number};
 
@@ -77,6 +79,7 @@ export class SettingsViewComponent {
   linkedTimeSelectionChanged = new EventEmitter<LinkedTimeSelectionChanged>();
 
   @Output() stepSelectorToggled = new EventEmitter<void>();
+  @Output() stepSelectorRangeToggled = new EventEmitter<void>();
 
   @Input() isImageSupportEnabled!: boolean;
 

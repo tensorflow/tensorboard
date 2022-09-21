@@ -97,6 +97,11 @@ describe('metrics right_pane', () => {
       store.overrideSelector(selectors.getMetricsCardMinWidth, null);
       store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, false);
       store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
+      store.overrideSelector(
+        selectors.getMetricsStepSelectorRangeEnabled,
+        false
+      );
+      store.overrideSelector(selectors.getAllowRangeSelection, false);
       store.overrideSelector(selectors.getMetricsLinkedTimeSelectionSetting, {
         start: {step: 0},
         end: {step: 1000},
@@ -649,6 +654,58 @@ describe('metrics right_pane', () => {
             affordance: TimeSelectionToggleAffordance.CHECK_BOX,
           })
         );
+      });
+
+      describe('range selection', () => {
+        beforeEach(() => {
+          store.overrideSelector(selectors.getAllowRangeSelection, true);
+        });
+
+        it('renders the Range Selection checkbox', () => {
+          const fixture = TestBed.createComponent(SettingsViewContainer);
+          fixture.detectChanges();
+
+          expect(
+            fixture.debugElement.query(By.css('.range-selection mat-checkbox'))
+          ).toBeTruthy();
+        });
+
+        it('only enables checkbox when X Axis Type is Step', () => {
+          store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+          const fixture = TestBed.createComponent(SettingsViewContainer);
+          fixture.detectChanges();
+          console.log(
+            'properties',
+            fixture.debugElement.query(By.css('.range-selection mat-checkbox'))
+              .properties
+          );
+          const checkbox = fixture.debugElement.query(
+            By.css('.range-selection mat-checkbox input')
+          );
+          expect(checkbox.properties['disabled']).toBe(false);
+
+          store.overrideSelector(
+            selectors.getMetricsXAxisType,
+            XAxisType.WALL_TIME
+          );
+          store.refreshState();
+          fixture.detectChanges();
+
+          expect(checkbox.properties['disabled']).toBe(true);
+        });
+
+        it('dispatches stepSelectorRangeEnableToggled on toggle', () => {
+          const fixture = TestBed.createComponent(SettingsViewContainer);
+          fixture.detectChanges();
+
+          select(fixture, '.range-selection input').nativeElement.click();
+
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            actions.stepSelectorRangeToggled({
+              affordance: TimeSelectionToggleAffordance.CHECK_BOX,
+            })
+          );
+        });
       });
     });
   });

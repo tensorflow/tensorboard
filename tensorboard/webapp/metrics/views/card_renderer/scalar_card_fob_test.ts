@@ -105,6 +105,14 @@ describe('ScalarFobController', () => {
 
       expect(highestStep).toBe(2);
     });
+
+    it('returns the next lowest step when max is a floating point.', () => {
+      const fixture = createComponent({minMax: [4.5, 1]});
+
+      const lowestStep = fixture.componentInstance.getHighestStep();
+
+      expect(lowestStep).toBe(4);
+    });
   });
 
   describe('getLowestStep', () => {
@@ -122,6 +130,14 @@ describe('ScalarFobController', () => {
       const lowestStep = fixture.componentInstance.getLowestStep();
 
       expect(lowestStep).toBe(0);
+    });
+
+    it('returns the next highest step when min is a floating point.', () => {
+      const fixture = createComponent({minMax: [4, 1.5]});
+
+      const lowestStep = fixture.componentInstance.getLowestStep();
+
+      expect(lowestStep).toBe(2);
     });
   });
 

@@ -207,6 +207,104 @@ describe('card_fob_controller', () => {
         mouseUpListener
       );
     });
+
+    it('swaps fobs being dragged when start > end', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 1}, end: {step: 2}},
+      });
+      fixture.detectChanges();
+      const fobController = fixture.componentInstance.fobController;
+
+      fobController.startDrag(
+        Fob.START,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
+      expect((fobController as any).currentDraggingFob).toEqual(Fob.START);
+
+      const fakeEvent = new MouseEvent('mousemove', {
+        clientY: 3,
+        movementY: 2,
+      });
+      fobController.mouseMove(fakeEvent);
+      expect((fobController as any).currentDraggingFob).toEqual(Fob.END);
+
+      fobController.stopDrag();
+      fixture.detectChanges();
+
+      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
+        timeSelection: {
+          start: {step: 2},
+          end: {step: 3},
+        },
+        affordance: TimeSelectionAffordance.FOB,
+      });
+    });
+
+    it('swaps fobs being dragged when end < start', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 2}, end: {step: 3}},
+      });
+      fixture.detectChanges();
+      const fobController = fixture.componentInstance.fobController;
+      fobController.startDrag(
+        Fob.END,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
+      expect((fobController as any).currentDraggingFob).toEqual(Fob.END);
+
+      const fakeEvent = new MouseEvent('mousemove', {
+        clientY: 1,
+        movementY: -3,
+      });
+      fobController.mouseMove(fakeEvent);
+      expect((fobController as any).currentDraggingFob).toEqual(Fob.START);
+
+      fobController.stopDrag();
+      fixture.detectChanges();
+
+      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
+        timeSelection: {
+          start: {step: 1},
+          end: {step: 2},
+        },
+        affordance: TimeSelectionAffordance.FOB,
+      });
+    });
+
+    it('does not swaps fobs when start === end', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 2}, end: {step: 3}},
+      });
+      fixture.detectChanges();
+      const fobController = fixture.componentInstance.fobController;
+
+      fobController.startDrag(
+        Fob.END,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
+      expect((fobController as any).currentDraggingFob).toEqual(Fob.END);
+
+      const fakeEvent = new MouseEvent('mousemove', {
+        clientY: 2,
+        movementY: -1,
+      });
+      fobController.mouseMove(fakeEvent);
+      expect((fobController as any).currentDraggingFob).toEqual(Fob.END);
+
+      fobController.stopDrag();
+      fixture.detectChanges();
+
+      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
+        timeSelection: {
+          start: {step: 2},
+          end: {step: 2},
+        },
+        affordance: TimeSelectionAffordance.FOB,
+      });
+    });
   });
 
   describe('vertical dragging', () => {

@@ -58,11 +58,7 @@ import {
 } from '../../../widgets/card_fob/card_fob_types';
 import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
-import {
-  linkedTimeToggled,
-  stepSelectorToggled,
-  timeSelectionChanged,
-} from '../../actions';
+import {stepSelectorToggled, timeSelectionChanged} from '../../actions';
 import {PluginType, ScalarStepDatum} from '../../data_source';
 import {
   getCardLoadState,
@@ -151,7 +147,6 @@ function areSeriesEqual(
       observeIntersection
       (onVisibilityChange)="onVisibilityChange($event)"
       (onTimeSelectionChanged)="onTimeSelectionChanged($event)"
-      (onLinkedTimeToggled)="onLinkedTimeToggled($event)"
       (onStepSelectorToggled)="onStepSelectorToggled($event)"
     ></scalar-card-component>
   `,
@@ -599,10 +594,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     newTimeSelectionWithAffordance: TimeSelectionWithAffordance
   ) {
     this.store.dispatch(timeSelectionChanged(newTimeSelectionWithAffordance));
-  }
-
-  onLinkedTimeToggled(affordance: TimeSelectionToggleAffordance) {
-    this.store.dispatch(linkedTimeToggled({affordance}));
   }
 
   onStepSelectorToggled(affordance: TimeSelectionToggleAffordance) {
