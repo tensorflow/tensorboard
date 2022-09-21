@@ -14,6 +14,7 @@
     "noImplicitOverride": true,
     "skipLibCheck": true,
     "strict": true,
+    "strictNullChecks": true,
     // Don't scan the node_modules/@types folder for ambient types.
     // This would force us to have all the types in the dependencies of
     // each library.
