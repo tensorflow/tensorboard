@@ -33,10 +33,10 @@ tf_ts_library(
 )
 
 tf_ts_library(
-  name = "numeric",
-  srcs = ["numeric.ts"],
-  deps = [
-    "@npm//numeric",
-  ],
-  strict_checks = False,
+    name = "numeric",
+    srcs = ["numeric.ts"],
+    strict_checks = False,
+    deps = [
+        "@npm//numeric",
+    ],
 )
