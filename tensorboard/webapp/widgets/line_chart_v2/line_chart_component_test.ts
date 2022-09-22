@@ -413,10 +413,10 @@ describe('line_chart_v2/line_chart test', () => {
     });
     spyOn(fixture.componentInstance.viewBoxChanged, 'emit');
     fixture.detectChanges();
-    expect(updateViewBoxSpy).toHaveBeenCalledTimes(1);
-    expect(updateViewBoxSpy.calls.argsFor(0)).toEqual([
-      {x: [-0.2, 2.2], y: [-1.2, 1.2]},
-    ]);
+    expect(updateViewBoxSpy).toHaveBeenCalledOnceWith({
+      x: [-0.2, 2.2],
+      y: [-1.2, 1.2],
+    });
 
     fixture.componentInstance.triggerViewBoxChange({
       x: [-5, 5],
