@@ -17,6 +17,7 @@ import {PartialSeries} from './scalar_card_types';
 import {
   getClosestStep,
   getDisplayNameForRun,
+  maybeClipLinkedTimeSelection,
   maybeSetClosestStartStep,
   partitionSeries,
 } from './utils';
@@ -308,6 +309,74 @@ describe('metrics card_renderer utils test', () => {
 
     it('gets closeset step equal to selected step', () => {
       expect(getClosestStep(10, [0, 10, 20])).toBe(10);
+    });
+  });
+
+  describe('#maybeClipLinkedTimeSelection', () => {
+    it('changes start when start.step < minStep', () => {
+      expect(
+        maybeClipLinkedTimeSelection(
+          {
+            start: {step: 0},
+            end: null,
+          },
+          1,
+          4
+        )
+      ).toEqual({
+        startStep: 1,
+        endStep: null,
+        clipped: true,
+      });
+    });
+
+    it('changes end when end.step < maxStep', () => {
+      expect(
+        maybeClipLinkedTimeSelection(
+          {
+            start: {step: 0},
+            end: {step: 4},
+          },
+          0,
+          3
+        )
+      ).toEqual({
+        startStep: 0,
+        endStep: 3,
+        clipped: true,
+      });
+    });
+
+    it('returns clipped === false when provided timeSelection is a subspace of minStep, maxStep', () => {
+      expect(
+        maybeClipLinkedTimeSelection(
+          {
+            start: {step: 0},
+            end: {step: 4},
+          },
+          0,
+          4
+        )
+      ).toEqual({
+        startStep: 0,
+        endStep: 4,
+        clipped: false,
+      });
+
+      expect(
+        maybeClipLinkedTimeSelection(
+          {
+            start: {step: 1},
+            end: {step: 3},
+          },
+          0,
+          4
+        )
+      ).toEqual({
+        startStep: 1,
+        endStep: 3,
+        clipped: false,
+      });
     });
   });
 });

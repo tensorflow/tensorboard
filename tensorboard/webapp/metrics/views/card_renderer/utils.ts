@@ -96,45 +96,24 @@ export function maybeClipLinkedTimeSelection(
   minStep: number,
   maxStep: number
 ): TimeSelectionView {
+  const startStep = Math.max(minStep, timeSelection.start.step);
+  const endStep = timeSelection.end
+    ? Math.min(maxStep, timeSelection.end.step)
+    : null;
   if (
-    // Case when timeSelection contains extents.
-    (timeSelection.start.step <= minStep &&
-      timeSelection.end &&
-      maxStep <= timeSelection.end.step) ||
-    // Case when start of timeSelection is within extent.
-    (minStep <= timeSelection.start.step &&
-      timeSelection.start.step <= maxStep) ||
-    // Case when end of timeSelection is within extent.
-    (timeSelection.end &&
-      minStep <= timeSelection.end?.step &&
-      timeSelection.end?.step <= maxStep)
+    startStep !== timeSelection.start.step ||
+    endStep !== (timeSelection.end?.step ?? null)
   ) {
     return {
-      startStep: timeSelection.start.step,
-      endStep: timeSelection.end?.step ?? null,
-      clipped: false,
-    };
-  }
-
-  // When time selection and data extent (in step axis) do not overlap,
-  // default single select min or max data extent depending on which side
-  // the time selection is at.
-
-  // Case when time selection is on the right of the maximum of the
-  // time series.
-  if (maxStep <= timeSelection.start.step) {
-    return {
-      startStep: maxStep,
-      endStep: null,
+      startStep,
+      endStep,
       clipped: true,
     };
   }
-  // Case when time selection is on the left of the minimum of the time
-  // series.
   return {
-    startStep: minStep,
-    endStep: null,
-    clipped: true,
+    startStep,
+    endStep,
+    clipped: false,
   };
 }
 
