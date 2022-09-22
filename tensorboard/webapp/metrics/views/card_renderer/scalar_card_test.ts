@@ -93,6 +93,7 @@ import {ScalarCardDataTable} from './scalar_card_data_table';
 import {ScalarCardFobController} from './scalar_card_fob_controller';
 import {
   ColumnHeaders,
+  MinMaxStep,
   ScalarCardPoint,
   ScalarCardSeriesMetadata,
   SeriesType,
@@ -2388,6 +2389,41 @@ describe('scalar card', () => {
         );
 
         expect(dataTableComponent).toBeFalsy();
+      }));
+    });
+
+    describe('line chart integration', () => {
+      it('updates minMax value when line chart is zoomed', fakeAsync(async () => {
+        const runToSeries = {
+          run1: [buildScalarStepData({step: 10})],
+          run2: [buildScalarStepData({step: 20})],
+          run3: [buildScalarStepData({step: 30})],
+        };
+        provideMockCardRunToSeriesData(
+          selectSpy,
+          PluginType.SCALARS,
+          'card1',
+          null /* metadataOverride */,
+          runToSeries
+        );
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
+          start: {step: 0},
+          end: {step: 50},
+        });
+        const fixture = createComponent('card1');
+
+        let newSteps: MinMaxStep | null = null;
+        fixture.componentInstance.minMaxSteps$?.subscribe((minMaxStep) => {
+          newSteps = minMaxStep;
+        });
+        fixture.componentInstance.onLineChartZoom({
+          x: [9.235, 30.4],
+          y: [0, 100],
+        });
+        expect(newSteps!).toEqual({
+          minStep: 10,
+          maxStep: 30,
+        });
       }));
     });
   });

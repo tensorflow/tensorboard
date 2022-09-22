@@ -18,10 +18,12 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  EventEmitter,
   Input,
   OnChanges,
   OnDestroy,
   OnInit,
+  Output,
   SimpleChanges,
   TemplateRef,
   ViewChild,
@@ -136,6 +138,9 @@ export class LineChartComponent
 
   @Input()
   lineOnly?: boolean = false;
+
+  @Output()
+  viewBoxChanged = new EventEmitter<Extent>();
 
   private onViewBoxOverridden = new ReplaySubject<boolean>(1);
 
@@ -482,12 +487,14 @@ export class LineChartComponent
     this.isViewBoxChanged = true;
     this.viewBox = dataExtent;
     this.updateLineChart();
+    this.viewBoxChanged.emit(dataExtent);
   }
 
   viewBoxReset() {
     this.setIsViewBoxOverridden(false);
     this.isViewBoxChanged = true;
     this.updateLineChart();
+    this.viewBoxChanged.emit(this.viewBox);
   }
 
   private setIsViewBoxOverridden(newValue: boolean): void {

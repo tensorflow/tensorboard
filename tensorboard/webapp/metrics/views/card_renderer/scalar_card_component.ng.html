@@ -112,6 +112,7 @@ limitations under the License.
     [tooltipTemplate]="tooltip"
     [useDarkMode]="useDarkMode"
     (onViewBoxOverridden)="isViewBoxOverridden = $event"
+    (viewBoxChanged)="onLineChartZoom.emit($event)"
     [customVisTemplate]="lineChartCustomVis"
     [customChartOverlayTemplate]="lineChartCustomXAxisVis"
   ></line-chart>

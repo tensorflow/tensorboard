@@ -37,6 +37,7 @@ import {
   relativeTimeFormatter,
   siNumberFormatter,
 } from '../../../widgets/line_chart_v2/lib/formatter';
+import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {LineChartComponent} from '../../../widgets/line_chart_v2/line_chart_component';
 import {
   RendererType,
@@ -103,6 +104,8 @@ export class ScalarCardComponent<Downloader> {
   }>();
   @Output() onStepSelectorToggled =
     new EventEmitter<TimeSelectionToggleAffordance>();
+
+  @Output() onLineChartZoom = new EventEmitter<Extent>();
 
   // Line chart may not exist when was never visible (*ngIf).
   @ViewChild(LineChartComponent)
