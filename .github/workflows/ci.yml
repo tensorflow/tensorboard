@@ -325,6 +325,10 @@ jobs:
           ! git grep -E '"@npm_angular_bazel//:index.bzl"' 'tensorboard/**/BUILD'
       - run: |
           ! git grep -E 'mat-color|$mat-' 'tensorboard/**/*.scss'
+        # Make sure no one depends on  the numeric library directly. Please
+        # import the indirection in //tensorboard/webapp/third_party.
+      - run: |
+          ! git grep -E '@npm//numeric' 'tensorboard/*/BUILD' ':!tensorboard/webapp/third_party/**'
 
   lint-misc: # build, protos, etc.
     runs-on: ubuntu-18.04
