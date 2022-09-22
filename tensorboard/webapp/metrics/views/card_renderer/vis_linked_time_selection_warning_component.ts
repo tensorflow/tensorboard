@@ -24,7 +24,7 @@ export type TimeSelectionWithClipped = TimeSelection & {clipped: boolean};
       *ngIf="isClipped"
       data-value="clipped"
       svgIcon="info_outline_24px"
-      title="Linked step is not found in this visualization. We highlighted the closest step for you."
+      title="A portion of the time selection cannot be shown. We highlighted the closest step for you."
     ></mat-icon>
     <mat-icon
       *ngIf="isClosestStepHighlighted"
