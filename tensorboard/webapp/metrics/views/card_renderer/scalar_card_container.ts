@@ -99,6 +99,8 @@ import {
   TimeSelectionView,
 } from './utils';
 
+const DEFAULT_MIN = -Infinity;
+const DEFAULT_MAX = Infinity;
 type ScalarCardMetadata = CardMetadata & {
   plugin: PluginType.SCALARS;
 };
@@ -191,18 +193,20 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   dataSeries$?: Observable<ScalarCardDataSeries[]>;
   chartMetadataMap$?: Observable<ScalarCardSeriesMetadataMap>;
   linkedTimeSelection$?: Observable<TimeSelectionView | null>;
-  minMaxSteps$?: Observable<MinMaxStep>;
   columnHeaders$?: Observable<ColumnHeaders[]>;
-
-  lineChartZoom$ = new BehaviorSubject<MinMaxStep>({
-    minStep: -Infinity,
-    maxStep: Infinity,
-  });
 
   onVisibilityChange({visible}: {visible: boolean}) {
     this.isVisible = visible;
   }
 
+  readonly minMaxSteps$ = new BehaviorSubject<MinMaxStep>({
+    minStep: DEFAULT_MIN,
+    maxStep: DEFAULT_MAX,
+  });
+  readonly lineChartZoom$ = new BehaviorSubject<MinMaxStep>({
+    minStep: DEFAULT_MIN,
+    maxStep: DEFAULT_MAX,
+  });
   readonly stepSelectorTimeSelection$ =
     new BehaviorSubject<TimeSelection | null>(null);
   readonly useDarkMode$ = this.store.select(getDarkModeEnabled);
@@ -348,11 +352,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       shareReplay(1)
     );
 
-    this.minMaxSteps$ = combineLatest([
-      partitionedSeries$,
-      this.lineChartZoom$,
-    ]).pipe(
-      map(([series, viewPort]) => {
+    combineLatest([partitionedSeries$, this.lineChartZoom$]).subscribe(
+      ([series, viewPort]) => {
         const allPoints = series
           .map(({points}) => points.map(({x}) => x))
           .flat();
@@ -361,8 +362,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
         const minStep = Math.max(min, viewPort.minStep);
         const maxStep = Math.min(max, viewPort.maxStep);
 
-        return {minStep, maxStep};
-      })
+        this.minMaxSteps$.next({minStep, maxStep});
+      }
     );
 
     this.dataSeries$ = partitionedSeries$.pipe(
@@ -611,10 +612,19 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   onTimeSelectionChanged(
     newTimeSelectionWithAffordance: TimeSelectionWithAffordance
   ) {
-    this.store.dispatch(timeSelectionChanged(newTimeSelectionWithAffordance));
-    this.stepSelectorTimeSelection$.next(
-      newTimeSelectionWithAffordance.timeSelection
+    const {minStep, maxStep} = this.minMaxSteps$.getValue();
+    const {startStep, endStep} = maybeClipLinkedTimeSelection(
+      newTimeSelectionWithAffordance.timeSelection,
+      minStep,
+      maxStep
     );
+    const newTimeSelection = {
+      start: {step: startStep},
+      end: endStep ? {step: endStep} : null,
+    };
+
+    this.store.dispatch(timeSelectionChanged(newTimeSelectionWithAffordance));
+    this.stepSelectorTimeSelection$.next(newTimeSelection);
   }
 
   onStepSelectorToggled(affordance: TimeSelectionToggleAffordance) {
