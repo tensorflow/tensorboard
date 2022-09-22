@@ -153,7 +153,7 @@ class TfGraphNodeSearch extends LegacyElementMixin(PolymerElement) {
       this._clearSearchResults();
       return;
     }
-    const matchedNodes = [];
+    const matchedNodes: any[] = [];
     const nodeMap = this.renderHierarchy.hierarchy.getNodeMap();
     _.each(nodeMap, (_, nodeName) => {
       if (matchedNodes.length >= this._maxRegexResults) {

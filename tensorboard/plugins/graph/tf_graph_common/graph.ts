@@ -374,8 +374,8 @@ export class EllipsisNodeImpl implements EllipsisNode {
     this.type = NodeType.ELLIPSIS;
     this.isGroupNode = false;
     this.cardinality = 1;
-    this.parentNode = null;
-    this.stats = null;
+    this.parentNode = null!;
+    this.stats = null!;
     this.setNumMoreNodes(numNodes);
     this.include = InclusionType.UNSPECIFIED;
   }
@@ -436,7 +436,7 @@ export class OpNodeImpl implements OpNode {
     // control dependency.
     this.inputs = normalizeInputs(rawNode.input);
     this.outputShapes = extractOutputShapes(rawNode.attr);
-    this.xlaCluster = extractXlaCluster(rawNode.attr);
+    this.xlaCluster = extractXlaCluster(rawNode.attr)!;
     this.compatible = false;
     // additional properties
     this.type = NodeType.OP;
@@ -444,9 +444,9 @@ export class OpNodeImpl implements OpNode {
     this.cardinality = 1;
     this.inEmbeddings = [];
     this.outEmbeddings = [];
-    this.parentNode = null;
+    this.parentNode = null!;
     this.include = InclusionType.UNSPECIFIED;
-    this.owningSeries = null;
+    this.owningSeries = null!;
   }
 }
 export function createMetanode(name: string, opt = {}): Metanode {
@@ -501,7 +501,7 @@ export function joinStatsInfoWithGraph(
           }
         });
       }
-      let outputSize: number[][] = null;
+      let outputSize: number[][] = null!;
       if (nodeStats.output) {
         outputSize = _.map(nodeStats.output, (output) => {
           return _.map(output.tensor_description.shape.dim, (dim) =>
@@ -577,7 +577,7 @@ export class MetanodeImpl implements Metanode {
       opt
     );
     /** bridgegraph must be constructed lazily-see hierarchy.getBridgegraph() */
-    this.bridgegraph = null;
+    this.bridgegraph = null!;
     /**
      * A dictionary that count ops type of nodes in this metanode
      * (op type => count).
@@ -587,9 +587,9 @@ export class MetanodeImpl implements Metanode {
     this.xlaClusterHistogram = {};
     this.compatibilityHistogram = {compatible: 0, incompatible: 0};
     /** unique id for a metanode of similar subgraph */
-    this.templateId = null;
+    this.templateId = null!;
     /** Metanode which contains this node, if any */
-    this.parentNode = null;
+    this.parentNode = null!;
     this.hasNonControlEdges = false;
     this.include = InclusionType.UNSPECIFIED;
     this.associatedFunction = '';
@@ -614,16 +614,16 @@ export class MetanodeImpl implements Metanode {
    * descendant leaves.
    */
   leaves(): string[] {
-    let leaves = [];
+    let leaves: string[] = [];
     let queue = [<Node>this];
     let metagraph; // Defined here due to a limitation of ES6->5 compilation.
     while (queue.length) {
       let node = queue.shift();
-      if (node.isGroupNode) {
+      if (node?.isGroupNode) {
         metagraph = (<GroupNode>node).metagraph;
         _.each(metagraph.nodes(), (name) => queue.push(metagraph.node(name)));
       } else {
-        leaves.push(node.name);
+        leaves.push(node?.name!);
       }
     }
     return leaves;
@@ -688,7 +688,7 @@ export class MetaedgeImpl implements Metaedge {
     this.v = v;
     this.w = w;
     this.baseEdgeList = [];
-    this.inbound = null;
+    this.inbound = null!;
     this.numRegularEdges = 0;
     this.numControlEdges = 0;
     this.numRefEdges = 0;
@@ -710,7 +710,7 @@ export class MetaedgeImpl implements Metaedge {
     h.maxMetaEdgeSize = Math.max(h.maxMetaEdgeSize, this.totalSize);
   }
   private static computeSizeOfEdge(edge: BaseEdge, h: Hierarchy): number {
-    let opNode = <OpNode>h.node(edge.v);
+    let opNode = <OpNode>h.node(edge.v!);
     if (!opNode.outputShapes) {
       // No shape information. Asssume a single number. This gives
       // a lower bound for the total size.
@@ -827,8 +827,8 @@ class SeriesNodeImpl implements SeriesNode {
       graphOptions
     );
     // bridgegraph must be constructed lazily-see hierarchy.getBridgegraph()
-    this.bridgegraph = null;
-    this.parentNode = null;
+    this.bridgegraph = null!;
+    this.parentNode = null!;
     this.deviceHistogram = {};
     this.xlaClusterHistogram = {};
     this.compatibilityHistogram = {compatible: 0, incompatible: 0};
@@ -852,21 +852,21 @@ function extractOutputShapes(
   let result = null;
   // We don't know anything about the output tensors.
   if (!attr) {
-    return null;
+    return null!;
   }
   for (let i = 0; i < attr.length; i++) {
     let {key, value} = attr[i];
     if (key === OUTPUT_SHAPES_KEY) {
       if (!value.list || !value.list.shape) {
         // The OUTPUT_SHAPES_KEY lacks a value. We know nothing about the shape.
-        return null;
+        return null!;
       }
       // Map all output tensors into array of numbers denoting their shape.
       let result = value.list.shape.map((shape) => {
         if (shape.unknown_rank) {
           // This output tensor is of unknown rank. We don't know if it is a
           // scalar, or a tensor, or of what shape it is.
-          return null;
+          return null!;
         }
         if (
           shape.dim == null ||
@@ -890,7 +890,7 @@ function extractOutputShapes(
   }
   // We didn't find OUTPUT_SHAPES_KEY in attributes, so we don't know anything
   // about the output tensors.
-  return null;
+  return null!;
 }
 /**
  * Extracts the XLA Cluster that an op runs on from the attrs of the OpNode.
@@ -1376,7 +1376,7 @@ function mapStrictHierarchy(
  */
 function degreeSequence(graph: graphlib.Graph): number[] {
   let degrees = graph.nodes().map(function (name) {
-    return graph.neighbors(name).length;
+    return graph.neighbors(name)?.length!;
   });
   degrees.sort();
   return degrees;

@@ -147,11 +147,11 @@ export function computeDomain(values: number[], ignoreOutliers: boolean) {
   let b: number;
   if (ignoreOutliers) {
     let sorted = _.sortBy(values);
-    a = d3.quantile(sorted, 0.05);
-    b = d3.quantile(sorted, 0.95);
+    a = d3.quantile(sorted, 0.05)!;
+    b = d3.quantile(sorted, 0.95)!;
   } else {
-    a = d3.min(values);
-    b = d3.max(values);
+    a = d3.min(values)!;
+    b = d3.max(values)!;
   }
   let padding: number;
   let span = b - a;

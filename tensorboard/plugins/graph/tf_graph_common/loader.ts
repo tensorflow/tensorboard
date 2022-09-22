@@ -40,7 +40,7 @@ export function fetchAndConstructHierarchicalGraph(
   );
   const start = Date.now();
   return parser
-    .fetchAndParseGraphData(remotePath, pbTxtFile, dataTracker)
+    .fetchAndParseGraphData(remotePath!, pbTxtFile!, dataTracker)
     .then(
       function (graph) {
         if (!graph.node) {

@@ -143,16 +143,16 @@ export class LineChart {
     this.yValueAccessor = yValueAccessor;
     // The symbol function maps series to marker. It uses a special dataset that
     // varies based on whether smoothing is enabled.
-    this.symbolFunction = symbolFunction;
-    this._defaultXRange = defaultXRange;
-    this._defaultYRange = defaultYRange;
+    this.symbolFunction = symbolFunction!;
+    this._defaultXRange = defaultXRange!;
+    this._defaultYRange = defaultYRange!;
     this.tooltipColumns = tooltipColumns as any;
     this.buildChart(
       xComponentsCreationMethod,
       yValueAccessor,
       yScaleType,
       fillArea,
-      xAxisFormatter
+      xAxisFormatter!
     );
   }
   private buildChart(
@@ -198,7 +198,7 @@ export class LineChart {
       this.xScale,
       this.yScale
     );
-    let xZeroLine = null;
+    let xZeroLine: any = null;
     if (yScaleType !== YScaleType.LOG) {
       xZeroLine = new Plottable.Components.GuideLineLayer('horizontal');
       xZeroLine.scale(this.yScale).value(0);
@@ -331,7 +331,7 @@ export class LineChart {
     const accessor = this.getYAxisAccessor();
     let lastPointsData = this.datasets
       .map((d) => {
-        let datum = null;
+        let datum: any = null;
         // filter out NaNs to ensure last point is a clean one
         let nonNanData = d.data().filter((x) => !isNaN(accessor(x, -1, d)));
         if (nonNanData.length > 0) {
@@ -353,7 +353,7 @@ export class LineChart {
     // the NaN points will have a "displayY" property which is the
     // y-value of a nearby point that was not NaN (0 if all points are NaN)
     let datasetToNaNData = (d: Plottable.Dataset) => {
-      let displayY = null;
+      let displayY: number | null = null;
       let data = d.data();
       let i = 0;
       while (i < data.length && displayY == null) {
@@ -365,7 +365,7 @@ export class LineChart {
       if (displayY == null) {
         displayY = 0;
       }
-      let nanData = [];
+      let nanData: any[] = [];
       for (i = 0; i < data.length; i++) {
         if (!isNaN(accessor(data[i], -1, d))) {
           displayY = accessor(data[i], -1, d);
@@ -457,18 +457,18 @@ export class LineChart {
       let target: vz_chart_helpers.Point = {
         x: p.x,
         y: p.y,
-        datum: null,
-        dataset: null,
+        datum: null!,
+        dataset: null!,
       };
       let bbox: SVGRect = (<any>this.gridlines.content().node()).getBBox();
       // pts is the closets point to the tooltip for each dataset
-      let pts = this.linePlot
+      let pts: vz_chart_helpers.Point[] = this.linePlot
         .datasets()
         .map((dataset) => this.findClosestPoint(target, dataset))
-        .filter(Boolean);
+        .filter((value): value is vz_chart_helpers.Point => Boolean(value));
       let intersectsBBox = Plottable.Utils.DOM.intersectsBBox;
       // We draw tooltips for points that are NaN, or are currently visible
-      let ptsForTooltips = pts.filter(
+      let ptsForTooltips: vz_chart_helpers.Point[] = pts.filter(
         (p) =>
           intersectsBBox(p.x, p.y, bbox) ||
           isNaN(this.yValueAccessor(p.datum, 0, p.dataset))
@@ -643,8 +643,8 @@ export class LineChart {
       .enter()
       .append('td')
       .each(function (col: TooltipColumn | LineChartTooltipColumn) {
-        if ('enter' in col && col.enter) {
-          const customTooltip = col as LineChartTooltipColumn;
+        if ('enter' in col) {
+          const customTooltip = col;
           customTooltip.enter.call(this, point);
         }
         self.drawTooltipColumn.call(self, this, col, point);

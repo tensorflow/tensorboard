@@ -172,7 +172,7 @@ export function selectOrCreateChild(
       newElement.classList.add(className[i]);
     }
   } else {
-    newElement.classList.add(className);
+    newElement.classList.add(className!);
   }
   if (before) {
     // if before exists, insert
@@ -262,7 +262,7 @@ export class NodeStats {
    */
   getTotalMicros(): number {
     if (this.startTime == null || this.endTime == null) {
-      return null;
+      return null!;
     }
     return this.endTime - this.startTime;
   }

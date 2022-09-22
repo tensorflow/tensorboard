@@ -82,11 +82,11 @@ export class ScatterPlot {
   private scene: THREE.Scene;
   private pickingTexture: THREE.WebGLRenderTarget;
   private light: THREE.PointLight;
-  private cameraDef: CameraDef = null;
+  private cameraDef: CameraDef | null = null;
   private camera: THREE.Camera;
   private orbitAnimationOnNextCameraCreation: boolean = false;
   private orbitCameraControls: any;
-  private orbitAnimationId: number;
+  private orbitAnimationId: number | null;
   private worldSpacePointPositions: Float32Array;
   private pointColors: Float32Array;
   private pointScaleFactors: Float32Array;
@@ -97,7 +97,7 @@ export class ScatterPlot {
   private polylineOpacities: Float32Array;
   private polylineWidths: Float32Array;
   private selecting = false;
-  private nearestPoint: number;
+  private nearestPoint: number | null;
   private mouseIsDown = false;
   private isDragSequence = false;
   private rectangleSelector: ScatterPlotRectangleSelector;
@@ -498,7 +498,7 @@ export class ScatterPlot {
   }
   /** Sets parameters for the next camera recreation. */
   setCameraParametersForNextCameraCreation(
-    def: CameraDef,
+    def: CameraDef | null,
     orbitAnimation: boolean
   ) {
     this.cameraDef = def;
@@ -673,7 +673,7 @@ export class ScatterPlot {
     const canvases = this.container.querySelectorAll('canvas');
     const filterValue = isNight ? 'invert(100%)' : null;
     for (let i = 0; i < canvases.length; i++) {
-      canvases[i].style.filter = filterValue;
+      canvases[i].style.filter = filterValue!;
     }
   }
   resize(render = true) {
@@ -723,6 +723,6 @@ export class ScatterPlot {
   }
   clickOnPoint(pointIndex: number) {
     this.nearestPoint = pointIndex;
-    this.onClick(null, false);
+    this.onClick(undefined, false);
   }
 }

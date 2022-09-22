@@ -106,13 +106,13 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
     // Tell the projector whenever the data normalization changes.
     // Unknown why, but the polymer checkbox button stops working as soon as
     // you do d3.select() on it.
-    this.$$('#normalize-data-checkbox').addEventListener('change', () => {
+    this.$$('#normalize-data-checkbox')?.addEventListener('change', () => {
       this.projector.setNormalizeData(this.normalizeData);
     });
     let forceCategoricalColoringCheckbox = this.$$(
       '#force-categorical-checkbox'
     );
-    forceCategoricalColoringCheckbox.addEventListener('change', () => {
+    forceCategoricalColoringCheckbox?.addEventListener('change', () => {
       this.setForceCategoricalColoring(
         (forceCategoricalColoringCheckbox as HTMLInputElement).checked
       );
@@ -138,14 +138,14 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
     this.forceCategoricalColoring = forceCategoricalColoring;
     (this.$$('#force-categorical-checkbox') as HTMLInputElement).checked =
       this.forceCategoricalColoring;
-    this.updateMetadataUI(this.spriteAndMetadata.stats, this.metadataFile);
+    this.updateMetadataUI(this.spriteAndMetadata.stats!, this.metadataFile);
     // The selected color option name doesn't change when we switch to using
     // categorical coloring for stats with too many unique values, so we
     // manually call this polymer observer so that we update the UI.
     this._selectedColorOptionNameChanged();
   }
   getSeparatorClass(isSeparator: boolean): string {
-    return isSeparator ? 'separator' : null;
+    return isSeparator ? 'separator' : null!;
   }
   metadataChanged(
     spriteAndMetadata: SpriteAndMetadataInfo,
@@ -155,7 +155,7 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
     if (metadataFile != null) {
       this.metadataFile = metadataFile;
     }
-    this.updateMetadataUI(this.spriteAndMetadata.stats, this.metadataFile);
+    this.updateMetadataUI(this.spriteAndMetadata.stats!, this.metadataFile);
     if (
       this.selectedColorOptionName == null ||
       this.colorOptions.filter((c) => c.name === this.selectedColorOptionName)
@@ -164,12 +164,14 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
       this.selectedColorOptionName = this.colorOptions[0].name;
     }
     let labelIndex = -1;
-    this.metadataFields = spriteAndMetadata.stats.map((stats, i) => {
-      if (!stats.isNumeric && labelIndex === -1) {
-        labelIndex = i;
-      }
-      return stats.name;
-    });
+    if (spriteAndMetadata.stats) {
+      this.metadataFields = spriteAndMetadata.stats.map((stats, i) => {
+        if (!stats.isNumeric && labelIndex === -1) {
+          labelIndex = i;
+        }
+        return stats.name;
+      });
+    }
     if (
       this.metadataEditorColumn == null ||
       this.metadataFields.filter((name) => name === this.metadataEditorColumn)
@@ -243,8 +245,8 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
         let items: {
           label: string;
           count: number;
-        }[];
-        let thresholds: ColorLegendThreshold[];
+        }[] = [];
+        let thresholds: ColorLegendThreshold[] = [];
         let isCategorical =
           this.forceCategoricalColoring || !stats.tooManyUniqueValues;
         let desc;
@@ -256,12 +258,12 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
             let index = (i * 3) % range.length;
             return range[index];
           });
-          items = stats.uniqueEntries;
+          items = stats.uniqueEntries!;
           scale.range(newRange).domain(items.map((x) => x.label));
           map = scale;
-          const len = stats.uniqueEntries.length;
+          const len = stats.uniqueEntries?.length;
           desc =
-            `${len} ${len > range.length ? ' non-unique' : ''} ` + `colors`;
+            `${len} ${len! > range.length ? ' non-unique' : ''} ` + `colors`;
         } else {
           thresholds = [
             {color: '#ffffdd', value: stats.min},
@@ -303,7 +305,7 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
     if (selectionSize > 0) {
       if (value != null && value.trim() !== '') {
         if (
-          this.spriteAndMetadata.stats.filter((s) => s.name === col)[0]
+          this.spriteAndMetadata.stats?.filter((s) => s.name === col)[0]
             .isNumeric &&
           isNaN(+value)
         ) {
@@ -363,7 +365,7 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
         .map((s) => s.name)
         .join('\t');
       this.projector.dataSet.spriteAndMetadataInfo.pointsInfo.forEach((p) => {
-        let vals = [];
+        let vals: any[] = [];
         for (const column in p) {
           vals.push(p[column]);
         }
@@ -447,7 +449,7 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
       (ds) => {
         let metadataFile = this.getEmbeddingInfoByName(
           this.selectedTensor
-        ).metadataPath;
+        )?.metadataPath;
         this.dataProvider.retrieveSpriteAndMetadata(
           this.selectedRun,
           this.selectedTensor,
@@ -469,15 +471,15 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
       let names = this.projectorConfig.embeddings
         .map((e) => e.tensorName)
         .filter((name) => {
-          let shape = this.getEmbeddingInfoByName(name).tensorShape;
-          return shape.length === 2 && shape[0] > 1 && shape[1] > 1;
+          let shape = this.getEmbeddingInfoByName(name)?.tensorShape;
+          return shape?.length === 2 && shape[0] > 1 && shape[1] > 1;
         })
         .sort((a, b) => {
           let embA = this.getEmbeddingInfoByName(a);
           let embB = this.getEmbeddingInfoByName(b);
           // Prefer tensors with metadata.
-          if (util.xor(!!embA.metadataPath, !!embB.metadataPath)) {
-            return embA.metadataPath ? -1 : 1;
+          if (util.xor(!!embA?.metadataPath, !!embB?.metadataPath)) {
+            return embA?.metadataPath ? -1 : 1;
           }
           // Prefer non-generated tensors.
           let isGenA = util.tensorIsGenerated(a);
@@ -486,16 +488,22 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
             return isGenB ? -1 : 1;
           }
           // Prefer bigger tensors.
-          let sizeA = embA.tensorShape[0];
-          let sizeB = embB.tensorShape[0];
+          let sizeA = embA?.tensorShape[0];
+          let sizeB = embB?.tensorShape[0];
           if (sizeA !== sizeB) {
-            return sizeB - sizeA;
+            return sizeB! - sizeA!;
           }
           // Sort alphabetically by tensor name.
           return a <= b ? -1 : 1;
         });
       this.tensorNames = names.map((name) => {
-        return {name, shape: this.getEmbeddingInfoByName(name).tensorShape};
+        return {
+          name,
+          shape: this.getEmbeddingInfoByName(name)?.tensorShape as [
+            number,
+            number
+          ],
+        };
       });
 
       // If in demo mode, let the order decide which tensor to load by default.
@@ -519,7 +527,7 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
   }
   @observe('selectedColorOptionName')
   _selectedColorOptionNameChanged() {
-    let colorOption: ColorOption;
+    let colorOption: ColorOption | null = null;
     for (let i = 0; i < this.colorOptions.length; i++) {
       if (this.colorOptions[i].name === this.selectedColorOptionName) {
         colorOption = this.colorOptions[i];
@@ -535,16 +543,16 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
     } else if (colorOption.items) {
       let items = colorOption.items.map((item) => {
         return {
-          color: colorOption.map(item.label),
+          color: colorOption?.map?.(item.label) as string,
           label: item.label,
           count: item.count,
         };
       });
-      this.colorLegendRenderInfo = {items, thresholds: null};
+      this.colorLegendRenderInfo = {items: items!, thresholds: []};
     } else {
       this.colorLegendRenderInfo = {
-        items: null,
-        thresholds: colorOption.thresholds,
+        items: [],
+        thresholds: colorOption.thresholds!,
       };
     }
     this.projector.setSelectedColorOption(colorOption);
@@ -562,7 +570,9 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
       this.projector.updateDataSet(this.projector.dataSet, metadata, fileName);
     });
   }
-  private getEmbeddingInfoByName(tensorName: string): EmbeddingInfo {
+  private getEmbeddingInfoByName(
+    tensorName: string
+  ): EmbeddingInfo | undefined {
     for (let i = 0; i < this.projectorConfig.embeddings.length; i++) {
       const e = this.projectorConfig.embeddings[i];
       if (e.tensorName === tensorName) {
@@ -574,7 +584,7 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
     // Show and setup the upload button.
     const fileInput = this.$$('#file') as HTMLInputElement;
     fileInput.onchange = () => {
-      const file: File = fileInput.files[0];
+      const file: File = fileInput.files?.[0]!;
       // Clear out the value of the file chooser. This ensures that if the user
       // selects the same file, we'll re-read it.
       fileInput.value = '';
@@ -592,7 +602,7 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
     // Show and setup the upload metadata button.
     const fileMetadataInput = this.$$('#file-metadata') as HTMLInputElement;
     fileMetadataInput.onchange = () => {
-      const file: File = fileMetadataInput.files[0];
+      const file: File = fileMetadataInput.files?.[0]!;
       // Clear out the value of the file chooser. This ensures that if the user
       // selects the same file, we'll re-read it.
       fileMetadataInput.value = '';

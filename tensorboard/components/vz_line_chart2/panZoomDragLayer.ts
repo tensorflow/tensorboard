@@ -27,7 +27,7 @@ export class PanZoomDragLayer extends Plottable.Components.Group {
   private state: State = State.NONE;
   private panStartCallback = new Plottable.Utils.CallbackSet<PanCallback>();
   private panEndCallback = new Plottable.Utils.CallbackSet<PanCallback>();
-  private _mouseDispatcher: Plottable.Dispatchers.Mouse;
+  private _mouseDispatcher: Plottable.Dispatchers.Mouse | null;
   /**
    * A Plottable component/layer with a complex interaction for the line chart.
    * When not pressing alt-key, it behaves like DragZoomLayer -- dragging a
@@ -65,14 +65,14 @@ export class PanZoomDragLayer extends Plottable.Components.Group {
     const onWheel = this.onWheel.bind(this);
     this.onAnchor(() => {
       this._mouseDispatcher = Plottable.Dispatchers.Mouse.getDispatcher(this);
-      this._mouseDispatcher.onWheel(onWheel);
+      this._mouseDispatcher?.onWheel(onWheel);
       this.panZoom.attachTo(this);
     });
     this.onDetach(() => {
       this.panZoom.detachFrom(this);
       // onDetach can be invoked before onAnchor
       if (this._mouseDispatcher) {
-        this._mouseDispatcher.offWheel(onWheel);
+        this._mouseDispatcher?.offWheel(onWheel);
         this._mouseDispatcher = null;
       }
     });

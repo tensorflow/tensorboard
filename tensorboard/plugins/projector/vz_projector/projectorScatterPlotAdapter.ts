@@ -87,7 +87,7 @@ export class ProjectorScatterPlotAdapter {
   private selectedPointIndices: number[];
   private neighborsOfFirstSelectedPoint: knn.NearestEntry[];
   private renderLabelsIn3D: boolean = false;
-  private labelPointAccessor: string;
+  private labelPointAccessor: string | null;
   private legendPointColorer: (ds: DataSet, index: number) => string;
   private distanceMetric: DistanceFunction;
   private spriteVisualizer: ScatterPlotVisualizerSprites;
@@ -176,11 +176,11 @@ export class ProjectorScatterPlotAdapter {
     this.scatterPlot.render();
   }
   setLegendPointColorer(
-    legendPointColorer: (ds: DataSet, index: number) => string
+    legendPointColorer: (ds: DataSet, index: number) => string | undefined
   ) {
     this.legendPointColorer = legendPointColorer;
   }
-  setLabelPointAccessor(labelPointAccessor: string) {
+  setLabelPointAccessor(labelPointAccessor: string | null) {
     this.labelPointAccessor = labelPointAccessor;
     if (this.labels3DVisualizer != null) {
       const ds = this.projection == null ? null : this.projection.dataSet;
@@ -656,7 +656,7 @@ export class ProjectorScatterPlotAdapter {
     }
     return colors;
   }
-  generate3DLabelsArray(ds: DataSet, accessor: string) {
+  generate3DLabelsArray(ds: DataSet, accessor: string | null) {
     if (ds == null || accessor == null) {
       return null;
     }
@@ -667,9 +667,13 @@ export class ProjectorScatterPlotAdapter {
     }
     return labels;
   }
-  private getLabelText(ds: DataSet, i: number, accessor: string): string {
-    return ds.points[i].metadata[accessor] !== undefined
-      ? String(ds.points[i].metadata[accessor])
+  private getLabelText(
+    ds: DataSet,
+    i: number,
+    accessor: string | null
+  ): string {
+    return ds.points[i].metadata[accessor!] !== undefined
+      ? String(ds.points[i].metadata[accessor!])
       : `Unknown #${i}`;
   }
   private updateScatterPlotWithNewProjection(projection: Projection) {

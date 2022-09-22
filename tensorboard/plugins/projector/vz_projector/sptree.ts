@@ -21,7 +21,7 @@ export interface BBox {
 /** A node in a space-partitioning tree. */
 export interface SPNode {
   /** The children of this node. */
-  children?: SPNode[];
+  children: SPNode[];
   /** The bounding box of the region this node occupies. */
   box: BBox;
   /** One or more points this node has. */
@@ -78,7 +78,11 @@ export class SPTree {
       center[d] = min[d] + span / 2;
       halfDim = Math.max(halfDim, span / 2);
     }
-    this.root = {box: {center: center, halfDim: halfDim}, point: data[0]};
+    this.root = {
+      children: [],
+      box: {center: center, halfDim: halfDim},
+      point: data[0],
+    };
     for (let i = 1; i < data.length; ++i) {
       this.insert(this.root, data[i]);
     }
@@ -154,7 +158,11 @@ export class SPTree {
     for (let d = 0; d < this.dim; ++d) {
       newC[d] = index & (1 << d) ? oldC[d] + h : oldC[d] - h;
     }
-    node.children[index] = {box: {center: newC, halfDim: h}, point: p};
+    node.children[index] = {
+      children: [],
+      box: {center: newC, halfDim: h},
+      point: p,
+    };
   }
 }
 function fillArray<T>(arr: T[], value: T): void {

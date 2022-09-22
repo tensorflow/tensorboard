@@ -17,6 +17,7 @@ import {
   addHashListener,
   addStorageListener,
   fireStorageChanged,
+  ListenKey,
   removeHashListenerByKey,
   removeStorageListenerByKey,
 } from './listeners';
@@ -112,8 +113,8 @@ export function makeBindings<T>(
   getObserver: (key: string, options: AutoStorageOptions<T>) => Function;
   disposeBinding: () => void;
 } {
-  const hashListeners = [];
-  const storageListeners = [];
+  const hashListeners: ListenKey[] = [];
+  const storageListeners: ListenKey[] = [];
   function get(key: string, options: StorageOptions<T> = {}): T {
     const {defaultValue, useLocalStorage = false} = options;
     const value = useLocalStorage

@@ -328,8 +328,8 @@ function dagreLayout(
     ranksep: params.rankSep,
     edgesep: params.edgeSep,
   });
-  let bridgeNodeNames = [];
-  let nonBridgeNodeNames = [];
+  let bridgeNodeNames: any[] = [];
+  let nonBridgeNodeNames: any[] = [];
   // Split out nodes into bridge and non-bridge nodes, and calculate the total
   // width we should use for bridge nodes.
   _.each(graph.nodes(), (nodeName) => {

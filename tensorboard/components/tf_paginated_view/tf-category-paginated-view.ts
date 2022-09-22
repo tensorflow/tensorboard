@@ -540,7 +540,9 @@ class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
   }
   _updatePageInputValue(newValue) {
     // Force two-way binding.
-    const pageInput = this.shadowRoot.querySelector('#page-input input') as any;
+    const pageInput = this.shadowRoot?.querySelector(
+      '#page-input input'
+    ) as any;
     if (pageInput) {
       pageInput.value = newValue;
     }

@@ -342,9 +342,11 @@ class TfImageLoader extends LegacyElementMixin(PolymerElement) {
           return;
         }
         const mainImageContainer = this.$$('#main-image-container');
-        mainImageContainer.textContent = '';
-        (PolymerDom.dom(mainImageContainer) as any).appendChild(img);
-        this.set('_isImageLoading', false);
+        if (mainImageContainer) {
+          mainImageContainer.textContent = '';
+          (PolymerDom.dom(mainImageContainer) as any).appendChild(img);
+          this.set('_isImageLoading', false);
+        }
       })
       .bind(this);
     img.style.filter = `contrast(${contrastPercentage}%) `;

@@ -445,7 +445,7 @@ class _TfCustomScalarMultiLineChartCard
       return;
     }
     this.root
-      .querySelectorAll('.match-list-entry')
+      ?.querySelectorAll('.match-list-entry')
       .forEach((entryElement: HTMLElement) => {
         const seriesName = domRepeat.itemForElement(entryElement);
         entryElement.style.color = this._determineColor(

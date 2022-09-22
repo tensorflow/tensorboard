@@ -47,7 +47,7 @@ export class PlottableExporter {
     return svg;
   }
   private convert(node: Node): Node | null {
-    let newNode = null;
+    let newNode: Element | null = null;
     const nodeName = node.nodeName.toUpperCase();
     if (
       node.nodeType == Node.ELEMENT_NODE &&
@@ -59,8 +59,8 @@ export class PlottableExporter {
       const top = parseInt(style.top, 10);
       if (left || top) {
         const clipId = this.createUniqueId('clip');
-        newNode.setAttribute('transform', `translate(${left}, ${top})`);
-        newNode.setAttribute('clip-path', `url(#${clipId})`);
+        newNode?.setAttribute('transform', `translate(${left}, ${top})`);
+        newNode?.setAttribute('clip-path', `url(#${clipId})`);
         const width = parseInt(style.width, 10);
         const height = parseInt(style.height, 10);
         const rect = document.createElement('rect');
@@ -72,19 +72,19 @@ export class PlottableExporter {
         newNode.appendChild(clipPath);
       }
     } else {
-      newNode = node.cloneNode();
+      newNode = node.cloneNode() as Element;
     }
     Array.from(node.childNodes)
       .map((node) => this.convert(node))
       .filter(Boolean)
-      .forEach((el) => newNode.appendChild(el));
+      .forEach((el) => newNode?.appendChild(el!));
     // Remove empty grouping. They add too much noise.
     const shouldOmit =
-      (newNode.nodeName.toUpperCase() == NodeName.GROUP &&
-        !newNode.hasChildNodes()) ||
+      (newNode?.nodeName.toUpperCase() == NodeName.GROUP &&
+        !newNode?.hasChildNodes()) ||
       this.shouldOmitNode(node);
     if (shouldOmit) return null;
-    return this.stripClass(this.transferStyle(node, newNode));
+    return this.stripClass(this.transferStyle(node, newNode!));
   }
   private stripClass(node: Node): Node {
     if (node.nodeType == Node.ELEMENT_NODE) {

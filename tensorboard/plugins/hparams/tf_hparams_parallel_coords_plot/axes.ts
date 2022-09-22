@@ -141,17 +141,17 @@ export class Axis {
   public scaleType(): ScaleType | null {
     return this._scaleType;
   }
-  public brushSelection(): d3.BrushSelection {
+  public brushSelection(): d3.BrushSelection | null {
     return this._brushSelection;
   }
   public isDisplayed(): boolean {
     return this._isDisplayed;
   }
-  public setBrushSelection(brushSelection: d3.BrushSelection) {
+  public setBrushSelection(brushSelection: d3.BrushSelection | null) {
     this._brushSelection = brushSelection;
     this._brushFilter = this._buildBrushFilter(
-      this.brushSelection(),
-      this.scaleType(),
+      this.brushSelection()!,
+      this.scaleType()!,
       this.yScale()
     );
   }

@@ -319,7 +319,7 @@ class VzLineChart2<SeriesMetadata = {}> extends LegacyElementMixin(
   private _seriesMetadataCache: Record<string, any> = {};
 
   @property({type: Number})
-  private _makeChartAsyncCallbackId: number = null;
+  private _makeChartAsyncCallbackId: number | null = null;
 
   ready() {
     super.ready();
@@ -339,7 +339,7 @@ class VzLineChart2<SeriesMetadata = {}> extends LegacyElementMixin(
     this._listen(window, 'keyup', this._onKeyUp.bind(this), option);
   }
   override detached() {
-    this.cancelAsync(this._makeChartAsyncCallbackId);
+    this.cancelAsync(this._makeChartAsyncCallbackId || -1);
     if (this._chart) {
       this._chart.destroy();
       this._chart = undefined;

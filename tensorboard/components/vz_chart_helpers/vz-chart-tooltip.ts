@@ -89,7 +89,7 @@ class VzChartTooltip extends LegacyElementMixin(PolymerElement) {
   }
 
   hide() {
-    window.cancelAnimationFrame(this._raf);
+    window.cancelAnimationFrame(this._raf || 0);
     this._styleCache = null;
     this._tunnel.style.opacity = 0;
   }
@@ -100,7 +100,7 @@ class VzChartTooltip extends LegacyElementMixin(PolymerElement) {
    * the tooltip with respect to the anchorNode.
    */
   updateAndPosition(anchorNode: Element) {
-    window.cancelAnimationFrame(this._raf);
+    window.cancelAnimationFrame(this._raf || 0);
     this._raf = window.requestAnimationFrame(() => {
       if (!this.isAttached) return;
       this._repositionImpl(anchorNode);
@@ -116,10 +116,10 @@ class VzChartTooltip extends LegacyElementMixin(PolymerElement) {
     const anchorTop = nodeRect.top;
     const anchorBottom = anchorTop + nodeRect.height;
     const effectiveTooltipHeight = tooltipRect.height + TOOLTIP_Y_PIXEL_OFFSET;
-    let bottom = null;
-    let left = Math.max(this.minDistFromEdge, nodeRect.left);
-    let right = null;
-    let top = anchorTop;
+    let bottom: number | null = null;
+    let left: number | null = Math.max(this.minDistFromEdge, nodeRect.left);
+    let right: number | null = null;
+    let top: number | null = anchorTop;
     if (this.position == TooltipPosition.RIGHT) {
       left = nodeRect.right;
     } else {

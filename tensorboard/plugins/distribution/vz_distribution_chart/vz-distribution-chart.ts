@@ -204,8 +204,7 @@ class _VzDistributionChart
   @property({type: Object})
   _seriesDataCache: object = {};
 
-  @property({type: Number})
-  _makeChartAsyncCallbackId: number = null;
+  @property({type: Number}) _makeChartAsyncCallbackId: number | null = null;
 
   setVisibleSeries(names) {
     this._visibleSeriesCache = names;
@@ -232,7 +231,7 @@ class _VzDistributionChart
     var colorScale = this.colorScale;
     var _attached = this._attached;
     if (this._makeChartAsyncCallbackId === null) {
-      this.cancelAsync(this._makeChartAsyncCallbackId);
+      this.cancelAsync(this._makeChartAsyncCallbackId || 0);
     }
     this._makeChartAsyncCallbackId = this.async(function () {
       this._makeChartAsyncCallbackId = null;

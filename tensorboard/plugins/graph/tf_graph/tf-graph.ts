@@ -536,10 +536,10 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
         if (!selectedMarker) {
           // The marker for a selected edge of this size does not exist yet. Create it.
           const originalMarker = this.$.scene.querySelector('#' + markerId);
-          selectedMarker = originalMarker.cloneNode(true) as HTMLElement;
+          selectedMarker = originalMarker?.cloneNode(true) as HTMLElement;
           selectedMarker.setAttribute('id', selectedMarkerId);
           selectedMarker.classList.add('selected-arrowhead');
-          originalMarker.parentNode.appendChild(selectedMarker);
+          originalMarker?.parentNode?.appendChild(selectedMarker);
         }
         // Make the path use this new marker while it is selected.
         const markerAttribute = selectedEdge.label.startMarkerId

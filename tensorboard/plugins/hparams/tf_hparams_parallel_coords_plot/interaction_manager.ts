@@ -22,7 +22,9 @@ import * as tf_hparams_api from '../types';
 import {AxesCollection} from './axes';
 import {LinesCollection, LineType, SessionGroupHandle} from './lines';
 
-type SessionGroupCallback = (SessionGroup: tf_hparams_api.SessionGroup) => void;
+type SessionGroupCallback = (
+  SessionGroup: tf_hparams_api.SessionGroup | null
+) => void;
 /**
  * Stores some global properties such as width and height of the SVG element
  * used for rendering the parallel coordinates plot. Also contains the top-level
@@ -173,7 +175,7 @@ export class InteractionManager {
       );
     }
     this._selectedSessionGroupChangedCB(
-      this._linesCollection.selectedSessionGroupHandle().sessionGroup()
+      this._linesCollection.selectedSessionGroupHandle().sessionGroup()!
     );
   }
   public onOptionsOrSessionGroupsChanged(

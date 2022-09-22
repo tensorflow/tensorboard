@@ -142,13 +142,13 @@ export function getLabelForBaseEdge(
   baseEdge: BaseEdge,
   renderInfo: render.RenderGraphInfo
 ): string {
-  let node = <OpNode>renderInfo.getNodeByName(baseEdge.v);
+  let node = <OpNode>renderInfo.getNodeByName(baseEdge.v!);
   if (node.outputShapes == null || _.isEmpty(node.outputShapes)) {
-    return null;
+    return null!;
   }
   let shape = node.outputShapes[baseEdge.outputTensorKey];
   if (shape == null) {
-    return null;
+    return null!;
   }
   if (shape.length === 0) {
     return 'scalar';
@@ -227,7 +227,7 @@ function adjustPathPointsForMarker(
     .y((d) => d.y);
   let path = d3
     .select(document.createElementNS('http://www.w3.org/2000/svg', 'path'))
-    .attr('d', lineFunc(points));
+    .attr('d', lineFunc(points)!);
   let markerWidth = +marker.attr('markerWidth');
   let viewBox = marker.attr('viewBox').split(' ').map(Number);
   let viewBoxWidth = viewBox[2] - viewBox[0];
@@ -241,6 +241,7 @@ function adjustPathPointsForMarker(
     const point = pathNode.getPointAtLength(length);
     // Figure out how many segments of the path we need to remove in order
     // to shorten the path.
+    // @ts-ignore TS2345: Argument of type 'Line<Point>' is not assignable to parameter of type '(points: Point[]) => string'.
     const segIndex = getPathSegmentIndexAtLength(points, length, lineFunc);
     // Update the very first segment.
     points[segIndex - 1] = {x: point.x, y: point.y};
@@ -255,6 +256,7 @@ function adjustPathPointsForMarker(
     const point = pathNode.getPointAtLength(length);
     // Figure out how many segments of the path we need to remove in order
     // to shorten the path.
+    // @ts-ignore TS2345: Argument of type 'Line<Point>' is not assignable to parameter of type '(points: Point[]) => string'.
     const segIndex = getPathSegmentIndexAtLength(points, length, lineFunc);
     // Update the very last segment.
     points[segIndex] = {x: point.x, y: point.y};
@@ -386,19 +388,19 @@ function getEdgePathInterpolator(
   if (d.label.startMarkerId) {
     points = adjustPathPointsForMarker(
       points,
-      d3.select(shadowRoot.querySelector('#' + d.label.startMarkerId)),
+      d3.select(shadowRoot?.querySelector('#' + d.label.startMarkerId)!),
       true
     );
   }
   if (d.label.endMarkerId) {
     points = adjustPathPointsForMarker(
       points,
-      d3.select(shadowRoot.querySelector('#' + d.label.endMarkerId)),
+      d3.select(shadowRoot?.querySelector('#' + d.label.endMarkerId)!),
       false
     );
   }
   if (!adjoiningMetaedge) {
-    return d3.interpolate(a, interpolate(points));
+    return d3.interpolate(a, interpolate(points)!);
   }
   // Get the adjoining path that matches the adjoining metaedge.
   let adjoiningPath = <SVGPathElement>(
@@ -411,8 +413,8 @@ function getEdgePathInterpolator(
   return function (t) {
     let adjoiningPoint = adjoiningPath
       .getPointAtLength(inbound ? adjoiningPath.getTotalLength() : 0)
-      .matrixTransform(adjoiningPath.getCTM())
-      .matrixTransform(renderPath.getCTM().inverse());
+      .matrixTransform(adjoiningPath.getCTM()!)
+      .matrixTransform(renderPath.getCTM()?.inverse()!);
     // Update the relevant point in the renderMetaedgeInfo's points list, then
     // re-interpolate the path.
     let index = inbound ? 0 : points.length - 1;
@@ -426,6 +428,7 @@ function position(component: HTMLElement, edgeGroup: HTMLElement) {
   d3.select(edgeGroup)
     .select('path.' + Class.Edge.LINE)
     .transition()
+    // @ts-ignore TS2769: No overload matches this call. complicated return type mismatch issue
     .attrTween('d', function (d: EdgeData, i: number, a: SVGPathElement[]) {
       return getEdgePathInterpolator(
         component,

@@ -53,14 +53,14 @@ class TfHparamsSessionGroupValues extends PolymerElement {
   @property({
     type: Object,
   })
-  sessionGroup: object = null;
+  sessionGroup: object | null = null;
   // The visibleSchema defining the columns to use.
   // Only the values of columns in the visibleSchema will be displayed.
   // See tf-hparams-query-pane for the definition of this object.
   @property({
     type: Object,
   })
-  visibleSchema: object = null;
+  visibleSchema: object | null = null;
   _propertiesArePopulated(visibleSchema, sessionGroup) {
     return (
       visibleSchema !== undefined &&

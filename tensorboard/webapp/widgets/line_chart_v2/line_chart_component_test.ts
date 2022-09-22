@@ -160,7 +160,7 @@ describe('line_chart_v2/line_chart test', () => {
           ],
         }),
       ],
-      seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+      seriesMetadataMap: {foodd: buildMetadata({id: 'foo', visible: true})},
       yScaleType: ScaleType.LINEAR,
     });
     fixture.detectChanges();

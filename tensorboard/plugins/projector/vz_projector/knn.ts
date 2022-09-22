@@ -138,7 +138,7 @@ export function findKNNGPUCosDistNorm<T>(
           if (piece < numPieces) {
             step(resolve);
           } else {
-            logging.setModalMessage(null, KNN_GPU_MSG_ID);
+            logging.setModalMessage(null!, KNN_GPU_MSG_ID);
             // Discard all tensors and free up the memory.
             bigMatrix.dispose();
             bigMatrixTransposed.dispose();
@@ -150,7 +150,7 @@ export function findKNNGPUCosDistNorm<T>(
         },
         (error) => {
           // GPU failed. Reverting back to CPU.
-          logging.setModalMessage(null, KNN_GPU_MSG_ID);
+          logging.setModalMessage(null!, KNN_GPU_MSG_ID);
           let distFunc = (a, b, limit) => vector.cosDistNorm(a, b);
           findKNN(dataPoints, k, accessor, distFunc).then((nearest) => {
             resolve(nearest);
