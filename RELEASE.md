@@ -1,3 +1,9 @@
+# Release 2.10.1
+
+## Bug Fixes
+
+- Fix embedding projector plugin. (#5944)
+
 # Release 2.10.0
 
 The 2.10 minor series tracks TensorFlow 2.10.
