@@ -31,3 +31,12 @@ tf_ts_library(
         "@npm//marked",
     ],
 )
+
+tf_ts_library(
+  name = "numeric",
+  srcs = ["numeric.ts"],
+  deps = [
+    "@npm//numeric",
+  ],
+  strict_checks = False,
+)
