@@ -67,7 +67,9 @@ class Callback(tf.keras.callbacks.Callback):
         elif isinstance(writer, str):
             self._writer = tf.compat.v2.summary.create_file_writer(writer)
         elif isinstance(writer, os.PathLike):
-            self._writer = tf.compat.v2.summary.create_file_writer(os.fspath(writer))
+            self._writer = tf.compat.v2.summary.create_file_writer(
+                os.fspath(writer)
+            )
         else:
             self._writer = writer
 
