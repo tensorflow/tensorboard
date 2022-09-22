@@ -189,7 +189,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   dataSeries$?: Observable<ScalarCardDataSeries[]>;
   chartMetadataMap$?: Observable<ScalarCardSeriesMetadataMap>;
   linkedTimeSelection$?: Observable<TimeSelectionView | null>;
-  stepSelectorTimeSelection$ = new BehaviorSubject<TimeSelection | null>(null);
   minMaxSteps$?: Observable<MinMaxStep>;
   columnHeaders$?: Observable<ColumnHeaders[]>;
 
@@ -197,6 +196,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.isVisible = visible;
   }
 
+  readonly stepSelectorTimeSelection$ =
+    new BehaviorSubject<TimeSelection | null>(null);
   readonly useDarkMode$ = this.store.select(getDarkModeEnabled);
   readonly ignoreOutliers$ = this.store.select(getMetricsIgnoreOutliers);
   readonly tooltipSort$ = this.store.select(getMetricsTooltipSort);
