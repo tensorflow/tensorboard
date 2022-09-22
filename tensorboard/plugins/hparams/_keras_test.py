@@ -174,7 +174,7 @@ class CallbackTest(tf.test.TestCase):
     def test_invalid_writer(self):
         with self.assertRaisesRegex(
             TypeError,
-            "writer must be a `SummaryWriter` or `str`, not None",
+            "writer must be a `SummaryWriter`, `str` or `PathLike`, not None",
         ):
             _keras.Callback(writer=None, hparams={})
 
