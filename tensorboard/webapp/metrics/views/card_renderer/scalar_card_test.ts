@@ -2098,50 +2098,6 @@ describe('scalar card', () => {
         ).toBeTruthy();
       }));
 
-      it('does not show clipped warning if there is an overlap', fakeAsync(() => {
-        const runToSeries = {
-          run1: [buildScalarStepData({step: 10})],
-          run2: [buildScalarStepData({step: 20})],
-          run3: [buildScalarStepData({step: 30})],
-        };
-        provideMockCardRunToSeriesData(
-          selectSpy,
-          PluginType.SCALARS,
-          'card1',
-          null /* metadataOverride */,
-          runToSeries
-        );
-        store.overrideSelector(getMetricsLinkedTimeSelection, {
-          start: {step: 25},
-          end: {step: 50},
-        });
-        const fixture = createComponent('card1');
-        fixture.detectChanges();
-        expect(
-          fixture.debugElement.query(Selector.HEADER_WARNING_CLIPPED)
-        ).toBeNull();
-
-        store.overrideSelector(getMetricsLinkedTimeSelection, {
-          start: {step: -10},
-          end: {step: 15},
-        });
-        store.refreshState();
-        fixture.detectChanges();
-        expect(
-          fixture.debugElement.query(Selector.HEADER_WARNING_CLIPPED)
-        ).toBeNull();
-
-        store.overrideSelector(getMetricsLinkedTimeSelection, {
-          start: {step: -1000},
-          end: {step: 1000},
-        });
-        store.refreshState();
-        fixture.detectChanges();
-        expect(
-          fixture.debugElement.query(Selector.HEADER_WARNING_CLIPPED)
-        ).toBeNull();
-      }));
-
       it('selects time selection to min extent when global setting is too small', fakeAsync(() => {
         const runToSeries = {
           run1: [buildScalarStepData({step: 10})],

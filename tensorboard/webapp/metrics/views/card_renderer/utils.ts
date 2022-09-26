@@ -96,9 +96,9 @@ export function maybeClipLinkedTimeSelection(
   minStep: number,
   maxStep: number
 ): TimeSelectionView {
-  const startStep = Math.max(minStep, timeSelection.start.step);
+  const startStep = Math.min(Math.max(minStep, timeSelection.start.step), maxStep);
   const endStep = timeSelection.end
-    ? Math.min(maxStep, timeSelection.end.step)
+    ? Math.max(Math.min(maxStep, timeSelection.end.step), minStep)
     : null;
   if (
     startStep !== timeSelection.start.step ||
