@@ -207,7 +207,7 @@ export class RequestManager {
       this._queue.length > 0
     ) {
       this._nActiveRequests++;
-      this._queue.pop().resolve(undefined);
+      this._queue.pop()!.resolve(undefined);
     }
   }
   /**

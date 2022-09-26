@@ -120,7 +120,7 @@ export function makeBindings<T>(
     const value = useLocalStorage
       ? window.localStorage.getItem(key)
       : componentToDict(readComponent())[key];
-    return value == undefined ? _.cloneDeep(defaultValue) : fromString(value);
+    return value == undefined ? _.cloneDeep(defaultValue)! : fromString(value)!;
   }
   function set(key: string, value: T, options: SetterOptions<T> = {}): void {
     const {
