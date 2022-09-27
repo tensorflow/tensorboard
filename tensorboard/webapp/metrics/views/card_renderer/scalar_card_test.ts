@@ -2979,7 +2979,7 @@ describe('scalar card', () => {
         run2: [{wallTime: 1, value: 2, step: 1}],
         run3: [{wallTime: 1, value: 3, step: 1}],
         run4: [{wallTime: 1, value: NaN, step: 1}],
-        run5: [{wallTime: 1, value: "NaN", step: 1}],
+        run5: [{wallTime: 1, value: 'NaN', step: 1}],
         run6: [{wallTime: 1, value: null, step: 1}],
         run7: [{wallTime: 1, value: undefined, step: 1}],
       };
@@ -3021,13 +3021,6 @@ describe('scalar card', () => {
       const data =
         scalarCardDataTable.componentInstance.getTimeSelectionTableData();
 
-      // expect(data[0].RUN).toEqual('run4');
-      // expect(data[1].RUN).toEqual('run5');
-      // expect(data[2].RUN).toEqual('run6');
-      // expect(data[3].RUN).toEqual('run7');
-      // expect(data[4].RUN).toEqual('run1');
-      // expect(data[5].RUN).toEqual('run2');
-      // expect(data[6].RUN).toEqual('run3');
       expect(data[0].RUN).toEqual('run3');
       expect(data[1].RUN).toEqual('run2');
       expect(data[2].RUN).toEqual('run1');
