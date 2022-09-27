@@ -311,7 +311,7 @@ tensor
 > now be used to poll all "active" files in a directory for new data, rather
 > than the most recent one as described below. A file is "active" as long as it
 > received new data within `--reload_multifile_inactive_secs` seconds ago,
-> defaulting to 4000.
+> defaulting to 86400.
 
 This issue usually comes about because of how TensorBoard iterates through the
 `tfevents` files: it progresses through the events file in timestamp order, and
@@ -327,7 +327,7 @@ multiple summary writers, each one should be writing to a separate directory.
 > **Update:** the [experimental `--reload_multifile=true` option][pr-1867] can
 > now be used to poll all "active" files in a directory for new data, defined as
 > any file that received new data within `--reload_multifile_inactive_secs`
-> seconds ago, defaulting to 4000.
+> seconds ago, defaulting to 86400.
 
 No. TensorBoard expects that only one events file will be written to at a time,
 and multiple summary writers means multiple events files. If you are running a
@@ -347,7 +347,7 @@ directory. Please have each TensorFlow run write to its own logdir.
   > **Update:** the [experimental `--reload_multifile=true` option][pr-1867] can
   > now be used to poll all "active" files in a directory for new data, defined
   > as any file that received new data within `--reload_multifile_inactive_secs`
-  > seconds ago, defaulting to 4000.
+  > seconds ago, defaulting to 86400.
 
 * You may have a bug in your code where the global_step variable (passed
 to `FileWriter.add_summary`) is being maintained incorrectly.
