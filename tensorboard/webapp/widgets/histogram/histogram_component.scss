@@ -69,7 +69,6 @@ limitations under the License.
 .axis ::ng-deep {
   @include tb-theme-foreground-prop(color, secondary-text);
   position: relative;
-  overflow: hidden;
 
   .domain,
   .tick text {
@@ -108,20 +107,6 @@ svg {
 
 .y-axis {
   grid-area: y-axis;
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    #0000 0%,
-    #000 10%,
-    #000 90%,
-    #0000 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    #0000 0%,
-    #000 10%,
-    #000 90%,
-    #0000 100%
-  );
 
   .tooltip {
     dominant-baseline: middle;
