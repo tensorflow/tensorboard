@@ -16,13 +16,19 @@ limitations under the License.
 @import 'tensorboard/webapp/theme/tb_theme';
 
 :host {
-  color: mat.get-color-from-palette(map-get($tb-theme, warn), 700);
+  color: mat.get-color-from-palette(
+    map-get(mat.get-color-config($tb-theme), warn),
+    700
+  );
   height: 1em;
   line-height: 0;
   display: inline-flex;
 
   @include tb-dark-theme {
-    color: mat.get-color-from-palette(map-get($tb-dark-theme, warn), 700);
+    color: mat.get-color-from-palette(
+      map-get(mat.get-color-config($tb-dark-theme), warn),
+      700
+    );
   }
 
   mat-icon {

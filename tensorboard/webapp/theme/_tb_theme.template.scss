@@ -22,6 +22,7 @@ limitations under the License.
 // Angular Material theme definition.
 
 // Include non-theme styles for core.
+@include mat.all-component-typographies();
 @include mat.core();
 
 // Value for `app-bar` property in $tb-background. Can specify an override in
@@ -106,7 +107,7 @@ $tb-dark-theme: mat.define-dark-theme(
   )
 );
 $tb-dark-foreground: map_merge(
-  map-get($tb-dark-theme, foreground),
+  map-get(mat.get-color-config($tb-dark-theme), foreground),
   (
     border: #555,
     disabled-text: mat.get-color-from-palette(mat.$gray-palette, 700),
@@ -115,7 +116,7 @@ $tb-dark-foreground: map_merge(
   )
 );
 $tb-dark-background: map_merge(
-  map-get($tb-dark-theme, background),
+  map-get(mat.get-color-config($tb-dark-theme), background),
   (
     app-bar: $tb-dark-app-bar-color,
   )
