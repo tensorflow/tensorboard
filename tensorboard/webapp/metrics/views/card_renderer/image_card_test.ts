@@ -564,28 +564,7 @@ describe('image card', () => {
         );
       });
 
-      it('renders ticks on selected steps are particially in range', () => {
-        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 25},
-          end: {step: 350},
-        });
-
-        const fixture = createImageCardContainer('card1');
-        fixture.detectChanges();
-
-        const dots = fixture.debugElement.queryAll(
-          By.css('.linked-time-wrapper .linked-time-tick')
-        );
-        // The third and fourth ticks are selected.
-        expect(dots[0].nativeElement.getAttribute('style')).toBe(
-          TICKS_STYLE[2]
-        );
-        expect(dots[1].nativeElement.getAttribute('style')).toBe(
-          TICKS_STYLE[3]
-        );
-      });
-
-      it('does not render ticks on slected range wrapped between steps ', () => {
+      it('does not render ticks on selected range wrapped between steps ', () => {
         store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 11},
           end: {step: 14},
@@ -723,42 +702,6 @@ describe('image card', () => {
         expect(sliderTrackFill).toBeTruthy();
         expect(sliderTrackFill.nativeElement.getAttribute('style')).toBe(
           'left: 25%; width: 31.25%;'
-        );
-      });
-
-      it('renders range slider on selected steps which end step is out of range, ', () => {
-        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 15},
-          end: {step: 55},
-        });
-
-        const fixture = createImageCardContainer('card1');
-        fixture.detectChanges();
-
-        const sliderTrackFill = fixture.debugElement.query(
-          By.css('.linked-time-wrapper .slider-track-fill')
-        );
-        expect(sliderTrackFill).toBeTruthy();
-        expect(sliderTrackFill.nativeElement.getAttribute('style')).toBe(
-          'left: 12.5%; width: 87.5%;'
-        );
-      });
-
-      it('renders range slider on selected steps which start step is out of range, ', () => {
-        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 5},
-          end: {step: 35},
-        });
-
-        const fixture = createImageCardContainer('card1');
-        fixture.detectChanges();
-
-        const sliderTrackFill = fixture.debugElement.query(
-          By.css('.linked-time-wrapper .slider-track-fill')
-        );
-        expect(sliderTrackFill).toBeTruthy();
-        expect(sliderTrackFill.nativeElement.getAttribute('style')).toBe(
-          'left: 0%; width: 62.5%;'
         );
       });
 
@@ -969,7 +912,7 @@ describe('image card', () => {
 
         expect(timeSelectionChangeSpy).toHaveBeenCalledWith({
           startStep: 40,
-          endStep: null,
+          endStep: 40,
           clipped: true,
         });
       });
@@ -1002,7 +945,7 @@ describe('image card', () => {
 
         expect(timeSelectionChangeSpy).toHaveBeenCalledWith({
           startStep: 10,
-          endStep: null,
+          endStep: 10,
           clipped: true,
         });
       });

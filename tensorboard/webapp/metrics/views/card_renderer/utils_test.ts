@@ -347,6 +347,23 @@ describe('metrics card_renderer utils test', () => {
       });
     });
 
+    it('does not create an endstep when timeSelection does not contain one', () => {
+      expect(
+        maybeClipLinkedTimeSelection(
+          {
+            start: {step: 10},
+            end: null,
+          },
+          0,
+          20
+        )
+      ).toEqual({
+        startStep: 10,
+        endStep: null,
+        clipped: false,
+      });
+    });
+
     it('returns minStep and maxStep when the timeselection is a superset of the min/maxstep', () => {
       expect(
         maybeClipLinkedTimeSelection(
@@ -355,7 +372,7 @@ describe('metrics card_renderer utils test', () => {
             end: {step: 100},
           },
           30,
-          50,
+          50
         )
       ).toEqual({
         startStep: 30,
@@ -365,20 +382,20 @@ describe('metrics card_renderer utils test', () => {
     });
 
     it('returns startStep === endStep === maxStep when timeSelection is above maxStep', () => {
-        expect(
-          maybeClipLinkedTimeSelection(
-            {
-              start: {step: 50},
-              end: {step: 100},
-            },
-            10,
-            20
-          )
-        ).toEqual({
-          startStep: 20,
-          endStep: 20,
-          clipped: true,
-        });
+      expect(
+        maybeClipLinkedTimeSelection(
+          {
+            start: {step: 50},
+            end: {step: 100},
+          },
+          10,
+          20
+        )
+      ).toEqual({
+        startStep: 20,
+        endStep: 20,
+        clipped: true,
+      });
     });
 
     it('returns startStep === endStep === minStep when timeSelection is below minStep', () => {

@@ -387,7 +387,7 @@ describe('histogram card', () => {
         );
         expect(viz.componentInstance.timeSelection).toEqual({
           start: {step: 15},
-          end: null,
+          end: {step: 15},
         });
       });
 
@@ -415,7 +415,7 @@ describe('histogram card', () => {
         );
         expect(viz.componentInstance.timeSelection).toEqual({
           start: {step: 50},
-          end: null,
+          end: {step: 50},
         });
       });
 
@@ -456,7 +456,7 @@ describe('histogram card', () => {
             'vis-linked-time-selection-warning mat-icon[data-value="clipped"]'
           )
         );
-        expect(indicatorAfter).toBeNull();
+        expect(indicatorAfter).toBeTruthy();
       });
     });
 
