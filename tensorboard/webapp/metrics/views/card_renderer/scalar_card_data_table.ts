@@ -198,14 +198,12 @@ export class ScalarCardDataTable {
       });
     dataTableData.sort(
       (point1: SelectedStepRunData, point2: SelectedStepRunData) => {
-        if (
-          point1[this.sortingInfo.header]! < point2[this.sortingInfo.header]!
-        ) {
+        const p1 = getSortableValue(point1[this.sortingInfo.header]);
+        const p2 = getSortableValue(point2[this.sortingInfo.header]);
+        if (p1 < p2) {
           return this.sortingInfo.order === SortingOrder.ASCENDING ? -1 : 1;
         }
-        if (
-          point1[this.sortingInfo.header]! > point2[this.sortingInfo.header]!
-        ) {
+        if (p1 > p2) {
           return this.sortingInfo.order === SortingOrder.ASCENDING ? 1 : -1;
         }
 
@@ -214,4 +212,16 @@ export class ScalarCardDataTable {
     );
     return dataTableData;
   }
+}
+
+function getSortableValue(value: number | string | undefined | null) {
+  if (
+    Number.isNaN(value) ||
+    value === 'NaN' ||
+    value === undefined ||
+    value === null
+  ) {
+    return -Infinity;
+  }
+  return value;
 }

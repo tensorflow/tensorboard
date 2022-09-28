@@ -2972,6 +2972,63 @@ describe('scalar card', () => {
       expect(data[1].RUN).toEqual('run1');
       expect(data[2].RUN).toEqual('run2');
     }));
+
+    it('Correctly orders NaNs', fakeAsync(() => {
+      const runToSeries = {
+        run1: [{wallTime: 1, value: 1, step: 1}],
+        run2: [{wallTime: 1, value: 2, step: 1}],
+        run3: [{wallTime: 1, value: 3, step: 1}],
+        run4: [{wallTime: 1, value: NaN, step: 1}],
+        run5: [{wallTime: 1, value: 'NaN', step: 1}],
+        run6: [{wallTime: 1, value: null, step: 1}],
+        run7: [{wallTime: 1, value: undefined, step: 1}],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries as any
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([
+          ['run1', true],
+          ['run2', true],
+          ['run3', true],
+          ['run4', true],
+          ['run5', true],
+          ['run6', true],
+          ['run7', true],
+        ])
+      );
+
+      store.overrideSelector(getMetricsLinkedTimeSelection, {
+        start: {step: 1},
+        end: null,
+      });
+
+      const fixture = createComponent('card1');
+      const scalarCardDataTable = fixture.debugElement.query(
+        By.directive(ScalarCardDataTable)
+      );
+      scalarCardDataTable.componentInstance.sortingInfo = {
+        header: ColumnHeaders.VALUE,
+        order: SortingOrder.DESCENDING,
+      };
+      fixture.detectChanges();
+
+      const data =
+        scalarCardDataTable.componentInstance.getTimeSelectionTableData();
+
+      expect(data[0].RUN).toEqual('run3');
+      expect(data[1].RUN).toEqual('run2');
+      expect(data[2].RUN).toEqual('run1');
+      expect(data[3].RUN).toEqual('run4');
+      expect(data[4].RUN).toEqual('run5');
+      expect(data[5].RUN).toEqual('run6');
+      expect(data[6].RUN).toEqual('run7');
+    }));
   });
 
   describe('step selector feature integration', () => {
