@@ -69,6 +69,7 @@ limitations under the License.
 .axis ::ng-deep {
   @include tb-theme-foreground-prop(color, secondary-text);
   position: relative;
+  overflow: hidden;
 
   .domain,
   .tick text {
@@ -107,6 +108,7 @@ svg {
 
 .y-axis {
   grid-area: y-axis;
+  overflow: clip visible;
 
   .tooltip {
     dominant-baseline: middle;
