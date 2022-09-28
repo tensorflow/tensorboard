@@ -108,20 +108,7 @@ svg {
 
 .y-axis {
   grid-area: y-axis;
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    #0000 0%,
-    #000 10%,
-    #000 90%,
-    #0000 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    #0000 0%,
-    #000 10%,
-    #000 90%,
-    #0000 100%
-  );
+  overflow: clip visible;
 
   .tooltip {
     dominant-baseline: middle;
