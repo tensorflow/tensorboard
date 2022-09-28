@@ -60,9 +60,9 @@ tf_ts_library(
         "force_svg_data_source_test.ts",
     ],
     deps = [
-      ":force_svg_data_source",
-      "//tensorboard/webapp/angular:expect_angular_core_testing",
-      "@npm//@types/jasmine",
+        ":force_svg_data_source",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "@npm//@types/jasmine",
     ],
 )
 
