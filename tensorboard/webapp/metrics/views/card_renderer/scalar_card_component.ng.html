@@ -234,7 +234,7 @@ limitations under the License.
       [scale]="xScale"
       [minMax]="viewExtent.x"
       [axisSize]="domDim.width"
-      (onTimeSelectionChanged)="onFobTimeSelectionChanged($event)"
+      (onTimeSelectionChanged)="onTimeSelectionChanged.emit($event)"
       (onTimeSelectionToggled)="onFobRemoved()"
     ></scalar-card-fob-controller>
   </ng-container>

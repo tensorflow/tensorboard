@@ -23,6 +23,7 @@ import {
   CardFobGetStepFromPositionHelper,
   TimeSelection,
   TimeSelectionAffordance,
+  TimeSelectionWithAffordance,
 } from './card_fob_types';
 
 @Component({
@@ -104,10 +105,12 @@ describe('card_fob_controller', () => {
       return step;
     });
     getAxisPositionFromStartStepSpy.and.callFake(() => {
-      return input.timeSelection.start.step;
+      return fixture.componentInstance.timeSelection.start.step;
     });
     getAxisPositionFromEndStepSpy.and.callFake(() => {
-      return input.timeSelection.end ? input.timeSelection.end.step : null;
+      return fixture.componentInstance.timeSelection.end
+        ? fixture.componentInstance.timeSelection.end.step
+        : null;
     });
     cardFobHelper = {
       getStepHigherThanAxisPosition: getStepHigherSpy,
@@ -132,6 +135,12 @@ describe('card_fob_controller', () => {
 
     onTimeSelectionChanged = jasmine.createSpy();
     fixture.componentInstance.onTimeSelectionChanged = onTimeSelectionChanged;
+    onTimeSelectionChanged.and.callFake(
+      (newSelectionWithAffordance: TimeSelectionWithAffordance) => {
+        fixture.componentInstance.timeSelection =
+          newSelectionWithAffordance.timeSelection;
+      }
+    );
 
     onTimeSelectionToggled = jasmine.createSpy();
     fixture.componentInstance.onTimeSelectionToggled = onTimeSelectionToggled;
@@ -228,7 +237,7 @@ describe('card_fob_controller', () => {
       });
       fobController.mouseMove(fakeEvent);
       expect((fobController as any).currentDraggingFob).toEqual(Fob.END);
-
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -261,6 +270,7 @@ describe('card_fob_controller', () => {
       fobController.mouseMove(fakeEvent);
       expect((fobController as any).currentDraggingFob).toEqual(Fob.START);
 
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -294,6 +304,7 @@ describe('card_fob_controller', () => {
       fobController.mouseMove(fakeEvent);
       expect((fobController as any).currentDraggingFob).toEqual(Fob.END);
 
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -328,6 +339,7 @@ describe('card_fob_controller', () => {
         movementY: 1,
       });
       fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -364,6 +376,7 @@ describe('card_fob_controller', () => {
         movementY: -1,
       });
       fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -488,6 +501,7 @@ describe('card_fob_controller', () => {
         movementY: 1,
       });
       fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -524,6 +538,7 @@ describe('card_fob_controller', () => {
         movementY: -1,
       });
       fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -623,6 +638,7 @@ describe('card_fob_controller', () => {
         movementX: 1,
       });
       fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -660,6 +676,7 @@ describe('card_fob_controller', () => {
         movementX: -1,
       });
       fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -697,6 +714,7 @@ describe('card_fob_controller', () => {
         movementX: -1,
       });
       fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -735,6 +753,7 @@ describe('card_fob_controller', () => {
         movementX: 1,
       });
       fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -806,6 +825,7 @@ describe('card_fob_controller', () => {
         movementX: 1,
       });
       fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -843,6 +863,7 @@ describe('card_fob_controller', () => {
         movementX: -1,
       });
       fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -976,6 +997,7 @@ describe('card_fob_controller', () => {
       fobController.mouseMove(
         new MouseEvent('mousemove', {clientX: 3, movementX: 1})
       );
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -1001,6 +1023,7 @@ describe('card_fob_controller', () => {
       fobController.mouseMove(
         new MouseEvent('mousemove', {clientX: 5, movementX: 1})
       );
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 

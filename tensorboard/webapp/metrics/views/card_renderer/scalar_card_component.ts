@@ -28,7 +28,6 @@ import {
   TimeSelection,
   TimeSelectionAffordance,
   TimeSelectionToggleAffordance,
-  TimeSelectionWithAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
 import {
   Formatter,
@@ -228,32 +227,6 @@ export class ScalarCardComponent<Downloader> {
         ? {step: this.linkedTimeSelection.endStep}
         : null,
     };
-  }
-
-  onFobTimeSelectionChanged(
-    newTimeSelectionWithAffordance: TimeSelectionWithAffordance
-  ) {
-    // Updates step selector to single selection.
-    const {timeSelection, affordance} = newTimeSelectionWithAffordance;
-    const newStartStep = timeSelection.start.step;
-    const nextStartStep =
-      newStartStep < this.minMaxStep.minStep
-        ? this.minMaxStep.minStep
-        : newStartStep > this.minMaxStep.maxStep
-        ? this.minMaxStep.maxStep
-        : newStartStep;
-
-    // Updates step selector to single selection.
-    this.stepSelectorTimeSelection = {
-      start: {step: nextStartStep},
-      end: null,
-    };
-
-    this.onTimeSelectionChanged.emit({
-      timeSelection,
-      // Only sets affordance when it's not undefined.
-      ...(affordance && {affordance}),
-    });
   }
 
   onFobRemoved() {

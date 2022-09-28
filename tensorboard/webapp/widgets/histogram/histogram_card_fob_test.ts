@@ -20,6 +20,7 @@ import {
 import {
   TimeSelection,
   TimeSelectionAffordance,
+  TimeSelectionWithAffordance,
 } from '../card_fob/card_fob_types';
 import {HistogramCardFobController} from './histogram_card_fob_controller';
 import {TemporalScale} from './histogram_component';
@@ -57,6 +58,16 @@ describe('HistogramCardFobController', () => {
       // Imitate a 10 to 1 scale.
       return step * 10;
     });
+    const onTimeSelectionChangedSpy = jasmine.createSpy();
+    fixture.componentInstance.onTimeSelectionChanged.emit =
+      onTimeSelectionChangedSpy;
+    onTimeSelectionChangedSpy.and.callFake(
+      (timeSelectionWithAffordance: TimeSelectionWithAffordance) => {
+        fixture.componentInstance.timeSelection =
+          timeSelectionWithAffordance.timeSelection;
+      }
+    );
+
     return fixture;
   }
 
