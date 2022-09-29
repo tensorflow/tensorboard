@@ -82,7 +82,7 @@ limitations under the License.
     <mat-slider
       class="step-slider"
       color="primary"
-      [ngClass]="[linkedTimeSelection && !linkedTimeSelection.clipped && linkedTimeSelection.endStep !== null ? 'hide-slider' : '']"
+      [ngClass]="[linkedTimeSelection && linkedTimeSelection.endStep !== null ? 'hide-slider' : '']"
       [disabled]="steps.length <= 1"
       [min]="0"
       [max]="steps.length - 1"
@@ -93,7 +93,7 @@ limitations under the License.
     ></mat-slider>
     <div
       class="linked-time-wrapper"
-      *ngIf="linkedTimeSelection && !linkedTimeSelection.clipped"
+      *ngIf="linkedTimeSelection"
     >
       <span *ngIf="linkedTimeSelection.endStep !== null">
         <span class="slider-track"></span>

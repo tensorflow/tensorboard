@@ -564,10 +564,10 @@ describe('image card', () => {
         );
       });
 
-      it('does not render ticks on selected range wrapped between steps ', () => {
+      it('renders ticks on selected steps are particially in range', () => {
         store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 11},
-          end: {step: 14},
+          start: {step: 25},
+          end: {step: 350},
         });
 
         const fixture = createImageCardContainer('card1');
@@ -577,13 +577,18 @@ describe('image card', () => {
           By.css('.linked-time-wrapper .linked-time-tick')
         );
         // The third and fourth ticks are selected.
-        expect(dots.length).toBe(0);
+        expect(dots[0].nativeElement.getAttribute('style')).toBe(
+          TICKS_STYLE[2]
+        );
+        expect(dots[1].nativeElement.getAttribute('style')).toBe(
+          TICKS_STYLE[3]
+        );
       });
 
-      it('does not render ticks when the slected range is clipped', () => {
+      it('does not render ticks on selected range wrapped between steps ', () => {
         store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 45},
-          end: {step: 55},
+          start: {step: 11},
+          end: {step: 14},
         });
 
         const fixture = createImageCardContainer('card1');
@@ -705,6 +710,42 @@ describe('image card', () => {
         );
       });
 
+      it('renders range slider on selected steps which end step is out of range, ', () => {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
+          start: {step: 15},
+          end: {step: 55},
+        });
+
+        const fixture = createImageCardContainer('card1');
+        fixture.detectChanges();
+
+        const sliderTrackFill = fixture.debugElement.query(
+          By.css('.linked-time-wrapper .slider-track-fill')
+        );
+        expect(sliderTrackFill).toBeTruthy();
+        expect(sliderTrackFill.nativeElement.getAttribute('style')).toBe(
+          'left: 12.5%; width: 87.5%;'
+        );
+      });
+
+      it('renders range slider on selected steps which start step is out of range, ', () => {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
+          start: {step: 5},
+          end: {step: 35},
+        });
+
+        const fixture = createImageCardContainer('card1');
+        fixture.detectChanges();
+
+        const sliderTrackFill = fixture.debugElement.query(
+          By.css('.linked-time-wrapper .slider-track-fill')
+        );
+        expect(sliderTrackFill).toBeTruthy();
+        expect(sliderTrackFill.nativeElement.getAttribute('style')).toBe(
+          'left: 0%; width: 62.5%;'
+        );
+      });
+
       it('renders range slider where range is between two steps, ', () => {
         store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 12.5},
@@ -727,21 +768,6 @@ describe('image card', () => {
         store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 15},
           end: null,
-        });
-
-        const fixture = createImageCardContainer('card1');
-        fixture.detectChanges();
-
-        const sliderTrackFill = fixture.debugElement.query(
-          By.css('.linked-time-wrapper .slider-track-fill')
-        );
-        expect(sliderTrackFill).toBeFalsy();
-      });
-
-      it('does not render range slider when the slected range is clipped', () => {
-        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 55},
-          end: {step: 60},
         });
 
         const fixture = createImageCardContainer('card1');
