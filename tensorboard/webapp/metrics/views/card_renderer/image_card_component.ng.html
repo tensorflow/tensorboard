@@ -91,10 +91,7 @@ limitations under the License.
       [value]="stepIndex"
       (input)="onSliderInput($event)"
     ></mat-slider>
-    <div
-      class="linked-time-wrapper"
-      *ngIf="linkedTimeSelection"
-    >
+    <div class="linked-time-wrapper" *ngIf="linkedTimeSelection">
       <span *ngIf="linkedTimeSelection.endStep !== null">
         <span class="slider-track"></span>
         <span

@@ -263,12 +263,11 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
 
           const minStep = Math.min(...steps);
           const maxStep = Math.max(...steps);
-          const potentiallyClippedTimeSelection = maybeClipLinkedTimeSelection(
+          return maybeClipLinkedTimeSelection(
             linkedTimeSelection,
             minStep,
             maxStep
           );
-          return potentiallyClippedTimeSelection;
         })
       );
 
