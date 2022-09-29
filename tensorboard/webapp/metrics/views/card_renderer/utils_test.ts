@@ -313,7 +313,7 @@ describe('metrics card_renderer utils test', () => {
   });
 
   describe('#maybeClipLinkedTimeSelection', () => {
-    it('changes start when start.step < minStep', () => {
+    it('clips to the minStep when time selection start step is smaller than the view extend', () => {
       expect(
         maybeClipLinkedTimeSelection(
           {
@@ -330,7 +330,7 @@ describe('metrics card_renderer utils test', () => {
       });
     });
 
-    it('changes end when end.step < maxStep', () => {
+    it('clips to maxStep when time selection end step is greater than view extend', () => {
       expect(
         maybeClipLinkedTimeSelection(
           {
@@ -347,7 +347,7 @@ describe('metrics card_renderer utils test', () => {
       });
     });
 
-    it('does not create an endstep when timeSelection does not contain one', () => {
+    it('does not clip when time selection falls into the view extend', () => {
       expect(
         maybeClipLinkedTimeSelection(
           {
@@ -381,7 +381,7 @@ describe('metrics card_renderer utils test', () => {
       });
     });
 
-    it('returns startStep === endStep === maxStep when timeSelection is above maxStep', () => {
+    it('clips both fobs to maxStep when timeSelection is greater than maxStep', () => {
       expect(
         maybeClipLinkedTimeSelection(
           {
@@ -415,7 +415,7 @@ describe('metrics card_renderer utils test', () => {
       });
     });
 
-    it('returns clipped === false when provided timeSelection is a subspace of minStep - maxStep', () => {
+    it('does not clip when time selection falls within the view extent', () => {
       expect(
         maybeClipLinkedTimeSelection(
           {
