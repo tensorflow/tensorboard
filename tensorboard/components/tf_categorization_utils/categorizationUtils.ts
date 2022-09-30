@@ -129,7 +129,7 @@ export function categorizeByPrefix(
 export function categorize(xs: string[], query = ''): RawCategory[] {
   const byFilter = [categorizeBySearchQuery(xs, query)];
   const byPrefix = categorizeByPrefix(xs);
-  return [].concat(byFilter, byPrefix);
+  return Array<RawCategory>().concat(byFilter, byPrefix);
 }
 
 export function categorizeTags(

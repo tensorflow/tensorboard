@@ -539,7 +539,7 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
     }
     this.showForceCategoricalColorsCheckbox = !!colorOption.tooManyUniqueValues;
     if (colorOption.map == null) {
-      this.colorLegendRenderInfo = null;
+      this.colorLegendRenderInfo = null!;
     } else if (colorOption.items) {
       let items = colorOption.items.map((item) => {
         return {

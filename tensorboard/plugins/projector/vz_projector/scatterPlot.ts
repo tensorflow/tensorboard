@@ -353,7 +353,7 @@ export class ScatterPlot {
       this.render();
     } else if (!this.mouseIsDown) {
       this.setNearestPointToMouse(e);
-      this.projectorEventContext.notifyHoverOverPoint(this.nearestPoint);
+      this.projectorEventContext.notifyHoverOverPoint(this.nearestPoint!);
     }
   }
   /** For using ctrl + left click as right click, and for circle select */
@@ -393,7 +393,7 @@ export class ScatterPlot {
     boundingBox: ScatterBoundingBox
   ): number[] {
     if (this.worldSpacePointPositions == null) {
-      return null;
+      return null!;
     }
     const pointCount = this.worldSpacePointPositions.length / 3;
     const dpr = window.devicePixelRatio || 1;

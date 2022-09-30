@@ -465,7 +465,7 @@ export function joinStatsInfoWithGraph(
 ): void {
   // Reset stats for each node.
   _.each(graph.nodes, (node) => {
-    node.stats = null;
+    node.stats = null!;
   });
   _.each(stats.dev_stats, (devStats) => {
     // Ignore devices that are not selected.

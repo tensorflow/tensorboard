@@ -148,7 +148,7 @@ export class Axis {
     return this._isDisplayed;
   }
   public setBrushSelection(brushSelection: d3.BrushSelection | null) {
-    this._brushSelection = brushSelection;
+    this._brushSelection = brushSelection!;
     this._brushFilter = this._buildBrushFilter(
       this.brushSelection()!,
       this.scaleType()!,
@@ -179,8 +179,8 @@ export class Axis {
     // sure not to change the selection if the data hasn't changed, as that
     // would be very annoying to the end user.
     this._brushFilter = this._buildBrushFilter(
-      this.brushSelection(),
-      this.scaleType(),
+      this.brushSelection()!,
+      this.scaleType()!,
       this.yScale()
     );
   }
@@ -289,7 +289,7 @@ export class Axis {
     // Set the brush selection programmatically.
     // We need to cast brushG to 'any' here since TypeScript doesn't realize
     // the brushG is a <g> selection and complains.
-    d3Brush.move(brushG as any, this.brushSelection());
+    d3Brush.move(brushG as any, this.brushSelection()!);
   }
   public setDisplayed(value: boolean) {
     this._isDisplayed = value;

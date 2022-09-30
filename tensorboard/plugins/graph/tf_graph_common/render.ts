@@ -812,7 +812,7 @@ export class RenderGraphInfo {
     _.each(originalMetaEdges.regular, (metaedge) => {
       _.each(metaedge.baseEdgeList, (baseEdge) => {
         // Destination nodes within regular base edges are op nodes.
-        const destinationNode = this.hierarchy.node(baseEdge.w) as OpNode;
+        const destinationNode = this.hierarchy.node(baseEdge.w!) as OpNode;
         _.each(destinationNode.inputs, (normalizedInput) => {
           // If an output of the function is an input into the op, map it back
           // to the output within the function so bridge edges are computed.
@@ -1344,7 +1344,7 @@ export class RenderGraphInfo {
       let metaedge = metagraph.edge(edgeObj);
       let renderMetaedgeInfo = new RenderMetaedgeInfo(metaedge as any);
       _.forEach(renderMetaedgeInfo.metaedge.baseEdgeList, (baseEdge) => {
-        const sourcePathList = baseEdge.v.split(tf_graph.NAMESPACE_DELIM);
+        const sourcePathList = baseEdge.v!.split(tf_graph.NAMESPACE_DELIM);
         for (let i = sourcePathList.length; i >= 0; i--) {
           const fromBeginningPathList = sourcePathList.slice(0, i);
           const node = this.hierarchy.node(

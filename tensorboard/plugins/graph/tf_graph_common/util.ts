@@ -331,7 +331,7 @@ export function removeCommonPrefix(strings: string[]) {
   let index = 0;
   let largestIndex = 0;
   // Find the shortest name across all strings.
-  let minLength = _.min(_.map(strings, (str) => str.length));
+  let minLength = _.min(_.map(strings, (str) => str.length))!;
   while (true) {
     index++;
     let prefixes = _.map(strings, (str) => str.substring(0, index));

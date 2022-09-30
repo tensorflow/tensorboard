@@ -1581,7 +1581,7 @@ export function buildGroupForScene(
       }
       return nodes;
     },
-    []
+    Array<any>()
   );
   if (renderNode.node.type === NodeType.SERIES) {
     // For series, we want the first item on top, so reverse the array so

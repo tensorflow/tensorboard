@@ -783,8 +783,8 @@ function addEdges(
   };
   _.each(graph.edges, (baseEdge) => {
     // Get the hierarchical paths for the source and destination of the edge.
-    let sourceAncestorIndex = getPath(graph.nodes[baseEdge.v], sourcePath);
-    let destAncestorIndex = getPath(graph.nodes[baseEdge.w], destPath);
+    let sourceAncestorIndex = getPath(graph.nodes[baseEdge.v!], sourcePath);
+    let destAncestorIndex = getPath(graph.nodes[baseEdge.w!], destPath);
     // If the hierarchical path cannot be found for either endpoint, then we
     // cannot create the edge. This happens for example when a node has a
     // control dependency on a summary node, which are embedded.
