@@ -267,7 +267,11 @@ $tb-dark-theme: map_merge(
 // Apply themed style for the global stylesheet (styles.scss).
 @mixin tb-global-themed-styles() {
   // Include all theme-styles for the components based on the current theme.
+  // TODO: remove old typography once all components are switched to MDC framework
   @include mat.all-component-themes($tb-theme);
+
+  @include mat.mdc-core-theme($tb-theme);
+  @include mat.mdc-checkbox-theme($tb-theme);
 
   body {
     // Prevents ngx-color-picker from creating a scrollbar and misposition.
@@ -301,6 +305,10 @@ $tb-dark-theme: map_merge(
       }
     }
 
+    // TODO: remove old typography once all components are switched to MDC framework
     @include mat.all-component-themes($tb-dark-theme);
+
+    @include mat.mdc-core-theme($tb-dark-theme);
+    @include mat.mdc-checkbox-theme($tb-dark-theme);
   }
 }
