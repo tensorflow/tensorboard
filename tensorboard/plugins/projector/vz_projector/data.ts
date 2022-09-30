@@ -695,7 +695,11 @@ export function getProjectionComponents(
   if (components.length > 3) {
     throw new RangeError('components length must be <= 3');
   }
-  const projectionComponents: [string|null, string|null, string|null] = [null, null, null];
+  const projectionComponents: [string | null, string | null, string | null] = [
+    null,
+    null,
+    null,
+  ];
   const prefix = projection === 'custom' ? 'linear' : projection;
   for (let i = 0; i < components.length; ++i) {
     if (components[i] == null) {
