@@ -91,29 +91,24 @@ export interface TimeSelectionView {
   clipped: boolean;
 }
 
+function boundNumber(value: number, min: number, max: number) {
+  if (value < min) {
+    return min;
+  }
+  if (value > max) {
+    return max;
+  }
+  return value;
+}
+
 export function maybeClipLinkedTimeSelection(
   timeSelection: TimeSelection,
   minStep: number,
   maxStep: number
 ): TimeSelectionView {
-  /**
-   * 1) Take greatest between the minStep and the current step.
-   *      This ensures that the current step is >= minStep
-   * 2) Take the minimum between the output of step 1 and the maxStep.
-   *      This ensures the result is <= maxStep.
-   */
-  const startStep = Math.min(
-    Math.max(minStep, timeSelection.start.step),
-    maxStep
-  );
-  /**
-   * 1) Take smallest between the maxStep and the current step.
-   *      This ensures that the current step is <= maxStep
-   * 2) Take the greatest between the output of step 1 and the minStep.
-   *      This ensures the result is >= minStep.
-   */
+  const startStep = boundNumber(timeSelection.start.step, minStep, maxStep);
   const endStep = timeSelection.end
-    ? Math.max(Math.min(maxStep, timeSelection.end.step), minStep)
+    ? boundNumber(timeSelection.end.step, minStep, maxStep)
     : null;
   const clipped =
     startStep !== timeSelection.start.step ||
