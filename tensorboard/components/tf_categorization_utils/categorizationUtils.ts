@@ -103,7 +103,7 @@ export function categorizeByPrefix(
   xs: string[],
   separator = '/'
 ): RawCategory[] {
-  const categories: any = [];
+  const categories: RawCategory[] = [];
   const categoriesByName = {};
   xs.forEach((x) => {
     const index = x.indexOf(separator);

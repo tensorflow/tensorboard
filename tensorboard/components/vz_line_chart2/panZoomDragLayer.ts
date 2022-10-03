@@ -65,14 +65,14 @@ export class PanZoomDragLayer extends Plottable.Components.Group {
     const onWheel = this.onWheel.bind(this);
     this.onAnchor(() => {
       this._mouseDispatcher = Plottable.Dispatchers.Mouse.getDispatcher(this);
-      this._mouseDispatcher?.onWheel(onWheel);
+      this._mouseDispatcher.onWheel(onWheel);
       this.panZoom.attachTo(this);
     });
     this.onDetach(() => {
       this.panZoom.detachFrom(this);
       // onDetach can be invoked before onAnchor
       if (this._mouseDispatcher) {
-        this._mouseDispatcher?.offWheel(onWheel);
+        this._mouseDispatcher.offWheel(onWheel);
         this._mouseDispatcher = null;
       }
     });

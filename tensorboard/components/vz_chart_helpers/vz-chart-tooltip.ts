@@ -89,7 +89,9 @@ class VzChartTooltip extends LegacyElementMixin(PolymerElement) {
   }
 
   hide() {
-    window.cancelAnimationFrame(this._raf || 0);
+    if (this._raf !== null) {
+      window.cancelAnimationFrame(this._raf);
+    }
     this._styleCache = null;
     this._tunnel.style.opacity = 0;
   }
@@ -100,7 +102,9 @@ class VzChartTooltip extends LegacyElementMixin(PolymerElement) {
    * the tooltip with respect to the anchorNode.
    */
   updateAndPosition(anchorNode: Element) {
-    window.cancelAnimationFrame(this._raf || 0);
+    if (this._raf !== null) {
+      window.cancelAnimationFrame(this._raf);
+    }
     this._raf = window.requestAnimationFrame(() => {
       if (!this.isAttached) return;
       this._repositionImpl(anchorNode);

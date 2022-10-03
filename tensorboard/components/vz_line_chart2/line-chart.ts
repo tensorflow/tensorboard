@@ -83,7 +83,7 @@ export class LineChart {
   private yAxis: Plottable.Axes.Numeric;
   private outer: Plottable.Components.Table;
   private colorScale: Plottable.Scales.Color;
-  private symbolFunction: SymbolFn;
+  private symbolFunction: SymbolFn | undefined;
   private tooltipColumns: Array<
     LineChartTooltipColumn | LineChartTooltipColumn
   >;
@@ -112,9 +112,9 @@ export class LineChart {
   private _redrawRaf: number;
   private _invalidateLayoutRaf: number;
   // An optional list of 2 numbers.
-  private _defaultXRange: number[];
+  private _defaultXRange: number[] | undefined;
   // An optional list of 2 numbers.
-  private _defaultYRange: number[];
+  private _defaultYRange: number[] | undefined;
   private _tooltipUpdateAnimationFrame: number;
   private targetSVG: d3.Selection<any, any, any, any>;
   constructor(
@@ -143,16 +143,16 @@ export class LineChart {
     this.yValueAccessor = yValueAccessor;
     // The symbol function maps series to marker. It uses a special dataset that
     // varies based on whether smoothing is enabled.
-    this.symbolFunction = symbolFunction!;
-    this._defaultXRange = defaultXRange!;
-    this._defaultYRange = defaultYRange!;
+    this.symbolFunction = symbolFunction;
+    this._defaultXRange = defaultXRange;
+    this._defaultYRange = defaultYRange;
     this.tooltipColumns = tooltipColumns as any;
     this.buildChart(
       xComponentsCreationMethod,
       yValueAccessor,
       yScaleType,
       fillArea,
-      xAxisFormatter!
+      xAxisFormatter
     );
   }
   private buildChart(
@@ -160,7 +160,7 @@ export class LineChart {
     yValueAccessor: Plottable.IAccessor<number>,
     yScaleType: YScaleType,
     fillArea: FillArea,
-    xAxisFormatter: (number) => string
+    xAxisFormatter?: (number) => string
   ) {
     this.destroy();
     const xComponents = xComponentsCreationMethod();
@@ -269,7 +269,7 @@ export class LineChart {
       markersScatterPlot.size(vz_chart_helpers.TOOLTIP_CIRCLE_SIZE * 2);
       markersScatterPlot.symbol(
         (d: vz_chart_helpers.Datum, i: number, dataset: Plottable.Dataset) => {
-          return this.symbolFunction(dataset.metadata().name);
+          return this.symbolFunction!(dataset.metadata().name);
         }
       );
       // Use a special dataset because this scatter plot should use the accesor
@@ -454,11 +454,9 @@ export class LineChart {
     if (!this.linePlot) return;
     window.cancelAnimationFrame(this._tooltipUpdateAnimationFrame);
     this._tooltipUpdateAnimationFrame = window.requestAnimationFrame(() => {
-      let target: vz_chart_helpers.Point = {
+      const target = {
         x: p.x,
         y: p.y,
-        datum: null!,
-        dataset: null!,
       };
       let bbox: SVGRect = (<any>this.gridlines.content().node()).getBBox();
       // pts is the closets point to the tooltip for each dataset
@@ -520,7 +518,7 @@ export class LineChart {
   }
   private drawTooltips(
     points: vz_chart_helpers.Point[],
-    target: vz_chart_helpers.Point,
+    target: {x: number, y: number},
     tooltipColumns: TooltipColumn[]
   ) {
     if (!points.length) {
@@ -668,7 +666,7 @@ export class LineChart {
     }
   }
   private findClosestPoint(
-    target: vz_chart_helpers.Point,
+    target: {x: number, y: number},
     dataset: Plottable.Dataset
   ): vz_chart_helpers.Point | null {
     const xPoints: number[] = dataset
