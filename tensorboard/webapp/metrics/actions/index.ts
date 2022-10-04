@@ -199,8 +199,8 @@ export const stepSelectorToggled = createAction(
     affordance?: TimeSelectionToggleAffordance;
   }>()
 );
-export const stepSelectorRangeToggled = createAction(
-  '[Metrics] Time Selector Range Toggle',
+export const rangeSelectionToggled = createAction(
+  '[Metrics] Range Selection Toggled',
   props<{
     // Affordance for internal analytics purpose. When no affordance is specified or is
     // undefined we do not want to log an analytics event.

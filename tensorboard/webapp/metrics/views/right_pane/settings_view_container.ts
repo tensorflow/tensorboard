@@ -38,7 +38,7 @@ import {
   metricsScalarPartitionNonMonotonicXToggled,
   metricsToggleIgnoreOutliers,
   metricsToggleImageShowActualSize,
-  stepSelectorRangeToggled,
+  rangeSelectionToggled,
   stepSelectorToggled,
   timeSelectionChanged,
 } from '../../actions';
@@ -97,7 +97,7 @@ const RANGE_INPUT_SOURCE_TO_AFFORDANCE: Record<
       (linkedTimeToggled)="onLinkedTimeToggled()"
       (linkedTimeSelectionChanged)="onLinkedTimeSelectionChanged($event)"
       (stepSelectorToggled)="onStepSelectorToggled()"
-      (stepSelectorRangeToggled)="onStepSelectorRangeToggled()"
+      (rangeSelectionToggled)="onRangeSelectionToggled()"
     >
     </metrics-dashboard-settings-component>
   `,
@@ -228,9 +228,9 @@ export class SettingsViewContainer {
     );
   }
 
-  onStepSelectorRangeToggled() {
+  onRangeSelectionToggled() {
     this.store.dispatch(
-      stepSelectorRangeToggled({
+      rangeSelectionToggled({
         affordance: TimeSelectionToggleAffordance.CHECK_BOX,
       })
     );

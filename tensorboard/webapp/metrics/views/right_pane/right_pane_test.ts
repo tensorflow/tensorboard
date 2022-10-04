@@ -694,14 +694,14 @@ describe('metrics right_pane', () => {
           expect(checkbox.properties['disabled']).toBe(true);
         });
 
-        it('dispatches stepSelectorRangeEnableToggled on toggle', () => {
+        it('dispatches rangeSelectionToggled on toggle', () => {
           const fixture = TestBed.createComponent(SettingsViewContainer);
           fixture.detectChanges();
 
           select(fixture, '.range-selection input').nativeElement.click();
 
           expect(dispatchSpy).toHaveBeenCalledWith(
-            actions.stepSelectorRangeToggled({
+            actions.rangeSelectionToggled({
               affordance: TimeSelectionToggleAffordance.CHECK_BOX,
             })
           );

@@ -819,7 +819,7 @@ describe('metrics selectors', () => {
             end: {step: 100},
           },
           linkedTimeEnabled: true,
-          linkedTimeRangeEnabled: true,
+          rangeSelectionEnabled: true,
         })
       );
       expect(selectors.getMetricsLinkedTimeSelection(state)).toEqual({
@@ -836,7 +836,7 @@ describe('metrics selectors', () => {
             end: {step: 100},
           },
           linkedTimeEnabled: true,
-          linkedTimeRangeEnabled: false,
+          rangeSelectionEnabled: false,
         })
       );
       expect(selectors.getMetricsLinkedTimeSelection(state)).toEqual({
