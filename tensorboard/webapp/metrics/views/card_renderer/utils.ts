@@ -91,7 +91,7 @@ export interface TimeSelectionView {
   clipped: boolean;
 }
 
-function boundNumber(value: number, min: number, max: number) {
+function clipStepWithinMinMax(value: number, min: number, max: number) {
   if (value < min) {
     return min;
   }
@@ -106,16 +106,20 @@ export function maybeClipLinkedTimeSelection(
   minStep: number,
   maxStep: number
 ): TimeSelectionView {
-  const startStep = boundNumber(timeSelection.start.step, minStep, maxStep);
-  const endStep = timeSelection.end
-    ? boundNumber(timeSelection.end.step, minStep, maxStep)
+  const maybeClippedStartStep = clipStepWithinMinMax(
+    timeSelection.start.step,
+    minStep,
+    maxStep
+  );
+  const maybeClippedEndStep = timeSelection.end
+    ? clipStepWithinMinMax(timeSelection.end.step, minStep, maxStep)
     : null;
   const clipped =
-    startStep !== timeSelection.start.step ||
-    endStep !== (timeSelection.end?.step ?? null);
+    maybeClippedStartStep !== timeSelection.start.step ||
+    maybeClippedEndStep !== (timeSelection.end?.step ?? null);
   return {
-    startStep,
-    endStep,
+    startStep: maybeClippedStartStep,
+    endStep: maybeClippedEndStep,
     clipped,
   };
 }
