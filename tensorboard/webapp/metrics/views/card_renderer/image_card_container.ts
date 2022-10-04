@@ -261,12 +261,8 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
         map(([linkedTimeSelection, steps]) => {
           if (!linkedTimeSelection) return null;
 
-          let minStep = Infinity;
-          let maxStep = -Infinity;
-          for (const step of steps) {
-            minStep = Math.min(step, minStep);
-            maxStep = Math.max(step, maxStep);
-          }
+          const minStep = Math.min(...steps);
+          const maxStep = Math.max(...steps);
           return maybeClipLinkedTimeSelection(
             linkedTimeSelection,
             minStep,
@@ -287,16 +283,11 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
           return [];
         }
 
-        const selectedStepsInRange = [];
-        for (const step of steps) {
-          if (
+        return steps.filter(
+          (step) =>
             step >= linkedTimeSelection.startStep &&
-            step <= linkedTimeSelection.endStep
-          ) {
-            selectedStepsInRange.push(step);
-          }
-        }
-        return selectedStepsInRange;
+            step <= linkedTimeSelection.endStep!
+        );
       })
     );
 

@@ -17,6 +17,7 @@ import {PartialSeries} from './scalar_card_types';
 import {
   getClosestStep,
   getDisplayNameForRun,
+  maybeClipLinkedTimeSelection,
   maybeSetClosestStartStep,
   partitionSeries,
 } from './utils';
@@ -308,6 +309,142 @@ describe('metrics card_renderer utils test', () => {
 
     it('gets closeset step equal to selected step', () => {
       expect(getClosestStep(10, [0, 10, 20])).toBe(10);
+    });
+  });
+
+  describe('#maybeClipLinkedTimeSelection', () => {
+    it('clips to the minStep when time selection start step is smaller than the view extend', () => {
+      expect(
+        maybeClipLinkedTimeSelection(
+          {
+            start: {step: 0},
+            end: null,
+          },
+          1,
+          4
+        )
+      ).toEqual({
+        startStep: 1,
+        endStep: null,
+        clipped: true,
+      });
+    });
+
+    it('clips to maxStep when time selection end step is greater than view extend', () => {
+      expect(
+        maybeClipLinkedTimeSelection(
+          {
+            start: {step: 0},
+            end: {step: 4},
+          },
+          0,
+          3
+        )
+      ).toEqual({
+        startStep: 0,
+        endStep: 3,
+        clipped: true,
+      });
+    });
+
+    it('does not clip when time selection falls into the view extend', () => {
+      expect(
+        maybeClipLinkedTimeSelection(
+          {
+            start: {step: 10},
+            end: null,
+          },
+          0,
+          20
+        )
+      ).toEqual({
+        startStep: 10,
+        endStep: null,
+        clipped: false,
+      });
+    });
+
+    it('returns minStep and maxStep when the timeselection is a superset of the min/maxstep', () => {
+      expect(
+        maybeClipLinkedTimeSelection(
+          {
+            start: {step: 0},
+            end: {step: 100},
+          },
+          30,
+          50
+        )
+      ).toEqual({
+        startStep: 30,
+        endStep: 50,
+        clipped: true,
+      });
+    });
+
+    it('clips both fobs to maxStep when timeSelection is greater than maxStep', () => {
+      expect(
+        maybeClipLinkedTimeSelection(
+          {
+            start: {step: 50},
+            end: {step: 100},
+          },
+          10,
+          20
+        )
+      ).toEqual({
+        startStep: 20,
+        endStep: 20,
+        clipped: true,
+      });
+    });
+
+    it('returns startStep === endStep === minStep when timeSelection is below minStep', () => {
+      expect(
+        maybeClipLinkedTimeSelection(
+          {
+            start: {step: 0},
+            end: {step: 10},
+          },
+          20,
+          30
+        )
+      ).toEqual({
+        startStep: 20,
+        endStep: 20,
+        clipped: true,
+      });
+    });
+
+    it('does not clip when time selection falls within the view extent', () => {
+      expect(
+        maybeClipLinkedTimeSelection(
+          {
+            start: {step: 0},
+            end: {step: 4},
+          },
+          0,
+          4
+        )
+      ).toEqual({
+        startStep: 0,
+        endStep: 4,
+        clipped: false,
+      });
+
+      expect(
+        maybeClipLinkedTimeSelection(
+          {
+            start: {step: 1},
+            end: {step: 3},
+          },
+          0,
+          4
+        )
+      ).toEqual({
+        startStep: 1,
+        endStep: 3,
+        clipped: false,
+      });
     });
   });
 });
