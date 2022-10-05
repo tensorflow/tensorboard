@@ -982,16 +982,12 @@ const reducer = createReducer(
     const nextRangeSelectionEnabled = !state.rangeSelectionEnabled;
     let nextStepSelectorEnabled = state.stepSelectorEnabled;
 
-    let linkedTimeSelection = state.linkedTimeSelection
-      ? {...state.linkedTimeSelection}
-      : null;
     if (nextRangeSelectionEnabled) {
       nextStepSelectorEnabled = nextRangeSelectionEnabled;
     }
 
     return {
       ...state,
-      linkedTimeSelection,
       stepSelectorEnabled: nextStepSelectorEnabled,
       rangeSelectionEnabled: nextRangeSelectionEnabled,
     };
