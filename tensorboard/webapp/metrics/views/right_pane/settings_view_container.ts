@@ -117,7 +117,7 @@ export class SettingsViewContainer {
   readonly isScalarStepSelectorEnabled$: Observable<boolean> =
     this.store.select(selectors.getMetricsStepSelectorEnabled);
   readonly isScalarStepSelectorRangeEnabled$: Observable<boolean> =
-    this.store.select(selectors.getMetricsStepSelectorRangeEnabled);
+    this.store.select(selectors.getMetricsRangeSelectionEnabled);
   readonly isLinkedTimeEnabled$: Observable<boolean> = this.store.select(
     selectors.getMetricsLinkedTimeEnabled
   );

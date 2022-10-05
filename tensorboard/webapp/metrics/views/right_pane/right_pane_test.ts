@@ -97,10 +97,7 @@ describe('metrics right_pane', () => {
       store.overrideSelector(selectors.getMetricsCardMinWidth, null);
       store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, false);
       store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
-      store.overrideSelector(
-        selectors.getMetricsStepSelectorRangeEnabled,
-        false
-      );
+      store.overrideSelector(selectors.getMetricsRangeSelectionEnabled, false);
       store.overrideSelector(selectors.getAllowRangeSelection, false);
       store.overrideSelector(selectors.getMetricsLinkedTimeSelectionSetting, {
         start: {step: 0},

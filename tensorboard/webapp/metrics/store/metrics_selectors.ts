@@ -368,14 +368,7 @@ export const getMetricsStepSelectorEnabled = createSelector(
   }
 );
 
-export const getMetricsStepSelectorRangeEnabled = createSelector(
-  selectMetricsState,
-  (state: MetricsState): boolean => {
-    return state.rangeSelectionEnabled;
-  }
-);
-
-export const getMetricsLinkedTimeRangeEnabled = createSelector(
+export const getMetricsRangeSelectionEnabled = createSelector(
   selectMetricsState,
   (state: MetricsState): boolean => {
     return state.rangeSelectionEnabled;
