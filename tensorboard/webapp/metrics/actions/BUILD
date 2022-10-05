@@ -12,6 +12,7 @@ tf_ts_library(
     deps = [
         "//tensorboard/webapp/metrics:internal_types",
         "//tensorboard/webapp/metrics/data_source",
+        "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",
         "//tensorboard/webapp/util:dom",
         "//tensorboard/webapp/widgets/card_fob:types",
         "@npm//@ngrx/store",

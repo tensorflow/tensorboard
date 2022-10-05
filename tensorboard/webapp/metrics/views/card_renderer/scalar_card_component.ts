@@ -103,6 +103,7 @@ export class ScalarCardComponent<Downloader> {
   }>();
   @Output() onStepSelectorToggled =
     new EventEmitter<TimeSelectionToggleAffordance>();
+  @Output() onDataTableSorting = new EventEmitter<SortingInfo>();
 
   @Output() onLineChartZoom = new EventEmitter<Extent>();
 
@@ -126,6 +127,7 @@ export class ScalarCardComponent<Downloader> {
 
   sortDataBy(sortingInfo: SortingInfo) {
     this.sortingInfo = sortingInfo;
+    this.onDataTableSorting.emit(sortingInfo);
   }
 
   resetDomain() {
