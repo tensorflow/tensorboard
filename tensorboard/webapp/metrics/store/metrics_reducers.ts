@@ -260,8 +260,7 @@ const {initialState, reducers: namespaceContextedReducer} =
       linkedTimeSelection: null,
       linkedTimeEnabled: false,
       stepSelectorEnabled: false,
-      stepSelectorRangeEnabled: false,
-      linkedTimeRangeEnabled: false,
+      rangeSelectionEnabled: false,
       filteredPluginTypes: new Set(),
       stepMinMax: {
         min: Infinity,
@@ -979,18 +978,18 @@ const reducer = createReducer(
       stepSelectorEnabled: nextStepSelectorEnabled,
     };
   }),
-  on(actions.stepSelectorRangeToggled, (state) => {
-    const nextStepSelectorRangeEnabled = !state.stepSelectorRangeEnabled;
+  on(actions.rangeSelectionToggled, (state) => {
+    const nextRangeSelectionEnabled = !state.rangeSelectionEnabled;
     let nextStepSelectorEnabled = state.stepSelectorEnabled;
 
-    if (nextStepSelectorRangeEnabled) {
-      nextStepSelectorEnabled = nextStepSelectorRangeEnabled;
+    if (nextRangeSelectionEnabled) {
+      nextStepSelectorEnabled = nextRangeSelectionEnabled;
     }
 
     return {
       ...state,
       stepSelectorEnabled: nextStepSelectorEnabled,
-      stepSelectorRangeEnabled: nextStepSelectorRangeEnabled,
+      rangeSelectionEnabled: nextRangeSelectionEnabled,
     };
   }),
   on(actions.timeSelectionChanged, (state, change) => {
@@ -1004,7 +1003,7 @@ const reducer = createReducer(
 
     // If there is no endStep then current selection state is single.
     // Otherwise selection state is range.
-    const linkedTimeRangeEnabled = nextEndStep !== undefined;
+    const rangeSelectionEnabled = nextEndStep !== undefined;
 
     const linkedTimeSelection = {
       start: {
@@ -1024,7 +1023,7 @@ const reducer = createReducer(
       ...state,
       linkedTimeSelection,
       cardStepIndex: nextCardStepIndexMap,
-      linkedTimeRangeEnabled,
+      rangeSelectionEnabled,
     };
   }),
   on(actions.stepSelectorToggled, (state) => {

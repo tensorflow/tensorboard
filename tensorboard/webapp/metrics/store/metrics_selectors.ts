@@ -368,17 +368,10 @@ export const getMetricsStepSelectorEnabled = createSelector(
   }
 );
 
-export const getMetricsStepSelectorRangeEnabled = createSelector(
+export const getMetricsRangeSelectionEnabled = createSelector(
   selectMetricsState,
   (state: MetricsState): boolean => {
-    return state.stepSelectorRangeEnabled;
-  }
-);
-
-export const getMetricsLinkedTimeRangeEnabled = createSelector(
-  selectMetricsState,
-  (state: MetricsState): boolean => {
-    return state.linkedTimeRangeEnabled;
+    return state.rangeSelectionEnabled;
   }
 );
 
@@ -436,7 +429,7 @@ export const getMetricsLinkedTimeSelection = createSelector(
     linkedTimeSelection: TimeSelection
   ): TimeSelection | null => {
     if (!state.linkedTimeEnabled) return null;
-    if (state.linkedTimeRangeEnabled) {
+    if (state.rangeSelectionEnabled) {
       return linkedTimeSelection;
     }
     return {...linkedTimeSelection, end: null};

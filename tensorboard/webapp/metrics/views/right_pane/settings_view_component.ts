@@ -79,7 +79,7 @@ export class SettingsViewComponent {
   linkedTimeSelectionChanged = new EventEmitter<LinkedTimeSelectionChanged>();
 
   @Output() stepSelectorToggled = new EventEmitter<void>();
-  @Output() stepSelectorRangeToggled = new EventEmitter<void>();
+  @Output() rangeSelectionToggled = new EventEmitter<void>();
 
   @Input() isImageSupportEnabled!: boolean;
 
