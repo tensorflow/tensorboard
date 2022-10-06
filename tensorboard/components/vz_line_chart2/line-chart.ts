@@ -518,7 +518,7 @@ export class LineChart {
   }
   private drawTooltips(
     points: vz_chart_helpers.Point[],
-    target: {x: number, y: number},
+    target: {x: number; y: number},
     tooltipColumns: TooltipColumn[]
   ) {
     if (!points.length) {
@@ -666,7 +666,7 @@ export class LineChart {
     }
   }
   private findClosestPoint(
-    target: {x: number, y: number},
+    target: {x: number; y: number},
     dataset: Plottable.Dataset
   ): vz_chart_helpers.Point | null {
     const xPoints: number[] = dataset

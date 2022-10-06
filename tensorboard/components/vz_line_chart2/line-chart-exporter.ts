@@ -46,7 +46,7 @@ export class PlottableExporter {
     svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
     return svg;
   }
-  private createConvertedNode(node: Node) : Element {
+  private createConvertedNode(node: Node): Element {
     const nodeName = node.nodeName.toUpperCase();
     if (
       node.nodeType == Node.ELEMENT_NODE &&
