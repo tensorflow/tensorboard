@@ -345,8 +345,8 @@ class TfImageLoader extends LegacyElementMixin(PolymerElement) {
         if (mainImageContainer) {
           mainImageContainer.textContent = '';
           (PolymerDom.dom(mainImageContainer) as any).appendChild(img);
-          this.set('_isImageLoading', false);
         }
+        this.set('_isImageLoading', false);
       })
       .bind(this);
     img.style.filter = `contrast(${contrastPercentage}%) `;

@@ -283,8 +283,8 @@ class TfMultiCheckbox extends LegacyElementMixin(PolymerElement) {
 
   synchronizeColors(e) {
     this._setIsolatorIcon();
-    const checkboxes = this.root?.querySelectorAll('paper-checkbox');
-    checkboxes?.forEach((p: any) => {
+    const checkboxes = this.root?.querySelectorAll('paper-checkbox') ?? [];
+    checkboxes.forEach((p: any) => {
       const color = this.coloring.getColor(p.name);
       p.updateStyles({
         '--paper-checkbox-checked-color': color,
@@ -293,8 +293,8 @@ class TfMultiCheckbox extends LegacyElementMixin(PolymerElement) {
         '--paper-checkbox-unchecked-ink-color': color,
       });
     });
-    const buttons = this.root?.querySelectorAll('.isolator');
-    buttons?.forEach((p: any) => {
+    const buttons = this.root?.querySelectorAll('.isolator') ?? [];
+    buttons.forEach((p: any) => {
       const color = this.coloring.getColor(p.name);
       p.style['color'] = color;
     });

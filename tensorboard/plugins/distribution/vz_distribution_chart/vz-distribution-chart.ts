@@ -230,8 +230,8 @@ class _VzDistributionChart
     var xType = this.xType;
     var colorScale = this.colorScale;
     var _attached = this._attached;
-    if (this._makeChartAsyncCallbackId === null) {
-      this.cancelAsync(this._makeChartAsyncCallbackId || 0);
+    if (this._makeChartAsyncCallbackId !== null) {
+      this.cancelAsync(this._makeChartAsyncCallbackId);
     }
     this._makeChartAsyncCallbackId = this.async(function () {
       this._makeChartAsyncCallbackId = null;

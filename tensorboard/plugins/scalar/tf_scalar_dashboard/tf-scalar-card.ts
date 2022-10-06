@@ -335,7 +335,7 @@ export class TfScalarCard extends PolymerElement {
 
     const batchSize = this.batchSize ?? DEFAULT_BATCH_SIZE;
 
-    const requestGroups: any = [];
+    const requestGroups: Array<{tag: string, runs: Array<string>}> = [];
     for (const [tag, runs] of runsByTag) {
       for (let i = 0; i < runs.length; i += batchSize) {
         requestGroups.push({tag, runs: runs.slice(i, i + batchSize)});

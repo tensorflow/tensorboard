@@ -339,7 +339,10 @@ class VzLineChart2<SeriesMetadata = {}> extends LegacyElementMixin(
     this._listen(window, 'keyup', this._onKeyUp.bind(this), option);
   }
   override detached() {
-    this.cancelAsync(this._makeChartAsyncCallbackId || -1);
+    if (this._makeChartAsyncCallbackId !== null) {
+      this.cancelAsync(this._makeChartAsyncCallbackId);
+      this._makeChartAsyncCallbackId = null;
+    }
     if (this._chart) {
       this._chart.destroy();
       this._chart = undefined;

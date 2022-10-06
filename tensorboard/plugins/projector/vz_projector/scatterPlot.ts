@@ -460,7 +460,7 @@ export class ScatterPlot {
   private sceneIs3D(): boolean {
     return this.dimensionality === 3;
   }
-  private remove3dAxisFromScene(): THREE.Object3D {
+  private remove3dAxisFromScene(): THREE.Object3D | undefined {
     const axes = this.scene.getObjectByName('axes');
     if (axes != null) {
       this.scene.remove(axes);
