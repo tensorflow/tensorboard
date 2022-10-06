@@ -84,6 +84,10 @@ export type HistogramTimeSeriesLoadable =
   BaseTimeSeriesLoadable<PluginType.HISTOGRAMS>;
 export type ImageTimeSeriesLoadable = BaseTimeSeriesLoadable<PluginType.IMAGES>;
 
+export type SampledImageTimeSeriesLoadable = {
+  [sample: number]: ImageTimeSeriesLoadable;
+};
+
 export type TimeSeriesLoadables = {
   [PluginType.SCALARS]: ScalarTimeSeriesLoadable;
   [PluginType.HISTOGRAMS]: HistogramTimeSeriesLoadable;
@@ -92,17 +96,31 @@ export type TimeSeriesLoadables = {
 
 export type TimeSeriesLoadable = TimeSeriesLoadables[PluginType];
 
-export interface ScalarTimeSeriesData {
-  [tag: string]: ScalarTimeSeriesLoadable;
+export type TimeSeriesLoadableType =
+  | ScalarTimeSeriesLoadable
+  | HistogramTimeSeriesLoadable
+  | SampledImageTimeSeriesLoadable;
+
+export function isSampledImageTimeSeriesLoadable(
+  loadable: TimeSeriesLoadableType
+): loadable is SampledImageTimeSeriesLoadable {
+  return (
+    !Boolean((loadable as any).runToSeries) &&
+    Boolean(Object.values(loadable)[0].runToSeries)
+  );
 }
 
-export interface HistogramTimeSeriesData {
-  [tag: string]: HistogramTimeSeriesLoadable;
-}
+export type BaseTimeSeriesData<T extends TimeSeriesLoadableType> = {
+  [tag: string]: T;
+};
 
-export interface ImageTimeSeriesData {
-  [tag: string]: {[sample: number]: ImageTimeSeriesLoadable};
-}
+export type ScalarTimeSeriesData = BaseTimeSeriesData<ScalarTimeSeriesLoadable>;
+
+export type HistogramTimeSeriesData =
+  BaseTimeSeriesData<HistogramTimeSeriesLoadable>;
+
+export type ImageTimeSeriesData =
+  BaseTimeSeriesData<SampledImageTimeSeriesLoadable>;
 
 export type TimeSeriesData = {
   [PluginType.SCALARS]: ScalarTimeSeriesData;

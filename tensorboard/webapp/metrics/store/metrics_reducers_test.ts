@@ -46,7 +46,7 @@ import {
   createScalarStepData,
   createTimeSeriesData,
 } from '../testing';
-import {reducers} from './metrics_reducers';
+import {reducers, TEST_ONLY} from './metrics_reducers';
 import {getCardId, getPinnedCardId} from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
@@ -2758,6 +2758,16 @@ describe('metrics reducers', () => {
         expect(state2.stepSelectorEnabled).toBe(true);
         expect(state2.rangeSelectionEnabled).toBe(false);
       });
+
+      it('generates a value for linkedTimeSelection when needed', () => {
+        const state1 = buildMetricsState();
+
+        const state2 = reducers(state1, actions.rangeSelectionToggled({}));
+        expect(state2.linkedTimeSelection).toEqual({
+          start: {step: Infinity},
+          end: {step: -Infinity},
+        });
+      });
     });
 
     describe('#linkedTimeEnabled', () => {
@@ -3063,6 +3073,206 @@ describe('metrics reducers', () => {
 
       const state3 = reducers(state2, actions.metricsSettingsPaneClosed());
       expect(state3.isSettingsPaneOpen).toBe(false);
+    });
+  });
+
+  describe('getMinMaxTimeSelection', () => {
+    it('Filters out NaNs', () => {
+      expect(
+        TEST_ONLY.getMinMaxTimeSelection({
+          histograms: {
+            'some tag': {
+              runToSeries: {
+                'run 1': [
+                  {
+                    step: NaN,
+                    wallTime: 0,
+                    bins: [],
+                  },
+                  {
+                    step: 1,
+                    wallTime: 0,
+                    bins: [],
+                  },
+                ],
+              },
+              runToLoadState: {},
+            },
+          },
+          scalars: {},
+          images: {},
+        })
+      ).toEqual({start: {step: 1}, end: {step: 1}});
+    });
+    it('returns Infinity -> -Infinity when no data is present', () => {
+      expect(
+        TEST_ONLY.getMinMaxTimeSelection({
+          histograms: {},
+          scalars: {},
+          images: {},
+        })
+      ).toEqual({start: {step: Infinity}, end: {step: -Infinity}});
+    });
+    it('handles histogram time series data correctly', () => {
+      expect(
+        TEST_ONLY.getMinMaxTimeSelection({
+          histograms: {
+            'some tag': {
+              runToSeries: {
+                'run 1': [
+                  {
+                    step: 1,
+                    wallTime: 0,
+                    bins: [],
+                  },
+                  {
+                    step: 1,
+                    wallTime: 0,
+                    bins: [],
+                  },
+                ],
+                'run 2': [
+                  {
+                    step: 2,
+                    wallTime: 0,
+                    bins: [],
+                  },
+                  {
+                    step: 3,
+                    wallTime: 0,
+                    bins: [],
+                  },
+                ],
+              },
+              runToLoadState: {},
+            },
+            'some other tag': {
+              runToSeries: {
+                'run 3': [
+                  {
+                    step: 0,
+                    wallTime: 0,
+                    bins: [],
+                  },
+                ],
+              },
+              runToLoadState: {},
+            },
+          },
+          scalars: {},
+          images: {},
+        })
+      ).toEqual({start: {step: 0}, end: {step: 3}});
+    });
+    it('handles scalar time series data correctly', () => {
+      expect(
+        TEST_ONLY.getMinMaxTimeSelection({
+          histograms: {},
+          scalars: {
+            'some tag': {
+              runToSeries: {
+                'run 1': [
+                  {
+                    step: 1,
+                    wallTime: 0,
+                    value: 2,
+                  },
+                  {
+                    step: 2,
+                    wallTime: 0,
+                    value: 3,
+                  },
+                ],
+                'run 2': [
+                  {
+                    step: 2,
+                    wallTime: 0,
+                    value: 5,
+                  },
+                  {
+                    step: 4,
+                    wallTime: 0,
+                    value: 7,
+                  },
+                ],
+              },
+              runToLoadState: {},
+            },
+            'some other tag': {
+              runToSeries: {
+                'run 1': [
+                  {
+                    step: 0,
+                    wallTime: 0,
+                    value: 0,
+                  },
+                ],
+              },
+              runToLoadState: {},
+            },
+          },
+          images: {},
+        })
+      ).toEqual({start: {step: 0}, end: {step: 4}});
+    });
+    it('handles image time series data correctly', () => {
+      expect(
+        TEST_ONLY.getMinMaxTimeSelection({
+          histograms: {},
+          scalars: {},
+          images: {
+            'some tag': {
+              1: {
+                runToSeries: {
+                  'run 1': [
+                    {
+                      step: 0,
+                      wallTime: 0,
+                      imageId: '',
+                    },
+                    {
+                      step: 2,
+                      wallTime: 0,
+                      imageId: '',
+                    },
+                  ],
+                  'run 2': [
+                    {
+                      step: 1,
+                      wallTime: 0,
+                      imageId: '',
+                    },
+                    {
+                      step: 2,
+                      wallTime: 0,
+                      imageId: '',
+                    },
+                  ],
+                },
+                runToLoadState: {},
+              },
+              2: {
+                runToSeries: {},
+                runToLoadState: {},
+              },
+            },
+            'some other tag': {
+              3: {
+                runToSeries: {
+                  'run 3': [
+                    {
+                      step: 3,
+                      wallTime: 0,
+                      imageId: '',
+                    },
+                  ],
+                },
+                runToLoadState: {},
+              },
+            },
+          },
+        })
+      ).toEqual({start: {step: 0}, end: {step: 3}});
     });
   });
 });
