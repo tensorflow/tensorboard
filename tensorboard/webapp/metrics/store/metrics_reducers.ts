@@ -958,7 +958,6 @@ const reducer = createReducer(
     let nextCardStepIndexMap = {...state.cardStepIndex};
     let nextLinkedTimeSelection = state.linkedTimeSelection;
     let nextStepSelectorEnabled = state.stepSelectorEnabled;
-    let linkedTimeRangeEnabled = state.rangeSelectionEnabled;
 
     // Updates cardStepIndex only when toggle to enable linked time.
     if (nextLinkedTimeEnabled) {
@@ -980,7 +979,6 @@ const reducer = createReducer(
 
     return {
       ...state,
-      linkedTimeRangeEnabled,
       cardStepIndex: nextCardStepIndexMap,
       linkedTimeEnabled: nextLinkedTimeEnabled,
       linkedTimeSelection: nextLinkedTimeSelection,
@@ -995,7 +993,7 @@ const reducer = createReducer(
     if (nextRangeSelectionEnabled) {
       nextStepSelectorEnabled = nextRangeSelectionEnabled;
       if (!linkedTimeSelection || !linkedTimeSelection.end) {
-        linkedTimeSelection = getMinMaxTimeSelection(state.timeSeriesData);
+        linkedTimeSelection = getStepMinMax(state.timeSeriesData);
       }
     }
 
@@ -1092,7 +1090,10 @@ export function reducers(state: MetricsState | undefined, action: Action) {
   return composeReducers(reducer, namespaceContextedReducer)(state, action);
 }
 
-function getMinMaxTimeSelection(timeSeriesData: TimeSeriesData): TimeSelection {
+/**
+ * Finding the minimum and maximum step in all experiments.
+ */
+function getStepMinMax(timeSeriesData: TimeSeriesData): TimeSelection {
   // Finding the minimum and maximum step in all experiments.
   const allSteps = Object.values(timeSeriesData)
     // Get all tags from all types of time series data
@@ -1153,5 +1154,5 @@ function buildTagToRuns(runTagInfo: {[run: string]: string[]}) {
 }
 
 export const TEST_ONLY = {
-  getMinMaxTimeSelection,
+  getStepMinMax,
 };

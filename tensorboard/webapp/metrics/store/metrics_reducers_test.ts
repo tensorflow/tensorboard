@@ -3076,10 +3076,10 @@ describe('metrics reducers', () => {
     });
   });
 
-  describe('getMinMaxTimeSelection', () => {
+  describe('getStepMinMax', () => {
     it('Filters out NaNs', () => {
       expect(
-        TEST_ONLY.getMinMaxTimeSelection({
+        TEST_ONLY.getStepMinMax({
           histograms: {
             'some tag': {
               runToSeries: {
@@ -3106,7 +3106,7 @@ describe('metrics reducers', () => {
     });
     it('returns Infinity -> -Infinity when no data is present', () => {
       expect(
-        TEST_ONLY.getMinMaxTimeSelection({
+        TEST_ONLY.getStepMinMax({
           histograms: {},
           scalars: {},
           images: {},
@@ -3115,7 +3115,7 @@ describe('metrics reducers', () => {
     });
     it('handles histogram time series data correctly', () => {
       expect(
-        TEST_ONLY.getMinMaxTimeSelection({
+        TEST_ONLY.getStepMinMax({
           histograms: {
             'some tag': {
               runToSeries: {
@@ -3166,7 +3166,7 @@ describe('metrics reducers', () => {
     });
     it('handles scalar time series data correctly', () => {
       expect(
-        TEST_ONLY.getMinMaxTimeSelection({
+        TEST_ONLY.getStepMinMax({
           histograms: {},
           scalars: {
             'some tag': {
@@ -3217,7 +3217,7 @@ describe('metrics reducers', () => {
     });
     it('handles image time series data correctly', () => {
       expect(
-        TEST_ONLY.getMinMaxTimeSelection({
+        TEST_ONLY.getStepMinMax({
           histograms: {},
           scalars: {},
           images: {
