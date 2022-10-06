@@ -1,7 +1,7 @@
 FROM ubuntu:latest
 
 # Install environment dependencies
-RUN apt update && apt install -y git wget unzip python3 python3-pip python3-dev python-is-python3 default-jdk
+RUN apt update && apt install -y git wget unzip python3 python3-pip python3-dev python-is-python3 default-jdk nodejs npm
 RUN python3 -m pip install -U pip
 
 # Setup build environment
@@ -22,6 +22,7 @@ RUN pip install -r ./tensorboard/pip_package/requirements.txt -r ./tensorboard/p
 # Setup Bazel
 RUN ci/download_bazel.sh "${BAZEL_VERSION}" "${BAZEL_SHA256SUM}" ~/bazel
 RUN mv ~/bazel /usr/local/bin/bazel && chmod +x /usr/local/bin/bazel && cp ./ci/bazelrc ~/.bazelrc
+RUN npm i -g @bazel/ibazel
 
 # Install TensorFlow
 RUN pip install "${TENSORFLOW_VERSION}"
