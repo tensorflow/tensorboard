@@ -66,7 +66,11 @@ import {
 import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer';
 import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
-import {stepSelectorToggled, timeSelectionChanged} from '../../actions';
+import {
+  sortingDataTable,
+  stepSelectorToggled,
+  timeSelectionChanged,
+} from '../../actions';
 import {PluginType, ScalarStepDatum} from '../../data_source';
 import {
   getCardLoadState,
@@ -92,6 +96,7 @@ import {
   ScalarCardPoint,
   ScalarCardSeriesMetadataMap,
   SeriesType,
+  SortingInfo,
 } from './scalar_card_types';
 import {
   maybeClipLinkedTimeSelection,
@@ -158,6 +163,7 @@ function areSeriesEqual(
       (onVisibilityChange)="onVisibilityChange($event)"
       (onTimeSelectionChanged)="onTimeSelectionChanged($event)"
       (onStepSelectorToggled)="onStepSelectorToggled($event)"
+      (onDataTableSorting)="onDataTableSorting($event)"
       (onLineChartZoom)="onLineChartZoom($event)"
     ></scalar-card-component>
   `,
@@ -607,6 +613,10 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
         relativeTimeInMs: 0,
       };
     });
+  }
+
+  onDataTableSorting(sortingInfo: SortingInfo) {
+    this.store.dispatch(sortingDataTable(sortingInfo));
   }
 
   onTimeSelectionChanged(
