@@ -25,15 +25,12 @@ import {mapObjectValues} from '../../util/lang';
 import {composeReducers} from '../../util/ngrx';
 import * as actions from '../actions';
 import {
-  HistogramStepDatum,
-  ImageStepDatum,
   isFailedTimeSeriesResponse,
   isSampledPlugin,
   isSingleRunPlugin,
   isSingleRunTimeSeriesRequest,
   NonSampledPluginType,
   PluginType,
-  ScalarStepDatum,
   TagMetadata as DataSourceTagMetadata,
   TimeSeriesRequest,
   TimeSeriesResponse,
@@ -44,7 +41,6 @@ import {
   CardUniqueInfo,
   SCALARS_SMOOTHING_MAX,
   SCALARS_SMOOTHING_MIN,
-  TimeSelection,
   TooltipSort,
   URLDeserializedState,
 } from '../internal_types';
@@ -65,18 +61,15 @@ import {
 import {
   CardMetadataMap,
   CardStepIndexMap,
-  isSampledImageTimeSeriesLoadable,
   MetricsNamespacedState,
   MetricsNonNamespacedState,
   MetricsSettings,
   MetricsState,
   METRICS_SETTINGS_DEFAULT,
   NonSampledPluginTagMetadata,
-  StepDatum,
   TagMetadata,
   TimeSeriesData,
   TimeSeriesLoadable,
-  TimeSeriesLoadableType,
 } from './metrics_types';
 
 function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {
@@ -992,11 +985,19 @@ const reducer = createReducer(
 
     if (nextRangeSelectionEnabled) {
       nextStepSelectorEnabled = nextRangeSelectionEnabled;
-      if (!linkedTimeSelection || !linkedTimeSelection.end) {
-        linkedTimeSelection = getStepMinMax(state.timeSeriesData);
+      if (!linkedTimeSelection) {
+        linkedTimeSelection = {
+          start: {step: state.stepMinMax.min},
+          end: {step: state.stepMinMax.max},
+        };
+      }
+      if (!linkedTimeSelection.end) {
+        linkedTimeSelection = {
+          ...linkedTimeSelection,
+          end: {step: state.stepMinMax.max},
+        };
       }
     }
-
     return {
       ...state,
       stepSelectorEnabled: nextStepSelectorEnabled,
@@ -1090,46 +1091,6 @@ export function reducers(state: MetricsState | undefined, action: Action) {
   return composeReducers(reducer, namespaceContextedReducer)(state, action);
 }
 
-/**
- * Finding the minimum and maximum step in all experiments.
- */
-function getStepMinMax(timeSeriesData: TimeSeriesData): TimeSelection {
-  // Finding the minimum and maximum step in all experiments.
-  const allSteps = Object.values(timeSeriesData)
-    // Get all tags from all types of time series data
-    .map((timeSeriesData: TimeSeriesData[keyof TimeSeriesData]) =>
-      Object.values(timeSeriesData)
-    )
-    .flat()
-    // Get all the runs
-    .map((timeSeriesLoadable: TimeSeriesLoadableType) => {
-      // Image data (and potentially other "sampled" data) has an extra layer of nesting.
-      if (isSampledImageTimeSeriesLoadable(timeSeriesLoadable)) {
-        return Object.values(timeSeriesLoadable)
-          .map((loadable) => Object.values(loadable))
-          .flat();
-      }
-      return Object.values(timeSeriesLoadable.runToSeries);
-    })
-    .flat()
-    // Get all the data from each run (note that this is doubly nested)
-    .map((datum: StepDatum) => Object.values(datum).flat())
-    .flat()
-    // Extract the step number from the datum.
-    .map(({step}: ScalarStepDatum | HistogramStepDatum | ImageStepDatum) => {
-      if (isNaN(step)) {
-        return -Infinity;
-      }
-      return step;
-    })
-    .filter((step) => Number.isFinite(step));
-
-  return {
-    start: {step: Math.min(...allSteps)},
-    end: {step: Math.max(...allSteps)},
-  };
-}
-
 function buildPluginTagData(
   tagMetadata: DataSourceTagMetadata,
   pluginType: NonSampledPluginType
@@ -1152,7 +1113,3 @@ function buildTagToRuns(runTagInfo: {[run: string]: string[]}) {
   }
   return tagToRuns;
 }
-
-export const TEST_ONLY = {
-  getStepMinMax,
-};
