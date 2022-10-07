@@ -17,15 +17,12 @@ RUN git clone https://github.com/tensorflow/tensorboard /tensorboard
 WORKDIR /tensorboard
 
 # Install python dependencies
-RUN pip install -r ./tensorboard/pip_package/requirements.txt -r ./tensorboard/pip_package/requirements_dev.txt && pip freeze --all
+RUN pip install -r ./tensorboard/pip_package/requirements.txt -r ./tensorboard/pip_package/requirements_dev.txt "$TENSORFLOW_VERSION" && pip freeze --all
 
 # Setup Bazel
 RUN ci/download_bazel.sh "${BAZEL_VERSION}" "${BAZEL_SHA256SUM}" ~/bazel
 RUN mv ~/bazel /usr/local/bin/bazel && chmod +x /usr/local/bin/bazel && cp ./ci/bazelrc ~/.bazelrc
 RUN npm i -g @bazel/ibazel
-
-# Install TensorFlow
-RUN pip install "${TENSORFLOW_VERSION}"
 
 # Fetch dependencies
 RUN bazel fetch //tensorboard/...
