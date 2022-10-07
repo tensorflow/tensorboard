@@ -2988,6 +2988,24 @@ describe('metrics reducers', () => {
       expect(state4.stepSelectorEnabled).toBe(false);
       expect(state2.linkedTimeEnabled).toBe(false);
     });
+
+    it('disables rangeSelection when stepSelector is disabled', () => {
+      const state1 = buildMetricsState({
+        stepSelectorEnabled: false,
+        rangeSelectionEnabled: true,
+      });
+      const state2 = reducers(state1, actions.stepSelectorToggled({}));
+      expect(state2.stepSelectorEnabled).toBe(true);
+      expect(state2.rangeSelectionEnabled).toBe(false);
+
+      const state3 = buildMetricsState({
+        stepSelectorEnabled: true,
+        rangeSelectionEnabled: true,
+      });
+      const state4 = reducers(state3, actions.stepSelectorToggled({}));
+      expect(state4.stepSelectorEnabled).toBe(false);
+      expect(state2.rangeSelectionEnabled).toBe(false);
+    });
   });
 
   describe('plugin filtering feature', () => {

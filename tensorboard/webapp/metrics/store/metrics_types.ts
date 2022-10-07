@@ -101,15 +101,6 @@ export type TimeSeriesLoadableType =
   | HistogramTimeSeriesLoadable
   | SampledImageTimeSeriesLoadable;
 
-export function isSampledImageTimeSeriesLoadable(
-  loadable: TimeSeriesLoadableType
-): loadable is SampledImageTimeSeriesLoadable {
-  return (
-    !Boolean((loadable as any).runToSeries) &&
-    Boolean(Object.values(loadable)[0].runToSeries)
-  );
-}
-
 export type BaseTimeSeriesData<T extends TimeSeriesLoadableType> = {
   [tag: string]: T;
 };
