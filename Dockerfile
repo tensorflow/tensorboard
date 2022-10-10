@@ -1,7 +1,7 @@
 FROM ubuntu:latest
 
 # Install environment dependencies
-RUN apt update && apt install -y git wget unzip python3 python3-pip python3-dev python-is-python3 default-jdk nodejs npm
+RUN apt update && apt install -y wget unzip python3 python3-pip python3-dev python-is-python3 default-jdk nodejs npm
 RUN python3 -m pip install -U pip
 
 # Setup build environment
@@ -13,7 +13,7 @@ ENV BUILDOZER_SHA256SUM='3d58a0b6972e4535718cdd6c12778170ea7382de7c75bc3728f5719
 ENV TENSORFLOW_VERSION='tf-nightly'
 
 # Get the code
-RUN git clone https://github.com/tensorflow/tensorboard /tensorboard
+COPY . /tensorboard
 WORKDIR /tensorboard
 
 # Install python dependencies
