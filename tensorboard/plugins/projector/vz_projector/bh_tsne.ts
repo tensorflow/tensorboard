@@ -477,9 +477,14 @@ export class TSNE {
     let forces: [number[], number[]][] = new Array(N);
     for (let i = 0; i < N; ++i) {
       let pointI = points[i];
+
+      // Defining these two here to avoid use before assignment error.
+      let sameCount = 0;
+      var otherCount = 0;
+
       if (supervised) {
-        var sameCount = labelCounts[labels[i]];
-        var otherCount = N - sameCount - unlabeledCount;
+        sameCount = labelCounts[labels[i]];
+        otherCount = N - sameCount - unlabeledCount;
       }
       // Compute the positive forces for the i-th node.
       let Fpos = this.dim === 3 ? [0, 0, 0] : [0, 0];

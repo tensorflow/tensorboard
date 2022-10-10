@@ -286,7 +286,7 @@ class TfFilterableCheckboxList extends LegacyElementMixin(PolymerElement) {
   @observe('coloring')
   _synchronizeColors() {
     var e = this.coloring;
-    const checkboxes = this.root.querySelectorAll('paper-checkbox');
+    const checkboxes = this.root?.querySelectorAll('paper-checkbox') ?? [];
     checkboxes.forEach((cb) => {
       // Setting the null value will clear previously set color.
       const color = this.useCheckboxColors

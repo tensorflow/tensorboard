@@ -101,10 +101,10 @@ export let healthPillEntries: HealthPillEntry[] = [
  */
 export function fit(svg, zoomG, d3zoom, callback) {
   let svgRect = svg.getBoundingClientRect();
-  let sceneSize = null;
+  let sceneSize: DOMRect | null = null;
   try {
     sceneSize = zoomG.getBBox();
-    if (sceneSize.width === 0) {
+    if (sceneSize?.width! === 0) {
       // There is no scene anymore. We have been detached from the dom.
       return;
     }
@@ -116,8 +116,8 @@ export function fit(svg, zoomG, d3zoom, callback) {
   let scale =
     0.9 *
     Math.min(
-      svgRect.width / sceneSize.width,
-      svgRect.height / sceneSize.height,
+      svgRect.width / sceneSize?.width!,
+      svgRect.height / sceneSize?.height!,
       2
     );
   let params = layout.PARAMS.graph;
@@ -419,7 +419,7 @@ function _getHealthPillTextContent(
   }
   text += '\nshape: ' + shapeStr + '\n\n';
   text += '#(elements): ' + totalCount + '\n';
-  const breakdownItems = [];
+  const breakdownItems: string[] = [];
   for (let i = 0; i < elementsBreakdown.length; i++) {
     if (elementsBreakdown[i] > 0) {
       breakdownItems.push(
@@ -658,6 +658,6 @@ export function addHealthPills(
       // Only show health pill data for this node if it is available.
       const healthPills = nodeNamesToHealthPills[nodeInfo.node.name];
       const healthPill = healthPills ? healthPills[healthPillStepIndex] : null;
-      addHealthPill(this as SVGElement, healthPill, nodeInfo, healthPillId++);
+      addHealthPill(this as SVGElement, healthPill!, nodeInfo, healthPillId++);
     });
 }

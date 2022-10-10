@@ -114,20 +114,15 @@ class TfCardHeading extends PolymerElement {
     </style>
   `;
 
-  @property({type: String})
-  displayName: string = null;
+  @property({type: String}) displayName: string | null = null;
 
-  @property({type: String})
-  tag: string = null;
+  @property({type: String}) tag: string | null = null;
 
-  @property({type: String})
-  run: string = null;
+  @property({type: String}) run: string | null = null;
 
-  @property({type: String})
-  description: string = null;
+  @property({type: String}) description: string | null = null;
 
-  @property({type: String})
-  color: string = null;
+  @property({type: String}) color: string | null = null;
 
   @property({
     type: String,

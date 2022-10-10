@@ -101,8 +101,8 @@ export class Hierarchy extends tf_graph_util.Dispatcher<HierarchyEvent> {
     this.root = createMetanode(ROOT_NAME, this.graphOptions);
     this.libraryFunctions = {};
     this.seriesGroupMap = new Map(params.seriesMap);
-    this.devices = null;
-    this.xlaClusters = null;
+    this.devices = null!;
+    this.xlaClusters = null!;
     this.verifyTemplate = params.verifyTemplate;
     /**
      * @type {Object} Dictionary object that maps node name to the node
@@ -153,7 +153,7 @@ export class Hierarchy extends tf_graph_util.Dispatcher<HierarchyEvent> {
       throw Error('Could not find node in hierarchy: ' + nodeName);
     }
     if (!('metagraph' in node)) {
-      return null;
+      return null!;
     }
     let groupNode = <GroupNode>node;
     if (groupNode.bridgegraph) {
@@ -352,7 +352,7 @@ export class Hierarchy extends tf_graph_util.Dispatcher<HierarchyEvent> {
       throw Error('Could not find node with name: ' + nodeName);
     }
     if (!node.isGroupNode) {
-      return null;
+      return null!;
     }
     if (nodeName in this.orderings) {
       return this.orderings[nodeName];
@@ -387,9 +387,9 @@ export class Hierarchy extends tf_graph_util.Dispatcher<HierarchyEvent> {
     let index = 0;
     while (queue.length) {
       let childName = queue.shift();
-      ordering[childName] = index++;
-      _.each(successors[childName], (succName) => queue.push(succName));
-      delete successors[childName]; // Prevent cycles from infinite looping.
+      ordering[childName!] = index++;
+      _.each(successors[childName!], (succName) => queue.push(succName));
+      delete successors[childName!]; // Prevent cycles from infinite looping.
     }
     return ordering;
   }
@@ -402,11 +402,11 @@ export class Hierarchy extends tf_graph_util.Dispatcher<HierarchyEvent> {
    */
   getTemplateIndex(): (string) => number | null {
     if (!this.templates) {
-      return null;
+      return null!;
     }
     let templateNames = d3.keys(this.templates);
     if (!templateNames.length) {
-      return null;
+      return null!;
     }
     let templateIndex = d3
       .scaleOrdinal()
@@ -570,7 +570,7 @@ export function joinAndAggregateStats(
   // Reset stats for each group node.
   _.each(h.getNodeMap(), (node, nodeName) => {
     if (node.isGroupNode) {
-      node.stats = new NodeStats(null);
+      node.stats = new NodeStats(null!);
       (<GroupNode>node).deviceHistogram = {};
     }
   });
@@ -783,8 +783,8 @@ function addEdges(
   };
   _.each(graph.edges, (baseEdge) => {
     // Get the hierarchical paths for the source and destination of the edge.
-    let sourceAncestorIndex = getPath(graph.nodes[baseEdge.v], sourcePath);
-    let destAncestorIndex = getPath(graph.nodes[baseEdge.w], destPath);
+    let sourceAncestorIndex = getPath(graph.nodes[baseEdge.v!], sourcePath);
+    let destAncestorIndex = getPath(graph.nodes[baseEdge.w!], destPath);
     // If the hierarchical path cannot be found for either endpoint, then we
     // cannot create the edge. This happens for example when a node has a
     // control dependency on a summary node, which are embedded.

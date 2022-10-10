@@ -207,7 +207,7 @@ class TfGraphOpCompatCard extends LegacyElementMixin(
   })
   _opIncompatColor: string = tf_graph_render.OpNodeColors.INCOMPATIBLE;
   @property({type: Object})
-  _templateIndex: (name: string) => number | null = null;
+  _templateIndex: ((name: string) => number | null) | null = null;
   _getNode(nodeName, graphHierarchy) {
     return graphHierarchy.node(nodeName);
   }

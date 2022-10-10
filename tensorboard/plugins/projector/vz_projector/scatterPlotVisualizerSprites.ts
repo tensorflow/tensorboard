@@ -164,7 +164,7 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
   private readonly FRAGMENT_SHADER = createFragmentShader();
   private scene: THREE.Scene;
   private fog: THREE.Fog;
-  private texture: THREE.Texture = null;
+  private texture: THREE.Texture | null = null;
   private standinTextureForPoints: THREE.Texture;
   private spritesPerRow: number;
   private spritesPerColumn: number;
@@ -295,15 +295,15 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute(
       'position',
-      new THREE.BufferAttribute(undefined, XYZ_NUM_ELEMENTS)
+      new THREE.BufferAttribute(undefined!, XYZ_NUM_ELEMENTS)
     );
     geometry.setAttribute(
       'color',
-      new THREE.BufferAttribute(undefined, RGB_NUM_ELEMENTS)
+      new THREE.BufferAttribute(undefined!, RGB_NUM_ELEMENTS)
     );
     geometry.setAttribute(
       'scaleFactor',
-      new THREE.BufferAttribute(undefined, INDEX_NUM_ELEMENTS)
+      new THREE.BufferAttribute(undefined!, INDEX_NUM_ELEMENTS)
     );
     return geometry;
   }
@@ -334,17 +334,17 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
     if (this.points != null) {
       this.scene.remove(this.points);
       this.points.geometry.dispose();
-      this.points = null;
-      this.worldSpacePointPositions = null;
+      this.points = null!;
+      this.worldSpacePointPositions = null!;
     }
   }
   private disposeTextureAtlas() {
     if (this.texture != null) {
       this.texture.dispose();
     }
-    this.texture = null;
-    this.renderMaterial = null;
-    this.pickingMaterial = null;
+    this.texture = null!;
+    this.renderMaterial = null!;
+    this.pickingMaterial = null!;
   }
   setScene(scene: THREE.Scene) {
     this.scene = scene;

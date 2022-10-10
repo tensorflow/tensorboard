@@ -87,7 +87,7 @@ export class ProjectorScatterPlotAdapter {
   private selectedPointIndices: number[];
   private neighborsOfFirstSelectedPoint: knn.NearestEntry[];
   private renderLabelsIn3D: boolean = false;
-  private labelPointAccessor: string;
+  private labelPointAccessor: string | null;
   private legendPointColorer: (ds: DataSet, index: number) => string;
   private distanceMetric: DistanceFunction;
   private spriteVisualizer: ScatterPlotVisualizerSprites;
@@ -144,7 +144,7 @@ export class ProjectorScatterPlotAdapter {
     }
     if (this.labels3DVisualizer != null) {
       this.labels3DVisualizer.setLabelStrings(
-        this.generate3DLabelsArray(dataSet, this.labelPointAccessor)
+        this.generate3DLabelsArray(dataSet, this.labelPointAccessor)!
       );
     }
     if (this.spriteVisualizer == null) {
@@ -180,12 +180,12 @@ export class ProjectorScatterPlotAdapter {
   ) {
     this.legendPointColorer = legendPointColorer;
   }
-  setLabelPointAccessor(labelPointAccessor: string) {
+  setLabelPointAccessor(labelPointAccessor: string | null) {
     this.labelPointAccessor = labelPointAccessor;
     if (this.labels3DVisualizer != null) {
       const ds = this.projection == null ? null : this.projection.dataSet;
       this.labels3DVisualizer.setLabelStrings(
-        this.generate3DLabelsArray(ds, labelPointAccessor)
+        this.generate3DLabelsArray(ds!, labelPointAccessor)!
       );
     }
   }
@@ -206,8 +206,8 @@ export class ProjectorScatterPlotAdapter {
     const projectionComponents =
       this.projection == null ? null : this.projection.projectionComponents;
     const newPositions = this.generatePointPositionArray(
-      ds,
-      projectionComponents
+      ds!,
+      projectionComponents!
     );
     this.scatterPlot.setPointPositions(newPositions);
   }
@@ -269,21 +269,21 @@ export class ProjectorScatterPlotAdapter {
     projectionComponents: ProjectionComponents3D
   ): Float32Array {
     if (ds == null) {
-      return null;
+      return null!;
     }
     const xScaler = d3.scaleLinear();
     const yScaler = d3.scaleLinear();
-    let zScaler = null;
+    let zScaler: any = null!;
     {
       // Determine max and min of each axis of our data.
       const xExtent = d3.extent(
         ds.points,
         (p, i) => ds.points[i].projections[projectionComponents[0]]
-      );
+      ) as [number, number];
       const yExtent = d3.extent(
         ds.points,
         (p, i) => ds.points[i].projections[projectionComponents[1]]
-      );
+      ) as [number, number];
       const range = [
         -SCATTER_PLOT_CUBE_LENGTH / 2,
         SCATTER_PLOT_CUBE_LENGTH / 2,
@@ -328,7 +328,7 @@ export class ProjectorScatterPlotAdapter {
     hoverPointIndex: number
   ): LabelRenderParams {
     if (ds == null) {
-      return null;
+      return null!;
     }
     const selectedPointCount =
       selectedPointIndices == null ? 0 : selectedPointIndices.length;
@@ -540,7 +540,7 @@ export class ProjectorScatterPlotAdapter {
       selectedPoints == null ? 0 : selectedPoints.length;
     if (selectedPointCount > 0) {
       opacities.fill(POLYLINE_DESELECTED_OPACITY);
-      const i = ds.points[selectedPoints[0]].sequenceIndex;
+      const i = ds.points[selectedPoints[0]].sequenceIndex!;
       opacities[i] = POLYLINE_SELECTED_OPACITY;
     } else {
       opacities.fill(POLYLINE_DEFAULT_OPACITY);
@@ -559,7 +559,7 @@ export class ProjectorScatterPlotAdapter {
     const selectedPointCount =
       selectedPoints == null ? 0 : selectedPoints.length;
     if (selectedPointCount > 0) {
-      const i = ds.points[selectedPoints[0]].sequenceIndex;
+      const i = ds.points[selectedPoints[0]].sequenceIndex!;
       widths[i] = POLYLINE_SELECTED_LINEWIDTH;
     }
     return widths;
@@ -656,7 +656,7 @@ export class ProjectorScatterPlotAdapter {
     }
     return colors;
   }
-  generate3DLabelsArray(ds: DataSet, accessor: string) {
+  generate3DLabelsArray(ds: DataSet, accessor: string | null) {
     if (ds == null || accessor == null) {
       return null;
     }
@@ -667,9 +667,13 @@ export class ProjectorScatterPlotAdapter {
     }
     return labels;
   }
-  private getLabelText(ds: DataSet, i: number, accessor: string): string {
-    return ds.points[i].metadata[accessor] !== undefined
-      ? String(ds.points[i].metadata[accessor])
+  private getLabelText(
+    ds: DataSet,
+    i: number,
+    accessor: string | null
+  ): string {
+    return ds.points[i].metadata[accessor!] !== undefined
+      ? String(ds.points[i].metadata[accessor!])
       : `Unknown #${i}`;
   }
   private updateScatterPlotWithNewProjection(projection: Projection) {
@@ -690,14 +694,14 @@ export class ProjectorScatterPlotAdapter {
     const ds = this.projection == null ? null : this.projection.dataSet;
     const scatterPlot = this.scatterPlot;
     scatterPlot.removeAllVisualizers();
-    this.labels3DVisualizer = null;
-    this.canvasLabelsVisualizer = null;
-    this.spriteVisualizer = null;
-    this.polylineVisualizer = null;
+    this.labels3DVisualizer = null!;
+    this.canvasLabelsVisualizer = null!;
+    this.spriteVisualizer = null!;
+    this.polylineVisualizer = null!;
     if (inLabels3DMode) {
       this.labels3DVisualizer = new ScatterPlotVisualizer3DLabels();
       this.labels3DVisualizer.setLabelStrings(
-        this.generate3DLabelsArray(ds, this.labelPointAccessor)
+        this.generate3DLabelsArray(ds!, this.labelPointAccessor)!
       );
     } else {
       this.spriteVisualizer = new ScatterPlotVisualizerSprites();
@@ -707,7 +711,7 @@ export class ProjectorScatterPlotAdapter {
       );
     }
     this.polylineVisualizer = new ScatterPlotVisualizerPolylines();
-    this.setDataSet(ds);
+    this.setDataSet(ds!);
     if (this.spriteVisualizer) {
       scatterPlot.addVisualizer(this.spriteVisualizer);
     }

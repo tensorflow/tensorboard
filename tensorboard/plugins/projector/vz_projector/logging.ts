@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 const WARNING_DURATION_MS = 10000;
-let dom: HTMLElement = null;
+let dom: HTMLElement | null = null;
 let msgId = 0;
 let numActiveMessages = 0;
 export function setDomContainer(domElement: HTMLElement) {
@@ -32,18 +32,18 @@ export function setDomContainer(domElement: HTMLElement) {
  */
 export function setModalMessage(
   msg: string,
-  id: string = null,
-  title = null,
+  id: string | null = null,
+  title: string | null = null,
   isErrorMsg = false
 ): string {
   if (dom == null) {
     console.warn("Can't show modal message before the dom is initialized");
-    return;
+    return '';
   }
   if (id == null) {
     id = (msgId++).toString();
   }
-  let dialog = dom.shadowRoot.querySelector('#notification-dialog') as any;
+  let dialog = dom.shadowRoot?.querySelector('#notification-dialog') as any;
   dialog.querySelector('.close-button').style.display = isErrorMsg
     ? null
     : 'none';
@@ -86,13 +86,13 @@ export function setModalMessage(
   return id;
 }
 export function setErrorMessage(errMsg: string, task?: string) {
-  setModalMessage(errMsg, null, 'Error ' + (task != null ? task : ''), true);
+  setModalMessage(errMsg, null!, 'Error ' + (task != null ? task : ''), true);
 }
 /**
  * Shows a warning message to the user for a certain amount of time.
  */
 export function setWarningMessage(msg: string): void {
-  let toast = dom.shadowRoot.querySelector('#toast') as any;
+  let toast = dom?.shadowRoot?.querySelector('#toast') as any;
   toast.text = msg;
   toast.duration = WARNING_DURATION_MS;
   toast.open();

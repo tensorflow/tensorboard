@@ -196,9 +196,9 @@ class TfHparamsSessionGroupDetails extends mixinBehaviors(
     (this as any).addEventListener('iron-resize', this.redraw.bind(this));
   }
   redraw() {
-    this.shadowRoot
-      .querySelectorAll('tf-scalar-card')
-      .forEach((c) => (c as any).redraw());
+    this.shadowRoot?.querySelectorAll('tf-scalar-card').forEach((c) => {
+      (c as any).redraw();
+    });
   }
   @observe('sessionGroup.*')
   _sessionGroupChanged() {
@@ -218,7 +218,7 @@ class TfHparamsSessionGroupDetails extends mixinBehaviors(
     }
     // Reset each scalar-card by prodding 'tag'.
     // We do this so the card will reset its domain on the next load.
-    this.shadowRoot.querySelectorAll('tf-scalar-card').forEach((c) => {
+    this.shadowRoot?.querySelectorAll('tf-scalar-card').forEach((c) => {
       const anyCard = c as any;
       const tag = anyCard.get('tag');
       anyCard.set('tag', '');

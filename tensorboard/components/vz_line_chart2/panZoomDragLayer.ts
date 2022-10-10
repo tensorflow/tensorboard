@@ -27,7 +27,7 @@ export class PanZoomDragLayer extends Plottable.Components.Group {
   private state: State = State.NONE;
   private panStartCallback = new Plottable.Utils.CallbackSet<PanCallback>();
   private panEndCallback = new Plottable.Utils.CallbackSet<PanCallback>();
-  private _mouseDispatcher: Plottable.Dispatchers.Mouse;
+  private _mouseDispatcher: Plottable.Dispatchers.Mouse | null;
   /**
    * A Plottable component/layer with a complex interaction for the line chart.
    * When not pressing alt-key, it behaves like DragZoomLayer -- dragging a

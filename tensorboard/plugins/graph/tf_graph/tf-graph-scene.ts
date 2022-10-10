@@ -97,7 +97,7 @@ class TfGraphScene2
   @property({
     type: Object,
   })
-  _zoomStartCoords: object = null;
+  _zoomStartCoords: object | null = null;
 
   /**
    * Keeps track of the current coordinates of a graph zoom/pan
@@ -107,7 +107,7 @@ class TfGraphScene2
   @property({
     type: Object,
   })
-  _zoomTransform: object = null;
+  _zoomTransform: object | null = null;
 
   /** Maximum distance of a zoom event for it to be interpreted as a click */
   @property({
@@ -121,8 +121,7 @@ class TfGraphScene2
    * tf_graph_scene_node when computing node color by structure.
    * This property is a d3.scale.ordinal object.
    */
-  @property({type: Object})
-  templateIndex: (name: string) => number;
+  @property({type: Object}) templateIndex: (name: string) => number | null;
 
   /**
    * A minimap object to notify for zoom events.
@@ -602,7 +601,7 @@ class TfGraphScene2
     // Update the minimap to reflect the highlighted (selected) node.
     (this.minimap as any).update();
     var node = this.renderHierarchy.hierarchy.node(selectedNode);
-    var nodeParents = [];
+    var nodeParents: string[] = [];
     // Create list of all metanode parents of the selected node.
     while (
       node.parentNode != null &&

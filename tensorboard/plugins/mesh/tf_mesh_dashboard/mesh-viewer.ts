@@ -153,20 +153,20 @@ export class MeshViewer extends THREE.EventDispatcher {
     this._scene = new THREE.Scene();
     var camera = new THREE[config.camera.cls](
       config.camera.fov,
-      this._canvasSize.width / this._canvasSize.height,
+      this._canvasSize?.width! / this._canvasSize?.height!,
       config.camera.near,
       config.camera.far
     );
     this._camera = camera;
 
-    this.initCameraPosition = null;
+    this.initCameraPosition = undefined;
     if (config.camera.position) {
       this.initCameraPosition = new THREE.Vector3().fromArray(
         config.camera.position
       );
     }
 
-    this.initCameraLookAt = null;
+    this.initCameraLookAt = undefined;
     if (config.camera.lookAt) {
       this.initCameraLookAt = new THREE.Vector3().fromArray(
         config.camera.lookAt
@@ -191,7 +191,7 @@ export class MeshViewer extends THREE.EventDispatcher {
     this._cameraControls = camControls;
     this._renderer = new THREE.WebGLRenderer({antialias: true});
     this._renderer.setPixelRatio(window.devicePixelRatio);
-    this._renderer.setSize(this._canvasSize.width, this._canvasSize.height);
+    this._renderer.setSize(this._canvasSize?.width!, this._canvasSize?.height!);
     this._renderer.setClearColor(0xffffff, 1);
   }
 
@@ -199,8 +199,10 @@ export class MeshViewer extends THREE.EventDispatcher {
    * Clears scene from any 3D geometry.
    */
   _clearScene() {
-    while (this._scene.children.length > 0) {
-      this._scene.remove(this._scene.children[0]);
+    if (this._scene) {
+      while (this._scene.children.length > 0) {
+        this._scene.remove(this._scene?.children[0]);
+      }
     }
   }
 
@@ -234,9 +236,9 @@ export class MeshViewer extends THREE.EventDispatcher {
    */
   getCameraPosition() {
     return {
-      far: this._camera.far,
-      position: this._camera.position.clone(),
-      target: this._cameraControls.target.clone(),
+      far: this._camera?.far,
+      position: this._camera?.position.clone(),
+      target: this._cameraControls?.target.clone(),
     };
   }
 
@@ -258,9 +260,12 @@ export class MeshViewer extends THREE.EventDispatcher {
     if (this._animationFrameIndex) {
       cancelAnimationFrame(this._animationFrameIndex);
     }
-    this._camera.aspect = this._canvasSize.width / this._canvasSize.height;
-    this._camera.updateProjectionMatrix();
-    this._renderer.setSize(this._canvasSize.width, this._canvasSize.height);
+    if (this._camera) {
+      this._camera.aspect =
+        this._canvasSize?.width! / this._canvasSize?.height!;
+      this._camera.updateProjectionMatrix();
+    }
+    this._renderer.setSize(this._canvasSize?.width!, this._canvasSize?.height!);
     const animate = function () {
       var delta = this._clock.getDelta();
       this._cameraControls.update(delta);
@@ -310,7 +315,7 @@ export class MeshViewer extends THREE.EventDispatcher {
    */
   resetView(mesh?: THREE.Mesh) {
     if (!this.isReady()) return;
-    this._cameraControls.reset();
+    this._cameraControls?.reset();
 
     let nextMesh: any;
     if (!mesh && this._lastMesh) {
@@ -321,7 +326,7 @@ export class MeshViewer extends THREE.EventDispatcher {
       // Store last mesh in case of resetView method called due to some events.
       this._lastMesh = nextMesh;
     }
-    this._cameraControls.update();
+    this._cameraControls?.update();
   }
   /**
    * Creates geometry for current step data.
@@ -377,7 +382,7 @@ export class MeshViewer extends THREE.EventDispatcher {
     }
     var material = new THREE[pc_config.material.cls](pc_config.material);
     var mesh = new THREE.Points(geometry, material);
-    this._scene.add(mesh);
+    this._scene?.add(mesh);
     this._lastMesh = mesh;
   }
   /**
@@ -389,12 +394,16 @@ export class MeshViewer extends THREE.EventDispatcher {
    */
   setCameraViewpoint(position, far, target) {
     this._silent = true;
-    this._camera.far = far;
-    this._camera.position.set(position.x, position.y, position.z);
-    this._camera.lookAt(target.clone());
-    this._camera.updateProjectionMatrix();
-    this._cameraControls.target = target.clone();
-    this._cameraControls.update();
+    if (this._camera) {
+      this._camera.far = far;
+      this._camera.position.set(position.x, position.y, position.z);
+      this._camera.lookAt(target.clone());
+      this._camera.updateProjectionMatrix();
+    }
+    if (this._cameraControls) {
+      this._cameraControls.target = target.clone();
+      this._cameraControls.update();
+    }
     this._silent = false;
   }
   /**
@@ -422,7 +431,7 @@ export class MeshViewer extends THREE.EventDispatcher {
     boundingBox.getCenter(center);
     boundingBox.getSize(size);
     const max_dim = Math.max(size.x, size.y, size.z);
-    const fov = this._camera.fov * (Math.PI / 180);
+    const fov = this._camera?.fov! * (Math.PI / 180);
     let camera_z = Math.abs(max_dim / (2 * Math.tan(fov / 2))) * offset;
     const min_z = boundingBox.min.z;
     // Make sure that even after arbitrary rotation mesh won't be clipped.
@@ -500,7 +509,7 @@ export class MeshViewer extends THREE.EventDispatcher {
     let mesh = new THREE.Mesh(geometry, material);
     mesh.castShadow = true;
     mesh.receiveShadow = true;
-    this._scene.add(mesh);
+    this._scene?.add(mesh);
     this._lastMesh = mesh;
   }
   /**

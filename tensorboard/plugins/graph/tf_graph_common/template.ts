@@ -142,7 +142,7 @@ function groupTemplateAndAssignId(nnGroups, verifyTemplate) {
     function (templates, nnGroupPair) {
       let signature = nnGroupPair[0],
         nnGroup = nnGroupPair[1].nodes,
-        clusters = [];
+        clusters: {metanode: Metanode; members: string[]}[] = [];
       nnGroup.forEach(function (metanode) {
         // check with each existing cluster
         for (let i = 0; i < clusters.length; i++) {
@@ -182,9 +182,9 @@ function sortNodes(names: string[], graph: graphlib.Graph, prefix: string) {
   return _.sortBy(names, [
     (name) => (graph.node(name) as unknown as OpNode).op,
     (name) => (graph.node(name) as unknown as Metanode).templateId,
-    (name) => graph.neighbors(name).length,
-    (name) => graph.predecessors(name).length,
-    (name) => graph.successors(name).length,
+    (name) => graph.neighbors(name)?.length,
+    (name) => graph.predecessors(name)?.length,
+    (name) => graph.successors(name)?.length,
     (name) => name.substr(prefix.length),
   ]);
 }
@@ -199,7 +199,7 @@ function isSimilarSubgraph(g1: graphlib.Graph, g2: graphlib.Graph) {
   let g2prefix = (g2.graph() as any).name;
   let visited1 = {};
   let visited2 = {};
-  let stack = [];
+  let stack: {n1: string; n2: string}[] = [];
   /**
    * push sources or successors into the stack
    * if the visiting pattern has been similar.
@@ -246,14 +246,17 @@ function isSimilarSubgraph(g1: graphlib.Graph, g2: graphlib.Graph) {
   while (stack.length > 0) {
     let cur = stack.pop();
     // check node
-    let similar = isSimilarNode(g1.node(cur.n1) as any, g2.node(cur.n2) as any);
+    let similar = isSimilarNode(
+      g1.node(cur?.n1!) as any,
+      g2.node(cur?.n2!) as any
+    );
     if (!similar) {
       return false;
     }
     // check if have same # of successors then sort and push
-    let succ1 = g1.successors(cur.n1),
-      succ2 = g2.successors(cur.n2);
-    if (succ1.length !== succ2.length) {
+    let succ1 = g1.successors(cur?.n1!),
+      succ2 = g2.successors(cur?.n2!);
+    if (succ1?.length! !== succ2?.length!) {
       /* tslint:disable */
       console.log('# of successors mismatch', succ1, succ2);
       /* tslint:enable */
@@ -261,8 +264,8 @@ function isSimilarSubgraph(g1: graphlib.Graph, g2: graphlib.Graph) {
     }
     succ1 = sortNodes(succ1 as any, g1, g1prefix);
     succ2 = sortNodes(succ2 as any, g2, g2prefix);
-    for (let j = 0; j < succ1.length; j++) {
-      let different = stackPushIfNotDifferent(succ1[j], succ2[j]);
+    for (let j = 0; j < succ1?.length!; j++) {
+      let different = stackPushIfNotDifferent(succ1?.[j]!, succ2?.[j]!);
       if (different) {
         return false;
       }
@@ -282,8 +285,8 @@ function isSimilarNode(
     let metanode1 = <Metanode>n1;
     let metanode2 = <Metanode>n2;
     return (
-      metanode1.templateId &&
-      metanode2.templateId &&
+      !!metanode1.templateId &&
+      !!metanode2.templateId &&
       metanode1.templateId === metanode2.templateId
     );
   } else if (n1.type === NodeType.OP && n2.type === NodeType.OP) {

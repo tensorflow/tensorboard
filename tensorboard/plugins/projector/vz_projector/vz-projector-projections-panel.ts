@@ -175,12 +175,14 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
   private setupUIControls() {
     {
       const self = this;
-      const inkTabs = this.root.querySelectorAll('.ink-tab');
-      for (let i = 0; i < inkTabs.length; i++) {
-        inkTabs[i].addEventListener('click', function () {
-          let id = this.getAttribute('data-tab');
-          self.showTab(id);
-        });
+      const inkTabs = this.root?.querySelectorAll('.ink-tab');
+      if (inkTabs) {
+        for (let i = 0; i < inkTabs.length; i++) {
+          inkTabs[i].addEventListener('click', function () {
+            let id = this.getAttribute('data-tab');
+            self.showTab(id);
+          });
+        }
       }
     }
     this.runTsneButton.addEventListener('click', () => {
@@ -228,11 +230,13 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     this.setupCustomProjectionInputFields();
     // TODO: figure out why `--paper-input-container-input` css mixin didn't
     // work.
-    const inputs = this.root.querySelectorAll(
+    const inputs = this.root?.querySelectorAll(
       'paper-dropdown-menu paper-input input'
     );
-    for (let i = 0; i < inputs.length; i++) {
-      (inputs[i] as HTMLElement).style.fontSize = '14px';
+    if (inputs) {
+      for (let i = 0; i < inputs.length; i++) {
+        (inputs[i] as HTMLElement).style.fontSize = '14px';
+      }
     }
   }
   restoreUIFromBookmark(bookmark: State) {
@@ -358,13 +362,13 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     this.updateTSNEPerplexityFromSliderChange();
     this.clearCentroids();
     (this.$$('#tsne-sampling') as HTMLElement).style.display =
-      pointCount > TSNE_SAMPLE_SIZE ? null : 'none';
+      pointCount > TSNE_SAMPLE_SIZE ? null! : 'none';
     const wasSampled =
       dataSet == null
         ? false
         : dataSet.dim[0] > PCA_SAMPLE_DIM || dataSet.dim[1] > PCA_SAMPLE_DIM;
     (this.$$('#pca-sampling') as HTMLElement).style.display = wasSampled
-      ? null
+      ? null!
       : 'none';
     this.showTab('pca');
   }
@@ -384,27 +388,31 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
   metadataChanged(spriteAndMetadata: SpriteAndMetadataInfo) {
     // Project by options for custom projections.
     let searchByMetadataIndex = -1;
-    this.searchByMetadataOptions = spriteAndMetadata.stats.map((stats, i) => {
+    this.searchByMetadataOptions = spriteAndMetadata.stats?.map((stats, i) => {
       // Make the default label by the first non-numeric column.
       if (!stats.isNumeric && searchByMetadataIndex === -1) {
         searchByMetadataIndex = i;
       }
       return stats.name;
-    });
+    })!;
     this.customSelectedSearchByMetadataOption =
       this.searchByMetadataOptions[Math.max(0, searchByMetadataIndex)];
   }
   public showTab(id: ProjectionType) {
     this.currentProjection = id;
     const tab = this.$$('.ink-tab[data-tab="' + id + '"]') as HTMLElement;
-    const allTabs = this.root.querySelectorAll('.ink-tab');
-    for (let i = 0; i < allTabs.length; i++) {
-      util.classed(allTabs[i] as HTMLElement, 'active', false);
+    const allTabs = this.root?.querySelectorAll('.ink-tab');
+    if (allTabs) {
+      for (let i = 0; i < allTabs.length; i++) {
+        util.classed(allTabs[i] as HTMLElement, 'active', false);
+      }
     }
     util.classed(tab, 'active', true);
-    const allTabContent = this.root.querySelectorAll('.ink-panel-content');
-    for (let i = 0; i < allTabContent.length; i++) {
-      util.classed(allTabContent[i] as HTMLElement, 'active', false);
+    const allTabContent = this.root?.querySelectorAll('.ink-panel-content');
+    if (allTabContent) {
+      for (let i = 0; i < allTabContent.length; i++) {
+        util.classed(allTabContent[i] as HTMLElement, 'active', false);
+      }
     }
     util.classed(
       this.$$('.ink-panel-content[data-panel="' + id + '"]') as HTMLElement,
@@ -451,7 +459,7 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     const accessors = getProjectionComponents('tsne', [
       0,
       1,
-      this.tSNEis3d ? 2 : null,
+      this.tSNEis3d ? 2 : null!,
     ]);
     const dimensionality = this.tSNEis3d ? 3 : 2;
     const projection = new Projection(
@@ -507,7 +515,7 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     const accessors = getProjectionComponents('umap', [
       0,
       1,
-      this.umapIs3d ? 2 : null,
+      this.umapIs3d ? 2 : null!,
     ]);
     const dimensionality = this.umapIs3d ? 3 : 2;
     const projection = new Projection(
@@ -609,8 +617,8 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     this.projector.setProjection(projection);
   }
   clearCentroids(): void {
-    this.centroids = {xLeft: null, xRight: null, yUp: null, yDown: null};
-    this.allCentroid = null;
+    this.centroids = {xLeft: [], xRight: [], yUp: [], yDown: []};
+    this.allCentroid = [];
   }
   @observe('customSelectedSearchByMetadataOption')
   _customSelectedSearchByMetadataOptionChanged(newVal: string, oldVal: string) {
@@ -654,7 +662,7 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     } else {
       input.message = `${result.numMatches} matches.`;
     }
-    this.centroids[name] = result.centroid;
+    this.centroids[name] = result.centroid!;
     this.centroidValues[name] = value;
   }
   private setupCustomProjectionInputField(name: InputControlName): any {

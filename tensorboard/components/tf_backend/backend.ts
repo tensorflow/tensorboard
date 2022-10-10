@@ -51,7 +51,7 @@ export function getTags(r: RunToTag): string[] {
  * Sorted, deduplicated.
  */
 export function filterTags(r: RunToTag, runs: string[]): string[] {
-  let result = [];
+  let result: string[] = [];
   runs.forEach((x) => (result = result.concat(r[x])));
   return _.uniq(result).sort(vz_sorting.compareTagNames);
 }

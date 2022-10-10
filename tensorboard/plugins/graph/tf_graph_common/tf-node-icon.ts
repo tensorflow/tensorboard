@@ -50,7 +50,7 @@ class TfNodeIcon extends LegacyElementMixin(PolymerElement) {
   @property({
     type: Object,
   })
-  node: object = null;
+  node: object | null = null;
 
   /**
    * Render node information associated with this node. Optional. If
@@ -61,7 +61,7 @@ class TfNodeIcon extends LegacyElementMixin(PolymerElement) {
   @property({
     type: Object,
   })
-  renderInfo: object = null;
+  renderInfo: object | null = null;
 
   /**
    * String indicating the type of coloring to use for this node, used
@@ -79,13 +79,13 @@ class TfNodeIcon extends LegacyElementMixin(PolymerElement) {
   @property({
     type: Object,
   })
-  templateIndex: (name: string) => number | null = null;
+  templateIndex: ((name: string) => number | null) | null = null;
 
   /** Type of node to draw (ignored if node is set). */
   @property({
     type: String,
   })
-  type: string = null;
+  type: string | null = null;
 
   /** Direction for series (ignored for other types). */
   @property({
@@ -113,7 +113,7 @@ class TfNodeIcon extends LegacyElementMixin(PolymerElement) {
   @property({
     type: String,
   })
-  fill: string = null;
+  fill: string | null = null;
 
   /** Height of the SVG element in pixels, used for scaling. */
   @property({

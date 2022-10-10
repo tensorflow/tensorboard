@@ -106,10 +106,10 @@ class Projector
   private projectionChangedListeners: ProjectionChangedListener[];
   private distanceMetricChangedListeners: DistanceMetricChangedListener[];
   private originalDataSet: DataSet;
-  private dataSetBeforeFilter: DataSet;
+  private dataSetBeforeFilter: DataSet | null;
   private projectorScatterPlotAdapter: ProjectorScatterPlotAdapter;
   private dim: number;
-  private dataSetFilterIndices: number[];
+  private dataSetFilterIndices: number[] | null;
   private selectedPointIndices: number[];
   private neighborsOfFirstPoint: knn.NearestEntry[];
   private hoverPointIndex: number;
@@ -118,7 +118,7 @@ class Projector
   private selectedColorOption: ColorOption;
   private selectedLabelOption: string;
   private normalizeData: boolean;
-  private projection: Projection;
+  private projection: Projection | null;
   private metadataFile: string;
   /** Polymer component panels */
   private inspectorPanel: any;
@@ -238,7 +238,7 @@ class Projector
         (this.dataSet.points[p.index].metadata[metadataColumn] = metadataLabel)
     );
     this.dataSet.spriteAndMetadataInfo.stats = analyzeMetadata(
-      this.dataSet.spriteAndMetadataInfo.stats.map((s) => s.name),
+      this.dataSet.spriteAndMetadataInfo.stats?.map((s) => s.name),
       this.dataSet.points.map((p) => p.metadata)
     );
     this.metadataChanged(this.dataSet.spriteAndMetadataInfo);
@@ -298,7 +298,7 @@ class Projector
     );
     this.setCurrentDataSet(this.dataSetBeforeFilter);
     if (this.projection != null) {
-      this.projection.dataSet = this.dataSetBeforeFilter;
+      this.projection.dataSet = this.dataSetBeforeFilter!;
     }
     this.dataSetBeforeFilter = null;
     this.projectorScatterPlotAdapter.updateScatterPlotPositions();
@@ -403,8 +403,8 @@ class Projector
   registerProjectionChangedListener(listener: ProjectionChangedListener) {
     this.projectionChangedListeners.push(listener);
   }
-  notifyProjectionChanged(projection: Projection) {
-    this.projectionChangedListeners.forEach((l) => l(projection));
+  notifyProjectionChanged(projection: Projection | null) {
+    this.projectionChangedListeners.forEach((l) => l(projection!));
   }
   registerDistanceMetricChangedListener(l: DistanceMetricChangedListener) {
     this.distanceMetricChangedListeners.push(l);
@@ -417,7 +417,7 @@ class Projector
     let dataProto = dataProtoString
       ? (JSON.parse(dataProtoString) as DataProto)
       : null;
-    this.initializeDataProvider(dataProto);
+    this.initializeDataProvider(dataProto!);
   }
   private makeDefaultPointsInfoAndStats(
     points: DataPoint[]
@@ -466,15 +466,12 @@ class Projector
   private getLegendPointColorer(
     colorOption: ColorOption
   ): (ds: DataSet, index: number) => string {
-    if (colorOption == null || colorOption.map == null) {
-      return null;
-    }
     const colorer = (ds: DataSet, i: number) => {
       let value = ds.points[i].metadata[this.selectedColorOption.name];
       if (value == null) {
         return POINT_COLOR_MISSING;
       }
-      return colorOption.map(value);
+      return colorOption.map?.(value)!;
     };
     return colorer;
   }
@@ -487,7 +484,7 @@ class Projector
   }
   adjustSelectionAndHover(selectedPointIndices: number[], hoverIndex?: number) {
     this.notifySelectionChanged(selectedPointIndices);
-    this.notifyHoverOverPoint(hoverIndex);
+    this.notifyHoverOverPoint(hoverIndex!);
     this.setMouseMode(MouseMode.CAMERA_AND_CLICK_SELECT);
   }
   private setMouseMode(mouseMode: MouseMode) {
@@ -495,7 +492,7 @@ class Projector
     (selectModeButton as any).active = mouseMode === MouseMode.AREA_SELECT;
     this.projectorScatterPlotAdapter.scatterPlot.setMouseMode(mouseMode);
   }
-  private setCurrentDataSet(ds: DataSet) {
+  private setCurrentDataSet(ds: DataSet | null) {
     this.adjustSelectionAndHover([]);
     if (this.dataSet != null) {
       this.dataSet.stopTSNE();
@@ -508,7 +505,7 @@ class Projector
       ds == null ? '0' : '' + ds.dim[0];
     (this.$$('span.dim') as HTMLSpanElement).innerText =
       ds == null ? '0' : '' + ds.dim[1];
-    this.dataSet = ds;
+    this.dataSet = ds!;
     this.projectionsPanel.dataSetUpdated(
       this.dataSet,
       this.originalDataSet,
@@ -522,12 +519,12 @@ class Projector
   }
   private setupUIControls() {
     // View controls
-    this.$$('#reset-zoom').addEventListener('click', () => {
+    this.$$('#reset-zoom')?.addEventListener('click', () => {
       this.projectorScatterPlotAdapter.scatterPlot.resetZoom();
       this.projectorScatterPlotAdapter.scatterPlot.startOrbitAnimation();
     });
     let selectModeButton = this.$$('#selectMode');
-    selectModeButton.addEventListener('click', (event) => {
+    selectModeButton?.addEventListener('click', (event) => {
       this.setMouseMode(
         (selectModeButton as any).active
           ? MouseMode.AREA_SELECT
@@ -535,13 +532,13 @@ class Projector
       );
     });
     let nightModeButton = this.$$('#nightDayMode');
-    nightModeButton.addEventListener('click', () => {
+    nightModeButton?.addEventListener('click', () => {
       this.projectorScatterPlotAdapter.scatterPlot.setDayNightMode(
         (nightModeButton as any).active
       );
     });
     let editModeButton = this.$$('#editMode');
-    editModeButton.addEventListener('click', (event) => {
+    editModeButton?.addEventListener('click', (event) => {
       this.editMode = (editModeButton as any).active;
     });
     const labels3DModeButton = this.get3DLabelModeButton();
@@ -579,7 +576,7 @@ class Projector
   }
   private onHover(hoverIndex: number) {
     this.hoverPointIndex = hoverIndex;
-    let hoverText = null;
+    let hoverText: string | null = null;
     if (hoverIndex != null) {
       const point = this.dataSet.points[hoverIndex];
       if (point.metadata[this.selectedLabelOption]) {
@@ -587,8 +584,11 @@ class Projector
       }
     }
     if (this.selectedPointIndices.length === 0) {
-      this.statusBar.style.display = hoverText ? null : 'none';
-      this.statusBar.innerText = hoverText;
+      if (hoverText) {
+        this.statusBar.innerText = hoverText!;
+      } else {
+        this.statusBar.style.display = 'none';
+      }
     }
   }
   private getScatterContainer(): HTMLDivElement {
@@ -607,12 +607,14 @@ class Projector
     let totalNumPoints =
       this.selectedPointIndices.length + neighborsOfFirstPoint.length;
     this.statusBar.innerText = `Selected ${totalNumPoints} points`;
-    this.statusBar.style.display = totalNumPoints > 0 ? null : 'none';
+    if (totalNumPoints > 0) {
+      this.statusBar.style.display = 'none';
+    }
   }
   onProjectionChanged(projection?: Projection) {
     this.dataPanel.projectionChanged(projection);
   }
-  setProjection(projection: Projection) {
+  setProjection(projection: Projection | null) {
     this.projection = projection;
     if (projection != null) {
       this.analyticsLogger.logProjectionChanged(projection.projectionType);
@@ -640,11 +642,11 @@ class Projector
       }
       state.projections.push(projections);
     }
-    state.selectedProjection = this.projection.projectionType;
+    state.selectedProjection = this.projection?.projectionType!;
     state.dataSetDimensions = this.dataSet.dim;
     state.tSNEIteration = this.dataSet.tSNEIteration;
     state.selectedPoints = this.selectedPointIndices;
-    state.filteredPoints = this.dataSetFilterIndices;
+    state.filteredPoints = this.dataSetFilterIndices!;
     this.projectorScatterPlotAdapter.populateBookmarkFromUI(state);
     state.selectedColorOptionName = this.dataPanel.selectedColorOptionName;
     state.forceCategoricalColoring = this.dataPanel.forceCategoricalColoring;

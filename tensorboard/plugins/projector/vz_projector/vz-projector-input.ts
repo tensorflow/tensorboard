@@ -117,7 +117,7 @@ class ProjectorInput extends LegacyElementMixin(PolymerElement) {
     } catch (invalidRegexException) {
       this.paperInput.setAttribute('invalid', 'true');
       this.message = '';
-      this.notifyInputChanged(null, true);
+      this.notifyInputChanged(null!, true);
       return;
     }
     this.paperInput.removeAttribute('invalid');

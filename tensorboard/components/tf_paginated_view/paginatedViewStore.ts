@@ -16,7 +16,7 @@ import {getNumber, setNumber} from '../tf_storage/storage';
 
 const LIMIT_LOCAL_STORAGE_KEY = 'TF.TensorBoard.PaginatedView.limit';
 const DEFAULT_LIMIT = 12; // reasonably small and has lots of factors
-let _limit: number = null; // cached localStorage value
+let _limit: number | null = null; // cached localStorage value
 
 export type Listener = () => void;
 
