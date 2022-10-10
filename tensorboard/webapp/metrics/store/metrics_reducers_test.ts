@@ -2996,7 +2996,7 @@ describe('metrics reducers', () => {
       });
       const state2 = reducers(state1, actions.stepSelectorToggled({}));
       expect(state2.stepSelectorEnabled).toBe(true);
-      expect(state2.rangeSelectionEnabled).toBe(false);
+      expect(state2.rangeSelectionEnabled).toBe(true);
 
       const state3 = buildMetricsState({
         stepSelectorEnabled: true,
@@ -3004,7 +3004,7 @@ describe('metrics reducers', () => {
       });
       const state4 = reducers(state3, actions.stepSelectorToggled({}));
       expect(state4.stepSelectorEnabled).toBe(false);
-      expect(state2.rangeSelectionEnabled).toBe(false);
+      expect(state4.rangeSelectionEnabled).toBe(false);
     });
   });
 
