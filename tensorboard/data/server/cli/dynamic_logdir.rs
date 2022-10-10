@@ -118,7 +118,8 @@ impl DynLogdir {
                     _ => creds_from_disk,
                 };
                 let client = gcs::Client::new(creds)?;
-                Ok(DynLogdir::Gcs(gcs::Logdir::new(client, bucket, prefix)))
+                let logdir = gcs::Logdir::new(client, bucket, prefix);
+                Ok(DynLogdir::Gcs(logdir))
             }
         }
     }

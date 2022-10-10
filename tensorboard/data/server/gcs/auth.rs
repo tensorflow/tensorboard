@@ -35,9 +35,42 @@ use std::path::PathBuf;
 use std::sync::RwLock;
 use std::time::{Duration, Instant};
 
+use gcp_auth::AuthenticationManager;
 use reqwest::blocking::{Client as HttpClient, RequestBuilder};
+use tokio::sync::OnceCell;
+
+static AUTH_MANAGER: OnceCell<AuthenticationManager> = OnceCell::const_new();
+
+fn get_token() -> AccessToken {
+    async fn authentication_manager() -> &'static AuthenticationManager {
+        AUTH_MANAGER
+            .get_or_init(|| async {
+                AuthenticationManager::new()
+                    .await
+                    .expect("unable to initialize authentication manager")
+            })
+            .await
+    }
+    async fn service_account_token() -> Result<gcp_auth::Token, gcp_auth::Error> {
+        let manager = authentication_manager().await;
+        let token_res = manager.get_token(SCOPES).await;
+        token_res
+    }
+
+    let token = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap()
+        .block_on(service_account_token());
+
+
+    AccessToken::from_gcs_token(token.ok())
+}
 
 const OAUTH_REFRESH_TOKEN_ENDPOINT: &str = "https://www.googleapis.com/oauth2/v3/token";
+
+/// Refresh access tokens once their remaining lifetime is shorter than this threshold.
+const TOKEN_EXPIRATION_MARGIN: Duration = Duration::from_secs(60);
 
 /// A set of refreshable OAuth credentials plus a potentially active token. Use
 /// [`authenticate`][Self::authenticate] to add an `Authorization` header to an outgoing request,
@@ -46,7 +79,7 @@ const OAUTH_REFRESH_TOKEN_ENDPOINT: &str = "https://www.googleapis.com/oauth2/v3
 /// A `TokenStore` may be freely shared among threads; it synchronizes internally if needed.
 pub struct TokenStore {
     creds: Credentials,
-    token: RwLock<Option<BoundedToken>>,
+    token: RwLock<Option<AccessToken>>,
 }
 
 impl TokenStore {
@@ -69,9 +102,13 @@ struct BoundedToken {
 }
 
 impl BoundedToken {
-    /// Tests whether this token will still be valid at the given instant.
-    fn valid_at(&self, when: Instant) -> bool {
-        when < self.expires
+    /// Checks whether `token` represents a token that will still be valid for at least the given
+    /// `lifetime`, and if so returns a reference to the inner access token.
+    fn unwrap_if_valid_for(token: &Option<Self>, lifetime: Duration) -> Option<&AccessToken> {
+        match token.as_ref() {
+            Some(t) if (Instant::now() + lifetime < t.expires) => Some(&t.access_token),
+            _ => None,
+        }
     }
 }
 
@@ -80,18 +117,37 @@ impl BoundedToken {
 mod access_token {
     use super::*;
     #[derive(Deserialize)]
-    pub struct AccessToken(String);
+    pub struct AccessToken(Option<gcp_auth::Token>);
     impl AccessToken {
         /// Attaches this token to an outgoing request.
         pub fn authenticate(&self, rb: RequestBuilder) -> RequestBuilder {
-            rb.bearer_auth(&self.0)
+            match &self.0 {
+                Some(t) => rb.bearer_auth(t.as_str()),
+                _ => rb
+            }
+        }
+
+        pub fn is_valid(&self) -> bool {
+            match &self.0 {
+                Some(t) => t.has_expired(),
+                _ => false
+            }
+        }
+
+        pub fn from_gcs_token(token: Option<gcp_auth::Token>) -> Self {
+            Self(token)
+        }
+
+        pub fn anonymous(&self) -> bool {
+            match &self.0 {
+                Some(_) => false,
+                _ => true
+            }
         }
     }
     impl Debug for AccessToken {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            f.debug_tuple("AccessToken")
-                .field(&format_args!("_"))
-                .finish()
+            self.0.fmt(f)
         }
     }
 }
@@ -102,48 +158,42 @@ impl TokenStore {
     ///
     /// A cached token will be reused if it is expected to be valid for at least `lifetime`.
     /// Otherwise, a new token will be fetched and stored.
-    pub fn authenticate(
-        &self,
-        rb: RequestBuilder,
-        http: &HttpClient,
-        lifetime: Duration,
-    ) -> RequestBuilder {
-        if self.creds.anonymous() {
-            return rb;
-        }
+    pub fn authenticate(&self, rb: RequestBuilder) -> RequestBuilder {
+        // check if access token is not none but token inside is none
+
         let token = self.token.read().expect("failed to read auth token");
-        if let Some(t) = BoundedToken::unwrap_if_valid_for(&*token, lifetime) {
-            return t.authenticate(rb);
+        if let Some(t)=  &*token {
+            if t.anonymous() {
+                return rb;
+            }
+            if t.is_valid() {
+                return t.authenticate(rb);
+            }
         }
         drop(token);
         let mut token = self.token.write().expect("failed to write auth token");
         // Check again: may have just been written by a different client, in which case no need to
         // re-fetch.
-        if let Some(t) = BoundedToken::unwrap_if_valid_for(&*token, lifetime) {
-            return t.authenticate(rb);
-        }
+        if let Some(t)=  &*token {
+            if t.anonymous() {
+                return rb;
+            }
+            if t.is_valid() {
+                return t.authenticate(rb);
+            }
+        };
         // If we get here, we need a fresh token.
-        *token = self.creds.fetch(http);
+        *token = Some(get_token());
         if let Some(ref t) = *token {
-            debug!(
-                "Obtained new access token, live for the next {:?}",
-                t.expires.saturating_duration_since(Instant::now())
-            );
-            t.access_token.authenticate(rb)
-        } else {
-            rb
-        }
-    }
-}
-
-impl BoundedToken {
-    /// Checks whether `token` represents a token that will still be valid for at least the given
-    /// `lifetime`, and if so returns a reference to the inner access token.
-    fn unwrap_if_valid_for(token: &Option<Self>, lifetime: Duration) -> Option<&AccessToken> {
-        match token.as_ref() {
-            Some(t) if t.valid_at(Instant::now() + lifetime) => Some(&t.access_token),
-            _ => None,
-        }
+            // debug!(
+            //     "Obtained new access token, live for the next {:?}",
+            //     t.expires.saturating_duration_since(Instant::now())
+            // );
+            if t.is_valid() {
+                return t.authenticate(rb);
+            }
+        };
+        rb
     }
 }
 

@@ -23,7 +23,6 @@ use reqwest::{
 };
 use std::ops::RangeInclusive;
 use std::sync::Arc;
-use std::time::Duration;
 
 use super::auth::{Credentials, TokenStore};
 
@@ -31,9 +30,6 @@ use super::auth::{Credentials, TokenStore};
 const STORAGE_BASE: &str = "https://storage.googleapis.com";
 /// Base URL for JSON API access.
 const API_BASE: &str = "https://www.googleapis.com/storage/v1";
-
-/// Refresh access tokens once their remaining lifetime is shorter than this threshold.
-const TOKEN_EXPIRATION_MARGIN: Duration = Duration::from_secs(60);
 
 /// GCS client.
 ///
@@ -84,9 +80,7 @@ struct ListResponseItem {
 
 impl Client {
     fn send_authenticated(&self, rb: RequestBuilder) -> reqwest::Result<Response> {
-        self.token_store
-            .authenticate(rb, &self.http, TOKEN_EXPIRATION_MARGIN)
-            .send()
+        self.token_store.authenticate(rb).send()
     }
 
     /// Lists all objects in a bucket matching the given prefix.
