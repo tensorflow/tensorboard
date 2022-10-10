@@ -60,7 +60,7 @@ fn main() {
     let opts: Opts = Opts::parse();
     init_logging(&opts);
 
-    let client = gcs::Client::new(gcs::Credentials::from_disk().unwrap()).unwrap();
+    let client = gcs::Client::new().unwrap();
     match opts.subcmd {
         Subcommand::Ls(opts) => {
             log::info!("ENTER gcs::Client::list");

@@ -47,8 +47,6 @@ pub enum Error {
         full_logdir: PathBuf,
     },
     #[error(transparent)]
-    GcsCredentialsError(#[from] gcs::CredentialsError),
-    #[error(transparent)]
     GcsClientError(#[from] gcs::ClientError),
 }
 
@@ -105,19 +103,7 @@ impl DynLogdir {
         match ParsedLogdir::from_path(path)? {
             ParsedLogdir::Disk(path) => Ok(DynLogdir::Disk(DiskLogdir::new(path))),
             ParsedLogdir::Gcs { bucket, prefix } => {
-                let creds_from_disk = gcs::Credentials::from_disk()?;
-                let creds = match creds_from_disk {
-                    // Try to fetch ServiceToken if it could not be loaded from disk
-                    gcs::Credentials::Anonymous => {
-                        if gcs::Credentials::can_fetch_service_token() {
-                            gcs::Credentials::ServiceToken
-                        } else {
-                            creds_from_disk
-                        }
-                    }
-                    _ => creds_from_disk,
-                };
-                let client = gcs::Client::new(creds)?;
+                let client = gcs::Client::new()?;
                 let logdir = gcs::Logdir::new(client, bucket, prefix);
                 Ok(DynLogdir::Gcs(logdir))
             }

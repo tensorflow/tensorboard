@@ -24,7 +24,7 @@ use reqwest::{
 use std::ops::RangeInclusive;
 use std::sync::Arc;
 
-use super::auth::{Credentials, TokenStore};
+use super::auth::TokenStore;
 
 /// Base URL for direct object reads.
 const STORAGE_BASE: &str = "https://storage.googleapis.com";
@@ -49,12 +49,12 @@ impl Client {
     /// Creates a new GCS client with the given credentials.
     ///
     /// May fail if constructing the underlying HTTP client fails.
-    pub fn new(creds: Credentials) -> Result<Self, ClientError> {
+    pub fn new() -> Result<Self, ClientError> {
         let http = HttpClient::builder()
             .user_agent(format!("tensorboard-data-server/{}", crate::VERSION))
             .build()
             .map_err(ClientError)?;
-        let token_store = Arc::new(TokenStore::new(creds));
+        let token_store = Arc::new(TokenStore::new());
         #[allow(clippy::inconsistent_struct_constructor)]
         // ^ https://github.com/rust-lang/rust-clippy/issues/7192
         Ok(Self { http, token_store })
