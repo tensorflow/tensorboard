@@ -24,7 +24,6 @@ import {
 } from '@angular/core';
 import {auditTime} from 'rxjs/operators';
 import {DropdownOption} from '../../../widgets/dropdown/dropdown_component';
-import {RangeValues, SingleValue} from '../../../widgets/range_input/types';
 import {
   HistogramMode,
   SCALARS_SMOOTHING_MAX,
@@ -191,28 +190,8 @@ export class SettingsViewComponent {
     return '';
   }
 
-  onSingleValueChanged({value, source}: SingleValue) {
-    this.linkedTimeSelectionChanged.emit({
-      timeSelection: {
-        start: {step: value},
-        end: null,
-      },
-      source,
-    });
-  }
-
   isAxisTypeStep(): boolean {
     return this.xAxisType === XAxisType.STEP;
-  }
-
-  onRangeValuesChanged({lowerValue, upperValue, source}: RangeValues) {
-    this.linkedTimeSelectionChanged.emit({
-      timeSelection: {
-        start: {step: lowerValue},
-        end: {step: upperValue},
-      },
-      source,
-    });
   }
 }
 
