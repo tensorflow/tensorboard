@@ -57,18 +57,6 @@ limitations under the License.
         [disabled]="!isAxisTypeStep()"
         >Link by step {{getLinkedTimeSelectionStartStep()}}
       </mat-checkbox>
-      <div class="indent" *ngIf="isLinkedTimeEnabled">
-        <tb-range-input
-          [min]="stepMinMax.min"
-          [max]="stepMinMax.max"
-          [lowerValue]="linkedTimeSelection?.start.step"
-          [upperValue]="linkedTimeSelection?.end?.step"
-          [enabled]="isLinkedTimeEnabled && isAxisTypeStep()"
-          [returnIntegers]="true"
-          (singleValueChanged)="onSingleValueChanged($event)"
-          (rangeValuesChanged)="onRangeValuesChanged($event)"
-        ></tb-range-input>
-      </div>
     </div>
   </div>
 
