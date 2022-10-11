@@ -100,6 +100,7 @@ import {
   SortingInfo,
 } from './scalar_card_types';
 import {
+  clipStepWithinMinMax,
   maybeClipLinkedTimeSelection,
   partitionSeries,
   TimeSelectionView,
@@ -603,23 +604,39 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       this.minMaxSteps$,
       this.store.select(getMetricsStepSelectorEnabled),
       this.store.select(getMetricsRangeSelectionEnabled),
-    ]).subscribe(
-      ([{minStep, maxStep}, enableStepSelector, stepSelectorRangeEnabled]) => {
-        this.stepSelectorTimeSelection$.next(
-          enableStepSelector
-            ? {
-                start: {step: minStep},
-                end: stepSelectorRangeEnabled ? {step: maxStep} : null,
-              }
-            : null
-        );
-      }
-    );
+    ]).subscribe(([minMaxStep, enableStepSelector, rangeSelectionEnabled]) => {
+      this.stepSelectorTimeSelection$.next(
+        this.computeStepSelectorTimeSelection(
+          minMaxStep,
+          enableStepSelector,
+          rangeSelectionEnabled
+        )
+      );
+    });
   }
 
   ngOnDestroy() {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+  }
+
+  computeStepSelectorTimeSelection(
+    {minStep, maxStep}: MinMaxStep,
+    enableStepSelector: boolean,
+    rangeSelectionEnabled: boolean
+  ) {
+    return enableStepSelector
+      ? {
+          start: {
+            step: clipStepWithinMinMax(
+              this.stepSelectorTimeSelection$.getValue()?.start.step ?? minStep,
+              minStep,
+              maxStep
+            ),
+          },
+          end: rangeSelectionEnabled ? {step: maxStep} : null,
+        }
+      : null;
   }
 
   private getRunDisplayNameAndAlias(

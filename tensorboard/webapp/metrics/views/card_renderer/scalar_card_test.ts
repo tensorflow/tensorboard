@@ -2154,6 +2154,112 @@ describe('scalar card', () => {
           fobs[0].query(By.css('span')).nativeElement.textContent.trim()
         ).toEqual('30');
       }));
+
+      describe('computeStepSelectorTimeSelection', () => {
+        beforeEach(() => {
+          provideMockCardRunToSeriesData(
+            selectSpy,
+            PluginType.SCALARS,
+            'card1',
+            null /* metadataOverride */,
+            {}
+          );
+        });
+
+        it('returns null when step selection is disable', fakeAsync(() => {
+          const fixture = createComponent('card1');
+          const timeSelection =
+            fixture.componentInstance.computeStepSelectorTimeSelection(
+              {
+                minStep: 0,
+                maxStep: 50,
+              },
+              false,
+              false
+            );
+          expect(timeSelection).toBeNull();
+        }));
+
+        it('time selection defaults to min/max', fakeAsync(() => {
+          const fixture = createComponent('card1');
+          const timeSelection =
+            fixture.componentInstance.computeStepSelectorTimeSelection(
+              {
+                minStep: 0,
+                maxStep: 50,
+              },
+              true,
+              true
+            );
+          expect(timeSelection).toEqual({
+            start: {step: 0},
+            end: {step: 50},
+          });
+        }));
+
+        it('uses existing min step when defined', fakeAsync(() => {
+          const fixture = createComponent('card1');
+          fixture.componentInstance.stepSelectorTimeSelection$.next({
+            start: {step: 10},
+            end: {step: 50},
+          });
+          const timeSelection =
+            fixture.componentInstance.computeStepSelectorTimeSelection(
+              {
+                minStep: 0,
+                maxStep: 50,
+              },
+              true,
+              true
+            );
+          expect(timeSelection).toEqual({
+            start: {step: 10},
+            end: {step: 50},
+          });
+        }));
+
+        it('removes end step when range is disabled', fakeAsync(() => {
+          const fixture = createComponent('card1');
+          fixture.componentInstance.stepSelectorTimeSelection$.next({
+            start: {step: 10},
+            end: {step: 50},
+          });
+          const timeSelection =
+            fixture.componentInstance.computeStepSelectorTimeSelection(
+              {
+                minStep: 0,
+                maxStep: 50,
+              },
+              true,
+              false
+            );
+          expect(timeSelection).toEqual({
+            start: {step: 10},
+            end: null,
+          });
+        }));
+
+        it('cannot generate steps outside min/max', fakeAsync(() => {
+          const fixture = createComponent('card1');
+          fixture.componentInstance.stepSelectorTimeSelection$.next({
+            start: {step: 10},
+            end: {step: 50},
+          });
+          const timeSelection =
+            fixture.componentInstance.computeStepSelectorTimeSelection(
+              {
+                minStep: 20,
+                maxStep: 30,
+              },
+              true,
+              true
+            );
+          expect(timeSelection).toEqual({
+            start: {step: 20},
+            end: {step: 30},
+          });
+        }));
+      });
     });
 
     describe('fob controls', () => {

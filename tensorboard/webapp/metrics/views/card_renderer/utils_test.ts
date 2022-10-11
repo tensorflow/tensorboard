@@ -15,6 +15,7 @@ limitations under the License.
 import {buildRun} from '../../../runs/store/testing';
 import {PartialSeries} from './scalar_card_types';
 import {
+  clipStepWithinMinMax,
   getClosestStep,
   getDisplayNameForRun,
   maybeClipLinkedTimeSelection,
@@ -309,6 +310,25 @@ describe('metrics card_renderer utils test', () => {
 
     it('gets closeset step equal to selected step', () => {
       expect(getClosestStep(10, [0, 10, 20])).toBe(10);
+    });
+  });
+
+  describe('#clipStepWithinMinMax', () => {
+    it('returns step if greater than min', () => {
+      expect(clipStepWithinMinMax(1, 0, 5)).toBe(1);
+    });
+
+    it('returns step if less than max', () => {
+      expect(clipStepWithinMinMax(1, 0, 5)).toBe(1);
+    });
+
+    it('returns min if greater than step', () => {
+      expect(clipStepWithinMinMax(1, 3, 5)).toBe(3);
+      expect(clipStepWithinMinMax(1, 5, 3)).toBe(5);
+    });
+
+    it('returns max if less than step', () => {
+      expect(clipStepWithinMinMax(6, 0, 5)).toBe(5);
     });
   });
 
