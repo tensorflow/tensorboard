@@ -2180,7 +2180,7 @@ describe('scalar card', () => {
           expect(timeSelection).toBeNull();
         }));
 
-        it('time selection defaults to min/max', fakeAsync(() => {
+        it('defaults to min/max', fakeAsync(() => {
           const fixture = createComponent('card1');
           const timeSelection =
             fixture.componentInstance.computeStepSelectorTimeSelection(
@@ -2197,7 +2197,7 @@ describe('scalar card', () => {
           });
         }));
 
-        it('uses existing min step when defined', fakeAsync(() => {
+        it('uses existing start step when defined', fakeAsync(() => {
           const fixture = createComponent('card1');
           fixture.componentInstance.stepSelectorTimeSelection$.next({
             start: {step: 10},
