@@ -30,7 +30,6 @@ import {
   SortingInfo,
   SortingOrder,
 } from './scalar_card_types';
-import {TimeSelectionView} from './utils';
 
 @Component({
   selector: 'scalar-card-data-table',
@@ -47,8 +46,7 @@ import {TimeSelectionView} from './utils';
 export class ScalarCardDataTable {
   @Input() chartMetadataMap!: ScalarCardSeriesMetadataMap;
   @Input() dataSeries!: ScalarCardDataSeries[];
-  @Input() linkedTimeSelection!: TimeSelectionView | null;
-  @Input() stepSelectorTimeSelection!: TimeSelection;
+  @Input() stepOrLinkedTimeSelection!: TimeSelection;
   @Input() dataHeaders!: ColumnHeaders[];
   @Input() sortingInfo!: SortingInfo;
 
@@ -83,18 +81,11 @@ export class ScalarCardDataTable {
   }
 
   getTimeSelectionTableData(): SelectedStepRunData[] {
-    if (
-      this.linkedTimeSelection === null &&
-      this.stepSelectorTimeSelection === null
-    ) {
+    if (this.stepOrLinkedTimeSelection === null) {
       return [];
     }
-    const startStep = this.linkedTimeSelection
-      ? this.linkedTimeSelection.startStep
-      : this.stepSelectorTimeSelection.start.step;
-    const endStep = this.linkedTimeSelection
-      ? this.linkedTimeSelection.endStep
-      : this.stepSelectorTimeSelection.end?.step;
+    const startStep = this.stepOrLinkedTimeSelection.start.step;
+    const endStep = this.stepOrLinkedTimeSelection.end?.step;
     const dataTableData: SelectedStepRunData[] = this.dataSeries
       .filter((datum) => {
         const metadata = this.chartMetadataMap[datum.id];

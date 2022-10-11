@@ -77,6 +77,7 @@ import {
   getCardMetadata,
   getCardTimeSeries,
   getMetricsIgnoreOutliers,
+  getMetricsRangeSelectionEnabled,
   getMetricsScalarPartitionNonMonotonicX,
   getMetricsScalarSmoothing,
   getMetricsTooltipSort,
@@ -153,7 +154,7 @@ function areSeriesEqual(
       [xScaleType]="xScaleType$ | async"
       [useDarkMode]="useDarkMode$ | async"
       [linkedTimeSelection]="linkedTimeSelection$ | async"
-      [stepSelectorTimeSelection]="stepSelectorTimeSelection$ | async"
+      [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection$ | async"
       [forceSvg]="forceSvg$ | async"
       [minMaxStep]="minMaxSteps$ | async"
       [dataHeaders]="columnHeaders$ | async"
@@ -200,6 +201,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   chartMetadataMap$?: Observable<ScalarCardSeriesMetadataMap>;
   linkedTimeSelection$?: Observable<TimeSelectionView | null>;
   columnHeaders$?: Observable<ColumnHeaders[]>;
+  stepOrLinkedTimeSelection$?: Observable<TimeSelection | null>;
 
   onVisibilityChange({visible}: {visible: boolean}) {
     this.isVisible = visible;
@@ -411,9 +413,16 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       this.store.select(getMetricsLinkedTimeEnabled),
       this.store.select(getMetricsLinkedTimeSelection),
       this.store.select(getMetricsXAxisType),
+      this.store.select(getMetricsRangeSelectionEnabled),
     ]).pipe(
       map(
-        ([{minStep, maxStep}, linkedTimeEnabled, timeSelection, xAxisType]) => {
+        ([
+          {minStep, maxStep},
+          linkedTimeEnabled,
+          timeSelection,
+          xAxisType,
+          rangeSelectionEnabled,
+        ]) => {
           if (
             !linkedTimeEnabled ||
             xAxisType !== XAxisType.STEP ||
@@ -421,19 +430,51 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
           ) {
             return null;
           }
+          const forkedTimeSelection = {...timeSelection};
+          if (!forkedTimeSelection.end && rangeSelectionEnabled) {
+            forkedTimeSelection.end = {step: maxStep};
+          }
 
-          return maybeClipLinkedTimeSelection(timeSelection, minStep, maxStep);
+          return maybeClipLinkedTimeSelection(
+            forkedTimeSelection,
+            minStep,
+            maxStep
+          );
+        }
+      )
+    );
+
+    this.stepOrLinkedTimeSelection$ = combineLatest([
+      this.stepSelectorTimeSelection$,
+      this.linkedTimeSelection$,
+      this.store.select(getMetricsLinkedTimeEnabled),
+    ]).pipe(
+      map(
+        ([
+          stepSelectorTimeSelection,
+          linkedTimeSelection,
+          linkedTimeEnabled,
+        ]) => {
+          return linkedTimeEnabled && linkedTimeSelection
+            ? {
+                start: {step: linkedTimeSelection.startStep},
+                end:
+                  linkedTimeSelection.endStep === null
+                    ? null
+                    : {step: linkedTimeSelection.endStep},
+              }
+            : stepSelectorTimeSelection;
         }
       )
     );
 
     this.columnHeaders$ = combineLatest([
       this.smoothingEnabled$,
-      this.linkedTimeSelection$,
+      this.stepOrLinkedTimeSelection$,
     ]).pipe(
       map(([smoothingEnabled, timeSelection]) => {
         const headers: ColumnHeaders[] = [];
-        if (timeSelection === null || timeSelection.endStep === null) {
+        if (timeSelection === null || timeSelection.end === null) {
           // Single Step Selected
           headers.push(ColumnHeaders.RUN);
           if (smoothingEnabled) {
@@ -561,11 +602,19 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     combineLatest([
       this.minMaxSteps$,
       this.store.select(getMetricsStepSelectorEnabled),
-    ]).subscribe(([{minStep}, enableStepSelector]) => {
-      this.stepSelectorTimeSelection$.next(
-        enableStepSelector ? {start: {step: minStep}, end: null} : null
-      );
-    });
+      this.store.select(getMetricsRangeSelectionEnabled),
+    ]).subscribe(
+      ([{minStep, maxStep}, enableStepSelector, stepSelectorRangeEnabled]) => {
+        this.stepSelectorTimeSelection$.next(
+          enableStepSelector
+            ? {
+                start: {step: minStep},
+                end: stepSelectorRangeEnabled ? {step: maxStep} : null,
+              }
+            : null
+        );
+      }
+    );
   }
 
   ngOnDestroy() {
