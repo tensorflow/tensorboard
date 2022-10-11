@@ -78,6 +78,7 @@ import {PluginType} from '../../data_source';
 import {
   getMetricsLinkedTimeEnabled,
   getMetricsLinkedTimeSelection,
+  getMetricsRangeSelectionEnabled,
   getMetricsScalarSmoothing,
 } from '../../store';
 import {
@@ -3074,6 +3075,7 @@ describe('scalar card', () => {
           start: {step: 20},
           end: null,
         });
+        store.overrideSelector(getMetricsRangeSelectionEnabled, false);
         const fixture = createComponent('card1');
         fixture.detectChanges();
         const testController = fixture.debugElement.query(
@@ -3124,7 +3126,7 @@ describe('scalar card', () => {
           By.directive(ScalarCardComponent)
         );
         expect(
-          scalarCardComponent.componentInstance.stepSelectorTimeSelection
+          scalarCardComponent.componentInstance.stepOrLinkedTimeSelection
         ).toEqual({
           start: {step: 25},
           end: null,

@@ -174,8 +174,7 @@ limitations under the License.
     <scalar-card-data-table
       [chartMetadataMap]="chartMetadataMap"
       [dataSeries]="dataSeries"
-      [linkedTimeSelection]="linkedTimeSelection"
-      [stepSelectorTimeSelection]="stepSelectorTimeSelection"
+      [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection"
       [dataHeaders]="dataHeaders"
       [sortingInfo]="sortingInfo"
       (sortDataBy)="sortDataBy($event)"
@@ -189,23 +188,23 @@ limitations under the License.
   let-domDim="domDimension"
   let-xScale="xScale"
 >
-  <ng-container *ngIf="linkedTimeSelection">
+  <ng-container *ngIf="stepOrLinkedTimeSelection">
     <div
       [ngClass]="{
         'out-of-selected-time': true,
         start: true,
-        range: !!linkedTimeSelection.endStep
+        range: !!stepOrLinkedTimeSelection.end?.step
       }"
       [style.right]="
         xScale.forward(
           viewExtent.x,
           [domDim.width, 0],
-          linkedTimeSelection.startStep
+          stepOrLinkedTimeSelection.start.step
         ) + 'px'
       "
     ></div>
     <div
-      *ngIf="linkedTimeSelection.endStep"
+      *ngIf="stepOrLinkedTimeSelection.end?.step"
       [ngClass]="{
         'out-of-selected-time': true,
         end: true,
@@ -215,7 +214,7 @@ limitations under the License.
         xScale.forward(
           viewExtent.x,
           [0, domDim.width],
-          linkedTimeSelection.endStep
+          stepOrLinkedTimeSelection.end?.step
         ) + 'px'
       "
     ></div>
@@ -230,7 +229,7 @@ limitations under the License.
 >
   <ng-container *ngIf="inTimeSelectionMode()">
     <scalar-card-fob-controller
-      [timeSelection]="getTimeSelection()"
+      [timeSelection]="stepOrLinkedTimeSelection"
       [scale]="xScale"
       [minMax]="viewExtent.x"
       [axisSize]="domDim.width"
