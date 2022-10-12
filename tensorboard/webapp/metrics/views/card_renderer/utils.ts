@@ -91,7 +91,7 @@ export interface TimeSelectionView {
   clipped: boolean;
 }
 
-function clipStepWithinMinMax(value: number, min: number, max: number) {
+export function clipStepWithinMinMax(value: number, min: number, max: number) {
   if (value < min) {
     return min;
   }

@@ -80,6 +80,7 @@ import {
   getMetricsLinkedTimeSelection,
   getMetricsRangeSelectionEnabled,
   getMetricsScalarSmoothing,
+  getMetricsStepSelectorEnabled,
 } from '../../store';
 import {
   appStateFromMetricsState,
@@ -2154,6 +2155,90 @@ describe('scalar card', () => {
           fobs[0].query(By.css('span')).nativeElement.textContent.trim()
         ).toEqual('30');
       }));
+
+      describe('stepSelectorTimeSelection', () => {
+        beforeEach(() => {
+          provideMockCardRunToSeriesData(
+            selectSpy,
+            PluginType.SCALARS,
+            'card1',
+            null /* metadataOverride */,
+            {}
+          );
+        });
+
+        it('defaults to min/max', fakeAsync(() => {
+          store.overrideSelector(getMetricsStepSelectorEnabled, true);
+          store.overrideSelector(getMetricsRangeSelectionEnabled, true);
+          const fixture = createComponent('card1');
+          fixture.componentInstance.minMaxSteps$.next({
+            minStep: 0,
+            maxStep: 50,
+          });
+          expect(
+            fixture.componentInstance.stepSelectorTimeSelection$.getValue()
+          ).toEqual({
+            start: {step: 0},
+            end: {step: 50},
+          });
+        }));
+
+        it('sets end to null when range is disabled', fakeAsync(() => {
+          store.overrideSelector(getMetricsStepSelectorEnabled, true);
+          store.overrideSelector(getMetricsRangeSelectionEnabled, false);
+          const fixture = createComponent('card1');
+          fixture.componentInstance.minMaxSteps$.next({
+            minStep: 0,
+            maxStep: 50,
+          });
+          expect(
+            fixture.componentInstance.stepSelectorTimeSelection$.getValue()
+          ).toEqual({
+            start: {step: 0},
+            end: null,
+          });
+        }));
+
+        it('uses existing start step when defined', fakeAsync(() => {
+          store.overrideSelector(getMetricsStepSelectorEnabled, true);
+          store.overrideSelector(getMetricsRangeSelectionEnabled, true);
+          const fixture = createComponent('card1');
+          fixture.componentInstance.stepSelectorTimeSelection$.next({
+            start: {step: 10},
+            end: {step: 50},
+          });
+          fixture.componentInstance.minMaxSteps$.next({
+            minStep: 0,
+            maxStep: 50,
+          });
+          expect(
+            fixture.componentInstance.stepSelectorTimeSelection$.getValue()
+          ).toEqual({
+            start: {step: 10},
+            end: {step: 50},
+          });
+        }));
+
+        it('cannot generate steps outside min/max', fakeAsync(() => {
+          store.overrideSelector(getMetricsStepSelectorEnabled, true);
+          store.overrideSelector(getMetricsRangeSelectionEnabled, true);
+          const fixture = createComponent('card1');
+          fixture.componentInstance.stepSelectorTimeSelection$.next({
+            start: {step: 10},
+            end: {step: 50},
+          });
+          fixture.componentInstance.minMaxSteps$.next({
+            minStep: 20,
+            maxStep: 30,
+          });
+          expect(
+            fixture.componentInstance.stepSelectorTimeSelection$.getValue()
+          ).toEqual({
+            start: {step: 20},
+            end: {step: 30},
+          });
+        }));
+      });
     });
 
     describe('fob controls', () => {

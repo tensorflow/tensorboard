@@ -100,6 +100,7 @@ import {
   SortingInfo,
 } from './scalar_card_types';
 import {
+  clipStepWithinMinMax,
   maybeClipLinkedTimeSelection,
   partitionSeries,
   TimeSelectionView,
@@ -604,12 +605,19 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       this.store.select(getMetricsStepSelectorEnabled),
       this.store.select(getMetricsRangeSelectionEnabled),
     ]).subscribe(
-      ([{minStep, maxStep}, enableStepSelector, stepSelectorRangeEnabled]) => {
+      ([{minStep, maxStep}, enableStepSelector, rangeSelectionEnabled]) => {
         this.stepSelectorTimeSelection$.next(
           enableStepSelector
             ? {
-                start: {step: minStep},
-                end: stepSelectorRangeEnabled ? {step: maxStep} : null,
+                start: {
+                  step: clipStepWithinMinMax(
+                    this.stepSelectorTimeSelection$.getValue()?.start.step ??
+                      minStep,
+                    minStep,
+                    maxStep
+                  ),
+                },
+                end: rangeSelectionEnabled ? {step: maxStep} : null,
               }
             : null
         );
