@@ -80,6 +80,7 @@ import {
   getMetricsLinkedTimeSelection,
   getMetricsRangeSelectionEnabled,
   getMetricsScalarSmoothing,
+  getMetricsStepSelectorEnabled,
 } from '../../store';
 import {
   appStateFromMetricsState,
@@ -2155,7 +2156,7 @@ describe('scalar card', () => {
         ).toEqual('30');
       }));
 
-      describe('computeStepSelectorTimeSelection', () => {
+      describe('stepSelectorTimeSelection', () => {
         beforeEach(() => {
           provideMockCardRunToSeriesData(
             selectSpy,
@@ -2166,95 +2167,73 @@ describe('scalar card', () => {
           );
         });
 
-        it('returns null when step selection is disable', fakeAsync(() => {
-          const fixture = createComponent('card1');
-          const timeSelection =
-            fixture.componentInstance.computeStepSelectorTimeSelection(
-              {
-                minStep: 0,
-                maxStep: 50,
-              },
-              false,
-              false
-            );
-          expect(timeSelection).toBeNull();
-        }));
-
         it('defaults to min/max', fakeAsync(() => {
+          store.overrideSelector(getMetricsStepSelectorEnabled, true);
+          store.overrideSelector(getMetricsRangeSelectionEnabled, true);
           const fixture = createComponent('card1');
-          const timeSelection =
-            fixture.componentInstance.computeStepSelectorTimeSelection(
-              {
-                minStep: 0,
-                maxStep: 50,
-              },
-              true,
-              true
-            );
-          expect(timeSelection).toEqual({
+          fixture.componentInstance.minMaxSteps$.next({
+            minStep: 0,
+            maxStep: 50,
+          });
+          expect(
+            fixture.componentInstance.stepSelectorTimeSelection$.getValue()
+          ).toEqual({
             start: {step: 0},
             end: {step: 50},
           });
         }));
 
-        it('uses existing start step when defined', fakeAsync(() => {
+        it('sets end to null when range is disabled', fakeAsync(() => {
+          store.overrideSelector(getMetricsStepSelectorEnabled, true);
+          store.overrideSelector(getMetricsRangeSelectionEnabled, false);
           const fixture = createComponent('card1');
-          fixture.componentInstance.stepSelectorTimeSelection$.next({
-            start: {step: 10},
-            end: {step: 50},
+          fixture.componentInstance.minMaxSteps$.next({
+            minStep: 0,
+            maxStep: 50,
           });
-          const timeSelection =
-            fixture.componentInstance.computeStepSelectorTimeSelection(
-              {
-                minStep: 0,
-                maxStep: 50,
-              },
-              true,
-              true
-            );
-          expect(timeSelection).toEqual({
-            start: {step: 10},
-            end: {step: 50},
-          });
-        }));
-
-        it('removes end step when range is disabled', fakeAsync(() => {
-          const fixture = createComponent('card1');
-          fixture.componentInstance.stepSelectorTimeSelection$.next({
-            start: {step: 10},
-            end: {step: 50},
-          });
-          const timeSelection =
-            fixture.componentInstance.computeStepSelectorTimeSelection(
-              {
-                minStep: 0,
-                maxStep: 50,
-              },
-              true,
-              false
-            );
-          expect(timeSelection).toEqual({
-            start: {step: 10},
+          expect(
+            fixture.componentInstance.stepSelectorTimeSelection$.getValue()
+          ).toEqual({
+            start: {step: 0},
             end: null,
           });
         }));
 
-        it('cannot generate steps outside min/max', fakeAsync(() => {
+        it('uses existing start step when defined', fakeAsync(() => {
+          store.overrideSelector(getMetricsStepSelectorEnabled, true);
+          store.overrideSelector(getMetricsRangeSelectionEnabled, true);
           const fixture = createComponent('card1');
           fixture.componentInstance.stepSelectorTimeSelection$.next({
             start: {step: 10},
             end: {step: 50},
           });
-          const timeSelection =
-            fixture.componentInstance.computeStepSelectorTimeSelection(
-              {
-                minStep: 20,
-                maxStep: 30,
-              },
-              true,
-              true
-            );
-          expect(timeSelection).toEqual({
+          fixture.componentInstance.minMaxSteps$.next({
+            minStep: 0,
+            maxStep: 50,
+          });
+          expect(
+            fixture.componentInstance.stepSelectorTimeSelection$.getValue()
+          ).toEqual({
+            start: {step: 10},
+            end: {step: 50},
+          });
+        }));
+
+        it('cannot generate steps outside min/max', fakeAsync(() => {
+          store.overrideSelector(getMetricsStepSelectorEnabled, true);
+          store.overrideSelector(getMetricsRangeSelectionEnabled, true);
+          const fixture = createComponent('card1');
+          fixture.componentInstance.stepSelectorTimeSelection$.next({
+            start: {step: 10},
+            end: {step: 50},
+          });
+          fixture.componentInstance.minMaxSteps$.next({
+            minStep: 20,
+            maxStep: 30,
+          });
+          expect(
+            fixture.componentInstance.stepSelectorTimeSelection$.getValue()
+          ).toEqual({
             start: {step: 20},
             end: {step: 30},
           });

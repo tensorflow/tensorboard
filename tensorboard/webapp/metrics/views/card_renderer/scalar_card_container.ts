@@ -604,39 +604,30 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       this.minMaxSteps$,
       this.store.select(getMetricsStepSelectorEnabled),
       this.store.select(getMetricsRangeSelectionEnabled),
-    ]).subscribe(([minMaxStep, enableStepSelector, rangeSelectionEnabled]) => {
-      this.stepSelectorTimeSelection$.next(
-        this.computeStepSelectorTimeSelection(
-          minMaxStep,
-          enableStepSelector,
-          rangeSelectionEnabled
-        )
-      );
-    });
+    ]).subscribe(
+      ([{minStep, maxStep}, enableStepSelector, rangeSelectionEnabled]) => {
+        this.stepSelectorTimeSelection$.next(
+          enableStepSelector
+            ? {
+                start: {
+                  step: clipStepWithinMinMax(
+                    this.stepSelectorTimeSelection$.getValue()?.start.step ??
+                      minStep,
+                    minStep,
+                    maxStep
+                  ),
+                },
+                end: rangeSelectionEnabled ? {step: maxStep} : null,
+              }
+            : null
+        );
+      }
+    );
   }
 
   ngOnDestroy() {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
-  }
-
-  computeStepSelectorTimeSelection(
-    {minStep, maxStep}: MinMaxStep,
-    enableStepSelector: boolean,
-    rangeSelectionEnabled: boolean
-  ) {
-    return enableStepSelector
-      ? {
-          start: {
-            step: clipStepWithinMinMax(
-              this.stepSelectorTimeSelection$.getValue()?.start.step ?? minStep,
-              minStep,
-              maxStep
-            ),
-          },
-          end: rangeSelectionEnabled ? {step: maxStep} : null,
-        }
-      : null;
   }
 
   private getRunDisplayNameAndAlias(
