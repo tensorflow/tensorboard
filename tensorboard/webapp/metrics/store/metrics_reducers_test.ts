@@ -2414,6 +2414,29 @@ describe('metrics reducers', () => {
     });
   });
 
+  it('loads Step Selector Setting into the next state', () => {
+    const beforeState = buildMetricsState({
+      stepSelectorEnabled: false,
+      rangeSelectionEnabled: false,
+      linkedTimeEnabled: false,
+    });
+
+    const nextState = reducers(
+      beforeState,
+      globalSettingsLoaded({
+        partialSettings: {
+          stepSelectorEnabled: true,
+          rangeSelectionEnabled: true,
+          linkedTimeEnabled: true,
+        },
+      })
+    );
+
+    expect(nextState.stepSelectorEnabled).toBe(true);
+    expect(nextState.rangeSelectionEnabled).toBe(true);
+    expect(nextState.linkedTimeEnabled).toBe(true);
+  });
+
   describe('linked time features', () => {
     describe('#timeSelectionChanged', () => {
       const imageCardId = 'test image card id "plugin":"images"';

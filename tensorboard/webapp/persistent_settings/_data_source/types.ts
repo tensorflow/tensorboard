@@ -38,6 +38,9 @@ export declare interface BackendSettings {
   sideBarWidthInPercent?: number;
   timeSeriesSettingsPaneOpened?: boolean;
   timeSeriesCardMinWidth?: number;
+  stepSelectorEnabled?: boolean;
+  rangeSelectionEnabled?: boolean;
+  linkedTimeEnabled?: boolean;
 }
 
 /**
@@ -57,4 +60,7 @@ export interface PersistableSettings {
   sideBarWidthInPercent?: number;
   timeSeriesSettingsPaneOpened?: boolean;
   timeSeriesCardMinWidth?: number;
+  stepSelectorEnabled?: boolean;
+  rangeSelectionEnabled?: boolean;
+  linkedTimeEnabled?: boolean;
 }

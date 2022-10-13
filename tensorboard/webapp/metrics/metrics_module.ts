@@ -27,7 +27,10 @@ import {MetricsEffects} from './effects';
 import {
   getMetricsCardMinWidth,
   getMetricsIgnoreOutliers,
+  getMetricsLinkedTimeEnabled,
+  getMetricsRangeSelectionEnabled,
   getMetricsScalarSmoothing,
+  getMetricsStepSelectorEnabled,
   getMetricsTooltipSort,
   isMetricsSettingsPaneOpen,
   METRICS_FEATURE_KEY,
@@ -95,6 +98,22 @@ export function getMetricsTimeSeriesCardMinWidth() {
     return {timeSeriesCardMinWidth: cardMinWidth};
   });
 }
+export function getMetricsTimeSeriesStepSelectorEnabled() {
+  return createSelector(getMetricsStepSelectorEnabled, (isEnabled) => {
+    return {stepSelectorEnabled: isEnabled};
+  });
+}
+
+export function getMetricsTimeSeriesRangeSelectionEnabled() {
+  return createSelector(getMetricsRangeSelectionEnabled, (isEnabled) => {
+    return {rangeSelectionEnabled: isEnabled};
+  });
+}
+export function getMetricsTimeSeriesLinkedTimeEnabled() {
+  return createSelector(getMetricsLinkedTimeEnabled, (isEnabled) => {
+    return {linkedTimeEnabled: isEnabled};
+  });
+}
 
 @NgModule({
   imports: [
@@ -128,6 +147,15 @@ export function getMetricsTimeSeriesCardMinWidth() {
     ),
     PersistentSettingsConfigModule.defineGlobalSetting(
       getMetricsTimeSeriesCardMinWidth
+    ),
+    PersistentSettingsConfigModule.defineGlobalSetting(
+      getMetricsTimeSeriesStepSelectorEnabled
+    ),
+    PersistentSettingsConfigModule.defineGlobalSetting(
+      getMetricsTimeSeriesRangeSelectionEnabled
+    ),
+    PersistentSettingsConfigModule.defineGlobalSetting(
+      getMetricsTimeSeriesLinkedTimeEnabled
     ),
   ],
   providers: [
