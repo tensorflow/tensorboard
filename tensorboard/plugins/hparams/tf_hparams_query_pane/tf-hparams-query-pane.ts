@@ -819,13 +819,6 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
         );
       } else if (hparam.filter.regexp) {
         colParam.filterRegexp = hparam.filter.regexp;
-      } else {
-        console.error(
-          'hparam.filter with no domainDiscrete, interval or regexp' +
-            ' properties set: %s',
-          hparam
-        );
-        return null;
       }
       colParams.push(colParam);
     });
