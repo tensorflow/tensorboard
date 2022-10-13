@@ -191,13 +191,18 @@ class HParamsPlugin(base_plugin.TBPlugin):
 
 
 def _parse_request_argument(request, proto_class):
-    if request.method == "POST":
-        return json_format.Parse(request.data, proto_class())
-
-    # args.get() returns the request URI-unescaped.
-    request_json = request.args.get("request")
-    if request_json is None:
+    request_json = (
+        request.data
+        if request.method == "POST"
+        else request.args.get("request")
+    )
+    try:
+        return json_format.Parse(request_json, proto_class())
+    # if request_json is None, json_format.Parse will throw an AttributeError:
+    # 'NoneType' object has no attribute 'decode'.
+    except (AttributeError, json_format.ParseError) as e:
         raise error.HParamsError(
-            "Expected a JSON-formatted 'request' arg of type: %s" % proto_class
-        )
-    return json_format.Parse(request_json, proto_class())
+            "Expected a JSON-formatted request data of type: {}, but got {} ".format(
+                proto_class, request_json
+            )
+        ) from e
