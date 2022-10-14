@@ -58,12 +58,6 @@ def parse_plugin_metadata(content):
     if content == b"{}":
         # Old-style JSON format. Equivalent to an all-default proto.
         return plugin_data_pb2.TextPluginData()
-    try:
-        result = plugin_data_pb2.TextPluginData.FromString(content)
-    except (message.DecodeError, TypeError) as e:
-        raise werkzeug.exceptions.InternalServerError(
-            "Failed to parse plugin metadata {}: {}".format(content, str(e))
-        )
     result = plugin_data_pb2.TextPluginData.FromString(content)
     if result.version == 0:
         return result
