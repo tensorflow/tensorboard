@@ -184,8 +184,7 @@ Here is a short summary of the various commands and their primary function. Plea
 
 For the most part, frontend-specific third-party dependencies are hosted by
 [npm](https://docs.npmjs.com/about-npm) and managed by
-[yarn](https://classic.yarnpkg.com/). Some of our build-time dependencies are
-managed by [bazel](https://bazel.build/).
+[yarn](https://classic.yarnpkg.com/).
 
 The source of truth for `yarn` is a combination of the `package.json` and
 `yarn.lock` files. `package.json` is maintained by us developers and describes
@@ -212,12 +211,60 @@ to be edited by hand.
 
 3.  Run `yarn run yarn-deduplicate`.
 
-4.  Cross reference your updates with the bazel `WORKSPACE` file and determine if any
-    bazel dependencies should also be updated.
-    * Googlers, for information on how to mirror WORKSPACE dependencies that
-      need to be downloaded, refer to go/tensorboard-tf-mirror.
 
-5.  Rebuild and test TensorBoard to make sure it works:
+4.  Rebuild and test TensorBoard to make sure it works:
     * `rm -rf node_modules; bazel clean --expunge; yarn`
     * `bazel run tensorboard --logdir <your favorite logdir>`
     * `bazel test --test_output=errors tensorboard/webapp/...`
+
+## Updating rules_nodejs
+
+The [bazel](https://bazel.build/) rules we use for compiling, bundling, testing,
+and running our frontend code come from
+[rules_nodejs](https://github.com/bazelbuild/rules_nodejs).
+
+When upgrading rules_nodejs we generally must also consider upgrading:
+* The npm packages scoped with `@bazel`
+* The rules_sass bazel library
+* The bazel version
+
+Sample upgrade: https://github.com/tensorflow/tensorboard/pull/5977
+
+1. Determine which version of rules_nodejs to upgrade to and find its release
+   notes in https://github.com/bazelbuild/rules_nodejs/releases. Read the
+   upgrade instructions for that release and every other release since our
+   previous upgrade. Typically these instructions follow the same pattern but
+   there are occasionally special instructions, especially for major releases.
+   Make a mental note of any of these special instructions.
+
+2. Update the build_bazel_rules_nodejs target in the WORKSPACE file as described
+   in the rules_nodejs release notes.
+
+3. Update npm packages scoped with `@bazel` in package.json using yarn.
+   * Use the same version as the rules_nodejs version.
+   * See the previous section for instructions on how to use yarn.
+
+4. Update the rules_sass target in the WORKSPACE file.
+   * Examine https://github.com/bazelbuild/rules_sass/tags to see the list
+     of rules_sass releases.
+   * Pick a tag (the most recent is likely good enough) and use that version to
+     modify the rules_sass target in the WORKSPACE file.
+
+5. Update the minimum bazel version to match the one supported by rules_nodejs:
+   * Examine https://github.com/bazelbuild/rules_nodejs/blob/stable/index.bzl
+     and find the SUPPORTED_BAZEL_VERSIONS constant.
+   * Compare the minimum bazel version supported by rules_nodejs to the one we
+     have specified in the WORKSPACE file. Modify the WORKSPACE file and
+     ci.yml with a new minimum version, if necessary.
+
+6.  Attempt to rebuild and test TensorBoard to make sure it works:
+    * `rm -rf node_modules; bazel clean --expunge; yarn`
+    * `bazel run tensorboard --logdir <your favorite logdir>`
+    * `bazel test --test_output=errors tensorboard/webapp/...`
+
+7. The first attempt to rebuild and test TensorBoard rarely works. Investigate
+   the problems and fix them. At this point, some of the special instructions in
+   the rules_nodejs release notes (from Step 1) might be helpful.
+
+8. Generate mirrors for the new versions of rules_nodejs and rules_sass.
+   Googlers, see information at go/tensorboard-tf-mirror.
