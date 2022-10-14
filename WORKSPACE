@@ -79,7 +79,9 @@ load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
 yarn_install(
     name = "npm",
     package_json = "//:package.json",
-    # "Some rules only work by referencing labels nested inside npm packages and therefore require turning off exports_directories_only." This includes "ts_library".
+    # "Some rules only work by referencing labels nested inside npm packages
+    # and therefore require turning off exports_directories_only."
+    # This includes "ts_library".
     # See: https://github.com/bazelbuild/rules_nodejs/wiki/Migrating-to-5.0#exports_directories_only
     exports_directories_only = False,
     yarn_lock = "//:yarn.lock",
