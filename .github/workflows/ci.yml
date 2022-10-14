@@ -22,7 +22,7 @@ on:
 env:
   # Keep this Bazel version in sync with the `versions.check` directive
   # in our WORKSPACE file.
-  BAZEL_VERSION: '4.0.0'
+  BAZEL_VERSION: '5.0.0'
   BAZEL_SHA256SUM: '7bee349a626281fc8b8d04a7a0b0358492712377400ab12533aeb39c2eb2b901'
   BUILDTOOLS_VERSION: '3.0.0'
   BUILDIFIER_SHA256SUM: 'e92a6793c7134c5431c58fbc34700664f101e5c9b1c1fcd93b97978e8b7f88db'
