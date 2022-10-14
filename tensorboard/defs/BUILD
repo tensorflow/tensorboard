@@ -1,6 +1,6 @@
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
-load("@npm//@bazel/typescript:index.bzl", "ts_library")
+load("@npm//@bazel/concatjs:index.bzl", "ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -57,7 +57,7 @@ nodejs_binary(
         "@npm//@angular/compiler-cli",
         "@npm//@bazel/typescript",
     ],
-    entry_point = "@npm//:node_modules/@bazel/typescript/internal/tsc_wrapped/tsc_wrapped.js",
+    entry_point = "@npm//:node_modules/@bazel/concatjs/internal/tsc_wrapped/tsc_wrapped.js",
     # Disables the Bazel node modules linker. The node module linker is unreliable for the
     # persistent worker executable, as it would rely on the `node_modules/` folder in the
     # execroot that can be shared in non-sandbox environments or for persistent workers.
