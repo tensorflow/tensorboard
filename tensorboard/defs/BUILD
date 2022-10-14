@@ -50,11 +50,12 @@ ts_library(
 # Custom ts_library compiler that runs tsc_wrapped with angular/compiler-cli statically linked
 # This can be used with worker mode because we don't need the linker at runtime to make
 # the angular plugin loadable
-# Just a clone of @npm//@bazel/typescript/bin:tsc_wrapped with added deps
+# Just a clone of @npm//@bazel/concatjs/bin:tsc_wrapped with added deps
 nodejs_binary(
     name = "tsc_wrapped_with_angular",
     data = [
         "@npm//@angular/compiler-cli",
+        "@npm//@bazel/concatjs",
         "@npm//@bazel/typescript",
     ],
     entry_point = "@npm//:node_modules/@bazel/concatjs/internal/tsc_wrapped/tsc_wrapped.js",
