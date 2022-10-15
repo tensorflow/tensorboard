@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-//! OAuth integration for GCS.
+//! OAuth integration for GCS. Authentication is done via the `gcp_auth` library.
 //!
 //! Useful resources:
 //!
@@ -26,7 +26,7 @@ limitations under the License.
 //! [RFC 6749]: https://tools.ietf.org/html/rfc6749
 //! ["Refreshing Access Tokens"]: https://www.oauth.com/oauth2-servers/access-tokens/refreshing-access-tokens/
 
-use log::warn;
+use log::{debug, warn};
 use std::fmt::{self, Debug};
 use std::sync::RwLock;
 
@@ -36,8 +36,10 @@ use tokio::sync::OnceCell;
 
 const SCOPES: &[&str] = &["https://www.googleapis.com/auth/cloud-platform"];
 
+/// AuthenticationManager across different threads or async tasks.
 static AUTH_MANAGER: OnceCell<AuthenticationManager> = OnceCell::const_new();
 
+/// Get a GCP Access Token using the `gcp_aut::AuthenticationManager`.
 fn get_token() -> Result<AccessToken, gcp_auth::Error> {
     async fn authentication_manager() -> &'static AuthenticationManager {
         AUTH_MANAGER
@@ -60,11 +62,13 @@ fn get_token() -> Result<AccessToken, gcp_auth::Error> {
         .unwrap()
         .block_on(service_account_token())?;
 
-    Ok(AccessToken::from_gcs_token(Some(token)))
+    Ok(AccessToken::new(Some(token)))
 }
 
 /// A potentially active token. Use [`authenticate`][Self::authenticate] to add an `Authorization`
 /// header to an outgoing request, fetching a fresh access token if necessary.
+///
+/// If it is `None`, then it has not been fetched yet.
 ///
 /// A `TokenStore` may be freely shared among threads; it synchronizes internally if needed.
 pub struct TokenStore {
@@ -86,8 +90,13 @@ impl TokenStore {
 /// token can be attached to a request, but cannot be directly extracted.
 mod access_token {
     use super::*;
+    /// If the token data is `None`, then it is an anonymous token
     pub struct AccessToken(Option<gcp_auth::Token>);
     impl AccessToken {
+        pub fn new(token: Option<gcp_auth::Token>) -> Self {
+            Self(token)
+        }
+
         /// Attaches this token to an outgoing request.
         pub fn authenticate(&self, rb: RequestBuilder) -> RequestBuilder {
             match &self.0 {
@@ -96,6 +105,7 @@ mod access_token {
             }
         }
 
+        /// Tests whether this token has not expired.
         pub fn is_valid(&self) -> bool {
             match &self.0 {
                 Some(t) => t.has_expired(),
@@ -103,15 +113,13 @@ mod access_token {
             }
         }
 
-        pub fn from_gcs_token(token: Option<gcp_auth::Token>) -> Self {
-            Self(token)
-        }
-
+        /// Tests whether this credential is inherently anonymous. If this returns `true`, then
+        /// [`Self::authenticate`] will always return the same `RequestBuilder`.
+        ///
+        /// This exists as an optimization so that a [`TokenStore`] doesn't need to check locks all the
+        /// time when the credential is anonymous, anyway.
         pub fn anonymous(&self) -> bool {
-            match &self.0 {
-                Some(_) => false,
-                _ => true,
-            }
+            matches!(&self.0, Some(_))
         }
     }
     impl Debug for AccessToken {
@@ -132,9 +140,11 @@ impl TokenStore {
 
         let token = self.token.read().expect("failed to read auth token");
         if let Some(t) = &*token {
+            // If the token is anonymous, do nothing with the request
             if t.anonymous() {
                 return rb;
             }
+            // If the token is valid, authenticate the request with it
             if t.is_valid() {
                 return t.authenticate(rb);
             }
@@ -144,9 +154,11 @@ impl TokenStore {
         // Check again: may have just been written by a different client, in which case no need to
         // re-fetch.
         if let Some(t) = &*token {
+            // If the token is anonymous, do nothing with the request
             if t.anonymous() {
                 return rb;
             }
+            // If the token is valid, authenticate the request with it
             if t.is_valid() {
                 return t.authenticate(rb);
             }
@@ -160,11 +172,9 @@ impl TokenStore {
             }
         }
         if let Some(ref t) = *token {
-            // debug!(
-            //     "Obtained new access token, live for the next {:?}",
-            //     t.expires.saturating_duration_since(Instant::now())
-            // );
-            if t.is_valid() {
+            debug!("Obtained new access token.");
+             // If the token is valid, authenticate the request with it
+             if t.is_valid() {
                 return t.authenticate(rb);
             }
         }
