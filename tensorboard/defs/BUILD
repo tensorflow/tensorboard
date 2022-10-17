@@ -1,6 +1,6 @@
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
-load("@npm//@bazel/typescript:index.bzl", "ts_library")
+load("@npm//@bazel/concatjs:index.bzl", "ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -50,14 +50,15 @@ ts_library(
 # Custom ts_library compiler that runs tsc_wrapped with angular/compiler-cli statically linked
 # This can be used with worker mode because we don't need the linker at runtime to make
 # the angular plugin loadable
-# Just a clone of @npm//@bazel/typescript/bin:tsc_wrapped with added deps
+# Just a clone of @npm//@bazel/concatjs/bin:tsc_wrapped with added deps
 nodejs_binary(
     name = "tsc_wrapped_with_angular",
     data = [
         "@npm//@angular/compiler-cli",
+        "@npm//@bazel/concatjs",
         "@npm//@bazel/typescript",
     ],
-    entry_point = "@npm//:node_modules/@bazel/typescript/internal/tsc_wrapped/tsc_wrapped.js",
+    entry_point = "@npm//:node_modules/@bazel/concatjs/internal/tsc_wrapped/tsc_wrapped.js",
     # Disables the Bazel node modules linker. The node module linker is unreliable for the
     # persistent worker executable, as it would rely on the `node_modules/` folder in the
     # execroot that can be shared in non-sandbox environments or for persistent workers.
