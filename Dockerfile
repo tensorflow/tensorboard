@@ -12,17 +12,21 @@ ENV BUILDIFIER_SHA256SUM='e92a6793c7134c5431c58fbc34700664f101e5c9b1c1fcd93b9797
 ENV BUILDOZER_SHA256SUM='3d58a0b6972e4535718cdd6c12778170ea7382de7c75bc3728f5719437ffb84d'
 ENV TENSORFLOW_VERSION='tf-nightly'
 
-# Get the code
-COPY . /tensorboard
+RUN mkdir /tensorboard
 WORKDIR /tensorboard
 
-# Install python dependencies
-RUN pip install -r ./tensorboard/pip_package/requirements.txt -r ./tensorboard/pip_package/requirements_dev.txt "$TENSORFLOW_VERSION" && pip freeze --all
-
 # Setup Bazel
+COPY ./ci /tensorboard/ci
 RUN ci/download_bazel.sh "${BAZEL_VERSION}" "${BAZEL_SHA256SUM}" ~/bazel
 RUN mv ~/bazel /usr/local/bin/bazel && chmod +x /usr/local/bin/bazel && cp ./ci/bazelrc ~/.bazelrc
 RUN npm i -g @bazel/ibazel
+
+# Install python dependencies
+COPY ./tensorboard/pip_package /tensorboard/tensorboard/pip_package
+RUN pip install -r ./tensorboard/pip_package/requirements.txt -r ./tensorboard/pip_package/requirements_dev.txt "$TENSORFLOW_VERSION" && pip freeze --all
+
+# Get the code
+COPY . /tensorboard
 
 # Fetch dependencies
 RUN bazel fetch //tensorboard/...
