@@ -98,11 +98,13 @@ def tf_ts_library(strict_checks = True, **kwargs):
 
     if strict_checks == False:
         tsconfig = "//:tsconfig-lax"
+    elif "test_only" in kwargs and kwargs.get("test_only"):
+        tsconfig = "//:tsconfig-test"
     kwargs.setdefault("deps", []).extend(["@npm//tslib", "//tensorboard/defs:strict_types"])
 
     ts_library(tsconfig = tsconfig, supports_workers = True, **kwargs)
 
-def tf_ng_web_test_suite(deps = [], **kwargs):
+def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs):
     """TensorBoard wrapper for the rule for a Karma web test suite.
 
     It has Angular specific configurations that we want as defaults.
@@ -113,12 +115,12 @@ def tf_ng_web_test_suite(deps = [], **kwargs):
         srcs = [
             "//tensorboard/webapp/testing:require_js_karma_config.js",
         ],
-        bootstrap = [
+        bootstrap = bootstrap + [
             "@npm//:node_modules/zone.js/dist/zone-testing-bundle.js",
             "@npm//:node_modules/reflect-metadata/Reflect.js",
             "@npm//:node_modules/@angular/localize/bundles/localize-init.umd.js",
         ],
-        runtime_deps = [
+        runtime_deps = runtime_deps + [
             "//tensorboard/webapp/testing:initialize_testbed",
         ],
         deps = deps + [
