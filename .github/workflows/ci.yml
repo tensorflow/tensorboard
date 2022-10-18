@@ -245,7 +245,11 @@ jobs:
           nbfmt_version="174c9a5c1cc51a3af1de98d84824c811ecd49029"
           pip install black yamllint -c ./tensorboard/pip_package/requirements_dev.txt
           pip install -U git+https://github.com/tensorflow/docs@${nbfmt_version}
-          pip install -U "protobuf<3.20"
+        # Workaround tensorflow incompatibility with protobuf>4.
+        # See: https://github.com/tensorflow/tensorboard/issues/5708.
+        # See: https://github.com/tensorflow/tensorflow/issues/53234.
+      - name: 'Downgrade to compatible protobuf version'
+        run: pip install -U "protobuf<3.20"
       - run: pip freeze --all
       - name: 'Lint Python code for style with Black'
         # You can run `black .` to fix all Black complaints.
