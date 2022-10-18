@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {
-  loadMonaco,
+  MonacoShim,
   TEST_ONLY,
   WindowWithRequireAndMonaco,
 } from './load_monaco_shim';
@@ -65,19 +65,19 @@ describe('loadMonaco shim', () => {
   });
 
   it('async function returns without error', async () => {
-    await loadMonaco();
+    await MonacoShim.loadMonaco();
     expect(requireSpy).toHaveBeenCalled();
   });
 
   it('does not reload monaco module if already loaded', async () => {
     windowWithRequireAndMonaco.monaco = createFakeMonaco();
-    await loadMonaco();
+    await MonacoShim.loadMonaco();
     expect(requireSpy).not.toHaveBeenCalled();
   });
 
   it('rejects if require.js is unavailable', async () => {
     delete windowWithRequireAndMonaco.require;
 
-    await expectAsync(loadMonaco()).toBeRejected();
+    await expectAsync(MonacoShim.loadMonaco()).toBeRejected();
   });
 });

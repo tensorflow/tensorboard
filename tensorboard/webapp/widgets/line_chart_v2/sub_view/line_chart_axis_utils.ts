@@ -39,7 +39,7 @@ function getNumLeadingZerosInFractional(value: number): number {
   return 0;
 }
 
-export function getStandardTicks(
+function getStandardTicks(
   scale: Scale,
   formatter: Formatter,
   maxMinorTickCount: number,
@@ -57,7 +57,7 @@ export function getStandardTicks(
   };
 }
 
-export function getTicksForTemporalScale(
+function getTicksForTemporalScale(
   scale: Scale,
   formatter: Formatter,
   maxMinorTickCount: number,
@@ -87,7 +87,7 @@ export function getTicksForTemporalScale(
   };
 }
 
-export function getTicksForLinearScale(
+function getTicksForLinearScale(
   scale: LinearScale,
   formatter: Formatter,
   maxMinorTickCount: number,
@@ -181,7 +181,7 @@ const canvasForMeasure = document.createElement('canvas').getContext('2d');
  * @param marginBetweenAxis Optional required spacing between labels.
  * @returns Filtered minor ticks based on their visibilities.
  */
-export function filterTicksByVisibility(
+function filterTicksByVisibility(
   minorTicks: MinorTick[],
   getDomPos: (tick: MinorTick) => number,
   axis: 'x' | 'y',
@@ -223,3 +223,10 @@ export function filterTicksByVisibility(
     return true;
   });
 }
+
+export const AxisUtils = {
+  getStandardTicks,
+  getTicksForTemporalScale,
+  getTicksForLinearScale,
+  filterTicksByVisibility,
+};

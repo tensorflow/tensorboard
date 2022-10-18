@@ -43,7 +43,7 @@ import {
   ScaleType,
 } from './lib/public_types';
 import {createScale} from './lib/scale';
-import {isOffscreenCanvasSupported} from './lib/utils';
+import {ChartUtils} from './lib/utils';
 import {WorkerChart} from './lib/worker/worker_chart';
 import {
   computeDataSeriesExtent,
@@ -393,7 +393,8 @@ export class LineChartComponent
     }
 
     const useWorker =
-      rendererType !== RendererType.SVG && isOffscreenCanvasSupported();
+      rendererType !== RendererType.SVG &&
+      ChartUtils.isOffscreenCanvasSupported();
     const klass = useWorker ? WorkerChart : ChartImpl;
     this.lineChart = new klass(params);
   }

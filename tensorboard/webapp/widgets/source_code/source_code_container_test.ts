@@ -17,7 +17,7 @@ limitations under the License.
  */
 import {Component, Input, NO_ERRORS_SCHEMA} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import * as loadMonacoShim from './load_monaco_shim';
+import {MonacoShim} from './load_monaco_shim';
 import {SourceCodeComponent} from './source_code_component';
 import {SourceCodeContainer} from './source_code_container';
 import {fakes, setUpMonacoFakes, spies, tearDownMonacoFakes} from './testing';
@@ -74,7 +74,7 @@ describe('Source Code Component', () => {
     component.useDarkMode = true;
     fixture.detectChanges();
     // Simlulate loading monaco and setting the `monaco` input after loading.
-    await loadMonacoShim.loadMonaco();
+    await MonacoShim.loadMonaco();
     fixture.detectChanges();
 
     expect(fakes.fakeMonaco.editor.create).toHaveBeenCalledOnceWith(
@@ -103,7 +103,7 @@ describe('Source Code Component', () => {
     fixture.detectChanges();
 
     // Simlulate loading monaco and setting the `monaco` input after loading.
-    await loadMonacoShim.loadMonaco();
+    await MonacoShim.loadMonaco();
     fixture.detectChanges();
 
     // Initial rendering of code uses monaco editor's constructor instead of
@@ -139,7 +139,7 @@ describe('Source Code Component', () => {
       fixture = TestBed.createComponent(TestableComponent);
       fixture.componentInstance.lines = lines1;
       fixture.detectChanges();
-      await loadMonacoShim.loadMonaco();
+      await MonacoShim.loadMonaco();
       fixture.detectChanges();
     });
 
