@@ -63,7 +63,7 @@ export class CardFobControllerComponent {
     new EventEmitter<TimeSelectionWithAffordance>();
   @Output() onTimeSelectionToggled = new EventEmitter();
 
-  private dragTimeSelectionStart: TimeSelection | undefined;
+  private hasFobMoved: boolean = false;
   private currentDraggingFob: Fob = Fob.NONE;
   private affordance: TimeSelectionAffordance = TimeSelectionAffordance.NONE;
 
@@ -111,7 +111,6 @@ export class CardFobControllerComponent {
     document.addEventListener('mousemove', this.mouseListener);
     document.addEventListener('mouseup', this.stopListener);
     this.currentDraggingFob = fob;
-    this.dragTimeSelectionStart = {...this.timeSelection};
     this.affordance = affordance;
   }
 
@@ -119,18 +118,14 @@ export class CardFobControllerComponent {
     document.removeEventListener('mousemove', this.mouseListener);
     document.removeEventListener('mouseup', this.stopListener);
     this.currentDraggingFob = Fob.NONE;
-    if (
-      this.dragTimeSelectionStart?.start.step !==
-        this.timeSelection.start.step ||
-      this.dragTimeSelectionStart?.end?.step !== this.timeSelection.end?.step
-    ) {
+    if (this.hasFobMoved) {
       this.onTimeSelectionChanged.emit({
         timeSelection: this.timeSelection,
         affordance: this.affordance,
       });
     }
     this.affordance = TimeSelectionAffordance.NONE;
-    this.dragTimeSelectionStart = undefined;
+    this.hasFobMoved = false;
   }
 
   isVertical() {
@@ -211,6 +206,7 @@ export class CardFobControllerComponent {
     this.onTimeSelectionChanged.emit({
       timeSelection: newTimeSelection,
     });
+    this.hasFobMoved = true;
   }
 
   isDraggingLower(position: number, movement: number): boolean {
