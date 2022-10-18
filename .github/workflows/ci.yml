@@ -32,7 +32,7 @@ env:
 
 jobs:
   build:
-    runs-on: ${{ env.RUN_PLATFORM }}
+    runs-on: ubuntu-20.04
     needs: lint-python-flake8 # fail fast in case of "undefined variable" errors
     strategy:
       fail-fast: false
@@ -136,11 +136,11 @@ jobs:
       fail-fast: false
       matrix:
         mode: ['native']
-        platform: ['${{ env.RUN_PLATFORM }}'', 'macos-11']
+        platform: ['ubuntu-20.04'', 'macos-11']
         rust_version: ['1.58.1']
         include:
           - mode: 'universal'
-            platform: '${{ env.RUN_PLATFORM }}''
+            platform: 'ubuntu-20.04''
             rust_version: '1.58.1'
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
@@ -208,7 +208,7 @@ jobs:
           path: /tmp/pip_package/*
 
   lint-python-flake8:
-    runs-on: ${{ env.RUN_PLATFORM }}
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
@@ -233,7 +233,7 @@ jobs:
         run: flake8 . --count --select=E9,F63,F7,F82,F401 --show-source --statistics
 
   lint-python-yaml-docs:
-    runs-on: ${{ env.RUN_PLATFORM }}
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
       - uses: actions/setup-python@152ba7c4dd6521b8e9c93f72d362ce03bf6c4f20
@@ -262,7 +262,7 @@ jobs:
         run: git ls-files -z '*.ipynb' | xargs -0 python3 -m tensorflow_docs.tools.nbfmt --test
 
   lint-rust:
-    runs-on: ${{ env.RUN_PLATFORM }}
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         rust_version: ['1.58.1']
@@ -306,7 +306,7 @@ jobs:
           git diff --staged --exit-code
 
   lint-frontend:
-    runs-on: ${{ env.RUN_PLATFORM }}
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
       - uses: actions/setup-node@56899e050abffc08c2b3b61f3ec6a79a9dc3223d
@@ -337,7 +337,7 @@ jobs:
           ! git grep -E '@npm//numeric' 'tensorboard/*/BUILD' ':!tensorboard/webapp/third_party/**'
 
   lint-misc: # build, protos, etc.
-    runs-on: ${{ env.RUN_PLATFORM }}
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
       - name: 'Set up Buildifier'
