@@ -237,7 +237,7 @@ jobs:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
       - uses: actions/setup-python@152ba7c4dd6521b8e9c93f72d362ce03bf6c4f20
         with:
-          python-version: '3.6'
+          python-version: '3.7'
           architecture: 'x64'
       - name: 'Install black, yamllint, and the TensorFlow docs notebook tools'
         run: |
