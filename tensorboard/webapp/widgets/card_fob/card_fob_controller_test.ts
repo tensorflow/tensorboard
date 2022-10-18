@@ -316,6 +316,34 @@ describe('card_fob_controller', () => {
         affordance: TimeSelectionAffordance.FOB,
       });
     });
+
+    it('does not fire event when time selection does not change', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 2}, end: {step: 3}},
+      });
+      fixture.detectChanges();
+      const fobController = fixture.componentInstance.fobController;
+
+      fobController.startDrag(
+        Fob.END,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
+      expect((fobController as any).currentDraggingFob).toEqual(Fob.END);
+
+      const fakeEvent = new MouseEvent('mousemove', {
+        clientY: 0,
+        movementY: 0,
+      });
+      fobController.mouseMove(fakeEvent);
+      expect((fobController as any).currentDraggingFob).toEqual(Fob.END);
+
+      fixture.detectChanges();
+      fobController.stopDrag();
+      fixture.detectChanges();
+
+      expect(onTimeSelectionChanged).not.toHaveBeenCalled();
+    });
   });
 
   describe('vertical dragging', () => {
@@ -723,13 +751,7 @@ describe('card_fob_controller', () => {
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(2);
-      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
-        timeSelection: {
-          start: {step: 2},
-          end: null,
-        },
-        affordance: TimeSelectionAffordance.FOB,
-      });
+      expect(onTimeSelectionChanged).not.toHaveBeenCalled();
     });
 
     it('does not call getStepLowerThanMousePosition or getStepHigherThanMousePosition when mouse is dragging right but, is left of the fob', () => {
@@ -762,13 +784,7 @@ describe('card_fob_controller', () => {
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(4);
-      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
-        timeSelection: {
-          start: {step: 4},
-          end: null,
-        },
-        affordance: TimeSelectionAffordance.FOB,
-      });
+      expect(onTimeSelectionChanged).not.toHaveBeenCalled();
     });
 
     it('does not move the start fob or call call getStepLowerThanMousePosition or getStepHigherThanMousePosition when mouse is dragging right but, the fob is already on the final step', () => {
