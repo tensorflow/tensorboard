@@ -85,16 +85,16 @@ To make the devleopment faster, we can use run TensorBoard on dev target with iB
 [--port PORT_NUMBER]
 ```
 
-*  `ibazel`: Bazel is capable of performing incremental builds where it builds only
-    the subset of files that are impacted by file changes. However, it does not come
-    with a file watcher. For an improved developer experience, start TensorBoard
-    with `ibazel` instead of `bazel` which will automatically re-build and start the
-    server when files change.
-*   `:dev`: A target to bundle all dev assets with no vulcanization, which makes
-    the build faster.
-*   `--bind_all`: Used to view the running TensorBoard over the network than
-    from `localhost`, necessary when running at a remote machine and accessing
-    the server from your local chrome browser.
+- `ibazel`: Bazel is capable of performing incremental builds where it builds only
+  the subset of files that are impacted by file changes. However, it does not come
+  with a file watcher. For an improved developer experience, start TensorBoard
+  with `ibazel` instead of `bazel` which will automatically re-build and start the
+  server when files change.
+- `:dev`: A target to bundle all dev assets with no vulcanization, which makes
+  the build faster.
+- `--bind_all`: Used to view the running TensorBoard over the network than
+  from `localhost`, necessary when running at a remote machine and accessing
+  the server from your local chrome browser.
 
 Access your server at `http://<YOUR_SERVER_ADDRESS>:<PORT_NUMBER>/` if you are
 running TensorBoard at a remote machine. Otherwise `localhost:<PORT_NUMBER>` should
@@ -107,6 +107,38 @@ below.
 # Optionally run `yarn` to keep `node_modules` up-to-date.
 yarn run ibazel run tensorboard:dev -- -- --logdir path/to/logs
 ```
+
+### Development Using Docker
+
+Rather than spend the time setting up a development environment, you may find it
+easier to run the project using Docker.
+
+Build the image using the following command from the root directory.
+`docker build -t tensorflow/tensorboard .`
+
+The image will only need to be rebuilt when a new dependency is added or an existing
+dependency is updated.
+
+Once the image is successfully built you can easily start up a development environment
+with the following command
+
+```
+docker run \
+    -p 6006:6006 \
+    -v $PWD/tensorboard:/tensorboard/tensorboard \
+    -v $MY_LOG_DIR:/logdir \
+    tensorflow/tensorboard \
+    ibazel run tensorboard:dev -- --logdir /logdir --bind_all
+```
+
+TensorBoard will now be accessible at [localhost:6006](http://localhost:6006)
+
+For continued development you may want to either save the compiled project with
+another volume mount or else plan to reuse the same container to prevent having
+to repeatedly clean compile the project.
+
+Note that it may still be necessary to run tensorboard natively in order to test
+compatibility with other platforms (i.e. OSX)
 
 ### Debugging Polymer UI Tests Locally
 
@@ -137,11 +169,11 @@ bazel build third_party/chromium
 ### Debugging Angular UI Tests Locally
 
 Here is a short summary of the various commands and their primary function. Please see below for more details. We recommand using `ibazle test` for regular work and `bazel run` for deep dive debugging.
-* `bazel test/run`: runs tests once and done.
-* `ibazel test`: supports file watching.
-* `ibazle run`: provides karma console breakpoint debugging; does not support file watching.
-* Both `ibazel test` and `ibazel run` supports `console.log` and `fit/fdescribe`, which are used to narrow down the test amount.
 
+- `bazel test/run`: runs tests once and done.
+- `ibazel test`: supports file watching.
+- `ibazle run`: provides karma console breakpoint debugging; does not support file watching.
+- Both `ibazel test` and `ibazel run` supports `console.log` and `fit/fdescribe`, which are used to narrow down the test amount.
 
 1.  Just run all webapp tests. The job stops after finished. `console.log` is not
     supported. Not handy on debugging.
@@ -151,13 +183,13 @@ Here is a short summary of the various commands and their primary function. Plea
     ```
 
 2.  Using `ibazel` to auto detect the file changes and use target
-    `karma_test_chromium-local` for running on *webapp* tests.
+    `karma_test_chromium-local` for running on _webapp_ tests.
 
     ```sh
     (tf)$ ibazel test //tensorboard/webapp/... --test_output=all
     ```
 
-    *   `--test_output=all`: for displaying number of tests if using '`fit`'.
+    - `--test_output=all`: for displaying number of tests if using '`fit`'.
 
 3.  To run on a specific test, we can change the target (with `chromium-local`
     suffix). For example,
@@ -199,25 +231,27 @@ to be edited by hand.
 2.  Add or modify an entry in the `[dependencies]` or `[devDependencies]`
     section of `package.json`. You can do this manually but often it's preferred
     to use `yarn` from the command line:
-    * `yarn add`
-      * https://classic.yarnpkg.com/lang/en/docs/cli/add/
-    * `yarn upgrade`
-      * See: https://classic.yarnpkg.com/lang/en/docs/cli/upgrade/
-      * Alternatively, use `yarn upgrade-interactive`, possibly with the
+
+    - `yarn add`
+      - https://classic.yarnpkg.com/lang/en/docs/cli/add/
+    - `yarn upgrade`
+      - See: https://classic.yarnpkg.com/lang/en/docs/cli/upgrade/
+      - Alternatively, use `yarn upgrade-interactive`, possibly with the
         `--latest` flag to use an interactive shell tool to hand pick
         dependencies to upgrade.
-      * See: https://classic.yarnpkg.com/lang/en/docs/cli/upgrade-interactive/
-    * `yarn remove`
-      * https://classic.yarnpkg.com/lang/en/docs/cli/remove/
+      - See: https://classic.yarnpkg.com/lang/en/docs/cli/upgrade-interactive/
+    - `yarn remove`
+      - https://classic.yarnpkg.com/lang/en/docs/cli/remove/
 
 3.  Run `yarn run yarn-deduplicate`.
 
 4.  Cross reference your updates with the bazel `WORKSPACE` file and determine if any
     bazel dependencies should also be updated.
-    * Googlers, for information on how to mirror WORKSPACE dependencies that
+
+    - Googlers, for information on how to mirror WORKSPACE dependencies that
       need to be downloaded, refer to go/tensorboard-tf-mirror.
 
 5.  Rebuild and test TensorBoard to make sure it works:
-    * `rm -rf node_modules; bazel clean --expunge; yarn`
-    * `bazel run tensorboard --logdir <your favorite logdir>`
-    * `bazel test --test_output=errors tensorboard/webapp/...`
+    - `rm -rf node_modules; bazel clean --expunge; yarn`
+    - `bazel run tensorboard --logdir <your favorite logdir>`
+    - `bazel test --test_output=errors tensorboard/webapp/...`
