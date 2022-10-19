@@ -237,7 +237,7 @@ jobs:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
       - uses: actions/setup-python@152ba7c4dd6521b8e9c93f72d362ce03bf6c4f20
         with:
-          python-version: '3.7'
+          python-version: '3.6'
           architecture: 'x64'
       - name: 'Install black, yamllint, and the TensorFlow docs notebook tools'
         run: |
@@ -245,11 +245,6 @@ jobs:
           nbfmt_version="174c9a5c1cc51a3af1de98d84824c811ecd49029"
           pip install black yamllint -c ./tensorboard/pip_package/requirements_dev.txt
           pip install -U git+https://github.com/tensorflow/docs@${nbfmt_version}
-        # Workaround tensorflow incompatibility with protobuf>4.
-        # See: https://github.com/tensorflow/tensorboard/issues/5708.
-        # See: https://github.com/tensorflow/tensorflow/issues/53234.
-      - name: 'Downgrade to compatible protobuf version'
-        run: pip install -U "protobuf<3.20"
       - run: pip freeze --all
       - name: 'Lint Python code for style with Black'
         # You can run `black .` to fix all Black complaints.
