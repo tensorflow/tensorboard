@@ -425,7 +425,9 @@ describe('feature_flag_selectors', () => {
           }),
         })
       );
-      expect(selectors.getIsLinkedTimeProspectiveFobEnabled(state)).toEqual(false);
+      expect(selectors.getIsLinkedTimeProspectiveFobEnabled(state)).toEqual(
+        false
+      );
 
       state = buildState(
         buildFeatureFlagState({
@@ -437,7 +439,9 @@ describe('feature_flag_selectors', () => {
           },
         })
       );
-      expect(selectors.getIsLinkedTimeProspectiveFobEnabled(state)).toEqual(true);
+      expect(selectors.getIsLinkedTimeProspectiveFobEnabled(state)).toEqual(
+        true
+      );
     });
   });
 });
