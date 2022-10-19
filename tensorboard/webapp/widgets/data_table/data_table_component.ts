@@ -52,6 +52,10 @@ export class DataTableComponent {
 
   getHeaderTextColumn(columnHeader: ColumnHeaders): string {
     switch (columnHeader) {
+      case ColumnHeaders.ALIAS:
+        return 'Alias';
+      case ColumnHeaders.DISPLAY_NAME:
+        return 'Display Name';
       case ColumnHeaders.RUN:
         return 'Run';
       case ColumnHeaders.VALUE:
@@ -90,6 +94,10 @@ export class DataTableComponent {
     selectedStepRunData: SelectedStepRunData
   ): string {
     switch (columnHeader) {
+      case ColumnHeaders.ALIAS:
+        return (selectedStepRunData.ALIAS || '').toString();
+      case ColumnHeaders.DISPLAY_NAME:
+        return (selectedStepRunData.DISPLAY_NAME || '').toString();
       case ColumnHeaders.RUN:
         if (selectedStepRunData.RUN === undefined) {
           return '';
