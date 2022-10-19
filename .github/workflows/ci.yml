@@ -30,6 +30,15 @@ env:
   TENSORFLOW_VERSION: 'tf-nightly'
 
 jobs:
+  docker-build:
+    runs-on: ubuntu-18.04
+    name: Docker build
+    steps:
+      - name: Build using Docker
+        id: docker-build
+        uses: rileyajones/tensorboard@v1
+      - name: Get the output
+        run: echo "${{ steps.docker-build.outputs.message }}"
   build:
     runs-on: ubuntu-18.04
     needs: lint-python-flake8 # fail fast in case of "undefined variable" errors
