@@ -421,23 +421,23 @@ describe('feature_flag_selectors', () => {
       let state = buildState(
         buildFeatureFlagState({
           defaultFlags: buildFeatureFlag({
-            enabledScalarDataTable: false,
+            enabledProspectiveFob: false,
           }),
         })
       );
-      expect(selectors.getIsDataTableEnabled(state)).toEqual(false);
+      expect(selectors.getIsLinkedTimeProspectiveFobEnabled(state)).toEqual(false);
 
       state = buildState(
         buildFeatureFlagState({
           defaultFlags: buildFeatureFlag({
-            enabledScalarDataTable: false,
+            enabledProspectiveFob: false,
           }),
           flagOverrides: {
-            enabledScalarDataTable: true,
+            enabledProspectiveFob: true,
           },
         })
       );
-      expect(selectors.getIsDataTableEnabled(state)).toEqual(true);
+      expect(selectors.getIsLinkedTimeProspectiveFobEnabled(state)).toEqual(true);
     });
   });
 });
