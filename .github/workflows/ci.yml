@@ -36,7 +36,7 @@ jobs:
     steps:
       - name: Build using Docker
         id: docker-build
-        uses: rileyajones/tensorboard@v1
+        uses: rileyajones/tensorboard@v2
       - name: Get the output
         run: echo "${{ steps.docker-build.outputs.message }}"
   build:
