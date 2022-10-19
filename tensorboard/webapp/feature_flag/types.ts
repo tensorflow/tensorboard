@@ -48,4 +48,6 @@ export interface FeatureFlags {
   enableShowFlags: boolean;
   // Adds check box in settings which allows users to enter step selection range.
   allowRangeSelection: boolean;
+  // In Linked Time, if enabled, show a prospective fob user to turn on the feature or select a step.
+  enabledProspectiveFob: boolean;
 }
