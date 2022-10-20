@@ -85,6 +85,7 @@ yarn_install(
     # See: https://github.com/bazelbuild/rules_nodejs/wiki/Migrating-to-5.0#exports_directories_only
     exports_directories_only = False,
     package_json = "//:package.json",
+    data = ["//patches:@bazel+concatjs+5.7.0.patch"],
     yarn_lock = "//:yarn.lock",
 )
 
