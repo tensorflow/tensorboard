@@ -1,0 +1,21 @@
+diff --git a/node_modules/@bazel/concatjs/web_test/karma.conf.js b/node_modules/@bazel/concatjs/web_test/karma.conf.js
+index 90a03ef..28778c9 100755
+--- a/node_modules/@bazel/concatjs/web_test/karma.conf.js
++++ b/node_modules/@bazel/concatjs/web_test/karma.conf.js
+@@ -384,7 +384,15 @@ try {
+             conf.browsers.push(launcher);
+           } else {
+             const launcher = 'CustomChrome';
+-            conf.customLaunchers = {[launcher]: {base: browser, flags: additionalArgs}};
++            // For TensorBoard: Patch the CustomChrome launcher so that even it
++            // specifies the --no-sandbox flag. This is to workaround
++            // incompatibilities with some environments.
++            //
++            // Specifically we were seeing errors like:
++            // [WARNING:gpu_process_host.cc(1228)] The GPU process has crashed 6 time(s)
++            // [FATAL:gpu_data_manager_impl_private.cc(439)] GPU process isn't usable. Goodbye.
++            conf.customLaunchers =
++                {[launcher]: {base: browser, flags: ['--no-sandbox', ...additionalArgs]}};
+             conf.browsers.push(launcher);
+           }
+         }
