@@ -79,13 +79,13 @@ load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
 
 yarn_install(
     name = "npm",
+    data = ["//patches:@bazel+concatjs+5.7.0.patch"],
     # "Some rules only work by referencing labels nested inside npm packages
     # and therefore require turning off exports_directories_only."
     # This includes "ts_library".
     # See: https://github.com/bazelbuild/rules_nodejs/wiki/Migrating-to-5.0#exports_directories_only
     exports_directories_only = False,
     package_json = "//:package.json",
-    data = ["//patches:@bazel+concatjs+5.7.0.patch"],
     yarn_lock = "//:yarn.lock",
 )
 
