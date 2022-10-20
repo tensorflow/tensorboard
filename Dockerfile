@@ -30,3 +30,5 @@ COPY . /tensorboard
 
 # Fetch dependencies
 RUN bazel fetch //tensorboard/...
+
+ENTRYPOINT ["/tensorboard/entrypoint.sh"]
