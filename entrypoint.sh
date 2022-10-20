@@ -1,6 +1,18 @@
-#!/bin/sh -l
+#!/bin/bash
 
 # DO_NOT_SUBMIT
-BAZEL_OUTPUT=$(bazel test //tensorboard/...)
+if [[ "$1" == 'test' ]]; then
+  echo "Running Tests"
+  OUTPUT=$(bazel test //tensorboard/...)
+elif [[ "$1" == 'dev' ]]; then
+  echo "Running Dev Server" 
+  COMMAND="ibazel run tensorboard:dev ${@:2}"
+  echo "Generated Command $COMMAND"
+  $COMMAND
+fi
 
-echo message="$BAZEL_OUTPUT" >> $GITHUB_OUTPUT
+echo $OUTPUT
+
+if [[ "$GITHUB_OUTPUT" != '' ]]; then
+  echo "output=$OUTPUT" >> $GITHUB_OUTPUT
+fi

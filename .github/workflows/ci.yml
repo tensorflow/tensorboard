@@ -35,14 +35,14 @@ jobs:
     runs-on: ubuntu-18.04
     name: Docker build
     steps:
-      - name: Build using Docker
+      - name: Run Tests
         id: docker-build
         # This should definitely NOT point to my fork in the long term
         uses: rileyajones/tensorboard@v2
         with:
           command: 'test'
       - name: Get the output
-        run: echo "${{ steps.docker-build.outputs.message }}"
+        run: echo "${{ steps.docker-build.outputs.output }}"
   build:
     runs-on: ubuntu-18.04
     needs: lint-python-flake8 # fail fast in case of "undefined variable" errors
