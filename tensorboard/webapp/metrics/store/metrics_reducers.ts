@@ -436,10 +436,19 @@ const reducer = createReducer(
 
     const isSettingsPaneOpen =
       partialSettings.timeSeriesSettingsPaneOpened ?? state.isSettingsPaneOpen;
+    const stepSelectorEnabled =
+      partialSettings.stepSelectorEnabled ?? state.stepSelectorEnabled;
+    const rangeSelectionEnabled =
+      partialSettings.rangeSelectionEnabled ?? state.rangeSelectionEnabled;
+    const linkedTimeEnabled =
+      partialSettings.linkedTimeEnabled ?? state.linkedTimeEnabled;
 
     return {
       ...state,
       isSettingsPaneOpen,
+      stepSelectorEnabled,
+      rangeSelectionEnabled,
+      linkedTimeEnabled,
       settings: {
         ...state.settings,
         ...metricsSettings,
