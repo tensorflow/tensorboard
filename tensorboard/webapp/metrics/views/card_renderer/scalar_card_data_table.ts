@@ -104,8 +104,13 @@ export class ScalarCardDataTable {
           closestEndPointIndex = findClosestIndex(datum.points, endStep);
           closestEndPoint = datum.points[closestEndPointIndex];
         }
+        const alias = metadata.alias
+          ? `${metadata.alias.aliasNumber} ${metadata.alias.aliasText}/`
+          : '';
         const selectedStepData: SelectedStepRunData = {};
+        selectedStepData.ALIAS = alias;
         selectedStepData.COLOR = metadata.color;
+        selectedStepData.DISPLAY_NAME = metadata.displayName;
         for (const header of this.dataHeaders) {
           switch (header) {
             case ColumnHeaders.RUN:
