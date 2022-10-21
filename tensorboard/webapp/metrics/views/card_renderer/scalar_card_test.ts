@@ -2541,6 +2541,7 @@ describe('scalar card', () => {
 
       expect(data).toEqual([
         {
+          id: 'run1',
           COLOR: '#fff',
           RELATIVE_TIME: 1000,
           RUN: 'run1',
@@ -2548,6 +2549,7 @@ describe('scalar card', () => {
           VALUE: 10,
         },
         {
+          id: 'run2',
           COLOR: '#fff',
           RELATIVE_TIME: 1000,
           RUN: 'run2',
@@ -2601,6 +2603,7 @@ describe('scalar card', () => {
 
       expect(data).toEqual([
         {
+          id: 'run1',
           COLOR: '#fff',
           RUN: 'run1',
           VALUE_CHANGE: 19,
@@ -2613,6 +2616,7 @@ describe('scalar card', () => {
           PERCENTAGE_CHANGE: 19, // percentage change from 1 to 20 is 1900%
         },
         {
+          id: 'run2',
           COLOR: '#fff',
           RUN: 'run2',
           VALUE_CHANGE: 24,
@@ -3092,6 +3096,95 @@ describe('scalar card', () => {
       expect(data[4].RUN).toEqual('run5');
       expect(data[5].RUN).toEqual('run6');
       expect(data[6].RUN).toEqual('run7');
+    }));
+
+    it('Sorts RUNS column by displayName', fakeAsync(() => {
+      const runToSeries = {
+        run1: [{wallTime: 1, value: 1, step: 1}],
+        run2: [{wallTime: 1, value: 2, step: 1}],
+        run3: [{wallTime: 1, value: 3, step: 1}],
+        run4: [{wallTime: 1, value: NaN, step: 1}],
+        run5: [{wallTime: 1, value: 'NaN', step: 1}],
+        run6: [{wallTime: 1, value: null, step: 1}],
+        run7: [{wallTime: 1, value: undefined, step: 1}],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries as any
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([
+          ['run1', true],
+          ['run2', true],
+          ['run3', true],
+          ['run4', true],
+          ['run5', true],
+          ['run6', true],
+          ['run7', true],
+        ])
+      );
+
+      store.overrideSelector(getMetricsLinkedTimeSelection, {
+        start: {step: 1},
+        end: null,
+      });
+
+      const fixture = createComponent('card1');
+      const scalarCardDataTable = fixture.debugElement.query(
+        By.directive(ScalarCardDataTable)
+      );
+      scalarCardDataTable.componentInstance.sortingInfo = {
+        header: ColumnHeaders.RUN,
+        order: SortingOrder.ASCENDING,
+      };
+      scalarCardDataTable.componentInstance.chartMetadataMap.run1.alias = {
+        aliasText: 'g',
+        aliasNumber: 7,
+      };
+      scalarCardDataTable.componentInstance.chartMetadataMap.run2.alias = {
+        aliasText: 'f',
+        aliasNumber: 6,
+      };
+      scalarCardDataTable.componentInstance.chartMetadataMap.run3.alias = {
+        aliasText: 'e',
+        aliasNumber: 5,
+      };
+      scalarCardDataTable.componentInstance.chartMetadataMap.run4.alias = {
+        aliasText: 'd',
+        aliasNumber: 4,
+      };
+      scalarCardDataTable.componentInstance.chartMetadataMap.run5.alias = {
+        aliasText: 'c',
+        aliasNumber: 3,
+      };
+      scalarCardDataTable.componentInstance.chartMetadataMap.run6.alias = {
+        aliasText: 'b',
+        aliasNumber: 2,
+      };
+      scalarCardDataTable.componentInstance.chartMetadataMap.run7.alias = {
+        aliasText: 'a',
+        aliasNumber: 1,
+      };
+      console.log(
+        'ChartMetadatMap: ',
+        scalarCardDataTable.componentInstance.chartMetadataMap
+      );
+      fixture.detectChanges();
+
+      const data =
+        scalarCardDataTable.componentInstance.getTimeSelectionTableData();
+
+      expect(data[0].RUN).toEqual('7 g/run1');
+      expect(data[1].RUN).toEqual('6 f/run2');
+      expect(data[2].RUN).toEqual('5 e/run3');
+      expect(data[3].RUN).toEqual('4 d/run4');
+      expect(data[4].RUN).toEqual('3 c/run5');
+      expect(data[5].RUN).toEqual('2 b/run6');
+      expect(data[6].RUN).toEqual('1 a/run7');
     }));
   });
 

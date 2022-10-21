@@ -99,7 +99,6 @@ describe('data table', () => {
         ColumnHeaders.MIN_VALUE,
         ColumnHeaders.MAX_VALUE,
         ColumnHeaders.PERCENTAGE_CHANGE,
-        ColumnHeaders.DISPLAY_NAME,
       ],
     });
     fixture.detectChanges();
@@ -112,7 +111,6 @@ describe('data table', () => {
     expect(headerElements[3].nativeElement.innerText).toBe('Step');
     expect(headerElements[4].nativeElement.innerText).toBe('Relative');
     expect(headerElements[5].nativeElement.innerText).toBe('Value');
-    expect(headerElements[6].nativeElement.innerText).toBe('Run');
     expect(
       headerElements[5]
         .queryAll(By.css('mat-icon'))[0]
@@ -150,6 +148,7 @@ describe('data table', () => {
       ],
       data: [
         {
+          id: 'someid',
           RUN: 'run name',
           VALUE: 3,
           STEP: 1,
@@ -204,7 +203,7 @@ describe('data table', () => {
         ColumnHeaders.STEP,
         ColumnHeaders.RELATIVE_TIME,
       ],
-      data: [{}],
+      data: [{id: 'someid'}],
     });
     fixture.detectChanges();
     const dataElements = fixture.debugElement.queryAll(By.css('td'));

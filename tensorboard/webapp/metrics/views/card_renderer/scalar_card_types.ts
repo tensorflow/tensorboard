@@ -78,7 +78,6 @@ export interface PartitionedSeries {
  */
 export enum ColumnHeaders {
   COLOR = 'COLOR',
-  DISPLAY_NAME = 'DISPLAY_NAME',
   RELATIVE_TIME = 'RELATIVE_TIME',
   RUN = 'RUN',
   STEP = 'STEP',
@@ -112,7 +111,7 @@ export interface SortingInfo {
  */
 export type SelectedStepRunData = {
   [key in ColumnHeaders]?: string | number;
-};
+} & {id: string};
 
 /**
  * An object which is intended to hold the min and max step within each scalar
