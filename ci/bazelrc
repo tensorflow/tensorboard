@@ -30,5 +30,6 @@ test --test_verbose_timeout_warnings
 # actually hermetic, and they run pretty quickly, anyway.
 common --remote_cache=https://storage.googleapis.com/tensorboard-build-cache
 common --remote_upload_local_results=false
+common --remote_timeout=3
 test --remote_upload_local_results=false
 test --cache_test_results=false
