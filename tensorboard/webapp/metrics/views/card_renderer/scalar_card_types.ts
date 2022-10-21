@@ -77,7 +77,6 @@ export interface PartitionedSeries {
  * value and the DataTable widget must know how to display each value.
  */
 export enum ColumnHeaders {
-  ALIAS = 'ALIAS',
   COLOR = 'COLOR',
   DISPLAY_NAME = 'DISPLAY_NAME',
   RELATIVE_TIME = 'RELATIVE_TIME',

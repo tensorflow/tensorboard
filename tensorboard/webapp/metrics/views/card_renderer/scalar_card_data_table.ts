@@ -104,11 +104,7 @@ export class ScalarCardDataTable {
           closestEndPointIndex = findClosestIndex(datum.points, endStep);
           closestEndPoint = datum.points[closestEndPointIndex];
         }
-        const alias = metadata.alias
-          ? `${metadata.alias.aliasNumber} ${metadata.alias.aliasText}/`
-          : '';
         const selectedStepData: SelectedStepRunData = {};
-        selectedStepData.ALIAS = alias;
         selectedStepData.COLOR = metadata.color;
         selectedStepData.DISPLAY_NAME = metadata.displayName;
         for (const header of this.dataHeaders) {
@@ -224,6 +220,8 @@ function makeValueSortable(value: number | string | null | undefined) {
 
 function getSortableValue(point: SelectedStepRunData, header: ColumnHeaders) {
   switch (header) {
+    // The value shown in the "RUN" column is a string concatenation of Alias Id + Alias + Run Name
+    // but we would actually prefer to sort by just the run name.
     case ColumnHeaders.RUN:
       return makeValueSortable(point[ColumnHeaders.DISPLAY_NAME]);
     default:
