@@ -3143,7 +3143,7 @@ describe('scalar card', () => {
       };
       scalarCardDataTable.componentInstance.chartMetadataMap.run1.alias = {
         aliasText: 'g',
-        aliasNumber: 7,
+        aliasNumber: 5,
       };
       scalarCardDataTable.componentInstance.chartMetadataMap.run2.alias = {
         aliasText: 'f',
@@ -3151,19 +3151,19 @@ describe('scalar card', () => {
       };
       scalarCardDataTable.componentInstance.chartMetadataMap.run3.alias = {
         aliasText: 'e',
-        aliasNumber: 5,
+        aliasNumber: 7,
       };
       scalarCardDataTable.componentInstance.chartMetadataMap.run4.alias = {
         aliasText: 'd',
         aliasNumber: 4,
       };
       scalarCardDataTable.componentInstance.chartMetadataMap.run5.alias = {
-        aliasText: 'c',
-        aliasNumber: 3,
-      };
-      scalarCardDataTable.componentInstance.chartMetadataMap.run6.alias = {
         aliasText: 'b',
         aliasNumber: 2,
+      };
+      scalarCardDataTable.componentInstance.chartMetadataMap.run6.alias = {
+        aliasText: 'c',
+        aliasNumber: 3,
       };
       scalarCardDataTable.componentInstance.chartMetadataMap.run7.alias = {
         aliasText: 'a',
@@ -3178,12 +3178,12 @@ describe('scalar card', () => {
       const data =
         scalarCardDataTable.componentInstance.getTimeSelectionTableData();
 
-      expect(data[0].RUN).toEqual('7 g/run1');
+      expect(data[0].RUN).toEqual('5 g/run1');
       expect(data[1].RUN).toEqual('6 f/run2');
-      expect(data[2].RUN).toEqual('5 e/run3');
+      expect(data[2].RUN).toEqual('7 e/run3');
       expect(data[3].RUN).toEqual('4 d/run4');
-      expect(data[4].RUN).toEqual('3 c/run5');
-      expect(data[5].RUN).toEqual('2 b/run6');
+      expect(data[4].RUN).toEqual('2 b/run5');
+      expect(data[5].RUN).toEqual('3 c/run6');
       expect(data[6].RUN).toEqual('1 a/run7');
     }));
   });
