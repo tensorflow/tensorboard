@@ -104,7 +104,9 @@ export class ScalarCardDataTable {
           closestEndPointIndex = findClosestIndex(datum.points, endStep);
           closestEndPoint = datum.points[closestEndPointIndex];
         }
-        const selectedStepData: SelectedStepRunData = {};
+        const selectedStepData: SelectedStepRunData = {
+          id: datum.id,
+        };
         selectedStepData.COLOR = metadata.color;
         for (const header of this.dataHeaders) {
           switch (header) {
@@ -189,8 +191,8 @@ export class ScalarCardDataTable {
       });
     dataTableData.sort(
       (point1: SelectedStepRunData, point2: SelectedStepRunData) => {
-        const p1 = getSortableValue(point1[this.sortingInfo.header]);
-        const p2 = getSortableValue(point2[this.sortingInfo.header]);
+        const p1 = this.getSortableValue(point1, this.sortingInfo.header);
+        const p2 = this.getSortableValue(point2, this.sortingInfo.header);
         if (p1 < p2) {
           return this.sortingInfo.order === SortingOrder.ASCENDING ? -1 : 1;
         }
@@ -203,9 +205,20 @@ export class ScalarCardDataTable {
     );
     return dataTableData;
   }
+
+  private getSortableValue(point: SelectedStepRunData, header: ColumnHeaders) {
+    switch (header) {
+      // The value shown in the "RUN" column is a string concatenation of Alias Id + Alias + Run Name
+      // but we would actually prefer to sort by just the run name.
+      case ColumnHeaders.RUN:
+        return makeValueSortable(this.chartMetadataMap[point.id].displayName);
+      default:
+        return makeValueSortable(point[header]);
+    }
+  }
 }
 
-function getSortableValue(value: number | string | undefined | null) {
+function makeValueSortable(value: number | string | null | undefined) {
   if (
     Number.isNaN(value) ||
     value === 'NaN' ||
