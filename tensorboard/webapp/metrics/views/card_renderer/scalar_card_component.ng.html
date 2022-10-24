@@ -231,7 +231,8 @@ limitations under the License.
     <scalar-card-fob-controller
       [timeSelection]="stepOrLinkedTimeSelection"
       [scale]="xScale"
-      [minMax]="viewExtent.x"
+      [minMaxHorizontalViewExtend]="viewExtent.x"
+      [minMaxStep]="minMaxStep"
       [axisSize]="domDim.width"
       (onTimeSelectionChanged)="onTimeSelectionChanged.emit($event)"
       (onTimeSelectionToggled)="onFobRemoved()"
