@@ -50,6 +50,8 @@ const TIME_SELECTION_TO_FOB: Record<keyof TimeSelection, Fob> = {
 export class CardFobControllerComponent {
   @ViewChild('startFobWrapper') readonly startFobWrapper!: ElementRef;
   @ViewChild('endFobWrapper') readonly endFobWrapper!: ElementRef;
+  @ViewChild('prospectiveFobWrapper')
+  readonly prospectiveFobWrapper!: ElementRef;
   @Input() axisDirection!: AxisDirection;
   @Input() timeSelection!: TimeSelection;
   @Input() cardFobHelper!: CardFobGetStepFromPositionHelper;
@@ -58,6 +60,8 @@ export class CardFobControllerComponent {
   @Input() highestStep!: number;
   @Input() lowestStep!: number;
   @Input() showExtendedLine?: Boolean = false;
+  @Input() isProspectiveFobFeatureEnabled: Boolean = false;
+  @Input() prospectiveStep: number | null = null;
 
   @Output() onTimeSelectionChanged =
     new EventEmitter<TimeSelectionWithAffordance>();

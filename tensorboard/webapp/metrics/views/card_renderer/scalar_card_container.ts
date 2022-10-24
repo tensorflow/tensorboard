@@ -51,6 +51,7 @@ import {
   getDarkModeEnabled,
   getExperimentIdForRunId,
   getExperimentIdToExperimentAliasMap,
+  getIsLinkedTimeProspectiveFobEnabled,
   getMetricsLinkedTimeEnabled,
   getMetricsLinkedTimeSelection,
   getMetricsStepSelectorEnabled,
@@ -156,6 +157,7 @@ function areSeriesEqual(
       [useDarkMode]="useDarkMode$ | async"
       [linkedTimeSelection]="linkedTimeSelection$ | async"
       [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection$ | async"
+      [isProspectiveFobFeatureEnabled]="isProspectiveFobFeatureEnabled$ | async"
       [forceSvg]="forceSvg$ | async"
       [minMaxStep]="minMaxSteps$ | async"
       [dataHeaders]="columnHeaders$ | async"
@@ -203,6 +205,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   linkedTimeSelection$?: Observable<TimeSelectionView | null>;
   columnHeaders$?: Observable<ColumnHeaders[]>;
   stepOrLinkedTimeSelection$?: Observable<TimeSelection | null>;
+
+  readonly isProspectiveFobFeatureEnabled$: Observable<boolean> =
+    this.store.select(getIsLinkedTimeProspectiveFobEnabled);
 
   onVisibilityChange({visible}: {visible: boolean}) {
     this.isVisible = visible;

@@ -335,6 +335,10 @@ describe('scalar card', () => {
     store.overrideSelector(selectors.getDarkModeEnabled, false);
     store.overrideSelector(selectors.getForceSvgFeatureFlag, false);
     store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
+    store.overrideSelector(
+      selectors.getIsLinkedTimeProspectiveFobEnabled,
+      false
+    );
   });
 
   describe('basic renders', () => {
