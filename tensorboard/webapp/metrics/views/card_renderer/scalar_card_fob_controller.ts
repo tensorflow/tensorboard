@@ -24,6 +24,7 @@ import {
   TimeSelectionAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
 import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
+import {MinMaxStep} from './scalar_card_types';
 
 @Component({
   selector: 'scalar-card-fob-controller',
@@ -47,7 +48,8 @@ import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
 export class ScalarCardFobController {
   @Input() timeSelection!: TimeSelection;
   @Input() scale!: Scale;
-  @Input() minMax!: [number, number];
+  @Input() minMaxHorizontalViewExtend!: [number, number];
+  @Input() minMaxStep!: MinMaxStep;
   @Input() axisSize!: number;
 
   @Output() onTimeSelectionChanged = new EventEmitter<{
@@ -65,7 +67,7 @@ export class ScalarCardFobController {
 
   getAxisPositionFromStartStep() {
     return this.scale.forward(
-      this.minMax,
+      this.minMaxHorizontalViewExtend,
       [0, this.axisSize],
       this.timeSelection.start.step
     );
@@ -76,20 +78,18 @@ export class ScalarCardFobController {
       return null;
     }
     return this.scale.forward(
-      this.minMax,
+      this.minMaxHorizontalViewExtend,
       [0, this.axisSize],
       this.timeSelection.end.step
     );
   }
 
   getHighestStep(): number {
-    const minMax = this.minMax;
-    return Math.floor(minMax[0] < minMax[1] ? minMax[1] : minMax[0]);
+    return this.minMaxStep.maxStep;
   }
 
   getLowestStep(): number {
-    const minMax = this.minMax;
-    return Math.ceil(minMax[0] < minMax[1] ? minMax[0] : minMax[1]);
+    return this.minMaxStep.minStep;
   }
 
   getStepHigherThanAxisPosition(position: number): number {
@@ -113,7 +113,11 @@ export class ScalarCardFobController {
    */
   getStepAtMousePostion(position: number): number {
     const stepAtMouse = Math.round(
-      this.scale.reverse(this.minMax, [0, this.axisSize], position)
+      this.scale.reverse(
+        this.minMaxHorizontalViewExtend,
+        [0, this.axisSize],
+        position
+      )
     );
     if (stepAtMouse > this.getHighestStep()) {
       return this.getHighestStep();
