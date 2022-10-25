@@ -17,6 +17,16 @@ limitations under the License.
 
 <div>
   <div
+    #prospectiveFobWrapper
+    class="time-fob-wrapper"
+    *ngIf="prospectiveStep !== null && isProspectiveFobFeatureEnabled"
+  >
+    <div *ngIf="showExtendedLine" class="extended-line"></div>
+    <card-fob
+      [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
+    ></card-fob>
+  </div>
+  <div
     #startFobWrapper
     class="time-fob-wrapper"
     [style.transform]="getCssTranslatePxForStartFob()"
@@ -53,16 +63,6 @@ limitations under the License.
       (mousedown)="startDrag(Fob.END, TimeSelectionAffordance.FOB, $event)"
       (stepChanged)="stepTyped(Fob.END, $event)"
       (fobRemoved)="onFobRemoved(Fob.END)"
-    ></card-fob>
-  </div>
-  <div
-    #prospectiveFobWrapper
-    class="time-fob-wrapper"
-    *ngIf="prospectiveStep !== null && isProspectiveFobFeatureEnabled"
-  >
-    <div *ngIf="showExtendedLine" class="extended-line"></div>
-    <card-fob
-      [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
     ></card-fob>
   </div>
 </div>
