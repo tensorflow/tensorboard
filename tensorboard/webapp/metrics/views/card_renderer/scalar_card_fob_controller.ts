@@ -34,6 +34,7 @@ import {MinMaxStep} from './scalar_card_types';
       [timeSelection]="timeSelection"
       [startStepAxisPosition]="getAxisPositionFromStartStep()"
       [endStepAxisPosition]="getAxisPositionFromEndStep()"
+      [prospectiveStepAxisPosition]="getAxisPositionFromProspectiveStep()"
       [highestStep]="getHighestStep()"
       [lowestStep]="getLowestStep()"
       [prospectiveStep]="prospectiveStep"
@@ -85,6 +86,16 @@ export class ScalarCardFobController {
       this.minMaxHorizontalViewExtend,
       [0, this.axisSize],
       this.timeSelection.end.step
+    );
+  }
+
+  getAxisPositionFromProspectiveStep() {
+    if (this.prospectiveStep === null) return null;
+
+    return this.scale.forward(
+      this.minMaxHorizontalViewExtend,
+      [0, this.axisSize],
+      this.prospectiveStep
     );
   }
 
