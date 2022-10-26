@@ -25,6 +25,7 @@ keyword argument overrides this.
 
 
 import collections
+import dataclasses
 import math
 
 
@@ -39,6 +40,7 @@ def Cleanse(obj, encoding="utf-8"):
     - Turns byte strings into unicode strings.
     - Turns sets into sorted lists.
     - Turns tuples into lists.
+    - Turns dataclasses into lists.
 
     Args:
       obj: Python data structure.
@@ -68,5 +70,7 @@ def Cleanse(obj, encoding="utf-8"):
         return collections.OrderedDict(
             (Cleanse(k, encoding), Cleanse(v, encoding)) for k, v in obj.items()
         )
+    elif dataclasses.is_dataclass(obj):
+        return [Cleanse(i, encoding) for i in dataclasses.asdict(obj).values()]
     else:
         return obj
