@@ -62,6 +62,7 @@ export class CardFobControllerComponent {
   @Input() showExtendedLine?: Boolean = false;
   @Input() isProspectiveFobFeatureEnabled?: Boolean = false;
   @Input() prospectiveStep?: number | null = null;
+  @Input() prospectiveStepAxisPosition?: number | null = null;
 
   @Output() onTimeSelectionChanged =
     new EventEmitter<TimeSelectionWithAffordance>();
@@ -97,6 +98,17 @@ export class CardFobControllerComponent {
       return `translate(0px, ${this.endStepAxisPosition}px)`;
     }
     return `translate(${this.endStepAxisPosition}px, 0px)`;
+  }
+
+  getCssTranslatePxForProspectiveFob() {
+    if (this.prospectiveStep === null) {
+      return '';
+    }
+
+    if (this.axisDirection === AxisDirection.VERTICAL) {
+      return `translate(0px, ${this.prospectiveStepAxisPosition}px)`;
+    }
+    return `translate(${this.prospectiveStepAxisPosition}px, 0px)`;
   }
 
   stopEventPropagation(e: Event) {
