@@ -50,8 +50,8 @@ class _FieldType:
 
     serialized_type: Union[Type[int], Type[str]]
     runtime_type: Union[Type[int], Type[str]]
-    serialize: Union[Callable[int, int], Type[str]]
-    deserialize: Union[Callable[int, int], Type[str]]
+    serialize: Union[Callable[[int], int], Type[str]]
+    deserialize: Union[Callable[[int], int], Type[str]]
 
 
 _type_int = _FieldType(
