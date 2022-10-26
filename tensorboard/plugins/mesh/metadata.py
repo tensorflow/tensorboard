@@ -14,20 +14,35 @@
 # ==============================================================================
 """Internal information about the mesh plugin."""
 
+import dataclasses
 
-import collections
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.mesh import plugin_data_pb2
 
-
-MeshTensor = collections.namedtuple(
-    "MeshTensor", ("data", "content_type", "data_type")
-)
 PLUGIN_NAME = "mesh"
 
 # The most recent value for the `version` field of the
 # `MeshPluginData` proto.
 _PROTO_VERSION = 0
+
+
+@dataclasses.dataclass(frozen=True)
+class MeshTensor:
+    """A mesh tensor.
+
+    Attributes:
+      data: Tensor of shape `[dim_1, ..., dim_n, 3]` representing the mesh data
+        of one of the following:
+          - 3D coordinates of vertices
+          - Indices of vertices within each triangle
+          - Colors for each vertex
+      content_type: Type of the mesh plugin data content.
+      data_type: Data type of the elements in the tensor.
+    """
+
+    data: "tf.Tensor"
+    content_type: plugin_data_pb2.MeshPluginData.ContentType
+    data_type: "tf.DType"
 
 
 def get_components_bitmask(content_types):
