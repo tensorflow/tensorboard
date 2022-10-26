@@ -16,6 +16,7 @@
 
 import dataclasses
 
+from tensorboard.compat import tf2 as tf
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.mesh import plugin_data_pb2
 
