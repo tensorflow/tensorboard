@@ -60,8 +60,8 @@ export class CardFobControllerComponent {
   @Input() highestStep!: number;
   @Input() lowestStep!: number;
   @Input() showExtendedLine?: Boolean = false;
-  @Input() isProspectiveFobFeatureEnabled: Boolean = false;
-  @Input() prospectiveStep: number | null = null;
+  @Input() isProspectiveFobFeatureEnabled?: Boolean = false;
+  @Input() prospectiveStep?: number | null = null;
 
   @Output() onTimeSelectionChanged =
     new EventEmitter<TimeSelectionWithAffordance>();
