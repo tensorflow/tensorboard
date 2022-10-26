@@ -92,6 +92,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() forceSvg!: boolean;
   @Input() linkedTimeSelection!: TimeSelectionView | null;
   @Input() stepOrLinkedTimeSelection!: TimeSelection | null;
+  @Input() isProspectiveFobFeatureEnabled: Boolean = false;
   @Input() minMaxStep!: MinMaxStep;
   @Input() dataHeaders!: ColumnHeaders[];
 

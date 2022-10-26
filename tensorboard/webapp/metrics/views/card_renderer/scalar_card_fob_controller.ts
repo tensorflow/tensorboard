@@ -36,6 +36,8 @@ import {MinMaxStep} from './scalar_card_types';
       [endStepAxisPosition]="getAxisPositionFromEndStep()"
       [highestStep]="getHighestStep()"
       [lowestStep]="getLowestStep()"
+      [prospectiveStep]="prospectiveStep"
+      [isProspectiveFobFeatureEnabled]="isProspectiveFobFeatureEnabled"
       [cardFobHelper]="cardFobHelper"
       [showExtendedLine]="true"
       (onTimeSelectionChanged)="onTimeSelectionChanged.emit($event)"
@@ -51,6 +53,7 @@ export class ScalarCardFobController {
   @Input() minMaxHorizontalViewExtend!: [number, number];
   @Input() minMaxStep!: MinMaxStep;
   @Input() axisSize!: number;
+  @Input() isProspectiveFobFeatureEnabled: Boolean = false;
 
   @Output() onTimeSelectionChanged = new EventEmitter<{
     timeSelection: TimeSelection;
@@ -64,6 +67,7 @@ export class ScalarCardFobController {
       this.getStepHigherThanAxisPosition.bind(this),
     getStepLowerThanAxisPosition: this.getStepLowerThanAxisPosition.bind(this),
   };
+  prospectiveStep: number | null = null;
 
   getAxisPositionFromStartStep() {
     return this.scale.forward(

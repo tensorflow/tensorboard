@@ -39,6 +39,8 @@ import {
       [lowestStep]="lowestStep"
       [cardFobHelper]="cardFobHelper"
       [showExtendedLine]="showExtendedLine"
+      [isProspectiveFobFeatureEnabled]="isProspectiveFobFeatureEnabled"
+      [prospectiveStep]="prospectiveStep"
       (onTimeSelectionChanged)="onTimeSelectionChanged($event)"
       (onTimeSelectionToggled)="onTimeSelectionToggled()"
     ></card-fob-controller>
@@ -56,6 +58,8 @@ class TestableComponent {
   @Input() lowestStep!: number;
   @Input() getAxisPositionFromStartStep!: () => number;
   @Input() getAxisPositionFromEndStep!: () => number;
+  @Input() isProspectiveFobFeatureEnabled!: Boolean;
+  @Input() prospectiveStep!: number | null;
 
   @Input() onTimeSelectionChanged!: (newTimeSelection: TimeSelection) => void;
   @Input() onTimeSelectionToggled!: () => void;
@@ -85,6 +89,8 @@ describe('card_fob_controller', () => {
     timeSelection: TimeSelection;
     showExtendedLine?: Boolean;
     steps?: number[];
+    isProspectiveFobFeatureEnabled?: Boolean;
+    prospectiveStep?: number | null;
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
 
@@ -132,6 +138,10 @@ describe('card_fob_controller', () => {
 
     fixture.componentInstance.showExtendedLine =
       input.showExtendedLine ?? false;
+
+    fixture.componentInstance.isProspectiveFobFeatureEnabled =
+      input.isProspectiveFobFeatureEnabled ?? false;
+    fixture.componentInstance.prospectiveStep = input.prospectiveStep ?? null;
 
     onTimeSelectionChanged = jasmine.createSpy();
     fixture.componentInstance.onTimeSelectionChanged = onTimeSelectionChanged;
@@ -1267,6 +1277,48 @@ describe('card_fob_controller', () => {
         },
         affordance: TimeSelectionAffordance.FOB_REMOVED,
       });
+    });
+  });
+
+  describe('prospective fob', () => {
+    it('renders when feature flag is enabled and the step is not null', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 4}, end: null},
+        isProspectiveFobFeatureEnabled: true,
+        prospectiveStep: 2,
+      });
+      fixture.detectChanges();
+
+      const fobController = fixture.componentInstance.fobController;
+      const prospectiveFob = fobController.prospectiveFobWrapper.nativeElement;
+
+      expect(prospectiveFob).toBeTruthy();
+    });
+
+    it('does not render when feature flag is disenabled', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 4}, end: null},
+        isProspectiveFobFeatureEnabled: false,
+        prospectiveStep: 2,
+      });
+      fixture.detectChanges();
+
+      expect(
+        fixture.componentInstance.fobController.prospectiveFobWrapper
+      ).toBeUndefined();
+    });
+
+    it('does not render when step is null', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 4}, end: null},
+        isProspectiveFobFeatureEnabled: true,
+        prospectiveStep: null,
+      });
+      fixture.detectChanges();
+
+      expect(
+        fixture.componentInstance.fobController.prospectiveFobWrapper
+      ).toBeUndefined();
     });
   });
 });
