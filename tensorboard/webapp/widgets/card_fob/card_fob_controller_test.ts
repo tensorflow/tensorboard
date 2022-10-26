@@ -1359,11 +1359,11 @@ describe('card_fob_controller', () => {
       fixture.detectChanges();
 
       const fobController = fixture.componentInstance.fobController;
-      const prospectiveFobLeftPosition =
+      const prospectiveFobTopPosition =
         fobController.prospectiveFobWrapper.nativeElement.getBoundingClientRect()
           .top;
 
-      expect(prospectiveFobLeftPosition).toEqual(2);
+      expect(prospectiveFobTopPosition).toEqual(2);
     });
   });
 });
