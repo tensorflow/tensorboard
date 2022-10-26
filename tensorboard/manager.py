@@ -24,8 +24,9 @@ import os
 import subprocess
 import tempfile
 import time
+import typing
 
-from typing import Callable, Optional, Type, Union, get_type_hints
+from typing import Callable, Optional, Type, Union
 
 from tensorboard import version
 from tensorboard.util import tb_logging
@@ -123,7 +124,7 @@ def _info_to_string(info):
     Returns:
       A string representation of the provided `TensorBoardInfo`.
     """
-    field_name_to_type = get_type_hints(TensorBoardInfo)
+    field_name_to_type = typing.get_type_hints(TensorBoardInfo)
     for key, field_type in field_name_to_type.items():
         if not isinstance(getattr(info, key), field_type.runtime_type):
             raise ValueError(
@@ -156,7 +157,7 @@ def _info_from_string(info_string):
       ValueError: If the provided string is not valid JSON, or if it is
         missing any required fields, or if any field is of incorrect type.
     """
-    field_name_to_type = get_type_hints(TensorBoardInfo)
+    field_name_to_type = typing.get_type_hints(TensorBoardInfo)
     try:
         json_value = json.loads(info_string)
     except ValueError:
