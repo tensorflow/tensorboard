@@ -44,6 +44,7 @@ import {
       [prospectiveStep]="prospectiveStep"
       (onTimeSelectionChanged)="onTimeSelectionChanged($event)"
       (onTimeSelectionToggled)="onTimeSelectionToggled()"
+      (onPrespectiveStepChanged)="onPrespectiveStepChanged($event)"
     ></card-fob-controller>
   `,
 })
@@ -65,6 +66,7 @@ class TestableComponent {
 
   @Input() onTimeSelectionChanged!: (newTimeSelection: TimeSelection) => void;
   @Input() onTimeSelectionToggled!: () => void;
+  @Input() onPrespectiveStepChanged!: (step: number | null) => void;
 }
 
 describe('card_fob_controller', () => {
@@ -76,6 +78,8 @@ describe('card_fob_controller', () => {
   let getAxisPositionFromEndStepSpy: jasmine.Spy;
   let getAxisPositionFromProspectiveStepSpy: jasmine.Spy;
   let cardFobHelper: CardFobGetStepFromPositionHelper;
+  let onPrespectiveStepChangedSpy: jasmine.Spy;
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [
@@ -165,6 +169,14 @@ describe('card_fob_controller', () => {
 
     onTimeSelectionToggled = jasmine.createSpy();
     fixture.componentInstance.onTimeSelectionToggled = onTimeSelectionToggled;
+
+    onPrespectiveStepChangedSpy = jasmine.createSpy();
+    fixture.componentInstance.onPrespectiveStepChanged =
+      onPrespectiveStepChangedSpy;
+    onPrespectiveStepChangedSpy.and.callFake((step: number | null) => {
+      fixture.componentInstance.prospectiveStep = step;
+    });
+
     return fixture;
   }
 
@@ -1364,6 +1376,26 @@ describe('card_fob_controller', () => {
           .top;
 
       expect(prospectiveFobTopPosition).toEqual(2);
+    });
+
+    describe('prospective area', () => {
+      it('emits null step on mouseleave', () => {
+        const fixture = createComponent({
+          timeSelection: {start: {step: 4}, end: null},
+          axisDirection: AxisDirection.HORIZONTAL,
+          isProspectiveFobFeatureEnabled: true,
+          prospectiveStep: 2,
+        });
+        fixture.detectChanges();
+
+        const hoverArea = fixture.debugElement.query(
+          By.css('.prospective-fob-area')
+        );
+        hoverArea.triggerEventHandler('mouseleave', {});
+        fixture.detectChanges();
+
+        expect(onPrespectiveStepChangedSpy).toHaveBeenCalledWith(null);
+      });
     });
   });
 });

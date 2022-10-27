@@ -67,6 +67,7 @@ export class CardFobControllerComponent {
   @Output() onTimeSelectionChanged =
     new EventEmitter<TimeSelectionWithAffordance>();
   @Output() onTimeSelectionToggled = new EventEmitter();
+  @Output() onPrespectiveStepChanged = new EventEmitter<number | null>();
 
   private hasFobMoved: boolean = false;
   private currentDraggingFob: Fob = Fob.NONE;
@@ -345,5 +346,9 @@ export class CardFobControllerComponent {
     }
 
     this.onTimeSelectionToggled.emit();
+  }
+
+  onProspectiveAreaMouseLeave() {
+    this.onPrespectiveStepChanged.emit(null);
   }
 }
