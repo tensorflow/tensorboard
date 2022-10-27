@@ -14,7 +14,7 @@
 # ==============================================================================
 """Unit tests for `tensorboard.manager`."""
 
-import dataclasses
+
 import datetime
 import errno
 import json
@@ -63,7 +63,7 @@ class TensorBoardInfoTest(tb_test.TestCase):
 
     def test_serialization_rejects_bad_types(self):
         bad_time = datetime.datetime.fromtimestamp(1549061116)  # not an int
-        info = dataclasses.replace(_make_info(), start_time=bad_time)
+        info = _make_info()._replace(start_time=bad_time)
         with self.assertRaisesRegex(
             ValueError,
             r"expected 'start_time' of type.*int.*, but found: datetime\.",
@@ -71,7 +71,7 @@ class TensorBoardInfoTest(tb_test.TestCase):
             manager._info_to_string(info)
 
     def test_serialization_rejects_wrong_version(self):
-        info = dataclasses.replace(_make_info(), version="reversion")
+        info = _make_info()._replace(version="reversion")
         with self.assertRaisesRegex(
             ValueError,
             "expected 'version' to be '.*', but found: 'reversion'",
@@ -139,11 +139,11 @@ class TensorBoardInfoTest(tb_test.TestCase):
             manager._info_from_string(bad_input)
 
     def test_logdir_data_source_format(self):
-        info = dataclasses.replace(_make_info(), logdir="~/foo", db="")
+        info = _make_info()._replace(logdir="~/foo", db="")
         self.assertEqual(manager.data_source_from_info(info), "logdir ~/foo")
 
     def test_db_data_source_format(self):
-        info = dataclasses.replace(_make_info(), logdir="", db="sqlite:~/bar")
+        info = _make_info()._replace(logdir="", db="sqlite:~/bar")
         self.assertEqual(manager.data_source_from_info(info), "db sqlite:~/bar")
 
 
@@ -327,7 +327,7 @@ class TensorBoardInfoIoTest(tb_test.TestCase):
         # The particulars of validation are tested more thoroughly in
         # `TensorBoardInfoTest` above.
         bad_time = datetime.datetime.fromtimestamp(1549061116)
-        info = dataclasses.replace(_make_info(), start_time=bad_time)
+        info = _make_info()._replace(start_time=bad_time)
         with self.assertRaisesRegex(
             ValueError,
             r"expected 'start_time' of type.*int.*, but found: datetime\.",
@@ -338,7 +338,7 @@ class TensorBoardInfoIoTest(tb_test.TestCase):
     def test_write_info_file_rejects_wrong_version(self):
         # The particulars of validation are tested more thoroughly in
         # `TensorBoardInfoTest` above.
-        info = dataclasses.replace(_make_info(), version="reversion")
+        info = _make_info()._replace(version="reversion")
         with self.assertRaisesRegex(
             ValueError,
             "expected 'version' to be '.*', but found: 'reversion'",
