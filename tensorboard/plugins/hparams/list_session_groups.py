@@ -560,7 +560,7 @@ class _MetricIdentifier:
     """An identifier for a metric.
 
     As protobuffers are mutable we can't use MetricName directly as a dict's key.
-    Instead, we wrap MetricName protocol buffer in an immutable dataclass.
+    Instead, we represent MetricName protocol buffer as an immutable dataclass.
 
     Attributes:
       group: Metric group corresponding to the dataset on which the model was
@@ -570,9 +570,6 @@ class _MetricIdentifier:
 
     group: str
     tag: str
-
-    def __eq__(self, other: "_MetricIdentifier") -> bool:
-        return self.group == other.group and self.tag == other.tag
 
 
 class _MetricStats(object):

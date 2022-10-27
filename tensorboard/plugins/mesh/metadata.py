@@ -16,7 +16,8 @@
 
 import dataclasses
 
-from tensorboard.compat import tf2 as tf
+from typing import Any
+
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.mesh import plugin_data_pb2
 
@@ -41,9 +42,9 @@ class MeshTensor:
       data_type: Data type of the elements in the tensor.
     """
 
-    data: "tf.Tensor"
+    data: Any  # Expects type `tf.Tensor`, not specified here to avoid heavy TF dep.
     content_type: plugin_data_pb2.MeshPluginData.ContentType
-    data_type: "tf.DType"
+    data_type: Any  # Expects type `tf.DType`, not specified here to avoid heavy TF dep.
 
 
 def get_components_bitmask(content_types):

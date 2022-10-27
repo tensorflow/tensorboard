@@ -18,7 +18,6 @@ import collections
 import dataclasses
 import threading
 
-
 from tensorboard.backend.event_processing import directory_loader
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import event_file_loader
@@ -59,7 +58,7 @@ class TensorEvent:
     """A tensor event.
 
     Attributes:
-      wall_time: Timestamp of the event.
+      wall_time: Timestamp of the event in seconds.
       step: Global step of the event.
       tensor_proto: A `TensorProto`.
     """

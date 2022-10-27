@@ -158,17 +158,13 @@ class Observation:
 
     Attributes:
       step: Global step of the event.
-      wall_time: Timestamp of the event.
+      wall_time: Timestamp of the event in seconds.
       tag: Tag name associated with the event.
     """
 
     step: int
     wall_time: float
     tag: str
-
-    def _asdict(self) -> Mapping[str, Any]:
-        """Returns a mapping from each attribute field name to the value."""
-        return self.__dict__
 
 
 @dataclasses.dataclass(frozen=True)
@@ -206,9 +202,9 @@ def get_field_to_observations_map(generator, query_for_tag=""):
     def increment(stat, event, tag=""):
         assert stat in TRACKED_FIELDS
         field_to_obs[stat].append(
-            Observation(
-                step=event.step, wall_time=event.wall_time, tag=tag
-            )._asdict()
+            dataclasses.asdict(
+                Observation(step=event.step, wall_time=event.wall_time, tag=tag)
+            )
         )
 
     field_to_obs = dict([(t, []) for t in TRACKED_FIELDS])

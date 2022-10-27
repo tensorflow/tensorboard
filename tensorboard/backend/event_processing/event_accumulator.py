@@ -18,7 +18,7 @@ import collections
 import dataclasses
 import threading
 
-from typing import Collection, Union
+from typing import Sequence
 
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import event_file_loader
@@ -43,14 +43,14 @@ class ScalarEvent:
     """Contains information of a scalar event.
 
     Attributes:
-      wall_time: Timestamp of the event.
+      wall_time: Timestamp of the event in seconds.
       step: Global step of the event.
       value: A float or int value of the scalar.
     """
 
     wall_time: float
     step: int
-    value: Union[float, int]
+    value: float
 
 
 @dataclasses.dataclass(frozen=True)
@@ -58,14 +58,14 @@ class CompressedHistogramEvent:
     """Contains information of a compressed histogram event.
 
     Attributes:
-      wall_time: Timestamp of the event.
+      wall_time: Timestamp of the event in seconds.
       step: Global step of the event.
       compressed_histogram_values: Values in a compressed histogram.
     """
 
     wall_time: float
     step: int
-    compressed_histogram_values: Collection[compressor.CompressedHistogramValue]
+    compressed_histogram_values: Sequence[compressor.CompressedHistogramValue]
 
 
 @dataclasses.dataclass(frozen=True)
@@ -82,13 +82,13 @@ class HistogramValue:
       bucket: Numbers of values per bucket.
     """
 
-    min: Union[float, int]
-    max: Union[float, int]
+    min: float
+    max: float
     num: int
-    sum: Union[float, int]
-    sum_squares: Union[float, int]
-    bucket_limit: Collection[Union[float, int]]
-    bucket: Collection[int]
+    sum: float
+    sum_squares: float
+    bucket_limit: Sequence[float]
+    bucket: Sequence[int]
 
 
 @dataclasses.dataclass(frozen=True)
@@ -96,7 +96,7 @@ class HistogramEvent:
     """Contains information of a histogram event.
 
     Attributes:
-      wall_time: Timestamp of the event.
+      wall_time: Timestamp of the event in seconds.
       step: Global step of the event.
       histogram_value: Information of the histogram values.
     """
@@ -111,16 +111,16 @@ class ImageEvent:
     """Contains information of an image event.
 
     Attributes:
-      wall_time: Timestamp of the event.
+      wall_time: Timestamp of the event in seconds.
       step: Global step of the event.
-      encoded_image_string: Image content encoded in string or bytes.
+      encoded_image_string: Image content encoded in bytes.
       width: Width of the image.
       height: Height of the image.
     """
 
     wall_time: float
     step: int
-    encoded_image_string: Union[str, bytes]
+    encoded_image_string: bytes
     width: int
     height: int
 
@@ -130,9 +130,9 @@ class AudioEvent:
     """Contains information of an audio event.
 
     Attributes:
-      wall_time: Timestamp of the event.
+      wall_time: Timestamp of the event in seconds.
       step: Global step of the event.
-      encoded_audio_string: Audio content encoded in string or bytes.
+      encoded_audio_string: Audio content encoded in bytes.
       content_type: A string describes the type of the audio content.
       sample_rate: Sample rate of the audio in Hz. Must be positive.
       length_frames: Length of the audio in frames (samples per channel).
@@ -140,7 +140,7 @@ class AudioEvent:
 
     wall_time: float
     step: int
-    encoded_audio_string: Union[str, bytes]
+    encoded_audio_string: bytes
     content_type: str
     sample_rate: float
     length_frames: int
@@ -151,7 +151,7 @@ class TensorEvent:
     """A tensor event.
 
     Attributes:
-      wall_time: Timestamp of the event.
+      wall_time: Timestamp of the event in seconds.
       step: Global step of the event.
       tensor_proto: A `TensorProto`.
     """

@@ -71,6 +71,6 @@ def Cleanse(obj, encoding="utf-8"):
             (Cleanse(k, encoding), Cleanse(v, encoding)) for k, v in obj.items()
         )
     elif dataclasses.is_dataclass(obj):
-        return [Cleanse(i, encoding) for i in dataclasses.asdict(obj).values()]
+        return Cleanse(dataclasses.astuple(obj), encoding)
     else:
         return obj
