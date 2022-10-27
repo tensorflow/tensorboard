@@ -433,6 +433,10 @@ pub struct Event {
     /// Global step of the event.
     #[prost(int64, tag="2")]
     pub step: i64,
+    /// Information of the source that writes the events, this is only logged in
+    /// the very first event along with the `file_version` field.
+    #[prost(message, optional, tag="10")]
+    pub source_metadata: ::core::option::Option<SourceMetadata>,
     #[prost(oneof="event::What", tags="3, 4, 5, 6, 7, 8, 9")]
     pub what: ::core::option::Option<event::What>,
 }
@@ -467,6 +471,14 @@ pub mod event {
         #[prost(bytes, tag="9")]
         MetaGraphDef(::prost::bytes::Bytes),
     }
+}
+/// Holds the information of the source that writes the events.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct SourceMetadata {
+    /// Low level name of the summary writer, such as
+    /// `tensorflow.core.util.events_writer`.
+    #[prost(string, tag="1")]
+    pub writer: ::prost::alloc::string::String,
 }
 /// Protocol buffer used for logging messages to the events file.
 ///
