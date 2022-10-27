@@ -53,7 +53,7 @@ export class CardFobControllerComponent {
   @ViewChild('prospectiveFobWrapper')
   readonly prospectiveFobWrapper!: ElementRef;
   @Input() axisDirection!: AxisDirection;
-  @Input() timeSelection!: TimeSelection;
+  @Input() timeSelection?: TimeSelection;
   @Input() cardFobHelper!: CardFobGetStepFromPositionHelper;
   @Input() startStepAxisPosition!: number;
   @Input() endStepAxisPosition!: number | null;
@@ -134,7 +134,7 @@ export class CardFobControllerComponent {
     document.removeEventListener('mousemove', this.mouseListener);
     document.removeEventListener('mouseup', this.stopListener);
     this.currentDraggingFob = Fob.NONE;
-    if (this.hasFobMoved) {
+    if (this.hasFobMoved && this.timeSelection) {
       this.onTimeSelectionChanged.emit({
         timeSelection: this.timeSelection,
         affordance: this.affordance,
@@ -149,7 +149,7 @@ export class CardFobControllerComponent {
   }
 
   private shouldSwapFobs(newStep: number) {
-    if (!this.timeSelection.end) {
+    if (!this.timeSelection || !this.timeSelection.end) {
       return false;
     }
     if (this.currentDraggingFob === Fob.END) {
@@ -168,6 +168,9 @@ export class CardFobControllerComponent {
   ): TimeSelection {
     const newTimeSelection = {...timeSelection};
 
+    if (!this.timeSelection) {
+      return newTimeSelection;
+    }
     // Single Selection
     if (!this.timeSelection.end) {
       newTimeSelection.start = {step: newStep};
@@ -211,7 +214,7 @@ export class CardFobControllerComponent {
       newStep = this.cardFobHelper.getStepLowerThanAxisPosition(mousePosition);
     }
 
-    if (newStep === null) {
+    if (newStep === null || !this.timeSelection) {
       return;
     }
 
@@ -266,6 +269,9 @@ export class CardFobControllerComponent {
   }
 
   getDraggingFobStep(): number {
+    if (!this.timeSelection) {
+      throw new Error('TimeSelection is not defined');
+    }
     return this.currentDraggingFob !== Fob.END
       ? this.timeSelection.start.step
       : this.timeSelection.end!.step;
@@ -278,6 +284,9 @@ export class CardFobControllerComponent {
   }
 
   stepTyped(fob: Fob, step: number | null) {
+    if (!this.timeSelection) {
+      return;
+    }
     // Types empty string in fob.
     if (step === null) {
       // Removes fob on range selection and sets step to minimum on single selection.
@@ -325,6 +334,9 @@ export class CardFobControllerComponent {
    * fob toggles the feature entirely.
    */
   onFobRemoved(fob: Fob) {
+    if (!this.timeSelection) {
+      return;
+    }
     if (fob === Fob.END) {
       this.onTimeSelectionChanged.emit({
         affordance: TimeSelectionAffordance.FOB_REMOVED,

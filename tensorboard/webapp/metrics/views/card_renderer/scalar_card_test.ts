@@ -2376,6 +2376,24 @@ describe('scalar card', () => {
           }),
         ]);
       }));
+
+      it('does not render fobs when no timeSelection is provided', fakeAsync(() => {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
+          start: {step: 20},
+          end: null,
+        });
+        const fixture = createComponent('card1');
+        const scalarCardFobController = fixture.debugElement.query(
+          By.directive(ScalarCardFobController)
+        ).componentInstance;
+        delete scalarCardFobController.timeSelection;
+        fixture.detectChanges();
+        const fobController = fixture.debugElement.query(
+          By.directive(CardFobComponent)
+        ).componentInstance;
+        expect(fobController.startFobWrapper).not.toBeDefined();
+        expect(fobController.endFobWrapper).not.toBeDefined();
+      }));
     });
 
     describe('scalar card data table', () => {
