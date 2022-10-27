@@ -30,7 +30,6 @@ from tensorboard import version
 from tensorboard.util import tb_logging
 
 
-# TODO(#5725): Replace namedtuple with dataclass.
 # Type descriptors for `TensorBoardInfo` fields.
 #
 # We represent timestamps as int-seconds-since-epoch rather than
