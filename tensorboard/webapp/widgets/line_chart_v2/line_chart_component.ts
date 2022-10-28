@@ -91,14 +91,6 @@ export class LineChartComponent
   @ViewChild('chartEl', {static: false, read: ElementRef})
   private chartEl?: ElementRef<HTMLCanvasElement | SVGElement>;
 
-  /**
-   * Optional ngTemplate that renders on top of line chart (not axis). This
-   * template is rendered on top of interactive layer and can mask other
-   * contents. Do note that this component may not intercept pointer-events.
-   */
-  @Input()
-  customVisTemplate?: TemplateRef<TemplateContext>;
-
   @Input()
   customChartOverlayTemplate?: TemplateRef<
     TemplateContext & {formatter: Formatter}

@@ -53,17 +53,6 @@ limitations under the License.
       (onViewExtentChange)="onViewBoxChanged($event)"
       (onViewExtentReset)="viewBoxReset()"
     ></line-chart-interactive-view>
-    <div *ngIf="customVisTemplate" class="custom-vis">
-      <ng-container
-        [ngTemplateOutlet]="customVisTemplate"
-        [ngTemplateOutletContext]="{
-          xScale: xScale,
-          yScale: yScale,
-          domDimension: domDimensions.main,
-          viewExtent: viewBox
-        }"
-      ></ng-container>
-    </div>
   </div>
   <div class="y-axis" #yAxis>
     <line-chart-axis
