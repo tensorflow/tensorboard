@@ -39,7 +39,7 @@ const SCOPES: &[&str] = &["https://www.googleapis.com/auth/cloud-platform"];
 /// AuthenticationManager across different threads or async tasks.
 static AUTH_MANAGER: OnceCell<AuthenticationManager> = OnceCell::const_new();
 
-/// Get a GCP Access Token using the `gcp_aut::AuthenticationManager`.
+/// Get a GCP Access Token using the `gcp_auth::AuthenticationManager`.
 fn get_token() -> Result<AccessToken, gcp_auth::Error> {
     async fn authentication_manager() -> &'static AuthenticationManager {
         AUTH_MANAGER
@@ -76,7 +76,7 @@ pub struct TokenStore {
 }
 
 impl TokenStore {
-    /// Creates a new token store from the given credentials.
+    /// Creates a new token store.
     ///
     /// This operation is cheap and does not actually fetch any access tokens.
     pub fn new() -> Self {
