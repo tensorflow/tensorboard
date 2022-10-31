@@ -53,7 +53,7 @@ export class CardFobControllerComponent {
   @ViewChild('prospectiveFobWrapper')
   readonly prospectiveFobWrapper!: ElementRef;
   @Input() axisDirection!: AxisDirection;
-  @Input() timeSelection!: TimeSelection;
+  @Input() timeSelection?: TimeSelection;
   @Input() cardFobHelper!: CardFobGetStepFromPositionHelper;
   @Input() startStepAxisPosition!: number;
   @Input() endStepAxisPosition!: number | null;
@@ -134,7 +134,7 @@ export class CardFobControllerComponent {
     document.removeEventListener('mousemove', this.mouseListener);
     document.removeEventListener('mouseup', this.stopListener);
     this.currentDraggingFob = Fob.NONE;
-    if (this.hasFobMoved) {
+    if (this.hasFobMoved && this.timeSelection) {
       this.onTimeSelectionChanged.emit({
         timeSelection: this.timeSelection,
         affordance: this.affordance,
@@ -149,7 +149,7 @@ export class CardFobControllerComponent {
   }
 
   private shouldSwapFobs(newStep: number) {
-    if (!this.timeSelection.end) {
+    if (!this.timeSelection || !this.timeSelection.end) {
       return false;
     }
     if (this.currentDraggingFob === Fob.END) {
@@ -168,6 +168,9 @@ export class CardFobControllerComponent {
   ): TimeSelection {
     const newTimeSelection = {...timeSelection};
 
+    if (!this.timeSelection) {
+      return newTimeSelection;
+    }
     // Single Selection
     if (!this.timeSelection.end) {
       newTimeSelection.start = {step: newStep};
@@ -211,7 +214,7 @@ export class CardFobControllerComponent {
       newStep = this.cardFobHelper.getStepLowerThanAxisPosition(mousePosition);
     }
 
-    if (newStep === null) {
+    if (newStep === null || !this.timeSelection) {
       return;
     }
 
@@ -267,8 +270,8 @@ export class CardFobControllerComponent {
 
   getDraggingFobStep(): number {
     return this.currentDraggingFob !== Fob.END
-      ? this.timeSelection.start.step
-      : this.timeSelection.end!.step;
+      ? this.timeSelection!.start.step
+      : this.timeSelection!.end!.step;
   }
 
   getMousePositionFromEvent(event: MouseEvent): number {
@@ -281,7 +284,7 @@ export class CardFobControllerComponent {
     // Types empty string in fob.
     if (step === null) {
       // Removes fob on range selection and sets step to minimum on single selection.
-      if (this.timeSelection.end !== null) {
+      if (this.timeSelection!.end !== null) {
         this.onFobRemoved(fob);
       } else {
         // TODO(jieweiwu): sets start step to minum.
@@ -290,7 +293,7 @@ export class CardFobControllerComponent {
       return;
     }
 
-    let newTimeSelection = {...this.timeSelection};
+    let newTimeSelection = {...this.timeSelection!};
     if (fob === Fob.START) {
       newTimeSelection.start = {step};
     } else if (fob === Fob.END) {
@@ -328,16 +331,16 @@ export class CardFobControllerComponent {
     if (fob === Fob.END) {
       this.onTimeSelectionChanged.emit({
         affordance: TimeSelectionAffordance.FOB_REMOVED,
-        timeSelection: {...this.timeSelection, end: null},
+        timeSelection: {...this.timeSelection!, end: null},
       });
       return;
     }
 
-    if (this.timeSelection.end !== null) {
+    if (this.timeSelection!.end !== null) {
       this.onTimeSelectionChanged.emit({
         affordance: TimeSelectionAffordance.FOB_REMOVED,
         timeSelection: {
-          start: this.timeSelection.end,
+          start: this.timeSelection!.end,
           end: null,
         },
       });

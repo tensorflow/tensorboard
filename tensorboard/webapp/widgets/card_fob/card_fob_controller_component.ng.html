@@ -31,6 +31,7 @@ limitations under the License.
     #startFobWrapper
     class="time-fob-wrapper"
     [style.transform]="getCssTranslatePxForStartFob()"
+    *ngIf="timeSelection"
   >
     <div
       *ngIf="showExtendedLine"
@@ -48,7 +49,7 @@ limitations under the License.
   </div>
   <div
     #endFobWrapper
-    *ngIf="timeSelection.end"
+    *ngIf="timeSelection && timeSelection.end"
     class="time-fob-wrapper"
     [style.transform]="getCssTranslatePxForEndFob()"
   >
