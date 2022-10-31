@@ -28,6 +28,11 @@ limitations under the License.
     ></card-fob>
   </div>
   <div
+    class="prospective-fob-area"
+    [ngClass]="isVertical() ? 'vertical-prospective-area' : 'horizontal-prospective-area'"
+    (mouseleave)="onProspectiveAreaMouseLeave()"
+  ></div>
+  <div
     #startFobWrapper
     class="time-fob-wrapper"
     [style.transform]="getCssTranslatePxForStartFob()"

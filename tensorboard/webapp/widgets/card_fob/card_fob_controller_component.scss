@@ -19,6 +19,7 @@ limitations under the License.
 .time-fob-wrapper {
   display: inline-block;
   position: absolute;
+  top: 0;
   width: 0;
 }
 
@@ -53,4 +54,16 @@ limitations under the License.
 .prospectiveFob {
   opacity: 0.8;
   cursor: pointer;
+}
+
+.horizontal-prospective-area {
+  bottom: 0;
+  position: absolute;
+  // Height/Width to match x-axis
+  height: 30px;
+  width: calc(100% - 50px); // dot on the left takes up 50px
+}
+
+.prospective-area {
+  display: block;
 }
