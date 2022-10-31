@@ -135,6 +135,11 @@ tb_proto_library(
 )
 
 tb_proto_library(
+    name = "histogram",
+    srcs = ["histogram.proto"],
+)
+
+tb_proto_library(
     name = "meta_graph",
     srcs = ["meta_graph.proto"],
     deps = [
@@ -227,6 +232,7 @@ tb_proto_library(
     name = "summary",
     srcs = ["summary.proto"],
     deps = [
+        ":histogram",
         ":tensor",
     ],
 )
@@ -310,6 +316,7 @@ tb_proto_library(
         ":full_type",
         ":function",
         ":graph",
+        ":histogram",
         ":meta_graph",
         ":node_def",
         ":op_def",
