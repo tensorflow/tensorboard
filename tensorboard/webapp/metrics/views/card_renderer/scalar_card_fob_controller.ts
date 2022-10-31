@@ -71,10 +71,13 @@ export class ScalarCardFobController {
   prospectiveStep: number | null = null;
 
   getAxisPositionFromStartStep() {
+    if (!this.timeSelection) {
+      return '';
+    }
     return this.scale.forward(
       this.minMaxHorizontalViewExtend,
       [0, this.axisSize],
-      this.timeSelection?.start.step ?? this.minMaxStep.minStep
+      this.timeSelection.start.step
     );
   }
 

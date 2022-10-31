@@ -2377,6 +2377,7 @@ describe('scalar card', () => {
         ]);
       }));
 
+      // TODO(rileyajones) refactor this test with #6006
       it('does not render fobs when no timeSelection is provided', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 20},
