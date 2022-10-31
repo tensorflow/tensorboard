@@ -57,9 +57,11 @@ limitations under the License.
 }
 
 .horizontal-prospective-area {
-  height: 25px;
-  transform: translateY(225px);
-  width: 100%;
+  bottom: 0;
+  position: absolute;
+  // Height/Width to match x-axis
+  height: 30px;
+  width: calc(100% - 30px); // dot on the left takes up 30px
 }
 
 .prospective-area {
