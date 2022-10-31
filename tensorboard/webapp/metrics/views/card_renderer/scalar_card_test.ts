@@ -2391,8 +2391,9 @@ describe('scalar card', () => {
         const fobController = fixture.debugElement.query(
           By.directive(CardFobComponent)
         ).componentInstance;
-        expect(fobController.startFobWrapper).not.toBeDefined();
-        expect(fobController.endFobWrapper).not.toBeDefined();
+
+        expect(fobController.startFobWrapper).toBeUndefined();
+        expect(fobController.endFobWrapper).toBeUndefined();
       }));
     });
 

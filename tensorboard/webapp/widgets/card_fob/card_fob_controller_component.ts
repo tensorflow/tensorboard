@@ -269,12 +269,9 @@ export class CardFobControllerComponent {
   }
 
   getDraggingFobStep(): number {
-    if (!this.timeSelection) {
-      throw new Error('TimeSelection is not defined');
-    }
     return this.currentDraggingFob !== Fob.END
-      ? this.timeSelection.start.step
-      : this.timeSelection.end!.step;
+      ? this.timeSelection!.start.step
+      : this.timeSelection!.end!.step;
   }
 
   getMousePositionFromEvent(event: MouseEvent): number {
@@ -284,13 +281,10 @@ export class CardFobControllerComponent {
   }
 
   stepTyped(fob: Fob, step: number | null) {
-    if (!this.timeSelection) {
-      return;
-    }
     // Types empty string in fob.
     if (step === null) {
       // Removes fob on range selection and sets step to minimum on single selection.
-      if (this.timeSelection.end !== null) {
+      if (this.timeSelection!.end !== null) {
         this.onFobRemoved(fob);
       } else {
         // TODO(jieweiwu): sets start step to minum.
@@ -299,7 +293,7 @@ export class CardFobControllerComponent {
       return;
     }
 
-    let newTimeSelection = {...this.timeSelection};
+    let newTimeSelection = {...this.timeSelection!};
     if (fob === Fob.START) {
       newTimeSelection.start = {step};
     } else if (fob === Fob.END) {
@@ -334,22 +328,19 @@ export class CardFobControllerComponent {
    * fob toggles the feature entirely.
    */
   onFobRemoved(fob: Fob) {
-    if (!this.timeSelection) {
-      return;
-    }
     if (fob === Fob.END) {
       this.onTimeSelectionChanged.emit({
         affordance: TimeSelectionAffordance.FOB_REMOVED,
-        timeSelection: {...this.timeSelection, end: null},
+        timeSelection: {...this.timeSelection!, end: null},
       });
       return;
     }
 
-    if (this.timeSelection.end !== null) {
+    if (this.timeSelection!.end !== null) {
       this.onTimeSelectionChanged.emit({
         affordance: TimeSelectionAffordance.FOB_REMOVED,
         timeSelection: {
-          start: this.timeSelection.end,
+          start: this.timeSelection!.end,
           end: null,
         },
       });
