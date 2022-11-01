@@ -15,8 +15,8 @@
 """Takes a generator of values, and accumulates them for a frontend."""
 
 import collections
-import dataclasses
 import threading
+
 
 from tensorboard.backend.event_processing import directory_loader
 from tensorboard.backend.event_processing import directory_watcher
@@ -29,12 +29,14 @@ from tensorboard.compat.proto import config_pb2
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import graph_pb2
 from tensorboard.compat.proto import meta_graph_pb2
-from tensorboard.compat.proto import tensor_pb2
 from tensorboard.util import tb_logging
 
 
 logger = tb_logging.get_logger()
 
+namedtuple = collections.namedtuple
+
+TensorEvent = namedtuple("TensorEvent", ["wall_time", "step", "tensor_proto"])
 
 # Legacy aliases
 TENSORS = tag_types.TENSORS
@@ -51,21 +53,6 @@ STORE_EVERYTHING_SIZE_GUIDANCE = {
 }
 
 _TENSOR_RESERVOIR_KEY = "."  # arbitrary
-
-
-@dataclasses.dataclass(frozen=True)
-class TensorEvent:
-    """A tensor event.
-
-    Attributes:
-      wall_time: Timestamp of the event in seconds.
-      step: Global step of the event.
-      tensor_proto: A `TensorProto`.
-    """
-
-    wall_time: float
-    step: int
-    tensor_proto: tensor_pb2.TensorProto
 
 
 class EventAccumulator(object):

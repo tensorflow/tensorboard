@@ -16,10 +16,8 @@
 
 
 import collections
-import dataclasses
 import operator
 import re
-from typing import Optional
 
 from google.protobuf import struct_pb2
 
@@ -555,21 +553,13 @@ def _value_to_python(value):
         raise ValueError("Unknown struct_pb2.Value oneof field set: %s" % field)
 
 
-@dataclasses.dataclass(frozen=True)
-class _MetricIdentifier:
-    """An identifier for a metric.
-
-    As protobuffers are mutable we can't use MetricName directly as a dict's key.
-    Instead, we represent MetricName protocol buffer as an immutable dataclass.
-
-    Attributes:
-      group: Metric group corresponding to the dataset on which the model was
-        evaluated.
-      tag: String tag assoicated with the metric.
-    """
-
-    group: str
-    tag: str
+# As protobuffers are mutable we can't use MetricName directly as a dict's key.
+# Instead, we duplicate MetricName as a collections.namedtuple. Another
+# alternative would be to wrap the MetricName protocol buffer class in an
+# immutable class that defines equality and __hash__ methods based on the text
+# representation of the protocol buffer. This is more complex, but won't
+# require modification if we ever add fields to MetricName.
+_MetricIdentifier = collections.namedtuple("_MetricIdentifier", "group tag")
 
 
 class _MetricStats(object):
@@ -643,17 +633,11 @@ def _set_avg_session_metrics(session_group):
         )
 
 
-@dataclasses.dataclass(frozen=True)
-class _Measurement:
-    """Holds a session's metric value.
-
-    Attributes:
-      metric_value: Metric value of the session.
-      session_index: Index of the session in its group.
-    """
-
-    metric_value: Optional[api_pb2.MetricValue]
-    session_index: int
+# A namedtuple to hold a session's metric value.
+# 'session_index' is the index of the session in its group.
+_Measurement = collections.namedtuple(
+    "_Measurement", ["metric_value", "session_index"]
+)
 
 
 def _set_median_session_metrics(session_group, aggregation_metric):

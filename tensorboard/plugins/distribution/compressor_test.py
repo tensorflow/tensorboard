@@ -20,10 +20,7 @@ from tensorboard.plugins.distribution import compressor
 
 
 def _make_expected_value(*values):
-    return [
-        compressor.CompressedHistogramValue(bp, val).as_tuple()
-        for bp, val in values
-    ]
+    return [compressor.CompressedHistogramValue(bp, val) for bp, val in values]
 
 
 class CompressorTest(tf.test.TestCase):
@@ -70,7 +67,7 @@ class CompressorTest(tf.test.TestCase):
         )
 
     def test_ugly(self):
-        input_bps = (0, 668, 1587, 3085, 5000, 6915, 8413, 9332, 10000)
+        bps = (0, 668, 1587, 3085, 5000, 6915, 8413, 9332, 10000)
         bucket_limits = [
             -1.0,
             0.0,
@@ -83,18 +80,17 @@ class CompressorTest(tf.test.TestCase):
         buckets = list(
             zip(*[bucket_limits[:-1], bucket_limits[1:], bucket_counts])
         )
-        vals = compressor.compress_histogram(buckets, input_bps)
-        (bps, values) = zip(*vals)
-        self.assertSequenceEqual(bps, input_bps)
-        self.assertAlmostEqual(values[0], -1.0)
-        self.assertAlmostEqual(values[1], -0.86277993701301037)
-        self.assertAlmostEqual(values[2], -0.67399964077791519)
-        self.assertAlmostEqual(values[3], -0.36628159533703131)
-        self.assertAlmostEqual(values[4], 0.027096279842737214)
-        self.assertAlmostEqual(values[5], 0.42047415502250551)
-        self.assertAlmostEqual(values[6], 0.72819220046338917)
-        self.assertAlmostEqual(values[7], 0.91697249669848446)
-        self.assertAlmostEqual(values[8], 1.7976931348623157e308)
+        vals = compressor.compress_histogram(buckets, bps)
+        self.assertEqual(tuple(v.basis_point for v in vals), bps)
+        self.assertAlmostEqual(vals[0].value, -1.0)
+        self.assertAlmostEqual(vals[1].value, -0.86277993701301037)
+        self.assertAlmostEqual(vals[2].value, -0.67399964077791519)
+        self.assertAlmostEqual(vals[3].value, -0.36628159533703131)
+        self.assertAlmostEqual(vals[4].value, 0.027096279842737214)
+        self.assertAlmostEqual(vals[5].value, 0.42047415502250551)
+        self.assertAlmostEqual(vals[6].value, 0.72819220046338917)
+        self.assertAlmostEqual(vals[7].value, 0.91697249669848446)
+        self.assertAlmostEqual(vals[8].value, 1.7976931348623157e308)
 
 
 if __name__ == "__main__":

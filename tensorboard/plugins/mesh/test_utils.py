@@ -14,29 +14,15 @@
 # ==============================================================================
 """Test utils for mesh plugin tests."""
 
-import dataclasses
+import collections
 import json
 
 import numpy as np
 
 from tensorboard.util import tb_logging
 
+Mesh = collections.namedtuple("Mesh", ("vertices", "faces", "colors"))
 logger = tb_logging.get_logger()
-
-
-@dataclasses.dataclass(frozen=True)
-class Mesh:
-    """A mesh dataclass.
-
-    Attributes:
-      vertices: A numpy array containing 3D coordinates of vertices.
-      faces: A numpy array containing indices of vertices within each triangle
-      colors: A numpy array containing colors for each vertex.
-    """
-
-    vertices: np.ndarray
-    faces: np.ndarray
-    colors: np.ndarray
 
 
 def get_random_mesh(
@@ -52,7 +38,7 @@ def get_random_mesh(
       batch_size: Size of batch dimension in output array.
 
     Returns:
-      Mesh dataclass with vertices and optionally with faces and/or colors.
+      Mesh namedtuple with vertices and optionally with faces and/or colors.
     """
     vertices = np.random.random([num_vertices, 3]) * 1000
     # Add batch dimension.

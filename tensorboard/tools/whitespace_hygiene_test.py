@@ -19,7 +19,7 @@
 Keeps diffs clean and persnickety developers happy.
 """
 
-import dataclasses
+import collections
 import os
 import subprocess
 import sys
@@ -28,19 +28,7 @@ import sys
 exceptions = frozenset([])
 
 
-@dataclasses.dataclass(frozen=True)
-class Match:
-    """Information of the match for superfluous trailing whitespaces.
-
-    Attributes:
-      filename: Name of file containing the match.
-      line_number: Line number of the match.
-      line: Content of the line containing the match.
-    """
-
-    filename: str
-    line_number: int
-    line: str
+Match = collections.namedtuple("Match", ("filename", "line_number", "line"))
 
 
 def main():
