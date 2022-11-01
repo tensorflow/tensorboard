@@ -374,7 +374,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
 
         # Create the expected values after compressing hst1
         expected_vals1 = [
-            compressor.CompressedHistogramValue(bp, val)
+            compressor.CompressedHistogramValue(bp, val).as_tuple()
             for bp, val in [
                 (0, 1.0),
                 (2500, 1.25),
@@ -390,7 +390,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
 
         # Create the expected values after compressing hst2
         expected_vals2 = [
-            compressor.CompressedHistogramValue(bp, val)
+            compressor.CompressedHistogramValue(bp, val).as_tuple()
             for bp, val in [
                 (0, -2),
                 (2500, 2),

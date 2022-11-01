@@ -18,7 +18,7 @@ import collections
 import dataclasses
 import threading
 
-from typing import Sequence
+from typing import Sequence, Tuple
 
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import event_file_loader
@@ -60,12 +60,13 @@ class CompressedHistogramEvent:
     Attributes:
       wall_time: Timestamp of the event in seconds.
       step: Global step of the event.
-      compressed_histogram_values: Values in a compressed histogram.
+      compressed_histogram_values: A sequence of tuples of basis points and
+        associated values in a compressed histogram.
     """
 
     wall_time: float
     step: int
-    compressed_histogram_values: Sequence[compressor.CompressedHistogramValue]
+    compressed_histogram_values: Sequence[Tuple[float, float]]
 
 
 @dataclasses.dataclass(frozen=True)

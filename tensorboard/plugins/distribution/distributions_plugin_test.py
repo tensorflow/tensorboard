@@ -160,8 +160,8 @@ class DistributionsPluginTest(tf.test.TestCase):
             for i in range(self._STEPS):
                 [_unused_wall_time, step, bps_and_icdfs] = data[i]
                 self.assertEqual(i, step)
-                bps = [val.basis_point for val in bps_and_icdfs]
-                self.assertSequenceEqual(bps, compressor.NORMAL_HISTOGRAM_BPS)
+                (bps, _unused_icdfs) = zip(*bps_and_icdfs)
+                self.assertEqual(bps, compressor.NORMAL_HISTOGRAM_BPS)
         else:
             with self.assertRaises(errors.NotFoundError):
                 self.plugin.distributions_impl(

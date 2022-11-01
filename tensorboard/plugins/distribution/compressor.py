@@ -16,8 +16,9 @@
 
 
 import dataclasses
-
 import numpy as np
+
+from typing import Tuple
 
 # Normal CDF for std_devs: (-Inf, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, Inf)
 # naturally gives bands around median of width 1 std dev, 2 std dev, 3 std dev,
@@ -37,6 +38,10 @@ class CompressedHistogramValue:
 
     basis_point: float
     value: float
+
+    def as_tuple(self) -> Tuple[float, float]:
+        """Returns the basis point and the value as a tuple."""
+        return (self.basis_point, self.value)
 
 
 # TODO(@jart): Unfork these methods.
@@ -59,7 +64,7 @@ def compress_histogram_proto(histo, bps=NORMAL_HISTOGRAM_BPS):
     """
     # See also: Histogram::Percentile() in core/lib/histogram/histogram.cc
     if not histo.num:
-        return [CompressedHistogramValue(b, 0.0) for b in bps]
+        return [CompressedHistogramValue(b, 0.0).as_tuple() for b in bps]
     bucket = np.array(histo.bucket)
     bucket_limit = list(histo.bucket_limit)
     weights = (bucket * bps[-1] / (bucket.sum() or 1.0)).cumsum()
@@ -79,13 +84,13 @@ def compress_histogram_proto(histo, bps=NORMAL_HISTOGRAM_BPS):
                 lhs = max(bucket_limit[i - 1], histo.min)
             rhs = min(bucket_limit[i], histo.max)
             weight = _lerp(bps[j], cumsum_prev, cumsum, lhs, rhs)
-            values.append(CompressedHistogramValue(bps[j], weight))
+            values.append(CompressedHistogramValue(bps[j], weight).as_tuple())
             j += 1
             break
         else:
             break
     while j < len(bps):
-        values.append(CompressedHistogramValue(bps[j], histo.max))
+        values.append(CompressedHistogramValue(bps[j], histo.max).as_tuple())
         j += 1
     return values
 
@@ -112,7 +117,7 @@ def compress_histogram(buckets, bps=NORMAL_HISTOGRAM_BPS):
     # See also: Histogram::Percentile() in core/lib/histogram/histogram.cc
     buckets = np.array(buckets)
     if not buckets.size:
-        return [CompressedHistogramValue(b, 0.0) for b in bps]
+        return [CompressedHistogramValue(b, 0.0).as_tuple() for b in bps]
     (minmin, maxmax) = (buckets[0][0], buckets[-1][1])
     counts = buckets[:, 2]
     right_edges = list(buckets[:, 1])
@@ -134,13 +139,17 @@ def compress_histogram(buckets, bps=NORMAL_HISTOGRAM_BPS):
                 lhs = max(right_edges[i - 1], minmin)
             rhs = min(right_edges[i], maxmax)
             weight = _lerp(bps[bp_index], cumsum_prev, cumsum, lhs, rhs)
-            result.append(CompressedHistogramValue(bps[bp_index], weight))
+            result.append(
+                CompressedHistogramValue(bps[bp_index], weight).as_tuple()
+            )
             bp_index += 1
             break
         else:
             break
     while bp_index < len(bps):
-        result.append(CompressedHistogramValue(bps[bp_index], maxmax))
+        result.append(
+            CompressedHistogramValue(bps[bp_index], maxmax).as_tuple()
+        )
         bp_index += 1
     return result
 
