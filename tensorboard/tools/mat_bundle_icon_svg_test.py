@@ -15,21 +15,21 @@
 
 """Tests for our composable SVG bundler."""
 
-import collections
+import dataclasses
 import os
 
 from tensorboard import test
 from tensorboard.tools import mat_bundle_icon_svg
 
 
-_TestableSvg = collections.namedtuple(
-    "_TestableSvg",
-    (
-        "basename",
-        "svg_content",
-        "expected_content",
-    ),
-)
+@dataclasses.dataclass(frozen=True)
+class _TestableSvg:
+    """Holds the information of a test SVG."""
+
+    basename: str
+    svg_content: str
+    expected_content: str
+
 
 TEST_SVG_A = _TestableSvg(
     "a.svg",

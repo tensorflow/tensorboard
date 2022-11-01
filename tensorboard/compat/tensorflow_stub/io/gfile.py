@@ -20,7 +20,7 @@ TensorBoard.  This allows running TensorBoard without depending on
 TensorFlow for file operations.
 """
 
-from collections import namedtuple
+import dataclasses
 import glob as py_glob
 import io
 import os
@@ -84,8 +84,15 @@ def get_filesystem(filename):
     return fs
 
 
-# Data returned from the Stat call.
-StatData = namedtuple("StatData", ["length"])
+@dataclasses.dataclass(frozen=True)
+class StatData:
+    """Data returned from the Stat call.
+
+    Attributes:
+      length: Length of the data content.
+    """
+
+    length: int
 
 
 class LocalFileSystem(object):
