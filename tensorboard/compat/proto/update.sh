@@ -26,7 +26,7 @@ rsync --existing "$1"/tensorflow/core/protobuf/*.proto tensorboard/compat/proto/
 rsync --existing "$1"/tensorflow/core/profiler/*.proto tensorboard/compat/proto/
 rsync --existing "$1"/tensorflow/core/util/*.proto tensorboard/compat/proto/
 rsync --existing "$1"/tensorflow/python/framework/*.proto tensorboard/compat/proto/
-if [ -d " "$1"/tensorflow/tsl/protobuf" ] # This directory first appears in TF 2.11
+if [ -d $1"/tensorflow/tsl/protobuf" ] # This directory first appears in TF 2.11
 then
   rsync --existing "$1"/tensorflow/tsl/protobuf/*.proto tensorboard/compat/proto/
 fi

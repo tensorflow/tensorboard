@@ -13,6 +13,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+/// Serialization format for histogram module in
+/// tsl/lib/histogram/histogram.h
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct HistogramProto {
+    #[prost(double, tag="1")]
+    pub min: f64,
+    #[prost(double, tag="2")]
+    pub max: f64,
+    #[prost(double, tag="3")]
+    pub num: f64,
+    #[prost(double, tag="4")]
+    pub sum: f64,
+    #[prost(double, tag="5")]
+    pub sum_squares: f64,
+    /// Parallel arrays encoding the bucket boundaries and the bucket values.
+    /// bucket(i) is the count for the bucket i.  The range for
+    /// a bucket is:
+    ///   i == 0:  -DBL_MAX .. bucket_limit(0)
+    ///   i != 0:  bucket_limit(i-1) .. bucket_limit(i)
+    #[prost(double, repeated, tag="6")]
+    pub bucket_limit: ::prost::alloc::vec::Vec<f64>,
+    #[prost(double, repeated, tag="7")]
+    pub bucket: ::prost::alloc::vec::Vec<f64>,
+}
 /// Dimensions of a tensor.
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct TensorShapeProto {
@@ -53,6 +77,12 @@ pub mod tensor_shape_proto {
         #[prost(string, tag="2")]
         pub name: ::prost::alloc::string::String,
     }
+}
+/// Represents a serialized tf.dtypes.Dtype
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct SerializedDType {
+    #[prost(enumeration="DataType", tag="1")]
+    pub datatype: i32,
 }
 /// (== suppress_warning documentation-presence ==)
 /// DISABLED.IfChange
@@ -253,30 +283,6 @@ pub struct SummaryDescription {
     /// Supported values include "scalar", "histogram", "image", "audio"
     #[prost(string, tag="1")]
     pub type_hint: ::prost::alloc::string::String,
-}
-/// Serialization format for histogram module in
-/// core/lib/histogram/histogram.h
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct HistogramProto {
-    #[prost(double, tag="1")]
-    pub min: f64,
-    #[prost(double, tag="2")]
-    pub max: f64,
-    #[prost(double, tag="3")]
-    pub num: f64,
-    #[prost(double, tag="4")]
-    pub sum: f64,
-    #[prost(double, tag="5")]
-    pub sum_squares: f64,
-    /// Parallel arrays encoding the bucket boundaries and the bucket values.
-    /// bucket(i) is the count for the bucket i.  The range for
-    /// a bucket is:
-    ///   i == 0:  -DBL_MAX .. bucket_limit(0)
-    ///   i != 0:  bucket_limit(i-1) .. bucket_limit(i)
-    #[prost(double, repeated, tag="6")]
-    pub bucket_limit: ::prost::alloc::vec::Vec<f64>,
-    #[prost(double, repeated, tag="7")]
-    pub bucket: ::prost::alloc::vec::Vec<f64>,
 }
 /// A SummaryMetadata encapsulates information on which plugins are able to make
 /// use of a certain summary value.

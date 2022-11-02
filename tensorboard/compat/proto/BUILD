@@ -68,6 +68,7 @@ tb_proto_library(
         ":debug",
         ":graph",
         ":rewriter_config",
+        ":rpc_options",
         ":step_stats",
     ],
 )
@@ -135,6 +136,11 @@ tb_proto_library(
 )
 
 tb_proto_library(
+    name = "histogram",
+    srcs = ["histogram.proto"],
+)
+
+tb_proto_library(
     name = "meta_graph",
     srcs = ["meta_graph.proto"],
     deps = [
@@ -187,6 +193,11 @@ tb_proto_library(
 )
 
 tb_proto_library(
+    name = "rpc_options",
+    srcs = ["rpc_options.proto"],
+)
+
+tb_proto_library(
     name = "saved_object_graph",
     srcs = ["saved_object_graph.proto"],
     deps = [
@@ -227,6 +238,7 @@ tb_proto_library(
     name = "summary",
     srcs = ["summary.proto"],
     deps = [
+        ":histogram",
         ":tensor",
     ],
 )
@@ -310,11 +322,13 @@ tb_proto_library(
         ":full_type",
         ":function",
         ":graph",
+        ":histogram",
         ":meta_graph",
         ":node_def",
         ":op_def",
         ":resource_handle",
         ":rewriter_config",
+        ":rpc_options",
         ":saved_object_graph",
         ":saver",
         ":step_stats",
