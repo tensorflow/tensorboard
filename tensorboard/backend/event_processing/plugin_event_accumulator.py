@@ -18,9 +18,12 @@ import collections
 import dataclasses
 import threading
 
+from typing import Optional
+
 from tensorboard.backend.event_processing import directory_loader
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import event_file_loader
+from tensorboard.backend.event_processing import event_util
 from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.backend.event_processing import reservoir
@@ -184,6 +187,9 @@ class EventAccumulator(object):
         self.most_recent_wall_time = -1
         self.file_version = None
 
+        # Names of the source writer that writes the event.
+        self._source_writer = None
+
     def Reload(self):
         """Loads all events added since the last call to `Reload`.
 
@@ -252,6 +258,21 @@ class EventAccumulator(object):
             except StopIteration:
                 raise ValueError("No event timestamp could be found")
 
+    @property
+    def SourceWriter(self) -> Optional[str]:
+        """Returns the name of the event writer."""
+        if self._source_writer is not None:
+            return self._source_writer
+        with self._generator_mutex:
+            try:
+                event = next(self._generator.Load())
+                self._ProcessEvent(event)
+                return self._source_writer
+            except StopIteration:
+                logger.info(
+                    "End of file in %s, no source writer was found.", self.path
+                )
+
     def PluginTagToContent(self, plugin_name):
         """Returns a dict mapping tags to content specific to that plugin.
 
@@ -310,8 +331,22 @@ class EventAccumulator(object):
         if self._first_event_timestamp is None:
             self._first_event_timestamp = event.wall_time
 
+        if event.HasField("source_metadata"):
+            new_source_writer = event_util.GetSourceWriter(
+                event.source_metadata
+            )
+            if self._source_writer and self._source_writer != new_source_writer:
+                # This should not happen.
+                logger.warning(
+                    (
+                        "Found new source writer for event.proto. "
+                        "Old: {0}, New: {1}"
+                    ).format(self._source_writer, new_source_writer)
+                )
+            self._source_writer = new_source_writer
+
         if event.HasField("file_version"):
-            new_file_version = _ParseFileVersion(event.file_version)
+            new_file_version = event_util.ParseFileVersion(event.file_version)
             if self.file_version and self.file_version != new_file_version:
                 ## This should not happen.
                 logger.warning(
@@ -687,27 +722,3 @@ def _GeneratorFromPath(
             loader_factory,
             io_wrapper.IsSummaryEventsFile,
         )
-
-
-def _ParseFileVersion(file_version):
-    """Convert the string file_version in event.proto into a float.
-
-    Args:
-      file_version: String file_version from event.proto
-
-    Returns:
-      Version number as a float.
-    """
-    tokens = file_version.split("brain.Event:")
-    try:
-        return float(tokens[-1])
-    except ValueError:
-        ## This should never happen according to the definition of file_version
-        ## specified in event.proto.
-        logger.warning(
-            (
-                "Invalid event.proto file_version. Defaulting to use of "
-                "out-of-order event.step logic for purging expired events."
-            )
-        )
-        return -1

@@ -709,8 +709,62 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         gen.AddEvent(
             event_pb2.Event(wall_time=1, step=2, file_version="brain.Event:2")
         )
-
         self.assertEqual(acc.FirstEventTimestamp(), 1)
+        acc.Reload()
+        self.assertEqual(acc.file_version, 2.0)
+
+    def testSourceWriter(self):
+        gen = _EventGenerator(self)
+        acc = ea.EventAccumulator(gen)
+        gen.AddEvent(
+            event_pb2.Event(
+                wall_time=10,
+                step=20,
+                source_metadata=event_pb2.SourceMetadata(
+                    writer="custom_writer"
+                ),
+            )
+        )
+        gen.AddScalar("s1", wall_time=30, step=40, value=20)
+        self.assertEqual(acc.SourceWriter, "custom_writer")
+
+    def testReloadPopulatesSourceWriter(self):
+        """Test that Reload() means SourceWriter won't load events."""
+        gen = _EventGenerator(self)
+        acc = ea.EventAccumulator(gen)
+        gen.AddEvent(
+            event_pb2.Event(
+                wall_time=1,
+                step=2,
+                source_metadata=event_pb2.SourceMetadata(
+                    writer="custom_writer"
+                ),
+            )
+        )
+        acc.Reload()
+
+        def _Die(*args, **kwargs):  # pylint: disable=unused-argument
+            raise RuntimeError("Load() should not be called")
+
+        self.stubs.Set(gen, "Load", _Die)
+        self.assertEqual(acc.SourceWriter, "custom_writer")
+
+    def testSourceWriterLoadsEvent(self):
+        """Test that SourceWriter doesn't discard the loaded event."""
+        gen = _EventGenerator(self)
+        acc = ea.EventAccumulator(gen)
+        gen.AddEvent(
+            event_pb2.Event(
+                wall_time=1,
+                step=2,
+                file_version="brain.Event:2",
+                source_metadata=event_pb2.SourceMetadata(
+                    writer="custom_writer"
+                ),
+            )
+        )
+
+        self.assertEqual(acc.SourceWriter, "custom_writer")
         acc.Reload()
         self.assertEqual(acc.file_version, 2.0)
 
