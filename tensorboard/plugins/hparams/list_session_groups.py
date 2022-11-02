@@ -565,7 +565,7 @@ class _MetricIdentifier:
     Attributes:
       group: Metric group corresponding to the dataset on which the model was
         evaluated.
-      tag: String tag associated with the metric.
+      tag: String tag assoicated with the metric.
     """
 
     group: str
