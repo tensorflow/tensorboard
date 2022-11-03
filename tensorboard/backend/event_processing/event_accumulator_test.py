@@ -23,6 +23,7 @@ from tensorboard.backend.event_processing import event_accumulator as ea
 from tensorboard.compat.proto import config_pb2
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import graph_pb2
+from tensorboard.compat.proto import histogram_pb2
 from tensorboard.compat.proto import meta_graph_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.distribution import compressor
@@ -75,7 +76,7 @@ class _EventGenerator(object):
         hbucket_limit=None,
         hbucket=None,
     ):
-        histo = summary_pb2.HistogramProto(
+        histo = histogram_pb2.HistogramProto(
             min=hmin,
             max=hmax,
             num=hnum,

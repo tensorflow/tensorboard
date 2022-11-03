@@ -21,6 +21,7 @@ import tensorflow as tf
 
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.compat.proto import event_pb2
+from tensorboard.compat.proto import histogram_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.util import test_util
 
@@ -56,7 +57,8 @@ class EventFileInspectorTest(tf.test.TestCase):
                         sw.add_summary(summary, global_step=datum["step"])
                     elif "histo" in datum:
                         summary.value.add(
-                            tag=datum["tag"], histo=summary_pb2.HistogramProto()
+                            tag=datum["tag"],
+                            histo=histogram_pb2.HistogramProto(),
                         )
                         sw.add_summary(summary, global_step=datum["step"])
                     elif "session_log" in datum:
