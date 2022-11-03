@@ -2377,17 +2377,16 @@ describe('scalar card', () => {
         ]);
       }));
 
-      // TODO(rileyajones) refactor this test with #6006
       it('does not render fobs when no timeSelection is provided', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 20},
           end: null,
         });
+        store.overrideSelector(
+          selectors.getIsLinkedTimeProspectiveFobEnabled,
+          true
+        );
         const fixture = createComponent('card1');
-        const scalarCardFobController = fixture.debugElement.query(
-          By.directive(ScalarCardFobController)
-        ).componentInstance;
-        delete scalarCardFobController.timeSelection;
         fixture.detectChanges();
         const fobController = fixture.debugElement.query(
           By.directive(CardFobComponent)
