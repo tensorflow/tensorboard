@@ -54,7 +54,7 @@ class EventUtilTest(tb_test.TestCase):
         self.assertIsNone(actual_writer)
 
     def testGetSourceWriter_writerNameTooLong(self):
-        long_writer_name = "really_long_name" * 10
+        long_writer_name = "a" * (event_util._MAX_WRITER_NAME_LEN + 1)
         with mock.patch.object(
             logger, "error", autospec=True, spec_set=True
         ) as mock_log:

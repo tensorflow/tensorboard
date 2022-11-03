@@ -187,7 +187,7 @@ class EventAccumulator(object):
         self.most_recent_wall_time = -1
         self.file_version = None
 
-        # Names of the source writer that writes the event.
+        # Name of the source writer that writes the event.
         self._source_writer = None
 
     def Reload(self):
