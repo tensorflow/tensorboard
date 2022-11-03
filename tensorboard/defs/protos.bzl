@@ -21,6 +21,7 @@ def tb_proto_library(
         visibility = None,
         testonly = None,
         has_services = False,
+        # The `exports` arg is unused here, but required internally for compatibility.
         exports = []):
     outs_proto = _PyOuts(srcs, grpc = False)
     outs_grpc = _PyOuts(srcs, grpc = True) if has_services else []
