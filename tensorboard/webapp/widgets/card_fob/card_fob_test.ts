@@ -63,7 +63,7 @@ describe('card fob', () => {
       ? input.axisDirection
       : AxisDirection.HORIZONTAL;
     if (input.allowRemoval !== undefined) {
-      fixture.componentInstance.allowRemoval = Boolean(input.allowRemoval);
+      fixture.componentInstance.allowRemoval = input.allowRemoval;
     }
 
     stepChangedSpy = jasmine.createSpy();
