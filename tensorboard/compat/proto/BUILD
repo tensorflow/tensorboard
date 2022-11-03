@@ -237,9 +237,10 @@ tb_proto_library(
 tb_proto_library(
     name = "summary",
     srcs = ["summary.proto"],
+    exports = ["//tensorboard/compat/proto:histogram"],
     deps = [
-        ":histogram",
         ":tensor",
+        "//tensorboard/compat/proto:histogram",
     ],
 )
 
