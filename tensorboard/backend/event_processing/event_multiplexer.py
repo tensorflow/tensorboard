@@ -272,7 +272,7 @@ class EventMultiplexer(object):
           Name of the writer that wrote the events in the run.
         """
         accumulator = self.GetAccumulator(run)
-        return accumulator.SourceWriter
+        return accumulator.GetSourceWriter()
 
     def Scalars(self, run, tag):
         """Retrieve the scalar events associated with a run and tag.

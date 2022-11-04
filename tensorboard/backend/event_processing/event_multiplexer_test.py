@@ -67,8 +67,7 @@ class _FakeAccumulator(object):
     def FirstEventTimestamp(self):
         return 0
 
-    @property
-    def SourceWriter(self):
+    def GetSourceWriter(self):
         return "%s_writer" % self._path
 
     def _TagHelper(self, tag_name, enum):

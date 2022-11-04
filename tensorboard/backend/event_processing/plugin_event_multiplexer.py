@@ -334,7 +334,7 @@ class EventMultiplexer(object):
           Name of the writer that wrote the events in the run.
         """
         accumulator = self.GetAccumulator(run)
-        return accumulator.SourceWriter
+        return accumulator.GetSourceWriter()
 
     def Graph(self, run):
         """Retrieve the graph associated with the provided run.

@@ -308,8 +308,7 @@ class EventAccumulator(object):
             except StopIteration:
                 raise ValueError("No event timestamp could be found")
 
-    @property
-    def SourceWriter(self) -> Optional[str]:
+    def GetSourceWriter(self) -> Optional[str]:
         """Returns the name of the event writer."""
         if self._source_writer is not None:
             return self._source_writer
@@ -366,7 +365,7 @@ class EventAccumulator(object):
             )
             if self._source_writer and self._source_writer != new_source_writer:
                 # This should not happen.
-                logger.warning(
+                logger.info(
                     (
                         "Found new source writer for event.proto. "
                         "Old: {0}, New: {1}"
