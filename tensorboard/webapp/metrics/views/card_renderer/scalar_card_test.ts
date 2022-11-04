@@ -3244,6 +3244,32 @@ describe('scalar card', () => {
         expect(testController).toBeTruthy();
       }));
 
+      it('renders prospective fob', fakeAsync(() => {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, null);
+        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
+        store.overrideSelector(
+          selectors.getIsLinkedTimeProspectiveFobEnabled,
+          true
+        );
+
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        const cardFobController = fixture.debugElement.query(
+          By.directive(CardFobControllerComponent)
+        ).componentInstance;
+        expect(cardFobController).toBeDefined();
+
+        cardFobController.onPrespectiveStepChanged.emit(1);
+        fixture.detectChanges();
+
+        const prospectiveFob = fixture.debugElement.query(
+          By.directive(CardFobComponent)
+        ).componentInstance;
+        expect(prospectiveFob).toBeDefined();
+        expect(cardFobController.prospectiveFobWrapper).toBeDefined();
+      }));
+
       it('Does not render fobs when axis type is RELATIVE', fakeAsync(() => {
         store.overrideSelector(
           selectors.getMetricsXAxisType,
