@@ -88,7 +88,7 @@ export class ProjectorScatterPlotAdapter {
   private neighborsOfFirstSelectedPoint: knn.NearestEntry[];
   private renderLabelsIn3D: boolean = false;
   private labelPointAccessor: string | null;
-  private legendPointColorer: (ds: DataSet, index: number) => string;
+  private legendPointColorer: ((ds: DataSet, index: number) => string) | null;
   private distanceMetric: DistanceFunction;
   private spriteVisualizer: ScatterPlotVisualizerSprites;
   private labels3DVisualizer: ScatterPlotVisualizer3DLabels;
@@ -176,7 +176,7 @@ export class ProjectorScatterPlotAdapter {
     this.scatterPlot.render();
   }
   setLegendPointColorer(
-    legendPointColorer: (ds: DataSet, index: number) => string
+    legendPointColorer: ((ds: DataSet, index: number) => string) | null
   ) {
     this.legendPointColorer = legendPointColorer;
   }
@@ -477,7 +477,7 @@ export class ProjectorScatterPlotAdapter {
   }
   generateLineSegmentColorMap(
     ds: DataSet,
-    legendPointColorer: (ds: DataSet, index: number) => string
+    legendPointColorer: ((ds: DataSet, index: number) => string) | null
   ): {
     [polylineIndex: number]: Float32Array;
   } {
@@ -566,7 +566,7 @@ export class ProjectorScatterPlotAdapter {
   }
   generatePointColorArray(
     ds: DataSet,
-    legendPointColorer: (ds: DataSet, index: number) => string,
+    legendPointColorer: ((ds: DataSet, index: number) => string) | null,
     distFunc: DistanceFunction,
     selectedPointIndices: number[],
     neighborsOfFirstPoint: knn.NearestEntry[],
