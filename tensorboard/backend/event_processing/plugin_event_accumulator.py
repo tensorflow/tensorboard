@@ -335,7 +335,6 @@ class EventAccumulator(object):
                 event.source_metadata
             )
             if self._source_writer and self._source_writer != new_source_writer:
-                # This should not happen.
                 logger.info(
                     (
                         "Found new source writer for event.proto. "
