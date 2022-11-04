@@ -465,7 +465,10 @@ class Projector
   }
   private getLegendPointColorer(
     colorOption: ColorOption
-  ): (ds: DataSet, index: number) => string {
+  ): ((ds: DataSet, index: number) => string) | null {
+    if (colorOption == null || colorOption.map == null) {
+      return null;
+    }
     const colorer = (ds: DataSet, i: number) => {
       let value = ds.points[i].metadata[this.selectedColorOption.name];
       if (value == null) {
