@@ -701,4 +701,9 @@ class Projector
     }
     this.notifySelectionChanged(state.selectedPoints);
   }
+
+  _toggleHelp3dDialog(event: MouseEvent) {
+    event.preventDefault();
+    (this.$$('#help3dDialog') as any).open();
+  }
 }
