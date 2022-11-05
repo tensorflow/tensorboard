@@ -36,6 +36,7 @@ export class PaintBrush {
       paintOpt
     );
     if (newCacheValue) {
+      console.log('new cache value for', cacheId);
       this.renderCache.setToCurrentFrame(cacheId, newCacheValue);
     }
   }
