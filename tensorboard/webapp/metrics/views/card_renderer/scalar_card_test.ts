@@ -3268,6 +3268,7 @@ describe('scalar card', () => {
         ).componentInstance;
         expect(prospectiveFob).toBeDefined();
         expect(cardFobController.prospectiveFobWrapper).toBeDefined();
+        expect(cardFobController.prospectiveStep).toEqual(1);
       }));
 
       it('Does not render fobs when axis type is RELATIVE', fakeAsync(() => {

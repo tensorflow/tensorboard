@@ -342,14 +342,10 @@ export class CardFobControllerComponent {
   }
 
   stepTyped(fob: Fob, step: number | null) {
-    if (!this.timeSelection) {
-      return;
-    }
-
     // Types empty string in fob.
     if (step === null) {
       // Removes fob on range selection and sets step to minimum on single selection.
-      if (this.timeSelection.end !== null) {
+      if (this.timeSelection!.end !== null) {
         this.onFobRemoved(fob);
       } else {
         // TODO(jieweiwu): sets start step to minum.
@@ -358,7 +354,7 @@ export class CardFobControllerComponent {
       return;
     }
 
-    let newTimeSelection = {...this.timeSelection};
+    let newTimeSelection = {...this.timeSelection!};
     if (fob === Fob.START) {
       newTimeSelection.start = {step};
     } else if (fob === Fob.END) {
