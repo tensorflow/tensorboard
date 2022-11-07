@@ -2390,6 +2390,8 @@ describe('scalar card', () => {
         ).componentInstance;
 
         expect(fobController).toBeDefined();
+        expect(fobController.startFobWrapper).toBeUndefined();
+        expect(fobController.endFobWrapper).toBeUndefined();
       }));
     });
 
