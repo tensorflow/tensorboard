@@ -15,7 +15,7 @@ limitations under the License.
 
 //! Simple benchmark to completely load a logdir and then exit.
 
-use clap::Clap;
+use clap::Parser;
 use log::info;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -25,7 +25,7 @@ use rustboard_core::commit::Commit;
 use rustboard_core::logdir::LogdirLoader;
 use rustboard_core::{cli::dynamic_logdir::DynLogdir, types::PluginSamplingHint};
 
-#[derive(Clap)]
+#[derive(Parser)]
 struct Opts {
     #[clap(long)]
     logdir: PathBuf,
