@@ -2378,10 +2378,7 @@ describe('scalar card', () => {
       }));
 
       it('does not render fobs when no timeSelection is provided', fakeAsync(() => {
-        store.overrideSelector(getMetricsLinkedTimeSelection, {
-          start: {step: 20},
-          end: null,
-        });
+        store.overrideSelector(getMetricsLinkedTimeSelection, null);
         store.overrideSelector(
           selectors.getIsLinkedTimeProspectiveFobEnabled,
           true
@@ -2389,9 +2386,10 @@ describe('scalar card', () => {
         const fixture = createComponent('card1');
         fixture.detectChanges();
         const fobController = fixture.debugElement.query(
-          By.directive(CardFobComponent)
+          By.directive(CardFobControllerComponent)
         ).componentInstance;
 
+        expect(fobController).toBeDefined();
         expect(fobController.startFobWrapper).toBeUndefined();
         expect(fobController.endFobWrapper).toBeUndefined();
       }));
@@ -3192,10 +3190,6 @@ describe('scalar card', () => {
         aliasText: 'a',
         aliasNumber: 1,
       };
-      console.log(
-        'ChartMetadatMap: ',
-        scalarCardDataTable.componentInstance.chartMetadataMap
-      );
       fixture.detectChanges();
 
       const data =
@@ -3246,6 +3240,10 @@ describe('scalar card', () => {
 
       it('Does not render fobs when axis type is RELATIVE', fakeAsync(() => {
         store.overrideSelector(
+          selectors.getIsLinkedTimeProspectiveFobEnabled,
+          true
+        );
+        store.overrideSelector(
           selectors.getMetricsXAxisType,
           XAxisType.RELATIVE
         );
@@ -3258,6 +3256,10 @@ describe('scalar card', () => {
       }));
 
       it('Does not render fobs when axis type is WALL_TIME', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getIsLinkedTimeProspectiveFobEnabled,
+          true
+        );
         store.overrideSelector(
           selectors.getMetricsXAxisType,
           XAxisType.WALL_TIME

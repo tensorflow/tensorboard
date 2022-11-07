@@ -168,7 +168,7 @@ limitations under the License.
     </table>
   </ng-template>
 </div>
-<ng-container *ngIf="inTimeSelectionMode()">
+<ng-container *ngIf="showDataTable()">
   <div class="data-table-container">
     <scalar-card-data-table
       [chartMetadataMap]="chartMetadataMap"
@@ -187,7 +187,7 @@ limitations under the License.
   let-domDim="domDimension"
   let-xScale="xScale"
 >
-  <ng-container *ngIf="inTimeSelectionMode() || isProspectiveFobFeatureEnabled">
+  <ng-container *ngIf="showFobController()">
     <scalar-card-fob-controller
       [timeSelection]="stepOrLinkedTimeSelection"
       [scale]="xScale"

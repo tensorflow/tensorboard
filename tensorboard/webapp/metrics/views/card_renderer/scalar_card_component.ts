@@ -221,10 +221,18 @@ export class ScalarCardComponent<Downloader> {
     this.onStepSelectorToggled.emit(TimeSelectionToggleAffordance.FOB_DESELECT);
   }
 
-  inTimeSelectionMode(): boolean {
+  showDataTable() {
     return (
       this.xAxisType === XAxisType.STEP &&
       this.stepOrLinkedTimeSelection !== null
+    );
+  }
+
+  showFobController() {
+    return (
+      this.xAxisType === XAxisType.STEP &&
+      (this.stepOrLinkedTimeSelection !== null ||
+        this.isProspectiveFobFeatureEnabled)
     );
   }
 }
