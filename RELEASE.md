@@ -1,3 +1,18 @@
+# Release 2.11.0
+
+The 2.11 minor series tracks TensorFlow 2.11.
+
+## Bug Fixes
+
+- Fixed HParams plugin sorting bugs (#5971)
+- Fix color by menu drop down bug in projector plugin (#5974)
+- Fix bug with histogram axis being off due to rounding (#5925)
+
+## Breaking Changes
+
+- TensorBoard now only supports Python 3.7 and above (#5878)
+  Python 3.6 is past its End of Life: https://peps.python.org/pep-0494/#lifespan
+
 # Release 2.10.1
 
 ## Bug Fixes
