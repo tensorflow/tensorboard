@@ -54,7 +54,7 @@ limitations under the License.
   </div>
   <div
     #endFobWrapper
-    *ngIf="timeSelection && timeSelection.end"
+    *ngIf="timeSelection && timeSelection.end && rangeSelectionEnabled"
     class="time-fob-wrapper"
     [style.transform]="getCssTranslatePxForEndFob()"
   >
