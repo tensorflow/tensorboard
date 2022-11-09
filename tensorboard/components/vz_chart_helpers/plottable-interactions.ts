@@ -29,8 +29,9 @@ limitations under the License.
  */
 import * as Plottable from 'plottable';
 
-function getHtmlElementAncestors(elem: Node) {
-  const elems = [];
+function getHtmlElementAncestors(element: Node) {
+  const elems: HTMLElement[] = [];
+  let elem: Node | null = element;
   while (elem && elem instanceof HTMLElement) {
     elems.push(elem);
     if (elem.assignedSlot) {
@@ -55,9 +56,9 @@ const _IDENTITY_TRANSFORM = [1, 0, 0, 1, 0, 0];
 // Forked from https://github.com/palantir/plottable/blob/b6e36fbd4d8d7cba579d853b9f35cc260d1243bf/src/utils/mathUtils.ts#L173-L202
 // The only difference is the implementation of the getHtmlElementAncestors.
 function getCumulativeTransform(element) {
-  const elems = getHtmlElementAncestors(element);
+  const elems: HTMLElement[] = getHtmlElementAncestors(element);
   let transform: number[] = _IDENTITY_TRANSFORM;
-  let offsetParent = null;
+  let offsetParent: Element | null = null;
   for (const elem of elems) {
     // apply css transform from any ancestor element
     const elementTransform = Plottable.Utils.DOM.getElementTransform(elem);

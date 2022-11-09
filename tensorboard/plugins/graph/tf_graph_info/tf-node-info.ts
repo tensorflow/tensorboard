@@ -478,7 +478,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
   @property({type: String})
   _groupButtonText: string;
   @property({type: Object})
-  _templateIndex: (name: string) => number | null = null;
+  _templateIndex: (name: string) => number | null = null!;
   expandNode() {
     this.fire('_node.expand', (this as any).node);
   }
@@ -501,7 +501,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
     return tf_graph_util.hasDisplayableNodeStats(stats);
   }
   @computed('_nodeStats')
-  get _nodeStatsFormattedBytes(): string {
+  get _nodeStatsFormattedBytes(): string | undefined {
     var stats = this._nodeStats;
     if (!stats || !stats.totalBytes) {
       return;
@@ -512,7 +512,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
     );
   }
   @computed('_nodeStats')
-  get _nodeStatsFormattedComputeTime(): string {
+  get _nodeStatsFormattedComputeTime(): string | undefined {
     var stats = this._nodeStats;
     if (!stats || !stats.getTotalMicros()) {
       return;
@@ -523,7 +523,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
     );
   }
   @computed('_nodeStats')
-  get _nodeStatsFormattedOutputSizes(): unknown[] {
+  get _nodeStatsFormattedOutputSizes(): unknown[] | undefined {
     var stats = this._nodeStats;
     if (!stats || !stats.outputSize || !stats.outputSize.length) {
       return;
@@ -545,7 +545,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
     if (!node || !node.attr) {
       return [];
     }
-    var attrs = [];
+    var attrs: any[] = [];
     _.each(node.attr, function (entry) {
       // Unpack the "too large" attributes into separate attributes
       // in the info card, with values "too large to show".
@@ -646,7 +646,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
      * that can be rendered.
      */
     var toEdgeInfoList = function (edges) {
-      var edgeInfoList = [];
+      var edgeInfoList: any[] = [];
       _.each(edges, (metaedge) => {
         var name = isPredecessor ? metaedge.v : metaedge.w;
         // Enumerate all the base edges if the node is an OpNode, or the

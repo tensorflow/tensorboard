@@ -115,12 +115,14 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
   }
   metadataChanged(spriteAndMetadata: SpriteAndMetadataInfo) {
     let labelIndex = -1;
-    this.metadataFields = spriteAndMetadata.stats.map((stats, i) => {
-      if (!stats.isNumeric && labelIndex === -1) {
-        labelIndex = i;
-      }
-      return stats.name;
-    });
+    if (spriteAndMetadata.stats) {
+      this.metadataFields = spriteAndMetadata.stats.map((stats, i) => {
+        if (!stats.isNumeric && labelIndex === -1) {
+          labelIndex = i;
+        }
+        return stats.name;
+      });
+    }
     if (
       spriteAndMetadata.spriteMetadata &&
       spriteAndMetadata.spriteMetadata.imagePath
@@ -128,9 +130,9 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
       const [spriteWidth, spriteHeight] =
         spriteAndMetadata.spriteMetadata.singleImageDim;
       this.spriteMeta = {
-        imagePath: spriteAndMetadata.spriteImage.src,
+        imagePath: spriteAndMetadata.spriteImage?.src,
         aspectRatio: spriteWidth / spriteHeight,
-        nCols: Math.floor(spriteAndMetadata.spriteImage.width / spriteWidth),
+        nCols: Math.floor(spriteAndMetadata.spriteImage?.width! / spriteWidth),
         singleImageDim: [spriteWidth, spriteHeight],
       };
     } else {
@@ -225,14 +227,14 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
     this.displayContexts.forEach((c) => {
       (this.$$(c) as HTMLDivElement).style.display = 'none';
     });
-    (this.$$(context) as HTMLDivElement).style.display = null;
+    (this.$$(context) as HTMLDivElement).style.display = null!;
   }
   private removeContext(context: string) {
     this.displayContexts = this.displayContexts.filter((c) => c !== context);
     (this.$$(context) as HTMLDivElement).style.display = 'none';
     if (this.displayContexts.length > 0) {
       let lastContext = this.displayContexts[this.displayContexts.length - 1];
-      (this.$$(lastContext) as HTMLDivElement).style.display = null;
+      (this.$$(lastContext) as HTMLDivElement).style.display = null!;
     }
   }
   private updateSearchResults(indices: number[]) {
@@ -245,7 +247,7 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
     }
     this.addContext('.matches-list');
     this.limitMessage.style.display =
-      indices.length <= LIMIT_RESULTS ? 'none' : null;
+      indices.length <= LIMIT_RESULTS ? 'none' : null!;
     indices = indices.slice(0, LIMIT_RESULTS);
     for (let i = 0; i < indices.length; i++) {
       const index = indices[i];
@@ -260,7 +262,7 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
         this.projectorEventContext.notifyHoverOverPoint(index);
       };
       rowLink.onmouseleave = () => {
-        this.projectorEventContext.notifyHoverOverPoint(null);
+        this.projectorEventContext.notifyHoverOverPoint(null!);
       };
       rowLink.onclick = () => {
         this.projectorEventContext.notifySelectionChanged([index]);
@@ -281,7 +283,7 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
     const {aspectRatio, nCols} = this.spriteMeta as any;
     const paddingBottom = 100 / aspectRatio + '%';
     const backgroundSize = `${nCols * 100}% ${nCols * 100}%`;
-    const backgroundImage = `url(${CSS.escape(spriteImagePath)})`;
+    const backgroundImage = `url(${CSS.escape(spriteImagePath!)})`;
     return (neighbor: knn.NearestEntry): HTMLElement => {
       const spriteElementImage = document.createElement('div');
       spriteElementImage.className = 'sprite-image';
@@ -315,9 +317,6 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
     this.addContext('.nn');
     this.searchBox.message = '';
     const minDist = neighbors.length > 0 ? neighbors[0].dist : 0;
-    if (this.spriteImagesAvailable && this.showNeighborImages) {
-      var imageRenderer = this.spriteImageRenderer();
-    }
     for (let i = 0; i < neighbors.length; i++) {
       const neighbor = neighbors[i];
       const neighborElement = document.createElement('div');
@@ -359,7 +358,7 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
         barElement.appendChild(tickElement);
       }
       if (this.spriteImagesAvailable && this.showNeighborImages) {
-        const neighborElementImage = imageRenderer(neighbor);
+        const neighborElementImage = this.spriteImageRenderer()(neighbor);
         neighborElement.appendChild(neighborElementImage);
       }
       neighborElementLink.appendChild(labelValueElement);
@@ -370,7 +369,7 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
         this.projectorEventContext.notifyHoverOverPoint(neighbor.index);
       };
       neighborElementLink.onmouseleave = () => {
-        this.projectorEventContext.notifyHoverOverPoint(null);
+        this.projectorEventContext.notifyHoverOverPoint(null!);
       };
       neighborElementLink.onclick = () => {
         this.projectorEventContext.notifySelectionChanged([neighbor.index]);
@@ -380,8 +379,8 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
   private updateFilterButtons(numPoints: number) {
     if (numPoints > 1) {
       this.setFilterButton.innerText = `Isolate ${numPoints} points`;
-      this.setFilterButton.disabled = null;
-      this.clearSelectionButton.disabled = null;
+      this.setFilterButton.disabled = null!;
+      this.clearSelectionButton.disabled = null!;
     } else {
       this.setFilterButton.disabled = true;
       this.clearSelectionButton.disabled = true;
@@ -391,9 +390,11 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
     this.distFunc = vector.cosDist;
     const eucDist = this.$$('.distance a.euclidean') as HTMLLinkElement;
     eucDist.onclick = () => {
-      const links = this.root.querySelectorAll('.distance a');
-      for (let i = 0; i < links.length; i++) {
-        util.classed(links[i] as HTMLElement, 'selected', false);
+      const links = this.root?.querySelectorAll('.distance a');
+      if (links) {
+        for (let i = 0; i < links.length; i++) {
+          util.classed(links[i] as HTMLElement, 'selected', false);
+        }
       }
       util.classed(eucDist as HTMLElement, 'selected', true);
       this.distFunc = vector.dist;
@@ -407,9 +408,11 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
     };
     const cosDist = this.$$('.distance a.cosine') as HTMLLinkElement;
     cosDist.onclick = () => {
-      const links = this.root.querySelectorAll('.distance a');
-      for (let i = 0; i < links.length; i++) {
-        util.classed(links[i] as HTMLElement, 'selected', false);
+      const links = this.root?.querySelectorAll('.distance a');
+      if (links) {
+        for (let i = 0; i < links.length; i++) {
+          util.classed(links[i] as HTMLElement, 'selected', false);
+        }
       }
       util.classed(cosDist, 'selected', true);
       this.distFunc = vector.cosDist;

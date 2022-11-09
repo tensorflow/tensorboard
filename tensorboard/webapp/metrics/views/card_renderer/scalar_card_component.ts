@@ -91,7 +91,8 @@ export class ScalarCardComponent<Downloader> {
   @Input() useDarkMode!: boolean;
   @Input() forceSvg!: boolean;
   @Input() linkedTimeSelection!: TimeSelectionView | null;
-  @Input() stepSelectorTimeSelection!: TimeSelection;
+  @Input() stepOrLinkedTimeSelection!: TimeSelection | null;
+  @Input() isProspectiveFobFeatureEnabled: Boolean = false;
   @Input() minMaxStep!: MinMaxStep;
   @Input() dataHeaders!: ColumnHeaders[];
 
@@ -216,30 +217,22 @@ export class ScalarCardComponent<Downloader> {
     });
   }
 
-  getTimeSelection(): TimeSelection | null {
-    if (this.linkedTimeSelection === null) {
-      return this.stepSelectorTimeSelection;
-    }
-
-    return {
-      start: {
-        step: this.linkedTimeSelection.startStep,
-      },
-      end: this.linkedTimeSelection.endStep
-        ? {step: this.linkedTimeSelection.endStep}
-        : null,
-    };
-  }
-
   onFobRemoved() {
     this.onStepSelectorToggled.emit(TimeSelectionToggleAffordance.FOB_DESELECT);
   }
 
-  inTimeSelectionMode(): boolean {
+  showDataTable() {
     return (
       this.xAxisType === XAxisType.STEP &&
-      (this.stepSelectorTimeSelection !== null ||
-        this.linkedTimeSelection !== null)
+      this.stepOrLinkedTimeSelection !== null
+    );
+  }
+
+  showFobController() {
+    return (
+      this.xAxisType === XAxisType.STEP &&
+      (this.stepOrLinkedTimeSelection !== null ||
+        this.isProspectiveFobFeatureEnabled)
     );
   }
 }

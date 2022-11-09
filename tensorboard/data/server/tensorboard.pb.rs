@@ -13,6 +13,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+/// Serialization format for histogram module in
+/// tsl/lib/histogram/histogram.h
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct HistogramProto {
+    #[prost(double, tag="1")]
+    pub min: f64,
+    #[prost(double, tag="2")]
+    pub max: f64,
+    #[prost(double, tag="3")]
+    pub num: f64,
+    #[prost(double, tag="4")]
+    pub sum: f64,
+    #[prost(double, tag="5")]
+    pub sum_squares: f64,
+    /// Parallel arrays encoding the bucket boundaries and the bucket values.
+    /// bucket(i) is the count for the bucket i.  The range for
+    /// a bucket is:
+    ///   i == 0:  -DBL_MAX .. bucket_limit(0)
+    ///   i != 0:  bucket_limit(i-1) .. bucket_limit(i)
+    #[prost(double, repeated, tag="6")]
+    pub bucket_limit: ::prost::alloc::vec::Vec<f64>,
+    #[prost(double, repeated, tag="7")]
+    pub bucket: ::prost::alloc::vec::Vec<f64>,
+}
 /// Dimensions of a tensor.
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct TensorShapeProto {
@@ -53,6 +77,12 @@ pub mod tensor_shape_proto {
         #[prost(string, tag="2")]
         pub name: ::prost::alloc::string::String,
     }
+}
+/// Represents a serialized tf.dtypes.Dtype
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct SerializedDType {
+    #[prost(enumeration="DataType", tag="1")]
+    pub datatype: i32,
 }
 /// (== suppress_warning documentation-presence ==)
 /// DISABLED.IfChange
@@ -254,30 +284,6 @@ pub struct SummaryDescription {
     #[prost(string, tag="1")]
     pub type_hint: ::prost::alloc::string::String,
 }
-/// Serialization format for histogram module in
-/// core/lib/histogram/histogram.h
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct HistogramProto {
-    #[prost(double, tag="1")]
-    pub min: f64,
-    #[prost(double, tag="2")]
-    pub max: f64,
-    #[prost(double, tag="3")]
-    pub num: f64,
-    #[prost(double, tag="4")]
-    pub sum: f64,
-    #[prost(double, tag="5")]
-    pub sum_squares: f64,
-    /// Parallel arrays encoding the bucket boundaries and the bucket values.
-    /// bucket(i) is the count for the bucket i.  The range for
-    /// a bucket is:
-    ///   i == 0:  -DBL_MAX .. bucket_limit(0)
-    ///   i != 0:  bucket_limit(i-1) .. bucket_limit(i)
-    #[prost(double, repeated, tag="6")]
-    pub bucket_limit: ::prost::alloc::vec::Vec<f64>,
-    #[prost(double, repeated, tag="7")]
-    pub bucket: ::prost::alloc::vec::Vec<f64>,
-}
 /// A SummaryMetadata encapsulates information on which plugins are able to make
 /// use of a certain summary value.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -433,6 +439,10 @@ pub struct Event {
     /// Global step of the event.
     #[prost(int64, tag="2")]
     pub step: i64,
+    /// Information of the source that writes the events, this is only logged in
+    /// the very first event along with the `file_version` field.
+    #[prost(message, optional, tag="10")]
+    pub source_metadata: ::core::option::Option<SourceMetadata>,
     #[prost(oneof="event::What", tags="3, 4, 5, 6, 7, 8, 9")]
     pub what: ::core::option::Option<event::What>,
 }
@@ -467,6 +477,14 @@ pub mod event {
         #[prost(bytes, tag="9")]
         MetaGraphDef(::prost::bytes::Bytes),
     }
+}
+/// Holds the information of the source that writes the events.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct SourceMetadata {
+    /// Low level name of the summary writer, such as
+    /// `tensorflow.core.util.events_writer`.
+    #[prost(string, tag="1")]
+    pub writer: ::prost::alloc::string::String,
 }
 /// Protocol buffer used for logging messages to the events file.
 ///

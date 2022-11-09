@@ -50,19 +50,26 @@ const TIME_SELECTION_TO_FOB: Record<keyof TimeSelection, Fob> = {
 export class CardFobControllerComponent {
   @ViewChild('startFobWrapper') readonly startFobWrapper!: ElementRef;
   @ViewChild('endFobWrapper') readonly endFobWrapper!: ElementRef;
+  @ViewChild('prospectiveFobWrapper')
+  readonly prospectiveFobWrapper!: ElementRef;
   @Input() axisDirection!: AxisDirection;
-  @Input() timeSelection!: TimeSelection;
+  @Input() timeSelection?: TimeSelection;
   @Input() cardFobHelper!: CardFobGetStepFromPositionHelper;
   @Input() startStepAxisPosition!: number;
   @Input() endStepAxisPosition!: number | null;
   @Input() highestStep!: number;
   @Input() lowestStep!: number;
   @Input() showExtendedLine?: Boolean = false;
+  @Input() isProspectiveFobFeatureEnabled?: Boolean = false;
+  @Input() prospectiveStep?: number | null = null;
+  @Input() prospectiveStepAxisPosition?: number | null = null;
 
   @Output() onTimeSelectionChanged =
     new EventEmitter<TimeSelectionWithAffordance>();
   @Output() onTimeSelectionToggled = new EventEmitter();
+  @Output() onPrespectiveStepChanged = new EventEmitter<number | null>();
 
+  private hasFobMoved: boolean = false;
   private currentDraggingFob: Fob = Fob.NONE;
   private affordance: TimeSelectionAffordance = TimeSelectionAffordance.NONE;
 
@@ -94,6 +101,17 @@ export class CardFobControllerComponent {
     return `translate(${this.endStepAxisPosition}px, 0px)`;
   }
 
+  getCssTranslatePxForProspectiveFob() {
+    if (this.prospectiveStep === null) {
+      return '';
+    }
+
+    if (this.axisDirection === AxisDirection.VERTICAL) {
+      return `translate(0px, ${this.prospectiveStepAxisPosition}px)`;
+    }
+    return `translate(${this.prospectiveStepAxisPosition}px, 0px)`;
+  }
+
   stopEventPropagation(e: Event) {
     e.stopPropagation();
     e.preventDefault();
@@ -117,11 +135,14 @@ export class CardFobControllerComponent {
     document.removeEventListener('mousemove', this.mouseListener);
     document.removeEventListener('mouseup', this.stopListener);
     this.currentDraggingFob = Fob.NONE;
-    this.onTimeSelectionChanged.emit({
-      timeSelection: this.timeSelection,
-      affordance: this.affordance,
-    });
+    if (this.hasFobMoved && this.timeSelection) {
+      this.onTimeSelectionChanged.emit({
+        timeSelection: this.timeSelection,
+        affordance: this.affordance,
+      });
+    }
     this.affordance = TimeSelectionAffordance.NONE;
+    this.hasFobMoved = false;
   }
 
   isVertical() {
@@ -129,7 +150,7 @@ export class CardFobControllerComponent {
   }
 
   private shouldSwapFobs(newStep: number) {
-    if (!this.timeSelection.end) {
+    if (!this.timeSelection || !this.timeSelection.end) {
       return false;
     }
     if (this.currentDraggingFob === Fob.END) {
@@ -148,6 +169,9 @@ export class CardFobControllerComponent {
   ): TimeSelection {
     const newTimeSelection = {...timeSelection};
 
+    if (!this.timeSelection) {
+      return newTimeSelection;
+    }
     // Single Selection
     if (!this.timeSelection.end) {
       newTimeSelection.start = {step: newStep};
@@ -191,7 +215,7 @@ export class CardFobControllerComponent {
       newStep = this.cardFobHelper.getStepLowerThanAxisPosition(mousePosition);
     }
 
-    if (newStep === null) {
+    if (newStep === null || !this.timeSelection) {
       return;
     }
 
@@ -202,6 +226,7 @@ export class CardFobControllerComponent {
     this.onTimeSelectionChanged.emit({
       timeSelection: newTimeSelection,
     });
+    this.hasFobMoved = true;
   }
 
   isDraggingLower(position: number, movement: number): boolean {
@@ -246,8 +271,8 @@ export class CardFobControllerComponent {
 
   getDraggingFobStep(): number {
     return this.currentDraggingFob !== Fob.END
-      ? this.timeSelection.start.step
-      : this.timeSelection.end!.step;
+      ? this.timeSelection!.start.step
+      : this.timeSelection!.end!.step;
   }
 
   getMousePositionFromEvent(event: MouseEvent): number {
@@ -260,7 +285,7 @@ export class CardFobControllerComponent {
     // Types empty string in fob.
     if (step === null) {
       // Removes fob on range selection and sets step to minimum on single selection.
-      if (this.timeSelection.end !== null) {
+      if (this.timeSelection!.end !== null) {
         this.onFobRemoved(fob);
       } else {
         // TODO(jieweiwu): sets start step to minum.
@@ -269,7 +294,7 @@ export class CardFobControllerComponent {
       return;
     }
 
-    let newTimeSelection = {...this.timeSelection};
+    let newTimeSelection = {...this.timeSelection!};
     if (fob === Fob.START) {
       newTimeSelection.start = {step};
     } else if (fob === Fob.END) {
@@ -307,16 +332,16 @@ export class CardFobControllerComponent {
     if (fob === Fob.END) {
       this.onTimeSelectionChanged.emit({
         affordance: TimeSelectionAffordance.FOB_REMOVED,
-        timeSelection: {...this.timeSelection, end: null},
+        timeSelection: {...this.timeSelection!, end: null},
       });
       return;
     }
 
-    if (this.timeSelection.end !== null) {
+    if (this.timeSelection!.end !== null) {
       this.onTimeSelectionChanged.emit({
         affordance: TimeSelectionAffordance.FOB_REMOVED,
         timeSelection: {
-          start: this.timeSelection.end,
+          start: this.timeSelection!.end,
           end: null,
         },
       });
@@ -324,5 +349,9 @@ export class CardFobControllerComponent {
     }
 
     this.onTimeSelectionToggled.emit();
+  }
+
+  onProspectiveAreaMouseLeave() {
+    this.onPrespectiveStepChanged.emit(null);
   }
 }

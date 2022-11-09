@@ -191,7 +191,7 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
   }
 
   @computed('dataLocation', '_dataLocationClipLength')
-  get _clippedDataLocation(): string {
+  get _clippedDataLocation(): string | undefined {
     var dataLocation = this.dataLocation;
     var dataLocationClipLength = this._dataLocationClipLength;
     if (dataLocation === undefined) {

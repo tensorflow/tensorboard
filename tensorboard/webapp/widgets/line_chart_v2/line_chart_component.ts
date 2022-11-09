@@ -43,7 +43,7 @@ import {
   ScaleType,
 } from './lib/public_types';
 import {createScale} from './lib/scale';
-import {isOffscreenCanvasSupported} from './lib/utils';
+import {ChartUtils} from './lib/utils';
 import {WorkerChart} from './lib/worker/worker_chart';
 import {
   computeDataSeriesExtent,
@@ -90,14 +90,6 @@ export class LineChartComponent
 
   @ViewChild('chartEl', {static: false, read: ElementRef})
   private chartEl?: ElementRef<HTMLCanvasElement | SVGElement>;
-
-  /**
-   * Optional ngTemplate that renders on top of line chart (not axis). This
-   * template is rendered on top of interactive layer and can mask other
-   * contents. Do note that this component may not intercept pointer-events.
-   */
-  @Input()
-  customVisTemplate?: TemplateRef<TemplateContext>;
 
   @Input()
   customChartOverlayTemplate?: TemplateRef<
@@ -393,7 +385,8 @@ export class LineChartComponent
     }
 
     const useWorker =
-      rendererType !== RendererType.SVG && isOffscreenCanvasSupported();
+      rendererType !== RendererType.SVG &&
+      ChartUtils.isOffscreenCanvasSupported();
     const klass = useWorker ? WorkerChart : ChartImpl;
     this.lineChart = new klass(params);
   }

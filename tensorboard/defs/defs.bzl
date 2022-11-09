@@ -14,9 +14,9 @@
 """External-only delegates for various BUILD rules."""
 
 load("@io_bazel_rules_sass//:defs.bzl", "npm_sass_library", "sass_binary", "sass_library")
-load("@npm//@bazel/concatjs:index.bzl", "karma_web_test_suite")
+load("@npm//@bazel/concatjs:index.bzl", "karma_web_test_suite", "ts_library")
 load("@npm//@bazel/esbuild:index.bzl", "esbuild")
-load("@npm//@bazel/typescript:index.bzl", "ts_config", "ts_library")
+load("@npm//@bazel/typescript:index.bzl", "ts_config")
 
 
 def tensorboard_webcomponent_library(**kwargs):

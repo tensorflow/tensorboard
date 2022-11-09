@@ -15,7 +15,7 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
 import {from, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-import {loadMonaco} from './load_monaco_shim';
+import {MonacoShim} from './load_monaco_shim';
 
 /**
  * A component that renders a diff of 2 separate text contents. Diffs can be
@@ -60,6 +60,6 @@ export class SourceCodeDiffContainer implements OnInit {
   monaco$: Observable<typeof monaco> | null = null;
 
   ngOnInit(): void {
-    this.monaco$ = from(loadMonaco()).pipe(map(() => window.monaco));
+    this.monaco$ = from(MonacoShim.loadMonaco()).pipe(map(() => window.monaco));
   }
 }

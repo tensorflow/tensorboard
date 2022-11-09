@@ -51,19 +51,19 @@ export class EnvironmentStore extends BaseStore {
     });
   }
   public getDataLocation(): string {
-    return this.environment ? this.environment.dataLocation : '';
+    return this.environment ? this.environment.dataLocation! : '';
   }
   public getWindowTitle(): string {
-    return this.environment ? this.environment.windowTitle : '';
+    return this.environment ? this.environment.windowTitle! : '';
   }
   public getExperimentName(): string {
-    return this.environment ? this.environment.experimentName : '';
+    return this.environment ? this.environment.experimentName! : '';
   }
   public getExperimentDescription(): string {
-    return this.environment ? this.environment.experimentDescription : '';
+    return this.environment ? this.environment.experimentDescription! : '';
   }
   public getCreationTime(): number | null {
-    return this.environment ? this.environment.creationTime : null;
+    return this.environment ? this.environment.creationTime! : null;
   }
 }
 

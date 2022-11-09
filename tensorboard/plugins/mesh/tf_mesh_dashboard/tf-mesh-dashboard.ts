@@ -244,7 +244,7 @@ class MeshDashboard extends PolymerElement {
 
   _getAllChildren() {
     return Array.from(
-      this.shadowRoot.querySelectorAll('tf-mesh-loader')
+      this.shadowRoot?.querySelectorAll('tf-mesh-loader')!
     ) as TfMeshLoader[];
   }
 

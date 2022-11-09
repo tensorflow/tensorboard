@@ -380,7 +380,7 @@ export function getSeriesName(node: Node) {
  * Returns null if the node is not rendered as part of a series.
  */
 function getContainingSeries(node: Node) {
-  let s: SeriesNode = null;
+  let s: SeriesNode | null = null;
   if (!node) {
     return null;
   } else if (node.type === NodeType.SERIES) {
@@ -423,7 +423,7 @@ function labelBuild(
   );
   // Make sure the label is visually on top among its siblings.
   let labelNode = <HTMLElement>label.node();
-  labelNode.parentNode.appendChild(labelNode);
+  labelNode.parentNode?.appendChild(labelNode);
   label.attr('dy', '.35em').attr('text-anchor', 'middle');
 
   // In tf-graph-scene styles, fontSizes are defined to vary from 6px to 9px. Since we
@@ -485,7 +485,7 @@ export function enforceLabelWidth(
   let labelContent = txtNode.textContent;
 
   // Get maximum length from settings.
-  let maxLength = null;
+  let maxLength: number | null = null;
   switch (nodeType) {
     case NodeType.META:
       if (renderNodeInfo && !renderNodeInfo.expanded) {
@@ -506,18 +506,18 @@ export function enforceLabelWidth(
   if (maxLength === null) return;
 
   txtNode.textContent = tf_graph_util.maybeTruncateString(
-    txtNode.textContent,
+    txtNode.textContent!,
     fontSize,
     maxLength
   );
   // Add tooltip with full name and return.
-  return txtElementSelection.append('title').text(labelContent);
+  return txtElementSelection.append('title').text(labelContent!);
 }
 /**
  * d3 scale used for sizing font of labels, used by labelBuild,
  * initialized once by getLabelFontScale.
  */
-let fontScale = null;
+let fontScale: any = null;
 function getLabelFontScale(sceneElement) {
   if (!fontScale) {
     fontScale = d3
@@ -793,7 +793,7 @@ export function getFillForNode(
       if (renderInfo.node.type === NodeType.META) {
         let tid = (<Metanode>renderInfo.node).templateId;
         return colorBy === ColorBy.STRUCTURE && tid !== null
-          ? colorParams.STRUCTURE_PALETTE(templateIndex(tid), isExpanded)
+          ? colorParams.STRUCTURE_PALETTE(templateIndex(tid)!, isExpanded)
           : colorParams.UNKNOWN;
       } else if (renderInfo.node.type === NodeType.SERIES) {
         // If expanded, we're showing the background rect, which we want to
@@ -991,7 +991,7 @@ function _getAllContainedOpNodes(
   nodeName: string,
   renderGraphInfo: render.RenderGraphInfo
 ): ReadonlyArray<OpNodeImpl> {
-  let opNodes = [];
+  let opNodes: OpNodeImpl[] = [];
   // Get current node.
   let node = renderGraphInfo.getNodeByName(nodeName) as
     | tf_graph.GroupNode
@@ -1159,7 +1159,7 @@ function _createVisibleTrace(
   let previousNode = nodeInstance;
   // Ascend through parents until a mutual parent is found with the start
   // node.
-  let destinationParentPairs = [];
+  let destinationParentPairs: Node[][] = [];
   while (!startNodeParents[currentNode.name]) {
     if (previousNode.name !== currentNode.name) {
       destinationParentPairs.push([previousNode, currentNode]);
@@ -1581,7 +1581,7 @@ export function buildGroupForScene(
       }
       return nodes;
     },
-    []
+    Array<any>()
   );
   if (renderNode.node.type === NodeType.SERIES) {
     // For series, we want the first item on top, so reverse the array so

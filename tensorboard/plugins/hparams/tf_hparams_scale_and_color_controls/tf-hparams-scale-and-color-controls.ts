@@ -204,7 +204,7 @@ class TfHparamsScaleAndColorControls extends PolymerElement {
       this.configuration.visibleSchema,
       this.sessionGroups,
       column.index
-    ) as [number, number];
+    ) as [unknown, unknown] as [number, number];
     // Log scale is only defined when the domain does not include 0.
     return min > 0 || max < 0;
   }

@@ -321,7 +321,7 @@ export class TfPrCurveCard extends PolymerElement {
 
   _getChartDataLoader() {
     // tslint:disable-next-line:no-unnecessary-type-assertion
-    return this.shadowRoot.querySelector('tf-line-chart-data-loader') as any; // TfLineChartDataLoader
+    return this.shadowRoot?.querySelector('tf-line-chart-data-loader') as any; // TfLineChartDataLoader
   }
 
   @observe('runs', 'tag')

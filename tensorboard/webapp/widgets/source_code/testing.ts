@@ -18,7 +18,7 @@ limitations under the License.
  * code components.
  */
 
-import * as loadMonacoShim from './load_monaco_shim';
+import {MonacoShim} from './load_monaco_shim';
 
 export class FakeRange {
   constructor(
@@ -86,7 +86,7 @@ export function setUpMonacoFakes() {
     ).and.callThrough();
     windowWithRequireAndMonaco.monaco = fakes.fakeMonaco;
   }
-  spies.loadMonacoSpy = spyOn(loadMonacoShim, 'loadMonaco').and.callFake(
+  spies.loadMonacoSpy = spyOn(MonacoShim, 'loadMonaco').and.callFake(
     fakeLoadMonaco
   );
 }

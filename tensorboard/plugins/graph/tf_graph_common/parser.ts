@@ -63,7 +63,7 @@ export function fetchAndParseMetadata(path: string, tracker: ProgressTracker) {
       tracker,
       tb_debug.GraphDebugEventId.FETCH_METADATA_PBTXT_BYTES
     )
-    .then((arrayBuffer: ArrayBuffer) => {
+    .then((arrayBuffer: ArrayBuffer | null) => {
       return tf_graph_util.runAsyncPromiseTask(
         'Parsing metadata.pbtxt',
         60,
@@ -172,7 +172,7 @@ export function streamParse(
       ]);
       const file = new FileReader();
       file.onload = function (e: any) {
-        readChunk(remainder, e.target.result, offset + chunkSize);
+        readChunk(remainder!, e.target.result, offset + chunkSize);
       };
       file.readAsText(nextChunk);
     }
@@ -271,7 +271,7 @@ function parsePbtxtFile(
   let output: {
     [name: string]: any;
   } = {};
-  let stack = [];
+  let stack: {}[] = [];
   let path: string[] = [];
   let current: {
     [name: string]: any;
@@ -330,7 +330,7 @@ function parsePbtxtFile(
         current = newValue;
         break;
       case '}':
-        current = stack.pop();
+        current = stack.pop()!;
         path.pop();
         break;
       default:

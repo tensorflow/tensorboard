@@ -23,7 +23,7 @@ export abstract class TfGraphScene extends HTMLElement {
   maxMetanodeLabelLength: number;
   maxMetanodeLabelLengthLargeFont: number;
   maxMetanodeLabelLengthFontSize: number;
-  templateIndex: (name: string) => number;
+  templateIndex: (name: string) => number | null;
   colorBy: ColorBy;
   abstract fire(eventName: string, daat: any): void;
   abstract addNodeGroup(name: string, selection: Selection): void;

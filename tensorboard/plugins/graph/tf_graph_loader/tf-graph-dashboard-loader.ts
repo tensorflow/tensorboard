@@ -28,7 +28,7 @@ import * as tf_graph_controls from '../tf_graph_controls/tf-graph-controls';
 
 interface GraphRunTag {
   run: string;
-  tag?: string;
+  tag: string | null;
 }
 
 /**
@@ -149,7 +149,7 @@ class TfGraphDashboardLoader extends LegacyElementMixin(PolymerElement) {
             })
           : Promise.resolve();
         const params = new URLSearchParams();
-        params.set('tag', tag);
+        params.set('tag', tag!);
         params.set('run', run);
         const metadataPath = getRouter().pluginRoute(
           'graphs',
@@ -190,7 +190,7 @@ class TfGraphDashboardLoader extends LegacyElementMixin(PolymerElement) {
       .fetchAndConstructHierarchicalGraph(
         tracker,
         path,
-        pbTxtFile,
+        pbTxtFile !== undefined ? pbTxtFile : null,
         this.compatibilityProvider,
         this.hierarchyParams
       )
@@ -208,7 +208,7 @@ class TfGraphDashboardLoader extends LegacyElementMixin(PolymerElement) {
       return;
     }
     const target = (e as any).target as HTMLInputElement;
-    const file = target.files[0];
+    const file = target.files?.[0];
     if (!file) {
       return;
     }

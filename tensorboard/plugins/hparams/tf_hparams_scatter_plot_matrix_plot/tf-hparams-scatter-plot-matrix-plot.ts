@@ -84,7 +84,7 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
     type: Object,
     notify: true,
   })
-  selectedSessionGroup: object = null;
+  selectedSessionGroup: object = null!;
   // The session group represented by the marker "closest" to the mouse
   // pointer. If the closest session group distance is larger than a
   // threshold, this property will be null.
@@ -92,12 +92,12 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
     type: Object,
     notify: true,
   })
-  closestSessionGroup: object = null;
+  closestSessionGroup: object = null!;
   // The <div> element with id "container".
   @property({
     type: Object,
   })
-  _container: HTMLElement = null;
+  _container: HTMLElement = null!;
   // A D3 selection containing just the root <svg> element.
   @property({
     type: Object,
@@ -117,7 +117,7 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
   @property({
     type: Object,
   })
-  _brushedCellIndex: object = null;
+  _brushedCellIndex: object = null!;
   // The the active brush selection in the form
   // [[x0,y0],[x1,y1]] where the coordinates are relative to the cell
   // indexed by _brushedCellIndex. Set to null, if there is no active
@@ -125,7 +125,7 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
   @property({
     type: Object,
   })
-  _brushSelection: object = null;
+  _brushSelection: object = null!;
   ready() {
     super.ready();
 
@@ -149,8 +149,8 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
   }
   @observe('visibleSchema.*')
   _visibleSchemaChanged() {
-    this._brushedCellIndex = null;
-    this._brushSelection = null;
+    this._brushedCellIndex = null!;
+    this._brushSelection = null!;
     this._redraw();
   }
   @observe('options.*')
@@ -426,7 +426,7 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
     // ---------------------------------------------------------------------
     // Draw data point markers.
     // ---------------------------------------------------------------------
-    let colorScale = null;
+    let colorScale: any = null;
     if (_this.options.colorByColumnIndex !== undefined) {
       colorScale = d3
         .scaleLinear()
@@ -502,7 +502,7 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
         sessionGroupMarkersMap.set(sessionGroup, []);
       });
       markers.each(function (d) {
-        sessionGroupMarkersMap.get(d.sessionGroup).push(this);
+        sessionGroupMarkersMap.get(d.sessionGroup)?.push(this);
       });
       markers.each((d) => {
         const sessionGroupMarkers = sessionGroupMarkersMap.get(d.sessionGroup);
@@ -532,7 +532,7 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
     // (col, metric). Each quad tree datum is the corresponding marker's
     // element.
     function createCellQuadTree(col, metric) {
-      const data = [];
+      const data: any[] = [];
       cellMarkers[col][metric].each(function () {
         data.push(this);
       });
@@ -547,7 +547,7 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
     );
     // A d3-selection of the cell in 'cells' that has the active
     // brush selection, or null if the brush is not active.
-    let brushedCellG = null;
+    let brushedCellG: any = null;
     if (isBrushActive()) {
       brushedCellG = cells.filter((cellIndex) =>
         _.isEqual(cellIndex, _this._brushedCellIndex)
@@ -578,6 +578,7 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
             (elem) => !visibleMarkers.has(elem)
           )
         ) as any
+        // @ts-ignore TS2769: No overload matches this call. for markerColorFn
       ).attr('fill', markerColorFn);
       // Gray-out the no-longer visible markers.
       d3.selectAll(
@@ -652,13 +653,13 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
         // Nothing to do if selection hasn't changed.
         return;
       }
-      _this._brushSelection = brushSelection;
+      _this._brushSelection = brushSelection!;
       if (brushSelection !== null) {
         brushedCellG = d3.select(cellGNode);
         _this._brushedCellIndex = brushedCellG.datum();
       } else {
         brushedCellG = null;
-        _this._brushedCellIndex = null;
+        _this._brushedCellIndex = null!;
       }
       updateVisibleMarkers();
     }
@@ -691,11 +692,11 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
     // if the distance to the closest session group is greater than a
     // threshold. This won't get set until the first mouse movement over
     // a cell.
-    let closestMarkers = null;
+    let closestMarkers: any = null;
     // A d3-selection containing the nodes in markers representing the
     // markers of the currently selected session group or null if no
     // session group is selected.
-    let selectedMarkers = null;
+    let selectedMarkers: any = null;
     if (this.selectedSessionGroup !== null) {
       selectedMarkers = d3
         .selectAll(sessionGroupMarkersMap.get(this.selectedSessionGroup))
@@ -745,14 +746,14 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
           // sessionGroup.
           _this.closestSessionGroup = closestMarkers.datum().sessionGroup;
         } else {
-          _this.closestSessionGroup = null;
+          _this.closestSessionGroup = null!;
         }
       })
       .on('mouseleave', function ([col, metric]) {
         if (closestMarkers !== null) {
           closestMarkers.classed('closest-marker', false);
           closestMarkers = null;
-          _this.closestSessionGroup = null;
+          _this.closestSessionGroup = null!;
         }
       });
     // Finds a closest visible marker in the [col,metric] cell to the point

@@ -210,7 +210,7 @@ class TfHistogramDashboard extends LegacyElementMixin(PolymerElement) {
   }
 
   _reloadHistograms() {
-    this.root.querySelectorAll('tf-histogram-loader').forEach((histogram) => {
+    this.root?.querySelectorAll('tf-histogram-loader').forEach((histogram) => {
       (histogram as TfHistogramLoader).reload();
     });
   }

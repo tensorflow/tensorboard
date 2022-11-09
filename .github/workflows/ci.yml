@@ -22,8 +22,8 @@ on:
 env:
   # Keep this Bazel version in sync with the `versions.check` directive
   # in our WORKSPACE file.
-  BAZEL_VERSION: '4.0.0'
-  BAZEL_SHA256SUM: '7bee349a626281fc8b8d04a7a0b0358492712377400ab12533aeb39c2eb2b901'
+  BAZEL_VERSION: '4.2.2'
+  BAZEL_SHA256SUM: '11dea6c7cfd866ed520af19a6bb1d952f3e9f4ee60ffe84e63c0825d95cb5859'
   BUILDTOOLS_VERSION: '3.0.0'
   BUILDIFIER_SHA256SUM: 'e92a6793c7134c5431c58fbc34700664f101e5c9b1c1fcd93b97978e8b7f88db'
   BUILDOZER_SHA256SUM: '3d58a0b6972e4535718cdd6c12778170ea7382de7c75bc3728f5719437ffb84d'
@@ -31,7 +31,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     needs: lint-python-flake8 # fail fast in case of "undefined variable" errors
     strategy:
       fail-fast: false
@@ -135,11 +135,11 @@ jobs:
       fail-fast: false
       matrix:
         mode: ['native']
-        platform: ['ubuntu-18.04', 'macos-11']
+        platform: ['ubuntu-20.04', 'macos-11']
         rust_version: ['1.58.1']
         include:
           - mode: 'universal'
-            platform: 'ubuntu-18.04'
+            platform: 'ubuntu-20.04'
             rust_version: '1.58.1'
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
@@ -207,7 +207,7 @@ jobs:
           path: /tmp/pip_package/*
 
   lint-python-flake8:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
@@ -232,7 +232,7 @@ jobs:
         run: flake8 . --count --select=E9,F63,F7,F82,F401 --show-source --statistics
 
   lint-python-yaml-docs:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
       - uses: actions/setup-python@152ba7c4dd6521b8e9c93f72d362ce03bf6c4f20
@@ -256,7 +256,7 @@ jobs:
         run: git ls-files -z '*.ipynb' | xargs -0 python3 -m tensorflow_docs.tools.nbfmt --test
 
   lint-rust:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         rust_version: ['1.58.1']
@@ -300,7 +300,7 @@ jobs:
           git diff --staged --exit-code
 
   lint-frontend:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
       - uses: actions/setup-node@56899e050abffc08c2b3b61f3ec6a79a9dc3223d
@@ -331,7 +331,7 @@ jobs:
           ! git grep -E '@npm//numeric' 'tensorboard/*/BUILD' ':!tensorboard/webapp/third_party/**'
 
   lint-misc: # build, protos, etc.
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
       - name: 'Set up Buildifier'

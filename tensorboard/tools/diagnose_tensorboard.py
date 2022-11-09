@@ -22,7 +22,7 @@ run TensorBoard. Read the output and follow the directions.
 
 # This script may only depend on the Python standard library. It is not
 # built with Bazel and should not assume any third-party dependencies.
-import collections
+import dataclasses
 import errno
 import functools
 import hashlib
@@ -45,14 +45,20 @@ import traceback
 CHECKS = []
 
 
-# A suggestion to the end user.
-#   headline (str): A short description, like "Turn it off and on
-#     again". Should be imperative with no trailing punctuation. May
-#     contain inline Markdown.
-#   description (str): A full enumeration of the steps that the user
-#     should take to accept the suggestion. Within this string, prose
-#     should be formatted with `reflow`. May contain Markdown.
-Suggestion = collections.namedtuple("Suggestion", ("headline", "description"))
+@dataclasses.dataclass(frozen=True)
+class Suggestion:
+    """A suggestion to the end user.
+
+    Attributes:
+      headline: A short description, like "Turn it off and on again". Should be
+        imperative with no trailing punctuation. May contain inline Markdown.
+      description: A full enumeration of the steps that the user should take to
+        accept the suggestion. Within this string, prose should be formatted
+        with `reflow`. May contain Markdown.
+    """
+
+    headline: str
+    description: str
 
 
 def check(fn):

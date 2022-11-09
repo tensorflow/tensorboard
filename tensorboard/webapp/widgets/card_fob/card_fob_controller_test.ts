@@ -35,12 +35,16 @@ import {
       [timeSelection]="timeSelection"
       [startStepAxisPosition]="getAxisPositionFromStartStep()"
       [endStepAxisPosition]="getAxisPositionFromEndStep()"
+      [prospectiveStepAxisPosition]="getAxisPositionFromProspectiveStep()"
       [highestStep]="highestStep"
       [lowestStep]="lowestStep"
       [cardFobHelper]="cardFobHelper"
       [showExtendedLine]="showExtendedLine"
+      [isProspectiveFobFeatureEnabled]="isProspectiveFobFeatureEnabled"
+      [prospectiveStep]="prospectiveStep"
       (onTimeSelectionChanged)="onTimeSelectionChanged($event)"
       (onTimeSelectionToggled)="onTimeSelectionToggled()"
+      (onPrespectiveStepChanged)="onPrespectiveStepChanged($event)"
     ></card-fob-controller>
   `,
 })
@@ -56,9 +60,13 @@ class TestableComponent {
   @Input() lowestStep!: number;
   @Input() getAxisPositionFromStartStep!: () => number;
   @Input() getAxisPositionFromEndStep!: () => number;
+  @Input() getAxisPositionFromProspectiveStep!: () => number;
+  @Input() isProspectiveFobFeatureEnabled!: Boolean;
+  @Input() prospectiveStep!: number | null;
 
   @Input() onTimeSelectionChanged!: (newTimeSelection: TimeSelection) => void;
   @Input() onTimeSelectionToggled!: () => void;
+  @Input() onPrespectiveStepChanged!: (step: number | null) => void;
 }
 
 describe('card_fob_controller', () => {
@@ -68,7 +76,10 @@ describe('card_fob_controller', () => {
   let getStepLowerSpy: jasmine.Spy;
   let getAxisPositionFromStartStepSpy: jasmine.Spy;
   let getAxisPositionFromEndStepSpy: jasmine.Spy;
+  let getAxisPositionFromProspectiveStepSpy: jasmine.Spy;
   let cardFobHelper: CardFobGetStepFromPositionHelper;
+  let onPrespectiveStepChangedSpy: jasmine.Spy;
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [
@@ -85,6 +96,8 @@ describe('card_fob_controller', () => {
     timeSelection: TimeSelection;
     showExtendedLine?: Boolean;
     steps?: number[];
+    isProspectiveFobFeatureEnabled?: Boolean;
+    prospectiveStep?: number | null;
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
 
@@ -98,6 +111,7 @@ describe('card_fob_controller', () => {
     getStepLowerSpy = jasmine.createSpy();
     getAxisPositionFromStartStepSpy = jasmine.createSpy();
     getAxisPositionFromEndStepSpy = jasmine.createSpy();
+    getAxisPositionFromProspectiveStepSpy = jasmine.createSpy();
     getStepHigherSpy.and.callFake((step: number) => {
       return step;
     });
@@ -112,6 +126,11 @@ describe('card_fob_controller', () => {
         ? fixture.componentInstance.timeSelection.end.step
         : null;
     });
+    getAxisPositionFromProspectiveStepSpy.and.callFake(() => {
+      return fixture.componentInstance.prospectiveStep
+        ? fixture.componentInstance.prospectiveStep
+        : null;
+    });
     cardFobHelper = {
       getStepHigherThanAxisPosition: getStepHigherSpy,
       getStepLowerThanAxisPosition: getStepLowerSpy,
@@ -121,6 +140,8 @@ describe('card_fob_controller', () => {
       getAxisPositionFromStartStepSpy;
     fixture.componentInstance.getAxisPositionFromEndStep =
       getAxisPositionFromEndStepSpy;
+    fixture.componentInstance.getAxisPositionFromProspectiveStep =
+      getAxisPositionFromProspectiveStepSpy;
     fixture.componentInstance.highestStep = 4;
     fixture.componentInstance.lowestStep = 0;
     fixture.componentInstance.cardFobHelper = cardFobHelper;
@@ -133,6 +154,10 @@ describe('card_fob_controller', () => {
     fixture.componentInstance.showExtendedLine =
       input.showExtendedLine ?? false;
 
+    fixture.componentInstance.isProspectiveFobFeatureEnabled =
+      input.isProspectiveFobFeatureEnabled ?? false;
+    fixture.componentInstance.prospectiveStep = input.prospectiveStep ?? null;
+
     onTimeSelectionChanged = jasmine.createSpy();
     fixture.componentInstance.onTimeSelectionChanged = onTimeSelectionChanged;
     onTimeSelectionChanged.and.callFake(
@@ -144,6 +169,14 @@ describe('card_fob_controller', () => {
 
     onTimeSelectionToggled = jasmine.createSpy();
     fixture.componentInstance.onTimeSelectionToggled = onTimeSelectionToggled;
+
+    onPrespectiveStepChangedSpy = jasmine.createSpy();
+    fixture.componentInstance.onPrespectiveStepChanged =
+      onPrespectiveStepChangedSpy;
+    onPrespectiveStepChangedSpy.and.callFake((step: number | null) => {
+      fixture.componentInstance.prospectiveStep = step;
+    });
+
     return fixture;
   }
 
@@ -315,6 +348,34 @@ describe('card_fob_controller', () => {
         },
         affordance: TimeSelectionAffordance.FOB,
       });
+    });
+
+    it('does not fire event when time selection does not change', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 2}, end: {step: 3}},
+      });
+      fixture.detectChanges();
+      const fobController = fixture.componentInstance.fobController;
+
+      fobController.startDrag(
+        Fob.END,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
+      expect((fobController as any).currentDraggingFob).toEqual(Fob.END);
+
+      const fakeEvent = new MouseEvent('mousemove', {
+        clientY: 0,
+        movementY: 0,
+      });
+      fobController.mouseMove(fakeEvent);
+      expect((fobController as any).currentDraggingFob).toEqual(Fob.END);
+
+      fixture.detectChanges();
+      fobController.stopDrag();
+      fixture.detectChanges();
+
+      expect(onTimeSelectionChanged).not.toHaveBeenCalled();
     });
   });
 
@@ -723,13 +784,7 @@ describe('card_fob_controller', () => {
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(2);
-      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
-        timeSelection: {
-          start: {step: 2},
-          end: null,
-        },
-        affordance: TimeSelectionAffordance.FOB,
-      });
+      expect(onTimeSelectionChanged).not.toHaveBeenCalled();
     });
 
     it('does not call getStepLowerThanMousePosition or getStepHigherThanMousePosition when mouse is dragging right but, is left of the fob', () => {
@@ -762,13 +817,7 @@ describe('card_fob_controller', () => {
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(4);
-      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
-        timeSelection: {
-          start: {step: 4},
-          end: null,
-        },
-        affordance: TimeSelectionAffordance.FOB,
-      });
+      expect(onTimeSelectionChanged).not.toHaveBeenCalled();
     });
 
     it('does not move the start fob or call call getStepLowerThanMousePosition or getStepHigherThanMousePosition when mouse is dragging right but, the fob is already on the final step', () => {
@@ -1250,6 +1299,102 @@ describe('card_fob_controller', () => {
           end: null,
         },
         affordance: TimeSelectionAffordance.FOB_REMOVED,
+      });
+    });
+  });
+
+  describe('prospective fob', () => {
+    it('renders when feature flag is enabled and the step is not null', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 4}, end: null},
+        isProspectiveFobFeatureEnabled: true,
+        prospectiveStep: 2,
+      });
+      fixture.detectChanges();
+
+      const fobController = fixture.componentInstance.fobController;
+      const prospectiveFob = fobController.prospectiveFobWrapper.nativeElement;
+
+      expect(prospectiveFob).toBeTruthy();
+    });
+
+    it('does not render when feature flag is disenabled', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 4}, end: null},
+        isProspectiveFobFeatureEnabled: false,
+        prospectiveStep: 2,
+      });
+      fixture.detectChanges();
+
+      expect(
+        fixture.componentInstance.fobController.prospectiveFobWrapper
+      ).toBeUndefined();
+    });
+
+    it('does not render when step is null', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 4}, end: null},
+        isProspectiveFobFeatureEnabled: true,
+        prospectiveStep: null,
+      });
+      fixture.detectChanges();
+
+      expect(
+        fixture.componentInstance.fobController.prospectiveFobWrapper
+      ).toBeUndefined();
+    });
+
+    it('sets horizontal position based on prospective step', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 4}, end: null},
+        axisDirection: AxisDirection.HORIZONTAL,
+        isProspectiveFobFeatureEnabled: true,
+        prospectiveStep: 2,
+      });
+      fixture.detectChanges();
+
+      const fobController = fixture.componentInstance.fobController;
+      const prospectiveFobLeftPosition =
+        fobController.prospectiveFobWrapper.nativeElement.getBoundingClientRect()
+          .left;
+
+      expect(prospectiveFobLeftPosition).toEqual(2);
+    });
+
+    it('sets vertical position based on prospective step', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 4}, end: null},
+        axisDirection: AxisDirection.VERTICAL,
+        isProspectiveFobFeatureEnabled: true,
+        prospectiveStep: 2,
+      });
+      fixture.detectChanges();
+
+      const fobController = fixture.componentInstance.fobController;
+      const prospectiveFobTopPosition =
+        fobController.prospectiveFobWrapper.nativeElement.getBoundingClientRect()
+          .top;
+
+      expect(prospectiveFobTopPosition).toEqual(2);
+    });
+
+    describe('prospective area', () => {
+      it('emits null step on mouseleave', () => {
+        const fixture = createComponent({
+          timeSelection: {start: {step: 4}, end: null},
+          axisDirection: AxisDirection.HORIZONTAL,
+          isProspectiveFobFeatureEnabled: true,
+          prospectiveStep: 2,
+        });
+        fixture.detectChanges();
+
+        const hoverArea = fixture.debugElement.query(
+          By.css('.prospective-fob-area')
+        );
+        hoverArea.triggerEventHandler('mouseleave', {});
+        fixture.detectChanges();
+
+        expect(onPrespectiveStepChangedSpy).toHaveBeenCalledWith(null);
       });
     });
   });

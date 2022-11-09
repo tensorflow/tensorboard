@@ -81,6 +81,10 @@ class EventFileWriterFSSpecTest(tb_test.TestCase):
         r.GetNext()
         s = event_pb2.Event.FromString(r.record())
         self.assertEqual(s.file_version, "brain.Event:2")
+        self.assertEqual(
+            s.source_metadata.writer,
+            "tensorboard.summary.writer.event_file_writer",
+        )
 
 
 if __name__ == "__main__":

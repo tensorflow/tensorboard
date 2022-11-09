@@ -436,10 +436,19 @@ const reducer = createReducer(
 
     const isSettingsPaneOpen =
       partialSettings.timeSeriesSettingsPaneOpened ?? state.isSettingsPaneOpen;
+    const stepSelectorEnabled =
+      partialSettings.stepSelectorEnabled ?? state.stepSelectorEnabled;
+    const rangeSelectionEnabled =
+      partialSettings.rangeSelectionEnabled ?? state.rangeSelectionEnabled;
+    const linkedTimeEnabled =
+      partialSettings.linkedTimeEnabled ?? state.linkedTimeEnabled;
 
     return {
       ...state,
       isSettingsPaneOpen,
+      stepSelectorEnabled,
+      rangeSelectionEnabled,
+      linkedTimeEnabled,
       settings: {
         ...state.settings,
         ...metricsSettings,
@@ -981,15 +990,28 @@ const reducer = createReducer(
   on(actions.rangeSelectionToggled, (state) => {
     const nextRangeSelectionEnabled = !state.rangeSelectionEnabled;
     let nextStepSelectorEnabled = state.stepSelectorEnabled;
+    let linkedTimeSelection = state.linkedTimeSelection;
 
     if (nextRangeSelectionEnabled) {
       nextStepSelectorEnabled = nextRangeSelectionEnabled;
+      if (!linkedTimeSelection) {
+        linkedTimeSelection = {
+          start: {step: state.stepMinMax.min},
+          end: {step: state.stepMinMax.max},
+        };
+      }
+      if (!linkedTimeSelection.end) {
+        linkedTimeSelection = {
+          ...linkedTimeSelection,
+          end: {step: state.stepMinMax.max},
+        };
+      }
     }
-
     return {
       ...state,
       stepSelectorEnabled: nextStepSelectorEnabled,
       rangeSelectionEnabled: nextRangeSelectionEnabled,
+      linkedTimeSelection,
     };
   }),
   on(actions.timeSelectionChanged, (state, change) => {
@@ -1028,14 +1050,16 @@ const reducer = createReducer(
   }),
   on(actions.stepSelectorToggled, (state) => {
     const nextStepSelectorEnabled = !state.stepSelectorEnabled;
-    const nextLinkedTimeEnabled = nextStepSelectorEnabled
-      ? state.linkedTimeEnabled
-      : nextStepSelectorEnabled;
+    const nextLinkedTimeEnabled =
+      nextStepSelectorEnabled && state.linkedTimeEnabled;
+    const nextRangeSelectionEnabled =
+      nextStepSelectorEnabled && state.rangeSelectionEnabled;
 
     return {
       ...state,
       linkedTimeEnabled: nextLinkedTimeEnabled,
       stepSelectorEnabled: nextStepSelectorEnabled,
+      rangeSelectionEnabled: nextRangeSelectionEnabled,
     };
   }),
   on(actions.timeSelectionCleared, (state) => {

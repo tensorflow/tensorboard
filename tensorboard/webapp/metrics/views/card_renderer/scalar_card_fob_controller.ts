@@ -24,6 +24,7 @@ import {
   TimeSelectionAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
 import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
+import {MinMaxStep} from './scalar_card_types';
 
 @Component({
   selector: 'scalar-card-fob-controller',
@@ -33,10 +34,14 @@ import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
       [timeSelection]="timeSelection"
       [startStepAxisPosition]="getAxisPositionFromStartStep()"
       [endStepAxisPosition]="getAxisPositionFromEndStep()"
+      [prospectiveStepAxisPosition]="getAxisPositionFromProspectiveStep()"
       [highestStep]="getHighestStep()"
       [lowestStep]="getLowestStep()"
+      [prospectiveStep]="prospectiveStep"
+      [isProspectiveFobFeatureEnabled]="isProspectiveFobFeatureEnabled"
       [cardFobHelper]="cardFobHelper"
       [showExtendedLine]="true"
+      (onPrespectiveStepChanged)="onPrespectiveStepChanged($event)"
       (onTimeSelectionChanged)="onTimeSelectionChanged.emit($event)"
       (onTimeSelectionToggled)="onTimeSelectionToggled.emit($event)"
     ></card-fob-controller>
@@ -45,10 +50,12 @@ import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ScalarCardFobController {
-  @Input() timeSelection!: TimeSelection;
+  @Input() timeSelection?: TimeSelection;
   @Input() scale!: Scale;
-  @Input() minMax!: [number, number];
+  @Input() minMaxHorizontalViewExtend!: [number, number];
+  @Input() minMaxStep!: MinMaxStep;
   @Input() axisSize!: number;
+  @Input() isProspectiveFobFeatureEnabled: Boolean = false;
 
   @Output() onTimeSelectionChanged = new EventEmitter<{
     timeSelection: TimeSelection;
@@ -62,34 +69,50 @@ export class ScalarCardFobController {
       this.getStepHigherThanAxisPosition.bind(this),
     getStepLowerThanAxisPosition: this.getStepLowerThanAxisPosition.bind(this),
   };
+  prospectiveStep: number | null = null;
 
   getAxisPositionFromStartStep() {
+    if (!this.timeSelection) {
+      return '';
+    }
     return this.scale.forward(
-      this.minMax,
+      this.minMaxHorizontalViewExtend,
       [0, this.axisSize],
       this.timeSelection.start.step
     );
   }
 
   getAxisPositionFromEndStep() {
-    if (this.timeSelection.end === null) {
+    if (!this.timeSelection?.end) {
       return null;
     }
     return this.scale.forward(
-      this.minMax,
+      this.minMaxHorizontalViewExtend,
       [0, this.axisSize],
-      this.timeSelection.end.step
+      this.timeSelection?.end.step ?? this.minMaxStep.maxStep
     );
   }
 
+  getAxisPositionFromProspectiveStep() {
+    if (this.prospectiveStep === null) return null;
+
+    return this.scale.forward(
+      this.minMaxHorizontalViewExtend,
+      [0, this.axisSize],
+      this.prospectiveStep
+    );
+  }
+
+  onPrespectiveStepChanged(step: number | null) {
+    this.prospectiveStep = step;
+  }
+
   getHighestStep(): number {
-    const minMax = this.minMax;
-    return Math.floor(minMax[0] < minMax[1] ? minMax[1] : minMax[0]);
+    return this.minMaxStep.maxStep;
   }
 
   getLowestStep(): number {
-    const minMax = this.minMax;
-    return Math.ceil(minMax[0] < minMax[1] ? minMax[0] : minMax[1]);
+    return this.minMaxStep.minStep;
   }
 
   getStepHigherThanAxisPosition(position: number): number {
@@ -113,7 +136,11 @@ export class ScalarCardFobController {
    */
   getStepAtMousePostion(position: number): number {
     const stepAtMouse = Math.round(
-      this.scale.reverse(this.minMax, [0, this.axisSize], position)
+      this.scale.reverse(
+        this.minMaxHorizontalViewExtend,
+        [0, this.axisSize],
+        position
+      )
     );
     if (stepAtMouse > this.getHighestStep()) {
       return this.getHighestStep();

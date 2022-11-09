@@ -415,4 +415,33 @@ describe('feature_flag_selectors', () => {
       expect(selectors.getIsDataTableEnabled(state)).toEqual(true);
     });
   });
+
+  describe('#getIsLinkedTimeProspectiveFobEnabled', () => {
+    it('returns the proper value', () => {
+      let state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            enabledProspectiveFob: false,
+          }),
+        })
+      );
+      expect(selectors.getIsLinkedTimeProspectiveFobEnabled(state)).toEqual(
+        false
+      );
+
+      state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            enabledProspectiveFob: false,
+          }),
+          flagOverrides: {
+            enabledProspectiveFob: true,
+          },
+        })
+      );
+      expect(selectors.getIsLinkedTimeProspectiveFobEnabled(state)).toEqual(
+        true
+      );
+    });
+  });
 });

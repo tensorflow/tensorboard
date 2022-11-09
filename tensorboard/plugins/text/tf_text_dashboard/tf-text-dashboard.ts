@@ -183,7 +183,7 @@ class TfTextDashboard extends LegacyElementMixin(PolymerElement) {
     });
   }
   _reloadTexts() {
-    this.root.querySelectorAll('tf-text-loader').forEach((textLoader) => {
+    this.root?.querySelectorAll('tf-text-loader').forEach((textLoader) => {
       (textLoader as any).reload();
     });
   }

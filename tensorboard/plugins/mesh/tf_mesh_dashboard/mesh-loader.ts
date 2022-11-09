@@ -218,7 +218,7 @@ class TfMeshLoaderImpl
     }
     if (!this._meshViewerAttached) {
       // Mesh viewer should be added to the dom once.
-      this.shadowRoot.appendChild(this._meshViewer.getRenderer().domElement);
+      this.shadowRoot?.appendChild(this._meshViewer.getRenderer().domElement);
       this._meshViewerAttached = true;
     }
   }

@@ -25,7 +25,7 @@ load("@bazel_skylib//lib:versions.bzl", "versions")
 
 # Keep this version in sync with:
 #  * The BAZEL environment variable defined in .github/workflows/ci.yml, which is used for CI and nightly builds.
-versions.check(minimum_bazel_version = "4.0.0")
+versions.check(minimum_bazel_version = "4.2.2")
 
 http_archive(
     name = "io_bazel_rules_webtesting",
@@ -64,27 +64,28 @@ rules_closure_dependencies(
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "d63ecec7192394f5cc4ad95a115f8a6c9de55c60d56c1f08da79c306355e4654",
+    sha256 = "c29944ba9b0b430aadcaf3bf2570fece6fc5ebfb76df145c6cdad40d65c20811",
     urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_nodejs/releases/download/4.6.1/rules_nodejs-4.6.1.tar.gz",
-        "https://github.com/bazelbuild/rules_nodejs/releases/download/4.6.1/rules_nodejs-4.6.1.tar.gz",
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_nodejs/releases/download/5.7.0/rules_nodejs-5.7.0.tar.gz",
+        "https://github.com/bazelbuild/rules_nodejs/releases/download/5.7.0/rules_nodejs-5.7.0.tar.gz",
     ],
 )
 
-load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "yarn_install")
+load("@build_bazel_rules_nodejs//:repositories.bzl", "build_bazel_rules_nodejs_dependencies")
 
-node_repositories(
-    node_version = "12.21.0",
-)
+build_bazel_rules_nodejs_dependencies()
+
+load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
 
 yarn_install(
     name = "npm",
+    data = ["//patches:@bazel+concatjs+5.7.0.patch"],
+    # "Some rules only work by referencing labels nested inside npm packages
+    # and therefore require turning off exports_directories_only."
+    # This includes "ts_library".
+    # See: https://github.com/bazelbuild/rules_nodejs/wiki/Migrating-to-5.0#exports_directories_only
+    exports_directories_only = False,
     package_json = "//:package.json",
-    # Opt out of symlinking local node_modules folder into bazel internal
-    # directory.  Symlinking is incompatible with our toolchain which often
-    # removes source directory without `bazel clean` which creates broken
-    # symlink into node_modules folder.
-    symlink_node_modules = False,
     yarn_lock = "//:yarn.lock",
 )
 
@@ -94,13 +95,18 @@ load("@build_bazel_rules_nodejs//toolchains/esbuild:esbuild_repositories.bzl", "
 
 esbuild_repositories(npm_repository = "npm")
 
+# rules_sass release information is difficult to find but it does seem to
+# regularly release with same cadence and version as core sass.
+# We typically upgrade this library whenever we upgrade rules_nodejs.
+#
+# rules_sass 1.55.0: https://github.com/bazelbuild/rules_sass/tree/1.55.0
 http_archive(
     name = "io_bazel_rules_sass",
-    sha256 = "ee6d527550d42af182673c3718da98bb9205cabdeb08eacc0e3767fa3f2b051a",
-    strip_prefix = "rules_sass-1.49.11",
+    sha256 = "1ea0103fa6adcb7d43ff26373b5082efe1d4b2e09c4f34f8a8f8b351e9a8a9b0",
+    strip_prefix = "rules_sass-1.55.0",
     urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_sass/archive/1.49.11.zip",
-        "https://github.com/bazelbuild/rules_sass/archive/1.49.11.zip",
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_sass/archive/1.55.0.zip",
+        "https://github.com/bazelbuild/rules_sass/archive/1.55.0.zip",
     ],
 )
 

@@ -67,6 +67,9 @@ class _FakeAccumulator(object):
     def FirstEventTimestamp(self):
         return 0
 
+    def GetSourceWriter(self):
+        return "%s_writer" % self._path
+
     def _TagHelper(self, tag_name, enum):
         if tag_name not in self.Tags()[enum]:
             raise KeyError
@@ -150,6 +153,13 @@ class EventMultiplexerTest(tf.test.TestCase):
         x.Reload()
         self.assertTrue(x.GetAccumulator("run1").reload_called)
         self.assertTrue(x.GetAccumulator("run2").reload_called)
+
+    def testGetSourceWriter(self):
+        x = event_multiplexer.EventMultiplexer(
+            {"run1": "path1", "run2": "path2"}
+        )
+        self.assertEqual(x.GetSourceWriter("run1"), "path1_writer")
+        self.assertEqual(x.GetSourceWriter("run2"), "path2_writer")
 
     def testScalars(self):
         """Tests Scalars function returns suitable values."""

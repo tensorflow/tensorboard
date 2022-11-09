@@ -177,18 +177,18 @@ export function getSearchPredicate(
 export function runAsyncTask<T>(
   message: string,
   task: () => T,
-  msgId: string = null,
+  msgId: string | null = null,
   taskDelay = TASK_DELAY_MS
 ): Promise<T> {
   let autoClear = msgId == null;
-  msgId = logging.setModalMessage(message, msgId);
+  msgId = logging.setModalMessage(message, msgId!);
   return new Promise<T>((resolve, reject) => {
     setTimeout(() => {
       try {
         let result = task();
         // Clearing the old message.
         if (autoClear) {
-          logging.setModalMessage(null, msgId);
+          logging.setModalMessage(null!, msgId!);
         }
         resolve(result);
       } catch (ex) {

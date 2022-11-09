@@ -113,7 +113,6 @@ limitations under the License.
     [useDarkMode]="useDarkMode"
     (onViewBoxOverridden)="isViewBoxOverridden = $event"
     (viewBoxChanged)="onLineChartZoom.emit($event)"
-    [customVisTemplate]="lineChartCustomVis"
     [customChartOverlayTemplate]="lineChartCustomXAxisVis"
   ></line-chart>
   <ng-template
@@ -169,13 +168,12 @@ limitations under the License.
     </table>
   </ng-template>
 </div>
-<ng-container *ngIf="inTimeSelectionMode()">
+<ng-container *ngIf="showDataTable()">
   <div class="data-table-container">
     <scalar-card-data-table
       [chartMetadataMap]="chartMetadataMap"
       [dataSeries]="dataSeries"
-      [linkedTimeSelection]="linkedTimeSelection"
-      [stepSelectorTimeSelection]="stepSelectorTimeSelection"
+      [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection"
       [dataHeaders]="dataHeaders"
       [sortingInfo]="sortingInfo"
       (sortDataBy)="sortDataBy($event)"
@@ -184,56 +182,19 @@ limitations under the License.
   </div>
 </ng-container>
 <ng-template
-  #lineChartCustomVis
-  let-viewExtent="viewExtent"
-  let-domDim="domDimension"
-  let-xScale="xScale"
->
-  <ng-container *ngIf="linkedTimeSelection">
-    <div
-      [ngClass]="{
-        'out-of-selected-time': true,
-        start: true,
-        range: !!linkedTimeSelection.endStep
-      }"
-      [style.right]="
-        xScale.forward(
-          viewExtent.x,
-          [domDim.width, 0],
-          linkedTimeSelection.startStep
-        ) + 'px'
-      "
-    ></div>
-    <div
-      *ngIf="linkedTimeSelection.endStep"
-      [ngClass]="{
-        'out-of-selected-time': true,
-        end: true,
-        range: true
-      }"
-      [style.left]="
-        xScale.forward(
-          viewExtent.x,
-          [0, domDim.width],
-          linkedTimeSelection.endStep
-        ) + 'px'
-      "
-    ></div>
-  </ng-container>
-</ng-template>
-
-<ng-template
   #lineChartCustomXAxisVis
   let-viewExtent="viewExtent"
   let-domDim="domDimension"
   let-xScale="xScale"
 >
-  <ng-container *ngIf="inTimeSelectionMode()">
+  <ng-container *ngIf="showFobController()">
     <scalar-card-fob-controller
-      [timeSelection]="getTimeSelection()"
+      [timeSelection]="stepOrLinkedTimeSelection"
       [scale]="xScale"
-      [minMax]="viewExtent.x"
+      [minMaxHorizontalViewExtend]="viewExtent.x"
+      [minMaxStep]="minMaxStep"
       [axisSize]="domDim.width"
+      [isProspectiveFobFeatureEnabled]="isProspectiveFobFeatureEnabled"
       (onTimeSelectionChanged)="onTimeSelectionChanged.emit($event)"
       (onTimeSelectionToggled)="onFobRemoved()"
     ></scalar-card-fob-controller>

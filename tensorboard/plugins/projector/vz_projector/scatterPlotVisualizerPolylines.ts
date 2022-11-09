@@ -72,7 +72,7 @@ export class ScatterPlotVisualizerPolylines implements ScatterPlotVisualizer {
       this.scene.remove(this.polylines[i]);
       this.polylines[i].geometry.dispose();
     }
-    this.polylines = null;
+    this.polylines = null!;
     this.polylinePositionBuffer = {};
     this.polylineColorBuffer = {};
   }

@@ -16,7 +16,7 @@
 
 
 import base64
-import collections
+import dataclasses
 import datetime
 import errno
 import json
@@ -24,56 +24,37 @@ import os
 import subprocess
 import tempfile
 import time
+import typing
 
+from typing import Optional
 
 from tensorboard import version
 from tensorboard.util import tb_logging
 
 
-# Type descriptors for `TensorBoardInfo` fields.
-#
-# We represent timestamps as int-seconds-since-epoch rather than
-# datetime objects to work around a bug in Python on Windows. See:
-# https://github.com/tensorflow/tensorboard/issues/2017.
-_FieldType = collections.namedtuple(
-    "_FieldType",
-    (
-        "serialized_type",
-        "runtime_type",
-        "serialize",
-        "deserialize",
-    ),
-)
-_type_int = _FieldType(
-    serialized_type=int,
-    runtime_type=int,
-    serialize=lambda n: n,
-    deserialize=lambda n: n,
-)
-_type_str = _FieldType(
-    serialized_type=str,  # `json.loads` always gives Unicode
-    runtime_type=str,
-    serialize=str,
-    deserialize=str,
-)
+@dataclasses.dataclass(frozen=True)
+class TensorBoardInfo:
+    """Holds the information about a running TensorBoard instance.
 
-# Information about a running TensorBoard instance.
-_TENSORBOARD_INFO_FIELDS = collections.OrderedDict(
-    (
-        ("version", _type_str),
-        ("start_time", _type_int),  # seconds since epoch
-        ("pid", _type_int),
-        ("port", _type_int),
-        ("path_prefix", _type_str),  # may be empty
-        ("logdir", _type_str),  # may be empty
-        ("db", _type_str),  # may be empty
-        ("cache_key", _type_str),  # opaque, as given by `cache_key` below
-    )
-)
-TensorBoardInfo = collections.namedtuple(
-    "TensorBoardInfo",
-    _TENSORBOARD_INFO_FIELDS,
-)
+    Attributes:
+      version: Version of the running TensorBoard.
+      start_time: Seconds since epoch.
+      pid: ID of the process running TensorBoard.
+      port: Port on which TensorBoard is running.
+      path_prefix: Relative prefix to the path, may be empty.
+      logdir: Data location used by the TensorBoard server, may be empty.
+      db: Database connection used by the TensorBoard server, may be empty.
+      cache_key: Opaque, as given by `cache_key` below.
+    """
+
+    version: str
+    start_time: int
+    pid: int
+    port: int
+    path_prefix: str
+    logdir: str
+    db: str
+    cache_key: str
 
 
 def data_source_from_info(info):
@@ -107,22 +88,19 @@ def _info_to_string(info):
     Returns:
       A string representation of the provided `TensorBoardInfo`.
     """
-    for key in _TENSORBOARD_INFO_FIELDS:
-        field_type = _TENSORBOARD_INFO_FIELDS[key]
-        if not isinstance(getattr(info, key), field_type.runtime_type):
+    field_name_to_type = typing.get_type_hints(TensorBoardInfo)
+    for key, field_type in field_name_to_type.items():
+        if not isinstance(getattr(info, key), field_type):
             raise ValueError(
                 "expected %r of type %s, but found: %r"
-                % (key, field_type.runtime_type, getattr(info, key))
+                % (key, field_type, getattr(info, key))
             )
     if info.version != version.VERSION:
         raise ValueError(
             "expected 'version' to be %r, but found: %r"
             % (version.VERSION, info.version)
         )
-    json_value = {
-        k: _TENSORBOARD_INFO_FIELDS[k].serialize(getattr(info, k))
-        for k in _TENSORBOARD_INFO_FIELDS
-    }
+    json_value = dataclasses.asdict(info)
     return json.dumps(json_value, sort_keys=True, indent=4)
 
 
@@ -140,14 +118,14 @@ def _info_from_string(info_string):
       ValueError: If the provided string is not valid JSON, or if it is
         missing any required fields, or if any field is of incorrect type.
     """
-
+    field_name_to_type = typing.get_type_hints(TensorBoardInfo)
     try:
         json_value = json.loads(info_string)
     except ValueError:
         raise ValueError("invalid JSON: %r" % (info_string,))
     if not isinstance(json_value, dict):
         raise ValueError("not a JSON object: %r" % (json_value,))
-    expected_keys = frozenset(_TENSORBOARD_INFO_FIELDS)
+    expected_keys = frozenset(field_name_to_type.keys())
     actual_keys = frozenset(json_value)
     missing_keys = expected_keys - actual_keys
     if missing_keys:
@@ -158,14 +136,13 @@ def _info_from_string(info_string):
 
     # Validate and deserialize fields.
     fields = {}
-    for key in _TENSORBOARD_INFO_FIELDS:
-        field_type = _TENSORBOARD_INFO_FIELDS[key]
-        if not isinstance(json_value[key], field_type.serialized_type):
+    for key, field_type in field_name_to_type.items():
+        if not isinstance(json_value[key], field_type):
             raise ValueError(
                 "expected %r of type %s, but found: %r"
-                % (key, field_type.serialized_type, json_value[key])
+                % (key, field_type, json_value[key])
             )
-        fields[key] = field_type.deserialize(json_value[key])
+        fields[key] = json_value[key]
 
     return TensorBoardInfo(**fields)
 
@@ -325,50 +302,87 @@ def get_all():
     return results
 
 
-# The following five types enumerate the possible return values of the
-# `start` function.
+@dataclasses.dataclass(frozen=True)
+class StartReused:
+    """Possible return value of the `start` function.
 
-# Indicates that a call to `start` was compatible with an existing
-# TensorBoard process, which can be reused according to the provided
-# info.
-StartReused = collections.namedtuple("StartReused", ("info",))
+    Indicates that a call to `start` was compatible with an existing
+    TensorBoard process, which can be reused according to the provided
+    info.
 
-# Indicates that a call to `start` successfully launched a new
-# TensorBoard process, which is available with the provided info.
-StartLaunched = collections.namedtuple("StartLaunched", ("info",))
+    Attributes:
+      info: A `TensorBoardInfo` object.
+    """
 
-# Indicates that a call to `start` tried to launch a new TensorBoard
-# instance, but the subprocess exited with the given exit code and
-# output streams. (If the contents of the output streams are no longer
-# available---e.g., because the user has emptied /tmp/---then the
-# corresponding values will be `None`.)
-StartFailed = collections.namedtuple(
-    "StartFailed",
-    (
-        "exit_code",  # int, as `Popen.returncode` (negative for signal)
-        "stdout",  # str, or `None` if the stream could not be read
-        "stderr",  # str, or `None` if the stream could not be read
-    ),
-)
+    info: TensorBoardInfo
 
-# Indicates that a call to `start` failed to invoke the subprocess.
-#
-# If the TensorBoard executable was chosen via the `TENSORBOARD_BINARY`
-# environment variable, then the `explicit_binary` field contains the
-# path to that binary; otherwise, the field is `None`.
-StartExecFailed = collections.namedtuple(
-    "StartExecFailed",
-    (
-        "os_error",  # `OSError` due to `Popen` invocation
-        "explicit_binary",  # `str` or `None`; see type-level comment
-    ),
-)
 
-# Indicates that a call to `start` launched a TensorBoard process, but
-# that process neither exited nor wrote its info file within the allowed
-# timeout period. The process may still be running under the included
-# PID.
-StartTimedOut = collections.namedtuple("StartTimedOut", ("pid",))
+@dataclasses.dataclass(frozen=True)
+class StartLaunched:
+    """Possible return value of the `start` function.
+
+    Indicates that a call to `start` successfully launched a new
+    TensorBoard process, which is available with the provided info.
+
+    Attributes:
+      info: A `TensorBoardInfo` object.
+    """
+
+    info: TensorBoardInfo
+
+
+@dataclasses.dataclass(frozen=True)
+class StartFailed:
+    """Possible return value of the `start` function.
+
+    Indicates that a call to `start` tried to launch a new TensorBoard
+    instance, but the subprocess exited with the given exit code and
+    output streams. (If the contents of the output streams are no longer
+    available---e.g., because the user has emptied /tmp/---then the
+    corresponding values will be `None`.)
+
+    Attributes:
+      exit_code: As `Popen.returncode` (negative for signal).
+      stdout: Error message to stdout if the stream could not be read.
+      stderr: Error message to stderr if the stream could not be read.
+    """
+
+    exit_code: int
+    stdout: Optional[str]
+    stderr: Optional[str]
+
+
+@dataclasses.dataclass(frozen=True)
+class StartExecFailed:
+    """Possible return value of the `start` function.
+
+    Indicates that a call to `start` failed to invoke the subprocess.
+
+    Attributes:
+      os_error: `OSError` due to `Popen` invocation.
+      explicit_binary: If the TensorBoard executable was chosen via the
+        `TENSORBOARD_BINARY` environment variable, then this field contains
+        the path to that binary; otherwise `None`.
+    """
+
+    os_error: OSError
+    explicit_binary: Optional[str]
+
+
+@dataclasses.dataclass(frozen=True)
+class StartTimedOut:
+    """Possible return value of the `start` function.
+
+    Indicates that a call to `start` launched a TensorBoard process, but
+    that process neither exited nor wrote its info file within the allowed
+    timeout period. The process may still be running under the included
+    PID.
+
+    Attributes:
+      pid: ID of the process running TensorBoard.
+    """
+
+    pid: int
 
 
 def start(arguments, timeout=datetime.timedelta(seconds=60)):

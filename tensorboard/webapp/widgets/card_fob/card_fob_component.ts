@@ -36,6 +36,8 @@ export class CardFobComponent {
 
   @Input() step!: number;
 
+  @Input() allowRemoval?: boolean = true;
+
   @Output() stepChanged = new EventEmitter<number | null>();
   @Output() fobRemoved = new EventEmitter();
 
