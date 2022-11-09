@@ -153,8 +153,9 @@ describe('card_fob_controller', () => {
       input.axisDirection ?? AxisDirection.VERTICAL;
 
     fixture.componentInstance.timeSelection = input.timeSelection;
-    fixture.componentInstance.rangeSelectionEnabled =
-      input.enableRangeSelection;
+    fixture.componentInstance.rangeSelectionEnabled = Boolean(
+      input.enableRangeSelection
+    );
 
     fixture.componentInstance.showExtendedLine =
       input.showExtendedLine ?? false;
