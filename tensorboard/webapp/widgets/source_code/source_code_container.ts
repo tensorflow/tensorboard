@@ -15,7 +15,7 @@ limitations under the License.
 import {Component, Input, OnInit} from '@angular/core';
 import {from, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-import {loadMonaco} from './load_monaco_shim';
+import {MonacoShim} from './load_monaco_shim';
 
 /**
  * SourceCodeContainer displays the content of a source-code file.
@@ -55,7 +55,7 @@ export class SourceCodeContainer implements OnInit {
   monaco$: Observable<typeof monaco> | null = null;
 
   ngOnInit(): void {
-    this.monaco$ = from(loadMonaco()).pipe(map(() => window.monaco));
+    this.monaco$ = from(MonacoShim.loadMonaco()).pipe(map(() => window.monaco));
   }
 
   constructor() {}

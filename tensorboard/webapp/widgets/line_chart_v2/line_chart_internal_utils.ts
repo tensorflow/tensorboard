@@ -18,7 +18,7 @@ import {
   DataSeriesMetadataMap,
   RendererType,
 } from './lib/public_types';
-import {isWebGl2Supported} from './lib/utils';
+import {ChartUtils} from './lib/utils';
 
 /**
  * Returns extent, min and max values of each dimensions, of all data series points.
@@ -79,7 +79,9 @@ export function getRendererType(
     case RendererType.SVG:
       return RendererType.SVG;
     case RendererType.WEBGL:
-      return isWebGl2Supported() ? RendererType.WEBGL : RendererType.SVG;
+      return ChartUtils.isWebGl2Supported()
+        ? RendererType.WEBGL
+        : RendererType.SVG;
     default:
       const _ = preferredRendererType as never;
       throw new Error(`Unknown rendererType: ${preferredRendererType}`);

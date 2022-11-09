@@ -19,7 +19,7 @@ import {
   NO_ERRORS_SCHEMA,
 } from '@angular/core';
 import {TestBed} from '@angular/core/testing';
-import * as loadMonacoShim from './load_monaco_shim';
+import {MonacoShim} from './load_monaco_shim';
 import {SourceCodeDiffComponent} from './source_code_diff_component';
 import {SourceCodeDiffContainer} from './source_code_diff_container';
 import {fakes, setUpMonacoFakes, spies, tearDownMonacoFakes} from './testing';
@@ -62,7 +62,7 @@ describe('Source Code Diff', () => {
     fixture.detectChanges();
 
     // Simlulate loading monaco.
-    await loadMonacoShim.loadMonaco();
+    await MonacoShim.loadMonaco();
     fixture.detectChanges();
 
     expect(spies.createDiffEditorSpy).toHaveBeenCalledTimes(1);
@@ -81,7 +81,7 @@ describe('Source Code Diff', () => {
     fixture.detectChanges();
 
     // Simlulate loading monaco.
-    await loadMonacoShim.loadMonaco();
+    await MonacoShim.loadMonaco();
     fixture.detectChanges();
 
     expect(spies.createDiffEditorSpy).toHaveBeenCalledTimes(1);
@@ -101,7 +101,7 @@ describe('Source Code Diff', () => {
     fixture.detectChanges();
 
     // Simlulate loading monaco.
-    await loadMonacoShim.loadMonaco();
+    await MonacoShim.loadMonaco();
     changeDetector.detectChanges();
 
     expect(spies.diffEditorSpy.updateOptions).not.toHaveBeenCalled();
@@ -134,7 +134,7 @@ describe('Source Code Diff', () => {
       const component = fixture.componentInstance;
       fixture.detectChanges();
 
-      await loadMonacoShim.loadMonaco();
+      await MonacoShim.loadMonaco();
       fixture.detectChanges();
 
       component.useDarkMode = true;
