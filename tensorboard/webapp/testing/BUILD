@@ -9,12 +9,15 @@ licenses(["notice"])
 
 tf_ts_library(
     name = "initialize_testbed",
+    # Not an actual test but still needs to be named spec.ts since it is a
+    # top-level dep for spec_bundle().
     srcs = [
-        "initialize_testbed.ts",
+        "initialize_testbed.spec.ts",
     ],
     deps = [
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_dynamic_testing",
+        "@npm//@angular/localize",
     ],
 )
 
@@ -83,5 +86,3 @@ tf_ng_module(
         "@npm//@ngrx/store",
     ],
 )
-
-exports_files(["require_js_karma_config.js"])
