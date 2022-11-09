@@ -230,41 +230,43 @@ When upgrading rules_nodejs we generally must also consider upgrading:
 
 Sample upgrade: https://github.com/tensorflow/tensorboard/pull/5977
 
-1. Determine which version of rules_nodejs to upgrade to and find its release
-   notes in https://github.com/bazelbuild/rules_nodejs/releases. Read the
-   upgrade instructions for that release and every other release since our
-   previous upgrade. Typically these instructions follow the same pattern but
-   there are occasionally special instructions, especially for major releases.
-   Make a mental note of any of these special instructions.
+1.  Determine which version of rules_nodejs to upgrade to and find its release
+    notes in https://github.com/bazelbuild/rules_nodejs/releases. Read the
+    upgrade instructions for that release and every other release since our
+    previous upgrade. Typically these instructions follow the same pattern but
+    there are occasionally special instructions, especially for major releases.
+    Make a mental note of any of these special instructions.
 
-2. Update the build_bazel_rules_nodejs target in the WORKSPACE file as described
-   in the rules_nodejs release notes.
+2.  Update the build_bazel_rules_nodejs target in the WORKSPACE file as described
+    in the rules_nodejs release notes. Also remove or comment out the now-stale
+    links to "http://mirror.tensorflow.org/".
 
-3. Update npm packages scoped with `@bazel` in package.json using yarn.
-   * Use the same version as the rules_nodejs version.
-   * See the previous section for instructions on how to use yarn.
+3.  Update npm packages scoped with `@bazel` in package.json using yarn.
+    * Use the same version as the rules_nodejs version.
+    * See the previous section for instructions on how to use yarn.
 
-4. Update the rules_sass target in the WORKSPACE file.
-   * Examine https://github.com/bazelbuild/rules_sass/tags to see the list
-     of rules_sass releases.
-   * Pick a tag (the most recent is likely good enough) and use that version to
-     modify the rules_sass target in the WORKSPACE file.
+4.  Update the rules_sass target in the WORKSPACE file.
+    * Examine https://github.com/bazelbuild/rules_sass/tags to see the list
+      of rules_sass releases.
+    * Pick a tag (the most recent is likely good enough) and use that version to
+      modify the rules_sass target in the WORKSPACE file.
 
-5. Update the minimum bazel version to match the one supported by rules_nodejs:
-   * Examine https://github.com/bazelbuild/rules_nodejs/blob/stable/index.bzl
-     and find the SUPPORTED_BAZEL_VERSIONS constant.
-   * Compare the minimum bazel version supported by rules_nodejs to the one we
-     have specified in the WORKSPACE file. Modify the WORKSPACE file and
-     ci.yml with a new minimum version, if necessary.
+5.  Update the minimum bazel version to match the one supported by rules_nodejs:
+    * Examine https://github.com/bazelbuild/rules_nodejs/blob/stable/index.bzl
+      and find the SUPPORTED_BAZEL_VERSIONS constant.
+    * Compare the minimum bazel version supported by rules_nodejs to the one we
+      have specified in the WORKSPACE file. Modify the WORKSPACE file and
+      ci.yml with a new minimum version, if necessary.
 
 6.  Attempt to rebuild and test TensorBoard to make sure it works:
     * `rm -rf node_modules; bazel clean --expunge; yarn`
     * `bazel run tensorboard --logdir <your favorite logdir>`
     * `bazel test --test_output=errors tensorboard/webapp/...`
 
-7. The first attempt to rebuild and test TensorBoard rarely works. Investigate
-   the problems and fix them. At this point, some of the special instructions in
-   the rules_nodejs release notes (from Step 1) might be helpful.
+7.  The first attempt to rebuild and test TensorBoard rarely works. Investigate
+    the problems and fix them. At this point, some of the special instructions in
+    the rules_nodejs release notes (from Step 1) might be helpful.
 
-8. Generate mirrors for the new versions of rules_nodejs and rules_sass.
-   Googlers, see information at go/tensorboard-tf-mirror.
+8.  Generate mirrors for the new versions of rules_nodejs and rules_sass and
+    update the WORKSPACE file with the new "http://mirror.tensorflow.org/" URLs.
+    Googlers, see information at go/tensorboard-tf-mirror.
