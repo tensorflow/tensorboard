@@ -31,7 +31,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: lint-python-flake8 # fail fast in case of "undefined variable" errors
     strategy:
       fail-fast: false
@@ -135,11 +135,11 @@ jobs:
       fail-fast: false
       matrix:
         mode: ['native']
-        platform: ['ubuntu-20.04', 'macos-11']
+        platform: ['ubuntu-22.04', 'macos-11']
         rust_version: ['1.58.1']
         include:
           - mode: 'universal'
-            platform: 'ubuntu-20.04'
+            platform: 'ubuntu-22.04'
             rust_version: '1.58.1'
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
@@ -207,7 +207,7 @@ jobs:
           path: /tmp/pip_package/*
 
   lint-python-flake8:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
@@ -232,12 +232,12 @@ jobs:
         run: flake8 . --count --select=E9,F63,F7,F82,F401 --show-source --statistics
 
   lint-python-yaml-docs:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
       - uses: actions/setup-python@152ba7c4dd6521b8e9c93f72d362ce03bf6c4f20
         with:
-          python-version: '3.6'
+          python-version: '3.7'
           architecture: 'x64'
       - name: 'Install black, yamllint, and the TensorFlow docs notebook tools'
         run: |
@@ -245,6 +245,11 @@ jobs:
           nbfmt_version="174c9a5c1cc51a3af1de98d84824c811ecd49029"
           pip install black yamllint -c ./tensorboard/pip_package/requirements_dev.txt
           pip install -U git+https://github.com/tensorflow/docs@${nbfmt_version}
+        # Workaround tensorflow incompatibility with protobuf>4.
+        # See: https://github.com/tensorflow/tensorboard/issues/5708.
+        # See: https://github.com/tensorflow/tensorflow/issues/53234.
+      - name: 'Downgrade to compatible protobuf version'
+        run: pip install -U "protobuf<3.20"
       - run: pip freeze --all
       - name: 'Lint Python code for style with Black'
         # You can run `black .` to fix all Black complaints.
@@ -256,7 +261,7 @@ jobs:
         run: git ls-files -z '*.ipynb' | xargs -0 python3 -m tensorflow_docs.tools.nbfmt --test
 
   lint-rust:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         rust_version: ['1.58.1']
@@ -300,7 +305,7 @@ jobs:
           git diff --staged --exit-code
 
   lint-frontend:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
       - uses: actions/setup-node@56899e050abffc08c2b3b61f3ec6a79a9dc3223d
@@ -331,7 +336,7 @@ jobs:
           ! git grep -E '@npm//numeric' 'tensorboard/*/BUILD' ':!tensorboard/webapp/third_party/**'
 
   lint-misc: # build, protos, etc.
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
       - name: 'Set up Buildifier'
