@@ -20,6 +20,9 @@ import {
 
 @NgModule()
 export class PersistentSettingsConfigModule<State, Settings> {
+  // @ts-ignore(go/ts48upgrade) Fix code and remove this comment. Error:
+  // TS2344: Type 'Settings' does not satisfy the constraint
+  // 'PersistableSettings'.
   private readonly globalSettingSelectors: SettingSelector<State, Settings>[] =
     [];
 
@@ -27,6 +30,9 @@ export class PersistentSettingsConfigModule<State, Settings> {
     @Optional()
     @Inject(GLOBAL_PERSISTENT_SETTINGS_TOKEN)
     globalSettingSelectorFactories: Array<
+      // @ts-ignore(go/ts48upgrade) Fix code and remove this
+      // comment. Error: TS2344: Type 'Settings' does not satisfy
+      // the constraint 'PersistableSettings'.
       () => SettingSelector<State, Settings>
     > | null
   ) {
@@ -41,6 +47,9 @@ export class PersistentSettingsConfigModule<State, Settings> {
   /**
    * Returns Ngrx selectors for getting global setting values.
    */
+  // @ts-ignore(go/ts48upgrade) Fix code and remove this comment. Error:
+  // TS2344: Type 'Settings' does not satisfy the constraint
+  // 'PersistableSettings'.
   getGlobalSettingSelectors(): SettingSelector<State, Settings>[] {
     return this.globalSettingSelectors ?? [];
   }
@@ -69,6 +78,9 @@ export class PersistentSettingsConfigModule<State, Settings> {
    * export class MyModule {}
    */
   static defineGlobalSetting<State, Settings>(
+    // @ts-ignore(go/ts48upgrade) Fix code and remove this comment. Error:
+    // TS2344: Type 'Settings' does not satisfy the constraint
+    // 'PersistableSettings'.
     selectorFactory: () => SettingSelector<State, Settings>
   ): ModuleWithProviders<PersistentSettingsConfigModule<any, {}>> {
     return {
