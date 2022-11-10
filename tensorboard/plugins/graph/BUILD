@@ -1,7 +1,5 @@
 # Description:
 # TensorBoard plugin for graphs
-load("//tensorboard/defs:defs.bzl", "tf_ng_web_test_suite")
-
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
