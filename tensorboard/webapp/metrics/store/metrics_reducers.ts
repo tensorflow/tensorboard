@@ -1018,6 +1018,7 @@ const reducer = createReducer(
     const {timeSelection} = change;
     const nextStartStep = timeSelection.start.step;
     const nextEndStep = timeSelection.end?.step;
+    const nextStepSelectorEnabled = Boolean(timeSelection);
     const end =
       nextEndStep === undefined
         ? null
@@ -1046,6 +1047,7 @@ const reducer = createReducer(
       linkedTimeSelection,
       cardStepIndex: nextCardStepIndexMap,
       rangeSelectionEnabled,
+      stepSelectorEnabled: nextStepSelectorEnabled,
     };
   }),
   on(actions.stepSelectorToggled, (state) => {

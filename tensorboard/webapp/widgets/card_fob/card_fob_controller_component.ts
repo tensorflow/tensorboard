@@ -343,10 +343,14 @@ export class CardFobControllerComponent {
   }
 
   stepTyped(fob: Fob, step: number | null) {
+    if (!this.timeSelection) {
+      return;
+    }
+
     // Types empty string in fob.
     if (step === null) {
       // Removes fob on range selection and sets step to minimum on single selection.
-      if (this.timeSelection!.end !== null) {
+      if (this.timeSelection.end !== null) {
         this.onFobRemoved(fob);
       } else {
         // TODO(jieweiwu): sets start step to minum.
@@ -355,7 +359,7 @@ export class CardFobControllerComponent {
       return;
     }
 
-    let newTimeSelection = {...this.timeSelection!};
+    let newTimeSelection = {...this.timeSelection};
     if (fob === Fob.START) {
       newTimeSelection.start = {step};
     } else if (fob === Fob.END) {
@@ -377,6 +381,32 @@ export class CardFobControllerComponent {
     this.onTimeSelectionChanged.emit({
       timeSelection: newTimeSelection,
       affordance: TimeSelectionAffordance.FOB_TEXT,
+    });
+  }
+
+  prospectiveFobClicked(event: Event) {
+    if (!this.isProspectiveFobFeatureEnabled) {
+      return;
+    }
+    event.stopPropagation();
+    if (this.prospectiveStep === null) {
+      return;
+    }
+    const newTimeSelection = this.timeSelection
+      ? {
+          ...this.timeSelection,
+          end: {
+            step: this.prospectiveStep,
+          },
+        }
+      : {
+          start: {step: this.prospectiveStep},
+          end: null,
+        };
+
+    this.onTimeSelectionChanged.emit({
+      affordance: TimeSelectionAffordance.FOB_ADDED,
+      timeSelection: newTimeSelection,
     });
   }
 
