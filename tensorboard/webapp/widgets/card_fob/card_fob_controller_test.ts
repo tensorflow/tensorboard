@@ -1411,7 +1411,6 @@ describe('card_fob_controller', () => {
       it('emits null step on mouseleave', () => {
         const fixture = createComponent({
           timeSelection: {start: {step: 4}, end: null},
-          enableRangeSelection: true,
           axisDirection: AxisDirection.HORIZONTAL,
           isProspectiveFobFeatureEnabled: true,
           prospectiveStep: 2,
