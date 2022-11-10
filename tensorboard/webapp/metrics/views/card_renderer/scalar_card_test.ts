@@ -3420,6 +3420,66 @@ describe('scalar card', () => {
         ]);
       }));
 
+      it('dispatches timeSelectionChanged actions when fob is added by clicking prospective fob', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getIsLinkedTimeProspectiveFobEnabled,
+          true
+        );
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        const testController = fixture.debugElement.query(
+          By.directive(CardFobControllerComponent)
+        ).componentInstance;
+        testController.timeSelection = null;
+        testController.prospectiveStep = 10;
+        fixture.detectChanges();
+
+        // One prospective fob
+        let fobs = fixture.debugElement.queryAll(
+          By.directive(CardFobComponent)
+        );
+        expect(fobs.length).toEqual(1);
+
+        // Click the prospective fob to set the start time
+        fixture.debugElement
+          .query(By.css('.prospective-fob-area'))
+          .nativeElement.click();
+        fixture.detectChanges();
+
+        // One start fob + 1 prospective fob
+        fobs = fixture.debugElement.queryAll(By.directive(CardFobComponent));
+        expect(fobs.length).toEqual(2);
+
+        // Click the prospective fob to set the end time
+        testController.prospectiveStep = 25;
+        fixture.debugElement
+          .query(By.css('.prospective-fob-area'))
+          .nativeElement.click();
+        fixture.detectChanges();
+
+        // One start fob, one end fob, and one prospective fob
+        fobs = fixture.debugElement.queryAll(By.directive(CardFobComponent));
+        expect(fobs.length).toEqual(3);
+
+        expect(dispatchedActions).toEqual([
+          timeSelectionChanged({
+            timeSelection: {
+              start: {step: 10},
+              end: null,
+            },
+            affordance: TimeSelectionAffordance.FOB_ADDED,
+          }),
+          timeSelectionChanged({
+            timeSelection: {
+              start: {step: 10},
+              end: {step: 25},
+            },
+            affordance: TimeSelectionAffordance.FOB_ADDED,
+          }),
+        ]);
+      }));
+
       it('toggles when single fob is deselected', fakeAsync(() => {
         const fixture = createComponent('card1');
         fixture.detectChanges();
