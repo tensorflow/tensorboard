@@ -13,6 +13,7 @@
 # limitations under the License.
 """External-only delegates for various BUILD rules."""
 
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@io_bazel_rules_sass//:defs.bzl", "npm_sass_library", "sass_binary", "sass_library")
 load("@npm//@angular/build-tooling/bazel/spec-bundling:index.bzl", "spec_bundle")
 load("@npm//@angular/build-tooling/bazel:extract_js_module_output.bzl", "extract_js_module_output")
@@ -103,19 +104,14 @@ def tf_ts_library(srcs = [], strict_checks = True, **kwargs):
     kwargs.setdefault("deps", []).extend(["@npm//tslib", "//tensorboard/defs:strict_types"])
 
     new_srcs = []
-    # Find test.ts files and rename to test.spec.ts to be compatible with
-    # spec_bundle() tooling.
+    # Find test.ts and testbed.ts files and rename to test.spec.ts to be
+    # compatible with spec_bundle() tooling.
     for s in srcs:
-      if s.endswith("_test.ts") or s.endswith("-test.ts"):
+      if s.endswith("_test.ts") or s.endswith("-test.ts") or s.endswith("_testbed.ts"):
         # Make a copy of the file with name .spec.ts and switch to that as
         # the src file.
         new_src = s[0:s.rindex('.ts')] + ".spec.ts"
-        native.genrule(
-            name = new_src + '_spec_copy',
-            srcs = [s],
-            outs = [new_src],
-            cmd = "cat $(SRCS) > $@",
-        )
+        copy_file(name = new_src + '_spec_copy', src = s, out = new_src, allow_symlink = True)
         new_srcs.append(new_src)
       else:
         # Not a test file. Nothing to do here.

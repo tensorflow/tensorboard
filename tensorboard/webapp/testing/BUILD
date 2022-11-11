@@ -9,10 +9,8 @@ licenses(["notice"])
 
 tf_ts_library(
     name = "initialize_testbed",
-    # Not an actual test but still needs to be named spec.ts since it is a
-    # top-level dep for spec_bundle().
     srcs = [
-        "initialize_testbed.spec.ts",
+        "initialize_testbed.ts",
     ],
     deps = [
         "//tensorboard/webapp/angular:expect_angular_core_testing",
