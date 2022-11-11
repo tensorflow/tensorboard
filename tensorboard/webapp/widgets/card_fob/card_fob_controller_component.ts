@@ -381,9 +381,6 @@ export class CardFobControllerComponent {
   }
 
   prospectiveFobClicked(event: Event) {
-    if (!this.isProspectiveFobFeatureEnabled) {
-      return;
-    }
     event.stopPropagation();
     if (this.prospectiveStep === null) {
       return;

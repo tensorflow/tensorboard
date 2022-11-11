@@ -3458,9 +3458,9 @@ describe('scalar card', () => {
           .nativeElement.click();
         fixture.detectChanges();
 
-        // One start fob, one end fob, and one prospective fob
+        // One start fob, one end fob
         fobs = fixture.debugElement.queryAll(By.directive(CardFobComponent));
-        expect(fobs.length).toEqual(3);
+        expect(fobs.length).toEqual(2);
 
         expect(dispatchedActions).toEqual([
           timeSelectionChanged({

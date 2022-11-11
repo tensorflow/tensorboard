@@ -23,6 +23,7 @@ import {DataLoadState} from '../../types/data';
 import {ElementId} from '../../util/dom';
 import {mapObjectValues} from '../../util/lang';
 import {composeReducers} from '../../util/ngrx';
+import {TimeSelectionAffordance} from '../../widgets/card_fob/card_fob_types';
 import * as actions from '../actions';
 import {
   isFailedTimeSeriesResponse,
@@ -1018,7 +1019,9 @@ const reducer = createReducer(
     const {timeSelection} = change;
     const nextStartStep = timeSelection.start.step;
     const nextEndStep = timeSelection.end?.step;
-    const nextStepSelectorEnabled = Boolean(timeSelection);
+    const nextStepSelectorEnabled =
+      change.affordance === TimeSelectionAffordance.FOB_ADDED ||
+      state.stepSelectorEnabled;
     const end =
       nextEndStep === undefined
         ? null
