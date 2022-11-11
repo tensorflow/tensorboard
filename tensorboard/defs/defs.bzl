@@ -111,7 +111,11 @@ def tf_ts_library(srcs = [], strict_checks = True, **kwargs):
         # Make a copy of the file with name .spec.ts and switch to that as
         # the src file.
         new_src = s[0:s.rindex('.ts')] + ".spec.ts"
-        copy_file(name = new_src + '_spec_copy', src = s, out = new_src, allow_symlink = True)
+        copy_file(
+            name = new_src + '_spec_copy',
+            src = s,
+            out = new_src,
+            allow_symlink = True)
         new_srcs.append(new_src)
       else:
         # Not a test file. Nothing to do here.
@@ -143,17 +147,18 @@ def tf_ng_web_test_suite(name, deps = [], **kwargs):
     # See the angular/components example:
     # https://github.com/angular/components/blob/871f8f231a7a86a7a0778e345f4d517109c9a357/tools/defaults.bzl#L427
     extract_js_module_output(
-      name = "%s_devmode_deps" % name,
-      deps = [
-        # initialize_testbed must be the first dep for the tests to run properly.
-        "//tensorboard/webapp/testing:initialize_testbed",
-      ] + deps,
-      provider = "JSModuleInfo",
-      forward_linker_mappings = True,
-      include_external_npm_packages = True,
-      include_default_files = False,
-      include_declarations = False,
-      testonly = True,
+        name = "%s_devmode_deps" % name,
+        deps = [
+            # initialize_testbed must be the first dep for the tests to run
+            # properly.
+            "//tensorboard/webapp/testing:initialize_testbed",
+        ] + deps,
+        provider = "JSModuleInfo",
+        forward_linker_mappings = True,
+        include_external_npm_packages = True,
+        include_default_files = False,
+        include_declarations = False,
+        testonly = True,
     )
 
     # Create an esbuild bundle with all source and dependencies. It provides a
@@ -163,27 +168,27 @@ def tf_ng_web_test_suite(name, deps = [], **kwargs):
     # See the angular/components example:
     # https://github.com/angular/components/blob/871f8f231a7a86a7a0778e345f4d517109c9a357/tools/defaults.bzl#L438
     spec_bundle(
-      name = "%s_bundle" % name,
-      deps = ["%s_devmode_deps" % name],
-      workspace_name = "org_tensorflow_tensorboard",
-      run_angular_linker = False,
-      platform = "browser",
+        name = "%s_bundle" % name,
+        deps = ["%s_devmode_deps" % name],
+        workspace_name = "org_tensorflow_tensorboard",
+        run_angular_linker = False,
+        platform = "browser",
     )
 
     karma_web_test_suite(
-      name = name,
-      bootstrap =
-        [
-          "@npm//:node_modules/zone.js/dist/zone-evergreen.js",
-          "@npm//:node_modules/zone.js/dist/zone-testing.js",
-          "@npm//:node_modules/reflect-metadata/Reflect.js",
+        name = name,
+        bootstrap =
+            [
+                "@npm//:node_modules/zone.js/dist/zone-evergreen.js",
+                "@npm//:node_modules/zone.js/dist/zone-testing.js",
+                "@npm//:node_modules/reflect-metadata/Reflect.js",
+            ],
+        # The only dependency is the esbuild bundle from spec_bundle().
+        # karma_web_test_suite() will rebundle it along with the test framework
+        # in a CommonJS bundle.
+        deps = [
+          "%s_bundle" % name,
         ],
-      # The only dependency is the esbuild bundle from spec_bundle().
-      # karma_web_test_suite() will rebundle it along with the test framework
-      # in a CommonJS bundle.
-      deps = [
-        "%s_bundle" % name,
-      ],
     )
 
 def tf_svg_bundle(name, srcs, out):
