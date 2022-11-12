@@ -79,7 +79,10 @@ load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
 
 yarn_install(
     name = "npm",
-    data = ["//patches:@bazel+concatjs+5.7.0.patch"],
+    data = [
+        "//patches:@angular+build-tooling+0.0.0-7d103b83a07f132629592fc9918ce17d42a5e382.patch",
+        "//patches:@bazel+concatjs+5.7.0.patch",
+    ],
     # "Some rules only work by referencing labels nested inside npm packages
     # and therefore require turning off exports_directories_only."
     # This includes "ts_library".
