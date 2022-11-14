@@ -170,3 +170,10 @@ export const getIsLinkedTimeProspectiveFobEnabled = createSelector(
     return flags.enabledProspectiveFob;
   }
 );
+
+export const getIsScalarColumnCustomizationEnabled = createSelector(
+  getFeatureFlags,
+  (flags: FeatureFlags): boolean => {
+    return flags.enableScalarColumnCustomization;
+  }
+);

@@ -121,6 +121,11 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       queryParamOverride: 'enableProspectiveFob',
       parseValue: parseBoolean,
     },
+    enableScalarColumnCustomization: {
+      defaultValue: false,
+      queryParamOverride: 'enableScalarColumnCustomization',
+      parseValue: parseBoolean,
+    },
   };
 
 /**
