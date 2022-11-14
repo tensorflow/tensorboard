@@ -401,6 +401,7 @@ export class CardFobControllerComponent {
       affordance: TimeSelectionAffordance.FOB_ADDED,
       timeSelection: newTimeSelection,
     });
+    this.onPrespectiveStepChanged.emit(null);
   }
 
   /**
