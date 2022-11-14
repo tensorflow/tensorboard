@@ -3299,19 +3299,6 @@ describe('scalar card', () => {
         ).toBeFalsy();
       }));
 
-      it('Does not render end fob when range selection is disabled', fakeAsync(() => {
-        store.overrideSelector(
-          selectors.getMetricsRangeSelectionEnabled,
-          false
-        );
-        const fixture = createComponent('card1');
-        fixture.detectChanges();
-
-        expect(
-          fixture.debugElement.queryAll(By.directive(CardFobComponent)).length
-        ).toEqual(1);
-      }));
-
       it('dispatches timeSelectionChanged actions when fob is dragged while linked time is enabled', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeEnabled, true);
         store.overrideSelector(getMetricsLinkedTimeSelection, {
