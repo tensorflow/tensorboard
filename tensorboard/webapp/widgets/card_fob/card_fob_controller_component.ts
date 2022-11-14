@@ -380,6 +380,29 @@ export class CardFobControllerComponent {
     });
   }
 
+  prospectiveFobClicked(event: Event) {
+    event.stopPropagation();
+    if (this.prospectiveStep === null) {
+      return;
+    }
+    const newTimeSelection = this.timeSelection
+      ? {
+          ...this.timeSelection,
+          end: {
+            step: this.prospectiveStep,
+          },
+        }
+      : {
+          start: {step: this.prospectiveStep},
+          end: null,
+        };
+
+    this.onTimeSelectionChanged.emit({
+      affordance: TimeSelectionAffordance.FOB_ADDED,
+      timeSelection: newTimeSelection,
+    });
+  }
+
   /**
    * When in range selection(which means we have a start and an end
    * fob) clicking "X" to remove a fob will leave the remaining fob in place.

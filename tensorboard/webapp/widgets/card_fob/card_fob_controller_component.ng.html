@@ -16,25 +16,30 @@ limitations under the License.
 -->
 
 <div>
-  <div
-    #prospectiveFobWrapper
-    class="time-fob-wrapper prospectiveFob"
-    *ngIf="prospectiveStep !== null && isProspectiveFobFeatureEnabled"
-    [style.transform]="getCssTranslatePxForProspectiveFob()"
+  <ng-container
+    *ngIf="isProspectiveFobFeatureEnabled && !rangeSelectionEnabled"
   >
-    <div *ngIf="showExtendedLine" class="extended-line"></div>
-    <card-fob
-      [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
-      [allowRemoval]="false"
-      [step]="prospectiveStep"
-    ></card-fob>
-  </div>
-  <div
-    class="prospective-fob-area"
-    [ngClass]="isVertical() ? 'vertical-prospective-area' : 'horizontal-prospective-area'"
-    (mousemove)="mouseOver($event)"
-    (mouseleave)="onProspectiveAreaMouseLeave()"
-  ></div>
+    <div
+      #prospectiveFobWrapper
+      *ngIf="prospectiveStep !== null"
+      class="time-fob-wrapper prospectiveFob"
+      [style.transform]="getCssTranslatePxForProspectiveFob()"
+    >
+      <div *ngIf="showExtendedLine" class="extended-line"></div>
+      <card-fob
+        [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
+        [allowRemoval]="false"
+        [step]="prospectiveStep"
+      ></card-fob>
+    </div>
+    <div
+      class="prospective-fob-area"
+      [ngClass]="isVertical() ? 'vertical-prospective-area' : 'horizontal-prospective-area'"
+      (mousemove)="mouseOver($event)"
+      (mouseleave)="onProspectiveAreaMouseLeave()"
+      (click)="prospectiveFobClicked($event)"
+    ></div>
+  </ng-container>
   <div
     #startFobWrapper
     class="time-fob-wrapper"
