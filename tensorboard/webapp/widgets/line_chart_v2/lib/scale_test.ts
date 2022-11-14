@@ -313,7 +313,7 @@ describe('line_chart_v2/lib/scale test', () => {
         expect(scale.reverse([1000, 2000], [-100, 100], -100)).toBe(1000);
         expect(scale.reverse([1000, 2000], [-100, 100], 100)).toBe(2000);
 
-        expect(scale.reverse([1000, 2000], [-100, 100], -101)).toBe(995);
+        expect(scale.reverse([1000, 2000], [-100, 100], -102)).toBe(990);
         expect(scale.reverse([1000, 2000], [-100, 100], 500)).toBe(4000);
 
         expect(

@@ -28,9 +28,11 @@
   },
   "homepage": "https://github.com/tensorflow/tensorboard#readme",
   "devDependencies": {
+    "@angular/build-tooling": "https://github.com/angular/dev-infra-private-build-tooling-builds.git#fb42478534df7d48ec23a6834fea94a776cb89a0",
     "@angular/cli": "^12.2.0",
     "@angular/compiler": "^12.2.0",
     "@angular/compiler-cli": "^12.2.0",
+    "@babel/core": "^7.16.12",
     "@bazel/concatjs": "5.7.0",
     "@bazel/esbuild": "5.7.0",
     "@bazel/ibazel": "^0.15.9",

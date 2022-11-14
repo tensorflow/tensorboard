@@ -15,6 +15,7 @@ tf_ts_library(
     deps = [
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_dynamic_testing",
+        "@npm//@angular/localize",
     ],
 )
 
@@ -83,5 +84,3 @@ tf_ng_module(
         "@npm//@ngrx/store",
     ],
 )
-
-exports_files(["require_js_karma_config.js"])
