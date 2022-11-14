@@ -53,7 +53,7 @@ tensorboard_zip_file = rule(
         "_Zipper": attr.label(
             default=Label("//tensorboard/java/org/tensorflow/tensorboard/vulcanize:Zipper"),
             executable=True,
-            cfg="host"),
+            cfg="exec"),
     },
     outputs={
         "zip": "%{name}.zip",

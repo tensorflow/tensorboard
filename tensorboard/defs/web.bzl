@@ -266,7 +266,7 @@ tf_web_library = rule(
         "_WebfilesServer": attr.label(
             default=Label("@io_bazel_rules_closure//java/io/bazel/rules/closure/webfiles/server:WebfilesServer"),
             executable=True,
-            cfg="host"),
+            cfg="exec"),
         "_ClosureWorker": CLOSURE_WORKER_ATTR,
         "_closure_library_base": CLOSURE_LIBRARY_BASE_ATTR,
     },
