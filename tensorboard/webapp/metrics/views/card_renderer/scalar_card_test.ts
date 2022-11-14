@@ -3238,6 +3238,33 @@ describe('scalar card', () => {
         expect(testController).toBeTruthy();
       }));
 
+      it('renders prospective fob', fakeAsync(() => {
+        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, null);
+        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
+        store.overrideSelector(
+          selectors.getIsLinkedTimeProspectiveFobEnabled,
+          true
+        );
+
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        const cardFobController = fixture.debugElement.query(
+          By.directive(CardFobControllerComponent)
+        ).componentInstance;
+        expect(cardFobController).toBeDefined();
+
+        cardFobController.onPrespectiveStepChanged.emit(1);
+        fixture.detectChanges();
+
+        const prospectiveFob = fixture.debugElement.query(
+          By.directive(CardFobComponent)
+        ).componentInstance;
+        expect(prospectiveFob).toBeDefined();
+        expect(cardFobController.prospectiveFobWrapper).toBeDefined();
+        expect(cardFobController.prospectiveStep).toEqual(1);
+      }));
+
       it('Does not render fobs when axis type is RELATIVE', fakeAsync(() => {
         store.overrideSelector(
           selectors.getIsLinkedTimeProspectiveFobEnabled,
@@ -3270,6 +3297,19 @@ describe('scalar card', () => {
         expect(
           fixture.debugElement.query(By.directive(CardFobControllerComponent))
         ).toBeFalsy();
+      }));
+
+      it('Does not render end fob when range selection is disabled', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getMetricsRangeSelectionEnabled,
+          false
+        );
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        expect(
+          fixture.debugElement.queryAll(By.directive(CardFobComponent)).length
+        ).toEqual(1);
       }));
 
       it('dispatches timeSelectionChanged actions when fob is dragged while linked time is enabled', fakeAsync(() => {

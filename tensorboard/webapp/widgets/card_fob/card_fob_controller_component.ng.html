@@ -25,11 +25,14 @@ limitations under the License.
     <div *ngIf="showExtendedLine" class="extended-line"></div>
     <card-fob
       [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
+      [allowRemoval]="false"
+      [step]="prospectiveStep"
     ></card-fob>
   </div>
   <div
     class="prospective-fob-area"
     [ngClass]="isVertical() ? 'vertical-prospective-area' : 'horizontal-prospective-area'"
+    (mousemove)="mouseOver($event)"
     (mouseleave)="onProspectiveAreaMouseLeave()"
   ></div>
   <div
@@ -54,7 +57,7 @@ limitations under the License.
   </div>
   <div
     #endFobWrapper
-    *ngIf="timeSelection && timeSelection.end"
+    *ngIf="timeSelection && timeSelection.end && rangeSelectionEnabled"
     class="time-fob-wrapper"
     [style.transform]="getCssTranslatePxForEndFob()"
   >

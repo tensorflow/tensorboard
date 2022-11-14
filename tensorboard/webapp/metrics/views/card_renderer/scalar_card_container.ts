@@ -157,6 +157,7 @@ function areSeriesEqual(
       [useDarkMode]="useDarkMode$ | async"
       [linkedTimeSelection]="linkedTimeSelection$ | async"
       [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection$ | async"
+      [rangeSelectionEnabled]="rangeSelectionEnabled$ | async"
       [isProspectiveFobFeatureEnabled]="isProspectiveFobFeatureEnabled$ | async"
       [forceSvg]="forceSvg$ | async"
       [minMaxStep]="minMaxSteps$ | async"
@@ -223,6 +224,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   });
   readonly stepSelectorTimeSelection$ =
     new BehaviorSubject<TimeSelection | null>(null);
+  readonly rangeSelectionEnabled$ = this.store.select(
+    getMetricsRangeSelectionEnabled
+  );
   readonly useDarkMode$ = this.store.select(getDarkModeEnabled);
   readonly ignoreOutliers$ = this.store.select(getMetricsIgnoreOutliers);
   readonly tooltipSort$ = this.store.select(getMetricsTooltipSort);

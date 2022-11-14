@@ -22,6 +22,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
+import {CardFobComponent} from './card_fob_component';
 import {
   AxisDirection,
   CardFobGetStepFromPositionHelper,
@@ -54,6 +55,7 @@ export class CardFobControllerComponent {
   readonly prospectiveFobWrapper!: ElementRef;
   @Input() axisDirection!: AxisDirection;
   @Input() timeSelection?: TimeSelection;
+  @Input() rangeSelectionEnabled: boolean = false;
   @Input() cardFobHelper!: CardFobGetStepFromPositionHelper;
   @Input() startStepAxisPosition!: number;
   @Input() endStepAxisPosition!: number | null;
@@ -61,7 +63,7 @@ export class CardFobControllerComponent {
   @Input() lowestStep!: number;
   @Input() showExtendedLine?: Boolean = false;
   @Input() isProspectiveFobFeatureEnabled?: Boolean = false;
-  @Input() prospectiveStep?: number | null = null;
+  @Input() prospectiveStep: number | null = null;
   @Input() prospectiveStepAxisPosition?: number | null = null;
 
   @Output() onTimeSelectionChanged =
@@ -200,21 +202,30 @@ export class CardFobControllerComponent {
     return newTimeSelection;
   }
 
-  mouseMove(event: MouseEvent) {
-    if (this.currentDraggingFob === Fob.NONE) return;
-
+  getNewStepFromMouseEvent(event: MouseEvent): number | null {
     let newStep: number | null = null;
     const mousePosition = this.getMousePositionFromEvent(event);
     const movement =
       this.axisDirection === AxisDirection.VERTICAL
         ? event.movementY
         : event.movementX;
-    if (this.isDraggingHigher(mousePosition, movement)) {
+    if (this.isMovingHigher(mousePosition, movement)) {
       newStep = this.cardFobHelper.getStepHigherThanAxisPosition(mousePosition);
-    } else if (this.isDraggingLower(mousePosition, movement)) {
+    } else if (this.isMovingLower(mousePosition, movement)) {
       newStep = this.cardFobHelper.getStepLowerThanAxisPosition(mousePosition);
     }
 
+    if (newStep === null) {
+      return null;
+    }
+
+    return newStep;
+  }
+
+  mouseMove(event: MouseEvent) {
+    if (this.currentDraggingFob === Fob.NONE) return;
+
+    const newStep = this.getNewStepFromMouseEvent(event);
     if (newStep === null || !this.timeSelection) {
       return;
     }
@@ -229,19 +240,53 @@ export class CardFobControllerComponent {
     this.hasFobMoved = true;
   }
 
-  isDraggingLower(position: number, movement: number): boolean {
+  mouseOver(event: MouseEvent) {
+    if (
+      this.timeSelection?.end !== null &&
+      this.timeSelection?.end !== undefined
+    ) {
+      return;
+    }
+
+    const newStep = this.getNewStepFromMouseEvent(event);
+    if (newStep === null) {
+      return;
+    }
+
+    this.onPrespectiveStepChanged.emit(newStep);
+  }
+
+  isMovingLower(position: number, movement: number): boolean {
+    if (this.currentDraggingFob === Fob.NONE && this.prospectiveStep === null) {
+      return true;
+    }
+
+    const currentStep = this.getCurrentFobStep();
+    if (currentStep === undefined) {
+      return false;
+    }
+
     return (
       position < this.getDraggingFobCenter() &&
       movement < 0 &&
-      this.getDraggingFobStep() > this.lowestStep
+      currentStep > this.lowestStep
     );
   }
 
-  isDraggingHigher(position: number, movement: number): boolean {
+  isMovingHigher(position: number, movement: number): boolean {
+    if (this.currentDraggingFob === Fob.NONE && this.prospectiveStep === null) {
+      return true;
+    }
+
+    const currentStep = this.getCurrentFobStep();
+    if (currentStep === undefined) {
+      return false;
+    }
+
     return (
       position > this.getDraggingFobCenter() &&
       movement > 0 &&
-      this.getDraggingFobStep() < this.highestStep
+      currentStep < this.highestStep
     );
   }
 
@@ -252,27 +297,43 @@ export class CardFobControllerComponent {
     // the element's natural position(using translateY(-50%)). While in the
     // horizontal direction the fob's center is actually rendered over the left
     // of the element's natural position (using translateX(-50%)).
+    const currentFob = this.getCurrentFob()?.nativeElement;
+    if (!currentFob) {
+      return 0;
+    }
+    let fobTopPosition = currentFob.getBoundingClientRect().top;
+    let fobLeftPosition = currentFob.getBoundingClientRect().left;
+
     if (this.axisDirection === AxisDirection.VERTICAL) {
       return (
-        (this.currentDraggingFob !== Fob.END
-          ? this.startFobWrapper.nativeElement.getBoundingClientRect().top
-          : this.endFobWrapper.nativeElement.getBoundingClientRect().top) -
-        this.root.nativeElement.getBoundingClientRect().top
+        fobTopPosition - this.root.nativeElement.getBoundingClientRect().top
       );
-    } else {
-      return (
-        (this.currentDraggingFob !== Fob.END
-          ? this.startFobWrapper.nativeElement.getBoundingClientRect().left
-          : this.endFobWrapper.nativeElement.getBoundingClientRect().left) -
-        this.root.nativeElement.getBoundingClientRect().left
-      );
+    }
+    return (
+      fobLeftPosition - this.root.nativeElement.getBoundingClientRect().left
+    );
+  }
+
+  getCurrentFob(): ElementRef<CardFobComponent & HTMLElement> | null {
+    switch (this.currentDraggingFob) {
+      case Fob.START:
+        return this.startFobWrapper;
+      case Fob.END:
+        return this.endFobWrapper;
+      case Fob.NONE:
+        return this.prospectiveFobWrapper;
     }
   }
 
-  getDraggingFobStep(): number {
-    return this.currentDraggingFob !== Fob.END
-      ? this.timeSelection!.start.step
-      : this.timeSelection!.end!.step;
+  getCurrentFobStep(): number | undefined {
+    switch (this.currentDraggingFob) {
+      case Fob.START:
+        return this.timeSelection?.start.step;
+      case Fob.END:
+        return this.timeSelection?.end?.step;
+      case Fob.NONE:
+        return this.prospectiveStep ?? undefined;
+    }
   }
 
   getMousePositionFromEvent(event: MouseEvent): number {

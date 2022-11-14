@@ -49,5 +49,6 @@ export interface FeatureFlags {
   // Adds check box in settings which allows users to enter step selection range.
   allowRangeSelection: boolean;
   // In Linked Time, if enabled, show a prospective fob user to turn on the feature or select a step.
+  // If this is removed update the `getCurrentFob` method of tensorboard/webapp/widgets/card_fob/card_fob_controller_component.ts
   enabledProspectiveFob: boolean;
 }
