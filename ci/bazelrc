@@ -23,12 +23,3 @@ build --verbose_failures
 build --worker_verbose
 test --test_output=errors
 test --test_verbose_timeout_warnings
-
-# Enable remote caching. This cache is publicly readable, but only writable on
-# trusted commits (e.g., commits to master). We don't write the actual test
-# statuses (or read them if they happen to be there) because not all tests are
-# actually hermetic, and they run pretty quickly, anyway.
-common --remote_cache=https://storage.googleapis.com/tensorboard-build-cache
-common --remote_upload_local_results=false
-test --remote_upload_local_results=false
-test --cache_test_results=false
