@@ -54,6 +54,7 @@ limitations under the License.
       <histogram-card-fob-controller
         class="histogram-card-fob"
         [timeSelection]="timeSelection"
+        [rangeSelectionEnabled]="rangeSelectionEnabled"
         [steps]="getSteps()"
         [temporalScale]="scales.temporalScale"
         (onTimeSelectionChanged)="onLinkedTimeSelectionChanged.emit($event)"
