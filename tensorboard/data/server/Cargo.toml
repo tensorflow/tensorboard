@@ -104,7 +104,7 @@ gen_buildrs = true
 [package.metadata.raze.crates.proc-macro-nested.'0.1.7']
 gen_buildrs = true
 
-[package.metadata.raze.crates.proc-macro2.'1.0.24']
+[package.metadata.raze.crates.proc-macro2.'1.0.43']
 additional_flags = [
     "--cfg=use_proc_macro",
     "--cfg=wrap_proc_macro",
