@@ -104,7 +104,7 @@ alias(
 
 alias(
     name = "gcp_auth",
-    actual = "@raze__gcp_auth__0_7_3//:gcp_auth",
+    actual = "@raze__gcp_auth__0_7_4//:gcp_auth",
     tags = [
         "cargo-raze",
         "manual",
