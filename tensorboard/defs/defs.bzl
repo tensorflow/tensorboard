@@ -34,7 +34,56 @@ def tf_js_binary(
         dev_mode_only = False,
         includes_polymer = False,
         **kwargs):
-    """Rule for creating a non-Angular JavaScript bundle.
+    """Rule for creating a JavaScript bundle.
+
+    We use the Angular team's internal toolchain for creating Angular-compatible
+    bundles: app_bundle(). This toolchain is not officially supported and is subject
+    to change or deletion.
+
+    Args:
+        name: Name of the target.
+        compile: Whether to compile when bundling. Only used internally.
+        dev_mode_only: Whether the binary is for development. When True, it will
+          produce a more readable bundle for debugging.
+        includes_polymer: Whether this binary contains Polymer. Only used
+          internally.
+        **kwargs: Other keyword arguments to app_bundle() and esbuild(). Typically
+          used for entry_point and deps. Please refer to
+          https://esbuild.github.io/api/ for more details.
+    """
+
+    app_bundle_name = '%s_app_bundle' % name
+    app_bundle(
+        name = app_bundle_name,
+        **kwargs
+    )
+
+    # app_bundle() generates several outputs and we must choose which one becomes
+    # the output bundle for this rule.
+    if dev_mode_only == False:
+        app_bundle_output_name = '%s.min.js' % app_bundle_name
+    else:
+        app_bundle_output_name = '%s.debug.js' % app_bundle_name
+
+    copy_file(
+        name = name,
+        visibility = visibility,
+        src = app_bundle_output_name,
+        out = '%s.js' % name,
+    )
+
+def tf_projector_js_binary(
+        name,
+        compile,
+        visibility = None,
+        dev_mode_only = False,
+        includes_polymer = False,
+        **kwargs):
+    """Rule for creating a JavaScript bundle for the projector plugin.
+
+    The projector plugin bundle is (so far) incompatible with Angular's
+    app_bundle() - possibly because of the tfjs dependency. So we use the old
+    esbuild() implementation instead.
 
     Args:
         name: Name of the target.
@@ -83,49 +132,6 @@ def tf_js_binary(
             "mainFields": ["browser", "es2015", "module", "jsnext:main", "main"],
         },
         **kwargs
-    )
-
-def tf_ng_js_binary(
-        name,
-        compile,
-        dev_mode_only = False,
-        **kwargs):
-    """Rules for creating an Angular JavaScript bundlee.
-
-    We use the Angular team's internal toolchain for creating Angular-compatible
-    bundles: app_bundle(). This toolchain is not officially supported and is subject
-    to change or deletion.
-
-    The output of this rule is a bundled file with the name '%name%.bundled.js'.
-
-    Args:
-        name: Name of the target.
-        compile: Whether to compile when bundling. Only used internally.
-        dev_mode_only: Whether the binary is for development. When True, it will
-          produce a more readable bundle for debugging.
-        **kwargs: Other keyword arguments to app_bundle() and esbuild(). Typically used for
-          entry_point and deps. Please refer to https://esbuild.github.io/api/
-          for more details.
-    """
-
-    app_bundle(
-        name = name,
-        **kwargs
-    )
-
-    # app_bundle() generates several outputs and we must choose which one becomes
-    # the output bundle for this rule.
-    if dev_mode_only == False:
-        app_bundle_output_name = '%s.min.js' % name
-    else:
-        app_bundle_output_name = '%s.debug.js' % name
-
-    copy_file(
-        name = '%s_bundled_rename' % name,
-        src = app_bundle_output_name,
-        # Unfortunately we cannot name the output `'%s.js' % name` because there
-        # is a file with that name output by app_bundle().
-        out = '%s.bundled.js' % name,
     )
 
 def tf_ts_config(**kwargs):
