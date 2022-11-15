@@ -21,10 +21,6 @@ limitations under the License.
 
 // Angular Material theme definition.
 
-// Include non-theme styles for core.
-@include mat.all-component-typographies();
-@include mat.core();
-
 // Value for `app-bar` property in $tb-background. Can specify an override in
 // _variable.scss to specifically customize this value.
 $tb-app-bar-color: mat.get-color-from-palette($tb-primary, default) !default;
@@ -266,6 +262,8 @@ $tb-dark-theme: map_merge(
 
 // Apply themed style for the global stylesheet (styles.scss).
 @mixin tb-global-themed-styles() {
+  @include mat.core();
+  @include mat.all-component-typographies();
   // Include all theme-styles for the components based on the current theme.
   @include mat.all-component-themes($tb-theme);
 
