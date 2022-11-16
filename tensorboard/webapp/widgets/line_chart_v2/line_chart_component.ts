@@ -38,6 +38,7 @@ import {
   DataSeriesMetadataMap,
   Extent,
   Formatter,
+  InteractionState,
   RendererType,
   Scale,
   ScaleType,
@@ -165,6 +166,8 @@ export class LineChartComponent
     yAxis: {width: 0, height: 0},
   };
   showChartRendererElement: boolean = true;
+
+  interactionState = InteractionState.NONE;
 
   private lineChart: Chart | null = null;
   private isDataUpdated = false;
@@ -496,6 +499,10 @@ export class LineChartComponent
     if (prevValue !== newValue) {
       this.onViewBoxOverridden.next(newValue);
     }
+  }
+
+  onInteractionStateChange(event: InteractionState) {
+    this.interactionState = event;
   }
 
   getIsViewBoxOverridden(): Observable<boolean> {

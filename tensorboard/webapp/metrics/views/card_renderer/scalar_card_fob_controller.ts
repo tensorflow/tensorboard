@@ -30,6 +30,7 @@ import {MinMaxStep} from './scalar_card_types';
   selector: 'scalar-card-fob-controller',
   template: `
     <card-fob-controller
+      [style.pointerEvents]="disableInteraction ? 'none' : 'all'"
       [axisDirection]="axisDirection"
       [timeSelection]="timeSelection"
       [rangeSelectionEnabled]="rangeSelectionEnabled"
@@ -58,6 +59,7 @@ export class ScalarCardFobController {
   @Input() axisSize!: number;
   @Input() rangeSelectionEnabled: boolean = false;
   @Input() isProspectiveFobFeatureEnabled: Boolean = false;
+  @Input() disableInteraction: boolean = false;
 
   @Output() onTimeSelectionChanged = new EventEmitter<{
     timeSelection: TimeSelection;

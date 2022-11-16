@@ -52,6 +52,7 @@ limitations under the License.
       [tooltipTemplate]="tooltipTemplate"
       (onViewExtentChange)="onViewBoxChanged($event)"
       (onViewExtentReset)="viewBoxReset()"
+      (onInteractionStateChange)="onInteractionStateChange($event)"
     ></line-chart-interactive-view>
   </div>
   <div class="y-axis" #yAxis>
@@ -90,7 +91,8 @@ limitations under the License.
         xScale: xScale,
         yScale: yScale,
         domDimension: domDimensions.main,
-        viewExtent: viewBox
+        viewExtent: viewBox,
+        interactionState: interactionState
       }"
     ></ng-container>
   </div>

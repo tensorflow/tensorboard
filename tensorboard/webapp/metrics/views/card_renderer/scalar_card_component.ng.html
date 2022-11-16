@@ -186,9 +186,11 @@ limitations under the License.
   let-viewExtent="viewExtent"
   let-domDim="domDimension"
   let-xScale="xScale"
+  let-interactionState="interactionState"
 >
   <ng-container *ngIf="showFobController()">
     <scalar-card-fob-controller
+      [disableInteraction]="interactionState !== 'NONE'"
       [timeSelection]="stepOrLinkedTimeSelection"
       [scale]="xScale"
       [minMaxHorizontalViewExtend]="viewExtent.x"

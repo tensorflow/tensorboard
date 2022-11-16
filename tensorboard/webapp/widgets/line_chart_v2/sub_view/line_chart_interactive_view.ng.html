@@ -18,10 +18,10 @@ limitations under the License.
   #dots
   class="dots"
   [class.pannable]="specialKeyPressed"
-  [class.draggable]="state === InteractionState.NONE || state === InteractionState.DRAG_ZOOMING"
-  [class.panning]="state === InteractionState.PANNING"
+  [class.draggable]="state.getValue() === InteractionState.NONE || state.getValue() === InteractionState.DRAG_ZOOMING"
+  [class.panning]="state.getValue() === InteractionState.PANNING"
 >
-  <ng-container *ngIf="state === InteractionState.NONE">
+  <ng-container *ngIf="state.getValue() === InteractionState.NONE">
     <ng-container
       *ngFor="let datum of cursoredData; trackBy: trackBySeriesName"
     >
@@ -35,7 +35,7 @@ limitations under the License.
     </ng-container>
   </ng-container>
   <rect
-    *ngIf="state === InteractionState.DRAG_ZOOMING"
+    *ngIf="state.getValue() === InteractionState.DRAG_ZOOMING"
     class="zoom-box"
     [attr.x]="zoomBoxInUiCoordinate.x"
     [attr.width]="zoomBoxInUiCoordinate.width"
@@ -54,7 +54,7 @@ limitations under the License.
 <ng-template
   cdkConnectedOverlay
   [cdkConnectedOverlayOrigin]="tooltipOriginEl"
-  [cdkConnectedOverlayOpen]="tooltipDisplayAttached && state === InteractionState.NONE"
+  [cdkConnectedOverlayOpen]="tooltipDisplayAttached && state.getValue() === InteractionState.NONE"
   [cdkConnectedOverlayPositions]="tooltipPositions"
   [cdkConnectedOverlayScrollStrategy]="scrollStrategy"
   [cdkConnectedOverlayLockPosition]="false"
