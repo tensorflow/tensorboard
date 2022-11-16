@@ -22,6 +22,7 @@ import {
   DataSeriesMetadataMap,
   Dimension,
   Extent,
+  InteractionState,
   Scale,
   ScaleType,
 } from '../lib/public_types';
@@ -49,6 +50,7 @@ interface Coord {
       [tooltipOriginEl]="tooltipOrigin"
       (onViewExtentChange)="onViewExtentChange($event)"
       (onViewExtentReset)="onViewExtentReset()"
+      (onInteractionStateChange)="onInteractionStateChange($event)"
     ></line-chart-interactive-view>
     <div #tooltipOrigin="cdkOverlayOrigin" cdkOverlayOrigin>origin</div>
   `,
@@ -86,12 +88,15 @@ class TestableComponent {
 
   @Input()
   onViewExtentReset!: () => void;
+
+  onInteractionStateChange(interactiveState: InteractionState) {}
 }
 
 describe('line_chart_v2/sub_view/interactive_view test', () => {
   let overlayContainer: OverlayContainer;
   let onViewExtentChange: jasmine.Spy;
   let onViewExtentReset: jasmine.Spy;
+  let onInteractionStateChange: jasmine.Spy;
 
   const Selector = {
     TOOLTIP_ROW_CIRCLE: '.tooltip-row-circle',
@@ -120,6 +125,8 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
 
     fixture.componentInstance.onViewExtentChange = onViewExtentChange;
     fixture.componentInstance.onViewExtentReset = onViewExtentReset;
+    fixture.componentInstance.onInteractionStateChange =
+      onInteractionStateChange;
 
     return fixture;
   }
@@ -164,6 +171,7 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
 
     onViewExtentChange = jasmine.createSpy();
     onViewExtentReset = jasmine.createSpy();
+    onInteractionStateChange = jasmine.createSpy();
   });
 
   describe('tooltips', () => {
@@ -324,13 +332,17 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
       fixture.detectChanges();
 
       emulateDrag(fixture, {x: 10, y: 10}, {x: 100, y: 100});
-      expect(onViewExtentChange).toHaveBeenCalledTimes(1);
-      expect(onViewExtentChange).toHaveBeenCalledWith({
+      expect(onViewExtentChange).toHaveBeenCalledOnceWith({
         dataExtent: {
           x: [110, 200],
           y: [500, 950],
         },
       });
+      expect(onInteractionStateChange.calls.allArgs()).toEqual([
+        [InteractionState.NONE],
+        [InteractionState.DRAG_ZOOMING],
+        [InteractionState.NONE],
+      ]);
     });
 
     it('hides tooltip when dragging to zoom', () => {
@@ -352,6 +364,10 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
       fixture.detectChanges();
 
       expect(overlayContainer.getContainerElement().childElementCount).toBe(0);
+      expect(onInteractionStateChange.calls.allArgs()).toEqual([
+        [InteractionState.NONE],
+        [InteractionState.DRAG_ZOOMING],
+      ]);
     });
 
     it('does not trigger drag zoom for right clicks', () => {
@@ -376,6 +392,10 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
       fixture.detectChanges();
 
       expect(onViewExtentChange).not.toHaveBeenCalled();
+      expect(onInteractionStateChange.calls.allArgs()).toEqual([
+        [InteractionState.NONE],
+        [InteractionState.DRAG_ZOOMING],
+      ]);
     });
 
     it('sets class, `dragging`, on svg while drag zooming', () => {
@@ -408,6 +428,10 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
       fixture.detectChanges();
 
       emitEvent(fixture, 'dblclick', {});
+      expect(onInteractionStateChange.calls.allArgs()).toEqual([
+        [InteractionState.NONE],
+        [InteractionState.NONE],
+      ]);
     });
   });
 
@@ -481,6 +505,10 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
       });
 
       expect(onViewExtentChange).not.toHaveBeenCalled();
+      expect(onInteractionStateChange.calls.allArgs()).toEqual([
+        [InteractionState.NONE],
+        [InteractionState.DRAG_ZOOMING],
+      ]);
     });
 
     it('changes mode when left button is clicked while panning', () => {
@@ -515,6 +543,11 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
       });
 
       expect(onViewExtentChange).toHaveBeenCalledTimes(1);
+      expect(onInteractionStateChange.calls.allArgs()).toEqual([
+        [InteractionState.NONE],
+        [InteractionState.PANNING],
+        [InteractionState.DRAG_ZOOMING],
+      ]);
     });
 
     it('does not pan when clicking middle button while drag zooming', () => {
@@ -549,6 +582,10 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
       });
 
       expect(onViewExtentChange).not.toHaveBeenCalled();
+      expect(onInteractionStateChange.calls.allArgs()).toEqual([
+        [InteractionState.NONE],
+        [InteractionState.DRAG_ZOOMING],
+      ]);
     });
 
     it('sets class, `panning`, on svg while panning', () => {

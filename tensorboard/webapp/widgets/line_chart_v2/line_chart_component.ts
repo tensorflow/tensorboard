@@ -503,7 +503,6 @@ export class LineChartComponent
 
   onInteractionStateChange(event: InteractionState) {
     this.interactionState = event;
-    // this.changeDetector.detectChanges();
   }
 
   getIsViewBoxOverridden(): Observable<boolean> {
