@@ -108,7 +108,9 @@ mod access_token {
         /// Tests whether this token has not expired.
         pub fn is_valid(&self) -> bool {
             match &self.0 {
-                Some(t) => t.has_expired(),
+                Some(t) => {
+                    t.has_expired() || t.expires_at().is_none()
+                },
                 _ => false,
             }
         }
@@ -119,7 +121,7 @@ mod access_token {
         /// This exists as an optimization so that a [`TokenStore`] doesn't need to check locks all the
         /// time when the credential is anonymous, anyway.
         pub fn anonymous(&self) -> bool {
-            matches!(&self.0, Some(_))
+            !matches!(&self.0, Some(_))
         }
     }
     impl Debug for AccessToken {
