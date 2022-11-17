@@ -37,12 +37,6 @@ export enum Fob {
   END,
 }
 
-export enum FobHoverArea {
-  NONE = 'NONE',
-  CLICKBOX = 'CLICKBOX',
-  FOB = 'FOB',
-}
-
 const TIME_SELECTION_TO_FOB: Record<keyof TimeSelection, Fob> = {
   start: Fob.START,
   end: Fob.END,
@@ -80,9 +74,6 @@ export class CardFobControllerComponent {
   private hasFobMoved: boolean = false;
   private currentDraggingFob: Fob = Fob.NONE;
   private affordance: TimeSelectionAffordance = TimeSelectionAffordance.NONE;
-
-  hoveringProspectiveFob = false;
-  hoveringProspectiveFobArea = false;
 
   // mouseListener and stopListener are used to keep a reference to the
   // EventListeners used to track mouse movement and mouse up in order to
@@ -158,10 +149,6 @@ export class CardFobControllerComponent {
 
   isVertical() {
     return this.axisDirection === AxisDirection.VERTICAL;
-  }
-
-  isHoveringProspectiveFob() {
-    return this.hoveringProspectiveFob || this.hoveringProspectiveFobArea;
   }
 
   private shouldSwapFobs(newStep: number) {
@@ -253,15 +240,7 @@ export class CardFobControllerComponent {
     this.hasFobMoved = true;
   }
 
-  mouseOver(event: MouseEvent, fobHoverArea: FobHoverArea) {
-    switch (fobHoverArea) {
-      case FobHoverArea.CLICKBOX:
-        this.hoveringProspectiveFobArea = true;
-        break;
-      case FobHoverArea.FOB:
-        this.hoveringProspectiveFob = true;
-        break;
-    }
+  mouseOver(event: MouseEvent) {
     if (
       this.timeSelection?.end !== null &&
       this.timeSelection?.end !== undefined
@@ -472,15 +451,7 @@ export class CardFobControllerComponent {
     this.onTimeSelectionToggled.emit();
   }
 
-  onProspectiveAreaMouseLeave(fobHoverArea: FobHoverArea) {
-    switch (fobHoverArea) {
-      case FobHoverArea.CLICKBOX:
-        this.hoveringProspectiveFobArea = false;
-        break;
-      case FobHoverArea.FOB:
-        this.hoveringProspectiveFob = false;
-        break;
-    }
+  onProspectiveAreaMouseLeave() {
     this.onPrespectiveStepChanged.emit(null);
   }
 }

@@ -3455,20 +3455,23 @@ describe('scalar card', () => {
         expect(fobs.length).toEqual(1);
 
         // Click the prospective fob to set the start time
-        fixture.debugElement
-          .query(By.css('.prospective-fob-area'))
-          .nativeElement.click();
+        testController.prospectiveFobClicked(new MouseEvent('mouseclick'));
+        fixture.detectChanges();
+
+        // One start fob
+        fobs = fixture.debugElement.queryAll(By.directive(CardFobComponent));
+        expect(fobs.length).toEqual(2);
         fixture.detectChanges();
 
         // One start fob + 1 prospective fob
+        testController.prospectiveStep = 25;
+        fixture.detectChanges();
+
         fobs = fixture.debugElement.queryAll(By.directive(CardFobComponent));
         expect(fobs.length).toEqual(2);
 
         // Click the prospective fob to set the end time
-        testController.prospectiveStep = 25;
-        fixture.debugElement
-          .query(By.css('.prospective-fob-area'))
-          .nativeElement.click();
+        testController.prospectiveFobClicked(new MouseEvent('mouseclick'));
         fixture.detectChanges();
 
         // One start fob, one end fob
