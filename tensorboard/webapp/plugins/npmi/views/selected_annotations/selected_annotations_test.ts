@@ -61,6 +61,10 @@ describe('Npmi Selected Annotations', () => {
     });
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders selected annotations component expanded', () => {
     const fixture = TestBed.createComponent(SelectedAnnotationsContainer);
     fixture.detectChanges();

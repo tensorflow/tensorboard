@@ -91,6 +91,10 @@ describe('metrics effects', () => {
     );
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   describe('#dataEffects', () => {
     beforeEach(() => {
       effects.dataEffects$.subscribe();

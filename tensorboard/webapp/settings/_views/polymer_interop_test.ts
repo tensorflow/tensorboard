@@ -43,6 +43,10 @@ describe('settings polymer_interop', () => {
     } as unknown as HTMLElement);
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('sets pagination limit when pageSize changes', () => {
     store.overrideSelector(getPageSize, 5);
     const fixture = TestBed.createComponent(SettingsPolymerInteropContainer);

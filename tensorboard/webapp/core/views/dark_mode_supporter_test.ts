@@ -35,6 +35,7 @@ describe('dark mode supporter test', () => {
 
   afterEach(() => {
     document.body.classList.remove('dark-mode');
+    store?.resetSelectors();
   });
 
   it('sets class name on body when dark mode is enabled', () => {

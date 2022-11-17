@@ -85,6 +85,7 @@ describe('persistent_settings effects test', () => {
 
   afterEach(fakeAsync(() => {
     discardPeriodicTasks();
+    store?.resetSelectors();
   }));
 
   describe('#initializeAndUpdateSettings$', () => {

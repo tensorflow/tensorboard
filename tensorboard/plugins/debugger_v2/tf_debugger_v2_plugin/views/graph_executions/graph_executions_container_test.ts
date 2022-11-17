@@ -87,6 +87,10 @@ describe('Graph Executions Container', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('does not render execs viewport if # execs = 0', fakeAsync(() => {
     const fixture = TestBed.createComponent(GraphExecutionsContainer);
     store.overrideSelector(getNumGraphExecutions, 0);

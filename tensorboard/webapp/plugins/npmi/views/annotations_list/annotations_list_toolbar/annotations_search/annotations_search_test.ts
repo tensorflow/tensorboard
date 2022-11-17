@@ -58,6 +58,10 @@ describe('Npmi Annotations Search Container', () => {
     });
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders npmi annotations search component', () => {
     const fixture = TestBed.createComponent(AnnotationsSearchContainer);
     fixture.detectChanges();

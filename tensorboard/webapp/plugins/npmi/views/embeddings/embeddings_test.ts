@@ -68,6 +68,10 @@ describe('Npmi Embeddings Container', () => {
     });
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders npmi embeddings component without runs', () => {
     store.overrideSelector(
       getCurrentRouteRunSelection,

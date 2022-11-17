@@ -84,6 +84,10 @@ describe('layout test', () => {
     store.overrideSelector(getSideBarWidthInPercent, 10);
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders sidebar and main content', () => {
     const fixture = TestBed.createComponent(TestableComponent);
     fixture.detectChanges();

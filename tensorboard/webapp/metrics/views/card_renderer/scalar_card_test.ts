@@ -341,6 +341,10 @@ describe('scalar card', () => {
     );
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   describe('basic renders', () => {
     it('renders empty chart when there is no data', fakeAsync(() => {
       const cardMetadata = {

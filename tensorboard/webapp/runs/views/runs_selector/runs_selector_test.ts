@@ -40,6 +40,10 @@ describe('runs selector test', () => {
     selectSpy = spyOn(store, 'select').and.callThrough();
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   describe('runs table', () => {
     it('renders no exp name when only one exp is being viewed', () => {
       store.overrideSelector(getExperimentIdsFromRoute, ['123']);

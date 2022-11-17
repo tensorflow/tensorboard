@@ -134,6 +134,10 @@ describe('Npmi Violin Filter Container', () => {
     fixture.detectChanges();
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders npmi violin filter component', () => {
     const chartContainer = fixture.debugElement.query(css.CHART_CONTAINER);
     expect(chartContainer).toBeTruthy();

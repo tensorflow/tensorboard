@@ -395,6 +395,10 @@ describe('Debugger effects', () => {
     store.overrideSelector(getActivePlugin, '');
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   function createAndSubscribeToDebuggerEffectsWithEmptyRepeater() {
     spyOn(TEST_ONLY, 'createTimedRepeater').and.callFake(
       (stream: Observable<any>) => stream

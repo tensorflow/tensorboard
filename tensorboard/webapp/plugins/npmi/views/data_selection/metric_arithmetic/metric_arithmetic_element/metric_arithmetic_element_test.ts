@@ -79,6 +79,10 @@ describe('Npmi Metric Arithmetic Element Container', () => {
     });
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders npmi metric arithmetic element component', () => {
     const fixture = TestBed.createComponent(MetricArithmeticElementContainer);
     fixture.componentInstance.metric = 'npmi@test';

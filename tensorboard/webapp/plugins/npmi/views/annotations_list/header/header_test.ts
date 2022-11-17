@@ -86,6 +86,10 @@ describe('Npmi Annotations List Header Container', () => {
     fixture.detectChanges();
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders checkbox and container', () => {
     const checkboxContainer = fixture.debugElement.query(
       css.CHECKBOX_CONTAINER

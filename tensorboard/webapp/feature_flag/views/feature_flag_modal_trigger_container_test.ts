@@ -33,7 +33,7 @@ import {
   getShowFlagsEnabled,
 } from '../store/feature_flag_selectors';
 import {FeatureFlags} from '../types';
-import {FeatureFlagModalTriggerContainer} from './feature_flag_modal_trigger_container';
+import {FeatureFlagModalTriggerContainer, TEST_ONLY} from './feature_flag_modal_trigger_container';
 import {FeatureFlagPageContainer} from './feature_flag_page_container';
 
 describe('feature_flag_modal_trigger_container', () => {
@@ -58,6 +58,13 @@ describe('feature_flag_modal_trigger_container', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
 
     spyOn(store, 'dispatch').and.stub();
+
+    // Fake out window.location.reload so it doesn't do anything.
+    TEST_ONLY.util.reloadWindow = () => {};
+  });
+
+  afterEach(() => {
+    store?.resetSelectors();
   });
 
   function createComponent() {

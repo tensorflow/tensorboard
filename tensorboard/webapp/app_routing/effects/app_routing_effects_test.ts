@@ -250,6 +250,10 @@ describe('app_routing_effects', () => {
     );
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   describe('bootstrapReducers$', () => {
     beforeEach(() => {
       effects = TestBed.inject(AppRoutingEffects);

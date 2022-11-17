@@ -61,6 +61,10 @@ describe('plugin_api_host test', () => {
     runApi = TestBed.inject(PluginRunsApiHostImpl);
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   describe('runs apis', () => {
     describe('#experimental.RunsChanged', () => {
       it('broadcasts runs when runs change', () => {

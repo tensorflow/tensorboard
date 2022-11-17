@@ -69,6 +69,10 @@ describe('core deeplink provider', () => {
       });
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   describe('time series', () => {
     describe('smoothing state', () => {
       it('serializes the smoothing state to the URL', () => {
