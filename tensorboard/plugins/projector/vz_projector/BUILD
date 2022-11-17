@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_web_test_suite", "tf_projector_js_binary", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_web_test_suite", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tb_combine_html", "tf_web_library")
 
 package(default_visibility = ["//tensorboard/plugins/projector:__subpackages__"])
@@ -90,7 +90,7 @@ tf_ts_library(
 
 ################# Standalone development #################
 
-tf_projector_js_binary(
+tf_js_binary(
     name = "standalone_bundle_no_vendor",
     compile = 1,
     entry_point = "bundle.ts",
