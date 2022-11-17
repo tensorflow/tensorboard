@@ -23,7 +23,7 @@ import {FeatureFlagPageContainer} from './feature_flag_page_container';
 const util = {
   reloadWindow: () => {
     window.location.reload();
-  }
+  },
 };
 
 @Component({
@@ -68,4 +68,4 @@ export class FeatureFlagModalTriggerContainer implements OnInit {
 
 export const TEST_ONLY = {
   util,
-}
+};

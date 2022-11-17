@@ -33,7 +33,10 @@ import {
   getShowFlagsEnabled,
 } from '../store/feature_flag_selectors';
 import {FeatureFlags} from '../types';
-import {FeatureFlagModalTriggerContainer, TEST_ONLY} from './feature_flag_modal_trigger_container';
+import {
+  FeatureFlagModalTriggerContainer,
+  TEST_ONLY,
+} from './feature_flag_modal_trigger_container';
 import {FeatureFlagPageContainer} from './feature_flag_page_container';
 
 describe('feature_flag_modal_trigger_container', () => {
