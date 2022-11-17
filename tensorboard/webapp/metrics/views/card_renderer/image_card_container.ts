@@ -56,7 +56,7 @@ import {
 import {CardId, CardMetadata} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
-import {maybeClipLinkedTimeSelection, TimeSelectionView} from './utils';
+import {maybeClipTimeSelectionView, TimeSelectionView} from './utils';
 
 const DISTANCE_RATIO = 0.1;
 
@@ -263,7 +263,7 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
 
           const minStep = Math.min(...steps);
           const maxStep = Math.max(...steps);
-          return maybeClipLinkedTimeSelection(
+          return maybeClipTimeSelectionView(
             linkedTimeSelection,
             minStep,
             maxStep

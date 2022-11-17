@@ -101,8 +101,8 @@ import {
   SortingInfo,
 } from './scalar_card_types';
 import {
-  clipStepWithinMinMax,
-  maybeClipLinkedTimeSelection,
+  maybeClipTimeSelectionView,
+  maybleClipTimeSelection,
   partitionSeries,
   TimeSelectionView,
 } from './utils';
@@ -445,7 +445,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
             forkedTimeSelection.end = {step: maxStep};
           }
 
-          return maybeClipLinkedTimeSelection(
+          return maybeClipTimeSelectionView(
             forkedTimeSelection,
             minStep,
             maxStep
@@ -615,21 +615,28 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       this.store.select(getMetricsRangeSelectionEnabled),
     ]).subscribe(
       ([{minStep, maxStep}, enableStepSelector, rangeSelectionEnabled]) => {
-        this.stepSelectorTimeSelection$.next(
-          enableStepSelector
-            ? {
-                start: {
-                  step: clipStepWithinMinMax(
-                    this.stepSelectorTimeSelection$.getValue()?.start.step ??
-                      minStep,
-                    minStep,
-                    maxStep
-                  ),
-                },
-                end: rangeSelectionEnabled ? {step: maxStep} : null,
-              }
-            : null
+        if (!enableStepSelector) {
+          this.stepSelectorTimeSelection$.next(null);
+          return;
+        }
+        const currentStartStep =
+          this.stepSelectorTimeSelection$.getValue()?.start.step;
+        const currentMaxStep =
+          this.stepSelectorTimeSelection$.getValue()?.end?.step;
+
+        const potentiallyClippedTimeSelection = maybleClipTimeSelection(
+          {
+            start: {
+              step: currentStartStep ?? minStep,
+            },
+            end: rangeSelectionEnabled
+              ? {step: currentMaxStep ?? maxStep}
+              : null,
+          },
+          minStep,
+          maxStep
         );
+        this.stepSelectorTimeSelection$.next(potentiallyClippedTimeSelection);
       }
     );
   }
@@ -689,7 +696,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     newTimeSelectionWithAffordance: TimeSelectionWithAffordance
   ) {
     const {minStep, maxStep} = this.minMaxSteps$.getValue();
-    const {startStep, endStep} = maybeClipLinkedTimeSelection(
+    const {startStep, endStep} = maybeClipTimeSelectionView(
       newTimeSelectionWithAffordance.timeSelection,
       minStep,
       maxStep

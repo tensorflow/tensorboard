@@ -101,7 +101,26 @@ export function clipStepWithinMinMax(value: number, min: number, max: number) {
   return value;
 }
 
-export function maybeClipLinkedTimeSelection(
+export function maybleClipTimeSelection(
+  timeSelection: TimeSelection,
+  minStep: number,
+  maxStep: number
+): TimeSelection {
+  const timeSelectionView = maybeClipTimeSelectionView(
+    timeSelection,
+    minStep,
+    maxStep
+  );
+  return {
+    start: {step: timeSelectionView.startStep},
+    end:
+      timeSelectionView.endStep === null
+        ? null
+        : {step: timeSelectionView.endStep},
+  };
+}
+
+export function maybeClipTimeSelectionView(
   timeSelection: TimeSelection,
   minStep: number,
   maxStep: number
