@@ -58,10 +58,10 @@ export class ScalarCardDataTable {
     endPointIndex: number,
     smoothed: boolean = false
   ): number {
-    let minValue = this.getValue(points[startPointIndex], smoothed);
+    let minValue = this.maybeSmoothedValue(points[startPointIndex], smoothed);
     for (let i = startPointIndex; i <= endPointIndex; i++) {
-      if (minValue > this.getValue(points[i], smoothed)) {
-        minValue = this.getValue(points[i], smoothed);
+      if (minValue > this.maybeSmoothedValue(points[i], smoothed)) {
+        minValue = this.maybeSmoothedValue(points[i], smoothed);
       }
     }
     return minValue;
@@ -73,16 +73,16 @@ export class ScalarCardDataTable {
     endPointIndex: number,
     smoothed: boolean = false
   ): number {
-    let maxValue = this.getValue(points[startPointIndex], smoothed);
+    let maxValue = this.maybeSmoothedValue(points[startPointIndex], smoothed);
     for (let i = startPointIndex; i <= endPointIndex; i++) {
-      if (maxValue < this.getValue(points[i], smoothed)) {
-        maxValue = this.getValue(points[i], smoothed);
+      if (maxValue < this.maybeSmoothedValue(points[i], smoothed)) {
+        maxValue = this.maybeSmoothedValue(points[i], smoothed);
       }
     }
     return maxValue;
   }
 
-  getValue(point: ScalarCardPoint, smoothed: boolean) {
+  maybeSmoothedValue(point: ScalarCardPoint, smoothed: boolean) {
     return smoothed ? point.y : point.value;
   }
 
