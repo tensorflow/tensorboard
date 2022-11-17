@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div class="fob">
+<div [ngClass]="allowRemoval ? 'fob' : 'fob unremovable'">
   <span
     contenteditable
     #stepSpan
