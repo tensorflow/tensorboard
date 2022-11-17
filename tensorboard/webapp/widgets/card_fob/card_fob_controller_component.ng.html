@@ -20,25 +20,28 @@ limitations under the License.
     *ngIf="isProspectiveFobFeatureEnabled && !rangeSelectionEnabled"
   >
     <div
-      #prospectiveFobWrapper
-      *ngIf="prospectiveStep !== null"
-      class="time-fob-wrapper prospectiveFob"
-      [style.transform]="getCssTranslatePxForProspectiveFob()"
-    >
-      <div *ngIf="showExtendedLine" class="extended-line"></div>
-      <card-fob
-        [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
-        [allowRemoval]="false"
-        [step]="prospectiveStep"
-      ></card-fob>
-    </div>
-    <div
       class="prospective-fob-area"
       [ngClass]="isVertical() ? 'vertical-prospective-area' : 'horizontal-prospective-area'"
-      (mousemove)="mouseOver($event)"
-      (mouseleave)="onProspectiveAreaMouseLeave()"
+      (mousemove)="mouseOver($event, 'CLICKBOX')"
+      (mouseleave)="onProspectiveAreaMouseLeave('CLICKBOX')"
       (click)="prospectiveFobClicked($event)"
-    ></div>
+    >
+      <div
+        #prospectiveFobWrapper
+        *ngIf="prospectiveStep !== null"
+        (mouseover)="mouseOver($event, 'FOB')"
+        (mouseleave)="onProspectiveAreaMouseLeave('FOB')"
+        [ngClass]="isHoveringProspectiveFob() ? 'time-fob-wrapper prospectiveFob prospective-fob-hover' : 'time-fob-wrapper prospectiveFob'"
+        [style.transform]="getCssTranslatePxForProspectiveFob()"
+      >
+        <div *ngIf="showExtendedLine" class="extended-line"></div>
+        <card-fob
+          [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
+          [allowRemoval]="false"
+          [step]="prospectiveStep"
+        ></card-fob>
+      </div>
+    </div>
   </ng-container>
   <div
     #startFobWrapper

@@ -53,14 +53,14 @@ limitations under the License.
 
 .prospectiveFob {
   opacity: 0.8;
-  cursor: pointer;
 
-  :hover {
+  &.prospective-fob-hover {
     opacity: 1;
   }
 }
 
 .horizontal-prospective-area {
+  cursor: pointer;
   bottom: 0;
   position: absolute;
   // Height/Width to match x-axis

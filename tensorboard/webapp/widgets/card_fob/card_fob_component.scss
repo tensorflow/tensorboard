@@ -33,6 +33,10 @@ limitations under the License.
   &:active {
     cursor: grabbing;
   }
+
+  &.unremovable {
+    padding: 2px 4px;
+  }
 }
 
 span {
