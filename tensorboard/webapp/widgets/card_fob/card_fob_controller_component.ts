@@ -382,26 +382,41 @@ export class CardFobControllerComponent {
 
   prospectiveFobClicked(event: Event) {
     event.stopPropagation();
-    if (this.prospectiveStep === null) {
+    const newTimeSelection = this.getProspectiveTimeSelection();
+    if (!newTimeSelection) {
       return;
     }
-    const newTimeSelection = this.timeSelection
-      ? {
-          ...this.timeSelection,
-          end: {
-            step: this.prospectiveStep,
-          },
-        }
-      : {
-          start: {step: this.prospectiveStep},
-          end: null,
-        };
 
     this.onTimeSelectionChanged.emit({
       affordance: TimeSelectionAffordance.FOB_ADDED,
       timeSelection: newTimeSelection,
     });
     this.onPrespectiveStepChanged.emit(null);
+  }
+
+  private getProspectiveTimeSelection() {
+    if (!this.prospectiveStep) {
+      return;
+    }
+    if (this.timeSelection) {
+      const startStep = Math.min(
+        this.timeSelection.start.step,
+        this.prospectiveStep
+      );
+      const endStep = Math.max(
+        this.timeSelection.start.step,
+        this.prospectiveStep
+      );
+      return {
+        start: {step: startStep},
+        end: {step: endStep},
+      };
+    }
+
+    return {
+      start: {step: this.prospectiveStep},
+      end: null,
+    };
   }
 
   /**

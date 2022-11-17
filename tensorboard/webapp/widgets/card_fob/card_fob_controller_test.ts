@@ -1347,7 +1347,7 @@ describe('card_fob_controller', () => {
       expect(prospectiveFob).toBeTruthy();
     });
 
-    it('does not render when feature flag is disenabled', () => {
+    it('does not render when feature flag is disabled', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 4}, end: null},
         isProspectiveFobFeatureEnabled: false,
@@ -1405,6 +1405,33 @@ describe('card_fob_controller', () => {
           .top;
 
       expect(prospectiveFobTopPosition).toEqual(2);
+    });
+
+    describe('builds timeSelection corectly', () => {
+      it('when prospective step is less than timeSelection.start.step', () => {
+        const fixture = createComponent({
+          timeSelection: {start: {step: 4}, end: null},
+          axisDirection: AxisDirection.VERTICAL,
+          isProspectiveFobFeatureEnabled: true,
+          prospectiveStep: 2,
+        });
+        fixture.detectChanges();
+
+        fixture.debugElement
+          .query(By.css('.prospective-fob-area'))
+          .nativeElement.click();
+        expect(onTimeSelectionChanged.calls.allArgs()).toEqual([
+          [
+            {
+              timeSelection: {
+                start: {step: 2},
+                end: {step: 4},
+              },
+              affordance: TimeSelectionAffordance.FOB_ADDED,
+            },
+          ],
+        ]);
+      });
     });
 
     describe('prospective area', () => {
