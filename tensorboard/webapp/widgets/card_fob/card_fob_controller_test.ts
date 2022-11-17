@@ -1407,7 +1407,7 @@ describe('card_fob_controller', () => {
       expect(prospectiveFobTopPosition).toEqual(2);
     });
 
-    describe('builds timeSelection corectly', () => {
+    describe('builds timeSelection correctly', () => {
       it('when prospective step is less than timeSelection.start.step', () => {
         const fixture = createComponent({
           timeSelection: {start: {step: 4}, end: null},
