@@ -108,9 +108,7 @@ mod access_token {
         /// Tests whether this token has not expired.
         pub fn is_valid(&self) -> bool {
             match &self.0 {
-                Some(t) => {
-                    t.has_expired() || t.expires_at().is_none()
-                },
+                Some(t) => !t.has_expired(),
                 _ => false,
             }
         }
