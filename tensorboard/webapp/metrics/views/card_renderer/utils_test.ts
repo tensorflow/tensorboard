@@ -18,7 +18,7 @@ import {
   clipStepWithinMinMax,
   getClosestStep,
   getDisplayNameForRun,
-  maybeClipLinkedTimeSelection,
+  maybeClipTimeSelectionView,
   maybeSetClosestStartStep,
   partitionSeries,
 } from './utils';
@@ -335,7 +335,7 @@ describe('metrics card_renderer utils test', () => {
   describe('#maybeClipLinkedTimeSelection', () => {
     it('clips to the minStep when time selection start step is smaller than the view extend', () => {
       expect(
-        maybeClipLinkedTimeSelection(
+        maybeClipTimeSelectionView(
           {
             start: {step: 0},
             end: null,
@@ -352,7 +352,7 @@ describe('metrics card_renderer utils test', () => {
 
     it('clips to maxStep when time selection end step is greater than view extend', () => {
       expect(
-        maybeClipLinkedTimeSelection(
+        maybeClipTimeSelectionView(
           {
             start: {step: 0},
             end: {step: 4},
@@ -369,7 +369,7 @@ describe('metrics card_renderer utils test', () => {
 
     it('does not clip when time selection falls into the view extend', () => {
       expect(
-        maybeClipLinkedTimeSelection(
+        maybeClipTimeSelectionView(
           {
             start: {step: 10},
             end: null,
@@ -386,7 +386,7 @@ describe('metrics card_renderer utils test', () => {
 
     it('returns minStep and maxStep when the timeselection is a superset of the min/maxstep', () => {
       expect(
-        maybeClipLinkedTimeSelection(
+        maybeClipTimeSelectionView(
           {
             start: {step: 0},
             end: {step: 100},
@@ -403,7 +403,7 @@ describe('metrics card_renderer utils test', () => {
 
     it('clips both fobs to maxStep when timeSelection is greater than maxStep', () => {
       expect(
-        maybeClipLinkedTimeSelection(
+        maybeClipTimeSelectionView(
           {
             start: {step: 50},
             end: {step: 100},
@@ -420,7 +420,7 @@ describe('metrics card_renderer utils test', () => {
 
     it('returns startStep === endStep === minStep when timeSelection is below minStep', () => {
       expect(
-        maybeClipLinkedTimeSelection(
+        maybeClipTimeSelectionView(
           {
             start: {step: 0},
             end: {step: 10},
@@ -437,7 +437,7 @@ describe('metrics card_renderer utils test', () => {
 
     it('does not clip when time selection falls within the view extent', () => {
       expect(
-        maybeClipLinkedTimeSelection(
+        maybeClipTimeSelectionView(
           {
             start: {step: 0},
             end: {step: 4},
@@ -452,7 +452,7 @@ describe('metrics card_renderer utils test', () => {
       });
 
       expect(
-        maybeClipLinkedTimeSelection(
+        maybeClipTimeSelectionView(
           {
             start: {step: 1},
             end: {step: 3},

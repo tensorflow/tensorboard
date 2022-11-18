@@ -2509,6 +2509,15 @@ describe('scalar card', () => {
           minStep: 10,
           maxStep: 30,
         });
+
+        fixture.componentInstance.onLineChartZoom({
+          x: [8, 31],
+          y: [0, 100],
+        });
+        expect(newSteps!).toEqual({
+          minStep: 10,
+          maxStep: 30,
+        });
       }));
     });
   });

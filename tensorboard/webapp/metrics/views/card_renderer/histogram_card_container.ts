@@ -48,7 +48,7 @@ import {CardId, CardMetadata} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {
-  maybeClipLinkedTimeSelection,
+  maybeClipTimeSelectionView,
   maybeSetClosestStartStep,
   TimeSelectionView,
 } from './utils';
@@ -182,7 +182,7 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
           minStep = Math.min(step, minStep);
           maxStep = Math.max(step, maxStep);
         }
-        const linkedTimeSelectionView = maybeClipLinkedTimeSelection(
+        const linkedTimeSelectionView = maybeClipTimeSelectionView(
           linkedTimeSelection,
           minStep,
           maxStep
