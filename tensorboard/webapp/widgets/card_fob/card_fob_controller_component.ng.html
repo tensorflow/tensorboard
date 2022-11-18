@@ -29,13 +29,14 @@ limitations under the License.
         #prospectiveFobWrapper
         *ngIf="prospectiveStep !== null"
         (click)="prospectiveFobClicked($event)"
-        class="time-fob-wrapper prospectiveFob"
+        class="time-fob-wrapper"
         [style.transform]="getCssTranslatePxForProspectiveFob()"
       >
         <div *ngIf="showExtendedLine" class="extended-line"></div>
         <card-fob
           [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
           [allowRemoval]="false"
+          [isProspective]="true"
           [step]="prospectiveStep"
         ></card-fob>
       </div>

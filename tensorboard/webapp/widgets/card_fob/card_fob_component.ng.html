@@ -15,7 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div [ngClass]="allowRemoval ? 'fob' : 'fob unremovable'">
+<div
+  [ngClass]="{'fob': true, 'unremovable': !allowRemoval, 'prospective': isProspective}"
+>
   <span
     contenteditable
     #stepSpan
@@ -33,5 +35,12 @@ limitations under the License.
     (click)="fobRemoved.emit()"
   >
     <mat-icon svgIcon="close_24px"></mat-icon>
+  </button>
+  <button
+    aria-label="Deselect fob"
+    (click)="fobRemoved.emit()"
+    *ngIf="isProspective"
+  >
+    <mat-icon svgIcon="keep_24px"></mat-icon>
   </button>
 </div>
