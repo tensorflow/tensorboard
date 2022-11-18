@@ -101,7 +101,7 @@ export function clipStepWithinMinMax(value: number, min: number, max: number) {
   return value;
 }
 
-export function maybleClipTimeSelection(
+export function maybeClipTimeSelection(
   timeSelection: TimeSelection,
   minStep: number,
   maxStep: number

@@ -101,8 +101,8 @@ import {
   SortingInfo,
 } from './scalar_card_types';
 import {
+  maybeClipTimeSelection,
   maybeClipTimeSelectionView,
-  maybleClipTimeSelection,
   partitionSeries,
   TimeSelectionView,
 } from './utils';
@@ -621,16 +621,16 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
         }
         const currentStartStep =
           this.stepSelectorTimeSelection$.getValue()?.start.step;
-        const currentMaxStep =
+        const currentEndStep =
           this.stepSelectorTimeSelection$.getValue()?.end?.step;
 
-        const potentiallyClippedTimeSelection = maybleClipTimeSelection(
+        const potentiallyClippedTimeSelection = maybeClipTimeSelection(
           {
             start: {
               step: currentStartStep ?? minStep,
             },
             end: rangeSelectionEnabled
-              ? {step: currentMaxStep ?? maxStep}
+              ? {step: currentEndStep ?? maxStep}
               : null,
           },
           minStep,
