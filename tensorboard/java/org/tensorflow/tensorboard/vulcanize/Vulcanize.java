@@ -58,8 +58,8 @@ import org.jsoup.select.NodeVisitor;
 /** Simple one-off solution for TensorBoard vulcanization. */
 public final class Vulcanize {
 
-  private static final Pattern INLINE_SOURCE_MAP_PATTERN =
-      Pattern.compile("//# sourceMappingURL=.*");
+private static final Pattern INLINE_SOURCE_MAP_PATTERN =
+     		 Pattern.compile("[^\"]//# sourceMappingURL=.*[^\"]");
 
   private static final Parser parser = Parser.htmlParser();
   private static final Map<Webpath, Path> webfiles = new HashMap<>();
