@@ -212,7 +212,7 @@ Here is a short summary of the various commands and their primary function. Plea
     However, you cannot use `ibazel run` in this case. The file watcher is glitchy on running the tests
     when detecting changes. It shows '`a broken pipe`' in terminal. We need to terminate and restart the program manually.
 
-## Adding, Updating, or Removing Frontend Dependencies
+## Adding, Updating, or Removing Frontend Dependencies (#frontend-dependencies)
 
 For the most part, frontend-specific third-party dependencies are hosted by
 [npm](https://docs.npmjs.com/about-npm) and managed by
@@ -302,3 +302,49 @@ Sample upgrade: https://github.com/tensorflow/tensorboard/pull/5977
 8.  Generate mirrors for the new versions of rules_nodejs and rules_sass and
     update the WORKSPACE file with the new "http://mirror.tensorflow.org/" URLs.
     Googlers, see information at go/tensorboard-tf-mirror.
+
+## Updating Angular
+
+Angular is the UI framework we use for most new UI functionality. A new major
+version of Angular is released every 6 months and, so, we must upgrade our
+Angular dependency at least twice a year.
+
+Helpful documents for choosing which versions:
+* Angular upgrade docs at https://update.angular.io/
+  * For example: [Angular 13 to 14 upgrade](https://update.angular.io/?l=3&v=13.0-14.0 )
+* Ngrx upgrade docs at https://dev.to/ngrx
+  * For example, [Ngrx 14 upgrade announcement](https://dev.to/ngrx/announcing-ngrx-v14-action-groups-componentstore-lifecycle-hooks-eslint-package-revamped-ngrx-component-and-more-18ck)
+* Npm website at https://www.npmjs.com/
+  * For example, [lookup the available versions of `@angular/core`](https://www.npmjs.com/package/@angular/core)
+
+When upgrading Angular we generally must consider upgrading the following
+dependencies listed in `package.json`:
+
+* All `@angular/*` and `@angular-devkit/*` dependencies
+  * Except `@angular/build-tooling`, for which we currently don't have any
+    upgrade policy/guidance. It is acceptable to leave this alone unless you
+    discover a need to upgrade it.
+  * Most of these should be upgraded to the ~same version. The easiest is to
+    upgrade to the latest version for each subdependency (within the major
+    series being upgraded to).
+* `typescript`
+  * The Angular and Ngrx upgrade documents will explain which version is
+    expected.
+* All `@ngrx/*` dependencies
+  * Ngrx should be on the same major version as Angular.
+* `rxjs`
+  * The Ngrx upgrade documentation will explain which version of rxjs to
+    upgrade to.
+* `zone.js`
+  * This is generally not well documented. You can attempt to upgrade to
+    the latest version but sometimes you have to guess at the most recent
+    version that is compatible with the version of Angular.
+* `ngx-color-picker`
+  * Similarly, the latest version might be fine but you also might have to guess
+    at the most recent version that is compatible with the version fo Angular.
+
+Sample upgrade: https://github.com/tensorflow/tensorboard/pull/BDTODO.
+
+The upgrade can be performed using the steps described [in this section](#frontend-dependencies).
+The builds and tests are unlikely to work on the first try and you will have to
+investigate and fix breakages due to changes in dependency behavior.
