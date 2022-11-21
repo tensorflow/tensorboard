@@ -55,6 +55,10 @@ describe('TBHttpClient', () => {
     ) as TestableAppRootProvider;
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('waits for feature flags before making POST request', () => {
     const body = new FormData();
     body.append('formKey', 'value');

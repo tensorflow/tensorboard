@@ -71,6 +71,10 @@ describe('metrics/views/data_download_dialog', () => {
     return fixture;
   }
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders', async () => {
     const fixture = await createComponent('card1');
     store.overrideSelector(getCardMetadata, {

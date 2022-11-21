@@ -115,6 +115,10 @@ describe('image card', () => {
     store.overrideSelector(getRun, null);
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   function expectImageSliderUI(
     fixture: ComponentFixture<ImageCardContainer>,
     imageId: string,

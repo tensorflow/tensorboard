@@ -64,6 +64,10 @@ describe('feature_flag_page_container', () => {
     dispatchSpy = spyOn(store, 'dispatch');
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   function createComponent() {
     fixture = TestBed.createComponent(FeatureFlagPageContainer);
     fixture.detectChanges();

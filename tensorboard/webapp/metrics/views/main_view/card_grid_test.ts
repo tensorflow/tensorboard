@@ -95,6 +95,10 @@ describe('card grid', () => {
     store.overrideSelector(getMetricsXAxisType, XAxisType.STEP);
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('keeps pagination button position when page size changes', fakeAsync(() => {
     store.overrideSelector(settingsSelectors.getPageSize, 2);
     let scrollOffset = 30;

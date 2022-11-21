@@ -19,7 +19,7 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatMenuModule} from '@angular/material/menu';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {Action, createAction, Store} from '@ngrx/store';
+import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../app_state';
 import {MatIconTestingModule} from '../../testing/mat_icon_module';
@@ -28,7 +28,6 @@ import * as selectors from '../_redux/notification_center_selectors';
 import {CategoryEnum} from '../_redux/notification_center_types';
 import {NotificationCenterComponent} from './notification_center_component';
 import {NotificationCenterContainer} from './notification_center_container';
-const testAction = createAction('[Notification] Notification Bell Clicked');
 
 describe('notification center', () => {
   let store: MockStore<State>;
@@ -58,6 +57,10 @@ describe('notification center', () => {
     });
     store.overrideSelector(selectors.getNotifications, []);
     store.overrideSelector(selectors.getLastReadTime, 0);
+  });
+
+  afterEach(() => {
+    store?.resetSelectors();
   });
 
   it('loads notification module', () => {

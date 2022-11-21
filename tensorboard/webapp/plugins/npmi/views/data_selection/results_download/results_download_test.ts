@@ -55,6 +55,10 @@ describe('Npmi Results Download', () => {
     );
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders disabled button when no annotations are flagged', () => {
     const fixture = TestBed.createComponent(ResultsDownloadContainer);
     fixture.detectChanges();

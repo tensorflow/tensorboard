@@ -84,6 +84,10 @@ describe('settings test', () => {
     overlayContainer = TestBed.inject(OverlayContainer);
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('opens a dialog when clicking on the button', async () => {
     const fixture = TestBed.createComponent(SettingsButtonContainer);
     fixture.detectChanges();

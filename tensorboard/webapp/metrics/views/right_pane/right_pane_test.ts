@@ -66,6 +66,10 @@ describe('metrics right_pane', () => {
     dispatchSpy = spyOn(store, 'dispatch');
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   describe('settings pane', () => {
     beforeEach(() => {
       store.overrideSelector(

@@ -57,6 +57,10 @@ describe('FeatureFlagHttpInterceptor', () => {
     httpClient = TestBed.inject(HttpClient);
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('injects feature flags into the HTTP request', () => {
     store.overrideSelector(getFeatureFlagsToSendToServer, {
       inColab: true,

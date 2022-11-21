@@ -53,6 +53,10 @@ describe('Npmi Container', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders npmi component initially with inactive component', () => {
     store.overrideSelector(
       getCurrentRouteRunSelection,

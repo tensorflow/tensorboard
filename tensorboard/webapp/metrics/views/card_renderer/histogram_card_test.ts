@@ -120,6 +120,10 @@ describe('histogram card', () => {
     store.overrideSelector(selectors.getMetricsLinkedTimeSelection, null);
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders empty message when there is no data', () => {
     const cardMetadata = {
       plugin: PluginType.HISTOGRAMS,

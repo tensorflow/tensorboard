@@ -117,6 +117,10 @@ describe('Npmi Parallel Coordinates Container', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders parallel coordinates without selected annoations', () => {
     store.overrideSelector(
       getCurrentRouteRunSelection,

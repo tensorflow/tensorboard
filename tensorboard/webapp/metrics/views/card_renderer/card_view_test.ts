@@ -71,6 +71,10 @@ describe('card view test', () => {
     intersectionObserver = TestBed.inject(IntersectionObserverTestingModule);
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('stamps DOM only when it is first visible', () => {
     const fixture = TestBed.createComponent(CardViewContainer);
     fixture.componentInstance.cardId = 'cardId';

@@ -88,6 +88,10 @@ describe('text_effects', () => {
     textEffects.loadData$.subscribe(() => {});
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('fetches run to tags on plugins loaded', () => {
     action.next(textPluginLoaded());
 

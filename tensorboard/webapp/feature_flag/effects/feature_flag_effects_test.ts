@@ -78,6 +78,10 @@ describe('feature_flag_effects', () => {
     store.overrideSelector(getFeatureFlagsMetadata, FeatureFlagMetadataMap);
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   describe('getFeatureFlags$', () => {
     let recordedActions: Action[];
 

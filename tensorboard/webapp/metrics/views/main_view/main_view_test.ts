@@ -205,6 +205,10 @@ describe('metrics main view', () => {
     store.overrideSelector(selectors.isMetricsSettingsPaneOpen, false);
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   describe('toolbar', () => {
     it('displays visible plugin type in the button toggle', () => {
       store.overrideSelector(

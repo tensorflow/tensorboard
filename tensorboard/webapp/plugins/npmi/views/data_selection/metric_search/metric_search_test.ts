@@ -84,6 +84,10 @@ describe('Npmi Metric Search Container', () => {
     });
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders npmi metrics search component', () => {
     const fixture = TestBed.createComponent(MetricSearchContainer);
     fixture.detectChanges();

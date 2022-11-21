@@ -68,6 +68,10 @@ describe('Npmi Main Container', () => {
     });
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders npmi main component without runs', () => {
     store.overrideSelector(
       getCurrentRouteRunSelection,

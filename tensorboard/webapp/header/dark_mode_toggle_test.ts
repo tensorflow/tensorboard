@@ -56,6 +56,10 @@ describe('dark mode toggle test', () => {
     overlayContainer = TestBed.inject(OverlayContainer);
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   function getMenuButtons(fixture: ComponentFixture<DarkModeToggleContainer>) {
     const els = fixture.debugElement.queryAll(By.css('button'));
     expect(els.length).toBe(1);

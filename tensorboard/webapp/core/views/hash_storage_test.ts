@@ -60,6 +60,10 @@ describe('hash storage test', () => {
     getPluginIdSpy = spyOn(deepLinker, 'getPluginId');
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('sets hash to plugin id when plugin id changes from null to value', () => {
     const setPluginIdCalls: Array<{
       id: string | null;
