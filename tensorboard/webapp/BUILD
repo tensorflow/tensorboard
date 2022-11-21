@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_external_sass_libray", "tf_js_binary", "tf_ng_module", "tf_ng_web_test_suite", "tf_sass_binary", "tf_svg_bundle", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_external_sass_libray", "tf_ng_module", "tf_ng_prod_js_binary", "tf_ng_web_test_suite", "tf_sass_binary", "tf_svg_bundle", "tf_ts_library")
 load("//tensorboard/defs:js.bzl", "tf_resource_digest_suffixer")
 load("//tensorboard/defs:web.bzl", "tb_combine_html", "tf_web_library")
 
@@ -173,7 +173,7 @@ tf_ng_module(
 )
 
 # Compile the prepared Angular app to a JS binary.
-tf_js_binary(
+tf_ng_prod_js_binary(
     name = "tb_webapp_binary",
     compile = 1,
     entry_point = "main_prod.ts",
