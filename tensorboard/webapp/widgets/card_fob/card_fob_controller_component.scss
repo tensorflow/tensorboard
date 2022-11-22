@@ -16,11 +16,6 @@ limitations under the License.
   pointer-events: all;
 }
 
-.card-fob-controller {
-  height: calc(100% + 30px);
-  position: relative;
-}
-
 .time-fob-wrapper {
   display: inline-block;
   position: absolute;
@@ -54,6 +49,11 @@ limitations under the License.
     margin-left: -20px;
     padding: 0 20px;
   }
+}
+
+.prospectiveFob {
+  opacity: 0.8;
+  cursor: pointer;
 }
 
 .horizontal-prospective-area {
