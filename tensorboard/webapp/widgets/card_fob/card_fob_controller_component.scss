@@ -16,11 +16,6 @@ limitations under the License.
   pointer-events: all;
 }
 
-.card-fob-controller {
-  height: calc(100% + 30px);
-  position: relative;
-}
-
 .time-fob-wrapper {
   display: inline-block;
   position: absolute;
@@ -58,6 +53,7 @@ limitations under the License.
 
 .horizontal-prospective-area {
   bottom: 0;
+  cursor: pointer;
   position: absolute;
   // Height/Width to match x-axis
   height: 30px;
