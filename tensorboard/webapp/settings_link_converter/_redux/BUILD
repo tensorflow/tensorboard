@@ -1,9 +1,8 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard/webapp/settings_link_converter:__subpackages__"])
 
 licenses(["notice"])
-
 
 tf_ts_library(
     name = "actions",

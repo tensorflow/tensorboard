@@ -11,9 +11,9 @@ tf_ng_module(
         "index.ts",
     ],
     deps = [
-        "@npm//@angular/core",
-        "@npm//@ngrx/store",
         "//tensorboard/webapp/settings_link_converter/_redux:actions",
         "//tensorboard/webapp/settings_link_converter/_redux:types",
+        "@npm//@angular/core",
+        "@npm//@ngrx/store",
     ],
 )
