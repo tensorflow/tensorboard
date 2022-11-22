@@ -15,14 +15,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div>
+<div class="card-fob-controller">
   <ng-container
     *ngIf="isProspectiveFobFeatureEnabled && !rangeSelectionEnabled"
   >
     <div
+      *ngIf="showExtendedLine && prospectiveStep !== null"
+      class="extended-line"
+      [style.transform]="getCssTranslatePxForProspectiveFob()"
+    ></div>
+    <div
       class="prospective-fob-area"
       [ngClass]="isVertical() ? 'vertical-prospective-area' : 'horizontal-prospective-area'"
-      (mousemove)="mouseOver($event)"
+      (mousemove)="mouseOverProspectiveFobArea($event)"
       (mouseleave)="onProspectiveAreaMouseLeave()"
     >
       <div
@@ -32,7 +37,6 @@ limitations under the License.
         class="time-fob-wrapper"
         [style.transform]="getCssTranslatePxForProspectiveFob()"
       >
-        <div *ngIf="showExtendedLine" class="extended-line"></div>
         <card-fob
           [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
           [allowRemoval]="false"

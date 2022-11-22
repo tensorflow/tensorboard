@@ -19,11 +19,9 @@ limitations under the License.
   display: inline-block;
 }
 
-$FOB_BACKGROUND: mat.get-color-from-palette(mat.$gray-palette, 300);
-
 .fob {
   display: inline-flex;
-  background-color: $FOB_BACKGROUND;
+  background-color: mat.get-color-from-palette(mat.$gray-palette, 300);
   border-radius: 25px;
   padding: 2px 2px 2px 4px;
   font-size: 11px;
