@@ -306,10 +306,10 @@ Sample upgrade: https://github.com/tensorflow/tensorboard/pull/5977
 ## Updating Angular
 
 Angular is the UI framework we use for most new UI functionality. A new major
-version of Angular is released every 6 months and, so, we must upgrade our
+version of Angular is released every 6 months and, so, we try to upgrade our
 Angular dependency at least twice a year.
 
-Helpful documents for choosing which versions:
+Helpful documents, especially for determining correct versions of dependencies:
 * Angular upgrade docs at https://update.angular.io/
   * For example: [Angular 13 to 14 upgrade](https://update.angular.io/?l=3&v=13.0-14.0 )
 * Ngrx upgrade docs at https://dev.to/ngrx
@@ -320,7 +320,7 @@ Helpful documents for choosing which versions:
 When upgrading Angular we generally must consider upgrading the following
 dependencies listed in `package.json`:
 
-* All `@angular/*` and `@angular-devkit/*` dependencies
+* All `@angular/*` and `@angular-devkit/*` dependencies.
   * Except `@angular/build-tooling`, for which we currently don't have any
     upgrade policy/guidance. It is acceptable to leave this alone unless you
     discover a need to upgrade it.
@@ -330,7 +330,7 @@ dependencies listed in `package.json`:
 * `typescript`
   * The Angular and Ngrx upgrade documents will explain which version is
     expected.
-* All `@ngrx/*` dependencies
+* All `@ngrx/*` dependencies.
   * Ngrx should be on the same major version as Angular.
 * `rxjs`
   * The Ngrx upgrade documentation will explain which version of rxjs to
@@ -343,8 +343,10 @@ dependencies listed in `package.json`:
   * Similarly, the latest version might be fine but you also might have to guess
     at the most recent version that is compatible with the version fo Angular.
 
-Sample upgrade: https://github.com/tensorflow/tensorboard/pull/BDTODO.
+Sample upgrades:
+  * Angular 13: https://github.com/tensorflow/tensorboard/pull/6063.
+  * Angular 14: https://github.com/tensorflow/tensorboard/pull/6066.
 
 The upgrade can be performed using the steps described [in this section](#frontend-dependencies).
 The builds and tests are unlikely to work on the first try and you will have to
-investigate and fix breakages due to changes in dependency behavior.
+investigate and fix breakages due to changes in behavior.
