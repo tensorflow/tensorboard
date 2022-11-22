@@ -240,7 +240,7 @@ export class CardFobControllerComponent {
     this.hasFobMoved = true;
   }
 
-  mouseOverProspectiveFobArea(event: MouseEvent) {
+  mouseOver(event: MouseEvent) {
     if (
       this.timeSelection?.end !== null &&
       this.timeSelection?.end !== undefined

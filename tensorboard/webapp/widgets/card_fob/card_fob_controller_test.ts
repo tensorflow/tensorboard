@@ -1417,11 +1417,9 @@ describe('card_fob_controller', () => {
         });
         fixture.detectChanges();
 
-        const testController = fixture.debugElement.query(
-          By.directive(CardFobControllerComponent)
-        ).componentInstance;
-        testController.prospectiveFobClicked(new MouseEvent('mouseclick'));
-
+        fixture.debugElement
+          .query(By.css('.prospective-fob-area'))
+          .nativeElement.click();
         expect(onTimeSelectionChanged.calls.allArgs()).toEqual([
           [
             {
