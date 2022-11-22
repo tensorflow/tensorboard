@@ -25,13 +25,34 @@ limitations under the License.
   border-radius: 25px;
   padding: 2px 2px 2px 4px;
   font-size: 11px;
+  text-align: center;
   width: min-content;
+
+  > .prospective {
+    padding-top: 1px;
+  }
 
   &:hover {
     cursor: grab;
+
+    &.prospective {
+      cursor: pointer;
+    }
   }
   &:active {
     cursor: grabbing;
+  }
+
+  &.unremovable {
+    padding: 2px 4px;
+  }
+
+  &.prospective {
+    align-items: center;
+    box-sizing: border-box;
+    border: 1px dashed mat.get-color-from-palette(mat.$gray-palette, 500);
+    font-weight: bold;
+    height: 17px;
   }
 }
 

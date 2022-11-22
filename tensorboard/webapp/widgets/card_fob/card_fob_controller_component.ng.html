@@ -15,30 +15,36 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div>
+<div class="card-fob-controller">
   <ng-container
     *ngIf="isProspectiveFobFeatureEnabled && !rangeSelectionEnabled"
   >
     <div
-      #prospectiveFobWrapper
-      *ngIf="prospectiveStep !== null"
-      class="time-fob-wrapper prospectiveFob"
+      *ngIf="showExtendedLine && prospectiveStep !== null"
+      class="extended-line"
       [style.transform]="getCssTranslatePxForProspectiveFob()"
-    >
-      <div *ngIf="showExtendedLine" class="extended-line"></div>
-      <card-fob
-        [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
-        [allowRemoval]="false"
-        [step]="prospectiveStep"
-      ></card-fob>
-    </div>
+    ></div>
     <div
       class="prospective-fob-area"
       [ngClass]="isVertical() ? 'vertical-prospective-area' : 'horizontal-prospective-area'"
-      (mousemove)="mouseOver($event)"
+      (mousemove)="mouseOverProspectiveFobArea($event)"
       (mouseleave)="onProspectiveAreaMouseLeave()"
-      (click)="prospectiveFobClicked($event)"
-    ></div>
+    >
+      <div
+        #prospectiveFobWrapper
+        *ngIf="prospectiveStep !== null"
+        (click)="prospectiveFobClicked($event)"
+        class="time-fob-wrapper"
+        [style.transform]="getCssTranslatePxForProspectiveFob()"
+      >
+        <card-fob
+          [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
+          [allowRemoval]="false"
+          [isProspective]="true"
+          [step]="prospectiveStep"
+        ></card-fob>
+      </div>
+    </div>
   </ng-container>
   <div
     #startFobWrapper
