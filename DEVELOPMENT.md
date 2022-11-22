@@ -247,7 +247,7 @@ to be edited by hand.
 4.  Rebuild and test TensorBoard to make sure it works:
     * `rm -rf node_modules; bazel clean --expunge; yarn`
     * `bazel run tensorboard --logdir <your favorite logdir>`
-    * `bazel test --test_output=errors tensorboard/webapp/...`
+    * `bazel test --test_output=errors tensorboard/webapp/... tensorboard/components/... tensorboard/plugins/...`
 
 ## Updating rules_nodejs
 
