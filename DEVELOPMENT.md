@@ -293,7 +293,7 @@ Sample upgrade: https://github.com/tensorflow/tensorboard/pull/5977
 6.  Attempt to rebuild and test TensorBoard to make sure it works:
     * `rm -rf node_modules; bazel clean --expunge; yarn`
     * `bazel run tensorboard --logdir <your favorite logdir>`
-    * `bazel test --test_output=errors tensorboard/webapp/...`
+    * `bazel test --test_output=errors tensorboard/webapp/... tensorboard/components/... tensorboard/plugins/...`
 
 7.  The first attempt to rebuild and test TensorBoard rarely works. Investigate
     the problems and fix them. At this point, some of the special instructions in
