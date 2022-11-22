@@ -112,25 +112,15 @@ genrule(
 )
 
 tf_web_library(
-    name = "standalone_lib",
+    name = "standalone",
     srcs = [
-        "standalone_lib.html",
+        "standalone.html",
         "standalone_projector_config.json",
         ":standalone_bundle.js",
     ],
     path = "/",
     deps = [
         "//tensorboard/components/tf_imports:roboto",
-    ],
-)
-
-tb_combine_html(
-    name = "standalone",
-    input_path = "/standalone_lib.html",
-    js_path = "/standalone.js",
-    output_path = "/standalone.html",
-    deps = [
-        ":standalone_lib",
     ],
 )
 
