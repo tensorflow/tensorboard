@@ -212,7 +212,7 @@ Here is a short summary of the various commands and their primary function. Plea
     However, you cannot use `ibazel run` in this case. The file watcher is glitchy on running the tests
     when detecting changes. It shows '`a broken pipe`' in terminal. We need to terminate and restart the program manually.
 
-## Adding, Updating, or Removing Frontend Dependencies (#frontend-dependencies)
+## Adding, Updating, or Removing Frontend Dependencies
 
 For the most part, frontend-specific third-party dependencies are hosted by
 [npm](https://docs.npmjs.com/about-npm) and managed by
@@ -347,6 +347,8 @@ Sample upgrades:
   * Angular 13: https://github.com/tensorflow/tensorboard/pull/6063.
   * Angular 14: https://github.com/tensorflow/tensorboard/pull/6066.
 
-The upgrade can be performed using the steps described [in this section](#frontend-dependencies).
+The upgrade can be performed using the steps described
+[in this section](##adding-updating-or-removing-frontend-dependencies-frontend-dependencies).
+
 The builds and tests are unlikely to work on the first try and you will have to
 investigate and fix breakages due to changes in behavior.
