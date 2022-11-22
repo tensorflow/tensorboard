@@ -348,7 +348,7 @@ Sample upgrades:
   * Angular 14: https://github.com/tensorflow/tensorboard/pull/6066.
 
 The upgrade can be performed using the steps described
-[in this section](##adding-updating-or-removing-frontend-dependencies-frontend-dependencies).
+[in this section](#adding-updating-or-removing-frontend-dependencies).
 
 The builds and tests are unlikely to work on the first try and you will have to
 investigate and fix breakages due to changes in behavior.
