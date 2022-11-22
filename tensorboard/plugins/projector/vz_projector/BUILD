@@ -1,5 +1,5 @@
 load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_web_test_suite", "tf_ts_library")
-load("//tensorboard/defs:web.bzl", "tb_combine_html", "tf_web_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 package(default_visibility = ["//tensorboard/plugins/projector:__subpackages__"])
 
