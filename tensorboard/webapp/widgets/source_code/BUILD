@@ -74,7 +74,6 @@ tf_ts_library(
         ":source_code",
         ":testing",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
-        "@npm//@angular/compiler",
         "@npm//@angular/core",
         "@npm//@types/jasmine",
     ],

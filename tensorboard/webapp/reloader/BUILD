@@ -33,7 +33,6 @@ tf_ts_library(
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/settings:testing",
         "@npm//@angular/common",
-        "@npm//@angular/compiler",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
