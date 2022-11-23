@@ -63,7 +63,6 @@ tf_ts_library(
         "//tensorboard/webapp/plugins/npmi/views/inactive",
         "//tensorboard/webapp/plugins/npmi/views/main",
         "@npm//@angular/common",
-        "@npm//@angular/compiler",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",

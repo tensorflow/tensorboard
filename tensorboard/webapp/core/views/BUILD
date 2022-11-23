@@ -112,7 +112,6 @@ tf_ts_library(
         "//tensorboard/webapp/testing:mat_icon",
         "//tensorboard/webapp/util:dom",
         "@npm//@angular/common",
-        "@npm//@angular/compiler",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",

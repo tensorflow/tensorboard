@@ -58,7 +58,6 @@ tf_ts_library(
         "//tensorboard/webapp/widgets/source_code:load_monaco",
         "//tensorboard/webapp/widgets/source_code:testing",
         "@npm//@angular/common",
-        "@npm//@angular/compiler",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",

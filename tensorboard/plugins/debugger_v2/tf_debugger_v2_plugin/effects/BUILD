@@ -45,7 +45,6 @@ tf_ts_library(
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/webapp_data_source:http_client_testing",
         "@npm//@angular/common",
-        "@npm//@angular/compiler",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
