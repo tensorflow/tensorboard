@@ -17,6 +17,8 @@ limitations under the License.
  * assumed not to have reference loops.
  */
 export function deepFreeze<T>(obj: T): T {
+  // @ts-ignore(go/ts48upgrade) Fix code and remove this comment. Error:
+  // TS2769: No overload matches this call.
   for (const val of Object.values(obj)) {
     if (val && typeof val === 'object') {
       deepFreeze(val);
