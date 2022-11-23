@@ -22,22 +22,23 @@ limitations under the License.
     <div
       #prospectiveFobWrapper
       *ngIf="prospectiveStep !== null"
-      class="time-fob-wrapper prospectiveFob"
+      class="time-fob-wrapper"
       [style.transform]="getCssTranslatePxForProspectiveFob()"
     >
       <div *ngIf="showExtendedLine" class="extended-line"></div>
       <card-fob
         [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
         [allowRemoval]="false"
+        [isProspective]="true"
         [step]="prospectiveStep"
       ></card-fob>
     </div>
     <div
       class="prospective-fob-area"
       [ngClass]="isVertical() ? 'vertical-prospective-area' : 'horizontal-prospective-area'"
-      (mousemove)="mouseOver($event)"
-      (mouseleave)="onProspectiveAreaMouseLeave()"
+      (mousemove)="mouseOverProspectiveFobArea($event)"
       (click)="prospectiveFobClicked($event)"
+      (mouseleave)="onProspectiveAreaMouseLeave()"
     ></div>
   </ng-container>
   <div

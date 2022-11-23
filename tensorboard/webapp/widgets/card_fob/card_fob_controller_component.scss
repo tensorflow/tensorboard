@@ -51,13 +51,9 @@ limitations under the License.
   }
 }
 
-.prospectiveFob {
-  opacity: 0.8;
-  cursor: pointer;
-}
-
 .horizontal-prospective-area {
   bottom: 0;
+  cursor: pointer;
   position: absolute;
   // Height/Width to match x-axis
   height: 30px;
