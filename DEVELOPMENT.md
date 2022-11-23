@@ -318,7 +318,9 @@ Helpful documents, especially for determining correct versions of dependencies:
   * For example, [lookup the available versions of `@angular/core`](https://www.npmjs.com/package/@angular/core)
 
 When upgrading Angular we generally must consider upgrading the following
-dependencies listed in `package.json`:
+dependencies listed in `package.json`. They should be upgraded using
+`yarn upgrade` as described
+[in this section](#adding-updating-or-removing-frontend-dependencies).
 
 * All `@angular/*` and `@angular-devkit/*` dependencies.
   * Except `@angular/build-tooling`, for which we currently don't have any
@@ -346,9 +348,6 @@ dependencies listed in `package.json`:
 Sample upgrades:
   * Angular 13: https://github.com/tensorflow/tensorboard/pull/6063.
   * Angular 14: https://github.com/tensorflow/tensorboard/pull/6066.
-
-The upgrade can be performed using the steps described
-[in this section](#adding-updating-or-removing-frontend-dependencies).
 
 The builds and tests are unlikely to work on the first try and you will have to
 investigate and fix breakages due to changes in behavior.
