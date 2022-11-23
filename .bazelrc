@@ -1,3 +1,7 @@
+# Use the Angular Ivy compiler
+# See https://github.com/angular/angular/blob/master/docs/BAZEL.md#various-flags-used-for-tests
+build --define=angular_ivy_enabled=True
+
 common --experimental_repo_remote_exec  # from TensorFlow
 
 # Use C++ backing implementations for Python proto parsing and deserialization,

@@ -20,7 +20,6 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp:ng_main",
-        "@npm//@angular/compiler",
         "@npm//@angular/localize",
     ],
 )

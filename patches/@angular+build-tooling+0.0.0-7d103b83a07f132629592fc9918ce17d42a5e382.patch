@@ -1,3 +1,29 @@
+diff --git a/node_modules/@angular/build-tooling/bazel/app-bundling/esbuild.config-tmpl.mjs b/node_modules/@angular/build-tooling/bazel/app-bundling/esbuild.config-tmpl.mjs
+index 618bbc5..05a112f 100755
+--- a/node_modules/@angular/build-tooling/bazel/app-bundling/esbuild.config-tmpl.mjs
++++ b/node_modules/@angular/build-tooling/bazel/app-bundling/esbuild.config-tmpl.mjs
+@@ -9,9 +9,18 @@
+ import * as path from 'path';
+
+ import {createEsbuildAngularOptimizePlugin} from '@angular/build-tooling/shared-scripts/angular-optimization/esbuild-plugin.mjs';
+-import {createEs2015LinkerPlugin} from '@angular/compiler-cli/linker/babel';
+-import {ConsoleLogger, NodeJSFileSystem, LogLevel} from '@angular/compiler-cli';
+-import {GLOBAL_DEFS_FOR_TERSER_WITH_AOT} from '@angular/compiler-cli/private/tooling';
++// For TensorBoard: Patch the esbuild config template so that imports are
++// grabbed from the correct places. This is just the consequence of some
++// skew using pre-13.X @angular/compiler-cli binaries. This should be resolved
++// once we upgrade to Angular 13+.
++//import {createEs2015LinkerPlugin} from '@angular/compiler-cli/linker/babel';
++import {createEs2015LinkerPlugin} from '@angular/compiler-cli/linker/babel/index.js';
++//import {ConsoleLogger, NodeJSFileSystem, LogLevel} from '@angular/compiler-cli';
++import {NodeJSFileSystem} from '@angular/compiler-cli/src/ngtsc/file_system/src/node_js_file_system.js';
++import {LogLevel} from '@angular/compiler-cli/src/ngtsc/logging/index.js';
++import {ConsoleLogger} from '@angular/compiler-cli/src/ngtsc/logging/src/console_logger.js';
++//import {GLOBAL_DEFS_FOR_TERSER_WITH_AOT} from '@angular/compiler-cli/private/tooling';
++import {GLOBAL_DEFS_FOR_TERSER_WITH_AOT} from '@angular/compiler-cli/src/tooling.js';
+
+ /** Root path pointing to the app bundle source entry-point file. */
+ const entryPointSourceRootPath = path.normalize(`TMPL_ENTRY_POINT_ROOTPATH`);
 diff --git a/node_modules/@angular/build-tooling/shared-scripts/angular-optimization/esbuild-plugin.mjs b/node_modules/@angular/build-tooling/shared-scripts/angular-optimization/esbuild-plugin.mjs
 index 57cd2b9..2e5eaf1 100755
 --- a/node_modules/@angular/build-tooling/shared-scripts/angular-optimization/esbuild-plugin.mjs
