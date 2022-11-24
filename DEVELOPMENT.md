@@ -247,7 +247,7 @@ to be edited by hand.
 4.  Rebuild and test TensorBoard to make sure it works:
     * `rm -rf node_modules; bazel clean --expunge; yarn`
     * `bazel run tensorboard --logdir <your favorite logdir>`
-    * `bazel test --test_output=errors tensorboard/webapp/...`
+    * `bazel test --test_output=errors tensorboard/webapp/... tensorboard/components/... tensorboard/plugins/...`
 
 ## Updating rules_nodejs
 
@@ -293,7 +293,7 @@ Sample upgrade: https://github.com/tensorflow/tensorboard/pull/5977
 6.  Attempt to rebuild and test TensorBoard to make sure it works:
     * `rm -rf node_modules; bazel clean --expunge; yarn`
     * `bazel run tensorboard --logdir <your favorite logdir>`
-    * `bazel test --test_output=errors tensorboard/webapp/...`
+    * `bazel test --test_output=errors tensorboard/webapp/... tensorboard/components/... tensorboard/plugins/...`
 
 7.  The first attempt to rebuild and test TensorBoard rarely works. Investigate
     the problems and fix them. At this point, some of the special instructions in
@@ -302,3 +302,52 @@ Sample upgrade: https://github.com/tensorflow/tensorboard/pull/5977
 8.  Generate mirrors for the new versions of rules_nodejs and rules_sass and
     update the WORKSPACE file with the new "http://mirror.tensorflow.org/" URLs.
     Googlers, see information at go/tensorboard-tf-mirror.
+
+## Updating Angular
+
+Angular is the UI framework we use for most new UI functionality. A new major
+version of Angular is released every 6 months and, so, we try to upgrade our
+Angular dependency at least twice a year.
+
+Helpful documents, especially for determining correct versions of dependencies:
+* Angular upgrade docs at https://update.angular.io/
+  * For example: [Angular 13 to 14 upgrade](https://update.angular.io/?l=3&v=13.0-14.0 )
+* Ngrx upgrade docs at https://dev.to/ngrx
+  * For example, [Ngrx 14 upgrade announcement](https://dev.to/ngrx/announcing-ngrx-v14-action-groups-componentstore-lifecycle-hooks-eslint-package-revamped-ngrx-component-and-more-18ck)
+* Npm website at https://www.npmjs.com/
+  * For example, [lookup the available versions of `@angular/core`](https://www.npmjs.com/package/@angular/core)
+
+When upgrading Angular we generally must consider upgrading the following
+dependencies listed in `package.json`. They should be upgraded using
+`yarn upgrade` as described
+[in this section](#adding-updating-or-removing-frontend-dependencies).
+
+* All `@angular/*` and `@angular-devkit/*` dependencies.
+  * Except `@angular/build-tooling`, for which we currently don't have any
+    upgrade policy/guidance. It is acceptable to leave this alone unless you
+    discover a need to upgrade it.
+  * Most of these should be upgraded to the ~same version. The easiest is to
+    upgrade to the latest version for each subdependency (within the major
+    series being upgraded to).
+* `typescript`
+  * The Angular and Ngrx upgrade documents will explain which version is
+    expected.
+* All `@ngrx/*` dependencies.
+  * Ngrx should be on the same major version as Angular.
+* `rxjs`
+  * The Ngrx upgrade documentation will explain which version of rxjs to
+    upgrade to.
+* `zone.js`
+  * This is generally not well documented. You can attempt to upgrade to
+    the latest version but sometimes you have to guess at the most recent
+    version that is compatible with the version of Angular.
+* `ngx-color-picker`
+  * Similarly, the latest version might be fine but you also might have to guess
+    at the most recent version that is compatible with the version fo Angular.
+
+Sample upgrades:
+  * Angular 13: https://github.com/tensorflow/tensorboard/pull/6063.
+  * Angular 14: https://github.com/tensorflow/tensorboard/pull/6066.
+
+The builds and tests are unlikely to work on the first try and you will have to
+investigate and fix breakages due to changes in behavior.
