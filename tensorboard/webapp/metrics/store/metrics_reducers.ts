@@ -46,6 +46,7 @@ import {
   URLDeserializedState,
 } from '../internal_types';
 import {groupCardIdWithMetdata} from '../utils';
+import {ColumnHeaders} from '../views/card_renderer/scalar_card_types';
 import {
   buildOrReturnStateWithPinnedCopy,
   buildOrReturnStateWithUnresolvedImportedPins,
@@ -262,6 +263,24 @@ const {initialState, reducers: namespaceContextedReducer} =
       linkedTimeEnabled: false,
       stepSelectorEnabled: false,
       rangeSelectionEnabled: false,
+      singleSelectionHeaders: [
+        ColumnHeaders.RUN,
+        ColumnHeaders.SMOOTHED,
+        ColumnHeaders.VALUE,
+        ColumnHeaders.STEP,
+        ColumnHeaders.RELATIVE_TIME,
+      ],
+      rangeSelectionHeaders: [
+        ColumnHeaders.RUN,
+        ColumnHeaders.MIN_VALUE,
+        ColumnHeaders.MAX_VALUE,
+        ColumnHeaders.START_VALUE,
+        ColumnHeaders.END_VALUE,
+        ColumnHeaders.VALUE_CHANGE,
+        ColumnHeaders.PERCENTAGE_CHANGE,
+        ColumnHeaders.START_STEP,
+        ColumnHeaders.END_STEP,
+      ],
       filteredPluginTypes: new Set(),
       stepMinMax: {
         min: Infinity,
