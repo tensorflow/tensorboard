@@ -1271,6 +1271,8 @@ class TfGraphControls extends LegacyElementMixin(
   _deviceCheckboxClicked(event: Event) {
     // Update the device map.
     const input = event.target as HTMLInputElement;
+    // @ts-ignore(go/ts48upgrade) Fix code and remove this comment. Error:
+    // TS2322: Type 'object' is not assignable to type 'DeviceForStats'.
     const devicesForStats: DeviceForStats = Object.assign(
       {},
       this.devicesForStats
