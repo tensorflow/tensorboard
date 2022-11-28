@@ -15,6 +15,14 @@ limitations under the License.
 
 //! OAuth integration for GCS. Authentication is done via the `gcp_auth` library.
 //!
+//! `gcp_auth`'s implementation of authentication when specifying GOOGLE_APPLICATION_CREDENTIALS
+//! only supports service account based authentication. If you are attempting to provide OAuth
+//! refresh tokens or other gcloud credential based authentication mechanisms and running into issues
+//! (e.g. unable to initialize authentication manager: CustomServiceAccountCredentials(Error("missing field private_key"))),
+//! you should unset the GOOGLE_APPLICATION_CREDENTIALS environment variable, as the final authentication
+//! mechanism in `gcp_auth` will look for credentials in the standard file location
+//! (i.e. ~/.config/gcloud/application_default_credentials.json) and properly handle authentication.
+//!
 //! Useful resources:
 //!
 //!   - TensorFlow OAuth implementation: [`oauth_client.cc`], [`google_auth_provider.cc`]
