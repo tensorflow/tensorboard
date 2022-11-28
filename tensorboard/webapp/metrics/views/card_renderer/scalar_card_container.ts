@@ -376,9 +376,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
           .map(({points}) => points.map(({x}) => x))
           .flat();
         const min =
-          allPoints.length == 0 ? DEFAULT_MIN : Math.min(...allPoints);
+          allPoints.length === 0 ? DEFAULT_MIN : Math.min(...allPoints);
         const max =
-          allPoints.length == 0 ? DEFAULT_MAX : Math.max(...allPoints);
+          allPoints.length === 0 ? DEFAULT_MAX : Math.max(...allPoints);
         const minStep = Math.max(min, viewPort.minStep);
         const maxStep = Math.min(max, viewPort.maxStep);
 
