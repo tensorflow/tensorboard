@@ -2164,6 +2164,29 @@ describe('scalar card', () => {
         ).toEqual('30');
       }));
 
+      it('initializes minMaxSteps when there is no run data', fakeAsync(async () => {
+        const runToSeries = {
+          run1: [],
+        };
+        provideMockCardRunToSeriesData(
+          selectSpy,
+          PluginType.SCALARS,
+          'card1',
+          null /* metadataOverride */,
+          runToSeries
+        );
+        const fixture = createComponent('card1');
+        let newSteps: MinMaxStep | null = null;
+        fixture.componentInstance.minMaxSteps$?.subscribe((minMaxStep) => {
+          newSteps = minMaxStep;
+        });
+
+        expect(newSteps!).toEqual({
+          minStep: -Infinity,
+          maxStep: Infinity,
+        });
+      }));
+
       describe('stepSelectorTimeSelection', () => {
         beforeEach(() => {
           provideMockCardRunToSeriesData(
