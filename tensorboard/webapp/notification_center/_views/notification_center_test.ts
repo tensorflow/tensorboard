@@ -204,7 +204,7 @@ describe('notification center', () => {
           dateInMs: 1,
           title: 'test title',
           content: 'test content',
-          fullNoteLink: "data:text/html,<script>alert('hi');</script>",
+          fullNoteLink: "javascript:alert('hi')",
         },
       ]);
       const fixture = TestBed.createComponent(NotificationCenterContainer);
