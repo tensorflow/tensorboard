@@ -51,6 +51,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=getrandom",
         "manual",
     ],
     version = "0.1.15",
@@ -58,7 +59,6 @@ rust_library(
     deps = [
         "@raze__cfg_if__0_1_10//:cfg_if",
     ] + selects.with_or({
-        # cfg(unix)
         (
             "@rules_rust//rust/platform:x86_64-apple-darwin",
             "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",

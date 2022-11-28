@@ -36,8 +36,6 @@ licenses([
 rust_library(
     name = "async_stream",
     srcs = glob(["**/*.rs"]),
-    crate_features = [
-    ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2018",
@@ -49,6 +47,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=async-stream",
         "manual",
     ],
     version = "0.3.0",

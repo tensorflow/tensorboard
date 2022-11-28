@@ -73,6 +73,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=regex",
         "manual",
     ],
     version = "1.5.6",

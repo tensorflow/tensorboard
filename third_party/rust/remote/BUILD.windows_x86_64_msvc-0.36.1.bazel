@@ -36,8 +36,6 @@ licenses([
 rust_library(
     name = "windows_x86_64_msvc",
     srcs = glob(["**/*.rs"]),
-    crate_features = [
-    ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2018",
@@ -46,6 +44,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=windows_x86_64_msvc",
         "manual",
     ],
     version = "0.36.1",

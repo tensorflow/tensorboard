@@ -82,6 +82,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=tonic-reflection",
         "manual",
     ],
     version = "0.3.0",

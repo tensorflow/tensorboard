@@ -45,15 +45,16 @@ rust_proc_macro(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=clap_derive",
         "manual",
     ],
     version = "3.0.0-beta.2",
     # buildifier: leave-alone
     deps = [
         "@raze__heck__0_3_1//:heck",
-        "@raze__proc_macro2__1_0_24//:proc_macro2",
+        "@raze__proc_macro2__1_0_43//:proc_macro2",
         "@raze__proc_macro_error__1_0_4//:proc_macro_error",
         "@raze__quote__1_0_7//:quote",
-        "@raze__syn__1_0_67//:syn",
+        "@raze__syn__1_0_99//:syn",
     ],
 )

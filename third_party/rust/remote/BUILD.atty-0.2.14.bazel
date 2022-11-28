@@ -38,8 +38,6 @@ rust_library(
     srcs = glob(["**/*.rs"]),
     aliases = {
     },
-    crate_features = [
-    ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2015",
@@ -48,13 +46,13 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=atty",
         "manual",
     ],
     version = "0.2.14",
     # buildifier: leave-alone
     deps = [
     ] + selects.with_or({
-        # cfg(unix)
         (
             "@rules_rust//rust/platform:x86_64-apple-darwin",
             "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",
@@ -63,7 +61,6 @@ rust_library(
         ],
         "//conditions:default": [],
     }) + selects.with_or({
-        # cfg(windows)
         (
             "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
         ): [

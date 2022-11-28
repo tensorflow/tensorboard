@@ -47,6 +47,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=tokio-util",
         "manual",
     ],
     version = "0.7.3",

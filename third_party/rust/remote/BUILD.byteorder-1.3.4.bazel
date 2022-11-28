@@ -50,6 +50,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=byteorder",
         "manual",
     ],
     version = "1.3.4",
