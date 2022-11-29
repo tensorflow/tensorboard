@@ -164,6 +164,8 @@ text {
 }
 
 .axis:hover .extent-edit-button,
+.x-axis.hover .extent-edit-button,
+.y-axis.hover .extent-edit-button,
 .axis:focus-within .extent-edit-button,
 .extent-edit-menu-opened {
   visibility: visible;

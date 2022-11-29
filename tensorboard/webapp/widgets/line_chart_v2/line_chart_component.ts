@@ -28,12 +28,13 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
-import {Observable, ReplaySubject} from 'rxjs';
+import {BehaviorSubject, Observable, ReplaySubject} from 'rxjs';
 import {ChartImpl} from './lib/chart';
 import {Chart} from './lib/chart_types';
 import {
   ChartCallbacks,
   ChartOptions,
+  ChartSection,
   DataSeries,
   DataSeriesMetadataMap,
   Extent,
@@ -176,6 +177,8 @@ export class LineChartComponent
   showChartRendererElement: boolean = true;
 
   interactionState = InteractionState.NONE;
+
+  readonly hoverSection = new BehaviorSubject<ChartSection>(ChartSection.NONE);
 
   private lineChart: Chart | null = null;
   private isDataUpdated = false;
@@ -350,6 +353,42 @@ export class LineChartComponent
 
   getLineChartForTest(): Chart | null {
     return this.lineChart;
+  }
+
+  onMouseMove({clientX: x, clientY: y}: MouseEvent): ChartSection {
+    const section = this.getHoveredSection({x, y});
+    this.hoverSection.next(section);
+
+    return section;
+  }
+
+  private getHoveredSection(point: {x: number; y: number}): ChartSection {
+    const xAxis = this.xAxis.nativeElement.getBoundingClientRect();
+    const yAxis = this.yAxis.nativeElement.getBoundingClientRect();
+    const chart = this.chartEl?.nativeElement.getBoundingClientRect();
+
+    if (isWithinRect(point, xAxis)) {
+      return ChartSection.XAXIS;
+    }
+
+    if (isWithinRect(point, yAxis)) {
+      return ChartSection.YAXIS;
+    }
+
+    if (chart && isWithinRect(point, chart)) {
+      return ChartSection.CHART;
+    }
+
+    return ChartSection.NONE;
+
+    function isWithinRect(point: {x: number; y: number}, rect: DOMRect) {
+      return (
+        point.x >= rect.x &&
+        point.x <= rect.x + rect.width &&
+        point.y >= rect.y &&
+        point.y <= rect.y + rect.height
+      );
+    }
   }
 
   private initializeChart() {

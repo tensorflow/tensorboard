@@ -19,6 +19,7 @@ limitations under the License.
   [ngClass]="{'container': true, 'dark-mode': useDarkMode, 'line-only-mode': lineOnly}"
   detectResize
   (onResize)="onViewResize()"
+  (mousemove)="onMouseMove($event)"
   [resizeEventDebouncePeriodInMs]="0"
   #overlayTarget="cdkOverlayOrigin"
   cdkOverlayOrigin
@@ -66,7 +67,10 @@ limitations under the License.
       ></ng-container>
     </div>
   </div>
-  <div class="y-axis" #yAxis>
+  <div
+    [ngClass]="{'y-axis': true, 'hovered': hoverSection.getValue() === 'YAXIS'}"
+    #yAxis
+  >
     <line-chart-axis
       *ngIf="!lineOnly"
       axis="y"
@@ -78,7 +82,10 @@ limitations under the License.
       (onViewExtentChange)="onViewBoxChangedFromAxis($event, 'y')"
     ></line-chart-axis>
   </div>
-  <div class="x-axis" #xAxis>
+  <div
+    [ngClass]="{'x-axis': true, 'hovered': hoverSection.getValue() === 'XAXIS'}"
+    #xAxis
+  >
     <line-chart-axis
       *ngIf="!lineOnly"
       axis="x"

@@ -33,3 +33,10 @@ export enum InteractionState {
   SCROLL_ZOOMING = 'SCROLL_ZOOMING',
   PANNING = 'PANNING',
 }
+
+export const enum ChartSection {
+  NONE = 'NONE',
+  CHART = 'CHART',
+  XAXIS = 'XAXIS',
+  YAXIS = 'YAXIS',
+}
