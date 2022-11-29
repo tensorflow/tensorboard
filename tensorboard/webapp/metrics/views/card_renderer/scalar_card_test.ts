@@ -2688,6 +2688,60 @@ describe('scalar card', () => {
       ]);
     }));
 
+    it('builds range selected step data object with smoothed values', fakeAsync(() => {
+      const runToSeries = {
+        run1: [
+          {wallTime: 1, value: 10, step: 1},
+          {wallTime: 2, value: 8, step: 2},
+          {wallTime: 3, value: 3, step: 3},
+          {wallTime: 4, value: 25, step: 4},
+        ],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([['run1', true]])
+      );
+
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.3);
+
+      store.overrideSelector(getMetricsLinkedTimeSelection, {
+        start: {step: 2},
+        end: {step: 4},
+      });
+
+      const fixture = createComponent('card1');
+      const scalarCardDataTable = fixture.debugElement.query(
+        By.directive(ScalarCardDataTable)
+      );
+      fixture.detectChanges();
+
+      const data =
+        scalarCardDataTable.componentInstance.getTimeSelectionTableData();
+
+      expect(data).toEqual([
+        {
+          id: '["smoothed","run1"]',
+          COLOR: '#fff',
+          RUN: 'run1',
+          VALUE_CHANGE: 10.515172900494004,
+          START_STEP: 2,
+          END_STEP: 4,
+          START_VALUE: 8.46153846153846,
+          END_VALUE: 18.976711362032464,
+          MIN_VALUE: 4.532374100719424,
+          MAX_VALUE: 18.976711362032464,
+          PERCENTAGE_CHANGE: 1.2427022518765645,
+        },
+      ]);
+    }));
+
     it('selects closest points to time selection', fakeAsync(() => {
       const runToSeries = {
         run1: [
