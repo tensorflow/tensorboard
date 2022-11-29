@@ -2688,7 +2688,7 @@ describe('scalar card', () => {
       ]);
     }));
 
-    it('uses smoothed values to builds range selected step data object', fakeAsync(() => {
+    it('builds range selected step data object with smoothed values', fakeAsync(() => {
       const runToSeries = {
         run1: [
           {wallTime: 1, value: 10, step: 1},

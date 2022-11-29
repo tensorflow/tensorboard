@@ -169,7 +169,7 @@ export class ScalarCardDataTable {
                 datum.points,
                 closestStartPointIndex,
                 closestEndPointIndex,
-                /*smoothed=*/ true
+                true
               );
               continue;
             case ColumnHeaders.MAX_VALUE:
@@ -180,7 +180,7 @@ export class ScalarCardDataTable {
                 datum.points,
                 closestStartPointIndex,
                 closestEndPointIndex,
-                /*smoothed=*/ true
+                true
               );
               continue;
             case ColumnHeaders.PERCENTAGE_CHANGE:
