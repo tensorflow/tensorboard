@@ -83,6 +83,8 @@ import {
   getMetricsScalarSmoothing,
   getMetricsTooltipSort,
   getMetricsXAxisType,
+  getRangeSelectionHeaders,
+  getSingleSelectionHeaders,
   RunToSeries,
 } from '../../store';
 import {CardId, CardMetadata, XAxisType} from '../../types';
@@ -483,32 +485,33 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.columnHeaders$ = combineLatest([
       this.smoothingEnabled$,
       this.stepOrLinkedTimeSelection$,
+      this.store.select(getSingleSelectionHeaders),
+      this.store.select(getRangeSelectionHeaders),
     ]).pipe(
-      map(([smoothingEnabled, timeSelection]) => {
-        const headers: ColumnHeaders[] = [];
-        if (timeSelection === null || timeSelection.end === null) {
-          // Single Step Selected
-          headers.push(ColumnHeaders.RUN);
-          if (smoothingEnabled) {
-            headers.push(ColumnHeaders.SMOOTHED);
+      map(
+        ([
+          smoothingEnabled,
+          timeSelection,
+          singleSelectionHeaders,
+          rangeSelectionHeaders,
+        ]) => {
+          const headers: ColumnHeaders[] = [];
+          if (timeSelection === null || timeSelection.end === null) {
+            if (!smoothingEnabled) {
+              // Return single selection headers without smoothed header.
+              const indexOfSmoothed = singleSelectionHeaders.indexOf(
+                ColumnHeaders.SMOOTHED
+              );
+              return singleSelectionHeaders
+                .slice(0, indexOfSmoothed)
+                .concat(singleSelectionHeaders.slice(indexOfSmoothed + 1));
+            }
+            return singleSelectionHeaders;
+          } else {
+            return rangeSelectionHeaders;
           }
-          headers.push(ColumnHeaders.VALUE);
-          headers.push(ColumnHeaders.STEP);
-          headers.push(ColumnHeaders.RELATIVE_TIME);
-        } else {
-          // Range selection headers.
-          headers.push(ColumnHeaders.RUN);
-          headers.push(ColumnHeaders.MIN_VALUE);
-          headers.push(ColumnHeaders.MAX_VALUE);
-          headers.push(ColumnHeaders.START_VALUE);
-          headers.push(ColumnHeaders.END_VALUE);
-          headers.push(ColumnHeaders.VALUE_CHANGE);
-          headers.push(ColumnHeaders.PERCENTAGE_CHANGE);
-          headers.push(ColumnHeaders.START_STEP);
-          headers.push(ColumnHeaders.END_STEP);
         }
-        return headers;
-      })
+      )
     );
 
     this.chartMetadataMap$ = partitionedSeries$.pipe(

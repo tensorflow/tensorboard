@@ -81,6 +81,8 @@ import {
   getMetricsRangeSelectionEnabled,
   getMetricsScalarSmoothing,
   getMetricsStepSelectorEnabled,
+  getRangeSelectionHeaders,
+  getSingleSelectionHeaders,
 } from '../../store';
 import {
   appStateFromMetricsState,
@@ -2552,6 +2554,24 @@ describe('scalar card', () => {
   describe('getTimeSelectionTableData', () => {
     beforeEach(() => {
       store.overrideSelector(getMetricsLinkedTimeEnabled, true);
+      store.overrideSelector(getSingleSelectionHeaders, [
+        ColumnHeaders.RUN,
+        ColumnHeaders.SMOOTHED,
+        ColumnHeaders.VALUE,
+        ColumnHeaders.STEP,
+        ColumnHeaders.RELATIVE_TIME,
+      ]);
+      store.overrideSelector(getRangeSelectionHeaders, [
+        ColumnHeaders.RUN,
+        ColumnHeaders.MIN_VALUE,
+        ColumnHeaders.MAX_VALUE,
+        ColumnHeaders.START_VALUE,
+        ColumnHeaders.END_VALUE,
+        ColumnHeaders.VALUE_CHANGE,
+        ColumnHeaders.PERCENTAGE_CHANGE,
+        ColumnHeaders.START_STEP,
+        ColumnHeaders.END_STEP,
+      ]);
     });
 
     it('builds single selected step data object', fakeAsync(() => {

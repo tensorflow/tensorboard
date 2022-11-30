@@ -30,6 +30,7 @@ import {
   TooltipSort,
   XAxisType,
 } from '../internal_types';
+import {ColumnHeaders} from '../views/card_renderer/scalar_card_types';
 import * as storeUtils from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
@@ -383,6 +384,20 @@ export const getMetricsStepMinMax = createSelector(
       min: min === Infinity ? 0 : min,
       max: max === -Infinity ? 1000 : max,
     };
+  }
+);
+
+export const getSingleSelectionHeaders = createSelector(
+  selectMetricsState,
+  (state: MetricsState): ColumnHeaders[] => {
+    return state.singleSelectionHeaders;
+  }
+);
+
+export const getRangeSelectionHeaders = createSelector(
+  selectMetricsState,
+  (state: MetricsState): ColumnHeaders[] => {
+    return state.rangeSelectionHeaders;
   }
 );
 
