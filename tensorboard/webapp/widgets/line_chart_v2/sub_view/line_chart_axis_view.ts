@@ -18,6 +18,7 @@ import {
   EventEmitter,
   Input,
   Output,
+  ViewEncapsulation,
 } from '@angular/core';
 import {Dimension, Formatter, Scale} from '../lib/public_types';
 import {LinearScale, TemporalScale} from '../lib/scale';
@@ -34,6 +35,7 @@ const AXIS_FONT = '11px Roboto, sans-serif';
   templateUrl: 'line_chart_axis_view.ng.html',
   styleUrls: ['line_chart_axis_view.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
 })
 export class LineChartAxisComponent {
   @Input()
