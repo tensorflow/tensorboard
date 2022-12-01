@@ -38,7 +38,9 @@ import {
       [headers]="dataHeaders"
       [data]="getTimeSelectionTableData()"
       [sortingInfo]="sortingInfo"
+      [columnCustomizationEnabled]="columnCustomizationEnabled"
       (sortDataBy)="sortDataBy.emit($event)"
+      (orderColumns)="orderColumns.emit($event)"
     ></tb-data-table>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -49,8 +51,10 @@ export class ScalarCardDataTable {
   @Input() stepOrLinkedTimeSelection!: TimeSelection;
   @Input() dataHeaders!: ColumnHeaders[];
   @Input() sortingInfo!: SortingInfo;
+  @Input() columnCustomizationEnabled!: boolean;
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
+  @Output() orderColumns = new EventEmitter<ColumnHeaders[]>();
 
   getMinValueInRange(
     points: ScalarCardPoint[],

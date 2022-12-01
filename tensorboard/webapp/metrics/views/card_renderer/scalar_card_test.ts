@@ -336,6 +336,10 @@ describe('scalar card', () => {
     store.overrideSelector(selectors.getRunColorMap, {});
     store.overrideSelector(selectors.getDarkModeEnabled, false);
     store.overrideSelector(selectors.getForceSvgFeatureFlag, false);
+    store.overrideSelector(
+      selectors.getIsScalarColumnCustomizationEnabled,
+      false
+    );
     store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
     store.overrideSelector(
       selectors.getIsLinkedTimeProspectiveFobEnabled,

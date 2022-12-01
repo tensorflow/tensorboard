@@ -30,7 +30,10 @@ import {
   TooltipSort,
   XAxisType,
 } from '../internal_types';
-import {SortingInfo} from '../views/card_renderer/scalar_card_types';
+import {
+  ColumnHeaders,
+  SortingInfo,
+} from '../views/card_renderer/scalar_card_types';
 
 export const metricsSettingsPaneClosed = createAction(
   '[Metrics] Metrics Settings Pane Closed'
@@ -195,6 +198,13 @@ export const linkedTimeToggled = createAction(
 export const sortingDataTable = createAction(
   '[Metrics] Sorting Data Table By Header',
   props<SortingInfo>()
+);
+
+export const dataTableColumnDrag = createAction(
+  '[Metrics] Data table column dragged',
+  props<{
+    newOrder: ColumnHeaders[];
+  }>()
 );
 
 export const stepSelectorToggled = createAction(
