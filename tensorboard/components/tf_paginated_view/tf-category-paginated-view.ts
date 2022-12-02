@@ -28,9 +28,9 @@ import {
 import {TfDomRepeat} from './tf-dom-repeat';
 
 @customElement('tf-category-paginated-view')
-class TfCategoryPaginatedView<
-  CategoryItem extends {}
-> extends TfDomRepeat<CategoryItem> {
+// @ts-ignore(go/ts48upgrade) Fix code and remove this comment. Error:
+// TS2344: Type 'CategoryItem' does not satisfy the constraint '{}'.
+class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
   static readonly template = html`
     <template is="dom-if" if="[[_paneRendered]]" id="ifRendered">
       <button class="heading" on-tap="_togglePane" open-button$="[[opened]]">
