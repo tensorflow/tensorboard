@@ -16,7 +16,9 @@ limitations under the License.
  * Recursively freezes an object and all of its fields. The given object is
  * assumed not to have reference loops.
  */
-export function deepFreeze<T extends {}>(obj: T): T {
+export function deepFreeze<T>(obj: T): T {
+  // @ts-ignore(go/ts48upgrade) Fix code and remove this comment. Error:
+  // TS2769: No overload matches this call.
   for (const val of Object.values(obj)) {
     if (val && typeof val === 'object') {
       deepFreeze(val);

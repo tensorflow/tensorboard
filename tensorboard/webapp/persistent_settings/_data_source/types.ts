@@ -37,7 +37,7 @@ export declare interface BackendSettings {
   notificationLastReadTimeInMs?: number;
   sideBarWidthInPercent?: number;
   timeSeriesSettingsPaneOpened?: boolean;
-  timeSeriesCardMinWidth?: number | null;
+  timeSeriesCardMinWidth?: number;
   stepSelectorEnabled?: boolean;
   rangeSelectionEnabled?: boolean;
   linkedTimeEnabled?: boolean;
@@ -59,7 +59,7 @@ export interface PersistableSettings {
   notificationLastReadTimeInMs?: number;
   sideBarWidthInPercent?: number;
   timeSeriesSettingsPaneOpened?: boolean;
-  timeSeriesCardMinWidth?: number | null;
+  timeSeriesCardMinWidth?: number;
   stepSelectorEnabled?: boolean;
   rangeSelectionEnabled?: boolean;
   linkedTimeEnabled?: boolean;
