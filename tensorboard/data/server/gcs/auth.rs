@@ -181,8 +181,8 @@ impl TokenStore {
         }
         if let Some(ref t) = *token {
             debug!("Obtained new access token.");
-             // If the token is valid, authenticate the request with it
-             if t.is_valid() {
+            // If the token is valid, authenticate the request with it
+            if t.is_valid() {
                 return t.authenticate(rb);
             }
         }
