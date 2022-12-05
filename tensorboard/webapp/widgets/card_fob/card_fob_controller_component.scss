@@ -57,7 +57,9 @@ limitations under the License.
   position: absolute;
   // Height/Width to match x-axis
   height: 30px;
-  width: calc(100% - 50px); // dot on the left takes up 50px
+  width: calc(
+    100% - 74px
+  ); // the dot on the left takes up 50px, the edit button takes up 24px
 }
 
 .prospective-area {
