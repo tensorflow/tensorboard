@@ -1092,6 +1092,34 @@ const reducer = createReducer(
       linkedTimeSelection: null,
     };
   }),
+  on(actions.dataTableColumnDrag, (state, {newOrder}) => {
+    if (state.rangeSelectionEnabled) {
+      return {
+        ...state,
+        rangeSelectionHeaders: newOrder,
+      };
+    }
+
+    // TODO(@jameshollyer): remove this logic with smoothing refactor *******
+    let orderAdjustedForSmoothed = newOrder;
+    const newSmoothedColumnIndex = newOrder.indexOf(ColumnHeaders.SMOOTHED);
+    const oldSmoothedColumnIndex = state.singleSelectionHeaders.indexOf(
+      ColumnHeaders.SMOOTHED
+    );
+
+    if (newSmoothedColumnIndex < 0 && oldSmoothedColumnIndex > 0) {
+      orderAdjustedForSmoothed = newOrder
+        .slice(0, oldSmoothedColumnIndex)
+        .concat([ColumnHeaders.SMOOTHED])
+        .concat(newOrder.slice(oldSmoothedColumnIndex, newOrder.length));
+    }
+    // *********************************************************************
+
+    return {
+      ...state,
+      singleSelectionHeaders: orderAdjustedForSmoothed,
+    };
+  }),
   on(actions.metricsToggleVisiblePlugin, (state, {plugin}) => {
     let nextFilteredPluginTypes = new Set(state.filteredPluginTypes);
     if (nextFilteredPluginTypes.has(plugin)) {

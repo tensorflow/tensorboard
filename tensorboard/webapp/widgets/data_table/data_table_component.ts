@@ -18,6 +18,7 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnDestroy,
   Output,
 } from '@angular/core';
 import {
@@ -32,23 +33,43 @@ import {
   relativeTimeFormatter,
 } from '../line_chart_v2/lib/formatter';
 
+enum Side {
+  RIGHT,
+  LEFT,
+}
+
+const preventDefault = function (e: MouseEvent) {
+  e.preventDefault();
+};
+
 @Component({
   selector: 'tb-data-table',
   templateUrl: 'data_table_component.ng.html',
   styleUrls: ['data_table_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DataTableComponent {
+export class DataTableComponent implements OnDestroy {
   // The order of this array of headers determines the order which they are
   // displayed in the table.
   @Input() headers!: ColumnHeaders[];
   @Input() data!: SelectedStepRunData[];
   @Input() sortingInfo!: SortingInfo;
+  @Input() columnCustomizationEnabled!: boolean;
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
+  @Output() orderColumns = new EventEmitter<ColumnHeaders[]>();
 
   readonly ColumnHeaders = ColumnHeaders;
   readonly SortingOrder = SortingOrder;
+  readonly Side = Side;
+
+  draggingHeader: ColumnHeaders | undefined;
+  highlightedColumn: ColumnHeaders | undefined;
+  highlightSide: Side = Side.RIGHT;
+
+  ngOnDestroy() {
+    document.removeEventListener('dragover', preventDefault);
+  }
 
   getHeaderTextColumn(columnHeader: ColumnHeaders): string {
     switch (columnHeader) {
@@ -199,5 +220,64 @@ export class DataTableComponent {
       return;
     }
     this.sortDataBy.emit({header, order: SortingOrder.ASCENDING});
+  }
+
+  dragStart(header: ColumnHeaders) {
+    this.draggingHeader = header;
+
+    // This stop the end drag animation
+    document.addEventListener('dragover', preventDefault);
+  }
+
+  dragEnd() {
+    if (!this.draggingHeader || !this.highlightedColumn) {
+      return;
+    }
+
+    this.orderColumns.emit(
+      this.moveHeader(
+        this.headers.indexOf(this.draggingHeader),
+        this.headers.indexOf(this.highlightedColumn)
+      )
+    );
+    this.draggingHeader = undefined;
+    this.highlightedColumn = undefined;
+    document.removeEventListener('dragover', preventDefault);
+  }
+
+  dragEnter(header: ColumnHeaders) {
+    if (!this.draggingHeader) {
+      return;
+    }
+    if (
+      this.headers.indexOf(header) < this.headers.indexOf(this.draggingHeader)
+    ) {
+      this.highlightSide = Side.LEFT;
+    } else {
+      this.highlightSide = Side.RIGHT;
+    }
+    this.highlightedColumn = header;
+  }
+
+  // Move the item at sourceIndex to destinationIndex
+  moveHeader(sourceIndex: number, destinationIndex: number) {
+    const newHeaders = [...this.headers];
+    // Delete from original location
+    newHeaders.splice(sourceIndex, 1);
+    // Insert at destinationIndex.
+    newHeaders.splice(destinationIndex, 0, this.headers[sourceIndex]);
+    return newHeaders;
+  }
+
+  getHeaderHighlightStyle(header: ColumnHeaders) {
+    if (header !== this.highlightedColumn) {
+      return {};
+    }
+
+    return {
+      highlight: true,
+      'highlight-border-right': this.highlightSide === Side.RIGHT,
+      'highlight-border-left': this.highlightSide === Side.LEFT,
+    };
   }
 }

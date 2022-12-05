@@ -90,6 +90,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() xScaleType!: ScaleType;
   @Input() useDarkMode!: boolean;
   @Input() forceSvg!: boolean;
+  @Input() columnCustomizationEnabled!: boolean;
   @Input() linkedTimeSelection!: TimeSelectionView | null;
   @Input() stepOrLinkedTimeSelection!: TimeSelection | null;
   @Input() rangeSelectionEnabled: boolean = false;
@@ -106,6 +107,7 @@ export class ScalarCardComponent<Downloader> {
   @Output() onStepSelectorToggled =
     new EventEmitter<TimeSelectionToggleAffordance>();
   @Output() onDataTableSorting = new EventEmitter<SortingInfo>();
+  @Output() reorderColumnHeaders = new EventEmitter<ColumnHeaders[]>();
 
   @Output() onLineChartZoom = new EventEmitter<Extent>();
 
