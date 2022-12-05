@@ -18,6 +18,7 @@ import {
   EventEmitter,
   Input,
   Output,
+  ViewEncapsulation,
 } from '@angular/core';
 import {Dimension, Formatter, Scale} from '../lib/public_types';
 import {LinearScale, TemporalScale} from '../lib/scale';
@@ -25,14 +26,7 @@ import {
   getDomSizeInformedTickCount,
   getScaleRangeFromDomDim,
 } from './chart_view_utils';
-import {
-  filterTicksByVisibility,
-  getStandardTicks,
-  getTicksForLinearScale,
-  getTicksForTemporalScale,
-  MajorTick,
-  MinorTick,
-} from './line_chart_axis_utils';
+import {AxisUtils, MajorTick, MinorTick} from './line_chart_axis_utils';
 
 const AXIS_FONT = '11px Roboto, sans-serif';
 
@@ -41,6 +35,9 @@ const AXIS_FONT = '11px Roboto, sans-serif';
   templateUrl: 'line_chart_axis_view.ng.html',
   styleUrls: ['line_chart_axis_view.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // This prevents the CSS generated from being namespaced thus allowing CSS
+  // to reach into the line_chart_component and card_fob_controller_component
+  encapsulation: ViewEncapsulation.None,
 })
 export class LineChartAxisComponent {
   @Input()
@@ -75,21 +72,21 @@ export class LineChartAxisComponent {
     const maxTickSize = getDomSizeInformedTickCount(domSize, this.gridCount);
 
     if (this.scale instanceof LinearScale) {
-      ticks = getTicksForLinearScale(
+      ticks = AxisUtils.getTicksForLinearScale(
         this.scale,
         this.getFormatter(),
         maxTickSize,
         this.axisExtent
       );
     } else if (this.scale instanceof TemporalScale) {
-      ticks = getTicksForTemporalScale(
+      ticks = AxisUtils.getTicksForTemporalScale(
         this.scale,
         this.getFormatter(),
         maxTickSize,
         this.axisExtent
       );
     } else {
-      ticks = getStandardTicks(
+      ticks = AxisUtils.getStandardTicks(
         this.scale,
         this.getFormatter(),
         maxTickSize,
@@ -98,7 +95,7 @@ export class LineChartAxisComponent {
     }
 
     this.majorTicks = ticks.major;
-    this.minorTicks = filterTicksByVisibility(
+    this.minorTicks = AxisUtils.filterTicksByVisibility(
       ticks.minor,
       (tick) => this.getDomPos(tick.value),
       this.axis,

@@ -53,6 +53,7 @@ describe('TBMetricsDataSource test', () => {
 
   afterEach(() => {
     httpMock.verify();
+    store?.resetSelectors();
   });
 
   describe('fetchTagMetadata', () => {

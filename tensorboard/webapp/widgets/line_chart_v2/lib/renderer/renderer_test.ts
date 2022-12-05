@@ -17,7 +17,7 @@ import {Polyline} from '../internal_types';
 import {assertSvgPathD} from '../testing';
 import {ThreeCoordinator} from '../threejs_coordinator';
 import {SvgRenderer} from './svg_renderer';
-import {ThreeRenderer} from './threejs_renderer';
+import {TEST_ONLY, ThreeRenderer} from './threejs_renderer';
 
 describe('line_chart_v2/lib/renderer test', () => {
   const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -326,7 +326,7 @@ describe('line_chart_v2/lib/renderer test', () => {
 
     beforeEach(() => {
       scene = new THREE.Scene();
-      spyOn(THREE, 'Scene').and.returnValue(scene);
+      spyOn(TEST_ONLY.ThreeWrapper, 'createScene').and.returnValue(scene);
 
       const canvas = document.createElement('canvas');
       const coordinator = new ThreeCoordinator();

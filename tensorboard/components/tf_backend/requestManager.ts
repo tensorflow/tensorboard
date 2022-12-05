@@ -187,11 +187,12 @@ export class RequestManager {
     while (this._queue.length > 0) {
       this._queue
         .pop()
-        .reject(
+        ?.reject(
           new RequestCancellationError('Request cancelled by clearQueue')
         );
     }
   }
+
   /* Return number of currently pending requests */
   public activeRequests(): number {
     return this._nActiveRequests;
@@ -206,7 +207,7 @@ export class RequestManager {
       this._queue.length > 0
     ) {
       this._nActiveRequests++;
-      this._queue.pop().resolve(undefined);
+      this._queue.pop()!.resolve(undefined);
     }
   }
   /**

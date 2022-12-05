@@ -163,3 +163,17 @@ export const getAllowRangeSelection = createSelector(
     return flags.allowRangeSelection;
   }
 );
+
+export const getIsLinkedTimeProspectiveFobEnabled = createSelector(
+  getFeatureFlags,
+  (flags: FeatureFlags): boolean => {
+    return flags.enabledProspectiveFob;
+  }
+);
+
+export const getIsScalarColumnCustomizationEnabled = createSelector(
+  getFeatureFlags,
+  (flags: FeatureFlags): boolean => {
+    return flags.enableScalarColumnCustomization;
+  }
+);

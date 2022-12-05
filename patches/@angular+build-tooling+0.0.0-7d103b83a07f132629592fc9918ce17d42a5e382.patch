@@ -1,0 +1,20 @@
+diff --git a/node_modules/@angular/build-tooling/shared-scripts/angular-optimization/esbuild-plugin.mjs b/node_modules/@angular/build-tooling/shared-scripts/angular-optimization/esbuild-plugin.mjs
+index 57cd2b9..2e5eaf1 100755
+--- a/node_modules/@angular/build-tooling/shared-scripts/angular-optimization/esbuild-plugin.mjs
++++ b/node_modules/@angular/build-tooling/shared-scripts/angular-optimization/esbuild-plugin.mjs
+@@ -43,9 +43,12 @@ export function createEsbuildAngularOptimizePlugin(
+
+         // If the current file is denoted as explicit side effect free, add the pure
+         // top-level functions optimization plugin for this file.
+-        if (isSideEffectFreeFn !== null && isSideEffectFreeFn(args.path)) {
+-          plugins.push(pureToplevelFunctionsPlugin);
+-        }
++        // For TensorBoard: This plugin aggressively culls symbols in a way that
++        // is incompatible with TensorBoard source. Remove it. The binary is
++        // bigger than it otherwise could be but the bundle also happens faster.
++        //if (isSideEffectFreeFn !== null && isSideEffectFreeFn(args.path)) {
++        //  plugins.push(pureToplevelFunctionsPlugin);
++        //}
+
+         const {code} = await babel.transformAsync(content, {
+           filename: filePath,

@@ -225,9 +225,9 @@ export function parseTensors(
       const row = line.split(valueDelim);
       const dataPoint: DataPoint = {
         metadata: {},
-        vector: null,
+        vector: null!,
         index: data.length,
-        projections: null,
+        projections: null!,
       };
       // If the first label is not a number, take it as the label.
       if (isNaN(row[0] as any) || numDim === row.length - 1) {
@@ -253,7 +253,7 @@ export function parseTensors(
         throw Error('Parsing failed');
       }
     }).then(() => {
-      logging.setModalMessage(null, TENSORS_MSG_ID);
+      logging.setModalMessage(null!, TENSORS_MSG_ID);
       resolve(data);
     });
   });
@@ -275,7 +275,7 @@ export function parseTensorsFromFloat32Array(
             metadata: {},
             vector: data.subarray(offset, offset + dim),
             index: i,
-            projections: null,
+            projections: null!,
           });
           offset += dim;
         }
@@ -284,7 +284,7 @@ export function parseTensorsFromFloat32Array(
       TENSORS_MSG_ID
     )
     .then((dataPoints) => {
-      logging.setModalMessage(null, TENSORS_MSG_ID);
+      logging.setModalMessage(null!, TENSORS_MSG_ID);
       return dataPoints;
     });
 }
@@ -371,11 +371,11 @@ export function parseMetadata(
       columnNames.forEach((name: string, colIndex: number) => {
         let value = rowValues[colIndex];
         // Normalize missing values.
-        value = value === '' ? null : value;
+        value = value === '' ? null! : value;
         metadata[name] = value;
       });
     }).then(() => {
-      logging.setModalMessage(null, METADATA_MSG_ID);
+      logging.setModalMessage(null!, METADATA_MSG_ID);
       resolve({
         stats: analyzeMetadata(columnNames, pointsMetadata),
         pointsInfo: pointsMetadata,
@@ -428,8 +428,8 @@ export function retrieveSpriteAndMetadataInfo(
       request.send(null);
     });
   }
-  let spriteMsgId = null;
-  let spritesPromise: Promise<HTMLImageElement> = null;
+  let spriteMsgId: string | null = null;
+  let spritesPromise: Promise<HTMLImageElement> | null = null;
   if (spriteImagePath) {
     spriteMsgId = logging.setModalMessage('Fetching sprite image...');
     spritesPromise = fetchImage(spriteImagePath);
@@ -437,7 +437,7 @@ export function retrieveSpriteAndMetadataInfo(
   // Fetch the metadata and the image in parallel.
   Promise.all([metadataPromise, spritesPromise]).then((values) => {
     if (spriteMsgId) {
-      logging.setModalMessage(null, spriteMsgId);
+      logging.setModalMessage(null!, spriteMsgId);
     }
     const [metadata, spriteImage] = values;
     if (
@@ -451,7 +451,7 @@ export function retrieveSpriteAndMetadataInfo(
           `${MAX_SPRITE_IMAGE_SIZE_PX}px x ${MAX_SPRITE_IMAGE_SIZE_PX}px`
       );
     } else {
-      metadata.spriteImage = spriteImage;
+      metadata.spriteImage = spriteImage!;
       metadata.spriteMetadata = spriteMetadata;
       try {
         callback(metadata);

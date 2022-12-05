@@ -75,6 +75,7 @@ describe('Source Files Container', () => {
 
   afterEach(() => {
     tearDownMonacoFakes();
+    store?.resetSelectors();
   });
 
   it('renders no file selected when no source line is focused on', () => {

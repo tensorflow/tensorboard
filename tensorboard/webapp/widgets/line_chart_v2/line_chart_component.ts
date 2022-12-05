@@ -18,10 +18,12 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  EventEmitter,
   Input,
   OnChanges,
   OnDestroy,
   OnInit,
+  Output,
   SimpleChanges,
   TemplateRef,
   ViewChild,
@@ -36,12 +38,13 @@ import {
   DataSeriesMetadataMap,
   Extent,
   Formatter,
+  InteractionState,
   RendererType,
   Scale,
   ScaleType,
 } from './lib/public_types';
 import {createScale} from './lib/scale';
-import {isOffscreenCanvasSupported} from './lib/utils';
+import {ChartUtils} from './lib/utils';
 import {WorkerChart} from './lib/worker/worker_chart';
 import {
   computeDataSeriesExtent,
@@ -137,6 +140,9 @@ export class LineChartComponent
   @Input()
   lineOnly?: boolean = false;
 
+  @Output()
+  viewBoxChanged = new EventEmitter<Extent>();
+
   private onViewBoxOverridden = new ReplaySubject<boolean>(1);
 
   /**
@@ -168,6 +174,8 @@ export class LineChartComponent
     yAxis: {width: 0, height: 0},
   };
   showChartRendererElement: boolean = true;
+
+  interactionState = InteractionState.NONE;
 
   private lineChart: Chart | null = null;
   private isDataUpdated = false;
@@ -388,7 +396,8 @@ export class LineChartComponent
     }
 
     const useWorker =
-      rendererType !== RendererType.SVG && isOffscreenCanvasSupported();
+      rendererType !== RendererType.SVG &&
+      ChartUtils.isOffscreenCanvasSupported();
     const klass = useWorker ? WorkerChart : ChartImpl;
     this.lineChart = new klass(params);
   }
@@ -482,12 +491,14 @@ export class LineChartComponent
     this.isViewBoxChanged = true;
     this.viewBox = dataExtent;
     this.updateLineChart();
+    this.viewBoxChanged.emit(dataExtent);
   }
 
   viewBoxReset() {
     this.setIsViewBoxOverridden(false);
     this.isViewBoxChanged = true;
     this.updateLineChart();
+    this.viewBoxChanged.emit(this.viewBox);
   }
 
   private setIsViewBoxOverridden(newValue: boolean): void {
@@ -496,6 +507,10 @@ export class LineChartComponent
     if (prevValue !== newValue) {
       this.onViewBoxOverridden.next(newValue);
     }
+  }
+
+  onInteractionStateChange(event: InteractionState) {
+    this.interactionState = event;
   }
 
   getIsViewBoxOverridden(): Observable<boolean> {

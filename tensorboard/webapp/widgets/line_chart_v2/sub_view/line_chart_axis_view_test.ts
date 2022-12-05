@@ -26,7 +26,7 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {Extent, Scale, ScaleType} from '../lib/public_types';
 import {createScale} from '../lib/scale';
-import * as utils from './line_chart_axis_utils';
+import {AxisUtils} from './line_chart_axis_utils';
 import {LineChartAxisComponent} from './line_chart_axis_view';
 
 @Component({
@@ -98,7 +98,7 @@ describe('line_chart_v2/sub_view/axis test', () => {
 
     overlayContainer = TestBed.inject(OverlayContainer);
     // `filterTicksByVisibility` is tested separately.
-    spyOn(utils, 'filterTicksByVisibility').and.callFake((ticks) => ticks);
+    spyOn(AxisUtils, 'filterTicksByVisibility').and.callFake((ticks) => ticks);
   });
 
   function assertLabels(debugElements: DebugElement[], axisLabels: string[]) {

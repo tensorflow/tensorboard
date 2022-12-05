@@ -26,7 +26,7 @@ import {
 } from '../experiments/store/testing';
 import {
   buildFeatureFlag,
-  buildFeatureFlagState as buildFeatureFlagState,
+  buildFeatureFlagState,
   buildState as buildStateFromFeatureFlagState,
 } from '../feature_flag/store/testing';
 import {

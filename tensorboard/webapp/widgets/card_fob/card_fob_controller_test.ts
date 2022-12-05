@@ -23,6 +23,7 @@ import {
   CardFobGetStepFromPositionHelper,
   TimeSelection,
   TimeSelectionAffordance,
+  TimeSelectionWithAffordance,
 } from './card_fob_types';
 
 @Component({
@@ -32,14 +33,19 @@ import {
       #FobController
       [axisDirection]="axisDirection"
       [timeSelection]="timeSelection"
+      [rangeSelectionEnabled]="rangeSelectionEnabled"
       [startStepAxisPosition]="getAxisPositionFromStartStep()"
       [endStepAxisPosition]="getAxisPositionFromEndStep()"
+      [prospectiveStepAxisPosition]="getAxisPositionFromProspectiveStep()"
       [highestStep]="highestStep"
       [lowestStep]="lowestStep"
       [cardFobHelper]="cardFobHelper"
       [showExtendedLine]="showExtendedLine"
+      [isProspectiveFobFeatureEnabled]="isProspectiveFobFeatureEnabled"
+      [prospectiveStep]="prospectiveStep"
       (onTimeSelectionChanged)="onTimeSelectionChanged($event)"
       (onTimeSelectionToggled)="onTimeSelectionToggled()"
+      (onPrespectiveStepChanged)="onPrespectiveStepChanged($event)"
     ></card-fob-controller>
   `,
 })
@@ -49,15 +55,20 @@ class TestableComponent {
 
   @Input() axisDirection!: AxisDirection;
   @Input() timeSelection!: TimeSelection;
+  @Input() rangeSelectionEnabled: boolean = false;
   @Input() cardFobHelper!: CardFobGetStepFromPositionHelper;
   @Input() showExtendedLine?: Boolean;
   @Input() highestStep!: number;
   @Input() lowestStep!: number;
   @Input() getAxisPositionFromStartStep!: () => number;
   @Input() getAxisPositionFromEndStep!: () => number;
+  @Input() getAxisPositionFromProspectiveStep!: () => number;
+  @Input() isProspectiveFobFeatureEnabled!: Boolean;
+  @Input() prospectiveStep!: number | null;
 
   @Input() onTimeSelectionChanged!: (newTimeSelection: TimeSelection) => void;
   @Input() onTimeSelectionToggled!: () => void;
+  @Input() onPrespectiveStepChanged!: (step: number | null) => void;
 }
 
 describe('card_fob_controller', () => {
@@ -67,7 +78,10 @@ describe('card_fob_controller', () => {
   let getStepLowerSpy: jasmine.Spy;
   let getAxisPositionFromStartStepSpy: jasmine.Spy;
   let getAxisPositionFromEndStepSpy: jasmine.Spy;
+  let getAxisPositionFromProspectiveStepSpy: jasmine.Spy;
   let cardFobHelper: CardFobGetStepFromPositionHelper;
+  let onPrespectiveStepChangedSpy: jasmine.Spy;
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [
@@ -82,8 +96,11 @@ describe('card_fob_controller', () => {
   function createComponent(input: {
     axisDirection?: AxisDirection;
     timeSelection: TimeSelection;
+    enableRangeSelection?: boolean;
     showExtendedLine?: Boolean;
     steps?: number[];
+    isProspectiveFobFeatureEnabled?: Boolean;
+    prospectiveStep?: number | null;
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
 
@@ -97,6 +114,7 @@ describe('card_fob_controller', () => {
     getStepLowerSpy = jasmine.createSpy();
     getAxisPositionFromStartStepSpy = jasmine.createSpy();
     getAxisPositionFromEndStepSpy = jasmine.createSpy();
+    getAxisPositionFromProspectiveStepSpy = jasmine.createSpy();
     getStepHigherSpy.and.callFake((step: number) => {
       return step;
     });
@@ -104,10 +122,17 @@ describe('card_fob_controller', () => {
       return step;
     });
     getAxisPositionFromStartStepSpy.and.callFake(() => {
-      return input.timeSelection.start.step;
+      return fixture.componentInstance.timeSelection.start.step;
     });
     getAxisPositionFromEndStepSpy.and.callFake(() => {
-      return input.timeSelection.end ? input.timeSelection.end.step : null;
+      return fixture.componentInstance.timeSelection.end
+        ? fixture.componentInstance.timeSelection.end.step
+        : null;
+    });
+    getAxisPositionFromProspectiveStepSpy.and.callFake(() => {
+      return fixture.componentInstance.prospectiveStep
+        ? fixture.componentInstance.prospectiveStep
+        : null;
     });
     cardFobHelper = {
       getStepHigherThanAxisPosition: getStepHigherSpy,
@@ -118,6 +143,8 @@ describe('card_fob_controller', () => {
       getAxisPositionFromStartStepSpy;
     fixture.componentInstance.getAxisPositionFromEndStep =
       getAxisPositionFromEndStepSpy;
+    fixture.componentInstance.getAxisPositionFromProspectiveStep =
+      getAxisPositionFromProspectiveStepSpy;
     fixture.componentInstance.highestStep = 4;
     fixture.componentInstance.lowestStep = 0;
     fixture.componentInstance.cardFobHelper = cardFobHelper;
@@ -126,21 +153,43 @@ describe('card_fob_controller', () => {
       input.axisDirection ?? AxisDirection.VERTICAL;
 
     fixture.componentInstance.timeSelection = input.timeSelection;
+    fixture.componentInstance.rangeSelectionEnabled = Boolean(
+      input.enableRangeSelection
+    );
 
     fixture.componentInstance.showExtendedLine =
       input.showExtendedLine ?? false;
 
+    fixture.componentInstance.isProspectiveFobFeatureEnabled =
+      input.isProspectiveFobFeatureEnabled ?? false;
+    fixture.componentInstance.prospectiveStep = input.prospectiveStep ?? null;
+
     onTimeSelectionChanged = jasmine.createSpy();
     fixture.componentInstance.onTimeSelectionChanged = onTimeSelectionChanged;
+    onTimeSelectionChanged.and.callFake(
+      (newSelectionWithAffordance: TimeSelectionWithAffordance) => {
+        fixture.componentInstance.timeSelection =
+          newSelectionWithAffordance.timeSelection;
+      }
+    );
 
     onTimeSelectionToggled = jasmine.createSpy();
     fixture.componentInstance.onTimeSelectionToggled = onTimeSelectionToggled;
+
+    onPrespectiveStepChangedSpy = jasmine.createSpy();
+    fixture.componentInstance.onPrespectiveStepChanged =
+      onPrespectiveStepChangedSpy;
+    onPrespectiveStepChangedSpy.and.callFake((step: number | null) => {
+      fixture.componentInstance.prospectiveStep = step;
+    });
+
     return fixture;
   }
 
   it('sets fob position based on time selection', () => {
     const fixture = createComponent({
       timeSelection: {start: {step: 2}, end: {step: 5}},
+      enableRangeSelection: true,
       axisDirection: AxisDirection.HORIZONTAL,
     });
     fixture.detectChanges();
@@ -211,6 +260,7 @@ describe('card_fob_controller', () => {
     it('swaps fobs being dragged when start > end', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 1}, end: {step: 2}},
+        enableRangeSelection: true,
       });
       fixture.detectChanges();
       const fobController = fixture.componentInstance.fobController;
@@ -228,7 +278,7 @@ describe('card_fob_controller', () => {
       });
       fobController.mouseMove(fakeEvent);
       expect((fobController as any).currentDraggingFob).toEqual(Fob.END);
-
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -244,6 +294,7 @@ describe('card_fob_controller', () => {
     it('swaps fobs being dragged when end < start', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 2}, end: {step: 3}},
+        enableRangeSelection: true,
       });
       fixture.detectChanges();
       const fobController = fixture.componentInstance.fobController;
@@ -261,6 +312,7 @@ describe('card_fob_controller', () => {
       fobController.mouseMove(fakeEvent);
       expect((fobController as any).currentDraggingFob).toEqual(Fob.START);
 
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -276,6 +328,7 @@ describe('card_fob_controller', () => {
     it('does not swaps fobs when start === end', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 2}, end: {step: 3}},
+        enableRangeSelection: true,
       });
       fixture.detectChanges();
       const fobController = fixture.componentInstance.fobController;
@@ -294,6 +347,7 @@ describe('card_fob_controller', () => {
       fobController.mouseMove(fakeEvent);
       expect((fobController as any).currentDraggingFob).toEqual(Fob.END);
 
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -304,6 +358,35 @@ describe('card_fob_controller', () => {
         },
         affordance: TimeSelectionAffordance.FOB,
       });
+    });
+
+    it('does not fire event when time selection does not change', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 2}, end: {step: 3}},
+        enableRangeSelection: true,
+      });
+      fixture.detectChanges();
+      const fobController = fixture.componentInstance.fobController;
+
+      fobController.startDrag(
+        Fob.END,
+        TimeSelectionAffordance.FOB,
+        new MouseEvent('mouseDown')
+      );
+      expect((fobController as any).currentDraggingFob).toEqual(Fob.END);
+
+      const fakeEvent = new MouseEvent('mousemove', {
+        clientY: 0,
+        movementY: 0,
+      });
+      fobController.mouseMove(fakeEvent);
+      expect((fobController as any).currentDraggingFob).toEqual(Fob.END);
+
+      fixture.detectChanges();
+      fobController.stopDrag();
+      fixture.detectChanges();
+
+      expect(onTimeSelectionChanged).not.toHaveBeenCalled();
     });
   });
 
@@ -328,6 +411,7 @@ describe('card_fob_controller', () => {
         movementY: 1,
       });
       fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -364,6 +448,7 @@ describe('card_fob_controller', () => {
         movementY: -1,
       });
       fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -470,6 +555,7 @@ describe('card_fob_controller', () => {
     it('end fob moves to the mouse when mouse is dragging up and mouse is above the fob', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 1}, end: {step: 1}},
+        enableRangeSelection: true,
       });
       fixture.detectChanges();
       const fobController = fixture.componentInstance.fobController;
@@ -488,6 +574,7 @@ describe('card_fob_controller', () => {
         movementY: 1,
       });
       fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -507,6 +594,7 @@ describe('card_fob_controller', () => {
     it('end fob moves to the mouse when mouse is dragging down and mouse is below the fob', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 1}, end: {step: 4}},
+        enableRangeSelection: true,
       });
       fixture.detectChanges();
       const fobController = fixture.componentInstance.fobController;
@@ -524,6 +612,7 @@ describe('card_fob_controller', () => {
         movementY: -1,
       });
       fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -543,6 +632,7 @@ describe('card_fob_controller', () => {
     it('end fob does not move when mouse is dragging down but, mouse is above the fob', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 1}, end: {step: 2}},
+        enableRangeSelection: true,
       });
       fixture.detectChanges();
       const fobController = fixture.componentInstance.fobController;
@@ -573,6 +663,7 @@ describe('card_fob_controller', () => {
     it('end fob does not move when mouse is dragging up but, mouse is below the fob', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 1}, end: {step: 3}},
+        enableRangeSelection: true,
       });
       fixture.detectChanges();
       const fobController = fixture.componentInstance.fobController;
@@ -623,6 +714,7 @@ describe('card_fob_controller', () => {
         movementX: 1,
       });
       fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -660,6 +752,7 @@ describe('card_fob_controller', () => {
         movementX: -1,
       });
       fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -697,6 +790,7 @@ describe('card_fob_controller', () => {
         movementX: -1,
       });
       fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -705,13 +799,7 @@ describe('card_fob_controller', () => {
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(2);
-      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
-        timeSelection: {
-          start: {step: 2},
-          end: null,
-        },
-        affordance: TimeSelectionAffordance.FOB,
-      });
+      expect(onTimeSelectionChanged).not.toHaveBeenCalled();
     });
 
     it('does not call getStepLowerThanMousePosition or getStepHigherThanMousePosition when mouse is dragging right but, is left of the fob', () => {
@@ -735,6 +823,7 @@ describe('card_fob_controller', () => {
         movementX: 1,
       });
       fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -743,13 +832,7 @@ describe('card_fob_controller', () => {
       expect(
         fobController.startFobWrapper.nativeElement.getBoundingClientRect().left
       ).toEqual(4);
-      expect(onTimeSelectionChanged).toHaveBeenCalledWith({
-        timeSelection: {
-          start: {step: 4},
-          end: null,
-        },
-        affordance: TimeSelectionAffordance.FOB,
-      });
+      expect(onTimeSelectionChanged).not.toHaveBeenCalled();
     });
 
     it('does not move the start fob or call call getStepLowerThanMousePosition or getStepHigherThanMousePosition when mouse is dragging right but, the fob is already on the final step', () => {
@@ -787,6 +870,7 @@ describe('card_fob_controller', () => {
     it('end fob moves to the mouse when mouse is dragging left and mouse is left of the fob', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 1}, end: {step: 1}},
+        enableRangeSelection: true,
         axisDirection: AxisDirection.HORIZONTAL,
       });
       fixture.detectChanges();
@@ -806,6 +890,7 @@ describe('card_fob_controller', () => {
         movementX: 1,
       });
       fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -825,6 +910,7 @@ describe('card_fob_controller', () => {
     it('end fob moves to the mouse when mouse is dragging right and mouse is right of the fob', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 1}, end: {step: 4}},
+        enableRangeSelection: true,
         axisDirection: AxisDirection.HORIZONTAL,
       });
       fixture.detectChanges();
@@ -843,6 +929,7 @@ describe('card_fob_controller', () => {
         movementX: -1,
       });
       fobController.mouseMove(fakeEvent);
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -862,6 +949,7 @@ describe('card_fob_controller', () => {
     it('end fob does not move when mouse is dragging right but, mouse is left of the fob', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 1}, end: {step: 2}},
+        enableRangeSelection: true,
         axisDirection: AxisDirection.HORIZONTAL,
       });
       fixture.detectChanges();
@@ -893,6 +981,7 @@ describe('card_fob_controller', () => {
     it('end fob does not move when mouse is dragging left but, mouse is right of the fob', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 1}, end: {step: 3}},
+        enableRangeSelection: true,
         axisDirection: AxisDirection.HORIZONTAL,
       });
       fixture.detectChanges();
@@ -938,6 +1027,7 @@ describe('card_fob_controller', () => {
     it('renders two lines on range selection', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 1}, end: {step: 4}},
+        enableRangeSelection: true,
         showExtendedLine: true,
       });
       fixture.detectChanges();
@@ -951,6 +1041,7 @@ describe('card_fob_controller', () => {
     it('clicks and drags the line to change selected step in horizontal axis', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 1}, end: {step: 3}},
+        enableRangeSelection: true,
         axisDirection: AxisDirection.HORIZONTAL,
         showExtendedLine: true,
       });
@@ -976,6 +1067,7 @@ describe('card_fob_controller', () => {
       fobController.mouseMove(
         new MouseEvent('mousemove', {clientX: 3, movementX: 1})
       );
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -1001,6 +1093,7 @@ describe('card_fob_controller', () => {
       fobController.mouseMove(
         new MouseEvent('mousemove', {clientX: 5, movementX: 1})
       );
+      fixture.detectChanges();
       fobController.stopDrag();
       fixture.detectChanges();
 
@@ -1039,6 +1132,7 @@ describe('card_fob_controller', () => {
     it('range selection start fob step typed which is less than end fob step', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 1}, end: {step: 4}},
+        enableRangeSelection: true,
       });
       fixture.detectChanges();
       const fobController = fixture.componentInstance.fobController;
@@ -1056,6 +1150,7 @@ describe('card_fob_controller', () => {
     it('range selection end fob step typed which is greater than start fob step', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 1}, end: {step: 4}},
+        enableRangeSelection: true,
       });
       fixture.detectChanges();
       const fobController = fixture.componentInstance.fobController;
@@ -1073,6 +1168,7 @@ describe('card_fob_controller', () => {
     it('range selection swaps when start step is typed in which is greater than end step', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 1}, end: {step: 2}},
+        enableRangeSelection: true,
       });
       fixture.detectChanges();
       const fobController = fixture.componentInstance.fobController;
@@ -1090,6 +1186,7 @@ describe('card_fob_controller', () => {
     it('range selection swaps when end step is typed in which is less than start step', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 3}, end: {step: 4}},
+        enableRangeSelection: true,
       });
       fixture.detectChanges();
       const fobController = fixture.componentInstance.fobController;
@@ -1107,6 +1204,7 @@ describe('card_fob_controller', () => {
     it('properly handles a 0 step', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 3}, end: {step: 4}},
+        enableRangeSelection: true,
       });
       fixture.detectChanges();
       const fobController = fixture.componentInstance.fobController;
@@ -1148,6 +1246,7 @@ describe('card_fob_controller', () => {
     it('changing end fob input modifies end step', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 1}, end: {step: 3}},
+        enableRangeSelection: true,
       });
       fixture.detectChanges();
 
@@ -1191,6 +1290,7 @@ describe('card_fob_controller', () => {
     it('fires onTimeSelectionChanged to remove end fob when end fob is deselected', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 1}, end: {step: 3}},
+        enableRangeSelection: true,
       });
       fixture.detectChanges();
 
@@ -1212,6 +1312,7 @@ describe('card_fob_controller', () => {
     it('fires onTimeSelectionChanged to change the start fob step to the current end fob step and the end fob step to null when start fob is deselected in a range selection', () => {
       const fixture = createComponent({
         timeSelection: {start: {step: 1}, end: {step: 3}},
+        enableRangeSelection: true,
       });
       fixture.detectChanges();
 
@@ -1227,6 +1328,131 @@ describe('card_fob_controller', () => {
           end: null,
         },
         affordance: TimeSelectionAffordance.FOB_REMOVED,
+      });
+    });
+  });
+
+  describe('prospective fob', () => {
+    it('renders when feature flag is enabled and the step is not null', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 4}, end: null},
+        isProspectiveFobFeatureEnabled: true,
+        prospectiveStep: 2,
+      });
+      fixture.detectChanges();
+
+      const fobController = fixture.componentInstance.fobController;
+      const prospectiveFob = fobController.prospectiveFobWrapper.nativeElement;
+
+      expect(prospectiveFob).toBeTruthy();
+    });
+
+    it('does not render when feature flag is disabled', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 4}, end: null},
+        isProspectiveFobFeatureEnabled: false,
+        prospectiveStep: 2,
+      });
+      fixture.detectChanges();
+
+      expect(
+        fixture.componentInstance.fobController.prospectiveFobWrapper
+      ).toBeUndefined();
+    });
+
+    it('does not render when step is null', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 4}, end: null},
+        isProspectiveFobFeatureEnabled: true,
+        prospectiveStep: null,
+      });
+      fixture.detectChanges();
+
+      expect(
+        fixture.componentInstance.fobController.prospectiveFobWrapper
+      ).toBeUndefined();
+    });
+
+    it('sets horizontal position based on prospective step', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 4}, end: null},
+        axisDirection: AxisDirection.HORIZONTAL,
+        isProspectiveFobFeatureEnabled: true,
+        prospectiveStep: 2,
+      });
+      fixture.detectChanges();
+
+      const fobController = fixture.componentInstance.fobController;
+      const prospectiveFobLeftPosition =
+        fobController.prospectiveFobWrapper.nativeElement.getBoundingClientRect()
+          .left;
+
+      expect(prospectiveFobLeftPosition).toEqual(2);
+    });
+
+    it('sets vertical position based on prospective step', () => {
+      const fixture = createComponent({
+        timeSelection: {start: {step: 4}, end: null},
+        axisDirection: AxisDirection.VERTICAL,
+        isProspectiveFobFeatureEnabled: true,
+        prospectiveStep: 2,
+      });
+      fixture.detectChanges();
+
+      const fobController = fixture.componentInstance.fobController;
+      const prospectiveFobTopPosition =
+        fobController.prospectiveFobWrapper.nativeElement.getBoundingClientRect()
+          .top;
+
+      expect(prospectiveFobTopPosition).toEqual(2);
+    });
+
+    describe('builds timeSelection correctly', () => {
+      it('when prospective step is less than timeSelection.start.step', () => {
+        const fixture = createComponent({
+          timeSelection: {start: {step: 4}, end: null},
+          axisDirection: AxisDirection.VERTICAL,
+          isProspectiveFobFeatureEnabled: true,
+          prospectiveStep: 2,
+        });
+        fixture.detectChanges();
+
+        const testController = fixture.debugElement.query(
+          By.directive(CardFobControllerComponent)
+        ).componentInstance;
+        testController.prospectiveFobClicked(new MouseEvent('mouseclick'));
+
+        expect(onTimeSelectionChanged.calls.allArgs()).toEqual([
+          [
+            {
+              timeSelection: {
+                start: {step: 2},
+                end: {step: 4},
+              },
+              affordance: TimeSelectionAffordance.FOB_ADDED,
+            },
+          ],
+        ]);
+      });
+    });
+
+    describe('prospective area', () => {
+      it('emits null step on mouseleave', () => {
+        const fixture = createComponent({
+          timeSelection: {start: {step: 4}, end: null},
+          axisDirection: AxisDirection.HORIZONTAL,
+          isProspectiveFobFeatureEnabled: true,
+          prospectiveStep: 2,
+        });
+        fixture.detectChanges();
+
+        const hoverArea = fixture.debugElement.query(
+          By.css('.prospective-fob-area')
+        );
+        hoverArea.triggerEventHandler('mouseleave', {});
+        fixture.detectChanges();
+
+        expect(onPrespectiveStepChangedSpy).toHaveBeenCalledWith(null);
       });
     });
   });

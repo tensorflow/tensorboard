@@ -125,6 +125,10 @@ describe('runs_effects', () => {
     store.overrideSelector(getActiveRoute, buildRoute());
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   describe('loadRunsOnRunTableShown', () => {
     beforeEach(() => {
       // Subscribes to effects.loadRunsOnRunTableShown$ change. Must subscribe

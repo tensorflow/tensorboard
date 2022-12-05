@@ -15,7 +15,7 @@ limitations under the License.
 
 import {Extent, Polyline, Rect} from './internal_types';
 
-export function convertRectToExtent(rect: Rect): Extent {
+function convertRectToExtent(rect: Rect): Extent {
   return {
     x: [rect.x, rect.x + rect.width],
     y: [rect.y, rect.y + rect.height],
@@ -39,15 +39,15 @@ let cachedIsWebGl2Supported = false;
   }
 }
 
-export function isWebGl2Supported(): boolean {
+function isWebGl2Supported(): boolean {
   return cachedIsWebGl2Supported;
 }
 
-export function isOffscreenCanvasSupported(): boolean {
+function isOffscreenCanvasSupported(): boolean {
   return self.hasOwnProperty('OffscreenCanvas');
 }
 
-export function arePolylinesEqual(lineA: Polyline, lineB: Polyline) {
+function arePolylinesEqual(lineA: Polyline, lineB: Polyline) {
   if (lineA.length !== lineB.length) {
     return false;
   }
@@ -60,7 +60,7 @@ export function arePolylinesEqual(lineA: Polyline, lineB: Polyline) {
   return true;
 }
 
-export function areExtentsEqual(extentA: Extent, extentB: Extent): boolean {
+function areExtentsEqual(extentA: Extent, extentB: Extent): boolean {
   return (
     extentA.x[0] === extentB.x[0] &&
     extentA.x[1] === extentB.x[1] &&
@@ -68,3 +68,11 @@ export function areExtentsEqual(extentA: Extent, extentB: Extent): boolean {
     extentA.y[1] === extentB.y[1]
   );
 }
+
+export const ChartUtils = {
+  convertRectToExtent,
+  isWebGl2Supported,
+  isOffscreenCanvasSupported,
+  arePolylinesEqual,
+  areExtentsEqual,
+};

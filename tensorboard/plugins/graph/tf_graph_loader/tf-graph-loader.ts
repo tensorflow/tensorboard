@@ -111,7 +111,7 @@ class TfGraphLoader extends LegacyElementMixin(PolymerElement) {
       .fetchAndConstructHierarchicalGraph(
         tracker,
         path,
-        pbTxtFile,
+        pbTxtFile!,
         compatibilityProvider,
         hierarchyParams
       )
@@ -130,7 +130,7 @@ class TfGraphLoader extends LegacyElementMixin(PolymerElement) {
       return;
     }
     const target = (e as any).target as HTMLInputElement;
-    const file = target.files[0];
+    const file = target.files?.[0];
     if (!file) {
       return;
     }

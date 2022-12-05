@@ -215,3 +215,15 @@ $_border-style: 1px solid mat.get-color-from-palette(mat.$gray-palette, 500);
     transform-origin: center;
   }
 }
+
+// Why this weird hack?
+// The prospective fob area is absolutely positioned over the XAxis.
+// This prevents hover events from reaching the XAxis.
+// The .extent-edit-button should appear when the XAxis is hovered.
+.line-chart:has(.horizontal-prospective-area:hover) {
+  .x-axis {
+    .extent-edit-button {
+      visibility: visible;
+    }
+  }
+}

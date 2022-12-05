@@ -133,6 +133,7 @@ describe('core_effects', () => {
 
   afterEach(() => {
     httpMock.verify();
+    store?.resetSelectors();
   });
 
   [

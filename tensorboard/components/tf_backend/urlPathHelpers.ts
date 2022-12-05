@@ -45,7 +45,7 @@ export function addParams(baseURL: string, params: QueryParams): string {
     return baseURL; // no need to change '/foo' to '/foo?'
   }
   const delimiter = baseURL.indexOf('?') !== -1 ? '&' : '?';
-  const parts = [].concat(
+  const parts = Array<string>().concat(
     ...keys.map((key) => {
       const rawValue = params[key];
       const values = Array.isArray(rawValue) ? rawValue : [rawValue];

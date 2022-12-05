@@ -284,8 +284,7 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
    *
    * @type {number?}
    */
-  @property({type: Number})
-  _healthPillStepRequestTimerId: number;
+  @property({type: Number}) _healthPillStepRequestTimerId: number | null;
   // The request for health pills at a specific step (as opposed to all sampled health pills) may
   // involve slow disk reads. Hence, we throttle to 1 of those requests every this many ms.
   @property({
@@ -335,7 +334,7 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
     if (!this._debuggerDataEnabled) {
       // Check if the debugger plugin is enabled now.
       this._requestManager.request(getRouter().pluginsListing()).then(
-        this._canceller.cancellable((result) => {
+        this._canceller.cancellable<string, void>((result) => {
           if (result.cancelled) {
             return;
           }

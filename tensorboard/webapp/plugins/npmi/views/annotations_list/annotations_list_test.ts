@@ -55,6 +55,10 @@ describe('Npmi Annotations List Container', () => {
     );
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders expanded annotations list', () => {
     const fixture = TestBed.createComponent(AnnotationsListContainer);
     fixture.detectChanges();

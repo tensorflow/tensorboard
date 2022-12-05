@@ -41,7 +41,7 @@ export class DemoDataProvider implements DataProvider {
         return embedding;
       }
     }
-    return null;
+    return null!;
   }
   retrieveRuns(callback: (runs: string[]) => void): void {
     callback(['Demo']);
@@ -66,7 +66,7 @@ export class DemoDataProvider implements DataProvider {
     };
     xhr.onload = () => {
       const projectorConfig = JSON.parse(xhr.responseText) as ProjectorConfig;
-      logging.setModalMessage(null, msgId);
+      logging.setModalMessage(null!, msgId);
       this.projectorConfig = projectorConfig;
       callback(projectorConfig);
     };
@@ -80,7 +80,7 @@ export class DemoDataProvider implements DataProvider {
     let embedding = this.getEmbeddingInfo(tensorName);
     let url = `${embedding.tensorPath}`;
     if (
-      embedding.tensorPath.substr(-1 * BYTES_EXTENSION.length) ===
+      embedding.tensorPath?.substr(-1 * BYTES_EXTENSION.length) ===
       BYTES_EXTENSION
     ) {
       retrieveTensorAsBytes(
@@ -113,14 +113,14 @@ export class DemoDataProvider implements DataProvider {
     callback: (r: SpriteAndMetadataInfo) => void
   ) {
     let embedding = this.getEmbeddingInfo(tensorName);
-    let spriteImagePath = null;
+    let spriteImagePath: string | null = null;
     if (embedding.sprite && embedding.sprite.imagePath) {
       spriteImagePath = embedding.sprite.imagePath;
     }
     retrieveSpriteAndMetadataInfo(
-      embedding.metadataPath,
-      spriteImagePath,
-      embedding.sprite,
+      embedding.metadataPath!,
+      spriteImagePath!,
+      embedding.sprite!,
       callback
     );
   }
@@ -132,13 +132,13 @@ export class DemoDataProvider implements DataProvider {
     let embedding = this.getEmbeddingInfo(tensorName);
     let msgId = logging.setModalMessage('Fetching bookmarks...');
     const xhr = new XMLHttpRequest();
-    xhr.open('GET', embedding.bookmarksPath);
+    xhr.open('GET', embedding.bookmarksPath!);
     xhr.onerror = (err) => {
       logging.setErrorMessage(xhr.responseText);
     };
     xhr.onload = () => {
       const bookmarks = JSON.parse(xhr.responseText) as State[];
-      logging.setModalMessage(null, msgId);
+      logging.setModalMessage(null!, msgId);
       callback(bookmarks);
     };
     xhr.send();

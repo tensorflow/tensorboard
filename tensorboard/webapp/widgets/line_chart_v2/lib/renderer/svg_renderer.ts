@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {Point, Polyline, Rect} from '../internal_types';
-import {arePolylinesEqual} from '../utils';
+import {ChartUtils} from '../utils';
 import {
   CirclePaintOption,
   LinePaintOption,
@@ -110,7 +110,7 @@ export class SvgRenderer implements ObjectRenderer<CacheValue> {
       (dom) => {
         if (
           !cachedLine?.data ||
-          !arePolylinesEqual(polyline, cachedLine?.data)
+          !ChartUtils.arePolylinesEqual(polyline, cachedLine?.data)
         ) {
           const data = this.createPathDString(polyline);
           dom.setAttribute('d', data);

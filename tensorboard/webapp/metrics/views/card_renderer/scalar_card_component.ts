@@ -28,7 +28,6 @@ import {
   TimeSelection,
   TimeSelectionAffordance,
   TimeSelectionToggleAffordance,
-  TimeSelectionWithAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
 import {
   Formatter,
@@ -37,6 +36,7 @@ import {
   relativeTimeFormatter,
   siNumberFormatter,
 } from '../../../widgets/line_chart_v2/lib/formatter';
+import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {LineChartComponent} from '../../../widgets/line_chart_v2/line_chart_component';
 import {
   RendererType,
@@ -91,7 +91,9 @@ export class ScalarCardComponent<Downloader> {
   @Input() useDarkMode!: boolean;
   @Input() forceSvg!: boolean;
   @Input() linkedTimeSelection!: TimeSelectionView | null;
-  @Input() stepSelectorTimeSelection!: TimeSelection;
+  @Input() stepOrLinkedTimeSelection!: TimeSelection | null;
+  @Input() rangeSelectionEnabled: boolean = false;
+  @Input() isProspectiveFobFeatureEnabled: Boolean = false;
   @Input() minMaxStep!: MinMaxStep;
   @Input() dataHeaders!: ColumnHeaders[];
 
@@ -103,6 +105,9 @@ export class ScalarCardComponent<Downloader> {
   }>();
   @Output() onStepSelectorToggled =
     new EventEmitter<TimeSelectionToggleAffordance>();
+  @Output() onDataTableSorting = new EventEmitter<SortingInfo>();
+
+  @Output() onLineChartZoom = new EventEmitter<Extent>();
 
   // Line chart may not exist when was never visible (*ngIf).
   @ViewChild(LineChartComponent)
@@ -124,6 +129,7 @@ export class ScalarCardComponent<Downloader> {
 
   sortDataBy(sortingInfo: SortingInfo) {
     this.sortingInfo = sortingInfo;
+    this.onDataTableSorting.emit(sortingInfo);
   }
 
   resetDomain() {
@@ -212,56 +218,22 @@ export class ScalarCardComponent<Downloader> {
     });
   }
 
-  getTimeSelection(): TimeSelection | null {
-    if (this.linkedTimeSelection === null) {
-      return this.stepSelectorTimeSelection;
-    }
-
-    return {
-      start: {
-        step: this.linkedTimeSelection.startStep,
-      },
-      end: this.linkedTimeSelection.endStep
-        ? {step: this.linkedTimeSelection.endStep}
-        : null,
-    };
-  }
-
-  onFobTimeSelectionChanged(
-    newTimeSelectionWithAffordance: TimeSelectionWithAffordance
-  ) {
-    // Updates step selector to single selection.
-    const {timeSelection, affordance} = newTimeSelectionWithAffordance;
-    const newStartStep = timeSelection.start.step;
-    const nextStartStep =
-      newStartStep < this.minMaxStep.minStep
-        ? this.minMaxStep.minStep
-        : newStartStep > this.minMaxStep.maxStep
-        ? this.minMaxStep.maxStep
-        : newStartStep;
-
-    // Updates step selector to single selection.
-    this.stepSelectorTimeSelection = {
-      start: {step: nextStartStep},
-      end: null,
-    };
-
-    this.onTimeSelectionChanged.emit({
-      timeSelection,
-      // Only sets affordance when it's not undefined.
-      ...(affordance && {affordance}),
-    });
-  }
-
   onFobRemoved() {
     this.onStepSelectorToggled.emit(TimeSelectionToggleAffordance.FOB_DESELECT);
   }
 
-  inTimeSelectionMode(): boolean {
+  showDataTable() {
     return (
       this.xAxisType === XAxisType.STEP &&
-      (this.stepSelectorTimeSelection !== null ||
-        this.linkedTimeSelection !== null)
+      this.stepOrLinkedTimeSelection !== null
+    );
+  }
+
+  showFobController() {
+    return (
+      this.xAxisType === XAxisType.STEP &&
+      (this.stepOrLinkedTimeSelection !== null ||
+        this.isProspectiveFobFeatureEnabled)
     );
   }
 }

@@ -1078,7 +1078,7 @@ class TfGraphControls extends LegacyElementMixin(
     type: Object,
     observer: '_statsChanged',
   })
-  stats: object = null;
+  stats: object | null = null;
   /**
    * @type {?Object<string, boolean>}
    */
@@ -1086,7 +1086,7 @@ class TfGraphControls extends LegacyElementMixin(
     type: Object,
     notify: true,
   })
-  devicesForStats: object = null;
+  devicesForStats: object | null = null;
   @property({
     type: String,
     notify: true,
@@ -1252,7 +1252,7 @@ class TfGraphControls extends LegacyElementMixin(
       }
     }
     return devices.map((device, i) => {
-      let ignoredMsg = null;
+      let ignoredMsg: string | null = null;
       // TODO(stephanwlee): this should probably bail on the first match or
       // do something useful with multiple rule.msgs.
       DEVICE_STATS_DEFAULT_OFF.forEach((rule) => {
@@ -1263,7 +1263,7 @@ class TfGraphControls extends LegacyElementMixin(
       return {
         device: device,
         suffix: suffixes[i],
-        used: devicesForStats[device],
+        used: devicesForStats?.[device],
         ignoredMsg: ignoredMsg,
       };
     });
@@ -1271,6 +1271,8 @@ class TfGraphControls extends LegacyElementMixin(
   _deviceCheckboxClicked(event: Event) {
     // Update the device map.
     const input = event.target as HTMLInputElement;
+    // @ts-ignore(go/ts48upgrade) Fix code and remove this comment. Error:
+    // TS2322: Type 'object' is not assignable to type 'DeviceForStats'.
     const devicesForStats: DeviceForStats = Object.assign(
       {},
       this.devicesForStats
@@ -1330,11 +1332,11 @@ class TfGraphControls extends LegacyElementMixin(
     return colorByParams.xla_cluster;
   }
   @computed('colorByParams', 'colorBy')
-  get _currentGradientParams(): object {
+  get _currentGradientParams(): object | null {
     var colorByParams = this.colorByParams;
     var colorBy = this.colorBy;
     if (!this._isGradientColoring(this.stats as any, colorBy)) {
-      return;
+      return null;
     }
     const params: ColorParams = colorByParams[colorBy];
     let minValue = params.minValue;
@@ -1369,7 +1371,7 @@ class TfGraphControls extends LegacyElementMixin(
     this.fire('download-image-requested', this._downloadFilename);
   }
   _updateFileInput(e: Event) {
-    const file = (e.target as HTMLInputElement).files[0];
+    const file = (e.target as HTMLInputElement).files?.[0];
     if (!file) return;
     // Strip off everything before the last "/" and strip off the file
     // extension in order to get the name of the PNG for the graph.

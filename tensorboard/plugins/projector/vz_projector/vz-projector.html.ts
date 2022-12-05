@@ -358,7 +358,7 @@ export const template = html`
           ></vz-projector-metadata-card>
           <paper-icon-button
             raised
-            onclick="help3dDialog.open()"
+            on-click="_toggleHelp3dDialog"
             icon="help-outline"
             id="help-3d-icon"
           ></paper-icon-button>

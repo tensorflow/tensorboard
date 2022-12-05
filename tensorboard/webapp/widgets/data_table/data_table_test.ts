@@ -148,6 +148,7 @@ describe('data table', () => {
       ],
       data: [
         {
+          id: 'someid',
           RUN: 'run name',
           VALUE: 3,
           STEP: 1,
@@ -202,7 +203,7 @@ describe('data table', () => {
         ColumnHeaders.STEP,
         ColumnHeaders.RELATIVE_TIME,
       ],
-      data: [{}],
+      data: [{id: 'someid'}],
     });
     fixture.detectChanges();
     const dataElements = fixture.debugElement.queryAll(By.css('td'));

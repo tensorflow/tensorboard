@@ -152,8 +152,8 @@ export class LogScale extends TfScale {
     if (this.ignoreOutlier()) {
       const logValues = legalValues.map(log);
       const sortedLogValues = logValues.sort((a, b) => a - b);
-      const a = d3.quantile(sortedLogValues, 0.05);
-      const b = d3.quantile(sortedLogValues, 0.95);
+      const a = d3.quantile(sortedLogValues, 0.05)!;
+      const b = d3.quantile(sortedLogValues, 0.95)!;
       filteredValues = sortedLogValues.filter((x) => x >= a && x <= b).map(pow);
     }
     const extent = d3.extent(filteredValues);

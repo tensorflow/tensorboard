@@ -90,7 +90,11 @@ class EventFileWriter(object):
 
         # Initialize an event instance.
         _event = event_pb2.Event(
-            wall_time=time.time(), file_version="brain.Event:2"
+            wall_time=time.time(),
+            file_version="brain.Event:2",
+            source_metadata=event_pb2.SourceMetadata(
+                writer="tensorboard.summary.writer.event_file_writer"
+            ),
         )
         self.add_event(_event)
         self.flush()

@@ -157,6 +157,10 @@ describe('runs_table', () => {
   let overlayContainer: OverlayContainer;
   let actualActions: Action[];
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   function createComponent(
     experimentIds: string[],
     columns?: RunsTableColumn[],

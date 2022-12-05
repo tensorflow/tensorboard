@@ -138,7 +138,7 @@ tb_combine_html = rule(
         "_Vulcanize": attr.label(
             default = Label("//tensorboard/java/org/tensorflow/tensorboard/vulcanize:Vulcanize"),
             executable = True,
-            cfg = "host",
+            cfg = "exec",
         ),
     },
     outputs = {

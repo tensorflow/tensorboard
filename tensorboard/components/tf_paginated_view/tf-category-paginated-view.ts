@@ -28,6 +28,8 @@ import {
 import {TfDomRepeat} from './tf-dom-repeat';
 
 @customElement('tf-category-paginated-view')
+// @ts-ignore(go/ts48upgrade) Fix code and remove this comment. Error:
+// TS2344: Type 'CategoryItem' does not satisfy the constraint '{}'.
 class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
   static readonly template = html`
     <template is="dom-if" if="[[_paneRendered]]" id="ifRendered">
@@ -540,7 +542,9 @@ class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
   }
   _updatePageInputValue(newValue) {
     // Force two-way binding.
-    const pageInput = this.shadowRoot.querySelector('#page-input input') as any;
+    const pageInput = this.shadowRoot?.querySelector(
+      '#page-input input'
+    ) as any;
     if (pageInput) {
       pageInput.value = newValue;
     }

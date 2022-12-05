@@ -339,7 +339,7 @@ class TfScalarDashboard extends LegacyElementMixin(ArrayUpdateHelper) {
   }
 
   _reloadCharts() {
-    this.root.querySelectorAll('tf-scalar-card').forEach((chart) => {
+    this.root?.querySelectorAll('tf-scalar-card').forEach((chart) => {
       (chart as TfScalarCard).reload();
     });
   }

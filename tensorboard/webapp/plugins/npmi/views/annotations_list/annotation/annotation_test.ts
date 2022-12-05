@@ -111,6 +111,10 @@ describe('Npmi Annotations List Row', () => {
     });
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders annotation', () => {
     store.overrideSelector(selectors.getRunColorMap, {
       run_1: '#000',

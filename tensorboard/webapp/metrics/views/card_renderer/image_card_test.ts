@@ -115,6 +115,10 @@ describe('image card', () => {
     store.overrideSelector(getRun, null);
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   function expectImageSliderUI(
     fixture: ComponentFixture<ImageCardContainer>,
     imageId: string,
@@ -585,26 +589,10 @@ describe('image card', () => {
         );
       });
 
-      it('does not render ticks on slected range wrapped between steps ', () => {
+      it('does not render ticks on selected range wrapped between steps ', () => {
         store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 11},
           end: {step: 14},
-        });
-
-        const fixture = createImageCardContainer('card1');
-        fixture.detectChanges();
-
-        const dots = fixture.debugElement.queryAll(
-          By.css('.linked-time-wrapper .linked-time-tick')
-        );
-        // The third and fourth ticks are selected.
-        expect(dots.length).toBe(0);
-      });
-
-      it('does not render ticks when the slected range is clipped', () => {
-        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 45},
-          end: {step: 55},
         });
 
         const fixture = createImageCardContainer('card1');
@@ -794,21 +782,6 @@ describe('image card', () => {
         );
         expect(sliderTrackFill).toBeFalsy();
       });
-
-      it('does not render range slider when the slected range is clipped', () => {
-        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 55},
-          end: {step: 60},
-        });
-
-        const fixture = createImageCardContainer('card1');
-        fixture.detectChanges();
-
-        const sliderTrackFill = fixture.debugElement.query(
-          By.css('.linked-time-wrapper .slider-track-fill')
-        );
-        expect(sliderTrackFill).toBeFalsy();
-      });
     });
 
     describe('thumb movement', () => {
@@ -969,7 +942,7 @@ describe('image card', () => {
 
         expect(timeSelectionChangeSpy).toHaveBeenCalledWith({
           startStep: 40,
-          endStep: null,
+          endStep: 40,
           clipped: true,
         });
       });
@@ -1002,7 +975,7 @@ describe('image card', () => {
 
         expect(timeSelectionChangeSpy).toHaveBeenCalledWith({
           startStep: 10,
-          endStep: null,
+          endStep: 10,
           clipped: true,
         });
       });

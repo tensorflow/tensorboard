@@ -13,10 +13,14 @@
 # limitations under the License.
 """External-only delegates for various BUILD rules."""
 
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@io_bazel_rules_sass//:defs.bzl", "npm_sass_library", "sass_binary", "sass_library")
-load("@npm//@bazel/concatjs:index.bzl", "karma_web_test_suite")
+load("@npm//@angular/build-tooling/bazel/app-bundling:index.bzl", "app_bundle")
+load("@npm//@angular/build-tooling/bazel/spec-bundling:index.bzl", "spec_bundle")
+load("@npm//@angular/build-tooling/bazel:extract_js_module_output.bzl", "extract_js_module_output")
+load("@npm//@bazel/concatjs:index.bzl", "karma_web_test_suite", "ts_library")
 load("@npm//@bazel/esbuild:index.bzl", "esbuild")
-load("@npm//@bazel/typescript:index.bzl", "ts_config", "ts_library")
+load("@npm//@bazel/typescript:index.bzl", "ts_config")
 
 
 def tensorboard_webcomponent_library(**kwargs):
@@ -30,7 +34,13 @@ def tf_js_binary(
         dev_mode_only = False,
         includes_polymer = False,
         **kwargs):
-    """Rules for creating a JavaScript bundle.
+    """Rule for creating a JavaScript bundle.
+
+    This uses esbuild() directly and is generally used for any bundle that is
+    non-Angular or non-Prod. It is faster than tf_ng_prod_js_binary.
+
+    Angular apps that use this rule will have to be run with the Angular JIT
+    compiler as this rule does not support Angular AOT compilation.
 
     Args:
         name: Name of the target.
@@ -81,12 +91,49 @@ def tf_js_binary(
         **kwargs
     )
 
+
+def tf_ng_prod_js_binary(
+        name,
+        compile,
+        **kwargs):
+    """Rule for creating a prod-optimized JavaScript bundle for an Angular app.
+
+    This uses the Angular team's internal toolchain for creating these bundles:
+    app_bundle(). This toolchain is not officially supported. We use it at our
+    own risk.
+
+    The bundles allow for Angular AOT compilation and are further optimized to
+    reduce size. However, the bundle times are significantly slower than those
+    for tf_js_binary().
+
+    Args:
+        name: Name of the target.
+        compile: Whether to compile when bundling. Only used internally.
+        **kwargs: Other keyword arguments to app_bundle() and esbuild(). Typically
+          used for entry_point and deps. Please refer to
+          https://esbuild.github.io/api/ for more details.
+    """
+
+    app_bundle_name = '%s_app_bundle' % name
+    app_bundle(
+        name = app_bundle_name,
+        **kwargs
+    )
+
+    # app_bundle() generates several outputs. We copy the one that has gone
+    # through a terser pass to be the output of this rule.
+    copy_file(
+        name = name,
+        src = '%s.min.js' % app_bundle_name,
+        out = '%s.js' % name,
+    )
+
 def tf_ts_config(**kwargs):
     """TensorBoard wrapper for the rule for a TypeScript configuration."""
 
     ts_config(**kwargs)
 
-def tf_ts_library(strict_checks = True, **kwargs):
+def tf_ts_library(srcs = [], strict_checks = True, **kwargs):
     """TensorBoard wrapper for the rule for a TypeScript library.
 
     Args:
@@ -98,50 +145,94 @@ def tf_ts_library(strict_checks = True, **kwargs):
 
     if strict_checks == False:
         tsconfig = "//:tsconfig-lax"
-    elif "test_only" in kwargs and kwargs.get("test_only"):
-        tsconfig = "//:tsconfig-test"
     kwargs.setdefault("deps", []).extend(["@npm//tslib", "//tensorboard/defs:strict_types"])
 
-    ts_library(tsconfig = tsconfig, supports_workers = True, **kwargs)
+    new_srcs = []
+    # Find test.ts and testbed.ts files and rename to test.spec.ts to be
+    # compatible with spec_bundle() tooling.
+    for s in srcs:
+      if s.endswith("_test.ts") or s.endswith("-test.ts") or s.endswith("_testbed.ts"):
+        # Make a copy of the file with name .spec.ts and switch to that as
+        # the src file.
+        new_src = s[0:s.rindex('.ts')] + ".spec.ts"
+        copy_file(
+            name = new_src + '_spec_copy',
+            src = s,
+            out = new_src,
+            allow_symlink = True)
+        new_srcs.append(new_src)
+      else:
+        # Not a test file. Nothing to do here.
+        new_srcs.append(s)
 
-def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs):
+    ts_library(
+        srcs = new_srcs,
+        tsconfig = tsconfig,
+        supports_workers = True,
+        # Override prodmode_target, devmode_target, and devmode_module to be
+        # compatible with extract_js_module_output() and spec_bundle() tooling.
+        # See the angular/components example:
+        # https://github.com/angular/components/blob/871f8f231a7a86a7a0778e345f4d517109c9a357/tools/defaults.bzl#L114-L121
+        prodmode_target = "es2020",
+        devmode_target = "es2020",
+        devmode_module = "esnext",
+        **kwargs)
+
+def tf_ng_web_test_suite(name, deps = [], **kwargs):
     """TensorBoard wrapper for the rule for a Karma web test suite.
 
-    It has Angular specific configurations that we want as defaults.
+    This uses the Angular team's internal toolchain for bundling
+    Angular-compatible tests: extract_js_module_output() and spec_bundle().
+    This toolchain is not officially supported. We use it at our own risk.
     """
 
-    kwargs.setdefault("tags", []).append("webtest")
-    karma_web_test_suite(
-        srcs = [
-            "//tensorboard/webapp/testing:require_js_karma_config.js",
-        ],
-        bootstrap = bootstrap + [
-            "@npm//:node_modules/zone.js/dist/zone-testing-bundle.js",
-            "@npm//:node_modules/reflect-metadata/Reflect.js",
-            "@npm//:node_modules/@angular/localize/bundles/localize-init.umd.js",
-        ],
-        runtime_deps = runtime_deps + [
+    # Call extract_js_module_output() to prepare proper input for spec_bundle()
+    # tooling.
+    # See the angular/components example:
+    # https://github.com/angular/components/blob/871f8f231a7a86a7a0778e345f4d517109c9a357/tools/defaults.bzl#L427
+    extract_js_module_output(
+        name = "%s_devmode_deps" % name,
+        deps = [
+            # initialize_testbed must be the first dep for the tests to run
+            # properly.
             "//tensorboard/webapp/testing:initialize_testbed",
+        ] + deps,
+        provider = "JSModuleInfo",
+        forward_linker_mappings = True,
+        include_external_npm_packages = True,
+        include_default_files = False,
+        include_declarations = False,
+        testonly = True,
+    )
+
+    # Create an esbuild bundle with all source and dependencies. It provides a
+    # clean way to bundle non-CommonJS dependencies without the use of hacks
+    # and shims that are typically necessary for working with
+    # karma_web_test_suite().
+    # See the angular/components example:
+    # https://github.com/angular/components/blob/871f8f231a7a86a7a0778e345f4d517109c9a357/tools/defaults.bzl#L438
+    spec_bundle(
+        name = "%s_bundle" % name,
+        deps = ["%s_devmode_deps" % name],
+        workspace_name = "org_tensorflow_tensorboard",
+        run_angular_linker = False,
+        platform = "browser",
+    )
+
+    karma_web_test_suite(
+        name = name,
+        bootstrap =
+            [
+                "@npm//:node_modules/zone.js/dist/zone-evergreen.js",
+                "@npm//:node_modules/zone.js/dist/zone-testing.js",
+                "@npm//:node_modules/reflect-metadata/Reflect.js",
+            ],
+        # The only dependency is the esbuild bundle from spec_bundle().
+        # karma_web_test_suite() will rebundle it along with the test framework
+        # in a CommonJS bundle.
+        deps = [
+          "%s_bundle" % name,
         ],
-        deps = deps + [
-            "//tensorboard/defs/internal:common_umd_lib",
-        ],
-        # Lodash runtime dependency that is compatible with requirejs for karma.
-        static_files = [
-            "@npm//:node_modules/@tensorflow/tfjs-core/dist/tf-core.js",
-            "@npm//:node_modules/@tensorflow/tfjs-backend-cpu/dist/tf-backend-cpu.js",
-            "@npm//:node_modules/@tensorflow/tfjs-backend-webgl/dist/tf-backend-webgl.js",
-            "@npm//:node_modules/umap-js/lib/umap-js.js",
-            # tfjs-backend-cpu only uses alea.
-            # https://github.com/tensorflow/tfjs/blob/bca336cd8297cb733e3ddcb3c091eac2eb4d5fc5/tfjs-backend-cpu/src/kernels/Multinomial.ts#L58
-            "@npm//:node_modules/seedrandom/lib/alea.js",
-            "@npm//:node_modules/lodash/lodash.js",
-            "@npm//:node_modules/d3/dist/d3.js",
-            "@npm//:node_modules/three/build/three.js",
-            "@npm//:node_modules/dagre/dist/dagre.js",
-            "@npm//:node_modules/marked/marked.min.js",
-        ],
-        **kwargs
     )
 
 def tf_svg_bundle(name, srcs, out):
@@ -193,9 +284,8 @@ def tf_external_sass_libray(**kwargs):
 
 def tf_ng_module(assets = [], **kwargs):
     """TensorBoard wrapper for Angular modules."""
-    ts_library(
+    tf_ts_library(
         compiler = "//tensorboard/defs:tsc_wrapped_with_angular",
-        supports_workers = True,
         use_angular_plugin = True,
         angular_assets = assets,
         **kwargs

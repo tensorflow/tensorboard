@@ -231,11 +231,11 @@ class TfGraphIcon extends LegacyElementMixin(DarkModeMixin(PolymerElement)) {
   @property({
     type: String,
   })
-  fillOverride: string = null;
+  fillOverride: string | null = null;
   @property({
     type: String,
   })
-  strokeOverride: string = null;
+  strokeOverride: string | null = null;
   @property({
     type: Number,
   })

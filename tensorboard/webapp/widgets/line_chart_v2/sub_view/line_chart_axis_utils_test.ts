@@ -14,19 +14,14 @@ limitations under the License.
 ==============================================================================*/
 
 import {createScale, LinearScale, ScaleType, TemporalScale} from '../lib/scale';
-import {
-  filterTicksByVisibility,
-  getStandardTicks,
-  getTicksForLinearScale,
-  getTicksForTemporalScale,
-} from './line_chart_axis_utils';
+import {AxisUtils} from './line_chart_axis_utils';
 
 describe('line_chart_v2/sub_view/axis_utils test', () => {
   describe('#getStandardTicks', () => {
     const scale = createScale(ScaleType.LOG10);
 
     it('returns no major ticks', () => {
-      const {major, minor} = getStandardTicks(
+      const {major, minor} = AxisUtils.getStandardTicks(
         scale,
         scale.defaultFormatter,
         5,
@@ -53,7 +48,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
     const scale = new TemporalScale();
 
     it('returns temporal ticks', () => {
-      const {major, minor} = getTicksForTemporalScale(
+      const {major, minor} = AxisUtils.getTicksForTemporalScale(
         scale,
         scale.defaultFormatter,
         5,
@@ -102,7 +97,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
     });
 
     it('returns only minor when d3 ticks return less than 2 major axes', () => {
-      const {major, minor} = getTicksForTemporalScale(
+      const {major, minor} = AxisUtils.getTicksForTemporalScale(
         scale,
         scale.defaultFormatter,
         5,
@@ -137,7 +132,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
     });
 
     it('does not return major when diff in time is greater than or equal to 1d', () => {
-      const {major, minor} = getTicksForTemporalScale(
+      const {major, minor} = AxisUtils.getTicksForTemporalScale(
         scale,
         scale.defaultFormatter,
         5,
@@ -177,7 +172,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
     const scale = new LinearScale();
 
     it('returns no major ticks for extents in integers', () => {
-      const {major, minor} = getTicksForLinearScale(
+      const {major, minor} = AxisUtils.getTicksForLinearScale(
         scale,
         scale.defaultFormatter,
         5,
@@ -195,7 +190,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
     });
 
     it('returns no major ticks for numbers with less than three decimal digits', () => {
-      const {major, minor} = getTicksForLinearScale(
+      const {major, minor} = AxisUtils.getTicksForLinearScale(
         scale,
         scale.defaultFormatter,
         2,
@@ -210,7 +205,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
     });
 
     it('handles extents with 0 and larger number', () => {
-      const {major, minor} = getTicksForLinearScale(
+      const {major, minor} = AxisUtils.getTicksForLinearScale(
         scale,
         scale.defaultFormatter,
         2,
@@ -225,7 +220,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
 
     describe('very small differences', () => {
       it('creates a major tick since very long minor tick labels are not legible', () => {
-        const {major, minor} = getTicksForLinearScale(
+        const {major, minor} = AxisUtils.getTicksForLinearScale(
           scale,
           scale.defaultFormatter,
           2,
@@ -246,7 +241,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
       });
 
       it('handles very minute differences in extent', () => {
-        const {major, minor} = getTicksForLinearScale(
+        const {major, minor} = AxisUtils.getTicksForLinearScale(
           scale,
           scale.defaultFormatter,
           2,
@@ -264,7 +259,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
       });
 
       it('breaks out to major axis when difference is small, not number', () => {
-        const {major, minor} = getTicksForLinearScale(
+        const {major, minor} = AxisUtils.getTicksForLinearScale(
           scale,
           scale.defaultFormatter,
           2,
@@ -285,7 +280,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
       });
 
       it('handles flipped axis', () => {
-        const {major, minor} = getTicksForLinearScale(
+        const {major, minor} = AxisUtils.getTicksForLinearScale(
           scale,
           scale.defaultFormatter,
           2,
@@ -305,7 +300,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
       });
 
       it('handles 0 and small number close to 0 well', () => {
-        const {major, minor} = getTicksForLinearScale(
+        const {major, minor} = AxisUtils.getTicksForLinearScale(
           scale,
           scale.defaultFormatter,
           2,
@@ -322,7 +317,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
       });
 
       it('handles 0 and small number close to 0 well (more minor ticks)', () => {
-        const {major, minor} = getTicksForLinearScale(
+        const {major, minor} = AxisUtils.getTicksForLinearScale(
           scale,
           scale.defaultFormatter,
           4,
@@ -341,7 +336,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
       });
 
       it('handles extent close to 0s well', () => {
-        const {major, minor} = getTicksForLinearScale(
+        const {major, minor} = AxisUtils.getTicksForLinearScale(
           scale,
           scale.defaultFormatter,
           2,
@@ -352,7 +347,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
       });
 
       it('handles negative extent close to 0s well', () => {
-        const {major, minor} = getTicksForLinearScale(
+        const {major, minor} = AxisUtils.getTicksForLinearScale(
           scale,
           scale.defaultFormatter,
           2,
@@ -378,7 +373,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
 
     describe('x axis', () => {
       it('filters ticks if it overlaps', () => {
-        const ticks = filterTicksByVisibility(
+        const ticks = AxisUtils.filterTicksByVisibility(
           [
             {value: 0, tickFormattedString: 'ABC'},
             {value: 0, tickFormattedString: 'XYZ'},
@@ -400,7 +395,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
       });
 
       it('filters everything out of nothing is visible', () => {
-        const ticks = filterTicksByVisibility(
+        const ticks = AxisUtils.filterTicksByVisibility(
           [
             {value: -100, tickFormattedString: 'A'},
             {value: -50, tickFormattedString: 'B'},
@@ -415,7 +410,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
       });
 
       it('honors the padding', () => {
-        const ticks = filterTicksByVisibility(
+        const ticks = AxisUtils.filterTicksByVisibility(
           [
             {value: 0, tickFormattedString: 'ABC'},
             {value: CHAR_WIDTH * 3, tickFormattedString: 'B'},
@@ -436,7 +431,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
 
     describe('y axis', () => {
       it('filters ticks if it overlaps', () => {
-        const ticks = filterTicksByVisibility(
+        const ticks = AxisUtils.filterTicksByVisibility(
           [
             {value: 200, tickFormattedString: 'A'},
             {value: 200, tickFormattedString: 'B'},
@@ -458,7 +453,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
       });
 
       it('honors the padding', () => {
-        const ticks = filterTicksByVisibility(
+        const ticks = AxisUtils.filterTicksByVisibility(
           [
             {value: 200, tickFormattedString: 'A'},
             {value: 200 - CHAR_HEIGHT, tickFormattedString: 'B'},

@@ -61,6 +61,10 @@ describe('Npmi Violin Filters Container', () => {
     });
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders npmi violin filters component without filters', () => {
     store.overrideSelector(getMetricFilters, {});
     const fixture = TestBed.createComponent(ViolinFiltersContainer);

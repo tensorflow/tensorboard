@@ -15,15 +15,14 @@
 """Validates responses and their security features."""
 
 
-import collections
+import dataclasses
+
+from typing import Collection
 
 from werkzeug.datastructures import Headers
 from werkzeug import http
 
 from tensorboard.util import tb_logging
-
-# Loosely follow vocabulary from https://www.w3.org/TR/CSP/#framework-directives.
-Directive = collections.namedtuple("Directive", ["name", "value"])
 
 logger = tb_logging.get_logger()
 
@@ -40,6 +39,21 @@ _CSP_IGNORE = {
     "script-src": ["'unsafe-eval'"],
     "font-src": ["data:"],
 }
+
+
+@dataclasses.dataclass(frozen=True)
+class Directive:
+    """Content security policy directive.
+
+    Loosely follow vocabulary from https://www.w3.org/TR/CSP/#framework-directives.
+
+    Attributes:
+      name: A non-empty string.
+      value: A collection of non-empty strings.
+    """
+
+    name: str
+    value: Collection[str]
 
 
 def _maybe_raise_value_error(error_msg):

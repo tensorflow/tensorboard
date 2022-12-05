@@ -2414,6 +2414,69 @@ describe('metrics reducers', () => {
     });
   });
 
+  it('loads Step Selector Setting into the next state', () => {
+    const beforeState = buildMetricsState({
+      stepSelectorEnabled: false,
+      rangeSelectionEnabled: false,
+      linkedTimeEnabled: false,
+    });
+
+    const nextState = reducers(
+      beforeState,
+      globalSettingsLoaded({
+        partialSettings: {
+          stepSelectorEnabled: true,
+        },
+      })
+    );
+
+    expect(nextState.stepSelectorEnabled).toBe(true);
+    expect(nextState.rangeSelectionEnabled).toBe(false);
+    expect(nextState.linkedTimeEnabled).toBe(false);
+  });
+
+  it('loads Step Selector Setting into the next state', () => {
+    const beforeState = buildMetricsState({
+      stepSelectorEnabled: false,
+      rangeSelectionEnabled: false,
+      linkedTimeEnabled: false,
+    });
+
+    const nextState = reducers(
+      beforeState,
+      globalSettingsLoaded({
+        partialSettings: {
+          rangeSelectionEnabled: true,
+        },
+      })
+    );
+
+    expect(nextState.stepSelectorEnabled).toBe(false);
+    expect(nextState.rangeSelectionEnabled).toBe(true);
+    expect(nextState.linkedTimeEnabled).toBe(false);
+  });
+
+  it('loads Step Selector Setting into the next state', () => {
+    const beforeState = buildMetricsState({
+      stepSelectorEnabled: false,
+      rangeSelectionEnabled: false,
+      linkedTimeEnabled: false,
+    });
+
+    const nextState = reducers(
+      beforeState,
+      globalSettingsLoaded({
+        partialSettings: {
+          linkedTimeEnabled: true,
+        },
+      })
+    );
+
+    expect(nextState.stepSelectorEnabled).toBe(false);
+    expect(nextState.rangeSelectionEnabled).toBe(false);
+    expect(nextState.linkedTimeEnabled).toBe(true);
+  });
+
   describe('linked time features', () => {
     describe('#timeSelectionChanged', () => {
       const imageCardId = 'test image card id "plugin":"images"';
@@ -2525,9 +2588,9 @@ describe('metrics reducers', () => {
         });
       });
 
-      it('sets `linkedTimeRangeEnabled` to true when `endStep` is present and linked time selection is null', () => {
+      it('sets `rangeSelectionEnabled` to true when `endStep` is present and linked time selection is null', () => {
         const beforeState = buildMetricsState({
-          linkedTimeRangeEnabled: false,
+          rangeSelectionEnabled: false,
           linkedTimeSelection: null,
         });
 
@@ -2541,13 +2604,13 @@ describe('metrics reducers', () => {
           })
         );
 
-        expect(nextState.linkedTimeRangeEnabled).toEqual(true);
+        expect(nextState.rangeSelectionEnabled).toEqual(true);
       });
 
       // This test case represents <tb-range-input> renders range slider from single slider.
-      it('sets `linkedTimeRangeEnabled` to true when `endStep` is present linked time selection is not null', () => {
+      it('sets `rangeSelectionEnabled` to true when `endStep` is present linked time selection is not null', () => {
         const beforeState = buildMetricsState({
-          linkedTimeRangeEnabled: false,
+          rangeSelectionEnabled: false,
           linkedTimeSelection: {
             start: {step: 0},
             // When single slider is rendered, the end step is set to step max.
@@ -2566,12 +2629,12 @@ describe('metrics reducers', () => {
           })
         );
 
-        expect(nextState.linkedTimeRangeEnabled).toEqual(true);
+        expect(nextState.rangeSelectionEnabled).toEqual(true);
       });
 
-      it('sets `linkedTimeRangeEnabled` to true when `endStep` is 0', () => {
+      it('sets `rangeSelectionEnabled` to true when `endStep` is 0', () => {
         const beforeState = buildMetricsState({
-          linkedTimeRangeEnabled: false,
+          rangeSelectionEnabled: false,
           linkedTimeSelection: {
             start: {step: 2},
             end: {step: 100},
@@ -2588,12 +2651,12 @@ describe('metrics reducers', () => {
           })
         );
 
-        expect(nextState.linkedTimeRangeEnabled).toEqual(true);
+        expect(nextState.rangeSelectionEnabled).toEqual(true);
       });
 
-      it('keeps `linkedTimeRangeEnabled` to be false when only sets `startStep`', () => {
+      it('keeps `rangeSelectionEnabled` to be false when only sets `startStep`', () => {
         const beforeState1 = buildMetricsState({
-          linkedTimeRangeEnabled: false,
+          rangeSelectionEnabled: false,
           linkedTimeSelection: null,
         });
 
@@ -2607,7 +2670,7 @@ describe('metrics reducers', () => {
           })
         );
 
-        expect(nextState1.linkedTimeRangeEnabled).toEqual(false);
+        expect(nextState1.rangeSelectionEnabled).toEqual(false);
       });
 
       it('sets `cardStepIndex` when step matches linked time selection', () => {
@@ -2690,9 +2753,9 @@ describe('metrics reducers', () => {
       });
     });
 
-    it('sets `linkedTimeRangeEnabled` to false when `endStep` is undefined', () => {
+    it('sets `rangeSelectionEnabled` to false when `endStep` is undefined', () => {
       const beforeState = buildMetricsState({
-        linkedTimeRangeEnabled: true,
+        rangeSelectionEnabled: true,
         linkedTimeSelection: {
           start: {step: 2},
           end: {step: 100},
@@ -2709,7 +2772,7 @@ describe('metrics reducers', () => {
         })
       );
 
-      expect(nextState.linkedTimeRangeEnabled).toEqual(false);
+      expect(nextState.rangeSelectionEnabled).toEqual(false);
     });
 
     describe('#timeSelectionCleared', () => {
@@ -2724,39 +2787,49 @@ describe('metrics reducers', () => {
       });
     });
 
-    describe('#stepSelectorRangeToggled', () => {
+    describe('#rangeSelectionToggled', () => {
       it('toggles whether stepSelectorRange is enabled or not', () => {
         const state1 = buildMetricsState({
-          stepSelectorRangeEnabled: false,
+          rangeSelectionEnabled: false,
         });
 
-        const state2 = reducers(state1, actions.stepSelectorRangeToggled({}));
-        expect(state2.stepSelectorRangeEnabled).toBe(true);
+        const state2 = reducers(state1, actions.rangeSelectionToggled({}));
+        expect(state2.rangeSelectionEnabled).toBe(true);
 
-        const state3 = reducers(state2, actions.stepSelectorRangeToggled({}));
-        expect(state3.stepSelectorRangeEnabled).toBe(false);
+        const state3 = reducers(state2, actions.rangeSelectionToggled({}));
+        expect(state3.rangeSelectionEnabled).toBe(false);
       });
 
       it('enables stepSelector if disabled when enabling stepSelectorRange', () => {
         const state1 = buildMetricsState({
           stepSelectorEnabled: false,
-          stepSelectorRangeEnabled: false,
+          rangeSelectionEnabled: false,
         });
 
-        const state2 = reducers(state1, actions.stepSelectorRangeToggled({}));
+        const state2 = reducers(state1, actions.rangeSelectionToggled({}));
         expect(state2.stepSelectorEnabled).toBe(true);
-        expect(state2.stepSelectorRangeEnabled).toBe(true);
+        expect(state2.rangeSelectionEnabled).toBe(true);
       });
 
       it('keeps stepSelector enabled when disabling stepSelectorRange', () => {
         const state1 = buildMetricsState({
           stepSelectorEnabled: true,
-          stepSelectorRangeEnabled: true,
+          rangeSelectionEnabled: true,
         });
 
-        const state2 = reducers(state1, actions.stepSelectorRangeToggled({}));
+        const state2 = reducers(state1, actions.rangeSelectionToggled({}));
         expect(state2.stepSelectorEnabled).toBe(true);
-        expect(state2.stepSelectorRangeEnabled).toBe(false);
+        expect(state2.rangeSelectionEnabled).toBe(false);
+      });
+
+      it('generates a value for linkedTimeSelection when needed', () => {
+        const state1 = buildMetricsState();
+
+        const state2 = reducers(state1, actions.rangeSelectionToggled({}));
+        expect(state2.linkedTimeSelection).toEqual({
+          start: {step: Infinity},
+          end: {step: -Infinity},
+        });
       });
     });
 
@@ -2977,6 +3050,24 @@ describe('metrics reducers', () => {
       const state4 = reducers(state3, actions.stepSelectorToggled({}));
       expect(state4.stepSelectorEnabled).toBe(false);
       expect(state2.linkedTimeEnabled).toBe(false);
+    });
+
+    it('disables rangeSelection when stepSelector is disabled', () => {
+      const state1 = buildMetricsState({
+        stepSelectorEnabled: false,
+        rangeSelectionEnabled: true,
+      });
+      const state2 = reducers(state1, actions.stepSelectorToggled({}));
+      expect(state2.stepSelectorEnabled).toBe(true);
+      expect(state2.rangeSelectionEnabled).toBe(true);
+
+      const state3 = buildMetricsState({
+        stepSelectorEnabled: true,
+        rangeSelectionEnabled: true,
+      });
+      const state4 = reducers(state3, actions.stepSelectorToggled({}));
+      expect(state4.stepSelectorEnabled).toBe(false);
+      expect(state4.rangeSelectionEnabled).toBe(false);
     });
   });
 

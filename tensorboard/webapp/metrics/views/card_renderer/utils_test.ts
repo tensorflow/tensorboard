@@ -15,8 +15,10 @@ limitations under the License.
 import {buildRun} from '../../../runs/store/testing';
 import {PartialSeries} from './scalar_card_types';
 import {
+  clipStepWithinMinMax,
   getClosestStep,
   getDisplayNameForRun,
+  maybeClipTimeSelectionView,
   maybeSetClosestStartStep,
   partitionSeries,
 } from './utils';
@@ -308,6 +310,161 @@ describe('metrics card_renderer utils test', () => {
 
     it('gets closeset step equal to selected step', () => {
       expect(getClosestStep(10, [0, 10, 20])).toBe(10);
+    });
+  });
+
+  describe('#clipStepWithinMinMax', () => {
+    it('returns step if greater than min', () => {
+      expect(clipStepWithinMinMax(1, 0, 5)).toBe(1);
+    });
+
+    it('returns step if less than max', () => {
+      expect(clipStepWithinMinMax(1, 0, 5)).toBe(1);
+    });
+
+    it('returns min if greater than step', () => {
+      expect(clipStepWithinMinMax(1, 3, 5)).toBe(3);
+      expect(clipStepWithinMinMax(1, 5, 3)).toBe(5);
+    });
+
+    it('returns max if less than step', () => {
+      expect(clipStepWithinMinMax(6, 0, 5)).toBe(5);
+    });
+  });
+
+  describe('#maybeClipLinkedTimeSelection', () => {
+    it('clips to the minStep when time selection start step is smaller than the view extend', () => {
+      expect(
+        maybeClipTimeSelectionView(
+          {
+            start: {step: 0},
+            end: null,
+          },
+          1,
+          4
+        )
+      ).toEqual({
+        startStep: 1,
+        endStep: null,
+        clipped: true,
+      });
+    });
+
+    it('clips to maxStep when time selection end step is greater than view extend', () => {
+      expect(
+        maybeClipTimeSelectionView(
+          {
+            start: {step: 0},
+            end: {step: 4},
+          },
+          0,
+          3
+        )
+      ).toEqual({
+        startStep: 0,
+        endStep: 3,
+        clipped: true,
+      });
+    });
+
+    it('does not clip when time selection falls into the view extend', () => {
+      expect(
+        maybeClipTimeSelectionView(
+          {
+            start: {step: 10},
+            end: null,
+          },
+          0,
+          20
+        )
+      ).toEqual({
+        startStep: 10,
+        endStep: null,
+        clipped: false,
+      });
+    });
+
+    it('returns minStep and maxStep when the timeselection is a superset of the min/maxstep', () => {
+      expect(
+        maybeClipTimeSelectionView(
+          {
+            start: {step: 0},
+            end: {step: 100},
+          },
+          30,
+          50
+        )
+      ).toEqual({
+        startStep: 30,
+        endStep: 50,
+        clipped: true,
+      });
+    });
+
+    it('clips both fobs to maxStep when timeSelection is greater than maxStep', () => {
+      expect(
+        maybeClipTimeSelectionView(
+          {
+            start: {step: 50},
+            end: {step: 100},
+          },
+          10,
+          20
+        )
+      ).toEqual({
+        startStep: 20,
+        endStep: 20,
+        clipped: true,
+      });
+    });
+
+    it('returns startStep === endStep === minStep when timeSelection is below minStep', () => {
+      expect(
+        maybeClipTimeSelectionView(
+          {
+            start: {step: 0},
+            end: {step: 10},
+          },
+          20,
+          30
+        )
+      ).toEqual({
+        startStep: 20,
+        endStep: 20,
+        clipped: true,
+      });
+    });
+
+    it('does not clip when time selection falls within the view extent', () => {
+      expect(
+        maybeClipTimeSelectionView(
+          {
+            start: {step: 0},
+            end: {step: 4},
+          },
+          0,
+          4
+        )
+      ).toEqual({
+        startStep: 0,
+        endStep: 4,
+        clipped: false,
+      });
+
+      expect(
+        maybeClipTimeSelectionView(
+          {
+            start: {step: 1},
+            end: {step: 3},
+          },
+          0,
+          4
+        )
+      ).toEqual({
+        startStep: 1,
+        endStep: 3,
+        clipped: false,
+      });
     });
   });
 });

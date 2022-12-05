@@ -270,11 +270,9 @@ class _VzHistogramTimeseries
   @property({type: Boolean})
   _attached: boolean;
 
-  @property({type: String})
-  _name: string = null;
+  @property({type: String}) _name: string | null = null;
 
-  @property({type: Array})
-  _data: VzHistogram[] = null;
+  @property({type: Array}) _data: VzHistogram[] | null = null;
 
   ready() {
     super.ready();

@@ -46,7 +46,7 @@ class TfWbrString extends PolymerElement {
   get _parts(): unknown[] {
     var value = this.value;
     var delimiterPattern = this.delimiterPattern;
-    const result = [];
+    const result: string[] = [];
     while (true) {
       const delimiterRegExp = new RegExp(delimiterPattern, 'g');
       delimiterRegExp.test(value);

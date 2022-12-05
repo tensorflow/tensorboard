@@ -26,3 +26,10 @@ export {
 } from './internal_types';
 export {RendererType} from './renderer/renderer_types';
 export {Scale, ScaleType} from './scale_types';
+
+export enum InteractionState {
+  NONE = 'NONE',
+  DRAG_ZOOMING = 'DRAG_ZOOMING',
+  SCROLL_ZOOMING = 'SCROLL_ZOOMING',
+  PANNING = 'PANNING',
+}

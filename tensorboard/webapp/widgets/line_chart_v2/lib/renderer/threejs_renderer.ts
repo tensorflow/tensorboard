@@ -17,7 +17,7 @@ import * as THREE from 'three';
 import {hsl, interpolateHsl} from '../../../../third_party/d3';
 import {Point, Polyline, Rect} from '../internal_types';
 import {ThreeCoordinator} from '../threejs_coordinator';
-import {arePolylinesEqual, isOffscreenCanvasSupported} from '../utils';
+import {ChartUtils} from '../utils';
 import {
   CirclePaintOption,
   LinePaintOption,
@@ -260,9 +260,15 @@ function updateObject(
   return true;
 }
 
+const ThreeWrapper = {
+  createScene: () => {
+    return new THREE.Scene();
+  },
+};
+
 export class ThreeRenderer implements ObjectRenderer<CacheValue> {
   private readonly renderer: THREE.WebGLRenderer;
-  private readonly scene = new THREE.Scene();
+  private readonly scene = ThreeWrapper.createScene();
   private backgroundColor: string = '#fff';
 
   constructor(
@@ -271,7 +277,10 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
     devicePixelRatio: number,
     onContextLost?: EventListener
   ) {
-    if (isOffscreenCanvasSupported() && canvas instanceof OffscreenCanvas) {
+    if (
+      ChartUtils.isOffscreenCanvasSupported() &&
+      canvas instanceof OffscreenCanvas
+    ) {
       // THREE.js require the style object which Offscreen canvas lacks.
       (canvas as any).style = (canvas as any).style || {};
     }
@@ -347,7 +356,7 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
         if (
           width !== prevWidth ||
           !prevPolyline ||
-          !arePolylinesEqual(prevPolyline, polyline)
+          !ChartUtils.arePolylinesEqual(prevPolyline, polyline)
         ) {
           updateThickPolylineGeometry(geometry, polyline, width);
         }
@@ -497,3 +506,7 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
     this.renderer.dispose();
   }
 }
+
+export const TEST_ONLY = {
+  ThreeWrapper,
+};

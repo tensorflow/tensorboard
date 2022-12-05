@@ -347,7 +347,7 @@ export const template = html`
           coloring by a given metadata field.
         </paper-tooltip>
       </div>
-      <template dom-if="[[colorLegendRenderInfo]]">
+      <template is="dom-if" if="[[colorLegendRenderInfo]]">
         <vz-projector-legend
           render-info="[[colorLegendRenderInfo]]"
         ></vz-projector-legend>

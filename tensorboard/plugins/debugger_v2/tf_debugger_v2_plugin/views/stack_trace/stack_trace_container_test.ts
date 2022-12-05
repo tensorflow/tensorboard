@@ -58,6 +58,10 @@ describe('Stack Trace container', () => {
     dispatchSpy = spyOn(store, 'dispatch');
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   for (const stickToBottommostFrame of [false, true]) {
     it(
       `shows non-empty eager stack frames; highlights focused frame: ` +

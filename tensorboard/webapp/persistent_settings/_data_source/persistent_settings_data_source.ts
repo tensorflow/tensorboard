@@ -84,6 +84,16 @@ export class OSSSettingsConverter extends SettingsConverter<
       serializableSettings.timeSeriesCardMinWidth =
         settings.timeSeriesCardMinWidth;
     }
+    if (settings.stepSelectorEnabled !== undefined) {
+      serializableSettings.stepSelectorEnabled = settings.stepSelectorEnabled;
+    }
+    if (settings.rangeSelectionEnabled !== undefined) {
+      serializableSettings.rangeSelectionEnabled =
+        settings.rangeSelectionEnabled;
+    }
+    if (settings.linkedTimeEnabled !== undefined) {
+      serializableSettings.linkedTimeEnabled = settings.linkedTimeEnabled;
+    }
     return serializableSettings;
   }
 
@@ -167,6 +177,27 @@ export class OSSSettingsConverter extends SettingsConverter<
       typeof backendSettings.timeSeriesCardMinWidth === 'number'
     ) {
       settings.timeSeriesCardMinWidth = backendSettings.timeSeriesCardMinWidth;
+    }
+
+    if (
+      backendSettings.hasOwnProperty('stepSelectorEnabled') &&
+      typeof backendSettings.stepSelectorEnabled === 'boolean'
+    ) {
+      settings.stepSelectorEnabled = backendSettings.stepSelectorEnabled;
+    }
+
+    if (
+      backendSettings.hasOwnProperty('rangeSelectionEnabled') &&
+      typeof backendSettings.rangeSelectionEnabled === 'boolean'
+    ) {
+      settings.rangeSelectionEnabled = backendSettings.rangeSelectionEnabled;
+    }
+
+    if (
+      backendSettings.hasOwnProperty('linkedTimeEnabled') &&
+      typeof backendSettings.linkedTimeEnabled === 'boolean'
+    ) {
+      settings.linkedTimeEnabled = backendSettings.linkedTimeEnabled;
     }
 
     return settings;

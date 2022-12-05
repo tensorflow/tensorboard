@@ -126,12 +126,14 @@ def session_start_pb(
         start_time_secs=start_time_secs,
     )
     for (hp_name, hp_val) in hparams.items():
-        if isinstance(hp_val, (float, int)):
+        # Boolean typed values need to be checked before integers since in Python
+        # isinstance(True/False, int) returns True.
+        if isinstance(hp_val, bool):
+            session_start_info.hparams[hp_name].bool_value = hp_val
+        elif isinstance(hp_val, (float, int)):
             session_start_info.hparams[hp_name].number_value = hp_val
         elif isinstance(hp_val, str):
             session_start_info.hparams[hp_name].string_value = hp_val
-        elif isinstance(hp_val, bool):
-            session_start_info.hparams[hp_name].bool_value = hp_val
         elif isinstance(hp_val, (list, tuple)):
             session_start_info.hparams[hp_name].string_value = str(hp_val)
         else:

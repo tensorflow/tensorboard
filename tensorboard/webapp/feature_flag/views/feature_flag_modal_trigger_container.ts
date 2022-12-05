@@ -20,6 +20,12 @@ import {featureFlagOverridesReset} from '../actions/feature_flag_actions';
 import {getShowFlagsEnabled} from '../store/feature_flag_selectors';
 import {FeatureFlagPageContainer} from './feature_flag_page_container';
 
+const util = {
+  reloadWindow: () => {
+    window.location.reload();
+  },
+};
+
 @Component({
   selector: 'feature-flag-modal-trigger',
   template: ``,
@@ -51,7 +57,7 @@ export class FeatureFlagModalTriggerContainer implements OnInit {
           // Wait one tick before reloading the page so the 'enableShowFlags'
           // reset has a chance to be reflected in the URL before page reload.
           setTimeout(() => {
-            window.location.reload();
+            util.reloadWindow();
           }, 1);
         });
         return;
@@ -59,3 +65,7 @@ export class FeatureFlagModalTriggerContainer implements OnInit {
     });
   }
 }
+
+export const TEST_ONLY = {
+  util,
+};

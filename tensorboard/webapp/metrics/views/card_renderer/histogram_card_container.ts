@@ -41,13 +41,14 @@ import {
   getCardTimeSeries,
   getMetricsHistogramMode,
   getMetricsLinkedTimeSelection,
+  getMetricsRangeSelectionEnabled,
   getMetricsXAxisType,
 } from '../../store';
 import {CardId, CardMetadata} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {
-  maybeClipLinkedTimeSelection,
+  maybeClipTimeSelectionView,
   maybeSetClosestStartStep,
   TimeSelectionView,
 } from './utils';
@@ -73,6 +74,7 @@ type HistogramCardMetadata = CardMetadata & {
       [isPinned]="isPinned$ | async"
       [isClosestStepHighlighted]="isClosestStepHighlighted$ | async"
       [linkedTimeSelection]="linkedTimeSelection$ | async"
+      [rangeSelectionEnabled]="rangeSelectionEnabled$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
       (onLinkedTimeSelectionChanged)="onLinkedTimeSelectionChanged($event)"
@@ -106,6 +108,7 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
   data$?: Observable<HistogramDatum[]>;
   mode$ = this.store.select(getMetricsHistogramMode);
   xAxisType$ = this.store.select(getMetricsXAxisType);
+  rangeSelectionEnabled$ = this.store.select(getMetricsRangeSelectionEnabled);
   showFullSize = false;
   isPinned$?: Observable<boolean>;
   linkedTimeSelection$?: Observable<TimeSelectionView | null>;
@@ -179,7 +182,7 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
           minStep = Math.min(step, minStep);
           maxStep = Math.max(step, maxStep);
         }
-        const linkedTimeSelectionView = maybeClipLinkedTimeSelection(
+        const linkedTimeSelectionView = maybeClipTimeSelectionView(
           linkedTimeSelection,
           minStep,
           maxStep

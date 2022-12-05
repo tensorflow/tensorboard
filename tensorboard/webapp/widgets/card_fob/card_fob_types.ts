@@ -42,6 +42,8 @@ export enum TimeSelectionAffordance {
   CHANGE_TO_SINGLE = 'changeToSingle',
   // User clicks on Histogram Chart to change to range selection.
   HISTOGRAM_CLICK_TO_RANGE = 'histogramClickToRange',
+  // Adding a new fob
+  FOB_ADDED = 'fobAdded',
 }
 
 /**

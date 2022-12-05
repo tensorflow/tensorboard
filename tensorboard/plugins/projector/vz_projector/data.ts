@@ -12,8 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import numeric from 'numeric';
 import {UMAP} from 'umap-js';
+import {numeric} from '../../../webapp/third_party/numeric';
 import {TSNE} from './bh_tsne';
 import {SpriteMetadata} from './data-provider';
 import * as knn from './knn';
@@ -105,10 +105,10 @@ const SEQUENCE_METADATA_ATTRS = ['__next__', '__seq_next__'];
 function getSequenceNextPointIndex(
   pointMetadata: PointMetadata
 ): number | null {
-  let sequenceAttr = null;
+  let sequenceAttr: number | null = null;
   for (let metadataAttr of SEQUENCE_METADATA_ATTRS) {
     if (metadataAttr in pointMetadata && pointMetadata[metadataAttr] !== '') {
-      sequenceAttr = pointMetadata[metadataAttr];
+      sequenceAttr = pointMetadata[metadataAttr] as number;
       break;
     }
   }
@@ -158,7 +158,8 @@ export class DataSet {
     this.shuffledDataIndices = util.shuffle(util.range(this.points.length));
     this.sequences = this.computeSequences(points);
     this.dim = [this.points.length, this.points[0].vector.length];
-    this.spriteAndMetadataInfo = spriteAndMetadataInfo;
+    if (spriteAndMetadataInfo)
+      this.spriteAndMetadataInfo = spriteAndMetadataInfo;
   }
   private computeSequences(points: DataPoint[]) {
     // Keep a list of indices seen so we don't compute sequences for a given
@@ -266,7 +267,7 @@ export class DataSet {
   /** Projects the dataset along the top 10 principal components. */
   projectPCA(): Promise<void> {
     if (this.projections['pca-0'] != null) {
-      return Promise.resolve<void>(null);
+      return Promise.resolve<void>(null!);
     }
     return util.runAsyncTask('Computing PCA...', () => {
       // Approximate pca vectors by sampling the dimensions.
@@ -335,8 +336,8 @@ export class DataSet {
     let step = () => {
       if (this.tSNEShouldStop) {
         this.projections['tsne'] = false;
-        stepCallback(null);
-        this.tsne = null;
+        stepCallback(null!);
+        this.tsne = null!;
         this.hasTSNERun = false;
         return;
       }
@@ -428,7 +429,7 @@ export class DataSet {
                   }
                 });
                 this.projections['umap'] = true;
-                logging.setModalMessage(null, UMAP_MSG_ID);
+                logging.setModalMessage(null!, UMAP_MSG_ID);
                 this.hasUmapRun = true;
                 stepCallback(currentEpoch);
                 resolve();
@@ -438,7 +439,7 @@ export class DataSet {
             0
           )
           .catch((error) => {
-            logging.setModalMessage(null, UMAP_MSG_ID);
+            logging.setModalMessage(null!, UMAP_MSG_ID);
             reject(error);
           });
       };
@@ -531,14 +532,14 @@ export class DataSet {
    * Merges metadata to the dataset and returns whether it succeeded.
    */
   mergeMetadata(metadata: SpriteAndMetadataInfo): boolean {
-    if (metadata.pointsInfo.length !== this.points.length) {
+    if (metadata.pointsInfo?.length! !== this.points.length) {
       let errorMessage =
         `Number of tensors (${this.points.length}) do not` +
         ` match the number of lines in metadata` +
-        ` (${metadata.pointsInfo.length}).`;
+        ` (${metadata.pointsInfo?.length}).`;
       if (
-        metadata.stats.length === 1 &&
-        this.points.length + 1 === metadata.pointsInfo.length
+        metadata.stats?.length === 1 &&
+        this.points.length + 1 === metadata.pointsInfo?.length
       ) {
         // If there is only one column of metadata and the number of points is
         // exactly one less than the number of metadata lines, this is due to an
@@ -552,8 +553,8 @@ export class DataSet {
         );
         return false;
       } else if (
-        metadata.stats.length > 1 &&
-        this.points.length - 1 === metadata.pointsInfo.length
+        metadata.stats?.length! > 1 &&
+        this.points.length - 1 === metadata.pointsInfo?.length!
       ) {
         // If there are multiple columns of metadata and the number of points is
         // exactly one greater than the number of lines in the metadata, this
@@ -570,7 +571,7 @@ export class DataSet {
     }
     this.spriteAndMetadataInfo = metadata;
     metadata.pointsInfo
-      .slice(0, this.points.length)
+      ?.slice(0, this.points.length)
       .forEach((m, i) => (this.points[i].metadata = m));
     return true;
   }
@@ -694,7 +695,11 @@ export function getProjectionComponents(
   if (components.length > 3) {
     throw new RangeError('components length must be <= 3');
   }
-  const projectionComponents: [string, string, string] = [null, null, null];
+  const projectionComponents: [string | null, string | null, string | null] = [
+    null,
+    null,
+    null,
+  ];
   const prefix = projection === 'custom' ? 'linear' : projection;
   for (let i = 0; i < components.length; ++i) {
     if (components[i] == null) {
@@ -702,7 +707,7 @@ export function getProjectionComponents(
     }
     projectionComponents[i] = prefix + '-' + components[i];
   }
-  return projectionComponents;
+  return projectionComponents as [string, string, string];
 }
 export function stateGetAccessorDimensions(
   state: State

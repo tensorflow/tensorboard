@@ -162,7 +162,7 @@ export function centroid<T>(
   accessor?: (a: T) => Vector
 ): Vector {
   if (dataPoints.length === 0) {
-    return null;
+    return null!;
   }
   if (accessor == null) {
     accessor = (a: T) => <any>a;

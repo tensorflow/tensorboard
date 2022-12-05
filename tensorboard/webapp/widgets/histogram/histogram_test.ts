@@ -30,6 +30,7 @@ import {
 import {
   TimeSelection,
   TimeSelectionAffordance,
+  TimeSelectionWithAffordance,
 } from '../card_fob/card_fob_types';
 import {IntersectionObserverTestingModule} from '../intersection_observer/intersection_observer_testing_module';
 import {HistogramCardFobController} from './histogram_card_fob_controller';
@@ -1307,6 +1308,12 @@ describe('histogram test', () => {
         };
         fixture.componentInstance.onLinkedTimeSelectionChanged =
           onLinkedTimeSelectionChangedSpy;
+        onLinkedTimeSelectionChangedSpy.and.callFake(
+          (timeSelectionWithAffordance: TimeSelectionWithAffordance) => {
+            fixture.componentInstance.timeSelection =
+              timeSelectionWithAffordance.timeSelection;
+          }
+        );
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
         const testController = fixture.debugElement.query(
@@ -1327,6 +1334,7 @@ describe('histogram test', () => {
           movementY: 1,
         });
         testController.mouseMove(fakeEvent);
+        fixture.detectChanges();
         testController.stopDrag();
         fixture.detectChanges();
 

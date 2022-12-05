@@ -30,6 +30,7 @@ import {
   TooltipSort,
   XAxisType,
 } from '../internal_types';
+import {ColumnHeaders} from '../views/card_renderer/scalar_card_types';
 import * as storeUtils from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
@@ -368,17 +369,10 @@ export const getMetricsStepSelectorEnabled = createSelector(
   }
 );
 
-export const getMetricsStepSelectorRangeEnabled = createSelector(
+export const getMetricsRangeSelectionEnabled = createSelector(
   selectMetricsState,
   (state: MetricsState): boolean => {
-    return state.stepSelectorRangeEnabled;
-  }
-);
-
-export const getMetricsLinkedTimeRangeEnabled = createSelector(
-  selectMetricsState,
-  (state: MetricsState): boolean => {
-    return state.linkedTimeRangeEnabled;
+    return state.rangeSelectionEnabled;
   }
 );
 
@@ -390,6 +384,20 @@ export const getMetricsStepMinMax = createSelector(
       min: min === Infinity ? 0 : min,
       max: max === -Infinity ? 1000 : max,
     };
+  }
+);
+
+export const getSingleSelectionHeaders = createSelector(
+  selectMetricsState,
+  (state: MetricsState): ColumnHeaders[] => {
+    return state.singleSelectionHeaders;
+  }
+);
+
+export const getRangeSelectionHeaders = createSelector(
+  selectMetricsState,
+  (state: MetricsState): ColumnHeaders[] => {
+    return state.rangeSelectionHeaders;
   }
 );
 
@@ -436,7 +444,7 @@ export const getMetricsLinkedTimeSelection = createSelector(
     linkedTimeSelection: TimeSelection
   ): TimeSelection | null => {
     if (!state.linkedTimeEnabled) return null;
-    if (state.linkedTimeRangeEnabled) {
+    if (state.rangeSelectionEnabled) {
       return linkedTimeSelection;
     }
     return {...linkedTimeSelection, end: null};

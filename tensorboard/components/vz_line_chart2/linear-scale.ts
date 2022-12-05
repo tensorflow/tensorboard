@@ -75,8 +75,8 @@ export class LinearScale extends Plottable.Scales.Linear implements ITfScale {
     let filteredValues = legalValues;
     if (this.ignoreOutlier()) {
       const sortedValues = legalValues.sort((a, b) => a - b);
-      const a = d3.quantile(sortedValues, 0.05);
-      const b = d3.quantile(sortedValues, 0.95);
+      const a = d3.quantile(sortedValues, 0.05)!;
+      const b = d3.quantile(sortedValues, 0.95)!;
       filteredValues = legalValues.filter((x) => x >= a && x <= b);
     }
     const extent = d3.extent(filteredValues);

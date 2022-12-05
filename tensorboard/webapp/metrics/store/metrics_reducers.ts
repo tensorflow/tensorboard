@@ -23,6 +23,7 @@ import {DataLoadState} from '../../types/data';
 import {ElementId} from '../../util/dom';
 import {mapObjectValues} from '../../util/lang';
 import {composeReducers} from '../../util/ngrx';
+import {TimeSelectionAffordance} from '../../widgets/card_fob/card_fob_types';
 import * as actions from '../actions';
 import {
   isFailedTimeSeriesResponse,
@@ -45,6 +46,7 @@ import {
   URLDeserializedState,
 } from '../internal_types';
 import {groupCardIdWithMetdata} from '../utils';
+import {ColumnHeaders} from '../views/card_renderer/scalar_card_types';
 import {
   buildOrReturnStateWithPinnedCopy,
   buildOrReturnStateWithUnresolvedImportedPins,
@@ -260,8 +262,25 @@ const {initialState, reducers: namespaceContextedReducer} =
       linkedTimeSelection: null,
       linkedTimeEnabled: false,
       stepSelectorEnabled: false,
-      stepSelectorRangeEnabled: false,
-      linkedTimeRangeEnabled: false,
+      rangeSelectionEnabled: false,
+      singleSelectionHeaders: [
+        ColumnHeaders.RUN,
+        ColumnHeaders.SMOOTHED,
+        ColumnHeaders.VALUE,
+        ColumnHeaders.STEP,
+        ColumnHeaders.RELATIVE_TIME,
+      ],
+      rangeSelectionHeaders: [
+        ColumnHeaders.RUN,
+        ColumnHeaders.MIN_VALUE,
+        ColumnHeaders.MAX_VALUE,
+        ColumnHeaders.START_VALUE,
+        ColumnHeaders.END_VALUE,
+        ColumnHeaders.VALUE_CHANGE,
+        ColumnHeaders.PERCENTAGE_CHANGE,
+        ColumnHeaders.START_STEP,
+        ColumnHeaders.END_STEP,
+      ],
       filteredPluginTypes: new Set(),
       stepMinMax: {
         min: Infinity,
@@ -437,10 +456,19 @@ const reducer = createReducer(
 
     const isSettingsPaneOpen =
       partialSettings.timeSeriesSettingsPaneOpened ?? state.isSettingsPaneOpen;
+    const stepSelectorEnabled =
+      partialSettings.stepSelectorEnabled ?? state.stepSelectorEnabled;
+    const rangeSelectionEnabled =
+      partialSettings.rangeSelectionEnabled ?? state.rangeSelectionEnabled;
+    const linkedTimeEnabled =
+      partialSettings.linkedTimeEnabled ?? state.linkedTimeEnabled;
 
     return {
       ...state,
       isSettingsPaneOpen,
+      stepSelectorEnabled,
+      rangeSelectionEnabled,
+      linkedTimeEnabled,
       settings: {
         ...state.settings,
         ...metricsSettings,
@@ -979,24 +1007,40 @@ const reducer = createReducer(
       stepSelectorEnabled: nextStepSelectorEnabled,
     };
   }),
-  on(actions.stepSelectorRangeToggled, (state) => {
-    const nextStepSelectorRangeEnabled = !state.stepSelectorRangeEnabled;
+  on(actions.rangeSelectionToggled, (state) => {
+    const nextRangeSelectionEnabled = !state.rangeSelectionEnabled;
     let nextStepSelectorEnabled = state.stepSelectorEnabled;
+    let linkedTimeSelection = state.linkedTimeSelection;
 
-    if (nextStepSelectorRangeEnabled) {
-      nextStepSelectorEnabled = nextStepSelectorRangeEnabled;
+    if (nextRangeSelectionEnabled) {
+      nextStepSelectorEnabled = nextRangeSelectionEnabled;
+      if (!linkedTimeSelection) {
+        linkedTimeSelection = {
+          start: {step: state.stepMinMax.min},
+          end: {step: state.stepMinMax.max},
+        };
+      }
+      if (!linkedTimeSelection.end) {
+        linkedTimeSelection = {
+          ...linkedTimeSelection,
+          end: {step: state.stepMinMax.max},
+        };
+      }
     }
-
     return {
       ...state,
       stepSelectorEnabled: nextStepSelectorEnabled,
-      stepSelectorRangeEnabled: nextStepSelectorRangeEnabled,
+      rangeSelectionEnabled: nextRangeSelectionEnabled,
+      linkedTimeSelection,
     };
   }),
   on(actions.timeSelectionChanged, (state, change) => {
     const {timeSelection} = change;
     const nextStartStep = timeSelection.start.step;
     const nextEndStep = timeSelection.end?.step;
+    const nextStepSelectorEnabled =
+      change.affordance === TimeSelectionAffordance.FOB_ADDED ||
+      state.stepSelectorEnabled;
     const end =
       nextEndStep === undefined
         ? null
@@ -1004,7 +1048,7 @@ const reducer = createReducer(
 
     // If there is no endStep then current selection state is single.
     // Otherwise selection state is range.
-    const linkedTimeRangeEnabled = nextEndStep !== undefined;
+    const rangeSelectionEnabled = nextEndStep !== undefined;
 
     const linkedTimeSelection = {
       start: {
@@ -1024,19 +1068,22 @@ const reducer = createReducer(
       ...state,
       linkedTimeSelection,
       cardStepIndex: nextCardStepIndexMap,
-      linkedTimeRangeEnabled,
+      rangeSelectionEnabled,
+      stepSelectorEnabled: nextStepSelectorEnabled,
     };
   }),
   on(actions.stepSelectorToggled, (state) => {
     const nextStepSelectorEnabled = !state.stepSelectorEnabled;
-    const nextLinkedTimeEnabled = nextStepSelectorEnabled
-      ? state.linkedTimeEnabled
-      : nextStepSelectorEnabled;
+    const nextLinkedTimeEnabled =
+      nextStepSelectorEnabled && state.linkedTimeEnabled;
+    const nextRangeSelectionEnabled =
+      nextStepSelectorEnabled && state.rangeSelectionEnabled;
 
     return {
       ...state,
       linkedTimeEnabled: nextLinkedTimeEnabled,
       stepSelectorEnabled: nextStepSelectorEnabled,
+      rangeSelectionEnabled: nextRangeSelectionEnabled,
     };
   }),
   on(actions.timeSelectionCleared, (state) => {

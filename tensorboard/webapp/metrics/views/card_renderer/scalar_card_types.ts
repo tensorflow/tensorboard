@@ -111,7 +111,7 @@ export interface SortingInfo {
  */
 export type SelectedStepRunData = {
   [key in ColumnHeaders]?: string | number;
-};
+} & {id: string};
 
 /**
  * An object which is intended to hold the min and max step within each scalar

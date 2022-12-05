@@ -17,13 +17,14 @@
 # Minimal wrapper over ctx.actions.write to write a string to a file.
 # Simpler than the genrule equivalent since we don't need to escape.
 def _write_file_impl(ctx):
-    ctx.actions.write(ctx.outputs.out, ctx.attr.content)
+    ctx.actions.write(ctx.outputs.out, ctx.attr.content, ctx.attr.is_executable)
 
 _write_file = rule(
     implementation = _write_file_impl,
     attrs = {
         "out": attr.output(mandatory = True),
         "content": attr.string(),
+        "is_executable": attr.bool(default = False),
     },
 )
 
@@ -93,6 +94,7 @@ def py_repl(name, preamble = None, deps = None, **kwargs):
         name = name + "_sh_gen",
         out = name + ".sh",
         content = "PYTHONINSPECT=1 exec $1",
+        is_executable = True,
     )
 
     # Use `args` to pass the location of the data dep which is shorter

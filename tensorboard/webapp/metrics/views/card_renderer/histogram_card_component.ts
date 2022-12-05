@@ -50,6 +50,7 @@ export class HistogramCardComponent {
   @Input() showFullSize!: boolean;
   @Input() isPinned!: boolean;
   @Input() linkedTimeSelection!: TimeSelectionView | null;
+  @Input() rangeSelectionEnabled?: boolean;
   @Input() isClosestStepHighlighted!: boolean | null;
 
   @Output() onFullSizeToggle = new EventEmitter<void>();

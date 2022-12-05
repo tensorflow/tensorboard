@@ -30,6 +30,7 @@ import {TemporalScale} from './histogram_component';
     <card-fob-controller
       [axisDirection]="axisDirection"
       [timeSelection]="timeSelection"
+      [rangeSelectionEnabled]="rangeSelectionEnabled"
       [startStepAxisPosition]="getAxisPositionFromStartStep()"
       [endStepAxisPosition]="getAxisPositionFromEndStep()"
       [highestStep]="getHighestStep()"
@@ -44,6 +45,7 @@ import {TemporalScale} from './histogram_component';
 export class HistogramCardFobController {
   @Input() steps!: number[];
   @Input() timeSelection!: TimeSelection;
+  @Input() rangeSelectionEnabled?: boolean;
   @Input() temporalScale!: TemporalScale;
   @Output() onTimeSelectionChanged = new EventEmitter<TimeSelection>();
   @Output() onTimeSelectionToggled = new EventEmitter();

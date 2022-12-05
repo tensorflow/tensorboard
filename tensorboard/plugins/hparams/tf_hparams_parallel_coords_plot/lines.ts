@@ -82,7 +82,7 @@ export class SessionGroupHandle {
     if (otherHandle.isNull()) {
       return false;
     }
-    return otherHandle.sessionGroup().name == this.sessionGroup().name;
+    return otherHandle.sessionGroup()?.name == this.sessionGroup()?.name;
   }
   private _sessionGroupSel: any; /* D3 selection */
 }
@@ -246,8 +246,8 @@ export class LinesCollection {
     this._sessionGroups = sessionGroups;
     this._fgPathsSel = this._recomputePathSelection(this._fgPathsSel);
     this._bgPathsSel = this._recomputePathSelection(this._bgPathsSel);
-    this._peakedSessionGroupHandle = this.getSessionGroupHandle(peakedSG);
-    this._selectedSessionGroupHandle = this.getSessionGroupHandle(selectedSG);
+    this._peakedSessionGroupHandle = this.getSessionGroupHandle(peakedSG!);
+    this._selectedSessionGroupHandle = this.getSessionGroupHandle(selectedSG!);
     this.recomputeControlPoints(LineType.FOREGROUND);
     this.recomputeControlPoints(LineType.BACKGROUND);
     this.recomputeForegroundLinesVisibility();

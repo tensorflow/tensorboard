@@ -64,7 +64,7 @@ class BookmarkPanel extends LegacyElementMixin(PolymerElement) {
     dataProvider: DataProvider
   ) {
     // Clear any existing bookmarks.
-    this.addStates(null);
+    this.addStates();
     if (tensorInfo && tensorInfo.bookmarksPath) {
       // Get any bookmarks that may come when the projector starts up.
       dataProvider.getBookmarks(run, tensorInfo.tensorName, (bookmarks) => {
@@ -128,7 +128,7 @@ class BookmarkPanel extends LegacyElementMixin(PolymerElement) {
     // Show and setup the load view button.
     const fileInput = this.$$('#state-file') as HTMLInputElement;
     fileInput.onchange = () => {
-      const file: File = fileInput.files[0];
+      const file: File = fileInput.files?.[0]!;
       // Clear out the value of the file chooser. This ensures that if the user
       // selects the same file, we'll re-read it.
       fileInput.value = '';

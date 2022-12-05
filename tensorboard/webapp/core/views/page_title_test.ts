@@ -50,6 +50,10 @@ describe('page title test', () => {
     });
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('uses window_title as page title if given', () => {
     const spy = spyOn(TEST_ONLY.utils, 'setDocumentTitle');
     store.overrideSelector(getRouteKind, RouteKind.EXPERIMENT);
@@ -139,6 +143,10 @@ describe('page title test with custom brand names', () => {
     });
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('uses TensorBoard brand name as page title as default', () => {
     const spy = spyOn(TEST_ONLY.utils, 'setDocumentTitle');
     const fixture = TestBed.createComponent(TestingComponent);
@@ -211,6 +219,10 @@ describe('page title test for OSS TensorBoard', () => {
       data_location: 'my-location',
       window_title: '',
     });
+  });
+
+  afterEach(() => {
+    store?.resetSelectors();
   });
 
   it('uses `TensorBoard` for experiment page title', () => {
