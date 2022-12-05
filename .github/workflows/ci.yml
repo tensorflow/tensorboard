@@ -136,11 +136,11 @@ jobs:
       matrix:
         mode: ['native']
         platform: ['ubuntu-22.04', 'macos-11']
-        rust_version: ['1.58.1']
+        rust_version: ['1.65.0']
         include:
           - mode: 'universal'
             platform: 'ubuntu-22.04'
-            rust_version: '1.58.1'
+            rust_version: '1.65.0'
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
       - uses: actions/setup-python@152ba7c4dd6521b8e9c93f72d362ce03bf6c4f20
