@@ -270,12 +270,14 @@ export class DataTableComponent implements OnDestroy {
   }
 
   getHeaderHighlightStyle(header: ColumnHeaders) {
+    if (header !== this.highlightedColumn) {
+      return {};
+    }
+
     return {
-      highlight: header === this.highlightedColumn,
-      'highlight-border-right':
-        header === this.highlightedColumn && this.highlightSide === Side.RIGHT,
-      'highlight-border-left':
-        header === this.highlightedColumn && this.highlightSide === Side.LEFT,
+      highlight: true,
+      'highlight-border-right': this.highlightSide === Side.RIGHT,
+      'highlight-border-left': this.highlightSide === Side.LEFT,
     };
   }
 }
