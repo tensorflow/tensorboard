@@ -35,6 +35,8 @@ const AXIS_FONT = '11px Roboto, sans-serif';
   templateUrl: 'line_chart_axis_view.ng.html',
   styleUrls: ['line_chart_axis_view.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // This prevents the CSS generated from being namespaced thus allowing CSS
+  // to reach into the line_chart_component and card_fob_controller_component
   encapsulation: ViewEncapsulation.None,
 })
 export class LineChartAxisComponent {
