@@ -39,6 +39,7 @@ import {
       [data]="getTimeSelectionTableData()"
       [sortingInfo]="sortingInfo"
       [columnCustomizationEnabled]="columnCustomizationEnabled"
+      [smoothingEnabled]="smoothingEnabled"
       (sortDataBy)="sortDataBy.emit($event)"
       (orderColumns)="orderColumns.emit($event)"
     ></tb-data-table>
@@ -52,6 +53,7 @@ export class ScalarCardDataTable {
   @Input() dataHeaders!: ColumnHeaders[];
   @Input() sortingInfo!: SortingInfo;
   @Input() columnCustomizationEnabled!: boolean;
+  @Input() smoothingEnabled!: boolean;
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() orderColumns = new EventEmitter<ColumnHeaders[]>();
