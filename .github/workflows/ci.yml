@@ -264,7 +264,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        rust_version: ['1.58.1']
+        rust_version: ['1.65.0']
         cargo_raze_version: ['0.13.0']
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
