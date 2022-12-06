@@ -44,7 +44,10 @@ import {
 } from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {ExperimentAlias} from '../../../experiments/types';
-import {getForceSvgFeatureFlag} from '../../../feature_flag/store/feature_flag_selectors';
+import {
+  getForceSvgFeatureFlag,
+  getIsScalarColumnCustomizationEnabled,
+} from '../../../feature_flag/store/feature_flag_selectors';
 import {
   getCardPinnedState,
   getCurrentRouteRunSelection,
@@ -68,6 +71,7 @@ import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer'
 import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
+  dataTableColumnDrag,
   sortingDataTable,
   stepSelectorToggled,
   timeSelectionChanged,
@@ -162,6 +166,7 @@ function areSeriesEqual(
       [rangeSelectionEnabled]="rangeSelectionEnabled$ | async"
       [isProspectiveFobFeatureEnabled]="isProspectiveFobFeatureEnabled$ | async"
       [forceSvg]="forceSvg$ | async"
+      [columnCustomizationEnabled]="columnCustomizationEnabled$ | async"
       [minMaxStep]="minMaxSteps$ | async"
       [dataHeaders]="columnHeaders$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
@@ -172,6 +177,7 @@ function areSeriesEqual(
       (onStepSelectorToggled)="onStepSelectorToggled($event)"
       (onDataTableSorting)="onDataTableSorting($event)"
       (onLineChartZoom)="onLineChartZoom($event)"
+      (reorderColumnHeaders)="reorderColumnHeaders($event)"
     ></scalar-card-component>
   `,
   styles: [
@@ -234,6 +240,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   readonly tooltipSort$ = this.store.select(getMetricsTooltipSort);
   readonly xAxisType$ = this.store.select(getMetricsXAxisType);
   readonly forceSvg$ = this.store.select(getForceSvgFeatureFlag);
+  readonly columnCustomizationEnabled$ = this.store.select(
+    getIsScalarColumnCustomizationEnabled
+  );
   readonly xScaleType$ = this.store.select(getMetricsXAxisType).pipe(
     map((xAxisType) => {
       switch (xAxisType) {
@@ -495,7 +504,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
           singleSelectionHeaders,
           rangeSelectionHeaders,
         ]) => {
-          const headers: ColumnHeaders[] = [];
           if (timeSelection === null || timeSelection.end === null) {
             if (!smoothingEnabled) {
               // Return single selection headers without smoothed header.
@@ -726,5 +734,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       maxStep: Math.floor(Math.max(...minMax)),
     };
     this.lineChartZoom$.next(minMaxStepInViewPort);
+  }
+
+  reorderColumnHeaders(headers: ColumnHeaders[]) {
+    this.store.dispatch(dataTableColumnDrag({newOrder: headers}));
   }
 }

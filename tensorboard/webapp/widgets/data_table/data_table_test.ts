@@ -34,6 +34,7 @@ import {DataTableComponent} from './data_table_component';
       [data]="data"
       [sortingInfo]="sortingInfo"
       (sortDataBy)="sortDataBy($event)"
+      (orderColumns)="orderColumns($event)"
     ></tb-data-table>
   `,
 })
@@ -46,10 +47,12 @@ class TestableComponent {
   @Input() sortingInfo!: SortingInfo;
 
   @Input() sortDataBy!: (sortingInfo: SortingInfo) => void;
+  @Input() orderColumns!: (newOrder: ColumnHeaders[]) => void;
 }
 
 describe('data table', () => {
   let sortDataBySpy: jasmine.Spy;
+  let orderColumnsSpy: jasmine.Spy;
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [TestableComponent, DataTableComponent],
@@ -73,6 +76,9 @@ describe('data table', () => {
 
     sortDataBySpy = jasmine.createSpy();
     fixture.componentInstance.sortDataBy = sortDataBySpy;
+
+    orderColumnsSpy = jasmine.createSpy();
+    fixture.componentInstance.orderColumns = orderColumnsSpy;
 
     return fixture;
   }
@@ -265,7 +271,7 @@ describe('data table', () => {
 
     expect(
       headerElements[1]
-        .queryAll(By.css('.sorting-icon-container'))[0]
+        .queryAll(By.css('mat-icon'))[0]
         .nativeElement.classList.contains('show')
     ).toBe(true);
     expect(
@@ -275,22 +281,22 @@ describe('data table', () => {
     ).toBe('arrow_upward_24px');
     expect(
       headerElements[2]
-        .queryAll(By.css('.sorting-icon-container'))[0]
+        .queryAll(By.css('mat-icon'))[0]
         .nativeElement.classList.contains('show')
     ).toBe(false);
     expect(
       headerElements[2]
-        .queryAll(By.css('.sorting-icon-container'))[0]
+        .queryAll(By.css('mat-icon'))[0]
         .nativeElement.classList.contains('show-on-hover')
     ).toBe(true);
     expect(
       headerElements[3]
-        .queryAll(By.css('.sorting-icon-container'))[0]
+        .queryAll(By.css('mat-icon'))[0]
         .nativeElement.classList.contains('show')
     ).toBe(false);
     expect(
       headerElements[3]
-        .queryAll(By.css('.sorting-icon-container'))[0]
+        .queryAll(By.css('mat-icon'))[0]
         .nativeElement.classList.contains('show-on-hover')
     ).toBe(true);
   });
@@ -305,27 +311,27 @@ describe('data table', () => {
 
     expect(
       headerElements[1]
-        .queryAll(By.css('.sorting-icon-container'))[0]
+        .queryAll(By.css('mat-icon'))[0]
         .nativeElement.classList.contains('show')
     ).toBe(false);
     expect(
       headerElements[1]
-        .queryAll(By.css('.sorting-icon-container'))[0]
+        .queryAll(By.css('mat-icon'))[0]
         .nativeElement.classList.contains('show-on-hover')
     ).toBe(true);
     expect(
       headerElements[2]
-        .queryAll(By.css('.sorting-icon-container'))[0]
+        .queryAll(By.css('mat-icon'))[0]
         .nativeElement.classList.contains('show')
     ).toBe(false);
     expect(
       headerElements[2]
-        .queryAll(By.css('.sorting-icon-container'))[0]
+        .queryAll(By.css('mat-icon'))[0]
         .nativeElement.classList.contains('show-on-hover')
     ).toBe(true);
     expect(
       headerElements[3]
-        .queryAll(By.css('.sorting-icon-container'))[0]
+        .queryAll(By.css('mat-icon'))[0]
         .nativeElement.classList.contains('show')
     ).toBe(true);
     expect(
@@ -333,5 +339,65 @@ describe('data table', () => {
         .queryAll(By.css('mat-icon'))[0]
         .nativeElement.getAttribute('svgIcon')
     ).toBe('arrow_downward_24px');
+  });
+
+  it('emits orderColumns with new order when dragged left', () => {
+    const fixture = createComponent({
+      headers: [ColumnHeaders.VALUE, ColumnHeaders.RUN, ColumnHeaders.STEP],
+      sortingInfo: {header: ColumnHeaders.STEP, order: SortingOrder.DESCENDING},
+    });
+    fixture.detectChanges();
+    const headerElements = fixture.debugElement.queryAll(By.css('th'));
+
+    headerElements[2].query(By.css('.cell')).triggerEventHandler('dragstart');
+    headerElements[1].query(By.css('.cell')).triggerEventHandler('dragenter');
+    fixture.detectChanges();
+    expect(
+      headerElements[1]
+        .query(By.css('.cell'))
+        .nativeElement.classList.contains('highlight')
+    ).toBe(true);
+    expect(
+      headerElements[1]
+        .query(By.css('.cell'))
+        .nativeElement.classList.contains('highlight-border-left')
+    ).toBe(true);
+    headerElements[2].query(By.css('.cell')).triggerEventHandler('dragend');
+
+    expect(orderColumnsSpy).toHaveBeenCalledOnceWith([
+      ColumnHeaders.RUN,
+      ColumnHeaders.VALUE,
+      ColumnHeaders.STEP,
+    ]);
+  });
+
+  it('emits orderColumns with new order when dragged right', () => {
+    const fixture = createComponent({
+      headers: [ColumnHeaders.VALUE, ColumnHeaders.RUN, ColumnHeaders.STEP],
+      sortingInfo: {header: ColumnHeaders.STEP, order: SortingOrder.DESCENDING},
+    });
+    fixture.detectChanges();
+    const headerElements = fixture.debugElement.queryAll(By.css('th'));
+
+    headerElements[2].query(By.css('.cell')).triggerEventHandler('dragstart');
+    headerElements[3].query(By.css('.cell')).triggerEventHandler('dragenter');
+    fixture.detectChanges();
+    expect(
+      headerElements[3]
+        .query(By.css('.cell'))
+        .nativeElement.classList.contains('highlight')
+    ).toBe(true);
+    expect(
+      headerElements[3]
+        .query(By.css('.cell'))
+        .nativeElement.classList.contains('highlight-border-right')
+    ).toBe(true);
+    headerElements[2].query(By.css('.cell')).triggerEventHandler('dragend');
+
+    expect(orderColumnsSpy).toHaveBeenCalledOnceWith([
+      ColumnHeaders.VALUE,
+      ColumnHeaders.STEP,
+      ColumnHeaders.RUN,
+    ]);
   });
 });

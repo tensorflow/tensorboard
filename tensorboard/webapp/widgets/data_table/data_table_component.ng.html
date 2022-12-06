@@ -21,7 +21,15 @@ limitations under the License.
         </th>
         <ng-container *ngFor="let header of headers;">
           <th (click)="headerClicked(header)">
-            <div [ngSwitch]="header" class="cell">
+            <div
+              [draggable]="columnCustomizationEnabled"
+              (dragstart)="dragStart(header)"
+              (dragend)="dragEnd()"
+              (dragenter)="dragEnter(header)"
+              [ngSwitch]="header"
+              class="cell"
+              [ngClass]="getHeaderHighlightStyle(header)"
+            >
               <!-- order icon -->
               <mat-icon
                 *ngSwitchCase="ColumnHeaders.VALUE_CHANGE"
@@ -35,16 +43,15 @@ limitations under the License.
 
               <span>{{ getHeaderTextColumn(header) }}</span>
 
-              <div
-                class="sorting-icon-container"
-                [ngClass]="header === sortingInfo.header ? 'show' : 'show-on-hover'"
-              >
+              <div class="sorting-icon-container">
                 <mat-icon
                   *ngIf="sortingInfo.order === SortingOrder.ASCENDING || header !== sortingInfo.header"
+                  [ngClass]="header === sortingInfo.header ? 'show' : 'show-on-hover'"
                   svgIcon="arrow_upward_24px"
                 ></mat-icon>
                 <mat-icon
                   *ngIf="sortingInfo.order === SortingOrder.DESCENDING && header === sortingInfo.header"
+                  [ngClass]="header === sortingInfo.header ? 'show' : 'show-on-hover'"
                   svgIcon="arrow_downward_24px"
                 ></mat-icon>
               </div>

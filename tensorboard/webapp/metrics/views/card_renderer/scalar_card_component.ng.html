@@ -177,7 +177,9 @@ limitations under the License.
       [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection"
       [dataHeaders]="dataHeaders"
       [sortingInfo]="sortingInfo"
+      [columnCustomizationEnabled]="columnCustomizationEnabled"
       (sortDataBy)="sortDataBy($event)"
+      (orderColumns)="reorderColumnHeaders.emit($event)"
     >
     </scalar-card-data-table>
   </div>
