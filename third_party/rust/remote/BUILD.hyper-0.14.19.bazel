@@ -97,6 +97,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=hyper",
         "manual",
     ],
     version = "0.14.19",

@@ -36,8 +36,6 @@ licenses([
 rust_library(
     name = "winapi_x86_64_pc_windows_gnu",
     srcs = glob(["**/*.rs"]),
-    crate_features = [
-    ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2015",
@@ -46,6 +44,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=winapi-x86_64-pc-windows-gnu",
         "manual",
     ],
     version = "0.4.0",

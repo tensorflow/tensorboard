@@ -38,8 +38,6 @@ licenses([
 rust_library(
     name = "humantime",
     srcs = glob(["**/*.rs"]),
-    crate_features = [
-    ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2018",
@@ -48,6 +46,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=humantime",
         "manual",
     ],
     version = "2.0.1",

@@ -58,13 +58,13 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=windows-sys",
         "manual",
     ],
     version = "0.36.1",
     # buildifier: leave-alone
     deps = [
     ] + selects.with_or({
-        # x86_64-pc-windows-msvc
         (
             "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
         ): [

@@ -49,6 +49,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=tinyvec",
         "manual",
     ],
     version = "1.1.1",

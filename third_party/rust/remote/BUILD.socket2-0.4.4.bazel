@@ -47,13 +47,13 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=socket2",
         "manual",
     ],
     version = "0.4.4",
     # buildifier: leave-alone
     deps = [
     ] + selects.with_or({
-        # cfg(unix)
         (
             "@rules_rust//rust/platform:x86_64-apple-darwin",
             "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",
@@ -62,7 +62,6 @@ rust_library(
         ],
         "//conditions:default": [],
     }) + selects.with_or({
-        # cfg(windows)
         (
             "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
         ): [

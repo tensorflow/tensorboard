@@ -62,6 +62,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=futures-util",
         "manual",
     ],
     version = "0.3.8",

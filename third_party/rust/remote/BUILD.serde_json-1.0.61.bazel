@@ -48,6 +48,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=serde_json",
         "manual",
     ],
     version = "1.0.61",

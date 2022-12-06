@@ -36,8 +36,6 @@ licenses([
 rust_library(
     name = "rayon_core",
     srcs = glob(["**/*.rs"]),
-    crate_features = [
-    ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2018",
@@ -46,6 +44,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=rayon-core",
         "manual",
     ],
     version = "1.9.0",

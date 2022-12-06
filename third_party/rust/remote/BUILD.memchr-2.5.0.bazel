@@ -48,6 +48,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=memchr",
         "manual",
     ],
     version = "2.5.0",
