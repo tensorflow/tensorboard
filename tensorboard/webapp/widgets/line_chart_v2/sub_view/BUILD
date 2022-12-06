@@ -13,6 +13,11 @@ tf_sass_binary(
     src = "line_chart_interactive_view.scss",
 )
 
+tf_sass_binary(
+    name = "line_chart_unencapsulated_styles",
+    src = "line_chart_unencapsulated.scss",
+)
+
 tf_ng_module(
     name = "sub_view",
     srcs = [
@@ -22,9 +27,11 @@ tf_ng_module(
         "line_chart_grid_view.ts",
         "line_chart_interactive_utils.ts",
         "line_chart_interactive_view.ts",
+        "line_chart_unencapsulated.ts",
         "sub_view_module.ts",
     ],
     assets = [
+        ":line_chart_unencapsulated_styles",
         ":line_chart_axis_view_styles",
         ":line_chart_interactive_view_styles",
         "line_chart_axis_view.ng.html",
