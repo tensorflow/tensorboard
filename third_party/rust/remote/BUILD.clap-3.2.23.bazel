@@ -1,0 +1,227 @@
+"""
+@generated
+cargo-raze crate build file.
+
+DO NOT EDIT! Replaced on runs of cargo-raze
+"""
+
+# buildifier: disable=load
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
+# buildifier: disable=load
+load(
+    "@rules_rust//rust:defs.bzl",
+    "rust_binary",
+    "rust_library",
+    "rust_proc_macro",
+    "rust_test",
+)
+
+package(default_visibility = [
+    # Public for visibility by "@raze__crate__version//" targets.
+    #
+    # Prefer access through "//third_party/rust", which limits external
+    # visibility to explicit Cargo.toml dependencies.
+    "//visibility:public",
+])
+
+licenses([
+    "notice",  # MIT from expression "MIT OR Apache-2.0"
+])
+
+# Generated Targets
+
+rust_binary(
+    # Prefix bin name to disambiguate from (probable) collision with lib name
+    # N.B.: The exact form of this is subject to change.
+    name = "cargo_bin_stdio_fixture",
+    srcs = glob(["**/*.rs"]),
+    crate_features = [
+        "atty",
+        "cargo",
+        "clap_derive",
+        "color",
+        "default",
+        "derive",
+        "env",
+        "once_cell",
+        "std",
+        "strsim",
+        "suggestions",
+        "termcolor",
+    ],
+    crate_root = "src/bin/stdio-fixture.rs",
+    data = [],
+    edition = "2021",
+    proc_macro_deps = [
+        "@raze__clap_derive__3_2_18//:clap_derive",
+    ],
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-raze",
+        "crate-name=stdio-fixture",
+        "manual",
+    ],
+    version = "3.2.23",
+    # buildifier: leave-alone
+    deps = [
+        ":clap",
+        "@raze__atty__0_2_14//:atty",
+        "@raze__bitflags__1_3_2//:bitflags",
+        "@raze__clap_lex__0_2_4//:clap_lex",
+        "@raze__indexmap__1_9_1//:indexmap",
+        "@raze__once_cell__1_16_0//:once_cell",
+        "@raze__strsim__0_10_0//:strsim",
+        "@raze__termcolor__1_1_3//:termcolor",
+        "@raze__textwrap__0_16_0//:textwrap",
+    ],
+)
+
+# Unsupported target "01_quick" with type "example" omitted
+
+# Unsupported target "01_quick_derive" with type "example" omitted
+
+# Unsupported target "02_app_settings" with type "example" omitted
+
+# Unsupported target "02_app_settings_derive" with type "example" omitted
+
+# Unsupported target "02_apps" with type "example" omitted
+
+# Unsupported target "02_apps_derive" with type "example" omitted
+
+# Unsupported target "02_crate" with type "example" omitted
+
+# Unsupported target "02_crate_derive" with type "example" omitted
+
+# Unsupported target "03_01_flag_bool" with type "example" omitted
+
+# Unsupported target "03_01_flag_bool_derive" with type "example" omitted
+
+# Unsupported target "03_01_flag_count" with type "example" omitted
+
+# Unsupported target "03_01_flag_count_derive" with type "example" omitted
+
+# Unsupported target "03_02_option" with type "example" omitted
+
+# Unsupported target "03_02_option_derive" with type "example" omitted
+
+# Unsupported target "03_03_positional" with type "example" omitted
+
+# Unsupported target "03_03_positional_derive" with type "example" omitted
+
+# Unsupported target "03_04_subcommands" with type "example" omitted
+
+# Unsupported target "03_04_subcommands_alt_derive" with type "example" omitted
+
+# Unsupported target "03_04_subcommands_derive" with type "example" omitted
+
+# Unsupported target "03_05_default_values" with type "example" omitted
+
+# Unsupported target "03_05_default_values_derive" with type "example" omitted
+
+# Unsupported target "04_01_enum" with type "example" omitted
+
+# Unsupported target "04_01_enum_derive" with type "example" omitted
+
+# Unsupported target "04_01_possible" with type "example" omitted
+
+# Unsupported target "04_02_parse" with type "example" omitted
+
+# Unsupported target "04_02_parse_derive" with type "example" omitted
+
+# Unsupported target "04_02_validate" with type "example" omitted
+
+# Unsupported target "04_02_validate_derive" with type "example" omitted
+
+# Unsupported target "04_03_relations" with type "example" omitted
+
+# Unsupported target "04_03_relations_derive" with type "example" omitted
+
+# Unsupported target "04_04_custom" with type "example" omitted
+
+# Unsupported target "04_04_custom_derive" with type "example" omitted
+
+# Unsupported target "05_01_assert" with type "example" omitted
+
+# Unsupported target "05_01_assert_derive" with type "example" omitted
+
+# Unsupported target "busybox" with type "example" omitted
+
+# Unsupported target "cargo-example" with type "example" omitted
+
+# Unsupported target "cargo-example-derive" with type "example" omitted
+
+# Unsupported target "custom-bool" with type "example" omitted
+
+# Unsupported target "demo" with type "example" omitted
+
+# Unsupported target "escaped-positional" with type "example" omitted
+
+# Unsupported target "escaped-positional-derive" with type "example" omitted
+
+# Unsupported target "git" with type "example" omitted
+
+# Unsupported target "git-derive" with type "example" omitted
+
+# Unsupported target "hostname" with type "example" omitted
+
+# Unsupported target "interop_augment_args" with type "example" omitted
+
+# Unsupported target "interop_augment_subcommands" with type "example" omitted
+
+# Unsupported target "interop_flatten_hand_args" with type "example" omitted
+
+# Unsupported target "interop_hand_subcommand" with type "example" omitted
+
+# Unsupported target "pacman" with type "example" omitted
+
+# Unsupported target "repl" with type "example" omitted
+
+# Unsupported target "typed-derive" with type "example" omitted
+
+rust_library(
+    name = "clap",
+    srcs = glob(["**/*.rs"]),
+    crate_features = [
+        "atty",
+        "cargo",
+        "clap_derive",
+        "color",
+        "default",
+        "derive",
+        "env",
+        "once_cell",
+        "std",
+        "strsim",
+        "suggestions",
+        "termcolor",
+    ],
+    crate_root = "src/lib.rs",
+    data = [],
+    edition = "2021",
+    proc_macro_deps = [
+        "@raze__clap_derive__3_2_18//:clap_derive",
+    ],
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-raze",
+        "crate-name=clap",
+        "manual",
+    ],
+    version = "3.2.23",
+    # buildifier: leave-alone
+    deps = [
+        "@raze__atty__0_2_14//:atty",
+        "@raze__bitflags__1_3_2//:bitflags",
+        "@raze__clap_lex__0_2_4//:clap_lex",
+        "@raze__indexmap__1_9_1//:indexmap",
+        "@raze__once_cell__1_16_0//:once_cell",
+        "@raze__strsim__0_10_0//:strsim",
+        "@raze__termcolor__1_1_3//:termcolor",
+        "@raze__textwrap__0_16_0//:textwrap",
+    ],
+)

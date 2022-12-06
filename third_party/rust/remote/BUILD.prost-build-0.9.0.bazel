@@ -55,7 +55,7 @@ cargo_build_script(
     version = "0.9.0",
     visibility = ["//visibility:private"],
     deps = [
-        "@raze__which__4_0_2//:which",
+        "@raze__which__4_3_0//:which",
     ],
 )
 
@@ -77,16 +77,16 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         ":prost_build_build_script",
-        "@raze__bytes__1_0_1//:bytes",
-        "@raze__heck__0_3_1//:heck",
-        "@raze__itertools__0_10_3//:itertools",
+        "@raze__bytes__1_2_1//:bytes",
+        "@raze__heck__0_3_3//:heck",
+        "@raze__itertools__0_10_5//:itertools",
         "@raze__lazy_static__1_4_0//:lazy_static",
-        "@raze__log__0_4_11//:log",
-        "@raze__multimap__0_8_2//:multimap",
+        "@raze__log__0_4_17//:log",
+        "@raze__multimap__0_8_3//:multimap",
         "@raze__petgraph__0_6_2//:petgraph",
         "@raze__prost__0_9_0//:prost",
         "@raze__prost_types__0_9_0//:prost_types",
-        "@raze__regex__1_5_6//:regex",
-        "@raze__tempfile__3_1_0//:tempfile",
+        "@raze__regex__1_7_0//:regex",
+        "@raze__tempfile__3_3_0//:tempfile",
     ],
 )

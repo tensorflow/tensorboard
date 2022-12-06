@@ -72,8 +72,8 @@ rust_library(
     version = "0.6.2",
     # buildifier: leave-alone
     deps = [
-        "@raze__fixedbitset__0_4_1//:fixedbitset",
-        "@raze__indexmap__1_8_2//:indexmap",
+        "@raze__fixedbitset__0_4_2//:fixedbitset",
+        "@raze__indexmap__1_9_1//:indexmap",
     ],
 )
 

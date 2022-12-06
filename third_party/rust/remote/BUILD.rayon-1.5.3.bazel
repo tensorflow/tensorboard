@@ -1,0 +1,87 @@
+"""
+@generated
+cargo-raze crate build file.
+
+DO NOT EDIT! Replaced on runs of cargo-raze
+"""
+
+# buildifier: disable=load
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
+# buildifier: disable=load
+load(
+    "@rules_rust//rust:defs.bzl",
+    "rust_binary",
+    "rust_library",
+    "rust_proc_macro",
+    "rust_test",
+)
+
+package(default_visibility = [
+    # Public for visibility by "@raze__crate__version//" targets.
+    #
+    # Prefer access through "//third_party/rust", which limits external
+    # visibility to explicit Cargo.toml dependencies.
+    "//visibility:public",
+])
+
+licenses([
+    "notice",  # MIT from expression "MIT OR Apache-2.0"
+])
+
+# Generated Targets
+
+# Unsupported target "build-script-build" with type "custom-build" omitted
+
+# Unsupported target "cpu_monitor" with type "example" omitted
+
+rust_library(
+    name = "rayon",
+    srcs = glob(["**/*.rs"]),
+    crate_root = "src/lib.rs",
+    data = [],
+    edition = "2018",
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-raze",
+        "crate-name=rayon",
+        "manual",
+    ],
+    version = "1.5.3",
+    # buildifier: leave-alone
+    deps = [
+        "@raze__crossbeam_deque__0_8_2//:crossbeam_deque",
+        "@raze__either__1_8_0//:either",
+        "@raze__rayon_core__1_9_3//:rayon_core",
+    ],
+)
+
+# Unsupported target "chars" with type "test" omitted
+
+# Unsupported target "clones" with type "test" omitted
+
+# Unsupported target "collect" with type "test" omitted
+
+# Unsupported target "cross-pool" with type "test" omitted
+
+# Unsupported target "debug" with type "test" omitted
+
+# Unsupported target "intersperse" with type "test" omitted
+
+# Unsupported target "issue671" with type "test" omitted
+
+# Unsupported target "issue671-unzip" with type "test" omitted
+
+# Unsupported target "iter_panic" with type "test" omitted
+
+# Unsupported target "named-threads" with type "test" omitted
+
+# Unsupported target "octillion" with type "test" omitted
+
+# Unsupported target "producer_split_at" with type "test" omitted
+
+# Unsupported target "sort-panic-safe" with type "test" omitted
+
+# Unsupported target "str" with type "test" omitted

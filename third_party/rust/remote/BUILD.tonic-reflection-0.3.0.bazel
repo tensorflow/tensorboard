@@ -89,11 +89,11 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         ":tonic_reflection_build_script",
-        "@raze__bytes__1_0_1//:bytes",
+        "@raze__bytes__1_2_1//:bytes",
         "@raze__prost__0_9_0//:prost",
         "@raze__prost_types__0_9_0//:prost_types",
-        "@raze__tokio__1_19_2//:tokio",
-        "@raze__tokio_stream__0_1_2//:tokio_stream",
+        "@raze__tokio__1_21_2//:tokio",
+        "@raze__tokio_stream__0_1_11//:tokio_stream",
         "@raze__tonic__0_6_2//:tonic",
     ],
 )
