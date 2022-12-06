@@ -51,6 +51,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=crossbeam-utils",
         "manual",
     ],
     version = "0.8.8",

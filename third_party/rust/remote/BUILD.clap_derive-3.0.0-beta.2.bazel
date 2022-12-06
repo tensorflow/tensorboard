@@ -45,6 +45,7 @@ rust_proc_macro(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=clap_derive",
         "manual",
     ],
     version = "3.0.0-beta.2",

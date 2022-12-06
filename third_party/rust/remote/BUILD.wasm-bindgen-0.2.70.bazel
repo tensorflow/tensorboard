@@ -36,14 +36,6 @@ licenses([
 rust_library(
     name = "wasm_bindgen",
     srcs = glob(["**/*.rs"]),
-    crate_features = [
-        "default",
-        "serde",
-        "serde-serialize",
-        "serde_json",
-        "spans",
-        "std",
-    ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2018",
@@ -55,6 +47,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=wasm-bindgen",
         "manual",
     ],
     version = "0.2.70",

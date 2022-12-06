@@ -34,9 +34,6 @@ licenses([
 rust_library(
     name = "hermit_abi",
     srcs = glob(["**/*.rs"]),
-    crate_features = [
-        "default",
-    ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2018",
@@ -45,6 +42,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=hermit-abi",
         "manual",
     ],
     version = "0.1.17",

@@ -36,9 +36,6 @@ licenses([
 rust_library(
     name = "bumpalo",
     srcs = glob(["**/*.rs"]),
-    crate_features = [
-        "default",
-    ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2018",
@@ -47,6 +44,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=bumpalo",
         "manual",
     ],
     version = "3.6.0",

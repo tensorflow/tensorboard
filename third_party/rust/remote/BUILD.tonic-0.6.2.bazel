@@ -66,6 +66,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=tonic",
         "manual",
     ],
     version = "0.6.2",

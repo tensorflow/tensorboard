@@ -65,6 +65,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=rand",
         "manual",
     ],
     version = "0.7.3",
@@ -73,7 +74,6 @@ rust_library(
         "@raze__getrandom__0_1_15//:getrandom",
         "@raze__rand_core__0_5_1//:rand_core",
     ] + selects.with_or({
-        # cfg(not(target_os = "emscripten"))
         (
             "@rules_rust//rust/platform:x86_64-apple-darwin",
             "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
@@ -83,7 +83,6 @@ rust_library(
         ],
         "//conditions:default": [],
     }) + selects.with_or({
-        # cfg(unix)
         (
             "@rules_rust//rust/platform:x86_64-apple-darwin",
             "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",

@@ -34,8 +34,6 @@ licenses([
 rust_proc_macro(
     name = "futures_macro",
     srcs = glob(["**/*.rs"]),
-    crate_features = [
-    ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2018",
@@ -47,6 +45,7 @@ rust_proc_macro(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=futures-macro",
         "manual",
     ],
     version = "0.3.8",

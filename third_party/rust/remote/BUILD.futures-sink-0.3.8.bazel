@@ -47,6 +47,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=futures-sink",
         "manual",
     ],
     version = "0.3.8",

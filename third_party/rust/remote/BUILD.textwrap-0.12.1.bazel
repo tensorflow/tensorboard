@@ -42,8 +42,6 @@ licenses([
 rust_library(
     name = "textwrap",
     srcs = glob(["**/*.rs"]),
-    crate_features = [
-    ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2018",
@@ -52,6 +50,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=textwrap",
         "manual",
     ],
     version = "0.12.1",

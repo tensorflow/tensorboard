@@ -34,9 +34,6 @@ licenses([
 rust_library(
     name = "wasm_bindgen_macro_support",
     srcs = glob(["**/*.rs"]),
-    crate_features = [
-        "spans",
-    ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2018",
@@ -45,6 +42,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=wasm-bindgen-macro-support",
         "manual",
     ],
     version = "0.2.70",

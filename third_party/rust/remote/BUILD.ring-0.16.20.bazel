@@ -64,7 +64,6 @@ cargo_build_script(
     deps = [
         "@raze__cc__1_0_66//:cc",
     ] + selects.with_or({
-        # cfg(any(target_arch = "x86", target_arch = "x86_64", all(any(target_arch = "aarch64", target_arch = "arm"), any(target_os = "android", target_os = "fuchsia", target_os = "linux"))))
         (
             "@rules_rust//rust/platform:x86_64-apple-darwin",
             "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
@@ -73,14 +72,12 @@ cargo_build_script(
         ],
         "//conditions:default": [],
     }) + selects.with_or({
-        # cfg(any(target_os = "android", target_os = "linux"))
         (
             "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",
         ): [
         ],
         "//conditions:default": [],
     }) + selects.with_or({
-        # cfg(target_os = "windows")
         (
             "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
         ): [
@@ -108,6 +105,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=ring",
         "manual",
     ],
     version = "0.16.20",
@@ -116,7 +114,6 @@ rust_library(
         ":ring_build_script",
         "@raze__untrusted__0_7_1//:untrusted",
     ] + selects.with_or({
-        # cfg(any(target_arch = "x86", target_arch = "x86_64", all(any(target_arch = "aarch64", target_arch = "arm"), any(target_os = "android", target_os = "fuchsia", target_os = "linux"))))
         (
             "@rules_rust//rust/platform:x86_64-apple-darwin",
             "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
@@ -126,7 +123,6 @@ rust_library(
         ],
         "//conditions:default": [],
     }) + selects.with_or({
-        # cfg(any(target_os = "android", target_os = "linux"))
         (
             "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",
         ): [
@@ -135,7 +131,6 @@ rust_library(
         ],
         "//conditions:default": [],
     }) + selects.with_or({
-        # cfg(target_os = "windows")
         (
             "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
         ): [
