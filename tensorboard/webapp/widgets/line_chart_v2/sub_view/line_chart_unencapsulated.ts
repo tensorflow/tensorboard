@@ -17,10 +17,27 @@ import {
   Component,
   ViewEncapsulation,
 } from '@angular/core';
+
+/**
+ * Why this weird hack?
+ * The prospective fob area is absolutely positioned over the XAxis.
+ * This prevents hover events from reaching the XAxis.
+ * The .extent-edit-button should appear when the XAxis is hovered.
+ */
+const prospectiveFobAreaHack = `
+.line-chart:has(.horizontal-prospective-area:hover) {
+  .x-axis {
+    .extent-edit-button {
+      visibility: visible;
+    }
+  }
+}
+`;
+
 @Component({
   selector: 'line-chart-unencapsulated',
   template: '',
-  styleUrls: ['line_chart_unencapsulated.css'],
+  styles: [prospectiveFobAreaHack],
   changeDetection: ChangeDetectionStrategy.OnPush,
   // This prevents the CSS generated from being namespaced thus allowing CSS
   // to reach into the line_chart_component and card_fob_controller_component
