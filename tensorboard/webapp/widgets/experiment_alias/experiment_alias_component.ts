@@ -31,7 +31,9 @@ import {ExperimentAlias} from '../../experiments/types';
       (onValueChange)="aliasChanged.emit($event)"
     ></content-wrapping-input>
     <ng-template #noEditAliasName>
-      <span [class.illegal]="!isAliasNameLegal">{{ alias.aliasText }}</span>
+      <span [class.illegal]="!isAliasNameLegal" [title]="title">{{
+        alias.aliasText
+      }}</span>
     </ng-template>
   `,
   styleUrls: [`experiment_alias_component.css`],
@@ -42,6 +44,9 @@ export class ExperimentAliasComponent {
 
   @Input()
   aliasEditable!: boolean;
+
+  @Input()
+  title?: string;
 
   @Input()
   isAliasNameLegal: boolean = true;

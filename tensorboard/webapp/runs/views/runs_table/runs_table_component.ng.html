@@ -244,6 +244,7 @@ limitations under the License.
         <tb-experiment-alias
           *ngSwitchCase="RunsTableColumn.EXPERIMENT_NAME"
           [alias]="item.experimentAlias"
+          [title]="item.experimentName"
         ></tb-experiment-alias>
 
         <span *ngSwitchCase="RunsTableColumn.RUN_NAME" class="name"
