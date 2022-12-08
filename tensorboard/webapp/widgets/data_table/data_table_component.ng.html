@@ -20,7 +20,10 @@ limitations under the License.
           <!-- This header is intentionally left blank for the color column -->
         </th>
         <ng-container *ngFor="let header of headers;">
-          <th (click)="headerClicked(header)">
+          <th
+            *ngIf="smoothingEnabled || header !== ColumnHeaders.SMOOTHED"
+            (click)="headerClicked(header)"
+          >
             <div
               [draggable]="columnCustomizationEnabled"
               (dragstart)="dragStart(header)"
@@ -67,7 +70,10 @@ limitations under the License.
             <span [style.backgroundColor]="runData.COLOR"></span>
           </td>
           <ng-container *ngFor="let header of headers;">
-            <td [ngSwitch]="header">
+            <td
+              *ngIf="smoothingEnabled || header !== ColumnHeaders.SMOOTHED"
+              [ngSwitch]="header"
+            >
               <div *ngSwitchCase="ColumnHeaders.VALUE_CHANGE" class="cell">
                 <ng-container
                   *ngTemplateOutlet="arrow; context: {$implicit:runData.VALUE_CHANGE}"

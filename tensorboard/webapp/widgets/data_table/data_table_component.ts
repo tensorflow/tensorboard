@@ -55,6 +55,7 @@ export class DataTableComponent implements OnDestroy {
   @Input() data!: SelectedStepRunData[];
   @Input() sortingInfo!: SortingInfo;
   @Input() columnCustomizationEnabled!: boolean;
+  @Input() smoothingEnabled!: boolean;
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() orderColumns = new EventEmitter<ColumnHeaders[]>();

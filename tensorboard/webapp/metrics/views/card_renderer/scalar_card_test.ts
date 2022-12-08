@@ -2628,6 +2628,7 @@ describe('scalar card', () => {
           RUN: 'run1',
           STEP: 2,
           VALUE: 10,
+          SMOOTHED: 10,
         },
         {
           id: 'run2',
@@ -2636,6 +2637,7 @@ describe('scalar card', () => {
           RUN: 'run2',
           STEP: 2,
           VALUE: 10,
+          SMOOTHED: 10,
         },
       ]);
     }));
@@ -3011,7 +3013,7 @@ describe('scalar card', () => {
       expect(data[1].RUN).toEqual('200 test alias 2/Run2 name');
     }));
 
-    it('adds smoothed column header when smoothed is enabled', fakeAsync(() => {
+    it('edits smoothed value when smoothed is enabled', fakeAsync(() => {
       store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.8);
 
       const runToSeries = {
@@ -3051,39 +3053,6 @@ describe('scalar card', () => {
         scalarCardDataTable.componentInstance.getTimeSelectionTableData()[0]
           .SMOOTHED
       ).toBe(6.000000000000001);
-    }));
-
-    it('does not add smoothed column header when smoothed is disabled', fakeAsync(() => {
-      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-
-      const runToSeries = {
-        run1: [{wallTime: 1, value: 1, step: 10}],
-      };
-      provideMockCardRunToSeriesData(
-        selectSpy,
-        PluginType.SCALARS,
-        'card1',
-        null /* metadataOverride */,
-        runToSeries
-      );
-      store.overrideSelector(
-        selectors.getCurrentRouteRunSelection,
-        new Map([['run1', true]])
-      );
-      store.overrideSelector(getMetricsLinkedTimeSelection, {
-        start: {step: 20},
-        end: null,
-      });
-
-      const fixture = createComponent('card1');
-      fixture.detectChanges();
-      const scalarCardDataTable = fixture.debugElement.query(
-        By.directive(ScalarCardDataTable)
-      );
-
-      expect(scalarCardDataTable.componentInstance.dataHeaders).not.toContain(
-        ColumnHeaders.SMOOTHED
-      );
     }));
 
     it('orders data ascending', fakeAsync(() => {
