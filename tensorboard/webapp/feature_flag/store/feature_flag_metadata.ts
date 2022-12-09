@@ -22,25 +22,29 @@ export type FeatureFlagType =
   | null
   | undefined;
 
+export type BasicFeatureFlagMetadata<T> = {
+  defaultValue: T;
+  // Some feature flags cannot be overridden by query params in the URL. They
+  // should specify null here.
+  queryParamOverride: null;
+};
+
+export type AdvancedFeatureFlagMetadata<T> = {
+  defaultValue: T;
+  // Some feature flags can be overridden by query params in the URL. They
+  // should specify the name of the query param here.
+  queryParamOverride: string;
+  // Additionally they should specify a way to parse the query param string
+  // values into the feature flag value.
+  parseValue: (str: string) => T;
+  // Indicates that the feature flag and value should be sent to the server
+  // if the user has specified an override value.
+  sendToServerWhenOverridden?: boolean;
+};
+
 export type FeatureFlagMetadata<T> =
-  | {
-      defaultValue: T;
-      // Some feature flags cannot be overridden by query params in the URL. They
-      // should specify null here.
-      queryParamOverride: null;
-    }
-  | {
-      defaultValue: T;
-      // Some feature flags can be overridden by query params in the URL. They
-      // should specify the name of the query param here.
-      queryParamOverride: string;
-      // Additionally they should specify a way to parse the query param string
-      // values into the feature flag value.
-      parseValue: (str: string) => T;
-      // Indicates that the feature flag and value should be sent to the server
-      // if the user has specified an override value.
-      sendToServerWhenOverridden?: boolean;
-    };
+  | BasicFeatureFlagMetadata<T>
+  | AdvancedFeatureFlagMetadata<T>;
 
 export type FeatureFlagMetadataMapType<T> = {
   [FlagName in keyof T]: FeatureFlagMetadata<T[FlagName]>;

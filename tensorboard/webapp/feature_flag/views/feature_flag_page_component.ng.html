@@ -21,11 +21,25 @@ limitations under the License.
     By enabling these features, you could put the application in an unusable
     state or expose yourself to untested features or potential bugs.
   </div>
+  <ng-container *ngIf="hasFlagsSentToServer">
+    <div class="message">
+      There is a difference between Default - (Enabled/Disabled) and
+      (Enabled/Disabled)
+    </div>
+    <div class="message">
+      Only flags with non default values are sent to the backend.
+    </div>
+  </ng-container>
   <table class="feature-flag-table">
     <ng-container *ngFor="let flagStatus of featureFlagStatuses;">
       <tr>
         <td>
-          <div>{{flagStatus.flag}}</div>
+          <div>
+            {{flagStatus.flag}}
+            <sup *ngIf="flagStatus.sendToServerWhenOverridden" class="note-1"
+              >1</sup
+            >
+          </div>
         </td>
         <ng-container
           *ngIf="isEditable(flagStatus); then selectBlock else unsupportedBlock"
@@ -47,6 +61,9 @@ limitations under the License.
         </ng-template>
       </tr>
     </ng-container>
-    <button mat-button (click)="allFlagsReset.emit()">Reset All</button>
   </table>
+  <button mat-button (click)="allFlagsReset.emit()">Reset All</button>
+  <div *ngIf="hasFlagsSentToServer" class="note-1">
+    1. Sent to server when overridden
+  </div>
 </div>

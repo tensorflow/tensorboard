@@ -25,6 +25,8 @@ import {FeatureFlagStatus, FeatureFlagStatusEvent} from './types';
 export class FeatureFlagPageComponent {
   @Input() featureFlagStatuses!: FeatureFlagStatus<keyof FeatureFlags>[];
 
+  @Input() hasFlagsSentToServer: boolean = false;
+
   @Output() flagChanged = new EventEmitter<FeatureFlagStatusEvent>();
 
   @Output() allFlagsReset = new EventEmitter();
