@@ -33,6 +33,7 @@ import {DataTableComponent} from './data_table_component';
       [headers]="headers"
       [data]="data"
       [sortingInfo]="sortingInfo"
+      [smoothingEnabled]="smoothingEnabled"
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
     ></tb-data-table>
@@ -45,6 +46,7 @@ class TestableComponent {
   @Input() headers!: ColumnHeaders[];
   @Input() data!: SelectedStepRunData[];
   @Input() sortingInfo!: SortingInfo;
+  @Input() smoothingEnabled!: boolean;
 
   @Input() sortDataBy!: (sortingInfo: SortingInfo) => void;
   @Input() orderColumns!: (newOrder: ColumnHeaders[]) => void;
@@ -64,6 +66,7 @@ describe('data table', () => {
     headers?: ColumnHeaders[];
     data?: SelectedStepRunData[];
     sortingInfo?: SortingInfo;
+    smoothingEnabled?: boolean;
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
 
@@ -73,6 +76,9 @@ describe('data table', () => {
       header: ColumnHeaders.RUN,
       order: SortingOrder.ASCENDING,
     };
+
+    fixture.componentInstance.smoothingEnabled =
+      input.smoothingEnabled === undefined ? true : input.smoothingEnabled;
 
     sortDataBySpy = jasmine.createSpy();
     fixture.componentInstance.sortDataBy = sortDataBySpy;
@@ -105,6 +111,7 @@ describe('data table', () => {
         ColumnHeaders.MIN_VALUE,
         ColumnHeaders.MAX_VALUE,
         ColumnHeaders.PERCENTAGE_CHANGE,
+        ColumnHeaders.SMOOTHED,
       ],
     });
     fixture.detectChanges();
@@ -134,6 +141,7 @@ describe('data table', () => {
         .queryAll(By.css('mat-icon'))[0]
         .nativeElement.getAttribute('svgIcon')
     ).toBe('change_history_24px');
+    expect(headerElements[13].nativeElement.innerText).toBe('Smoothed');
   });
 
   it('displays data in order', () => {
@@ -151,6 +159,7 @@ describe('data table', () => {
         ColumnHeaders.MIN_VALUE,
         ColumnHeaders.MAX_VALUE,
         ColumnHeaders.PERCENTAGE_CHANGE,
+        ColumnHeaders.SMOOTHED,
       ],
       data: [
         {
@@ -167,6 +176,7 @@ describe('data table', () => {
           MIN_VALUE: 1,
           MAX_VALUE: 500,
           PERCENTAGE_CHANGE: 0.3,
+          SMOOTHED: 2,
         },
       ],
     });
@@ -199,6 +209,7 @@ describe('data table', () => {
         .queryAll(By.css('mat-icon'))[0]
         .nativeElement.getAttribute('svgIcon')
     ).toBe('arrow_upward_24px');
+    expect(dataElements[13].nativeElement.innerText).toBe('2');
   });
 
   it('displays nothing when no data is available', () => {
@@ -399,5 +410,42 @@ describe('data table', () => {
       ColumnHeaders.STEP,
       ColumnHeaders.RUN,
     ]);
+  });
+
+  it('does not display Smoothed column when smoothingEnabled is false', () => {
+    const fixture = createComponent({
+      headers: [
+        ColumnHeaders.VALUE,
+        ColumnHeaders.RUN,
+        ColumnHeaders.SMOOTHED,
+        ColumnHeaders.STEP,
+      ],
+      data: [
+        {
+          id: 'someid',
+          RUN: 'run name',
+          VALUE: 3,
+          STEP: 1,
+          SMOOTHED: 2,
+        },
+      ],
+      smoothingEnabled: false,
+    });
+    fixture.detectChanges();
+    const headerElements = fixture.debugElement.queryAll(By.css('th'));
+    const dataElements = fixture.debugElement.queryAll(By.css('td'));
+
+    // The first header should always be blank as it is the run color column.
+    expect(headerElements[0].nativeElement.innerText).toBe('');
+    expect(headerElements[1].nativeElement.innerText).toBe('Value');
+    expect(headerElements[2].nativeElement.innerText).toBe('Run');
+    expect(headerElements[3].nativeElement.innerText).toBe('Step');
+    expect(headerElements.length).toBe(4);
+
+    expect(dataElements[0].nativeElement.innerText).toBe('');
+    expect(dataElements[1].nativeElement.innerText).toBe('3');
+    expect(dataElements[2].nativeElement.innerText).toBe('run name');
+    expect(dataElements[3].nativeElement.innerText).toBe('1');
+    expect(dataElements.length).toBe(4);
   });
 });

@@ -492,34 +492,17 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     );
 
     this.columnHeaders$ = combineLatest([
-      this.smoothingEnabled$,
       this.stepOrLinkedTimeSelection$,
       this.store.select(getSingleSelectionHeaders),
       this.store.select(getRangeSelectionHeaders),
     ]).pipe(
-      map(
-        ([
-          smoothingEnabled,
-          timeSelection,
-          singleSelectionHeaders,
-          rangeSelectionHeaders,
-        ]) => {
-          if (timeSelection === null || timeSelection.end === null) {
-            if (!smoothingEnabled) {
-              // Return single selection headers without smoothed header.
-              const indexOfSmoothed = singleSelectionHeaders.indexOf(
-                ColumnHeaders.SMOOTHED
-              );
-              return singleSelectionHeaders
-                .slice(0, indexOfSmoothed)
-                .concat(singleSelectionHeaders.slice(indexOfSmoothed + 1));
-            }
-            return singleSelectionHeaders;
-          } else {
-            return rangeSelectionHeaders;
-          }
+      map(([timeSelection, singleSelectionHeaders, rangeSelectionHeaders]) => {
+        if (timeSelection === null || timeSelection.end === null) {
+          return singleSelectionHeaders;
+        } else {
+          return rangeSelectionHeaders;
         }
-      )
+      })
     );
 
     this.chartMetadataMap$ = partitionedSeries$.pipe(
