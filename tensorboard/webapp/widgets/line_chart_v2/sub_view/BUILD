@@ -22,7 +22,6 @@ tf_ng_module(
         "line_chart_grid_view.ts",
         "line_chart_interactive_utils.ts",
         "line_chart_interactive_view.ts",
-        "line_chart_unencapsulated.ts",
         "sub_view_module.ts",
     ],
     assets = [
