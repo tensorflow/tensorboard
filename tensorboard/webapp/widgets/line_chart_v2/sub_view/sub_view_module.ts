@@ -22,7 +22,6 @@ import {MatMenuModule} from '@angular/material/menu';
 import {LineChartAxisComponent} from './line_chart_axis_view';
 import {LineChartGridView} from './line_chart_grid_view';
 import {LineChartInteractiveViewComponent} from './line_chart_interactive_view';
-import {LineChartUnencapsulated} from './line_chart_unencapsulated';
 
 /**
  * SubViewModule provides UI elements for a traditional line chart; axes, grid, and
@@ -34,13 +33,11 @@ import {LineChartUnencapsulated} from './line_chart_unencapsulated';
     LineChartAxisComponent,
     LineChartInteractiveViewComponent,
     LineChartGridView,
-    LineChartUnencapsulated,
   ],
   exports: [
     LineChartAxisComponent,
     LineChartInteractiveViewComponent,
     LineChartGridView,
-    LineChartUnencapsulated,
   ],
   imports: [
     CommonModule,

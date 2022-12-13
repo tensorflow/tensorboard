@@ -18,6 +18,14 @@ limitations under the License.
   contain: strict;
   display: inline-block;
 
+  ::ng-deep .line-chart:has(.horizontal-prospective-area:hover) {
+    .x-axis {
+      .extent-edit-button {
+        visibility: visible;
+      }
+    }
+  }
+
   .custom-vis {
     // custom-vis shows on top of interactive-view but we still need to give
     // mouse interactions to the interactive-view. Currently, the contract is
