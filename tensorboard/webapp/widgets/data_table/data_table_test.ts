@@ -18,7 +18,8 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatIconModule} from '@angular/material/icon';
 import {By} from '@angular/platform-browser';
 import {
-  ColumnHeaders,
+  ColumnHeader,
+  ColumnHeaderType,
   SelectedStepRunData,
   SortingInfo,
   SortingOrder,
@@ -43,13 +44,13 @@ class TestableComponent {
   @ViewChild('DataTable')
   dataTable!: DataTableComponent;
 
-  @Input() headers!: ColumnHeaders[];
+  @Input() headers!: ColumnHeader[];
   @Input() data!: SelectedStepRunData[];
   @Input() sortingInfo!: SortingInfo;
   @Input() smoothingEnabled!: boolean;
 
   @Input() sortDataBy!: (sortingInfo: SortingInfo) => void;
-  @Input() orderColumns!: (newOrder: ColumnHeaders[]) => void;
+  @Input() orderColumns!: (newOrder: ColumnHeaderType[]) => void;
 }
 
 describe('data table', () => {
@@ -63,7 +64,7 @@ describe('data table', () => {
   });
 
   function createComponent(input: {
-    headers?: ColumnHeaders[];
+    headers?: ColumnHeader[];
     data?: SelectedStepRunData[];
     sortingInfo?: SortingInfo;
     smoothingEnabled?: boolean;
@@ -73,7 +74,7 @@ describe('data table', () => {
     fixture.componentInstance.headers = input.headers || [];
     fixture.componentInstance.data = input.data || [];
     fixture.componentInstance.sortingInfo = input.sortingInfo || {
-      header: ColumnHeaders.RUN,
+      header: ColumnHeaderType.RUN,
       order: SortingOrder.ASCENDING,
     };
 
@@ -99,19 +100,19 @@ describe('data table', () => {
   it('displays given headers in order', () => {
     const fixture = createComponent({
       headers: [
-        ColumnHeaders.VALUE,
-        ColumnHeaders.RUN,
-        ColumnHeaders.STEP,
-        ColumnHeaders.RELATIVE_TIME,
-        ColumnHeaders.VALUE_CHANGE,
-        ColumnHeaders.START_STEP,
-        ColumnHeaders.END_STEP,
-        ColumnHeaders.START_VALUE,
-        ColumnHeaders.END_VALUE,
-        ColumnHeaders.MIN_VALUE,
-        ColumnHeaders.MAX_VALUE,
-        ColumnHeaders.PERCENTAGE_CHANGE,
-        ColumnHeaders.SMOOTHED,
+        {type: ColumnHeaderType.VALUE, enabled: true},
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.STEP, enabled: true},
+        {type: ColumnHeaderType.RELATIVE_TIME, enabled: true},
+        {type: ColumnHeaderType.VALUE_CHANGE, enabled: true},
+        {type: ColumnHeaderType.START_STEP, enabled: true},
+        {type: ColumnHeaderType.END_STEP, enabled: true},
+        {type: ColumnHeaderType.START_VALUE, enabled: true},
+        {type: ColumnHeaderType.END_VALUE, enabled: true},
+        {type: ColumnHeaderType.MIN_VALUE, enabled: true},
+        {type: ColumnHeaderType.MAX_VALUE, enabled: true},
+        {type: ColumnHeaderType.PERCENTAGE_CHANGE, enabled: true},
+        {type: ColumnHeaderType.SMOOTHED, enabled: true},
       ],
     });
     fixture.detectChanges();
@@ -147,19 +148,19 @@ describe('data table', () => {
   it('displays data in order', () => {
     const fixture = createComponent({
       headers: [
-        ColumnHeaders.VALUE,
-        ColumnHeaders.RUN,
-        ColumnHeaders.STEP,
-        ColumnHeaders.RELATIVE_TIME,
-        ColumnHeaders.VALUE_CHANGE,
-        ColumnHeaders.START_STEP,
-        ColumnHeaders.END_STEP,
-        ColumnHeaders.START_VALUE,
-        ColumnHeaders.END_VALUE,
-        ColumnHeaders.MIN_VALUE,
-        ColumnHeaders.MAX_VALUE,
-        ColumnHeaders.PERCENTAGE_CHANGE,
-        ColumnHeaders.SMOOTHED,
+        {type: ColumnHeaderType.VALUE, enabled: true},
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.STEP, enabled: true},
+        {type: ColumnHeaderType.RELATIVE_TIME, enabled: true},
+        {type: ColumnHeaderType.VALUE_CHANGE, enabled: true},
+        {type: ColumnHeaderType.START_STEP, enabled: true},
+        {type: ColumnHeaderType.END_STEP, enabled: true},
+        {type: ColumnHeaderType.START_VALUE, enabled: true},
+        {type: ColumnHeaderType.END_VALUE, enabled: true},
+        {type: ColumnHeaderType.MIN_VALUE, enabled: true},
+        {type: ColumnHeaderType.MAX_VALUE, enabled: true},
+        {type: ColumnHeaderType.PERCENTAGE_CHANGE, enabled: true},
+        {type: ColumnHeaderType.SMOOTHED, enabled: true},
       ],
       data: [
         {
@@ -212,13 +213,44 @@ describe('data table', () => {
     expect(dataElements[13].nativeElement.innerText).toBe('2');
   });
 
+  it('does not displays headers or data when header is disabled', () => {
+    const fixture = createComponent({
+      headers: [
+        {type: ColumnHeaderType.VALUE, enabled: true},
+        {type: ColumnHeaderType.RUN, enabled: false},
+        {type: ColumnHeaderType.STEP, enabled: true},
+      ],
+      data: [
+        {
+          id: 'someid',
+          RUN: 'run name',
+          VALUE: 3,
+          STEP: 1,
+        },
+      ],
+    });
+    fixture.detectChanges();
+    const headerElements = fixture.debugElement.queryAll(By.css('th'));
+    const dataElements = fixture.debugElement.queryAll(By.css('td'));
+
+    // The first header should always be blank as it is the run color column.
+    expect(headerElements[0].nativeElement.innerText).toBe('');
+    expect(headerElements[1].nativeElement.innerText).toBe('Value');
+    expect(headerElements[2].nativeElement.innerText).toBe('Step');
+
+    // The first column should always be blank as it is the run color column.
+    expect(dataElements[0].nativeElement.innerText).toBe('');
+    expect(dataElements[1].nativeElement.innerText).toBe('3');
+    expect(dataElements[2].nativeElement.innerText).toBe('1');
+  });
+
   it('displays nothing when no data is available', () => {
     const fixture = createComponent({
       headers: [
-        ColumnHeaders.VALUE,
-        ColumnHeaders.RUN,
-        ColumnHeaders.STEP,
-        ColumnHeaders.RELATIVE_TIME,
+        {type: ColumnHeaderType.VALUE, enabled: true},
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.STEP, enabled: true},
+        {type: ColumnHeaderType.RELATIVE_TIME, enabled: true},
       ],
       data: [{id: 'someid'}],
     });
@@ -236,10 +268,10 @@ describe('data table', () => {
   it('emits sortDataBy event when header clicked', () => {
     const fixture = createComponent({
       headers: [
-        ColumnHeaders.VALUE,
-        ColumnHeaders.RUN,
-        ColumnHeaders.STEP,
-        ColumnHeaders.RELATIVE_TIME,
+        {type: ColumnHeaderType.VALUE, enabled: true},
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.STEP, enabled: true},
+        {type: ColumnHeaderType.RELATIVE_TIME, enabled: true},
       ],
     });
     fixture.detectChanges();
@@ -247,7 +279,7 @@ describe('data table', () => {
 
     headerElements[3].triggerEventHandler('click', {});
     expect(sortDataBySpy).toHaveBeenCalledOnceWith({
-      header: ColumnHeaders.STEP,
+      header: ColumnHeaderType.STEP,
       order: SortingOrder.ASCENDING,
     });
   });
@@ -255,27 +287,37 @@ describe('data table', () => {
   it('emits sortDataBy event with DESCENDING when header that is currently sorted is clicked', () => {
     const fixture = createComponent({
       headers: [
-        ColumnHeaders.VALUE,
-        ColumnHeaders.RUN,
-        ColumnHeaders.STEP,
-        ColumnHeaders.RELATIVE_TIME,
+        {type: ColumnHeaderType.VALUE, enabled: true},
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.STEP, enabled: true},
+        {type: ColumnHeaderType.RELATIVE_TIME, enabled: true},
       ],
-      sortingInfo: {header: ColumnHeaders.STEP, order: SortingOrder.ASCENDING},
+      sortingInfo: {
+        header: ColumnHeaderType.STEP,
+        order: SortingOrder.ASCENDING,
+      },
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(By.css('th'));
 
     headerElements[3].triggerEventHandler('click', {});
     expect(sortDataBySpy).toHaveBeenCalledOnceWith({
-      header: ColumnHeaders.STEP,
+      header: ColumnHeaderType.STEP,
       order: SortingOrder.DESCENDING,
     });
   });
 
   it('keeps sorting arrow invisible unless sorting on that header', () => {
     const fixture = createComponent({
-      headers: [ColumnHeaders.VALUE, ColumnHeaders.RUN, ColumnHeaders.STEP],
-      sortingInfo: {header: ColumnHeaders.VALUE, order: SortingOrder.ASCENDING},
+      headers: [
+        {type: ColumnHeaderType.VALUE, enabled: true},
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.STEP, enabled: true},
+      ],
+      sortingInfo: {
+        header: ColumnHeaderType.VALUE,
+        order: SortingOrder.ASCENDING,
+      },
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(By.css('th'));
@@ -314,8 +356,15 @@ describe('data table', () => {
 
   it('shows downward arrow when order is DESCENDING', () => {
     const fixture = createComponent({
-      headers: [ColumnHeaders.VALUE, ColumnHeaders.RUN, ColumnHeaders.STEP],
-      sortingInfo: {header: ColumnHeaders.STEP, order: SortingOrder.DESCENDING},
+      headers: [
+        {type: ColumnHeaderType.VALUE, enabled: true},
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.STEP, enabled: true},
+      ],
+      sortingInfo: {
+        header: ColumnHeaderType.STEP,
+        order: SortingOrder.DESCENDING,
+      },
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(By.css('th'));
@@ -354,8 +403,15 @@ describe('data table', () => {
 
   it('emits orderColumns with new order when dragged left', () => {
     const fixture = createComponent({
-      headers: [ColumnHeaders.VALUE, ColumnHeaders.RUN, ColumnHeaders.STEP],
-      sortingInfo: {header: ColumnHeaders.STEP, order: SortingOrder.DESCENDING},
+      headers: [
+        {type: ColumnHeaderType.VALUE, enabled: true},
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.STEP, enabled: true},
+      ],
+      sortingInfo: {
+        header: ColumnHeaderType.STEP,
+        order: SortingOrder.DESCENDING,
+      },
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(By.css('th'));
@@ -376,16 +432,23 @@ describe('data table', () => {
     headerElements[2].query(By.css('.cell')).triggerEventHandler('dragend');
 
     expect(orderColumnsSpy).toHaveBeenCalledOnceWith([
-      ColumnHeaders.RUN,
-      ColumnHeaders.VALUE,
-      ColumnHeaders.STEP,
+      {type: ColumnHeaderType.RUN, enabled: true},
+      {type: ColumnHeaderType.VALUE, enabled: true},
+      {type: ColumnHeaderType.STEP, enabled: true},
     ]);
   });
 
   it('emits orderColumns with new order when dragged right', () => {
     const fixture = createComponent({
-      headers: [ColumnHeaders.VALUE, ColumnHeaders.RUN, ColumnHeaders.STEP],
-      sortingInfo: {header: ColumnHeaders.STEP, order: SortingOrder.DESCENDING},
+      headers: [
+        {type: ColumnHeaderType.VALUE, enabled: true},
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.STEP, enabled: true},
+      ],
+      sortingInfo: {
+        header: ColumnHeaderType.STEP,
+        order: SortingOrder.DESCENDING,
+      },
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(By.css('th'));
@@ -406,19 +469,19 @@ describe('data table', () => {
     headerElements[2].query(By.css('.cell')).triggerEventHandler('dragend');
 
     expect(orderColumnsSpy).toHaveBeenCalledOnceWith([
-      ColumnHeaders.VALUE,
-      ColumnHeaders.STEP,
-      ColumnHeaders.RUN,
+      {type: ColumnHeaderType.VALUE, enabled: true},
+      {type: ColumnHeaderType.STEP, enabled: true},
+      {type: ColumnHeaderType.RUN, enabled: true},
     ]);
   });
 
   it('does not display Smoothed column when smoothingEnabled is false', () => {
     const fixture = createComponent({
       headers: [
-        ColumnHeaders.VALUE,
-        ColumnHeaders.RUN,
-        ColumnHeaders.SMOOTHED,
-        ColumnHeaders.STEP,
+        {type: ColumnHeaderType.VALUE, enabled: true},
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.SMOOTHED, enabled: true},
+        {type: ColumnHeaderType.STEP, enabled: true},
       ],
       data: [
         {

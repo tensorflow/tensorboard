@@ -22,7 +22,8 @@ import {
 import {TimeSelection} from '../../../widgets/card_fob/card_fob_types';
 import {findClosestIndex} from '../../../widgets/line_chart_v2/sub_view/line_chart_interactive_utils';
 import {
-  ColumnHeaders,
+  ColumnHeader,
+  ColumnHeaderType,
   ScalarCardDataSeries,
   ScalarCardPoint,
   ScalarCardSeriesMetadataMap,
@@ -35,7 +36,7 @@ import {
   selector: 'scalar-card-data-table',
   template: `
     <tb-data-table
-      [headers]="dataHeaders"
+      [headers]="columnHeaders"
       [data]="getTimeSelectionTableData()"
       [sortingInfo]="sortingInfo"
       [columnCustomizationEnabled]="columnCustomizationEnabled"
@@ -50,13 +51,13 @@ export class ScalarCardDataTable {
   @Input() chartMetadataMap!: ScalarCardSeriesMetadataMap;
   @Input() dataSeries!: ScalarCardDataSeries[];
   @Input() stepOrLinkedTimeSelection!: TimeSelection;
-  @Input() dataHeaders!: ColumnHeaders[];
+  @Input() columnHeaders!: ColumnHeader[];
   @Input() sortingInfo!: SortingInfo;
   @Input() columnCustomizationEnabled!: boolean;
   @Input() smoothingEnabled!: boolean;
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
-  @Output() orderColumns = new EventEmitter<ColumnHeaders[]>();
+  @Output() orderColumns = new EventEmitter<ColumnHeader[]>();
 
   getMinValueInRange(
     points: ScalarCardPoint[],
@@ -120,54 +121,54 @@ export class ScalarCardDataTable {
           id: datum.id,
         };
         selectedStepData.COLOR = metadata.color;
-        for (const header of this.dataHeaders) {
-          switch (header) {
-            case ColumnHeaders.RUN:
+        for (const header of this.columnHeaders) {
+          switch (header.type) {
+            case ColumnHeaderType.RUN:
               let alias = '';
               if (metadata.alias) {
                 alias = `${metadata.alias.aliasNumber} ${metadata.alias.aliasText}/`;
               }
               selectedStepData.RUN = `${alias}${metadata.displayName}`;
               continue;
-            case ColumnHeaders.STEP:
+            case ColumnHeaderType.STEP:
               selectedStepData.STEP = closestStartPoint.step;
               continue;
-            case ColumnHeaders.VALUE:
+            case ColumnHeaderType.VALUE:
               selectedStepData.VALUE = closestStartPoint.value;
               continue;
-            case ColumnHeaders.RELATIVE_TIME:
+            case ColumnHeaderType.RELATIVE_TIME:
               selectedStepData.RELATIVE_TIME =
                 closestStartPoint.relativeTimeInMs;
               continue;
-            case ColumnHeaders.SMOOTHED:
+            case ColumnHeaderType.SMOOTHED:
               selectedStepData.SMOOTHED = closestStartPoint.y;
               continue;
-            case ColumnHeaders.VALUE_CHANGE:
+            case ColumnHeaderType.VALUE_CHANGE:
               if (!closestEndPoint) {
                 continue;
               }
               selectedStepData.VALUE_CHANGE =
                 closestEndPoint.y - closestStartPoint.y;
               continue;
-            case ColumnHeaders.START_STEP:
+            case ColumnHeaderType.START_STEP:
               selectedStepData.START_STEP = closestStartPoint.step;
               continue;
-            case ColumnHeaders.END_STEP:
+            case ColumnHeaderType.END_STEP:
               if (!closestEndPoint) {
                 continue;
               }
               selectedStepData.END_STEP = closestEndPoint.step;
               continue;
-            case ColumnHeaders.START_VALUE:
+            case ColumnHeaderType.START_VALUE:
               selectedStepData.START_VALUE = closestStartPoint.y;
               continue;
-            case ColumnHeaders.END_VALUE:
+            case ColumnHeaderType.END_VALUE:
               if (!closestEndPoint) {
                 continue;
               }
               selectedStepData.END_VALUE = closestEndPoint.y;
               continue;
-            case ColumnHeaders.MIN_VALUE:
+            case ColumnHeaderType.MIN_VALUE:
               if (!closestEndPointIndex) {
                 continue;
               }
@@ -178,7 +179,7 @@ export class ScalarCardDataTable {
                 true
               );
               continue;
-            case ColumnHeaders.MAX_VALUE:
+            case ColumnHeaderType.MAX_VALUE:
               if (!closestEndPointIndex) {
                 continue;
               }
@@ -189,7 +190,7 @@ export class ScalarCardDataTable {
                 true
               );
               continue;
-            case ColumnHeaders.PERCENTAGE_CHANGE:
+            case ColumnHeaderType.PERCENTAGE_CHANGE:
               if (!closestEndPoint) {
                 continue;
               }
@@ -219,11 +220,14 @@ export class ScalarCardDataTable {
     return dataTableData;
   }
 
-  private getSortableValue(point: SelectedStepRunData, header: ColumnHeaders) {
+  private getSortableValue(
+    point: SelectedStepRunData,
+    header: ColumnHeaderType
+  ) {
     switch (header) {
       // The value shown in the "RUN" column is a string concatenation of Alias Id + Alias + Run Name
       // but we would actually prefer to sort by just the run name.
-      case ColumnHeaders.RUN:
+      case ColumnHeaderType.RUN:
         return makeValueSortable(this.chartMetadataMap[point.id].displayName);
       default:
         return makeValueSortable(point[header]);

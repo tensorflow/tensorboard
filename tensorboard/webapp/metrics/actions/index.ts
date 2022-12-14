@@ -31,7 +31,7 @@ import {
   XAxisType,
 } from '../internal_types';
 import {
-  ColumnHeaders,
+  ColumnHeader,
   SortingInfo,
 } from '../views/card_renderer/scalar_card_types';
 
@@ -203,7 +203,7 @@ export const sortingDataTable = createAction(
 export const dataTableColumnDrag = createAction(
   '[Metrics] Data table column dragged',
   props<{
-    newOrder: ColumnHeaders[];
+    newOrder: ColumnHeader[];
   }>()
 );
 

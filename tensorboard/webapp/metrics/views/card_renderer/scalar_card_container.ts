@@ -96,7 +96,8 @@ import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {DataDownloadDialogContainer} from './data_download_dialog_container';
 import {
-  ColumnHeaders,
+  ColumnHeader,
+  ColumnHeaderType,
   MinMaxStep,
   PartialSeries,
   PartitionedSeries,
@@ -168,7 +169,7 @@ function areSeriesEqual(
       [forceSvg]="forceSvg$ | async"
       [columnCustomizationEnabled]="columnCustomizationEnabled$ | async"
       [minMaxStep]="minMaxSteps$ | async"
-      [dataHeaders]="columnHeaders$ | async"
+      [columnHeaders]="columnHeaders$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
       observeIntersection
@@ -212,7 +213,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   dataSeries$?: Observable<ScalarCardDataSeries[]>;
   chartMetadataMap$?: Observable<ScalarCardSeriesMetadataMap>;
   linkedTimeSelection$?: Observable<TimeSelectionView | null>;
-  columnHeaders$?: Observable<ColumnHeaders[]>;
+  columnHeaders$?: Observable<ColumnHeader[]>;
   stepOrLinkedTimeSelection$?: Observable<TimeSelection | null>;
 
   readonly isProspectiveFobFeatureEnabled$: Observable<boolean> =
@@ -719,7 +720,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.lineChartZoom$.next(minMaxStepInViewPort);
   }
 
-  reorderColumnHeaders(headers: ColumnHeaders[]) {
+  reorderColumnHeaders(headers: ColumnHeader[]) {
     this.store.dispatch(dataTableColumnDrag({newOrder: headers}));
   }
 }
