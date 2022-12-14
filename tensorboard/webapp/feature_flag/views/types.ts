@@ -24,6 +24,7 @@ export type FeatureFlagStatus<K extends keyof FeatureFlags> = {
   flag: K;
   status: FeatureFlagOverrideStatus;
   defaultValue: FeatureFlags[K];
+  sendToServerWhenOverridden?: boolean;
 };
 
 export type FeatureFlagStatusEvent = {

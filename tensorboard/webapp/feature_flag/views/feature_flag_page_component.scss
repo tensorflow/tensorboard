@@ -22,9 +22,12 @@ limitations under the License.
   margin-bottom: 16px;
 }
 
-.scolling-page {
-  height: 90vh;
-  overflow-y: scroll;
+.note-1 {
+  color: mat.get-color-from-palette($tb-accent);
+}
+
+.scrolling-page {
+  max-height: 90vh;
 }
 
 .feature-flag-table {
