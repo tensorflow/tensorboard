@@ -16,7 +16,6 @@ import {Component} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {map, withLatestFrom} from 'rxjs/operators';
-
 import {State} from '../../app_state';
 import {
   allFeatureFlagOverridesReset,
