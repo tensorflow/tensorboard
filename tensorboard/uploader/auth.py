@@ -175,12 +175,14 @@ class CredentialsStore:
 
 
 def authenticate_user(
-    force_console=False) -> google.oauth2.credentials.Credentials:
+    force_console=False,
+) -> google.oauth2.credentials.Credentials:
     """Makes the user authenticate to retrieve auth credentials."""
     flow = _TbUploaderAuthFlow(
         _BROWSER_OAUTH_CLIENT_CONFIG,
         _CONSOLE_OAUTH_CLIENT_CONFIG,
-        OPENID_CONNECT_SCOPES)
+        OPENID_CONNECT_SCOPES,
+    )
     return flow.run(force_console)
 
 
@@ -203,11 +205,14 @@ class _TbUploaderAuthFlow(auth_flows.Flow):
         self,
         installed_app_client_config,
         limited_input_device_client_config,
-        scopes):
-        self._installed_app_client_config = (
-            json.loads(installed_app_client_config))
-        self._limited_input_device_client_config = (
-            json.loads(limited_input_device_client_config))
+        scopes,
+    ):
+        self._installed_app_client_config = json.loads(
+            installed_app_client_config
+        )
+        self._limited_input_device_client_config = json.loads(
+            limited_input_device_client_config
+        )
         self.scopes = scopes
 
     def run(self, force_console=False) -> google.oauth2.credentials.Credentials:
@@ -235,55 +240,59 @@ class _TbUploaderAuthFlow(auth_flows.Flow):
                 return self.run_installed_app_flow()
             except webbrowser.Error:
                 sys.stderr.write(
-                    "Falling back to remote authentication flow...\n")
+                    "Falling back to remote authentication flow...\n"
+                )
         return self.run_limited_input_device_flow()
 
     def run_installed_app_flow(self) -> google.oauth2.credentials.Credentials:
         flow = auth_flows.InstalledAppFlow.from_client_config(
-            self._installed_app_client_config, scopes=self.scopes)
+            self._installed_app_client_config, scopes=self.scopes
+        )
         return flow.run_local_server(port=0)
 
     def run_limited_input_device_flow(
-        self, **kwargs) -> google.oauth2.credentials.Credentials:
+        self, **kwargs
+    ) -> google.oauth2.credentials.Credentials:
         print("Using authentication without a browser.\n")
         device_response = self._send_device_auth_request()
         prompt_message = (
             "Please visit this URL in another device, and enter the provided "
-                "code to authenticate with the TensorBoard Uploader:\n"
-                "\n"
-                "url: {url}\n"
-                "code: {code}\n"
-            .format(
+            "code to authenticate with the TensorBoard Uploader:\n"
+            "\n"
+            "url: {url}\n"
+            "code: {code}\n".format(
                 url=device_response["verification_url"],
-                code=device_response["user_code"]))
+                code=device_response["user_code"],
+            )
+        )
         print(prompt_message)
 
         auth_response = self._poll_for_auth_token(
             device_code=device_response["device_code"],
             grant_type=self._limited_input_device_client_config["grant_type"],
             polling_interval=device_response["interval"],
-            expiration_seconds=device_response["expires_in"])
+            expiration_seconds=device_response["expires_in"],
+        )
 
         if not auth_response:
             # Should not happen, as any failed authentication should have raised
             # a different error when polling for access.
             raise RuntimeError(
                 "An unexpected error occurred while authenticating, "
-                "please try again.")
+                "please try again."
+            )
 
         return self._build_credentials(auth_response)
 
     def _send_device_auth_request(self):
         device_uri = self._limited_input_device_client_config["device_uri"]
         client_id = self._limited_input_device_client_config["client_id"]
-        params = {
-            "client_id": client_id,
-            "scope": " ".join(self.scopes)
-        }
+        params = {"client_id": client_id, "scope": " ".join(self.scopes)}
         r = requests.post(device_uri, data=params).json()
         if "device_code" not in r:
             raise RuntimeError(
-                "Auth service temporarily unavailable, try again later.")
+                "Auth service temporarily unavailable, try again later."
+            )
         return r
 
     def _poll_for_auth_token(
@@ -291,18 +300,20 @@ class _TbUploaderAuthFlow(auth_flows.Flow):
         device_code: str,
         grant_type: str,
         polling_interval: int,
-        expiration_seconds: int):
+        expiration_seconds: int,
+    ):
 
         token_uri = self._limited_input_device_client_config["token_uri"]
         client_id = self._limited_input_device_client_config["client_id"]
-        client_secret = (
-            self._limited_input_device_client_config["client_secret"])
+        client_secret = self._limited_input_device_client_config[
+            "client_secret"
+        ]
         params = {
             "client_id": client_id,
             "client_secret": client_secret,
             "device_code": device_code,
-            "grant_type": grant_type
-            }
+            "grant_type": grant_type,
+        }
         expiration_time = time.time() + expiration_seconds
         # Error cases documented in
         # https://developers.google.com/identity/protocols/oauth2/limited-input-device#step-2:-handle-the-authorization-server-response
@@ -322,13 +333,16 @@ class _TbUploaderAuthFlow(auth_flows.Flow):
                 time.sleep(int(polling_interval * 1.5))
             else:
                 raise RuntimeError(
-                    "An unexpected error occurred while authenticating.")
+                    "An unexpected error occurred while authenticating."
+                )
         raise TimeoutError("Timed out waiting for authorization.")
 
     def _build_credentials(
-        self, auth_response) -> google.oauth2.credentials.Credentials:
+        self, auth_response
+    ) -> google.oauth2.credentials.Credentials:
         expiration_timestamp = datetime.datetime.utcfromtimestamp(
-            int(time.time()) + auth_response["expires_in"])
+            int(time.time()) + auth_response["expires_in"]
+        )
 
         return google.oauth2.credentials.Credentials(
             auth_response["access_token"],
@@ -336,10 +350,11 @@ class _TbUploaderAuthFlow(auth_flows.Flow):
             id_token=auth_response["id_token"],
             token_uri=self._limited_input_device_client_config["token_uri"],
             client_id=self._limited_input_device_client_config["client_id"],
-            client_secret= (
-                self._limited_input_device_client_config["client_secret"]),
+            client_secret=(
+                self._limited_input_device_client_config["client_secret"]
+            ),
             scopes=self.scopes,
-            expiry=expiration_timestamp
+            expiry=expiration_timestamp,
         )
 
 

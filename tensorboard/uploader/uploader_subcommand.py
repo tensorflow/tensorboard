@@ -92,7 +92,8 @@ def _run(flags, experiment_url_callback=None):
     if not credentials:
         _prompt_for_user_ack(intent)
         credentials = auth.authenticate_user(
-            force_console=flags.auth_force_console)
+            force_console=flags.auth_force_console
+        )
         sys.stderr.write("\n")  # Extra newline after auth flow messages.
         store.write_credentials(credentials)
 
