@@ -15,12 +15,12 @@ limitations under the License.
 
 //! CLI for testing GCS integration.
 
-use clap::Clap;
+use clap::Parser;
 use std::io::Write;
 
 use rustboard_core::gcs;
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(name = "gsutil")]
 struct Opts {
     #[clap(long, default_value = "info")]
@@ -29,7 +29,7 @@ struct Opts {
     subcmd: Subcommand,
 }
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 enum Subcommand {
     /// List objects in a bucket.
     Ls(LsOpts),
@@ -37,14 +37,14 @@ enum Subcommand {
     Cat(CatOpts),
 }
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 struct LsOpts {
     bucket: String,
-    #[clap(long, default_value = "", setting(clap::ArgSettings::AllowEmptyValues))]
+    #[clap(long, default_value = "")]
     prefix: String,
 }
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 struct CatOpts {
     bucket: String,
     object: String,

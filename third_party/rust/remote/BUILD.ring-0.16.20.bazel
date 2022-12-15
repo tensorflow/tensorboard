@@ -62,7 +62,7 @@ cargo_build_script(
     version = "0.16.20",
     visibility = ["//visibility:private"],
     deps = [
-        "@raze__cc__1_0_66//:cc",
+        "@raze__cc__1_0_74//:cc",
     ] + selects.with_or({
         (
             "@rules_rust//rust/platform:x86_64-apple-darwin",
@@ -126,8 +126,8 @@ rust_library(
         (
             "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",
         ): [
-            "@raze__libc__0_2_126//:libc",
-            "@raze__once_cell__1_5_2//:once_cell",
+            "@raze__libc__0_2_137//:libc",
+            "@raze__once_cell__1_16_0//:once_cell",
         ],
         "//conditions:default": [],
     }) + selects.with_or({

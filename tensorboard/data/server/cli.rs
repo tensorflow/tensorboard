@@ -15,7 +15,7 @@ limitations under the License.
 
 //! Command-line interface for the main entry point.
 
-use clap::Clap;
+use clap::Parser;
 use log::{debug, error, info, LevelFilter};
 use std::fs::File;
 use std::io::{Read, Write};
@@ -39,7 +39,7 @@ use data::tensor_board_data_provider_server::TensorBoardDataProviderServer;
 pub mod dynamic_logdir;
 use dynamic_logdir::DynLogdir;
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(name = "rustboard", version = crate::VERSION)]
 struct Opts {
     /// Log directory to load
@@ -48,7 +48,7 @@ struct Opts {
     /// directory, its descendants, and its event files will be periodically polled for new data.
     ///
     /// If this log directory is invalid or unsupported, exits with status 8.
-    #[clap(long, setting(clap::ArgSettings::AllowEmptyValues))]
+    #[clap(long)]
     logdir: PathBuf,
 
     /// Bind to this host name
@@ -134,7 +134,7 @@ struct Opts {
     /// jobs. Each `num_samples` may be the special token `all` to retain all data without
     /// downsampling. For instance, `--samples_per_plugin=scalars=500,images=all,audio=0` keeps 500
     /// events in each scalar series, all of the images, and none of the audio.
-    #[clap(long, default_value = "", setting(clap::ArgSettings::AllowEmptyValues))]
+    #[clap(long, default_value = "")]
     samples_per_plugin: PluginSamplingHint,
 }
 

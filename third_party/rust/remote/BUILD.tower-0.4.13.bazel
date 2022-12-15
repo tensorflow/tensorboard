@@ -1,0 +1,114 @@
+"""
+@generated
+cargo-raze crate build file.
+
+DO NOT EDIT! Replaced on runs of cargo-raze
+"""
+
+# buildifier: disable=load
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
+# buildifier: disable=load
+load(
+    "@rules_rust//rust:defs.bzl",
+    "rust_binary",
+    "rust_library",
+    "rust_proc_macro",
+    "rust_test",
+)
+
+package(default_visibility = [
+    # Public for visibility by "@raze__crate__version//" targets.
+    #
+    # Prefer access through "//third_party/rust", which limits external
+    # visibility to explicit Cargo.toml dependencies.
+    "//visibility:public",
+])
+
+licenses([
+    "notice",  # MIT from expression "MIT"
+])
+
+# Generated Targets
+
+# Unsupported target "tower-balance" with type "example" omitted
+
+rust_library(
+    name = "tower",
+    srcs = glob(["**/*.rs"]),
+    crate_features = [
+        "__common",
+        "balance",
+        "buffer",
+        "default",
+        "discover",
+        "futures-core",
+        "futures-util",
+        "indexmap",
+        "limit",
+        "load",
+        "log",
+        "make",
+        "pin-project",
+        "pin-project-lite",
+        "rand",
+        "ready-cache",
+        "slab",
+        "timeout",
+        "tokio",
+        "tokio-util",
+        "tracing",
+        "util",
+    ],
+    crate_root = "src/lib.rs",
+    data = [],
+    edition = "2018",
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-raze",
+        "crate-name=tower",
+        "manual",
+    ],
+    version = "0.4.13",
+    # buildifier: leave-alone
+    deps = [
+        "@raze__futures_core__0_3_25//:futures_core",
+        "@raze__futures_util__0_3_25//:futures_util",
+        "@raze__indexmap__1_9_1//:indexmap",
+        "@raze__pin_project__1_0_12//:pin_project",
+        "@raze__pin_project_lite__0_2_9//:pin_project_lite",
+        "@raze__rand__0_8_5//:rand",
+        "@raze__slab__0_4_7//:slab",
+        "@raze__tokio__1_21_2//:tokio",
+        "@raze__tokio_util__0_7_4//:tokio_util",
+        "@raze__tower_layer__0_3_2//:tower_layer",
+        "@raze__tower_service__0_3_2//:tower_service",
+        "@raze__tracing__0_1_37//:tracing",
+    ],
+)
+
+# Unsupported target "balance" with type "test" omitted
+
+# Unsupported target "buffer" with type "test" omitted
+
+# Unsupported target "builder" with type "test" omitted
+
+# Unsupported target "hedge" with type "test" omitted
+
+# Unsupported target "limit" with type "test" omitted
+
+# Unsupported target "load_shed" with type "test" omitted
+
+# Unsupported target "ready_cache" with type "test" omitted
+
+# Unsupported target "retry" with type "test" omitted
+
+# Unsupported target "spawn_ready" with type "test" omitted
+
+# Unsupported target "steer" with type "test" omitted
+
+# Unsupported target "support" with type "test" omitted
+
+# Unsupported target "util" with type "test" omitted
