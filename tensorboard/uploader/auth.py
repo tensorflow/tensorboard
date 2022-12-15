@@ -15,8 +15,6 @@
 # Lint as: python3
 """Provides authentication support for TensorBoardUploader."""
 
-from typing import Iterable
-
 import datetime
 import errno
 import json
