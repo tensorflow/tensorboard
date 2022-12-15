@@ -167,8 +167,8 @@ class FakeHttpResponse():
 
 class AuthFlowTest(tb_test.TestCase):
 
-    # Original config passed to the auth flow for the "browser" auth flow (aka
-    # installed app flow).
+    # Config passed to the auth flow for the "browser" auth flow (aka installed
+    # app flow).
     _INSTALLED_APP_AUTH_CONFIG_JSON = """
         {
             "installed": {
@@ -181,8 +181,8 @@ class AuthFlowTest(tb_test.TestCase):
         }
         """
 
-    # Original config passed to the auth flow for the "no browser" auth flow
-    # (aka "console" or "limited-input device" flow).
+    # Config passed to the auth flow for the "no browser" auth flow (aka
+    # "console" or "limited-input device" flow).
     _CONSOLE_AUTH_CONFIG_JSON = """
         {
             "client_id": "console_client_id",
@@ -254,9 +254,7 @@ class AuthFlowTest(tb_test.TestCase):
         self.assertTrue(self.fake_auth_flow.run_local_server_was_called)
 
     def test_auth_flow__console__device_request_fails__raises(self):
-        mocked_post = self.enter_context(
-            mock.patch.object(requests, 'post', autospec=True))
-        mocked_post.return_value = (
+        self.mocked_post.return_value = (
             FakeHttpResponse({"error": "quota exceeded"}, status=403))
 
         with self.assertRaisesRegex(
