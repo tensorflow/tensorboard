@@ -180,29 +180,31 @@ class FakeInstalledAppFlow:
 
 
 class AuthenticateUserTest(tb_test.TestCase):
-
     def setUp(self):
         super().setUp()
         # Used to estimate if a browser is available in this env.
         self.os_env_display_fn = self.enter_context(
-            mock.patch.object(os, "getenv"))
+            mock.patch.object(os, "getenv")
+        )
 
         self.mocked_installed_auth_flow_creator_fn = self.enter_context(
             mock.patch.object(auth_flows.InstalledAppFlow, "from_client_config")
         )
 
         self.mocked_device_auth_flow = self.enter_context(
-            mock.patch.object(auth,
-            "_LimitedInputDeviceAuthFlow",
-            autospec=True)
+            mock.patch.object(
+                auth, "_LimitedInputDeviceAuthFlow", autospec=True
+            )
         )
 
     def test_authenticate_user__no_force_console_override__has_display__uses_installed_app_flow(
-        self):
+        self,
+    ):
         self.os_env_display_fn.return_value = "some_display"
 
         fake_auth_flow = FakeInstalledAppFlow(
-            credentials=Credentials("fake_access_token"))
+            credentials=Credentials("fake_access_token")
+        )
         self.mocked_installed_auth_flow_creator_fn.return_value = fake_auth_flow
 
         auth.authenticate_user()
@@ -212,7 +214,8 @@ class AuthenticateUserTest(tb_test.TestCase):
         self.mocked_device_auth_flow.assert_not_called()
 
     def test_authenticate_user__no_force_console_override__no_display__uses_device_flow(
-        self):
+        self,
+    ):
         self.os_env_display_fn.return_value = None
 
         auth.authenticate_user()
@@ -222,7 +225,8 @@ class AuthenticateUserTest(tb_test.TestCase):
         self.mocked_device_auth_flow.return_value.run.assert_called_once()
 
     def test_authenticate_user__no_force_console_override__has_display__webbrowser_error__uses_device_flow(
-        self):
+        self,
+    ):
         fake_auth_flow = FakeInstalledAppFlow(raiseError=True)
         self.mocked_installed_auth_flow_creator_fn.return_value = fake_auth_flow
         self.os_env_display_fn.return_value = "some_display"
@@ -242,6 +246,7 @@ class AuthenticateUserTest(tb_test.TestCase):
         self.mocked_device_auth_flow.assert_called_once()
         self.mocked_device_auth_flow.return_value.run.assert_called_once()
 
+
 class FakeHttpResponse:
     """A fake implementation of the response from the requests library."""
 
@@ -251,6 +256,7 @@ class FakeHttpResponse:
 
     def json(self):
         return self._data
+
 
 class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
     _OAUTH_CONFIG_JSON = """
@@ -300,7 +306,7 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
                 "time",
                 # Timestamps from a fake clock.
                 # The values don't matter in most tests.
-                side_effect=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                side_effect=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
             )
         )
 
@@ -381,7 +387,8 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
 
         credentials_ttl = self._AUTH_GRANTED_RESPONSE.json()["expires_in"]
         expected_expiration_timestamp = datetime.utcfromtimestamp(
-            now_timestamp + credentials_ttl)
+            now_timestamp + credentials_ttl
+        )
 
         expected_credentials = Credentials(
             "some_access_token",

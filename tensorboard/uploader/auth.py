@@ -159,7 +159,8 @@ class CredentialsStore:
 
 
 def authenticate_user(
-    force_console=False) -> google.oauth2.credentials.Credentials:
+    force_console=False,
+) -> google.oauth2.credentials.Credentials:
     """Makes the user authenticate to retrieve auth credentials.
 
     The default behavior is to use the [installed app flow](
@@ -190,14 +191,14 @@ def authenticate_user(
     if not force_console and os.getenv("DISPLAY"):
         try:
             flow = auth_flows.InstalledAppFlow.from_client_config(
-                    _OAUTH_CLIENT_CONFIG, scopes=OPENID_CONNECT_SCOPES)
+                _OAUTH_CLIENT_CONFIG, scopes=OPENID_CONNECT_SCOPES
+            )
             return flow.run_local_server(port=0)
         except webbrowser.Error:
-            sys.stderr.write(
-                "Falling back to remote authentication flow...\n"
-            )
+            sys.stderr.write("Falling back to remote authentication flow...\n")
     flow = _LimitedInputDeviceAuthFlow(
-        _OAUTH_CLIENT_CONFIG, scopes=OPENID_CONNECT_SCOPES)
+        _OAUTH_CLIENT_CONFIG, scopes=OPENID_CONNECT_SCOPES
+    )
     return flow.run()
 
 
@@ -238,7 +239,7 @@ class _LimitedInputDeviceAuthFlow(auth_flows.Flow):
         device_uri = self._client_config["device_uri"]
         params = {
             "client_id": self._client_config["client_id"],
-            "scope": " ".join(self._scopes)
+            "scope": " ".join(self._scopes),
         }
         r = requests.post(device_uri, data=params).json()
         if "device_code" not in r:
@@ -248,7 +249,8 @@ class _LimitedInputDeviceAuthFlow(auth_flows.Flow):
         return r
 
     def _poll_for_auth_token(
-        self, device_code: str, polling_interval: int, expiration_seconds: int):
+        self, device_code: str, polling_interval: int, expiration_seconds: int
+    ):
         token_uri = self._client_config["token_uri"]
         params = {
             "client_id": self._client_config["client_id"],
