@@ -315,7 +315,7 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
             self._SCOPES,
         )
 
-    def test_auth_flow__console__device_request_fails__raises(self):
+    def test_run__device_request_fails__raises(self):
         self.mocked_post.return_value = FakeHttpResponse(
             {"error": "quota exceeded"}, status=403
         )
@@ -325,9 +325,7 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
         ):
             self.flow.run()
 
-    def test_auth_flow__console__polling__auth_pending_response__keeps_polling(
-        self,
-    ):
+    def test_run__polling__auth_pending_response__keeps_polling(self):
         auth_pending_response = FakeHttpResponse(
             {"error": "authorization_pending"}, status=428
         )
@@ -364,9 +362,7 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
         # `interval` in _DEVICE_RESPONSE is 5
         self.mocked_sleep.assert_called_once_with(5)
 
-    def test_auth_flow__console__polling__access_granted__returns_credentials(
-        self,
-    ):
+    def test_run__polling__access_granted__returns_credentials(self):
         self.mocked_post.side_effect = [
             self._DEVICE_RESPONSE,
             self._AUTH_GRANTED_RESPONSE,
@@ -397,7 +393,7 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
         )
         self.assertEqual(creds.to_json(), expected_credentials.to_json())
 
-    def test_auth_flow__console__polling__access_denied__raises(self):
+    def test_run__polling__access_denied__raises(self):
         access_denied_response = FakeHttpResponse(
             {"error": "access_denied"}, 403
         )
@@ -409,9 +405,7 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
         with self.assertRaisesRegex(PermissionError, "Auth was denied."):
             self.flow.run()
 
-    def test_auth_flow__console__polling__slow_down_response__waits_longer(
-        self,
-    ):
+    def test_run__polling__slow_down_response__waits_longer(self):
         slow_down_response = FakeHttpResponse({"error": "slow_down"})
         self.mocked_post.side_effect = [
             self._DEVICE_RESPONSE,
@@ -426,7 +420,7 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
         sleep_time = 7
         self.mocked_sleep.assert_called_once_with(sleep_time)
 
-    def test_auth_flow__console__polling__bad_request_response__raises(self):
+    def test_run__polling__bad_request_response__raises(self):
         bad_request_response = FakeHttpResponse({"error": "bad_request"}, 401)
         self.mocked_post.side_effect = [
             self._DEVICE_RESPONSE,
@@ -438,7 +432,7 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
         ):
             self.flow.run()
 
-    def test_auth_flow__console__polling__timed_out__raises(self):
+    def test_run__polling__timed_out__raises(self):
         self.mocked_post.return_value = self._DEVICE_RESPONSE
         # Not very realistic, but before starting to poll, the time increased
         # more than the expiration time from the _DEVICE_RESPONSE.
@@ -449,7 +443,7 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
         ):
             self.flow.run()
 
-    def test_auth_flow__console__polling__unexpected_error__raises(self):
+    def test_run__polling__unexpected_error__raises(self):
         unexpected_response = FakeHttpResponse({"error": "unexpected 500"}, 500)
         self.mocked_post.side_effect = [
             self._DEVICE_RESPONSE,
