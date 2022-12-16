@@ -16,8 +16,10 @@
 """Tests for tensorboard.uploader.auth."""
 
 from datetime import datetime
+from distutils.log import error
 import json
 import os
+import webbrowser
 import requests
 import time
 from typing import Dict
@@ -154,6 +156,92 @@ class CredentialsStoreTest(tb_test.TestCase):
             store.read_credentials()
 
 
+class FakeInstalledAppFlow:
+    """A minimal fake for the InstalledApp flow with the function we call.
+
+    This is a fake of a publicly available class that should already be tested,
+    so we mostly want to test high-level interactions with it.
+    """
+
+    def __init__(self, credentials=None, raiseError=False):
+        if not credentials and not raiseError:
+            ValueError("credentials cannot be None when raiseError is False")
+        if credentials and raiseError:
+            ValueError("credentials must be None when raiseError is True")
+        self.run_local_server_was_called = False
+        self._creds = credentials
+        self._raiseError = raiseError
+
+    def run_local_server(self, port=8080):
+        self.run_local_server_was_called = True
+        if self._raiseError:
+            raise webbrowser.Error()
+        return self._creds
+
+
+class AuthenticateUserTest(tb_test.TestCase):
+
+    def setUp(self):
+        super().setUp()
+        # Used to estimate if a browser is available in this env.
+        self.os_env_display_fn = self.enter_context(
+            mock.patch.object(os, "getenv"))
+
+        self.mocked_installed_auth_flow_creator_fn = self.enter_context(
+            mock.patch.object(auth_flows.InstalledAppFlow, "from_client_config")
+        )
+
+        self.mocked_device_auth_flow = self.enter_context(
+            mock.patch.object(auth,
+            "_LimitedInputDeviceAuthFlow",
+            autospec=True)
+        )
+
+    def test_authenticate_user__no_force_console_override__has_display__uses_installed_app_flow(
+        self):
+        self.os_env_display_fn.return_value = "some_display"
+
+        fake_auth_flow = FakeInstalledAppFlow(
+            credentials=Credentials("fake_access_token"))
+        self.mocked_installed_auth_flow_creator_fn.return_value = fake_auth_flow
+
+        auth.authenticate_user()
+
+        self.mocked_installed_auth_flow_creator_fn.assert_called_once()
+        self.assertTrue(fake_auth_flow.run_local_server_was_called)
+        self.mocked_device_auth_flow.assert_not_called()
+
+    def test_authenticate_user__no_force_console_override__no_display__uses_device_flow(
+        self):
+        self.os_env_display_fn.return_value = None
+
+        auth.authenticate_user()
+
+        self.mocked_installed_auth_flow_creator_fn.assert_not_called()
+        self.mocked_device_auth_flow.assert_called_once()
+        self.mocked_device_auth_flow.return_value.run.assert_called_once()
+
+    def test_authenticate_user__no_force_console_override__has_display__webbrowser_error__uses_device_flow(
+        self):
+        fake_auth_flow = FakeInstalledAppFlow(raiseError=True)
+        self.mocked_installed_auth_flow_creator_fn.return_value = fake_auth_flow
+        self.os_env_display_fn.return_value = "some_display"
+
+        auth.authenticate_user()
+
+        # "installed app" flow was instantiated and ran, which raied an exception,
+        # so the other flow also ran.
+        self.mocked_installed_auth_flow_creator_fn.assert_called_once()
+        self.assertTrue(fake_auth_flow.run_local_server_was_called)
+        self.mocked_device_auth_flow.assert_called_once()
+        self.mocked_device_auth_flow.return_value.run.assert_called_once()
+
+    def test_authenticate_user__force_console_override__uses_device_flow(self):
+        auth.authenticate_user(force_console=True)
+        self.mocked_installed_auth_flow_creator_fn.assert_not_called()
+        self.mocked_device_auth_flow.assert_called_once()
+        self.mocked_device_auth_flow.return_value.run.assert_called_once()
+
 class FakeHttpResponse:
     """A fake implementation of the response from the requests library."""
 
@@ -164,26 +252,10 @@ class FakeHttpResponse:
     def json(self):
         return self._data
 
-
-class AuthFlowTest(tb_test.TestCase):
-
-    # Config passed to the auth flow for the "browser" auth flow (aka installed
-    # app flow).
-    _INSTALLED_APP_AUTH_CONFIG_JSON = """
-        {
-            "installed": {
-                "client_id": "installed_client_id",
-                "auth_uri": "https://google.com/auth",
-                "token_uri": "https://google.com/token",
-                "client_secret": "installed_client_secret",
-                "redirect_uris": ["http://localhost"]
-            }
-        }
-        """
-
-    # Config passed to the auth flow for the "no browser" auth flow (aka
-    # "console" or "limited-input device" flow).
-    _CONSOLE_AUTH_CONFIG_JSON = """
+class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
+    _OAUTH_CONFIG_JSON = """
+    {
+        "limited-input device":
         {
             "client_id": "console_client_id",
             "device_uri": "https://google.com/device",
@@ -191,7 +263,8 @@ class AuthFlowTest(tb_test.TestCase):
             "client_secret": "console_client_secret",
             "grant_type": "urn:ietf:params:oauth:grant-type:device_code"
         }
-        """
+    }
+    """
 
     _SCOPES = ["email", "openid"]
 
@@ -221,16 +294,15 @@ class AuthFlowTest(tb_test.TestCase):
     def setUp(self):
         super().setUp()
 
-        # The faked installed app flow that we use from the common library.
-        # That class should already be tested, so we mostly want to test
-        # high-level interactions with it.
-        self.fake_auth_flow = FakeInstalledAppFlow(Credentials("access_token"))
-
         self.mocked_time = self.enter_context(
-            mock.patch.object(time, "time", autospec=True)
+            mock.patch.object(
+                time,
+                "time",
+                # Timestamps from a fake clock.
+                # The values don't matter in most tests.
+                side_effect=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+            )
         )
-        # Timestamps from a fake clock. The values don't matter in most tests.
-        self.mocked_time.side_effect = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
         self.mocked_sleep = self.enter_context(
             mock.patch.object(time, "sleep", autospec=True)
@@ -240,29 +312,10 @@ class AuthFlowTest(tb_test.TestCase):
             mock.patch.object(requests, "post", autospec=True)
         )
 
-        self.mocked_auth_flow_creator_fn = self.enter_context(
-            mock.patch.object(
-                auth_flows.InstalledAppFlow,
-                "from_client_config",
-                return_value=self.fake_auth_flow,
-            )
-        )
-
-        # Used to estimate if a browser is available in this env.
-        self.mocked_getenv = self.enter_context(
-            mock.patch.object(os, "getenv", return_value="some_display")
-        )
-
-        self.flow = auth._TbUploaderAuthFlow(
-            self._INSTALLED_APP_AUTH_CONFIG_JSON,
-            self._CONSOLE_AUTH_CONFIG_JSON,
+        self.flow = auth._LimitedInputDeviceAuthFlow(
+            self._OAUTH_CONFIG_JSON,
             self._SCOPES,
         )
-
-    def test_auth_flow__browser__uses_intalled_app_flow(self):
-        self.flow.run()
-        self.mocked_auth_flow_creator_fn.assert_called_once()
-        self.assertTrue(self.fake_auth_flow.run_local_server_was_called)
 
     def test_auth_flow__console__device_request_fails__raises(self):
         self.mocked_post.return_value = FakeHttpResponse(
@@ -272,7 +325,7 @@ class AuthFlowTest(tb_test.TestCase):
         with self.assertRaisesRegex(
             RuntimeError, "Auth service temporarily unavailable"
         ):
-            self.flow.run(force_console=True)
+            self.flow.run()
 
     def test_auth_flow__console__polling__auth_pending_response__keeps_polling(
         self,
@@ -283,7 +336,7 @@ class AuthFlowTest(tb_test.TestCase):
             self._AUTH_GRANTED_RESPONSE,
         ]
 
-        self.flow.run(force_console=True)
+        self.flow.run()
 
         device_params = {
             "client_id": "console_client_id",
@@ -307,8 +360,8 @@ class AuthFlowTest(tb_test.TestCase):
         self.assertSequenceEqual(
             expected_post_requests, self.mocked_post.call_args_list
         )
-        sleep_time = self._DEVICE_RESPONSE.json()["interval"]
-        self.mocked_sleep.assert_called_once_with(sleep_time)
+        # `interval` in _DEVICE_RESPONSE is 5
+        self.mocked_sleep.assert_called_once_with(5)
 
     def test_auth_flow__console__polling__access_granted__returns_credentials(
         self,
@@ -321,31 +374,22 @@ class AuthFlowTest(tb_test.TestCase):
         # 1. To generate an expiration time for polling
         # 2. While polling to check if we reached the expiration time
         # 3. To calculate an expiration time for the credentials (useful below)
-        #
-        # The third timestamp corresponds to: 2022/12/13 16:00:00Z
-        #
-        # Note that I could have simply used 3, it doesn't really matter if this
-        # is a realistic timestamp, but for the sake of clarity and having a
-        # realistic setup, I decided to use this.
-        now_timestamp = 1670947200
+        now_timestamp = 3
         self.mocked_time.side_effect = [1, 2, now_timestamp]
 
-        creds = self.flow.run(force_console=True)
+        creds = self.flow.run()
 
-        auth_response = self._AUTH_GRANTED_RESPONSE.json()
-        console_config = json.loads(self._CONSOLE_AUTH_CONFIG_JSON)
-
+        credentials_ttl = self._AUTH_GRANTED_RESPONSE.json()["expires_in"]
         expected_expiration_timestamp = datetime.utcfromtimestamp(
-            now_timestamp + auth_response["expires_in"]
-        )
+            now_timestamp + credentials_ttl)
 
         expected_credentials = Credentials(
-            auth_response["access_token"],
-            refresh_token=auth_response["refresh_token"],
-            id_token=auth_response["id_token"],
-            token_uri=console_config["token_uri"],
-            client_id=console_config["client_id"],
-            client_secret=console_config["client_secret"],
+            "some_access_token",
+            refresh_token="some_refresh_token",
+            id_token="some_id_token",
+            token_uri="https://google.com/token",
+            client_id="console_client_id",
+            client_secret="console_client_secret",
             scopes=self._SCOPES,
             expiry=expected_expiration_timestamp,
         )
@@ -361,7 +405,7 @@ class AuthFlowTest(tb_test.TestCase):
         ]
 
         with self.assertRaisesRegex(PermissionError, "Auth was denied."):
-            self.flow.run(force_console=True)
+            self.flow.run()
 
     def test_auth_flow__console__polling__slow_down_response__waits_longer(
         self,
@@ -373,10 +417,11 @@ class AuthFlowTest(tb_test.TestCase):
             self._AUTH_GRANTED_RESPONSE,
         ]
 
-        self.flow.run(force_console=True)
+        self.flow.run()
 
-        interval = self._DEVICE_RESPONSE.json()["interval"]
-        sleep_time = int(interval * 1.5)
+        # `interval`` in _DEVICE_RESPONSE is 5, which is multiplied by 1.5 and
+        # parsed to int() when a slow_down error is received while polling.
+        sleep_time = 7
         self.mocked_sleep.assert_called_once_with(sleep_time)
 
     def test_auth_flow__console__polling__bad_request_response__raises(self):
@@ -389,18 +434,18 @@ class AuthFlowTest(tb_test.TestCase):
         with self.assertRaisesRegex(
             ValueError, "There must be an error in the request."
         ):
-            self.flow.run(force_console=True)
+            self.flow.run()
 
     def test_auth_flow__console__polling__timed_out__raises(self):
         self.mocked_post.return_value = self._DEVICE_RESPONSE
-        # Before polling, the time increased more than the expiration time from
-        # the device response.
+        # Not very realistic, but before starting to poll, the time increased
+        # more than the expiration time from the _DEVICE_RESPONSE.
         self.mocked_time.side_effect = [1, 5000]
 
         with self.assertRaisesRegex(
             TimeoutError, "Timed out waiting for authorization."
         ):
-            self.flow.run(force_console=True)
+            self.flow.run()
 
     def test_auth_flow__console__polling__unexpected_error__raises(self):
         unexpected_response = FakeHttpResponse({"error": "unexpected 500"}, 500)
@@ -412,19 +457,7 @@ class AuthFlowTest(tb_test.TestCase):
         with self.assertRaisesRegex(
             RuntimeError, "An unexpected error occurred while authenticating."
         ):
-            self.flow.run(force_console=True)
-
-
-class FakeInstalledAppFlow:
-    """A minimal fake for the InstalledApp flow with the function we call."""
-
-    def __init__(self, credentials):
-        self.run_local_server_was_called = False
-        self._creds = credentials
-
-    def run_local_server(self, port=8080):
-        self.run_local_server_was_called = True
-        return self._creds
+            self.flow.run()
 
 
 if __name__ == "__main__":
