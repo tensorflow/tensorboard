@@ -214,8 +214,9 @@ class _LimitedInputDeviceAuthFlow(auth_flows.Flow):
     def run(self) -> google.oauth2.credentials.Credentials:
         device_response = self._send_device_auth_request()
         prompt_message = (
-            "Please visit this URL in another device, and enter the provided "
-            "code to authenticate with the TensorBoard Uploader:\n"
+            "Please visit this URL in a browser window (can be on a different "
+            "device), and enter the provided code to authenticate with the "
+            "TensorBoard Uploader:\n"
             "\n"
             "url: {url}\n"
             "code: {code}\n".format(
