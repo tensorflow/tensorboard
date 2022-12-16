@@ -51,22 +51,22 @@ OPENID_CONNECT_SCOPES = (
 # https://developers.google.com/identity/protocols/OAuth2?csw=1#installed and
 # https://developers.google.com/identity/protocols/oauth2/limited-input-device
 _OAUTH_CLIENT_CONFIG = {
-  "installed": {
-    "client_id": "373649185512-8v619h5kft38l4456nm2dj4ubeqsrvh6.apps.googleusercontent.com",
-    "project_id": "hosted-tensorboard-prod",
-    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-    "token_uri": "https://oauth2.googleapis.com/token",
-    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_secret": "pOyAuU2yq2arsM98Bw5hwYtr",
-    "redirect_uris": ["http://localhost"]
-  },
-  "limited-input device": {
-    "client_id": "373649185512-26ojik4u7dt0rdtfdmfnhpajqqh579qd.apps.googleusercontent.com",
-    "device_uri": "https://oauth2.googleapis.com/device/code",
-    "token_uri": "https://oauth2.googleapis.com/token",
-    "client_secret": "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",
-    "grant_type": "urn:ietf:params:oauth:grant-type:device_code"
-  }
+    "installed": {
+        "client_id": "373649185512-8v619h5kft38l4456nm2dj4ubeqsrvh6.apps.googleusercontent.com",
+        "project_id": "hosted-tensorboard-prod",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_secret": "pOyAuU2yq2arsM98Bw5hwYtr",
+        "redirect_uris": ["http://localhost"],
+    },
+    "limited-input device": {
+        "client_id": "373649185512-26ojik4u7dt0rdtfdmfnhpajqqh579qd.apps.googleusercontent.com",
+        "device_uri": "https://oauth2.googleapis.com/device/code",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "client_secret": "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",
+        "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+    },
 }
 
 

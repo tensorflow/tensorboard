@@ -260,13 +260,12 @@ class FakeHttpResponse:
 
 class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
     _OAUTH_CONFIG = {
-        "limited-input device":
-        {
+        "limited-input device": {
             "client_id": "console_client_id",
             "device_uri": "https://google.com/device",
             "token_uri": "https://google.com/token",
             "client_secret": "console_client_secret",
-            "grant_type": "urn:ietf:params:oauth:grant-type:device_code"
+            "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
         }
     }
 
