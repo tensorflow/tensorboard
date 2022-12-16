@@ -259,8 +259,7 @@ class FakeHttpResponse:
 
 
 class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
-    _OAUTH_CONFIG_JSON = """
-    {
+    _OAUTH_CONFIG = {
         "limited-input device":
         {
             "client_id": "console_client_id",
@@ -270,7 +269,6 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
             "grant_type": "urn:ietf:params:oauth:grant-type:device_code"
         }
     }
-    """
 
     _SCOPES = ["email", "openid"]
 
@@ -319,7 +317,7 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
         )
 
         self.flow = auth._LimitedInputDeviceAuthFlow(
-            self._OAUTH_CONFIG_JSON,
+            self._OAUTH_CONFIG,
             self._SCOPES,
         )
 

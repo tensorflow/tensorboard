@@ -50,8 +50,7 @@ OPENID_CONNECT_SCOPES = (
 # where this runs. See:
 # https://developers.google.com/identity/protocols/OAuth2?csw=1#installed and
 # https://developers.google.com/identity/protocols/oauth2/limited-input-device
-_OAUTH_CLIENT_CONFIG = """
-{
+_OAUTH_CLIENT_CONFIG = {
   "installed": {
     "client_id": "373649185512-8v619h5kft38l4456nm2dj4ubeqsrvh6.apps.googleusercontent.com",
     "project_id": "hosted-tensorboard-prod",
@@ -69,7 +68,6 @@ _OAUTH_CLIENT_CONFIG = """
     "grant_type": "urn:ietf:params:oauth:grant-type:device_code"
   }
 }
-"""
 
 
 # Components of the relative path (within the user settings directory) at which
@@ -210,7 +208,7 @@ class _LimitedInputDeviceAuthFlow(auth_flows.Flow):
     """
 
     def __init__(self, client_config, scopes):
-        self._client_config = json.loads(client_config)["limited-input device"]
+        self._client_config = client_config["limited-input device"]
         self._scopes = scopes
 
     def run(self) -> google.oauth2.credentials.Credentials:
