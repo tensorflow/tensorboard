@@ -16,7 +16,6 @@
 """Tests for tensorboard.uploader.auth."""
 
 from datetime import datetime
-from distutils.log import error
 import json
 import os
 import webbrowser
@@ -233,8 +232,8 @@ class AuthenticateUserTest(tb_test.TestCase):
 
         auth.authenticate_user()
 
-        # "installed app" flow was instantiated and ran, which raied an exception,
-        # so the other flow also ran.
+        # "installed app" flow was instantiated and ran, which raised an
+        # exception, so the other flow also ran.
         self.mocked_installed_auth_flow_creator_fn.assert_called_once()
         self.assertTrue(fake_auth_flow.run_local_server_was_called)
         self.mocked_device_auth_flow.assert_called_once()
@@ -279,10 +278,6 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
             "interval": 5,
             "expires_in": 300,
         }
-    )
-
-    _AUTH_PENDING_RESPONSE = FakeHttpResponse(
-        {"error": "authorization_pending"}, status=428
     )
 
     _AUTH_GRANTED_RESPONSE = FakeHttpResponse(
@@ -333,9 +328,12 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
     def test_auth_flow__console__polling__auth_pending_response__keeps_polling(
         self,
     ):
+        auth_pending_response = FakeHttpResponse(
+            {"error": "authorization_pending"}, status=428
+        )
         self.mocked_post.side_effect = [
             self._DEVICE_RESPONSE,
-            self._AUTH_PENDING_RESPONSE,
+            auth_pending_response,
             self._AUTH_GRANTED_RESPONSE,
         ]
 
