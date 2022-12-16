@@ -1,0 +1,76 @@
+"""
+@generated
+cargo-raze crate build file.
+
+DO NOT EDIT! Replaced on runs of cargo-raze
+"""
+
+# buildifier: disable=load
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
+# buildifier: disable=load
+load(
+    "@rules_rust//rust:defs.bzl",
+    "rust_binary",
+    "rust_library",
+    "rust_proc_macro",
+    "rust_test",
+)
+
+package(default_visibility = [
+    # Public for visibility by "@raze__crate__version//" targets.
+    #
+    # Prefer access through "//third_party/rust", which limits external
+    # visibility to explicit Cargo.toml dependencies.
+    "//visibility:public",
+])
+
+licenses([
+    "notice",  # MIT from expression "MIT"
+])
+
+# Generated Targets
+
+# Unsupported target "simple" with type "example" omitted
+
+rust_library(
+    name = "gcp_auth",
+    srcs = glob(["**/*.rs"]),
+    crate_features = [
+        "default",
+    ],
+    crate_root = "src/lib.rs",
+    data = [],
+    edition = "2018",
+    proc_macro_deps = [
+        "@raze__async_trait__0_1_41//:async_trait",
+    ],
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-raze",
+        "crate-name=gcp_auth",
+        "manual",
+    ],
+    version = "0.7.4",
+    # buildifier: leave-alone
+    deps = [
+        "@raze__base64__0_13_0//:base64",
+        "@raze__dirs_next__2_0_0//:dirs_next",
+        "@raze__hyper__0_14_19//:hyper",
+        "@raze__hyper_rustls__0_23_0//:hyper_rustls",
+        "@raze__ring__0_16_20//:ring",
+        "@raze__rustls__0_20_6//:rustls",
+        "@raze__rustls_pemfile__1_0_1//:rustls_pemfile",
+        "@raze__serde__1_0_144//:serde",
+        "@raze__serde_json__1_0_61//:serde_json",
+        "@raze__thiserror__1_0_22//:thiserror",
+        "@raze__time__0_3_14//:time",
+        "@raze__tokio__1_19_2//:tokio",
+        "@raze__tracing__0_1_34//:tracing",
+        "@raze__tracing_futures__0_2_5//:tracing_futures",
+        "@raze__url__2_2_0//:url",
+        "@raze__which__4_3_0//:which",
+    ],
+)

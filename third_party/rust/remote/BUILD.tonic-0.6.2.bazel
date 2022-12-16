@@ -83,7 +83,7 @@ rust_library(
         "@raze__hyper__0_14_19//:hyper",
         "@raze__hyper_timeout__0_4_1//:hyper_timeout",
         "@raze__percent_encoding__2_1_0//:percent_encoding",
-        "@raze__pin_project__1_0_1//:pin_project",
+        "@raze__pin_project__1_0_12//:pin_project",
         "@raze__prost__0_9_0//:prost",
         "@raze__tokio__1_19_2//:tokio",
         "@raze__tokio_stream__0_1_2//:tokio_stream",
@@ -92,6 +92,6 @@ rust_library(
         "@raze__tower_layer__0_3_1//:tower_layer",
         "@raze__tower_service__0_3_0//:tower_service",
         "@raze__tracing__0_1_34//:tracing",
-        "@raze__tracing_futures__0_2_4//:tracing_futures",
+        "@raze__tracing_futures__0_2_5//:tracing_futures",
     ],
 )

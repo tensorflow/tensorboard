@@ -74,7 +74,7 @@ rust_library(
         "@raze__futures_core__0_3_12//:futures_core",
         "@raze__futures_util__0_3_8//:futures_util",
         "@raze__indexmap__1_8_2//:indexmap",
-        "@raze__pin_project__1_0_1//:pin_project",
+        "@raze__pin_project__1_0_12//:pin_project",
         "@raze__pin_project_lite__0_2_9//:pin_project_lite",
         "@raze__rand__0_8_2//:rand",
         "@raze__slab__0_4_2//:slab",

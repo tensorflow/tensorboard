@@ -77,7 +77,7 @@ rust_library(
     deps = [
         "@raze__bytes__1_0_1//:bytes",
         "@raze__http__0_2_1//:http",
-        "@raze__serde__1_0_118//:serde",
+        "@raze__serde__1_0_144//:serde",
         "@raze__serde_json__1_0_61//:serde_json",
         "@raze__serde_urlencoded__0_7_0//:serde_urlencoded",
         "@raze__url__2_2_0//:url",
