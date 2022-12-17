@@ -43,10 +43,6 @@ const preventDefault = function (e: MouseEvent) {
   e.preventDefault();
 };
 
-const isHeaderOfType = function (type: ColumnHeaderType, header: ColumnHeader) {
-  return header.type === type;
-};
-
 @Component({
   selector: 'tb-data-table',
   templateUrl: 'data_table_component.ng.html',
@@ -242,12 +238,8 @@ export class DataTableComponent implements OnDestroy {
 
     this.orderColumns.emit(
       this.moveHeader(
-        this.headers.findIndex((element) =>
-          isHeaderOfType(this.draggingHeaderType!, element)
-        ),
-        this.headers.findIndex((element) =>
-          isHeaderOfType(this.highlightedColumnType!, element)
-        )
+        this.getIndexOfHeaderWithType(this.draggingHeaderType!),
+        this.getIndexOfHeaderWithType(this.highlightedColumnType!)
       )
     );
     this.draggingHeaderType = undefined;
@@ -260,12 +252,8 @@ export class DataTableComponent implements OnDestroy {
       return;
     }
     if (
-      this.headers.findIndex((element) =>
-        isHeaderOfType(header.type, element)
-      ) <
-      this.headers.findIndex((element) =>
-        isHeaderOfType(this.draggingHeaderType!, element)
-      )
+      this.getIndexOfHeaderWithType(header.type) <
+      this.getIndexOfHeaderWithType(this.draggingHeaderType!)
     ) {
       this.highlightSide = Side.LEFT;
     } else {
@@ -301,5 +289,11 @@ export class DataTableComponent implements OnDestroy {
       header.enabled &&
       (this.smoothingEnabled || header.type !== ColumnHeaderType.SMOOTHED)
     );
+  }
+
+  getIndexOfHeaderWithType(type: ColumnHeaderType) {
+    return this.headers.findIndex((element) => {
+      return type === element.type;
+    });
   }
 }
