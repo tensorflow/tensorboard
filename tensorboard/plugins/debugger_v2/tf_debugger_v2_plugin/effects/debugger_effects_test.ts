@@ -397,7 +397,7 @@ describe('Debugger effects', () => {
       //
       // The Angular team suggests this means we "have scope leakage in [our]
       // tests" but we haven't been able to pinpoint the leakage.
-      teardown: { destroyAfterEach: false }
+      teardown: {destroyAfterEach: false},
     }).compileComponents();
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
