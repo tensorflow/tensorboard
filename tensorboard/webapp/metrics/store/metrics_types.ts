@@ -36,7 +36,7 @@ import {
   TooltipSort,
   XAxisType,
 } from '../internal_types';
-import {ColumnHeaders} from '../views/card_renderer/scalar_card_types';
+import {ColumnHeader} from '../views/card_renderer/scalar_card_types';
 
 export const METRICS_FEATURE_KEY = 'metrics';
 
@@ -177,8 +177,8 @@ export interface MetricsNamespacedState {
   linkedTimeEnabled: boolean;
   stepSelectorEnabled: boolean;
   rangeSelectionEnabled: boolean;
-  singleSelectionHeaders: ColumnHeaders[];
-  rangeSelectionHeaders: ColumnHeaders[];
+  singleSelectionHeaders: ColumnHeader[];
+  rangeSelectionHeaders: ColumnHeader[];
   // Empty Set would signify "show all". `filteredPluginTypes` will never have
   // all pluginTypes in the Set.
   filteredPluginTypes: Set<PluginType>;

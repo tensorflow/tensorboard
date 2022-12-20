@@ -45,7 +45,8 @@ import {
 } from '../../../widgets/line_chart_v2/types';
 import {TooltipSort, XAxisType} from '../../types';
 import {
-  ColumnHeaders,
+  ColumnHeader,
+  ColumnHeaderType,
   MinMaxStep,
   ScalarCardDataSeries,
   ScalarCardSeriesMetadata,
@@ -96,7 +97,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() rangeSelectionEnabled: boolean = false;
   @Input() isProspectiveFobFeatureEnabled: Boolean = false;
   @Input() minMaxStep!: MinMaxStep;
-  @Input() dataHeaders!: ColumnHeaders[];
+  @Input() columnHeaders!: ColumnHeader[];
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
@@ -107,7 +108,7 @@ export class ScalarCardComponent<Downloader> {
   @Output() onStepSelectorToggled =
     new EventEmitter<TimeSelectionToggleAffordance>();
   @Output() onDataTableSorting = new EventEmitter<SortingInfo>();
-  @Output() reorderColumnHeaders = new EventEmitter<ColumnHeaders[]>();
+  @Output() reorderColumnHeaders = new EventEmitter<ColumnHeader[]>();
 
   @Output() onLineChartZoom = new EventEmitter<Extent>();
 
@@ -115,7 +116,7 @@ export class ScalarCardComponent<Downloader> {
   @ViewChild(LineChartComponent)
   lineChart?: LineChartComponent;
   sortingInfo: SortingInfo = {
-    header: ColumnHeaders.RUN,
+    header: ColumnHeaderType.RUN,
     order: SortingOrder.ASCENDING,
   };
 

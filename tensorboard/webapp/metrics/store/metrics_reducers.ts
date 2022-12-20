@@ -46,7 +46,7 @@ import {
   URLDeserializedState,
 } from '../internal_types';
 import {groupCardIdWithMetdata} from '../utils';
-import {ColumnHeaders} from '../views/card_renderer/scalar_card_types';
+import {ColumnHeaderType} from '../views/card_renderer/scalar_card_types';
 import {
   buildOrReturnStateWithPinnedCopy,
   buildOrReturnStateWithUnresolvedImportedPins,
@@ -264,22 +264,22 @@ const {initialState, reducers: namespaceContextedReducer} =
       stepSelectorEnabled: false,
       rangeSelectionEnabled: false,
       singleSelectionHeaders: [
-        ColumnHeaders.RUN,
-        ColumnHeaders.SMOOTHED,
-        ColumnHeaders.VALUE,
-        ColumnHeaders.STEP,
-        ColumnHeaders.RELATIVE_TIME,
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.SMOOTHED, enabled: true},
+        {type: ColumnHeaderType.VALUE, enabled: true},
+        {type: ColumnHeaderType.STEP, enabled: true},
+        {type: ColumnHeaderType.RELATIVE_TIME, enabled: true},
       ],
       rangeSelectionHeaders: [
-        ColumnHeaders.RUN,
-        ColumnHeaders.MIN_VALUE,
-        ColumnHeaders.MAX_VALUE,
-        ColumnHeaders.START_VALUE,
-        ColumnHeaders.END_VALUE,
-        ColumnHeaders.VALUE_CHANGE,
-        ColumnHeaders.PERCENTAGE_CHANGE,
-        ColumnHeaders.START_STEP,
-        ColumnHeaders.END_STEP,
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.MIN_VALUE, enabled: true},
+        {type: ColumnHeaderType.MAX_VALUE, enabled: true},
+        {type: ColumnHeaderType.START_VALUE, enabled: true},
+        {type: ColumnHeaderType.END_VALUE, enabled: true},
+        {type: ColumnHeaderType.VALUE_CHANGE, enabled: true},
+        {type: ColumnHeaderType.PERCENTAGE_CHANGE, enabled: true},
+        {type: ColumnHeaderType.START_STEP, enabled: true},
+        {type: ColumnHeaderType.END_STEP, enabled: true},
       ],
       filteredPluginTypes: new Set(),
       stepMinMax: {
