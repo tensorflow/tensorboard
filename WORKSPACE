@@ -23,9 +23,13 @@ http_archive(
 
 load("@bazel_skylib//lib:versions.bzl", "versions")
 
-# Keep this version in sync with:
-#  * The BAZEL environment variable defined in .github/workflows/ci.yml, which is used for CI and nightly builds.
-versions.check(minimum_bazel_version = "4.2.2")
+versions.check(
+    # Keep this version in sync with:
+    #  * The BAZEL environment variable defined in .github/workflows/ci.yml, which is used for CI and nightly builds.
+    minimum_bazel_version = "4.2.2",
+    # TODO(https://github.com/tensorflow/tensorboard/issues/6115): Support building TensorBoard with Bazel version >= 6.0.0
+    maximum_bazel_version = "5.4.0",
+)
 
 http_archive(
     name = "io_bazel_rules_webtesting",
