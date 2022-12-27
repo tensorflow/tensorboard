@@ -202,6 +202,7 @@ export class LineChartInteractiveViewComponent
   ];
 
   cursorLocationInDataCoord: {x: number; y: number} | null = null;
+  cursorLocation: {x: number; y: number} | null = null;
   cursoredData: TooltipDatum[] = [];
   tooltipDisplayAttached: boolean = false;
 
@@ -521,6 +522,10 @@ export class LineChartInteractiveViewComponent
     this.cursorLocationInDataCoord = {
       x: this.getDataX(event.offsetX),
       y: this.getDataY(event.offsetY),
+    };
+    this.cursorLocation = {
+      x: event.offsetX,
+      y: event.offsetY,
     };
     this.updateCursoredDataAndTooltipVisibility();
   }

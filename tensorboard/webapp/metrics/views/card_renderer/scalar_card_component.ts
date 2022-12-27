@@ -163,7 +163,8 @@ export class ScalarCardComponent<Downloader> {
 
   getCursorAwareTooltipData(
     tooltipData: TooltipDatum<ScalarCardSeriesMetadata>[],
-    cursorLoc: {x: number; y: number}
+    cursorLocationInDataCoord: {x: number; y: number},
+    cursorLocation: {x: number; y: number}
   ): ScalarTooltipDatum[] {
     const scalarTooltipData = tooltipData.map((datum) => {
       return {
@@ -172,8 +173,20 @@ export class ScalarCardComponent<Downloader> {
           ...datum.metadata,
           closest: false,
           distSqToCursor: Math.hypot(
-            datum.point.x - cursorLoc.x,
-            datum.point.y - cursorLoc.y
+            datum.point.x - cursorLocationInDataCoord.x,
+            datum.point.y - cursorLocationInDataCoord.y
+          ),
+          distSqToCursorPixels: Math.hypot(
+            datum.point.x - cursorLocation.x,
+            datum.point.y - cursorLocation.y
+          ),
+          distSqToCursorX: Math.hypot(
+            datum.point.x - cursorLocationInDataCoord.x,
+            0
+          ),
+          distSqToCursorY: Math.hypot(
+            0,
+            datum.point.y - cursorLocationInDataCoord.y
           ),
         },
       };
@@ -200,6 +213,20 @@ export class ScalarCardComponent<Downloader> {
       case TooltipSort.NEAREST:
         return scalarTooltipData.sort((a, b) => {
           return a.metadata.distSqToCursor - b.metadata.distSqToCursor;
+        });
+      case TooltipSort.NEAREST_PIXEL:
+        return scalarTooltipData.sort((a, b) => {
+          return (
+            a.metadata.distSqToCursorPixels - b.metadata.distSqToCursorPixels
+          );
+        });
+      case TooltipSort.NEAREST_X:
+        return scalarTooltipData.sort((a, b) => {
+          return a.metadata.distSqToCursorX - b.metadata.distSqToCursorX;
+        });
+      case TooltipSort.NEAREST_Y:
+        return scalarTooltipData.sort((a, b) => {
+          return a.metadata.distSqToCursorY - b.metadata.distSqToCursorY;
         });
       case TooltipSort.DEFAULT:
       case TooltipSort.ALPHABETICAL:

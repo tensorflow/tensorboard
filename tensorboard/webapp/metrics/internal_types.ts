@@ -15,24 +15,13 @@ limitations under the License.
 import {TimeSelection} from '../widgets/card_fob/card_fob_types';
 import {HistogramMode} from '../widgets/histogram/histogram_types';
 
+export {TooltipSort} from '../persistent_settings/_data_source/types';
 export {HistogramMode, TimeSelection};
 
 export enum PluginType {
   SCALARS = 'scalars',
   HISTOGRAMS = 'histograms',
   IMAGES = 'images',
-}
-
-// When adding a new value to the enum, please implement the deserializer on
-// data_source/metrics_data_source.ts.
-// When editing a value of the enum, please write a backward compatible
-// deserializer in data_source/metrics_data_source.ts.
-export enum TooltipSort {
-  DEFAULT = 'default',
-  ALPHABETICAL = 'alphabetical',
-  ASCENDING = 'ascending',
-  DESCENDING = 'descending',
-  NEAREST = 'nearest',
 }
 
 export enum XAxisType {

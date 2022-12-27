@@ -19,6 +19,21 @@ export enum ThemeValue {
   DARK = 'dark',
 }
 
+// When adding a new value to the enum, please implement the deserializer on
+// data_source/metrics_data_source.ts.
+// When editing a value of the enum, please write a backward compatible
+// deserializer in tensorboard/webapp/metrics/store/metrics_reducers.ts
+export enum TooltipSort {
+  DEFAULT = 'default',
+  ALPHABETICAL = 'alphabetical',
+  ASCENDING = 'ascending',
+  DESCENDING = 'descending',
+  NEAREST = 'nearest',
+  NEAREST_PIXEL = 'nearest_pixel',
+  NEAREST_X = 'nearest_x',
+  NEAREST_Y = 'nearest_Y',
+}
+
 /**
  * Global settings that the backend remembers. `declare`d so properties do not
  * get mangled or mangled differently when a version compiler changes.
@@ -28,7 +43,7 @@ export enum ThemeValue {
  */
 export declare interface BackendSettings {
   scalarSmoothing?: number;
-  tooltipSort?: string;
+  tooltipSort?: TooltipSort;
   ignoreOutliers?: boolean;
   autoReload?: boolean;
   autoReloadPeriodInMs?: number;
@@ -50,7 +65,7 @@ export declare interface BackendSettings {
  */
 export interface PersistableSettings {
   scalarSmoothing?: number;
-  tooltipSortString?: string;
+  tooltipSortString?: TooltipSort;
   ignoreOutliers?: boolean;
   autoReload?: boolean;
   autoReloadPeriodInMs?: number;
