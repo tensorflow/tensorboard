@@ -72,7 +72,7 @@ const TEST_UINT8ARRAY = new Uint8Array([12, 34, 50, 160, 200]);
 // leave the rest of the string to be 0
 const TEST_RANDOMID_STRING = '023ac000000000000000000000000000';
 
-fdescribe('app_routing_effects', () => {
+describe('app_routing_effects', () => {
   let effects: AppRoutingEffects;
   let store: MockStore<State>;
   let action: ReplaySubject<Action>;

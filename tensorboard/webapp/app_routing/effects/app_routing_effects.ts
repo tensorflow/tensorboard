@@ -455,6 +455,8 @@ export class AppRoutingEffects {
         );
       }),
       tap(([{routeMatch}]) => {
+        // Some route configurations can generate actions that should be
+        // dispatched early in app routing handling.
         if (routeMatch.action) {
           this.store.dispatch(routeMatch.action);
         }
