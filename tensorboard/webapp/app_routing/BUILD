@@ -143,6 +143,7 @@ tf_ng_module(
         ":deep_link_provider",
         ":types",
         "@npm//@angular/core",
+        "@npm//@ngrx/store",
     ],
 )
 
@@ -156,6 +157,7 @@ tf_ng_module(
         ":route_config",
         ":types",
         "@npm//@angular/core",
+        "@npm//@ngrx/store",
         "@npm//@types/jasmine",
     ],
 )

@@ -72,7 +72,7 @@ const TEST_UINT8ARRAY = new Uint8Array([12, 34, 50, 160, 200]);
 // leave the rest of the string to be 0
 const TEST_RANDOMID_STRING = '023ac000000000000000000000000000';
 
-describe('app_routing_effects', () => {
+fdescribe('app_routing_effects', () => {
   let effects: AppRoutingEffects;
   let store: MockStore<State>;
   let action: ReplaySubject<Action>;
@@ -122,6 +122,9 @@ describe('app_routing_effects', () => {
           routeKind: RouteKind.UNKNOWN,
           path: '/no_deeplink_unknown/route',
           ngComponent: TestableComponent,
+          actionGenerator: () => {
+            return testAction();
+          },
         },
         {
           path: '/redirect_no_query/:route/:param',
@@ -343,6 +346,28 @@ describe('app_routing_effects', () => {
         actions.navigating({
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENTS,
+            params: {},
+          }),
+        }),
+      ]);
+    });
+
+    it('dispatches RouteMatch.action if it exists', () => {
+      store.overrideSelector(getActiveRoute, null);
+      store.overrideSelector(getActiveNamespaceId, null);
+      store.refreshState();
+
+      action.next(
+        actions.navigationRequested({
+          pathname: '/redirect_query/no_deeplink_unknown/route',
+        })
+      );
+
+      expect(actualActions).toEqual([
+        testAction(),
+        actions.navigating({
+          after: buildRoute({
+            routeKind: RouteKind.UNKNOWN,
             params: {},
           }),
         }),
@@ -1271,6 +1296,7 @@ describe('app_routing_effects', () => {
           tick();
 
           expect(actualActions).toEqual([
+            jasmine.any(Object), // This route has an actionGenerator.
             actions.navigating({
               after: buildRoute({
                 routeKind: RouteKind.UNKNOWN,

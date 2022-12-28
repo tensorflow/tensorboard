@@ -454,6 +454,11 @@ export class AppRoutingEffects {
           })
         );
       }),
+      tap(([{routeMatch}]) => {
+        if (routeMatch.action) {
+          this.store.dispatch(routeMatch.action);
+        }
+      }),
       switchMap(([{routeMatch, options}]): Observable<InternalRoute> => {
         if (routeMatch.deepLinkProvider === null) {
           // Without a DeepLinkProvider emit a single result without query
