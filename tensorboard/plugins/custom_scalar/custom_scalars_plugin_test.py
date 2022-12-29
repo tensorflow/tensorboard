@@ -46,7 +46,7 @@ tf.compat.v1.disable_v2_behavior()
 
 class CustomScalarsPluginTest(tf.test.TestCase):
     def __init__(self, *args, **kwargs):
-        super(CustomScalarsPluginTest, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.logdir = os.path.join(self.get_temp_dir(), "logdir")
         os.makedirs(self.logdir)
 

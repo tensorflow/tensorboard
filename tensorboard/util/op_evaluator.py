@@ -60,7 +60,7 @@ class PersistentOpEvaluator:
     """
 
     def __init__(self):
-        super(PersistentOpEvaluator, self).__init__()
+        super().__init__()
         self._session = None
         self._initialization_lock = threading.Lock()
 

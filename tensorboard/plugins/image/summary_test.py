@@ -41,7 +41,7 @@ except AttributeError:
 
 class SummaryBaseTest:
     def setUp(self):
-        super(SummaryBaseTest, self).setUp()
+        super().setUp()
         np.random.seed(0)
         self.image_width = 20
         self.image_height = 15
@@ -184,7 +184,7 @@ class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
 
 class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
     def setUp(self):
-        super(SummaryV2OpTest, self).setUp()
+        super().setUp()
         if tf2 is None:
             self.skipTest("TF v2 summary API not available")
 

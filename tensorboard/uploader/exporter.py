@@ -474,7 +474,7 @@ class OutputDirectoryExistsError(ValueError):
 
 class GrpcTimeoutException(Exception):
     def __init__(self, experiment_id):
-        super(GrpcTimeoutException, self).__init__(experiment_id)
+        super().__init__(experiment_id)
         self.experiment_id = experiment_id
 
 

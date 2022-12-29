@@ -237,7 +237,7 @@ class TensorBoardInfoIoTest(tb_test.TestCase):
     """Tests for `write_info_file`, `remove_info_file`, and `get_all`."""
 
     def setUp(self):
-        super(TensorBoardInfoIoTest, self).setUp()
+        super().setUp()
         patcher = mock.patch.dict(os.environ, {"TMPDIR": self.get_temp_dir()})
         patcher.start()
         self.addCleanup(patcher.stop)

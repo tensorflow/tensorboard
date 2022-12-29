@@ -60,7 +60,7 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
           api_endpoint: Optional override value for API endpoint. Used for
             development only.
         """
-        super(ExperimentFromDev, self).__init__()
+        super().__init__()
         self._experiment_id = experiment_id
         self._api_client = get_api_client(api_endpoint=api_endpoint)
 

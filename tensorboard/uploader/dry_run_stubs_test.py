@@ -22,7 +22,7 @@ from tensorboard.uploader.proto import write_service_pb2
 
 class DryRunTensorBoardWriterServicerTest(tb_test.TestCase):
     def setUp(self):
-        super(DryRunTensorBoardWriterServicerTest, self).setUp()
+        super().setUp()
         self._stub = dry_run_stubs.DryRunTensorBoardWriterStub()
 
     def testCreateExperiment(self):

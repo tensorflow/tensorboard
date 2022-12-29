@@ -50,7 +50,7 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         Args:
           context: A base_plugin.TBContext instance.
         """
-        super(DebuggerV2Plugin, self).__init__(context)
+        super().__init__(context)
         self._logdir = context.logdir
         self._underlying_data_provider = None
         # Held while initializing `_underlying_data_provider` for the first

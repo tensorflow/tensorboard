@@ -787,7 +787,7 @@ class BlobSequenceTimeSeries(_TimeSeries):
         description,
         display_name,
     ):
-        super(BlobSequenceTimeSeries, self).__init__(
+        super().__init__(
             max_step=max_step,
             max_wall_time=max_wall_time,
             plugin_content=plugin_content,

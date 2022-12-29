@@ -169,7 +169,7 @@ class WerkzeugServerTest(tb_test.TestCase):
 
 class SubcommandTest(tb_test.TestCase):
     def setUp(self):
-        super(SubcommandTest, self).setUp()
+        super().setUp()
         self.stderr = io.StringIO()
         patchers = [
             mock.patch.object(program.TensorBoard, "_install_signal_handler"),

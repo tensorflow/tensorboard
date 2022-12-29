@@ -266,7 +266,7 @@ class ParseEventFilesSpecTest(tb_test.TestCase):
 
 class FileSystemSupportTest(tb_test.TestCase):
     def setUp(self):
-        super(FileSystemSupportTest, self).setUp()
+        super().setUp()
         try:
             # Do a dummy call to triger lazy loading of `get_registered_schemes`
             # before mocking it in tests, otherwise it won't be able to unmock

@@ -199,7 +199,7 @@ class EventAccumulatorTest(tf.test.TestCase):
 
 class MockingEventAccumulatorTest(EventAccumulatorTest):
     def setUp(self):
-        super(MockingEventAccumulatorTest, self).setUp()
+        super().setUp()
         self.stubs = tf.compat.v1.test.StubOutForTesting()
         self._real_constructor = ea.EventAccumulator
         self._real_generator = ea._GeneratorFromPath

@@ -42,7 +42,7 @@ class BaseTest:
         raise NotImplementedError()
 
     def setUp(self):
-        super(BaseTest, self).setUp()
+        super().setUp()
 
         self.app = self._create_app()
         self.server = werkzeug_test.Client(self.app, werkzeug.wrappers.Response)

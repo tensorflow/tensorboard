@@ -43,7 +43,7 @@ tf1.enable_eager_execution()
 
 class MultiplexerDataProviderTest(tf.test.TestCase):
     def setUp(self):
-        super(MultiplexerDataProviderTest, self).setUp()
+        super().setUp()
         self.logdir = self.get_temp_dir()
         self.ctx = context.RequestContext()
 

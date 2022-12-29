@@ -134,11 +134,11 @@ class EventAccumulatorTest(tf.test.TestCase):
 
 class MockingEventAccumulatorTest(EventAccumulatorTest):
     def setUp(self):
-        super(MockingEventAccumulatorTest, self).setUp()
+        super().setUp()
         self.stubs = tf.compat.v1.test.StubOutForTesting()
 
     def tearDown(self):
-        super(MockingEventAccumulatorTest, self).tearDown()
+        super().tearDown()
         self.stubs.CleanUp()
 
     def _make_accumulator(self, generator, **kwargs):

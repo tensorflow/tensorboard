@@ -49,7 +49,7 @@ class ReadableFormatter(BaseExperimentFormatter):
     _NAME_COLUMN_WIDTH = 20
 
     def __init__(self):
-        super(ReadableFormatter, self).__init__()
+        super().__init__()
 
     def format_experiment(self, experiment, experiment_url):
         output = []
@@ -83,7 +83,7 @@ class JsonFormatter:
     _JSON_INDENT = 2
 
     def __init__(self):
-        super(JsonFormatter, self).__init__()
+        super().__init__()
 
     def format_experiment(self, experiment, experiment_url):
         data = [

@@ -105,7 +105,7 @@ def _GetFakeAccumulator(
 
 class EventMultiplexerTest(tf.test.TestCase):
     def setUp(self):
-        super(EventMultiplexerTest, self).setUp()
+        super().setUp()
         self.stubs = tf.compat.v1.test.StubOutForTesting()
 
         self.stubs.Set(

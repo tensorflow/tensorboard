@@ -45,7 +45,7 @@ class FileWriter(tf.compat.v1.summary.FileWriter):
         # Briefly enter graph mode context so this testing FileWriter can be
         # created from an eager mode context without triggering a usage error.
         with tf.compat.v1.Graph().as_default():
-            super(FileWriter, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
 
     def add_test_summary(self, tag, simple_value=1.0, step=None):
         """Convenience for writing a simple summary for a given tag."""
@@ -63,7 +63,7 @@ class FileWriter(tf.compat.v1.summary.FileWriter):
                     "Added TensorFlow event proto. "
                     "Please prefer TensorBoard copy of the proto"
                 )
-        super(FileWriter, self).add_event(tf_event)
+        super().add_event(tf_event)
 
     def add_summary(self, summary, global_step=None):
         if isinstance(summary, summary_pb2.Summary):
@@ -77,7 +77,7 @@ class FileWriter(tf.compat.v1.summary.FileWriter):
                     "Added TensorFlow summary proto. "
                     "Please prefer TensorBoard copy of the proto"
                 )
-        super(FileWriter, self).add_summary(tf_summary, global_step)
+        super().add_summary(tf_summary, global_step)
 
     def add_session_log(self, session_log, global_step=None):
         if isinstance(session_log, event_pb2.SessionLog):
@@ -91,7 +91,7 @@ class FileWriter(tf.compat.v1.summary.FileWriter):
                     "Added TensorFlow session_log proto. "
                     "Please prefer TensorBoard copy of the proto"
                 )
-        super(FileWriter, self).add_session_log(tf_session_log, global_step)
+        super().add_session_log(tf_session_log, global_step)
 
     def add_graph(self, graph, global_step=None, graph_def=None):
         if isinstance(graph_def, graph_pb2.GraphDef):
@@ -101,7 +101,7 @@ class FileWriter(tf.compat.v1.summary.FileWriter):
         else:
             tf_graph_def = graph_def
 
-        super(FileWriter, self).add_graph(
+        super().add_graph(
             graph, global_step=global_step, graph_def=tf_graph_def
         )
 
@@ -113,7 +113,7 @@ class FileWriter(tf.compat.v1.summary.FileWriter):
         else:
             tf_meta_graph_def = meta_graph_def
 
-        super(FileWriter, self).add_meta_graph(
+        super().add_meta_graph(
             meta_graph_def=tf_meta_graph_def, global_step=global_step
         )
 

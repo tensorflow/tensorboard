@@ -36,7 +36,7 @@ from tensorboard import manager
 
 class ManagerEndToEndTest(tf.test.TestCase):
     def setUp(self):
-        super(ManagerEndToEndTest, self).setUp()
+        super().setUp()
 
         # Spy on subprocesses spawned so that we can kill them.
         self.popens = []
