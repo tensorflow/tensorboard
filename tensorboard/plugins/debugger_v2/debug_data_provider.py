@@ -474,7 +474,7 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
           logdir: Path to the directory from which the tfdbg v2 data will be
             loaded.
         """
-        super(LocalDebuggerV2DataProvider, self).__init__()
+        super().__init__()
         self._multiplexer = debug_data_multiplexer.DebuggerV2EventMultiplexer(
             logdir
         )

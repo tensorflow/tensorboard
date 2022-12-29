@@ -23,7 +23,7 @@ from google.protobuf import timestamp_pb2
 from tensorboard.compat.proto import summary_pb2
 
 
-class FakeTime(object):
+class FakeTime:
     """Thread-safe fake replacement for the `time` module."""
 
     def __init__(self, current=0.0):

@@ -43,7 +43,7 @@ class TestGrpcServer(grpc_util_test_pb2_grpc.TestServiceServicer):
     """Helper for testing gRPC client logic with a dummy gRPC server."""
 
     def __init__(self, handler):
-        super(TestGrpcServer, self).__init__()
+        super().__init__()
         self._handler = handler
 
     def TestRpc(self, request, context):

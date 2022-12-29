@@ -40,7 +40,7 @@ class AuthProvider(metaclass=abc.ABCMeta):
         pass
 
 
-class AuthContext(object):
+class AuthContext:
     """Authentication context within the scope of a single request.
 
     Auth providers are keyed within an `AuthContext` by arbitrary

@@ -42,7 +42,7 @@ from tensorboard.util import test_util
 logger = tb_logging.get_logger()
 
 
-class _EventGenerator(object):
+class _EventGenerator:
     """Class that can add_events and then yield them back.
 
     Satisfies the EventGenerator API required for the EventAccumulator.
@@ -134,11 +134,11 @@ class EventAccumulatorTest(tf.test.TestCase):
 
 class MockingEventAccumulatorTest(EventAccumulatorTest):
     def setUp(self):
-        super(MockingEventAccumulatorTest, self).setUp()
+        super().setUp()
         self.stubs = tf.compat.v1.test.StubOutForTesting()
 
     def tearDown(self):
-        super(MockingEventAccumulatorTest, self).tearDown()
+        super().tearDown()
         self.stubs.CleanUp()
 
     def _make_accumulator(self, generator, **kwargs):

@@ -29,7 +29,7 @@ _ORIGINAL_IMPORT = __import__
 _TENSORFLOW_IO_MODULE = "tensorflow_io"
 
 
-class FakeFlags(object):
+class FakeFlags:
     def __init__(
         self,
         detect_file_replacement=None,
@@ -266,7 +266,7 @@ class ParseEventFilesSpecTest(tb_test.TestCase):
 
 class FileSystemSupportTest(tb_test.TestCase):
     def setUp(self):
-        super(FileSystemSupportTest, self).setUp()
+        super().setUp()
         try:
             # Do a dummy call to triger lazy loading of `get_registered_schemes`
             # before mocking it in tests, otherwise it won't be able to unmock

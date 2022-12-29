@@ -20,7 +20,7 @@ from tensorboard.util import op_evaluator
 
 class PersistentOpEvaluatorTest(tf.test.TestCase):
     def setUp(self):
-        super(PersistentOpEvaluatorTest, self).setUp()
+        super().setUp()
 
         patch = tf.test.mock.patch(
             "tensorflow.compat.v1.Session", wraps=tf.Session
@@ -30,7 +30,7 @@ class PersistentOpEvaluatorTest(tf.test.TestCase):
 
         class Squarer(op_evaluator.PersistentOpEvaluator):
             def __init__(self):
-                super(Squarer, self).__init__()
+                super().__init__()
                 self._input = None
                 self._squarer = None
 

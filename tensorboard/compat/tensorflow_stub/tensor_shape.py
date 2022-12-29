@@ -19,7 +19,7 @@ from tensorboard.compat.proto import tensor_shape_pb2
 
 
 # @tf_export("Dimension")
-class Dimension(object):
+class Dimension:
     """Represents the value of one dimension in a TensorShape."""
 
     def __init__(self, value):
@@ -488,7 +488,7 @@ def as_dimension(value):
 
 
 # @tf_export("TensorShape")
-class TensorShape(object):
+class TensorShape:
     """Represents the shape of a `Tensor`.
 
     A `TensorShape` represents a possibly-partial shape specification for a

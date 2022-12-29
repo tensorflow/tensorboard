@@ -72,7 +72,7 @@ TENSORBOARD_CREDENTIALS_FILEPATH_PARTS = [
 ]
 
 
-class CredentialsStore(object):
+class CredentialsStore:
     """Private file store for a `google.oauth2.credentials.Credentials`."""
 
     _DEFAULT_CONFIG_DIRECTORY = object()  # Sentinel value.
@@ -200,7 +200,7 @@ class IdTokenAuthMetadataPlugin(grpc.AuthMetadataPlugin):
           request (google.auth.transport.Request): A HTTP transport request object
             used to refresh credentials as needed.
         """
-        super(IdTokenAuthMetadataPlugin, self).__init__()
+        super().__init__()
         if not isinstance(credentials, google.oauth2.credentials.Credentials):
             raise TypeError(
                 "Cannot get ID tokens from credentials type %s"

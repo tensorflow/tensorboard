@@ -82,7 +82,7 @@ Could not start data server: %s.
 """
 
 
-class TensorBoard(object):
+class TensorBoard:
     """Class for running TensorBoard.
 
     Fields:
@@ -699,9 +699,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
 
         self._fix_werkzeug_logging()
         try:
-            super(WerkzeugServer, self).__init__(
-                host, port, wsgi_app, _WSGIRequestHandler
-            )
+            super().__init__(host, port, wsgi_app, _WSGIRequestHandler)
         except socket.error as e:
             if hasattr(errno, "EACCES") and e.errno == errno.EACCES:
                 raise TensorBoardServerException(
@@ -818,7 +816,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
                     logger.warning(
                         "Failed to dual-bind to IPv4 wildcard: %s", str(e)
                     )
-        super(WerkzeugServer, self).server_bind()
+        super().server_bind()
 
     def handle_error(self, request, client_address):
         """Override to get rid of noisy EPIPE errors."""
@@ -868,7 +866,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
                 "use a proxy or pass --bind_all\n"
             )
             sys.stderr.flush()
-        super(WerkzeugServer, self).print_serving_message()
+        super().print_serving_message()
 
     def _fix_werkzeug_logging(self):
         """Fix werkzeug logging setup so it inherits TensorBoard's log level.

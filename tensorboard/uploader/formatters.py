@@ -22,7 +22,7 @@ import json
 from tensorboard.uploader import util
 
 
-class BaseExperimentFormatter(object):
+class BaseExperimentFormatter:
     """Abstract base class for formatting experiment information as a string."""
 
     __metaclass__ = abc.ABCMeta
@@ -49,7 +49,7 @@ class ReadableFormatter(BaseExperimentFormatter):
     _NAME_COLUMN_WIDTH = 20
 
     def __init__(self):
-        super(ReadableFormatter, self).__init__()
+        super().__init__()
 
     def format_experiment(self, experiment, experiment_url):
         output = []
@@ -77,13 +77,13 @@ class ReadableFormatter(BaseExperimentFormatter):
         return "\n".join(output)
 
 
-class JsonFormatter(object):
+class JsonFormatter:
     """A formatter implementation: outputs experiment as JSON."""
 
     _JSON_INDENT = 2
 
     def __init__(self):
-        super(JsonFormatter, self).__init__()
+        super().__init__()
 
     def format_experiment(self, experiment, experiment_url):
         data = [

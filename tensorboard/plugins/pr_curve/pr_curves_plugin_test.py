@@ -41,7 +41,7 @@ assert_allclose = functools.partial(
 
 class PrCurvesPluginTest(tf.test.TestCase):
     def setUp(self):
-        super(PrCurvesPluginTest, self).setUp()
+        super().setUp()
         logdir = os.path.join(self.get_temp_dir(), "logdir")
 
         # Generate data.

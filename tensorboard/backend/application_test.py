@@ -30,7 +30,7 @@ from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 
 
-class FakeFlags(object):
+class FakeFlags:
     def __init__(
         self,
         generic_data="auto",

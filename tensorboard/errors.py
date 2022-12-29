@@ -38,7 +38,7 @@ class PublicError(RuntimeError):
     http_code = 500  # default; subclasses should override
 
     def __init__(self, details):
-        super(PublicError, self).__init__(details)
+        super().__init__(details)
         self.headers = []
 
 
@@ -56,7 +56,7 @@ class InvalidArgumentError(PublicError):
 
     def __init__(self, details=None):
         msg = _format_message("Invalid argument", details)
-        super(InvalidArgumentError, self).__init__(msg)
+        super().__init__(msg)
 
 
 class NotFoundError(PublicError):
@@ -73,7 +73,7 @@ class NotFoundError(PublicError):
 
     def __init__(self, details=None):
         msg = _format_message("Not found", details)
-        super(NotFoundError, self).__init__(msg)
+        super().__init__(msg)
 
 
 class UnauthenticatedError(PublicError):
@@ -102,7 +102,7 @@ class UnauthenticatedError(PublicError):
             as described in RFC 7235.
         """
         msg = _format_message("Unauthenticated", details)
-        super(UnauthenticatedError, self).__init__(msg)
+        super().__init__(msg)
         self.headers.append(("WWW-Authenticate", challenge))
 
 
@@ -120,7 +120,7 @@ class PermissionDeniedError(PublicError):
 
     def __init__(self, details=None):
         msg = _format_message("Permission denied", details)
-        super(PermissionDeniedError, self).__init__(msg)
+        super().__init__(msg)
 
 
 def _format_message(code_name, details):

@@ -275,7 +275,7 @@ def _summary_pb(tag, hparams_plugin_data):
     return summary
 
 
-class HParam(object):
+class HParam:
     """A hyperparameter in an experiment.
 
     This class describes a hyperparameter in the abstract. It ranges
@@ -542,7 +542,7 @@ class Discrete(Domain):
         hparam_info.domain_discrete.extend(self._values)
 
 
-class Metric(object):
+class Metric:
     """A metric in an experiment.
 
     A metric is a real-valued function of a model. Each metric is

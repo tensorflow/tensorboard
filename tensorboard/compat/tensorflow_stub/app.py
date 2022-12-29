@@ -64,7 +64,7 @@ class _HelpFlag(flags.BooleanFlag):
     SHORT_NAME = "h"
 
     def __init__(self):
-        super(_HelpFlag, self).__init__(
+        super().__init__(
             self.NAME, False, "show this help", short_name=self.SHORT_NAME
         )
 
@@ -87,7 +87,7 @@ class _HelpfullFlag(flags.BooleanFlag):
     """Display help for flags in main module and all dependent modules."""
 
     def __init__(self):
-        super(_HelpfullFlag, self).__init__("helpfull", False, "show full help")
+        super().__init__("helpfull", False, "show full help")
 
     def parse(self, arg):
         if arg:

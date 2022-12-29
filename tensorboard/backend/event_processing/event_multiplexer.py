@@ -29,7 +29,7 @@ from tensorboard.util import tb_logging
 logger = tb_logging.get_logger()
 
 
-class EventMultiplexer(object):
+class EventMultiplexer:
     """An `EventMultiplexer` manages access to multiple `EventAccumulator`s.
 
     Each `EventAccumulator` is associated with a `run`, which is a self-contained

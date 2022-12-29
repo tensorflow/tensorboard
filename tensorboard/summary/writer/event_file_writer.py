@@ -26,7 +26,7 @@ from tensorboard.compat.proto import event_pb2
 from tensorboard.summary.writer.record_writer import RecordWriter
 
 
-class AtomicCounter(object):
+class AtomicCounter:
     def __init__(self, initial_value):
         self._value = initial_value
         self._lock = threading.Lock()
@@ -42,7 +42,7 @@ class AtomicCounter(object):
 _global_uid = AtomicCounter(0)
 
 
-class EventFileWriter(object):
+class EventFileWriter:
     """Writes `Event` protocol buffers to an event file.
 
     The `EventFileWriter` class creates an event file in the specified
@@ -134,7 +134,7 @@ class EventFileWriter(object):
         self._async_writer.close()
 
 
-class _AsyncWriter(object):
+class _AsyncWriter:
     """Writes bytes to a file."""
 
     def __init__(self, record_writer, max_queue_size=20, flush_secs=120):

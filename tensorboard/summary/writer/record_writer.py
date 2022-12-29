@@ -17,7 +17,7 @@ import struct
 from tensorboard.compat.tensorflow_stub.pywrap_tensorflow import masked_crc32c
 
 
-class RecordWriter(object):
+class RecordWriter:
     """Write encoded protobuf to a file with packing defined in tensorflow."""
 
     def __init__(self, writer):

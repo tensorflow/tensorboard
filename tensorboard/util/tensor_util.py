@@ -181,7 +181,7 @@ _TENSOR_CONTENT_TYPES = frozenset(
 )
 
 
-class _Message(object):
+class _Message:
     def __init__(self, message):
         self._message = message
 

@@ -45,7 +45,7 @@ def _CreateCleanDirectory(path):
     tf.io.gfile.mkdir(path)
 
 
-class _FakeAccumulator(object):
+class _FakeAccumulator:
     def __init__(self, path):
         """Constructs a fake accumulator with some fake events.
 
@@ -105,7 +105,7 @@ def _GetFakeAccumulator(
 
 class EventMultiplexerTest(tf.test.TestCase):
     def setUp(self):
-        super(EventMultiplexerTest, self).setUp()
+        super().setUp()
         self.stubs = tf.compat.v1.test.StubOutForTesting()
 
         self.stubs.Set(

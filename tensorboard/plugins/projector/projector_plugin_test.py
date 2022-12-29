@@ -49,7 +49,7 @@ USING_REAL_TF = tf_compat.__version__ != "stub"
 
 class ProjectorAppTest(tf.test.TestCase):
     def __init__(self, *args, **kwargs):
-        super(ProjectorAppTest, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.logdir = None
         self.plugin = None
         self.server = None

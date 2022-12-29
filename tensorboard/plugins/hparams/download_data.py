@@ -22,7 +22,7 @@ import math
 from tensorboard.plugins.hparams import error
 
 
-class OutputFormat(object):
+class OutputFormat:
     """An enum used to list the valid output formats for API calls."""
 
     JSON = "json"
@@ -30,7 +30,7 @@ class OutputFormat(object):
     LATEX = "latex"
 
 
-class Handler(object):
+class Handler:
     """Handles a DownloadData request."""
 
     def __init__(

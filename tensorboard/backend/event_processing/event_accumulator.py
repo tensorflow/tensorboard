@@ -116,7 +116,7 @@ STORE_EVERYTHING_SIZE_GUIDANCE = {
 }
 
 
-class EventAccumulator(object):
+class EventAccumulator:
     """An `EventAccumulator` takes an event generator, and accumulates the
     values.
 

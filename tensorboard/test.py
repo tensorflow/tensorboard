@@ -30,7 +30,7 @@ class TestCase(absltest.TestCase):
     """
 
     def __init__(self, *args, **kwargs):
-        super(TestCase, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._tempdir = None
 
     def get_temp_dir(self):

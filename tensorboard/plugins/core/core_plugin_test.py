@@ -44,7 +44,7 @@ NO_CACHE_CONTROL_VALUE = "no-cache, must-revalidate"
 ONE_DAY_CACHE_CONTROL_VALUE = "private, max-age=86400"
 
 
-class FakeFlags(object):
+class FakeFlags:
     def __init__(
         self,
         bind_all=False,
@@ -255,7 +255,7 @@ class CorePluginTest(tf.test.TestCase):
         self.assertEqual(parsed_object["data_location"], self.get_temp_dir())
 
     def testEnvironmentWithExperimentMetadata(self):
-        class FakeDataProvider(object):
+        class FakeDataProvider:
             def experiment_metadata(self, ctx, *, experiment_id):
                 del experiment_id  # Unused.
                 return provider.ExperimentMetadata(

@@ -59,17 +59,17 @@ _RUN_WITHOUT_GRAPH_WITHOUT_METADATA = (
 )
 
 
-class GraphsPluginBaseTest(object):
+class GraphsPluginBaseTest:
 
     _METADATA_TAG = "secret-stats"
     _MESSAGE_PREFIX_LENGTH_LOWER_BOUND = 1024
 
     def __init__(self, *args, **kwargs):
-        super(GraphsPluginBaseTest, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.plugin = None
 
     def setUp(self):
-        super(GraphsPluginBaseTest, self).setUp()
+        super().setUp()
 
     def generate_run(
         self, logdir, run_name, include_graph, include_run_metadata

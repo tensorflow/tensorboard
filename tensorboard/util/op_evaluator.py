@@ -21,7 +21,7 @@ Requires TensorFlow.
 import threading
 
 
-class PersistentOpEvaluator(object):
+class PersistentOpEvaluator:
     """Evaluate a fixed TensorFlow graph repeatedly, safely, efficiently.
 
     Extend this class to create a particular kind of op evaluator, like an
@@ -60,7 +60,7 @@ class PersistentOpEvaluator(object):
     """
 
     def __init__(self):
-        super(PersistentOpEvaluator, self).__init__()
+        super().__init__()
         self._session = None
         self._initialization_lock = threading.Lock()
 

@@ -26,7 +26,7 @@ from google.protobuf import json_format
 from tensorboard.plugins.scalar import metadata as scalar_metadata
 
 
-class Context(object):
+class Context:
     """Wraps the base_plugin.TBContext to stores additional data shared across
     API handlers for the HParams plugin backend.
 

@@ -59,7 +59,7 @@ _IMGHDR_TO_MIMETYPE = {
 _DEFAULT_IMAGE_MIMETYPE = "application/octet-stream"
 
 
-class LRUCache(object):
+class LRUCache:
     """LRU cache.
 
     Used for storing the last used tensor.
@@ -90,7 +90,7 @@ class LRUCache(object):
         self._dict[key] = value
 
 
-class EmbeddingMetadata(object):
+class EmbeddingMetadata:
     """Metadata container for an embedding.
 
     The metadata holds different columns with values used for

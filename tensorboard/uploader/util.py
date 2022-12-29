@@ -22,7 +22,7 @@ import os.path
 import time
 
 
-class RateLimiter(object):
+class RateLimiter:
     """Helper class for rate-limiting using a fixed minimum interval."""
 
     def __init__(self, interval_secs):

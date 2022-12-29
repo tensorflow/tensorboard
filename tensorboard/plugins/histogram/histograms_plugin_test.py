@@ -53,7 +53,7 @@ class HistogramsPluginTest(tf.test.TestCase):
     _RUN_WITH_SCALARS = "_RUN_WITH_SCALARS"
 
     def __init__(self, *args, **kwargs):
-        super(HistogramsPluginTest, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.logdir = None
 
     def load_runs(self, run_names):

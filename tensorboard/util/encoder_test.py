@@ -21,7 +21,7 @@ from tensorboard.util import encoder
 
 class TensorFlowPngEncoderTest(tf.test.TestCase):
     def setUp(self):
-        super(TensorFlowPngEncoderTest, self).setUp()
+        super().setUp()
         self._encode = encoder._TensorFlowPngEncoder()
         self._rgb = np.arange(12 * 34 * 3).reshape((12, 34, 3)).astype(np.uint8)
         self._rgba = (
@@ -52,7 +52,7 @@ class TensorFlowPngEncoderTest(tf.test.TestCase):
 
 class TensorFlowWavEncoderTest(tf.test.TestCase):
     def setUp(self):
-        super(TensorFlowWavEncoderTest, self).setUp()
+        super().setUp()
         self._encode = encoder._TensorFlowWavEncoder()
         space = np.linspace(0.0, 100.0, 44100)
         self._stereo = np.array([np.sin(space), np.cos(space)]).transpose()

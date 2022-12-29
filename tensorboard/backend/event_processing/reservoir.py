@@ -21,7 +21,7 @@ import random
 import threading
 
 
-class Reservoir(object):
+class Reservoir:
     """A map-to-arrays container, with deterministic Reservoir Sampling.
 
     Items are added with an associated key. Items may be retrieved by key, and
@@ -161,7 +161,7 @@ class Reservoir(object):
                 )
 
 
-class _ReservoirBucket(object):
+class _ReservoirBucket:
     """A container for items from a stream, that implements reservoir sampling.
 
     It always stores the most recent item as its final item.

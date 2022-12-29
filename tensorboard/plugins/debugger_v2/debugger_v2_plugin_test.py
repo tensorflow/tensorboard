@@ -110,7 +110,7 @@ _DEFAULT_DEVICE_SUFFIX = "GPU:0" if tf.test.is_gpu_available() else "CPU:0"
 
 class DebuggerV2PluginTest(tf.test.TestCase):
     def setUp(self):
-        super(DebuggerV2PluginTest, self).setUp()
+        super().setUp()
         self.logdir = self.get_temp_dir()
         context = base_plugin.TBContext(logdir=self.logdir)
         self.plugin = debugger_v2_plugin.DebuggerV2Plugin(context)
@@ -135,7 +135,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
 
     def tearDown(self):
         self.run_in_background_patch.stop()
-        super(DebuggerV2PluginTest, self).tearDown()
+        super().tearDown()
 
     def _getExactlyOneRun(self):
         """Assert there is exactly one DebuggerV2 run and get its ID."""

@@ -31,7 +31,7 @@ from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.util import test_util
 
 
-class _TimestampedByteLoader(object):
+class _TimestampedByteLoader:
     """A loader that loads timestamped bytes from a file."""
 
     def __init__(self, path, registry=None):

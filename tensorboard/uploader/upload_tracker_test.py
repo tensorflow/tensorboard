@@ -218,7 +218,7 @@ class UploadTrackerTest(tb_test.TestCase):
     """Test for the UploadTracker class."""
 
     def setUp(self):
-        super(UploadTrackerTest, self).setUp()
+        super().setUp()
         self.cumulative_bar = mock.MagicMock()
         self.skipped_bar = mock.MagicMock()
         self.uploading_bar = mock.MagicMock()
@@ -236,7 +236,7 @@ class UploadTrackerTest(tb_test.TestCase):
     def tearDown(self):
         self.mock_stdout_write.stop()
         self.mock_stdout_flush.stop()
-        super(UploadTrackerTest, self).tearDown()
+        super().tearDown()
 
     def testSendTracker(self):
         tracker = upload_tracker.UploadTracker(verbosity=1)

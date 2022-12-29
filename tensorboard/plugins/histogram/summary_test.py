@@ -41,9 +41,9 @@ except AttributeError:
     pass
 
 
-class SummaryBaseTest(object):
+class SummaryBaseTest:
     def setUp(self):
-        super(SummaryBaseTest, self).setUp()
+        super().setUp()
         np.random.seed(0)
         self.gaussian = np.random.normal(size=[100])
 
@@ -215,7 +215,7 @@ class SummaryV2PbTest(SummaryBaseTest, tf.test.TestCase):
 
 class SummaryV3OpTest(SummaryBaseTest, tf.test.TestCase):
     def setUp(self):
-        super(SummaryV3OpTest, self).setUp()
+        super().setUp()
         if tf2 is None:
             self.skipTest("v3 histogram summary API not available")
 

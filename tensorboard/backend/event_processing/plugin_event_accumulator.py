@@ -71,7 +71,7 @@ class TensorEvent:
     tensor_proto: tensor_pb2.TensorProto
 
 
-class EventAccumulator(object):
+class EventAccumulator:
     """An `EventAccumulator` takes an event generator, and accumulates the
     values.
 

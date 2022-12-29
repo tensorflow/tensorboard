@@ -25,7 +25,7 @@ from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import io_wrapper
 
 
-class _ByteLoader(object):
+class _ByteLoader:
     """A loader that loads individual bytes from a file."""
 
     def __init__(self, path):

@@ -31,7 +31,7 @@ tf.compat.v1.enable_eager_execution()
 
 class CallbackTest(tf.test.TestCase):
     def setUp(self):
-        super(CallbackTest, self).setUp()
+        super().setUp()
         self.logdir = os.path.join(self.get_temp_dir(), "logs")
 
     def _initialize_model(self, writer):

@@ -95,7 +95,7 @@ class StatData:
     length: int
 
 
-class LocalFileSystem(object):
+class LocalFileSystem:
     """Provides local fileystem access."""
 
     def exists(self, filename):
@@ -218,7 +218,7 @@ class LocalFileSystem(object):
         return StatData(file_length)
 
 
-class S3FileSystem(object):
+class S3FileSystem:
     """Provides filesystem access to S3."""
 
     def __init__(self):
@@ -418,7 +418,7 @@ class S3FileSystem(object):
                 raise
 
 
-class FSSpecFileSystem(object):
+class FSSpecFileSystem:
     """Provides filesystem access via fsspec.
 
     The current gfile interface doesn't map perfectly to the fsspec interface
@@ -659,7 +659,7 @@ if S3_ENABLED:
     register_filesystem("s3", S3FileSystem())
 
 
-class GFile(object):
+class GFile:
     # Only methods needed for TensorBoard are implemented.
 
     def __init__(self, filename, mode):

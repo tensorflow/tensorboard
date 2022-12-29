@@ -43,7 +43,7 @@ tf1.enable_eager_execution()
 
 class MultiplexerDataProviderTest(tf.test.TestCase):
     def setUp(self):
-        super(MultiplexerDataProviderTest, self).setUp()
+        super().setUp()
         self.logdir = self.get_temp_dir()
         self.ctx = context.RequestContext()
 
@@ -173,7 +173,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             "second_1": 2.0,
         }
 
-        class FakeMultiplexer(object):
+        class FakeMultiplexer:
             def Runs(multiplexer):
                 result = ["second_2", "first", "no_time", "second_1"]
                 self.assertItemsEqual(result, start_times)

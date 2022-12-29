@@ -190,11 +190,11 @@ class ReservoirBucketTest(tf.test.TestCase):
         )
 
     def testLazyFunctionEvaluationAndAlwaysKeepLast(self):
-        class FakeRandom(object):
+        class FakeRandom:
             def randint(self, a, b):  # pylint:disable=unused-argument
                 return 999
 
-        class Incrementer(object):
+        class Incrementer:
             def __init__(self):
                 self.n = 0
 
