@@ -15,6 +15,7 @@ limitations under the License.
 import {Component, Type} from '@angular/core';
 import {DeepLinkProvider} from './deep_link_provider';
 import {RouteKind, SerializableQueryParams} from './types';
+import {Action} from '@ngrx/store';
 
 export interface ConcreteRouteDef {
   routeKind: RouteKind;
@@ -43,6 +44,11 @@ export interface ConcreteRouteDef {
   // The function is called when navigating to this route. The Observable can
   // emit when the state that needs to be persisted changes.
   deepLinkProvider?: DeepLinkProvider;
+
+  // If defined, returns an Action to be dispatched. The action is dispatched
+  // early in the app routing handling, before deep links are parsed, before
+  // namespaced state is updated, and before navigation to the route.
+  actionGenerator?: (pathParts: string[]) => Action;
 }
 
 export interface RedirectionRouteDef {

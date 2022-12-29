@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {Component} from '@angular/core';
+import {createAction, props} from '@ngrx/store';
 import {RouteConfigs, RouteMatch} from './route_config';
 import {ConcreteRouteDef, RedirectionRouteDef} from './route_config_types';
 import {Navigation, RouteKind} from './types';
@@ -53,9 +54,15 @@ function buildRouteMatch(override: Partial<RouteMatch> = {}): RouteMatch {
     params: {},
     deepLinkProvider: null,
     originateFromRedirection: false,
+    action: null,
     ...override,
   } as RouteMatch;
 }
+
+/**
+ * An Action to use for testing RouteDef's actionGenerator property.
+ */
+const FakeAction = createAction('My fake action', props<{path: string[]}>());
 
 describe('route config', () => {
   describe('validation', () => {
@@ -230,6 +237,21 @@ describe('route config', () => {
       );
     });
 
+    it('calls actionGenerator if specified', () => {
+      const config = new RouteConfigs([
+        buildConcreteRouteDef({
+          routeKind: RouteKind.EXPERIMENT,
+          path: '/tb/:foo/:bar',
+          actionGenerator: (path) => {
+            return FakeAction({path});
+          },
+        }),
+      ]);
+
+      const match = config.match(buildNavigation({pathname: '/tb/a/b'}));
+      expect(match!.action).toEqual(FakeAction({path: ['tb', 'a', 'b']}));
+    });
+
     it('does not when the route is different', () => {
       const config = new RouteConfigs([
         buildConcreteRouteDef({path: '/tb/bar/baz'}),
@@ -275,6 +297,24 @@ describe('route config', () => {
         })
       );
     });
+
+    it('calls defaultRoute actionGenerator if specified', () => {
+      const config = new RouteConfigs([
+        buildConcreteRouteDef({
+          routeKind: RouteKind.EXPERIMENT,
+          path: '/tb',
+          defaultRoute: true,
+          actionGenerator: (path) => {
+            return FakeAction({path});
+          },
+        }),
+      ]);
+
+      const match = config.match(buildNavigation({pathname: '/blah/a/b/c'}));
+      expect(match!.action).toEqual(
+        FakeAction({path: ['blah', 'a', 'b', 'c']})
+      );
+    });
   });
 
   describe('matchByRouteKind', () => {
@@ -289,6 +329,7 @@ describe('route config', () => {
         params: {},
         pathname: '/tb',
         deepLinkProvider: null,
+        action: null,
       });
     });
 
@@ -308,6 +349,24 @@ describe('route config', () => {
 
       expect(match).not.toBeNull();
       expect(match!.pathname).toBe('/tb/a/bar/c');
+    });
+
+    it('calls actionGenerator if specified', () => {
+      const config = new RouteConfigs([
+        buildConcreteRouteDef({
+          routeKind: RouteKind.EXPERIMENT,
+          path: '/tb/:foo/:bar',
+          actionGenerator: (path) => {
+            return FakeAction({path});
+          },
+        }),
+      ]);
+
+      const match = config.matchByRouteKind(RouteKind.EXPERIMENT, {
+        foo: 'a',
+        bar: 'b',
+      });
+      expect(match!.action).toEqual(FakeAction({path: ['tb', 'a', 'b']}));
     });
 
     it('throws when routeKind is not matching any known config', () => {
