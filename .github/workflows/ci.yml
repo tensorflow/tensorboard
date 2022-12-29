@@ -201,7 +201,7 @@ jobs:
             --out-dir /tmp/pip_package \
             ;
       - name: 'Upload'
-        uses: actions/upload-artifact@ee69f02b3dfdecd58bb31b4d133da38ba6fe3700
+        uses: actions/upload-artifact@v3
         with:
           name: tensorboard-data-server
           path: /tmp/pip_package/*
