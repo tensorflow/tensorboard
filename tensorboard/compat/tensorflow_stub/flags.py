@@ -58,7 +58,7 @@ def _wrap_define_function(original_function):
     return wrapper
 
 
-class _FlagValuesWrapper(object):
+class _FlagValuesWrapper:
     """Wrapper class for absl.flags.FLAGS.
 
     The difference is that tf.compat.v1.flags.FLAGS implicitly parses

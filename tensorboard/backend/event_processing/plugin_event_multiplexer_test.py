@@ -45,7 +45,7 @@ def _CreateCleanDirectory(path):
     tf.io.gfile.mkdir(path)
 
 
-class _FakeAccumulator(object):
+class _FakeAccumulator:
     def __init__(self, path):
         """Constructs a fake accumulator with some fake events.
 

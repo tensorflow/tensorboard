@@ -45,7 +45,7 @@ if audio_ops is None:
     from tensorflow.python.ops import gen_audio_ops as audio_ops
 
 
-class SummaryBaseTest(object):
+class SummaryBaseTest:
     def setUp(self):
         super(SummaryBaseTest, self).setUp()
         self.samples_rate = 44100

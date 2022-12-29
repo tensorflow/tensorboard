@@ -70,7 +70,7 @@ _FILENAME_BLOBS_SUFFIX = ".bin"
 logger = tb_logging.get_logger()
 
 
-class TensorBoardExporter(object):
+class TensorBoardExporter:
     """Exports all of the user's experiment data from TensorBoard.dev.
 
     Data is exported into a directory, with one file per experiment. Each

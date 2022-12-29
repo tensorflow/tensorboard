@@ -24,7 +24,7 @@ from tensorboard import test as tb_test
 from tensorboard.backend import experiment_id
 
 
-class BaseTest(object):
+class BaseTest:
     """Base tests for `ExperimentIdMiddleware`."""
 
     def _echo_app(self, environ, start_response):

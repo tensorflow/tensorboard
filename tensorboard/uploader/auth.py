@@ -72,7 +72,7 @@ TENSORBOARD_CREDENTIALS_FILEPATH_PARTS = [
 ]
 
 
-class CredentialsStore(object):
+class CredentialsStore:
     """Private file store for a `google.oauth2.credentials.Credentials`."""
 
     _DEFAULT_CONFIG_DIRECTORY = object()  # Sentinel value.

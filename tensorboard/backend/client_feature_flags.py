@@ -20,7 +20,7 @@ from tensorboard import context
 from tensorboard import errors
 
 
-class ClientFeatureFlagsMiddleware(object):
+class ClientFeatureFlagsMiddleware:
     """Middleware for injecting client-side feature flags into the Context.
 
     The client webapp is expected to include a json-serialized version of its

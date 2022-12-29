@@ -34,7 +34,7 @@ tf.compat.v1.disable_v2_behavior()
 logger = tb_logging.get_logger()
 
 
-class _EventGenerator(object):
+class _EventGenerator:
     """Class that can add_events and then yield them back.
 
     Satisfies the EventGenerator API required for the EventAccumulator.

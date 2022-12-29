@@ -29,7 +29,7 @@ _ORIGINAL_IMPORT = __import__
 _TENSORFLOW_IO_MODULE = "tensorflow_io"
 
 
-class FakeFlags(object):
+class FakeFlags:
     def __init__(
         self,
         detect_file_replacement=None,

@@ -41,7 +41,7 @@ except AttributeError:
     pass
 
 
-class SummaryBaseTest(object):
+class SummaryBaseTest:
     def text(self, *args, **kwargs):
         raise NotImplementedError()
 

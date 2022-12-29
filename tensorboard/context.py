@@ -21,7 +21,7 @@ from tensorboard import auth as auth_lib
 _WSGI_KEY = "tensorboard.request_context"
 
 
-class RequestContext(object):
+class RequestContext:
     """Container of request-scoped values.
 
     This context is for cross-cutting concerns: authentication,

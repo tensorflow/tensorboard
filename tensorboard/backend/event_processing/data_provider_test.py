@@ -173,7 +173,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             "second_1": 2.0,
         }
 
-        class FakeMultiplexer(object):
+        class FakeMultiplexer:
             def Runs(multiplexer):
                 result = ["second_2", "first", "no_time", "second_1"]
                 self.assertItemsEqual(result, start_times)

@@ -23,7 +23,7 @@ _np_bfloat16 = pywrap_tensorflow.TF_bfloat16_type()
 
 
 # @tf_export("DType")
-class DType(object):
+class DType:
     """Represents the type of the elements in a `Tensor`.
 
     The following `DType` objects are defined:

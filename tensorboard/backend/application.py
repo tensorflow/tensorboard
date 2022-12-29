@@ -171,7 +171,7 @@ def make_plugin_loader(plugin_spec):
     raise TypeError("Not a TBLoader or TBPlugin subclass: %r" % (plugin_spec,))
 
 
-class TensorBoardWSGI(object):
+class TensorBoardWSGI:
     """The TensorBoard WSGI app that delegates to a set of TBPlugin."""
 
     def __init__(

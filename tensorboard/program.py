@@ -82,7 +82,7 @@ Could not start data server: %s.
 """
 
 
-class TensorBoard(object):
+class TensorBoard:
     """Class for running TensorBoard.
 
     Fields:

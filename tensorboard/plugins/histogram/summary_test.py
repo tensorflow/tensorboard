@@ -41,7 +41,7 @@ except AttributeError:
     pass
 
 
-class SummaryBaseTest(object):
+class SummaryBaseTest:
     def setUp(self):
         super(SummaryBaseTest, self).setUp()
         np.random.seed(0)

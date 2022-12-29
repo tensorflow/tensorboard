@@ -518,7 +518,7 @@ def _make_specific_exception(node_def, op, message, error_code):
 # some object creation overhead.
 # TODO(b/77295559): expand use of TF_Status* SWIG typemap and deprecate this.
 # @tf_export("errors.raise_exception_on_not_ok_status")  # pylint: disable=invalid-name
-class raise_exception_on_not_ok_status(object):
+class raise_exception_on_not_ok_status:
     """Context manager to check for C API status."""
 
     def __enter__(self):

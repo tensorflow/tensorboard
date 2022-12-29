@@ -107,7 +107,7 @@ class WerkzeugServerTest(tb_test.TestCase):
     IPv4, only IPv6, and both IPv4 and IPv6 enabled.
     """
 
-    class _StubApplication(object):
+    class _StubApplication:
         pass
 
     def make_flags(self, **kwargs):

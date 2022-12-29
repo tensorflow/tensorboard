@@ -21,7 +21,7 @@ Requires TensorFlow.
 import threading
 
 
-class PersistentOpEvaluator(object):
+class PersistentOpEvaluator:
     """Evaluate a fixed TensorFlow graph repeatedly, safely, efficiently.
 
     Extend this class to create a particular kind of op evaluator, like an

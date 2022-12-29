@@ -26,7 +26,7 @@ from tensorboard.util import tb_logging
 logger = tb_logging.get_logger()
 
 
-class LogdirLoader(object):
+class LogdirLoader:
     """Loader for a root log directory, maintaining multiple DirectoryLoaders.
 
     This class takes a root log directory and a factory for DirectoryLoaders, and

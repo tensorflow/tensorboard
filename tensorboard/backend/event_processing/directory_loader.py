@@ -29,7 +29,7 @@ logger = tb_logging.get_logger()
 _INACTIVE = object()
 
 
-class DirectoryLoader(object):
+class DirectoryLoader:
     """Loader for an entire directory, maintaining multiple active file
     loaders.
 

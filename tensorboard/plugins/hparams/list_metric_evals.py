@@ -19,7 +19,7 @@ from tensorboard.plugins.hparams import metrics
 from tensorboard.plugins.scalar import scalars_plugin
 
 
-class Handler(object):
+class Handler:
     """Handles a ListMetricEvals request."""
 
     def __init__(

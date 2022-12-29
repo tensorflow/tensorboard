@@ -118,7 +118,7 @@ class FileWriter(tf.compat.v1.summary.FileWriter):
         )
 
 
-class FileWriterCache(object):
+class FileWriterCache:
     """Cache for TensorBoard test file writers."""
 
     # Cache, keyed by directory.
@@ -145,7 +145,7 @@ class FileWriterCache(object):
             return FileWriterCache._cache[logdir]
 
 
-class FakeTime(object):
+class FakeTime:
     """Thread-safe fake replacement for the `time` module."""
 
     def __init__(self, current=0.0):

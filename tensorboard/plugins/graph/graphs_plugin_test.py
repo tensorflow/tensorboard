@@ -59,7 +59,7 @@ _RUN_WITHOUT_GRAPH_WITHOUT_METADATA = (
 )
 
 
-class GraphsPluginBaseTest(object):
+class GraphsPluginBaseTest:
 
     _METADATA_TAG = "secret-stats"
     _MESSAGE_PREFIX_LENGTH_LOWER_BOUND = 1024

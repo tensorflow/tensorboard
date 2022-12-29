@@ -82,7 +82,7 @@ def _make_tf_record_iterator(file_path):
             return tf.compat.v1.io.tf_record_iterator(file_path)
 
 
-class _PyRecordReaderIterator(object):
+class _PyRecordReaderIterator:
     """Python iterator for TF Records based on PyRecordReader."""
 
     def __init__(self, py_record_reader_new, file_path):
@@ -114,7 +114,7 @@ class _PyRecordReaderIterator(object):
     next = __next__  # for python2 compatibility
 
 
-class RawEventFileLoader(object):
+class RawEventFileLoader:
     """An iterator that yields Event protos as serialized bytestrings."""
 
     def __init__(self, file_path, detect_file_replacement=False):

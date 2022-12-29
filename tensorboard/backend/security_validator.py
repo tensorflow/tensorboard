@@ -61,7 +61,7 @@ def _maybe_raise_value_error(error_msg):
     # TODO(3.x): raise a value error.
 
 
-class SecurityValidatorMiddleware(object):
+class SecurityValidatorMiddleware:
     """WSGI middleware validating security on response.
 
     It validates:

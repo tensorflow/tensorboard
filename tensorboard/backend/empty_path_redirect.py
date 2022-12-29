@@ -26,7 +26,7 @@ the actual path "/foo", and so will be redirected to "/foo/".
 """
 
 
-class EmptyPathRedirectMiddleware(object):
+class EmptyPathRedirectMiddleware:
     """WSGI middleware to redirect from "" to "/"."""
 
     def __init__(self, application):

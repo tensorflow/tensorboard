@@ -23,7 +23,7 @@ See the `--path_prefix` flag docs for more details.
 from tensorboard import errors
 
 
-class PathPrefixMiddleware(object):
+class PathPrefixMiddleware:
     """WSGI middleware for path prefixes.
 
     All requests to this middleware must begin with the specified path

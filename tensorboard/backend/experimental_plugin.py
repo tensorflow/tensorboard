@@ -18,7 +18,7 @@ Contains the mechanism for marking plugins as experimental.
 """
 
 
-class ExperimentalPlugin(object):
+class ExperimentalPlugin:
     """A marker class used to annotate a plugin as experimental.
 
     Experimental plugins are hidden from users by default. The plugin will only
