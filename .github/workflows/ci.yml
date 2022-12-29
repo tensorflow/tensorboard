@@ -40,7 +40,7 @@ jobs:
         python_version: ['3.7']
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
-      - uses: actions/setup-python@152ba7c4dd6521b8e9c93f72d362ce03bf6c4f20
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
           architecture: 'x64'
@@ -143,7 +143,7 @@ jobs:
             rust_version: '1.65.0'
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
-      - uses: actions/setup-python@152ba7c4dd6521b8e9c93f72d362ce03bf6c4f20
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.8'
           architecture: 'x64'
@@ -217,7 +217,7 @@ jobs:
         python_version: ['3.7', '3.8', '3.9', '3.10']
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
-      - uses: actions/setup-python@152ba7c4dd6521b8e9c93f72d362ce03bf6c4f20
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
           architecture: 'x64'
@@ -235,7 +235,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
-      - uses: actions/setup-python@152ba7c4dd6521b8e9c93f72d362ce03bf6c4f20
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.7'
           architecture: 'x64'
