@@ -40,7 +40,7 @@ jobs:
         python_version: ['3.7']
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
         with:
           python-version: ${{ matrix.python_version }}
           architecture: 'x64'
@@ -124,7 +124,7 @@ jobs:
       - name: 'Upload Pip package as an artifact (with TensorFlow only)'
         # Prevent uploads when running on forks or non-master branch.
         if: matrix.tf_version_id == 'tf' && github.repository == 'tensorflow/tensorboard' && github.ref == 'refs/heads/master'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@ 83fd05a356d7e2593de66fc9913b3002723633cb # v3.1.1
         with:
           name: tb-nightly
           path: /tmp/tb_nightly_pip_package/*
@@ -143,7 +143,7 @@ jobs:
             rust_version: '1.65.0'
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
         with:
           python-version: '3.8'
           architecture: 'x64'
@@ -201,7 +201,7 @@ jobs:
             --out-dir /tmp/pip_package \
             ;
       - name: 'Upload'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@ 83fd05a356d7e2593de66fc9913b3002723633cb # v3.1.1
         with:
           name: tensorboard-data-server
           path: /tmp/pip_package/*
@@ -217,7 +217,7 @@ jobs:
         python_version: ['3.7', '3.8', '3.9', '3.10']
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
         with:
           python-version: ${{ matrix.python_version }}
           architecture: 'x64'
@@ -235,7 +235,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
         with:
           python-version: '3.7'
           architecture: 'x64'
