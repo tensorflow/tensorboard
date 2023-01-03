@@ -127,9 +127,9 @@ class NpmiPluginTest(tf.test.TestCase):
             "_npmi_/values",
             "_npmi_/embeddings",
         ]
-        self.assertItemsEqual(gt_runs, tags.keys())
-        self.assertItemsEqual(gt_tags, tags["run_1"])
-        self.assertItemsEqual(gt_tags, tags["run_2"])
+        self.assertCountEqual(gt_runs, tags.keys())
+        self.assertCountEqual(gt_tags, tags["run_1"])
+        self.assertCountEqual(gt_tags, tags["run_2"])
 
     def testAnnotations(self):
         plugin = self.create_plugin()
@@ -137,8 +137,8 @@ class NpmiPluginTest(tf.test.TestCase):
             context.RequestContext(),
             experiment="exp",
         )
-        self.assertItemsEqual(["name_1", "name_2"], annotations["run_1"])
-        self.assertItemsEqual(["name_1", "name_2"], annotations["run_2"])
+        self.assertCountEqual(["name_1", "name_2"], annotations["run_1"])
+        self.assertCountEqual(["name_1", "name_2"], annotations["run_2"])
 
     def testMetrics(self):
         plugin = self.create_plugin()
@@ -146,26 +146,26 @@ class NpmiPluginTest(tf.test.TestCase):
             context.RequestContext(),
             experiment="exp",
         )
-        self.assertItemsEqual(["A", "B"], metrics["run_1"])
-        self.assertItemsEqual(["A", "B"], metrics["run_2"])
+        self.assertCountEqual(["A", "B"], metrics["run_1"])
+        self.assertCountEqual(["A", "B"], metrics["run_2"])
 
     def testValues(self):
         plugin = self.create_plugin()
         values = plugin.values_impl(context.RequestContext(), experiment="exp")
-        self.assertItemsEqual([1.0, -1.0], values["run_1"][0])
-        self.assertItemsEqual([0.5, -0.5], values["run_1"][1])
-        self.assertItemsEqual([1.0, -1.0], values["run_2"][0])
-        self.assertItemsEqual([-0.5, None], values["run_2"][1])
+        self.assertCountEqual([1.0, -1.0], values["run_1"][0])
+        self.assertCountEqual([0.5, -0.5], values["run_1"][1])
+        self.assertCountEqual([1.0, -1.0], values["run_2"][0])
+        self.assertCountEqual([-0.5, None], values["run_2"][1])
 
     def testEmbeddings(self):
         plugin = self.create_plugin()
         embeddings = plugin.embeddings_impl(
             context.RequestContext(), experiment="exp"
         )
-        self.assertItemsEqual([1.0, 0.5], embeddings["run_1"][0])
-        self.assertItemsEqual([-0.5, 0.5], embeddings["run_1"][1])
-        self.assertItemsEqual([1.0, 0.5], embeddings["run_2"][0])
-        self.assertItemsEqual([-0.5, 0.5], embeddings["run_2"][1])
+        self.assertCountEqual([1.0, 0.5], embeddings["run_1"][0])
+        self.assertCountEqual([-0.5, 0.5], embeddings["run_1"][1])
+        self.assertCountEqual([1.0, 0.5], embeddings["run_2"][0])
+        self.assertCountEqual([-0.5, 0.5], embeddings["run_2"][1])
 
     def testIsActiveReturnsFalse(self):
         """The plugin should always return false because this is now handled

@@ -182,7 +182,7 @@ def _latest_checkpoints_changed(configs, run_path_pairs):
             if tf.io.gfile.exists(config_fpath):
                 with tf.io.gfile.GFile(config_fpath, "r") as f:
                     file_content = f.read()
-                text_format.Merge(file_content, config)
+                text_format.Parse(file_content, config)
         else:
             config = configs[run_name]
 
@@ -441,7 +441,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             if tf.io.gfile.exists(config_fpath):
                 with tf.io.gfile.GFile(config_fpath, "r") as f:
                     file_content = f.read()
-                text_format.Merge(file_content, config)
+                text_format.Parse(file_content, config)
             has_tensor_files = False
             for embedding in config.embeddings:
                 if embedding.tensor_path:

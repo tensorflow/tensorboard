@@ -104,7 +104,7 @@ class ProjectorAppTest(tf.test.TestCase):
         self._SetupWSGIApp()
 
         info_json = self._GetJson("/data/plugin/projector/info?run=.")
-        self.assertItemsEqual(
+        self.assertCountEqual(
             info_json["embeddings"],
             [
                 {
@@ -128,7 +128,7 @@ class ProjectorAppTest(tf.test.TestCase):
         self.assertTrue(run_json)
         run = run_json[0]
         info_json = self._GetJson("/data/plugin/projector/info?run=%s" % run)
-        self.assertItemsEqual(
+        self.assertCountEqual(
             info_json["embeddings"],
             [
                 {

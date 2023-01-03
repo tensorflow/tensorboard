@@ -128,17 +128,17 @@ class PrCurvesPluginTest(tf.test.TestCase):
         tags_response = self.plugin.tags_impl(context.RequestContext(), "123")
 
         # Assert that the runs are right.
-        self.assertItemsEqual(
+        self.assertCountEqual(
             ["colors", "mask_every_other_prediction"],
             list(tags_response.keys()),
         )
 
         # Assert that the tags for each run are correct.
-        self.assertItemsEqual(
+        self.assertCountEqual(
             ["red/pr_curves", "green/pr_curves", "blue/pr_curves"],
             list(tags_response["colors"].keys()),
         )
-        self.assertItemsEqual(
+        self.assertCountEqual(
             ["red/pr_curves", "green/pr_curves", "blue/pr_curves"],
             list(tags_response["mask_every_other_prediction"].keys()),
         )
@@ -198,7 +198,7 @@ class PrCurvesPluginTest(tf.test.TestCase):
         )
 
         # Assert that the runs are correct.
-        self.assertItemsEqual(
+        self.assertCountEqual(
             ["colors", "mask_every_other_prediction"],
             list(pr_curves_response.keys()),
         )
