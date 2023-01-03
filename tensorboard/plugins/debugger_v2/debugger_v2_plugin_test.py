@@ -1257,10 +1257,6 @@ class DebuggerV2PluginTest(tf.test.TestCase):
 
     def testServeGraphOpInfoForOpWithNoConsumers(self):
         """Get the op info of an op with no consumers in the same graph."""
-        self.skipTest("Temporarily disabled while internal Tensorflow "
-                      "changes are made. Googlers see b/264288347. This "
-                      "should be reenabled after the changes make it into "
-                      "tf-nightly")
         _generate_tfdbg_v2_data(self.logdir)
         run = self._getExactlyOneRun()
         # First, look up the graph_id and name of the Iendity op in the
@@ -1309,6 +1305,10 @@ class DebuggerV2PluginTest(tf.test.TestCase):
 
     def testServeGraphOpInfoForOpWithNoInputs(self):
         """Get the op info of an op with no inputs."""
+        self.skipTest("Temporarily disabled while internal Tensorflow "
+                      "changes are made. Googlers see b/264288347. This "
+                      "should be reenabled after the changes make it into "
+                      "tf-nightly")
         _generate_tfdbg_v2_data(self.logdir)
         run = self._getExactlyOneRun()
         # First, look up the graph_id and name of the Placeholder op in the
