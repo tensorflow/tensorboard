@@ -29,7 +29,6 @@ export enum TooltipSort {
   ASCENDING = 'ascending',
   DESCENDING = 'descending',
   NEAREST = 'nearest',
-  NEAREST_PIXEL = 'nearest_pixel',
   NEAREST_X = 'nearest_x',
   NEAREST_Y = 'nearest_Y',
 }

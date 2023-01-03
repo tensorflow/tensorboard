@@ -42,6 +42,7 @@ import {
   CardUniqueInfo,
   SCALARS_SMOOTHING_MAX,
   SCALARS_SMOOTHING_MIN,
+  TooltipSort,
   URLDeserializedState,
 } from '../internal_types';
 import {groupCardIdWithMetdata} from '../utils';
@@ -425,7 +426,10 @@ const reducer = createReducer(
   }),
   on(globalSettingsLoaded, (state, {partialSettings}) => {
     const metricsSettings: Partial<MetricsSettings> = {};
-    if (partialSettings.tooltipSortString) {
+    if (
+      partialSettings.tooltipSortString &&
+      Object.values(TooltipSort).includes(partialSettings.tooltipSortString)
+    ) {
       metricsSettings.tooltipSort = partialSettings.tooltipSortString;
     }
     if (typeof partialSettings.timeSeriesCardMinWidth === 'number') {

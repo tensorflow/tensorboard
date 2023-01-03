@@ -21,7 +21,12 @@ import {
   SettingsConverter,
   TEST_ONLY,
 } from './persistent_settings_data_source';
-import {BackendSettings, PersistableSettings, ThemeValue} from './types';
+import {
+  BackendSettings,
+  PersistableSettings,
+  ThemeValue,
+  TooltipSort,
+} from './types';
 
 describe('persistent_settings data_source test', () => {
   let getItemSpy: jasmine.Spy;
@@ -289,7 +294,7 @@ describe('persistent_settings data_source test', () => {
 
           expect(actual).toEqual({
             scalarSmoothing: 0.3,
-            tooltipSortString: 'ascending',
+            tooltipSortString: 'ascending' as TooltipSort,
             notificationLastReadTimeInMs: 3,
           });
         });
@@ -311,7 +316,7 @@ describe('persistent_settings data_source test', () => {
 
           expect(actual).toEqual({
             scalarSmoothing: 0.5,
-            tooltipSortString: 'default',
+            tooltipSortString: 'default' as TooltipSort,
             notificationLastReadTimeInMs: 100,
           });
         });

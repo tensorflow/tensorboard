@@ -68,6 +68,7 @@ export interface TooltipDatum<
   metadata: Metadata;
   closestPointIndex: number;
   point: PointDatum;
+  pixelLocation: Point;
 }
 
 const SCROLL_ZOOM_SPEED_FACTOR = 0.01;
@@ -555,10 +556,15 @@ export class LineChartInteractiveViewComponent
           })
           .map(({seriesDatum, metadata}) => {
             const index = findClosestIndex(seriesDatum.points, cursorLoc.x);
+            const point = seriesDatum.points[index];
             return {
               id: seriesDatum.id,
               closestPointIndex: index,
-              point: seriesDatum.points[index],
+              point,
+              pixelLocation: {
+                x: this.getDomX(point.x),
+                y: this.getDomY(point.y),
+              },
               metadata,
             };
           })

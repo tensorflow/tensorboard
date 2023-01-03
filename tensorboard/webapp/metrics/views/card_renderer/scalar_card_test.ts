@@ -67,6 +67,7 @@ import {
 import {
   DataSeries,
   DataSeriesMetadataMap,
+  Point,
   RendererType,
   ScaleType,
   TooltipDatum,
@@ -115,7 +116,8 @@ import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_w
       [ngTemplateOutlet]="tooltipTemplate"
       [ngTemplateOutletContext]="{
         data: tooltipDataForTesting,
-        cursorLocationInDataCoord: cursorLocForTesting
+        cursorLocationInDataCoord: cursorLocationInDataCoordForTesting,
+        cursorLocation: cursorLocationForTesting
       }"
     ></ng-container>
     <ng-container
@@ -165,10 +167,14 @@ class TestableLineChart {
   @Output()
   onViewBoxOverridden = new EventEmitter<boolean>();
 
-  // This input does not exist on real line-chart and is devised to make tooltipTemplate
+  // These inputs do not exist on the real line-chart and is devised to make tooltipTemplate
   // testable without using the real implementation.
   @Input() tooltipDataForTesting: TooltipDatum[] = [];
-  @Input() cursorLocForTesting: {x: number; y: number} = {x: 0, y: 0};
+  @Input() cursorLocationInDataCoordForTesting: {x: number; y: number} = {
+    x: 0,
+    y: 0,
+  };
+  @Input() cursorLocationForTesting: {x: number; y: number} = {x: 0, y: 0};
 
   private isViewBoxOverridden = new ReplaySubject<boolean>(1);
 
@@ -1142,7 +1148,8 @@ describe('scalar card', () => {
   describe('tooltip', () => {
     function buildTooltipDatum(
       metadata?: ScalarCardSeriesMetadata,
-      point: Partial<ScalarCardPoint> = {}
+      point: Partial<ScalarCardPoint> = {},
+      pixelLocation: Point = {x: 0, y: 0}
     ): TooltipDatum<ScalarCardSeriesMetadata, ScalarCardPoint> {
       return {
         id: metadata?.id ?? 'a',
@@ -1165,6 +1172,7 @@ describe('scalar card', () => {
           relativeTimeInMs: 0,
           ...point,
         },
+        pixelLocation,
       };
     }
 
@@ -1180,11 +1188,19 @@ describe('scalar card', () => {
 
     function setCursorLocation(
       fixture: ComponentFixture<ScalarCardContainer>,
-      cursorLocInDataCoord?: {x: number; y: number}
+      cursorLocInDataCoord?: {x: number; y: number},
+      cursorLocationInPixels?: Point
     ) {
       const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
 
-      lineChart.componentInstance.cursorLocForTesting = cursorLocInDataCoord;
+      if (cursorLocInDataCoord) {
+        lineChart.componentInstance.cursorLocationInDataCoordForTesting =
+          cursorLocInDataCoord;
+      }
+      if (cursorLocationInPixels) {
+        lineChart.componentInstance.cursorLocationForTesting =
+          cursorLocationInPixels;
+      }
       lineChart.componentInstance.changeDetectorRef.markForCheck();
     }
 
@@ -1616,6 +1632,10 @@ describe('scalar card', () => {
             y: 1000,
             value: 1000,
             wallTime: new Date('2020-01-01').getTime(),
+          },
+          {
+            x: 0,
+            y: 100,
           }
         ),
         buildTooltipDatum(
@@ -1634,6 +1654,10 @@ describe('scalar card', () => {
             y: -500,
             value: -500,
             wallTime: new Date('2020-12-31').getTime(),
+          },
+          {
+            x: 50,
+            y: 0,
           }
         ),
         buildTooltipDatum(
@@ -1652,10 +1676,14 @@ describe('scalar card', () => {
             y: 3,
             value: 3,
             wallTime: new Date('2021-01-01').getTime(),
+          },
+          {
+            x: 1000,
+            y: 30,
           }
         ),
       ]);
-      setCursorLocation(fixture, {x: 500, y: -100});
+      setCursorLocation(fixture, {x: 500, y: -100}, {x: 50, y: 0});
       fixture.detectChanges();
       assertTooltipRows(fixture, [
         ['', 'Row 2', '-500', '1,000', anyString, anyString],
@@ -1663,7 +1691,7 @@ describe('scalar card', () => {
         ['', 'Row 3', '3', '10,000', anyString, anyString],
       ]);
 
-      setCursorLocation(fixture, {x: 500, y: 600});
+      setCursorLocation(fixture, {x: 500, y: 600}, {x: 50, y: 80});
       fixture.detectChanges();
       assertTooltipRows(fixture, [
         ['', 'Row 1', '1000', '0', anyString, anyString],
@@ -1671,7 +1699,7 @@ describe('scalar card', () => {
         ['', 'Row 3', '3', '10,000', anyString, anyString],
       ]);
 
-      setCursorLocation(fixture, {x: 10000, y: -100});
+      setCursorLocation(fixture, {x: 10000, y: -100}, {x: 1000, y: 20});
       fixture.detectChanges();
       assertTooltipRows(fixture, [
         ['', 'Row 3', '3', '10,000', anyString, anyString],
@@ -1680,7 +1708,7 @@ describe('scalar card', () => {
       ]);
 
       // Right between row 1 and row 2. When tied, original order is used.
-      setCursorLocation(fixture, {x: 500, y: 250});
+      setCursorLocation(fixture, {x: 500, y: 250}, {x: 25, y: 50});
       fixture.detectChanges();
       assertTooltipRows(fixture, [
         ['', 'Row 1', '1000', '0', anyString, anyString],
