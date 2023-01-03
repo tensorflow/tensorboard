@@ -94,9 +94,9 @@ class TextPluginTest(tf.test.TestCase):
     def testIndex(self):
         plugin = self.create_plugin()
         index = plugin.index_impl(context.RequestContext(), experiment="123")
-        self.assertItemsEqual(["fry", "leela"], index.keys())
-        self.assertItemsEqual(["message", "vector"], index["fry"])
-        self.assertItemsEqual(["message", "vector"], index["leela"])
+        self.assertCountEqual(["fry", "leela"], index.keys())
+        self.assertCountEqual(["message", "vector"], index["fry"])
+        self.assertCountEqual(["message", "vector"], index["leela"])
 
     def testText(self):
         plugin = self.create_plugin()

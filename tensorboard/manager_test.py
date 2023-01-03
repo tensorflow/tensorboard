@@ -360,19 +360,19 @@ class TensorBoardInfoIoTest(tb_test.TestCase):
             with mock.patch("os.getpid", lambda: 76540 + i):
                 manager.remove_info_file()
 
-        self.assertItemsEqual(manager.get_all(), [])
+        self.assertCountEqual(manager.get_all(), [])
         add_info(1)
-        self.assertItemsEqual(manager.get_all(), [_make_info(1)])
+        self.assertCountEqual(manager.get_all(), [_make_info(1)])
         add_info(2)
-        self.assertItemsEqual(manager.get_all(), [_make_info(1), _make_info(2)])
+        self.assertCountEqual(manager.get_all(), [_make_info(1), _make_info(2)])
         remove_info(1)
-        self.assertItemsEqual(manager.get_all(), [_make_info(2)])
+        self.assertCountEqual(manager.get_all(), [_make_info(2)])
         add_info(3)
-        self.assertItemsEqual(manager.get_all(), [_make_info(2), _make_info(3)])
+        self.assertCountEqual(manager.get_all(), [_make_info(2), _make_info(3)])
         remove_info(3)
-        self.assertItemsEqual(manager.get_all(), [_make_info(2)])
+        self.assertCountEqual(manager.get_all(), [_make_info(2)])
         remove_info(2)
-        self.assertItemsEqual(manager.get_all(), [])
+        self.assertCountEqual(manager.get_all(), [])
 
     def test_get_all_ignores_bad_files(self):
         with open(os.path.join(self.info_dir, "pid-1234.info"), "w") as outfile:

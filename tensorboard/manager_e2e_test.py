@@ -167,7 +167,7 @@ class ManagerEndToEndTest(tf.test.TestCase):
         self.assertNotEqual(r1.info.port, r2.info.port)
         self.assertNotEqual(r1.info.pid, r2.info.pid)
         infos = manager.get_all()
-        self.assertItemsEqual(infos, [r1.info, r2.info])
+        self.assertCountEqual(infos, [r1.info, r2.info])
         self._assert_live(r1.info, expected_logdir="./logs")
         self._assert_live(r2.info, expected_logdir="./adders")
 
@@ -186,7 +186,7 @@ class ManagerEndToEndTest(tf.test.TestCase):
         self.assertIsInstance(r2, manager.StartLaunched)  # (picked a new port)
         self.assertEqual(r1.info.cache_key, r2.info.cache_key)
         infos = manager.get_all()
-        self.assertItemsEqual(infos, [r2.info])
+        self.assertCountEqual(infos, [r2.info])
         self._assert_live(r1.info, expected_logdir="./logs")
         self._assert_live(r2.info, expected_logdir="./logs")
 

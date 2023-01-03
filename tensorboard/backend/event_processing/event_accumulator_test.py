@@ -187,12 +187,12 @@ class EventAccumulatorTest(tf.test.TestCase):
         # Verifies that there are no unexpected keys in the actual response.
         # If this line fails, likely you added a new tag type, and need to update
         # the empty_tags dictionary above.
-        self.assertItemsEqual(actual.keys(), empty_tags.keys())
+        self.assertCountEqual(actual.keys(), empty_tags.keys())
 
         for key in actual:
             expected_value = expected.get(key, empty_tags[key])
             if isinstance(expected_value, list):
-                self.assertItemsEqual(actual[key], expected_value)
+                self.assertCountEqual(actual[key], expected_value)
             else:
                 self.assertEqual(actual[key], expected_value)
 

@@ -220,7 +220,7 @@ class CustomScalarsPluginTest(tf.test.TestCase):
         ctx = context.RequestContext()
         body = self.plugin.scalars_impl(ctx, "bar", "increments", "exp_id")
         self.assertTrue(body["regex_valid"])
-        self.assertItemsEqual(
+        self.assertCountEqual(
             ["increments/scalar_summary"], list(body["tag_to_events"].keys())
         )
         data = body["tag_to_events"]["increments/scalar_summary"]
