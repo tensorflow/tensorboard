@@ -793,6 +793,10 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
 
     def testServeGraphExecutionDigestsPartialRange(self):
+        self.skipTest("Temporarily disabled while internal Tensorflow "
+                      "changes are made. Googlers see b/264288347. This "
+                      "should be reenabled after the changes make it into "
+                      "tf-nightly")
         _generate_tfdbg_v2_data(self.logdir)
         run = self._getExactlyOneRun()
         response = self.server.get(
@@ -842,6 +846,10 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertTrue(digests[3]["graph_id"])
 
     def testServeGraphExecutionDigestsImplicitFullRange(self):
+        self.skipTest("Temporarily disabled while internal Tensorflow "
+                      "changes are made. Googlers see b/264288347. This "
+                      "should be reenabled after the changes make it into "
+                      "tf-nightly")
         _generate_tfdbg_v2_data(self.logdir)
         run = self._getExactlyOneRun()
         response = self.server.get(
@@ -866,6 +874,10 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertTrue(digests[-1]["graph_id"])
 
     def testServeGraphExecutionDigestOutOfBoundsError(self):
+        self.skipTest("Temporarily disabled while internal Tensorflow "
+                      "changes are made. Googlers see b/264288347. This "
+                      "should be reenabled after the changes make it into "
+                      "tf-nightly")
         _generate_tfdbg_v2_data(self.logdir)
         run = self._getExactlyOneRun()
 
@@ -915,6 +927,10 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
 
     def testServeASingleGraphExecutionDataObject(self):
+        self.skipTest("Temporarily disabled while internal Tensorflow "
+                      "changes are made. Googlers see b/264288347. This "
+                      "should be reenabled after the changes make it into "
+                      "tf-nightly")
         _generate_tfdbg_v2_data(self.logdir, tensor_debug_mode="CONCISE_HEALTH")
         run = self._getExactlyOneRun()
         response = self.server.get(
@@ -942,6 +958,10 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEndsWith(graph_exec["device_name"], _DEFAULT_DEVICE_SUFFIX)
 
     def testServeMultipleGraphExecutionDataObjects(self):
+        self.skipTest("Temporarily disabled while internal Tensorflow "
+                      "changes are made. Googlers see b/264288347. This "
+                      "should be reenabled after the changes make it into "
+                      "tf-nightly")
         _generate_tfdbg_v2_data(self.logdir, tensor_debug_mode="CONCISE_HEALTH")
         run = self._getExactlyOneRun()
         response = self.server.get(
@@ -995,6 +1015,10 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEndsWith(graph_exec["device_name"], _DEFAULT_DEVICE_SUFFIX)
 
     def testServeGraphExecutionDataObjectsOutOfBoundsError(self):
+        self.skipTest("Temporarily disabled while internal Tensorflow "
+                      "changes are made. Googlers see b/264288347. This "
+                      "should be reenabled after the changes make it into "
+                      "tf-nightly")
         _generate_tfdbg_v2_data(self.logdir)
         run = self._getExactlyOneRun()
 
@@ -1233,6 +1257,10 @@ class DebuggerV2PluginTest(tf.test.TestCase):
 
     def testServeGraphOpInfoForOpWithNoConsumers(self):
         """Get the op info of an op with no consumers in the same graph."""
+        self.skipTest("Temporarily disabled while internal Tensorflow "
+                      "changes are made. Googlers see b/264288347. This "
+                      "should be reenabled after the changes make it into "
+                      "tf-nightly")
         _generate_tfdbg_v2_data(self.logdir)
         run = self._getExactlyOneRun()
         # First, look up the graph_id and name of the Iendity op in the
