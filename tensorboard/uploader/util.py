@@ -174,7 +174,7 @@ def format_time_absolute(timestamp_pb):
     Returns:
       An RFC 3339 date-time string.
     """
-    dt = datetime.datetime.utcfromtimestamp(
+    dt = datetime.datetime.fromtimestamp(
         timestamp_pb.seconds, tz=datetime.timezone.utc
     )
     return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
