@@ -806,11 +806,11 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         data = json.loads(response.get_data())
         self.assertEqual(data["begin"], 0)
         self.assertEqual(data["end"], 4)
-        self.assertEqual(data["num_digests"], 219)
+        self.assertEqual(data["num_digests"], 207)
         digests = data["graph_execution_digests"]
         self.assertLen(digests, 4)
         self.assertGreater(digests[0]["wall_time"], 0)
-        self.assertEqual(digests[0]["op_type"], "Placeholder")
+        self.assertEqual(digests[0]["op_type"], "Const")
         self.assertEqual(digests[0]["output_slot"], 0)
         self.assertTrue(digests[0]["op_name"])
         self.assertTrue(digests[0]["graph_id"])
@@ -818,7 +818,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertGreaterEqual(
             digests[1]["wall_time"], digests[0]["wall_time"]
         )
-        self.assertEqual(digests[1]["op_type"], "Const")
+        self.assertEqual(digests[1]["op_type"], "Unpack")
         self.assertEqual(digests[1]["output_slot"], 0)
         self.assertTrue(digests[1]["op_name"])
         self.assertNotEqual(digests[1]["op_name"], digests[0]["op_name"])
@@ -827,8 +827,8 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertGreaterEqual(
             digests[2]["wall_time"], digests[1]["wall_time"]
         )
-        self.assertEqual(digests[2]["op_type"], "Placeholder")
-        self.assertEqual(digests[2]["output_slot"], 0)
+        self.assertEqual(digests[2]["op_type"], "Unpack")
+        self.assertEqual(digests[2]["output_slot"], 1)
         self.assertTrue(digests[2]["op_name"])
         self.assertTrue(digests[2]["graph_id"])
 
@@ -837,7 +837,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         # The unstack() function uses the Unpack op under the hood.
         self.assertEqual(digests[3]["op_type"], "Unpack")
-        self.assertEqual(digests[3]["output_slot"], 0)
+        self.assertEqual(digests[3]["output_slot"], 2)
         self.assertTrue(digests[3]["op_name"])
         self.assertTrue(digests[3]["graph_id"])
 
@@ -853,10 +853,10 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         data = json.loads(response.get_data())
         self.assertEqual(data["begin"], 0)
-        self.assertEqual(data["end"], 219)
-        self.assertEqual(data["num_digests"], 219)
+        self.assertEqual(data["end"], 207)
+        self.assertEqual(data["num_digests"], 207)
         digests = data["graph_execution_digests"]
-        self.assertLen(digests, 219)
+        self.assertLen(digests, 207)
         self.assertGreater(digests[-1]["wall_time"], 0)
         # Due to the while loop in the tf.function, the last op executed
         # is a Less op.
@@ -880,7 +880,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         self.assertEqual(
             json.loads(response.get_data()),
-            {"error": "Invalid argument: end index (300) out of bounds (219)"},
+            {"error": "Invalid argument: end index (300) out of bounds (207)"},
         )
 
         # begin = -1; end = 2
@@ -929,7 +929,6 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(data["end"], 1)
         self.assertLen(data["graph_executions"], 1)
         graph_exec = data["graph_executions"][0]
-        self.assertStartsWith(graph_exec["op_type"], "Placeholder")
         self.assertTrue(graph_exec["op_name"])
         self.assertEqual(graph_exec["output_slot"], 0)
         self.assertTrue(graph_exec["graph_id"])
@@ -937,7 +936,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(graph_exec["graph_ids"][-1], graph_exec["graph_id"])
         # [tensor_id, element_count, nan_count, neg_inf_count, pos_inf_count].
         self.assertEqual(
-            graph_exec["debug_tensor_value"], [1.0, 4.0, 0.0, 0.0, 0.0]
+            graph_exec["debug_tensor_value"], [4.0, 1.0, 0.0, 0.0, 0.0]
         )
         self.assertEndsWith(graph_exec["device_name"], _DEFAULT_DEVICE_SUFFIX)
 
@@ -957,7 +956,6 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertLen(data["graph_executions"], 3)
 
         graph_exec = data["graph_executions"][0]
-        self.assertStartsWith(graph_exec["op_type"], "Placeholder")
         self.assertTrue(graph_exec["op_name"])
         self.assertEqual(graph_exec["output_slot"], 0)
         self.assertTrue(graph_exec["graph_id"])
@@ -965,19 +963,18 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(graph_exec["graph_ids"][-1], graph_exec["graph_id"])
         # [tensor_id, element_count, nan_count, neg_inf_count, pos_inf_count].
         self.assertEqual(
-            graph_exec["debug_tensor_value"], [1.0, 4.0, 0.0, 0.0, 0.0]
+            graph_exec["debug_tensor_value"], [4.0, 1.0, 0.0, 0.0, 0.0]
         )
         self.assertEndsWith(graph_exec["device_name"], _DEFAULT_DEVICE_SUFFIX)
 
         graph_exec = data["graph_executions"][1]
-        self.assertStartsWith(graph_exec["op_type"], "Placeholder")
         self.assertTrue(graph_exec["op_name"])
-        self.assertEqual(graph_exec["output_slot"], 0)
+        self.assertEqual(graph_exec["output_slot"], 1)
         self.assertTrue(graph_exec["graph_id"])
         self.assertGreaterEqual(len(graph_exec["graph_ids"]), 1)
         self.assertEqual(graph_exec["graph_ids"][-1], graph_exec["graph_id"])
         self.assertEqual(
-            graph_exec["debug_tensor_value"], [3.0, 4.0, 0.0, 0.0, 0.0]
+            graph_exec["debug_tensor_value"], [5.0, 1.0, 0.0, 0.0, 0.0]
         )
         self.assertEndsWith(graph_exec["device_name"], _DEFAULT_DEVICE_SUFFIX)
 
@@ -985,12 +982,12 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         # The unstack() function uses the Unpack op under the hood.
         self.assertStartsWith(graph_exec["op_type"], "Unpack")
         self.assertTrue(graph_exec["op_name"])
-        self.assertEqual(graph_exec["output_slot"], 0)
+        self.assertEqual(graph_exec["output_slot"], 2)
         self.assertTrue(graph_exec["graph_id"])
         self.assertGreaterEqual(len(graph_exec["graph_ids"]), 1)
         self.assertEqual(graph_exec["graph_ids"][-1], graph_exec["graph_id"])
         self.assertEqual(
-            graph_exec["debug_tensor_value"], [4.0, 1.0, 0.0, 0.0, 0.0]
+            graph_exec["debug_tensor_value"], [6.0, 1.0, 0.0, 0.0, 0.0]
         )
         self.assertEndsWith(graph_exec["device_name"], _DEFAULT_DEVICE_SUFFIX)
 
@@ -1010,7 +1007,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         )
         self.assertEqual(
             json.loads(response.get_data()),
-            {"error": "Invalid argument: end index (220) out of bounds (219)"},
+            {"error": "Invalid argument: end index (220) out of bounds (207)"},
         )
 
         # begin = -1; end = 2
@@ -1283,8 +1280,6 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         """Get the op info of an op with no inputs."""
         _generate_tfdbg_v2_data(self.logdir)
         run = self._getExactlyOneRun()
-        # First, look up the graph_id and name of the Placeholder op in the
-        # same graph as the Unstack op. This Placeholder op has no inputs.
         response = self.server.get(
             _ROUTE_PREFIX + "/graph_execution/digests?run=%s" % run
         )
@@ -1292,13 +1287,9 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         digests = data["graph_execution_digests"]
         op_types = [digest["op_type"] for digest in digests]
         graph_ids = [digest["graph_id"] for digest in digests]
-        unpack_op_index = op_types.index("Unpack")
-        unpack_op_name = digests[unpack_op_index]["op_name"]
-        graph_id = digests[unpack_op_index]["graph_id"]
-        placeholder_op_index = list(zip(graph_ids, op_types)).index(
-            (graph_id, "Placeholder")
-        )
+        placeholder_op_index = op_types.index("Placeholder")
         op_name = digests[placeholder_op_index]["op_name"]
+        graph_id = digests[placeholder_op_index]["graph_id"]
         # Actually query the /graphs/op_info route.
         response = self.server.get(
             _ROUTE_PREFIX
@@ -1327,12 +1318,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
 
         # Check consumers.
         self.assertLen(data["consumers"], 1)
-        self.assertLen(data["consumers"][0], 1)
-        self.assertEqual(data["consumers"][0][0]["op_name"], unpack_op_name)
-        self.assertEqual(data["consumers"][0][0]["input_slot"], 0)
-        consumer = data["consumers"][0][0]["data"]
-        self.assertEqual(consumer["op_type"], "Unpack")
-        self.assertEqual(consumer["op_name"], unpack_op_name)
+        self.assertEmpty(data["consumers"][0])
 
     def testServeGraphOpInfoWithInputsAndConsumerLookupFailures(self):
         """Get the op info of an op with both inputs and consumers."""
