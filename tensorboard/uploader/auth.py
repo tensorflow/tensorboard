@@ -227,17 +227,19 @@ def authenticate_user(
     granted or rejected, or the initiated authorization request expires.
     """
     # TODO(b/141721828): make auto-detection smarter, especially for macOS.
+    scopes = OPENID_CONNECT_SCOPES
     if not force_console and os.getenv("DISPLAY"):
         try:
+            client_config = json.loads(_INSTALLED_APP_OAUTH_CLIENT_CONFIG)
             flow = auth_flows.InstalledAppFlow.from_client_config(
-                _INSTALLED_APP_OAUTH_CLIENT_CONFIG, scopes=OPENID_CONNECT_SCOPES
+                client_config, scopes=scopes
             )
             return flow.run_local_server(port=0)
         except webbrowser.Error:
             sys.stderr.write("Falling back to remote authentication flow...\n")
-    flow = _LimitedInputDeviceAuthFlow(
-        _LIMITED_INPUT_DEVICE_OAUTH_CLIENT_CONFIG, scopes=OPENID_CONNECT_SCOPES
-    )
+
+    client_config = json.loads(_LIMITED_INPUT_DEVICE_OAUTH_CLIENT_CONFIG)
+    flow = _LimitedInputDeviceAuthFlow(client_config, scopes=scopes)
     return flow.run()
 
 
@@ -279,12 +281,11 @@ class _LimitedInputDeviceAuthFlow:
         return self._build_credentials(auth_response)
 
     def _send_device_auth_request(self):
-        device_uri = self._client_config["device_uri"]
         params = {
             "client_id": self._client_config["client_id"],
             "scope": " ".join(self._scopes),
         }
-        r = requests.post(device_uri, data=params).json()
+        r = requests.post(_DEVICE_AUTH_CODE_URI, data=params).json()
         if "device_code" not in r:
             raise RuntimeError(
                 "There was an error while contacting Google's authorization "
@@ -300,7 +301,7 @@ class _LimitedInputDeviceAuthFlow:
             "client_id": self._client_config["client_id"],
             "client_secret": self._client_config["client_secret"],
             "device_code": device_code,
-            "grant_type": self._client_config["grant_type"],
+            "grant_type": _LIMITED_INPUT_DEVICE_AUTH_GRANT_TYPE,
         }
         expiration_time = time.time() + expiration_seconds
         # Error cases documented in

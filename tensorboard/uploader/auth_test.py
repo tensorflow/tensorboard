@@ -259,13 +259,9 @@ class FakeHttpResponse:
 
 class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
     _OAUTH_CONFIG = {
-        "limited-input device": {
-            "client_id": "console_client_id",
-            "device_uri": "https://google.com/device",
-            "token_uri": "https://google.com/token",
-            "client_secret": "console_client_secret",
-            "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
-        }
+        "client_id": "console_client_id",
+        "token_uri": "https://google.com/token",
+        "client_secret": "console_client_secret",
     }
 
     _SCOPES = ["email", "openid"]
@@ -285,7 +281,7 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
             "access_token": "some_access_token",
             "refresh_token": "some_refresh_token",
             "id_token": "some_id_token",
-            "expires_in": 3600,
+            "expires_in": 3600,  # seconds
         }
     )
 
@@ -320,9 +316,11 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
             {"error": "quota exceeded"}, status=403
         )
 
-        with self.assertRaisesRegex(
-            RuntimeError, "Auth service temporarily unavailable"
-        ):
+        expected_error_msg = (
+            "There was an error while contacting Google's "
+            "authorization server. Please try again later."
+        )
+        with self.assertRaisesRegex(RuntimeError, expected_error_msg):
             self.flow.run()
 
     def test_run__polling__auth_pending_response__keeps_polling(self):
@@ -347,7 +345,7 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
             "device_code": "resp_device_code",
             "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
         }
-        device_uri = "https://google.com/device"
+        device_uri = auth._DEVICE_AUTH_CODE_URI
         token_uri = "https://google.com/token"
         # One device code request, then two polling calls:
         # the first poll returned auth_pending, the second one returned success.
@@ -402,7 +400,8 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
             access_denied_response,
         ]
 
-        with self.assertRaisesRegex(PermissionError, "Auth was denied."):
+        expected_error_msg = "Access was denied by user."
+        with self.assertRaisesRegex(PermissionError, expected_error_msg):
             self.flow.run()
 
     def test_run__polling__slow_down_response__waits_longer(self):
@@ -427,9 +426,8 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
             bad_request_response,
         ]
 
-        with self.assertRaisesRegex(
-            ValueError, "There must be an error in the request."
-        ):
+        expected_error_msg = "There must be an error in the request."
+        with self.assertRaisesRegex(ValueError, expected_error_msg):
             self.flow.run()
 
     def test_run__polling__timed_out__raises(self):
@@ -450,9 +448,10 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
             unexpected_response,
         ]
 
-        with self.assertRaisesRegex(
-            RuntimeError, "An unexpected error occurred while authenticating."
-        ):
+        expected_error_msg = (
+            "An unexpected error occurred while waiting for authorization."
+        )
+        with self.assertRaisesRegex(RuntimeError, expected_error_msg):
             self.flow.run()
 
 
