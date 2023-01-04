@@ -427,10 +427,10 @@ const reducer = createReducer(
   on(globalSettingsLoaded, (state, {partialSettings}) => {
     const metricsSettings: Partial<MetricsSettings> = {};
     if (
-      partialSettings.tooltipSortString &&
-      Object.values(TooltipSort).includes(partialSettings.tooltipSortString)
+      partialSettings.tooltipSort &&
+      Object.values(TooltipSort).includes(partialSettings.tooltipSort)
     ) {
-      metricsSettings.tooltipSort = partialSettings.tooltipSortString;
+      metricsSettings.tooltipSort = partialSettings.tooltipSort;
     }
     if (typeof partialSettings.timeSeriesCardMinWidth === 'number') {
       metricsSettings.cardMinWidth = partialSettings.timeSeriesCardMinWidth;

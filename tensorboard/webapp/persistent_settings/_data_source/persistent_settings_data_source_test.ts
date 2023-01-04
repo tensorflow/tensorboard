@@ -294,7 +294,7 @@ describe('persistent_settings data_source test', () => {
 
           expect(actual).toEqual({
             scalarSmoothing: 0.3,
-            tooltipSortString: 'ascending' as TooltipSort,
+            tooltipSort: 'ascending' as TooltipSort,
             notificationLastReadTimeInMs: 3,
           });
         });
@@ -316,7 +316,7 @@ describe('persistent_settings data_source test', () => {
 
           expect(actual).toEqual({
             scalarSmoothing: 0.5,
-            tooltipSortString: 'default' as TooltipSort,
+            tooltipSort: 'default' as TooltipSort,
             notificationLastReadTimeInMs: 100,
           });
         });

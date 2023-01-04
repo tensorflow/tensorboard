@@ -29,7 +29,6 @@ export enum TooltipSort {
   ASCENDING = 'ascending',
   DESCENDING = 'descending',
   NEAREST = 'nearest',
-  NEAREST_X = 'nearest_x',
   NEAREST_Y = 'nearest_Y',
 }
 
@@ -64,7 +63,7 @@ export declare interface BackendSettings {
  */
 export interface PersistableSettings {
   scalarSmoothing?: number;
-  tooltipSortString?: TooltipSort;
+  tooltipSort?: TooltipSort;
   ignoreOutliers?: boolean;
   autoReload?: boolean;
   autoReloadPeriodInMs?: number;

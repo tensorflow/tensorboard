@@ -208,10 +208,6 @@ export class ScalarCardComponent<Downloader> {
         return scalarTooltipData.sort((a, b) => {
           return a.metadata.distToCursorPixels - b.metadata.distToCursorPixels;
         });
-      case TooltipSort.NEAREST_X:
-        return scalarTooltipData.sort((a, b) => {
-          return a.metadata.distToCursorX - b.metadata.distToCursorX;
-        });
       case TooltipSort.NEAREST_Y:
         return scalarTooltipData.sort((a, b) => {
           return a.metadata.distToCursorY - b.metadata.distToCursorY;
