@@ -58,7 +58,6 @@ import {TimeSelectionView} from './utils';
 
 type ScalarTooltipDatum = TooltipDatum<
   ScalarCardSeriesMetadata & {
-    distToCursor: number;
     closest: boolean;
   }
 >;
@@ -172,10 +171,6 @@ export class ScalarCardComponent<Downloader> {
         metadata: {
           ...datum.metadata,
           closest: false,
-          distToCursor: Math.hypot(
-            datum.point.x - cursorLocationInDataCoord.x,
-            datum.point.y - cursorLocationInDataCoord.y
-          ),
           distToCursorPixels: Math.hypot(
             datum.pixelLocation.x - cursorLocation.x,
             datum.pixelLocation.y - cursorLocation.y
@@ -189,8 +184,8 @@ export class ScalarCardComponent<Downloader> {
     let minDist = Infinity;
     let minIndex = 0;
     for (let index = 0; index < scalarTooltipData.length; index++) {
-      if (minDist > scalarTooltipData[index].metadata.distToCursor) {
-        minDist = scalarTooltipData[index].metadata.distToCursor;
+      if (minDist > scalarTooltipData[index].metadata.distToCursorPixels) {
+        minDist = scalarTooltipData[index].metadata.distToCursorPixels;
         minIndex = index;
       }
     }
