@@ -251,7 +251,7 @@ class _LimitedInputDeviceAuthFlow:
     """
 
     def __init__(self, client_config, scopes):
-        self._client_config = client_config["limited-input device"]
+        self._client_config = client_config
         self._scopes = scopes
 
     def run(self) -> google.oauth2.credentials.Credentials:
