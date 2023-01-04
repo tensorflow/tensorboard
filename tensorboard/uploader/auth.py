@@ -45,29 +45,71 @@ OPENID_CONNECT_SCOPES = (
     "https://www.googleapis.com/auth/userinfo.email",
 )
 
-
+# This config was downloaded from our GCP project at:
+# console.cloud.google.com/apis/credentials?project=hosted-tensorboard-prod
+# and in b/143316611.
+#
 # The client "secret" is considered public, as it's distributed to the devices
 # where this runs. See:
-# https://developers.google.com/identity/protocols/OAuth2?csw=1#installed and
+# https://developers.google.com/identity/protocols/OAuth2?csw=1#installed
+#
+# See below for the config for another accepted credential.
+_INSTALLED_APP_OAUTH_CLIENT_CONFIG = """
+    {
+        "installed":{
+            "client_id":"373649185512-8v619h5kft38l4456nm2dj4ubeqsrvh6.apps.googleusercontent.com",
+            "project_id":"hosted-tensorboard-prod",
+            "auth_uri":"https://accounts.google.com/o/oauth2/auth",
+            "token_uri":"https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs",
+            "client_secret":"pOyAuU2yq2arsM98Bw5hwYtr",
+            "redirect_uris":["http://localhost"]
+        }
+    }
+"""
+
+
+# These values can be updated with values from the well-known "discovery url":
+# https://accounts.google.com/.well-known/openid-configuration
+#
+# See:
+# developers.google.com/identity/openid-connect/openid-connect#discovery
+_DEVICE_AUTH_CODE_URI = "https://oauth2.googleapis.com/device/code"
+
+
+_LIMITED_INPUT_DEVICE_AUTH_GRANT_TYPE = (
+    "urn:ietf:params:oauth:grant-type:device_code"
+)
+
+# This config was downloaded from our GCP project at:
+# console.cloud.google.com/apis/credentials?project=hosted-tensorboard-prod
+# and in b/262276562.
+#
+# Note that some of these fields are not really useful for this flow.
+# It seems the limited-input device flow is not quite as well supported yet by
+# neither the Google python oauth libraries, nor the GCP console, so this config
+# does not match what we would need to authenticate this way (starting from the
+# fact that it seems to be a config for an "installed" app), but we do use some
+# of them (e.g. client_id and client_secret), along with other values defined in
+# separate constants for this auth flow.
+#
+# The client "secret" is considered public, as it's distributed to the devices
+# where this runs. See:
 # https://developers.google.com/identity/protocols/oauth2/limited-input-device
-_OAUTH_CLIENT_CONFIG = {
-    "installed": {
-        "client_id": "373649185512-8v619h5kft38l4456nm2dj4ubeqsrvh6.apps.googleusercontent.com",
-        "project_id": "hosted-tensorboard-prod",
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-        "client_secret": "pOyAuU2yq2arsM98Bw5hwYtr",
-        "redirect_uris": ["http://localhost"],
-    },
-    "limited-input device": {
-        "client_id": "373649185512-26ojik4u7dt0rdtfdmfnhpajqqh579qd.apps.googleusercontent.com",
-        "device_uri": "https://oauth2.googleapis.com/device/code",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "client_secret": "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",
-        "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
-    },
-}
+#
+# See above for the config for another accepted credential.
+_LIMITED_INPUT_DEVICE_OAUTH_CLIENT_CONFIG = """
+    {
+        "installed":{
+            "client_id":"373649185512-26ojik4u7dt0rdtfdmfnhpajqqh579qd.apps.googleusercontent.com",
+            "project_id":"hosted-tensorboard-prod",
+            "auth_uri":"https://accounts.google.com/o/oauth2/auth",
+            "token_uri":"https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs",
+            "client_secret":"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"
+        }
+    }
+"""
 
 
 # Components of the relative path (within the user settings directory) at which
@@ -168,39 +210,38 @@ def authenticate_user(
     to `localhost` with an authorization code that would then be received by the
     local web server started here.
 
-    Notably, when the uploaoder is run from a colab notebook, this flow cannot
-    be used, as colab notebooks are run in an environment where a browser is not
-    available, even tho the machine where user is interacting with such notebook
-    might have a browser available.
+    The two most notable cases where the default flow is not well supported are:
+    - When the uploader is run from a colab notebook.
+    - Then the uploader is run via a remote terminal (SSH).
 
     If any of the following is true, a different auth flow will be used:
     - the flag `--auth_force_console` is set to true, or
-    - a browser is not available (e.g. when running in a colab notebook), or
+    - a browser is not available, or
     - a local web server cannot be started
 
     In this case, a [limited-input device flow](
     http://developers.google.com/identity/protocols/oauth2/limited-input-device)
     will be used, in which the user is presented with a URL and a short code
     that they'd need to use to authenticate and authorize access in a separate
-    browser or device, after which the uploader will poll for access until the
-    access is granted or rejected, or the initiated auth request expires.
+    browser or device. The uploader will poll for access until the access is
+    granted or rejected, or the initiated authorization request expires.
     """
     # TODO(b/141721828): make auto-detection smarter, especially for macOS.
     if not force_console and os.getenv("DISPLAY"):
         try:
             flow = auth_flows.InstalledAppFlow.from_client_config(
-                _OAUTH_CLIENT_CONFIG, scopes=OPENID_CONNECT_SCOPES
+                _INSTALLED_APP_OAUTH_CLIENT_CONFIG, scopes=OPENID_CONNECT_SCOPES
             )
             return flow.run_local_server(port=0)
         except webbrowser.Error:
             sys.stderr.write("Falling back to remote authentication flow...\n")
     flow = _LimitedInputDeviceAuthFlow(
-        _OAUTH_CLIENT_CONFIG, scopes=OPENID_CONNECT_SCOPES
+        _LIMITED_INPUT_DEVICE_OAUTH_CLIENT_CONFIG, scopes=OPENID_CONNECT_SCOPES
     )
     return flow.run()
 
 
-class _LimitedInputDeviceAuthFlow(auth_flows.Flow):
+class _LimitedInputDeviceAuthFlow:
     """OAuth flow to authenticate using the limited-input device flow.
 
     See:
@@ -214,12 +255,15 @@ class _LimitedInputDeviceAuthFlow(auth_flows.Flow):
     def run(self) -> google.oauth2.credentials.Credentials:
         device_response = self._send_device_auth_request()
         prompt_message = (
-            "Please visit this URL in a browser window (can be on a different "
-            "device), and enter the provided code to authenticate with the "
-            "TensorBoard Uploader:\n"
+            "To sign in with the TensorBoard uploader:\n"
             "\n"
-            "url: {url}\n"
-            "code: {code}\n".format(
+            "1. On your computer or phone, visit:\n"
+            "\n"
+            "   {url}\n"
+            "\n"
+            "2. Sign in with your Google account, then enter:\n"
+            "\n"
+            "   {code}\n".format(
                 url=device_response["verification_url"],
                 code=device_response["user_code"],
             )
@@ -243,7 +287,8 @@ class _LimitedInputDeviceAuthFlow(auth_flows.Flow):
         r = requests.post(device_uri, data=params).json()
         if "device_code" not in r:
             raise RuntimeError(
-                "Auth service temporarily unavailable, try again later."
+                "There was an error while contacting Google's authorization "
+                "server. Please try again later."
             )
         return r
 
@@ -259,24 +304,31 @@ class _LimitedInputDeviceAuthFlow(auth_flows.Flow):
         }
         expiration_time = time.time() + expiration_seconds
         # Error cases documented in
-        # https://developers.google.com/identity/protocols/oauth2/limited-input-device#step-2:-handle-the-authorization-server-response
+        # https://developers.google.com/identity/protocols/oauth2/limited-input-device#step-6:-handle-responses-to-polling-requests
         while time.time() < expiration_time:
             resp = requests.post(token_uri, data=params)
             r = resp.json()
             if "access_token" in r:
                 return r
-            if "error" in r and r["error"] == "access_denied":
-                raise PermissionError("Auth was denied.")
-            if resp.status_code in {400, 401}:
-                raise ValueError("There must be an error in the request.")
-
-            if "error" in r and r["error"] == "authorization_pending":
+            elif "error" in r and r["error"] == "authorization_pending":
+                # Not really an error. This is the expected response when the
+                # user has not yet granted access to this app.
                 time.sleep(polling_interval)
             elif "error" in r and r["error"] == "slow_down":
-                time.sleep(int(polling_interval * 1.5))
+                # We should be polling at the specified interval from the
+                # previous response, so this error would be unexpected.
+                # However, it is just a temporary/retryable error, so we can
+                # poll a bit more slowly.
+                polling_interval = int(polling_interval * 1.5)
+                time.sleep(polling_interval)
+            elif "error" in r and r["error"] == "access_denied":
+                raise PermissionError("Access was denied by user.")
+            elif resp.status_code in {400, 401}:
+                raise ValueError("There must be an error in the request.")
             else:
                 raise RuntimeError(
-                    "An unexpected error occurred while authenticating."
+                    "An unexpected error occurred while waiting for "
+                    "authorization."
                 )
         raise TimeoutError("Timed out waiting for authorization.")
 
@@ -284,7 +336,7 @@ class _LimitedInputDeviceAuthFlow(auth_flows.Flow):
         self, auth_response
     ) -> google.oauth2.credentials.Credentials:
 
-        expiration_timestamp = datetime.datetime.utcfromtimestamp(
+        expiration_datetime = datetime.datetime.utcfromtimestamp(
             int(time.time()) + auth_response["expires_in"]
         )
         return google.oauth2.credentials.Credentials(
@@ -295,7 +347,7 @@ class _LimitedInputDeviceAuthFlow(auth_flows.Flow):
             client_id=self._client_config["client_id"],
             client_secret=self._client_config["client_secret"],
             scopes=self._scopes,
-            expiry=expiration_timestamp,
+            expiry=expiration_datetime,
         )
 
 
