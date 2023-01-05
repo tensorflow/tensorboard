@@ -226,8 +226,8 @@ def authenticate_user(
     browser or device. The uploader will poll for access until the access is
     granted or rejected, or the initiated authorization request expires.
     """
-    # TODO(b/141721828): make auto-detection smarter, especially for macOS.
     scopes = OPENID_CONNECT_SCOPES
+    # TODO(b/141721828): make auto-detection smarter, especially for macOS.
     if not force_console and os.getenv("DISPLAY"):
         try:
             client_config = json.loads(_INSTALLED_APP_OAUTH_CLIENT_CONFIG)
