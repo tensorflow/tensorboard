@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for `tensorboard.backend.auth_context`."""
+"""Tests for `tensorboard.backend.auth_context_middleware`."""
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
 from tensorboard import auth
 from tensorboard import context
 from tensorboard import test as tb_test
-from tensorboard.backend import auth_context
+from tensorboard.backend import auth_context_middleware
 
 
 class SimpleAuthProvider(auth.AuthProvider):
@@ -35,8 +35,9 @@ class SimpleAuthProvider(auth.AuthProvider):
 def _create_auth_provider_verifier_app(expected_auth_key):
     """Generates a WSGI application for verifying AuthContextMiddleware.
 
-    It should be placed downstream from the AuthContextMiddleware. It will
-    generate a credential using the AuthContext and the given key.
+    It should be placed after AuthContextMiddleware in the WSGI handler chain.
+    It will generate a credential using the AuthContextpopulated by
+    AuthContextMiddleware.
 
     Args:
       expected_auth_key: The auth key to be used for invoking the AuthContext.
@@ -57,7 +58,7 @@ class AuthContextMiddlewareTest(tb_test.TestCase):
     """Tests for `AuthContextMiddleware`"""
 
     def test_populates_auth_context(self):
-        app = auth_context.AuthContextMiddleware(
+        app = auth_context_middleware.AuthContextMiddleware(
             _create_auth_provider_verifier_app("my_key"),
             {"my_key": SimpleAuthProvider("my_credential")},
         )

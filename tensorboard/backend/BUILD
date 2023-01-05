@@ -53,7 +53,7 @@ py_library(
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
-        ":auth_context",
+        ":auth_context_middleware",
         ":client_feature_flags",
         ":empty_path_redirect",
         ":experiment_id",
@@ -88,8 +88,8 @@ py_test(
 )
 
 py_library(
-    name = "auth_context",
-    srcs = ["auth_context.py"],
+    name = "auth_context_middleware",
+    srcs = ["auth_context_middleware.py"],
     srcs_version = "PY3",
     deps = [
         "//tensorboard:auth",
@@ -98,13 +98,13 @@ py_library(
 )
 
 py_test(
-    name = "auth_context_test",
+    name = "auth_context_middleware_test",
     size = "small",
-    srcs = ["auth_context_test.py"],
+    srcs = ["auth_context_middleware_test.py"],
     srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
-        ":auth_context",
+        ":auth_context_middleware",
         "//tensorboard:auth",
         "//tensorboard:context",
         "//tensorboard:test",
