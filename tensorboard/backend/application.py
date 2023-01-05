@@ -32,8 +32,7 @@ from werkzeug import wrappers
 
 from tensorboard import errors
 from tensorboard import plugin_util
-from tensorboard import auth
-from tensorboard import context
+from tensorboard.backend import auth_context
 from tensorboard.backend import client_feature_flags
 from tensorboard.backend import empty_path_redirect
 from tensorboard.backend import experiment_id
@@ -326,7 +325,7 @@ class TensorBoardWSGI:
         app = self._route_request
         for middleware in self._extra_middlewares:
             app = middleware(app)
-        app = _auth_context_middleware(app, self._auth_providers)
+        app = auth_context.AuthContextMiddleware(app, self._auth_providers)
         app = client_feature_flags.ClientFeatureFlagsMiddleware(app)
         app = empty_path_redirect.EmptyPathRedirectMiddleware(app)
         app = experiment_id.ExperimentIdMiddleware(app)
@@ -578,17 +577,6 @@ def _handling_errors(wsgi_app):
             return error_app(environ, start_response)
         # Let other exceptions be handled by the server, as an opaque
         # internal server error.
-
-    return wrapper
-
-
-def _auth_context_middleware(wsgi_app, auth_providers):
-    def wrapper(environ, start_response):
-        environ = dict(environ)
-        auth_ctx = auth.AuthContext(auth_providers, environ)
-        ctx = context.from_environ(environ).replace(auth=auth_ctx)
-        context.set_in_environ(environ, ctx)
-        return wsgi_app(environ, start_response)
 
     return wrapper
 
