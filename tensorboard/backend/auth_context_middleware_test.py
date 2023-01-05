@@ -36,7 +36,7 @@ def _create_auth_provider_verifier_app(expected_auth_key):
     """Generates a WSGI application for verifying AuthContextMiddleware.
 
     It should be placed after AuthContextMiddleware in the WSGI handler chain.
-    It will generate a credential using the AuthContextpopulated by
+    It will generate a credential using the AuthContext populated by
     AuthContextMiddleware.
 
     Args:
