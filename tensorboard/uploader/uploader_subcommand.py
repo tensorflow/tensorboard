@@ -16,7 +16,6 @@
 
 
 import abc
-import json
 import os
 import sys
 import textwrap
@@ -92,9 +91,9 @@ def _run(flags, experiment_url_callback=None):
     credentials = store.read_credentials()
     if not credentials:
         _prompt_for_user_ack(intent)
-        client_config = json.loads(auth.OAUTH_CLIENT_CONFIG)
-        flow = auth.build_installed_app_flow(client_config)
-        credentials = flow.run(force_console=flags.auth_force_console)
+        credentials = auth.authenticate_user(
+            force_console=flags.auth_force_console
+        )
         sys.stderr.write("\n")  # Extra newline after auth flow messages.
         store.write_credentials(credentials)
 
