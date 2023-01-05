@@ -196,9 +196,7 @@ class AuthenticateUserTest(tb_test.TestCase):
             )
         )
 
-    def test_authenticate_user__no_force_console_override__has_display__uses_installed_app_flow(
-        self,
-    ):
+    def test_uses_installed_app_flow_when_has_display(self):
         self.os_env_display_fn.return_value = "some_display"
 
         fake_auth_flow = FakeInstalledAppFlow(
@@ -212,9 +210,7 @@ class AuthenticateUserTest(tb_test.TestCase):
         self.assertTrue(fake_auth_flow.run_local_server_was_called)
         self.mocked_device_auth_flow.assert_not_called()
 
-    def test_authenticate_user__no_force_console_override__no_display__uses_device_flow(
-        self,
-    ):
+    def test_uses_device_flow_when_no_display(self):
         self.os_env_display_fn.return_value = None
 
         auth.authenticate_user()
@@ -223,9 +219,7 @@ class AuthenticateUserTest(tb_test.TestCase):
         self.mocked_device_auth_flow.assert_called_once()
         self.mocked_device_auth_flow.return_value.run.assert_called_once()
 
-    def test_authenticate_user__no_force_console_override__has_display__webbrowser_error__uses_device_flow(
-        self,
-    ):
+    def test_falls_back_to_device_flow_when_installed_app_flow_gets_error(self):
         fake_auth_flow = FakeInstalledAppFlow(raiseError=True)
         self.mocked_installed_auth_flow_creator_fn.return_value = fake_auth_flow
         self.os_env_display_fn.return_value = "some_display"
@@ -239,7 +233,7 @@ class AuthenticateUserTest(tb_test.TestCase):
         self.mocked_device_auth_flow.assert_called_once()
         self.mocked_device_auth_flow.return_value.run.assert_called_once()
 
-    def test_authenticate_user__force_console_override__uses_device_flow(self):
+    def test_uses_device_flow_when_has_console_override(self):
         auth.authenticate_user(force_console=True)
         self.mocked_installed_auth_flow_creator_fn.assert_not_called()
         self.mocked_device_auth_flow.assert_called_once()
@@ -311,7 +305,7 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
             self._SCOPES,
         )
 
-    def test_run__device_request_fails__raises(self):
+    def test_raises_when_device_request_fails(self):
         self.mocked_post.return_value = FakeHttpResponse(
             {"error": "quota exceeded"}, status=403
         )
@@ -323,7 +317,7 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
         with self.assertRaisesRegex(RuntimeError, expected_error_msg):
             self.flow.run()
 
-    def test_run__polling__auth_pending_response__keeps_polling(self):
+    def test_keeps_polling_when_auth_pending_response_is_received(self):
         auth_pending_response = FakeHttpResponse(
             {"error": "authorization_pending"}, status=428
         )
@@ -335,11 +329,11 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
 
         self.flow.run()
 
-        device_params = {
+        expected_device_params = {
             "client_id": "console_client_id",
             "scope": "email openid",
         }
-        polling_params = {
+        expected_polling_params = {
             "client_id": "console_client_id",
             "client_secret": "console_client_secret",
             "device_code": "resp_device_code",
@@ -350,9 +344,9 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
         # One device code request, then two polling calls:
         # the first poll returned auth_pending, the second one returned success.
         expected_post_requests = [
-            mock.call(device_uri, data=device_params),
-            mock.call(token_uri, data=polling_params),
-            mock.call(token_uri, data=polling_params),
+            mock.call(device_uri, data=expected_device_params),
+            mock.call(token_uri, data=expected_polling_params),
+            mock.call(token_uri, data=expected_polling_params),
         ]
         self.assertSequenceEqual(
             expected_post_requests, self.mocked_post.call_args_list
@@ -360,7 +354,7 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
         # `interval` in _DEVICE_RESPONSE is 5
         self.mocked_sleep.assert_called_once_with(5)
 
-    def test_run__polling__access_granted__returns_credentials(self):
+    def test_returns_credentials_when_access_is_granted(self):
         self.mocked_post.side_effect = [
             self._DEVICE_RESPONSE,
             self._AUTH_GRANTED_RESPONSE,
@@ -391,7 +385,7 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
         )
         self.assertEqual(creds.to_json(), expected_credentials.to_json())
 
-    def test_run__polling__access_denied__raises(self):
+    def test_raises_when_access_is_denied(self):
         access_denied_response = FakeHttpResponse(
             {"error": "access_denied"}, 403
         )
@@ -404,7 +398,7 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
         with self.assertRaisesRegex(PermissionError, expected_error_msg):
             self.flow.run()
 
-    def test_run__polling__slow_down_response__waits_longer(self):
+    def test_waits_longer_to_poll_when_slow_down_response_is_received(self):
         slow_down_response = FakeHttpResponse({"error": "slow_down"})
         self.mocked_post.side_effect = [
             self._DEVICE_RESPONSE,
@@ -419,7 +413,7 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
         sleep_time = 7
         self.mocked_sleep.assert_called_once_with(sleep_time)
 
-    def test_run__polling__bad_request_response__raises(self):
+    def test_raises_when_bad_request_response_is_received(self):
         bad_request_response = FakeHttpResponse({"error": "bad_request"}, 401)
         self.mocked_post.side_effect = [
             self._DEVICE_RESPONSE,
@@ -430,7 +424,7 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
         with self.assertRaisesRegex(ValueError, expected_error_msg):
             self.flow.run()
 
-    def test_run__polling__timed_out__raises(self):
+    def test_raises_when_access_is_not_granted_by_time_out_period(self):
         self.mocked_post.return_value = self._DEVICE_RESPONSE
         # Not very realistic, but before starting to poll, the time increased
         # more than the expiration time from the _DEVICE_RESPONSE.
@@ -441,7 +435,7 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
         ):
             self.flow.run()
 
-    def test_run__polling__unexpected_error__raises(self):
+    def test_raises_when_unexpected_error_is_received(self):
         unexpected_response = FakeHttpResponse({"error": "unexpected 500"}, 500)
         self.mocked_post.side_effect = [
             self._DEVICE_RESPONSE,
