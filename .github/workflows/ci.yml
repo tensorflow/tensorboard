@@ -44,6 +44,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
           architecture: 'x64'
+          check-latest: true
       - name: 'Set up Bazel'
         run: |
           ci/download_bazel.sh "${BAZEL_VERSION}" "${BAZEL_SHA256SUM}" ~/bazel
@@ -72,9 +73,7 @@ jobs:
             ;
       - name: 'Install TensorFlow'
         run: pip install "${TENSORFLOW_VERSION}"
-        if: matrix.tf_version_id != 'notf'
-        with:
-          check-latest: true
+        if: matrix.tf_version_id != 'notf'          
       - name: 'Install Python dependencies'
         run: |
           python -m pip install -U pip
