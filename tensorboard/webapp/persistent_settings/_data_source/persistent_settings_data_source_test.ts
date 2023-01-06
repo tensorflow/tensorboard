@@ -15,18 +15,14 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {firstValueFrom} from 'rxjs';
+import {TooltipSort} from '../../metrics/types';
 import {
   OSSSettingsConverter,
   PersistentSettingsDataSourceImpl,
   SettingsConverter,
   TEST_ONLY,
 } from './persistent_settings_data_source';
-import {
-  BackendSettings,
-  PersistableSettings,
-  ThemeValue,
-  TooltipSort,
-} from './types';
+import {BackendSettings, PersistableSettings, ThemeValue} from './types';
 
 describe('persistent_settings data_source test', () => {
   let getItemSpy: jasmine.Spy;

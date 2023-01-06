@@ -15,7 +15,6 @@ limitations under the License.
 import {TimeSelection} from '../widgets/card_fob/card_fob_types';
 import {HistogramMode} from '../widgets/histogram/histogram_types';
 
-export {TooltipSort} from '../persistent_settings/_data_source/types';
 export {HistogramMode, TimeSelection};
 
 export enum PluginType {

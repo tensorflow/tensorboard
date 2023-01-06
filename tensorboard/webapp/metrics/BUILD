@@ -35,7 +35,6 @@ tf_ts_library(
     ],
     deps = [
         ":internal_types",
-        "//tensorboard/webapp/metrics/store:types",
     ],
 )
 
@@ -46,7 +45,6 @@ tf_ts_library(
     ],
     visibility = ["//tensorboard/webapp/metrics:__subpackages__"],
     deps = [
-        "//tensorboard/webapp/persistent_settings/_data_source:types",
         "//tensorboard/webapp/widgets/card_fob:types",
         "//tensorboard/webapp/widgets/histogram:types",
     ],

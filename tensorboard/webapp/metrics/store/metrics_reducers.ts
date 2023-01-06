@@ -44,7 +44,7 @@ import {
   SCALARS_SMOOTHING_MIN,
   TooltipSort,
   URLDeserializedState,
-} from '../internal_types';
+} from '../types';
 import {groupCardIdWithMetdata} from '../utils';
 import {ColumnHeaderType} from '../views/card_renderer/scalar_card_types';
 import {

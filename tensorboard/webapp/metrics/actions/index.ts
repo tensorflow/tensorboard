@@ -29,7 +29,7 @@ import {
   PluginType,
   TooltipSort,
   XAxisType,
-} from '../internal_types';
+} from '../types';
 import {
   ColumnHeader,
   SortingInfo,

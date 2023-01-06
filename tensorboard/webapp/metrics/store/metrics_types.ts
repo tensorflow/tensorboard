@@ -35,7 +35,7 @@ import {
   TimeSelection,
   TooltipSort,
   XAxisType,
-} from '../internal_types';
+} from '../types';
 import {ColumnHeader} from '../views/card_renderer/scalar_card_types';
 
 export const METRICS_FEATURE_KEY = 'metrics';

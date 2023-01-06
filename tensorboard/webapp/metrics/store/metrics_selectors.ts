@@ -29,7 +29,7 @@ import {
   TimeSelection,
   TooltipSort,
   XAxisType,
-} from '../internal_types';
+} from '../types';
 import {ColumnHeader} from '../views/card_renderer/scalar_card_types';
 import * as storeUtils from './metrics_store_internal_utils';
 import {
