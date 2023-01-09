@@ -172,11 +172,11 @@ export class ScalarCardComponent<Downloader> {
           ...datum.metadata,
           closest: false,
           distToCursorPixels: Math.hypot(
-            datum.pixelLocation.x - cursorLocation.x,
-            datum.pixelLocation.y - cursorLocation.y
+            datum.domPoint.x - cursorLocation.x,
+            datum.domPoint.y - cursorLocation.y
           ),
-          distToCursorX: datum.point.x - cursorLocationInDataCoord.x,
-          distToCursorY: datum.point.y - cursorLocationInDataCoord.y,
+          distToCursorX: datum.dataPoint.x - cursorLocationInDataCoord.x,
+          distToCursorY: datum.dataPoint.y - cursorLocationInDataCoord.y,
         },
       };
     });
@@ -196,9 +196,9 @@ export class ScalarCardComponent<Downloader> {
 
     switch (this.tooltipSort) {
       case TooltipSort.ASCENDING:
-        return scalarTooltipData.sort((a, b) => a.point.y - b.point.y);
+        return scalarTooltipData.sort((a, b) => a.dataPoint.y - b.dataPoint.y);
       case TooltipSort.DESCENDING:
-        return scalarTooltipData.sort((a, b) => b.point.y - a.point.y);
+        return scalarTooltipData.sort((a, b) => b.dataPoint.y - a.dataPoint.y);
       case TooltipSort.NEAREST:
         return scalarTooltipData.sort((a, b) => {
           return a.metadata.distToCursorPixels - b.metadata.distToCursorPixels;

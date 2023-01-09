@@ -312,7 +312,7 @@ describe('persistent_settings data_source test', () => {
 
           expect(actual).toEqual({
             scalarSmoothing: 0.5,
-            tooltipSort: 'default' as TooltipSort,
+            tooltipSort: TooltipSort.DEFAULT,
             notificationLastReadTimeInMs: 100,
           });
         });

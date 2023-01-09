@@ -1148,8 +1148,8 @@ describe('scalar card', () => {
   describe('tooltip', () => {
     function buildTooltipDatum(
       metadata?: ScalarCardSeriesMetadata,
-      point: Partial<ScalarCardPoint> = {},
-      pixelLocation: Point = {x: 0, y: 0}
+      dataPoint: Partial<ScalarCardPoint> = {},
+      domPoint: Point = {x: 0, y: 0}
     ): TooltipDatum<ScalarCardSeriesMetadata, ScalarCardPoint> {
       return {
         id: metadata?.id ?? 'a',
@@ -1163,16 +1163,16 @@ describe('scalar card', () => {
           ...metadata,
         },
         closestPointIndex: 0,
-        point: {
+        dataPoint: {
           x: 0,
           y: 0,
           value: 0,
           step: 0,
           wallTime: 0,
           relativeTimeInMs: 0,
-          ...point,
+          ...dataPoint,
         },
-        pixelLocation,
+        domPoint,
       };
     }
 
@@ -1188,18 +1188,16 @@ describe('scalar card', () => {
 
     function setCursorLocation(
       fixture: ComponentFixture<ScalarCardContainer>,
-      cursorLocInDataCoord?: {x: number; y: number},
-      cursorLocationInPixels?: Point
+      dataPoint?: {x: number; y: number},
+      domPoint?: Point
     ) {
       const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
 
-      if (cursorLocInDataCoord) {
-        lineChart.componentInstance.cursorLocationInDataCoordForTesting =
-          cursorLocInDataCoord;
+      if (dataPoint) {
+        lineChart.componentInstance.dataPointForTesting = dataPoint;
       }
-      if (cursorLocationInPixels) {
-        lineChart.componentInstance.cursorLocationForTesting =
-          cursorLocationInPixels;
+      if (domPoint) {
+        lineChart.componentInstance.cursorLocationForTesting = domPoint;
       }
       lineChart.componentInstance.changeDetectorRef.markForCheck();
     }

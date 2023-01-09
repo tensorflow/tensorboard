@@ -155,14 +155,15 @@ limitations under the License.
               >{{ datum.metadata.displayName }}
             </td>
             <td *ngIf="smoothingEnabled">
-              {{ valueFormatter.formatShort(datum.point.y) }}
+              {{ valueFormatter.formatShort(datum.dataPoint.y) }}
             </td>
-            <td>{{ valueFormatter.formatShort(datum.point.value) }}</td>
+            <td>{{ valueFormatter.formatShort(datum.dataPoint.value) }}</td>
             <!-- Print the step with comma for readability. -->
-            <td>{{ stepFormatter.formatShort(datum.point.step) }}</td>
-            <td>{{ datum.point.wallTime | date: 'short' }}</td>
+            <td>{{ stepFormatter.formatShort(datum.dataPoint.step) }}</td>
+            <td>{{ datum.dataPoint.wallTime | date: 'short' }}</td>
             <td>
-              {{ relativeXFormatter.formatReadable(datum.point.relativeTimeInMs)
+              {{
+              relativeXFormatter.formatReadable(datum.dataPoint.relativeTimeInMs)
               }}
             </td>
           </tr>

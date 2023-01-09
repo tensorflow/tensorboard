@@ -2359,7 +2359,7 @@ describe('metrics reducers', () => {
         globalSettingsLoaded({
           partialSettings: {
             ignoreOutliers: true,
-            tooltipSort: 'descending' as TooltipSort,
+            tooltipSort: TooltipSort.DESCENDING,
           },
         })
       );

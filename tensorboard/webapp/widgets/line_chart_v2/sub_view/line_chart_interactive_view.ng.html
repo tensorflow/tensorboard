@@ -26,9 +26,9 @@ limitations under the License.
       *ngFor="let datum of cursoredData; trackBy: trackBySeriesName"
     >
       <circle
-        *ngIf="shouldRenderTooltipPoint(datum.point)"
-        [attr.cx]="getDomX(datum.point.x)"
-        [attr.cy]="getDomY(datum.point.y)"
+        *ngIf="shouldRenderTooltipPoint(datum.dataPoint)"
+        [attr.cx]="getDomX(datum.dataPoint.x)"
+        [attr.cy]="getDomY(datum.dataPoint.y)"
         [attr.fill]="datum.metadata.color"
         r="4"
       ></circle>
@@ -93,8 +93,8 @@ limitations under the License.
             <span [style.backgroundColor]="datum.metadata.color"></span>
           </td>
           <td class="name">{{ datum.metadata.displayName }}</td>
-          <td>{{ datum.point.y }}</td>
-          <td>{{ datum.point.x }}</td>
+          <td>{{ datum.dataPoint.y }}</td>
+          <td>{{ datum.dataPoint.x }}</td>
         </tr>
       </ng-container>
     </tbody>
