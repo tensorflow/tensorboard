@@ -21,7 +21,7 @@ import socket
 import threading
 import time
 
-from tensorboard.compat import tf
+from tensorboard.compat import tensorflow_stub as tf
 from tensorboard.compat.proto import event_pb2
 from tensorboard.summary.writer.record_writer import RecordWriter
 
