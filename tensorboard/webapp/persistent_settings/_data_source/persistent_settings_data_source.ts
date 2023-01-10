@@ -51,10 +51,10 @@ export class OSSSettingsConverter extends SettingsConverter<
     if (settings.scalarSmoothing !== undefined) {
       serializableSettings.scalarSmoothing = settings.scalarSmoothing;
     }
-    if (settings.tooltipSortString !== undefined) {
+    if (settings.tooltipSort !== undefined) {
       // TooltipSort is a string enum and has string values; no need to
       // serialize it differently to account for their unintended changes.
-      serializableSettings.tooltipSort = settings.tooltipSortString;
+      serializableSettings.tooltipSort = settings.tooltipSort;
     }
     if (settings.autoReload !== undefined) {
       serializableSettings.autoReload = settings.autoReload;
@@ -117,7 +117,7 @@ export class OSSSettingsConverter extends SettingsConverter<
       backendSettings.hasOwnProperty('tooltipSort') &&
       typeof backendSettings.tooltipSort === 'string'
     ) {
-      settings.tooltipSortString = backendSettings.tooltipSort;
+      settings.tooltipSort = backendSettings.tooltipSort;
     }
 
     if (

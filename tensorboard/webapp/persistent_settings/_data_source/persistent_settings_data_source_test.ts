@@ -15,6 +15,7 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {firstValueFrom} from 'rxjs';
+import {TooltipSort} from '../../metrics/types';
 import {
   OSSSettingsConverter,
   PersistentSettingsDataSourceImpl,
@@ -289,7 +290,7 @@ describe('persistent_settings data_source test', () => {
 
           expect(actual).toEqual({
             scalarSmoothing: 0.3,
-            tooltipSortString: 'ascending',
+            tooltipSort: 'ascending' as TooltipSort,
             notificationLastReadTimeInMs: 3,
           });
         });
@@ -311,7 +312,7 @@ describe('persistent_settings data_source test', () => {
 
           expect(actual).toEqual({
             scalarSmoothing: 0.5,
-            tooltipSortString: 'default',
+            tooltipSort: TooltipSort.DEFAULT,
             notificationLastReadTimeInMs: 100,
           });
         });

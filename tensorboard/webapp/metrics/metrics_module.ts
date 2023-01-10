@@ -83,7 +83,7 @@ export function getMetricsIgnoreOutliersSettingFactory() {
 
 export function getMetricsTooltipSortSettingFactory() {
   return createSelector(getMetricsTooltipSort, (tooltipSort) => {
-    return {tooltipSortString: String(tooltipSort)};
+    return {tooltipSort: String(tooltipSort)};
   });
 }
 

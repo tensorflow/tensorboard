@@ -44,7 +44,7 @@ import {
   SCALARS_SMOOTHING_MIN,
   TooltipSort,
   URLDeserializedState,
-} from '../internal_types';
+} from '../types';
 import {groupCardIdWithMetdata} from '../utils';
 import {ColumnHeaderType} from '../views/card_renderer/scalar_card_types';
 import {
@@ -426,23 +426,11 @@ const reducer = createReducer(
   }),
   on(globalSettingsLoaded, (state, {partialSettings}) => {
     const metricsSettings: Partial<MetricsSettings> = {};
-    if (partialSettings.tooltipSortString) {
-      switch (partialSettings.tooltipSortString) {
-        case TooltipSort.DEFAULT:
-        case TooltipSort.ALPHABETICAL:
-          metricsSettings.tooltipSort = TooltipSort.ALPHABETICAL;
-          break;
-        case TooltipSort.ASCENDING:
-          metricsSettings.tooltipSort = TooltipSort.ASCENDING;
-          break;
-        case TooltipSort.DESCENDING:
-          metricsSettings.tooltipSort = TooltipSort.DESCENDING;
-          break;
-        case TooltipSort.NEAREST:
-          metricsSettings.tooltipSort = TooltipSort.NEAREST;
-          break;
-        default:
-      }
+    if (
+      partialSettings.tooltipSort &&
+      Object.values(TooltipSort).includes(partialSettings.tooltipSort)
+    ) {
+      metricsSettings.tooltipSort = partialSettings.tooltipSort;
     }
     if (typeof partialSettings.timeSeriesCardMinWidth === 'number') {
       metricsSettings.cardMinWidth = partialSettings.timeSeriesCardMinWidth;

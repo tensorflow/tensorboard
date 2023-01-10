@@ -67,7 +67,8 @@ export interface TooltipDatum<
   id: string;
   metadata: Metadata;
   closestPointIndex: number;
-  point: PointDatum;
+  dataPoint: PointDatum;
+  domPoint: Point;
 }
 
 const SCROLL_ZOOM_SPEED_FACTOR = 0.01;
@@ -202,6 +203,7 @@ export class LineChartInteractiveViewComponent
   ];
 
   cursorLocationInDataCoord: {x: number; y: number} | null = null;
+  cursorLocation: {x: number; y: number} | null = null;
   cursoredData: TooltipDatum[] = [];
   tooltipDisplayAttached: boolean = false;
 
@@ -522,6 +524,10 @@ export class LineChartInteractiveViewComponent
       x: this.getDataX(event.offsetX),
       y: this.getDataY(event.offsetY),
     };
+    this.cursorLocation = {
+      x: event.offsetX,
+      y: event.offsetY,
+    };
     this.updateCursoredDataAndTooltipVisibility();
   }
 
@@ -550,10 +556,15 @@ export class LineChartInteractiveViewComponent
           })
           .map(({seriesDatum, metadata}) => {
             const index = findClosestIndex(seriesDatum.points, cursorLoc.x);
+            const dataPoint = seriesDatum.points[index];
             return {
               id: seriesDatum.id,
               closestPointIndex: index,
-              point: seriesDatum.points[index],
+              dataPoint,
+              domPoint: {
+                x: this.getDomX(dataPoint.x),
+                y: this.getDomY(dataPoint.y),
+              },
               metadata,
             };
           })

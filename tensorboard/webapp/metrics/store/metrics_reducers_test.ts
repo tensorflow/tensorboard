@@ -27,13 +27,6 @@ import {
   TagMetadata as DataSourceTagMetadata,
 } from '../data_source';
 import {
-  CardId,
-  CardMetadata,
-  HistogramMode,
-  TooltipSort,
-  XAxisType,
-} from '../internal_types';
-import {
   buildDataSourceTagMetadata,
   buildMetricsSettingsState,
   buildMetricsState,
@@ -46,6 +39,13 @@ import {
   createScalarStepData,
   createTimeSeriesData,
 } from '../testing';
+import {
+  CardId,
+  CardMetadata,
+  HistogramMode,
+  TooltipSort,
+  XAxisType,
+} from '../types';
 import {reducers} from './metrics_reducers';
 import {getCardId, getPinnedCardId} from './metrics_store_internal_utils';
 import {
@@ -2359,7 +2359,7 @@ describe('metrics reducers', () => {
         globalSettingsLoaded({
           partialSettings: {
             ignoreOutliers: true,
-            tooltipSortString: 'descending',
+            tooltipSort: TooltipSort.DESCENDING,
           },
         })
       );
@@ -2387,7 +2387,7 @@ describe('metrics reducers', () => {
           beforeState,
           globalSettingsLoaded({
             partialSettings: {
-              tooltipSortString: 'yo',
+              tooltipSort: 'yo' as TooltipSort,
             },
           })
         );

@@ -13,3 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 export * from './internal_types';
+
+// When adding a new value to the enum, please implement the deserializer on
+// data_source/metrics_data_source.ts.
+// When editing a value of the enum, please write a backward compatible
+// deserializer in tensorboard/webapp/metrics/store/metrics_reducers.ts
+export enum TooltipSort {
+  DEFAULT = 'default',
+  ALPHABETICAL = 'alphabetical',
+  ASCENDING = 'ascending',
+  DESCENDING = 'descending',
+  NEAREST = 'nearest',
+  NEAREST_Y = 'nearest_Y',
+}

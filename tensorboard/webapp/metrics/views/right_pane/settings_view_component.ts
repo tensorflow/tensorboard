@@ -86,7 +86,8 @@ export class SettingsViewComponent {
     {value: TooltipSort.ALPHABETICAL, displayText: 'Alphabetical'},
     {value: TooltipSort.ASCENDING, displayText: 'Ascending'},
     {value: TooltipSort.DESCENDING, displayText: 'Descending'},
-    {value: TooltipSort.NEAREST, displayText: 'Nearest'},
+    {value: TooltipSort.NEAREST, displayText: 'Nearest Pixel'},
+    {value: TooltipSort.NEAREST_Y, displayText: 'Nearest Y'},
   ];
   @Input() tooltipSort!: TooltipSort;
   @Output() tooltipSortChanged = new EventEmitter<TooltipSort>();
