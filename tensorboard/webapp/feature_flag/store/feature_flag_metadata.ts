@@ -79,7 +79,7 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       parseValue: parseBoolean,
     },
     enabledScalarDataTable: {
-      defaultValue: false,
+      defaultValue: true,
       queryParamOverride: 'enableDataTable',
       parseValue: parseBoolean,
     },
