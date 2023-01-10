@@ -15,9 +15,10 @@
 """Takes a generator of values, and accumulates them for a frontend."""
 
 import collections
+import dataclasses
 import threading
 
-from typing import Optional
+from typing import Optional, Sequence, Tuple
 
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import event_file_loader
@@ -30,47 +31,137 @@ from tensorboard.compat.proto import config_pb2
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import graph_pb2
 from tensorboard.compat.proto import meta_graph_pb2
+from tensorboard.compat.proto import tensor_pb2
 from tensorboard.plugins.distribution import compressor
 from tensorboard.util import tb_logging
 
 
 logger = tb_logging.get_logger()
 
-namedtuple = collections.namedtuple
-ScalarEvent = namedtuple("ScalarEvent", ["wall_time", "step", "value"])
 
-CompressedHistogramEvent = namedtuple(
-    "CompressedHistogramEvent",
-    ["wall_time", "step", "compressed_histogram_values"],
-)
+@dataclasses.dataclass(frozen=True)
+class ScalarEvent:
+    """Contains information of a scalar event.
 
-HistogramEvent = namedtuple(
-    "HistogramEvent", ["wall_time", "step", "histogram_value"]
-)
+    Attributes:
+      wall_time: Timestamp of the event in seconds.
+      step: Global step of the event.
+      value: A float or int value of the scalar.
+    """
 
-HistogramValue = namedtuple(
-    "HistogramValue",
-    ["min", "max", "num", "sum", "sum_squares", "bucket_limit", "bucket"],
-)
+    wall_time: float
+    step: int
+    value: float
 
-ImageEvent = namedtuple(
-    "ImageEvent",
-    ["wall_time", "step", "encoded_image_string", "width", "height"],
-)
 
-AudioEvent = namedtuple(
-    "AudioEvent",
-    [
-        "wall_time",
-        "step",
-        "encoded_audio_string",
-        "content_type",
-        "sample_rate",
-        "length_frames",
-    ],
-)
+@dataclasses.dataclass(frozen=True)
+class CompressedHistogramEvent:
+    """Contains information of a compressed histogram event.
 
-TensorEvent = namedtuple("TensorEvent", ["wall_time", "step", "tensor_proto"])
+    Attributes:
+      wall_time: Timestamp of the event in seconds.
+      step: Global step of the event.
+      compressed_histogram_values: A sequence of tuples of basis points and
+        associated values in a compressed histogram.
+    """
+
+    wall_time: float
+    step: int
+    compressed_histogram_values: Sequence[Tuple[float, float]]
+
+
+@dataclasses.dataclass(frozen=True)
+class HistogramValue:
+    """Holds the information of the histogram values.
+
+    Attributes:
+      min: A float or int min value.
+      max: A float or int max value.
+      num: Total number of values.
+      sum: Sum of all values.
+      sum_squares: Sum of squares for all values.
+      bucket_limit: Upper values per bucket.
+      bucket: Numbers of values per bucket.
+    """
+
+    min: float
+    max: float
+    num: int
+    sum: float
+    sum_squares: float
+    bucket_limit: Sequence[float]
+    bucket: Sequence[int]
+
+
+@dataclasses.dataclass(frozen=True)
+class HistogramEvent:
+    """Contains information of a histogram event.
+
+    Attributes:
+      wall_time: Timestamp of the event in seconds.
+      step: Global step of the event.
+      histogram_value: Information of the histogram values.
+    """
+
+    wall_time: float
+    step: int
+    histogram_value: HistogramValue
+
+
+@dataclasses.dataclass(frozen=True)
+class ImageEvent:
+    """Contains information of an image event.
+
+    Attributes:
+      wall_time: Timestamp of the event in seconds.
+      step: Global step of the event.
+      encoded_image_string: Image content encoded in bytes.
+      width: Width of the image.
+      height: Height of the image.
+    """
+
+    wall_time: float
+    step: int
+    encoded_image_string: bytes
+    width: int
+    height: int
+
+
+@dataclasses.dataclass(frozen=True)
+class AudioEvent:
+    """Contains information of an audio event.
+
+    Attributes:
+      wall_time: Timestamp of the event in seconds.
+      step: Global step of the event.
+      encoded_audio_string: Audio content encoded in bytes.
+      content_type: A string describes the type of the audio content.
+      sample_rate: Sample rate of the audio in Hz. Must be positive.
+      length_frames: Length of the audio in frames (samples per channel).
+    """
+
+    wall_time: float
+    step: int
+    encoded_audio_string: bytes
+    content_type: str
+    sample_rate: float
+    length_frames: int
+
+
+@dataclasses.dataclass(frozen=True)
+class TensorEvent:
+    """A tensor event.
+
+    Attributes:
+      wall_time: Timestamp of the event in seconds.
+      step: Global step of the event.
+      tensor_proto: A `TensorProto`.
+    """
+
+    wall_time: float
+    step: int
+    tensor_proto: tensor_pb2.TensorProto
+
 
 ## Different types of summary events handled by the event_accumulator
 SUMMARY_TYPES = {
@@ -697,7 +788,8 @@ class EventAccumulator:
             self.most_recent_step = event.step
             self.most_recent_wall_time = event.wall_time
 
-    def _ConvertHistogramProtoToTuple(self, histo):
+    def _ConvertHistogramProtoToPopo(self, histo):
+        """Converts histogram proto to Python object."""
         return HistogramValue(
             min=histo.min,
             max=histo.max,
@@ -710,7 +802,7 @@ class EventAccumulator:
 
     def _ProcessHistogram(self, tag, wall_time, step, histo):
         """Processes a proto histogram by adding it to accumulated state."""
-        histo = self._ConvertHistogramProtoToTuple(histo)
+        histo = self._ConvertHistogramProtoToPopo(histo)
         histo_ev = HistogramEvent(wall_time, step, histo)
         self.histograms.AddItem(tag, histo_ev)
         self.compressed_histograms.AddItem(
