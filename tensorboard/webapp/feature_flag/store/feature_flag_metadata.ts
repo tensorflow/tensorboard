@@ -74,7 +74,7 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       parseValue: parseStringArray,
     },
     enabledLinkedTime: {
-      defaultValue: false,
+      defaultValue: true,
       queryParamOverride: 'enableLinkedTime',
       parseValue: parseBoolean,
     },
@@ -116,12 +116,12 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       parseValue: parseBoolean,
     },
     allowRangeSelection: {
-      defaultValue: false,
+      defaultValue: true,
       queryParamOverride: 'allowRangeSelection',
       parseValue: parseBoolean,
     },
     enabledProspectiveFob: {
-      defaultValue: false,
+      defaultValue: true,
       queryParamOverride: 'enableProspectiveFob',
       parseValue: parseBoolean,
     },
