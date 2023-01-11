@@ -357,6 +357,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",
+        "//tensorboard/webapp/metrics/store:types",
         "//tensorboard/webapp/runs/store:testing",
         "//tensorboard/webapp/runs/store:types",
         "//tensorboard/webapp/testing:mat_icon",

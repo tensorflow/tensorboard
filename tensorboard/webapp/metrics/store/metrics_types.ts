@@ -40,6 +40,15 @@ import {ColumnHeader} from '../views/card_renderer/scalar_card_types';
 
 export const METRICS_FEATURE_KEY = 'metrics';
 
+/**
+ * An object which is intended to hold the min and max step within each scalar
+ * card.
+ */
+export type MinMaxStep = {
+  minStep: number;
+  maxStep: number;
+};
+
 type RunId = string;
 
 type tagToRunIds = Record<string, RunId[]>;
@@ -150,6 +159,10 @@ export type CardToPinnedCard = Map<NonPinnedCardId, PinnedCardId>;
 
 export type PinnedCardToCard = Map<PinnedCardId, NonPinnedCardId>;
 
+export type CardToMinMax = Map<NonPinnedCardId, MinMaxStep>;
+
+export type CardToTimeSelection = Map<NonPinnedCardId, TimeSelection>;
+
 export interface MetricsNamespacedState {
   tagMetadataLoadState: LoadState;
   tagMetadata: TagMetadata;
@@ -159,6 +172,9 @@ export interface MetricsNamespacedState {
   // A map of card ids that previously pinned by the user.
   cardToPinnedCopyCache: CardToPinnedCard;
   pinnedCardToOriginal: PinnedCardToCard;
+  cardToMinMax: CardToMinMax;
+  // A record of card ids to the time selection of the card
+  cardToTimeSelection: CardToTimeSelection;
   /**
    * Pinned cards imported from storage that do not yet have a corresponding
    * card (e.g. tag metadata might not be loaded yet). Resolving an imported

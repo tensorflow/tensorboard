@@ -43,11 +43,11 @@ import {
   ScaleType,
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
+import {MinMaxStep} from '../../store';
 import {TooltipSort, XAxisType} from '../../types';
 import {
   ColumnHeader,
   ColumnHeaderType,
-  MinMaxStep,
   ScalarCardDataSeries,
   ScalarCardSeriesMetadata,
   ScalarCardSeriesMetadataMap,
@@ -241,6 +241,7 @@ export class ScalarCardComponent<Downloader> {
   showFobController() {
     return (
       this.xAxisType === XAxisType.STEP &&
+      this.minMaxStep &&
       (this.stepOrLinkedTimeSelection !== null ||
         this.isProspectiveFobFeatureEnabled)
     );

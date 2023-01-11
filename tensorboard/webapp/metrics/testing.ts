@@ -92,6 +92,8 @@ function buildBlankState(): MetricsState {
     cardToPinnedCopy: new Map(),
     cardToPinnedCopyCache: new Map(),
     pinnedCardToOriginal: new Map(),
+    cardToMinMax: new Map(),
+    cardToTimeSelection: new Map(),
     unresolvedImportedPinnedCards: [],
     cardMetadataMap: {},
     cardStepIndex: {},

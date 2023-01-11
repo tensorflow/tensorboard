@@ -18,9 +18,11 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
   Output,
+  SimpleChanges,
 } from '@angular/core';
 import {Store} from '@ngrx/store';
 import {
@@ -55,6 +57,7 @@ import {
   getExperimentIdForRunId,
   getExperimentIdToExperimentAliasMap,
   getIsLinkedTimeProspectiveFobEnabled,
+  getMetricsCardTimeSelection,
   getMetricsLinkedTimeEnabled,
   getMetricsLinkedTimeSelection,
   getMetricsStepSelectorEnabled,
@@ -71,6 +74,7 @@ import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer'
 import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
+  cardMinMaxChanged,
   dataTableColumnDrag,
   sortingDataTable,
   stepSelectorToggled,
@@ -81,6 +85,7 @@ import {
   getCardLoadState,
   getCardMetadata,
   getCardTimeSeries,
+  getMetricsCardToMinMax,
   getMetricsIgnoreOutliers,
   getMetricsRangeSelectionEnabled,
   getMetricsScalarPartitionNonMonotonicX,
@@ -89,6 +94,7 @@ import {
   getMetricsXAxisType,
   getRangeSelectionHeaders,
   getSingleSelectionHeaders,
+  MinMaxStep,
   RunToSeries,
 } from '../../store';
 import {CardId, CardMetadata, XAxisType} from '../../types';
@@ -97,8 +103,6 @@ import {getTagDisplayName} from '../utils';
 import {DataDownloadDialogContainer} from './data_download_dialog_container';
 import {
   ColumnHeader,
-  ColumnHeaderType,
-  MinMaxStep,
   PartialSeries,
   PartitionedSeries,
   ScalarCardDataSeries,
@@ -114,10 +118,16 @@ import {
   TimeSelectionView,
 } from './utils';
 
-const DEFAULT_MIN = -Infinity;
-const DEFAULT_MAX = Infinity;
 type ScalarCardMetadata = CardMetadata & {
   plugin: PluginType.SCALARS;
+};
+
+/**
+ * The default value for minMax steps;
+ */
+const DEFAULT_MIN_MAX_STEPS: MinMaxStep = {
+  minStep: -Infinity,
+  maxStep: Infinity,
 };
 
 function areSeriesEqual(
@@ -191,7 +201,9 @@ function areSeriesEqual(
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
+export class ScalarCardContainer
+  implements CardRenderer, OnInit, OnDestroy, OnChanges
+{
   constructor(private readonly store: Store<State>) {}
 
   // Angular Component constructor for DataDownload dialog. It is customizable for
@@ -223,16 +235,12 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.isVisible = visible;
   }
 
-  readonly minMaxSteps$ = new BehaviorSubject<MinMaxStep>({
-    minStep: DEFAULT_MIN,
-    maxStep: DEFAULT_MAX,
-  });
   readonly lineChartZoom$ = new BehaviorSubject<MinMaxStep>({
-    minStep: DEFAULT_MIN,
-    maxStep: DEFAULT_MAX,
+    ...DEFAULT_MIN_MAX_STEPS,
   });
-  readonly stepSelectorTimeSelection$ =
-    new BehaviorSubject<TimeSelection | null>(null);
+
+  readonly cardId$ = new BehaviorSubject<CardId | null>(this.cardId ?? null);
+
   readonly rangeSelectionEnabled$ = this.store.select(
     getMetricsRangeSelectionEnabled
   );
@@ -264,6 +272,18 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     .select(getMetricsScalarSmoothing)
     .pipe(map((smoothing) => smoothing > 0));
 
+  readonly minMaxSteps$: Observable<MinMaxStep | null> = combineLatest([
+    this.cardId$,
+    this.store.select(getMetricsCardToMinMax),
+  ]).pipe(
+    map(([cardId, cardToMinMax]) => {
+      if (!cardId) {
+        return null;
+      }
+      return cardToMinMax.get(cardId) ?? null;
+    })
+  );
+
   showFullSize = false;
 
   private readonly ngUnsubscribe = new Subject<void>();
@@ -279,6 +299,13 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.showFullSize = !this.showFullSize;
     this.fullWidthChanged.emit(this.showFullSize);
     this.fullHeightChanged.emit(this.showFullSize);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    const nextCardId = changes['cardId'];
+    if (nextCardId) {
+      this.cardId$.next(nextCardId.currentValue);
+    }
   }
 
   /**
@@ -382,19 +409,17 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       shareReplay(1)
     );
 
-    combineLatest([partitionedSeries$, this.lineChartZoom$]).subscribe(
-      ([series, viewPort]) => {
-        const allPoints = series
-          .map(({points}) => points.map(({x}) => x))
-          .flat();
-        const min =
-          allPoints.length === 0 ? DEFAULT_MIN : Math.min(...allPoints);
-        const max =
-          allPoints.length === 0 ? DEFAULT_MAX : Math.max(...allPoints);
-        const minStep = Math.max(min, viewPort.minStep);
-        const maxStep = Math.min(max, viewPort.maxStep);
+    combineLatest([this.cardId$, this.lineChartZoom$]).subscribe(
+      ([cardId, viewPort]) => {
+        if (!cardId) {
+          return;
+        }
+        const minStep = viewPort.minStep;
+        const maxStep = viewPort.maxStep;
 
-        this.minMaxSteps$.next({minStep, maxStep});
+        this.store.dispatch(
+          cardMinMaxChanged({cardId, minMax: {minStep, maxStep}})
+        );
       }
     );
 
@@ -441,19 +466,21 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     ]).pipe(
       map(
         ([
-          {minStep, maxStep},
+          minMaxStep,
           linkedTimeEnabled,
           timeSelection,
           xAxisType,
           rangeSelectionEnabled,
         ]) => {
           if (
+            !minMaxStep ||
             !linkedTimeEnabled ||
             xAxisType !== XAxisType.STEP ||
             !timeSelection
           ) {
             return null;
           }
+          const {minStep, maxStep} = minMaxStep;
           const forkedTimeSelection = {...timeSelection};
           if (!forkedTimeSelection.end && rangeSelectionEnabled) {
             forkedTimeSelection.end = {step: maxStep};
@@ -466,44 +493,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
           );
         }
       )
-    );
-
-    this.stepOrLinkedTimeSelection$ = combineLatest([
-      this.stepSelectorTimeSelection$,
-      this.linkedTimeSelection$,
-      this.store.select(getMetricsLinkedTimeEnabled),
-    ]).pipe(
-      map(
-        ([
-          stepSelectorTimeSelection,
-          linkedTimeSelection,
-          linkedTimeEnabled,
-        ]) => {
-          return linkedTimeEnabled && linkedTimeSelection
-            ? {
-                start: {step: linkedTimeSelection.startStep},
-                end:
-                  linkedTimeSelection.endStep === null
-                    ? null
-                    : {step: linkedTimeSelection.endStep},
-              }
-            : stepSelectorTimeSelection;
-        }
-      )
-    );
-
-    this.columnHeaders$ = combineLatest([
-      this.stepOrLinkedTimeSelection$,
-      this.store.select(getSingleSelectionHeaders),
-      this.store.select(getRangeSelectionHeaders),
-    ]).pipe(
-      map(([timeSelection, singleSelectionHeaders, rangeSelectionHeaders]) => {
-        if (timeSelection === null || timeSelection.end === null) {
-          return singleSelectionHeaders;
-        } else {
-          return rangeSelectionHeaders;
-        }
-      })
     );
 
     this.chartMetadataMap$ = partitionedSeries$.pipe(
@@ -606,35 +595,60 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
 
-    combineLatest([
-      this.minMaxSteps$,
+    this.stepOrLinkedTimeSelection$ = combineLatest([
+      this.cardId$,
       this.store.select(getMetricsStepSelectorEnabled),
-      this.store.select(getMetricsRangeSelectionEnabled),
-    ]).subscribe(
-      ([{minStep, maxStep}, enableStepSelector, rangeSelectionEnabled]) => {
-        if (!enableStepSelector) {
-          this.stepSelectorTimeSelection$.next(null);
-          return;
-        }
-        const currentStartStep =
-          this.stepSelectorTimeSelection$.getValue()?.start.step;
-        const currentEndStep =
-          this.stepSelectorTimeSelection$.getValue()?.end?.step;
+      this.store.select(getMetricsLinkedTimeEnabled),
+      this.store.select(getMetricsLinkedTimeSelection),
+      this.store.select(getMetricsCardTimeSelection),
+    ]).pipe(
+      map(
+        ([
+          cardId,
+          stepSelectorEnabled,
+          linkedTimeEnabled,
+          linkedTimeSelection,
+          cardIdToStepSelectionMap,
+        ]) => {
+          if (!cardId || !stepSelectorEnabled) {
+            return null;
+          }
+          if (linkedTimeEnabled) {
+            return linkedTimeSelection;
+          }
 
+          return cardIdToStepSelectionMap.get(cardId) ?? null;
+        }
+      ),
+      combineLatestWith(this.rangeSelectionEnabled$, this.minMaxSteps$),
+      map(([timeSelection, rangeSelectionEnabled, minMax]) => {
+        if (!timeSelection || !minMax) {
+          return null;
+        }
         const potentiallyClippedTimeSelection = maybeClipTimeSelection(
-          {
-            start: {
-              step: currentStartStep ?? minStep,
-            },
-            end: rangeSelectionEnabled
-              ? {step: currentEndStep ?? maxStep}
-              : null,
-          },
-          minStep,
-          maxStep
+          timeSelection,
+          minMax?.minStep,
+          minMax?.maxStep
         );
-        this.stepSelectorTimeSelection$.next(potentiallyClippedTimeSelection);
-      }
+        if (!rangeSelectionEnabled) {
+          potentiallyClippedTimeSelection.end = null;
+        }
+        return potentiallyClippedTimeSelection;
+      })
+    );
+
+    this.columnHeaders$ = combineLatest([
+      this.stepOrLinkedTimeSelection$,
+      this.store.select(getSingleSelectionHeaders),
+      this.store.select(getRangeSelectionHeaders),
+    ]).pipe(
+      map(([timeSelection, singleSelectionHeaders, rangeSelectionHeaders]) => {
+        if (timeSelection === null || timeSelection.end === null) {
+          return singleSelectionHeaders;
+        } else {
+          return rangeSelectionHeaders;
+        }
+      })
     );
   }
 
@@ -692,19 +706,12 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   onTimeSelectionChanged(
     newTimeSelectionWithAffordance: TimeSelectionWithAffordance
   ) {
-    const {minStep, maxStep} = this.minMaxSteps$.getValue();
-    const {startStep, endStep} = maybeClipTimeSelectionView(
-      newTimeSelectionWithAffordance.timeSelection,
-      minStep,
-      maxStep
+    this.store.dispatch(
+      timeSelectionChanged({
+        cardId: this.cardId,
+        ...newTimeSelectionWithAffordance,
+      })
     );
-    const newTimeSelection = {
-      start: {step: startStep},
-      end: endStep ? {step: endStep} : null,
-    };
-
-    this.store.dispatch(timeSelectionChanged(newTimeSelectionWithAffordance));
-    this.stepSelectorTimeSelection$.next(newTimeSelection);
   }
 
   onStepSelectorToggled(affordance: TimeSelectionToggleAffordance) {

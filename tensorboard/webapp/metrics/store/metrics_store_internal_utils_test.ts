@@ -21,6 +21,7 @@ import {
   buildTimeSeriesData,
   createCardMetadata,
 } from '../testing';
+import {NonPinnedCardId, TimeSelection} from '../types';
 import {
   buildOrReturnStateWithPinnedCopy,
   buildOrReturnStateWithUnresolvedImportedPins,
@@ -374,7 +375,8 @@ describe('metrics store utils', () => {
         new Map(),
         new Map(),
         new Map(),
-        {card1: buildStepIndexMetadata({index: 2})}
+        {card1: buildStepIndexMetadata({index: 2})},
+        new Map()
       );
 
       const pinnedCardId = getPinnedCardId('card1');
@@ -405,7 +407,8 @@ describe('metrics store utils', () => {
         new Map(),
         new Map(),
         {card1: buildStepIndexMetadata({index: 2})},
-        {card1: createCardMetadata()}
+        {card1: createCardMetadata()},
+        new Map()
       );
       const pinnedCardId = getPinnedCardId('card1');
 
@@ -430,7 +433,8 @@ describe('metrics store utils', () => {
           new Map(),
           new Map(),
           {},
-          {}
+          {},
+          new Map()
         );
       }).toThrow();
     });
@@ -448,6 +452,7 @@ describe('metrics store utils', () => {
         cardStepIndexMap: {...cardStepIndexMap},
         cardMetadataMap: {...cardMetadataMap},
       };
+      const cardToTimeSelection = new Map<NonPinnedCardId, TimeSelection>();
 
       const result = buildOrReturnStateWithPinnedCopy(
         'card1',
@@ -455,7 +460,8 @@ describe('metrics store utils', () => {
         cardToPinnedCopyCache,
         pinnedCardToOriginal,
         cardStepIndexMap,
-        cardMetadataMap
+        cardMetadataMap,
+        cardToTimeSelection
       );
 
       expect(result.cardToPinnedCopy).toEqual(originals.cardToPinnedCopy);

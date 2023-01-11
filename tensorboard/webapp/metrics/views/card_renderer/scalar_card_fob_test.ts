@@ -15,8 +15,8 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {CardFobControllerComponent} from '../../../widgets/card_fob/card_fob_controller_component';
 import {TimeSelection} from '../../../widgets/card_fob/card_fob_types';
 import {LinearScale} from '../../../widgets/line_chart_v2/lib/scale';
+import {MinMaxStep} from '../../store/metrics_types';
 import {ScalarCardFobController} from './scalar_card_fob_controller';
-import {MinMaxStep} from './scalar_card_types';
 
 const SCALE_RATIO = 10;
 

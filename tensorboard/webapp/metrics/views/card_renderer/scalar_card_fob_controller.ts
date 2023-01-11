@@ -24,7 +24,7 @@ import {
   TimeSelectionAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
 import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
-import {MinMaxStep} from './scalar_card_types';
+import {MinMaxStep} from '../../store';
 
 @Component({
   selector: 'scalar-card-fob-controller',
