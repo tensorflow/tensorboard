@@ -1,3 +1,11 @@
+# Release 2.11.1
+
+## Bug Fixes
+
+- Prevent regression in TensorBoard.dev uploader authentication by replacing deprecated OOB auth flow with limited-input device flow. (#6107)
+  - See [deprecation announcement](https://developers.googleblog.com/2022/02/making-oauth-flows-safer.html).
+- Fix compatibility with numpy 1.24.0 by removing deprecated type aliases (#6117, #6140)
+
 # Release 2.11.0
 
 The 2.11 minor series tracks TensorFlow 2.11.
