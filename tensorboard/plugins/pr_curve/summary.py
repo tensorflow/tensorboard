@@ -215,7 +215,7 @@ def pb(
 
     # Compute bins of true positives and false positives.
     bucket_indices = np.int32(np.floor(predictions * (num_thresholds - 1)))
-    float_labels = labels.astype(np.float)
+    float_labels = labels.astype(float)
     histogram_range = (0, num_thresholds - 1)
     tp_buckets, _ = np.histogram(
         bucket_indices,
