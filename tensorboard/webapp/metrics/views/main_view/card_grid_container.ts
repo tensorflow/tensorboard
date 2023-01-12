@@ -26,9 +26,7 @@ import {map, shareReplay, switchMap, takeUntil, tap} from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {
   getMetricsCardMinWidth,
-  getMetricsStepSelectorEnabled,
   getMetricsTagGroupExpansionState,
-  getMetricsXAxisType,
 } from '../../../selectors';
 import {selectors as settingsSelectors} from '../../../settings';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
@@ -45,8 +43,6 @@ import {CardIdWithMetadata} from '../metrics_view_types';
       [cardIdsWithMetadata]="pagedItems$ | async"
       [cardMinWidth]="cardMinWidth$ | async"
       [cardObserver]="cardObserver"
-      [isStepSelectorEnabled]="isStepSelectorEnabled$ | async"
-      [xAxisType]="getMetricsXAxisType$ | async"
       (pageIndexChanged)="onPageIndexChanged($event)"
     >
     </metrics-card-grid-component>
@@ -63,11 +59,6 @@ export class CardGridContainer implements OnChanges, OnDestroy {
   readonly pageIndex$ = new BehaviorSubject<number>(0);
   private readonly items$ = new BehaviorSubject<CardIdWithMetadata[]>([]);
   private readonly ngUnsubscribe = new Subject<void>();
-
-  readonly isStepSelectorEnabled$ = this.store.select(
-    getMetricsStepSelectorEnabled
-  );
-  readonly getMetricsXAxisType$ = this.store.select(getMetricsXAxisType);
 
   readonly numPages$ = combineLatest([
     this.items$,

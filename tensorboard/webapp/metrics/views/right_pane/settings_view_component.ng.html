@@ -32,12 +32,12 @@ limitations under the License.
     *ngIf="isScalarStepSelectorFeatureEnabled"
     [title]="!isAxisTypeStep()? 'Only available when Horizontal Axis is set to step': ''"
   >
-    <mat-checkbox
+      <mat-checkbox
       [checked]="isScalarStepSelectorEnabled"
       (change)="stepSelectorToggled.emit()"
-      [disabled]="!isAxisTypeStep()"
+        [disabled]="!isAxisTypeStep()"
       >Enable step selection and data table
-    </mat-checkbox>
+      </mat-checkbox>
     <span class="indent">(Scalars only)</span>
     <div class="indent range-selection" *ngIf="isRangeSelectionAllowed">
       <mat-checkbox

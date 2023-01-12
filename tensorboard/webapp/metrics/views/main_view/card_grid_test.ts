@@ -13,8 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ScrollingModule} from '@angular/cdk/scrolling';
-import {Component, Input, NO_ERRORS_SCHEMA} from '@angular/core';
+import {Component, EventEmitter, Input, NO_ERRORS_SCHEMA, Output} from '@angular/core';
 import {
+  ComponentFixture,
   discardPeriodicTasks,
   fakeAsync,
   TestBed,
@@ -28,13 +29,10 @@ import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';
 import {
   getMetricsCardMinWidth,
-  getMetricsStepSelectorEnabled,
   getMetricsTagGroupExpansionState,
-  getMetricsXAxisType,
 } from '../../../selectors';
 import {selectors as settingsSelectors} from '../../../settings';
 import {PluginType} from '../../data_source';
-import {XAxisType} from '../../types';
 import {CardIdWithMetadata} from '../metrics_view_types';
 import {CardGridComponent} from './card_grid_component';
 import {CardGridContainer} from './card_grid_container';
@@ -72,6 +70,15 @@ class TestableScrollingContainer {
   @Input() cardIdsWithMetadata: CardIdWithMetadata[] = [];
 }
 
+/**
+ * Stub 'card-view' component for ease of testing.
+ */
+@Component({selector: 'card-view'})
+class TestableCardView {
+  @Output() fullHeightChanged = new EventEmitter<boolean>();
+  @Output() fullWidthChanged = new EventEmitter<boolean>();
+}
+
 describe('card grid', () => {
   let store: MockStore<State>;
   beforeEach(async () => {
@@ -80,6 +87,7 @@ describe('card grid', () => {
       declarations: [
         CardGridComponent,
         CardGridContainer,
+        TestableCardView,
         TestableScrollingContainer,
       ],
       providers: [provideMockStore()],
@@ -91,8 +99,6 @@ describe('card grid', () => {
     store.overrideSelector(getMetricsTagGroupExpansionState, true);
     store.overrideSelector(getMetricsCardMinWidth, 30);
     store.overrideSelector(settingsSelectors.getPageSize, 10);
-    store.overrideSelector(getMetricsStepSelectorEnabled, false);
-    store.overrideSelector(getMetricsXAxisType, XAxisType.STEP);
   });
 
   afterEach(() => {
@@ -215,139 +221,146 @@ describe('card grid', () => {
     discardPeriodicTasks();
   }));
 
-  describe('step selector', () => {
-    it('updates scalar card height when step selector is enabled', fakeAsync(() => {
-      store.overrideSelector(getMetricsStepSelectorEnabled, true);
-      const fixture = TestBed.createComponent(TestableScrollingContainer);
+  describe('card dimensions', () => {
+    let fixture: ComponentFixture<TestableScrollingContainer>;
+    beforeEach(() => {
+      fixture = TestBed.createComponent(TestableScrollingContainer);
       fixture.componentInstance.cardIdsWithMetadata = [
         {
           cardId: 'card1',
           plugin: PluginType.SCALARS,
           tag: 'tagA',
           runId: null,
-        },
-      ];
-      fixture.detectChanges();
-
-      const scalarCardViewElement = fixture.debugElement.query(
-        By.css('card-view')
-      ).nativeElement;
-
-      expect(scalarCardViewElement.classList).toContain('height-with-table');
-    }));
-
-    it('does not update card height when step selector is disabled', fakeAsync(() => {
-      store.overrideSelector(getMetricsStepSelectorEnabled, false);
-      const fixture = TestBed.createComponent(TestableScrollingContainer);
-      fixture.componentInstance.cardIdsWithMetadata = [
-        {
-          cardId: 'card1',
-          plugin: PluginType.SCALARS,
-          tag: 'tagA',
-          runId: null,
-        },
-        {
-          cardId: 'card1',
-          plugin: PluginType.IMAGES,
-          tag: 'tagB',
-          runId: 'run1',
-        },
-      ];
-      fixture.detectChanges();
-
-      const cardViewElements = fixture.debugElement
-        .queryAll(By.css('card-view'))
-        .map((debugElement) => debugElement.nativeElement);
-
-      expect(cardViewElements[0].classList).not.toContain('height-with-table');
-      expect(cardViewElements[1].classList).not.toContain('height-with-table');
-    }));
-
-    it('does not update card height when step selector is enabled but axis type is RELATIVE', fakeAsync(() => {
-      store.overrideSelector(getMetricsStepSelectorEnabled, true);
-      store.overrideSelector(getMetricsXAxisType, XAxisType.RELATIVE);
-      const fixture = TestBed.createComponent(TestableScrollingContainer);
-      fixture.componentInstance.cardIdsWithMetadata = [
-        {
-          cardId: 'card1',
-          plugin: PluginType.SCALARS,
-          tag: 'tagA',
-          runId: null,
-        },
-        {
-          cardId: 'card1',
-          plugin: PluginType.IMAGES,
-          tag: 'tagB',
-          runId: 'run1',
-        },
-      ];
-      fixture.detectChanges();
-
-      const cardViewElements = fixture.debugElement
-        .queryAll(By.css('card-view'))
-        .map((debugElement) => debugElement.nativeElement);
-
-      expect(cardViewElements[0].classList).not.toContain('height-with-table');
-      expect(cardViewElements[1].classList).not.toContain('height-with-table');
-    }));
-
-    it('does not update card height when step selector is enabled but axis type is WALL_TIME', fakeAsync(() => {
-      store.overrideSelector(getMetricsStepSelectorEnabled, true);
-      store.overrideSelector(getMetricsXAxisType, XAxisType.WALL_TIME);
-      const fixture = TestBed.createComponent(TestableScrollingContainer);
-      fixture.componentInstance.cardIdsWithMetadata = [
-        {
-          cardId: 'card1',
-          plugin: PluginType.SCALARS,
-          tag: 'tagA',
-          runId: null,
-        },
-        {
-          cardId: 'card1',
-          plugin: PluginType.IMAGES,
-          tag: 'tagB',
-          runId: 'run1',
-        },
-      ];
-      fixture.detectChanges();
-
-      const cardViewElements = fixture.debugElement
-        .queryAll(By.css('card-view'))
-        .map((debugElement) => debugElement.nativeElement);
-
-      expect(cardViewElements[0].classList).not.toContain('height-with-table');
-      expect(cardViewElements[1].classList).not.toContain('height-with-table');
-    }));
-
-    it('does not update non-scalar card height when step selector is enabled', fakeAsync(() => {
-      store.overrideSelector(getMetricsStepSelectorEnabled, true);
-      const fixture = TestBed.createComponent(TestableScrollingContainer);
-      fixture.componentInstance.cardIdsWithMetadata = [
-        {
-          cardId: 'card1',
-          plugin: PluginType.IMAGES,
-          tag: 'tagB',
-          runId: 'run1',
         },
         {
           cardId: 'card2',
-          plugin: PluginType.HISTOGRAMS,
+          plugin: PluginType.SCALARS,
           tag: 'tagA',
-          runId: 'run2',
+          runId: null,
+        },
+        {
+          cardId: 'card3',
+          plugin: PluginType.SCALARS,
+          tag: 'tagA',
+          runId: null,
         },
       ];
       fixture.detectChanges();
+    });
 
-      const nonScalarCardViewElements = fixture.debugElement
-        .queryAll(By.css('card-view'))
-        .map((debugElement) => debugElement.nativeElement);
+    it('shows cards at min dimensions by default', () => {
+      const cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
+      expect(cardSpaces[0].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[0].nativeElement.classList).not.toContain('full-width');
+      expect(cardSpaces[1].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[1].nativeElement.classList).not.toContain('full-width');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-width');
+    });
 
-      expect(nonScalarCardViewElements[0].classList).not.toContain(
-        'height-with-table'
-      );
-      expect(nonScalarCardViewElements[1].classList).not.toContain(
-        'height-with-table'
-      );
-    }));
+    it('changes height after card event', () => {
+      const cardViews = fixture.debugElement.queryAll(By.css('card-view'));
+      const cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
+
+      cardViews[1].componentInstance.fullHeightChanged.emit(true);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[1].nativeElement.classList).toContain('full-height');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-height');
+
+      cardViews[0].componentInstance.fullHeightChanged.emit(true);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).toContain('full-height');
+      expect(cardSpaces[1].nativeElement.classList).toContain('full-height');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-height');
+
+      cardViews[1].componentInstance.fullHeightChanged.emit(false);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).toContain('full-height');
+      expect(cardSpaces[1].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-height');
+
+      cardViews[0].componentInstance.fullHeightChanged.emit(false);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[1].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-height');
+    });
+
+    it('does not change height if emitted value is same', () => {
+      const cardViews = fixture.debugElement.queryAll(By.css('card-view'));
+      const cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
+
+      cardViews[1].componentInstance.fullHeightChanged.emit(true);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[1].nativeElement.classList).toContain('full-height');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-height');
+
+      cardViews[0].componentInstance.fullHeightChanged.emit(false);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[1].nativeElement.classList).toContain('full-height');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-height');
+
+      cardViews[1].componentInstance.fullHeightChanged.emit(true);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[1].nativeElement.classList).toContain('full-height');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-height');
+    });
+
+    it('changes width after card event', () => {
+      const cardViews = fixture.debugElement.queryAll(By.css('card-view'));
+      const cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
+
+      cardViews[2].componentInstance.fullWidthChanged.emit(true);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).not.toContain('full-width');
+      expect(cardSpaces[1].nativeElement.classList).not.toContain('full-width');
+      expect(cardSpaces[2].nativeElement.classList).toContain('full-width');
+
+      cardViews[1].componentInstance.fullWidthChanged.emit(true);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).not.toContain('full-width');
+      expect(cardSpaces[1].nativeElement.classList).toContain('full-width');
+      expect(cardSpaces[2].nativeElement.classList).toContain('full-width');
+
+      cardViews[1].componentInstance.fullWidthChanged.emit(false);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).not.toContain('full-width');
+      expect(cardSpaces[1].nativeElement.classList).not.toContain('full-width');
+      expect(cardSpaces[2].nativeElement.classList).toContain('full-width');
+
+      cardViews[2].componentInstance.fullWidthChanged.emit(false);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).not.toContain('full-width');
+      expect(cardSpaces[1].nativeElement.classList).not.toContain('full-width');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-width');
+    });
+
+    it('does not change width if emitted value is same', () => {
+      const cardViews = fixture.debugElement.queryAll(By.css('card-view'));
+      const cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
+
+      cardViews[1].componentInstance.fullWidthChanged.emit(true);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).not.toContain('full-width');
+      expect(cardSpaces[1].nativeElement.classList).toContain('full-width');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-width');
+
+      cardViews[0].componentInstance.fullWidthChanged.emit(false);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).not.toContain('full-width');
+      expect(cardSpaces[1].nativeElement.classList).toContain('full-width');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-width');
+
+      cardViews[1].componentInstance.fullWidthChanged.emit(true);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).not.toContain('full-width');
+      expect(cardSpaces[1].nativeElement.classList).toContain('full-width');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-width');
+    });
+
   });
 });

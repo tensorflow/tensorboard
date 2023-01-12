@@ -15,8 +15,9 @@ limitations under the License.
 import {
   ChangeDetectionStrategy,
   Component,
-  HostBinding,
+  EventEmitter,
   Input,
+  Output,
 } from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
@@ -64,8 +65,8 @@ export class CardViewContainer {
   @Input() groupName!: string | null;
   @Input() pluginType!: PluginType;
 
-  @HostBinding('class.full-width') showFullWidth: boolean = false;
-  @HostBinding('class.full-height') showFullHeight: boolean = false;
+  @Output() fullWidthChanged = new EventEmitter<boolean>();
+  @Output() fullHeightChanged = new EventEmitter<boolean>();
 
   onVisibilityChange({visible}: {visible: boolean}) {
     this.isEverVisible = this.isEverVisible || visible;
@@ -91,11 +92,11 @@ export class CardViewContainer {
     );
 
   onFullWidthChanged(showFullWidth: boolean) {
-    this.showFullWidth = showFullWidth;
+    this.fullWidthChanged.emit(showFullWidth);
   }
 
   onFullHeightChanged(showFullHeight: boolean) {
-    this.showFullHeight = showFullHeight;
+    this.fullHeightChanged.emit(showFullHeight);
   }
 
   onPinStateChanged() {

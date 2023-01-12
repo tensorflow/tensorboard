@@ -94,6 +94,15 @@ type ImageCardMetadata = CardMetadata & {
       (onPinClicked)="pinStateChanged.emit($event)"
     ></image-card-component>
   `,
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+    `,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {

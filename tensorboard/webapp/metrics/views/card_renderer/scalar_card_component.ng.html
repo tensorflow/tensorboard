@@ -14,163 +14,165 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="heading">
-  <span class="name">
-    <tb-truncated-path
-      class="tag"
-      title="{{ tag }}"
-      value="{{ title }}"
-    ></tb-truncated-path>
-    <vis-linked-time-selection-warning
-      [isClipped]="linkedTimeSelection && linkedTimeSelection.clipped"
-    ></vis-linked-time-selection-warning>
-  </span>
-  <span class="controls">
-    <button
-      mat-icon-button
-      [disabled]="!lineChart || !(lineChart.getIsViewBoxOverridden() | async)"
-      (click)="resetDomain()"
-      [title]="
-          !lineChart || !(lineChart.getIsViewBoxOverridden() | async) ?
-              'Fit line chart domains to data' :
-              'Line chart is already fitted to data. When data updates, the line chart '
-                + 'will auto fit to its domain.'
-      "
-      i18n-aria-label="A button that resets line chart domain to the data"
-      aria-label="Fit line chart domains to data"
-    >
-      <mat-icon svgIcon="settings_overscan_24px"></mat-icon>
-    </button>
-    <button
-      mat-icon-button
-      class="pin-button"
-      i18n-aria-label="A button to pin a card."
-      aria-label="Pin card"
-      [attr.title]="isPinned ? 'Unpin card' : 'Pin card'"
-      (click)="onPinClicked.emit(!isPinned)"
-    >
-      <mat-icon
-        [svgIcon]="isPinned ? 'keep_24px' : 'keep_outline_24px'"
-      ></mat-icon>
-    </button>
-    <button
-      mat-icon-button
-      i18n-aria-label="A button on line chart that toggles full size mode."
-      aria-label="Toggle full size mode"
-      title="Toggle full size mode"
-      (click)="onFullSizeToggle.emit()"
-    >
-      <mat-icon
-        [svgIcon]="showFullSize ? 'fullscreen_exit_24px' : 'fullscreen_24px'"
-      ></mat-icon>
-    </button>
-    <!-- overflow menu cannot use mat-tooltip since it interferes with the mat-menu. -->
-    <button
-      mat-icon-button
-      [matMenuTriggerFor]="menu"
-      i18n-aria-label="An overflow menu button that opens more line chart options"
-      aria-label="More line chart options"
-      title="More line chart options"
-    >
-      <mat-icon svgIcon="more_vert_24px"></mat-icon>
-    </button>
-    <mat-menu #menu="matMenu">
+<div class="always-visible">
+  <div class="heading">
+    <span class="name">
+      <tb-truncated-path
+        class="tag"
+        title="{{ tag }}"
+        value="{{ title }}"
+      ></tb-truncated-path>
+      <vis-linked-time-selection-warning
+        [isClipped]="linkedTimeSelection && linkedTimeSelection.clipped"
+      ></vis-linked-time-selection-warning>
+    </span>
+    <span class="controls">
       <button
-        mat-menu-item
-        (click)="toggleYScaleType()"
-        i18n-aria-label="A button that toggles log scale on y-axis on a line chart"
-        aria-label="Toggle Y-axis log scale on line chart"
+        mat-icon-button
+        [disabled]="!lineChart || !(lineChart.getIsViewBoxOverridden() | async)"
+        (click)="resetDomain()"
+        [title]="
+            !lineChart || !(lineChart.getIsViewBoxOverridden() | async) ?
+                'Fit line chart domains to data' :
+                'Line chart is already fitted to data. When data updates, the line chart '
+                  + 'will auto fit to its domain.'
+        "
+        i18n-aria-label="A button that resets line chart domain to the data"
+        aria-label="Fit line chart domains to data"
       >
-        <mat-icon svgIcon="line_weight_24px"></mat-icon>
-        <span>Toggle Y-axis log scale</span>
+        <mat-icon svgIcon="settings_overscan_24px"></mat-icon>
       </button>
       <button
-        mat-menu-item
-        (click)="openDataDownloadDialog()"
-        aria-label="Open dialog to download data"
+        mat-icon-button
+        class="pin-button"
+        i18n-aria-label="A button to pin a card."
+        aria-label="Pin card"
+        [attr.title]="isPinned ? 'Unpin card' : 'Pin card'"
+        (click)="onPinClicked.emit(!isPinned)"
       >
-        <mat-icon svgIcon="get_app_24px"></mat-icon>
-        <span>Download data</span>
+        <mat-icon
+          [svgIcon]="isPinned ? 'keep_24px' : 'keep_outline_24px'"
+        ></mat-icon>
       </button>
-    </mat-menu>
-  </span>
-</div>
-<div class="chart-container">
-  <mat-spinner
-    diameter="18"
-    *ngIf="loadState === DataLoadState.LOADING"
-  ></mat-spinner>
-  <line-chart
-    [disableUpdate]="!isCardVisible"
-    [preferredRendererType]="forceSvg ? RendererType.SVG : RendererType.WEBGL"
-    [seriesData]="dataSeries"
-    [seriesMetadataMap]="chartMetadataMap"
-    [xScaleType]="xScaleType"
-    [yScaleType]="yScaleType"
-    [customXFormatter]="getCustomXFormatter()"
-    [ignoreYOutliers]="ignoreOutliers"
-    [tooltipTemplate]="tooltip"
-    [useDarkMode]="useDarkMode"
-    (onViewBoxOverridden)="isViewBoxOverridden = $event"
-    (viewBoxChanged)="onLineChartZoom.emit($event)"
-    [customVisTemplate]="lineChartCustomVis"
-    [customChartOverlayTemplate]="lineChartCustomXAxisVis"
-  ></line-chart>
-  <ng-template
-    #tooltip
-    let-tooltipData="data"
-    let-cursorLocationInDataCoord="cursorLocationInDataCoord"
-    let-cursorLocation="cursorLocation"
-  >
-    <table class="tooltip">
-      <thead>
-        <tr>
-          <th class="circle-header"></th>
-          <th>Run</th>
-          <th *ngIf="smoothingEnabled">Smoothed</th>
-          <th>Value</th>
-          <th>Step</th>
-          <th>Time</th>
-          <th>Relative</th>
-        </tr>
-      </thead>
-      <tbody>
-        <ng-container
-          *ngFor="
-            let datum of getCursorAwareTooltipData(tooltipData,
-              cursorLocationInDataCoord, cursorLocation);
-            trackBy: trackByTooltipDatum
-          "
+      <button
+        mat-icon-button
+        i18n-aria-label="A button on line chart that toggles full size mode."
+        aria-label="Toggle full size mode"
+        title="Toggle full size mode"
+        (click)="onFullSizeToggle.emit()"
+      >
+        <mat-icon
+          [svgIcon]="showFullSize ? 'fullscreen_exit_24px' : 'fullscreen_24px'"
+        ></mat-icon>
+      </button>
+      <!-- overflow menu cannot use mat-tooltip since it interferes with the mat-menu. -->
+      <button
+        mat-icon-button
+        [matMenuTriggerFor]="menu"
+        i18n-aria-label="An overflow menu button that opens more line chart options"
+        aria-label="More line chart options"
+        title="More line chart options"
+      >
+        <mat-icon svgIcon="more_vert_24px"></mat-icon>
+      </button>
+      <mat-menu #menu="matMenu">
+        <button
+          mat-menu-item
+          (click)="toggleYScaleType()"
+          i18n-aria-label="A button that toggles log scale on y-axis on a line chart"
+          aria-label="Toggle Y-axis log scale on line chart"
         >
-          <tr class="tooltip-row" [class.closest]="datum.metadata.closest">
-            <td class="tooltip-row-circle">
-              <span [style.backgroundColor]="datum.metadata.color"></span>
-            </td>
-            <td class="name">
-              <ng-container *ngIf="datum.metadata.alias"
-                ><tb-experiment-alias
-                  [alias]="datum.metadata.alias"
-                ></tb-experiment-alias
-                >/</ng-container
-              >{{ datum.metadata.displayName }}
-            </td>
-            <td *ngIf="smoothingEnabled">
-              {{ valueFormatter.formatShort(datum.dataPoint.y) }}
-            </td>
-            <td>{{ valueFormatter.formatShort(datum.dataPoint.value) }}</td>
-            <!-- Print the step with comma for readability. -->
-            <td>{{ stepFormatter.formatShort(datum.dataPoint.step) }}</td>
-            <td>{{ datum.dataPoint.wallTime | date: 'short' }}</td>
-            <td>
-              {{
-              relativeXFormatter.formatReadable(datum.dataPoint.relativeTimeInMs)
-              }}
-            </td>
+          <mat-icon svgIcon="line_weight_24px"></mat-icon>
+          <span>Toggle Y-axis log scale</span>
+        </button>
+        <button
+          mat-menu-item
+          (click)="openDataDownloadDialog()"
+          aria-label="Open dialog to download data"
+        >
+          <mat-icon svgIcon="get_app_24px"></mat-icon>
+          <span>Download data</span>
+        </button>
+      </mat-menu>
+    </span>
+  </div>
+  <div class="chart-container">
+    <mat-spinner
+      diameter="18"
+      *ngIf="loadState === DataLoadState.LOADING"
+    ></mat-spinner>
+    <line-chart
+      [disableUpdate]="!isCardVisible"
+      [preferredRendererType]="forceSvg ? RendererType.SVG : RendererType.WEBGL"
+      [seriesData]="dataSeries"
+      [seriesMetadataMap]="chartMetadataMap"
+      [xScaleType]="xScaleType"
+      [yScaleType]="yScaleType"
+      [customXFormatter]="getCustomXFormatter()"
+      [ignoreYOutliers]="ignoreOutliers"
+      [tooltipTemplate]="tooltip"
+      [useDarkMode]="useDarkMode"
+      (onViewBoxOverridden)="isViewBoxOverridden = $event"
+      (viewBoxChanged)="onLineChartZoom.emit($event)"
+      [customVisTemplate]="lineChartCustomVis"
+      [customChartOverlayTemplate]="lineChartCustomXAxisVis"
+    ></line-chart>
+    <ng-template
+      #tooltip
+      let-tooltipData="data"
+      let-cursorLocationInDataCoord="cursorLocationInDataCoord"
+      let-cursorLocation="cursorLocation"
+    >
+      <table class="tooltip">
+        <thead>
+          <tr>
+            <th class="circle-header"></th>
+            <th>Run</th>
+            <th *ngIf="smoothingEnabled">Smoothed</th>
+            <th>Value</th>
+            <th>Step</th>
+            <th>Time</th>
+            <th>Relative</th>
           </tr>
-        </ng-container>
-      </tbody>
-    </table>
-  </ng-template>
+        </thead>
+        <tbody>
+          <ng-container
+            *ngFor="
+              let datum of getCursorAwareTooltipData(tooltipData,
+                cursorLocationInDataCoord, cursorLocation);
+              trackBy: trackByTooltipDatum
+            "
+          >
+            <tr class="tooltip-row" [class.closest]="datum.metadata.closest">
+              <td class="tooltip-row-circle">
+                <span [style.backgroundColor]="datum.metadata.color"></span>
+              </td>
+              <td class="name">
+                <ng-container *ngIf="datum.metadata.alias"
+                  ><tb-experiment-alias
+                    [alias]="datum.metadata.alias"
+                  ></tb-experiment-alias
+                  >/</ng-container
+                >{{ datum.metadata.displayName }}
+              </td>
+              <td *ngIf="smoothingEnabled">
+                {{ valueFormatter.formatShort(datum.dataPoint.y) }}
+              </td>
+              <td>{{ valueFormatter.formatShort(datum.dataPoint.value) }}</td>
+              <!-- Print the step with comma for readability. -->
+              <td>{{ stepFormatter.formatShort(datum.dataPoint.step) }}</td>
+              <td>{{ datum.dataPoint.wallTime | date: 'short' }}</td>
+              <td>
+                {{
+                relativeXFormatter.formatReadable(datum.dataPoint.relativeTimeInMs)
+                }}
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </ng-template>
+  </div>
 </div>
 <ng-container *ngIf="showDataTable()">
   <div class="data-table-container">

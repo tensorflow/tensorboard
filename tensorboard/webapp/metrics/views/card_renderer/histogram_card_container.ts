@@ -84,7 +84,8 @@ type HistogramCardMetadata = CardMetadata & {
   styles: [
     `
       :host {
-        display: block;
+        display: flex;
+        flex-direction: column;
         height: 100%;
       }
     `,

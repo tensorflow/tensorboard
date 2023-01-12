@@ -21,16 +21,24 @@ limitations under the License.
   ></ng-container>
 
   <div class="card-grid" [style.grid-template-columns]="gridTemplateColumn">
-    <card-view
-      *ngFor="let item of cardIdsWithMetadata; trackBy: trackByCards"
-      [ngClass]="isShowingDataTable(item) ? 'height-with-table' : ''"
-      [cardId]="item.cardId"
-      [groupName]="groupName"
-      [pluginType]="item.plugin"
-      [cardObserver]="cardObserver"
-      [cardLazyLoader]="item.cardId"
-    >
-    </card-view>
+      <div
+        *ngFor="let item of cardIdsWithMetadata; trackBy: trackByCards"
+        class="card-space"
+        [ngClass]="{
+          'full-width': cardsAtFullWidth.has(item.cardId),
+          'full-height': cardsAtFullHeight.has(item.cardId)
+        }">
+        <card-view
+          [cardId]="item.cardId"
+          [groupName]="groupName"
+          [pluginType]="item.plugin"
+          [cardObserver]="cardObserver"
+          [cardLazyLoader]="item.cardId"
+          (fullWidthChanged)="onFullWidthChanged(item.cardId, $event)"
+          (fullHeightChanged)="onFullHeightChanged(item.cardId, $event)"
+        >
+        </card-view>
+     </div>
   </div>
 
   <ng-container

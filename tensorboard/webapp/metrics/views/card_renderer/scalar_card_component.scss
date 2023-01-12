@@ -29,6 +29,15 @@ $_title-to-heading-gap: 12px;
   padding-top: $metrics-preferred-gap - $_title-to-heading-gap;
 }
 
+.always-visible {
+  display: flex;
+  // The content that is always visible should match the min height of a card,
+  // taking into account padding and 2px for the card border.
+  flex-basis: $metrics-min-card-height - 2px - ($metrics-preferred-gap * 2) + $_title-to-heading-gap;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
 .heading {
   $heading-content-gap: 4px;
 
@@ -68,8 +77,7 @@ $_title-to-heading-gap: 12px;
 }
 
 .chart-container {
-  position: relative;
-  flex: 1;
+  flex-grow: 1;
 
   mat-spinner {
     $mat-icon-button-diameter: 40px;
