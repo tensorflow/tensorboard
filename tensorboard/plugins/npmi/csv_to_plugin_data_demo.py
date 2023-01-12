@@ -70,7 +70,7 @@ def convert_file(file_path):
         for row in csv_reader:
             annotations.append(row[0])
             values.append(row[1:])
-        values = np.array(values).astype(np.float)
+        values = np.array(values).astype(float)
 
     writer = tf.summary.create_file_writer(os.path.dirname(file_path))
     with writer.as_default():
