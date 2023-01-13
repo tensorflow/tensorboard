@@ -43,9 +43,14 @@ export class FeatureFlagOverrideDataSource implements TBFeatureFlagDataSource {
       featureFlagsMetadata,
       this.queryParams.getParams()
     );
+    const persistedFlags = Object.fromEntries(
+      Object.entries(this.getPersistentFeatureFlags()).filter(
+        ([key]) => featureFlagsMetadata[key as keyof FeatureFlags]
+      )
+    );
     return {
       ...featuresFromMediaQuery,
-      ...this.getPersistentFeatureFlags(),
+      ...persistedFlags,
       ...overriddenFeatures,
     } as Partial<FeatureFlags>;
   }

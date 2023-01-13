@@ -77,6 +77,7 @@ export const getFeatureFlagsToSendToServer = createSelector(
     for (const entry in state.flagOverrides) {
       const entryMetadata = state.metadata[entry as keyof FeatureFlags];
       if (
+        entryMetadata &&
         entryMetadata.queryParamOverride &&
         entryMetadata.sendToServerWhenOverridden
       ) {
