@@ -2662,6 +2662,7 @@ describe('scalar card', () => {
         //   maxStep: 50,
         // });
         store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);
+        store.overrideSelector(selectors.getMetricsRangeSelectionEnabled, true);
         store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 0},
           end: {step: 50},
