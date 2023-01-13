@@ -252,11 +252,20 @@ class FakeHttpResponse:
 
 
 class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
-    _OAUTH_CONFIG = {
-        "client_id": "console_client_id",
-        "token_uri": "https://google.com/token",
-        "client_secret": "console_client_secret",
-    }
+    # A "realistic" JSON client config string, like the ones we download from
+    # our GCP project.
+    _OAUTH_CONFIG_JSON = """
+        {
+            "installed":{
+                "client_id":"console_client_id",
+                "project_id":"some GCP cloud project id",
+                "auth_uri":"https://accounts.google.com/o/oauth2/auth",
+                "token_uri":"https://google.com/token",
+                "auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs",
+                "client_secret":"console_client_secret"
+            }
+        }
+    """
 
     _SCOPES = ["email", "openid"]
 
@@ -300,8 +309,9 @@ class LimitedInputDeviceAuthFlowTest(tb_test.TestCase):
             mock.patch.object(requests, "post", autospec=True)
         )
 
+        client_config = json.loads(self._OAUTH_CONFIG_JSON)
         self.flow = auth._LimitedInputDeviceAuthFlow(
-            self._OAUTH_CONFIG,
+            client_config,
             self._SCOPES,
         )
 

@@ -251,7 +251,9 @@ class _LimitedInputDeviceAuthFlow:
     """
 
     def __init__(self, client_config, scopes):
-        self._client_config = client_config
+        # The config is loaded from a json string from the GCP project, which
+        # comes with an "installed" wrapper layer on the values we need.
+        self._client_config = client_config["installed"]
         self._scopes = scopes
 
     def run(self) -> google.oauth2.credentials.Credentials:
