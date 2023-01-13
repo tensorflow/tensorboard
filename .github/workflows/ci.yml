@@ -37,7 +37,7 @@ jobs:
       fail-fast: false
       matrix:
         tf_version_id: ['tf', 'notf']
-        python_version: ['3.7']
+        python_version: ['3.8']
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
       - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
@@ -214,7 +214,7 @@ jobs:
         # flake8 should run on each Python version that we target,
         # because the errors and warnings can differ due to language
         # changes, and we want to catch them all.
-        python_version: ['3.7', '3.8', '3.9', '3.10']
+        python_version: ['3.8', '3.9', '3.10']
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
       - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
@@ -237,7 +237,7 @@ jobs:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
       - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
         with:
-          python-version: '3.7'
+          python-version: '3.8'
           architecture: 'x64'
       - name: 'Install black, yamllint, and the TensorFlow docs notebook tools'
         run: |
