@@ -1,3 +1,9 @@
+# Release 2.11.2
+
+## Bug Fixes
+
+- Fixes bug introduced in #6107, which was included in release 2.11.1. (#6142)
+
 # Release 2.11.1
 
 ## Bug Fixes
