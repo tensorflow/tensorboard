@@ -289,6 +289,7 @@ const {initialState, reducers: namespaceContextedReducer} =
     },
     {
       isSettingsPaneOpen: true,
+      isSlideoutMenuOpen: false,
       timeSeriesData: {
         scalars: {},
         histograms: {},
@@ -1118,6 +1119,9 @@ const reducer = createReducer(
   }),
   on(actions.metricsSettingsPaneClosed, (state) => {
     return {...state, isSettingsPaneOpen: false};
+  }),
+  on(actions.metricsSlideoutMenuToggled, (state) => {
+    return {...state, isSlideoutMenuOpen: !state.isSlideoutMenuOpen};
   })
 );
 

@@ -94,10 +94,15 @@ describe('metrics right_pane', () => {
       store.overrideSelector(selectors.getIsMetricsImageSupportEnabled, true);
       store.overrideSelector(selectors.getIsLinkedTimeEnabled, false);
       store.overrideSelector(selectors.getIsDataTableEnabled, false);
+      store.overrideSelector(
+        selectors.getIsScalarColumnCustomizationEnabled,
+        false
+      );
       store.overrideSelector(selectors.getMetricsCardMinWidth, null);
       store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, false);
       store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
       store.overrideSelector(selectors.getMetricsRangeSelectionEnabled, false);
+      store.overrideSelector(selectors.isMetricsSlideoutMenuOpen, false);
       store.overrideSelector(selectors.getAllowRangeSelection, false);
       store.overrideSelector(selectors.getMetricsLinkedTimeSelectionSetting, {
         start: {step: 0},
@@ -500,11 +505,7 @@ describe('metrics right_pane', () => {
           store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
           const fixture = TestBed.createComponent(SettingsViewContainer);
           fixture.detectChanges();
-          console.log(
-            'properties',
-            fixture.debugElement.query(By.css('.range-selection mat-checkbox'))
-              .properties
-          );
+
           const checkbox = fixture.debugElement.query(
             By.css('.range-selection mat-checkbox input')
           );
@@ -531,6 +532,54 @@ describe('metrics right_pane', () => {
               affordance: TimeSelectionToggleAffordance.CHECK_BOX,
             })
           );
+        });
+
+        describe('slide out menu', () => {
+          beforeEach(() => {
+            store.overrideSelector(
+              selectors.getIsScalarColumnCustomizationEnabled,
+              true
+            );
+          });
+
+          it('dispatches metricsSlideoutMenuToggled when Edit Menu Toggle is clicked', () => {
+            const fixture = TestBed.createComponent(SettingsViewContainer);
+            fixture.detectChanges();
+
+            fixture.debugElement
+              .query(By.css('.column-edit-menu-toggle'))
+              .nativeElement.click();
+
+            expect(dispatchSpy).toHaveBeenCalledWith(
+              actions.metricsSlideoutMenuToggled()
+            );
+          });
+
+          it('renders left cheron when slideout is closed', () => {
+            store.overrideSelector(selectors.isMetricsSlideoutMenuOpen, false);
+            const fixture = TestBed.createComponent(SettingsViewContainer);
+            fixture.detectChanges();
+
+            expect(
+              fixture.debugElement
+                .query(By.css('.column-edit-menu-toggle'))
+                .query(By.css('mat-icon'))
+                .nativeElement.getAttribute('svgIcon')
+            ).toBe('chevron_left_24px');
+          });
+
+          it('renders right cheron when slideout is open', () => {
+            store.overrideSelector(selectors.isMetricsSlideoutMenuOpen, true);
+            const fixture = TestBed.createComponent(SettingsViewContainer);
+            fixture.detectChanges();
+
+            expect(
+              fixture.debugElement
+                .query(By.css('.column-edit-menu-toggle'))
+                .query(By.css('mat-icon'))
+                .nativeElement.getAttribute('svgIcon')
+            ).toBe('chevron_right_24px');
+          });
         });
       });
     });

@@ -38,6 +38,8 @@ export class MainViewComponent {
 
   @Input() initialTagsLoading!: boolean;
 
+  @Input() slideOutMenuOpen!: boolean;
+
   @Output() onSettingsButtonClicked = new EventEmitter<void>();
 
   @Output() onCloseSidepaneButtonClicked = new EventEmitter<void>();

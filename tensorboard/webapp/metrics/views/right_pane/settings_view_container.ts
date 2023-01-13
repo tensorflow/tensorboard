@@ -36,6 +36,7 @@ import {
   metricsResetImageBrightness,
   metricsResetImageContrast,
   metricsScalarPartitionNonMonotonicXToggled,
+  metricsSlideoutMenuToggled,
   metricsToggleIgnoreOutliers,
   metricsToggleImageShowActualSize,
   rangeSelectionToggled,
@@ -92,12 +93,17 @@ const RANGE_INPUT_SOURCE_TO_AFFORDANCE: Record<
         isScalarStepSelectorRangeEnabled$ | async
       "
       [isLinkedTimeEnabled]="isLinkedTimeEnabled$ | async"
+      [isScalarColumnCustomizationEnabled]="
+        isScalarColumnCustomizationEnabled$ | async
+      "
       [linkedTimeSelection]="linkedTimeSelection$ | async"
       [stepMinMax]="stepMinMax$ | async"
+      [isSlideOutMenuOpen]="isSlideOutMenuOpen$ | async"
       (linkedTimeToggled)="onLinkedTimeToggled()"
       (linkedTimeSelectionChanged)="onLinkedTimeSelectionChanged($event)"
       (stepSelectorToggled)="onStepSelectorToggled()"
       (rangeSelectionToggled)="onRangeSelectionToggled()"
+      (onSlideOutToggled)="onSlideOutToggled()"
     >
     </metrics-dashboard-settings-component>
   `,
@@ -121,10 +127,16 @@ export class SettingsViewContainer {
   readonly isLinkedTimeEnabled$: Observable<boolean> = this.store.select(
     selectors.getMetricsLinkedTimeEnabled
   );
+  readonly isScalarColumnCustomizationEnabled$ = this.store.select(
+    selectors.getIsScalarColumnCustomizationEnabled
+  );
   readonly linkedTimeSelection$ = this.store.select(
     selectors.getMetricsLinkedTimeSelectionSetting
   );
   readonly stepMinMax$ = this.store.select(selectors.getMetricsStepMinMax);
+  readonly isSlideOutMenuOpen$ = this.store.select(
+    selectors.isMetricsSlideoutMenuOpen
+  );
 
   readonly isImageSupportEnabled$ = this.store
     .select(selectors.getIsFeatureFlagsLoaded)
@@ -246,5 +258,9 @@ export class SettingsViewContainer {
         affordance: RANGE_INPUT_SOURCE_TO_AFFORDANCE[source],
       })
     );
+  }
+
+  onSlideOutToggled() {
+    this.store.dispatch(metricsSlideoutMenuToggled());
   }
 }
