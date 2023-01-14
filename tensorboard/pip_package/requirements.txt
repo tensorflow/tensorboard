@@ -21,11 +21,11 @@ google-auth >= 1.6.3, < 3
 google-auth-oauthlib >= 0.4.1, < 0.5
 markdown >= 2.6.8
 numpy >= 1.12.0
-# Protobuf 4.0 is incompatible with TF. Force < 4 until they unblock upgrade.
-# See: http://b/182876485
-# See: https://github.com/protocolbuffers/protobuf/issues/9954#issuecomment-1128283911
-# See: https://cs.opensource.google/tensorflow/tensorflow/+/master:tensorflow/tools/pip_package/setup.py?q=protobuf
-protobuf >= 3.9.2, < 4
+# NOTE: this version must be >= the protoc version in our WORKSPACE file.
+# At the same time, any constraints we specify here must allow at least some
+# version to be installed that is also compatible with TensorFlow's constraints:
+# https://github.com/tensorflow/tensorflow/blob/9d22f4a0a9499c8e10a4312503e63e0da35ccd94/tensorflow/tools/pip_package/setup.py#L100-L107
+protobuf >= 3.19.6
 requests >= 2.21.0, < 3
 setuptools >= 41.0.0
 tensorboard-data-server >= 0.6.0, < 0.7.0

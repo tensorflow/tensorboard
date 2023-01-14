@@ -121,37 +121,28 @@ load("@io_bazel_rules_sass//:defs.bzl", "sass_repositories")
 
 sass_repositories()
 
-# Always bump the requirements.txt protobuf dep to be >= the version here.
-# Keep this version to be in sync with TensorFlow:
-# https://github.com/tensorflow/tensorflow/blob/master/tensorflow/workspace2.bzl#L446
-# For other projects (e.g. Keras) depending on tb-nightly, generating protobuf code at
-# a more recent version than the protobuf runtime supplied by TF's bazel build tooling
-# might lead to test failures.
+# This dependency specifies the version of protobuf that will be used to compile
+# protos as part of TensorBoard's build (i.e., the protoc version).
+#
+# This version must always be <= the protobuf runtime version, which is the version of
+# the "protobuf" pip package as specified in our requirements.txt file.
+#
+# NOTE: This dependency currently cannot be advanced past 3.19.x. This is because
+# TF is currently unable to use a runtime any greater than 3.19.x, see details here:
+# https://github.com/tensorflow/tensorflow/blob/9d22f4a0a9499c8e10a4312503e63e0da35ccd94/tensorflow/tools/pip_package/setup.py#L100-L107
+#
+# As a result of TF's constraint and the above <= requirement, 3.19.x is the most recent
+# possible protoc we can use while remaining cross-compatible with TF. At the same time,
+# 3.19.x is the minimum possible protoc that will generate compiled proto code that *is*
+# compatible with protobuf runtimes >= 4, as discussed here:
+# https://developers.google.com/protocol-buffers/docs/news/2022-05-06
 http_archive(
     name = "com_google_protobuf",
-    patch_args = ["-p1"],
-    patches = [
-        # To maintain compatibility with python 3.10 and greater, we need to patch
-        # in the following protobuf change:
-        # https://github.com/grpc/grpc/commit/9d61eada0f47d7be793983638c4a29707b192d0c
-        #
-        # To reproduce the patch:
-        # ```
-        # $ git clone https://github.com/protocolbuffers/protobuf.git
-        # $ cd protobuf
-        # $ git checkout tags/v3.9.2 -b my-patch
-        # $ git cherry-pick 9d61eada0f47d7be793983638c4a29707b192d0c
-        # $ git diff HEAD~1 > protobuf.patch
-        # # Remove trailing whitespace to satisify whitespace_hygiene_test.py.
-        # $ sed -i 's/[[:space:]]*$//' protobuf.patch
-        # ```
-        "//third_party:protobuf.patch",
-    ],
-    sha256 = "1fbf1c2962af287607232b2eddeaec9b4f4a7a6f5934e1a9276e9af76952f7e0",
-    strip_prefix = "protobuf-3.9.2",
+    sha256 = "9a301cf94a8ddcb380b901e7aac852780b826595075577bb967004050c835056",
+    strip_prefix = "protobuf-3.19.6",
     urls = [
-        "http://mirror.tensorflow.org/github.com/protocolbuffers/protobuf/archive/v3.9.2.tar.gz",
-        "https://github.com/protocolbuffers/protobuf/archive/v3.9.2.tar.gz",  # 2019-09-23
+        "http://mirror.tensorflow.org/github.com/protocolbuffers/protobuf/archive/v3.19.6.tar.gz",
+        "https://github.com/protocolbuffers/protobuf/archive/v3.19.6.tar.gz",  # 2022-09-29
     ],
 )
 
