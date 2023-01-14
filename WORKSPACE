@@ -3,15 +3,6 @@ workspace(name = "org_tensorflow_tensorboard")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
-    name = "build_bazel_rules_apple",
-    sha256 = "0052d452af7742c8f3a4e0929763388a66403de363775db7e90adecb2ba4944b",
-    urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_apple/releases/download/0.31.3/rules_apple.0.31.3.tar.gz",
-        "https://github.com/bazelbuild/rules_apple/releases/download/0.31.3/rules_apple.0.31.3.tar.gz",
-    ],
-)
-
-http_archive(
     name = "bazel_skylib",
     sha256 = "07b4117379dde7ab382345c3b0f5edfc6b7cff6c93756eac63da121e0bbcc5de",
     strip_prefix = "bazel-skylib-1.1.1",
@@ -147,39 +138,17 @@ http_archive(
 )
 
 # gRPC.
+#
+# NOTE: The version used here must be cross-compatible with our protobuf version.
+# As 2023-01-13, 1.48.2 is the most recent gRPC release that was still using a 3.19.x
+# version of protobuf in its own builds (more recent releases move to 3.21.x).
 http_archive(
     name = "com_github_grpc_grpc",
-    patch_args = ["-p1"],
-    patches = [
-        # To maintain compatibility with python 3.10 and greater, we need to patch
-        # in the following grpc change:
-        # https://github.com/grpc/grpc/commit/dbe73c9004e483d24168c220cd589fe1824e72bc
-        #
-        # To reproduce the patch:
-        # ```
-        # $ git clone https://github.com/grpc/grpc.git
-        # $ cd grpc
-        # $ git checkout b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd -b my-patch
-        # $ git cherry-pick dbe73c9004e483d24168c220cd589fe1824e72bc
-        # $ git diff HEAD~1 > grpc.patch
-        # ```
-        #
-        # Note that we choose b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd as the
-        # base since it matches the archive (the commit number is in the archive
-        # file's name). There is no exact corresponding tag to use but the
-        # nearest might be v1.27.0-pre1.
-        "//third_party:grpc.patch",
-    ],
-    sha256 = "b956598d8cbe168b5ee717b5dafa56563eb5201a947856a6688bbeac9cac4e1f",
-    strip_prefix = "grpc-b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd",
+    sha256 = "bdb8e98145469d58c69ab9f2c9e0bd838c2836a99b5760bc0ebf658623768f52",
+    strip_prefix = "grpc-1.48.2",
     urls = [
-        # Same as TF: https://github.com/tensorflow/tensorflow/blob/master/tensorflow/workspace2.bzl#L492
-        # Currently we can't upgrade gRPC past 1.30.0 without also bumping protobuf to 3.12.0+:
-        # https://github.com/grpc/grpc/issues/23311.
-        #
-        # Inspecting the contents of this archive, the version is v1.27.0-dev.
-        "http://mirror.tensorflow.org/github.com/grpc/grpc/archive/b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd.tar.gz",
-        "https://github.com/grpc/grpc/archive/b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd.tar.gz",
+        "http://mirror.tensorflow.org/github.com/grpc/grpc/archive/v1.48.2.tar.gz",
+        "https://github.com/grpc/grpc/archive/v1.48.2.tar.gz",  # 2022-09-21
     ],
 )
 

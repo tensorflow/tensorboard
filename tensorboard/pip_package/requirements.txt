@@ -16,7 +16,8 @@
 # Non-vendored runtime dependencies of TensorBoard.
 
 absl-py >= 0.4
-grpcio >= 1.24.3
+# NOTE: this version should be >= the grpc version in our WORKSPACE file.
+grpcio >= 1.48.2
 google-auth >= 1.6.3, < 3
 google-auth-oauthlib >= 0.4.1, < 0.5
 markdown >= 2.6.8
