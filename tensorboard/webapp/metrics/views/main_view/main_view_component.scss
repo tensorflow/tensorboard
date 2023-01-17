@@ -77,10 +77,14 @@ limitations under the License.
 .main,
 .sidebar {
   contain: strict;
+  background-color: mat.get-color-from-palette($tb-background, background);
   overflow-x: hidden;
   overflow-y: auto;
   will-change: transform, scroll-position;
-  background-color: white;
+
+  @include tb-dark-theme {
+    background-color: map-get($tb-dark-background, background);
+  }
 }
 
 .main {
@@ -163,16 +167,23 @@ limitations under the License.
 }
 
 .slide-out-menu {
+  background-color: mat.get-color-from-palette($tb-background, background);
+  height: 100%;
   position: absolute;
-  height: calc(100% - 50px);
+  right: 50px;
   top: 50px;
-  left: calc(100vw - 250px);
-  width: 200px;
-  background-color: white;
-  border: 1px solid mat.get-color-from-palette(mat.$gray-palette, 300);
   transition: all 0.75s ease;
+  visibility: hidden;
+  width: 200px;
+
+  @include tb-theme-foreground-prop(border-left, border, 1px solid);
+
+  @include tb-dark-theme {
+    background-color: map-get($tb-dark-background, background);
+  }
 }
 
 .slide-out-menu-expanded {
-  left: calc(100vw - 450px);
+  right: 250px;
+  visibility: visible;
 }

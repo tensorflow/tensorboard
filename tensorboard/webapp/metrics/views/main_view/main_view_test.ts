@@ -1735,7 +1735,7 @@ describe('metrics main view', () => {
       expect(slideoutMenu).toBeFalsy();
     });
 
-    it('renders slideout menu behind sidepanel when closed', () => {
+    it('renders non-expanded slideout menu when closed', () => {
       store.overrideSelector(selectors.isMetricsSettingsPaneOpen, true);
       store.overrideSelector(selectors.isMetricsSlideoutMenuOpen, false);
       const fixture = TestBed.createComponent(MainViewContainer);
