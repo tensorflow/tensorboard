@@ -141,6 +141,12 @@ describe('tb_feature_flag_data_source', () => {
             inColab: true,
           });
         });
+
+        it('ignores features not contained within the provided FeatureFlagMetadataMap', () => {
+          expect(
+            getFeatures({localStorageOverrides: '{"abc123": true}'})
+          ).toEqual({});
+        });
       });
     });
 
