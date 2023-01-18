@@ -39,7 +39,7 @@ jobs:
         tf_version_id: ['tf', 'notf']
         python_version: ['3.8']
     steps:
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
       - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
         with:
           python-version: ${{ matrix.python_version }}
@@ -142,7 +142,7 @@ jobs:
             platform: 'ubuntu-22.04'
             rust_version: '1.65.0'
     steps:
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
       - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
         with:
           python-version: '3.8'
@@ -216,7 +216,7 @@ jobs:
         # changes, and we want to catch them all.
         python_version: ['3.8', '3.9', '3.10', '3.11']
     steps:
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
       - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
         with:
           python-version: ${{ matrix.python_version }}
@@ -234,7 +234,7 @@ jobs:
   lint-python-yaml-docs:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
       - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
         with:
           python-version: '3.8'
@@ -267,7 +267,7 @@ jobs:
         rust_version: ['1.65.0']
         cargo_raze_version: ['0.16.1']
     steps:
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
       - name: 'Cache Cargo artifacts'
         uses: actions/cache@1a9e2138d905efd099035b49d8b7a3888c653ca8
         with:
@@ -307,7 +307,7 @@ jobs:
   lint-frontend:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
       - uses: actions/setup-node@56899e050abffc08c2b3b61f3ec6a79a9dc3223d
         with:
           # default on setup-node@1 is v10.24.1.
@@ -338,7 +338,7 @@ jobs:
   lint-misc: # build, protos, etc.
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
       - name: 'Set up Buildifier'
         run: |
           ci/download_buildifier.sh "${BUILDTOOLS_VERSION}" "${BUILDIFIER_SHA256SUM}" ~/buildifier
