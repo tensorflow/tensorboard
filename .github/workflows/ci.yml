@@ -149,7 +149,7 @@ jobs:
           architecture: 'x64'
       - name: 'Cache Cargo artifacts'
         if: matrix.mode == 'native'
-        uses: actions/cache@1a9e2138d905efd099035b49d8b7a3888c653ca8
+        uses: actions/cache@58c146cc91c5b9e778e71775dfe9bf1442ad9a12 # v3.2.2
         with:
           path: |
             tensorboard/data/server/target/
@@ -269,7 +269,7 @@ jobs:
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
       - name: 'Cache Cargo artifacts'
-        uses: actions/cache@1a9e2138d905efd099035b49d8b7a3888c653ca8
+        uses: actions/cache@58c146cc91c5b9e778e71775dfe9bf1442ad9a12 # v3.2.2
         with:
           path: |
             tensorboard/data/server/target/
@@ -308,10 +308,9 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-      - uses: actions/setup-node@56899e050abffc08c2b3b61f3ec6a79a9dc3223d
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
-          # default on setup-node@1 is v10.24.1.
-          node-version: '12.21.0'
+          node-version: 16
       - run: yarn install --ignore-engines
         # You can run `yarn fix-lint` to fix all Prettier complaints.
       - run: yarn lint
