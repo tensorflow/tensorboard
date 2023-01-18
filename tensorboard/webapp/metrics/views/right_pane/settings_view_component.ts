@@ -70,8 +70,10 @@ export class SettingsViewComponent {
   @Input() isScalarStepSelectorFeatureEnabled!: boolean;
   @Input() isScalarStepSelectorEnabled!: boolean;
   @Input() isScalarStepSelectorRangeEnabled!: boolean;
+  @Input() isScalarColumnCustomizationEnabled!: boolean;
   @Input() linkedTimeSelection!: TimeSelection | null;
   @Input() stepMinMax!: {min: number; max: number};
+  @Input() isSlideOutMenuOpen!: boolean;
 
   @Output() linkedTimeToggled = new EventEmitter<void>();
   @Output()
@@ -79,6 +81,7 @@ export class SettingsViewComponent {
 
   @Output() stepSelectorToggled = new EventEmitter<void>();
   @Output() rangeSelectionToggled = new EventEmitter<void>();
+  @Output() onSlideOutToggled = new EventEmitter<void>();
 
   @Input() isImageSupportEnabled!: boolean;
 

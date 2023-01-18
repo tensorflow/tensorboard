@@ -222,6 +222,7 @@ export interface MetricsSettings {
 export interface MetricsNonNamespacedState {
   timeSeriesData: TimeSeriesData;
   isSettingsPaneOpen: boolean;
+  isSlideoutMenuOpen: boolean;
   // Default settings. For the legacy reasons, we cannot change the name of the
   // prop. It either is set by application or a user via settings storage.
   settings: MetricsSettings;

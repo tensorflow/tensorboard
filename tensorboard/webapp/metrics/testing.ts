@@ -107,6 +107,7 @@ function buildBlankState(): MetricsState {
     filteredPluginTypes: new Set(),
     stepMinMax: {min: Infinity, max: -Infinity},
     isSettingsPaneOpen: false,
+    isSlideoutMenuOpen: false,
   };
 }
 

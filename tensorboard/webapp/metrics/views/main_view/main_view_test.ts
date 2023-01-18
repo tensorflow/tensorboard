@@ -203,6 +203,7 @@ describe('metrics main view', () => {
       lastLoadedTimeInMs: null,
     });
     store.overrideSelector(selectors.isMetricsSettingsPaneOpen, false);
+    store.overrideSelector(selectors.isMetricsSlideoutMenuOpen, false);
   });
 
   afterEach(() => {
@@ -1719,6 +1720,51 @@ describe('metrics main view', () => {
         const indicator = fixture.debugElement.query(byCss.INDICATOR);
         expect(indicator).toBeTruthy();
       });
+    });
+  });
+
+  describe('slideout menu', () => {
+    it('does not render slideout menu when sidepanel when closed', () => {
+      store.overrideSelector(selectors.isMetricsSettingsPaneOpen, false);
+      const fixture = TestBed.createComponent(MainViewContainer);
+      fixture.detectChanges();
+
+      const slideoutMenu = fixture.debugElement.query(
+        By.css('.slide-out-menu')
+      );
+      expect(slideoutMenu).toBeFalsy();
+    });
+
+    it('renders non-expanded slideout menu when closed', () => {
+      store.overrideSelector(selectors.isMetricsSettingsPaneOpen, true);
+      store.overrideSelector(selectors.isMetricsSlideoutMenuOpen, false);
+      const fixture = TestBed.createComponent(MainViewContainer);
+      fixture.detectChanges();
+
+      const slideoutMenu = fixture.debugElement.query(
+        By.css('.slide-out-menu')
+      );
+      expect(slideoutMenu).toBeTruthy();
+
+      expect(
+        slideoutMenu.nativeElement.classList.contains('slide-out-menu-expanded')
+      ).toBe(false);
+    });
+
+    it('renders expanded slideout menu when open', () => {
+      store.overrideSelector(selectors.isMetricsSettingsPaneOpen, true);
+      store.overrideSelector(selectors.isMetricsSlideoutMenuOpen, true);
+      const fixture = TestBed.createComponent(MainViewContainer);
+      fixture.detectChanges();
+
+      const slideoutMenu = fixture.debugElement.query(
+        By.css('.slide-out-menu')
+      );
+      expect(slideoutMenu).toBeTruthy();
+
+      expect(
+        slideoutMenu.nativeElement.classList.contains('slide-out-menu-expanded')
+      ).toBe(true);
     });
   });
 

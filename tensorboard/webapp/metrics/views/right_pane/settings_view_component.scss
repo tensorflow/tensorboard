@@ -18,6 +18,8 @@ limitations under the License.
 :host {
   @include tb-theme-foreground-prop(color, secondary-text);
   font-size: 12px;
+  z-index: 1;
+  position: fixed;
 }
 
 section {
@@ -94,6 +96,16 @@ mat-slider {
   // https://github.com/angular/components/blob/master/src/material/slider/slider.scss#L10
   margin-left: -8px;
   margin-right: -8px;
+}
+
+.column-edit-menu-toggle {
+  align-items: center;
+  display: flex;
+  cursor: pointer;
+  mat-icon {
+    height: 15px;
+    width: 15px;
+  }
 }
 
 tb-dropdown {

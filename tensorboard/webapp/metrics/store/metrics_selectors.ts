@@ -462,3 +462,8 @@ export const isMetricsSettingsPaneOpen = createSelector(
   selectMetricsState,
   (state): boolean => state.isSettingsPaneOpen
 );
+
+export const isMetricsSlideoutMenuOpen = createSelector(
+  selectMetricsState,
+  (state): boolean => state.isSlideoutMenuOpen
+);

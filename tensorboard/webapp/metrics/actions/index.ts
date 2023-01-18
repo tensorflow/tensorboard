@@ -43,6 +43,10 @@ export const metricsSettingsPaneToggled = createAction(
   '[Metrics] Metrics Settings Pane Toggled'
 );
 
+export const metricsSlideoutMenuToggled = createAction(
+  '[Metrics] Slide out settings menu toggled'
+);
+
 export const metricsTagMetadataRequested = createAction(
   '[Metrics] Metrics Tag Metadata Requested'
 );
