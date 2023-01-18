@@ -35,18 +35,12 @@ export class TBNotificationCenterDataSource
       .get<NotificationCenterResponse>(`/data/notifications`)
       .pipe(
         map((response) => {
-          const todayInMs: number = new Date(
-            new Date().toDateString()
-          ).getTime();
           return {
             ...response,
-            notifications: response.notifications.map((notification) => {
-              if (!notification.hasOwnProperty('dateInMs')) return notification;
-              return {
-                ...notification,
-                // `dateInMs` can never exceed local machine's today at 12:00 AM.
-                dateInMs: Math.min(notification.dateInMs, todayInMs),
-              };
+            notifications: response.notifications.filter((notification) => {
+              // Do not return notifications that have been configured to
+              // start in the future.
+              return notification.dateInMs <= new Date().getTime();
             }),
           };
         })
