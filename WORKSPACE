@@ -3,15 +3,6 @@ workspace(name = "org_tensorflow_tensorboard")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
-    name = "build_bazel_rules_apple",
-    sha256 = "0052d452af7742c8f3a4e0929763388a66403de363775db7e90adecb2ba4944b",
-    urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_apple/releases/download/0.31.3/rules_apple.0.31.3.tar.gz",
-        "https://github.com/bazelbuild/rules_apple/releases/download/0.31.3/rules_apple.0.31.3.tar.gz",
-    ],
-)
-
-http_archive(
     name = "bazel_skylib",
     sha256 = "07b4117379dde7ab382345c3b0f5edfc6b7cff6c93756eac63da121e0bbcc5de",
     strip_prefix = "bazel-skylib-1.1.1",
@@ -121,74 +112,43 @@ load("@io_bazel_rules_sass//:defs.bzl", "sass_repositories")
 
 sass_repositories()
 
-# Always bump the requirements.txt protobuf dep to be >= the version here.
-# Keep this version to be in sync with TensorFlow:
-# https://github.com/tensorflow/tensorflow/blob/master/tensorflow/workspace2.bzl#L446
-# For other projects (e.g. Keras) depending on tb-nightly, generating protobuf code at
-# a more recent version than the protobuf runtime supplied by TF's bazel build tooling
-# might lead to test failures.
+# This dependency specifies the version of protobuf that will be used to compile
+# protos as part of TensorBoard's build (i.e., the protoc version).
+#
+# This version must always be <= the protobuf runtime version, which is the version of
+# the "protobuf" pip package as specified in our requirements.txt file.
+#
+# NOTE: This dependency currently cannot be advanced past 3.19.x. This is because
+# TF is currently unable to use a runtime any greater than 3.19.x, see details here:
+# https://github.com/tensorflow/tensorflow/blob/9d22f4a0a9499c8e10a4312503e63e0da35ccd94/tensorflow/tools/pip_package/setup.py#L100-L107
+#
+# As a result of TF's constraint and the above <= requirement, 3.19.x is the most recent
+# possible protoc we can use while remaining cross-compatible with TF. At the same time,
+# 3.19.x is the minimum possible protoc that will generate compiled proto code that *is*
+# compatible with protobuf runtimes >= 4, as discussed here:
+# https://developers.google.com/protocol-buffers/docs/news/2022-05-06
 http_archive(
     name = "com_google_protobuf",
-    patch_args = ["-p1"],
-    patches = [
-        # To maintain compatibility with python 3.10 and greater, we need to patch
-        # in the following protobuf change:
-        # https://github.com/grpc/grpc/commit/9d61eada0f47d7be793983638c4a29707b192d0c
-        #
-        # To reproduce the patch:
-        # ```
-        # $ git clone https://github.com/protocolbuffers/protobuf.git
-        # $ cd protobuf
-        # $ git checkout tags/v3.9.2 -b my-patch
-        # $ git cherry-pick 9d61eada0f47d7be793983638c4a29707b192d0c
-        # $ git diff HEAD~1 > protobuf.patch
-        # # Remove trailing whitespace to satisify whitespace_hygiene_test.py.
-        # $ sed -i 's/[[:space:]]*$//' protobuf.patch
-        # ```
-        "//third_party:protobuf.patch",
-    ],
-    sha256 = "1fbf1c2962af287607232b2eddeaec9b4f4a7a6f5934e1a9276e9af76952f7e0",
-    strip_prefix = "protobuf-3.9.2",
+    sha256 = "9a301cf94a8ddcb380b901e7aac852780b826595075577bb967004050c835056",
+    strip_prefix = "protobuf-3.19.6",
     urls = [
-        "http://mirror.tensorflow.org/github.com/protocolbuffers/protobuf/archive/v3.9.2.tar.gz",
-        "https://github.com/protocolbuffers/protobuf/archive/v3.9.2.tar.gz",  # 2019-09-23
+        "http://mirror.tensorflow.org/github.com/protocolbuffers/protobuf/archive/v3.19.6.tar.gz",
+        "https://github.com/protocolbuffers/protobuf/archive/v3.19.6.tar.gz",  # 2022-09-29
     ],
 )
 
 # gRPC.
+#
+# NOTE: The version used here must be cross-compatible with our protobuf version.
+# As 2023-01-13, 1.48.2 is the most recent gRPC release that was still using a 3.19.x
+# version of protobuf in its own builds (more recent releases move to 3.21.x).
 http_archive(
     name = "com_github_grpc_grpc",
-    patch_args = ["-p1"],
-    patches = [
-        # To maintain compatibility with python 3.10 and greater, we need to patch
-        # in the following grpc change:
-        # https://github.com/grpc/grpc/commit/dbe73c9004e483d24168c220cd589fe1824e72bc
-        #
-        # To reproduce the patch:
-        # ```
-        # $ git clone https://github.com/grpc/grpc.git
-        # $ cd grpc
-        # $ git checkout b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd -b my-patch
-        # $ git cherry-pick dbe73c9004e483d24168c220cd589fe1824e72bc
-        # $ git diff HEAD~1 > grpc.patch
-        # ```
-        #
-        # Note that we choose b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd as the
-        # base since it matches the archive (the commit number is in the archive
-        # file's name). There is no exact corresponding tag to use but the
-        # nearest might be v1.27.0-pre1.
-        "//third_party:grpc.patch",
-    ],
-    sha256 = "b956598d8cbe168b5ee717b5dafa56563eb5201a947856a6688bbeac9cac4e1f",
-    strip_prefix = "grpc-b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd",
+    sha256 = "bdb8e98145469d58c69ab9f2c9e0bd838c2836a99b5760bc0ebf658623768f52",
+    strip_prefix = "grpc-1.48.2",
     urls = [
-        # Same as TF: https://github.com/tensorflow/tensorflow/blob/master/tensorflow/workspace2.bzl#L492
-        # Currently we can't upgrade gRPC past 1.30.0 without also bumping protobuf to 3.12.0+:
-        # https://github.com/grpc/grpc/issues/23311.
-        #
-        # Inspecting the contents of this archive, the version is v1.27.0-dev.
-        "http://mirror.tensorflow.org/github.com/grpc/grpc/archive/b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd.tar.gz",
-        "https://github.com/grpc/grpc/archive/b54a5b338637f92bfcf4b0bc05e0f57a5fd8fadd.tar.gz",
+        "http://mirror.tensorflow.org/github.com/grpc/grpc/archive/v1.48.2.tar.gz",
+        "https://github.com/grpc/grpc/archive/v1.48.2.tar.gz",  # 2022-09-21
     ],
 )
 
