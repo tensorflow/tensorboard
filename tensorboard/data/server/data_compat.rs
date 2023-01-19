@@ -471,7 +471,7 @@ mod tests {
     macro_rules! to_le_bytes {
         ($($x:expr),+ $(,)?) => (
             [$($x),+].iter()
-                .flat_map(|v| std::array::IntoIter::new(v.to_le_bytes()))
+                .flat_map(|v| IntoIterator::into_iter(v.to_le_bytes()))
                 .collect::<Bytes>()
         );
     }
