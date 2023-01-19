@@ -60,8 +60,8 @@ fn get_token() -> Result<AccessToken, gcp_auth::Error> {
     }
     async fn service_account_token() -> Result<gcp_auth::Token, gcp_auth::Error> {
         let manager = authentication_manager().await;
-        let token_res = manager.get_token(SCOPES).await;
-        token_res
+        
+        manager.get_token(SCOPES).await
     }
 
     let token = tokio::runtime::Builder::new_current_thread()
