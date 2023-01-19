@@ -67,7 +67,7 @@ impl Read for File {
             .gcs
             .read(&self.bucket, &self.object, range)
             .map_err(reqwest_to_io_error)?;
-        (&mut buf[0..result.len()]).copy_from_slice(&result);
+        buf[0..result.len()].copy_from_slice(&result);
         self.pos += result.len() as u64;
         Ok(result.len())
     }
