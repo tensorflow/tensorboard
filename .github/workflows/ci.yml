@@ -166,10 +166,9 @@ jobs:
           key: build-data-server-pip-${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ hashFiles('**/Cargo.lock', '.github/workflows/ci.yml') }}
       - name: 'Install Rust toolchain'
         if: matrix.mode == 'native'
-        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af
+        uses: dtolnay/rust-toolchain@5f2e2a7aff63d8cbdacb4832218a30fa7a37ee6e # current HEAD as of 1/19/2023
         with:
           toolchain: ${{ matrix.rust_version }}
-          default: true
           components: rustfmt
       - name: 'Install Python packaging deps'
         run: |
@@ -283,20 +282,18 @@ jobs:
             ~/.cargo/.crates2.json
           key: lint-rust-${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ matrix.cargo_raze_version }}-${{ hashFiles('**/Cargo.lock', '.github/workflows/ci.yml') }}
       - name: 'Install Rust toolchain'
-        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af
+        uses: dtolnay/rust-toolchain@5f2e2a7aff63d8cbdacb4832218a30fa7a37ee6e # current HEAD as of 1/19/2023
         with:
           toolchain: ${{ matrix.rust_version }}
-          default: true
           components: rustfmt, clippy
       - name: 'Install cargo-raze'
         run: cargo install cargo-raze --version ${{ matrix.cargo_raze_version }}
       - name: 'Run Rustfmt'
         run: (cd tensorboard/data/server/ && cargo fmt -- --check)
       - name: 'Run Clippy'
-        uses: actions-rs/clippy-check@b5b5f21f4797c02da247df37026fcd0a5024aa4d
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --tests --manifest-path tensorboard/data/server/Cargo.toml
+        # You can run `cargo clippy --all-targets --manifest-path tensorboard/data/server/Cargo.toml --fix` to fix all Clippy complaints.
+        # This will only apply `MachineApplicable` fixes (https://doc.rust-lang.org/nightly/nightly-rustc/rustc_lint_defs/enum.Applicability.html), so some modifications may need to be done manually.
+        run: cargo clippy --all-targets --manifest-path tensorboard/data/server/Cargo.toml -- -D warnings
       - name: 'Check cargo-raze freshness'
         run: |
           rm -rf third_party/rust/
