@@ -60,7 +60,6 @@ fn get_token() -> Result<AccessToken, gcp_auth::Error> {
     }
     async fn service_account_token() -> Result<gcp_auth::Token, gcp_auth::Error> {
         let manager = authentication_manager().await;
-        
         manager.get_token(SCOPES).await
     }
 
