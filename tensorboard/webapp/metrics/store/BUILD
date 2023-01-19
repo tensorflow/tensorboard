@@ -96,6 +96,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
+        "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",
         "//tensorboard/webapp/persistent_settings",
         "//tensorboard/webapp/routes:testing",
         "//tensorboard/webapp/types",

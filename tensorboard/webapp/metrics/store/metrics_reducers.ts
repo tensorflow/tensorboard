@@ -46,7 +46,11 @@ import {
   URLDeserializedState,
 } from '../types';
 import {groupCardIdWithMetdata} from '../utils';
-import {ColumnHeaderType} from '../views/card_renderer/scalar_card_types';
+import {
+  ColumnHeader,
+  ColumnHeaderType,
+  FobState,
+} from '../views/card_renderer/scalar_card_types';
 import {
   buildOrReturnStateWithPinnedCopy,
   buildOrReturnStateWithUnresolvedImportedPins,
@@ -1094,6 +1098,70 @@ const reducer = createReducer(
       singleSelectionHeaders: newOrder,
     };
   }),
+  on(actions.dataTableColumnEdited, (state, {fobState, newHeaders}) => {
+    const enabledNewHeaders: ColumnHeader[] = [];
+    const disabledNewHeaders: ColumnHeader[] = [];
+
+    newHeaders.forEach((header) => {
+      if (header.enabled) {
+        enabledNewHeaders.push(header);
+      } else {
+        disabledNewHeaders.push(header);
+      }
+    });
+
+    if (fobState === FobState.RANGE) {
+      return {
+        ...state,
+        rangeSelectionHeaders: enabledNewHeaders.concat(disabledNewHeaders),
+      };
+    }
+
+    return {
+      ...state,
+      singleSelectionHeaders: enabledNewHeaders.concat(disabledNewHeaders),
+    };
+  }),
+  on(actions.dataTableColumnToggled, (state, {fobState, headerType}) => {
+    const targetedHeaders =
+      fobState === FobState.RANGE
+        ? state.rangeSelectionHeaders
+        : state.singleSelectionHeaders;
+
+    const toggledHeaderCurrentIndex = targetedHeaders.findIndex(
+      (element) => element.type === headerType
+    );
+
+    // If the header is being enabled it goes at the bottom of the currently
+    // enabled headers. If it is being disabled it goes to the top of the
+    // currently disabled headers.
+    let newToggledHeaderIndex = getEnabledCount(targetedHeaders);
+    if (targetedHeaders[toggledHeaderCurrentIndex].enabled) {
+      newToggledHeaderIndex--;
+    }
+    const newHeaders = moveHeader(
+      toggledHeaderCurrentIndex,
+      newToggledHeaderIndex,
+      targetedHeaders
+    );
+
+    newHeaders[newToggledHeaderIndex] = {
+      type: newHeaders[newToggledHeaderIndex].type,
+      enabled: !newHeaders[newToggledHeaderIndex].enabled,
+    };
+
+    if (fobState === FobState.RANGE) {
+      return {
+        ...state,
+        rangeSelectionHeaders: newHeaders,
+      };
+    }
+
+    return {
+      ...state,
+      singleSelectionHeaders: newHeaders,
+    };
+  }),
   on(actions.metricsToggleVisiblePlugin, (state, {plugin}) => {
     let nextFilteredPluginTypes = new Set(state.filteredPluginTypes);
     if (nextFilteredPluginTypes.has(plugin)) {
@@ -1150,4 +1218,28 @@ function buildTagToRuns(runTagInfo: {[run: string]: string[]}) {
     }
   }
   return tagToRuns;
+}
+
+// Move the item at sourceIndex to destinationIndex
+function moveHeader(
+  sourceIndex: number,
+  destinationIndex: number,
+  headers: ColumnHeader[]
+) {
+  const newHeaders = [...headers];
+  // Delete from original location
+  newHeaders.splice(sourceIndex, 1);
+  // Insert at destinationIndex.
+  newHeaders.splice(destinationIndex, 0, headers[sourceIndex]);
+  return newHeaders;
+}
+
+function getEnabledCount(headers: ColumnHeader[]) {
+  let count = 0;
+  headers.forEach((header) => {
+    if (header.enabled) {
+      count++;
+    }
+  });
+  return count;
 }

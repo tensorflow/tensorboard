@@ -99,6 +99,11 @@ export interface ColumnHeader {
   enabled: boolean;
 }
 
+export enum FobState {
+  SINGLE,
+  RANGE,
+}
+
 export enum SortingOrder {
   ASCENDING,
   DESCENDING,
