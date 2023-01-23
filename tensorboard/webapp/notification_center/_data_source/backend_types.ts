@@ -26,6 +26,7 @@ export abstract class NotificationCenterDataSource {
  * A notification from backend.
  */
 export declare interface BackendNotification {
+  // The date at which to begin showing the user the notification.
   dateInMs: number;
   title: string;
   content: string;
