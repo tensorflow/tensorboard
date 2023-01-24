@@ -13,7 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ScrollingModule} from '@angular/cdk/scrolling';
-import {Component, EventEmitter, Input, NO_ERRORS_SCHEMA, Output} from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  NO_ERRORS_SCHEMA,
+  Output,
+} from '@angular/core';
 import {
   ComponentFixture,
   discardPeriodicTasks,
@@ -250,11 +256,17 @@ describe('card grid', () => {
 
     it('shows cards at min dimensions by default', () => {
       const cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
-      expect(cardSpaces[0].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[0].nativeElement.classList).not.toContain(
+        'full-height'
+      );
       expect(cardSpaces[0].nativeElement.classList).not.toContain('full-width');
-      expect(cardSpaces[1].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[1].nativeElement.classList).not.toContain(
+        'full-height'
+      );
       expect(cardSpaces[1].nativeElement.classList).not.toContain('full-width');
-      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain(
+        'full-height'
+      );
       expect(cardSpaces[2].nativeElement.classList).not.toContain('full-width');
     });
 
@@ -264,27 +276,43 @@ describe('card grid', () => {
 
       cardViews[1].componentInstance.fullHeightChanged.emit(true);
       fixture.detectChanges();
-      expect(cardSpaces[0].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[0].nativeElement.classList).not.toContain(
+        'full-height'
+      );
       expect(cardSpaces[1].nativeElement.classList).toContain('full-height');
-      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain(
+        'full-height'
+      );
 
       cardViews[0].componentInstance.fullHeightChanged.emit(true);
       fixture.detectChanges();
       expect(cardSpaces[0].nativeElement.classList).toContain('full-height');
       expect(cardSpaces[1].nativeElement.classList).toContain('full-height');
-      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain(
+        'full-height'
+      );
 
       cardViews[1].componentInstance.fullHeightChanged.emit(false);
       fixture.detectChanges();
       expect(cardSpaces[0].nativeElement.classList).toContain('full-height');
-      expect(cardSpaces[1].nativeElement.classList).not.toContain('full-height');
-      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[1].nativeElement.classList).not.toContain(
+        'full-height'
+      );
+      expect(cardSpaces[2].nativeElement.classList).not.toContain(
+        'full-height'
+      );
 
       cardViews[0].componentInstance.fullHeightChanged.emit(false);
       fixture.detectChanges();
-      expect(cardSpaces[0].nativeElement.classList).not.toContain('full-height');
-      expect(cardSpaces[1].nativeElement.classList).not.toContain('full-height');
-      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[0].nativeElement.classList).not.toContain(
+        'full-height'
+      );
+      expect(cardSpaces[1].nativeElement.classList).not.toContain(
+        'full-height'
+      );
+      expect(cardSpaces[2].nativeElement.classList).not.toContain(
+        'full-height'
+      );
     });
 
     it('does not change height if emitted value is same', () => {
@@ -293,21 +321,33 @@ describe('card grid', () => {
 
       cardViews[1].componentInstance.fullHeightChanged.emit(true);
       fixture.detectChanges();
-      expect(cardSpaces[0].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[0].nativeElement.classList).not.toContain(
+        'full-height'
+      );
       expect(cardSpaces[1].nativeElement.classList).toContain('full-height');
-      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain(
+        'full-height'
+      );
 
       cardViews[0].componentInstance.fullHeightChanged.emit(false);
       fixture.detectChanges();
-      expect(cardSpaces[0].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[0].nativeElement.classList).not.toContain(
+        'full-height'
+      );
       expect(cardSpaces[1].nativeElement.classList).toContain('full-height');
-      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain(
+        'full-height'
+      );
 
       cardViews[1].componentInstance.fullHeightChanged.emit(true);
       fixture.detectChanges();
-      expect(cardSpaces[0].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[0].nativeElement.classList).not.toContain(
+        'full-height'
+      );
       expect(cardSpaces[1].nativeElement.classList).toContain('full-height');
-      expect(cardSpaces[2].nativeElement.classList).not.toContain('full-height');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain(
+        'full-height'
+      );
     });
 
     it('changes width after card event', () => {
@@ -361,6 +401,5 @@ describe('card grid', () => {
       expect(cardSpaces[1].nativeElement.classList).toContain('full-width');
       expect(cardSpaces[2].nativeElement.classList).not.toContain('full-width');
     });
-
   });
 });

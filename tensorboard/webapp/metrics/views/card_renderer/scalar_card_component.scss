@@ -33,7 +33,8 @@ $_title-to-heading-gap: 12px;
   display: flex;
   // The content that is always visible should match the min height of a card,
   // taking into account padding and 2px for the card border.
-  flex-basis: $metrics-min-card-height - 2px - ($metrics-preferred-gap * 2) + $_title-to-heading-gap;
+  flex-basis: $metrics-min-card-height - 2px - ($metrics-preferred-gap * 2) +
+    $_title-to-heading-gap;
   flex-direction: column;
   flex-grow: 1;
 }
