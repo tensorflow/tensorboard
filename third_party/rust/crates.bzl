@@ -113,12 +113,12 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
-        name = "raze__bumpalo__3_6_0",
-        url = "https://crates.io/api/v1/crates/bumpalo/3.6.0/download",
+        name = "raze__bumpalo__3_12_0",
+        url = "https://crates.io/api/v1/crates/bumpalo/3.12.0/download",
         type = "tar.gz",
-        sha256 = "099e596ef14349721d9016f6b80dd3419ea1bf289ab9b44df8e4dfd3a005d5d9",
-        strip_prefix = "bumpalo-3.6.0",
-        build_file = Label("//third_party/rust/remote:BUILD.bumpalo-3.6.0.bazel"),
+        sha256 = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535",
+        strip_prefix = "bumpalo-3.12.0",
+        build_file = Label("//third_party/rust/remote:BUILD.bumpalo-3.12.0.bazel"),
     )
 
     maybe(
