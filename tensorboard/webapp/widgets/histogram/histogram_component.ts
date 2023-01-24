@@ -104,8 +104,6 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   @Input() timeSelection: TimeSelection | null = null;
 
-  @Input() rangeSelectionEnabled: boolean = false;
-
   @Output() onLinkedTimeSelectionChanged =
     new EventEmitter<TimeSelectionWithAffordance>();
   @Output() onLinkedTimeToggled = new EventEmitter();

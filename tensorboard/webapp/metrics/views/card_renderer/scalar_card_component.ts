@@ -93,7 +93,6 @@ export class ScalarCardComponent<Downloader> {
   @Input() columnCustomizationEnabled!: boolean;
   @Input() linkedTimeSelection!: TimeSelectionView | null;
   @Input() stepOrLinkedTimeSelection!: TimeSelection | null;
-  @Input() rangeSelectionEnabled: boolean = false;
   @Input() isProspectiveFobFeatureEnabled: Boolean = false;
   @Input() minMaxStep!: MinMaxStep;
   @Input() columnHeaders!: ColumnHeader[];

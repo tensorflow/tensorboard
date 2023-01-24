@@ -819,29 +819,11 @@ describe('metrics selectors', () => {
             end: {step: 100},
           },
           linkedTimeEnabled: true,
-          rangeSelectionEnabled: true,
         })
       );
       expect(selectors.getMetricsLinkedTimeSelection(state)).toEqual({
         start: {step: 0},
         end: {step: 100},
-      });
-    });
-
-    it('removes `end` when using single step mode', () => {
-      const state = appStateFromMetricsState(
-        buildMetricsState({
-          linkedTimeSelection: {
-            start: {step: 0},
-            end: {step: 100},
-          },
-          linkedTimeEnabled: true,
-          rangeSelectionEnabled: false,
-        })
-      );
-      expect(selectors.getMetricsLinkedTimeSelection(state)).toEqual({
-        start: {step: 0},
-        end: null,
       });
     });
   });
