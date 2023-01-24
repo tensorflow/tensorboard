@@ -1616,7 +1616,7 @@ describe('metrics reducers', () => {
       });
     });
 
-    fdescribe('dataTableColumnToggled', () => {
+    describe('dataTableColumnToggled', () => {
       it('moves header down to the disabled headers when toggling to disabled', () => {
         const beforeState = buildMetricsState({
           rangeSelectionHeaders: [
