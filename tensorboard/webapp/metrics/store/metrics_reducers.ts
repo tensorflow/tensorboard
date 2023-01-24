@@ -49,7 +49,7 @@ import {groupCardIdWithMetdata} from '../utils';
 import {
   ColumnHeader,
   ColumnHeaderType,
-  FobState,
+  DataTableMode,
 } from '../views/card_renderer/scalar_card_types';
 import {
   buildOrReturnStateWithPinnedCopy,
@@ -1098,11 +1098,12 @@ const reducer = createReducer(
       singleSelectionHeaders: newOrder,
     };
   }),
-  on(actions.dataTableColumnEdited, (state, {fobState, newHeaders}) => {
+  on(actions.dataTableColumnEdited, (state, {fobState, headers}) => {
     const enabledNewHeaders: ColumnHeader[] = [];
     const disabledNewHeaders: ColumnHeader[] = [];
 
-    newHeaders.forEach((header) => {
+    // All enabled headers appear above all disabled headers.
+    headers.forEach((header) => {
       if (header.enabled) {
         enabledNewHeaders.push(header);
       } else {
@@ -1110,7 +1111,7 @@ const reducer = createReducer(
       }
     });
 
-    if (fobState === FobState.RANGE) {
+    if (fobState === DataTableMode.RANGE) {
       return {
         ...state,
         rangeSelectionHeaders: enabledNewHeaders.concat(disabledNewHeaders),
@@ -1124,11 +1125,11 @@ const reducer = createReducer(
   }),
   on(actions.dataTableColumnToggled, (state, {fobState, headerType}) => {
     const targetedHeaders =
-      fobState === FobState.RANGE
+      fobState === DataTableMode.RANGE
         ? state.rangeSelectionHeaders
         : state.singleSelectionHeaders;
 
-    const toggledHeaderCurrentIndex = targetedHeaders.findIndex(
+    const currentToggledHeaderIndex = targetedHeaders.findIndex(
       (element) => element.type === headerType
     );
 
@@ -1136,11 +1137,11 @@ const reducer = createReducer(
     // enabled headers. If it is being disabled it goes to the top of the
     // currently disabled headers.
     let newToggledHeaderIndex = getEnabledCount(targetedHeaders);
-    if (targetedHeaders[toggledHeaderCurrentIndex].enabled) {
+    if (targetedHeaders[currentToggledHeaderIndex].enabled) {
       newToggledHeaderIndex--;
     }
     const newHeaders = moveHeader(
-      toggledHeaderCurrentIndex,
+      currentToggledHeaderIndex,
       newToggledHeaderIndex,
       targetedHeaders
     );
@@ -1150,7 +1151,7 @@ const reducer = createReducer(
       enabled: !newHeaders[newToggledHeaderIndex].enabled,
     };
 
-    if (fobState === FobState.RANGE) {
+    if (fobState === DataTableMode.RANGE) {
       return {
         ...state,
         rangeSelectionHeaders: newHeaders,
@@ -1220,7 +1221,10 @@ function buildTagToRuns(runTagInfo: {[run: string]: string[]}) {
   return tagToRuns;
 }
 
-// Move the item at sourceIndex to destinationIndex
+/**
+ * Returns a copy of the headers array with item at sourceIndex moved to
+ * destinationIndex.
+ */
 function moveHeader(
   sourceIndex: number,
   destinationIndex: number,

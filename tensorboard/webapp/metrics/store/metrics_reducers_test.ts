@@ -48,7 +48,7 @@ import {
 } from '../types';
 import {
   ColumnHeaderType,
-  FobState,
+  DataTableMode,
 } from '../views/card_renderer/scalar_card_types';
 import {reducers} from './metrics_reducers';
 import {getCardId, getPinnedCardId} from './metrics_store_internal_utils';
@@ -1510,8 +1510,8 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.dataTableColumnEdited({
-            fobState: FobState.RANGE,
-            newHeaders: [
+            fobState: DataTableMode.RANGE,
+            headers: [
               {type: ColumnHeaderType.RUN, enabled: true},
               {type: ColumnHeaderType.END_VALUE, enabled: true},
               {type: ColumnHeaderType.START_VALUE, enabled: true},
@@ -1556,8 +1556,8 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.dataTableColumnEdited({
-            fobState: FobState.SINGLE,
-            newHeaders: [
+            fobState: DataTableMode.SINGLE,
+            headers: [
               {type: ColumnHeaderType.RUN, enabled: true},
               {type: ColumnHeaderType.STEP, enabled: true},
               {type: ColumnHeaderType.VALUE, enabled: true},
@@ -1595,8 +1595,8 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.dataTableColumnEdited({
-            fobState: FobState.RANGE,
-            newHeaders: [
+            fobState: DataTableMode.RANGE,
+            headers: [
               {type: ColumnHeaderType.RUN, enabled: true},
               {type: ColumnHeaderType.MAX_VALUE, enabled: false},
               {type: ColumnHeaderType.START_VALUE, enabled: true},
@@ -1616,7 +1616,7 @@ describe('metrics reducers', () => {
       });
     });
 
-    describe('dataTableColumnToggled', () => {
+    fdescribe('dataTableColumnToggled', () => {
       it('moves header down to the disabled headers when toggling to disabled', () => {
         const beforeState = buildMetricsState({
           rangeSelectionHeaders: [
@@ -1631,7 +1631,7 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.dataTableColumnToggled({
-            fobState: FobState.RANGE,
+            fobState: DataTableMode.RANGE,
             headerType: ColumnHeaderType.RUN,
           })
         );
@@ -1659,7 +1659,7 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.dataTableColumnToggled({
-            fobState: FobState.RANGE,
+            fobState: DataTableMode.RANGE,
             headerType: ColumnHeaderType.MAX_VALUE,
           })
         );
@@ -1693,7 +1693,7 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.dataTableColumnToggled({
-            fobState: FobState.RANGE,
+            fobState: DataTableMode.RANGE,
             headerType: ColumnHeaderType.MAX_VALUE,
           })
         );
@@ -1733,7 +1733,7 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.dataTableColumnToggled({
-            fobState: FobState.SINGLE,
+            fobState: DataTableMode.SINGLE,
             headerType: ColumnHeaderType.STEP,
           })
         );

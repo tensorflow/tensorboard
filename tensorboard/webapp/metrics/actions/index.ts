@@ -33,7 +33,7 @@ import {
 import {
   ColumnHeader,
   ColumnHeaderType,
-  FobState,
+  DataTableMode,
   SortingInfo,
 } from '../views/card_renderer/scalar_card_types';
 
@@ -216,15 +216,15 @@ export const dataTableColumnDrag = createAction(
 export const dataTableColumnEdited = createAction(
   '[Metrics] Data table columns edited in edit menu',
   props<{
-    fobState: FobState;
-    newHeaders: ColumnHeader[];
+    fobState: DataTableMode;
+    headers: ColumnHeader[];
   }>()
 );
 
 export const dataTableColumnToggled = createAction(
-  '[Metrics] Data table columns toggled in edit menu',
+  '[Metrics] Data table column toggled in edit menu',
   props<{
-    fobState: FobState;
+    fobState: DataTableMode;
     headerType: ColumnHeaderType;
   }>()
 );

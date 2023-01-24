@@ -99,7 +99,7 @@ export interface ColumnHeader {
   enabled: boolean;
 }
 
-export enum FobState {
+export enum DataTableMode {
   SINGLE,
   RANGE,
 }
