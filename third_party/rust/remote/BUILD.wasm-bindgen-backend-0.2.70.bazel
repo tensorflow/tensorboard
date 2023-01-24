@@ -48,7 +48,7 @@ rust_library(
     version = "0.2.70",
     # buildifier: leave-alone
     deps = [
-        "@raze__bumpalo__3_6_0//:bumpalo",
+        "@raze__bumpalo__3_12_0//:bumpalo",
         "@raze__lazy_static__1_4_0//:lazy_static",
         "@raze__log__0_4_11//:log",
         "@raze__proc_macro2__1_0_43//:proc_macro2",
