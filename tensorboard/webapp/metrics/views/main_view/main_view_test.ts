@@ -922,7 +922,7 @@ describe('metrics main view', () => {
           fixture.debugElement.query(By.css('.card-grid')).styles[
             'grid-template-columns'
           ]
-        ).toBe('repeat(auto-fill, minmax(500px, auto))');
+        ).toBe('repeat(auto-fill, minmax(500px, 1fr))');
       });
 
       it('does not set the max width with invalid width value', () => {
@@ -981,7 +981,7 @@ describe('metrics main view', () => {
           fixture.debugElement.query(By.css('.card-grid')).styles[
             'grid-template-columns'
           ]
-        ).toBe('repeat(auto-fill, minmax(500px, auto))');
+        ).toBe('repeat(auto-fill, minmax(500px, 1fr))');
 
         getMetricsCardMinWidthSubject.next(null);
         fixture.detectChanges();

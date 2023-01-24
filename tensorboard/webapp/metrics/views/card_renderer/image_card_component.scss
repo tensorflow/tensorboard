@@ -20,9 +20,12 @@ $_title-to-heading-gap: 12px;
 $_tick_width: 14px;
 
 :host {
-  display: flex;
-  flex-direction: column;
   box-sizing: border-box;
+  display: flex;
+  // Remove 2px from height to account for the card border.
+  flex-basis: $metrics-min-card-height - 2px;
+  flex-direction: column;
+  flex-grow: 1;
   height: 100%;
   overflow: auto;
   padding: $metrics-preferred-gap;
@@ -110,7 +113,7 @@ $_tick_width: 14px;
 }
 
 .img-container {
-  flex: 1 1 0;
+  flex-grow: 1;
   overflow-y: auto;
   position: relative;
 }

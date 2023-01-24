@@ -105,46 +105,52 @@ describe('card view test', () => {
     });
   });
 
-  it('updates full width upon card notification', () => {
+  it('emits fullWidthChanged after lower level fullWidthChanged', () => {
     const fixture = TestBed.createComponent(CardViewContainer);
     fixture.componentInstance.cardId = 'cardId';
     fixture.componentInstance.pluginType = PluginType.SCALARS;
     intersectionObserver.simulateVisibilityChange(fixture, true);
     fixture.detectChanges();
 
-    expect(fixture.debugElement.classes['full-width']).not.toBeTruthy();
+    const onFullWidthChanged = jasmine.createSpy();
+    fixture.componentInstance.fullWidthChanged.subscribe(onFullWidthChanged);
+
+    expect(onFullWidthChanged.calls.allArgs()).toEqual([]);
 
     const scalarCard = fixture.debugElement.query(By.css('scalar-card'));
     scalarCard.componentInstance.fullWidthChanged.emit(true);
     fixture.detectChanges();
 
-    expect(fixture.debugElement.classes['full-width']).toBe(true);
+    expect(onFullWidthChanged.calls.allArgs()).toEqual([[true]]);
 
     scalarCard.componentInstance.fullWidthChanged.emit(false);
     fixture.detectChanges();
 
-    expect(fixture.debugElement.classes['full-width']).not.toBeTruthy();
+    expect(onFullWidthChanged.calls.allArgs()).toEqual([[true], [false]]);
   });
 
-  it('updates full height upon card notification', () => {
+  it('emits fullHeightChanged after lower level fullHeightChanged', () => {
     const fixture = TestBed.createComponent(CardViewContainer);
     fixture.componentInstance.cardId = 'cardId';
     fixture.componentInstance.pluginType = PluginType.SCALARS;
     intersectionObserver.simulateVisibilityChange(fixture, true);
     fixture.detectChanges();
 
-    expect(fixture.debugElement.classes['full-height']).not.toBeTruthy();
+    const onFullHeightChanged = jasmine.createSpy();
+    fixture.componentInstance.fullHeightChanged.subscribe(onFullHeightChanged);
+
+    expect(onFullHeightChanged.calls.allArgs()).toEqual([]);
 
     const scalarCard = fixture.debugElement.query(By.css('scalar-card'));
     scalarCard.componentInstance.fullHeightChanged.emit(true);
     fixture.detectChanges();
 
-    expect(fixture.debugElement.classes['full-height']).toBe(true);
+    expect(onFullHeightChanged.calls.allArgs()).toEqual([[true]]);
 
     scalarCard.componentInstance.fullHeightChanged.emit(false);
     fixture.detectChanges();
 
-    expect(fixture.debugElement.classes['full-height']).not.toBeTruthy();
+    expect(onFullHeightChanged.calls.allArgs()).toEqual([[true], [false]]);
   });
 
   it('dispatches action when pin state changes', () => {

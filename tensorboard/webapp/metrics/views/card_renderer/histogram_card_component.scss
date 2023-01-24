@@ -18,9 +18,12 @@ limitations under the License.
 $_title-to-heading-gap: 12px;
 
 :host {
-  display: flex;
-  flex-direction: column;
   box-sizing: border-box;
+  display: flex;
+  // Remove 2px from height to account for the card border.
+  flex-basis: $metrics-min-card-height - 2px;
+  flex-direction: column;
+  flex-grow: 1;
   height: 100%;
   overflow: auto;
   padding: $metrics-preferred-gap;
