@@ -99,6 +99,11 @@ export interface ColumnHeader {
   enabled: boolean;
 }
 
+export enum DataTableMode {
+  SINGLE,
+  RANGE,
+}
+
 export enum SortingOrder {
   ASCENDING,
   DESCENDING,

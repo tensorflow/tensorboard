@@ -32,6 +32,8 @@ import {
 } from '../types';
 import {
   ColumnHeader,
+  ColumnHeaderType,
+  DataTableMode,
   SortingInfo,
 } from '../views/card_renderer/scalar_card_types';
 
@@ -208,6 +210,22 @@ export const dataTableColumnDrag = createAction(
   '[Metrics] Data table column dragged',
   props<{
     newOrder: ColumnHeader[];
+  }>()
+);
+
+export const dataTableColumnEdited = createAction(
+  '[Metrics] Data table columns edited in edit menu',
+  props<{
+    fobState: DataTableMode;
+    headers: ColumnHeader[];
+  }>()
+);
+
+export const dataTableColumnToggled = createAction(
+  '[Metrics] Data table column toggled in edit menu',
+  props<{
+    fobState: DataTableMode;
+    headerType: ColumnHeaderType;
   }>()
 );
 

@@ -46,6 +46,10 @@ import {
   TooltipSort,
   XAxisType,
 } from '../types';
+import {
+  ColumnHeaderType,
+  DataTableMode,
+} from '../views/card_renderer/scalar_card_types';
 import {reducers} from './metrics_reducers';
 import {getCardId, getPinnedCardId} from './metrics_store_internal_utils';
 import {
@@ -1483,6 +1487,271 @@ describe('metrics reducers', () => {
 
       expect(nextState.timeSeriesData).toBe(beforeState.timeSeriesData);
       expect(nextState.timeSeriesData).toEqual(createTimeSeriesData());
+    });
+
+    describe('dataTableColumnEdited', () => {
+      it('edits range selection when fobState is range', () => {
+        const beforeState = buildMetricsState({
+          rangeSelectionHeaders: [
+            {type: ColumnHeaderType.RUN, enabled: true},
+            {type: ColumnHeaderType.START_VALUE, enabled: true},
+            {type: ColumnHeaderType.END_VALUE, enabled: true},
+            {type: ColumnHeaderType.MIN_VALUE, enabled: false},
+            {type: ColumnHeaderType.MAX_VALUE, enabled: false},
+          ],
+          singleSelectionHeaders: [
+            {type: ColumnHeaderType.RUN, enabled: true},
+            {type: ColumnHeaderType.VALUE, enabled: true},
+            {type: ColumnHeaderType.STEP, enabled: true},
+            {type: ColumnHeaderType.RELATIVE_TIME, enabled: false},
+          ],
+        });
+
+        const nextState = reducers(
+          beforeState,
+          actions.dataTableColumnEdited({
+            fobState: DataTableMode.RANGE,
+            headers: [
+              {type: ColumnHeaderType.RUN, enabled: true},
+              {type: ColumnHeaderType.END_VALUE, enabled: true},
+              {type: ColumnHeaderType.START_VALUE, enabled: true},
+              {type: ColumnHeaderType.MIN_VALUE, enabled: false},
+              {type: ColumnHeaderType.MAX_VALUE, enabled: false},
+            ],
+          })
+        );
+
+        expect(nextState.rangeSelectionHeaders).toEqual([
+          {type: ColumnHeaderType.RUN, enabled: true},
+          {type: ColumnHeaderType.END_VALUE, enabled: true},
+          {type: ColumnHeaderType.START_VALUE, enabled: true},
+          {type: ColumnHeaderType.MIN_VALUE, enabled: false},
+          {type: ColumnHeaderType.MAX_VALUE, enabled: false},
+        ]);
+        expect(nextState.singleSelectionHeaders).toEqual([
+          {type: ColumnHeaderType.RUN, enabled: true},
+          {type: ColumnHeaderType.VALUE, enabled: true},
+          {type: ColumnHeaderType.STEP, enabled: true},
+          {type: ColumnHeaderType.RELATIVE_TIME, enabled: false},
+        ]);
+      });
+
+      it('edits single selection when fobState is single', () => {
+        const beforeState = buildMetricsState({
+          rangeSelectionHeaders: [
+            {type: ColumnHeaderType.RUN, enabled: true},
+            {type: ColumnHeaderType.START_VALUE, enabled: true},
+            {type: ColumnHeaderType.END_VALUE, enabled: true},
+            {type: ColumnHeaderType.MIN_VALUE, enabled: false},
+            {type: ColumnHeaderType.MAX_VALUE, enabled: false},
+          ],
+          singleSelectionHeaders: [
+            {type: ColumnHeaderType.RUN, enabled: true},
+            {type: ColumnHeaderType.VALUE, enabled: true},
+            {type: ColumnHeaderType.STEP, enabled: true},
+            {type: ColumnHeaderType.RELATIVE_TIME, enabled: false},
+          ],
+        });
+
+        const nextState = reducers(
+          beforeState,
+          actions.dataTableColumnEdited({
+            fobState: DataTableMode.SINGLE,
+            headers: [
+              {type: ColumnHeaderType.RUN, enabled: true},
+              {type: ColumnHeaderType.STEP, enabled: true},
+              {type: ColumnHeaderType.VALUE, enabled: true},
+              {type: ColumnHeaderType.RELATIVE_TIME, enabled: false},
+            ],
+          })
+        );
+
+        expect(nextState.rangeSelectionHeaders).toEqual([
+          {type: ColumnHeaderType.RUN, enabled: true},
+          {type: ColumnHeaderType.START_VALUE, enabled: true},
+          {type: ColumnHeaderType.END_VALUE, enabled: true},
+          {type: ColumnHeaderType.MIN_VALUE, enabled: false},
+          {type: ColumnHeaderType.MAX_VALUE, enabled: false},
+        ]);
+        expect(nextState.singleSelectionHeaders).toEqual([
+          {type: ColumnHeaderType.RUN, enabled: true},
+          {type: ColumnHeaderType.STEP, enabled: true},
+          {type: ColumnHeaderType.VALUE, enabled: true},
+          {type: ColumnHeaderType.RELATIVE_TIME, enabled: false},
+        ]);
+      });
+
+      it('ensures ordering keeps enabled headers first', () => {
+        const beforeState = buildMetricsState({
+          rangeSelectionHeaders: [
+            {type: ColumnHeaderType.RUN, enabled: true},
+            {type: ColumnHeaderType.START_VALUE, enabled: true},
+            {type: ColumnHeaderType.END_VALUE, enabled: true},
+            {type: ColumnHeaderType.MIN_VALUE, enabled: false},
+            {type: ColumnHeaderType.MAX_VALUE, enabled: false},
+          ],
+        });
+
+        const nextState = reducers(
+          beforeState,
+          actions.dataTableColumnEdited({
+            fobState: DataTableMode.RANGE,
+            headers: [
+              {type: ColumnHeaderType.RUN, enabled: true},
+              {type: ColumnHeaderType.MAX_VALUE, enabled: false},
+              {type: ColumnHeaderType.START_VALUE, enabled: true},
+              {type: ColumnHeaderType.END_VALUE, enabled: true},
+              {type: ColumnHeaderType.MIN_VALUE, enabled: false},
+            ],
+          })
+        );
+
+        expect(nextState.rangeSelectionHeaders).toEqual([
+          {type: ColumnHeaderType.RUN, enabled: true},
+          {type: ColumnHeaderType.START_VALUE, enabled: true},
+          {type: ColumnHeaderType.END_VALUE, enabled: true},
+          {type: ColumnHeaderType.MAX_VALUE, enabled: false},
+          {type: ColumnHeaderType.MIN_VALUE, enabled: false},
+        ]);
+      });
+    });
+
+    describe('dataTableColumnToggled', () => {
+      it('moves header down to the disabled headers when toggling to disabled', () => {
+        const beforeState = buildMetricsState({
+          rangeSelectionHeaders: [
+            {type: ColumnHeaderType.RUN, enabled: true},
+            {type: ColumnHeaderType.START_VALUE, enabled: true},
+            {type: ColumnHeaderType.END_VALUE, enabled: true},
+            {type: ColumnHeaderType.MIN_VALUE, enabled: false},
+            {type: ColumnHeaderType.MAX_VALUE, enabled: false},
+          ],
+        });
+
+        const nextState = reducers(
+          beforeState,
+          actions.dataTableColumnToggled({
+            fobState: DataTableMode.RANGE,
+            headerType: ColumnHeaderType.RUN,
+          })
+        );
+
+        expect(nextState.rangeSelectionHeaders).toEqual([
+          {type: ColumnHeaderType.START_VALUE, enabled: true},
+          {type: ColumnHeaderType.END_VALUE, enabled: true},
+          {type: ColumnHeaderType.RUN, enabled: false},
+          {type: ColumnHeaderType.MIN_VALUE, enabled: false},
+          {type: ColumnHeaderType.MAX_VALUE, enabled: false},
+        ]);
+      });
+
+      it('moves header up to the enabled headers when toggling to enabled', () => {
+        const beforeState = buildMetricsState({
+          rangeSelectionHeaders: [
+            {type: ColumnHeaderType.RUN, enabled: true},
+            {type: ColumnHeaderType.START_VALUE, enabled: true},
+            {type: ColumnHeaderType.END_VALUE, enabled: true},
+            {type: ColumnHeaderType.MIN_VALUE, enabled: false},
+            {type: ColumnHeaderType.MAX_VALUE, enabled: false},
+          ],
+        });
+
+        const nextState = reducers(
+          beforeState,
+          actions.dataTableColumnToggled({
+            fobState: DataTableMode.RANGE,
+            headerType: ColumnHeaderType.MAX_VALUE,
+          })
+        );
+
+        expect(nextState.rangeSelectionHeaders).toEqual([
+          {type: ColumnHeaderType.RUN, enabled: true},
+          {type: ColumnHeaderType.START_VALUE, enabled: true},
+          {type: ColumnHeaderType.END_VALUE, enabled: true},
+          {type: ColumnHeaderType.MAX_VALUE, enabled: true},
+          {type: ColumnHeaderType.MIN_VALUE, enabled: false},
+        ]);
+      });
+
+      it('only changes range selection headers when FobState is RANGE', () => {
+        const beforeState = buildMetricsState({
+          rangeSelectionHeaders: [
+            {type: ColumnHeaderType.RUN, enabled: true},
+            {type: ColumnHeaderType.START_VALUE, enabled: true},
+            {type: ColumnHeaderType.END_VALUE, enabled: true},
+            {type: ColumnHeaderType.MIN_VALUE, enabled: false},
+            {type: ColumnHeaderType.MAX_VALUE, enabled: false},
+          ],
+          singleSelectionHeaders: [
+            {type: ColumnHeaderType.RUN, enabled: true},
+            {type: ColumnHeaderType.STEP, enabled: true},
+            {type: ColumnHeaderType.VALUE, enabled: true},
+            {type: ColumnHeaderType.RELATIVE_TIME, enabled: false},
+          ],
+        });
+
+        const nextState = reducers(
+          beforeState,
+          actions.dataTableColumnToggled({
+            fobState: DataTableMode.RANGE,
+            headerType: ColumnHeaderType.MAX_VALUE,
+          })
+        );
+
+        expect(nextState.rangeSelectionHeaders).toEqual([
+          {type: ColumnHeaderType.RUN, enabled: true},
+          {type: ColumnHeaderType.START_VALUE, enabled: true},
+          {type: ColumnHeaderType.END_VALUE, enabled: true},
+          {type: ColumnHeaderType.MAX_VALUE, enabled: true},
+          {type: ColumnHeaderType.MIN_VALUE, enabled: false},
+        ]);
+        expect(nextState.singleSelectionHeaders).toEqual([
+          {type: ColumnHeaderType.RUN, enabled: true},
+          {type: ColumnHeaderType.STEP, enabled: true},
+          {type: ColumnHeaderType.VALUE, enabled: true},
+          {type: ColumnHeaderType.RELATIVE_TIME, enabled: false},
+        ]);
+      });
+
+      it('only changes single selection headers when FobState is SINGLE', () => {
+        const beforeState = buildMetricsState({
+          rangeSelectionHeaders: [
+            {type: ColumnHeaderType.RUN, enabled: true},
+            {type: ColumnHeaderType.START_VALUE, enabled: true},
+            {type: ColumnHeaderType.END_VALUE, enabled: true},
+            {type: ColumnHeaderType.MIN_VALUE, enabled: false},
+            {type: ColumnHeaderType.MAX_VALUE, enabled: false},
+          ],
+          singleSelectionHeaders: [
+            {type: ColumnHeaderType.RUN, enabled: true},
+            {type: ColumnHeaderType.STEP, enabled: true},
+            {type: ColumnHeaderType.VALUE, enabled: true},
+            {type: ColumnHeaderType.RELATIVE_TIME, enabled: false},
+          ],
+        });
+
+        const nextState = reducers(
+          beforeState,
+          actions.dataTableColumnToggled({
+            fobState: DataTableMode.SINGLE,
+            headerType: ColumnHeaderType.STEP,
+          })
+        );
+
+        expect(nextState.rangeSelectionHeaders).toEqual([
+          {type: ColumnHeaderType.RUN, enabled: true},
+          {type: ColumnHeaderType.START_VALUE, enabled: true},
+          {type: ColumnHeaderType.END_VALUE, enabled: true},
+          {type: ColumnHeaderType.MIN_VALUE, enabled: false},
+          {type: ColumnHeaderType.MAX_VALUE, enabled: false},
+        ]);
+        expect(nextState.singleSelectionHeaders).toEqual([
+          {type: ColumnHeaderType.RUN, enabled: true},
+          {type: ColumnHeaderType.VALUE, enabled: true},
+          {type: ColumnHeaderType.STEP, enabled: false},
+          {type: ColumnHeaderType.RELATIVE_TIME, enabled: false},
+        ]);
+      });
     });
   });
 
