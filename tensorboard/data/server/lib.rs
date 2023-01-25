@@ -19,7 +19,7 @@ limitations under the License.
 
 /// Package version. Keep in sync with `Cargo.toml`. We don't use `env!("CARGO_PKG_VERSION")`
 /// because of <https://github.com/bazelbuild/rules_rust/issues/573>.
-pub(crate) const VERSION: &str = "0.7.0";
+pub(crate) const VERSION: &str = "0.8.0-alpha.0";
 
 pub mod blob_key;
 pub mod cli;
