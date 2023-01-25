@@ -19,7 +19,7 @@ import os
 
 # Version of this Python package. This may differ from the versions of
 # both TensorBoard and the data server.
-__version__ = "0.7.0"
+__version__ = "0.8.0a0"
 
 
 def server_binary():
