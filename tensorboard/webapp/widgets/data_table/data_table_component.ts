@@ -73,41 +73,6 @@ export class DataTableComponent implements OnDestroy {
     document.removeEventListener('dragover', preventDefault);
   }
 
-  getHeaderTextColumn(columnHeader: ColumnHeaderType): string {
-    switch (columnHeader) {
-      case ColumnHeaderType.RUN:
-        return 'Run';
-      case ColumnHeaderType.VALUE:
-        return 'Value';
-      case ColumnHeaderType.STEP:
-        return 'Step';
-      case ColumnHeaderType.TIME:
-        return 'Time';
-      case ColumnHeaderType.RELATIVE_TIME:
-        return 'Relative';
-      case ColumnHeaderType.SMOOTHED:
-        return 'Smoothed';
-      case ColumnHeaderType.VALUE_CHANGE:
-        return 'Value';
-      case ColumnHeaderType.START_STEP:
-        return 'Start Step';
-      case ColumnHeaderType.END_STEP:
-        return 'End Step';
-      case ColumnHeaderType.START_VALUE:
-        return 'Start Value';
-      case ColumnHeaderType.END_VALUE:
-        return 'End Value';
-      case ColumnHeaderType.MIN_VALUE:
-        return 'Min';
-      case ColumnHeaderType.MAX_VALUE:
-        return 'Max';
-      case ColumnHeaderType.PERCENTAGE_CHANGE:
-        return '%';
-      default:
-        return '';
-    }
-  }
-
   getFormattedDataForColumn(
     columnHeader: ColumnHeaderType,
     selectedStepRunData: SelectedStepRunData

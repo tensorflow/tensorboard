@@ -26,22 +26,10 @@ limitations under the License.
               (dragstart)="dragStart(header)"
               (dragend)="dragEnd()"
               (dragenter)="dragEnter(header)"
-              [ngSwitch]="header.type"
               class="cell"
               [ngClass]="getHeaderHighlightStyle(header.type)"
             >
-              <!-- order icon -->
-              <mat-icon
-                *ngSwitchCase="ColumnHeaders.VALUE_CHANGE"
-                svgIcon="change_history_24px"
-              ></mat-icon>
-              <mat-icon
-                *ngSwitchCase="ColumnHeaders.PERCENTAGE_CHANGE"
-                svgIcon="change_history_24px"
-              ></mat-icon>
-              <div *ngSwitchDefault class="extra-right-padding"></div>
-
-              <span>{{ getHeaderTextColumn(header.type) }}</span>
+              <tb-data-table-header [header]="header"></tb-data-table-header>
 
               <div class="sorting-icon-container">
                 <mat-icon

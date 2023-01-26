@@ -16,12 +16,11 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {MatIconModule} from '@angular/material/icon';
-import {DataTableComponent} from './data_table_component';
-import {DataTableHeaderModule} from './data_table_header_module';
+import {DataTableHeaderComponent} from './data_table_header_component';
 
 @NgModule({
-  declarations: [DataTableComponent],
-  exports: [DataTableComponent],
-  imports: [CommonModule, MatIconModule, DataTableHeaderModule],
+  declarations: [DataTableHeaderComponent],
+  exports: [DataTableHeaderComponent],
+  imports: [CommonModule, MatIconModule],
 })
-export class DataTableModule {}
+export class DataTableHeaderModule {}
