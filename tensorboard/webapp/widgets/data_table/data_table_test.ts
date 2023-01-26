@@ -25,6 +25,7 @@ import {
   SortingOrder,
 } from '../../metrics/views/card_renderer/scalar_card_types';
 import {DataTableComponent} from './data_table_component';
+import {DataTableModule} from './data_table_module';
 
 @Component({
   selector: 'testable-comp',
@@ -59,7 +60,7 @@ describe('data table', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [TestableComponent, DataTableComponent],
-      imports: [MatIconModule],
+      imports: [MatIconModule, DataTableModule],
     }).compileComponents();
   });
 
