@@ -13,20 +13,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {DataLoadState} from '../../types/data';
-import {PluginType} from '../data_source';
+import {PluginType, RunToSeries} from '../data_source';
 import {
   buildMetricsState,
   buildStepIndexMetadata,
   buildTagMetadata,
   buildTimeSeriesData,
   createCardMetadata,
+  createHistogramStepData,
+  createImageStepData,
+  createScalarStepData,
 } from '../testing';
+import {NonPinnedCardId, TimeSelection} from '../types';
 import {
   buildOrReturnStateWithPinnedCopy,
   buildOrReturnStateWithUnresolvedImportedPins,
   canCreateNewPins,
   createPluginDataWithLoadable,
   createRunToLoadState,
+  generateCardMinMaxStep,
   generateNextCardStepIndex,
   generateNextPinnedCardMappings,
   getCardId,
@@ -374,7 +379,8 @@ describe('metrics store utils', () => {
         new Map(),
         new Map(),
         new Map(),
-        {card1: buildStepIndexMetadata({index: 2})}
+        {card1: buildStepIndexMetadata({index: 2})},
+        new Map()
       );
 
       const pinnedCardId = getPinnedCardId('card1');
@@ -405,7 +411,8 @@ describe('metrics store utils', () => {
         new Map(),
         new Map(),
         {card1: buildStepIndexMetadata({index: 2})},
-        {card1: createCardMetadata()}
+        {card1: createCardMetadata()},
+        new Map()
       );
       const pinnedCardId = getPinnedCardId('card1');
 
@@ -430,7 +437,8 @@ describe('metrics store utils', () => {
           new Map(),
           new Map(),
           {},
-          {}
+          {},
+          new Map()
         );
       }).toThrow();
     });
@@ -448,6 +456,7 @@ describe('metrics store utils', () => {
         cardStepIndexMap: {...cardStepIndexMap},
         cardMetadataMap: {...cardMetadataMap},
       };
+      const cardToTimeSelection = new Map<NonPinnedCardId, TimeSelection>();
 
       const result = buildOrReturnStateWithPinnedCopy(
         'card1',
@@ -455,7 +464,8 @@ describe('metrics store utils', () => {
         cardToPinnedCopyCache,
         pinnedCardToOriginal,
         cardStepIndexMap,
-        cardMetadataMap
+        cardMetadataMap,
+        cardToTimeSelection
       );
 
       expect(result.cardToPinnedCopy).toEqual(originals.cardToPinnedCopy);
@@ -707,6 +717,38 @@ describe('metrics store utils', () => {
 
       expect(nextCardStepIndexMap).toEqual({
         card1: buildStepIndexMetadata({index: 1}),
+      });
+    });
+  });
+
+  describe('generateCardMinMaxStep', () => {
+    it('finds the min and max in scalar datum', () => {
+      const maxInScalars: RunToSeries = {
+        run1: createScalarStepData(),
+      };
+      expect(generateCardMinMaxStep(maxInScalars)).toEqual({
+        minStep: 0,
+        maxStep: 99,
+      });
+    });
+
+    it('finds the min and max in histogram datum', () => {
+      const maxInHistogram: RunToSeries = {
+        run1: createHistogramStepData(),
+      };
+      expect(generateCardMinMaxStep(maxInHistogram)).toEqual({
+        minStep: 0,
+        maxStep: 99,
+      });
+    });
+
+    it('finds min and max in image step datum', () => {
+      const maxInImage: RunToSeries = {
+        run1: createImageStepData(),
+      };
+      expect(generateCardMinMaxStep(maxInImage)).toEqual({
+        minStep: 0,
+        maxStep: 99,
       });
     });
   });

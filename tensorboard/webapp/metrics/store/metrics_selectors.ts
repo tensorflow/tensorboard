@@ -192,6 +192,26 @@ export const getCardStepIndexMetaData = createSelector(
 );
 
 /**
+ * Gets the time selection of a metrics card.
+ */
+export const getMetricsCardTimeSelection = createSelector(
+  selectMetricsState,
+  (state: MetricsState): Map<CardId, TimeSelection> => {
+    return state.cardToTimeSelection;
+  }
+);
+
+/**
+ * Gets the min and max step of a metrics card.
+ */
+export const getMetricsCardToMinMax = createSelector(
+  selectMetricsState,
+  (state: MetricsState) => {
+    return state.cardToMinMax;
+  }
+);
+
+/**
  * Returns step values of an image card.
  */
 export const getMetricsImageCardSteps = createSelector(

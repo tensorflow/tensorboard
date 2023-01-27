@@ -57,6 +57,7 @@ import {
   canCreateNewPins,
   createPluginDataWithLoadable,
   createRunToLoadState,
+  generateCardMinMaxStep,
   generateNextCardStepIndex,
   generateNextCardStepIndexFromLinkedTimeSelection,
   generateNextPinnedCardMappings,
@@ -257,6 +258,8 @@ const {initialState, reducers: namespaceContextedReducer} =
       cardList: [],
       cardToPinnedCopy: new Map(),
       cardToPinnedCopyCache: new Map(),
+      cardToMinMax: new Map(),
+      cardToTimeSelection: new Map(),
       pinnedCardToOriginal: new Map(),
       unresolvedImportedPinnedCards: [],
       cardMetadataMap: {},
@@ -398,7 +401,8 @@ const reducer = createReducer(
       state.cardToPinnedCopy,
       state.cardToPinnedCopyCache,
       state.pinnedCardToOriginal,
-      state.cardStepIndex
+      state.cardStepIndex,
+      state.cardToTimeSelection
     );
 
     const hydratedSmoothing = hydratedState.metrics.smoothing;
@@ -584,7 +588,8 @@ const reducer = createReducer(
         nextCardToPinnedCopy,
         state.cardToPinnedCopyCache,
         nextPinnedCardToOriginal,
-        nextCardStepIndex
+        nextCardStepIndex,
+        state.cardToTimeSelection
       );
 
       return {
@@ -810,6 +815,8 @@ const reducer = createReducer(
       {response}: {response: TimeSeriesResponse}
     ): MetricsState => {
       const nextStepMinMax = {...state.stepMinMax};
+      const nextCardToMinMax = new Map(state.cardToMinMax);
+      const nextCardToTimeSeletion = new Map(state.cardToTimeSelection);
       // Update time series.
       const nextTimeSeriesData = {...state.timeSeriesData};
       const {plugin, tag, runId, sample} = response;
@@ -852,7 +859,31 @@ const reducer = createReducer(
         }
       }
 
-      const nextState = {
+      const nextCardMetadataList = buildCardMetadataList(state.tagMetadata);
+      for (const cardMetadata of nextCardMetadataList) {
+        const cardId = getCardId(cardMetadata);
+        const cardTimeSeriesLoadable = getTimeSeriesLoadable(
+          nextTimeSeriesData,
+          cardMetadata.plugin,
+          cardMetadata.tag,
+          cardMetadata.sample
+        );
+        if (cardTimeSeriesLoadable) {
+          const nextMinMax = generateCardMinMaxStep(
+            cardTimeSeriesLoadable.runToSeries
+          );
+          nextCardToMinMax.set(cardId, nextMinMax);
+
+          nextCardToTimeSeletion.set(cardId, {
+            start: {step: nextMinMax.minStep},
+            end: state.rangeSelectionEnabled
+              ? {step: nextMinMax.maxStep}
+              : null,
+          });
+        }
+      }
+
+      const nextState: MetricsState = {
         ...state,
         timeSeriesData: nextTimeSeriesData,
         cardStepIndex: buildNormalizedCardStepIndexMap(
@@ -862,6 +893,8 @@ const reducer = createReducer(
           state.timeSeriesData
         ),
         stepMinMax: nextStepMinMax,
+        cardToMinMax: nextCardToMinMax,
+        cardToTimeSelection: nextCardToTimeSeletion,
       };
       return nextState;
     }
@@ -925,6 +958,7 @@ const reducer = createReducer(
     let nextCardToPinnedCopy = new Map(state.cardToPinnedCopy);
     let nextCardToPinnedCopyCache = new Map(state.cardToPinnedCopyCache);
     let nextPinnedCardToOriginal = new Map(state.pinnedCardToOriginal);
+    let nextCardToTimeSelection = new Map(state.cardToTimeSelection);
     let nextCardMetadataMap = {...state.cardMetadataMap};
     let nextCardStepIndexMap = {...state.cardStepIndex};
 
@@ -943,13 +977,15 @@ const reducer = createReducer(
           nextCardToPinnedCopyCache,
           nextPinnedCardToOriginal,
           nextCardStepIndexMap,
-          nextCardMetadataMap
+          nextCardMetadataMap,
+          nextCardToTimeSelection
         );
         nextCardToPinnedCopy = resolvedResult.cardToPinnedCopy;
         nextCardToPinnedCopyCache = resolvedResult.cardToPinnedCopyCache;
         nextPinnedCardToOriginal = resolvedResult.pinnedCardToOriginal;
         nextCardMetadataMap = resolvedResult.cardMetadataMap;
         nextCardStepIndexMap = resolvedResult.cardStepIndex;
+        nextCardToTimeSelection = resolvedResult.cardToTimeSelection;
       } else {
         const pinnedCardId = state.cardToPinnedCopy.get(cardId)!;
         nextCardToPinnedCopy.delete(cardId);
@@ -965,6 +1001,7 @@ const reducer = createReducer(
       cardStepIndex: nextCardStepIndexMap,
       cardToPinnedCopy: nextCardToPinnedCopy,
       cardToPinnedCopyCache: nextCardToPinnedCopyCache,
+      cardToTimeSelection: nextCardToTimeSelection,
       pinnedCardToOriginal: nextPinnedCardToOriginal,
     };
   }),
@@ -1004,6 +1041,7 @@ const reducer = createReducer(
     const nextRangeSelectionEnabled = !state.rangeSelectionEnabled;
     let nextStepSelectorEnabled = state.stepSelectorEnabled;
     let linkedTimeSelection = state.linkedTimeSelection;
+    let nextCardToTimeSelection = new Map(state.cardToTimeSelection);
 
     if (nextRangeSelectionEnabled) {
       nextStepSelectorEnabled = nextRangeSelectionEnabled;
@@ -1019,16 +1057,37 @@ const reducer = createReducer(
           end: {step: state.stepMinMax.max},
         };
       }
+      Array.from(nextCardToTimeSelection.entries()).forEach(
+        ([cardId, timeSelection]) => {
+          if (!timeSelection.end) {
+            nextCardToTimeSelection.set(cardId, {
+              start: timeSelection.start,
+              end: {step: Infinity},
+            });
+          }
+        }
+      );
     }
     return {
       ...state,
       stepSelectorEnabled: nextStepSelectorEnabled,
       rangeSelectionEnabled: nextRangeSelectionEnabled,
       linkedTimeSelection,
+      cardToTimeSelection: nextCardToTimeSelection,
+    };
+  }),
+  on(actions.cardMinMaxChanged, (state, change) => {
+    const {cardId, minMax} = change;
+    const nextCardToMinMax = new Map(state.cardToMinMax);
+    nextCardToMinMax.set(cardId, minMax);
+
+    return {
+      ...state,
+      cardToMinMax: nextCardToMinMax,
     };
   }),
   on(actions.timeSelectionChanged, (state, change) => {
-    const {timeSelection} = change;
+    const {cardId, timeSelection} = change;
     const nextStartStep = timeSelection.start.step;
     const nextEndStep = timeSelection.end?.step;
     const nextStepSelectorEnabled =
@@ -1056,11 +1115,16 @@ const reducer = createReducer(
         state.timeSeriesData,
         linkedTimeSelection
       );
+    const nextCardToTimeSeletion = new Map(state.cardToTimeSelection);
+    if (cardId) {
+      nextCardToTimeSeletion.set(cardId, linkedTimeSelection);
+    }
 
     return {
       ...state,
       linkedTimeSelection,
       cardStepIndex: nextCardStepIndexMap,
+      cardToTimeSelection: nextCardToTimeSeletion,
       rangeSelectionEnabled,
       stepSelectorEnabled: nextStepSelectorEnabled,
     };

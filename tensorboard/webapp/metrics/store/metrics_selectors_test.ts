@@ -25,8 +25,9 @@ import {
   createScalarStepData,
   createTimeSeriesData,
 } from '../testing';
-import {HistogramMode, TooltipSort, XAxisType} from '../types';
+import {HistogramMode, TimeSelection, TooltipSort, XAxisType} from '../types';
 import * as selectors from './metrics_selectors';
+import {MinMaxStep} from './metrics_types';
 
 describe('metrics selectors', () => {
   beforeEach(() => {
@@ -402,6 +403,44 @@ describe('metrics selectors', () => {
       expect(selectors.getCardStepIndexMetaData(state, 'card1')).toEqual(
         buildStepIndexMetadata({index: 5})
       );
+    });
+  });
+
+  describe('getMetricsCardTimeSelection', () => {
+    it('returns cardToTimeSelection map', () => {
+      const cardToTimeSelection = new Map<string, TimeSelection>();
+      cardToTimeSelection.set('card1', {
+        start: {step: 0},
+        end: {step: 100},
+      });
+
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          cardToTimeSelection,
+        })
+      );
+
+      expect(selectors.getMetricsCardTimeSelection(state)).toEqual(
+        cardToTimeSelection
+      );
+    });
+  });
+
+  describe('getMetricsCardToMinMax', () => {
+    it('returns cardToMinMax map', () => {
+      const cardToMinMax = new Map<string, MinMaxStep>();
+      cardToMinMax.set('card1', {
+        minStep: 0,
+        maxStep: 100,
+      });
+
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          cardToMinMax,
+        })
+      );
+
+      expect(selectors.getMetricsCardToMinMax(state)).toEqual(cardToMinMax);
     });
   });
 

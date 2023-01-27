@@ -17,7 +17,14 @@ limitations under the License.
  */
 
 import {DataLoadState} from '../../types/data';
-import {isSampledPlugin, PluginType, SampledPluginType} from '../data_source';
+import {
+  HistogramStepDatum,
+  ImageStepDatum,
+  isSampledPlugin,
+  PluginType,
+  SampledPluginType,
+  ScalarStepDatum,
+} from '../data_source';
 import {
   CardId,
   CardMetadata,
@@ -30,9 +37,13 @@ import {
   CardStepIndexMap,
   CardStepIndexMetaData,
   CardToPinnedCard,
+  CardToTimeSelection,
   MetricsState,
+  MinMaxStep,
   PinnedCardToCard,
   RunToLoadState,
+  RunToSeries,
+  StepDatum,
   TagMetadata,
   TimeSeriesData,
   TimeSeriesLoadables,
@@ -45,6 +56,7 @@ type ResolvedPinPartialState = Pick<
   | 'cardToPinnedCopyCache'
   | 'pinnedCardToOriginal'
   | 'cardStepIndex'
+  | 'cardToTimeSelection'
 >;
 
 const DISTANCE_RATIO = 0.1;
@@ -206,7 +218,8 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
   cardToPinnedCopy: CardToPinnedCard,
   cardToPinnedCopyCache: CardToPinnedCard,
   pinnedCardToOriginal: PinnedCardToCard,
-  cardStepIndexMap: CardStepIndexMap
+  cardStepIndexMap: CardStepIndexMap,
+  cardToTimeSelection: CardToTimeSelection
 ): ResolvedPinPartialState & {unresolvedImportedPinnedCards: CardUniqueInfo[]} {
   const unresolvedPinSet = new Set(unresolvedImportedPinnedCards);
   const nonPinnedCardsWithMatch = [];
@@ -228,6 +241,7 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
       cardToPinnedCopy,
       cardToPinnedCopyCache,
       pinnedCardToOriginal,
+      cardToTimeSelection,
       cardStepIndex: cardStepIndexMap,
     };
   }
@@ -238,6 +252,7 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
     pinnedCardToOriginal,
     cardStepIndex: cardStepIndexMap,
     cardMetadataMap,
+    cardToTimeSelection,
   };
   for (const cardToPin of nonPinnedCardsWithMatch) {
     stateWithResolvedPins = buildOrReturnStateWithPinnedCopy(
@@ -246,7 +261,8 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
       stateWithResolvedPins.cardToPinnedCopyCache,
       stateWithResolvedPins.pinnedCardToOriginal,
       stateWithResolvedPins.cardStepIndex,
-      stateWithResolvedPins.cardMetadataMap
+      stateWithResolvedPins.cardMetadataMap,
+      stateWithResolvedPins.cardToTimeSelection
     );
   }
 
@@ -266,7 +282,8 @@ export function buildOrReturnStateWithPinnedCopy(
   cardToPinnedCopyCache: CardToPinnedCard,
   pinnedCardToOriginal: PinnedCardToCard,
   cardStepIndexMap: CardStepIndexMap,
-  cardMetadataMap: CardMetadataMap
+  cardMetadataMap: CardMetadataMap,
+  nextCardToTimeSelection: CardToTimeSelection
 ): ResolvedPinPartialState {
   // No-op if the card already has a pinned copy.
   if (cardToPinnedCopy.has(cardId)) {
@@ -276,6 +293,7 @@ export function buildOrReturnStateWithPinnedCopy(
       pinnedCardToOriginal,
       cardStepIndex: cardStepIndexMap,
       cardMetadataMap,
+      cardToTimeSelection: nextCardToTimeSelection,
     };
   }
 
@@ -290,6 +308,10 @@ export function buildOrReturnStateWithPinnedCopy(
   nextCardToPinnedCopy.set(cardId, pinnedCardId);
   nextCardToPinnedCopyCache.set(cardId, pinnedCardId);
   nextPinnedCardToOriginal.set(pinnedCardId, cardId);
+  const originalTimeSelection = nextCardToTimeSelection.get(cardId);
+  if (originalTimeSelection) {
+    nextCardToTimeSelection.set(pinnedCardId, {...originalTimeSelection});
+  }
   if (cardStepIndexMap.hasOwnProperty(cardId)) {
     nextCardStepIndexMap[pinnedCardId] = cardStepIndexMap[cardId];
   }
@@ -306,6 +328,7 @@ export function buildOrReturnStateWithPinnedCopy(
     pinnedCardToOriginal: nextPinnedCardToOriginal,
     cardStepIndex: nextCardStepIndexMap,
     cardMetadataMap: nextCardMetadataMap,
+    cardToTimeSelection: nextCardToTimeSelection,
   };
 }
 
@@ -363,6 +386,22 @@ export function generateNextCardStepIndex(
     }
   });
   return nextCardStepIndexMap;
+}
+
+export function generateCardMinMaxStep<T extends PluginType = PluginType>(
+  runsToSeries: RunToSeries<T>
+): MinMaxStep {
+  const allData = Object.values(runsToSeries)
+    .flat()
+    .map((stepDatum) => stepDatum as StepDatum[T])
+    .flat()
+    .map((datum: ScalarStepDatum | HistogramStepDatum | ImageStepDatum) => {
+      return datum.step;
+    });
+  return {
+    minStep: Math.min(...allData),
+    maxStep: Math.max(...allData),
+  };
 }
 
 /**
