@@ -129,6 +129,7 @@ tf_ng_module(
         "//tensorboard/webapp/metrics/views:utils",
         "//tensorboard/webapp/metrics/views/card_renderer",
         "//tensorboard/webapp/metrics/views/right_pane",
+        "//tensorboard/webapp/metrics/views/right_pane/scalar_column_editor",
         "//tensorboard/webapp/settings",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/types:ui",

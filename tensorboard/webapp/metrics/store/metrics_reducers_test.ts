@@ -1490,7 +1490,7 @@ describe('metrics reducers', () => {
     });
 
     describe('dataTableColumnEdited', () => {
-      it('edits range selection when fobState is range', () => {
+      it('edits range selection when dataTableMode is range', () => {
         const beforeState = buildMetricsState({
           rangeSelectionHeaders: [
             {type: ColumnHeaderType.RUN, enabled: true},
@@ -1510,7 +1510,7 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.dataTableColumnEdited({
-            fobState: DataTableMode.RANGE,
+            dataTableMode: DataTableMode.RANGE,
             headers: [
               {type: ColumnHeaderType.RUN, enabled: true},
               {type: ColumnHeaderType.END_VALUE, enabled: true},
@@ -1536,7 +1536,7 @@ describe('metrics reducers', () => {
         ]);
       });
 
-      it('edits single selection when fobState is single', () => {
+      it('edits single selection when dataTableMode is single', () => {
         const beforeState = buildMetricsState({
           rangeSelectionHeaders: [
             {type: ColumnHeaderType.RUN, enabled: true},
@@ -1556,7 +1556,7 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.dataTableColumnEdited({
-            fobState: DataTableMode.SINGLE,
+            dataTableMode: DataTableMode.SINGLE,
             headers: [
               {type: ColumnHeaderType.RUN, enabled: true},
               {type: ColumnHeaderType.STEP, enabled: true},
@@ -1595,7 +1595,7 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.dataTableColumnEdited({
-            fobState: DataTableMode.RANGE,
+            dataTableMode: DataTableMode.RANGE,
             headers: [
               {type: ColumnHeaderType.RUN, enabled: true},
               {type: ColumnHeaderType.MAX_VALUE, enabled: false},
@@ -1631,7 +1631,7 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.dataTableColumnToggled({
-            fobState: DataTableMode.RANGE,
+            dataTableMode: DataTableMode.RANGE,
             headerType: ColumnHeaderType.RUN,
           })
         );
@@ -1659,7 +1659,7 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.dataTableColumnToggled({
-            fobState: DataTableMode.RANGE,
+            dataTableMode: DataTableMode.RANGE,
             headerType: ColumnHeaderType.MAX_VALUE,
           })
         );
@@ -1673,7 +1673,7 @@ describe('metrics reducers', () => {
         ]);
       });
 
-      it('only changes range selection headers when FobState is RANGE', () => {
+      it('only changes range selection headers when dataTableMode is RANGE', () => {
         const beforeState = buildMetricsState({
           rangeSelectionHeaders: [
             {type: ColumnHeaderType.RUN, enabled: true},
@@ -1693,7 +1693,7 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.dataTableColumnToggled({
-            fobState: DataTableMode.RANGE,
+            dataTableMode: DataTableMode.RANGE,
             headerType: ColumnHeaderType.MAX_VALUE,
           })
         );
@@ -1713,7 +1713,7 @@ describe('metrics reducers', () => {
         ]);
       });
 
-      it('only changes single selection headers when FobState is SINGLE', () => {
+      it('only changes single selection headers when dataTableMode is SINGLE', () => {
         const beforeState = buildMetricsState({
           rangeSelectionHeaders: [
             {type: ColumnHeaderType.RUN, enabled: true},
@@ -1733,7 +1733,7 @@ describe('metrics reducers', () => {
         const nextState = reducers(
           beforeState,
           actions.dataTableColumnToggled({
-            fobState: DataTableMode.SINGLE,
+            dataTableMode: DataTableMode.SINGLE,
             headerType: ColumnHeaderType.STEP,
           })
         );

@@ -277,6 +277,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/metrics/views/card_renderer:card_renderer_tests",
         "//tensorboard/webapp/metrics/views/main_view:main_view_tests",
         "//tensorboard/webapp/metrics/views/right_pane:right_pane_test",
+        "//tensorboard/webapp/metrics/views/right_pane/scalar_column_editor:scalar_column_editor_test",
         "//tensorboard/webapp/plugins:plugins_container_test_lib",
         "//tensorboard/webapp/plugins/npmi:npmi_test_lib",
         "//tensorboard/webapp/plugins/npmi/data_source:data_source_test_lib",
