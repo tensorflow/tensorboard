@@ -2911,7 +2911,7 @@ describe('metrics reducers', () => {
           actions.timeSelectionChanged({
             timeSelection: {
               start: {step: 2},
-              end: {step: 0},
+              end: {step: 10},
             },
           })
         );

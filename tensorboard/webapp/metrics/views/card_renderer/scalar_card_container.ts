@@ -587,6 +587,28 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
 
+    // stepSelectorTimeSelection$ is partially independent of the global
+    // stepSelectorEnabled state. stepSelectorTimeSelection$ may change in
+    // response to changes to stepSelectorEnabled but may otherwise diverge
+    // while stepSelectorEnabled remains unchanged.
+    //
+    // For instance, as we see in the following code:
+    // * If stepSelectorTimeSelection$ is null when stepSelectorEnabled
+    //   is changed to true, then a default value is assigned to
+    //   stepSelectorTimeSelection$.
+    // * If stepSelectorTimeSelection$ has a value when stepSelectorEnabled
+    //   is changed to false, then null is assigned to
+    //   stepSelectorTimeSelection$.
+    //
+    // On the other hand, stepSelectorTimeSelection$ may later change
+    // independent of stepSelectorEnabled state:
+    // * It can be assigned a value while stepSelectorEnabled is still false (if
+    //   the user, for example, uses a fob to turn on step selection for this
+    //   particular chart).
+    // * It can be assigned to null when stepSelectorEnabled is still true (if
+    //   the user, for example, uses a fob to turn off step selection for this
+    //   particular chart).
+    // The link is lost until the next change to stepSelectorEnabled.
     this.store
       .select(getMetricsStepSelectorEnabled)
       .pipe(
@@ -612,6 +634,11 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
         }
       });
 
+    // stepSelectorTimeSelection$ is also partially independent of the
+    // global rangeSelectionEnabled state, similar to its relationship with
+    // stepSelectorEnabled, described above. stepSelectorTimeSelection$ may
+    // change in response to changes to rangeSelectionEnabled but may otherwise
+    // diverge while rangeSelectionEnabled remains unchanged.
     this.store
       .select(getMetricsRangeSelectionEnabled)
       .pipe(withLatestFrom(this.minMaxSteps$), takeUntil(this.ngUnsubscribe))
