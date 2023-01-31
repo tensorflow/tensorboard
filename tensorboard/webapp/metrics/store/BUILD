@@ -55,9 +55,9 @@ tf_ts_library(
     visibility = ["//tensorboard/webapp/metrics/store:__subpackages__"],
     deps = [
         ":types",
+        "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/types",
-        "//tensorboard/webapp/metrics:types",
     ],
 )
 
