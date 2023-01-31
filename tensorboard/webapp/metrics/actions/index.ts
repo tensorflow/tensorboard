@@ -23,10 +23,10 @@ import {
   TimeSeriesRequest,
   TimeSeriesResponse,
 } from '../data_source';
-import {MinMaxStep} from '../store/metrics_types';
 import {
   CardId,
   HistogramMode,
+  MinMaxStep,
   PluginType,
   TooltipSort,
   XAxisType,

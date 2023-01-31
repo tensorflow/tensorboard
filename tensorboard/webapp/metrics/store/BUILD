@@ -23,7 +23,6 @@ tf_ts_library(
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",
-        "//tensorboard/webapp/metrics/views/card_renderer:utils",
         "//tensorboard/webapp/persistent_settings",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/util:dom",
@@ -56,9 +55,9 @@ tf_ts_library(
     visibility = ["//tensorboard/webapp/metrics/store:__subpackages__"],
     deps = [
         ":types",
-        "//tensorboard/webapp/metrics:internal_types",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/types",
+        "//tensorboard/webapp/metrics:types",
     ],
 )
 

@@ -26,3 +26,12 @@ export enum TooltipSort {
   NEAREST = 'nearest',
   NEAREST_Y = 'nearest_Y',
 }
+
+/**
+ * An object which is intended to hold the min and max step within each scalar
+ * card.
+ */
+export interface MinMaxStep {
+  minStep: number;
+  maxStep: number;
+}

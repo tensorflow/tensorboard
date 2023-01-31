@@ -20,9 +20,6 @@ import {
   buildTagMetadata,
   buildTimeSeriesData,
   createCardMetadata,
-  createHistogramStepData,
-  createImageStepData,
-  createScalarStepData,
 } from '../testing';
 import {NonPinnedCardId, TimeSelection} from '../types';
 import {
@@ -399,12 +396,18 @@ describe('metrics store utils', () => {
 
   describe('buildOrReturnStateWithPinnedCopy', () => {
     it('adds a pinned copy properly', () => {
+      const initialCardToTimeSelectionMap = new Map<string, TimeSelection>();
+      initialCardToTimeSelectionMap.set('card1', {
+        start: {step: 5},
+        end: {step: 7},
+      });
       const {
         cardToPinnedCopy,
         cardToPinnedCopyCache,
         pinnedCardToOriginal,
         cardStepIndex,
         cardMetadataMap,
+        cardToTimeSelection,
       } = buildOrReturnStateWithPinnedCopy(
         'card1',
         new Map(),
@@ -412,7 +415,7 @@ describe('metrics store utils', () => {
         new Map(),
         {card1: buildStepIndexMetadata({index: 2})},
         {card1: createCardMetadata()},
-        new Map()
+        initialCardToTimeSelectionMap
       );
       const pinnedCardId = getPinnedCardId('card1');
 
@@ -427,6 +430,7 @@ describe('metrics store utils', () => {
         card1: createCardMetadata(),
         [pinnedCardId]: createCardMetadata(),
       });
+      expect(cardToTimeSelection).toEqual(initialCardToTimeSelectionMap);
     });
 
     it('throws if the original card does not have metadata', () => {
@@ -724,27 +728,73 @@ describe('metrics store utils', () => {
   describe('generateCardMinMaxStep', () => {
     it('finds the min and max in scalar datum', () => {
       const maxInScalars: RunToSeries = {
-        run1: createScalarStepData(),
+        run1: [
+          {
+            step: 10,
+            wallTime: 40,
+            value: 1,
+          },
+          {
+            step: 0,
+            wallTime: 30,
+            value: 5,
+          },
+        ],
+        run2: [
+          {
+            step: 200,
+            value: 0,
+            wallTime: 42,
+          },
+        ],
       };
       expect(generateCardMinMaxStep(maxInScalars)).toEqual({
         minStep: 0,
-        maxStep: 99,
+        maxStep: 200,
       });
     });
 
     it('finds the min and max in histogram datum', () => {
       const maxInHistogram: RunToSeries = {
-        run1: createHistogramStepData(),
+        run1: [
+          {
+            step: 0,
+            wallTime: 123,
+            bins: [],
+          },
+          {
+            step: 99,
+            wallTime: 126,
+            bins: [],
+          },
+        ],
+        run3: [{step: -5, wallTime: 125, bins: []}],
       };
       expect(generateCardMinMaxStep(maxInHistogram)).toEqual({
-        minStep: 0,
+        minStep: -5,
         maxStep: 99,
       });
     });
 
     it('finds min and max in image step datum', () => {
       const maxInImage: RunToSeries = {
-        run1: createImageStepData(),
+        run1: [
+          {
+            step: 50,
+            wallTime: 1,
+            imageId: 'image1',
+          },
+          {
+            step: 0,
+            wallTime: 2,
+            imageId: 'image2',
+          },
+          {
+            step: 99,
+            wallTime: 3,
+            imageId: 'image3',
+          },
+        ],
       };
       expect(generateCardMinMaxStep(maxInImage)).toEqual({
         minStep: 0,

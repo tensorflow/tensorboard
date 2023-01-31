@@ -25,9 +25,14 @@ import {
   createScalarStepData,
   createTimeSeriesData,
 } from '../testing';
-import {HistogramMode, TimeSelection, TooltipSort, XAxisType} from '../types';
+import {
+  HistogramMode,
+  MinMaxStep,
+  TimeSelection,
+  TooltipSort,
+  XAxisType,
+} from '../types';
 import * as selectors from './metrics_selectors';
-import {MinMaxStep} from './metrics_types';
 
 describe('metrics selectors', () => {
   beforeEach(() => {

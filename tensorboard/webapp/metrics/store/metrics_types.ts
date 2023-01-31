@@ -30,6 +30,7 @@ import {
   CardMetadata,
   CardUniqueInfo,
   HistogramMode,
+  MinMaxStep,
   NonPinnedCardId,
   PinnedCardId,
   TimeSelection,
@@ -39,15 +40,6 @@ import {
 import {ColumnHeader} from '../views/card_renderer/scalar_card_types';
 
 export const METRICS_FEATURE_KEY = 'metrics';
-
-/**
- * An object which is intended to hold the min and max step within each scalar
- * card.
- */
-export type MinMaxStep = {
-  minStep: number;
-  maxStep: number;
-};
 
 type RunId = string;
 
@@ -159,9 +151,9 @@ export type CardToPinnedCard = Map<NonPinnedCardId, PinnedCardId>;
 
 export type PinnedCardToCard = Map<PinnedCardId, NonPinnedCardId>;
 
-export type CardToMinMax = Map<NonPinnedCardId, MinMaxStep>;
+export type CardToMinMax = Map<CardId, MinMaxStep>;
 
-export type CardToTimeSelection = Map<NonPinnedCardId, TimeSelection>;
+export type CardToTimeSelection = Map<CardId, TimeSelection>;
 
 export interface MetricsNamespacedState {
   tagMetadataLoadState: LoadState;

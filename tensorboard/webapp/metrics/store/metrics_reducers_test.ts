@@ -43,6 +43,7 @@ import {
   CardId,
   CardMetadata,
   HistogramMode,
+  MinMaxStep,
   NonPinnedCardId,
   TimeSelection,
   TooltipSort,
@@ -57,7 +58,6 @@ import {getCardId, getPinnedCardId} from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
   MetricsState,
-  MinMaxStep,
   RunToLoadState,
   TagMetadata,
 } from './metrics_types';

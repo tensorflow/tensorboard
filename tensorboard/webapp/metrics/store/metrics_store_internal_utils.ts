@@ -17,21 +17,15 @@ limitations under the License.
  */
 
 import {DataLoadState} from '../../types/data';
-import {
-  HistogramStepDatum,
-  ImageStepDatum,
-  isSampledPlugin,
-  PluginType,
-  SampledPluginType,
-  ScalarStepDatum,
-} from '../data_source';
+import {isSampledPlugin, PluginType, SampledPluginType} from '../data_source';
 import {
   CardId,
   CardMetadata,
   CardUniqueInfo,
+  MinMaxStep,
   NonPinnedCardId,
   TimeSelection,
-} from '../internal_types';
+} from '../types';
 import {
   CardMetadataMap,
   CardStepIndexMap,
@@ -39,7 +33,6 @@ import {
   CardToPinnedCard,
   CardToTimeSelection,
   MetricsState,
-  MinMaxStep,
   PinnedCardToCard,
   RunToLoadState,
   RunToSeries,
@@ -303,7 +296,6 @@ export function buildOrReturnStateWithPinnedCopy(
   const nextCardStepIndexMap = {...cardStepIndexMap};
   const nextCardMetadataMap = {...cardMetadataMap};
 
-  // Create a pinned copy. Copies step index from the original card.
   const pinnedCardId = getPinnedCardId(cardId);
   nextCardToPinnedCopy.set(cardId, pinnedCardId);
   nextCardToPinnedCopyCache.set(cardId, pinnedCardId);
@@ -393,11 +385,7 @@ export function generateCardMinMaxStep<T extends PluginType = PluginType>(
 ): MinMaxStep {
   const allData = Object.values(runsToSeries)
     .flat()
-    .map((stepDatum) => stepDatum as StepDatum[T])
-    .flat()
-    .map((datum: ScalarStepDatum | HistogramStepDatum | ImageStepDatum) => {
-      return datum.step;
-    });
+    .map((stepDatum) => (stepDatum as StepDatum[T]).step);
   return {
     minStep: Math.min(...allData),
     maxStep: Math.max(...allData),
