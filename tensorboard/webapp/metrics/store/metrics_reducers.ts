@@ -859,27 +859,36 @@ const reducer = createReducer(
         }
       }
 
-      const nextCardMetadataList = buildCardMetadataList(state.tagMetadata);
-      for (const cardMetadata of nextCardMetadataList) {
-        const cardId = getCardId(cardMetadata);
-        const cardTimeSeriesLoadable = getTimeSeriesLoadable(
-          nextTimeSeriesData,
-          cardMetadata.plugin,
-          cardMetadata.tag,
-          cardMetadata.sample
-        );
-        if (cardTimeSeriesLoadable) {
-          const nextMinMax = generateCardMinMaxStep(
-            cardTimeSeriesLoadable.runToSeries
-          );
-          nextCardToMinMax.set(cardId, nextMinMax);
+      if (response.runToSeries) {
+        for (let runId in response.runToSeries) {
+          const cardMetadata: CardMetadata = {
+            plugin,
+            tag,
+            runId,
+          };
+          if (sample) {
+            cardMetadata.sample = sample;
+          }
 
-          nextCardToTimeSeletion.set(cardId, {
-            start: {step: nextMinMax.minStep},
-            end: state.rangeSelectionEnabled
-              ? {step: nextMinMax.maxStep}
-              : null,
-          });
+          const cardId = getCardId(cardMetadata);
+          const cardTimeSeriesLoadable = getTimeSeriesLoadable(
+            nextTimeSeriesData,
+            cardMetadata.plugin,
+            cardMetadata.tag,
+            cardMetadata.sample
+          );
+          if (cardTimeSeriesLoadable) {
+            const nextMinMax = generateCardMinMaxStep(
+              cardTimeSeriesLoadable.runToSeries
+            );
+            nextCardToMinMax.set(cardId, nextMinMax);
+            nextCardToTimeSeletion.set(cardId, {
+              start: {step: nextMinMax.minStep},
+              end: state.rangeSelectionEnabled
+                ? {step: nextMinMax.maxStep}
+                : null,
+            });
+          }
         }
       }
 
