@@ -611,14 +611,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     // The link is lost until the next change to stepSelectorEnabled.
     this.store
       .select(getMetricsStepSelectorEnabled)
-      .pipe(
-        withLatestFrom(
-          this.store.select(getMetricsRangeSelectionEnabled),
-          this.minMaxSteps$
-        ),
-        takeUntil(this.ngUnsubscribe)
-      )
-      .subscribe(([stepSelectorEnabled, rangeSelectionEnabled, minMax]) => {
+      .pipe(withLatestFrom(this.minMaxSteps$), takeUntil(this.ngUnsubscribe))
+      .subscribe(([stepSelectorEnabled, minMax]) => {
         if (!stepSelectorEnabled) {
           this.stepSelectorTimeSelection$.next(null);
           return;
@@ -628,7 +622,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
         if (currentValue === null) {
           this.stepSelectorTimeSelection$.next({
             start: {step: minMax.minStep},
-            end: rangeSelectionEnabled ? {step: minMax.maxStep} : null,
+            end: null,
           });
           return;
         }
@@ -645,6 +639,12 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       .subscribe(([rangeSelectionEnabled, minMax]) => {
         const currentValue = this.stepSelectorTimeSelection$.getValue();
         if (currentValue === null) {
+          if (rangeSelectionEnabled) {
+            this.stepSelectorTimeSelection$.next({
+              start: {step: minMax.minStep},
+              end: rangeSelectionEnabled ? {step: minMax.maxStep} : null,
+            });
+          }
           return;
         }
 
@@ -762,6 +762,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   }
 
   onStepSelectorToggled(affordance: TimeSelectionToggleAffordance) {
+    // onStepSelectorToggled is currently only called when disabling step
+    // selection. We can assume that if there is a timeSelection value then it
+    // should be removed.
     if (this.stepSelectorTimeSelection$.getValue()) {
       this.stepSelectorTimeSelection$.next(null);
     }

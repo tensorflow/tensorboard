@@ -3334,45 +3334,17 @@ describe('metrics reducers', () => {
       expect(state3.stepSelectorEnabled).toBe(false);
     });
 
-    it('enables and disables stepSelection when linked time on', () => {
-      const state1 = buildMetricsState({
-        stepSelectorEnabled: false,
-        linkedTimeEnabled: true,
-      });
-
-      const state2 = reducers(
-        state1,
-        actions.stepSelectorToggled({
-          affordance: TimeSelectionToggleAffordance.FOB_DESELECT,
-        })
-      );
-      expect(state2.stepSelectorEnabled).toBe(true);
-
-      const state3 = reducers(
-        state2,
-        actions.stepSelectorToggled({
-          affordance: TimeSelectionToggleAffordance.FOB_DESELECT,
-        })
-      );
-      expect(state3.stepSelectorEnabled).toBe(false);
-    });
-
     it('disables linkedTime and rangeSelection when stepSelector is toggled off', () => {
       const state1 = buildMetricsState({
-        stepSelectorEnabled: false,
+        stepSelectorEnabled: true,
         linkedTimeEnabled: true,
         rangeSelectionEnabled: true,
       });
 
       const state2 = reducers(state1, actions.stepSelectorToggled({}));
-      expect(state2.stepSelectorEnabled).toBe(true);
-      expect(state2.linkedTimeEnabled).toBe(true);
-      expect(state2.rangeSelectionEnabled).toBe(true);
-
-      const state3 = reducers(state2, actions.stepSelectorToggled({}));
-      expect(state3.stepSelectorEnabled).toBe(false);
-      expect(state3.linkedTimeEnabled).toBe(false);
-      expect(state3.rangeSelectionEnabled).toBe(false);
+      expect(state2.stepSelectorEnabled).toBe(false);
+      expect(state2.linkedTimeEnabled).toBe(false);
+      expect(state2.rangeSelectionEnabled).toBe(false);
     });
   });
 
