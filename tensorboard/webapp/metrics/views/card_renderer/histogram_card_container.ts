@@ -41,7 +41,6 @@ import {
   getCardTimeSeries,
   getMetricsHistogramMode,
   getMetricsLinkedTimeSelection,
-  getMetricsRangeSelectionEnabled,
   getMetricsXAxisType,
 } from '../../store';
 import {CardId, CardMetadata} from '../../types';
@@ -74,7 +73,6 @@ type HistogramCardMetadata = CardMetadata & {
       [isPinned]="isPinned$ | async"
       [isClosestStepHighlighted]="isClosestStepHighlighted$ | async"
       [linkedTimeSelection]="linkedTimeSelection$ | async"
-      [rangeSelectionEnabled]="rangeSelectionEnabled$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
       (onLinkedTimeSelectionChanged)="onLinkedTimeSelectionChanged($event)"
@@ -109,7 +107,6 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
   data$?: Observable<HistogramDatum[]>;
   mode$ = this.store.select(getMetricsHistogramMode);
   xAxisType$ = this.store.select(getMetricsXAxisType);
-  rangeSelectionEnabled$ = this.store.select(getMetricsRangeSelectionEnabled);
   showFullSize = false;
   isPinned$?: Observable<boolean>;
   linkedTimeSelection$?: Observable<TimeSelectionView | null>;

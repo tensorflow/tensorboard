@@ -41,6 +41,7 @@ import {
   startWith,
   switchMap,
   takeUntil,
+  withLatestFrom,
 } from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {ExperimentAlias} from '../../../experiments/types';
@@ -97,7 +98,6 @@ import {getTagDisplayName} from '../utils';
 import {DataDownloadDialogContainer} from './data_download_dialog_container';
 import {
   ColumnHeader,
-  ColumnHeaderType,
   MinMaxStep,
   PartialSeries,
   PartitionedSeries,
@@ -164,7 +164,6 @@ function areSeriesEqual(
       [useDarkMode]="useDarkMode$ | async"
       [linkedTimeSelection]="linkedTimeSelection$ | async"
       [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection$ | async"
-      [rangeSelectionEnabled]="rangeSelectionEnabled$ | async"
       [isProspectiveFobFeatureEnabled]="isProspectiveFobFeatureEnabled$ | async"
       [forceSvg]="forceSvg$ | async"
       [columnCustomizationEnabled]="columnCustomizationEnabled$ | async"
@@ -233,9 +232,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   });
   readonly stepSelectorTimeSelection$ =
     new BehaviorSubject<TimeSelection | null>(null);
-  readonly rangeSelectionEnabled$ = this.store.select(
-    getMetricsRangeSelectionEnabled
-  );
   readonly useDarkMode$ = this.store.select(getDarkModeEnabled);
   readonly ignoreOutliers$ = this.store.select(getMetricsIgnoreOutliers);
   readonly tooltipSort$ = this.store.select(getMetricsTooltipSort);
@@ -437,16 +433,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       this.store.select(getMetricsLinkedTimeEnabled),
       this.store.select(getMetricsLinkedTimeSelection),
       this.store.select(getMetricsXAxisType),
-      this.store.select(getMetricsRangeSelectionEnabled),
     ]).pipe(
       map(
-        ([
-          {minStep, maxStep},
-          linkedTimeEnabled,
-          timeSelection,
-          xAxisType,
-          rangeSelectionEnabled,
-        ]) => {
+        ([{minStep, maxStep}, linkedTimeEnabled, timeSelection, xAxisType]) => {
           if (
             !linkedTimeEnabled ||
             xAxisType !== XAxisType.STEP ||
@@ -454,16 +443,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
           ) {
             return null;
           }
-          const forkedTimeSelection = {...timeSelection};
-          if (!forkedTimeSelection.end && rangeSelectionEnabled) {
-            forkedTimeSelection.end = {step: maxStep};
-          }
 
-          return maybeClipTimeSelectionView(
-            forkedTimeSelection,
-            minStep,
-            maxStep
-          );
+          return maybeClipTimeSelectionView(timeSelection, minStep, maxStep);
         }
       )
     );
@@ -606,14 +587,88 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
 
-    combineLatest([
-      this.minMaxSteps$,
-      this.store.select(getMetricsStepSelectorEnabled),
-      this.store.select(getMetricsRangeSelectionEnabled),
-    ]).subscribe(
-      ([{minStep, maxStep}, enableStepSelector, rangeSelectionEnabled]) => {
-        if (!enableStepSelector) {
+    // stepSelectorTimeSelection$ is partially independent of the global
+    // stepSelectorEnabled state. stepSelectorTimeSelection$ may change in
+    // response to changes to stepSelectorEnabled but may otherwise diverge
+    // while stepSelectorEnabled remains unchanged.
+    //
+    // For instance, as we see in the following code:
+    // * If stepSelectorTimeSelection$ is null when stepSelectorEnabled
+    //   is changed to true, then a default value is assigned to
+    //   stepSelectorTimeSelection$.
+    // * If stepSelectorTimeSelection$ has a value when stepSelectorEnabled
+    //   is changed to false, then null is assigned to
+    //   stepSelectorTimeSelection$.
+    //
+    // On the other hand, stepSelectorTimeSelection$ may later change
+    // independent of stepSelectorEnabled state:
+    // * It can be assigned a value while stepSelectorEnabled is still false (if
+    //   the user, for example, uses a fob to turn on step selection for this
+    //   particular chart).
+    // * It can be assigned to null when stepSelectorEnabled is still true (if
+    //   the user, for example, uses a fob to turn off step selection for this
+    //   particular chart).
+    // The link is lost until the next change to stepSelectorEnabled.
+    this.store
+      .select(getMetricsStepSelectorEnabled)
+      .pipe(withLatestFrom(this.minMaxSteps$), takeUntil(this.ngUnsubscribe))
+      .subscribe(([stepSelectorEnabled, minMax]) => {
+        if (!stepSelectorEnabled) {
           this.stepSelectorTimeSelection$.next(null);
+          return;
+        }
+
+        const currentValue = this.stepSelectorTimeSelection$.getValue();
+        if (currentValue === null) {
+          this.stepSelectorTimeSelection$.next({
+            start: {step: minMax.minStep},
+            end: null,
+          });
+          return;
+        }
+      });
+
+    // stepSelectorTimeSelection$ is also partially independent of the
+    // global rangeSelectionEnabled state, similar to its relationship with
+    // stepSelectorEnabled, described above. stepSelectorTimeSelection$ may
+    // change in response to changes to rangeSelectionEnabled but may otherwise
+    // diverge while rangeSelectionEnabled remains unchanged.
+    this.store
+      .select(getMetricsRangeSelectionEnabled)
+      .pipe(withLatestFrom(this.minMaxSteps$), takeUntil(this.ngUnsubscribe))
+      .subscribe(([rangeSelectionEnabled, minMax]) => {
+        const currentValue = this.stepSelectorTimeSelection$.getValue();
+        if (currentValue === null) {
+          if (rangeSelectionEnabled) {
+            this.stepSelectorTimeSelection$.next({
+              start: {step: minMax.minStep},
+              end: rangeSelectionEnabled ? {step: minMax.maxStep} : null,
+            });
+          }
+          return;
+        }
+
+        if (!rangeSelectionEnabled && currentValue.end !== null) {
+          this.stepSelectorTimeSelection$.next({
+            start: currentValue.start,
+            end: null,
+          });
+          return;
+        }
+
+        if (rangeSelectionEnabled && currentValue.end === null) {
+          this.stepSelectorTimeSelection$.next({
+            start: currentValue.start,
+            end: {step: minMax.maxStep},
+          });
+          return;
+        }
+      });
+
+    this.minMaxSteps$
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(({minStep, maxStep}) => {
+        if (!this.stepSelectorTimeSelection$.getValue()) {
           return;
         }
         const currentStartStep =
@@ -626,7 +681,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
             start: {
               step: currentStartStep ?? minStep,
             },
-            end: rangeSelectionEnabled
+            end: this.stepSelectorTimeSelection$.getValue()?.end
               ? {step: currentEndStep ?? maxStep}
               : null,
           },
@@ -634,8 +689,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
           maxStep
         );
         this.stepSelectorTimeSelection$.next(potentiallyClippedTimeSelection);
-      }
-    );
+      });
   }
 
   ngOnDestroy() {
@@ -708,6 +762,12 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   }
 
   onStepSelectorToggled(affordance: TimeSelectionToggleAffordance) {
+    // onStepSelectorToggled is currently only called when disabling step
+    // selection. We can assume that if there is a timeSelection value then it
+    // should be removed.
+    if (this.stepSelectorTimeSelection$.getValue()) {
+      this.stepSelectorTimeSelection$.next(null);
+    }
     this.store.dispatch(stepSelectorToggled({affordance}));
   }
 
