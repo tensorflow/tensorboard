@@ -1410,7 +1410,7 @@ describe('metrics reducers', () => {
 
       const expectedCardToMinMax = new Map<NonPinnedCardId, MinMaxStep>();
       expectedCardToMinMax.set(
-        '{"plugin":"scalars","tag":"tagA","runId":null}',
+        '{"plugin":"scalars","tag":"tagA","runId":"run1"}',
         {
           minStep: 0,
           maxStep: 99,
@@ -1424,7 +1424,7 @@ describe('metrics reducers', () => {
         }
       );
       expectedCardToMinMax.set(
-        '{"plugin":"histograms","tag":"tagB","runId":"run2"}',
+        '{"plugin":"images","tag":"tagC","runId":"run1","sample":9}',
         {
           minStep: 0,
           maxStep: 99,
@@ -1437,7 +1437,7 @@ describe('metrics reducers', () => {
         TimeSelection
       >();
       expectedCardToTimeSelection.set(
-        '{"plugin":"scalars","tag":"tagA","runId":null}',
+        '{"plugin":"scalars","tag":"tagA","runId":"run1"}',
         {
           start: {step: 0},
           end: null,
@@ -1451,7 +1451,7 @@ describe('metrics reducers', () => {
         }
       );
       expectedCardToTimeSelection.set(
-        '{"plugin":"histograms","tag":"tagB","runId":"run2"}',
+        '{"plugin":"images","tag":"tagC","runId":"run1","sample":9}',
         {
           start: {step: 0},
           end: null,
