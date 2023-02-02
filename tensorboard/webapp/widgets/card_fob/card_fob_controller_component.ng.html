@@ -16,9 +16,7 @@ limitations under the License.
 -->
 
 <div>
-  <ng-container
-    *ngIf="isProspectiveFobFeatureEnabled && !rangeSelectionEnabled"
-  >
+  <ng-container *ngIf="isProspectiveFobFeatureEnabled">
     <div
       #prospectiveFobWrapper
       *ngIf="prospectiveStep !== null"
@@ -63,7 +61,7 @@ limitations under the License.
   </div>
   <div
     #endFobWrapper
-    *ngIf="timeSelection && timeSelection.end && rangeSelectionEnabled"
+    *ngIf="timeSelection && timeSelection.end"
     class="time-fob-wrapper"
     [style.transform]="getCssTranslatePxForEndFob()"
   >

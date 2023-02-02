@@ -101,6 +101,7 @@ tf_ts_library(
         "//tensorboard/webapp/routes:testing",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/util:dom",
+        "//tensorboard/webapp/widgets/card_fob:types",
         "@npm//@types/jasmine",
     ],
 )

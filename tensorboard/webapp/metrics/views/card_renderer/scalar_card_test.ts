@@ -243,6 +243,20 @@ describe('scalar card', () => {
     return buttons[0] as HTMLButtonElement;
   }
 
+  function addStepUsingProspectiveFob(
+    fixture: ComponentFixture<ScalarCardContainer>,
+    step: number
+  ) {
+    const testController = fixture.debugElement.query(
+      By.directive(CardFobControllerComponent)
+    ).componentInstance;
+
+    testController.onPrespectiveStepChanged.emit(step);
+    fixture.detectChanges();
+    testController.prospectiveFobClicked(new MouseEvent('mouseclick'));
+    fixture.detectChanges();
+  }
+
   function createComponent(
     cardId: string,
     initiallyHidden?: boolean
@@ -350,7 +364,7 @@ describe('scalar card', () => {
     store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
     store.overrideSelector(
       selectors.getIsLinkedTimeProspectiveFobEnabled,
-      false
+      true
     );
   });
 
@@ -2220,7 +2234,7 @@ describe('scalar card', () => {
         });
       }));
 
-      describe('stepSelectorTimeSelection', () => {
+      describe('min/max changes', () => {
         beforeEach(() => {
           provideMockCardRunToSeriesData(
             selectSpy,
@@ -2231,7 +2245,23 @@ describe('scalar card', () => {
           );
         });
 
-        it('defaults to min/max', fakeAsync(() => {
+        it('defaults to min when step selector enabled', fakeAsync(() => {
+          store.overrideSelector(getMetricsStepSelectorEnabled, true);
+          store.overrideSelector(getMetricsRangeSelectionEnabled, false);
+          const fixture = createComponent('card1');
+          fixture.componentInstance.minMaxSteps$.next({
+            minStep: 0,
+            maxStep: 50,
+          });
+          expect(
+            fixture.componentInstance.stepSelectorTimeSelection$.getValue()
+          ).toEqual({
+            start: {step: 0},
+            end: null,
+          });
+        }));
+
+        it('defaults to min/max when range enabled', fakeAsync(() => {
           store.overrideSelector(getMetricsStepSelectorEnabled, true);
           store.overrideSelector(getMetricsRangeSelectionEnabled, true);
           const fixture = createComponent('card1');
@@ -2247,18 +2277,22 @@ describe('scalar card', () => {
           });
         }));
 
-        it('sets end to null when range is disabled', fakeAsync(() => {
+        it('keeps end null when already null', fakeAsync(() => {
           store.overrideSelector(getMetricsStepSelectorEnabled, true);
           store.overrideSelector(getMetricsRangeSelectionEnabled, false);
           const fixture = createComponent('card1');
+          fixture.componentInstance.stepSelectorTimeSelection$.next({
+            start: {step: 20},
+            end: null,
+          });
           fixture.componentInstance.minMaxSteps$.next({
-            minStep: 0,
+            minStep: 10,
             maxStep: 50,
           });
           expect(
             fixture.componentInstance.stepSelectorTimeSelection$.getValue()
           ).toEqual({
-            start: {step: 0},
+            start: {step: 20},
             end: null,
           });
         }));
@@ -2325,6 +2359,64 @@ describe('scalar card', () => {
           runToSeries
         );
       });
+
+      it('renders fobs', fakeAsync(() => {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
+          start: {step: 20},
+          end: null,
+        });
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+        expect(
+          fixture.debugElement.queryAll(By.directive(CardFobComponent)).length
+        ).toEqual(1);
+      }));
+
+      it('does not render fobs when axis type is RELATIVE', fakeAsync(() => {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
+          start: {step: 20},
+          end: null,
+        });
+        store.overrideSelector(
+          selectors.getMetricsXAxisType,
+          XAxisType.RELATIVE
+        );
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        expect(
+          fixture.debugElement.queryAll(By.directive(CardFobComponent)).length
+        ).toEqual(0);
+      }));
+
+      it('does not render fobs when axis type is WALL_TIME', fakeAsync(() => {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
+          start: {step: 20},
+          end: null,
+        });
+        store.overrideSelector(
+          selectors.getMetricsXAxisType,
+          XAxisType.WALL_TIME
+        );
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+        expect(
+          fixture.debugElement.queryAll(By.directive(CardFobComponent)).length
+        ).toEqual(0);
+      }));
+
+      it('renders start and end fobs for range selection', fakeAsync(() => {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
+          start: {step: 20},
+          end: {step: 40},
+        });
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        expect(
+          fixture.debugElement.queryAll(By.directive(CardFobComponent)).length
+        ).toEqual(2);
+      }));
 
       it('dispatches timeSelectionChanged action when fob is dragged', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
@@ -2439,10 +2531,6 @@ describe('scalar card', () => {
 
       it('does not render fobs when no timeSelection is provided', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, null);
-        store.overrideSelector(
-          selectors.getIsLinkedTimeProspectiveFobEnabled,
-          true
-        );
         const fixture = createComponent('card1');
         fixture.detectChanges();
         const fobController = fixture.debugElement.query(
@@ -3336,27 +3424,19 @@ describe('scalar card', () => {
           null /* metadataOverride */,
           runToSeries
         );
-        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);
+        store.overrideSelector(getMetricsStepSelectorEnabled, false);
+        store.overrideSelector(getMetricsRangeSelectionEnabled, false);
       });
 
-      it('renders fobs', fakeAsync(() => {
+      it('does not render fobs by default', fakeAsync(() => {
         const fixture = createComponent('card1');
         fixture.detectChanges();
-        const testController = fixture.debugElement.query(
-          By.directive(CardFobControllerComponent)
-        ).componentInstance;
-
-        expect(testController).toBeTruthy();
+        expect(
+          fixture.debugElement.queryAll(By.directive(CardFobComponent)).length
+        ).toEqual(0);
       }));
 
       it('renders prospective fob', fakeAsync(() => {
-        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, null);
-        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
-        store.overrideSelector(
-          selectors.getIsLinkedTimeProspectiveFobEnabled,
-          true
-        );
-
         const fixture = createComponent('card1');
         fixture.detectChanges();
 
@@ -3376,51 +3456,258 @@ describe('scalar card', () => {
         expect(cardFobController.prospectiveStep).toEqual(1);
       }));
 
-      it('Does not render fobs when axis type is RELATIVE', fakeAsync(() => {
-        store.overrideSelector(
-          selectors.getIsLinkedTimeProspectiveFobEnabled,
-          true
-        );
-        store.overrideSelector(
-          selectors.getMetricsXAxisType,
-          XAxisType.RELATIVE
-        );
+      it('dispatches timeSelectionChanged actions when fob is added by clicking prospective fob', fakeAsync(() => {
         const fixture = createComponent('card1');
         fixture.detectChanges();
 
+        const testController = fixture.debugElement.query(
+          By.directive(CardFobControllerComponent)
+        ).componentInstance;
+        testController.onPrespectiveStepChanged.emit(10);
+        fixture.detectChanges();
+
+        // One prospective fob
+        let fobs = fixture.debugElement.queryAll(
+          By.directive(CardFobComponent)
+        );
+        expect(fobs.length).toEqual(1);
+
+        // Click the prospective fob to set the start time
+        testController.prospectiveFobClicked(new MouseEvent('mouseclick'));
+        fixture.detectChanges();
+
+        // One start fob
+        fobs = fixture.debugElement.queryAll(By.directive(CardFobComponent));
+        expect(fobs.length).toEqual(1);
+        fixture.detectChanges();
+
+        // One start fob + 1 prospective fob
+        testController.onPrespectiveStepChanged.emit(25);
+        fixture.detectChanges();
+
+        fobs = fixture.debugElement.queryAll(By.directive(CardFobComponent));
+        expect(fobs.length).toEqual(2);
+
+        // Click the prospective fob to set the end time
+        testController.prospectiveFobClicked(new MouseEvent('mouseclick'));
+        fixture.detectChanges();
+
+        // One start fob, one end fob
+        fobs = fixture.debugElement.queryAll(By.directive(CardFobComponent));
+        expect(fobs.length).toEqual(2);
+
+        expect(dispatchedActions).toEqual([
+          timeSelectionChanged({
+            timeSelection: {
+              start: {step: 10},
+              end: null,
+            },
+            affordance: TimeSelectionAffordance.FOB_ADDED,
+          }),
+          timeSelectionChanged({
+            timeSelection: {
+              start: {step: 10},
+              end: {step: 25},
+            },
+            affordance: TimeSelectionAffordance.FOB_ADDED,
+          }),
+        ]);
+
         expect(
-          fixture.debugElement.query(By.directive(CardFobControllerComponent))
-        ).toBeFalsy();
+          fixture.componentInstance.stepSelectorTimeSelection$.getValue()
+        ).toEqual({
+          start: {step: 10},
+          end: {step: 25},
+        });
       }));
 
-      it('Does not render fobs when axis type is WALL_TIME', fakeAsync(() => {
-        store.overrideSelector(
-          selectors.getIsLinkedTimeProspectiveFobEnabled,
-          true
-        );
-        store.overrideSelector(
-          selectors.getMetricsXAxisType,
-          XAxisType.WALL_TIME
-        );
+      it('adds start when step selection enabled', fakeAsync(() => {
         const fixture = createComponent('card1');
         fixture.detectChanges();
 
+        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);
+        store.refreshState();
+        fixture.detectChanges();
+
         expect(
-          fixture.debugElement.query(By.directive(CardFobControllerComponent))
-        ).toBeFalsy();
+          fixture.componentInstance.stepSelectorTimeSelection$.getValue()
+        ).toEqual({
+          start: {step: 10}, // Sets to min.
+          end: null,
+        });
       }));
 
-      it('Does not render end fob when range selection is disabled', fakeAsync(() => {
+      it('does not override existing start when step selection enabled', fakeAsync(() => {
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        addStepUsingProspectiveFob(fixture, 20);
+
+        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);
+        store.refreshState();
+        fixture.detectChanges();
+
+        expect(
+          fixture.componentInstance.stepSelectorTimeSelection$.getValue()
+        ).toEqual({
+          start: {step: 20},
+          end: null,
+        });
+      }));
+
+      it('removes step selection when step selection disabled', fakeAsync(() => {
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);
+        store.refreshState();
+        fixture.detectChanges();
+
+        expect(
+          fixture.componentInstance.stepSelectorTimeSelection$.getValue()
+        ).toEqual({
+          start: {step: 10}, // Sets to min.
+          end: null,
+        });
+
+        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
+        store.refreshState();
+        fixture.detectChanges();
+
+        expect(
+          fixture.componentInstance.stepSelectorTimeSelection$.getValue()
+        ).toEqual(null);
+      }));
+
+      it('adds start and end when range selection enabled', fakeAsync(() => {
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        store.overrideSelector(selectors.getMetricsRangeSelectionEnabled, true);
+        store.refreshState();
+        fixture.detectChanges();
+
+        expect(
+          fixture.componentInstance.stepSelectorTimeSelection$.getValue()
+        ).toEqual({
+          start: {step: 10}, // Sets to min.
+          end: {step: 30}, // Sets to max.
+        });
+      }));
+
+      it('adds end when range selection enabled', fakeAsync(() => {
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        addStepUsingProspectiveFob(fixture, 20);
+
+        store.overrideSelector(selectors.getMetricsRangeSelectionEnabled, true);
+        store.refreshState();
+        fixture.detectChanges();
+
+        expect(
+          fixture.componentInstance.stepSelectorTimeSelection$.getValue()
+        ).toEqual({
+          start: {step: 20},
+          end: {step: 30}, // Sets to end.
+        });
+      }));
+
+      it('removes end when range selection disabled', fakeAsync(() => {
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        addStepUsingProspectiveFob(fixture, 20);
+        addStepUsingProspectiveFob(fixture, 25);
+
+        expect(
+          fixture.componentInstance.stepSelectorTimeSelection$.getValue()
+        ).toEqual({
+          start: {step: 20},
+          end: {step: 25},
+        });
+
+        store.overrideSelector(selectors.getMetricsRangeSelectionEnabled, true);
+        store.refreshState();
+        fixture.detectChanges();
+
+        expect(
+          fixture.componentInstance.stepSelectorTimeSelection$.getValue()
+        ).toEqual({
+          start: {step: 20},
+          end: {step: 25},
+        });
+
         store.overrideSelector(
           selectors.getMetricsRangeSelectionEnabled,
           false
         );
-        const fixture = createComponent('card1');
+        store.refreshState();
         fixture.detectChanges();
 
         expect(
-          fixture.debugElement.queryAll(By.directive(CardFobComponent)).length
-        ).toEqual(1);
+          fixture.componentInstance.stepSelectorTimeSelection$.getValue()
+        ).toEqual({
+          start: {step: 20},
+          end: null,
+        });
+      }));
+
+      it('toggles when single fob is deselected', fakeAsync(() => {
+        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+        const fobComponent = fixture.debugElement.query(
+          By.directive(CardFobComponent)
+        ).componentInstance;
+        fobComponent.fobRemoved.emit();
+
+        expect(dispatchedActions).toEqual([
+          stepSelectorToggled({
+            affordance: TimeSelectionToggleAffordance.FOB_DESELECT,
+          }),
+        ]);
+      }));
+
+      it('bounds start step changes within the min and max step', fakeAsync(() => {
+        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+        const testController = fixture.debugElement.query(
+          By.directive(CardFobControllerComponent)
+        ).componentInstance;
+        const controllerStartPosition =
+          testController.root.nativeElement.getBoundingClientRect().left;
+
+        // Simulate dragging fob to step 35.
+        testController.startDrag(
+          Fob.START,
+          TimeSelectionAffordance.FOB,
+          new MouseEvent('mouseDown')
+        );
+        const fakeEvent = new MouseEvent('mousemove', {
+          clientX: 35 + controllerStartPosition,
+          movementX: 1,
+        });
+        testController.mouseMove(fakeEvent);
+        fixture.detectChanges();
+
+        expect(testController.timeSelection).toEqual({
+          start: {step: 30}, // Current max step is 30
+          end: null,
+        });
+
+        const fakeEvent2 = new MouseEvent('mousemove', {
+          clientX: 5 + controllerStartPosition,
+          movementX: -1,
+        });
+        testController.mouseMove(fakeEvent2);
+        fixture.detectChanges();
+
+        expect(testController.timeSelection).toEqual({
+          start: {step: 10}, // Current min step is 10
+          end: null,
+        });
       }));
 
       it('dispatches timeSelectionChanged actions when fob is dragged while linked time is enabled', fakeAsync(() => {
@@ -3429,7 +3716,6 @@ describe('scalar card', () => {
           start: {step: 20},
           end: null,
         });
-        store.overrideSelector(getMetricsRangeSelectionEnabled, false);
         const fixture = createComponent('card1');
         fixture.detectChanges();
         const testController = fixture.debugElement.query(
@@ -3488,6 +3774,7 @@ describe('scalar card', () => {
       }));
 
       it('dispatches timeSelectionChanged actions when fob is dragged while linkedTime is disabled', fakeAsync(() => {
+        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);
         const fixture = createComponent('card1');
         fixture.detectChanges();
         const testController = fixture.debugElement.query(
@@ -3530,124 +3817,6 @@ describe('scalar card', () => {
           }),
         ]);
       }));
-
-      it('dispatches timeSelectionChanged actions when fob is added by clicking prospective fob', fakeAsync(() => {
-        store.overrideSelector(
-          selectors.getIsLinkedTimeProspectiveFobEnabled,
-          true
-        );
-        const fixture = createComponent('card1');
-        fixture.detectChanges();
-
-        const testController = fixture.debugElement.query(
-          By.directive(CardFobControllerComponent)
-        ).componentInstance;
-        testController.timeSelection = null;
-        testController.prospectiveStep = 10;
-        fixture.detectChanges();
-
-        // One prospective fob
-        let fobs = fixture.debugElement.queryAll(
-          By.directive(CardFobComponent)
-        );
-        expect(fobs.length).toEqual(1);
-
-        // Click the prospective fob to set the start time
-        testController.prospectiveFobClicked(new MouseEvent('mouseclick'));
-        fixture.detectChanges();
-
-        // One start fob
-        fobs = fixture.debugElement.queryAll(By.directive(CardFobComponent));
-        expect(fobs.length).toEqual(2);
-        fixture.detectChanges();
-
-        // One start fob + 1 prospective fob
-        testController.prospectiveStep = 25;
-        fixture.detectChanges();
-
-        fobs = fixture.debugElement.queryAll(By.directive(CardFobComponent));
-        expect(fobs.length).toEqual(2);
-
-        // Click the prospective fob to set the end time
-        testController.prospectiveFobClicked(new MouseEvent('mouseclick'));
-        fixture.detectChanges();
-
-        // One start fob, one end fob
-        fobs = fixture.debugElement.queryAll(By.directive(CardFobComponent));
-        expect(fobs.length).toEqual(2);
-
-        expect(dispatchedActions).toEqual([
-          timeSelectionChanged({
-            timeSelection: {
-              start: {step: 10},
-              end: null,
-            },
-            affordance: TimeSelectionAffordance.FOB_ADDED,
-          }),
-          timeSelectionChanged({
-            timeSelection: {
-              start: {step: 10},
-              end: {step: 25},
-            },
-            affordance: TimeSelectionAffordance.FOB_ADDED,
-          }),
-        ]);
-      }));
-
-      it('toggles when single fob is deselected', fakeAsync(() => {
-        const fixture = createComponent('card1');
-        fixture.detectChanges();
-        const fobComponent = fixture.debugElement.query(
-          By.directive(CardFobComponent)
-        ).componentInstance;
-        fobComponent.fobRemoved.emit();
-
-        expect(dispatchedActions).toEqual([
-          stepSelectorToggled({
-            affordance: TimeSelectionToggleAffordance.FOB_DESELECT,
-          }),
-        ]);
-      }));
-
-      it('bounds start step changes within the min and max step', fakeAsync(() => {
-        const fixture = createComponent('card1');
-        fixture.detectChanges();
-        const testController = fixture.debugElement.query(
-          By.directive(CardFobControllerComponent)
-        ).componentInstance;
-        const controllerStartPosition =
-          testController.root.nativeElement.getBoundingClientRect().left;
-
-        // Simulate dragging fob to step 25.
-        testController.startDrag(
-          Fob.START,
-          TimeSelectionAffordance.FOB,
-          new MouseEvent('mouseDown')
-        );
-        const fakeEvent = new MouseEvent('mousemove', {
-          clientX: 35 + controllerStartPosition,
-          movementX: 1,
-        });
-        testController.mouseMove(fakeEvent);
-        fixture.detectChanges();
-
-        expect(testController.timeSelection).toEqual({
-          start: {step: 30}, // Current max step is 30
-          end: null,
-        });
-
-        const fakeEvent2 = new MouseEvent('mousemove', {
-          clientX: 5 + controllerStartPosition,
-          movementX: -1,
-        });
-        testController.mouseMove(fakeEvent2);
-        fixture.detectChanges();
-
-        expect(testController.timeSelection).toEqual({
-          start: {step: 10}, // Current min step is 10
-          end: null,
-        });
-      }));
     });
 
     describe('scalar card data table', () => {
@@ -3665,6 +3834,18 @@ describe('scalar card', () => {
           runToSeries
         );
       });
+
+      it('does not render table initially', fakeAsync(() => {
+        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        const dataTableComponent = fixture.debugElement.query(
+          By.directive(DataTableComponent)
+        );
+
+        expect(dataTableComponent).toBeFalsy();
+      }));
 
       it('renders data table', fakeAsync(() => {
         store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);

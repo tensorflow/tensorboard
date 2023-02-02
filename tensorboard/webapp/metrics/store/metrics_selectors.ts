@@ -464,10 +464,7 @@ export const getMetricsLinkedTimeSelection = createSelector(
     linkedTimeSelection: TimeSelection
   ): TimeSelection | null => {
     if (!state.linkedTimeEnabled) return null;
-    if (state.rangeSelectionEnabled) {
-      return linkedTimeSelection;
-    }
-    return {...linkedTimeSelection, end: null};
+    return linkedTimeSelection;
   }
 );
 

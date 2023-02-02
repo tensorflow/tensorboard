@@ -33,7 +33,6 @@ import {MinMaxStep} from './scalar_card_types';
       [style.pointerEvents]="disableInteraction ? 'none' : 'all'"
       [axisDirection]="axisDirection"
       [timeSelection]="timeSelection"
-      [rangeSelectionEnabled]="rangeSelectionEnabled"
       [startStepAxisPosition]="getAxisPositionFromStartStep()"
       [endStepAxisPosition]="getAxisPositionFromEndStep()"
       [prospectiveStepAxisPosition]="getAxisPositionFromProspectiveStep()"
@@ -57,7 +56,6 @@ export class ScalarCardFobController {
   @Input() minMaxHorizontalViewExtend!: [number, number];
   @Input() minMaxStep!: MinMaxStep;
   @Input() axisSize!: number;
-  @Input() rangeSelectionEnabled: boolean = false;
   @Input() isProspectiveFobFeatureEnabled: Boolean = false;
   @Input() disableInteraction: boolean = false;
 

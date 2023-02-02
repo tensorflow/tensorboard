@@ -23,7 +23,7 @@ import {DataLoadState} from '../../types/data';
 import {ElementId} from '../../util/dom';
 import {mapObjectValues} from '../../util/lang';
 import {composeReducers} from '../../util/ngrx';
-import {TimeSelectionAffordance} from '../../widgets/card_fob/card_fob_types';
+import {TimeSelectionToggleAffordance} from '../../widgets/card_fob/card_fob_types';
 import * as actions from '../actions';
 import {
   isFailedTimeSeriesResponse,
@@ -1076,6 +1076,13 @@ const reducer = createReducer(
           }
         }
       );
+    } else {
+      if (linkedTimeSelection) {
+        linkedTimeSelection = {
+          ...linkedTimeSelection,
+          end: null,
+        };
+      }
     }
     return {
       ...state,
@@ -1099,17 +1106,17 @@ const reducer = createReducer(
     const {cardId, timeSelection} = change;
     const nextStartStep = timeSelection.start.step;
     const nextEndStep = timeSelection.end?.step;
-    const nextStepSelectorEnabled =
-      change.affordance === TimeSelectionAffordance.FOB_ADDED ||
-      state.stepSelectorEnabled;
     const end =
       nextEndStep === undefined
         ? null
         : {step: nextStartStep > nextEndStep ? nextStartStep : nextEndStep};
 
-    // If there is no endStep then current selection state is single.
-    // Otherwise selection state is range.
-    const rangeSelectionEnabled = nextEndStep !== undefined;
+    let nextRangeSelectionEnabled = state.rangeSelectionEnabled;
+    if (state.linkedTimeEnabled) {
+      // If there is no endStep then current selection state is single.
+      // Otherwise selection state is range.
+      nextRangeSelectionEnabled = nextEndStep !== undefined;
+    }
 
     const linkedTimeSelection = {
       start: {
@@ -1134,11 +1141,19 @@ const reducer = createReducer(
       linkedTimeSelection,
       cardStepIndex: nextCardStepIndexMap,
       cardToTimeSelection: nextCardToTimeSeletion,
-      rangeSelectionEnabled,
-      stepSelectorEnabled: nextStepSelectorEnabled,
+      rangeSelectionEnabled: nextRangeSelectionEnabled,
     };
   }),
-  on(actions.stepSelectorToggled, (state) => {
+  on(actions.stepSelectorToggled, (state, {affordance}) => {
+    if (
+      !state.linkedTimeEnabled &&
+      affordance !== TimeSelectionToggleAffordance.CHECK_BOX
+    ) {
+      // In plain step selection mode (without linked time), we do not allow
+      // interactions with fobs to modify global step selection state.
+      return {...state};
+    }
+
     const nextStepSelectorEnabled = !state.stepSelectorEnabled;
     const nextLinkedTimeEnabled =
       nextStepSelectorEnabled && state.linkedTimeEnabled;

@@ -65,7 +65,6 @@ limitations under the License.
   [timeProperty]="timeProperty(xAxisType)"
   [color]="runColorScale(runId)"
   [timeSelection]="convertToTimeSelection(linkedTimeSelection)"
-  [rangeSelectionEnabled]="rangeSelectionEnabled"
   (onLinkedTimeSelectionChanged)="onLinkedTimeSelectionChanged.emit($event)"
   (onLinkedTimeToggled)="onLinkedTimeToggled.emit()"
 ></tb-histogram>
