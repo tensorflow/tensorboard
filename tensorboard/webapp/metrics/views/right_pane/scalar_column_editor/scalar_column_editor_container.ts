@@ -1,4 +1,4 @@
-/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2023 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -42,12 +42,8 @@ import {
 export class ScalarColumnEditorContainer {
   constructor(private readonly store: Store<State>) {}
 
-  readonly singleHeaders$: Observable<ColumnHeader[]> = this.store.select(
-    getSingleSelectionHeaders
-  );
-  readonly rangeHeaders$: Observable<ColumnHeader[]> = this.store.select(
-    getRangeSelectionHeaders
-  );
+  readonly singleHeaders$ = this.store.select(getSingleSelectionHeaders);
+  readonly rangeHeaders$ = this.store.select(getRangeSelectionHeaders);
 
   onScalarTableColumnToggled({
     dataTableMode,

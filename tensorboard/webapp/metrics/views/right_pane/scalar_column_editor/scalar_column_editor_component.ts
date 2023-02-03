@@ -1,4 +1,4 @@
-/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2023 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ import {
   Component,
   EventEmitter,
   Input,
-  OnDestroy,
   Output,
 } from '@angular/core';
 import {
@@ -26,27 +25,14 @@ import {
   DataTableMode,
 } from '../../card_renderer/scalar_card_types';
 
-const preventDefault = function (e: MouseEvent) {
-  e.preventDefault();
-};
-
-enum Edge {
-  TOP,
-  BOTTOM,
-}
-
-const isHeaderOfType = function (type: ColumnHeaderType, header: ColumnHeader) {
-  return header.type === type;
-};
-
 @Component({
   selector: 'metrics-scalar-column-editor-component',
   templateUrl: 'scalar_column_editor_component.ng.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: [`scalar_column_editor_component.css`],
 })
-export class ScalarColumnEditorComponent implements OnDestroy {
-  dataTableMode = DataTableMode;
+export class ScalarColumnEditorComponent {
+  DataTableMode = DataTableMode;
   selectedTab: DataTableMode = DataTableMode.SINGLE;
   @Input() rangeHeaders!: ColumnHeader[];
   @Input() singleHeaders!: ColumnHeader[];
@@ -56,24 +42,9 @@ export class ScalarColumnEditorComponent implements OnDestroy {
     headerType: ColumnHeaderType;
   }>();
 
-  ngOnDestroy() {
-    document.removeEventListener('dragover', preventDefault);
-  }
-
-  onTabChange(tabIndex: number) {
-    switch (tabIndex) {
-      case 0:
-        this.selectedTab = DataTableMode.SINGLE;
-        break;
-      case 1:
-        this.selectedTab = DataTableMode.RANGE;
-        break;
-    }
-  }
-
-  toggleHeader(header: ColumnHeader) {
+  toggleHeader(header: ColumnHeader, dataTableMode: DataTableMode) {
     this.onScalarTableColumnToggled.emit({
-      dataTableMode: this.selectedTab,
+      dataTableMode: dataTableMode,
       headerType: header.type,
     });
   }

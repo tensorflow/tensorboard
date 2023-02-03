@@ -1,4 +1,4 @@
-/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2023 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,31 +23,14 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
 .tab-group {
   // Override static position so this object is not seen in front of the
   // settings panel.
-  position: fixed;
+  position: relative;
+  z-index: 0;
 }
 .header-list {
-  display: block;
-  border-bottom: 0px;
-  height: 90%;
   margin-top: 5%;
-  width: 90%;
   margin-left: 5%;
 }
 
 .header-list-item {
-  display: flex;
-  justify-content: space-between;
   padding: 3px;
-}
-
-.highlighted {
-  background-color: mat.get-color-from-palette(mat.$gray-palette, 200);
-}
-
-.highlight-bottom {
-  border-bottom: 2px solid mat.get-color-from-palette($_accent);
-}
-
-.highlight-top {
-  border-top: 2px solid mat.get-color-from-palette($_accent);
 }
