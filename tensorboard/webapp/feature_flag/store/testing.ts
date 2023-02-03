@@ -31,7 +31,9 @@ export function buildFeatureFlagState(
   };
 }
 
-export function buildState(featureFlagState: FeatureFlagState) {
+export function buildState(
+  featureFlagState: FeatureFlagState = buildFeatureFlagState()
+) {
   return {
     [FEATURE_FLAG_FEATURE_KEY]: featureFlagState,
   };

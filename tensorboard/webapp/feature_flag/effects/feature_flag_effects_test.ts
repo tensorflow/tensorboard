@@ -38,6 +38,7 @@ import {
   getIsAutoDarkModeAllowed,
 } from '../store/feature_flag_selectors';
 import {State} from '../store/feature_flag_types';
+import {buildState as buildFeatureFlagState} from '../store/testing';
 import {buildFeatureFlag} from '../testing';
 import {FeatureFlags} from '../types';
 import {FeatureFlagEffects} from './feature_flag_effects';
@@ -57,7 +58,11 @@ describe('feature_flag_effects', () => {
       providers: [
         provideMockActions(actions),
         FeatureFlagEffects,
-        provideMockStore(),
+        provideMockStore({
+          initialState: {
+            ...buildFeatureFlagState(),
+          },
+        }),
       ],
     }).compileComponents();
 

@@ -19,6 +19,7 @@ import {skip} from 'rxjs/operators';
 import {SerializableQueryParams} from '../app_routing/types';
 import {State} from '../app_state';
 import {FeatureFlagMetadataMap} from '../feature_flag/store/feature_flag_metadata';
+import {buildState as buildFeatureFlagState} from '../feature_flag/store/testing';
 import {PluginType} from '../metrics/data_source/types';
 import {appStateFromMetricsState, buildMetricsState} from '../metrics/testing';
 import {GroupBy, GroupByKey} from '../runs/types';
@@ -37,6 +38,7 @@ describe('core deeplink provider', () => {
         provideMockStore({
           initialState: {
             ...appStateFromMetricsState(buildMetricsState()),
+            ...buildFeatureFlagState(),
           },
         }),
       ],
