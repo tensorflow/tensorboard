@@ -1,0 +1,48 @@
+<!--
+@license
+Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div>
+  <mat-tab-group class="tab-group">
+    <mat-tab [label]="'Single'">
+      <ngContext
+        [ngTemplateOutlet]="headerList"
+        [ngTemplateOutletContext]="{headers: singleHeaders, dataTableMode:DataTableMode.SINGLE}"
+      ></ngContext>
+    </mat-tab>
+    <mat-tab [label]="'Range'">
+      <ngContext
+        [ngTemplateOutlet]="headerList"
+        [ngTemplateOutletContext]="{headers: rangeHeaders, dataTableMode:DataTableMode.RANGE}"
+      ></ngContext>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+
+<ng-template
+  #headerList
+  let-headers="headers"
+  let-dataTableMode="dataTableMode"
+>
+  <div class="header-list">
+    <div class="header-list-item" *ngFor="let header of headers;">
+      <mat-checkbox
+        [checked]="header.enabled"
+        (change)="toggleHeader(header, dataTableMode)"
+        ><tb-data-table-header [header]="header"></tb-data-table-header
+      ></mat-checkbox>
+    </div>
+  </div>
+</ng-template>

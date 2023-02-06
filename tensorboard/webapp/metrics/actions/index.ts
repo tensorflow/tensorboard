@@ -216,7 +216,7 @@ export const dataTableColumnDrag = createAction(
 export const dataTableColumnEdited = createAction(
   '[Metrics] Data table columns edited in edit menu',
   props<{
-    fobState: DataTableMode;
+    dataTableMode: DataTableMode;
     headers: ColumnHeader[];
   }>()
 );
@@ -224,7 +224,7 @@ export const dataTableColumnEdited = createAction(
 export const dataTableColumnToggled = createAction(
   '[Metrics] Data table column toggled in edit menu',
   props<{
-    fobState: DataTableMode;
+    dataTableMode: DataTableMode;
     headerType: ColumnHeaderType;
   }>()
 );

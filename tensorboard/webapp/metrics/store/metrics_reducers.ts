@@ -1113,7 +1113,7 @@ const reducer = createReducer(
       singleSelectionHeaders: newOrder,
     };
   }),
-  on(actions.dataTableColumnEdited, (state, {fobState, headers}) => {
+  on(actions.dataTableColumnEdited, (state, {dataTableMode, headers}) => {
     const enabledNewHeaders: ColumnHeader[] = [];
     const disabledNewHeaders: ColumnHeader[] = [];
 
@@ -1126,7 +1126,7 @@ const reducer = createReducer(
       }
     });
 
-    if (fobState === DataTableMode.RANGE) {
+    if (dataTableMode === DataTableMode.RANGE) {
       return {
         ...state,
         rangeSelectionHeaders: enabledNewHeaders.concat(disabledNewHeaders),
@@ -1138,9 +1138,9 @@ const reducer = createReducer(
       singleSelectionHeaders: enabledNewHeaders.concat(disabledNewHeaders),
     };
   }),
-  on(actions.dataTableColumnToggled, (state, {fobState, headerType}) => {
+  on(actions.dataTableColumnToggled, (state, {dataTableMode, headerType}) => {
     const targetedHeaders =
-      fobState === DataTableMode.RANGE
+      dataTableMode === DataTableMode.RANGE
         ? state.rangeSelectionHeaders
         : state.singleSelectionHeaders;
 
@@ -1166,7 +1166,7 @@ const reducer = createReducer(
       enabled: !newHeaders[newToggledHeaderIndex].enabled,
     };
 
-    if (fobState === DataTableMode.RANGE) {
+    if (dataTableMode === DataTableMode.RANGE) {
       return {
         ...state,
         rangeSelectionHeaders: newHeaders,

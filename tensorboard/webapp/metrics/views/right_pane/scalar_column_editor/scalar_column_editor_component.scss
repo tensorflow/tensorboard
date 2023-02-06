@@ -12,15 +12,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
+@import 'tensorboard/webapp/theme/tb_theme';
 
-import {CommonModule} from '@angular/common';
-import {NgModule} from '@angular/core';
-import {MatIconModule} from '@angular/material/icon';
-import {DataTableHeaderComponent} from './data_table_header_component';
+$_accent: map-get(mat.get-color-config($tb-theme), accent);
 
-@NgModule({
-  declarations: [DataTableHeaderComponent],
-  exports: [DataTableHeaderComponent],
-  imports: [CommonModule, MatIconModule],
-})
-export class DataTableHeaderModule {}
+:host ::ng-deep .mat-tab-label {
+  min-width: 0;
+}
+.tab-group {
+  // Override static position so this object is not seen in front of the
+  // settings panel.
+  position: relative;
+  z-index: 0;
+}
+.header-list {
+  margin-top: 5%;
+  margin-left: 5%;
+}
+
+.header-list-item {
+  padding: 3px;
+}

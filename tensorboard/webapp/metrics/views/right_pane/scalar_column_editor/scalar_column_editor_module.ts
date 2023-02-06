@@ -12,15 +12,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatIconModule} from '@angular/material/icon';
-import {DataTableHeaderComponent} from './data_table_header_component';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatTabsModule} from '@angular/material/tabs';
+import {ScalarColumnEditorComponent} from './scalar_column_editor_component';
+import {ScalarColumnEditorContainer} from './scalar_column_editor_container';
+import {DataTableHeaderModule} from '../../../../widgets/data_table/data_table_header_module';
 
 @NgModule({
-  declarations: [DataTableHeaderComponent],
-  exports: [DataTableHeaderComponent],
-  imports: [CommonModule, MatIconModule],
+  declarations: [ScalarColumnEditorComponent, ScalarColumnEditorContainer],
+  exports: [ScalarColumnEditorContainer],
+  imports: [
+    CommonModule,
+    DataTableHeaderModule,
+    MatCheckboxModule,
+    MatTabsModule,
+  ],
 })
-export class DataTableHeaderModule {}
+export class ScalarColumnEditorModule {}
