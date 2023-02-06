@@ -42,7 +42,7 @@ import {MinMaxStep} from './scalar_card_types';
       [isProspectiveFobFeatureEnabled]="isProspectiveFobFeatureEnabled"
       [cardFobHelper]="cardFobHelper"
       [showExtendedLine]="true"
-      (onPrespectiveStepChanged)="onPrespectiveStepChanged($event)"
+      (onProspectiveStepChanged)="onProspectiveStepChanged($event)"
       (onTimeSelectionChanged)="onTimeSelectionChanged.emit($event)"
       (onTimeSelectionToggled)="onTimeSelectionToggled.emit($event)"
     ></card-fob-controller>
@@ -105,7 +105,7 @@ export class ScalarCardFobController {
     );
   }
 
-  onPrespectiveStepChanged(step: number | null) {
+  onProspectiveStepChanged(step: number | null) {
     this.prospectiveStep = step;
   }
 

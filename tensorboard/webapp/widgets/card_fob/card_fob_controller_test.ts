@@ -44,7 +44,7 @@ import {
       [prospectiveStep]="prospectiveStep"
       (onTimeSelectionChanged)="onTimeSelectionChanged($event)"
       (onTimeSelectionToggled)="onTimeSelectionToggled()"
-      (onPrespectiveStepChanged)="onPrespectiveStepChanged($event)"
+      (onProspectiveStepChanged)="onProspectiveStepChanged($event)"
     ></card-fob-controller>
   `,
 })
@@ -66,7 +66,7 @@ class TestableComponent {
 
   @Input() onTimeSelectionChanged!: (newTimeSelection: TimeSelection) => void;
   @Input() onTimeSelectionToggled!: () => void;
-  @Input() onPrespectiveStepChanged!: (step: number | null) => void;
+  @Input() onProspectiveStepChanged!: (step: number | null) => void;
 }
 
 describe('card_fob_controller', () => {
@@ -78,7 +78,7 @@ describe('card_fob_controller', () => {
   let getAxisPositionFromEndStepSpy: jasmine.Spy;
   let getAxisPositionFromProspectiveStepSpy: jasmine.Spy;
   let cardFobHelper: CardFobGetStepFromPositionHelper;
-  let onPrespectiveStepChangedSpy: jasmine.Spy;
+  let onProspectiveStepChangedSpy: jasmine.Spy;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -170,10 +170,10 @@ describe('card_fob_controller', () => {
     onTimeSelectionToggled = jasmine.createSpy();
     fixture.componentInstance.onTimeSelectionToggled = onTimeSelectionToggled;
 
-    onPrespectiveStepChangedSpy = jasmine.createSpy();
-    fixture.componentInstance.onPrespectiveStepChanged =
-      onPrespectiveStepChangedSpy;
-    onPrespectiveStepChangedSpy.and.callFake((step: number | null) => {
+    onProspectiveStepChangedSpy = jasmine.createSpy();
+    fixture.componentInstance.onProspectiveStepChanged =
+      onProspectiveStepChangedSpy;
+    onProspectiveStepChangedSpy.and.callFake((step: number | null) => {
       fixture.componentInstance.prospectiveStep = step;
     });
 
@@ -1423,7 +1423,7 @@ describe('card_fob_controller', () => {
         hoverArea.triggerEventHandler('mouseleave', {});
         fixture.detectChanges();
 
-        expect(onPrespectiveStepChangedSpy).toHaveBeenCalledWith(null);
+        expect(onProspectiveStepChangedSpy).toHaveBeenCalledWith(null);
       });
     });
   });

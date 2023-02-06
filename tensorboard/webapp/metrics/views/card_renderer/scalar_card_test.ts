@@ -251,7 +251,7 @@ describe('scalar card', () => {
       By.directive(CardFobControllerComponent)
     ).componentInstance;
 
-    testController.onPrespectiveStepChanged.emit(step);
+    testController.onProspectiveStepChanged.emit(step);
     fixture.detectChanges();
     testController.prospectiveFobClicked(new MouseEvent('mouseclick'));
     fixture.detectChanges();
@@ -3445,7 +3445,7 @@ describe('scalar card', () => {
         ).componentInstance;
         expect(cardFobController).toBeDefined();
 
-        cardFobController.onPrespectiveStepChanged.emit(1);
+        cardFobController.onProspectiveStepChanged.emit(1);
         fixture.detectChanges();
 
         const prospectiveFob = fixture.debugElement.query(
@@ -3463,7 +3463,7 @@ describe('scalar card', () => {
         const testController = fixture.debugElement.query(
           By.directive(CardFobControllerComponent)
         ).componentInstance;
-        testController.onPrespectiveStepChanged.emit(10);
+        testController.onProspectiveStepChanged.emit(10);
         fixture.detectChanges();
 
         // One prospective fob
@@ -3482,7 +3482,7 @@ describe('scalar card', () => {
         fixture.detectChanges();
 
         // One start fob + 1 prospective fob
-        testController.onPrespectiveStepChanged.emit(25);
+        testController.onProspectiveStepChanged.emit(25);
         fixture.detectChanges();
 
         fobs = fixture.debugElement.queryAll(By.directive(CardFobComponent));
