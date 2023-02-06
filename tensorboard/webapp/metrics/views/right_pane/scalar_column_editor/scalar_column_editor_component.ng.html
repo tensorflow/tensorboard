@@ -37,7 +37,15 @@ limitations under the License.
   let-dataTableMode="dataTableMode"
 >
   <div class="header-list">
-    <div class="header-list-item" *ngFor="let header of headers;">
+    <div
+      class="header-list-item"
+      *ngFor="let header of headers;"
+      draggable="true"
+      (dragstart)="dragStart(header)"
+      (dragend)="dragEnd(dataTableMode)"
+      (dragenter)="dragEnter(header, dataTableMode)"
+      [ngClass]="getHighlightClasses(header)"
+    >
       <mat-checkbox
         [checked]="header.enabled"
         (change)="toggleHeader(header, dataTableMode)"

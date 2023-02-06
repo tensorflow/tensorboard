@@ -16,7 +16,7 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {State} from '../../../../app_state';
-import {dataTableColumnToggled} from '../../../actions';
+import {dataTableColumnEdited, dataTableColumnToggled} from '../../../actions';
 import {
   getRangeSelectionHeaders,
   getSingleSelectionHeaders,
@@ -34,6 +34,7 @@ import {
       [singleHeaders]="singleHeaders$ | async"
       [rangeHeaders]="rangeHeaders$ | async"
       (onScalarTableColumnToggled)="onScalarTableColumnToggled($event)"
+      (onScalarTableColumnEdit)="onScalarTableColumnEdit($event)"
     >
     </metrics-scalar-column-editor-component>
   `,
@@ -53,5 +54,15 @@ export class ScalarColumnEditorContainer {
     headerType: ColumnHeaderType;
   }) {
     this.store.dispatch(dataTableColumnToggled({dataTableMode, headerType}));
+  }
+
+  onScalarTableColumnEdit({
+    dataTableMode,
+    headers,
+  }: {
+    dataTableMode: DataTableMode;
+    headers: ColumnHeader[];
+  }) {
+    this.store.dispatch(dataTableColumnEdited({dataTableMode, headers}));
   }
 }

@@ -34,3 +34,15 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
 .header-list-item {
   padding: 3px;
 }
+
+.highlighted {
+  background-color: mat.get-color-from-palette(mat.$gray-palette, 200);
+}
+
+.highlight-bottom {
+  border-bottom: 2px solid mat.get-color-from-palette($_accent);
+}
+
+.highlight-top {
+  border-top: 2px solid mat.get-color-from-palette($_accent);
+}
