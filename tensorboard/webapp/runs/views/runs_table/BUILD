@@ -124,6 +124,7 @@ tf_ts_library(
         "//tensorboard/webapp/settings:testing",
         "//tensorboard/webapp/testing:dom",
         "//tensorboard/webapp/testing:mat_icon",
+        "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/widgets/experiment_alias",

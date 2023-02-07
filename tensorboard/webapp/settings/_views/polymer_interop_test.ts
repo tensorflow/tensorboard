@@ -15,7 +15,8 @@ limitations under the License.
 
 import {TestBed} from '@angular/core/testing';
 import {Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
+import {provideMockTbStore} from '../../testing/utils';
 import {getPageSize} from '../_redux/settings_selectors';
 import {SettingsPolymerInteropContainer} from './polymer_interop_container';
 
@@ -25,7 +26,7 @@ describe('settings polymer_interop', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideMockStore()],
+      providers: [provideMockTbStore()],
       declarations: [SettingsPolymerInteropContainer],
     }).compileComponents();
 

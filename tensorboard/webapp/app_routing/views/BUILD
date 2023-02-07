@@ -49,6 +49,7 @@ tf_ts_library(
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/app_routing/actions",
         "//tensorboard/webapp/app_routing/store",
+        "//tensorboard/webapp/testing:utils",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",

@@ -55,6 +55,7 @@ tf_ts_library(
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
+        "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/widgets/source_code:load_monaco",
         "//tensorboard/webapp/widgets/source_code:testing",
         "@npm//@angular/common",

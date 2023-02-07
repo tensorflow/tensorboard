@@ -16,7 +16,7 @@ import {Component} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {
   getTestingProvider,
   PluginApiHostModule,
@@ -37,6 +37,7 @@ import {
 } from '../feature_flag/store/feature_flag_selectors';
 import {buildFeatureFlag} from '../feature_flag/testing';
 import {selectors as settingsSelectors} from '../settings';
+import {provideMockTbStore} from '../testing/utils';
 import {
   CustomElementLoadingMechanism,
   IframeLoadingMechanism,
@@ -157,7 +158,7 @@ describe('plugins_component', () => {
   async function setup(providersOverride?: any[]) {
     await TestBed.configureTestingModule({
       providers: [
-        provideMockStore(),
+        provideMockTbStore(),
         PluginsContainer,
         PluginRegistryModule,
         getTestingProvider(),

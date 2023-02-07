@@ -43,6 +43,7 @@ tf_ts_library(
         "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/feature_flag/store:types",
+        "//tensorboard/webapp/testing:utils",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",

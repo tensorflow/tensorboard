@@ -17,9 +17,10 @@ import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
 import {getExperimentIdsFromRoute} from '../../../selectors';
+import {provideMockTbStore} from '../../../testing/utils';
 import {RunsTableColumn} from '../runs_table/types';
 import {RunsSelectorComponent} from './runs_selector_component';
 import {RunsSelectorContainer} from './runs_selector_container';
@@ -31,7 +32,7 @@ describe('runs selector test', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [NoopAnimationsModule],
-      providers: [provideMockStore()],
+      providers: [provideMockTbStore()],
       declarations: [RunsSelectorContainer, RunsSelectorComponent],
       // Ignore implementation detail of runs-table; it has own test.
       schemas: [NO_ERRORS_SCHEMA],

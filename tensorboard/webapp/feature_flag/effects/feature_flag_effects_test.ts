@@ -16,8 +16,9 @@ limitations under the License.
 import {TestBed} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {ReplaySubject} from 'rxjs';
+import {provideMockTbStore} from '../../testing/utils';
 import {
   TBFeatureFlagTestingModule,
   TestingTBFeatureFlagDataSource,
@@ -38,7 +39,6 @@ import {
   getIsAutoDarkModeAllowed,
 } from '../store/feature_flag_selectors';
 import {State} from '../store/feature_flag_types';
-import {buildState as buildFeatureFlagState} from '../store/testing';
 import {buildFeatureFlag} from '../testing';
 import {FeatureFlags} from '../types';
 import {FeatureFlagEffects} from './feature_flag_effects';
@@ -58,11 +58,7 @@ describe('feature_flag_effects', () => {
       providers: [
         provideMockActions(actions),
         FeatureFlagEffects,
-        provideMockStore({
-          initialState: {
-            ...buildFeatureFlagState(),
-          },
-        }),
+        provideMockTbStore(),
       ],
     }).compileComponents();
 

@@ -343,7 +343,9 @@ export function createDebuggerStateWithLoadedExecutionDigests(
   return state;
 }
 
-export function createState(debuggerState: DebuggerState): State {
+export function createState(
+  debuggerState: DebuggerState = createDebuggerState()
+): State {
   return {[DEBUGGER_FEATURE_KEY]: debuggerState};
 }
 

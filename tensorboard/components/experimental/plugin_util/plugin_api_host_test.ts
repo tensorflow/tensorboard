@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
 import {Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {of} from 'rxjs';
 import {State} from '../../../webapp/app_state';
 import {buildRun} from '../../../webapp/runs/store/testing';
@@ -24,6 +24,7 @@ import {
   getRuns,
 } from '../../../webapp/selectors';
 import {TfStorageElement} from '../../../webapp/tb_polymer_interop_types';
+import {provideMockTbStore} from '../../../webapp/testing/utils';
 import {PluginCoreApiHostImpl} from './core-host-impl';
 import {MessageId} from './message_types';
 import {Ipc} from './plugin-host-ipc';
@@ -41,7 +42,7 @@ describe('plugin_api_host test', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       providers: [
-        provideMockStore(),
+        provideMockTbStore(),
         {provide: Ipc, useClass: NoopIpc},
         PluginRunsApiHostImpl,
         PluginCoreApiHostImpl,

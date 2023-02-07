@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
+import {provideMockTbStore} from '../testing/utils';
 import {HashStorageComponent} from './hash';
 
 describe('hash storage test', () => {
@@ -24,7 +25,7 @@ describe('hash storage test', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [NoopAnimationsModule, CommonModule],
-      providers: [provideMockStore(), HashStorageContainer],
+      providers: [provideMockTbStore(), HashStorageContainer],
       declarations: [HashStorageContainer, HashStorageComponent],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;

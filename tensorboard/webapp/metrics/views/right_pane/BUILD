@@ -75,6 +75,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/store",
+        "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/widgets/card_fob:types",
         "//tensorboard/webapp/widgets/dropdown",
         "//tensorboard/webapp/widgets/range_input:types",

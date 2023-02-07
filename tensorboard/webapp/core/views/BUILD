@@ -110,6 +110,7 @@ tf_ts_library(
         "//tensorboard/webapp/deeplink",
         "//tensorboard/webapp/experiments/store:testing",
         "//tensorboard/webapp/testing:mat_icon",
+        "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/util:dom",
         "@npm//@angular/common",
         "@npm//@angular/core",

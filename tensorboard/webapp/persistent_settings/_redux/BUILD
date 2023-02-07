@@ -43,6 +43,7 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/persistent_settings:config_module",
         "//tensorboard/webapp/persistent_settings/_data_source:testing",
+        "//tensorboard/webapp/testing:utils",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
         "@npm//@types/jasmine",

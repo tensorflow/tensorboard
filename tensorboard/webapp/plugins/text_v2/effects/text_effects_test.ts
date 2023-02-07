@@ -15,11 +15,12 @@ limitations under the License.
 import {TestBed} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {of, ReplaySubject} from 'rxjs';
 import {CategoryType} from '../../../../components/tf_categorization_utils/categorizationUtils';
 import {State} from '../../../app_state';
 import {manualReload, reload} from '../../../core/actions';
+import {provideMockTbStore} from '../../../testing/utils';
 import {
   textDataLoaded,
   textPluginLoaded,
@@ -52,7 +53,11 @@ describe('text_effects', () => {
     action = new ReplaySubject<Action>(1);
     await TestBed.configureTestingModule({
       imports: [TextV2DataSourceModule],
-      providers: [provideMockActions(action), provideMockStore(), TextEffects],
+      providers: [
+        provideMockActions(action),
+        provideMockTbStore(),
+        TextEffects,
+      ],
     }).compileComponents();
 
     textEffects = TestBed.inject(TextEffects);

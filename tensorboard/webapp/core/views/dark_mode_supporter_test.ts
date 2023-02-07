@@ -15,9 +15,10 @@ limitations under the License.
 import {TestBed} from '@angular/core/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {State} from '../../app_state';
 import {getDarkModeEnabled} from '../../selectors';
+import {provideMockTbStore} from '../../testing/utils';
 import {DarkModeSupportContainer} from './dark_mode_supporter_container';
 
 describe('dark mode supporter test', () => {
@@ -26,7 +27,7 @@ describe('dark mode supporter test', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [NoopAnimationsModule],
-      providers: [provideMockStore(), DarkModeSupportContainer],
+      providers: [provideMockTbStore(), DarkModeSupportContainer],
       declarations: [DarkModeSupportContainer],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;

@@ -15,9 +15,10 @@ limitations under the License.
 import {TestBed} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {Subject, throwError} from 'rxjs';
 import {State} from '../../app_state';
+import {provideMockTbStore} from '../../testing/utils';
 import {TBHttpClientTestingModule} from '../../webapp_data_source/tb_http_client_testing';
 import {
   NotificationCenterDataSource,
@@ -54,7 +55,7 @@ describe('notification center effects', () => {
         provideMockActions(actions$),
         provideTestingNotificationCenterDataSource(),
         NotificationCenterEffects,
-        provideMockStore(),
+        provideMockTbStore(),
       ],
     }).compileComponents();
 

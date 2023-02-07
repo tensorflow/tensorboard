@@ -20,11 +20,12 @@ import {MatMenuModule} from '@angular/material/menu';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {State} from '../core/store';
 import {overrideEnableDarkModeChanged} from '../feature_flag/actions/feature_flag_actions';
 import {getEnableDarkModeOverride} from '../selectors';
 import {MatIconTestingModule} from '../testing/mat_icon_module';
+import {provideMockTbStore} from '../testing/utils';
 import {DarkModeToggleComponent} from './dark_mode_toggle_component';
 import {DarkModeToggleContainer} from './dark_mode_toggle_container';
 
@@ -41,7 +42,7 @@ describe('dark mode toggle test', () => {
         MatMenuModule,
         NoopAnimationsModule,
       ],
-      providers: [provideMockStore()],
+      providers: [provideMockTbStore()],
       declarations: [DarkModeToggleComponent, DarkModeToggleContainer],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();

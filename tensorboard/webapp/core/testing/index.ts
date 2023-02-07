@@ -76,6 +76,6 @@ export function createCoreState(override?: Partial<CoreState>): CoreState {
   };
 }
 
-export function createState(coreState: CoreState): State {
+export function createState(coreState: CoreState = createCoreState()): State {
   return {[CORE_FEATURE_KEY]: coreState};
 }

@@ -21,8 +21,9 @@ import {
 import {TestBed} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {of} from 'rxjs';
+import {provideMockTbStore} from '../../testing/utils';
 import {getFeatureFlagsToSendToServer} from '../store/feature_flag_selectors';
 import {State as FeatureFlagState} from '../store/feature_flag_types';
 import {FEATURE_FLAGS_HEADER_NAME} from './const';
@@ -37,7 +38,7 @@ describe('FeatureFlagHttpInterceptor', () => {
       imports: [HttpClientTestingModule],
       providers: [
         provideMockActions(() => of()),
-        provideMockStore(),
+        provideMockTbStore(),
         {
           provide: HTTP_INTERCEPTORS,
           useClass: FeatureFlagHttpInterceptor,

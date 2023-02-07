@@ -80,6 +80,7 @@ tf_ts_library(
         "//tensorboard/webapp/feature_flag/actions",
         "//tensorboard/webapp/settings",
         "//tensorboard/webapp/testing:mat_icon",
+        "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",
         "@npm//@angular/core",
