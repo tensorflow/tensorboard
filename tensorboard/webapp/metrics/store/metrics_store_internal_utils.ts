@@ -36,7 +36,6 @@ import {
   PinnedCardToCard,
   RunToLoadState,
   RunToSeries,
-  StepDatum,
   TagMetadata,
   TimeSeriesData,
   TimeSeriesLoadables,
@@ -215,7 +214,7 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
   cardToTimeSelection: CardToTimeSelection
 ): ResolvedPinPartialState & {unresolvedImportedPinnedCards: CardUniqueInfo[]} {
   const unresolvedPinSet = new Set(unresolvedImportedPinnedCards);
-  const nonPinnedCardsWithMatch = [];
+  const nonPinnedCardsWithMatch: string[] = [];
   for (const unresolvedPin of unresolvedImportedPinnedCards) {
     for (const nonPinnedCardId of nonPinnedCards) {
       const cardMetadata = cardMetadataMap[nonPinnedCardId];
@@ -385,7 +384,7 @@ export function generateCardMinMaxStep<T extends PluginType = PluginType>(
 ): MinMaxStep {
   const allData = Object.values(runsToSeries)
     .flat()
-    .map((stepDatum) => (stepDatum as StepDatum[T]).step);
+    .map((stepDatum) => stepDatum.step);
   return {
     minStep: Math.min(...allData),
     maxStep: Math.max(...allData),
@@ -424,7 +423,7 @@ export function generateNextCardStepIndexFromLinkedTimeSelection(
 
     const steps = getImageCardSteps(cardId, cardMetadataMap, timeSeriesData);
 
-    let nextStepIndexMetaData = null;
+    let nextStepIndexMetaData: CardStepIndexMetaData | null = null;
     if (timeSelection.end === null) {
       // Single Selection
       nextStepIndexMetaData = getNextImageCardStepIndexFromSingleSelection(
@@ -494,7 +493,7 @@ function getSelectedSteps(
   }
 
   // Range selection.
-  const selectedStepsInRange = [];
+  const selectedStepsInRange: number[] = [];
   for (const step of steps) {
     if (step >= timeSelection.start.step && step <= timeSelection.end.step) {
       selectedStepsInRange.push(step);

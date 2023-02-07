@@ -1411,7 +1411,7 @@ describe('metrics reducers', () => {
 
       const expectedCardToMinMax = new Map<NonPinnedCardId, MinMaxStep>();
       expectedCardToMinMax.set(
-        '{"plugin":"scalars","tag":"tagA","runId":"run1"}',
+        '{"plugin":"scalars","tag":"tagA","runId":null}',
         {
           minStep: 0,
           maxStep: 99,
@@ -1438,7 +1438,7 @@ describe('metrics reducers', () => {
         TimeSelection
       >();
       expectedCardToTimeSelection.set(
-        '{"plugin":"scalars","tag":"tagA","runId":"run1"}',
+        '{"plugin":"scalars","tag":"tagA","runId":null}',
         {
           start: {step: 0},
           end: null,

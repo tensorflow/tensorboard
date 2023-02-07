@@ -79,11 +79,21 @@ import {
   TimeSeriesLoadable,
 } from './metrics_types';
 
+function buildCardMetata(metadata: CardMetadata): CardMetadata {
+  if (
+    !isSampledPlugin(metadata.plugin) &&
+    !isSingleRunPlugin(metadata.plugin)
+  ) {
+    metadata.runId = null;
+  }
+
+  return metadata;
+}
+
 function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {
   const results: CardMetadata[] = [];
   for (let pluginKey of Object.keys(tagMetadata)) {
     const plugin = pluginKey as PluginType;
-    let tagToRuns;
 
     if (isSampledPlugin(plugin)) {
       if (isSingleRunPlugin(plugin)) {
@@ -93,13 +103,15 @@ function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {
           for (const runId of Object.keys(tagRunSampleInfo[tag])) {
             const {maxSamplesPerStep} = tagRunSampleInfo[tag][runId];
             for (let i = 0; i < maxSamplesPerStep; i++) {
-              results.push({
-                plugin,
-                tag,
-                runId,
-                sample: i,
-                numSample: maxSamplesPerStep,
-              });
+              results.push(
+                buildCardMetata({
+                  plugin,
+                  tag,
+                  runId,
+                  sample: i,
+                  numSample: maxSamplesPerStep,
+                })
+              );
             }
           }
         }
@@ -109,19 +121,18 @@ function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {
         );
       }
     } else {
+      const tagToRuns = tagMetadata[plugin].tagToRuns;
       if (isSingleRunPlugin(plugin)) {
         // Single-run, unsampled format (e.g. Histograms).
-        tagToRuns = tagMetadata[plugin].tagToRuns;
         for (const tag of Object.keys(tagToRuns)) {
           for (const runId of tagToRuns[tag]) {
-            results.push({plugin, tag, runId});
+            results.push(buildCardMetata({plugin, tag, runId}));
           }
         }
       } else {
         // Multi-run, unsampled format (e.g. Scalars).
-        tagToRuns = tagMetadata[plugin].tagToRuns;
         for (const tag of Object.keys(tagToRuns)) {
-          results.push({plugin, tag, runId: null});
+          results.push(buildCardMetata({plugin, tag, runId: null}));
         }
       }
     }
@@ -861,11 +872,11 @@ const reducer = createReducer(
 
       if (response.runToSeries) {
         for (let runId in response.runToSeries) {
-          const cardMetadata: CardMetadata = {
+          const cardMetadata: CardMetadata = buildCardMetata({
             plugin,
             tag,
             runId,
-          };
+          });
           if (sample) {
             cardMetadata.sample = sample;
           }
@@ -881,13 +892,17 @@ const reducer = createReducer(
             const nextMinMax = generateCardMinMaxStep(
               cardTimeSeriesLoadable.runToSeries
             );
-            nextCardToMinMax.set(cardId, nextMinMax);
-            nextCardToTimeSeletion.set(cardId, {
-              start: {step: nextMinMax.minStep},
-              end: state.rangeSelectionEnabled
-                ? {step: nextMinMax.maxStep}
-                : null,
-            });
+            if (!nextCardToMinMax.get(cardId)) {
+              nextCardToMinMax.set(cardId, nextMinMax);
+            }
+            if (!nextCardToTimeSeletion.get(cardId)) {
+              nextCardToTimeSeletion.set(cardId, {
+                start: {step: nextMinMax.minStep},
+                end: state.rangeSelectionEnabled
+                  ? {step: nextMinMax.maxStep}
+                  : null,
+              });
+            }
           }
         }
       }
@@ -1071,7 +1086,7 @@ const reducer = createReducer(
           if (!timeSelection.end) {
             nextCardToTimeSelection.set(cardId, {
               start: timeSelection.start,
-              end: {step: Infinity},
+              end: {step: state.cardToMinMax.get(cardId)?.maxStep || Infinity},
             });
           }
         }
