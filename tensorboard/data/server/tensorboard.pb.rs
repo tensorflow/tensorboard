@@ -111,7 +111,7 @@ pub enum DataType {
     DtQuint8 = 12,
     /// Quantized int32
     DtQint32 = 13,
-    /// Float32 truncated to 16 bits.  Only for cast ops.
+    /// Float32 truncated to 16 bits.
     DtBfloat16 = 14,
     /// Quantized int16
     DtQint16 = 15,
@@ -126,6 +126,12 @@ pub enum DataType {
     DtVariant = 21,
     DtUint32 = 22,
     DtUint64 = 23,
+    /// 5 exponent bits, 2 mantissa bits.
+    DtFloat8E5m2 = 24,
+    /// 4 exponent bits, 3 mantissa bits, finite-only, with
+    DtFloat8E4m3fn = 25,
+    // 2 NaNs (0bS1111111).
+
     /// Do not use!  These are only for parameters.  Every enum above
     /// should have a corresponding value below (verified by types_test).
     DtFloatRef = 101,
@@ -151,6 +157,8 @@ pub enum DataType {
     DtVariantRef = 121,
     DtUint32Ref = 122,
     DtUint64Ref = 123,
+    DtFloat8E5m2Ref = 124,
+    DtFloat8E4m3fnRef = 125,
 }
 /// Protocol buffer representing a handle to a tensorflow resource. Handles are
 /// not valid across executions, but can be serialized back and forth from within
@@ -262,6 +270,10 @@ pub struct TensorProto {
     /// DT_UINT64
     #[prost(uint64, repeated, tag="17")]
     pub uint64_val: ::prost::alloc::vec::Vec<u64>,
+    /// DT_FLOAT8_*, use variable-sized set of bytes
+    /// (i.e. the equivalent of repeated uint8, if such a thing existed).
+    #[prost(bytes="bytes", tag="18")]
+    pub float8_val: ::prost::bytes::Bytes,
 }
 /// Protocol buffer representing the serialization format of DT_VARIANT tensors.
 #[derive(Clone, PartialEq, ::prost::Message)]
