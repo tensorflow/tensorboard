@@ -1,3 +1,29 @@
+# Release 2.12.0
+
+The 2.12 minor series tracks TensorFlow 2.12.
+
+## Features
+
+- Time Series dashboard visualization improvements: (#6137)
+  - Allows selection of a step or range of steps on a scalar chart, and shows a table with data from those steps under it.
+  - Enables linking the selected steps across all charts in the Time Series dashboard.
+- Time Series dashboard now sorts runs in tooltip by pixel distance (matching the Scalars dashboard) (#6116).
+- Fast data loading mode (`--load_fast`, aka “RustBoard”)  improvements:
+  - Supports more ways to authenticate to GCS, including GKE service accounts, via  `gcp_auth` (#5939, thanks @Corwinpro).
+  - Now available on `manylinux2014` platforms (#6101, thanks @adamjstewart).
+
+## Bug Fixes
+
+- Fixes long standing breakage in standalone version of the Projector visualization (#6069).
+- Fixes broken help dialog button in projector plugin (#6024, thanks @mromanelli9).
+- Fixes a bug in which a deadlock could cause the event writer to hang (#6168, thanks @crassirostris).
+
+
+## Breaking Changes
+
+- Drops support for Python 3.7 and marks 3.11 as supported (#6144).
+- Drops support for protobuf < 3.19.6 and adds support for 4.x (#6147).
+
 # Release 2.11.0
 
 The 2.11 minor series tracks TensorFlow 2.11.
