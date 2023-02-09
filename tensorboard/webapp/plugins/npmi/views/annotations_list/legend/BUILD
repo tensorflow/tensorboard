@@ -7,6 +7,8 @@ licenses(["notice"])
 tf_sass_binary(
     name = "legend_component_styles",
     src = "legend_component.scss",
+    strict_deps = False,
+    deps = ["//tensorboard/webapp/theme"],
 )
 
 tf_ng_module(

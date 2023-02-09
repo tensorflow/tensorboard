@@ -7,6 +7,8 @@ licenses(["notice"])
 tf_sass_binary(
     name = "truncated_path_styles",
     src = "truncated_path_component.scss",
+    strict_deps = False,
+    deps = ["//tensorboard/webapp/theme"],
 )
 
 tf_ng_module(

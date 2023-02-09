@@ -7,6 +7,8 @@ licenses(["notice"])
 tf_sass_binary(
     name = "line_chart_styles",
     src = "line_chart_component.scss",
+    strict_deps = False,
+    deps = ["//tensorboard/webapp/theme"],
 )
 
 tf_ng_module(
