@@ -22,10 +22,18 @@ from tensorboard import version
 class VersionTest(tb_test.TestCase):
     def test_valid_pep440_version(self):
         """Ensure that our version is PEP 440-compliant."""
-        # `Version` and `LegacyVersion` are vendored and not publicly
-        # exported; get handles to them.
+        # pkg_resources.parse_version() doesn't have a public return type,
+        # so we get a handle to it by parsing known good and bad versions.
+        #
+        # Note: depending on the version of the module (which is bundled
+        # with setuptools), when called with a non-compliant version, it
+        # either returns a `LegacyVersion` (setuptools < 66) or raises an
+        # `InvalidVersion` exception (setuptools >= 66). Handle both cases.
         compliant_version = pkg_resources.parse_version("1.0.0")
-        legacy_version = pkg_resources.parse_version("some arbitrary string")
+        try:
+            legacy_version = pkg_resources.parse_version("arbitrary string")
+        except Exception:
+            legacy_version = None
         self.assertNotEqual(type(compliant_version), type(legacy_version))
 
         tensorboard_version = pkg_resources.parse_version(version.VERSION)
