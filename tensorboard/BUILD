@@ -506,13 +506,13 @@ py_library(
     srcs = ["data_compat.py"],
     srcs_version = "PY3",
     deps = [
+        ":expect_protobuf_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/audio:metadata",
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/util:tensor_util",
-        "@com_google_protobuf//:protobuf_python",
     ],
 )
 
