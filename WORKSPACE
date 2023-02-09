@@ -117,8 +117,14 @@ sass_repositories()
 # This dependency specifies the version of protobuf that will be used to compile
 # protos as part of TensorBoard's build (i.e., the protoc version).
 #
-# This version must always be <= the protobuf runtime version, which is the version of
-# the "protobuf" pip package as specified in our requirements.txt file.
+# The generated Python code for those protos relies on a Python runtime library,
+# which is provided by the `protobuf` pip package. To ensure compatibility, the
+# protoc version must be <= the runtime version. In our case, that means we must
+# set the minimum `protobuf` version in our requirements.txt to be at least as
+# high as the version of protobuf we depend on below, and we cannot increase the
+# version below without bumping the requirements.txt version.
+#
+# TODO(#6185): Remove the TODO below once the TF constraint no longer applies.
 #
 # NOTE: This dependency currently cannot be advanced past 3.19.x. This is because
 # TF is currently unable to use a runtime any greater than 3.19.x, see details here:
