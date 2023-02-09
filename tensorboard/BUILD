@@ -490,6 +490,17 @@ py_library(name = "expect_pandas_installed")
 # optional dependency.
 py_library(name = "expect_fsspec_installed")
 
+# This is a dummy rule used as a protobuf dependency in open-source.
+# We expect protobuf to already be installed on the system, e.g. via
+# `pip install protobuf`.
+#
+# Note that this dependency only represents the protobuf runtime library,
+# it is not used for compiling .proto files to generated code, which is
+# done by protoc as part of the build process. The protoc version may
+# differ from the runtime version, but to be compatible, the runtime
+# version should always be >= the protoc version.
+py_library(name = "expect_protobuf_installed")
+
 py_library(
     name = "data_compat",
     srcs = ["data_compat.py"],
