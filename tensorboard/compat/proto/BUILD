@@ -23,6 +23,7 @@ py_test(
     ],
     deps = [
         ":protos_all_py_pb2",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )

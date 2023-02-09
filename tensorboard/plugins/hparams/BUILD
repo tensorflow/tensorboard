@@ -76,6 +76,7 @@ py_test(
     deps = [
         ":hparams_plugin",
         "//tensorboard:context",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_accumulator",
@@ -94,6 +95,7 @@ py_test(
     deps = [
         ":hparams_plugin",
         "//tensorboard:context",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
@@ -107,6 +109,7 @@ py_test(
     deps = [
         ":hparams_plugin",
         "//tensorboard:context",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
@@ -140,6 +143,7 @@ py_binary(
         ":summary",
         "//tensorboard:expect_absl_app_installed",
         "//tensorboard:expect_absl_flags_installed",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins/scalar:summary",
     ],
@@ -296,6 +300,7 @@ py_test(
     deps = [
         ":protos_all_py_pb2",
         ":summary",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )

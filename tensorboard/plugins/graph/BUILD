@@ -29,7 +29,10 @@ py_test(
     size = "small",
     srcs = ["graphs_plugin_test.py"],
     srcs_version = "PY3",
-    deps = [":graphs_plugin_test_lib"],
+    deps = [
+        ":graphs_plugin_test_lib",
+        "//tensorboard:expect_protobuf_installed",
+    ],
 )
 
 py_library(
