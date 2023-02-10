@@ -19,6 +19,7 @@ limitations under the License.
 .time-fob-wrapper {
   display: inline-block;
   position: absolute;
+  top: 0;
   width: 0;
 }
 
@@ -48,4 +49,19 @@ limitations under the License.
     margin-left: -20px;
     padding: 0 20px;
   }
+}
+
+.horizontal-prospective-area {
+  bottom: 0;
+  cursor: pointer;
+  position: absolute;
+  // Height/Width to match x-axis
+  height: 30px;
+  width: calc(
+    100% - 74px
+  ); // the dot on the left takes up 50px, the edit button takes up 24px
+}
+
+.prospective-area {
+  display: block;
 }

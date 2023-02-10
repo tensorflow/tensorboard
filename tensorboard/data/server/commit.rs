@@ -105,7 +105,7 @@ impl<V> TimeSeries<V> {
 /// don't care too much about what happens to these invalid values. Keeping them in the commit as
 /// `DataLoss` tombstones is convenient, and [`TimeSeries::valid_values`] offers a view that
 /// abstracts over this detail by only showing valid data.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct DataLoss;
 
 /// The value of a scalar time series at a single point.
@@ -115,7 +115,7 @@ pub struct ScalarValue(pub f32);
 /// The value of a blob sequence time series at a single point.
 ///
 /// This value is a sequence of zero or more blobs, stored in memory.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BlobSequenceValue(pub Vec<Bytes>);
 
 #[cfg(test)]

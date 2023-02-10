@@ -16,7 +16,7 @@ limitations under the License.
 -->
 
 <div
-  [ngClass]="{'container': true, 'dark-mode': useDarkMode, 'line-only-mode': lineOnly}"
+  [ngClass]="{'container': true, 'dark-mode': useDarkMode, 'line-only-mode': lineOnly, 'line-chart': true}"
   detectResize
   (onResize)="onViewResize()"
   [resizeEventDebouncePeriodInMs]="0"
@@ -52,6 +52,7 @@ limitations under the License.
       [tooltipTemplate]="tooltipTemplate"
       (onViewExtentChange)="onViewBoxChanged($event)"
       (onViewExtentReset)="viewBoxReset()"
+      (onInteractionStateChange)="onInteractionStateChange($event)"
     ></line-chart-interactive-view>
     <div *ngIf="customVisTemplate" class="custom-vis">
       <ng-container
@@ -101,7 +102,8 @@ limitations under the License.
         xScale: xScale,
         yScale: yScale,
         domDimension: domDimensions.main,
-        viewExtent: viewBox
+        viewExtent: viewBox,
+        interactionState: interactionState
       }"
     ></ng-container>
   </div>

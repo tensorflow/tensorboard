@@ -237,8 +237,7 @@ export class TfScalarCard extends PolymerElement {
 
   // If specified uses the given colorScale; otherwise, uses a built-in
   // default. See _getColorScale below for more details.
-  @property({type: Object})
-  colorScale: object = null;
+  @property({type: Object}) colorScale: object | null = null;
 
   @property({type: String})
   tooltipSortingMethod: string;
@@ -336,7 +335,7 @@ export class TfScalarCard extends PolymerElement {
 
     const batchSize = this.batchSize ?? DEFAULT_BATCH_SIZE;
 
-    const requestGroups = [];
+    const requestGroups: Array<{tag: string; runs: Array<string>}> = [];
     for (const [tag, runs] of runsByTag) {
       for (let i = 0; i < runs.length; i += batchSize) {
         requestGroups.push({tag, runs: runs.slice(i, i + batchSize)});
@@ -387,7 +386,7 @@ export class TfScalarCard extends PolymerElement {
 
   _getChartDataLoader() {
     // tslint:disable-next-line:no-unnecessary-type-assertion
-    return this.shadowRoot.querySelector('tf-line-chart-data-loader') as any; // TfLineChartDataLoader
+    return this.shadowRoot?.querySelector('tf-line-chart-data-loader') as any; // TfLineChartDataLoader
   }
 
   reload() {
@@ -421,9 +420,7 @@ export class TfScalarCard extends PolymerElement {
     // data so that such a hash is not interpreted as a fragment
     // specifier, truncating the SVG. (See issue #1874.)
     // tslint:disable-next-line:no-unnecessary-type-assertion
-    const svgLink = this.shadowRoot.querySelector(
-      '#svgLink'
-    ) as HTMLAnchorElement;
+    const svgLink = this.shadowRoot?.querySelector('#svgLink');
     (svgLink as any).href = `data:image/svg+xml;base64,${btoa(svgStr)}`;
   }
 

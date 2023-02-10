@@ -359,7 +359,7 @@ class DataProvider(metaclass=abc.ABCMeta):
         pass
 
 
-class ExperimentMetadata(object):
+class ExperimentMetadata:
     """Metadata about an experiment.
 
     All fields have default values: i.e., they will always be present on
@@ -432,7 +432,7 @@ class ExperimentMetadata(object):
         )
 
 
-class Run(object):
+class Run:
     """Metadata about a run.
 
     Attributes:
@@ -486,7 +486,7 @@ class Run(object):
         )
 
 
-class _TimeSeries(object):
+class _TimeSeries:
     """Metadata about time series data for a particular run and tag.
 
     Superclass of `ScalarTimeSeries`, `TensorTimeSeries`, and
@@ -592,7 +592,7 @@ class ScalarTimeSeries(_TimeSeries):
         )
 
 
-class ScalarDatum(object):
+class ScalarDatum:
     """A single datum in a scalar time series for a run and tag.
 
     Attributes:
@@ -701,7 +701,7 @@ class TensorTimeSeries(_TimeSeries):
         )
 
 
-class TensorDatum(object):
+class TensorDatum:
     """A single datum in a tensor time series for a run and tag.
 
     Attributes:
@@ -787,7 +787,7 @@ class BlobSequenceTimeSeries(_TimeSeries):
         description,
         display_name,
     ):
-        super(BlobSequenceTimeSeries, self).__init__(
+        super().__init__(
             max_step=max_step,
             max_wall_time=max_wall_time,
             plugin_content=plugin_content,
@@ -842,7 +842,7 @@ class BlobSequenceTimeSeries(_TimeSeries):
         )
 
 
-class BlobReference(object):
+class BlobReference:
     """A reference to a blob.
 
     Attributes:
@@ -911,7 +911,7 @@ class BlobReference(object):
         )
 
 
-class BlobSequenceDatum(object):
+class BlobSequenceDatum:
     """A single datum in a blob sequence time series for a run and tag.
 
     Attributes:
@@ -966,7 +966,7 @@ class BlobSequenceDatum(object):
         )
 
 
-class RunTagFilter(object):
+class RunTagFilter:
     """Filters data by run and tag names."""
 
     def __init__(self, runs=None, tags=None):

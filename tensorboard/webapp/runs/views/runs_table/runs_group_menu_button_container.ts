@@ -18,10 +18,7 @@ import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {RouteKind} from '../../../app_routing/types';
 import {State} from '../../../app_state';
-import {
-  getEnabledColorGroupByRegex,
-  getRegisteredRouteKinds,
-} from '../../../selectors';
+import {getRegisteredRouteKinds} from '../../../selectors';
 import {runGroupByChanged} from '../../actions';
 import {
   getColorGroupRegexString,
@@ -38,7 +35,6 @@ import {GroupBy} from '../../types';
     <runs-group-menu-button-component
       [regexString]="groupByRegexString$ | async"
       [selectedGroupBy]="selectedGroupBy$ | async"
-      [showGroupByRegex]="showGroupByRegex$ | async"
       [showExperimentsGroupBy]="showExperimentsGroupBy$ | async"
       [experimentIds]="experimentIds"
       (onGroupByChange)="onGroupByChange($event)"
@@ -47,10 +43,6 @@ import {GroupBy} from '../../types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RunsGroupMenuButtonContainer {
-  showGroupByRegex$: Observable<boolean> = this.store.select(
-    getEnabledColorGroupByRegex
-  );
-
   @Input() experimentIds!: string[];
 
   constructor(private readonly store: Store<State>) {}

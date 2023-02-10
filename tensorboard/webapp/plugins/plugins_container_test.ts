@@ -140,6 +140,10 @@ describe('plugins_component', () => {
     },
   };
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   function setActivePlugin(plugin: PluginId) {
     store.overrideSelector(getActivePlugin, plugin);
     store.refreshState();

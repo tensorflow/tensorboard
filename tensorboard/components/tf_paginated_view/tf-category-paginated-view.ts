@@ -28,7 +28,9 @@ import {
 import {TfDomRepeat} from './tf-dom-repeat';
 
 @customElement('tf-category-paginated-view')
-class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
+class TfCategoryPaginatedView<
+  CategoryItem extends {}
+> extends TfDomRepeat<CategoryItem> {
   static readonly template = html`
     <template is="dom-if" if="[[_paneRendered]]" id="ifRendered">
       <button class="heading" on-tap="_togglePane" open-button$="[[opened]]">
@@ -540,7 +542,9 @@ class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
   }
   _updatePageInputValue(newValue) {
     // Force two-way binding.
-    const pageInput = this.shadowRoot.querySelector('#page-input input') as any;
+    const pageInput = this.shadowRoot?.querySelector(
+      '#page-input input'
+    ) as any;
     if (pageInput) {
       pageInput.value = newValue;
     }

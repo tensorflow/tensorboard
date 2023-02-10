@@ -18,7 +18,7 @@
 from tensorboard.uploader.proto import write_service_pb2
 
 
-class DryRunTensorBoardWriterStub(object):
+class DryRunTensorBoardWriterStub:
     """A dry-run TensorBoardWriter gRPC Server.
 
     Only the methods used by the `tensorboard dev upload` are

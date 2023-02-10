@@ -73,7 +73,6 @@ tf_ts_library(
         "//tensorboard/webapp/settings",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",
-        "@npm//@angular/compiler",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",

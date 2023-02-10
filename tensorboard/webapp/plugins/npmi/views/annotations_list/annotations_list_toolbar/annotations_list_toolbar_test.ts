@@ -57,6 +57,10 @@ describe('Npmi Annotations List Toolbar Container', () => {
     });
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders toolbar in non-expanded state', () => {
     const fixture = TestBed.createComponent(AnnotationsListToolbarContainer);
     fixture.componentInstance.numAnnotations = 3;

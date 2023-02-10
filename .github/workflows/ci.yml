@@ -22,8 +22,8 @@ on:
 env:
   # Keep this Bazel version in sync with the `versions.check` directive
   # in our WORKSPACE file.
-  BAZEL_VERSION: '4.0.0'
-  BAZEL_SHA256SUM: '7bee349a626281fc8b8d04a7a0b0358492712377400ab12533aeb39c2eb2b901'
+  BAZEL_VERSION: '4.2.2'
+  BAZEL_SHA256SUM: '11dea6c7cfd866ed520af19a6bb1d952f3e9f4ee60ffe84e63c0825d95cb5859'
   BUILDTOOLS_VERSION: '3.0.0'
   BUILDIFIER_SHA256SUM: 'e92a6793c7134c5431c58fbc34700664f101e5c9b1c1fcd93b97978e8b7f88db'
   BUILDOZER_SHA256SUM: '3d58a0b6972e4535718cdd6c12778170ea7382de7c75bc3728f5719437ffb84d'
@@ -31,16 +31,16 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     needs: lint-python-flake8 # fail fast in case of "undefined variable" errors
     strategy:
       fail-fast: false
       matrix:
         tf_version_id: ['tf', 'notf']
-        python_version: ['3.7']
+        python_version: ['3.8']
     steps:
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
-      - uses: actions/setup-python@152ba7c4dd6521b8e9c93f72d362ce03bf6c4f20
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
         with:
           python-version: ${{ matrix.python_version }}
           architecture: 'x64'
@@ -124,7 +124,7 @@ jobs:
       - name: 'Upload Pip package as an artifact (with TensorFlow only)'
         # Prevent uploads when running on forks or non-master branch.
         if: matrix.tf_version_id == 'tf' && github.repository == 'tensorflow/tensorboard' && github.ref == 'refs/heads/master'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # v3.1.1
         with:
           name: tb-nightly
           path: /tmp/tb_nightly_pip_package/*
@@ -135,21 +135,21 @@ jobs:
       fail-fast: false
       matrix:
         mode: ['native']
-        platform: ['ubuntu-18.04', 'macos-11']
-        rust_version: ['1.58.1']
+        platform: ['ubuntu-22.04', 'macos-12']
+        rust_version: ['1.65.0']
         include:
           - mode: 'universal'
-            platform: 'ubuntu-18.04'
-            rust_version: '1.58.1'
+            platform: 'ubuntu-22.04'
+            rust_version: '1.65.0'
     steps:
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
-      - uses: actions/setup-python@152ba7c4dd6521b8e9c93f72d362ce03bf6c4f20
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
         with:
           python-version: '3.8'
           architecture: 'x64'
       - name: 'Cache Cargo artifacts'
         if: matrix.mode == 'native'
-        uses: actions/cache@1a9e2138d905efd099035b49d8b7a3888c653ca8
+        uses: actions/cache@58c146cc91c5b9e778e71775dfe9bf1442ad9a12 # v3.2.2
         with:
           path: |
             tensorboard/data/server/target/
@@ -166,10 +166,9 @@ jobs:
           key: build-data-server-pip-${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ hashFiles('**/Cargo.lock', '.github/workflows/ci.yml') }}
       - name: 'Install Rust toolchain'
         if: matrix.mode == 'native'
-        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af
+        uses: dtolnay/rust-toolchain@5f2e2a7aff63d8cbdacb4832218a30fa7a37ee6e # current HEAD as of 1/19/2023
         with:
           toolchain: ${{ matrix.rust_version }}
-          default: true
           components: rustfmt
       - name: 'Install Python packaging deps'
         run: |
@@ -201,23 +200,23 @@ jobs:
             --out-dir /tmp/pip_package \
             ;
       - name: 'Upload'
-        uses: actions/upload-artifact@ee69f02b3dfdecd58bb31b4d133da38ba6fe3700
+        uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # v3.1.1
         with:
           name: tensorboard-data-server
           path: /tmp/pip_package/*
 
   lint-python-flake8:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
         # flake8 should run on each Python version that we target,
         # because the errors and warnings can differ due to language
         # changes, and we want to catch them all.
-        python_version: ['3.6', '3.7']
+        python_version: ['3.8', '3.9', '3.10', '3.11']
     steps:
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
-      - uses: actions/setup-python@152ba7c4dd6521b8e9c93f72d362ce03bf6c4f20
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
         with:
           python-version: ${{ matrix.python_version }}
           architecture: 'x64'
@@ -232,12 +231,12 @@ jobs:
         run: flake8 . --count --select=E9,F63,F7,F82,F401 --show-source --statistics
 
   lint-python-yaml-docs:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
-      - uses: actions/setup-python@152ba7c4dd6521b8e9c93f72d362ce03bf6c4f20
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
         with:
-          python-version: '3.6'
+          python-version: '3.8'
           architecture: 'x64'
       - name: 'Install black, yamllint, and the TensorFlow docs notebook tools'
         run: |
@@ -245,6 +244,11 @@ jobs:
           nbfmt_version="174c9a5c1cc51a3af1de98d84824c811ecd49029"
           pip install black yamllint -c ./tensorboard/pip_package/requirements_dev.txt
           pip install -U git+https://github.com/tensorflow/docs@${nbfmt_version}
+        # Workaround tensorflow incompatibility with protobuf>4.
+        # See: https://github.com/tensorflow/tensorboard/issues/5708.
+        # See: https://github.com/tensorflow/tensorflow/issues/53234.
+      - name: 'Downgrade to compatible protobuf version'
+        run: pip install -U "protobuf<3.20"
       - run: pip freeze --all
       - name: 'Lint Python code for style with Black'
         # You can run `black .` to fix all Black complaints.
@@ -256,15 +260,15 @@ jobs:
         run: git ls-files -z '*.ipynb' | xargs -0 python3 -m tensorflow_docs.tools.nbfmt --test
 
   lint-rust:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
-        rust_version: ['1.58.1']
-        cargo_raze_version: ['0.13.0']
+        rust_version: ['1.65.0']
+        cargo_raze_version: ['0.16.1']
     steps:
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
       - name: 'Cache Cargo artifacts'
-        uses: actions/cache@1a9e2138d905efd099035b49d8b7a3888c653ca8
+        uses: actions/cache@58c146cc91c5b9e778e71775dfe9bf1442ad9a12 # v3.2.2
         with:
           path: |
             tensorboard/data/server/target/
@@ -278,20 +282,18 @@ jobs:
             ~/.cargo/.crates2.json
           key: lint-rust-${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ matrix.cargo_raze_version }}-${{ hashFiles('**/Cargo.lock', '.github/workflows/ci.yml') }}
       - name: 'Install Rust toolchain'
-        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af
+        uses: dtolnay/rust-toolchain@5f2e2a7aff63d8cbdacb4832218a30fa7a37ee6e # current HEAD as of 1/19/2023
         with:
           toolchain: ${{ matrix.rust_version }}
-          default: true
           components: rustfmt, clippy
       - name: 'Install cargo-raze'
         run: cargo install cargo-raze --version ${{ matrix.cargo_raze_version }}
       - name: 'Run Rustfmt'
         run: (cd tensorboard/data/server/ && cargo fmt -- --check)
       - name: 'Run Clippy'
-        uses: actions-rs/clippy-check@b5b5f21f4797c02da247df37026fcd0a5024aa4d
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --tests --manifest-path tensorboard/data/server/Cargo.toml
+        # You can run `cargo clippy --all-targets --manifest-path tensorboard/data/server/Cargo.toml --fix` to fix all Clippy complaints.
+        # This will only apply `MachineApplicable` fixes (https://doc.rust-lang.org/nightly/nightly-rustc/rustc_lint_defs/enum.Applicability.html), so some modifications may need to be done manually.
+        run: cargo clippy --all-targets --manifest-path tensorboard/data/server/Cargo.toml -- -D warnings
       - name: 'Check cargo-raze freshness'
         run: |
           rm -rf third_party/rust/
@@ -300,13 +302,12 @@ jobs:
           git diff --staged --exit-code
 
   lint-frontend:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
-      - uses: actions/setup-node@56899e050abffc08c2b3b61f3ec6a79a9dc3223d
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
-          # default on setup-node@1 is v10.24.1.
-          node-version: '12.21.0'
+          node-version: 16
       - run: yarn install --ignore-engines
         # You can run `yarn fix-lint` to fix all Prettier complaints.
       - run: yarn lint
@@ -325,11 +326,15 @@ jobs:
           ! git grep -E '"@npm_angular_bazel//:index.bzl"' 'tensorboard/**/BUILD'
       - run: |
           ! git grep -E 'mat-color|$mat-' 'tensorboard/**/*.scss'
+        # Make sure no one depends on  the numeric library directly. Please
+        # import the indirection in //tensorboard/webapp/third_party.
+      - run: |
+          ! git grep -E '@npm//numeric' 'tensorboard/*/BUILD' ':!tensorboard/webapp/third_party/**'
 
   lint-misc: # build, protos, etc.
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
       - name: 'Set up Buildifier'
         run: |
           ci/download_buildifier.sh "${BUILDTOOLS_VERSION}" "${BUILDIFIER_SHA256SUM}" ~/buildifier

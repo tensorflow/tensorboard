@@ -12,13 +12,39 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
+@import 'tensorboard/webapp/theme/tb_theme';
+
+$_accent: map-get(mat.get-color-config($tb-theme), accent);
 
 .data-table {
   border-spacing: 4px;
   font-size: 13px;
 
   th {
+    background-color: mat.get-color-from-palette($tb-background, background);
+    position: sticky;
     text-align: left;
+    top: 0;
+    vertical-align: bottom;
+
+    &:hover {
+      cursor: pointer;
+    }
+
+    @include tb-dark-theme {
+      background-color: map-get($tb-dark-background, background);
+    }
+  }
+
+  .cell {
+    align-items: center;
+    display: flex;
+  }
+
+  .extra-right-padding {
+    // Add artificial padding to keep consistent with icons which have whitespace
+    padding-right: 1px;
   }
 
   .row {
@@ -41,5 +67,40 @@ limitations under the License.
     // Subtract by border width (1px on both sides)
     height: $_circle-size - 2px;
     width: $_circle-size - 2px;
+  }
+
+  .cell mat-icon {
+    height: 12px;
+    width: 12px;
+  }
+
+  .sorting-icon-container {
+    width: 12px;
+    height: 12px;
+    border-radius: 5px;
+  }
+
+  .show {
+    opacity: 1;
+  }
+
+  .show-on-hover {
+    opacity: 0;
+  }
+
+  th:hover .show-on-hover {
+    opacity: 0.3;
+  }
+
+  .highlight {
+    background-color: mat.get-color-from-palette(mat.$gray-palette, 200);
+  }
+
+  .highlight-border-right {
+    border-right: 2px solid mat.get-color-from-palette($_accent);
+  }
+
+  .highlight-border-left {
+    border-left: 2px solid mat.get-color-from-palette($_accent);
   }
 }

@@ -93,7 +93,7 @@ class IoWrapperTest(tf.test.TestCase):
             "model.ckpt",
             "waldo",
         )
-        self.assertItemsEqual(
+        self.assertCountEqual(
             (os.path.join(temp_dir, f) for f in expected_files),
             io_wrapper.ListDirectoryAbsolute(temp_dir),
         )
@@ -317,7 +317,7 @@ class IoWrapperTest(tf.test.TestCase):
             "quuz/garply/grault",
             "waldo/fred",
         ]
-        self.assertItemsEqual(
+        self.assertCountEqual(
             [
                 (os.path.join(temp_dir, subdir) if subdir else temp_dir)
                 for subdir in expected
@@ -389,7 +389,7 @@ class IoWrapperTest(tf.test.TestCase):
         gotten_directory_to_listing = {
             result[0]: list(result[1]) for result in gotten
         }
-        self.assertItemsEqual(
+        self.assertCountEqual(
             expected_directory_to_listing.keys(),
             gotten_directory_to_listing.keys(),
         )
@@ -399,7 +399,7 @@ class IoWrapperTest(tf.test.TestCase):
             expected_listing,
         ) in expected_directory_to_listing.items():
             gotten_listing = gotten_directory_to_listing[subdirectory]
-            self.assertItemsEqual(
+            self.assertCountEqual(
                 expected_listing,
                 gotten_listing,
                 "Files for subdirectory %r must match. Expected %r. Got %r."

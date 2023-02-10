@@ -15,7 +15,7 @@
 """Classes and functions for handling the GetExperiment API call."""
 
 
-class Handler(object):
+class Handler:
     """Handles a GetExperiment request."""
 
     def __init__(self, request_context, backend_context, experiment_id):

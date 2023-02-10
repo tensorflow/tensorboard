@@ -74,6 +74,10 @@ describe('router_outlet', () => {
     getNgComponentByRouteKindSpy = spyOn(registry, 'getNgComponentByRouteKind');
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   function setActiveRoute(routeKind: RouteKind) {
     store.overrideSelector(
       getActiveRoute,

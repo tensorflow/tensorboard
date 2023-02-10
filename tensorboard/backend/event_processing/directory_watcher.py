@@ -26,7 +26,7 @@ from tensorboard.util import tb_logging
 logger = tb_logging.get_logger()
 
 
-class DirectoryWatcher(object):
+class DirectoryWatcher:
     """A DirectoryWatcher wraps a loader to load from a sequence of paths.
 
     A loader reads a path and produces some kind of values as an iterator. A

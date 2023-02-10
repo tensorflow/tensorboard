@@ -154,7 +154,7 @@ class TfAudioDashboard extends LegacyElementMixin(PolymerElement) {
   }
 
   _reloadAudio() {
-    this.root.querySelectorAll('tf-audio-loader').forEach((audio) => {
+    this.root?.querySelectorAll('tf-audio-loader').forEach((audio) => {
       (audio as TfAudioLoader).reload();
     });
   }

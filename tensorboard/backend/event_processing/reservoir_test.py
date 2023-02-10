@@ -33,7 +33,7 @@ class ReservoirTest(tf.test.TestCase):
         r.AddItem("foo", 4)
         r.AddItem("bar", 9)
         r.AddItem("foo", 19)
-        self.assertItemsEqual(r.Keys(), ["foo", "bar"])
+        self.assertCountEqual(r.Keys(), ["foo", "bar"])
         self.assertEqual(r.Items("foo"), [4, 19])
         self.assertEqual(r.Items("bar"), [9])
 
@@ -190,11 +190,11 @@ class ReservoirBucketTest(tf.test.TestCase):
         )
 
     def testLazyFunctionEvaluationAndAlwaysKeepLast(self):
-        class FakeRandom(object):
+        class FakeRandom:
             def randint(self, a, b):  # pylint:disable=unused-argument
                 return 999
 
-        class Incrementer(object):
+        class Incrementer:
             def __init__(self):
                 self.n = 0
 

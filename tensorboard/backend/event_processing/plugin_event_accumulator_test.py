@@ -42,7 +42,7 @@ from tensorboard.util import test_util
 logger = tb_logging.get_logger()
 
 
-class _EventGenerator(object):
+class _EventGenerator:
     """Class that can add_events and then yield them back.
 
     Satisfies the EventGenerator API required for the EventAccumulator.
@@ -122,23 +122,23 @@ class EventAccumulatorTest(tf.test.TestCase):
         # Verifies that there are no unexpected keys in the actual response.
         # If this line fails, likely you added a new tag type, and need to update
         # the empty_tags dictionary above.
-        self.assertItemsEqual(actual.keys(), empty_tags.keys())
+        self.assertCountEqual(actual.keys(), empty_tags.keys())
 
         for key in actual:
             expected_value = expected.get(key, empty_tags[key])
             if isinstance(expected_value, list):
-                self.assertItemsEqual(actual[key], expected_value)
+                self.assertCountEqual(actual[key], expected_value)
             else:
                 self.assertEqual(actual[key], expected_value)
 
 
 class MockingEventAccumulatorTest(EventAccumulatorTest):
     def setUp(self):
-        super(MockingEventAccumulatorTest, self).setUp()
+        super().setUp()
         self.stubs = tf.compat.v1.test.StubOutForTesting()
 
     def tearDown(self):
-        super(MockingEventAccumulatorTest, self).tearDown()
+        super().tearDown()
         self.stubs.CleanUp()
 
     def _make_accumulator(self, generator, **kwargs):
@@ -381,6 +381,60 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         acc.Reload()
         self.assertEqual(acc.file_version, 2.0)
 
+    def testGetSourceWriter(self):
+        gen = _EventGenerator(self)
+        acc = self._make_accumulator(gen)
+        gen.AddEvent(
+            event_pb2.Event(
+                wall_time=10,
+                step=20,
+                source_metadata=event_pb2.SourceMetadata(
+                    writer="custom_writer"
+                ),
+            )
+        )
+        gen.AddScalarTensor("s1", wall_time=30, step=40, value=20)
+        self.assertEqual(acc.GetSourceWriter(), "custom_writer")
+
+    def testReloadPopulatesSourceWriter(self):
+        """Test that Reload() means GetSourceWriter() won't load events."""
+        gen = _EventGenerator(self)
+        acc = self._make_accumulator(gen)
+        gen.AddEvent(
+            event_pb2.Event(
+                wall_time=1,
+                step=2,
+                source_metadata=event_pb2.SourceMetadata(
+                    writer="custom_writer"
+                ),
+            )
+        )
+        acc.Reload()
+
+        def _Die(*args, **kwargs):  # pylint: disable=unused-argument
+            raise RuntimeError("Load() should not be called")
+
+        self.stubs.Set(gen, "Load", _Die)
+        self.assertEqual(acc.GetSourceWriter(), "custom_writer")
+
+    def testGetSourceWriterLoadsEvent(self):
+        """Test that GetSourceWriter() doesn't discard the loaded event."""
+        gen = _EventGenerator(self)
+        acc = self._make_accumulator(gen)
+        gen.AddEvent(
+            event_pb2.Event(
+                wall_time=1,
+                step=2,
+                file_version="brain.Event:2",
+                source_metadata=event_pb2.SourceMetadata(
+                    writer="custom_writer"
+                ),
+            )
+        )
+        self.assertEqual(acc.GetSourceWriter(), "custom_writer")
+        acc.Reload()
+        self.assertEqual(acc.file_version, 2.0)
+
     def testNewStyleScalarSummary(self):
         """Verify processing of tensorboard.plugins.scalar.summary."""
         event_sink = _EventGenerator(self, zero_out_timestamps=True)
@@ -416,7 +470,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
             },
         )
 
-        self.assertItemsEqual(
+        self.assertCountEqual(
             accumulator.ActivePlugins(),
             [scalar_metadata.PLUGIN_NAME, graph_metadata.PLUGIN_NAME],
         )
@@ -465,7 +519,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
             },
         )
 
-        self.assertItemsEqual(
+        self.assertCountEqual(
             accumulator.ActivePlugins(),
             [audio_metadata.PLUGIN_NAME, graph_metadata.PLUGIN_NAME],
         )
@@ -512,7 +566,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
             },
         )
 
-        self.assertItemsEqual(
+        self.assertCountEqual(
             accumulator.ActivePlugins(),
             [image_metadata.PLUGIN_NAME, graph_metadata.PLUGIN_NAME],
         )
@@ -553,7 +607,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         self.assertTrue(np.array_equal(vector, [1.0, 2.0, 3.0]))
         self.assertTrue(np.array_equal(string, b"foobar"))
 
-        self.assertItemsEqual(accumulator.ActivePlugins(), [])
+        self.assertCountEqual(accumulator.ActivePlugins(), [])
 
     def _testTFSummaryTensor_SizeGuidance(
         self, plugin_name, tensor_size_guidance, steps, expected_count
@@ -882,7 +936,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         )
         with self.assertRaisesRegex(KeyError, "plug"):
             acc.PluginTagToContent("plug")
-        self.assertItemsEqual(acc.ActivePlugins(), ["outlet"])
+        self.assertCountEqual(acc.ActivePlugins(), ["outlet"])
 
 
 if __name__ == "__main__":

@@ -51,10 +51,10 @@ export class OSSSettingsConverter extends SettingsConverter<
     if (settings.scalarSmoothing !== undefined) {
       serializableSettings.scalarSmoothing = settings.scalarSmoothing;
     }
-    if (settings.tooltipSortString !== undefined) {
+    if (settings.tooltipSort !== undefined) {
       // TooltipSort is a string enum and has string values; no need to
       // serialize it differently to account for their unintended changes.
-      serializableSettings.tooltipSort = settings.tooltipSortString;
+      serializableSettings.tooltipSort = settings.tooltipSort;
     }
     if (settings.autoReload !== undefined) {
       serializableSettings.autoReload = settings.autoReload;
@@ -76,10 +76,6 @@ export class OSSSettingsConverter extends SettingsConverter<
       serializableSettings.sideBarWidthInPercent =
         settings.sideBarWidthInPercent;
     }
-    if (settings.timeSeriesPromotionDismissed !== undefined) {
-      serializableSettings.timeSeriesPromotionDismissed =
-        settings.timeSeriesPromotionDismissed;
-    }
     if (settings.timeSeriesSettingsPaneOpened !== undefined) {
       serializableSettings.timeSeriesSettingsPaneOpened =
         settings.timeSeriesSettingsPaneOpened;
@@ -87,6 +83,16 @@ export class OSSSettingsConverter extends SettingsConverter<
     if (settings.timeSeriesCardMinWidth !== undefined) {
       serializableSettings.timeSeriesCardMinWidth =
         settings.timeSeriesCardMinWidth;
+    }
+    if (settings.stepSelectorEnabled !== undefined) {
+      serializableSettings.stepSelectorEnabled = settings.stepSelectorEnabled;
+    }
+    if (settings.rangeSelectionEnabled !== undefined) {
+      serializableSettings.rangeSelectionEnabled =
+        settings.rangeSelectionEnabled;
+    }
+    if (settings.linkedTimeEnabled !== undefined) {
+      serializableSettings.linkedTimeEnabled = settings.linkedTimeEnabled;
     }
     return serializableSettings;
   }
@@ -111,7 +117,7 @@ export class OSSSettingsConverter extends SettingsConverter<
       backendSettings.hasOwnProperty('tooltipSort') &&
       typeof backendSettings.tooltipSort === 'string'
     ) {
-      settings.tooltipSortString = backendSettings.tooltipSort;
+      settings.tooltipSort = backendSettings.tooltipSort;
     }
 
     if (
@@ -159,14 +165,6 @@ export class OSSSettingsConverter extends SettingsConverter<
     }
 
     if (
-      backendSettings.hasOwnProperty('timeSeriesPromotionDismissed') &&
-      typeof backendSettings.timeSeriesPromotionDismissed === 'boolean'
-    ) {
-      settings.timeSeriesPromotionDismissed =
-        backendSettings.timeSeriesPromotionDismissed;
-    }
-
-    if (
       backendSettings.hasOwnProperty('timeSeriesSettingsPaneOpened') &&
       typeof backendSettings.timeSeriesSettingsPaneOpened === 'boolean'
     ) {
@@ -179,6 +177,27 @@ export class OSSSettingsConverter extends SettingsConverter<
       typeof backendSettings.timeSeriesCardMinWidth === 'number'
     ) {
       settings.timeSeriesCardMinWidth = backendSettings.timeSeriesCardMinWidth;
+    }
+
+    if (
+      backendSettings.hasOwnProperty('stepSelectorEnabled') &&
+      typeof backendSettings.stepSelectorEnabled === 'boolean'
+    ) {
+      settings.stepSelectorEnabled = backendSettings.stepSelectorEnabled;
+    }
+
+    if (
+      backendSettings.hasOwnProperty('rangeSelectionEnabled') &&
+      typeof backendSettings.rangeSelectionEnabled === 'boolean'
+    ) {
+      settings.rangeSelectionEnabled = backendSettings.rangeSelectionEnabled;
+    }
+
+    if (
+      backendSettings.hasOwnProperty('linkedTimeEnabled') &&
+      typeof backendSettings.linkedTimeEnabled === 'boolean'
+    ) {
+      settings.linkedTimeEnabled = backendSettings.linkedTimeEnabled;
     }
 
     return settings;

@@ -48,6 +48,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=serde_json",
         "manual",
     ],
     version = "1.0.61",
@@ -55,6 +56,6 @@ rust_library(
     deps = [
         "@raze__itoa__0_4_6//:itoa",
         "@raze__ryu__1_0_5//:ryu",
-        "@raze__serde__1_0_118//:serde",
+        "@raze__serde__1_0_144//:serde",
     ],
 )

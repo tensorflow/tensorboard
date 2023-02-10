@@ -49,7 +49,7 @@ USING_REAL_TF = tf_compat.__version__ != "stub"
 
 class ProjectorAppTest(tf.test.TestCase):
     def __init__(self, *args, **kwargs):
-        super(ProjectorAppTest, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.logdir = None
         self.plugin = None
         self.server = None
@@ -104,7 +104,7 @@ class ProjectorAppTest(tf.test.TestCase):
         self._SetupWSGIApp()
 
         info_json = self._GetJson("/data/plugin/projector/info?run=.")
-        self.assertItemsEqual(
+        self.assertCountEqual(
             info_json["embeddings"],
             [
                 {
@@ -128,7 +128,7 @@ class ProjectorAppTest(tf.test.TestCase):
         self.assertTrue(run_json)
         run = run_json[0]
         info_json = self._GetJson("/data/plugin/projector/info?run=%s" % run)
-        self.assertItemsEqual(
+        self.assertCountEqual(
             info_json["embeddings"],
             [
                 {

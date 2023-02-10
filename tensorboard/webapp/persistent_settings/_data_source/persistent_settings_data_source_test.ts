@@ -15,6 +15,7 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {firstValueFrom} from 'rxjs';
+import {TooltipSort} from '../../metrics/types';
 import {
   OSSSettingsConverter,
   PersistentSettingsDataSourceImpl,
@@ -141,6 +142,46 @@ describe('persistent_settings data_source test', () => {
           themeOverride: ThemeValue.DARK,
         });
       });
+
+      it('properly converts stepSelectorEnabled', async () => {
+        getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
+          JSON.stringify({
+            stepSelectorEnabled: true,
+          })
+        );
+
+        const actual = await firstValueFrom(dataSource.getSettings());
+
+        expect(actual).toEqual({
+          stepSelectorEnabled: true,
+        });
+      });
+      it('properly converts rangeSelectionEnabled', async () => {
+        getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
+          JSON.stringify({
+            rangeSelectionEnabled: true,
+          })
+        );
+
+        const actual = await firstValueFrom(dataSource.getSettings());
+
+        expect(actual).toEqual({
+          rangeSelectionEnabled: true,
+        });
+      });
+      it('properly converts linkedTimeEnabled', async () => {
+        getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
+          JSON.stringify({
+            linkedTimeEnabled: true,
+          })
+        );
+
+        const actual = await firstValueFrom(dataSource.getSettings());
+
+        expect(actual).toEqual({
+          linkedTimeEnabled: true,
+        });
+      });
     });
 
     describe('#setSettings', () => {
@@ -164,6 +205,63 @@ describe('persistent_settings data_source test', () => {
             ignoreOutliers: false,
             scalarSmoothing: 0.5,
             timeSeriesCardMinWidth: 360,
+          })
+        );
+      });
+
+      it('properly converts stepSelectorEnabled', async () => {
+        getItemSpy
+          .withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY)
+          .and.returnValue(null);
+
+        await firstValueFrom(
+          dataSource.setSettings({
+            stepSelectorEnabled: true,
+          })
+        );
+
+        expect(setItemSpy).toHaveBeenCalledOnceWith(
+          TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY,
+          JSON.stringify({
+            stepSelectorEnabled: true,
+          })
+        );
+      });
+
+      it('properly converts rangeSelectionEnabled', async () => {
+        getItemSpy
+          .withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY)
+          .and.returnValue(null);
+
+        await firstValueFrom(
+          dataSource.setSettings({
+            rangeSelectionEnabled: true,
+          })
+        );
+
+        expect(setItemSpy).toHaveBeenCalledOnceWith(
+          TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY,
+          JSON.stringify({
+            rangeSelectionEnabled: true,
+          })
+        );
+      });
+
+      it('properly converts linkedTimeEnabled', async () => {
+        getItemSpy
+          .withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY)
+          .and.returnValue(null);
+
+        await firstValueFrom(
+          dataSource.setSettings({
+            linkedTimeEnabled: true,
+          })
+        );
+
+        expect(setItemSpy).toHaveBeenCalledOnceWith(
+          TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY,
+          JSON.stringify({
+            linkedTimeEnabled: true,
           })
         );
       });
@@ -192,7 +290,7 @@ describe('persistent_settings data_source test', () => {
 
           expect(actual).toEqual({
             scalarSmoothing: 0.3,
-            tooltipSortString: 'ascending',
+            tooltipSort: 'ascending' as TooltipSort,
             notificationLastReadTimeInMs: 3,
           });
         });
@@ -214,7 +312,7 @@ describe('persistent_settings data_source test', () => {
 
           expect(actual).toEqual({
             scalarSmoothing: 0.5,
-            tooltipSortString: 'default',
+            tooltipSort: TooltipSort.DEFAULT,
             notificationLastReadTimeInMs: 100,
           });
         });

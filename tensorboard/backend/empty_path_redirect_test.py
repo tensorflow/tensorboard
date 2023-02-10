@@ -26,7 +26,7 @@ class EmptyPathRedirectMiddlewareTest(tb_test.TestCase):
     """Tests for `EmptyPathRedirectMiddleware`."""
 
     def setUp(self):
-        super(EmptyPathRedirectMiddlewareTest, self).setUp()
+        super().setUp()
         app = werkzeug.Request.application(
             lambda req: werkzeug.Response(req.path)
         )

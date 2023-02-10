@@ -342,8 +342,10 @@ class TfImageLoader extends LegacyElementMixin(PolymerElement) {
           return;
         }
         const mainImageContainer = this.$$('#main-image-container');
-        mainImageContainer.textContent = '';
-        (PolymerDom.dom(mainImageContainer) as any).appendChild(img);
+        if (mainImageContainer) {
+          mainImageContainer.textContent = '';
+          (PolymerDom.dom(mainImageContainer) as any).appendChild(img);
+        }
         this.set('_isImageLoading', false);
       })
       .bind(this);

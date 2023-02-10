@@ -492,7 +492,7 @@ class _TfCustomScalarMarginChartCard
       // The user's regular expression was valid.
       // Incorporate these newly loaded values.
       const newMapping = _.clone(this._nameToDataSeries);
-      const tagsNotFound = [];
+      const tagsNotFound: any[] = [];
       _.forEach(marginChartSeries, (tagsObject) => {
         let tagNotFound = false;
         const scalarEvents = data.tag_to_events[tagsObject.value];
@@ -712,7 +712,7 @@ class _TfCustomScalarMarginChartCard
       return;
     }
     this.root
-      .querySelectorAll('.match-list-entry')
+      ?.querySelectorAll('.match-list-entry')
       .forEach((entryElement: HTMLDivElement) => {
         const seriesName = domRepeat.itemForElement(entryElement);
         entryElement.style.color = this._determineColor(

@@ -33,7 +33,14 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
-import {fromEvent, of, Subject, timer} from 'rxjs';
+import {
+  BehaviorSubject,
+  fromEvent,
+  of,
+  Subject,
+  Subscription,
+  timer,
+} from 'rxjs';
 import {filter, map, switchMap, takeUntil, tap} from 'rxjs/operators';
 import {MouseEventButtons} from '../../../util/dom';
 import {
@@ -42,6 +49,7 @@ import {
   DataSeriesMetadataMap,
   Dimension,
   Extent,
+  InteractionState,
   Point,
   Rect,
   Scale,
@@ -59,14 +67,8 @@ export interface TooltipDatum<
   id: string;
   metadata: Metadata;
   closestPointIndex: number;
-  point: PointDatum;
-}
-
-enum InteractionState {
-  NONE,
-  DRAG_ZOOMING,
-  SCROLL_ZOOMING,
-  PANNING,
+  dataPoint: PointDatum;
+  domPoint: Point;
 }
 
 const SCROLL_ZOOM_SPEED_FACTOR = 0.01;
@@ -136,9 +138,12 @@ export class LineChartInteractiveViewComponent
   @Output()
   onViewExtentReset = new EventEmitter<void>();
 
+  @Output()
+  onInteractionStateChange = new EventEmitter<InteractionState>();
+
   readonly InteractionState = InteractionState;
 
-  state: InteractionState = InteractionState.NONE;
+  readonly state = new BehaviorSubject<InteractionState>(InteractionState.NONE);
 
   // Whether alt or shiftKey is pressed down.
   specialKeyPressed: boolean = false;
@@ -198,6 +203,7 @@ export class LineChartInteractiveViewComponent
   ];
 
   cursorLocationInDataCoord: {x: number; y: number} | null = null;
+  cursorLocation: {x: number; y: number} | null = null;
   cursoredData: TooltipDatum[] = [];
   tooltipDisplayAttached: boolean = false;
 
@@ -207,6 +213,7 @@ export class LineChartInteractiveViewComponent
   private dragStartCoord: {x: number; y: number} | null = null;
   private isCursorInside = false;
   private readonly ngUnsubscribe = new Subject<void>();
+  private readonly subscriptions: Subscription[] = [];
 
   constructor(
     private readonly changeDetector: ChangeDetectorRef,
@@ -214,6 +221,18 @@ export class LineChartInteractiveViewComponent
   ) {}
 
   ngAfterViewInit() {
+    this.subscriptions.push(
+      this.state.subscribe((state) => {
+        this.onInteractionStateChange.emit(state);
+      })
+    );
+    this.ngUnsubscribe.pipe(
+      map(() => {
+        this.subscriptions.forEach((subscription) =>
+          subscription.unsubscribe()
+        );
+      })
+    );
     // dblclick event cannot be prevented. Using css to disallow selecting instead.
     fromEvent<MouseEvent>(this.dotsContainer.nativeElement, 'dblclick', {
       passive: true,
@@ -221,7 +240,7 @@ export class LineChartInteractiveViewComponent
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe(() => {
         this.onViewExtentReset.emit();
-        this.state = InteractionState.NONE;
+        this.state.next(InteractionState.NONE);
         this.changeDetector.markForCheck();
       });
 
@@ -254,7 +273,7 @@ export class LineChartInteractiveViewComponent
     })
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((event) => {
-        const prevState = this.state;
+        const prevState = this.state.getValue();
         const nextState = this.shouldPan(event)
           ? InteractionState.PANNING
           : InteractionState.DRAG_ZOOMING;
@@ -276,7 +295,7 @@ export class LineChartInteractiveViewComponent
         }
 
         if (prevState !== nextState) {
-          this.state = nextState;
+          this.state.next(nextState);
           this.changeDetector.markForCheck();
         }
       });
@@ -293,7 +312,7 @@ export class LineChartInteractiveViewComponent
         const zoomBox = this.zoomBoxInUiCoordinate;
         if (
           !leftClicked &&
-          this.state === InteractionState.DRAG_ZOOMING &&
+          this.state.getValue() === InteractionState.DRAG_ZOOMING &&
           zoomBox.width > 0 &&
           zoomBox.height > 0
         ) {
@@ -309,8 +328,8 @@ export class LineChartInteractiveViewComponent
             },
           });
         }
-        if (this.state !== InteractionState.NONE) {
-          this.state = InteractionState.NONE;
+        if (this.state.getValue() !== InteractionState.NONE) {
+          this.state.next(InteractionState.NONE);
           this.changeDetector.markForCheck();
         }
       });
@@ -333,7 +352,7 @@ export class LineChartInteractiveViewComponent
         this.dragStartCoord = null;
         this.isCursorInside = false;
         this.updateTooltip(event);
-        this.state = InteractionState.NONE;
+        this.state.next(InteractionState.NONE);
         this.changeDetector.markForCheck();
       });
 
@@ -342,9 +361,9 @@ export class LineChartInteractiveViewComponent
     })
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((event) => {
-        switch (this.state) {
+        switch (this.state.getValue()) {
           case InteractionState.SCROLL_ZOOMING: {
-            this.state = InteractionState.NONE;
+            this.state.next(InteractionState.NONE);
             this.updateTooltip(event);
             this.changeDetector.markForCheck();
             break;
@@ -425,8 +444,8 @@ export class LineChartInteractiveViewComponent
           ),
         });
 
-        if (this.state !== InteractionState.SCROLL_ZOOMING) {
-          this.state = InteractionState.SCROLL_ZOOMING;
+        if (this.state.getValue() !== InteractionState.SCROLL_ZOOMING) {
+          this.state.next(InteractionState.SCROLL_ZOOMING);
           this.changeDetector.markForCheck();
         }
       });
@@ -505,6 +524,10 @@ export class LineChartInteractiveViewComponent
       x: this.getDataX(event.offsetX),
       y: this.getDataY(event.offsetY),
     };
+    this.cursorLocation = {
+      x: event.offsetX,
+      y: event.offsetY,
+    };
     this.updateCursoredDataAndTooltipVisibility();
   }
 
@@ -533,10 +556,15 @@ export class LineChartInteractiveViewComponent
           })
           .map(({seriesDatum, metadata}) => {
             const index = findClosestIndex(seriesDatum.points, cursorLoc.x);
+            const dataPoint = seriesDatum.points[index];
             return {
               id: seriesDatum.id,
               closestPointIndex: index,
-              point: seriesDatum.points[index],
+              dataPoint,
+              domPoint: {
+                x: this.getDomX(dataPoint.x),
+                y: this.getDomY(dataPoint.y),
+              },
               metadata,
             };
           })

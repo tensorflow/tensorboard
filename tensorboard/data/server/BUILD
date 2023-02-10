@@ -63,6 +63,7 @@ rust_library(
         "//tensorboard/data/server/cargo:crc",
         "//tensorboard/data/server/cargo:env_logger",
         "//tensorboard/data/server/cargo:futures_core",
+        "//tensorboard/data/server/cargo:gcp_auth",
         "//tensorboard/data/server/cargo:log",
         "//tensorboard/data/server/cargo:prost",
         "//tensorboard/data/server/cargo:prost_types",

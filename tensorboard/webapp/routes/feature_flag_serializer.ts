@@ -18,37 +18,35 @@ import {
   FeatureFlagMetadataMapType,
   FeatureFlagType,
 } from '../feature_flag/store/feature_flag_metadata';
-import {FeatureFlags} from '../feature_flag/types';
 
-export function featureFlagsToSerializableQueryParams<T extends FeatureFlags>(
-  overriddenFeatureFlags: Partial<FeatureFlags>,
+export function featureFlagsToSerializableQueryParams<T>(
+  overriddenFeatureFlags: Partial<T>,
   featureFlagMetadataMap: FeatureFlagMetadataMapType<T>
 ): SerializableQueryParams {
   return Object.entries(overriddenFeatureFlags)
     .map(([featureFlag, featureValue]) => {
+      if (featureValue === undefined) {
+        // Feature flag has no overriden value specified.
+        // Return empty item. Will be filtered out.
+        return {};
+      }
       const featureFlagMetadata: FeatureFlagMetadata<any> =
-        featureFlagMetadataMap[featureFlag as keyof FeatureFlags];
-      if (!featureFlagMetadata) {
-        // No metadata for this feature flag. Shouldn't happen but we must
-        // include the check for the compiler.
+        featureFlagMetadataMap[featureFlag as keyof T];
+      if (!featureFlagMetadata || !featureFlagMetadata.queryParamOverride) {
+        // No metadata for this feature flag or no query param support specified
+        // by the metadata.
         // Return empty item. Will be filtered out.
         return {};
       }
-      const key = featureFlagMetadata.queryParamOverride;
-      if (!key || featureValue === undefined) {
-        // Feature flag has no query param or there was no overriden value
-        // specified.
-        // Return empty item. Will be filtered out.
-        return {};
-      }
+
       return {
-        key,
+        key: featureFlagMetadata.queryParamOverride,
         // Note that all FeatureFlagType (string | number | boolean | string[])
         // support toString() and toString() happens to output the format we
         // want. Mostly notably, string[].toString() effectively does join(',').
         // If this does hold when we add new types then consider adding support
         // for custom encoders.
-        value: featureValue?.toString(),
+        value: (featureValue as FeatureFlagType)?.toString(),
       };
     })
     .filter(
@@ -77,9 +75,7 @@ export function getFeatureFlagValueFromSearchParams<T extends FeatureFlagType>(
 /**
  * Parses all feature flags from the query params.
  */
-export function getOverriddenFeatureFlagValuesFromSearchParams<
-  T extends FeatureFlags
->(
+export function getOverriddenFeatureFlagValuesFromSearchParams<T>(
   featureFlagMetadataMap: FeatureFlagMetadataMapType<T>,
   params: URLSearchParams
 ) {
@@ -91,11 +87,11 @@ export function getOverriddenFeatureFlagValuesFromSearchParams<
       );
 
       if (featureValue !== null) {
-        const f = flagName as keyof FeatureFlags;
+        const f = flagName as keyof T;
         overrides[f] = featureValue;
       }
       return overrides;
     },
-    {} as Partial<Record<keyof FeatureFlags, FeatureFlagType>>
+    {} as Partial<T>
   );
 }

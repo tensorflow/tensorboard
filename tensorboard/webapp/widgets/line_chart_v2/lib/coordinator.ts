@@ -15,7 +15,7 @@ limitations under the License.
 
 import {Rect, Scale, ScaleType} from './internal_types';
 import {createScale} from './scale';
-import {convertRectToExtent} from './utils';
+import {ChartUtils} from './utils';
 
 /**
  * A stateful convenient utility around scale for converting coordinate systems.
@@ -109,7 +109,7 @@ export class Coordinator {
     dataCoordinate: [number, number]
   ): [number, number] {
     const rect = rectInUiCoordinate;
-    const domain = convertRectToExtent(this.currentViewBoxRect);
+    const domain = ChartUtils.convertRectToExtent(this.currentViewBoxRect);
     return [
       this.xScale.forward(
         domain.x,

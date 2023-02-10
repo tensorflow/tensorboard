@@ -15,10 +15,14 @@
 """Takes a generator of values, and accumulates them for a frontend."""
 
 import collections
+import dataclasses
 import threading
+
+from typing import Optional, Sequence, Tuple
 
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import event_file_loader
+from tensorboard.backend.event_processing import event_util
 from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.backend.event_processing import reservoir
@@ -27,47 +31,137 @@ from tensorboard.compat.proto import config_pb2
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import graph_pb2
 from tensorboard.compat.proto import meta_graph_pb2
+from tensorboard.compat.proto import tensor_pb2
 from tensorboard.plugins.distribution import compressor
 from tensorboard.util import tb_logging
 
 
 logger = tb_logging.get_logger()
 
-namedtuple = collections.namedtuple
-ScalarEvent = namedtuple("ScalarEvent", ["wall_time", "step", "value"])
 
-CompressedHistogramEvent = namedtuple(
-    "CompressedHistogramEvent",
-    ["wall_time", "step", "compressed_histogram_values"],
-)
+@dataclasses.dataclass(frozen=True)
+class ScalarEvent:
+    """Contains information of a scalar event.
 
-HistogramEvent = namedtuple(
-    "HistogramEvent", ["wall_time", "step", "histogram_value"]
-)
+    Attributes:
+      wall_time: Timestamp of the event in seconds.
+      step: Global step of the event.
+      value: A float or int value of the scalar.
+    """
 
-HistogramValue = namedtuple(
-    "HistogramValue",
-    ["min", "max", "num", "sum", "sum_squares", "bucket_limit", "bucket"],
-)
+    wall_time: float
+    step: int
+    value: float
 
-ImageEvent = namedtuple(
-    "ImageEvent",
-    ["wall_time", "step", "encoded_image_string", "width", "height"],
-)
 
-AudioEvent = namedtuple(
-    "AudioEvent",
-    [
-        "wall_time",
-        "step",
-        "encoded_audio_string",
-        "content_type",
-        "sample_rate",
-        "length_frames",
-    ],
-)
+@dataclasses.dataclass(frozen=True)
+class CompressedHistogramEvent:
+    """Contains information of a compressed histogram event.
 
-TensorEvent = namedtuple("TensorEvent", ["wall_time", "step", "tensor_proto"])
+    Attributes:
+      wall_time: Timestamp of the event in seconds.
+      step: Global step of the event.
+      compressed_histogram_values: A sequence of tuples of basis points and
+        associated values in a compressed histogram.
+    """
+
+    wall_time: float
+    step: int
+    compressed_histogram_values: Sequence[Tuple[float, float]]
+
+
+@dataclasses.dataclass(frozen=True)
+class HistogramValue:
+    """Holds the information of the histogram values.
+
+    Attributes:
+      min: A float or int min value.
+      max: A float or int max value.
+      num: Total number of values.
+      sum: Sum of all values.
+      sum_squares: Sum of squares for all values.
+      bucket_limit: Upper values per bucket.
+      bucket: Numbers of values per bucket.
+    """
+
+    min: float
+    max: float
+    num: int
+    sum: float
+    sum_squares: float
+    bucket_limit: Sequence[float]
+    bucket: Sequence[int]
+
+
+@dataclasses.dataclass(frozen=True)
+class HistogramEvent:
+    """Contains information of a histogram event.
+
+    Attributes:
+      wall_time: Timestamp of the event in seconds.
+      step: Global step of the event.
+      histogram_value: Information of the histogram values.
+    """
+
+    wall_time: float
+    step: int
+    histogram_value: HistogramValue
+
+
+@dataclasses.dataclass(frozen=True)
+class ImageEvent:
+    """Contains information of an image event.
+
+    Attributes:
+      wall_time: Timestamp of the event in seconds.
+      step: Global step of the event.
+      encoded_image_string: Image content encoded in bytes.
+      width: Width of the image.
+      height: Height of the image.
+    """
+
+    wall_time: float
+    step: int
+    encoded_image_string: bytes
+    width: int
+    height: int
+
+
+@dataclasses.dataclass(frozen=True)
+class AudioEvent:
+    """Contains information of an audio event.
+
+    Attributes:
+      wall_time: Timestamp of the event in seconds.
+      step: Global step of the event.
+      encoded_audio_string: Audio content encoded in bytes.
+      content_type: A string describes the type of the audio content.
+      sample_rate: Sample rate of the audio in Hz. Must be positive.
+      length_frames: Length of the audio in frames (samples per channel).
+    """
+
+    wall_time: float
+    step: int
+    encoded_audio_string: bytes
+    content_type: str
+    sample_rate: float
+    length_frames: int
+
+
+@dataclasses.dataclass(frozen=True)
+class TensorEvent:
+    """A tensor event.
+
+    Attributes:
+      wall_time: Timestamp of the event in seconds.
+      step: Global step of the event.
+      tensor_proto: A `TensorProto`.
+    """
+
+    wall_time: float
+    step: int
+    tensor_proto: tensor_pb2.TensorProto
+
 
 ## Different types of summary events handled by the event_accumulator
 SUMMARY_TYPES = {
@@ -113,7 +207,7 @@ STORE_EVERYTHING_SIZE_GUIDANCE = {
 }
 
 
-class EventAccumulator(object):
+class EventAccumulator:
     """An `EventAccumulator` takes an event generator, and accumulates the
     values.
 
@@ -224,6 +318,9 @@ class EventAccumulator(object):
         self.most_recent_wall_time = -1
         self.file_version = None
 
+        # Name of the source writer that writes the event.
+        self._source_writer = None
+
         # The attributes that get built up by the accumulator
         self.accumulated_attrs = (
             "scalars",
@@ -302,6 +399,20 @@ class EventAccumulator(object):
             except StopIteration:
                 raise ValueError("No event timestamp could be found")
 
+    def GetSourceWriter(self) -> Optional[str]:
+        """Returns the name of the event writer."""
+        if self._source_writer is not None:
+            return self._source_writer
+        with self._generator_mutex:
+            try:
+                event = next(self._generator.Load())
+                self._ProcessEvent(event)
+                return self._source_writer
+            except StopIteration:
+                logger.info(
+                    "End of file in %s, no source writer was found.", self.path
+                )
+
     def PluginTagToContent(self, plugin_name):
         """Returns a dict mapping tags to content specific to that plugin.
 
@@ -339,8 +450,21 @@ class EventAccumulator(object):
         if self._first_event_timestamp is None:
             self._first_event_timestamp = event.wall_time
 
+        if event.HasField("source_metadata"):
+            new_source_writer = event_util.GetSourceWriter(
+                event.source_metadata
+            )
+            if self._source_writer and self._source_writer != new_source_writer:
+                logger.info(
+                    (
+                        "Found new source writer for event.proto. "
+                        "Old: {0}, New: {1}"
+                    ).format(self._source_writer, new_source_writer)
+                )
+            self._source_writer = new_source_writer
+
         if event.HasField("file_version"):
-            new_file_version = _ParseFileVersion(event.file_version)
+            new_file_version = event_util.ParseFileVersion(event.file_version)
             if self.file_version and self.file_version != new_file_version:
                 ## This should not happen.
                 logger.warning(
@@ -664,7 +788,8 @@ class EventAccumulator(object):
             self.most_recent_step = event.step
             self.most_recent_wall_time = event.wall_time
 
-    def _ConvertHistogramProtoToTuple(self, histo):
+    def _ConvertHistogramProtoToPopo(self, histo):
+        """Converts histogram proto to Python object."""
         return HistogramValue(
             min=histo.min,
             max=histo.max,
@@ -677,7 +802,7 @@ class EventAccumulator(object):
 
     def _ProcessHistogram(self, tag, wall_time, step, histo):
         """Processes a proto histogram by adding it to accumulated state."""
-        histo = self._ConvertHistogramProtoToTuple(histo)
+        histo = self._ConvertHistogramProtoToPopo(histo)
         histo_ev = HistogramEvent(wall_time, step, histo)
         self.histograms.AddItem(tag, histo_ev)
         self.compressed_histograms.AddItem(
@@ -824,27 +949,3 @@ def _GeneratorFromPath(path):
             event_file_loader.LegacyEventFileLoader,
             io_wrapper.IsSummaryEventsFile,
         )
-
-
-def _ParseFileVersion(file_version):
-    """Convert the string file_version in event.proto into a float.
-
-    Args:
-      file_version: String file_version from event.proto
-
-    Returns:
-      Version number as a float.
-    """
-    tokens = file_version.split("brain.Event:")
-    try:
-        return float(tokens[-1])
-    except ValueError:
-        ## This should never happen according to the definition of file_version
-        ## specified in event.proto.
-        logger.warning(
-            (
-                "Invalid event.proto file_version. Defaulting to use of "
-                "out-of-order event.step logic for purging expired events."
-            )
-        )
-        return -1

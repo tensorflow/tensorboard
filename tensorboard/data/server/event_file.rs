@@ -121,7 +121,7 @@ mod tests {
     /// Encodes an `Event` proto to bytes.
     fn encode_event(e: &Event) -> Vec<u8> {
         let mut encoded = Vec::new();
-        Event::encode(&e, &mut encoded).expect("failed to encode event");
+        Event::encode(e, &mut encoded).expect("failed to encode event");
         encoded
     }
 

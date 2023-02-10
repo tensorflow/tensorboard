@@ -48,6 +48,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=itoa",
         "manual",
     ],
     version = "0.4.6",

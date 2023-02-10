@@ -53,6 +53,7 @@ py_library(
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
+        ":auth_context_middleware",
         ":client_feature_flags",
         ":empty_path_redirect",
         ":experiment_id",
@@ -60,8 +61,6 @@ py_library(
         ":http_util",
         ":path_prefix",
         ":security_validator",
-        "//tensorboard:auth",
-        "//tensorboard:context",
         "//tensorboard:errors",
         "//tensorboard:plugin_util",
         "//tensorboard/plugins/core:core_plugin",
@@ -84,6 +83,31 @@ py_test(
         "//tensorboard:test",
         "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
+        "@org_pocoo_werkzeug",
+    ],
+)
+
+py_library(
+    name = "auth_context_middleware",
+    srcs = ["auth_context_middleware.py"],
+    srcs_version = "PY3",
+    deps = [
+        "//tensorboard:auth",
+        "//tensorboard:context",
+    ],
+)
+
+py_test(
+    name = "auth_context_middleware_test",
+    size = "small",
+    srcs = ["auth_context_middleware_test.py"],
+    srcs_version = "PY3",
+    tags = ["support_notf"],
+    deps = [
+        ":auth_context_middleware",
+        "//tensorboard:auth",
+        "//tensorboard:context",
+        "//tensorboard:test",
         "@org_pocoo_werkzeug",
     ],
 )

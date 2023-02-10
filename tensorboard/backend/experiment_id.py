@@ -26,7 +26,7 @@ _EXPERIMENT_PATH_COMPONENT = "experiment"
 WSGI_ENVIRON_KEY = "HTTP_TENSORBOARD_EXPERIMENT_ID"
 
 
-class ExperimentIdMiddleware(object):
+class ExperimentIdMiddleware:
     """WSGI middleware extracting experiment IDs from URL to environment.
 
     Any request whose path matches `/experiment/SOME_EID[/...]` will have

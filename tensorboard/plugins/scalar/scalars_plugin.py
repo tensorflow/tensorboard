@@ -35,7 +35,7 @@ from tensorboard.plugins.scalar import metadata
 _DEFAULT_DOWNSAMPLING = 1000  # scalars per time series
 
 
-class OutputFormat(object):
+class OutputFormat:
     """An enum used to list the valid output formats for API calls."""
 
     JSON = "json"

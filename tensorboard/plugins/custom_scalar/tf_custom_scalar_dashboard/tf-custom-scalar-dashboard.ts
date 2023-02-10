@@ -312,27 +312,28 @@ writer.add_summary(layout_summary)
 
   reload() {
     const url = getRouter().pluginsListing();
-    const handlePluginsListingResponse = this._canceller.cancellable(
-      (result) => {
-        if (result.cancelled) {
-          return;
-        }
-        this.set('_dataNotFound', !result.value['custom_scalars']);
-        if (this._dataNotFound) {
-          return;
-        }
-        this._retrieveLayoutAndData();
+    const handlePluginsListingResponse = this._canceller.cancellable<
+      string,
+      void
+    >((result) => {
+      if (result.cancelled) {
+        return;
       }
-    );
+      this.set('_dataNotFound', !result.value['custom_scalars']);
+      if (this._dataNotFound) {
+        return;
+      }
+      this._retrieveLayoutAndData();
+    });
     this._requestManager.request(url).then(handlePluginsListingResponse);
   }
 
   _reloadCharts() {
-    const charts = this.root.querySelectorAll(
+    const charts = this.root?.querySelectorAll(
       'tf-custom-scalar-margin-chart-card, ' +
         'tf-custom-scalar-multi-line-chart-card'
     );
-    charts.forEach(
+    charts?.forEach(
       (
         chart: TfCustomScalarMarginChartCard | TfCustomScalarMultiLineChartCard
       ) => {

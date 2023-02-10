@@ -68,6 +68,10 @@ describe('npmi effects', () => {
     effects.loadData$.subscribe();
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   describe('load Plugin Data', () => {
     let fetchDataSpy: jasmine.Spy;
     let fetchDataSubject: Subject<{

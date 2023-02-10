@@ -101,11 +101,13 @@ function buildBlankState(): MetricsState {
     linkedTimeSelection: null,
     linkedTimeEnabled: false,
     stepSelectorEnabled: false,
-    linkedTimeRangeEnabled: false,
+    rangeSelectionEnabled: false,
+    singleSelectionHeaders: [],
+    rangeSelectionHeaders: [],
     filteredPluginTypes: new Set(),
     stepMinMax: {min: Infinity, max: -Infinity},
-    promoteTimeSeries: false,
     isSettingsPaneOpen: false,
+    isSlideoutMenuOpen: false,
   };
 }
 

@@ -64,7 +64,7 @@ export class ProtoDataProvider implements DataProvider {
         pointsMetadata[i][c.name] = values[i];
       }
     });
-    let spritesPromise: Promise<HTMLImageElement> = Promise.resolve(null);
+    let spritesPromise: Promise<HTMLImageElement> = Promise.resolve(null!);
     if (this.dataProto.metadata.sprite != null) {
       spritesPromise = new Promise<HTMLImageElement>((resolve, reject) => {
         const image = new Image();
@@ -107,7 +107,7 @@ export class ProtoDataProvider implements DataProvider {
       points.push({
         vector: new Float32Array(tensor.slice(offset, offset + d)),
         metadata: {},
-        projections: null,
+        projections: null!,
         index: i,
       });
     }

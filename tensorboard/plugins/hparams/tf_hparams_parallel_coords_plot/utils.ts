@@ -91,7 +91,7 @@ export function findClosestPath(paths, axesPos, target, threshold) {
     }
     return tf_hparams_utils.l2NormSquared(cbx - tp * abx, cby - tp * aby);
   }
-  let minDist = null;
+  let minDist: number | null = null;
   let closestPath = null;
   paths.forEach((p) => {
     const dist = distFn(
@@ -179,7 +179,10 @@ export function createAxisScale(domainValues, axisHeight, scaleType) {
       // (to allow a log scale).
       return [1, 2];
     }
-    const [min, max] = d3.extent(domainValues) as [number, number];
+    const [min, max] = d3.extent(domainValues) as [unknown, unknown] as [
+      number,
+      number
+    ];
     if (min !== max) {
       return [min, max];
     }

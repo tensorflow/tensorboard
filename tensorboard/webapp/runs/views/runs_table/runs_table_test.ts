@@ -60,8 +60,6 @@ import {
   getColorGroupRegexString,
   getCurrentRouteRunSelection,
   getDarkModeEnabled,
-  getEnabledColorGroup,
-  getEnabledColorGroupByRegex,
   getExperiment,
   getExperimentIdToExperimentAliasMap,
   getRegisteredRouteKinds,
@@ -158,6 +156,10 @@ describe('runs_table', () => {
   let dispatchSpy: jasmine.Spy;
   let overlayContainer: OverlayContainer;
   let actualActions: Action[];
+
+  afterEach(() => {
+    store?.resetSelectors();
+  });
 
   function createComponent(
     experimentIds: string[],
@@ -294,8 +296,6 @@ describe('runs_table', () => {
       new Map() as ReturnType<typeof hparamsSelectors.getMetricFilterMap>
     );
     store.overrideSelector(getActiveRoute, buildExperimentRouteFromId('123'));
-    store.overrideSelector(getEnabledColorGroup, false);
-    store.overrideSelector(getEnabledColorGroupByRegex, false);
     store.overrideSelector(getRunGroupBy, {key: GroupByKey.RUN});
     store.overrideSelector(getColorGroupRegexString, '');
     store.overrideSelector(getRegisteredRouteKinds, new Set<RouteKind>());
@@ -610,27 +610,11 @@ describe('runs_table', () => {
         menuButton.nativeElement.click();
       }
 
-      it('renders the menu for color grouping when the feature is enabled', () => {
-        store.overrideSelector(getEnabledColorGroup, true);
-        const fixture = createComponent(
-          ['book'],
-          [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
-        );
-        fixture.detectChanges();
-
-        const menuButton = fixture.debugElement.query(
-          By.directive(RunsGroupMenuButtonContainer)
-        );
-        expect(menuButton).toBeTruthy();
-      });
-
       it('renders Experiment only when COMPARE_EXPERIMENT route is registered', () => {
         store.overrideSelector(
           getRegisteredRouteKinds,
           new Set([RouteKind.COMPARE_EXPERIMENT])
         );
-        store.overrideSelector(getEnabledColorGroup, true);
-        store.overrideSelector(getEnabledColorGroupByRegex, true);
         const fixture = createComponent(
           ['book'],
           [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
@@ -650,8 +634,6 @@ describe('runs_table', () => {
           getRegisteredRouteKinds,
           new Set([RouteKind.EXPERIMENT])
         );
-        store.overrideSelector(getEnabledColorGroup, true);
-        store.overrideSelector(getEnabledColorGroupByRegex, true);
         const fixture = createComponent(
           ['book'],
           [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
@@ -674,8 +656,6 @@ describe('runs_table', () => {
             getRegisteredRouteKinds,
             new Set([RouteKind.COMPARE_EXPERIMENT])
           );
-          store.overrideSelector(getEnabledColorGroup, true);
-          store.overrideSelector(getEnabledColorGroupByRegex, true);
           store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
           const fixture = createComponent(
             ['book'],
@@ -725,8 +705,6 @@ describe('runs_table', () => {
             getRegisteredRouteKinds,
             new Set([RouteKind.COMPARE_EXPERIMENT])
           );
-          store.overrideSelector(getEnabledColorGroup, true);
-          store.overrideSelector(getEnabledColorGroupByRegex, true);
           store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
           const fixture = createComponent(
             ['book'],
@@ -768,8 +746,6 @@ describe('runs_table', () => {
       );
 
       it('dispatches `runGroupByChanged` on clicking `Regex` when there is a regex string', () => {
-        store.overrideSelector(getEnabledColorGroup, true);
-        store.overrideSelector(getEnabledColorGroupByRegex, true);
         store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
         store.overrideSelector(getColorGroupRegexString, 'run');
         const fixture = createComponent(
@@ -789,8 +765,6 @@ describe('runs_table', () => {
       });
 
       it('opens edit dialog on clicking `Regex` when the regex string is not set', () => {
-        store.overrideSelector(getEnabledColorGroup, true);
-        store.overrideSelector(getEnabledColorGroupByRegex, true);
         store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
         store.overrideSelector(getColorGroupRegexString, '');
         const fixture = createComponent(
@@ -808,8 +782,6 @@ describe('runs_table', () => {
       });
 
       it('dispatches `runGroupByChanged` when regex editing is saved', () => {
-        store.overrideSelector(getEnabledColorGroup, true);
-        store.overrideSelector(getEnabledColorGroupByRegex, true);
         store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
         const fixture = createComponent(
           ['book'],
@@ -849,8 +821,6 @@ describe('runs_table', () => {
       });
 
       it('does not dispatch `runGroupByChanged` with GroupByKey.REGEX when regex editing is cancelled', () => {
-        store.overrideSelector(getEnabledColorGroup, true);
-        store.overrideSelector(getEnabledColorGroupByRegex, true);
         store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
         const fixture = createComponent(
           ['book'],
@@ -881,23 +851,18 @@ describe('runs_table', () => {
         );
       });
 
-      it(
-        'does not render the menu when color column is not specified even ' +
-          'when the feature is enabled',
-        () => {
-          store.overrideSelector(getEnabledColorGroup, true);
-          const fixture = createComponent(
-            ['book'],
-            [RunsTableColumn.RUN_NAME, RunsTableColumn.EXPERIMENT_NAME]
-          );
-          fixture.detectChanges();
+      it('does not render the menu when color column is not specified.', () => {
+        const fixture = createComponent(
+          ['book'],
+          [RunsTableColumn.RUN_NAME, RunsTableColumn.EXPERIMENT_NAME]
+        );
+        fixture.detectChanges();
 
-          const menuButton = fixture.debugElement.query(
-            By.directive(RunsGroupMenuButtonContainer)
-          );
-          expect(menuButton).toBeFalsy();
-        }
-      );
+        const menuButton = fixture.debugElement.query(
+          By.directive(RunsGroupMenuButtonContainer)
+        );
+        expect(menuButton).toBeFalsy();
+      });
     });
 
     it('dispatches `runColorChanged` when color changes', () => {

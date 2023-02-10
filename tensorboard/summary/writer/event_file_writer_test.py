@@ -18,6 +18,11 @@
 
 import glob
 import os
+import threading
+import time
+from typing import Optional
+from unittest.mock import MagicMock
+
 from tensorboard.summary.writer.event_file_writer import EventFileWriter
 from tensorboard.summary.writer.event_file_writer import _AsyncWriter
 from tensorboard.compat.proto import event_pb2
@@ -64,6 +69,10 @@ class EventFileWriterTest(tb_test.TestCase):
         r.GetNext()
         s = event_pb2.Event.FromString(r.record())
         self.assertEqual(s.file_version, "brain.Event:2")
+        self.assertEqual(
+            s.source_metadata.writer,
+            "tensorboard.summary.writer.event_file_writer",
+        )
 
 
 class AsyncWriterTest(tb_test.TestCase):
@@ -127,6 +136,47 @@ class AsyncWriterTest(tb_test.TestCase):
         # nothing is written to the file after close
         with open(filename, "rb") as f:
             self.assertEqual(f.read(), bytes_to_write)
+
+    def test_exception_in_background_thread_while_waiting_to_put(self):
+        record_writer_mock = MagicMock()
+        w = _AsyncWriter(record_writer_mock, max_queue_size=10)
+
+        cv = threading.Condition()
+        writing_can_proceed: bool = False
+        last_write_timestamp: Optional[float] = None
+
+        def writing_routine():
+            nonlocal last_write_timestamp
+            # 30 messages should be enough to fill the queue even if some of
+            # the events are dequeued in the background thread.
+            for _ in range(30):
+                w.write(b"x" * 64)
+                last_write_timestamp = time.time()
+
+        def on_write(*args, **kwargs) -> None:
+            with cv:
+                cv.wait_for(lambda: writing_can_proceed)
+            raise Exception()
+
+        record_writer_mock.write.side_effect = on_write
+        thread = threading.Thread(target=writing_routine, daemon=True)
+        thread.start()
+
+        with cv:
+            # Wait until the writing routine is blocked on writing.
+            while (
+                last_write_timestamp is None
+                or time.time() < last_write_timestamp + 1
+            ):
+                cv.wait(0.1)
+            writing_can_proceed = True
+            cv.notify_all()
+
+        # If the thread joins successfully, it means that the exception was
+        # successfully propagated. 10 seconds should be more than enough to
+        # make sure that the thread is hanging.
+        thread.join(timeout=10)
+        self.assertFalse(thread.is_alive())
 
 
 if __name__ == "__main__":

@@ -15,7 +15,14 @@ limitations under the License.
 
 import {OverlayModule} from '@angular/cdk/overlay';
 import {CommonModule} from '@angular/common';
-import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  NO_ERRORS_SCHEMA,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {ChartImpl} from './lib/chart';
@@ -55,6 +62,7 @@ class FakeGridComponent {
       [yScaleType]="yScaleType"
       [fixedViewBox]="fixedViewBox"
       [useDarkMode]="useDarkMode"
+      (viewBoxChanged)="viewBoxChanged.emit($event)"
     ></line-chart>
   `,
   styles: [
@@ -91,6 +99,9 @@ class TestableComponent {
 
   @Input()
   lineOnly: boolean = false;
+
+  @Output()
+  viewBoxChanged = new EventEmitter();
 
   // WebGL one is harder to test.
   preferredRendererType = RendererType.SVG;
@@ -383,6 +394,42 @@ describe('line_chart_v2/line_chart test', () => {
     expect(updateViewBoxSpy.calls.argsFor(3)).toEqual([
       {x: [-0.5, 4.5], y: [-2, 2]},
     ]);
+  });
+
+  it('emits viewBoxChanged event when viewbox is changed or reset', () => {
+    const fixture = createComponent({
+      seriesData: [
+        buildSeries({
+          id: 'foo',
+          points: [
+            {x: 0, y: 0},
+            {x: 1, y: -1},
+            {x: 2, y: 1},
+          ],
+        }),
+      ],
+      seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+      yScaleType: ScaleType.LINEAR,
+    });
+    spyOn(fixture.componentInstance.viewBoxChanged, 'emit');
+    fixture.detectChanges();
+    expect(updateViewBoxSpy).toHaveBeenCalledOnceWith({
+      x: [-0.2, 2.2],
+      y: [-1.2, 1.2],
+    });
+
+    fixture.componentInstance.triggerViewBoxChange({
+      x: [-5, 5],
+      y: [0, 10],
+    });
+
+    expect(fixture.componentInstance.viewBoxChanged.emit).toHaveBeenCalledTimes(
+      1
+    );
+    fixture.componentInstance.chart.viewBoxReset();
+    expect(fixture.componentInstance.viewBoxChanged.emit).toHaveBeenCalledTimes(
+      2
+    );
   });
 
   it('sets correct domDim and viewBox on initial render', () => {

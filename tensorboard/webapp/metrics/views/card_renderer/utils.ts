@@ -91,50 +91,55 @@ export interface TimeSelectionView {
   clipped: boolean;
 }
 
-export function maybeClipLinkedTimeSelection(
+export function clipStepWithinMinMax(value: number, min: number, max: number) {
+  if (value < min) {
+    return min;
+  }
+  if (value > max) {
+    return max;
+  }
+  return value;
+}
+
+export function maybeClipTimeSelection(
+  timeSelection: TimeSelection,
+  minStep: number,
+  maxStep: number
+): TimeSelection {
+  const timeSelectionView = maybeClipTimeSelectionView(
+    timeSelection,
+    minStep,
+    maxStep
+  );
+  return {
+    start: {step: timeSelectionView.startStep},
+    end:
+      timeSelectionView.endStep === null
+        ? null
+        : {step: timeSelectionView.endStep},
+  };
+}
+
+export function maybeClipTimeSelectionView(
   timeSelection: TimeSelection,
   minStep: number,
   maxStep: number
 ): TimeSelectionView {
-  if (
-    // Case when timeSelection contains extents.
-    (timeSelection.start.step <= minStep &&
-      timeSelection.end &&
-      maxStep <= timeSelection.end.step) ||
-    // Case when start of timeSelection is within extent.
-    (minStep <= timeSelection.start.step &&
-      timeSelection.start.step <= maxStep) ||
-    // Case when end of timeSelection is within extent.
-    (timeSelection.end &&
-      minStep <= timeSelection.end?.step &&
-      timeSelection.end?.step <= maxStep)
-  ) {
-    return {
-      startStep: timeSelection.start.step,
-      endStep: timeSelection.end?.step ?? null,
-      clipped: false,
-    };
-  }
-
-  // When time selection and data extent (in step axis) do not overlap,
-  // default single select min or max data extent depending on which side
-  // the time selection is at.
-
-  // Case when time selection is on the right of the maximum of the
-  // time series.
-  if (maxStep <= timeSelection.start.step) {
-    return {
-      startStep: maxStep,
-      endStep: null,
-      clipped: true,
-    };
-  }
-  // Case when time selection is on the left of the minimum of the time
-  // series.
+  const maybeClippedStartStep = clipStepWithinMinMax(
+    timeSelection.start.step,
+    minStep,
+    maxStep
+  );
+  const maybeClippedEndStep = timeSelection.end
+    ? clipStepWithinMinMax(timeSelection.end.step, minStep, maxStep)
+    : null;
+  const clipped =
+    maybeClippedStartStep !== timeSelection.start.step ||
+    maybeClippedEndStep !== (timeSelection.end?.step ?? null);
   return {
-    startStep: minStep,
-    endStep: null,
-    clipped: true,
+    startStep: maybeClippedStartStep,
+    endStep: maybeClippedEndStep,
+    clipped,
   };
 }
 
@@ -171,7 +176,7 @@ export function getClosestStep(
   steps: number[]
 ): number | null {
   let minDistance = Infinity;
-  let closestStep = null;
+  let closestStep: number | null = null;
   for (const step of steps) {
     const distance = Math.abs(selectedStep - step);
     // With the same distance between two steps, this method favors smaller step than larger

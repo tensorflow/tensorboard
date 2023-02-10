@@ -194,7 +194,7 @@ class TfDistributionDashboard extends LegacyElementMixin(PolymerElement) {
   }
 
   _reloadDistributions() {
-    this.root.querySelectorAll('tf-distribution-loader').forEach((loader) => {
+    this.root?.querySelectorAll('tf-distribution-loader').forEach((loader) => {
       (loader as TfDistributionLoader).reload();
     });
   }

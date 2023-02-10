@@ -39,7 +39,7 @@ def _CreateCleanDirectory(path):
     tf.io.gfile.mkdir(path)
 
 
-class _FakeAccumulator(object):
+class _FakeAccumulator:
     def __init__(self, path):
         """Constructs a fake accumulator with some fake events.
 
@@ -66,6 +66,9 @@ class _FakeAccumulator(object):
 
     def FirstEventTimestamp(self):
         return 0
+
+    def GetSourceWriter(self):
+        return "%s_writer" % self._path
 
     def _TagHelper(self, tag_name, enum):
         if tag_name not in self.Tags()[enum]:
@@ -115,7 +118,7 @@ def _GetFakeAccumulator(
 
 class EventMultiplexerTest(tf.test.TestCase):
     def setUp(self):
-        super(EventMultiplexerTest, self).setUp()
+        super().setUp()
         self.stubs = tf.compat.v1.test.StubOutForTesting()
 
         self.stubs.Set(
@@ -136,7 +139,7 @@ class EventMultiplexerTest(tf.test.TestCase):
         x = event_multiplexer.EventMultiplexer(
             {"run1": "path1", "run2": "path2"}
         )
-        self.assertItemsEqual(sorted(x.Runs().keys()), ["run1", "run2"])
+        self.assertCountEqual(sorted(x.Runs().keys()), ["run1", "run2"])
         self.assertEqual(x.GetAccumulator("run1")._path, "path1")
         self.assertEqual(x.GetAccumulator("run2")._path, "path2")
 
@@ -150,6 +153,13 @@ class EventMultiplexerTest(tf.test.TestCase):
         x.Reload()
         self.assertTrue(x.GetAccumulator("run1").reload_called)
         self.assertTrue(x.GetAccumulator("run2").reload_called)
+
+    def testGetSourceWriter(self):
+        x = event_multiplexer.EventMultiplexer(
+            {"run1": "path1", "run2": "path2"}
+        )
+        self.assertEqual(x.GetSourceWriter("run1"), "path1_writer")
+        self.assertEqual(x.GetSourceWriter("run2"), "path2_writer")
 
     def testScalars(self):
         """Tests Scalars function returns suitable values."""
@@ -196,7 +206,7 @@ class EventMultiplexerTest(tf.test.TestCase):
         x = event_multiplexer.EventMultiplexer(
             {"run1": "path1", "run2": "path2"}
         )
-        self.assertItemsEqual(x.Runs(), ["run1", "run2"])
+        self.assertCountEqual(x.Runs(), ["run1", "run2"])
         self.assertEqual(x.GetAccumulator("run1")._path, "path1")
         self.assertEqual(x.GetAccumulator("run2")._path, "path2")
 
@@ -231,14 +241,14 @@ class EventMultiplexerTest(tf.test.TestCase):
 
         _AddEvents(path1)
         x.AddRunsFromDirectory(realdir)
-        self.assertItemsEqual(x.Runs(), ["path1"], "loaded run: path1")
+        self.assertCountEqual(x.Runs(), ["path1"], "loaded run: path1")
         loader1 = x.GetAccumulator("path1")
         self.assertEqual(loader1._path, path1, "has the correct path")
 
         path2 = join(realdir, "path2")
         _AddEvents(path2)
         x.AddRunsFromDirectory(realdir)
-        self.assertItemsEqual(x.Runs(), ["path1", "path2"])
+        self.assertCountEqual(x.Runs(), ["path1", "path2"])
         self.assertEqual(
             x.GetAccumulator("path1"), loader1, "loader1 not regenerated"
         )
@@ -246,7 +256,7 @@ class EventMultiplexerTest(tf.test.TestCase):
         path2_2 = join(path2, "path2")
         _AddEvents(path2_2)
         x.AddRunsFromDirectory(realdir)
-        self.assertItemsEqual(x.Runs(), ["path1", "path2", "path2/path2"])
+        self.assertCountEqual(x.Runs(), ["path1", "path2", "path2/path2"])
         self.assertEqual(
             x.GetAccumulator("path2/path2")._path,
             path2_2,
@@ -265,12 +275,12 @@ class EventMultiplexerTest(tf.test.TestCase):
 
         _AddEvents(realdir)
         x.AddRunsFromDirectory(realdir)
-        self.assertItemsEqual(x.Runs(), ["."])
+        self.assertCountEqual(x.Runs(), ["."])
 
         subdir = join(realdir, "subdir")
         _AddEvents(subdir)
         x.AddRunsFromDirectory(realdir)
-        self.assertItemsEqual(x.Runs(), [".", "subdir"])
+        self.assertCountEqual(x.Runs(), [".", "subdir"])
 
     def testAddRunsFromDirectoryWithRunNames(self):
         x = event_multiplexer.EventMultiplexer()
@@ -284,12 +294,12 @@ class EventMultiplexerTest(tf.test.TestCase):
 
         _AddEvents(realdir)
         x.AddRunsFromDirectory(realdir, "foo")
-        self.assertItemsEqual(x.Runs(), ["foo/."])
+        self.assertCountEqual(x.Runs(), ["foo/."])
 
         subdir = join(realdir, "subdir")
         _AddEvents(subdir)
         x.AddRunsFromDirectory(realdir, "foo")
-        self.assertItemsEqual(x.Runs(), ["foo/.", "foo/subdir"])
+        self.assertCountEqual(x.Runs(), ["foo/.", "foo/subdir"])
 
     def testAddRunsFromDirectoryWalksTree(self):
         x = event_multiplexer.EventMultiplexer()
@@ -308,7 +318,7 @@ class EventMultiplexerTest(tf.test.TestCase):
         _AddEvents(sub1_1)
         x.AddRunsFromDirectory(realdir)
 
-        self.assertItemsEqual(
+        self.assertCountEqual(
             x.Runs(),
             [".", "subdirectory/1", "subdirectory/2", "subdirectory/1/1"],
         )
@@ -337,7 +347,7 @@ class EventMultiplexerTest(tf.test.TestCase):
         self.assertNotEqual(run1, new_run1)
 
         x.AddRun("runName3")
-        self.assertItemsEqual(sorted(x.Runs().keys()), ["run1", "runName3"])
+        self.assertCountEqual(sorted(x.Runs().keys()), ["run1", "runName3"])
         self.assertEqual(x.GetAccumulator("runName3")._path, "runName3")
 
     def testAddRunMaintainsLoading(self):

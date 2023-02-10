@@ -38,7 +38,7 @@ def main():
         mac_platform = "macosx_11_0"
     platform_name = {
         # using platform tag values from TensorFlow releases
-        "Linux": "manylinux2010",
+        "Linux": "manylinux2014",
         "Darwin": mac_platform,
     }.get(platform.system())
 

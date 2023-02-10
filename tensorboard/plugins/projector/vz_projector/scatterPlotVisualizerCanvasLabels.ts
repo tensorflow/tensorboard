@@ -36,7 +36,7 @@ export class ScatterPlotVisualizerCanvasLabels
   constructor(container: HTMLElement) {
     this.canvas = document.createElement('canvas');
     container.appendChild(this.canvas);
-    this.gc = this.canvas.getContext('2d');
+    this.gc = this.canvas.getContext('2d')!;
     this.canvas.style.position = 'absolute';
     this.canvas.style.left = '0';
     this.canvas.style.top = '0';
@@ -157,8 +157,8 @@ export class ScatterPlotVisualizerCanvasLabels
   }
   dispose() {
     this.removeAllLabels();
-    this.canvas = null;
-    this.gc = null;
+    this.canvas = null!;
+    this.gc = null!;
   }
   onPointPositionsChanged(newPositions: Float32Array) {
     this.worldSpacePointPositions = newPositions;

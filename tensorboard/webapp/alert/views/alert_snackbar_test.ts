@@ -66,6 +66,7 @@ describe('alert snackbar', () => {
 
   afterEach(() => {
     snackbar.dismiss();
+    store?.resetSelectors();
   });
 
   it('opens the snackbar on each alert', () => {

@@ -18,24 +18,24 @@ limitations under the License.
   #dots
   class="dots"
   [class.pannable]="specialKeyPressed"
-  [class.draggable]="state === InteractionState.NONE || state === InteractionState.DRAG_ZOOMING"
-  [class.panning]="state === InteractionState.PANNING"
+  [class.draggable]="state.getValue() === InteractionState.NONE || state.getValue() === InteractionState.DRAG_ZOOMING"
+  [class.panning]="state.getValue() === InteractionState.PANNING"
 >
-  <ng-container *ngIf="state === InteractionState.NONE">
+  <ng-container *ngIf="state.getValue() === InteractionState.NONE">
     <ng-container
       *ngFor="let datum of cursoredData; trackBy: trackBySeriesName"
     >
       <circle
-        *ngIf="shouldRenderTooltipPoint(datum.point)"
-        [attr.cx]="getDomX(datum.point.x)"
-        [attr.cy]="getDomY(datum.point.y)"
+        *ngIf="shouldRenderTooltipPoint(datum.dataPoint)"
+        [attr.cx]="getDomX(datum.dataPoint.x)"
+        [attr.cy]="getDomY(datum.dataPoint.y)"
         [attr.fill]="datum.metadata.color"
         r="4"
       ></circle>
     </ng-container>
   </ng-container>
   <rect
-    *ngIf="state === InteractionState.DRAG_ZOOMING"
+    *ngIf="state.getValue() === InteractionState.DRAG_ZOOMING"
     class="zoom-box"
     [attr.x]="zoomBoxInUiCoordinate.x"
     [attr.width]="zoomBoxInUiCoordinate.width"
@@ -54,7 +54,7 @@ limitations under the License.
 <ng-template
   cdkConnectedOverlay
   [cdkConnectedOverlayOrigin]="tooltipOriginEl"
-  [cdkConnectedOverlayOpen]="tooltipDisplayAttached && state === InteractionState.NONE"
+  [cdkConnectedOverlayOpen]="tooltipDisplayAttached && state.getValue() === InteractionState.NONE"
   [cdkConnectedOverlayPositions]="tooltipPositions"
   [cdkConnectedOverlayScrollStrategy]="scrollStrategy"
   [cdkConnectedOverlayLockPosition]="false"
@@ -67,7 +67,8 @@ limitations under the License.
       [ngTemplateOutlet]="tooltipTemplate ? tooltipTemplate : defaultTooltip"
       [ngTemplateOutletContext]="{
         data: cursoredData,
-        cursorLocationInDataCoord: cursorLocationInDataCoord
+        cursorLocationInDataCoord: cursorLocationInDataCoord,
+        cursorLocation: cursorLocation
       }"
     ></ng-container>
   </div>
@@ -92,8 +93,8 @@ limitations under the License.
             <span [style.backgroundColor]="datum.metadata.color"></span>
           </td>
           <td class="name">{{ datum.metadata.displayName }}</td>
-          <td>{{ datum.point.y }}</td>
-          <td>{{ datum.point.x }}</td>
+          <td>{{ datum.dataPoint.y }}</td>
+          <td>{{ datum.dataPoint.x }}</td>
         </tr>
       </ng-container>
     </tbody>

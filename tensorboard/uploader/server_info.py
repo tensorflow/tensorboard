@@ -48,27 +48,27 @@ _DEFAULT_MIN_BLOB_REQUEST_INTERVAL = 1000
 # slow and we would otherwise risk Deadline Exceeded errors.
 #
 # [1]: https://github.com/grpc/grpc/blob/e70d8582b4b0eedc45e3d25a57b58a08b94a9f4a/include/grpc/impl/codegen/grpc_types.h#L447  # pylint: disable=line-too-long
-_DEFAULT_MAX_SCALAR_REQUEST_SIZE = 128 * (2 ** 10)  # 128KiB
+_DEFAULT_MAX_SCALAR_REQUEST_SIZE = 128 * (2**10)  # 128KiB
 
 # Maximum WriteTensor request size, if not specified by server_info, in bytes.
 # The server-side limit is 4 MiB [1]; we should pad a bit to mitigate any errors
 # in our bookkeeping. Currently, we pad a lot.
 #
 # [1]: https://github.com/grpc/grpc/blob/e70d8582b4b0eedc45e3d25a57b58a08b94a9f4a/include/grpc/impl/codegen/grpc_types.h#L447  # pylint: disable=line-too-long
-_DEFAULT_MAX_TENSOR_REQUEST_SIZE = 512 * (2 ** 10)  # 512KiB
+_DEFAULT_MAX_TENSOR_REQUEST_SIZE = 512 * (2**10)  # 512KiB
 
 # Maximum WriteBlob request size, if not specified by server_info, in bytes.
 # The server-side limit is 4 MiB [1]; we pad with a 256 KiB chunk to mitigate
 # any errors in our bookkeeping.
 #
 # [1]: https://github.com/grpc/grpc/blob/e70d8582b4b0eedc45e3d25a57b58a08b94a9f4a/include/grpc/impl/codegen/grpc_types.h#L447  # pylint: disable=line-too-long
-_DEFAULT_MAX_BLOB_REQUEST_SIZE = 4 * (2 ** 20) - 256 * (2 ** 10)  # 4MiB-256KiB
+_DEFAULT_MAX_BLOB_REQUEST_SIZE = 4 * (2**20) - 256 * (2**10)  # 4MiB-256KiB
 
 # Maximum blob size, if not specified by server_info, in bytes.
-_DEFAULT_MAX_BLOB_SIZE = 10 * (2 ** 20)  # 10MiB
+_DEFAULT_MAX_BLOB_SIZE = 10 * (2**20)  # 10MiB
 
 # Maximum tensor point size, if not specified by server_info, in bytes.
-_DEFAULT_MAX_TENSOR_POINT_SIZE = 16 * (2 ** 10)  # 16KiB
+_DEFAULT_MAX_TENSOR_POINT_SIZE = 16 * (2**10)  # 16KiB
 
 
 def _server_info_request(upload_plugins):

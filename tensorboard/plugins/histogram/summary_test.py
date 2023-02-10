@@ -41,9 +41,9 @@ except AttributeError:
     pass
 
 
-class SummaryBaseTest(object):
+class SummaryBaseTest:
     def setUp(self):
-        super(SummaryBaseTest, self).setUp()
+        super().setUp()
         np.random.seed(0)
         self.gaussian = np.random.normal(size=[100])
 
@@ -92,7 +92,7 @@ class SummaryBaseTest(object):
         self.assertEqual(buckets[:, 0].min(), self.gaussian.min())
         # Assert near, not equal, since TF's linspace op introduces floating point
         # error in the upper bound of the result.
-        self.assertNear(buckets[:, 1].max(), self.gaussian.max(), 1.0 ** -10)
+        self.assertNear(buckets[:, 1].max(), self.gaussian.max(), 1.0**-10)
         self.assertEqual(buckets[:, 2].sum(), self.gaussian.size)
         np.testing.assert_allclose(buckets[1:, 0], buckets[:-1, 1])
 
@@ -215,7 +215,7 @@ class SummaryV2PbTest(SummaryBaseTest, tf.test.TestCase):
 
 class SummaryV3OpTest(SummaryBaseTest, tf.test.TestCase):
     def setUp(self):
-        super(SummaryV3OpTest, self).setUp()
+        super().setUp()
         if tf2 is None:
             self.skipTest("v3 histogram summary API not available")
 

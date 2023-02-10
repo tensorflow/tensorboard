@@ -28,6 +28,7 @@ import {HashStorageModule} from './core/views/hash_storage_module';
 import {PageTitleModule} from './core/views/page_title_module';
 import {ExperimentsModule} from './experiments/experiments_module';
 import {FeatureFlagModule} from './feature_flag/feature_flag_module';
+import {FeatureFlagModalTriggerModule} from './feature_flag/views/feature_flag_modal_trigger_module';
 import {HeaderModule} from './header/header_module';
 import {HparamsModule} from './hparams/hparams_module';
 import {MatIconModule} from './mat_icon_module';
@@ -45,6 +46,7 @@ import {TensorBoardWrapperModule} from './tb_wrapper/tb_wrapper_module';
   imports: [
     // Ensure feature flags are enabled before they are consumed.
     FeatureFlagModule,
+    FeatureFlagModalTriggerModule,
     BrowserModule,
     BrowserAnimationsModule,
     AppRoutingModule,

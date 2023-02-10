@@ -95,9 +95,9 @@ class TextPluginTest(tf.test.TestCase):
     def testIndex(self):
         plugin = self.load_plugin()
         index = plugin.index_impl(context.RequestContext(), experiment="123")
-        self.assertItemsEqual(["fry", "leela"], index.keys())
-        self.assertItemsEqual(["message", "vector"], index["fry"])
-        self.assertItemsEqual(["message", "vector"], index["leela"])
+        self.assertCountEqual(["fry", "leela"], index.keys())
+        self.assertCountEqual(["message", "vector"], index["fry"])
+        self.assertCountEqual(["message", "vector"], index["leela"])
 
     def testText(self):
         plugin = self.load_plugin()
@@ -336,7 +336,7 @@ class TextPluginTest(tf.test.TestCase):
 
             Example: rangeArray(2) results in [[0,1],[2,3]].
             """
-            return np.array(range(2 ** dim)).reshape([2] * dim)
+            return np.array(range(2**dim)).reshape([2] * dim)
 
         for i in range(2, 5):
             actual = text_plugin.reduce_to_2d(make_range_array(i))
@@ -430,9 +430,9 @@ class TextPluginTest(tf.test.TestCase):
         run_to_tags = plugin.index_impl(
             context.RequestContext(), experiment="123"
         )
-        self.assertItemsEqual(["fry", "leela"], run_to_tags.keys())
-        self.assertItemsEqual(["message", "vector"], run_to_tags["fry"])
-        self.assertItemsEqual(["message", "vector"], run_to_tags["leela"])
+        self.assertCountEqual(["fry", "leela"], run_to_tags.keys())
+        self.assertCountEqual(["message", "vector"], run_to_tags["fry"])
+        self.assertCountEqual(["message", "vector"], run_to_tags["leela"])
 
 
 if __name__ == "__main__":

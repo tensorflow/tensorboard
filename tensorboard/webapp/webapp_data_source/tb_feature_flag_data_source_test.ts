@@ -13,24 +13,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
+import {FeatureFlagMetadataMap} from '../feature_flag/store/feature_flag_metadata';
 import {QueryParams} from './query_params';
 import {
-  QueryParamsFeatureFlagDataSource,
+  FeatureFlagOverrideDataSource,
   TEST_ONLY,
 } from './tb_feature_flag_data_source';
 
 describe('tb_feature_flag_data_source', () => {
-  describe('QueryParamsFeatureFlagDataSource', () => {
-    let dataSource: QueryParamsFeatureFlagDataSource;
+  describe('FeatureFlagOverrideDataSource', () => {
+    let dataSource: FeatureFlagOverrideDataSource;
     let matchMediaSpy: jasmine.Spy;
     let getParamsSpy: jasmine.Spy;
 
     beforeEach(async () => {
       await TestBed.configureTestingModule({
-        providers: [QueryParamsFeatureFlagDataSource, QueryParams],
+        providers: [FeatureFlagOverrideDataSource, QueryParams],
       }).compileComponents();
 
-      dataSource = TestBed.inject(QueryParamsFeatureFlagDataSource);
+      dataSource = TestBed.inject(FeatureFlagOverrideDataSource);
       matchMediaSpy = spyOn(window, 'matchMedia').and.returnValue({
         matches: false,
       } as MediaQueryList);
@@ -42,261 +43,74 @@ describe('tb_feature_flag_data_source', () => {
     });
 
     describe('getFeatures', () => {
+      function getFeatures(options?: {
+        enableMediaQuery?: boolean;
+        localStorageOverrides?: string | null;
+      }) {
+        const {enableMediaQuery = false, localStorageOverrides = null} =
+          options || {};
+        spyOn(localStorage, 'getItem').and.returnValue(localStorageOverrides);
+        return dataSource.getFeatures(enableMediaQuery, FeatureFlagMetadataMap);
+      }
+
       it('returns empty values when params are empty', () => {
         getParamsSpy.and.returnValue(new URLSearchParams(''));
-        expect(dataSource.getFeatures()).toEqual({});
+        expect(getFeatures()).toEqual({});
       });
 
       it('returns enabledExperimentalPlugins from the query params', () => {
         getParamsSpy.and.returnValue(
           new URLSearchParams('experimentalPlugin=a,b')
         );
-        expect(dataSource.getFeatures()).toEqual({
+        expect(getFeatures()).toEqual({
           enabledExperimentalPlugins: ['a', 'b'],
         });
       });
 
-      it('returns inColab=false when `tensorboardColab` is empty', () => {
+      it('returns inColab=true when `tensorboardColab` is empty', () => {
         getParamsSpy.and.returnValue(new URLSearchParams('tensorboardColab'));
-        expect(dataSource.getFeatures()).toEqual({inColab: true});
+        expect(getFeatures()).toEqual({inColab: true});
       });
 
       it('returns inColab=true when `tensorboardColab` is`true`', () => {
         getParamsSpy.and.returnValue(
           new URLSearchParams('tensorboardColab=true')
         );
-        expect(dataSource.getFeatures()).toEqual({inColab: true});
+        expect(getFeatures()).toEqual({inColab: true});
       });
 
       it('returns inColab=false when `tensorboardColab` is `false`', () => {
         getParamsSpy.and.returnValue(
           new URLSearchParams('tensorboardColab=false')
         );
-        expect(dataSource.getFeatures()).toEqual({inColab: false});
+        expect(getFeatures()).toEqual({inColab: false});
       });
 
       it('returns scalarsBatchSize from the query params', () => {
         getParamsSpy.and.returnValue(
           new URLSearchParams('scalarsBatchSize=12')
         );
-        expect(dataSource.getFeatures()).toEqual({
+        expect(getFeatures()).toEqual({
           scalarsBatchSize: 12,
         });
       });
 
-      describe('returns enableColorGroup from the query params', () => {
-        it('when set to false', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableColorGroup=false')
-          );
-          expect(dataSource.getFeatures()).toEqual({enabledColorGroup: false});
-        });
-
-        it('when set to empty string', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableColorGroup=')
-          );
-          expect(dataSource.getFeatures()).toEqual({enabledColorGroup: true});
-        });
-
-        it('when set to true', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableColorGroup=true')
-          );
-          expect(dataSource.getFeatures()).toEqual({enabledColorGroup: true});
-        });
-
-        it('when set to an arbitrary string', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableColorGroup=foo')
-          );
-          expect(dataSource.getFeatures()).toEqual({enabledColorGroup: true});
-        });
-      });
-
-      describe('returns enabledColorGroupByRegex from the query params', () => {
-        it('when set to false', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableColorGroupByRegex=false')
-          );
-          expect(dataSource.getFeatures()).toEqual({
-            enabledColorGroupByRegex: false,
-          });
-        });
-
-        it('when set to empty string', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableColorGroupByRegex=')
-          );
-          expect(dataSource.getFeatures()).toEqual({
-            enabledColorGroupByRegex: true,
-          });
-        });
-
-        it('when set to true', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableColorGroupByRegex=true')
-          );
-          expect(dataSource.getFeatures()).toEqual({
-            enabledColorGroupByRegex: true,
-          });
-        });
-
-        it('when set to an arbitrary string', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableColorGroupByRegex=foo')
-          );
-          expect(dataSource.getFeatures()).toEqual({
-            enabledColorGroupByRegex: true,
-          });
-        });
-      });
-
-      describe('returns enabledLinkedTime from the query params', () => {
-        it('when set to false', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableLinkedTime=false')
-          );
-          expect(dataSource.getFeatures()).toEqual({enabledLinkedTime: false});
-        });
-
-        it('when set to empty string', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableLinkedTime=')
-          );
-          expect(dataSource.getFeatures()).toEqual({enabledLinkedTime: true});
-        });
-
-        it('when set to true', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableLinkedTime=true')
-          );
-          expect(dataSource.getFeatures()).toEqual({enabledLinkedTime: true});
-        });
-
-        it('when set to an arbitrary string', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableLinkedTime=foo')
-          );
-          expect(dataSource.getFeatures()).toEqual({enabledLinkedTime: true});
-        });
-      });
-
-      describe('returns enabledCardWidthSetting from the query params', () => {
-        it('when set to false', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableCardWidthSetting=false')
-          );
-          expect(dataSource.getFeatures()).toEqual({
-            enabledCardWidthSetting: false,
-          });
-        });
-
-        it('when set to empty string', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableCardWidthSetting=')
-          );
-          expect(dataSource.getFeatures()).toEqual({
-            enabledCardWidthSetting: true,
-          });
-        });
-
-        it('when set to true', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableCardWidthSetting=true')
-          );
-          expect(dataSource.getFeatures()).toEqual({
-            enabledCardWidthSetting: true,
-          });
-        });
-
-        it('when set to an arbitrary string', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableCardWidthSetting=foo')
-          );
-          expect(dataSource.getFeatures()).toEqual({
-            enabledCardWidthSetting: true,
-          });
-        });
-      });
-
-      describe('returns forceSvg from the query params', () => {
-        it('when set to false', () => {
-          getParamsSpy.and.returnValue(new URLSearchParams('forceSVG=false'));
-          expect(dataSource.getFeatures()).toEqual({forceSvg: false});
-        });
-
-        it('when set to empty string', () => {
-          getParamsSpy.and.returnValue(new URLSearchParams('forceSVG='));
-          expect(dataSource.getFeatures()).toEqual({forceSvg: true});
-        });
-
-        it('when set to true', () => {
-          getParamsSpy.and.returnValue(new URLSearchParams('forceSVG=true'));
-          expect(dataSource.getFeatures()).toEqual({forceSvg: true});
-        });
-
-        it('when set to an arbitrary string', () => {
-          getParamsSpy.and.returnValue(new URLSearchParams('forceSVG=foo'));
-          expect(dataSource.getFeatures()).toEqual({forceSvg: true});
-        });
-      });
-
-      describe('returns enabledDataTable from the query params', () => {
-        it('when set to false', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableDataTable=false')
-          );
-          expect(dataSource.getFeatures()).toEqual({
-            enabledScalarDataTable: false,
-          });
-        });
-
-        it('when set to empty string', () => {
-          getParamsSpy.and.returnValue(new URLSearchParams('enableDataTable='));
-          expect(dataSource.getFeatures()).toEqual({
-            enabledScalarDataTable: true,
-          });
-        });
-
-        it('when set to true', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableDataTable=true')
-          );
-          expect(dataSource.getFeatures()).toEqual({
-            enabledScalarDataTable: true,
-          });
-        });
-
-        it('when set to an arbitrary string', () => {
-          getParamsSpy.and.returnValue(
-            new URLSearchParams('enableDataTable=foo')
-          );
-          expect(dataSource.getFeatures()).toEqual({
-            enabledScalarDataTable: true,
-          });
-        });
-      });
-
-      it('returns all flag values when they are all set', () => {
+      it('returns multiple flag values when they are all set', () => {
         getParamsSpy.and.returnValue(
           new URLSearchParams(
             'experimentalPlugin=a' +
               '&tensorboardColab' +
-              '&fastChart=true' +
               '&scalarsBatchSize=16'
           )
         );
-        expect(dataSource.getFeatures()).toEqual({
+        expect(getFeatures()).toEqual({
           enabledExperimentalPlugins: ['a'],
           inColab: true,
           scalarsBatchSize: 16,
         });
       });
-    });
 
-    describe('media query feature flag', () => {
-      describe('getFeatures', () => {
+      describe('media query feature flag', () => {
         function fakeMediaQuery(matchDarkMode: boolean) {
           matchMediaSpy
             .withArgs(TEST_ONLY.DARK_MODE_MEDIA_QUERY)
@@ -306,7 +120,7 @@ describe('tb_feature_flag_data_source', () => {
 
         it('takes value from media query when `enableMediaQuery` is true', () => {
           fakeMediaQuery(true);
-          expect(dataSource.getFeatures(true)).toEqual({
+          expect(getFeatures({enableMediaQuery: true})).toEqual({
             defaultEnableDarkMode: true,
           });
         });
@@ -316,8 +130,171 @@ describe('tb_feature_flag_data_source', () => {
             'dark mode',
           () => {
             fakeMediaQuery(false);
-            expect(dataSource.getFeatures(true)).toEqual({});
+            expect(getFeatures({enableMediaQuery: true})).toEqual({});
           }
+        );
+
+        it('retrieves values from localStorage', () => {
+          expect(
+            getFeatures({localStorageOverrides: '{"inColab": true}'})
+          ).toEqual({
+            inColab: true,
+          });
+        });
+
+        it('ignores features not contained within the provided FeatureFlagMetadataMap', () => {
+          expect(
+            getFeatures({localStorageOverrides: '{"abc123": true}'})
+          ).toEqual({});
+        });
+      });
+    });
+
+    describe('persistFeatureFlags', () => {
+      it('setsflag values', () => {
+        spyOn(localStorage, 'getItem').and.returnValue(null);
+        const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
+
+        dataSource.persistFeatureFlags({enabledScalarDataTable: true});
+
+        expect(setItemSpy).toHaveBeenCalledOnceWith(
+          'tb_feature_flag_storage_key',
+          '{"enabledScalarDataTable":true}'
+        );
+      });
+
+      it('adds new flag when some flags already exist', () => {
+        spyOn(localStorage, 'getItem').and.returnValue(
+          '{"enabledScalarDataTable":true}'
+        );
+
+        const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
+
+        dataSource.persistFeatureFlags({inColab: true});
+
+        expect(setItemSpy).toHaveBeenCalledOnceWith(
+          'tb_feature_flag_storage_key',
+          '{"enabledScalarDataTable":true,"inColab":true}'
+        );
+      });
+
+      it('Overrides flag if it is already persisted', () => {
+        spyOn(localStorage, 'getItem').and.returnValue(
+          '{"enabledScalarDataTable":true,"inColab":true}'
+        );
+        const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
+
+        dataSource.persistFeatureFlags({inColab: false});
+
+        expect(setItemSpy).toHaveBeenCalledOnceWith(
+          'tb_feature_flag_storage_key',
+          '{"enabledScalarDataTable":true,"inColab":false}'
+        );
+      });
+
+      it('sets multiple flags when passed', () => {
+        spyOn(localStorage, 'getItem').and.returnValue(null);
+        const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
+
+        dataSource.persistFeatureFlags({
+          enabledScalarDataTable: true,
+          inColab: false,
+        });
+
+        expect(setItemSpy).toHaveBeenCalledOnceWith(
+          'tb_feature_flag_storage_key',
+          '{"enabledScalarDataTable":true,"inColab":false}'
+        );
+      });
+    });
+
+    describe('getPersistentFeatureFlags', () => {
+      it('returns an empty object when localStorage returns null', () => {
+        const getItemSpy = spyOn(localStorage, 'getItem').and.returnValue(null);
+
+        expect(dataSource.getPersistentFeatureFlags()).toEqual({});
+        expect(getItemSpy).toHaveBeenCalledOnceWith(
+          'tb_feature_flag_storage_key'
+        );
+      });
+
+      it('returns a properly parsed object when getItem gives one', () => {
+        const getItemSpy = spyOn(localStorage, 'getItem').and.returnValue(
+          '{"enabledScalarDataTable":true,"inColab":false}'
+        );
+
+        expect(dataSource.getPersistentFeatureFlags()).toEqual({
+          enabledScalarDataTable: true,
+          inColab: false,
+        });
+        expect(getItemSpy).toHaveBeenCalledOnceWith(
+          'tb_feature_flag_storage_key'
+        );
+      });
+    });
+
+    describe('resetPersistedFeatureFlag', () => {
+      it('does nothing if there is no flags are persisted', () => {
+        spyOn(localStorage, 'getItem').and.returnValue(null);
+        const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
+
+        dataSource.resetPersistedFeatureFlag('inColab');
+
+        expect(setItemSpy).not.toHaveBeenCalled();
+      });
+
+      it('does nothing when featureFlag passed is not persisted', () => {
+        spyOn(localStorage, 'getItem').and.returnValue(
+          '{"enabledScalarDataTable":true}'
+        );
+        const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
+
+        dataSource.resetPersistedFeatureFlag('inColab');
+
+        expect(setItemSpy).not.toHaveBeenCalled();
+      });
+
+      it('stores a new object with given flag removed', () => {
+        spyOn(localStorage, 'getItem').and.returnValue(
+          '{"enabledScalarDataTable":true,"inColab":false}'
+        );
+        const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
+
+        dataSource.resetPersistedFeatureFlag('inColab');
+
+        expect(setItemSpy).toHaveBeenCalledOnceWith(
+          'tb_feature_flag_storage_key',
+          '{"enabledScalarDataTable":true}'
+        );
+      });
+
+      it('removes item when reseting the only flag', () => {
+        spyOn(localStorage, 'getItem').and.returnValue(
+          '{"enabledScalarDataTable":true}'
+        );
+        const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
+        const removeItemSpy = spyOn(localStorage, 'removeItem').and.stub();
+
+        dataSource.resetPersistedFeatureFlag('enabledScalarDataTable');
+
+        expect(setItemSpy).not.toHaveBeenCalled();
+        expect(removeItemSpy).toHaveBeenCalledOnceWith(
+          'tb_feature_flag_storage_key'
+        );
+      });
+    });
+
+    describe('resetAllPersistedFeatureFlags', () => {
+      it('removes entry from localStorage', () => {
+        spyOn(localStorage, 'getItem').and.returnValue(
+          '{"enabledScalarDataTable":true}'
+        );
+        const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
+        const removeItemSpy = spyOn(localStorage, 'removeItem').and.stub();
+
+        dataSource.resetAllPersistedFeatureFlags();
+        expect(removeItemSpy).toHaveBeenCalledOnceWith(
+          'tb_feature_flag_storage_key'
         );
       });
     });

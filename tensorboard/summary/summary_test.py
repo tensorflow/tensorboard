@@ -29,7 +29,7 @@ import tensorboard.summary.v1 as tb_summary_v1
 import tensorboard.summary.v2 as tb_summary_v2
 
 
-class SummaryExportsBaseTest(object):
+class SummaryExportsBaseTest:
     module = None
     plugins = None
     allowed = frozenset()

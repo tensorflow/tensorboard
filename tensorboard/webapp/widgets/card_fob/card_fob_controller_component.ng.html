@@ -16,41 +16,65 @@ limitations under the License.
 -->
 
 <div>
+  <ng-container *ngIf="isProspectiveFobFeatureEnabled">
+    <div
+      #prospectiveFobWrapper
+      *ngIf="prospectiveStep !== null"
+      class="time-fob-wrapper"
+      [style.transform]="getCssTranslatePxForProspectiveFob()"
+    >
+      <div *ngIf="showExtendedLine" class="extended-line"></div>
+      <card-fob
+        [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
+        [allowRemoval]="false"
+        [isProspective]="true"
+        [step]="prospectiveStep"
+      ></card-fob>
+    </div>
+    <div
+      class="prospective-fob-area"
+      [ngClass]="isVertical() ? 'vertical-prospective-area' : 'horizontal-prospective-area'"
+      (mousemove)="mouseOverProspectiveFobArea($event)"
+      (click)="prospectiveFobClicked($event)"
+      (mouseleave)="onProspectiveAreaMouseLeave()"
+    ></div>
+  </ng-container>
   <div
     #startFobWrapper
     class="time-fob-wrapper"
     [style.transform]="getCssTranslatePxForStartFob()"
+    *ngIf="timeSelection"
   >
     <div
       *ngIf="showExtendedLine"
       class="extended-line"
-      (mousedown)="startDrag(Fob.START, TimeSelectionAffordance.EXTENDED_LINE)"
+      (mousedown)="startDrag(Fob.START, TimeSelectionAffordance.EXTENDED_LINE, $event)"
     ></div>
     <card-fob
       class="startFob"
       [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
       [step]="timeSelection.start.step"
-      (mousedown)="startDrag(Fob.START, TimeSelectionAffordance.FOB)"
+      (mousedown)="startDrag(Fob.START, TimeSelectionAffordance.FOB, $event)"
       (stepChanged)="stepTyped(Fob.START, $event)"
       (fobRemoved)="onFobRemoved(Fob.START)"
     ></card-fob>
   </div>
   <div
     #endFobWrapper
-    *ngIf="timeSelection.end"
+    *ngIf="timeSelection && timeSelection.end"
     class="time-fob-wrapper"
     [style.transform]="getCssTranslatePxForEndFob()"
   >
     <div
       *ngIf="showExtendedLine"
       class="extended-line"
-      (mousedown)="startDrag(Fob.END, TimeSelectionAffordance.EXTENDED_LINE)"
+      (mousedown)="startDrag(Fob.END, TimeSelectionAffordance.EXTENDED_LINE, $event)"
     ></div>
     <card-fob
       class="endFob"
       [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
       [step]="timeSelection.end.step"
-      (mousedown)="startDrag(Fob.END, TimeSelectionAffordance.FOB)"
+      (mousedown)="startDrag(Fob.END, TimeSelectionAffordance.FOB, $event)"
       (stepChanged)="stepTyped(Fob.END, $event)"
       (fobRemoved)="onFobRemoved(Fob.END)"
     ></card-fob>

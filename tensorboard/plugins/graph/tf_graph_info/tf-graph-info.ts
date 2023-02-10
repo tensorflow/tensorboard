@@ -151,7 +151,7 @@ class TfGraphInfo extends LegacyElementMixin(PolymerElement) {
     this.highlightedNode = event.detail.nodeName;
   }
   _nodeListItemMouseout() {
-    this.highlightedNode = null;
+    this.highlightedNode = null!;
   }
   _healthPillsAvailable(debuggerDataEnabled, nodeNamesToHealthPills) {
     // So long as there is a mapping (even if empty) from node name to health pills, show the

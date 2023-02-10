@@ -14,29 +14,51 @@
 
 load("@com_google_protobuf//:protobuf.bzl", "proto_gen")
 
+# TODO(#6185): try to reduce the complexity in this rule.
 def tb_proto_library(
         name,
         srcs = None,
         deps = [],
         visibility = None,
         testonly = None,
-        has_services = False):
+        has_services = False,
+        # The `exports` arg is unused here, but required internally for compatibility.
+        exports = []):
     outs_proto = _PyOuts(srcs, grpc = False)
     outs_grpc = _PyOuts(srcs, grpc = True) if has_services else []
     outs_all = outs_proto + outs_grpc
 
-    runtime = "@com_google_protobuf//:protobuf_python"
+    # Dependencies we need to operate protoc (the protobuf compiler), including
+    # protoc itself, the intermediate generated proto output from the runtime
+    # bundled with protoc (to provide proto types used during the protoc code
+    # generation process itself), and the grpc plugin to protoc used for gRPC
+    # service generation.
+    protoc = "@com_google_protobuf//:protoc"
+    protoc_runtime_genproto = "@com_google_protobuf//:protobuf_python_genproto"
+    grpc_python_plugin = "//external:grpc_python_plugin"
+
+    # Python generated code relies on a Python protobuf runtime to be present.
+    # The runtime version must be compatible (typically, >=) with the protoc
+    # that was used to generate the code. There is a runtime provided along
+    # with protoc as part of our build-time dependency on protobuf (the target
+    # is "@com_google_protobuf//:protobuf_python"), but we deliberately don't
+    # use it, because our tests may need to use a protobuf runtime that is
+    # higher than our protoc version in order to be compatible with generated
+    # protobuf code used by our dependencies (namely, TensorFlow). Instead, we
+    # rely on picking up protobuf ambiently from the virtual environment, the
+    # same way that it will behave when released in our pip package.
+    runtime = "//tensorboard:expect_protobuf_installed"
 
     proto_gen(
         name = name + "_genproto",
         srcs = srcs,
-        deps = [s + "_genproto" for s in deps] + [runtime + "_genproto"],
+        deps = [s + "_genproto" for s in deps] + [protoc_runtime_genproto],
         includes = [],
-        protoc = "@com_google_protobuf//:protoc",
+        protoc = protoc,
         gen_py = True,
         outs = outs_all,
         visibility = ["//visibility:public"],
-        plugin = "//external:grpc_python_plugin" if has_services else None,
+        plugin = grpc_python_plugin if has_services else None,
         plugin_language = "grpc",
     )
 

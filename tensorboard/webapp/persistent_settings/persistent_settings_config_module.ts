@@ -19,7 +19,7 @@ import {
 } from './persistent_settings_config_types';
 
 @NgModule()
-export class PersistentSettingsConfigModule<State, Settings> {
+export class PersistentSettingsConfigModule<State, Settings extends {}> {
   private readonly globalSettingSelectors: SettingSelector<State, Settings>[] =
     [];
 
@@ -68,9 +68,9 @@ export class PersistentSettingsConfigModule<State, Settings> {
    * })
    * export class MyModule {}
    */
-  static defineGlobalSetting<State, Settings>(
+  static defineGlobalSetting<State, Settings extends {}>(
     selectorFactory: () => SettingSelector<State, Settings>
-  ): ModuleWithProviders<PersistentSettingsConfigModule<any, {}>> {
+  ): ModuleWithProviders<PersistentSettingsConfigModule<State, Settings>> {
     return {
       ngModule: PersistentSettingsConfigModule,
       providers: [

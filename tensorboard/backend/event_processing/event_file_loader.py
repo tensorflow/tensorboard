@@ -82,7 +82,7 @@ def _make_tf_record_iterator(file_path):
             return tf.compat.v1.io.tf_record_iterator(file_path)
 
 
-class _PyRecordReaderIterator(object):
+class _PyRecordReaderIterator:
     """Python iterator for TF Records based on PyRecordReader."""
 
     def __init__(self, py_record_reader_new, file_path):
@@ -114,7 +114,7 @@ class _PyRecordReaderIterator(object):
     next = __next__  # for python2 compatibility
 
 
-class RawEventFileLoader(object):
+class RawEventFileLoader:
     """An iterator that yields Event protos as serialized bytestrings."""
 
     def __init__(self, file_path, detect_file_replacement=False):
@@ -241,7 +241,7 @@ class LegacyEventFileLoader(RawEventFileLoader):
         Yields:
           All events in the file that have not been yielded yet.
         """
-        for record in super(LegacyEventFileLoader, self).Load():
+        for record in super().Load():
             yield event_pb2.Event.FromString(record)
 
 
@@ -252,7 +252,7 @@ class EventFileLoader(LegacyEventFileLoader):
     """
 
     def __init__(self, *args, **kwargs):
-        super(EventFileLoader, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # Track initial metadata for each tag, for `dataclass_compat`.
         # This is meant to be tracked per run, not per event file, so
         # there is a potential failure case when the second event file
@@ -267,7 +267,7 @@ class EventFileLoader(LegacyEventFileLoader):
         self._initial_metadata = {}  # from tag name to `SummaryMetadata`
 
     def Load(self):
-        for event in super(EventFileLoader, self).Load():
+        for event in super().Load():
             event = data_compat.migrate_event(event)
             events = dataclass_compat.migrate_event(
                 event, self._initial_metadata
@@ -289,5 +289,5 @@ class TimestampedEventFileLoader(EventFileLoader):
           Pairs of (UNIX timestamp float, Event proto) for all events in the file
           that have not been yielded yet.
         """
-        for event in super(TimestampedEventFileLoader, self).Load():
+        for event in super().Load():
             yield (event.wall_time, event)

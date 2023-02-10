@@ -26,6 +26,10 @@ rsync --existing "$1"/tensorflow/core/protobuf/*.proto tensorboard/compat/proto/
 rsync --existing "$1"/tensorflow/core/profiler/*.proto tensorboard/compat/proto/
 rsync --existing "$1"/tensorflow/core/util/*.proto tensorboard/compat/proto/
 rsync --existing "$1"/tensorflow/python/framework/*.proto tensorboard/compat/proto/
+if [ -d $1"/tensorflow/tsl/protobuf" ] # This directory first appears in TF 2.11
+then
+  rsync --existing "$1"/tensorflow/tsl/protobuf/*.proto tensorboard/compat/proto/
+fi
 
 # Rewrite file paths and package names and disable LINT checks.
 find tensorboard/compat/proto/ -type f  -name '*.proto' -exec perl -pi \
@@ -34,6 +38,7 @@ find tensorboard/compat/proto/ -type f  -name '*.proto' -exec perl -pi \
   -e 's|tensorflow/core/profiler|tensorboard/compat/proto|g;' \
   -e 's|tensorflow/core/util|tensorboard/compat/proto|g;' \
   -e 's|tensorflow/python/framework|tensorboard/compat/proto|g;' \
+  -e 's|tensorflow/tsl/protobuf|tensorboard/compat/proto|g;' \
   -e 's|package tensorflow.tfprof;|package tensorboard;|g;' \
   -e 's|package tensorflow;|package tensorboard;|g;' \
   -e 's|tensorflow\.DataType|tensorboard.DataType|g;' \
@@ -60,9 +65,9 @@ find tensorboard/compat/proto/ -type f  -name '*.proto' -exec perl -pi \
       printf 'tb_proto_library(\n'
       printf '    name = "%s",\n' "${f%.proto}"
       printf '    srcs = ["%s"],\n' "$f"
-      if grep -q '^import "tensorboard/' "$f"; then
+      if grep -q '^import\( public\)* "tensorboard/' "$f"; then
         printf '    deps = [\n'
-        grep '^import "tensorboard/' "$f" | sort |
+        grep '^import\( public\)* "tensorboard/' "$f" | sort |
           sed -e 's#.*compat/proto/\([^.]*\).*#        ":\1",#'
         printf '    ],\n'
       fi

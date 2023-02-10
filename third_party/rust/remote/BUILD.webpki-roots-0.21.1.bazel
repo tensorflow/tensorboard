@@ -36,8 +36,6 @@ rust_binary(
     # N.B.: The exact form of this is subject to change.
     name = "cargo_bin_process_cert",
     srcs = glob(["**/*.rs"]),
-    crate_features = [
-    ],
     crate_root = "src/bin/process_cert.rs",
     data = [],
     edition = "2018",
@@ -46,6 +44,7 @@ rust_binary(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=process_cert",
         "manual",
     ],
     version = "0.21.1",
@@ -59,8 +58,6 @@ rust_binary(
 rust_library(
     name = "webpki_roots",
     srcs = glob(["**/*.rs"]),
-    crate_features = [
-    ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2018",
@@ -69,6 +66,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=webpki-roots",
         "manual",
     ],
     version = "0.21.1",

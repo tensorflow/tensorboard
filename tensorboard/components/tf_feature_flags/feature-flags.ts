@@ -19,20 +19,27 @@ import {FeatureFlags} from '../../webapp/feature_flag/types';
 // base. In practice they are set one time soon after application load and never
 // again for the lifetime of the application.
 let _featureFlags: FeatureFlags | null;
+let _featureFlagsToSendToServer: Partial<FeatureFlags> | null;
 initializeFeatureFlags();
 
 export function initializeFeatureFlags(): void {
   _featureFlags = null;
+  _featureFlagsToSendToServer = null;
 }
 
 /**
- * Sets the FeatureFlags for use in the Polymer portion of the TB code base.
+ * Sets FeatureFlags-related properties for use in the Polymer portion of the TB
+ * code base.
  *
  * In practice this should only be called by the Angular portion of the TB code
  * base immediately after it determines the final set of FeatureFlags.
  */
-export function setFeatureFlags(featureFlags: FeatureFlags): void {
+export function setFeatureFlags(
+  featureFlags: FeatureFlags,
+  featureFlagsToSendToServer: Partial<FeatureFlags>
+): void {
   _featureFlags = featureFlags;
+  _featureFlagsToSendToServer = featureFlagsToSendToServer;
 }
 
 /**
@@ -47,4 +54,18 @@ export function getFeatureFlags(): FeatureFlags {
     throw Error('FeatureFlags have not yet been determined by TensorBoard.');
   }
   return _featureFlags;
+}
+
+/**
+ * Retrieves the set of FeatureFlags that should be sent to the server.
+ *
+ * @throws Error if FeatureFlags have not yet been set. In practice they should
+ *     be set soon after application load before any Polymer code is invoked.
+ *     This runtime check acts as a sanity check to enforce that assumption.
+ */
+export function getFeatureFlagsToSendToServer(): Partial<FeatureFlags> {
+  if (_featureFlagsToSendToServer === null) {
+    throw Error('FeatureFlags have not yet been determined by TensorBoard.');
+  }
+  return _featureFlagsToSendToServer;
 }

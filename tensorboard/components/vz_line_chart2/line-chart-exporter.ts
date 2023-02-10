@@ -46,14 +46,13 @@ export class PlottableExporter {
     svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
     return svg;
   }
-  private convert(node: Node): Node | null {
-    let newNode = null;
+  private createConvertedNode(node: Node): Element {
     const nodeName = node.nodeName.toUpperCase();
     if (
       node.nodeType == Node.ELEMENT_NODE &&
       (nodeName == NodeName.DIV || nodeName == NodeName.SVG)
     ) {
-      newNode = document.createElement(NodeName.GROUP);
+      const newNode = document.createElement(NodeName.GROUP);
       const style = window.getComputedStyle(node as Element);
       const left = parseInt(style.left, 10);
       const top = parseInt(style.top, 10);
@@ -71,13 +70,19 @@ export class PlottableExporter {
         clipPath.appendChild(rect);
         newNode.appendChild(clipPath);
       }
+      return newNode;
     } else {
-      newNode = node.cloneNode();
+      return node.cloneNode() as Element;
     }
+  }
+  private convert(node: Node): Node | null {
+    const newNode = this.createConvertedNode(node);
     Array.from(node.childNodes)
       .map((node) => this.convert(node))
       .filter(Boolean)
-      .forEach((el) => newNode.appendChild(el));
+      .forEach((el) => {
+        newNode.appendChild(el!);
+      });
     // Remove empty grouping. They add too much noise.
     const shouldOmit =
       (newNode.nodeName.toUpperCase() == NodeName.GROUP &&

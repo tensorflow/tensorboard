@@ -66,6 +66,10 @@ describe('metrics right_pane', () => {
     dispatchSpy = spyOn(store, 'dispatch');
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   describe('settings pane', () => {
     beforeEach(() => {
       store.overrideSelector(
@@ -90,11 +94,16 @@ describe('metrics right_pane', () => {
       store.overrideSelector(selectors.getIsMetricsImageSupportEnabled, true);
       store.overrideSelector(selectors.getIsLinkedTimeEnabled, false);
       store.overrideSelector(selectors.getIsDataTableEnabled, false);
-      store.overrideSelector(selectors.getEnabledCardWidthSetting, false);
+      store.overrideSelector(
+        selectors.getIsScalarColumnCustomizationEnabled,
+        false
+      );
       store.overrideSelector(selectors.getMetricsCardMinWidth, null);
       store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, false);
       store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
-      store.overrideSelector(selectors.getMetricsLinkedTimeRangeEnabled, false);
+      store.overrideSelector(selectors.getMetricsRangeSelectionEnabled, false);
+      store.overrideSelector(selectors.isMetricsSlideoutMenuOpen, false);
+      store.overrideSelector(selectors.getAllowRangeSelection, false);
       store.overrideSelector(selectors.getMetricsLinkedTimeSelectionSetting, {
         start: {step: 0},
         end: {step: 1000},
@@ -186,14 +195,6 @@ describe('metrics right_pane', () => {
           'aria-checked'
         ]
       ).toBe('true');
-    });
-
-    it('hides card width setting if disabled', () => {
-      store.overrideSelector(selectors.getEnabledCardWidthSetting, false);
-      const fixture = TestBed.createComponent(SettingsViewContainer);
-      fixture.detectChanges();
-
-      expect(fixture.debugElement.query(By.css('.card-width'))).toBeFalsy();
     });
 
     it('hides settings if images are not supported', () => {
@@ -313,12 +314,8 @@ describe('metrics right_pane', () => {
     // mat-select does not render `input` or a DOM that can be manipulated.
     // skip the test for now.
 
-    describe('card width setting enabled', () => {
+    describe('card width setting', () => {
       const CARD_WIDTH_SLIDER = '.card-width mat-slider';
-
-      beforeEach(() => {
-        store.overrideSelector(selectors.getEnabledCardWidthSetting, true);
-      });
 
       it('renders slider and reset button', () => {
         const fixture = TestBed.createComponent(SettingsViewContainer);
@@ -368,7 +365,7 @@ describe('metrics right_pane', () => {
         );
       });
 
-      it('do not set invalid value', () => {
+      it('does not set invalid value', () => {
         store.overrideSelector(selectors.getMetricsCardMinWidth, null);
         let fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
@@ -399,8 +396,8 @@ describe('metrics right_pane', () => {
 
     describe('linked time feature enabled', () => {
       beforeEach(() => {
+        store.overrideSelector(selectors.getIsDataTableEnabled, true);
         store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
-        store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
       });
 
       it('enables the feature only when xAxisType=STEP', () => {
@@ -408,7 +405,10 @@ describe('metrics right_pane', () => {
         const fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
 
-        expect(fixture.debugElement.query(By.css('.linked-time'))).toBeTruthy();
+        const el = fixture.debugElement.query(
+          By.css('.linked-time mat-checkbox input')
+        );
+        expect(el.properties['disabled']).toBe(false);
 
         store.overrideSelector(
           selectors.getMetricsXAxisType,
@@ -417,7 +417,7 @@ describe('metrics right_pane', () => {
         store.refreshState();
         fixture.detectChanges();
 
-        expect(fixture.debugElement.query(By.css('.linked-time'))).toBeFalsy();
+        expect(el.properties['disabled']).toBe(true);
       });
 
       describe('toggles', () => {
@@ -442,127 +442,6 @@ describe('metrics right_pane', () => {
           store.refreshState();
           fixture.detectChanges();
           expect(enabled.nativeElement.ariaChecked).toBe('true');
-        });
-      });
-
-      describe('range input', () => {
-        it('displays tb-range-input on both single and range step selection mode', () => {
-          store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
-          store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
-          store.overrideSelector(
-            selectors.getMetricsLinkedTimeRangeEnabled,
-            false
-          );
-          const fixture = TestBed.createComponent(SettingsViewContainer);
-          fixture.detectChanges();
-
-          const el = fixture.debugElement.query(By.css('.linked-time'));
-          expect(el.query(By.css('tb-range-input'))).toBeTruthy();
-
-          store.overrideSelector(
-            selectors.getMetricsLinkedTimeRangeEnabled,
-            true
-          );
-          store.refreshState();
-          fixture.detectChanges();
-          expect(el.query(By.css('tb-range-input'))).toBeTruthy();
-        });
-
-        it('disables tb-range-input on select time disabled', () => {
-          store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
-          store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
-          store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, false);
-          store.overrideSelector(
-            selectors.getMetricsLinkedTimeRangeEnabled,
-            false
-          );
-          const fixture = TestBed.createComponent(SettingsViewContainer);
-          fixture.detectChanges();
-
-          const el = fixture.debugElement.query(
-            By.css('.linked-time tb-range-input')
-          );
-          expect(el.properties['enabled']).toBe(false);
-        });
-
-        it('enables tb-range-input on select time enabled', () => {
-          store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
-          store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
-          store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, true);
-          store.overrideSelector(
-            selectors.getMetricsLinkedTimeRangeEnabled,
-            false
-          );
-          const fixture = TestBed.createComponent(SettingsViewContainer);
-          fixture.detectChanges();
-
-          const el = fixture.debugElement.query(
-            By.css('.linked-time tb-range-input')
-          );
-          expect(el.properties['enabled']).toBe(true);
-        });
-
-        it('dispatches actions when making range step change', () => {
-          store.overrideSelector(
-            selectors.getMetricsLinkedTimeRangeEnabled,
-            true
-          );
-          store.overrideSelector(
-            selectors.getMetricsLinkedTimeSelectionSetting,
-            {
-              start: {step: 0},
-              end: {step: 0},
-            }
-          );
-          const fixture = TestBed.createComponent(SettingsViewContainer);
-          fixture.detectChanges();
-
-          const el = fixture.debugElement.query(By.css('.linked-time'));
-          const rangeInput = el.query(By.css('tb-range-input'));
-
-          rangeInput.triggerEventHandler('rangeValuesChanged', {
-            lowerValue: 10,
-            upperValue: 200,
-          });
-
-          expect(dispatchSpy).toHaveBeenCalledOnceWith(
-            actions.linkedTimeSelectionChanged({
-              timeSelection: {
-                startStep: 10,
-                endStep: 200,
-              },
-            })
-          );
-        });
-
-        it('dispatches actions when making single step change', () => {
-          store.overrideSelector(
-            selectors.getMetricsLinkedTimeRangeEnabled,
-            true
-          );
-          store.overrideSelector(
-            selectors.getMetricsLinkedTimeSelectionSetting,
-            {
-              start: {step: 0},
-              end: null,
-            }
-          );
-          const fixture = TestBed.createComponent(SettingsViewContainer);
-          fixture.detectChanges();
-
-          const el = fixture.debugElement.query(By.css('.linked-time'));
-          const rangeInput = el.query(By.css('tb-range-input'));
-
-          rangeInput.triggerEventHandler('singleValueChanged', 10);
-
-          expect(dispatchSpy).toHaveBeenCalledOnceWith(
-            actions.linkedTimeSelectionChanged({
-              timeSelection: {
-                startStep: 10,
-                endStep: undefined,
-              },
-            })
-          );
         });
       });
     });
@@ -606,6 +485,102 @@ describe('metrics right_pane', () => {
             affordance: TimeSelectionToggleAffordance.CHECK_BOX,
           })
         );
+      });
+
+      describe('range selection', () => {
+        beforeEach(() => {
+          store.overrideSelector(selectors.getAllowRangeSelection, true);
+        });
+
+        it('renders the Range Selection checkbox', () => {
+          const fixture = TestBed.createComponent(SettingsViewContainer);
+          fixture.detectChanges();
+
+          expect(
+            fixture.debugElement.query(By.css('.range-selection mat-checkbox'))
+          ).toBeTruthy();
+        });
+
+        it('only enables checkbox when X Axis Type is Step', () => {
+          store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+          const fixture = TestBed.createComponent(SettingsViewContainer);
+          fixture.detectChanges();
+
+          const checkbox = fixture.debugElement.query(
+            By.css('.range-selection mat-checkbox input')
+          );
+          expect(checkbox.properties['disabled']).toBe(false);
+
+          store.overrideSelector(
+            selectors.getMetricsXAxisType,
+            XAxisType.WALL_TIME
+          );
+          store.refreshState();
+          fixture.detectChanges();
+
+          expect(checkbox.properties['disabled']).toBe(true);
+        });
+
+        it('dispatches rangeSelectionToggled on toggle', () => {
+          const fixture = TestBed.createComponent(SettingsViewContainer);
+          fixture.detectChanges();
+
+          select(fixture, '.range-selection input').nativeElement.click();
+
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            actions.rangeSelectionToggled({
+              affordance: TimeSelectionToggleAffordance.CHECK_BOX,
+            })
+          );
+        });
+
+        describe('slide out menu', () => {
+          beforeEach(() => {
+            store.overrideSelector(
+              selectors.getIsScalarColumnCustomizationEnabled,
+              true
+            );
+          });
+
+          it('dispatches metricsSlideoutMenuToggled when Edit Menu Toggle is clicked', () => {
+            const fixture = TestBed.createComponent(SettingsViewContainer);
+            fixture.detectChanges();
+
+            fixture.debugElement
+              .query(By.css('.column-edit-menu-toggle'))
+              .nativeElement.click();
+
+            expect(dispatchSpy).toHaveBeenCalledWith(
+              actions.metricsSlideoutMenuToggled()
+            );
+          });
+
+          it('renders left cheron when slideout is closed', () => {
+            store.overrideSelector(selectors.isMetricsSlideoutMenuOpen, false);
+            const fixture = TestBed.createComponent(SettingsViewContainer);
+            fixture.detectChanges();
+
+            expect(
+              fixture.debugElement
+                .query(By.css('.column-edit-menu-toggle'))
+                .query(By.css('mat-icon'))
+                .nativeElement.getAttribute('svgIcon')
+            ).toBe('chevron_left_24px');
+          });
+
+          it('renders right cheron when slideout is open', () => {
+            store.overrideSelector(selectors.isMetricsSlideoutMenuOpen, true);
+            const fixture = TestBed.createComponent(SettingsViewContainer);
+            fixture.detectChanges();
+
+            expect(
+              fixture.debugElement
+                .query(By.css('.column-edit-menu-toggle'))
+                .query(By.css('mat-icon'))
+                .nativeElement.getAttribute('svgIcon')
+            ).toBe('chevron_right_24px');
+          });
+        });
       });
     });
   });

@@ -39,6 +39,7 @@ rust_library(
     crate_features = [
         "bytes",
         "default",
+        "fs",
         "io-std",
         "io-util",
         "libc",
@@ -48,6 +49,7 @@ rust_library(
         "net",
         "num_cpus",
         "once_cell",
+        "parking_lot",
         "rt",
         "rt-multi-thread",
         "socket2",
@@ -67,6 +69,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=tokio",
         "manual",
     ],
     version = "1.19.2",
@@ -77,10 +80,10 @@ rust_library(
         "@raze__mio__0_8_3//:mio",
         "@raze__num_cpus__1_13_0//:num_cpus",
         "@raze__once_cell__1_5_2//:once_cell",
+        "@raze__parking_lot__0_12_1//:parking_lot",
         "@raze__pin_project_lite__0_2_9//:pin_project_lite",
         "@raze__socket2__0_4_4//:socket2",
     ] + selects.with_or({
-        # cfg(unix)
         (
             "@rules_rust//rust/platform:x86_64-apple-darwin",
             "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",
@@ -89,7 +92,6 @@ rust_library(
         ],
         "//conditions:default": [],
     }) + selects.with_or({
-        # cfg(windows)
         (
             "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
         ): [

@@ -56,6 +56,10 @@ describe('Graph Container', () => {
     dispatchSpy = spyOn(store, 'dispatch');
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders no-op-selected element and nothing else when no op is selected', () => {
     const fixture = TestBed.createComponent(GraphContainer);
     store.overrideSelector(getFocusedGraphOpInfo, null);

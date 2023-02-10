@@ -30,7 +30,7 @@ from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 
 
-class FakeFlags(object):
+class FakeFlags:
     def __init__(
         self,
         generic_data="auto",
@@ -774,7 +774,7 @@ class TensorBoardPluginsTest(tb_test.TestCase):
     def testNameToPluginMapping(self):
         # The mapping from plugin name to instance should include all plugins.
         mapping = self.context.plugin_name_to_instance
-        self.assertItemsEqual(["foo", "bar", "whoami"], list(mapping.keys()))
+        self.assertCountEqual(["foo", "bar", "whoami"], list(mapping.keys()))
         self.assertEqual("foo", mapping["foo"].plugin_name)
         self.assertEqual("bar", mapping["bar"].plugin_name)
         self.assertEqual("whoami", mapping["whoami"].plugin_name)

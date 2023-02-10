@@ -15,7 +15,6 @@ limitations under the License.
 import {DataLoadState} from '../../types/data';
 import {nextElementId} from '../../util/dom';
 import {PluginType} from '../data_source';
-import {HistogramMode, TooltipSort, XAxisType} from '../internal_types';
 import {
   appStateFromMetricsState,
   buildMetricsSettingsState,
@@ -26,6 +25,7 @@ import {
   createScalarStepData,
   createTimeSeriesData,
 } from '../testing';
+import {HistogramMode, TooltipSort, XAxisType} from '../types';
 import * as selectors from './metrics_selectors';
 
 describe('metrics selectors', () => {
@@ -819,29 +819,11 @@ describe('metrics selectors', () => {
             end: {step: 100},
           },
           linkedTimeEnabled: true,
-          linkedTimeRangeEnabled: true,
         })
       );
       expect(selectors.getMetricsLinkedTimeSelection(state)).toEqual({
         start: {step: 0},
         end: {step: 100},
-      });
-    });
-
-    it('removes `end` when using single step mode', () => {
-      const state = appStateFromMetricsState(
-        buildMetricsState({
-          linkedTimeSelection: {
-            start: {step: 0},
-            end: {step: 100},
-          },
-          linkedTimeEnabled: true,
-          linkedTimeRangeEnabled: false,
-        })
-      );
-      expect(selectors.getMetricsLinkedTimeSelection(state)).toEqual({
-        start: {step: 0},
-        end: null,
       });
     });
   });
@@ -863,29 +845,16 @@ describe('metrics selectors', () => {
     });
   });
 
-  describe('#getPromoteTimeSeries', () => {
-    beforeEach(() => {
-      selectors.getPromoteTimeSeries.release();
-    });
-
-    it('returns current visualization filters', () => {
-      const state = appStateFromMetricsState(
-        buildMetricsState({promoteTimeSeries: false})
-      );
-      expect(selectors.getPromoteTimeSeries(state)).toEqual(false);
-    });
-  });
-
   describe('#isMetricsSettingsPaneOpen', () => {
     beforeEach(() => {
-      selectors.getPromoteTimeSeries.release();
+      selectors.isMetricsSettingsPaneOpen.release();
     });
 
-    it('returns current visualization filters', () => {
+    it('returns current settings pane open state', () => {
       const state = appStateFromMetricsState(
-        buildMetricsState({promoteTimeSeries: false})
+        buildMetricsState({isSettingsPaneOpen: false})
       );
-      expect(selectors.getPromoteTimeSeries(state)).toEqual(false);
+      expect(selectors.isMetricsSettingsPaneOpen(state)).toEqual(false);
     });
   });
 });

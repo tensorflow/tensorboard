@@ -30,7 +30,7 @@ tf.compat.v1.disable_v2_behavior()
 
 class PrCurveTest(tf.test.TestCase):
     def setUp(self):
-        super(PrCurveTest, self).setUp()
+        super().setUp()
         tf.compat.v1.reset_default_graph()
         np.random.seed(42)
 
@@ -427,7 +427,7 @@ class PrCurveTest(tf.test.TestCase):
 
 class StreamingOpTest(tf.test.TestCase):
     def setUp(self):
-        super(StreamingOpTest, self).setUp()
+        super().setUp()
         tf.compat.v1.reset_default_graph()
         np.random.seed(1)
 

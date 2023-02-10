@@ -386,6 +386,18 @@ describe('Debugger effects', () => {
         Tfdbg2HttpServerDataSource,
         provideMockStore({initialState}),
       ],
+      // The upgrade to Angular 13 caused this test file to fail flakily with
+      // errors like "Error: Injector has already been destroyed."
+      //
+      // Others have run into this problem:
+      // https://github.com/angular/angular/issues/44186
+      //
+      // The suggested workaround is to set `destroyAfterEach` to false. The
+      // default value for `destroyAfterEach` changed in Angular 13.
+      //
+      // The Angular team suggests this means we "have scope leakage in [our]
+      // tests" but we haven't been able to pinpoint the leakage.
+      teardown: {destroyAfterEach: false},
     }).compileComponents();
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
@@ -393,6 +405,10 @@ describe('Debugger effects', () => {
       dispatchedActions.push(action);
     });
     store.overrideSelector(getActivePlugin, '');
+  });
+
+  afterEach(() => {
+    store?.resetSelectors();
   });
 
   function createAndSubscribeToDebuggerEffectsWithEmptyRepeater() {

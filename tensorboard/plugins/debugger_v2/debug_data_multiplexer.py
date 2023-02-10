@@ -103,7 +103,7 @@ def parse_tensor_name(tensor_name):
     return op_name, output_slot
 
 
-class DebuggerV2EventMultiplexer(object):
+class DebuggerV2EventMultiplexer:
     """A class used for accessing tfdbg v2 DebugEvent data on local filesystem.
 
     This class is a short-term hack, mirroring the EventMultiplexer for the main

@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {TooltipSort} from '../../metrics/types';
+
 export enum ThemeValue {
   BROWSER_DEFAULT = 'browser_default',
   LIGHT = 'light',
@@ -28,7 +30,7 @@ export enum ThemeValue {
  */
 export declare interface BackendSettings {
   scalarSmoothing?: number;
-  tooltipSort?: string;
+  tooltipSort?: TooltipSort;
   ignoreOutliers?: boolean;
   autoReload?: boolean;
   autoReloadPeriodInMs?: number;
@@ -36,9 +38,11 @@ export declare interface BackendSettings {
   theme?: ThemeValue;
   notificationLastReadTimeInMs?: number;
   sideBarWidthInPercent?: number;
-  timeSeriesPromotionDismissed?: boolean;
   timeSeriesSettingsPaneOpened?: boolean;
-  timeSeriesCardMinWidth?: number;
+  timeSeriesCardMinWidth?: number | null;
+  stepSelectorEnabled?: boolean;
+  rangeSelectionEnabled?: boolean;
+  linkedTimeEnabled?: boolean;
 }
 
 /**
@@ -48,7 +52,7 @@ export declare interface BackendSettings {
  */
 export interface PersistableSettings {
   scalarSmoothing?: number;
-  tooltipSortString?: string;
+  tooltipSort?: TooltipSort;
   ignoreOutliers?: boolean;
   autoReload?: boolean;
   autoReloadPeriodInMs?: number;
@@ -56,7 +60,9 @@ export interface PersistableSettings {
   themeOverride?: ThemeValue;
   notificationLastReadTimeInMs?: number;
   sideBarWidthInPercent?: number;
-  timeSeriesPromotionDismissed?: boolean;
   timeSeriesSettingsPaneOpened?: boolean;
-  timeSeriesCardMinWidth?: number;
+  timeSeriesCardMinWidth?: number | null;
+  stepSelectorEnabled?: boolean;
+  rangeSelectionEnabled?: boolean;
+  linkedTimeEnabled?: boolean;
 }

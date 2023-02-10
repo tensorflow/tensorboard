@@ -127,15 +127,18 @@ class MetadataCard extends LegacyElementMixin(PolymerElement) {
     this.set('collapseIcon', this.isCollapsed ? 'expand-more' : 'expand-less');
   }
   updateMetadata(pointMetadata?: PointMetadata) {
-    this.pointMetadata = pointMetadata;
     this.hasMetadata = pointMetadata != null;
     if (pointMetadata) {
-      let metadata = [];
+      this.pointMetadata = pointMetadata;
+      let metadata: Array<{key: string; value: string}> = [];
       for (let metadataKey in pointMetadata) {
         if (!pointMetadata.hasOwnProperty(metadataKey)) {
           continue;
         }
-        metadata.push({key: metadataKey, value: pointMetadata[metadataKey]});
+        metadata.push({
+          key: metadataKey,
+          value: pointMetadata[metadataKey] as string,
+        });
       }
       this.metadata = metadata;
       this.label = '' + this.pointMetadata[this.labelOption];

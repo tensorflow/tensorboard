@@ -35,7 +35,8 @@ import {
   TimeSelection,
   TooltipSort,
   XAxisType,
-} from '../internal_types';
+} from '../types';
+import {ColumnHeader} from '../views/card_renderer/scalar_card_types';
 
 export const METRICS_FEATURE_KEY = 'metrics';
 
@@ -84,6 +85,10 @@ export type HistogramTimeSeriesLoadable =
   BaseTimeSeriesLoadable<PluginType.HISTOGRAMS>;
 export type ImageTimeSeriesLoadable = BaseTimeSeriesLoadable<PluginType.IMAGES>;
 
+export type SampledImageTimeSeriesLoadable = {
+  [sample: number]: ImageTimeSeriesLoadable;
+};
+
 export type TimeSeriesLoadables = {
   [PluginType.SCALARS]: ScalarTimeSeriesLoadable;
   [PluginType.HISTOGRAMS]: HistogramTimeSeriesLoadable;
@@ -92,17 +97,22 @@ export type TimeSeriesLoadables = {
 
 export type TimeSeriesLoadable = TimeSeriesLoadables[PluginType];
 
-export interface ScalarTimeSeriesData {
-  [tag: string]: ScalarTimeSeriesLoadable;
-}
+export type TimeSeriesLoadableType =
+  | ScalarTimeSeriesLoadable
+  | HistogramTimeSeriesLoadable
+  | SampledImageTimeSeriesLoadable;
 
-export interface HistogramTimeSeriesData {
-  [tag: string]: HistogramTimeSeriesLoadable;
-}
+export type BaseTimeSeriesData<T extends TimeSeriesLoadableType> = {
+  [tag: string]: T;
+};
 
-export interface ImageTimeSeriesData {
-  [tag: string]: {[sample: number]: ImageTimeSeriesLoadable};
-}
+export type ScalarTimeSeriesData = BaseTimeSeriesData<ScalarTimeSeriesLoadable>;
+
+export type HistogramTimeSeriesData =
+  BaseTimeSeriesData<HistogramTimeSeriesLoadable>;
+
+export type ImageTimeSeriesData =
+  BaseTimeSeriesData<SampledImageTimeSeriesLoadable>;
 
 export type TimeSeriesData = {
   [PluginType.SCALARS]: ScalarTimeSeriesData;
@@ -166,7 +176,9 @@ export interface MetricsNamespacedState {
   linkedTimeSelection: TimeSelection | null;
   linkedTimeEnabled: boolean;
   stepSelectorEnabled: boolean;
-  linkedTimeRangeEnabled: boolean;
+  rangeSelectionEnabled: boolean;
+  singleSelectionHeaders: ColumnHeader[];
+  rangeSelectionHeaders: ColumnHeader[];
   // Empty Set would signify "show all". `filteredPluginTypes` will never have
   // all pluginTypes in the Set.
   filteredPluginTypes: Set<PluginType>;
@@ -208,9 +220,9 @@ export interface MetricsSettings {
 }
 
 export interface MetricsNonNamespacedState {
-  promoteTimeSeries: boolean;
   timeSeriesData: TimeSeriesData;
   isSettingsPaneOpen: boolean;
+  isSlideoutMenuOpen: boolean;
   // Default settings. For the legacy reasons, we cannot change the name of the
   // prop. It either is set by application or a user via settings storage.
   settings: MetricsSettings;

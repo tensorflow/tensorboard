@@ -16,6 +16,7 @@ import {CardFobControllerComponent} from '../../../widgets/card_fob/card_fob_con
 import {TimeSelection} from '../../../widgets/card_fob/card_fob_types';
 import {LinearScale} from '../../../widgets/line_chart_v2/lib/scale';
 import {ScalarCardFobController} from './scalar_card_fob_controller';
+import {MinMaxStep} from './scalar_card_types';
 
 const SCALE_RATIO = 10;
 
@@ -33,6 +34,7 @@ describe('ScalarFobController', () => {
   function createComponent(input: {
     timeSelection?: TimeSelection;
     minMax?: [number, number];
+    minMaxStep?: MinMaxStep;
     axisSize?: number;
   }): ComponentFixture<ScalarCardFobController> {
     const fixture = TestBed.createComponent(ScalarCardFobController);
@@ -41,7 +43,13 @@ describe('ScalarFobController', () => {
       end: null,
     };
 
-    fixture.componentInstance.minMax = input.minMax ?? [0, 1];
+    fixture.componentInstance.minMaxHorizontalViewExtend = input.minMax ?? [
+      -1, 2,
+    ];
+    fixture.componentInstance.minMaxStep = input.minMaxStep ?? {
+      minStep: 0,
+      maxStep: 1,
+    };
     fixture.componentInstance.axisSize = input.axisSize ?? 1;
 
     const fakeScale = new LinearScale();
@@ -89,40 +97,14 @@ describe('ScalarFobController', () => {
     });
   });
 
-  describe('getHighestStep', () => {
-    it('gets the highest step when minMax is in order', () => {
-      const fixture = createComponent({minMax: [0, 2]});
+  it('gets the highest/lowest step', () => {
+    const fixture = createComponent({minMaxStep: {minStep: 0, maxStep: 2}});
 
-      const highestStep = fixture.componentInstance.getHighestStep();
+    const highestStep = fixture.componentInstance.getHighestStep();
+    const lowestStep = fixture.componentInstance.getLowestStep();
 
-      expect(highestStep).toBe(2);
-    });
-
-    it('gets the highest step when minMax is not in order', () => {
-      const fixture = createComponent({minMax: [2, 0]});
-
-      const highestStep = fixture.componentInstance.getHighestStep();
-
-      expect(highestStep).toBe(2);
-    });
-  });
-
-  describe('getLowestStep', () => {
-    it('gets the lowest step when minMax is in order', () => {
-      const fixture = createComponent({minMax: [0, 2]});
-
-      const lowestStep = fixture.componentInstance.getLowestStep();
-
-      expect(lowestStep).toBe(0);
-    });
-
-    it('gets the lowest step when minMax is not in order', () => {
-      const fixture = createComponent({minMax: [2, 0]});
-
-      const lowestStep = fixture.componentInstance.getLowestStep();
-
-      expect(lowestStep).toBe(0);
-    });
+    expect(lowestStep).toBe(0);
+    expect(highestStep).toBe(2);
   });
 
   describe('getStepHigherThanAxisPosition', () => {
@@ -135,7 +117,7 @@ describe('ScalarFobController', () => {
     });
 
     it('gets highest step if given position is higher than the position at highest step', () => {
-      const fixture = createComponent({minMax: [0, 2]});
+      const fixture = createComponent({minMaxStep: {minStep: 0, maxStep: 2}});
 
       const step = fixture.componentInstance.getStepHigherThanAxisPosition(30);
 
@@ -143,7 +125,7 @@ describe('ScalarFobController', () => {
     });
 
     it('gets lowest step if given position is lower than the position at lowest step', () => {
-      const fixture = createComponent({minMax: [1, 3]});
+      const fixture = createComponent({minMaxStep: {minStep: 1, maxStep: 3}});
 
       const step = fixture.componentInstance.getStepHigherThanAxisPosition(0);
 
@@ -161,7 +143,7 @@ describe('ScalarFobController', () => {
     });
 
     it('gets highest step if given position is higher than the position at highest step', () => {
-      const fixture = createComponent({minMax: [0, 2]});
+      const fixture = createComponent({minMaxStep: {minStep: 0, maxStep: 2}});
 
       const step = fixture.componentInstance.getStepLowerThanAxisPosition(30);
 
@@ -169,7 +151,7 @@ describe('ScalarFobController', () => {
     });
 
     it('gets lowest step if given position is lower than the position at lowest step', () => {
-      const fixture = createComponent({minMax: [1, 3]});
+      const fixture = createComponent({minMaxStep: {minStep: 1, maxStep: 3}});
 
       const step = fixture.componentInstance.getStepLowerThanAxisPosition(0);
 

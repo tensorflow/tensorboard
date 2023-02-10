@@ -171,7 +171,7 @@ class TfHparamsParallelCoordsPlot extends LegacyElementMixin(
     type: Object,
     notify: true,
   })
-  selectedSessionGroup: object = null;
+  selectedSessionGroup: object | null = null;
   // The session group represented by the curve "closest" to the mouse
   // pointer (the corresponding path element will have the 'peaked-path'
   // class). If the closest session group distance is larger than a
@@ -183,7 +183,7 @@ class TfHparamsParallelCoordsPlot extends LegacyElementMixin(
     type: Object,
     notify: true,
   })
-  closestSessionGroup: object = null;
+  closestSessionGroup: object | null = null;
   // Counts the number of times the element has been redrawn since it
   // was created. This is incremented at the end of a redraw and allows
   // integration tests to wait for the element to finish redrawing.
@@ -196,8 +196,7 @@ class TfHparamsParallelCoordsPlot extends LegacyElementMixin(
   // and hyperparameters is populated. This element only displays valid
   // session groups. The elements here are not copies of sessionGroups
   // but refer to the same objects stored in the 'sessionGroups' property.
-  @property({type: Array})
-  _validSessionGroups: any[];
+  @property({type: Array}) _validSessionGroups: any[] | undefined;
   // An InteractionManager object. Contains the logic driving this
   // element. Defined in tf-hparams-parallel-coords-plot.ts.
   @property({type: Object})
@@ -215,8 +214,8 @@ class TfHparamsParallelCoordsPlot extends LegacyElementMixin(
     // this is initialization or if configuration.schema has changed.
     if (
       this._interactionManager === undefined ||
-      !_.isEqual(prevConfig.schema, nextConfig.schema) ||
-      !_.isEqual(prevConfig.columnsVisibility, nextConfig.columnsVisibility)
+      !_.isEqual(prevConfig?.schema, nextConfig.schema) ||
+      !_.isEqual(prevConfig?.columnsVisibility, nextConfig.columnsVisibility)
     ) {
       // Remove any pre-existing DOM children of our SVG.
       d3.select(this.$.svg as SVGElement)

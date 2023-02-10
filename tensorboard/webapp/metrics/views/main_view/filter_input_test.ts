@@ -93,6 +93,10 @@ describe('metrics filter input', () => {
     );
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   describe('input interaction', () => {
     it('dispatches metricsTagFilterChanged when typing on input', () => {
       const fixture = TestBed.createComponent(MetricsFilterInputContainer);

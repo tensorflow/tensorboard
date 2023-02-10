@@ -45,14 +45,23 @@ tf_ts_library(
     name = "testing",
     testonly = True,
     srcs = [
-        "force_svg_data_source_test.ts",
         "testing.ts",
     ],
     deps = [
-        ":force_svg_data_source",
         ":types",
+        "//tensorboard/webapp/feature_flag/store:feature_flag_metadata",
+    ],
+)
+
+tf_ts_library(
+    name = "test_lib",
+    testonly = True,
+    srcs = [
+        "force_svg_data_source_test.ts",
+    ],
+    deps = [
+        ":force_svg_data_source",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
-        "//tensorboard/webapp/webapp_data_source:feature_flag_types",
         "@npm//@types/jasmine",
     ],
 )
@@ -60,8 +69,10 @@ tf_ts_library(
 tf_ng_web_test_suite(
     name = "karma_test",
     deps = [
+        ":test_lib",
         "//tensorboard/webapp/feature_flag/effects:effects_test_lib",
         "//tensorboard/webapp/feature_flag/http:http_test_lib",
         "//tensorboard/webapp/feature_flag/store:store_test_lib",
+        "//tensorboard/webapp/feature_flag/views:views_test",
     ],
 )

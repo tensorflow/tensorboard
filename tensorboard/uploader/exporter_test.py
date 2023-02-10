@@ -144,7 +144,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
 
         expected_eids_request = export_service_pb2.StreamExperimentsRequest()
         expected_eids_request.read_timestamp.CopyFrom(start_time_pb)
-        expected_eids_request.limit = 2 ** 63 - 1
+        expected_eids_request.limit = 2**63 - 1
         expected_eids_request.experiments_mask.create_time = True
         expected_eids_request.experiments_mask.update_time = True
         expected_eids_request.experiments_mask.name = True
@@ -357,7 +357,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
 
         expected_eids_request = export_service_pb2.StreamExperimentsRequest()
         expected_eids_request.read_timestamp.CopyFrom(start_time_pb)
-        expected_eids_request.limit = 2 ** 63 - 1
+        expected_eids_request.limit = 2**63 - 1
         expected_eids_request.experiments_mask.create_time = True
         expected_eids_request.experiments_mask.update_time = True
         expected_eids_request.experiments_mask.name = True

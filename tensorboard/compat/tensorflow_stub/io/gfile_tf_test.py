@@ -127,7 +127,7 @@ class FileIoTest(tb_test.TestCase):
         subdir_file_path = os.path.join(subdir_path, "file4.txt")
         gfile.GFile(subdir_file_path, mode="w").write("testing")
         dir_list = gfile.listdir(dir_path)
-        self.assertItemsEqual(files + ["sub_dir"], dir_list)
+        self.assertCountEqual(files + ["sub_dir"], dir_list)
 
     def testListDirectoryFailure(self):
         dir_path = os.path.join(self._base_dir, "test_dir")
@@ -162,7 +162,7 @@ class FileIoTest(tb_test.TestCase):
             all_dirs.append(w_dir)
             all_subdirs.append(w_subdirs)
             all_files.append(w_files)
-        self.assertItemsEqual(
+        self.assertCountEqual(
             all_dirs,
             [dir_path]
             + [
@@ -180,11 +180,11 @@ class FileIoTest(tb_test.TestCase):
             all_dirs.index(os.path.join(dir_path, "subdir1_2")),
             all_dirs.index(os.path.join(dir_path, "subdir1_2/subdir2")),
         )
-        self.assertItemsEqual(all_subdirs[1:5], [[], ["subdir2"], [], []])
-        self.assertItemsEqual(
+        self.assertCountEqual(all_subdirs[1:5], [[], ["subdir2"], [], []])
+        self.assertCountEqual(
             all_subdirs[0], ["subdir1_1", "subdir1_2", "subdir1_3"]
         )
-        self.assertItemsEqual(
+        self.assertCountEqual(
             all_files, [["file1.txt"], ["file2.txt"], [], [], []]
         )
         self.assertLess(
@@ -202,7 +202,7 @@ class FileIoTest(tb_test.TestCase):
             all_dirs.append(w_dir)
             all_subdirs.append(w_subdirs)
             all_files.append(w_files)
-        self.assertItemsEqual(
+        self.assertCountEqual(
             all_dirs,
             [
                 os.path.join(dir_path, item)
@@ -220,11 +220,11 @@ class FileIoTest(tb_test.TestCase):
             all_dirs.index(os.path.join(dir_path, "subdir1_2/subdir2")),
             all_dirs.index(os.path.join(dir_path, "subdir1_2")),
         )
-        self.assertItemsEqual(all_subdirs[0:4], [[], [], ["subdir2"], []])
-        self.assertItemsEqual(
+        self.assertCountEqual(all_subdirs[0:4], [[], [], ["subdir2"], []])
+        self.assertCountEqual(
             all_subdirs[4], ["subdir1_1", "subdir1_2", "subdir1_3"]
         )
-        self.assertItemsEqual(
+        self.assertCountEqual(
             all_files, [["file2.txt"], [], [], [], ["file1.txt"]]
         )
         self.assertLess(
@@ -241,9 +241,9 @@ class FileIoTest(tb_test.TestCase):
             all_dirs.append(w_dir)
             all_subdirs.append(w_subdirs)
             all_files.append(w_files)
-        self.assertItemsEqual(all_dirs, [])
-        self.assertItemsEqual(all_subdirs, [])
-        self.assertItemsEqual(all_files, [])
+        self.assertCountEqual(all_dirs, [])
+        self.assertCountEqual(all_subdirs, [])
+        self.assertCountEqual(all_files, [])
 
     def testStat(self):
         file_path = os.path.join(self._base_dir, "temp_file")

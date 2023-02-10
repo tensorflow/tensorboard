@@ -34,7 +34,7 @@ tf.compat.v1.disable_v2_behavior()
 logger = tb_logging.get_logger()
 
 
-class _EventGenerator(object):
+class _EventGenerator:
     """Class that can add_events and then yield them back.
 
     Satisfies the EventGenerator API required for the EventAccumulator.
@@ -187,19 +187,19 @@ class EventAccumulatorTest(tf.test.TestCase):
         # Verifies that there are no unexpected keys in the actual response.
         # If this line fails, likely you added a new tag type, and need to update
         # the empty_tags dictionary above.
-        self.assertItemsEqual(actual.keys(), empty_tags.keys())
+        self.assertCountEqual(actual.keys(), empty_tags.keys())
 
         for key in actual:
             expected_value = expected.get(key, empty_tags[key])
             if isinstance(expected_value, list):
-                self.assertItemsEqual(actual[key], expected_value)
+                self.assertCountEqual(actual[key], expected_value)
             else:
                 self.assertEqual(actual[key], expected_value)
 
 
 class MockingEventAccumulatorTest(EventAccumulatorTest):
     def setUp(self):
-        super(MockingEventAccumulatorTest, self).setUp()
+        super().setUp()
         self.stubs = tf.compat.v1.test.StubOutForTesting()
         self._real_constructor = ea.EventAccumulator
         self._real_generator = ea._GeneratorFromPath
@@ -374,7 +374,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
 
         # Create the expected values after compressing hst1
         expected_vals1 = [
-            compressor.CompressedHistogramValue(bp, val)
+            compressor.CompressedHistogramValue(bp, val).as_tuple()
             for bp, val in [
                 (0, 1.0),
                 (2500, 1.25),
@@ -390,7 +390,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
 
         # Create the expected values after compressing hst2
         expected_vals2 = [
-            compressor.CompressedHistogramValue(bp, val)
+            compressor.CompressedHistogramValue(bp, val).as_tuple()
             for bp, val in [
                 (0, -2),
                 (2500, 2),
@@ -709,8 +709,62 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         gen.AddEvent(
             event_pb2.Event(wall_time=1, step=2, file_version="brain.Event:2")
         )
-
         self.assertEqual(acc.FirstEventTimestamp(), 1)
+        acc.Reload()
+        self.assertEqual(acc.file_version, 2.0)
+
+    def testGetSourceWriter(self):
+        gen = _EventGenerator(self)
+        acc = ea.EventAccumulator(gen)
+        gen.AddEvent(
+            event_pb2.Event(
+                wall_time=10,
+                step=20,
+                source_metadata=event_pb2.SourceMetadata(
+                    writer="custom_writer"
+                ),
+            )
+        )
+        gen.AddScalar("s1", wall_time=30, step=40, value=20)
+        self.assertEqual(acc.GetSourceWriter(), "custom_writer")
+
+    def testReloadPopulatesSourceWriter(self):
+        """Test that Reload() means GetSourceWriter() won't load events."""
+        gen = _EventGenerator(self)
+        acc = ea.EventAccumulator(gen)
+        gen.AddEvent(
+            event_pb2.Event(
+                wall_time=1,
+                step=2,
+                source_metadata=event_pb2.SourceMetadata(
+                    writer="custom_writer"
+                ),
+            )
+        )
+        acc.Reload()
+
+        def _Die(*args, **kwargs):  # pylint: disable=unused-argument
+            raise RuntimeError("Load() should not be called")
+
+        self.stubs.Set(gen, "Load", _Die)
+        self.assertEqual(acc.GetSourceWriter(), "custom_writer")
+
+    def testGetSourceWriterLoadsEvent(self):
+        """Test that GetSourceWriter() doesn't discard the loaded event."""
+        gen = _EventGenerator(self)
+        acc = ea.EventAccumulator(gen)
+        gen.AddEvent(
+            event_pb2.Event(
+                wall_time=1,
+                step=2,
+                file_version="brain.Event:2",
+                source_metadata=event_pb2.SourceMetadata(
+                    writer="custom_writer"
+                ),
+            )
+        )
+
+        self.assertEqual(acc.GetSourceWriter(), "custom_writer")
         acc.Reload()
         self.assertEqual(acc.file_version, 2.0)
 

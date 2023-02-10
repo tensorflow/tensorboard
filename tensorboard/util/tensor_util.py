@@ -181,7 +181,7 @@ _TENSOR_CONTENT_TYPES = frozenset(
 )
 
 
-class _Message(object):
+class _Message:
     def __init__(self, message):
         self._message = message
 
@@ -577,9 +577,7 @@ def make_ndarray(tensor):
                 np.array(tensor.string_val[0], dtype=dtype), num_elements
             ).reshape(shape)
         else:
-            return np.array(
-                [x for x in tensor.string_val], dtype=dtype
-            ).reshape(shape)
+            return np.array(list(tensor.string_val), dtype=dtype).reshape(shape)
     elif tensor_dtype == dtypes.complex64:
         it = iter(tensor.scomplex_val)
         if len(tensor.scomplex_val) == 2:

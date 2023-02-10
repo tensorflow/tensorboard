@@ -64,7 +64,7 @@ setup(
     },
     install_requires=REQUIRED_PACKAGES,
     tests_require=REQUIRED_PACKAGES,
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     # PyPI package information.
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -73,10 +73,10 @@ setup(
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3 :: Only",
         "Topic :: Scientific/Engineering :: Mathematics",
         "Topic :: Software Development :: Libraries :: Python Modules",

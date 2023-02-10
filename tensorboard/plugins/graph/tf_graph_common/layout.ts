@@ -328,8 +328,8 @@ function dagreLayout(
     ranksep: params.rankSep,
     edgesep: params.edgeSep,
   });
-  let bridgeNodeNames = [];
-  let nonBridgeNodeNames = [];
+  let bridgeNodeNames: any[] = [];
+  let nonBridgeNodeNames: any[] = [];
   // Split out nodes into bridge and non-bridge nodes, and calculate the total
   // width we should use for bridge nodes.
   _.each(graph.nodes(), (nodeName) => {
@@ -464,7 +464,7 @@ function layoutMetanode(renderNodeInfo: render.RenderGroupNodeInfo): void {
     ? _.maxBy(
         renderNodeInfo.isolatedInExtract,
         (renderNode) => renderNode.width
-      ).width
+      )!.width
     : null;
   renderNodeInfo.inExtractBox.width =
     maxInExtractWidth != null ? maxInExtractWidth : 0;
@@ -486,7 +486,7 @@ function layoutMetanode(renderNodeInfo: render.RenderGroupNodeInfo): void {
     ? _.maxBy(
         renderNodeInfo.isolatedOutExtract,
         (renderNode) => renderNode.width
-      ).width
+      )!.width
     : null;
   renderNodeInfo.outExtractBox.width =
     maxOutExtractWidth != null ? maxOutExtractWidth : 0;
@@ -508,7 +508,7 @@ function layoutMetanode(renderNodeInfo: render.RenderGroupNodeInfo): void {
     ? _.maxBy(
         renderNodeInfo.libraryFunctionsExtract,
         (renderNode) => renderNode.width
-      ).width
+      )!.width
     : null;
   renderNodeInfo.libraryFunctionsBox.width =
     maxLibraryFunctionsWidth != null ? maxLibraryFunctionsWidth : 0;

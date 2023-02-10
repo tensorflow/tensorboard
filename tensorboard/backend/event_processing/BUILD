@@ -209,6 +209,30 @@ py_test(
 )
 
 py_library(
+    name = "event_util",
+    srcs = ["event_util.py"],
+    srcs_version = "PY3",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tb_logging",
+    ],
+)
+
+py_test(
+    name = "event_util_test",
+    size = "small",
+    srcs = ["event_util_test.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":event_util",
+        "//tensorboard:test",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tb_logging",
+    ],
+)
+
+py_library(
     name = "tag_types",
     srcs = ["tag_types.py"],
     srcs_version = "PY3",
@@ -226,6 +250,7 @@ py_library(
         ":directory_loader",
         ":directory_watcher",
         ":event_file_loader",
+        ":event_util",
         ":io_wrapper",
         ":plugin_asset_util",
         ":reservoir",

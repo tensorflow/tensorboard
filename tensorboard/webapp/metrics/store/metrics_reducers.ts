@@ -23,6 +23,7 @@ import {DataLoadState} from '../../types/data';
 import {ElementId} from '../../util/dom';
 import {mapObjectValues} from '../../util/lang';
 import {composeReducers} from '../../util/ngrx';
+import {TimeSelectionToggleAffordance} from '../../widgets/card_fob/card_fob_types';
 import * as actions from '../actions';
 import {
   isFailedTimeSeriesResponse,
@@ -43,8 +44,13 @@ import {
   SCALARS_SMOOTHING_MIN,
   TooltipSort,
   URLDeserializedState,
-} from '../internal_types';
+} from '../types';
 import {groupCardIdWithMetdata} from '../utils';
+import {
+  ColumnHeader,
+  ColumnHeaderType,
+  DataTableMode,
+} from '../views/card_renderer/scalar_card_types';
 import {
   buildOrReturnStateWithPinnedCopy,
   buildOrReturnStateWithUnresolvedImportedPins,
@@ -260,7 +266,25 @@ const {initialState, reducers: namespaceContextedReducer} =
       linkedTimeSelection: null,
       linkedTimeEnabled: false,
       stepSelectorEnabled: false,
-      linkedTimeRangeEnabled: false,
+      rangeSelectionEnabled: false,
+      singleSelectionHeaders: [
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.SMOOTHED, enabled: true},
+        {type: ColumnHeaderType.VALUE, enabled: true},
+        {type: ColumnHeaderType.STEP, enabled: true},
+        {type: ColumnHeaderType.RELATIVE_TIME, enabled: true},
+      ],
+      rangeSelectionHeaders: [
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.MIN_VALUE, enabled: true},
+        {type: ColumnHeaderType.MAX_VALUE, enabled: true},
+        {type: ColumnHeaderType.START_VALUE, enabled: true},
+        {type: ColumnHeaderType.END_VALUE, enabled: true},
+        {type: ColumnHeaderType.VALUE_CHANGE, enabled: true},
+        {type: ColumnHeaderType.PERCENTAGE_CHANGE, enabled: true},
+        {type: ColumnHeaderType.START_STEP, enabled: true},
+        {type: ColumnHeaderType.END_STEP, enabled: true},
+      ],
       filteredPluginTypes: new Set(),
       stepMinMax: {
         min: Infinity,
@@ -269,7 +293,7 @@ const {initialState, reducers: namespaceContextedReducer} =
     },
     {
       isSettingsPaneOpen: true,
-      promoteTimeSeries: true,
+      isSlideoutMenuOpen: false,
       timeSeriesData: {
         scalars: {},
         histograms: {},
@@ -407,23 +431,11 @@ const reducer = createReducer(
   }),
   on(globalSettingsLoaded, (state, {partialSettings}) => {
     const metricsSettings: Partial<MetricsSettings> = {};
-    if (partialSettings.tooltipSortString) {
-      switch (partialSettings.tooltipSortString) {
-        case TooltipSort.DEFAULT:
-        case TooltipSort.ALPHABETICAL:
-          metricsSettings.tooltipSort = TooltipSort.ALPHABETICAL;
-          break;
-        case TooltipSort.ASCENDING:
-          metricsSettings.tooltipSort = TooltipSort.ASCENDING;
-          break;
-        case TooltipSort.DESCENDING:
-          metricsSettings.tooltipSort = TooltipSort.DESCENDING;
-          break;
-        case TooltipSort.NEAREST:
-          metricsSettings.tooltipSort = TooltipSort.NEAREST;
-          break;
-        default:
-      }
+    if (
+      partialSettings.tooltipSort &&
+      Object.values(TooltipSort).includes(partialSettings.tooltipSort)
+    ) {
+      metricsSettings.tooltipSort = partialSettings.tooltipSort;
     }
     if (typeof partialSettings.timeSeriesCardMinWidth === 'number') {
       metricsSettings.cardMinWidth = partialSettings.timeSeriesCardMinWidth;
@@ -435,18 +447,21 @@ const reducer = createReducer(
       metricsSettings.scalarSmoothing = partialSettings.scalarSmoothing;
     }
 
-    const promoteTimeSeries =
-      typeof partialSettings.timeSeriesPromotionDismissed === 'boolean'
-        ? !partialSettings.timeSeriesPromotionDismissed
-        : state.promoteTimeSeries;
-
     const isSettingsPaneOpen =
       partialSettings.timeSeriesSettingsPaneOpened ?? state.isSettingsPaneOpen;
+    const stepSelectorEnabled =
+      partialSettings.stepSelectorEnabled ?? state.stepSelectorEnabled;
+    const rangeSelectionEnabled =
+      partialSettings.rangeSelectionEnabled ?? state.rangeSelectionEnabled;
+    const linkedTimeEnabled =
+      partialSettings.linkedTimeEnabled ?? state.linkedTimeEnabled;
 
     return {
       ...state,
-      promoteTimeSeries,
       isSettingsPaneOpen,
+      stepSelectorEnabled,
+      rangeSelectionEnabled,
+      linkedTimeEnabled,
       settings: {
         ...state.settings,
         ...metricsSettings,
@@ -517,7 +532,7 @@ const reducer = createReducer(
 
       const newCardMetadataMap = {} as CardMetadataMap;
       const nextCardMetadataList = buildCardMetadataList(nextTagMetadata);
-      const nextCardList = [];
+      const nextCardList: string[] = [];
 
       // Create new cards for unseen metadata.
       for (const cardMetadata of nextCardMetadataList) {
@@ -957,6 +972,7 @@ const reducer = createReducer(
     const nextLinkedTimeEnabled = !state.linkedTimeEnabled;
     let nextCardStepIndexMap = {...state.cardStepIndex};
     let nextLinkedTimeSelection = state.linkedTimeSelection;
+    let nextStepSelectorEnabled = state.stepSelectorEnabled;
 
     // Updates cardStepIndex only when toggle to enable linked time.
     if (nextLinkedTimeEnabled) {
@@ -972,6 +988,8 @@ const reducer = createReducer(
         state.timeSeriesData,
         nextLinkedTimeSelection
       );
+
+      nextStepSelectorEnabled = nextLinkedTimeEnabled;
     }
 
     return {
@@ -979,20 +997,58 @@ const reducer = createReducer(
       cardStepIndex: nextCardStepIndexMap,
       linkedTimeEnabled: nextLinkedTimeEnabled,
       linkedTimeSelection: nextLinkedTimeSelection,
+      stepSelectorEnabled: nextStepSelectorEnabled,
     };
   }),
-  on(actions.linkedTimeSelectionChanged, (state, change) => {
+  on(actions.rangeSelectionToggled, (state) => {
+    const nextRangeSelectionEnabled = !state.rangeSelectionEnabled;
+    let nextStepSelectorEnabled = state.stepSelectorEnabled;
+    let linkedTimeSelection = state.linkedTimeSelection;
+
+    if (nextRangeSelectionEnabled) {
+      nextStepSelectorEnabled = nextRangeSelectionEnabled;
+      if (!linkedTimeSelection) {
+        linkedTimeSelection = {
+          start: {step: state.stepMinMax.min},
+          end: {step: state.stepMinMax.max},
+        };
+      }
+      if (!linkedTimeSelection.end) {
+        linkedTimeSelection = {
+          ...linkedTimeSelection,
+          end: {step: state.stepMinMax.max},
+        };
+      }
+    } else {
+      if (linkedTimeSelection) {
+        linkedTimeSelection = {
+          ...linkedTimeSelection,
+          end: null,
+        };
+      }
+    }
+    return {
+      ...state,
+      stepSelectorEnabled: nextStepSelectorEnabled,
+      rangeSelectionEnabled: nextRangeSelectionEnabled,
+      linkedTimeSelection,
+    };
+  }),
+  on(actions.timeSelectionChanged, (state, change) => {
     const {timeSelection} = change;
-    const nextStartStep = timeSelection.startStep;
-    const nextEndStep = timeSelection.endStep;
+    const nextStartStep = timeSelection.start.step;
+    const nextEndStep = timeSelection.end?.step;
     const end =
       nextEndStep === undefined
         ? null
         : {step: nextStartStep > nextEndStep ? nextStartStep : nextEndStep};
 
-    // If there is no endStep then current selection state is single.
-    // Otherwise selection state is range.
-    const linkedTimeRangeEnabled = nextEndStep !== undefined;
+    let nextRangeSelectionEnabled = state.rangeSelectionEnabled;
+    if (state.linkedTimeEnabled) {
+      // If there is no endStep then current selection state is single.
+      // Otherwise selection state is range.
+      nextRangeSelectionEnabled = nextEndStep !== undefined;
+    }
 
     const linkedTimeSelection = {
       start: {
@@ -1010,22 +1066,116 @@ const reducer = createReducer(
 
     return {
       ...state,
-      linkedTimeEnabled: true,
       linkedTimeSelection,
       cardStepIndex: nextCardStepIndexMap,
-      linkedTimeRangeEnabled,
+      rangeSelectionEnabled: nextRangeSelectionEnabled,
     };
   }),
-  on(actions.stepSelectorToggled, (state) => {
+  on(actions.stepSelectorToggled, (state, {affordance}) => {
+    if (
+      !state.linkedTimeEnabled &&
+      affordance !== TimeSelectionToggleAffordance.CHECK_BOX
+    ) {
+      // In plain step selection mode (without linked time), we do not allow
+      // interactions with fobs to modify global step selection state.
+      return {...state};
+    }
+
+    const nextStepSelectorEnabled = !state.stepSelectorEnabled;
+    const nextLinkedTimeEnabled =
+      nextStepSelectorEnabled && state.linkedTimeEnabled;
+    const nextRangeSelectionEnabled =
+      nextStepSelectorEnabled && state.rangeSelectionEnabled;
+
     return {
       ...state,
-      stepSelectorEnabled: !state.stepSelectorEnabled,
+      linkedTimeEnabled: nextLinkedTimeEnabled,
+      stepSelectorEnabled: nextStepSelectorEnabled,
+      rangeSelectionEnabled: nextRangeSelectionEnabled,
     };
   }),
   on(actions.timeSelectionCleared, (state) => {
     return {
       ...state,
       linkedTimeSelection: null,
+    };
+  }),
+  on(actions.dataTableColumnDrag, (state, {newOrder}) => {
+    if (state.rangeSelectionEnabled) {
+      return {
+        ...state,
+        rangeSelectionHeaders: newOrder,
+      };
+    }
+
+    return {
+      ...state,
+      singleSelectionHeaders: newOrder,
+    };
+  }),
+  on(actions.dataTableColumnEdited, (state, {dataTableMode, headers}) => {
+    const enabledNewHeaders: ColumnHeader[] = [];
+    const disabledNewHeaders: ColumnHeader[] = [];
+
+    // All enabled headers appear above all disabled headers.
+    headers.forEach((header) => {
+      if (header.enabled) {
+        enabledNewHeaders.push(header);
+      } else {
+        disabledNewHeaders.push(header);
+      }
+    });
+
+    if (dataTableMode === DataTableMode.RANGE) {
+      return {
+        ...state,
+        rangeSelectionHeaders: enabledNewHeaders.concat(disabledNewHeaders),
+      };
+    }
+
+    return {
+      ...state,
+      singleSelectionHeaders: enabledNewHeaders.concat(disabledNewHeaders),
+    };
+  }),
+  on(actions.dataTableColumnToggled, (state, {dataTableMode, headerType}) => {
+    const targetedHeaders =
+      dataTableMode === DataTableMode.RANGE
+        ? state.rangeSelectionHeaders
+        : state.singleSelectionHeaders;
+
+    const currentToggledHeaderIndex = targetedHeaders.findIndex(
+      (element) => element.type === headerType
+    );
+
+    // If the header is being enabled it goes at the bottom of the currently
+    // enabled headers. If it is being disabled it goes to the top of the
+    // currently disabled headers.
+    let newToggledHeaderIndex = getEnabledCount(targetedHeaders);
+    if (targetedHeaders[currentToggledHeaderIndex].enabled) {
+      newToggledHeaderIndex--;
+    }
+    const newHeaders = moveHeader(
+      currentToggledHeaderIndex,
+      newToggledHeaderIndex,
+      targetedHeaders
+    );
+
+    newHeaders[newToggledHeaderIndex] = {
+      type: newHeaders[newToggledHeaderIndex].type,
+      enabled: !newHeaders[newToggledHeaderIndex].enabled,
+    };
+
+    if (dataTableMode === DataTableMode.RANGE) {
+      return {
+        ...state,
+        rangeSelectionHeaders: newHeaders,
+      };
+    }
+
+    return {
+      ...state,
+      singleSelectionHeaders: newHeaders,
     };
   }),
   on(actions.metricsToggleVisiblePlugin, (state, {plugin}) => {
@@ -1048,14 +1198,14 @@ const reducer = createReducer(
   on(actions.metricsShowAllPlugins, (state): MetricsState => {
     return {...state, filteredPluginTypes: new Set()};
   }),
-  on(actions.metricsPromoDismissed, (state) => {
-    return {...state, promoteTimeSeries: false};
-  }),
   on(actions.metricsSettingsPaneToggled, (state) => {
     return {...state, isSettingsPaneOpen: !state.isSettingsPaneOpen};
   }),
   on(actions.metricsSettingsPaneClosed, (state) => {
     return {...state, isSettingsPaneOpen: false};
+  }),
+  on(actions.metricsSlideoutMenuToggled, (state) => {
+    return {...state, isSlideoutMenuOpen: !state.isSlideoutMenuOpen};
   })
 );
 
@@ -1084,4 +1234,31 @@ function buildTagToRuns(runTagInfo: {[run: string]: string[]}) {
     }
   }
   return tagToRuns;
+}
+
+/**
+ * Returns a copy of the headers array with item at sourceIndex moved to
+ * destinationIndex.
+ */
+function moveHeader(
+  sourceIndex: number,
+  destinationIndex: number,
+  headers: ColumnHeader[]
+) {
+  const newHeaders = [...headers];
+  // Delete from original location
+  newHeaders.splice(sourceIndex, 1);
+  // Insert at destinationIndex.
+  newHeaders.splice(destinationIndex, 0, headers[sourceIndex]);
+  return newHeaders;
+}
+
+function getEnabledCount(headers: ColumnHeader[]) {
+  let count = 0;
+  headers.forEach((header) => {
+    if (header.enabled) {
+      count++;
+    }
+  });
+  return count;
 }

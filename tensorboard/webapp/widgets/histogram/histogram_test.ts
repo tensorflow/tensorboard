@@ -30,6 +30,7 @@ import {
 import {
   TimeSelection,
   TimeSelectionAffordance,
+  TimeSelectionWithAffordance,
 } from '../card_fob/card_fob_types';
 import {IntersectionObserverTestingModule} from '../intersection_observer/intersection_observer_testing_module';
 import {HistogramCardFobController} from './histogram_card_fob_controller';
@@ -299,6 +300,43 @@ describe('histogram test', () => {
         expect(
           getAxisLabelText(fixture.debugElement.query(byCss.Y_AXIS))
         ).toEqual(['0', '20', '40', '60', '80', '100']);
+      });
+
+      it('cannot have fractional steps in STEP mode', () => {
+        const fixture = createComponent('foo', [
+          buildHistogramDatum({
+            step: 0,
+          }),
+          buildHistogramDatum({
+            step: 1,
+          }),
+          buildHistogramDatum({
+            step: 2,
+          }),
+          buildHistogramDatum({
+            step: 3,
+          }),
+          buildHistogramDatum({
+            step: 4,
+          }),
+          buildHistogramDatum({
+            step: 5,
+          }),
+          buildHistogramDatum({
+            step: 6,
+          }),
+          buildHistogramDatum({
+            step: 7,
+          }),
+        ]);
+        fixture.componentInstance.mode = HistogramMode.OFFSET;
+        fixture.componentInstance.timeProperty = TimeProperty.STEP;
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+
+        expect(
+          getAxisLabelText(fixture.debugElement.query(byCss.Y_AXIS))
+        ).toEqual(['0', '2', '4', '6']);
       });
 
       it('renders wallTime in WALL_TIME mode', () => {
@@ -1128,8 +1166,11 @@ describe('histogram test', () => {
         histograms[3].triggerEventHandler('click', null);
         fixture.detectChanges();
         expect(onLinkedTimeSelectionChangedSpy).toHaveBeenCalledWith({
-          start: {step: 5},
-          end: {step: 20},
+          timeSelection: {
+            start: {step: 5},
+            end: {step: 20},
+          },
+          affordance: TimeSelectionAffordance.HISTOGRAM_CLICK_TO_RANGE,
         });
       });
 
@@ -1144,8 +1185,11 @@ describe('histogram test', () => {
         histograms[0].triggerEventHandler('click', null);
         fixture.detectChanges();
         expect(onLinkedTimeSelectionChangedSpy).toHaveBeenCalledWith({
-          start: {step: 0},
-          end: {step: 5},
+          timeSelection: {
+            start: {step: 0},
+            end: {step: 5},
+          },
+          affordance: TimeSelectionAffordance.HISTOGRAM_CLICK_TO_RANGE,
         });
       });
 
@@ -1163,8 +1207,11 @@ describe('histogram test', () => {
         histograms[0].triggerEventHandler('click', null);
         fixture.detectChanges();
         expect(onLinkedTimeSelectionChangedSpy).toHaveBeenCalledWith({
-          start: {step: 0},
-          end: {step: 10},
+          timeSelection: {
+            start: {step: 0},
+            end: {step: 10},
+          },
+          affordance: TimeSelectionAffordance.HISTOGRAM_CLICK_TO_RANGE,
         });
       });
 
@@ -1182,8 +1229,11 @@ describe('histogram test', () => {
         histograms[3].triggerEventHandler('click', null);
         fixture.detectChanges();
         expect(onLinkedTimeSelectionChangedSpy).toHaveBeenCalledWith({
-          start: {step: 5},
-          end: {step: 20},
+          timeSelection: {
+            start: {step: 5},
+            end: {step: 20},
+          },
+          affordance: TimeSelectionAffordance.HISTOGRAM_CLICK_TO_RANGE,
         });
       });
 
@@ -1258,6 +1308,12 @@ describe('histogram test', () => {
         };
         fixture.componentInstance.onLinkedTimeSelectionChanged =
           onLinkedTimeSelectionChangedSpy;
+        onLinkedTimeSelectionChangedSpy.and.callFake(
+          (timeSelectionWithAffordance: TimeSelectionWithAffordance) => {
+            fixture.componentInstance.timeSelection =
+              timeSelectionWithAffordance.timeSelection;
+          }
+        );
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
         const testController = fixture.debugElement.query(
@@ -1268,12 +1324,17 @@ describe('histogram test', () => {
           .getBoundingClientRect().top;
 
         // Simulate dragging fob to step 10.
-        testController.startDrag(Fob.START, TimeSelectionAffordance.FOB);
+        testController.startDrag(
+          Fob.START,
+          TimeSelectionAffordance.FOB,
+          new MouseEvent('mouseDown')
+        );
         const fakeEvent = new MouseEvent('mousemove', {
           clientY: 5 + fobStartPosition, // Add the difference between step 5 and 10, which is equal to 5.
           movementY: 1,
         });
         testController.mouseMove(fakeEvent);
+        fixture.detectChanges();
         testController.stopDrag();
         fixture.detectChanges();
 

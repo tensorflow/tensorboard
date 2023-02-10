@@ -59,7 +59,7 @@ import org.jsoup.select.NodeVisitor;
 public final class Vulcanize {
 
   private static final Pattern INLINE_SOURCE_MAP_PATTERN =
-      Pattern.compile("//# sourceMappingURL=.*");
+      Pattern.compile("[^\"]//# sourceMappingURL=.*[^\"]");
 
   private static final Parser parser = Parser.htmlParser();
   private static final Map<Webpath, Path> webfiles = new HashMap<>();
@@ -97,7 +97,7 @@ public final class Vulcanize {
     if (firstScript != null) {
       firstScript.before(
           new Element(Tag.valueOf("script"), firstScript.baseUri())
-              .appendChild(new DataNode("var CLOSURE_NO_DEPS = true;", firstScript.baseUri())));
+              .appendChild(new DataNode("var CLOSURE_NO_DEPS = true;")));
     }
     if (licenseComment != null) {
       licenseComment.attr("comment", String.format("\n%s\n", Joiner.on("\n\n").join(licenses)));
@@ -238,7 +238,7 @@ public final class Vulcanize {
         new Element(Tag.valueOf("style"), node.baseUri(), node.attributes())
             .appendChild(
                 new DataNode(
-                    new String(Files.readAllBytes(getWebfile(href)), UTF_8), node.baseUri()))
+                    new String(Files.readAllBytes(getWebfile(href)), UTF_8)))
             .removeAttr("rel")
             .removeAttr("href"));
   }
@@ -255,7 +255,7 @@ public final class Vulcanize {
       result = replaceNode(
           node,
           new Element(Tag.valueOf("script"), node.baseUri(), node.attributes())
-              .appendChild(new DataNode(code, node.baseUri()))
+              .appendChild(new DataNode(code))
               .removeAttr("src"));
     }
     if (firstScript == null) {
@@ -270,7 +270,7 @@ public final class Vulcanize {
   }
 
   private static Node removeNode(Node node) {
-    return replaceNode(node, new TextNode("", node.baseUri()));
+    return replaceNode(node, new TextNode(""));
   }
 
   private static Path getWebfile(Webpath path) {
@@ -450,7 +450,7 @@ public final class Vulcanize {
   private static Document getFlattenedHTML5Document(Document document) {
     Document flatDoc = new Document("/");
 
-    flatDoc.appendChild(new DocumentType("html", "", "", ""));
+    flatDoc.appendChild(new DocumentType("html", "", ""));
 
     // Transfer comment nodes from the `document` level. They are important
     // license comments

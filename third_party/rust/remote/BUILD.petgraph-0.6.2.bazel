@@ -58,8 +58,6 @@ licenses([
 rust_library(
     name = "petgraph",
     srcs = glob(["**/*.rs"]),
-    crate_features = [
-    ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2018",
@@ -68,6 +66,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=petgraph",
         "manual",
     ],
     version = "0.6.2",

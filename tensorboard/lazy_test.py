@@ -95,7 +95,7 @@ class LazyTest(unittest.TestCase):
     def test_loads_only_once_even_when_result_equal_to_everything(self):
         # This would fail if the implementation of `_memoize` used `==`
         # rather than `is` to check for the sentinel value.
-        class EqualToEverything(object):
+        class EqualToEverything:
             def __eq__(self, other):
                 return True
 

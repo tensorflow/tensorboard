@@ -28,15 +28,15 @@ def readable_time_string():
 
 def readable_bytes_string(bytes):
     """Get a human-readable string for number of bytes."""
-    if bytes >= 2 ** 20:
-        return "%.1f MB" % (float(bytes) / 2 ** 20)
-    elif bytes >= 2 ** 10:
-        return "%.1f kB" % (float(bytes) / 2 ** 10)
+    if bytes >= 2**20:
+        return "%.1f MB" % (float(bytes) / 2**20)
+    elif bytes >= 2**10:
+        return "%.1f kB" % (float(bytes) / 2**10)
     else:
         return "%d B" % bytes
 
 
-class UploadStats(object):
+class UploadStats:
     """Statistics of uploading."""
 
     def __init__(self):
@@ -254,7 +254,7 @@ _STYLE_DARKGRAY = "\033[90m"
 _STYLE_ERASE_LINE = "\033[2K"
 
 
-class UploadTracker(object):
+class UploadTracker:
     """Tracker for uploader progress and status."""
 
     _SUPPORTED_VERBISITY_VALUES = (0, 1)
@@ -418,7 +418,7 @@ class UploadTracker(object):
             pass
 
 
-class _BlobTracker(object):
+class _BlobTracker:
     def __init__(self, upload_stats, blob_bytes):
         self._upload_stats = upload_stats
         self._blob_bytes = blob_bytes

@@ -29,7 +29,7 @@ from tensorboard.util import test_util
 
 class LayoutTest(tf.test.TestCase):
     def setUp(self):
-        super(LayoutTest, self).setUp()
+        super().setUp()
         self.logdir = self.get_temp_dir()
 
     def testSetLayout(self):

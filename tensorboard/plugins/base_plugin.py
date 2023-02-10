@@ -101,7 +101,7 @@ class TBPlugin(metaclass=ABCMeta):
         return (self.plugin_name,)
 
 
-class FrontendMetadata(object):
+class FrontendMetadata:
     """Metadata required to render a plugin on the frontend.
 
     Each argument to the constructor is publicly accessible under a
@@ -226,7 +226,7 @@ class FrontendMetadata(object):
         )
 
 
-class TBContext(object):
+class TBContext:
     """Magic container of information passed from TensorBoard core to plugins.
 
     A TBContext instance is passed to the constructor of a TBPlugin class. Plugins
@@ -291,7 +291,7 @@ class TBContext(object):
         self.window_title = window_title
 
 
-class TBLoader(object):
+class TBLoader:
     """TBPlugin factory base class.
 
     Plugins can override this class to customize how a plugin is loaded at

@@ -58,7 +58,7 @@ def _wrap_define_function(original_function):
     return wrapper
 
 
-class _FlagValuesWrapper(object):
+class _FlagValuesWrapper:
     """Wrapper class for absl.flags.FLAGS.
 
     The difference is that tf.compat.v1.flags.FLAGS implicitly parses
@@ -71,7 +71,7 @@ class _FlagValuesWrapper(object):
 
     def __getattribute__(self, name):
         if name == "__dict__":
-            return super(_FlagValuesWrapper, self).__getattribute__(name)
+            return super().__getattribute__(name)
         return self.__dict__["__wrapped"].__getattribute__(name)
 
     def __getattr__(self, name):

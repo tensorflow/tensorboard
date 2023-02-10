@@ -22,28 +22,36 @@ export type FeatureFlagType =
   | null
   | undefined;
 
-export type FeatureFlagMetadata<T> = {
+export type BasicFeatureFlagMetadata<T> = {
   defaultValue: T;
-  // The name of the query param users can use to override the feature flag
-  // value. If unspecified then users cannot override the feature flag value.
-  queryParamOverride?: string;
-  // Function that translates a query param value into the feature flag value.
-  parseValue: (str: string) => T;
+  // Some feature flags cannot be overridden by query params in the URL. They
+  // should specify null here.
+  queryParamOverride: null;
 };
 
-export type FeatureFlagMetadataMapType<T extends FeatureFlags> = {
+export type AdvancedFeatureFlagMetadata<T> = {
+  defaultValue: T;
+  // Some feature flags can be overridden by query params in the URL. They
+  // should specify the name of the query param here.
+  queryParamOverride: string;
+  // Additionally they should specify a way to parse the query param string
+  // values into the feature flag value.
+  parseValue: (str: string) => T;
+  // Indicates that the feature flag and value should be sent to the server
+  // if the user has specified an override value.
+  sendToServerWhenOverridden?: boolean;
+};
+
+export type FeatureFlagMetadata<T> =
+  | BasicFeatureFlagMetadata<T>
+  | AdvancedFeatureFlagMetadata<T>;
+
+export type FeatureFlagMetadataMapType<T> = {
   [FlagName in keyof T]: FeatureFlagMetadata<T[FlagName]>;
 };
 
 export function parseBoolean(str: string): boolean {
   return str !== 'false';
-}
-
-export function parseBooleanOrNull(str: string): boolean | null {
-  if (str === 'null') {
-    return null;
-  }
-  return parseBoolean(str);
 }
 
 export function parseStringArray(str: string): string[] {
@@ -60,33 +68,18 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       queryParamOverride: 'scalarsBatchSize',
       parseValue: parseInt,
     },
-    enabledColorGroup: {
-      defaultValue: true,
-      queryParamOverride: 'enableColorGroup',
-      parseValue: parseBoolean,
-    },
-    enabledColorGroupByRegex: {
-      defaultValue: true,
-      queryParamOverride: 'enableColorGroupByRegex',
-      parseValue: parseBoolean,
-    },
     enabledExperimentalPlugins: {
       defaultValue: [],
       queryParamOverride: 'experimentalPlugin',
       parseValue: parseStringArray,
     },
     enabledLinkedTime: {
-      defaultValue: false,
+      defaultValue: true,
       queryParamOverride: 'enableLinkedTime',
       parseValue: parseBoolean,
     },
-    enabledCardWidthSetting: {
-      defaultValue: true,
-      queryParamOverride: 'enableCardWidthSetting',
-      parseValue: parseBoolean,
-    },
     enabledScalarDataTable: {
-      defaultValue: false,
+      defaultValue: true,
       queryParamOverride: 'enableDataTable',
       parseValue: parseBoolean,
     },
@@ -97,7 +90,7 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
     },
     enableDarkModeOverride: {
       defaultValue: null,
-      parseValue: parseBooleanOrNull,
+      queryParamOverride: null,
     },
     defaultEnableDarkMode: {
       defaultValue: false,
@@ -106,7 +99,7 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
     },
     isAutoDarkModeAllowed: {
       defaultValue: true,
-      parseValue: parseBoolean,
+      queryParamOverride: null,
     },
     inColab: {
       defaultValue: false,
@@ -115,10 +108,26 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
     },
     metricsImageSupportEnabled: {
       defaultValue: true,
+      queryParamOverride: null,
+    },
+    enableShowFlags: {
+      defaultValue: false,
+      queryParamOverride: 'showFlags',
       parseValue: parseBoolean,
     },
-    enableTimeSeriesPromotion: {
+    allowRangeSelection: {
+      defaultValue: true,
+      queryParamOverride: 'allowRangeSelection',
+      parseValue: parseBoolean,
+    },
+    enabledProspectiveFob: {
+      defaultValue: true,
+      queryParamOverride: 'enableProspectiveFob',
+      parseValue: parseBoolean,
+    },
+    enableScalarColumnCustomization: {
       defaultValue: false,
+      queryParamOverride: 'enableScalarColumnCustomization',
       parseValue: parseBoolean,
     },
   };
@@ -126,12 +135,12 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
 /**
  * Gets gets just the default values of each feature flag from the provided metadata.
  */
-export function generateFeatureFlagDefaults<T extends FeatureFlags>(
+export function generateFeatureFlagDefaults<T>(
   featureFlagMetadataMap: FeatureFlagMetadataMapType<T>
 ): T {
   return Object.entries(featureFlagMetadataMap).reduce(
-    (map, [key, {defaultValue}]) => {
-      map[key] = defaultValue;
+    (map, [key, metadata]) => {
+      map[key] = (metadata as FeatureFlagMetadata<T>).defaultValue;
       return map;
     },
     {} as Record<string, any>

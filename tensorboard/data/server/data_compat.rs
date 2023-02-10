@@ -202,7 +202,7 @@ impl EventValue {
                         Ok(BlobSequenceValue(tp.string_val))
                     } else if shape.dim.len() == 2
                         && shape.dim[1].size == 2
-                        && is_plugin(&metadata, plugin_names::AUDIO)
+                        && is_plugin(metadata, plugin_names::AUDIO)
                     {
                         // Extract just the actual audio clips along the first axis.
                         let audio: Vec<Bytes> = tp
@@ -213,9 +213,9 @@ impl EventValue {
                         Ok(BlobSequenceValue(audio))
                     } else if shape.dim.is_empty()
                         && tp.string_val.len() == 1
-                        && (is_plugin(&metadata, plugin_names::GRAPH_RUN_METADATA)
-                            || is_plugin(&metadata, plugin_names::GRAPH_RUN_METADATA_WITH_GRAPH)
-                            || is_plugin(&metadata, plugin_names::GRAPH_KERAS_MODEL))
+                        && (is_plugin(metadata, plugin_names::GRAPH_RUN_METADATA)
+                            || is_plugin(metadata, plugin_names::GRAPH_RUN_METADATA_WITH_GRAPH)
+                            || is_plugin(metadata, plugin_names::GRAPH_KERAS_MODEL))
                     {
                         let data = tp.string_val.into_iter().next().unwrap();
                         Ok(BlobSequenceValue(vec![data]))
@@ -471,7 +471,7 @@ mod tests {
     macro_rules! to_le_bytes {
         ($($x:expr),+ $(,)?) => (
             [$($x),+].iter()
-                .flat_map(|v| std::array::IntoIter::new(v.to_le_bytes()))
+                .flat_map(|v| IntoIterator::into_iter(v.to_le_bytes()))
                 .collect::<Bytes>()
         );
     }

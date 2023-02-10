@@ -45,9 +45,9 @@ if audio_ops is None:
     from tensorflow.python.ops import gen_audio_ops as audio_ops
 
 
-class SummaryBaseTest(object):
+class SummaryBaseTest:
     def setUp(self):
-        super(SummaryBaseTest, self).setUp()
+        super().setUp()
         self.samples_rate = 44100
         self.audio_count = 1
         self.num_samples = 20
@@ -87,7 +87,7 @@ class SummaryBaseTest(object):
         # WAV roundtrip goes from float32 to int16 and back, so expect some
         # precision loss, but not more than 2 applications of rounding error from
         # mapping the range [-1.0, 1.0] to 2^16.
-        epsilon = 2 * 2.0 / (2 ** 16)
+        epsilon = 2 * 2.0 / (2**16)
         self.assertAllClose(audio[0], decoded, atol=epsilon)
         self.assertEqual(44100, sample_rate.numpy())
 
@@ -147,7 +147,7 @@ class SummaryBaseTest(object):
 
 class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
     def setUp(self):
-        super(SummaryV1PbTest, self).setUp()
+        super().setUp()
 
     def audio(self, *args, **kwargs):
         return summary.pb(*args, **kwargs)
@@ -167,7 +167,7 @@ class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
 
 class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
     def setUp(self):
-        super(SummaryV1OpTest, self).setUp()
+        super().setUp()
 
     def audio(self, *args, **kwargs):
         return tf.compat.v1.Summary.FromString(
@@ -200,7 +200,7 @@ class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
 
 class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
     def setUp(self):
-        super(SummaryV2OpTest, self).setUp()
+        super().setUp()
         if tf2 is None:
             self.skipTest("TF v2 summary API not available")
 

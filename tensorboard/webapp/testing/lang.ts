@@ -16,7 +16,7 @@ limitations under the License.
  * Recursively freezes an object and all of its fields. The given object is
  * assumed not to have reference loops.
  */
-export function deepFreeze<T>(obj: T): T {
+export function deepFreeze<T extends {}>(obj: T): T {
   for (const val of Object.values(obj)) {
     if (val && typeof val === 'object') {
       deepFreeze(val);

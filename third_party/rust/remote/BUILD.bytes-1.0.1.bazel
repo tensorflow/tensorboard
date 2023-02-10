@@ -52,6 +52,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=bytes",
         "manual",
     ],
     version = "1.0.1",

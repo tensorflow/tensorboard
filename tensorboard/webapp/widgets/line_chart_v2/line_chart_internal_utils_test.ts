@@ -16,7 +16,7 @@ limitations under the License.
 import {RendererType, ScaleType} from './lib/public_types';
 import {createScale} from './lib/scale';
 import {buildMetadata, buildSeries} from './lib/testing';
-import * as libUtils from './lib/utils';
+import {ChartUtils} from './lib/utils';
 import {
   computeDataSeriesExtent,
   getRendererType,
@@ -465,12 +465,12 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
     });
 
     it('returns webgl if webgl2 is supported', () => {
-      spyOn(libUtils, 'isWebGl2Supported').and.returnValue(true);
+      spyOn(ChartUtils, 'isWebGl2Supported').and.returnValue(true);
       expect(getRendererType(RendererType.WEBGL)).toBe(RendererType.WEBGL);
     });
 
     it('returns svg if webgl2 is not supported', () => {
-      spyOn(libUtils, 'isWebGl2Supported').and.returnValue(false);
+      spyOn(ChartUtils, 'isWebGl2Supported').and.returnValue(false);
       expect(getRendererType(RendererType.WEBGL)).toBe(RendererType.SVG);
     });
   });

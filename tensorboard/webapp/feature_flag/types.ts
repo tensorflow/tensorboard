@@ -25,10 +25,6 @@ export interface FeatureFlags {
   // complete (it is badly broken on Firefox). The feature is still available
   // when using the query parameter, `?darkMode`.
   isAutoDarkModeAllowed: boolean;
-  // Whether to enable experimental semantic color grouping feature.
-  enabledColorGroup: boolean;
-  // Whether to enable color grouping by regex.
-  enabledColorGroupByRegex: boolean;
   // experimental plugins to manually enable.
   enabledExperimentalPlugins: string[];
   // Whether the TensorBoard is being run inside Colab output cell.
@@ -43,13 +39,19 @@ export interface FeatureFlags {
   metricsImageSupportEnabled: boolean;
   // Whether TimeSeries linked time feature is enabled or not.
   enabledLinkedTime: boolean;
-  // Whether to enable TimeSeries promotion butter bar.
-  enableTimeSeriesPromotion: boolean;
-  // Whether to enable card width adjustment on the right panle.
-  enabledCardWidthSetting: boolean;
   // Flag for the escape hatch from WebGL. This only effects the TimeSeries
   // Scalar cards.
   forceSvg: boolean;
   // Whether to enable the "sticky" data table in scalar cards.
   enabledScalarDataTable: boolean;
+  // If enabled causes the feature flags modal to appear.
+  enableShowFlags: boolean;
+  // Adds check box in settings which allows users to enter step selection range.
+  allowRangeSelection: boolean;
+  // In Linked Time, if enabled, show a prospective fob user to turn on the feature or select a step.
+  // If this is removed update the `getCurrentFob` method of tensorboard/webapp/widgets/card_fob/card_fob_controller_component.ts
+  enabledProspectiveFob: boolean;
+  // Adds affordance for users to select and reorder the columns in the Scalar
+  // Card Data Table
+  enableScalarColumnCustomization: boolean;
 }

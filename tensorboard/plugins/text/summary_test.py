@@ -41,7 +41,7 @@ except AttributeError:
     pass
 
 
-class SummaryBaseTest(object):
+class SummaryBaseTest:
     def text(self, *args, **kwargs):
         raise NotImplementedError()
 
@@ -162,7 +162,7 @@ class SummaryV2PbTest(SummaryBaseTest, tf.test.TestCase):
 
 class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
     def setUp(self):
-        super(SummaryV2OpTest, self).setUp()
+        super().setUp()
         if tf2 is None:
             self.skipTest("TF v2 summary API not available")
 

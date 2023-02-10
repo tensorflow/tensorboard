@@ -23,7 +23,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {PluginType} from '../../data_source';
-import {XAxisType} from '../../types';
+import {CardId} from '../../types';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
 
@@ -40,6 +40,9 @@ export class CardGridComponent {
   readonly PluginType = PluginType;
   gridTemplateColumn = '';
 
+  cardsAtFullWidth = new Set<CardId>();
+  cardsAtFullHeight = new Set<CardId>();
+
   @Input() isGroupExpanded!: boolean;
   @Input() pageIndex!: number;
   @Input() numPages!: number;
@@ -47,8 +50,6 @@ export class CardGridComponent {
   @Input() cardMinWidth!: number | null;
   @Input() cardObserver!: CardObserver;
   @Input() showPaginationControls!: boolean;
-  @Input() isStepSelectorEnabled!: boolean;
-  @Input() xAxisType!: XAxisType;
 
   @Output() pageIndexChanged = new EventEmitter<number>();
 
@@ -58,7 +59,7 @@ export class CardGridComponent {
 
   ngOnInit() {
     if (this.isCardWidthValid(this.cardMinWidth)) {
-      this.gridTemplateColumn = `repeat(auto-fill, minmax(${this.cardMinWidth}px, auto))`;
+      this.gridTemplateColumn = `repeat(auto-fill, minmax(${this.cardMinWidth}px, 1fr))`;
     }
   }
 
@@ -67,7 +68,7 @@ export class CardGridComponent {
       const newCardWidth = changes['cardMinWidth'].currentValue;
       if (this.isCardWidthValid(newCardWidth)) {
         this.cardMinWidth = newCardWidth;
-        this.gridTemplateColumn = `repeat(auto-fill, minmax(${this.cardMinWidth}px, auto))`;
+        this.gridTemplateColumn = `repeat(auto-fill, minmax(${this.cardMinWidth}px, 1fr))`;
       } else {
         this.gridTemplateColumn = '';
       }
@@ -136,11 +137,19 @@ export class CardGridComponent {
     this.handlePageChange(nextValue, input);
   }
 
-  isShowingDataTable(item: CardIdWithMetadata) {
-    return (
-      this.isStepSelectorEnabled &&
-      item.plugin === PluginType.SCALARS &&
-      this.xAxisType === XAxisType.STEP
-    );
+  onFullWidthChanged(cardId: CardId, showFullWidth: boolean) {
+    if (showFullWidth) {
+      this.cardsAtFullWidth.add(cardId);
+    } else {
+      this.cardsAtFullWidth.delete(cardId);
+    }
+  }
+
+  onFullHeightChanged(cardId: CardId, showFullHeight: boolean) {
+    if (showFullHeight) {
+      this.cardsAtFullHeight.add(cardId);
+    } else {
+      this.cardsAtFullHeight.delete(cardId);
+    }
   }
 }

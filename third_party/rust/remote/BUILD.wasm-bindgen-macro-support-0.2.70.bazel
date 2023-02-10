@@ -34,9 +34,6 @@ licenses([
 rust_library(
     name = "wasm_bindgen_macro_support",
     srcs = glob(["**/*.rs"]),
-    crate_features = [
-        "spans",
-    ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2018",
@@ -45,14 +42,15 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=wasm-bindgen-macro-support",
         "manual",
     ],
     version = "0.2.70",
     # buildifier: leave-alone
     deps = [
-        "@raze__proc_macro2__1_0_24//:proc_macro2",
+        "@raze__proc_macro2__1_0_43//:proc_macro2",
         "@raze__quote__1_0_7//:quote",
-        "@raze__syn__1_0_67//:syn",
+        "@raze__syn__1_0_99//:syn",
         "@raze__wasm_bindgen_backend__0_2_70//:wasm_bindgen_backend",
         "@raze__wasm_bindgen_shared__0_2_70//:wasm_bindgen_shared",
     ],

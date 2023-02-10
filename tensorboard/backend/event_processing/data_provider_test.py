@@ -43,7 +43,7 @@ tf1.enable_eager_execution()
 
 class MultiplexerDataProviderTest(tf.test.TestCase):
     def setUp(self):
-        super(MultiplexerDataProviderTest, self).setUp()
+        super().setUp()
         self.logdir = self.get_temp_dir()
         self.ctx = context.RequestContext()
 
@@ -51,9 +51,9 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         with tf.summary.create_file_writer(logdir).as_default():
             for i in range(10):
                 scalar_summary.scalar(
-                    "square", i ** 2, step=2 * i, description="boxen"
+                    "square", i**2, step=2 * i, description="boxen"
                 )
-                scalar_summary.scalar("cube", i ** 3, step=3 * i)
+                scalar_summary.scalar("cube", i**3, step=3 * i)
 
         logdir = os.path.join(self.logdir, "waves")
         with tf.summary.create_file_writer(logdir).as_default():
@@ -131,7 +131,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
     def test_list_plugins_with_no_graph(self):
         provider = self.create_provider()
         result = provider.list_plugins(self.ctx, experiment_id="unused")
-        self.assertItemsEqual(
+        self.assertCountEqual(
             result,
             [
                 "greetings",
@@ -150,7 +150,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
 
         provider = self.create_provider()
         result = provider.list_plugins(self.ctx, experiment_id="unused")
-        self.assertItemsEqual(
+        self.assertCountEqual(
             result,
             [
                 "greetings",
@@ -173,10 +173,10 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             "second_1": 2.0,
         }
 
-        class FakeMultiplexer(object):
+        class FakeMultiplexer:
             def Runs(multiplexer):
                 result = ["second_2", "first", "no_time", "second_1"]
-                self.assertItemsEqual(result, start_times)
+                self.assertCountEqual(result, start_times)
                 return result
 
             def FirstEventTimestamp(multiplexer, run):
@@ -192,7 +192,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             multiplexer, "fake_logdir"
         )
         result = provider.list_runs(self.ctx, experiment_id="unused")
-        self.assertItemsEqual(
+        self.assertCountEqual(
             result,
             [
                 base_provider.Run(
@@ -210,9 +210,9 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             plugin_name=scalar_metadata.PLUGIN_NAME,
             run_tag_filter=None,
         )
-        self.assertItemsEqual(result.keys(), ["polynomials", "waves"])
-        self.assertItemsEqual(result["polynomials"].keys(), ["square", "cube"])
-        self.assertItemsEqual(result["waves"].keys(), ["square", "sine"])
+        self.assertCountEqual(result.keys(), ["polynomials", "waves"])
+        self.assertCountEqual(result["polynomials"].keys(), ["square", "cube"])
+        self.assertCountEqual(result["waves"].keys(), ["square", "sine"])
         sample = result["polynomials"]["square"]
         self.assertIsInstance(sample, base_provider.ScalarTimeSeries)
         self.assertEqual(sample.max_step, 18)
@@ -232,8 +232,8 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             plugin_name=scalar_metadata.PLUGIN_NAME,
             run_tag_filter=base_provider.RunTagFilter(["waves"], ["square"]),
         )
-        self.assertItemsEqual(result.keys(), ["waves"])
-        self.assertItemsEqual(result["waves"].keys(), ["square"])
+        self.assertCountEqual(result.keys(), ["waves"])
+        self.assertCountEqual(result["waves"].keys(), ["square"])
 
         result = provider.list_scalars(
             self.ctx,
@@ -243,9 +243,9 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
                 tags=["square", "quartic"]
             ),
         )
-        self.assertItemsEqual(result.keys(), ["polynomials", "waves"])
-        self.assertItemsEqual(result["polynomials"].keys(), ["square"])
-        self.assertItemsEqual(result["waves"].keys(), ["square"])
+        self.assertCountEqual(result.keys(), ["polynomials", "waves"])
+        self.assertCountEqual(result["polynomials"].keys(), ["square"])
+        self.assertCountEqual(result["waves"].keys(), ["square"])
 
         result = provider.list_scalars(
             self.ctx,
@@ -253,8 +253,8 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             plugin_name=scalar_metadata.PLUGIN_NAME,
             run_tag_filter=base_provider.RunTagFilter(runs=["waves", "hugs"]),
         )
-        self.assertItemsEqual(result.keys(), ["waves"])
-        self.assertItemsEqual(result["waves"].keys(), ["sine", "square"])
+        self.assertCountEqual(result.keys(), ["waves"])
+        self.assertCountEqual(result["waves"].keys(), ["sine", "square"])
 
         result = provider.list_scalars(
             self.ctx,
@@ -282,9 +282,9 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             downsample=100,
         )
 
-        self.assertItemsEqual(result.keys(), ["polynomials", "waves"])
-        self.assertItemsEqual(result["polynomials"].keys(), ["square", "cube"])
-        self.assertItemsEqual(result["waves"].keys(), ["square", "sine"])
+        self.assertCountEqual(result.keys(), ["polynomials", "waves"])
+        self.assertCountEqual(result["polynomials"].keys(), ["square", "cube"])
+        self.assertCountEqual(result["waves"].keys(), ["square", "sine"])
         for run in result:
             for tag in result[run]:
                 tensor_events = multiplexer.Tensors(run, tag)
@@ -336,8 +336,8 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             plugin_name=histogram_metadata.PLUGIN_NAME,
             run_tag_filter=None,
         )
-        self.assertItemsEqual(result.keys(), ["lebesgue"])
-        self.assertItemsEqual(result["lebesgue"].keys(), ["uniform", "bimodal"])
+        self.assertCountEqual(result.keys(), ["lebesgue"])
+        self.assertCountEqual(result["lebesgue"].keys(), ["uniform", "bimodal"])
         sample = result["lebesgue"]["uniform"]
         self.assertIsInstance(sample, base_provider.TensorTimeSeries)
         self.assertEqual(sample.max_step, 10)
@@ -361,8 +361,8 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
                 ["lebesgue"], ["uniform"]
             ),
         )
-        self.assertItemsEqual(result.keys(), ["lebesgue"])
-        self.assertItemsEqual(result["lebesgue"].keys(), ["uniform"])
+        self.assertCountEqual(result.keys(), ["lebesgue"])
+        self.assertCountEqual(result["lebesgue"].keys(), ["uniform"])
 
     def test_read_tensors(self):
         multiplexer = self.create_multiplexer()
@@ -382,8 +382,8 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             downsample=100,
         )
 
-        self.assertItemsEqual(result.keys(), ["lebesgue"])
-        self.assertItemsEqual(result["lebesgue"].keys(), ["uniform", "bimodal"])
+        self.assertCountEqual(result.keys(), ["lebesgue"])
+        self.assertCountEqual(result["lebesgue"].keys(), ["uniform", "bimodal"])
         for run in result:
             for tag in result[run]:
                 tensor_events = multiplexer.Tensors(run, tag)
@@ -418,8 +418,8 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
                 experiment_id="unused",
                 plugin_name=image_metadata.PLUGIN_NAME,
             )
-            self.assertItemsEqual(result.keys(), ["mondrian"])
-            self.assertItemsEqual(
+            self.assertCountEqual(result.keys(), ["mondrian"])
+            self.assertCountEqual(
                 result["mondrian"].keys(), ["red", "blue", "yellow"]
             )
             sample = result["mondrian"]["blue"]
@@ -440,8 +440,8 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
                     runs=["mondrian", "picasso"], tags=["yellow", "green't"]
                 ),
             )
-            self.assertItemsEqual(result.keys(), ["mondrian"])
-            self.assertItemsEqual(result["mondrian"].keys(), ["yellow"])
+            self.assertCountEqual(result.keys(), ["mondrian"])
+            self.assertCountEqual(result["mondrian"].keys(), ["yellow"])
             self.assertIsInstance(
                 result["mondrian"]["yellow"],
                 base_provider.BlobSequenceTimeSeries,
@@ -457,8 +457,8 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
                 plugin_name=image_metadata.PLUGIN_NAME,
                 downsample=4,
             )
-            self.assertItemsEqual(result.keys(), ["mondrian"])
-            self.assertItemsEqual(
+            self.assertCountEqual(result.keys(), ["mondrian"])
+            self.assertCountEqual(
                 result["mondrian"].keys(), ["red", "blue", "yellow"]
             )
             sample = result["mondrian"]["blue"]
@@ -495,8 +495,8 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
                 ),
                 downsample=1,
             )
-            self.assertItemsEqual(result.keys(), ["mondrian"])
-            self.assertItemsEqual(result["mondrian"].keys(), ["yellow"])
+            self.assertCountEqual(result.keys(), ["mondrian"])
+            self.assertCountEqual(result["mondrian"].keys(), ["yellow"])
             self.assertIsInstance(
                 result["mondrian"]["yellow"][0],
                 base_provider.BlobSequenceDatum,

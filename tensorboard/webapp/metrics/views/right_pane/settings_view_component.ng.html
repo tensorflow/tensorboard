@@ -26,7 +26,56 @@ limitations under the License.
     >
     </tb-dropdown>
   </div>
-  <div class="control-row card-width" *ngIf="isCardWidthSettingEnabled">
+
+  <div
+    class="control-row scalars-step-selector"
+    *ngIf="isScalarStepSelectorFeatureEnabled"
+    [title]="!isAxisTypeStep()? 'Only available when Horizontal Axis is set to step': ''"
+  >
+    <mat-checkbox
+      [checked]="isScalarStepSelectorEnabled"
+      (change)="stepSelectorToggled.emit()"
+      [disabled]="!isAxisTypeStep()"
+      >Enable step selection and data table
+    </mat-checkbox>
+    <span class="indent">(Scalars only)</span>
+    <div class="indent range-selection" *ngIf="isRangeSelectionAllowed">
+      <mat-checkbox
+        [checked]="isScalarStepSelectorRangeEnabled"
+        (change)="rangeSelectionToggled.emit()"
+        [disabled]="!isAxisTypeStep()"
+        >Enable Range Selection
+      </mat-checkbox>
+    </div>
+    <div
+      class="control-row linked-time indent"
+      *ngIf="isLinkedTimeFeatureEnabled"
+    >
+      <mat-checkbox
+        [checked]="isLinkedTimeEnabled"
+        (change)="linkedTimeToggled.emit()"
+        [disabled]="!isAxisTypeStep()"
+        >Link by step {{getLinkedTimeSelectionStartStep()}}
+      </mat-checkbox>
+    </div>
+    <div
+      *ngIf="isScalarColumnCustomizationEnabled"
+      class="column-edit-menu-toggle"
+      (click)="onSlideOutToggled.emit()"
+    >
+      <mat-icon
+        *ngIf="!isSlideOutMenuOpen"
+        svgIcon="chevron_left_24px"
+      ></mat-icon>
+      <mat-icon
+        *ngIf="isSlideOutMenuOpen"
+        svgIcon="chevron_right_24px"
+      ></mat-icon>
+      Open Column Edit Control
+    </div>
+  </div>
+
+  <div class="control-row card-width">
     <div class="control-name" id="card-width-label">Card Width</div>
     <div class="slider-row">
       <mat-slider
@@ -49,47 +98,6 @@ limitations under the License.
       >
         <mat-icon svgIcon="settings_backup_restore_24px"></mat-icon>
       </button>
-    </div>
-  </div>
-
-  <div
-    class="control-row scalars-step-selector"
-    *ngIf="isScalarStepSelectorFeatureEnabled"
-  >
-    <mat-checkbox
-      [checked]="isScalarStepSelectorEnabled"
-      (change)="stepSelectorToggled.emit()"
-      [disabled]="!isAxisTypeStep()"
-      [title]="!isAxisTypeStep()? 'Only available When Horizontal Axis is set to step': ''"
-      >Enable step selection and data table
-    </mat-checkbox>
-    <span class="indent">(Scalars only)</span>
-  </div>
-
-  <div
-    class="control-row linked-time"
-    *ngIf="isLinkedTimeFeatureEnabled && xAxisType == XAxisType.STEP"
-  >
-    <label>Link visualization by step</label>
-    <div class="controls">
-      <div>
-        <mat-checkbox
-          [checked]="isLinkedTimeEnabled"
-          (change)="linkedTimeToggled.emit()"
-          >Enabled</mat-checkbox
-        >
-      </div>
-      <div class="step-selector">
-        <tb-range-input
-          [min]="stepMinMax.min"
-          [max]="stepMinMax.max"
-          [lowerValue]="linkedTimeSelection?.start.step"
-          [upperValue]="linkedTimeSelection?.end?.step"
-          [enabled]="isLinkedTimeEnabled"
-          (singleValueChanged)="onSingleValueChanged($event)"
-          (rangeValuesChanged)="onRangeValuesChanged($event)"
-        ></tb-range-input>
-      </div>
     </div>
   </div>
 </section>

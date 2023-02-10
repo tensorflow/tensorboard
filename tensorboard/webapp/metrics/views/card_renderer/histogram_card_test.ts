@@ -38,7 +38,7 @@ import {
 } from '../../../widgets/histogram/histogram_types';
 import {buildNormalizedHistograms} from '../../../widgets/histogram/histogram_util';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
-import {linkedTimeSelectionChanged, linkedTimeToggled} from '../../actions';
+import {stepSelectorToggled, timeSelectionChanged} from '../../actions';
 import {PluginType} from '../../data_source';
 import * as selectors from '../../store/metrics_selectors';
 import {
@@ -118,6 +118,10 @@ describe('histogram card', () => {
     store.overrideSelector(getExperimentIdToExperimentAliasMap, {});
     store.overrideSelector(getRun, null);
     store.overrideSelector(selectors.getMetricsLinkedTimeSelection, null);
+  });
+
+  afterEach(() => {
+    store?.resetSelectors();
   });
 
   it('renders empty message when there is no data', () => {
@@ -281,7 +285,7 @@ describe('histogram card', () => {
   });
 
   describe('linked time', () => {
-    it('dispatches linkedTimeSelectionChanged when HistogramComponent emits onLinkedTimeSelectionChanged event', () => {
+    it('dispatches timeSelectionChanged when HistogramComponent emits onLinkedTimeSelectionChanged event', () => {
       provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
       store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
         start: {step: 5},
@@ -303,10 +307,10 @@ describe('histogram card', () => {
       });
 
       expect(dispatchedActions).toEqual([
-        linkedTimeSelectionChanged({
+        timeSelectionChanged({
           timeSelection: {
-            startStep: 5,
-            endStep: undefined,
+            start: {step: 5},
+            end: null,
           },
           affordance: TimeSelectionAffordance.FOB,
         }),
@@ -387,7 +391,7 @@ describe('histogram card', () => {
         );
         expect(viz.componentInstance.timeSelection).toEqual({
           start: {step: 15},
-          end: null,
+          end: {step: 15},
         });
       });
 
@@ -415,7 +419,7 @@ describe('histogram card', () => {
         );
         expect(viz.componentInstance.timeSelection).toEqual({
           start: {step: 50},
-          end: null,
+          end: {step: 50},
         });
       });
 
@@ -456,7 +460,7 @@ describe('histogram card', () => {
             'vis-linked-time-selection-warning mat-icon[data-value="clipped"]'
           )
         );
-        expect(indicatorAfter).toBeNull();
+        expect(indicatorAfter).toBeTruthy();
       });
     });
 
@@ -539,7 +543,7 @@ describe('histogram card', () => {
         expect(indicator).toBeFalsy();
       });
 
-      it('dispatches linkedTimeToggled when HistogramComponent emits the onLinkedTimeToggled event', () => {
+      it('dispatches stepSelectorToggled when HistogramComponent emits the onLinkedTimeToggled event', () => {
         provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
         store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
           start: {step: 5},
@@ -558,7 +562,7 @@ describe('histogram card', () => {
         histogramWidget.onLinkedTimeToggled.emit();
 
         expect(dispatchedActions).toEqual([
-          linkedTimeToggled({
+          stepSelectorToggled({
             affordance: TimeSelectionToggleAffordance.FOB_DESELECT,
           }),
         ]);

@@ -16,6 +16,10 @@ limitations under the License.
 import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {FeatureFlags} from '../types';
 import {
+  FeatureFlagMetadataMapType,
+  FeatureFlagType,
+} from './feature_flag_metadata';
+import {
   FeatureFlagState,
   FEATURE_FLAG_FEATURE_KEY,
   State,
@@ -42,11 +46,46 @@ export const getFeatureFlags = createSelector(
   }
 );
 
+export const getDefaultFeatureFlags = createSelector(
+  selectFeatureFlagState,
+  (state: FeatureFlagState): FeatureFlags => {
+    return state.defaultFlags;
+  }
+);
+
 export const getOverriddenFeatureFlags = createSelector(
   selectFeatureFlagState,
   (state: FeatureFlagState): Partial<FeatureFlags> => {
     // Temporarily assume state.flagOverrides can be undefined for sync purposes.
     return state.flagOverrides || {};
+  }
+);
+
+export const getFeatureFlagsMetadata = createSelector(
+  selectFeatureFlagState,
+  (state: FeatureFlagState): FeatureFlagMetadataMapType<FeatureFlags> => {
+    return state.metadata;
+  }
+);
+
+export const getFeatureFlagsToSendToServer = createSelector(
+  selectFeatureFlagState,
+  (state: FeatureFlagState): Partial<FeatureFlags> => {
+    const featureFlagsToSendToServer: Partial<
+      Record<keyof FeatureFlags, FeatureFlagType>
+    > = {};
+    for (const entry in state.flagOverrides) {
+      const entryMetadata = state.metadata[entry as keyof FeatureFlags];
+      if (
+        entryMetadata &&
+        entryMetadata.queryParamOverride &&
+        entryMetadata.sendToServerWhenOverridden
+      ) {
+        featureFlagsToSendToServer[entry as keyof FeatureFlags] =
+          state.flagOverrides[entry as keyof FeatureFlags];
+      }
+    }
+    return featureFlagsToSendToServer as Partial<FeatureFlags>;
   }
 );
 
@@ -84,17 +123,6 @@ export const getIsInColab = createSelector(getFeatureFlags, (flags) => {
   return flags.inColab;
 });
 
-export const getEnabledColorGroup = createSelector(getFeatureFlags, (flags) => {
-  return flags.enabledColorGroup;
-});
-
-export const getEnabledColorGroupByRegex = createSelector(
-  getFeatureFlags,
-  (flags) => {
-    return flags.enabledColorGroupByRegex;
-  }
-);
-
 export const getIsMetricsImageSupportEnabled = createSelector(
   getFeatureFlags,
   (flags) => {
@@ -109,20 +137,6 @@ export const getIsLinkedTimeEnabled = createSelector(
   }
 );
 
-export const getIsTimeSeriesPromotionEnabled = createSelector(
-  getFeatureFlags,
-  (flags: FeatureFlags): boolean => {
-    return flags.enableTimeSeriesPromotion;
-  }
-);
-
-export const getEnabledCardWidthSetting = createSelector(
-  getFeatureFlags,
-  (flags: FeatureFlags): boolean => {
-    return flags.enabledCardWidthSetting;
-  }
-);
-
 export const getForceSvgFeatureFlag = createSelector(
   getFeatureFlags,
   (flags: FeatureFlags): boolean => {
@@ -134,5 +148,33 @@ export const getIsDataTableEnabled = createSelector(
   getFeatureFlags,
   (flags: FeatureFlags): boolean => {
     return flags.enabledScalarDataTable;
+  }
+);
+
+export const getShowFlagsEnabled = createSelector(
+  getFeatureFlags,
+  (flags: FeatureFlags): boolean => {
+    return flags.enableShowFlags;
+  }
+);
+
+export const getAllowRangeSelection = createSelector(
+  getFeatureFlags,
+  (flags: FeatureFlags): boolean => {
+    return flags.allowRangeSelection;
+  }
+);
+
+export const getIsLinkedTimeProspectiveFobEnabled = createSelector(
+  getFeatureFlags,
+  (flags: FeatureFlags): boolean => {
+    return flags.enabledProspectiveFob;
+  }
+);
+
+export const getIsScalarColumnCustomizationEnabled = createSelector(
+  getFeatureFlags,
+  (flags: FeatureFlags): boolean => {
+    return flags.enableScalarColumnCustomization;
   }
 );

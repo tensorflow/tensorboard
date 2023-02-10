@@ -27,9 +27,11 @@ import {MetricsEffects} from './effects';
 import {
   getMetricsCardMinWidth,
   getMetricsIgnoreOutliers,
+  getMetricsLinkedTimeEnabled,
+  getMetricsRangeSelectionEnabled,
   getMetricsScalarSmoothing,
+  getMetricsStepSelectorEnabled,
   getMetricsTooltipSort,
-  getPromoteTimeSeries,
   isMetricsSettingsPaneOpen,
   METRICS_FEATURE_KEY,
   METRICS_SETTINGS_DEFAULT,
@@ -81,13 +83,7 @@ export function getMetricsIgnoreOutliersSettingFactory() {
 
 export function getMetricsTooltipSortSettingFactory() {
   return createSelector(getMetricsTooltipSort, (tooltipSort) => {
-    return {tooltipSortString: String(tooltipSort)};
-  });
-}
-
-export function getMetricsTimeSeriesPromotionDismissed() {
-  return createSelector(getPromoteTimeSeries, (promoteTimeSeries) => {
-    return {timeSeriesPromotionDismissed: !promoteTimeSeries};
+    return {tooltipSort: String(tooltipSort)};
   });
 }
 
@@ -100,6 +96,22 @@ export function getMetricsTimeSeriesSettingsPaneOpen() {
 export function getMetricsTimeSeriesCardMinWidth() {
   return createSelector(getMetricsCardMinWidth, (cardMinWidth) => {
     return {timeSeriesCardMinWidth: cardMinWidth};
+  });
+}
+export function getMetricsTimeSeriesStepSelectorEnabled() {
+  return createSelector(getMetricsStepSelectorEnabled, (isEnabled) => {
+    return {stepSelectorEnabled: isEnabled};
+  });
+}
+
+export function getMetricsTimeSeriesRangeSelectionEnabled() {
+  return createSelector(getMetricsRangeSelectionEnabled, (isEnabled) => {
+    return {rangeSelectionEnabled: isEnabled};
+  });
+}
+export function getMetricsTimeSeriesLinkedTimeEnabled() {
+  return createSelector(getMetricsLinkedTimeEnabled, (isEnabled) => {
+    return {linkedTimeEnabled: isEnabled};
   });
 }
 
@@ -131,13 +143,19 @@ export function getMetricsTimeSeriesCardMinWidth() {
       getMetricsTooltipSortSettingFactory
     ),
     PersistentSettingsConfigModule.defineGlobalSetting(
-      getMetricsTimeSeriesPromotionDismissed
-    ),
-    PersistentSettingsConfigModule.defineGlobalSetting(
       getMetricsTimeSeriesSettingsPaneOpen
     ),
     PersistentSettingsConfigModule.defineGlobalSetting(
       getMetricsTimeSeriesCardMinWidth
+    ),
+    PersistentSettingsConfigModule.defineGlobalSetting(
+      getMetricsTimeSeriesStepSelectorEnabled
+    ),
+    PersistentSettingsConfigModule.defineGlobalSetting(
+      getMetricsTimeSeriesRangeSelectionEnabled
+    ),
+    PersistentSettingsConfigModule.defineGlobalSetting(
+      getMetricsTimeSeriesLinkedTimeEnabled
     ),
   ],
   providers: [

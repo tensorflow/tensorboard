@@ -55,7 +55,7 @@ impl WallTime {
 #[allow(clippy::derive_ord_xor_partial_ord)] // okay because it agrees with `PartialOrd` impl
 impl Ord for WallTime {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.partial_cmp(&other)
+        self.partial_cmp(other)
             .unwrap_or_else(|| unreachable!("{:?} <> {:?}", &self, &other))
     }
 }

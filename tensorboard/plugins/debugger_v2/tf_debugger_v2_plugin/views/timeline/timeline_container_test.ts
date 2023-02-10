@@ -91,6 +91,10 @@ describe('Timeline Container', () => {
     dispatchSpy = spyOn(store, 'dispatch');
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('shows total number of executions', () => {
     const fixture = TestBed.createComponent(TimelineContainer);
     fixture.detectChanges();

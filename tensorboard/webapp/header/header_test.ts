@@ -88,6 +88,10 @@ describe('header test', () => {
     store.overrideSelector(getCoreDataLoadedState, DataLoadState.NOT_LOADED);
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   function assertDebugElementText(el: DebugElement, text: string) {
     expect(el.nativeElement.innerText.trim().toUpperCase()).toBe(text);
   }

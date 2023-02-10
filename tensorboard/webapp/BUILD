@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_external_sass_libray", "tf_js_binary", "tf_ng_module", "tf_ng_web_test_suite", "tf_sass_binary", "tf_svg_bundle", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_external_sass_libray", "tf_ng_module", "tf_ng_prod_js_binary", "tf_ng_web_test_suite", "tf_sass_binary", "tf_svg_bundle", "tf_ts_library")
 load("//tensorboard/defs:js.bzl", "tf_resource_digest_suffixer")
 load("//tensorboard/defs:web.bzl", "tb_combine_html", "tf_web_library")
 
@@ -120,6 +120,7 @@ tf_ng_module(
         "//tensorboard/webapp/core/views:page_title",
         "//tensorboard/webapp/experiments",
         "//tensorboard/webapp/feature_flag",
+        "//tensorboard/webapp/feature_flag/views:feature_flag_modal_trigger",
         "//tensorboard/webapp/header",
         "//tensorboard/webapp/hparams",
         "//tensorboard/webapp/persistent_settings",
@@ -172,7 +173,7 @@ tf_ng_module(
 )
 
 # Compile the prepared Angular app to a JS binary.
-tf_js_binary(
+tf_ng_prod_js_binary(
     name = "tb_webapp_binary",
     compile = 1,
     entry_point = "main_prod.ts",
@@ -276,6 +277,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/metrics/views/card_renderer:card_renderer_tests",
         "//tensorboard/webapp/metrics/views/main_view:main_view_tests",
         "//tensorboard/webapp/metrics/views/right_pane:right_pane_test",
+        "//tensorboard/webapp/metrics/views/right_pane/scalar_column_editor:scalar_column_editor_test",
         "//tensorboard/webapp/plugins:plugins_container_test_lib",
         "//tensorboard/webapp/plugins/npmi:npmi_test_lib",
         "//tensorboard/webapp/plugins/npmi/data_source:data_source_test_lib",
@@ -359,6 +361,7 @@ tf_svg_bundle(
         "@com_google_material_design_icon//:brightness_6_24px.svg",
         "@com_google_material_design_icon//:bug_report_24px.svg",
         "@com_google_material_design_icon//:cancel_24px.svg",
+        "@com_google_material_design_icon//:change_history_24px.svg",
         "@com_google_material_design_icon//:chevron_left_24px.svg",
         "@com_google_material_design_icon//:chevron_right_24px.svg",
         "@com_google_material_design_icon//:clear_24px.svg",

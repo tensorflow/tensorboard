@@ -15,8 +15,8 @@ limitations under the License.
 import {createAction, props} from '@ngrx/store';
 import {ElementId} from '../../util/dom';
 import {
-  TimeSelectionAffordance,
   TimeSelectionToggleAffordance,
+  TimeSelectionWithAffordance,
 } from '../../widgets/card_fob/card_fob_types';
 import {
   TagMetadata,
@@ -29,7 +29,13 @@ import {
   PluginType,
   TooltipSort,
   XAxisType,
-} from '../internal_types';
+} from '../types';
+import {
+  ColumnHeader,
+  ColumnHeaderType,
+  DataTableMode,
+  SortingInfo,
+} from '../views/card_renderer/scalar_card_types';
 
 export const metricsSettingsPaneClosed = createAction(
   '[Metrics] Metrics Settings Pane Closed'
@@ -37,6 +43,10 @@ export const metricsSettingsPaneClosed = createAction(
 
 export const metricsSettingsPaneToggled = createAction(
   '[Metrics] Metrics Settings Pane Toggled'
+);
+
+export const metricsSlideoutMenuToggled = createAction(
+  '[Metrics] Slide out settings menu toggled'
 );
 
 export const metricsTagMetadataRequested = createAction(
@@ -173,17 +183,9 @@ export const metricsShowAllPlugins = createAction(
   '[Metrics] Toggle Show All Plugins'
 );
 
-export const linkedTimeSelectionChanged = createAction(
-  '[Metrics] Linked Time Selection Changed',
-  props<{
-    timeSelection: {
-      startStep: number;
-      endStep: number | undefined;
-    };
-    // Affordance for internal analytics purpose. When no affordance is specified or is
-    // undefined we do not want to log an analytics event.
-    affordance?: TimeSelectionAffordance | undefined;
-  }>()
+export const timeSelectionChanged = createAction(
+  '[Metrics] Time Selection Changed',
+  props<TimeSelectionWithAffordance>()
 );
 
 export const timeSelectionCleared = createAction(
@@ -199,6 +201,34 @@ export const linkedTimeToggled = createAction(
   }>()
 );
 
+export const sortingDataTable = createAction(
+  '[Metrics] Sorting Data Table By Header',
+  props<SortingInfo>()
+);
+
+export const dataTableColumnDrag = createAction(
+  '[Metrics] Data table column dragged',
+  props<{
+    newOrder: ColumnHeader[];
+  }>()
+);
+
+export const dataTableColumnEdited = createAction(
+  '[Metrics] Data table columns edited in edit menu',
+  props<{
+    dataTableMode: DataTableMode;
+    headers: ColumnHeader[];
+  }>()
+);
+
+export const dataTableColumnToggled = createAction(
+  '[Metrics] Data table column toggled in edit menu',
+  props<{
+    dataTableMode: DataTableMode;
+    headerType: ColumnHeaderType;
+  }>()
+);
+
 export const stepSelectorToggled = createAction(
   '[Metrics] Time Selector Enable Toggle',
   props<{
@@ -207,28 +237,13 @@ export const stepSelectorToggled = createAction(
     affordance?: TimeSelectionToggleAffordance;
   }>()
 );
-
-/**
- * Fired when step selector time selection is changed. This event is
- * used for internal analytics only and will not cause state changes.
- */
-export const stepSelectorTimeSelectionChanged = createAction(
-  '[Metrics] Ｓtep Selector Time Selection Changed',
+export const rangeSelectionToggled = createAction(
+  '[Metrics] Range Selection Toggled',
   props<{
-    timeSelection: {
-      startStep: number;
-      endStep: number | undefined;
-    };
     // Affordance for internal analytics purpose. When no affordance is specified or is
     // undefined we do not want to log an analytics event.
-    affordance?: TimeSelectionAffordance | undefined;
+    affordance?: TimeSelectionToggleAffordance;
   }>()
 );
-
-export const metricsPromoDismissed = createAction(
-  '[Metrics] Metrics Promo Dismissed'
-);
-
-export const metricsPromoGoToScalars = createAction(
-  '[Metrics] Metrics Promo Go To Scalars'
-);
+// TODO(jieweiwu): Delete after internal code is updated.
+export const stepSelectorTimeSelectionChanged = timeSelectionChanged;

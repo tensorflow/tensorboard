@@ -31,6 +31,7 @@ import {
   TooltipSort,
   XAxisType,
 } from '../../types';
+import {LinkedTimeSelectionChanged} from './types';
 
 const SLIDER_AUDIT_TIME_MS = 250;
 
@@ -63,18 +64,24 @@ const MAX_SMOOTHING_SLIDER_VALUE = 0.99;
 export class SettingsViewComponent {
   constructor(@Inject(LOCALE_ID) private readonly locale: string) {}
 
-  @Input() isCardWidthSettingEnabled!: boolean;
   @Input() isLinkedTimeFeatureEnabled!: boolean;
+  @Input() isRangeSelectionAllowed!: boolean;
   @Input() isLinkedTimeEnabled!: boolean;
   @Input() isScalarStepSelectorFeatureEnabled!: boolean;
   @Input() isScalarStepSelectorEnabled!: boolean;
+  @Input() isScalarStepSelectorRangeEnabled!: boolean;
+  @Input() isScalarColumnCustomizationEnabled!: boolean;
   @Input() linkedTimeSelection!: TimeSelection | null;
   @Input() stepMinMax!: {min: number; max: number};
+  @Input() isSlideOutMenuOpen!: boolean;
 
   @Output() linkedTimeToggled = new EventEmitter<void>();
-  @Output() linkedTimeSelectionChanged = new EventEmitter<TimeSelection>();
+  @Output()
+  linkedTimeSelectionChanged = new EventEmitter<LinkedTimeSelectionChanged>();
 
   @Output() stepSelectorToggled = new EventEmitter<void>();
+  @Output() rangeSelectionToggled = new EventEmitter<void>();
+  @Output() onSlideOutToggled = new EventEmitter<void>();
 
   @Input() isImageSupportEnabled!: boolean;
 
@@ -82,7 +89,8 @@ export class SettingsViewComponent {
     {value: TooltipSort.ALPHABETICAL, displayText: 'Alphabetical'},
     {value: TooltipSort.ASCENDING, displayText: 'Ascending'},
     {value: TooltipSort.DESCENDING, displayText: 'Descending'},
-    {value: TooltipSort.NEAREST, displayText: 'Nearest'},
+    {value: TooltipSort.NEAREST, displayText: 'Nearest Pixel'},
+    {value: TooltipSort.NEAREST_Y, displayText: 'Nearest Y'},
   ];
   @Input() tooltipSort!: TooltipSort;
   @Output() tooltipSortChanged = new EventEmitter<TooltipSort>();
@@ -175,28 +183,19 @@ export class SettingsViewComponent {
     );
   }
 
-  onSingleValueChanged(stepValue: number) {
-    this.linkedTimeSelectionChanged.emit({
-      start: {step: stepValue},
-      end: null,
-    });
+  getLinkedTimeSelectionStartStep() {
+    if (
+      !this.isLinkedTimeEnabled &&
+      this.linkedTimeSelection !== null &&
+      this.linkedTimeSelection.end === null
+    ) {
+      return this.linkedTimeSelection.start.step;
+    }
+    return '';
   }
 
   isAxisTypeStep(): boolean {
     return this.xAxisType === XAxisType.STEP;
-  }
-
-  onRangeValuesChanged({
-    lowerValue,
-    upperValue,
-  }: {
-    lowerValue: number;
-    upperValue: number;
-  }) {
-    this.linkedTimeSelectionChanged.emit({
-      start: {step: lowerValue},
-      end: {step: upperValue},
-    });
   }
 }
 

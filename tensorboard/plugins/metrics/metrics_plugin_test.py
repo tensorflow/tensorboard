@@ -37,7 +37,7 @@ tf1.enable_eager_execution()
 
 class MetricsPluginTest(tf.test.TestCase):
     def setUp(self):
-        super(MetricsPluginTest, self).setUp()
+        super().setUp()
         self._logdir = self.get_temp_dir()
         self._multiplexer = event_multiplexer.EventMultiplexer()
 

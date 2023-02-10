@@ -154,14 +154,14 @@ class ImagesPluginTest(tf.test.TestCase):
         entry = entries[0]
         self.assertEqual(0, entry["step"])
         parsed_query_1 = urllib.parse.parse_qs(entry["query"])
-        self.assertItemsEqual(["blob_key"], parsed_query_1)
+        self.assertCountEqual(["blob_key"], parsed_query_1)
         self.assertTrue(parsed_query_1["blob_key"])
 
         # Verify that the 2nd entry is correct.
         entry = entries[1]
         self.assertEqual(1, entry["step"])
         parsed_query_2 = urllib.parse.parse_qs(entry["query"])
-        self.assertItemsEqual(["blob_key"], parsed_query_2)
+        self.assertCountEqual(["blob_key"], parsed_query_2)
         self.assertTrue(parsed_query_2["blob_key"])
 
         self.assertNotEqual(parsed_query_1, parsed_query_2)
@@ -181,14 +181,14 @@ class ImagesPluginTest(tf.test.TestCase):
         entry = entries[0]
         self.assertEqual(0, entry["step"])
         parsed_query_1 = urllib.parse.parse_qs(entry["query"])
-        self.assertItemsEqual(["blob_key"], parsed_query_1)
+        self.assertCountEqual(["blob_key"], parsed_query_1)
         self.assertTrue(parsed_query_1["blob_key"])
 
         # Verify that the 2nd entry is correct.
         entry = entries[1]
         self.assertEqual(1, entry["step"])
         parsed_query_2 = urllib.parse.parse_qs(entry["query"])
-        self.assertItemsEqual(["blob_key"], parsed_query_2)
+        self.assertCountEqual(["blob_key"], parsed_query_2)
         self.assertTrue(parsed_query_2["blob_key"])
 
         self.assertNotEqual(parsed_query_1, parsed_query_2)

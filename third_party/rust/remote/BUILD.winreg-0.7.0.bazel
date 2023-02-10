@@ -44,8 +44,6 @@ licenses([
 rust_library(
     name = "winreg",
     srcs = glob(["**/*.rs"]),
-    crate_features = [
-    ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2015",
@@ -54,6 +52,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=winreg",
         "manual",
     ],
     version = "0.7.0",

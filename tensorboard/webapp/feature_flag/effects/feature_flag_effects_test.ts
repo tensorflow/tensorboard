@@ -22,11 +22,19 @@ import {
   TBFeatureFlagTestingModule,
   TestingTBFeatureFlagDataSource,
 } from '../../webapp_data_source/tb_feature_flag_testing';
-import {partialFeatureFlagsLoaded} from '../actions/feature_flag_actions';
+import {
+  allFeatureFlagOverridesReset,
+  featureFlagOverrideChanged,
+  featureFlagOverridesReset,
+  partialFeatureFlagsLoaded,
+} from '../actions/feature_flag_actions';
 import {ForceSvgDataSource} from '../force_svg_data_source';
 import {ForceSvgDataSourceModule} from '../force_svg_data_source_module';
+import {FeatureFlagMetadataMap} from '../store/feature_flag_metadata';
 import {
   getFeatureFlags,
+  getFeatureFlagsMetadata,
+  getFeatureFlagsToSendToServer,
   getIsAutoDarkModeAllowed,
 } from '../store/feature_flag_selectors';
 import {State} from '../store/feature_flag_types';
@@ -67,6 +75,11 @@ describe('feature_flag_effects', () => {
     dataSource = TestBed.inject(TestingTBFeatureFlagDataSource);
     forceSvgDataSource = TestBed.inject(ForceSvgDataSource);
     store.overrideSelector(getIsAutoDarkModeAllowed, false);
+    store.overrideSelector(getFeatureFlagsMetadata, FeatureFlagMetadataMap);
+  });
+
+  afterEach(() => {
+    store?.resetSelectors();
   });
 
   describe('getFeatureFlags$', () => {
@@ -158,6 +171,9 @@ describe('feature_flag_effects', () => {
         getFeatureFlags,
         buildFeatureFlag({inColab: true})
       );
+      store.overrideSelector(getFeatureFlagsToSendToServer, {
+        scalarsBatchSize: 10,
+      });
       store.refreshState();
 
       effects.updatePolymerFeatureFlags$.subscribe();
@@ -170,11 +186,55 @@ describe('feature_flag_effects', () => {
         })
       );
 
-      // Expect tf_feature_flags.setFeatureFlags() to be called using the
-      // FeatureFlags object from the Store (and not from the action).
       expect(setPolymerFeatureFlagsSpy).toHaveBeenCalledOnceWith(
-        buildFeatureFlag({inColab: true})
+        // Uses the FeatureFlags object from the Store and not from the action.
+        buildFeatureFlag({inColab: true}),
+        {scalarsBatchSize: 10}
       );
+    });
+  });
+
+  describe('storeFeatureFlag', () => {
+    it('calls persistFeatureFlags', () => {
+      const persistFlagSpy = spyOn(
+        dataSource,
+        'persistFeatureFlags'
+      ).and.stub();
+      effects.storeFeatureFlag$.subscribe();
+
+      actions.next(
+        featureFlagOverrideChanged({
+          flags: {enabledScalarDataTable: true},
+        })
+      );
+
+      expect(persistFlagSpy).toHaveBeenCalledOnceWith({
+        enabledScalarDataTable: true,
+      });
+    });
+  });
+
+  describe('resetFeatureFlagOverrides', () => {
+    it('calls resetPersistedFeatureFlag', () => {
+      const resetFlagSpy = spyOn(
+        dataSource,
+        'resetPersistedFeatureFlag'
+      ).and.stub();
+      effects.resetFeatureFlagOverrides$.subscribe();
+      actions.next(featureFlagOverridesReset({flags: ['inColab']}));
+      expect(resetFlagSpy).toHaveBeenCalledOnceWith('inColab');
+    });
+  });
+
+  describe('resetAllFeatureFlagOverrides', () => {
+    it('calls resetAllPersistedFeatureFlags', () => {
+      const resetAllFlagsSpy = spyOn(
+        dataSource,
+        'resetAllPersistedFeatureFlags'
+      ).and.stub();
+      effects.resetAllFeatureFlagOverrides$.subscribe();
+      actions.next(allFeatureFlagOverridesReset());
+      expect(resetAllFlagsSpy).toHaveBeenCalledOnceWith();
     });
   });
 });

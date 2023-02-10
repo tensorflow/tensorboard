@@ -103,6 +103,15 @@ alias(
 )
 
 alias(
+    name = "gcp_auth",
+    actual = "@raze__gcp_auth__0_7_4//:gcp_auth",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
     name = "log",
     actual = "@raze__log__0_4_11//:log",
     tags = [
@@ -176,7 +185,7 @@ alias(
 
 alias(
     name = "serde",
-    actual = "@raze__serde__1_0_118//:serde",
+    actual = "@raze__serde__1_0_144//:serde",
     tags = [
         "cargo-raze",
         "manual",
@@ -266,8 +275,18 @@ alias(
 
 # Export file for Stardoc support
 exports_files(
-    [
-        "crates.bzl",
-    ],
+    glob([
+        "**/*.bazel",
+        "**/*.bzl",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "srcs",
+    srcs = glob([
+        "**/*.bazel",
+        "**/*.bzl",
+    ]),
     visibility = ["//visibility:public"],
 )

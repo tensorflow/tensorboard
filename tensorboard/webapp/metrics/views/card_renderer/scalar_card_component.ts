@@ -36,8 +36,8 @@ import {
   relativeTimeFormatter,
   siNumberFormatter,
 } from '../../../widgets/line_chart_v2/lib/formatter';
+import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {LineChartComponent} from '../../../widgets/line_chart_v2/line_chart_component';
-import {findClosestIndex} from '../../../widgets/line_chart_v2/sub_view/line_chart_interactive_utils';
 import {
   RendererType,
   ScaleType,
@@ -45,18 +45,19 @@ import {
 } from '../../../widgets/line_chart_v2/types';
 import {TooltipSort, XAxisType} from '../../types';
 import {
-  ColumnHeaders,
+  ColumnHeader,
+  ColumnHeaderType,
   MinMaxStep,
   ScalarCardDataSeries,
   ScalarCardSeriesMetadata,
   ScalarCardSeriesMetadataMap,
-  SelectedStepRunData,
+  SortingInfo,
+  SortingOrder,
 } from './scalar_card_types';
 import {TimeSelectionView} from './utils';
 
 type ScalarTooltipDatum = TooltipDatum<
   ScalarCardSeriesMetadata & {
-    distSqToCursor: number;
     closest: boolean;
   }
 >;
@@ -89,29 +90,33 @@ export class ScalarCardComponent<Downloader> {
   @Input() xScaleType!: ScaleType;
   @Input() useDarkMode!: boolean;
   @Input() forceSvg!: boolean;
+  @Input() columnCustomizationEnabled!: boolean;
   @Input() linkedTimeSelection!: TimeSelectionView | null;
-  @Input() stepSelectorTimeSelection!: TimeSelection;
+  @Input() stepOrLinkedTimeSelection!: TimeSelection | null;
+  @Input() isProspectiveFobFeatureEnabled: Boolean = false;
   @Input() minMaxStep!: MinMaxStep;
-  @Input() dataHeaders!: ColumnHeaders[];
+  @Input() columnHeaders!: ColumnHeader[];
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
-  @Output() onLinkedTimeToggled =
-    new EventEmitter<TimeSelectionToggleAffordance>();
-  @Output() onLinkedTimeSelectionChanged = new EventEmitter<{
+  @Output() onTimeSelectionChanged = new EventEmitter<{
     timeSelection: TimeSelection;
-    affordance: TimeSelectionAffordance;
+    affordance?: TimeSelectionAffordance;
   }>();
   @Output() onStepSelectorToggled =
     new EventEmitter<TimeSelectionToggleAffordance>();
-  @Output() onStepSelectorTimeSelectionChanged = new EventEmitter<{
-    timeSelection: TimeSelection;
-    affordance: TimeSelectionAffordance;
-  }>();
+  @Output() onDataTableSorting = new EventEmitter<SortingInfo>();
+  @Output() reorderColumnHeaders = new EventEmitter<ColumnHeader[]>();
+
+  @Output() onLineChartZoom = new EventEmitter<Extent>();
 
   // Line chart may not exist when was never visible (*ngIf).
   @ViewChild(LineChartComponent)
   lineChart?: LineChartComponent;
+  sortingInfo: SortingInfo = {
+    header: ColumnHeaderType.RUN,
+    order: SortingOrder.ASCENDING,
+  };
 
   constructor(private readonly ref: ElementRef, private dialog: MatDialog) {}
 
@@ -121,6 +126,11 @@ export class ScalarCardComponent<Downloader> {
   toggleYScaleType() {
     this.yScaleType =
       this.yScaleType === ScaleType.LINEAR ? ScaleType.LOG10 : ScaleType.LINEAR;
+  }
+
+  sortDataBy(sortingInfo: SortingInfo) {
+    this.sortingInfo = sortingInfo;
+    this.onDataTableSorting.emit(sortingInfo);
   }
 
   resetDomain() {
@@ -151,7 +161,8 @@ export class ScalarCardComponent<Downloader> {
 
   getCursorAwareTooltipData(
     tooltipData: TooltipDatum<ScalarCardSeriesMetadata>[],
-    cursorLoc: {x: number; y: number}
+    cursorLocationInDataCoord: {x: number; y: number},
+    cursorLocation: {x: number; y: number}
   ): ScalarTooltipDatum[] {
     const scalarTooltipData = tooltipData.map((datum) => {
       return {
@@ -159,10 +170,12 @@ export class ScalarCardComponent<Downloader> {
         metadata: {
           ...datum.metadata,
           closest: false,
-          distSqToCursor: Math.hypot(
-            datum.point.x - cursorLoc.x,
-            datum.point.y - cursorLoc.y
+          distToCursorPixels: Math.hypot(
+            datum.domPoint.x - cursorLocation.x,
+            datum.domPoint.y - cursorLocation.y
           ),
+          distToCursorX: datum.dataPoint.x - cursorLocationInDataCoord.x,
+          distToCursorY: datum.dataPoint.y - cursorLocationInDataCoord.y,
         },
       };
     });
@@ -170,8 +183,8 @@ export class ScalarCardComponent<Downloader> {
     let minDist = Infinity;
     let minIndex = 0;
     for (let index = 0; index < scalarTooltipData.length; index++) {
-      if (minDist > scalarTooltipData[index].metadata.distSqToCursor) {
-        minDist = scalarTooltipData[index].metadata.distSqToCursor;
+      if (minDist > scalarTooltipData[index].metadata.distToCursorPixels) {
+        minDist = scalarTooltipData[index].metadata.distToCursorPixels;
         minIndex = index;
       }
     }
@@ -182,12 +195,16 @@ export class ScalarCardComponent<Downloader> {
 
     switch (this.tooltipSort) {
       case TooltipSort.ASCENDING:
-        return scalarTooltipData.sort((a, b) => a.point.y - b.point.y);
+        return scalarTooltipData.sort((a, b) => a.dataPoint.y - b.dataPoint.y);
       case TooltipSort.DESCENDING:
-        return scalarTooltipData.sort((a, b) => b.point.y - a.point.y);
+        return scalarTooltipData.sort((a, b) => b.dataPoint.y - a.dataPoint.y);
       case TooltipSort.NEAREST:
         return scalarTooltipData.sort((a, b) => {
-          return a.metadata.distSqToCursor - b.metadata.distSqToCursor;
+          return a.metadata.distToCursorPixels - b.metadata.distToCursorPixels;
+        });
+      case TooltipSort.NEAREST_Y:
+        return scalarTooltipData.sort((a, b) => {
+          return a.metadata.distToCursorY - b.metadata.distToCursorY;
         });
       case TooltipSort.DEFAULT:
       case TooltipSort.ALPHABETICAL:
@@ -209,119 +226,22 @@ export class ScalarCardComponent<Downloader> {
     });
   }
 
-  getTimeSelection(): TimeSelection | null {
-    if (this.linkedTimeSelection === null) {
-      return this.stepSelectorTimeSelection;
-    }
-
-    return {
-      start: {
-        step: this.linkedTimeSelection.startStep,
-      },
-      end: this.linkedTimeSelection.endStep
-        ? {step: this.linkedTimeSelection.endStep}
-        : null,
-    };
-  }
-
-  getTimeSelectionTableData(): SelectedStepRunData[] {
-    if (
-      this.linkedTimeSelection === null &&
-      this.stepSelectorTimeSelection === null
-    ) {
-      return [];
-    }
-    const startStep = this.linkedTimeSelection
-      ? this.linkedTimeSelection.startStep
-      : this.stepSelectorTimeSelection.start.step;
-    const dataTableData: SelectedStepRunData[] = this.dataSeries
-      .filter((datum) => {
-        const metadata = this.chartMetadataMap[datum.id];
-        return metadata && metadata.visible && !Boolean(metadata.aux);
-      })
-      .map((datum) => {
-        const metadata = this.chartMetadataMap[datum.id];
-        const closestStartPoint =
-          datum.points[findClosestIndex(datum.points, startStep)];
-        const selectedStepData: SelectedStepRunData = {};
-        selectedStepData.COLOR = metadata.color;
-        for (const header of this.dataHeaders) {
-          switch (header) {
-            case ColumnHeaders.RUN:
-              let alias = '';
-              if (metadata.alias) {
-                alias = `${metadata.alias.aliasNumber} ${metadata.alias.aliasText}/`;
-              }
-              selectedStepData.RUN = `${alias}${metadata.displayName}`;
-              continue;
-            case ColumnHeaders.STEP:
-              selectedStepData.STEP = closestStartPoint.step;
-              continue;
-            case ColumnHeaders.VALUE:
-              selectedStepData.VALUE = closestStartPoint.value;
-              continue;
-            case ColumnHeaders.RELATIVE_TIME:
-              selectedStepData.RELATIVE_TIME =
-                closestStartPoint.relativeTimeInMs;
-              continue;
-            case ColumnHeaders.SMOOTHED:
-              selectedStepData.SMOOTHED = closestStartPoint.y;
-              continue;
-            default:
-              continue;
-          }
-        }
-        return selectedStepData;
-      });
-
-    return dataTableData;
-  }
-
-  onFobTimeSelectionChanged(newTimeSelectionWithAffordance: {
-    timeSelection: TimeSelection;
-    affordance: TimeSelectionAffordance;
-  }) {
-    // Updates step selector to single selection.
-    const {timeSelection, affordance} = newTimeSelectionWithAffordance;
-    const newStartStep = timeSelection.start.step;
-    const nextStartStep =
-      newStartStep < this.minMaxStep.minStep
-        ? this.minMaxStep.minStep
-        : newStartStep > this.minMaxStep.maxStep
-        ? this.minMaxStep.maxStep
-        : newStartStep;
-
-    // Updates step selector to single selection.
-    this.stepSelectorTimeSelection = {
-      start: {step: nextStartStep},
-      end: null,
-    };
-
-    if (this.linkedTimeSelection !== null) {
-      this.onLinkedTimeSelectionChanged.emit({
-        timeSelection,
-        affordance,
-      });
-    } else {
-      this.onStepSelectorTimeSelectionChanged.emit({timeSelection, affordance});
-    }
-  }
-
   onFobRemoved() {
-    if (this.linkedTimeSelection !== null) {
-      this.onLinkedTimeToggled.emit(TimeSelectionToggleAffordance.FOB_DESELECT);
-    } else {
-      this.onStepSelectorToggled.emit(
-        TimeSelectionToggleAffordance.FOB_DESELECT
-      );
-    }
+    this.onStepSelectorToggled.emit(TimeSelectionToggleAffordance.FOB_DESELECT);
   }
 
-  inTimeSelectionMode(): boolean {
+  showDataTable() {
     return (
       this.xAxisType === XAxisType.STEP &&
-      (this.stepSelectorTimeSelection !== null ||
-        this.linkedTimeSelection !== null)
+      this.stepOrLinkedTimeSelection !== null
+    );
+  }
+
+  showFobController() {
+    return (
+      this.xAxisType === XAxisType.STEP &&
+      (this.stepOrLinkedTimeSelection !== null ||
+        this.isProspectiveFobFeatureEnabled)
     );
   }
 }

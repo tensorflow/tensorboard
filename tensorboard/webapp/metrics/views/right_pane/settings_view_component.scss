@@ -96,18 +96,22 @@ mat-slider {
   margin-right: -8px;
 }
 
+.column-edit-menu-toggle {
+  align-items: center;
+  display: flex;
+  cursor: pointer;
+  mat-icon {
+    height: 15px;
+    width: 15px;
+  }
+}
+
 tb-dropdown {
   display: block;
 }
 
 .linked-time {
-  .step-selector {
-    padding: 0 10px;
-  }
-
-  .controls {
-    padding: 5px;
-  }
+  padding: 5px 0;
 }
 
 .control-row {

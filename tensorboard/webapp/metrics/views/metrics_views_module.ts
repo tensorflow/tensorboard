@@ -20,16 +20,10 @@ import {CustomizationModule} from '../../customization/customization_module';
 import {RunsSelectorModule} from '../../runs/views/runs_selector/runs_selector_module';
 import {MainViewModule} from './main_view/main_view_module';
 import {MetricsDashboardContainer} from './metrics_container';
-import {MetricsPromoNoticeComponent} from './metrics_promo_notice_component';
-import {MetricsPromoNoticeContainer} from './metrics_promo_notice_container';
 import {RightPaneModule} from './right_pane/right_pane_module';
 
 @NgModule({
-  declarations: [
-    MetricsDashboardContainer,
-    MetricsPromoNoticeComponent,
-    MetricsPromoNoticeContainer,
-  ],
+  declarations: [MetricsDashboardContainer],
   exports: [MetricsDashboardContainer],
   imports: [
     CommonModule,

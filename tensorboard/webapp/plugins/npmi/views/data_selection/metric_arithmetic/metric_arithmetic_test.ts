@@ -47,6 +47,10 @@ describe('Npmi Metric Arithmetic Container', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders no metrics when none active', () => {
     const fixture = TestBed.createComponent(MetricArithmeticContainer);
     fixture.detectChanges();

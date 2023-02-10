@@ -110,24 +110,26 @@ export class ScatterPlotVisualizer3DLabels implements ScatterPlotVisualizer {
     canvas.width = MAX_CANVAS_DIMENSION;
     canvas.height = FONT_SIZE;
     let ctx = canvas.getContext('2d');
-    ctx.font = 'bold ' + FONT_SIZE * 0.75 + 'px roboto';
-    ctx.textBaseline = 'top';
-    ctx.fillStyle = LABEL_BACKGROUND;
-    ctx.rect(0, 0, canvas.width, canvas.height);
-    ctx.fill();
-    ctx.fillStyle = LABEL_COLOR;
-    let spaceOffset = ctx.measureText(' ').width;
+    if (ctx) {
+      ctx.font = 'bold ' + FONT_SIZE * 0.75 + 'px roboto';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = LABEL_BACKGROUND;
+      ctx.rect(0, 0, canvas.width, canvas.height);
+      ctx.fill();
+      ctx.fillStyle = LABEL_COLOR;
+    }
+    let spaceOffset = ctx?.measureText(' ').width;
     // For each letter, store length, position at the encoded index.
     let glyphLengths = new Float32Array(NUM_GLYPHS);
     let glyphOffset = new Float32Array(NUM_GLYPHS);
     let leftCoord = 0;
     for (let i = 0; i < NUM_GLYPHS; i++) {
       let text = ' ' + String.fromCharCode(i);
-      let textLength = ctx.measureText(text).width;
-      glyphLengths[i] = textLength - spaceOffset;
+      let textLength = ctx?.measureText(text).width;
+      glyphLengths[i] = textLength! - spaceOffset!;
       glyphOffset[i] = leftCoord;
-      ctx.fillText(text, leftCoord - spaceOffset, 0);
-      leftCoord += textLength;
+      ctx?.fillText(text, leftCoord - spaceOffset!, 0);
+      leftCoord += textLength!;
     }
     const tex = util.createTexture(canvas);
     return {texture: tex, lengths: glyphLengths, offsets: glyphOffset};
@@ -300,15 +302,15 @@ export class ScatterPlotVisualizer3DLabels implements ScatterPlotVisualizer {
       if (this.scene) {
         this.scene.remove(this.labelsMesh);
       }
-      this.labelsMesh = null;
+      this.labelsMesh = null!;
     }
     if (this.geometry) {
       this.geometry.dispose();
-      this.geometry = null;
+      this.geometry = null!;
     }
     if (this.glyphTexture != null && this.glyphTexture.texture != null) {
       this.glyphTexture.texture.dispose();
-      this.glyphTexture.texture = null;
+      this.glyphTexture.texture = null!;
     }
   }
   onPickingRender(rc: RenderContext) {

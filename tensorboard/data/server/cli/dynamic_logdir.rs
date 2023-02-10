@@ -47,8 +47,6 @@ pub enum Error {
         full_logdir: PathBuf,
     },
     #[error(transparent)]
-    GcsCredentialsError(#[from] gcs::CredentialsError),
-    #[error(transparent)]
     GcsClientError(#[from] gcs::ClientError),
 }
 
@@ -105,8 +103,9 @@ impl DynLogdir {
         match ParsedLogdir::from_path(path)? {
             ParsedLogdir::Disk(path) => Ok(DynLogdir::Disk(DiskLogdir::new(path))),
             ParsedLogdir::Gcs { bucket, prefix } => {
-                let client = gcs::Client::new(gcs::Credentials::from_disk()?)?;
-                Ok(DynLogdir::Gcs(gcs::Logdir::new(client, bucket, prefix)))
+                let client = gcs::Client::new()?;
+                let logdir = gcs::Logdir::new(client, bucket, prefix);
+                Ok(DynLogdir::Gcs(logdir))
             }
         }
     }

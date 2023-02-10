@@ -76,7 +76,7 @@ export interface PartitionedSeries {
  * ScalarCardComponent must know which piece of data is associated with each
  * value and the DataTable widget must know how to display each value.
  */
-export enum ColumnHeaders {
+export enum ColumnHeaderType {
   COLOR = 'COLOR',
   RELATIVE_TIME = 'RELATIVE_TIME',
   RUN = 'RUN',
@@ -84,6 +84,34 @@ export enum ColumnHeaders {
   TIME = 'TIME',
   VALUE = 'VALUE',
   SMOOTHED = 'SMOOTHED',
+  VALUE_CHANGE = 'VALUE_CHANGE',
+  START_STEP = 'START_STEP',
+  END_STEP = 'END_STEP',
+  START_VALUE = 'START_VALUE',
+  END_VALUE = 'END_VALUE',
+  MIN_VALUE = 'MIN_VALUE',
+  MAX_VALUE = 'MAX_VALUE',
+  PERCENTAGE_CHANGE = 'PERCENTAGE_CHANGE',
+}
+
+export interface ColumnHeader {
+  type: ColumnHeaderType;
+  enabled: boolean;
+}
+
+export enum DataTableMode {
+  SINGLE,
+  RANGE,
+}
+
+export enum SortingOrder {
+  ASCENDING,
+  DESCENDING,
+}
+
+export interface SortingInfo {
+  header: ColumnHeaderType;
+  order: SortingOrder;
 }
 
 /**
@@ -92,8 +120,8 @@ export enum ColumnHeaders {
  * run.
  */
 export type SelectedStepRunData = {
-  [key in ColumnHeaders]?: string | number;
-};
+  [key in ColumnHeaderType]?: string | number;
+} & {id: string};
 
 /**
  * An object which is intended to hold the min and max step within each scalar

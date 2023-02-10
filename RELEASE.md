@@ -1,3 +1,65 @@
+# Release 2.12.0
+
+The 2.12 minor series tracks TensorFlow 2.12.
+
+## Features
+
+- Time Series dashboard visualization improvements: (#6137)
+  - Allows selection of a step or range of steps on a scalar chart, and shows a table with data from those steps under it.
+  - Enables linking the selected steps across all charts in the Time Series dashboard.
+- Time Series dashboard now sorts runs in tooltip by pixel distance (matching the Scalars dashboard) (#6116).
+- Fast data loading mode (`--load_fast`, aka “RustBoard”)  improvements:
+  - Supports more ways to authenticate to GCS, including GKE service accounts, via  `gcp_auth` (#5939, thanks @Corwinpro).
+  - Now available on `manylinux2014` platforms (#6101, thanks @adamjstewart).
+
+## Bug Fixes
+
+- Fixes long standing breakage in standalone version of the Projector visualization (#6069).
+- Fixes broken help dialog button in projector plugin (#6024, thanks @mromanelli9).
+- Fixes a bug in which a deadlock could cause the event writer to hang (#6168, thanks @crassirostris).
+
+
+## Breaking Changes
+
+- Drops support for Python 3.7 and marks 3.11 as supported (#6144).
+- Drops support for protobuf < 3.19.6 and adds support for 4.x (#6147).
+
+# Release 2.11.0
+
+The 2.11 minor series tracks TensorFlow 2.11.
+
+## Bug Fixes
+
+- Fixed HParams plugin sorting bugs (#5971)
+- Fix color by menu drop down bug in projector plugin (#5974)
+- Fix bug with histogram axis being off due to rounding (#5925)
+
+## Breaking Changes
+
+- TensorBoard now only supports Python 3.7 and above (#5878)
+  Python 3.6 is past its End of Life: https://peps.python.org/pep-0494/#lifespan
+
+# Release 2.10.1
+
+## Bug Fixes
+
+- Fix embedding projector plugin. (#5944)
+
+# Release 2.10.0
+
+The 2.10 minor series tracks TensorFlow 2.10.
+
+## Features
+- Time Series is now the default dashboard when you log scalar, histogram, or image events (#5698). If you have feedback or find any bugs you can leave a comment [here](https://github.com/tensorflow/tensorboard/issues/5704) (#5704) or create a new issue
+- Time Series now supports selecting a single run using double click (#5831, #5842)
+
+## Bug Fixes
+- Stop removing experiment related query parameters (#5717, #5834)
+- Fix the histogram x-axis tick format (#5818)
+- Keep pinned cards when refreshing UI (#5837)
+- Fix "Card Width" property reset button (#5841)
+- Numerous fixes for dependencies and unit tests
+
 # Release 2.9.1
 
 ## Bug fixes

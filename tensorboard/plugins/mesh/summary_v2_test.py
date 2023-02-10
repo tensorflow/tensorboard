@@ -41,7 +41,7 @@ except AttributeError:
 
 class MeshSummaryV2Test(tf.test.TestCase):
     def setUp(self):
-        super(MeshSummaryV2Test, self).setUp()
+        super().setUp()
         if tf2 is None:
             self.skipTest("v2 summary API not available")
 

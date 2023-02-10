@@ -60,6 +60,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=crossbeam-epoch",
         "manual",
     ],
     version = "0.9.1",

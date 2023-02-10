@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {FEATURE_FLAGS_HEADER_NAME} from '../../webapp/feature_flag/http/const';
-import {getFeatureFlags} from '../tf_feature_flags/feature-flags';
+import {getFeatureFlagsToSendToServer} from '../tf_feature_flags/feature-flags';
 
 interface ResolveReject {
   resolve: (x: unknown) => void;
@@ -187,11 +187,12 @@ export class RequestManager {
     while (this._queue.length > 0) {
       this._queue
         .pop()
-        .reject(
+        ?.reject(
           new RequestCancellationError('Request cancelled by clearQueue')
         );
     }
   }
+
   /* Return number of currently pending requests */
   public activeRequests(): number {
     return this._nActiveRequests;
@@ -206,7 +207,7 @@ export class RequestManager {
       this._queue.length > 0
     ) {
       this._nActiveRequests++;
-      this._queue.pop().resolve(undefined);
+      this._queue.pop()!.resolve(undefined);
     }
   }
   /**
@@ -245,7 +246,7 @@ export class RequestManager {
       );
       req.setRequestHeader(
         FEATURE_FLAGS_HEADER_NAME,
-        JSON.stringify(getFeatureFlags())
+        JSON.stringify(getFeatureFlagsToSendToServer())
       );
       req.onload = function () {
         if (req.status === 200) {

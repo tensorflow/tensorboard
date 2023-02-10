@@ -72,6 +72,10 @@ describe('regex_edit_dialog', () => {
     }).compileComponents();
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   function createComponent(experimentIds: string[]) {
     TestBed.overrideProvider(MAT_DIALOG_DATA, {useValue: {experimentIds}});
 

@@ -31,7 +31,7 @@ tf.compat.v1.enable_eager_execution()
 
 class CallbackTest(tf.test.TestCase):
     def setUp(self):
-        super(CallbackTest, self).setUp()
+        super().setUp()
         self.logdir = os.path.join(self.get_temp_dir(), "logs")
 
     def _initialize_model(self, writer):
@@ -99,7 +99,7 @@ class CallbackTest(tf.test.TestCase):
         end_pb.end_time_secs = 6789.0
 
         expected_start_pb = plugin_data_pb2.SessionStartInfo()
-        text_format.Merge(
+        text_format.Parse(
             """
             start_time_secs: 1234.5
             group_name: "my_trial"
@@ -121,7 +121,7 @@ class CallbackTest(tf.test.TestCase):
         self.assertEqual(start_pb, expected_start_pb)
 
         expected_end_pb = plugin_data_pb2.SessionEndInfo()
-        text_format.Merge(
+        text_format.Parse(
             """
             end_time_secs: 6789.0
             status: STATUS_SUCCESS

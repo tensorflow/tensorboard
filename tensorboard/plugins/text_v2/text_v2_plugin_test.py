@@ -94,9 +94,9 @@ class TextPluginTest(tf.test.TestCase):
     def testIndex(self):
         plugin = self.create_plugin()
         index = plugin.index_impl(context.RequestContext(), experiment="123")
-        self.assertItemsEqual(["fry", "leela"], index.keys())
-        self.assertItemsEqual(["message", "vector"], index["fry"])
-        self.assertItemsEqual(["message", "vector"], index["leela"])
+        self.assertCountEqual(["fry", "leela"], index.keys())
+        self.assertCountEqual(["message", "vector"], index["fry"])
+        self.assertCountEqual(["message", "vector"], index["leela"])
 
     def testText(self):
         plugin = self.create_plugin()
@@ -132,7 +132,7 @@ class TextPluginTest(tf.test.TestCase):
 
             Example: rangeArray(2) results in [[0,1],[2,3]].
             """
-            return np.array(range(2 ** dim)).reshape([2] * dim)
+            return np.array(range(2**dim)).reshape([2] * dim)
 
         for i in range(2, 5):
             actual = text_v2_plugin.reduce_to_2d(make_range_array(i))

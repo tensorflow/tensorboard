@@ -172,6 +172,7 @@ export function runTask<T>(
     // Errors that happen inside asynchronous tasks are
     // reported to the tracker using a user-friendly message.
     tracker.reportError('Failed ' + msg, e);
+    return null!;
   }
 }
 /**
@@ -238,7 +239,7 @@ export function runAsyncPromiseTask<T>(
             // Update the progress value.
             tracker.updateProgress(incProgressValue);
             notifyDebugEvent({
-              timingId: debugEventId,
+              timingId: debugEventId!,
               eventValue: durationInMs,
             });
             // Return the result to be used by other tasks.
@@ -293,9 +294,9 @@ export function convertUnitsToHumanReadable(
   units: Units,
   unitIndex: number = 0
 ) {
-  if (unitIndex + 1 < units.length && value >= units[unitIndex + 1].numUnits) {
+  if (unitIndex + 1 < units.length && value >= units[unitIndex + 1].numUnits!) {
     return convertUnitsToHumanReadable(
-      value / units[unitIndex + 1].numUnits,
+      value / units[unitIndex + 1].numUnits!,
       units,
       unitIndex + 1
     );
@@ -330,7 +331,7 @@ export function removeCommonPrefix(strings: string[]) {
   let index = 0;
   let largestIndex = 0;
   // Find the shortest name across all strings.
-  let minLength = _.min(_.map(strings, (str) => str.length));
+  let minLength = _.min(_.map(strings, (str) => str.length))!;
   while (true) {
     index++;
     let prefixes = _.map(strings, (str) => str.substring(0, index));
@@ -381,8 +382,9 @@ const measurerContext = canvas.getContext('2d');
  * Returns width of `text` rendered with Roboto at provided fontSize.
  */
 export function measureTextWidth(text: string, fontSize: number): number {
-  measurerContext.font = `${fontSize}px Roboto, sans-serif`;
-  return measurerContext.measureText(text).width;
+  if (measurerContext)
+    measurerContext.font = `${fontSize}px Roboto, sans-serif`;
+  return measurerContext?.measureText(text).width!;
 }
 
 /**
@@ -448,18 +450,18 @@ export class Dispatcher<EventType = any> {
   }
 
   addListener(eventType: EventType, listener: Function) {
-    this.getListeners(eventType).push(listener);
+    this.getListeners(eventType)?.push(listener);
   }
 
   removeListener(eventType: EventType, listener: Function) {
-    const newListeners = this.getListeners(eventType).filter((x) => {
+    const newListeners = this.getListeners(eventType)?.filter((x) => {
       return x !== listener;
     });
-    this.eventTypeToListeners.set(eventType, newListeners);
+    this.eventTypeToListeners.set(eventType, newListeners!);
   }
 
   dispatchEvent(eventType: EventType, payload?: any) {
-    for (const listener of this.getListeners(eventType)) {
+    for (const listener of this.getListeners(eventType)!) {
       listener(payload);
     }
   }

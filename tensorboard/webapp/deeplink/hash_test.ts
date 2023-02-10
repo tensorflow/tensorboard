@@ -52,6 +52,10 @@ describe('hash storage test', () => {
     createElement.and.callThrough();
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('sets the hash to plugin id by replacing on first load', () => {
     store.overrideSelector(getActivePlugin, 'foo');
     const fixture = TestBed.createComponent(HashStorageContainer);

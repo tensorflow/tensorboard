@@ -99,7 +99,7 @@ def _tf_web_library(ctx):
     )
   params = struct(
       label=str(ctx.label),
-      bind="localhost:0",
+      bind="localhost:6006",
       manifest=[long_path(ctx, man) for man in devserver_manifests.to_list()],
       external_asset=[struct(webpath=k, path=v)
                       for k, v in ctx.attr.external_assets.items()])
@@ -266,7 +266,7 @@ tf_web_library = rule(
         "_WebfilesServer": attr.label(
             default=Label("@io_bazel_rules_closure//java/io/bazel/rules/closure/webfiles/server:WebfilesServer"),
             executable=True,
-            cfg="host"),
+            cfg="exec"),
         "_ClosureWorker": CLOSURE_WORKER_ATTR,
         "_closure_library_base": CLOSURE_LIBRARY_BASE_ATTR,
     },

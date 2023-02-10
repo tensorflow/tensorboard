@@ -19,10 +19,17 @@ import {Action, createAction, Store} from '@ngrx/store';
 import {combineLatestWith, map, tap, withLatestFrom} from 'rxjs/operators';
 import '../../tb_polymer_interop_types';
 import {TBFeatureFlagDataSource} from '../../webapp_data_source/tb_feature_flag_data_source_types';
-import {partialFeatureFlagsLoaded} from '../actions/feature_flag_actions';
+import {
+  allFeatureFlagOverridesReset,
+  featureFlagOverrideChanged,
+  featureFlagOverridesReset,
+  partialFeatureFlagsLoaded,
+} from '../actions/feature_flag_actions';
 import {ForceSvgDataSource} from '../force_svg_data_source';
 import {
   getFeatureFlags,
+  getFeatureFlagsMetadata,
+  getFeatureFlagsToSendToServer,
   getIsAutoDarkModeAllowed,
 } from '../store/feature_flag_selectors';
 import {State} from '../store/feature_flag_types';
@@ -41,9 +48,15 @@ export class FeatureFlagEffects {
   readonly getFeatureFlags$ = createEffect(() =>
     this.actions$.pipe(
       ofType(effectsInitialized),
-      combineLatestWith(this.store.select(getIsAutoDarkModeAllowed)),
-      map(([, isDarkModeAllowed]) => {
-        const features = this.dataSource.getFeatures(isDarkModeAllowed);
+      combineLatestWith(
+        this.store.select(getIsAutoDarkModeAllowed),
+        this.store.select(getFeatureFlagsMetadata)
+      ),
+      map(([, isDarkModeAllowed, featureFlagsMetadata]) => {
+        const features = this.dataSource.getFeatures(
+          isDarkModeAllowed,
+          featureFlagsMetadata
+        );
 
         if (features.forceSvg != null) {
           this.forceSvgDataSource.updateForceSvgFlag(features.forceSvg);
@@ -69,9 +82,54 @@ export class FeatureFlagEffects {
         // feature flag values used are from the Store, given that it contains
         // the finalized merged feature flags.
         ofType(partialFeatureFlagsLoaded),
-        withLatestFrom(this.store.select(getFeatureFlags)),
-        tap(([, featureFlags]) => {
-          this.tfFeatureFlags.ref.setFeatureFlags(featureFlags);
+        withLatestFrom(
+          this.store.select(getFeatureFlags),
+          this.store.select(getFeatureFlagsToSendToServer)
+        ),
+        tap(([, featureFlags, featureFlagsToSendToServer]) => {
+          this.tfFeatureFlags.ref.setFeatureFlags(
+            featureFlags,
+            featureFlagsToSendToServer
+          );
+        })
+      ),
+    {dispatch: false}
+  );
+
+  /**
+   * When a feature flag is overriden this effect persists that override by
+   * putting it in local storage using the dataSource.
+   */
+  readonly storeFeatureFlag$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(featureFlagOverrideChanged),
+        tap(({flags}) => {
+          this.dataSource.persistFeatureFlags(flags);
+        })
+      ),
+    {dispatch: false}
+  );
+
+  readonly resetFeatureFlagOverrides$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(featureFlagOverridesReset),
+        tap(({flags}) => {
+          flags.forEach((flag) => {
+            this.dataSource.resetPersistedFeatureFlag(flag);
+          });
+        })
+      ),
+    {dispatch: false}
+  );
+
+  readonly resetAllFeatureFlagOverrides$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(allFeatureFlagOverridesReset),
+        tap(() => {
+          this.dataSource.resetAllPersistedFeatureFlags();
         })
       ),
     {dispatch: false}

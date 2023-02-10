@@ -25,33 +25,34 @@ $_background: map-get($tb-theme, background);
   display: grid;
   grid-template-columns: repeat(
     auto-fill,
-    minmax($metrics-min-card-width, auto)
+    minmax($metrics-min-card-width, 1fr)
   );
   gap: $metrics-preferred-gap;
   padding: $metrics-preferred-gap;
+}
+
+.card-space.full-width {
+  grid-column-start: 1;
+  grid-column-end: -1;
+}
+
+.card-space.full-height {
+  min-height: $metrics-min-card-height * 1.5;
+
+  card-view {
+    height: 100%;
+  }
 }
 
 card-view {
   @include tb-theme-foreground-prop(border, border, 1px solid);
   border-radius: 4px;
   box-sizing: border-box;
-  contain: strict;
-  height: 100%;
+  contain: layout paint;
+  display: block;
+  // Make sure the cards generally have some guaranteed minimum height to avoid
+  // jank as cards load.
   min-height: $metrics-min-card-height;
-
-  &.full-width {
-    // Remove `contain: size` to let the content's intrinsic size define height.
-    contain: layout paint;
-    grid-column-start: 1;
-    grid-column-end: -1;
-  }
-
-  &.full-height {
-    min-height: $metrics-min-card-height * 1.5;
-  }
-  &.height-with-table {
-    min-height: $metrics-min-card-height + 100px;
-  }
 }
 
 .group-controls {

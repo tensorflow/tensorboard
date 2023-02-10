@@ -38,7 +38,7 @@ class _TensorFlowPngEncoder(op_evaluator.PersistentOpEvaluator):
     """
 
     def __init__(self):
-        super(_TensorFlowPngEncoder, self).__init__()
+        super().__init__()
         self._image_placeholder = None
         self._encode_op = None
 
@@ -78,7 +78,7 @@ class _TensorFlowWavEncoder(op_evaluator.PersistentOpEvaluator):
     """
 
     def __init__(self):
-        super(_TensorFlowWavEncoder, self).__init__()
+        super().__init__()
         self._audio_placeholder = None
         self._samples_per_second_placeholder = None
         self._encode_op = None

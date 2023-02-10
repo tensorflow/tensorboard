@@ -454,6 +454,13 @@ export class AppRoutingEffects {
           })
         );
       }),
+      tap(([{routeMatch}]) => {
+        // Some route configurations can generate actions that should be
+        // dispatched early in app routing handling.
+        if (routeMatch.action) {
+          this.store.dispatch(routeMatch.action);
+        }
+      }),
       switchMap(([{routeMatch, options}]): Observable<InternalRoute> => {
         if (routeMatch.deepLinkProvider === null) {
           // Without a DeepLinkProvider emit a single result without query

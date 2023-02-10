@@ -45,13 +45,13 @@ describe('TBNotificationCenterDataSource test', () => {
     httpMock.verify();
   });
 
-  it('fetches empty notifications', () => {
+  it('filters empty notifications', () => {
     const resultSpy = jasmine.createSpy();
     dataSource.fetchNotifications().subscribe(resultSpy);
     const req = httpMock.expectOne('/data/notifications');
     req.flush({notifications: [{}]});
 
-    expect(resultSpy).toHaveBeenCalledWith({notifications: [{}]});
+    expect(resultSpy).toHaveBeenCalledWith({notifications: []});
   });
 
   it('fetches non-empty notifications', () => {
@@ -84,29 +84,40 @@ describe('TBNotificationCenterDataSource test', () => {
     expect(errorSpy).toHaveBeenCalledWith(httpErrorResponse);
   });
 
-  it(
-    'clips dateInMs to max today to prevent issue where notification never ' +
-      'gets dismissed',
-    () => {
-      jasmine.clock().mockDate(new Date('2000-01-31 07:00'));
-      const resultSpy = jasmine.createSpy();
-      dataSource.fetchNotifications().subscribe(resultSpy);
-      const req = httpMock.expectOne('/data/notifications');
-      req.flush(
-        buildNotificationResponse([
-          buildNotification({
-            dateInMs: new Date('2000-01-31 23:59').getTime(),
-          }),
-        ])
-      );
+  it('filters notifications from the future', () => {
+    jasmine.clock().mockDate(new Date('2000-01-31 07:00'));
+    const resultSpy = jasmine.createSpy();
+    dataSource.fetchNotifications().subscribe(resultSpy);
+    const req = httpMock.expectOne('/data/notifications');
+    req.flush(
+      buildNotificationResponse([
+        buildNotification({
+          dateInMs: new Date('2000-01-31 07:00').getTime(),
+        }),
+        buildNotification({
+          dateInMs: new Date('2000-01-31 06:59').getTime(),
+        }),
+        buildNotification({
+          dateInMs: new Date('2000-01-31 07:01').getTime(),
+        }),
+        buildNotification({
+          dateInMs: new Date('2000-01-31 06:58').getTime(),
+        }),
+      ])
+    );
 
-      expect(resultSpy).toHaveBeenCalledOnceWith(
-        buildNotificationResponse([
-          buildNotification({
-            dateInMs: new Date('2000-01-31 12:00 AM').getTime(),
-          }),
-        ])
-      );
-    }
-  );
+    expect(resultSpy).toHaveBeenCalledOnceWith(
+      buildNotificationResponse([
+        buildNotification({
+          dateInMs: new Date('2000-01-31 07:00').getTime(),
+        }),
+        buildNotification({
+          dateInMs: new Date('2000-01-31 06:59').getTime(),
+        }),
+        buildNotification({
+          dateInMs: new Date('2000-01-31 06:58').getTime(),
+        }),
+      ])
+    );
+  });
 });

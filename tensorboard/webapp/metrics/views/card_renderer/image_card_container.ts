@@ -56,7 +56,7 @@ import {
 import {CardId, CardMetadata} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
-import {maybeClipLinkedTimeSelection, TimeSelectionView} from './utils';
+import {maybeClipTimeSelectionView, TimeSelectionView} from './utils';
 
 const DISTANCE_RATIO = 0.1;
 
@@ -94,6 +94,15 @@ type ImageCardMetadata = CardMetadata & {
       (onPinClicked)="pinStateChanged.emit($event)"
     ></image-card-component>
   `,
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+    `,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
@@ -261,13 +270,9 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
         map(([linkedTimeSelection, steps]) => {
           if (!linkedTimeSelection) return null;
 
-          let minStep = Infinity;
-          let maxStep = -Infinity;
-          for (const step of steps) {
-            minStep = Math.min(step, minStep);
-            maxStep = Math.max(step, maxStep);
-          }
-          return maybeClipLinkedTimeSelection(
+          const minStep = Math.min(...steps);
+          const maxStep = Math.max(...steps);
+          return maybeClipTimeSelectionView(
             linkedTimeSelection,
             minStep,
             maxStep
@@ -287,16 +292,11 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
           return [];
         }
 
-        const selectedStepsInRange = [];
-        for (const step of steps) {
-          if (
+        return steps.filter(
+          (step) =>
             step >= linkedTimeSelection.startStep &&
-            step <= linkedTimeSelection.endStep
-          ) {
-            selectedStepsInRange.push(step);
-          }
-        }
-        return selectedStepsInRange;
+            step <= linkedTimeSelection.endStep!
+        );
       })
     );
 

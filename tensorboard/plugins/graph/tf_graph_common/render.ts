@@ -342,7 +342,7 @@ export class RenderGraphInfo {
         proportion: histogram[key] / numItems,
       }));
     }
-    return null;
+    return null!;
   }
   /**
    * Get a previously created RenderNodeInfo for the specified node name,
@@ -351,7 +351,7 @@ export class RenderGraphInfo {
   getOrCreateRenderNodeByName(nodeName: string): RenderNodeInfo {
     // Polymer may invoke this with null.
     if (!nodeName) {
-      return null;
+      return null!;
     }
     if (nodeName in this.index) {
       return this.index[nodeName];
@@ -361,7 +361,7 @@ export class RenderGraphInfo {
     // when a graph is reloaded while the infocard points to a node not visible
     // at the top-level.
     if (!node) {
-      return null;
+      return null!;
     }
     let renderInfo = node.isGroupNode
       ? new RenderGroupNodeInfo(<GroupNode>node, this.hierarchy.graphOptions)
@@ -378,9 +378,9 @@ export class RenderGraphInfo {
     renderInfo.isFadedOut =
       this.displayingStats &&
       !tf_graph_util.hasDisplayableNodeStats(node.stats);
-    var deviceHistogram = null;
-    var xlaClusterHistogram = null;
-    var opCompatibility = null;
+    var deviceHistogram: {} | null = null;
+    var xlaClusterHistogram: {} | null = null;
+    var opCompatibility: number | null = null;
     if (node.isGroupNode) {
       deviceHistogram = (<GroupNode>node).deviceHistogram;
       xlaClusterHistogram = (<GroupNode>node).xlaClusterHistogram;
@@ -437,7 +437,7 @@ export class RenderGraphInfo {
   getNearestVisibleAncestor(name: string): string {
     let path = getHierarchicalPath(name);
     let i = 0;
-    let renderNode: RenderNodeInfo = null;
+    let renderNode: RenderNodeInfo | null = null;
     // Fallthrough. If everything was expanded return the node.
     let nodeName = name;
     for (; i < path.length; i++) {
@@ -454,10 +454,10 @@ export class RenderGraphInfo {
     // displayed.
     if (i == path.length - 2) {
       let nextName = path[i + 1];
-      if (renderNode.inAnnotations.nodeNames[nextName]) {
+      if (renderNode?.inAnnotations.nodeNames[nextName]) {
         return nextName;
       }
-      if (renderNode.outAnnotations.nodeNames[nextName]) {
+      if (renderNode?.outAnnotations.nodeNames[nextName]) {
         return nextName;
       }
     }
@@ -784,7 +784,7 @@ export class RenderGraphInfo {
     // Also change any base edges that point into the original node to
     // point to the input arg within the function. These are used to
     // make bridge edges.
-    _.each(originalMetaEdge.baseEdgeList, (edge) => {
+    _.each(originalMetaEdge!.baseEdgeList, (edge) => {
       if (edge.w === opNodeToReplace.name) {
         edge.w = newOpNode.name;
       }
@@ -812,7 +812,7 @@ export class RenderGraphInfo {
     _.each(originalMetaEdges.regular, (metaedge) => {
       _.each(metaedge.baseEdgeList, (baseEdge) => {
         // Destination nodes within regular base edges are op nodes.
-        const destinationNode = this.hierarchy.node(baseEdge.w) as OpNode;
+        const destinationNode = this.hierarchy.node(baseEdge.w!) as OpNode;
         _.each(destinationNode.inputs, (normalizedInput) => {
           // If an output of the function is an input into the op, map it back
           // to the output within the function so bridge edges are computed.
@@ -859,8 +859,8 @@ export class RenderGraphInfo {
     let renderGroupNodeInfo = <RenderGroupNodeInfo>renderNodeInfo;
     let metagraph = renderGroupNodeInfo.node.metagraph;
     let coreGraph = renderGroupNodeInfo.coreGraph;
-    const nodesThatGotCloned = [];
-    const functionCallMetanodesToAdd = [];
+    const nodesThatGotCloned: Node[] = [];
+    const functionCallMetanodesToAdd: Metanode[] = [];
     if (!_.isEmpty(this.hierarchy.libraryFunctions)) {
       // This graph has library functions. Add them to the current
       // sub-hierarchy if necessary.
@@ -909,7 +909,7 @@ export class RenderGraphInfo {
       coreGraph.setNode(childName, childRenderInfo);
       if (!childNode.isGroupNode) {
         _.each((<OpNode>childNode).inEmbeddings, (embedding) => {
-          let renderMetaedgeInfo = new RenderMetaedgeInfo(null);
+          let renderMetaedgeInfo = new RenderMetaedgeInfo(null!);
           let renderNodeInfo = new RenderNodeInfo(embedding);
           addInAnnotation(
             childRenderInfo,
@@ -921,7 +921,7 @@ export class RenderGraphInfo {
           this.index[embedding.name] = renderNodeInfo;
         });
         _.each((<OpNode>childNode).outEmbeddings, (embedding) => {
-          let renderMetaedgeInfo = new RenderMetaedgeInfo(null);
+          let renderMetaedgeInfo = new RenderMetaedgeInfo(null!);
           let renderNodeInfo = new RenderNodeInfo(embedding);
           addOutAnnotation(
             childRenderInfo,
@@ -1050,7 +1050,7 @@ export class RenderGraphInfo {
       // It will either be a Metaedge involving this node directly, if it
       // previously came from a metagraph, or it'll be a Metaedge involving
       // a previously created bridge node standing in for the other node.
-      let adjoiningMetaedge = null;
+      let adjoiningMetaedge: RenderMetaedgeInfo | null = null;
       // We can only hope to render a bridge path if:
       //  - bridgegraph paths are enabled,
       //  - the other node is not too high-degree,
@@ -1129,7 +1129,7 @@ export class RenderGraphInfo {
         // after its destination.
         let ordering = this.hierarchy.getTopologicalOrdering(topGroupNode.name);
         let e = topAdjoiningMetaedge.metaedge;
-        backwards = ordering[e.v] > ordering[e.w];
+        backwards = ordering[e.v!] > ordering[e.w!];
       }
       // Render backwards control edges as annotations.
       canDrawBridgePath = canDrawBridgePath && !backwards;
@@ -1163,8 +1163,8 @@ export class RenderGraphInfo {
             // Unused node properties.
             isGroupNode: false,
             cardinality: 0,
-            parentNode: null,
-            stats: null,
+            parentNode: null!,
+            stats: null!,
             include: InclusionType.UNSPECIFIED,
             // BridgeNode properties.
             inbound: inbound,
@@ -1181,8 +1181,8 @@ export class RenderGraphInfo {
           // Unimportant node properties.
           isGroupNode: false,
           cardinality: 1,
-          parentNode: null,
-          stats: null,
+          parentNode: null!,
+          stats: null!,
           include: InclusionType.UNSPECIFIED,
           // BridgeNode properties.
           inbound: inbound,
@@ -1197,7 +1197,7 @@ export class RenderGraphInfo {
       }
       // Create and add a bridge render metaedge.
       let bridgeRenderMetaedge = new RenderMetaedgeInfo(bridgeMetaedge as any);
-      bridgeRenderMetaedge.adjoiningMetaedge = adjoiningMetaedge;
+      bridgeRenderMetaedge.adjoiningMetaedge = adjoiningMetaedge!;
       inbound
         ? coreGraph.setEdge(bridgeNodeName, childName, bridgeRenderMetaedge)
         : coreGraph.setEdge(childName, bridgeNodeName, bridgeRenderMetaedge);
@@ -1275,8 +1275,8 @@ export class RenderGraphInfo {
           return;
         }
         let isTerminal = inbound
-          ? !coreGraph.predecessors(childName).length
-          : !coreGraph.successors(childName).length;
+          ? !coreGraph.predecessors(childName)?.length!
+          : !coreGraph.successors(childName)?.length!;
         if (!isTerminal) {
           return;
         }
@@ -1299,8 +1299,8 @@ export class RenderGraphInfo {
             // Unimportant Node properties.
             isGroupNode: false,
             cardinality: 1,
-            parentNode: null,
-            stats: null,
+            parentNode: null!,
+            stats: null!,
             include: InclusionType.UNSPECIFIED,
             // BridgeNode properties.
             inbound: inbound,
@@ -1314,7 +1314,7 @@ export class RenderGraphInfo {
           coreGraph.setParent(structuralNodeName, bridgeContainerName);
         }
         // Create the structural Metaedge and insert it.
-        let structuralMetaedgeInfo = new RenderMetaedgeInfo(null);
+        let structuralMetaedgeInfo = new RenderMetaedgeInfo(null!);
         structuralMetaedgeInfo.structural = true;
         structuralMetaedgeInfo.weight--; // Reduce weight for dagre layout.
         inbound
@@ -1344,7 +1344,7 @@ export class RenderGraphInfo {
       let metaedge = metagraph.edge(edgeObj);
       let renderMetaedgeInfo = new RenderMetaedgeInfo(metaedge as any);
       _.forEach(renderMetaedgeInfo.metaedge.baseEdgeList, (baseEdge) => {
-        const sourcePathList = baseEdge.v.split(tf_graph.NAMESPACE_DELIM);
+        const sourcePathList = baseEdge.v!.split(tf_graph.NAMESPACE_DELIM);
         for (let i = sourcePathList.length; i >= 0; i--) {
           const fromBeginningPathList = sourcePathList.slice(0, i);
           const node = this.hierarchy.node(
@@ -1454,8 +1454,8 @@ export class Annotation {
     // Properties needed for generating an ID for the edge's path element if
     // this annotation is associated with a metaedge.
     if (renderMetaedgeInfo && renderMetaedgeInfo.metaedge) {
-      this.v = renderMetaedgeInfo.metaedge.v;
-      this.w = renderMetaedgeInfo.metaedge.w;
+      this.v = renderMetaedgeInfo.metaedge.v!;
+      this.w = renderMetaedgeInfo.metaedge.w!;
     }
     this.isIn = isIn;
     this.points = [];
@@ -1512,7 +1512,7 @@ export class AnnotationList {
       new Annotation(
         ellipsisNode,
         new RenderNodeInfo(ellipsisNode),
-        null,
+        null!,
         AnnotationType.ELLIPSIS,
         annotation.isIn
       )
@@ -1768,7 +1768,7 @@ export class RenderMetaedgeInfo {
   isFadedOut: boolean;
   constructor(metaedge: Metaedge) {
     this.metaedge = metaedge;
-    this.adjoiningMetaedge = null;
+    this.adjoiningMetaedge = null!;
     this.structural = false;
     this.weight = 1;
     this.isFadedOut = false;
@@ -1931,7 +1931,7 @@ function makeOutExtract(
     });
   }
   // Remove the node from the core graph if it no longer has neighbors.
-  if (graph.neighbors(n).length === 0) {
+  if (graph.neighbors(n)?.length === 0) {
     child.node.include = InclusionType.EXCLUDE;
     renderNode.isolatedOutExtract.push(child);
     graph.removeNode(n);
@@ -1961,7 +1961,7 @@ export function makeInExtract(
     });
   }
   // Remove the node from the core graph if it no longer has neighbors.
-  if (graph.neighbors(n).length === 0) {
+  if (graph.neighbors(n)?.length === 0) {
     child.node.include = InclusionType.EXCLUDE;
     renderNode.isolatedInExtract.push(child);
     graph.removeNode(n);
@@ -2005,8 +2005,8 @@ function extractSpecifiedNodes(renderNode: RenderGroupNodeInfo) {
       // function scene group, which contains nodes that do not represent ops in
       // the graph and should thus never have its nodes added to the core graph.
       if (
-        renderNode.coreGraph.outEdges(n).length >
-        renderNode.coreGraph.inEdges(n).length
+        renderNode.coreGraph.outEdges(n)?.length! >
+        renderNode.coreGraph.inEdges(n)?.length!
       ) {
         makeOutExtract(renderNode, n, true);
       } else {
@@ -2066,8 +2066,8 @@ function extractHighInOrOutDegree(renderNode: RenderGroupNodeInfo) {
       },
       0
     );
-    if (inDegree === 0 && graph.predecessors(currentNode).length > 0) {
-      inDegree = graph.predecessors(currentNode).length;
+    if (inDegree === 0 && graph.predecessors(currentNode)?.length! > 0) {
+      inDegree = graph.predecessors(currentNode)?.length!;
     }
     let outDegree = _.reduce(
       graph.successors(currentNode),
@@ -2077,8 +2077,8 @@ function extractHighInOrOutDegree(renderNode: RenderGroupNodeInfo) {
       },
       0
     );
-    if (outDegree === 0 && graph.successors(currentNode).length > 0) {
-      outDegree = graph.successors(currentNode).length;
+    if (outDegree === 0 && graph.successors(currentNode)?.length! > 0) {
+      outDegree = graph.successors(currentNode)?.length;
     }
     // Store the in and out degrees of this node to avoid recomputing.
     nodeToInDegree[currentNode] = inDegree;
@@ -2220,7 +2220,7 @@ function extractHighDegrees(
   let graph = renderNode.coreGraph;
   _.each(graph.nodes(), (n) => {
     let child = graph.node(n) as any;
-    let degree = graph.neighbors(n).length;
+    let degree = graph.neighbors(n)?.length;
     if (child.node.include !== InclusionType.UNSPECIFIED) {
       return;
     }
@@ -2280,8 +2280,8 @@ export function expandUntilNodeIsShown(
   // Graph names do not take into account the output slot. Strip it.
   const lastNodeNameMatch =
     splitTensorName[splitTensorName.length - 1].match(/(.*):\w+/);
-  if (lastNodeNameMatch.length === 2) {
-    splitTensorName[splitTensorName.length - 1] = lastNodeNameMatch[1];
+  if (lastNodeNameMatch?.length === 2) {
+    splitTensorName[splitTensorName.length - 1] = lastNodeNameMatch?.[1];
   }
   let nodeName = splitTensorName[0];
   let renderNode = renderHierarchy.getRenderNodeByName(nodeName);

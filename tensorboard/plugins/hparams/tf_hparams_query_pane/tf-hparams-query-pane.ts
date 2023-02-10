@@ -338,13 +338,13 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
   })
   configuration = {
     schema: {
-      hparamColumns: [],
-      metricColumns: [],
+      hparamColumns: Array<any>(),
+      metricColumns: Array<any>(),
     },
-    columnsVisibility: [],
+    columnsVisibility: Array<any>(),
     visibleSchema: {
-      hparamInfos: [],
-      metricInfos: [],
+      hparamInfos: Array<any>(),
+      metricInfos: Array<any>(),
     },
   };
   // The latest list of session groups received from the server.
@@ -555,7 +555,7 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
   }
   // Updates the _hparams property from the _experiment property.
   _computeHParams() {
-    const result = [];
+    const result: any[] = [];
     const kNumHParamsToDisplayByDefault = 5;
     this._experiment.hparamInfos.forEach((anInfo, index) => {
       const hparam = {
@@ -604,7 +604,7 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
   }
   // Updates the _metrics property from the _experiment property.
   _computeMetrics() {
-    const result = [];
+    const result: any[] = [];
     // By default we display the first kNumMetricsToDisplayByDefault metrics
     // and not the rest.
     const kNumMetricsToDisplayByDefault = 5;
@@ -802,7 +802,7 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
     const allowedStatuses = this._statuses
       .filter((s) => s.allowed)
       .map((s) => s.value);
-    let colParams = [];
+    let colParams: any[] = [];
     // Build the hparams filters in the request.
     this._hparams.forEach((hparam, index) => {
       let colParam = {hparam: hparam.info.name} as any;
@@ -819,13 +819,6 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
         );
       } else if (hparam.filter.regexp) {
         colParam.filterRegexp = hparam.filter.regexp;
-      } else {
-        console.error(
-          'hparam.filter with no domainDiscrete, interval or regexp' +
-            ' properties set: %s',
-          hparam
-        );
-        return null;
       }
       colParams.push(colParam);
     });
@@ -853,8 +846,8 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
         this._sortDirection === 0 ? 'ORDER_ASC' : 'ORDER_DESC';
     }
     // Paging.
-    const pageNum = parseInputAsPositiveInt('_pageNumberInput');
-    const pageSize = parseInputAsPositiveInt('_pageSizeInput');
+    const pageNum = parseInputAsPositiveInt('_pageNumberInput') || 0;
+    const pageSize = parseInputAsPositiveInt('_pageSizeInput') || 0;
     if (!queryValid) {
       return null;
     }

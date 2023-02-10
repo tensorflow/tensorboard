@@ -96,6 +96,13 @@ input {
   transition: transform 0.3s ease;
   width: $_thumb-size;
   will-change: transform;
+
+  &:hover {
+    cursor: grab;
+  }
+  &:active {
+    cursor: grabbing;
+  }
 }
 
 .thumb.active {

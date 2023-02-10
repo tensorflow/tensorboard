@@ -26,7 +26,7 @@ from tensorboard.compat.proto import event_pb2
 from tensorboard.summary.writer.record_writer import RecordWriter
 
 
-class AtomicCounter(object):
+class AtomicCounter:
     def __init__(self, initial_value):
         self._value = initial_value
         self._lock = threading.Lock()
@@ -42,7 +42,7 @@ class AtomicCounter(object):
 _global_uid = AtomicCounter(0)
 
 
-class EventFileWriter(object):
+class EventFileWriter:
     """Writes `Event` protocol buffers to an event file.
 
     The `EventFileWriter` class creates an event file in the specified
@@ -90,7 +90,11 @@ class EventFileWriter(object):
 
         # Initialize an event instance.
         _event = event_pb2.Event(
-            wall_time=time.time(), file_version="brain.Event:2"
+            wall_time=time.time(),
+            file_version="brain.Event:2",
+            source_metadata=event_pb2.SourceMetadata(
+                writer="tensorboard.summary.writer.event_file_writer"
+            ),
         )
         self.add_event(_event)
         self.flush()
@@ -130,7 +134,7 @@ class EventFileWriter(object):
         self._async_writer.close()
 
 
-class _AsyncWriter(object):
+class _AsyncWriter:
     """Writes bytes to a file."""
 
     def __init__(self, record_writer, max_queue_size=20, flush_secs=120):
@@ -161,9 +165,17 @@ class _AsyncWriter(object):
     def write(self, bytestring):
         """Enqueue the given bytes to be written asychronously."""
         with self._lock:
+            # Status of the worker should be checked under the lock to avoid
+            # multiple threads passing the check and then switching just before
+            # blocking on putting to the queue which might result in a deadlock.
+            self._check_worker_status()
             if self._closed:
                 raise IOError("Writer is closed")
             self._byte_queue.put(bytestring)
+            # Check the status again in case the background worker thread has
+            # failed in the meantime to avoid waiting until the next call to
+            # surface the error.
+            self._check_worker_status()
 
     def flush(self):
         """Write all the enqueued bytestring before this flush call to disk.
@@ -171,10 +183,15 @@ class _AsyncWriter(object):
         Block until all the above bytestring are written.
         """
         with self._lock:
+            self._check_worker_status()
             if self._closed:
                 raise IOError("Writer is closed")
             self._byte_queue.join()
             self._writer.flush()
+            # Check the status again in case the background worker thread has
+            # failed in the meantime to avoid waiting until the next call to
+            # surface the error.
+            self._check_worker_status()
 
     def close(self):
         """Closes the underlying writer, flushing any pending writes first."""
@@ -185,6 +202,14 @@ class _AsyncWriter(object):
                     self._worker.stop()
                     self._writer.flush()
                     self._writer.close()
+
+    def _check_worker_status(self):
+        """Makes sure the worker thread is still running and raises exception
+        thrown in the worker thread otherwise.
+        """
+        exception = self._worker.exception
+        if exception is not None:
+            raise exception
 
 
 class _AsyncWriterThread(threading.Thread):
@@ -201,6 +226,7 @@ class _AsyncWriterThread(threading.Thread):
         """
         threading.Thread.__init__(self)
         self.daemon = True
+        self.exception = None
         self._queue = queue
         self._record_writer = record_writer
         self._flush_secs = flush_secs
@@ -214,6 +240,22 @@ class _AsyncWriterThread(threading.Thread):
         self.join()
 
     def run(self):
+        try:
+            self._run()
+        except Exception as ex:
+            self.exception = ex
+            try:
+                # In case there's a thread blocked on putting an item into the
+                # queue or a thread blocked on flushing, pop all items from the
+                # queue to let the foreground thread proceed.
+                while True:
+                    self._queue.get(False)
+                    self._queue.task_done()
+            except queue.Empty:
+                pass
+            raise
+
+    def _run(self):
         # Here wait on the queue until an data appears, or till the next
         # time to flush the writer, whichever is earlier. If we have an
         # data, write it. If not, an empty queue exception will be raised

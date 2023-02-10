@@ -69,6 +69,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=reqwest",
         "manual",
     ],
     version = "0.11.0",
@@ -76,12 +77,11 @@ rust_library(
     deps = [
         "@raze__bytes__1_0_1//:bytes",
         "@raze__http__0_2_1//:http",
-        "@raze__serde__1_0_118//:serde",
+        "@raze__serde__1_0_144//:serde",
         "@raze__serde_json__1_0_61//:serde_json",
         "@raze__serde_urlencoded__0_7_0//:serde_urlencoded",
         "@raze__url__2_2_0//:url",
     ] + selects.with_or({
-        # cfg(not(target_arch = "wasm32"))
         (
             "@rules_rust//rust/platform:x86_64-apple-darwin",
             "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
@@ -107,7 +107,6 @@ rust_library(
         ],
         "//conditions:default": [],
     }) + selects.with_or({
-        # cfg(windows)
         (
             "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
         ): [

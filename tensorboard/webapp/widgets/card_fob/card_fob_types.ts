@@ -25,19 +25,25 @@ export interface TimeSelection {
  * Only used for internal analytics.
  */
 export enum TimeSelectionAffordance {
-  NONE,
+  NONE = 'no affordance',
   // Dragging the extended line above a fob.
-  EXTENDED_LINE,
+  EXTENDED_LINE = 'extendedLine',
   // Dragging the fob.
-  FOB,
+  FOB = 'fob',
   // Clicking the deselect button.
-  FOB_REMOVED,
+  FOB_REMOVED = 'fobRemoved',
   // Typing the step in fob.
-  FOB_TEXT,
+  FOB_TEXT = 'fobText',
   // Typing the step in setting pane.
-  SETTINGS_TEXT,
+  SETTINGS_TEXT = 'settingsText',
   // Dragging the slider in setting pane.
-  SETTINGS_SLIDER,
+  SETTINGS_SLIDER = 'settingsSlider',
+  // User changes from multi selection to single selection.
+  CHANGE_TO_SINGLE = 'changeToSingle',
+  // User clicks on Histogram Chart to change to range selection.
+  HISTOGRAM_CLICK_TO_RANGE = 'histogramClickToRange',
+  // Adding a new fob
+  FOB_ADDED = 'fobAdded',
 }
 
 /**
@@ -45,11 +51,11 @@ export enum TimeSelectionAffordance {
  * Only used for internal analytics.
  */
 export enum TimeSelectionToggleAffordance {
-  NONE,
+  NONE = 'no toggle affordance',
   // Clicking cross sign in fob.
-  FOB_DESELECT,
+  FOB_DESELECT = 'fobDeselect',
   // Clicking check box in settings pane.
-  CHECK_BOX,
+  CHECK_BOX = 'checkBox',
 }
 
 /**
@@ -88,3 +94,13 @@ export interface CardFobGetStepFromPositionHelper {
    */
   getStepLowerThanAxisPosition(position: number): number;
 }
+
+/**
+ * Props of the timeSelectionChanged event.
+ */
+export type TimeSelectionWithAffordance = {
+  timeSelection: TimeSelection;
+  // Affordance for internal analytics purpose. When no affordance is specified or is
+  // undefined we do not want to log an analytics event.
+  affordance?: TimeSelectionAffordance;
+};

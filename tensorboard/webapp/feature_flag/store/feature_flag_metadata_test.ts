@@ -12,11 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {
-  parseBoolean,
-  parseBooleanOrNull,
-  parseStringArray,
-} from './feature_flag_metadata';
+import {parseBoolean, parseStringArray} from './feature_flag_metadata';
 
 describe('feature flag query parameters', () => {
   describe('parseBoolean', () => {
@@ -28,22 +24,6 @@ describe('feature flag query parameters', () => {
       expect(parseBoolean('true')).toBeTrue();
       expect(parseBoolean('foo bar')).toBeTrue();
       expect(parseBoolean('')).toBeTrue();
-    });
-  });
-
-  describe('parseBooleanOrNull', () => {
-    it('"null" should return null', () => {
-      expect(parseBooleanOrNull('null')).toBeNull();
-    });
-
-    it('"false" should evaluate to false', () => {
-      expect(parseBooleanOrNull('false')).toBeFalse();
-    });
-
-    it('values other than "false" should evaluate to true', () => {
-      expect(parseBooleanOrNull('true')).toBeTrue();
-      expect(parseBooleanOrNull('foo bar')).toBeTrue();
-      expect(parseBooleanOrNull('')).toBeTrue();
     });
   });
 

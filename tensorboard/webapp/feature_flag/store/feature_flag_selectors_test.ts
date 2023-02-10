@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {buildFeatureFlag} from '../testing';
+import {FeatureFlagMetadataMap} from './feature_flag_metadata';
 import * as selectors from './feature_flag_selectors';
 import {buildFeatureFlagState, buildState} from './testing';
 
@@ -55,6 +56,29 @@ describe('feature_flag_selectors', () => {
     });
   });
 
+  describe('#getDefaultFeatureFlags', () => {
+    it('returns exact copy of the default feature flags', () => {
+      const initialState = buildFeatureFlagState();
+      const state = buildState(initialState);
+      const actual = selectors.getDefaultFeatureFlags(state);
+
+      expect(actual).toEqual(initialState.defaultFlags);
+    });
+
+    it('is uneffected by feature flag overrides', () => {
+      const initialState = buildFeatureFlagState({
+        flagOverrides: {
+          forceSvg: true,
+          inColab: true,
+        },
+      });
+      const state = buildState(initialState);
+      const actual = selectors.getDefaultFeatureFlags(state);
+
+      expect(actual).toEqual(initialState.defaultFlags);
+    });
+  });
+
   describe('#getOverriddenFeatureFlags', () => {
     it('returns empty object if it is not overridden', () => {
       const state = buildState(buildFeatureFlagState());
@@ -77,6 +101,132 @@ describe('feature_flag_selectors', () => {
       const actual = selectors.getOverriddenFeatureFlags(state);
 
       expect(actual).toEqual({enabledExperimentalPlugins: ['foo']});
+    });
+  });
+
+  describe('#getFeatureFlagsMetadata', () => {
+    it('returns metadata', () => {
+      // Modify the default value for one of the properties. inColab is a good
+      // one because the defaultValue is unlikely to ever change.
+      const metadata = {
+        ...FeatureFlagMetadataMap,
+        inColab: {...FeatureFlagMetadataMap.inColab, defaultValue: true},
+      };
+      const state = buildState(buildFeatureFlagState({metadata}));
+      const actual = selectors.getFeatureFlagsMetadata(state);
+
+      expect(actual).toEqual(metadata);
+    });
+  });
+
+  describe('#getFeatureFlagsToSendToServer', () => {
+    it('returns overriden flags to send to server', () => {
+      // Give explicit defaultValues and modify sendToServer value for some of
+      // the properties.
+      const metadata = {
+        ...FeatureFlagMetadataMap,
+        inColab: {
+          ...FeatureFlagMetadataMap.inColab,
+          defaultValue: true,
+          sendToServerWhenOverridden: true,
+        },
+        scalarsBatchSize: {
+          ...FeatureFlagMetadataMap.scalarsBatchSize,
+          defaultValue: 5,
+          sendToServerWhenOverridden: true,
+        },
+      };
+      const state = buildState(
+        buildFeatureFlagState({
+          metadata,
+          flagOverrides: {inColab: false, scalarsBatchSize: 10},
+        })
+      );
+      const actual = selectors.getFeatureFlagsToSendToServer(state);
+
+      expect(actual).toEqual({inColab: false, scalarsBatchSize: 10});
+    });
+
+    it('returns flags even if overridden is same as default value', () => {
+      // Give explicit defaultValues and modify sendToServer value for some of
+      // the properties.
+      const metadata = {
+        ...FeatureFlagMetadataMap,
+        inColab: {
+          ...FeatureFlagMetadataMap.inColab,
+          defaultValue: true,
+          sendToServerWhenOverridden: true,
+        },
+      };
+      const state = buildState(
+        buildFeatureFlagState({metadata, flagOverrides: {inColab: true}})
+      );
+      const actual = selectors.getFeatureFlagsToSendToServer(state);
+      expect(actual).toEqual({inColab: true});
+    });
+
+    it('ignores overriden flags that should not be sent to server', () => {
+      // Give explicit defaultValues and modify sendToServer value for some of
+      // the properties.
+      const metadata = {
+        ...FeatureFlagMetadataMap,
+        inColab: {
+          ...FeatureFlagMetadataMap.inColab,
+          defaultValue: true,
+          sendToServerWhenOverridden: true,
+        },
+        scalarsBatchSize: {
+          ...FeatureFlagMetadataMap.scalarsBatchSize,
+          defaultValue: 5,
+          sendToServerWhenOverridden: false,
+        },
+        // Omit sendToServer property to show that unset is equivalent to false.
+        forceSvg: {...FeatureFlagMetadataMap.forceSvg, defaultValue: true},
+      };
+      const state = buildState(
+        buildFeatureFlagState({
+          metadata,
+          flagOverrides: {
+            inColab: false,
+            scalarsBatchSize: 10,
+            forceSvg: false,
+          },
+        })
+      );
+      // scalarsBatchSize and forceSvg are not included in the result.
+      const actual = selectors.getFeatureFlagsToSendToServer(state);
+      expect(actual).toEqual({inColab: false});
+    });
+
+    it('ignores sendToServer flags that have not been overridden', () => {
+      // Give explicit defaultValues and modify sendToServer value for some of
+      // the properties.
+      const metadata = {
+        ...FeatureFlagMetadataMap,
+        inColab: {
+          ...FeatureFlagMetadataMap.inColab,
+          defaultValue: true,
+          sendToServerWhenOverridden: true,
+        },
+        scalarsBatchSize: {
+          ...FeatureFlagMetadataMap.scalarsBatchSize,
+          defaultValue: 5,
+          sendToServerWhenOverridden: true,
+        },
+      };
+      const state = buildState(
+        buildFeatureFlagState({
+          metadata,
+          // Note: inColab does not have an overridden value.
+          flagOverrides: {
+            scalarsBatchSize: 10,
+          },
+        })
+      );
+
+      const actual = selectors.getFeatureFlagsToSendToServer(state);
+      // inColab is not included in the result.
+      expect(actual).toEqual({scalarsBatchSize: 10});
     });
   });
 
@@ -191,56 +341,6 @@ describe('feature_flag_selectors', () => {
     });
   });
 
-  describe('#getEnabledColorGroup', () => {
-    it('returns the proper value', () => {
-      let state = buildState(
-        buildFeatureFlagState({
-          defaultFlags: buildFeatureFlag({
-            enabledColorGroup: false,
-          }),
-        })
-      );
-      expect(selectors.getEnabledColorGroup(state)).toEqual(false);
-
-      state = buildState(
-        buildFeatureFlagState({
-          defaultFlags: buildFeatureFlag({
-            enabledColorGroup: false,
-          }),
-          flagOverrides: {
-            enabledColorGroup: true,
-          },
-        })
-      );
-      expect(selectors.getEnabledColorGroup(state)).toEqual(true);
-    });
-  });
-
-  describe('#getEnabledColorGroupByRegex', () => {
-    it('returns the proper value', () => {
-      let state = buildState(
-        buildFeatureFlagState({
-          defaultFlags: buildFeatureFlag({
-            enabledColorGroupByRegex: false,
-          }),
-        })
-      );
-      expect(selectors.getEnabledColorGroupByRegex(state)).toEqual(false);
-
-      state = buildState(
-        buildFeatureFlagState({
-          defaultFlags: buildFeatureFlag({
-            enabledColorGroupByRegex: false,
-          }),
-          flagOverrides: {
-            enabledColorGroupByRegex: true,
-          },
-        })
-      );
-      expect(selectors.getEnabledColorGroupByRegex(state)).toEqual(true);
-    });
-  });
-
   describe('#getIsMetricsImageSupportEnabled', () => {
     it('returns the proper value', () => {
       let state = buildState(
@@ -291,56 +391,6 @@ describe('feature_flag_selectors', () => {
     });
   });
 
-  describe('#getIsTimeSeriesPromotionEnabled', () => {
-    it('returns the proper value', () => {
-      let state = buildState(
-        buildFeatureFlagState({
-          defaultFlags: buildFeatureFlag({
-            enableTimeSeriesPromotion: false,
-          }),
-        })
-      );
-      expect(selectors.getIsTimeSeriesPromotionEnabled(state)).toEqual(false);
-
-      state = buildState(
-        buildFeatureFlagState({
-          defaultFlags: buildFeatureFlag({
-            enableTimeSeriesPromotion: false,
-          }),
-          flagOverrides: {
-            enableTimeSeriesPromotion: true,
-          },
-        })
-      );
-      expect(selectors.getIsTimeSeriesPromotionEnabled(state)).toEqual(true);
-    });
-  });
-
-  describe('#getEnabledCardWidthSetting', () => {
-    it('returns the proper value', () => {
-      let state = buildState(
-        buildFeatureFlagState({
-          defaultFlags: buildFeatureFlag({
-            enabledCardWidthSetting: false,
-          }),
-        })
-      );
-      expect(selectors.getEnabledCardWidthSetting(state)).toEqual(false);
-
-      state = buildState(
-        buildFeatureFlagState({
-          defaultFlags: buildFeatureFlag({
-            enabledCardWidthSetting: false,
-          }),
-          flagOverrides: {
-            enabledCardWidthSetting: true,
-          },
-        })
-      );
-      expect(selectors.getEnabledCardWidthSetting(state)).toEqual(true);
-    });
-  });
-
   describe('#getIsDataTableEnabled', () => {
     it('returns the proper value', () => {
       let state = buildState(
@@ -363,6 +413,35 @@ describe('feature_flag_selectors', () => {
         })
       );
       expect(selectors.getIsDataTableEnabled(state)).toEqual(true);
+    });
+  });
+
+  describe('#getIsLinkedTimeProspectiveFobEnabled', () => {
+    it('returns the proper value', () => {
+      let state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            enabledProspectiveFob: false,
+          }),
+        })
+      );
+      expect(selectors.getIsLinkedTimeProspectiveFobEnabled(state)).toEqual(
+        false
+      );
+
+      state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            enabledProspectiveFob: false,
+          }),
+          flagOverrides: {
+            enabledProspectiveFob: true,
+          },
+        })
+      );
+      expect(selectors.getIsLinkedTimeProspectiveFobEnabled(state)).toEqual(
+        true
+      );
     });
   });
 });

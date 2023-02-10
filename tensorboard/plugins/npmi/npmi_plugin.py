@@ -64,7 +64,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
         Args:
             context: A base_plugin.TBContext instance.
         """
-        super(NpmiPlugin, self).__init__(context)
+        super().__init__(context)
         self._logdir = context.logdir
         self._downsample_to = (context.sampling_hints or {}).get(
             self.plugin_name, _DEFAULT_DOWNSAMPLING

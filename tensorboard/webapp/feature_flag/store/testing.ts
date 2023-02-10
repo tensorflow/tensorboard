@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {buildFeatureFlag} from '../testing';
+import {FeatureFlagMetadataMap} from './feature_flag_metadata';
 import {FeatureFlagState, FEATURE_FLAG_FEATURE_KEY} from './feature_flag_types';
 
 export {buildFeatureFlag} from '../testing';
@@ -24,6 +25,7 @@ export function buildFeatureFlagState(
   return {
     isFeatureFlagsLoaded: true,
     defaultFlags: buildFeatureFlag(),
+    metadata: FeatureFlagMetadataMap,
     ...override,
     flagOverrides: override.flagOverrides ?? {},
   };

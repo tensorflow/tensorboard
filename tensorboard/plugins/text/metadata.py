@@ -53,6 +53,9 @@ def parse_plugin_metadata(content):
     """
     if not isinstance(content, bytes):
         raise TypeError("Content type must be bytes")
+    if content == b"{}":
+        # Old-style JSON format. Equivalent to an all-default proto.
+        return plugin_data_pb2.TextPluginData()
     result = plugin_data_pb2.TextPluginData.FromString(content)
     if result.version == 0:
         return result

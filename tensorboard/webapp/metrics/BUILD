@@ -35,7 +35,6 @@ tf_ts_library(
     ],
     deps = [
         ":internal_types",
-        "//tensorboard/webapp/metrics/store:types",
     ],
 )
 

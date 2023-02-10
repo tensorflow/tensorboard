@@ -43,7 +43,7 @@ from tensorboard.util import tensor_util
 _FILENAME_SAFE_CHARS = frozenset(string.ascii_letters + string.digits + "-_")
 
 # Maximum value of a signed 64-bit integer.
-_MAX_INT64 = 2 ** 63 - 1
+_MAX_INT64 = 2**63 - 1
 
 # Output filename for experiment metadata (creation time, description,
 # etc.) within an experiment directory.
@@ -70,7 +70,7 @@ _FILENAME_BLOBS_SUFFIX = ".bin"
 logger = tb_logging.get_logger()
 
 
-class TensorBoardExporter(object):
+class TensorBoardExporter:
     """Exports all of the user's experiment data from TensorBoard.dev.
 
     Data is exported into a directory, with one file per experiment. Each
@@ -474,7 +474,7 @@ class OutputDirectoryExistsError(ValueError):
 
 class GrpcTimeoutException(Exception):
     def __init__(self, experiment_id):
-        super(GrpcTimeoutException, self).__init__(experiment_id)
+        super().__init__(experiment_id)
         self.experiment_id = experiment_id
 
 

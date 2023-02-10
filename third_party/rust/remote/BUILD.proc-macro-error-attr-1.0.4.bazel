@@ -36,8 +36,6 @@ licenses([
 rust_proc_macro(
     name = "proc_macro_error_attr",
     srcs = glob(["**/*.rs"]),
-    crate_features = [
-    ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2018",
@@ -46,12 +44,13 @@ rust_proc_macro(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=proc-macro-error-attr",
         "manual",
     ],
     version = "1.0.4",
     # buildifier: leave-alone
     deps = [
-        "@raze__proc_macro2__1_0_24//:proc_macro2",
+        "@raze__proc_macro2__1_0_43//:proc_macro2",
         "@raze__quote__1_0_7//:quote",
     ],
 )

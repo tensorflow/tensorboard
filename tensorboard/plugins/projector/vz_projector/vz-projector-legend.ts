@@ -111,7 +111,7 @@ class Legend extends LegacyElementMixin(PolymerElement) {
       this.async(() => this.setupLinearGradient());
     }
   }
-  _getLastThreshold(): number {
+  _getLastThreshold(): number | undefined {
     if (this.renderInfo == null || this.renderInfo.thresholds == null) {
       return;
     }

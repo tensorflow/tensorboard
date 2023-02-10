@@ -224,7 +224,7 @@ class TfPrCurveDashboard extends LegacyElementMixin(PolymerElement) {
   }
 
   _reloadCards() {
-    _.forEach(this.root.querySelectorAll('tf-pr-curve-card'), (card) => {
+    _.forEach(this.root?.querySelectorAll('tf-pr-curve-card')!, (card) => {
       (card as TfPrCurveCard).reload();
     });
   }

@@ -62,6 +62,10 @@ describe('Npmi Embedding Projection Container', () => {
     });
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   it('renders npmi embedding projection component', () => {
     const fixture = TestBed.createComponent(EmbeddingProjectionContainer);
     fixture.detectChanges();

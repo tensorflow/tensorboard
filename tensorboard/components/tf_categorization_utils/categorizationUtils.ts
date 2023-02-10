@@ -103,7 +103,7 @@ export function categorizeByPrefix(
   xs: string[],
   separator = '/'
 ): RawCategory[] {
-  const categories = [];
+  const categories: RawCategory[] = [];
   const categoriesByName = {};
   xs.forEach((x) => {
     const index = x.indexOf(separator);
@@ -129,7 +129,7 @@ export function categorizeByPrefix(
 export function categorize(xs: string[], query = ''): RawCategory[] {
   const byFilter = [categorizeBySearchQuery(xs, query)];
   const byPrefix = categorizeByPrefix(xs);
-  return [].concat(byFilter, byPrefix);
+  return Array<RawCategory>().concat(byFilter, byPrefix);
 }
 
 export function categorizeTags(

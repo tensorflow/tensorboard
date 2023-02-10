@@ -19,6 +19,7 @@ tf_ng_module(
         "range_input_component.ng.html",
     ],
     deps = [
+        ":types",
         "//tensorboard/webapp/angular:expect_angular_cdk_drag_drop",
         "//tensorboard/webapp/angular:expect_angular_material_slider",
         "@npm//@angular/common",
@@ -28,11 +29,19 @@ tf_ng_module(
 )
 
 tf_ts_library(
+    name = "types",
+    srcs = [
+        "types.ts",
+    ],
+)
+
+tf_ts_library(
     name = "range_input_tests",
     testonly = True,
     srcs = ["range_input_test.ts"],
     deps = [
         ":range_input",
+        ":types",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_slider",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",

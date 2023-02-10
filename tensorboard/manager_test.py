@@ -14,7 +14,7 @@
 # ==============================================================================
 """Unit tests for `tensorboard.manager`."""
 
-
+import dataclasses
 import datetime
 import errno
 import json
@@ -63,7 +63,7 @@ class TensorBoardInfoTest(tb_test.TestCase):
 
     def test_serialization_rejects_bad_types(self):
         bad_time = datetime.datetime.fromtimestamp(1549061116)  # not an int
-        info = _make_info()._replace(start_time=bad_time)
+        info = dataclasses.replace(_make_info(), start_time=bad_time)
         with self.assertRaisesRegex(
             ValueError,
             r"expected 'start_time' of type.*int.*, but found: datetime\.",
@@ -71,7 +71,7 @@ class TensorBoardInfoTest(tb_test.TestCase):
             manager._info_to_string(info)
 
     def test_serialization_rejects_wrong_version(self):
-        info = _make_info()._replace(version="reversion")
+        info = dataclasses.replace(_make_info(), version="reversion")
         with self.assertRaisesRegex(
             ValueError,
             "expected 'version' to be '.*', but found: 'reversion'",
@@ -139,11 +139,11 @@ class TensorBoardInfoTest(tb_test.TestCase):
             manager._info_from_string(bad_input)
 
     def test_logdir_data_source_format(self):
-        info = _make_info()._replace(logdir="~/foo", db="")
+        info = dataclasses.replace(_make_info(), logdir="~/foo", db="")
         self.assertEqual(manager.data_source_from_info(info), "logdir ~/foo")
 
     def test_db_data_source_format(self):
-        info = _make_info()._replace(logdir="", db="sqlite:~/bar")
+        info = dataclasses.replace(_make_info(), logdir="", db="sqlite:~/bar")
         self.assertEqual(manager.data_source_from_info(info), "db sqlite:~/bar")
 
 
@@ -237,7 +237,7 @@ class TensorBoardInfoIoTest(tb_test.TestCase):
     """Tests for `write_info_file`, `remove_info_file`, and `get_all`."""
 
     def setUp(self):
-        super(TensorBoardInfoIoTest, self).setUp()
+        super().setUp()
         patcher = mock.patch.dict(os.environ, {"TMPDIR": self.get_temp_dir()})
         patcher.start()
         self.addCleanup(patcher.stop)
@@ -327,7 +327,7 @@ class TensorBoardInfoIoTest(tb_test.TestCase):
         # The particulars of validation are tested more thoroughly in
         # `TensorBoardInfoTest` above.
         bad_time = datetime.datetime.fromtimestamp(1549061116)
-        info = _make_info()._replace(start_time=bad_time)
+        info = dataclasses.replace(_make_info(), start_time=bad_time)
         with self.assertRaisesRegex(
             ValueError,
             r"expected 'start_time' of type.*int.*, but found: datetime\.",
@@ -338,7 +338,7 @@ class TensorBoardInfoIoTest(tb_test.TestCase):
     def test_write_info_file_rejects_wrong_version(self):
         # The particulars of validation are tested more thoroughly in
         # `TensorBoardInfoTest` above.
-        info = _make_info()._replace(version="reversion")
+        info = dataclasses.replace(_make_info(), version="reversion")
         with self.assertRaisesRegex(
             ValueError,
             "expected 'version' to be '.*', but found: 'reversion'",
@@ -360,19 +360,19 @@ class TensorBoardInfoIoTest(tb_test.TestCase):
             with mock.patch("os.getpid", lambda: 76540 + i):
                 manager.remove_info_file()
 
-        self.assertItemsEqual(manager.get_all(), [])
+        self.assertCountEqual(manager.get_all(), [])
         add_info(1)
-        self.assertItemsEqual(manager.get_all(), [_make_info(1)])
+        self.assertCountEqual(manager.get_all(), [_make_info(1)])
         add_info(2)
-        self.assertItemsEqual(manager.get_all(), [_make_info(1), _make_info(2)])
+        self.assertCountEqual(manager.get_all(), [_make_info(1), _make_info(2)])
         remove_info(1)
-        self.assertItemsEqual(manager.get_all(), [_make_info(2)])
+        self.assertCountEqual(manager.get_all(), [_make_info(2)])
         add_info(3)
-        self.assertItemsEqual(manager.get_all(), [_make_info(2), _make_info(3)])
+        self.assertCountEqual(manager.get_all(), [_make_info(2), _make_info(3)])
         remove_info(3)
-        self.assertItemsEqual(manager.get_all(), [_make_info(2)])
+        self.assertCountEqual(manager.get_all(), [_make_info(2)])
         remove_info(2)
-        self.assertItemsEqual(manager.get_all(), [])
+        self.assertCountEqual(manager.get_all(), [])
 
     def test_get_all_ignores_bad_files(self):
         with open(os.path.join(self.info_dir, "pid-1234.info"), "w") as outfile:

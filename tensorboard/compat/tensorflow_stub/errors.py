@@ -39,7 +39,7 @@ class OpError(Exception):
           message: The message string describing the failure.
           error_code: The `error_codes.Code` describing the error.
         """
-        super(OpError, self).__init__()
+        super().__init__()
         self._message = message
         self._node_def = node_def
         self._op = op
@@ -198,7 +198,7 @@ class CancelledError(OpError):
 
     def __init__(self, node_def, op, message):
         """Creates a `CancelledError`."""
-        super(CancelledError, self).__init__(node_def, op, message, CANCELLED)
+        super().__init__(node_def, op, message, CANCELLED)
 
 
 # @tf_export("errors.UnknownError")
@@ -216,7 +216,7 @@ class UnknownError(OpError):
 
     def __init__(self, node_def, op, message, error_code=UNKNOWN):
         """Creates an `UnknownError`."""
-        super(UnknownError, self).__init__(node_def, op, message, error_code)
+        super().__init__(node_def, op, message, error_code)
 
 
 # @tf_export("errors.InvalidArgumentError")
@@ -236,9 +236,7 @@ class InvalidArgumentError(OpError):
 
     def __init__(self, node_def, op, message):
         """Creates an `InvalidArgumentError`."""
-        super(InvalidArgumentError, self).__init__(
-            node_def, op, message, INVALID_ARGUMENT
-        )
+        super().__init__(node_def, op, message, INVALID_ARGUMENT)
 
 
 # @tf_export("errors.DeadlineExceededError")
@@ -252,9 +250,7 @@ class DeadlineExceededError(OpError):
 
     def __init__(self, node_def, op, message):
         """Creates a `DeadlineExceededError`."""
-        super(DeadlineExceededError, self).__init__(
-            node_def, op, message, DEADLINE_EXCEEDED
-        )
+        super().__init__(node_def, op, message, DEADLINE_EXCEEDED)
 
 
 # @tf_export("errors.NotFoundError")
@@ -272,7 +268,7 @@ class NotFoundError(OpError):
 
     def __init__(self, node_def, op, message):
         """Creates a `NotFoundError`."""
-        super(NotFoundError, self).__init__(node_def, op, message, NOT_FOUND)
+        super().__init__(node_def, op, message, NOT_FOUND)
 
 
 # @tf_export("errors.AlreadyExistsError")
@@ -289,9 +285,7 @@ class AlreadyExistsError(OpError):
 
     def __init__(self, node_def, op, message):
         """Creates an `AlreadyExistsError`."""
-        super(AlreadyExistsError, self).__init__(
-            node_def, op, message, ALREADY_EXISTS
-        )
+        super().__init__(node_def, op, message, ALREADY_EXISTS)
 
 
 # @tf_export("errors.PermissionDeniedError")
@@ -308,9 +302,7 @@ class PermissionDeniedError(OpError):
 
     def __init__(self, node_def, op, message):
         """Creates a `PermissionDeniedError`."""
-        super(PermissionDeniedError, self).__init__(
-            node_def, op, message, PERMISSION_DENIED
-        )
+        super().__init__(node_def, op, message, PERMISSION_DENIED)
 
 
 # @tf_export("errors.UnauthenticatedError")
@@ -324,9 +316,7 @@ class UnauthenticatedError(OpError):
 
     def __init__(self, node_def, op, message):
         """Creates an `UnauthenticatedError`."""
-        super(UnauthenticatedError, self).__init__(
-            node_def, op, message, UNAUTHENTICATED
-        )
+        super().__init__(node_def, op, message, UNAUTHENTICATED)
 
 
 # @tf_export("errors.ResourceExhaustedError")
@@ -341,9 +331,7 @@ class ResourceExhaustedError(OpError):
 
     def __init__(self, node_def, op, message):
         """Creates a `ResourceExhaustedError`."""
-        super(ResourceExhaustedError, self).__init__(
-            node_def, op, message, RESOURCE_EXHAUSTED
-        )
+        super().__init__(node_def, op, message, RESOURCE_EXHAUSTED)
 
 
 # @tf_export("errors.FailedPreconditionError")
@@ -360,9 +348,7 @@ class FailedPreconditionError(OpError):
 
     def __init__(self, node_def, op, message):
         """Creates a `FailedPreconditionError`."""
-        super(FailedPreconditionError, self).__init__(
-            node_def, op, message, FAILED_PRECONDITION
-        )
+        super().__init__(node_def, op, message, FAILED_PRECONDITION)
 
 
 # @tf_export("errors.AbortedError")
@@ -380,7 +366,7 @@ class AbortedError(OpError):
 
     def __init__(self, node_def, op, message):
         """Creates an `AbortedError`."""
-        super(AbortedError, self).__init__(node_def, op, message, ABORTED)
+        super().__init__(node_def, op, message, ABORTED)
 
 
 # @tf_export("errors.OutOfRangeError")
@@ -398,9 +384,7 @@ class OutOfRangeError(OpError):
 
     def __init__(self, node_def, op, message):
         """Creates an `OutOfRangeError`."""
-        super(OutOfRangeError, self).__init__(
-            node_def, op, message, OUT_OF_RANGE
-        )
+        super().__init__(node_def, op, message, OUT_OF_RANGE)
 
 
 # @tf_export("errors.UnimplementedError")
@@ -418,9 +402,7 @@ class UnimplementedError(OpError):
 
     def __init__(self, node_def, op, message):
         """Creates an `UnimplementedError`."""
-        super(UnimplementedError, self).__init__(
-            node_def, op, message, UNIMPLEMENTED
-        )
+        super().__init__(node_def, op, message, UNIMPLEMENTED)
 
 
 # @tf_export("errors.InternalError")
@@ -435,7 +417,7 @@ class InternalError(OpError):
 
     def __init__(self, node_def, op, message):
         """Creates an `InternalError`."""
-        super(InternalError, self).__init__(node_def, op, message, INTERNAL)
+        super().__init__(node_def, op, message, INTERNAL)
 
 
 # @tf_export("errors.UnavailableError")
@@ -449,9 +431,7 @@ class UnavailableError(OpError):
 
     def __init__(self, node_def, op, message):
         """Creates an `UnavailableError`."""
-        super(UnavailableError, self).__init__(
-            node_def, op, message, UNAVAILABLE
-        )
+        super().__init__(node_def, op, message, UNAVAILABLE)
 
 
 # @tf_export("errors.DataLossError")
@@ -467,7 +447,7 @@ class DataLossError(OpError):
 
     def __init__(self, node_def, op, message):
         """Creates a `DataLossError`."""
-        super(DataLossError, self).__init__(node_def, op, message, DATA_LOSS)
+        super().__init__(node_def, op, message, DATA_LOSS)
 
 
 _CODE_TO_EXCEPTION_CLASS = {
@@ -518,7 +498,7 @@ def _make_specific_exception(node_def, op, message, error_code):
 # some object creation overhead.
 # TODO(b/77295559): expand use of TF_Status* SWIG typemap and deprecate this.
 # @tf_export("errors.raise_exception_on_not_ok_status")  # pylint: disable=invalid-name
-class raise_exception_on_not_ok_status(object):
+class raise_exception_on_not_ok_status:
     """Context manager to check for C API status."""
 
     def __enter__(self):

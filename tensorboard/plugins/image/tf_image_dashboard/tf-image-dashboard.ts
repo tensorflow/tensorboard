@@ -247,7 +247,7 @@ class TfImageDashboard extends LegacyElementMixin(PolymerElement) {
     });
   }
   _reloadImages() {
-    this.root.querySelectorAll('tf-image-loader').forEach((image) => {
+    this.root?.querySelectorAll('tf-image-loader').forEach((image) => {
       (image as any).reload();
     });
   }

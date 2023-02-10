@@ -203,7 +203,11 @@ describe('metrics main view', () => {
       lastLoadedTimeInMs: null,
     });
     store.overrideSelector(selectors.isMetricsSettingsPaneOpen, false);
-    store.overrideSelector(selectors.getEnabledCardWidthSetting, false);
+    store.overrideSelector(selectors.isMetricsSlideoutMenuOpen, false);
+  });
+
+  afterEach(() => {
+    store?.resetSelectors();
   });
 
   describe('toolbar', () => {
@@ -909,19 +913,7 @@ describe('metrics main view', () => {
         ]);
       });
 
-      it('does not set the min width without feature flag enabled', () => {
-        const fixture = TestBed.createComponent(MainViewContainer);
-        fixture.detectChanges();
-
-        expect(
-          fixture.debugElement.query(By.css('.card-grid')).styles[
-            'grid-template-columns'
-          ]
-        ).toBe('');
-      });
-
       it('sets the min width to be cardMinWidth', () => {
-        store.overrideSelector(selectors.getEnabledCardWidthSetting, true);
         store.overrideSelector(selectors.getMetricsCardMinWidth, 500);
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
@@ -930,12 +922,10 @@ describe('metrics main view', () => {
           fixture.debugElement.query(By.css('.card-grid')).styles[
             'grid-template-columns'
           ]
-        ).toBe('repeat(auto-fill, minmax(500px, auto))');
+        ).toBe('repeat(auto-fill, minmax(500px, 1fr))');
       });
 
       it('does not set the max width with invalid width value', () => {
-        store.overrideSelector(selectors.getEnabledCardWidthSetting, true);
-
         store.overrideSelector(selectors.getMetricsCardMinWidth, null);
         let fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
@@ -977,7 +967,6 @@ describe('metrics main view', () => {
       });
 
       it('resets the card min width', () => {
-        store.overrideSelector(selectors.getEnabledCardWidthSetting, true);
         const getMetricsCardMinWidthSubject = new ReplaySubject<number | null>(
           1
         );
@@ -992,7 +981,7 @@ describe('metrics main view', () => {
           fixture.debugElement.query(By.css('.card-grid')).styles[
             'grid-template-columns'
           ]
-        ).toBe('repeat(auto-fill, minmax(500px, auto))');
+        ).toBe('repeat(auto-fill, minmax(500px, 1fr))');
 
         getMetricsCardMinWidthSubject.next(null);
         fixture.detectChanges();
@@ -1731,6 +1720,51 @@ describe('metrics main view', () => {
         const indicator = fixture.debugElement.query(byCss.INDICATOR);
         expect(indicator).toBeTruthy();
       });
+    });
+  });
+
+  describe('slideout menu', () => {
+    it('does not render slideout menu when sidepanel when closed', () => {
+      store.overrideSelector(selectors.isMetricsSettingsPaneOpen, false);
+      const fixture = TestBed.createComponent(MainViewContainer);
+      fixture.detectChanges();
+
+      const slideoutMenu = fixture.debugElement.query(
+        By.css('.slide-out-menu')
+      );
+      expect(slideoutMenu).toBeFalsy();
+    });
+
+    it('renders non-expanded slideout menu when closed', () => {
+      store.overrideSelector(selectors.isMetricsSettingsPaneOpen, true);
+      store.overrideSelector(selectors.isMetricsSlideoutMenuOpen, false);
+      const fixture = TestBed.createComponent(MainViewContainer);
+      fixture.detectChanges();
+
+      const slideoutMenu = fixture.debugElement.query(
+        By.css('.slide-out-menu')
+      );
+      expect(slideoutMenu).toBeTruthy();
+
+      expect(
+        slideoutMenu.nativeElement.classList.contains('slide-out-menu-expanded')
+      ).toBe(false);
+    });
+
+    it('renders expanded slideout menu when open', () => {
+      store.overrideSelector(selectors.isMetricsSettingsPaneOpen, true);
+      store.overrideSelector(selectors.isMetricsSlideoutMenuOpen, true);
+      const fixture = TestBed.createComponent(MainViewContainer);
+      fixture.detectChanges();
+
+      const slideoutMenu = fixture.debugElement.query(
+        By.css('.slide-out-menu')
+      );
+      expect(slideoutMenu).toBeTruthy();
+
+      expect(
+        slideoutMenu.nativeElement.classList.contains('slide-out-menu-expanded')
+      ).toBe(true);
     });
   });
 

@@ -146,7 +146,7 @@ export class Minimap {
   getImageBlob(): Promise<Blob> {
     return new Promise<Blob>((resolve) => {
       this.downloadCanvas.toBlob((blob) => {
-        resolve(blob);
+        resolve(blob!);
       }, 'image/png');
     });
   }
@@ -155,7 +155,7 @@ export class Minimap {
    * was updated (e.g. when a node was expanded).
    */
   update(): void {
-    let sceneSize = null;
+    let sceneSize: DOMRect | null = null;
     try {
       // Get the size of the entire scene.
       sceneSize = this.zoomG.getBBox();
@@ -263,13 +263,13 @@ export class Minimap {
     image.onload = () => {
       // Draw the svg content onto the buffer canvas.
       let context = this.canvasBuffer.getContext('2d');
-      context.clearRect(
+      context?.clearRect(
         0,
         0,
         this.canvasBuffer.width,
         this.canvasBuffer.height
       );
-      context.drawImage(
+      context?.drawImage(
         image,
         0,
         0,
@@ -284,13 +284,13 @@ export class Minimap {
         [this.canvas, this.canvasBuffer] = [this.canvasBuffer, this.canvas];
       });
       let downloadContext = this.downloadCanvas.getContext('2d');
-      downloadContext.clearRect(
+      downloadContext?.clearRect(
         0,
         0,
         this.downloadCanvas.width,
         this.downloadCanvas.height
       );
-      downloadContext.drawImage(
+      downloadContext?.drawImage(
         image,
         0,
         0,

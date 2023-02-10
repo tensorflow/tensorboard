@@ -53,7 +53,7 @@ def write_graph():
     def f():
         x = tf.constant(2)
         y = tf.constant(3)
-        return x ** y
+        return x**y
 
     with tf.summary.create_file_writer(logdir).as_default():
         if hasattr(tf.summary, "graph"):

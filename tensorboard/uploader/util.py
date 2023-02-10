@@ -22,7 +22,7 @@ import os.path
 import time
 
 
-class RateLimiter(object):
+class RateLimiter:
     """Helper class for rate-limiting using a fixed minimum interval."""
 
     def __init__(self, interval_secs):
@@ -113,7 +113,7 @@ def set_timestamp(pb, seconds_since_epoch):
       seconds_since_epoch: A `float`, as returned by `time.time`.
     """
     pb.seconds = int(seconds_since_epoch)
-    pb.nanos = int(round((seconds_since_epoch % 1) * 10 ** 9))
+    pb.nanos = int(round((seconds_since_epoch % 1) * 10**9))
 
 
 def format_time(timestamp_pb, now=None):
@@ -174,7 +174,9 @@ def format_time_absolute(timestamp_pb):
     Returns:
       An RFC 3339 date-time string.
     """
-    dt = datetime.datetime.utcfromtimestamp(timestamp_pb.seconds)
+    dt = datetime.datetime.fromtimestamp(
+        timestamp_pb.seconds, tz=datetime.timezone.utc
+    )
     return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 

@@ -55,7 +55,7 @@ function requireAsPromise(paths: string[]): Promise<void> {
  * global path dynamically using require.js. If `window.monaco` is already
  * defined, this function is a no-op.
  */
-export async function loadMonaco(): Promise<void> {
+async function loadMonaco(): Promise<void> {
   const window = utils.getWindow();
   if (window.monaco !== undefined) {
     return;
@@ -78,6 +78,10 @@ export async function loadMonaco(): Promise<void> {
     );
   }
 }
+
+export const MonacoShim = {
+  loadMonaco,
+};
 
 export const TEST_ONLY = {
   utils,

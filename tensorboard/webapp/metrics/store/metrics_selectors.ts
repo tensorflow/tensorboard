@@ -29,7 +29,8 @@ import {
   TimeSelection,
   TooltipSort,
   XAxisType,
-} from '../internal_types';
+} from '../types';
+import {ColumnHeader} from '../views/card_renderer/scalar_card_types';
 import * as storeUtils from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
@@ -368,10 +369,10 @@ export const getMetricsStepSelectorEnabled = createSelector(
   }
 );
 
-export const getMetricsLinkedTimeRangeEnabled = createSelector(
+export const getMetricsRangeSelectionEnabled = createSelector(
   selectMetricsState,
   (state: MetricsState): boolean => {
-    return state.linkedTimeRangeEnabled;
+    return state.rangeSelectionEnabled;
   }
 );
 
@@ -383,6 +384,20 @@ export const getMetricsStepMinMax = createSelector(
       min: min === Infinity ? 0 : min,
       max: max === -Infinity ? 1000 : max,
     };
+  }
+);
+
+export const getSingleSelectionHeaders = createSelector(
+  selectMetricsState,
+  (state: MetricsState): ColumnHeader[] => {
+    return state.singleSelectionHeaders;
+  }
+);
+
+export const getRangeSelectionHeaders = createSelector(
+  selectMetricsState,
+  (state: MetricsState): ColumnHeader[] => {
+    return state.rangeSelectionHeaders;
   }
 );
 
@@ -429,10 +444,7 @@ export const getMetricsLinkedTimeSelection = createSelector(
     linkedTimeSelection: TimeSelection
   ): TimeSelection | null => {
     if (!state.linkedTimeEnabled) return null;
-    if (state.linkedTimeRangeEnabled) {
-      return linkedTimeSelection;
-    }
-    return {...linkedTimeSelection, end: null};
+    return linkedTimeSelection;
   }
 );
 
@@ -443,14 +455,12 @@ export const getMetricsFilteredPluginTypes = createSelector(
   }
 );
 
-export const getPromoteTimeSeries = createSelector(
-  selectMetricsState,
-  (state: MetricsState): boolean => {
-    return state.promoteTimeSeries;
-  }
-);
-
 export const isMetricsSettingsPaneOpen = createSelector(
   selectMetricsState,
   (state): boolean => state.isSettingsPaneOpen
+);
+
+export const isMetricsSlideoutMenuOpen = createSelector(
+  selectMetricsState,
+  (state): boolean => state.isSlideoutMenuOpen
 );

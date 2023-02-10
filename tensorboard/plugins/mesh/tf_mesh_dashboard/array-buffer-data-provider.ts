@@ -105,9 +105,9 @@ export class ArrayBufferDataProvider {
     );
     const reshapeTo1xNx3 = function (data) {
       const channelsCount = 3;
-      let items = [];
+      let items: any[] = [];
       for (let i = 0; i < data.length / channelsCount; i++) {
-        let dataEntry = [];
+        let dataEntry: any[] = [];
         for (let j = 0; j < channelsCount; j++) {
           dataEntry.push(data[i * channelsCount + j]);
         }
@@ -160,7 +160,7 @@ export class ArrayBufferDataProvider {
    * @private
    */
   fetchData(stepDatum, run, tag, sample) {
-    let promises = [];
+    let promises: any[] = [];
     // Map to populate with mesh data, i.e. vertices, faces, etc.
     let meshData = new Map();
     Object.keys(ContentType).forEach((contentType) => {
@@ -217,7 +217,7 @@ export class ArrayBufferDataProvider {
    * @return {!Array} list of step datums.
    * @private
    */
-  _processMetadata(data: any[] | undefined): unknown[] {
+  _processMetadata(data: any[] | undefined): unknown[] | undefined {
     if (!data) return;
     const stepToData = new Map<any, any>();
     for (let i = 0; i < data.length; i++) {
@@ -227,7 +227,7 @@ export class ArrayBufferDataProvider {
       }
       stepToData.get(dataEntry.step).push(dataEntry);
     }
-    let datums = [];
+    let datums: any[] = [];
     stepToData.forEach((data) => {
       let datum = this._createStepDatum(data[0]);
       datums.push(datum);

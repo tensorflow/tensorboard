@@ -55,7 +55,7 @@ _MAX_VARINT64_LENGTH_BYTES = 10
 logger = tb_logging.get_logger()
 
 
-class TensorBoardUploader(object):
+class TensorBoardUploader:
     """Uploads a TensorBoard logdir to TensorBoard.dev."""
 
     def __init__(
@@ -320,7 +320,7 @@ class _OutOfSpaceError(Exception):
     pass
 
 
-class _BatchedRequestSender(object):
+class _BatchedRequestSender:
     """Helper class for building requests that fit under a size limit.
 
     This class maintains stateful request builders for each of the possible
@@ -468,7 +468,7 @@ class _BatchedRequestSender(object):
                     yield (run_name, event, value)
 
 
-class _ScalarBatchedRequestSender(object):
+class _ScalarBatchedRequestSender:
     """Helper class for building requests that fit under a size limit.
 
     This class accumulates a current request.  `add_event(...)` may or may not
@@ -627,7 +627,7 @@ class _ScalarBatchedRequestSender(object):
             raise
 
 
-class _TensorBatchedRequestSender(object):
+class _TensorBatchedRequestSender:
     """Helper class for building WriteTensor() requests that fit under a size limit.
 
     This class accumulates a current request.  `add_event(...)` may or may not
@@ -829,7 +829,7 @@ class _TensorBatchedRequestSender(object):
             )
 
 
-class _ByteBudgetManager(object):
+class _ByteBudgetManager:
     """Helper class for managing the request byte budget for certain RPCs.
 
     This should be used for RPCs that organize data by Runs, Tags, and Points,
@@ -942,7 +942,7 @@ class _ByteBudgetManager(object):
         self._byte_budget -= cost
 
 
-class _BlobRequestSender(object):
+class _BlobRequestSender:
     """Uploader for blob-type event data.
 
     Unlike the other types, this class does not accumulate events in batches;

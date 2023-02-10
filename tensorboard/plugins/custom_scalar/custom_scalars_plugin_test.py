@@ -46,7 +46,7 @@ tf.compat.v1.disable_v2_behavior()
 
 class CustomScalarsPluginTest(tf.test.TestCase):
     def __init__(self, *args, **kwargs):
-        super(CustomScalarsPluginTest, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.logdir = os.path.join(self.get_temp_dir(), "logdir")
         os.makedirs(self.logdir)
 
@@ -220,7 +220,7 @@ class CustomScalarsPluginTest(tf.test.TestCase):
         ctx = context.RequestContext()
         body = self.plugin.scalars_impl(ctx, "bar", "increments", "exp_id")
         self.assertTrue(body["regex_valid"])
-        self.assertItemsEqual(
+        self.assertCountEqual(
             ["increments/scalar_summary"], list(body["tag_to_events"].keys())
         )
         data = body["tag_to_events"]["increments/scalar_summary"]

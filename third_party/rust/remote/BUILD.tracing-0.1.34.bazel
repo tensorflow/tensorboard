@@ -58,6 +58,7 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
+        "crate-name=tracing",
         "manual",
     ],
     version = "0.1.34",

@@ -19,6 +19,5 @@ mod auth;
 mod client;
 mod logdir;
 
-pub use auth::{Credentials, CredentialsError};
 pub use client::{Client, ClientError};
 pub use logdir::Logdir;

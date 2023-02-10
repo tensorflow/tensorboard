@@ -15,7 +15,7 @@
 
 [package]
 name = "rustboard"
-version = "0.7.0-alpha.0"
+version = "0.8.0-alpha.0"
 authors = ["The TensorFlow Authors <tensorboard-gardener@google.com>"]
 # Keep in sync with `edition` in rustfmt.toml.
 edition = "2018"
@@ -34,6 +34,7 @@ crc = "1.8.1"
 crossbeam = "0.8.0"
 env_logger = "0.8.2"
 futures-core = "0.3.12"
+gcp_auth = "0.7.4"
 log = "0.4.11"
 prost = "0.9.0"
 prost-types = "0.9.0"
@@ -44,7 +45,7 @@ reqwest = { version = "0.11.0", features = ["blocking", "json", "rustls-tls"], d
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.59"
 thiserror = "1.0.21"
-tokio = { version = "1.8.4", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.8.4", features = ["macros", "rt-multi-thread", "parking_lot"] }
 tokio-stream = { version = "0.1.2", features = ["net"] }
 tonic = "0.6.2"
 tonic-reflection = "0.3.0"
@@ -103,7 +104,7 @@ gen_buildrs = true
 [package.metadata.raze.crates.proc-macro-nested.'0.1.7']
 gen_buildrs = true
 
-[package.metadata.raze.crates.proc-macro2.'1.0.24']
+[package.metadata.raze.crates.proc-macro2.'1.0.43']
 additional_flags = [
     "--cfg=use_proc_macro",
     "--cfg=wrap_proc_macro",
@@ -127,5 +128,8 @@ PROTOC = "$(execpath @com_google_protobuf//:protoc)"
 RUSTFMT = "/bin/true"
 
 [package.metadata.raze.crates.webpki.'0.21.4']
+gen_buildrs = true
+data_attr = "glob([\"src/**/*.der\"])"
+[package.metadata.raze.crates.webpki.'0.22.0']
 gen_buildrs = true
 data_attr = "glob([\"src/**/*.der\"])"

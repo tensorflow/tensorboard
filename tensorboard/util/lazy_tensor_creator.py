@@ -24,7 +24,7 @@ from tensorboard.compat import tf2 as tf
 _CALL_IN_PROGRESS_SENTINEL = object()
 
 
-class LazyTensorCreator(object):
+class LazyTensorCreator:
     """Lazy auto-converting wrapper for a callable that returns a `tf.Tensor`.
 
     This class wraps an arbitrary callable that returns a `Tensor` so that it

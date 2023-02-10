@@ -59,17 +59,17 @@ _RUN_WITHOUT_GRAPH_WITHOUT_METADATA = (
 )
 
 
-class GraphsPluginBaseTest(object):
+class GraphsPluginBaseTest:
 
     _METADATA_TAG = "secret-stats"
     _MESSAGE_PREFIX_LENGTH_LOWER_BOUND = 1024
 
     def __init__(self, *args, **kwargs):
-        super(GraphsPluginBaseTest, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.plugin = None
 
     def setUp(self):
-        super(GraphsPluginBaseTest, self).setUp()
+        super().setUp()
 
     def generate_run(
         self, logdir, run_name, include_graph, include_run_metadata
@@ -112,7 +112,7 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
         tf.compat.v1.reset_default_graph()
         k1 = tf.constant(math.pi, name="k1")
         k2 = tf.constant(math.e, name="k2")
-        result = (k1 ** k2) - k1
+        result = (k1**k2) - k1
         expected = tf.constant(20.0, name="expected")
         error = tf.abs(result - expected, name="error")
         message_prefix_value = "error " * 1000

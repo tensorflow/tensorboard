@@ -21,9 +21,6 @@ limitations under the License.
 
 // Angular Material theme definition.
 
-// Include non-theme styles for core.
-@include mat.core();
-
 // Value for `app-bar` property in $tb-background. Can specify an override in
 // _variable.scss to specifically customize this value.
 $tb-app-bar-color: mat.get-color-from-palette($tb-primary, default) !default;
@@ -38,7 +35,17 @@ $tb-dark-app-bar-color: mat.get-color-from-palette(
   default
 ) !default;
 
-$tb-theme: mat.define-light-theme($tb-primary, $tb-accent, $tb-warn);
+$tb-theme: mat.define-light-theme(
+  (
+    color: (
+      primary: $tb-primary,
+      accent: $tb-accent,
+      warn: $tb-warn,
+    ),
+    typography: null,
+    density: 0,
+  )
+);
 
 // Overriding mat-light-theme-foreground variables.
 $tb-foreground: map_merge(
@@ -70,13 +77,33 @@ $tb-theme: map_merge(
   )
 );
 
+$color: map_merge(
+  map_get($tb-theme, 'color'),
+  (
+    foreground: $tb-foreground,
+    background: $tb-background,
+  )
+);
+$tb-theme: map_merge(
+  $tb-theme,
+  (
+    color: $color,
+  )
+);
+
 $tb-dark-theme: mat.define-dark-theme(
-  $tb-dark-primary,
-  $tb-dark-accent,
-  $tb-dark-warn
+  (
+    color: (
+      primary: $tb-dark-primary,
+      accent: $tb-dark-accent,
+      warn: $tb-dark-warn,
+    ),
+    typography: null,
+    density: 0,
+  )
 );
 $tb-dark-foreground: map_merge(
-  map-get($tb-dark-theme, foreground),
+  map-get(mat.get-color-config($tb-dark-theme), foreground),
   (
     border: #555,
     disabled-text: mat.get-color-from-palette(mat.$gray-palette, 700),
@@ -85,7 +112,7 @@ $tb-dark-foreground: map_merge(
   )
 );
 $tb-dark-background: map_merge(
-  map-get($tb-dark-theme, background),
+  map-get(mat.get-color-config($tb-dark-theme), background),
   (
     app-bar: $tb-dark-app-bar-color,
   )
@@ -95,6 +122,20 @@ $tb-dark-theme: map_merge(
   (
     background: $tb-dark-background,
     foreground: $tb-dark-foreground,
+  )
+);
+
+$color-dark: map_merge(
+  map_get($tb-dark-theme, 'color'),
+  (
+    foreground: $tb-dark-foreground,
+    background: $tb-dark-background,
+  )
+);
+$tb-dark-theme: map_merge(
+  $tb-dark-theme,
+  (
+    color: $color-dark,
   )
 );
 
@@ -221,6 +262,8 @@ $tb-dark-theme: map_merge(
 
 // Apply themed style for the global stylesheet (styles.scss).
 @mixin tb-global-themed-styles() {
+  @include mat.core();
+  @include mat.all-component-typographies();
   // Include all theme-styles for the components based on the current theme.
   @include mat.all-component-themes($tb-theme);
 

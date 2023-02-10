@@ -26,6 +26,7 @@ import {AxisDirection} from './card_fob_types';
       #Fob
       [axisDirection]="axisDirection"
       [step]="step"
+      [allowRemoval]="allowRemoval"
       (stepChanged)="stepChanged($event)"
     ></card-fob>
   `,
@@ -36,6 +37,7 @@ class TestableFobComponent {
 
   @Input() step!: number;
   @Input() axisDirection!: AxisDirection;
+  @Input() allowRemoval: boolean = true;
 
   @Input() stepChanged!: (newStep: number) => void;
 }
@@ -52,6 +54,7 @@ describe('card fob', () => {
 
   function createFobComponent(input: {
     step?: number;
+    allowRemoval?: boolean;
     axisDirection?: AxisDirection;
   }): ComponentFixture<TestableFobComponent> {
     const fixture = TestBed.createComponent(TestableFobComponent);
@@ -59,6 +62,9 @@ describe('card fob', () => {
     fixture.componentInstance.axisDirection = input.axisDirection
       ? input.axisDirection
       : AxisDirection.HORIZONTAL;
+    if (input.allowRemoval !== undefined) {
+      fixture.componentInstance.allowRemoval = input.allowRemoval;
+    }
 
     stepChangedSpy = jasmine.createSpy();
     fixture.componentInstance.stepChanged = stepChangedSpy;
@@ -72,6 +78,14 @@ describe('card fob', () => {
 
     const stepSpan = fixture.debugElement.query(By.css('span'));
     expect(stepSpan.nativeElement.innerText).toBe('3');
+  });
+
+  it('does not render deselect button when allowRemoval is false', () => {
+    const fixture = createFobComponent({
+      allowRemoval: false,
+    });
+    fixture.detectChanges();
+    expect(fixture.debugElement.query(By.css('button'))).toBeNull();
   });
 
   it('emits stepChange when pressing enter key', () => {

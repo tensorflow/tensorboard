@@ -18,9 +18,12 @@ import {Observable} from 'rxjs';
 import {filter, map, take, withLatestFrom} from 'rxjs/operators';
 import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';
-import {TimeSelectionToggleAffordance} from '../../../widgets/card_fob/card_fob_types';
 import {
-  linkedTimeSelectionChanged,
+  TimeSelectionAffordance,
+  TimeSelectionToggleAffordance,
+} from '../../../widgets/card_fob/card_fob_types';
+import {RangeInputSource} from '../../../widgets/range_input/types';
+import {
   linkedTimeToggled,
   metricsChangeCardWidth,
   metricsChangeHistogramMode,
@@ -33,16 +36,24 @@ import {
   metricsResetImageBrightness,
   metricsResetImageContrast,
   metricsScalarPartitionNonMonotonicXToggled,
+  metricsSlideoutMenuToggled,
   metricsToggleIgnoreOutliers,
   metricsToggleImageShowActualSize,
+  rangeSelectionToggled,
   stepSelectorToggled,
+  timeSelectionChanged,
 } from '../../actions';
-import {
-  HistogramMode,
-  TimeSelection,
-  TooltipSort,
-  XAxisType,
-} from '../../types';
+import {HistogramMode, TooltipSort, XAxisType} from '../../types';
+import {LinkedTimeSelectionChanged} from './types';
+
+const RANGE_INPUT_SOURCE_TO_AFFORDANCE: Record<
+  RangeInputSource,
+  TimeSelectionAffordance
+> = Object.freeze({
+  [RangeInputSource.SLIDER]: TimeSelectionAffordance.SETTINGS_SLIDER,
+  [RangeInputSource.TEXT]: TimeSelectionAffordance.SETTINGS_TEXT,
+  [RangeInputSource.TEXT_DELETED]: TimeSelectionAffordance.CHANGE_TO_SINGLE,
+});
 
 @Component({
   selector: 'metrics-dashboard-settings',
@@ -55,7 +66,6 @@ import {
       (ignoreOutliersChanged)="onIgnoreOutliersChanged()"
       [xAxisType]="xAxisType$ | async"
       (xAxisTypeChanged)="onXAxisTypeChanged($event)"
-      [isCardWidthSettingEnabled]="isCardWidthSettingEnabled$ | async"
       [cardMinWidth]="cardMinWidth$ | async"
       (cardWidthChanged)="onCardWidthChanged($event)"
       (cardWidthReset)="onCardWidthReset()"
@@ -74,16 +84,26 @@ import {
       [imageShowActualSize]="imageShowActualSize$ | async"
       (imageShowActualSizeChanged)="onImageShowActualSizeChanged()"
       [isLinkedTimeFeatureEnabled]="isLinkedTimeFeatureEnabled$ | async"
+      [isRangeSelectionAllowed]="isRangeSelectionAllowed$ | async"
       [isScalarStepSelectorFeatureEnabled]="
         isScalarStepSelectorFeatureEnabled$ | async
       "
       [isScalarStepSelectorEnabled]="isScalarStepSelectorEnabled$ | async"
+      [isScalarStepSelectorRangeEnabled]="
+        isScalarStepSelectorRangeEnabled$ | async
+      "
       [isLinkedTimeEnabled]="isLinkedTimeEnabled$ | async"
+      [isScalarColumnCustomizationEnabled]="
+        isScalarColumnCustomizationEnabled$ | async
+      "
       [linkedTimeSelection]="linkedTimeSelection$ | async"
       [stepMinMax]="stepMinMax$ | async"
+      [isSlideOutMenuOpen]="isSlideOutMenuOpen$ | async"
       (linkedTimeToggled)="onLinkedTimeToggled()"
       (linkedTimeSelectionChanged)="onLinkedTimeSelectionChanged($event)"
       (stepSelectorToggled)="onStepSelectorToggled()"
+      (rangeSelectionToggled)="onRangeSelectionToggled()"
+      (onSlideOutToggled)="onSlideOutToggled()"
     >
     </metrics-dashboard-settings-component>
   `,
@@ -92,23 +112,31 @@ import {
 export class SettingsViewContainer {
   constructor(private readonly store: Store<State>) {}
 
-  readonly isCardWidthSettingEnabled$: Observable<boolean> = this.store.select(
-    selectors.getEnabledCardWidthSetting
-  );
   readonly isLinkedTimeFeatureEnabled$: Observable<boolean> = this.store.select(
     selectors.getIsLinkedTimeEnabled
+  );
+  readonly isRangeSelectionAllowed$: Observable<boolean> = this.store.select(
+    selectors.getAllowRangeSelection
   );
   readonly isScalarStepSelectorFeatureEnabled$: Observable<boolean> =
     this.store.select(selectors.getIsDataTableEnabled);
   readonly isScalarStepSelectorEnabled$: Observable<boolean> =
     this.store.select(selectors.getMetricsStepSelectorEnabled);
+  readonly isScalarStepSelectorRangeEnabled$: Observable<boolean> =
+    this.store.select(selectors.getMetricsRangeSelectionEnabled);
   readonly isLinkedTimeEnabled$: Observable<boolean> = this.store.select(
     selectors.getMetricsLinkedTimeEnabled
+  );
+  readonly isScalarColumnCustomizationEnabled$ = this.store.select(
+    selectors.getIsScalarColumnCustomizationEnabled
   );
   readonly linkedTimeSelection$ = this.store.select(
     selectors.getMetricsLinkedTimeSelectionSetting
   );
   readonly stepMinMax$ = this.store.select(selectors.getMetricsStepMinMax);
+  readonly isSlideOutMenuOpen$ = this.store.select(
+    selectors.isMetricsSlideoutMenuOpen
+  );
 
   readonly isImageSupportEnabled$ = this.store
     .select(selectors.getIsFeatureFlagsLoaded)
@@ -212,14 +240,27 @@ export class SettingsViewContainer {
     );
   }
 
-  onLinkedTimeSelectionChanged(newValue: TimeSelection) {
+  onRangeSelectionToggled() {
     this.store.dispatch(
-      linkedTimeSelectionChanged({
-        timeSelection: {
-          startStep: newValue.start.step,
-          endStep: newValue.end?.step,
-        },
+      rangeSelectionToggled({
+        affordance: TimeSelectionToggleAffordance.CHECK_BOX,
       })
     );
+  }
+
+  onLinkedTimeSelectionChanged({
+    timeSelection,
+    source,
+  }: LinkedTimeSelectionChanged) {
+    this.store.dispatch(
+      timeSelectionChanged({
+        timeSelection,
+        affordance: RANGE_INPUT_SOURCE_TO_AFFORDANCE[source],
+      })
+    );
+  }
+
+  onSlideOutToggled() {
+    this.store.dispatch(metricsSlideoutMenuToggled());
   }
 }

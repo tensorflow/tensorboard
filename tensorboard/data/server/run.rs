@@ -330,7 +330,7 @@ impl RunLoaderData {
         let mut run = run_data.write().expect("acquiring tags lock");
         run.start_time = self.start_time;
         for (tag, ts) in &mut self.time_series {
-            ts.commit(tag, &mut *run);
+            ts.commit(tag, &mut run);
         }
     }
 
@@ -507,7 +507,7 @@ mod test {
         assert_eq!(loader.data.start_time, Some(WallTime::new(1234.0).unwrap()));
 
         let runs = commit.runs.read().expect("read-locking runs map");
-        let run_data: &commit::RunData = &*runs
+        let run_data: &commit::RunData = &runs
             .get(&run)
             .expect("looking up data for run")
             .read()
@@ -685,7 +685,7 @@ mod test {
             &commit.runs.read().unwrap()[&run],
         );
         let runs = commit.runs.read().expect("read-locking runs map");
-        let run_data: &commit::RunData = &*runs
+        let run_data: &commit::RunData = &runs
             .get(&run)
             .expect("looking up data for run")
             .read()
@@ -791,7 +791,7 @@ mod test {
         );
 
         let runs = commit.runs.read().expect("read-locking runs map");
-        let run_data: &commit::RunData = &*runs
+        let run_data: &commit::RunData = &runs
             .get(&run)
             .expect("looking up data for run")
             .read()
