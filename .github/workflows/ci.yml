@@ -115,13 +115,14 @@ jobs:
           bazel test //tensorboard/summary/writer:event_file_writer_s3_test &&
           bazel test //tensorboard/compat/tensorflow_stub:gfile_fsspec_test &&
           bazel test //tensorboard/summary/writer:event_file_writer_fsspec_test
-      - name: 'Bazel: build Pip package (with TensorFlow only)'
-        if: matrix.tf_version_id == 'tf'
+      - name: 'Bazel: build Pip package (master branch TF build only)'
+        # Only bother creating the pip package if it will be updated in the next step.
+        if: matrix.tf_version_id == 'tf' && github.repository == 'tensorflow/tensorboard' && github.ref == 'refs/heads/master'
         run: |
           ./tensorboard/tools/update_version.sh
           rm -rf /tmp/tb_nightly_pip_package && mkdir /tmp/tb_nightly_pip_package
           bazel run //tensorboard/pip_package:build_pip_package -- /tmp/tb_nightly_pip_package
-      - name: 'Upload Pip package as an artifact (with TensorFlow only)'
+      - name: 'Upload Pip package as an artifact (master branch TF build only)
         # Prevent uploads when running on forks or non-master branch.
         if: matrix.tf_version_id == 'tf' && github.repository == 'tensorflow/tensorboard' && github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # v3.1.1
