@@ -116,7 +116,8 @@ jobs:
           bazel test //tensorboard/compat/tensorflow_stub:gfile_fsspec_test &&
           bazel test //tensorboard/summary/writer:event_file_writer_fsspec_test
       - name: 'Bazel: build Pip package (master branch TF build only)'
-        # Only bother creating the pip package if it will be updated in the next step.
+        # This pip package is only needed if we will upload it, so run this step
+        # only under the same conditions as the next step (see comment below).
         if: matrix.tf_version_id == 'tf' && github.repository == 'tensorflow/tensorboard' && github.ref == 'refs/heads/master'
         run: |
           ./tensorboard/tools/set_nightly_version.sh
