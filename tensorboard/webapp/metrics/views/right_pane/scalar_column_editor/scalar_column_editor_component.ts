@@ -15,6 +15,7 @@ limitations under the License.
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   EventEmitter,
   Input,
   OnDestroy,
@@ -79,13 +80,18 @@ export class ScalarColumnEditorComponent implements OnDestroy {
     headerType: ColumnHeaderType;
   }>();
 
+  constructor(private readonly hostElement: ElementRef) {}
+
   ngOnDestroy() {
-    document.removeEventListener('dragover', preventDefault);
+    this.hostElement.nativeElement.removeEventListener(
+      'dragover',
+      preventDefault
+    );
   }
 
   dragStart(header: ColumnHeader) {
     this.draggingHeaderType = header.type;
-    document.addEventListener('dragover', preventDefault);
+    this.hostElement.nativeElement.addEventListener('dragover', preventDefault);
   }
 
   dragEnd(dataTableMode: DataTableMode) {
@@ -103,7 +109,10 @@ export class ScalarColumnEditorComponent implements OnDestroy {
     });
     this.draggingHeaderType = undefined;
     this.highlightedHeaderType = undefined;
-    document.removeEventListener('dragover', preventDefault);
+    this.hostElement.nativeElement.removeEventListener(
+      'dragover',
+      preventDefault
+    );
   }
 
   dragEnter(header: ColumnHeader, dataTableMode: DataTableMode) {
@@ -111,6 +120,7 @@ export class ScalarColumnEditorComponent implements OnDestroy {
       return;
     }
 
+    // Highlight the position which the dragging header will go when dropped.
     const headers = this.getHeadersForMode(dataTableMode);
     if (
       getIndexOfType(header.type, headers) <
@@ -143,7 +153,7 @@ export class ScalarColumnEditorComponent implements OnDestroy {
     };
   }
 
-  getHeadersForMode(dataTableMode: DataTableMode) {
+  private getHeadersForMode(dataTableMode: DataTableMode) {
     return dataTableMode === DataTableMode.SINGLE
       ? this.singleHeaders
       : this.rangeHeaders;

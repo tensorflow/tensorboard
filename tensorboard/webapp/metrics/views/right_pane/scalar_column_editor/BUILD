@@ -24,6 +24,7 @@ tf_ng_module(
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_material_checkbox",
         "//tensorboard/webapp/angular:expect_angular_material_tabs",
+        "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/store",
         "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",

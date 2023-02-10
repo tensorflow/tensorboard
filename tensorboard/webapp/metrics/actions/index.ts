@@ -25,6 +25,8 @@ import {
 } from '../data_source';
 import {
   CardId,
+  HeaderEditInfo,
+  HeaderToggleInfo,
   HistogramMode,
   PluginType,
   TooltipSort,
@@ -215,18 +217,12 @@ export const dataTableColumnDrag = createAction(
 
 export const dataTableColumnEdited = createAction(
   '[Metrics] Data table columns edited in edit menu',
-  props<{
-    dataTableMode: DataTableMode;
-    headers: ColumnHeader[];
-  }>()
+  props<HeaderEditInfo>()
 );
 
 export const dataTableColumnToggled = createAction(
   '[Metrics] Data table column toggled in edit menu',
-  props<{
-    dataTableMode: DataTableMode;
-    headerType: ColumnHeaderType;
-  }>()
+  props<HeaderToggleInfo>()
 );
 
 export const stepSelectorToggled = createAction(

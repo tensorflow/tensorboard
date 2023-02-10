@@ -21,6 +21,7 @@ import {
   getRangeSelectionHeaders,
   getSingleSelectionHeaders,
 } from '../../../store/metrics_selectors';
+import {HeaderEditInfo, HeaderToggleInfo} from '../../../types';
 import {
   ColumnHeader,
   ColumnHeaderType,
@@ -46,23 +47,11 @@ export class ScalarColumnEditorContainer {
   readonly singleHeaders$ = this.store.select(getSingleSelectionHeaders);
   readonly rangeHeaders$ = this.store.select(getRangeSelectionHeaders);
 
-  onScalarTableColumnToggled({
-    dataTableMode,
-    headerType,
-  }: {
-    dataTableMode: DataTableMode;
-    headerType: ColumnHeaderType;
-  }) {
-    this.store.dispatch(dataTableColumnToggled({dataTableMode, headerType}));
+  onScalarTableColumnToggled(toggleInfo: HeaderToggleInfo) {
+    this.store.dispatch(dataTableColumnToggled(toggleInfo));
   }
 
-  onScalarTableColumnEdit({
-    dataTableMode,
-    headers,
-  }: {
-    dataTableMode: DataTableMode;
-    headers: ColumnHeader[];
-  }) {
-    this.store.dispatch(dataTableColumnEdited({dataTableMode, headers}));
+  onScalarTableColumnEdit(editInfo: HeaderEditInfo) {
+    this.store.dispatch(dataTableColumnEdited(editInfo));
   }
 }
