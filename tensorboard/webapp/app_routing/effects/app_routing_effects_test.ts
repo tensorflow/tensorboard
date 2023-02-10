@@ -17,9 +17,10 @@ import {Component} from '@angular/core';
 import {fakeAsync, flush, TestBed, tick} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, createAction, createSelector, props, Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {of, ReplaySubject} from 'rxjs';
 import {State} from '../../app_state';
+import {provideMockTbStore} from '../../testing/utils';
 import * as actions from '../actions';
 import {AppRootProvider, TestableAppRootProvider} from '../app_root';
 import {DirtyUpdatesRegistryModule} from '../dirty_updates_registry_module';
@@ -206,7 +207,7 @@ describe('app_routing_effects', () => {
       providers: [
         provideMockActions(action),
         AppRoutingEffects,
-        provideMockStore(),
+        provideMockTbStore(),
         provideLocationTesting(),
         {
           provide: AppRootProvider,

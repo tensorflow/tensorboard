@@ -83,6 +83,7 @@ tf_ts_library(
         "//tensorboard/webapp/feature_flag/actions",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/feature_flag/store:testing",
+        "//tensorboard/webapp/testing:utils",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",

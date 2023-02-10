@@ -14,15 +14,15 @@ limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
 import {Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {skip} from 'rxjs/operators';
 import {SerializableQueryParams} from '../app_routing/types';
 import {State} from '../app_state';
 import {FeatureFlagMetadataMap} from '../feature_flag/store/feature_flag_metadata';
 import {PluginType} from '../metrics/data_source/types';
-import {appStateFromMetricsState, buildMetricsState} from '../metrics/testing';
 import {GroupBy, GroupByKey} from '../runs/types';
 import * as selectors from '../selectors';
+import {provideMockTbStore} from '../testing/utils';
 import {DashboardDeepLinkProvider} from './dashboard_deeplink_provider';
 import {buildDeserializedState} from './testing';
 
@@ -33,13 +33,7 @@ describe('core deeplink provider', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [
-        provideMockStore({
-          initialState: {
-            ...appStateFromMetricsState(buildMetricsState()),
-          },
-        }),
-      ],
+      providers: [provideMockTbStore()],
     }).compileComponents();
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;

@@ -15,7 +15,7 @@ limitations under the License.
 import {TestBed} from '@angular/core/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
 import {buildRun} from '../../../runs/store/testing';
 import {
@@ -23,6 +23,7 @@ import {
   getExperimentIdToExperimentAliasMap,
   getRun,
 } from '../../../selectors';
+import {provideMockTbStore} from '../../../testing/utils';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {RunNameComponent} from './run_name_component';
 import {RunNameContainer} from './run_name_container';
@@ -34,7 +35,7 @@ describe('card run name', () => {
     await TestBed.configureTestingModule({
       imports: [NoopAnimationsModule, ExperimentAliasModule],
       declarations: [RunNameContainer, RunNameComponent],
-      providers: [provideMockStore()],
+      providers: [provideMockTbStore()],
     }).compileComponents();
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;

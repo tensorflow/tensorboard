@@ -26,9 +26,10 @@ import {MatSliderModule} from '@angular/material/slider';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';
+import {provideMockTbStore} from '../../../testing/utils';
 import {TimeSelectionToggleAffordance} from '../../../widgets/card_fob/card_fob_types';
 import {DropdownModule} from '../../../widgets/dropdown/dropdown_module';
 import * as actions from '../../actions';
@@ -56,7 +57,7 @@ describe('metrics right_pane', () => {
         SettingsViewComponent,
         SettingsViewContainer,
       ],
-      providers: [provideMockStore()],
+      providers: [provideMockTbStore()],
       // Ignore errors from components that are out-of-scope for this test:
       // 'runs-selector'.
       schemas: [NO_ERRORS_SCHEMA],

@@ -16,9 +16,10 @@ import {CommonModule} from '@angular/common';
 import {TestBed} from '@angular/core/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {DeepLinkerInterface} from '../../deeplink';
 import {SetStringOption} from '../../deeplink/types';
+import {provideMockTbStore} from '../../testing/utils';
 import {pluginUrlHashChanged} from '../actions';
 import {State} from '../state';
 import {getActivePlugin} from '../store';
@@ -46,7 +47,7 @@ describe('hash storage test', () => {
     await TestBed.configureTestingModule({
       imports: [NoopAnimationsModule, CommonModule],
       providers: [
-        provideMockStore(),
+        provideMockTbStore(),
         HashStorageContainer,
         {provide: DeepLinkerInterface, useClass: TestableDeeplinker},
       ],

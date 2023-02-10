@@ -38,6 +38,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/runs/store:testing",
         "//tensorboard/webapp/runs/views/runs_table",
+        "//tensorboard/webapp/testing:utils",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",

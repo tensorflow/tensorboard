@@ -17,8 +17,9 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {MatIconTestingModule} from '../../testing/mat_icon_module';
+import {provideMockTbStore} from '../../testing/utils';
 import {MouseEventButtons} from '../../util/dom';
 import {sideBarWidthChanged} from '../actions';
 import {State} from '../state';
@@ -73,7 +74,7 @@ describe('layout test', () => {
     await TestBed.configureTestingModule({
       imports: [NoopAnimationsModule, MatIconTestingModule],
       declarations: [TestableComponent, Main, Sidebar, LayoutContainer],
-      providers: [provideMockStore()],
+      providers: [provideMockTbStore()],
     }).compileComponents();
 
     dispatchedActions = [];

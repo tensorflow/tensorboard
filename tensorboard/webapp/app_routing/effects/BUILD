@@ -50,6 +50,7 @@ tf_ng_module(
         "//tensorboard/webapp/app_routing/actions",
         "//tensorboard/webapp/app_routing/store",
         "//tensorboard/webapp/feature_flag/store",
+        "//tensorboard/webapp/testing:utils",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",

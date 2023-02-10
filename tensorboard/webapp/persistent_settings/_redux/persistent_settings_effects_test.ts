@@ -20,8 +20,9 @@ import {
 } from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, createSelector, Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {EMPTY, of, ReplaySubject} from 'rxjs';
+import {provideMockTbStore} from '../../testing/utils';
 import {PersistentSettingsConfigModule} from '../persistent_settings_config_module';
 import {
   PersistentSettingsTestingDataSource,
@@ -67,7 +68,7 @@ describe('persistent_settings effects test', () => {
       ],
       providers: [
         provideMockActions(action),
-        provideMockStore(),
+        provideMockTbStore(),
         PersistentSettingsEffects,
         PersistentSettingsConfigModule,
       ],

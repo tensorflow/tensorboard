@@ -19,9 +19,10 @@ import {CommonModule} from '@angular/common';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {State as OtherAppState} from '../../../../../webapp/app_state';
 import {getDarkModeEnabled} from '../../../../../webapp/selectors';
+import {provideMockTbStore} from '../../../../../webapp/testing/utils';
 import {
   setUpMonacoFakes,
   tearDownMonacoFakes,
@@ -66,7 +67,7 @@ describe('Source Files Container', () => {
         StackTraceModule,
         TimelineModule,
       ],
-      providers: [provideMockStore(), DebuggerContainer],
+      providers: [provideMockTbStore(), DebuggerContainer],
     }).compileComponents();
     store = TestBed.inject<Store<AppState>>(Store) as MockStore<AppState>;
     dispatchSpy = spyOn(store, 'dispatch');

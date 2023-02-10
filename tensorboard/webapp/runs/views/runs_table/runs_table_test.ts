@@ -37,7 +37,7 @@ import {MatTableModule} from '@angular/material/table';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {of, ReplaySubject} from 'rxjs';
 import * as alertActions from '../../../alert/actions';
 import {buildExperimentRouteFromId} from '../../../app_routing/testing';
@@ -76,6 +76,7 @@ import {selectors as settingsSelectors} from '../../../settings';
 import {buildColorPalette} from '../../../settings/testing';
 import {sendKeys} from '../../../testing/dom';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
+import {provideMockTbStore} from '../../../testing/utils';
 import {DataLoadState} from '../../../types/data';
 import {SortDirection} from '../../../types/ui';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
@@ -247,7 +248,7 @@ describe('runs_table', () => {
         RunsTableContainer,
         TestableColorPicker,
       ],
-      providers: [provideMockStore(), ColorPickerTestHelper],
+      providers: [provideMockTbStore(), ColorPickerTestHelper],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 

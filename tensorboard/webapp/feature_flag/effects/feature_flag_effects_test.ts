@@ -16,8 +16,9 @@ limitations under the License.
 import {TestBed} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {ReplaySubject} from 'rxjs';
+import {provideMockTbStore} from '../../testing/utils';
 import {
   TBFeatureFlagTestingModule,
   TestingTBFeatureFlagDataSource,
@@ -57,7 +58,7 @@ describe('feature_flag_effects', () => {
       providers: [
         provideMockActions(actions),
         FeatureFlagEffects,
-        provideMockStore(),
+        provideMockTbStore(),
       ],
     }).compileComponents();
 

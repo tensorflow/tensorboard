@@ -15,7 +15,7 @@ limitations under the License.
 import {TestBed} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {of, ReplaySubject} from 'rxjs';
 import {
   buildCompareRoute,
@@ -31,6 +31,7 @@ import {
   getRuns,
   getRunsLoadState,
 } from '../../selectors';
+import {provideMockTbStore} from '../../testing/utils';
 import {DataLoadState} from '../../types/data';
 import * as actions from '../actions';
 import {HparamsAndMetadata, Run} from '../data_source/runs_data_source_types';
@@ -89,7 +90,7 @@ describe('runs_effects', () => {
       providers: [
         provideMockActions(action),
         RunsEffects,
-        provideMockStore(),
+        provideMockTbStore(),
         provideTestingRunsDataSource(),
       ],
     }).compileComponents();

@@ -189,6 +189,7 @@ tf_ts_library(
         "//tensorboard/webapp/testing:dom",
         "//tensorboard/webapp/testing:mat_icon",
         "//tensorboard/webapp/testing:material",
+        "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/widgets/filter_input",

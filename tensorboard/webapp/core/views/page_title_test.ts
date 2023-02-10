@@ -15,7 +15,7 @@ limitations under the License.
 import {Component, NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {RouteKind} from '../../app_routing/types';
 import {buildExperiment} from '../../experiments/store/testing';
 import {
@@ -23,6 +23,7 @@ import {
   getExperimentIdsFromRoute,
   getRouteKind,
 } from '../../selectors';
+import {provideMockTbStore} from '../../testing/utils';
 import {State} from '../state';
 import {getEnvironment} from '../store';
 import {TB_BRAND_NAME} from '../types';
@@ -36,7 +37,7 @@ describe('page title test', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [PageTitleComponent, PageTitleContainer],
-      providers: [provideMockStore()],
+      providers: [provideMockTbStore()],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
@@ -124,7 +125,7 @@ describe('page title test with custom brand names', () => {
       imports: [PageTitleModule],
       declarations: [TestingComponent],
       providers: [
-        provideMockStore(),
+        provideMockTbStore(),
         {
           provide: TB_BRAND_NAME,
           useValue: 'TensorBoard.corp',
@@ -202,7 +203,7 @@ describe('page title test for OSS TensorBoard', () => {
       imports: [PageTitleModule],
       declarations: [TestingComponent],
       providers: [
-        provideMockStore(),
+        provideMockTbStore(),
         {
           provide: TB_BRAND_NAME,
           useValue: 'TensorBoard',
