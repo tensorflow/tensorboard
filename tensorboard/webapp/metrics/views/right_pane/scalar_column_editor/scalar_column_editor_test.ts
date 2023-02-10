@@ -24,7 +24,7 @@ import {By} from '@angular/platform-browser';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../../app_state';
-import {dataTableColumnToggled} from '../../../actions';
+import {dataTableColumnEdited, dataTableColumnToggled} from '../../../actions';
 import {
   getRangeSelectionHeaders,
   getSingleSelectionHeaders,
@@ -184,6 +184,116 @@ describe('scalar column editor', () => {
           headerType: ColumnHeaderType.MAX_VALUE,
         })
       );
+    }));
+  });
+
+  describe('dragging', () => {
+    let dispatchedActions: Action[] = [];
+    beforeEach(() => {
+      dispatchedActions = [];
+      spyOn(store, 'dispatch').and.callFake((action: Action) => {
+        dispatchedActions.push(action);
+      });
+    });
+
+    it('dispatches dataTableColumnEdited action with singe selection when header is dragged', fakeAsync(() => {
+      store.overrideSelector(getSingleSelectionHeaders, [
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.VALUE, enabled: true},
+        {type: ColumnHeaderType.STEP, enabled: true},
+      ]);
+      const fixture = createComponent();
+      switchTabs(fixture, DataTableMode.SINGLE);
+
+      const headerListItems = fixture.debugElement.queryAll(
+        By.css('.header-list-item')
+      );
+
+      headerListItems[0].triggerEventHandler('dragstart');
+      headerListItems[1].triggerEventHandler('dragenter');
+      headerListItems[0].triggerEventHandler('dragend');
+
+      expect(dispatchedActions[0]).toEqual(
+        dataTableColumnEdited({
+          dataTableMode: DataTableMode.SINGLE,
+          headers: [
+            {type: ColumnHeaderType.VALUE, enabled: true},
+            {type: ColumnHeaderType.RUN, enabled: true},
+            {type: ColumnHeaderType.STEP, enabled: true},
+          ],
+        })
+      );
+    }));
+
+    it('dispatches dataTableColumnEdited action with range selection when header is dragged', fakeAsync(() => {
+      store.overrideSelector(getRangeSelectionHeaders, [
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.MAX_VALUE, enabled: true},
+        {type: ColumnHeaderType.MIN_VALUE, enabled: true},
+      ]);
+      const fixture = createComponent();
+      switchTabs(fixture, DataTableMode.RANGE);
+
+      const headerListItems = fixture.debugElement.queryAll(
+        By.css('.header-list-item')
+      );
+
+      headerListItems[1].triggerEventHandler('dragstart');
+      headerListItems[0].triggerEventHandler('dragenter');
+      headerListItems[1].triggerEventHandler('dragend');
+
+      expect(dispatchedActions[0]).toEqual(
+        dataTableColumnEdited({
+          dataTableMode: DataTableMode.RANGE,
+          headers: [
+            {type: ColumnHeaderType.MAX_VALUE, enabled: true},
+            {type: ColumnHeaderType.RUN, enabled: true},
+            {type: ColumnHeaderType.MIN_VALUE, enabled: true},
+          ],
+        })
+      );
+    }));
+
+    it('highlights item with bottom edge when dragging below item being dragged', fakeAsync(() => {
+      store.overrideSelector(getRangeSelectionHeaders, [
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.MAX_VALUE, enabled: true},
+        {type: ColumnHeaderType.MIN_VALUE, enabled: true},
+      ]);
+      const fixture = createComponent();
+      switchTabs(fixture, DataTableMode.RANGE);
+
+      const headerListItems = fixture.debugElement.queryAll(
+        By.css('.header-list-item')
+      );
+
+      headerListItems[1].triggerEventHandler('dragstart');
+      headerListItems[2].triggerEventHandler('dragenter');
+      fixture.detectChanges();
+
+      expect(headerListItems[2].classes['highlighted']).toBeTrue();
+      expect(headerListItems[2].classes['highlight-bottom']).toBeTrue();
+    }));
+
+    it('highlights item with top edge when dragging above item being dragged', fakeAsync(() => {
+      store.overrideSelector(getRangeSelectionHeaders, [
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.MAX_VALUE, enabled: true},
+        {type: ColumnHeaderType.MIN_VALUE, enabled: true},
+      ]);
+      const fixture = createComponent();
+      switchTabs(fixture, DataTableMode.RANGE);
+
+      const headerListItems = fixture.debugElement.queryAll(
+        By.css('.header-list-item')
+      );
+
+      headerListItems[1].triggerEventHandler('dragstart');
+      headerListItems[0].triggerEventHandler('dragenter');
+      fixture.detectChanges();
+
+      expect(headerListItems[0].classes['highlighted']).toBeTrue();
+      expect(headerListItems[0].classes['highlight-top']).toBeTrue();
     }));
   });
 });
