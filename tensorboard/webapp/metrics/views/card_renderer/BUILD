@@ -5,6 +5,8 @@ package(default_visibility = ["//tensorboard:internal"])
 tf_sass_binary(
     name = "card_view_styles",
     src = "card_view_container.scss",
+    strict_deps = False,
+    deps = ["//tensorboard/webapp/theme"],
 )
 
 tf_ng_module(
@@ -41,6 +43,8 @@ tf_ng_module(
 tf_sass_binary(
     name = "data_download_dialog_styles",
     src = "data_download_dialog_component.scss",
+    strict_deps = False,
+    deps = ["//tensorboard/webapp/theme"],
 )
 
 tf_ng_module(
@@ -76,8 +80,10 @@ tf_ng_module(
 tf_sass_binary(
     name = "histogram_card_styles",
     src = "histogram_card_component.scss",
+    strict_deps = False,
     deps = [
         "//tensorboard/webapp/metrics/views:metrics_common_styles",
+        "//tensorboard/webapp/theme",
     ],
 )
 
@@ -122,9 +128,11 @@ tf_ng_module(
 tf_sass_binary(
     name = "image_card_styles",
     src = "image_card_component.scss",
+    strict_deps = False,
     deps = [
         "//tensorboard/webapp:angular_material_sass_deps",
         "//tensorboard/webapp/metrics/views:metrics_common_styles",
+        "//tensorboard/webapp/theme",
     ],
 )
 
@@ -167,6 +175,8 @@ tf_ng_module(
 tf_sass_binary(
     name = "run_name_styles",
     src = "run_name_component.scss",
+    strict_deps = False,
+    deps = ["//tensorboard/webapp/theme"],
 )
 
 tf_ng_module(
@@ -195,7 +205,11 @@ tf_ng_module(
 tf_sass_binary(
     name = "vis_linked_time_selection_warning_styles",
     src = "vis_linked_time_selection_warning_component.scss",
-    deps = ["//tensorboard/webapp:angular_material_sass_deps"],
+    strict_deps = False,
+    deps = [
+        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/theme",
+    ],
 )
 
 tf_ng_module(
@@ -242,16 +256,20 @@ tf_ts_library(
 tf_sass_binary(
     name = "scalar_card_styles",
     src = "scalar_card_component.scss",
+    strict_deps = False,
     deps = [
         "//tensorboard/webapp/metrics/views:metrics_common_styles",
+        "//tensorboard/webapp/theme",
     ],
 )
 
 tf_sass_binary(
     name = "scalar_card_fob_controller_styles",
     src = "scalar_card_fob_controller.scss",
+    strict_deps = False,
     deps = [
         "//tensorboard/webapp/metrics/views:metrics_common_styles",
+        "//tensorboard/webapp/theme",
     ],
 )
 

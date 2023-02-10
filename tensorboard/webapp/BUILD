@@ -87,6 +87,8 @@ tf_ts_library(
 tf_sass_binary(
     name = "app_styles",
     src = "app_container.scss",
+    strict_deps = False,
+    deps = ["//tensorboard/webapp/theme"],
 )
 
 # Angular module for the top-level app component together with all of its
@@ -409,4 +411,6 @@ tf_external_sass_libray(
 tf_sass_binary(
     name = "styles",
     src = "styles.scss",
+    strict_deps = False,
+    deps = ["//tensorboard/webapp/theme"],
 )

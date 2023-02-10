@@ -7,6 +7,8 @@ licenses(["notice"])
 tf_sass_binary(
     name = "npmi_component_styles",
     src = "npmi_component.scss",
+    strict_deps = False,
+    deps = ["//tensorboard/webapp/theme"],
 )
 
 tf_ng_module(

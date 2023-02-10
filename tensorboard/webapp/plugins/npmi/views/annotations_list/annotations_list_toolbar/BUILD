@@ -7,6 +7,8 @@ licenses(["notice"])
 tf_sass_binary(
     name = "annotations_list_toolbar_component_styles",
     src = "annotations_list_toolbar_component.scss",
+    strict_deps = False,
+    deps = ["//tensorboard/webapp/theme"],
 )
 
 tf_ng_module(

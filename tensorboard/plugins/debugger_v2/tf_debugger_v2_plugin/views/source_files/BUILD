@@ -7,6 +7,8 @@ licenses(["notice"])
 tf_sass_binary(
     name = "source_files_component_style",
     src = "source_files_component.scss",
+    strict_deps = False,
+    deps = ["//tensorboard/webapp/theme"],
 )
 
 tf_ng_module(
