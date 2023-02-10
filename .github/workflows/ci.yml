@@ -119,7 +119,7 @@ jobs:
         # Only bother creating the pip package if it will be updated in the next step.
         if: matrix.tf_version_id == 'tf' && github.repository == 'tensorflow/tensorboard' && github.ref == 'refs/heads/master'
         run: |
-          ./tensorboard/tools/update_version.sh
+          ./tensorboard/tools/set_nightly_version.sh
           rm -rf /tmp/tb_nightly_pip_package && mkdir /tmp/tb_nightly_pip_package
           bazel run //tensorboard/pip_package:build_pip_package -- /tmp/tb_nightly_pip_package
       - name: 'Upload Pip package as an artifact (master branch TF build only)

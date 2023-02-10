@@ -15,8 +15,15 @@
 # ==============================================================================
 
 # Updates package version and renames the package to `tb-nightly`.
-version="$(grep -Po "(?<=VERSION = ['\"]).*?(?=['\"])" tensorboard/version.py)"
-series="$(grep -Po "(?<=VERSION = ['\"]).*?(?=a0['\"])" tensorboard/version.py)"
-release="${series}a$(date +%Y%m%d)"
-sed -i -e "s/${version}/${release}/" tensorboard/version.py
-sed -i -e "s/name *= *['\"][^'\"]*['\"]/name=\"tb-nightly\"/" tensorboard/pip_package/setup.py
+version="$(python tensorboard/version.py)"
+case "${version}" in
+  *a0)
+    # Strip a0 as the suffix and add "a" plus today's date.
+    release="${version%a0}a$(date +%Y%m%d)"
+    sed -i -e "s/${version}/${release}/" tensorboard/version.py
+    sed -i -e "s/name *= *['\"][^'\"]*['\"]/name=\"tb-nightly\"/" tensorboard/pip_package/setup.py
+    ;;
+  *)
+    printf "error: found non-placeholder version %s\n" "${version}"
+    exit 1
+esac
