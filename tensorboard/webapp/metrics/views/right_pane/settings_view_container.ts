@@ -32,6 +32,7 @@ import {
   metricsChangeScalarSmoothing,
   metricsChangeTooltipSort,
   metricsChangeXAxisType,
+  metricsHideEmptyCardsChanged,
   metricsResetCardWidth,
   metricsResetImageBrightness,
   metricsResetImageContrast,
@@ -71,6 +72,9 @@ const RANGE_INPUT_SOURCE_TO_AFFORDANCE: Record<
       (cardWidthReset)="onCardWidthReset()"
       [histogramMode]="histogramMode$ | async"
       (histogramModeChanged)="onHistogramModeChanged($event)"
+      [numEmptyCards]="numEmptyCards$ | async"
+      [hideEmptyCards]="hideEmptyCards$ | async"
+      (hideEmptyCardsToggled)="onHideEmptyCardsToggled()"
       [scalarSmoothing]="scalarSmoothing$ | async"
       (scalarSmoothingChanged)="onScalarSmoothingChanged($event)"
       [scalarPartitionX]="scalarPartitionX$ | async"
@@ -175,6 +179,19 @@ export class SettingsViewContainer {
   readonly imageShowActualSize$ = this.store.select(
     selectors.getMetricsImageShowActualSize
   );
+
+  readonly numEmptyCards$ = this.store.select(selectors.getEmptyCardIds).pipe(
+    map((emptyCardIds) => {
+      return emptyCardIds.size;
+    })
+  );
+  readonly hideEmptyCards$ = this.store.select(
+    selectors.getMetricsHideEmptyCards
+  );
+
+  onHideEmptyCardsToggled() {
+    this.store.dispatch(metricsHideEmptyCardsChanged());
+  }
 
   onTooltipSortChanged(sort: TooltipSort) {
     this.store.dispatch(metricsChangeTooltipSort({sort}));

@@ -18,6 +18,10 @@ import {Observable} from 'rxjs';
 import {combineLatestWith, map} from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {getMetricsFilteredPluginTypes} from '../../store';
+import {
+  getEmptyCardIds,
+  getMetricsHideEmptyCards,
+} from '../../store/metrics_selectors';
 import {groupCardIdWithMetdata} from '../../utils';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardGroup} from '../metrics_view_types';
@@ -47,6 +51,14 @@ export class CardGroupsContainer {
         return cardList.filter((card) => {
           return filteredPlugins.has(card.plugin);
         });
+      }),
+      combineLatestWith(
+        this.store.select(getMetricsHideEmptyCards),
+        this.store.select(getEmptyCardIds)
+      ),
+      map(([cardList, hideEmptyCards, emptyCardIds]) => {
+        if (!hideEmptyCards) return cardList;
+        return cardList.filter(({cardId}) => !emptyCardIds.has(cardId));
       }),
       map((cardList) => groupCardIdWithMetdata(cardList))
     );

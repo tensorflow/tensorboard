@@ -243,3 +243,7 @@ export const rangeSelectionToggled = createAction(
 );
 // TODO(jieweiwu): Delete after internal code is updated.
 export const stepSelectorTimeSelectionChanged = timeSelectionChanged;
+
+export const metricsHideEmptyCardsChanged = createAction(
+  '[Metrics] Hide Empty Cards Changed'
+);

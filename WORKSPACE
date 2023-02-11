@@ -15,13 +15,13 @@ http_archive(
 load("@bazel_skylib//lib:versions.bzl", "versions")
 
 versions.check(
-    # Keep this version in sync with:
-    #  * The BAZEL environment variable defined in .github/workflows/ci.yml, which is used for CI and nightly builds.
-    minimum_bazel_version = "4.2.2",
     # Preemptively assume the next Bazel major version will break us, since historically they do,
     # and provide a clean error message in that case. Since the maximum version is inclusive rather
     # than exclusive, we set it to the 999th patch release of the current major version.
     maximum_bazel_version = "6.999.0",
+    # Keep this version in sync with:
+    #  * The BAZEL environment variable defined in .github/workflows/ci.yml, which is used for CI and nightly builds.
+    minimum_bazel_version = "4.2.2",
 )
 
 http_archive(

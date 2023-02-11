@@ -27,6 +27,10 @@ import {
 import {State} from '../../../app_state';
 import {DeepReadonly} from '../../../util/types';
 import {getMetricsFilteredPluginTypes, getMetricsTagFilter} from '../../store';
+import {
+  getEmptyCardIds,
+  getMetricsHideEmptyCards,
+} from '../../store/metrics_selectors';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
 import {getSortedRenderableCardIdsWithMetadata} from './common_selectors';
@@ -59,6 +63,14 @@ export class FilteredViewContainer {
     map(([cardList, filteredPluginTypes]) => {
       if (!filteredPluginTypes.size) return cardList;
       return cardList.filter((card) => filteredPluginTypes.has(card.plugin));
+    }),
+    combineLatestWith(
+      this.store.select(getMetricsHideEmptyCards),
+      this.store.select(getEmptyCardIds)
+    ),
+    map(([cardList, hideEmptyCards, emptyCardIds]) => {
+      if (!hideEmptyCards) return cardList;
+      return cardList.filter(({cardId}) => !emptyCardIds.has(cardId));
     }),
     combineLatestWith(this.store.select(getMetricsTagFilter)),
     debounceTime(FILTER_VIEW_DEBOUNCE_IN_MS),

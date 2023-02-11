@@ -163,6 +163,15 @@ limitations under the License.
 When enabled, a non-monotonic time series composed of N monotonic pieces will be shown as N monotonic lines."
     ></mat-icon>
   </div>
+
+  <div class="control-row">
+    <mat-checkbox
+      [checked]="hideEmptyCards"
+      (change)="hideEmptyCardsToggled.emit()"
+    >
+      Hide Empty Cards {{numEmptyCards}}
+    </mat-checkbox>
+  </div>
 </section>
 
 <section class="Histograms">

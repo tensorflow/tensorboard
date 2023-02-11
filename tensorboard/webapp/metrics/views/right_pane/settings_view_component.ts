@@ -75,6 +75,11 @@ export class SettingsViewComponent {
   @Input() stepMinMax!: {min: number; max: number};
   @Input() isSlideOutMenuOpen!: boolean;
 
+  @Input() numEmptyCards!: number;
+  @Input() hideEmptyCards!: boolean;
+
+  @Output() hideEmptyCardsToggled = new EventEmitter<boolean>();
+
   @Output() linkedTimeToggled = new EventEmitter<void>();
   @Output()
   linkedTimeSelectionChanged = new EventEmitter<LinkedTimeSelectionChanged>();

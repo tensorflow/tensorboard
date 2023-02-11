@@ -17,6 +17,7 @@ import {State} from '../../app_state';
 import {DataLoadState, LoadState} from '../../types/data';
 import {ElementId} from '../../util/dom';
 import {DeepReadonly} from '../../util/types';
+import {getCurrentRouteRunSelection} from '../../util/ui_selectors';
 import {
   CardId,
   CardIdWithMetadata,
@@ -323,6 +324,11 @@ export const getMetricsScalarSmoothing = createSelector(
   (settings): number => settings.scalarSmoothing
 );
 
+export const getMetricsHideEmptyCards = createSelector(
+  selectSettings,
+  (settings): boolean => settings.hideEmptyCards
+);
+
 export const getMetricsScalarPartitionNonMonotonicX = createSelector(
   selectSettings,
   (settings): boolean => settings.scalarPartitionNonMonotonicX
@@ -463,4 +469,42 @@ export const isMetricsSettingsPaneOpen = createSelector(
 export const isMetricsSlideoutMenuOpen = createSelector(
   selectMetricsState,
   (state): boolean => state.isSlideoutMenuOpen
+);
+
+export const getEmptyCardIds = createSelector(
+  selectMetricsState,
+  getCardMetadataMap,
+  getCardIds,
+  getCurrentRouteRunSelection,
+  (
+    state: MetricsState,
+    metadataMap: CardMetadataMap,
+    cardIds: CardId[],
+    runSelection: Map<string, boolean> | null
+  ) => {
+    return new Set(
+      cardIds
+        .filter((cardId) => {
+          return (
+            metadataMap.hasOwnProperty(cardId) &&
+            metadataMap[cardId].plugin === PluginType.SCALARS
+          );
+        })
+        .filter((cardId) => {
+          const {plugin, tag, sample} = metadataMap[cardId];
+          const loadable = storeUtils.getTimeSeriesLoadable(
+            state.timeSeriesData,
+            plugin,
+            tag,
+            sample
+          );
+          return (
+            !loadable ||
+            !Object.keys(loadable.runToSeries).filter((runName) => {
+              return runSelection?.get(runName);
+            }).length
+          );
+        })
+    );
+  }
 );
