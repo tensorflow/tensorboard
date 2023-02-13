@@ -1425,7 +1425,7 @@ describe('metrics reducers', () => {
         }
       );
       expectedCardToMinMax.set(
-        '{"plugin":"images","tag":"tagC","runId":"run1","sample":9}',
+        '{"plugin":"images","tag":"tagC","runId":"run1","sample":9,"numSample":1}',
         {
           minStep: 0,
           maxStep: 99,
@@ -1452,7 +1452,7 @@ describe('metrics reducers', () => {
         }
       );
       expectedCardToTimeSelection.set(
-        '{"plugin":"images","tag":"tagC","runId":"run1","sample":9}',
+        '{"plugin":"images","tag":"tagC","runId":"run1","sample":9,"numSample":1}',
         {
           start: {step: 0},
           end: null,

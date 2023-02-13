@@ -80,14 +80,15 @@ import {
 } from './metrics_types';
 
 function buildCardMetata(metadata: CardMetadata): CardMetadata {
+  const newMetadata = {...metadata};
   if (
-    !isSampledPlugin(metadata.plugin) &&
-    !isSingleRunPlugin(metadata.plugin)
+    !isSampledPlugin(newMetadata.plugin) &&
+    !isSingleRunPlugin(newMetadata.plugin)
   ) {
-    metadata.runId = null;
+    newMetadata.runId = null;
   }
 
-  return metadata;
+  return newMetadata;
 }
 
 function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {
@@ -138,6 +139,19 @@ function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {
     }
   }
   return results;
+}
+
+function getNumSamplesFromTagMetadata(
+  tagMetadata: TagMetadata,
+  plugin: PluginType,
+  tag: string,
+  runId: string
+): number | undefined {
+  if (!isSampledPlugin(plugin)) {
+    return;
+  }
+
+  return tagMetadata[plugin].tagRunSampledInfo[tag][runId].maxSamplesPerStep;
 }
 
 function getMaxStepIndex(
@@ -876,21 +890,20 @@ const reducer = createReducer(
             plugin,
             tag,
             runId,
+            sample,
+            numSample: getNumSamplesFromTagMetadata(
+              state.tagMetadata,
+              plugin,
+              tag,
+              runId
+            ),
           });
-          if (sample) {
-            cardMetadata.sample = sample;
-          }
 
           const cardId = getCardId(cardMetadata);
-          const cardTimeSeriesLoadable = getTimeSeriesLoadable(
-            nextTimeSeriesData,
-            cardMetadata.plugin,
-            cardMetadata.tag,
-            cardMetadata.sample
-          );
-          if (cardTimeSeriesLoadable) {
+          if (loadable) {
             const nextMinMax = generateCardMinMaxStep(
-              cardTimeSeriesLoadable.runToSeries
+              loadable.runToSeries,
+              cardMetadata
             );
             if (!nextCardToMinMax.get(cardId)) {
               nextCardToMinMax.set(cardId, nextMinMax);

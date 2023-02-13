@@ -748,7 +748,13 @@ describe('metrics store utils', () => {
           },
         ],
       };
-      expect(generateCardMinMaxStep(maxInScalars)).toEqual({
+      expect(
+        generateCardMinMaxStep(maxInScalars, {
+          plugin: PluginType.SCALARS,
+          tag: 'some-tag',
+          runId: null,
+        })
+      ).toEqual({
         minStep: 0,
         maxStep: 200,
       });
@@ -770,8 +776,14 @@ describe('metrics store utils', () => {
         ],
         run3: [{step: -5, wallTime: 125, bins: []}],
       };
-      expect(generateCardMinMaxStep(maxInHistogram)).toEqual({
-        minStep: -5,
+      expect(
+        generateCardMinMaxStep(maxInHistogram, {
+          plugin: PluginType.HISTOGRAMS,
+          tag: 'some-tag',
+          runId: 'run1',
+        })
+      ).toEqual({
+        minStep: 0,
         maxStep: 99,
       });
     });
@@ -795,8 +807,23 @@ describe('metrics store utils', () => {
             imageId: 'image3',
           },
         ],
+        run2: [
+          {
+            step: -5,
+            wallTime: 1,
+            imageId: 'image4',
+          },
+        ],
       };
-      expect(generateCardMinMaxStep(maxInImage)).toEqual({
+      expect(
+        generateCardMinMaxStep(maxInImage, {
+          plugin: PluginType.IMAGES,
+          tag: 'some-tag',
+          runId: 'run1',
+          sample: 3,
+          numSample: 5,
+        })
+      ).toEqual({
         minStep: 0,
         maxStep: 99,
       });

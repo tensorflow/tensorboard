@@ -379,8 +379,8 @@ export function generateNextCardStepIndex(
   return nextCardStepIndexMap;
 }
 
-export function generateCardMinMaxStep<T extends PluginType = PluginType>(
-  runsToSeries: RunToSeries<T>
+function generateScalarCardMinMaxStep(
+  runsToSeries: RunToSeries<PluginType.SCALARS>
 ): MinMaxStep {
   const allData = Object.values(runsToSeries)
     .flat()
@@ -389,6 +389,50 @@ export function generateCardMinMaxStep<T extends PluginType = PluginType>(
     minStep: Math.min(...allData),
     maxStep: Math.max(...allData),
   };
+}
+
+function generateHistogramCardMinMaxStep(
+  runsToSeries: RunToSeries<PluginType.HISTOGRAMS>,
+  runId: string
+): MinMaxStep {
+  const steps = runsToSeries[runId].map((stepDatum) => stepDatum.step);
+  return {
+    minStep: Math.min(...steps),
+    maxStep: Math.max(...steps),
+  };
+}
+
+function generateImageCardMinMaxStep(
+  runsToSeries: RunToSeries<PluginType.IMAGES>,
+  runId: string
+): MinMaxStep {
+  const steps = runsToSeries[runId].map((stepDatum) => stepDatum.step);
+  return {
+    minStep: Math.min(...steps),
+    maxStep: Math.max(...steps),
+  };
+}
+
+export function generateCardMinMaxStep<T extends PluginType = PluginType>(
+  runsToSeries: RunToSeries<T>,
+  metadata: CardMetadata
+): MinMaxStep {
+  switch (metadata.plugin) {
+    case PluginType.SCALARS:
+      return generateScalarCardMinMaxStep(
+        runsToSeries as RunToSeries<PluginType.SCALARS>
+      );
+    case PluginType.HISTOGRAMS:
+      return generateHistogramCardMinMaxStep(
+        runsToSeries as RunToSeries<PluginType.HISTOGRAMS>,
+        metadata.runId!
+      );
+    case PluginType.IMAGES:
+      return generateImageCardMinMaxStep(
+        runsToSeries as RunToSeries<PluginType.IMAGES>,
+        metadata.runId!
+      );
+  }
 }
 
 /**
