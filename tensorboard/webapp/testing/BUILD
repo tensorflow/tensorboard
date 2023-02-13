@@ -68,6 +68,7 @@ tf_ts_library(
     deps = [
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/testing",
         "//tensorboard/webapp/alert/store:testing",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/feature_flag/store:testing",
         "//tensorboard/webapp/metrics:test_lib",
