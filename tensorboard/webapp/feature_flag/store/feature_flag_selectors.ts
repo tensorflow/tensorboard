@@ -57,32 +57,36 @@ export const getOverriddenFeatureFlags = createSelector(
   selectFeatureFlagState,
   (state: FeatureFlagState): Partial<FeatureFlags> => {
     // Temporarily assume state.flagOverrides can be undefined for sync purposes.
-    return state.flagOverrides || {};
+    return state?.flagOverrides || {};
   }
 );
 
 export const getFeatureFlagsMetadata = createSelector(
   selectFeatureFlagState,
   (state: FeatureFlagState): FeatureFlagMetadataMapType<FeatureFlags> => {
-    return state.metadata;
+    return state?.metadata;
   }
 );
 
 export const getFeatureFlagsToSendToServer = createSelector(
-  selectFeatureFlagState,
-  (state: FeatureFlagState): Partial<FeatureFlags> => {
+  getOverriddenFeatureFlags,
+  getFeatureFlagsMetadata,
+  (
+    flagOverrides: Partial<FeatureFlags>,
+    metadata: FeatureFlagMetadataMapType<FeatureFlags>
+  ): Partial<FeatureFlags> => {
     const featureFlagsToSendToServer: Partial<
       Record<keyof FeatureFlags, FeatureFlagType>
     > = {};
-    for (const entry in state.flagOverrides) {
-      const entryMetadata = state.metadata[entry as keyof FeatureFlags];
+    for (const entry in flagOverrides) {
+      const entryMetadata = metadata[entry as keyof FeatureFlags];
       if (
         entryMetadata &&
         entryMetadata.queryParamOverride &&
         entryMetadata.sendToServerWhenOverridden
       ) {
         featureFlagsToSendToServer[entry as keyof FeatureFlags] =
-          state.flagOverrides[entry as keyof FeatureFlags];
+          flagOverrides[entry as keyof FeatureFlags];
       }
     }
     return featureFlagsToSendToServer as Partial<FeatureFlags>;
