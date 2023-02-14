@@ -27,6 +27,7 @@ import {
 } from '../internal_types';
 import {
   CardMetadataMap,
+  CardSettingsMap,
   CardStepIndexMap,
   CardStepIndexMetaData,
   CardToPinnedCard,
@@ -45,6 +46,7 @@ type ResolvedPinPartialState = Pick<
   | 'cardToPinnedCopyCache'
   | 'pinnedCardToOriginal'
   | 'cardStepIndex'
+  | 'cardSettingsMap'
 >;
 
 const DISTANCE_RATIO = 0.1;
@@ -206,7 +208,8 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
   cardToPinnedCopy: CardToPinnedCard,
   cardToPinnedCopyCache: CardToPinnedCard,
   pinnedCardToOriginal: PinnedCardToCard,
-  cardStepIndexMap: CardStepIndexMap
+  cardStepIndexMap: CardStepIndexMap,
+  cardSettingsMap: CardSettingsMap
 ): ResolvedPinPartialState & {unresolvedImportedPinnedCards: CardUniqueInfo[]} {
   const unresolvedPinSet = new Set(unresolvedImportedPinnedCards);
   const nonPinnedCardsWithMatch = [];
@@ -229,6 +232,7 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
       cardToPinnedCopyCache,
       pinnedCardToOriginal,
       cardStepIndex: cardStepIndexMap,
+      cardSettingsMap,
     };
   }
 
@@ -238,6 +242,7 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
     pinnedCardToOriginal,
     cardStepIndex: cardStepIndexMap,
     cardMetadataMap,
+    cardSettingsMap,
   };
   for (const cardToPin of nonPinnedCardsWithMatch) {
     stateWithResolvedPins = buildOrReturnStateWithPinnedCopy(
@@ -246,7 +251,8 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
       stateWithResolvedPins.cardToPinnedCopyCache,
       stateWithResolvedPins.pinnedCardToOriginal,
       stateWithResolvedPins.cardStepIndex,
-      stateWithResolvedPins.cardMetadataMap
+      stateWithResolvedPins.cardMetadataMap,
+      cardSettingsMap
     );
   }
 
@@ -266,7 +272,8 @@ export function buildOrReturnStateWithPinnedCopy(
   cardToPinnedCopyCache: CardToPinnedCard,
   pinnedCardToOriginal: PinnedCardToCard,
   cardStepIndexMap: CardStepIndexMap,
-  cardMetadataMap: CardMetadataMap
+  cardMetadataMap: CardMetadataMap,
+  cardSettingsMap: CardSettingsMap
 ): ResolvedPinPartialState {
   // No-op if the card already has a pinned copy.
   if (cardToPinnedCopy.has(cardId)) {
@@ -276,6 +283,7 @@ export function buildOrReturnStateWithPinnedCopy(
       pinnedCardToOriginal,
       cardStepIndex: cardStepIndexMap,
       cardMetadataMap,
+      cardSettingsMap,
     };
   }
 
@@ -284,6 +292,7 @@ export function buildOrReturnStateWithPinnedCopy(
   const nextPinnedCardToOriginal = new Map(pinnedCardToOriginal);
   const nextCardStepIndexMap = {...cardStepIndexMap};
   const nextCardMetadataMap = {...cardMetadataMap};
+  const nextCardSettingsMap = {...cardSettingsMap};
 
   // Create a pinned copy. Copies step index from the original card.
   const pinnedCardId = getPinnedCardId(cardId);
@@ -299,6 +308,9 @@ export function buildOrReturnStateWithPinnedCopy(
     throw new Error('Cannot pin a card without metadata');
   }
   nextCardMetadataMap[pinnedCardId] = metadata;
+  if (nextCardSettingsMap[cardId]) {
+    nextCardSettingsMap[pinnedCardId] = {...cardSettingsMap[cardId]};
+  }
 
   return {
     cardToPinnedCopy: nextCardToPinnedCopy,
@@ -306,6 +318,7 @@ export function buildOrReturnStateWithPinnedCopy(
     pinnedCardToOriginal: nextPinnedCardToOriginal,
     cardStepIndex: nextCardStepIndexMap,
     cardMetadataMap: nextCardMetadataMap,
+    cardSettingsMap: nextCardSettingsMap,
   };
 }
 

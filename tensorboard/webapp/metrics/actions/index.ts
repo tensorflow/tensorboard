@@ -23,6 +23,7 @@ import {
   TimeSeriesRequest,
   TimeSeriesResponse,
 } from '../data_source';
+import {CardSettings} from '../store/metrics_types';
 import {
   CardId,
   HeaderEditInfo,
@@ -62,6 +63,14 @@ export const metricsTagMetadataLoaded = createAction(
 
 export const metricsTagMetadataFailed = createAction(
   '[Metrics] Metrics Tag Metadata Failed'
+);
+
+export const metricsCardSettingsUpdated = createAction(
+  '[Metrics] Metrics Card Settings Updated',
+  props<{
+    cardId: CardId;
+    settings: CardSettings;
+  }>()
 );
 
 export const metricsChangeTooltipSort = createAction(

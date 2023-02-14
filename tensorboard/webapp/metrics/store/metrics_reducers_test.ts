@@ -2186,6 +2186,9 @@ describe('metrics reducers', () => {
         },
       };
       const beforeState = buildMetricsState({
+        cardSettingsMap: {
+          card1: {},
+        },
         cardMetadataMap: {
           card1: cardMetadata,
         },
@@ -2209,6 +2212,10 @@ describe('metrics reducers', () => {
 
       const expectedPinnedCopyId = getPinnedCardId('card1');
       const expectedState = buildMetricsState({
+        cardSettingsMap: {
+          card1: {},
+          [expectedPinnedCopyId]: {},
+        },
         cardMetadataMap: {
           card1: cardMetadata,
           [expectedPinnedCopyId]: cardMetadata,
@@ -2262,6 +2269,42 @@ describe('metrics reducers', () => {
       expect(() => {
         return reducers(beforeState, action);
       }).toThrow();
+    });
+  });
+
+  describe('metricsCardSettingsUpdated', () => {
+    it('adds new cardId', () => {
+      const state = buildMetricsState();
+      const action = actions.metricsCardSettingsUpdated({
+        cardId: 'card1',
+        settings: {},
+      });
+      const nextState = reducers(state, action);
+      expect(nextState.cardSettingsMap).toEqual({
+        card1: {},
+      });
+    });
+
+    it('updates existing card settings', () => {
+      const state = buildMetricsState({
+        cardSettingsMap: {
+          card1: {
+            tableExpanded: true,
+          },
+        },
+      });
+      const action = actions.metricsCardSettingsUpdated({
+        cardId: 'card1',
+        settings: {
+          tableExpanded: false,
+        },
+      });
+      const nextState = reducers(state, action);
+      expect(nextState.cardSettingsMap).toEqual({
+        card1: {
+          tableExpanded: false,
+        },
+      });
     });
   });
 

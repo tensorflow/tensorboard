@@ -94,6 +94,7 @@ function buildBlankState(): MetricsState {
     pinnedCardToOriginal: new Map(),
     unresolvedImportedPinnedCards: [],
     cardMetadataMap: {},
+    cardSettingsMap: {},
     cardStepIndex: {},
     visibleCardMap: new Map(),
     tagFilter: '',
@@ -286,7 +287,7 @@ export function provideMockCardSeriesData(
 ) {
   const cardMetadata = {...createCardMetadata(plugin), ...metadataOverride};
   const runId = cardMetadata.runId;
-  let runToSeries = null;
+  let runToSeries: RunToSeries | null = null;
   let steps: number[] = [];
 
   if (timeSeries !== null) {
