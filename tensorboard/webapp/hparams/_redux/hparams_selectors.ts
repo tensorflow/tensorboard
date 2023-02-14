@@ -15,16 +15,15 @@ limitations under the License.
 import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {DiscreteFilter, HparamAndMetricSpec, IntervalFilter} from '../types';
 import {combineHparamAndMetricSpecs} from './hparams_selectors_utils';
-import {HparamsState, HPARAMS_FEATURE_KEY, State} from './types';
+import {HparamsState, HPARAMS_FEATURE_KEY} from './types';
 import {
   combineDefaultHparamFilters,
   combineDefaultMetricFilters,
   getIdFromExperimentIds,
 } from './utils';
 
-const getHparamsState = createFeatureSelector<State, HparamsState>(
-  HPARAMS_FEATURE_KEY
-);
+const getHparamsState =
+  createFeatureSelector<HparamsState>(HPARAMS_FEATURE_KEY);
 
 const getHparamsDefaultFiltersForExperiments = createSelector(
   getHparamsState,

@@ -23,13 +23,10 @@ import {
   MetricListing,
   NpmiState,
   NPMI_FEATURE_KEY,
-  State,
   ViewActive,
 } from './npmi_types';
 
-const selectNpmiState = createFeatureSelector<State, NpmiState>(
-  NPMI_FEATURE_KEY
-);
+const selectNpmiState = createFeatureSelector<NpmiState>(NPMI_FEATURE_KEY);
 
 export const getPluginDataLoaded = createSelector(
   selectNpmiState,

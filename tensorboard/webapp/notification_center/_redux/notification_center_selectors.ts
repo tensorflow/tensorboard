@@ -17,10 +17,9 @@ import {
   Notification,
   NotificationState,
   NOTIFICATION_FEATURE_KEY,
-  State,
 } from './notification_center_types';
 
-const selectNotifications = createFeatureSelector<State, NotificationState>(
+const selectNotifications = createFeatureSelector<NotificationState>(
   NOTIFICATION_FEATURE_KEY
 );
 

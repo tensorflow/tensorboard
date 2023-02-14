@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createFeatureSelector, createSelector} from '@ngrx/store';
-import {State} from '../../app_state';
 import {DataLoadState, LoadState} from '../../types/data';
 import {ElementId} from '../../util/dom';
 import {DeepReadonly} from '../../util/types';
@@ -42,9 +41,8 @@ import {
   TagMetadata,
 } from './metrics_types';
 
-const selectMetricsState = createFeatureSelector<State, MetricsState>(
-  METRICS_FEATURE_KEY
-);
+const selectMetricsState =
+  createFeatureSelector<MetricsState>(METRICS_FEATURE_KEY);
 
 export const getMetricsTagMetadataLoadState = createSelector(
   selectMetricsState,

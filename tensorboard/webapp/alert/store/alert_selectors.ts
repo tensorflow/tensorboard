@@ -14,11 +14,9 @@ limitations under the License.
 ==============================================================================*/
 import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {AlertInfo} from '../types';
-import {AlertState, ALERT_FEATURE_KEY, State} from './alert_types';
+import {AlertState, ALERT_FEATURE_KEY} from './alert_types';
 
-const selectAlertState = createFeatureSelector<State, AlertState>(
-  ALERT_FEATURE_KEY
-);
+const selectAlertState = createFeatureSelector<AlertState>(ALERT_FEATURE_KEY);
 
 export const getLatestAlert = createSelector(
   selectAlertState,

@@ -44,12 +44,10 @@ import {
   SourceFileSpec,
   StackFrame,
   StackFramesById,
-  State,
 } from './debugger_types';
 
-const selectDebuggerState = createFeatureSelector<State, DebuggerState>(
-  DEBUGGER_FEATURE_KEY
-);
+const selectDebuggerState =
+  createFeatureSelector<DebuggerState>(DEBUGGER_FEATURE_KEY);
 
 export const getDebuggerRunListing = createSelector(
   selectDebuggerState,

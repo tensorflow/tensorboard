@@ -19,13 +19,9 @@ import {
   FeatureFlagMetadataMapType,
   FeatureFlagType,
 } from './feature_flag_metadata';
-import {
-  FeatureFlagState,
-  FEATURE_FLAG_FEATURE_KEY,
-  State,
-} from './feature_flag_types';
+import {FeatureFlagState, FEATURE_FLAG_FEATURE_KEY} from './feature_flag_types';
 
-const selectFeatureFlagState = createFeatureSelector<State, FeatureFlagState>(
+const selectFeatureFlagState = createFeatureSelector<FeatureFlagState>(
   FEATURE_FLAG_FEATURE_KEY
 );
 
