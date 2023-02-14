@@ -18,6 +18,7 @@
 import collections
 import imghdr
 import json
+import urllib.parse
 
 from werkzeug import wrappers
 
@@ -305,10 +306,16 @@ class MetricsPlugin(base_plugin.TBPlugin):
     def _serve_tags(self, request):
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
-        index = self._tags_impl(ctx, experiment=experiment)
+
+        run_ids = None
+        query_params = urllib.parse.parse_qs(request.environ["QUERY_STRING"])
+        if query_params.get("runIds"):
+            run_ids = query_params.get("runIds")
+
+        index = self._tags_impl(ctx, experiment=experiment, run_ids=run_ids)
         return http_util.Respond(request, index, "application/json")
 
-    def _tags_impl(self, ctx, experiment=None):
+    def _tags_impl(self, ctx, experiment=None, run_ids=None):
         """Returns tag metadata for a given experiment's logged metrics.
 
         Args:
@@ -319,10 +326,13 @@ class MetricsPlugin(base_plugin.TBPlugin):
             A nested dict 'd' with keys in ("scalars", "histograms", "images")
                 and values being the return type of _format_*mapping.
         """
+
+        run_tag_filter = provider.RunTagFilter(runs=run_ids)
         scalar_mapping = self._data_provider.list_scalars(
             ctx,
             experiment_id=experiment,
             plugin_name=scalar_metadata.PLUGIN_NAME,
+            run_tag_filter=run_tag_filter,
         )
         scalar_mapping = self._filter_by_version(
             scalar_mapping,
@@ -334,6 +344,7 @@ class MetricsPlugin(base_plugin.TBPlugin):
             ctx,
             experiment_id=experiment,
             plugin_name=histogram_metadata.PLUGIN_NAME,
+            run_tag_filter=run_tag_filter,
         )
         if histogram_mapping is None:
             histogram_mapping = {}
@@ -347,6 +358,7 @@ class MetricsPlugin(base_plugin.TBPlugin):
             ctx,
             experiment_id=experiment,
             plugin_name=image_metadata.PLUGIN_NAME,
+            run_tag_filter=run_tag_filter,
         )
         if image_mapping is None:
             image_mapping = {}

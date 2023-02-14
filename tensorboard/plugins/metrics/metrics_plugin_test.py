@@ -369,6 +369,56 @@ class MetricsPluginTest(tf.test.TestCase):
             response["histograms"]["tagDescriptions"],
         )
 
+    def test_tags_with_run_filter(self):
+        self._write_scalar("run1", "scalars/tagA", None)
+        self._write_scalar("run1", "scalars/tagA", None)
+        self._write_scalar("run1", "scalars/tagB", None)
+        self._write_scalar("run2", "scalars/tagB", None)
+        self._write_histogram("run1", "histograms/tagA", None)
+        self._write_histogram("run1", "histograms/tagA", None)
+        self._write_histogram("run1", "histograms/tagB", None)
+        self._write_histogram("run2", "histograms/tagB", None)
+        self._write_image("run1", "images/tagA", 1, None)
+        self._write_image("run1", "images/tagA", 2, None)
+        self._write_image("run1", "images/tagB", 3, None)
+        self._write_image("run2", "images/tagB", 4, None)
+
+        self._multiplexer.Reload()
+        response = self._plugin._tags_impl(
+            context.RequestContext(), "eid", run_ids=["run1"]
+        )
+
+        self.assertEqual(
+            {
+                "runTagInfo": {
+                    "run1": ["scalars/tagA", "scalars/tagB"],
+                },
+                "tagDescriptions": {},
+            },
+            response["scalars"],
+        )
+        self.assertEqual(
+            {
+                "runTagInfo": {
+                    "run1": ["histograms/tagA", "histograms/tagB"],
+                },
+                "tagDescriptions": {},
+            },
+            response["histograms"],
+        )
+        self.assertEqual(
+            {
+                "tagDescriptions": {},
+                "tagRunSampledInfo": {
+                    "images/tagA": {"run1": {"maxSamplesPerStep": 2}},
+                    "images/tagB": {
+                        "run1": {"maxSamplesPerStep": 3},
+                    },
+                },
+            },
+            response["images"],
+        )
+
     def test_time_series_scalar(self):
         self._write_scalar_data("run1", "scalars/tagA", [0, 100, -200])
         self._multiplexer.Reload()
