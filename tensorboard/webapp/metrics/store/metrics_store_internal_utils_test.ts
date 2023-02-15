@@ -28,9 +28,9 @@ import {
   canCreateNewPins,
   createPluginDataWithLoadable,
   createRunToLoadState,
-  generateCardMinMaxStep,
   generateNextCardStepIndex,
   generateNextPinnedCardMappings,
+  generateScalarCardMinMaxStep,
   getCardId,
   getPinnedCardId,
   getRunIds,
@@ -725,7 +725,7 @@ describe('metrics store utils', () => {
     });
   });
 
-  describe('generateCardMinMaxStep', () => {
+  describe('generateScalarCardMinMaxStep', () => {
     it('finds the min and max in scalar datum', () => {
       const maxInScalars: RunToSeries = {
         run1: [
@@ -748,84 +748,9 @@ describe('metrics store utils', () => {
           },
         ],
       };
-      expect(
-        generateCardMinMaxStep(maxInScalars, {
-          plugin: PluginType.SCALARS,
-          tag: 'some-tag',
-          runId: null,
-        })
-      ).toEqual({
+      expect(generateScalarCardMinMaxStep(maxInScalars)).toEqual({
         minStep: 0,
         maxStep: 200,
-      });
-    });
-
-    it('finds the min and max in histogram datum', () => {
-      const maxInHistogram: RunToSeries = {
-        run1: [
-          {
-            step: 0,
-            wallTime: 123,
-            bins: [],
-          },
-          {
-            step: 99,
-            wallTime: 126,
-            bins: [],
-          },
-        ],
-        run3: [{step: -5, wallTime: 125, bins: []}],
-      };
-      expect(
-        generateCardMinMaxStep(maxInHistogram, {
-          plugin: PluginType.HISTOGRAMS,
-          tag: 'some-tag',
-          runId: 'run1',
-        })
-      ).toEqual({
-        minStep: 0,
-        maxStep: 99,
-      });
-    });
-
-    it('finds min and max in image step datum', () => {
-      const maxInImage: RunToSeries = {
-        run1: [
-          {
-            step: 50,
-            wallTime: 1,
-            imageId: 'image1',
-          },
-          {
-            step: 0,
-            wallTime: 2,
-            imageId: 'image2',
-          },
-          {
-            step: 99,
-            wallTime: 3,
-            imageId: 'image3',
-          },
-        ],
-        run2: [
-          {
-            step: -5,
-            wallTime: 1,
-            imageId: 'image4',
-          },
-        ],
-      };
-      expect(
-        generateCardMinMaxStep(maxInImage, {
-          plugin: PluginType.IMAGES,
-          tag: 'some-tag',
-          runId: 'run1',
-          sample: 3,
-          numSample: 5,
-        })
-      ).toEqual({
-        minStep: 0,
-        maxStep: 99,
       });
     });
   });

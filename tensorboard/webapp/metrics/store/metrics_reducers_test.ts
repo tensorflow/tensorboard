@@ -1417,20 +1417,6 @@ describe('metrics reducers', () => {
           maxStep: 99,
         }
       );
-      expectedCardToMinMax.set(
-        '{"plugin":"histograms","tag":"tagB","runId":"run1"}',
-        {
-          minStep: 0,
-          maxStep: 99,
-        }
-      );
-      expectedCardToMinMax.set(
-        '{"plugin":"images","tag":"tagC","runId":"run1","sample":9,"numSample":1}',
-        {
-          minStep: 0,
-          maxStep: 99,
-        }
-      );
       expect(nextState.cardToMinMax).toEqual(expectedCardToMinMax);
 
       const expectedCardToTimeSelection = new Map<
@@ -1444,21 +1430,6 @@ describe('metrics reducers', () => {
           end: null,
         }
       );
-      expectedCardToTimeSelection.set(
-        '{"plugin":"histograms","tag":"tagB","runId":"run1"}',
-        {
-          start: {step: 0},
-          end: null,
-        }
-      );
-      expectedCardToTimeSelection.set(
-        '{"plugin":"images","tag":"tagC","runId":"run1","sample":9,"numSample":1}',
-        {
-          start: {step: 0},
-          end: null,
-        }
-      );
-
       expect(nextState.cardToTimeSelection).toEqual(
         expectedCardToTimeSelection
       );
