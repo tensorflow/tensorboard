@@ -307,27 +307,28 @@ class MetricsPlugin(base_plugin.TBPlugin):
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
 
-        run_ids = None
+        runs = None
         query_params = urllib.parse.parse_qs(request.environ["QUERY_STRING"])
-        if query_params.get("runIds"):
-            run_ids = query_params.get("runIds")
+        if query_params.get("runs"):
+            runs = query_params.get("runs")
 
-        index = self._tags_impl(ctx, experiment=experiment, run_ids=run_ids)
+        index = self._tags_impl(ctx, experiment=experiment, runs=runs)
         return http_util.Respond(request, index, "application/json")
 
-    def _tags_impl(self, ctx, experiment=None, run_ids=None):
+    def _tags_impl(self, ctx, experiment=None, runs=None):
         """Returns tag metadata for a given experiment's logged metrics.
 
         Args:
             ctx: A `tensorboard.context.RequestContext` value.
             experiment: optional string ID of the request's experiment.
+            runs: A list of Run names used to filter the tags returned.
 
         Returns:
             A nested dict 'd' with keys in ("scalars", "histograms", "images")
                 and values being the return type of _format_*mapping.
         """
 
-        run_tag_filter = provider.RunTagFilter(runs=run_ids)
+        run_tag_filter = provider.RunTagFilter(runs=runs)
         scalar_mapping = self._data_provider.list_scalars(
             ctx,
             experiment_id=experiment,
