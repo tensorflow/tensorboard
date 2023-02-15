@@ -385,7 +385,7 @@ class MetricsPluginTest(tf.test.TestCase):
 
         self._multiplexer.Reload()
         response = self._plugin._tags_impl(
-            context.RequestContext(), "eid", run_ids=["run1"]
+            context.RequestContext(), "eid", runs=["run1"]
         )
 
         self.assertEqual(
