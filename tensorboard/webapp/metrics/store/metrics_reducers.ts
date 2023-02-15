@@ -84,6 +84,7 @@ function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {
   const results: CardMetadata[] = [];
   for (let pluginKey of Object.keys(tagMetadata)) {
     const plugin = pluginKey as PluginType;
+    let tagToRuns;
 
     if (isSampledPlugin(plugin)) {
       if (isSingleRunPlugin(plugin)) {
@@ -109,9 +110,9 @@ function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {
         );
       }
     } else {
-      const tagToRuns = tagMetadata[plugin].tagToRuns;
       if (isSingleRunPlugin(plugin)) {
         // Single-run, unsampled format (e.g. Histograms).
+        tagToRuns = tagMetadata[plugin].tagToRuns;
         for (const tag of Object.keys(tagToRuns)) {
           for (const runId of tagToRuns[tag]) {
             results.push({plugin, tag, runId});
@@ -119,6 +120,7 @@ function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {
         }
       } else {
         // Multi-run, unsampled format (e.g. Scalars).
+        tagToRuns = tagMetadata[plugin].tagToRuns;
         for (const tag of Object.keys(tagToRuns)) {
           results.push({plugin, tag, runId: null});
         }
@@ -867,7 +869,6 @@ const reducer = createReducer(
           plugin,
           tag,
           runId: null,
-          sample,
         };
 
         const cardId = getCardId(cardMetadata);

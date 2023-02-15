@@ -727,7 +727,7 @@ describe('metrics store utils', () => {
 
   describe('generateScalarCardMinMaxStep', () => {
     it('finds the min and max in scalar datum', () => {
-      const maxInScalars: RunToSeries = {
+      const minMaxInScalars: RunToSeries = {
         run1: [
           {
             step: 10,
@@ -748,7 +748,7 @@ describe('metrics store utils', () => {
           },
         ],
       };
-      expect(generateScalarCardMinMaxStep(maxInScalars)).toEqual({
+      expect(generateScalarCardMinMaxStep(minMaxInScalars)).toEqual({
         minStep: 0,
         maxStep: 200,
       });
