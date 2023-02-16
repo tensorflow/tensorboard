@@ -35,8 +35,6 @@ import {
 } from '../types';
 import {
   ColumnHeader,
-  ColumnHeaderType,
-  DataTableMode,
   SortingInfo,
 } from '../views/card_renderer/scalar_card_types';
 
@@ -69,7 +67,7 @@ export const metricsCardSettingsUpdated = createAction(
   '[Metrics] Metrics Card Settings Updated',
   props<{
     cardId: CardId;
-    settings: CardSettings;
+    settings: Partial<CardSettings>;
   }>()
 );
 

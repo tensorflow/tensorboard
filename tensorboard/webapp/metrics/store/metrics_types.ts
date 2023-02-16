@@ -126,10 +126,10 @@ export type CardMetadataMap = Record<
 >;
 
 export type CardSettings = {
-  tableExpanded?: boolean;
+  tableExpanded: boolean;
 };
 
-export type CardSettingsMap = Record<CardId, CardSettings>;
+export type CardSettingsMap = Record<CardId, Partial<CardSettings>>;
 
 /**
  * A step index in a card could be set from actions or "modified" from the closest step index
