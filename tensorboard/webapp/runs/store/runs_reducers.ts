@@ -415,7 +415,7 @@ const uiReducers = composeReducers(uiReducer, uiNamespaceContextedReducers);
 /**
  * Reducers for the experiments.
  */
-export function reducers(state: RunsState, action: Action) {
+export function reducers(state: RunsState | undefined, action: Action) {
   return combineReducers({
     data: dataReducers,
     ui: uiReducers,
