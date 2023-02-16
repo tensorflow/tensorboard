@@ -491,18 +491,9 @@ export const getEmptyCardIds = createSelector(
           );
         })
         .filter((cardId) => {
-          const {plugin, tag, sample} = metadataMap[cardId];
-          const loadable = storeUtils.getTimeSeriesLoadable(
-            state.timeSeriesData,
-            plugin,
-            tag,
-            sample
-          );
-          return (
-            !loadable ||
-            !Object.keys(loadable.runToSeries).filter((runName) => {
-              return runSelection?.get(runName);
-            }).length
+          const {tag} = metadataMap[cardId];
+          return state.tagMetadata.scalars.tagToRuns[tag].some(
+            (run) => !runSelection?.get(run)
           );
         })
     );
