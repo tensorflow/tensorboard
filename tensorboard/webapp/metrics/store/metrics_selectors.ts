@@ -491,8 +491,11 @@ export const getEmptyScalarCardIds = createSelector(
           );
         })
         .filter((cardId) => {
+          if (!runSelection || !runSelection.size) {
+            return true;
+          }
           const {tag} = metadataMap[cardId];
-          return state.tagMetadata.scalars.tagToRuns[tag].some(
+          return state.tagMetadata.scalars.tagToRuns[tag].every(
             (run) => !runSelection?.get(run)
           );
         })

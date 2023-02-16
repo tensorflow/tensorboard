@@ -12,6 +12,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {
+  buildAppRoutingState,
+  buildStateFromAppRoutingState,
+} from '../../app_routing/store/testing';
+import {buildRoute} from '../../app_routing/testing';
+import {RouteKind} from '../../app_routing/types';
+import {Run} from '../../runs/store/runs_types';
+import {
+  buildRunsState,
+  buildStateFromRunsState,
+} from '../../runs/store/testing';
 import {DataLoadState} from '../../types/data';
 import {nextElementId} from '../../util/dom';
 import {PluginType} from '../data_source';
@@ -871,56 +882,324 @@ describe('metrics selectors', () => {
   });
 
   describe('getEmptyScalarCardIds', () => {
-    it('treats cards lacking metadata as non-empty', () => {
-      const state = appStateFromMetricsState(
-        buildMetricsState({
-          cardList: ['card1', 'card2', 'card3'],
-          cardMetadataMap: {
-            card1: {
-              plugin: PluginType.SCALARS,
-              tag: 'some-tag',
-              runId: null,
-            },
-            card2: {
-              plugin: PluginType.SCALARS,
-              tag: 'some-other-tag',
-              runId: null,
-            },
-          },
-        })
-      );
+    let runIds: Record<string, string[]>;
+    let runIdToExpId: Record<string, string>;
+    let runMetadata: Record<string, Run>;
+    beforeEach(() => {
+      runIds = {defaultExperimentId: ['run1', 'run2', 'run3']};
+      runIdToExpId = {
+        run1: 'defaultExperimentId',
+        run2: 'defaultExperimentId',
+        run3: 'defaultExperimentId',
+      };
+      runMetadata = {
+        run1: {
+          id: 'run1',
+          name: 'run1',
+          startTime: 0,
+          hparams: null,
+          metrics: null,
+        },
+        run2: {
+          id: 'run2',
+          name: 'run2',
+          startTime: 0,
+          hparams: null,
+          metrics: null,
+        },
+        run3: {
+          id: 'run3',
+          name: 'run3',
+          startTime: 0,
+          hparams: null,
+          metrics: null,
+        },
+      };
+    });
 
-      expect(selectors.getEmptyScalarCardIds(state)).toEqual(
+    it('treats cards lacking metadata as non-empty', () => {
+      const state = {
+        ...appStateFromMetricsState(
+          buildMetricsState({
+            cardList: ['card1', 'card2', 'card3'],
+            cardMetadataMap: {
+              card2: {
+                plugin: PluginType.SCALARS,
+                tag: 'tag-2',
+                runId: null,
+              },
+              card3: {
+                plugin: PluginType.HISTOGRAMS,
+                tag: 'tag-2',
+                runId: 'run1',
+              },
+            },
+            tagMetadata: {
+              histograms: {
+                tagDescriptions: {},
+                tagToRuns: {},
+              },
+              images: {
+                tagDescriptions: {},
+                tagRunSampledInfo: {},
+              },
+              scalars: {
+                tagDescriptions: {},
+                tagToRuns: {
+                  'tag-1': ['run1'],
+                  'tag-2': ['run2', 'run3'],
+                },
+              },
+            },
+          })
+        ),
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: buildRoute({
+              routeKind: RouteKind.EXPERIMENT,
+              params: {},
+            }),
+          })
+        ),
+        ...buildStateFromRunsState(
+          buildRunsState(
+            {
+              runIds,
+              runIdToExpId,
+              runMetadata,
+            },
+            {
+              selectionState: new Map([
+                ['run1', false],
+                ['run2', true],
+                ['run3', false],
+              ]),
+            }
+          )
+        ),
+      };
+
+      expect(selectors.getEmptyScalarCardIds(state)).toEqual(new Set());
+    });
+
+    it('treats non scalar cards as non empty', () => {
+      const state = {
+        ...appStateFromMetricsState(
+          buildMetricsState({
+            cardList: ['card1', 'card2', 'card3'],
+            cardMetadataMap: {
+              card1: {
+                plugin: PluginType.SCALARS,
+                tag: 'tag-1',
+                runId: null,
+              },
+              card2: {
+                plugin: PluginType.SCALARS,
+                tag: 'tag-2',
+                runId: null,
+              },
+              card3: {
+                plugin: PluginType.HISTOGRAMS,
+                tag: 'tag-2',
+                runId: 'run1',
+              },
+            },
+            tagMetadata: {
+              histograms: {
+                tagDescriptions: {},
+                tagToRuns: {},
+              },
+              images: {
+                tagDescriptions: {},
+                tagRunSampledInfo: {},
+              },
+              scalars: {
+                tagDescriptions: {},
+                tagToRuns: {
+                  'tag-1': ['run1'],
+                  'tag-2': ['run2', 'run3'],
+                },
+              },
+            },
+          })
+        ),
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: buildRoute({
+              routeKind: RouteKind.EXPERIMENT,
+              params: {},
+            }),
+          })
+        ),
+        ...buildStateFromRunsState(
+          buildRunsState(
+            {
+              runIds,
+              runIdToExpId,
+              runMetadata,
+            },
+            {
+              selectionState: new Map([
+                ['run1', false],
+                ['run2', true],
+                ['run3', false],
+              ]),
+            }
+          )
+        ),
+      };
+
+      expect(selectors.getEmptyScalarCardIds(state as any)).toEqual(
+        new Set(['card1'])
+      );
+    });
+
+    it('treats all scalar cards as empty when there are no runs selected', () => {
+      const state = {
+        ...appStateFromMetricsState(
+          buildMetricsState({
+            cardList: ['card1', 'card2', 'card3'],
+            cardMetadataMap: {
+              card1: {
+                plugin: PluginType.SCALARS,
+                tag: 'tag-1',
+                runId: null,
+              },
+              card2: {
+                plugin: PluginType.SCALARS,
+                tag: 'tag-2',
+                runId: null,
+              },
+              card3: {
+                plugin: PluginType.HISTOGRAMS,
+                tag: 'tag-2',
+                runId: 'run1',
+              },
+            },
+            tagMetadata: {
+              histograms: {
+                tagDescriptions: {},
+                tagToRuns: {},
+              },
+              images: {
+                tagDescriptions: {},
+                tagRunSampledInfo: {},
+              },
+              scalars: {
+                tagDescriptions: {},
+                tagToRuns: {
+                  'tag-1': ['run1'],
+                  'tag-2': ['run2', 'run3'],
+                },
+              },
+            },
+          })
+        ),
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: buildRoute({
+              routeKind: RouteKind.EXPERIMENT,
+              params: {},
+            }),
+          })
+        ),
+        ...buildStateFromRunsState(
+          buildRunsState(
+            {
+              runIds,
+              runIdToExpId,
+              runMetadata,
+            },
+            {
+              selectionState: new Map(),
+            }
+          )
+        ),
+      };
+
+      expect(selectors.getEmptyScalarCardIds(state as any)).toEqual(
         new Set(['card1', 'card2'])
       );
     });
 
-    it('treats non scalar cards as non empty', () => {
-      const state = appStateFromMetricsState(
-        buildMetricsState({
-          cardList: ['card1', 'card2', 'card3'],
-          cardMetadataMap: {
-            card1: {
-              plugin: PluginType.SCALARS,
-              tag: 'some-tag',
-              runId: null,
+    fit('checks runs found in all selected experiments', () => {
+      const state = {
+        ...appStateFromMetricsState(
+          buildMetricsState({
+            cardList: ['card1', 'card2', 'card3'],
+            cardMetadataMap: {
+              card1: {
+                plugin: PluginType.SCALARS,
+                tag: 'tag-1',
+                runId: null,
+              },
+              card2: {
+                plugin: PluginType.SCALARS,
+                tag: 'tag-2',
+                runId: null,
+              },
+              card3: {
+                plugin: PluginType.HISTOGRAMS,
+                tag: 'tag-2',
+                runId: 'run1',
+              },
             },
-            card2: {
-              plugin: PluginType.SCALARS,
-              tag: 'some-other-tag',
-              runId: null,
+            tagMetadata: {
+              histograms: {
+                tagDescriptions: {},
+                tagToRuns: {},
+              },
+              images: {
+                tagDescriptions: {},
+                tagRunSampledInfo: {},
+              },
+              scalars: {
+                tagDescriptions: {},
+                tagToRuns: {
+                  'tag-1': ['run1'],
+                  'tag-2': ['run2', 'run3'],
+                },
+              },
             },
-            card3: {
-              plugin: PluginType.HISTOGRAMS,
-              tag: 'some-other-tag',
-              runId: 'run1',
+          })
+        ),
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: buildRoute({
+              routeKind: RouteKind.COMPARE_EXPERIMENT,
+              params: {
+                experimentIds: 'experiment1:123,experiment2:456',
+              },
+            }),
+          })
+        ),
+        ...buildStateFromRunsState(
+          buildRunsState(
+            {
+              runIds: {
+                123: ['run1', 'run2', 'run3'],
+                456: ['run2'],
+              },
+              runIdToExpId: {
+                run1: '123',
+                run2: '456',
+                run3: '123',
+              },
+              runMetadata,
             },
-          },
-        })
-      );
+            {
+              selectionState: new Map([
+                ['run1', false],
+                ['run2', true],
+                ['run3', false],
+              ]),
+            }
+          )
+        ),
+      };
 
-      expect(selectors.getEmptyScalarCardIds(state)).toEqual(
-        new Set(['card1', 'card2'])
+      expect(selectors.getEmptyScalarCardIds(state as any)).toEqual(
+        new Set(['card1'])
       );
     });
   });
