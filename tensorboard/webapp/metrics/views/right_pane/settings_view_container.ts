@@ -180,11 +180,13 @@ export class SettingsViewContainer {
     selectors.getMetricsImageShowActualSize
   );
 
-  readonly numEmptyCards$ = this.store.select(selectors.getEmptyCardIds).pipe(
-    map((emptyCardIds) => {
-      return emptyCardIds.size;
-    })
-  );
+  readonly numEmptyCards$ = this.store
+    .select(selectors.getEmptyScalarCardIds)
+    .pipe(
+      map((emptyCardIds) => {
+        return emptyCardIds.size;
+      })
+    );
   readonly hideEmptyCards$ = this.store.select(
     selectors.getMetricsHideEmptyCards
   );

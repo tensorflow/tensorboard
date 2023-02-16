@@ -471,7 +471,7 @@ export const isMetricsSlideoutMenuOpen = createSelector(
   (state): boolean => state.isSlideoutMenuOpen
 );
 
-export const getEmptyCardIds = createSelector(
+export const getEmptyScalarCardIds = createSelector(
   selectMetricsState,
   getCardMetadataMap,
   getCardIds,

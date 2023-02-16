@@ -19,7 +19,7 @@ import {combineLatestWith, map} from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {getMetricsFilteredPluginTypes} from '../../store';
 import {
-  getEmptyCardIds,
+  getEmptyScalarCardIds,
   getMetricsHideEmptyCards,
 } from '../../store/metrics_selectors';
 import {groupCardIdWithMetdata} from '../../utils';
@@ -54,7 +54,7 @@ export class CardGroupsContainer {
       }),
       combineLatestWith(
         this.store.select(getMetricsHideEmptyCards),
-        this.store.select(getEmptyCardIds)
+        this.store.select(getEmptyScalarCardIds)
       ),
       map(([cardList, hideEmptyCards, emptyCardIds]) => {
         if (!hideEmptyCards) return cardList;

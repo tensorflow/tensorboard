@@ -603,6 +603,18 @@ describe('metrics selectors', () => {
       expect(selectors.getMetricsScalarSmoothing(state)).toBe(0);
     });
 
+    it('returns hideEmptyCards when getMetricsHideEmptyCards is called', () => {
+      selectors.getMetricsHideEmptyCards.release();
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          settings: buildMetricsSettingsState({
+            hideEmptyCards: false,
+          }),
+        })
+      );
+      expect(selectors.getMetricsHideEmptyCards(state)).toBe(false);
+    });
+
     it('returns scalarPartitionNonMonotonicX', () => {
       selectors.getMetricsScalarPartitionNonMonotonicX.release();
       const state = appStateFromMetricsState(
@@ -855,6 +867,61 @@ describe('metrics selectors', () => {
         buildMetricsState({isSettingsPaneOpen: false})
       );
       expect(selectors.isMetricsSettingsPaneOpen(state)).toEqual(false);
+    });
+  });
+
+  describe('getEmptyScalarCardIds', () => {
+    it('treats cards lacking metadata as non-empty', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          cardList: ['card1', 'card2', 'card3'],
+          cardMetadataMap: {
+            card1: {
+              plugin: PluginType.SCALARS,
+              tag: 'some-tag',
+              runId: null,
+            },
+            card2: {
+              plugin: PluginType.SCALARS,
+              tag: 'some-other-tag',
+              runId: null,
+            },
+          },
+        })
+      );
+
+      expect(selectors.getEmptyScalarCardIds(state)).toEqual(
+        new Set(['card1', 'card2'])
+      );
+    });
+
+    it('treats non scalar cards as non empty', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          cardList: ['card1', 'card2', 'card3'],
+          cardMetadataMap: {
+            card1: {
+              plugin: PluginType.SCALARS,
+              tag: 'some-tag',
+              runId: null,
+            },
+            card2: {
+              plugin: PluginType.SCALARS,
+              tag: 'some-other-tag',
+              runId: null,
+            },
+            card3: {
+              plugin: PluginType.HISTOGRAMS,
+              tag: 'some-other-tag',
+              runId: 'run1',
+            },
+          },
+        })
+      );
+
+      expect(selectors.getEmptyScalarCardIds(state)).toEqual(
+        new Set(['card1', 'card2'])
+      );
     });
   });
 });

@@ -51,6 +51,7 @@ export function buildMetricsSettingsState(
     tooltipSort: TooltipSort.NEAREST,
     ignoreOutliers: false,
     xAxisType: XAxisType.WALL_TIME,
+    hideEmptyCards: false,
     scalarSmoothing: 0.3,
     scalarPartitionNonMonotonicX: false,
     imageBrightnessInMilli: 123,
