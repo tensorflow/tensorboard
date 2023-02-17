@@ -377,7 +377,11 @@ describe('metrics store utils', () => {
         new Map(),
         new Map(),
         {card1: buildStepIndexMetadata({index: 2})},
+<<<<<<< HEAD
         new Map()
+=======
+        {}
+>>>>>>> master
       );
 
       const pinnedCardId = getPinnedCardId('card1');
@@ -415,7 +419,11 @@ describe('metrics store utils', () => {
         new Map(),
         {card1: buildStepIndexMetadata({index: 2})},
         {card1: createCardMetadata()},
+<<<<<<< HEAD
         initialCardToTimeSelectionMap
+=======
+        {}
+>>>>>>> master
       );
       const pinnedCardId = getPinnedCardId('card1');
 
@@ -442,7 +450,11 @@ describe('metrics store utils', () => {
           new Map(),
           {},
           {},
+<<<<<<< HEAD
           new Map()
+=======
+          {}
+>>>>>>> master
         );
       }).toThrow();
     });
@@ -469,7 +481,11 @@ describe('metrics store utils', () => {
         pinnedCardToOriginal,
         cardStepIndexMap,
         cardMetadataMap,
+<<<<<<< HEAD
         cardToTimeSelection
+=======
+        {}
+>>>>>>> master
       );
 
       expect(result.cardToPinnedCopy).toEqual(originals.cardToPinnedCopy);

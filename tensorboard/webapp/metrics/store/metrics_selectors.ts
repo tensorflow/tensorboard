@@ -30,10 +30,15 @@ import {
   TooltipSort,
   XAxisType,
 } from '../types';
-import {ColumnHeader} from '../views/card_renderer/scalar_card_types';
+import {
+  ColumnHeader,
+  MinMaxStep,
+} from '../views/card_renderer/scalar_card_types';
 import * as storeUtils from './metrics_store_internal_utils';
+import {getMinMaxStepFromCardState} from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
+  CardStateMap,
   CardStepIndexMetaData,
   MetricsSettings,
   MetricsState,
@@ -142,6 +147,13 @@ export const getCardMetadata = createSelector(
   }
 );
 
+export const getCardStateMap = createSelector(
+  selectMetricsState,
+  (state: MetricsState): CardStateMap => {
+    return state.cardStateMap;
+  }
+);
+
 // A cheap identity selector to skip recomputing selectors when `state` changes.
 const selectVisibleCardMap = createSelector(
   selectMetricsState,
@@ -195,19 +207,19 @@ export const getCardStepIndexMetaData = createSelector(
  * Gets the time selection of a metrics card.
  */
 export const getMetricsCardTimeSelection = createSelector(
-  selectMetricsState,
-  (state: MetricsState): Map<CardId, TimeSelection> => {
-    return state.cardToTimeSelection;
+  getCardStateMap,
+  (cardStateMap: CardStateMap, cardId: CardId): TimeSelection | undefined => {
+    return cardStateMap[cardId]?.timeSelection;
   }
 );
 
 /**
  * Gets the min and max step of a metrics card.
  */
-export const getMetricsCardToMinMax = createSelector(
-  selectMetricsState,
-  (state: MetricsState) => {
-    return state.cardToMinMax;
+export const getMetricsCardMinMax = createSelector(
+  getCardStateMap,
+  (cardStateMap: MetricsState, cardId: CardId): MinMaxStep | undefined => {
+    return getMinMaxStepFromCardState(cardStateMap[cardId]);
   }
 );
 

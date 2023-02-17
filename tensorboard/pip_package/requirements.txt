@@ -28,7 +28,7 @@ numpy >= 1.12.0
 # https://github.com/tensorflow/tensorflow/blob/9d22f4a0a9499c8e10a4312503e63e0da35ccd94/tensorflow/tools/pip_package/setup.py#L100-L107
 protobuf >= 3.19.6
 requests >= 2.21.0, < 3
-setuptools >= 41.0.0
+setuptools >= 41.0.0  # Note: provides pkg_resources as well as setuptools
 tensorboard-data-server >= 0.7.0, < 0.8.0
 tensorboard-plugin-wit >= 1.6.0
 werkzeug >= 1.0.1

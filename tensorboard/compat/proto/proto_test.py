@@ -145,11 +145,13 @@ PROTO_IMPORTS = [
 ]
 
 PROTO_REPLACEMENTS = [
+    # Keep replacements here in sync with the sed command in update.sh.
     ("tensorflow/core/framework/", "tensorboard/compat/proto/"),
-    ("tensorflow/core/protobuf/", "tensorboard/compat/proto/"),
     ("tensorflow/core/profiler/", "tensorboard/compat/proto/"),
-    ("tensorflow/python/framework/", "tensorboard/compat/proto/"),
+    ("tensorflow/core/protobuf/", "tensorboard/compat/proto/"),
     ("tensorflow/core/util/", "tensorboard/compat/proto/"),
+    ("tensorflow/python/framework/", "tensorboard/compat/proto/"),
+    ("tensorflow/tsl/protobuf", "tensorboard/compat/proto"),
     ('package: "tensorflow.tfprof"', 'package: "tensorboard"'),
     ('package: "tensorflow"', 'package: "tensorboard"'),
     ('type_name: ".tensorflow.tfprof', 'type_name: ".tensorboard'),
@@ -166,17 +168,26 @@ This is expected to happen when TensorFlow updates their proto definitions.
 We pin copies of the protos, but TensorFlow can freely update them at any
 time.
 
-The proper fix is:
+To get this test passing, follow these steps:
 
-1. In your TensorFlow clone, check out the version of TensorFlow whose
-   protos you want to update (e.g., `git checkout v2.2.0-rc0`)
-2. In your tensorboard repo, run:
+1. Identify the version of TensorFlow that you want to update the protos to
+   match. Typically, this is the version of TF that is in the environment
+   that you are using when running this test. For releases, this is typically
+   the TF release candidate that we are testing against for our own release.
+
+2. Clone the TensorFlow git repo and check out the commit that aligns with the
+   TF version from step 1. For tagged release candidates this is typically just
+   checking out the tag (e.g., `git checkout v2.2.0-rc0`). If the target TF
+   version is untagged (e.g. a tf-nightly release), you'll need to pick a
+   commit close in time to when that release was cut.
+
+3. In your tensorboard repo, run:
 
     ./tensorboard/compat/proto/update.sh PATH_TO_TENSORFLOW_REPO
 
-3. Verify the updates build. In your tensorboard repo, run:
+4. Verify the updates build. In your tensorboard repo, run:
 
-    bazel build tensorboard/compat/proto/...
+    bazel build //tensorboard/compat/proto/...
 
   If they fail with an error message like the following:
 
@@ -186,14 +197,28 @@ The proper fix is:
 
     touch tensorboard/compat/proto/full_type.proto
 
-  And return to step 2. `update.sh` will only copy files that already exist in
+  And rerun `update.sh`. The script will only copy files that already exist in
   the tensorboard repo.
 
-4. Update the rust data server proto binaries. In your tensorboard repo, run:
+5. Verify that this test now passes. Ensure that the target version of TF from
+   step 1 is the version in your virtual environment, and then run:
+
+    bazel test //tensorboard/compat/proto:proto_test
+
+   If it doesn't pass, the possible reasons might be:
+     - Skew between the TF version in your environment, and the TF commit you
+       selected in step 2. Adjust the commit as necessary to resolve the skew.
+     - Logic in the update script and/or this test might be outdated if the TF
+       proto behavior has changed in ways that are valid, but not yet supported
+       by the script and/or test. Update the script and/or test as necessary.
+
+   Ensure the test passes before proceeding.
+
+5. Update the rust data server proto binaries. In your tensorboard repo, run:
 
     bazel run //tensorboard/data/server:update_protos
 
-5. Review and commit any changes.
+6. Review and commit any changes.
 
 """
 

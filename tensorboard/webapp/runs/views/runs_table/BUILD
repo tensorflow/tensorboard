@@ -7,18 +7,28 @@ licenses(["notice"])
 tf_sass_binary(
     name = "runs_table_styles",
     src = "runs_table_component.scss",
-    deps = ["//tensorboard/webapp:angular_material_sass_deps"],
+    strict_deps = False,
+    deps = [
+        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/theme",
+    ],
 )
 
 tf_sass_binary(
     name = "runs_group_menu_button_styles",
     src = "runs_group_menu_button_component.scss",
-    deps = ["//tensorboard/webapp:angular_material_sass_deps"],
+    strict_deps = False,
+    deps = [
+        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/theme",
+    ],
 )
 
 tf_sass_binary(
     name = "regex_edit_dialog_styles",
     src = "regex_edit_dialog_component.scss",
+    strict_deps = False,
+    deps = ["//tensorboard/webapp/theme"],
 )
 
 tf_ng_module(
@@ -124,6 +134,7 @@ tf_ts_library(
         "//tensorboard/webapp/settings:testing",
         "//tensorboard/webapp/testing:dom",
         "//tensorboard/webapp/testing:mat_icon",
+        "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/widgets/experiment_alias",

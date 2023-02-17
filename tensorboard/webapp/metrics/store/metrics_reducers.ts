@@ -259,11 +259,10 @@ const {initialState, reducers: namespaceContextedReducer} =
       cardList: [],
       cardToPinnedCopy: new Map(),
       cardToPinnedCopyCache: new Map(),
-      cardToMinMax: new Map(),
-      cardToTimeSelection: new Map(),
       pinnedCardToOriginal: new Map(),
       unresolvedImportedPinnedCards: [],
       cardMetadataMap: {},
+      cardStateMap: {},
       cardStepIndex: {},
       tagFilter: '',
       tagGroupExpanded: new Map<string, boolean>(),
@@ -403,7 +402,7 @@ const reducer = createReducer(
       state.cardToPinnedCopyCache,
       state.pinnedCardToOriginal,
       state.cardStepIndex,
-      state.cardToTimeSelection
+      state.cardStateMap
     );
 
     const hydratedSmoothing = hydratedState.metrics.smoothing;
@@ -590,7 +589,7 @@ const reducer = createReducer(
         state.cardToPinnedCopyCache,
         nextPinnedCardToOriginal,
         nextCardStepIndex,
-        state.cardToTimeSelection
+        state.cardStateMap
       );
 
       return {
@@ -606,6 +605,15 @@ const reducer = createReducer(
       };
     }
   ),
+  on(actions.metricsCardStateUpdated, (state, {cardId, settings}) => {
+    const nextcardStateMap = {...state.cardStateMap};
+    nextcardStateMap[cardId] = {...settings};
+
+    return {
+      ...state,
+      cardStateMap: nextcardStateMap,
+    };
+  }),
   on(actions.metricsTagFilterChanged, (state, {tagFilter}) => {
     return {
       ...state,
@@ -816,8 +824,7 @@ const reducer = createReducer(
       {response}: {response: TimeSeriesResponse}
     ): MetricsState => {
       const nextStepMinMax = {...state.stepMinMax};
-      const nextCardToMinMax = new Map(state.cardToMinMax);
-      const nextCardToTimeSeletion = new Map(state.cardToTimeSelection);
+      const nextCardStateMap = {...state.cardStateMap};
       // Update time series.
       const nextTimeSeriesData = {...state.timeSeriesData};
       const {plugin, tag, runId, sample} = response;
@@ -875,17 +882,10 @@ const reducer = createReducer(
         const nextMinMax = generateScalarCardMinMaxStep(
           loadable.runToSeries as RunToSeries<PluginType.SCALARS>
         );
-        if (!nextCardToMinMax.get(cardId)) {
-          nextCardToMinMax.set(cardId, nextMinMax);
+        if (!nextCardStateMap[cardId]) {
+          nextCardStateMap[cardId] = {};
         }
-        if (!nextCardToTimeSeletion.get(cardId)) {
-          nextCardToTimeSeletion.set(cardId, {
-            start: {step: nextMinMax.minStep},
-            end: state.rangeSelectionEnabled
-              ? {step: nextMinMax.maxStep}
-              : null,
-          });
-        }
+        nextCardStateMap[cardId].dataMinMax = nextMinMax;
       }
 
       const nextState: MetricsState = {
@@ -898,8 +898,7 @@ const reducer = createReducer(
           state.timeSeriesData
         ),
         stepMinMax: nextStepMinMax,
-        cardToMinMax: nextCardToMinMax,
-        cardToTimeSelection: nextCardToTimeSeletion,
+        cardStateMap: nextCardStateMap,
       };
       return nextState;
     }
@@ -963,9 +962,9 @@ const reducer = createReducer(
     let nextCardToPinnedCopy = new Map(state.cardToPinnedCopy);
     let nextCardToPinnedCopyCache = new Map(state.cardToPinnedCopyCache);
     let nextPinnedCardToOriginal = new Map(state.pinnedCardToOriginal);
-    let nextCardToTimeSelection = new Map(state.cardToTimeSelection);
     let nextCardMetadataMap = {...state.cardMetadataMap};
     let nextCardStepIndexMap = {...state.cardStepIndex};
+    let nextCardStateMap = {...state.cardStateMap};
 
     if (isPinnedCopy) {
       const originalCardId = state.pinnedCardToOriginal.get(cardId);
@@ -974,6 +973,7 @@ const reducer = createReducer(
       nextPinnedCardToOriginal.delete(cardId);
       delete nextCardMetadataMap[cardId];
       delete nextCardStepIndexMap[cardId];
+      delete nextCardStateMap[cardId];
     } else {
       if (shouldPin) {
         const resolvedResult = buildOrReturnStateWithPinnedCopy(
@@ -983,14 +983,14 @@ const reducer = createReducer(
           nextPinnedCardToOriginal,
           nextCardStepIndexMap,
           nextCardMetadataMap,
-          nextCardToTimeSelection
+          nextCardStateMap
         );
         nextCardToPinnedCopy = resolvedResult.cardToPinnedCopy;
         nextCardToPinnedCopyCache = resolvedResult.cardToPinnedCopyCache;
         nextPinnedCardToOriginal = resolvedResult.pinnedCardToOriginal;
         nextCardMetadataMap = resolvedResult.cardMetadataMap;
         nextCardStepIndexMap = resolvedResult.cardStepIndex;
-        nextCardToTimeSelection = resolvedResult.cardToTimeSelection;
+        nextCardStateMap = resolvedResult.cardStateMap;
       } else {
         const pinnedCardId = state.cardToPinnedCopy.get(cardId)!;
         nextCardToPinnedCopy.delete(cardId);
@@ -998,15 +998,16 @@ const reducer = createReducer(
         nextPinnedCardToOriginal.delete(pinnedCardId);
         delete nextCardMetadataMap[pinnedCardId];
         delete nextCardStepIndexMap[pinnedCardId];
+        delete nextCardStateMap[cardId];
       }
     }
     return {
       ...state,
       cardMetadataMap: nextCardMetadataMap,
+      cardStateMap: nextCardStateMap,
       cardStepIndex: nextCardStepIndexMap,
       cardToPinnedCopy: nextCardToPinnedCopy,
       cardToPinnedCopyCache: nextCardToPinnedCopyCache,
-      cardToTimeSelection: nextCardToTimeSelection,
       pinnedCardToOriginal: nextPinnedCardToOriginal,
     };
   }),
@@ -1046,7 +1047,6 @@ const reducer = createReducer(
     const nextRangeSelectionEnabled = !state.rangeSelectionEnabled;
     let nextStepSelectorEnabled = state.stepSelectorEnabled;
     let linkedTimeSelection = state.linkedTimeSelection;
-    let nextCardToTimeSelection = new Map(state.cardToTimeSelection);
 
     if (nextRangeSelectionEnabled) {
       nextStepSelectorEnabled = nextRangeSelectionEnabled;
@@ -1062,16 +1062,6 @@ const reducer = createReducer(
           end: {step: state.stepMinMax.max},
         };
       }
-      Array.from(nextCardToTimeSelection.entries()).forEach(
-        ([cardId, timeSelection]) => {
-          if (!timeSelection.end) {
-            nextCardToTimeSelection.set(cardId, {
-              start: timeSelection.start,
-              end: {step: state.cardToMinMax.get(cardId)?.maxStep || Infinity},
-            });
-          }
-        }
-      );
     } else {
       if (linkedTimeSelection) {
         linkedTimeSelection = {
@@ -1085,17 +1075,6 @@ const reducer = createReducer(
       stepSelectorEnabled: nextStepSelectorEnabled,
       rangeSelectionEnabled: nextRangeSelectionEnabled,
       linkedTimeSelection,
-      cardToTimeSelection: nextCardToTimeSelection,
-    };
-  }),
-  on(actions.cardMinMaxChanged, (state, change) => {
-    const {cardId, minMax} = change;
-    const nextCardToMinMax = new Map(state.cardToMinMax);
-    nextCardToMinMax.set(cardId, minMax);
-
-    return {
-      ...state,
-      cardToMinMax: nextCardToMinMax,
     };
   }),
   on(actions.timeSelectionChanged, (state, change) => {
@@ -1127,16 +1106,19 @@ const reducer = createReducer(
         state.timeSeriesData,
         linkedTimeSelection
       );
-    const nextCardToTimeSeletion = new Map(state.cardToTimeSelection);
+    const nextCardStateMap = {...state.cardStateMap};
     if (cardId) {
-      nextCardToTimeSeletion.set(cardId, linkedTimeSelection);
+      if (!nextCardStateMap[cardId]) {
+        nextCardStateMap[cardId] = {};
+      }
+      nextCardStateMap[cardId].timeSelection = linkedTimeSelection;
     }
 
     return {
       ...state,
       linkedTimeSelection,
       cardStepIndex: nextCardStepIndexMap,
-      cardToTimeSelection: nextCardToTimeSeletion,
+      cardStateMap: nextCardStateMap,
       rangeSelectionEnabled: nextRangeSelectionEnabled,
     };
   }),
@@ -1182,7 +1164,7 @@ const reducer = createReducer(
       singleSelectionHeaders: newOrder,
     };
   }),
-  on(actions.dataTableColumnEdited, (state, {fobState, headers}) => {
+  on(actions.dataTableColumnEdited, (state, {dataTableMode, headers}) => {
     const enabledNewHeaders: ColumnHeader[] = [];
     const disabledNewHeaders: ColumnHeader[] = [];
 
@@ -1195,7 +1177,7 @@ const reducer = createReducer(
       }
     });
 
-    if (fobState === DataTableMode.RANGE) {
+    if (dataTableMode === DataTableMode.RANGE) {
       return {
         ...state,
         rangeSelectionHeaders: enabledNewHeaders.concat(disabledNewHeaders),
@@ -1207,9 +1189,9 @@ const reducer = createReducer(
       singleSelectionHeaders: enabledNewHeaders.concat(disabledNewHeaders),
     };
   }),
-  on(actions.dataTableColumnToggled, (state, {fobState, headerType}) => {
+  on(actions.dataTableColumnToggled, (state, {dataTableMode, headerType}) => {
     const targetedHeaders =
-      fobState === DataTableMode.RANGE
+      dataTableMode === DataTableMode.RANGE
         ? state.rangeSelectionHeaders
         : state.singleSelectionHeaders;
 
@@ -1235,7 +1217,7 @@ const reducer = createReducer(
       enabled: !newHeaders[newToggledHeaderIndex].enabled,
     };
 
-    if (fobState === DataTableMode.RANGE) {
+    if (dataTableMode === DataTableMode.RANGE) {
       return {
         ...state,
         rangeSelectionHeaders: newHeaders,

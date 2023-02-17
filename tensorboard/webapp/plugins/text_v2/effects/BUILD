@@ -40,6 +40,7 @@ tf_ts_library(
         "//tensorboard/webapp/plugins/text_v2/actions",
         "//tensorboard/webapp/plugins/text_v2/data_source",
         "//tensorboard/webapp/plugins/text_v2/store",
+        "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/webapp_data_source:http_client_testing",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",

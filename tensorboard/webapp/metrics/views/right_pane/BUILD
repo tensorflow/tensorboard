@@ -5,7 +5,11 @@ package(default_visibility = ["//tensorboard:internal"])
 tf_sass_binary(
     name = "settings_view_styles",
     src = "settings_view_component.scss",
-    deps = ["//tensorboard/webapp:angular_material_sass_deps"],
+    strict_deps = False,
+    deps = [
+        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/theme",
+    ],
 )
 
 tf_ng_module(
@@ -75,6 +79,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/store",
+        "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/widgets/card_fob:types",
         "//tensorboard/webapp/widgets/dropdown",
         "//tensorboard/webapp/widgets/range_input:types",

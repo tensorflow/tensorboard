@@ -126,6 +126,15 @@ export type CardMetadataMap = Record<
   CardMetadata
 >;
 
+export type CardState = {
+  dataMinMax: MinMaxStep;
+  userMinMax: MinMaxStep;
+  timeSelection: TimeSelection;
+  tableExpanded: boolean;
+};
+
+export type CardStateMap = Record<CardId, Partial<CardState>>;
+
 /**
  * A step index in a card could be set from actions or "modified" from the closest step index
  * set when linked time selection changed. When it is set from linked time selection, closest is true.
@@ -151,10 +160,6 @@ export type CardToPinnedCard = Map<NonPinnedCardId, PinnedCardId>;
 
 export type PinnedCardToCard = Map<PinnedCardId, NonPinnedCardId>;
 
-export type CardToMinMax = Map<CardId, MinMaxStep>;
-
-export type CardToTimeSelection = Map<CardId, TimeSelection>;
-
 export interface MetricsNamespacedState {
   tagMetadataLoadState: LoadState;
   tagMetadata: TagMetadata;
@@ -164,9 +169,6 @@ export interface MetricsNamespacedState {
   // A map of card ids that previously pinned by the user.
   cardToPinnedCopyCache: CardToPinnedCard;
   pinnedCardToOriginal: PinnedCardToCard;
-  cardToMinMax: CardToMinMax;
-  // A record of card ids to the time selection of the card
-  cardToTimeSelection: CardToTimeSelection;
   /**
    * Pinned cards imported from storage that do not yet have a corresponding
    * card (e.g. tag metadata might not be loaded yet). Resolving an imported
@@ -178,6 +180,7 @@ export interface MetricsNamespacedState {
    */
   unresolvedImportedPinnedCards: CardUniqueInfo[];
   cardMetadataMap: CardMetadataMap;
+  cardStateMap: CardStateMap;
   cardStepIndex: CardStepIndexMap;
   tagFilter: string;
   tagGroupExpanded: Map<string, boolean>;

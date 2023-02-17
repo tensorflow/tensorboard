@@ -80,6 +80,7 @@ tf_ts_library(
         "//tensorboard/webapp/notification_center/_data_source",
         "//tensorboard/webapp/notification_center/_data_source:testing",
         "//tensorboard/webapp/persistent_settings",
+        "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/webapp_data_source:http_client_testing",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",

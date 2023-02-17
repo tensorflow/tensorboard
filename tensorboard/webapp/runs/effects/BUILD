@@ -44,6 +44,7 @@ tf_ts_library(
         "//tensorboard/webapp/runs/actions",
         "//tensorboard/webapp/runs/data_source",
         "//tensorboard/webapp/runs/data_source:testing",
+        "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/types",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",

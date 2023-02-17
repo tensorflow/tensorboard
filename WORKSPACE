@@ -18,8 +18,10 @@ versions.check(
     # Keep this version in sync with:
     #  * The BAZEL environment variable defined in .github/workflows/ci.yml, which is used for CI and nightly builds.
     minimum_bazel_version = "4.2.2",
-    # TODO(https://github.com/tensorflow/tensorboard/issues/6115): Support building TensorBoard with Bazel version >= 6.0.0
-    maximum_bazel_version = "5.4.0",
+    # Preemptively assume the next Bazel major version will break us, since historically they do,
+    # and provide a clean error message in that case. Since the maximum version is inclusive rather
+    # than exclusive, we set it to the 999th patch release of the current major version.
+    maximum_bazel_version = "6.999.0",
 )
 
 http_archive(
@@ -115,8 +117,14 @@ sass_repositories()
 # This dependency specifies the version of protobuf that will be used to compile
 # protos as part of TensorBoard's build (i.e., the protoc version).
 #
-# This version must always be <= the protobuf runtime version, which is the version of
-# the "protobuf" pip package as specified in our requirements.txt file.
+# The generated Python code for those protos relies on a Python runtime library,
+# which is provided by the `protobuf` pip package. To ensure compatibility, the
+# protoc version must be <= the runtime version. In our case, that means we must
+# set the minimum `protobuf` version in our requirements.txt to be at least as
+# high as the version of protobuf we depend on below, and we cannot increase the
+# version below without bumping the requirements.txt version.
+#
+# TODO(#6185): Remove the TODO below once the TF constraint no longer applies.
 #
 # NOTE: This dependency currently cannot be advanced past 3.19.x. This is because
 # TF is currently unable to use a runtime any greater than 3.19.x, see details here:

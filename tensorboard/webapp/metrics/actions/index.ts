@@ -23,8 +23,11 @@ import {
   TimeSeriesRequest,
   TimeSeriesResponse,
 } from '../data_source';
+import {CardState} from '../store/metrics_types';
 import {
   CardId,
+  HeaderEditInfo,
+  HeaderToggleInfo,
   HistogramMode,
   MinMaxStep,
   PluginType,
@@ -33,8 +36,6 @@ import {
 } from '../types';
 import {
   ColumnHeader,
-  ColumnHeaderType,
-  DataTableMode,
   SortingInfo,
 } from '../views/card_renderer/scalar_card_types';
 
@@ -61,6 +62,14 @@ export const metricsTagMetadataLoaded = createAction(
 
 export const metricsTagMetadataFailed = createAction(
   '[Metrics] Metrics Tag Metadata Failed'
+);
+
+export const metricsCardStateUpdated = createAction(
+  '[Metrics] Metrics Card State Updated',
+  props<{
+    cardId: CardId;
+    settings: Partial<CardState>;
+  }>()
 );
 
 export const metricsChangeTooltipSort = createAction(
@@ -221,18 +230,12 @@ export const dataTableColumnDrag = createAction(
 
 export const dataTableColumnEdited = createAction(
   '[Metrics] Data table columns edited in edit menu',
-  props<{
-    fobState: DataTableMode;
-    headers: ColumnHeader[];
-  }>()
+  props<HeaderEditInfo>()
 );
 
 export const dataTableColumnToggled = createAction(
   '[Metrics] Data table column toggled in edit menu',
-  props<{
-    fobState: DataTableMode;
-    headerType: ColumnHeaderType;
-  }>()
+  props<HeaderToggleInfo>()
 );
 
 export const stepSelectorToggled = createAction(

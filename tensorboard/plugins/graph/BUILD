@@ -14,12 +14,12 @@ py_library(
         ":keras_util",
         ":metadata",
         "//tensorboard:errors",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend:process_graph",
         "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
-        "@com_google_protobuf//:protobuf_python",
         "@org_pocoo_werkzeug",
     ],
 )
@@ -29,7 +29,10 @@ py_test(
     size = "small",
     srcs = ["graphs_plugin_test.py"],
     srcs_version = "PY3",
-    deps = [":graphs_plugin_test_lib"],
+    deps = [
+        ":graphs_plugin_test_lib",
+        "//tensorboard:expect_protobuf_installed",
+    ],
 )
 
 py_library(
@@ -40,13 +43,13 @@ py_library(
     deps = [
         ":graphs_plugin",
         "//tensorboard:context",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
-        "@com_google_protobuf//:protobuf_python",
         "@org_pocoo_werkzeug",
     ],
 )
@@ -62,9 +65,9 @@ py_test(
         ":graphs_plugin_test_lib",
         "//tensorboard:errors",
         "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
-        "@com_google_protobuf//:protobuf_python",
     ],
 )
 
@@ -77,6 +80,7 @@ py_test(
     srcs_version = "PY3",
     deps = [
         ":graphs_plugin",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
@@ -84,7 +88,6 @@ py_test(
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
-        "@com_google_protobuf//:protobuf_python",
         "@org_pocoo_werkzeug",
     ],
 )
@@ -118,9 +121,9 @@ py_test(
     srcs_version = "PY3",
     deps = [
         ":keras_util",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
-        "@com_google_protobuf//:protobuf_python",
     ],
 )
 
@@ -142,9 +145,9 @@ py_test(
     srcs_version = "PY3",
     deps = [
         ":graph_util",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
-        "@com_google_protobuf//:protobuf_python",
     ],
 )
 

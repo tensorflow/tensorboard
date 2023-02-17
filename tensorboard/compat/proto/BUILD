@@ -23,6 +23,7 @@ py_test(
     ],
     deps = [
         ":protos_all_py_pb2",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )
@@ -237,7 +238,9 @@ tb_proto_library(
 tb_proto_library(
     name = "summary",
     srcs = ["summary.proto"],
-    exports = [":histogram"],
+    exports = [
+        ":histogram",
+    ],
     deps = [
         ":histogram",
         ":tensor",

@@ -101,7 +101,9 @@ limitations under the License.
     *ngIf="isSidepaneOpen"
     class="slide-out-menu"
     [ngClass]="{'slide-out-menu-expanded':slideOutMenuOpen}"
-  ></div>
+  >
+    <metrics-scalar-column-editor></metrics-scalar-column-editor>
+  </div>
   <div class="sidebar" *ngIf="isSidepaneOpen">
     <div class="header">
       <h2 class="title">Settings</h2>

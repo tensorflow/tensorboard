@@ -7,6 +7,8 @@ licenses(["notice"])
 tf_sass_binary(
     name = "debugger_component_style",
     src = "debugger_component.scss",
+    strict_deps = False,
+    deps = ["//tensorboard/webapp/theme"],
 )
 
 # TODO(cais): Consider replacing old debuger plugin with this before launch,

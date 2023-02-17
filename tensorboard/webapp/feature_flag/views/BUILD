@@ -7,7 +7,11 @@ licenses(["notice"])
 tf_sass_binary(
     name = "style",
     src = "feature_flag_page_component.scss",
-    deps = ["//tensorboard/webapp:angular_material_sass_deps"],
+    strict_deps = False,
+    deps = [
+        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/theme",
+    ],
 )
 
 tf_ng_module(
@@ -79,6 +83,7 @@ tf_ts_library(
         "//tensorboard/webapp/feature_flag/actions",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/feature_flag/store:testing",
+        "//tensorboard/webapp/testing:utils",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",

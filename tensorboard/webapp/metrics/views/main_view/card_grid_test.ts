@@ -30,7 +30,7 @@ import {
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';
 import {
@@ -38,6 +38,7 @@ import {
   getMetricsTagGroupExpansionState,
 } from '../../../selectors';
 import {selectors as settingsSelectors} from '../../../settings';
+import {provideMockTbStore} from '../../../testing/utils';
 import {PluginType} from '../../data_source';
 import {CardIdWithMetadata} from '../metrics_view_types';
 import {CardGridComponent} from './card_grid_component';
@@ -96,7 +97,7 @@ describe('card grid', () => {
         TestableCardView,
         TestableScrollingContainer,
       ],
-      providers: [provideMockStore()],
+      providers: [provideMockTbStore()],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 

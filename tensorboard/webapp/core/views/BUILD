@@ -5,6 +5,8 @@ package(default_visibility = ["//tensorboard:internal"])
 tf_sass_binary(
     name = "layout_styles",
     src = "layout_container.scss",
+    strict_deps = False,
+    deps = ["//tensorboard/webapp/theme"],
 )
 
 tf_ng_module(
@@ -110,6 +112,7 @@ tf_ts_library(
         "//tensorboard/webapp/deeplink",
         "//tensorboard/webapp/experiments/store:testing",
         "//tensorboard/webapp/testing:mat_icon",
+        "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/util:dom",
         "@npm//@angular/common",
         "@npm//@angular/core",

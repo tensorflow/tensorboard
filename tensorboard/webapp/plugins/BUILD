@@ -7,6 +7,8 @@ licenses(["notice"])
 tf_sass_binary(
     name = "plugins_component_styles",
     src = "plugins_component.scss",
+    strict_deps = False,
+    deps = ["//tensorboard/webapp/theme"],
 )
 
 tf_ng_module(
@@ -71,6 +73,7 @@ tf_ts_library(
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/plugins/testing",
         "//tensorboard/webapp/settings",
+        "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",
         "@npm//@angular/core",

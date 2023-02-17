@@ -32,6 +32,8 @@ then
 fi
 
 # Rewrite file paths and package names and disable LINT checks.
+#
+# NOTE: Keep replacements here in sync with PROTO_REPLACEMENTS in proto_test.py.
 find tensorboard/compat/proto/ -type f  -name '*.proto' -exec perl -pi \
   -e 's|tensorflow/core/framework|tensorboard/compat/proto|g;' \
   -e 's|tensorflow/core/protobuf|tensorboard/compat/proto|g;' \
@@ -65,9 +67,18 @@ find tensorboard/compat/proto/ -type f  -name '*.proto' -exec perl -pi \
       printf 'tb_proto_library(\n'
       printf '    name = "%s",\n' "${f%.proto}"
       printf '    srcs = ["%s"],\n' "$f"
+      # Generate one dep for each imported proto.
       if grep -q '^import\( public\)* "tensorboard/' "$f"; then
         printf '    deps = [\n'
         grep '^import\( public\)* "tensorboard/' "$f" | sort |
+          sed -e 's#.*compat/proto/\([^.]*\).*#        ":\1",#'
+        printf '    ],\n'
+      fi
+      # Generate one export for each public imported proto. The exports are
+      # unused in open source but needed for our internal build.
+      if grep -q '^import public "tensorboard/' "$f"; then
+        printf '    exports = [\n'
+        grep '^import public "tensorboard/' "$f" | sort |
           sed -e 's#.*compat/proto/\([^.]*\).*#        ":\1",#'
         printf '    ],\n'
       fi

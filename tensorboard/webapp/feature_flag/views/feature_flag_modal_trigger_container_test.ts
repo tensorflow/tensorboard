@@ -25,8 +25,9 @@ import {
 import {MatDialogHarness} from '@angular/material/dialog/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {State} from '../../app_state';
+import {provideMockTbStore} from '../../testing/utils';
 import {
   getDefaultFeatureFlags,
   getOverriddenFeatureFlags,
@@ -51,7 +52,7 @@ describe('feature_flag_modal_trigger_container', () => {
       imports: [MatDialogModule, NoopAnimationsModule],
       declarations: [FeatureFlagPageContainer],
       providers: [
-        provideMockStore(),
+        provideMockTbStore(),
         {provide: MatDialogRef, useValue: MatDialog},
       ],
       schemas: [NO_ERRORS_SCHEMA],

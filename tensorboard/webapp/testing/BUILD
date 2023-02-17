@@ -60,6 +60,24 @@ tf_ng_module(
     ],
 )
 
+tf_ts_library(
+    name = "utils",
+    srcs = [
+        "utils.ts",
+    ],
+    deps = [
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/testing",
+        "//tensorboard/webapp/alert/store:testing",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
+        "//tensorboard/webapp/core/testing",
+        "//tensorboard/webapp/feature_flag/store:testing",
+        "//tensorboard/webapp/metrics:test_lib",
+        "//tensorboard/webapp/plugins/npmi/testing",
+        "//tensorboard/webapp/settings:testing",
+        "@npm//@ngrx/store",
+    ],
+)
+
 tf_ng_module(
     name = "integration_test_module",
     srcs = [

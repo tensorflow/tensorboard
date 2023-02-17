@@ -40,6 +40,7 @@ tf_ng_module(
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/feature_flag/store:feature_flag_metadata",
         "//tensorboard/webapp/feature_flag/store:types",
+        "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/webapp_data_source:feature_flag_testing",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",

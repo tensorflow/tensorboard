@@ -1,9 +1,4 @@
-load(
-    "//tensorboard/defs:defs.bzl",
-    "tf_ng_module",
-    "tf_sass_binary",
-    "tf_ts_library",
-)
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -12,6 +7,8 @@ licenses(["notice"])
 tf_sass_binary(
     name = "embedding_projection_component_styles",
     src = "embedding_projection_component.scss",
+    strict_deps = False,
+    deps = ["//tensorboard/webapp/theme"],
 )
 
 tf_ng_module(

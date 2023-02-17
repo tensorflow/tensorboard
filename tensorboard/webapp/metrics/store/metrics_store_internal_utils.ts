@@ -28,10 +28,11 @@ import {
 } from '../types';
 import {
   CardMetadataMap,
+  CardState,
+  CardStateMap,
   CardStepIndexMap,
   CardStepIndexMetaData,
   CardToPinnedCard,
-  CardToTimeSelection,
   MetricsState,
   PinnedCardToCard,
   RunToLoadState,
@@ -48,7 +49,7 @@ type ResolvedPinPartialState = Pick<
   | 'cardToPinnedCopyCache'
   | 'pinnedCardToOriginal'
   | 'cardStepIndex'
-  | 'cardToTimeSelection'
+  | 'cardStateMap'
 >;
 
 const DISTANCE_RATIO = 0.1;
@@ -211,7 +212,7 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
   cardToPinnedCopyCache: CardToPinnedCard,
   pinnedCardToOriginal: PinnedCardToCard,
   cardStepIndexMap: CardStepIndexMap,
-  cardToTimeSelection: CardToTimeSelection
+  cardStateMap: CardStateMap
 ): ResolvedPinPartialState & {unresolvedImportedPinnedCards: CardUniqueInfo[]} {
   const unresolvedPinSet = new Set(unresolvedImportedPinnedCards);
   const nonPinnedCardsWithMatch: string[] = [];
@@ -233,8 +234,8 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
       cardToPinnedCopy,
       cardToPinnedCopyCache,
       pinnedCardToOriginal,
-      cardToTimeSelection,
       cardStepIndex: cardStepIndexMap,
+      cardStateMap,
     };
   }
 
@@ -244,7 +245,7 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
     pinnedCardToOriginal,
     cardStepIndex: cardStepIndexMap,
     cardMetadataMap,
-    cardToTimeSelection,
+    cardStateMap,
   };
   for (const cardToPin of nonPinnedCardsWithMatch) {
     stateWithResolvedPins = buildOrReturnStateWithPinnedCopy(
@@ -254,7 +255,7 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
       stateWithResolvedPins.pinnedCardToOriginal,
       stateWithResolvedPins.cardStepIndex,
       stateWithResolvedPins.cardMetadataMap,
-      stateWithResolvedPins.cardToTimeSelection
+      cardStateMap
     );
   }
 
@@ -275,7 +276,7 @@ export function buildOrReturnStateWithPinnedCopy(
   pinnedCardToOriginal: PinnedCardToCard,
   cardStepIndexMap: CardStepIndexMap,
   cardMetadataMap: CardMetadataMap,
-  nextCardToTimeSelection: CardToTimeSelection
+  cardStateMap: CardStateMap
 ): ResolvedPinPartialState {
   // No-op if the card already has a pinned copy.
   if (cardToPinnedCopy.has(cardId)) {
@@ -285,7 +286,7 @@ export function buildOrReturnStateWithPinnedCopy(
       pinnedCardToOriginal,
       cardStepIndex: cardStepIndexMap,
       cardMetadataMap,
-      cardToTimeSelection: nextCardToTimeSelection,
+      cardStateMap,
     };
   }
 
@@ -294,15 +295,13 @@ export function buildOrReturnStateWithPinnedCopy(
   const nextPinnedCardToOriginal = new Map(pinnedCardToOriginal);
   const nextCardStepIndexMap = {...cardStepIndexMap};
   const nextCardMetadataMap = {...cardMetadataMap};
+  const nextCardStateMap = {...cardStateMap};
 
   const pinnedCardId = getPinnedCardId(cardId);
   nextCardToPinnedCopy.set(cardId, pinnedCardId);
   nextCardToPinnedCopyCache.set(cardId, pinnedCardId);
   nextPinnedCardToOriginal.set(pinnedCardId, cardId);
-  const originalTimeSelection = nextCardToTimeSelection.get(cardId);
-  if (originalTimeSelection) {
-    nextCardToTimeSelection.set(pinnedCardId, {...originalTimeSelection});
-  }
+
   if (cardStepIndexMap.hasOwnProperty(cardId)) {
     nextCardStepIndexMap[pinnedCardId] = cardStepIndexMap[cardId];
   }
@@ -313,13 +312,35 @@ export function buildOrReturnStateWithPinnedCopy(
   }
   nextCardMetadataMap[pinnedCardId] = metadata;
 
+  // If the card has state
+  // 1) Create a deep copy of the state
+  // 2) Set the new state equal to the copy
+  // 3) Set any pinned versions equal to the copy
+  if (nextCardStateMap[cardId]) {
+    const nextCardState = Object.entries(nextCardStateMap[cardId]).reduce(
+      (cardState, [key, value]) => {
+        if (Array.isArray(value)) {
+          cardState[key] = [...value];
+        } else if (typeof value === 'object') {
+          cardState[key] = {...value};
+        } else {
+          cardState[key] = value;
+        }
+        return cardState;
+      },
+      {} as Partial<CardState>
+    );
+    nextCardStateMap[cardId] = nextCardState;
+    nextCardStateMap[pinnedCardId] = {...nextCardState};
+  }
+
   return {
     cardToPinnedCopy: nextCardToPinnedCopy,
     cardToPinnedCopyCache: nextCardToPinnedCopyCache,
     pinnedCardToOriginal: nextPinnedCardToOriginal,
     cardStepIndex: nextCardStepIndexMap,
     cardMetadataMap: nextCardMetadataMap,
-    cardToTimeSelection: nextCardToTimeSelection,
+    cardStateMap: nextCardStateMap,
   };
 }
 
@@ -573,3 +594,12 @@ export const TEST_ONLY = {
   generateNextCardStepIndexFromLinkedTimeSelection,
   util,
 };
+
+/**
+ * Determines what a cards realized min max should be by examining the min and max steps in the data as well as any user defined min and max
+ * @param cardState
+ */
+export function getMinMaxStepFromCardState(cardState: CardState) {
+  const {dataMinMax, userMinMax} = cardState;
+  return userMinMax || dataMinMax;
+}

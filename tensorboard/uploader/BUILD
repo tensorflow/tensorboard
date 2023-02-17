@@ -105,6 +105,7 @@ py_library(
         ":upload_tracker",
         ":util",
         "//tensorboard:expect_grpc_installed",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard/backend:process_graph",
         "//tensorboard/backend/event_processing:directory_loader",
         "//tensorboard/backend/event_processing:event_file_loader",
@@ -115,7 +116,6 @@ py_library(
         "//tensorboard/util:grpc_util",
         "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
-        "@com_google_protobuf//:protobuf_python",
     ],
 )
 
@@ -140,6 +140,7 @@ py_test(
         "//tensorboard:dataclass_compat",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:expect_grpc_testing_installed",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat:no_tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
@@ -151,7 +152,6 @@ py_test(
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/uploader/proto:protos_all_py_pb2_grpc",
         "//tensorboard/util:test_util",
-        "@com_google_protobuf//:protobuf_python",
     ],
 )
 
@@ -239,8 +239,8 @@ py_library(
     srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_grpc_installed",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
-        "@com_google_protobuf//:protobuf_python",
     ],
 )
 
@@ -256,8 +256,8 @@ py_test(
     deps = [
         ":test_util",
         ":util",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:test",
-        "@com_google_protobuf//:protobuf_python",
     ],
 )
 
@@ -266,11 +266,11 @@ py_library(
     srcs = ["server_info.py"],
     srcs_version = "PY3",
     deps = [
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:expect_requests_installed",
         "//tensorboard:version",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
-        "@com_google_protobuf//:protobuf_python",
     ],
 )
 

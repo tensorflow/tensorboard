@@ -63,6 +63,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/feature_flag:testing",
         "//tensorboard/webapp/metrics:internal_types",
+        "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/webapp_data_source:http_client_testing",
         "@npm//@ngrx/store",
         "@npm//@types/jasmine",

@@ -18,6 +18,7 @@ py_library(
         ":protos_all_py_pb2",
         "//tensorboard:context",
         "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:plugin_asset_util",
         "//tensorboard/compat:tensorflow",
@@ -35,6 +36,7 @@ py_library(
     deps = [
         ":metadata",
         ":protos_all_py_pb2",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard/compat:tensorflow",
     ],
 )
@@ -47,6 +49,7 @@ py_test(
     srcs_version = "PY3",
     deps = [
         ":projector",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:test_util",
     ],
@@ -61,6 +64,7 @@ py_test(
     deps = [
         ":projector_plugin",
         "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:data_provider",
@@ -82,6 +86,7 @@ py_test(
     deps = [
         ":projector_plugin",
         "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:data_provider",

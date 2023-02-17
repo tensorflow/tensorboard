@@ -19,8 +19,9 @@ import {By} from '@angular/platform-browser';
 import {BrowserDynamicTestingModule} from '@angular/platform-browser-dynamic/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {State} from '../../app_state';
+import {provideMockTbStore} from '../../testing/utils';
 import {RouteRegistryModule} from '../route_registry_module';
 import {
   getActiveRoute,
@@ -50,7 +51,7 @@ describe('router_outlet', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [NoopAnimationsModule, RouteRegistryModule],
-      providers: [provideMockStore()],
+      providers: [provideMockTbStore()],
       declarations: [
         RouterOutletComponent,
         RouterOutletContainer,

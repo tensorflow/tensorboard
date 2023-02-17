@@ -55,6 +55,7 @@ tf_ts_library(
         "//tensorboard/webapp/settings:testing",
         "//tensorboard/webapp/settings/_redux",
         "//tensorboard/webapp/testing:mat_icon",
+        "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",
         "@npm//@angular/core",

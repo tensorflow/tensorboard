@@ -29,7 +29,7 @@ import {MatMenuModule} from '@angular/material/menu';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
 import {
   getColorGroupRegexString,
@@ -40,6 +40,7 @@ import {
 import {selectors as settingsSelectors} from '../../../settings';
 import {buildColorPalette} from '../../../settings/testing';
 import {KeyType, sendKey, SendKeyArgs} from '../../../testing/dom';
+import {provideMockTbStore} from '../../../testing/utils';
 import {runGroupByChanged} from '../../actions';
 import {buildRun} from '../../store/testing';
 import {GroupByKey} from '../../types';
@@ -65,7 +66,7 @@ describe('regex_edit_dialog', () => {
       ],
       declarations: [RegexEditDialogComponent, RegexEditDialogContainer],
       providers: [
-        provideMockStore(),
+        provideMockTbStore(),
         {provide: MatDialogRef, useValue: matDialogRefSpy},
       ],
       schemas: [NO_ERRORS_SCHEMA],
