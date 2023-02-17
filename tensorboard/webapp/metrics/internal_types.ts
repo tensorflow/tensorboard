@@ -37,8 +37,8 @@ export enum XAxisType {
 export interface CardMetadata {
   plugin: PluginType;
   tag: string;
-  sample?: number | undefined;
-  numSample?: number | undefined;
+  sample?: number;
+  numSample?: number;
 
   /**
    * A `null` runId indicates all runs.

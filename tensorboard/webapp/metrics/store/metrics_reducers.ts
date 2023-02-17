@@ -867,18 +867,8 @@ const reducer = createReducer(
         }
       }
 
-      if (
-        response.runToSeries &&
-        loadable &&
-        response.plugin === PluginType.SCALARS
-      ) {
-        const cardMetadata: CardMetadata = {
-          plugin,
-          tag,
-          runId: null,
-        };
-
-        const cardId = getCardId(cardMetadata);
+      if (response.runToSeries && response.plugin === PluginType.SCALARS) {
+        const cardId = getCardId({plugin, tag, runId: null});
         const nextMinMax = generateScalarCardMinMaxStep(
           loadable.runToSeries as RunToSeries<PluginType.SCALARS>
         );
@@ -1120,6 +1110,16 @@ const reducer = createReducer(
       cardStepIndex: nextCardStepIndexMap,
       cardStateMap: nextCardStateMap,
       rangeSelectionEnabled: nextRangeSelectionEnabled,
+    };
+  }),
+  on(actions.cardMinMaxChanged, (state, {cardId, minMax}) => {
+    const nextCardStateMap = {...state.cardStateMap};
+    nextCardStateMap[cardId] = {...nextCardStateMap[cardId]};
+    nextCardStateMap[cardId].userMinMax = minMax;
+
+    return {
+      ...state,
+      cardStateMap: nextCardStateMap,
     };
   }),
   on(actions.stepSelectorToggled, (state, {affordance}) => {

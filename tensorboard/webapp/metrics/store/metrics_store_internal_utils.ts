@@ -320,11 +320,11 @@ export function buildOrReturnStateWithPinnedCopy(
     const nextCardState = Object.entries(nextCardStateMap[cardId]).reduce(
       (cardState, [key, value]) => {
         if (Array.isArray(value)) {
-          cardState[key] = [...value];
+          cardState[key as keyof CardState] = [...value] as any;
         } else if (typeof value === 'object') {
-          cardState[key] = {...value};
+          cardState[key as keyof CardState] = {...value} as any;
         } else {
-          cardState[key] = value;
+          cardState[key as keyof CardState] = value as any;
         }
         return cardState;
       },
@@ -599,7 +599,7 @@ export const TEST_ONLY = {
  * Determines what a cards realized min max should be by examining the min and max steps in the data as well as any user defined min and max
  * @param cardState
  */
-export function getMinMaxStepFromCardState(cardState: CardState) {
+export function getMinMaxStepFromCardState(cardState: Partial<CardState>) {
   const {dataMinMax, userMinMax} = cardState;
   return userMinMax || dataMinMax;
 }

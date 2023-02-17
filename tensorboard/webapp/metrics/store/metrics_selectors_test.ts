@@ -25,13 +25,7 @@ import {
   createScalarStepData,
   createTimeSeriesData,
 } from '../testing';
-import {
-  HistogramMode,
-  MinMaxStep,
-  TimeSelection,
-  TooltipSort,
-  XAxisType,
-} from '../types';
+import {HistogramMode, TooltipSort, XAxisType} from '../types';
 import * as selectors from './metrics_selectors';
 
 describe('metrics selectors', () => {
@@ -244,8 +238,8 @@ describe('metrics selectors', () => {
     });
   });
 
-  describe('getCardSettingsMap', () => {
-    it('returns cardSettings', () => {
+  describe('getCardStateMap', () => {
+    it('returns cardStateMap', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
           cardStateMap: {
@@ -432,39 +426,69 @@ describe('metrics selectors', () => {
 
   describe('getMetricsCardTimeSelection', () => {
     it('returns cardToTimeSelection map', () => {
-      const cardToTimeSelection = new Map<string, TimeSelection>();
-      cardToTimeSelection.set('card1', {
-        start: {step: 0},
-        end: {step: 100},
-      });
-
       const state = appStateFromMetricsState(
         buildMetricsState({
-          cardToTimeSelection,
+          cardStateMap: {
+            card1: {
+              timeSelection: {
+                start: {step: 0},
+                end: {step: 5},
+              },
+            },
+          },
         })
       );
 
-      expect(selectors.getMetricsCardTimeSelection(state)).toEqual(
-        cardToTimeSelection
-      );
+      expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
+        start: {step: 0},
+        end: {step: 5},
+      });
     });
   });
 
-  describe('getMetricsCardToMinMax', () => {
-    it('returns cardToMinMax map', () => {
-      const cardToMinMax = new Map<string, MinMaxStep>();
-      cardToMinMax.set('card1', {
-        minStep: 0,
-        maxStep: 100,
-      });
-
+  describe('getMetricsCardMinMax', () => {
+    it('returns userMinMax when defined', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
-          cardToMinMax,
+          cardStateMap: {
+            card1: {
+              userMinMax: {
+                minStep: 10,
+                maxStep: 20,
+              },
+              dataMinMax: {
+                minStep: 0,
+                maxStep: 100,
+              },
+            },
+          },
         })
       );
 
-      expect(selectors.getMetricsCardToMinMax(state)).toEqual(cardToMinMax);
+      expect(selectors.getMetricsCardMinMax(state, 'card1')).toEqual({
+        minStep: 10,
+        maxStep: 20,
+      });
+    });
+
+    it('returns dataMinMax when userMinMax is not defined', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          cardStateMap: {
+            card1: {
+              dataMinMax: {
+                minStep: 0,
+                maxStep: 100,
+              },
+            },
+          },
+        })
+      );
+
+      expect(selectors.getMetricsCardMinMax(state, 'card1')).toEqual({
+        minStep: 0,
+        maxStep: 100,
+      });
     });
   });
 

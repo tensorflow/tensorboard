@@ -218,7 +218,7 @@ export const getMetricsCardTimeSelection = createSelector(
  */
 export const getMetricsCardMinMax = createSelector(
   getCardStateMap,
-  (cardStateMap: MetricsState, cardId: CardId): MinMaxStep | undefined => {
+  (cardStateMap: CardStateMap, cardId: CardId): MinMaxStep | undefined => {
     return getMinMaxStepFromCardState(cardStateMap[cardId]);
   }
 );
