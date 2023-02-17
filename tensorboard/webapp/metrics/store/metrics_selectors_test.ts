@@ -238,6 +238,25 @@ describe('metrics selectors', () => {
     });
   });
 
+  describe('getCardSettingsMap', () => {
+    it('returns cardSettings', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          cardStateMap: {
+            card1: {
+              tableExpanded: true,
+            },
+          },
+        })
+      );
+      expect(selectors.getCardStateMap(state)).toEqual({
+        card1: {
+          tableExpanded: true,
+        },
+      });
+    });
+  });
+
   describe('getNonEmptyCardIdsWithMetadata', () => {
     beforeEach(() => {
       selectors.getNonEmptyCardIdsWithMetadata.release();

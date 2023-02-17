@@ -125,6 +125,12 @@ export type CardMetadataMap = Record<
   CardMetadata
 >;
 
+export type CardState = {
+  tableExpanded: boolean;
+};
+
+export type CardStateMap = Record<CardId, Partial<CardState>>;
+
 /**
  * A step index in a card could be set from actions or "modified" from the closest step index
  * set when linked time selection changed. When it is set from linked time selection, closest is true.
@@ -170,6 +176,7 @@ export interface MetricsNamespacedState {
    */
   unresolvedImportedPinnedCards: CardUniqueInfo[];
   cardMetadataMap: CardMetadataMap;
+  cardStateMap: CardStateMap;
   cardStepIndex: CardStepIndexMap;
   tagFilter: string;
   tagGroupExpanded: Map<string, boolean>;
