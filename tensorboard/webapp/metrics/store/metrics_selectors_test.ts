@@ -242,14 +242,14 @@ describe('metrics selectors', () => {
     it('returns cardSettings', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
-          cardSettingsMap: {
+          cardStateMap: {
             card1: {
               tableExpanded: true,
             },
           },
         })
       );
-      expect(selectors.getCardSettingsMap(state)).toEqual({
+      expect(selectors.getCardStateMap(state)).toEqual({
         card1: {
           tableExpanded: true,
         },

@@ -260,7 +260,7 @@ const {initialState, reducers: namespaceContextedReducer} =
       pinnedCardToOriginal: new Map(),
       unresolvedImportedPinnedCards: [],
       cardMetadataMap: {},
-      cardSettingsMap: {},
+      cardStateMap: {},
       cardStepIndex: {},
       tagFilter: '',
       tagGroupExpanded: new Map<string, boolean>(),
@@ -400,7 +400,7 @@ const reducer = createReducer(
       state.cardToPinnedCopyCache,
       state.pinnedCardToOriginal,
       state.cardStepIndex,
-      state.cardSettingsMap
+      state.cardStateMap
     );
 
     const hydratedSmoothing = hydratedState.metrics.smoothing;
@@ -587,7 +587,7 @@ const reducer = createReducer(
         state.cardToPinnedCopyCache,
         nextPinnedCardToOriginal,
         nextCardStepIndex,
-        state.cardSettingsMap
+        state.cardStateMap
       );
 
       return {
@@ -603,13 +603,13 @@ const reducer = createReducer(
       };
     }
   ),
-  on(actions.metricsCardSettingsUpdated, (state, {cardId, settings}) => {
-    const nextCardSettingsMap = {...state.cardSettingsMap};
-    nextCardSettingsMap[cardId] = {...settings};
+  on(actions.metricsCardStateUpdated, (state, {cardId, settings}) => {
+    const nextcardStateMap = {...state.cardStateMap};
+    nextcardStateMap[cardId] = {...settings};
 
     return {
       ...state,
-      cardSettingsMap: nextCardSettingsMap,
+      cardStateMap: nextcardStateMap,
     };
   }),
   on(actions.metricsTagFilterChanged, (state, {tagFilter}) => {
@@ -939,7 +939,7 @@ const reducer = createReducer(
     let nextPinnedCardToOriginal = new Map(state.pinnedCardToOriginal);
     let nextCardMetadataMap = {...state.cardMetadataMap};
     let nextCardStepIndexMap = {...state.cardStepIndex};
-    let nextCardSettingsMap = {...state.cardSettingsMap};
+    let nextCardStateMap = {...state.cardStateMap};
 
     if (isPinnedCopy) {
       const originalCardId = state.pinnedCardToOriginal.get(cardId);
@@ -948,7 +948,7 @@ const reducer = createReducer(
       nextPinnedCardToOriginal.delete(cardId);
       delete nextCardMetadataMap[cardId];
       delete nextCardStepIndexMap[cardId];
-      delete nextCardSettingsMap[cardId];
+      delete nextCardStateMap[cardId];
     } else {
       if (shouldPin) {
         const resolvedResult = buildOrReturnStateWithPinnedCopy(
@@ -958,14 +958,14 @@ const reducer = createReducer(
           nextPinnedCardToOriginal,
           nextCardStepIndexMap,
           nextCardMetadataMap,
-          nextCardSettingsMap
+          nextCardStateMap
         );
         nextCardToPinnedCopy = resolvedResult.cardToPinnedCopy;
         nextCardToPinnedCopyCache = resolvedResult.cardToPinnedCopyCache;
         nextPinnedCardToOriginal = resolvedResult.pinnedCardToOriginal;
         nextCardMetadataMap = resolvedResult.cardMetadataMap;
         nextCardStepIndexMap = resolvedResult.cardStepIndex;
-        nextCardSettingsMap = resolvedResult.cardSettingsMap;
+        nextCardStateMap = resolvedResult.cardStateMap;
       } else {
         const pinnedCardId = state.cardToPinnedCopy.get(cardId)!;
         nextCardToPinnedCopy.delete(cardId);
@@ -973,13 +973,13 @@ const reducer = createReducer(
         nextPinnedCardToOriginal.delete(pinnedCardId);
         delete nextCardMetadataMap[pinnedCardId];
         delete nextCardStepIndexMap[pinnedCardId];
-        delete nextCardSettingsMap[cardId];
+        delete nextCardStateMap[cardId];
       }
     }
     return {
       ...state,
       cardMetadataMap: nextCardMetadataMap,
-      cardSettingsMap: nextCardSettingsMap,
+      cardStateMap: nextCardStateMap,
       cardStepIndex: nextCardStepIndexMap,
       cardToPinnedCopy: nextCardToPinnedCopy,
       cardToPinnedCopyCache: nextCardToPinnedCopyCache,

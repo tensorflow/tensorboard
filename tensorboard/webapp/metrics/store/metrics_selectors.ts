@@ -34,7 +34,7 @@ import {ColumnHeader} from '../views/card_renderer/scalar_card_types';
 import * as storeUtils from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
-  CardSettingsMap,
+  CardStateMap,
   CardStepIndexMetaData,
   MetricsSettings,
   MetricsState,
@@ -143,10 +143,10 @@ export const getCardMetadata = createSelector(
   }
 );
 
-export const getCardSettingsMap = createSelector(
+export const getCardStateMap = createSelector(
   selectMetricsState,
-  (state: MetricsState): CardSettingsMap => {
-    return state.cardSettingsMap;
+  (state: MetricsState): CardStateMap => {
+    return state.cardStateMap;
   }
 );
 

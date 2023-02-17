@@ -94,7 +94,7 @@ function buildBlankState(): MetricsState {
     pinnedCardToOriginal: new Map(),
     unresolvedImportedPinnedCards: [],
     cardMetadataMap: {},
-    cardSettingsMap: {},
+    cardStateMap: {},
     cardStepIndex: {},
     visibleCardMap: new Map(),
     tagFilter: '',

@@ -125,11 +125,11 @@ export type CardMetadataMap = Record<
   CardMetadata
 >;
 
-export type CardSettings = {
+export type CardState = {
   tableExpanded: boolean;
 };
 
-export type CardSettingsMap = Record<CardId, Partial<CardSettings>>;
+export type CardStateMap = Record<CardId, Partial<CardState>>;
 
 /**
  * A step index in a card could be set from actions or "modified" from the closest step index
@@ -176,7 +176,7 @@ export interface MetricsNamespacedState {
    */
   unresolvedImportedPinnedCards: CardUniqueInfo[];
   cardMetadataMap: CardMetadataMap;
-  cardSettingsMap: CardSettingsMap;
+  cardStateMap: CardStateMap;
   cardStepIndex: CardStepIndexMap;
   tagFilter: string;
   tagGroupExpanded: Map<string, boolean>;

@@ -27,7 +27,7 @@ import {
 } from '../internal_types';
 import {
   CardMetadataMap,
-  CardSettingsMap,
+  CardStateMap,
   CardStepIndexMap,
   CardStepIndexMetaData,
   CardToPinnedCard,
@@ -46,7 +46,7 @@ type ResolvedPinPartialState = Pick<
   | 'cardToPinnedCopyCache'
   | 'pinnedCardToOriginal'
   | 'cardStepIndex'
-  | 'cardSettingsMap'
+  | 'cardStateMap'
 >;
 
 const DISTANCE_RATIO = 0.1;
@@ -209,10 +209,10 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
   cardToPinnedCopyCache: CardToPinnedCard,
   pinnedCardToOriginal: PinnedCardToCard,
   cardStepIndexMap: CardStepIndexMap,
-  cardSettingsMap: CardSettingsMap
+  cardStateMap: CardStateMap
 ): ResolvedPinPartialState & {unresolvedImportedPinnedCards: CardUniqueInfo[]} {
   const unresolvedPinSet = new Set(unresolvedImportedPinnedCards);
-  const nonPinnedCardsWithMatch = [];
+  const nonPinnedCardsWithMatch: string[] = [];
   for (const unresolvedPin of unresolvedImportedPinnedCards) {
     for (const nonPinnedCardId of nonPinnedCards) {
       const cardMetadata = cardMetadataMap[nonPinnedCardId];
@@ -232,7 +232,7 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
       cardToPinnedCopyCache,
       pinnedCardToOriginal,
       cardStepIndex: cardStepIndexMap,
-      cardSettingsMap,
+      cardStateMap,
     };
   }
 
@@ -242,7 +242,7 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
     pinnedCardToOriginal,
     cardStepIndex: cardStepIndexMap,
     cardMetadataMap,
-    cardSettingsMap,
+    cardStateMap,
   };
   for (const cardToPin of nonPinnedCardsWithMatch) {
     stateWithResolvedPins = buildOrReturnStateWithPinnedCopy(
@@ -252,7 +252,7 @@ export function buildOrReturnStateWithUnresolvedImportedPins(
       stateWithResolvedPins.pinnedCardToOriginal,
       stateWithResolvedPins.cardStepIndex,
       stateWithResolvedPins.cardMetadataMap,
-      cardSettingsMap
+      cardStateMap
     );
   }
 
@@ -273,7 +273,7 @@ export function buildOrReturnStateWithPinnedCopy(
   pinnedCardToOriginal: PinnedCardToCard,
   cardStepIndexMap: CardStepIndexMap,
   cardMetadataMap: CardMetadataMap,
-  cardSettingsMap: CardSettingsMap
+  cardStateMap: CardStateMap
 ): ResolvedPinPartialState {
   // No-op if the card already has a pinned copy.
   if (cardToPinnedCopy.has(cardId)) {
@@ -283,7 +283,7 @@ export function buildOrReturnStateWithPinnedCopy(
       pinnedCardToOriginal,
       cardStepIndex: cardStepIndexMap,
       cardMetadataMap,
-      cardSettingsMap,
+      cardStateMap,
     };
   }
 
@@ -292,7 +292,7 @@ export function buildOrReturnStateWithPinnedCopy(
   const nextPinnedCardToOriginal = new Map(pinnedCardToOriginal);
   const nextCardStepIndexMap = {...cardStepIndexMap};
   const nextCardMetadataMap = {...cardMetadataMap};
-  const nextCardSettingsMap = {...cardSettingsMap};
+  const nextCardStateMap = {...cardStateMap};
 
   // Create a pinned copy. Copies step index from the original card.
   const pinnedCardId = getPinnedCardId(cardId);
@@ -308,8 +308,8 @@ export function buildOrReturnStateWithPinnedCopy(
     throw new Error('Cannot pin a card without metadata');
   }
   nextCardMetadataMap[pinnedCardId] = metadata;
-  if (nextCardSettingsMap[cardId]) {
-    nextCardSettingsMap[pinnedCardId] = {...cardSettingsMap[cardId]};
+  if (nextCardStateMap[cardId]) {
+    nextCardStateMap[pinnedCardId] = {...cardStateMap[cardId]};
   }
 
   return {
@@ -318,7 +318,7 @@ export function buildOrReturnStateWithPinnedCopy(
     pinnedCardToOriginal: nextPinnedCardToOriginal,
     cardStepIndex: nextCardStepIndexMap,
     cardMetadataMap: nextCardMetadataMap,
-    cardSettingsMap: nextCardSettingsMap,
+    cardStateMap: nextCardStateMap,
   };
 }
 
@@ -410,7 +410,7 @@ export function generateNextCardStepIndexFromLinkedTimeSelection(
 
     const steps = getImageCardSteps(cardId, cardMetadataMap, timeSeriesData);
 
-    let nextStepIndexMetaData = null;
+    let nextStepIndexMetaData: CardStepIndexMetaData | null = null;
     if (timeSelection.end === null) {
       // Single Selection
       nextStepIndexMetaData = getNextImageCardStepIndexFromSingleSelection(
@@ -480,7 +480,7 @@ function getSelectedSteps(
   }
 
   // Range selection.
-  const selectedStepsInRange = [];
+  const selectedStepsInRange: number[] = [];
   for (const step of steps) {
     if (step >= timeSelection.start.step && step <= timeSelection.end.step) {
       selectedStepsInRange.push(step);
