@@ -586,15 +586,6 @@ function getNextImageCardStepIndexFromRangeSelection(
   return null;
 }
 
-export const TEST_ONLY = {
-  getImageCardSteps,
-  getSelectedSteps,
-  getNextImageCardStepIndexFromRangeSelection,
-  getNextImageCardStepIndexFromSingleSelection,
-  generateNextCardStepIndexFromLinkedTimeSelection,
-  util,
-};
-
 /**
  * Determines what a cards realized min max should be by examining the min and max steps in the data as well as any user defined min and max
  * @param cardState
@@ -603,3 +594,12 @@ export function getMinMaxStepFromCardState(cardState: Partial<CardState>) {
   const {dataMinMax, userMinMax} = cardState;
   return userMinMax || dataMinMax;
 }
+
+export const TEST_ONLY = {
+  getImageCardSteps,
+  getSelectedSteps,
+  getNextImageCardStepIndexFromRangeSelection,
+  getNextImageCardStepIndexFromSingleSelection,
+  generateNextCardStepIndexFromLinkedTimeSelection,
+  util,
+};

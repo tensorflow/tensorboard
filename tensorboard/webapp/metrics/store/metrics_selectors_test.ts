@@ -425,9 +425,10 @@ describe('metrics selectors', () => {
   });
 
   describe('getMetricsCardTimeSelection', () => {
-    it('returns cardToTimeSelection map', () => {
+    it('returns cards timeSelection if defined', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
+          linkedTimeEnabled: false,
           cardStateMap: {
             card1: {
               timeSelection: {
@@ -435,6 +436,44 @@ describe('metrics selectors', () => {
                 end: {step: 5},
               },
             },
+          },
+        })
+      );
+
+      expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
+        start: {step: 0},
+        end: {step: 5},
+      });
+    });
+
+    it('returns cards minMax as a timeSelection if timeSelection is undefined', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          linkedTimeEnabled: false,
+          cardStateMap: {
+            card1: {
+              dataMinMax: {
+                minStep: 0,
+                maxStep: 5,
+              },
+            },
+          },
+        })
+      );
+
+      expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
+        start: {step: 0},
+        end: {step: 5},
+      });
+    });
+
+    it('returns linkedTimeSelection if linkedTime is enabled', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          linkedTimeEnabled: true,
+          linkedTimeSelection: {
+            start: {step: 0},
+            end: {step: 5},
           },
         })
       );

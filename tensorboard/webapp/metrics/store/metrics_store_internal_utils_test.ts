@@ -31,6 +31,7 @@ import {
   generateNextPinnedCardMappings,
   generateScalarCardMinMaxStep,
   getCardId,
+  getMinMaxStepFromCardState,
   getPinnedCardId,
   getRunIds,
   getTimeSeriesLoadable,
@@ -1154,6 +1155,40 @@ describe('metrics store utils', () => {
       );
 
       expect(nextCardStepIndex).toEqual(null);
+    });
+  });
+
+  describe('getMinMaxStepFromCardState', () => {
+    it('returns userMinMax when defined', () => {
+      expect(
+        getMinMaxStepFromCardState({
+          userMinMax: {
+            minStep: 10,
+            maxStep: 20,
+          },
+          dataMinMax: {
+            minStep: 0,
+            maxStep: 100,
+          },
+        })
+      ).toEqual({
+        minStep: 10,
+        maxStep: 20,
+      });
+    });
+
+    it('returns dataMinMax when userMinMax is not defined', () => {
+      expect(
+        getMinMaxStepFromCardState({
+          dataMinMax: {
+            minStep: 0,
+            maxStep: 100,
+          },
+        })
+      ).toEqual({
+        minStep: 0,
+        maxStep: 100,
+      });
     });
   });
 });

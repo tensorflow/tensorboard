@@ -46,7 +46,6 @@ import {
   HistogramMode,
   MinMaxStep,
   NonPinnedCardId,
-  TimeSelection,
   TooltipSort,
   XAxisType,
 } from '../types';
@@ -3072,14 +3071,6 @@ describe('metrics reducers', () => {
         })
       );
 
-      const expectedCardToTimeSelection = new Map<
-        NonPinnedCardId,
-        TimeSelection
-      >();
-      expectedCardToTimeSelection.set('card2', {
-        start: {step: 1},
-        end: {step: 5},
-      });
       expect(state2.cardStateMap).toEqual({
         card1: {},
         card2: {
@@ -3091,7 +3082,7 @@ describe('metrics reducers', () => {
       });
     });
 
-    it('overrides an existing cards time selection', () => {
+    it('overrides an existing cardStateMap timeSelection', () => {
       const state1 = buildMetricsState({
         cardStateMap: {
           card1: {
@@ -3118,14 +3109,6 @@ describe('metrics reducers', () => {
         })
       );
 
-      const expectedCardToTimeSelection = new Map<
-        NonPinnedCardId,
-        TimeSelection
-      >();
-      expectedCardToTimeSelection.set('card1', {
-        start: {step: 1},
-        end: {step: 5},
-      });
       expect(state2.cardStateMap).toEqual({
         card1: {
           dataMinMax: {
