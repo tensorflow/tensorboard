@@ -43,6 +43,7 @@ import {
   ScaleType,
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
+import {CardState} from '../../store';
 import {TooltipSort, XAxisType} from '../../types';
 import {
   ColumnHeader,
@@ -75,6 +76,7 @@ export class ScalarCardComponent<Downloader> {
 
   @Input() cardId!: string;
   @Input() chartMetadataMap!: ScalarCardSeriesMetadataMap;
+  @Input() cardState?: CardState;
   @Input() DataDownloadComponent!: ComponentType<Downloader>;
   @Input() dataSeries!: ScalarCardDataSeries[];
   @Input() ignoreOutliers!: boolean;
@@ -110,6 +112,8 @@ export class ScalarCardComponent<Downloader> {
 
   @Output() onLineChartZoom = new EventEmitter<Extent>();
 
+  @Output() onCardStateChanged = new EventEmitter<Partial<CardState>>();
+
   // Line chart may not exist when was never visible (*ngIf).
   @ViewChild(LineChartComponent)
   lineChart?: LineChartComponent;
@@ -117,6 +121,9 @@ export class ScalarCardComponent<Downloader> {
     header: ColumnHeaderType.RUN,
     order: SortingOrder.ASCENDING,
   };
+
+  @ViewChild('dataTableContainer')
+  dataTableContainer?: ElementRef;
 
   constructor(private readonly ref: ElementRef, private dialog: MatDialog) {}
 
@@ -243,5 +250,18 @@ export class ScalarCardComponent<Downloader> {
       (this.stepOrLinkedTimeSelection !== null ||
         this.isProspectiveFobFeatureEnabled)
     );
+  }
+
+  toggleTableExpanded() {
+    // Manually resizing an element sets a style value on the element which takes
+    // precedence over any classes the element may have. This value must be removed
+    // for the table to expand or collapse correctly.
+    if (this.dataTableContainer) {
+      this.dataTableContainer.nativeElement.style.height = '';
+    }
+    this.onCardStateChanged.emit({
+      ...this.cardState,
+      tableExpanded: !this.cardState?.tableExpanded,
+    });
   }
 }

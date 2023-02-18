@@ -96,7 +96,7 @@ limitations under the License.
       </mat-menu>
     </span>
   </div>
-  <div class="chart-container">
+  <div #chartContainer class="chart-container">
     <mat-spinner
       diameter="18"
       *ngIf="loadState === DataLoadState.LOADING"
@@ -175,7 +175,13 @@ limitations under the License.
   </div>
 </div>
 <ng-container *ngIf="showDataTable()">
-  <div class="data-table-container">
+  <div
+    #dataTableContainer
+    [ngClass]="{
+      'data-table-container': true,
+      'expanded': cardState!.tableExpanded || showFullSize
+    }"
+  >
     <scalar-card-data-table
       [chartMetadataMap]="chartMetadataMap"
       [dataSeries]="dataSeries"
@@ -188,6 +194,20 @@ limitations under the License.
       (orderColumns)="reorderColumnHeaders.emit($event)"
     >
     </scalar-card-data-table>
+  </div>
+  <div class="bottom-area">
+    <button
+      mat-icon-button
+      i18n-aria-label="Expand Table"
+      class="expand-button"
+      aria-label="Expand Table"
+      [title]="cardState!.tableExpanded ? 'Collapse Table' : 'Expand Table'"
+      (click)="toggleTableExpanded()"
+    >
+      <mat-icon
+        [svgIcon]="cardState!.tableExpanded ? 'expand_less_24px' : 'expand_more_24px'"
+      ></mat-icon>
+    </button>
   </div>
 </ng-container>
 <ng-template

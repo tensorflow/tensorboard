@@ -77,6 +77,7 @@ import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {stepSelectorToggled, timeSelectionChanged} from '../../actions';
 import {PluginType} from '../../data_source';
 import {
+  getCardSettingsMap,
   getMetricsLinkedTimeEnabled,
   getMetricsLinkedTimeSelection,
   getMetricsRangeSelectionEnabled,
@@ -3401,6 +3402,80 @@ describe('scalar card', () => {
       expect(data[4].RUN).toEqual('2 b/run5');
       expect(data[5].RUN).toEqual('3 c/run6');
       expect(data[6].RUN).toEqual('1 a/run7');
+    }));
+  });
+
+  describe('toggleTableExpanded', () => {
+    beforeEach(() => {
+      store.overrideSelector(getMetricsLinkedTimeEnabled, true);
+      store.overrideSelector(getSingleSelectionHeaders, [
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.SMOOTHED, enabled: true},
+        {type: ColumnHeaderType.VALUE, enabled: true},
+        {type: ColumnHeaderType.STEP, enabled: true},
+        {type: ColumnHeaderType.RELATIVE_TIME, enabled: true},
+      ]);
+      store.overrideSelector(getRangeSelectionHeaders, [
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.MIN_VALUE, enabled: true},
+        {type: ColumnHeaderType.MAX_VALUE, enabled: true},
+        {type: ColumnHeaderType.START_VALUE, enabled: true},
+        {type: ColumnHeaderType.END_VALUE, enabled: true},
+        {type: ColumnHeaderType.VALUE_CHANGE, enabled: true},
+        {type: ColumnHeaderType.PERCENTAGE_CHANGE, enabled: true},
+        {type: ColumnHeaderType.START_STEP, enabled: true},
+        {type: ColumnHeaderType.END_STEP, enabled: true},
+      ]);
+
+      const runToSeries = {
+        run1: [
+          {wallTime: 1, value: 1, step: 1},
+          {wallTime: 2, value: 10, step: 2},
+          {wallTime: 3, value: 20, step: 3},
+        ],
+        run2: [
+          {wallTime: 1, value: 1, step: 1},
+          {wallTime: 2, value: 10, step: 2},
+          {wallTime: 3, value: 20, step: 3},
+        ],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([
+          ['run1', true],
+          ['run2', true],
+        ])
+      );
+
+      store.overrideSelector(getMetricsLinkedTimeSelection, {
+        start: {step: 2},
+        end: null,
+      });
+
+      store.overrideSelector(getCardSettingsMap, {});
+    });
+
+    it('clears inline styles', fakeAsync(() => {
+      const fixture = createComponent('card1');
+      fixture.detectChanges();
+      const component = fixture.debugElement.query(
+        By.directive(ScalarCardComponent)
+      );
+      expect(component.componentInstance.dataTableContainer).toBeDefined();
+      component.componentInstance.dataTableContainer.nativeElement.style =
+        'height: 123px;';
+      component.componentInstance.toggleTableExpanded();
+      expect(
+        component.componentInstance.dataTableContainer.nativeElement.style
+          .cssText
+      ).toEqual('');
     }));
   });
 

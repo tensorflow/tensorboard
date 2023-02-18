@@ -12,31 +12,47 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 @import '../common';
 
 $_title-to-heading-gap: 12px;
+
+$_min_content_height: $metrics-min-card-height - 2px -
+  ($metrics-preferred-gap * 2) + $_title-to-heading-gap;
 
 :host {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   height: 100%;
-  overflow: auto;
   padding: $metrics-preferred-gap;
   // When vertically centered, the title's text-top contains extra space above
   // the text, which counts towards the visually perceived white space.
   padding-top: $metrics-preferred-gap - $_title-to-heading-gap;
+
+  &:has(.data-table-container) {
+    padding: $metrics-preferred-gap $metrics-preferred-gap 0;
+  }
+
+  &:hover {
+    .bottom-area {
+      .expand-button {
+        visibility: visible;
+      }
+    }
+  }
 }
 
 .always-visible {
   display: flex;
-  // The content that is always visible should match the min height of a card,
-  // taking into account padding and 2px for the card border.
-  flex-basis: $metrics-min-card-height - 2px - ($metrics-preferred-gap * 2) +
-    $_title-to-heading-gap;
   flex-direction: column;
   flex-grow: 1;
+  transition: flex-basis 300ms ease-in-out;
+
+  // The content that is always visible should match the min height of a card,
+  // taking into account padding and 2px for the card border.
+  flex-basis: $_min_content_height;
 }
 
 .heading {
@@ -78,7 +94,9 @@ $_title-to-heading-gap: 12px;
 }
 
 .chart-container {
+  overflow: hidden;
   flex-grow: 1;
+  resize: vertical;
 
   mat-spinner {
     $mat-icon-button-diameter: 40px;
@@ -167,7 +185,47 @@ $_title-to-heading-gap: 12px;
 }
 
 .data-table-container {
-  width: 100%;
+  flex-grow: 1;
   height: 100px;
+  width: 100%;
+  min-height: 0;
+
   overflow: auto;
+  resize: vertical;
+
+  max-height: 50em;
+
+  &:hover {
+    overflow-x: auto;
+  }
+
+  &.expanded {
+    height: auto;
+  }
+}
+
+$expand-button-height: 40px;
+
+.bottom-area {
+  // position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  bottom: 0;
+
+  .expand-button {
+    color: mat.get-color-from-palette($tb-foreground, secondary-text);
+
+    @include tb-dark-theme {
+      color: mat.get-color-from-palette($tb-dark-foreground, secondary-text);
+      background-color: map-get($tb-dark-background, background);
+    }
+  }
+
+  &:hover {
+    .expand-button {
+      visibility: visible;
+    }
+  }
 }
