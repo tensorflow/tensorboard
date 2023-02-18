@@ -281,6 +281,14 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.showFullSize = !this.showFullSize;
     this.fullWidthChanged.emit(this.showFullSize);
     this.fullHeightChanged.emit(this.showFullSize);
+    this.store.dispatch(
+      metricsCardStateUpdated({
+        cardId: this.cardId,
+        settings: {
+          tableExpanded: this.showFullSize,
+        },
+      })
+    );
   }
 
   /**

@@ -18,9 +18,6 @@ limitations under the License.
 
 $_title-to-heading-gap: 12px;
 
-$_min_content_height: $metrics-min-card-height - 2px -
-  ($metrics-preferred-gap * 2) + $_title-to-heading-gap;
-
 :host {
   display: flex;
   flex-direction: column;
@@ -34,14 +31,6 @@ $_min_content_height: $metrics-min-card-height - 2px -
   &:has(.data-table-container) {
     padding: $metrics-preferred-gap $metrics-preferred-gap 0;
   }
-
-  &:hover {
-    .bottom-area {
-      .expand-button {
-        visibility: visible;
-      }
-    }
-  }
 }
 
 .always-visible {
@@ -52,7 +41,8 @@ $_min_content_height: $metrics-min-card-height - 2px -
 
   // The content that is always visible should match the min height of a card,
   // taking into account padding and 2px for the card border.
-  flex-basis: $_min_content_height;
+  flex-basis: $metrics-min-card-height - 2px - ($metrics-preferred-gap * 2) +
+    $_title-to-heading-gap;
 }
 
 .heading {
@@ -195,10 +185,6 @@ $_min_content_height: $metrics-min-card-height - 2px -
 
   max-height: 50em;
 
-  &:hover {
-    overflow-x: auto;
-  }
-
   &.expanded {
     height: auto;
   }
@@ -207,7 +193,6 @@ $_min_content_height: $metrics-min-card-height - 2px -
 $expand-button-height: 40px;
 
 .bottom-area {
-  // position: absolute;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -220,12 +205,6 @@ $expand-button-height: 40px;
     @include tb-dark-theme {
       color: mat.get-color-from-palette($tb-dark-foreground, secondary-text);
       background-color: map-get($tb-dark-background, background);
-    }
-  }
-
-  &:hover {
-    .expand-button {
-      visibility: visible;
     }
   }
 }
