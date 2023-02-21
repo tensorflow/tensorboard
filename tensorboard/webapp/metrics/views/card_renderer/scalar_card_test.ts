@@ -77,7 +77,7 @@ import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {stepSelectorToggled, timeSelectionChanged} from '../../actions';
 import {PluginType} from '../../data_source';
 import {
-  getCardSettingsMap,
+  getCardStateMap,
   getMetricsLinkedTimeEnabled,
   getMetricsLinkedTimeSelection,
   getMetricsRangeSelectionEnabled,
@@ -3459,7 +3459,7 @@ describe('scalar card', () => {
         end: null,
       });
 
-      store.overrideSelector(getCardSettingsMap, {});
+      store.overrideSelector(getCardStateMap, {});
     });
 
     it('clears inline styles', fakeAsync(() => {
