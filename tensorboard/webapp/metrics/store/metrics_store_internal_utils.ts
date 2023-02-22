@@ -314,24 +314,12 @@ export function buildOrReturnStateWithPinnedCopy(
 
   // If the card has state
   // 1) Create a deep copy of the state
-  // 2) Set the new state equal to the copy
-  // 3) Set any pinned versions equal to the copy
+  // 2) Set any pinned versions equal to the copy
   if (nextCardStateMap[cardId]) {
-    const nextCardState = Object.entries(nextCardStateMap[cardId]).reduce(
-      (cardState, [key, value]) => {
-        if (Array.isArray(value)) {
-          cardState[key as keyof CardState] = [...value] as any;
-        } else if (typeof value === 'object') {
-          cardState[key as keyof CardState] = {...value} as any;
-        } else {
-          cardState[key as keyof CardState] = value as any;
-        }
-        return cardState;
-      },
-      {} as Partial<CardState>
-    );
-    nextCardStateMap[cardId] = nextCardState;
-    nextCardStateMap[pinnedCardId] = {...nextCardState};
+    const nextCardState = nextCardStateMap[cardId];
+    nextCardStateMap[pinnedCardId] = JSON.parse(
+      JSON.stringify(nextCardState)
+    ) as Partial<CardState>;
   }
 
   return {
@@ -587,7 +575,8 @@ function getNextImageCardStepIndexFromRangeSelection(
 }
 
 /**
- * Determines what a cards realized min max should be by examining the min and max steps in the data as well as any user defined min and max
+ * Determines what a cards realized min max should be by examining the min and
+ * max steps in the data as well as any user defined min and max
  * @param cardState
  */
 export function getMinMaxStepFromCardState(cardState: Partial<CardState>) {

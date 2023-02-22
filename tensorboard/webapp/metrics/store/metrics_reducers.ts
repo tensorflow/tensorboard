@@ -872,10 +872,10 @@ const reducer = createReducer(
         const nextMinMax = generateScalarCardMinMaxStep(
           loadable.runToSeries as RunToSeries<PluginType.SCALARS>
         );
-        if (!nextCardStateMap[cardId]) {
-          nextCardStateMap[cardId] = {};
-        }
-        nextCardStateMap[cardId].dataMinMax = nextMinMax;
+        nextCardStateMap[cardId] = {
+          ...nextCardStateMap[cardId],
+          dataMinMax: nextMinMax,
+        };
       }
 
       const nextState: MetricsState = {
@@ -1083,7 +1083,7 @@ const reducer = createReducer(
       nextRangeSelectionEnabled = nextEndStep !== undefined;
     }
 
-    const linkedTimeSelection = {
+    const nextTimeSelection = {
       start: {
         step: nextStartStep,
       },
@@ -1094,19 +1094,19 @@ const reducer = createReducer(
         state.cardStepIndex,
         state.cardMetadataMap,
         state.timeSeriesData,
-        linkedTimeSelection
+        nextTimeSelection
       );
     const nextCardStateMap = {...state.cardStateMap};
     if (cardId) {
-      if (!nextCardStateMap[cardId]) {
-        nextCardStateMap[cardId] = {};
-      }
-      nextCardStateMap[cardId].timeSelection = linkedTimeSelection;
+      nextCardStateMap[cardId] = {
+        ...nextCardStateMap[cardId],
+        timeSelection: nextTimeSelection,
+      };
     }
 
     return {
       ...state,
-      linkedTimeSelection,
+      linkedTimeSelection: nextTimeSelection,
       cardStepIndex: nextCardStepIndexMap,
       cardStateMap: nextCardStateMap,
       rangeSelectionEnabled: nextRangeSelectionEnabled,
@@ -1114,8 +1114,10 @@ const reducer = createReducer(
   }),
   on(actions.cardMinMaxChanged, (state, {cardId, minMax}) => {
     const nextCardStateMap = {...state.cardStateMap};
-    nextCardStateMap[cardId] = {...nextCardStateMap[cardId]};
-    nextCardStateMap[cardId].userMinMax = minMax;
+    nextCardStateMap[cardId] = {
+      ...nextCardStateMap[cardId],
+      userMinMax: minMax,
+    };
 
     return {
       ...state,
