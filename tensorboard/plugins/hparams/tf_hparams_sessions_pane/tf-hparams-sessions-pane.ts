@@ -29,6 +29,13 @@ import '../tf_hparams_table_view/tf-hparams-table-view';
  */
 @customElement('tf-hparams-sessions-pane')
 class TfHparamsSessionsPane extends PolymerElement {
+  constructor() {
+    super();
+    // If window['ga'] is defined, use it, otherwise any logging calls will be
+    // no-ops.
+    // @ts-ignore
+    this.ga = window['ga'] || function () {};
+  }
   static readonly template = html`
     <paper-header-panel>
       <paper-toolbar slot="header" class="tab-bar">
@@ -36,11 +43,19 @@ class TfHparamsSessionsPane extends PolymerElement {
           <!-- view-id can be used by integration tests to locate a tab.
                It should be the name of the root element implementing the view
                without the 'tf-hparams-' prefix. -->
-          <paper-tab view-id="table-view"> TABLE VIEW </paper-tab>
-          <paper-tab view-id="parallel-coords-view">
+          <paper-tab on-click="_tableTabClicked" view-id="table-view">
+            TABLE VIEW
+          </paper-tab>
+          <paper-tab
+            on-click="_parrellelCoordsTabClicked"
+            view-id="parallel-coords-view"
+          >
             PARALLEL COORDINATES VIEW
           </paper-tab>
-          <paper-tab view-id="scatter-plot-matrix-view">
+          <paper-tab
+            on-click="_scatterPlotMatrixTabClicked"
+            view-id="scatter-plot-matrix-view"
+          >
             SCATTER PLOT MATRIX VIEW
           </paper-tab>
           <div class="help-and-feedback">
@@ -169,4 +184,23 @@ class TfHparamsSessionsPane extends PolymerElement {
     type: Number,
   })
   _selectedTab: number = 0;
+  _tableTabClicked: () => void = () => {
+    this.logTabClick('Table');
+  };
+  _parrellelCoordsTabClicked: () => void = () => {
+    this.logTabClick('Parrellel Coords');
+  };
+  _scatterPlotMatrixTabClicked: () => void = () => {
+    this.logTabClick('Scatter Plot Matrix');
+  };
+
+  logTabClick: (tabName: string) => void = (tabName: string) => {
+    // @ts-ignore
+    this.ga('send', {
+      hitType: 'event',
+      eventCategory: 'HParam',
+      eventAction: 'Tab Clicked',
+      eventLabel: tabName,
+    });
+  };
 }
