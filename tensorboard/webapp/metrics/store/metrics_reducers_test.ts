@@ -3052,74 +3052,74 @@ describe('metrics reducers', () => {
           [imageCardId]: buildStepIndexMetadata({index: 2}),
         });
       });
-    });
 
-    it('adds a new value to an existing cardStateMap', () => {
-      const state1 = buildMetricsState({
-        cardStateMap: {
+      it('adds a new value to an existing cardStateMap', () => {
+        const state1 = buildMetricsState({
+          cardStateMap: {
+            card1: {},
+          },
+        });
+        const state2 = reducers(
+          state1,
+          actions.timeSelectionChanged({
+            cardId: 'card2',
+            timeSelection: {
+              start: {step: 1},
+              end: {step: 5},
+            },
+          })
+        );
+
+        expect(state2.cardStateMap).toEqual({
           card1: {},
-        },
-      });
-      const state2 = reducers(
-        state1,
-        actions.timeSelectionChanged({
-          cardId: 'card2',
-          timeSelection: {
-            start: {step: 1},
-            end: {step: 5},
+          card2: {
+            timeSelection: {
+              start: {step: 1},
+              end: {step: 5},
+            },
           },
-        })
-      );
-
-      expect(state2.cardStateMap).toEqual({
-        card1: {},
-        card2: {
-          timeSelection: {
-            start: {step: 1},
-            end: {step: 5},
-          },
-        },
+        });
       });
-    });
 
-    it('overrides an existing cardStateMap timeSelection', () => {
-      const state1 = buildMetricsState({
-        cardStateMap: {
+      it('overrides an existing cardStateMap timeSelection', () => {
+        const state1 = buildMetricsState({
+          cardStateMap: {
+            card1: {
+              dataMinMax: {
+                minStep: 0,
+                maxStep: 1000,
+              },
+              timeSelection: {
+                start: {step: 0},
+                end: {step: 100},
+              },
+            },
+          },
+        });
+
+        const state2 = reducers(
+          state1,
+          actions.timeSelectionChanged({
+            cardId: 'card1',
+            timeSelection: {
+              start: {step: 1},
+              end: {step: 5},
+            },
+          })
+        );
+
+        expect(state2.cardStateMap).toEqual({
           card1: {
             dataMinMax: {
               minStep: 0,
               maxStep: 1000,
             },
             timeSelection: {
-              start: {step: 0},
-              end: {step: 100},
+              start: {step: 1},
+              end: {step: 5},
             },
           },
-        },
-      });
-
-      const state2 = reducers(
-        state1,
-        actions.timeSelectionChanged({
-          cardId: 'card1',
-          timeSelection: {
-            start: {step: 1},
-            end: {step: 5},
-          },
-        })
-      );
-
-      expect(state2.cardStateMap).toEqual({
-        card1: {
-          dataMinMax: {
-            minStep: 0,
-            maxStep: 1000,
-          },
-          timeSelection: {
-            start: {step: 1},
-            end: {step: 5},
-          },
-        },
+        });
       });
     });
 
