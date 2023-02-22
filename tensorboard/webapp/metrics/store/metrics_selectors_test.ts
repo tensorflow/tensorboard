@@ -610,6 +610,18 @@ describe('metrics selectors', () => {
       expect(selectors.getMetricsXAxisType(state)).toBe(XAxisType.WALL_TIME);
     });
 
+    it('returns hideEmptyCards when getMetricsHideEmptyCards is called', () => {
+      selectors.getMetricsHideEmptyCards.release();
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          settings: buildMetricsSettingsState({
+            hideEmptyCards: false,
+          }),
+        })
+      );
+      expect(selectors.getMetricsHideEmptyCards(state)).toBe(false);
+    });
+
     it('returns scalarSmoothing when called getMetricsScalarSmoothing', () => {
       selectors.getMetricsScalarSmoothing.release();
       const state = appStateFromMetricsState(
