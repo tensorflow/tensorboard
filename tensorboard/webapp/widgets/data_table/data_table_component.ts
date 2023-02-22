@@ -173,6 +173,34 @@ export class DataTableComponent implements OnDestroy {
             (selectedStepRunData.PERCENTAGE_CHANGE as number) * 100
           ).toString() + '%'
         );
+      case ColumnHeaderType.STEP_AT_MAX:
+        if (selectedStepRunData.STEP_AT_MAX === undefined) {
+          return '';
+        }
+        return intlNumberFormatter.formatShort(
+          selectedStepRunData.STEP_AT_MAX as number
+        );
+      case ColumnHeaderType.STEP_AT_MIN:
+        if (selectedStepRunData.STEP_AT_MIN === undefined) {
+          return '';
+        }
+        return intlNumberFormatter.formatShort(
+          selectedStepRunData.STEP_AT_MIN as number
+        );
+      case ColumnHeaderType.MEAN:
+        if (selectedStepRunData.MEAN === undefined) {
+          return '';
+        }
+        return intlNumberFormatter.formatShort(
+          selectedStepRunData.MEAN as number
+        );
+      case ColumnHeaderType.REAL_CHANGE:
+        if (selectedStepRunData.REAL_CHANGE === undefined) {
+          return '';
+        }
+        return numberFormatter.formatShort(
+          Math.abs(selectedStepRunData.REAL_CHANGE as number)
+        );
       default:
         return '';
     }

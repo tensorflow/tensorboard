@@ -12,7 +12,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div class="header-container" [ngSwitch]="header.type">
+<div class="header-container" [ngSwitch]="header.type" title="Test title">
   <mat-icon
     *ngSwitchCase="ColumnHeaderType.VALUE_CHANGE"
     svgIcon="change_history_24px"
@@ -21,7 +21,13 @@ limitations under the License.
     *ngSwitchCase="ColumnHeaderType.PERCENTAGE_CHANGE"
     svgIcon="change_history_24px"
   ></mat-icon>
+  <mat-icon
+    *ngSwitchCase="ColumnHeaderType.REAL_CHANGE"
+    svgIcon="change_history_24px"
+  ></mat-icon>
   <div *ngSwitchDefault class="extra-right-padding"></div>
 
-  <span>{{ getHeaderTextColumn(header.type) }}</span>
+  <span [ngClass]="getSpecialTypeClasses(header.type)"
+    >{{ getHeaderTextColumn(header.type) }}</span
+  >
 </div>

@@ -284,6 +284,10 @@ const {initialState, reducers: namespaceContextedReducer} =
         {type: ColumnHeaderType.PERCENTAGE_CHANGE, enabled: true},
         {type: ColumnHeaderType.START_STEP, enabled: true},
         {type: ColumnHeaderType.END_STEP, enabled: true},
+        {type: ColumnHeaderType.STEP_AT_MAX, enabled: false},
+        {type: ColumnHeaderType.STEP_AT_MIN, enabled: false},
+        {type: ColumnHeaderType.MEAN, enabled: false},
+        {type: ColumnHeaderType.REAL_CHANGE, enabled: false},
       ],
       filteredPluginTypes: new Set(),
       stepMinMax: {

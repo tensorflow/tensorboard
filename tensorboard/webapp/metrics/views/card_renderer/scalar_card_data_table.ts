@@ -64,14 +64,16 @@ export class ScalarCardDataTable {
     startPointIndex: number,
     endPointIndex: number,
     smoothed: boolean = false
-  ): number {
+  ): ScalarCardPoint {
     let minValue = this.maybeSmoothedValue(points[startPointIndex], smoothed);
+    let minValuePoint = points[startPointIndex];
     for (let i = startPointIndex; i <= endPointIndex; i++) {
       if (minValue > this.maybeSmoothedValue(points[i], smoothed)) {
         minValue = this.maybeSmoothedValue(points[i], smoothed);
+        minValuePoint = points[i];
       }
     }
-    return minValue;
+    return minValuePoint;
   }
 
   getMaxValueInRange(
@@ -79,14 +81,24 @@ export class ScalarCardDataTable {
     startPointIndex: number,
     endPointIndex: number,
     smoothed: boolean = false
-  ): number {
+  ): ScalarCardPoint {
     let maxValue = this.maybeSmoothedValue(points[startPointIndex], smoothed);
+    let maxPoint = points[startPointIndex];
     for (let i = startPointIndex; i <= endPointIndex; i++) {
       if (maxValue < this.maybeSmoothedValue(points[i], smoothed)) {
         maxValue = this.maybeSmoothedValue(points[i], smoothed);
+        maxPoint = points[i];
       }
     }
-    return maxValue;
+    return maxPoint;
+  }
+
+  getMean(points: ScalarCardPoint[]) {
+    let sum = 0;
+    points.forEach((point) => {
+      sum += point.value;
+    });
+    return sum / points.length;
   }
 
   maybeSmoothedValue(point: ScalarCardPoint, smoothed: boolean) {
@@ -177,7 +189,7 @@ export class ScalarCardDataTable {
                 closestStartPointIndex,
                 closestEndPointIndex,
                 true
-              );
+              ).y;
               continue;
             case ColumnHeaderType.MAX_VALUE:
               if (!closestEndPointIndex) {
@@ -188,7 +200,7 @@ export class ScalarCardDataTable {
                 closestStartPointIndex,
                 closestEndPointIndex,
                 true
-              );
+              ).y;
               continue;
             case ColumnHeaderType.PERCENTAGE_CHANGE:
               if (!closestEndPoint) {
@@ -196,6 +208,51 @@ export class ScalarCardDataTable {
               }
               selectedStepData.PERCENTAGE_CHANGE =
                 (closestEndPoint.y - closestStartPoint.y) / closestStartPoint.y;
+              continue;
+            case ColumnHeaderType.STEP_AT_MAX:
+              if (!closestEndPointIndex) {
+                continue;
+              }
+              selectedStepData.STEP_AT_MAX = this.getMaxValueInRange(
+                datum.points,
+                closestStartPointIndex,
+                closestEndPointIndex,
+                true
+              ).step;
+              continue;
+            case ColumnHeaderType.STEP_AT_MIN:
+              if (!closestEndPointIndex) {
+                continue;
+              }
+              selectedStepData.STEP_AT_MIN = this.getMinValueInRange(
+                datum.points,
+                closestStartPointIndex,
+                closestEndPointIndex,
+                true
+              ).step;
+              continue;
+            case ColumnHeaderType.MEAN:
+              if (!closestEndPointIndex) {
+                continue;
+              }
+              selectedStepData.MEAN = this.getMean(datum.points);
+              continue;
+            case ColumnHeaderType.REAL_CHANGE:
+              if (!closestEndPoint) {
+                continue;
+              }
+              selectedStepData.REAL_CHANGE =
+                closestEndPoint.value - closestStartPoint.value;
+              continue;
+            case ColumnHeaderType.NONSMOOTHED_START_VALUE:
+              selectedStepData.NONSMOOTHED_START_VALUE =
+                closestStartPoint.value;
+              continue;
+            case ColumnHeaderType.NONSMOOTHED_END_VALUE:
+              if (!closestEndPoint) {
+                continue;
+              }
+              selectedStepData.NONSMOOTHED_END_VALUE = closestEndPoint.value;
               continue;
             default:
               continue;

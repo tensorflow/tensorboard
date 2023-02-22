@@ -2690,6 +2690,10 @@ describe('scalar card', () => {
         {type: ColumnHeaderType.PERCENTAGE_CHANGE, enabled: true},
         {type: ColumnHeaderType.START_STEP, enabled: true},
         {type: ColumnHeaderType.END_STEP, enabled: true},
+        {type: ColumnHeaderType.STEP_AT_MAX, enabled: true},
+        {type: ColumnHeaderType.STEP_AT_MIN, enabled: true},
+        {type: ColumnHeaderType.MEAN, enabled: true},
+        {type: ColumnHeaderType.REAL_CHANGE, enabled: true},
       ]);
     });
 
@@ -2761,7 +2765,7 @@ describe('scalar card', () => {
       const runToSeries = {
         run1: [
           {wallTime: 1, value: 1, step: 1},
-          {wallTime: 2, value: 10, step: 2},
+          {wallTime: 2, value: 12, step: 2},
           {wallTime: 3, value: 20, step: 3},
         ],
         run2: [
@@ -2812,6 +2816,10 @@ describe('scalar card', () => {
           MIN_VALUE: 1,
           MAX_VALUE: 20,
           PERCENTAGE_CHANGE: 19, // percentage change from 1 to 20 is 1900%
+          STEP_AT_MAX: 3,
+          STEP_AT_MIN: 1,
+          MEAN: 11,
+          REAL_CHANGE: 19,
         },
         {
           id: 'run2',
@@ -2825,6 +2833,10 @@ describe('scalar card', () => {
           MIN_VALUE: 1,
           MAX_VALUE: 25,
           PERCENTAGE_CHANGE: 24, // percentage change from 1 to 25 is 2400%
+          STEP_AT_MAX: 3,
+          STEP_AT_MIN: 1,
+          MEAN: 12,
+          REAL_CHANGE: 24,
         },
       ]);
     }));
@@ -2879,6 +2891,10 @@ describe('scalar card', () => {
           MIN_VALUE: 4.532374100719424,
           MAX_VALUE: 18.976711362032464,
           PERCENTAGE_CHANGE: 1.2427022518765645,
+          STEP_AT_MAX: 4,
+          STEP_AT_MIN: 3,
+          MEAN: 11.5,
+          REAL_CHANGE: 17,
         },
       ]);
     }));

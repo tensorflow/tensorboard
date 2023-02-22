@@ -64,6 +64,25 @@ export class DataTableHeaderComponent {
         return 'Max';
       case ColumnHeaderType.PERCENTAGE_CHANGE:
         return '%';
+      case ColumnHeaderType.STEP_AT_MAX:
+        return 'Step at Max';
+      case ColumnHeaderType.STEP_AT_MIN:
+        return 'Step at Min';
+      case ColumnHeaderType.MEAN:
+        return 'Mean';
+      case ColumnHeaderType.REAL_CHANGE:
+        return 'Real Value';
+      default:
+        return '';
+    }
+  }
+
+  getSpecialTypeClasses(columnHeader: ColumnHeaderType) {
+    switch (columnHeader) {
+      case ColumnHeaderType.STEP_AT_MIN:
+        return 'step-at-min';
+      case ColumnHeaderType.STEP_AT_MAX:
+        return 'step-at-max';
       default:
         return '';
     }
