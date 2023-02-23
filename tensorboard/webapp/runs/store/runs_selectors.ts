@@ -24,11 +24,10 @@ import {
   RunsState,
   RunsUiState,
   RUNS_FEATURE_KEY,
-  State,
 } from './runs_types';
 import {createGroupBy} from './utils';
 
-const getRunsState = createFeatureSelector<State, RunsState>(RUNS_FEATURE_KEY);
+const getRunsState = createFeatureSelector<RunsState>(RUNS_FEATURE_KEY);
 
 const getDataState = createSelector(
   getRunsState,

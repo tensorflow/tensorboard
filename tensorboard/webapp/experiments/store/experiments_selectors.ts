@@ -18,10 +18,9 @@ import {
   ExperimentsDataState,
   ExperimentsState,
   EXPERIMENTS_FEATURE_KEY,
-  State,
 } from './experiments_types';
 
-const getExperimentsState = createFeatureSelector<State, ExperimentsState>(
+const getExperimentsState = createFeatureSelector<ExperimentsState>(
   EXPERIMENTS_FEATURE_KEY
 );
 

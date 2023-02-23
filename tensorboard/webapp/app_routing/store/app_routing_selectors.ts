@@ -31,7 +31,7 @@ import {
   State,
 } from './app_routing_types';
 
-const getAppRoutingState = createFeatureSelector<State, AppRoutingState>(
+const getAppRoutingState = createFeatureSelector<AppRoutingState>(
   APP_ROUTING_FEATURE_KEY
 );
 

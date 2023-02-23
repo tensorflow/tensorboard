@@ -15,11 +15,9 @@ limitations under the License.
 import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {StepDatum} from '../data_source';
 import {RunTag} from '../types';
-import {State, TextState, TEXT_FEATURE_KEY} from './text_types';
+import {TextState, TEXT_FEATURE_KEY} from './text_types';
 
-const selectTextState = createFeatureSelector<State, TextState>(
-  TEXT_FEATURE_KEY
-);
+const selectTextState = createFeatureSelector<TextState>(TEXT_FEATURE_KEY);
 
 export const getTextRunToTags = createSelector(
   selectTextState,

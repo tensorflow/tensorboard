@@ -15,16 +15,9 @@ limitations under the License.
 import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {Environment, PluginId, PluginsListing} from '../../types/api';
 import {DataLoadState, LoadState} from '../../types/data';
-import {
-  CoreState,
-  CORE_FEATURE_KEY,
-  PluginsListLoadState,
-  State,
-} from './core_types';
+import {CoreState, CORE_FEATURE_KEY, PluginsListLoadState} from './core_types';
 
-const selectCoreState = createFeatureSelector<State, CoreState>(
-  CORE_FEATURE_KEY
-);
+const selectCoreState = createFeatureSelector<CoreState>(CORE_FEATURE_KEY);
 
 export const getPluginsListLoaded = createSelector(
   selectCoreState,
