@@ -60,6 +60,7 @@ import {
   generateNextCardStepIndex,
   generateNextCardStepIndexFromLinkedTimeSelection,
   generateNextPinnedCardMappings,
+  generateScalarCardMinMaxStep,
   getCardId,
   getRunIds,
   getTimeSeriesLoadable,
@@ -73,6 +74,7 @@ import {
   MetricsState,
   METRICS_SETTINGS_DEFAULT,
   NonSampledPluginTagMetadata,
+  RunToSeries,
   TagMetadata,
   TimeSeriesData,
   TimeSeriesLoadable,
@@ -822,6 +824,7 @@ const reducer = createReducer(
       {response}: {response: TimeSeriesResponse}
     ): MetricsState => {
       const nextStepMinMax = {...state.stepMinMax};
+      const nextCardStateMap = {...state.cardStateMap};
       // Update time series.
       const nextTimeSeriesData = {...state.timeSeriesData};
       const {plugin, tag, runId, sample} = response;
@@ -864,7 +867,18 @@ const reducer = createReducer(
         }
       }
 
-      const nextState = {
+      if (response.runToSeries && response.plugin === PluginType.SCALARS) {
+        const cardId = getCardId({plugin, tag, runId: null});
+        const nextMinMax = generateScalarCardMinMaxStep(
+          loadable.runToSeries as RunToSeries<PluginType.SCALARS>
+        );
+        nextCardStateMap[cardId] = {
+          ...nextCardStateMap[cardId],
+          dataMinMax: nextMinMax,
+        };
+      }
+
+      const nextState: MetricsState = {
         ...state,
         timeSeriesData: nextTimeSeriesData,
         cardStepIndex: buildNormalizedCardStepIndexMap(
@@ -874,6 +888,7 @@ const reducer = createReducer(
           state.timeSeriesData
         ),
         stepMinMax: nextStepMinMax,
+        cardStateMap: nextCardStateMap,
       };
       return nextState;
     }
@@ -1053,7 +1068,7 @@ const reducer = createReducer(
     };
   }),
   on(actions.timeSelectionChanged, (state, change) => {
-    const {timeSelection} = change;
+    const {cardId, timeSelection} = change;
     const nextStartStep = timeSelection.start.step;
     const nextEndStep = timeSelection.end?.step;
     const end =
@@ -1068,7 +1083,7 @@ const reducer = createReducer(
       nextRangeSelectionEnabled = nextEndStep !== undefined;
     }
 
-    const linkedTimeSelection = {
+    const nextTimeSelection = {
       start: {
         step: nextStartStep,
       },
@@ -1079,14 +1094,34 @@ const reducer = createReducer(
         state.cardStepIndex,
         state.cardMetadataMap,
         state.timeSeriesData,
-        linkedTimeSelection
+        nextTimeSelection
       );
+    const nextCardStateMap = {...state.cardStateMap};
+    if (cardId) {
+      nextCardStateMap[cardId] = {
+        ...nextCardStateMap[cardId],
+        timeSelection: nextTimeSelection,
+      };
+    }
 
     return {
       ...state,
-      linkedTimeSelection,
+      linkedTimeSelection: nextTimeSelection,
       cardStepIndex: nextCardStepIndexMap,
+      cardStateMap: nextCardStateMap,
       rangeSelectionEnabled: nextRangeSelectionEnabled,
+    };
+  }),
+  on(actions.cardMinMaxChanged, (state, {cardId, minMax}) => {
+    const nextCardStateMap = {...state.cardStateMap};
+    nextCardStateMap[cardId] = {
+      ...nextCardStateMap[cardId],
+      userMinMax: minMax,
+    };
+
+    return {
+      ...state,
+      cardStateMap: nextCardStateMap,
     };
   }),
   on(actions.stepSelectorToggled, (state, {affordance}) => {

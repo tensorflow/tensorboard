@@ -30,6 +30,7 @@ import {
   CardMetadata,
   CardUniqueInfo,
   HistogramMode,
+  MinMaxStep,
   NonPinnedCardId,
   PinnedCardId,
   TimeSelection,
@@ -126,6 +127,9 @@ export type CardMetadataMap = Record<
 >;
 
 export type CardState = {
+  dataMinMax: MinMaxStep;
+  userMinMax: MinMaxStep;
+  timeSelection: TimeSelection;
   tableExpanded: boolean;
 };
 

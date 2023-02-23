@@ -29,6 +29,7 @@ import {
   HeaderEditInfo,
   HeaderToggleInfo,
   HistogramMode,
+  MinMaxStep,
   PluginType,
   TooltipSort,
   XAxisType,
@@ -194,7 +195,12 @@ export const metricsShowAllPlugins = createAction(
 
 export const timeSelectionChanged = createAction(
   '[Metrics] Time Selection Changed',
-  props<TimeSelectionWithAffordance>()
+  props<{cardId?: CardId} & TimeSelectionWithAffordance>()
+);
+
+export const cardMinMaxChanged = createAction(
+  '[Metrics] Card Min Max Changed',
+  props<{cardId: CardId; minMax: MinMaxStep}>()
 );
 
 export const timeSelectionCleared = createAction(

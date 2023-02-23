@@ -30,8 +30,12 @@ import {
   TooltipSort,
   XAxisType,
 } from '../types';
-import {ColumnHeader} from '../views/card_renderer/scalar_card_types';
+import {
+  ColumnHeader,
+  MinMaxStep,
+} from '../views/card_renderer/scalar_card_types';
 import * as storeUtils from './metrics_store_internal_utils';
+import {getMinMaxStepFromCardState} from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
   CardStateMap,
@@ -471,4 +475,46 @@ export const isMetricsSettingsPaneOpen = createSelector(
 export const isMetricsSlideoutMenuOpen = createSelector(
   selectMetricsState,
   (state): boolean => state.isSlideoutMenuOpen
+);
+
+/**
+ * Gets the min and max step of a metrics card.
+ */
+export const getMetricsCardMinMax = createSelector(
+  getCardStateMap,
+  (cardStateMap: CardStateMap, cardId: CardId): MinMaxStep | undefined => {
+    return getMinMaxStepFromCardState(cardStateMap[cardId]);
+  }
+);
+
+/**
+ * Gets the time selection of a metrics card.
+ */
+export const getMetricsCardTimeSelection = createSelector(
+  getCardStateMap,
+  getMetricsLinkedTimeEnabled,
+  getMetricsLinkedTimeSelection,
+  (
+    cardStateMap: CardStateMap,
+    linkedTimeEnabled: boolean,
+    linkedTimeSelection: TimeSelection | null,
+    cardId: CardId
+  ): TimeSelection | undefined => {
+    if (linkedTimeEnabled && linkedTimeSelection) {
+      return linkedTimeSelection;
+    }
+
+    if (cardStateMap[cardId]?.timeSelection) {
+      return cardStateMap[cardId]?.timeSelection;
+    }
+    const minMaxStep = getMinMaxStepFromCardState(cardStateMap[cardId]);
+    if (!minMaxStep) {
+      return;
+    }
+
+    return {
+      start: {step: minMaxStep.minStep},
+      end: {step: minMaxStep.maxStep},
+    };
+  }
 );

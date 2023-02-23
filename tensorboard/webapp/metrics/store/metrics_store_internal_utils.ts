@@ -22,11 +22,13 @@ import {
   CardId,
   CardMetadata,
   CardUniqueInfo,
+  MinMaxStep,
   NonPinnedCardId,
   TimeSelection,
-} from '../internal_types';
+} from '../types';
 import {
   CardMetadataMap,
+  CardState,
   CardStateMap,
   CardStepIndexMap,
   CardStepIndexMetaData,
@@ -34,6 +36,7 @@ import {
   MetricsState,
   PinnedCardToCard,
   RunToLoadState,
+  RunToSeries,
   TagMetadata,
   TimeSeriesData,
   TimeSeriesLoadables,
@@ -294,11 +297,11 @@ export function buildOrReturnStateWithPinnedCopy(
   const nextCardMetadataMap = {...cardMetadataMap};
   const nextCardStateMap = {...cardStateMap};
 
-  // Create a pinned copy. Copies step index from the original card.
   const pinnedCardId = getPinnedCardId(cardId);
   nextCardToPinnedCopy.set(cardId, pinnedCardId);
   nextCardToPinnedCopyCache.set(cardId, pinnedCardId);
   nextPinnedCardToOriginal.set(pinnedCardId, cardId);
+
   if (cardStepIndexMap.hasOwnProperty(cardId)) {
     nextCardStepIndexMap[pinnedCardId] = cardStepIndexMap[cardId];
   }
@@ -308,8 +311,12 @@ export function buildOrReturnStateWithPinnedCopy(
     throw new Error('Cannot pin a card without metadata');
   }
   nextCardMetadataMap[pinnedCardId] = metadata;
+
   if (nextCardStateMap[cardId]) {
-    nextCardStateMap[pinnedCardId] = {...cardStateMap[cardId]};
+    // This shared reference is okay because the reducer will force the referenced
+    // object to be updated when any changes are made to it.
+    // https://github.com/tensorflow/tensorboard/pull/6172#discussion_r1115007044
+    nextCardStateMap[pinnedCardId] = nextCardStateMap[cardId];
   }
 
   return {
@@ -376,6 +383,18 @@ export function generateNextCardStepIndex(
     }
   });
   return nextCardStepIndexMap;
+}
+
+export function generateScalarCardMinMaxStep(
+  runsToSeries: RunToSeries<PluginType.SCALARS>
+): MinMaxStep {
+  const allData = Object.values(runsToSeries)
+    .flat()
+    .map((stepDatum) => stepDatum.step);
+  return {
+    minStep: Math.min(...allData),
+    maxStep: Math.max(...allData),
+  };
 }
 
 /**
@@ -550,6 +569,16 @@ function getNextImageCardStepIndexFromRangeSelection(
 
   // Does not update index when it is in selected range.
   return null;
+}
+
+/**
+ * Determines what a cards realized min max should be by examining the min and
+ * max steps in the data as well as any user defined min and max
+ * @param cardState
+ */
+export function getMinMaxStepFromCardState(cardState: Partial<CardState>) {
+  const {dataMinMax, userMinMax} = cardState;
+  return userMinMax || dataMinMax;
 }
 
 export const TEST_ONLY = {

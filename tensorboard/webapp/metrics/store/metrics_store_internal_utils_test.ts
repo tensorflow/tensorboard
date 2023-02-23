@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {DataLoadState} from '../../types/data';
-import {PluginType} from '../data_source';
+import {PluginType, RunToSeries} from '../data_source';
 import {
   buildMetricsState,
   buildStepIndexMetadata,
@@ -29,7 +29,9 @@ import {
   createRunToLoadState,
   generateNextCardStepIndex,
   generateNextPinnedCardMappings,
+  generateScalarCardMinMaxStep,
   getCardId,
+  getMinMaxStepFromCardState,
   getPinnedCardId,
   getRunIds,
   getTimeSeriesLoadable,
@@ -394,12 +396,21 @@ describe('metrics store utils', () => {
 
   describe('buildOrReturnStateWithPinnedCopy', () => {
     it('adds a pinned copy properly', () => {
+      const initialCardStateMap = {
+        card1: {
+          timeSelection: {
+            start: {step: 5},
+            end: {step: 7},
+          },
+        },
+      };
       const {
         cardToPinnedCopy,
         cardToPinnedCopyCache,
         pinnedCardToOriginal,
         cardStepIndex,
         cardMetadataMap,
+        cardStateMap,
       } = buildOrReturnStateWithPinnedCopy(
         'card1',
         new Map(),
@@ -407,7 +418,7 @@ describe('metrics store utils', () => {
         new Map(),
         {card1: buildStepIndexMetadata({index: 2})},
         {card1: createCardMetadata()},
-        {}
+        initialCardStateMap
       );
       const pinnedCardId = getPinnedCardId('card1');
 
@@ -421,6 +432,20 @@ describe('metrics store utils', () => {
       expect(cardMetadataMap).toEqual({
         card1: createCardMetadata(),
         [pinnedCardId]: createCardMetadata(),
+      });
+      expect(cardStateMap).toEqual({
+        card1: {
+          timeSelection: {
+            start: {step: 5},
+            end: {step: 7},
+          },
+        },
+        ['{"baseCardId":"card1"}']: {
+          timeSelection: {
+            start: {step: 5},
+            end: {step: 7},
+          },
+        },
       });
     });
 
@@ -711,6 +736,36 @@ describe('metrics store utils', () => {
 
       expect(nextCardStepIndexMap).toEqual({
         card1: buildStepIndexMetadata({index: 1}),
+      });
+    });
+  });
+
+  describe('generateScalarCardMinMaxStep', () => {
+    it('finds the min and max in scalar datum', () => {
+      const minMaxInScalars: RunToSeries = {
+        run1: [
+          {
+            step: 10,
+            wallTime: 40,
+            value: 1,
+          },
+          {
+            step: 0,
+            wallTime: 30,
+            value: 5,
+          },
+        ],
+        run2: [
+          {
+            step: 200,
+            value: 0,
+            wallTime: 42,
+          },
+        ],
+      };
+      expect(generateScalarCardMinMaxStep(minMaxInScalars)).toEqual({
+        minStep: 0,
+        maxStep: 200,
       });
     });
   });
@@ -1100,6 +1155,40 @@ describe('metrics store utils', () => {
       );
 
       expect(nextCardStepIndex).toEqual(null);
+    });
+  });
+
+  describe('getMinMaxStepFromCardState', () => {
+    it('returns userMinMax when defined', () => {
+      expect(
+        getMinMaxStepFromCardState({
+          userMinMax: {
+            minStep: 10,
+            maxStep: 20,
+          },
+          dataMinMax: {
+            minStep: 0,
+            maxStep: 100,
+          },
+        })
+      ).toEqual({
+        minStep: 10,
+        maxStep: 20,
+      });
+    });
+
+    it('returns dataMinMax when userMinMax is not defined', () => {
+      expect(
+        getMinMaxStepFromCardState({
+          dataMinMax: {
+            minStep: 0,
+            maxStep: 100,
+          },
+        })
+      ).toEqual({
+        minStep: 0,
+        maxStep: 100,
+      });
     });
   });
 });

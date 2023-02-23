@@ -44,6 +44,8 @@ import {
   CardId,
   CardMetadata,
   HistogramMode,
+  MinMaxStep,
+  NonPinnedCardId,
   TooltipSort,
   XAxisType,
 } from '../types';
@@ -1405,6 +1407,16 @@ describe('metrics reducers', () => {
           },
         },
       });
+
+      const expectedCardStateMap = {
+        '{"plugin":"scalars","tag":"tagA","runId":null}': {
+          dataMinMax: {
+            minStep: 0,
+            maxStep: 99,
+          },
+        },
+      };
+      expect(nextState.cardStateMap).toEqual(expectedCardStateMap);
     });
 
     it('updates store on fetch loaded with some errors', () => {
@@ -3040,6 +3052,75 @@ describe('metrics reducers', () => {
           [imageCardId]: buildStepIndexMetadata({index: 2}),
         });
       });
+
+      it('adds a new value to an existing cardStateMap', () => {
+        const state1 = buildMetricsState({
+          cardStateMap: {
+            card1: {},
+          },
+        });
+        const state2 = reducers(
+          state1,
+          actions.timeSelectionChanged({
+            cardId: 'card2',
+            timeSelection: {
+              start: {step: 1},
+              end: {step: 5},
+            },
+          })
+        );
+
+        expect(state2.cardStateMap).toEqual({
+          card1: {},
+          card2: {
+            timeSelection: {
+              start: {step: 1},
+              end: {step: 5},
+            },
+          },
+        });
+      });
+
+      it('overrides an existing cardStateMap timeSelection', () => {
+        const state1 = buildMetricsState({
+          cardStateMap: {
+            card1: {
+              dataMinMax: {
+                minStep: 0,
+                maxStep: 1000,
+              },
+              timeSelection: {
+                start: {step: 0},
+                end: {step: 100},
+              },
+            },
+          },
+        });
+
+        const state2 = reducers(
+          state1,
+          actions.timeSelectionChanged({
+            cardId: 'card1',
+            timeSelection: {
+              start: {step: 1},
+              end: {step: 5},
+            },
+          })
+        );
+
+        expect(state2.cardStateMap).toEqual({
+          card1: {
+            dataMinMax: {
+              minStep: 0,
+              maxStep: 1000,
+            },
+            timeSelection: {
+              start: {step: 1},
+              end: {step: 5},
+            },
+          },
+        });
+      });
     });
 
     describe('#timeSelectionCleared', () => {
@@ -3147,6 +3228,82 @@ describe('metrics reducers', () => {
         expect(state2.linkedTimeSelection).toEqual({
           start: {step: 100},
           end: null,
+        });
+      });
+    });
+
+    describe('#cardMinMaxChanged', () => {
+      it('adds a new value to an existing cardToMinMax map', () => {
+        const initialCardToMinMax = new Map<NonPinnedCardId, MinMaxStep>();
+        initialCardToMinMax.set('card1', {
+          minStep: 0,
+          maxStep: 100,
+        });
+        const state1 = buildMetricsState({
+          cardStateMap: {
+            card1: {},
+          },
+        });
+        const state2 = reducers(
+          state1,
+          actions.cardMinMaxChanged({
+            cardId: 'card2',
+            minMax: {
+              minStep: 1,
+              maxStep: 5,
+            },
+          })
+        );
+
+        expect(state2.cardStateMap).toEqual({
+          card1: {},
+          card2: {
+            userMinMax: {
+              minStep: 1,
+              maxStep: 5,
+            },
+          },
+        });
+      });
+
+      it('overrides an existing cards min max', () => {
+        const state1 = buildMetricsState({
+          cardStateMap: {
+            card1: {
+              userMinMax: {
+                minStep: 0,
+                maxStep: 100,
+              },
+              timeSelection: {
+                start: {step: 0},
+                end: {step: 5},
+              },
+            },
+          },
+        });
+
+        const state2 = reducers(
+          state1,
+          actions.cardMinMaxChanged({
+            cardId: 'card1',
+            minMax: {
+              minStep: 1,
+              maxStep: 5,
+            },
+          })
+        );
+
+        expect(state2.cardStateMap).toEqual({
+          card1: {
+            userMinMax: {
+              minStep: 1,
+              maxStep: 5,
+            },
+            timeSelection: {
+              start: {step: 0},
+              end: {step: 5},
+            },
+          },
         });
       });
     });
