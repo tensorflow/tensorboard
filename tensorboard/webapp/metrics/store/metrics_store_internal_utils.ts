@@ -312,14 +312,11 @@ export function buildOrReturnStateWithPinnedCopy(
   }
   nextCardMetadataMap[pinnedCardId] = metadata;
 
-  // If the card has state
-  // 1) Create a deep copy of the state
-  // 2) Set any pinned versions equal to the copy
   if (nextCardStateMap[cardId]) {
-    const nextCardState = nextCardStateMap[cardId];
-    nextCardStateMap[pinnedCardId] = JSON.parse(
-      JSON.stringify(nextCardState)
-    ) as Partial<CardState>;
+    // This shared reference is okay because the reducer will force the referenced
+    // object to be updated when any changes are made to it.
+    // https://github.com/tensorflow/tensorboard/pull/6172#discussion_r1115007044
+    nextCardStateMap[pinnedCardId] = nextCardStateMap[cardId];
   }
 
   return {
