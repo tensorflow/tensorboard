@@ -74,7 +74,11 @@ import {
 } from '../../../widgets/line_chart_v2/types';
 import {ResizeDetectorTestingModule} from '../../../widgets/resize_detector_testing_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
-import {stepSelectorToggled, timeSelectionChanged} from '../../actions';
+import {
+  metricsCardStateUpdated,
+  stepSelectorToggled,
+  timeSelectionChanged,
+} from '../../actions';
 import {PluginType} from '../../data_source';
 import {
   getCardStateMap,
@@ -3411,20 +3415,10 @@ describe('scalar card', () => {
       store.overrideSelector(getSingleSelectionHeaders, [
         {type: ColumnHeaderType.RUN, enabled: true},
         {type: ColumnHeaderType.SMOOTHED, enabled: true},
-        {type: ColumnHeaderType.VALUE, enabled: true},
-        {type: ColumnHeaderType.STEP, enabled: true},
-        {type: ColumnHeaderType.RELATIVE_TIME, enabled: true},
       ]);
       store.overrideSelector(getRangeSelectionHeaders, [
         {type: ColumnHeaderType.RUN, enabled: true},
         {type: ColumnHeaderType.MIN_VALUE, enabled: true},
-        {type: ColumnHeaderType.MAX_VALUE, enabled: true},
-        {type: ColumnHeaderType.START_VALUE, enabled: true},
-        {type: ColumnHeaderType.END_VALUE, enabled: true},
-        {type: ColumnHeaderType.VALUE_CHANGE, enabled: true},
-        {type: ColumnHeaderType.PERCENTAGE_CHANGE, enabled: true},
-        {type: ColumnHeaderType.START_STEP, enabled: true},
-        {type: ColumnHeaderType.END_STEP, enabled: true},
       ]);
 
       const runToSeries = {
@@ -3463,6 +3457,10 @@ describe('scalar card', () => {
     });
 
     it('clears inline styles', fakeAsync(() => {
+      let dispatchedActions: Action[] = [];
+      spyOn(store, 'dispatch').and.callFake((action: Action) => {
+        dispatchedActions.push(action);
+      });
       const fixture = createComponent('card1');
       fixture.detectChanges();
       const component = fixture.debugElement.query(
@@ -3471,11 +3469,64 @@ describe('scalar card', () => {
       expect(component.componentInstance.dataTableContainer).toBeDefined();
       component.componentInstance.dataTableContainer.nativeElement.style =
         'height: 123px;';
-      component.componentInstance.toggleTableExpanded();
+      fixture.debugElement
+        .query(By.css('.expand-button'))
+        .nativeElement.click();
       expect(
         component.componentInstance.dataTableContainer.nativeElement.style
           .cssText
       ).toEqual('');
+      expect(dispatchedActions).toEqual([
+        metricsCardStateUpdated({
+          cardId: 'card1',
+          settings: {
+            tableExpanded: true,
+          },
+        }),
+      ]);
+    }));
+
+    it('expands the table after a manual resize', fakeAsync(() => {
+      let dispatchedActions: Action[] = [];
+      spyOn(store, 'dispatch').and.callFake((action: Action) => {
+        dispatchedActions.push(action);
+      });
+      const fixture = createComponent('card1');
+      fixture.detectChanges();
+      const component = fixture.debugElement.query(
+        By.directive(ScalarCardComponent)
+      );
+      expect(component.componentInstance.dataTableContainer).toBeDefined();
+      let expandButton = fixture.debugElement.query(By.css('.expand-button'));
+      expandButton.nativeElement.click();
+      fixture.detectChanges();
+
+      component.componentInstance.dataTableContainer.nativeElement.style =
+        'height: 123px;';
+      expandButton = fixture.debugElement.query(By.css('.expand-button'));
+      expect(expandButton.nativeElement.getAttribute('title')).toEqual(
+        'Expand Table'
+      );
+      expandButton.nativeElement.click();
+
+      expect(
+        component.componentInstance.dataTableContainer.nativeElement.style
+          .cssText
+      ).toEqual('');
+      expect(dispatchedActions).toEqual([
+        metricsCardStateUpdated({
+          cardId: 'card1',
+          settings: {
+            tableExpanded: true,
+          },
+        }),
+        metricsCardStateUpdated({
+          cardId: 'card1',
+          settings: {
+            tableExpanded: true,
+          },
+        }),
+      ]);
     }));
   });
 

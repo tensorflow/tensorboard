@@ -83,6 +83,7 @@ $_title-to-heading-gap: 12px;
 }
 
 .chart-container {
+  flex-grow: 1;
   overflow: hidden;
   resize: vertical;
 

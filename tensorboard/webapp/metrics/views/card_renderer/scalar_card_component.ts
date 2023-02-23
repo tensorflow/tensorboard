@@ -252,16 +252,26 @@ export class ScalarCardComponent<Downloader> {
     );
   }
 
+  shouldExpandTable() {
+    // If the user has resized the data table a height style will be set.
+    // If the data table has been resized we always want to expand the table.
+    // Otherwise the table should be toggled.
+    return Boolean(
+      this.dataTableContainer?.nativeElement.style.height ||
+        !this.cardState?.tableExpanded
+    );
+  }
+
   toggleTableExpanded() {
+    this.onCardStateChanged.emit({
+      ...this.cardState,
+      tableExpanded: this.shouldExpandTable(),
+    });
     // Manually resizing an element sets a style value on the element which takes
     // precedence over any classes the element may have. This value must be removed
     // for the table to expand or collapse correctly.
     if (this.dataTableContainer) {
       this.dataTableContainer.nativeElement.style.height = '';
     }
-    this.onCardStateChanged.emit({
-      ...this.cardState,
-      tableExpanded: !this.cardState?.tableExpanded,
-    });
   }
 }

@@ -201,11 +201,11 @@ limitations under the License.
       i18n-aria-label="Expand Table"
       class="expand-button"
       aria-label="Expand Table"
-      [title]="cardState!.tableExpanded ? 'Collapse Table' : 'Expand Table'"
+      [title]="shouldExpandTable() ? 'Expand Table' : 'Collapse Table'"
       (click)="toggleTableExpanded()"
     >
       <mat-icon
-        [svgIcon]="cardState!.tableExpanded ? 'expand_less_24px' : 'expand_more_24px'"
+        [svgIcon]="shouldExpandTable() ? 'expand_more_24px' : 'expand_less_24px'"
       ></mat-icon>
     </button>
   </div>
