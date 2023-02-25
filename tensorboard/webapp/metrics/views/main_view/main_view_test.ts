@@ -31,6 +31,7 @@ import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {of, ReplaySubject} from 'rxjs';
 import {State} from '../../../app_state';
+import {CustomizationModule} from '../../../customization/customization_module';
 import * as selectors from '../../../selectors';
 import {
   getMetricsCardMinWidth,
@@ -63,7 +64,7 @@ import {
   FilteredViewContainer,
   FILTER_VIEW_DEBOUNCE_IN_MS,
 } from './filtered_view_container';
-import {MainViewComponent} from './main_view_component';
+import {MainViewComponent, SHARE_BUTTON_COMPONENT} from './main_view_component';
 import {MainViewContainer} from './main_view_container';
 import {PinnedViewComponent} from './pinned_view_component';
 import {PinnedViewContainer} from './pinned_view_container';
@@ -77,6 +78,12 @@ class TestableCard {
   @Input() cardId!: CardId;
   @Input() runColorScale!: RunColorScale;
 }
+
+@Component({
+  selector: 'test-share-button',
+  template: ``,
+})
+class TestShareButtonContainer {}
 
 function createNScalarCards(size: number, tag: string = 'tagA') {
   return [...new Array(size)].map((unused, index) => {
@@ -1808,5 +1815,48 @@ describe('metrics main view', () => {
 
       expect(dispatchedActions).toEqual([actions.metricsSettingsPaneClosed()]);
     });
+  });
+});
+
+describe('customizable share button ', () => {
+  it('renders share button when it is provided', async () => {
+    await TestBed.configureTestingModule({
+      imports: [CustomizationModule],
+      declarations: [
+        MainViewComponent,
+        MainViewContainer,
+        TestShareButtonContainer,
+      ],
+      providers: [
+        {
+          provide: SHARE_BUTTON_COMPONENT,
+          useClass: TestShareButtonContainer,
+        },
+        provideMockStore({
+          initialState: appStateFromMetricsState(buildMetricsState()),
+        }),
+      ],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(MainViewContainer);
+    fixture.detectChanges();
+
+    expect(
+      fixture.debugElement.query(By.css('test-share-button'))
+    ).toBeTruthy();
+  });
+
+  it('does not render share button when it is not provided', async () => {
+    await TestBed.configureTestingModule({
+      declarations: [MainViewComponent, MainViewContainer],
+      providers: [
+        provideMockStore({
+          initialState: appStateFromMetricsState(buildMetricsState()),
+        }),
+      ],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(MainViewContainer);
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('test-share-button'))).toBeNull();
   });
 });

@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {ScrollingModule} from '@angular/cdk/scrolling';
 import {CommonModule} from '@angular/common';
+import {CustomizationModule} from '../../../customization/customization_module';
 import {NgModule} from '@angular/core';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatButtonModule} from '@angular/material/button';
@@ -65,6 +66,7 @@ import {PinnedViewContainer} from './pinned_view_container';
   imports: [
     CardRendererModule,
     CommonModule,
+    CustomizationModule,
     FilterInputModule,
     MatAutocompleteModule,
     MatButtonModule,
