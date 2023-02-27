@@ -18,10 +18,19 @@ import {
   ElementRef,
   EventEmitter,
   Input,
+  Inject,
   Output,
+  Type,
+  Optional,
+  InjectionToken,
 } from '@angular/core';
+
 import {PluginType} from '../../types';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
+
+export const SHARE_BUTTON_COMPONENT = new InjectionToken<Type<Component>>(
+  'Customizable Share Button'
+);
 
 @Component({
   selector: 'metrics-main-view-component',
@@ -48,7 +57,12 @@ export class MainViewComponent {
 
   @Output() onPluginTypeAllToggled = new EventEmitter<void>();
 
-  constructor(private readonly host: ElementRef) {}
+  constructor(
+    private readonly host: ElementRef,
+    @Optional()
+    @Inject(SHARE_BUTTON_COMPONENT)
+    readonly customShareButton: Type<Component>
+  ) {}
 
   readonly PluginType = PluginType;
 
