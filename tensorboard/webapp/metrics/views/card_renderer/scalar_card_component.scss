@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 @import '../common';
 
@@ -22,21 +23,25 @@ $_title-to-heading-gap: 12px;
   flex-direction: column;
   box-sizing: border-box;
   height: 100%;
-  overflow: auto;
   padding: $metrics-preferred-gap;
   // When vertically centered, the title's text-top contains extra space above
   // the text, which counts towards the visually perceived white space.
   padding-top: $metrics-preferred-gap - $_title-to-heading-gap;
+
+  &:has(.expand-button) {
+    // Remove the bottom padding when the expand button appears
+    padding: $metrics-preferred-gap $metrics-preferred-gap 0;
+  }
 }
 
 .always-visible {
   display: flex;
+  flex-direction: column;
+
   // The content that is always visible should match the min height of a card,
   // taking into account padding and 2px for the card border.
   flex-basis: $metrics-min-card-height - 2px - ($metrics-preferred-gap * 2) +
     $_title-to-heading-gap;
-  flex-direction: column;
-  flex-grow: 1;
 }
 
 .heading {
@@ -79,6 +84,8 @@ $_title-to-heading-gap: 12px;
 
 .chart-container {
   flex-grow: 1;
+  overflow: hidden;
+  resize: vertical;
 
   mat-spinner {
     $mat-icon-button-diameter: 40px;
@@ -167,7 +174,27 @@ $_title-to-heading-gap: 12px;
 }
 
 .data-table-container {
-  width: 100%;
   height: 100px;
+  max-height: 50em;
   overflow: auto;
+  resize: vertical;
+
+  &.expanded {
+    height: auto;
+  }
+}
+
+.bottom-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .expand-button {
+    color: mat.get-color-from-palette($tb-foreground, secondary-text);
+
+    @include tb-dark-theme {
+      color: mat.get-color-from-palette($tb-dark-foreground, secondary-text);
+      background-color: map-get($tb-dark-background, background);
+    }
+  }
 }

@@ -51,6 +51,7 @@ import {
 } from '../../../feature_flag/store/feature_flag_selectors';
 import {
   getCardPinnedState,
+  getCardStateMap,
   getCurrentRouteRunSelection,
   getDarkModeEnabled,
   getExperimentIdForRunId,
@@ -73,12 +74,14 @@ import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
   dataTableColumnDrag,
+  metricsCardStateUpdated,
   sortingDataTable,
   stepSelectorToggled,
   timeSelectionChanged,
 } from '../../actions';
 import {PluginType, ScalarStepDatum} from '../../data_source';
 import {
+  CardState,
   getCardLoadState,
   getCardMetadata,
   getCardTimeSeries,
@@ -158,6 +161,7 @@ function areSeriesEqual(
       [smoothingEnabled]="smoothingEnabled$ | async"
       [tag]="tag$ | async"
       [title]="title$ | async"
+      [cardState]="cardState$ | async"
       [tooltipSort]="tooltipSort$ | async"
       [xAxisType]="xAxisType$ | async"
       [xScaleType]="xScaleType$ | async"
@@ -178,6 +182,7 @@ function areSeriesEqual(
       (onDataTableSorting)="onDataTableSorting($event)"
       (onLineChartZoom)="onLineChartZoom($event)"
       (reorderColumnHeaders)="reorderColumnHeaders($event)"
+      (onCardStateChanged)="onCardStateChanged($event)"
     ></scalar-card-component>
   `,
   styles: [
@@ -214,6 +219,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   linkedTimeSelection$?: Observable<TimeSelectionView | null>;
   columnHeaders$?: Observable<ColumnHeader[]>;
   stepOrLinkedTimeSelection$?: Observable<TimeSelection | null>;
+  cardState$?: Observable<Partial<CardState>>;
 
   readonly isProspectiveFobFeatureEnabled$: Observable<boolean> =
     this.store.select(getIsLinkedTimeProspectiveFobEnabled);
@@ -275,6 +281,14 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.showFullSize = !this.showFullSize;
     this.fullWidthChanged.emit(this.showFullSize);
     this.fullHeightChanged.emit(this.showFullSize);
+    this.store.dispatch(
+      metricsCardStateUpdated({
+        cardId: this.cardId,
+        settings: {
+          tableExpanded: this.showFullSize,
+        },
+      })
+    );
   }
 
   /**
@@ -579,6 +593,12 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       })
     );
 
+    this.cardState$ = this.store.select(getCardStateMap).pipe(
+      map((cardStateMap) => {
+        return cardStateMap[this.cardId] || {};
+      })
+    );
+
     this.title$ = this.tag$.pipe(
       map((tag) => {
         return getTagDisplayName(tag, this.groupName);
@@ -741,6 +761,15 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
   onDataTableSorting(sortingInfo: SortingInfo) {
     this.store.dispatch(sortingDataTable(sortingInfo));
+  }
+
+  onCardStateChanged(newSettings: Partial<CardState>) {
+    this.store.dispatch(
+      metricsCardStateUpdated({
+        cardId: this.cardId,
+        settings: newSettings,
+      })
+    );
   }
 
   onTimeSelectionChanged(

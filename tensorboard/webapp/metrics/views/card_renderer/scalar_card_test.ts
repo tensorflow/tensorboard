@@ -74,9 +74,14 @@ import {
 } from '../../../widgets/line_chart_v2/types';
 import {ResizeDetectorTestingModule} from '../../../widgets/resize_detector_testing_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
-import {stepSelectorToggled, timeSelectionChanged} from '../../actions';
+import {
+  metricsCardStateUpdated,
+  stepSelectorToggled,
+  timeSelectionChanged,
+} from '../../actions';
 import {PluginType} from '../../data_source';
 import {
+  getCardStateMap,
   getMetricsLinkedTimeEnabled,
   getMetricsLinkedTimeSelection,
   getMetricsRangeSelectionEnabled,
@@ -3401,6 +3406,127 @@ describe('scalar card', () => {
       expect(data[4].RUN).toEqual('2 b/run5');
       expect(data[5].RUN).toEqual('3 c/run6');
       expect(data[6].RUN).toEqual('1 a/run7');
+    }));
+  });
+
+  describe('toggleTableExpanded', () => {
+    beforeEach(() => {
+      store.overrideSelector(getMetricsLinkedTimeEnabled, true);
+      store.overrideSelector(getSingleSelectionHeaders, [
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.SMOOTHED, enabled: true},
+      ]);
+      store.overrideSelector(getRangeSelectionHeaders, [
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.MIN_VALUE, enabled: true},
+      ]);
+
+      const runToSeries = {
+        run1: [
+          {wallTime: 1, value: 1, step: 1},
+          {wallTime: 2, value: 10, step: 2},
+          {wallTime: 3, value: 20, step: 3},
+        ],
+        run2: [
+          {wallTime: 1, value: 1, step: 1},
+          {wallTime: 2, value: 10, step: 2},
+          {wallTime: 3, value: 20, step: 3},
+        ],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([
+          ['run1', true],
+          ['run2', true],
+        ])
+      );
+
+      store.overrideSelector(getMetricsLinkedTimeSelection, {
+        start: {step: 2},
+        end: null,
+      });
+
+      store.overrideSelector(getCardStateMap, {});
+    });
+
+    it('clears inline styles', fakeAsync(() => {
+      let dispatchedActions: Action[] = [];
+      spyOn(store, 'dispatch').and.callFake((action: Action) => {
+        dispatchedActions.push(action);
+      });
+      const fixture = createComponent('card1');
+      fixture.detectChanges();
+      const component = fixture.debugElement.query(
+        By.directive(ScalarCardComponent)
+      );
+      expect(component.componentInstance.dataTableContainer).toBeDefined();
+      component.componentInstance.dataTableContainer.nativeElement.style =
+        'height: 123px;';
+      fixture.debugElement
+        .query(By.css('.expand-button'))
+        .nativeElement.click();
+      expect(
+        component.componentInstance.dataTableContainer.nativeElement.style
+          .cssText
+      ).toEqual('');
+      expect(dispatchedActions).toEqual([
+        metricsCardStateUpdated({
+          cardId: 'card1',
+          settings: {
+            tableExpanded: true,
+          },
+        }),
+      ]);
+    }));
+
+    it('expands the table after a manual resize', fakeAsync(() => {
+      let dispatchedActions: Action[] = [];
+      spyOn(store, 'dispatch').and.callFake((action: Action) => {
+        dispatchedActions.push(action);
+      });
+      const fixture = createComponent('card1');
+      fixture.detectChanges();
+      const component = fixture.debugElement.query(
+        By.directive(ScalarCardComponent)
+      );
+      expect(component.componentInstance.dataTableContainer).toBeDefined();
+      let expandButton = fixture.debugElement.query(By.css('.expand-button'));
+      expandButton.nativeElement.click();
+      fixture.detectChanges();
+
+      component.componentInstance.dataTableContainer.nativeElement.style =
+        'height: 123px;';
+      expandButton = fixture.debugElement.query(By.css('.expand-button'));
+      expect(expandButton.nativeElement.getAttribute('title')).toEqual(
+        'Expand Table'
+      );
+      expandButton.nativeElement.click();
+
+      expect(
+        component.componentInstance.dataTableContainer.nativeElement.style
+          .cssText
+      ).toEqual('');
+      expect(dispatchedActions).toEqual([
+        metricsCardStateUpdated({
+          cardId: 'card1',
+          settings: {
+            tableExpanded: true,
+          },
+        }),
+        metricsCardStateUpdated({
+          cardId: 'card1',
+          settings: {
+            tableExpanded: true,
+          },
+        }),
+      ]);
     }));
   });
 

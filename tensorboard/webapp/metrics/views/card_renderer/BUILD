@@ -82,6 +82,7 @@ tf_sass_binary(
     src = "histogram_card_component.scss",
     strict_deps = False,
     deps = [
+        "//tensorboard/webapp:angular_material_sass_deps",
         "//tensorboard/webapp/metrics/views:metrics_common_styles",
         "//tensorboard/webapp/theme",
     ],
