@@ -31,11 +31,9 @@ import '../tf_hparams_table_view/tf-hparams-table-view';
 class TfHparamsSessionsPane extends PolymerElement {
   constructor() {
     super();
-    // If window['ga'] is defined, use it, otherwise any logging calls will be
-    // no-ops.
-    // @ts-ignore
-    this.ga = window['ga'] || function () {};
+    this.logTabClick('Plugin Load');
   }
+
   static readonly template = html`
     <paper-header-panel>
       <paper-toolbar slot="header" class="tab-bar">
@@ -47,7 +45,7 @@ class TfHparamsSessionsPane extends PolymerElement {
             TABLE VIEW
           </paper-tab>
           <paper-tab
-            on-click="_parrellelCoordsTabClicked"
+            on-click="_parrallelCoordsTabClicked"
             view-id="parallel-coords-view"
           >
             PARALLEL COORDINATES VIEW
@@ -185,21 +183,28 @@ class TfHparamsSessionsPane extends PolymerElement {
   })
   _selectedTab: number = 0;
   _tableTabClicked: () => void = () => {
-    this.logTabClick('Table');
+    this.logTabClick('Tab Clicked', 'Table');
   };
-  _parrellelCoordsTabClicked: () => void = () => {
-    this.logTabClick('Parrellel Coords');
+  _parrallelCoordsTabClicked: () => void = () => {
+    this.logTabClick('Tab Clicked', 'Parrellel Coords');
   };
   _scatterPlotMatrixTabClicked: () => void = () => {
-    this.logTabClick('Scatter Plot Matrix');
+    this.logTabClick('Tab Clicked', 'Scatter Plot Matrix');
   };
 
-  logTabClick: (tabName: string) => void = (tabName: string) => {
+  logTabClick: (action: string, tabName?: string) => void = (
+    action: string,
+    tabName?: string
+  ) => {
+    // If window['ga'] is defined, use it, otherwise any logging calls will be
+    // no-ops. window['ga'] is only defined in the hosted TensorBoard.
+    // @ts-ignore
+    this.ga = window['ga'] || function () {};
     // @ts-ignore
     this.ga('send', {
       hitType: 'event',
-      eventCategory: 'HParam',
-      eventAction: 'Tab Clicked',
+      eventCategory: 'HParams',
+      eventAction: action,
       eventLabel: tabName,
     });
   };
