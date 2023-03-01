@@ -186,7 +186,7 @@ class TfHparamsSessionsPane extends PolymerElement {
     this.logTabClick('Tab Clicked', 'Table');
   };
   _parrallelCoordsTabClicked: () => void = () => {
-    this.logTabClick('Tab Clicked', 'Parrellel Coords');
+    this.logTabClick('Tab Clicked', 'Parrallel Coords');
   };
   _scatterPlotMatrixTabClicked: () => void = () => {
     this.logTabClick('Tab Clicked', 'Scatter Plot Matrix');
@@ -199,9 +199,9 @@ class TfHparamsSessionsPane extends PolymerElement {
     // If window['ga'] is defined, use it, otherwise any logging calls will be
     // no-ops. window['ga'] is only defined in the hosted TensorBoard.
     // @ts-ignore
-    this.ga = window['ga'] || function () {};
+    const analytics = window['ga'] || function () {};
     // @ts-ignore
-    this.ga('send', {
+    analytics('send', {
       hitType: 'event',
       eventCategory: 'HParams',
       eventAction: action,
