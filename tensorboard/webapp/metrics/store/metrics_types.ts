@@ -255,7 +255,7 @@ export const METRICS_SETTINGS_DEFAULT: MetricsSettings = {
   tooltipSort: TooltipSort.ALPHABETICAL,
   ignoreOutliers: true,
   xAxisType: XAxisType.STEP,
-  hideEmptyCards: false,
+  hideEmptyCards: true,
   scalarSmoothing: 0.6,
   scalarPartitionNonMonotonicX: false,
   imageBrightnessInMilli: 1000,
