@@ -20,6 +20,9 @@ $_title-to-heading-gap: 12px;
 
 $_card_padding_top: $metrics-preferred-gap - $_title-to-heading-gap;
 
+// If this is changed, please also update canExpandTable
+$_data_table_initial_height: 100px;
+
 :host {
   display: flex;
   flex-direction: column;
@@ -179,7 +182,8 @@ $_card_padding_top: $metrics-preferred-gap - $_title-to-heading-gap;
 }
 
 .data-table-container {
-  height: 100px; // If this is changed, please also update the ngIf on the expand button
+  height: $_data_table_initial_height;
+  min-height: $_data_table_initial_height;
   max-height: 50em;
   overflow: auto;
   resize: vertical;

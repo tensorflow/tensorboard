@@ -3455,6 +3455,8 @@ describe('scalar card', () => {
         new Map([
           ['run1', true],
           ['run2', true],
+          ['run3', true],
+          ['run4', true],
         ])
       );
 
@@ -3467,12 +3469,14 @@ describe('scalar card', () => {
     });
 
     it('does not render expand button when the datatable does not overflow', fakeAsync(() => {
-      provideMockCardRunToSeriesData(
-        selectSpy,
-        PluginType.SCALARS,
-        'card1',
-        null /* metadataOverride */,
-        {}
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([
+          ['run1', true],
+          ['run2', true],
+          ['run3', false],
+          ['run4', false],
+        ])
       );
       const fixture = createComponent('card1');
       fixture.detectChanges();
