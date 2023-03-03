@@ -607,7 +607,10 @@ const reducer = createReducer(
   ),
   on(actions.metricsCardStateUpdated, (state, {cardId, settings}) => {
     const nextcardStateMap = {...state.cardStateMap};
-    nextcardStateMap[cardId] = {...settings};
+    nextcardStateMap[cardId] = {
+      ...nextcardStateMap[cardId],
+      ...settings,
+    };
 
     return {
       ...state,

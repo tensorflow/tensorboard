@@ -18,6 +18,8 @@ limitations under the License.
 
 $_title-to-heading-gap: 12px;
 
+$_card_padding_top: $metrics-preferred-gap - $_title-to-heading-gap;
+
 :host {
   display: flex;
   flex-direction: column;
@@ -26,17 +28,20 @@ $_title-to-heading-gap: 12px;
   padding: $metrics-preferred-gap;
   // When vertically centered, the title's text-top contains extra space above
   // the text, which counts towards the visually perceived white space.
-  padding-top: $metrics-preferred-gap - $_title-to-heading-gap;
+  padding-top: $_card_padding_top;
 
   &:has(.expand-button) {
     // Remove the bottom padding when the expand button appears
-    padding: $metrics-preferred-gap $metrics-preferred-gap 0;
+    padding: $_card_padding_top $metrics-preferred-gap 0;
   }
 }
 
 .always-visible {
   display: flex;
   flex-direction: column;
+  &:not(:has(.expand-button)) {
+    flex-grow: 1;
+  }
 
   // The content that is always visible should match the min height of a card,
   // taking into account padding and 2px for the card border.
@@ -174,7 +179,7 @@ $_title-to-heading-gap: 12px;
 }
 
 .data-table-container {
-  height: 100px;
+  height: 100px; // If this is changed, please also update the ngIf on the expand button
   max-height: 50em;
   overflow: auto;
   resize: vertical;
