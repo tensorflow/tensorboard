@@ -257,6 +257,8 @@ export class ScalarCardComponent<Downloader> {
       return isDatumVisible(datum, this.chartMetadataMap);
     });
 
+    // 3 is the maximum number of runs that can be shown before
+    // the height of the table exceeds $_data_table_initial_height.
     return visbleRuns.length > 3;
   }
 
