@@ -808,7 +808,8 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
       let colParam = {hparam: hparam.info.name} as any;
       if (hparam.filter.domainDiscrete) {
         const allChecked = hparam.filter.domainDiscrete.every(
-            (filterVal) => filterVal.checked);
+          (filterVal) => filterVal.checked
+        );
         if (!allChecked) {
           colParam.filterDiscrete = [];
           hparam.filter.domainDiscrete.forEach((filterVal) => {
@@ -818,10 +819,13 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
           });
         }
       } else if (hparam.filter.interval) {
-        if (hparam.filter.interval.min.value !== '' ||
-            hparam.filter.interval.max.value !== '') {
-          colParam.filterInterval =
-              parseInputInterval('_hparams.' + index + '.filter.interval');
+        if (
+          hparam.filter.interval.min.value !== '' ||
+          hparam.filter.interval.max.value !== ''
+        ) {
+          colParam.filterInterval = parseInputInterval(
+            '_hparams.' + index + '.filter.interval'
+          );
         }
       } else if (hparam.filter.regexp) {
         colParam.filterRegexp = hparam.filter.regexp;
@@ -831,12 +835,15 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
     // Build the metric filters in the request.
     this._metrics.forEach((metric, index) => {
       let colParam = {
-        metric: metric.info.name
+        metric: metric.info.name,
       } as any;
-      if (metric.filter.interval.min.value !== '' ||
-          metric.filter.interval.max.value !== '') {
-        colParam.filterInterval =
-              parseInputInterval('_metrics.' + index + '.filter.interval');
+      if (
+        metric.filter.interval.min.value !== '' ||
+        metric.filter.interval.max.value !== ''
+      ) {
+        colParam.filterInterval = parseInputInterval(
+          '_metrics.' + index + '.filter.interval'
+        );
       }
       colParams.push(colParam);
     });
