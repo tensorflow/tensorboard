@@ -55,7 +55,7 @@ import {
   SortingInfo,
   SortingOrder,
 } from './scalar_card_types';
-import {TimeSelectionView} from './utils';
+import {isDatumVisible, TimeSelectionView} from './utils';
 
 type ScalarTooltipDatum = TooltipDatum<
   ScalarCardSeriesMetadata & {
@@ -250,6 +250,16 @@ export class ScalarCardComponent<Downloader> {
       (this.stepOrLinkedTimeSelection !== null ||
         this.isProspectiveFobFeatureEnabled)
     );
+  }
+
+  canExpandTable() {
+    const visbleRuns = this.dataSeries.filter((datum) => {
+      return isDatumVisible(datum, this.chartMetadataMap);
+    });
+
+    // 3 is the maximum number of runs that can be shown before
+    // the height of the table exceeds $_data_table_initial_height.
+    return visbleRuns.length > 3;
   }
 
   shouldExpandTable() {

@@ -2301,6 +2301,10 @@ describe('metrics reducers', () => {
       const state = buildMetricsState({
         cardStateMap: {
           card1: {
+            timeSelection: {
+              start: {step: 5},
+              end: null,
+            },
             tableExpanded: true,
           },
         },
@@ -2314,6 +2318,10 @@ describe('metrics reducers', () => {
       const nextState = reducers(state, action);
       expect(nextState.cardStateMap).toEqual({
         card1: {
+          timeSelection: {
+            start: {step: 5},
+            end: null,
+          },
           tableExpanded: false,
         },
       });

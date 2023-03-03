@@ -197,6 +197,7 @@ limitations under the License.
   </div>
   <div class="bottom-area">
     <button
+      *ngIf="canExpandTable()"
       mat-icon-button
       i18n-aria-label="Expand Table"
       class="expand-button"

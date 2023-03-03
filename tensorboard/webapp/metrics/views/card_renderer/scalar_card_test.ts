@@ -3432,6 +3432,16 @@ describe('scalar card', () => {
           {wallTime: 2, value: 10, step: 2},
           {wallTime: 3, value: 20, step: 3},
         ],
+        run3: [
+          {wallTime: 1, value: 1, step: 1},
+          {wallTime: 2, value: 10, step: 2},
+          {wallTime: 3, value: 20, step: 3},
+        ],
+        run4: [
+          {wallTime: 1, value: 1, step: 1},
+          {wallTime: 2, value: 10, step: 2},
+          {wallTime: 3, value: 20, step: 3},
+        ],
       };
       provideMockCardRunToSeriesData(
         selectSpy,
@@ -3445,6 +3455,8 @@ describe('scalar card', () => {
         new Map([
           ['run1', true],
           ['run2', true],
+          ['run3', true],
+          ['run4', true],
         ])
       );
 
@@ -3455,6 +3467,25 @@ describe('scalar card', () => {
 
       store.overrideSelector(getCardStateMap, {});
     });
+
+    it('does not render expand button when the datatable does not overflow', fakeAsync(() => {
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([
+          ['run1', true],
+          ['run2', true],
+          ['run3', false],
+          ['run4', false],
+        ])
+      );
+      const fixture = createComponent('card1');
+      fixture.detectChanges();
+      const component = fixture.debugElement.query(
+        By.directive(ScalarCardComponent)
+      );
+      expect(component.componentInstance.dataTableContainer).toBeDefined();
+      expect(fixture.debugElement.query(By.css('.expand-button'))).toBeNull();
+    }));
 
     it('clears inline styles', fakeAsync(() => {
       let dispatchedActions: Action[] = [];

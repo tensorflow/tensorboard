@@ -15,7 +15,12 @@ limitations under the License.
 import {ExperimentAlias} from '../../../experiments/types';
 import {Run} from '../../../runs/store/runs_types';
 import {TimeSelection} from '../../types';
-import {PartialSeries, PartitionedSeries} from './scalar_card_types';
+import {
+  PartialSeries,
+  PartitionedSeries,
+  ScalarCardDataSeries,
+  ScalarCardSeriesMetadataMap,
+} from './scalar_card_types';
 
 export function getDisplayNameForRun(
   runId: string,
@@ -187,4 +192,15 @@ export function getClosestStep(
     }
   }
   return closestStep;
+}
+
+/**
+ * Used to determine if a data point should be rendered given the metadata.
+ */
+export function isDatumVisible(
+  datum: ScalarCardDataSeries,
+  metadataMap: ScalarCardSeriesMetadataMap
+) {
+  const metadata = metadataMap[datum.id];
+  return metadata && metadata.visible && !Boolean(metadata.aux);
 }

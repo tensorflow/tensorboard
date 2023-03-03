@@ -31,6 +31,7 @@ import {
   SortingInfo,
   SortingOrder,
 } from './scalar_card_types';
+import {isDatumVisible} from './utils';
 
 @Component({
   selector: 'scalar-card-data-table',
@@ -101,8 +102,7 @@ export class ScalarCardDataTable {
     const endStep = this.stepOrLinkedTimeSelection.end?.step;
     const dataTableData: SelectedStepRunData[] = this.dataSeries
       .filter((datum) => {
-        const metadata = this.chartMetadataMap[datum.id];
-        return metadata && metadata.visible && !Boolean(metadata.aux);
+        return isDatumVisible(datum, this.chartMetadataMap);
       })
       .map((datum) => {
         const metadata = this.chartMetadataMap[datum.id];
