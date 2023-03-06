@@ -742,7 +742,7 @@ const reducer = createReducer(
       },
     };
   }),
-  on(actions.metricsHideEmptyCardsChanged, (state) => {
+  on(actions.metricsHideEmptyCardsToggled, (state) => {
     return {
       ...state,
       settingOverrides: {

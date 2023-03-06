@@ -1217,13 +1217,20 @@ describe('metrics reducers', () => {
         settingOverrides: {},
       });
 
-      const nextState = reducers(
+      const secondState = reducers(
         prevState,
-        actions.metricsHideEmptyCardsChanged()
+        actions.metricsHideEmptyCardsToggled()
       );
 
-      expect(nextState.settings.hideEmptyCards).toBe(false);
-      expect(nextState.settingOverrides.hideEmptyCards).toBe(true);
+      expect(secondState.settings.hideEmptyCards).toBe(false);
+      expect(secondState.settingOverrides.hideEmptyCards).toBe(true);
+
+      const thirdState = reducers(
+        secondState,
+        actions.metricsHideEmptyCardsToggled()
+      );
+      expect(thirdState.settings.hideEmptyCards).toBe(false);
+      expect(thirdState.settingOverrides.hideEmptyCards).toBe(false);
     });
   });
 

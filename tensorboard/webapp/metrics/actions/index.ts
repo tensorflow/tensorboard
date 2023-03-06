@@ -249,7 +249,7 @@ export const rangeSelectionToggled = createAction(
   }>()
 );
 
-export const metricsHideEmptyCardsChanged = createAction(
+export const metricsHideEmptyCardsToggled = createAction(
   '[Metrics] Hide Empty Cards Changed'
 );
 
