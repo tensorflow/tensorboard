@@ -25,7 +25,7 @@ import {getNonEmptyCardIdsWithMetadata, TagMetadata} from '../../store';
 import {compareTagNames} from '../../utils';
 import {CardIdWithMetadata} from '../metrics_view_types';
 
-const getTagsWithScalarData = createSelector(
+export const getTagsWithScalarData = createSelector(
   getMetricsTagMetadata,
   getCurrentRouteRunSelection,
   (

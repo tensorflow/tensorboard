@@ -57,6 +57,7 @@ import {CardGroupsComponent} from './card_groups_component';
 import {CardGroupsContainer} from './card_groups_container';
 import {CardGroupToolBarComponent} from './card_group_toolbar_component';
 import {CardGroupToolBarContainer} from './card_group_toolbar_container';
+import * as common_selectors from './common_selectors';
 import {EmptyTagMatchMessageComponent} from './empty_tag_match_message_component';
 import {EmptyTagMatchMessageContainer} from './empty_tag_match_message_container';
 import {FilteredViewComponent} from './filtered_view_component';
@@ -363,6 +364,10 @@ describe('metrics main view', () => {
           sample: 0,
         },
       ]);
+      store.overrideSelector(
+        common_selectors.TEST_ONLY.getTagsWithScalarData,
+        new Set(['tagA'])
+      );
 
       const fixture = TestBed.createComponent(MainViewContainer);
       fixture.detectChanges();
@@ -395,6 +400,10 @@ describe('metrics main view', () => {
           sample: 0,
         },
       ]);
+      store.overrideSelector(
+        common_selectors.TEST_ONLY.getTagsWithScalarData,
+        new Set(['tagA'])
+      );
       const fixture = TestBed.createComponent(MainViewContainer);
       fixture.detectChanges();
 
@@ -483,6 +492,11 @@ describe('metrics main view', () => {
           sample: 0,
         },
       ]);
+
+      store.overrideSelector(
+        common_selectors.TEST_ONLY.getTagsWithScalarData,
+        new Set(['tagA'])
+      );
 
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
@@ -746,6 +760,10 @@ describe('metrics main view', () => {
             sample: 0,
           },
         ]);
+        store.overrideSelector(
+          common_selectors.TEST_ONLY.getTagsWithScalarData,
+          new Set(['tagA/Scalars'])
+        );
         store.overrideSelector(getMetricsTagGroupExpansionState, true);
       });
 
@@ -767,10 +785,16 @@ describe('metrics main view', () => {
 
       it('responds to page size changes', () => {
         store.overrideSelector(getMetricsTagGroupExpansionState, true);
+        const scalarCards = createNScalarCards(20);
         store.overrideSelector(
           selectors.getNonEmptyCardIdsWithMetadata,
-          createNScalarCards(20)
+          scalarCards
         );
+        store.overrideSelector(
+          common_selectors.TEST_ONLY.getTagsWithScalarData,
+          new Set(scalarCards.map(({tag}) => tag))
+        );
+
         store.overrideSelector(settingsSelectors.getPageSize, 50);
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
@@ -1186,6 +1210,10 @@ describe('metrics main view', () => {
           sample: 0,
         },
       ]);
+      store.overrideSelector(
+        common_selectors.TEST_ONLY.getTagsWithScalarData,
+        new Set(['tagA'])
+      );
     });
 
     function getFilterViewContainer(
@@ -1288,9 +1316,14 @@ describe('metrics main view', () => {
 
     it('does not limit number of items to 3', fakeAsync(() => {
       store.overrideSelector(settingsSelectors.getPageSize, 5);
+      const scalarCards = createNScalarCards(10);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
-        createNScalarCards(10)
+        scalarCards
+      );
+      store.overrideSelector(
+        common_selectors.TEST_ONLY.getTagsWithScalarData,
+        new Set(scalarCards.map(({tag}) => tag))
       );
       const fixture = createComponent('tagA');
 
@@ -1315,9 +1348,14 @@ describe('metrics main view', () => {
     }));
 
     it('shows a warning when no cards match current query', fakeAsync(() => {
+      const scalarCards = createNScalarCards(100);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
-        createNScalarCards(100)
+        scalarCards
+      );
+      store.overrideSelector(
+        common_selectors.TEST_ONLY.getTagsWithScalarData,
+        new Set(scalarCards.map(({tag}) => tag))
       );
       const fixture = createComponent('^no_match_please$');
 
@@ -1335,9 +1373,14 @@ describe('metrics main view', () => {
         selectors.getMetricsFilteredPluginTypes,
         new Set([PluginType.IMAGES, PluginType.HISTOGRAMS])
       );
+      const scalarCards = createNScalarCards(100);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
-        createNScalarCards(100)
+        scalarCards
+      );
+      store.overrideSelector(
+        common_selectors.TEST_ONLY.getTagsWithScalarData,
+        new Set(scalarCards.map(({tag}) => tag))
       );
 
       const fixture = createComponent('.');
@@ -1357,10 +1400,16 @@ describe('metrics main view', () => {
         'the correct list when regex is fixed',
       fakeAsync(() => {
         store.overrideSelector(settingsSelectors.getPageSize, 5);
+        const scalarCards = createNScalarCards(10);
         store.overrideSelector(
           selectors.getNonEmptyCardIdsWithMetadata,
-          createNScalarCards(10)
+          scalarCards
         );
+        store.overrideSelector(
+          common_selectors.TEST_ONLY.getTagsWithScalarData,
+          new Set(scalarCards.map(({tag}) => tag))
+        );
+
         const fixture = createComponent('tagA');
 
         store.overrideSelector(selectors.getMetricsTagFilter, 'tagA/Scalars_[');
