@@ -31,7 +31,7 @@ import '../tf_hparams_table_view/tf-hparams-table-view';
 class TfHparamsSessionsPane extends PolymerElement {
   constructor() {
     super();
-    this.logTabClick('Plugin Load');
+    this.logAction('Plugin Load');
   }
 
   static readonly template = html`
@@ -45,7 +45,7 @@ class TfHparamsSessionsPane extends PolymerElement {
             TABLE VIEW
           </paper-tab>
           <paper-tab
-            on-click="_parrallelCoordsTabClicked"
+            on-click="_parallelCoordsTabClicked"
             view-id="parallel-coords-view"
           >
             PARALLEL COORDINATES VIEW
@@ -183,16 +183,16 @@ class TfHparamsSessionsPane extends PolymerElement {
   })
   _selectedTab: number = 0;
   _tableTabClicked: () => void = () => {
-    this.logTabClick('Tab Clicked', 'Table');
+    this.logAction('Tab Clicked', 'Table');
   };
-  _parrallelCoordsTabClicked: () => void = () => {
-    this.logTabClick('Tab Clicked', 'Parrallel Coords');
+  _parallelCoordsTabClicked: () => void = () => {
+    this.logAction('Tab Clicked', 'Parallel Coords');
   };
   _scatterPlotMatrixTabClicked: () => void = () => {
-    this.logTabClick('Tab Clicked', 'Scatter Plot Matrix');
+    this.logAction('Tab Clicked', 'Scatter Plot Matrix');
   };
 
-  logTabClick: (action: string, tabName?: string) => void = (
+  logAction: (action: string, tabName?: string) => void = (
     action: string,
     tabName?: string
   ) => {
