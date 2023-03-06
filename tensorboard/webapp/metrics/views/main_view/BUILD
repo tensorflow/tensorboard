@@ -184,6 +184,7 @@ tf_ts_library(
         "//tensorboard/webapp/app_routing",
         "//tensorboard/webapp/app_routing:testing",
         "//tensorboard/webapp/app_routing/store:testing",
+        "//tensorboard/webapp/customization",
         "//tensorboard/webapp/metrics:test_lib",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/actions",

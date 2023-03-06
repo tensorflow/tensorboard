@@ -58,7 +58,10 @@ const getRenderableCardIdsWithMetadata = createSelector(
       }
       return Boolean(runSelectionMap && runSelectionMap.get(card.runId!));
     });
-    if (hideEmptyCards) {
+    const areAnyRunsSelected = Array.from(runSelectionMap?.values() || []).some(
+      Boolean
+    );
+    if (hideEmptyCards && areAnyRunsSelected) {
       return cardsWithMetadata.filter((cardIdWithMetadata) => {
         if (cardIdWithMetadata.plugin !== PluginType.SCALARS) {
           return true;
@@ -82,5 +85,6 @@ export const getSortedRenderableCardIdsWithMetadata = createSelector<
 });
 
 export const TEST_ONLY = {
+  getRenderableCardIdsWithMetadata,
   getTagsWithScalarData,
 };
