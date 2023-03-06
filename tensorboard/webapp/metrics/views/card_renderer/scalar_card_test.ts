@@ -2693,7 +2693,7 @@ describe('scalar card', () => {
         {type: ColumnHeaderType.STEP_AT_MAX, enabled: true},
         {type: ColumnHeaderType.STEP_AT_MIN, enabled: true},
         {type: ColumnHeaderType.MEAN, enabled: true},
-        {type: ColumnHeaderType.REAL_CHANGE, enabled: true},
+        {type: ColumnHeaderType.RAW_CHANGE, enabled: true},
       ]);
     });
 
@@ -2819,7 +2819,7 @@ describe('scalar card', () => {
           STEP_AT_MAX: 3,
           STEP_AT_MIN: 1,
           MEAN: 11,
-          REAL_CHANGE: 19,
+          RAW_CHANGE: 19,
         },
         {
           id: 'run2',
@@ -2836,7 +2836,7 @@ describe('scalar card', () => {
           STEP_AT_MAX: 3,
           STEP_AT_MIN: 1,
           MEAN: 12,
-          REAL_CHANGE: 24,
+          RAW_CHANGE: 24,
         },
       ]);
     }));
@@ -2894,7 +2894,7 @@ describe('scalar card', () => {
           STEP_AT_MAX: 4,
           STEP_AT_MIN: 3,
           MEAN: 12,
-          REAL_CHANGE: 17,
+          RAW_CHANGE: 17,
         },
       ]);
     }));
@@ -2952,7 +2952,7 @@ describe('scalar card', () => {
           STEP_AT_MAX: 4,
           STEP_AT_MIN: 3,
           MEAN: 11,
-          REAL_CHANGE: 10,
+          RAW_CHANGE: 10,
         },
       ]);
     }));

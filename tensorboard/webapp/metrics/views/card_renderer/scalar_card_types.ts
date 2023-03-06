@@ -95,7 +95,7 @@ export enum ColumnHeaderType {
   STEP_AT_MAX = 'STEP_AT_MAX',
   STEP_AT_MIN = 'STEP_AT_MIN',
   MEAN = 'MEAN',
-  REAL_CHANGE = 'REAL_CHANGE',
+  RAW_CHANGE = 'RAW_CHANGE',
 }
 
 export interface ColumnHeader {

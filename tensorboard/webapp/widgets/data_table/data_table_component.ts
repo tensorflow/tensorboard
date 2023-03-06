@@ -194,12 +194,12 @@ export class DataTableComponent implements OnDestroy {
         return intlNumberFormatter.formatShort(
           selectedStepRunData.MEAN as number
         );
-      case ColumnHeaderType.REAL_CHANGE:
-        if (selectedStepRunData.REAL_CHANGE === undefined) {
+      case ColumnHeaderType.RAW_CHANGE:
+        if (selectedStepRunData.RAW_CHANGE === undefined) {
           return '';
         }
         return numberFormatter.formatShort(
-          Math.abs(selectedStepRunData.REAL_CHANGE as number)
+          Math.abs(selectedStepRunData.RAW_CHANGE as number)
         );
       default:
         return '';

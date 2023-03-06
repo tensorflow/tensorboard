@@ -70,7 +70,7 @@ export class DataTableHeaderComponent {
         return 'Step at Min';
       case ColumnHeaderType.MEAN:
         return 'Mean';
-      case ColumnHeaderType.REAL_CHANGE:
+      case ColumnHeaderType.RAW_CHANGE:
         return 'Real Value';
       default:
         return '';

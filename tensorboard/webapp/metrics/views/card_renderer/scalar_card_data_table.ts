@@ -82,14 +82,14 @@ export class ScalarCardDataTable {
     endPointIndex: number
   ): ScalarCardPoint {
     let maxValue = points[startPointIndex].value;
-    let maxPoint = points[startPointIndex];
+    let maxValuePoint = points[startPointIndex];
     for (let i = startPointIndex; i <= endPointIndex; i++) {
       if (maxValue < points[i].value) {
         maxValue = points[i].value;
-        maxPoint = points[i];
+        maxValuePoint = points[i];
       }
     }
-    return maxPoint;
+    return maxValuePoint;
   }
 
   getMean(
@@ -236,11 +236,11 @@ export class ScalarCardDataTable {
                 closestEndPointIndex
               );
               continue;
-            case ColumnHeaderType.REAL_CHANGE:
+            case ColumnHeaderType.RAW_CHANGE:
               if (!closestEndPoint) {
                 continue;
               }
-              selectedStepData.REAL_CHANGE =
+              selectedStepData.RAW_CHANGE =
                 closestEndPoint.value - closestStartPoint.value;
               continue;
             default:
