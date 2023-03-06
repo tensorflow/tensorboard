@@ -2695,6 +2695,10 @@ describe('scalar card', () => {
         {type: ColumnHeaderType.PERCENTAGE_CHANGE, enabled: true},
         {type: ColumnHeaderType.START_STEP, enabled: true},
         {type: ColumnHeaderType.END_STEP, enabled: true},
+        {type: ColumnHeaderType.STEP_AT_MAX, enabled: true},
+        {type: ColumnHeaderType.STEP_AT_MIN, enabled: true},
+        {type: ColumnHeaderType.MEAN, enabled: true},
+        {type: ColumnHeaderType.RAW_CHANGE, enabled: true},
       ]);
     });
 
@@ -2766,7 +2770,7 @@ describe('scalar card', () => {
       const runToSeries = {
         run1: [
           {wallTime: 1, value: 1, step: 1},
-          {wallTime: 2, value: 10, step: 2},
+          {wallTime: 2, value: 12, step: 2},
           {wallTime: 3, value: 20, step: 3},
         ],
         run2: [
@@ -2817,6 +2821,10 @@ describe('scalar card', () => {
           MIN_VALUE: 1,
           MAX_VALUE: 20,
           PERCENTAGE_CHANGE: 19, // percentage change from 1 to 20 is 1900%
+          STEP_AT_MAX: 3,
+          STEP_AT_MIN: 1,
+          MEAN: 11,
+          RAW_CHANGE: 19,
         },
         {
           id: 'run2',
@@ -2830,6 +2838,10 @@ describe('scalar card', () => {
           MIN_VALUE: 1,
           MAX_VALUE: 25,
           PERCENTAGE_CHANGE: 24, // percentage change from 1 to 25 is 2400%
+          STEP_AT_MAX: 3,
+          STEP_AT_MIN: 1,
+          MEAN: 12,
+          RAW_CHANGE: 24,
         },
       ]);
     }));
@@ -2884,6 +2896,68 @@ describe('scalar card', () => {
           MIN_VALUE: 4.532374100719424,
           MAX_VALUE: 18.976711362032464,
           PERCENTAGE_CHANGE: 1.2427022518765645,
+          STEP_AT_MAX: 4,
+          STEP_AT_MIN: 3,
+          MEAN: 12,
+          RAW_CHANGE: 17,
+        },
+      ]);
+    }));
+
+    it('builds range selected step data object with range not at the ends of the data', fakeAsync(() => {
+      const runToSeries = {
+        run1: [
+          {wallTime: 1, value: 1, step: 1},
+          {wallTime: 2, value: 5, step: 2},
+          {wallTime: 3, value: 4, step: 3},
+          {wallTime: 4, value: 20, step: 4},
+          {wallTime: 5, value: 15, step: 5},
+          {wallTime: 6, value: 45, step: 6},
+        ],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([['run1', true]])
+      );
+
+      store.overrideSelector(getMetricsLinkedTimeSelection, {
+        start: {step: 2},
+        end: {step: 5},
+      });
+
+      const fixture = createComponent('card1');
+      const scalarCardDataTable = fixture.debugElement.query(
+        By.directive(ScalarCardDataTable)
+      );
+      fixture.detectChanges();
+
+      const data =
+        scalarCardDataTable.componentInstance.getTimeSelectionTableData();
+
+      expect(data).toEqual([
+        {
+          id: 'run1',
+          COLOR: '#fff',
+          RUN: 'run1',
+          VALUE_CHANGE: 10,
+          START_STEP: 2,
+          END_STEP: 5,
+          START_VALUE: 5,
+          END_VALUE: 15,
+          MIN_VALUE: 4,
+          MAX_VALUE: 20,
+          PERCENTAGE_CHANGE: 2,
+          STEP_AT_MAX: 4,
+          STEP_AT_MIN: 3,
+          MEAN: 11,
+          RAW_CHANGE: 10,
         },
       ]);
     }));

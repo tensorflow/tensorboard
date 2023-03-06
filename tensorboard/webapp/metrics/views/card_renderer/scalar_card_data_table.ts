@@ -60,38 +60,49 @@ export class ScalarCardDataTable {
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() orderColumns = new EventEmitter<ColumnHeader[]>();
 
-  getMinValueInRange(
+  getMinPointInRange(
     points: ScalarCardPoint[],
     startPointIndex: number,
     endPointIndex: number,
     smoothed: boolean = false
-  ): number {
-    let minValue = this.maybeSmoothedValue(points[startPointIndex], smoothed);
+  ): ScalarCardPoint {
+    let minValue = points[startPointIndex].value;
+    let minValuePoint = points[startPointIndex];
     for (let i = startPointIndex; i <= endPointIndex; i++) {
-      if (minValue > this.maybeSmoothedValue(points[i], smoothed)) {
-        minValue = this.maybeSmoothedValue(points[i], smoothed);
+      if (minValue > points[i].value) {
+        minValue = points[i].value;
+        minValuePoint = points[i];
       }
     }
-    return minValue;
+    return minValuePoint;
   }
 
-  getMaxValueInRange(
+  getMaxPointInRange(
     points: ScalarCardPoint[],
     startPointIndex: number,
-    endPointIndex: number,
-    smoothed: boolean = false
-  ): number {
-    let maxValue = this.maybeSmoothedValue(points[startPointIndex], smoothed);
+    endPointIndex: number
+  ): ScalarCardPoint {
+    let maxValue = points[startPointIndex].value;
+    let maxValuePoint = points[startPointIndex];
     for (let i = startPointIndex; i <= endPointIndex; i++) {
-      if (maxValue < this.maybeSmoothedValue(points[i], smoothed)) {
-        maxValue = this.maybeSmoothedValue(points[i], smoothed);
+      if (maxValue < points[i].value) {
+        maxValue = points[i].value;
+        maxValuePoint = points[i];
       }
     }
-    return maxValue;
+    return maxValuePoint;
   }
 
-  maybeSmoothedValue(point: ScalarCardPoint, smoothed: boolean) {
-    return smoothed ? point.y : point.value;
+  getMean(
+    points: ScalarCardPoint[],
+    startPointIndex: number,
+    endPointIndex: number
+  ) {
+    let sum = 0;
+    for (let i = startPointIndex; i <= endPointIndex; i++) {
+      sum += points[i].value;
+    }
+    return sum / (endPointIndex - startPointIndex + 1);
   }
 
   getTimeSelectionTableData(): SelectedStepRunData[] {
@@ -172,23 +183,21 @@ export class ScalarCardDataTable {
               if (!closestEndPointIndex) {
                 continue;
               }
-              selectedStepData.MIN_VALUE = this.getMinValueInRange(
+              selectedStepData.MIN_VALUE = this.getMinPointInRange(
                 datum.points,
                 closestStartPointIndex,
-                closestEndPointIndex,
-                true
-              );
+                closestEndPointIndex
+              ).y;
               continue;
             case ColumnHeaderType.MAX_VALUE:
               if (!closestEndPointIndex) {
                 continue;
               }
-              selectedStepData.MAX_VALUE = this.getMaxValueInRange(
+              selectedStepData.MAX_VALUE = this.getMaxPointInRange(
                 datum.points,
                 closestStartPointIndex,
-                closestEndPointIndex,
-                true
-              );
+                closestEndPointIndex
+              ).y;
               continue;
             case ColumnHeaderType.PERCENTAGE_CHANGE:
               if (!closestEndPoint) {
@@ -196,6 +205,43 @@ export class ScalarCardDataTable {
               }
               selectedStepData.PERCENTAGE_CHANGE =
                 (closestEndPoint.y - closestStartPoint.y) / closestStartPoint.y;
+              continue;
+            case ColumnHeaderType.STEP_AT_MAX:
+              if (!closestEndPointIndex) {
+                continue;
+              }
+              selectedStepData.STEP_AT_MAX = this.getMaxPointInRange(
+                datum.points,
+                closestStartPointIndex,
+                closestEndPointIndex
+              ).step;
+              continue;
+            case ColumnHeaderType.STEP_AT_MIN:
+              if (!closestEndPointIndex) {
+                continue;
+              }
+              selectedStepData.STEP_AT_MIN = this.getMinPointInRange(
+                datum.points,
+                closestStartPointIndex,
+                closestEndPointIndex
+              ).step;
+              continue;
+            case ColumnHeaderType.MEAN:
+              if (!closestEndPointIndex) {
+                continue;
+              }
+              selectedStepData.MEAN = this.getMean(
+                datum.points,
+                closestStartPointIndex,
+                closestEndPointIndex
+              );
+              continue;
+            case ColumnHeaderType.RAW_CHANGE:
+              if (!closestEndPoint) {
+                continue;
+              }
+              selectedStepData.RAW_CHANGE =
+                closestEndPoint.value - closestStartPoint.value;
               continue;
             default:
               continue;

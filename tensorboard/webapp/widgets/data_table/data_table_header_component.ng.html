@@ -21,7 +21,13 @@ limitations under the License.
     *ngSwitchCase="ColumnHeaderType.PERCENTAGE_CHANGE"
     svgIcon="change_history_24px"
   ></mat-icon>
+  <mat-icon
+    *ngSwitchCase="ColumnHeaderType.RAW_CHANGE"
+    svgIcon="change_history_24px"
+  ></mat-icon>
   <div *ngSwitchDefault class="extra-right-padding"></div>
 
-  <span>{{ getHeaderTextColumn(header.type) }}</span>
+  <span [ngClass]="getSpecialTypeClasses(header.type)"
+    >{{ getHeaderTextColumn(header.type) }}</span
+  >
 </div>

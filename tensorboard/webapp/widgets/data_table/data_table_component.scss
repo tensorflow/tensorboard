@@ -28,6 +28,7 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
     text-align: left;
     top: 0;
     vertical-align: bottom;
+    min-width: 30px;
 
     &:hover {
       cursor: pointer;
