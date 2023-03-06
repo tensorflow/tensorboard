@@ -976,6 +976,72 @@ class KerasUtilTest(tf.test.TestCase):
 
         self.assertGraphDefToModel(expected_proto, model)
 
+    def test_keras_model_to_graph_def_functional_multiple_inbound_nodes_from_same_node(
+        self,
+    ):
+        expected_proto = """
+            node {
+              name: "model/input_1"
+              attr {
+                key: "keras_class"
+                value {
+                  s: "InputLayer"
+                }
+              }
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+            }
+            node {
+              name: "model/private__doubling_layer"
+              input: "model/input_1"
+              attr {
+                key: "keras_class"
+                value {
+                  s: "_DoublingLayer"
+                }
+              }
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+            }
+            node {
+              name: "model/add"
+              input: "model/private__doubling_layer"
+              input: "model/private__doubling_layer"
+              attr {
+                key: "keras_class"
+                value {
+                  s: "Add"
+                }
+              }
+              attr {
+                key: "dtype"
+                value {
+                  type: DT_FLOAT
+                }
+              }
+            }
+        """
+        inputs = tf.keras.Input(shape=(2,))
+        doubling_layer = _DoublingLayer()
+        reducing_layer = tf.keras.layers.Add()
+        outputs = reducing_layer(doubling_layer(inputs))
+        model = tf.keras.Model(inputs=[inputs], outputs=outputs)
+
+        self.assertGraphDefToModel(expected_proto, model)
+
+
+class _DoublingLayer(tf.keras.layers.Layer):
+    def call(self, inputs):
+        return inputs, inputs
+
 
 if __name__ == "__main__":
     tf.test.main()
