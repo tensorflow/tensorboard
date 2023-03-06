@@ -254,5 +254,10 @@ export const rangeSelectionToggled = createAction(
     affordance?: TimeSelectionToggleAffordance;
   }>()
 );
+
+export const metricsHideEmptyCardsToggled = createAction(
+  '[Metrics] Hide Empty Cards Changed'
+);
+
 // TODO(jieweiwu): Delete after internal code is updated.
 export const stepSelectorTimeSelectionChanged = timeSelectionChanged;

@@ -747,6 +747,15 @@ const reducer = createReducer(
       },
     };
   }),
+  on(actions.metricsHideEmptyCardsToggled, (state) => {
+    return {
+      ...state,
+      settingOverrides: {
+        ...state.settingOverrides,
+        hideEmptyCards: !state.settingOverrides.hideEmptyCards,
+      },
+    };
+  }),
   on(
     actions.multipleTimeSeriesRequested,
     (

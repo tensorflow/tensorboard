@@ -52,6 +52,7 @@ export function buildMetricsSettingsState(
     ignoreOutliers: false,
     xAxisType: XAxisType.WALL_TIME,
     scalarSmoothing: 0.3,
+    hideEmptyCards: true,
     scalarPartitionNonMonotonicX: false,
     imageBrightnessInMilli: 123,
     imageContrastInMilli: 123,

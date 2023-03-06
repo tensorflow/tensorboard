@@ -328,6 +328,11 @@ export const getMetricsHistogramMode = createSelector(
   (settings): HistogramMode => settings.histogramMode
 );
 
+export const getMetricsHideEmptyCards = createSelector(
+  selectSettings,
+  (settings): boolean => settings.hideEmptyCards
+);
+
 export const getMetricsScalarSmoothing = createSelector(
   selectSettings,
   (settings): number => settings.scalarSmoothing

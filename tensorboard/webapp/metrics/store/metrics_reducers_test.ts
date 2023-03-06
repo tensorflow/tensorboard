@@ -1210,6 +1210,30 @@ describe('metrics reducers', () => {
       expect(nextState.settings.cardMinWidth).toBe(400);
       expect(nextState.settingOverrides.cardMinWidth).toBeNull();
     });
+
+    it('updates hideEmptyCards', () => {
+      const prevState = buildMetricsState({
+        settings: buildMetricsSettingsState({
+          hideEmptyCards: false,
+        }),
+        settingOverrides: {},
+      });
+
+      const secondState = reducers(
+        prevState,
+        actions.metricsHideEmptyCardsToggled()
+      );
+
+      expect(secondState.settings.hideEmptyCards).toBe(false);
+      expect(secondState.settingOverrides.hideEmptyCards).toBe(true);
+
+      const thirdState = reducers(
+        secondState,
+        actions.metricsHideEmptyCardsToggled()
+      );
+      expect(thirdState.settings.hideEmptyCards).toBe(false);
+      expect(thirdState.settingOverrides.hideEmptyCards).toBe(false);
+    });
   });
 
   describe('loading time series data', () => {

@@ -206,6 +206,7 @@ export interface MetricsSettings {
   ignoreOutliers: boolean;
   xAxisType: XAxisType;
   scalarSmoothing: number;
+  hideEmptyCards: boolean;
   /**
    * https://github.com/tensorflow/tensorboard/issues/3732
    *
@@ -258,6 +259,7 @@ export const METRICS_SETTINGS_DEFAULT: MetricsSettings = {
   tooltipSort: TooltipSort.ALPHABETICAL,
   ignoreOutliers: true,
   xAxisType: XAxisType.STEP,
+  hideEmptyCards: true,
   scalarSmoothing: 0.6,
   scalarPartitionNonMonotonicX: false,
   imageBrightnessInMilli: 1000,
