@@ -339,34 +339,29 @@ describe('metrics main view', () => {
 
     it('renders group by tag name', () => {
       store.overrideSelector(
-        selectors.getCurrentRouteRunSelection,
-        new Map([['run1', true]])
-      );
-      store.overrideSelector(selectors.getNonEmptyCardIdsWithMetadata, [
-        {
-          cardId: 'card1',
-          plugin: PluginType.SCALARS,
-          tag: 'tagA',
-          runId: null,
-        },
-        {
-          cardId: 'card2',
-          plugin: PluginType.IMAGES,
-          tag: 'tagA/Images',
-          runId: 'run1',
-          sample: 0,
-        },
-        {
-          cardId: 'card3',
-          plugin: PluginType.IMAGES,
-          tag: 'tagB/meow/cat',
-          runId: 'run1',
-          sample: 0,
-        },
-      ]);
-      store.overrideSelector(
-        common_selectors.TEST_ONLY.getScalarTagsForRunSelection,
-        new Set(['tagA'])
+        common_selectors.getSortedRenderableCardIdsWithMetadata,
+        [
+          {
+            cardId: 'card1',
+            plugin: PluginType.SCALARS,
+            tag: 'tagA',
+            runId: null,
+          },
+          {
+            cardId: 'card2',
+            plugin: PluginType.IMAGES,
+            tag: 'tagA/Images',
+            runId: 'run1',
+            sample: 0,
+          },
+          {
+            cardId: 'card3',
+            plugin: PluginType.IMAGES,
+            tag: 'tagB/meow/cat',
+            runId: 'run1',
+            sample: 0,
+          },
+        ]
       );
 
       const fixture = TestBed.createComponent(MainViewContainer);
@@ -382,27 +377,22 @@ describe('metrics main view', () => {
 
     it('renders plugins', async () => {
       store.overrideSelector(
-        selectors.getCurrentRouteRunSelection,
-        new Map([['run1', true]])
-      );
-      store.overrideSelector(selectors.getNonEmptyCardIdsWithMetadata, [
-        {
-          cardId: 'card1',
-          plugin: PluginType.SCALARS,
-          tag: 'tagA',
-          runId: null,
-        },
-        {
-          cardId: 'card2',
-          plugin: PluginType.IMAGES,
-          tag: 'tagB',
-          runId: 'run1',
-          sample: 0,
-        },
-      ]);
-      store.overrideSelector(
-        common_selectors.TEST_ONLY.getScalarTagsForRunSelection,
-        new Set(['tagA'])
+        common_selectors.getSortedRenderableCardIdsWithMetadata,
+        [
+          {
+            cardId: 'card1',
+            plugin: PluginType.SCALARS,
+            tag: 'tagA',
+            runId: null,
+          },
+          {
+            cardId: 'card2',
+            plugin: PluginType.IMAGES,
+            tag: 'tagB',
+            runId: 'run1',
+            sample: 0,
+          },
+        ]
       );
       const fixture = TestBed.createComponent(MainViewContainer);
       fixture.detectChanges();
@@ -469,69 +459,9 @@ describe('metrics main view', () => {
       );
     });
 
-    it('hides single-run cards based on the run selection', () => {
-      store.overrideSelector(selectors.getNonEmptyCardIdsWithMetadata, [
-        {
-          cardId: 'card1',
-          plugin: PluginType.SCALARS,
-          tag: 'tagA',
-          runId: null,
-        },
-        {
-          cardId: 'card2',
-          plugin: PluginType.IMAGES,
-          tag: 'tagA/Images',
-          runId: 'run1',
-          sample: 0,
-        },
-        {
-          cardId: 'card3',
-          plugin: PluginType.IMAGES,
-          tag: 'tagB/meow/cat',
-          runId: 'run2',
-          sample: 0,
-        },
-      ]);
-
-      store.overrideSelector(
-        common_selectors.TEST_ONLY.getScalarTagsForRunSelection,
-        new Set(['tagA'])
-      );
-
-      store.overrideSelector(
-        selectors.getCurrentRouteRunSelection,
-        new Map([
-          ['run1', false],
-          ['run2', true],
-        ])
-      );
-      const fixture = TestBed.createComponent(MainViewContainer);
-      fixture.detectChanges();
-
-      expect(getCardContents(getCards(fixture.debugElement))).toEqual([
-        'scalars: card1',
-        'images: card3',
-      ]);
-
-      store.overrideSelector(
-        selectors.getCurrentRouteRunSelection,
-        new Map([
-          ['run1', true],
-          ['run2', false],
-        ])
-      );
-      store.refreshState();
-      fixture.detectChanges();
-
-      expect(getCardContents(getCards(fixture.debugElement))).toEqual([
-        'scalars: card1',
-        'images: card2',
-      ]);
-    });
-
     describe('lazy loading', () => {
       function createScalarCardMetadata(count: number) {
-        const results = [];
+        const results: CardIdWithMetadata[] = [];
         for (let i = 0; i < count; i++) {
           results.push({
             cardId: `card${i}`,
@@ -733,36 +663,31 @@ describe('metrics main view', () => {
 
     describe('pagination', () => {
       beforeEach(() => {
-        store.overrideSelector(
-          selectors.getCurrentRouteRunSelection,
-          new Map([['run1', true]])
-        );
         store.overrideSelector(settingsSelectors.getPageSize, 2);
-        store.overrideSelector(selectors.getNonEmptyCardIdsWithMetadata, [
-          {
-            cardId: 'card1',
-            plugin: PluginType.SCALARS,
-            tag: 'tagA/Scalars',
-            runId: null,
-          },
-          {
-            cardId: 'card2',
-            plugin: PluginType.IMAGES,
-            tag: 'tagA/Images',
-            runId: 'run1',
-            sample: 0,
-          },
-          {
-            cardId: 'card3',
-            plugin: PluginType.HISTOGRAMS,
-            tag: 'tagA/Hist',
-            runId: 'run1',
-            sample: 0,
-          },
-        ]);
         store.overrideSelector(
-          common_selectors.TEST_ONLY.getScalarTagsForRunSelection,
-          new Set(['tagA/Scalars'])
+          common_selectors.getSortedRenderableCardIdsWithMetadata,
+          [
+            {
+              cardId: 'card1',
+              plugin: PluginType.SCALARS,
+              tag: 'tagA/Scalars',
+              runId: null,
+            },
+            {
+              cardId: 'card2',
+              plugin: PluginType.IMAGES,
+              tag: 'tagA/Images',
+              runId: 'run1',
+              sample: 0,
+            },
+            {
+              cardId: 'card3',
+              plugin: PluginType.HISTOGRAMS,
+              tag: 'tagA/Hist',
+              runId: 'run1',
+              sample: 0,
+            },
+          ]
         );
         store.overrideSelector(getMetricsTagGroupExpansionState, true);
       });
@@ -785,16 +710,10 @@ describe('metrics main view', () => {
 
       it('responds to page size changes', () => {
         store.overrideSelector(getMetricsTagGroupExpansionState, true);
-        const scalarCards = createNScalarCards(20);
         store.overrideSelector(
-          selectors.getNonEmptyCardIdsWithMetadata,
-          scalarCards
+          common_selectors.getSortedRenderableCardIdsWithMetadata,
+          createNScalarCards(20)
         );
-        store.overrideSelector(
-          common_selectors.TEST_ONLY.getScalarTagsForRunSelection,
-          new Set(scalarCards.map(({tag}) => tag))
-        );
-
         store.overrideSelector(settingsSelectors.getPageSize, 50);
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
@@ -922,7 +841,10 @@ describe('metrics main view', () => {
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
-        store.overrideSelector(selectors.getNonEmptyCardIdsWithMetadata, []);
+        store.overrideSelector(
+          common_selectors.getSortedRenderableCardIdsWithMetadata,
+          []
+        );
         store.refreshState();
         fixture.detectChanges();
 
@@ -1316,14 +1238,9 @@ describe('metrics main view', () => {
 
     it('does not limit number of items to 3', fakeAsync(() => {
       store.overrideSelector(settingsSelectors.getPageSize, 5);
-      const scalarCards = createNScalarCards(10);
       store.overrideSelector(
-        selectors.getNonEmptyCardIdsWithMetadata,
-        scalarCards
-      );
-      store.overrideSelector(
-        common_selectors.TEST_ONLY.getScalarTagsForRunSelection,
-        new Set(scalarCards.map(({tag}) => tag))
+        common_selectors.getSortedRenderableCardIdsWithMetadata,
+        createNScalarCards(10)
       );
       const fixture = createComponent('tagA');
 
@@ -1348,14 +1265,9 @@ describe('metrics main view', () => {
     }));
 
     it('shows a warning when no cards match current query', fakeAsync(() => {
-      const scalarCards = createNScalarCards(100);
       store.overrideSelector(
-        selectors.getNonEmptyCardIdsWithMetadata,
-        scalarCards
-      );
-      store.overrideSelector(
-        common_selectors.TEST_ONLY.getScalarTagsForRunSelection,
-        new Set(scalarCards.map(({tag}) => tag))
+        common_selectors.getSortedRenderableCardIdsWithMetadata,
+        createNScalarCards(100)
       );
       const fixture = createComponent('^no_match_please$');
 
@@ -1373,14 +1285,9 @@ describe('metrics main view', () => {
         selectors.getMetricsFilteredPluginTypes,
         new Set([PluginType.IMAGES, PluginType.HISTOGRAMS])
       );
-      const scalarCards = createNScalarCards(100);
       store.overrideSelector(
-        selectors.getNonEmptyCardIdsWithMetadata,
-        scalarCards
-      );
-      store.overrideSelector(
-        common_selectors.TEST_ONLY.getScalarTagsForRunSelection,
-        new Set(scalarCards.map(({tag}) => tag))
+        common_selectors.getSortedRenderableCardIdsWithMetadata,
+        createNScalarCards(100)
       );
 
       const fixture = createComponent('.');
@@ -1400,14 +1307,9 @@ describe('metrics main view', () => {
         'the correct list when regex is fixed',
       fakeAsync(() => {
         store.overrideSelector(settingsSelectors.getPageSize, 5);
-        const scalarCards = createNScalarCards(10);
         store.overrideSelector(
-          selectors.getNonEmptyCardIdsWithMetadata,
-          scalarCards
-        );
-        store.overrideSelector(
-          common_selectors.TEST_ONLY.getScalarTagsForRunSelection,
-          new Set(scalarCards.map(({tag}) => tag))
+          common_selectors.getSortedRenderableCardIdsWithMetadata,
+          createNScalarCards(10)
         );
 
         const fixture = createComponent('tagA');
