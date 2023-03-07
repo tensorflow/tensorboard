@@ -2007,7 +2007,7 @@ describe('metrics reducers', () => {
         });
       });
 
-      it('sets step index to null if time series is empty', () => {
+      it('does not reset step index to null when time series is empty', () => {
         const runToSeries = {};
         let beforeState = createScalarCardLoadedState(
           'card1',
@@ -2031,8 +2031,8 @@ describe('metrics reducers', () => {
         });
         const nextState = reducers(beforeState, action);
         expect(nextState.cardStepIndex).toEqual({
-          card1: null,
-          pinnedCopy1: null,
+          card1: buildStepIndexMetadata({index: 5}),
+          pinnedCopy1: buildStepIndexMetadata({index: 5}),
         });
       });
     });
