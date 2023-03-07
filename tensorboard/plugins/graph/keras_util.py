@@ -262,6 +262,9 @@ def keras_model_to_graph_def(keras_layer):
                     # number of entries in the `inbound_node_names` list. To
                     # avoid IndexErrors, we just use the last element in the
                     # `inbound_node_names` in this situation.
+                    # Note that this is a quick hack to avoid IndexErrors in
+                    # this situation, and might not be an appropriate solution
+                    # to this problem in general.
                     input_name = (
                         inbound_node_names[index]
                         if index < len(inbound_node_names)
