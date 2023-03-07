@@ -255,7 +255,22 @@ def keras_model_to_graph_def(keras_layer):
                     inbound_node_names = model_name_to_output.get(
                         inbound_name, [inbound_name]
                     )
-                    node_def.input.append(inbound_node_names[index])
+                    # There can be multiple inbound_nodes that reference the
+                    # same upstream layer. This causes issues when looking for
+                    # a particular index in that layer, since the indices
+                    # captured in `inbound_nodes` doesn't necessarily match the
+                    # number of entries in the `inbound_node_names` list. To
+                    # avoid IndexErrors, we just use the last element in the
+                    # `inbound_node_names` in this situation.
+                    # Note that this is a quick hack to avoid IndexErrors in
+                    # this situation, and might not be an appropriate solution
+                    # to this problem in general.
+                    input_name = (
+                        inbound_node_names[index]
+                        if index < len(inbound_node_names)
+                        else inbound_node_names[-1]
+                    )
+                    node_def.input.append(input_name)
         elif prev_node_name is not None:
             node_def.input.append(prev_node_name)
 
