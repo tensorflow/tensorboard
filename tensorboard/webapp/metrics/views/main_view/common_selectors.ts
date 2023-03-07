@@ -25,7 +25,7 @@ import {getNonEmptyCardIdsWithMetadata, TagMetadata} from '../../store';
 import {compareTagNames} from '../../utils';
 import {CardIdWithMetadata} from '../metrics_view_types';
 
-export const getTagsWithScalarData = createSelector(
+export const getScalarTagsForRunSelection = createSelector(
   getMetricsTagMetadata,
   getCurrentRouteRunSelection,
   (
@@ -50,27 +50,29 @@ const getRenderableCardIdsWithMetadata = createSelector(
   getNonEmptyCardIdsWithMetadata,
   getCurrentRouteRunSelection,
   getMetricsHideEmptyCards,
-  getTagsWithScalarData,
-  (cardList, runSelectionMap, hideEmptyCards, tagsWithScalarData) => {
-    const cardsWithMetadata = cardList.filter((card) => {
+  getScalarTagsForRunSelection,
+  (
+    cardList,
+    runSelectionMap,
+    hideEmptyScalarCards,
+    scalarTagsForRunSelection
+  ) => {
+    const areAnyRunsSelected = Array.from(runSelectionMap?.values() || []).some(
+      Boolean
+    );
+    return cardList.filter((card) => {
       if (!isSingleRunPlugin(card.plugin)) {
+        if (
+          hideEmptyScalarCards &&
+          areAnyRunsSelected &&
+          card.plugin === PluginType.SCALARS
+        ) {
+          return scalarTagsForRunSelection.has(card.tag);
+        }
         return true;
       }
       return Boolean(runSelectionMap && runSelectionMap.get(card.runId!));
     });
-    const areAnyRunsSelected = Array.from(runSelectionMap?.values() || []).some(
-      Boolean
-    );
-    if (hideEmptyCards && areAnyRunsSelected) {
-      return cardsWithMetadata.filter((cardIdWithMetadata) => {
-        if (cardIdWithMetadata.plugin !== PluginType.SCALARS) {
-          return true;
-        }
-        return tagsWithScalarData!.has(cardIdWithMetadata.tag);
-      });
-    }
-
-    return cardsWithMetadata;
   }
 );
 
@@ -86,5 +88,5 @@ export const getSortedRenderableCardIdsWithMetadata = createSelector<
 
 export const TEST_ONLY = {
   getRenderableCardIdsWithMetadata,
-  getTagsWithScalarData,
+  getScalarTagsForRunSelection,
 };

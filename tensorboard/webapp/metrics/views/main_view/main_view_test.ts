@@ -365,7 +365,7 @@ describe('metrics main view', () => {
         },
       ]);
       store.overrideSelector(
-        common_selectors.TEST_ONLY.getTagsWithScalarData,
+        common_selectors.TEST_ONLY.getScalarTagsForRunSelection,
         new Set(['tagA'])
       );
 
@@ -401,7 +401,7 @@ describe('metrics main view', () => {
         },
       ]);
       store.overrideSelector(
-        common_selectors.TEST_ONLY.getTagsWithScalarData,
+        common_selectors.TEST_ONLY.getScalarTagsForRunSelection,
         new Set(['tagA'])
       );
       const fixture = TestBed.createComponent(MainViewContainer);
@@ -494,7 +494,7 @@ describe('metrics main view', () => {
       ]);
 
       store.overrideSelector(
-        common_selectors.TEST_ONLY.getTagsWithScalarData,
+        common_selectors.TEST_ONLY.getScalarTagsForRunSelection,
         new Set(['tagA'])
       );
 
@@ -761,7 +761,7 @@ describe('metrics main view', () => {
           },
         ]);
         store.overrideSelector(
-          common_selectors.TEST_ONLY.getTagsWithScalarData,
+          common_selectors.TEST_ONLY.getScalarTagsForRunSelection,
           new Set(['tagA/Scalars'])
         );
         store.overrideSelector(getMetricsTagGroupExpansionState, true);
@@ -791,7 +791,7 @@ describe('metrics main view', () => {
           scalarCards
         );
         store.overrideSelector(
-          common_selectors.TEST_ONLY.getTagsWithScalarData,
+          common_selectors.TEST_ONLY.getScalarTagsForRunSelection,
           new Set(scalarCards.map(({tag}) => tag))
         );
 
@@ -1211,7 +1211,7 @@ describe('metrics main view', () => {
         },
       ]);
       store.overrideSelector(
-        common_selectors.TEST_ONLY.getTagsWithScalarData,
+        common_selectors.TEST_ONLY.getScalarTagsForRunSelection,
         new Set(['tagA'])
       );
     });
@@ -1322,7 +1322,7 @@ describe('metrics main view', () => {
         scalarCards
       );
       store.overrideSelector(
-        common_selectors.TEST_ONLY.getTagsWithScalarData,
+        common_selectors.TEST_ONLY.getScalarTagsForRunSelection,
         new Set(scalarCards.map(({tag}) => tag))
       );
       const fixture = createComponent('tagA');
@@ -1354,7 +1354,7 @@ describe('metrics main view', () => {
         scalarCards
       );
       store.overrideSelector(
-        common_selectors.TEST_ONLY.getTagsWithScalarData,
+        common_selectors.TEST_ONLY.getScalarTagsForRunSelection,
         new Set(scalarCards.map(({tag}) => tag))
       );
       const fixture = createComponent('^no_match_please$');
@@ -1379,7 +1379,7 @@ describe('metrics main view', () => {
         scalarCards
       );
       store.overrideSelector(
-        common_selectors.TEST_ONLY.getTagsWithScalarData,
+        common_selectors.TEST_ONLY.getScalarTagsForRunSelection,
         new Set(scalarCards.map(({tag}) => tag))
       );
 
@@ -1406,7 +1406,7 @@ describe('metrics main view', () => {
           scalarCards
         );
         store.overrideSelector(
-          common_selectors.TEST_ONLY.getTagsWithScalarData,
+          common_selectors.TEST_ONLY.getScalarTagsForRunSelection,
           new Set(scalarCards.map(({tag}) => tag))
         );
 

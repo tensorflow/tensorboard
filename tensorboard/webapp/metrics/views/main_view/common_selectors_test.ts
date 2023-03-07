@@ -67,7 +67,7 @@ describe('common selectors', () => {
     };
   });
 
-  describe('getTagsWithScalarData', () => {
+  describe('getScalarTagsForRunSelection', () => {
     it('returns all tags containing scalar data when no runs are selected', () => {
       const state = {
         ...appStateFromMetricsState(
@@ -112,7 +112,7 @@ describe('common selectors', () => {
           )
         ),
       };
-      expect(selectors.TEST_ONLY.getTagsWithScalarData(state)).toEqual(
+      expect(selectors.TEST_ONLY.getScalarTagsForRunSelection(state)).toEqual(
         new Set(['tag-1', 'tag-2'])
       );
     });
@@ -165,7 +165,7 @@ describe('common selectors', () => {
           )
         ),
       };
-      expect(selectors.TEST_ONLY.getTagsWithScalarData(state)).toEqual(
+      expect(selectors.TEST_ONLY.getScalarTagsForRunSelection(state)).toEqual(
         new Set(['tag-2'])
       );
     });
