@@ -269,7 +269,8 @@ class TfHparamsParallelCoordsPlot extends LegacyElementMixin(
         if (!this.options.configuration.columnsVisibility[colIndex]) {
           continue;
         }
-        if (utils.columnValueByIndex(schema, sg, colIndex) === undefined) {
+        const columnValue = utils.columnValueByIndex(schema, sg, colIndex);
+        if (columnValue === undefined || columnValue === 'NaN') {
           return false;
         }
       }

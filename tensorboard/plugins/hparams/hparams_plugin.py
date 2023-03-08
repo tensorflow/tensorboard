@@ -168,11 +168,9 @@ class HParamsPlugin(base_plugin.TBPlugin):
                 raise werkzeug.exceptions.NotFound("Scalars plugin not loaded")
             return http_util.Respond(
                 request,
-                json.dumps(
-                    list_metric_evals.Handler(
-                        ctx, request_proto, scalars_plugin, experiment_id
-                    ).run()
-                ),
+                list_metric_evals.Handler(
+                    ctx, request_proto, scalars_plugin, experiment_id
+                ).run(),
                 "application/json",
             )
         except error.HParamsError as e:

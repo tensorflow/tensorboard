@@ -22,6 +22,25 @@ import {Canceller} from '../../../components/tf_backend/canceller';
 import '../tf_hparams_utils/hparams-split-layout';
 import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 
+interface MinMax {
+  minValue: number | 'Infinity' | '-Infinity';
+  maxValue: number | 'Infinity' | '-Infinity';
+}
+
+interface ColumnHparam {
+  hparam: string;
+  filterDiscrete?: any[];
+  filterInterval?: MinMax | null;
+  filterRegexp?: string;
+  order?: string;
+}
+
+interface ColumnMetric {
+  metric: string;
+  filterInterval?: MinMax | null;
+  order?: string;
+}
+
 /**
  * The tf-hparams-query-pane element implements controls for querying the
  * server for a list of session groups. It provides filtering, and
@@ -748,6 +767,11 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
     const _this = this;
     // Will be set to false if we encounter any invalid inputs.
     let queryValid = true;
+    // Determines if an interval has been set to any range of values other than
+    // the default.
+    function isIntervalSet(interval) {
+      return interval.min.value !== '' || interval.max.value !== '';
+    }
     // Parses an inputInterval object of the form:
     // {min: {value: string, invalid: boolean},
     //  max: {value: string  invalid: boolean}}. Returns an object
@@ -759,20 +783,22 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
     // The inputIntervalPath should be a Polymer path for the inputInterval
     // object. We work with paths, rather than the object, so that we
     // can make observable changes.
-    function parseInputInterval(inputIntervalPath) {
+    function parseInputInterval(inputIntervalPath): MinMax | null {
       const minValueStr = _this.get(inputIntervalPath + '.min.value');
       console.assert(minValueStr !== undefined);
       // The protobuffer JSON mapping maps the strings "-Infinity" and
       // "Infinity" to the floating-point infinity and -infinity values.
-      const minValue: any = minValueStr === '' ? '-Infinity' : +minValueStr;
-      _this.set(inputIntervalPath + '.min.invalid', isNaN(minValue));
-      queryValid = queryValid && !isNaN(minValue);
+      const minValue = minValueStr === '' ? '-Infinity' : +minValueStr;
+      const minValueIsNan = isNaN(minValue as number);
+      _this.set(inputIntervalPath + '.min.invalid', minValueIsNan);
+      queryValid = queryValid && !minValueIsNan;
       const maxValueStr = _this.get(inputIntervalPath + '.max.value');
       console.assert(maxValueStr !== undefined);
-      const maxValue: any = maxValueStr === '' ? 'Infinity' : +maxValueStr;
-      _this.set(inputIntervalPath + '.max.invalid', isNaN(maxValue));
-      queryValid = queryValid && !isNaN(maxValue);
-      if (isNaN(minValue) || isNaN(maxValue)) {
+      const maxValue = maxValueStr === '' ? 'Infinity' : +maxValueStr;
+      const maxValueIsNan = isNaN(maxValue as number);
+      _this.set(inputIntervalPath + '.max.invalid', maxValueIsNan);
+      queryValid = queryValid && !maxValueIsNan;
+      if (minValueIsNan || maxValueIsNan) {
         return null;
       }
       return {minValue: minValue, maxValue: maxValue};
@@ -802,34 +828,44 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
     const allowedStatuses = this._statuses
       .filter((s) => s.allowed)
       .map((s) => s.value);
-    let colParams: any[] = [];
+    let colParams: (ColumnHparam | ColumnMetric)[] = [];
     // Build the hparams filters in the request.
     this._hparams.forEach((hparam, index) => {
-      let colParam = {hparam: hparam.info.name} as any;
+      let colParam: ColumnHparam = {hparam: hparam.info.name};
       if (hparam.filter.domainDiscrete) {
-        colParam.filterDiscrete = [];
-        hparam.filter.domainDiscrete.forEach((filterVal) => {
-          if (filterVal.checked) {
-            colParam.filterDiscrete.push(filterVal.value);
-          }
-        });
-      } else if (hparam.filter.interval) {
-        colParam.filterInterval = parseInputInterval(
-          '_hparams.' + index + '.filter.interval'
+        const allChecked = hparam.filter.domainDiscrete.every(
+          (filterVal) => filterVal.checked
         );
+        if (!allChecked) {
+          colParam.filterDiscrete = [];
+          hparam.filter.domainDiscrete.forEach((filterVal) => {
+            if (filterVal.checked) {
+              colParam.filterDiscrete!.push(filterVal.value);
+            }
+          });
+        }
+      } else if (hparam.filter.interval) {
+        if (isIntervalSet(hparam.filter.interval)) {
+          colParam.filterInterval = parseInputInterval(
+            '_hparams.' + index + '.filter.interval'
+          );
+        }
       } else if (hparam.filter.regexp) {
         colParam.filterRegexp = hparam.filter.regexp;
       }
+
       colParams.push(colParam);
     });
     // Build the metric filters in the request.
     this._metrics.forEach((metric, index) => {
-      let colParam = {
+      let colParam: ColumnMetric = {
         metric: metric.info.name,
-        filterInterval: parseInputInterval(
-          '_metrics.' + index + '.filter.interval'
-        ),
       };
+      if (isIntervalSet(metric.filter.interval)) {
+        colParam.filterInterval = parseInputInterval(
+          '_metrics.' + index + '.filter.interval'
+        );
+      }
       colParams.push(colParam);
     });
     // Sorting.
