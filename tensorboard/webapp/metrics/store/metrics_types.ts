@@ -161,14 +161,13 @@ export type CardToPinnedCard = Map<NonPinnedCardId, PinnedCardId>;
 export type PinnedCardToCard = Map<PinnedCardId, NonPinnedCardId>;
 
 export interface MetricsNamespacedState {
+  /*
+   * Date-related states: states below are drived from the server.
+   */
   tagMetadataLoadState: LoadState;
   tagMetadata: TagMetadata;
   // A list of card ids in the main content area, excluding pinned copies.
   cardList: NonPinnedCardId[];
-  cardToPinnedCopy: CardToPinnedCard;
-  // A map of card ids that previously pinned by the user.
-  cardToPinnedCopyCache: CardToPinnedCard;
-  pinnedCardToOriginal: PinnedCardToCard;
   /**
    * Pinned cards imported from storage that do not yet have a corresponding
    * card (e.g. tag metadata might not be loaded yet). Resolving an imported
@@ -180,6 +179,19 @@ export interface MetricsNamespacedState {
    */
   unresolvedImportedPinnedCards: CardUniqueInfo[];
   cardMetadataMap: CardMetadataMap;
+  // Minimum and maximum step number across all TimeSeries data.
+  stepMinMax: {
+    min: number;
+    max: number;
+  };
+
+  /*
+   * Ui-related states: states below affects the dashboard appearance.
+   */
+  cardToPinnedCopy: CardToPinnedCard;
+  // A map of card ids that previously pinned by the user.
+  cardToPinnedCopyCache: CardToPinnedCard;
+  pinnedCardToOriginal: PinnedCardToCard;
   cardStateMap: CardStateMap;
   cardStepIndex: CardStepIndexMap;
   tagFilter: string;
@@ -193,11 +205,6 @@ export interface MetricsNamespacedState {
   // Empty Set would signify "show all". `filteredPluginTypes` will never have
   // all pluginTypes in the Set.
   filteredPluginTypes: Set<PluginType>;
-  // Minimum and maximum step number across all TimeSeries data.
-  stepMinMax: {
-    min: number;
-    max: number;
-  };
 }
 
 export interface MetricsSettings {
