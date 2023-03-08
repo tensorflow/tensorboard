@@ -14,24 +14,61 @@ limitations under the License.
 ==============================================================================*/
 import {createSelector} from '@ngrx/store';
 import {State} from '../../../app_state';
-import {getCurrentRouteRunSelection} from '../../../selectors';
+import {
+  getCurrentRouteRunSelection,
+  getMetricsHideEmptyCards,
+  getMetricsTagMetadata,
+} from '../../../selectors';
 import {DeepReadonly} from '../../../util/types';
-import {isSingleRunPlugin} from '../../data_source';
-import {getNonEmptyCardIdsWithMetadata} from '../../store';
+import {isSingleRunPlugin, PluginType} from '../../data_source';
+import {getNonEmptyCardIdsWithMetadata, TagMetadata} from '../../store';
 import {compareTagNames} from '../../utils';
 import {CardIdWithMetadata} from '../metrics_view_types';
 
-const getRenderableCardIdsWithMetadata = createSelector<
-  State,
-  readonly DeepReadonly<CardIdWithMetadata>[],
-  Map<string, boolean> | null,
-  DeepReadonly<CardIdWithMetadata>[]
->(
+export const getScalarTagsForRunSelection = createSelector(
+  getMetricsTagMetadata,
+  getCurrentRouteRunSelection,
+  (
+    tagMetadata: DeepReadonly<TagMetadata>,
+    runSelection: Map<string, boolean> | null
+  ) => {
+    return new Set(
+      Object.entries(tagMetadata.scalars.tagToRuns)
+        // If there are runs selected, filter to a list of tags with at least one selected run
+        .filter(([, runs]) => {
+          if (!runSelection || !runSelection.size) {
+            return true;
+          }
+          return runs.some((run) => runSelection?.get(run));
+        })
+        .map(([tag]) => tag)
+    );
+  }
+);
+
+const getRenderableCardIdsWithMetadata = createSelector(
   getNonEmptyCardIdsWithMetadata,
   getCurrentRouteRunSelection,
-  (cardList, runSelectionMap) => {
+  getMetricsHideEmptyCards,
+  getScalarTagsForRunSelection,
+  (
+    cardList,
+    runSelectionMap,
+    hideEmptyScalarCards,
+    scalarTagsForRunSelection
+  ) => {
+    const areAnyRunsSelected = Array.from(runSelectionMap?.values() || []).some(
+      Boolean
+    );
     return cardList.filter((card) => {
       if (!isSingleRunPlugin(card.plugin)) {
+        if (
+          hideEmptyScalarCards &&
+          areAnyRunsSelected &&
+          card.plugin === PluginType.SCALARS
+        ) {
+          return scalarTagsForRunSelection.has(card.tag);
+        }
         return true;
       }
       return Boolean(runSelectionMap && runSelectionMap.get(card.runId!));
@@ -48,3 +85,8 @@ export const getSortedRenderableCardIdsWithMetadata = createSelector<
     return compareTagNames(cardA.tag, cardB.tag);
   });
 });
+
+export const TEST_ONLY = {
+  getRenderableCardIdsWithMetadata,
+  getScalarTagsForRunSelection,
+};
