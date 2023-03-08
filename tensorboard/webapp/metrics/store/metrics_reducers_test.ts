@@ -2006,35 +2006,6 @@ describe('metrics reducers', () => {
           pinnedCopy1: buildStepIndexMetadata({index: 2}),
         });
       });
-
-      it('sets step index to null if time series is empty', () => {
-        const runToSeries = {};
-        let beforeState = createScalarCardLoadedState(
-          'card1',
-          runToSeries,
-          'tagA'
-        );
-        beforeState = {
-          ...stateWithPinnedCopy(beforeState, 'card1', 'pinnedCopy1'),
-          cardStepIndex: {
-            card1: buildStepIndexMetadata({index: 5}),
-            pinnedCopy1: buildStepIndexMetadata({index: 5}),
-          },
-        };
-
-        const action = actions.fetchTimeSeriesLoaded({
-          response: {
-            plugin: PluginType.SCALARS,
-            tag: 'tagA',
-            runToSeries: {},
-          },
-        });
-        const nextState = reducers(beforeState, action);
-        expect(nextState.cardStepIndex).toEqual({
-          card1: null,
-          pinnedCopy1: null,
-        });
-      });
     });
   });
 

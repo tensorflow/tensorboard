@@ -157,7 +157,6 @@ function getMaxStepIndex(
  * - assign a default step
  * - reselect the max step, if the previous series' max was selected
  * - clamp to the new series' max
- * - set to `null` if the series contains no step data
  */
 function buildNormalizedCardStepIndexMap(
   cardMetadataMap: CardMetadataMap,
@@ -176,9 +175,6 @@ function buildNormalizedCardStepIndexMap(
       timeSeriesData
     );
     if (maxStepIndex === null) {
-      if (cardStepIndex.hasOwnProperty(cardId)) {
-        result[cardId] = null;
-      }
       continue;
     }
     const stepIndex = cardStepIndex.hasOwnProperty(cardId)
