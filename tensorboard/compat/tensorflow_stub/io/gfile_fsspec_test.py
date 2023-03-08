@@ -531,10 +531,14 @@ class GFileFSSpecTest(tb_test.TestCase):
             ],
         )
 
-    def testGlobNonAbsolute(self):
+    def testGlobAbsolute(self):
         """
-        This tests glob with in memory file system which does not return
+        This tests glob with in memory file system which does return
         absolute paths from glob.
+
+        Note that this this changed in fsspec==2021.6.0. Prior to this version
+        absolute paths were not returned from glob.
+        (https://github.com/fsspec/filesystem_spec/pull/654),
         """
         fs = fsspec.filesystem("memory")
         fs.mkdir("dir")
@@ -547,8 +551,8 @@ class GFileFSSpecTest(tb_test.TestCase):
         self.assertCountEqual(
             files,
             [
-                posixpath.join(root, "foo.txt"),
-                posixpath.join(root, "bar.txt"),
+                "memory:///dir/bar.txt",
+                "memory:///dir/foo.txt",
             ],
         )
 
