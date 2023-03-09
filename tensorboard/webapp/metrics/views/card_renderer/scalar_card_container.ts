@@ -788,7 +788,12 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       end: endStep ? {step: endStep} : null,
     };
 
-    this.store.dispatch(timeSelectionChanged(newTimeSelectionWithAffordance));
+    this.store.dispatch(
+      timeSelectionChanged({
+        ...newTimeSelectionWithAffordance,
+        cardId: this.cardId,
+      })
+    );
     this.stepSelectorTimeSelection$.next(newTimeSelection);
   }
 

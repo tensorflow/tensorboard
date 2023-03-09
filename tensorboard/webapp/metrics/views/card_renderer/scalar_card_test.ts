@@ -2488,6 +2488,7 @@ describe('scalar card', () => {
               start: {step: 25},
               end: null,
             },
+            cardId: 'card1',
           }),
           // Call from first stopDrag.
           timeSelectionChanged({
@@ -2496,6 +2497,7 @@ describe('scalar card', () => {
               end: null,
             },
             affordance: TimeSelectionAffordance.FOB,
+            cardId: 'card1',
           }),
           // Call from second mouseMove.
           timeSelectionChanged({
@@ -2503,6 +2505,7 @@ describe('scalar card', () => {
               start: {step: 30},
               end: null,
             },
+            cardId: 'card1',
           }),
           // Call from second stopDrag.
           timeSelectionChanged({
@@ -2511,6 +2514,7 @@ describe('scalar card', () => {
               end: null,
             },
             affordance: TimeSelectionAffordance.EXTENDED_LINE,
+            cardId: 'card1',
           }),
         ]);
       }));
@@ -3734,6 +3738,7 @@ describe('scalar card', () => {
               end: null,
             },
             affordance: TimeSelectionAffordance.FOB_ADDED,
+            cardId: 'card1',
           }),
           timeSelectionChanged({
             timeSelection: {
@@ -3741,6 +3746,7 @@ describe('scalar card', () => {
               end: {step: 25},
             },
             affordance: TimeSelectionAffordance.FOB_ADDED,
+            cardId: 'card1',
           }),
         ]);
 
@@ -3991,6 +3997,7 @@ describe('scalar card', () => {
               end: null,
             },
             affordance: TimeSelectionAffordance.FOB,
+            cardId: 'card1',
           })
         );
         const scalarCardComponent = fixture.debugElement.query(
@@ -4038,6 +4045,7 @@ describe('scalar card', () => {
               start: {step: 25},
               end: null,
             },
+            cardId: 'card1',
           }),
           timeSelectionChanged({
             timeSelection: {
@@ -4045,6 +4053,7 @@ describe('scalar card', () => {
               end: null,
             },
             affordance: TimeSelectionAffordance.FOB,
+            cardId: 'card1',
           }),
         ]);
       }));
