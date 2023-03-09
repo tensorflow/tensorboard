@@ -425,12 +425,114 @@ describe('metrics selectors', () => {
   });
 
   describe('getMetricsCardTimeSelection', () => {
+    it('returns undefined if card step selection is not enabled', () => {
+      expect(
+        selectors.getMetricsCardTimeSelection(
+          appStateFromMetricsState(
+            buildMetricsState({
+              linkedTimeEnabled: false,
+              rangeSelectionEnabled: true,
+              cardStateMap: {
+                card1: {
+                  stepSelectionEnabled: false,
+                  dataMinMax: {
+                    minStep: 0,
+                    maxStep: 10,
+                  },
+                  timeSelection: {
+                    start: {step: 0},
+                    end: {step: 5},
+                  },
+                },
+              },
+            })
+          ),
+          'card1'
+        )
+      ).toBeUndefined();
+
+      expect(
+        selectors.getMetricsCardTimeSelection(
+          appStateFromMetricsState(
+            buildMetricsState({
+              linkedTimeEnabled: false,
+              rangeSelectionEnabled: true,
+              stepSelectorEnabled: false,
+              cardStateMap: {
+                card1: {
+                  dataMinMax: {
+                    minStep: 0,
+                    maxStep: 10,
+                  },
+                  timeSelection: {
+                    start: {step: 0},
+                    end: {step: 5},
+                  },
+                },
+              },
+            })
+          ),
+          'card1'
+        )
+      ).toBeUndefined();
+    });
+
+    it('returns undefined if no min max is defined', () => {
+      expect(
+        selectors.getMetricsCardTimeSelection(
+          appStateFromMetricsState(
+            buildMetricsState({
+              linkedTimeEnabled: false,
+              rangeSelectionEnabled: true,
+              stepSelectorEnabled: true,
+              cardStateMap: {
+                card1: {
+                  timeSelection: {
+                    start: {step: 0},
+                    end: {step: 5},
+                  },
+                },
+              },
+            })
+          ),
+          'card1'
+        )
+      ).toBeUndefined();
+
+      expect(
+        selectors.getMetricsCardTimeSelection(
+          appStateFromMetricsState(
+            buildMetricsState({
+              linkedTimeEnabled: false,
+              rangeSelectionEnabled: true,
+              stepSelectorEnabled: true,
+              cardStateMap: {
+                card1: {
+                  timeSelection: {
+                    start: {step: 0},
+                    end: {step: 5},
+                  },
+                },
+              },
+            })
+          ),
+          'card1'
+        )
+      ).toBeUndefined();
+    });
+
     it('returns cards timeSelection if defined', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
           linkedTimeEnabled: false,
+          rangeSelectionEnabled: true,
           cardStateMap: {
             card1: {
+              stepSelectionEnabled: true,
+              dataMinMax: {
+                minStep: 0,
+                maxStep: 10,
+              },
               timeSelection: {
                 start: {step: 0},
                 end: {step: 5},
@@ -452,6 +554,8 @@ describe('metrics selectors', () => {
           linkedTimeEnabled: false,
           cardStateMap: {
             card1: {
+              stepSelectionEnabled: true,
+              rangeSelectionEnabled: true,
               dataMinMax: {
                 minStep: 0,
                 maxStep: 5,
@@ -471,6 +575,15 @@ describe('metrics selectors', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
           linkedTimeEnabled: true,
+          rangeSelectionEnabled: true,
+          cardStateMap: {
+            card1: {
+              dataMinMax: {
+                minStep: 0,
+                maxStep: 10,
+              },
+            },
+          },
           linkedTimeSelection: {
             start: {step: 0},
             end: {step: 5},
@@ -481,6 +594,84 @@ describe('metrics selectors', () => {
       expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
         start: {step: 0},
         end: {step: 5},
+      });
+    });
+
+    it('clips linkedTimeSelection if linkedTime is not within minMax', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          linkedTimeEnabled: true,
+          rangeSelectionEnabled: true,
+          cardStateMap: {
+            card1: {
+              dataMinMax: {
+                minStep: 0,
+                maxStep: 10,
+              },
+            },
+          },
+          linkedTimeSelection: {
+            start: {step: 5},
+            end: {step: 25},
+          },
+        })
+      );
+
+      expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
+        start: {step: 5},
+        end: {step: 10},
+      });
+    });
+
+    it('removes the linked time end step if card specific range selection is disabled', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          linkedTimeEnabled: true,
+          cardStateMap: {
+            card1: {
+              rangeSelectionEnabled: false,
+              dataMinMax: {
+                minStep: 0,
+                maxStep: 10,
+              },
+            },
+          },
+          linkedTimeSelection: {
+            start: {step: 5},
+            end: {step: 25},
+          },
+        })
+      );
+
+      expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
+        start: {step: 5},
+        end: null,
+      });
+    });
+
+    it('removes the linked time end step if global range selection is disabled', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          linkedTimeEnabled: true,
+          rangeSelectionEnabled: false,
+          cardStateMap: {
+            card1: {
+              dataMinMax: {
+                minStep: 0,
+                maxStep: 10,
+              },
+            },
+          },
+          linkedTimeSelection: {
+            start: {step: 5},
+            end: {step: 25},
+          },
+        })
+      );
+
+      expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
+        start: {step: 5},
+        end: null,
       });
     });
   });

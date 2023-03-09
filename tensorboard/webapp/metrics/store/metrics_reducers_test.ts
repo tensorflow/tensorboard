@@ -3068,7 +3068,7 @@ describe('metrics reducers', () => {
             cardId: 'card2',
             timeSelection: {
               start: {step: 1},
-              end: {step: 5},
+              end: null,
             },
           })
         );
@@ -3078,8 +3078,10 @@ describe('metrics reducers', () => {
           card2: {
             timeSelection: {
               start: {step: 1},
-              end: {step: 5},
+              end: null,
             },
+            stepSelectionEnabled: true,
+            rangeSelectionEnabled: false,
           },
         });
       });
@@ -3121,6 +3123,38 @@ describe('metrics reducers', () => {
               start: {step: 1},
               end: {step: 5},
             },
+            stepSelectionEnabled: true,
+            rangeSelectionEnabled: true,
+          },
+        });
+      });
+
+      it('enables card specific range selection if an end value is provided', () => {
+        const state1 = buildMetricsState({
+          cardStateMap: {
+            card1: {},
+          },
+        });
+        const state2 = reducers(
+          state1,
+          actions.timeSelectionChanged({
+            cardId: 'card2',
+            timeSelection: {
+              start: {step: 1},
+              end: {step: 5},
+            },
+          })
+        );
+
+        expect(state2.cardStateMap).toEqual({
+          card1: {},
+          card2: {
+            timeSelection: {
+              start: {step: 1},
+              end: {step: 5},
+            },
+            stepSelectionEnabled: true,
+            rangeSelectionEnabled: true,
           },
         });
       });
@@ -3548,6 +3582,15 @@ describe('metrics reducers', () => {
       expect(state2.stepSelectorEnabled).toBe(false);
       expect(state2.linkedTimeEnabled).toBe(false);
       expect(state2.rangeSelectionEnabled).toBe(false);
+    });
+
+    it('disables card specific step selection when cardId is provided', () => {
+      const prevState = buildMetricsState();
+      const nextState = reducers(
+        prevState,
+        actions.stepSelectorToggled({cardId: 'card1'})
+      );
+      expect(nextState.cardStateMap['card1'].stepSelectionEnabled).toBeFalse();
     });
   });
 

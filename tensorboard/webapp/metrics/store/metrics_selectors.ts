@@ -34,7 +34,11 @@ import {
   MinMaxStep,
 } from '../views/card_renderer/scalar_card_types';
 import * as storeUtils from './metrics_store_internal_utils';
-import {getMinMaxStepFromCardState} from './metrics_store_internal_utils';
+import {
+  getCardRangeSelectionEnabled,
+  getCardStepSelectionEnabled,
+  getMinMaxStepFromCardState,
+} from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
   CardStateMap,
@@ -45,6 +49,7 @@ import {
   RunToSeries,
   TagMetadata,
 } from './metrics_types';
+import {formatTimeSelection} from './time_selection_utils';
 
 const selectMetricsState =
   createFeatureSelector<MetricsState>(METRICS_FEATURE_KEY);
@@ -486,6 +491,7 @@ export const isMetricsSlideoutMenuOpen = createSelector(
 export const getMetricsCardMinMax = createSelector(
   getCardStateMap,
   (cardStateMap: CardStateMap, cardId: CardId): MinMaxStep | undefined => {
+    if (!cardStateMap[cardId]) return;
     return getMinMaxStepFromCardState(cardStateMap[cardId]);
   }
 );
@@ -495,29 +501,64 @@ export const getMetricsCardMinMax = createSelector(
  */
 export const getMetricsCardTimeSelection = createSelector(
   getCardStateMap,
+  getMetricsStepSelectorEnabled,
+  getMetricsRangeSelectionEnabled,
   getMetricsLinkedTimeEnabled,
   getMetricsLinkedTimeSelection,
   (
     cardStateMap: CardStateMap,
+    globalStepSelectionEnabled: boolean,
+    globalRangeSelectionEnabled: boolean,
     linkedTimeEnabled: boolean,
     linkedTimeSelection: TimeSelection | null,
     cardId: CardId
   ): TimeSelection | undefined => {
-    if (linkedTimeEnabled && linkedTimeSelection) {
-      return linkedTimeSelection;
+    const cardState = cardStateMap[cardId];
+    if (!cardState) {
+      return;
     }
-
-    if (cardStateMap[cardId]?.timeSelection) {
-      return cardStateMap[cardId]?.timeSelection;
-    }
-    const minMaxStep = getMinMaxStepFromCardState(cardStateMap[cardId]);
+    const minMaxStep = getMinMaxStepFromCardState(cardState);
     if (!minMaxStep) {
       return;
     }
+    const rangeSelectionEnabled = getCardRangeSelectionEnabled(
+      globalRangeSelectionEnabled,
+      cardState
+    );
 
-    return {
-      start: {step: minMaxStep.minStep},
-      end: {step: minMaxStep.maxStep},
-    };
+    // Handling Linked Time
+    if (linkedTimeEnabled && linkedTimeSelection) {
+      return formatTimeSelection(
+        linkedTimeSelection,
+        minMaxStep,
+        rangeSelectionEnabled
+      );
+    }
+
+    // If the user has disabled step selection, nothing should be returned.
+    if (
+      !cardState ||
+      !getCardStepSelectionEnabled(globalStepSelectionEnabled, cardState)
+    ) {
+      return;
+    }
+
+    if (cardState.timeSelection) {
+      return formatTimeSelection(
+        cardState.timeSelection,
+        minMaxStep,
+        rangeSelectionEnabled
+      );
+    }
+
+    // The default time selection
+    return formatTimeSelection(
+      {
+        start: {step: minMaxStep.minStep},
+        end: {step: minMaxStep.maxStep},
+      },
+      minMaxStep,
+      rangeSelectionEnabled
+    );
   }
 );

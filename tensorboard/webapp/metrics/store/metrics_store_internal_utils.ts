@@ -581,6 +581,24 @@ export function getMinMaxStepFromCardState(cardState: Partial<CardState>) {
   return userMinMax || dataMinMax;
 }
 
+export function getCardStepSelectionEnabled(
+  globalStepSelectionEnabled: boolean,
+  cardState: Partial<CardState>
+) {
+  return cardState.stepSelectionEnabled !== undefined
+    ? cardState.stepSelectionEnabled
+    : globalStepSelectionEnabled;
+}
+
+export function getCardRangeSelectionEnabled(
+  globalRangeSelectionEnabled: boolean,
+  cardState: Partial<CardState>
+) {
+  return cardState.rangeSelectionEnabled !== undefined
+    ? cardState.rangeSelectionEnabled
+    : globalRangeSelectionEnabled;
+}
+
 export const TEST_ONLY = {
   getImageCardSteps,
   getSelectedSteps,

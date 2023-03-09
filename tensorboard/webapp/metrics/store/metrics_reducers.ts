@@ -1113,6 +1113,8 @@ const reducer = createReducer(
       nextCardStateMap[cardId] = {
         ...nextCardStateMap[cardId],
         timeSelection: nextTimeSelection,
+        stepSelectionEnabled: true,
+        rangeSelectionEnabled: nextTimeSelection.end?.step !== undefined,
       };
     }
 
@@ -1136,14 +1138,25 @@ const reducer = createReducer(
       cardStateMap: nextCardStateMap,
     };
   }),
-  on(actions.stepSelectorToggled, (state, {affordance}) => {
+  on(actions.stepSelectorToggled, (state, {affordance, cardId}) => {
+    const nextCardStateMap = {...state.cardStateMap};
+    if (cardId) {
+      nextCardStateMap[cardId] = {
+        ...nextCardStateMap[cardId],
+        stepSelectionEnabled: false,
+      };
+    }
+
     if (
       !state.linkedTimeEnabled &&
       affordance !== TimeSelectionToggleAffordance.CHECK_BOX
     ) {
       // In plain step selection mode (without linked time), we do not allow
       // interactions with fobs to modify global step selection state.
-      return {...state};
+      return {
+        ...state,
+        cardStateMap: nextCardStateMap,
+      };
     }
 
     const nextStepSelectorEnabled = !state.stepSelectorEnabled;
@@ -1157,6 +1170,7 @@ const reducer = createReducer(
       linkedTimeEnabled: nextLinkedTimeEnabled,
       stepSelectorEnabled: nextStepSelectorEnabled,
       rangeSelectionEnabled: nextRangeSelectionEnabled,
+      cardStateMap: nextCardStateMap,
     };
   }),
   on(actions.timeSelectionCleared, (state) => {

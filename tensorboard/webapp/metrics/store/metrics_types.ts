@@ -130,6 +130,8 @@ export type CardState = {
   dataMinMax: MinMaxStep;
   userMinMax: MinMaxStep;
   timeSelection: TimeSelection;
+  stepSelectionEnabled: boolean;
+  rangeSelectionEnabled: boolean;
   tableExpanded: boolean;
 };
 
