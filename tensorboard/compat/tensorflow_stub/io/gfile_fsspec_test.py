@@ -15,6 +15,7 @@
 
 
 import posixpath
+import unittest
 
 from tensorboard import test as tb_test
 from tensorboard.compat.tensorflow_stub import errors
@@ -531,6 +532,9 @@ class GFileFSSpecTest(tb_test.TestCase):
             ],
         )
 
+    @unittest.skip(
+        "Temporarily disabling to avoid internal sync breakage across fsspec versions"
+    )
     def testGlobAbsolute(self):
         """
         This tests glob with in memory file system which does return
