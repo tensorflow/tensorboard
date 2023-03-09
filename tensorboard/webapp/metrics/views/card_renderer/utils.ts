@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {ExperimentAlias} from '../../../experiments/types';
 import {Run} from '../../../runs/store/runs_types';
+import {clipStepWithinMinMax} from '../../store/time_selection_utils';
 import {TimeSelection} from '../../types';
 import {
   PartialSeries,
@@ -94,35 +95,6 @@ export interface TimeSelectionView {
   startStep: number;
   endStep: number | null;
   clipped: boolean;
-}
-
-export function clipStepWithinMinMax(value: number, min: number, max: number) {
-  if (value < min) {
-    return min;
-  }
-  if (value > max) {
-    return max;
-  }
-  return value;
-}
-
-export function maybeClipTimeSelection(
-  timeSelection: TimeSelection,
-  minStep: number,
-  maxStep: number
-): TimeSelection {
-  const timeSelectionView = maybeClipTimeSelectionView(
-    timeSelection,
-    minStep,
-    maxStep
-  );
-  return {
-    start: {step: timeSelectionView.startStep},
-    end:
-      timeSelectionView.endStep === null
-        ? null
-        : {step: timeSelectionView.endStep},
-  };
 }
 
 export function maybeClipTimeSelectionView(

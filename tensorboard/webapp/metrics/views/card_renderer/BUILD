@@ -250,6 +250,7 @@ tf_ts_library(
         ":scalar_card_types",
         "//tensorboard/webapp/experiments:types",
         "//tensorboard/webapp/metrics:types",
+        "//tensorboard/webapp/metrics/store:time_selection_utils",
         "//tensorboard/webapp/runs/store:types",
     ],
 )
@@ -307,6 +308,7 @@ tf_ng_module(
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",
+        "//tensorboard/webapp/metrics/store:time_selection_utils",
         "//tensorboard/webapp/metrics/views:types",
         "//tensorboard/webapp/metrics/views:utils",
         "//tensorboard/webapp/runs/store:types",

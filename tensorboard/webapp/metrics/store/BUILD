@@ -48,6 +48,16 @@ tf_ng_module(
 )
 
 tf_ts_library(
+    name = "time_selection_utils",
+    srcs = [
+        "time_selection_utils.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/metrics:types",
+    ],
+)
+
+tf_ts_library(
     name = "internal_utils",
     srcs = [
         "metrics_store_internal_utils.ts",
@@ -83,10 +93,12 @@ tf_ts_library(
         "metrics_reducers_test.ts",
         "metrics_selectors_test.ts",
         "metrics_store_internal_utils_test.ts",
+        "time_selection_utils_test.ts",
     ],
     deps = [
         ":internal_utils",
         ":store",
+        ":time_selection_utils",
         ":types",
         "//tensorboard/webapp/app_routing:testing",
         "//tensorboard/webapp/app_routing:types",
