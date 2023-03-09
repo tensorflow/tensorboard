@@ -705,8 +705,10 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
               ? {step: currentEndStep ?? maxStep}
               : null,
           },
-          minStep,
-          maxStep
+          {
+            minStep,
+            maxStep,
+          }
         );
         this.stepSelectorTimeSelection$.next(potentiallyClippedTimeSelection);
       });
