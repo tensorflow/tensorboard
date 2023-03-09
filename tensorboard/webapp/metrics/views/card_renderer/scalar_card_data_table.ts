@@ -63,14 +63,13 @@ export class ScalarCardDataTable {
   getMinPointInRange(
     points: ScalarCardPoint[],
     startPointIndex: number,
-    endPointIndex: number,
-    smoothed: boolean = false
+    endPointIndex: number
   ): ScalarCardPoint {
-    let minValue = points[startPointIndex].value;
+    let minValue = points[startPointIndex].y;
     let minValuePoint = points[startPointIndex];
     for (let i = startPointIndex; i <= endPointIndex; i++) {
-      if (minValue > points[i].value) {
-        minValue = points[i].value;
+      if (minValue > points[i].y) {
+        minValue = points[i].y;
         minValuePoint = points[i];
       }
     }
@@ -82,11 +81,11 @@ export class ScalarCardDataTable {
     startPointIndex: number,
     endPointIndex: number
   ): ScalarCardPoint {
-    let maxValue = points[startPointIndex].value;
+    let maxValue = points[startPointIndex].y;
     let maxValuePoint = points[startPointIndex];
     for (let i = startPointIndex; i <= endPointIndex; i++) {
-      if (maxValue < points[i].value) {
-        maxValue = points[i].value;
+      if (maxValue < points[i].y) {
+        maxValue = points[i].y;
         maxValuePoint = points[i];
       }
     }
