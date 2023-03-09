@@ -94,6 +94,9 @@ export class OSSSettingsConverter extends SettingsConverter<
     if (settings.linkedTimeEnabled !== undefined) {
       serializableSettings.linkedTimeEnabled = settings.linkedTimeEnabled;
     }
+    if (settings.repository !== undefined) {
+      serializableSettings.repository = settings.repository;
+    }
     return serializableSettings;
   }
 
@@ -198,6 +201,13 @@ export class OSSSettingsConverter extends SettingsConverter<
       typeof backendSettings.linkedTimeEnabled === 'boolean'
     ) {
       settings.linkedTimeEnabled = backendSettings.linkedTimeEnabled;
+    }
+
+    if (
+      backendSettings.hasOwnProperty('repository') &&
+      typeof backendSettings.repository === 'string'
+    ) {
+      settings.repository = backendSettings.repository;
     }
 
     return settings;

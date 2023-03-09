@@ -182,6 +182,19 @@ describe('persistent_settings data_source test', () => {
           linkedTimeEnabled: true,
         });
       });
+      it('properly converts repository', async () => {
+        getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
+          JSON.stringify({
+            repository: 'xid',
+          })
+        );
+
+        const actual = await firstValueFrom(dataSource.getSettings());
+
+        expect(actual).toEqual({
+          repository: 'xid',
+        });
+      });
     });
 
     describe('#setSettings', () => {
@@ -262,6 +275,25 @@ describe('persistent_settings data_source test', () => {
           TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY,
           JSON.stringify({
             linkedTimeEnabled: true,
+          })
+        );
+      });
+
+      it('properly converts repository', async () => {
+        getItemSpy
+          .withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY)
+          .and.returnValue(null);
+
+        await firstValueFrom(
+          dataSource.setSettings({
+            repository: 'xid',
+          })
+        );
+
+        expect(setItemSpy).toHaveBeenCalledOnceWith(
+          TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY,
+          JSON.stringify({
+            repository: 'xid',
           })
         );
       });

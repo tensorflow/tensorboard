@@ -43,6 +43,7 @@ export declare interface BackendSettings {
   stepSelectorEnabled?: boolean;
   rangeSelectionEnabled?: boolean;
   linkedTimeEnabled?: boolean;
+  repository?: string;
 }
 
 /**
@@ -65,4 +66,5 @@ export interface PersistableSettings {
   stepSelectorEnabled?: boolean;
   rangeSelectionEnabled?: boolean;
   linkedTimeEnabled?: boolean;
+  repository?: string;
 }
