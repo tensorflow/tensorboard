@@ -11,7 +11,6 @@ tf_ts_library(
     ],
     deps = [
         ":internal_utils",
-        ":time_selection_utils",
         ":types",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/app_routing",
@@ -45,16 +44,6 @@ tf_ng_module(
         ":types",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
-    ],
-)
-
-tf_ts_library(
-    name = "time_selection_utils",
-    srcs = [
-        "time_selection_utils.ts",
-    ],
-    deps = [
-        "//tensorboard/webapp/metrics:types",
     ],
 )
 

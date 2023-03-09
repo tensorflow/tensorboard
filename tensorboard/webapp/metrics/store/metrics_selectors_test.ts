@@ -431,7 +431,6 @@ describe('metrics selectors', () => {
           appStateFromMetricsState(
             buildMetricsState({
               linkedTimeEnabled: false,
-              rangeSelectionEnabled: true,
               cardStateMap: {
                 card1: {
                   stepSelectionEnabled: false,
@@ -456,7 +455,6 @@ describe('metrics selectors', () => {
           appStateFromMetricsState(
             buildMetricsState({
               linkedTimeEnabled: false,
-              rangeSelectionEnabled: true,
               stepSelectorEnabled: false,
               cardStateMap: {
                 card1: {
@@ -483,7 +481,6 @@ describe('metrics selectors', () => {
           appStateFromMetricsState(
             buildMetricsState({
               linkedTimeEnabled: false,
-              rangeSelectionEnabled: true,
               stepSelectorEnabled: true,
               cardStateMap: {
                 card1: {
@@ -504,7 +501,6 @@ describe('metrics selectors', () => {
           appStateFromMetricsState(
             buildMetricsState({
               linkedTimeEnabled: false,
-              rangeSelectionEnabled: true,
               stepSelectorEnabled: true,
               cardStateMap: {
                 card1: {
@@ -525,7 +521,6 @@ describe('metrics selectors', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
           linkedTimeEnabled: false,
-          rangeSelectionEnabled: true,
           cardStateMap: {
             card1: {
               stepSelectionEnabled: true,
@@ -555,7 +550,6 @@ describe('metrics selectors', () => {
           cardStateMap: {
             card1: {
               stepSelectionEnabled: true,
-              rangeSelectionEnabled: true,
               dataMinMax: {
                 minStep: 0,
                 maxStep: 5,
@@ -575,7 +569,6 @@ describe('metrics selectors', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
           linkedTimeEnabled: true,
-          rangeSelectionEnabled: true,
           cardStateMap: {
             card1: {
               dataMinMax: {
@@ -594,84 +587,6 @@ describe('metrics selectors', () => {
       expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
         start: {step: 0},
         end: {step: 5},
-      });
-    });
-
-    it('clips linkedTimeSelection if linkedTime is not within minMax', () => {
-      const state = appStateFromMetricsState(
-        buildMetricsState({
-          linkedTimeEnabled: true,
-          rangeSelectionEnabled: true,
-          cardStateMap: {
-            card1: {
-              dataMinMax: {
-                minStep: 0,
-                maxStep: 10,
-              },
-            },
-          },
-          linkedTimeSelection: {
-            start: {step: 5},
-            end: {step: 25},
-          },
-        })
-      );
-
-      expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
-        start: {step: 5},
-        end: {step: 10},
-      });
-    });
-
-    it('removes the linked time end step if card specific range selection is disabled', () => {
-      const state = appStateFromMetricsState(
-        buildMetricsState({
-          linkedTimeEnabled: true,
-          cardStateMap: {
-            card1: {
-              rangeSelectionEnabled: false,
-              dataMinMax: {
-                minStep: 0,
-                maxStep: 10,
-              },
-            },
-          },
-          linkedTimeSelection: {
-            start: {step: 5},
-            end: {step: 25},
-          },
-        })
-      );
-
-      expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
-        start: {step: 5},
-        end: null,
-      });
-    });
-
-    it('removes the linked time end step if global range selection is disabled', () => {
-      const state = appStateFromMetricsState(
-        buildMetricsState({
-          linkedTimeEnabled: true,
-          rangeSelectionEnabled: false,
-          cardStateMap: {
-            card1: {
-              dataMinMax: {
-                minStep: 0,
-                maxStep: 10,
-              },
-            },
-          },
-          linkedTimeSelection: {
-            start: {step: 5},
-            end: {step: 25},
-          },
-        })
-      );
-
-      expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
-        start: {step: 5},
-        end: null,
       });
     });
   });
@@ -1065,6 +980,67 @@ describe('metrics selectors', () => {
       expect(selectors.getMetricsTagGroupExpansionState(state, 'world')).toBe(
         false
       );
+    });
+  });
+
+  describe('getMetricsCardRangeSelectionEnabled', () => {
+    it('returns card specific value when defined', () => {
+      expect(
+        selectors.getMetricsCardRangeSelectionEnabled(
+          appStateFromMetricsState(
+            buildMetricsState({
+              rangeSelectionEnabled: false,
+              cardStateMap: {
+                card1: {
+                  rangeSelectionEnabled: true,
+                },
+              },
+            })
+          ),
+          'card1'
+        )
+      ).toBeTrue();
+      expect(
+        selectors.getMetricsCardRangeSelectionEnabled(
+          appStateFromMetricsState(
+            buildMetricsState({
+              rangeSelectionEnabled: true,
+              cardStateMap: {
+                card1: {
+                  rangeSelectionEnabled: false,
+                },
+              },
+            })
+          ),
+          'card1'
+        )
+      ).toBeFalse();
+    });
+
+    it('returns global value when card specific value is not defined', () => {
+      expect(
+        selectors.getMetricsCardRangeSelectionEnabled(
+          appStateFromMetricsState(
+            buildMetricsState({
+              rangeSelectionEnabled: true,
+              cardStateMap: {
+                card1: {},
+              },
+            })
+          ),
+          'card1'
+        )
+      ).toBeTrue();
+      expect(
+        selectors.getMetricsCardRangeSelectionEnabled(
+          appStateFromMetricsState(
+            buildMetricsState({
+              rangeSelectionEnabled: false,
+            })
+          ),
+          'card1'
+        )
+      ).toBeFalse();
     });
   });
 

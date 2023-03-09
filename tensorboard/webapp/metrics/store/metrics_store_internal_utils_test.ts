@@ -31,7 +31,6 @@ import {
   generateNextPinnedCardMappings,
   generateScalarCardMinMaxStep,
   getCardId,
-  getCardRangeSelectionEnabled,
   getCardStepSelectionEnabled,
   getMinMaxStepFromCardState,
   getPinnedCardId,
@@ -1211,26 +1210,6 @@ describe('metrics store utils', () => {
     it('returns global value when card specific value is not defined', () => {
       expect(getCardStepSelectionEnabled(false, {})).toEqual(false);
       expect(getCardStepSelectionEnabled(true, {})).toEqual(true);
-    });
-  });
-
-  describe('getCardRangeSelectionEnabled', () => {
-    it('returns card specific value if defined', () => {
-      expect(
-        getCardRangeSelectionEnabled(false, {
-          rangeSelectionEnabled: true,
-        })
-      ).toEqual(true);
-      expect(
-        getCardRangeSelectionEnabled(true, {
-          rangeSelectionEnabled: false,
-        })
-      ).toEqual(false);
-    });
-
-    it('returns global value when card specific value is not defined', () => {
-      expect(getCardRangeSelectionEnabled(false, {})).toEqual(false);
-      expect(getCardRangeSelectionEnabled(true, {})).toEqual(true);
     });
   });
 });
