@@ -470,7 +470,7 @@ describe('metrics card_renderer utils test', () => {
   });
 
   describe('#formatTimeSelection', () => {
-    it('returns [minStep, minStep] when above minMax', () => {
+    it('returns [maxStep, maxStep] when above minMax', () => {
       expect(
         formatTimeSelection(
           {
@@ -489,7 +489,7 @@ describe('metrics card_renderer utils test', () => {
       });
     });
 
-    it('returns [maxStep, maxStep] when below minMax', () => {
+    it('returns [minStep, minStep] when below minMax', () => {
       expect(
         formatTimeSelection(
           {
