@@ -67,6 +67,8 @@ import {
 } from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
+  CardSelectionState,
+  CardStateMap,
   CardStepIndexMap,
   MetricsNamespacedState,
   MetricsNonNamespacedState,
@@ -1050,6 +1052,17 @@ const reducer = createReducer(
     let nextStepSelectorEnabled = state.stepSelectorEnabled;
     let linkedTimeSelection = state.linkedTimeSelection;
 
+    const nextCardStateMap = Object.entries(state.cardStateMap).reduce(
+      (cardStateMap, [cardId, cardState]) => {
+        cardStateMap[cardId] = {
+          ...cardState,
+          rangeSelection: CardSelectionState.GLOBAL,
+        };
+        return cardStateMap;
+      },
+      {} as CardStateMap
+    );
+
     if (nextRangeSelectionEnabled) {
       nextStepSelectorEnabled = nextRangeSelectionEnabled;
       if (!linkedTimeSelection) {
@@ -1077,6 +1090,7 @@ const reducer = createReducer(
       stepSelectorEnabled: nextStepSelectorEnabled,
       rangeSelectionEnabled: nextRangeSelectionEnabled,
       linkedTimeSelection,
+      cardStateMap: nextCardStateMap,
     };
   }),
   on(actions.timeSelectionChanged, (state, change) => {
@@ -1113,8 +1127,11 @@ const reducer = createReducer(
       nextCardStateMap[cardId] = {
         ...nextCardStateMap[cardId],
         timeSelection: nextTimeSelection,
-        stepSelectionEnabled: true,
-        rangeSelectionEnabled: nextTimeSelection.end?.step !== undefined,
+        stepSelection: CardSelectionState.ENABLED,
+        rangeSelection:
+          nextTimeSelection.end?.step === undefined
+            ? CardSelectionState.DISABLED
+            : CardSelectionState.ENABLED,
       };
     }
 
@@ -1143,8 +1160,15 @@ const reducer = createReducer(
     if (cardId) {
       nextCardStateMap[cardId] = {
         ...nextCardStateMap[cardId],
-        stepSelectionEnabled: false,
+        stepSelection: CardSelectionState.DISABLED,
       };
+    } else {
+      Object.keys(nextCardStateMap).forEach((cardId) => {
+        nextCardStateMap[cardId] = {
+          ...nextCardStateMap[cardId],
+          stepSelection: CardSelectionState.GLOBAL,
+        };
+      });
     }
 
     if (

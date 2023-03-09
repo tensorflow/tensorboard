@@ -126,12 +126,18 @@ export type CardMetadataMap = Record<
   CardMetadata
 >;
 
+export enum CardSelectionState {
+  GLOBAL,
+  ENABLED,
+  DISABLED,
+}
+
 export type CardState = {
   dataMinMax: MinMaxStep;
   userMinMax: MinMaxStep;
   timeSelection: TimeSelection;
-  stepSelectionEnabled: boolean;
-  rangeSelectionEnabled: boolean;
+  stepSelection: CardSelectionState;
+  rangeSelection: CardSelectionState;
   tableExpanded: boolean;
 };
 

@@ -27,6 +27,7 @@ import {
 } from '../testing';
 import {HistogramMode, TooltipSort, XAxisType} from '../types';
 import * as selectors from './metrics_selectors';
+import {CardSelectionState} from './metrics_types';
 
 describe('metrics selectors', () => {
   beforeEach(() => {
@@ -433,7 +434,7 @@ describe('metrics selectors', () => {
               linkedTimeEnabled: false,
               cardStateMap: {
                 card1: {
-                  stepSelectionEnabled: false,
+                  stepSelection: CardSelectionState.DISABLED,
                   dataMinMax: {
                     minStep: 0,
                     maxStep: 10,
@@ -523,7 +524,7 @@ describe('metrics selectors', () => {
           linkedTimeEnabled: false,
           cardStateMap: {
             card1: {
-              stepSelectionEnabled: true,
+              stepSelection: CardSelectionState.ENABLED,
               dataMinMax: {
                 minStep: 0,
                 maxStep: 10,
@@ -549,7 +550,7 @@ describe('metrics selectors', () => {
           linkedTimeEnabled: false,
           cardStateMap: {
             card1: {
-              stepSelectionEnabled: true,
+              stepSelection: CardSelectionState.ENABLED,
               dataMinMax: {
                 minStep: 0,
                 maxStep: 5,
@@ -992,7 +993,7 @@ describe('metrics selectors', () => {
               rangeSelectionEnabled: false,
               cardStateMap: {
                 card1: {
-                  rangeSelectionEnabled: true,
+                  rangeSelection: CardSelectionState.ENABLED,
                 },
               },
             })
@@ -1007,7 +1008,7 @@ describe('metrics selectors', () => {
               rangeSelectionEnabled: true,
               cardStateMap: {
                 card1: {
-                  rangeSelectionEnabled: false,
+                  rangeSelection: CardSelectionState.DISABLED,
                 },
               },
             })

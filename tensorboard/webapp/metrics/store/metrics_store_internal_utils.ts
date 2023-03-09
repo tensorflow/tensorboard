@@ -28,6 +28,7 @@ import {
 } from '../types';
 import {
   CardMetadataMap,
+  CardSelectionState,
   CardState,
   CardStateMap,
   CardStepIndexMap,
@@ -585,7 +586,14 @@ export function getCardStepSelectionEnabled(
   globalStepSelectionEnabled: boolean,
   cardState: Partial<CardState>
 ) {
-  return cardState.stepSelectionEnabled ?? globalStepSelectionEnabled;
+  switch (cardState?.stepSelection) {
+    case CardSelectionState.ENABLED:
+      return true;
+    case CardSelectionState.DISABLED:
+      return false;
+    default:
+      return globalStepSelectionEnabled;
+  }
 }
 
 export const TEST_ONLY = {

@@ -57,6 +57,7 @@ import {reducers} from './metrics_reducers';
 import {getCardId, getPinnedCardId} from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
+  CardSelectionState,
   MetricsState,
   RunToLoadState,
   TagMetadata,
@@ -3080,8 +3081,8 @@ describe('metrics reducers', () => {
               start: {step: 1},
               end: null,
             },
-            stepSelectionEnabled: true,
-            rangeSelectionEnabled: false,
+            stepSelection: CardSelectionState.ENABLED,
+            rangeSelection: CardSelectionState.DISABLED,
           },
         });
       });
@@ -3123,8 +3124,8 @@ describe('metrics reducers', () => {
               start: {step: 1},
               end: {step: 5},
             },
-            stepSelectionEnabled: true,
-            rangeSelectionEnabled: true,
+            stepSelection: CardSelectionState.ENABLED,
+            rangeSelection: CardSelectionState.ENABLED,
           },
         });
       });
@@ -3153,8 +3154,8 @@ describe('metrics reducers', () => {
               start: {step: 1},
               end: {step: 5},
             },
-            stepSelectionEnabled: true,
-            rangeSelectionEnabled: true,
+            stepSelection: CardSelectionState.ENABLED,
+            rangeSelection: CardSelectionState.ENABLED,
           },
         });
       });
@@ -3265,6 +3266,37 @@ describe('metrics reducers', () => {
         expect(state2.linkedTimeSelection).toEqual({
           start: {step: 100},
           end: null,
+        });
+      });
+
+      it('sets all card specific overrides to default', () => {
+        const state1 = buildMetricsState({
+          linkedTimeSelection: {
+            start: {step: 100},
+            end: {step: 1000},
+          },
+          rangeSelectionEnabled: false,
+          cardStateMap: {
+            card1: {
+              rangeSelection: CardSelectionState.ENABLED,
+            },
+            card2: {
+              rangeSelection: CardSelectionState.DISABLED,
+            },
+            card3: {},
+          },
+        });
+        const state2 = reducers(state1, actions.rangeSelectionToggled({}));
+        expect(state2.cardStateMap).toEqual({
+          card1: {
+            rangeSelection: CardSelectionState.GLOBAL,
+          },
+          card2: {
+            rangeSelection: CardSelectionState.GLOBAL,
+          },
+          card3: {
+            rangeSelection: CardSelectionState.GLOBAL,
+          },
         });
       });
     });
@@ -3590,7 +3622,9 @@ describe('metrics reducers', () => {
         prevState,
         actions.stepSelectorToggled({cardId: 'card1'})
       );
-      expect(nextState.cardStateMap['card1'].stepSelectionEnabled).toBeFalse();
+      expect(nextState.cardStateMap['card1'].stepSelection).toEqual(
+        CardSelectionState.DISABLED
+      );
     });
   });
 

@@ -40,6 +40,7 @@ import {
 } from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
+  CardSelectionState,
   CardStateMap,
   CardStepIndexMetaData,
   MetricsSettings,
@@ -403,7 +404,14 @@ export const getMetricsCardRangeSelectionEnabled = createSelector(
     cardId: CardId
   ) => {
     const cardState = cardStateMap[cardId];
-    return cardState?.rangeSelectionEnabled ?? globalRangeSelectionEnabled;
+    switch (cardState?.rangeSelection) {
+      case CardSelectionState.ENABLED:
+        return true;
+      case CardSelectionState.DISABLED:
+        return false;
+      default:
+        return globalRangeSelectionEnabled;
+    }
   }
 );
 
@@ -522,6 +530,11 @@ export const getMetricsCardTimeSelection = createSelector(
     linkedTimeSelection: TimeSelection | null,
     cardId: CardId
   ): TimeSelection | undefined => {
+    // Handling Linked Time
+    if (linkedTimeEnabled && linkedTimeSelection) {
+      return linkedTimeSelection;
+    }
+
     const cardState = cardStateMap[cardId];
     if (!cardState) {
       return;
@@ -531,24 +544,18 @@ export const getMetricsCardTimeSelection = createSelector(
       return;
     }
 
-    // Handling Linked Time
-    if (linkedTimeEnabled && linkedTimeSelection) {
-      return linkedTimeSelection;
-    }
-
     // If the user has disabled step selection, nothing should be returned.
     if (!getCardStepSelectionEnabled(globalStepSelectionEnabled, cardState)) {
       return;
     }
 
-    if (cardState.timeSelection) {
-      return cardState.timeSelection;
-    }
+    const startStep = cardState.timeSelection?.start.step ?? minMaxStep.minStep;
+    const endStep = cardState.timeSelection?.end?.step ?? minMaxStep.maxStep;
 
     // The default time selection
     return {
-      start: {step: minMaxStep.minStep},
-      end: {step: minMaxStep.maxStep},
+      start: {step: startStep},
+      end: {step: endStep},
     };
   }
 );
