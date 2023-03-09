@@ -95,7 +95,6 @@ import {
   getSingleSelectionHeaders,
   RunToSeries,
 } from '../../store';
-import {maybeClipTimeSelection} from '../../store/time_selection_utils';
 import {CardId, CardMetadata, XAxisType} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
@@ -112,6 +111,7 @@ import {
   SortingInfo,
 } from './scalar_card_types';
 import {
+  maybeClipTimeSelection,
   maybeClipTimeSelectionView,
   partitionSeries,
   TimeSelectionView,

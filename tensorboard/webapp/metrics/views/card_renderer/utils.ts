@@ -14,9 +14,9 @@ limitations under the License.
 ==============================================================================*/
 import {ExperimentAlias} from '../../../experiments/types';
 import {Run} from '../../../runs/store/runs_types';
-import {clipStepWithinMinMax} from '../../store/time_selection_utils';
 import {TimeSelection} from '../../types';
 import {
+  MinMaxStep,
   PartialSeries,
   PartitionedSeries,
   ScalarCardDataSeries,
@@ -97,6 +97,45 @@ export interface TimeSelectionView {
   clipped: boolean;
 }
 
+/**
+ * Ensures that value is within min max. If it is not, return the closest value that is.
+ * @param value
+ * @param min
+ * @param max
+ */
+export function clipStepWithinMinMax(value: number, min: number, max: number) {
+  if (value < min) {
+    return min;
+  }
+  if (value > max) {
+    return max;
+  }
+  return value;
+}
+
+/**
+ * Clips both start and end step of a time selection within min and max
+ * @param timeSelection
+ * @param param1
+ */
+export function maybeClipTimeSelection(
+  timeSelection: TimeSelection,
+  {minStep, maxStep}: MinMaxStep
+) {
+  const start = {
+    step: clipStepWithinMinMax(timeSelection.start.step, minStep, maxStep),
+  };
+  const end = timeSelection.end
+    ? {
+        step: clipStepWithinMinMax(timeSelection.end.step, minStep, maxStep),
+      }
+    : null;
+  return {
+    start,
+    end,
+  };
+}
+
 export function maybeClipTimeSelectionView(
   timeSelection: TimeSelection,
   minStep: number,
@@ -175,4 +214,37 @@ export function isDatumVisible(
 ) {
   const metadata = metadataMap[datum.id];
   return metadata && metadata.visible && !Boolean(metadata.aux);
+}
+
+/**
+ * Removes the end step of a time selection if range selection is not enabled
+ * @param timeSelection
+ * @param rangeSelectionEnabled
+ */
+function maybeOmitTimeSelectionEnd(
+  timeSelection: TimeSelection,
+  rangeSelectionEnabled: boolean
+): TimeSelection {
+  if (rangeSelectionEnabled) {
+    return timeSelection;
+  }
+
+  return {
+    start: timeSelection.start,
+    end: null,
+  };
+}
+
+/**
+ * Clips a time selection and potentially removes the end step if range selection is not enabled
+ */
+export function formatTimeSelection(
+  timeSelection: TimeSelection,
+  minMaxStep: MinMaxStep,
+  rangeSelectionEnabled: boolean
+) {
+  return maybeOmitTimeSelectionEnd(
+    maybeClipTimeSelection(timeSelection, minMaxStep),
+    rangeSelectionEnabled
+  );
 }
