@@ -29,9 +29,9 @@ export enum PluginType {
 }
 
 export enum XAxisType {
-  STEP,
-  RELATIVE,
-  WALL_TIME,
+  STEP = 'step',
+  RELATIVE = 'relative',
+  WALL_TIME = 'walltime',
 }
 
 export interface CardMetadata {
