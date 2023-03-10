@@ -75,6 +75,7 @@ import {
 import {ResizeDetectorTestingModule} from '../../../widgets/resize_detector_testing_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {
+  cardMinMaxChanged,
   metricsCardStateUpdated,
   stepSelectorToggled,
   timeSelectionChanged,
@@ -220,6 +221,7 @@ describe('scalar card', () => {
   let selectSpy: jasmine.Spy;
   let overlayContainer: OverlayContainer;
   let intersectionObserver: IntersectionObserverTestingModule;
+  let dispatchedActions: Action[];
 
   const Selector = {
     FIT_TO_DOMAIN: By.css('[aria-label="Fit line chart domains to data"]'),
@@ -293,6 +295,10 @@ describe('scalar card', () => {
       // lineChart property is now set; let the template re-render with
       // `lineChart` checks correctly return the right value.
       lineChartComponent.componentInstance.changeDetectorRef.markForCheck();
+
+      // This hack effectively resizes the line chart.
+      // Resizing the line chart will result in a cardMinMax changed event being dispatched.
+      dispatchedActions.pop();
     }
     fixture.detectChanges();
     return fixture;
@@ -371,6 +377,11 @@ describe('scalar card', () => {
       selectors.getIsLinkedTimeProspectiveFobEnabled,
       true
     );
+
+    dispatchedActions = [];
+    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+      dispatchedActions.push(action);
+    });
   });
 
   afterEach(() => {
@@ -2345,17 +2356,12 @@ describe('scalar card', () => {
     });
 
     describe('fob controls', () => {
-      let dispatchedActions: Action[] = [];
       beforeEach(() => {
-        dispatchedActions = [];
         const runToSeries = {
           run1: [buildScalarStepData({step: 10})],
           run2: [buildScalarStepData({step: 20})],
           run3: [buildScalarStepData({step: 30})],
         };
-        spyOn(store, 'dispatch').and.callFake((action: Action) => {
-          dispatchedActions.push(action);
-        });
         provideMockCardRunToSeriesData(
           selectSpy,
           PluginType.SCALARS,
@@ -2654,27 +2660,31 @@ describe('scalar card', () => {
         });
         const fixture = createComponent('card1');
 
-        let newSteps: MinMaxStep | null = null;
-        fixture.componentInstance.minMaxSteps$?.subscribe((minMaxStep) => {
-          newSteps = minMaxStep;
-        });
         fixture.componentInstance.onLineChartZoom({
           x: [9.235, 30.4],
           y: [0, 100],
-        });
-        expect(newSteps!).toEqual({
-          minStep: 10,
-          maxStep: 30,
         });
 
         fixture.componentInstance.onLineChartZoom({
           x: [8, 31],
           y: [0, 100],
         });
-        expect(newSteps!).toEqual({
-          minStep: 10,
-          maxStep: 30,
-        });
+        expect(dispatchedActions).toEqual([
+          cardMinMaxChanged({
+            minMax: {
+              minStep: 10,
+              maxStep: 30,
+            },
+            cardId: 'card1',
+          }),
+          cardMinMaxChanged({
+            minMax: {
+              minStep: 10,
+              maxStep: 30,
+            },
+            cardId: 'card1',
+          }),
+        ]);
       }));
     });
   });
@@ -3566,10 +3576,6 @@ describe('scalar card', () => {
     }));
 
     it('clears inline styles', fakeAsync(() => {
-      let dispatchedActions: Action[] = [];
-      spyOn(store, 'dispatch').and.callFake((action: Action) => {
-        dispatchedActions.push(action);
-      });
       const fixture = createComponent('card1');
       fixture.detectChanges();
       const component = fixture.debugElement.query(
@@ -3596,10 +3602,6 @@ describe('scalar card', () => {
     }));
 
     it('expands the table after a manual resize', fakeAsync(() => {
-      let dispatchedActions: Action[] = [];
-      spyOn(store, 'dispatch').and.callFake((action: Action) => {
-        dispatchedActions.push(action);
-      });
       const fixture = createComponent('card1');
       fixture.detectChanges();
       const component = fixture.debugElement.query(
@@ -3641,17 +3643,12 @@ describe('scalar card', () => {
 
   describe('step selector feature integration', () => {
     describe('fob controls', () => {
-      let dispatchedActions: Action[] = [];
       beforeEach(() => {
-        dispatchedActions = [];
         const runToSeries = {
           run1: [buildScalarStepData({step: 10})],
           run2: [buildScalarStepData({step: 20})],
           run3: [buildScalarStepData({step: 30})],
         };
-        spyOn(store, 'dispatch').and.callFake((action: Action) => {
-          dispatchedActions.push(action);
-        });
         provideMockCardRunToSeriesData(
           selectSpy,
           PluginType.SCALARS,
