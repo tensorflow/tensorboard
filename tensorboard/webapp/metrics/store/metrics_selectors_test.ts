@@ -27,7 +27,7 @@ import {
 } from '../testing';
 import {HistogramMode, TooltipSort, XAxisType} from '../types';
 import * as selectors from './metrics_selectors';
-import {CardSelectionState} from './metrics_types';
+import {CardSelectionState, MetricsState} from './metrics_types';
 
 describe('metrics selectors', () => {
   beforeEach(() => {
@@ -426,143 +426,172 @@ describe('metrics selectors', () => {
   });
 
   describe('getMetricsCardTimeSelection', () => {
-    it('returns undefined if card step selection is not enabled', () => {
-      expect(
-        selectors.getMetricsCardTimeSelection(
-          appStateFromMetricsState(
-            buildMetricsState({
-              linkedTimeEnabled: false,
-              cardStateMap: {
-                card1: {
-                  stepSelection: CardSelectionState.DISABLED,
-                  dataMinMax: {
-                    minStep: 0,
-                    maxStep: 10,
-                  },
-                  timeSelection: {
-                    start: {step: 0},
-                    end: {step: 5},
-                  },
-                },
-              },
-            })
-          ),
-          'card1'
-        )
-      ).toBeUndefined();
-
-      expect(
-        selectors.getMetricsCardTimeSelection(
-          appStateFromMetricsState(
-            buildMetricsState({
-              linkedTimeEnabled: false,
-              stepSelectorEnabled: false,
-              cardStateMap: {
-                card1: {
-                  dataMinMax: {
-                    minStep: 0,
-                    maxStep: 10,
-                  },
-                  timeSelection: {
-                    start: {step: 0},
-                    end: {step: 5},
-                  },
-                },
-              },
-            })
-          ),
-          'card1'
-        )
-      ).toBeUndefined();
-    });
-
-    it('returns undefined if no min max is defined', () => {
-      expect(
-        selectors.getMetricsCardTimeSelection(
-          appStateFromMetricsState(
-            buildMetricsState({
-              linkedTimeEnabled: false,
-              stepSelectorEnabled: true,
-              cardStateMap: {
-                card1: {
-                  timeSelection: {
-                    start: {step: 0},
-                    end: {step: 5},
-                  },
-                },
-              },
-            })
-          ),
-          'card1'
-        )
-      ).toBeUndefined();
-
-      expect(
-        selectors.getMetricsCardTimeSelection(
-          appStateFromMetricsState(
-            buildMetricsState({
-              linkedTimeEnabled: false,
-              stepSelectorEnabled: true,
-              cardStateMap: {
-                card1: {
-                  timeSelection: {
-                    start: {step: 0},
-                    end: {step: 5},
-                  },
-                },
-              },
-            })
-          ),
-          'card1'
-        )
-      ).toBeUndefined();
-    });
-
-    it('returns cards timeSelection if defined', () => {
-      const state = appStateFromMetricsState(
-        buildMetricsState({
+    describe('when linked time is disabled', () => {
+      let partialState: Partial<MetricsState>;
+      beforeEach(() => {
+        partialState = {
           linkedTimeEnabled: false,
-          cardStateMap: {
-            card1: {
-              stepSelection: CardSelectionState.ENABLED,
-              dataMinMax: {
-                minStep: 0,
-                maxStep: 10,
-              },
-              timeSelection: {
-                start: {step: 0},
-                end: {step: 5},
-              },
-            },
-          },
-        })
-      );
-
-      expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
-        start: {step: 0},
-        end: {step: 5},
+        };
       });
-    });
 
-    it('returns cards minMax as a timeSelection if timeSelection is undefined', () => {
-      const state = appStateFromMetricsState(
-        buildMetricsState({
-          linkedTimeEnabled: false,
-          cardStateMap: {
-            card1: {
-              stepSelection: CardSelectionState.ENABLED,
-              dataMinMax: {
-                minStep: 0,
-                maxStep: 5,
+      it('returns undefined if step selection is disabled', () => {
+        expect(
+          selectors.getMetricsCardTimeSelection(
+            appStateFromMetricsState(
+              buildMetricsState({
+                ...partialState,
+                stepSelectorEnabled: true,
+                cardStateMap: {
+                  card1: {
+                    stepSelection: CardSelectionState.DISABLED,
+                    dataMinMax: {
+                      minStep: 0,
+                      maxStep: 10,
+                    },
+                    timeSelection: {
+                      start: {step: 0},
+                      end: {step: 5},
+                    },
+                  },
+                },
+              })
+            ),
+            'card1'
+          )
+        ).toBeUndefined();
+
+        expect(
+          selectors.getMetricsCardTimeSelection(
+            appStateFromMetricsState(
+              buildMetricsState({
+                ...partialState,
+                stepSelectorEnabled: false,
+                cardStateMap: {
+                  card1: {
+                    dataMinMax: {
+                      minStep: 0,
+                      maxStep: 10,
+                    },
+                    timeSelection: {
+                      start: {step: 0},
+                      end: {step: 5},
+                    },
+                  },
+                },
+              })
+            ),
+            'card1'
+          )
+        ).toBeUndefined();
+      });
+
+      it('returns undefined if no min max is defined', () => {
+        expect(
+          selectors.getMetricsCardTimeSelection(
+            appStateFromMetricsState(
+              buildMetricsState({
+                ...partialState,
+                cardStateMap: {
+                  card1: {
+                    timeSelection: {
+                      start: {step: 0},
+                      end: {step: 5},
+                    },
+                  },
+                },
+              })
+            ),
+            'card1'
+          )
+        ).toBeUndefined();
+      });
+
+      it('returns undefined when there is no card state', () => {
+        expect(
+          selectors.getMetricsCardTimeSelection(
+            appStateFromMetricsState(
+              buildMetricsState({
+                ...partialState,
+                cardStateMap: {},
+              })
+            ),
+            'card1'
+          )
+        ).toBeUndefined();
+      });
+
+      it('returns cards timeSelection if defined', () => {
+        const state = appStateFromMetricsState(
+          buildMetricsState({
+            ...partialState,
+            cardStateMap: {
+              card1: {
+                stepSelection: CardSelectionState.ENABLED,
+                dataMinMax: {
+                  minStep: 0,
+                  maxStep: 10,
+                },
+                timeSelection: {
+                  start: {step: 0},
+                  end: {step: 5},
+                },
               },
             },
-          },
-        })
-      );
+          })
+        );
 
-      expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
-        start: {step: 0},
-        end: {step: 5},
+        expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
+          start: {step: 0},
+          end: {step: 5},
+        });
+      });
+
+      it('generates an end value if none exists', () => {
+        const state = appStateFromMetricsState(
+          buildMetricsState({
+            ...partialState,
+            cardStateMap: {
+              card1: {
+                stepSelection: CardSelectionState.ENABLED,
+                dataMinMax: {
+                  minStep: 0,
+                  maxStep: 10,
+                },
+                timeSelection: {
+                  start: {step: 0},
+                  end: null,
+                },
+              },
+            },
+          })
+        );
+
+        expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
+          start: {step: 0},
+          end: {step: 10},
+        });
+      });
+
+      it('returns cards minMax as a timeSelection if timeSelection is undefined', () => {
+        const state = appStateFromMetricsState(
+          buildMetricsState({
+            ...partialState,
+            cardStateMap: {
+              card1: {
+                stepSelection: CardSelectionState.ENABLED,
+                dataMinMax: {
+                  minStep: 0,
+                  maxStep: 5,
+                },
+              },
+            },
+          })
+        );
+
+        expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
+          start: {step: 0},
+          end: {step: 5},
+        });
       });
     });
 
@@ -570,14 +599,6 @@ describe('metrics selectors', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
           linkedTimeEnabled: true,
-          cardStateMap: {
-            card1: {
-              dataMinMax: {
-                minStep: 0,
-                maxStep: 10,
-              },
-            },
-          },
           linkedTimeSelection: {
             start: {step: 0},
             end: {step: 5},

@@ -25,6 +25,7 @@ import {
   buildOrReturnStateWithPinnedCopy,
   buildOrReturnStateWithUnresolvedImportedPins,
   canCreateNewPins,
+  cardSelectionStateToBoolean,
   createPluginDataWithLoadable,
   createRunToLoadState,
   generateNextCardStepIndex,
@@ -37,7 +38,11 @@ import {
   getTimeSeriesLoadable,
   TEST_ONLY,
 } from './metrics_store_internal_utils';
-import {ImageTimeSeriesData, TimeSeriesData} from './metrics_types';
+import {
+  CardSelectionState,
+  ImageTimeSeriesData,
+  TimeSeriesData,
+} from './metrics_types';
 
 const {
   getImageCardSteps,
@@ -1189,6 +1194,34 @@ describe('metrics store utils', () => {
         minStep: 0,
         maxStep: 100,
       });
+    });
+  });
+
+  describe('cardSelectionStateToBoolean', () => {
+    it('returns true when selection state is ENABLED', () => {
+      expect(
+        cardSelectionStateToBoolean(CardSelectionState.ENABLED, false)
+      ).toBeTrue();
+    });
+
+    it('returns false when selection state is DISABLED', () => {
+      expect(
+        cardSelectionStateToBoolean(CardSelectionState.DISABLED, true)
+      ).toBeFalse();
+    });
+
+    it('returns global value when selection state is GLOBAL', () => {
+      expect(
+        cardSelectionStateToBoolean(CardSelectionState.GLOBAL, true)
+      ).toBeTrue();
+      expect(
+        cardSelectionStateToBoolean(CardSelectionState.GLOBAL, false)
+      ).toBeFalse();
+    });
+
+    it('returns global value when selection state is undefined', () => {
+      expect(cardSelectionStateToBoolean(undefined, true)).toBeTrue();
+      expect(cardSelectionStateToBoolean(undefined, false)).toBeFalse();
     });
   });
 });

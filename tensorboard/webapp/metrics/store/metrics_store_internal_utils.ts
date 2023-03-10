@@ -582,17 +582,17 @@ export function getMinMaxStepFromCardState(cardState: Partial<CardState>) {
   return userMinMax || dataMinMax;
 }
 
-export function getCardStepSelectionEnabled(
-  globalStepSelectionEnabled: boolean,
-  cardState: Partial<CardState>
+export function cardSelectionStateToBoolean(
+  cardSelectionState: CardSelectionState | undefined,
+  globalValue: boolean
 ) {
-  switch (cardState?.stepSelection) {
+  switch (cardSelectionState) {
     case CardSelectionState.ENABLED:
       return true;
     case CardSelectionState.DISABLED:
       return false;
     default:
-      return globalStepSelectionEnabled;
+      return globalValue;
   }
 }
 

@@ -3626,6 +3626,32 @@ describe('metrics reducers', () => {
         CardSelectionState.DISABLED
       );
     });
+
+    it('removes all card specific overrides when no card id is provided', () => {
+      const prevState = buildMetricsState({
+        cardStateMap: {
+          card1: {
+            stepSelection: CardSelectionState.ENABLED,
+          },
+          card2: {
+            stepSelection: CardSelectionState.DISABLED,
+          },
+          card3: {},
+        },
+      });
+      const nextState = reducers(prevState, actions.stepSelectorToggled({}));
+      expect(nextState.cardStateMap).toEqual({
+        card1: {
+          stepSelection: CardSelectionState.GLOBAL,
+        },
+        card2: {
+          stepSelection: CardSelectionState.GLOBAL,
+        },
+        card3: {
+          stepSelection: CardSelectionState.GLOBAL,
+        },
+      });
+    });
   });
 
   describe('plugin filtering feature', () => {

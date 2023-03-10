@@ -35,12 +35,11 @@ import {
 } from '../views/card_renderer/scalar_card_types';
 import * as storeUtils from './metrics_store_internal_utils';
 import {
-  getCardStepSelectionEnabled,
+  cardSelectionStateToBoolean,
   getMinMaxStepFromCardState,
 } from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
-  CardSelectionState,
   CardStateMap,
   CardStepIndexMetaData,
   MetricsSettings,
@@ -404,14 +403,10 @@ export const getMetricsCardRangeSelectionEnabled = createSelector(
     cardId: CardId
   ) => {
     const cardState = cardStateMap[cardId];
-    switch (cardState?.rangeSelection) {
-      case CardSelectionState.ENABLED:
-        return true;
-      case CardSelectionState.DISABLED:
-        return false;
-      default:
-        return globalRangeSelectionEnabled;
-    }
+    return cardSelectionStateToBoolean(
+      cardState?.rangeSelection,
+      globalRangeSelectionEnabled
+    );
   }
 );
 
@@ -545,7 +540,12 @@ export const getMetricsCardTimeSelection = createSelector(
     }
 
     // If the user has disabled step selection, nothing should be returned.
-    if (!getCardStepSelectionEnabled(globalStepSelectionEnabled, cardState)) {
+    if (
+      !cardSelectionStateToBoolean(
+        cardState.stepSelection,
+        globalStepSelectionEnabled
+      )
+    ) {
       return;
     }
 
