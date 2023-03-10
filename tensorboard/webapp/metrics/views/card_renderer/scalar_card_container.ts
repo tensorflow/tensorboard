@@ -73,6 +73,7 @@ import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer'
 import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
+  cardMinMaxChanged,
   dataTableColumnDrag,
   metricsCardStateUpdated,
   sortingDataTable,
@@ -405,6 +406,12 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
         const maxStep = Math.min(max, viewPort.maxStep);
 
         this.minMaxSteps$.next({minStep, maxStep});
+        this.store.dispatch(
+          cardMinMaxChanged({
+            minMax: {minStep, maxStep},
+            cardId: this.cardId,
+          })
+        );
       }
     );
 
