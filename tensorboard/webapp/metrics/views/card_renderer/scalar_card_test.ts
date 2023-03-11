@@ -83,6 +83,7 @@ import {
 import {PluginType} from '../../data_source';
 import {
   getCardStateMap,
+  getMetricsCardMinMax,
   getMetricsLinkedTimeEnabled,
   getMetricsLinkedTimeSelection,
   getMetricsRangeSelectionEnabled,
@@ -2163,6 +2164,11 @@ describe('scalar card', () => {
           start: {step: 0},
           end: {step: 5},
         });
+        // Workaround to align minMax state with minMaxSteps$
+        store.overrideSelector(getMetricsCardMinMax, {
+          minStep: 10,
+          maxStep: 30,
+        });
         const fixture = createComponent('card1');
         fixture.detectChanges();
 
@@ -2187,6 +2193,11 @@ describe('scalar card', () => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: -100},
           end: {step: 0},
+        });
+        // Workaround to align minMax state with minMaxSteps$
+        store.overrideSelector(getMetricsCardMinMax, {
+          minStep: 10,
+          maxStep: 30,
         });
         const fixture = createComponent('card1');
         fixture.detectChanges();
@@ -2215,6 +2226,11 @@ describe('scalar card', () => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 50},
           end: {step: 100},
+        });
+        // Workaround to align minMax state with minMaxSteps$
+        store.overrideSelector(getMetricsCardMinMax, {
+          minStep: 10,
+          maxStep: 30,
         });
         const fixture = createComponent('card1');
         fixture.detectChanges();
@@ -2657,6 +2673,11 @@ describe('scalar card', () => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 0},
           end: {step: 50},
+        });
+        // Workaround to align minMax state with minMaxSteps$
+        store.overrideSelector(getMetricsCardMinMax, {
+          minStep: 10,
+          maxStep: 30,
         });
         const fixture = createComponent('card1');
 
@@ -3658,6 +3679,11 @@ describe('scalar card', () => {
         );
         store.overrideSelector(getMetricsStepSelectorEnabled, false);
         store.overrideSelector(getMetricsRangeSelectionEnabled, false);
+        // Workaround to align minMax state with minMaxSteps$
+        store.overrideSelector(getMetricsCardMinMax, {
+          minStep: 10,
+          maxStep: 30,
+        });
       });
 
       it('does not render fobs by default', fakeAsync(() => {
