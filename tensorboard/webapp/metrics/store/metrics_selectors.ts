@@ -486,7 +486,7 @@ export const isMetricsSlideoutMenuOpen = createSelector(
 export const getMetricsCardMinMax = createSelector(
   getCardStateMap,
   (cardStateMap: CardStateMap, cardId: CardId): MinMaxStep | undefined => {
-    if (!Object.keys(cardStateMap).includes(cardId)) return undefined;
+    if (!cardStateMap[cardId]) return;
 
     return getMinMaxStepFromCardState(cardStateMap[cardId]);
   }
