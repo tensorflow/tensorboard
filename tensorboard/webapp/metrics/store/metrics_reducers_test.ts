@@ -57,7 +57,7 @@ import {reducers} from './metrics_reducers';
 import {getCardId, getPinnedCardId} from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
-  CardSelectionState,
+  CardOverrideState,
   MetricsState,
   RunToLoadState,
   TagMetadata,
@@ -3081,8 +3081,8 @@ describe('metrics reducers', () => {
               start: {step: 1},
               end: null,
             },
-            stepSelection: CardSelectionState.ENABLED,
-            rangeSelection: CardSelectionState.DISABLED,
+            stepSelectionOverride: CardOverrideState.OVERRIDE_AS_ENABLED,
+            rangeSelectionOverride: CardOverrideState.OVERRIDE_AS_DISABLED,
           },
         });
       });
@@ -3124,8 +3124,8 @@ describe('metrics reducers', () => {
               start: {step: 1},
               end: {step: 5},
             },
-            stepSelection: CardSelectionState.ENABLED,
-            rangeSelection: CardSelectionState.ENABLED,
+            stepSelectionOverride: CardOverrideState.OVERRIDE_AS_ENABLED,
+            rangeSelectionOverride: CardOverrideState.OVERRIDE_AS_ENABLED,
           },
         });
       });
@@ -3154,8 +3154,8 @@ describe('metrics reducers', () => {
               start: {step: 1},
               end: {step: 5},
             },
-            stepSelection: CardSelectionState.ENABLED,
-            rangeSelection: CardSelectionState.ENABLED,
+            stepSelectionOverride: CardOverrideState.OVERRIDE_AS_ENABLED,
+            rangeSelectionOverride: CardOverrideState.OVERRIDE_AS_ENABLED,
           },
         });
       });
@@ -3278,10 +3278,10 @@ describe('metrics reducers', () => {
           rangeSelectionEnabled: false,
           cardStateMap: {
             card1: {
-              rangeSelection: CardSelectionState.ENABLED,
+              rangeSelectionOverride: CardOverrideState.OVERRIDE_AS_ENABLED,
             },
             card2: {
-              rangeSelection: CardSelectionState.DISABLED,
+              rangeSelectionOverride: CardOverrideState.OVERRIDE_AS_DISABLED,
             },
             card3: {},
           },
@@ -3289,13 +3289,13 @@ describe('metrics reducers', () => {
         const state2 = reducers(state1, actions.rangeSelectionToggled({}));
         expect(state2.cardStateMap).toEqual({
           card1: {
-            rangeSelection: CardSelectionState.GLOBAL,
+            rangeSelectionOverride: CardOverrideState.NONE,
           },
           card2: {
-            rangeSelection: CardSelectionState.GLOBAL,
+            rangeSelectionOverride: CardOverrideState.NONE,
           },
           card3: {
-            rangeSelection: CardSelectionState.GLOBAL,
+            rangeSelectionOverride: CardOverrideState.NONE,
           },
         });
       });
@@ -3622,8 +3622,8 @@ describe('metrics reducers', () => {
         prevState,
         actions.stepSelectorToggled({cardId: 'card1'})
       );
-      expect(nextState.cardStateMap['card1'].stepSelection).toEqual(
-        CardSelectionState.DISABLED
+      expect(nextState.cardStateMap['card1'].stepSelectionOverride).toEqual(
+        CardOverrideState.OVERRIDE_AS_DISABLED
       );
     });
 
@@ -3631,10 +3631,10 @@ describe('metrics reducers', () => {
       const prevState = buildMetricsState({
         cardStateMap: {
           card1: {
-            stepSelection: CardSelectionState.ENABLED,
+            stepSelectionOverride: CardOverrideState.OVERRIDE_AS_ENABLED,
           },
           card2: {
-            stepSelection: CardSelectionState.DISABLED,
+            stepSelectionOverride: CardOverrideState.OVERRIDE_AS_DISABLED,
           },
           card3: {},
         },
@@ -3642,13 +3642,13 @@ describe('metrics reducers', () => {
       const nextState = reducers(prevState, actions.stepSelectorToggled({}));
       expect(nextState.cardStateMap).toEqual({
         card1: {
-          stepSelection: CardSelectionState.GLOBAL,
+          stepSelectionOverride: CardOverrideState.NONE,
         },
         card2: {
-          stepSelection: CardSelectionState.GLOBAL,
+          stepSelectionOverride: CardOverrideState.NONE,
         },
         card3: {
-          stepSelection: CardSelectionState.GLOBAL,
+          stepSelectionOverride: CardOverrideState.NONE,
         },
       });
     });

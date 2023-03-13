@@ -27,7 +27,7 @@ import {
 } from '../testing';
 import {HistogramMode, TooltipSort, XAxisType} from '../types';
 import * as selectors from './metrics_selectors';
-import {CardSelectionState, MetricsState} from './metrics_types';
+import {CardOverrideState, MetricsState} from './metrics_types';
 
 describe('metrics selectors', () => {
   beforeEach(() => {
@@ -434,6 +434,32 @@ describe('metrics selectors', () => {
         };
       });
 
+      it('returns cards timeSelection if defined', () => {
+        const state = appStateFromMetricsState(
+          buildMetricsState({
+            ...partialState,
+            cardStateMap: {
+              card1: {
+                stepSelectionOverride: CardOverrideState.OVERRIDE_AS_ENABLED,
+                dataMinMax: {
+                  minStep: 0,
+                  maxStep: 10,
+                },
+                timeSelection: {
+                  start: {step: 0},
+                  end: {step: 5},
+                },
+              },
+            },
+          })
+        );
+
+        expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
+          start: {step: 0},
+          end: {step: 5},
+        });
+      });
+
       it('returns undefined if step selection is disabled', () => {
         expect(
           selectors.getMetricsCardTimeSelection(
@@ -443,7 +469,8 @@ describe('metrics selectors', () => {
                 stepSelectorEnabled: true,
                 cardStateMap: {
                   card1: {
-                    stepSelection: CardSelectionState.DISABLED,
+                    stepSelectionOverride:
+                      CardOverrideState.OVERRIDE_AS_DISABLED,
                     dataMinMax: {
                       minStep: 0,
                       maxStep: 10,
@@ -520,39 +547,13 @@ describe('metrics selectors', () => {
         ).toBeUndefined();
       });
 
-      it('returns cards timeSelection if defined', () => {
+      it('uses max step as end value if none exists', () => {
         const state = appStateFromMetricsState(
           buildMetricsState({
             ...partialState,
             cardStateMap: {
               card1: {
-                stepSelection: CardSelectionState.ENABLED,
-                dataMinMax: {
-                  minStep: 0,
-                  maxStep: 10,
-                },
-                timeSelection: {
-                  start: {step: 0},
-                  end: {step: 5},
-                },
-              },
-            },
-          })
-        );
-
-        expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
-          start: {step: 0},
-          end: {step: 5},
-        });
-      });
-
-      it('generates an end value if none exists', () => {
-        const state = appStateFromMetricsState(
-          buildMetricsState({
-            ...partialState,
-            cardStateMap: {
-              card1: {
-                stepSelection: CardSelectionState.ENABLED,
+                stepSelectionOverride: CardOverrideState.OVERRIDE_AS_ENABLED,
                 dataMinMax: {
                   minStep: 0,
                   maxStep: 10,
@@ -578,7 +579,7 @@ describe('metrics selectors', () => {
             ...partialState,
             cardStateMap: {
               card1: {
-                stepSelection: CardSelectionState.ENABLED,
+                stepSelectionOverride: CardOverrideState.OVERRIDE_AS_ENABLED,
                 dataMinMax: {
                   minStep: 0,
                   maxStep: 5,
@@ -1014,7 +1015,7 @@ describe('metrics selectors', () => {
               rangeSelectionEnabled: false,
               cardStateMap: {
                 card1: {
-                  rangeSelection: CardSelectionState.ENABLED,
+                  rangeSelectionOverride: CardOverrideState.OVERRIDE_AS_ENABLED,
                 },
               },
             })
@@ -1029,7 +1030,8 @@ describe('metrics selectors', () => {
               rangeSelectionEnabled: true,
               cardStateMap: {
                 card1: {
-                  rangeSelection: CardSelectionState.DISABLED,
+                  rangeSelectionOverride:
+                    CardOverrideState.OVERRIDE_AS_DISABLED,
                 },
               },
             })

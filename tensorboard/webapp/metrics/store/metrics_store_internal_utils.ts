@@ -28,7 +28,7 @@ import {
 } from '../types';
 import {
   CardMetadataMap,
-  CardSelectionState,
+  CardOverrideState,
   CardState,
   CardStateMap,
   CardStepIndexMap,
@@ -582,14 +582,14 @@ export function getMinMaxStepFromCardState(cardState: Partial<CardState>) {
   return userMinMax || dataMinMax;
 }
 
-export function cardSelectionStateToBoolean(
-  cardSelectionState: CardSelectionState | undefined,
+export function getCardSelectionStateToBoolean(
+  cardOverrideState: CardOverrideState | undefined,
   globalValue: boolean
 ) {
-  switch (cardSelectionState) {
-    case CardSelectionState.ENABLED:
+  switch (cardOverrideState) {
+    case CardOverrideState.OVERRIDE_AS_ENABLED:
       return true;
-    case CardSelectionState.DISABLED:
+    case CardOverrideState.OVERRIDE_AS_DISABLED:
       return false;
     default:
       return globalValue;

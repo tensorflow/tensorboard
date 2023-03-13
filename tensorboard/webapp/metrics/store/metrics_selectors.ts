@@ -35,7 +35,7 @@ import {
 } from '../views/card_renderer/scalar_card_types';
 import * as storeUtils from './metrics_store_internal_utils';
 import {
-  cardSelectionStateToBoolean,
+  getCardSelectionStateToBoolean,
   getMinMaxStepFromCardState,
 } from './metrics_store_internal_utils';
 import {
@@ -403,8 +403,8 @@ export const getMetricsCardRangeSelectionEnabled = createSelector(
     cardId: CardId
   ) => {
     const cardState = cardStateMap[cardId];
-    return cardSelectionStateToBoolean(
-      cardState?.rangeSelection,
+    return getCardSelectionStateToBoolean(
+      cardState?.rangeSelectionOverride,
       globalRangeSelectionEnabled
     );
   }
@@ -541,8 +541,8 @@ export const getMetricsCardTimeSelection = createSelector(
 
     // If the user has disabled step selection, nothing should be returned.
     if (
-      !cardSelectionStateToBoolean(
-        cardState.stepSelection,
+      !getCardSelectionStateToBoolean(
+        cardState.stepSelectionOverride,
         globalStepSelectionEnabled
       )
     ) {

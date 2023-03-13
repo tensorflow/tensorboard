@@ -126,18 +126,18 @@ export type CardMetadataMap = Record<
   CardMetadata
 >;
 
-export enum CardSelectionState {
-  GLOBAL,
-  ENABLED,
-  DISABLED,
+export enum CardOverrideState {
+  NONE,
+  OVERRIDE_AS_ENABLED,
+  OVERRIDE_AS_DISABLED,
 }
 
 export type CardState = {
   dataMinMax: MinMaxStep;
   userMinMax: MinMaxStep;
   timeSelection: TimeSelection;
-  stepSelection: CardSelectionState;
-  rangeSelection: CardSelectionState;
+  stepSelectionOverride: CardOverrideState;
+  rangeSelectionOverride: CardOverrideState;
   tableExpanded: boolean;
 };
 

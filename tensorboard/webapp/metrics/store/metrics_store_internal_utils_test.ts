@@ -25,13 +25,13 @@ import {
   buildOrReturnStateWithPinnedCopy,
   buildOrReturnStateWithUnresolvedImportedPins,
   canCreateNewPins,
-  cardSelectionStateToBoolean,
   createPluginDataWithLoadable,
   createRunToLoadState,
   generateNextCardStepIndex,
   generateNextPinnedCardMappings,
   generateScalarCardMinMaxStep,
   getCardId,
+  getCardSelectionStateToBoolean,
   getMinMaxStepFromCardState,
   getPinnedCardId,
   getRunIds,
@@ -39,7 +39,7 @@ import {
   TEST_ONLY,
 } from './metrics_store_internal_utils';
 import {
-  CardSelectionState,
+  CardOverrideState,
   ImageTimeSeriesData,
   TimeSeriesData,
 } from './metrics_types';
@@ -1197,31 +1197,49 @@ describe('metrics store utils', () => {
     });
   });
 
-  describe('cardSelectionStateToBoolean', () => {
+  describe('getCardSelectionStateToBoolean', () => {
     it('returns true when selection state is ENABLED', () => {
       expect(
-        cardSelectionStateToBoolean(CardSelectionState.ENABLED, false)
+        getCardSelectionStateToBoolean(
+          CardOverrideState.OVERRIDE_AS_ENABLED,
+          false
+        )
+      ).toBeTrue();
+      expect(
+        getCardSelectionStateToBoolean(
+          CardOverrideState.OVERRIDE_AS_ENABLED,
+          true
+        )
       ).toBeTrue();
     });
 
     it('returns false when selection state is DISABLED', () => {
       expect(
-        cardSelectionStateToBoolean(CardSelectionState.DISABLED, true)
+        getCardSelectionStateToBoolean(
+          CardOverrideState.OVERRIDE_AS_DISABLED,
+          true
+        )
+      ).toBeFalse();
+      expect(
+        getCardSelectionStateToBoolean(
+          CardOverrideState.OVERRIDE_AS_DISABLED,
+          false
+        )
       ).toBeFalse();
     });
 
     it('returns global value when selection state is GLOBAL', () => {
       expect(
-        cardSelectionStateToBoolean(CardSelectionState.GLOBAL, true)
+        getCardSelectionStateToBoolean(CardOverrideState.NONE, true)
       ).toBeTrue();
       expect(
-        cardSelectionStateToBoolean(CardSelectionState.GLOBAL, false)
+        getCardSelectionStateToBoolean(CardOverrideState.NONE, false)
       ).toBeFalse();
     });
 
     it('returns global value when selection state is undefined', () => {
-      expect(cardSelectionStateToBoolean(undefined, true)).toBeTrue();
-      expect(cardSelectionStateToBoolean(undefined, false)).toBeFalse();
+      expect(getCardSelectionStateToBoolean(undefined, true)).toBeTrue();
+      expect(getCardSelectionStateToBoolean(undefined, false)).toBeFalse();
     });
   });
 });

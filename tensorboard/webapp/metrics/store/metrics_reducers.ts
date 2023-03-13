@@ -67,7 +67,7 @@ import {
 } from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
-  CardSelectionState,
+  CardOverrideState,
   CardStateMap,
   CardStepIndexMap,
   MetricsNamespacedState,
@@ -1054,9 +1054,17 @@ const reducer = createReducer(
 
     const nextCardStateMap = Object.entries(state.cardStateMap).reduce(
       (cardStateMap, [cardId, cardState]) => {
+        // Range selection is tierd, it can be turned on/off globally and
+        // then overridden for an individual card.
+        //
+        // Since range selection was last toggled on/off, some cards were
+        // individually turned off/on respectively. Those cards differed
+        // from the "global" step selection enablement state. Now that
+        // range selection is being turned back on or off, all cards once
+        // again have the "global" state.
         cardStateMap[cardId] = {
           ...cardState,
-          rangeSelection: CardSelectionState.GLOBAL,
+          rangeSelectionOverride: CardOverrideState.NONE,
         };
         return cardStateMap;
       },
@@ -1127,11 +1135,11 @@ const reducer = createReducer(
       nextCardStateMap[cardId] = {
         ...nextCardStateMap[cardId],
         timeSelection: nextTimeSelection,
-        stepSelection: CardSelectionState.ENABLED,
-        rangeSelection:
+        stepSelectionOverride: CardOverrideState.OVERRIDE_AS_ENABLED,
+        rangeSelectionOverride:
           nextTimeSelection.end?.step === undefined
-            ? CardSelectionState.DISABLED
-            : CardSelectionState.ENABLED,
+            ? CardOverrideState.OVERRIDE_AS_DISABLED
+            : CardOverrideState.OVERRIDE_AS_ENABLED,
       };
     }
 
@@ -1158,15 +1166,25 @@ const reducer = createReducer(
   on(actions.stepSelectorToggled, (state, {affordance, cardId}) => {
     const nextCardStateMap = {...state.cardStateMap};
     if (cardId) {
+      // cardId is only included when the event is generated from a scalar card
+      // The only time that the scalar card dispatches a step selection toggled
+      // event is when the last fob is being removed, therefore this should
+      // always result in stepSelection being disabled.
+      const {timeSelection, ...cardState} = nextCardStateMap[cardId] || {};
       nextCardStateMap[cardId] = {
-        ...nextCardStateMap[cardId],
-        stepSelection: CardSelectionState.DISABLED,
+        ...cardState,
+        stepSelectionOverride: CardOverrideState.OVERRIDE_AS_DISABLED,
       };
     } else {
+      // Step selection is tiered, it can be turned on/off global and then
+      // overridden for an individual card.
+      //
+      // When no cardId is provided, the global status is being changed and
+      // thus all cards should be made to adhere to the new state.
       Object.keys(nextCardStateMap).forEach((cardId) => {
         nextCardStateMap[cardId] = {
           ...nextCardStateMap[cardId],
-          stepSelection: CardSelectionState.GLOBAL,
+          stepSelectionOverride: CardOverrideState.NONE,
         };
       });
     }
