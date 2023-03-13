@@ -86,6 +86,7 @@ import {
   getCardLoadState,
   getCardMetadata,
   getCardTimeSeries,
+  getMetricsCardMinMax,
   getMetricsIgnoreOutliers,
   getMetricsRangeSelectionEnabled,
   getMetricsScalarPartitionNonMonotonicX,
@@ -144,6 +145,11 @@ function areSeriesEqual(
       })
     );
   });
+}
+
+function isMinMaxStepValid(minMax: MinMaxStep | undefined): boolean {
+  if (!minMax) return false;
+  return !(minMax.minStep === -Infinity && minMax.maxStep === Infinity);
 }
 
 @Component({
@@ -393,27 +399,36 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       shareReplay(1)
     );
 
-    combineLatest([partitionedSeries$, this.lineChartZoom$]).subscribe(
-      ([series, viewPort]) => {
-        const allPoints = series
-          .map(({points}) => points.map(({x}) => x))
-          .flat();
-        const min =
-          allPoints.length === 0 ? DEFAULT_MIN : Math.min(...allPoints);
-        const max =
-          allPoints.length === 0 ? DEFAULT_MAX : Math.max(...allPoints);
-        const minStep = Math.max(min, viewPort.minStep);
-        const maxStep = Math.min(max, viewPort.maxStep);
+    combineLatest([partitionedSeries$, this.lineChartZoom$])
+      .pipe(
+        withLatestFrom(this.store.select(getMetricsCardMinMax, this.cardId)),
+        map(([[series, viewPort], minMax]) => {
+          if (!isMinMaxStepValid(viewPort) && isMinMaxStepValid(minMax)) {
+            return minMax!;
+          }
 
-        this.minMaxSteps$.next({minStep, maxStep});
+          const allPoints = series
+            .map(({points}) => points.map(({x}) => x))
+            .flat();
+          const min =
+            allPoints.length === 0 ? DEFAULT_MIN : Math.min(...allPoints);
+          const max =
+            allPoints.length === 0 ? DEFAULT_MAX : Math.max(...allPoints);
+          const minStep = Math.max(min, viewPort.minStep);
+          const maxStep = Math.min(max, viewPort.maxStep);
+
+          return {minStep, maxStep};
+        })
+      )
+      .subscribe((viewPort) => {
+        this.minMaxSteps$.next(viewPort);
         this.store.dispatch(
           cardMinMaxChanged({
-            minMax: {minStep, maxStep},
+            minMax: viewPort,
             cardId: this.cardId,
           })
         );
-      }
-    );
+      });
 
     this.dataSeries$ = partitionedSeries$.pipe(
       // Smooth
