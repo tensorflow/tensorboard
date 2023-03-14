@@ -23,14 +23,7 @@ import {
   Output,
 } from '@angular/core';
 import {Store} from '@ngrx/store';
-import {
-  BehaviorSubject,
-  combineLatest,
-  from,
-  Observable,
-  of,
-  Subject,
-} from 'rxjs';
+import {combineLatest, from, Observable, of, Subject} from 'rxjs';
 import {
   combineLatestWith,
   debounceTime,
@@ -57,6 +50,7 @@ import {
   getExperimentIdForRunId,
   getExperimentIdToExperimentAliasMap,
   getIsLinkedTimeProspectiveFobEnabled,
+  getMetricsCardDataMinMax,
   getMetricsCardTimeSelection,
   getMetricsLinkedTimeEnabled,
   getMetricsLinkedTimeSelection,
@@ -235,10 +229,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.isVisible = visible;
   }
 
-  readonly lineChartZoom$ = new BehaviorSubject<MinMaxStep>({
-    minStep: DEFAULT_MIN,
-    maxStep: DEFAULT_MAX,
-  });
   readonly useDarkMode$ = this.store.select(getDarkModeEnabled);
   readonly ignoreOutliers$ = this.store.select(getMetricsIgnoreOutliers);
   readonly tooltipSort$ = this.store.select(getMetricsTooltipSort);
@@ -385,35 +375,25 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       shareReplay(1)
     );
 
-    combineLatest([partitionedSeries$, this.lineChartZoom$])
+    this.minMaxSteps$ = this.store
+      .select(getMetricsCardMinMax, this.cardId)
       .pipe(
-        withLatestFrom(this.store.select(getMetricsCardMinMax, this.cardId)),
-        map(([[series, viewPort], minMax]) => {
-          if (!isMinMaxStepValid(viewPort) && isMinMaxStepValid(minMax)) {
-            return minMax!;
-          }
-
-          const allPoints = series
-            .map(({points}) => points.map(({x}) => x))
-            .flat();
-          const min =
-            allPoints.length === 0 ? DEFAULT_MIN : Math.min(...allPoints);
-          const max =
-            allPoints.length === 0 ? DEFAULT_MAX : Math.max(...allPoints);
-          const minStep = Math.max(min, viewPort.minStep);
-          const maxStep = Math.min(max, viewPort.maxStep);
-
-          return {minStep, maxStep};
+        withLatestFrom(
+          this.store.select(getMetricsCardDataMinMax, this.cardId)
+        ),
+        map(([minMax, dataMinMax]) => {
+          return {
+            minStep: Math.max(
+              minMax?.minStep || -Infinity,
+              dataMinMax?.minStep || -Infinity
+            ),
+            maxStep: Math.min(
+              minMax?.maxStep || -Infinity,
+              dataMinMax?.maxStep || -Infinity
+            ),
+          };
         })
-      )
-      .subscribe((viewPort) => {
-        this.store.dispatch(
-          cardMinMaxChanged({
-            minMax: viewPort,
-            cardId: this.cardId,
-          })
-        );
-      });
+      );
 
     this.dataSeries$ = partitionedSeries$.pipe(
       // Smooth
@@ -448,8 +428,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       }),
       startWith([] as ScalarCardDataSeries[])
     );
-
-    this.minMaxSteps$ = this.store.select(getMetricsCardMinMax, this.cardId);
 
     this.linkedTimeSelection$ = combineLatest([
       this.minMaxSteps$,
@@ -694,7 +672,12 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       minStep: Math.ceil(Math.min(...minMax)),
       maxStep: Math.floor(Math.max(...minMax)),
     };
-    this.lineChartZoom$.next(minMaxStepInViewPort);
+    this.store.dispatch(
+      cardMinMaxChanged({
+        minMax: minMaxStepInViewPort,
+        cardId: this.cardId,
+      })
+    );
   }
 
   reorderColumnHeaders(headers: ColumnHeader[]) {

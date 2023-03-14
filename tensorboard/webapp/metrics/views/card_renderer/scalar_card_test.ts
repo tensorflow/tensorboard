@@ -84,6 +84,7 @@ import {
 import {PluginType} from '../../data_source';
 import {
   getCardStateMap,
+  getMetricsCardDataMinMax,
   getMetricsCardMinMax,
   getMetricsCardRangeSelectionEnabled,
   getMetricsCardTimeSelection,
@@ -2204,9 +2205,13 @@ describe('scalar card', () => {
           end: {step: 100},
         });
         // Workaround to align minMax state with minMaxSteps$
-        store.overrideSelector(getMetricsCardMinMax, {
-          minStep: 10,
-          maxStep: 30,
+        store.overrideSelector(getCardStateMap, {
+          card1: {
+            dataMinMax: {
+              minStep: 10,
+              maxStep: 30,
+            },
+          },
         });
         const fixture = createComponent('card1');
         fixture.detectChanges();
@@ -2217,6 +2222,28 @@ describe('scalar card', () => {
         expect(
           fobs[0].query(By.css('span')).nativeElement.textContent.trim()
         ).toEqual('30');
+      }));
+
+      it('cannot derive a minMax outside of dataMinMax', fakeAsync(() => {
+        store.overrideSelector(getMetricsStepSelectorEnabled, true);
+        store.overrideSelector(getMetricsRangeSelectionEnabled, true);
+        store.overrideSelector(getMetricsCardDataMinMax, {
+          minStep: 0,
+          maxStep: 30,
+        });
+        store.overrideSelector(getMetricsCardMinMax, {
+          minStep: 10,
+          maxStep: 40,
+        });
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+        const component = fixture.debugElement.query(
+          By.directive(ScalarCardComponent)
+        );
+        expect(component.componentInstance.minMaxStep).toEqual({
+          minStep: 10,
+          maxStep: 30,
+        });
       }));
     });
 
@@ -2240,9 +2267,13 @@ describe('scalar card', () => {
           end: {step: 40},
         });
         store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
-        store.overrideSelector(getMetricsCardMinMax, {
-          minStep: 0,
-          maxStep: 100,
+        store.overrideSelector(getCardStateMap, {
+          card1: {
+            dataMinMax: {
+              minStep: 0,
+              maxStep: 100,
+            },
+          },
         });
       });
 
@@ -2534,10 +2565,13 @@ describe('scalar card', () => {
           start: {step: 0},
           end: {step: 50},
         });
-        // Workaround to align minMax state with minMaxSteps$
-        store.overrideSelector(getMetricsCardMinMax, {
-          minStep: 10,
-          maxStep: 30,
+        store.overrideSelector(getCardStateMap, {
+          card1: {
+            dataMinMax: {
+              minStep: 10,
+              maxStep: 30,
+            },
+          },
         });
         const fixture = createComponent('card1');
 
@@ -2560,8 +2594,8 @@ describe('scalar card', () => {
           }),
           cardMinMaxChanged({
             minMax: {
-              minStep: 10,
-              maxStep: 30,
+              minStep: 8,
+              maxStep: 31,
             },
             cardId: 'card1',
           }),
@@ -2595,9 +2629,13 @@ describe('scalar card', () => {
         {type: ColumnHeaderType.MEAN, enabled: true},
         {type: ColumnHeaderType.RAW_CHANGE, enabled: true},
       ]);
-      store.overrideSelector(getMetricsCardMinMax, {
-        minStep: 0,
-        maxStep: 100,
+      store.overrideSelector(getCardStateMap, {
+        card1: {
+          dataMinMax: {
+            minStep: 0,
+            maxStep: 100,
+          },
+        },
       });
       store.overrideSelector(getMetricsCardRangeSelectionEnabled, false);
     });
