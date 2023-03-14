@@ -39,7 +39,7 @@ import {
   TEST_ONLY,
 } from './metrics_store_internal_utils';
 import {
-  CardOverrideState,
+  CardFeatureOverride,
   ImageTimeSeriesData,
   TimeSeriesData,
 } from './metrics_types';
@@ -1201,13 +1201,13 @@ describe('metrics store utils', () => {
     it('returns true when selection state is ENABLED', () => {
       expect(
         getCardSelectionStateToBoolean(
-          CardOverrideState.OVERRIDE_AS_ENABLED,
+          CardFeatureOverride.OVERRIDE_AS_ENABLED,
           false
         )
       ).toBeTrue();
       expect(
         getCardSelectionStateToBoolean(
-          CardOverrideState.OVERRIDE_AS_ENABLED,
+          CardFeatureOverride.OVERRIDE_AS_ENABLED,
           true
         )
       ).toBeTrue();
@@ -1216,13 +1216,13 @@ describe('metrics store utils', () => {
     it('returns false when selection state is DISABLED', () => {
       expect(
         getCardSelectionStateToBoolean(
-          CardOverrideState.OVERRIDE_AS_DISABLED,
+          CardFeatureOverride.OVERRIDE_AS_DISABLED,
           true
         )
       ).toBeFalse();
       expect(
         getCardSelectionStateToBoolean(
-          CardOverrideState.OVERRIDE_AS_DISABLED,
+          CardFeatureOverride.OVERRIDE_AS_DISABLED,
           false
         )
       ).toBeFalse();
@@ -1230,10 +1230,10 @@ describe('metrics store utils', () => {
 
     it('returns global value when selection state is GLOBAL', () => {
       expect(
-        getCardSelectionStateToBoolean(CardOverrideState.NONE, true)
+        getCardSelectionStateToBoolean(CardFeatureOverride.NONE, true)
       ).toBeTrue();
       expect(
-        getCardSelectionStateToBoolean(CardOverrideState.NONE, false)
+        getCardSelectionStateToBoolean(CardFeatureOverride.NONE, false)
       ).toBeFalse();
     });
 

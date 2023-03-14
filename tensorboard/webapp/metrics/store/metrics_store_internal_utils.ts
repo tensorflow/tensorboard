@@ -27,8 +27,8 @@ import {
   TimeSelection,
 } from '../types';
 import {
+  CardFeatureOverride,
   CardMetadataMap,
-  CardOverrideState,
   CardState,
   CardStateMap,
   CardStepIndexMap,
@@ -583,13 +583,13 @@ export function getMinMaxStepFromCardState(cardState: Partial<CardState>) {
 }
 
 export function getCardSelectionStateToBoolean(
-  cardOverrideState: CardOverrideState | undefined,
+  cardOverrideState: CardFeatureOverride | undefined,
   globalValue: boolean
 ) {
   switch (cardOverrideState) {
-    case CardOverrideState.OVERRIDE_AS_ENABLED:
+    case CardFeatureOverride.OVERRIDE_AS_ENABLED:
       return true;
-    case CardOverrideState.OVERRIDE_AS_DISABLED:
+    case CardFeatureOverride.OVERRIDE_AS_DISABLED:
       return false;
     default:
       return globalValue;

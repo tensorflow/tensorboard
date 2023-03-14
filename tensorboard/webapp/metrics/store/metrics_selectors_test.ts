@@ -27,7 +27,7 @@ import {
 } from '../testing';
 import {HistogramMode, TooltipSort, XAxisType} from '../types';
 import * as selectors from './metrics_selectors';
-import {CardOverrideState, MetricsState} from './metrics_types';
+import {CardFeatureOverride, MetricsState} from './metrics_types';
 
 describe('metrics selectors', () => {
   beforeEach(() => {
@@ -440,7 +440,7 @@ describe('metrics selectors', () => {
             ...partialState,
             cardStateMap: {
               card1: {
-                stepSelectionOverride: CardOverrideState.OVERRIDE_AS_ENABLED,
+                stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
                 dataMinMax: {
                   minStep: 0,
                   maxStep: 10,
@@ -470,7 +470,7 @@ describe('metrics selectors', () => {
                 cardStateMap: {
                   card1: {
                     stepSelectionOverride:
-                      CardOverrideState.OVERRIDE_AS_DISABLED,
+                      CardFeatureOverride.OVERRIDE_AS_DISABLED,
                     dataMinMax: {
                       minStep: 0,
                       maxStep: 10,
@@ -553,7 +553,7 @@ describe('metrics selectors', () => {
             ...partialState,
             cardStateMap: {
               card1: {
-                stepSelectionOverride: CardOverrideState.OVERRIDE_AS_ENABLED,
+                stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
                 dataMinMax: {
                   minStep: 0,
                   maxStep: 10,
@@ -579,7 +579,7 @@ describe('metrics selectors', () => {
             ...partialState,
             cardStateMap: {
               card1: {
-                stepSelectionOverride: CardOverrideState.OVERRIDE_AS_ENABLED,
+                stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
                 dataMinMax: {
                   minStep: 0,
                   maxStep: 5,
@@ -1015,7 +1015,8 @@ describe('metrics selectors', () => {
               rangeSelectionEnabled: false,
               cardStateMap: {
                 card1: {
-                  rangeSelectionOverride: CardOverrideState.OVERRIDE_AS_ENABLED,
+                  rangeSelectionOverride:
+                    CardFeatureOverride.OVERRIDE_AS_ENABLED,
                 },
               },
             })
@@ -1031,7 +1032,7 @@ describe('metrics selectors', () => {
               cardStateMap: {
                 card1: {
                   rangeSelectionOverride:
-                    CardOverrideState.OVERRIDE_AS_DISABLED,
+                    CardFeatureOverride.OVERRIDE_AS_DISABLED,
                 },
               },
             })

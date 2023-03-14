@@ -66,8 +66,8 @@ import {
   getTimeSeriesLoadable,
 } from './metrics_store_internal_utils';
 import {
+  CardFeatureOverride,
   CardMetadataMap,
-  CardOverrideState,
   CardStateMap,
   CardStepIndexMap,
   MetricsNamespacedState,
@@ -1054,7 +1054,7 @@ const reducer = createReducer(
 
     const nextCardStateMap = Object.entries(state.cardStateMap).reduce(
       (cardStateMap, [cardId, cardState]) => {
-        // Range selection is tierd, it can be turned on/off globally and
+        // Range selection is tiered, it can be turned on/off globally and
         // then overridden for an individual card.
         //
         // Since range selection was last toggled on/off, some cards were
@@ -1064,7 +1064,7 @@ const reducer = createReducer(
         // again have the "global" state.
         cardStateMap[cardId] = {
           ...cardState,
-          rangeSelectionOverride: CardOverrideState.NONE,
+          rangeSelectionOverride: CardFeatureOverride.NONE,
         };
         return cardStateMap;
       },
@@ -1135,11 +1135,11 @@ const reducer = createReducer(
       nextCardStateMap[cardId] = {
         ...nextCardStateMap[cardId],
         timeSelection: nextTimeSelection,
-        stepSelectionOverride: CardOverrideState.OVERRIDE_AS_ENABLED,
+        stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
         rangeSelectionOverride:
           nextTimeSelection.end?.step === undefined
-            ? CardOverrideState.OVERRIDE_AS_DISABLED
-            : CardOverrideState.OVERRIDE_AS_ENABLED,
+            ? CardFeatureOverride.OVERRIDE_AS_DISABLED
+            : CardFeatureOverride.OVERRIDE_AS_ENABLED,
       };
     }
 
@@ -1173,7 +1173,7 @@ const reducer = createReducer(
       const {timeSelection, ...cardState} = nextCardStateMap[cardId] || {};
       nextCardStateMap[cardId] = {
         ...cardState,
-        stepSelectionOverride: CardOverrideState.OVERRIDE_AS_DISABLED,
+        stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_DISABLED,
       };
     } else {
       // Step selection is tiered, it can be turned on/off global and then
@@ -1184,7 +1184,7 @@ const reducer = createReducer(
       Object.keys(nextCardStateMap).forEach((cardId) => {
         nextCardStateMap[cardId] = {
           ...nextCardStateMap[cardId],
-          stepSelectionOverride: CardOverrideState.NONE,
+          stepSelectionOverride: CardFeatureOverride.NONE,
         };
       });
     }
