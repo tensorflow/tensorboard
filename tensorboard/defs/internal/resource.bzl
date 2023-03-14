@@ -51,7 +51,7 @@ def tf_resource_digest_suffixer(name, resources, template, out):
             $(execpath //tensorboard/defs/internal:resource_digest_suffixer) %s
           } > $@
         """ % " ".join(args),
-        exec_tools = [
+        tools = [
             "//tensorboard/defs/internal:resource_digest_suffixer",
         ],
     )
