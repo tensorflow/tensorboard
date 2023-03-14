@@ -34,7 +34,10 @@ import {
   MinMaxStep,
 } from '../views/card_renderer/scalar_card_types';
 import * as storeUtils from './metrics_store_internal_utils';
-import {getMinMaxStepFromCardState} from './metrics_store_internal_utils';
+import {
+  getCardSelectionStateToBoolean,
+  getMinMaxStepFromCardState,
+} from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
   CardStateMap,
@@ -391,6 +394,22 @@ export const getMetricsRangeSelectionEnabled = createSelector(
   }
 );
 
+export const getMetricsCardRangeSelectionEnabled = createSelector(
+  getMetricsRangeSelectionEnabled,
+  getCardStateMap,
+  (
+    globalRangeSelectionEnabled: boolean,
+    cardStateMap: CardStateMap,
+    cardId: CardId
+  ) => {
+    const cardState = cardStateMap[cardId];
+    return getCardSelectionStateToBoolean(
+      cardState?.rangeSelectionOverride,
+      globalRangeSelectionEnabled
+    );
+  }
+);
+
 export const getMetricsStepMinMax = createSelector(
   selectMetricsState,
   (state: MetricsState): {min: number; max: number} => {
@@ -487,7 +506,6 @@ export const getMetricsCardMinMax = createSelector(
   getCardStateMap,
   (cardStateMap: CardStateMap, cardId: CardId): MinMaxStep | undefined => {
     if (!cardStateMap[cardId]) return;
-
     return getMinMaxStepFromCardState(cardStateMap[cardId]);
   }
 );
@@ -497,29 +515,47 @@ export const getMetricsCardMinMax = createSelector(
  */
 export const getMetricsCardTimeSelection = createSelector(
   getCardStateMap,
+  getMetricsStepSelectorEnabled,
   getMetricsLinkedTimeEnabled,
   getMetricsLinkedTimeSelection,
   (
     cardStateMap: CardStateMap,
+    globalStepSelectionEnabled: boolean,
     linkedTimeEnabled: boolean,
     linkedTimeSelection: TimeSelection | null,
     cardId: CardId
   ): TimeSelection | undefined => {
+    // Handling Linked Time
     if (linkedTimeEnabled && linkedTimeSelection) {
       return linkedTimeSelection;
     }
 
-    if (cardStateMap[cardId]?.timeSelection) {
-      return cardStateMap[cardId]?.timeSelection;
+    const cardState = cardStateMap[cardId];
+    if (!cardState) {
+      return;
     }
-    const minMaxStep = getMinMaxStepFromCardState(cardStateMap[cardId]);
+    const minMaxStep = getMinMaxStepFromCardState(cardState);
     if (!minMaxStep) {
       return;
     }
 
+    // If the user has disabled step selection, nothing should be returned.
+    if (
+      !getCardSelectionStateToBoolean(
+        cardState.stepSelectionOverride,
+        globalStepSelectionEnabled
+      )
+    ) {
+      return;
+    }
+
+    const startStep = cardState.timeSelection?.start.step ?? minMaxStep.minStep;
+    const endStep = cardState.timeSelection?.end?.step ?? minMaxStep.maxStep;
+
+    // The default time selection
     return {
-      start: {step: minMaxStep.minStep},
-      end: {step: minMaxStep.maxStep},
+      start: {step: startStep},
+      end: {step: endStep},
     };
   }
 );

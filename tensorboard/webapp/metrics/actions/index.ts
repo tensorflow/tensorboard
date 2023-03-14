@@ -244,6 +244,13 @@ export const stepSelectorToggled = createAction(
     // Affordance for internal analytics purpose. When no affordance is specified or is
     // undefined we do not want to log an analytics event.
     affordance?: TimeSelectionToggleAffordance;
+    // This action can be triggered by two different events:
+    //   1) Clicking the checkbox in the settings panel
+    //   2) Removing the last fob from a scalar card
+    //
+    // Setting the cardId results in stepSelection being toggled for a specific card.
+    // Without the cardId being set this action only effects the global stepSeletion.
+    cardId?: CardId;
   }>()
 );
 export const rangeSelectionToggled = createAction(

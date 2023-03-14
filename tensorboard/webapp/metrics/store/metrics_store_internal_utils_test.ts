@@ -31,13 +31,18 @@ import {
   generateNextPinnedCardMappings,
   generateScalarCardMinMaxStep,
   getCardId,
+  getCardSelectionStateToBoolean,
   getMinMaxStepFromCardState,
   getPinnedCardId,
   getRunIds,
   getTimeSeriesLoadable,
   TEST_ONLY,
 } from './metrics_store_internal_utils';
-import {ImageTimeSeriesData, TimeSeriesData} from './metrics_types';
+import {
+  CardFeatureOverride,
+  ImageTimeSeriesData,
+  TimeSeriesData,
+} from './metrics_types';
 
 const {
   getImageCardSteps,
@@ -1189,6 +1194,52 @@ describe('metrics store utils', () => {
         minStep: 0,
         maxStep: 100,
       });
+    });
+  });
+
+  describe('getCardSelectionStateToBoolean', () => {
+    it('returns true when selection state is ENABLED', () => {
+      expect(
+        getCardSelectionStateToBoolean(
+          CardFeatureOverride.OVERRIDE_AS_ENABLED,
+          false
+        )
+      ).toBeTrue();
+      expect(
+        getCardSelectionStateToBoolean(
+          CardFeatureOverride.OVERRIDE_AS_ENABLED,
+          true
+        )
+      ).toBeTrue();
+    });
+
+    it('returns false when selection state is DISABLED', () => {
+      expect(
+        getCardSelectionStateToBoolean(
+          CardFeatureOverride.OVERRIDE_AS_DISABLED,
+          true
+        )
+      ).toBeFalse();
+      expect(
+        getCardSelectionStateToBoolean(
+          CardFeatureOverride.OVERRIDE_AS_DISABLED,
+          false
+        )
+      ).toBeFalse();
+    });
+
+    it('returns global value when selection state is GLOBAL', () => {
+      expect(
+        getCardSelectionStateToBoolean(CardFeatureOverride.NONE, true)
+      ).toBeTrue();
+      expect(
+        getCardSelectionStateToBoolean(CardFeatureOverride.NONE, false)
+      ).toBeFalse();
+    });
+
+    it('returns global value when selection state is undefined', () => {
+      expect(getCardSelectionStateToBoolean(undefined, true)).toBeTrue();
+      expect(getCardSelectionStateToBoolean(undefined, false)).toBeFalse();
     });
   });
 });

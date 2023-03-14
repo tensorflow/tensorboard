@@ -27,6 +27,7 @@ import {
   TimeSelection,
 } from '../types';
 import {
+  CardFeatureOverride,
   CardMetadataMap,
   CardState,
   CardStateMap,
@@ -579,6 +580,20 @@ function getNextImageCardStepIndexFromRangeSelection(
 export function getMinMaxStepFromCardState(cardState: Partial<CardState>) {
   const {dataMinMax, userMinMax} = cardState;
   return userMinMax || dataMinMax;
+}
+
+export function getCardSelectionStateToBoolean(
+  cardOverrideState: CardFeatureOverride | undefined,
+  globalValue: boolean
+) {
+  switch (cardOverrideState) {
+    case CardFeatureOverride.OVERRIDE_AS_ENABLED:
+      return true;
+    case CardFeatureOverride.OVERRIDE_AS_DISABLED:
+      return false;
+    default:
+      return globalValue;
+  }
 }
 
 export const TEST_ONLY = {

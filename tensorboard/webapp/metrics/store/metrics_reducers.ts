@@ -66,7 +66,9 @@ import {
   getTimeSeriesLoadable,
 } from './metrics_store_internal_utils';
 import {
+  CardFeatureOverride,
   CardMetadataMap,
+  CardStateMap,
   CardStepIndexMap,
   MetricsNamespacedState,
   MetricsNonNamespacedState,
@@ -1050,6 +1052,25 @@ const reducer = createReducer(
     let nextStepSelectorEnabled = state.stepSelectorEnabled;
     let linkedTimeSelection = state.linkedTimeSelection;
 
+    const nextCardStateMap = Object.entries(state.cardStateMap).reduce(
+      (cardStateMap, [cardId, cardState]) => {
+        // Range selection is tiered, it can be turned on/off globally and
+        // then overridden for an individual card.
+        //
+        // Since range selection was last toggled on/off, some cards were
+        // individually turned off/on respectively. Those cards differed
+        // from the "global" step selection enablement state. Now that
+        // range selection is being turned back on or off, all cards once
+        // again have the "global" state.
+        cardStateMap[cardId] = {
+          ...cardState,
+          rangeSelectionOverride: CardFeatureOverride.NONE,
+        };
+        return cardStateMap;
+      },
+      {} as CardStateMap
+    );
+
     if (nextRangeSelectionEnabled) {
       nextStepSelectorEnabled = nextRangeSelectionEnabled;
       if (!linkedTimeSelection) {
@@ -1077,6 +1098,7 @@ const reducer = createReducer(
       stepSelectorEnabled: nextStepSelectorEnabled,
       rangeSelectionEnabled: nextRangeSelectionEnabled,
       linkedTimeSelection,
+      cardStateMap: nextCardStateMap,
     };
   }),
   on(actions.timeSelectionChanged, (state, change) => {
@@ -1113,6 +1135,11 @@ const reducer = createReducer(
       nextCardStateMap[cardId] = {
         ...nextCardStateMap[cardId],
         timeSelection: nextTimeSelection,
+        stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+        rangeSelectionOverride:
+          nextTimeSelection.end?.step === undefined
+            ? CardFeatureOverride.OVERRIDE_AS_DISABLED
+            : CardFeatureOverride.OVERRIDE_AS_ENABLED,
       };
     }
 
@@ -1136,14 +1163,42 @@ const reducer = createReducer(
       cardStateMap: nextCardStateMap,
     };
   }),
-  on(actions.stepSelectorToggled, (state, {affordance}) => {
+  on(actions.stepSelectorToggled, (state, {affordance, cardId}) => {
+    const nextCardStateMap = {...state.cardStateMap};
+    if (cardId) {
+      // cardId is only included when the event is generated from a scalar card
+      // The only time that the scalar card dispatches a step selection toggled
+      // event is when the last fob is being removed, therefore this should
+      // always result in stepSelection being disabled.
+      const {timeSelection, ...cardState} = nextCardStateMap[cardId] || {};
+      nextCardStateMap[cardId] = {
+        ...cardState,
+        stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_DISABLED,
+      };
+    } else {
+      // Step selection is tiered, it can be turned on/off global and then
+      // overridden for an individual card.
+      //
+      // When no cardId is provided, the global status is being changed and
+      // thus all cards should be made to adhere to the new state.
+      Object.keys(nextCardStateMap).forEach((cardId) => {
+        nextCardStateMap[cardId] = {
+          ...nextCardStateMap[cardId],
+          stepSelectionOverride: CardFeatureOverride.NONE,
+        };
+      });
+    }
+
     if (
       !state.linkedTimeEnabled &&
       affordance !== TimeSelectionToggleAffordance.CHECK_BOX
     ) {
       // In plain step selection mode (without linked time), we do not allow
       // interactions with fobs to modify global step selection state.
-      return {...state};
+      return {
+        ...state,
+        cardStateMap: nextCardStateMap,
+      };
     }
 
     const nextStepSelectorEnabled = !state.stepSelectorEnabled;
@@ -1157,6 +1212,7 @@ const reducer = createReducer(
       linkedTimeEnabled: nextLinkedTimeEnabled,
       stepSelectorEnabled: nextStepSelectorEnabled,
       rangeSelectionEnabled: nextRangeSelectionEnabled,
+      cardStateMap: nextCardStateMap,
     };
   }),
   on(actions.timeSelectionCleared, (state) => {

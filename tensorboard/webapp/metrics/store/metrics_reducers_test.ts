@@ -56,6 +56,7 @@ import {
 import {reducers} from './metrics_reducers';
 import {getCardId, getPinnedCardId} from './metrics_store_internal_utils';
 import {
+  CardFeatureOverride,
   CardMetadataMap,
   MetricsState,
   RunToLoadState,
@@ -3068,7 +3069,7 @@ describe('metrics reducers', () => {
             cardId: 'card2',
             timeSelection: {
               start: {step: 1},
-              end: {step: 5},
+              end: null,
             },
           })
         );
@@ -3078,8 +3079,10 @@ describe('metrics reducers', () => {
           card2: {
             timeSelection: {
               start: {step: 1},
-              end: {step: 5},
+              end: null,
             },
+            stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+            rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_DISABLED,
           },
         });
       });
@@ -3121,6 +3124,38 @@ describe('metrics reducers', () => {
               start: {step: 1},
               end: {step: 5},
             },
+            stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+            rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+          },
+        });
+      });
+
+      it('enables card specific range selection if an end value is provided', () => {
+        const state1 = buildMetricsState({
+          cardStateMap: {
+            card1: {},
+          },
+        });
+        const state2 = reducers(
+          state1,
+          actions.timeSelectionChanged({
+            cardId: 'card2',
+            timeSelection: {
+              start: {step: 1},
+              end: {step: 5},
+            },
+          })
+        );
+
+        expect(state2.cardStateMap).toEqual({
+          card1: {},
+          card2: {
+            timeSelection: {
+              start: {step: 1},
+              end: {step: 5},
+            },
+            stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+            rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
           },
         });
       });
@@ -3231,6 +3266,37 @@ describe('metrics reducers', () => {
         expect(state2.linkedTimeSelection).toEqual({
           start: {step: 100},
           end: null,
+        });
+      });
+
+      it('sets all card specific overrides to default', () => {
+        const state1 = buildMetricsState({
+          linkedTimeSelection: {
+            start: {step: 100},
+            end: {step: 1000},
+          },
+          rangeSelectionEnabled: false,
+          cardStateMap: {
+            card1: {
+              rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+            },
+            card2: {
+              rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_DISABLED,
+            },
+            card3: {},
+          },
+        });
+        const state2 = reducers(state1, actions.rangeSelectionToggled({}));
+        expect(state2.cardStateMap).toEqual({
+          card1: {
+            rangeSelectionOverride: CardFeatureOverride.NONE,
+          },
+          card2: {
+            rangeSelectionOverride: CardFeatureOverride.NONE,
+          },
+          card3: {
+            rangeSelectionOverride: CardFeatureOverride.NONE,
+          },
         });
       });
     });
@@ -3548,6 +3614,43 @@ describe('metrics reducers', () => {
       expect(state2.stepSelectorEnabled).toBe(false);
       expect(state2.linkedTimeEnabled).toBe(false);
       expect(state2.rangeSelectionEnabled).toBe(false);
+    });
+
+    it('disables card specific step selection when cardId is provided', () => {
+      const prevState = buildMetricsState();
+      const nextState = reducers(
+        prevState,
+        actions.stepSelectorToggled({cardId: 'card1'})
+      );
+      expect(nextState.cardStateMap['card1'].stepSelectionOverride).toEqual(
+        CardFeatureOverride.OVERRIDE_AS_DISABLED
+      );
+    });
+
+    it('removes all card specific overrides when no card id is provided', () => {
+      const prevState = buildMetricsState({
+        cardStateMap: {
+          card1: {
+            stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+          },
+          card2: {
+            stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_DISABLED,
+          },
+          card3: {},
+        },
+      });
+      const nextState = reducers(prevState, actions.stepSelectorToggled({}));
+      expect(nextState.cardStateMap).toEqual({
+        card1: {
+          stepSelectionOverride: CardFeatureOverride.NONE,
+        },
+        card2: {
+          stepSelectionOverride: CardFeatureOverride.NONE,
+        },
+        card3: {
+          stepSelectionOverride: CardFeatureOverride.NONE,
+        },
+      });
     });
   });
 
