@@ -1374,6 +1374,12 @@ describe('metrics reducers', () => {
             },
           },
         },
+        cardToPinnedCopy: new Map([
+          [
+            '{"plugin":"scalars","tag":"tagA","runId":null}',
+            'somePinnedCardId',
+          ],
+        ]),
       });
 
       const sample = 9;
@@ -1435,6 +1441,12 @@ describe('metrics reducers', () => {
 
       const expectedCardStateMap = {
         '{"plugin":"scalars","tag":"tagA","runId":null}': {
+          dataMinMax: {
+            minStep: 0,
+            maxStep: 99,
+          },
+        },
+        somePinnedCardId: {
           dataMinMax: {
             minStep: 0,
             maxStep: 99,

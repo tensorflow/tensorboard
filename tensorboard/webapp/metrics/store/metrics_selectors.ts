@@ -510,6 +510,13 @@ export const getMetricsCardMinMax = createSelector(
   }
 );
 
+export const getMetricsCardDataMinMax = createSelector(
+  getCardStateMap,
+  (cardStateMap: CardStateMap, cardId: CardId): MinMaxStep | undefined => {
+    return cardStateMap[cardId]?.dataMinMax;
+  }
+);
+
 /**
  * Gets the time selection of a metrics card.
  */

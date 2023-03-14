@@ -660,6 +660,45 @@ describe('metrics selectors', () => {
     });
   });
 
+  describe('getMetricsCardDataMinMax', () => {
+    it('returns undefined when cardStateMap is undefined', () => {
+      const state = appStateFromMetricsState(buildMetricsState({}));
+      expect(
+        selectors.getMetricsCardDataMinMax(state, 'card1')
+      ).toBeUndefined();
+    });
+
+    it('returns undefined when card has no cardState', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          cardStateMap: {},
+        })
+      );
+      expect(
+        selectors.getMetricsCardDataMinMax(state, 'card1')
+      ).toBeUndefined();
+    });
+
+    it('returns data cards minMax when defined', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          cardStateMap: {
+            card1: {
+              dataMinMax: {
+                minStep: 0,
+                maxStep: 100,
+              },
+            },
+          },
+        })
+      );
+      expect(selectors.getMetricsCardDataMinMax(state, 'card1')).toEqual({
+        minStep: 0,
+        maxStep: 100,
+      });
+    });
+  });
+
   describe('getPinnedCardsWithMetadata', () => {
     beforeEach(() => {
       selectors.getPinnedCardsWithMetadata.release();
