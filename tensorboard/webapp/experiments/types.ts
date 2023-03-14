@@ -22,6 +22,12 @@ export declare interface Experiment {
   hparams?: string;
   tags?: string[];
   related_links?: Array<{name: string; url: string}>;
+  // These state values were chosen to follow these AIPs
+  // https://google.aip.dev/164 and https://google.aip.dev/216.
+  // However, we replaced 'delete' with 'hidden' as this feature is different
+  // from the soft delete described in the AIP. In this case 'hidden' simply
+  // means that the experiment is not shown in the experiment list.
+  state?: 'active' | 'hidden' | 'unspecified';
 }
 
 export interface ExperimentAlias {
