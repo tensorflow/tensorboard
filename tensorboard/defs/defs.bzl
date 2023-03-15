@@ -331,5 +331,5 @@ def tf_inline_pngs(name, html_template, images, out):
         srcs = [html_template] + images,
         outs = [out],
         cmd = "$(execpath //tensorboard/defs:inline_images) $(SRCS) >'$@'",
-        exec_tools = ["//tensorboard/defs:inline_images"],
+        tools = ["//tensorboard/defs:inline_images"],
     )

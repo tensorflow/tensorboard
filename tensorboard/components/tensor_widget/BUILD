@@ -13,7 +13,7 @@ genrule(
     ],
     outs = ["tensor-widget-style.ts"],
     cmd = "$(execpath //tensorboard/tools:inline_file_content) $(SRCS) >'$@'",
-    exec_tools = ["//tensorboard/tools:inline_file_content"],
+    tools = ["//tensorboard/tools:inline_file_content"],
 )
 
 tf_web_library(
