@@ -85,6 +85,7 @@ section .control-row:not(:last-child) {
     height: $_dim;
     margin-left: 5px;
     width: $_dim;
+    min-width: $_dim;
   }
 }
 
