@@ -382,15 +382,12 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
           this.store.select(getMetricsCardDataMinMax, this.cardId)
         ),
         map(([minMax, dataMinMax]) => {
+          if (!minMax || !dataMinMax) {
+            return;
+          }
           return {
-            minStep: Math.max(
-              minMax?.minStep || -Infinity,
-              dataMinMax?.minStep || -Infinity
-            ),
-            maxStep: Math.min(
-              minMax?.maxStep || -Infinity,
-              dataMinMax?.maxStep || -Infinity
-            ),
+            minStep: Math.max(minMax?.minStep!, dataMinMax?.minStep!),
+            maxStep: Math.min(minMax?.maxStep!, dataMinMax?.maxStep!),
           };
         })
       );
