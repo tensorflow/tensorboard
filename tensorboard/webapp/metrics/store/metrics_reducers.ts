@@ -890,6 +890,13 @@ const reducer = createReducer(
           ...nextCardStateMap[cardId],
           dataMinMax: nextMinMax,
         };
+        const pinnedId = state.cardToPinnedCopy.get(cardId);
+        if (pinnedId) {
+          nextCardStateMap[pinnedId] = {
+            ...nextCardStateMap[pinnedId],
+            dataMinMax: nextMinMax,
+          };
+        }
       }
 
       const nextState: MetricsState = {

@@ -500,13 +500,27 @@ export const isMetricsSlideoutMenuOpen = createSelector(
 );
 
 /**
- * Gets the min and max step of a metrics card.
+ * Gets the min and max step visible in a metrics card.
+ * This value can either be the data min max or be overridden
+ * by a user min max.
+ *
+ * Note: userMinMax is not necessarily a subset of dataMinMax.
  */
 export const getMetricsCardMinMax = createSelector(
   getCardStateMap,
   (cardStateMap: CardStateMap, cardId: CardId): MinMaxStep | undefined => {
     if (!cardStateMap[cardId]) return;
     return getMinMaxStepFromCardState(cardStateMap[cardId]);
+  }
+);
+
+/**
+ * Returns the min and max step found in the cards data.
+ */
+export const getMetricsCardDataMinMax = createSelector(
+  getCardStateMap,
+  (cardStateMap: CardStateMap, cardId: CardId): MinMaxStep | undefined => {
+    return cardStateMap[cardId]?.dataMinMax;
   }
 );
 
