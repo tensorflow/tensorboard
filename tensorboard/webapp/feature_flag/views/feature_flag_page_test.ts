@@ -234,4 +234,78 @@ describe('feature_flag_page_container', () => {
       expect(component.formatFlagValue('')).toEqual('');
     });
   });
+
+  describe('filters flags based on the value of showFlags feature', () => {
+    beforeEach(() => {
+      store.overrideSelector(getDefaultFeatureFlags, {
+        enabledLinkedTime: true,
+        enabledProspectiveFob: true,
+        inColab: false,
+        allowRangeSelection: true,
+      } as FeatureFlags);
+    });
+
+    it('shows all flags when value is undefined', () => {
+      store.overrideSelector(getOverriddenFeatureFlags, {
+        showFlags: undefined,
+      });
+      createComponent();
+      const component = getComponent();
+
+      const rows = component.querySelectorAll('tr');
+      expect(rows.length).toEqual(4);
+    });
+
+    it('shows all flags when value is empty string', () => {
+      store.overrideSelector(getOverriddenFeatureFlags, {
+        showFlags: '',
+      });
+      createComponent();
+      const component = getComponent();
+
+      const rows = component.querySelectorAll('tr');
+      expect(rows.length).toEqual(4);
+    });
+
+    it('only shows flags whose name includes filter', () => {
+      store.overrideSelector(getOverriddenFeatureFlags, {
+        showFlags: 'enable',
+      });
+      createComponent();
+      const component = getComponent();
+
+      expect(component.querySelectorAll('tr').length).toEqual(2);
+
+      store.overrideSelector(getOverriddenFeatureFlags, {
+        showFlags: 'linked',
+      });
+      store.refreshState();
+      fixture.detectChanges();
+      expect(component.querySelectorAll('tr').length).toEqual(1);
+    });
+
+    it('shows message when flags are filtered', () => {
+      store.overrideSelector(getOverriddenFeatureFlags, {
+        showFlags: 'enable',
+      });
+
+      createComponent();
+      const component = getComponent();
+      expect(component.innerText).toContain(
+        'Feature Flags are filtered to only show features containing'
+      );
+    });
+
+    it('does not show message when flags are not filtered', () => {
+      store.overrideSelector(getOverriddenFeatureFlags, {
+        showFlags: undefined,
+      });
+
+      createComponent();
+      const component = getComponent();
+      expect(component.innerText).not.toContain(
+        'Feature Flags are filtered to only show features containing'
+      );
+    });
+  });
 });

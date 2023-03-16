@@ -150,7 +150,7 @@ export const getIsDataTableEnabled = createSelector(
 export const getShowFlagsEnabled = createSelector(
   getFeatureFlags,
   (flags: FeatureFlags): boolean => {
-    return flags.enableShowFlags;
+    return flags.showFlags !== undefined;
   }
 );
 
