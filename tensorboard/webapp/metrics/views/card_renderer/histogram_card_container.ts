@@ -127,7 +127,6 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
   }
 
   onFullSizeToggle() {
-    console.log('onFullSizeToggle:', this.cardId);
     this.store.dispatch(
       metricsCardTableExpansionToggled({cardId: this.cardId})
     );

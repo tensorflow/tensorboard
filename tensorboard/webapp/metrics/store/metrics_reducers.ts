@@ -621,7 +621,6 @@ const reducer = createReducer(
   }),
   on(actions.metricsCardTableExpansionToggled, (state, {cardId}) => {
     const nextcardStateMap = {...state.cardStateMap};
-    console.log('nextcardStateMap:', nextcardStateMap);
     nextcardStateMap[cardId] = {
       ...nextcardStateMap[cardId],
       // When card id does not exist on cardStateMap, this means expanding the table.
