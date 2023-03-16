@@ -72,6 +72,11 @@ export const metricsCardStateUpdated = createAction(
   }>()
 );
 
+export const metricsCardTableExpansionToggled = createAction(
+  '[Metrics] Metrics Card Table Expansion Toiggled',
+  props<{cardId: CardId}>()
+);
+
 export const metricsChangeTooltipSort = createAction(
   '[Metrics] Metrics Settings Change Tooltip',
   props<{sort: TooltipSort}>()

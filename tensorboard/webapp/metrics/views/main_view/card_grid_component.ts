@@ -26,6 +26,7 @@ import {PluginType} from '../../data_source';
 import {CardId} from '../../types';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
+import {CardStateMap} from '../../store/metrics_types';
 
 const MIN_CARD_MIN_WIDTH_IN_PX = 335;
 const MAX_CARD_MIN_WIDTH_IN_PX = 735;
@@ -50,6 +51,7 @@ export class CardGridComponent {
   @Input() cardMinWidth!: number | null;
   @Input() cardObserver!: CardObserver;
   @Input() showPaginationControls!: boolean;
+  @Input() cardStateMap!: CardStateMap;
 
   @Output() pageIndexChanged = new EventEmitter<number>();
 

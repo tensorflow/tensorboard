@@ -29,6 +29,7 @@ import {
   from,
   Observable,
   of,
+  ReplaySubject,
   Subject,
 } from 'rxjs';
 import {
@@ -40,6 +41,7 @@ import {
   shareReplay,
   startWith,
   switchMap,
+  take,
   takeUntil,
   withLatestFrom,
 } from 'rxjs/operators';
@@ -76,6 +78,7 @@ import {
   cardMinMaxChanged,
   dataTableColumnDrag,
   metricsCardStateUpdated,
+  metricsCardTableExpansionToggled,
   sortingDataTable,
   stepSelectorToggled,
   timeSelectionChanged,
@@ -164,7 +167,7 @@ function isMinMaxStepValid(minMax: MinMaxStep | undefined): boolean {
       [isCardVisible]="isVisible"
       [isPinned]="isPinned$ | async"
       [loadState]="loadState$ | async"
-      [showFullSize]="showFullSize"
+      [showFullSize]="showFullSize$ | async"
       [smoothingEnabled]="smoothingEnabled$ | async"
       [tag]="tag$ | async"
       [title]="title$ | async"
@@ -212,8 +215,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     DataDownloadDialogContainer;
   @Input() cardId!: CardId;
   @Input() groupName!: string | null;
-  @Output() fullWidthChanged = new EventEmitter<boolean>();
-  @Output() fullHeightChanged = new EventEmitter<boolean>();
   @Output() pinStateChanged = new EventEmitter<boolean>();
 
   isVisible: boolean = false;
@@ -273,7 +274,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     .select(getMetricsScalarSmoothing)
     .pipe(map((smoothing) => smoothing > 0));
 
-  showFullSize = false;
+  readonly showFullSize$ = this.store
+    .select(getCardStateMap)
+    .pipe(map((map) => map[this.cardId]?.tableExpanded));
 
   private readonly ngUnsubscribe = new Subject<void>();
 
@@ -285,16 +288,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   }
 
   onFullSizeToggle() {
-    this.showFullSize = !this.showFullSize;
-    this.fullWidthChanged.emit(this.showFullSize);
-    this.fullHeightChanged.emit(this.showFullSize);
     this.store.dispatch(
-      metricsCardStateUpdated({
-        cardId: this.cardId,
-        settings: {
-          tableExpanded: this.showFullSize,
-        },
-      })
+      metricsCardTableExpansionToggled({cardId: this.cardId})
     );
   }
 

@@ -619,6 +619,20 @@ const reducer = createReducer(
       cardStateMap: nextcardStateMap,
     };
   }),
+  on(actions.metricsCardTableExpansionToggled, (state, {cardId}) => {
+    const nextcardStateMap = {...state.cardStateMap};
+    console.log('nextcardStateMap:', nextcardStateMap);
+    nextcardStateMap[cardId] = {
+      ...nextcardStateMap[cardId],
+      // When card id does not exist on cardStateMap, this means expanding the table.
+      tableExpanded: !nextcardStateMap[cardId]?.tableExpanded ?? true,
+    };
+
+    return {
+      ...state,
+      cardStateMap: nextcardStateMap,
+    };
+  }),
   on(actions.metricsTagFilterChanged, (state, {tagFilter}) => {
     return {
       ...state,

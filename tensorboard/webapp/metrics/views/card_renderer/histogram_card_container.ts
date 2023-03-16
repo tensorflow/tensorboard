@@ -32,7 +32,11 @@ import {
 } from '../../../widgets/card_fob/card_fob_types';
 import {HistogramDatum} from '../../../widgets/histogram/histogram_types';
 import {buildNormalizedHistograms} from '../../../widgets/histogram/histogram_util';
-import {stepSelectorToggled, timeSelectionChanged} from '../../actions';
+import {
+  metricsCardTableExpansionToggled,
+  stepSelectorToggled,
+  timeSelectionChanged,
+} from '../../actions';
 import {HistogramStepDatum, PluginType} from '../../data_source';
 import {
   getCardLoadState,
@@ -43,6 +47,7 @@ import {
   getMetricsLinkedTimeSelection,
   getMetricsXAxisType,
 } from '../../store';
+import {getCardStateMap} from '../../../selectors';
 import {CardId, CardMetadata} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
@@ -69,7 +74,7 @@ type HistogramCardMetadata = CardMetadata & {
       [mode]="mode$ | async"
       [xAxisType]="xAxisType$ | async"
       [runColorScale]="runColorScale"
-      [showFullSize]="showFullSize"
+      [showFullSize]="showFullSize$ | async"
       [isPinned]="isPinned$ | async"
       [isClosestStepHighlighted]="isClosestStepHighlighted$ | async"
       [linkedTimeSelection]="linkedTimeSelection$ | async"
@@ -96,8 +101,6 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
   @Input() cardId!: CardId;
   @Input() groupName!: string | null;
   @Input() runColorScale!: RunColorScale;
-  @Output() fullWidthChanged = new EventEmitter<boolean>();
-  @Output() fullHeightChanged = new EventEmitter<boolean>();
   @Output() pinStateChanged = new EventEmitter<boolean>();
 
   loadState$?: Observable<DataLoadState>;
@@ -107,7 +110,9 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
   data$?: Observable<HistogramDatum[]>;
   mode$ = this.store.select(getMetricsHistogramMode);
   xAxisType$ = this.store.select(getMetricsXAxisType);
-  showFullSize = false;
+  readonly showFullSize$ = this.store
+    .select(getCardStateMap)
+    .pipe(map((map) => map[this.cardId]?.tableExpanded));
   isPinned$?: Observable<boolean>;
   linkedTimeSelection$?: Observable<TimeSelectionView | null>;
   isClosestStepHighlighted$?: Observable<boolean | null>;
@@ -122,9 +127,10 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
   }
 
   onFullSizeToggle() {
-    this.showFullSize = !this.showFullSize;
-    this.fullWidthChanged.emit(this.showFullSize);
-    this.fullHeightChanged.emit(this.showFullSize);
+    console.log('onFullSizeToggle:', this.cardId);
+    this.store.dispatch(
+      metricsCardTableExpansionToggled({cardId: this.cardId})
+    );
   }
 
   /**

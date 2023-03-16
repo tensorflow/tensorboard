@@ -25,8 +25,8 @@ limitations under the License.
       *ngFor="let item of cardIdsWithMetadata; trackBy: trackByCards"
       class="card-space"
       [ngClass]="{
-          'full-width': cardsAtFullWidth.has(item.cardId),
-          'full-height': cardsAtFullHeight.has(item.cardId)
+          'full-width': cardStateMap[item.cardId]?.tableExpanded,
+          'full-height': cardStateMap[item.cardId]?.tableExpanded
         }"
     >
       <card-view
