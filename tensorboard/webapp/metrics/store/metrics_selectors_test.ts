@@ -669,13 +669,25 @@ describe('metrics selectors', () => {
     });
 
     it('returns undefined when card has no cardState', () => {
-      const state = appStateFromMetricsState(
+      const state1 = appStateFromMetricsState(
         buildMetricsState({
           cardStateMap: {},
         })
       );
+
+      const state2 = appStateFromMetricsState(
+        buildMetricsState({
+          cardStateMap: {
+            card1: {},
+          },
+        })
+      );
+
       expect(
-        selectors.getMetricsCardDataMinMax(state, 'card1')
+        selectors.getMetricsCardDataMinMax(state1, 'card1')
+      ).toBeUndefined();
+      expect(
+        selectors.getMetricsCardDataMinMax(state2, 'card1')
       ).toBeUndefined();
     });
 
