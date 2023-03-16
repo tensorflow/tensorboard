@@ -300,7 +300,7 @@ describe('card grid', () => {
       expect(cardSpaces[2].nativeElement.classList).not.toContain('full-width');
     });
 
-    fit('renders card height based on getCardStateMap', () => {
+    it('renders card height based on getCardStateMap', () => {
       store.overrideSelector(getCardStateMap, {card2: {tableExpanded: true}});
       let fixture = createComponent();
       let cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
@@ -352,7 +352,7 @@ describe('card grid', () => {
       );
     });
 
-    fit('renders card width based on getCardStateMap', () => {
+    it('renders card width based on getCardStateMap', () => {
       store.overrideSelector(getCardStateMap, {card3: {tableExpanded: true}});
       let fixture = createComponent();
       let cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
