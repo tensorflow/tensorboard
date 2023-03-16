@@ -232,30 +232,6 @@ describe('card grid', () => {
 
   describe('card dimensions', () => {
     let fixture: ComponentFixture<TestableScrollingContainer>;
-    beforeEach(() => {
-      // fixture = TestBed.createComponent(TestableScrollingContainer);
-      // fixture.componentInstance.cardIdsWithMetadata = [
-      //   {
-      //     cardId: 'card1',
-      //     plugin: PluginType.SCALARS,
-      //     tag: 'tagA',
-      //     runId: null,
-      //   },
-      //   {
-      //     cardId: 'card2',
-      //     plugin: PluginType.SCALARS,
-      //     tag: 'tagA',
-      //     runId: null,
-      //   },
-      //   {
-      //     cardId: 'card3',
-      //     plugin: PluginType.SCALARS,
-      //     tag: 'tagA',
-      //     runId: null,
-      //   },
-      // ];
-      // fixture.detectChanges();
-    });
 
     function createComponent() {
       fixture = TestBed.createComponent(TestableScrollingContainer);
@@ -285,6 +261,7 @@ describe('card grid', () => {
     }
 
     it('shows cards at min dimensions by default', () => {
+      const fixture = createComponent();
       const cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
       expect(cardSpaces[0].nativeElement.classList).not.toContain(
         'full-height'
