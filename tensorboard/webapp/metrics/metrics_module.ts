@@ -32,6 +32,8 @@ import {
   getMetricsScalarSmoothing,
   getMetricsStepSelectorEnabled,
   getMetricsTooltipSort,
+  getRangeSelectionHeaders,
+  getSingleSelectionHeaders,
   isMetricsSettingsPaneOpen,
   METRICS_FEATURE_KEY,
   METRICS_SETTINGS_DEFAULT,
@@ -115,6 +117,18 @@ export function getMetricsTimeSeriesLinkedTimeEnabled() {
   });
 }
 
+export function getSingleSelectionHeadersFactory() {
+  return createSelector(getSingleSelectionHeaders, (singleSelectionHeaders) => {
+    return {singleSelectionHeaders};
+  });
+}
+
+export function getRangeSelectionHeadersFactory() {
+  return createSelector(getRangeSelectionHeaders, (rangeSelectionHeaders) => {
+    return {rangeSelectionHeaders};
+  });
+}
+
 @NgModule({
   imports: [
     CommonModule,
@@ -156,6 +170,12 @@ export function getMetricsTimeSeriesLinkedTimeEnabled() {
     ),
     PersistentSettingsConfigModule.defineGlobalSetting(
       getMetricsTimeSeriesLinkedTimeEnabled
+    ),
+    PersistentSettingsConfigModule.defineGlobalSetting(
+      getSingleSelectionHeadersFactory
+    ),
+    PersistentSettingsConfigModule.defineGlobalSetting(
+      getRangeSelectionHeadersFactory
     ),
   ],
   providers: [
