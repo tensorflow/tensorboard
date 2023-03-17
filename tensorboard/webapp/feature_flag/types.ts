@@ -44,8 +44,8 @@ export interface FeatureFlags {
   forceSvg: boolean;
   // Whether to enable the "sticky" data table in scalar cards.
   enabledScalarDataTable: boolean;
-  // If enabled causes the feature flags modal to appear.
-  enableShowFlags: boolean;
+  // If defined causes the feature flags modal to appear.
+  showFlags: string | undefined;
   // Adds check box in settings which allows users to enter step selection range.
   allowRangeSelection: boolean;
   // In Linked Time, if enabled, show a prospective fob user to turn on the feature or select a step.

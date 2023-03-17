@@ -49,12 +49,12 @@ export class FeatureFlagModalTriggerContainer implements OnInit {
           // dialog from appearing again after the page is refreshed.
           this.store.dispatch(
             featureFlagOverridesReset({
-              flags: ['enableShowFlags'],
+              flags: ['showFlags'],
             })
           );
           // Reload the page so that the application restarts with stable
           // feature flag values.
-          // Wait one tick before reloading the page so the 'enableShowFlags'
+          // Wait one tick before reloading the page so the 'showFlags'
           // reset has a chance to be reflected in the URL before page reload.
           setTimeout(() => {
             util.reloadWindow();

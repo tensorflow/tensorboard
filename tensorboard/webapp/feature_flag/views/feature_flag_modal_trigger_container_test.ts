@@ -77,7 +77,7 @@ describe('feature_flag_modal_trigger_container', () => {
     rootLoader = TestbedHarnessEnvironment.documentRootLoader(fixture);
   }
 
-  it('creates modal when enableShowFlags is true', async () => {
+  it('creates modal when showFlags is true', async () => {
     store.overrideSelector(getDefaultFeatureFlags, {} as FeatureFlags);
     store.overrideSelector(getOverriddenFeatureFlags, {});
     store.overrideSelector(getShowFlagsEnabled, true);
@@ -90,7 +90,7 @@ describe('feature_flag_modal_trigger_container', () => {
     expect(dialog).toBeDefined();
   });
 
-  it('does not create modal when enableShowFlags is false', async () => {
+  it('does not create modal when showFlags is false', async () => {
     store.overrideSelector(getDefaultFeatureFlags, {} as FeatureFlags);
     store.overrideSelector(getOverriddenFeatureFlags, {});
     store.overrideSelector(getShowFlagsEnabled, false);

@@ -27,6 +27,8 @@ export class FeatureFlagPageComponent {
 
   @Input() hasFlagsSentToServer: boolean = false;
 
+  @Input() showFlagsFilter: string | undefined;
+
   @Output() flagChanged = new EventEmitter<FeatureFlagStatusEvent>();
 
   @Output() allFlagsReset = new EventEmitter();

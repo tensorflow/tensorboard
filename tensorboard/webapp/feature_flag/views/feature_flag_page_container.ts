@@ -44,12 +44,19 @@ import {
   template: `<feature-flag-page-component
     [featureFlagStatuses]="featureFlags$ | async"
     [hasFlagsSentToServer]="hasFlagsSentToServer$ | async"
+    [showFlagsFilter]="showFlagsFilter$ | async"
     (flagChanged)="onFlagChanged($event)"
     (allFlagsReset)="onAllFlagsReset()"
   ></feature-flag-page-component>`,
 })
 export class FeatureFlagPageContainer {
   constructor(private readonly store: Store<State>) {}
+
+  readonly showFlagsFilter$ = this.store.select(getOverriddenFeatureFlags).pipe(
+    map((overriddenFeatureFlags) => {
+      return overriddenFeatureFlags.showFlags?.toLowerCase();
+    })
+  );
 
   readonly hasFlagsSentToServer$: Observable<boolean> = this.store
     .select(getFeatureFlagsMetadata)
@@ -66,27 +73,40 @@ export class FeatureFlagPageContainer {
     this.store.select(getOverriddenFeatureFlags).pipe(
       withLatestFrom(
         this.store.select(getDefaultFeatureFlags),
-        this.store.select(getFeatureFlagsMetadata)
+        this.store.select(getFeatureFlagsMetadata),
+        this.showFlagsFilter$
       ),
-      map(([overriddenFeatureFlags, defaultFeatureFlags, flagMetadata]) => {
-        return Object.entries(defaultFeatureFlags).map(
-          ([flagName, defaultValue]) => {
-            const status = getFlagStatus(
-              flagName as keyof FeatureFlags,
-              overriddenFeatureFlags
-            );
-            const metadata = flagMetadata[flagName as keyof FeatureFlags];
-            return {
-              flag: flagName,
-              defaultValue,
-              status,
-              sendToServerWhenOverridden: (
-                metadata as AdvancedFeatureFlagMetadata<FeatureFlagType>
-              ).sendToServerWhenOverridden,
-            } as FeatureFlagStatus<keyof FeatureFlags>;
-          }
-        );
-      })
+      map(
+        ([
+          overriddenFeatureFlags,
+          defaultFeatureFlags,
+          flagMetadata,
+          showFlagsFilter,
+        ]) => {
+          return Object.entries(defaultFeatureFlags)
+            .filter(([flagName]) => {
+              if (!showFlagsFilter) {
+                return true;
+              }
+              return flagName.toLowerCase().includes(showFlagsFilter);
+            })
+            .map(([flagName, defaultValue]) => {
+              const status = getFlagStatus(
+                flagName as keyof FeatureFlags,
+                overriddenFeatureFlags
+              );
+              const metadata = flagMetadata[flagName as keyof FeatureFlags];
+              return {
+                flag: flagName,
+                defaultValue,
+                status,
+                sendToServerWhenOverridden: (
+                  metadata as AdvancedFeatureFlagMetadata<FeatureFlagType>
+                ).sendToServerWhenOverridden,
+              } as FeatureFlagStatus<keyof FeatureFlags>;
+            });
+        }
+      )
     );
 
   onFlagChanged({flag, status}: FeatureFlagStatusEvent) {

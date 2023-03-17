@@ -30,6 +30,12 @@ limitations under the License.
       Only flags with non default values are sent to the backend.
     </div>
   </ng-container>
+  <ng-container *ngIf="showFlagsFilter">
+    <div class="message">
+      Feature Flags are filtered to only show features containing
+      "{{showFlagsFilter}}"
+    </div>
+  </ng-container>
   <table class="feature-flag-table">
     <ng-container *ngFor="let flagStatus of featureFlagStatuses;">
       <tr>

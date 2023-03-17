@@ -19,7 +19,7 @@ import {FeatureFlagPageModule} from './feature_flag_module';
 
 /**
  * Provides the wrapper component that triggers the opening of the feature flag modal.
- * The modal appears based on the value of the enableShowFlags feature flag.
+ * The modal appears based on the value of the showFlags feature flag.
  */
 @NgModule({
   declarations: [FeatureFlagModalTriggerContainer],
