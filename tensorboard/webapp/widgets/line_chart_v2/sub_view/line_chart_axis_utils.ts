@@ -102,6 +102,17 @@ function getTicksForLinearScale(
 
   const minorTickVals = scale.ticks([low, high], maxMinorTickCount);
   const majorTickVals = scale.ticks([low, high], 2);
+
+  // If the numbers are small enough that javascript starts using scientific
+  // notation the logic here does not work. Also, those numbers normally show up
+  // well using the standard ticks.
+  if (
+    containsScientificNotation(minorTickVals) ||
+    containsScientificNotation(majorTickVals)
+  ) {
+    return getStandardTicks(scale, formatter, maxMinorTickCount, lowAndHigh);
+  }
+
   const minor: MinorTick[] = [];
 
   let numFractionalToKeep = getNumLeadingZerosInFractional(diff);
@@ -222,6 +233,15 @@ function filterTicksByVisibility(
     currentMax = position + coordinateUnit * textDim;
     return true;
   });
+}
+
+function containsScientificNotation(values: number[]): boolean {
+  for (const value of values) {
+    if (String(value).includes('e')) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export const AxisUtils = {
