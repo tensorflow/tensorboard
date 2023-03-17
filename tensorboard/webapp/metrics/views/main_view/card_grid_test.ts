@@ -360,7 +360,7 @@ describe('card grid', () => {
     });
 
     it('renders card width based on card state full size', () => {
-      store.overrideSelector(getCardStateMap, {card2: {fullSize: true}});
+      store.overrideSelector(getCardStateMap, {card2: {fullWidth: true}});
       let fixture = createComponent();
       let cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
       expect(cardSpaces[0].nativeElement.classList).not.toContain(
@@ -372,8 +372,8 @@ describe('card grid', () => {
       );
 
       store.overrideSelector(getCardStateMap, {
-        card1: {fullSize: true},
-        card2: {fullSize: true},
+        card1: {fullWidth: true},
+        card2: {fullWidth: true},
       });
       fixture = createComponent();
       cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
@@ -384,8 +384,8 @@ describe('card grid', () => {
       );
 
       store.overrideSelector(getCardStateMap, {
-        card1: {fullSize: false},
-        card2: {fullSize: true},
+        card1: {fullWidth: false},
+        card2: {fullWidth: true},
       });
       fixture = createComponent();
       cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
@@ -412,7 +412,7 @@ describe('card grid', () => {
     });
 
     it('renders card width based on card state full size', () => {
-      store.overrideSelector(getCardStateMap, {card3: {fullSize: true}});
+      store.overrideSelector(getCardStateMap, {card3: {fullWidth: true}});
       let fixture = createComponent();
       let cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
       expect(cardSpaces[0].nativeElement.classList).not.toContain('full-width');
@@ -420,8 +420,8 @@ describe('card grid', () => {
       expect(cardSpaces[2].nativeElement.classList).toContain('full-width');
 
       store.overrideSelector(getCardStateMap, {
-        card2: {fullSize: true},
-        card3: {fullSize: true},
+        card2: {fullWidth: true},
+        card3: {fullWidth: true},
       });
       fixture = createComponent();
       cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
@@ -430,8 +430,8 @@ describe('card grid', () => {
       expect(cardSpaces[2].nativeElement.classList).toContain('full-width');
 
       store.overrideSelector(getCardStateMap, {
-        card2: {fullSize: false},
-        card3: {fullSize: true},
+        card2: {fullWidth: false},
+        card3: {fullWidth: true},
       });
       fixture = createComponent();
       cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));

@@ -165,7 +165,7 @@ function isMinMaxStepValid(minMax: MinMaxStep | undefined): boolean {
       [isCardVisible]="isVisible"
       [isPinned]="isPinned$ | async"
       [loadState]="loadState$ | async"
-      [showFullSize]="showFullSize$ | async"
+      [showFullWidth]="showFullWidth$ | async"
       [smoothingEnabled]="smoothingEnabled$ | async"
       [tag]="tag$ | async"
       [title]="title$ | async"
@@ -273,9 +273,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     .select(getMetricsScalarSmoothing)
     .pipe(map((smoothing) => smoothing > 0));
 
-  readonly showFullSize$ = this.store
+  readonly showFullWidth$ = this.store
     .select(getCardStateMap)
-    .pipe(map((map) => map[this.cardId]?.fullSize));
+    .pipe(map((map) => map[this.cardId]?.fullWidth));
 
   private readonly ngUnsubscribe = new Subject<void>();
 

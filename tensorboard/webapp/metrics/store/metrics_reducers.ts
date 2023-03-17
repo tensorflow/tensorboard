@@ -623,9 +623,8 @@ const reducer = createReducer(
     const nextcardStateMap = {...state.cardStateMap};
     nextcardStateMap[cardId] = {
       ...nextcardStateMap[cardId],
-      // When the action is fired and card id does not exist on cardStateMap,
-      // this means the full size icon is clicked.
-      fullSize: !nextcardStateMap[cardId]?.fullSize,
+      fullWidth: !nextcardStateMap[cardId]?.fullWidth,
+      tableExpanded: !nextcardStateMap[cardId]?.fullWidth,
     };
 
     return {

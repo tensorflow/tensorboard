@@ -74,7 +74,7 @@ type HistogramCardMetadata = CardMetadata & {
       [mode]="mode$ | async"
       [xAxisType]="xAxisType$ | async"
       [runColorScale]="runColorScale"
-      [showFullSize]="showFullSize$ | async"
+      [showFullWidth]="showFullWidth$ | async"
       [isPinned]="isPinned$ | async"
       [isClosestStepHighlighted]="isClosestStepHighlighted$ | async"
       [linkedTimeSelection]="linkedTimeSelection$ | async"
@@ -110,9 +110,9 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
   data$?: Observable<HistogramDatum[]>;
   mode$ = this.store.select(getMetricsHistogramMode);
   xAxisType$ = this.store.select(getMetricsXAxisType);
-  readonly showFullSize$ = this.store
+  readonly showFullWidth$ = this.store
     .select(getCardStateMap)
-    .pipe(map((map) => map[this.cardId]?.fullSize));
+    .pipe(map((map) => map[this.cardId]?.fullWidth));
   isPinned$?: Observable<boolean>;
   linkedTimeSelection$?: Observable<TimeSelectionView | null>;
   isClosestStepHighlighted$?: Observable<boolean | null>;

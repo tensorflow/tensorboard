@@ -139,7 +139,7 @@ export type CardState = {
   stepSelectionOverride: CardFeatureOverride;
   rangeSelectionOverride: CardFeatureOverride;
   tableExpanded: boolean;
-  fullSize: boolean;
+  fullWidth: boolean;
 };
 
 export type CardStateMap = Record<CardId, Partial<CardState>>;
