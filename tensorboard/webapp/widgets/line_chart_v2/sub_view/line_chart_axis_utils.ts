@@ -250,3 +250,5 @@ export const AxisUtils = {
   getTicksForLinearScale,
   filterTicksByVisibility,
 };
+
+export const TEST_ONLY = {containsScientificNotation};
