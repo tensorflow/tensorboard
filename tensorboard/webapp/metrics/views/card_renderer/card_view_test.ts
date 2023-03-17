@@ -105,7 +105,7 @@ describe('card view test', () => {
     });
   });
 
-  fit('emits fullWidthChanged after lower level fullWidthChanged', () => {
+  it('emits fullWidthChanged after lower level fullWidthChanged', () => {
     const fixture = TestBed.createComponent(CardViewContainer);
     fixture.componentInstance.cardId = 'cardId';
     fixture.componentInstance.pluginType = PluginType.IMAGES;
