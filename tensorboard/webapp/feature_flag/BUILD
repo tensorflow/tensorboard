@@ -8,7 +8,6 @@ tf_ng_module(
         "feature_flag_module.ts",
     ],
     deps = [
-        ":force_svg_data_source",
         "//tensorboard/webapp/angular:expect_angular_common_http",
         "//tensorboard/webapp/feature_flag/effects",
         "//tensorboard/webapp/feature_flag/http",
@@ -19,18 +18,6 @@ tf_ng_module(
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
-    ],
-)
-
-tf_ng_module(
-    name = "force_svg_data_source",
-    srcs = [
-        "force_svg_data_source.ts",
-        "force_svg_data_source_module.ts",
-    ],
-    deps = [
-        "//tensorboard/webapp/webapp_data_source:feature_flag_types",
-        "@npm//@angular/core",
     ],
 )
 
@@ -50,19 +37,6 @@ tf_ts_library(
     deps = [
         ":types",
         "//tensorboard/webapp/feature_flag/store:feature_flag_metadata",
-    ],
-)
-
-tf_ts_library(
-    name = "test_lib",
-    testonly = True,
-    srcs = [
-        "force_svg_data_source_test.ts",
-    ],
-    deps = [
-        ":force_svg_data_source",
-        "//tensorboard/webapp/angular:expect_angular_core_testing",
-        "@npm//@types/jasmine",
     ],
 )
 

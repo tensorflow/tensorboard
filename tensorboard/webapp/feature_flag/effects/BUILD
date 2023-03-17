@@ -9,7 +9,6 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp:tb_polymer_interop_types",
-        "//tensorboard/webapp/feature_flag:force_svg_data_source",
         "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/actions",
         "//tensorboard/webapp/feature_flag/store",
@@ -33,7 +32,6 @@ tf_ng_module(
         ":effects",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
-        "//tensorboard/webapp/feature_flag:force_svg_data_source",
         "//tensorboard/webapp/feature_flag:testing",
         "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/actions",
