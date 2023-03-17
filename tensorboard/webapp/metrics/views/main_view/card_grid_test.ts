@@ -12,38 +12,38 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ScrollingModule} from '@angular/cdk/scrolling';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import {
   Component,
   EventEmitter,
   Input,
   NO_ERRORS_SCHEMA,
-  Output,
+  Output
 } from '@angular/core';
 import {
   ComponentFixture,
   discardPeriodicTasks,
   fakeAsync,
   TestBed,
-  tick,
+  tick
 } from '@angular/core/testing';
-import {By} from '@angular/platform-browser';
-import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {Store} from '@ngrx/store';
-import {MockStore} from '@ngrx/store/testing';
-import {State} from '../../../app_state';
+import { By } from '@angular/platform-browser';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { Store } from '@ngrx/store';
+import { MockStore } from '@ngrx/store/testing';
+import { State } from '../../../app_state';
 import * as selectors from '../../../selectors';
 import {
   getCardStateMap,
   getMetricsCardMinWidth,
-  getMetricsTagGroupExpansionState,
+  getMetricsTagGroupExpansionState
 } from '../../../selectors';
-import {selectors as settingsSelectors} from '../../../settings';
-import {provideMockTbStore} from '../../../testing/utils';
-import {PluginType} from '../../data_source';
-import {CardIdWithMetadata} from '../metrics_view_types';
-import {CardGridComponent} from './card_grid_component';
-import {CardGridContainer} from './card_grid_container';
+import { selectors as settingsSelectors } from '../../../settings';
+import { provideMockTbStore } from '../../../testing/utils';
+import { PluginType } from '../../data_source';
+import { CardIdWithMetadata } from '../metrics_view_types';
+import { CardGridComponent } from './card_grid_component';
+import { CardGridContainer } from './card_grid_container';
 
 const scrollElementHeight = 100;
 
@@ -277,8 +277,90 @@ describe('card grid', () => {
       expect(cardSpaces[2].nativeElement.classList).not.toContain('full-width');
     });
 
-    it('renders card height based on getCardStateMap', () => {
-      store.overrideSelector(getCardStateMap, {card2: {tableExpanded: true}});
+    it('changes height after card event', () => {
+      const fixture = createComponent();
+      const cardViews = fixture.debugElement.queryAll(By.css('card-view'));
+      const cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
+
+      cardViews[1].componentInstance.fullHeightChanged.emit(true);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).not.toContain(
+        'full-height'
+      );
+      expect(cardSpaces[1].nativeElement.classList).toContain('full-height');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain(
+        'full-height'
+      );
+
+      cardViews[0].componentInstance.fullHeightChanged.emit(true);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).toContain('full-height');
+      expect(cardSpaces[1].nativeElement.classList).toContain('full-height');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain(
+        'full-height'
+      );
+
+      cardViews[1].componentInstance.fullHeightChanged.emit(false);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).toContain('full-height');
+      expect(cardSpaces[1].nativeElement.classList).not.toContain(
+        'full-height'
+      );
+      expect(cardSpaces[2].nativeElement.classList).not.toContain(
+        'full-height'
+      );
+
+      cardViews[0].componentInstance.fullHeightChanged.emit(false);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).not.toContain(
+        'full-height'
+      );
+      expect(cardSpaces[1].nativeElement.classList).not.toContain(
+        'full-height'
+      );
+      expect(cardSpaces[2].nativeElement.classList).not.toContain(
+        'full-height'
+      );
+    });
+
+    it('does not change height if emitted value is same', () => {
+      const fixture = createComponent();
+      const cardViews = fixture.debugElement.queryAll(By.css('card-view'));
+      const cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
+
+      cardViews[1].componentInstance.fullHeightChanged.emit(true);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).not.toContain(
+        'full-height'
+      );
+      expect(cardSpaces[1].nativeElement.classList).toContain('full-height');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain(
+        'full-height'
+      );
+
+      cardViews[0].componentInstance.fullHeightChanged.emit(false);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).not.toContain(
+        'full-height'
+      );
+      expect(cardSpaces[1].nativeElement.classList).toContain('full-height');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain(
+        'full-height'
+      );
+
+      cardViews[1].componentInstance.fullHeightChanged.emit(true);
+      fixture.detectChanges();
+      expect(cardSpaces[0].nativeElement.classList).not.toContain(
+        'full-height'
+      );
+      expect(cardSpaces[1].nativeElement.classList).toContain('full-height');
+      expect(cardSpaces[2].nativeElement.classList).not.toContain(
+        'full-height'
+      );
+    });
+
+    it('renders card width based on card state full size', () => {
+      store.overrideSelector(getCardStateMap, {card2: {fullSize: true}});
       let fixture = createComponent();
       let cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
       expect(cardSpaces[0].nativeElement.classList).not.toContain(
@@ -290,8 +372,8 @@ describe('card grid', () => {
       );
 
       store.overrideSelector(getCardStateMap, {
-        card1: {tableExpanded: true},
-        card2: {tableExpanded: true},
+        card1: {fullSize: true},
+        card2: {fullSize: true},
       });
       fixture = createComponent();
       cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
@@ -302,8 +384,8 @@ describe('card grid', () => {
       );
 
       store.overrideSelector(getCardStateMap, {
-        card1: {tableExpanded: false},
-        card2: {tableExpanded: true},
+        card1: {fullSize: false},
+        card2: {fullSize: true},
       });
       fixture = createComponent();
       cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
@@ -329,8 +411,8 @@ describe('card grid', () => {
       );
     });
 
-    it('renders card width based on getCardStateMap', () => {
-      store.overrideSelector(getCardStateMap, {card3: {tableExpanded: true}});
+    it('renders card width based on card state full size', () => {
+      store.overrideSelector(getCardStateMap, {card3: {fullSize: true}});
       let fixture = createComponent();
       let cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
       expect(cardSpaces[0].nativeElement.classList).not.toContain('full-width');
@@ -338,8 +420,8 @@ describe('card grid', () => {
       expect(cardSpaces[2].nativeElement.classList).toContain('full-width');
 
       store.overrideSelector(getCardStateMap, {
-        card2: {tableExpanded: true},
-        card3: {tableExpanded: true},
+        card2: {fullSize: true},
+        card3: {fullSize: true},
       });
       fixture = createComponent();
       cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));
@@ -348,8 +430,8 @@ describe('card grid', () => {
       expect(cardSpaces[2].nativeElement.classList).toContain('full-width');
 
       store.overrideSelector(getCardStateMap, {
-        card2: {tableExpanded: false},
-        card3: {tableExpanded: true},
+        card2: {fullSize: false},
+        card3: {fullSize: true},
       });
       fixture = createComponent();
       cardSpaces = fixture.debugElement.queryAll(By.css('.card-space'));

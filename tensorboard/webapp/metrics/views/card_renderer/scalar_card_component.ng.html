@@ -179,7 +179,7 @@ limitations under the License.
     #dataTableContainer
     [ngClass]="{
       'data-table-container': true,
-      'expanded': cardState!.tableExpanded
+      'expanded': cardState!.tableExpanded || cardState!.fullSize
     }"
   >
     <scalar-card-data-table

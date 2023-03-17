@@ -78,7 +78,7 @@ import {
   cardMinMaxChanged,
   dataTableColumnDrag,
   metricsCardStateUpdated,
-  metricsCardTableExpansionToggled,
+  metricsCardFullSizeToggled,
   sortingDataTable,
   stepSelectorToggled,
   timeSelectionChanged,
@@ -276,7 +276,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
   readonly showFullSize$ = this.store
     .select(getCardStateMap)
-    .pipe(map((map) => map[this.cardId]?.tableExpanded));
+    .pipe(map((map) => map[this.cardId]?.fullSize));
 
   private readonly ngUnsubscribe = new Subject<void>();
 
@@ -289,7 +289,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
   onFullSizeToggle() {
     this.store.dispatch(
-      metricsCardTableExpansionToggled({cardId: this.cardId})
+      metricsCardFullSizeToggled({cardId: this.cardId})
     );
   }
 

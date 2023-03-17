@@ -33,7 +33,7 @@ import {
 import {HistogramDatum} from '../../../widgets/histogram/histogram_types';
 import {buildNormalizedHistograms} from '../../../widgets/histogram/histogram_util';
 import {
-  metricsCardTableExpansionToggled,
+  metricsCardFullSizeToggled,
   stepSelectorToggled,
   timeSelectionChanged,
 } from '../../actions';
@@ -112,7 +112,7 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
   xAxisType$ = this.store.select(getMetricsXAxisType);
   readonly showFullSize$ = this.store
     .select(getCardStateMap)
-    .pipe(map((map) => map[this.cardId]?.tableExpanded));
+    .pipe(map((map) => map[this.cardId]?.fullSize));
   isPinned$?: Observable<boolean>;
   linkedTimeSelection$?: Observable<TimeSelectionView | null>;
   isClosestStepHighlighted$?: Observable<boolean | null>;
@@ -128,7 +128,7 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
 
   onFullSizeToggle() {
     this.store.dispatch(
-      metricsCardTableExpansionToggled({cardId: this.cardId})
+      metricsCardFullSizeToggled({cardId: this.cardId})
     );
   }
 

@@ -77,7 +77,7 @@ import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {
   cardMinMaxChanged,
   metricsCardStateUpdated,
-  metricsCardTableExpansionToggled,
+  metricsCardFullSizeToggled,
   stepSelectorToggled,
   timeSelectionChanged,
 } from '../../actions';
@@ -851,7 +851,7 @@ describe('scalar card', () => {
       );
     });
 
-    it('dispatches metricsCardTableExpansionToggled on full size toggle', fakeAsync(() => {
+    it('dispatches metricsCardFullSizeToggled on full size toggle', fakeAsync(() => {
       const fixture = createComponent('card1');
       fixture.detectChanges();
 
@@ -861,7 +861,7 @@ describe('scalar card', () => {
 
       button.nativeElement.click();
       expect(dispatchedActions).toEqual([
-        metricsCardTableExpansionToggled({cardId: 'card1'}),
+        metricsCardFullSizeToggled({cardId: 'card1'}),
       ]);
     }));
   });

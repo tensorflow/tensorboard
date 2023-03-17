@@ -29,8 +29,6 @@ limitations under the License.
     *ngSwitchCase="PluginType.SCALARS"
     [cardId]="cardId"
     [groupName]="groupName"
-    (fullWidthChanged)="onFullWidthChanged($event)"
-    (fullHeightChanged)="onFullHeightChanged($event)"
     (pinStateChanged)="onPinStateChanged()"
   ></scalar-card>
 
@@ -39,8 +37,6 @@ limitations under the License.
     [cardId]="cardId"
     [groupName]="groupName"
     [runColorScale]="runColorScale"
-    (fullWidthChanged)="onFullWidthChanged($event)"
-    (fullHeightChanged)="onFullHeightChanged($event)"
     (pinStateChanged)="onPinStateChanged()"
   ></histogram-card>
 

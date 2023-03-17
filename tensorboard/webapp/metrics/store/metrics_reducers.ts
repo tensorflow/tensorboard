@@ -619,12 +619,13 @@ const reducer = createReducer(
       cardStateMap: nextcardStateMap,
     };
   }),
-  on(actions.metricsCardTableExpansionToggled, (state, {cardId}) => {
+  on(actions.metricsCardFullSizeToggled, (state, {cardId}) => {
     const nextcardStateMap = {...state.cardStateMap};
     nextcardStateMap[cardId] = {
       ...nextcardStateMap[cardId],
-      // When card id does not exist on cardStateMap, this means expanding the table.
-      tableExpanded: !nextcardStateMap[cardId]?.tableExpanded ?? true,
+      // When the action is fired and card id does not exist on cardStateMap,
+      // this means the full size icon is clicked.
+      fullSize: !nextcardStateMap[cardId]?.fullSize ?? true,
     };
 
     return {

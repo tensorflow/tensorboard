@@ -41,7 +41,7 @@ import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {
   stepSelectorToggled,
   timeSelectionChanged,
-  metricsCardTableExpansionToggled,
+  metricsCardFullSizeToggled,
 } from '../../actions';
 import {PluginType} from '../../data_source';
 import * as selectors from '../../store/metrics_selectors';
@@ -271,7 +271,7 @@ describe('histogram card', () => {
       });
     });
 
-    it('dispatches metricsCardTableExpansionToggled on full size toggle', () => {
+    it('dispatches metricsCardFullSizeToggled on full size toggle', () => {
       const fixture = createHistogramCardContainer();
       fixture.detectChanges();
 
@@ -281,7 +281,7 @@ describe('histogram card', () => {
 
       button.nativeElement.click();
       expect(dispatchedActions).toEqual([
-        metricsCardTableExpansionToggled({cardId: 'card1'}),
+        metricsCardFullSizeToggled({cardId: 'card1'}),
       ]);
     });
   });

@@ -72,8 +72,8 @@ export const metricsCardStateUpdated = createAction(
   }>()
 );
 
-export const metricsCardTableExpansionToggled = createAction(
-  '[Metrics] Metrics Card Table Expansion Toiggled',
+export const metricsCardFullSizeToggled = createAction(
+  '[Metrics] Metrics Card Full Size Toggled',
   props<{cardId: CardId}>()
 );
 
