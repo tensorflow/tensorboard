@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {createScale, LinearScale, ScaleType, TemporalScale} from '../lib/scale';
-import {AxisUtils} from './line_chart_axis_utils';
+import {AxisUtils, TEST_ONLY} from './line_chart_axis_utils';
 
 describe('line_chart_v2/sub_view/axis_utils test', () => {
   describe('#getStandardTicks', () => {
@@ -363,6 +363,32 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
           {value: -0.00001, tickFormattedString: '…0'},
         ]);
       });
+      it('returns no major ticks for numbers which are transated to scientific notation', () => {
+        const {major, minor} = AxisUtils.getTicksForLinearScale(
+          scale,
+          scale.defaultFormatter,
+          5,
+          [0.0000000004, 0.000000009]
+        );
+
+        expect(major).toEqual([]);
+        expect(minor).toEqual([
+          {value: 2e-9, tickFormattedString: '2e-9'},
+          {value: 4e-9, tickFormattedString: '4e-9'},
+          {value: 6e-9, tickFormattedString: '6e-9'},
+          {value: 8e-9, tickFormattedString: '8e-9'},
+        ]);
+      });
+    });
+  });
+
+  describe('#containsScientificNotation', () => {
+    it('returns true if the array contains scientific notation', () => {
+      expect(TEST_ONLY.containsScientificNotation([1, 2e-9, 2])).toBe(true);
+    });
+
+    it('returns false if the array does not contain scientific notation', () => {
+      expect(TEST_ONLY.containsScientificNotation([1, 4, 2])).toBe(false);
     });
   });
 
