@@ -288,9 +288,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   }
 
   onFullSizeToggle() {
-    this.store.dispatch(
-      metricsCardFullSizeToggled({cardId: this.cardId})
-    );
+    this.store.dispatch(metricsCardFullSizeToggled({cardId: this.cardId}));
   }
 
   /**

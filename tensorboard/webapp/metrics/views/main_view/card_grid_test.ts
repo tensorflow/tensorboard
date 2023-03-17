@@ -12,38 +12,38 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import { ScrollingModule } from '@angular/cdk/scrolling';
+import {ScrollingModule} from '@angular/cdk/scrolling';
 import {
   Component,
   EventEmitter,
   Input,
   NO_ERRORS_SCHEMA,
-  Output
+  Output,
 } from '@angular/core';
 import {
   ComponentFixture,
   discardPeriodicTasks,
   fakeAsync,
   TestBed,
-  tick
+  tick,
 } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { Store } from '@ngrx/store';
-import { MockStore } from '@ngrx/store/testing';
-import { State } from '../../../app_state';
+import {By} from '@angular/platform-browser';
+import {NoopAnimationsModule} from '@angular/platform-browser/animations';
+import {Store} from '@ngrx/store';
+import {MockStore} from '@ngrx/store/testing';
+import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';
 import {
   getCardStateMap,
   getMetricsCardMinWidth,
-  getMetricsTagGroupExpansionState
+  getMetricsTagGroupExpansionState,
 } from '../../../selectors';
-import { selectors as settingsSelectors } from '../../../settings';
-import { provideMockTbStore } from '../../../testing/utils';
-import { PluginType } from '../../data_source';
-import { CardIdWithMetadata } from '../metrics_view_types';
-import { CardGridComponent } from './card_grid_component';
-import { CardGridContainer } from './card_grid_container';
+import {selectors as settingsSelectors} from '../../../settings';
+import {provideMockTbStore} from '../../../testing/utils';
+import {PluginType} from '../../data_source';
+import {CardIdWithMetadata} from '../metrics_view_types';
+import {CardGridComponent} from './card_grid_component';
+import {CardGridContainer} from './card_grid_container';
 
 const scrollElementHeight = 100;
 
