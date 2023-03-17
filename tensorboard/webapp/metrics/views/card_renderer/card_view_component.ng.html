@@ -29,6 +29,7 @@ limitations under the License.
     *ngSwitchCase="PluginType.SCALARS"
     [cardId]="cardId"
     [groupName]="groupName"
+    (fullHeightChanged)="onFullHeightChanged($event)"
     (pinStateChanged)="onPinStateChanged()"
   ></scalar-card>
 

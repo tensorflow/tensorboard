@@ -29,7 +29,6 @@ import {
   from,
   Observable,
   of,
-  ReplaySubject,
   Subject,
 } from 'rxjs';
 import {
@@ -41,7 +40,6 @@ import {
   shareReplay,
   startWith,
   switchMap,
-  take,
   takeUntil,
   withLatestFrom,
 } from 'rxjs/operators';
@@ -215,6 +213,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     DataDownloadDialogContainer;
   @Input() cardId!: CardId;
   @Input() groupName!: string | null;
+  @Output() fullHeightChanged = new EventEmitter<boolean>();
   @Output() pinStateChanged = new EventEmitter<boolean>();
 
   isVisible: boolean = false;

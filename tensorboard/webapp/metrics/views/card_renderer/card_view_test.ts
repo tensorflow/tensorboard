@@ -105,6 +105,30 @@ describe('card view test', () => {
     });
   });
 
+  it('emits fullHeightChanged after lower level fullHeightChanged', () => {
+    const fixture = TestBed.createComponent(CardViewContainer);
+    fixture.componentInstance.cardId = 'cardId';
+    fixture.componentInstance.pluginType = PluginType.SCALARS;
+    intersectionObserver.simulateVisibilityChange(fixture, true);
+    fixture.detectChanges();
+
+    const onFullHeightChanged = jasmine.createSpy();
+    fixture.componentInstance.fullHeightChanged.subscribe(onFullHeightChanged);
+
+    expect(onFullHeightChanged.calls.allArgs()).toEqual([]);
+
+    const scalarCard = fixture.debugElement.query(By.css('scalar-card'));
+    scalarCard.componentInstance.fullHeightChanged.emit(true);
+    fixture.detectChanges();
+
+    expect(onFullHeightChanged.calls.allArgs()).toEqual([[true]]);
+
+    scalarCard.componentInstance.fullHeightChanged.emit(false);
+    fixture.detectChanges();
+
+    expect(onFullHeightChanged.calls.allArgs()).toEqual([[true], [false]]);
+  });
+
   it('dispatches action when pin state changes', () => {
     const fixture = TestBed.createComponent(CardViewContainer);
     fixture.componentInstance.cardId = 'cardId';
