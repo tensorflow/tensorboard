@@ -2336,7 +2336,7 @@ describe('metrics reducers', () => {
       });
     });
 
-    it('expands card when table has expanded', () => {
+    it('expands card when table is already expanded', () => {
       const state = buildMetricsState({
         cardStateMap: {card1: {tableExpanded: true}},
       });
@@ -2362,7 +2362,7 @@ describe('metrics reducers', () => {
       });
     });
 
-    it('collapse card on table is expanded', () => {
+    it('collapses card when table is already expanded', () => {
       const state = buildMetricsState({
         cardStateMap: {card1: {fullWidth: true, tableExpanded: true}},
       });
