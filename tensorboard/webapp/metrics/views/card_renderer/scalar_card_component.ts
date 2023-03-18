@@ -83,7 +83,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() isCardVisible!: boolean;
   @Input() isPinned!: boolean;
   @Input() loadState!: DataLoadState;
-  @Input() showFullSize!: boolean;
+  @Input() showFullWidth!: boolean;
   @Input() smoothingEnabled!: boolean;
   @Input() tag!: string;
   @Input() title!: string;

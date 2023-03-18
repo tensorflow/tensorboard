@@ -76,6 +76,7 @@ import {
   cardMinMaxChanged,
   dataTableColumnDrag,
   metricsCardStateUpdated,
+  metricsCardFullSizeToggled,
   sortingDataTable,
   stepSelectorToggled,
   timeSelectionChanged,
@@ -164,7 +165,7 @@ function isMinMaxStepValid(minMax: MinMaxStep | undefined): boolean {
       [isCardVisible]="isVisible"
       [isPinned]="isPinned$ | async"
       [loadState]="loadState$ | async"
-      [showFullSize]="showFullSize"
+      [showFullWidth]="showFullWidth$ | async"
       [smoothingEnabled]="smoothingEnabled$ | async"
       [tag]="tag$ | async"
       [title]="title$ | async"
@@ -212,8 +213,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     DataDownloadDialogContainer;
   @Input() cardId!: CardId;
   @Input() groupName!: string | null;
-  @Output() fullWidthChanged = new EventEmitter<boolean>();
-  @Output() fullHeightChanged = new EventEmitter<boolean>();
   @Output() pinStateChanged = new EventEmitter<boolean>();
 
   isVisible: boolean = false;
@@ -273,7 +272,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     .select(getMetricsScalarSmoothing)
     .pipe(map((smoothing) => smoothing > 0));
 
-  showFullSize = false;
+  readonly showFullWidth$ = this.store
+    .select(getCardStateMap)
+    .pipe(map((map) => map[this.cardId]?.fullWidth));
 
   private readonly ngUnsubscribe = new Subject<void>();
 
@@ -285,17 +286,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   }
 
   onFullSizeToggle() {
-    this.showFullSize = !this.showFullSize;
-    this.fullWidthChanged.emit(this.showFullSize);
-    this.fullHeightChanged.emit(this.showFullSize);
-    this.store.dispatch(
-      metricsCardStateUpdated({
-        cardId: this.cardId,
-        settings: {
-          tableExpanded: this.showFullSize,
-        },
-      })
-    );
+    this.store.dispatch(metricsCardFullSizeToggled({cardId: this.cardId}));
   }
 
   /**

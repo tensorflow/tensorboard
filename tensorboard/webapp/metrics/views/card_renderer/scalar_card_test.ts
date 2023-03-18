@@ -77,6 +77,7 @@ import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {
   cardMinMaxChanged,
   metricsCardStateUpdated,
+  metricsCardFullSizeToggled,
   stepSelectorToggled,
   timeSelectionChanged,
 } from '../../actions';
@@ -850,27 +851,18 @@ describe('scalar card', () => {
       );
     });
 
-    it('requests full size on toggle', fakeAsync(() => {
-      const onFullWidthChanged = jasmine.createSpy();
-      const onFullHeightChanged = jasmine.createSpy();
+    it('dispatches metricsCardFullSizeToggled on full size toggle', fakeAsync(() => {
       const fixture = createComponent('card1');
       fixture.detectChanges();
 
-      fixture.componentInstance.fullWidthChanged.subscribe(onFullWidthChanged);
-      fixture.componentInstance.fullHeightChanged.subscribe(
-        onFullHeightChanged
-      );
       const button = fixture.debugElement.query(
         By.css('[aria-label="Toggle full size mode"]')
       );
 
       button.nativeElement.click();
-      expect(onFullWidthChanged.calls.allArgs()).toEqual([[true]]);
-      expect(onFullHeightChanged.calls.allArgs()).toEqual([[true]]);
-
-      button.nativeElement.click();
-      expect(onFullWidthChanged.calls.allArgs()).toEqual([[true], [false]]);
-      expect(onFullHeightChanged.calls.allArgs()).toEqual([[true], [false]]);
+      expect(dispatchedActions).toEqual([
+        metricsCardFullSizeToggled({cardId: 'card1'}),
+      ]);
     }));
   });
 

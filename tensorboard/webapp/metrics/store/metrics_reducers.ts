@@ -619,6 +619,19 @@ const reducer = createReducer(
       cardStateMap: nextcardStateMap,
     };
   }),
+  on(actions.metricsCardFullSizeToggled, (state, {cardId}) => {
+    const nextcardStateMap = {...state.cardStateMap};
+    nextcardStateMap[cardId] = {
+      ...nextcardStateMap[cardId],
+      fullWidth: !nextcardStateMap[cardId]?.fullWidth,
+      tableExpanded: !nextcardStateMap[cardId]?.fullWidth,
+    };
+
+    return {
+      ...state,
+      cardStateMap: nextcardStateMap,
+    };
+  }),
   on(actions.metricsTagFilterChanged, (state, {tagFilter}) => {
     return {
       ...state,

@@ -47,7 +47,7 @@ export class HistogramCardComponent {
   @Input() mode!: HistogramMode;
   @Input() xAxisType!: XAxisType;
   @Input() runColorScale!: RunColorScale;
-  @Input() showFullSize!: boolean;
+  @Input() showFullWidth!: boolean;
   @Input() isPinned!: boolean;
   @Input() linkedTimeSelection!: TimeSelectionView | null;
   @Input() isClosestStepHighlighted!: boolean | null;

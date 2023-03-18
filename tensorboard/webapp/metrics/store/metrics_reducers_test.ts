@@ -2336,6 +2336,57 @@ describe('metrics reducers', () => {
     });
   });
 
+  describe('metricsCardFullSizeToggled', () => {
+    it('expands card', () => {
+      const state = buildMetricsState();
+      const action = actions.metricsCardFullSizeToggled({
+        cardId: 'card1',
+      });
+      const nextState = reducers(state, action);
+      expect(nextState.cardStateMap).toEqual({
+        card1: {fullWidth: true, tableExpanded: true},
+      });
+    });
+
+    it('expands card when table is already expanded', () => {
+      const state = buildMetricsState({
+        cardStateMap: {card1: {tableExpanded: true}},
+      });
+      const action = actions.metricsCardFullSizeToggled({
+        cardId: 'card1',
+      });
+      const nextState = reducers(state, action);
+      expect(nextState.cardStateMap).toEqual({
+        card1: {fullWidth: true, tableExpanded: true},
+      });
+    });
+
+    it('collapse card', () => {
+      const state = buildMetricsState({
+        cardStateMap: {card1: {fullWidth: true}},
+      });
+      const action = actions.metricsCardFullSizeToggled({
+        cardId: 'card1',
+      });
+      const nextState = reducers(state, action);
+      expect(nextState.cardStateMap).toEqual({
+        card1: {fullWidth: false, tableExpanded: false},
+      });
+    });
+
+    it('collapses card when table is already expanded', () => {
+      const state = buildMetricsState({
+        cardStateMap: {card1: {fullWidth: true, tableExpanded: true}},
+      });
+      const action = actions.metricsCardFullSizeToggled({
+        cardId: 'card1',
+      });
+      const nextState = reducers(state, action);
+      expect(nextState.cardStateMap).toEqual({
+        card1: {fullWidth: false, tableExpanded: false},
+      });
+    });
+  });
   describe('metricsTagFilterChanged', () => {
     it('sets the tagFilter state', () => {
       const state = buildMetricsState({tagFilter: 'foo'});

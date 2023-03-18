@@ -31,6 +31,7 @@ import {
 import {selectors as settingsSelectors} from '../../../settings';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
+import * as selectors from '../../../selectors';
 
 @Component({
   selector: 'metrics-card-grid',
@@ -43,6 +44,7 @@ import {CardIdWithMetadata} from '../metrics_view_types';
       [cardIdsWithMetadata]="pagedItems$ | async"
       [cardMinWidth]="cardMinWidth$ | async"
       [cardObserver]="cardObserver"
+      [cardStateMap]="cardStateMap$ | async"
       (pageIndexChanged)="onPageIndexChanged($event)"
     >
     </metrics-card-grid-component>
@@ -59,6 +61,7 @@ export class CardGridContainer implements OnChanges, OnDestroy {
   readonly pageIndex$ = new BehaviorSubject<number>(0);
   private readonly items$ = new BehaviorSubject<CardIdWithMetadata[]>([]);
   private readonly ngUnsubscribe = new Subject<void>();
+  readonly cardStateMap$ = this.store.select(selectors.getCardStateMap);
 
   readonly numPages$ = combineLatest([
     this.items$,

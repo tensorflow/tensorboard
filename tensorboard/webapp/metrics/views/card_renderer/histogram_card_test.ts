@@ -38,7 +38,11 @@ import {
 } from '../../../widgets/histogram/histogram_types';
 import {buildNormalizedHistograms} from '../../../widgets/histogram/histogram_util';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
-import {stepSelectorToggled, timeSelectionChanged} from '../../actions';
+import {
+  stepSelectorToggled,
+  timeSelectionChanged,
+  metricsCardFullSizeToggled,
+} from '../../actions';
 import {PluginType} from '../../data_source';
 import * as selectors from '../../store/metrics_selectors';
 import {
@@ -256,31 +260,29 @@ describe('histogram card', () => {
   });
 
   describe('full size', () => {
+    let dispatchedActions: Action[];
+
     beforeEach(() => {
       provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
+
+      dispatchedActions = [];
+      spyOn(store, 'dispatch').and.callFake((action: Action) => {
+        dispatchedActions.push(action);
+      });
     });
 
-    it('requests full size on toggle', () => {
-      const onFullWidthChanged = jasmine.createSpy();
-      const onFullHeightChanged = jasmine.createSpy();
+    it('dispatches metricsCardFullSizeToggled on full size toggle', () => {
       const fixture = createHistogramCardContainer();
       fixture.detectChanges();
 
-      fixture.componentInstance.fullWidthChanged.subscribe(onFullWidthChanged);
-      fixture.componentInstance.fullHeightChanged.subscribe(
-        onFullHeightChanged
-      );
       const button = fixture.debugElement.query(
         By.css('[aria-label="Toggle full size mode"]')
       );
 
       button.nativeElement.click();
-      expect(onFullWidthChanged.calls.allArgs()).toEqual([[true]]);
-      expect(onFullHeightChanged.calls.allArgs()).toEqual([[true]]);
-
-      button.nativeElement.click();
-      expect(onFullWidthChanged.calls.allArgs()).toEqual([[true], [false]]);
-      expect(onFullHeightChanged.calls.allArgs()).toEqual([[true], [false]]);
+      expect(dispatchedActions).toEqual([
+        metricsCardFullSizeToggled({cardId: 'card1'}),
+      ]);
     });
   });
 
