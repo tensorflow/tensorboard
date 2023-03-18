@@ -55,7 +55,7 @@ Set the environment variable MODEL_PATH to the location of the resulting model
 directory on your machine.
 
 Install docker and TensorFlow Serving following the
-[official documentation](https://www.tensorflow.org/serving/docker).
+[official documentation](https://www.tensorflow.org/tfx/serving/docker).
 
 Serve the model using docker through
 `docker run -p 8500:8500 --mount type=bind,source=${MODEL_PATH},target=/models/uci_income -e MODEL_NAME=uci_income -t tensorflow/serving`.
