@@ -51,8 +51,8 @@ export function buildMetricsSettingsState(
     tooltipSort: TooltipSort.NEAREST,
     ignoreOutliers: false,
     xAxisType: XAxisType.WALL_TIME,
-    scalarSmoothing: 0.3,
     hideEmptyCards: true,
+    scalarSmoothing: 0.3,
     scalarPartitionNonMonotonicX: false,
     imageBrightnessInMilli: 123,
     imageContrastInMilli: 123,
@@ -62,7 +62,7 @@ export function buildMetricsSettingsState(
   };
 }
 
-function buildBlankState(): MetricsState {
+export function buildBlankState(): MetricsState {
   return {
     tagMetadataLoadState: {
       state: DataLoadState.NOT_LOADED,
