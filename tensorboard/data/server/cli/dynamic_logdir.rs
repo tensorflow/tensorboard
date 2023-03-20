@@ -17,6 +17,7 @@ limitations under the License.
 
 use log::error;
 use std::collections::HashMap;
+use std::env;
 use std::io::{self, Read};
 use std::path::PathBuf;
 
@@ -93,6 +94,13 @@ impl DynLogdir {
     /// This constructor is heavyweight; it may construct an HTTP client and read a GCS credentials
     /// file from disk.
     ///
+    /// In the path represents a GCS logdir, the created `gcs::Logdir` will attempt to fetch the
+    /// `"TB_GCS_BUFFER_SIZE_KB"` environment variable that represent the read buffer size (in Kb)
+    /// for each TF events file.
+    /// Note: if reading a large number of TF events files, use the `"TB_GCS_BUFFER_SIZE_KB"`
+    /// environment variable to prevent running out of memory by controlling the total size of the
+    /// allocated memory.
+    ///
     /// # Panics
     ///
     /// May panic in debug mode if called from a thread with an active Tokio runtime; see
@@ -104,7 +112,13 @@ impl DynLogdir {
             ParsedLogdir::Disk(path) => Ok(DynLogdir::Disk(DiskLogdir::new(path))),
             ParsedLogdir::Gcs { bucket, prefix } => {
                 let client = gcs::Client::new()?;
-                let logdir = gcs::Logdir::new(client, bucket, prefix);
+                let buffer_capacity = env::var("TB_GCS_BUFFER_SIZE_KB")
+                    .ok()
+                    .map(|n| n.parse::<usize>().ok())
+                    .unwrap_or(None)
+                    .map(|n| n * 1024); // convert Kb to bytes
+
+                let logdir = gcs::Logdir::new(client, bucket, prefix, buffer_capacity);
                 Ok(DynLogdir::Gcs(logdir))
             }
         }

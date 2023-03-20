@@ -79,23 +79,33 @@ pub struct Logdir {
     /// Invariant: `prefix` either is empty or ends with `/`, and thus an event file name should be
     /// joined onto `prefix` to form its full object name.
     prefix: String,
-}
-
-impl Logdir {
-    pub fn new(gcs: Client, bucket: String, mut prefix: String) -> Self {
-        if !prefix.is_empty() && !prefix.ends_with('/') {
-            prefix.push('/');
-        }
-        Self {
-            gcs,
-            bucket,
-            prefix,
-        }
-    }
+    /// Size of the opened file read buffer (in bytes) when reading from GCS.
+    /// The default value is defined by the `BUFFER_CAPACITY` constant.
+    buffer_capacity: usize,
 }
 
 /// Read large chunks from GCS to reduce network roundtrips.
 const BUFFER_CAPACITY: usize = 1024 * 1024 * 16;
+
+impl Logdir {
+    pub fn new(
+        gcs: Client,
+        bucket: String,
+        mut prefix: String,
+        buffer_capacity: Option<usize>,
+    ) -> Self {
+        if !prefix.is_empty() && !prefix.ends_with('/') {
+            prefix.push('/');
+        }
+        let buffer = buffer_capacity.unwrap_or(BUFFER_CAPACITY);
+        Self {
+            gcs,
+            bucket,
+            prefix,
+            buffer_capacity: buffer,
+        }
+    }
+}
 
 impl crate::logdir::Logdir for Logdir {
     type File = BufReader<File>;
@@ -140,6 +150,6 @@ impl crate::logdir::Logdir for Logdir {
         let mut object = self.prefix.clone();
         object.push_str(path.0.to_string_lossy().as_ref());
         let file = File::new(self.gcs.clone(), self.bucket.clone(), object);
-        Ok(BufReader::with_capacity(BUFFER_CAPACITY, file))
+        Ok(BufReader::with_capacity(self.buffer_capacity, file))
     }
 }
