@@ -116,7 +116,7 @@ impl DynLogdir {
                     .ok()
                     .map(|n| n.parse::<usize>().ok())
                     .unwrap_or(None)
-                    .map(|n| n * 1024); // convert Kb to bytes
+                    .map(|n| n * 1024); // convert the Kb buffer size to bytes
 
                 let logdir = gcs::Logdir::new(client, bucket, prefix, buffer_capacity);
                 Ok(DynLogdir::Gcs(logdir))
