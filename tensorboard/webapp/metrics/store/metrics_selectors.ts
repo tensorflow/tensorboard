@@ -514,13 +514,6 @@ export const getMetricsCardMinMax = createSelector(
   }
 );
 
-export const getMetricsCardDataMinMax = createSelector(
-  getCardStateMap,
-  (cardStateMap: CardStateMap, cardId: CardId): MinMaxStep | undefined => {
-    return cardStateMap[cardId]?.dataMinMax;
-  }
-);
-
 /**
  * Returns the min and max step found in the cards data.
  */
