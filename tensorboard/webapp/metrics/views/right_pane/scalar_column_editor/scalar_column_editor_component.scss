@@ -46,3 +46,16 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
 .highlight-top {
   border-top: 2px solid mat.get-color-from-palette($_accent);
 }
+
+button {
+  display: grid;
+  cursor: pointer;
+  width: 25px;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 8px;
+  background-color: inherit;
+  border: unset;
+}

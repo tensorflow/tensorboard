@@ -93,6 +93,15 @@ limitations under the License.
           <mat-icon svgIcon="get_app_24px"></mat-icon>
           <span>Download data</span>
         </button>
+        <button
+          *ngIf="columnCustomizationEnabled"
+          mat-menu-item
+          (click)="openSlideoutColumnEditMenu.emit()"
+          aria-label="Open menu to edit data table columns"
+        >
+          <mat-icon svgIcon="edit_24px"></mat-icon>
+          <span>Edit Table Columns</span>
+        </button>
       </mat-menu>
     </span>
   </div>

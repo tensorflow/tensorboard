@@ -51,6 +51,14 @@ export const metricsSlideoutMenuToggled = createAction(
   '[Metrics] Slide out settings menu toggled'
 );
 
+export const metricsSlideoutMenuRequested = createAction(
+  '[Metrics] Slide out settings menu requested'
+);
+
+export const metricsSlideoutMenuClosed = createAction(
+  '[Metrics] Slide out settings menu closed'
+);
+
 export const metricsTagMetadataRequested = createAction(
   '[Metrics] Metrics Tag Metadata Requested'
 );

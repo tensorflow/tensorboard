@@ -3802,4 +3802,55 @@ describe('metrics reducers', () => {
       expect(state3.isSettingsPaneOpen).toBe(false);
     });
   });
+
+  describe('Metrics Slideout Menu', () => {
+    describe('#metricsSlideoutMenuToggled', () => {
+      it('toggles the isSlideoutMenuOpen state', () => {
+        const state1 = buildMetricsState({
+          isSlideoutMenuOpen: false,
+        });
+
+        const state2 = reducers(state1, actions.metricsSlideoutMenuToggled());
+        expect(state2.isSlideoutMenuOpen).toBe(true);
+
+        const state3 = reducers(state2, actions.metricsSlideoutMenuToggled());
+        expect(state3.isSlideoutMenuOpen).toBe(false);
+      });
+    });
+
+    describe('#metricsSlideoutMenuRequested', () => {
+      it('sets the isSlideoutMenuOpen and isSettingsPaneOpen to true', () => {
+        const state1 = buildMetricsState({
+          isSlideoutMenuOpen: false,
+          isSettingsPaneOpen: false,
+        });
+
+        const state2 = reducers(state1, actions.metricsSlideoutMenuRequested());
+        expect(state2.isSlideoutMenuOpen).toBe(true);
+        expect(state2.isSettingsPaneOpen).toBe(true);
+      });
+
+      it('leaves isSettingsPaneOpen as true when it is already set', () => {
+        const state1 = buildMetricsState({
+          isSlideoutMenuOpen: false,
+          isSettingsPaneOpen: true,
+        });
+
+        const state2 = reducers(state1, actions.metricsSlideoutMenuRequested());
+        expect(state2.isSlideoutMenuOpen).toBe(true);
+        expect(state2.isSettingsPaneOpen).toBe(true);
+      });
+    });
+
+    describe('#metricsSlideoutMenuClosed', () => {
+      it('sets the isSlideoutMenuOpen to false', () => {
+        const state1 = buildMetricsState({
+          isSlideoutMenuOpen: true,
+        });
+
+        const state2 = reducers(state1, actions.metricsSlideoutMenuClosed());
+        expect(state2.isSlideoutMenuOpen).toBe(false);
+      });
+    });
+  });
 });

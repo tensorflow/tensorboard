@@ -80,6 +80,7 @@ import {
   sortingDataTable,
   stepSelectorToggled,
   timeSelectionChanged,
+  metricsSlideoutMenuRequested,
 } from '../../actions';
 import {PluginType, ScalarStepDatum} from '../../data_source';
 import {
@@ -191,6 +192,7 @@ function isMinMaxStepValid(minMax: MinMaxStep | undefined): boolean {
       (onLineChartZoom)="onLineChartZoom($event)"
       (reorderColumnHeaders)="reorderColumnHeaders($event)"
       (onCardStateChanged)="onCardStateChanged($event)"
+      (openSlideoutColumnEditMenu)="openSlideoutColumnEditMenu()"
     ></scalar-card-component>
   `,
   styles: [
@@ -831,5 +833,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
   reorderColumnHeaders(headers: ColumnHeader[]) {
     this.store.dispatch(dataTableColumnDrag({newOrder: headers}));
+  }
+
+  openSlideoutColumnEditMenu() {
+    this.store.dispatch(metricsSlideoutMenuRequested());
   }
 }

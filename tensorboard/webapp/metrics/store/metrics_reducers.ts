@@ -1347,6 +1347,12 @@ const reducer = createReducer(
   }),
   on(actions.metricsSlideoutMenuToggled, (state) => {
     return {...state, isSlideoutMenuOpen: !state.isSlideoutMenuOpen};
+  }),
+  on(actions.metricsSlideoutMenuRequested, (state) => {
+    return {...state, isSlideoutMenuOpen: true, isSettingsPaneOpen: true};
+  }),
+  on(actions.metricsSlideoutMenuClosed, (state) => {
+    return {...state, isSlideoutMenuOpen: false};
   })
 );
 
