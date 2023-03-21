@@ -83,8 +83,8 @@ pub struct Logdir {
     /// Size of the opened file read buffer (in Kb) when reading from GCS.
     /// The `gcs::Logdir::new` will attempt to fetch the `TB_GCS_BUFFER_SIZE_KB` environment
     /// variable that represent the read buffer size (in Kb) for each TF events file.
-    /// Note: if reading a large number of TF events files, use the `TB_GCS_BUFFER_SIZE_KB`
-    /// environment variable to prevent running out of memory by controlling the total size of the
+    /// Note: if reading a large number of TF events files, set an appropriate value for
+    /// `buffer_capacity` to prevent running out of memory. This determines the total size of the
     /// allocated memory.
     /// The default value is defined by the `DEFAULT_BUFFER_CAPACITY` constant.
     buffer_capacity: usize,
