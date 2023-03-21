@@ -86,7 +86,7 @@ pub struct Logdir {
     /// Note: if reading a large number of TF events files, set an appropriate value for
     /// `buffer_capacity` to prevent running out of memory. This determines the total size of the
     /// allocated memory.
-    /// The default value is defined by the `DEFAULT_BUFFER_CAPACITY` constant.
+    /// The default value is defined by the `DEFAULT_BUFFER_CAPACITY_KB` constant.
     buffer_capacity: usize,
 }
 
