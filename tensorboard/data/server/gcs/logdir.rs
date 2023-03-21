@@ -84,8 +84,9 @@ pub struct Logdir {
     buffer_capacity: usize,
 }
 
+/// Default size of the GSC file read buffer.
 /// Read large chunks from GCS to reduce network roundtrips.
-const BUFFER_CAPACITY: usize = 1024 * 1024 * 16;
+const DEFAULT_BUFFER_CAPACITY: usize = 1024 * 1024 * 16;
 
 impl Logdir {
     pub fn new(
@@ -97,7 +98,7 @@ impl Logdir {
         if !prefix.is_empty() && !prefix.ends_with('/') {
             prefix.push('/');
         }
-        let buffer = buffer_capacity.unwrap_or(BUFFER_CAPACITY);
+        let buffer = buffer_capacity.unwrap_or(DEFAULT_BUFFER_CAPACITY);
         Self {
             gcs,
             bucket,
