@@ -394,22 +394,6 @@ export const getMetricsRangeSelectionEnabled = createSelector(
   }
 );
 
-export const getMetricsCardRangeSelectionEnabled = createSelector(
-  getMetricsRangeSelectionEnabled,
-  getCardStateMap,
-  (
-    globalRangeSelectionEnabled: boolean,
-    cardStateMap: CardStateMap,
-    cardId: CardId
-  ) => {
-    const cardState = cardStateMap[cardId];
-    return getCardSelectionStateToBoolean(
-      cardState?.rangeSelectionOverride,
-      globalRangeSelectionEnabled
-    );
-  }
-);
-
 export const getMetricsStepMinMax = createSelector(
   selectMetricsState,
   (state: MetricsState): {min: number; max: number} => {
@@ -497,6 +481,28 @@ export const isMetricsSettingsPaneOpen = createSelector(
 export const isMetricsSlideoutMenuOpen = createSelector(
   selectMetricsState,
   (state): boolean => state.isSlideoutMenuOpen
+);
+
+export const getMetricsCardRangeSelectionEnabled = createSelector(
+  getMetricsRangeSelectionEnabled,
+  getMetricsLinkedTimeEnabled,
+  getCardStateMap,
+  (
+    globalRangeSelectionEnabled: boolean,
+    linkedTimeEnabled: boolean,
+    cardStateMap: CardStateMap,
+    cardId: CardId
+  ) => {
+    if (linkedTimeEnabled) {
+      return globalRangeSelectionEnabled;
+    }
+
+    const cardState = cardStateMap[cardId];
+    return getCardSelectionStateToBoolean(
+      cardState?.rangeSelectionOverride,
+      globalRangeSelectionEnabled
+    );
+  }
 );
 
 /**
