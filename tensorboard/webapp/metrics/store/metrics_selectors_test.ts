@@ -1118,6 +1118,44 @@ describe('metrics selectors', () => {
         )
       ).toBeFalse();
     });
+
+    it('returns global value when linked time is enabled', () => {
+      expect(
+        selectors.getMetricsCardRangeSelectionEnabled(
+          appStateFromMetricsState(
+            buildMetricsState({
+              rangeSelectionEnabled: true,
+              linkedTimeEnabled: true,
+              cardStateMap: {
+                card1: {
+                  rangeSelectionOverride:
+                    CardFeatureOverride.OVERRIDE_AS_DISABLED,
+                },
+              },
+            })
+          ),
+          'card1'
+        )
+      ).toBeTrue();
+
+      expect(
+        selectors.getMetricsCardRangeSelectionEnabled(
+          appStateFromMetricsState(
+            buildMetricsState({
+              rangeSelectionEnabled: false,
+              linkedTimeEnabled: true,
+              cardStateMap: {
+                card1: {
+                  rangeSelectionOverride:
+                    CardFeatureOverride.OVERRIDE_AS_ENABLED,
+                },
+              },
+            })
+          ),
+          'card1'
+        )
+      ).toBeFalse();
+    });
   });
 
   describe('getMetricsStepMinMax', () => {
