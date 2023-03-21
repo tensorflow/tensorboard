@@ -15,7 +15,7 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType, OnInitEffects} from '@ngrx/effects';
 import {Action, createAction, Store} from '@ngrx/store';
-import {merge, Observable} from 'rxjs';
+import {EMPTY, merge, Observable} from 'rxjs';
 import {
   buffer,
   debounceTime,
@@ -25,11 +25,13 @@ import {
   share,
   skip,
   tap,
+  withLatestFrom,
 } from 'rxjs/operators';
 import {PersistentSettingsConfigModule} from '../persistent_settings_config_module';
 import {PersistentSettingsDataSource} from '../_data_source/persistent_settings_data_source';
 import {PersistableSettings} from '../_data_source/types';
 import {globalSettingsLoaded} from './persistent_settings_actions';
+import {getShouldPersistSettings} from './persistent_settings_selectors';
 
 const initAction = createAction('[Persistent Settings] Effects Init');
 const DEBOUNCE_PERIOD_IN_MS = 500;
@@ -85,7 +87,11 @@ export class PersistentSettingsEffects implements OnInitEffects {
         // Buffers changes from all selectors and only emit when debounce period
         // is over.
         buffer(selectorsEmit$.pipe(debounceTime(DEBOUNCE_PERIOD_IN_MS))),
-        mergeMap((partialSettings) => {
+        withLatestFrom(this.store.select(getShouldPersistSettings)),
+        mergeMap(([partialSettings, shouldPersistSettings]) => {
+          if (!shouldPersistSettings) {
+            return EMPTY;
+          }
           const partialSetting: Partial<PersistableSettings> = {};
           // Combine buffered setting changes. Last settings change would
           // overwrite earlier changes.

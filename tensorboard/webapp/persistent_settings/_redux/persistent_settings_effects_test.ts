@@ -33,6 +33,7 @@ import {
   PersistentSettingsEffects,
   TEST_ONLY,
 } from './persistent_settings_effects';
+import {getShouldPersistSettings} from './persistent_settings_selectors';
 
 describe('persistent_settings effects test', () => {
   let action: ReplaySubject<Action>;
@@ -95,7 +96,7 @@ describe('persistent_settings effects test', () => {
     });
 
     describe('on init', () => {
-      it('fetches user settings and emits an aciton', () => {
+      it('fetches user settings and emits an action', () => {
         getSettingsSpy.and.returnValue(
           of({
             ignoreOutliers: false,
@@ -207,6 +208,30 @@ describe('persistent_settings effects test', () => {
           scalarSmoothing: 0.3,
           ignoreOutliers: true,
         });
+      }));
+
+      it('persists settings when it should', fakeAsync(() => {
+        store.overrideSelector(getShouldPersistSettings, true);
+        initializeAndSubscribe();
+
+        store.overrideSelector(setSmoothingSelector, {scalarSmoothing: 0.3});
+        store.refreshState();
+
+        tick(TEST_ONLY.DEBOUNCE_PERIOD_IN_MS);
+        expect(setSettingsSpy).toHaveBeenCalledOnceWith({
+          scalarSmoothing: 0.3,
+        });
+      }));
+
+      it('does not persist settings when it should not', fakeAsync(() => {
+        store.overrideSelector(getShouldPersistSettings, false);
+        initializeAndSubscribe();
+
+        store.overrideSelector(setSmoothingSelector, {scalarSmoothing: 0.3});
+        store.refreshState();
+
+        tick(TEST_ONLY.DEBOUNCE_PERIOD_IN_MS);
+        expect(setSettingsSpy).not.toHaveBeenCalled();
       }));
     });
   });

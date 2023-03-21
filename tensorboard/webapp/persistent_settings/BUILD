@@ -12,8 +12,9 @@ tf_ng_module(
         ":config_module",
         "//tensorboard/webapp/persistent_settings/_data_source",
         "//tensorboard/webapp/persistent_settings/_data_source:types",
+        "//tensorboard/webapp/persistent_settings/_redux",
         "//tensorboard/webapp/persistent_settings/_redux:persistent_settings_actions",
-        "//tensorboard/webapp/persistent_settings/_redux:persistent_settings_effects",
+        "//tensorboard/webapp/persistent_settings/_redux:types",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
@@ -66,6 +67,6 @@ tf_ng_web_test_suite(
     deps = [
         ":config_module_test_lib",
         "//tensorboard/webapp/persistent_settings/_data_source:_data_source_test_lib",
-        "//tensorboard/webapp/persistent_settings/_redux:persistent_settings_effects_test_lib",
+        "//tensorboard/webapp/persistent_settings/_redux:_redux_test_lib",
     ],
 )

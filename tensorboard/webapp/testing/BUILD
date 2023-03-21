@@ -72,6 +72,7 @@ tf_ts_library(
         "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/feature_flag/store:testing",
         "//tensorboard/webapp/metrics:test_lib",
+        "//tensorboard/webapp/persistent_settings/_redux:testing",
         "//tensorboard/webapp/settings:testing",
         "@npm//@ngrx/store",
     ],
