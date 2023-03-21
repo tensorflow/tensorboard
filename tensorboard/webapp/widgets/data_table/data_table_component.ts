@@ -87,7 +87,9 @@ export class DataTableComponent implements OnDestroy {
         if (selectedStepRunData.VALUE === undefined) {
           return '';
         }
-        return numberFormatter.formatShort(selectedStepRunData.VALUE as number);
+        return intlNumberFormatter.formatShort(
+          selectedStepRunData.VALUE as number
+        );
       case ColumnHeaderType.STEP:
         if (selectedStepRunData.STEP === undefined) {
           return '';
@@ -112,14 +114,14 @@ export class DataTableComponent implements OnDestroy {
         if (selectedStepRunData.SMOOTHED === undefined) {
           return '';
         }
-        return numberFormatter.formatShort(
+        return intlNumberFormatter.formatShort(
           selectedStepRunData.SMOOTHED as number
         );
       case ColumnHeaderType.VALUE_CHANGE:
         if (selectedStepRunData.VALUE_CHANGE === undefined) {
           return '';
         }
-        return numberFormatter.formatShort(
+        return intlNumberFormatter.formatShort(
           Math.abs(selectedStepRunData.VALUE_CHANGE as number)
         );
       case ColumnHeaderType.START_STEP:

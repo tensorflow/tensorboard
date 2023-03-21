@@ -93,7 +93,7 @@ export const numberFormatter: Formatter = {
  */
 
 const IntlNumberFormatter = new Intl.NumberFormat(undefined, {
-  maximumFractionDigits: 3,
+  maximumFractionDigits: 4,
 });
 
 function formatIntlNumber(x: number): string {
