@@ -1084,6 +1084,7 @@ const reducer = createReducer(
         // again have the "global" state.
         cardStateMap[cardId] = {
           ...cardState,
+          stepSelectionOverride: CardFeatureOverride.NONE,
           rangeSelectionOverride: CardFeatureOverride.NONE,
         };
         return cardStateMap;

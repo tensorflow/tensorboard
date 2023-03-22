@@ -3342,9 +3342,11 @@ describe('metrics reducers', () => {
           cardStateMap: {
             card1: {
               rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+              stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
             },
             card2: {
               rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_DISABLED,
+              stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_DISABLED,
             },
             card3: {},
           },
@@ -3353,12 +3355,15 @@ describe('metrics reducers', () => {
         expect(state2.cardStateMap).toEqual({
           card1: {
             rangeSelectionOverride: CardFeatureOverride.NONE,
+            stepSelectionOverride: CardFeatureOverride.NONE,
           },
           card2: {
             rangeSelectionOverride: CardFeatureOverride.NONE,
+            stepSelectionOverride: CardFeatureOverride.NONE,
           },
           card3: {
             rangeSelectionOverride: CardFeatureOverride.NONE,
+            stepSelectionOverride: CardFeatureOverride.NONE,
           },
         });
       });
