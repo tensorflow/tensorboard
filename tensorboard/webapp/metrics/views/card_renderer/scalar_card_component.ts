@@ -93,8 +93,8 @@ export class ScalarCardComponent<Downloader> {
   @Input() useDarkMode!: boolean;
   @Input() forceSvg!: boolean;
   @Input() columnCustomizationEnabled!: boolean;
-  @Input() linkedTimeSelection!: TimeSelectionView | null;
-  @Input() stepOrLinkedTimeSelection!: TimeSelection | null;
+  @Input() linkedTimeSelection: TimeSelectionView | undefined;
+  @Input() stepOrLinkedTimeSelection: TimeSelection | undefined;
   @Input() isProspectiveFobFeatureEnabled: Boolean = false;
   @Input() minMaxStep!: MinMaxStep;
   @Input() columnHeaders!: ColumnHeader[];
@@ -238,17 +238,14 @@ export class ScalarCardComponent<Downloader> {
   }
 
   showDataTable() {
-    return (
-      this.xAxisType === XAxisType.STEP &&
-      this.stepOrLinkedTimeSelection !== null
-    );
+    return this.xAxisType === XAxisType.STEP && this.stepOrLinkedTimeSelection;
   }
 
   showFobController() {
     return (
       this.xAxisType === XAxisType.STEP &&
-      (this.stepOrLinkedTimeSelection !== null ||
-        this.isProspectiveFobFeatureEnabled)
+      this.minMaxStep &&
+      (this.stepOrLinkedTimeSelection || this.isProspectiveFobFeatureEnabled)
     );
   }
 

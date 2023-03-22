@@ -105,7 +105,7 @@ export class ScalarCardDataTable {
   }
 
   getTimeSelectionTableData(): SelectedStepRunData[] {
-    if (this.stepOrLinkedTimeSelection === null) {
+    if (!this.stepOrLinkedTimeSelection) {
       return [];
     }
     const startStep = this.stepOrLinkedTimeSelection.start.step;
