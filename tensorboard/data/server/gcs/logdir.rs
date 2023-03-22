@@ -18,6 +18,7 @@ limitations under the License.
 use log::warn;
 use reqwest::StatusCode;
 use std::collections::HashMap;
+use std::env;
 use std::io::{self, BufReader, Read};
 use std::path::{Path, PathBuf};
 
@@ -79,23 +80,44 @@ pub struct Logdir {
     /// Invariant: `prefix` either is empty or ends with `/`, and thus an event file name should be
     /// joined onto `prefix` to form its full object name.
     prefix: String,
+    /// Size of the opened file read buffer (in Kb) when reading from GCS.
+    /// The `gcs::Logdir::new` will attempt to fetch the `TB_GCS_BUFFER_SIZE_KB` environment
+    /// variable that represent the read buffer size (in Kb) for each TF events file.
+    /// Note: if reading a large number of TF events files, set an appropriate value for
+    /// `buffer_capacity` to prevent running out of memory. This determines the total size of the
+    /// allocated memory.
+    /// The default value is defined by the `DEFAULT_BUFFER_CAPACITY_KB` constant.
+    buffer_capacity: usize,
 }
+
+/// Default size of the GCS file read buffer (in Kb).
+/// Read large chunks from GCS to reduce network roundtrips.
+const DEFAULT_BUFFER_CAPACITY_KB: usize = 1024 * 16;
 
 impl Logdir {
     pub fn new(gcs: Client, bucket: String, mut prefix: String) -> Self {
         if !prefix.is_empty() && !prefix.ends_with('/') {
             prefix.push('/');
         }
+        // convert the Kb buffer size to bytes
+        let buffer_capacity = match env::var("TB_GCS_BUFFER_SIZE_KB") {
+            Ok(val) => {
+                val.parse::<usize>()
+                    .ok()
+                    .unwrap_or(DEFAULT_BUFFER_CAPACITY_KB)
+                    * 1024
+            }
+            Err(_) => DEFAULT_BUFFER_CAPACITY_KB * 1024,
+        };
+
         Self {
             gcs,
             bucket,
             prefix,
+            buffer_capacity,
         }
     }
 }
-
-/// Read large chunks from GCS to reduce network roundtrips.
-const BUFFER_CAPACITY: usize = 1024 * 1024 * 16;
 
 impl crate::logdir::Logdir for Logdir {
     type File = BufReader<File>;
@@ -140,6 +162,6 @@ impl crate::logdir::Logdir for Logdir {
         let mut object = self.prefix.clone();
         object.push_str(path.0.to_string_lossy().as_ref());
         let file = File::new(self.gcs.clone(), self.bucket.clone(), object);
-        Ok(BufReader::with_capacity(BUFFER_CAPACITY, file))
+        Ok(BufReader::with_capacity(self.buffer_capacity, file))
     }
 }
