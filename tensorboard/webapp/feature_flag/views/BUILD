@@ -36,9 +36,9 @@ tf_ng_module(
 tf_ng_module(
     name = "feature_flag_dialog",
     srcs = [
-        "feature_flag_dialog_module.ts",
         "feature_flag_dialog_component.ts",
         "feature_flag_dialog_container.ts",
+        "feature_flag_dialog_module.ts",
         "types.ts",
     ],
     assets = [
@@ -65,12 +65,12 @@ tf_ts_library(
     name = "views_test",
     testonly = True,
     srcs = [
-        "feature_flag_modal_trigger_container_test.ts",
         "feature_flag_dialog_test.ts",
+        "feature_flag_modal_trigger_container_test.ts",
     ],
     deps = [
-        ":feature_flag_modal_trigger",
         ":feature_flag_dialog",
+        ":feature_flag_modal_trigger",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_cdk_testing",
         "//tensorboard/webapp/angular:expect_angular_cdk_testing_testbed",

@@ -39,7 +39,7 @@ import {
 import {FeatureFlagOverrideStatus} from './types';
 
 describe('feature_flag_dialog_container', () => {
-  let store: MockStore<State>;f
+  let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;
   let fixture: ComponentFixture<FeatureFlagDialogContainer>;
 
