@@ -30,23 +30,23 @@ import {
 } from '../store/feature_flag_selectors';
 import {buildFeatureFlagState, buildState} from '../store/testing';
 import {FeatureFlags} from '../types';
-import {FeatureFlagPageModule} from './feature_flag_module';
-import {FeatureFlagPageComponent} from './feature_flag_page_component';
+import {FeatureFlagDialogModule} from './feature_flag_dialog_module';
+import {FeatureFlagDialogComponent} from './feature_flag_dialog_component';
 import {
-  FeatureFlagPageContainer,
+  FeatureFlagDialogContainer,
   TEST_ONLY,
-} from './feature_flag_page_container';
+} from './feature_flag_dialog_container';
 import {FeatureFlagOverrideStatus} from './types';
 
-describe('feature_flag_page_container', () => {
-  let store: MockStore<State>;
+describe('feature_flag_dialog_container', () => {
+  let store: MockStore<State>;f
   let dispatchSpy: jasmine.Spy;
-  let fixture: ComponentFixture<FeatureFlagPageContainer>;
+  let fixture: ComponentFixture<FeatureFlagDialogContainer>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [FeatureFlagPageContainer],
-      imports: [CommonModule, FeatureFlagPageModule],
+      declarations: [FeatureFlagDialogContainer],
+      imports: [CommonModule, FeatureFlagDialogModule],
       providers: [
         provideMockStore({
           initialState: buildState(
@@ -56,7 +56,7 @@ describe('feature_flag_page_container', () => {
             })
           ),
         }),
-        FeatureFlagPageContainer,
+        FeatureFlagDialogContainer,
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -69,15 +69,15 @@ describe('feature_flag_page_container', () => {
   });
 
   function createComponent() {
-    fixture = TestBed.createComponent(FeatureFlagPageContainer);
+    fixture = TestBed.createComponent(FeatureFlagDialogContainer);
     fixture.detectChanges();
   }
 
   function getComponent(): HTMLElement {
-    return fixture.nativeElement.querySelector('feature-flag-page-component');
+    return fixture.nativeElement.querySelector('feature-flag-dialog-component');
   }
 
-  // Tests for feature_flag_page_container
+  // Tests for feature_flag_dialog_container
   describe('onFlagChanged', () => {
     it('creates override status is set to enabled or disabled not set', () => {
       store.overrideSelector(getDefaultFeatureFlags, {
@@ -155,7 +155,7 @@ describe('feature_flag_page_container', () => {
     });
   });
 
-  // Tests for feature_flag_page_component
+  // Tests for feature_flag_dialog_component
   it('creates rows for each feature flag', () => {
     store.overrideSelector(getDefaultFeatureFlags, {
       inColab: false,
@@ -192,21 +192,21 @@ describe('feature_flag_page_container', () => {
   describe('formatFlagValue', () => {
     it('converts true to "Enabled"', () => {
       const component = TestBed.createComponent(
-        FeatureFlagPageComponent
+        FeatureFlagDialogComponent
       ).componentInstance;
       expect(component.formatFlagValue(true)).toEqual('- Enabled');
     });
 
     it('converts false to "Disabled"', () => {
       const component = TestBed.createComponent(
-        FeatureFlagPageComponent
+        FeatureFlagDialogComponent
       ).componentInstance;
       expect(component.formatFlagValue(false)).toEqual('- Disabled');
     });
 
     it('converts null and undefined to "null"', () => {
       const component = TestBed.createComponent(
-        FeatureFlagPageComponent
+        FeatureFlagDialogComponent
       ).componentInstance;
       expect(component.formatFlagValue(null)).toEqual('- null');
       expect(component.formatFlagValue(undefined)).toEqual('- null');
@@ -214,14 +214,14 @@ describe('feature_flag_page_container', () => {
 
     it('serializes arrays', () => {
       const component = TestBed.createComponent(
-        FeatureFlagPageComponent
+        FeatureFlagDialogComponent
       ).componentInstance;
       expect(component.formatFlagValue([])).toEqual('- []');
     });
 
     it('serializes numbers and strings', () => {
       const component = TestBed.createComponent(
-        FeatureFlagPageComponent
+        FeatureFlagDialogComponent
       ).componentInstance;
       expect(component.formatFlagValue(1)).toEqual('- 1');
       expect(component.formatFlagValue('foo')).toEqual('- foo');
@@ -229,7 +229,7 @@ describe('feature_flag_page_container', () => {
 
     it('does not include hyphen when value has length 0', () => {
       const component = TestBed.createComponent(
-        FeatureFlagPageComponent
+        FeatureFlagDialogComponent
       ).componentInstance;
       expect(component.formatFlagValue('')).toEqual('');
     });

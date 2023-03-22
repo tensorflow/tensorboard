@@ -18,11 +18,11 @@ import {FeatureFlags} from '../types';
 import {FeatureFlagStatus, FeatureFlagStatusEvent} from './types';
 
 @Component({
-  selector: 'feature-flag-page-component',
-  styleUrls: ['feature_flag_page_component.css'],
-  templateUrl: `feature_flag_page_component.ng.html`,
+  selector: 'feature-flag-dialog-component',
+  styleUrls: ['feature_flag_dialog_component.css'],
+  templateUrl: `feature_flag_dialog_component.ng.html`,
 })
-export class FeatureFlagPageComponent {
+export class FeatureFlagDialogComponent {
   @Input() featureFlagStatuses!: FeatureFlagStatus<keyof FeatureFlags>[];
 
   @Input() hasFlagsSentToServer: boolean = false;

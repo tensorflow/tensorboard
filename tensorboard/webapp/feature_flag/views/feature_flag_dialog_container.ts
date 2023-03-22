@@ -40,16 +40,16 @@ import {
 } from './types';
 
 @Component({
-  selector: 'feature-flag-page',
-  template: `<feature-flag-page-component
+  selector: 'feature-flag-dialog',
+  template: `<feature-flag-dialog-component
     [featureFlagStatuses]="featureFlags$ | async"
     [hasFlagsSentToServer]="hasFlagsSentToServer$ | async"
     [showFlagsFilter]="showFlagsFilter$ | async"
     (flagChanged)="onFlagChanged($event)"
     (allFlagsReset)="onAllFlagsReset()"
-  ></feature-flag-page-component>`,
+  ></feature-flag-dialog-component>`,
 })
-export class FeatureFlagPageContainer {
+export class FeatureFlagDialogContainer {
   constructor(private readonly store: Store<State>) {}
 
   readonly showFlagsFilter$ = this.store.select(getOverriddenFeatureFlags).pipe(

@@ -18,7 +18,7 @@ import {Store} from '@ngrx/store';
 import {State} from '../../app_state';
 import {featureFlagOverridesReset} from '../actions/feature_flag_actions';
 import {getShowFlagsEnabled} from '../store/feature_flag_selectors';
-import {FeatureFlagPageContainer} from './feature_flag_page_container';
+import {FeatureFlagDialogContainer} from './feature_flag_dialog_container';
 
 const util = {
   reloadWindow: () => {
@@ -33,7 +33,7 @@ const util = {
 })
 export class FeatureFlagModalTriggerContainer implements OnInit {
   readonly showFeatureFlags$ = this.store.select(getShowFlagsEnabled);
-  private featureFlagsDialog?: MatDialogRef<FeatureFlagPageContainer>;
+  private featureFlagsDialog?: MatDialogRef<FeatureFlagDialogContainer>;
 
   constructor(
     private readonly store: Store<State>,
@@ -43,7 +43,7 @@ export class FeatureFlagModalTriggerContainer implements OnInit {
   ngOnInit() {
     this.showFeatureFlags$.subscribe((showFeatureFlags: boolean) => {
       if (showFeatureFlags) {
-        this.featureFlagsDialog = this.dialog.open(FeatureFlagPageContainer);
+        this.featureFlagsDialog = this.dialog.open(FeatureFlagDialogContainer);
         this.featureFlagsDialog.afterClosed().subscribe(() => {
           // Reset the 'showFlags' flag when the dialog is closed to prevent the
           // dialog from appearing again after the page is refreshed.
