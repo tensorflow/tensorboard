@@ -167,7 +167,7 @@ describe('data table', () => {
         {
           id: 'someid',
           RUN: 'run name',
-          VALUE: 3,
+          VALUE: 31415926535,
           STEP: 1,
           RELATIVE_TIME: 123,
           VALUE_CHANGE: -20,
@@ -175,10 +175,10 @@ describe('data table', () => {
           END_STEP: 30,
           START_VALUE: 13,
           END_VALUE: 23,
-          MIN_VALUE: 1,
-          MAX_VALUE: 500,
+          MIN_VALUE: 0.12345,
+          MAX_VALUE: 89793238462,
           PERCENTAGE_CHANGE: 0.3,
-          SMOOTHED: 2,
+          SMOOTHED: 3.14e10,
         },
       ],
     });
@@ -187,7 +187,7 @@ describe('data table', () => {
 
     // The first header should always be blank as it is the run color column.
     expect(dataElements[0].nativeElement.innerText).toBe('');
-    expect(dataElements[1].nativeElement.innerText).toBe('3');
+    expect(dataElements[1].nativeElement.innerText).toBe('31,415,926,535');
     expect(dataElements[2].nativeElement.innerText).toBe('run name');
     expect(dataElements[3].nativeElement.innerText).toBe('1');
     expect(dataElements[4].nativeElement.innerText).toBe('123 ms');
@@ -202,8 +202,8 @@ describe('data table', () => {
     expect(dataElements[7].nativeElement.innerText).toBe('30');
     expect(dataElements[8].nativeElement.innerText).toBe('13');
     expect(dataElements[9].nativeElement.innerText).toBe('23');
-    expect(dataElements[10].nativeElement.innerText).toBe('1');
-    expect(dataElements[11].nativeElement.innerText).toBe('500');
+    expect(dataElements[10].nativeElement.innerText).toBe('0.1235');
+    expect(dataElements[11].nativeElement.innerText).toBe('89,793,238,462');
     expect(dataElements[12].nativeElement.innerText).toBe('30%');
     expect(dataElements[12].queryAll(By.css('mat-icon')).length).toBe(1);
     expect(
@@ -211,7 +211,7 @@ describe('data table', () => {
         .queryAll(By.css('mat-icon'))[0]
         .nativeElement.getAttribute('svgIcon')
     ).toBe('arrow_upward_24px');
-    expect(dataElements[13].nativeElement.innerText).toBe('2');
+    expect(dataElements[13].nativeElement.innerText).toBe('31,400,000,000');
   });
 
   it('does not displays headers or data when header is disabled', () => {
