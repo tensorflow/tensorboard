@@ -24,7 +24,6 @@ import {Store} from '@ngrx/store';
 import {combineLatest, Observable} from 'rxjs';
 import {filter, map} from 'rxjs/operators';
 import {State} from '../../../app_state';
-import {getCardStateMap} from '../../../selectors';
 import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
 import {
@@ -43,6 +42,7 @@ import {
   getCardLoadState,
   getCardMetadata,
   getCardPinnedState,
+  getCardStateMap,
   getCardTimeSeries,
   getMetricsHistogramMode,
   getMetricsLinkedTimeSelection,

@@ -287,6 +287,10 @@ describe('histogram card', () => {
   });
 
   describe('linked time', () => {
+    beforeEach(() => {
+      store.overrideSelector(selectors.getMetricsRangeSelectionEnabled, true);
+    });
+
     it('dispatches timeSelectionChanged when HistogramComponent emits onLinkedTimeSelectionChanged event', () => {
       provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
       store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
@@ -356,7 +360,6 @@ describe('histogram card', () => {
         start: {step: 5},
         end: {step: 10},
       });
-      store.overrideSelector(selectors.getMetricsRangeSelectionEnabled, true);
       const fixture = createHistogramCardContainer();
       fixture.detectChanges();
 
@@ -411,7 +414,6 @@ describe('histogram card', () => {
           start: {step: 18},
           end: {step: 20},
         });
-        store.overrideSelector(selectors.getMetricsRangeSelectionEnabled, true);
         const fixture = createHistogramCardContainer();
         fixture.detectChanges();
 
@@ -440,7 +442,6 @@ describe('histogram card', () => {
           start: {step: 18},
           end: {step: 20},
         });
-        store.overrideSelector(selectors.getMetricsRangeSelectionEnabled, true);
         const fixture = createHistogramCardContainer();
         fixture.detectChanges();
 
