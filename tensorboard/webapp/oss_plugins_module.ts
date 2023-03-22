@@ -21,9 +21,8 @@ import {NgModule} from '@angular/core';
 import {DebuggerModule} from '../plugins/debugger_v2/tf_debugger_v2_plugin/debugger_module';
 import {MetricsModule} from './metrics/metrics_module';
 import {NpmiModule} from './plugins/npmi/npmi_module';
-import {TextV2Module} from './plugins/text_v2/text_v2_module';
 
 @NgModule({
-  imports: [DebuggerModule, MetricsModule, NpmiModule, TextV2Module],
+  imports: [DebuggerModule, MetricsModule, NpmiModule],
 })
 export class OssPluginsModule {}
