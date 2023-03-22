@@ -369,7 +369,7 @@ describe('histogram card', () => {
       });
     });
 
-    fit('removes end step when range selection is disabled', () => {
+    it('removes end step when range selection is disabled', () => {
       provideMockCardSeriesData(
         selectSpy,
         PluginType.HISTOGRAMS,
