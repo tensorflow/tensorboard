@@ -221,7 +221,7 @@ export function isDatumVisible(
  * @param timeSelection
  * @param rangeSelectionEnabled
  */
-function maybeOmitTimeSelectionEnd(
+export function maybeOmitTimeSelectionEnd(
   timeSelection: TimeSelection,
   rangeSelectionEnabled: boolean
 ): TimeSelection {
