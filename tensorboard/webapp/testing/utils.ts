@@ -21,7 +21,6 @@ import {
 import {createState as createCoreState} from '../core/testing';
 import {buildFeatureFlagState} from '../feature_flag/store/testing';
 import {appStateFromMetricsState, buildMetricsState} from '../metrics/testing';
-import {appStateFromNpmiState, createNpmiState} from '../plugins/npmi/testing';
 import {createSettingsState} from '../settings/testing';
 
 export function provideMockTbStore() {
@@ -32,7 +31,6 @@ export function provideMockTbStore() {
       ...buildStateFromAlertState(buildAlertState({})),
       ...createCoreState(),
       ...appStateFromMetricsState(buildMetricsState()),
-      ...appStateFromNpmiState(createNpmiState()),
       ...createSettingsState(),
     },
   });
