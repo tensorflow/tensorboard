@@ -94,6 +94,14 @@ export class OSSSettingsConverter extends SettingsConverter<
     if (settings.linkedTimeEnabled !== undefined) {
       serializableSettings.linkedTimeEnabled = settings.linkedTimeEnabled;
     }
+    if (settings.singleSelectionHeaders !== undefined) {
+      serializableSettings.singleSelectionHeaders =
+        settings.singleSelectionHeaders;
+    }
+    if (settings.rangeSelectionHeaders !== undefined) {
+      serializableSettings.rangeSelectionHeaders =
+        settings.rangeSelectionHeaders;
+    }
     return serializableSettings;
   }
 
@@ -200,6 +208,20 @@ export class OSSSettingsConverter extends SettingsConverter<
       settings.linkedTimeEnabled = backendSettings.linkedTimeEnabled;
     }
 
+    if (
+      backendSettings.hasOwnProperty('singleSelectionHeaders') &&
+      typeof backendSettings.singleSelectionHeaders === 'object'
+    ) {
+      settings.singleSelectionHeaders = backendSettings.singleSelectionHeaders;
+    }
+
+    if (
+      backendSettings.hasOwnProperty('rangeSelectionHeaders') &&
+      typeof backendSettings.rangeSelectionHeaders === 'object'
+    ) {
+      settings.rangeSelectionHeaders = backendSettings.rangeSelectionHeaders;
+    }
+
     return settings;
   }
 }
@@ -263,6 +285,7 @@ export class PersistentSettingsDataSourceImpl<UiSettings, StorageSettings>
         localStorage.getItem(LEGACY_METRICS_LOCAL_STORAGE_KEY) ?? '{}'
       )
     );
+
     const settings = this.converter.backendToUi(
       this.deserialize(localStorage.getItem(GLOBAL_LOCAL_STORAGE_KEY) ?? '{}')
     );

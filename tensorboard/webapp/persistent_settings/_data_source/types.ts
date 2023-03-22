@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {TooltipSort} from '../../metrics/types';
+import {ColumnHeader} from '../../metrics/views/card_renderer/scalar_card_types';
 
 export enum ThemeValue {
   BROWSER_DEFAULT = 'browser_default',
@@ -43,6 +44,8 @@ export declare interface BackendSettings {
   stepSelectorEnabled?: boolean;
   rangeSelectionEnabled?: boolean;
   linkedTimeEnabled?: boolean;
+  singleSelectionHeaders?: ColumnHeader[];
+  rangeSelectionHeaders?: ColumnHeader[];
 }
 
 /**
@@ -65,4 +68,6 @@ export interface PersistableSettings {
   stepSelectorEnabled?: boolean;
   rangeSelectionEnabled?: boolean;
   linkedTimeEnabled?: boolean;
+  singleSelectionHeaders?: ColumnHeader[];
+  rangeSelectionHeaders?: ColumnHeader[];
 }

@@ -24,6 +24,7 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp/metrics:types",
+        "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",
     ],
 )
 
@@ -53,6 +54,7 @@ tf_ng_module(
         ":types",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/metrics:types",
+        "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",
         "@npm//@angular/core",
         "@npm//@types/jasmine",
         "@npm//rxjs",

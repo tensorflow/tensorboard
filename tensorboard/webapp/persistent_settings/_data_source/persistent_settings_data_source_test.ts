@@ -16,6 +16,7 @@ import {Injectable} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {firstValueFrom} from 'rxjs';
 import {TooltipSort} from '../../metrics/types';
+import {ColumnHeaderType} from '../../metrics/views/card_renderer/scalar_card_types';
 import {
   OSSSettingsConverter,
   PersistentSettingsDataSourceImpl,
@@ -180,6 +181,44 @@ describe('persistent_settings data_source test', () => {
 
         expect(actual).toEqual({
           linkedTimeEnabled: true,
+        });
+      });
+      it('properly converts singleSelectionEnabled', async () => {
+        getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
+          JSON.stringify({
+            singleSelectionHeaders: [
+              {type: ColumnHeaderType.RUN, enabled: true},
+              {type: ColumnHeaderType.VALUE, enabled: false},
+            ],
+          })
+        );
+
+        const actual = await firstValueFrom(dataSource.getSettings());
+
+        expect(actual).toEqual({
+          singleSelectionHeaders: [
+            {type: ColumnHeaderType.RUN, enabled: true},
+            {type: ColumnHeaderType.VALUE, enabled: false},
+          ],
+        });
+      });
+      it('properly converts rangeSelectionEnabled', async () => {
+        getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
+          JSON.stringify({
+            rangeSelectionHeaders: [
+              {type: ColumnHeaderType.RUN, enabled: true},
+              {type: ColumnHeaderType.MIN_VALUE, enabled: true},
+            ],
+          })
+        );
+
+        const actual = await firstValueFrom(dataSource.getSettings());
+
+        expect(actual).toEqual({
+          rangeSelectionHeaders: [
+            {type: ColumnHeaderType.RUN, enabled: true},
+            {type: ColumnHeaderType.MIN_VALUE, enabled: true},
+          ],
         });
       });
     });

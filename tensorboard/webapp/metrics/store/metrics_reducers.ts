@@ -461,6 +461,10 @@ const reducer = createReducer(
       partialSettings.rangeSelectionEnabled ?? state.rangeSelectionEnabled;
     const linkedTimeEnabled =
       partialSettings.linkedTimeEnabled ?? state.linkedTimeEnabled;
+    const singleSelectionHeaders =
+      partialSettings.singleSelectionHeaders ?? state.singleSelectionHeaders;
+    const rangeSelectionHeaders =
+      partialSettings.rangeSelectionHeaders ?? state.rangeSelectionHeaders;
 
     return {
       ...state,
@@ -468,6 +472,8 @@ const reducer = createReducer(
       stepSelectorEnabled,
       rangeSelectionEnabled,
       linkedTimeEnabled,
+      singleSelectionHeaders,
+      rangeSelectionHeaders,
       settings: {
         ...state.settings,
         ...metricsSettings,

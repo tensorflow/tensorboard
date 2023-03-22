@@ -2804,6 +2804,67 @@ describe('metrics reducers', () => {
 
       expect(nextState.isSettingsPaneOpen).toBe(false);
     });
+
+    it('loads singleSelectionHeaders setting into the next state', () => {
+      const beforeState = buildMetricsState({
+        singleSelectionHeaders: [
+          {type: ColumnHeaderType.RUN, enabled: true},
+          {type: ColumnHeaderType.SMOOTHED, enabled: true},
+          {type: ColumnHeaderType.VALUE, enabled: true},
+        ],
+      });
+
+      const nextState = reducers(
+        beforeState,
+        globalSettingsLoaded({
+          partialSettings: {
+            singleSelectionHeaders: [
+              {type: ColumnHeaderType.SMOOTHED, enabled: true},
+              {type: ColumnHeaderType.RUN, enabled: true},
+              {type: ColumnHeaderType.VALUE, enabled: false},
+            ],
+          },
+        })
+      );
+
+      expect(nextState.singleSelectionHeaders).toEqual([
+        {type: ColumnHeaderType.SMOOTHED, enabled: true},
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.VALUE, enabled: false},
+      ]);
+    });
+
+    it('loads rangeSelectionHeaders setting into the next state', () => {
+      const beforeState = buildMetricsState({
+        rangeSelectionHeaders: [
+          {type: ColumnHeaderType.RUN, enabled: true},
+          {type: ColumnHeaderType.MIN_VALUE, enabled: true},
+          {type: ColumnHeaderType.MAX_VALUE, enabled: true},
+          {type: ColumnHeaderType.MEAN, enabled: false},
+        ],
+      });
+
+      const nextState = reducers(
+        beforeState,
+        globalSettingsLoaded({
+          partialSettings: {
+            rangeSelectionHeaders: [
+              {type: ColumnHeaderType.RUN, enabled: true},
+              {type: ColumnHeaderType.MEAN, enabled: true},
+              {type: ColumnHeaderType.MAX_VALUE, enabled: true},
+              {type: ColumnHeaderType.MIN_VALUE, enabled: false},
+            ],
+          },
+        })
+      );
+
+      expect(nextState.rangeSelectionHeaders).toEqual([
+        {type: ColumnHeaderType.RUN, enabled: true},
+        {type: ColumnHeaderType.MEAN, enabled: true},
+        {type: ColumnHeaderType.MAX_VALUE, enabled: true},
+        {type: ColumnHeaderType.MIN_VALUE, enabled: false},
+      ]);
+    });
   });
 
   it('loads Step Selector Setting into the next state', () => {
