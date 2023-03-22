@@ -44,20 +44,11 @@ from tensorboard.plugins.pr_curve import pr_curves_plugin
 from tensorboard.plugins.profile_redirect import profile_redirect_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
-from tensorboard.plugins.text_v2 import text_v2_plugin
 from tensorboard.plugins.mesh import mesh_plugin
 from tensorboard.plugins.npmi import npmi_plugin
 
 
 logger = logging.getLogger(__name__)
-
-
-class ExperimentalTextV2Plugin(
-    text_v2_plugin.TextV2Plugin, experimental_plugin.ExperimentalPlugin
-):
-    """Angular Text Plugin marked as experimental."""
-
-    pass
 
 
 class ExperimentalNpmiPlugin(
@@ -86,7 +77,6 @@ _PLUGINS = [
     profile_redirect_plugin.ProfileRedirectPluginLoader,
     hparams_plugin.HParamsPlugin,
     mesh_plugin.MeshPlugin,
-    ExperimentalTextV2Plugin,
     ExperimentalNpmiPlugin,
 ]
 
