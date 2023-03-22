@@ -50,7 +50,6 @@ tf_ng_module(
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/feature_flag/store:types",
         "//tensorboard/webapp/settings",
-        "//tensorboard/webapp/tbdev_upload",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",
         "@npm//@angular/core",

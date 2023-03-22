@@ -20,7 +20,6 @@ import {Component} from '@angular/core';
     <mat-toolbar>
       <span class="brand">TensorBoard</span>
       <plugin-selector class="plugins"></plugin-selector>
-      <tbdev-upload-button></tbdev-upload-button>
       <app-header-dark-mode-toggle></app-header-dark-mode-toggle>
       <app-header-reload></app-header-reload>
       <settings-button></settings-button>

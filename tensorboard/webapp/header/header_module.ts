@@ -23,7 +23,6 @@ import {MatTabsModule} from '@angular/material/tabs';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {CoreModule} from '../core/core_module';
 import {SettingsModule} from '../settings/settings_module';
-import {TbdevUploadModule} from '../tbdev_upload/tbdev_upload_module';
 import {DarkModeToggleComponent} from './dark_mode_toggle_component';
 import {DarkModeToggleContainer} from './dark_mode_toggle_container';
 import {HeaderComponent} from './header_component';
@@ -57,7 +56,6 @@ import {ReloadContainer} from './reload_container';
     CommonModule,
     CoreModule,
     SettingsModule,
-    TbdevUploadModule,
   ],
 })
 export class HeaderModule {}
