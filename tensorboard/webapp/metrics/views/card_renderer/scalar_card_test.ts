@@ -76,8 +76,8 @@ import {ResizeDetectorTestingModule} from '../../../widgets/resize_detector_test
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {
   cardMinMaxChanged,
-  metricsCardStateUpdated,
   metricsCardFullSizeToggled,
+  metricsCardStateUpdated,
   stepSelectorToggled,
   timeSelectionChanged,
 } from '../../actions';
@@ -2266,11 +2266,6 @@ describe('scalar card', () => {
           runToSeries
         );
 
-        store.overrideSelector(getMetricsLinkedTimeSelection, {
-          start: {step: 20},
-          end: {step: 40},
-        });
-        store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
         store.overrideSelector(getCardStateMap, {
           card1: {
             dataMinMax: {
@@ -2279,10 +2274,15 @@ describe('scalar card', () => {
             },
           },
         });
+
+        store.overrideSelector(getMetricsCardTimeSelection, {
+          start: {step: 20},
+          end: {step: 40},
+        });
       });
 
       it('renders fobs', fakeAsync(() => {
-        store.overrideSelector(getMetricsLinkedTimeSelection, {
+        store.overrideSelector(getMetricsCardTimeSelection, {
           start: {step: 20},
           end: null,
         });
@@ -2336,7 +2336,7 @@ describe('scalar card', () => {
       }));
 
       it('dispatches timeSelectionChanged action when fob is dragged', fakeAsync(() => {
-        store.overrideSelector(getMetricsLinkedTimeSelection, {
+        store.overrideSelector(getMetricsCardTimeSelection, {
           start: {step: 20},
           end: null,
         });
@@ -2361,7 +2361,7 @@ describe('scalar card', () => {
         testController.mouseMove(fakeEvent);
 
         // Simulate ngrx update from mouseMove;
-        store.overrideSelector(getMetricsLinkedTimeSelection, {
+        store.overrideSelector(getMetricsCardTimeSelection, {
           start: {step: 25},
           end: null,
         });
@@ -2383,7 +2383,7 @@ describe('scalar card', () => {
         testController.mouseMove(fakeEvent);
 
         // Simulate ngrx update from mouseMove;
-        store.overrideSelector(getMetricsLinkedTimeSelection, {
+        store.overrideSelector(getMetricsCardTimeSelection, {
           start: {step: 30},
           end: null,
         });
@@ -2432,7 +2432,7 @@ describe('scalar card', () => {
       }));
 
       it('toggles step selection when single fob is deselected even when linked time is enabled', fakeAsync(() => {
-        store.overrideSelector(getMetricsLinkedTimeSelection, {
+        store.overrideSelector(getMetricsCardTimeSelection, {
           start: {step: 20},
           end: null,
         });
@@ -2452,7 +2452,7 @@ describe('scalar card', () => {
       }));
 
       it('does not render fobs when no timeSelection is provided', fakeAsync(() => {
-        store.overrideSelector(getMetricsLinkedTimeSelection, null);
+        store.overrideSelector(getMetricsCardTimeSelection, undefined);
         const fixture = createComponent('card1');
         fixture.detectChanges();
         const fobController = fixture.debugElement.query(
@@ -2645,7 +2645,7 @@ describe('scalar card', () => {
           },
         },
       });
-      store.overrideSelector(getMetricsCardRangeSelectionEnabled, false);
+      store.overrideSelector(getMetricsRangeSelectionEnabled, false);
     });
 
     it('builds single selected step data object', fakeAsync(() => {
@@ -2732,7 +2732,7 @@ describe('scalar card', () => {
         null /* metadataOverride */,
         runToSeries
       );
-      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
+      store.overrideSelector(getMetricsRangeSelectionEnabled, true);
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([
@@ -2809,7 +2809,7 @@ describe('scalar card', () => {
         null /* metadataOverride */,
         runToSeries
       );
-      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
+      store.overrideSelector(getMetricsRangeSelectionEnabled, true);
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([['run1', true]])
@@ -2870,7 +2870,7 @@ describe('scalar card', () => {
         null /* metadataOverride */,
         runToSeries
       );
-      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
+      store.overrideSelector(getMetricsRangeSelectionEnabled, true);
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([['run1', true]])
@@ -2977,7 +2977,7 @@ describe('scalar card', () => {
         null /* metadataOverride */,
         runToSeries
       );
-      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
+      store.overrideSelector(getMetricsRangeSelectionEnabled, true);
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([
@@ -3489,13 +3489,12 @@ describe('scalar card', () => {
         end: null,
       });
 
+      store.overrideSelector(getMetricsCardTimeSelection, {
+        start: {step: 2},
+        end: null,
+      });
       store.overrideSelector(getCardStateMap, {
         card1: {},
-      });
-      store.overrideSelector(getMetricsCardMinMax, {minStep: 0, maxStep: 100});
-      store.overrideSelector(getMetricsCardDataMinMax, {
-        minStep: 0,
-        maxStep: 100,
       });
     });
 
@@ -3661,9 +3660,8 @@ describe('scalar card', () => {
         testController.prospectiveFobClicked(new MouseEvent('mouseclick'));
         store.overrideSelector(getMetricsCardTimeSelection, {
           start: {step: 10},
-          end: {step: 30},
+          end: null,
         });
-        store.overrideSelector(getMetricsCardRangeSelectionEnabled, false);
         store.refreshState();
         fixture.detectChanges();
 

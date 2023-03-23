@@ -23,6 +23,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",
+        "//tensorboard/webapp/metrics/views/card_renderer:utils",
         "//tensorboard/webapp/persistent_settings",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/util:dom",

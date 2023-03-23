@@ -438,6 +438,7 @@ describe('metrics selectors', () => {
         const state = appStateFromMetricsState(
           buildMetricsState({
             ...partialState,
+            rangeSelectionEnabled: true,
             cardStateMap: {
               card1: {
                 stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
@@ -551,6 +552,7 @@ describe('metrics selectors', () => {
         const state = appStateFromMetricsState(
           buildMetricsState({
             ...partialState,
+            rangeSelectionEnabled: true,
             cardStateMap: {
               card1: {
                 stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
@@ -577,6 +579,7 @@ describe('metrics selectors', () => {
         const state = appStateFromMetricsState(
           buildMetricsState({
             ...partialState,
+            rangeSelectionEnabled: true,
             cardStateMap: {
               card1: {
                 stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
@@ -594,22 +597,206 @@ describe('metrics selectors', () => {
           end: {step: 5},
         });
       });
+
+      it('removes end value if range selection is overridden as disabled', () => {
+        const state = appStateFromMetricsState(
+          buildMetricsState({
+            ...partialState,
+            rangeSelectionEnabled: true,
+            cardStateMap: {
+              card1: {
+                stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+                rangeSelectionOverride:
+                  CardFeatureOverride.OVERRIDE_AS_DISABLED,
+                dataMinMax: {
+                  minStep: 0,
+                  maxStep: 5,
+                },
+              },
+            },
+          })
+        );
+
+        expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
+          start: {step: 0},
+          end: null,
+        });
+      });
+
+      it('removes end value if range selection is globally disabled', () => {
+        const state = appStateFromMetricsState(
+          buildMetricsState({
+            ...partialState,
+            rangeSelectionEnabled: false,
+            cardStateMap: {
+              card1: {
+                stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+                dataMinMax: {
+                  minStep: 0,
+                  maxStep: 5,
+                },
+              },
+            },
+          })
+        );
+
+        expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
+          start: {step: 0},
+          end: null,
+        });
+      });
+
+      it('does not remove end value if range selection is overridden as enabled', () => {
+        const state = appStateFromMetricsState(
+          buildMetricsState({
+            ...partialState,
+            rangeSelectionEnabled: false,
+            cardStateMap: {
+              card1: {
+                stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+                rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+                dataMinMax: {
+                  minStep: 0,
+                  maxStep: 5,
+                },
+              },
+            },
+          })
+        );
+
+        expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
+          start: {step: 0},
+          end: {step: 5},
+        });
+      });
+
+      it('clips time selection if it exceeds the cards minMax', () => {
+        const state = appStateFromMetricsState(
+          buildMetricsState({
+            ...partialState,
+            rangeSelectionEnabled: true,
+            cardStateMap: {
+              card1: {
+                stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+                dataMinMax: {
+                  minStep: 5,
+                  maxStep: 10,
+                },
+                timeSelection: {
+                  start: {step: 0},
+                  end: {step: 15},
+                },
+              },
+            },
+          })
+        );
+
+        expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
+          start: {step: 5},
+          end: {step: 10},
+        });
+      });
     });
 
-    it('returns linkedTimeSelection if linkedTime is enabled', () => {
-      const state = appStateFromMetricsState(
-        buildMetricsState({
+    describe('with linkedTime enabled', () => {
+      let partialState: Partial<MetricsState>;
+      beforeEach(() => {
+        partialState = {
           linkedTimeEnabled: true,
           linkedTimeSelection: {
             start: {step: 0},
             end: {step: 5},
           },
-        })
-      );
+        };
+      });
 
-      expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
-        start: {step: 0},
-        end: {step: 5},
+      it('returns linkedTimeSelection if linkedTime is enabled', () => {
+        const state = appStateFromMetricsState(
+          buildMetricsState({
+            ...partialState,
+            rangeSelectionEnabled: true,
+            cardStateMap: {
+              card1: {
+                dataMinMax: {
+                  minStep: 0,
+                  maxStep: 5,
+                },
+              },
+            },
+          })
+        );
+
+        expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
+          start: {step: 0},
+          end: {step: 5},
+        });
+      });
+
+      it('removes end value if global range selection is disabled', () => {
+        const state = appStateFromMetricsState(
+          buildMetricsState({
+            ...partialState,
+            rangeSelectionEnabled: false,
+            cardStateMap: {
+              card1: {
+                dataMinMax: {
+                  minStep: 0,
+                  maxStep: 5,
+                },
+              },
+            },
+          })
+        );
+
+        expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
+          start: {step: 0},
+          end: null,
+        });
+      });
+
+      it('maintains end value if local range selection is overridden as disabled', () => {
+        const state = appStateFromMetricsState(
+          buildMetricsState({
+            ...partialState,
+            rangeSelectionEnabled: true,
+            cardStateMap: {
+              card1: {
+                rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+                dataMinMax: {
+                  minStep: 0,
+                  maxStep: 5,
+                },
+              },
+            },
+          })
+        );
+
+        expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
+          start: {step: 0},
+          end: {step: 5},
+        });
+      });
+
+      it('clips time selection based on card minMax', () => {
+        const state = appStateFromMetricsState(
+          buildMetricsState({
+            ...partialState,
+            rangeSelectionEnabled: true,
+            cardStateMap: {
+              card1: {
+                dataMinMax: {
+                  minStep: 1,
+                  maxStep: 4,
+                },
+              },
+            },
+          })
+        );
+
+        expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
+          start: {step: 1},
+          end: {step: 4},
+        });
       });
     });
   });
