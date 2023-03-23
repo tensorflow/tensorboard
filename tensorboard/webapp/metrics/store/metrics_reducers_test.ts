@@ -3551,6 +3551,18 @@ describe('metrics reducers', () => {
         expect(state2.linkedTimeEnabled).toBe(false);
       });
 
+      it('keeps rangeSelection when linkedTime is disabled', () => {
+        const state1 = buildMetricsState({
+          rangeSelectionEnabled: true,
+          stepSelectorEnabled: true,
+          linkedTimeEnabled: true,
+        });
+
+        const state2 = reducers(state1, actions.linkedTimeToggled({}));
+        expect(state2.rangeSelectionEnabled).toBe(true);
+        expect(state2.linkedTimeEnabled).toBe(false);
+      });
+
       it('sets cardStepIndex to step 0 when linkedTimeSelection is null before toggling', () => {
         const state1 = buildMetricsState({
           linkedTimeEnabled: false,
@@ -3689,6 +3701,38 @@ describe('metrics reducers', () => {
           start: {step: 20},
           end: null,
         });
+      });
+
+      it('enables rangeSelection if linkedTimeSelection has an end step', () => {
+        const state1 = buildMetricsState({
+          stepSelectorEnabled: true,
+          rangeSelectionEnabled: false,
+          linkedTimeEnabled: false,
+          linkedTimeSelection: {
+            start: {step: 5},
+            end: {step: 10},
+          },
+        });
+
+        const state2 = reducers(state1, actions.linkedTimeToggled({}));
+        expect(state2.rangeSelectionEnabled).toBeTrue();
+        expect(state2.linkedTimeEnabled).toBeTrue();
+      });
+
+      it('does not enable rangeSelection if linkedTimeSelection does not have an end step', () => {
+        const state1 = buildMetricsState({
+          stepSelectorEnabled: true,
+          rangeSelectionEnabled: false,
+          linkedTimeEnabled: false,
+          linkedTimeSelection: {
+            start: {step: 5},
+            end: null,
+          },
+        });
+
+        const state2 = reducers(state1, actions.linkedTimeToggled({}));
+        expect(state2.linkedTimeEnabled).toBeTrue();
+        expect(state2.rangeSelectionEnabled).toBeFalse();
       });
     });
   });
