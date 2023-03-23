@@ -33,6 +33,7 @@ import {
   ColumnHeader,
   MinMaxStep,
 } from '../views/card_renderer/scalar_card_types';
+import {formatTimeSelection} from '../views/card_renderer/utils';
 import * as storeUtils from './metrics_store_internal_utils';
 import {
   getCardSelectionStateToBoolean,
@@ -536,20 +537,17 @@ export const getMetricsCardDataMinMax = createSelector(
 export const getMetricsCardTimeSelection = createSelector(
   getCardStateMap,
   getMetricsStepSelectorEnabled,
+  getMetricsRangeSelectionEnabled,
   getMetricsLinkedTimeEnabled,
   getMetricsLinkedTimeSelection,
   (
     cardStateMap: CardStateMap,
     globalStepSelectionEnabled: boolean,
+    globalRangeSelectionEnabled: boolean,
     linkedTimeEnabled: boolean,
     linkedTimeSelection: TimeSelection | null,
     cardId: CardId
   ): TimeSelection | undefined => {
-    // Handling Linked Time
-    if (linkedTimeEnabled && linkedTimeSelection) {
-      return linkedTimeSelection;
-    }
-
     const cardState = cardStateMap[cardId];
     if (!cardState) {
       return;
@@ -557,6 +555,16 @@ export const getMetricsCardTimeSelection = createSelector(
     const minMaxStep = getMinMaxStepFromCardState(cardState);
     if (!minMaxStep) {
       return;
+    }
+
+    // Handling Linked Time
+    if (linkedTimeEnabled && linkedTimeSelection) {
+      return formatTimeSelection(
+        linkedTimeSelection,
+        minMaxStep,
+        // Note that globalRangeSelection should always be used with linked time.
+        globalRangeSelectionEnabled
+      );
     }
 
     // If the user has disabled step selection, nothing should be returned.
@@ -569,13 +577,22 @@ export const getMetricsCardTimeSelection = createSelector(
       return;
     }
 
+    const rangeSelectionEnabled = getCardSelectionStateToBoolean(
+      cardState.rangeSelectionOverride,
+      globalRangeSelectionEnabled
+    );
+
     const startStep = cardState.timeSelection?.start.step ?? minMaxStep.minStep;
     const endStep = cardState.timeSelection?.end?.step ?? minMaxStep.maxStep;
 
     // The default time selection
-    return {
-      start: {step: startStep},
-      end: {step: endStep},
-    };
+    return formatTimeSelection(
+      {
+        start: {step: startStep},
+        end: {step: endStep},
+      },
+      minMaxStep,
+      rangeSelectionEnabled
+    );
   }
 );

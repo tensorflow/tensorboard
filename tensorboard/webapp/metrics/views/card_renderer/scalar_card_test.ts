@@ -76,8 +76,8 @@ import {ResizeDetectorTestingModule} from '../../../widgets/resize_detector_test
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {
   cardMinMaxChanged,
-  metricsCardStateUpdated,
   metricsCardFullSizeToggled,
+  metricsCardStateUpdated,
   stepSelectorToggled,
   timeSelectionChanged,
 } from '../../actions';
@@ -2270,14 +2270,9 @@ describe('scalar card', () => {
           start: {step: 20},
           end: {step: 40},
         });
-        store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
-        store.overrideSelector(getCardStateMap, {
-          card1: {
-            dataMinMax: {
-              minStep: 0,
-              maxStep: 100,
-            },
-          },
+        store.overrideSelector(getMetricsCardTimeSelection, {
+          start: {step: 0},
+          end: {step: 100},
         });
       });
 
@@ -2645,7 +2640,7 @@ describe('scalar card', () => {
           },
         },
       });
-      store.overrideSelector(getMetricsCardRangeSelectionEnabled, false);
+      store.overrideSelector(getMetricsRangeSelectionEnabled, false);
     });
 
     it('builds single selected step data object', fakeAsync(() => {
@@ -2732,7 +2727,7 @@ describe('scalar card', () => {
         null /* metadataOverride */,
         runToSeries
       );
-      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
+      store.overrideSelector(getMetricsRangeSelectionEnabled, true);
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([
@@ -2809,7 +2804,7 @@ describe('scalar card', () => {
         null /* metadataOverride */,
         runToSeries
       );
-      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
+      store.overrideSelector(getMetricsRangeSelectionEnabled, true);
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([['run1', true]])
@@ -2870,7 +2865,7 @@ describe('scalar card', () => {
         null /* metadataOverride */,
         runToSeries
       );
-      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
+      store.overrideSelector(getMetricsRangeSelectionEnabled, true);
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([['run1', true]])
@@ -2977,7 +2972,7 @@ describe('scalar card', () => {
         null /* metadataOverride */,
         runToSeries
       );
-      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
+      store.overrideSelector(getMetricsRangeSelectionEnabled, true);
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([
@@ -3489,13 +3484,12 @@ describe('scalar card', () => {
         end: null,
       });
 
+      store.overrideSelector(getMetricsCardTimeSelection, {
+        start: {step: 2},
+        end: null,
+      });
       store.overrideSelector(getCardStateMap, {
         card1: {},
-      });
-      store.overrideSelector(getMetricsCardMinMax, {minStep: 0, maxStep: 100});
-      store.overrideSelector(getMetricsCardDataMinMax, {
-        minStep: 0,
-        maxStep: 100,
       });
     });
 

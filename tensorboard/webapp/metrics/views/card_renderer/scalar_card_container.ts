@@ -69,8 +69,8 @@ import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
   cardMinMaxChanged,
   dataTableColumnDrag,
-  metricsCardStateUpdated,
   metricsCardFullSizeToggled,
+  metricsCardStateUpdated,
   sortingDataTable,
   stepSelectorToggled,
   timeSelectionChanged,
@@ -82,7 +82,6 @@ import {
   getCardMetadata,
   getCardTimeSeries,
   getMetricsCardMinMax,
-  getMetricsCardRangeSelectionEnabled,
   getMetricsIgnoreOutliers,
   getMetricsScalarPartitionNonMonotonicX,
   getMetricsScalarSmoothing,
@@ -108,7 +107,6 @@ import {
   SortingInfo,
 } from './scalar_card_types';
 import {
-  formatTimeSelection,
   maybeClipTimeSelectionView,
   partitionSeries,
   TimeSelectionView,
@@ -450,22 +448,10 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       })
     );
 
-    this.stepOrLinkedTimeSelection$ = this.store
-      .select(getMetricsCardTimeSelection, this.cardId)
-      .pipe(
-        combineLatestWith(
-          this.minMaxSteps$,
-          this.store.select(getMetricsCardRangeSelectionEnabled, this.cardId)
-        ),
-        map(([timeSelection, minMaxSteps, rangeSelection]) => {
-          if (!timeSelection || !minMaxSteps) return;
-          return formatTimeSelection(
-            timeSelection,
-            minMaxSteps,
-            rangeSelection
-          );
-        })
-      );
+    this.stepOrLinkedTimeSelection$ = this.store.select(
+      getMetricsCardTimeSelection,
+      this.cardId
+    );
 
     this.columnHeaders$ = combineLatest([
       this.stepOrLinkedTimeSelection$,
