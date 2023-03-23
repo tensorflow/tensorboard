@@ -29,7 +29,6 @@ import logging
 
 import pkg_resources
 
-from tensorboard.backend import experimental_plugin
 from tensorboard.plugins.audio import audio_plugin
 from tensorboard.plugins.core import core_plugin
 from tensorboard.plugins.custom_scalar import custom_scalars_plugin
@@ -45,18 +44,9 @@ from tensorboard.plugins.profile_redirect import profile_redirect_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
 from tensorboard.plugins.mesh import mesh_plugin
-from tensorboard.plugins.npmi import npmi_plugin
 
 
 logger = logging.getLogger(__name__)
-
-
-class ExperimentalNpmiPlugin(
-    npmi_plugin.NpmiPlugin, experimental_plugin.ExperimentalPlugin
-):
-    """Angular nPMI Plugin marked as experimental."""
-
-    pass
 
 
 # Ordering matters. The order in which these lines appear determines the
@@ -77,7 +67,6 @@ _PLUGINS = [
     profile_redirect_plugin.ProfileRedirectPluginLoader,
     hparams_plugin.HParamsPlugin,
     mesh_plugin.MeshPlugin,
-    ExperimentalNpmiPlugin,
 ]
 
 
