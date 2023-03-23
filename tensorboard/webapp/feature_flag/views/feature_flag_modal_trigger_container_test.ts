@@ -14,14 +14,9 @@ limitations under the License.
 ==============================================================================*/
 import {HarnessLoader} from '@angular/cdk/testing';
 import {TestbedHarnessEnvironment} from '@angular/cdk/testing/testbed';
-import {NO_ERRORS_SCHEMA} from '@angular/core';
+import {Component} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {
-  MatDialog,
-  MatDialogModule,
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
+import {MatDialogModule} from '@angular/material/dialog';
 import {MatDialogHarness} from '@angular/material/dialog/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
@@ -38,27 +33,24 @@ import {
   FeatureFlagModalTriggerContainer,
   TEST_ONLY,
 } from './feature_flag_modal_trigger_container';
-import {FeatureFlagDialogContainer} from './feature_flag_dialog_container';
+
+@Component({
+  selector: 'testable-feature-flag-dialog-container',
+  template: '<div>Test</div>',
+})
+class TestableFeatureFlagDialogContainer {}
 
 describe('feature_flag_modal_trigger_container', () => {
   let store: MockStore<State>;
-
   let fixture: ComponentFixture<FeatureFlagModalTriggerContainer>;
-  let loader: HarnessLoader;
   let rootLoader: HarnessLoader;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MatDialogModule, NoopAnimationsModule],
-      declarations: [FeatureFlagDialogContainer],
-      providers: [
-        provideMockTbStore(),
-        {provide: MatDialogRef, useValue: MatDialog},
-      ],
-      schemas: [NO_ERRORS_SCHEMA],
+      providers: [provideMockTbStore()],
     }).compileComponents();
 
-    TestBed.overrideProvider(MAT_DIALOG_DATA, {useValue: {}});
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
 
     spyOn(store, 'dispatch').and.stub();
@@ -73,7 +65,11 @@ describe('feature_flag_modal_trigger_container', () => {
 
   function createComponent() {
     fixture = TestBed.createComponent(FeatureFlagModalTriggerContainer);
-    loader = TestbedHarnessEnvironment.loader(fixture);
+    // Override the dialog component to something that does not require a
+    // working store. The dialog component sometimes completes initialization
+    // after the test is torn down and the selectors have been reset.
+    fixture.componentInstance.featureFlagDialogType =
+      TestableFeatureFlagDialogContainer;
     rootLoader = TestbedHarnessEnvironment.documentRootLoader(fixture);
   }
 

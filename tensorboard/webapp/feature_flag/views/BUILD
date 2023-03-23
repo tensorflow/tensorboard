@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -23,6 +23,7 @@ tf_ng_module(
     deps = [
         ":feature_flag_dialog",
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
         "//tensorboard/webapp/angular:expect_angular_material_dialog",
         "//tensorboard/webapp/feature_flag/actions",
         "//tensorboard/webapp/feature_flag/store",
@@ -61,8 +62,8 @@ tf_ng_module(
     ],
 )
 
-tf_ts_library(
-    name = "views_test",
+tf_ng_module(
+    name = "views_test_lib",
     testonly = True,
     srcs = [
         "feature_flag_dialog_test.ts",
