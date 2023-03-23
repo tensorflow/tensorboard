@@ -15,7 +15,7 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {FeatureFlagModalTriggerContainer} from './feature_flag_modal_trigger_container';
-import {FeatureFlagPageModule} from './feature_flag_module';
+import {FeatureFlagDialogModule} from './feature_flag_dialog_module';
 
 /**
  * Provides the wrapper component that triggers the opening of the feature flag modal.
@@ -23,7 +23,7 @@ import {FeatureFlagPageModule} from './feature_flag_module';
  */
 @NgModule({
   declarations: [FeatureFlagModalTriggerContainer],
-  imports: [CommonModule, FeatureFlagPageModule],
+  imports: [CommonModule, FeatureFlagDialogModule],
   exports: [FeatureFlagModalTriggerContainer],
   entryComponents: [FeatureFlagModalTriggerContainer],
 })

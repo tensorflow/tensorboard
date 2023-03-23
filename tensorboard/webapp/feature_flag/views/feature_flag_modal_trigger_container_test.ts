@@ -38,7 +38,7 @@ import {
   FeatureFlagModalTriggerContainer,
   TEST_ONLY,
 } from './feature_flag_modal_trigger_container';
-import {FeatureFlagPageContainer} from './feature_flag_page_container';
+import {FeatureFlagDialogContainer} from './feature_flag_dialog_container';
 
 describe('feature_flag_modal_trigger_container', () => {
   let store: MockStore<State>;
@@ -50,7 +50,7 @@ describe('feature_flag_modal_trigger_container', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MatDialogModule, NoopAnimationsModule],
-      declarations: [FeatureFlagPageContainer],
+      declarations: [FeatureFlagDialogContainer],
       providers: [
         provideMockTbStore(),
         {provide: MatDialogRef, useValue: MatDialog},

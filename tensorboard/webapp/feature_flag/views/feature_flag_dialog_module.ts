@@ -16,16 +16,16 @@ import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatSelectModule} from '@angular/material/select';
-import {FeatureFlagPageComponent} from './feature_flag_page_component';
-import {FeatureFlagPageContainer} from './feature_flag_page_container';
+import {FeatureFlagDialogComponent} from './feature_flag_dialog_component';
+import {FeatureFlagDialogContainer} from './feature_flag_dialog_container';
 
 /**
- * Provides the wrapper component that renders the main dashboard page.
+ * Provides the wrapper component that renders the main dashboard dialog.
  */
 @NgModule({
-  declarations: [FeatureFlagPageComponent, FeatureFlagPageContainer],
+  declarations: [FeatureFlagDialogComponent, FeatureFlagDialogContainer],
   imports: [CommonModule, MatButtonModule, MatSelectModule],
-  exports: [FeatureFlagPageContainer],
-  entryComponents: [FeatureFlagPageContainer],
+  exports: [FeatureFlagDialogContainer],
+  entryComponents: [FeatureFlagDialogContainer],
 })
-export class FeatureFlagPageModule {}
+export class FeatureFlagDialogModule {}

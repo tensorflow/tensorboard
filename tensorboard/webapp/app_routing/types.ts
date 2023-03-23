@@ -35,7 +35,6 @@ export enum RouteKind {
   // Temporary enum values until we can remove special cases in core_effects to
   // handle TensorBoard applications with no routes defined.
   NOT_SET,
-  FLAGS,
 }
 
 export const DEFAULT_EXPERIMENT_ID = 'defaultExperimentId';
