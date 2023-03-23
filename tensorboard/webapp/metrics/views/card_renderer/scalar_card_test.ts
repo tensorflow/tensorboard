@@ -2266,18 +2266,23 @@ describe('scalar card', () => {
           runToSeries
         );
 
-        store.overrideSelector(getMetricsLinkedTimeSelection, {
+        store.overrideSelector(getCardStateMap, {
+          card1: {
+            dataMinMax: {
+              minStep: 0,
+              maxStep: 100,
+            },
+          },
+        });
+
+        store.overrideSelector(getMetricsCardTimeSelection, {
           start: {step: 20},
           end: {step: 40},
-        });
-        store.overrideSelector(getMetricsCardTimeSelection, {
-          start: {step: 0},
-          end: {step: 100},
         });
       });
 
       it('renders fobs', fakeAsync(() => {
-        store.overrideSelector(getMetricsLinkedTimeSelection, {
+        store.overrideSelector(getMetricsCardTimeSelection, {
           start: {step: 20},
           end: null,
         });
@@ -2331,7 +2336,7 @@ describe('scalar card', () => {
       }));
 
       it('dispatches timeSelectionChanged action when fob is dragged', fakeAsync(() => {
-        store.overrideSelector(getMetricsLinkedTimeSelection, {
+        store.overrideSelector(getMetricsCardTimeSelection, {
           start: {step: 20},
           end: null,
         });
@@ -2356,7 +2361,7 @@ describe('scalar card', () => {
         testController.mouseMove(fakeEvent);
 
         // Simulate ngrx update from mouseMove;
-        store.overrideSelector(getMetricsLinkedTimeSelection, {
+        store.overrideSelector(getMetricsCardTimeSelection, {
           start: {step: 25},
           end: null,
         });
@@ -2378,7 +2383,7 @@ describe('scalar card', () => {
         testController.mouseMove(fakeEvent);
 
         // Simulate ngrx update from mouseMove;
-        store.overrideSelector(getMetricsLinkedTimeSelection, {
+        store.overrideSelector(getMetricsCardTimeSelection, {
           start: {step: 30},
           end: null,
         });
@@ -2427,7 +2432,7 @@ describe('scalar card', () => {
       }));
 
       it('toggles step selection when single fob is deselected even when linked time is enabled', fakeAsync(() => {
-        store.overrideSelector(getMetricsLinkedTimeSelection, {
+        store.overrideSelector(getMetricsCardTimeSelection, {
           start: {step: 20},
           end: null,
         });
@@ -2447,7 +2452,7 @@ describe('scalar card', () => {
       }));
 
       it('does not render fobs when no timeSelection is provided', fakeAsync(() => {
-        store.overrideSelector(getMetricsLinkedTimeSelection, null);
+        store.overrideSelector(getMetricsCardTimeSelection, undefined);
         const fixture = createComponent('card1');
         fixture.detectChanges();
         const fobController = fixture.debugElement.query(
@@ -3655,9 +3660,8 @@ describe('scalar card', () => {
         testController.prospectiveFobClicked(new MouseEvent('mouseclick'));
         store.overrideSelector(getMetricsCardTimeSelection, {
           start: {step: 10},
-          end: {step: 30},
+          end: null,
         });
-        store.overrideSelector(getMetricsCardRangeSelectionEnabled, false);
         store.refreshState();
         fixture.detectChanges();
 
