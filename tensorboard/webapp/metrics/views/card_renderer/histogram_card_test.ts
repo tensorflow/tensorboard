@@ -39,9 +39,9 @@ import {
 import {buildNormalizedHistograms} from '../../../widgets/histogram/histogram_util';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {
+  metricsCardFullSizeToggled,
   stepSelectorToggled,
   timeSelectionChanged,
-  metricsCardFullSizeToggled,
 } from '../../actions';
 import {PluginType} from '../../data_source';
 import * as selectors from '../../store/metrics_selectors';
@@ -287,6 +287,10 @@ describe('histogram card', () => {
   });
 
   describe('linked time', () => {
+    beforeEach(() => {
+      store.overrideSelector(selectors.getMetricsRangeSelectionEnabled, true);
+    });
+
     it('dispatches timeSelectionChanged when HistogramComponent emits onLinkedTimeSelectionChanged event', () => {
       provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
       store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
@@ -365,6 +369,31 @@ describe('histogram card', () => {
       expect(viz.componentInstance.timeSelection).toEqual({
         start: {step: 5},
         end: {step: 10},
+      });
+    });
+
+    it('removes end step when range selection is disabled', () => {
+      provideMockCardSeriesData(
+        selectSpy,
+        PluginType.HISTOGRAMS,
+        'card1',
+        undefined,
+        [buildHistogramStepData({step: 5}), buildHistogramStepData({step: 15})]
+      );
+      store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
+        start: {step: 5},
+        end: {step: 10},
+      });
+      store.overrideSelector(selectors.getMetricsRangeSelectionEnabled, false);
+      const fixture = createHistogramCardContainer();
+      fixture.detectChanges();
+
+      const viz = fixture.debugElement.query(
+        By.directive(TestableHistogramWidget)
+      );
+      expect(viz.componentInstance.timeSelection).toEqual({
+        start: {step: 5},
+        end: null,
       });
     });
 

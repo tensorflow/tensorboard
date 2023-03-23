@@ -42,17 +42,19 @@ import {
   getCardLoadState,
   getCardMetadata,
   getCardPinnedState,
+  getCardStateMap,
   getCardTimeSeries,
   getMetricsHistogramMode,
   getMetricsLinkedTimeSelection,
+  getMetricsRangeSelectionEnabled,
   getMetricsXAxisType,
 } from '../../store';
-import {getCardStateMap} from '../../../selectors';
 import {CardId, CardMetadata} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {
   maybeClipTimeSelectionView,
+  maybeOmitTimeSelectionEnd,
   maybeSetClosestStartStep,
   TimeSelectionView,
 } from './utils';
@@ -173,8 +175,9 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
     this.linkedTimeSelection$ = combineLatest([
       this.store.select(getMetricsLinkedTimeSelection),
       this.steps$,
+      this.store.select(getMetricsRangeSelectionEnabled),
     ]).pipe(
-      map(([linkedTimeSelection, steps]) => {
+      map(([linkedTimeSelection, steps, rangeSelectionEnabled]) => {
         if (!linkedTimeSelection) return null;
 
         let minStep = Infinity;
@@ -183,8 +186,12 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
           minStep = Math.min(step, minStep);
           maxStep = Math.max(step, maxStep);
         }
-        const linkedTimeSelectionView = maybeClipTimeSelectionView(
+        const formattedTimeSelection = maybeOmitTimeSelectionEnd(
           linkedTimeSelection,
+          rangeSelectionEnabled
+        );
+        const linkedTimeSelectionView = maybeClipTimeSelectionView(
+          formattedTimeSelection,
           minStep,
           maxStep
         );
