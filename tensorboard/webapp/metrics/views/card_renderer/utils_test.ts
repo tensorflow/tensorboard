@@ -20,6 +20,7 @@ import {
   getClosestStep,
   getDisplayNameForRun,
   maybeClipTimeSelectionView,
+  maybeOmitTimeSelectionEnd,
   maybeSetClosestStartStep,
   partitionSeries,
 } from './utils';
@@ -465,6 +466,38 @@ describe('metrics card_renderer utils test', () => {
         startStep: 1,
         endStep: 3,
         clipped: false,
+      });
+    });
+  });
+
+  describe('#maybeOmitTimeSelectionEnd', () => {
+    it('does nothing when range selection is enabled', () => {
+      expect(
+        maybeOmitTimeSelectionEnd(
+          {
+            start: {step: 5},
+            end: {step: 10},
+          },
+          true
+        )
+      ).toEqual({
+        start: {step: 5},
+        end: {step: 10},
+      });
+    });
+
+    it('sets end step to null when range selection is disabled', () => {
+      expect(
+        maybeOmitTimeSelectionEnd(
+          {
+            start: {step: 5},
+            end: {step: 10},
+          },
+          false
+        )
+      ).toEqual({
+        start: {step: 5},
+        end: null,
       });
     });
   });
