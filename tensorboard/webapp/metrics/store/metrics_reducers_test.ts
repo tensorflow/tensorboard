@@ -3828,6 +3828,10 @@ describe('metrics reducers', () => {
         const state2 = reducers(state1, actions.metricsSlideoutMenuRequested());
         expect(state2.isSlideoutMenuOpen).toBe(true);
         expect(state2.isSettingsPaneOpen).toBe(true);
+
+        const state3 = reducers(state1, actions.metricsSlideoutMenuRequested());
+        expect(state3.isSlideoutMenuOpen).toBe(true);
+        expect(state3.isSettingsPaneOpen).toBe(true);
       });
 
       it('leaves isSettingsPaneOpen as true when it is already set', () => {
@@ -3850,6 +3854,9 @@ describe('metrics reducers', () => {
 
         const state2 = reducers(state1, actions.metricsSlideoutMenuClosed());
         expect(state2.isSlideoutMenuOpen).toBe(false);
+
+        const state3 = reducers(state1, actions.metricsSlideoutMenuClosed());
+        expect(state3.isSlideoutMenuOpen).toBe(false);
       });
     });
   });

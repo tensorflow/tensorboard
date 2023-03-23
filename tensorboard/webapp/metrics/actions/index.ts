@@ -52,7 +52,7 @@ export const metricsSlideoutMenuToggled = createAction(
 );
 
 export const metricsSlideoutMenuRequested = createAction(
-  '[Metrics] Slide out settings menu requested'
+  '[Metrics] User requested to open the slide out menu'
 );
 
 export const metricsSlideoutMenuClosed = createAction(

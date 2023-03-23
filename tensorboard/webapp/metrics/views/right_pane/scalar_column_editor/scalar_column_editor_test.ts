@@ -302,12 +302,15 @@ describe('scalar column editor', () => {
   });
 
   describe('closing', () => {
-    it('dispatches metricsSlideoutMenuClosed', () => {
-      const fixture = createComponent();
-      const dispatchedActions: Action[] = [];
+    let dispatchedActions: Action[] = [];
+    beforeEach(() => {
+      dispatchedActions = [];
       spyOn(store, 'dispatch').and.callFake((action: Action) => {
         dispatchedActions.push(action);
       });
+    });
+    it('dispatches metricsSlideoutMenuClosed', () => {
+      const fixture = createComponent();
 
       fixture.debugElement
         .query(By.css('.close-button'))
