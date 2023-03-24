@@ -23,6 +23,7 @@ tf_ng_module(
     deps = [
         ":persistent_settings_actions",
         ":types",
+        "//tensorboard/webapp/app_routing/actions",
         "//tensorboard/webapp/persistent_settings:config_module",
         "//tensorboard/webapp/persistent_settings/_data_source",
         "//tensorboard/webapp/persistent_settings/_data_source:types",
@@ -64,6 +65,8 @@ tf_ng_module(
         ":testing",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
+        "//tensorboard/webapp/app_routing/actions",
+        "//tensorboard/webapp/app_routing:testing",
         "//tensorboard/webapp/persistent_settings:config_module",
         "//tensorboard/webapp/persistent_settings/_data_source:testing",
         "//tensorboard/webapp/testing:utils",

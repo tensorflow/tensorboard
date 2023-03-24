@@ -15,9 +15,9 @@ limitations under the License.
 export const PERSISTENT_SETTINGS_FEATURE_KEY = 'persistent_settings';
 
 export interface PersistentSettingsState {
-  // Describes whether settings should be persisted after they have been
-  // changed. In the OSS code base this value is always true but Google-internal
-  // extensions may override it in certain circumstances.
+  // Describes whether settings should be read to and written from the
+  // persistent data source. In the OSS code base this value is always true but
+  // Google-internal extensions may override it in certain circumstances.
   shouldPersistSettings: boolean;
 }
 

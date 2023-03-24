@@ -21,6 +21,8 @@ import {
   debounceTime,
   delay,
   distinctUntilChanged,
+  filter,
+  first,
   mergeMap,
   share,
   skip,
@@ -32,8 +34,8 @@ import {PersistentSettingsDataSource} from '../_data_source/persistent_settings_
 import {PersistableSettings} from '../_data_source/types';
 import {globalSettingsLoaded} from './persistent_settings_actions';
 import {getShouldPersistSettings} from './persistent_settings_selectors';
+import * as appRoutingActions from '../../app_routing/actions';
 
-const initAction = createAction('[Persistent Settings] Effects Init');
 const DEBOUNCE_PERIOD_IN_MS = 500;
 
 /**
@@ -42,12 +44,15 @@ const DEBOUNCE_PERIOD_IN_MS = 500;
  * emit.
  */
 @Injectable()
-export class PersistentSettingsEffects implements OnInitEffects {
+export class PersistentSettingsEffects {
   /** @export */
   readonly initializeAndUpdateSettings$: Observable<void> = createEffect(
     () => {
       const selectorsEmit$ = this.actions$.pipe(
-        ofType(initAction),
+        ofType(appRoutingActions.navigating),
+        first(),
+        withLatestFrom(this.store.select(getShouldPersistSettings)),
+        filter(([, shouldPersistSettings]) => shouldPersistSettings),
         mergeMap(() => this.dataSource.getSettings()),
         tap((partialSettings) => {
           this.store.dispatch(globalSettingsLoaded({partialSettings}));
@@ -114,11 +119,6 @@ export class PersistentSettingsEffects implements OnInitEffects {
     >,
     private readonly dataSource: PersistentSettingsDataSource<PersistableSettings>
   ) {}
-
-  /** @export */
-  ngrxOnInitEffects(): Action {
-    return initAction();
-  }
 }
 
-export const TEST_ONLY = {initAction, DEBOUNCE_PERIOD_IN_MS};
+export const TEST_ONLY = {DEBOUNCE_PERIOD_IN_MS};
