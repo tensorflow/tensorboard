@@ -63,7 +63,11 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
   justify-content: flex-end;
   width: 100%;
   height: 39px;
-  border-top: 1px solid mat.get-color-from-palette(mat.$gray-palette, 300);
+  border-top: 1px solid mat.get-color-from-palette($tb-foreground, border);
+
+  @include tb-dark-theme {
+    border-color: mat.get-color-from-palette($tb-dark-foreground, border);
+  }
 }
 
 .close-button {
@@ -71,5 +75,8 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
   width: calc(50% - 10px);
   & ::ng-deep .mat-button-focus-overlay {
     display: none;
+  }
+  @include tb-dark-theme {
+    color: mat.get-color-from-palette($tb-dark-foreground, secondary-text);
   }
 }
