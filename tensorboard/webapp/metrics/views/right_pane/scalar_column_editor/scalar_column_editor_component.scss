@@ -22,9 +22,9 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
   padding: 0 30px;
 }
 .editor-controls {
-  // 148px is the height of the Tensorboard header(64px), the tags filter
-  // box(49px), and the ScalarColumnEditor's footer(35px) combined.
-  height: calc(100vh - 148px);
+  // 158px is the height of the Tensorboard header(64px), the tags filter
+  // box(49px), and the ScalarColumnEditor's footer(40px) combined.
+  height: calc(100vh - 153px);
 }
 .tab-group {
   // Override static position so this object is not seen in front of the
@@ -62,22 +62,14 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
   align-items: center;
   justify-content: flex-end;
   width: 100%;
-  height: 34px;
+  height: 39px;
   border-top: 1px solid mat.get-color-from-palette(mat.$gray-palette, 300);
 }
 
 .close-button {
-  border: unset;
-  border-radius: 4px;
   color: mat.get-color-from-palette($tb-foreground, secondary-text);
-  font: inherit;
-  height: 20px;
-  margin-right: 5px;
-  text-align: center;
   width: calc(50% - 10px);
-  @include tb-dark-theme {
-    color: mat.get-color-from-palette($tb-dark-foreground, secondary-text);
+  & ::ng-deep .mat-button-focus-overlay {
+    display: none;
   }
-
-  @include tb-theme-background-prop(background-color, selected-button);
 }

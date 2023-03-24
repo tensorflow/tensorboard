@@ -17,6 +17,7 @@ import {NgModule} from '@angular/core';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatIconModule} from '@angular/material/icon';
 import {MatTabsModule} from '@angular/material/tabs';
+import {MatButtonModule} from '@angular/material/button';
 import {ScalarColumnEditorComponent} from './scalar_column_editor_component';
 import {ScalarColumnEditorContainer} from './scalar_column_editor_container';
 import {DataTableHeaderModule} from '../../../../widgets/data_table/data_table_header_module';
@@ -30,6 +31,7 @@ import {DataTableHeaderModule} from '../../../../widgets/data_table/data_table_h
     MatCheckboxModule,
     MatTabsModule,
     MatIconModule,
+    MatButtonModule,
   ],
 })
 export class ScalarColumnEditorModule {}
