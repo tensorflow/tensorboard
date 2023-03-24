@@ -61,7 +61,10 @@ export class FeatureFlagOverrideDataSource implements TBFeatureFlagDataSource {
       ...currentState,
       ...flags,
     };
-    localStorage.setItem(FEATURE_FLAG_STORAGE_KEY, JSON.stringify(newState));
+    window.localStorage.setItem(
+      FEATURE_FLAG_STORAGE_KEY,
+      JSON.stringify(newState)
+    );
   }
 
   resetPersistedFeatureFlag<K extends keyof FeatureFlags>(featureFlag: K) {
@@ -74,21 +77,21 @@ export class FeatureFlagOverrideDataSource implements TBFeatureFlagDataSource {
     // Remove the entire key-value from localStorage when there are no more
     // overrides.
     if (Object.keys(currentState).length === 0) {
-      localStorage.removeItem(FEATURE_FLAG_STORAGE_KEY);
+      window.localStorage.removeItem(FEATURE_FLAG_STORAGE_KEY);
       return;
     }
-    localStorage.setItem(
+    window.localStorage.setItem(
       FEATURE_FLAG_STORAGE_KEY,
       JSON.stringify(currentState)
     );
   }
 
   resetAllPersistedFeatureFlags() {
-    localStorage.removeItem(FEATURE_FLAG_STORAGE_KEY);
+    window.localStorage.removeItem(FEATURE_FLAG_STORAGE_KEY);
   }
 
   getPersistentFeatureFlags(): Partial<FeatureFlags> {
-    const currentState = localStorage.getItem(FEATURE_FLAG_STORAGE_KEY);
+    const currentState = window.localStorage.getItem(FEATURE_FLAG_STORAGE_KEY);
     if (currentState == null) {
       return {};
     }
