@@ -129,7 +129,7 @@ describe('persistent_settings effects test', () => {
         expect(getSettingsSpy).not.toHaveBeenCalled();
       });
 
-      it('does not fetch again after first navigating event',() => {
+      it('does not fetch again after first navigating event', () => {
         getSettingsSpy.and.returnValue(
           of({
             ignoreOutliers: false,
@@ -175,7 +175,7 @@ describe('persistent_settings effects test', () => {
       }));
 
       it('ignores value emitted from initial subscription', fakeAsync(() => {
-       store.overrideSelector(setSmoothingSelector, {scalarSmoothing: 0.1});
+        store.overrideSelector(setSmoothingSelector, {scalarSmoothing: 0.1});
 
         getSettingsSpy.and.returnValue(of({}));
         action.next(appRoutingActions.navigating({after: buildRoute()}));
