@@ -245,7 +245,7 @@ export class PersistentSettingsDataSourceImpl<UiSettings, StorageSettings>
 
     return this.getSettings().pipe(
       tap((currentPartialSettings) => {
-        localStorage.setItem(
+        window.localStorage.setItem(
           GLOBAL_LOCAL_STORAGE_KEY,
           JSON.stringify(
             this.converter.uiToBackend({
@@ -254,8 +254,8 @@ export class PersistentSettingsDataSourceImpl<UiSettings, StorageSettings>
             })
           )
         );
-        localStorage.removeItem(LEGACY_METRICS_LOCAL_STORAGE_KEY);
-        localStorage.removeItem(NOTIFICATION_LAST_READ_TIME_KEY);
+        window.localStorage.removeItem(LEGACY_METRICS_LOCAL_STORAGE_KEY);
+        window.localStorage.removeItem(NOTIFICATION_LAST_READ_TIME_KEY);
       }),
       map(() => void null)
     );
@@ -270,7 +270,9 @@ export class PersistentSettingsDataSourceImpl<UiSettings, StorageSettings>
   }
 
   getSettings(): Observable<Partial<UiSettings>> {
-    const lastReadTime = localStorage.getItem(NOTIFICATION_LAST_READ_TIME_KEY);
+    const lastReadTime = window.localStorage.getItem(
+      NOTIFICATION_LAST_READ_TIME_KEY
+    );
     const notificationSettings = this.converter.backendToUi(
       this.deserialize(
         lastReadTime
@@ -282,12 +284,14 @@ export class PersistentSettingsDataSourceImpl<UiSettings, StorageSettings>
     );
     const legacySettings = this.converter.backendToUi(
       this.deserialize(
-        localStorage.getItem(LEGACY_METRICS_LOCAL_STORAGE_KEY) ?? '{}'
+        window.localStorage.getItem(LEGACY_METRICS_LOCAL_STORAGE_KEY) ?? '{}'
       )
     );
 
     const settings = this.converter.backendToUi(
-      this.deserialize(localStorage.getItem(GLOBAL_LOCAL_STORAGE_KEY) ?? '{}')
+      this.deserialize(
+        window.localStorage.getItem(GLOBAL_LOCAL_STORAGE_KEY) ?? '{}'
+      )
     );
     return of({
       ...notificationSettings,
