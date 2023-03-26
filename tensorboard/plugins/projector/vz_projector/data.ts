@@ -87,7 +87,7 @@ export interface DataPoint {
   };
 }
 const IS_FIREFOX = navigator.userAgent.toLowerCase().indexOf('firefox') >= 0;
-/** Amount of sampling for that projection type. */
+/** Maximum sample size for each projection type. */
 export const TSNE_SAMPLE_SIZE = 10000;
 export const UMAP_SAMPLE_SIZE = 5000;
 export const PCA_SAMPLE_SIZE = 50000;
@@ -463,7 +463,7 @@ export class DataSet {
         this.nearest
           // NearestEntry has list of K-nearest vector indices at given index.
           // Hence, if we already precomputed K = 100 before and later seek
-          // K-10, we just have ot take the first ten.
+          // K = 10, we just have ot take the first ten.
           .map((neighbors) => neighbors.slice(0, nNeighbors))
       );
     } else {
