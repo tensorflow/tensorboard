@@ -35,7 +35,7 @@ const util = {
   styles: [],
 })
 export class FeatureFlagModalTriggerContainer implements OnInit, OnDestroy {
-  // Allow the dialog component type to be overriden for testing purposes.
+  // Allow the dialog component type to be overridden for testing purposes.
   featureFlagDialogType: ComponentType<any> = FeatureFlagDialogContainer;
 
   readonly showFeatureFlags$ = this.store.select(getShowFlagsEnabled);
