@@ -22,10 +22,10 @@ import {
   delay,
   distinctUntilChanged,
   filter,
-  first,
   mergeMap,
   share,
   skip,
+  take,
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
@@ -50,7 +50,7 @@ export class PersistentSettingsEffects {
     () => {
       const selectorsEmit$ = this.actions$.pipe(
         ofType(appRoutingActions.navigating),
-        first(),
+        take(1),
         withLatestFrom(this.store.select(getShouldPersistSettings)),
         filter(([, shouldPersistSettings]) => shouldPersistSettings),
         mergeMap(() => this.dataSource.getSettings()),
@@ -92,18 +92,17 @@ export class PersistentSettingsEffects {
         // Buffers changes from all selectors and only emit when debounce period
         // is over.
         buffer(selectorsEmit$.pipe(debounceTime(DEBOUNCE_PERIOD_IN_MS))),
-        withLatestFrom(this.store.select(getShouldPersistSettings)),
-        mergeMap(([partialSettings, shouldPersistSettings]) => {
-          if (!shouldPersistSettings) {
+        mergeMap((stateSettings) => {
+          const dataSourceSettings: Partial<PersistableSettings> = {};
+          if (stateSettings.length === 0) {
             return EMPTY;
           }
-          const partialSetting: Partial<PersistableSettings> = {};
           // Combine buffered setting changes. Last settings change would
           // overwrite earlier changes.
-          for (const setting of partialSettings) {
-            Object.assign(partialSetting, setting);
+          for (const setting of stateSettings) {
+            Object.assign(dataSourceSettings, setting);
           }
-          return this.dataSource.setSettings(partialSetting);
+          return this.dataSource.setSettings(dataSourceSettings);
         })
       );
     },

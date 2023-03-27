@@ -189,6 +189,7 @@ describe('persistent_settings effects test', () => {
       function initializeAndSubscribe() {
         store.overrideSelector(setSmoothingSelector, {scalarSmoothing: 0.1});
         store.overrideSelector(setIgnoreOutliers, {ignoreOutliers: false});
+        store.refreshState();
         getSettingsSpy.and.returnValue(of({}));
         action.next(appRoutingActions.navigating({after: buildRoute()}));
         tick();
@@ -248,9 +249,9 @@ describe('persistent_settings effects test', () => {
       }));
 
       it('persists settings when it should', fakeAsync(() => {
+        store.overrideSelector(getShouldPersistSettings, true);
         initializeAndSubscribe();
 
-        store.overrideSelector(getShouldPersistSettings, true);
         store.overrideSelector(setSmoothingSelector, {scalarSmoothing: 0.3});
         store.refreshState();
 
@@ -261,9 +262,9 @@ describe('persistent_settings effects test', () => {
       }));
 
       it('does not persist settings when it should not', fakeAsync(() => {
+        store.overrideSelector(getShouldPersistSettings, false);
         initializeAndSubscribe();
 
-        store.overrideSelector(getShouldPersistSettings, false);
         store.overrideSelector(setSmoothingSelector, {scalarSmoothing: 0.3});
         store.refreshState();
 
