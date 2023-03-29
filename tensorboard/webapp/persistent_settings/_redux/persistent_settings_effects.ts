@@ -93,10 +93,11 @@ export class PersistentSettingsEffects {
         // is over.
         buffer(selectorsEmit$.pipe(debounceTime(DEBOUNCE_PERIOD_IN_MS))),
         mergeMap((stateSettings) => {
-          const dataSourceSettings: Partial<PersistableSettings> = {};
           if (stateSettings.length === 0) {
             return EMPTY;
           }
+
+          const dataSourceSettings: Partial<PersistableSettings> = {};
           // Combine buffered setting changes. Last settings change would
           // overwrite earlier changes.
           for (const setting of stateSettings) {
