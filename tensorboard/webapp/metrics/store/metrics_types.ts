@@ -127,9 +127,9 @@ export type CardMetadataMap = Record<
 >;
 
 export enum CardFeatureOverride {
-  NONE,
-  OVERRIDE_AS_ENABLED,
-  OVERRIDE_AS_DISABLED,
+  NONE = 'none',
+  OVERRIDE_AS_ENABLED = 'override_as_enabled',
+  OVERRIDE_AS_DISABLED = 'override_as_disabled',
 }
 
 export type CardState = {
