@@ -21,6 +21,10 @@ import {
 import {createState as createCoreState} from '../core/testing';
 import {buildFeatureFlagState} from '../feature_flag/store/testing';
 import {appStateFromMetricsState, buildMetricsState} from '../metrics/testing';
+import {
+  buildPersistentSettingsState,
+  buildStateFromPersistentSettingsState,
+} from '../persistent_settings/_redux/testing';
 import {createSettingsState} from '../settings/testing';
 
 export function provideMockTbStore() {
@@ -29,6 +33,9 @@ export function provideMockTbStore() {
       ...createDebuggerState(),
       ...buildFeatureFlagState(),
       ...buildStateFromAlertState(buildAlertState({})),
+      ...buildStateFromPersistentSettingsState(
+        buildPersistentSettingsState({})
+      ),
       ...createCoreState(),
       ...appStateFromMetricsState(buildMetricsState()),
       ...createSettingsState(),

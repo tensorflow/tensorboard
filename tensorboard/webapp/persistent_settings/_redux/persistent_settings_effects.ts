@@ -15,23 +15,27 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType, OnInitEffects} from '@ngrx/effects';
 import {Action, createAction, Store} from '@ngrx/store';
-import {merge, Observable} from 'rxjs';
+import {EMPTY, merge, Observable} from 'rxjs';
 import {
   buffer,
   debounceTime,
   delay,
   distinctUntilChanged,
+  filter,
   mergeMap,
   share,
   skip,
+  take,
   tap,
+  withLatestFrom,
 } from 'rxjs/operators';
 import {PersistentSettingsConfigModule} from '../persistent_settings_config_module';
 import {PersistentSettingsDataSource} from '../_data_source/persistent_settings_data_source';
 import {PersistableSettings} from '../_data_source/types';
 import {globalSettingsLoaded} from './persistent_settings_actions';
+import {getShouldPersistSettings} from './persistent_settings_selectors';
+import * as appRoutingActions from '../../app_routing/actions';
 
-const initAction = createAction('[Persistent Settings] Effects Init');
 const DEBOUNCE_PERIOD_IN_MS = 500;
 
 /**
@@ -40,12 +44,15 @@ const DEBOUNCE_PERIOD_IN_MS = 500;
  * emit.
  */
 @Injectable()
-export class PersistentSettingsEffects implements OnInitEffects {
+export class PersistentSettingsEffects {
   /** @export */
   readonly initializeAndUpdateSettings$: Observable<void> = createEffect(
     () => {
       const selectorsEmit$ = this.actions$.pipe(
-        ofType(initAction),
+        ofType(appRoutingActions.navigating),
+        take(1),
+        withLatestFrom(this.store.select(getShouldPersistSettings)),
+        filter(([, shouldPersistSettings]) => shouldPersistSettings),
         mergeMap(() => this.dataSource.getSettings()),
         tap((partialSettings) => {
           this.store.dispatch(globalSettingsLoaded({partialSettings}));
@@ -85,14 +92,18 @@ export class PersistentSettingsEffects implements OnInitEffects {
         // Buffers changes from all selectors and only emit when debounce period
         // is over.
         buffer(selectorsEmit$.pipe(debounceTime(DEBOUNCE_PERIOD_IN_MS))),
-        mergeMap((partialSettings) => {
-          const partialSetting: Partial<PersistableSettings> = {};
+        mergeMap((stateSettings) => {
+          if (stateSettings.length === 0) {
+            return EMPTY;
+          }
+
+          const dataSourceSettings: Partial<PersistableSettings> = {};
           // Combine buffered setting changes. Last settings change would
           // overwrite earlier changes.
-          for (const setting of partialSettings) {
-            Object.assign(partialSetting, setting);
+          for (const setting of stateSettings) {
+            Object.assign(dataSourceSettings, setting);
           }
-          return this.dataSource.setSettings(partialSetting);
+          return this.dataSource.setSettings(dataSourceSettings);
         })
       );
     },
@@ -108,11 +119,6 @@ export class PersistentSettingsEffects implements OnInitEffects {
     >,
     private readonly dataSource: PersistentSettingsDataSource<PersistableSettings>
   ) {}
-
-  /** @export */
-  ngrxOnInitEffects(): Action {
-    return initAction();
-  }
 }
 
-export const TEST_ONLY = {initAction, DEBOUNCE_PERIOD_IN_MS};
+export const TEST_ONLY = {DEBOUNCE_PERIOD_IN_MS};

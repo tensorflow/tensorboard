@@ -33,6 +33,9 @@ import {
   PersistentSettingsEffects,
   TEST_ONLY,
 } from './persistent_settings_effects';
+import {getShouldPersistSettings} from './persistent_settings_selectors';
+import * as appRoutingActions from '../../app_routing/actions';
+import {buildRoute} from '../../app_routing/testing';
 
 describe('persistent_settings effects test', () => {
   let action: ReplaySubject<Action>;
@@ -95,13 +98,13 @@ describe('persistent_settings effects test', () => {
     });
 
     describe('on init', () => {
-      it('fetches user settings and emits an aciton', () => {
+      it('fetches user settings and emits an action', () => {
         getSettingsSpy.and.returnValue(
           of({
             ignoreOutliers: false,
           })
         );
-        action.next(TEST_ONLY.initAction());
+        action.next(appRoutingActions.navigating({after: buildRoute()}));
 
         expect(actualActions).toEqual([
           globalSettingsLoaded({
@@ -112,12 +115,47 @@ describe('persistent_settings effects test', () => {
         ]);
       });
 
+      it('does not fetch user settings if it should not', () => {
+        store.overrideSelector(getShouldPersistSettings, false);
+        store.refreshState();
+        getSettingsSpy.and.returnValue(
+          of({
+            ignoreOutliers: false,
+          })
+        );
+        action.next(appRoutingActions.navigating({after: buildRoute()}));
+
+        expect(actualActions).toEqual([]);
+        expect(getSettingsSpy).not.toHaveBeenCalled();
+      });
+
+      it('does not fetch again after first navigating event', () => {
+        getSettingsSpy.and.returnValue(
+          of({
+            ignoreOutliers: false,
+          })
+        );
+
+        action.next(appRoutingActions.navigating({after: buildRoute()}));
+        expect(actualActions).toEqual([
+          globalSettingsLoaded({
+            partialSettings: {
+              ignoreOutliers: false,
+            },
+          }),
+        ]);
+
+        actualActions = [];
+        action.next(appRoutingActions.navigating({after: buildRoute()}));
+        expect(actualActions).toEqual([]);
+      });
+
       it('subscribes to selector changes after initial setting is read', fakeAsync(() => {
         store.overrideSelector(setSmoothingSelector, {scalarSmoothing: 0.1});
         const getSettingsSubject = new ReplaySubject(1);
 
         getSettingsSpy.and.returnValue(getSettingsSubject);
-        action.next(TEST_ONLY.initAction());
+        action.next(appRoutingActions.navigating({after: buildRoute()}));
 
         tick();
         store.overrideSelector(setSmoothingSelector, {scalarSmoothing: 0.3});
@@ -140,7 +178,7 @@ describe('persistent_settings effects test', () => {
         store.overrideSelector(setSmoothingSelector, {scalarSmoothing: 0.1});
 
         getSettingsSpy.and.returnValue(of({}));
-        action.next(TEST_ONLY.initAction());
+        action.next(appRoutingActions.navigating({after: buildRoute()}));
 
         tick(TEST_ONLY.DEBOUNCE_PERIOD_IN_MS * 2);
         expect(setSettingsSpy).not.toHaveBeenCalled();
@@ -151,8 +189,9 @@ describe('persistent_settings effects test', () => {
       function initializeAndSubscribe() {
         store.overrideSelector(setSmoothingSelector, {scalarSmoothing: 0.1});
         store.overrideSelector(setIgnoreOutliers, {ignoreOutliers: false});
+        store.refreshState();
         getSettingsSpy.and.returnValue(of({}));
-        action.next(TEST_ONLY.initAction());
+        action.next(appRoutingActions.navigating({after: buildRoute()}));
         tick();
       }
 
@@ -207,6 +246,30 @@ describe('persistent_settings effects test', () => {
           scalarSmoothing: 0.3,
           ignoreOutliers: true,
         });
+      }));
+
+      it('persists settings when it should', fakeAsync(() => {
+        store.overrideSelector(getShouldPersistSettings, true);
+        initializeAndSubscribe();
+
+        store.overrideSelector(setSmoothingSelector, {scalarSmoothing: 0.3});
+        store.refreshState();
+
+        tick(TEST_ONLY.DEBOUNCE_PERIOD_IN_MS);
+        expect(setSettingsSpy).toHaveBeenCalledOnceWith({
+          scalarSmoothing: 0.3,
+        });
+      }));
+
+      it('does not persist settings when it should not', fakeAsync(() => {
+        store.overrideSelector(getShouldPersistSettings, false);
+        initializeAndSubscribe();
+
+        store.overrideSelector(setSmoothingSelector, {scalarSmoothing: 0.3});
+        store.refreshState();
+
+        tick(TEST_ONLY.DEBOUNCE_PERIOD_IN_MS);
+        expect(setSettingsSpy).not.toHaveBeenCalled();
       }));
     });
   });
