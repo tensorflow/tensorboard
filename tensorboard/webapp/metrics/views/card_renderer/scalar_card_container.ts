@@ -373,22 +373,20 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       shareReplay(1)
     );
 
-    this.minMaxSteps$ = this.store
-      .select(getMetricsCardMinMax, this.cardId)
-      .pipe(
-        withLatestFrom(
-          this.store.select(getMetricsCardDataMinMax, this.cardId)
-        ),
-        map(([minMax, dataMinMax]) => {
-          if (!minMax || !dataMinMax) {
-            return;
-          }
-          return {
-            minStep: Math.max(minMax?.minStep!, dataMinMax?.minStep!),
-            maxStep: Math.min(minMax?.maxStep!, dataMinMax?.maxStep!),
-          };
-        })
-      );
+    this.minMaxSteps$ = combineLatest([
+      this.store.select(getMetricsCardMinMax, this.cardId),
+      this.store.select(getMetricsCardDataMinMax, this.cardId),
+    ]).pipe(
+      map(([minMax, dataMinMax]) => {
+        if (!minMax || !dataMinMax) {
+          return;
+        }
+        return {
+          minStep: Math.max(minMax?.minStep!, dataMinMax?.minStep!),
+          maxStep: Math.min(minMax?.maxStep!, dataMinMax?.maxStep!),
+        };
+      })
+    );
 
     this.dataSeries$ = partitionedSeries$.pipe(
       // Smooth
