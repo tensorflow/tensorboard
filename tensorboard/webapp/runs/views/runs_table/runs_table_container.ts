@@ -173,6 +173,12 @@ function matchFilter(
       filter.filterValues;
     return values.includes(value);
   } else if (filter.type === DomainType.INTERVAL) {
+    // Auto-added to unblock TS5.0 migration
+    //  @ts-ignore(go/ts50upgrade): Operator '<=' cannot be applied to types
+    //  'number' and 'string | number | boolean'.
+    // Auto-added to unblock TS5.0 migration
+    //  @ts-ignore(go/ts50upgrade): Operator '<=' cannot be applied to types
+    //  'string | number | boolean' and 'number'.
     return filter.filterLowerValue <= value && value <= filter.filterUpperValue;
   }
   return false;
