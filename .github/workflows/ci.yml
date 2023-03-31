@@ -296,6 +296,8 @@ jobs:
         # You can run `cargo clippy --all-targets --manifest-path tensorboard/data/server/Cargo.toml --fix` to fix all Clippy complaints.
         # This will only apply `MachineApplicable` fixes (https://doc.rust-lang.org/nightly/nightly-rustc/rustc_lint_defs/enum.Applicability.html), so some modifications may need to be done manually.
         run: cargo clippy --all-targets --manifest-path tensorboard/data/server/Cargo.toml -- -D warnings
+      - name: 'Create tmp dir (test)'
+        run: mkdir -p /tmp/cargo-raze/doesnt/exist/
       - name: 'Check cargo-raze freshness'
         run: |
           rm -rf third_party/rust/
