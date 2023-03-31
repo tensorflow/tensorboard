@@ -298,6 +298,7 @@ jobs:
         run: cargo clippy --all-targets --manifest-path tensorboard/data/server/Cargo.toml -- -D warnings
       - name: 'Check cargo-raze freshness'
         run: |
+          mkdir -p /tmp/cargo-raze/doesnt/exist/
           rm -rf third_party/rust/
           (cd tensorboard/data/server/ && cargo fetch && cargo raze)
           git add .
