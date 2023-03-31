@@ -289,7 +289,7 @@ jobs:
           toolchain: ${{ matrix.rust_version }}
           components: rustfmt, clippy
       - name: 'Install cargo-raze'
-        run: cargo install cargo-raze --version ${{ matrix.cargo_raze_version }}
+        run: cargo install cargo-raze --version ${{ matrix.cargo_raze_version }} --locked
       - name: 'Run Rustfmt'
         run: (cd tensorboard/data/server/ && cargo fmt -- --check)
       - name: 'Run Clippy'
@@ -298,7 +298,6 @@ jobs:
         run: cargo clippy --all-targets --manifest-path tensorboard/data/server/Cargo.toml -- -D warnings
       - name: 'Check cargo-raze freshness'
         run: |
-          mkdir -p /tmp/cargo-raze/doesnt/exist/
           rm -rf third_party/rust/
           (cd tensorboard/data/server/ && cargo fetch && cargo raze)
           git add .
