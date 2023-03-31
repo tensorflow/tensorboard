@@ -274,7 +274,7 @@ jobs:
           toolchain: ${{ matrix.rust_version }}
           components: rustfmt, clippy
       - name: 'Install cargo-raze'
-        run: cargo install cargo-raze --version ${{ matrix.cargo_raze_version }}
+        run: cargo install --locked cargo-raze --version ${{ matrix.cargo_raze_version }}
       - name: 'Run Rustfmt'
         run: (cd tensorboard/data/server/ && cargo fmt -- --check)
       - name: 'Run Clippy'
