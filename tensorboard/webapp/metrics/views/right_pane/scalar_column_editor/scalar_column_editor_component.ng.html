@@ -14,34 +14,32 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div>
-  <div class="editor-controls">
-    <mat-tab-group class="tab-group">
-      <mat-tab [label]="'Single'">
-        <ngContext
-          [ngTemplateOutlet]="headerList"
-          [ngTemplateOutletContext]="{headers: singleHeaders, dataTableMode:DataTableMode.SINGLE}"
-        ></ngContext>
-      </mat-tab>
-      <mat-tab [label]="'Range'">
-        <ngContext
-          [ngTemplateOutlet]="headerList"
-          [ngTemplateOutletContext]="{headers: rangeHeaders, dataTableMode:DataTableMode.RANGE}"
-        ></ngContext>
-      </mat-tab>
-    </mat-tab-group>
-  </div>
-  <div class="footer">
-    <button
-      mat-button
-      class="close-button"
-      (click)="onScalarTableColumnEditorClosed.emit()"
-      i18n-aria-label="Label on a button to close the column editor."
-      aria-label="Close column editor"
-    >
-      Close
-    </button>
-  </div>
+<div class="editor-controls">
+  <mat-tab-group class="tab-group">
+    <mat-tab [label]="'Single'">
+      <ngContext
+        [ngTemplateOutlet]="headerList"
+        [ngTemplateOutletContext]="{headers: singleHeaders, dataTableMode:DataTableMode.SINGLE}"
+      ></ngContext>
+    </mat-tab>
+    <mat-tab [label]="'Range'">
+      <ngContext
+        [ngTemplateOutlet]="headerList"
+        [ngTemplateOutletContext]="{headers: rangeHeaders, dataTableMode:DataTableMode.RANGE}"
+      ></ngContext>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+<div class="footer">
+  <button
+    mat-button
+    class="close-button"
+    (click)="onScalarTableColumnEditorClosed.emit()"
+    i18n-aria-label="Label on a button to close the column editor."
+    aria-label="Close column editor"
+  >
+    Close
+  </button>
 </div>
 
 <ng-template

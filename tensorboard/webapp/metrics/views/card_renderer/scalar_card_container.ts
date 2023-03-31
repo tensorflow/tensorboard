@@ -80,7 +80,7 @@ import {
   sortingDataTable,
   stepSelectorToggled,
   timeSelectionChanged,
-  metricsSlideoutMenuRequested,
+  metricsSlideoutMenuOpened,
 } from '../../actions';
 import {PluginType, ScalarStepDatum} from '../../data_source';
 import {
@@ -836,6 +836,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   }
 
   openSlideoutColumnEditMenu() {
-    this.store.dispatch(metricsSlideoutMenuRequested());
+    this.store.dispatch(metricsSlideoutMenuOpened());
   }
 }

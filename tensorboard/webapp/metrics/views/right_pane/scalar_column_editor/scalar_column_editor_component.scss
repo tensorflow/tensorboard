@@ -22,9 +22,8 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
   padding: 0 30px;
 }
 .editor-controls {
-  // 158px is the height of the Tensorboard header(64px), the tags filter
-  // box(49px), and the ScalarColumnEditor's footer(40px) combined.
-  height: calc(100vh - 153px);
+  // controls should fill the full height except for the height of the footer.
+  height: calc(100% - 40px);
 }
 .tab-group {
   // Override static position so this object is not seen in front of the
@@ -33,8 +32,6 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
   z-index: 0;
   height: -webkit-fill-available;
   height: -moz-available;
-  height: fill-available;
-  min-width: none;
 }
 .header-list {
   margin-top: 5%;
@@ -61,8 +58,7 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  width: 100%;
-  height: 39px;
+  padding: 4px;
   border-top: 1px solid mat.get-color-from-palette($tb-foreground, border);
 
   @include tb-dark-theme {
@@ -72,7 +68,7 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
 
 .close-button {
   color: mat.get-color-from-palette($tb-foreground, secondary-text);
-  width: calc(50% - 10px);
+  width: 84px;
   & ::ng-deep .mat-button-focus-overlay {
     display: none;
   }

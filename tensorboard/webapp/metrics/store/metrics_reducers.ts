@@ -1348,7 +1348,11 @@ const reducer = createReducer(
   on(actions.metricsSlideoutMenuToggled, (state) => {
     return {...state, isSlideoutMenuOpen: !state.isSlideoutMenuOpen};
   }),
-  on(actions.metricsSlideoutMenuRequested, (state) => {
+  on(actions.metricsSlideoutMenuOpened, (state) => {
+    // The reason the toggle action does not open the settings pane is because
+    // the settings pane is the only place the menu can be toggled. The open
+    // request can be made from the card when the settings menu is closed,
+    // therefore we need to make sure the settings menu is opened, too.
     return {...state, isSlideoutMenuOpen: true, isSettingsPaneOpen: true};
   }),
   on(actions.metricsSlideoutMenuClosed, (state) => {
