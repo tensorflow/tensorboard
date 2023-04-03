@@ -23,15 +23,14 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
 }
 .editor-controls {
   // controls should fill the full height except for the height of the footer.
-  height: calc(100% - 40px);
+  height: calc(100% - 45px);
 }
 .tab-group {
   // Override static position so this object is not seen in front of the
   // settings panel.
   position: relative;
   z-index: 0;
-  height: -webkit-fill-available;
-  height: -moz-available;
+  height: 100%;
 }
 .header-list {
   margin-top: 5%;
@@ -56,6 +55,11 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
 
 .footer {
   display: flex;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  width: 100%;
   align-items: center;
   justify-content: flex-end;
   padding: 4px;
@@ -69,9 +73,7 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
 .close-button {
   color: mat.get-color-from-palette($tb-foreground, secondary-text);
   width: 84px;
-  & ::ng-deep .mat-button-focus-overlay {
-    display: none;
-  }
+
   @include tb-dark-theme {
     color: mat.get-color-from-palette($tb-dark-foreground, secondary-text);
   }
