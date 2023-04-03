@@ -1,3 +1,10 @@
+# Release 2.12.1
+
+## Bug Fixes
+
+- Bumps `google-auth-oauthlib` dependency restriction to be compatible with
+  versions up to 1.0 (#6246)
+
 # Release 2.12.0
 
 The 2.12 minor series tracks TensorFlow 2.12.
@@ -23,6 +30,22 @@ The 2.12 minor series tracks TensorFlow 2.12.
 
 - Drops support for Python 3.7 and marks 3.11 as supported (#6144).
 - Drops support for protobuf < 3.19.6 and adds support for 4.x (#6147).
+
+# Release 2.11.2
+
+## Bug Fixes
+
+- Fixes bug introduced in #6107, which was included in release 2.11.1. (#6142)
+
+# Release 2.11.1
+
+NOTE: This release has a bug related to the limited-input device auth flow, and was "yanked" in PyPi (https://pypi.org/help/#yanked). A newer patch release (2.11.2) contains these changes along with the fix for the bug.
+
+## Bug Fixes
+
+- Prevent regression in TensorBoard.dev uploader authentication by replacing deprecated OOB auth flow with limited-input device flow. (#6107)
+See [deprecation announcement](https://developers.googleblog.com/2022/02/making-oauth-flows-safer.html).
+- Fix compatibility with numpy 1.24.0 by removing deprecated type aliases (#6117, #6140)
 
 # Release 2.11.0
 
