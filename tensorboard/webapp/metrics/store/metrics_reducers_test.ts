@@ -3818,18 +3818,18 @@ describe('metrics reducers', () => {
       });
     });
 
-    describe('#metricsSlideoutMenuRequested', () => {
+    describe('#metricsSlideoutMenuOpened', () => {
       it('sets the isSlideoutMenuOpen and isSettingsPaneOpen to true', () => {
         const state1 = buildMetricsState({
           isSlideoutMenuOpen: false,
           isSettingsPaneOpen: false,
         });
 
-        const state2 = reducers(state1, actions.metricsSlideoutMenuRequested());
+        const state2 = reducers(state1, actions.metricsSlideoutMenuOpened());
         expect(state2.isSlideoutMenuOpen).toBe(true);
         expect(state2.isSettingsPaneOpen).toBe(true);
 
-        const state3 = reducers(state1, actions.metricsSlideoutMenuRequested());
+        const state3 = reducers(state1, actions.metricsSlideoutMenuOpened());
         expect(state3.isSlideoutMenuOpen).toBe(true);
         expect(state3.isSettingsPaneOpen).toBe(true);
       });
@@ -3840,7 +3840,7 @@ describe('metrics reducers', () => {
           isSettingsPaneOpen: true,
         });
 
-        const state2 = reducers(state1, actions.metricsSlideoutMenuRequested());
+        const state2 = reducers(state1, actions.metricsSlideoutMenuOpened());
         expect(state2.isSlideoutMenuOpen).toBe(true);
         expect(state2.isSettingsPaneOpen).toBe(true);
       });

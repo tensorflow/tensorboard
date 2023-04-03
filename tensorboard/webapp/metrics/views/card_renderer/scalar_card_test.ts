@@ -80,7 +80,7 @@ import {
   metricsCardFullSizeToggled,
   stepSelectorToggled,
   timeSelectionChanged,
-  metricsSlideoutMenuRequested,
+  metricsSlideoutMenuOpened,
 } from '../../actions';
 import {PluginType} from '../../data_source';
 import {
@@ -841,7 +841,7 @@ describe('scalar card', () => {
       flush();
     }));
 
-    it('dispatches metricsSlideoutMenuRequested when edit columns button is clicked', fakeAsync(() => {
+    it('dispatches metricsSlideoutMenuOpened when edit columns button is clicked', fakeAsync(() => {
       store.overrideSelector(
         selectors.getIsScalarColumnCustomizationEnabled,
         true
@@ -852,7 +852,7 @@ describe('scalar card', () => {
       getMenuButton('Open menu to edit data table columns').click();
       fixture.detectChanges();
 
-      expect(dispatchedActions[0]).toEqual(metricsSlideoutMenuRequested());
+      expect(dispatchedActions[0]).toEqual(metricsSlideoutMenuOpened());
       flush();
     }));
   });
