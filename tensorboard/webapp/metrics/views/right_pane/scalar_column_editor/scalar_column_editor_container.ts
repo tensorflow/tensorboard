@@ -55,7 +55,6 @@ export class ScalarColumnEditorContainer {
   }
 
   onScalarTableColumnEditorClosed() {
-    console.log('dispatching metricsSlideoutMenuClosed');
     this.store.dispatch(metricsSlideoutMenuClosed());
   }
 }
