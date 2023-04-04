@@ -340,6 +340,10 @@ export class ScatterPlot {
       this.render();
     }
     this.mouseIsDown = false;
+    this.selecting = this.getMouseMode() === MouseMode.AREA_SELECT;
+    if (!this.selecting) {
+      this.container.style.cursor = 'default';
+    }
   }
   /**
    * When the mouse moves, find the nearest point (if any) and send it to the
