@@ -79,6 +79,7 @@ export class ScalarColumnEditorComponent implements OnDestroy {
     dataTableMode: DataTableMode;
     headerType: ColumnHeaderType;
   }>();
+  @Output() onScalarTableColumnEditorClosed = new EventEmitter<void>();
 
   constructor(private readonly hostElement: ElementRef) {}
 

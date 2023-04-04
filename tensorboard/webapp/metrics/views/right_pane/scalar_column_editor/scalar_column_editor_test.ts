@@ -24,7 +24,11 @@ import {By} from '@angular/platform-browser';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../../app_state';
-import {dataTableColumnEdited, dataTableColumnToggled} from '../../../actions';
+import {
+  dataTableColumnEdited,
+  dataTableColumnToggled,
+  metricsSlideoutMenuClosed,
+} from '../../../actions';
 import {
   getRangeSelectionHeaders,
   getSingleSelectionHeaders,
@@ -295,5 +299,24 @@ describe('scalar column editor', () => {
       expect(headerListItems[0].classes['highlighted']).toBeTrue();
       expect(headerListItems[0].classes['highlight-top']).toBeTrue();
     }));
+  });
+
+  describe('closing', () => {
+    let dispatchedActions: Action[] = [];
+    beforeEach(() => {
+      dispatchedActions = [];
+      spyOn(store, 'dispatch').and.callFake((action: Action) => {
+        dispatchedActions.push(action);
+      });
+    });
+    it('dispatches metricsSlideoutMenuClosed', () => {
+      const fixture = createComponent();
+
+      fixture.debugElement
+        .query(By.css('.close-button'))
+        .triggerEventHandler('click', {});
+
+      expect(dispatchedActions[0]).toEqual(metricsSlideoutMenuClosed());
+    });
   });
 });

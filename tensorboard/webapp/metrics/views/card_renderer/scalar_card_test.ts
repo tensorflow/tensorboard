@@ -80,6 +80,7 @@ import {
   metricsCardStateUpdated,
   stepSelectorToggled,
   timeSelectionChanged,
+  metricsSlideoutMenuOpened,
 } from '../../actions';
 import {PluginType} from '../../data_source';
 import {
@@ -839,6 +840,21 @@ describe('scalar card', () => {
       expect(lineChartEl.componentInstance.yScaleType).toBe(ScaleType.LINEAR);
 
       // Clicking on overflow menu and mat button enqueue asyncs. Flush them.
+      flush();
+    }));
+
+    it('dispatches metricsSlideoutMenuOpened when edit columns button is clicked', fakeAsync(() => {
+      store.overrideSelector(
+        selectors.getIsScalarColumnCustomizationEnabled,
+        true
+      );
+      const fixture = createComponent('card1');
+
+      openOverflowMenu(fixture);
+      getMenuButton('Open menu to edit data table columns').click();
+      fixture.detectChanges();
+
+      expect(dispatchedActions[0]).toEqual(metricsSlideoutMenuOpened());
       flush();
     }));
   });
