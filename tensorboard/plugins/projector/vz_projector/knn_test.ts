@@ -12,8 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {findKNN, findKNNGPUCosDistNorm, NearestEntry, TEST_ONLY} from './knn';
-import {cosDistNorm, unit} from './vector';
+import {findKNN, findKNNGPUCosDist, NearestEntry, TEST_ONLY} from './knn';
+import {cosDist} from './vector';
 
 describe('projector knn test', () => {
   function getIndices(nearest: NearestEntry[][]): number[][] {
@@ -22,22 +22,16 @@ describe('projector knn test', () => {
     });
   }
 
-  function unitVector(vector: Float32Array): Float32Array {
-    // `unit` method replaces the vector in-place.
-    unit(vector);
-    return vector;
-  }
-
-  describe('#findKNNGPUCosDistNorm', () => {
+  describe('#findKNNGPUCosDist', () => {
     it('finds n-nearest neighbor for each item', async () => {
-      const values = await findKNNGPUCosDistNorm(
+      const values = await findKNNGPUCosDist(
         [
-          {a: unitVector(new Float32Array([1, 2, 0]))},
-          {a: unitVector(new Float32Array([1, 1, 3]))},
-          {a: unitVector(new Float32Array([100, 30, 0]))},
-          {a: unitVector(new Float32Array([95, 23, 3]))},
-          {a: unitVector(new Float32Array([100, 10, 0]))},
-          {a: unitVector(new Float32Array([95, 23, 100]))},
+          {a: new Float32Array([1, 2, 0])},
+          {a: new Float32Array([1, 1, 3])},
+          {a: new Float32Array([100, 30, 0])},
+          {a: new Float32Array([95, 23, 3])},
+          {a: new Float32Array([100, 10, 0])},
+          {a: new Float32Array([95, 23, 100])},
         ],
         4,
         (data) => data.a
@@ -54,11 +48,8 @@ describe('projector knn test', () => {
     });
 
     it('returns less than N when number of item is lower', async () => {
-      const values = await findKNNGPUCosDistNorm(
-        [
-          unitVector(new Float32Array([1, 2, 0])),
-          unitVector(new Float32Array([1, 1, 3])),
-        ],
+      const values = await findKNNGPUCosDist(
+        [new Float32Array([1, 2, 0]), new Float32Array([1, 1, 3])],
         4,
         (a) => a
       );
@@ -68,10 +59,8 @@ describe('projector knn test', () => {
 
     it('splits a large data into one that would fit into GPU memory', async () => {
       const size = TEST_ONLY.OPTIMAL_GPU_BLOCK_SIZE + 5;
-      const data = new Array(size).fill(
-        unitVector(new Float32Array([1, 1, 1]))
-      );
-      const values = await findKNNGPUCosDistNorm(data, 1, (a) => a);
+      const data = new Array(size).fill(new Float32Array([1, 1, 1]));
+      const values = await findKNNGPUCosDist(data, 1, (a) => a);
 
       expect(getIndices(values)).toEqual([
         // Since distance to the diagonal entries (distance to self is 0) is
@@ -84,25 +73,25 @@ describe('projector knn test', () => {
   });
 
   describe('#findKNN', () => {
-    // Covered by equality tests below (#findKNNGPUCosDistNorm == #findKNN).
+    // Covered by equality tests below (#findKNNGPUCosDist == #findKNN).
   });
 
-  describe('#findKNNGPUCosDistNorm and #findKNN', () => {
+  describe('#findKNNGPUCosDist and #findKNN', () => {
     it('returns same value when dist metrics are cosine', async () => {
       const data = [
-        unitVector(new Float32Array([1, 2, 0])),
-        unitVector(new Float32Array([1, 1, 3])),
-        unitVector(new Float32Array([100, 30, 0])),
-        unitVector(new Float32Array([95, 23, 3])),
-        unitVector(new Float32Array([100, 10, 0])),
-        unitVector(new Float32Array([95, 23, 100])),
+        new Float32Array([1, 2, 0]),
+        new Float32Array([1, 1, 3]),
+        new Float32Array([100, 30, 0]),
+        new Float32Array([95, 23, 3]),
+        new Float32Array([100, 10, 0]),
+        new Float32Array([95, 23, 100]),
       ];
-      const findKnnGpuCosVal = await findKNNGPUCosDistNorm(data, 2, (a) => a);
+      const findKnnGpuCosVal = await findKNNGPUCosDist(data, 2, (a) => a);
       const findKnnVal = await findKNN(
         data,
         2,
         (a) => a,
-        (a, b, limit) => cosDistNorm(a, b)
+        (a, b, limit) => cosDist(a, b)
       );
 
       // Floating point precision makes it hard to test. Just assert indices.
@@ -112,15 +101,15 @@ describe('projector knn test', () => {
     it('splits a large data without the result being wrong', async () => {
       const size = TEST_ONLY.OPTIMAL_GPU_BLOCK_SIZE + 5;
       const data = Array.from(new Array(size)).map((_, index) => {
-        return unitVector(new Float32Array([index + 1, index + 1]));
+        return new Float32Array([index + 1, index + 2]);
       });
 
-      const findKnnGpuCosVal = await findKNNGPUCosDistNorm(data, 2, (a) => a);
+      const findKnnGpuCosVal = await findKNNGPUCosDist(data, 2, (a) => a);
       const findKnnVal = await findKNN(
         data,
         2,
         (a) => a,
-        (a, b, limit) => cosDistNorm(a, b)
+        (a, b, limit) => cosDist(a, b)
       );
 
       expect(getIndices(findKnnGpuCosVal)).toEqual(getIndices(findKnnVal));

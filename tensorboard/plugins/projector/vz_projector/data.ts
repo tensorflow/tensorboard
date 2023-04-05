@@ -481,16 +481,12 @@ export class DataSet {
         MIN_NUM_KNN_NEIGHBORS
       );
       const result = await (knnGpuEnabled
-        ? knn.findKNNGPUCosDistNorm(
-            data,
-            numKnnNeighborsToCompute,
-            (d) => d.vector
-          )
+        ? knn.findKNNGPUCosDist(data, numKnnNeighborsToCompute, (d) => d.vector)
         : knn.findKNN(
             data,
             numKnnNeighborsToCompute,
             (d) => d.vector,
-            (a, b) => vector.cosDistNorm(a, b)
+            (a, b) => vector.cosDist(a, b)
           ));
       this.nearest = result;
       return Promise.resolve(
