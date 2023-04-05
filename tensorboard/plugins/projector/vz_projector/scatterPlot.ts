@@ -334,16 +334,12 @@ export class ScatterPlot {
   }
   /** When we stop dragging/zooming, return to normal behavior. */
   private onMouseUp(e: any) {
-    if (this.selecting) {
+    if (this.selecting || !this.orbitCameraControls.enabled) {
       this.orbitCameraControls.enabled = true;
       this.rectangleSelector.onMouseUp();
       this.render();
     }
     this.mouseIsDown = false;
-    this.selecting = this.getMouseMode() === MouseMode.AREA_SELECT;
-    if (!this.selecting) {
-      this.container.style.cursor = 'default';
-    }
   }
   /**
    * When the mouse moves, find the nearest point (if any) and send it to the
