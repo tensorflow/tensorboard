@@ -84,6 +84,14 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
   // Custom projection.
   @property({type: String})
   customSelectedSearchByMetadataOption: string;
+  @property({type: String})
+  superviseInput: string;
+  @property({type: String})
+  superviseInputLabel: string = 'Ignored label';
+  @property({type: String})
+  superviseColumn: string;
+  @property({type: Boolean})
+  showSuperviseSettings: boolean = false;
 
   private projector: any; // Projector; type omitted b/c LegacyElement
 
@@ -111,6 +119,8 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
   private perplexitySlider: HTMLInputElement;
   private learningRateInput: HTMLInputElement;
   private superviseFactorInput: HTMLInputElement;
+  private superviseInputSelected: string;
+  private metadataFields: string[];
   private zDropdown: HTMLElement;
   private iterationLabelTsne: HTMLElement;
   private runUmapButton: HTMLButtonElement;
@@ -146,6 +156,7 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     ) as HTMLInputElement;
     this.iterationLabelTsne = this.$$('.run-tsne-iter') as HTMLElement;
     this.runUmapButton = this.$$('#run-umap') as HTMLButtonElement;
+    this.superviseInputSelected = '';
   }
   disablePolymerChangesTriggerReprojection() {
     this.polymerChangesTriggerReprojection = false;
@@ -260,6 +271,9 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     if (this.learningRateInput) {
       this.learningRateInput.value = bookmark.tSNELearningRate.toString();
     }
+    this.superviseFactor = bookmark.tSNESuperviseFactor;
+    this.superviseColumn = bookmark.tSNESuperviseColumn;
+    this.superviseInput = bookmark.tSNESuperviseInput || '';
     this.tSNEis3d = bookmark.tSNEis3d;
     // UMAP
     this.umapIs3d = bookmark.umapIs3d;
@@ -296,6 +310,9 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     this.setZDropdownEnabled(this.pcaIs3d);
     this.updateTSNEPerplexityFromSliderChange();
     this.updateTSNELearningRateFromUIChange();
+    this.updateTSNESuperviseFactorFromUIChange();
+    this.setSupervision(this.superviseInput, this.superviseColumn);
+    this.superviseInputChange();
     if (this.iterationLabelTsne) {
       this.iterationLabelTsne.innerText = bookmark.tSNEIteration.toString();
     }
@@ -318,6 +335,9 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     if (this.learningRateInput != null) {
       bookmark.tSNELearningRate = +this.learningRateInput.value;
     }
+    bookmark.tSNESuperviseFactor = this.superviseFactor;
+    bookmark.tSNESuperviseInput = this.superviseInput;
+    bookmark.tSNESuperviseColumn = this.superviseColumn;
     bookmark.tSNEis3d = this.tSNEis3d;
     // UMAP
     bookmark.umapIs3d = this.umapIs3d;
@@ -407,6 +427,25 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     })!;
     this.customSelectedSearchByMetadataOption =
       this.searchByMetadataOptions[Math.max(0, searchByMetadataIndex)];
+    let labelIndex = -1;
+    if (spriteAndMetadata.stats) {
+      this.metadataFields = spriteAndMetadata.stats.map((stats, i) => {
+        if (!stats.isNumeric && labelIndex === -1) {
+          labelIndex = i;
+        }
+        return stats.name;
+      });
+    }
+    if (
+      this.superviseColumn == null ||
+      this.metadataFields.filter((name) => name === this.superviseColumn)
+        .length === 0
+    ) {
+      // Make the default supervise class the first non-numeric column.
+      this.superviseColumn = this.metadataFields[Math.max(0, labelIndex)];
+      this.superviseInput = '';
+    }
+    this.superviseInputChange();
   }
   public showTab(id: ProjectionType) {
     this.currentProjection = id;
@@ -461,6 +500,59 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
       this.reprojectCustom();
     }
   }
+  private superviseInputTyping() {
+    let value = this.superviseInput.trim();
+    if (value == null || value.trim() === '') {
+      if (this.superviseInputSelected === '') {
+        this.superviseInputLabel = 'No ignored label';
+      } else {
+        this.superviseInputLabel = `Supervising without '${this.superviseInputSelected}'`;
+      }
+      return;
+    }
+    if (this.projector && this.projector.dataSet) {
+      let numMatches = this.projector.dataSet.points.filter(
+        (p) => p.metadata[this.superviseColumn].toString().trim() === value
+      ).length;
+      if (numMatches === 0) {
+        this.superviseInputLabel = 'Label not found';
+      } else {
+        if (this.projector.dataSet.superviseInput != value) {
+          this.superviseInputLabel = `Supervise without '${value}' [${numMatches} points]`;
+        }
+      }
+    }
+  }
+  private superviseInputChange() {
+    let value = this.superviseInput.trim();
+    if (value == null || value.trim() === '') {
+      this.superviseInputSelected = '';
+      this.superviseInputLabel = 'No ignored label';
+      this.setSupervision(this.superviseColumn, '');
+      return;
+    }
+    if (this.projector && this.projector.dataSet) {
+      let numMatches = this.projector.dataSet.points.filter(
+        (p) => p.metadata[this.superviseColumn].toString().trim() === value
+      ).length;
+      if (numMatches === 0) {
+        this.superviseInputLabel = `Supervising without '${this.superviseInputSelected}'`;
+      } else {
+        this.superviseInputSelected = value;
+        this.superviseInputLabel = `Supervising without '${value}' [${numMatches} points]`;
+        this.setSupervision(this.superviseColumn, value);
+      }
+    }
+  }
+  private superviseColumnChanged() {
+    this.superviseInput = '';
+    this.superviseInputChange();
+  }
+  private setSupervision(superviseColumn: string, superviseInput: string) {
+    if (this.projector && this.projector.dataSet) {
+      this.projector.dataSet.setSupervision(superviseColumn, superviseInput);
+    }
+  }
   private showTSNE() {
     const dataSet = this.dataSet;
     if (dataSet == null) {
@@ -486,7 +578,6 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     }
   }
   private runTSNE() {
-    let projectionChangeNotified = false;
     this.runTsneButton.innerText = 'Stop';
     this.runTsneButton.disabled = true;
     this.pauseTsneButton.innerText = 'Pause';
@@ -502,17 +593,12 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
           this.pauseTsneButton.disabled = false;
           this.iterationLabelTsne.innerText = '' + iteration;
           this.projector.notifyProjectionPositionsUpdated();
-          if (!projectionChangeNotified && this.dataSet.projections['tsne']) {
-            this.projector.onProjectionChanged();
-            projectionChangeNotified = true;
-          }
         } else {
           this.runTsneButton.innerText = 'Re-run';
           this.runTsneButton.disabled = false;
           this.pauseTsneButton.innerText = 'Pause';
           this.pauseTsneButton.disabled = true;
           this.perturbTsneButton.disabled = true;
-          this.projector.onProjectionChanged();
         }
       }
     );
@@ -542,7 +628,6 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     }
   }
   private runUmap() {
-    let projectionChangeNotified = false;
     this.runUmapButton.disabled = true;
     const nComponents = this.umapIs3d ? 3 : 2;
     const nNeighbors = this.umapNeighbors;
@@ -555,14 +640,9 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
         if (iteration != null) {
           this.runUmapButton.disabled = false;
           this.projector.notifyProjectionPositionsUpdated();
-          if (!projectionChangeNotified && this.dataSet.projections['umap']) {
-            this.projector.onProjectionChanged();
-            projectionChangeNotified = true;
-          }
         } else {
           this.runUmapButton.innerText = 'Re-run';
           this.runUmapButton.disabled = false;
-          this.projector.onProjectionChanged();
         }
       }
     );

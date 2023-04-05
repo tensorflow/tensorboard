@@ -668,6 +668,9 @@ export class State {
   tSNEIteration: number = 0;
   tSNEPerplexity: number = 0;
   tSNELearningRate: number = 0;
+  tSNESuperviseFactor: number = 0;
+  tSNESuperviseInput: string;
+  tSNESuperviseColumn: string;
   tSNEis3d: boolean = true;
   /** UMAP parameters */
   umapIs3d: boolean = true;

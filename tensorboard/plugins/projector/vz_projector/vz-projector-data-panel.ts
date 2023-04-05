@@ -17,12 +17,7 @@ import {PolymerElement} from '@polymer/polymer';
 import '../../../components/polymer/irons_and_papers';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import * as d3 from '../../../webapp/third_party/d3';
-import {
-  ColorOption,
-  ColumnStats,
-  Projection,
-  SpriteAndMetadataInfo,
-} from './data';
+import {ColorOption, ColumnStats, SpriteAndMetadataInfo} from './data';
 import {
   DataProvider,
   EmbeddingInfo,
@@ -63,14 +58,6 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
   metadataEditorColumn: string;
   @property({type: Boolean})
   metadataEditorButtonDisabled: boolean;
-  @property({type: String})
-  superviseInput: string;
-  @property({type: String})
-  superviseInputLabel: string = 'Ignored label';
-  @property({type: String})
-  superviseColumn: string;
-  @property({type: Boolean})
-  showSuperviseSettings: boolean = false;
 
   @property({type: String})
   readonly _wordDelimiter = '[/=_,-]';
@@ -78,7 +65,6 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
   private labelOptions: string[];
   private colorOptions: ColorOption[];
   forceCategoricalColoring: boolean = false;
-  private superviseInputSelected: string;
   private selectedPointIndices: number[];
   private neighborsOfFirstPoint: knn.NearestEntry[];
   private dataProvider: DataProvider;
@@ -97,7 +83,6 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
   ready() {
     super.ready();
     this.normalizeData = true;
-    this.superviseInputSelected = '';
   }
   initialize(projector: any, dp: DataProvider) {
     this.projector = projector;
@@ -179,27 +164,6 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
     ) {
       // Make the default label the first non-numeric column.
       this.metadataEditorColumn = this.metadataFields[Math.max(0, labelIndex)];
-    }
-    if (
-      this.superviseColumn == null ||
-      this.metadataFields.filter((name) => name === this.superviseColumn)
-        .length === 0
-    ) {
-      // Make the default supervise class the first non-numeric column.
-      this.superviseColumn = this.metadataFields[Math.max(0, labelIndex)];
-      this.superviseInput = '';
-    }
-    this.superviseInputChange();
-  }
-  projectionChanged(projection: Projection) {
-    if (projection) {
-      switch (projection.projectionType) {
-        case 'tsne':
-          this.set('showSuperviseSettings', true);
-          break;
-        default:
-          this.set('showSuperviseSettings', false);
-      }
     }
   }
   onProjectorSelectionChanged(
@@ -379,59 +343,6 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
         href: window.URL['createObjectURL'](textBlob),
       });
       anyDownloadMetadataLink.click();
-    }
-  }
-  private superviseInputTyping() {
-    let value = this.superviseInput.trim();
-    if (value == null || value.trim() === '') {
-      if (this.superviseInputSelected === '') {
-        this.superviseInputLabel = 'No ignored label';
-      } else {
-        this.superviseInputLabel = `Supervising without '${this.superviseInputSelected}'`;
-      }
-      return;
-    }
-    if (this.projector && this.projector.dataSet) {
-      let numMatches = this.projector.dataSet.points.filter(
-        (p) => p.metadata[this.superviseColumn].toString().trim() === value
-      ).length;
-      if (numMatches === 0) {
-        this.superviseInputLabel = 'Label not found';
-      } else {
-        if (this.projector.dataSet.superviseInput != value) {
-          this.superviseInputLabel = `Supervise without '${value}' [${numMatches} points]`;
-        }
-      }
-    }
-  }
-  private superviseInputChange() {
-    let value = this.superviseInput.trim();
-    if (value == null || value.trim() === '') {
-      this.superviseInputSelected = '';
-      this.superviseInputLabel = 'No ignored label';
-      this.setSupervision(this.superviseColumn, '');
-      return;
-    }
-    if (this.projector && this.projector.dataSet) {
-      let numMatches = this.projector.dataSet.points.filter(
-        (p) => p.metadata[this.superviseColumn].toString().trim() === value
-      ).length;
-      if (numMatches === 0) {
-        this.superviseInputLabel = `Supervising without '${this.superviseInputSelected}'`;
-      } else {
-        this.superviseInputSelected = value;
-        this.superviseInputLabel = `Supervising without '${value}' [${numMatches} points]`;
-        this.setSupervision(this.superviseColumn, value);
-      }
-    }
-  }
-  private superviseColumnChanged() {
-    this.superviseInput = '';
-    this.superviseInputChange();
-  }
-  private setSupervision(superviseColumn: string, superviseInput: string) {
-    if (this.projector && this.projector.dataSet) {
-      this.projector.dataSet.setSupervision(superviseColumn, superviseInput);
     }
   }
   setNormalizeData(normalizeData: boolean) {
