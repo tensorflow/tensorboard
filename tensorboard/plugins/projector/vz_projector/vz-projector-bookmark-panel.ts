@@ -169,7 +169,7 @@ class BookmarkPanel extends LegacyElementMixin(PolymerElement) {
   }
   /** Handles a radio button click on a saved state. */
   _radioButtonHandler(evt: Event) {
-    const index = this.getParentDataIndex(evt);
+    const index = this.getBookmarkIndex(evt);
     this.loadSavedState(index);
     this.setSelectionState(index, true);
   }
@@ -193,27 +193,18 @@ class BookmarkPanel extends LegacyElementMixin(PolymerElement) {
    * Crawls up the DOM to find an ancestor with a data-index attribute. This is
    * used to match events to their bookmark index.
    */
-  private getParentDataIndex(evt: Event) {
-    for (let i = 0; i < (evt as any).path.length; i++) {
-      let elem = (evt as any).path[i];
-      if (elem instanceof HTMLElement) {
-        let dataIndex = elem.getAttribute('data-index');
-        if (dataIndex != null) {
-          return +dataIndex;
-        }
-      }
-    }
-    return -1;
+  private getBookmarkIndex(evt: any) {
+    return evt.model.__data.index;
   }
   /** Handles a clear button click on a bookmark. */
   _clearButtonHandler(evt: Event) {
-    let index = this.getParentDataIndex(evt);
+    let index = this.getBookmarkIndex(evt);
     this.splice('savedStates', index, 1);
     this.updateHasStates();
   }
   /** Handles a label change event on a bookmark. */
   _labelChange(evt: Event) {
-    let index = this.getParentDataIndex(evt);
+    let index = this.getBookmarkIndex(evt);
     this.savedStates[index].label = (evt.target as any).value;
   }
   /**
