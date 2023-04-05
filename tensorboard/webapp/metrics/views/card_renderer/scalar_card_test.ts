@@ -81,6 +81,7 @@ import {
   stepSelectorToggled,
   timeSelectionChanged,
   metricsSlideoutMenuOpened,
+  dataTableColumnEdited,
 } from '../../actions';
 import {PluginType} from '../../data_source';
 import {
@@ -111,6 +112,7 @@ import {ScalarCardFobController} from './scalar_card_fob_controller';
 import {
   ColumnHeader,
   ColumnHeaderType,
+  DataTableMode,
   ScalarCardPoint,
   ScalarCardSeriesMetadata,
   SeriesType,
@@ -3931,6 +3933,74 @@ describe('scalar card', () => {
         );
 
         expect(dataTableComponent).toBeFalsy();
+      }));
+
+      it('emits dataTableColumnEdited with DataTableMode.SINGLE when orderColumns is called while in Single Selection', fakeAsync(() => {
+        store.overrideSelector(getCardStateMap, {
+          card1: {
+            dataMinMax: {
+              minStep: 0,
+              maxStep: 100,
+            },
+          },
+        });
+        store.overrideSelector(getMetricsCardTimeSelection, {
+          start: {step: 1},
+          end: null,
+        });
+        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+        const scalarCardDataTable = fixture.debugElement.query(
+          By.directive(ScalarCardDataTable)
+        );
+
+        const headers = [
+          {type: ColumnHeaderType.RUN, enabled: true},
+          {type: ColumnHeaderType.VALUE, enabled: true},
+        ];
+        scalarCardDataTable.componentInstance.orderColumns(headers);
+
+        expect(dispatchedActions).toEqual([
+          dataTableColumnEdited({
+            headers,
+            dataTableMode: DataTableMode.SINGLE,
+          }),
+        ]);
+      }));
+
+      it('emits dataTableColumnEdited with DataTableMode.RANGE when orderColumns is called while in Range Selection', fakeAsync(() => {
+        store.overrideSelector(getCardStateMap, {
+          card1: {
+            dataMinMax: {
+              minStep: 0,
+              maxStep: 100,
+            },
+          },
+        });
+        store.overrideSelector(getMetricsCardTimeSelection, {
+          start: {step: 1},
+          end: {step: 20},
+        });
+        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+        const scalarCardDataTable = fixture.debugElement.query(
+          By.directive(ScalarCardDataTable)
+        );
+
+        const headers = [
+          {type: ColumnHeaderType.RUN, enabled: true},
+          {type: ColumnHeaderType.VALUE, enabled: true},
+        ];
+        scalarCardDataTable.componentInstance.orderColumns(headers);
+
+        expect(dispatchedActions).toEqual([
+          dataTableColumnEdited({
+            headers,
+            dataTableMode: DataTableMode.RANGE,
+          }),
+        ]);
       }));
     });
   });

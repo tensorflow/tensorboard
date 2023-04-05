@@ -44,7 +44,7 @@ import {
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
 import {CardState} from '../../store';
-import {TooltipSort, XAxisType} from '../../types';
+import {HeaderEditInfo, TooltipSort, XAxisType} from '../../types';
 import {
   ColumnHeader,
   ColumnHeaderType,
@@ -108,7 +108,7 @@ export class ScalarCardComponent<Downloader> {
   @Output() onStepSelectorToggled =
     new EventEmitter<TimeSelectionToggleAffordance>();
   @Output() onDataTableSorting = new EventEmitter<SortingInfo>();
-  @Output() reorderColumnHeaders = new EventEmitter<ColumnHeader[]>();
+  @Output() reorderColumnHeaders = new EventEmitter<HeaderEditInfo>();
   @Output() openSlideoutColumnEditMenu = new EventEmitter<void>();
 
   @Output() onLineChartZoom = new EventEmitter<Extent>();
