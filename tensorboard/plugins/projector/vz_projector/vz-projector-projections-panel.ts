@@ -315,6 +315,7 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     bookmark.tSNEis3d = this.tSNEis3d;
     // UMAP
     bookmark.umapIs3d = this.umapIs3d;
+    bookmark.umapNeighbors = this.umapNeighbors;
     // custom
     bookmark.customSelectedSearchByMetadataOption =
       this.customSelectedSearchByMetadataOption;
