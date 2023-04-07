@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Inject} from '@angular/core';
-import {MAT_DIALOG_DATA} from '@angular/material/dialog';
+import {MAT_LEGACY_DIALOG_DATA} from '@angular/material/dialog';
 import {Store} from '@ngrx/store';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {filter, map, startWith} from 'rxjs/operators';
@@ -54,7 +54,7 @@ export class DataDownloadDialogContainer {
   constructor(
     store: Store<State>,
     dataSource: MetricsDataSource,
-    @Inject(MAT_DIALOG_DATA) data: DataDownloadDialogData
+    @Inject(MAT_LEGACY_DIALOG_DATA) data: DataDownloadDialogData
   ) {
     this.cardMetadata$ = store
       .select(getCardMetadata, data.cardId)
