@@ -334,7 +334,7 @@ export class ScatterPlot {
   }
   /** When we stop dragging/zooming, return to normal behavior. */
   private onMouseUp(e: any) {
-    if (this.selecting) {
+    if (this.selecting || !this.orbitCameraControls.enabled) {
       this.orbitCameraControls.enabled = true;
       this.rectangleSelector.onMouseUp();
       this.render();
