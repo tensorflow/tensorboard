@@ -234,6 +234,34 @@ export const template = html`
             ></paper-slider>
             <span>[[umapNeighbors]]</span>
           </div>
+          <div class="slider umap-min-dist">
+            <label>
+              MinDist
+              <paper-icon-button
+                icon="help"
+                class="help-icon"
+              ></paper-icon-button>
+              <paper-tooltip
+                position="right"
+                animation-delay="0"
+                fit-to-visible-bounds
+              >
+                Controls how tightly UMAP is allowed to pack points together.
+                Provides the minimum distance apart that points are allowed to
+                be in the low dimensional representation. The default value is
+                0.1.
+              </paper-tooltip>
+            </label>
+            <paper-slider
+              id="umap-mindist-slider"
+              value="{{umapMinDist}}"
+              pin
+              min="0"
+              max="0.99"
+              step="0.01"
+            ></paper-slider>
+            <span>[[umapMinDist]]</span>
+          </div>
           <p>
             <button
               id="run-umap"
