@@ -38,9 +38,6 @@ const PERSP_CAMERA_FOV_VERTICAL = 70;
 const PERSP_CAMERA_NEAR_CLIP_PLANE = 0.01;
 const PERSP_CAMERA_FAR_CLIP_PLANE = 100;
 const ORTHO_CAMERA_FRUSTUM_HALF_EXTENT = 1.2;
-// Key presses.
-const SHIFT_KEY = 16;
-const CTRL_KEY = 17;
 const ORBIT_MOUSE_ROTATION_SPEED = 1;
 const ORBIT_ANIMATION_ROTATION_CYCLE_IN_SECONDS = 7;
 export type OnCameraMoveListener = (
@@ -85,7 +82,7 @@ export class ScatterPlot {
   private cameraDef: CameraDef | null = null;
   private camera: THREE.Camera;
   private orbitAnimationOnNextCameraCreation: boolean = false;
-  private orbitCameraControls: any;
+  private orbitCameraControls: OrbitControls;
   private orbitAnimationId: number | null;
   private worldSpacePointPositions: Float32Array;
   private pointColors: Float32Array;
@@ -133,7 +130,7 @@ export class ScatterPlot {
     window.addEventListener('keydown', this.onKeyDown.bind(this), false);
     window.addEventListener('keyup', this.onKeyUp.bind(this), false);
   }
-  private addCameraControlsEventListeners(cameraControls: any) {
+  private addCameraControlsEventListeners(cameraControls: OrbitControls) {
     // Start is called when the user stars interacting with
     // controls.
     cameraControls.addEventListener('start', () => {
@@ -158,7 +155,7 @@ export class ScatterPlot {
     if (this.orbitCameraControls != null) {
       this.orbitCameraControls.dispose();
     }
-    const occ = new OrbitControls(camera, this.renderer.domElement) as any;
+    const occ = new OrbitControls(camera, this.renderer.domElement);
     occ.target0 = new THREE.Vector3(
       cameraDef.target[0],
       cameraDef.target[1],
@@ -170,11 +167,11 @@ export class ScatterPlot {
     occ.autoRotate = false;
     occ.rotateSpeed = ORBIT_MOUSE_ROTATION_SPEED;
     if (cameraIs3D) {
-      occ.mouseButtons.ORBIT = THREE.MOUSE.LEFT;
-      occ.mouseButtons.PAN = THREE.MOUSE.RIGHT;
+      occ.mouseButtons.LEFT = THREE.MOUSE.ROTATE;
+      occ.mouseButtons.RIGHT = THREE.MOUSE.PAN;
     } else {
-      occ.mouseButtons.ORBIT = null;
-      occ.mouseButtons.PAN = THREE.MOUSE.LEFT;
+      occ.mouseButtons.RIGHT = null;
+      occ.mouseButtons.LEFT = THREE.MOUSE.PAN;
     }
     occ.reset();
     this.camera = camera;
@@ -312,28 +309,10 @@ export class ScatterPlot {
       this.orbitCameraControls.enabled = false;
       this.rectangleSelector.onMouseDown(e.offsetX, e.offsetY);
       this.setNearestPointToMouse(e);
-    } else if (
-      !e.ctrlKey &&
-      this.sceneIs3D() &&
-      this.orbitCameraControls.mouseButtons.ORBIT === THREE.MOUSE.RIGHT
-    ) {
-      // The user happened to press the ctrl key when the tab was active,
-      // unpressed the ctrl when the tab was inactive, and now he/she
-      // is back to the projector tab.
-      this.orbitCameraControls.mouseButtons.ORBIT = THREE.MOUSE.LEFT;
-      this.orbitCameraControls.mouseButtons.PAN = THREE.MOUSE.RIGHT;
-    } else if (
-      e.ctrlKey &&
-      this.sceneIs3D() &&
-      this.orbitCameraControls.mouseButtons.ORBIT === THREE.MOUSE.LEFT
-    ) {
-      // Similarly to the situation above.
-      this.orbitCameraControls.mouseButtons.ORBIT = THREE.MOUSE.RIGHT;
-      this.orbitCameraControls.mouseButtons.PAN = THREE.MOUSE.LEFT;
     }
   }
   /** When we stop dragging/zooming, return to normal behavior. */
-  private onMouseUp(e: any) {
+  private onMouseUp(e: MouseEvent) {
     if (this.selecting || !this.orbitCameraControls.enabled) {
       this.orbitCameraControls.enabled = true;
       this.rectangleSelector.onMouseUp();
@@ -356,27 +335,18 @@ export class ScatterPlot {
       this.projectorEventContext.notifyHoverOverPoint(this.nearestPoint!);
     }
   }
-  /** For using ctrl + left click as right click, and for circle select */
-  private onKeyDown(e: any) {
-    // If ctrl is pressed, use left click to orbit
-    if (e.keyCode === CTRL_KEY && this.sceneIs3D()) {
-      this.orbitCameraControls.mouseButtons.ORBIT = THREE.MOUSE.RIGHT;
-      this.orbitCameraControls.mouseButtons.PAN = THREE.MOUSE.LEFT;
-    }
+  /** For for circle select */
+  private onKeyDown(e: KeyboardEvent) {
     // If shift is pressed, start selecting
-    if (e.keyCode === SHIFT_KEY) {
+    if (e.shiftKey) {
       this.selecting = true;
       this.container.style.cursor = 'crosshair';
     }
   }
-  /** For using ctrl + left click as right click, and for circle select */
-  private onKeyUp(e: any) {
-    if (e.keyCode === CTRL_KEY && this.sceneIs3D()) {
-      this.orbitCameraControls.mouseButtons.ORBIT = THREE.MOUSE.LEFT;
-      this.orbitCameraControls.mouseButtons.PAN = THREE.MOUSE.RIGHT;
-    }
+  /** For for circle select */
+  private onKeyUp(e: KeyboardEvent) {
     // If shift is released, stop selecting
-    if (e.keyCode === SHIFT_KEY) {
+    if (e.shiftKey) {
       this.selecting = this.getMouseMode() === MouseMode.AREA_SELECT;
       if (!this.selecting) {
         this.container.style.cursor = 'default';
@@ -468,7 +438,7 @@ export class ScatterPlot {
     return axes;
   }
   private add3dAxis() {
-    const axes = new (THREE as any).AxesHelper();
+    const axes = new THREE.AxesHelper();
     axes.name = 'axes';
     this.scene.add(axes);
   }
@@ -493,7 +463,7 @@ export class ScatterPlot {
     def.orthographic = !this.sceneIs3D();
     def.position = [pos.x, pos.y, pos.z];
     def.target = [tgt.x, tgt.y, tgt.z];
-    def.zoom = (this.camera as any).zoom;
+    def.zoom = this.camera.zoom;
     return def;
   }
   /** Sets parameters for the next camera recreation. */
@@ -705,7 +675,7 @@ export class ScatterPlot {
       const renderCanvasSize = new THREE.Vector2();
       // TODO(stephanwlee): Remove casting to any after three.js typing is
       // proper.
-      (this.renderer as any).getSize(renderCanvasSize);
+      this.renderer.getSize(renderCanvasSize);
       const pixelRatio = this.renderer.getPixelRatio();
       this.pickingTexture = new THREE.WebGLRenderTarget(
         renderCanvasSize.width * pixelRatio,
