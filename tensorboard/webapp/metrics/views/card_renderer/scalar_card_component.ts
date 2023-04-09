@@ -108,7 +108,7 @@ export class ScalarCardComponent<Downloader> {
   @Output() onStepSelectorToggled =
     new EventEmitter<TimeSelectionToggleAffordance>();
   @Output() onDataTableSorting = new EventEmitter<SortingInfo>();
-  @Output() reorderColumnHeaders = new EventEmitter<HeaderEditInfo>();
+  @Output() editColumnHeaders = new EventEmitter<HeaderEditInfo>();
   @Output() openSlideoutColumnEditMenu = new EventEmitter<void>();
 
   @Output() onLineChartZoom = new EventEmitter<Extent>();

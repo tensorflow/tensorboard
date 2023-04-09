@@ -60,7 +60,7 @@ export class ScalarCardDataTable {
   @Input() smoothingEnabled!: boolean;
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
-  @Output() reorderColumnHeaders = new EventEmitter<HeaderEditInfo>();
+  @Output() editColumnHeaders = new EventEmitter<HeaderEditInfo>();
 
   getMinPointInRange(
     points: ScalarCardPoint[],
@@ -282,7 +282,7 @@ export class ScalarCardDataTable {
   }
 
   orderColumns(headers: ColumnHeader[]) {
-    this.reorderColumnHeaders.emit({
+    this.editColumnHeaders.emit({
       headers: headers,
       dataTableMode: this.stepOrLinkedTimeSelection.end
         ? DataTableMode.RANGE

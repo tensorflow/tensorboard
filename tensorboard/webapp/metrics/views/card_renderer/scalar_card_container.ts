@@ -183,7 +183,7 @@ function isMinMaxStepValid(minMax: MinMaxStep | undefined): boolean {
       (onStepSelectorToggled)="onStepSelectorToggled($event)"
       (onDataTableSorting)="onDataTableSorting($event)"
       (onLineChartZoom)="onLineChartZoom($event)"
-      (reorderColumnHeaders)="reorderColumnHeaders($event)"
+      (editColumnHeaders)="editColumnHeaders($event)"
       (onCardStateChanged)="onCardStateChanged($event)"
       (openSlideoutColumnEditMenu)="openSlideoutColumnEditMenu()"
     ></scalar-card-component>
@@ -664,7 +664,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     );
   }
 
-  reorderColumnHeaders(headerEditInfo: HeaderEditInfo) {
+  editColumnHeaders(headerEditInfo: HeaderEditInfo) {
     this.store.dispatch(dataTableColumnEdited(headerEditInfo));
   }
 
