@@ -52,11 +52,25 @@ class ClientFeatureFlagsMiddlewareTest(tb_test.TestCase):
         response = server.get("")
         self._assert_ok(response, {})
 
+    def test_no_query_string(self):
+        app = client_feature_flags.ClientFeatureFlagsMiddleware(self._echo_app)
+        server = werkzeug_test.Client(app, wrappers.Response)
+
+        response = server.get("")
+        self._assert_ok(response, {})
+
     def test_header_with_no_value(self):
         app = client_feature_flags.ClientFeatureFlagsMiddleware(self._echo_app)
         server = werkzeug_test.Client(app, wrappers.Response)
 
         response = server.get("", headers=[("X-TensorBoard-Feature-Flags", "")])
+        self._assert_ok(response, {})
+
+    def test_query_string_with_no_value(self):
+        app = client_feature_flags.ClientFeatureFlagsMiddleware(self._echo_app)
+        server = werkzeug_test.Client(app, wrappers.Response)
+
+        response = server.get("", query_string={"tensorBoardFeatureFlags": ""})
         self._assert_ok(response, {})
 
     def test_header_with_no_flags(self):
@@ -65,6 +79,15 @@ class ClientFeatureFlagsMiddlewareTest(tb_test.TestCase):
 
         response = server.get(
             "", headers=[("X-TensorBoard-Feature-Flags", "{}")]
+        )
+        self._assert_ok(response, {})
+
+    def test_query_string_with_no_flags(self):
+        app = client_feature_flags.ClientFeatureFlagsMiddleware(self._echo_app)
+        server = werkzeug_test.Client(app, wrappers.Response)
+
+        response = server.get(
+            "", query_string={"tensorBoardFeatureFlags": "{}"}
         )
         self._assert_ok(response, {})
 
@@ -80,6 +103,25 @@ class ClientFeatureFlagsMiddlewareTest(tb_test.TestCase):
                     '{"str": "hi", "bool": true, "strArr": ["one", "two"]}',
                 )
             ],
+        )
+        self._assert_ok(
+            response,
+            {
+                "str": "hi",
+                "bool": True,
+                "strArr": ["one", "two"],
+            },
+        )
+
+    def test_query_string_with_client_feature_flags(self):
+        app = client_feature_flags.ClientFeatureFlagsMiddleware(self._echo_app)
+        server = werkzeug_test.Client(app, wrappers.Response)
+
+        response = server.get(
+            "",
+            query_string={
+                "tensorBoardFeatureFlags": '{"str": "hi", "bool": true, "strArr": ["one", "two"]}'
+            },
         )
         self._assert_ok(
             response,
@@ -107,6 +149,19 @@ class ClientFeatureFlagsMiddlewareTest(tb_test.TestCase):
                 ],
             )
 
+    def test_query_string_with_json_not_decodable(self):
+        app = client_feature_flags.ClientFeatureFlagsMiddleware(self._echo_app)
+        server = werkzeug_test.Client(app, wrappers.Response)
+
+        response = server.get(
+            "",
+            query_string={
+                "tensorBoardFeatureFlags": "some_invalid_json {} {}",
+            },
+        )
+
+        self._assert_ok(response, {})
+
     def test_header_with_json_not_dict(self):
         app = client_feature_flags.ClientFeatureFlagsMiddleware(self._echo_app)
         server = werkzeug_test.Client(app, wrappers.Response)
@@ -123,6 +178,42 @@ class ClientFeatureFlagsMiddlewareTest(tb_test.TestCase):
                     )
                 ],
             )
+
+    def test_query_string_with_json_not_dict(self):
+        app = client_feature_flags.ClientFeatureFlagsMiddleware(self._echo_app)
+        server = werkzeug_test.Client(app, wrappers.Response)
+
+        response = server.get(
+            "",
+            query_string={
+                "tensorBoardFeatureFlags": '["not", "a", "dict"]',
+            },
+        )
+
+        self._assert_ok(response, {})
+
+    def test_header_feature_flags_take_precedence(self):
+        app = client_feature_flags.ClientFeatureFlagsMiddleware(self._echo_app)
+        server = werkzeug_test.Client(app, wrappers.Response)
+
+        response = server.get(
+            "",
+            headers=[
+                (
+                    "X-TensorBoard-Feature-Flags",
+                    '{"a": "1", "b": "2"}',
+                )
+            ],
+            query_string={"tensorBoardFeatureFlags": '{"a": "2", "c": "3"}'},
+        )
+        self._assert_ok(
+            response,
+            {
+                "a": "1",
+                "b": "2",
+                "c": "3",
+            },
+        )
 
 
 if __name__ == "__main__":

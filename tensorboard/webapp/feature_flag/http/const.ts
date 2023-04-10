@@ -14,3 +14,4 @@ limitations under the License.
 ==============================================================================*/
 
 export const FEATURE_FLAGS_HEADER_NAME = 'X-TensorBoard-Feature-Flags';
+export const FEATURE_FLAGS_QUERY_STRING_NAME = 'tensorBoardFeatureFlags';
