@@ -78,6 +78,8 @@ $_title-to-heading-gap: 12px;
 }
 
 .chart-container {
+  display: flex;
+  flex-direction: column;
   flex-grow: 1;
 
   mat-spinner {
@@ -94,8 +96,7 @@ $_title-to-heading-gap: 12px;
   }
 
   line-chart {
-    display: block;
-    height: 100%;
+    flex-grow: 1;
   }
 }
 

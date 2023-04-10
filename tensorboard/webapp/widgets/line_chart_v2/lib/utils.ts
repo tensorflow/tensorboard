@@ -43,8 +43,13 @@ function isWebGl2Supported(): boolean {
   return cachedIsWebGl2Supported;
 }
 
-function isOffscreenCanvasSupported(): boolean {
-  return self.hasOwnProperty('OffscreenCanvas');
+function isWebGl2OffscreenCanvasSupported(): boolean {
+  if (!self.hasOwnProperty('OffscreenCanvas')) {
+    return false;
+  }
+  // Safari 16.4 rolled out OffscreenCanvas support but without webgl2 support.
+  const context = new OffscreenCanvas(0, 0).getContext('webgl2');
+  return Boolean(context);
 }
 
 function arePolylinesEqual(lineA: Polyline, lineB: Polyline) {
@@ -72,7 +77,7 @@ function areExtentsEqual(extentA: Extent, extentB: Extent): boolean {
 export const ChartUtils = {
   convertRectToExtent,
   isWebGl2Supported,
-  isOffscreenCanvasSupported,
+  isWebGl2OffscreenCanvasSupported,
   arePolylinesEqual,
   areExtentsEqual,
 };
