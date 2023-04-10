@@ -101,9 +101,13 @@ class ClientFeatureFlagsMiddleware:
         try:
             client_feature_flags = json.loads(potential_feature_flags[0])
         except json.JSONDecodeError:
-            return {}
+            raise errors.InvalidArgumentError(
+                "tensorBoardFeatureFlags cannot be JSON decoded."
+            )
 
         if not isinstance(client_feature_flags, dict):
-            return {}
+            raise errors.InvalidArgumentError(
+                "tensorBoardFeatureFlags cannot be decoded to a dict."
+            )
 
         return client_feature_flags

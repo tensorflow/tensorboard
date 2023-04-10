@@ -153,14 +153,15 @@ class ClientFeatureFlagsMiddlewareTest(tb_test.TestCase):
         app = client_feature_flags.ClientFeatureFlagsMiddleware(self._echo_app)
         server = werkzeug_test.Client(app, wrappers.Response)
 
-        response = server.get(
-            "",
-            query_string={
-                "tensorBoardFeatureFlags": "some_invalid_json {} {}",
-            },
-        )
-
-        self._assert_ok(response, {})
+        with self.assertRaisesRegex(
+            errors.InvalidArgumentError, "cannot be JSON decoded."
+        ):
+            response = server.get(
+                "",
+                query_string={
+                    "tensorBoardFeatureFlags": "some_invalid_json {} {}",
+                },
+            )
 
     def test_header_with_json_not_dict(self):
         app = client_feature_flags.ClientFeatureFlagsMiddleware(self._echo_app)
@@ -183,14 +184,15 @@ class ClientFeatureFlagsMiddlewareTest(tb_test.TestCase):
         app = client_feature_flags.ClientFeatureFlagsMiddleware(self._echo_app)
         server = werkzeug_test.Client(app, wrappers.Response)
 
-        response = server.get(
-            "",
-            query_string={
-                "tensorBoardFeatureFlags": '["not", "a", "dict"]',
-            },
-        )
-
-        self._assert_ok(response, {})
+        with self.assertRaisesRegex(
+            errors.InvalidArgumentError, "cannot be decoded to a dict"
+        ):
+            response = server.get(
+                "",
+                query_string={
+                    "tensorBoardFeatureFlags": '["not", "a", "dict"]',
+                },
+            )
 
     def test_header_feature_flags_take_precedence(self):
         app = client_feature_flags.ClientFeatureFlagsMiddleware(self._echo_app)
