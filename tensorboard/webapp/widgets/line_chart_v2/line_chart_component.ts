@@ -397,7 +397,7 @@ export class LineChartComponent
 
     const useWorker =
       rendererType !== RendererType.SVG &&
-      ChartUtils.isOffscreenCanvasSupported();
+      ChartUtils.isWebGl2OffscreenCanvasSupported();
     const klass = useWorker ? WorkerChart : ChartImpl;
     this.lineChart = new klass(params);
   }

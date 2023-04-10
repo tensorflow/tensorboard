@@ -278,7 +278,7 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
     onContextLost?: EventListener
   ) {
     if (
-      ChartUtils.isOffscreenCanvasSupported() &&
+      ChartUtils.isWebGl2OffscreenCanvasSupported() &&
       canvas instanceof OffscreenCanvas
     ) {
       // THREE.js require the style object which Offscreen canvas lacks.
