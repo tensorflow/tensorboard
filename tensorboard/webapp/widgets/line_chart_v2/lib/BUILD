@@ -112,6 +112,7 @@ tf_ts_library(
     visibility = ["//tensorboard:internal"],
     deps = [
         ":internal_types",
+        "@npm//@types/offscreencanvas",
     ],
 )
 

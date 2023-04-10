@@ -91,6 +91,8 @@ $_data_table_initial_height: 100px;
 }
 
 .chart-container {
+  display: flex;
+  flex-direction: column;
   flex-grow: 1;
   overflow: hidden;
   resize: vertical;
@@ -109,8 +111,7 @@ $_data_table_initial_height: 100px;
   }
 
   line-chart {
-    display: block;
-    height: 100%;
+    flex-grow: 1;
   }
 }
 

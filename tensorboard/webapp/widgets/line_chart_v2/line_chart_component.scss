@@ -16,7 +16,8 @@ limitations under the License.
 
 :host {
   contain: strict;
-  display: inline-block;
+  display: flex;
+  flex-direction: column;
 
   ::ng-deep .line-chart:has(.horizontal-prospective-area:hover) {
     .x-axis {
@@ -37,6 +38,7 @@ limitations under the License.
 .container {
   background: inherit;
   display: grid;
+  flex-grow: 1;
   height: 100%;
   overflow: hidden;
   width: 100%;
