@@ -59,6 +59,8 @@ limitations under the License.
       </mat-checkbox>
     </div>
     <div
+      role="button"
+      tabindex="0"
       *ngIf="isScalarColumnCustomizationEnabled"
       class="column-edit-menu-toggle"
       (click)="onSlideOutToggled.emit()"
@@ -71,7 +73,7 @@ limitations under the License.
         *ngIf="isSlideOutMenuOpen"
         svgIcon="chevron_right_24px"
       ></mat-icon>
-      Open Column Edit Control
+      Edit Table Columns
     </div>
   </div>
 
