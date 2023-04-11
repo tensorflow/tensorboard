@@ -122,7 +122,11 @@ class TfGraphDashboardLoader extends LegacyElementMixin(PolymerElement) {
           )
         );
         if (tag) params.set('tag', tag);
-        const graphPath = getRouter().pluginRoute('graphs', '/graph', params);
+        const graphPath = getRouter().pluginRouteForSrc(
+          'graphs',
+          '/graph',
+          params
+        );
         return this._fetchAndConstructHierarchicalGraph(graphPath).then(() => {
           this._graphRunTag = {run, tag};
         });
@@ -151,7 +155,7 @@ class TfGraphDashboardLoader extends LegacyElementMixin(PolymerElement) {
         const params = new URLSearchParams();
         params.set('tag', tag!);
         params.set('run', run);
-        const metadataPath = getRouter().pluginRoute(
+        const metadataPath = getRouter().pluginRouteForSrc(
           'graphs',
           '/run_metadata',
           params
