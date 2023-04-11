@@ -26,6 +26,8 @@ import {formatDate} from '../../../components/tf_card_heading/util';
 import {runsColorScale} from '../../../components/tf_color_scale/colorScale';
 import '../../../components/tf_dashboard_common/tensorboard-color';
 import '../../../components/tf_markdown_view/tf-markdown-view';
+import {getFeatureFlagsToSendToServer} from '../../../components/tf_feature_flags/feature-flags';
+import {FEATURE_FLAGS_QUERY_STRING_NAME} from '../../../webapp/feature_flag/http/const';
 
 // Response from /data/plugin/audio/tags.
 export interface AudioTagInfo {
@@ -261,6 +263,10 @@ class _TfAudioLoader
     // the browser to reload the audio when the URL changes. The
     // backend doesn't care about the value.
     searchParam.append('ts', String(audioMetadata.wall_time));
+    searchParam.append(
+      FEATURE_FLAGS_QUERY_STRING_NAME,
+      JSON.stringify(getFeatureFlagsToSendToServer())
+    );
     const url = getRouter().pluginRoute(
       'audio',
       '/individualAudio',

@@ -26,6 +26,8 @@ import '../../../components/tf_card_heading/tf-card-heading-style';
 import {formatDate} from '../../../components/tf_card_heading/util';
 import {runsColorScale} from '../../../components/tf_color_scale/colorScale';
 import '../../../components/tf_dashboard_common/tensorboard-color';
+import {getFeatureFlagsToSendToServer} from '../../../components/tf_feature_flags/feature-flags';
+import {FEATURE_FLAGS_QUERY_STRING_NAME} from '../../../webapp/feature_flag/http/const';
 
 @customElement('tf-image-loader')
 class TfImageLoader extends LegacyElementMixin(PolymerElement) {
@@ -311,12 +313,20 @@ class TfImageLoader extends LegacyElementMixin(PolymerElement) {
     this.requestManager.request(url).then(updateSteps);
   }
   _createStepDatum(imageMetadata) {
-    let url = getRouter().pluginRoute('images', '/individualImage');
+    const searchParam = new URLSearchParams(imageMetadata.query);
     // Include wall_time just to disambiguate the URL and force
     // the browser to reload the image when the URL changes. The
     // backend doesn't care about the value.
-    url = addParams(url, {ts: imageMetadata.wall_time});
-    url += '&' + imageMetadata.query;
+    searchParam.append('ts', imageMetadata.wall_time);
+    searchParam.append(
+      FEATURE_FLAGS_QUERY_STRING_NAME,
+      JSON.stringify(getFeatureFlagsToSendToServer())
+    );
+    let url = getRouter().pluginRoute(
+      'images',
+      '/individualImage',
+      searchParam
+    );
     return {
       // The wall time within the metadata is in seconds. The Date
       // constructor accepts a time in milliseconds, so we multiply by 1000.
