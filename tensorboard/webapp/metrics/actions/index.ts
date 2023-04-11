@@ -36,6 +36,7 @@ import {
 } from '../types';
 import {
   ColumnHeader,
+  DataTableMode,
   SortingInfo,
 } from '../views/card_renderer/scalar_card_types';
 
@@ -52,7 +53,13 @@ export const metricsSlideoutMenuToggled = createAction(
 );
 
 export const metricsSlideoutMenuOpened = createAction(
-  '[Metrics] User requested to open the slide out menu'
+  '[Metrics] User requested to open the slide out menu',
+  props<{mode: DataTableMode}>()
+);
+
+export const tableEditorTabChanged = createAction(
+  '[Metrics] User changed the tab in the table editor',
+  props<{tab: DataTableMode}>()
 );
 
 export const metricsSlideoutMenuClosed = createAction(

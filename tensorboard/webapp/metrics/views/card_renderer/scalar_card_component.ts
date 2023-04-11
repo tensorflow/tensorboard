@@ -48,6 +48,7 @@ import {HeaderEditInfo, TooltipSort, XAxisType} from '../../types';
 import {
   ColumnHeader,
   ColumnHeaderType,
+  DataTableMode,
   MinMaxStep,
   ScalarCardDataSeries,
   ScalarCardSeriesMetadata,
@@ -98,6 +99,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() isProspectiveFobFeatureEnabled: Boolean = false;
   @Input() minMaxStep!: MinMaxStep;
   @Input() columnHeaders!: ColumnHeader[];
+  @Input() rangeEnabled!: boolean;
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
@@ -109,7 +111,7 @@ export class ScalarCardComponent<Downloader> {
     new EventEmitter<TimeSelectionToggleAffordance>();
   @Output() onDataTableSorting = new EventEmitter<SortingInfo>();
   @Output() editColumnHeaders = new EventEmitter<HeaderEditInfo>();
-  @Output() openSlideoutColumnEditMenu = new EventEmitter<void>();
+  @Output() openTableEditMenuToMode = new EventEmitter<DataTableMode>();
 
   @Output() onLineChartZoom = new EventEmitter<Extent>();
 
@@ -281,5 +283,12 @@ export class ScalarCardComponent<Downloader> {
     if (this.dataTableContainer) {
       this.dataTableContainer.nativeElement.style.height = '';
     }
+  }
+
+  openTableEditMenu() {
+    const currentTableMode = this.rangeEnabled
+      ? DataTableMode.RANGE
+      : DataTableMode.SINGLE;
+    this.openTableEditMenuToMode.emit(currentTableMode);
   }
 }

@@ -34,7 +34,6 @@ import {
   startWith,
   switchMap,
   takeUntil,
-  withLatestFrom,
 } from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {ExperimentAlias} from '../../../experiments/types';
@@ -54,6 +53,7 @@ import {
   getMetricsCardTimeSelection,
   getMetricsLinkedTimeEnabled,
   getMetricsLinkedTimeSelection,
+  getMetricsCardRangeSelectionEnabled,
   getRun,
   getRunColorMap,
 } from '../../../selectors';
@@ -175,6 +175,7 @@ function isMinMaxStepValid(minMax: MinMaxStep | undefined): boolean {
       [columnCustomizationEnabled]="columnCustomizationEnabled$ | async"
       [minMaxStep]="minMaxSteps$ | async"
       [columnHeaders]="columnHeaders$ | async"
+      [rangeEnabled]="rangeEnabled$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
       observeIntersection
@@ -185,7 +186,7 @@ function isMinMaxStepValid(minMax: MinMaxStep | undefined): boolean {
       (onLineChartZoom)="onLineChartZoom($event)"
       (editColumnHeaders)="editColumnHeaders($event)"
       (onCardStateChanged)="onCardStateChanged($event)"
-      (openSlideoutColumnEditMenu)="openSlideoutColumnEditMenu()"
+      (openTableEditMenuToMode)="openTableEditMenuToMode($event)"
     ></scalar-card-component>
   `,
   styles: [
@@ -222,6 +223,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   minMaxSteps$?: Observable<MinMaxStep | undefined>;
   stepOrLinkedTimeSelection$?: Observable<TimeSelection | undefined>;
   cardState$?: Observable<Partial<CardState>>;
+  rangeEnabled$?: Observable<boolean>;
 
   readonly isProspectiveFobFeatureEnabled$: Observable<boolean> =
     this.store.select(getIsLinkedTimeProspectiveFobEnabled);
@@ -573,6 +575,11 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     );
 
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
+
+    this.rangeEnabled$ = this.store.select(
+      getMetricsCardRangeSelectionEnabled,
+      this.cardId
+    );
   }
 
   ngOnDestroy() {
@@ -668,7 +675,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.store.dispatch(dataTableColumnEdited(headerEditInfo));
   }
 
-  openSlideoutColumnEditMenu() {
-    this.store.dispatch(metricsSlideoutMenuOpened());
+  openTableEditMenuToMode(tableMode: DataTableMode) {
+    this.store.dispatch(metricsSlideoutMenuOpened({mode: tableMode}));
   }
 }

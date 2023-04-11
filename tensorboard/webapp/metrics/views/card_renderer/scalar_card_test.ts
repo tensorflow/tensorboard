@@ -384,6 +384,10 @@ describe('scalar card', () => {
       selectors.getIsLinkedTimeProspectiveFobEnabled,
       true
     );
+    store.overrideSelector(
+      selectors.getMetricsCardRangeSelectionEnabled,
+      false
+    );
 
     dispatchedActions = [];
     spyOn(store, 'dispatch').and.callFake((action: Action) => {
@@ -845,7 +849,7 @@ describe('scalar card', () => {
       flush();
     }));
 
-    it('dispatches metricsSlideoutMenuOpened when edit columns button is clicked', fakeAsync(() => {
+    it('dispatches metricsSlideoutMenuOpened with mode SINGLE when there are no fobs when edit columns button is clicked', fakeAsync(() => {
       store.overrideSelector(
         selectors.getIsScalarColumnCustomizationEnabled,
         true
@@ -856,7 +860,45 @@ describe('scalar card', () => {
       getMenuButton('Open menu to edit data table columns').click();
       fixture.detectChanges();
 
-      expect(dispatchedActions[0]).toEqual(metricsSlideoutMenuOpened());
+      expect(dispatchedActions[0]).toEqual(
+        metricsSlideoutMenuOpened({mode: DataTableMode.SINGLE})
+      );
+      flush();
+    }));
+
+    it('dispatches metricsSlideoutMenuOpened with mode SINGLE when there is a single fob when edit columns button is clicked', fakeAsync(() => {
+      store.overrideSelector(
+        selectors.getIsScalarColumnCustomizationEnabled,
+        true
+      );
+      store.overrideSelector(getMetricsCardRangeSelectionEnabled, false);
+      const fixture = createComponent('card1');
+
+      openOverflowMenu(fixture);
+      getMenuButton('Open menu to edit data table columns').click();
+      fixture.detectChanges();
+
+      expect(dispatchedActions[0]).toEqual(
+        metricsSlideoutMenuOpened({mode: DataTableMode.SINGLE})
+      );
+      flush();
+    }));
+
+    it('dispatches metricsSlideoutMenuOpened with mode set to RANGE when edit columns button is clicked and there are 2 fobs', fakeAsync(() => {
+      store.overrideSelector(
+        selectors.getIsScalarColumnCustomizationEnabled,
+        true
+      );
+      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
+      const fixture = createComponent('card1');
+
+      openOverflowMenu(fixture);
+      getMenuButton('Open menu to edit data table columns').click();
+      fixture.detectChanges();
+
+      expect(dispatchedActions[0]).toEqual(
+        metricsSlideoutMenuOpened({mode: DataTableMode.RANGE})
+      );
       flush();
     }));
   });

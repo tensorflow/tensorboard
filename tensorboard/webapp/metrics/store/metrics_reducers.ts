@@ -299,6 +299,7 @@ const {initialState, reducers: namespaceContextedReducer} =
     {
       isSettingsPaneOpen: true,
       isSlideoutMenuOpen: false,
+      tableEditorSelectedTab: DataTableMode.SINGLE,
       timeSeriesData: {
         scalars: {},
         histograms: {},
@@ -1252,6 +1253,12 @@ const reducer = createReducer(
       linkedTimeSelection: null,
     };
   }),
+  on(actions.tableEditorTabChanged, (state, {tab}) => {
+    return {
+      ...state,
+      tableEditorSelectedTab: tab,
+    };
+  }),
   on(actions.dataTableColumnEdited, (state, {dataTableMode, headers}) => {
     const enabledNewHeaders: ColumnHeader[] = [];
     const disabledNewHeaders: ColumnHeader[] = [];
@@ -1346,12 +1353,17 @@ const reducer = createReducer(
   on(actions.metricsSlideoutMenuToggled, (state) => {
     return {...state, isSlideoutMenuOpen: !state.isSlideoutMenuOpen};
   }),
-  on(actions.metricsSlideoutMenuOpened, (state) => {
+  on(actions.metricsSlideoutMenuOpened, (state, {mode}) => {
     // The reason the toggle action does not open the settings pane is because
     // the settings pane is the only place the menu can be toggled. The open
     // request can be made from the card when the settings menu is closed,
     // therefore we need to make sure the settings menu is opened, too.
-    return {...state, isSlideoutMenuOpen: true, isSettingsPaneOpen: true};
+    return {
+      ...state,
+      isSlideoutMenuOpen: true,
+      isSettingsPaneOpen: true,
+      tableEditorSelectedTab: mode,
+    };
   }),
   on(actions.metricsSlideoutMenuClosed, (state) => {
     return {...state, isSlideoutMenuOpen: false};

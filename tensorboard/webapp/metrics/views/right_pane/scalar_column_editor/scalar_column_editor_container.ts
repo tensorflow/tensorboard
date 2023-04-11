@@ -19,12 +19,15 @@ import {
   dataTableColumnEdited,
   dataTableColumnToggled,
   metricsSlideoutMenuClosed,
+  tableEditorTabChanged,
 } from '../../../actions';
 import {
   getRangeSelectionHeaders,
   getSingleSelectionHeaders,
+  getTableEditorSelectedTab,
 } from '../../../store/metrics_selectors';
 import {HeaderEditInfo, HeaderToggleInfo} from '../../../types';
+import {DataTableMode} from '../../card_renderer/scalar_card_types';
 
 @Component({
   selector: 'metrics-scalar-column-editor',
@@ -32,9 +35,11 @@ import {HeaderEditInfo, HeaderToggleInfo} from '../../../types';
     <metrics-scalar-column-editor-component
       [singleHeaders]="singleHeaders$ | async"
       [rangeHeaders]="rangeHeaders$ | async"
+      [selectedTab]="selectedTab$ | async"
       (onScalarTableColumnToggled)="onScalarTableColumnToggled($event)"
       (onScalarTableColumnEdit)="onScalarTableColumnEdit($event)"
       (onScalarTableColumnEditorClosed)="onScalarTableColumnEditorClosed()"
+      (onTabChange)="onTabChange($event)"
     >
     </metrics-scalar-column-editor-component>
   `,
@@ -45,6 +50,7 @@ export class ScalarColumnEditorContainer {
 
   readonly singleHeaders$ = this.store.select(getSingleSelectionHeaders);
   readonly rangeHeaders$ = this.store.select(getRangeSelectionHeaders);
+  readonly selectedTab$ = this.store.select(getTableEditorSelectedTab);
 
   onScalarTableColumnToggled(toggleInfo: HeaderToggleInfo) {
     this.store.dispatch(dataTableColumnToggled(toggleInfo));
@@ -56,5 +62,9 @@ export class ScalarColumnEditorContainer {
 
   onScalarTableColumnEditorClosed() {
     this.store.dispatch(metricsSlideoutMenuClosed());
+  }
+
+  onTabChange(tab: DataTableMode) {
+    this.store.dispatch(tableEditorTabChanged({tab}));
   }
 }

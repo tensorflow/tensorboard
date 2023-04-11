@@ -42,6 +42,7 @@ import {
   StepDatum,
 } from './store/metrics_types';
 import {CardId, CardMetadata, TooltipSort, XAxisType} from './types';
+import {DataTableMode} from './views/card_renderer/scalar_card_types';
 
 export function buildMetricsSettingsState(
   overrides?: Partial<MetricsSettings>
@@ -110,6 +111,7 @@ function buildBlankState(): MetricsState {
     stepMinMax: {min: Infinity, max: -Infinity},
     isSettingsPaneOpen: false,
     isSlideoutMenuOpen: false,
+    tableEditorSelectedTab: DataTableMode.SINGLE,
   };
 }
 

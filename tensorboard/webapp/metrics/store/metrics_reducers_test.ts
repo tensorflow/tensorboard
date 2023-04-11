@@ -3929,19 +3929,27 @@ describe('metrics reducers', () => {
     });
 
     describe('#metricsSlideoutMenuOpened', () => {
-      it('sets the isSlideoutMenuOpen and isSettingsPaneOpen to true', () => {
+      it('sets the isSlideoutMenuOpen and isSettingsPaneOpen to true and always updates tableEditorSelectedTab', () => {
         const state1 = buildMetricsState({
           isSlideoutMenuOpen: false,
           isSettingsPaneOpen: false,
         });
 
-        const state2 = reducers(state1, actions.metricsSlideoutMenuOpened());
+        const state2 = reducers(
+          state1,
+          actions.metricsSlideoutMenuOpened({mode: DataTableMode.RANGE})
+        );
         expect(state2.isSlideoutMenuOpen).toBe(true);
         expect(state2.isSettingsPaneOpen).toBe(true);
+        expect(state2.tableEditorSelectedTab).toBe(DataTableMode.RANGE);
 
-        const state3 = reducers(state1, actions.metricsSlideoutMenuOpened());
+        const state3 = reducers(
+          state2,
+          actions.metricsSlideoutMenuOpened({mode: DataTableMode.SINGLE})
+        );
         expect(state3.isSlideoutMenuOpen).toBe(true);
         expect(state3.isSettingsPaneOpen).toBe(true);
+        expect(state3.tableEditorSelectedTab).toBe(DataTableMode.SINGLE);
       });
 
       it('leaves isSettingsPaneOpen as true when it is already set', () => {
@@ -3950,9 +3958,13 @@ describe('metrics reducers', () => {
           isSettingsPaneOpen: true,
         });
 
-        const state2 = reducers(state1, actions.metricsSlideoutMenuOpened());
+        const state2 = reducers(
+          state1,
+          actions.metricsSlideoutMenuOpened({mode: DataTableMode.SINGLE})
+        );
         expect(state2.isSlideoutMenuOpen).toBe(true);
         expect(state2.isSettingsPaneOpen).toBe(true);
+        expect(state2.tableEditorSelectedTab).toBe(DataTableMode.SINGLE);
       });
     });
 

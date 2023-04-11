@@ -20,7 +20,9 @@ import {
   Input,
   OnDestroy,
   Output,
+  ViewChild,
 } from '@angular/core';
+import {MatTabChangeEvent, MatTabGroup} from '@angular/material/tabs';
 import {
   ColumnHeader,
   ColumnHeaderType,
@@ -64,12 +66,12 @@ enum Edge {
 })
 export class ScalarColumnEditorComponent implements OnDestroy {
   DataTableMode = DataTableMode;
-  selectedTab: DataTableMode = DataTableMode.SINGLE;
   draggingHeaderType: ColumnHeaderType | undefined;
   highlightedHeaderType: ColumnHeaderType | undefined;
   highlightEdge: Edge = Edge.TOP;
   @Input() rangeHeaders!: ColumnHeader[];
   @Input() singleHeaders!: ColumnHeader[];
+  @Input() selectedTab!: DataTableMode;
 
   @Output() onScalarTableColumnEdit = new EventEmitter<{
     dataTableMode: DataTableMode;
@@ -80,6 +82,7 @@ export class ScalarColumnEditorComponent implements OnDestroy {
     headerType: ColumnHeaderType;
   }>();
   @Output() onScalarTableColumnEditorClosed = new EventEmitter<void>();
+  @Output() onTabChange = new EventEmitter<DataTableMode>();
 
   constructor(private readonly hostElement: ElementRef) {}
 
@@ -88,6 +91,12 @@ export class ScalarColumnEditorComponent implements OnDestroy {
       'dragover',
       preventDefault
     );
+  }
+
+  tabChange(event: MatTabChangeEvent) {
+    const newMode =
+      event.index === 0 ? DataTableMode.SINGLE : DataTableMode.RANGE;
+    this.onTabChange.emit(newMode);
   }
 
   dragStart(header: ColumnHeader) {

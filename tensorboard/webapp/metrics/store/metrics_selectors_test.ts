@@ -26,6 +26,7 @@ import {
   createTimeSeriesData,
 } from '../testing';
 import {HistogramMode, TooltipSort, XAxisType} from '../types';
+import {DataTableMode} from '../views/card_renderer/scalar_card_types';
 import * as selectors from './metrics_selectors';
 import {CardFeatureOverride, MetricsState} from './metrics_types';
 
@@ -1471,6 +1472,21 @@ describe('metrics selectors', () => {
         buildMetricsState({isSettingsPaneOpen: false})
       );
       expect(selectors.isMetricsSettingsPaneOpen(state)).toEqual(false);
+    });
+  });
+
+  describe('#getTableEditorSelectedTab', () => {
+    beforeEach(() => {
+      selectors.getTableEditorSelectedTab.release();
+    });
+
+    it('returns current settings pane open state', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({tableEditorSelectedTab: DataTableMode.RANGE})
+      );
+      expect(selectors.getTableEditorSelectedTab(state)).toEqual(
+        DataTableMode.RANGE
+      );
     });
   });
 });
