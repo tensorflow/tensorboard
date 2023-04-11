@@ -16,6 +16,7 @@ import {
   HttpMethodType,
   RequestOptions,
 } from '../../../components/tf_backend/requestManager';
+import {getRouter} from '../../../components/tf_backend/router';
 
 /* A 'tf-hparams-backend' encapsulates sending HParams API requests to the
    backend.
@@ -23,18 +24,15 @@ import {
    tf-hparams-main as the 'backend' property.
 */
 export class Backend {
-  private _apiUrl: any;
   private _requestManager: any;
   private _useHttpGet: any;
 
   // Constructs a backend that uses the given tf_backend.requestManager to
-  // send requests. The apiUrl parameter should denote the base
-  // url to use. If useHttpGet is true uses HTTP GET to send a request
+  // send requests. If useHttpGet is true uses HTTP GET to send a request
   // otherwise uses HTTP POST. See tensorboard/plugins/hparams/http_api.md
   // for details on how the requests and responses are encoded in each
   // scheme (GET or POST).
-  constructor(apiUrl, requestManager, useHttpGet = true) {
-    this._apiUrl = apiUrl;
+  constructor(requestManager, useHttpGet = true) {
     this._requestManager = requestManager;
     this._useHttpGet = useHttpGet;
   }
@@ -42,12 +40,12 @@ export class Backend {
   // protocol buffer and the response is a JSON translated response protocol
   // buffer. See api.proto for the details.
   getExperiment(experimentRequest) {
-    return this._sendRequest('experiment', experimentRequest);
+    return this._sendRequest('/experiment', experimentRequest);
   }
   getDownloadUrl(format, listSessionGroupsRequest, columnsVisibility) {
-    return (
-      this._apiUrl +
-      '/download_data?' +
+    return getRouter().pluginRouteForSrc(
+      'hparams',
+      '/download_data',
       new URLSearchParams({
         format: format,
         columnsVisibility: JSON.stringify(columnsVisibility),
@@ -56,17 +54,22 @@ export class Backend {
     );
   }
   listSessionGroups(listSessionGroupsRequest) {
-    return this._sendRequest('session_groups', listSessionGroupsRequest);
+    return this._sendRequest('/session_groups', listSessionGroupsRequest);
   }
   listMetricEvals(listMetricEvalsRequest) {
-    return this._sendRequest('metric_evals', listMetricEvalsRequest);
+    return this._sendRequest('/metric_evals', listMetricEvalsRequest);
   }
   // ---- Private methods below -------------------------------------------
   _sendRequest(methodName, request_proto) {
     if (this._useHttpGet) {
       const encodedRequest = encodeURIComponent(JSON.stringify(request_proto));
-      const url =
-        this._apiUrl + '/' + methodName + '?request=' + encodedRequest;
+      const url = getRouter().pluginRoute(
+        'hparams',
+        methodName,
+        new URLSearchParams({
+          request: encodedRequest,
+        })
+      );
       return this._requestManager.request(url);
     }
     /* Use POST */
@@ -75,7 +78,7 @@ export class Backend {
     requestOptions.methodType = HttpMethodType.POST;
     requestOptions.contentType = 'text/plain';
     requestOptions.body = JSON.stringify(request_proto);
-    const url = this._apiUrl + '/' + methodName;
+    const url = getRouter().pluginRoute('hparams', methodName);
     return this._requestManager.requestWithOptions(url, requestOptions);
   }
 }

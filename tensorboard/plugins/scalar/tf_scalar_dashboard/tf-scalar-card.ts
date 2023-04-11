@@ -267,7 +267,7 @@ export class TfScalarCard extends PolymerElement {
 
   @property({type: Object})
   getDataLoadUrl: Function = ({tag, run}) => {
-    return getRouter().pluginRoute(
+    return getRouter().pluginRouteForSrc(
       'scalars',
       '/scalars',
       new URLSearchParams({tag, run})

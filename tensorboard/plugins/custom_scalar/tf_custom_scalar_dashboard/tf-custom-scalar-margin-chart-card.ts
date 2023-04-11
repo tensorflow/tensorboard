@@ -469,12 +469,13 @@ class _TfCustomScalarMarginChartCard
   }
   _downloadDataUrl(_nameToDataSeries, dataSeriesName) {
     const dataSeries = _nameToDataSeries[dataSeriesName];
-    const getVars = {
+    const getVars = new URLSearchParams({
       tag: dataSeries.getTag(),
       run: dataSeries.getRun(),
-    };
-    return addParams(
-      getRouter().pluginRoute('custom_scalars', '/download_data'),
+    });
+    return getRouter().pluginRouteForSrc(
+      'custom_scalars',
+      '/download_data',
       getVars
     );
   }
