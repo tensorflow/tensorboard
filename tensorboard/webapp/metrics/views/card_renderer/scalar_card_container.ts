@@ -68,7 +68,7 @@ import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
   cardMinMaxChanged,
-  dataTableColumnDrag,
+  dataTableColumnEdited,
   metricsCardFullSizeToggled,
   metricsCardStateUpdated,
   sortingDataTable,
@@ -92,12 +92,13 @@ import {
   getSingleSelectionHeaders,
   RunToSeries,
 } from '../../store';
-import {CardId, CardMetadata, XAxisType} from '../../types';
+import {CardId, CardMetadata, HeaderEditInfo, XAxisType} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {DataDownloadDialogContainer} from './data_download_dialog_container';
 import {
   ColumnHeader,
+  DataTableMode,
   MinMaxStep,
   PartialSeries,
   PartitionedSeries,
@@ -182,7 +183,7 @@ function isMinMaxStepValid(minMax: MinMaxStep | undefined): boolean {
       (onStepSelectorToggled)="onStepSelectorToggled($event)"
       (onDataTableSorting)="onDataTableSorting($event)"
       (onLineChartZoom)="onLineChartZoom($event)"
-      (reorderColumnHeaders)="reorderColumnHeaders($event)"
+      (editColumnHeaders)="editColumnHeaders($event)"
       (onCardStateChanged)="onCardStateChanged($event)"
       (openSlideoutColumnEditMenu)="openSlideoutColumnEditMenu()"
     ></scalar-card-component>
@@ -663,8 +664,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     );
   }
 
-  reorderColumnHeaders(headers: ColumnHeader[]) {
-    this.store.dispatch(dataTableColumnDrag({newOrder: headers}));
+  editColumnHeaders(headerEditInfo: HeaderEditInfo) {
+    this.store.dispatch(dataTableColumnEdited(headerEditInfo));
   }
 
   openSlideoutColumnEditMenu() {

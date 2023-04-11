@@ -21,9 +21,11 @@ import {
 } from '@angular/core';
 import {TimeSelection} from '../../../widgets/card_fob/card_fob_types';
 import {findClosestIndex} from '../../../widgets/line_chart_v2/sub_view/line_chart_interactive_utils';
+import {HeaderEditInfo} from '../../types';
 import {
   ColumnHeader,
   ColumnHeaderType,
+  DataTableMode,
   ScalarCardDataSeries,
   ScalarCardPoint,
   ScalarCardSeriesMetadataMap,
@@ -43,7 +45,7 @@ import {isDatumVisible} from './utils';
       [columnCustomizationEnabled]="columnCustomizationEnabled"
       [smoothingEnabled]="smoothingEnabled"
       (sortDataBy)="sortDataBy.emit($event)"
-      (orderColumns)="orderColumns.emit($event)"
+      (orderColumns)="orderColumns($event)"
     ></tb-data-table>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -58,7 +60,7 @@ export class ScalarCardDataTable {
   @Input() smoothingEnabled!: boolean;
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
-  @Output() orderColumns = new EventEmitter<ColumnHeader[]>();
+  @Output() editColumnHeaders = new EventEmitter<HeaderEditInfo>();
 
   getMinPointInRange(
     points: ScalarCardPoint[],
@@ -277,6 +279,15 @@ export class ScalarCardDataTable {
       default:
         return makeValueSortable(point[header]);
     }
+  }
+
+  orderColumns(headers: ColumnHeader[]) {
+    this.editColumnHeaders.emit({
+      headers: headers,
+      dataTableMode: this.stepOrLinkedTimeSelection.end
+        ? DataTableMode.RANGE
+        : DataTableMode.SINGLE,
+    });
   }
 }
 

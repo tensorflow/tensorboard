@@ -1252,19 +1252,6 @@ const reducer = createReducer(
       linkedTimeSelection: null,
     };
   }),
-  on(actions.dataTableColumnDrag, (state, {newOrder}) => {
-    if (state.rangeSelectionEnabled) {
-      return {
-        ...state,
-        rangeSelectionHeaders: newOrder,
-      };
-    }
-
-    return {
-      ...state,
-      singleSelectionHeaders: newOrder,
-    };
-  }),
   on(actions.dataTableColumnEdited, (state, {dataTableMode, headers}) => {
     const enabledNewHeaders: ColumnHeader[] = [];
     const disabledNewHeaders: ColumnHeader[] = [];

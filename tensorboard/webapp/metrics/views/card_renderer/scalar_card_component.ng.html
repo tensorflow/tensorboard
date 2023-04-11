@@ -200,7 +200,7 @@ limitations under the License.
       [columnCustomizationEnabled]="columnCustomizationEnabled"
       [smoothingEnabled]="smoothingEnabled"
       (sortDataBy)="sortDataBy($event)"
-      (orderColumns)="reorderColumnHeaders.emit($event)"
+      (editColumnHeaders)="editColumnHeaders.emit($event)"
     >
     </scalar-card-data-table>
   </div>

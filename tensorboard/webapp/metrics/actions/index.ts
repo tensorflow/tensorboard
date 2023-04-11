@@ -234,13 +234,6 @@ export const sortingDataTable = createAction(
   props<SortingInfo>()
 );
 
-export const dataTableColumnDrag = createAction(
-  '[Metrics] Data table column dragged',
-  props<{
-    newOrder: ColumnHeader[];
-  }>()
-);
-
 export const dataTableColumnEdited = createAction(
   '[Metrics] Data table columns edited in edit menu',
   props<HeaderEditInfo>()
