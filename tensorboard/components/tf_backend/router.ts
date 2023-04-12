@@ -74,15 +74,15 @@ export function createRouter(
     pluginRouteForSrc: (
       pluginName: string,
       route: string,
-      params?: URLSearchParams
+      params: URLSearchParams = new URLSearchParams()
     ): string => {
-      if (params === undefined) {
-        params = new URLSearchParams();
+      let featureFlags = getFeatureFlagsToSendToServer();
+      if (Object.keys(featureFlags).length > 0) {
+        params.append(
+          FEATURE_FLAGS_QUERY_STRING_NAME,
+          JSON.stringify(featureFlags)
+        );
       }
-      params.append(
-        FEATURE_FLAGS_QUERY_STRING_NAME,
-        JSON.stringify(getFeatureFlagsToSendToServer())
-      );
       return createDataPath(
         dataDir + '/plugin',
         `/${pluginName}${route}`,

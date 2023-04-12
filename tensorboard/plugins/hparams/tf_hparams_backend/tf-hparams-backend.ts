@@ -62,12 +62,11 @@ export class Backend {
   // ---- Private methods below -------------------------------------------
   _sendRequest(methodName, request_proto) {
     if (this._useHttpGet) {
-      const encodedRequest = encodeURIComponent(JSON.stringify(request_proto));
       const url = getRouter().pluginRoute(
         'hparams',
         methodName,
         new URLSearchParams({
-          request: encodedRequest,
+          request: JSON.stringify(request_proto),
         })
       );
       return this._requestManager.request(url);
