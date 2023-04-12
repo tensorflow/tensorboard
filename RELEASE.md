@@ -1,3 +1,9 @@
+# Release 2.12.2
+
+## Bug Fixes
+
+- Fixes scalar chart rendering in Safari (#6303)
+
 # Release 2.12.1
 
 ## Bug Fixes
