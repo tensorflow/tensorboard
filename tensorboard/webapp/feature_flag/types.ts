@@ -54,4 +54,6 @@ export interface FeatureFlags {
   // Adds affordance for users to select and reorder the columns in the Scalar
   // Card Data Table
   enableScalarColumnCustomization: boolean;
+  // Adds hparam columns to the runs table and the scalar card data table.
+  enableHparamsInTimeSeries: boolean;
 }

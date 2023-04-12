@@ -130,6 +130,11 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       queryParamOverride: 'enableScalarColumnCustomization',
       parseValue: parseBoolean,
     },
+    enableHparamsInTimeSeries: {
+      defaultValue: false,
+      queryParamOverride: 'enableHparamsInTimeSeries',
+      parseValue: parseBoolean,
+    },
   };
 
 /**
