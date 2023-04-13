@@ -102,9 +102,15 @@ mat-slider {
   display: flex;
   cursor: pointer;
   font-size: inherit;
+  height: 25px;
+  padding-left: 5px;
+  padding-right: 8px;
+  &.open-state {
+    background-color: mat.get-color-from-palette(mat.$grey-palette, 800);
+  }
   mat-icon {
-    height: 15px;
     width: 15px;
+    margin-right: 6px;
   }
 }
 

@@ -61,17 +61,10 @@ limitations under the License.
     <button
       mat-button
       *ngIf="isScalarColumnCustomizationEnabled"
-      class="column-edit-menu-toggle"
+      [ngClass]="{'column-edit-menu-toggle':true, 'open-state': isSlideOutMenuOpen}"
       (click)="onSlideOutToggled.emit()"
     >
-      <!-- <mat-icon
-        *ngIf="!isSlideOutMenuOpen"
-        svgIcon="chevron_left_24px"
-      ></mat-icon> -->
-      <!-- <mat-icon
-        *ngIf="isSlideOutMenuOpen"
-        svgIcon="chevron_right_24px"
-      ></mat-icon> -->
+      <mat-icon svgIcon="edit_24px"></mat-icon>
       Edit Table Columns
     </button>
   </div>
