@@ -161,6 +161,9 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
   private updateTSNELearningRateFromUIChange() {
     if (this.learningRateInput) {
       this.learningRate = Math.pow(10, +this.learningRateInput.value);
+      if (this.dataSet) {
+        this.dataSet.setTsneLearningRate(this.learningRate);
+      }
     }
     (this.$$('.tsne-learning-rate span') as HTMLSpanElement).innerText =
       '' + this.learningRate;

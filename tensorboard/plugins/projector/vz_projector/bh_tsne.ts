@@ -259,7 +259,7 @@ export class TSNE {
   constructor(opt: TSNEOptions) {
     opt = opt || {dim: 2};
     this.perplexity = opt.perplexity || 30;
-    this.epsilon = opt.epsilon || 10;
+    this.setEpsilon(opt.epsilon || 10);
     this.rng = opt.rng || Math.random;
     this.dim = opt.dim;
     if (opt.dim === 2) {
@@ -382,6 +382,9 @@ export class TSNE {
         this.Y[i * this.dim + d] -= ymean[d] / N;
       }
     }
+  }
+  setEpsilon(epsilon: number) {
+    this.epsilon = epsilon;
   }
   setSupervision(superviseLabels: string[], superviseInput?: string) {
     if (superviseLabels != null) {
