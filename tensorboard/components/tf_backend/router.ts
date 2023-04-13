@@ -76,7 +76,7 @@ export function createRouter(
       route: string,
       params: URLSearchParams = new URLSearchParams()
     ): string => {
-      let featureFlags = getFeatureFlagsToSendToServer();
+      const featureFlags = getFeatureFlagsToSendToServer();
       if (Object.keys(featureFlags).length > 0) {
         params.append(
           FEATURE_FLAGS_QUERY_STRING_NAME,
