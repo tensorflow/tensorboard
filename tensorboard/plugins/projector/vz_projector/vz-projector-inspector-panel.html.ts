@@ -181,7 +181,7 @@ export const template = html`
 
     .nn-slider {
       --paper-slider-input: {
-        width: 64px;
+        width: 72px;
       }
       --paper-input-container-input: {
         font-size: 14px;
@@ -218,13 +218,13 @@ export const template = html`
   </style>
   <div class="container">
     <div class="buttons">
-      <button class="button reset-filter">Show All Data</button>
+      <button class="button reset-filter">Show all data</button>
       <button class="button set-filter">Isolate selection</button>
       <button class="button clear-selection">Clear selection</button>
     </div>
     <div class="search-by">
       <vz-projector-input id="search-box" label="Search"></vz-projector-input>
-      <paper-dropdown-menu no-animations label="by">
+      <paper-dropdown-menu no-animations label="By">
         <paper-listbox
           attr-for-selected="value"
           class="dropdown-content"
@@ -245,7 +245,7 @@ export const template = html`
       <div class="neighbors">
         <div class="neighbors-options">
           <div class="slider num-nn">
-            <span class="option-label">neighbors</span>
+            <span class="option-label">Neighbors</span>
             <paper-icon-button
               icon="help"
               class="help-icon"
@@ -270,7 +270,7 @@ export const template = html`
           </div>
         </div>
         <div class="distance">
-          <span class="option-label">distance</span>
+          <span class="option-label">Distance</span>
           <div class="options">
             <a class="selected cosine" href="javascript:void(0);">COSINE</a>
             <a class="euclidean" href="javascript:void(0);">EUCLIDEAN</a>
