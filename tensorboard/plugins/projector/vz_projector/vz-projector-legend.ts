@@ -78,7 +78,7 @@ class Legend extends LegacyElementMixin(PolymerElement) {
       </div>
     </template>
 
-    <template is="dom-if" if="[[renderInfo.thresholds]]">
+    <template is="dom-if" if="[[renderInfo.thresholds.length]]">
       <svg class="gradient">
         <defs>
           <linearGradient
@@ -105,14 +105,14 @@ class Legend extends LegacyElementMixin(PolymerElement) {
     if (this.renderInfo == null) {
       return;
     }
-    if (this.renderInfo.thresholds) {
+    if (this.renderInfo.thresholds.length) {
       // <linearGradient> is under dom-if so we should wait for it to be
       // inserted in the dom tree using async().
-      this.async(() => this.setupLinearGradient());
+      this.async(() => this.setupLinearGradient(), 150);
     }
   }
   _getLastThreshold(): number | undefined {
-    if (this.renderInfo == null || this.renderInfo.thresholds == null) {
+    if (this.renderInfo == null || !this.renderInfo.thresholds.length) {
       return;
     }
     return this.renderInfo.thresholds[this.renderInfo.thresholds.length - 1]
@@ -139,6 +139,7 @@ class Legend extends LegacyElementMixin(PolymerElement) {
       );
       stopElement.setAttribute('offset', this.getOffset(t.value));
       stopElement.setAttribute('stop-color', t.color);
+      linearGradient.appendChild(stopElement);
     });
   }
 }
