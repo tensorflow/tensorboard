@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {FEATURE_FLAGS_QUERY_STRING_NAME} from '../../webapp/feature_flag/http/const';
+import {getFeatureFlagsToSendToServer} from '../tf_feature_flags/feature-flags';
 import {ExperimentId} from './type';
 import {QueryParams} from './urlPathHelpers';
 
@@ -21,6 +23,11 @@ export interface Router {
   environment: () => string;
   experiments: () => string;
   pluginRoute: (
+    pluginName: string,
+    route: string,
+    params?: URLSearchParams
+  ) => string;
+  pluginRouteForSrc: (
     pluginName: string,
     route: string,
     params?: URLSearchParams
@@ -58,6 +65,24 @@ export function createRouter(
       route: string,
       params?: URLSearchParams
     ): string => {
+      return createDataPath(
+        dataDir + '/plugin',
+        `/${pluginName}${route}`,
+        params
+      );
+    },
+    pluginRouteForSrc: (
+      pluginName: string,
+      route: string,
+      params: URLSearchParams = new URLSearchParams()
+    ): string => {
+      const featureFlags = getFeatureFlagsToSendToServer();
+      if (Object.keys(featureFlags).length > 0) {
+        params.append(
+          FEATURE_FLAGS_QUERY_STRING_NAME,
+          JSON.stringify(featureFlags)
+        );
+      }
       return createDataPath(
         dataDir + '/plugin',
         `/${pluginName}${route}`,

@@ -25,7 +25,6 @@ const inColab =
   new URLSearchParams(window.location.search).get('tensorboardColab') ===
   'true';
 
-const PLUGIN_NAME = 'hparams';
 @customElement('tf-hparams-dashboard')
 class TfHparamsDashboard extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
@@ -42,9 +41,6 @@ class TfHparamsDashboard extends LegacyElementMixin(PolymerElement) {
     type: Object,
   })
   _backend = new tf_hparams_backend.Backend(
-    /* apiUrl= */ tf_backend
-      .getRouter()
-      .pluginRoute(/* pluginName= */ PLUGIN_NAME, /* route= */ ''),
     new tf_backend.RequestManager(),
     /* Use GETs if we're running in colab (due to b/126387106).
           Otherwise use POSTs. */

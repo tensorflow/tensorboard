@@ -20,7 +20,6 @@ import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mix
 import {Canceller} from '../../../components/tf_backend/canceller';
 import {RequestManager} from '../../../components/tf_backend/requestManager';
 import {getRouter} from '../../../components/tf_backend/router';
-import {addParams} from '../../../components/tf_backend/urlPathHelpers';
 import '../../../components/tf_card_heading/tf-card-heading';
 import '../../../components/tf_card_heading/tf-card-heading-style';
 import {formatDate} from '../../../components/tf_card_heading/util';
@@ -293,12 +292,12 @@ class TfImageLoader extends LegacyElementMixin(PolymerElement) {
       return;
     }
     this._metadataCanceller.cancelAll();
-    const router = getRouter();
-    const url = addParams(router.pluginRoute('images', '/images'), {
+    const searchParams = new URLSearchParams({
       tag: this.tag,
       run: this.run,
       sample: this.sample as any,
     });
+    const url = getRouter().pluginRoute('images', '/images', searchParams);
     const updateSteps = this._metadataCanceller.cancellable((result) => {
       if (result.cancelled) {
         return;
@@ -311,12 +310,16 @@ class TfImageLoader extends LegacyElementMixin(PolymerElement) {
     this.requestManager.request(url).then(updateSteps);
   }
   _createStepDatum(imageMetadata) {
-    let url = getRouter().pluginRoute('images', '/individualImage');
+    const searchParams = new URLSearchParams(imageMetadata.query);
     // Include wall_time just to disambiguate the URL and force
     // the browser to reload the image when the URL changes. The
     // backend doesn't care about the value.
-    url = addParams(url, {ts: imageMetadata.wall_time});
-    url += '&' + imageMetadata.query;
+    searchParams.append('ts', imageMetadata.wall_time);
+    let url = getRouter().pluginRouteForSrc(
+      'images',
+      '/individualImage',
+      searchParams
+    );
     return {
       // The wall time within the metadata is in seconds. The Date
       // constructor accepts a time in milliseconds, so we multiply by 1000.

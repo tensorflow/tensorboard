@@ -394,7 +394,7 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
     );
   }
   _graphUrl(run, limitAttrSize, largeAttrsKey) {
-    return getRouter().pluginRoute(
+    return getRouter().pluginRouteForSrc(
       'graphs',
       '/graph',
       new URLSearchParams({

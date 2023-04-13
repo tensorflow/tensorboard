@@ -261,7 +261,7 @@ class _TfAudioLoader
     // the browser to reload the audio when the URL changes. The
     // backend doesn't care about the value.
     searchParam.append('ts', String(audioMetadata.wall_time));
-    const url = getRouter().pluginRoute(
+    const url = getRouter().pluginRouteForSrc(
       'audio',
       '/individualAudio',
       searchParam
