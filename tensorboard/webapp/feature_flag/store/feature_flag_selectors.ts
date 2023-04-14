@@ -174,3 +174,10 @@ export const getIsScalarColumnCustomizationEnabled = createSelector(
     return flags.enableScalarColumnCustomization;
   }
 );
+
+export const getEnableHparamsInTimeSeries = createSelector(
+  getFeatureFlags,
+  (flags: FeatureFlags): boolean => {
+    return flags.enableHparamsInTimeSeries;
+  }
+);
