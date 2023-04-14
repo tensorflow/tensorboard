@@ -44,3 +44,20 @@ export const getExperiment = createSelector(
     return state.experimentMap[experimentId] || null;
   }
 );
+
+/**
+ * Returns Observable that emits an object mapping the provided
+ * experiment ids to experiment names.
+ */
+export const getExperimentNames = (experimentIds: string[]) =>
+  createSelector(
+    getDataState,
+    (state: ExperimentsDataState): Record<string, string> =>
+      experimentIds
+        .map((experimentId) => state.experimentMap[experimentId])
+        .filter(Boolean)
+        .reduce((map, experiment) => {
+          map[experiment.id] = experiment.name;
+          return map;
+        }, {} as Record<string, string>)
+  );

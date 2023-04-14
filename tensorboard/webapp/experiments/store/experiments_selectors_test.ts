@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as selectors from './experiments_selectors';
+import {State} from './experiments_types';
 import {buildExperiment, buildStateFromExperimentsState} from './testing';
 
 describe('experiments selectors', () => {
@@ -45,6 +46,39 @@ describe('experiments selectors', () => {
       expect(selectors.getExperiment(state, {experimentId: 'tigger'})).toEqual(
         null
       );
+    });
+  });
+
+  describe('#getExperimentNames', () => {
+    let state: State;
+
+    beforeEach(() => {
+      const foo = buildExperiment({id: 'foo', name: 'foo name'});
+      const bar = buildExperiment({id: 'bar', name: 'bar name'});
+
+      state = buildStateFromExperimentsState({
+        data: {
+          experimentMap: {foo, bar},
+        },
+      });
+    });
+
+    it('translates experiment ids to experiment names', () => {
+      expect(
+        selectors.getExperimentNames(['foo', 'bar', 'baz'])(state)
+      ).toEqual({
+        foo: 'foo name',
+        bar: 'bar name',
+      });
+    });
+
+    it('does not include experiments which are not found', () => {
+      expect(selectors.getExperimentNames(['foo', 'baz'])(state)).toEqual({
+        foo: 'foo name',
+      });
+    });
+    it('returns an empty object when no experiments are provided', () => {
+      expect(selectors.getExperimentNames([])(state)).toEqual({});
     });
   });
 });
