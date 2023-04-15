@@ -192,6 +192,7 @@ export function runAsyncTask<T>(
         }
         resolve(result);
       } catch (ex) {
+        logging.setErrorMessage((ex as Error).message);
         reject(ex);
       }
       return true;
