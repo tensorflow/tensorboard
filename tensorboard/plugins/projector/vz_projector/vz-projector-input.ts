@@ -47,12 +47,17 @@ class ProjectorInput extends LegacyElementMixin(PolymerElement) {
         background-color: #880e4f;
         color: white;
       }
+
+      .suffix {
+        display: flex;
+        flex-direction: row;
+      }
     </style>
 
     <paper-input label="[[label]]">
       <div class="slash" prefix slot="prefix">/</div>
-      <div class="slash" suffix slot="suffix">/</div>
-      <div suffix slot="suffix">
+      <div class="suffix" suffix slot="suffix">
+        <div class="slash">/</div>
         <paper-button id="regex" toggles class="toggle">.*</paper-button>
       </div>
     </paper-input>
