@@ -238,12 +238,12 @@ jobs:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
       - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
         with:
-          python-version: '3.8'
+          python-version: '3.10'
           architecture: 'x64'
       - name: 'Install black, yamllint, and the TensorFlow docs notebook tools'
         run: |
           python -m pip install -U pip
-          nbfmt_version="174c9a5c1cc51a3af1de98d84824c811ecd49029"
+          nbfmt_version="84bd7bea0c468667dd0ec273d426ed50f23e1a15"
           pip install black yamllint -c ./tensorboard/pip_package/requirements_dev.txt
           pip install -U git+https://github.com/tensorflow/docs@${nbfmt_version}
         # Workaround tensorflow incompatibility with protobuf>4.
