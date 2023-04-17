@@ -87,6 +87,7 @@ tf_ts_library(
         "//tensorboard/webapp/testing:utils",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
+        "@npm//@ngrx/store",
         "@npm//@types/jasmine",
     ],
 )
