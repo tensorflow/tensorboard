@@ -58,21 +58,15 @@ limitations under the License.
         >Link by step {{getLinkedTimeSelectionStartStep()}}
       </mat-checkbox>
     </div>
-    <div
+    <button
+      mat-button
       *ngIf="isScalarColumnCustomizationEnabled"
-      class="column-edit-menu-toggle"
+      [ngClass]="{'column-edit-menu-toggle':true, 'toggle-opened': isSlideOutMenuOpen}"
       (click)="onSlideOutToggled.emit()"
     >
-      <mat-icon
-        *ngIf="!isSlideOutMenuOpen"
-        svgIcon="chevron_left_24px"
-      ></mat-icon>
-      <mat-icon
-        *ngIf="isSlideOutMenuOpen"
-        svgIcon="chevron_right_24px"
-      ></mat-icon>
-      Open Column Edit Control
-    </div>
+      <mat-icon svgIcon="edit_24px"></mat-icon>
+      Edit Table Columns
+    </button>
   </div>
 
   <div class="control-row card-width">

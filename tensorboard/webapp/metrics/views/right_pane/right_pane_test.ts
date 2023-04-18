@@ -556,30 +556,26 @@ describe('metrics right_pane', () => {
             );
           });
 
-          it('renders left cheron when slideout is closed', () => {
+          it('renders without toggle-opened class when slideout is closed', () => {
             store.overrideSelector(selectors.isMetricsSlideoutMenuOpen, false);
             const fixture = TestBed.createComponent(SettingsViewContainer);
             fixture.detectChanges();
 
             expect(
-              fixture.debugElement
-                .query(By.css('.column-edit-menu-toggle'))
-                .query(By.css('mat-icon'))
-                .nativeElement.getAttribute('svgIcon')
-            ).toBe('chevron_left_24px');
+              fixture.debugElement.query(By.css('.column-edit-menu-toggle'))
+                .nativeElement
+            ).not.toHaveClass('toggle-opened');
           });
 
-          it('renders right cheron when slideout is open', () => {
+          it('renders with toggle-opened class when slideout is open', () => {
             store.overrideSelector(selectors.isMetricsSlideoutMenuOpen, true);
             const fixture = TestBed.createComponent(SettingsViewContainer);
             fixture.detectChanges();
 
             expect(
-              fixture.debugElement
-                .query(By.css('.column-edit-menu-toggle'))
-                .query(By.css('mat-icon'))
-                .nativeElement.getAttribute('svgIcon')
-            ).toBe('chevron_right_24px');
+              fixture.debugElement.query(By.css('.column-edit-menu-toggle'))
+                .nativeElement
+            ).toHaveClass('toggle-opened');
           });
         });
       });
