@@ -64,6 +64,7 @@ tf_ts_library(
     deps = [
         ":selectors",
         ":testing",
+        ":types",
         "//tensorboard/webapp/types",
         "@npm//@types/jasmine",
     ],

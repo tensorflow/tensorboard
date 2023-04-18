@@ -264,6 +264,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/core/views:test_lib",
         "//tensorboard/webapp/customization:customization_test_lib",
         "//tensorboard/webapp/deeplink:deeplink_test_lib",
+        "//tensorboard/webapp/experiments/store:store_test_lib",
         "//tensorboard/webapp/header:test_lib",
         "//tensorboard/webapp/metrics:integration_test",
         "//tensorboard/webapp/metrics:test_lib",
