@@ -72,13 +72,9 @@ describe('experiments selectors', () => {
       });
     });
 
-    it('does not include experiments which are not found', () => {
-      expect(selectors.getExperimentNames(['foo', 'baz'])(state)).toEqual({
-        foo: 'foo name',
-      });
-    });
     it('returns an empty object when no experiments are provided', () => {
       expect(selectors.getExperimentNames([])(state)).toEqual({});
+      expect(selectors.getExperimentNames(['abc', '123'])(state)).toEqual({});
     });
   });
 });
