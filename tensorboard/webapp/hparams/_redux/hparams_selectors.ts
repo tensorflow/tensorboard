@@ -12,12 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {
-  createFeatureSelector,
-  createSelector,
-  MemoizedSelector,
-} from '@ngrx/store';
-import {State} from '../../app_state';
+import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {DiscreteFilter, HparamAndMetricSpec, IntervalFilter} from '../types';
 import {combineHparamAndMetricSpecs} from './hparams_selectors_utils';
 import {HparamsState, HPARAMS_FEATURE_KEY} from './types';
@@ -147,7 +142,7 @@ export function getMetricFilterMapFromExperimentIds(experimentIds: string[]) {
     getMetricsDefaultFiltersForExperimentsFromExperimentIds(experimentIds),
     (state, defaultFilterMap) =>
       getMetricFilterMapResultFunction(state, defaultFilterMap, experimentIds)
-  ) as MemoizedSelector<State, Map<string, IntervalFilter>>;
+  );
 }
 
 /**
