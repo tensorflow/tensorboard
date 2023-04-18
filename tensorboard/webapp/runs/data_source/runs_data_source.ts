@@ -74,6 +74,10 @@ function transformBackendMetricSpec(
   };
 }
 
+declare interface GetExperimentHparamRequestPayload {
+  experimentName: string;
+}
+
 @Injectable()
 export class TBRunsDataSource implements RunsDataSource {
   constructor(private readonly http: TBHttpClient) {}
@@ -94,12 +98,13 @@ export class TBRunsDataSource implements RunsDataSource {
   }
 
   fetchHparamsMetadata(experimentId: string): Observable<HparamsAndMetadata> {
-    const formData = new FormData();
-    formData.append('experimentName', experimentId);
+    const requestPayload: GetExperimentHparamRequestPayload = {
+      experimentName: experimentId,
+    };
     return this.http
       .post<backendTypes.BackendHparamsExperimentResponse>(
         `/experiment/${experimentId}/${HPARAMS_HTTP_PATH_PREFIX}/experiment`,
-        formData
+        requestPayload
       )
       .pipe(
         map((response) => {
