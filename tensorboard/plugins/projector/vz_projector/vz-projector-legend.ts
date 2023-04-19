@@ -78,7 +78,7 @@ class Legend extends LegacyElementMixin(PolymerElement) {
       </div>
     </template>
 
-    <template is="dom-if" if="[[renderInfo.thresholds.length]]">
+    <template is="dom-if" if="[[renderInfo.thresholds?.length]]">
       <svg class="gradient">
         <defs>
           <linearGradient
@@ -105,14 +105,14 @@ class Legend extends LegacyElementMixin(PolymerElement) {
     if (this.renderInfo == null) {
       return;
     }
-    if (this.renderInfo.thresholds.length) {
+    if (this.renderInfo.thresholds?.length) {
       // <linearGradient> is under dom-if so we should wait for it to be
       // inserted in the dom tree using async().
       this.async(() => this.setupLinearGradient(), 150);
     }
   }
   _getLastThreshold(): number | undefined {
-    if (this.renderInfo == null || !this.renderInfo.thresholds.length) {
+    if (this.renderInfo == null || !this.renderInfo.thresholds?.length) {
       return;
     }
     return this.renderInfo.thresholds[this.renderInfo.thresholds.length - 1]
