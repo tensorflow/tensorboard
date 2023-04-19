@@ -219,6 +219,7 @@ export const template = html`
         position: absolute;
         top: 20px;
         left: 20px;
+        background: white;
       }
 
       #help3dDialog .main {
