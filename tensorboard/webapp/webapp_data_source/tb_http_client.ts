@@ -45,6 +45,20 @@ function convertFormDataToObject(formData: FormData) {
   return result;
 }
 
+function bodyToParams(body: any | null, serializeUnder?: string) {
+  if (!body) {
+    return;
+  }
+  const params =
+    body instanceof FormData ? convertFormDataToObject(body) : body;
+  if (serializeUnder) {
+    return {
+      [serializeUnder]: JSON.stringify(params),
+    };
+  }
+  return params;
+}
+
 export const XSRF_REQUIRED_HEADER = 'X-XSRF-Protected';
 
 /**
@@ -84,7 +98,8 @@ export class TBHttpClient implements TBHttpClientInterface {
     path: string,
     // Angular's HttpClient is typed exactly this way.
     body: any | null,
-    options: PostOptions | undefined = {}
+    options: PostOptions | undefined = {},
+    serializeUnder: string | undefined = undefined
   ): Observable<ResponseType> {
     options = withXsrfHeader(options);
     return this.store.select(getIsFeatureFlagsLoaded).pipe(
@@ -100,7 +115,7 @@ export class TBHttpClient implements TBHttpClientInterface {
         if (isInColab) {
           return this.http.get<ResponseType>(resolvedPath, {
             headers: options.headers ?? {},
-            params: convertFormDataToObject(body),
+            params: bodyToParams(body, serializeUnder),
           });
         } else {
           return this.http.post<ResponseType>(resolvedPath, body, options);
