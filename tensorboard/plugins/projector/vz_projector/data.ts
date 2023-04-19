@@ -680,6 +680,8 @@ export class State {
   filteredPoints: number[];
   /** The indices of selected points. */
   selectedPoints: number[] = [];
+  /** The shuffled indices of points. */
+  shuffledDataIndices: number[] = [];
   /** Camera state (2d/3d, position, target, zoom, etc). */
   cameraDef: CameraDef;
   /** Color by option. */

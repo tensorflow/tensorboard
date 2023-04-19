@@ -190,7 +190,7 @@ class BookmarkPanel extends LegacyElementMixin(PolymerElement) {
     this.notifyPath(path, selected);
   }
   /**
-   * Return an event's to their bookmark index.
+   * Returns the bookmark index of the event.
    */
   private getBookmarkIndex(evt: any) {
     return evt.model.__data.index;
