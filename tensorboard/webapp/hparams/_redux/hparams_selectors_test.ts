@@ -117,6 +117,98 @@ describe('hparams/_redux/hparams_selectors_test', () => {
     });
   });
 
+  describe('#getHparamFilterMapFromExperimentIds()', () => {
+    it('returns default hparam filter map', () => {
+      const state = buildStateFromHparamsState(
+        buildHparamsState(
+          buildSpecs('foo', {
+            hparam: {
+              specs: [buildHparamSpec({name: 'optimizer'})],
+              defaultFilters: new Map([
+                [
+                  'optimizer',
+                  buildDiscreteFilter({
+                    filterValues: ['a', 'b', 'c'],
+                  }),
+                ],
+              ]),
+            },
+          })
+        )
+      );
+
+      expect(
+        selectors.getHparamFilterMapFromExperimentIds(['foo'])(state)
+      ).toEqual(
+        new Map([
+          ['optimizer', buildDiscreteFilter({filterValues: ['a', 'b', 'c']})],
+        ])
+      );
+    });
+
+    it('returns custom hparam filter map', () => {
+      const state = buildStateFromHparamsState(
+        buildHparamsState(
+          buildSpecs('foo', {
+            hparam: {
+              specs: [buildHparamSpec({name: 'optimizer'})],
+              defaultFilters: new Map([
+                [
+                  'optimizer',
+                  buildDiscreteFilter({
+                    filterValues: ['a', 'b', 'c'],
+                  }),
+                ],
+              ]),
+            },
+          }),
+          buildFilterState(['foo'], {
+            hparams: new Map([
+              [
+                'optimizer',
+                buildDiscreteFilter({
+                  filterValues: ['d', 'e', 'f'],
+                }),
+              ],
+            ]),
+          })
+        )
+      );
+
+      expect(
+        selectors.getHparamFilterMapFromExperimentIds(['foo'])(state)
+      ).toEqual(
+        new Map([
+          [
+            'optimizer',
+            buildDiscreteFilter({
+              filterValues: ['d', 'e', 'f'],
+            }),
+          ],
+        ])
+      );
+    });
+
+    it('returns empty map for an unknown exp', () => {
+      const state = buildStateFromHparamsState(
+        buildHparamsState(
+          buildSpecs('foo', {
+            hparam: {
+              specs: [buildHparamSpec({name: 'optimizer'})],
+              defaultFilters: new Map([
+                ['optimizer', buildDiscreteFilter({filterValues: ['a']})],
+              ]),
+            },
+          })
+        )
+      );
+
+      expect(
+        selectors.getHparamFilterMapFromExperimentIds(['bar'])(state)
+      ).toEqual(new Map());
+    });
+  });
+
   describe('#getMetricFilterMap', () => {
     beforeEach(() => {
       // Clear the memoization.
@@ -230,6 +322,123 @@ describe('hparams/_redux/hparams_selectors_test', () => {
         )
       );
       expect(selectors.getMetricFilterMap(state, ['bar'])).toEqual(new Map());
+    });
+  });
+
+  describe('#getMetricFilterMapFromExperimentIds', () => {
+    it('returns default metric filter map', () => {
+      const state = buildStateFromHparamsState(
+        buildHparamsState(
+          buildSpecs('foo', {
+            metric: {
+              specs: [buildMetricSpec({tag: 'acc'})],
+              defaultFilters: new Map([
+                [
+                  'acc',
+                  buildIntervalFilter({
+                    filterLowerValue: 0,
+                    filterUpperValue: 1,
+                  }),
+                ],
+              ]),
+            },
+          })
+        )
+      );
+
+      expect(
+        selectors.getMetricFilterMapFromExperimentIds(['foo'])(state)
+      ).toEqual(
+        new Map([
+          [
+            'acc',
+            buildIntervalFilter({
+              filterLowerValue: 0,
+              filterUpperValue: 1,
+            }),
+          ],
+        ])
+      );
+    });
+
+    it('returns custom metric filter map', () => {
+      const state = buildStateFromHparamsState(
+        buildHparamsState(
+          buildSpecs('foo', {
+            metric: {
+              specs: [buildMetricSpec({tag: 'acc'})],
+              defaultFilters: new Map([
+                [
+                  'acc',
+                  buildIntervalFilter({
+                    filterLowerValue: 0,
+                    filterUpperValue: 1,
+                  }),
+                ],
+              ]),
+            },
+          }),
+          buildFilterState(['foo'], {
+            metrics: new Map([
+              [
+                'acc',
+                buildIntervalFilter({
+                  filterLowerValue: 0,
+                  filterUpperValue: 0.1,
+                }),
+              ],
+            ]),
+          })
+        )
+      );
+      expect(
+        selectors.getMetricFilterMapFromExperimentIds(['foo'])(state)
+      ).toEqual(
+        new Map([
+          [
+            'acc',
+            buildIntervalFilter({
+              filterLowerValue: 0,
+              filterUpperValue: 0.1,
+            }),
+          ],
+        ])
+      );
+    });
+
+    it('returns empty map for an unknown exp', () => {
+      const state = buildStateFromHparamsState(
+        buildHparamsState(
+          buildSpecs('foo', {
+            metric: {
+              specs: [buildMetricSpec({tag: 'acc'})],
+              defaultFilters: new Map([
+                [
+                  'acc',
+                  buildIntervalFilter({
+                    filterLowerValue: 0,
+                    filterUpperValue: 1,
+                  }),
+                ],
+              ]),
+            },
+          }),
+          buildFilterState(['foo'], {
+            metrics: new Map([
+              [
+                'acc',
+                buildIntervalFilter({
+                  filterLowerValue: 0,
+                  filterUpperValue: 0.1,
+                }),
+              ],
+            ]),
+          })
+        )
+      );
+      expect(
+        selectors.getMetricFilterMapFromExperimentIds(['bar'])(state)
+      ).toEqual(new Map());
     });
   });
 });

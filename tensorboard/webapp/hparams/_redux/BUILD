@@ -74,6 +74,7 @@ tf_ts_library(
         ":hparams_actions",
         ":types",
         ":utils",
+        "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/hparams:types",
         "//tensorboard/webapp/runs/actions",
         "@npm//@ngrx/store",

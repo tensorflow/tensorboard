@@ -25,80 +25,125 @@ import {
 const getHparamsState =
   createFeatureSelector<HparamsState>(HPARAMS_FEATURE_KEY);
 
-const getHparamsDefaultFiltersForExperiments = createSelector(
-  getHparamsState,
-  (
-    state: HparamsState,
-    experimentIds: string[]
-  ): Map<string, DiscreteFilter | IntervalFilter> => {
-    const defaultFilterMaps: Array<
-      Map<string, DiscreteFilter | IntervalFilter>
-    > = [];
+function getHparamsDefaultFiltersForExperimentsResultFunction(
+  state: HparamsState,
+  experimentIds: string[]
+): Map<string, DiscreteFilter | IntervalFilter> {
+  const defaultFilterMaps: Array<Map<string, DiscreteFilter | IntervalFilter>> =
+    [];
 
-    for (const experimentId of experimentIds) {
-      if (!state.specs[experimentId]) {
-        continue;
-      }
-
-      defaultFilterMaps.push(state.specs[experimentId].hparam.defaultFilters);
+  for (const experimentId of experimentIds) {
+    if (!state.specs[experimentId]) {
+      continue;
     }
 
-    return combineDefaultHparamFilters(defaultFilterMaps);
+    defaultFilterMaps.push(state.specs[experimentId].hparam.defaultFilters);
   }
+
+  return combineDefaultHparamFilters(defaultFilterMaps);
+}
+
+const getHparamsDefaultFiltersForExperiments = createSelector(
+  getHparamsState,
+  getHparamsDefaultFiltersForExperimentsResultFunction
 );
+
+function getHparamsDefaultFiltersForExperimentsFromExperimentIds(
+  experimentIds: string[]
+) {
+  return createSelector(getHparamsState, (state) =>
+    getHparamsDefaultFiltersForExperimentsResultFunction(state, experimentIds)
+  );
+}
+
+function getHparamFilterMapResultFunction(
+  hparamState: HparamsState,
+  combinedDefaultfilterMap: Map<string, DiscreteFilter | IntervalFilter>,
+  experimentIds: string[]
+): Map<string, IntervalFilter | DiscreteFilter> {
+  const id = getIdFromExperimentIds(experimentIds);
+  const otherFilter = hparamState.filters[id];
+
+  return new Map([
+    ...combinedDefaultfilterMap,
+    ...(otherFilter?.hparams ?? []),
+  ]);
+}
 
 export const getHparamFilterMap = createSelector(
-  getHparamsDefaultFiltersForExperiments,
   getHparamsState,
-  (
-    combinedDefaultfilterMap,
-    hparamState,
-    experimentIds: string[]
-  ): Map<string, IntervalFilter | DiscreteFilter> => {
-    const id = getIdFromExperimentIds(experimentIds);
-    const otherFilter = hparamState.filters[id];
-
-    return new Map([
-      ...combinedDefaultfilterMap,
-      ...(otherFilter?.hparams ?? []),
-    ]);
-  }
+  getHparamsDefaultFiltersForExperiments,
+  getHparamFilterMapResultFunction
 );
+
+export function getHparamFilterMapFromExperimentIds(experimentIds: string[]) {
+  return createSelector(
+    getHparamsState,
+    getHparamsDefaultFiltersForExperimentsFromExperimentIds(experimentIds),
+    (hparamState, combinedDefaultFilterMap) =>
+      getHparamFilterMapResultFunction(
+        hparamState,
+        combinedDefaultFilterMap,
+        experimentIds
+      )
+  );
+}
+
+function getMetricsDefaultFiltersForExperimentsResultFunction(
+  state: HparamsState,
+  experimentIds: string[]
+): Map<string, IntervalFilter> {
+  const defaultFilterMaps: Array<Map<string, IntervalFilter>> = [];
+
+  for (const experimentId of experimentIds) {
+    if (!state.specs[experimentId]) {
+      continue;
+    }
+
+    defaultFilterMaps.push(state.specs[experimentId].metric.defaultFilters);
+  }
+
+  return combineDefaultMetricFilters(defaultFilterMaps);
+}
 
 const getMetricsDefaultFiltersForExperiments = createSelector(
   getHparamsState,
-  (
-    state: HparamsState,
-    experimentIds: string[]
-  ): Map<string, IntervalFilter> => {
-    const defaultFilterMaps: Array<Map<string, IntervalFilter>> = [];
-
-    for (const experimentId of experimentIds) {
-      if (!state.specs[experimentId]) {
-        continue;
-      }
-
-      defaultFilterMaps.push(state.specs[experimentId].metric.defaultFilters);
-    }
-
-    return combineDefaultMetricFilters(defaultFilterMaps);
-  }
+  getMetricsDefaultFiltersForExperimentsResultFunction
 );
+
+function getMetricsDefaultFiltersForExperimentsFromExperimentIds(
+  experimentIds: string[]
+) {
+  return createSelector(getHparamsState, (state) =>
+    getMetricsDefaultFiltersForExperimentsResultFunction(state, experimentIds)
+  );
+}
+
+function getMetricFilterMapResultFunction(
+  hparamState: HparamsState,
+  defaultFilterMap: Map<string, IntervalFilter>,
+  experimentIds: string[]
+): Map<string, IntervalFilter> {
+  const id = getIdFromExperimentIds(experimentIds);
+  const otherFilter = hparamState.filters[id];
+
+  return new Map([...defaultFilterMap, ...(otherFilter?.metrics ?? [])]);
+}
 
 export const getMetricFilterMap = createSelector(
-  getMetricsDefaultFiltersForExperiments,
   getHparamsState,
-  (
-    defaultfilterMap,
-    hparamState,
-    experimentIds: string[]
-  ): Map<string, IntervalFilter> => {
-    const id = getIdFromExperimentIds(experimentIds);
-    const otherFilter = hparamState.filters[id];
-
-    return new Map([...defaultfilterMap, ...(otherFilter?.metrics ?? [])]);
-  }
+  getMetricsDefaultFiltersForExperiments,
+  getMetricFilterMapResultFunction
 );
+
+export function getMetricFilterMapFromExperimentIds(experimentIds: string[]) {
+  return createSelector(
+    getHparamsState,
+    getMetricsDefaultFiltersForExperimentsFromExperimentIds(experimentIds),
+    (state, defaultFilterMap) =>
+      getMetricFilterMapResultFunction(state, defaultFilterMap, experimentIds)
+  );
+}
 
 /**
  * Returns Observable that emits hparams and metrics specs of experiments.
