@@ -503,6 +503,11 @@ export class DataSet {
       });
     }
   }
+  setTsneLearningRate(learningRate: number) {
+    if (this.tsne) {
+      this.tsne.setEpsilon(learningRate);
+    }
+  }
   setSupervision(superviseColumn: string, superviseInput?: string) {
     if (superviseColumn != null) {
       this.superviseLabels = this.shuffledDataIndices
