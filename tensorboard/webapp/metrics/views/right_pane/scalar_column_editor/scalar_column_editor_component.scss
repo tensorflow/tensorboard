@@ -78,3 +78,9 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
     color: mat.get-color-from-palette($tb-dark-foreground, secondary-text);
   }
 }
+
+// The mat-tab-body-wrapper should grow to the full height to surround it's
+// content. This class is added to a div internal to the mat-tab-group.
+::ng-deep .mat-tab-body-wrapper {
+  flex: 1;
+}
