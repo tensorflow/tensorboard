@@ -92,18 +92,51 @@ describe('TBHttpClient', () => {
     });
   });
 
-  it('converts POST requests to GET when in Colab', () => {
-    const body = new FormData();
-    body.append('formKey', 'value');
-    store.overrideSelector(getIsFeatureFlagsLoaded, true);
-    store.overrideSelector(getIsInColab, true);
-    tbHttpClient.post('foo', body).subscribe(jasmine.createSpy());
-    httpMock.expectOne((req) => {
-      return (
-        req.method === 'GET' &&
-        req.urlWithParams === 'foo?formKey=value' &&
-        !req.body
-      );
+  describe('converts POST requests to GET when in Colab', () => {
+    it('using form data', () => {
+      const body = new FormData();
+      body.append('formKey', 'value');
+      store.overrideSelector(getIsFeatureFlagsLoaded, true);
+      store.overrideSelector(getIsInColab, true);
+      tbHttpClient.post('foo', body).subscribe(jasmine.createSpy());
+      httpMock.expectOne((req) => {
+        return (
+          req.method === 'GET' &&
+          req.urlWithParams === 'foo?formKey=value' &&
+          !req.body
+        );
+      });
+    });
+
+    it('using json', () => {
+      const body = {key: 'value'};
+      store.overrideSelector(getIsFeatureFlagsLoaded, true);
+      store.overrideSelector(getIsInColab, true);
+      tbHttpClient.post('foo', body).subscribe(jasmine.createSpy());
+      httpMock.expectOne((req) => {
+        return (
+          req.method === 'GET' &&
+          req.urlWithParams === 'foo?key=value' &&
+          !req.body
+        );
+      });
+    });
+
+    it('sets body as a serialized query param when serializeUnder is set', () => {
+      const body = {key: 'value', foo: [1, 2, 3]};
+      store.overrideSelector(getIsFeatureFlagsLoaded, true);
+      store.overrideSelector(getIsInColab, true);
+      tbHttpClient
+        .post('foo', body, {}, 'request')
+        .subscribe(jasmine.createSpy());
+      httpMock.expectOne((req) => {
+        return (
+          req.method === 'GET' &&
+          req.urlWithParams ===
+            'foo?request=%7B%22key%22:%22value%22,%22foo%22:%5B1,2,3%5D%7D' &&
+          !req.body
+        );
+      });
     });
   });
 
