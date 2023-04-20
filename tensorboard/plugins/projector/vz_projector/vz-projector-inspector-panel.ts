@@ -106,6 +106,7 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
     } else {
       this.updateSearchResults([]);
     }
+    this.searchBox.message = '';
   }
   private enableResetFilterButton(enabled: boolean) {
     this.resetFilterButton.disabled = !enabled;
@@ -151,6 +152,7 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
       this.selectedPointIndices,
       this.neighborsOfFirstPoint
     );
+    this.searchBox.setValue('', false);
   }
   datasetChanged() {
     this.enableResetFilterButton(false);
@@ -158,6 +160,10 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
   @observe('showNeighborImages', 'spriteImagesAvailable')
   _refreshNeighborsList() {
     this.updateNeighborsList();
+  }
+  @observe('selectedMetadataField')
+  _selectedMetadataFieldChanged() {
+    this.searchBox.setValue('', false);
   }
   metadataEditorContext(enabled: boolean, metadataColumn: string) {
     if (!this.projector || !this.projector.dataSet) {
@@ -382,6 +388,7 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
       this.setFilterButton.disabled = null!;
       this.clearSelectionButton.disabled = null!;
     } else {
+      this.setFilterButton.innerText = 'Isolate selection';
       this.setFilterButton.disabled = true;
       this.clearSelectionButton.disabled = true;
     }
@@ -436,12 +443,12 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
         inRegexMode,
         this.selectedMetadataField
       );
+      this.projectorEventContext.notifySelectionChanged(indices);
       if (indices.length === 0) {
         this.searchBox.message = '0 matches.';
       } else {
         this.searchBox.message = `${indices.length} matches.`;
       }
-      this.projectorEventContext.notifySelectionChanged(indices);
     };
     this.searchBox.registerInputChangedListener((value, inRegexMode) => {
       updateInput(value, inRegexMode);
