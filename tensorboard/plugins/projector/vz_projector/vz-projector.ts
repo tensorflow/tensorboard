@@ -588,7 +588,8 @@ class Projector
     }
     if (this.selectedPointIndices.length === 0) {
       if (hoverText) {
-        this.statusBar.innerText = hoverText!;
+        this.statusBar.innerText = hoverText;
+        this.statusBar.style.display = null!;
       } else {
         this.statusBar.style.display = 'none';
       }
@@ -611,6 +612,8 @@ class Projector
       this.selectedPointIndices.length + neighborsOfFirstPoint.length;
     this.statusBar.innerText = `Selected ${totalNumPoints} points`;
     if (totalNumPoints > 0) {
+      this.statusBar.style.display = null!;
+    } else {
       this.statusBar.style.display = 'none';
     }
   }
