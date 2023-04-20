@@ -3964,7 +3964,6 @@ describe('metrics reducers', () => {
         );
         expect(state2.isSlideoutMenuOpen).toBe(true);
         expect(state2.isSettingsPaneOpen).toBe(true);
-        expect(state2.tableEditorSelectedTab).toBe(DataTableMode.SINGLE);
       });
     });
 

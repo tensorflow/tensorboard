@@ -163,6 +163,10 @@ export class ScalarColumnEditorComponent implements OnDestroy {
     };
   }
 
+  getSelectedTabIndex() {
+    return this.selectedTab === DataTableMode.SINGLE ? 0 : 1;
+  }
+
   private getHeadersForMode(dataTableMode: DataTableMode) {
     return dataTableMode === DataTableMode.SINGLE
       ? this.singleHeaders

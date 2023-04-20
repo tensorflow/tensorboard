@@ -358,7 +358,6 @@ describe('scalar column editor', () => {
       const fixture = createComponent();
       fixture.detectChanges();
       const tabs = fixture.debugElement.queryAll(By.css('.mat-tab-label'));
-      console.log('tabs', tabs[0].attributes.class);
 
       expect(
         tabs[0].attributes.class?.includes('mat-tab-label-active')

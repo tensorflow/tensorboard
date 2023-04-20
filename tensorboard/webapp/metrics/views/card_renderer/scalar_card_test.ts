@@ -849,24 +849,7 @@ describe('scalar card', () => {
       flush();
     }));
 
-    it('dispatches metricsSlideoutMenuOpened with mode SINGLE when there are no fobs when edit columns button is clicked', fakeAsync(() => {
-      store.overrideSelector(
-        selectors.getIsScalarColumnCustomizationEnabled,
-        true
-      );
-      const fixture = createComponent('card1');
-
-      openOverflowMenu(fixture);
-      getMenuButton('Open menu to edit data table columns').click();
-      fixture.detectChanges();
-
-      expect(dispatchedActions[0]).toEqual(
-        metricsSlideoutMenuOpened({mode: DataTableMode.SINGLE})
-      );
-      flush();
-    }));
-
-    it('dispatches metricsSlideoutMenuOpened with mode SINGLE when there is a single fob when edit columns button is clicked', fakeAsync(() => {
+    it('dispatches metricsSlideoutMenuOpened with mode SINGLE when range disabled for card', fakeAsync(() => {
       store.overrideSelector(
         selectors.getIsScalarColumnCustomizationEnabled,
         true
@@ -884,7 +867,7 @@ describe('scalar card', () => {
       flush();
     }));
 
-    it('dispatches metricsSlideoutMenuOpened with mode set to RANGE when edit columns button is clicked and there are 2 fobs', fakeAsync(() => {
+    it('dispatches metricsSlideoutMenuOpened with mode RANGE when range enabled for card', fakeAsync(() => {
       store.overrideSelector(
         selectors.getIsScalarColumnCustomizationEnabled,
         true

@@ -17,7 +17,7 @@ limitations under the License.
 <div class="editor-controls">
   <mat-tab-group
     class="tab-group"
-    [selectedIndex]="selectedTab"
+    [selectedIndex]="getSelectedTabIndex()"
     (selectedTabChange)="tabChange($event)"
   >
     <mat-tab [label]="'Single'">
