@@ -367,6 +367,8 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     this.clearCentroids();
     (this.$$('#tsne-sampling') as HTMLElement).style.display =
       pointCount > TSNE_SAMPLE_SIZE ? null! : 'none';
+    (this.$$('#umap-sampling') as HTMLElement).style.display =
+      pointCount > UMAP_SAMPLE_SIZE ? null! : 'none';
     const wasSampled =
       dataSet == null
         ? false
