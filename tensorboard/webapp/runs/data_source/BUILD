@@ -48,7 +48,9 @@ tf_ts_library(
         "runs_data_source_test.ts",
     ],
     deps = [
+        ":backend_types",
         ":data_source",
+        ":testing",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/webapp_data_source:http_client_testing",
         "@npm//@types/jasmine",
