@@ -1163,7 +1163,7 @@ describe('metrics store utils', () => {
     });
   });
 
-  fdescribe('getMinMaxStepFromCardState', () => {
+  describe('getMinMaxStepFromCardState', () => {
     it('returns userViewBox when defined', () => {
       expect(
         getMinMaxStepFromCardState({

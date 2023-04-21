@@ -802,7 +802,7 @@ describe('metrics selectors', () => {
     });
   });
 
-  fdescribe('getMetricsCardMinMax', () => {
+  describe('getMetricsCardMinMax', () => {
     it('returns userMinMax when defined', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
