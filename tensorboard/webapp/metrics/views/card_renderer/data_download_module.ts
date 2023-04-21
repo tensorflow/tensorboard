@@ -22,10 +22,15 @@ import {MatSelectModule} from '@angular/material/select';
 import {MetricsDataSourceModule} from '../../data_source';
 import {DataDownloadDialogComponent} from './data_download_dialog_component';
 import {DataDownloadDialogContainer} from './data_download_dialog_container';
+import {DataDownloadDialogDirective} from './data_download_dialog_directive';
 
 @NgModule({
-  declarations: [DataDownloadDialogContainer, DataDownloadDialogComponent],
-  exports: [DataDownloadDialogContainer],
+  declarations: [
+    DataDownloadDialogContainer,
+    DataDownloadDialogComponent,
+    DataDownloadDialogDirective,
+  ],
+  exports: [DataDownloadDialogContainer, DataDownloadDialogDirective],
   imports: [
     CommonModule,
     FormsModule,

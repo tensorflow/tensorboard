@@ -52,6 +52,7 @@ tf_ng_module(
     srcs = [
         "data_download_dialog_component.ts",
         "data_download_dialog_container.ts",
+        "data_download_dialog_directive.ts",
         "data_download_module.ts",
     ],
     assets = [
@@ -65,6 +66,8 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_dialog",
         "//tensorboard/webapp/angular:expect_angular_material_input",
         "//tensorboard/webapp/angular:expect_angular_material_select",
+        "//tensorboard/webapp/feature_flag/http:const",
+        "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/data_source:types",
@@ -143,6 +146,7 @@ tf_ng_module(
     srcs = [
         "image_card_component.ts",
         "image_card_container.ts",
+        "image_card_directive.ts",
         "image_card_module.ts",
     ],
     assets = [
@@ -158,6 +162,8 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_progress_spinner",
         "//tensorboard/webapp/angular:expect_angular_material_slider",
+        "//tensorboard/webapp/feature_flag/http:const",
+        "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
