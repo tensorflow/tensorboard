@@ -1183,11 +1183,11 @@ const reducer = createReducer(
       rangeSelectionEnabled: nextRangeSelectionEnabled,
     };
   }),
-  on(actions.cardMinMaxChanged, (state, {cardId, minMax}) => {
+  on(actions.cardViewPortChanged, (state, {cardId, viewPort}) => {
     const nextCardStateMap = {...state.cardStateMap};
     nextCardStateMap[cardId] = {
       ...nextCardStateMap[cardId],
-      userMinMax: minMax,
+      userViewBox: viewPort,
     };
 
     return {

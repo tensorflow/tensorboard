@@ -802,15 +802,15 @@ describe('metrics selectors', () => {
     });
   });
 
-  describe('getMetricsCardMinMax', () => {
+  fdescribe('getMetricsCardMinMax', () => {
     it('returns userMinMax when defined', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
           cardStateMap: {
             card1: {
-              userMinMax: {
-                minStep: 10,
-                maxStep: 20,
+              userViewBox: {
+                x: [10, 20],
+                y: [11, 22],
               },
               dataMinMax: {
                 minStep: 0,

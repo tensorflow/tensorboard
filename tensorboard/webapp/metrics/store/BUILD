@@ -74,6 +74,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/util:dom",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
     ],
 )
 

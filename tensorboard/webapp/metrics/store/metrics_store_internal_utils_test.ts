@@ -1163,13 +1163,13 @@ describe('metrics store utils', () => {
     });
   });
 
-  describe('getMinMaxStepFromCardState', () => {
-    it('returns userMinMax when defined', () => {
+  fdescribe('getMinMaxStepFromCardState', () => {
+    it('returns userViewBox when defined', () => {
       expect(
         getMinMaxStepFromCardState({
-          userMinMax: {
-            minStep: 10,
-            maxStep: 20,
+          userViewBox: {
+            x: [10, 20],
+            y: [11, 22],
           },
           dataMinMax: {
             minStep: 0,
@@ -1182,7 +1182,25 @@ describe('metrics store utils', () => {
       });
     });
 
-    it('returns dataMinMax when userMinMax is not defined', () => {
+    it('returns min max within userViewBox range', () => {
+      expect(
+        getMinMaxStepFromCardState({
+          userViewBox: {
+            x: [11.2, 20.3],
+            y: [11, 22],
+          },
+          dataMinMax: {
+            minStep: 0,
+            maxStep: 100,
+          },
+        })
+      ).toEqual({
+        minStep: 12,
+        maxStep: 20,
+      });
+    });
+
+    it('returns dataMinMax when userViewBox is not defined', () => {
       expect(
         getMinMaxStepFromCardState({
           dataMinMax: {
