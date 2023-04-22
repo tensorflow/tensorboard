@@ -899,6 +899,50 @@ describe('metrics selectors', () => {
     });
   });
 
+  describe('getMetricsCardUserViewBox', () => {
+    it('returns null when cardStateMap is undefined', () => {
+      const state = appStateFromMetricsState(buildMetricsState({}));
+      expect(selectors.getMetricsCardUserViewBox(state, 'card1')).toBeNull();
+    });
+
+    it('returns null when card has no cardState', () => {
+      const state1 = appStateFromMetricsState(
+        buildMetricsState({
+          cardStateMap: {},
+        })
+      );
+      expect(selectors.getMetricsCardUserViewBox(state1, 'card1')).toBeNull();
+
+      const state2 = appStateFromMetricsState(
+        buildMetricsState({
+          cardStateMap: {
+            card1: {},
+          },
+        })
+      );
+      expect(selectors.getMetricsCardUserViewBox(state2, 'card1')).toBeNull();
+    });
+
+    it('returns userViewBox when defined', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          cardStateMap: {
+            card1: {
+              userViewBox: {
+                x: [0, 10],
+                y: [11, 22],
+              },
+            },
+          },
+        })
+      );
+      expect(selectors.getMetricsCardUserViewBox(state, 'card1')).toEqual({
+        x: [0, 10],
+        y: [11, 22],
+      });
+    });
+  });
+
   describe('getPinnedCardsWithMetadata', () => {
     beforeEach(() => {
       selectors.getPinnedCardsWithMetadata.release();

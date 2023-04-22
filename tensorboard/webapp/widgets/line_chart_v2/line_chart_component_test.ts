@@ -62,6 +62,7 @@ class FakeGridComponent {
       [yScaleType]="yScaleType"
       [fixedViewBox]="fixedViewBox"
       [useDarkMode]="useDarkMode"
+      [userViewBox]="userViewBox"
       (viewBoxChanged)="viewBoxChanged.emit($event)"
     ></line-chart>
   `,
@@ -100,6 +101,9 @@ class TestableComponent {
   @Input()
   lineOnly: boolean = false;
 
+  @Input()
+  userViewBox: Extent | null = null;
+
   @Output()
   viewBoxChanged = new EventEmitter();
 
@@ -119,6 +123,7 @@ describe('line_chart_v2/line_chart test', () => {
   let updateMetadataSpy: jasmine.Spy;
   let updateDataSpy: jasmine.Spy;
   let updateViewBoxSpy: jasmine.Spy;
+  let updateUserViewBoxSpy: jasmine.Spy;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -430,6 +435,32 @@ describe('line_chart_v2/line_chart test', () => {
     expect(fixture.componentInstance.viewBoxChanged.emit).toHaveBeenCalledTimes(
       2
     );
+  });
+
+  it('emits viewBoxChanged event with null when viewbox is reset', () => {
+    const fixture = createComponent({
+      seriesData: [
+        buildSeries({
+          id: 'foo',
+          points: [
+            {x: 0, y: 0},
+            {x: 1, y: -1},
+            {x: 2, y: 1},
+          ],
+        }),
+      ],
+      seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+      yScaleType: ScaleType.LINEAR,
+    });
+    fixture.detectChanges();
+    const viewBoxChangedSpy = spyOn(
+      fixture.componentInstance.viewBoxChanged,
+      'emit'
+    );
+
+    fixture.componentInstance.chart.viewBoxReset();
+
+    expect(viewBoxChangedSpy).toHaveBeenCalledWith(null);
   });
 
   it('sets correct domDim and viewBox on initial render', () => {
@@ -988,6 +1019,102 @@ describe('line_chart_v2/line_chart test', () => {
       expect(
         fixture.debugElement.query(By.css('.x-axis line-chart-axis'))
       ).toBeNull();
+    });
+  });
+
+  describe('userViewBox', () => {
+    it('updates viewBox', () => {
+      const fixture = createComponent({
+        seriesData: [
+          buildSeries({
+            id: 'foo',
+            points: [],
+          }),
+        ],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      fixture.componentInstance.userViewBox = {
+        x: [0, 1],
+        y: [0, 0.5],
+      };
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.chart.viewBox).toEqual({
+        x: [0, 1],
+        y: [0, 0.5],
+      });
+    });
+
+    it('does not update viewBox when data loaded afterward', () => {
+      const fixture = createComponent({
+        seriesData: [
+          buildSeries({
+            id: 'foo',
+            points: [],
+          }),
+        ],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      fixture.detectChanges();
+
+      fixture.componentInstance.userViewBox = {
+        x: [0, 1],
+        y: [0, 0.5],
+      };
+      fixture.detectChanges();
+
+      fixture.componentInstance.seriesData = [
+        buildSeries({
+          id: 'foo',
+          points: [
+            {x: 0, y: 0},
+            {x: 1, y: -1},
+            {x: 2, y: 1},
+          ],
+        }),
+      ];
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.chart.viewBox).toEqual({
+        x: [0, 1],
+        y: [0, 0.5],
+      });
+    });
+
+    it('updates viewBox with data extent when userView is null', () => {
+      const fixture = createComponent({
+        seriesData: [
+          buildSeries({
+            id: 'foo',
+            points: [],
+          }),
+        ],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      fixture.detectChanges();
+
+      fixture.componentInstance.userViewBox = null;
+      fixture.detectChanges();
+
+      fixture.componentInstance.seriesData = [
+        buildSeries({
+          id: 'foo',
+          points: [
+            {x: 0, y: 0},
+            {x: 1, y: -1},
+            {x: 2, y: 1},
+          ],
+        }),
+      ];
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.chart.viewBox).toEqual({
+        x: [-0.2, 2.2],
+        y: [-1.2, 1.2],
+      });
     });
   });
 });

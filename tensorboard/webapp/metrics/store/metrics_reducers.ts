@@ -1183,11 +1183,11 @@ const reducer = createReducer(
       rangeSelectionEnabled: nextRangeSelectionEnabled,
     };
   }),
-  on(actions.cardViewBoxChanged, (state, {cardId, viewBox}) => {
+  on(actions.cardViewBoxChanged, (state, {cardId, userViewBox}) => {
     const nextCardStateMap = {...state.cardStateMap};
     nextCardStateMap[cardId] = {
       ...nextCardStateMap[cardId],
-      userViewBox: viewBox,
+      userViewBox,
     };
 
     return {

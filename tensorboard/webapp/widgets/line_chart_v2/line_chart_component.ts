@@ -137,11 +137,13 @@ export class LineChartComponent
   @Input()
   tooltipTemplate?: TooltipTemplate;
 
+  @Input() userViewBox: Extent | null = null;
+
   @Input()
   lineOnly?: boolean = false;
 
   @Output()
-  viewBoxChanged = new EventEmitter<Extent>();
+  viewBoxChanged = new EventEmitter<Extent | null>();
 
   private onViewBoxOverridden = new ReplaySubject<boolean>(1);
 
@@ -183,6 +185,7 @@ export class LineChartComponent
   private isFixedViewBoxUpdated = false;
   private isViewBoxOverridden = false;
   private useDarkModeUpdated = false;
+  private userViewBoxUpdated = false;
   // Must set the default view box since it is an optional input and won't trigger
   // onChanges.
   private isViewBoxChanged = true;
@@ -226,8 +229,15 @@ export class LineChartComponent
       this.useDarkModeUpdated = true;
     }
 
-    if (this.scaleUpdated) {
+    // Do not set isViewBoxOverridden to false until updated userViewBox has been reflected on the lineChart.
+    if (this.scaleUpdated && !this.userViewBoxUpdated) {
       this.setIsViewBoxOverridden(false);
+    }
+
+    if (changes['userViewBox'] && this.userViewBox) {
+      this.userViewBoxUpdated = true;
+      this.viewBox = this.userViewBox;
+      this.setIsViewBoxOverridden(true);
     }
 
     this.isViewBoxChanged =
@@ -457,6 +467,10 @@ export class LineChartComponent
       this.lineChart.setUseDarkMode(this.useDarkMode);
     }
 
+    if (this.userViewBoxUpdated) {
+      this.userViewBoxUpdated = false;
+    }
+
     if (!this.isViewBoxOverridden && this.fixedViewBox) {
       this.viewBox = this.fixedViewBox;
     } else if (!this.isViewBoxOverridden && this.isViewBoxChanged) {
@@ -498,7 +512,8 @@ export class LineChartComponent
     this.setIsViewBoxOverridden(false);
     this.isViewBoxChanged = true;
     this.updateLineChart();
-    this.viewBoxChanged.emit(this.viewBox);
+    this.viewBoxChanged.emit(null);
+    this.userViewBox = null;
   }
 
   private setIsViewBoxOverridden(newValue: boolean): void {

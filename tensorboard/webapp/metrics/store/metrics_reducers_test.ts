@@ -3441,7 +3441,7 @@ describe('metrics reducers', () => {
           state1,
           actions.cardViewBoxChanged({
             cardId: 'card2',
-            viewBox: {
+            userViewBox: {
               x: [0, 1],
               y: [2, 5],
             },
@@ -3479,7 +3479,7 @@ describe('metrics reducers', () => {
           state1,
           actions.cardViewBoxChanged({
             cardId: 'card1',
-            viewBox: {
+            userViewBox: {
               x: [1, 5],
               y: [2, 5],
             },
