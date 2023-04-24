@@ -28,10 +28,12 @@ import {
   dataTableColumnEdited,
   dataTableColumnToggled,
   metricsSlideoutMenuClosed,
+  tableEditorTabChanged,
 } from '../../../actions';
 import {
   getRangeSelectionHeaders,
   getSingleSelectionHeaders,
+  getTableEditorSelectedTab,
 } from '../../../store/metrics_selectors';
 import {
   ColumnHeaderType,
@@ -78,6 +80,7 @@ describe('scalar column editor', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getRangeSelectionHeaders, []);
     store.overrideSelector(getSingleSelectionHeaders, []);
+    store.overrideSelector(getTableEditorSelectedTab, DataTableMode.SINGLE);
   });
 
   afterEach(() => {
@@ -156,7 +159,8 @@ describe('scalar column editor', () => {
       ]);
       const fixture = createComponent();
       switchTabs(fixture, DataTableMode.SINGLE);
-
+      // Clear action fired on tab change.
+      dispatchedActions = [];
       const checkboxes = fixture.debugElement.queryAll(By.css('mat-checkbox'));
 
       checkboxes[0].triggerEventHandler('change');
@@ -178,6 +182,8 @@ describe('scalar column editor', () => {
       const fixture = createComponent();
 
       switchTabs(fixture, DataTableMode.RANGE);
+      // Clear action fired on tab change.
+      dispatchedActions = [];
       const checkboxes = fixture.debugElement.queryAll(By.css('mat-checkbox'));
       checkboxes[1].triggerEventHandler('change', {});
       fixture.detectChanges();
@@ -208,7 +214,8 @@ describe('scalar column editor', () => {
       ]);
       const fixture = createComponent();
       switchTabs(fixture, DataTableMode.SINGLE);
-
+      // Clear action fired on tab change.
+      dispatchedActions = [];
       const headerListItems = fixture.debugElement.queryAll(
         By.css('.header-list-item')
       );
@@ -237,7 +244,8 @@ describe('scalar column editor', () => {
       ]);
       const fixture = createComponent();
       switchTabs(fixture, DataTableMode.RANGE);
-
+      // Clear action fired on tab change.
+      dispatchedActions = [];
       const headerListItems = fixture.debugElement.queryAll(
         By.css('.header-list-item')
       );
@@ -317,6 +325,57 @@ describe('scalar column editor', () => {
         .triggerEventHandler('click', {});
 
       expect(dispatchedActions[0]).toEqual(metricsSlideoutMenuClosed());
+    });
+  });
+
+  describe('tabs', () => {
+    let dispatchedActions: Action[] = [];
+    beforeEach(() => {
+      dispatchedActions = [];
+      spyOn(store, 'dispatch').and.callFake((action: Action) => {
+        dispatchedActions.push(action);
+      });
+    });
+    it('dispatches tableEditorTabChanged action when tab is clicked', fakeAsync(() => {
+      const fixture = createComponent();
+      switchTabs(fixture, DataTableMode.RANGE);
+      fixture.detectChanges();
+
+      expect(dispatchedActions[0]).toEqual(
+        tableEditorTabChanged({tab: DataTableMode.RANGE})
+      );
+
+      dispatchedActions = [];
+      switchTabs(fixture, DataTableMode.SINGLE);
+      fixture.detectChanges();
+
+      expect(dispatchedActions[0]).toEqual(
+        tableEditorTabChanged({tab: DataTableMode.SINGLE})
+      );
+    }));
+
+    it('update when global tableEditorSelectedTab changes', () => {
+      const fixture = createComponent();
+      fixture.detectChanges();
+      const tabs = fixture.debugElement.queryAll(By.css('.mat-tab-label'));
+
+      expect(
+        tabs[0].attributes.class?.includes('mat-tab-label-active')
+      ).toBeTrue();
+      expect(
+        tabs[1].attributes.class?.includes('mat-tab-label-active')
+      ).toBeFalse();
+
+      store.overrideSelector(getTableEditorSelectedTab, DataTableMode.RANGE);
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(
+        tabs[0].attributes.class?.includes('mat-tab-label-active')
+      ).toBeFalse();
+      expect(
+        tabs[1].attributes.class?.includes('mat-tab-label-active')
+      ).toBeTrue();
     });
   });
 });

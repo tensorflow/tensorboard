@@ -31,6 +31,7 @@ import {
 } from '../types';
 import {
   ColumnHeader,
+  DataTableMode,
   MinMaxStep,
 } from '../views/card_renderer/scalar_card_types';
 import {formatTimeSelection} from '../views/card_renderer/utils';
@@ -482,6 +483,11 @@ export const isMetricsSettingsPaneOpen = createSelector(
 export const isMetricsSlideoutMenuOpen = createSelector(
   selectMetricsState,
   (state): boolean => state.isSlideoutMenuOpen
+);
+
+export const getTableEditorSelectedTab = createSelector(
+  selectMetricsState,
+  (state): DataTableMode => state.tableEditorSelectedTab
 );
 
 export const getMetricsCardRangeSelectionEnabled = createSelector(

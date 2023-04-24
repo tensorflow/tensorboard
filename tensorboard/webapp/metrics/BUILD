@@ -88,6 +88,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",
         "//tensorboard/webapp/metrics/store:types",
+        "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/widgets/histogram:types",
         "@npm//@angular/core",

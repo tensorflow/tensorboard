@@ -37,7 +37,10 @@ import {
   TooltipSort,
   XAxisType,
 } from '../types';
-import {ColumnHeader} from '../views/card_renderer/scalar_card_types';
+import {
+  ColumnHeader,
+  DataTableMode,
+} from '../views/card_renderer/scalar_card_types';
 
 export const METRICS_FEATURE_KEY = 'metrics';
 
@@ -244,6 +247,7 @@ export interface MetricsNonNamespacedState {
   timeSeriesData: TimeSeriesData;
   isSettingsPaneOpen: boolean;
   isSlideoutMenuOpen: boolean;
+  tableEditorSelectedTab: DataTableMode;
   // Default settings. For the legacy reasons, we cannot change the name of the
   // prop. It either is set by application or a user via settings storage.
   settings: MetricsSettings;

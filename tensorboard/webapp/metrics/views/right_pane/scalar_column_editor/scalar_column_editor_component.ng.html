@@ -15,7 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div class="editor-controls">
-  <mat-tab-group class="tab-group">
+  <mat-tab-group
+    class="tab-group"
+    [selectedIndex]="getSelectedTabIndex()"
+    (selectedTabChange)="tabChange($event)"
+  >
     <mat-tab [label]="'Single'">
       <ngContext
         [ngTemplateOutlet]="headerList"
