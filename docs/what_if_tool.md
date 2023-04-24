@@ -1,5 +1,11 @@
 # Model Understanding with the What-If Tool Dashboard
 
+> **Warning**
+> This documentation only applies to TensorBoard 2.11 and earlier, as the
+> What-If Tool is no longer actively maintained. Please check out the actively
+> maintained [Learning Interpretability Tool
+> (LIT)](https://pair-code.github.io/lit/) instead.
+
 ![What-If Tool](./images/what_if_tool.png)
 
 The What-If Tool (WIT) provides an easy-to-use interface for expanding

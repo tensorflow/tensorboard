@@ -21,6 +21,7 @@ tf_ts_library(
         "//tensorboard/plugins/profile_redirect/tf_profile_redirect_dashboard",
         "//tensorboard/plugins/scalar/tf_scalar_dashboard",
         "//tensorboard/plugins/text/tf_text_dashboard",
+        "//tensorboard/plugins/wit_redirect/tf_wit_redirect_dashboard",
     ],
 )
 

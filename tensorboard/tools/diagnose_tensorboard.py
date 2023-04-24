@@ -254,23 +254,6 @@ def installed_packages():
         )
         yield Suggestion("Fix conflicting installations", message)
 
-    wit_version = packages.get("tensorboard-plugin-wit")
-    if wit_version == "tensorboard-plugin-wit==1.6.0.post2":
-        # This is only incompatible with TensorBoard prior to 2.2.0, but
-        # we just issue a blanket warning so that we don't have to pull
-        # in a `pkg_resources` dep to parse the version.
-        preamble = reflow(
-            """
-            Versions of the What-If Tool (`tensorboard-plugin-wit`)
-            prior to 1.6.0.post3 are incompatible with some versions of
-            TensorBoard. Please upgrade this package to the latest
-            version to resolve any startup errors:
-            """
-        )
-        command = "pip install -U tensorboard-plugin-wit"
-        message = "%s\n\n\t%s" % (preamble, command)
-        yield Suggestion("Upgrade `tensorboard-plugin-wit`", message)
-
 
 @check
 def tensorboard_python_version():
