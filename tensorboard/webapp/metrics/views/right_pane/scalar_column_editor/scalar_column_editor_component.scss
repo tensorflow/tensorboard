@@ -79,8 +79,12 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
   }
 }
 
-// The mat-tab-body-wrapper should grow to the full height to surround it's
-// content. This class is added to a div internal to the mat-tab-group.
+// Make the mat-tab-body-wrapper fill the height of its parent. When flex-grow
+// is 0 this element tries to wrap its content but, mysteriously it does so
+// incorrectly. This works around that by making the element fill the full area
+// allowed for the tab content. Then the child element can correctly decide when
+// a scroll bar is needed. This class is added to a div internal to the
+// mat-tab-group.
 ::ng-deep .mat-tab-body-wrapper {
   flex: 1;
 }
