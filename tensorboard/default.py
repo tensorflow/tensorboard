@@ -47,6 +47,7 @@ from tensorboard.plugins.text import text_plugin
 from tensorboard.plugins.text_v2 import text_v2_plugin
 from tensorboard.plugins.mesh import mesh_plugin
 from tensorboard.plugins.npmi import npmi_plugin
+from tensorboard.plugins.wit_redirect import wit_redirect_plugin
 
 
 logger = logging.getLogger(__name__)
@@ -88,6 +89,7 @@ _PLUGINS = [
     mesh_plugin.MeshPlugin,
     ExperimentalTextV2Plugin,
     ExperimentalNpmiPlugin,
+    wit_redirect_plugin.WITRedirectPluginLoader,
 ]
 
 

@@ -26,4 +26,5 @@ import '../plugins/profile_redirect/tf_profile_redirect_dashboard/tf-profile-red
 import '../plugins/pr_curve/tf_pr_curve_dashboard/tf-pr-curve-dashboard';
 import '../plugins/scalar/tf_scalar_dashboard/tf-scalar-dashboard';
 import '../plugins/text/tf_text_dashboard/tf-text-dashboard';
+import '../plugins/wit_redirect/tf_wit_redirect_dashboard/tf-wit-redirect-dashboard';
 import './polymer3_interop_helper';
