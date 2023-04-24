@@ -44,6 +44,7 @@ from tensorboard.plugins.profile_redirect import profile_redirect_plugin
 from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
 from tensorboard.plugins.mesh import mesh_plugin
+from tensorboard.plugins.wit_redirect import wit_redirect_plugin
 
 
 logger = logging.getLogger(__name__)
@@ -67,6 +68,7 @@ _PLUGINS = [
     profile_redirect_plugin.ProfileRedirectPluginLoader,
     hparams_plugin.HParamsPlugin,
     mesh_plugin.MeshPlugin,
+    wit_redirect_plugin.WITRedirectPluginLoader,
 ]
 
 
