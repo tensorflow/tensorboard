@@ -20,7 +20,6 @@ import {
   Input,
   OnDestroy,
   Output,
-  ViewChild,
 } from '@angular/core';
 import {MatTabChangeEvent} from '@angular/material/tabs';
 import {
