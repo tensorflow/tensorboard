@@ -22,7 +22,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {MatTabChangeEvent, MatTabGroup} from '@angular/material/tabs';
+import {MatTabChangeEvent} from '@angular/material/tabs';
 import {
   ColumnHeader,
   ColumnHeaderType,
