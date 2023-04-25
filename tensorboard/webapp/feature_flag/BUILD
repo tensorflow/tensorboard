@@ -43,6 +43,7 @@ tf_ts_library(
 tf_ng_web_test_suite(
     name = "karma_test",
     deps = [
+        "//tensorboard/webapp/feature_flag/directives:directives_test_lib",
         "//tensorboard/webapp/feature_flag/effects:effects_test_lib",
         "//tensorboard/webapp/feature_flag/http:http_test_lib",
         "//tensorboard/webapp/feature_flag/store:store_test_lib",

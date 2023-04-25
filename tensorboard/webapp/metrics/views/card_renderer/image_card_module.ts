@@ -21,15 +21,16 @@ import {MatSliderModule} from '@angular/material/slider';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {ImageCardComponent} from './image_card_component';
 import {ImageCardContainer} from './image_card_container';
-import {ImageCardDirective} from './image_card_directive';
+import {FeatureFlagDirectiveModule} from '../../../feature_flag/directives/feature_flag_directive';
 import {RunNameModule} from './run_name_module';
 import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_warning_module';
 
 @NgModule({
-  declarations: [ImageCardContainer, ImageCardComponent, ImageCardDirective],
-  exports: [ImageCardContainer, ImageCardDirective],
+  declarations: [ImageCardContainer, ImageCardComponent],
+  exports: [ImageCardContainer],
   imports: [
     CommonModule,
+    FeatureFlagDirectiveModule,
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,

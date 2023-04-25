@@ -19,20 +19,17 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
+import {FeatureFlagDirectiveModule} from '../../../feature_flag/directives/feature_flag_directive';
 import {MetricsDataSourceModule} from '../../data_source';
 import {DataDownloadDialogComponent} from './data_download_dialog_component';
 import {DataDownloadDialogContainer} from './data_download_dialog_container';
-import {DataDownloadDialogDirective} from './data_download_dialog_directive';
 
 @NgModule({
-  declarations: [
-    DataDownloadDialogContainer,
-    DataDownloadDialogComponent,
-    DataDownloadDialogDirective,
-  ],
-  exports: [DataDownloadDialogContainer, DataDownloadDialogDirective],
+  declarations: [DataDownloadDialogContainer, DataDownloadDialogComponent],
+  exports: [DataDownloadDialogContainer],
   imports: [
     CommonModule,
+    FeatureFlagDirectiveModule,
     FormsModule,
     MatButtonModule,
     MatDialogModule,
