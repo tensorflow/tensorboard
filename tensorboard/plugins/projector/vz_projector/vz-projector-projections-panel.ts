@@ -66,6 +66,8 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
   umapIs3d: boolean = true;
   @property({type: Number})
   umapNeighbors: number = 15;
+  @property({type: Number})
+  umapMinDist: number = 0.1;
   // PCA projection.
   @property({type: Array})
   pcaComponents: Array<{
@@ -262,6 +264,7 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     // UMAP
     this.umapIs3d = bookmark.umapIs3d;
     this.umapNeighbors = bookmark.umapNeighbors;
+    this.umapMinDist = bookmark.umapMinDist;
     // custom
     this.customSelectedSearchByMetadataOption =
       bookmark.customSelectedSearchByMetadataOption;
@@ -319,6 +322,7 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     // UMAP
     bookmark.umapIs3d = this.umapIs3d;
     bookmark.umapNeighbors = this.umapNeighbors;
+    bookmark.umapMinDist = this.umapMinDist;
     // custom
     bookmark.customSelectedSearchByMetadataOption =
       this.customSelectedSearchByMetadataOption;
@@ -542,20 +546,26 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     this.runUmapButton.disabled = true;
     const nComponents = this.umapIs3d ? 3 : 2;
     const nNeighbors = this.umapNeighbors;
-    this.dataSet.projectUmap(nComponents, nNeighbors, (iteration: number) => {
-      if (iteration != null) {
-        this.runUmapButton.disabled = false;
-        this.projector.notifyProjectionPositionsUpdated();
-        if (!projectionChangeNotified && this.dataSet.projections['umap']) {
+    const minDist = this.umapMinDist;
+    this.dataSet.projectUmap(
+      nComponents,
+      nNeighbors,
+      minDist,
+      (iteration: number) => {
+        if (iteration != null) {
+          this.runUmapButton.disabled = false;
+          this.projector.notifyProjectionPositionsUpdated();
+          if (!projectionChangeNotified && this.dataSet.projections['umap']) {
+            this.projector.onProjectionChanged();
+            projectionChangeNotified = true;
+          }
+        } else {
+          this.runUmapButton.innerText = 'Re-run';
+          this.runUmapButton.disabled = false;
           this.projector.onProjectionChanged();
-          projectionChangeNotified = true;
         }
-      } else {
-        this.runUmapButton.innerText = 'Re-run';
-        this.runUmapButton.disabled = false;
-        this.projector.onProjectionChanged();
       }
-    });
+    );
   }
   @observe('pcaX', 'pcaY', 'pcaZ')
   private showPCAIfEnabled() {
