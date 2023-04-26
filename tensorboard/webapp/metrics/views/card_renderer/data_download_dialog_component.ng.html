@@ -54,14 +54,16 @@ limitations under the License.
         mat-stroked-button
         [disabled]="!downloadUrlJson"
         [download]="getDownloadName('json')"
-        [attr.href]="downloadUrlJson"
+        [href]="downloadUrlJson"
+        [includeFeatureFlags]
         >JSON</a
       >
       <a
         mat-stroked-button
         [disabled]="!downloadUrlCsv"
         [download]="getDownloadName('csv')"
-        [attr.href]="downloadUrlCsv"
+        [href]="downloadUrlCsv"
+        [includeFeatureFlags]
         >CSV</a
       >
     </div>
