@@ -101,19 +101,84 @@ describe('data table', () => {
   it('displays given headers in order', () => {
     const fixture = createComponent({
       headers: [
-        {type: ColumnHeaderType.VALUE, enabled: true},
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.STEP, enabled: true},
-        {type: ColumnHeaderType.RELATIVE_TIME, enabled: true},
-        {type: ColumnHeaderType.VALUE_CHANGE, enabled: true},
-        {type: ColumnHeaderType.START_STEP, enabled: true},
-        {type: ColumnHeaderType.END_STEP, enabled: true},
-        {type: ColumnHeaderType.START_VALUE, enabled: true},
-        {type: ColumnHeaderType.END_VALUE, enabled: true},
-        {type: ColumnHeaderType.MIN_VALUE, enabled: true},
-        {type: ColumnHeaderType.MAX_VALUE, enabled: true},
-        {type: ColumnHeaderType.PERCENTAGE_CHANGE, enabled: true},
-        {type: ColumnHeaderType.SMOOTHED, enabled: true},
+        {
+          type: ColumnHeaderType.VALUE,
+          name: 'value',
+          displayName: 'Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.STEP,
+          name: 'step',
+          displayName: 'Step',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RELATIVE_TIME,
+          name: 'relativeTime',
+          displayName: 'Relative',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.VALUE_CHANGE,
+          name: 'valueChanged',
+          displayName: 'Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.START_STEP,
+          name: 'startStep',
+          displayName: 'Start Step',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.END_STEP,
+          name: 'endStep',
+          displayName: 'End Step',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.START_VALUE,
+          name: 'startValue',
+          displayName: 'Start Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.END_VALUE,
+          name: 'endValue',
+          displayName: 'End Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.MIN_VALUE,
+          name: 'minValue',
+          displayName: 'Min',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.MAX_VALUE,
+          name: 'maxValue',
+          displayName: 'Max',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.PERCENTAGE_CHANGE,
+          name: 'percentageChanged',
+          displayName: '%',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.SMOOTHED,
+          name: 'smoothed',
+          displayName: 'Smoothed',
+          enabled: true,
+        },
       ],
     });
     fixture.detectChanges();
@@ -149,19 +214,84 @@ describe('data table', () => {
   it('displays data in order', () => {
     const fixture = createComponent({
       headers: [
-        {type: ColumnHeaderType.VALUE, enabled: true},
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.STEP, enabled: true},
-        {type: ColumnHeaderType.RELATIVE_TIME, enabled: true},
-        {type: ColumnHeaderType.VALUE_CHANGE, enabled: true},
-        {type: ColumnHeaderType.START_STEP, enabled: true},
-        {type: ColumnHeaderType.END_STEP, enabled: true},
-        {type: ColumnHeaderType.START_VALUE, enabled: true},
-        {type: ColumnHeaderType.END_VALUE, enabled: true},
-        {type: ColumnHeaderType.MIN_VALUE, enabled: true},
-        {type: ColumnHeaderType.MAX_VALUE, enabled: true},
-        {type: ColumnHeaderType.PERCENTAGE_CHANGE, enabled: true},
-        {type: ColumnHeaderType.SMOOTHED, enabled: true},
+        {
+          type: ColumnHeaderType.VALUE,
+          name: 'value',
+          displayName: 'Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.STEP,
+          name: 'step',
+          displayName: 'Step',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RELATIVE_TIME,
+          name: 'relativeTime',
+          displayName: 'Relative',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.VALUE_CHANGE,
+          name: 'valueChanged',
+          displayName: 'Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.START_STEP,
+          name: 'startStep',
+          displayName: 'Start Step',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.END_STEP,
+          name: 'endStep',
+          displayName: 'End Step',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.START_VALUE,
+          name: 'startValue',
+          displayName: 'Start Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.END_VALUE,
+          name: 'endValue',
+          displayName: 'End Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.MIN_VALUE,
+          name: 'minValue',
+          displayName: 'Min',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.MAX_VALUE,
+          name: 'maxValue',
+          displayName: 'max',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.PERCENTAGE_CHANGE,
+          name: 'percentageChanged',
+          displayName: '%',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.SMOOTHED,
+          name: 'smoothed',
+          displayName: 'Smoothed',
+          enabled: true,
+        },
       ],
       data: [
         {
@@ -217,9 +347,24 @@ describe('data table', () => {
   it('does not displays headers or data when header is disabled', () => {
     const fixture = createComponent({
       headers: [
-        {type: ColumnHeaderType.VALUE, enabled: true},
-        {type: ColumnHeaderType.RUN, enabled: false},
-        {type: ColumnHeaderType.STEP, enabled: true},
+        {
+          type: ColumnHeaderType.VALUE,
+          name: 'value',
+          displayName: 'Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: false,
+        },
+        {
+          type: ColumnHeaderType.STEP,
+          name: 'step',
+          displayName: 'Step',
+          enabled: true,
+        },
       ],
       data: [
         {
@@ -248,10 +393,30 @@ describe('data table', () => {
   it('displays nothing when no data is available', () => {
     const fixture = createComponent({
       headers: [
-        {type: ColumnHeaderType.VALUE, enabled: true},
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.STEP, enabled: true},
-        {type: ColumnHeaderType.RELATIVE_TIME, enabled: true},
+        {
+          type: ColumnHeaderType.VALUE,
+          name: 'value',
+          displayName: 'Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.STEP,
+          name: 'step',
+          displayName: 'Step',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RELATIVE_TIME,
+          name: 'relativeTime',
+          displayName: 'Relative',
+          enabled: true,
+        },
       ],
       data: [{id: 'someid'}],
     });
@@ -269,10 +434,30 @@ describe('data table', () => {
   it('emits sortDataBy event when header clicked', () => {
     const fixture = createComponent({
       headers: [
-        {type: ColumnHeaderType.VALUE, enabled: true},
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.STEP, enabled: true},
-        {type: ColumnHeaderType.RELATIVE_TIME, enabled: true},
+        {
+          type: ColumnHeaderType.VALUE,
+          name: 'value',
+          displayName: 'Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.STEP,
+          name: 'step',
+          displayName: 'Step',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RELATIVE_TIME,
+          name: 'relativeTime',
+          displayName: 'Relative',
+          enabled: true,
+        },
       ],
     });
     fixture.detectChanges();
@@ -288,10 +473,30 @@ describe('data table', () => {
   it('emits sortDataBy event with DESCENDING when header that is currently sorted is clicked', () => {
     const fixture = createComponent({
       headers: [
-        {type: ColumnHeaderType.VALUE, enabled: true},
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.STEP, enabled: true},
-        {type: ColumnHeaderType.RELATIVE_TIME, enabled: true},
+        {
+          type: ColumnHeaderType.VALUE,
+          name: 'value',
+          displayName: 'Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.STEP,
+          name: 'step',
+          displayName: 'Step',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RELATIVE_TIME,
+          name: 'relativeTime',
+          displayName: 'Relative',
+          enabled: true,
+        },
       ],
       sortingInfo: {
         header: ColumnHeaderType.STEP,
@@ -311,9 +516,24 @@ describe('data table', () => {
   it('keeps sorting arrow invisible unless sorting on that header', () => {
     const fixture = createComponent({
       headers: [
-        {type: ColumnHeaderType.VALUE, enabled: true},
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.STEP, enabled: true},
+        {
+          type: ColumnHeaderType.VALUE,
+          name: 'value',
+          displayName: 'Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.STEP,
+          name: 'step',
+          displayName: 'Step',
+          enabled: true,
+        },
       ],
       sortingInfo: {
         header: ColumnHeaderType.VALUE,
@@ -358,9 +578,24 @@ describe('data table', () => {
   it('shows downward arrow when order is DESCENDING', () => {
     const fixture = createComponent({
       headers: [
-        {type: ColumnHeaderType.VALUE, enabled: true},
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.STEP, enabled: true},
+        {
+          type: ColumnHeaderType.VALUE,
+          name: 'value',
+          displayName: 'Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.STEP,
+          name: 'step',
+          displayName: 'Step',
+          enabled: true,
+        },
       ],
       sortingInfo: {
         header: ColumnHeaderType.STEP,
@@ -405,9 +640,24 @@ describe('data table', () => {
   it('emits orderColumns with new order when dragged left', () => {
     const fixture = createComponent({
       headers: [
-        {type: ColumnHeaderType.VALUE, enabled: true},
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.STEP, enabled: true},
+        {
+          type: ColumnHeaderType.VALUE,
+          name: 'value',
+          displayName: 'Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.STEP,
+          name: 'step',
+          displayName: 'Step',
+          enabled: true,
+        },
       ],
       sortingInfo: {
         header: ColumnHeaderType.STEP,
@@ -433,18 +683,48 @@ describe('data table', () => {
     headerElements[2].query(By.css('.cell')).triggerEventHandler('dragend');
 
     expect(orderColumnsSpy).toHaveBeenCalledOnceWith([
-      {type: ColumnHeaderType.RUN, enabled: true},
-      {type: ColumnHeaderType.VALUE, enabled: true},
-      {type: ColumnHeaderType.STEP, enabled: true},
+      {
+        type: ColumnHeaderType.RUN,
+        name: 'run',
+        displayName: 'Run',
+        enabled: true,
+      },
+      {
+        type: ColumnHeaderType.VALUE,
+        name: 'value',
+        displayName: 'Value',
+        enabled: true,
+      },
+      {
+        type: ColumnHeaderType.STEP,
+        name: 'step',
+        displayName: 'Step',
+        enabled: true,
+      },
     ]);
   });
 
   it('emits orderColumns with new order when dragged right', () => {
     const fixture = createComponent({
       headers: [
-        {type: ColumnHeaderType.VALUE, enabled: true},
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.STEP, enabled: true},
+        {
+          type: ColumnHeaderType.VALUE,
+          name: 'value',
+          displayName: 'Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.STEP,
+          name: 'step',
+          displayName: 'Step',
+          enabled: true,
+        },
       ],
       sortingInfo: {
         header: ColumnHeaderType.STEP,
@@ -470,19 +750,54 @@ describe('data table', () => {
     headerElements[2].query(By.css('.cell')).triggerEventHandler('dragend');
 
     expect(orderColumnsSpy).toHaveBeenCalledOnceWith([
-      {type: ColumnHeaderType.VALUE, enabled: true},
-      {type: ColumnHeaderType.STEP, enabled: true},
-      {type: ColumnHeaderType.RUN, enabled: true},
+      {
+        type: ColumnHeaderType.VALUE,
+        name: 'value',
+        displayName: 'Value',
+        enabled: true,
+      },
+      {
+        type: ColumnHeaderType.STEP,
+        name: 'step',
+        displayName: 'Step',
+        enabled: true,
+      },
+      {
+        type: ColumnHeaderType.RUN,
+        name: 'run',
+        displayName: 'Run',
+        enabled: true,
+      },
     ]);
   });
 
   it('does not display Smoothed column when smoothingEnabled is false', () => {
     const fixture = createComponent({
       headers: [
-        {type: ColumnHeaderType.VALUE, enabled: true},
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.SMOOTHED, enabled: true},
-        {type: ColumnHeaderType.STEP, enabled: true},
+        {
+          type: ColumnHeaderType.VALUE,
+          name: 'value',
+          displayName: 'Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.SMOOTHED,
+          name: 'smoothed',
+          displayName: 'Smoothed',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.STEP,
+          name: 'step',
+          displayName: 'Step',
+          enabled: true,
+        },
       ],
       data: [
         {

@@ -187,8 +187,18 @@ describe('persistent_settings data_source test', () => {
         getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
           JSON.stringify({
             singleSelectionHeaders: [
-              {type: ColumnHeaderType.RUN, enabled: true},
-              {type: ColumnHeaderType.VALUE, enabled: false},
+              {
+                type: ColumnHeaderType.RUN,
+                name: 'run',
+                displayName: 'Run',
+                enabled: true,
+              },
+              {
+                type: ColumnHeaderType.VALUE,
+                name: 'value',
+                displayName: 'Value',
+                enabled: false,
+              },
             ],
           })
         );
@@ -197,8 +207,18 @@ describe('persistent_settings data_source test', () => {
 
         expect(actual).toEqual({
           singleSelectionHeaders: [
-            {type: ColumnHeaderType.RUN, enabled: true},
-            {type: ColumnHeaderType.VALUE, enabled: false},
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.VALUE,
+              name: 'value',
+              displayName: 'Value',
+              enabled: false,
+            },
           ],
         });
       });
@@ -206,8 +226,18 @@ describe('persistent_settings data_source test', () => {
         getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
           JSON.stringify({
             rangeSelectionHeaders: [
-              {type: ColumnHeaderType.RUN, enabled: true},
-              {type: ColumnHeaderType.MIN_VALUE, enabled: true},
+              {
+                type: ColumnHeaderType.RUN,
+                name: 'run',
+                displayName: 'Run',
+                enabled: true,
+              },
+              {
+                type: ColumnHeaderType.MIN_VALUE,
+                name: 'minValue',
+                displayName: 'Min',
+                enabled: true,
+              },
             ],
           })
         );
@@ -216,8 +246,18 @@ describe('persistent_settings data_source test', () => {
 
         expect(actual).toEqual({
           rangeSelectionHeaders: [
-            {type: ColumnHeaderType.RUN, enabled: true},
-            {type: ColumnHeaderType.MIN_VALUE, enabled: true},
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.MIN_VALUE,
+              name: 'minValue',
+              displayName: 'Min',
+              enabled: true,
+            },
           ],
         });
       });

@@ -269,26 +269,116 @@ const {initialState, reducers: namespaceContextedReducer} =
       stepSelectorEnabled: false,
       rangeSelectionEnabled: false,
       singleSelectionHeaders: [
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.SMOOTHED, enabled: true},
-        {type: ColumnHeaderType.VALUE, enabled: true},
-        {type: ColumnHeaderType.STEP, enabled: true},
-        {type: ColumnHeaderType.RELATIVE_TIME, enabled: true},
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.SMOOTHED,
+          name: 'smoothed',
+          displayName: 'Smoothed',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.VALUE,
+          name: 'value',
+          displayName: 'Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.STEP,
+          name: 'step',
+          displayName: 'Step',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RELATIVE_TIME,
+          name: 'relative',
+          displayName: 'Relative',
+          enabled: true,
+        },
       ],
       rangeSelectionHeaders: [
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.MIN_VALUE, enabled: true},
-        {type: ColumnHeaderType.MAX_VALUE, enabled: true},
-        {type: ColumnHeaderType.START_VALUE, enabled: true},
-        {type: ColumnHeaderType.END_VALUE, enabled: true},
-        {type: ColumnHeaderType.VALUE_CHANGE, enabled: true},
-        {type: ColumnHeaderType.PERCENTAGE_CHANGE, enabled: true},
-        {type: ColumnHeaderType.START_STEP, enabled: true},
-        {type: ColumnHeaderType.END_STEP, enabled: true},
-        {type: ColumnHeaderType.STEP_AT_MAX, enabled: false},
-        {type: ColumnHeaderType.STEP_AT_MIN, enabled: false},
-        {type: ColumnHeaderType.MEAN, enabled: false},
-        {type: ColumnHeaderType.RAW_CHANGE, enabled: false},
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.MIN_VALUE,
+          name: 'min',
+          displayName: 'Min',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.MAX_VALUE,
+          name: 'max',
+          displayName: 'Max',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.START_VALUE,
+          name: 'start',
+          displayName: 'Start Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.END_VALUE,
+          name: 'end',
+          displayName: 'End Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.VALUE_CHANGE,
+          name: 'valueChange',
+          displayName: 'Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.PERCENTAGE_CHANGE,
+          name: 'percentageChange',
+          displayName: '%',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.START_STEP,
+          name: 'startStep',
+          displayName: 'Start Step',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.END_STEP,
+          name: 'endStep',
+          displayName: 'End Step',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.STEP_AT_MAX,
+          name: 'stepAtMax',
+          displayName: 'Step At Max',
+          enabled: false,
+        },
+        {
+          type: ColumnHeaderType.STEP_AT_MIN,
+          name: 'stepAtMin',
+          displayName: 'Step At Min',
+          enabled: false,
+        },
+        {
+          type: ColumnHeaderType.MEAN,
+          name: 'mean',
+          displayName: 'Mean',
+          enabled: false,
+        },
+        {
+          type: ColumnHeaderType.RAW_CHANGE,
+          name: 'rawChange',
+          displayName: 'Raw',
+          enabled: false,
+        },
       ],
       filteredPluginTypes: new Set(),
       stepMinMax: {
@@ -1308,7 +1398,7 @@ const reducer = createReducer(
     );
 
     newHeaders[newToggledHeaderIndex] = {
-      type: newHeaders[newToggledHeaderIndex].type,
+      ...newHeaders[newToggledHeaderIndex],
       enabled: !newHeaders[newToggledHeaderIndex].enabled,
     };
 
