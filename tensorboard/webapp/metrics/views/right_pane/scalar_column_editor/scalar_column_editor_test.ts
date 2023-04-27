@@ -360,10 +360,10 @@ describe('scalar column editor', () => {
       const tabs = fixture.debugElement.queryAll(By.css('.mat-tab-label'));
 
       expect(
-        tabs[0].attributes.class?.includes('mat-tab-label-active')
+        tabs[0].attributes['class']?.includes('mat-tab-label-active')
       ).toBeTrue();
       expect(
-        tabs[1].attributes.class?.includes('mat-tab-label-active')
+        tabs[1].attributes['class']?.includes('mat-tab-label-active')
       ).toBeFalse();
 
       store.overrideSelector(getTableEditorSelectedTab, DataTableMode.RANGE);
@@ -371,10 +371,10 @@ describe('scalar column editor', () => {
       fixture.detectChanges();
 
       expect(
-        tabs[0].attributes.class?.includes('mat-tab-label-active')
+        tabs[0].attributes['class']?.includes('mat-tab-label-active')
       ).toBeFalse();
       expect(
-        tabs[1].attributes.class?.includes('mat-tab-label-active')
+        tabs[1].attributes['class']?.includes('mat-tab-label-active')
       ).toBeTrue();
     });
   });
