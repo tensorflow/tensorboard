@@ -5,7 +5,19 @@ load("//tensorboard/defs:py_repl.bzl", "py_repl")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:zipper.bzl", "tensorboard_zip_file")
 
+# copybara:uncomment_begin
+# load("//tools/build_defs/license:license.bzl", "license")
+# copybara:uncomment_end
+
 package(default_visibility = [":internal"])
+
+
+# copybara:uncomment_begin
+# license(
+#     name = "license",
+#     package_name = "tensorboard",
+# )
+# copybara:uncomment_end
 
 licenses(["notice"])
 

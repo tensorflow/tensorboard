@@ -1,7 +1,10 @@
 # Description:
 # Plugin with installation instructions for dynamic interpretability plugin
 
-package(default_visibility = ["//tensorboard:internal"])
+package(
+    # copybara:uncomment default_applicable_licenses = ["//tensorboard:license"],
+    default_visibility = ["//tensorboard:internal"],
+)
 
 licenses(["notice"])
 
