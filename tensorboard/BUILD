@@ -11,7 +11,6 @@ load("//tensorboard/defs:zipper.bzl", "tensorboard_zip_file")
 
 package(default_visibility = [":internal"])
 
-
 # copybara:uncomment_begin
 # license(
 #     name = "license",
