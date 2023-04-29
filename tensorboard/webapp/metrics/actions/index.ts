@@ -219,9 +219,9 @@ export const timeSelectionChanged = createAction(
   props<{cardId?: CardId} & TimeSelectionWithAffordance>()
 );
 
-export const cardViewPortChanged = createAction(
-  '[Metrics] Card View Port Changed',
-  props<{cardId: CardId; viewPort: Extent}>()
+export const cardViewBoxChanged = createAction(
+  '[Metrics] Card View Box Changed',
+  props<{cardId: CardId; viewBox: Extent}>()
 );
 
 export const timeSelectionCleared = createAction(

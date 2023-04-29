@@ -67,7 +67,7 @@ import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer'
 import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
-  cardViewPortChanged,
+  cardViewBoxChanged,
   dataTableColumnEdited,
   metricsCardFullSizeToggled,
   metricsCardStateUpdated,
@@ -659,8 +659,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
   onLineChartZoom(lineChartViewBox: Extent) {
     this.store.dispatch(
-      cardViewPortChanged({
-        viewPort: lineChartViewBox,
+      cardViewBoxChanged({
+        viewBox: lineChartViewBox,
         cardId: this.cardId,
       })
     );

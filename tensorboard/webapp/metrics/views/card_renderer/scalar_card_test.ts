@@ -75,7 +75,7 @@ import {
 import {ResizeDetectorTestingModule} from '../../../widgets/resize_detector_testing_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {
-  cardViewPortChanged,
+  cardViewBoxChanged,
   metricsCardFullSizeToggled,
   metricsCardStateUpdated,
   stepSelectorToggled,
@@ -2599,7 +2599,7 @@ describe('scalar card', () => {
     });
 
     describe('line chart integration', () => {
-      it('updates viewPort value when line chart is zoomed', fakeAsync(async () => {
+      it('updates viewBox value when line chart is zoomed', fakeAsync(async () => {
         const runToSeries = {
           run1: [buildScalarStepData({step: 10})],
           run2: [buildScalarStepData({step: 20})],
@@ -2636,15 +2636,15 @@ describe('scalar card', () => {
           y: [0, 100],
         });
         expect(dispatchedActions).toEqual([
-          cardViewPortChanged({
-            viewPort: {
+          cardViewBoxChanged({
+            viewBox: {
               x: [9.235, 30.4],
               y: [0, 100],
             },
             cardId: 'card1',
           }),
-          cardViewPortChanged({
-            viewPort: {
+          cardViewBoxChanged({
+            viewBox: {
               x: [8, 31],
               y: [0, 100],
             },

@@ -3430,7 +3430,7 @@ describe('metrics reducers', () => {
       });
     });
 
-    describe('#cardViewPortChanged', () => {
+    describe('#cardViewBoxChanged', () => {
       it('adds a new value to an existing cardState map', () => {
         const state1 = buildMetricsState({
           cardStateMap: {
@@ -3439,9 +3439,9 @@ describe('metrics reducers', () => {
         });
         const state2 = reducers(
           state1,
-          actions.cardViewPortChanged({
+          actions.cardViewBoxChanged({
             cardId: 'card2',
-            viewPort: {
+            viewBox: {
               x: [0, 1],
               y: [2, 5],
             },
@@ -3459,7 +3459,7 @@ describe('metrics reducers', () => {
         });
       });
 
-      it('overrides an existing card viewport', () => {
+      it('overrides an existing card viewBox', () => {
         const state1 = buildMetricsState({
           cardStateMap: {
             card1: {
@@ -3477,9 +3477,9 @@ describe('metrics reducers', () => {
 
         const state2 = reducers(
           state1,
-          actions.cardViewPortChanged({
+          actions.cardViewBoxChanged({
             cardId: 'card1',
-            viewPort: {
+            viewBox: {
               x: [1, 5],
               y: [2, 5],
             },

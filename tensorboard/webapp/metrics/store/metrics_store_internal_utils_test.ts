@@ -1182,6 +1182,24 @@ describe('metrics store utils', () => {
       });
     });
 
+    it('minStep is lower than maxStep', () => {
+      expect(
+        getMinMaxStepFromCardState({
+          userViewBox: {
+            x: [20, 10],
+            y: [22, 11],
+          },
+          dataMinMax: {
+            minStep: 0,
+            maxStep: 100,
+          },
+        })
+      ).toEqual({
+        minStep: 10,
+        maxStep: 20,
+      });
+    });
+
     it('returns min max within userViewBox range', () => {
       expect(
         getMinMaxStepFromCardState({
