@@ -1182,7 +1182,7 @@ describe('metrics store utils', () => {
       });
     });
 
-    it('minStep is lower than maxStep', () => {
+    it('returns minStep lower than maxStep on descending x extent', () => {
       expect(
         getMinMaxStepFromCardState({
           userViewBox: {
