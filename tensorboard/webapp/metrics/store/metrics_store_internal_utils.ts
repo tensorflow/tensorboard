@@ -578,8 +578,15 @@ function getNextImageCardStepIndexFromRangeSelection(
  * @param cardState
  */
 export function getMinMaxStepFromCardState(cardState: Partial<CardState>) {
-  const {dataMinMax, userMinMax} = cardState;
-  return userMinMax || dataMinMax;
+  const {dataMinMax, userViewBox} = cardState;
+  const x = userViewBox?.x;
+  if (!x) return dataMinMax;
+
+  const minStep = x[0] < x[1] ? x[0] : x[1];
+  const maxStep = minStep === x[0] ? x[1] : x[0];
+  return (
+    {minStep: Math.ceil(minStep), maxStep: Math.floor(maxStep)} || dataMinMax
+  );
 }
 
 export function getCardSelectionStateToBoolean(

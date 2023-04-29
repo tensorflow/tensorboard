@@ -808,9 +808,9 @@ describe('metrics selectors', () => {
         buildMetricsState({
           cardStateMap: {
             card1: {
-              userMinMax: {
-                minStep: 10,
-                maxStep: 20,
+              userViewBox: {
+                x: [10, 20],
+                y: [11, 22],
               },
               dataMinMax: {
                 minStep: 0,

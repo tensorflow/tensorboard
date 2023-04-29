@@ -39,6 +39,7 @@ import {
   DataTableMode,
   SortingInfo,
 } from '../views/card_renderer/scalar_card_types';
+import {Extent} from '../../widgets/line_chart_v2/lib/public_types';
 
 export const metricsSettingsPaneClosed = createAction(
   '[Metrics] Metrics Settings Pane Closed'
@@ -218,9 +219,9 @@ export const timeSelectionChanged = createAction(
   props<{cardId?: CardId} & TimeSelectionWithAffordance>()
 );
 
-export const cardMinMaxChanged = createAction(
-  '[Metrics] Card Min Max Changed',
-  props<{cardId: CardId; minMax: MinMaxStep}>()
+export const cardViewBoxChanged = createAction(
+  '[Metrics] Card View Box Changed',
+  props<{cardId: CardId; viewBox: Extent}>()
 );
 
 export const timeSelectionCleared = createAction(

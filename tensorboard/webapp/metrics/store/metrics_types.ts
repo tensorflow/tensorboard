@@ -41,6 +41,7 @@ import {
   ColumnHeader,
   DataTableMode,
 } from '../views/card_renderer/scalar_card_types';
+import {Extent} from '../../widgets/line_chart_v2/lib/public_types';
 
 export const METRICS_FEATURE_KEY = 'metrics';
 
@@ -137,7 +138,7 @@ export enum CardFeatureOverride {
 
 export type CardState = {
   dataMinMax: MinMaxStep;
-  userMinMax: MinMaxStep;
+  userViewBox: Extent;
   timeSelection: TimeSelection;
   stepSelectionOverride: CardFeatureOverride;
   rangeSelectionOverride: CardFeatureOverride;

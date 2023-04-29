@@ -515,9 +515,9 @@ export const getMetricsCardRangeSelectionEnabled = createSelector(
 /**
  * Gets the min and max step visible in a metrics card.
  * This value can either be the data min max or be overridden
- * by a user min max.
+ * by min max within userViewBox.
  *
- * Note: userMinMax is not necessarily a subset of dataMinMax.
+ * Note: min max within userViewBox is not necessarily a subset of dataMinMax.
  */
 export const getMetricsCardMinMax = createSelector(
   getCardStateMap,

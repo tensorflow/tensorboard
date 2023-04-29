@@ -67,7 +67,7 @@ import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer'
 import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
-  cardMinMaxChanged,
+  cardViewBoxChanged,
   dataTableColumnEdited,
   metricsCardFullSizeToggled,
   metricsCardStateUpdated,
@@ -658,14 +658,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   }
 
   onLineChartZoom(lineChartViewBox: Extent) {
-    const minMax = lineChartViewBox.x;
-    const minMaxStepInViewPort: MinMaxStep = {
-      minStep: Math.ceil(Math.min(...minMax)),
-      maxStep: Math.floor(Math.max(...minMax)),
-    };
     this.store.dispatch(
-      cardMinMaxChanged({
-        minMax: minMaxStepInViewPort,
+      cardViewBoxChanged({
+        viewBox: lineChartViewBox,
         cardId: this.cardId,
       })
     );

@@ -3430,13 +3430,8 @@ describe('metrics reducers', () => {
       });
     });
 
-    describe('#cardMinMaxChanged', () => {
-      it('adds a new value to an existing cardToMinMax map', () => {
-        const initialCardToMinMax = new Map<NonPinnedCardId, MinMaxStep>();
-        initialCardToMinMax.set('card1', {
-          minStep: 0,
-          maxStep: 100,
-        });
+    describe('#cardViewBoxChanged', () => {
+      it('adds a new value to an existing cardState map', () => {
         const state1 = buildMetricsState({
           cardStateMap: {
             card1: {},
@@ -3444,11 +3439,11 @@ describe('metrics reducers', () => {
         });
         const state2 = reducers(
           state1,
-          actions.cardMinMaxChanged({
+          actions.cardViewBoxChanged({
             cardId: 'card2',
-            minMax: {
-              minStep: 1,
-              maxStep: 5,
+            viewBox: {
+              x: [0, 1],
+              y: [2, 5],
             },
           })
         );
@@ -3456,21 +3451,21 @@ describe('metrics reducers', () => {
         expect(state2.cardStateMap).toEqual({
           card1: {},
           card2: {
-            userMinMax: {
-              minStep: 1,
-              maxStep: 5,
+            userViewBox: {
+              x: [0, 1],
+              y: [2, 5],
             },
           },
         });
       });
 
-      it('overrides an existing cards min max', () => {
+      it('overrides an existing card viewBox', () => {
         const state1 = buildMetricsState({
           cardStateMap: {
             card1: {
-              userMinMax: {
-                minStep: 0,
-                maxStep: 100,
+              userViewBox: {
+                x: [0, 100],
+                y: [2, 5],
               },
               timeSelection: {
                 start: {step: 0},
@@ -3482,20 +3477,20 @@ describe('metrics reducers', () => {
 
         const state2 = reducers(
           state1,
-          actions.cardMinMaxChanged({
+          actions.cardViewBoxChanged({
             cardId: 'card1',
-            minMax: {
-              minStep: 1,
-              maxStep: 5,
+            viewBox: {
+              x: [1, 5],
+              y: [2, 5],
             },
           })
         );
 
         expect(state2.cardStateMap).toEqual({
           card1: {
-            userMinMax: {
-              minStep: 1,
-              maxStep: 5,
+            userViewBox: {
+              x: [1, 5],
+              y: [2, 5],
             },
             timeSelection: {
               start: {step: 0},
