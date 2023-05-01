@@ -12,7 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Directive, ElementRef, HostBinding, Input, NgModule, OnChanges} from '@angular/core';
+import {
+  Directive,
+  ElementRef,
+  HostBinding,
+  Input,
+  NgModule,
+} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {firstValueFrom} from 'rxjs';
 import {map, tap} from 'rxjs/operators';
@@ -22,36 +28,31 @@ import {getFeatureFlagsToSendToServer} from '../store/feature_flag_selectors';
 import {State as FeatureFlagState} from '../store/feature_flag_types';
 
 @Directive({selector: 'a[includeFeatureFlags], img[includeFeatureFlags]'})
-export class FeatureFlagDirective implements OnChanges {
-  @HostBinding('attr.href') hrefAttr: string|undefined = undefined;
-  @HostBinding('attr.src') srcAttr: string|undefined = undefined;
+export class FeatureFlagDirective {
+  @HostBinding('attr.href') hrefAttr: string | undefined = undefined;
+  @HostBinding('attr.src') srcAttr: string | undefined = undefined;
   @Input() includeFeatureFlags: boolean = true;
 
   constructor(private readonly store: Store<FeatureFlagState>) {}
 
-  ngOnChanges() {
-    console.log("CHANGING");
-  }
-
   private getUrlWithFeatureFlags(url: string) {
-    console.log("getUrlWithFlags");
-    return this.store.select(getFeatureFlagsToSendToServer)
-        .pipe(map((featureFlags) => {
-          if (Object.keys(featureFlags).length > 0) {
-            const params = new URLSearchParams([
-              [FEATURE_FLAGS_QUERY_STRING_NAME, JSON.stringify(featureFlags)],
-            ]);
-            const delimiter = url.includes('?') ? '&' : '?';
-            return url + delimiter + String(params);
-          } else {
-            return url;
-          }
-        }));
+    return this.store.select(getFeatureFlagsToSendToServer).pipe(
+      map((featureFlags) => {
+        if (Object.keys(featureFlags).length > 0) {
+          const params = new URLSearchParams([
+            [FEATURE_FLAGS_QUERY_STRING_NAME, JSON.stringify(featureFlags)],
+          ]);
+          const delimiter = url.includes('?') ? '&' : '?';
+          return url + delimiter + String(params);
+        } else {
+          return url;
+        }
+      })
+    );
   }
-
 
   @Input()
-  set href(href: string|null) {
+  set href(href: string | null) {
     if (href) {
       firstValueFrom(this.getUrlWithFeatureFlags(href)).then((value) => {
         this.hrefAttr = value;
@@ -60,8 +61,7 @@ export class FeatureFlagDirective implements OnChanges {
   }
 
   @Input()
-  set src(src: string|null) {
-    console.log("IN SRC");
+  set src(src: string | null) {
     if (src) {
       firstValueFrom(this.getUrlWithFeatureFlags(src)).then((value) => {
         this.srcAttr = value;
@@ -70,10 +70,8 @@ export class FeatureFlagDirective implements OnChanges {
   }
 }
 
-
 @NgModule({
   declarations: [FeatureFlagDirective],
   exports: [FeatureFlagDirective],
 })
-export class FeatureFlagDirectiveModule {
-}
+export class FeatureFlagDirectiveModule {}

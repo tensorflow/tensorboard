@@ -19,7 +19,7 @@ import {
   OnChanges,
   ViewChild,
 } from '@angular/core';
-import {TestBed} from '@angular/core/testing';
+import {TestBed, fakeAsync, tick} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
 import {MockStore} from '@ngrx/store/testing';
@@ -29,9 +29,7 @@ import {FEATURE_FLAGS_HEADER_NAME} from '../http/const';
 import {getFeatureFlagsToSendToServer} from '../store/feature_flag_selectors';
 import {State as FeatureFlagState} from '../store/feature_flag_types';
 
-import {
-  FeatureFlagDirective,
-} from './feature_flag_directive';
+import {FeatureFlagDirective} from './feature_flag_directive';
 
 @Component({
   selector: 'test',
@@ -95,6 +93,8 @@ describe('feature_flags', () => {
     hostComponent.valueFromHost = href;
     const component = hostComponent.testComponent;
     fixture.detectChanges();
+    tick();
+    fixture.detectChanges();
     return fixture.debugElement.query(By.css('a'));
   }
 
@@ -103,34 +103,34 @@ describe('feature_flags', () => {
     const hostComponent = fixture.componentInstance;
     hostComponent.valueFromHost = src;
     fixture.detectChanges();
+    tick();
+    fixture.detectChanges();
     return fixture.debugElement.query(By.css('img'));
   }
 
-  it('injects feature flags in <img> tags if any are set', () => {
+  it('injects feature flags in <img> tags if any are set', fakeAsync(() => {
     store.overrideSelector(getFeatureFlagsToSendToServer, {inColab: true});
     const anchorStr = createImgComponent('https://abc.def');
     expect(anchorStr.attributes['src']).toBe(
       'https://abc.def?tensorBoardFeatureFlags=%7B%22inColab%22%3Atrue%7D'
     );
-  });
+  }));
 
-  /*
-  it('leaves <img> tags unmodified if no feature flags are set', () => {
+  it('leaves <img> tags unmodified if no feature flags are set', fakeAsync(() => {
     const anchorStr = createImgComponent('https://abc.def');
     expect(anchorStr.attributes['src']).toBe('https://abc.def');
-  });
+  }));
 
-  it('injects feature flags in <a> tags if any are set', () => {
+  it('injects feature flags in <a> tags if any are set', fakeAsync(() => {
     store.overrideSelector(getFeatureFlagsToSendToServer, {inColab: true});
     const anchorStr = createHrefComponent('https://abc.def');
     expect(anchorStr.attributes['href']).toBe(
       'https://abc.def?tensorBoardFeatureFlags=%7B%22inColab%22%3Atrue%7D'
     );
-  });
+  }));
 
-  it('leaves <a> tags unmodified if no feature flags are set', () => {
+  it('leaves <a> tags unmodified if no feature flags are set', fakeAsync(() => {
     const anchorStr = createHrefComponent('https://abc.def');
     expect(anchorStr.attributes['href']).toBe('https://abc.def');
-  });
-  */
+  }));
 });
