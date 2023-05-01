@@ -584,9 +584,7 @@ export function getMinMaxStepFromCardState(cardState: Partial<CardState>) {
 
   const minStep = x[0] < x[1] ? x[0] : x[1];
   const maxStep = minStep === x[0] ? x[1] : x[0];
-  return (
-    {minStep: Math.ceil(minStep), maxStep: Math.floor(maxStep)} || dataMinMax
-  );
+  return {minStep: Math.ceil(minStep), maxStep: Math.floor(maxStep)};
 }
 
 export function getCardSelectionStateToBoolean(
