@@ -1,3 +1,11 @@
+# Release 2.12.3
+
+## Bug Fixes
+
+- Redirects the unsupported What-If Tool plugin to the supported [Learning
+  Interpretability Tool](https://pair-code.github.io/lit/) to avoid protobuf
+  compatibility errors (#6343)
+
 # Release 2.12.2
 
 ## Bug Fixes
