@@ -56,8 +56,8 @@ export class CardFobControllerComponent {
   @Input() axisDirection!: AxisDirection;
   @Input() timeSelection?: TimeSelection;
   @Input() cardFobHelper!: CardFobGetStepFromPositionHelper;
-  @Input() startStepAxisPosition!: number;
-  @Input() endStepAxisPosition!: number | null;
+  @Input() startStepAxisPosition!: number | null;
+  @Input() endStepAxisPosition!: number;
   @Input() highestStep!: number;
   @Input() lowestStep!: number;
   @Input() showExtendedLine?: Boolean = false;
@@ -86,6 +86,9 @@ export class CardFobControllerComponent {
   readonly TimeSelectionAffordance = TimeSelectionAffordance;
 
   getCssTranslatePxForStartFob() {
+    if (this.startStepAxisPosition === null) {
+      return '';
+    }
     if (this.axisDirection === AxisDirection.VERTICAL) {
       return `translate(0px, ${this.startStepAxisPosition}px)`;
     }
@@ -93,9 +96,6 @@ export class CardFobControllerComponent {
   }
 
   getCssTranslatePxForEndFob() {
-    if (this.endStepAxisPosition === null) {
-      return '';
-    }
     if (this.axisDirection === AxisDirection.VERTICAL) {
       return `translate(0px, ${this.endStepAxisPosition}px)`;
     }
@@ -151,7 +151,7 @@ export class CardFobControllerComponent {
   }
 
   private shouldSwapFobs(newStep: number) {
-    if (!this.timeSelection || !this.timeSelection.end) {
+    if (!this.timeSelection || !this.timeSelection.start) {
       return false;
     }
     if (this.currentDraggingFob === Fob.END) {
@@ -174,8 +174,8 @@ export class CardFobControllerComponent {
       return newTimeSelection;
     }
     // Single Selection
-    if (!this.timeSelection.end) {
-      newTimeSelection.start = {step: newStep};
+    if (this.timeSelection.start === null) {
+      newTimeSelection.end = {step: newStep};
       return newTimeSelection;
     }
 
@@ -194,10 +194,9 @@ export class CardFobControllerComponent {
 
     if (this.currentDraggingFob === Fob.END) {
       newTimeSelection.end = {step: newStep};
-      return newTimeSelection;
+    } else {
+      newTimeSelection.start = {step: newStep};
     }
-
-    newTimeSelection.start = {step: newStep};
     return newTimeSelection;
   }
 
@@ -212,10 +211,6 @@ export class CardFobControllerComponent {
       newStep = this.cardFobHelper.getStepHigherThanAxisPosition(mousePosition);
     } else if (this.isMovingLower(mousePosition, movement)) {
       newStep = this.cardFobHelper.getStepLowerThanAxisPosition(mousePosition);
-    }
-
-    if (newStep === null) {
-      return null;
     }
 
     return newStep;
@@ -241,8 +236,8 @@ export class CardFobControllerComponent {
 
   mouseOverProspectiveFobArea(event: MouseEvent) {
     if (
-      this.timeSelection?.end !== null &&
-      this.timeSelection?.end !== undefined
+      this.timeSelection?.start !== null &&
+      this.timeSelection?.start !== undefined
     ) {
       return;
     }
@@ -327,9 +322,9 @@ export class CardFobControllerComponent {
   getCurrentFobStep(): number | undefined {
     switch (this.currentDraggingFob) {
       case Fob.START:
-        return this.timeSelection?.start.step;
+        return this.timeSelection?.start?.step;
       case Fob.END:
-        return this.timeSelection?.end?.step;
+        return this.timeSelection?.end.step;
       case Fob.NONE:
         return this.prospectiveStep ?? undefined;
     }
@@ -345,12 +340,9 @@ export class CardFobControllerComponent {
     // Types empty string in fob.
     if (step === null) {
       // Removes fob on range selection and sets step to minimum on single selection.
-      if (this.timeSelection!.end !== null) {
+      if (this.timeSelection!.start !== null) {
         this.onFobRemoved(fob);
-      } else {
-        // TODO(jieweiwu): sets start step to minum.
       }
-
       return;
     }
 
@@ -362,7 +354,7 @@ export class CardFobControllerComponent {
     }
 
     if (
-      newTimeSelection.end !== null &&
+      newTimeSelection.start !== null &&
       newTimeSelection.start.step > newTimeSelection.end.step
     ) {
       // The Start Step is now greater than the End Step - flip them.
@@ -399,11 +391,11 @@ export class CardFobControllerComponent {
     }
     if (this.timeSelection) {
       const startStep = Math.min(
-        this.timeSelection.start.step,
+        this.timeSelection.end.step,
         this.prospectiveStep
       );
       const endStep = Math.max(
-        this.timeSelection.start.step,
+        this.timeSelection.end.step,
         this.prospectiveStep
       );
       return {
@@ -413,35 +405,35 @@ export class CardFobControllerComponent {
     }
 
     return {
-      start: {step: this.prospectiveStep},
-      end: null,
+      start: null,
+      end: {step: this.prospectiveStep},
     };
   }
 
   /**
    * When in range selection(which means we have a start and an end
    * fob) clicking "X" to remove a fob will leave the remaining fob in place.
-   * This means we switch to single selection. If the end fob is removed we
-   * simply remove it. However, if the start fob is removed we must change the
-   * end fob to the start fob before removing the end fob. This gives the effect
-   * that the start fob was removed. Lastly when in single selection removing the
+   * This means we switch to single selection. If the start fob is removed we
+   * simply remove it. However, if the end fob is removed we must change the
+   * start fob to the end fob before removing the start fob. This gives the effect
+   * that the end fob was removed. Lastly when in single selection removing the
    * fob toggles the feature entirely.
    */
   onFobRemoved(fob: Fob) {
-    if (fob === Fob.END) {
+    if (fob === Fob.START) {
       this.onTimeSelectionChanged.emit({
         affordance: TimeSelectionAffordance.FOB_REMOVED,
-        timeSelection: {...this.timeSelection!, end: null},
+        timeSelection: {...this.timeSelection!, start: null},
       });
       return;
     }
 
-    if (this.timeSelection!.end !== null) {
+    if (this.timeSelection!.start !== null) {
       this.onTimeSelectionChanged.emit({
         affordance: TimeSelectionAffordance.FOB_REMOVED,
         timeSelection: {
-          start: this.timeSelection!.end,
-          end: null,
+          start: null,
+          end: this.timeSelection!.start,
         },
       });
       return;

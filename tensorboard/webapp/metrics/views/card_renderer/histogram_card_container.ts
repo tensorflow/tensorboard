@@ -54,8 +54,8 @@ import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {
   maybeClipTimeSelectionView,
-  maybeOmitTimeSelectionEnd,
-  maybeSetClosestStartStep,
+  maybeOmitTimeSelectionStart,
+  maybeSetClosestEndStep,
   TimeSelectionView,
 } from './utils';
 
@@ -186,7 +186,7 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
           minStep = Math.min(step, minStep);
           maxStep = Math.max(step, maxStep);
         }
-        const formattedTimeSelection = maybeOmitTimeSelectionEnd(
+        const formattedTimeSelection = maybeOmitTimeSelectionStart(
           linkedTimeSelection,
           rangeSelectionEnabled
         );
@@ -196,7 +196,7 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
           maxStep
         );
 
-        return maybeSetClosestStartStep(linkedTimeSelectionView, steps);
+        return maybeSetClosestEndStep(linkedTimeSelectionView, steps);
       })
     );
 
@@ -209,8 +209,8 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
           linkedTimeSelection &&
           linkedTimeSelectionView &&
           !linkedTimeSelectionView.clipped &&
-          linkedTimeSelection.end === null &&
-          linkedTimeSelection.start.step !== linkedTimeSelectionView.startStep
+          linkedTimeSelection.start === null &&
+          linkedTimeSelection.end.step !== linkedTimeSelectionView.endStep
         );
       })
     );

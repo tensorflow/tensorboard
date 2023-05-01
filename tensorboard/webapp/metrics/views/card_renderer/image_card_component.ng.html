@@ -82,7 +82,7 @@ limitations under the License.
     <mat-slider
       class="step-slider"
       color="primary"
-      [ngClass]="[linkedTimeSelection && linkedTimeSelection.endStep !== null ? 'hide-slider' : '']"
+      [ngClass]="[linkedTimeSelection && linkedTimeSelection.startStep !== null ? 'hide-slider' : '']"
       [disabled]="steps.length <= 1"
       [min]="0"
       [max]="steps.length - 1"
@@ -92,7 +92,7 @@ limitations under the License.
       (input)="onSliderInput($event)"
     ></mat-slider>
     <div class="linked-time-wrapper" *ngIf="linkedTimeSelection">
-      <span *ngIf="linkedTimeSelection.endStep !== null">
+      <span *ngIf="linkedTimeSelection.startStep !== null">
         <span class="slider-track"></span>
         <span
           class="slider-track-fill"

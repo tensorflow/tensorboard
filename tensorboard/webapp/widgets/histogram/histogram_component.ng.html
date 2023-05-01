@@ -74,7 +74,7 @@ limitations under the License.
     <g
       #histograms
       [class.histograms]="true"
-      [class.linked-time-single-step]="timeSelection && !timeSelection.end"
+      [class.linked-time-single-step]="timeSelection && !timeSelection.start"
     >
       <g
         *ngFor="let datum of data; trackBy: trackByWallTime;"

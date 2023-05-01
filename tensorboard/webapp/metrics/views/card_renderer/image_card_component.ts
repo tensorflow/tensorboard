@@ -94,7 +94,10 @@ export class ImageCardComponent {
   }
 
   renderRangeSlider() {
-    if (!this.linkedTimeSelection || !this.linkedTimeSelection.endStep) {
+    if (
+      !this.linkedTimeSelection ||
+      this.linkedTimeSelection.startStep === null
+    ) {
       return;
     }
 

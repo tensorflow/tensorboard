@@ -2326,8 +2326,8 @@ describe('scalar card', () => {
 
       it('renders fobs', fakeAsync(() => {
         store.overrideSelector(getMetricsCardTimeSelection, {
-          start: {step: 20},
-          end: null,
+          start: null,
+          end: {step: 20},
         });
         const fixture = createComponent('card1');
         fixture.detectChanges();
@@ -2338,8 +2338,8 @@ describe('scalar card', () => {
 
       it('does not render fobs when axis type is RELATIVE', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
-          start: {step: 20},
-          end: null,
+          start: null,
+          end: {step: 20},
         });
         store.overrideSelector(
           selectors.getMetricsXAxisType,
@@ -2355,8 +2355,8 @@ describe('scalar card', () => {
 
       it('does not render fobs when axis type is WALL_TIME', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
-          start: {step: 20},
-          end: null,
+          start: null,
+          end: {step: 20},
         });
         store.overrideSelector(
           selectors.getMetricsXAxisType,
@@ -2380,8 +2380,8 @@ describe('scalar card', () => {
 
       it('dispatches timeSelectionChanged action when fob is dragged', fakeAsync(() => {
         store.overrideSelector(getMetricsCardTimeSelection, {
-          start: {step: 20},
-          end: null,
+          start: null,
+          end: {step: 20},
         });
         const fixture = createComponent('card1');
         fixture.detectChanges();
@@ -2393,7 +2393,7 @@ describe('scalar card', () => {
 
         // Simulate dragging fob to step 25.
         testController.startDrag(
-          Fob.START,
+          Fob.END,
           TimeSelectionAffordance.FOB,
           new MouseEvent('mouseDown')
         );
@@ -2405,8 +2405,8 @@ describe('scalar card', () => {
 
         // Simulate ngrx update from mouseMove;
         store.overrideSelector(getMetricsCardTimeSelection, {
-          start: {step: 25},
-          end: null,
+          start: null,
+          end: {step: 25},
         });
         store.refreshState();
         fixture.detectChanges();
@@ -2415,7 +2415,7 @@ describe('scalar card', () => {
         fixture.detectChanges();
 
         testController.startDrag(
-          Fob.START,
+          Fob.END,
           TimeSelectionAffordance.EXTENDED_LINE,
           new MouseEvent('mouseDown')
         );
@@ -2427,8 +2427,8 @@ describe('scalar card', () => {
 
         // Simulate ngrx update from mouseMove;
         store.overrideSelector(getMetricsCardTimeSelection, {
-          start: {step: 30},
-          end: null,
+          start: null,
+          end: {step: 30},
         });
         store.refreshState();
         fixture.detectChanges();
@@ -2440,16 +2440,16 @@ describe('scalar card', () => {
           // Call from first mouseMove.
           timeSelectionChanged({
             timeSelection: {
-              start: {step: 25},
-              end: null,
+              start: null,
+              end: {step: 25},
             },
             cardId: 'card1',
           }),
           // Call from first stopDrag.
           timeSelectionChanged({
             timeSelection: {
-              start: {step: 25},
-              end: null,
+              start: null,
+              end: {step: 25},
             },
             affordance: TimeSelectionAffordance.FOB,
             cardId: 'card1',
@@ -2457,16 +2457,16 @@ describe('scalar card', () => {
           // Call from second mouseMove.
           timeSelectionChanged({
             timeSelection: {
-              start: {step: 30},
-              end: null,
+              start: null,
+              end: {step: 30},
             },
             cardId: 'card1',
           }),
           // Call from second stopDrag.
           timeSelectionChanged({
             timeSelection: {
-              start: {step: 30},
-              end: null,
+              start: null,
+              end: {step: 30},
             },
             affordance: TimeSelectionAffordance.EXTENDED_LINE,
             cardId: 'card1',
@@ -2476,8 +2476,8 @@ describe('scalar card', () => {
 
       it('toggles step selection when single fob is deselected even when linked time is enabled', fakeAsync(() => {
         store.overrideSelector(getMetricsCardTimeSelection, {
-          start: {step: 20},
-          end: null,
+          start: null,
+          end: {step: 20},
         });
         const fixture = createComponent('card1');
         fixture.detectChanges();
@@ -2534,8 +2534,8 @@ describe('scalar card', () => {
 
       it('renders table', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
-          start: {step: 20},
-          end: null,
+          start: null,
+          end: {step: 20},
         });
         const fixture = createComponent('card1');
         fixture.detectChanges();
@@ -2561,8 +2561,8 @@ describe('scalar card', () => {
 
       it('does not render table when axis type is RELATIVE', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
-          start: {step: 20},
-          end: null,
+          start: null,
+          end: {step: 20},
         });
         store.overrideSelector(
           selectors.getMetricsXAxisType,
@@ -2580,8 +2580,8 @@ describe('scalar card', () => {
 
       it('does not render table when axis type is WALL_TIME', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
-          start: {step: 20},
-          end: null,
+          start: null,
+          end: {step: 20},
         });
         store.overrideSelector(
           selectors.getMetricsXAxisType,
@@ -2720,8 +2720,8 @@ describe('scalar card', () => {
       );
 
       store.overrideSelector(getMetricsLinkedTimeSelection, {
-        start: {step: 2},
-        end: null,
+        start: null,
+        end: {step: 2},
       });
 
       const fixture = createComponent('card1');
@@ -2983,8 +2983,8 @@ describe('scalar card', () => {
       );
 
       store.overrideSelector(getMetricsLinkedTimeSelection, {
-        start: {step: 18},
-        end: null,
+        start: null,
+        end: {step: 18},
       });
 
       const fixture = createComponent('card1');
@@ -3049,7 +3049,7 @@ describe('scalar card', () => {
       expect(data[1].END_STEP).toEqual(25);
     }));
 
-    it('selects largest points when time selection startStep is greater than any points step', fakeAsync(() => {
+    it('selects largest points when time selection endStep is greater than any points step', fakeAsync(() => {
       const runToSeries = {
         run1: [
           {wallTime: 1, value: 1, step: 1},
@@ -3078,8 +3078,8 @@ describe('scalar card', () => {
       );
 
       store.overrideSelector(getMetricsLinkedTimeSelection, {
-        start: {step: 100},
-        end: null,
+        start: null,
+        end: {step: 100},
       });
 
       const fixture = createComponent('card1');
@@ -3095,7 +3095,7 @@ describe('scalar card', () => {
       expect(data[1].STEP).toEqual(50);
     }));
 
-    it('selects smallest points when time selection startStep is less than any points step', fakeAsync(() => {
+    it('selects smallest points when time selection endStep is less than any points step', fakeAsync(() => {
       const runToSeries = {
         run1: [
           {wallTime: 1, value: 1, step: 10},
@@ -3123,8 +3123,8 @@ describe('scalar card', () => {
         ])
       );
       store.overrideSelector(getMetricsLinkedTimeSelection, {
-        start: {step: 1},
-        end: null,
+        start: null,
+        end: {step: 1},
       });
 
       const fixture = createComponent('card1');
@@ -3172,8 +3172,8 @@ describe('scalar card', () => {
         eid2: {aliasText: 'test alias 2', aliasNumber: 200},
       });
       store.overrideSelector(getMetricsLinkedTimeSelection, {
-        start: {step: 1},
-        end: null,
+        start: null,
+        end: {step: 1},
       });
       selectSpy
         .withArgs(selectors.getExperimentIdForRunId, {runId: 'run1'})
@@ -3222,8 +3222,8 @@ describe('scalar card', () => {
         new Map([['run1', true]])
       );
       store.overrideSelector(getMetricsLinkedTimeSelection, {
-        start: {step: 20},
-        end: null,
+        start: null,
+        end: {step: 20},
       });
 
       const fixture = createComponent('card1');
@@ -3266,8 +3266,8 @@ describe('scalar card', () => {
       );
 
       store.overrideSelector(getMetricsLinkedTimeSelection, {
-        start: {step: 1},
-        end: null,
+        start: null,
+        end: {step: 1},
       });
 
       const fixture = createComponent('card1');
@@ -3311,8 +3311,8 @@ describe('scalar card', () => {
       );
 
       store.overrideSelector(getMetricsLinkedTimeSelection, {
-        start: {step: 1},
-        end: null,
+        start: null,
+        end: {step: 1},
       });
 
       const fixture = createComponent('card1');
@@ -3364,8 +3364,8 @@ describe('scalar card', () => {
       );
 
       store.overrideSelector(getMetricsLinkedTimeSelection, {
-        start: {step: 1},
-        end: null,
+        start: null,
+        end: {step: 1},
       });
 
       const fixture = createComponent('card1');
@@ -3421,8 +3421,8 @@ describe('scalar card', () => {
       );
 
       store.overrideSelector(getMetricsLinkedTimeSelection, {
-        start: {step: 1},
-        end: null,
+        start: null,
+        end: {step: 1},
       });
 
       const fixture = createComponent('card1');
@@ -3528,13 +3528,13 @@ describe('scalar card', () => {
       );
 
       store.overrideSelector(getMetricsLinkedTimeSelection, {
-        start: {step: 2},
-        end: null,
+        start: null,
+        end: {step: 2},
       });
 
       store.overrideSelector(getMetricsCardTimeSelection, {
-        start: {step: 2},
-        end: null,
+        start: null,
+        end: {step: 2},
       });
       store.overrideSelector(getCardStateMap, {
         card1: {},
@@ -3690,7 +3690,7 @@ describe('scalar card', () => {
         const testController = fixture.debugElement.query(
           By.directive(CardFobControllerComponent)
         ).componentInstance;
-        testController.onProspectiveStepChanged.emit(10);
+        testController.onProspectiveStepChanged.emit(25);
         fixture.detectChanges();
 
         // One prospective fob
@@ -3699,28 +3699,28 @@ describe('scalar card', () => {
         );
         expect(fobs.length).toEqual(1);
 
-        // Click the prospective fob to set the start time
+        // Click the prospective fob to set the end time
         testController.prospectiveFobClicked(new MouseEvent('mouseclick'));
         store.overrideSelector(getMetricsCardTimeSelection, {
-          start: {step: 10},
-          end: null,
+          start: null,
+          end: {step: 25},
         });
         store.refreshState();
         fixture.detectChanges();
 
-        // One start fob
+        // One end fob
         fobs = fixture.debugElement.queryAll(By.directive(CardFobComponent));
         expect(fobs.length).toEqual(1);
         fixture.detectChanges();
 
-        // One start fob + 1 prospective fob
-        testController.onProspectiveStepChanged.emit(25);
+        // One end fob + 1 prospective fob
+        testController.onProspectiveStepChanged.emit(10);
         fixture.detectChanges();
 
         fobs = fixture.debugElement.queryAll(By.directive(CardFobComponent));
         expect(fobs.length).toEqual(2);
 
-        // Click the prospective fob to set the end time
+        // Click the prospective fob to set the start time
         testController.prospectiveFobClicked(new MouseEvent('mouseclick'));
         store.overrideSelector(getMetricsCardTimeSelection, {
           start: {step: 10},
@@ -3737,8 +3737,8 @@ describe('scalar card', () => {
         expect(dispatchedActions).toEqual([
           timeSelectionChanged({
             timeSelection: {
-              start: {step: 10},
-              end: null,
+              start: null,
+              end: {step: 25},
             },
             affordance: TimeSelectionAffordance.FOB_ADDED,
             cardId: 'card1',
@@ -3774,8 +3774,8 @@ describe('scalar card', () => {
       it('dispatches timeSelectionChanged actions when fob is dragged while linked time is enabled', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeEnabled, true);
         store.overrideSelector(getMetricsLinkedTimeSelection, {
-          start: {step: 20},
-          end: null,
+          start: null,
+          end: {step: 20},
         });
         const fixture = createComponent('card1');
         fixture.detectChanges();
@@ -3787,7 +3787,7 @@ describe('scalar card', () => {
 
         // Simulate dragging fob to step 25.
         testController.startDrag(
-          Fob.START,
+          Fob.END,
           TimeSelectionAffordance.FOB,
           new MouseEvent('mouseDown')
         );
@@ -3799,8 +3799,8 @@ describe('scalar card', () => {
 
         // Simulate ngrx update from mouseMove;
         store.overrideSelector(getMetricsLinkedTimeSelection, {
-          start: {step: 25},
-          end: null,
+          start: null,
+          end: {step: 25},
         });
         store.refreshState();
         fixture.detectChanges();
@@ -3817,8 +3817,8 @@ describe('scalar card', () => {
         expect(dispatchedActions).toContain(
           timeSelectionChanged({
             timeSelection: {
-              start: {step: 25},
-              end: null,
+              start: null,
+              end: {step: 25},
             },
             affordance: TimeSelectionAffordance.FOB,
             cardId: 'card1',
@@ -3830,8 +3830,8 @@ describe('scalar card', () => {
         expect(
           scalarCardComponent.componentInstance.stepOrLinkedTimeSelection
         ).toEqual({
-          start: {step: 25},
-          end: null,
+          start: null,
+          end: {step: 25},
         });
       }));
 
@@ -3847,20 +3847,20 @@ describe('scalar card', () => {
 
         // Simulate dragging fob to step 25.
         testController.startDrag(
-          Fob.START,
+          Fob.END,
           TimeSelectionAffordance.FOB,
           new MouseEvent('mouseDown')
         );
         const fakeEvent = new MouseEvent('mousemove', {
           clientX: 25 + controllerStartPosition,
-          movementX: 1,
+          movementX: -1,
         });
         testController.mouseMove(fakeEvent);
 
         // Simulate ngrx update from mouseMove
         store.overrideSelector(getMetricsCardTimeSelection, {
-          start: {step: 25},
-          end: null,
+          start: null,
+          end: {step: 25},
         });
         store.refreshState();
         fixture.detectChanges();
@@ -3871,15 +3871,15 @@ describe('scalar card', () => {
         expect(dispatchedActions).toEqual([
           timeSelectionChanged({
             timeSelection: {
-              start: {step: 25},
-              end: null,
+              start: null,
+              end: {step: 25},
             },
             cardId: 'card1',
           }),
           timeSelectionChanged({
             timeSelection: {
-              start: {step: 25},
-              end: null,
+              start: null,
+              end: {step: 25},
             },
             affordance: TimeSelectionAffordance.FOB,
             cardId: 'card1',
@@ -3970,8 +3970,8 @@ describe('scalar card', () => {
           },
         });
         store.overrideSelector(getMetricsCardTimeSelection, {
-          start: {step: 1},
-          end: null,
+          start: null,
+          end: {step: 1},
         });
         store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);
         const fixture = createComponent('card1');

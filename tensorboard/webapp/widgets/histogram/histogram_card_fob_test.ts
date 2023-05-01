@@ -48,8 +48,8 @@ describe('HistogramCardFobController', () => {
 
     fixture.componentInstance.steps = input.steps ?? [100, 200, 300, 400];
     fixture.componentInstance.timeSelection = input.timeSelection ?? {
-      start: {step: 200},
-      end: null,
+      start: null,
+      end: {step: 200},
     };
     temporalScaleSpy = jasmine.createSpy();
     fixture.componentInstance.temporalScale =
@@ -152,31 +152,31 @@ describe('HistogramCardFobController', () => {
   describe('interaction with base controller', () => {
     it('properly uses scale when setting fob position', () => {
       let fixture = createComponent({
-        timeSelection: {start: {step: 300}, end: null},
+        timeSelection: {start: null, end: {step: 300}},
       });
       fixture.detectChanges();
       let testController = fixture.debugElement.query(
         By.directive(CardFobControllerComponent)
       ).componentInstance;
       expect(
-        testController.startFobWrapper.nativeElement.getBoundingClientRect().top
+        testController.endFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(3000);
     });
     it('moves the fob to the next highest step when dragging down', () => {
       let fixture = createComponent({
         steps: [100, 200, 300, 400],
-        timeSelection: {start: {step: 300}, end: null},
+        timeSelection: {start: null, end: {step: 300}},
       });
       fixture.detectChanges();
       let testController = fixture.debugElement.query(
         By.directive(CardFobControllerComponent)
       ).componentInstance;
       testController.startDrag(
-        Fob.START,
+        Fob.END,
         TimeSelectionAffordance.NONE,
         new MouseEvent('mouseDown')
       );
-      // Starting step '300' renders the fob at 3000px. Mouse event at 3020px
+      // End step '300' renders the fob at 3000px. Mouse event at 3020px
       // mimics a drag down (towards higher steps).
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 3020,
@@ -186,24 +186,24 @@ describe('HistogramCardFobController', () => {
       fixture.detectChanges();
       // Move to next step '400', which renders the fob at 4000px.
       expect(
-        testController.startFobWrapper.nativeElement.getBoundingClientRect().top
+        testController.endFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(4000);
     });
     it('moves the fob to the next lowest step when dragging up', () => {
       let fixture = createComponent({
         steps: [100, 200, 300, 400],
-        timeSelection: {start: {step: 300}, end: null},
+        timeSelection: {start: null, end: {step: 300}},
       });
       fixture.detectChanges();
       let testController = fixture.debugElement.query(
         By.directive(CardFobControllerComponent)
       ).componentInstance;
       testController.startDrag(
-        Fob.START,
+        Fob.END,
         TimeSelectionAffordance.NONE,
         new MouseEvent('mouseDown')
       );
-      // Starting step '300' renders the fob at 3000px. Mouse event at 2980px
+      // End step '300' renders the fob at 3000px. Mouse event at 2980px
       // mimics a drag up (towards lower steps).
       const fakeEvent = new MouseEvent('mousemove', {
         clientY: 2980,
@@ -213,7 +213,7 @@ describe('HistogramCardFobController', () => {
       fixture.detectChanges();
       // Move to previous step '200', which renders the fob at 2000px.
       expect(
-        testController.startFobWrapper.nativeElement.getBoundingClientRect().top
+        testController.endFobWrapper.nativeElement.getBoundingClientRect().top
       ).toEqual(2000);
     });
   });

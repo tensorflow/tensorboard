@@ -431,10 +431,10 @@ export function generateNextCardStepIndexFromLinkedTimeSelection(
     const steps = getImageCardSteps(cardId, cardMetadataMap, timeSeriesData);
 
     let nextStepIndexMetaData: CardStepIndexMetaData | null = null;
-    if (timeSelection.end === null) {
+    if (timeSelection.start === null) {
       // Single Selection
       nextStepIndexMetaData = getNextImageCardStepIndexFromSingleSelection(
-        timeSelection.start.step,
+        timeSelection.end.step,
         steps
       );
     } else {
@@ -492,10 +492,10 @@ function getSelectedSteps(
 ) {
   if (!timeSelection) return [];
 
-  // Single selection: returns start step if matching any step in the list, otherwise returns nothing.
-  if (timeSelection.end === null) {
-    if (steps.indexOf(timeSelection.start.step) !== -1)
-      return [timeSelection.start.step];
+  // Single selection: returns end step if matching any step in the list, otherwise returns nothing.
+  if (timeSelection.start === null) {
+    if (steps.indexOf(timeSelection.end.step) !== -1)
+      return [timeSelection.end.step];
     return [];
   }
 
@@ -511,8 +511,8 @@ function getSelectedSteps(
 
 /**
  * Gets next stepIndex for an image card based on single selection. Returns null if nothing should change.
- * @param selectedStep The selected step from linked time selection. It is equivalent to start step here
- *  since there is no `end` in linked time selection when it is single seleciton.
+ * @param selectedStep The selected step from linked time selection. It is equivalent to end step here
+ *  since there is no `start` in linked time selection when it is single seleciton.
  */
 function getNextImageCardStepIndexFromSingleSelection(
   selectedStep: number,
@@ -524,7 +524,7 @@ function getNextImageCardStepIndexFromSingleSelection(
     return {index: maybeMatchedStepIndex, isClosest: false};
   }
 
-  // Checks if start step is "close" enough to a step value and move it
+  // Checks if end step is "close" enough to a step value and move it
   for (let i = 0; i < steps.length - 1; i++) {
     const currentStep = steps[i];
     const nextStep = steps[i + 1];

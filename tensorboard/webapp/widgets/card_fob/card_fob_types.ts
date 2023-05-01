@@ -16,8 +16,8 @@ limitations under the License.
  * The start and end time to define a time selection, used for linked time and step selector.
  */
 export interface TimeSelection {
-  start: {step: number};
-  end: {step: number} | null;
+  start: {step: number} | null;
+  end: {step: number};
 }
 
 /**

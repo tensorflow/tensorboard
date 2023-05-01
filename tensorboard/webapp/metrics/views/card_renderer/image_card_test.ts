@@ -515,8 +515,8 @@ describe('image card', () => {
 
       it('renders a single tick on linked time selection', () => {
         store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 10},
-          end: null,
+          start: null,
+          end: {step: 10},
         });
 
         const fixture = createImageCardContainer('card1');
@@ -533,8 +533,8 @@ describe('image card', () => {
 
       it('renders a single tick at correct propositional position', () => {
         store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 20},
-          end: null,
+          start: null,
+          end: {step: 20},
         });
 
         const fixture = createImageCardContainer('card1');
@@ -770,8 +770,8 @@ describe('image card', () => {
 
       it('does not render range slider on single selection', () => {
         store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 15},
-          end: null,
+          start: null,
+          end: {step: 15},
         });
 
         const fixture = createImageCardContainer('card1');
@@ -788,8 +788,8 @@ describe('image card', () => {
       describe('single selection', () => {
         it('does not move slider thumb to larger closest step when it is clipped', () => {
           store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-            start: {step: 9},
-            end: null,
+            start: null,
+            end: {step: 9},
           });
           const timeSeries = [
             {wallTime: 100, imageId: 'ImageId1', step: 10},
@@ -814,8 +814,8 @@ describe('image card', () => {
         it('does not move slider thumb to smaller closest step when it is clipped', () => {
           store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
             // Linked time is clipped since step 41 is larger than the largest step 40.
-            start: {step: 41},
-            end: null,
+            start: null,
+            end: {step: 41},
           });
           const timeSeries = [
             {wallTime: 100, imageId: 'ImageId1', step: 10},
@@ -840,8 +840,8 @@ describe('image card', () => {
         it('does not move slider thumb to larger closest step when it is clipped', () => {
           store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
             // Linked time is clipped since step 9 is smaller than the smallest step 10.
-            start: {step: 9},
-            end: null,
+            start: null,
+            end: {step: 9},
           });
           const timeSeries = [
             {wallTime: 100, imageId: 'ImageId1', step: 10},

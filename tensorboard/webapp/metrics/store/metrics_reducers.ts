@@ -1051,11 +1051,11 @@ const reducer = createReducer(
 
     // Updates cardStepIndex only when toggle to enable linked time.
     if (nextLinkedTimeEnabled) {
-      const {min} = state.stepMinMax;
-      const startStep = min === Infinity ? 0 : min;
+      const {max} = state.stepMinMax;
+      const endStep = max === -Infinity ? 0 : max;
       nextLinkedTimeSelection = state.linkedTimeSelection ?? {
-        start: {step: startStep},
-        end: null,
+        start: null,
+        end: {step: endStep},
       };
 
       nextCardStepIndexMap = generateNextCardStepIndexFromLinkedTimeSelection(
@@ -1066,7 +1066,7 @@ const reducer = createReducer(
       );
 
       nextStepSelectorEnabled = nextLinkedTimeEnabled;
-      nextRangeSelectionEnabled = Boolean(nextLinkedTimeSelection.end);
+      nextRangeSelectionEnabled = nextLinkedTimeSelection.start !== null;
     }
 
     return {
@@ -1111,17 +1111,17 @@ const reducer = createReducer(
           end: {step: state.stepMinMax.max},
         };
       }
-      if (!linkedTimeSelection.end) {
+      if (linkedTimeSelection.start === null) {
         linkedTimeSelection = {
           ...linkedTimeSelection,
-          end: {step: state.stepMinMax.max},
+          start: {step: state.stepMinMax.min},
         };
       }
     } else {
       if (linkedTimeSelection) {
         linkedTimeSelection = {
           ...linkedTimeSelection,
-          end: null,
+          start: null,
         };
       }
     }
@@ -1135,25 +1135,25 @@ const reducer = createReducer(
   }),
   on(actions.timeSelectionChanged, (state, change) => {
     const {cardId, timeSelection} = change;
-    const nextStartStep = timeSelection.start.step;
-    const nextEndStep = timeSelection.end?.step;
-    const end =
-      nextEndStep === undefined
+    const nextStartStep = timeSelection.start?.step;
+    const nextEndStep = timeSelection.end.step;
+    const start =
+      nextStartStep === undefined
         ? null
-        : {step: nextStartStep > nextEndStep ? nextStartStep : nextEndStep};
+        : {step: nextStartStep < nextEndStep ? nextStartStep : nextEndStep};
 
     let nextRangeSelectionEnabled = state.rangeSelectionEnabled;
     if (state.linkedTimeEnabled) {
-      // If there is no endStep then current selection state is single.
+      // If there is no startStep then current selection state is single.
       // Otherwise selection state is range.
-      nextRangeSelectionEnabled = nextEndStep !== undefined;
+      nextRangeSelectionEnabled = nextStartStep !== undefined;
     }
 
     const nextTimeSelection = {
-      start: {
-        step: nextStartStep,
+      start,
+      end: {
+        step: nextEndStep,
       },
-      end,
     };
     const nextCardStepIndexMap =
       generateNextCardStepIndexFromLinkedTimeSelection(
@@ -1169,7 +1169,7 @@ const reducer = createReducer(
         timeSelection: nextTimeSelection,
         stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
         rangeSelectionOverride:
-          nextTimeSelection.end?.step === undefined
+          nextTimeSelection.start?.step === undefined
             ? CardFeatureOverride.OVERRIDE_AS_DISABLED
             : CardFeatureOverride.OVERRIDE_AS_ENABLED,
       };

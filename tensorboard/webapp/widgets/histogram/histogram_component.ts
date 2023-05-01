@@ -252,8 +252,8 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     if (!this.isTimeSelectionEnabled(this.timeSelection)) {
       return true;
     }
-    if (this.timeSelection.end === null) {
-      return this.timeSelection.start.step === datum.step;
+    if (this.timeSelection.start === null) {
+      return this.timeSelection.end.step === datum.step;
     }
     return (
       this.timeSelection.start.step <= datum.step &&
@@ -317,15 +317,15 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
       return;
     }
 
-    const startStep = this.timeSelection.start.step;
-    const endStep = this.timeSelection.end?.step;
-    const nextStartStep = datum.step < startStep ? datum.step : startStep;
-    let nextEndStep = endStep;
+    const startStep = this.timeSelection.start?.step;
+    const endStep = this.timeSelection.end.step;
+    let nextStartStep = startStep;
+    const nextEndStep = datum.step > endStep ? datum.step : endStep;
 
-    if (nextEndStep === undefined) {
-      nextEndStep = datum.step > startStep ? datum.step : startStep;
+    if (nextStartStep === undefined) {
+      nextStartStep = datum.step < endStep ? datum.step : endStep;
     } else {
-      nextEndStep = datum.step > nextEndStep ? datum.step : nextEndStep;
+      nextStartStep = datum.step < nextStartStep ? datum.step : nextStartStep;
     }
 
     if (

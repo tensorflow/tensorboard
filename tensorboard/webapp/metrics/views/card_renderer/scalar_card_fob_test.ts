@@ -39,8 +39,8 @@ describe('ScalarFobController', () => {
   }): ComponentFixture<ScalarCardFobController> {
     const fixture = TestBed.createComponent(ScalarCardFobController);
     fixture.componentInstance.timeSelection = input.timeSelection ?? {
-      start: {step: 200},
-      end: null,
+      start: null,
+      end: {step: 200},
     };
 
     fixture.componentInstance.minMaxHorizontalViewExtend = input.minMax ?? [

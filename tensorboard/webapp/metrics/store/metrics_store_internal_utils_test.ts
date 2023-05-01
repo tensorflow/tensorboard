@@ -814,7 +814,7 @@ describe('metrics store utils', () => {
           {[imageCardId]: buildStepIndexMetadata({index: 3})},
           cardMetadataMap,
           timeSeriesData,
-          {start: {step: 20}, end: null}
+          {start: null, end: {step: 20}}
         );
 
       expect(nextCardStepIndex).toEqual({
@@ -851,7 +851,7 @@ describe('metrics store utils', () => {
         },
         images: {},
       };
-      const linkedTimeSelection = {start: {step: 20}, end: null};
+      const linkedTimeSelection = {start: null, end: {step: 20}};
 
       const nextCardStepIndex =
         generateNextCardStepIndexFromLinkedTimeSelection(
@@ -871,7 +871,7 @@ describe('metrics store utils', () => {
           {[imageCardId]: buildStepIndexMetadata({index: 3})},
           cardMetadataMap,
           timeSeriesData,
-          {start: {step: 15}, end: null}
+          {start: null, end: {step: 15}}
         );
 
       expect(nextCardStepIndex).toEqual({
@@ -1013,7 +1013,7 @@ describe('metrics store utils', () => {
 
   describe('getSelectedSteps', () => {
     it(`gets one selected step on single selection`, () => {
-      const linkedTimeSelection = {start: {step: 10}, end: null};
+      const linkedTimeSelection = {start: null, end: {step: 10}};
       const steps = [10];
 
       expect(getSelectedSteps(linkedTimeSelection, steps)).toEqual([10]);
@@ -1043,7 +1043,7 @@ describe('metrics store utils', () => {
     });
 
     it(`gets empty selected steps when single linked time selection does not contain any steps`, () => {
-      const linkedTimeSelection = {start: {step: 10}, end: null};
+      const linkedTimeSelection = {start: null, end: {step: 10}};
       const steps = [5, 20, 30];
 
       expect(getSelectedSteps(linkedTimeSelection, steps)).toEqual([]);

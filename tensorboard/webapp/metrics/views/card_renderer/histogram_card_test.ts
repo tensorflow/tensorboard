@@ -68,8 +68,8 @@ class TestableHistogramWidget {
   @Input() name!: string;
   @Input() data!: HistogramData;
   @Input() timeSelection!: {
-    start: {step: number};
-    end: {step: number} | null;
+    start: {step: number} | null;
+    end: {step: number};
   } | null;
 
   @Output() onLinkedTimeToggled = new EventEmitter();
@@ -294,8 +294,8 @@ describe('histogram card', () => {
     it('dispatches timeSelectionChanged when HistogramComponent emits onLinkedTimeSelectionChanged event', () => {
       provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
       store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-        start: {step: 5},
-        end: null,
+        start: null,
+        end: {step: 5},
       });
       const fixture = createHistogramCardContainer();
       fixture.detectChanges();
@@ -308,15 +308,15 @@ describe('histogram card', () => {
         By.directive(TestableHistogramWidget)
       ).componentInstance;
       histogramWidget.onLinkedTimeSelectionChanged.emit({
-        timeSelection: {start: {step: 5}, end: null},
+        timeSelection: {start: null, end: {step: 5}},
         affordance: TimeSelectionAffordance.FOB,
       });
 
       expect(dispatchedActions).toEqual([
         timeSelectionChanged({
           timeSelection: {
-            start: {step: 5},
-            end: null,
+            start: null,
+            end: {step: 5},
           },
           affordance: TimeSelectionAffordance.FOB,
         }),
@@ -338,8 +338,8 @@ describe('histogram card', () => {
     it('passes closest step linked time parameter to histogram viz', () => {
       provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
       store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-        start: {step: 5},
-        end: null,
+        start: null,
+        end: {step: 5},
       });
       const fixture = createHistogramCardContainer();
       fixture.detectChanges();
@@ -349,8 +349,8 @@ describe('histogram card', () => {
       );
       expect(viz.componentInstance.timeSelection).toEqual({
         // Steps are [0, 1, 99] in mock data
-        start: {step: 1},
-        end: null,
+        start: null,
+        end: {step: 1},
       });
     });
 
@@ -372,13 +372,13 @@ describe('histogram card', () => {
       });
     });
 
-    it('removes end step when range selection is disabled', () => {
+    it('removes start step when range selection is disabled', () => {
       provideMockCardSeriesData(
         selectSpy,
         PluginType.HISTOGRAMS,
         'card1',
         undefined,
-        [buildHistogramStepData({step: 5}), buildHistogramStepData({step: 15})]
+        [buildHistogramStepData({step: 5}), buildHistogramStepData({step: 10})]
       );
       store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
         start: {step: 5},
@@ -392,8 +392,8 @@ describe('histogram card', () => {
         By.directive(TestableHistogramWidget)
       );
       expect(viz.componentInstance.timeSelection).toEqual({
-        start: {step: 5},
-        end: null,
+        start: null,
+        end: {step: 10},
       });
     });
 
@@ -512,8 +512,8 @@ describe('histogram card', () => {
 
       it('renders warning when no data on the selected step', () => {
         store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 99},
-          end: null,
+          start: null,
+          end: {step: 99},
         });
         const fixture = createHistogramCardContainer();
         fixture.detectChanges();
@@ -528,8 +528,8 @@ describe('histogram card', () => {
 
       it('does not render warning when data exist on selected step', () => {
         store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 100},
-          end: null,
+          start: null,
+          end: {step: 100},
         });
         const fixture = createHistogramCardContainer();
         fixture.detectChanges();
@@ -544,8 +544,8 @@ describe('histogram card', () => {
 
       it('does not render warning when time selection is clipped', () => {
         store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 49},
-          end: null,
+          start: null,
+          end: {step: 49},
         });
         const fixture = createHistogramCardContainer();
         fixture.detectChanges();
@@ -577,8 +577,8 @@ describe('histogram card', () => {
       it('dispatches stepSelectorToggled when HistogramComponent emits the onLinkedTimeToggled event', () => {
         provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
         store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 5},
-          end: null,
+          start: null,
+          end: {step: 5},
         });
         const fixture = createHistogramCardContainer();
         fixture.detectChanges();

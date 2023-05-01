@@ -55,14 +55,14 @@ export class HistogramCardFobController {
     getStepLowerThanAxisPosition: this.getStepLowerThanAxisPosition.bind(this),
   };
 
-  getAxisPositionFromStartStep(): number {
+  getAxisPositionFromStartStep(): number | null {
+    if (this.timeSelection.start === null) {
+      return null;
+    }
     return this.temporalScale(this.timeSelection.start.step);
   }
 
-  getAxisPositionFromEndStep(): number | null {
-    if (this.timeSelection.end === null) {
-      return null;
-    }
+  getAxisPositionFromEndStep(): number {
     return this.temporalScale(this.timeSelection.end.step);
   }
 

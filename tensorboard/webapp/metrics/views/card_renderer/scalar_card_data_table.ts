@@ -110,25 +110,22 @@ export class ScalarCardDataTable {
     if (!this.stepOrLinkedTimeSelection) {
       return [];
     }
-    const startStep = this.stepOrLinkedTimeSelection.start.step;
-    const endStep = this.stepOrLinkedTimeSelection.end?.step;
+    const startStep = this.stepOrLinkedTimeSelection.start?.step;
+    const endStep = this.stepOrLinkedTimeSelection.end.step;
     const dataTableData: SelectedStepRunData[] = this.dataSeries
       .filter((datum) => {
         return isDatumVisible(datum, this.chartMetadataMap);
       })
       .map((datum) => {
         const metadata = this.chartMetadataMap[datum.id];
-        const closestStartPointIndex = findClosestIndex(
-          datum.points,
-          startStep
-        );
-        const closestStartPoint = datum.points[closestStartPointIndex];
-        let closestEndPoint: ScalarCardPoint | null = null;
-        let closestEndPointIndex: number | null = null;
-        if (endStep !== null && endStep !== undefined) {
-          closestEndPointIndex = findClosestIndex(datum.points, endStep);
-          closestEndPoint = datum.points[closestEndPointIndex];
+        let closestStartPoint: ScalarCardPoint | null = null;
+        let closestStartPointIndex: number | null = null;
+        if (startStep !== null && startStep !== undefined) {
+          closestStartPointIndex = findClosestIndex(datum.points, startStep);
+          closestStartPoint = datum.points[closestStartPointIndex];
         }
+        const closestEndPointIndex = findClosestIndex(datum.points, endStep);
+        const closestEndPoint = datum.points[closestEndPointIndex];
         const selectedStepData: SelectedStepRunData = {
           id: datum.id,
         };
@@ -143,45 +140,44 @@ export class ScalarCardDataTable {
               selectedStepData.RUN = `${alias}${metadata.displayName}`;
               continue;
             case ColumnHeaderType.STEP:
-              selectedStepData.STEP = closestStartPoint.step;
+              selectedStepData.STEP = closestEndPoint.step;
               continue;
             case ColumnHeaderType.VALUE:
-              selectedStepData.VALUE = closestStartPoint.value;
+              selectedStepData.VALUE = closestEndPoint.value;
               continue;
             case ColumnHeaderType.RELATIVE_TIME:
-              selectedStepData.RELATIVE_TIME =
-                closestStartPoint.relativeTimeInMs;
+              selectedStepData.RELATIVE_TIME = closestEndPoint.relativeTimeInMs;
               continue;
             case ColumnHeaderType.SMOOTHED:
-              selectedStepData.SMOOTHED = closestStartPoint.y;
+              selectedStepData.SMOOTHED = closestEndPoint.y;
               continue;
             case ColumnHeaderType.VALUE_CHANGE:
-              if (!closestEndPoint) {
+              if (closestStartPoint === null) {
                 continue;
               }
               selectedStepData.VALUE_CHANGE =
                 closestEndPoint.y - closestStartPoint.y;
               continue;
             case ColumnHeaderType.START_STEP:
+              if (closestStartPoint === null) {
+                continue;
+              }
               selectedStepData.START_STEP = closestStartPoint.step;
               continue;
             case ColumnHeaderType.END_STEP:
-              if (!closestEndPoint) {
-                continue;
-              }
               selectedStepData.END_STEP = closestEndPoint.step;
               continue;
             case ColumnHeaderType.START_VALUE:
+              if (closestStartPoint === null) {
+                continue;
+              }
               selectedStepData.START_VALUE = closestStartPoint.y;
               continue;
             case ColumnHeaderType.END_VALUE:
-              if (!closestEndPoint) {
-                continue;
-              }
               selectedStepData.END_VALUE = closestEndPoint.y;
               continue;
             case ColumnHeaderType.MIN_VALUE:
-              if (!closestEndPointIndex) {
+              if (closestStartPointIndex === null) {
                 continue;
               }
               selectedStepData.MIN_VALUE = this.getMinPointInRange(
@@ -191,7 +187,7 @@ export class ScalarCardDataTable {
               ).y;
               continue;
             case ColumnHeaderType.MAX_VALUE:
-              if (!closestEndPointIndex) {
+              if (closestStartPointIndex === null) {
                 continue;
               }
               selectedStepData.MAX_VALUE = this.getMaxPointInRange(
@@ -201,14 +197,14 @@ export class ScalarCardDataTable {
               ).y;
               continue;
             case ColumnHeaderType.PERCENTAGE_CHANGE:
-              if (!closestEndPoint) {
+              if (closestStartPoint === null) {
                 continue;
               }
               selectedStepData.PERCENTAGE_CHANGE =
                 (closestEndPoint.y - closestStartPoint.y) / closestStartPoint.y;
               continue;
             case ColumnHeaderType.STEP_AT_MAX:
-              if (!closestEndPointIndex) {
+              if (closestStartPointIndex === null) {
                 continue;
               }
               selectedStepData.STEP_AT_MAX = this.getMaxPointInRange(
@@ -218,7 +214,7 @@ export class ScalarCardDataTable {
               ).step;
               continue;
             case ColumnHeaderType.STEP_AT_MIN:
-              if (!closestEndPointIndex) {
+              if (closestStartPointIndex === null) {
                 continue;
               }
               selectedStepData.STEP_AT_MIN = this.getMinPointInRange(
@@ -228,7 +224,7 @@ export class ScalarCardDataTable {
               ).step;
               continue;
             case ColumnHeaderType.MEAN:
-              if (!closestEndPointIndex) {
+              if (closestStartPointIndex === null) {
                 continue;
               }
               selectedStepData.MEAN = this.getMean(
@@ -238,7 +234,7 @@ export class ScalarCardDataTable {
               );
               continue;
             case ColumnHeaderType.RAW_CHANGE:
-              if (!closestEndPoint) {
+              if (closestStartPoint === null) {
                 continue;
               }
               selectedStepData.RAW_CHANGE =
@@ -284,9 +280,10 @@ export class ScalarCardDataTable {
   orderColumns(headers: ColumnHeader[]) {
     this.editColumnHeaders.emit({
       headers: headers,
-      dataTableMode: this.stepOrLinkedTimeSelection.end
-        ? DataTableMode.RANGE
-        : DataTableMode.SINGLE,
+      dataTableMode:
+        this.stepOrLinkedTimeSelection.start !== null
+          ? DataTableMode.RANGE
+          : DataTableMode.SINGLE,
     });
   }
 }

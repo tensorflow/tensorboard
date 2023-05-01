@@ -92,8 +92,8 @@ export function partitionSeries(series: PartialSeries[]): PartitionedSeries[] {
 }
 
 export interface TimeSelectionView {
-  startStep: number;
-  endStep: number | null;
+  startStep: number | null;
+  endStep: number;
   clipped: boolean;
 }
 
@@ -122,14 +122,19 @@ export function maybeClipTimeSelection(
   timeSelection: TimeSelection,
   {minStep, maxStep}: MinMaxStep
 ) {
-  const start = {
-    step: clipStepWithinMinMax(timeSelection.start.step, minStep, maxStep),
+  const start =
+    timeSelection.start !== null
+      ? {
+          step: clipStepWithinMinMax(
+            timeSelection.start.step,
+            minStep,
+            maxStep
+          ),
+        }
+      : null;
+  const end = {
+    step: clipStepWithinMinMax(timeSelection.end.step, minStep, maxStep),
   };
-  const end = timeSelection.end
-    ? {
-        step: clipStepWithinMinMax(timeSelection.end.step, minStep, maxStep),
-      }
-    : null;
   return {
     start,
     end,
@@ -141,17 +146,18 @@ export function maybeClipTimeSelectionView(
   minStep: number,
   maxStep: number
 ): TimeSelectionView {
-  const maybeClippedStartStep = clipStepWithinMinMax(
-    timeSelection.start.step,
+  const maybeClippedStartStep =
+    timeSelection.start !== null
+      ? clipStepWithinMinMax(timeSelection.start.step, minStep, maxStep)
+      : null;
+  const maybeClippedEndStep = clipStepWithinMinMax(
+    timeSelection.end.step,
     minStep,
     maxStep
   );
-  const maybeClippedEndStep = timeSelection.end
-    ? clipStepWithinMinMax(timeSelection.end.step, minStep, maxStep)
-    : null;
   const clipped =
-    maybeClippedStartStep !== timeSelection.start.step ||
-    maybeClippedEndStep !== (timeSelection.end?.step ?? null);
+    maybeClippedStartStep !== (timeSelection.start?.step ?? null) ||
+    maybeClippedEndStep !== timeSelection.end.step;
   return {
     startStep: maybeClippedStartStep,
     endStep: maybeClippedEndStep,
@@ -160,23 +166,23 @@ export function maybeClipTimeSelectionView(
 }
 
 /**
- * Sets startStep of TimeSelectionView to the closest step if the closeset step is not null.
+ * Sets endStep of TimeSelectionView to the closest step if the closeset step is not null.
  */
-export function maybeSetClosestStartStep(
+export function maybeSetClosestEndStep(
   timeSelectionView: TimeSelectionView,
   steps: number[]
 ): TimeSelectionView {
-  // Only sets start step on single selection.
-  if (timeSelectionView.endStep !== null) {
+  // Only sets end step on single selection.
+  if (timeSelectionView.startStep !== null) {
     return timeSelectionView;
   }
 
-  const closestStep = getClosestStep(timeSelectionView.startStep, steps);
+  const closestStep = getClosestStep(timeSelectionView.endStep, steps);
   if (closestStep !== null) {
-    // If the closest step is startStep itself, this is equivalent to timeSelectionView.
+    // If the closest step is endStep itself, this is equivalent to timeSelectionView.
     return {
       ...timeSelectionView,
-      startStep: closestStep,
+      endStep: closestStep,
     };
   }
 
@@ -217,11 +223,11 @@ export function isDatumVisible(
 }
 
 /**
- * Removes the end step of a time selection if range selection is not enabled
+ * Removes the start step of a time selection if range selection is not enabled
  * @param timeSelection
  * @param rangeSelectionEnabled
  */
-export function maybeOmitTimeSelectionEnd(
+export function maybeOmitTimeSelectionStart(
   timeSelection: TimeSelection,
   rangeSelectionEnabled: boolean
 ): TimeSelection {
@@ -230,20 +236,20 @@ export function maybeOmitTimeSelectionEnd(
   }
 
   return {
-    start: timeSelection.start,
-    end: null,
+    start: null,
+    end: timeSelection.end,
   };
 }
 
 /**
- * Clips a time selection and potentially removes the end step if range selection is not enabled
+ * Clips a time selection and potentially removes the start step if range selection is not enabled
  */
 export function formatTimeSelection(
   timeSelection: TimeSelection,
   minMaxStep: MinMaxStep,
   rangeSelectionEnabled: boolean
 ) {
-  return maybeOmitTimeSelectionEnd(
+  return maybeOmitTimeSelectionStart(
     maybeClipTimeSelection(timeSelection, minMaxStep),
     rangeSelectionEnabled
   );

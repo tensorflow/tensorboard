@@ -74,24 +74,24 @@ export class ScalarCardFobController {
   prospectiveStep: number | null = null;
 
   getAxisPositionFromStartStep() {
+    if (!this.timeSelection || this.timeSelection.start === null) {
+      return null;
+    }
+    return this.scale.forward(
+      this.minMaxHorizontalViewExtend,
+      [0, this.axisSize],
+      this.timeSelection?.start.step ?? this.minMaxStep.maxStep
+    );
+  }
+
+  getAxisPositionFromEndStep() {
     if (!this.timeSelection) {
       return '';
     }
     return this.scale.forward(
       this.minMaxHorizontalViewExtend,
       [0, this.axisSize],
-      this.timeSelection.start.step
-    );
-  }
-
-  getAxisPositionFromEndStep() {
-    if (!this.timeSelection?.end) {
-      return null;
-    }
-    return this.scale.forward(
-      this.minMaxHorizontalViewExtend,
-      [0, this.axisSize],
-      this.timeSelection?.end.step ?? this.minMaxStep.maxStep
+      this.timeSelection.end.step
     );
   }
 

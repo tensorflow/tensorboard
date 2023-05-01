@@ -78,8 +78,8 @@ export class HistogramCardComponent {
       return null;
     }
     return {
-      start: {step: timeSelection.startStep},
-      end: timeSelection.endStep ? {step: timeSelection.endStep} : null,
+      start: timeSelection.startStep ? {step: timeSelection.startStep} : null,
+      end: {step: timeSelection.endStep},
     };
   }
 }

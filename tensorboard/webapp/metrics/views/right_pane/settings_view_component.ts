@@ -183,13 +183,13 @@ export class SettingsViewComponent {
     );
   }
 
-  getLinkedTimeSelectionStartStep() {
+  getLinkedTimeSelectionEndStep() {
     if (
       !this.isLinkedTimeEnabled &&
       this.linkedTimeSelection !== null &&
-      this.linkedTimeSelection.end === null
+      this.linkedTimeSelection.start === null
     ) {
-      return this.linkedTimeSelection.start.step;
+      return this.linkedTimeSelection.end.step;
     }
     return '';
   }

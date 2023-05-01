@@ -286,16 +286,16 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       map(([linkedTimeSelection, steps]) => {
         if (!linkedTimeSelection) return [];
 
-        if (linkedTimeSelection.endStep === null) {
-          if (steps.indexOf(linkedTimeSelection.startStep) !== -1)
-            return [linkedTimeSelection.startStep];
+        if (linkedTimeSelection.startStep === null) {
+          if (steps.indexOf(linkedTimeSelection.endStep) !== -1)
+            return [linkedTimeSelection.endStep];
           return [];
         }
 
         return steps.filter(
           (step) =>
-            step >= linkedTimeSelection.startStep &&
-            step <= linkedTimeSelection.endStep!
+            step >= linkedTimeSelection.startStep! &&
+            step <= linkedTimeSelection.endStep
         );
       })
     );

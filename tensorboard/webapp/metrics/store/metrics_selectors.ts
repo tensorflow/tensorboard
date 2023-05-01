@@ -438,10 +438,10 @@ export const getMetricsLinkedTimeSelectionSetting = createSelector(
   (state, stepMinMax): TimeSelection => {
     if (!state.linkedTimeSelection) {
       return {
-        start: {
-          step: stepMinMax.min,
+        start: null,
+        end: {
+          step: stepMinMax.max,
         },
-        end: null,
       };
     }
 
@@ -451,7 +451,7 @@ export const getMetricsLinkedTimeSelectionSetting = createSelector(
 
 /**
  * Returns linked time selection set by user. If linkedTime is disabled, it returns
- * `null`. Also, when range selection mode is disabled, it returns `end=null`
+ * `null`. Also, when range selection mode is disabled, it returns `start=null`
  * even if it has value set.
  *
  * Virtually all views should use this selector.
@@ -588,8 +588,9 @@ export const getMetricsCardTimeSelection = createSelector(
       globalRangeSelectionEnabled
     );
 
-    const startStep = cardState.timeSelection?.start.step ?? minMaxStep.minStep;
-    const endStep = cardState.timeSelection?.end?.step ?? minMaxStep.maxStep;
+    const startStep =
+      cardState.timeSelection?.start?.step ?? minMaxStep.minStep;
+    const endStep = cardState.timeSelection?.end.step ?? minMaxStep.maxStep;
 
     // The default time selection
     return formatTimeSelection(

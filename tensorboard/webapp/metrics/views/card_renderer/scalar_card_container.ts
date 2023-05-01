@@ -462,7 +462,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       this.store.select(getRangeSelectionHeaders),
     ]).pipe(
       map(([timeSelection, singleSelectionHeaders, rangeSelectionHeaders]) => {
-        if (!timeSelection || timeSelection.end === null) {
+        if (!timeSelection || timeSelection.start === null) {
           return singleSelectionHeaders;
         } else {
           return rangeSelectionHeaders;

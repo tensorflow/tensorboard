@@ -549,7 +549,7 @@ describe('metrics selectors', () => {
         ).toBeUndefined();
       });
 
-      it('uses max step as end value if none exists', () => {
+      it('uses min step as start value if none exists', () => {
         const state = appStateFromMetricsState(
           buildMetricsState({
             ...partialState,
@@ -558,12 +558,12 @@ describe('metrics selectors', () => {
               card1: {
                 stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
                 dataMinMax: {
-                  minStep: 0,
+                  minStep: 5,
                   maxStep: 10,
                 },
                 timeSelection: {
-                  start: {step: 0},
-                  end: null,
+                  start: null,
+                  end: {step: 10},
                 },
               },
             },
@@ -571,7 +571,7 @@ describe('metrics selectors', () => {
         );
 
         expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
-          start: {step: 0},
+          start: {step: 5},
           end: {step: 10},
         });
       });
@@ -599,7 +599,7 @@ describe('metrics selectors', () => {
         });
       });
 
-      it('removes end value if range selection is overridden as disabled', () => {
+      it('removes start value if range selection is overridden as disabled', () => {
         const state = appStateFromMetricsState(
           buildMetricsState({
             ...partialState,
@@ -610,8 +610,8 @@ describe('metrics selectors', () => {
                 rangeSelectionOverride:
                   CardFeatureOverride.OVERRIDE_AS_DISABLED,
                 dataMinMax: {
-                  minStep: 0,
-                  maxStep: 5,
+                  minStep: 5,
+                  maxStep: 10,
                 },
               },
             },
@@ -619,12 +619,12 @@ describe('metrics selectors', () => {
         );
 
         expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
-          start: {step: 0},
-          end: null,
+          start: null,
+          end: {step: 10},
         });
       });
 
-      it('removes end value if range selection is globally disabled', () => {
+      it('removes start value if range selection is globally disabled', () => {
         const state = appStateFromMetricsState(
           buildMetricsState({
             ...partialState,
@@ -633,8 +633,8 @@ describe('metrics selectors', () => {
               card1: {
                 stepSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
                 dataMinMax: {
-                  minStep: 0,
-                  maxStep: 5,
+                  minStep: 5,
+                  maxStep: 10,
                 },
               },
             },
@@ -642,12 +642,12 @@ describe('metrics selectors', () => {
         );
 
         expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
-          start: {step: 0},
-          end: null,
+          start: null,
+          end: {step: 10},
         });
       });
 
-      it('does not remove end value if range selection is overridden as enabled', () => {
+      it('does not remove start value if range selection is overridden as enabled', () => {
         const state = appStateFromMetricsState(
           buildMetricsState({
             ...partialState,
@@ -733,7 +733,7 @@ describe('metrics selectors', () => {
         });
       });
 
-      it('removes end value if global range selection is disabled', () => {
+      it('removes start value if global range selection is disabled', () => {
         const state = appStateFromMetricsState(
           buildMetricsState({
             ...partialState,
@@ -750,12 +750,12 @@ describe('metrics selectors', () => {
         );
 
         expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
-          start: {step: 0},
-          end: null,
+          start: null,
+          end: {step: 5},
         });
       });
 
-      it('maintains end value if local range selection is overridden as disabled', () => {
+      it('maintains start value if local range selection is overridden as disabled', () => {
         const state = appStateFromMetricsState(
           buildMetricsState({
             ...partialState,
@@ -1381,7 +1381,7 @@ describe('metrics selectors', () => {
       selectors.getMetricsLinkedTimeSelectionSetting.release();
     });
 
-    it('returns value with start step from the dataset when linked time selection is null', () => {
+    it('returns value with end step from the dataset when linked time selection is null', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
           linkedTimeSelection: null,
@@ -1392,8 +1392,8 @@ describe('metrics selectors', () => {
         })
       );
       expect(selectors.getMetricsLinkedTimeSelectionSetting(state)).toEqual({
-        start: {step: 0},
-        end: null,
+        start: null,
+        end: {step: 1000},
       });
     });
 

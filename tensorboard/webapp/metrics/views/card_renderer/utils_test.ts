@@ -20,8 +20,8 @@ import {
   getClosestStep,
   getDisplayNameForRun,
   maybeClipTimeSelectionView,
-  maybeOmitTimeSelectionEnd,
-  maybeSetClosestStartStep,
+  maybeOmitTimeSelectionStart,
+  maybeSetClosestEndStep,
   partitionSeries,
 } from './utils';
 
@@ -253,51 +253,47 @@ describe('metrics card_renderer utils test', () => {
     });
   });
 
-  describe('#maybeSetClosestStartStep', () => {
-    it('sets startStep to closest step', () => {
+  describe('#maybeSetClosestEndStep', () => {
+    it('sets endStep to closest step', () => {
       const timeSelectionView = {
-        startStep: 0,
-        endStep: null,
+        startStep: null,
+        endStep: 0,
         clipped: false,
       };
 
-      expect(maybeSetClosestStartStep(timeSelectionView, [10, 20, 30])).toEqual(
-        {
-          startStep: 10,
-          endStep: null,
-          clipped: false,
-        }
-      );
-    });
-
-    it('does not set startStep on an empty array of steps', () => {
-      const timeSelectionView = {
-        startStep: 0,
-        endStep: null,
-        clipped: false,
-      };
-
-      expect(maybeSetClosestStartStep(timeSelectionView, [])).toEqual({
-        startStep: 0,
-        endStep: null,
+      expect(maybeSetClosestEndStep(timeSelectionView, [10, 20, 30])).toEqual({
+        startStep: null,
+        endStep: 10,
         clipped: false,
       });
     });
 
-    it('does not set startStep when time selection is range selection', () => {
+    it('does not set endStep on an empty array of steps', () => {
+      const timeSelectionView = {
+        startStep: null,
+        endStep: 0,
+        clipped: false,
+      };
+
+      expect(maybeSetClosestEndStep(timeSelectionView, [])).toEqual({
+        startStep: null,
+        endStep: 0,
+        clipped: false,
+      });
+    });
+
+    it('does not set endStep when time selection is range selection', () => {
       const timeSelectionView = {
         startStep: 0,
         endStep: 3,
         clipped: false,
       };
 
-      expect(maybeSetClosestStartStep(timeSelectionView, [10, 20, 30])).toEqual(
-        {
-          startStep: 0,
-          endStep: 3,
-          clipped: false,
-        }
-      );
+      expect(maybeSetClosestEndStep(timeSelectionView, [10, 20, 30])).toEqual({
+        startStep: 0,
+        endStep: 3,
+        clipped: false,
+      });
     });
   });
 
@@ -335,36 +331,36 @@ describe('metrics card_renderer utils test', () => {
   });
 
   describe('#maybeClipLinkedTimeSelection', () => {
-    it('clips to the minStep when time selection start step is smaller than the view extend', () => {
+    it('clips to the minStep when time selection end step is smaller than the view extend', () => {
       expect(
         maybeClipTimeSelectionView(
           {
-            start: {step: 0},
-            end: null,
+            start: null,
+            end: {step: 0},
           },
           1,
           4
         )
       ).toEqual({
-        startStep: 1,
-        endStep: null,
+        startStep: null,
+        endStep: 1,
         clipped: true,
       });
     });
 
-    it('clips to maxStep when time selection end step is greater than view extend', () => {
+    it('clips to maxStep when time selection start step is less than view extend', () => {
       expect(
         maybeClipTimeSelectionView(
           {
             start: {step: 0},
             end: {step: 4},
           },
-          0,
-          3
+          1,
+          4
         )
       ).toEqual({
-        startStep: 0,
-        endStep: 3,
+        startStep: 1,
+        endStep: 4,
         clipped: true,
       });
     });
@@ -373,15 +369,15 @@ describe('metrics card_renderer utils test', () => {
       expect(
         maybeClipTimeSelectionView(
           {
-            start: {step: 10},
-            end: null,
+            start: null,
+            end: {step: 10},
           },
           0,
           20
         )
       ).toEqual({
-        startStep: 10,
-        endStep: null,
+        startStep: null,
+        endStep: 10,
         clipped: false,
       });
     });
@@ -470,10 +466,10 @@ describe('metrics card_renderer utils test', () => {
     });
   });
 
-  describe('#maybeOmitTimeSelectionEnd', () => {
+  describe('#maybeOmitTimeSelectionStart', () => {
     it('does nothing when range selection is enabled', () => {
       expect(
-        maybeOmitTimeSelectionEnd(
+        maybeOmitTimeSelectionStart(
           {
             start: {step: 5},
             end: {step: 10},
@@ -486,9 +482,9 @@ describe('metrics card_renderer utils test', () => {
       });
     });
 
-    it('sets end step to null when range selection is disabled', () => {
+    it('sets starts step to null when range selection is disabled', () => {
       expect(
-        maybeOmitTimeSelectionEnd(
+        maybeOmitTimeSelectionStart(
           {
             start: {step: 5},
             end: {step: 10},
@@ -496,8 +492,8 @@ describe('metrics card_renderer utils test', () => {
           false
         )
       ).toEqual({
-        start: {step: 5},
-        end: null,
+        start: null,
+        end: {step: 10},
       });
     });
   });
@@ -541,12 +537,12 @@ describe('metrics card_renderer utils test', () => {
       });
     });
 
-    it('does not add an end step when none is provided', () => {
+    it('does not add an start step when none is provided', () => {
       expect(
         formatTimeSelection(
           {
-            start: {step: 0},
-            end: null,
+            start: null,
+            end: {step: 0},
           },
           {
             minStep: 100,
@@ -555,15 +551,15 @@ describe('metrics card_renderer utils test', () => {
           true
         )
       ).toEqual({
-        start: {step: 100},
-        end: null,
+        start: null,
+        end: {step: 100},
       });
 
       expect(
         formatTimeSelection(
           {
-            start: {step: 100},
-            end: null,
+            start: null,
+            end: {step: 100},
           },
           {
             minStep: 0,
@@ -572,15 +568,15 @@ describe('metrics card_renderer utils test', () => {
           true
         )
       ).toEqual({
-        start: {step: 50},
-        end: null,
+        start: null,
+        end: {step: 50},
       });
 
       expect(
         formatTimeSelection(
           {
-            start: {step: 100},
-            end: null,
+            start: null,
+            end: {step: 100},
           },
           {
             minStep: 50,
@@ -589,8 +585,8 @@ describe('metrics card_renderer utils test', () => {
           true
         )
       ).toEqual({
-        start: {step: 100},
-        end: null,
+        start: null,
+        end: {step: 100},
       });
     });
 
@@ -651,7 +647,7 @@ describe('metrics card_renderer utils test', () => {
       });
     });
 
-    it('sets end to null when rangeSelection is disabled', () => {
+    it('sets start to null when rangeSelection is disabled', () => {
       expect(
         formatTimeSelection(
           {
@@ -665,8 +661,8 @@ describe('metrics card_renderer utils test', () => {
           false
         )
       ).toEqual({
-        start: {step: 50},
-        end: null,
+        start: null,
+        end: {step: 100},
       });
     });
 

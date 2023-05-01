@@ -228,31 +228,31 @@ limitations under the License.
 >
   <ng-container *ngIf="stepOrLinkedTimeSelection">
     <div
+      *ngIf="stepOrLinkedTimeSelection.start !== null"
       [ngClass]="{
         'out-of-selected-time': true,
         start: true,
-        range: !!stepOrLinkedTimeSelection.end?.step
+        range: true
       }"
       [style.right]="
         xScale.forward(
           viewExtent.x,
           [domDim.width, 0],
-          stepOrLinkedTimeSelection.start.step
+          stepOrLinkedTimeSelection.start?.step
         ) + 'px'
       "
     ></div>
     <div
-      *ngIf="stepOrLinkedTimeSelection.end?.step"
       [ngClass]="{
         'out-of-selected-time': true,
         end: true,
-        range: true
+        range: stepOrLinkedTimeSelection.start !== null
       }"
       [style.left]="
         xScale.forward(
           viewExtent.x,
           [0, domDim.width],
-          stepOrLinkedTimeSelection.end?.step
+          stepOrLinkedTimeSelection.end.step
         ) + 'px'
       "
     ></div>

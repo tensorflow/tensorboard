@@ -55,7 +55,7 @@ limitations under the License.
         [checked]="isLinkedTimeEnabled"
         (change)="linkedTimeToggled.emit()"
         [disabled]="!isAxisTypeStep()"
-        >Link by step {{getLinkedTimeSelectionStartStep()}}
+        >Link by step {{getLinkedTimeSelectionEndStep()}}
       </mat-checkbox>
     </div>
     <button
