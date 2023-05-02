@@ -31,6 +31,18 @@ tf_sass_binary(
     deps = ["//tensorboard/webapp/theme"],
 )
 
+tf_ts_library(
+    name = "types",
+    srcs = [
+        "types.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/experiments:types",
+        "//tensorboard/webapp/runs/data_source",
+        "//tensorboard/webapp/runs/store:types",
+    ],
+)
+
 tf_ng_module(
     name = "runs_table",
     srcs = [
@@ -41,7 +53,6 @@ tf_ng_module(
         "runs_table_component.ts",
         "runs_table_container.ts",
         "runs_table_module.ts",
-        "types.ts",
     ],
     assets = [
         ":regex_edit_dialog_styles",
@@ -52,6 +63,7 @@ tf_ng_module(
         "runs_group_menu_button_component.ng.html",
     ],
     deps = [
+        ":types",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/alert",
@@ -103,6 +115,7 @@ tf_ts_library(
     ],
     deps = [
         ":runs_table",
+        ":types",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/alert/actions",

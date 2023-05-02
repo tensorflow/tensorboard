@@ -18,27 +18,70 @@ import {
   buildAlertState,
   buildStateFromAlertState,
 } from '../alert/store/testing';
+import {APP_ROUTING_FEATURE_KEY} from '../app_routing/store/app_routing_types';
+import {
+  buildAppRoutingState,
+  buildStateFromAppRoutingState,
+} from '../app_routing/store/testing';
+import {State} from '../app_state';
 import {createState as createCoreState} from '../core/testing';
-import {buildFeatureFlagState} from '../feature_flag/store/testing';
+import {EXPERIMENTS_FEATURE_KEY} from '../experiments/store/experiments_types';
+import {
+  buildExperimentState,
+  buildStateFromExperimentsState,
+} from '../experiments/store/testing';
+import {FEATURE_FLAG_FEATURE_KEY} from '../feature_flag/store/feature_flag_types';
+import {
+  buildFeatureFlagState,
+  buildState as buildStateFromFeatureFlagsState,
+} from '../feature_flag/store/testing';
+import {
+  buildHparamsState,
+  buildStateFromHparamsState,
+} from '../hparams/_redux/testing';
+import {METRICS_FEATURE_KEY} from '../metrics/store';
 import {appStateFromMetricsState, buildMetricsState} from '../metrics/testing';
 import {
   buildPersistentSettingsState,
   buildStateFromPersistentSettingsState,
 } from '../persistent_settings/_redux/testing';
-import {createSettingsState} from '../settings/testing';
+import {RUNS_FEATURE_KEY} from '../runs/store/runs_types';
+import {buildRunsState, buildStateFromRunsState} from '../runs/store/testing';
+import {
+  createState as createSettings,
+  createSettingsState,
+} from '../settings/testing';
+
+export function buildMockState(overrides: Partial<State> = {}): State {
+  return {
+    ...createDebuggerState(),
+    ...buildFeatureFlagState(overrides[FEATURE_FLAG_FEATURE_KEY]),
+    ...buildStateFromAlertState(buildAlertState({})),
+    ...buildStateFromPersistentSettingsState(buildPersistentSettingsState({})),
+    ...createCoreState(),
+    ...appStateFromMetricsState(
+      buildMetricsState(overrides[METRICS_FEATURE_KEY])
+    ),
+    ...createSettings(createSettingsState()),
+    ...buildStateFromRunsState(
+      buildRunsState(
+        overrides[RUNS_FEATURE_KEY]?.data,
+        overrides[RUNS_FEATURE_KEY]?.ui
+      )
+    ),
+    ...buildStateFromExperimentsState(
+      buildExperimentState(overrides[EXPERIMENTS_FEATURE_KEY]?.data)
+    ),
+    ...buildStateFromAppRoutingState(
+      buildAppRoutingState(overrides[APP_ROUTING_FEATURE_KEY])
+    ),
+    ...buildStateFromFeatureFlagsState(buildFeatureFlagState()),
+    ...buildStateFromHparamsState(buildHparamsState()),
+  };
+}
 
 export function provideMockTbStore() {
   return provideMockStore({
-    initialState: {
-      ...createDebuggerState(),
-      ...buildFeatureFlagState(),
-      ...buildStateFromAlertState(buildAlertState({})),
-      ...buildStateFromPersistentSettingsState(
-        buildPersistentSettingsState({})
-      ),
-      ...createCoreState(),
-      ...appStateFromMetricsState(buildMetricsState()),
-      ...createSettingsState(),
-    },
+    initialState: buildMockState(),
   });
 }
