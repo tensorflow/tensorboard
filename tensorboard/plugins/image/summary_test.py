@@ -244,13 +244,15 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
         pb = self.image("mona_lisa", data)
 
         self.assertLen(pb.value, 2)
+
         encoded0 = pb.value[0].tensor.string_val[2]  # skip width, height
-        decoded0 = tf.image.decode_png(encoded).numpy()
-        encoded1 = pb.value[1].tensor.string_val[2]  # skip width, height
-        decoded1 = tf.image.decode_png(encoded).numpy()
+        decoded0 = tf.image.decode_png(encoded0).numpy()
         # Float values outside [0, 1) are truncated, and everything is scaled to the
         # range [0, 255] with 229 = 0.9 * 255, truncated.
         self.assertAllEqual([0, 0, 229, 255, 255], list(decoded0.flat))
+
+        encoded1 = pb.value[1].tensor.string_val[2]  # skip width, height
+        decoded1 = tf.image.decode_png(encoded1).numpy()
         self.assertAllEqual([0, 0, 255, 229, 255], list(decoded1.flat))
 
 
