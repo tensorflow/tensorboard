@@ -94,8 +94,18 @@ describe('scalar column editor', () => {
 
   it('renders single selection headers when selectedTab is set to SINGLE', fakeAsync(() => {
     store.overrideSelector(getSingleSelectionHeaders, [
-      {type: ColumnHeaderType.RUN, enabled: true},
-      {type: ColumnHeaderType.VALUE, enabled: true},
+      {
+        type: ColumnHeaderType.RUN,
+        name: 'run',
+        displayName: 'Run',
+        enabled: true,
+      },
+      {
+        type: ColumnHeaderType.VALUE,
+        name: 'value',
+        displayName: 'Value',
+        enabled: true,
+      },
     ]);
     const fixture = createComponent();
 
@@ -111,8 +121,18 @@ describe('scalar column editor', () => {
 
   it('renders range selection headers when selectedTab is set to RANGE', fakeAsync(() => {
     store.overrideSelector(getRangeSelectionHeaders, [
-      {type: ColumnHeaderType.RUN, enabled: true},
-      {type: ColumnHeaderType.VALUE, enabled: true},
+      {
+        type: ColumnHeaderType.RUN,
+        name: 'run',
+        displayName: 'Run',
+        enabled: true,
+      },
+      {
+        type: ColumnHeaderType.VALUE,
+        name: 'value',
+        displayName: 'Value',
+        enabled: true,
+      },
     ]);
     const fixture = createComponent();
     switchTabs(fixture, DataTableMode.RANGE);
@@ -128,8 +148,18 @@ describe('scalar column editor', () => {
 
   it('checkboxes reflect enabled state', fakeAsync(() => {
     store.overrideSelector(getSingleSelectionHeaders, [
-      {type: ColumnHeaderType.RUN, enabled: true},
-      {type: ColumnHeaderType.VALUE, enabled: false},
+      {
+        type: ColumnHeaderType.RUN,
+        name: 'run',
+        displayName: 'Run',
+        enabled: true,
+      },
+      {
+        type: ColumnHeaderType.VALUE,
+        name: 'value',
+        displayName: 'Value',
+        enabled: false,
+      },
     ]);
     const fixture = createComponent();
 
@@ -154,8 +184,18 @@ describe('scalar column editor', () => {
 
     it('dispatches dataTableColumnToggled action with singe selection when checkbox is clicked', fakeAsync(() => {
       store.overrideSelector(getSingleSelectionHeaders, [
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.VALUE, enabled: false},
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.VALUE,
+          name: 'value',
+          displayName: 'Value',
+          enabled: false,
+        },
       ]);
       const fixture = createComponent();
       switchTabs(fixture, DataTableMode.SINGLE);
@@ -176,8 +216,18 @@ describe('scalar column editor', () => {
 
     it('dispatches dataTableColumnToggled action with range selection when checkbox is clicked', fakeAsync(() => {
       store.overrideSelector(getRangeSelectionHeaders, [
-        {type: ColumnHeaderType.SMOOTHED, enabled: true},
-        {type: ColumnHeaderType.MAX_VALUE, enabled: false},
+        {
+          type: ColumnHeaderType.SMOOTHED,
+          name: 'smoothed',
+          displayName: 'Smoothed',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.MAX_VALUE,
+          name: 'maxValue',
+          displayName: 'Max',
+          enabled: false,
+        },
       ]);
       const fixture = createComponent();
 
@@ -208,9 +258,24 @@ describe('scalar column editor', () => {
 
     it('dispatches dataTableColumnEdited action with singe selection when header is dragged', fakeAsync(() => {
       store.overrideSelector(getSingleSelectionHeaders, [
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.VALUE, enabled: true},
-        {type: ColumnHeaderType.STEP, enabled: true},
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.VALUE,
+          name: 'value',
+          displayName: 'Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.STEP,
+          name: 'step',
+          displayName: 'Step',
+          enabled: true,
+        },
       ]);
       const fixture = createComponent();
       switchTabs(fixture, DataTableMode.SINGLE);
@@ -228,9 +293,24 @@ describe('scalar column editor', () => {
         dataTableColumnEdited({
           dataTableMode: DataTableMode.SINGLE,
           headers: [
-            {type: ColumnHeaderType.VALUE, enabled: true},
-            {type: ColumnHeaderType.RUN, enabled: true},
-            {type: ColumnHeaderType.STEP, enabled: true},
+            {
+              type: ColumnHeaderType.VALUE,
+              name: 'value',
+              displayName: 'Value',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.STEP,
+              name: 'step',
+              displayName: 'Step',
+              enabled: true,
+            },
           ],
         })
       );
@@ -238,9 +318,24 @@ describe('scalar column editor', () => {
 
     it('dispatches dataTableColumnEdited action with range selection when header is dragged', fakeAsync(() => {
       store.overrideSelector(getRangeSelectionHeaders, [
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.MAX_VALUE, enabled: true},
-        {type: ColumnHeaderType.MIN_VALUE, enabled: true},
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.MAX_VALUE,
+          name: 'maxValue',
+          displayName: 'Max',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.MIN_VALUE,
+          name: 'minValue',
+          displayName: 'Min',
+          enabled: true,
+        },
       ]);
       const fixture = createComponent();
       switchTabs(fixture, DataTableMode.RANGE);
@@ -258,9 +353,24 @@ describe('scalar column editor', () => {
         dataTableColumnEdited({
           dataTableMode: DataTableMode.RANGE,
           headers: [
-            {type: ColumnHeaderType.MAX_VALUE, enabled: true},
-            {type: ColumnHeaderType.RUN, enabled: true},
-            {type: ColumnHeaderType.MIN_VALUE, enabled: true},
+            {
+              type: ColumnHeaderType.MAX_VALUE,
+              name: 'maxValue',
+              displayName: 'Max',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.MIN_VALUE,
+              name: 'minValue',
+              displayName: 'Min',
+              enabled: true,
+            },
           ],
         })
       );
@@ -268,9 +378,24 @@ describe('scalar column editor', () => {
 
     it('highlights item with bottom edge when dragging below item being dragged', fakeAsync(() => {
       store.overrideSelector(getRangeSelectionHeaders, [
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.MAX_VALUE, enabled: true},
-        {type: ColumnHeaderType.MIN_VALUE, enabled: true},
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.MAX_VALUE,
+          name: 'maxValue',
+          displayName: 'Max',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.MIN_VALUE,
+          name: 'minValue',
+          displayName: 'Min',
+          enabled: true,
+        },
       ]);
       const fixture = createComponent();
       switchTabs(fixture, DataTableMode.RANGE);
@@ -289,9 +414,24 @@ describe('scalar column editor', () => {
 
     it('highlights item with top edge when dragging above item being dragged', fakeAsync(() => {
       store.overrideSelector(getRangeSelectionHeaders, [
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.MAX_VALUE, enabled: true},
-        {type: ColumnHeaderType.MIN_VALUE, enabled: true},
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.MAX_VALUE,
+          name: 'maxValue',
+          displayName: 'Max',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.MIN_VALUE,
+          name: 'minValue',
+          displayName: 'Min',
+          enabled: true,
+        },
       ]);
       const fixture = createComponent();
       switchTabs(fixture, DataTableMode.RANGE);

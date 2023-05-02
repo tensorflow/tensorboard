@@ -2659,26 +2659,116 @@ describe('scalar card', () => {
     beforeEach(() => {
       store.overrideSelector(getMetricsLinkedTimeEnabled, true);
       store.overrideSelector(getSingleSelectionHeaders, [
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.SMOOTHED, enabled: true},
-        {type: ColumnHeaderType.VALUE, enabled: true},
-        {type: ColumnHeaderType.STEP, enabled: true},
-        {type: ColumnHeaderType.RELATIVE_TIME, enabled: true},
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.SMOOTHED,
+          name: 'smoothed',
+          displayName: 'Smoothed',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.VALUE,
+          name: 'value',
+          displayName: 'Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.STEP,
+          name: 'step',
+          displayName: 'Step',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RELATIVE_TIME,
+          name: 'relativeTime',
+          displayName: 'Relative',
+          enabled: true,
+        },
       ]);
       store.overrideSelector(getRangeSelectionHeaders, [
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.MIN_VALUE, enabled: true},
-        {type: ColumnHeaderType.MAX_VALUE, enabled: true},
-        {type: ColumnHeaderType.START_VALUE, enabled: true},
-        {type: ColumnHeaderType.END_VALUE, enabled: true},
-        {type: ColumnHeaderType.VALUE_CHANGE, enabled: true},
-        {type: ColumnHeaderType.PERCENTAGE_CHANGE, enabled: true},
-        {type: ColumnHeaderType.START_STEP, enabled: true},
-        {type: ColumnHeaderType.END_STEP, enabled: true},
-        {type: ColumnHeaderType.STEP_AT_MAX, enabled: true},
-        {type: ColumnHeaderType.STEP_AT_MIN, enabled: true},
-        {type: ColumnHeaderType.MEAN, enabled: true},
-        {type: ColumnHeaderType.RAW_CHANGE, enabled: true},
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.MIN_VALUE,
+          name: 'minValue',
+          displayName: 'Min Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.MAX_VALUE,
+          name: 'maxValue',
+          displayName: 'Max Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.START_VALUE,
+          name: 'startValue',
+          displayName: 'Start Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.END_VALUE,
+          name: 'endValue',
+          displayName: 'End Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.VALUE_CHANGE,
+          name: 'valueChange',
+          displayName: 'Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.PERCENTAGE_CHANGE,
+          name: 'percentageChange',
+          displayName: '%',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.START_STEP,
+          name: 'startStep',
+          displayName: 'Start Step',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.END_STEP,
+          name: 'endStep',
+          displayName: 'End Step',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.STEP_AT_MAX,
+          name: 'stepAtMax',
+          displayName: 'Step At Max',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.STEP_AT_MIN,
+          name: 'stepAtMin',
+          displayName: 'Step At Min',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.MEAN,
+          name: 'mean',
+          displayName: 'Mean',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RAW_CHANGE,
+          name: 'rawChange',
+          displayName: 'Raw',
+          enabled: true,
+        },
       ]);
       store.overrideSelector(getCardStateMap, {
         card1: {
@@ -3480,12 +3570,32 @@ describe('scalar card', () => {
     beforeEach(() => {
       store.overrideSelector(getMetricsLinkedTimeEnabled, true);
       store.overrideSelector(getSingleSelectionHeaders, [
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.SMOOTHED, enabled: true},
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.SMOOTHED,
+          name: 'smoothed',
+          displayName: 'Smoothed',
+          enabled: true,
+        },
       ]);
       store.overrideSelector(getRangeSelectionHeaders, [
-        {type: ColumnHeaderType.RUN, enabled: true},
-        {type: ColumnHeaderType.MIN_VALUE, enabled: true},
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.MIN_VALUE,
+          name: 'minValue',
+          displayName: 'Min Value',
+          enabled: true,
+        },
       ]);
 
       const runToSeries = {
@@ -3981,8 +4091,18 @@ describe('scalar card', () => {
         );
 
         const headers = [
-          {type: ColumnHeaderType.RUN, enabled: true},
-          {type: ColumnHeaderType.VALUE, enabled: true},
+          {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.VALUE,
+            name: 'value',
+            displayName: 'Value',
+            enabled: true,
+          },
         ];
         scalarCardDataTable.componentInstance.orderColumns(headers);
 
@@ -4015,8 +4135,18 @@ describe('scalar card', () => {
         );
 
         const headers = [
-          {type: ColumnHeaderType.RUN, enabled: true},
-          {type: ColumnHeaderType.VALUE, enabled: true},
+          {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.VALUE,
+            name: 'value',
+            displayName: 'Value',
+            enabled: true,
+          },
         ];
         scalarCardDataTable.componentInstance.orderColumns(headers);
 

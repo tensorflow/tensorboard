@@ -100,6 +100,8 @@ export enum ColumnHeaderType {
 
 export interface ColumnHeader {
   type: ColumnHeaderType;
+  name: string;
+  displayName: string;
   enabled: boolean;
 }
 
