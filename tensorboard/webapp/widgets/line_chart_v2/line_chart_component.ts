@@ -234,10 +234,15 @@ export class LineChartComponent
       this.setIsViewBoxOverridden(false);
     }
 
-    if (changes['userViewBox'] && this.userViewBox) {
+    if (changes['userViewBox']) {
       this.userViewBoxUpdated = true;
-      this.viewBox = this.userViewBox;
-      this.setIsViewBoxOverridden(true);
+      this.isViewBoxChanged = true;
+      this.setIsViewBoxOverridden(false);
+
+      if (this.userViewBox) {
+        this.setIsViewBoxOverridden(true);
+        this.viewBox = this.userViewBox;
+      }
     }
 
     this.isViewBoxChanged =
@@ -501,19 +506,11 @@ export class LineChartComponent
   }
 
   onViewBoxChanged({dataExtent}: {dataExtent: Extent}) {
-    this.setIsViewBoxOverridden(true);
-    this.isViewBoxChanged = true;
-    this.viewBox = dataExtent;
-    this.updateLineChart();
     this.viewBoxChanged.emit(dataExtent);
   }
 
   viewBoxReset() {
-    this.setIsViewBoxOverridden(false);
-    this.isViewBoxChanged = true;
-    this.updateLineChart();
     this.viewBoxChanged.emit(null);
-    this.userViewBox = null;
   }
 
   private setIsViewBoxOverridden(newValue: boolean): void {

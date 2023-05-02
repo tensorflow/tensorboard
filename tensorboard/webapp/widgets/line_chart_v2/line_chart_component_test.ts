@@ -731,50 +731,6 @@ describe('line_chart_v2/line_chart test', () => {
     });
   });
 
-  describe('#getIsViewBoxOverridden', () => {
-    it('emits when viewBox changes', () => {
-      const onViewBoxOverridden = jasmine.createSpy();
-      const fixture = createComponent({
-        seriesData: [
-          buildSeries({
-            id: 'foo',
-            points: [
-              {x: 0, y: 0},
-              {x: 1, y: -1},
-              {x: 2, y: 1},
-            ],
-          }),
-        ],
-        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
-        yScaleType: ScaleType.LINEAR,
-      });
-      fixture.componentInstance.yScaleType = ScaleType.LINEAR;
-      fixture.detectChanges();
-
-      fixture.componentInstance.chart
-        .getIsViewBoxOverridden()
-        .subscribe(onViewBoxOverridden);
-
-      // Initial value.
-      expect(onViewBoxOverridden).toHaveBeenCalledOnceWith(false);
-
-      fixture.componentInstance.triggerViewBoxChange({
-        x: [-5, 5],
-        y: [0, 10],
-      });
-
-      expect(onViewBoxOverridden.calls.allArgs()).toEqual([[false], [true]]);
-
-      fixture.componentInstance.yScaleType = ScaleType.TIME;
-      fixture.detectChanges();
-      expect(onViewBoxOverridden.calls.allArgs()).toEqual([
-        [false],
-        [true],
-        [false],
-      ]);
-    });
-  });
-
   describe('dark mode support', () => {
     it('sets class dark-mode', () => {
       const fixture = createComponent({
@@ -1044,6 +1000,33 @@ describe('line_chart_v2/line_chart test', () => {
         x: [0, 1],
         y: [0, 0.5],
       });
+    });
+
+    it('emits getIsViewBoxOverridden', () => {
+      const onViewBoxOverridden = jasmine.createSpy();
+      const fixture = createComponent({
+        seriesData: [
+          buildSeries({
+            id: 'foo',
+            points: [],
+          }),
+        ],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      fixture.detectChanges();
+
+      fixture.componentInstance.chart
+        .getIsViewBoxOverridden()
+        .subscribe(onViewBoxOverridden);
+      expect(onViewBoxOverridden).toHaveBeenCalledOnceWith(false);
+
+      fixture.componentInstance.userViewBox = {
+        x: [0, 1],
+        y: [0, 0.5],
+      };
+      fixture.detectChanges();
+      expect(onViewBoxOverridden.calls.allArgs()).toEqual([[false], [true]]);
     });
 
     it('does not update viewBox when data loaded afterward', () => {
