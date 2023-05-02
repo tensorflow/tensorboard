@@ -112,6 +112,8 @@ class TestableComponent {
 
   triggerViewBoxChange(viewBox: Extent) {
     this.chart.onViewBoxChanged({dataExtent: viewBox});
+    // Workaround to re-render the line chart.
+    this.userViewBox = viewBox;
   }
 }
 
@@ -371,6 +373,7 @@ describe('line_chart_v2/line_chart test', () => {
       x: [-5, 5],
       y: [0, 10],
     });
+    fixture.detectChanges();
     expect(updateViewBoxSpy).toHaveBeenCalledTimes(2);
 
     fixture.componentInstance.yScaleType = ScaleType.TIME;
@@ -575,12 +578,15 @@ describe('line_chart_v2/line_chart test', () => {
         seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
         yScaleType: ScaleType.LINEAR,
       });
+
       fixture.detectChanges();
 
       fixture.componentInstance.triggerViewBoxChange({
         x: [-5, 5],
         y: [0, 10],
       });
+      fixture.detectChanges();
+
       expect(updateViewBoxSpy).toHaveBeenCalledTimes(2);
 
       fixture.componentInstance.seriesData = [
