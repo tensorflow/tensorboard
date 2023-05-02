@@ -176,6 +176,57 @@ describe('runs_selectors', () => {
     });
   });
 
+  describe('#getRunsFromExperimentIds', () => {
+    it('returns runs', () => {
+      const state = buildStateFromRunsState(
+        buildRunsState({
+          runIds: {
+            eid: ['run1'],
+          },
+          runMetadata: {
+            run1: buildRun({id: 'run1'}),
+          },
+        })
+      );
+      expect(selectors.getRunsFromExperimentIds(['eid'])(state)).toEqual([
+        {
+          ...buildRun({
+            id: 'run1',
+          }),
+          experimentId: 'eid',
+        },
+      ]);
+    });
+
+    it('returns runs for the ones that has metadata', () => {
+      const state = buildStateFromRunsState(
+        buildRunsState({
+          runIds: {
+            eid: ['run1', 'run2'],
+          },
+          runMetadata: {
+            run1: buildRun({id: 'run1'}),
+          },
+        })
+      );
+      expect(selectors.getRunsFromExperimentIds(['eid'])(state)).toEqual([
+        {
+          ...buildRun({
+            id: 'run1',
+          }),
+          experimentId: 'eid',
+        },
+      ]);
+    });
+
+    it('returns empty list if experiment id does not exist', () => {
+      const state = buildStateFromRunsState(buildRunsState());
+      expect(
+        selectors.getRunsFromExperimentIds(['i_do_not_exist'])(state)
+      ).toEqual([]);
+    });
+  });
+
   describe('#getRunIdsForExperiment', () => {
     beforeEach(() => {
       // Clear the memoization.
