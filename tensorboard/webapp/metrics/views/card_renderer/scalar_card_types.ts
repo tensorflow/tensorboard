@@ -116,7 +116,12 @@ export enum SortingOrder {
 }
 
 export interface SortingInfo {
+  // Currently in the process of moving from header to name.
+  // Header is no longer used but is required as to not break sync
+  // TODO(jameshollyer): Remove header once all internal code is switched
+  // to using name and make name required.
   header: ColumnHeaderType;
+  name?: string;
   order: SortingOrder;
 }
 
@@ -125,9 +130,9 @@ export interface SortingInfo {
  * DataTable. It will have a value for each required ColumnHeader for a given
  * run.
  */
-export type SelectedStepRunData = {
-  [key in ColumnHeaderType]?: string | number;
-} & {id: string};
+export type SelectedStepRunData = Record<string, string | number> & {
+  id: string;
+};
 
 /**
  * An object which is intended to hold the min and max step within each scalar

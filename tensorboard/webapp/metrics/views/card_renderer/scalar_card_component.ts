@@ -122,7 +122,8 @@ export class ScalarCardComponent<Downloader> {
   @ViewChild(LineChartComponent)
   lineChart?: LineChartComponent;
   sortingInfo: SortingInfo = {
-    header: ColumnHeaderType.RUN,
+    header: ColumnHeaderType.RUN, //This is no longer used but the type needs it or it will break sync. TODO(jameshollyer): remove this once internal code all uses name.
+    name: 'run',
     order: SortingOrder.ASCENDING,
   };
 

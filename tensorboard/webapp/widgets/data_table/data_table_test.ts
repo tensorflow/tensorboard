@@ -76,6 +76,7 @@ describe('data table', () => {
     fixture.componentInstance.data = input.data || [];
     fixture.componentInstance.sortingInfo = input.sortingInfo || {
       header: ColumnHeaderType.RUN,
+      name: 'run',
       order: SortingOrder.ASCENDING,
     };
 
@@ -184,7 +185,7 @@ describe('data table', () => {
         },
         {
           type: ColumnHeaderType.VALUE_CHANGE,
-          name: 'valueChanged',
+          name: 'valueChange',
           displayName: 'Value',
           enabled: true,
         },
@@ -226,7 +227,7 @@ describe('data table', () => {
         },
         {
           type: ColumnHeaderType.PERCENTAGE_CHANGE,
-          name: 'percentageChanged',
+          name: 'percentageChange',
           displayName: '%',
           enabled: true,
         },
@@ -240,19 +241,19 @@ describe('data table', () => {
       data: [
         {
           id: 'someid',
-          RUN: 'run name',
-          VALUE: 31415926535,
-          STEP: 1,
-          RELATIVE_TIME: 123,
-          VALUE_CHANGE: -20,
-          START_STEP: 5,
-          END_STEP: 30,
-          START_VALUE: 13,
-          END_VALUE: 23,
-          MIN_VALUE: 0.12345,
-          MAX_VALUE: 89793238462,
-          PERCENTAGE_CHANGE: 0.3,
-          SMOOTHED: 3.14e10,
+          run: 'run name',
+          value: 31415926535,
+          step: 1,
+          relativeTime: 123,
+          valueChange: -20,
+          startStep: 5,
+          endStep: 30,
+          startValue: 13,
+          endValue: 23,
+          minValue: 0.12345,
+          maxValue: 89793238462,
+          percentageChange: 0.3,
+          smoothed: 3.14e10,
         },
       ],
     });
@@ -313,9 +314,9 @@ describe('data table', () => {
       data: [
         {
           id: 'someid',
-          RUN: 'run name',
-          VALUE: 3,
-          STEP: 1,
+          run: 'run name',
+          value: 3,
+          step: 1,
         },
       ],
     });
@@ -409,7 +410,8 @@ describe('data table', () => {
 
     headerElements[3].triggerEventHandler('click', {});
     expect(sortDataBySpy).toHaveBeenCalledOnceWith({
-      header: ColumnHeaderType.STEP,
+      header: jasmine.any(String), // This attribute is no longer used but temporarily left here to no break internal syncs
+      name: 'step',
       order: SortingOrder.ASCENDING,
     });
   });
@@ -444,6 +446,7 @@ describe('data table', () => {
       ],
       sortingInfo: {
         header: ColumnHeaderType.STEP,
+        name: 'step',
         order: SortingOrder.ASCENDING,
       },
     });
@@ -452,7 +455,8 @@ describe('data table', () => {
 
     headerElements[3].triggerEventHandler('click', {});
     expect(sortDataBySpy).toHaveBeenCalledOnceWith({
-      header: ColumnHeaderType.STEP,
+      header: jasmine.any(String), // This attribute is no longer used but temporarily left here to no break internal syncs
+      name: 'step',
       order: SortingOrder.DESCENDING,
     });
   });
@@ -481,6 +485,7 @@ describe('data table', () => {
       ],
       sortingInfo: {
         header: ColumnHeaderType.VALUE,
+        name: 'value',
         order: SortingOrder.ASCENDING,
       },
     });
@@ -543,6 +548,7 @@ describe('data table', () => {
       ],
       sortingInfo: {
         header: ColumnHeaderType.STEP,
+        name: 'step',
         order: SortingOrder.DESCENDING,
       },
     });
@@ -605,6 +611,7 @@ describe('data table', () => {
       ],
       sortingInfo: {
         header: ColumnHeaderType.STEP,
+        name: 'step',
         order: SortingOrder.DESCENDING,
       },
     });
@@ -672,6 +679,7 @@ describe('data table', () => {
       ],
       sortingInfo: {
         header: ColumnHeaderType.STEP,
+        name: 'step',
         order: SortingOrder.DESCENDING,
       },
     });
@@ -746,10 +754,10 @@ describe('data table', () => {
       data: [
         {
           id: 'someid',
-          RUN: 'run name',
-          VALUE: 3,
-          STEP: 1,
-          SMOOTHED: 2,
+          run: 'run name',
+          value: 3,
+          step: 1,
+          smoothed: 2,
         },
       ],
       smoothingEnabled: false,
