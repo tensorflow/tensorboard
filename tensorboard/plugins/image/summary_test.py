@@ -239,8 +239,10 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
 
     def test_vector_data(self):
         data = np.array(
-            [-0.01, 0.0, 0.9, 1.0, 1.1],
-            [-0.01, 0.0, 1.0, 0.9, 1.1],
+            [
+                [-0.01, 0.0, 0.9, 1.0, 1.1],
+                [-0.01, 0.0, 1.0, 0.9, 1.1],
+            ]
         ).reshape((2, -1, 1, 1))
         pb = self.image("mona_lisa", data)
 
