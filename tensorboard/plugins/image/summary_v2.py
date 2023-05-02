@@ -116,7 +116,7 @@ def image(name, data, step=None, max_outputs=3, description=None):
             if tf.compat.forward_compatible(2023, 5, 1):
                 encoded_images = tf.image.encode_png(limited_images)
             else:
-                # TODO(b/276803093): The kernel was updated around 2023/04/15. 
+                # TODO(b/276803093): The kernel was updated around 2023/04/15.
                 # After 90 days (2023/07/15), please remove the False branch.
                 encoded_images = tf.map_fn(
                     tf.image.encode_png,
