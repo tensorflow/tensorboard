@@ -210,14 +210,18 @@ export class OSSSettingsConverter extends SettingsConverter<
 
     if (
       backendSettings.hasOwnProperty('singleSelectionHeaders') &&
-      typeof backendSettings.singleSelectionHeaders === 'object'
+      Array.isArray(backendSettings.singleSelectionHeaders) &&
+      // If the settings stored in the backend are invalid, reset back to default.
+      backendSettings.singleSelectionHeaders[0].name !== undefined
     ) {
       settings.singleSelectionHeaders = backendSettings.singleSelectionHeaders;
     }
 
     if (
       backendSettings.hasOwnProperty('rangeSelectionHeaders') &&
-      typeof backendSettings.rangeSelectionHeaders === 'object'
+      Array.isArray(backendSettings.rangeSelectionHeaders) &&
+      // If the settings stored in the backend are invalid, reset back to default.
+      backendSettings.rangeSelectionHeaders[0].name !== undefined
     ) {
       settings.rangeSelectionHeaders = backendSettings.rangeSelectionHeaders;
     }
