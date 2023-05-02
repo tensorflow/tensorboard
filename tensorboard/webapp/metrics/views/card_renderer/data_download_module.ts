@@ -19,7 +19,7 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
-import {FeatureFlagDirectiveModule} from '../../../feature_flag/directives/feature_flag_directive';
+import {FeatureFlagDirectiveModule} from '../../../feature_flag/directives/feature_flag_directive_module';
 import {MetricsDataSourceModule} from '../../data_source';
 import {DataDownloadDialogComponent} from './data_download_dialog_component';
 import {DataDownloadDialogContainer} from './data_download_dialog_container';

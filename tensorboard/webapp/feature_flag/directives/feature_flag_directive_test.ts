@@ -1,4 +1,4 @@
-/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2023 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,13 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {
-  Component,
-  DebugElement,
-  Input,
-  OnChanges,
-  ViewChild,
-} from '@angular/core';
+import {Component, DebugElement, Input} from '@angular/core';
 import {TestBed, fakeAsync, tick} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
@@ -32,35 +26,29 @@ import {State as FeatureFlagState} from '../store/feature_flag_types';
 import {FeatureFlagDirective} from './feature_flag_directive';
 
 @Component({
-  selector: 'test',
-  template: `<p>{{ value }}</p>`,
+  selector: 'test-matching-selector',
+  template: `
+    <p>
+      <a [href]="href" [includeFeatureFlags]>test link</a>
+      <img [src]="src" [includeFeatureFlags] />
+    </p>
+  `,
 })
-export class TestComponent {
-  @Input() value!: string;
+export class TestMatchingComponent {
+  @Input() href!: string;
+  @Input() src!: string;
 }
 
 @Component({
-  selector: 'test-with-href',
-  template: '<a [href]="valueFromHost" [includeFeatureFlags]>testable link</a>',
+  selector: 'test-nonmatching-selector',
+  template: `
+    <p>
+      <img [src]="src" />
+    </p>
+  `,
 })
-class TestableHrefComponent {
-  @ViewChild(
-    TestComponent
-  ) /* using viewChild we get access to the TestComponent which is a child of TestHostComponent */
-  public testComponent: any;
-  public valueFromHost!: string; /* this is the variable which is passed as input to the TestComponent */
-}
-
-@Component({
-  selector: 'test-with-img',
-  template: '<img [src]="valueFromHost" [includeFeatureFlags]>',
-})
-class TestableImgComponent {
-  @ViewChild(
-    TestComponent
-  ) /* using viewChild we get access to the TestComponent which is a child of TestHostComponent */
-  public testComponent: any;
-  public valueFromHost!: string; /* this is the variable which is passed as input to the TestComponent */
+export class TestNonmatchingComponent {
+  @Input() src!: string;
 }
 
 describe('feature_flags', () => {
@@ -70,9 +58,8 @@ describe('feature_flags', () => {
     await TestBed.configureTestingModule({
       providers: [provideMockTbStore()],
       declarations: [
-        TestComponent,
-        TestableHrefComponent,
-        TestableImgComponent,
+        TestMatchingComponent,
+        TestNonmatchingComponent,
         FeatureFlagDirective,
       ],
     }).compileComponents();
@@ -87,50 +74,67 @@ describe('feature_flags', () => {
     store?.resetSelectors();
   });
 
-  function createHrefComponent(href: string): DebugElement {
-    const fixture = TestBed.createComponent(TestableHrefComponent);
-    const hostComponent = fixture.componentInstance;
-    hostComponent.valueFromHost = href;
-    const component = hostComponent.testComponent;
+  function createMatchingHrefComponent(href: string): DebugElement {
+    const fixture = TestBed.createComponent(TestMatchingComponent);
+    fixture.componentInstance.href = href;
     fixture.detectChanges();
     tick();
     fixture.detectChanges();
     return fixture.debugElement.query(By.css('a'));
   }
 
-  function createImgComponent(src: string): DebugElement {
-    const fixture = TestBed.createComponent(TestableImgComponent);
-    const hostComponent = fixture.componentInstance;
-    hostComponent.valueFromHost = src;
+  function createMatchingImgComponent(src: string): DebugElement {
+    const fixture = TestBed.createComponent(TestMatchingComponent);
+    fixture.componentInstance.src = src;
     fixture.detectChanges();
     tick();
     fixture.detectChanges();
     return fixture.debugElement.query(By.css('img'));
   }
 
-  it('injects feature flags in <img> tags if any are set', fakeAsync(() => {
+  function createNonmatchingImgComponent(src: string): DebugElement {
+    const fixture = TestBed.createComponent(TestNonmatchingComponent);
+    fixture.componentInstance.src = src;
+    fixture.detectChanges();
+    tick();
+    fixture.detectChanges();
+    return fixture.debugElement.query(By.css('img'));
+  }
+
+  it('injects feature flags in <img> tags if any are set without preexisting query parameters', fakeAsync(() => {
     store.overrideSelector(getFeatureFlagsToSendToServer, {inColab: true});
-    const anchorStr = createImgComponent('https://abc.def');
+    const anchorStr = createMatchingImgComponent('https://abc.def');
     expect(anchorStr.attributes['src']).toBe(
       'https://abc.def?tensorBoardFeatureFlags=%7B%22inColab%22%3Atrue%7D'
     );
   }));
 
+  it('injects feature flags in <img> tags if any are set with preexisting query parameters', fakeAsync(() => {
+    store.overrideSelector(getFeatureFlagsToSendToServer, {inColab: true});
+    const anchorStr = createMatchingImgComponent('https://abc.def?test=value');
+    expect(anchorStr.attributes['src']).toBe(
+      'https://abc.def?test=value&tensorBoardFeatureFlags=%7B%22inColab%22%3Atrue%7D'
+    );
+  }));
+
   it('leaves <img> tags unmodified if no feature flags are set', fakeAsync(() => {
-    const anchorStr = createImgComponent('https://abc.def');
+    const anchorStr = createMatchingImgComponent('https://abc.def');
     expect(anchorStr.attributes['src']).toBe('https://abc.def');
+  }));
+
+  it('leaves <img> tags unmodified if [includeFeatureFlags] is not included', fakeAsync(() => {
+    store.overrideSelector(getFeatureFlagsToSendToServer, {inColab: true});
+    const anchorStr = createNonmatchingImgComponent(
+      'https://abc.def?test=value'
+    );
+    expect(anchorStr.attributes['src']).toBe('https://abc.def?test=value');
   }));
 
   it('injects feature flags in <a> tags if any are set', fakeAsync(() => {
     store.overrideSelector(getFeatureFlagsToSendToServer, {inColab: true});
-    const anchorStr = createHrefComponent('https://abc.def');
+    const anchorStr = createMatchingHrefComponent('https://abc.def');
     expect(anchorStr.attributes['href']).toBe(
       'https://abc.def?tensorBoardFeatureFlags=%7B%22inColab%22%3Atrue%7D'
     );
-  }));
-
-  it('leaves <a> tags unmodified if no feature flags are set', fakeAsync(() => {
-    const anchorStr = createHrefComponent('https://abc.def');
-    expect(anchorStr.attributes['href']).toBe('https://abc.def');
   }));
 });

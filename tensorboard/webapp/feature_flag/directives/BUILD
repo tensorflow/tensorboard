@@ -6,6 +6,7 @@ tf_ng_module(
     name = "directives",
     srcs = [
         "feature_flag_directive.ts",
+        "feature_flag_directive_module.ts",
     ],
     deps = [
         "//tensorboard/webapp/angular:expect_angular_common_http",
