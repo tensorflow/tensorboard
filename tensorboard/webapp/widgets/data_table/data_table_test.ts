@@ -114,57 +114,9 @@ describe('data table', () => {
           enabled: true,
         },
         {
-          type: ColumnHeaderType.STEP,
-          name: 'step',
-          displayName: 'Step',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.RELATIVE_TIME,
-          name: 'relativeTime',
-          displayName: 'Relative',
-          enabled: true,
-        },
-        {
           type: ColumnHeaderType.VALUE_CHANGE,
           name: 'valueChanged',
           displayName: 'Value',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.START_STEP,
-          name: 'startStep',
-          displayName: 'Start Step',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.END_STEP,
-          name: 'endStep',
-          displayName: 'End Step',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.START_VALUE,
-          name: 'startValue',
-          displayName: 'Start Value',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.END_VALUE,
-          name: 'endValue',
-          displayName: 'End Value',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.MIN_VALUE,
-          name: 'minValue',
-          displayName: 'Min',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.MAX_VALUE,
-          name: 'maxValue',
-          displayName: 'Max',
           enabled: true,
         },
         {
@@ -188,27 +140,19 @@ describe('data table', () => {
     expect(headerElements[0].nativeElement.innerText).toBe('');
     expect(headerElements[1].nativeElement.innerText).toBe('Value');
     expect(headerElements[2].nativeElement.innerText).toBe('Run');
-    expect(headerElements[3].nativeElement.innerText).toBe('Step');
-    expect(headerElements[4].nativeElement.innerText).toBe('Relative');
-    expect(headerElements[5].nativeElement.innerText).toBe('Value');
+    expect(headerElements[3].nativeElement.innerText).toBe('Value');
     expect(
-      headerElements[5]
+      headerElements[3]
         .queryAll(By.css('mat-icon'))[0]
         .nativeElement.getAttribute('svgIcon')
     ).toBe('change_history_24px');
-    expect(headerElements[6].nativeElement.innerText).toBe('Start Step');
-    expect(headerElements[7].nativeElement.innerText).toBe('End Step');
-    expect(headerElements[8].nativeElement.innerText).toBe('Start Value');
-    expect(headerElements[9].nativeElement.innerText).toBe('End Value');
-    expect(headerElements[10].nativeElement.innerText).toBe('Min');
-    expect(headerElements[11].nativeElement.innerText).toBe('Max');
-    expect(headerElements[12].nativeElement.innerText).toBe('%');
+    expect(headerElements[4].nativeElement.innerText).toBe('%');
     expect(
-      headerElements[12]
+      headerElements[4]
         .queryAll(By.css('mat-icon'))[0]
         .nativeElement.getAttribute('svgIcon')
     ).toBe('change_history_24px');
-    expect(headerElements[13].nativeElement.innerText).toBe('Smoothed');
+    expect(headerElements[5].nativeElement.innerText).toBe('Smoothed');
   });
 
   it('displays data in order', () => {
