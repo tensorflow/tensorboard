@@ -29,6 +29,8 @@ tf_ts_library(
     deps = [
         ":directives",
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/feature_flag:testing",
         "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/http:const",
