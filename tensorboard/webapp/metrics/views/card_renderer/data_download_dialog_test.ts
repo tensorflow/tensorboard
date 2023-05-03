@@ -258,7 +258,9 @@ describe('metrics/views/data_download_dialog', () => {
     const pathAndQueries = downloadLinks.map((link) => {
       return link.nativeElement.href.slice(link.nativeElement.origin.length);
     });
-    expect(pathAndQueries).toEqual(['', '']);
+    // Karma seems to inject this value when using [href] instead of
+    // [attr.href] in the template.
+    expect(pathAndQueries).toEqual(['/context.html', '/context.html']);
   });
 
   it('forms correct url even if run names are all the same', async () => {
