@@ -235,13 +235,13 @@ export class LineChartComponent
     }
 
     if (changes['userViewBox']) {
-      this.userViewBoxUpdated = true;
-      this.isViewBoxChanged = true;
       this.setIsViewBoxOverridden(false);
+      this.isViewBoxChanged = true;
 
       if (this.userViewBox) {
         this.setIsViewBoxOverridden(true);
         this.viewBox = this.userViewBox;
+        this.userViewBoxUpdated = true;
       }
     }
 
