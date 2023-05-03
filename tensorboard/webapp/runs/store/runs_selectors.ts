@@ -84,15 +84,12 @@ export const getRunsFromExperimentIds = (experimentIds: string[]) =>
     getDataState,
     (state: RunsDataState): Array<Run & {experimentId: string}> => {
       return experimentIds.reduce((runs, experimentId) => {
-        const runsIdsForExperiment = (state.runIds[experimentId] || []).filter(
-          (id) => Boolean(state.runMetadata[id])
-        );
-        runsIdsForExperiment.forEach((runId) => {
-          runs.push({
-            ...state.runMetadata[runId],
-            experimentId,
+        (state.runIds[experimentId] || [])
+          .filter((id) => Boolean(state.runMetadata[id]))
+          .forEach((runId) => {
+            runs.push({...state.runMetadata[runId], experimentId});
           });
-        });
+
         return runs;
       }, [] as Array<Run & {experimentId: string}>);
     }
