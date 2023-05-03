@@ -79,6 +79,22 @@ export const getRuns = createSelector(
   }
 );
 
+export const getRunsFromExperimentIds = (experimentIds: string[]) =>
+  createSelector(
+    getDataState,
+    (state: RunsDataState): Array<Run & {experimentId: string}> => {
+      return experimentIds.reduce((runs, experimentId) => {
+        (state.runIds[experimentId] || [])
+          .filter((id) => Boolean(state.runMetadata[id]))
+          .forEach((runId) => {
+            runs.push({...state.runMetadata[runId], experimentId});
+          });
+
+        return runs;
+      }, [] as Array<Run & {experimentId: string}>);
+    }
+  );
+
 /**
  * Returns Observable that emits runs list for an experiment.
  */
