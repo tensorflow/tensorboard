@@ -237,6 +237,25 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
         # range [0, 255] with 229 = 0.9 * 255, truncated.
         self.assertAllEqual([0, 0, 229, 255, 255], list(decoded.flat))
 
+    def test_vector_data(self):
+        data = np.array(
+            [
+                [-0.01, 0.0, 0.9, 1.0, 1.1],
+                [-0.01, 0.0, 1.0, 0.9, 1.1],
+            ]
+        ).reshape((2, -1, 1, 1))
+        pb = self.image("mona_lisa", data)
+
+        encoded0 = pb.value[0].tensor.string_val[2]  # skip width, height
+        decoded0 = tf.image.decode_png(encoded0).numpy()
+        # Float values outside [0, 1) are truncated, and everything is scaled to the
+        # range [0, 255] with 229 = 0.9 * 255, truncated.
+        self.assertAllEqual([0, 0, 229, 255, 255], list(decoded0.flat))
+
+        encoded1 = pb.value[0].tensor.string_val[3]  # skip width, height
+        decoded1 = tf.image.decode_png(encoded1).numpy()
+        self.assertAllEqual([0, 0, 255, 229, 255], list(decoded1.flat))
+
 
 if __name__ == "__main__":
     tf.test.main()
