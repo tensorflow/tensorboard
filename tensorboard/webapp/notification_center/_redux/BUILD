@@ -55,6 +55,7 @@ tf_ts_library(
     srcs = [
         "testing.ts",
     ],
+    visibility = ["//tensorboard/webapp/testing:__subpackages__"],
     deps = [
         ":types",
     ],

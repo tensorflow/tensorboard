@@ -80,6 +80,8 @@ tf_ts_library(
         "//tensorboard/webapp/hparams/_redux:testing",
         "//tensorboard/webapp/metrics:test_lib",
         "//tensorboard/webapp/metrics/store",
+        "//tensorboard/webapp/notification_center/_redux:testing",
+        "//tensorboard/webapp/notification_center/_redux:types",
         "//tensorboard/webapp/persistent_settings/_redux:testing",
         "//tensorboard/webapp/runs/store:testing",
         "//tensorboard/webapp/runs/store:types",

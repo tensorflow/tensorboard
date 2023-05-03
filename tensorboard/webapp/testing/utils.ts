@@ -41,6 +41,11 @@ import {
 } from '../hparams/_redux/testing';
 import {METRICS_FEATURE_KEY} from '../metrics/store';
 import {appStateFromMetricsState, buildMetricsState} from '../metrics/testing';
+import {NOTIFICATION_FEATURE_KEY} from '../notification_center/_redux/notification_center_types';
+import {
+  buildNotificationState,
+  buildStateFromNotificationState,
+} from '../notification_center/_redux/testing';
 import {
   buildPersistentSettingsState,
   buildStateFromPersistentSettingsState,
@@ -77,6 +82,9 @@ export function buildMockState(overrides: Partial<State> = {}): State {
     ),
     ...buildStateFromFeatureFlagsState(buildFeatureFlagState()),
     ...buildStateFromHparamsState(buildHparamsState()),
+    ...buildStateFromNotificationState(
+      buildNotificationState(overrides[NOTIFICATION_FEATURE_KEY] || {})
+    ),
   };
 }
 
