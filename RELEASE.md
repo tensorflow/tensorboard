@@ -1,3 +1,15 @@
+# Release 2.13.0
+
+The 2.13 minor series tracks TensorFlow 2.13
+
+## Bug Fixes
+
+- Several improvements to the projector plugin (thank you @alicialics)
+  - Embedding Projector: fix regex suffix css (#6329)
+  - Embedding Projector: fix bookmark projection state (#6328)
+  - Embedding Projector: fix dark mode button contrast (#6327)
+  - Embedding Projector: update tsne learning rate during iteration (#6319)
+
 # Release 2.12.3
 
 ## Bug Fixes
