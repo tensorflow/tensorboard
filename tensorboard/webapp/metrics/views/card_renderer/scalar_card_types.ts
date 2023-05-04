@@ -100,8 +100,8 @@ export enum ColumnHeaderType {
 
 export interface ColumnHeader {
   type: ColumnHeaderType;
-  name: string;
-  displayName: string;
+  name?: string; // TODO(jameshollyer): make required after internal changes are made
+  displayName?: string; // TODO(jameshollyer): make required after internal changes are made
   enabled: boolean;
 }
 
