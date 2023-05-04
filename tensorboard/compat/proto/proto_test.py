@@ -67,6 +67,10 @@ PROTO_IMPORTS = [
         "tensorboard.compat.proto.function_pb2",
     ),
     (
+        "tensorflow.core.framework.graph_debug_info_pb2",
+        "tensorboard.compat.proto.graph_debug_info_pb2",
+    ),
+    (
         "tensorflow.core.framework.graph_pb2",
         "tensorboard.compat.proto.graph_pb2",
     ),
