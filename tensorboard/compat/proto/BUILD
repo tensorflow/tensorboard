@@ -127,10 +127,16 @@ tb_proto_library(
 )
 
 tb_proto_library(
+    name = "graph_debug_info",
+    srcs = ["graph_debug_info.proto"],
+)
+
+tb_proto_library(
     name = "graph",
     srcs = ["graph.proto"],
     deps = [
         ":function",
+        ":graph_debug_info",
         ":node_def",
         ":versions",
     ],
@@ -326,6 +332,7 @@ tb_proto_library(
         ":full_type",
         ":function",
         ":graph",
+        ":graph_debug_info",
         ":histogram",
         ":meta_graph",
         ":node_def",
