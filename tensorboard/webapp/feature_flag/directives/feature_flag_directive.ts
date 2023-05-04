@@ -13,11 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
+  ChangeDetectorRef,
   Directive,
   ElementRef,
   HostBinding,
   Input,
-  OnChanges,
 } from '@angular/core';
 import {Store} from '@ngrx/store';
 import {firstValueFrom} from 'rxjs';
@@ -28,28 +28,18 @@ import {getFeatureFlagsToSendToServer} from '../store/feature_flag_selectors';
 import {State as FeatureFlagState} from '../store/feature_flag_types';
 
 @Directive({selector: 'a[includeFeatureFlags], img[includeFeatureFlags]'})
-export class FeatureFlagDirective implements OnChanges {
+export class FeatureFlagDirective {
+  @HostBinding('attr.href') hrefAttr: string | undefined = undefined;
+  @HostBinding('attr.src') srcAttr: string | undefined = undefined;
   // The selector applies if [includeFeatureFlags] is present at all. Supplying
   // [includeFeatureFlags]="true"/"false" has no impact on the actual logic and
   // will behave the same as though [includeFeatureFlags] is unset.
   @Input() includeFeatureFlags: boolean = true;
-  @Input() @HostBinding('attr.src') src: string | undefined;
-  @Input() @HostBinding('attr.href') href: string | undefined;
 
-  constructor(private readonly store: Store<FeatureFlagState>) {}
-
-  ngOnChanges() {
-    if (this.src) {
-      firstValueFrom(this.getUrlWithFeatureFlags(this.src)).then((value) => {
-        this.src = value;
-      });
-    }
-    if (this.href) {
-      firstValueFrom(this.getUrlWithFeatureFlags(this.href)).then((value) => {
-        this.href = value;
-      });
-    }
-  }
+  constructor(
+    private readonly store: Store<FeatureFlagState>,
+    private readonly changeDetectorRef: ChangeDetectorRef
+  ) {}
 
   private getUrlWithFeatureFlags(url: string) {
     return this.store.select(getFeatureFlagsToSendToServer).pipe(
@@ -65,5 +55,25 @@ export class FeatureFlagDirective implements OnChanges {
         }
       })
     );
+  }
+
+  @Input()
+  set href(href: string | null) {
+    if (href) {
+      firstValueFrom(this.getUrlWithFeatureFlags(href)).then((value) => {
+        this.hrefAttr = value;
+        this.changeDetectorRef.detectChanges();
+      });
+    }
+  }
+
+  @Input()
+  set src(src: string | null) {
+    if (src) {
+      firstValueFrom(this.getUrlWithFeatureFlags(src)).then((value) => {
+        this.srcAttr = value;
+        this.changeDetectorRef.detectChanges();
+      });
+    }
   }
 }
