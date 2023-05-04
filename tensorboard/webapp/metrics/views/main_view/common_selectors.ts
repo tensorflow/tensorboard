@@ -23,6 +23,7 @@ import {
   getExperimentNames,
   getRunColorMap,
   getRunSelectorRegexFilter,
+  getRouteKind,
   getRunsFromExperimentIds,
 } from '../../../selectors';
 import {DeepReadonly} from '../../../util/types';
@@ -42,6 +43,7 @@ import {isSingleRunPlugin, PluginType} from '../../data_source';
 import {getNonEmptyCardIdsWithMetadata, TagMetadata} from '../../store';
 import {compareTagNames} from '../../utils';
 import {CardIdWithMetadata} from '../metrics_view_types';
+import {RouteKind} from '../../../app_routing/types';
 
 export const getScalarTagsForRunSelection = createSelector(
   getMetricsTagMetadata,
@@ -104,116 +106,124 @@ export const getSortedRenderableCardIdsWithMetadata = createSelector<
   });
 });
 
-export function getRenderableRuns(experimentIds: string[]) {
-  return createSelector(
-    getRunsFromExperimentIds(experimentIds),
-    getExperimentNames(experimentIds),
-    getCurrentRouteRunSelection,
-    getRunColorMap,
-    getExperimentIdToExperimentAliasMap,
-    (runs, experimentNames, selectionMap, colorMap, experimentIdToAlias) => {
-      return runs.map((run) => {
-        const hparamMap: RunTableItem['hparams'] = new Map();
-        (run.hparams || []).forEach((hparam) => {
-          hparamMap.set(hparam.name, hparam.value);
+const utils = {
+  getRenderableRuns(experimentIds: string[]) {
+    return createSelector(
+      getRunsFromExperimentIds(experimentIds),
+      getExperimentNames(experimentIds),
+      getCurrentRouteRunSelection,
+      getRunColorMap,
+      getExperimentIdToExperimentAliasMap,
+      (runs, experimentNames, selectionMap, colorMap, experimentIdToAlias) => {
+        return runs.map((run) => {
+          const hparamMap: RunTableItem['hparams'] = new Map();
+          (run.hparams || []).forEach((hparam) => {
+            hparamMap.set(hparam.name, hparam.value);
+          });
+          const metricMap: RunTableItem['metrics'] = new Map();
+          (run.metrics || []).forEach((metric) => {
+            metricMap.set(metric.tag, metric.value);
+          });
+          return {
+            run,
+            experimentName: experimentNames[run.experimentId] || '',
+            experimentAlias: experimentIdToAlias[run.experimentId],
+            selected: Boolean(selectionMap && selectionMap.get(run.id)),
+            runColor: colorMap[run.id],
+            hparams: hparamMap,
+            metrics: metricMap,
+          };
         });
-        const metricMap: RunTableItem['metrics'] = new Map();
-        (run.metrics || []).forEach((metric) => {
-          metricMap.set(metric.tag, metric.value);
-        });
-        return {
-          run,
-          experimentName: experimentNames[run.experimentId] || '',
-          experimentAlias: experimentIdToAlias[run.experimentId],
-          selected: Boolean(selectionMap && selectionMap.get(run.id)),
-          runColor: colorMap[run.id],
-          hparams: hparamMap,
-          metrics: metricMap,
-        };
-      });
-    }
-  );
-}
-
-function filterRunItemsByRegex(runItems: RunTableItem[], regexString: string) {
-  if (!regexString) {
-    return runItems;
-  }
-
-  // DO_NOT_SUBMIT
-  // const shouldIncludeExperimentName = this.columns.includes(
-  //   RunsTableColumn.EXPERIMENT_NAME
-  // );
-  const shouldIncludeExperimentName = false;
-  return runItems.filter((item) => {
-    return matchRunToRegex(
-      {
-        runName: item.run.name,
-        experimentAlias: item.experimentAlias,
-      },
-      regexString,
-      shouldIncludeExperimentName
-    );
-  });
-}
-
-function matchFilter(
-  filter: DiscreteFilter | IntervalFilter,
-  value: number | DiscreteHparamValue | undefined
-): boolean {
-  if (value === undefined) {
-    return filter.includeUndefined;
-  }
-  if (filter.type === DomainType.DISCRETE) {
-    // (upcast to work around bad TypeScript libdefs)
-    const values: Readonly<Array<typeof filter.filterValues[number]>> =
-      filter.filterValues;
-    return values.includes(value);
-  } else if (filter.type === DomainType.INTERVAL) {
-    // Auto-added to unblock TS5.0 migration
-    //  @ts-ignore(go/ts50upgrade): Operator '<=' cannot be applied to types
-    //  'number' and 'string | number | boolean'.
-    // Auto-added to unblock TS5.0 migration
-    //  @ts-ignore(go/ts50upgrade): Operator '<=' cannot be applied to types
-    //  'string | number | boolean' and 'number'.
-    return filter.filterLowerValue <= value && value <= filter.filterUpperValue;
-  }
-  return false;
-}
-
-function filterRunItemsByHparamAndMetricFilter(
-  runItems: RunTableItem[],
-  hparamFilters: Map<string, IntervalFilter | DiscreteFilter>,
-  metricFilters: Map<string, IntervalFilter>
-) {
-  return runItems.filter(({hparams, metrics}) => {
-    const hparamMatches = [...hparamFilters.entries()].every(
-      ([hparamName, filter]) => {
-        const value = hparams.get(hparamName);
-        return matchFilter(filter, value);
       }
     );
+  },
 
-    return (
-      hparamMatches &&
-      [...metricFilters.entries()].every(([metricTag, filter]) => {
-        const value = metrics.get(metricTag);
-        return matchFilter(filter, value);
-      })
-    );
-  });
-}
+  filterRunItemsByRegex(
+    runItems: RunTableItem[],
+    regexString: string,
+    shouldIncludeExperimentName: boolean
+  ) {
+    if (!regexString) {
+      return runItems;
+    }
+
+    return runItems.filter((item) => {
+      return matchRunToRegex(
+        {
+          runName: item.run.name,
+          experimentAlias: item.experimentAlias,
+        },
+        regexString,
+        shouldIncludeExperimentName
+      );
+    });
+  },
+
+  matchFilter(
+    filter: DiscreteFilter | IntervalFilter,
+    value: number | DiscreteHparamValue | undefined
+  ): boolean {
+    if (value === undefined) {
+      return filter.includeUndefined;
+    }
+    if (filter.type === DomainType.DISCRETE) {
+      // (upcast to work around bad TypeScript libdefs)
+      const values: Readonly<Array<typeof filter.filterValues[number]>> =
+        filter.filterValues;
+      return values.includes(value);
+    } else if (filter.type === DomainType.INTERVAL) {
+      // Auto-added to unblock TS5.0 migration
+      //  @ts-ignore(go/ts50upgrade): Operator '<=' cannot be applied to types
+      //  'number' and 'string | number | boolean'.
+      // Auto-added to unblock TS5.0 migration
+      //  @ts-ignore(go/ts50upgrade): Operator '<=' cannot be applied to types
+      //  'string | number | boolean' and 'number'.
+      return (
+        filter.filterLowerValue <= value && value <= filter.filterUpperValue
+      );
+    }
+    return false;
+  },
+
+  filterRunItemsByHparamAndMetricFilter(
+    runItems: RunTableItem[],
+    hparamFilters: Map<string, IntervalFilter | DiscreteFilter>,
+    metricFilters: Map<string, IntervalFilter>
+  ) {
+    return runItems.filter(({hparams, metrics}) => {
+      const hparamMatches = [...hparamFilters.entries()].every(
+        ([hparamName, filter]) => {
+          const value = hparams.get(hparamName);
+          return utils.matchFilter(filter, value);
+        }
+      );
+
+      return (
+        hparamMatches &&
+        [...metricFilters.entries()].every(([metricTag, filter]) => {
+          const value = metrics.get(metricTag);
+          return utils.matchFilter(filter, value);
+        })
+      );
+    });
+  },
+};
 
 export function getFilteredRenderableRuns(experimentIds: string[]) {
   return createSelector(
     getRunSelectorRegexFilter,
-    getRenderableRuns(experimentIds),
+    utils.getRenderableRuns(experimentIds),
     getHparamFilterMapFromExperimentIds(experimentIds),
     getMetricFilterMapFromExperimentIds(experimentIds),
-    (regexFilter, runItems, hparamFilters, metricFilters) => {
-      const regexFilteredItems = filterRunItemsByRegex(runItems, regexFilter);
+    getRouteKind,
+    (regexFilter, runItems, hparamFilters, metricFilters, routeKind) => {
+      const regexFilteredItems = utils.filterRunItemsByRegex(
+        runItems,
+        regexFilter,
+        routeKind === RouteKind.COMPARE_EXPERIMENT
+      );
 
-      return filterRunItemsByHparamAndMetricFilter(
+      return utils.filterRunItemsByHparamAndMetricFilter(
         regexFilteredItems,
         hparamFilters,
         metricFilters
@@ -233,4 +243,5 @@ export const getFilteredRenderableRunsFromRoute = createSelector(
 export const TEST_ONLY = {
   getRenderableCardIdsWithMetadata,
   getScalarTagsForRunSelection,
+  utils,
 };
