@@ -12,7 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Directive, ElementRef, HostBinding, Input} from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Directive,
+  ElementRef,
+  HostBinding,
+  Input,
+} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {firstValueFrom} from 'rxjs';
 import {map, tap} from 'rxjs/operators';
@@ -30,7 +36,10 @@ export class FeatureFlagDirective {
   // will behave the same as though [includeFeatureFlags] is unset.
   @Input() includeFeatureFlags: boolean = true;
 
-  constructor(private readonly store: Store<FeatureFlagState>) {}
+  constructor(
+    private readonly store: Store<FeatureFlagState>,
+    private readonly changeDetectorRef: ChangeDetectorRef
+  ) {}
 
   private getUrlWithFeatureFlags(url: string) {
     return this.store.select(getFeatureFlagsToSendToServer).pipe(
@@ -53,6 +62,7 @@ export class FeatureFlagDirective {
     if (href) {
       firstValueFrom(this.getUrlWithFeatureFlags(href)).then((value) => {
         this.hrefAttr = value;
+        this.changeDetectorRef.detectChanges();
       });
     }
   }
@@ -62,6 +72,7 @@ export class FeatureFlagDirective {
     if (src) {
       firstValueFrom(this.getUrlWithFeatureFlags(src)).then((value) => {
         this.srcAttr = value;
+        this.changeDetectorRef.detectChanges();
       });
     }
   }
