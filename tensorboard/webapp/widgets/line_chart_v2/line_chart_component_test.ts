@@ -1035,49 +1035,14 @@ describe('line_chart_v2/line_chart test', () => {
       expect(onViewBoxOverridden.calls.allArgs()).toEqual([[false], [true]]);
     });
 
-    it('does not update viewBox when data loaded afterward', () => {
-      const fixture = createComponent({
-        seriesData: [
-          buildSeries({
-            id: 'foo',
-            points: [],
-          }),
-        ],
-        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
-        yScaleType: ScaleType.LINEAR,
-      });
-      fixture.detectChanges();
-
-      fixture.componentInstance.userViewBox = {
-        x: [0, 1],
-        y: [0, 0.5],
-      };
-      fixture.detectChanges();
-
-      fixture.componentInstance.seriesData = [
-        buildSeries({
-          id: 'foo',
-          points: [
-            {x: 0, y: 0},
-            {x: 1, y: -1},
-            {x: 2, y: 1},
-          ],
-        }),
-      ];
-      fixture.detectChanges();
-
-      expect(fixture.componentInstance.chart.viewBox).toEqual({
-        x: [0, 1],
-        y: [0, 0.5],
-      });
-    });
-
-    it('updates viewBox with userView when the data loads later', () => {
+    it('does not change viewBox when data loaded afterward', () => {
       const fixture = createComponent({
         seriesData: [],
         seriesMetadataMap: {},
         yScaleType: ScaleType.LINEAR,
       });
+      fixture.detectChanges();
+
       fixture.componentInstance.userViewBox = {
         x: [0, 1],
         y: [0, 0.5],
