@@ -261,6 +261,48 @@ describe('persistent_settings data_source test', () => {
           ],
         });
       });
+
+      it('resets singleSelectionEnabled if old ColumnHeader is stored', async () => {
+        getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
+          JSON.stringify({
+            singleSelectionHeaders: [
+              {
+                type: ColumnHeaderType.RUN,
+                enabled: true,
+              },
+              {
+                type: ColumnHeaderType.VALUE,
+                enabled: false,
+              },
+            ],
+          })
+        );
+
+        const actual = await firstValueFrom(dataSource.getSettings());
+
+        expect(actual).toEqual({});
+      });
+
+      it('resets rangeSelectionEnabled if old ColumnHeader is stored', async () => {
+        getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
+          JSON.stringify({
+            rangeSelectionHeaders: [
+              {
+                type: ColumnHeaderType.RUN,
+                enabled: true,
+              },
+              {
+                type: ColumnHeaderType.MIN_VALUE,
+                enabled: true,
+              },
+            ],
+          })
+        );
+
+        const actual = await firstValueFrom(dataSource.getSettings());
+
+        expect(actual).toEqual({});
+      });
     });
 
     describe('#setSettings', () => {
