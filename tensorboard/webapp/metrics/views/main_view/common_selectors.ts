@@ -44,6 +44,7 @@ import {getNonEmptyCardIdsWithMetadata, TagMetadata} from '../../store';
 import {compareTagNames} from '../../utils';
 import {CardIdWithMetadata} from '../metrics_view_types';
 import {RouteKind} from '../../../app_routing/types';
+import {Run} from '../../../runs/types';
 
 export const getScalarTagsForRunSelection = createSelector(
   getMetricsTagMetadata,
@@ -114,7 +115,13 @@ const utils = {
       getCurrentRouteRunSelection,
       getRunColorMap,
       getExperimentIdToExperimentAliasMap,
-      (runs, experimentNames, selectionMap, colorMap, experimentIdToAlias) => {
+      (
+        runs,
+        experimentNames,
+        selectionMap,
+        colorMap,
+        experimentIdToAlias
+      ): Array<RunTableItem & {run: Run & {experimentId: string}}> => {
         return runs.map((run) => {
           const hparamMap: RunTableItem['hparams'] = new Map();
           (run.hparams || []).forEach((hparam) => {
@@ -142,7 +149,7 @@ const utils = {
     runItems: RunTableItem[],
     regexString: string,
     shouldIncludeExperimentName: boolean
-  ) {
+  ): RunTableItem[] {
     if (!regexString) {
       return runItems;
     }
@@ -172,14 +179,10 @@ const utils = {
         filter.filterValues;
       return values.includes(value);
     } else if (filter.type === DomainType.INTERVAL) {
-      // Auto-added to unblock TS5.0 migration
-      //  @ts-ignore(go/ts50upgrade): Operator '<=' cannot be applied to types
-      //  'number' and 'string | number | boolean'.
-      // Auto-added to unblock TS5.0 migration
-      //  @ts-ignore(go/ts50upgrade): Operator '<=' cannot be applied to types
-      //  'string | number | boolean' and 'number'.
       return (
-        filter.filterLowerValue <= value && value <= filter.filterUpperValue
+        typeof value === 'number' &&
+        filter.filterLowerValue <= value &&
+        value <= filter.filterUpperValue
       );
     }
     return false;
@@ -198,13 +201,14 @@ const utils = {
         }
       );
 
-      return (
-        hparamMatches &&
-        [...metricFilters.entries()].every(([metricTag, filter]) => {
+      const metricMatches = [...metricFilters.entries()].every(
+        ([metricTag, filter]) => {
           const value = metrics.get(metricTag);
           return utils.matchFilter(filter, value);
-        })
+        }
       );
+
+      return hparamMatches && metricMatches;
     });
   },
 };

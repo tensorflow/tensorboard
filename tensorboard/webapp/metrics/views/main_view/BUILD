@@ -90,6 +90,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics/views:types",
         "//tensorboard/webapp/metrics/views:utils",
         "//tensorboard/webapp/runs/views/runs_table:types",
+        "//tensorboard/webapp/runs:types",
         "//tensorboard/webapp/util:matcher",
         "//tensorboard/webapp/util:types",
         "@npm//@ngrx/store",

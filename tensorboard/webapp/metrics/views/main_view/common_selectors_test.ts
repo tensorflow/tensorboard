@@ -86,12 +86,7 @@ describe('common selectors', () => {
           id: 'run1-id',
           name: 'run1',
           startTime: 0,
-          hparams: [
-            {
-              name: 'accurracy',
-              value: 1,
-            },
-          ],
+          hparams: null,
           metrics: null,
         },
         experimentAlias: {
@@ -108,12 +103,7 @@ describe('common selectors', () => {
           id: 'run2-id',
           name: 'run2',
           startTime: 0,
-          hparams: [
-            {
-              name: 'accurracy',
-              value: 1,
-            },
-          ],
+          hparams: null,
           metrics: null,
         },
         experimentAlias: {
@@ -130,12 +120,7 @@ describe('common selectors', () => {
           id: 'run1-id',
           name: 'run1',
           startTime: 0,
-          hparams: [
-            {
-              name: 'accurracy',
-              value: 1,
-            },
-          ],
+          hparams: null,
           metrics: null,
         },
         experimentAlias: {
@@ -584,7 +569,7 @@ describe('common selectors', () => {
       ).toBeFalse();
     });
 
-    it('returns values including value when filter type is DISCRETE', () => {
+    it('returns values including value when filter type is DISCRETE and values are strings', () => {
       const filter: DiscreteFilter = {
         type: DomainType.DISCRETE,
         includeUndefined: false,
@@ -593,6 +578,40 @@ describe('common selectors', () => {
       };
       expect(selectors.TEST_ONLY.utils.matchFilter(filter, 'foo')).toBeTrue();
       expect(selectors.TEST_ONLY.utils.matchFilter(filter, 'bar')).toBeFalse();
+    });
+
+    it('returns values including value when filter type is DISCRETE and values are numbers', () => {
+      const filter: DiscreteFilter = {
+        type: DomainType.DISCRETE,
+        includeUndefined: false,
+        possibleValues: [],
+        filterValues: [0, 1, 2, 3, 4],
+      };
+      expect(selectors.TEST_ONLY.utils.matchFilter(filter, 0)).toBeTrue();
+      expect(selectors.TEST_ONLY.utils.matchFilter(filter, 2)).toBeTrue();
+      expect(selectors.TEST_ONLY.utils.matchFilter(filter, 5)).toBeFalse();
+    });
+
+    it('returns values including value when filter type is DISCRETE and values are booleans', () => {
+      const filter: DiscreteFilter = {
+        type: DomainType.DISCRETE,
+        includeUndefined: false,
+        possibleValues: [],
+        filterValues: [true, false],
+      };
+      expect(selectors.TEST_ONLY.utils.matchFilter(filter, true)).toBeTrue();
+      expect(selectors.TEST_ONLY.utils.matchFilter(filter, false)).toBeTrue();
+      expect(
+        selectors.TEST_ONLY.utils.matchFilter(
+          {
+            type: DomainType.DISCRETE,
+            includeUndefined: false,
+            possibleValues: [],
+            filterValues: [false],
+          },
+          false
+        )
+      ).toBeTrue();
     });
 
     it('checks if value is within bounds when filter type is INTERVAL', () => {
@@ -850,6 +869,40 @@ describe('common selectors', () => {
           ])
         ).length
       ).toEqual(0);
+    });
+
+    it('filters by both hparams and metrics', () => {
+      expect(
+        selectors.TEST_ONLY.utils.filterRunItemsByHparamAndMetricFilter(
+          runTableItems,
+          new Map([
+            [
+              'lr',
+              {
+                type: DomainType.INTERVAL,
+                minValue: 0,
+                maxValue: 10,
+                filterLowerValue: 2,
+                filterUpperValue: 5,
+                includeUndefined: true,
+              },
+            ],
+          ]),
+          new Map([
+            [
+              'foo',
+              {
+                type: DomainType.INTERVAL,
+                minValue: 0,
+                maxValue: 10,
+                filterLowerValue: 2,
+                filterUpperValue: 3,
+                includeUndefined: false,
+              },
+            ],
+          ])
+        ).length
+      ).toEqual(1);
     });
   });
 
