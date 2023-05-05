@@ -229,24 +229,19 @@ export class LineChartComponent
       this.useDarkModeUpdated = true;
     }
 
-    // Do not set isViewBoxOverridden to false until updated userViewBox has been reflected on the lineChart.
-    if (this.scaleUpdated && !this.userViewBoxUpdated) {
-      this.setIsViewBoxOverridden(false);
+    if (changes['userViewBox']) {
+      this.userViewBoxUpdated = true;
     }
 
-    if (changes['userViewBox']) {
+    if (this.userViewBoxUpdated) {
+      this.setIsViewBoxOverridden(!!this.userViewBox);
+    } else if (this.scaleUpdated) {
       this.setIsViewBoxOverridden(false);
-      this.isViewBoxChanged = true;
-
-      if (this.userViewBox) {
-        this.setIsViewBoxOverridden(true);
-        this.viewBox = this.userViewBox;
-        this.userViewBoxUpdated = true;
-      }
     }
 
     this.isViewBoxChanged =
       this.isViewBoxChanged ||
+      this.userViewBoxUpdated ||
       this.scaleUpdated ||
       (!this.isViewBoxOverridden && this.shouldUpdateDefaultViewBox(changes));
 
@@ -476,7 +471,9 @@ export class LineChartComponent
       this.userViewBoxUpdated = false;
     }
 
-    if (!this.isViewBoxOverridden && this.fixedViewBox) {
+    if (this.isViewBoxOverridden && !!this.userViewBox) {
+      this.viewBox = this.userViewBox;
+    } else if (!this.isViewBoxOverridden && this.fixedViewBox) {
       this.viewBox = this.fixedViewBox;
     } else if (!this.isViewBoxOverridden && this.isViewBoxChanged) {
       const dataExtent = computeDataSeriesExtent(

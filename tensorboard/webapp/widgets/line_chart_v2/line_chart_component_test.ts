@@ -1072,6 +1072,36 @@ describe('line_chart_v2/line_chart test', () => {
       });
     });
 
+    it('updates viewBox with userView when the data loads later', () => {
+      const fixture = createComponent({
+        seriesData: [],
+        seriesMetadataMap: {},
+        yScaleType: ScaleType.LINEAR,
+      });
+      fixture.componentInstance.userViewBox = {
+        x: [0, 1],
+        y: [0, 0.5],
+      };
+      fixture.detectChanges();
+
+      fixture.componentInstance.seriesData = [
+        buildSeries({
+          id: 'foo',
+          points: [
+            {x: 0, y: 0},
+            {x: 1, y: -1},
+            {x: 2, y: 1},
+          ],
+        }),
+      ];
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.chart.viewBox).toEqual({
+        x: [0, 1],
+        y: [0, 0.5],
+      });
+    });
+
     it('updates viewBox with data extent when userView is null', () => {
       const fixture = createComponent({
         seriesData: [
