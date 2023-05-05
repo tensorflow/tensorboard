@@ -695,16 +695,12 @@ describe('common selectors', () => {
 
   describe('getRenderableRuns', () => {
     it('returns all runs associated with experiment', () => {
-      const exp1Result = selectors.TEST_ONLY.utils.getRenderableRuns(['exp1'])(
-        state
-      );
+      const exp1Result = selectors.getRenderableRuns(['exp1'])(state);
       expect(exp1Result.length).toEqual(2);
       expect(exp1Result[0].run).toEqual({...run1, experimentId: 'exp1'});
       expect(exp1Result[1].run).toEqual({...run2, experimentId: 'exp1'});
 
-      const exp2Result = selectors.TEST_ONLY.utils.getRenderableRuns(['exp2'])(
-        state
-      );
+      const exp2Result = selectors.getRenderableRuns(['exp2'])(state);
       expect(exp2Result.length).toEqual(3);
       expect(exp2Result[0].run).toEqual({...run2, experimentId: 'exp2'});
       expect(exp2Result[1].run).toEqual({...run3, experimentId: 'exp2'});
@@ -712,10 +708,7 @@ describe('common selectors', () => {
     });
 
     it('returns two runs when a run is associated with multiple experiments', () => {
-      const result = selectors.TEST_ONLY.utils.getRenderableRuns([
-        'exp1',
-        'exp2',
-      ])(state);
+      const result = selectors.getRenderableRuns(['exp1', 'exp2'])(state);
       expect(result.length).toEqual(5);
       expect(result[0].run).toEqual({...run1, experimentId: 'exp1'});
       expect(result[1].run).toEqual({...run2, experimentId: 'exp1'});
@@ -725,9 +718,7 @@ describe('common selectors', () => {
     });
 
     it('returns empty list when no experiments are provided', () => {
-      expect(selectors.TEST_ONLY.utils.getRenderableRuns([])(state)).toEqual(
-        []
-      );
+      expect(selectors.getRenderableRuns([])(state)).toEqual([]);
     });
   });
 

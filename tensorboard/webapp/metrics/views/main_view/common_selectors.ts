@@ -108,43 +108,6 @@ export const getSortedRenderableCardIdsWithMetadata = createSelector<
 });
 
 const utils = {
-  getRenderableRuns(experimentIds: string[]) {
-    return createSelector(
-      getRunsFromExperimentIds(experimentIds),
-      getExperimentNames(experimentIds),
-      getCurrentRouteRunSelection,
-      getRunColorMap,
-      getExperimentIdToExperimentAliasMap,
-      (
-        runs,
-        experimentNames,
-        selectionMap,
-        colorMap,
-        experimentIdToAlias
-      ): Array<RunTableItem & {run: Run & {experimentId: string}}> => {
-        return runs.map((run) => {
-          const hparamMap: RunTableItem['hparams'] = new Map();
-          (run.hparams || []).forEach((hparam) => {
-            hparamMap.set(hparam.name, hparam.value);
-          });
-          const metricMap: RunTableItem['metrics'] = new Map();
-          (run.metrics || []).forEach((metric) => {
-            metricMap.set(metric.tag, metric.value);
-          });
-          return {
-            run,
-            experimentName: experimentNames[run.experimentId] || '',
-            experimentAlias: experimentIdToAlias[run.experimentId],
-            selected: Boolean(selectionMap && selectionMap.get(run.id)),
-            runColor: colorMap[run.id],
-            hparams: hparamMap,
-            metrics: metricMap,
-          };
-        });
-      }
-    );
-  },
-
   filterRunItemsByRegex(
     runItems: RunTableItem[],
     regexString: string,
@@ -213,10 +176,47 @@ const utils = {
   },
 };
 
+export function getRenderableRuns(experimentIds: string[]) {
+  return createSelector(
+    getRunsFromExperimentIds(experimentIds),
+    getExperimentNames(experimentIds),
+    getCurrentRouteRunSelection,
+    getRunColorMap,
+    getExperimentIdToExperimentAliasMap,
+    (
+      runs,
+      experimentNames,
+      selectionMap,
+      colorMap,
+      experimentIdToAlias
+    ): Array<RunTableItem & {run: Run & {experimentId: string}}> => {
+      return runs.map((run) => {
+        const hparamMap: RunTableItem['hparams'] = new Map();
+        (run.hparams || []).forEach((hparam) => {
+          hparamMap.set(hparam.name, hparam.value);
+        });
+        const metricMap: RunTableItem['metrics'] = new Map();
+        (run.metrics || []).forEach((metric) => {
+          metricMap.set(metric.tag, metric.value);
+        });
+        return {
+          run,
+          experimentName: experimentNames[run.experimentId] || '',
+          experimentAlias: experimentIdToAlias[run.experimentId],
+          selected: Boolean(selectionMap && selectionMap.get(run.id)),
+          runColor: colorMap[run.id],
+          hparams: hparamMap,
+          metrics: metricMap,
+        };
+      });
+    }
+  );
+}
+
 export function getFilteredRenderableRuns(experimentIds: string[]) {
   return createSelector(
     getRunSelectorRegexFilter,
-    utils.getRenderableRuns(experimentIds),
+    getRenderableRuns(experimentIds),
     getHparamFilterMapFromExperimentIds(experimentIds),
     getMetricFilterMapFromExperimentIds(experimentIds),
     getRouteKind,
