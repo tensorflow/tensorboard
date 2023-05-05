@@ -50,6 +50,7 @@ import {
   RunToSeries,
   TagMetadata,
 } from './metrics_types';
+import {Extent} from '../../widgets/line_chart_v2/lib/public_types';
 
 const selectMetricsState =
   createFeatureSelector<MetricsState>(METRICS_FEATURE_KEY);
@@ -534,6 +535,16 @@ export const getMetricsCardDataMinMax = createSelector(
   getCardStateMap,
   (cardStateMap: CardStateMap, cardId: CardId): MinMaxStep | undefined => {
     return cardStateMap[cardId]?.dataMinMax;
+  }
+);
+
+/**
+ * Returns user defined view extent. Null means no zoom in, user box is the same as data extent.
+ */
+export const getMetricsCardUserViewBox = createSelector(
+  getCardStateMap,
+  (cardStateMap: CardStateMap, cardId: CardId): Extent | null => {
+    return cardStateMap[cardId]?.userViewBox ?? null;
   }
 );
 

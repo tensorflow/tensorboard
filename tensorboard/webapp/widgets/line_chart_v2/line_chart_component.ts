@@ -137,11 +137,13 @@ export class LineChartComponent
   @Input()
   tooltipTemplate?: TooltipTemplate;
 
+  @Input() userViewBox: Extent | null = null;
+
   @Input()
   lineOnly?: boolean = false;
 
   @Output()
-  viewBoxChanged = new EventEmitter<Extent>();
+  viewBoxChanged = new EventEmitter<Extent | null>();
 
   private onViewBoxOverridden = new ReplaySubject<boolean>(1);
 
@@ -183,6 +185,7 @@ export class LineChartComponent
   private isFixedViewBoxUpdated = false;
   private isViewBoxOverridden = false;
   private useDarkModeUpdated = false;
+  private userViewBoxUpdated = false;
   // Must set the default view box since it is an optional input and won't trigger
   // onChanges.
   private isViewBoxChanged = true;
@@ -226,12 +229,19 @@ export class LineChartComponent
       this.useDarkModeUpdated = true;
     }
 
-    if (this.scaleUpdated) {
+    if (changes['userViewBox']) {
+      this.userViewBoxUpdated = true;
+    }
+
+    if (this.userViewBoxUpdated) {
+      this.setIsViewBoxOverridden(!!this.userViewBox);
+    } else if (this.scaleUpdated) {
       this.setIsViewBoxOverridden(false);
     }
 
     this.isViewBoxChanged =
       this.isViewBoxChanged ||
+      this.userViewBoxUpdated ||
       this.scaleUpdated ||
       (!this.isViewBoxOverridden && this.shouldUpdateDefaultViewBox(changes));
 
@@ -457,7 +467,13 @@ export class LineChartComponent
       this.lineChart.setUseDarkMode(this.useDarkMode);
     }
 
-    if (!this.isViewBoxOverridden && this.fixedViewBox) {
+    if (this.userViewBoxUpdated) {
+      this.userViewBoxUpdated = false;
+    }
+
+    if (this.isViewBoxOverridden && !!this.userViewBox) {
+      this.viewBox = this.userViewBox;
+    } else if (!this.isViewBoxOverridden && this.fixedViewBox) {
       this.viewBox = this.fixedViewBox;
     } else if (!this.isViewBoxOverridden && this.isViewBoxChanged) {
       const dataExtent = computeDataSeriesExtent(
@@ -487,18 +503,11 @@ export class LineChartComponent
   }
 
   onViewBoxChanged({dataExtent}: {dataExtent: Extent}) {
-    this.setIsViewBoxOverridden(true);
-    this.isViewBoxChanged = true;
-    this.viewBox = dataExtent;
-    this.updateLineChart();
     this.viewBoxChanged.emit(dataExtent);
   }
 
   viewBoxReset() {
-    this.setIsViewBoxOverridden(false);
-    this.isViewBoxChanged = true;
-    this.updateLineChart();
-    this.viewBoxChanged.emit(this.viewBox);
+    this.viewBoxChanged.emit(null);
   }
 
   private setIsViewBoxOverridden(newValue: boolean): void {

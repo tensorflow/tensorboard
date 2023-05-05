@@ -395,6 +395,7 @@ tf_ts_library(
         "//tensorboard/webapp/widgets/intersection_observer:intersection_observer_testing",
         "//tensorboard/webapp/widgets/line_chart_v2",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:formatter",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:scale",
         "//tensorboard/webapp/widgets/text:truncated_path",
         "@npm//@angular/core",

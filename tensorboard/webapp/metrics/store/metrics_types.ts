@@ -138,7 +138,7 @@ export enum CardFeatureOverride {
 
 export type CardState = {
   dataMinMax: MinMaxStep;
-  userViewBox: Extent;
+  userViewBox: Extent | null;
   timeSelection: TimeSelection;
   stepSelectionOverride: CardFeatureOverride;
   rangeSelectionOverride: CardFeatureOverride;

@@ -98,6 +98,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() stepOrLinkedTimeSelection: TimeSelection | undefined;
   @Input() isProspectiveFobFeatureEnabled: Boolean = false;
   @Input() minMaxStep!: MinMaxStep;
+  @Input() userViewBox!: Extent | null;
   @Input() columnHeaders!: ColumnHeader[];
   @Input() rangeEnabled!: boolean;
 
@@ -113,7 +114,7 @@ export class ScalarCardComponent<Downloader> {
   @Output() editColumnHeaders = new EventEmitter<HeaderEditInfo>();
   @Output() openTableEditMenuToMode = new EventEmitter<DataTableMode>();
 
-  @Output() onLineChartZoom = new EventEmitter<Extent>();
+  @Output() onLineChartZoom = new EventEmitter<Extent | null>();
 
   @Output() onCardStateChanged = new EventEmitter<Partial<CardState>>();
 

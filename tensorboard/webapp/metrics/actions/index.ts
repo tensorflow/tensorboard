@@ -220,8 +220,8 @@ export const timeSelectionChanged = createAction(
 );
 
 export const cardViewBoxChanged = createAction(
-  '[Metrics] Card View Box Changed',
-  props<{cardId: CardId; viewBox: Extent}>()
+  '[Metrics] Card User View Box Changed',
+  props<{cardId: CardId; userViewBox: Extent | null}>()
 );
 
 export const timeSelectionCleared = createAction(

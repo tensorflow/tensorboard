@@ -51,6 +51,7 @@ import {
   getIsLinkedTimeProspectiveFobEnabled,
   getMetricsCardDataMinMax,
   getMetricsCardTimeSelection,
+  getMetricsCardUserViewBox,
   getMetricsLinkedTimeEnabled,
   getMetricsLinkedTimeSelection,
   getMetricsCardRangeSelectionEnabled,
@@ -174,6 +175,7 @@ function isMinMaxStepValid(minMax: MinMaxStep | undefined): boolean {
       [forceSvg]="forceSvg$ | async"
       [columnCustomizationEnabled]="columnCustomizationEnabled$ | async"
       [minMaxStep]="minMaxSteps$ | async"
+      [userViewBox]="userViewBox$ | async"
       [columnHeaders]="columnHeaders$ | async"
       [rangeEnabled]="rangeEnabled$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
@@ -221,6 +223,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   linkedTimeSelection$?: Observable<TimeSelectionView | null>;
   columnHeaders$?: Observable<ColumnHeader[]>;
   minMaxSteps$?: Observable<MinMaxStep | undefined>;
+  userViewBox$?: Observable<Extent | null>;
   stepOrLinkedTimeSelection$?: Observable<TimeSelection | undefined>;
   cardState$?: Observable<Partial<CardState>>;
   rangeEnabled$?: Observable<boolean>;
@@ -376,6 +379,11 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
         });
       }),
       shareReplay(1)
+    );
+
+    this.userViewBox$ = this.store.select(
+      getMetricsCardUserViewBox,
+      this.cardId
     );
 
     this.minMaxSteps$ = combineLatest([
@@ -657,10 +665,10 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.store.dispatch(stepSelectorToggled({affordance, cardId: this.cardId}));
   }
 
-  onLineChartZoom(lineChartViewBox: Extent) {
+  onLineChartZoom(lineChartViewBox: Extent | null) {
     this.store.dispatch(
       cardViewBoxChanged({
-        viewBox: lineChartViewBox,
+        userViewBox: lineChartViewBox,
         cardId: this.cardId,
       })
     );

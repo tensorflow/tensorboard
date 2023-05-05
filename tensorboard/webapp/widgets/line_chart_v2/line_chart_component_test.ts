@@ -62,6 +62,7 @@ class FakeGridComponent {
       [yScaleType]="yScaleType"
       [fixedViewBox]="fixedViewBox"
       [useDarkMode]="useDarkMode"
+      [userViewBox]="userViewBox"
       (viewBoxChanged)="viewBoxChanged.emit($event)"
     ></line-chart>
   `,
@@ -100,6 +101,9 @@ class TestableComponent {
   @Input()
   lineOnly: boolean = false;
 
+  @Input()
+  userViewBox: Extent | null = null;
+
   @Output()
   viewBoxChanged = new EventEmitter();
 
@@ -108,6 +112,8 @@ class TestableComponent {
 
   triggerViewBoxChange(viewBox: Extent) {
     this.chart.onViewBoxChanged({dataExtent: viewBox});
+    // Workaround to re-render the line chart.
+    this.userViewBox = viewBox;
   }
 }
 
@@ -119,6 +125,7 @@ describe('line_chart_v2/line_chart test', () => {
   let updateMetadataSpy: jasmine.Spy;
   let updateDataSpy: jasmine.Spy;
   let updateViewBoxSpy: jasmine.Spy;
+  let updateUserViewBoxSpy: jasmine.Spy;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -366,6 +373,7 @@ describe('line_chart_v2/line_chart test', () => {
       x: [-5, 5],
       y: [0, 10],
     });
+    fixture.detectChanges();
     expect(updateViewBoxSpy).toHaveBeenCalledTimes(2);
 
     fixture.componentInstance.yScaleType = ScaleType.TIME;
@@ -430,6 +438,32 @@ describe('line_chart_v2/line_chart test', () => {
     expect(fixture.componentInstance.viewBoxChanged.emit).toHaveBeenCalledTimes(
       2
     );
+  });
+
+  it('emits viewBoxChanged event with null when viewbox is reset', () => {
+    const fixture = createComponent({
+      seriesData: [
+        buildSeries({
+          id: 'foo',
+          points: [
+            {x: 0, y: 0},
+            {x: 1, y: -1},
+            {x: 2, y: 1},
+          ],
+        }),
+      ],
+      seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+      yScaleType: ScaleType.LINEAR,
+    });
+    fixture.detectChanges();
+    const viewBoxChangedSpy = spyOn(
+      fixture.componentInstance.viewBoxChanged,
+      'emit'
+    );
+
+    fixture.componentInstance.chart.viewBoxReset();
+
+    expect(viewBoxChangedSpy).toHaveBeenCalledWith(null);
   });
 
   it('sets correct domDim and viewBox on initial render', () => {
@@ -544,12 +578,15 @@ describe('line_chart_v2/line_chart test', () => {
         seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
         yScaleType: ScaleType.LINEAR,
       });
+
       fixture.detectChanges();
 
       fixture.componentInstance.triggerViewBoxChange({
         x: [-5, 5],
         y: [0, 10],
       });
+      fixture.detectChanges();
+
       expect(updateViewBoxSpy).toHaveBeenCalledTimes(2);
 
       fixture.componentInstance.seriesData = [
@@ -696,50 +733,6 @@ describe('line_chart_v2/line_chart test', () => {
           x: [-0.1, 1.1],
           y: [-0.1, 1.1],
         },
-      ]);
-    });
-  });
-
-  describe('#getIsViewBoxOverridden', () => {
-    it('emits when viewBox changes', () => {
-      const onViewBoxOverridden = jasmine.createSpy();
-      const fixture = createComponent({
-        seriesData: [
-          buildSeries({
-            id: 'foo',
-            points: [
-              {x: 0, y: 0},
-              {x: 1, y: -1},
-              {x: 2, y: 1},
-            ],
-          }),
-        ],
-        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
-        yScaleType: ScaleType.LINEAR,
-      });
-      fixture.componentInstance.yScaleType = ScaleType.LINEAR;
-      fixture.detectChanges();
-
-      fixture.componentInstance.chart
-        .getIsViewBoxOverridden()
-        .subscribe(onViewBoxOverridden);
-
-      // Initial value.
-      expect(onViewBoxOverridden).toHaveBeenCalledOnceWith(false);
-
-      fixture.componentInstance.triggerViewBoxChange({
-        x: [-5, 5],
-        y: [0, 10],
-      });
-
-      expect(onViewBoxOverridden.calls.allArgs()).toEqual([[false], [true]]);
-
-      fixture.componentInstance.yScaleType = ScaleType.TIME;
-      fixture.detectChanges();
-      expect(onViewBoxOverridden.calls.allArgs()).toEqual([
-        [false],
-        [true],
-        [false],
       ]);
     });
   });
@@ -988,6 +981,124 @@ describe('line_chart_v2/line_chart test', () => {
       expect(
         fixture.debugElement.query(By.css('.x-axis line-chart-axis'))
       ).toBeNull();
+    });
+  });
+
+  describe('userViewBox', () => {
+    it('updates viewBox', () => {
+      const fixture = createComponent({
+        seriesData: [
+          buildSeries({
+            id: 'foo',
+            points: [],
+          }),
+        ],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      fixture.componentInstance.userViewBox = {
+        x: [0, 1],
+        y: [0, 0.5],
+      };
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.chart.viewBox).toEqual({
+        x: [0, 1],
+        y: [0, 0.5],
+      });
+    });
+
+    it('emits getIsViewBoxOverridden', () => {
+      const onViewBoxOverridden = jasmine.createSpy();
+      const fixture = createComponent({
+        seriesData: [
+          buildSeries({
+            id: 'foo',
+            points: [],
+          }),
+        ],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      fixture.detectChanges();
+
+      fixture.componentInstance.chart
+        .getIsViewBoxOverridden()
+        .subscribe(onViewBoxOverridden);
+      expect(onViewBoxOverridden).toHaveBeenCalledOnceWith(false);
+
+      fixture.componentInstance.userViewBox = {
+        x: [0, 1],
+        y: [0, 0.5],
+      };
+      fixture.detectChanges();
+      expect(onViewBoxOverridden.calls.allArgs()).toEqual([[false], [true]]);
+    });
+
+    it('does not change viewBox when data loaded afterward', () => {
+      const fixture = createComponent({
+        seriesData: [],
+        seriesMetadataMap: {},
+        yScaleType: ScaleType.LINEAR,
+      });
+      fixture.detectChanges();
+
+      fixture.componentInstance.userViewBox = {
+        x: [0, 1],
+        y: [0, 0.5],
+      };
+      fixture.detectChanges();
+
+      fixture.componentInstance.seriesData = [
+        buildSeries({
+          id: 'foo',
+          points: [
+            {x: 0, y: 0},
+            {x: 1, y: -1},
+            {x: 2, y: 1},
+          ],
+        }),
+      ];
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.chart.viewBox).toEqual({
+        x: [0, 1],
+        y: [0, 0.5],
+      });
+    });
+
+    it('updates viewBox with data extent when userView is null', () => {
+      const fixture = createComponent({
+        seriesData: [
+          buildSeries({
+            id: 'foo',
+            points: [],
+          }),
+        ],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      fixture.detectChanges();
+
+      fixture.componentInstance.userViewBox = null;
+      fixture.detectChanges();
+
+      fixture.componentInstance.seriesData = [
+        buildSeries({
+          id: 'foo',
+          points: [
+            {x: 0, y: 0},
+            {x: 1, y: -1},
+            {x: 2, y: 1},
+          ],
+        }),
+      ];
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.chart.viewBox).toEqual({
+        x: [-0.2, 2.2],
+        y: [-1.2, 1.2],
+      });
     });
   });
 });

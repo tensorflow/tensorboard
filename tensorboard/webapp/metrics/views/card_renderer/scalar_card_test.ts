@@ -119,6 +119,7 @@ import {
   SortingOrder,
 } from './scalar_card_types';
 import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_warning_module';
+import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 
 @Component({
   selector: 'line-chart',
@@ -153,6 +154,7 @@ class TestableLineChart {
   @Input() useDarkMode?: boolean;
   @Input()
   tooltipTemplate!: TemplateRef<{data: TooltipDatum[]}>;
+  @Input() userViewBox?: Extent;
 
   @Input()
   customChartOverlayTemplate!: TemplateRef<{}>;
@@ -388,6 +390,7 @@ describe('scalar card', () => {
       selectors.getMetricsCardRangeSelectionEnabled,
       false
     );
+    store.overrideSelector(selectors.getMetricsCardUserViewBox, null);
 
     dispatchedActions = [];
     spyOn(store, 'dispatch').and.callFake((action: Action) => {
@@ -2630,24 +2633,29 @@ describe('scalar card', () => {
           x: [9.235, 30.4],
           y: [0, 100],
         });
-
         fixture.componentInstance.onLineChartZoom({
           x: [8, 31],
           y: [0, 100],
         });
+        fixture.componentInstance.onLineChartZoom(null);
+
         expect(dispatchedActions).toEqual([
           cardViewBoxChanged({
-            viewBox: {
+            userViewBox: {
               x: [9.235, 30.4],
               y: [0, 100],
             },
             cardId: 'card1',
           }),
           cardViewBoxChanged({
-            viewBox: {
+            userViewBox: {
               x: [8, 31],
               y: [0, 100],
             },
+            cardId: 'card1',
+          }),
+          cardViewBoxChanged({
+            userViewBox: null,
             cardId: 'card1',
           }),
         ]);
@@ -4159,4 +4167,20 @@ describe('scalar card', () => {
       }));
     });
   });
+
+  it('renders userViewBox', fakeAsync(() => {
+    store.overrideSelector(selectors.getMetricsCardUserViewBox, {
+      x: [0, 1],
+      y: [11, 22],
+    });
+    const fixture = createComponent('card1');
+    fixture.detectChanges();
+
+    const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
+    expect(lineChartEl).toBeTruthy();
+    expect(lineChartEl.componentInstance.userViewBox).toEqual({
+      x: [0, 1],
+      y: [11, 22],
+    });
+  }));
 });
