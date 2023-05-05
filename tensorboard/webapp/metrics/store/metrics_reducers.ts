@@ -1141,8 +1141,8 @@ const reducer = createReducer(
 
     // Updates cardStepIndex only when toggle to enable linked time.
     if (nextLinkedTimeEnabled) {
-      const {min} = state.stepMinMax;
-      const startStep = min === Infinity ? 0 : min;
+      const {max} = state.stepMinMax;
+      const startStep = max === -Infinity ? 0 : max;
       nextLinkedTimeSelection = state.linkedTimeSelection ?? {
         start: {step: startStep},
         end: null,
@@ -1202,15 +1202,19 @@ const reducer = createReducer(
         };
       }
       if (!linkedTimeSelection.end) {
+        // Enabling range selection from single selection selects the first
+        // step as the start of the range. The previous start step from single
+        // selection is now the end step.
         linkedTimeSelection = {
-          ...linkedTimeSelection,
-          end: {step: state.stepMinMax.max},
+          start: {step: state.stepMinMax.min},
+          end: linkedTimeSelection.start,
         };
       }
     } else {
       if (linkedTimeSelection) {
+        // Disabling range selection keeps the largest step from the range.
         linkedTimeSelection = {
-          ...linkedTimeSelection,
+          start: linkedTimeSelection.end ?? linkedTimeSelection.start,
           end: null,
         };
       }
