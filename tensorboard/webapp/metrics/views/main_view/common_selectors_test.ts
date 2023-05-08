@@ -117,7 +117,7 @@ describe('common selectors', () => {
       },
       {
         run: {
-          id: 'run1-id',
+          id: 'run3-id',
           name: 'run1',
           startTime: 0,
           hparams: null,
@@ -678,7 +678,7 @@ describe('common selectors', () => {
       expect(
         selectors.TEST_ONLY.utils.filterRunItemsByRegex(
           runTableItems,
-          'run1',
+          'run[13]',
           false
         )
       ).toEqual([runTableItems[0], runTableItems[2]]);
