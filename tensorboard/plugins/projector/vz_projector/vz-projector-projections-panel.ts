@@ -376,7 +376,7 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     const wasSampled =
       dataSet == null
         ? false
-        : dataSet.dim[0] > PCA_SAMPLE_DIM || dataSet.dim[1] > PCA_SAMPLE_DIM;
+        : dataSet.dim[0] > PCA_SAMPLE_SIZE || dataSet.dim[1] > PCA_SAMPLE_DIM;
     (this.$$('#pca-sampling') as HTMLElement).style.display = wasSampled
       ? null!
       : 'none';
