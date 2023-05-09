@@ -549,7 +549,7 @@ describe('metrics selectors', () => {
         ).toBeUndefined();
       });
 
-      it('uses max step as end value if none exists', () => {
+      it('uses min step as start value if end value does not exists', () => {
         const state = appStateFromMetricsState(
           buildMetricsState({
             ...partialState,
@@ -562,7 +562,7 @@ describe('metrics selectors', () => {
                   maxStep: 10,
                 },
                 timeSelection: {
-                  start: {step: 0},
+                  start: {step: 5},
                   end: null,
                 },
               },
@@ -572,7 +572,7 @@ describe('metrics selectors', () => {
 
         expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
           start: {step: 0},
-          end: {step: 10},
+          end: {step: 5},
         });
       });
 
@@ -619,7 +619,7 @@ describe('metrics selectors', () => {
         );
 
         expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
-          start: {step: 0},
+          start: {step: 5},
           end: null,
         });
       });
@@ -642,7 +642,7 @@ describe('metrics selectors', () => {
         );
 
         expect(selectors.getMetricsCardTimeSelection(state, 'card1')).toEqual({
-          start: {step: 0},
+          start: {step: 5},
           end: null,
         });
       });
@@ -1436,7 +1436,7 @@ describe('metrics selectors', () => {
         })
       );
       expect(selectors.getMetricsLinkedTimeSelectionSetting(state)).toEqual({
-        start: {step: 0},
+        start: {step: 1000},
         end: null,
       });
     });

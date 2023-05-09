@@ -4057,8 +4057,8 @@ describe('metrics reducers', () => {
 
         const state2 = reducers(state1, actions.rangeSelectionToggled({}));
         expect(state2.linkedTimeSelection).toEqual({
-          start: {step: 100},
-          end: {step: -Infinity},
+          start: {step: Infinity},
+          end: {step: 100},
         });
       });
 
@@ -4073,7 +4073,7 @@ describe('metrics reducers', () => {
 
         const state2 = reducers(state1, actions.rangeSelectionToggled({}));
         expect(state2.linkedTimeSelection).toEqual({
-          start: {step: 100},
+          start: {step: 1000},
           end: null,
         });
       });
@@ -4358,7 +4358,7 @@ describe('metrics reducers', () => {
         });
       });
 
-      it('sets linkedTimeSelection to min step when linkedTimeSelection is null before toggling', () => {
+      it('sets linkedTimeSelection to max step when linkedTimeSelection is null before toggling', () => {
         const state1 = buildMetricsState({
           stepMinMax: {min: 10, max: 100},
         });
@@ -4366,7 +4366,7 @@ describe('metrics reducers', () => {
         const state2 = reducers(state1, actions.linkedTimeToggled({}));
 
         expect(state2.linkedTimeSelection).toEqual({
-          start: {step: 10},
+          start: {step: 100},
           end: null,
         });
       });

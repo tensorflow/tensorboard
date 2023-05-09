@@ -3971,7 +3971,7 @@ describe('scalar card', () => {
         );
         const fakeEvent = new MouseEvent('mousemove', {
           clientX: 25 + controllerStartPosition,
-          movementX: 1,
+          movementX: -1,
         });
         testController.mouseMove(fakeEvent);
 

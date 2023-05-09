@@ -440,7 +440,7 @@ export const getMetricsLinkedTimeSelectionSetting = createSelector(
     if (!state.linkedTimeSelection) {
       return {
         start: {
-          step: stepMinMax.min,
+          step: stepMinMax.max,
         },
         end: null,
       };
@@ -599,15 +599,33 @@ export const getMetricsCardTimeSelection = createSelector(
       globalRangeSelectionEnabled
     );
 
-    const startStep = cardState.timeSelection?.start.step ?? minMaxStep.minStep;
-    const endStep = cardState.timeSelection?.end?.step ?? minMaxStep.maxStep;
+    let timeSelection = cardState.timeSelection;
+    if (!timeSelection) {
+      timeSelection = {
+        start: {step: minMaxStep.minStep},
+        end: {step: minMaxStep.maxStep},
+      };
+    }
+    if (rangeSelectionEnabled) {
+      if (!timeSelection.end) {
+        // Enabling range selection from single selection selects the first
+        // step as the start of the range. The previous start step from single
+        // selection is now the end step.
+        timeSelection = {
+          start: {step: minMaxStep.minStep},
+          end: timeSelection.start,
+        };
+      }
+    } else {
+      // Disabling range selection keeps the largest step from the range.
+      timeSelection = {
+        start: timeSelection.end ?? timeSelection.start,
+        end: null,
+      };
+    }
 
-    // The default time selection
     return formatTimeSelection(
-      {
-        start: {step: startStep},
-        end: {step: endStep},
-      },
+      timeSelection,
       minMaxStep,
       rangeSelectionEnabled
     );
