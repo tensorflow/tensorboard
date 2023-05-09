@@ -18,12 +18,33 @@ import {
   getCurrentRouteRunSelection,
   getMetricsHideEmptyCards,
   getMetricsTagMetadata,
+  getExperimentIdsFromRoute,
+  getExperimentIdToExperimentAliasMap,
+  getExperimentNames,
+  getRunColorMap,
+  getRunSelectorRegexFilter,
+  getRouteKind,
+  getRunsFromExperimentIds,
 } from '../../../selectors';
 import {DeepReadonly} from '../../../util/types';
+import {
+  getHparamFilterMapFromExperimentIds,
+  getMetricFilterMapFromExperimentIds,
+} from '../../../hparams/_redux/hparams_selectors';
+import {
+  DiscreteFilter,
+  DiscreteHparamValue,
+  DomainType,
+  IntervalFilter,
+} from '../../../hparams/types';
+import {RunTableItem} from '../../../runs/views/runs_table/types';
+import {matchRunToRegex} from '../../../util/matcher';
 import {isSingleRunPlugin, PluginType} from '../../data_source';
 import {getNonEmptyCardIdsWithMetadata, TagMetadata} from '../../store';
 import {compareTagNames} from '../../utils';
 import {CardIdWithMetadata} from '../metrics_view_types';
+import {RouteKind} from '../../../app_routing/types';
+import {Run} from '../../../runs/types';
 
 export const getScalarTagsForRunSelection = createSelector(
   getMetricsTagMetadata,
@@ -86,7 +107,145 @@ export const getSortedRenderableCardIdsWithMetadata = createSelector<
   });
 });
 
+const utils = {
+  filterRunItemsByRegex(
+    runItems: RunTableItem[],
+    regexString: string,
+    shouldIncludeExperimentName: boolean
+  ): RunTableItem[] {
+    if (!regexString) {
+      return runItems;
+    }
+
+    return runItems.filter((item) => {
+      return matchRunToRegex(
+        {
+          runName: item.run.name,
+          experimentAlias: item.experimentAlias,
+        },
+        regexString,
+        shouldIncludeExperimentName
+      );
+    });
+  },
+
+  matchFilter(
+    filter: DiscreteFilter | IntervalFilter,
+    value: number | DiscreteHparamValue | undefined
+  ): boolean {
+    if (value === undefined) {
+      return filter.includeUndefined;
+    }
+    if (filter.type === DomainType.DISCRETE) {
+      // (upcast to work around bad TypeScript libdefs)
+      const values: Readonly<Array<typeof filter.filterValues[number]>> =
+        filter.filterValues;
+      return values.includes(value);
+    } else if (filter.type === DomainType.INTERVAL) {
+      return (
+        typeof value === 'number' &&
+        filter.filterLowerValue <= value &&
+        value <= filter.filterUpperValue
+      );
+    }
+    return false;
+  },
+
+  filterRunItemsByHparamAndMetricFilter(
+    runItems: RunTableItem[],
+    hparamFilters: Map<string, IntervalFilter | DiscreteFilter>,
+    metricFilters: Map<string, IntervalFilter>
+  ) {
+    return runItems.filter(({hparams, metrics}) => {
+      const hparamMatches = [...hparamFilters.entries()].every(
+        ([hparamName, filter]) => {
+          const value = hparams.get(hparamName);
+          return utils.matchFilter(filter, value);
+        }
+      );
+
+      const metricMatches = [...metricFilters.entries()].every(
+        ([metricTag, filter]) => {
+          const value = metrics.get(metricTag);
+          return utils.matchFilter(filter, value);
+        }
+      );
+
+      return hparamMatches && metricMatches;
+    });
+  },
+};
+
+export function getRenderableRuns(experimentIds: string[]) {
+  return createSelector(
+    getRunsFromExperimentIds(experimentIds),
+    getExperimentNames(experimentIds),
+    getCurrentRouteRunSelection,
+    getRunColorMap,
+    getExperimentIdToExperimentAliasMap,
+    (
+      runs,
+      experimentNames,
+      selectionMap,
+      colorMap,
+      experimentIdToAlias
+    ): Array<RunTableItem & {run: Run & {experimentId: string}}> => {
+      return runs.map((run) => {
+        const hparamMap: RunTableItem['hparams'] = new Map();
+        (run.hparams || []).forEach((hparam) => {
+          hparamMap.set(hparam.name, hparam.value);
+        });
+        const metricMap: RunTableItem['metrics'] = new Map();
+        (run.metrics || []).forEach((metric) => {
+          metricMap.set(metric.tag, metric.value);
+        });
+        return {
+          run,
+          experimentName: experimentNames[run.experimentId] || '',
+          experimentAlias: experimentIdToAlias[run.experimentId],
+          selected: Boolean(selectionMap && selectionMap.get(run.id)),
+          runColor: colorMap[run.id],
+          hparams: hparamMap,
+          metrics: metricMap,
+        };
+      });
+    }
+  );
+}
+
+export function getFilteredRenderableRuns(experimentIds: string[]) {
+  return createSelector(
+    getRunSelectorRegexFilter,
+    getRenderableRuns(experimentIds),
+    getHparamFilterMapFromExperimentIds(experimentIds),
+    getMetricFilterMapFromExperimentIds(experimentIds),
+    getRouteKind,
+    (regexFilter, runItems, hparamFilters, metricFilters, routeKind) => {
+      const regexFilteredItems = utils.filterRunItemsByRegex(
+        runItems,
+        regexFilter,
+        routeKind === RouteKind.COMPARE_EXPERIMENT
+      );
+
+      return utils.filterRunItemsByHparamAndMetricFilter(
+        regexFilteredItems,
+        hparamFilters,
+        metricFilters
+      );
+    }
+  );
+}
+
+export const getFilteredRenderableRunsFromRoute = createSelector(
+  (state) => state,
+  getExperimentIdsFromRoute,
+  (state, experimentIds) => {
+    return getFilteredRenderableRuns(experimentIds || [])(state);
+  }
+);
+
 export const TEST_ONLY = {
   getRenderableCardIdsWithMetadata,
   getScalarTagsForRunSelection,
+  utils,
 };
