@@ -2834,21 +2834,21 @@ describe('scalar card', () => {
       expect(data).toEqual([
         {
           id: 'run1',
-          COLOR: '#fff',
-          RELATIVE_TIME: 1000,
-          RUN: 'run1',
-          STEP: 2,
-          VALUE: 10,
-          SMOOTHED: 10,
+          color: '#fff',
+          relativeTime: 1000,
+          run: 'run1',
+          step: 2,
+          value: 10,
+          smoothed: 10,
         },
         {
           id: 'run2',
-          COLOR: '#fff',
-          RELATIVE_TIME: 1000,
-          RUN: 'run2',
-          STEP: 2,
-          VALUE: 10,
-          SMOOTHED: 10,
+          color: '#fff',
+          relativeTime: 1000,
+          run: 'run2',
+          step: 2,
+          value: 10,
+          smoothed: 10,
         },
       ]);
     }));
@@ -2899,37 +2899,37 @@ describe('scalar card', () => {
       expect(data).toEqual([
         {
           id: 'run1',
-          COLOR: '#fff',
-          RUN: 'run1',
-          VALUE_CHANGE: 19,
-          START_STEP: 1,
-          END_STEP: 3,
-          START_VALUE: 1,
-          END_VALUE: 20,
-          MIN_VALUE: 1,
-          MAX_VALUE: 20,
-          PERCENTAGE_CHANGE: 19, // percentage change from 1 to 20 is 1900%
-          STEP_AT_MAX: 3,
-          STEP_AT_MIN: 1,
-          MEAN: 11,
-          RAW_CHANGE: 19,
+          color: '#fff',
+          run: 'run1',
+          valueChange: 19,
+          startStep: 1,
+          endStep: 3,
+          startValue: 1,
+          endValue: 20,
+          minValue: 1,
+          maxValue: 20,
+          percentageChange: 19, // percentage change from 1 to 20 is 1900%
+          stepAtMax: 3,
+          stepAtMin: 1,
+          mean: 11,
+          rawChange: 19,
         },
         {
           id: 'run2',
-          COLOR: '#fff',
-          RUN: 'run2',
-          VALUE_CHANGE: 24,
-          START_STEP: 1,
-          END_STEP: 3,
-          START_VALUE: 1,
-          END_VALUE: 25,
-          MIN_VALUE: 1,
-          MAX_VALUE: 25,
-          PERCENTAGE_CHANGE: 24, // percentage change from 1 to 25 is 2400%
-          STEP_AT_MAX: 3,
-          STEP_AT_MIN: 1,
-          MEAN: 12,
-          RAW_CHANGE: 24,
+          color: '#fff',
+          run: 'run2',
+          valueChange: 24,
+          startStep: 1,
+          endStep: 3,
+          startValue: 1,
+          endValue: 25,
+          minValue: 1,
+          maxValue: 25,
+          percentageChange: 24, // percentage change from 1 to 25 is 2400%
+          stepAtMax: 3,
+          stepAtMin: 1,
+          mean: 12,
+          rawChange: 24,
         },
       ]);
     }));
@@ -2975,20 +2975,20 @@ describe('scalar card', () => {
       expect(data).toEqual([
         {
           id: '["smoothed","run1"]',
-          COLOR: '#fff',
-          RUN: 'run1',
-          VALUE_CHANGE: 10.515172900494004,
-          START_STEP: 2,
-          END_STEP: 4,
-          START_VALUE: 8.46153846153846,
-          END_VALUE: 18.976711362032464,
-          MIN_VALUE: 4.532374100719424,
-          MAX_VALUE: 18.976711362032464,
-          PERCENTAGE_CHANGE: 1.2427022518765645,
-          STEP_AT_MAX: 4,
-          STEP_AT_MIN: 3,
-          MEAN: 12,
-          RAW_CHANGE: 17,
+          color: '#fff',
+          run: 'run1',
+          valueChange: 10.515172900494004,
+          startStep: 2,
+          endStep: 4,
+          startValue: 8.46153846153846,
+          endValue: 18.976711362032464,
+          minValue: 4.532374100719424,
+          maxValue: 18.976711362032464,
+          percentageChange: 1.2427022518765645,
+          stepAtMax: 4,
+          stepAtMin: 3,
+          mean: 12,
+          rawChange: 17,
         },
       ]);
     }));
@@ -3034,20 +3034,20 @@ describe('scalar card', () => {
       expect(data).toEqual([
         {
           id: 'run1',
-          COLOR: '#fff',
-          RUN: 'run1',
-          VALUE_CHANGE: 10,
-          START_STEP: 2,
-          END_STEP: 5,
-          START_VALUE: 5,
-          END_VALUE: 15,
-          MIN_VALUE: 4,
-          MAX_VALUE: 20,
-          PERCENTAGE_CHANGE: 2,
-          STEP_AT_MAX: 4,
-          STEP_AT_MIN: 3,
-          MEAN: 11,
-          RAW_CHANGE: 10,
+          color: '#fff',
+          run: 'run1',
+          valueChange: 10,
+          startStep: 2,
+          endStep: 5,
+          startValue: 5,
+          endValue: 15,
+          minValue: 4,
+          maxValue: 20,
+          percentageChange: 2,
+          stepAtMax: 4,
+          stepAtMin: 3,
+          mean: 11,
+          rawChange: 10,
         },
       ]);
     }));
@@ -3094,8 +3094,8 @@ describe('scalar card', () => {
       const data =
         scalarCardDataTable.componentInstance.getTimeSelectionTableData();
 
-      expect(data[0].STEP).toEqual(20);
-      expect(data[1].STEP).toEqual(15);
+      expect(data[0].step).toEqual(20);
+      expect(data[1].step).toEqual(15);
     }));
 
     it('selects closest start and end points to ranged time selection', fakeAsync(() => {
@@ -3141,10 +3141,10 @@ describe('scalar card', () => {
       const data =
         scalarCardDataTable.componentInstance.getTimeSelectionTableData();
 
-      expect(data[0].START_STEP).toEqual(1);
-      expect(data[1].START_STEP).toEqual(3);
-      expect(data[0].END_STEP).toEqual(20);
-      expect(data[1].END_STEP).toEqual(25);
+      expect(data[0].startStep).toEqual(1);
+      expect(data[1].startStep).toEqual(3);
+      expect(data[0].endStep).toEqual(20);
+      expect(data[1].endStep).toEqual(25);
     }));
 
     it('selects largest points when time selection startStep is greater than any points step', fakeAsync(() => {
@@ -3189,8 +3189,8 @@ describe('scalar card', () => {
       const data =
         scalarCardDataTable.componentInstance.getTimeSelectionTableData();
 
-      expect(data[0].STEP).toEqual(35);
-      expect(data[1].STEP).toEqual(50);
+      expect(data[0].step).toEqual(35);
+      expect(data[1].step).toEqual(50);
     }));
 
     it('selects smallest points when time selection startStep is less than any points step', fakeAsync(() => {
@@ -3234,8 +3234,8 @@ describe('scalar card', () => {
       const data =
         scalarCardDataTable.componentInstance.getTimeSelectionTableData();
 
-      expect(data[0].STEP).toEqual(10);
-      expect(data[1].STEP).toEqual(8);
+      expect(data[0].step).toEqual(10);
+      expect(data[1].step).toEqual(8);
     }));
 
     it('renders alias', fakeAsync(() => {
@@ -3294,8 +3294,8 @@ describe('scalar card', () => {
 
       const data =
         scalarCardDataTable.componentInstance.getTimeSelectionTableData();
-      expect(data[0].RUN).toEqual('100 test alias 1/Run1 name');
-      expect(data[1].RUN).toEqual('200 test alias 2/Run2 name');
+      expect(data[0].run).toEqual('100 test alias 1/Run1 name');
+      expect(data[1].run).toEqual('200 test alias 2/Run2 name');
     }));
 
     it('edits smoothed value when smoothed is enabled', fakeAsync(() => {
@@ -3337,7 +3337,7 @@ describe('scalar card', () => {
       ).toBeGreaterThanOrEqual(0);
       expect(
         scalarCardDataTable.componentInstance.getTimeSelectionTableData()[0]
-          .SMOOTHED
+          .smoothed
       ).toBe(6.000000000000001);
     }));
 
@@ -3373,7 +3373,7 @@ describe('scalar card', () => {
         By.directive(ScalarCardDataTable)
       );
       scalarCardDataTable.componentInstance.sortingInfo = {
-        header: ColumnHeaderType.VALUE,
+        name: 'value',
         order: SortingOrder.ASCENDING,
       };
       fixture.detectChanges();
@@ -3381,9 +3381,9 @@ describe('scalar card', () => {
       const data =
         scalarCardDataTable.componentInstance.getTimeSelectionTableData();
 
-      expect(data[0].RUN).toEqual('run2');
-      expect(data[1].RUN).toEqual('run1');
-      expect(data[2].RUN).toEqual('run3');
+      expect(data[0].run).toEqual('run2');
+      expect(data[1].run).toEqual('run1');
+      expect(data[2].run).toEqual('run3');
     }));
 
     it('orders data descending', fakeAsync(() => {
@@ -3418,7 +3418,7 @@ describe('scalar card', () => {
         By.directive(ScalarCardDataTable)
       );
       scalarCardDataTable.componentInstance.sortingInfo = {
-        header: ColumnHeaderType.VALUE,
+        name: 'value',
         order: SortingOrder.DESCENDING,
       };
       fixture.detectChanges();
@@ -3426,9 +3426,9 @@ describe('scalar card', () => {
       const data =
         scalarCardDataTable.componentInstance.getTimeSelectionTableData();
 
-      expect(data[0].RUN).toEqual('run3');
-      expect(data[1].RUN).toEqual('run1');
-      expect(data[2].RUN).toEqual('run2');
+      expect(data[0].run).toEqual('run3');
+      expect(data[1].run).toEqual('run1');
+      expect(data[2].run).toEqual('run2');
     }));
 
     it('Correctly orders NaNs', fakeAsync(() => {
@@ -3471,7 +3471,7 @@ describe('scalar card', () => {
         By.directive(ScalarCardDataTable)
       );
       scalarCardDataTable.componentInstance.sortingInfo = {
-        header: ColumnHeaderType.VALUE,
+        name: 'value',
         order: SortingOrder.DESCENDING,
       };
       fixture.detectChanges();
@@ -3479,13 +3479,13 @@ describe('scalar card', () => {
       const data =
         scalarCardDataTable.componentInstance.getTimeSelectionTableData();
 
-      expect(data[0].RUN).toEqual('run3');
-      expect(data[1].RUN).toEqual('run2');
-      expect(data[2].RUN).toEqual('run1');
-      expect(data[3].RUN).toEqual('run4');
-      expect(data[4].RUN).toEqual('run5');
-      expect(data[5].RUN).toEqual('run6');
-      expect(data[6].RUN).toEqual('run7');
+      expect(data[0].run).toEqual('run3');
+      expect(data[1].run).toEqual('run2');
+      expect(data[2].run).toEqual('run1');
+      expect(data[3].run).toEqual('run4');
+      expect(data[4].run).toEqual('run5');
+      expect(data[5].run).toEqual('run6');
+      expect(data[6].run).toEqual('run7');
     }));
 
     it('Sorts RUNS column by displayName', fakeAsync(() => {
@@ -3528,7 +3528,7 @@ describe('scalar card', () => {
         By.directive(ScalarCardDataTable)
       );
       scalarCardDataTable.componentInstance.sortingInfo = {
-        header: ColumnHeaderType.RUN,
+        name: 'run',
         order: SortingOrder.ASCENDING,
       };
       scalarCardDataTable.componentInstance.chartMetadataMap.run1.alias = {
@@ -3564,13 +3564,13 @@ describe('scalar card', () => {
       const data =
         scalarCardDataTable.componentInstance.getTimeSelectionTableData();
 
-      expect(data[0].RUN).toEqual('5 g/run1');
-      expect(data[1].RUN).toEqual('6 f/run2');
-      expect(data[2].RUN).toEqual('7 e/run3');
-      expect(data[3].RUN).toEqual('4 d/run4');
-      expect(data[4].RUN).toEqual('2 b/run5');
-      expect(data[5].RUN).toEqual('3 c/run6');
-      expect(data[6].RUN).toEqual('1 a/run7');
+      expect(data[0].run).toEqual('5 g/run1');
+      expect(data[1].run).toEqual('6 f/run2');
+      expect(data[2].run).toEqual('7 e/run3');
+      expect(data[3].run).toEqual('4 d/run4');
+      expect(data[4].run).toEqual('2 b/run5');
+      expect(data[5].run).toEqual('3 c/run6');
+      expect(data[6].run).toEqual('1 a/run7');
     }));
   });
 

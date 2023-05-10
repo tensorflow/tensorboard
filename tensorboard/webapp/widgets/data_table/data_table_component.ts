@@ -65,8 +65,8 @@ export class DataTableComponent implements OnDestroy {
   readonly SortingOrder = SortingOrder;
   readonly Side = Side;
 
-  draggingHeaderType: ColumnHeaderType | undefined;
-  highlightedColumnType: ColumnHeaderType | undefined;
+  draggingHeaderName: string | undefined;
+  highlightedColumnName: string | undefined;
   highlightSide: Side = Side.RIGHT;
 
   ngOnDestroy() {
@@ -75,186 +75,98 @@ export class DataTableComponent implements OnDestroy {
 
   getFormattedDataForColumn(
     columnHeader: ColumnHeaderType,
-    selectedStepRunData: SelectedStepRunData
+    datum: string | number | undefined
   ): string {
+    if (datum === undefined) {
+      return '';
+    }
     switch (columnHeader) {
       case ColumnHeaderType.RUN:
-        if (selectedStepRunData.RUN === undefined) {
-          return '';
-        }
-        return selectedStepRunData.RUN as string;
+        return datum as string;
       case ColumnHeaderType.VALUE:
-        if (selectedStepRunData.VALUE === undefined) {
-          return '';
-        }
-        return intlNumberFormatter.formatShort(
-          selectedStepRunData.VALUE as number
-        );
       case ColumnHeaderType.STEP:
-        if (selectedStepRunData.STEP === undefined) {
-          return '';
-        }
-        return intlNumberFormatter.formatShort(
-          selectedStepRunData.STEP as number
-        );
+      case ColumnHeaderType.SMOOTHED:
+      case ColumnHeaderType.START_STEP:
+      case ColumnHeaderType.END_STEP:
+      case ColumnHeaderType.START_VALUE:
+      case ColumnHeaderType.END_VALUE:
+      case ColumnHeaderType.MIN_VALUE:
+      case ColumnHeaderType.MAX_VALUE:
+      case ColumnHeaderType.STEP_AT_MAX:
+      case ColumnHeaderType.STEP_AT_MIN:
+      case ColumnHeaderType.MEAN:
+        return intlNumberFormatter.formatShort(datum as number);
       case ColumnHeaderType.TIME:
-        if (selectedStepRunData.TIME === undefined) {
-          return '';
-        }
-        const time = new Date(selectedStepRunData.TIME!);
+        const time = new Date(datum!);
         return time.toISOString();
       case ColumnHeaderType.RELATIVE_TIME:
-        if (selectedStepRunData.RELATIVE_TIME === undefined) {
-          return '';
-        }
-        return relativeTimeFormatter.formatReadable(
-          selectedStepRunData.RELATIVE_TIME as number
-        );
-      case ColumnHeaderType.SMOOTHED:
-        if (selectedStepRunData.SMOOTHED === undefined) {
-          return '';
-        }
-        return intlNumberFormatter.formatShort(
-          selectedStepRunData.SMOOTHED as number
-        );
+        return relativeTimeFormatter.formatReadable(datum as number);
       case ColumnHeaderType.VALUE_CHANGE:
-        if (selectedStepRunData.VALUE_CHANGE === undefined) {
-          return '';
-        }
-        return intlNumberFormatter.formatShort(
-          Math.abs(selectedStepRunData.VALUE_CHANGE as number)
-        );
-      case ColumnHeaderType.START_STEP:
-        if (selectedStepRunData.START_STEP === undefined) {
-          return '';
-        }
-        return intlNumberFormatter.formatShort(
-          selectedStepRunData.START_STEP as number
-        );
-      case ColumnHeaderType.END_STEP:
-        if (selectedStepRunData.END_STEP === undefined) {
-          return '';
-        }
-        return intlNumberFormatter.formatShort(
-          selectedStepRunData.END_STEP as number
-        );
-      case ColumnHeaderType.START_VALUE:
-        if (selectedStepRunData.START_VALUE === undefined) {
-          return '';
-        }
-        return intlNumberFormatter.formatShort(
-          selectedStepRunData.START_VALUE as number
-        );
-      case ColumnHeaderType.END_VALUE:
-        if (selectedStepRunData.END_VALUE === undefined) {
-          return '';
-        }
-        return intlNumberFormatter.formatShort(
-          selectedStepRunData.END_VALUE as number
-        );
-      case ColumnHeaderType.MIN_VALUE:
-        if (selectedStepRunData.MIN_VALUE === undefined) {
-          return '';
-        }
-        return intlNumberFormatter.formatShort(
-          selectedStepRunData.MIN_VALUE as number
-        );
-      case ColumnHeaderType.MAX_VALUE:
-        if (selectedStepRunData.MAX_VALUE === undefined) {
-          return '';
-        }
-        return intlNumberFormatter.formatShort(
-          selectedStepRunData.MAX_VALUE as number
-        );
+        return intlNumberFormatter.formatShort(Math.abs(datum as number));
       case ColumnHeaderType.PERCENTAGE_CHANGE:
-        if (selectedStepRunData.PERCENTAGE_CHANGE === undefined) {
-          return '';
-        }
-        return (
-          Math.round(
-            (selectedStepRunData.PERCENTAGE_CHANGE as number) * 100
-          ).toString() + '%'
-        );
-      case ColumnHeaderType.STEP_AT_MAX:
-        if (selectedStepRunData.STEP_AT_MAX === undefined) {
-          return '';
-        }
-        return intlNumberFormatter.formatShort(
-          selectedStepRunData.STEP_AT_MAX as number
-        );
-      case ColumnHeaderType.STEP_AT_MIN:
-        if (selectedStepRunData.STEP_AT_MIN === undefined) {
-          return '';
-        }
-        return intlNumberFormatter.formatShort(
-          selectedStepRunData.STEP_AT_MIN as number
-        );
-      case ColumnHeaderType.MEAN:
-        if (selectedStepRunData.MEAN === undefined) {
-          return '';
-        }
-        return intlNumberFormatter.formatShort(
-          selectedStepRunData.MEAN as number
-        );
+        return Math.round((datum as number) * 100).toString() + '%';
       case ColumnHeaderType.RAW_CHANGE:
-        if (selectedStepRunData.RAW_CHANGE === undefined) {
-          return '';
-        }
-        return numberFormatter.formatShort(
-          Math.abs(selectedStepRunData.RAW_CHANGE as number)
-        );
+        return numberFormatter.formatShort(Math.abs(datum as number));
       default:
         return '';
     }
   }
 
-  headerClicked(header: ColumnHeaderType) {
+  headerClicked(name: string) {
     if (
-      this.sortingInfo.header === header &&
+      this.sortingInfo.name === name &&
       this.sortingInfo.order === SortingOrder.ASCENDING
     ) {
-      this.sortDataBy.emit({header, order: SortingOrder.DESCENDING});
+      this.sortDataBy.emit({
+        header: ColumnHeaderType.RUN, //This is no longer used but the sortingInfo interface needs it or it will break sync. TODO(jameshollyer): remove this once internal code all uses name.
+        name,
+        order: SortingOrder.DESCENDING,
+      });
       return;
     }
-    this.sortDataBy.emit({header, order: SortingOrder.ASCENDING});
+    this.sortDataBy.emit({
+      header: ColumnHeaderType.RUN, //This is no longer used but the sortingInfo interface needs it or it will break sync. TODO(jameshollyer): remove this once internal code all uses name.
+      name,
+      order: SortingOrder.ASCENDING,
+    });
   }
 
   dragStart(header: ColumnHeader) {
-    this.draggingHeaderType = header.type;
+    this.draggingHeaderName = header.name;
 
     // This stop the end drag animation
     document.addEventListener('dragover', preventDefault);
   }
 
   dragEnd() {
-    if (!this.draggingHeaderType || !this.highlightedColumnType) {
+    if (!this.draggingHeaderName || !this.highlightedColumnName) {
       return;
     }
 
     this.orderColumns.emit(
       this.moveHeader(
-        this.getIndexOfHeaderWithType(this.draggingHeaderType!),
-        this.getIndexOfHeaderWithType(this.highlightedColumnType!)
+        this.getIndexOfHeaderWithName(this.draggingHeaderName!),
+        this.getIndexOfHeaderWithName(this.highlightedColumnName!)
       )
     );
-    this.draggingHeaderType = undefined;
-    this.highlightedColumnType = undefined;
+    this.draggingHeaderName = undefined;
+    this.highlightedColumnName = undefined;
     document.removeEventListener('dragover', preventDefault);
   }
 
   dragEnter(header: ColumnHeader) {
-    if (!this.draggingHeaderType) {
+    if (!this.draggingHeaderName) {
       return;
     }
     if (
-      this.getIndexOfHeaderWithType(header.type) <
-      this.getIndexOfHeaderWithType(this.draggingHeaderType!)
+      this.getIndexOfHeaderWithName(header.name) <
+      this.getIndexOfHeaderWithName(this.draggingHeaderName!)
     ) {
       this.highlightSide = Side.LEFT;
     } else {
       this.highlightSide = Side.RIGHT;
     }
-    this.highlightedColumnType = header.type;
+    this.highlightedColumnName = header.name;
   }
 
   // Move the item at sourceIndex to destinationIndex
@@ -267,8 +179,8 @@ export class DataTableComponent implements OnDestroy {
     return newHeaders;
   }
 
-  getHeaderHighlightStyle(header: ColumnHeaderType) {
-    if (header !== this.highlightedColumnType) {
+  getHeaderHighlightStyle(name: string) {
+    if (name !== this.highlightedColumnName) {
       return {};
     }
 
@@ -286,9 +198,9 @@ export class DataTableComponent implements OnDestroy {
     );
   }
 
-  getIndexOfHeaderWithType(type: ColumnHeaderType) {
+  getIndexOfHeaderWithName(name: string) {
     return this.headers.findIndex((element) => {
-      return type === element.type;
+      return name === element.name;
     });
   }
 }
