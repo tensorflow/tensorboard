@@ -37,20 +37,11 @@ export interface FeatureFlags {
   scalarsBatchSize: number | undefined;
   // Whether the Time Series dashboards supports showing Image summary data.
   metricsImageSupportEnabled: boolean;
-  // Whether TimeSeries linked time feature is enabled or not.
-  enabledLinkedTime: boolean;
   // Flag for the escape hatch from WebGL. This only effects the TimeSeries
   // Scalar cards.
   forceSvg: boolean;
-  // Whether to enable the "sticky" data table in scalar cards.
-  enabledScalarDataTable: boolean;
   // If defined causes the feature flags modal to appear.
   showFlags: string | undefined;
-  // Adds check box in settings which allows users to enter step selection range.
-  allowRangeSelection: boolean;
-  // In Linked Time, if enabled, show a prospective fob user to turn on the feature or select a step.
-  // If this is removed update the `getCurrentFob` method of tensorboard/webapp/widgets/card_fob/card_fob_controller_component.ts
-  enabledProspectiveFob: boolean;
   // Adds affordance for users to select and reorder the columns in the Scalar
   // Card Data Table
   enableScalarColumnCustomization: boolean;

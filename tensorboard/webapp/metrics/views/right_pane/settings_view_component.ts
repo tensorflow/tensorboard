@@ -64,10 +64,7 @@ const MAX_SMOOTHING_SLIDER_VALUE = 0.99;
 export class SettingsViewComponent {
   constructor(@Inject(LOCALE_ID) private readonly locale: string) {}
 
-  @Input() isLinkedTimeFeatureEnabled!: boolean;
-  @Input() isRangeSelectionAllowed!: boolean;
   @Input() isLinkedTimeEnabled!: boolean;
-  @Input() isScalarStepSelectorFeatureEnabled!: boolean;
   @Input() isScalarStepSelectorEnabled!: boolean;
   @Input() isScalarStepSelectorRangeEnabled!: boolean;
   @Input() isScalarColumnCustomizationEnabled!: boolean;

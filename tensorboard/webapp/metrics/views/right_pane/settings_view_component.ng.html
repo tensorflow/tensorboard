@@ -29,7 +29,6 @@ limitations under the License.
 
   <div
     class="control-row scalars-step-selector"
-    *ngIf="isScalarStepSelectorFeatureEnabled"
     [title]="!isAxisTypeStep()? 'Only available when Horizontal Axis is set to step': ''"
   >
     <mat-checkbox
@@ -39,7 +38,7 @@ limitations under the License.
       >Enable step selection and data table
     </mat-checkbox>
     <span class="indent">(Scalars only)</span>
-    <div class="indent range-selection" *ngIf="isRangeSelectionAllowed">
+    <div class="indent range-selection">
       <mat-checkbox
         [checked]="isScalarStepSelectorRangeEnabled"
         (change)="rangeSelectionToggled.emit()"
@@ -47,10 +46,7 @@ limitations under the License.
         >Enable Range Selection
       </mat-checkbox>
     </div>
-    <div
-      class="control-row linked-time indent"
-      *ngIf="isLinkedTimeFeatureEnabled"
-    >
+    <div class="control-row linked-time indent">
       <mat-checkbox
         [checked]="isLinkedTimeEnabled"
         (change)="linkedTimeToggled.emit()"

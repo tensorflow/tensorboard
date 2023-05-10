@@ -155,18 +155,16 @@ describe('tb_feature_flag_data_source', () => {
         spyOn(localStorage, 'getItem').and.returnValue(null);
         const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
 
-        dataSource.persistFeatureFlags({enabledScalarDataTable: true});
+        dataSource.persistFeatureFlags({forceSvg: true});
 
         expect(setItemSpy).toHaveBeenCalledOnceWith(
           'tb_feature_flag_storage_key',
-          '{"enabledScalarDataTable":true}'
+          '{"forceSvg":true}'
         );
       });
 
       it('adds new flag when some flags already exist', () => {
-        spyOn(localStorage, 'getItem').and.returnValue(
-          '{"enabledScalarDataTable":true}'
-        );
+        spyOn(localStorage, 'getItem').and.returnValue('{"forceSvg":true}');
 
         const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
 
@@ -174,13 +172,13 @@ describe('tb_feature_flag_data_source', () => {
 
         expect(setItemSpy).toHaveBeenCalledOnceWith(
           'tb_feature_flag_storage_key',
-          '{"enabledScalarDataTable":true,"inColab":true}'
+          '{"forceSvg":true,"inColab":true}'
         );
       });
 
       it('Overrides flag if it is already persisted', () => {
         spyOn(localStorage, 'getItem').and.returnValue(
-          '{"enabledScalarDataTable":true,"inColab":true}'
+          '{"forceSvg":true,"inColab":true}'
         );
         const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
 
@@ -188,7 +186,7 @@ describe('tb_feature_flag_data_source', () => {
 
         expect(setItemSpy).toHaveBeenCalledOnceWith(
           'tb_feature_flag_storage_key',
-          '{"enabledScalarDataTable":true,"inColab":false}'
+          '{"forceSvg":true,"inColab":false}'
         );
       });
 
@@ -197,13 +195,13 @@ describe('tb_feature_flag_data_source', () => {
         const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
 
         dataSource.persistFeatureFlags({
-          enabledScalarDataTable: true,
+          forceSvg: true,
           inColab: false,
         });
 
         expect(setItemSpy).toHaveBeenCalledOnceWith(
           'tb_feature_flag_storage_key',
-          '{"enabledScalarDataTable":true,"inColab":false}'
+          '{"forceSvg":true,"inColab":false}'
         );
       });
     });
@@ -220,11 +218,11 @@ describe('tb_feature_flag_data_source', () => {
 
       it('returns a properly parsed object when getItem gives one', () => {
         const getItemSpy = spyOn(localStorage, 'getItem').and.returnValue(
-          '{"enabledScalarDataTable":true,"inColab":false}'
+          '{"forceSvg":true,"inColab":false}'
         );
 
         expect(dataSource.getPersistentFeatureFlags()).toEqual({
-          enabledScalarDataTable: true,
+          forceSvg: true,
           inColab: false,
         });
         expect(getItemSpy).toHaveBeenCalledOnceWith(
@@ -244,9 +242,7 @@ describe('tb_feature_flag_data_source', () => {
       });
 
       it('does nothing when featureFlag passed is not persisted', () => {
-        spyOn(localStorage, 'getItem').and.returnValue(
-          '{"enabledScalarDataTable":true}'
-        );
+        spyOn(localStorage, 'getItem').and.returnValue('{"forceSvg":true}');
         const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
 
         dataSource.resetPersistedFeatureFlag('inColab');
@@ -256,7 +252,7 @@ describe('tb_feature_flag_data_source', () => {
 
       it('stores a new object with given flag removed', () => {
         spyOn(localStorage, 'getItem').and.returnValue(
-          '{"enabledScalarDataTable":true,"inColab":false}'
+          '{"forceSvg":true,"inColab":false}'
         );
         const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
 
@@ -264,18 +260,16 @@ describe('tb_feature_flag_data_source', () => {
 
         expect(setItemSpy).toHaveBeenCalledOnceWith(
           'tb_feature_flag_storage_key',
-          '{"enabledScalarDataTable":true}'
+          '{"forceSvg":true}'
         );
       });
 
       it('removes item when reseting the only flag', () => {
-        spyOn(localStorage, 'getItem').and.returnValue(
-          '{"enabledScalarDataTable":true}'
-        );
+        spyOn(localStorage, 'getItem').and.returnValue('{"forceSvg":true}');
         const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
         const removeItemSpy = spyOn(localStorage, 'removeItem').and.stub();
 
-        dataSource.resetPersistedFeatureFlag('enabledScalarDataTable');
+        dataSource.resetPersistedFeatureFlag('forceSvg');
 
         expect(setItemSpy).not.toHaveBeenCalled();
         expect(removeItemSpy).toHaveBeenCalledOnceWith(
@@ -286,9 +280,7 @@ describe('tb_feature_flag_data_source', () => {
 
     describe('resetAllPersistedFeatureFlags', () => {
       it('removes entry from localStorage', () => {
-        spyOn(localStorage, 'getItem').and.returnValue(
-          '{"enabledScalarDataTable":true}'
-        );
+        spyOn(localStorage, 'getItem').and.returnValue('{"forceSvg":true}');
         const setItemSpy = spyOn(localStorage, 'setItem').and.stub();
         const removeItemSpy = spyOn(localStorage, 'removeItem').and.stub();
 

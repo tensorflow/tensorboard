@@ -73,16 +73,6 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       queryParamOverride: 'experimentalPlugin',
       parseValue: parseStringArray,
     },
-    enabledLinkedTime: {
-      defaultValue: true,
-      queryParamOverride: 'enableLinkedTime',
-      parseValue: parseBoolean,
-    },
-    enabledScalarDataTable: {
-      defaultValue: true,
-      queryParamOverride: 'enableDataTable',
-      parseValue: parseBoolean,
-    },
     forceSvg: {
       defaultValue: false,
       queryParamOverride: 'forceSVG',
@@ -114,16 +104,6 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       defaultValue: undefined,
       queryParamOverride: 'showFlags',
       parseValue: (str) => str,
-    },
-    allowRangeSelection: {
-      defaultValue: true,
-      queryParamOverride: 'allowRangeSelection',
-      parseValue: parseBoolean,
-    },
-    enabledProspectiveFob: {
-      defaultValue: true,
-      queryParamOverride: 'enableProspectiveFob',
-      parseValue: parseBoolean,
     },
     enableScalarColumnCustomization: {
       defaultValue: false,

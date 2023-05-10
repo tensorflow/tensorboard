@@ -150,12 +150,12 @@ describe('feature_flag_effects', () => {
 
       actions.next(
         featureFlagOverrideChanged({
-          flags: {enabledScalarDataTable: true},
+          flags: {forceSvg: true},
         })
       );
 
       expect(persistFlagSpy).toHaveBeenCalledOnceWith({
-        enabledScalarDataTable: true,
+        forceSvg: true,
       });
     });
   });

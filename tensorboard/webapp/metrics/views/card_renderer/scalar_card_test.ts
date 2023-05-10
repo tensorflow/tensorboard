@@ -383,10 +383,6 @@ describe('scalar card', () => {
     );
     store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
     store.overrideSelector(
-      selectors.getIsLinkedTimeProspectiveFobEnabled,
-      true
-    );
-    store.overrideSelector(
       selectors.getMetricsCardRangeSelectionEnabled,
       false
     );
