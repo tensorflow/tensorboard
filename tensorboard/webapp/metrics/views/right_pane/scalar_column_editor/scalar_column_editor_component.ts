@@ -26,7 +26,7 @@ import {
   ColumnHeader,
   ColumnHeaderType,
   DataTableMode,
-} from '../../card_renderer/scalar_card_types';
+} from '../../../../widgets/data_table/types';
 
 const preventDefault = (e: MouseEvent) => {
   e.preventDefault();

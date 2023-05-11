@@ -72,69 +72,6 @@ export interface PartitionedSeries {
 }
 
 /**
- * This enum defines the columns available in the data table. The
- * ScalarCardComponent must know which piece of data is associated with each
- * value and the DataTable widget must know how to display each value.
- */
-export enum ColumnHeaderType {
-  COLOR = 'COLOR',
-  RELATIVE_TIME = 'RELATIVE_TIME',
-  RUN = 'RUN',
-  STEP = 'STEP',
-  TIME = 'TIME',
-  VALUE = 'VALUE',
-  SMOOTHED = 'SMOOTHED',
-  VALUE_CHANGE = 'VALUE_CHANGE',
-  START_STEP = 'START_STEP',
-  END_STEP = 'END_STEP',
-  START_VALUE = 'START_VALUE',
-  END_VALUE = 'END_VALUE',
-  MIN_VALUE = 'MIN_VALUE',
-  MAX_VALUE = 'MAX_VALUE',
-  PERCENTAGE_CHANGE = 'PERCENTAGE_CHANGE',
-  STEP_AT_MAX = 'STEP_AT_MAX',
-  STEP_AT_MIN = 'STEP_AT_MIN',
-  MEAN = 'MEAN',
-  RAW_CHANGE = 'RAW_CHANGE',
-}
-
-export interface ColumnHeader {
-  type: ColumnHeaderType;
-  name: string;
-  displayName: string;
-  enabled: boolean;
-}
-
-export enum DataTableMode {
-  SINGLE,
-  RANGE,
-}
-
-export enum SortingOrder {
-  ASCENDING,
-  DESCENDING,
-}
-
-export interface SortingInfo {
-  // Currently in the process of moving from header to name.
-  // Header is no longer used but is required as to not break sync
-  // TODO(jameshollyer): Remove header once all internal code is switched
-  // to using name and make name required.
-  header: ColumnHeaderType;
-  name?: string;
-  order: SortingOrder;
-}
-
-/**
- * An object which essentially contains the data for an entire row in the
- * DataTable. It will have a value for each required ColumnHeader for a given
- * run.
- */
-export type SelectedStepRunData = Record<string, string | number> & {
-  id: string;
-};
-
-/**
  * An object which is intended to hold the min and max step within each scalar
  * card.
  */

@@ -24,10 +24,10 @@ import {
 import {
   ColumnHeader,
   ColumnHeaderType,
-  SelectedStepRunData,
+  TableData,
   SortingInfo,
   SortingOrder,
-} from '../../metrics/views/card_renderer/scalar_card_types';
+} from './types';
 import {
   intlNumberFormatter,
   numberFormatter,
@@ -53,7 +53,7 @@ export class DataTableComponent implements OnDestroy {
   // The order of this array of headers determines the order which they are
   // displayed in the table.
   @Input() headers!: ColumnHeader[];
-  @Input() data!: SelectedStepRunData[];
+  @Input() data!: TableData[];
   @Input() sortingInfo!: SortingInfo;
   @Input() columnCustomizationEnabled!: boolean;
   @Input() smoothingEnabled!: boolean;

@@ -23,16 +23,18 @@ import {TimeSelection} from '../../../widgets/card_fob/card_fob_types';
 import {findClosestIndex} from '../../../widgets/line_chart_v2/sub_view/line_chart_interactive_utils';
 import {HeaderEditInfo} from '../../types';
 import {
-  ColumnHeader,
-  ColumnHeaderType,
-  DataTableMode,
   ScalarCardDataSeries,
   ScalarCardPoint,
   ScalarCardSeriesMetadataMap,
-  SelectedStepRunData,
+} from './scalar_card_types';
+import {
+  ColumnHeader,
+  ColumnHeaderType,
+  DataTableMode,
+  TableData,
   SortingInfo,
   SortingOrder,
-} from './scalar_card_types';
+} from '../../../widgets/data_table/types';
 import {isDatumVisible} from './utils';
 
 @Component({
@@ -106,13 +108,13 @@ export class ScalarCardDataTable {
     return sum / (endPointIndex - startPointIndex + 1);
   }
 
-  getTimeSelectionTableData(): SelectedStepRunData[] {
+  getTimeSelectionTableData(): TableData[] {
     if (!this.stepOrLinkedTimeSelection) {
       return [];
     }
     const startStep = this.stepOrLinkedTimeSelection.start.step;
     const endStep = this.stepOrLinkedTimeSelection.end?.step;
-    const dataTableData: SelectedStepRunData[] = this.dataSeries
+    const dataTableData: TableData[] = this.dataSeries
       .filter((datum) => {
         return isDatumVisible(datum, this.chartMetadataMap);
       })
@@ -129,7 +131,7 @@ export class ScalarCardDataTable {
           closestEndPointIndex = findClosestIndex(datum.points, endStep);
           closestEndPoint = datum.points[closestEndPointIndex];
         }
-        const selectedStepData: SelectedStepRunData = {
+        const selectedStepData: TableData = {
           id: datum.id,
           color: metadata.color,
         };
@@ -254,28 +256,26 @@ export class ScalarCardDataTable {
       (header) => header.name === this.sortingInfo.name
     );
     if (sortingHeader !== undefined) {
-      dataTableData.sort(
-        (point1: SelectedStepRunData, point2: SelectedStepRunData) => {
-          if (!sortingHeader) {
-            return 0;
-          }
-          const p1 = this.getSortableValue(point1, sortingHeader);
-          const p2 = this.getSortableValue(point2, sortingHeader);
-          if (p1 < p2) {
-            return this.sortingInfo.order === SortingOrder.ASCENDING ? -1 : 1;
-          }
-          if (p1 > p2) {
-            return this.sortingInfo.order === SortingOrder.ASCENDING ? 1 : -1;
-          }
-
+      dataTableData.sort((point1: TableData, point2: TableData) => {
+        if (!sortingHeader) {
           return 0;
         }
-      );
+        const p1 = this.getSortableValue(point1, sortingHeader);
+        const p2 = this.getSortableValue(point2, sortingHeader);
+        if (p1 < p2) {
+          return this.sortingInfo.order === SortingOrder.ASCENDING ? -1 : 1;
+        }
+        if (p1 > p2) {
+          return this.sortingInfo.order === SortingOrder.ASCENDING ? 1 : -1;
+        }
+
+        return 0;
+      });
     }
     return dataTableData;
   }
 
-  private getSortableValue(point: SelectedStepRunData, header: ColumnHeader) {
+  private getSortableValue(point: TableData, header: ColumnHeader) {
     // The value shown in the "RUN" column is a string concatenation of Alias Id + Alias + Run Name
     // but we would actually prefer to sort by just the run name.
     if (header.type === ColumnHeaderType.RUN) {

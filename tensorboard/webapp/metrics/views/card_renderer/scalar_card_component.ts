@@ -46,16 +46,18 @@ import {
 import {CardState} from '../../store';
 import {HeaderEditInfo, TooltipSort, XAxisType} from '../../types';
 import {
-  ColumnHeader,
-  ColumnHeaderType,
-  DataTableMode,
   MinMaxStep,
   ScalarCardDataSeries,
   ScalarCardSeriesMetadata,
   ScalarCardSeriesMetadataMap,
+} from './scalar_card_types';
+import {
+  ColumnHeader,
+  ColumnHeaderType,
+  DataTableMode,
   SortingInfo,
   SortingOrder,
-} from './scalar_card_types';
+} from '../../../widgets/data_table/types';
 import {isDatumVisible, TimeSelectionView} from './utils';
 
 type ScalarTooltipDatum = TooltipDatum<

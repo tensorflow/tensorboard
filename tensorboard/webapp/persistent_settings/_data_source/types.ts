@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {TooltipSort} from '../../metrics/types';
-import {ColumnHeader} from '../../metrics/views/card_renderer/scalar_card_types';
+import {ColumnHeader} from '../../widgets/data_table/types';
 
 export enum ThemeValue {
   BROWSER_DEFAULT = 'browser_default',

@@ -37,10 +37,7 @@ import {
   TooltipSort,
   XAxisType,
 } from '../types';
-import {
-  ColumnHeader,
-  DataTableMode,
-} from '../views/card_renderer/scalar_card_types';
+import {ColumnHeader, DataTableMode} from '../../widgets/data_table/types';
 import {Extent} from '../../widgets/line_chart_v2/lib/public_types';
 
 export const METRICS_FEATURE_KEY = 'metrics';

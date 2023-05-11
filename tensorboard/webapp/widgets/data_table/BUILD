@@ -34,6 +34,7 @@ tf_ng_module(
     ],
     deps = [
         ":data_table_header",
+        ":types",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:formatter",
@@ -53,10 +54,17 @@ tf_ng_module(
         ":data_table_header_styles",
     ],
     deps = [
+        ":types",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
-        "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",
         "@npm//@angular/common",
         "@npm//@angular/core",
+    ],
+)
+
+tf_ts_library(
+    name = "types",
+    srcs = [
+        "types.ts",
     ],
 )
 
@@ -68,9 +76,9 @@ tf_ts_library(
     ],
     deps = [
         ":data_table",
+        ":types",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
-        "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@types/jasmine",

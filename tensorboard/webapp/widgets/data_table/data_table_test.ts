@@ -20,10 +20,10 @@ import {By} from '@angular/platform-browser';
 import {
   ColumnHeader,
   ColumnHeaderType,
-  SelectedStepRunData,
+  TableData,
   SortingInfo,
   SortingOrder,
-} from '../../metrics/views/card_renderer/scalar_card_types';
+} from './types';
 import {DataTableComponent} from './data_table_component';
 import {DataTableModule} from './data_table_module';
 
@@ -46,7 +46,7 @@ class TestableComponent {
   dataTable!: DataTableComponent;
 
   @Input() headers!: ColumnHeader[];
-  @Input() data!: SelectedStepRunData[];
+  @Input() data!: TableData[];
   @Input() sortingInfo!: SortingInfo;
   @Input() smoothingEnabled!: boolean;
 
@@ -66,7 +66,7 @@ describe('data table', () => {
 
   function createComponent(input: {
     headers?: ColumnHeader[];
-    data?: SelectedStepRunData[];
+    data?: TableData[];
     sortingInfo?: SortingInfo;
     smoothingEnabled?: boolean;
   }): ComponentFixture<TestableComponent> {

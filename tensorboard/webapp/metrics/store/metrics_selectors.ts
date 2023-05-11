@@ -29,11 +29,7 @@ import {
   TooltipSort,
   XAxisType,
 } from '../types';
-import {
-  ColumnHeader,
-  DataTableMode,
-  MinMaxStep,
-} from '../views/card_renderer/scalar_card_types';
+import {MinMaxStep} from '../views/card_renderer/scalar_card_types';
 import {formatTimeSelection} from '../views/card_renderer/utils';
 import * as storeUtils from './metrics_store_internal_utils';
 import {
@@ -50,6 +46,7 @@ import {
   RunToSeries,
   TagMetadata,
 } from './metrics_types';
+import {ColumnHeader, DataTableMode} from '../../widgets/data_table/types';
 import {Extent} from '../../widgets/line_chart_v2/lib/public_types';
 
 const selectMetricsState =

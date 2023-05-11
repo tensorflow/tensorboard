@@ -49,10 +49,7 @@ import {
   TooltipSort,
   XAxisType,
 } from '../types';
-import {
-  ColumnHeaderType,
-  DataTableMode,
-} from '../views/card_renderer/scalar_card_types';
+import {ColumnHeaderType, DataTableMode} from '../../widgets/data_table/types';
 import {reducers} from './metrics_reducers';
 import {getCardId, getPinnedCardId} from './metrics_store_internal_utils';
 import {
