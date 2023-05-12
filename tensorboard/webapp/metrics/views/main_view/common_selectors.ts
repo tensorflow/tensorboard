@@ -47,6 +47,7 @@ import {getNonEmptyCardIdsWithMetadata, TagMetadata} from '../../store';
 import {compareTagNames} from '../../utils';
 import {CardIdWithMetadata} from '../metrics_view_types';
 import {RouteKind} from '../../../app_routing/types';
+import {memoize} from '../../../util/memoize';
 
 export const getScalarTagsForRunSelection = createSelector(
   getMetricsTagMetadata,
@@ -178,7 +179,7 @@ const utils = {
   },
 };
 
-function getRenderableRuns(experimentIds: string[]) {
+const getRenderableRuns = memoize((experimentIds: string[]) => {
   return createSelector(
     getRunsFromExperimentIds(experimentIds),
     getExperimentNames(experimentIds),
@@ -213,9 +214,9 @@ function getRenderableRuns(experimentIds: string[]) {
       });
     }
   );
-}
+});
 
-function getFilteredRenderableRuns(experimentIds: string[]) {
+const getFilteredRenderableRuns = memoize((experimentIds: string[]) => {
   return createSelector(
     getRunSelectorRegexFilter,
     getRenderableRuns(experimentIds),
@@ -236,7 +237,7 @@ function getFilteredRenderableRuns(experimentIds: string[]) {
       );
     }
   );
-}
+});
 
 export const getFilteredRenderableRunsFromRoute = createSelector(
   (state) => state,
