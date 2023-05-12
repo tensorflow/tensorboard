@@ -240,6 +240,7 @@ tf_ts_library(
     ],
     deps = [
         "//tensorboard/webapp/experiments:types",
+        "//tensorboard/webapp/widgets/data_table:types",
         "//tensorboard/webapp/widgets/line_chart_v2",
     ],
 )
