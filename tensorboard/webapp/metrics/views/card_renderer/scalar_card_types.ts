@@ -79,3 +79,57 @@ export type MinMaxStep = {
   minStep: number;
   maxStep: number;
 };
+
+/**
+ * THE SECTION BELOW IS HERE TO AVOID BREAKING SYNC. THESE SHOULD NOT BE USED!!!
+ * Please use webapp/widgets/data_table/types for these types.
+ */
+
+export enum ColumnHeaderType {
+  COLOR = 'COLOR',
+  RELATIVE_TIME = 'RELATIVE_TIME',
+  RUN = 'RUN',
+  STEP = 'STEP',
+  TIME = 'TIME',
+  VALUE = 'VALUE',
+  SMOOTHED = 'SMOOTHED',
+  VALUE_CHANGE = 'VALUE_CHANGE',
+  START_STEP = 'START_STEP',
+  END_STEP = 'END_STEP',
+  START_VALUE = 'START_VALUE',
+  END_VALUE = 'END_VALUE',
+  MIN_VALUE = 'MIN_VALUE',
+  MAX_VALUE = 'MAX_VALUE',
+  PERCENTAGE_CHANGE = 'PERCENTAGE_CHANGE',
+  STEP_AT_MAX = 'STEP_AT_MAX',
+  STEP_AT_MIN = 'STEP_AT_MIN',
+  MEAN = 'MEAN',
+  RAW_CHANGE = 'RAW_CHANGE',
+}
+
+export interface ColumnHeader {
+  type: ColumnHeaderType;
+  name: string;
+  displayName: string;
+  enabled: boolean;
+}
+
+export enum SortingOrder {
+  ASCENDING,
+  DESCENDING,
+}
+
+export interface SortingInfo {
+  header: ColumnHeaderType;
+  name?: string;
+  order: SortingOrder;
+}
+
+export type TableData = Record<string, string | number> & {
+  id: string;
+};
+
+export enum DataTableMode {
+  SINGLE,
+  RANGE,
+}
