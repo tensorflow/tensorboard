@@ -37,14 +37,16 @@ import {
   DomainType,
   IntervalFilter,
 } from '../../../hparams/types';
-import {RunTableItem} from '../../../runs/views/runs_table/types';
+import {
+  RunTableItem,
+  RunTableExperimentItem,
+} from '../../../runs/views/runs_table/types';
 import {matchRunToRegex} from '../../../util/matcher';
 import {isSingleRunPlugin, PluginType} from '../../data_source';
 import {getNonEmptyCardIdsWithMetadata, TagMetadata} from '../../store';
 import {compareTagNames} from '../../utils';
 import {CardIdWithMetadata} from '../metrics_view_types';
 import {RouteKind} from '../../../app_routing/types';
-import {Run} from '../../../runs/types';
 
 export const getScalarTagsForRunSelection = createSelector(
   getMetricsTagMetadata,
@@ -176,7 +178,7 @@ const utils = {
   },
 };
 
-export function getRenderableRuns(experimentIds: string[]) {
+function getRenderableRuns(experimentIds: string[]) {
   return createSelector(
     getRunsFromExperimentIds(experimentIds),
     getExperimentNames(experimentIds),
@@ -189,7 +191,7 @@ export function getRenderableRuns(experimentIds: string[]) {
       selectionMap,
       colorMap,
       experimentIdToAlias
-    ): Array<RunTableItem & {run: Run & {experimentId: string}}> => {
+    ): Array<RunTableExperimentItem> => {
       return runs.map((run) => {
         const hparamMap: RunTableItem['hparams'] = new Map();
         (run.hparams || []).forEach((hparam) => {
@@ -213,7 +215,7 @@ export function getRenderableRuns(experimentIds: string[]) {
   );
 }
 
-export function getFilteredRenderableRuns(experimentIds: string[]) {
+function getFilteredRenderableRuns(experimentIds: string[]) {
   return createSelector(
     getRunSelectorRegexFilter,
     getRenderableRuns(experimentIds),
@@ -243,6 +245,18 @@ export const getFilteredRenderableRunsFromRoute = createSelector(
     return getFilteredRenderableRuns(experimentIds || [])(state);
   }
 );
+
+export const getFilteredRenderableRunsIdsFromRoute = createSelector(
+  getFilteredRenderableRunsFromRoute,
+  (filteredRenderableRuns) => {
+    return new Set(filteredRenderableRuns.map(({run: {id}}) => id));
+  }
+);
+
+export const factories = {
+  getRenderableRuns,
+  getFilteredRenderableRuns,
+};
 
 export const TEST_ONLY = {
   getRenderableCardIdsWithMetadata,
