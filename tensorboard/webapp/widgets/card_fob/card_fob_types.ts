@@ -34,12 +34,6 @@ export enum TimeSelectionAffordance {
   FOB_REMOVED = 'fobRemoved',
   // Typing the step in fob.
   FOB_TEXT = 'fobText',
-  // Typing the step in setting pane.
-  SETTINGS_TEXT = 'settingsText',
-  // Dragging the slider in setting pane.
-  SETTINGS_SLIDER = 'settingsSlider',
-  // User changes from multi selection to single selection.
-  CHANGE_TO_SINGLE = 'changeToSingle',
   // User clicks on Histogram Chart to change to range selection.
   HISTOGRAM_CLICK_TO_RANGE = 'histogramClickToRange',
   // Adding a new fob

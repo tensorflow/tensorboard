@@ -18,11 +18,7 @@ import {Observable} from 'rxjs';
 import {filter, map, take, withLatestFrom} from 'rxjs/operators';
 import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';
-import {
-  TimeSelectionAffordance,
-  TimeSelectionToggleAffordance,
-} from '../../../widgets/card_fob/card_fob_types';
-import {RangeInputSource} from '../../../widgets/range_input/types';
+import {TimeSelectionToggleAffordance} from '../../../widgets/card_fob/card_fob_types';
 import {
   linkedTimeToggled,
   metricsChangeCardWidth,
@@ -41,19 +37,8 @@ import {
   metricsToggleImageShowActualSize,
   rangeSelectionToggled,
   stepSelectorToggled,
-  timeSelectionChanged,
 } from '../../actions';
 import {HistogramMode, TooltipSort, XAxisType} from '../../types';
-import {LinkedTimeSelectionChanged} from './types';
-
-const RANGE_INPUT_SOURCE_TO_AFFORDANCE: Record<
-  RangeInputSource,
-  TimeSelectionAffordance
-> = Object.freeze({
-  [RangeInputSource.SLIDER]: TimeSelectionAffordance.SETTINGS_SLIDER,
-  [RangeInputSource.TEXT]: TimeSelectionAffordance.SETTINGS_TEXT,
-  [RangeInputSource.TEXT_DELETED]: TimeSelectionAffordance.CHANGE_TO_SINGLE,
-});
 
 @Component({
   selector: 'metrics-dashboard-settings',
@@ -95,7 +80,6 @@ const RANGE_INPUT_SOURCE_TO_AFFORDANCE: Record<
       [stepMinMax]="stepMinMax$ | async"
       [isSlideOutMenuOpen]="isSlideOutMenuOpen$ | async"
       (linkedTimeToggled)="onLinkedTimeToggled()"
-      (linkedTimeSelectionChanged)="onLinkedTimeSelectionChanged($event)"
       (stepSelectorToggled)="onStepSelectorToggled()"
       (rangeSelectionToggled)="onRangeSelectionToggled()"
       (onSlideOutToggled)="onSlideOutToggled()"
@@ -231,18 +215,6 @@ export class SettingsViewContainer {
     this.store.dispatch(
       rangeSelectionToggled({
         affordance: TimeSelectionToggleAffordance.CHECK_BOX,
-      })
-    );
-  }
-
-  onLinkedTimeSelectionChanged({
-    timeSelection,
-    source,
-  }: LinkedTimeSelectionChanged) {
-    this.store.dispatch(
-      timeSelectionChanged({
-        timeSelection,
-        affordance: RANGE_INPUT_SOURCE_TO_AFFORDANCE[source],
       })
     );
   }
