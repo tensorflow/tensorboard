@@ -377,11 +377,12 @@ class DataProvider(metaclass=abc.ABCMeta):
 
         Args:
           ctx: A TensorBoard `RequestContext` value.
-          experiment_ids: A List[string] of IDs of the enclosing experiments.
+          experiment_ids: A Collection[string] of IDs of the enclosing
+            experiments.
 
         Returns:
-          A List[Hyperparameter] describing the hyperparameter metadata for the
-          experiments.
+          A Collection[Hyperparameter] describing the hyperparameter metadata
+          for the experiments.
 
         Raises:
           tensorboard.errors.PublicError: See `DataProvider` class docstring.
@@ -521,11 +522,11 @@ class HyperparameterDomainType(enum.Enum):
 
     # A range of numeric values. Normally represented as Tuple[float, float].
     INTERVAL = "interval"
-    # A finite set of numeric values. Normally represented as List[float].
+    # A finite set of numeric values. Normally represented as Collection[float].
     DISCRETE_FLOAT = "discrete_float"
-    # A finite set of string values. Normally represented as List[string].
+    # A finite set of string values. Normally represented as Collection[string].
     DISCRETE_STRING = "discrete_string"
-    # A finite set of bool values. Normally represented as List[bool].
+    # A finite set of bool values. Normally represented as Collection[bool].
     DISCRETE_BOOL = "discrete_bool"
 
 
@@ -543,13 +544,12 @@ class Hyperparameter:
 
         If domain_type is INTERVAL, a Tuple[float, float] describing the
           range of numeric values.
-        If domain_type is DISCRETE_FLOAT, a List[float] describing the finite
-          set of numeric values.
-        If domain_type is DISCRETE_STRING, a List[string] describing the finite
-          set of string values.
-        If domain_type is DISCRETE_BOOL, a List[bool] describing the finite set
-          of known bool values. (A subset of [True, False], possibly [True] and
-          possibly [False] and possibly []).
+        If domain_type is DISCRETE_FLOAT, a Collection[float] describing the
+          finite set of numeric values.
+        If domain_type is DISCRETE_STRING, a Collection[string] describing the
+          finite set of string values.
+        If domain_type is DISCRETE_BOOL, a Collection[bool] describing the
+          finite set of bool values.
     """
 
     __slots__ = (
