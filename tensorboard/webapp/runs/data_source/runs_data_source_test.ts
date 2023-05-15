@@ -42,11 +42,11 @@ describe('TBRunsDataSource test', () => {
   });
 
   describe('fetchRuns', () => {
-    it('fetches from "data/runs"', fakeAsync(() => {
+    it('fetches from "/experiment/${experimentId}/data/runs"', fakeAsync(() => {
       const results = jasmine.createSpy();
       dataSource.fetchRuns('exp1').subscribe(results);
 
-      httpMock.expectOne('data/runs').flush(['foo', 'bar']);
+      httpMock.expectOne('/experiment/exp1/data/runs').flush(['foo', 'bar']);
       // Flush the promise in the microtask.
       flush();
 
