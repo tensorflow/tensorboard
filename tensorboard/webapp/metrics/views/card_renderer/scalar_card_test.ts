@@ -2414,7 +2414,6 @@ describe('scalar card', () => {
           end: null,
         });
         store.refreshState();
-        tick();
         fixture.detectChanges();
 
         testController.stopDrag();
@@ -2437,7 +2436,6 @@ describe('scalar card', () => {
           end: null,
         });
         store.refreshState();
-        tick();
         fixture.detectChanges();
 
         testController.stopDrag();
@@ -3893,7 +3891,6 @@ describe('scalar card', () => {
           end: null,
         });
         store.refreshState();
-        tick();
         fixture.detectChanges();
 
         // One start fob
@@ -3916,7 +3913,6 @@ describe('scalar card', () => {
         });
         store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
         store.refreshState();
-        tick();
         fixture.detectChanges();
 
         // One start fob, one end fob
@@ -3992,7 +3988,6 @@ describe('scalar card', () => {
           end: null,
         });
         store.refreshState();
-        tick();
         fixture.detectChanges();
 
         testController.stopDrag();
@@ -4053,7 +4048,6 @@ describe('scalar card', () => {
           end: null,
         });
         store.refreshState();
-        tick();
         fixture.detectChanges();
 
         testController.stopDrag();
