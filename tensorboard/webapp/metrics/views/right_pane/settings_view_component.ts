@@ -31,7 +31,6 @@ import {
   TooltipSort,
   XAxisType,
 } from '../../types';
-import {LinkedTimeSelectionChanged} from './types';
 
 const SLIDER_AUDIT_TIME_MS = 250;
 
@@ -73,8 +72,6 @@ export class SettingsViewComponent {
   @Input() isSlideOutMenuOpen!: boolean;
 
   @Output() linkedTimeToggled = new EventEmitter<void>();
-  @Output()
-  linkedTimeSelectionChanged = new EventEmitter<LinkedTimeSelectionChanged>();
 
   @Output() stepSelectorToggled = new EventEmitter<void>();
   @Output() rangeSelectionToggled = new EventEmitter<void>();
