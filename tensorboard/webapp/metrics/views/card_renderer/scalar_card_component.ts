@@ -98,7 +98,6 @@ export class ScalarCardComponent<Downloader> {
   @Input() columnCustomizationEnabled!: boolean;
   @Input() linkedTimeSelection: TimeSelectionView | undefined;
   @Input() stepOrLinkedTimeSelection: TimeSelection | undefined;
-  @Input() isProspectiveFobFeatureEnabled: Boolean = false;
   @Input() minMaxStep!: MinMaxStep;
   @Input() userViewBox!: Extent | null;
   @Input() columnHeaders!: ColumnHeader[];
@@ -249,11 +248,7 @@ export class ScalarCardComponent<Downloader> {
   }
 
   showFobController() {
-    return (
-      this.xAxisType === XAxisType.STEP &&
-      this.minMaxStep &&
-      (this.stepOrLinkedTimeSelection || this.isProspectiveFobFeatureEnabled)
-    );
+    return this.xAxisType === XAxisType.STEP && this.minMaxStep;
   }
 
   canExpandTable() {

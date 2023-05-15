@@ -93,8 +93,6 @@ describe('metrics right_pane', () => {
       );
       store.overrideSelector(selectors.getIsFeatureFlagsLoaded, true);
       store.overrideSelector(selectors.getIsMetricsImageSupportEnabled, true);
-      store.overrideSelector(selectors.getIsLinkedTimeEnabled, false);
-      store.overrideSelector(selectors.getIsDataTableEnabled, false);
       store.overrideSelector(
         selectors.getIsScalarColumnCustomizationEnabled,
         false
@@ -104,7 +102,6 @@ describe('metrics right_pane', () => {
       store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
       store.overrideSelector(selectors.getMetricsRangeSelectionEnabled, false);
       store.overrideSelector(selectors.isMetricsSlideoutMenuOpen, false);
-      store.overrideSelector(selectors.getAllowRangeSelection, false);
       store.overrideSelector(selectors.getMetricsLinkedTimeSelectionSetting, {
         start: {step: 0},
         end: {step: 1000},
@@ -377,30 +374,7 @@ describe('metrics right_pane', () => {
       });
     });
 
-    it('does not display link time setting on link time disabled', () => {
-      store.overrideSelector(selectors.getIsLinkedTimeEnabled, false);
-      const fixture = TestBed.createComponent(SettingsViewContainer);
-      fixture.detectChanges();
-
-      const el = fixture.debugElement.query(By.css('.linked-time'));
-      expect(el).toBeFalsy();
-    });
-
-    it('does not display step selector setting on step selector disabled', () => {
-      store.overrideSelector(selectors.getIsDataTableEnabled, false);
-      const fixture = TestBed.createComponent(SettingsViewContainer);
-      fixture.detectChanges();
-
-      const el = fixture.debugElement.query(By.css('.scalars-step-selector'));
-      expect(el).toBeFalsy();
-    });
-
-    describe('linked time feature enabled', () => {
-      beforeEach(() => {
-        store.overrideSelector(selectors.getIsDataTableEnabled, true);
-        store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
-      });
-
+    describe('linked time checkbox', () => {
       it('enables the feature only when xAxisType=STEP', () => {
         store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
         const fixture = TestBed.createComponent(SettingsViewContainer);
@@ -421,37 +395,31 @@ describe('metrics right_pane', () => {
         expect(el.properties['disabled']).toBe(true);
       });
 
-      describe('toggles', () => {
-        it('renders and dispatches action when toggling the feature', () => {
-          store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, false);
-          const fixture = TestBed.createComponent(SettingsViewContainer);
-          fixture.detectChanges();
+      it('renders and dispatches action when toggling the feature', () => {
+        store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, false);
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
 
-          const el = fixture.debugElement.query(By.css('.linked-time'));
-          const [enabled] = el.queryAll(By.css('mat-checkbox input'));
-          expect(enabled.nativeElement.ariaChecked).toBe('false');
+        const el = fixture.debugElement.query(By.css('.linked-time'));
+        const [enabled] = el.queryAll(By.css('mat-checkbox input'));
+        expect(enabled.nativeElement.ariaChecked).toBe('false');
 
-          enabled.nativeElement.click();
+        enabled.nativeElement.click();
 
-          expect(dispatchSpy).toHaveBeenCalledOnceWith(
-            actions.linkedTimeToggled({
-              affordance: TimeSelectionToggleAffordance.CHECK_BOX,
-            })
-          );
+        expect(dispatchSpy).toHaveBeenCalledOnceWith(
+          actions.linkedTimeToggled({
+            affordance: TimeSelectionToggleAffordance.CHECK_BOX,
+          })
+        );
 
-          store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, true);
-          store.refreshState();
-          fixture.detectChanges();
-          expect(enabled.nativeElement.ariaChecked).toBe('true');
-        });
+        store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, true);
+        store.refreshState();
+        fixture.detectChanges();
+        expect(enabled.nativeElement.ariaChecked).toBe('true');
       });
     });
 
-    describe('step selector feature enabled', () => {
-      beforeEach(() => {
-        store.overrideSelector(selectors.getIsDataTableEnabled, true);
-      });
-
+    describe('step selector checkbox', () => {
       it('renders', () => {
         const fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
@@ -487,97 +455,93 @@ describe('metrics right_pane', () => {
           })
         );
       });
+    });
 
-      describe('range selection', () => {
-        beforeEach(() => {
-          store.overrideSelector(selectors.getAllowRangeSelection, true);
-        });
+    describe('range selection', () => {
+      it('renders the Range Selection checkbox', () => {
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
 
-        it('renders the Range Selection checkbox', () => {
-          const fixture = TestBed.createComponent(SettingsViewContainer);
-          fixture.detectChanges();
+        expect(
+          fixture.debugElement.query(By.css('.range-selection mat-checkbox'))
+        ).toBeTruthy();
+      });
 
-          expect(
-            fixture.debugElement.query(By.css('.range-selection mat-checkbox'))
-          ).toBeTruthy();
-        });
+      it('only enables checkbox when X Axis Type is Step', () => {
+        store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
 
-        it('only enables checkbox when X Axis Type is Step', () => {
-          store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
-          const fixture = TestBed.createComponent(SettingsViewContainer);
-          fixture.detectChanges();
+        const checkbox = fixture.debugElement.query(
+          By.css('.range-selection mat-checkbox input')
+        );
+        expect(checkbox.properties['disabled']).toBe(false);
 
-          const checkbox = fixture.debugElement.query(
-            By.css('.range-selection mat-checkbox input')
-          );
-          expect(checkbox.properties['disabled']).toBe(false);
+        store.overrideSelector(
+          selectors.getMetricsXAxisType,
+          XAxisType.WALL_TIME
+        );
+        store.refreshState();
+        fixture.detectChanges();
 
-          store.overrideSelector(
-            selectors.getMetricsXAxisType,
-            XAxisType.WALL_TIME
-          );
-          store.refreshState();
-          fixture.detectChanges();
+        expect(checkbox.properties['disabled']).toBe(true);
+      });
 
-          expect(checkbox.properties['disabled']).toBe(true);
-        });
+      it('dispatches rangeSelectionToggled on toggle', () => {
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
 
-        it('dispatches rangeSelectionToggled on toggle', () => {
-          const fixture = TestBed.createComponent(SettingsViewContainer);
-          fixture.detectChanges();
+        select(fixture, '.range-selection input').nativeElement.click();
 
-          select(fixture, '.range-selection input').nativeElement.click();
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          actions.rangeSelectionToggled({
+            affordance: TimeSelectionToggleAffordance.CHECK_BOX,
+          })
+        );
+      });
+    });
 
-          expect(dispatchSpy).toHaveBeenCalledWith(
-            actions.rangeSelectionToggled({
-              affordance: TimeSelectionToggleAffordance.CHECK_BOX,
-            })
-          );
-        });
+    describe('edit table columns button', () => {
+      beforeEach(() => {
+        store.overrideSelector(
+          selectors.getIsScalarColumnCustomizationEnabled,
+          true
+        );
+      });
 
-        describe('slide out menu', () => {
-          beforeEach(() => {
-            store.overrideSelector(
-              selectors.getIsScalarColumnCustomizationEnabled,
-              true
-            );
-          });
+      it('dispatches metricsSlideoutMenuToggled when Edit Menu Toggle is clicked', () => {
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
 
-          it('dispatches metricsSlideoutMenuToggled when Edit Menu Toggle is clicked', () => {
-            const fixture = TestBed.createComponent(SettingsViewContainer);
-            fixture.detectChanges();
+        fixture.debugElement
+          .query(By.css('.column-edit-menu-toggle'))
+          .nativeElement.click();
 
-            fixture.debugElement
-              .query(By.css('.column-edit-menu-toggle'))
-              .nativeElement.click();
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          actions.metricsSlideoutMenuToggled()
+        );
+      });
 
-            expect(dispatchSpy).toHaveBeenCalledWith(
-              actions.metricsSlideoutMenuToggled()
-            );
-          });
+      it('renders without toggle-opened class when slideout is closed', () => {
+        store.overrideSelector(selectors.isMetricsSlideoutMenuOpen, false);
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
 
-          it('renders without toggle-opened class when slideout is closed', () => {
-            store.overrideSelector(selectors.isMetricsSlideoutMenuOpen, false);
-            const fixture = TestBed.createComponent(SettingsViewContainer);
-            fixture.detectChanges();
+        expect(
+          fixture.debugElement.query(By.css('.column-edit-menu-toggle'))
+            .nativeElement
+        ).not.toHaveClass('toggle-opened');
+      });
 
-            expect(
-              fixture.debugElement.query(By.css('.column-edit-menu-toggle'))
-                .nativeElement
-            ).not.toHaveClass('toggle-opened');
-          });
+      it('renders with toggle-opened class when slideout is open', () => {
+        store.overrideSelector(selectors.isMetricsSlideoutMenuOpen, true);
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
 
-          it('renders with toggle-opened class when slideout is open', () => {
-            store.overrideSelector(selectors.isMetricsSlideoutMenuOpen, true);
-            const fixture = TestBed.createComponent(SettingsViewContainer);
-            fixture.detectChanges();
-
-            expect(
-              fixture.debugElement.query(By.css('.column-edit-menu-toggle'))
-                .nativeElement
-            ).toHaveClass('toggle-opened');
-          });
-        });
+        expect(
+          fixture.debugElement.query(By.css('.column-edit-menu-toggle'))
+            .nativeElement
+        ).toHaveClass('toggle-opened');
       });
     });
   });

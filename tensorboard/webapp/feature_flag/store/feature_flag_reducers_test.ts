@@ -119,13 +119,13 @@ describe('feature_flag_reducers', () => {
       const nextState = reducers(
         prevState,
         actions.featureFlagOverrideChanged({
-          flags: {enabledLinkedTime: true},
+          flags: {forceSvg: true},
         })
       );
       expect(nextState.flagOverrides).toEqual({
         inColab: true,
         defaultEnableDarkMode: true,
-        enabledLinkedTime: true,
+        forceSvg: true,
       });
     });
 

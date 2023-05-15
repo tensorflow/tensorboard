@@ -238,10 +238,10 @@ describe('feature_flag_dialog_container', () => {
   describe('filters flags based on the value of showFlags feature', () => {
     beforeEach(() => {
       store.overrideSelector(getDefaultFeatureFlags, {
-        enabledLinkedTime: true,
-        enabledProspectiveFob: true,
+        defaultEnableDarkMode: true,
+        enableHparamsInTimeSeries: true,
         inColab: false,
-        allowRangeSelection: true,
+        forceSvg: true,
       } as FeatureFlags);
     });
 
@@ -269,15 +269,15 @@ describe('feature_flag_dialog_container', () => {
 
     it('only shows flags whose name includes filter', () => {
       store.overrideSelector(getOverriddenFeatureFlags, {
-        showFlags: 'enable',
+        showFlags: 'e',
       });
       createComponent();
       const component = getComponent();
 
-      expect(component.querySelectorAll('tr').length).toEqual(2);
+      expect(component.querySelectorAll('tr').length).toEqual(3);
 
       store.overrideSelector(getOverriddenFeatureFlags, {
-        showFlags: 'linked',
+        showFlags: 'Hparams',
       });
       store.refreshState();
       fixture.detectChanges();

@@ -47,7 +47,6 @@ import {
   getDarkModeEnabled,
   getExperimentIdForRunId,
   getExperimentIdToExperimentAliasMap,
-  getIsLinkedTimeProspectiveFobEnabled,
   getMetricsCardDataMinMax,
   getMetricsCardTimeSelection,
   getMetricsCardUserViewBox,
@@ -172,7 +171,6 @@ function isMinMaxStepValid(minMax: MinMaxStep | undefined): boolean {
       [useDarkMode]="useDarkMode$ | async"
       [linkedTimeSelection]="linkedTimeSelection$ | async"
       [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection$ | async"
-      [isProspectiveFobFeatureEnabled]="isProspectiveFobFeatureEnabled$ | async"
       [forceSvg]="forceSvg$ | async"
       [columnCustomizationEnabled]="columnCustomizationEnabled$ | async"
       [minMaxStep]="minMaxSteps$ | async"
@@ -228,9 +226,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   stepOrLinkedTimeSelection$?: Observable<TimeSelection | undefined>;
   cardState$?: Observable<Partial<CardState>>;
   rangeEnabled$?: Observable<boolean>;
-
-  readonly isProspectiveFobFeatureEnabled$: Observable<boolean> =
-    this.store.select(getIsLinkedTimeProspectiveFobEnabled);
 
   onVisibilityChange({visible}: {visible: boolean}) {
     this.isVisible = visible;

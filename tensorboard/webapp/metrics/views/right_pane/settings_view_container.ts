@@ -83,11 +83,6 @@ const RANGE_INPUT_SOURCE_TO_AFFORDANCE: Record<
       (imageContrastReset)="onImageContrastReset()"
       [imageShowActualSize]="imageShowActualSize$ | async"
       (imageShowActualSizeChanged)="onImageShowActualSizeChanged()"
-      [isLinkedTimeFeatureEnabled]="isLinkedTimeFeatureEnabled$ | async"
-      [isRangeSelectionAllowed]="isRangeSelectionAllowed$ | async"
-      [isScalarStepSelectorFeatureEnabled]="
-        isScalarStepSelectorFeatureEnabled$ | async
-      "
       [isScalarStepSelectorEnabled]="isScalarStepSelectorEnabled$ | async"
       [isScalarStepSelectorRangeEnabled]="
         isScalarStepSelectorRangeEnabled$ | async
@@ -112,14 +107,6 @@ const RANGE_INPUT_SOURCE_TO_AFFORDANCE: Record<
 export class SettingsViewContainer {
   constructor(private readonly store: Store<State>) {}
 
-  readonly isLinkedTimeFeatureEnabled$: Observable<boolean> = this.store.select(
-    selectors.getIsLinkedTimeEnabled
-  );
-  readonly isRangeSelectionAllowed$: Observable<boolean> = this.store.select(
-    selectors.getAllowRangeSelection
-  );
-  readonly isScalarStepSelectorFeatureEnabled$: Observable<boolean> =
-    this.store.select(selectors.getIsDataTableEnabled);
   readonly isScalarStepSelectorEnabled$: Observable<boolean> =
     this.store.select(selectors.getMetricsStepSelectorEnabled);
   readonly isScalarStepSelectorRangeEnabled$: Observable<boolean> =
