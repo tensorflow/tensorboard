@@ -34,11 +34,7 @@ import {
   TooltipSort,
   XAxisType,
 } from '../types';
-import {
-  ColumnHeader,
-  DataTableMode,
-  SortingInfo,
-} from '../views/card_renderer/scalar_card_types';
+import {SortingInfo, DataTableMode} from '../../widgets/data_table/types';
 import {Extent} from '../../widgets/line_chart_v2/lib/public_types';
 
 export const metricsSettingsPaneClosed = createAction(

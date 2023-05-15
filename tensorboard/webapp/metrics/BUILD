@@ -45,8 +45,8 @@ tf_ts_library(
     ],
     visibility = ["//tensorboard/webapp/metrics:__subpackages__"],
     deps = [
-        "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",
         "//tensorboard/webapp/widgets/card_fob:types",
+        "//tensorboard/webapp/widgets/data_table:types",
         "//tensorboard/webapp/widgets/histogram:types",
     ],
 )
@@ -88,8 +88,8 @@ tf_ts_library(
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",
         "//tensorboard/webapp/metrics/store:types",
-        "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",
         "//tensorboard/webapp/types",
+        "//tensorboard/webapp/widgets/data_table:types",
         "//tensorboard/webapp/widgets/histogram:types",
         "@npm//@angular/core",
         "@npm//@types/jasmine",

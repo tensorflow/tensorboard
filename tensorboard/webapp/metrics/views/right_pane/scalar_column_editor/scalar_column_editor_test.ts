@@ -38,7 +38,7 @@ import {
 import {
   ColumnHeaderType,
   DataTableMode,
-} from '../../card_renderer/scalar_card_types';
+} from '../../../../widgets/data_table/types';
 import {DataTableHeaderModule} from '../../../../widgets/data_table/data_table_header_module';
 import {ScalarColumnEditorComponent} from './scalar_column_editor_component';
 import {ScalarColumnEditorContainer} from './scalar_column_editor_container';

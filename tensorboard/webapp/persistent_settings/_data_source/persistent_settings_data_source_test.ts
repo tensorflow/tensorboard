@@ -16,7 +16,7 @@ import {Injectable} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {firstValueFrom} from 'rxjs';
 import {TooltipSort} from '../../metrics/types';
-import {ColumnHeaderType} from '../../metrics/views/card_renderer/scalar_card_types';
+import {ColumnHeaderType} from '../../widgets/data_table/types';
 import {
   OSSSettingsConverter,
   PersistentSettingsDataSourceImpl,

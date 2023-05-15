@@ -99,8 +99,6 @@ import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {DataDownloadDialogContainer} from './data_download_dialog_container';
 import {
-  ColumnHeader,
-  DataTableMode,
   MinMaxStep,
   PartialSeries,
   PartitionedSeries,
@@ -108,8 +106,12 @@ import {
   ScalarCardPoint,
   ScalarCardSeriesMetadataMap,
   SeriesType,
-  SortingInfo,
 } from './scalar_card_types';
+import {
+  ColumnHeader,
+  DataTableMode,
+  SortingInfo,
+} from '../../../widgets/data_table/types';
 import {
   maybeClipTimeSelectionView,
   partitionSeries,

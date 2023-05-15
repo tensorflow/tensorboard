@@ -18,7 +18,7 @@ import {
   ColumnHeader,
   ColumnHeaderType,
   DataTableMode,
-} from './views/card_renderer/scalar_card_types';
+} from '../widgets/data_table/types';
 
 export {HistogramMode, TimeSelection};
 

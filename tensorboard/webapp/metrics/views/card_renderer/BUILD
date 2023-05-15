@@ -240,6 +240,7 @@ tf_ts_library(
     ],
     deps = [
         "//tensorboard/webapp/experiments:types",
+        "//tensorboard/webapp/widgets/data_table:types",
         "//tensorboard/webapp/widgets/line_chart_v2",
     ],
 )
@@ -321,6 +322,7 @@ tf_ng_module(
         "//tensorboard/webapp/widgets/card_fob",
         "//tensorboard/webapp/widgets/card_fob:types",
         "//tensorboard/webapp/widgets/data_table",
+        "//tensorboard/webapp/widgets/data_table:types",
         "//tensorboard/webapp/widgets/experiment_alias",
         "//tensorboard/webapp/widgets/intersection_observer",
         "//tensorboard/webapp/widgets/line_chart_v2",
@@ -392,6 +394,7 @@ tf_ts_library(
         "//tensorboard/webapp/widgets/card_fob",
         "//tensorboard/webapp/widgets/card_fob:types",
         "//tensorboard/webapp/widgets/data_table",
+        "//tensorboard/webapp/widgets/data_table:types",
         "//tensorboard/webapp/widgets/experiment_alias",
         "//tensorboard/webapp/widgets/histogram:types",
         "//tensorboard/webapp/widgets/intersection_observer:intersection_observer_testing",

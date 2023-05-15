@@ -108,14 +108,16 @@ import {ScalarCardContainer} from './scalar_card_container';
 import {ScalarCardDataTable} from './scalar_card_data_table';
 import {ScalarCardFobController} from './scalar_card_fob_controller';
 import {
-  ColumnHeader,
-  ColumnHeaderType,
-  DataTableMode,
   ScalarCardPoint,
   ScalarCardSeriesMetadata,
   SeriesType,
-  SortingOrder,
 } from './scalar_card_types';
+import {
+  ColumnHeader,
+  ColumnHeaderType,
+  DataTableMode,
+  SortingOrder,
+} from '../../../widgets/data_table/types';
 import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_warning_module';
 import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {provideMockTbStore} from '../../../testing/utils';

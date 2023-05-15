@@ -42,7 +42,7 @@ import {
   StepDatum,
 } from './store/metrics_types';
 import {CardId, CardMetadata, TooltipSort, XAxisType} from './types';
-import {DataTableMode} from './views/card_renderer/scalar_card_types';
+import {DataTableMode} from '../widgets/data_table/types';
 
 export function buildMetricsSettingsState(
   overrides?: Partial<MetricsSettings>

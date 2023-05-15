@@ -27,7 +27,7 @@ import {
   getTableEditorSelectedTab,
 } from '../../../store/metrics_selectors';
 import {HeaderEditInfo, HeaderToggleInfo} from '../../../types';
-import {DataTableMode} from '../../card_renderer/scalar_card_types';
+import {DataTableMode} from '../../../../widgets/data_table/types';
 
 @Component({
   selector: 'metrics-scalar-column-editor',

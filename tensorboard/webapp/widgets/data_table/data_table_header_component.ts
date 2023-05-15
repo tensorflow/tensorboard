@@ -14,10 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {
-  ColumnHeaderType,
-  ColumnHeader,
-} from '../../metrics/views/card_renderer/scalar_card_types';
+import {ColumnHeader, ColumnHeaderType} from './types';
 
 @Component({
   selector: 'tb-data-table-header',
