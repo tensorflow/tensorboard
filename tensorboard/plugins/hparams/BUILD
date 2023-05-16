@@ -111,10 +111,7 @@ py_test(
         "//tensorboard:context",
         "//tensorboard:expect_protobuf_installed",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend/event_processing:data_provider",
-        "//tensorboard/backend/event_processing:event_multiplexer",
-        "//tensorboard/compat/proto:protos_all_py_pb2",
-        "//tensorboard/plugins/scalar:metadata",
+        "//tensorboard/data:provider",
     ],
 )
 
