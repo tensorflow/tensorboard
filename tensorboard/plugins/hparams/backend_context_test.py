@@ -22,15 +22,12 @@ import tensorflow as tf
 
 from google.protobuf import text_format
 from tensorboard import context
-from tensorboard.backend.event_processing import data_provider
-from tensorboard.backend.event_processing import plugin_event_multiplexer
-from tensorboard.compat.proto import summary_pb2
+from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import backend_context
 from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import plugin_data_pb2
-from tensorboard.plugins.scalar import metadata as scalars_metadata
 
 DATA_TYPE_EXPERIMENT = "experiment"
 DATA_TYPE_SESSION_START_INFO = "session_start_info"
@@ -43,32 +40,24 @@ class BackendContextTest(tf.test.TestCase):
 
     def setUp(self):
         self._mock_tb_context = base_plugin.TBContext()
-        # TODO(#3425): Remove mocking or switch to mocking data provider
-        # APIs directly.
-        self._mock_multiplexer = mock.create_autospec(
-            plugin_event_multiplexer.EventMultiplexer
+
+        self._mock_tb_context.data_provider = mock.create_autospec(
+            provider.DataProvider
         )
-        self._mock_tb_context.multiplexer = self._mock_multiplexer
-        self._mock_multiplexer.PluginRunToTagToContent.side_effect = (
-            self._mock_plugin_run_to_tag_to_content
+        self._mock_tb_context.data_provider.list_tensors.side_effect = (
+            self._mock_list_tensors
         )
-        self._mock_multiplexer.AllSummaryMetadata.side_effect = (
-            self._mock_all_summary_metadata
+        self._mock_tb_context.data_provider.list_scalars.side_effect = (
+            self._mock_list_scalars
         )
-        self._mock_multiplexer.SummaryMetadata.side_effect = (
-            self._mock_summary_metadata
-        )
-        self._mock_tb_context.data_provider = (
-            data_provider.MultiplexerDataProvider(
-                self._mock_multiplexer, "/path/to/logs"
-            )
-        )
+
         self.session_1_start_info_ = ""
         self.session_2_start_info_ = ""
         self.session_3_start_info_ = ""
 
-    def _mock_all_summary_metadata(self):
-        result = {}
+    def _mock_list_tensors(
+        self, ctx, *, experiment_id, plugin_name, run_tag_filter
+    ):
         hparams_content = {
             "exp/session_1": {
                 metadata.SESSION_START_INFO_TAG: self._serialized_plugin_data(
@@ -86,6 +75,28 @@ class BackendContextTest(tf.test.TestCase):
                 ),
             },
         }
+        result = {}
+        for (run, tag_to_content) in hparams_content.items():
+            result.setdefault(run, {})
+            for (tag, content) in tag_to_content.items():
+                t = provider.TensorTimeSeries(
+                    max_step=0,
+                    max_wall_time=0,
+                    plugin_content=content,
+                    description="",
+                    display_name="",
+                )
+                result[run][tag] = t
+        return result
+
+    def _mock_list_scalars(
+        self,
+        ctx,
+        *,
+        experiment_id,
+        plugin_name,
+        run_tag_filter=provider.RunTagFilter(),
+    ):
         scalars_content = {
             "exp/session_1": {"loss": b"", "accuracy": b""},
             "exp/session_1/eval": {
@@ -115,39 +126,19 @@ class BackendContextTest(tf.test.TestCase):
                 "loss2": b"",
             },
         }
-        for (run, tag_to_content) in hparams_content.items():
-            result.setdefault(run, {})
-            for (tag, content) in tag_to_content.items():
-                m = summary_pb2.SummaryMetadata()
-                m.data_class = summary_pb2.DATA_CLASS_TENSOR
-                m.plugin_data.plugin_name = metadata.PLUGIN_NAME
-                m.plugin_data.content = content
-                result[run][tag] = m
+        result = {}
         for (run, tag_to_content) in scalars_content.items():
             result.setdefault(run, {})
             for (tag, content) in tag_to_content.items():
-                m = summary_pb2.SummaryMetadata()
-                m.data_class = summary_pb2.DATA_CLASS_SCALAR
-                m.plugin_data.plugin_name = scalars_metadata.PLUGIN_NAME
-                m.plugin_data.content = content
-                result[run][tag] = m
+                t = provider.ScalarTimeSeries(
+                    max_step=0,
+                    max_wall_time=0,
+                    plugin_content=content,
+                    description="",
+                    display_name="",
+                )
+                result[run][tag] = t
         return result
-
-    def _mock_plugin_run_to_tag_to_content(self, plugin_name):
-        result = {}
-        for (
-            run,
-            tag_to_metadata,
-        ) in self._mock_multiplexer.AllSummaryMetadata().items():
-            for (tag, metadata) in tag_to_metadata.items():
-                if metadata.plugin_data.plugin_name != plugin_name:
-                    continue
-                result.setdefault(run, {})
-                result[run][tag] = metadata.plugin_data.content
-        return result
-
-    def _mock_summary_metadata(self, run, tag):
-        return self._mock_multiplexer.AllSummaryMetadata()[run][tag]
 
     def test_experiment_with_experiment_tag(self):
         experiment = """
@@ -158,14 +149,19 @@ class BackendContextTest(tf.test.TestCase):
         """
         run = "exp"
         tag = metadata.EXPERIMENT_TAG
-        m = summary_pb2.SummaryMetadata()
-        m.data_class = summary_pb2.DATA_CLASS_TENSOR
-        m.plugin_data.plugin_name = metadata.PLUGIN_NAME
-        m.plugin_data.content = self._serialized_plugin_data(
-            DATA_TYPE_EXPERIMENT, experiment
+        t = provider.TensorTimeSeries(
+            max_step=0,
+            max_wall_time=0,
+            plugin_content=self._serialized_plugin_data(
+                DATA_TYPE_EXPERIMENT, experiment
+            ),
+            description="",
+            display_name="",
         )
-        self._mock_multiplexer.AllSummaryMetadata.side_effect = None
-        self._mock_multiplexer.AllSummaryMetadata.return_value = {run: {tag: m}}
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._mock_tb_context.data_provider.list_tensors.return_value = {
+            run: {tag: t}
+        }
         ctxt = backend_context.Context(self._mock_tb_context)
         request_ctx = context.RequestContext()
         self.assertProtoEquals(
@@ -177,11 +173,11 @@ class BackendContextTest(tf.test.TestCase):
 
     def test_experiment_without_experiment_tag(self):
         self.session_1_start_info_ = """
-        hparams: [
-          {key: 'batch_size' value: {number_value: 100}},
-          {key: 'lr' value: {number_value: 0.01}},
-          {key: 'model_type' value: {string_value: 'CNN'}}
-        ]
+            hparams: [
+              {key: 'batch_size' value: {number_value: 100}},
+              {key: 'lr' value: {number_value: 0.01}},
+              {key: 'model_type' value: {string_value: 'CNN'}}
+            ]
         """
         self.session_2_start_info_ = """
             hparams:[
