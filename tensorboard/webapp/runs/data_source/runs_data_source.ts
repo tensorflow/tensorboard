@@ -83,18 +83,20 @@ export class TBRunsDataSource implements RunsDataSource {
   constructor(private readonly http: TBHttpClient) {}
 
   fetchRuns(experimentId: string): Observable<Run[]> {
-    return this.http.get<BackendGetRunsResponse>('data/runs').pipe(
-      map((runs) => {
-        return runs.map((run) => {
-          return {
-            id: runToRunId(run, experimentId),
-            name: run,
-            // Use a dummy startTime for now, until there is backend support.
-            startTime: 0,
-          };
-        });
-      })
-    );
+    return this.http
+      .get<BackendGetRunsResponse>(`/experiment/${experimentId}/data/runs`)
+      .pipe(
+        map((runs) => {
+          return runs.map((run) => {
+            return {
+              id: runToRunId(run, experimentId),
+              name: run,
+              // Use a dummy startTime for now, until there is backend support.
+              startTime: 0,
+            };
+          });
+        })
+      );
   }
 
   fetchHparamsMetadata(experimentId: string): Observable<HparamsAndMetadata> {
