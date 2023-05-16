@@ -16,6 +16,7 @@
 
 
 import abc
+import enum
 
 import numpy as np
 
@@ -93,6 +94,19 @@ class DataProvider(metaclass=abc.ABCMeta):
     providers may or may not fully support an empty experiment ID. The
     plugin name should correspond to the `plugin_data.plugin_name` field
     of the `SummaryMetadata` proto passed to `tf.summary.write`.
+
+    Additionally, the data provider interface specifies one *hyperparameter*
+    class, which is metadata about the parameters used to generate the data for
+    one or more runs within one or more experiments. Each hyperparameter has a
+    value type -- one of string, bool, and float. Each one also has a domain,
+    which describes the set of known values for that hyperparameter across the
+    given set of experiments.
+
+    Each run within an experiment may specify a value for a hyperparameter. Runs
+    that were generated together with the same set of hyperparameter values form
+    a hyperparameter session. When querying for hyperparameter values for a set
+    of experiments, the result will group runs by hyperparameter session and
+    provide one set of hyperparameter values for each group.
 
     All methods on this class take a `RequestContext` parameter as the
     first positional argument. This argument is temporarily optional to
@@ -358,6 +372,23 @@ class DataProvider(metaclass=abc.ABCMeta):
         """
         pass
 
+    def list_hyperparameters(self, ctx=None, *, experiment_ids):
+        """List hyperparameters metadata.
+
+        Args:
+          ctx: A TensorBoard `RequestContext` value.
+          experiment_ids: A Collection[string] of IDs of the enclosing
+            experiments.
+
+        Returns:
+          A Collection[Hyperparameter] describing the hyperparameter metadata
+          for the experiments.
+
+        Raises:
+          tensorboard.errors.PublicError: See `DataProvider` class docstring.
+        """
+        pass
+
 
 class ExperimentMetadata:
     """Metadata about an experiment.
@@ -484,6 +515,77 @@ class Run:
                 "start_time=%r" % (self._start_time,),
             )
         )
+
+
+class HyperparameterDomainType(enum.Enum):
+    """Describes how to represent the set of known values for a hyperparameter."""
+
+    # A range of numeric values. Normally represented as Tuple[float, float].
+    INTERVAL = "interval"
+    # A finite set of numeric values. Normally represented as Collection[float].
+    DISCRETE_FLOAT = "discrete_float"
+    # A finite set of string values. Normally represented as Collection[string].
+    DISCRETE_STRING = "discrete_string"
+    # A finite set of bool values. Normally represented as Collection[bool].
+    DISCRETE_BOOL = "discrete_bool"
+
+
+class Hyperparameter:
+    """Metadata about a hyperparameter.
+
+    Attributes:
+      hyperparameter_name: A string identifier for the hyperparameter that should be unique
+        in any result set of Hyperparameter objects.
+      hyperparameter_display_name: A displayable name for the hyperparameter.
+        Unlike hyperparameter_name, there is no uniqueness constraint.
+      domain_type: A HyperparameterDomainType describing how we represent the
+        set of known values in the `domain` attribute.
+      domain: A representation of the set of known values for the hyperparameter.
+
+        If domain_type is INTERVAL, a Tuple[float, float] describing the
+          range of numeric values.
+        If domain_type is DISCRETE_FLOAT, a Collection[float] describing the
+          finite set of numeric values.
+        If domain_type is DISCRETE_STRING, a Collection[string] describing the
+          finite set of string values.
+        If domain_type is DISCRETE_BOOL, a Collection[bool] describing the
+          finite set of bool values.
+    """
+
+    __slots__ = (
+        "_hyperparameter_name",
+        "_hyperparameter_display_name",
+        "_domain_type",
+        "_domain",
+    )
+
+    def __init__(
+        self,
+        hyperparameter_name,
+        hyperparameter_display_name,
+        domain_type,
+        domain,
+    ):
+        self._hyperparameter_name = hyperparameter_name
+        self._hyperparameter_display_name = hyperparameter_display_name
+        self._domain_type = domain_type
+        self._domain = domain
+
+    @property
+    def hyperparameter_name(self):
+        return self._hyperparameter_name
+
+    @property
+    def hyperparameter_display_name(self):
+        return self._hyperparameter_display_name
+
+    @property
+    def domain_type(self):
+        return self._domain_type
+
+    @property
+    def domain(self):
+        return self._domain
 
 
 class _TimeSeries:
