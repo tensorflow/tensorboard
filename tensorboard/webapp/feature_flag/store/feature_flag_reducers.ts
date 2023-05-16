@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
-import {globalSettingsLoaded, ThemeValue} from '../../persistent_settings';
+import {persistentSettingsLoaded, ThemeValue} from '../../persistent_settings';
 import * as actions from '../actions/feature_flag_actions';
 import {FeatureFlags} from '../types';
 import {initialState} from './feature_flag_store_config_provider';
@@ -72,7 +72,7 @@ const reducer = createReducer<FeatureFlagState>(
       flagOverrides: {},
     };
   }),
-  on(globalSettingsLoaded, (state, {partialSettings}) => {
+  on(persistentSettingsLoaded, (state, {partialSettings}) => {
     if (!partialSettings.themeOverride) {
       return state;
     }

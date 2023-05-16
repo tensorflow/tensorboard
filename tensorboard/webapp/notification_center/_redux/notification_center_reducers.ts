@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
-import {globalSettingsLoaded} from '../../persistent_settings';
+import {persistentSettingsLoaded} from '../../persistent_settings';
 import * as actions from './notification_center_actions';
 import {Notification, NotificationState} from './notification_center_types';
 
@@ -43,7 +43,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    globalSettingsLoaded,
+    persistentSettingsLoaded,
     (state: NotificationState, {partialSettings}): NotificationState => {
       if (
         typeof partialSettings.notificationLastReadTimeInMs === 'undefined' ||

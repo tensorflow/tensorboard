@@ -19,6 +19,14 @@ import {PersistableSettings} from '../_data_source/types';
  * Describes settings loaded from a global settings storage. Dispatched once
  * when the application bootstraps.
  */
+export const persistentSettingsLoaded = createAction(
+  '[Persistent Settings] Global Settings Loaded',
+  props<{
+    partialSettings: Partial<PersistableSettings>;
+  }>()
+);
+
+// TODO(b/279035032): Removes this function once internal import are renamed.
 export const globalSettingsLoaded = createAction(
   '[Persistent Settings] Global Settings Loaded',
   props<{
