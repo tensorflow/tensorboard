@@ -31,6 +31,7 @@ import {MatSortModule} from '@angular/material/sort';
 import {MatTableModule} from '@angular/material/table';
 import {ColorPickerModule} from 'ngx-color-picker';
 import {AlertModule} from '../../../alert/alert_module';
+import {DataTableModule} from '../../../widgets/data_table/data_table_module';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';
 import {RangeInputModule} from '../../../widgets/range_input/range_input_module';
@@ -45,6 +46,7 @@ import {RunsTableContainer} from './runs_table_container';
   imports: [
     ColorPickerModule,
     CommonModule,
+    DataTableModule,
     ExperimentAliasModule,
     FilterInputModule,
     MatFormFieldModule,
