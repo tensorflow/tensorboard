@@ -50,10 +50,14 @@ class BackendContextTest(tf.test.TestCase):
         self._mock_tb_context.data_provider.list_scalars.side_effect = (
             self._mock_list_scalars
         )
+        self._mock_tb_context.data_provider.list_hyperparameters.side_effect = (
+            self._mock_list_hyperparameters
+        )
 
         self.session_1_start_info_ = ""
         self.session_2_start_info_ = ""
         self.session_3_start_info_ = ""
+        self._hyperparameters = []
 
     def _mock_list_tensors(
         self, ctx, *, experiment_id, plugin_name, run_tag_filter
@@ -140,6 +144,27 @@ class BackendContextTest(tf.test.TestCase):
                 result[run][tag] = t
         return result
 
+    def _mock_list_hyperparameters(
+        self,
+        ctx,
+        *,
+        experiment_ids,
+    ):
+        return self._hyperparameters
+
+    def _experiment_from_metadata(self, max_domain_discrete_len=10):
+        """Calls the expected operations for generating an Experiment proto."""
+        ctxt = backend_context.Context(
+            self._mock_tb_context, max_domain_discrete_len
+        )
+        request_ctx = context.RequestContext()
+        return ctxt.experiment_from_metadata(
+            request_ctx,
+            "123",
+            ctxt.hparams_metadata(request_ctx, "123"),
+            ctxt.hparams_from_data_provider(request_ctx, "123"),
+        )
+
     def test_experiment_with_experiment_tag(self):
         experiment = """
             description: 'Test experiment'
@@ -162,14 +187,7 @@ class BackendContextTest(tf.test.TestCase):
         self._mock_tb_context.data_provider.list_tensors.return_value = {
             run: {tag: t}
         }
-        ctxt = backend_context.Context(self._mock_tb_context)
-        request_ctx = context.RequestContext()
-        self.assertProtoEquals(
-            experiment,
-            ctxt.experiment_from_metadata(
-                request_ctx, "123", ctxt.hparams_metadata(request_ctx, "123")
-            ),
-        )
+        self.assertProtoEquals(experiment, self._experiment_from_metadata())
 
     def test_experiment_without_experiment_tag(self):
         self.session_1_start_info_ = """
@@ -223,11 +241,7 @@ class BackendContextTest(tf.test.TestCase):
               name: {group: 'train', tag: 'loss'}
             }
         """
-        ctxt = backend_context.Context(self._mock_tb_context)
-        request_ctx = context.RequestContext()
-        actual_exp = ctxt.experiment_from_metadata(
-            request_ctx, "123", ctxt.hparams_metadata(request_ctx, "123")
-        )
+        actual_exp = self._experiment_from_metadata()
         _canonicalize_experiment(actual_exp)
         self.assertProtoEquals(expected_exp, actual_exp)
 
@@ -288,11 +302,7 @@ class BackendContextTest(tf.test.TestCase):
               name: {group: 'train', tag: 'loss'}
             }
         """
-        ctxt = backend_context.Context(self._mock_tb_context)
-        request_ctx = context.RequestContext()
-        actual_exp = ctxt.experiment_from_metadata(
-            request_ctx, "123", ctxt.hparams_metadata(request_ctx, "123")
-        )
+        actual_exp = self._experiment_from_metadata()
         _canonicalize_experiment(actual_exp)
         self.assertProtoEquals(expected_exp, actual_exp)
 
@@ -344,30 +354,155 @@ class BackendContextTest(tf.test.TestCase):
               name: {group: 'train', tag: 'loss'}
             }
         """
-        ctxt = backend_context.Context(
-            self._mock_tb_context, max_domain_discrete_len=1
-        )
-        request_ctx = context.RequestContext()
-        actual_exp = ctxt.experiment_from_metadata(
-            request_ctx,
-            "123",
-            ctxt.hparams_metadata(request_ctx, "123"),
-        )
+        actual_exp = self._experiment_from_metadata(max_domain_discrete_len=1)
         _canonicalize_experiment(actual_exp)
         self.assertProtoEquals(expected_exp, actual_exp)
 
-    def test_experiment_without_any_hparams_summaries(self):
-        ctxt = backend_context.Context(
-            self._mock_tb_context, max_domain_discrete_len=1
-        )
+    def test_experiment_without_any_hparams(self):
         request_ctx = context.RequestContext()
-        actual_exp = ctxt.experiment_from_metadata(
-            request_ctx,
-            "123",
-            ctxt.hparams_metadata(request_ctx, "123"),
-        )
+        actual_exp = self._experiment_from_metadata()
         self.assertIsInstance(actual_exp, api_pb2.Experiment)
         self.assertProtoEquals("", actual_exp)
+
+    def test_experiment_from_data_provider_interval_hparam(self):
+        self._hyperparameters = [
+            provider.Hyperparameter(
+                hyperparameter_name="hparam1_name",
+                hyperparameter_display_name="hparam1_display_name",
+                domain_type=provider.HyperparameterDomainType.INTERVAL,
+                domain=(-10.0, 15),
+            )
+        ]
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        actual_exp = self._experiment_from_metadata()
+        expected_exp = """
+            hparam_infos: {
+              name: 'hparam1_name'
+              display_name: 'hparam1_display_name'
+              type: DATA_TYPE_FLOAT64
+              domain_interval: {
+                min_value: -10.0
+                max_value: 15
+              }
+            }
+        """
+        self.assertProtoEquals(expected_exp, actual_exp)
+
+    def test_experiment_from_data_provider_discrete_bool_hparam(self):
+        self._hyperparameters = [
+            provider.Hyperparameter(
+                hyperparameter_name="hparam1_name",
+                hyperparameter_display_name="hparam1_display_name",
+                domain_type=provider.HyperparameterDomainType.DISCRETE_BOOL,
+                domain=[True],
+            ),
+            provider.Hyperparameter(
+                hyperparameter_name="hparam2_name",
+                hyperparameter_display_name="hparam2_display_name",
+                domain_type=provider.HyperparameterDomainType.DISCRETE_BOOL,
+                domain=[True, False],
+            ),
+            provider.Hyperparameter(
+                hyperparameter_name="hparam3_name",
+                hyperparameter_display_name="hparam3_display_name",
+                domain_type=provider.HyperparameterDomainType.DISCRETE_BOOL,
+                domain=[False],
+            ),
+            provider.Hyperparameter(
+                hyperparameter_name="hparam4_name",
+                hyperparameter_display_name="hparam4_display_name",
+                domain_type=provider.HyperparameterDomainType.DISCRETE_BOOL,
+                domain=[],
+            ),
+        ]
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        actual_exp = self._experiment_from_metadata()
+        expected_exp = """
+            hparam_infos: {
+              name: 'hparam1_name'
+              display_name: 'hparam1_display_name'
+              type: DATA_TYPE_BOOL
+              domain_discrete: {
+                values: [{bool_value: true}]
+              }
+            }
+            hparam_infos: {
+              name: 'hparam2_name'
+              display_name: 'hparam2_display_name'
+              type: DATA_TYPE_BOOL
+              domain_discrete: {
+                values: [{bool_value: true}, {bool_value: false}]
+              }
+            }
+            hparam_infos: {
+              name: 'hparam3_name'
+              display_name: 'hparam3_display_name'
+              type: DATA_TYPE_BOOL
+              domain_discrete: {
+                values: [{bool_value: false}]
+              }
+            }
+            hparam_infos: {
+              name: 'hparam4_name'
+              display_name: 'hparam4_display_name'
+              type: DATA_TYPE_BOOL
+            }
+        """
+        self.assertProtoEquals(expected_exp, actual_exp)
+
+    def test_experiment_from_data_provider_discrete_float_hparam(self):
+        self._hyperparameters = [
+            provider.Hyperparameter(
+                hyperparameter_name="hparam1_name",
+                hyperparameter_display_name="hparam1_display_name",
+                domain_type=provider.HyperparameterDomainType.DISCRETE_FLOAT,
+                domain=[-1.0, 1.5, 0.0],
+            ),
+        ]
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        actual_exp = self._experiment_from_metadata()
+        expected_exp = """
+            hparam_infos: {
+              name: 'hparam1_name'
+              display_name: 'hparam1_display_name'
+              type: DATA_TYPE_FLOAT64
+              domain_discrete: {
+                values: [
+                  {number_value: -1.0},
+                  {number_value: 1.5},
+                  {number_value: 0.0}
+                ]
+              }
+            }
+        """
+        self.assertProtoEquals(expected_exp, actual_exp)
+
+    def test_experiment_from_data_provider_discrete_string_hparam(self):
+        self._hyperparameters = [
+            provider.Hyperparameter(
+                hyperparameter_name="hparam1_name",
+                hyperparameter_display_name="hparam1_display_name",
+                domain_type=provider.HyperparameterDomainType.DISCRETE_STRING,
+                domain=["one", "two", "aaaa"],
+            ),
+        ]
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        actual_exp = self._experiment_from_metadata()
+        expected_exp = """
+            hparam_infos: {
+              name: 'hparam1_name'
+              display_name: 'hparam1_display_name'
+              type: DATA_TYPE_STRING
+              domain_discrete: {
+                values: [
+                  {string_value: 'one'},
+                  {string_value: 'two'},
+                  {string_value: 'aaaa'}
+                ]
+              }
+            }
+        """
+        self.assertProtoEquals(expected_exp, actual_exp)
 
     def _serialized_plugin_data(self, data_oneof_field, text_protobuffer):
         oneof_type_dict = {

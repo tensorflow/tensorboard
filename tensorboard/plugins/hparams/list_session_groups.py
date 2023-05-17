@@ -58,7 +58,12 @@ class Handler:
         # Since an context.experiment() call may search through all the runs, we
         # cache it here.
         self._experiment = backend_context.experiment_from_metadata(
-            request_context, experiment_id, self._hparams_run_to_tag_to_content
+            request_context,
+            experiment_id,
+            self._hparams_run_to_tag_to_content,
+            self._backend_context.hparams_from_data_provider(
+                request_context, experiment_id
+            ),
         )
 
     def run(self):

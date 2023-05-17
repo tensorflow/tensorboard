@@ -43,4 +43,7 @@ class Handler:
             self._backend_context.hparams_metadata(
                 self._request_context, experiment_id
             ),
+            self._backend_context.hparams_from_data_provider(
+                self._request_context, experiment_id
+            ),
         )
