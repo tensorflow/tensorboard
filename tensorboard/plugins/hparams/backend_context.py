@@ -20,6 +20,7 @@ import collections
 import os
 
 
+from tensorboard.data import provider
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import metadata
 from google.protobuf import json_format
@@ -51,33 +52,56 @@ class Context:
         self._max_domain_discrete_len = max_domain_discrete_len
 
     def experiment_from_metadata(
-        self, ctx, experiment_id, hparams_run_to_tag_to_content
+        self,
+        ctx,
+        experiment_id,
+        hparams_run_to_tag_to_content,
+        hparams_from_data_provider,
     ):
-        """Returns the experiment protobuffer defining the experiment.
-
-        Accepts a dict containing the plugin contents for all summary tags
-        associated with the hparams plugin, as an optimization for callers
-        who already have this information available, so that this function
-        can minimize its calls to the underlying `DataProvider`.
+        """Returns the experiment proto defining the experiment.
 
         This method first attempts to find a metadata.EXPERIMENT_TAG tag and
-        retrieve the associated protobuffer. If no such tag is found, the method
-        will attempt to build a minimal experiment protobuffer by scanning for
-        all metadata.SESSION_START_INFO_TAG tags (to compute the hparam_infos
-        field of the experiment) and for all scalar tags (to compute the
-        metric_infos field of the experiment).
+        retrieve the associated proto.
+
+        If no such tag is found, the method will attempt to build a minimal
+        experiment proto by scanning for all metadata.SESSION_START_INFO_TAG
+        tags (to compute the hparam_infos field of the experiment) and for all
+        scalar tags (to compute the metric_infos field of the experiment).
+
+        If no metadata.EXPERIMENT_TAG nor metadata.SESSION_START_INFO_TAG tags
+        are found, then will build an experiment proto using the results from
+        DataProvider.list_hyperparameters().
+
+        Args:
+          experiment_id: String, from `plugin_util.experiment_id`.
+          hparams_run_to_tag_to_content: The output from an hparams_metadata()
+            call. A dict `d` such that `d[run][tag]` is a `bytes` value with the
+            summary metadata content for the keyed time series.
+          hparams_from_data_provider: The ouput from an data_provider_hparams()
+            call, corresponding to DataProvider.list_hyperparameters().
+            A Collection[provider.Hyperparameter].
 
         Returns:
-          The experiment protobuffer. If no tags are found from which an experiment
-          protobuffer can be built (possibly, because the event data has not been
-          completely loaded yet), returns an entirely empty experiment.
+          The experiment proto. If no data is found for an experiment proto to
+          be built, returns an entirely empty experiment.
         """
         experiment = self._find_experiment_tag(hparams_run_to_tag_to_content)
         if experiment:
             return experiment
-        return self._compute_experiment_from_runs(
+
+        experiment_from_runs = self._compute_experiment_from_runs(
             ctx, experiment_id, hparams_run_to_tag_to_content
         )
+        if experiment_from_runs:
+            return experiment_from_runs
+
+        experiment_from_data_provider = self._experiment_from_data_provider(
+            hparams_from_data_provider
+        )
+        if experiment_from_data_provider:
+            return experiment_from_data_provider
+
+        return api_pb2.Experiment()
 
     @property
     def tb_context(self):
@@ -159,6 +183,12 @@ class Context:
             for (run, tag_to_data) in data_provider_output.items()
         }
 
+    def hparams_from_data_provider(self, ctx, experiment_id):
+        """Calls DataProvider.list_hyperparameters() and returns the result."""
+        return self._tb_context.data_provider.list_hyperparameters(
+            ctx, experiment_ids=[experiment_id]
+        )
+
     def _find_experiment_tag(self, hparams_run_to_tag_to_content):
         """Finds the experiment associcated with the metadata.EXPERIMENT_TAG
         tag.
@@ -179,7 +209,7 @@ class Context:
     ):
         """Computes a minimal Experiment protocol buffer by scanning the runs.
 
-        Returns an empty Experiment if there are no hparam infos logged.
+        Returns None if there are no hparam infos logged.
         """
         hparam_infos = self._compute_hparam_infos(hparams_run_to_tag_to_content)
         if hparam_infos:
@@ -188,6 +218,9 @@ class Context:
             )
         else:
             metric_infos = []
+        if not hparam_infos and not metric_infos:
+            return None
+
         return api_pb2.Experiment(
             hparam_infos=hparam_infos, metric_infos=metric_infos
         )
@@ -272,6 +305,69 @@ class Context:
             result.domain_discrete.extend(distinct_values)
 
         return result
+
+    def _experiment_from_data_provider(
+        self,
+        hparams_from_data_provider,
+    ):
+        """Returns an experiment protobuffer based on data provider hparams.
+
+        Args:
+          hparams_from_data_provider: The ouput from an data_provider_hparams()
+            call, corresponding to DataProvider.list_hyperparameters().
+            A Collection[provider.Hyperparameter].
+
+        Returns:
+          The experiment proto. If there are no hyperparameters in the input,
+          returns None.
+        """
+        if not hparams_from_data_provider:
+            return None
+
+        hparam_infos = [
+            self._convert_data_provider_hparam(dp_hparam)
+            for dp_hparam in hparams_from_data_provider
+        ]
+        return api_pb2.Experiment(hparam_infos=hparam_infos)
+
+    def _convert_data_provider_hparam(self, dp_hparam):
+        """Builds am HParamInfo message from data provider Hyperparameter.
+
+        Args:
+          dp_hparams: The provider.Hyperparameter returned by the call to
+            provider.DataProvider.list_hyperparameters().
+
+        Returns:
+          An HParamInfo to include in the Experiment.
+        """
+        hparam_info = api_pb2.HParamInfo(
+            name=dp_hparam.hyperparameter_name,
+            display_name=dp_hparam.hyperparameter_display_name,
+        )
+        if dp_hparam.domain_type == provider.HyperparameterDomainType.INTERVAL:
+            hparam_info.type = api_pb2.DATA_TYPE_FLOAT64
+            (dp_hparam_min, dp_hparam_max) = dp_hparam.domain
+            hparam_info.domain_interval.min_value = dp_hparam_min
+            hparam_info.domain_interval.max_value = dp_hparam_max
+        elif (
+            dp_hparam.domain_type
+            == provider.HyperparameterDomainType.DISCRETE_BOOL
+        ):
+            hparam_info.type = api_pb2.DATA_TYPE_BOOL
+            hparam_info.domain_discrete.extend(dp_hparam.domain)
+        elif (
+            dp_hparam.domain_type
+            == provider.HyperparameterDomainType.DISCRETE_FLOAT
+        ):
+            hparam_info.type = api_pb2.DATA_TYPE_FLOAT64
+            hparam_info.domain_discrete.extend(dp_hparam.domain)
+        elif (
+            dp_hparam.domain_type
+            == provider.HyperparameterDomainType.DISCRETE_STRING
+        ):
+            hparam_info.type = api_pb2.DATA_TYPE_STRING
+            hparam_info.domain_discrete.extend(dp_hparam.domain)
+        return hparam_info
 
     def _compute_metric_infos(
         self, ctx, experiment_id, hparams_run_to_tag_to_content
