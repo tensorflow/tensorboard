@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
-import {globalSettingsLoaded} from '../../persistent_settings';
+import {persistentSettingsLoaded} from '../../persistent_settings';
 import {DataLoadState} from '../../types/data';
 import * as actions from './settings_actions';
-import {initialState, Settings, SettingsState} from './settings_types';
+import {Settings, SettingsState, initialState} from './settings_types';
 
 /**
  * Check if settings are ready to modify. We want to reject modifications to
@@ -82,7 +82,7 @@ const reducer = createReducer(
       },
     };
   }),
-  on(globalSettingsLoaded, (state, {partialSettings}) => {
+  on(persistentSettingsLoaded, (state, {partialSettings}) => {
     const nextSettings: Partial<Settings> = {};
 
     if (

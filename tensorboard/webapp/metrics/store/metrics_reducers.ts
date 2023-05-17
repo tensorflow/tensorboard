@@ -18,7 +18,7 @@ import {stateRehydratedFromUrl} from '../../app_routing/actions';
 import {createNamespaceContextedState} from '../../app_routing/namespaced_state_reducer_helper';
 import {RouteKind} from '../../app_routing/types';
 import * as coreActions from '../../core/actions';
-import {globalSettingsLoaded} from '../../persistent_settings';
+import {persistentSettingsLoaded} from '../../persistent_settings';
 import {DataLoadState} from '../../types/data';
 import {ElementId} from '../../util/dom';
 import {mapObjectValues} from '../../util/lang';
@@ -526,7 +526,7 @@ const reducer = createReducer(
     }
     return newState;
   }),
-  on(globalSettingsLoaded, (state, {partialSettings}) => {
+  on(persistentSettingsLoaded, (state, {partialSettings}) => {
     const metricsSettings: Partial<MetricsSettings> = {};
     if (
       partialSettings.tooltipSort &&

@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {Actions, createEffect, ofType, OnInitEffects} from '@ngrx/effects';
-import {Action, createAction, Store} from '@ngrx/store';
-import {EMPTY, merge, Observable} from 'rxjs';
+import {Actions, createEffect, ofType} from '@ngrx/effects';
+import {Store} from '@ngrx/store';
+import {EMPTY, Observable, merge} from 'rxjs';
 import {
   buffer,
   debounceTime,
@@ -29,12 +29,12 @@ import {
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
-import {PersistentSettingsConfigModule} from '../persistent_settings_config_module';
+import * as appRoutingActions from '../../app_routing/actions';
 import {PersistentSettingsDataSource} from '../_data_source/persistent_settings_data_source';
 import {PersistableSettings} from '../_data_source/types';
-import {globalSettingsLoaded} from './persistent_settings_actions';
+import {PersistentSettingsConfigModule} from '../persistent_settings_config_module';
+import {persistentSettingsLoaded} from './persistent_settings_actions';
 import {getShouldPersistSettings} from './persistent_settings_selectors';
-import * as appRoutingActions from '../../app_routing/actions';
 
 const DEBOUNCE_PERIOD_IN_MS = 500;
 
@@ -55,7 +55,7 @@ export class PersistentSettingsEffects {
         filter(([, shouldPersistSettings]) => shouldPersistSettings),
         mergeMap(() => this.dataSource.getSettings()),
         tap((partialSettings) => {
-          this.store.dispatch(globalSettingsLoaded({partialSettings}));
+          this.store.dispatch(persistentSettingsLoaded({partialSettings}));
         }),
         // Give time for reducers to react to the action in a microtask.
         delay(0),

@@ -13,7 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+export {PersistableSettings, ThemeValue} from './_data_source/types';
+// TODO(b/279035032): Removes globalSettingsLoaded export after internal import are renamed.
+export {
+  persistentSettingsLoaded,
+  globalSettingsLoaded,
+} from './_redux/persistent_settings_actions';
 export {PersistentSettingsConfigModule} from './persistent_settings_config_module';
 export {PersistentSettingsModule} from './persistent_settings_module';
-export {PersistableSettings, ThemeValue} from './_data_source/types';
-export {globalSettingsLoaded} from './_redux/persistent_settings_actions';
