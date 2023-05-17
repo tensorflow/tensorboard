@@ -388,7 +388,7 @@ class BackendContextTest(tf.test.TestCase):
         """
         self.assertProtoEquals(expected_exp, actual_exp)
 
-    def test_experiment_from_data_provider_discreet_bool_hparam(self):
+    def test_experiment_from_data_provider_discrete_bool_hparam(self):
         self._hyperparameters = [
             provider.Hyperparameter(
                 hyperparameter_name="hparam1_name",
@@ -450,7 +450,7 @@ class BackendContextTest(tf.test.TestCase):
         """
         self.assertProtoEquals(expected_exp, actual_exp)
 
-    def test_experiment_from_data_provider_discreet_float_hparam(self):
+    def test_experiment_from_data_provider_discrete_float_hparam(self):
         self._hyperparameters = [
             provider.Hyperparameter(
                 hyperparameter_name="hparam1_name",
@@ -477,7 +477,7 @@ class BackendContextTest(tf.test.TestCase):
         """
         self.assertProtoEquals(expected_exp, actual_exp)
 
-    def test_experiment_from_data_provider_discreet_string_hparam(self):
+    def test_experiment_from_data_provider_discrete_string_hparam(self):
         self._hyperparameters = [
             provider.Hyperparameter(
                 hyperparameter_name="hparam1_name",

@@ -26,6 +26,12 @@ from tensorboard.plugins.hparams import metadata
 from google.protobuf import json_format
 from tensorboard.plugins.scalar import metadata as scalar_metadata
 
+_DISCRETE_DOMAIN_TYPE_TO_DATA_TYPE = {
+    provider.HyperparameterDomainType.DISCRETE_BOOL: api_pb2.DATA_TYPE_BOOL,
+    provider.HyperparameterDomainType.DISCRETE_FLOAT: api_pb2.DATA_TYPE_FLOAT64,
+    provider.HyperparameterDomainType.DISCRETE_STRING: api_pb2.DATA_TYPE_STRING,
+}
+
 
 class Context:
     """Wraps the base_plugin.TBContext to stores additional data shared across
@@ -56,7 +62,7 @@ class Context:
         ctx,
         experiment_id,
         hparams_run_to_tag_to_content,
-        hparams_from_data_provider,
+        data_provider_hparams,
     ):
         """Returns the experiment proto defining the experiment.
 
@@ -77,7 +83,7 @@ class Context:
           hparams_run_to_tag_to_content: The output from an hparams_metadata()
             call. A dict `d` such that `d[run][tag]` is a `bytes` value with the
             summary metadata content for the keyed time series.
-          hparams_from_data_provider: The ouput from an data_provider_hparams()
+          data_provider_hparams: The ouput from an hparams_from_data_provider()
             call, corresponding to DataProvider.list_hyperparameters().
             A Collection[provider.Hyperparameter].
 
@@ -95,13 +101,14 @@ class Context:
         if experiment_from_runs:
             return experiment_from_runs
 
-        experiment_from_data_provider = self._experiment_from_data_provider(
-            hparams_from_data_provider
+        experiment_from_data_provider_hparams = (
+            self._experiment_from_data_provider_hparams(data_provider_hparams)
         )
-        if experiment_from_data_provider:
-            return experiment_from_data_provider
-
-        return api_pb2.Experiment()
+        return (
+            experiment_from_data_provider_hparams
+            if experiment_from_data_provider_hparams
+            else api_pb2.Experiment()
+        )
 
     @property
     def tb_context(self):
@@ -306,14 +313,14 @@ class Context:
 
         return result
 
-    def _experiment_from_data_provider(
+    def _experiment_from_data_provider_hparams(
         self,
-        hparams_from_data_provider,
+        data_provider_hparams,
     ):
         """Returns an experiment protobuffer based on data provider hparams.
 
         Args:
-          hparams_from_data_provider: The ouput from an data_provider_hparams()
+          data_provider_hparams: The ouput from an hparams_from_data_provider()
             call, corresponding to DataProvider.list_hyperparameters().
             A Collection[provider.Hyperparameter].
 
@@ -321,20 +328,20 @@ class Context:
           The experiment proto. If there are no hyperparameters in the input,
           returns None.
         """
-        if not hparams_from_data_provider:
+        if not data_provider_hparams:
             return None
 
         hparam_infos = [
             self._convert_data_provider_hparam(dp_hparam)
-            for dp_hparam in hparams_from_data_provider
+            for dp_hparam in data_provider_hparams
         ]
         return api_pb2.Experiment(hparam_infos=hparam_infos)
 
     def _convert_data_provider_hparam(self, dp_hparam):
-        """Builds am HParamInfo message from data provider Hyperparameter.
+        """Builds an HParamInfo message from data provider Hyperparameter.
 
         Args:
-          dp_hparams: The provider.Hyperparameter returned by the call to
+          dp_hparam: The provider.Hyperparameter returned by the call to
             provider.DataProvider.list_hyperparameters().
 
         Returns:
@@ -349,23 +356,10 @@ class Context:
             (dp_hparam_min, dp_hparam_max) = dp_hparam.domain
             hparam_info.domain_interval.min_value = dp_hparam_min
             hparam_info.domain_interval.max_value = dp_hparam_max
-        elif (
-            dp_hparam.domain_type
-            == provider.HyperparameterDomainType.DISCRETE_BOOL
-        ):
-            hparam_info.type = api_pb2.DATA_TYPE_BOOL
-            hparam_info.domain_discrete.extend(dp_hparam.domain)
-        elif (
-            dp_hparam.domain_type
-            == provider.HyperparameterDomainType.DISCRETE_FLOAT
-        ):
-            hparam_info.type = api_pb2.DATA_TYPE_FLOAT64
-            hparam_info.domain_discrete.extend(dp_hparam.domain)
-        elif (
-            dp_hparam.domain_type
-            == provider.HyperparameterDomainType.DISCRETE_STRING
-        ):
-            hparam_info.type = api_pb2.DATA_TYPE_STRING
+        elif dp_hparam.domain_type in _DISCRETE_DOMAIN_TYPE_TO_DATA_TYPE.keys():
+            hparam_info.type = _DISCRETE_DOMAIN_TYPE_TO_DATA_TYPE.get(
+                dp_hparam.domain_type
+            )
             hparam_info.domain_discrete.extend(dp_hparam.domain)
         return hparam_info
 
