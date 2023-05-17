@@ -27,9 +27,4 @@ export const persistentSettingsLoaded = createAction(
 );
 
 // TODO(b/279035032): Removes this function once internal import are renamed.
-export const globalSettingsLoaded = createAction(
-  '[Persistent Settings] Global Settings Loaded',
-  props<{
-    partialSettings: Partial<PersistableSettings>;
-  }>()
-);
+export const globalSettingsLoaded = persistentSettingsLoaded;
