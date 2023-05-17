@@ -3967,18 +3967,6 @@ describe('metrics reducers', () => {
       });
     });
 
-    describe('#timeSelectionCleared', () => {
-      it('clears linked time selection', () => {
-        const beforeState = buildMetricsState({
-          linkedTimeSelection: {start: {step: 4}, end: {step: 4}},
-        });
-
-        const nextState = reducers(beforeState, actions.timeSelectionCleared());
-
-        expect(nextState.linkedTimeSelection).toBeNull();
-      });
-    });
-
     describe('#rangeSelectionToggled', () => {
       it('toggles whether stepSelectorRange is enabled or not', () => {
         const state1 = buildMetricsState({

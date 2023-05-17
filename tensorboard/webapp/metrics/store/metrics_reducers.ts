@@ -1341,12 +1341,6 @@ const reducer = createReducer(
       cardStateMap: nextCardStateMap,
     };
   }),
-  on(actions.timeSelectionCleared, (state) => {
-    return {
-      ...state,
-      linkedTimeSelection: null,
-    };
-  }),
   on(actions.tableEditorTabChanged, (state, {tab}) => {
     return {
       ...state,

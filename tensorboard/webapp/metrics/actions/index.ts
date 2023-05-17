@@ -220,10 +220,6 @@ export const cardViewBoxChanged = createAction(
   props<{cardId: CardId; userViewBox: Extent | null}>()
 );
 
-export const timeSelectionCleared = createAction(
-  '[Metrics] Linked Time Selection Cleared'
-);
-
 export const linkedTimeToggled = createAction(
   '[Metrics] Linked Time Enable Toggle',
   props<{
