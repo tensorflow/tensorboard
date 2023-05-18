@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {globalSettingsLoaded} from '../../persistent_settings';
+import {persistentSettingsLoaded} from '../../persistent_settings';
 import * as notificationActions from './notification_center_actions';
 import * as notificationReducers from './notification_center_reducers';
 import {buildNotification, buildNotificationState} from './testing';
@@ -53,7 +53,7 @@ describe('notification reducers', () => {
     });
   });
 
-  describe('#globalSettingsLoaded', () => {
+  describe('#persistentSettingsLoaded', () => {
     it('sets lastReadTimestampInMs if its related state is present', () => {
       const state1 = buildNotificationState({
         lastReadTimestampInMs: 0,
@@ -61,7 +61,7 @@ describe('notification reducers', () => {
 
       const state2 = notificationReducers.reducers(
         state1,
-        globalSettingsLoaded({
+        persistentSettingsLoaded({
           partialSettings: {
             notificationLastReadTimeInMs: 500,
           },
@@ -77,7 +77,7 @@ describe('notification reducers', () => {
 
       const state2 = notificationReducers.reducers(
         state1,
-        globalSettingsLoaded({
+        persistentSettingsLoaded({
           partialSettings: {
             notificationLastReadTimeInMs: NaN,
           },
@@ -87,7 +87,7 @@ describe('notification reducers', () => {
 
       const state3 = notificationReducers.reducers(
         state2,
-        globalSettingsLoaded({
+        persistentSettingsLoaded({
           partialSettings: {},
         })
       );

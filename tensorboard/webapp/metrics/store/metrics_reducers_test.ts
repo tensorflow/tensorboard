@@ -16,7 +16,7 @@ import * as routingActions from '../../app_routing/actions';
 import {buildNavigatedAction, buildRoute} from '../../app_routing/testing';
 import {RouteKind} from '../../app_routing/types';
 import * as coreActions from '../../core/actions';
-import {globalSettingsLoaded} from '../../persistent_settings';
+import {persistentSettingsLoaded} from '../../persistent_settings';
 import {buildDeserializedState} from '../../routes/testing';
 import {DataLoadState} from '../../types/data';
 import {nextElementId} from '../../util/dom';
@@ -3309,7 +3309,7 @@ describe('metrics reducers', () => {
     });
   });
 
-  describe('#globalSettingsLoaded', () => {
+  describe('#persistentSettingsLoaded', () => {
     it('adds partial state from loading the settings to the (alphabetical) settings', () => {
       const beforeState = buildMetricsState({
         settings: buildMetricsSettingsState({
@@ -3325,7 +3325,7 @@ describe('metrics reducers', () => {
 
       const nextState = reducers(
         beforeState,
-        globalSettingsLoaded({
+        persistentSettingsLoaded({
           partialSettings: {
             ignoreOutliers: true,
             tooltipSort: TooltipSort.DESCENDING,
@@ -3354,7 +3354,7 @@ describe('metrics reducers', () => {
 
         const nextState = reducers(
           beforeState,
-          globalSettingsLoaded({
+          persistentSettingsLoaded({
             partialSettings: {
               tooltipSort: 'yo' as TooltipSort,
             },
@@ -3372,7 +3372,7 @@ describe('metrics reducers', () => {
 
       const nextState = reducers(
         beforeState,
-        globalSettingsLoaded({
+        persistentSettingsLoaded({
           partialSettings: {
             timeSeriesSettingsPaneOpened: false,
           },
@@ -3408,7 +3408,7 @@ describe('metrics reducers', () => {
 
       const nextState = reducers(
         beforeState,
-        globalSettingsLoaded({
+        persistentSettingsLoaded({
           partialSettings: {
             singleSelectionHeaders: [
               {
@@ -3488,7 +3488,7 @@ describe('metrics reducers', () => {
 
       const nextState = reducers(
         beforeState,
-        globalSettingsLoaded({
+        persistentSettingsLoaded({
           partialSettings: {
             rangeSelectionHeaders: [
               {
@@ -3558,7 +3558,7 @@ describe('metrics reducers', () => {
 
     const nextState = reducers(
       beforeState,
-      globalSettingsLoaded({
+      persistentSettingsLoaded({
         partialSettings: {
           stepSelectorEnabled: true,
         },
@@ -3579,7 +3579,7 @@ describe('metrics reducers', () => {
 
     const nextState = reducers(
       beforeState,
-      globalSettingsLoaded({
+      persistentSettingsLoaded({
         partialSettings: {
           rangeSelectionEnabled: true,
         },
@@ -3600,7 +3600,7 @@ describe('metrics reducers', () => {
 
     const nextState = reducers(
       beforeState,
-      globalSettingsLoaded({
+      persistentSettingsLoaded({
         partialSettings: {
           linkedTimeEnabled: true,
         },
