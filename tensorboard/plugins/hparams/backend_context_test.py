@@ -366,7 +366,7 @@ class BackendContextTest(tf.test.TestCase):
         """
         self.session_2_start_info_ = """
             hparams:[
-              {key: 'batch_size' value: {bool_value: false}}
+              {key: 'batch_size' value: {bool_value: true}}
             ]
         """
         self.session_3_start_info_ = """
@@ -394,16 +394,7 @@ class BackendContextTest(tf.test.TestCase):
               name: {group: 'train', tag: 'loss'}
             }
         """
-        ctxt = backend_context.Context(
-            self._mock_tb_context, max_domain_discrete_len=1
-        )
-        request_ctx = context.RequestContext()
-        actual_exp = ctxt.experiment_from_metadata(
-            request_ctx,
-            "123",
-            ctxt.hparams_metadata(request_ctx, "123"),
-            ctxt.hparams_from_data_provider(request_ctx, "123"),
-        )
+        actual_exp = self._experiment_from_metadata()
         _canonicalize_experiment(actual_exp)
         self.assertProtoEquals(expected_exp, actual_exp)
 
