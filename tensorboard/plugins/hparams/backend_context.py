@@ -311,6 +311,10 @@ class Context:
         ):
             result.domain_discrete.extend(distinct_values)
 
+        # If the result is a boolean, domain should be True and False
+        if result.type == api_pb2.DATA_TYPE_BOOL:
+            result.domain_discrete.extend([True, False])
+
         return result
 
     def _experiment_from_data_provider_hparams(

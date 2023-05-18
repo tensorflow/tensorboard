@@ -80,9 +80,9 @@ class BackendContextTest(tf.test.TestCase):
             },
         }
         result = {}
-        for (run, tag_to_content) in hparams_content.items():
+        for run, tag_to_content in hparams_content.items():
             result.setdefault(run, {})
-            for (tag, content) in tag_to_content.items():
+            for tag, content in tag_to_content.items():
                 t = provider.TensorTimeSeries(
                     max_step=0,
                     max_wall_time=0,
@@ -131,9 +131,9 @@ class BackendContextTest(tf.test.TestCase):
             },
         }
         result = {}
-        for (run, tag_to_content) in scalars_content.items():
+        for run, tag_to_content in scalars_content.items():
             result.setdefault(run, {})
-            for (tag, content) in tag_to_content.items():
+            for tag, content in tag_to_content.items():
                 t = provider.ScalarTimeSeries(
                     max_step=0,
                     max_wall_time=0,
@@ -355,6 +355,55 @@ class BackendContextTest(tf.test.TestCase):
             }
         """
         actual_exp = self._experiment_from_metadata(max_domain_discrete_len=1)
+        _canonicalize_experiment(actual_exp)
+        self.assertProtoEquals(expected_exp, actual_exp)
+
+    def test_experiment_with_bool_types(self):
+        self.session_1_start_info_ = """
+            hparams:[
+              {key: 'batch_size' value: {bool_value: true}}
+            ]
+        """
+        self.session_2_start_info_ = """
+            hparams:[
+              {key: 'batch_size' value: {bool_value: false}}
+            ]
+        """
+        self.session_3_start_info_ = """
+            hparams:[
+            ]
+        """
+        expected_exp = """
+            hparam_infos: {
+              name: 'batch_size'
+              type: DATA_TYPE_BOOL
+              domain_discrete: {
+                values: [{bool_value: true}, {bool_value: false}]
+              }
+            }
+            metric_infos: {
+              name: {group: '', tag: 'accuracy'}
+            }
+            metric_infos: {
+              name: {group: '', tag: 'loss'}
+            }
+            metric_infos: {
+              name: {group: 'eval', tag: 'loss'}
+            }
+            metric_infos: {
+              name: {group: 'train', tag: 'loss'}
+            }
+        """
+        ctxt = backend_context.Context(
+            self._mock_tb_context, max_domain_discrete_len=1
+        )
+        request_ctx = context.RequestContext()
+        actual_exp = ctxt.experiment_from_metadata(
+            request_ctx,
+            "123",
+            ctxt.hparams_metadata(request_ctx, "123"),
+            ctxt.hparams_from_data_provider(request_ctx, "123"),
+        )
         _canonicalize_experiment(actual_exp)
         self.assertProtoEquals(expected_exp, actual_exp)
 
