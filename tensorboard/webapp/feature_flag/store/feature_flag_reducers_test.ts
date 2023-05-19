@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {globalSettingsLoaded, ThemeValue} from '../../persistent_settings';
+import {persistentSettingsLoaded, ThemeValue} from '../../persistent_settings';
 import * as actions from '../actions/feature_flag_actions';
 import {buildFeatureFlag} from '../testing';
 import {reducers} from './feature_flag_reducers';
@@ -221,7 +221,7 @@ describe('feature_flag_reducers', () => {
     });
   });
 
-  describe('#globalSettingsLoaded', () => {
+  describe('#persistentSettingsLoaded', () => {
     it('sets dark mode overrides when global settings include it', () => {
       const prevState = buildFeatureFlagState({
         isFeatureFlagsLoaded: true,
@@ -232,7 +232,7 @@ describe('feature_flag_reducers', () => {
 
       const state1 = reducers(
         prevState,
-        globalSettingsLoaded({
+        persistentSettingsLoaded({
           partialSettings: {},
         })
       );
@@ -240,7 +240,7 @@ describe('feature_flag_reducers', () => {
 
       const state2 = reducers(
         prevState,
-        globalSettingsLoaded({
+        persistentSettingsLoaded({
           partialSettings: {themeOverride: ThemeValue.LIGHT},
         })
       );
@@ -248,7 +248,7 @@ describe('feature_flag_reducers', () => {
 
       const state3 = reducers(
         prevState,
-        globalSettingsLoaded({
+        persistentSettingsLoaded({
           partialSettings: {themeOverride: ThemeValue.DARK},
         })
       );
@@ -256,7 +256,7 @@ describe('feature_flag_reducers', () => {
 
       const state4 = reducers(
         prevState,
-        globalSettingsLoaded({
+        persistentSettingsLoaded({
           partialSettings: {themeOverride: ThemeValue.BROWSER_DEFAULT},
         })
       );
