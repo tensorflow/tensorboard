@@ -136,7 +136,7 @@ describe('data table', () => {
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(
-      By.css('header > .col')
+      By.css('.header > .col')
     );
 
     // The first header should always be blank as it is the run color column.
@@ -324,7 +324,7 @@ describe('data table', () => {
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(
-      By.css('header > .col')
+      By.css('.header > .col')
     );
     const dataElements = fixture.debugElement.queryAll(By.css('.row > .col'));
 
@@ -411,7 +411,7 @@ describe('data table', () => {
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(
-      By.css('header > .col')
+      By.css('.header > .col')
     );
 
     headerElements[3].triggerEventHandler('click', {});
@@ -458,7 +458,7 @@ describe('data table', () => {
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(
-      By.css('header > .col')
+      By.css('.header > .col')
     );
 
     headerElements[3].triggerEventHandler('click', {});
@@ -499,7 +499,7 @@ describe('data table', () => {
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(
-      By.css('header > .col')
+      By.css('.header > .col')
     );
 
     expect(
@@ -564,7 +564,7 @@ describe('data table', () => {
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(
-      By.css('header > .col')
+      By.css('.header > .col')
     );
 
     expect(
@@ -629,7 +629,7 @@ describe('data table', () => {
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(
-      By.css('header > .col')
+      By.css('.header > .col')
     );
 
     headerElements[2].query(By.css('.cell')).triggerEventHandler('dragstart');
@@ -699,7 +699,7 @@ describe('data table', () => {
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(
-      By.css('header > .col')
+      By.css('.header > .col')
     );
 
     headerElements[2].query(By.css('.cell')).triggerEventHandler('dragstart');
@@ -780,7 +780,7 @@ describe('data table', () => {
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(
-      By.css('header > .col')
+      By.css('.header > .col')
     );
     const dataElements = fixture.debugElement.queryAll(By.css('.row > .col'));
 
