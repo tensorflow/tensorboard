@@ -23,7 +23,7 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
   display: table;
   width: 100%;
 
-  header,
+  .header,
   .row {
     display: table-row;
   }
@@ -32,7 +32,7 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
     display: table-cell;
   }
 
-  header {
+  .header {
     background-color: mat.get-color-from-palette($tb-background, background);
     position: sticky;
     text-align: left;
