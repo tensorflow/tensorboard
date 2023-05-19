@@ -38,6 +38,7 @@ import {
 import {State} from '../../../app_state';
 import {ExperimentAlias} from '../../../experiments/types';
 import {
+  getEnableHparamsInTimeSeries,
   getForceSvgFeatureFlag,
   getIsScalarColumnCustomizationEnabled,
 } from '../../../feature_flag/store/feature_flag_selectors';
@@ -498,6 +499,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       }),
       combineLatestWith(
         this.store.select(getCurrentRouteRunSelection),
+        this.store.select(getEnableHparamsInTimeSeries),
         this.store.select(getFilteredRenderableRunsIdsFromRoute),
         this.store.select(getRunColorMap),
         this.store.select(getMetricsScalarSmoothing)
@@ -511,6 +513,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
         ([
           namedPartitionedSeries,
           runSelectionMap,
+          hparamsInTimeSeriesEnabled,
           renderableRuns,
           colorMap,
           smoothing,
@@ -539,7 +542,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
               visible: Boolean(
                 runSelectionMap &&
                   runSelectionMap.get(runId) &&
-                  renderableRuns.has(runId)
+                  (renderableRuns.has(runId) || !hparamsInTimeSeriesEnabled)
               ),
               color: colorMap[runId] ?? '#fff',
               aux: false,
