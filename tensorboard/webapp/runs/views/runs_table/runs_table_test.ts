@@ -3179,6 +3179,7 @@ describe('runs_table', () => {
     beforeEach(() => {
       store.overrideSelector(getEnableHparamsInTimeSeries, true);
     });
+
     it('renders data table when hparam flag is on', () => {
       const fixture = createComponent(['book']);
       fixture.detectChanges();
@@ -3192,10 +3193,8 @@ describe('runs_table', () => {
     });
 
     it('passes run name and color to data table', () => {
-      let selectSpy: jasmine.Spy;
-
       // To make sure we only return the runs when called with the right props.
-      selectSpy = spyOn(store, 'select').and.callThrough();
+      const selectSpy = spyOn(store, 'select').and.callThrough();
       selectSpy
         .withArgs(getRuns, {experimentId: 'book'})
         .and.returnValue(
