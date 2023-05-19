@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {globalSettingsLoaded} from '../../persistent_settings';
+import {persistentSettingsLoaded} from '../../persistent_settings';
 import {DataLoadState} from '../../types/data';
 import * as actions from '../actions';
 import {
@@ -591,14 +591,14 @@ describe('core reducer', () => {
     });
   });
 
-  describe('#globalSettingsLoaded', () => {
+  describe('#persistentSettingsLoaded', () => {
     it('loads sideBarWidthInPercent from settings when present', () => {
       const state = createCoreState({
         sideBarWidthInPercent: 0,
       });
       const nextState = reducers(
         state,
-        globalSettingsLoaded({partialSettings: {sideBarWidthInPercent: 40}})
+        persistentSettingsLoaded({partialSettings: {sideBarWidthInPercent: 40}})
       );
 
       expect(nextState.sideBarWidthInPercent).toBe(40);
@@ -610,7 +610,7 @@ describe('core reducer', () => {
       });
       const nextState = reducers(
         state,
-        globalSettingsLoaded({partialSettings: {}})
+        persistentSettingsLoaded({partialSettings: {}})
       );
 
       expect(nextState.sideBarWidthInPercent).toBe(0);
@@ -622,19 +622,23 @@ describe('core reducer', () => {
       });
       const state2 = reducers(
         state1,
-        globalSettingsLoaded({partialSettings: {sideBarWidthInPercent: 101}})
+        persistentSettingsLoaded({
+          partialSettings: {sideBarWidthInPercent: 101},
+        })
       );
       expect(state2.sideBarWidthInPercent).toBe(0);
 
       const state3 = reducers(
         state2,
-        globalSettingsLoaded({partialSettings: {sideBarWidthInPercent: -1}})
+        persistentSettingsLoaded({partialSettings: {sideBarWidthInPercent: -1}})
       );
       expect(state3.sideBarWidthInPercent).toBe(0);
 
       const state4 = reducers(
         state3,
-        globalSettingsLoaded({partialSettings: {sideBarWidthInPercent: NaN}})
+        persistentSettingsLoaded({
+          partialSettings: {sideBarWidthInPercent: NaN},
+        })
       );
       expect(state4.sideBarWidthInPercent).toBe(0);
     });

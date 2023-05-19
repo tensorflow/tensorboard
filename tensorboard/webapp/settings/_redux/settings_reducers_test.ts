@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {globalSettingsLoaded} from '../../persistent_settings';
+import {persistentSettingsLoaded} from '../../persistent_settings';
 import {DataLoadState} from '../../types/data';
 import {createSettings, createSettingsState} from '../testing';
 import * as actions from './settings_actions';
@@ -158,7 +158,7 @@ describe('settings reducer', () => {
     });
   });
 
-  describe('#globalSettingsLoaded', () => {
+  describe('#persistentSettingsLoaded', () => {
     it('loads settings from the persistent settings storage', () => {
       const state = createSettingsState({
         state: DataLoadState.LOADING,
@@ -171,7 +171,7 @@ describe('settings reducer', () => {
 
       const nextState = reducers(
         state,
-        globalSettingsLoaded({
+        persistentSettingsLoaded({
           partialSettings: {
             autoReloadPeriodInMs: 50000,
             pageSize: 10,
@@ -195,7 +195,7 @@ describe('settings reducer', () => {
 
       const nextState = reducers(
         state,
-        globalSettingsLoaded({
+        persistentSettingsLoaded({
           partialSettings: {
             autoReloadPeriodInMs: 10,
             pageSize: NaN,

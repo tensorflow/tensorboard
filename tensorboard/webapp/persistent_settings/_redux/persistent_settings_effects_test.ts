@@ -28,7 +28,7 @@ import {
   PersistentSettingsTestingDataSource,
   PersistentSettingsTestingDataSourceModule,
 } from '../_data_source/testing';
-import {globalSettingsLoaded} from './persistent_settings_actions';
+import {persistentSettingsLoaded} from './persistent_settings_actions';
 import {
   PersistentSettingsEffects,
   TEST_ONLY,
@@ -107,7 +107,7 @@ describe('persistent_settings effects test', () => {
         action.next(appRoutingActions.navigating({after: buildRoute()}));
 
         expect(actualActions).toEqual([
-          globalSettingsLoaded({
+          persistentSettingsLoaded({
             partialSettings: {
               ignoreOutliers: false,
             },
@@ -138,7 +138,7 @@ describe('persistent_settings effects test', () => {
 
         action.next(appRoutingActions.navigating({after: buildRoute()}));
         expect(actualActions).toEqual([
-          globalSettingsLoaded({
+          persistentSettingsLoaded({
             partialSettings: {
               ignoreOutliers: false,
             },
