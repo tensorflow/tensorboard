@@ -20,7 +20,7 @@ import {
   OnInit,
 } from '@angular/core';
 import {createSelector, Store} from '@ngrx/store';
-import {combineLatest, Observable, of, Subject} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, of, Subject} from 'rxjs';
 import {
   distinctUntilChanged,
   filter,
@@ -61,6 +61,12 @@ import {
 import {DataLoadState, LoadState} from '../../../types/data';
 import {SortDirection} from '../../../types/ui';
 import {matchRunToRegex} from '../../../util/matcher';
+import {getEnableHparamsInTimeSeries} from '../../../feature_flag/store/feature_flag_selectors';
+import {
+  ColumnHeaderType,
+  SortingOrder,
+  TableData,
+} from '../../../widgets/data_table/types';
 import {
   runColorChanged,
   runPageSelectionToggled,
@@ -194,6 +200,7 @@ function matchFilter(
   selector: 'runs-table',
   template: `
     <runs-table-component
+      *ngIf="!HParamsEnabled.value"
       [experimentIds]="experimentIds"
       [useFlexibleLayout]="useFlexibleLayout"
       [numSelectedItems]="numSelectedItems$ | async"
@@ -220,6 +227,16 @@ function matchFilter(
       (onHparamDiscreteFilterChanged)="onHparamDiscreteFilterChanged($event)"
       (onMetricFilterChanged)="onMetricFilterChanged($event)"
     ></runs-table-component>
+    <tb-data-table
+      *ngIf="HParamsEnabled.value"
+      [headers]="runsColumns"
+      [data]="allRunsTableData$ | async"
+      [sortingInfo]="sortingInfo"
+      [columnCustomizationEnabled]="columnCustomizationEnabled"
+      [smoothingEnabled]="smoothingEnabled"
+      (sortDataBy)="sortDataBy($event)"
+      (orderColumns)="orderColumns($event)"
+    ></tb-data-table>
   `,
   host: {
     '[class.flex-layout]': 'useFlexibleLayout',
@@ -239,11 +256,29 @@ function matchFilter(
 })
 export class RunsTableContainer implements OnInit, OnDestroy {
   private allUnsortedRunTableItems$?: Observable<RunTableItem[]>;
+  allRunsTableData$: Observable<TableData[]> = of([]);
   loading$: Observable<boolean> | null = null;
   filteredItemsLength$?: Observable<number>;
   allItemsLength$?: Observable<number>;
   pageItems$?: Observable<RunTableItem[]>;
   numSelectedItems$?: Observable<number>;
+
+  // TODO(jameshollyer): Move these values to ngrx and make these Observables.
+  runsColumns = [
+    {
+      type: ColumnHeaderType.RUN,
+      name: 'run',
+      displayName: 'Run',
+      enabled: true,
+    },
+  ];
+  sortingInfo = {
+    header: ColumnHeaderType.RUN,
+    name: 'run',
+    order: SortingOrder.ASCENDING,
+  };
+  columnCustomizationEnabled = true;
+  smoothingEnabled = false;
 
   hparamColumns$: Observable<HparamColumn[]> = of([]);
   metricColumns$: Observable<MetricColumn[]> = of([]);
@@ -275,6 +310,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   sortOption$ = this.store.select(getRunSelectorSort);
   paginationOption$ = this.store.select(getRunSelectorPaginationOption);
   regexFilter$ = this.store.select(getRunSelectorRegexFilter);
+  HParamsEnabled = new BehaviorSubject<boolean>(false);
   private readonly ngUnsubscribe = new Subject<void>();
 
   constructor(private readonly store: Store<State>) {}
@@ -286,8 +322,22 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.store.select(getEnableHparamsInTimeSeries).subscribe((enabled) => {
+      this.HParamsEnabled.next(enabled);
+    });
     const getRunTableItemsPerExperiment = this.experimentIds.map((id) =>
       this.getRunTableItemsForExperiment(id)
+    );
+
+    const getRunTableDataPerExperiment$ = this.experimentIds.map((id) =>
+      this.getRunTableDataForExperiment(id)
+    );
+
+    this.allRunsTableData$ = combineLatest(getRunTableDataPerExperiment$).pipe(
+      map((itemsForExperiments: TableData[][]) => {
+        const items = [] as TableData[];
+        return items.concat(...itemsForExperiments);
+      })
     );
 
     const rawAllUnsortedRunTableItems$ = combineLatest(
@@ -517,6 +567,34 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     );
 
     return slicedItems;
+  }
+
+  private getRunTableDataForExperiment(
+    experimentId: string
+  ): Observable<TableData[]> {
+    return combineLatest([
+      this.store.select(getRuns, {experimentId}),
+      this.store.select(getRunColorMap),
+    ]).pipe(
+      map(([runs, colorMap]) => {
+        return runs.map((run) => {
+          const tableData: TableData = {
+            id: run.id,
+            color: colorMap[run.id],
+          };
+          this.runsColumns.forEach((column) => {
+            switch (column.type) {
+              case ColumnHeaderType.RUN:
+                tableData[column.name!] = run.name;
+                break;
+              default:
+                break;
+            }
+          });
+          return tableData;
+        });
+      })
+    );
   }
 
   private getRunTableItemsForExperiment(

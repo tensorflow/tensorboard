@@ -44,6 +44,7 @@ import {buildExperimentRouteFromId} from '../../../app_routing/testing';
 import {RouteKind} from '../../../app_routing/types';
 import {State} from '../../../app_state';
 import {buildExperiment} from '../../../experiments/store/testing';
+import {getEnableHparamsInTimeSeries} from '../../../feature_flag/store/feature_flag_selectors';
 import {
   actions as hparamsActions,
   selectors as hparamsSelectors,
@@ -79,6 +80,8 @@ import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {provideMockTbStore} from '../../../testing/utils';
 import {DataLoadState} from '../../../types/data';
 import {SortDirection} from '../../../types/ui';
+import {DataTableModule} from '../../../widgets/data_table/data_table_module';
+import {DataTableComponent} from '../../../widgets/data_table/data_table_component';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';
 import {RangeInputModule} from '../../../widgets/range_input/range_input_module';
@@ -239,6 +242,7 @@ describe('runs_table', () => {
         FilterInputModule,
         RangeInputModule,
         ExperimentAliasModule,
+        DataTableModule,
       ],
       declarations: [
         RunsGroupMenuButtonComponent,
@@ -305,6 +309,7 @@ describe('runs_table', () => {
       settingsSelectors.getColorPalette,
       buildColorPalette()
     );
+    store.overrideSelector(getEnableHparamsInTimeSeries, false);
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
     });
@@ -3167,6 +3172,53 @@ describe('runs_table', () => {
           ['Book 1', '32', '', ''],
         ]);
       });
+    });
+  });
+
+  describe('runs data table', () => {
+    beforeEach(() => {
+      store.overrideSelector(getEnableHparamsInTimeSeries, true);
+    });
+
+    it('renders data table when hparam flag is on', () => {
+      const fixture = createComponent(['book']);
+      fixture.detectChanges();
+
+      expect(
+        fixture.debugElement.query(By.directive(DataTableComponent))
+      ).toBeTruthy();
+      expect(
+        fixture.nativeElement.querySelector('runs-table-component')
+      ).toBeFalsy();
+    });
+
+    it('passes run name and color to data table', () => {
+      // To make sure we only return the runs when called with the right props.
+      const selectSpy = spyOn(store, 'select').and.callThrough();
+      selectSpy
+        .withArgs(getRuns, {experimentId: 'book'})
+        .and.returnValue(
+          of([
+            buildRun({id: 'book1', name: "The Philosopher's Stone"}),
+            buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
+          ])
+        );
+
+      store.overrideSelector(getRunColorMap, {
+        book1: '#000',
+        book2: '#111',
+      });
+
+      const fixture = createComponent(['book']);
+      fixture.detectChanges();
+      const dataTableComponent = fixture.debugElement.query(
+        By.directive(DataTableComponent)
+      );
+
+      expect(dataTableComponent.componentInstance.data).toEqual([
+        {id: 'book1', color: '#000', run: "The Philosopher's Stone"},
+        {id: 'book2', color: '#111', run: 'The Chamber Of Secrets'},
+      ]);
     });
   });
 });
