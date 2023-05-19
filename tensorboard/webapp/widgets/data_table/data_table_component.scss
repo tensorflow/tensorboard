@@ -20,13 +20,24 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
 .data-table {
   border-spacing: 4px;
   font-size: 13px;
+  display: table;
   width: 100%;
 
-  th {
+  .header,
+  .row {
+    display: table-row;
+  }
+
+  .col {
+    display: table-cell;
+  }
+
+  .header {
     background-color: mat.get-color-from-palette($tb-background, background);
     position: sticky;
     text-align: left;
     top: 0;
+    font-weight: bold;
     vertical-align: bottom;
 
     &:hover {
@@ -36,11 +47,17 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
     @include tb-dark-theme {
       background-color: map-get($tb-dark-background, background);
     }
+    .col:hover .show-on-hover {
+      opacity: 0.3;
+    }
+
+    .col {
+      vertical-align: bottom;
+    }
   }
 
-  .cell {
-    align-items: center;
-    display: flex;
+  .col {
+    padding: 1px;
   }
 
   .extra-right-padding {
@@ -48,18 +65,7 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
     padding-right: 1px;
   }
 
-  .row {
-    white-space: nowrap;
-  }
-
   $_circle-size: 12px;
-
-  .row-circle {
-    align-items: center;
-    display: inline-flex;
-    height: $_circle-size;
-    width: $_circle-size;
-  }
 
   .row-circle > span {
     border-radius: 50%;
@@ -68,6 +74,12 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
     // Subtract by border width (1px on both sides)
     height: $_circle-size - 2px;
     width: $_circle-size - 2px;
+    vertical-align: middle;
+  }
+
+  .cell {
+    align-items: center;
+    display: flex;
   }
 
   .cell mat-icon {
@@ -87,10 +99,6 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
 
   .show-on-hover {
     opacity: 0;
-  }
-
-  th:hover .show-on-hover {
-    opacity: 0.3;
   }
 
   .highlight {

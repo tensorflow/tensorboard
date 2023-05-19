@@ -135,7 +135,9 @@ describe('data table', () => {
       ],
     });
     fixture.detectChanges();
-    const headerElements = fixture.debugElement.queryAll(By.css('th'));
+    const headerElements = fixture.debugElement.queryAll(
+      By.css('.header > .col')
+    );
 
     // The first header should always be blank as it is the run color column.
     expect(headerElements[0].nativeElement.innerText).toBe('');
@@ -258,7 +260,7 @@ describe('data table', () => {
       ],
     });
     fixture.detectChanges();
-    const dataElements = fixture.debugElement.queryAll(By.css('td'));
+    const dataElements = fixture.debugElement.queryAll(By.css('.row > .col'));
 
     // The first header should always be blank as it is the run color column.
     expect(dataElements[0].nativeElement.innerText).toBe('');
@@ -321,8 +323,10 @@ describe('data table', () => {
       ],
     });
     fixture.detectChanges();
-    const headerElements = fixture.debugElement.queryAll(By.css('th'));
-    const dataElements = fixture.debugElement.queryAll(By.css('td'));
+    const headerElements = fixture.debugElement.queryAll(
+      By.css('.header > .col')
+    );
+    const dataElements = fixture.debugElement.queryAll(By.css('.row > .col'));
 
     // The first header should always be blank as it is the run color column.
     expect(headerElements[0].nativeElement.innerText).toBe('');
@@ -366,7 +370,7 @@ describe('data table', () => {
       data: [{id: 'someid'}],
     });
     fixture.detectChanges();
-    const dataElements = fixture.debugElement.queryAll(By.css('td'));
+    const dataElements = fixture.debugElement.queryAll(By.css('.row > .col'));
 
     // The first header should always be blank as it is the run color column.
     expect(dataElements[0].nativeElement.innerText).toBe('');
@@ -406,7 +410,9 @@ describe('data table', () => {
       ],
     });
     fixture.detectChanges();
-    const headerElements = fixture.debugElement.queryAll(By.css('th'));
+    const headerElements = fixture.debugElement.queryAll(
+      By.css('.header > .col')
+    );
 
     headerElements[3].triggerEventHandler('click', {});
     expect(sortDataBySpy).toHaveBeenCalledOnceWith({
@@ -451,7 +457,9 @@ describe('data table', () => {
       },
     });
     fixture.detectChanges();
-    const headerElements = fixture.debugElement.queryAll(By.css('th'));
+    const headerElements = fixture.debugElement.queryAll(
+      By.css('.header > .col')
+    );
 
     headerElements[3].triggerEventHandler('click', {});
     expect(sortDataBySpy).toHaveBeenCalledOnceWith({
@@ -490,7 +498,9 @@ describe('data table', () => {
       },
     });
     fixture.detectChanges();
-    const headerElements = fixture.debugElement.queryAll(By.css('th'));
+    const headerElements = fixture.debugElement.queryAll(
+      By.css('.header > .col')
+    );
 
     expect(
       headerElements[1]
@@ -553,7 +563,9 @@ describe('data table', () => {
       },
     });
     fixture.detectChanges();
-    const headerElements = fixture.debugElement.queryAll(By.css('th'));
+    const headerElements = fixture.debugElement.queryAll(
+      By.css('.header > .col')
+    );
 
     expect(
       headerElements[1]
@@ -616,7 +628,9 @@ describe('data table', () => {
       },
     });
     fixture.detectChanges();
-    const headerElements = fixture.debugElement.queryAll(By.css('th'));
+    const headerElements = fixture.debugElement.queryAll(
+      By.css('.header > .col')
+    );
 
     headerElements[2].query(By.css('.cell')).triggerEventHandler('dragstart');
     headerElements[1].query(By.css('.cell')).triggerEventHandler('dragenter');
@@ -684,7 +698,9 @@ describe('data table', () => {
       },
     });
     fixture.detectChanges();
-    const headerElements = fixture.debugElement.queryAll(By.css('th'));
+    const headerElements = fixture.debugElement.queryAll(
+      By.css('.header > .col')
+    );
 
     headerElements[2].query(By.css('.cell')).triggerEventHandler('dragstart');
     headerElements[3].query(By.css('.cell')).triggerEventHandler('dragenter');
@@ -763,8 +779,10 @@ describe('data table', () => {
       smoothingEnabled: false,
     });
     fixture.detectChanges();
-    const headerElements = fixture.debugElement.queryAll(By.css('th'));
-    const dataElements = fixture.debugElement.queryAll(By.css('td'));
+    const headerElements = fixture.debugElement.queryAll(
+      By.css('.header > .col')
+    );
+    const dataElements = fixture.debugElement.queryAll(By.css('.row > .col'));
 
     // The first header should always be blank as it is the run color column.
     expect(headerElements[0].nativeElement.innerText).toBe('');
