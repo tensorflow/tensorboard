@@ -3631,6 +3631,73 @@ describe('scalar card', () => {
       expect(data[5].run).toEqual('3 c/run6');
       expect(data[6].run).toEqual('1 a/run7');
     }));
+
+    describe('while integrated with hparams in timeseries', () => {
+      beforeEach(() => {
+        const runToSeries = {
+          run1: [{wallTime: 1, value: 1, step: 1}],
+          run2: [{wallTime: 1, value: 2, step: 1}],
+          run3: [{wallTime: 1, value: 3, step: 1}],
+          run4: [{wallTime: 1, value: NaN, step: 1}],
+          run5: [{wallTime: 1, value: 'NaN', step: 1}],
+          run6: [{wallTime: 1, value: null, step: 1}],
+          run7: [{wallTime: 1, value: undefined, step: 1}],
+        };
+        provideMockCardRunToSeriesData(
+          selectSpy,
+          PluginType.SCALARS,
+          'card1',
+          null /* metadataOverride */,
+          runToSeries as any
+        );
+        store.overrideSelector(
+          selectors.getCurrentRouteRunSelection,
+          new Map([
+            ['run1', true],
+            ['run2', true],
+          ])
+        );
+
+        store.overrideSelector(
+          commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+          new Set(['run1'])
+        );
+
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
+          start: {step: 1},
+          end: null,
+        });
+      });
+
+      it('filters runs by hparam when enableHparamsInTimeSeries is true', fakeAsync(() => {
+        store.overrideSelector(selectors.getEnableHparamsInTimeSeries, true);
+
+        const fixture = createComponent('card1');
+        const scalarCardDataTable = fixture.debugElement.query(
+          By.directive(ScalarCardDataTable)
+        );
+
+        const data =
+          scalarCardDataTable.componentInstance.getTimeSelectionTableData();
+        expect(data.length).toEqual(1);
+        expect(data[0].run).toEqual('run1');
+      }));
+
+      it('does not filter runs by hparam when enableHparamsInTimeSeries is false', fakeAsync(() => {
+        store.overrideSelector(selectors.getEnableHparamsInTimeSeries, false);
+
+        const fixture = createComponent('card1');
+        const scalarCardDataTable = fixture.debugElement.query(
+          By.directive(ScalarCardDataTable)
+        );
+
+        const data =
+          scalarCardDataTable.componentInstance.getTimeSelectionTableData();
+        expect(data.length).toEqual(2);
+        expect(data[0].run).toEqual('run1');
+        expect(data[1].run).toEqual('run2');
+      }));
+    });
   });
 
   describe('toggleTableExpanded', () => {
