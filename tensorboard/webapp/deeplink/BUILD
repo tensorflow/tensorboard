@@ -11,6 +11,8 @@ tf_ng_module(
         "types.ts",
     ],
     deps = [
+        "//tensorboard/components/tf_globals:tf_globals_lib",
+        "//tensorboard/components/tf_storage",
         "//tensorboard/webapp:tb_polymer_interop_types",
         "@npm//@angular/core",
     ],
@@ -24,6 +26,8 @@ tf_ng_module(
     ],
     deps = [
         ":deeplink",
+        "//tensorboard/components/tf_globals:tf_globals_lib",
+        "//tensorboard/components/tf_storage",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "@npm//@types/jasmine",
     ],

@@ -31,26 +31,16 @@ describe('deeplink', () => {
     getStringSpy = jasmine.createSpy();
     migrateLegacyURLSchemeSpy = jasmine.createSpy();
     setUseHashSpy = jasmine.createSpy();
-
+    TEST_ONLY.utils.globals = {
+      setUseHash: setUseHashSpy,
+    } as any;
+    TEST_ONLY.utils.storage = {
+      migrateLegacyURLScheme: migrateLegacyURLSchemeSpy,
+      getString: getStringSpy,
+      setString: setStringSpy,
+    } as any;
     // Cannot safely stub out window.location.hash or rely on test framework
     // to not make use of the hash (it does).
-
-    // Do not rely on Polymer bundle in the test.
-    const createElementSpy = spyOn(document, 'createElement');
-    createElementSpy.withArgs('tf-storage').and.returnValue({
-      tf_storage: {
-        setString: setStringSpy,
-        getString: getStringSpy,
-        migrateLegacyURLScheme: migrateLegacyURLSchemeSpy,
-      },
-    } as any);
-    createElementSpy.withArgs('tf-globals').and.returnValue({
-      tf_globals: {
-        setUseHash: setUseHashSpy,
-      },
-    } as any);
-    createElementSpy.and.callThrough();
-
     deepLinker = TestBed.inject(HashDeepLinker);
   });
 
