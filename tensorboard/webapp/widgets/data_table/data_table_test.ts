@@ -75,7 +75,6 @@ describe('data table', () => {
     fixture.componentInstance.headers = input.headers || [];
     fixture.componentInstance.data = input.data || [];
     fixture.componentInstance.sortingInfo = input.sortingInfo || {
-      header: ColumnHeaderType.RUN,
       name: 'run',
       order: SortingOrder.ASCENDING,
     };
@@ -416,7 +415,6 @@ describe('data table', () => {
 
     headerElements[3].triggerEventHandler('click', {});
     expect(sortDataBySpy).toHaveBeenCalledOnceWith({
-      header: jasmine.any(String), // This attribute is no longer used but temporarily left here to no break internal syncs
       name: 'step',
       order: SortingOrder.ASCENDING,
     });
@@ -451,7 +449,6 @@ describe('data table', () => {
         },
       ],
       sortingInfo: {
-        header: ColumnHeaderType.STEP,
         name: 'step',
         order: SortingOrder.ASCENDING,
       },
@@ -463,7 +460,6 @@ describe('data table', () => {
 
     headerElements[3].triggerEventHandler('click', {});
     expect(sortDataBySpy).toHaveBeenCalledOnceWith({
-      header: jasmine.any(String), // This attribute is no longer used but temporarily left here to no break internal syncs
       name: 'step',
       order: SortingOrder.DESCENDING,
     });
@@ -492,7 +488,6 @@ describe('data table', () => {
         },
       ],
       sortingInfo: {
-        header: ColumnHeaderType.VALUE,
         name: 'value',
         order: SortingOrder.ASCENDING,
       },
@@ -557,7 +552,6 @@ describe('data table', () => {
         },
       ],
       sortingInfo: {
-        header: ColumnHeaderType.STEP,
         name: 'step',
         order: SortingOrder.DESCENDING,
       },
@@ -622,7 +616,6 @@ describe('data table', () => {
         },
       ],
       sortingInfo: {
-        header: ColumnHeaderType.STEP,
         name: 'step',
         order: SortingOrder.DESCENDING,
       },
@@ -692,7 +685,6 @@ describe('data table', () => {
         },
       ],
       sortingInfo: {
-        header: ColumnHeaderType.STEP,
         name: 'step',
         order: SortingOrder.DESCENDING,
       },
