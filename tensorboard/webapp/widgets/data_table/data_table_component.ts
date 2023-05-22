@@ -118,14 +118,12 @@ export class DataTableComponent implements OnDestroy {
       this.sortingInfo.order === SortingOrder.ASCENDING
     ) {
       this.sortDataBy.emit({
-        header: ColumnHeaderType.RUN, //This is no longer used but the sortingInfo interface needs it or it will break sync. TODO(jameshollyer): remove this once internal code all uses name.
         name,
         order: SortingOrder.DESCENDING,
       });
       return;
     }
     this.sortDataBy.emit({
-      header: ColumnHeaderType.RUN, //This is no longer used but the sortingInfo interface needs it or it will break sync. TODO(jameshollyer): remove this once internal code all uses name.
       name,
       order: SortingOrder.ASCENDING,
     });
