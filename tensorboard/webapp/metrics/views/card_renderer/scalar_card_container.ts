@@ -542,7 +542,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
               visible: Boolean(
                 runSelectionMap &&
                   runSelectionMap.get(runId) &&
-                  (renderableRuns.has(runId) || !hparamsInTimeSeriesEnabled)
+                  (!hparamsInTimeSeriesEnabled || renderableRuns.has(runId))
               ),
               color: colorMap[runId] ?? '#fff',
               aux: false,
