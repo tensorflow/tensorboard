@@ -368,7 +368,7 @@ impl SummaryValue {
                 };
                 Box::new(md)
             }
-            (None, _) => Box::new(pb::SummaryMetadata::default()),
+            (None, _) => Box::<pb::SummaryMetadata>::default(),
         }
     }
 }

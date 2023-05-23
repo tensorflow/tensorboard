@@ -452,7 +452,7 @@ impl TensorBoardDataProvider for DataProviderHandler {
                 let mut steps = Vec::with_capacity(n);
                 let mut wall_times = Vec::with_capacity(n);
                 let mut values = Vec::with_capacity(n);
-                for (step, wall_time, &BlobSequenceValue(ref value)) in points {
+                for (step, wall_time, BlobSequenceValue(value)) in points {
                     steps.push(step.into());
                     wall_times.push(wall_time.into());
                     let eid = req.experiment_id.as_str();
