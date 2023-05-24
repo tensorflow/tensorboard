@@ -48,6 +48,7 @@ import {
 } from './metrics_types';
 import {ColumnHeader, DataTableMode} from '../../widgets/data_table/types';
 import {Extent} from '../../widgets/line_chart_v2/lib/public_types';
+import {memoize} from '../../util/memoize';
 
 const selectMetricsState =
   createFeatureSelector<MetricsState>(METRICS_FEATURE_KEY);
@@ -405,20 +406,6 @@ export const getMetricsStepMinMax = createSelector(
   }
 );
 
-export const getSingleSelectionHeaders = createSelector(
-  selectMetricsState,
-  (state: MetricsState): ColumnHeader[] => {
-    return state.singleSelectionHeaders;
-  }
-);
-
-export const getRangeSelectionHeaders = createSelector(
-  selectMetricsState,
-  (state: MetricsState): ColumnHeader[] => {
-    return state.rangeSelectionHeaders;
-  }
-);
-
 /**
  * Returns value of the linked time set by user. When linked time selection is never
  * set, it returns the default value which is derived from the timeseries data
@@ -628,3 +615,30 @@ export const getMetricsCardTimeSelection = createSelector(
     );
   }
 );
+
+export const getSingleSelectionHeaders = createSelector(
+  selectMetricsState,
+  (state: MetricsState): ColumnHeader[] => {
+    return state.singleSelectionHeaders;
+  }
+);
+
+export const getRangeSelectionHeaders = createSelector(
+  selectMetricsState,
+  (state: MetricsState): ColumnHeader[] => {
+    return state.rangeSelectionHeaders;
+  }
+);
+
+export const getColumnHeadersForCard = memoize((cardId: string) => {
+  return createSelector(
+    (state) => state,
+    getSingleSelectionHeaders,
+    getRangeSelectionHeaders,
+    (state, singleSelectionHeaders, rangeSelectionHeaders) => {
+      return getMetricsCardRangeSelectionEnabled(state, cardId)
+        ? rangeSelectionHeaders
+        : singleSelectionHeaders;
+    }
+  );
+});

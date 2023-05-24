@@ -2668,6 +2668,8 @@ describe('scalar card', () => {
   describe('getTimeSelectionTableData', () => {
     beforeEach(() => {
       store.overrideSelector(getMetricsLinkedTimeEnabled, true);
+      // These tests now rely on the selector getColumnHeadersForCard which in turn
+      // relies on these selectors.
       store.overrideSelector(getSingleSelectionHeaders, [
         {
           type: ColumnHeaderType.RUN,
@@ -2880,6 +2882,7 @@ describe('scalar card', () => {
         runToSeries
       );
       store.overrideSelector(getMetricsRangeSelectionEnabled, true);
+      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([
@@ -2961,6 +2964,7 @@ describe('scalar card', () => {
         runToSeries
       );
       store.overrideSelector(getMetricsRangeSelectionEnabled, true);
+      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([['run1', true]])
@@ -3026,6 +3030,7 @@ describe('scalar card', () => {
         runToSeries
       );
       store.overrideSelector(getMetricsRangeSelectionEnabled, true);
+      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([['run1', true]])
@@ -3141,6 +3146,7 @@ describe('scalar card', () => {
         runToSeries
       );
       store.overrideSelector(getMetricsRangeSelectionEnabled, true);
+      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([
