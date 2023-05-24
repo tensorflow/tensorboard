@@ -2880,6 +2880,7 @@ describe('scalar card', () => {
         runToSeries
       );
       store.overrideSelector(getMetricsRangeSelectionEnabled, true);
+      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([
@@ -2961,6 +2962,7 @@ describe('scalar card', () => {
         runToSeries
       );
       store.overrideSelector(getMetricsRangeSelectionEnabled, true);
+      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([['run1', true]])
@@ -3026,6 +3028,7 @@ describe('scalar card', () => {
         runToSeries
       );
       store.overrideSelector(getMetricsRangeSelectionEnabled, true);
+      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([['run1', true]])
@@ -3141,6 +3144,7 @@ describe('scalar card', () => {
         runToSeries
       );
       store.overrideSelector(getMetricsRangeSelectionEnabled, true);
+      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([

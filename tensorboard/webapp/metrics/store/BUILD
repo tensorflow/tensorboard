@@ -28,6 +28,7 @@ tf_ts_library(
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/util:dom",
         "//tensorboard/webapp/util:lang",
+        "//tensorboard/webapp/util:memoize",
         "//tensorboard/webapp/util:ngrx",
         "//tensorboard/webapp/util:types",
         "//tensorboard/webapp/widgets/card_fob:types",

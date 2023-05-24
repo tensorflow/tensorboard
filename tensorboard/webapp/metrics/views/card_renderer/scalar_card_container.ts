@@ -57,6 +57,7 @@ import {
   getRun,
   getRunColorMap,
   getCurrentRouteRunSelection,
+  getColumnHeadersForCard,
 } from '../../../selectors';
 import {DataLoadState} from '../../../types/data';
 import {
@@ -89,8 +90,6 @@ import {
   getMetricsScalarSmoothing,
   getMetricsTooltipSort,
   getMetricsXAxisType,
-  getRangeSelectionHeaders,
-  getSingleSelectionHeaders,
   RunToSeries,
 } from '../../store';
 import {CardId, CardMetadata, HeaderEditInfo, XAxisType} from '../../types';
@@ -461,18 +460,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       this.cardId
     );
 
-    this.columnHeaders$ = combineLatest([
-      this.stepOrLinkedTimeSelection$,
-      this.store.select(getSingleSelectionHeaders),
-      this.store.select(getRangeSelectionHeaders),
-    ]).pipe(
-      map(([timeSelection, singleSelectionHeaders, rangeSelectionHeaders]) => {
-        if (!timeSelection || timeSelection.end === null) {
-          return singleSelectionHeaders;
-        } else {
-          return rangeSelectionHeaders;
-        }
-      })
+    this.columnHeaders$ = this.store.select(
+      getColumnHeadersForCard(this.cardId)
     );
 
     this.chartMetadataMap$ = partitionedSeries$.pipe(

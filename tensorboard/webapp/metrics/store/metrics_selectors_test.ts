@@ -26,7 +26,11 @@ import {
   createTimeSeriesData,
 } from '../testing';
 import {HistogramMode, TooltipSort, XAxisType} from '../types';
-import {DataTableMode} from '../../widgets/data_table/types';
+import {
+  ColumnHeader,
+  ColumnHeaderType,
+  DataTableMode,
+} from '../../widgets/data_table/types';
 import * as selectors from './metrics_selectors';
 import {CardFeatureOverride, MetricsState} from './metrics_types';
 
@@ -1531,6 +1535,172 @@ describe('metrics selectors', () => {
       expect(selectors.getTableEditorSelectedTab(state)).toEqual(
         DataTableMode.RANGE
       );
+    });
+  });
+
+  describe('getSingleSelectionHeaders', () => {
+    it('returns all single selection headers', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          singleSelectionHeaders: [
+            {
+              type: ColumnHeaderType.COLOR,
+              name: 'color',
+              displayName: 'Color',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'My Run name',
+              enabled: false,
+            },
+          ],
+        })
+      );
+      expect(selectors.getSingleSelectionHeaders(state)).toEqual([
+        {
+          type: ColumnHeaderType.COLOR,
+          name: 'color',
+          displayName: 'Color',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'My Run name',
+          enabled: false,
+        },
+      ]);
+    });
+  });
+
+  describe('getRangeSelectionHeaders', () => {
+    it('returns all range selection headers', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          rangeSelectionHeaders: [
+            {
+              type: ColumnHeaderType.COLOR,
+              name: 'color',
+              displayName: 'Color',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'My Run name',
+              enabled: false,
+            },
+          ],
+        })
+      );
+      expect(selectors.getRangeSelectionHeaders(state)).toEqual([
+        {
+          type: ColumnHeaderType.COLOR,
+          name: 'color',
+          displayName: 'Color',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'My Run name',
+          enabled: false,
+        },
+      ]);
+    });
+  });
+
+  describe('getColumnHeadersForCard', () => {
+    let singleSelectionHeaders: ColumnHeader[];
+    let rangeSelectionHeaders: ColumnHeader[];
+
+    beforeEach(() => {
+      singleSelectionHeaders = [
+        {
+          type: ColumnHeaderType.COLOR,
+          name: 'color',
+          displayName: 'Color',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'My Run name',
+          enabled: false,
+        },
+      ];
+      rangeSelectionHeaders = [
+        {
+          type: ColumnHeaderType.MEAN,
+          name: 'mean',
+          displayName: 'Mean',
+          enabled: true,
+        },
+      ];
+    });
+
+    it('returns single selection headers when card range selection is disabled', () => {
+      expect(
+        selectors.getColumnHeadersForCard('card1')(
+          appStateFromMetricsState(
+            buildMetricsState({
+              singleSelectionHeaders,
+              rangeSelectionHeaders,
+            })
+          )
+        )
+      ).toEqual(singleSelectionHeaders);
+      expect(
+        selectors.getColumnHeadersForCard('card1')(
+          appStateFromMetricsState(
+            buildMetricsState({
+              singleSelectionHeaders,
+              rangeSelectionHeaders,
+              cardStateMap: {
+                card1: {
+                  rangeSelectionOverride:
+                    CardFeatureOverride.OVERRIDE_AS_DISABLED,
+                },
+              },
+            })
+          )
+        )
+      ).toEqual(singleSelectionHeaders);
+    });
+
+    it('returns range selection headers when card range selection is enabled', () => {
+      expect(
+        selectors.getColumnHeadersForCard('card1')(
+          appStateFromMetricsState(
+            buildMetricsState({
+              singleSelectionHeaders,
+              rangeSelectionHeaders,
+              cardStateMap: {
+                card1: {
+                  rangeSelectionOverride:
+                    CardFeatureOverride.OVERRIDE_AS_ENABLED,
+                },
+              },
+            })
+          )
+        )
+      ).toEqual(rangeSelectionHeaders);
+    });
+
+    it('returns range selection headers when global range selection is enabled', () => {
+      expect(
+        selectors.getColumnHeadersForCard('card1')(
+          appStateFromMetricsState(
+            buildMetricsState({
+              singleSelectionHeaders,
+              rangeSelectionHeaders,
+              rangeSelectionEnabled: true,
+            })
+          )
+        )
+      ).toEqual(rangeSelectionHeaders);
     });
   });
 });
