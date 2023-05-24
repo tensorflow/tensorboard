@@ -78,6 +78,7 @@ tf_ts_library(
         "//tensorboard/webapp/feature_flag/store:testing",
         "//tensorboard/webapp/feature_flag/store:types",
         "//tensorboard/webapp/hparams/_redux:testing",
+        "//tensorboard/webapp/hparams/_redux:types",
         "//tensorboard/webapp/metrics:test_lib",
         "//tensorboard/webapp/metrics/store",
         "//tensorboard/webapp/notification_center/_redux:testing",

@@ -205,7 +205,7 @@ export class RunsEffects {
       }),
       map((runsAndMedataList) => {
         const newRunsAndMetadata = {} as ExperimentIdToRunsAndMetadata;
-        const runsForAllExperiments = [];
+        const runsForAllExperiments: Run[] = [];
 
         for (const runsAndMedata of runsAndMedataList) {
           runsForAllExperiments.push(...runsAndMedata.runs);

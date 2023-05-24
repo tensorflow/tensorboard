@@ -38,6 +38,7 @@ export enum ColumnHeaderType {
   STEP_AT_MIN = 'STEP_AT_MIN',
   MEAN = 'MEAN',
   RAW_CHANGE = 'RAW_CHANGE',
+  HPARAM = 'HPARAM',
 }
 
 export interface ColumnHeader {

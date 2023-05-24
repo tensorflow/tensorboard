@@ -72,6 +72,7 @@ import {
   getRunSelectorRegexFilter,
   getRunSelectorSort,
   getRunsLoadState,
+  getRunsTableHeaders,
 } from '../../../selectors';
 import {selectors as settingsSelectors} from '../../../settings';
 import {buildColorPalette} from '../../../settings/testing';
@@ -105,6 +106,7 @@ import {RunsGroupMenuButtonContainer} from './runs_group_menu_button_container';
 import {RunsTableComponent} from './runs_table_component';
 import {RunsTableContainer, TEST_ONLY} from './runs_table_container';
 import {HparamSpec, MetricSpec, RunsTableColumn} from './types';
+import {ColumnHeaderType} from '../../../widgets/data_table/types';
 
 @Injectable()
 class ColorPickerTestHelper {
@@ -3203,6 +3205,16 @@ describe('runs_table', () => {
             buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
           ])
         );
+      selectSpy.withArgs(getRunsTableHeaders).and.returnValue(
+        of([
+          {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
+        ])
+      );
 
       store.overrideSelector(getRunColorMap, {
         book1: '#000',

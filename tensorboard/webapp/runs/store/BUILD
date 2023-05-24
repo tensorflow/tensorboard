@@ -22,6 +22,7 @@ tf_ts_library(
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/util:ngrx",
+        "//tensorboard/webapp/widgets/data_table:types",
         "@npm//@ngrx/store",
     ],
 )
@@ -47,6 +48,7 @@ tf_ts_library(
         "//tensorboard/webapp/runs:types",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/types:ui",
+        "//tensorboard/webapp/widgets/data_table:types",
         "@npm//@ngrx/store",
     ],
 )
@@ -62,6 +64,7 @@ tf_ts_library(
         "//tensorboard/webapp/runs/data_source",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/types:ui",
+        "//tensorboard/webapp/widgets/data_table:types",
     ],
 )
 
@@ -74,6 +77,7 @@ tf_ts_library(
         "//tensorboard/webapp/runs:types",
         "//tensorboard/webapp/runs/data_source",
         "//tensorboard/webapp/types:ui",
+        "//tensorboard/webapp/widgets/data_table:types",
     ],
 )
 
@@ -101,6 +105,7 @@ tf_ts_library(
         "//tensorboard/webapp/testing:lang",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/types:ui",
+        "//tensorboard/webapp/widgets/data_table:types",
         "@npm//@types/jasmine",
     ],
 )
