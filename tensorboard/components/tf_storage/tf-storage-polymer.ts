@@ -20,4 +20,12 @@ import * as tf_storage from './index';
 class TfStorage extends PolymerElement {
   override _template = null;
   tf_storage = tf_storage;
+  constructor() {
+    super();
+    const extendedWindow: any = window;
+    if (!extendedWindow['tensorboard']) {
+      extendedWindow['tensorboard'] = {};
+    }
+    extendedWindow['tensorboard']['tf_storage'] = tf_storage;
+  }
 }

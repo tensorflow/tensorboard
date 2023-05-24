@@ -20,4 +20,12 @@ import * as tf_globals from './globals';
 class TfGlobals extends PolymerElement {
   override _template = null;
   tf_globals = tf_globals;
+  constructor() {
+    super();
+    const extendedWindow: any = window;
+    if (!extendedWindow['tensorboard']) {
+      extendedWindow['tensorboard'] = {};
+    }
+    extendedWindow['tensorboard']['tf_globals'] = tf_globals;
+  }
 }
