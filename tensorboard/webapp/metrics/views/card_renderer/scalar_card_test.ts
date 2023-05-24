@@ -2668,6 +2668,8 @@ describe('scalar card', () => {
   describe('getTimeSelectionTableData', () => {
     beforeEach(() => {
       store.overrideSelector(getMetricsLinkedTimeEnabled, true);
+      // These tests now rely on the selector getColumnHeadersForCard which in turn
+      // relies on these selectors.
       store.overrideSelector(getSingleSelectionHeaders, [
         {
           type: ColumnHeaderType.RUN,
