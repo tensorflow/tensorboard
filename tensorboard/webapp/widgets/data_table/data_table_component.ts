@@ -95,7 +95,11 @@ export class DataTableComponent implements OnDestroy {
       case ColumnHeaderType.STEP_AT_MAX:
       case ColumnHeaderType.STEP_AT_MIN:
       case ColumnHeaderType.MEAN:
-        return intlNumberFormatter.formatShort(datum as number);
+      case ColumnHeaderType.HPARAM:
+        if (typeof datum === 'number') {
+          return intlNumberFormatter.formatShort(datum as number);
+        }
+        return datum;
       case ColumnHeaderType.TIME:
         const time = new Date(datum!);
         return time.toISOString();

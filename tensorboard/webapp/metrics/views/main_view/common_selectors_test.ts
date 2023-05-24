@@ -14,6 +14,11 @@ limitations under the License.
 ==============================================================================*/
 import {RouteKind} from '../../../app_routing';
 import {
+  buildSpecs,
+  buildHparamSpec,
+  buildMetricSpec,
+} from '../../../hparams/_redux/testing';
+import {
   buildAppRoutingState,
   buildStateFromAppRoutingState,
 } from '../../../app_routing/store/testing';
@@ -35,6 +40,7 @@ import {
 } from '../../testing';
 import {PluginType} from '../../types';
 import * as selectors from './common_selectors';
+import {ColumnHeaderType} from '../card_renderer/scalar_card_types';
 
 describe('common selectors', () => {
   let runIds: Record<string, string[]>;
@@ -170,6 +176,18 @@ describe('common selectors', () => {
             experimentIds: 'foo:exp1,bar:exp2',
           },
         },
+      } as any,
+      hparams: {
+        specs: buildSpecs('defaultExperimentId', {
+          hparam: {
+            specs: [buildHparamSpec({name: 'foo', displayName: 'Foo'})],
+            defaultFilters: new Map(),
+          },
+          metric: {
+            specs: [buildMetricSpec({displayName: 'Bar'})],
+            defaultFilters: new Map(),
+          },
+        }),
       } as any,
     });
   });
@@ -966,6 +984,45 @@ describe('common selectors', () => {
     it('returns a set of run ids from the route when in single experiment view', () => {
       const result = selectors.getFilteredRenderableRunsIdsFromRoute(state);
       expect(result).toEqual(new Set());
+    });
+  });
+
+  describe('getPotentialHparamColumns', () => {
+    it('returns empty list when there are no experiments', () => {
+      state.app_routing!.activeRoute!.routeKind = RouteKind.EXPERIMENTS;
+
+      expect(selectors.getPotentialHparamColumns(state)).toEqual([]);
+    });
+
+    it('creates columns for each hparam', () => {
+      expect(selectors.getPotentialHparamColumns(state)).toEqual([
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'foo',
+          displayName: 'Foo',
+          enabled: false,
+        },
+      ]);
+    });
+
+    it('sets name as display name when a display name is not provided', () => {
+      state.hparams!.specs['defaultExperimentId'].hparam.specs.push(
+        buildHparamSpec({name: 'bar', displayName: ''})
+      );
+      expect(selectors.getPotentialHparamColumns(state)).toEqual([
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'foo',
+          displayName: 'Foo',
+          enabled: false,
+        },
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'bar',
+          displayName: 'bar',
+          enabled: false,
+        },
+      ]);
     });
   });
 });
