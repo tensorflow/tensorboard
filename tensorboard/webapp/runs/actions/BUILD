@@ -14,6 +14,7 @@ tf_ts_library(
         "//tensorboard/webapp/runs:types",
         "//tensorboard/webapp/runs/data_source",
         "//tensorboard/webapp/types:ui",
+        "//tensorboard/webapp/widgets/data_table:types",
         "@npm//@ngrx/store",
     ],
 )

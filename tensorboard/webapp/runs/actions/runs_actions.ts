@@ -20,6 +20,7 @@ import {createAction, props} from '@ngrx/store';
 import {SortDirection} from '../../types/ui';
 import {Run} from '../data_source/runs_data_source_types';
 import {ExperimentIdToRunsAndMetadata, GroupBy, SortKey} from '../types';
+import {ColumnHeader, SortingInfo} from '../../widgets/data_table/types';
 
 /**
  * The action can fire when no requests are actually made (i.e., an empty
@@ -95,4 +96,20 @@ export const runTableShown = createAction(
 export const runGroupByChanged = createAction(
   '[Runs] Run Group By Changed',
   props<{experimentIds: string[]; groupBy: GroupBy}>()
+);
+
+/**
+ * Inserts the provided column header at the specified index.
+ */
+export const runsTableHeaderAdded = createAction(
+  '[Runs] Runs Table Header Added',
+  props<{header: ColumnHeader; index?: number}>()
+);
+
+/**
+ * Updates the sorting logic used by the runs data tabe.
+ */
+export const runsTableSortingInfoChanged = createAction(
+  '[Runs] Runs Table Sorting Info Changed',
+  props<{sortingInfo: SortingInfo}>()
 );

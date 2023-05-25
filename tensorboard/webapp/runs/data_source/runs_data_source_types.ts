@@ -86,3 +86,8 @@ export abstract class RunsDataSource {
     experimentId: string
   ): Observable<HparamsAndMetadata>;
 }
+
+export type RunToHParamValues = Record<
+  string,
+  Map<string, HparamValue['value']>
+>;

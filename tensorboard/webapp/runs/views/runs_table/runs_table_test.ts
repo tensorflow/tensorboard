@@ -72,6 +72,7 @@ import {
   getRunSelectorRegexFilter,
   getRunSelectorSort,
   getRunsLoadState,
+  getRunsTableHeaders,
 } from '../../../selectors';
 import {selectors as settingsSelectors} from '../../../settings';
 import {buildColorPalette} from '../../../settings/testing';
@@ -104,7 +105,9 @@ import {RunsGroupMenuButtonComponent} from './runs_group_menu_button_component';
 import {RunsGroupMenuButtonContainer} from './runs_group_menu_button_container';
 import {RunsTableComponent} from './runs_table_component';
 import {RunsTableContainer, TEST_ONLY} from './runs_table_container';
-import {HparamSpec, MetricSpec, RunsTableColumn} from './types';
+import {HparamSpec, MetricSpec, RunTableItem, RunsTableColumn} from './types';
+import {ColumnHeaderType} from '../../../widgets/data_table/types';
+import {getFilteredRenderableRunsFromRoute} from '../../../metrics/views/main_view/common_selectors';
 
 @Injectable()
 class ColorPickerTestHelper {
@@ -1863,7 +1866,7 @@ describe('runs_table', () => {
 
   describe('"too many runs" alert', () => {
     function createRuns(runCount: number): Run[] {
-      const runs = [];
+      const runs: Run[] = [];
       for (let i = 0; i < runCount; i++) {
         runs.push(
           buildRun({
@@ -3203,6 +3206,16 @@ describe('runs_table', () => {
             buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
           ])
         );
+      selectSpy.withArgs(getRunsTableHeaders).and.returnValue(
+        of([
+          {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
+        ])
+      );
 
       store.overrideSelector(getRunColorMap, {
         book1: '#000',
@@ -3218,6 +3231,56 @@ describe('runs_table', () => {
       expect(dataTableComponent.componentInstance.data).toEqual([
         {id: 'book1', color: '#000', run: "The Philosopher's Stone"},
         {id: 'book2', color: '#111', run: 'The Chamber Of Secrets'},
+      ]);
+    });
+
+    it('passes hparam values to data table', () => {
+      const run1 = buildRun({id: 'book1', name: "The Philosopher's Stone"});
+      const run2 = buildRun({id: 'book2', name: 'The Chamber Of Secrets'});
+      // To make sure we only return the runs when called with the right props.
+      const selectSpy = spyOn(store, 'select').and.callThrough();
+      selectSpy
+        .withArgs(getRuns, {experimentId: 'book'})
+        .and.returnValue(of([run1, run2]));
+
+      selectSpy.withArgs(getRunsTableHeaders).and.returnValue(
+        of([
+          {
+            type: ColumnHeaderType.HPARAM,
+            name: 'batch_size',
+            displayName: 'Batch Size',
+            enabled: true,
+          },
+        ])
+      );
+
+      selectSpy.withArgs(getFilteredRenderableRunsFromRoute).and.returnValue(
+        of([
+          {
+            run: run1,
+            hparams: new Map([['batch_size', 1]]),
+          } as RunTableItem,
+          {
+            run: run2,
+            hparams: new Map([['batch_size', 2]]),
+          } as RunTableItem,
+        ])
+      );
+
+      store.overrideSelector(getRunColorMap, {
+        book1: '#000',
+        book2: '#111',
+      });
+
+      const fixture = createComponent(['book']);
+      fixture.detectChanges();
+      const dataTableComponent = fixture.debugElement.query(
+        By.directive(DataTableComponent)
+      );
+
+      expect(dataTableComponent.componentInstance.data).toEqual([
+        {id: 'book1', color: '#000', batch_size: 1},
+        {id: 'book2', color: '#111', batch_size: 2},
       ]);
     });
   });

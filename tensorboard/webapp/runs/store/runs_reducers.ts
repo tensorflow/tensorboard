@@ -35,9 +35,11 @@ import {
   RunsDataState,
   RunsState,
   RunsUiNamespacedState,
+  RunsUiNonNamespacedState,
   RunsUiState,
 } from './runs_types';
 import {createGroupBy, groupRuns} from './utils';
+import {ColumnHeaderType, SortingOrder} from '../../widgets/data_table/types';
 
 const {
   initialState: dataInitialState,
@@ -309,7 +311,10 @@ const initialSort: RunsUiNamespacedState['sort'] = {
   direction: SortDirection.UNSET,
 };
 const {initialState: uiInitialState, reducers: uiNamespaceContextedReducers} =
-  createNamespaceContextedState(
+  createNamespaceContextedState<
+    RunsUiNamespacedState,
+    RunsUiNonNamespacedState
+  >(
     {
       paginationOption: {
         pageIndex: 0,
@@ -317,6 +322,19 @@ const {initialState: uiInitialState, reducers: uiNamespaceContextedReducers} =
       },
       sort: initialSort,
       selectionState: new Map<string, boolean>(),
+      runsTableHeaders: [
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+      ],
+      sortingInfo: {
+        header: ColumnHeaderType.RUN,
+        name: 'run',
+        order: SortingOrder.DESCENDING,
+      },
     },
     {}
   );
@@ -406,6 +424,25 @@ const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
     return {
       ...state,
       selectionState: nextSelectionState,
+    };
+  }),
+  on(runsActions.runsTableHeaderAdded, (state, {header, index}) => {
+    const newRunsTableHeaders = [...state.runsTableHeaders];
+    if (index === undefined) {
+      newRunsTableHeaders.push(header);
+    } else {
+      newRunsTableHeaders.splice(index, 0, header);
+    }
+
+    return {
+      ...state,
+      runsTableHeaders: newRunsTableHeaders,
+    };
+  }),
+  on(runsActions.runsTableSortingInfoChanged, (state, {sortingInfo}) => {
+    return {
+      ...state,
+      sortingInfo,
     };
   })
 );

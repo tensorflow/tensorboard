@@ -22,11 +22,12 @@ import {RouteKind} from '../../app_routing/types';
 import {deepFreeze} from '../../testing/lang';
 import {DataLoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
+import {ColumnHeaderType, SortingOrder} from '../../widgets/data_table/types';
 import * as actions from '../actions';
 import {buildHparamsAndMetadata} from '../data_source/testing';
 import {GroupByKey, SortType, URLDeserializedState} from '../types';
 import * as runsReducers from './runs_reducers';
-import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT, Run} from './runs_types';
+import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT, Run, RunsState} from './runs_types';
 import {buildRun, buildRunsState} from './testing';
 
 describe('runs_reducers', () => {
@@ -1351,6 +1352,105 @@ describe('runs_reducers', () => {
       );
 
       expect(nextState.data.initialGroupBy.key).toBe(GroupByKey.RUN);
+    });
+  });
+
+  describe('runsTableHeaderAdded', () => {
+    let state: RunsState;
+
+    beforeEach(() => {
+      state = buildRunsState(
+        {},
+        {
+          runsTableHeaders: [
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.VALUE,
+              name: 'value',
+              displayName: 'Value',
+              enabled: true,
+            },
+          ],
+        }
+      );
+    });
+
+    it('adds new column to end of list when no index is provided', () => {
+      const nextState = runsReducers.reducers(
+        state,
+        actions.runsTableHeaderAdded({
+          header: {
+            type: ColumnHeaderType.COLOR,
+            name: 'color',
+            displayName: 'Color',
+            enabled: true,
+          },
+        })
+      );
+      expect(
+        nextState.ui.runsTableHeaders.map((header) => header.type)
+      ).toEqual([
+        ColumnHeaderType.RUN,
+        ColumnHeaderType.VALUE,
+        ColumnHeaderType.COLOR,
+      ]);
+    });
+
+    it('adds new column at the specified index', () => {
+      const nextState = runsReducers.reducers(
+        state,
+        actions.runsTableHeaderAdded({
+          header: {
+            type: ColumnHeaderType.COLOR,
+            name: 'color',
+            displayName: 'Color',
+            enabled: true,
+          },
+          index: 1,
+        })
+      );
+      expect(
+        nextState.ui.runsTableHeaders.map((header) => header.type)
+      ).toEqual([
+        ColumnHeaderType.RUN,
+        ColumnHeaderType.COLOR,
+        ColumnHeaderType.VALUE,
+      ]);
+    });
+  });
+
+  describe('runsTableSortingInfoChanged', () => {
+    it('returns the current runs table sorting info', () => {
+      const state = buildRunsState(
+        {},
+        {
+          sortingInfo: {
+            header: ColumnHeaderType.RUN,
+            name: 'run',
+            order: SortingOrder.ASCENDING,
+          },
+        }
+      );
+      const nextState = runsReducers.reducers(
+        state,
+        actions.runsTableSortingInfoChanged({
+          sortingInfo: {
+            header: ColumnHeaderType.HPARAM,
+            name: 'lr',
+            order: SortingOrder.DESCENDING,
+          },
+        })
+      );
+      expect(nextState.ui.sortingInfo).toEqual({
+        header: ColumnHeaderType.HPARAM,
+        name: 'lr',
+        order: SortingOrder.DESCENDING,
+      });
     });
   });
 });

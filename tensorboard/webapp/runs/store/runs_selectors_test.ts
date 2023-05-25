@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {DataLoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
+import {ColumnHeaderType, SortingOrder} from '../../widgets/data_table/types';
 import {GroupByKey, SortType} from '../types';
 import * as selectors from './runs_selectors';
 import {buildRun, buildRunsState, buildStateFromRunsState} from './testing';
@@ -582,6 +583,68 @@ describe('runs_selectors', () => {
       );
 
       expect(selectors.getColorGroupRegexString(state)).toEqual('foo(\\d+)');
+    });
+  });
+
+  describe('#getRunsTableHeaders', () => {
+    it('returns the runs table headers', () => {
+      const state = buildStateFromRunsState(
+        buildRunsState(
+          {},
+          {
+            runsTableHeaders: [
+              {
+                type: ColumnHeaderType.RUN,
+                name: 'run',
+                displayName: 'Run',
+                enabled: true,
+              },
+              {
+                type: ColumnHeaderType.COLOR,
+                name: 'color',
+                displayName: 'Color',
+                enabled: false,
+              },
+            ],
+          }
+        )
+      );
+      expect(selectors.getRunsTableHeaders(state)).toEqual([
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.COLOR,
+          name: 'color',
+          displayName: 'Color',
+          enabled: false,
+        },
+      ]);
+    });
+  });
+
+  describe('#getRunsTableSortingInfo', () => {
+    it('returns the runs data table sorting info', () => {
+      const state = buildStateFromRunsState(
+        buildRunsState(
+          {},
+          {
+            sortingInfo: {
+              header: ColumnHeaderType.RUN,
+              name: 'run',
+              order: SortingOrder.ASCENDING,
+            },
+          }
+        )
+      );
+      expect(selectors.getRunsTableSortingInfo(state)).toEqual({
+        header: ColumnHeaderType.RUN,
+        name: 'run',
+        order: SortingOrder.ASCENDING,
+      });
     });
   });
 });

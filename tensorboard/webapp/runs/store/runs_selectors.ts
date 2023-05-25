@@ -26,6 +26,7 @@ import {
   RUNS_FEATURE_KEY,
 } from './runs_types';
 import {createGroupBy} from './utils';
+import {ColumnHeader, SortingInfo} from '../../widgets/data_table/types';
 
 const getRunsState = createFeatureSelector<RunsState>(RUNS_FEATURE_KEY);
 
@@ -234,5 +235,25 @@ export const getColorGroupRegexString = createSelector(
   getDataState,
   (state: RunsDataState): string => {
     return state.colorGroupRegexString;
+  }
+);
+
+/**
+ * Gets the columns to be displayed by the runs table.
+ */
+export const getRunsTableHeaders = createSelector(
+  getUiState,
+  (state: RunsUiState): ColumnHeader[] => {
+    return state.runsTableHeaders;
+  }
+);
+
+/**
+ * Gets the information needed to sort the runs data table.
+ */
+export const getRunsTableSortingInfo = createSelector(
+  getUiState,
+  (state: RunsUiState): SortingInfo => {
+    return state.sortingInfo;
   }
 );

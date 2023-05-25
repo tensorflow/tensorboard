@@ -19,6 +19,7 @@ limitations under the License.
 import {NamespaceContextedState} from '../../app_routing/namespaced_state_reducer_helper';
 import {LoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
+import {ColumnHeader, SortingInfo} from '../../widgets/data_table/types';
 import {HparamValue} from '../data_source/runs_data_source_types';
 import {GroupBy, GroupByKey, SortKey} from '../types';
 
@@ -79,6 +80,8 @@ export interface RunsUiNamespacedState {
    * Indicates whether the run is selected.
    */
   selectionState: Map<RunId, boolean>;
+  runsTableHeaders: ColumnHeader[];
+  sortingInfo: SortingInfo;
 }
 
 export interface RunsUiNonNamespacedState {}

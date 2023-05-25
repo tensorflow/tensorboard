@@ -17,6 +17,7 @@ limitations under the License.
  */
 
 import {SortDirection} from '../../types/ui';
+import {ColumnHeaderType, SortingOrder} from '../../widgets/data_table/types';
 import {GroupByKey} from '../types';
 import {
   Run,
@@ -68,6 +69,12 @@ export function buildRunsState(
       paginationOption: {pageIndex: 0, pageSize: 0},
       sort: {key: null, direction: SortDirection.UNSET},
       selectionState: new Map(),
+      runsTableHeaders: [],
+      sortingInfo: {
+        header: ColumnHeaderType.RUN,
+        name: 'run',
+        order: SortingOrder.DESCENDING,
+      },
       ...uiOverride,
     },
   };

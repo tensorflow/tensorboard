@@ -57,6 +57,8 @@ import {
   getRunSelectorRegexFilter,
   getRunSelectorSort,
   getRunsLoadState,
+  getRunsTableHeaders,
+  getRunsTableSortingInfo,
 } from '../../../selectors';
 import {DataLoadState, LoadState} from '../../../types/data';
 import {SortDirection} from '../../../types/ui';
@@ -64,7 +66,7 @@ import {matchRunToRegex} from '../../../util/matcher';
 import {getEnableHparamsInTimeSeries} from '../../../feature_flag/store/feature_flag_selectors';
 import {
   ColumnHeaderType,
-  SortingOrder,
+  SortingInfo,
   TableData,
 } from '../../../widgets/data_table/types';
 import {
@@ -75,6 +77,7 @@ import {
   runSelectorRegexFilterChanged,
   runSelectorSortChanged,
   runTableShown,
+  runsTableSortingInfoChanged,
   singleRunSelected,
 } from '../../actions';
 import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT} from '../../store/runs_types';
@@ -85,6 +88,8 @@ import {
   MetricColumn,
 } from './runs_table_component';
 import {RunsTableColumn, RunTableItem} from './types';
+import {getFilteredRenderableRunsFromRoute} from '../../../metrics/views/main_view/common_selectors';
+import {RunToHParamValues} from '../../data_source/runs_data_source_types';
 
 const getRunsLoading = createSelector<
   State,
@@ -229,11 +234,11 @@ function matchFilter(
     ></runs-table-component>
     <tb-data-table
       *ngIf="HParamsEnabled.value"
-      [headers]="runsColumns"
+      [headers]="runsColumns$ | async"
       [data]="allRunsTableData$ | async"
-      [sortingInfo]="sortingInfo"
-      [columnCustomizationEnabled]="columnCustomizationEnabled"
-      [smoothingEnabled]="smoothingEnabled"
+      [sortingInfo]="sortingInfo$ | async"
+      columnCustomizationEnabled="true"
+      smoothingEnabled="false"
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
     ></tb-data-table>
@@ -250,6 +255,11 @@ function matchFilter(
       :host.flex-layout > runs-table-component {
         width: 100%;
       }
+
+      :host.flex-layout > tb-data-table {
+        overflow-y: scroll;
+        width: 100%;
+      }
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -262,23 +272,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   allItemsLength$?: Observable<number>;
   pageItems$?: Observable<RunTableItem[]>;
   numSelectedItems$?: Observable<number>;
-
-  // TODO(jameshollyer): Move these values to ngrx and make these Observables.
-  runsColumns = [
-    {
-      type: ColumnHeaderType.RUN,
-      name: 'run',
-      displayName: 'Run',
-      enabled: true,
-    },
-  ];
-  sortingInfo = {
-    header: ColumnHeaderType.RUN,
-    name: 'run',
-    order: SortingOrder.ASCENDING,
-  };
-  columnCustomizationEnabled = true;
-  smoothingEnabled = false;
+  sortingInfo$ = this.store.select(getRunsTableSortingInfo);
 
   hparamColumns$: Observable<HparamColumn[]> = of([]);
   metricColumns$: Observable<MetricColumn[]> = of([]);
@@ -311,6 +305,19 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   paginationOption$ = this.store.select(getRunSelectorPaginationOption);
   regexFilter$ = this.store.select(getRunSelectorRegexFilter);
   HParamsEnabled = new BehaviorSubject<boolean>(false);
+  runsColumns$ = this.store.select(getRunsTableHeaders);
+
+  runToHParamValues$ = this.store
+    .select(getFilteredRenderableRunsFromRoute)
+    .pipe(
+      map((items) => {
+        return items.reduce((map, item) => {
+          map[item.run.id] = item.hparams;
+          return map;
+        }, {} as RunToHParamValues);
+      })
+    );
+
   private readonly ngUnsubscribe = new Subject<void>();
 
   constructor(private readonly store: Store<State>) {}
@@ -335,8 +342,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
 
     this.allRunsTableData$ = combineLatest(getRunTableDataPerExperiment$).pipe(
       map((itemsForExperiments: TableData[][]) => {
-        const items = [] as TableData[];
-        return items.concat(...itemsForExperiments);
+        return itemsForExperiments.flat();
       })
     );
 
@@ -575,17 +581,24 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     return combineLatest([
       this.store.select(getRuns, {experimentId}),
       this.store.select(getRunColorMap),
+      this.runsColumns$,
+      this.runToHParamValues$,
     ]).pipe(
-      map(([runs, colorMap]) => {
+      map(([runs, colorMap, runsColumns, runToHParamValues]) => {
         return runs.map((run) => {
           const tableData: TableData = {
             id: run.id,
             color: colorMap[run.id],
           };
-          this.runsColumns.forEach((column) => {
+          runsColumns.forEach((column) => {
             switch (column.type) {
               case ColumnHeaderType.RUN:
                 tableData[column.name!] = run.name;
+                break;
+              case ColumnHeaderType.HPARAM:
+                tableData[column.name] = runToHParamValues[run.id]?.get(
+                  column.name
+                ) as string | number;
                 break;
               default:
                 break;
@@ -595,6 +608,10 @@ export class RunsTableContainer implements OnInit, OnDestroy {
         });
       })
     );
+  }
+
+  sortDataBy(sortingInfo: SortingInfo) {
+    this.store.dispatch(runsTableSortingInfoChanged({sortingInfo}));
   }
 
   private getRunTableItemsForExperiment(
