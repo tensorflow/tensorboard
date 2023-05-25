@@ -89,7 +89,7 @@ import {
 } from './runs_table_component';
 import {RunsTableColumn, RunTableItem} from './types';
 import {getFilteredRenderableRunsFromRoute} from '../../../metrics/views/main_view/common_selectors';
-import {RunToHParamValues} from '../../../metrics/views/card_renderer/scalar_card_types';
+import {RunToHParamValues} from '../../data_source/runs_data_source_types';
 
 const getRunsLoading = createSelector<
   State,
@@ -238,7 +238,7 @@ function matchFilter(
       [data]="allRunsTableData$ | async"
       [sortingInfo]="sortingInfo$ | async"
       columnCustomizationEnabled="true"
-      [smoothingEnabled]="smoothingEnabled"
+      smoothingEnabled="false"
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
     ></tb-data-table>
@@ -273,7 +273,6 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   pageItems$?: Observable<RunTableItem[]>;
   numSelectedItems$?: Observable<number>;
   sortingInfo$ = this.store.select(getRunsTableSortingInfo);
-  smoothingEnabled = false;
 
   hparamColumns$: Observable<HparamColumn[]> = of([]);
   metricColumns$: Observable<MetricColumn[]> = of([]);
@@ -313,7 +312,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     .pipe(
       map((items) => {
         return items.reduce((map, item) => {
-          map[item.run.id] = Object.fromEntries(item.hparams.entries());
+          map[item.run.id] = item.hparams;
           return map;
         }, {} as RunToHParamValues);
       })
@@ -597,9 +596,9 @@ export class RunsTableContainer implements OnInit, OnDestroy {
                 tableData[column.name!] = run.name;
                 break;
               case ColumnHeaderType.HPARAM:
-                tableData[column.name] = runToHParamValues[run.id]?.[
+                tableData[column.name] = runToHParamValues[run.id]?.get(
                   column.name
-                ] as string | number;
+                ) as string | number;
                 break;
               default:
                 break;

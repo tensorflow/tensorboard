@@ -1425,7 +1425,7 @@ describe('runs_reducers', () => {
   });
 
   describe('runsTableSortingInfoChanged', () => {
-    it('it returns the current runs table sorting info', () => {
+    it('returns the current runs table sorting info', () => {
       const state = buildRunsState(
         {},
         {

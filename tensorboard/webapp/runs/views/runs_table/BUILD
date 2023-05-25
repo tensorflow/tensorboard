@@ -138,6 +138,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_platform_browser_dynamic_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/app_routing:testing",
+        "//tensorboard/webapp/metrics/views/main_view:common_selectors",
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/experiments/store:testing",
         "//tensorboard/webapp/feature_flag/store",

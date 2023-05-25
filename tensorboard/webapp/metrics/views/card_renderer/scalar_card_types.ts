@@ -92,8 +92,3 @@ export type MinMaxStep = {
   minStep: number;
   maxStep: number;
 };
-
-export type RunToHParamValues = Record<
-  string,
-  Record<string, string | number | boolean | undefined>
->;
