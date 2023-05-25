@@ -1866,7 +1866,7 @@ describe('runs_table', () => {
 
   describe('"too many runs" alert', () => {
     function createRuns(runCount: number): Run[] {
-      const runs = [];
+      const runs: Run[] = [];
       for (let i = 0; i < runCount; i++) {
         runs.push(
           buildRun({

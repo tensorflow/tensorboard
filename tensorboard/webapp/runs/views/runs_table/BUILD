@@ -85,7 +85,6 @@ tf_ng_module(
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/hparams",
         "//tensorboard/webapp/hparams:types",
-        "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",
         "//tensorboard/webapp/metrics/views/main_view:common_selectors",
         "//tensorboard/webapp/runs:types",
         "//tensorboard/webapp/runs/actions",
