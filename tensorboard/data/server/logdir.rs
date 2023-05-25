@@ -389,7 +389,7 @@ mod tests {
         let train_dir = logdir.path().join("train");
         let test_dir = logdir.path().join("test");
         fs::create_dir(&train_dir)?;
-        std::os::unix::fs::symlink(&train_dir, &test_dir)?;
+        std::os::unix::fs::symlink(&train_dir, test_dir)?;
         File::create(train_dir.join(EVENT_FILE_BASENAME_INFIX))?;
 
         let commit = Commit::new();
