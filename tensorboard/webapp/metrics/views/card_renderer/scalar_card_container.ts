@@ -71,6 +71,7 @@ import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
   cardViewBoxChanged,
   dataTableColumnEdited,
+  dataTableColumnRemoved,
   metricsCardFullSizeToggled,
   metricsCardStateUpdated,
   sortingDataTable,
@@ -92,7 +93,7 @@ import {
   getMetricsXAxisType,
   RunToSeries,
 } from '../../store';
-import {CardId, CardMetadata, HeaderEditInfo, XAxisType} from '../../types';
+import {CardId, CardMetadata, HeaderEditInfo, HeaderRemoveInfo, XAxisType} from '../../types';
 import {getFilteredRenderableRunsIdsFromRoute} from '../main_view/common_selectors';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
@@ -188,6 +189,7 @@ function isMinMaxStepValid(minMax: MinMaxStep | undefined): boolean {
       (editColumnHeaders)="editColumnHeaders($event)"
       (onCardStateChanged)="onCardStateChanged($event)"
       (openTableEditMenuToMode)="openTableEditMenuToMode($event)"
+      (onRemoveColumn)="onRemoveColumn($event)"
     ></scalar-card-component>
   `,
   styles: [
@@ -681,5 +683,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
   openTableEditMenuToMode(tableMode: DataTableMode) {
     this.store.dispatch(metricsSlideoutMenuOpened({mode: tableMode}));
+  }
+
+  onRemoveColumn(headerRemoveInfo: HeaderRemoveInfo) {
+    this.store.dispatch(dataTableColumnRemoved(headerRemoveInfo));
   }
 }

@@ -1372,6 +1372,46 @@ const reducer = createReducer(
       singleSelectionHeaders: enabledNewHeaders.concat(disabledNewHeaders),
     };
   }),
+  on(actions.dataTableColumnRemoved, (state, {headerType, cardId, dataTableMode}) => {
+    const targetedHeaders =
+      dataTableMode === DataTableMode.RANGE
+        ? state.rangeSelectionHeaders
+        : state.singleSelectionHeaders;
+
+    const currentToggledHeaderIndex = targetedHeaders.findIndex(
+      (element) => element.type === headerType
+    );
+
+    // If the header is being enabled it goes at the bottom of the currently
+    // enabled headers. If it is being disabled it goes to the top of the
+    // currently disabled headers.
+    let newToggledHeaderIndex = getEnabledCount(targetedHeaders);
+    if (targetedHeaders[currentToggledHeaderIndex].enabled) {
+      newToggledHeaderIndex--;
+    }
+    const newHeaders = moveHeader(
+      currentToggledHeaderIndex,
+      newToggledHeaderIndex,
+      targetedHeaders
+    );
+
+    newHeaders[newToggledHeaderIndex] = {
+      ...newHeaders[newToggledHeaderIndex],
+      enabled: !newHeaders[newToggledHeaderIndex].enabled,
+    };
+
+    if (dataTableMode === DataTableMode.RANGE) {
+      return {
+        ...state,
+        rangeSelectionHeaders: newHeaders,
+      };
+    }
+
+    return {
+      ...state,
+      singleSelectionHeaders: newHeaders,
+    };
+  }),
   on(actions.dataTableColumnToggled, (state, {dataTableMode, headerType}) => {
     const targetedHeaders =
       dataTableMode === DataTableMode.RANGE

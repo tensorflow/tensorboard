@@ -60,6 +60,9 @@ export class DataTableComponent implements OnDestroy {
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() orderColumns = new EventEmitter<ColumnHeader[]>();
+  @Output() removeColumn = new EventEmitter<{
+    headerType: ColumnHeaderType;
+  }>();
 
   readonly ColumnHeaders = ColumnHeaderType;
   readonly SortingOrder = SortingOrder;
@@ -200,5 +203,16 @@ export class DataTableComponent implements OnDestroy {
     return this.headers.findIndex((element) => {
       return name === element.name;
     });
+  }
+
+  clickRemoveColumn(header: ColumnHeader) {
+    // const headerRemoveInfo: HeaderRemoveInfo = {
+    //   dataTableMode: this.dataTableMode,
+    //   headerType: header.type,
+    //   cardId: this.cardId
+    // };
+    this.removeColumn.emit({
+      headerType: header.type,
+    })
   }
 }

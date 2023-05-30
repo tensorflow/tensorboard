@@ -36,6 +36,8 @@ import {
   SortingOrder,
 } from '../../../widgets/data_table/types';
 import {isDatumVisible} from './utils';
+// import { CardId, HeaderRemoveInfo } from '../../../metrics/internal_types';
+// import {CardId} from '../../types';
 
 @Component({
   selector: 'scalar-card-data-table',
@@ -48,6 +50,7 @@ import {isDatumVisible} from './utils';
       [smoothingEnabled]="smoothingEnabled"
       (sortDataBy)="sortDataBy.emit($event)"
       (orderColumns)="orderColumns($event)"
+      (removeColumn)="removeColumn.emit($event)"
     ></tb-data-table>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -60,9 +63,14 @@ export class ScalarCardDataTable {
   @Input() sortingInfo!: SortingInfo;
   @Input() columnCustomizationEnabled!: boolean;
   @Input() smoothingEnabled!: boolean;
+  // @Input() dataTableMode!: DataTableMode;
+  // @Input() cardId!: CardId;
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() editColumnHeaders = new EventEmitter<HeaderEditInfo>();
+  @Output() removeColumn = new EventEmitter<{
+    headerType: ColumnHeaderType;
+  }>();
 
   getMinPointInRange(
     points: ScalarCardPoint[],

@@ -99,6 +99,12 @@ export interface HeaderEditInfo {
   headers: ColumnHeader[];
 }
 
+export interface HeaderRemoveInfo {
+  headerType: ColumnHeaderType;
+  cardId: CardId;
+  dataTableMode: DataTableMode;
+}
+
 export interface HeaderToggleInfo {
   dataTableMode: DataTableMode;
   headerType: ColumnHeaderType;
