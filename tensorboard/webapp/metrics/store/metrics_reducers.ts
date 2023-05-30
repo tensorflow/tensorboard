@@ -62,6 +62,7 @@ import {
   generateNextPinnedCardMappings,
   generateScalarCardMinMaxStep,
   getCardId,
+  getCardRangeSelectionEnabled,
   getRunIds,
   getTimeSeriesLoadable,
 } from './metrics_store_internal_utils';
@@ -1372,19 +1373,15 @@ const reducer = createReducer(
       singleSelectionHeaders: enabledNewHeaders.concat(disabledNewHeaders),
     };
   }),
-  on(actions.dataTableColumnRemoved, (state, {headerType, cardId, dataTableMode}) => {
-    const targetedHeaders =
-      dataTableMode === DataTableMode.RANGE
+  on(actions.dataTableColumnRemoved, (state, {headerType, cardId}) => {
+    const rangeSelectionEnabled = getCardRangeSelectionEnabled(state, cardId);
+    const targetedHeaders = rangeSelectionEnabled
         ? state.rangeSelectionHeaders
         : state.singleSelectionHeaders;
-
     const currentToggledHeaderIndex = targetedHeaders.findIndex(
       (element) => element.type === headerType
     );
 
-    // If the header is being enabled it goes at the bottom of the currently
-    // enabled headers. If it is being disabled it goes to the top of the
-    // currently disabled headers.
     let newToggledHeaderIndex = getEnabledCount(targetedHeaders);
     if (targetedHeaders[currentToggledHeaderIndex].enabled) {
       newToggledHeaderIndex--;
@@ -1400,16 +1397,16 @@ const reducer = createReducer(
       enabled: !newHeaders[newToggledHeaderIndex].enabled,
     };
 
-    if (dataTableMode === DataTableMode.RANGE) {
+    if (rangeSelectionEnabled) {
       return {
         ...state,
-        rangeSelectionHeaders: newHeaders,
+        rangeSelectionHeaders: newHeaders
       };
     }
 
     return {
       ...state,
-      singleSelectionHeaders: newHeaders,
+      singleSelectionHeaders: newHeaders
     };
   }),
   on(actions.dataTableColumnToggled, (state, {dataTableMode, headerType}) => {

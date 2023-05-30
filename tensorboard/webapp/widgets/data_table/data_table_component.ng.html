@@ -30,13 +30,6 @@ limitations under the License.
           [ngClass]="getHeaderHighlightStyle(header.name)"
         >
           <tb-data-table-header [header]="header"></tb-data-table-header>
-          <div class="delete-icon-container">
-            <mat-icon
-              (click)="clickRemoveColumn(header)"
-              class='show-on-hover'
-              svgIcon="close_24px"
-            ></mat-icon>
-          </div>
           <div class="sorting-icon-container">
             <mat-icon
               *ngIf="sortingInfo.order === SortingOrder.ASCENDING || header.name !== sortingInfo.name"
@@ -48,6 +41,15 @@ limitations under the License.
               [ngClass]="header.name === sortingInfo.name ? 'show' : 'show-on-hover'"
               svgIcon="arrow_downward_24px"
             ></mat-icon>
+          </div>
+          <div class="delete-icon-container">
+            <mat-icon
+              id="delete-icon"
+              (click)="clickRemoveColumn(header)"
+              class='show-on-hover'
+              svgIcon="close_24px"
+              >
+          </mat-icon>
           </div>
         </div>
       </div>

@@ -36,8 +36,6 @@ import {
   SortingOrder,
 } from '../../../widgets/data_table/types';
 import {isDatumVisible} from './utils';
-// import { CardId, HeaderRemoveInfo } from '../../../metrics/internal_types';
-// import {CardId} from '../../types';
 
 @Component({
   selector: 'scalar-card-data-table',

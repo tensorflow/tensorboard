@@ -206,11 +206,6 @@ export class DataTableComponent implements OnDestroy {
   }
 
   clickRemoveColumn(header: ColumnHeader) {
-    // const headerRemoveInfo: HeaderRemoveInfo = {
-    //   dataTableMode: this.dataTableMode,
-    //   headerType: header.type,
-    //   cardId: this.cardId
-    // };
     this.removeColumn.emit({
       headerType: header.type,
     })

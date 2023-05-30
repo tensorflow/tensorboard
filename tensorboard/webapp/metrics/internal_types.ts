@@ -102,7 +102,6 @@ export interface HeaderEditInfo {
 export interface HeaderRemoveInfo {
   headerType: ColumnHeaderType;
   cardId: CardId;
-  dataTableMode: DataTableMode;
 }
 
 export interface HeaderToggleInfo {

@@ -147,11 +147,7 @@ export class ScalarCardComponent<Downloader> {
   }
 
   removeColumn(headerRemoveInfo: HeaderRemoveInfo) {
-    // this.sortingInfo = sortingInfo;
     const removeInfo = {
-      dataTableMode: this.rangeEnabled
-      ? DataTableMode.RANGE
-      : DataTableMode.SINGLE,
       headerType: headerRemoveInfo.headerType,
       cardId: this.cardId
     };

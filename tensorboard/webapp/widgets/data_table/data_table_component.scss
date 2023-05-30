@@ -93,6 +93,24 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
     border-radius: 5px;
   }
 
+  .delete-icon-container {
+    width: 12px;
+    height: 12px;
+    border-radius: 5px;
+    top: 0;
+  }
+
+  .delete-icon-container:hover {
+    background-color: mat.get-color-from-palette(mat.$gray-palette, 500);
+    color: mat.get-color-from-palette(mat.$gray-palette, 200);
+    cursor: pointer;
+  
+    @include tb-dark-theme {
+      background-color: mat.get-color-from-palette(mat.$gray-palette, 700);
+      color: mat.get-color-from-palette(mat.$gray-palette, 300);
+    }
+  }
+
   .show {
     opacity: 1;
   }
