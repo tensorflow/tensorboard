@@ -202,6 +202,10 @@ def tensorboard_js_workspace():
                 "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_change_history_24px.svg",
                 "https://raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_change_history_24px.svg",
             ],
+            "475c29758b4a689598f80099714362c0340ad3a4bc111e2d88807bbf4b0f817e": [
+                "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/content/add/materialicons/24px.svg",
+                "https://raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/content/add/materialicons/24px.svg",
+            ],
         },
         rename = {
             "ic_arrow_downward_24px.svg": "arrow_downward_24px.svg",
@@ -266,5 +270,7 @@ def tensorboard_js_workspace():
             "https://raw.githubusercontent.com/google/material-design-icons/d3d4aca5a7cf50bc68bbd401cefa708e364194e8/src/image/brightness_6/materialicons/24px.svg": "brightness_6_24px.svg",
             "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/d3d4aca5a7cf50bc68bbd401cefa708e364194e8/src/action/drag_indicator/materialicons/24px.svg": "drag_indicator_24px.svg",
             "https://raw.githubusercontent.com/google/material-design-icons/d3d4aca5a7cf50bc68bbd401cefa708e364194e8/src/action/drag_indicator/materialicons/24px.svg": "drag_indicator_24px.svg",
+            "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/content/add/materialicons/24px.svg": "add_24px.svg",
+            "https://raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/content/add/materialicons/24px.svg": "add_24px.svg",
         },
     )
