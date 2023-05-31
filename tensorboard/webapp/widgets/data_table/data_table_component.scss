@@ -85,6 +85,10 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
   .cell mat-icon {
     height: 12px;
     width: 12px;
+
+    ::ng-deep path {
+      fill: unset;
+    }
   }
 
   .sorting-icon-container {
