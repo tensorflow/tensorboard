@@ -208,6 +208,6 @@ export class DataTableComponent implements OnDestroy {
   clickRemoveColumn(header: ColumnHeader) {
     this.removeColumn.emit({
       headerType: header.type,
-    })
+    });
   }
 }

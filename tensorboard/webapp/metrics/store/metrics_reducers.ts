@@ -1373,82 +1373,56 @@ const reducer = createReducer(
       singleSelectionHeaders: enabledNewHeaders.concat(disabledNewHeaders),
     };
   }),
-  on(actions.dataTableColumnRemoved, (state, {headerType, cardId}) => {
-    const rangeSelectionEnabled = getCardRangeSelectionEnabled(state, cardId);
-    const targetedHeaders = rangeSelectionEnabled
-        ? state.rangeSelectionHeaders
-        : state.singleSelectionHeaders;
-    const currentToggledHeaderIndex = targetedHeaders.findIndex(
-      (element) => element.type === headerType
-    );
+  on(
+    actions.dataTableColumnToggled,
+    (state, {dataTableMode, headerType, cardId}) => {
+      let rangeSelectionEnabled;
 
-    let newToggledHeaderIndex = getEnabledCount(targetedHeaders);
-    if (targetedHeaders[currentToggledHeaderIndex].enabled) {
-      newToggledHeaderIndex--;
-    }
-    const newHeaders = moveHeader(
-      currentToggledHeaderIndex,
-      newToggledHeaderIndex,
-      targetedHeaders
-    );
+      if (cardId) {
+        rangeSelectionEnabled = getCardRangeSelectionEnabled(state, cardId);
+      } else {
+        rangeSelectionEnabled = dataTableMode === DataTableMode.RANGE;
+      }
 
-    newHeaders[newToggledHeaderIndex] = {
-      ...newHeaders[newToggledHeaderIndex],
-      enabled: !newHeaders[newToggledHeaderIndex].enabled,
-    };
-
-    if (rangeSelectionEnabled) {
-      return {
-        ...state,
-        rangeSelectionHeaders: newHeaders
-      };
-    }
-
-    return {
-      ...state,
-      singleSelectionHeaders: newHeaders
-    };
-  }),
-  on(actions.dataTableColumnToggled, (state, {dataTableMode, headerType}) => {
-    const targetedHeaders =
-      dataTableMode === DataTableMode.RANGE
+      const targetedHeaders = rangeSelectionEnabled
         ? state.rangeSelectionHeaders
         : state.singleSelectionHeaders;
 
-    const currentToggledHeaderIndex = targetedHeaders.findIndex(
-      (element) => element.type === headerType
-    );
+      const currentToggledHeaderIndex = targetedHeaders.findIndex(
+        (element) => element.type === headerType
+      );
 
-    // If the header is being enabled it goes at the bottom of the currently
-    // enabled headers. If it is being disabled it goes to the top of the
-    // currently disabled headers.
-    let newToggledHeaderIndex = getEnabledCount(targetedHeaders);
-    if (targetedHeaders[currentToggledHeaderIndex].enabled) {
-      newToggledHeaderIndex--;
-    }
-    const newHeaders = moveHeader(
-      currentToggledHeaderIndex,
-      newToggledHeaderIndex,
-      targetedHeaders
-    );
+      // If the header is being enabled it goes at the bottom of the currently
+      // enabled headers. If it is being disabled it goes to the top of the
+      // currently disabled headers.
+      let newToggledHeaderIndex = getEnabledCount(targetedHeaders);
+      if (targetedHeaders[currentToggledHeaderIndex].enabled) {
+        newToggledHeaderIndex--;
+      }
+      const newHeaders = moveHeader(
+        currentToggledHeaderIndex,
+        newToggledHeaderIndex,
+        targetedHeaders
+      );
 
-    newHeaders[newToggledHeaderIndex] = {
-      ...newHeaders[newToggledHeaderIndex],
-      enabled: !newHeaders[newToggledHeaderIndex].enabled,
-    };
+      newHeaders[newToggledHeaderIndex] = {
+        ...newHeaders[newToggledHeaderIndex],
+        enabled: !newHeaders[newToggledHeaderIndex].enabled,
+      };
 
-    if (dataTableMode === DataTableMode.RANGE) {
+      if (rangeSelectionEnabled) {
+        return {
+          ...state,
+          rangeSelectionHeaders: newHeaders,
+        };
+      }
+
       return {
         ...state,
-        rangeSelectionHeaders: newHeaders,
+        singleSelectionHeaders: newHeaders,
       };
     }
-
-    return {
-      ...state,
-      singleSelectionHeaders: newHeaders,
-    };
-  }),
+  ),
   on(actions.metricsToggleVisiblePlugin, (state, {plugin}) => {
     let nextFilteredPluginTypes = new Set(state.filteredPluginTypes);
     if (nextFilteredPluginTypes.has(plugin)) {

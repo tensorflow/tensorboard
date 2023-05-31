@@ -44,7 +44,12 @@ import {
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
 import {CardState} from '../../store';
-import {HeaderEditInfo, HeaderRemoveInfo, TooltipSort, XAxisType} from '../../types';
+import {
+  HeaderEditInfo,
+  HeaderToggleInfo,
+  TooltipSort,
+  XAxisType,
+} from '../../types';
 import {
   MinMaxStep,
   ScalarCardDataSeries,
@@ -114,7 +119,7 @@ export class ScalarCardComponent<Downloader> {
   @Output() onDataTableSorting = new EventEmitter<SortingInfo>();
   @Output() editColumnHeaders = new EventEmitter<HeaderEditInfo>();
   @Output() openTableEditMenuToMode = new EventEmitter<DataTableMode>();
-  @Output() onRemoveColumn = new EventEmitter<HeaderRemoveInfo>();
+  @Output() onRemoveColumn = new EventEmitter<HeaderToggleInfo>();
 
   @Output() onLineChartZoom = new EventEmitter<Extent | null>();
 
@@ -146,12 +151,12 @@ export class ScalarCardComponent<Downloader> {
     this.onDataTableSorting.emit(sortingInfo);
   }
 
-  removeColumn(headerRemoveInfo: HeaderRemoveInfo) {
-    const removeInfo = {
-      headerType: headerRemoveInfo.headerType,
-      cardId: this.cardId
+  removeColumn(headerToggleInfo: HeaderToggleInfo) {
+    const toggleInfo = {
+      headerType: headerToggleInfo.headerType,
+      cardId: this.cardId,
     };
-    this.onRemoveColumn.emit(removeInfo);
+    this.onRemoveColumn.emit(toggleInfo);
   }
 
   resetDomain() {

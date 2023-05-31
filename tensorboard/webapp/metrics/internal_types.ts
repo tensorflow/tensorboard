@@ -105,8 +105,9 @@ export interface HeaderRemoveInfo {
 }
 
 export interface HeaderToggleInfo {
-  dataTableMode: DataTableMode;
+  dataTableMode?: DataTableMode;
   headerType: ColumnHeaderType;
+  cardId?: CardId;
 }
 
 export const SCALARS_SMOOTHING_MIN = 0;

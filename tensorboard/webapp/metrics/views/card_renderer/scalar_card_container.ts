@@ -71,7 +71,7 @@ import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
   cardViewBoxChanged,
   dataTableColumnEdited,
-  dataTableColumnRemoved,
+  dataTableColumnToggled,
   metricsCardFullSizeToggled,
   metricsCardStateUpdated,
   sortingDataTable,
@@ -93,7 +93,13 @@ import {
   getMetricsXAxisType,
   RunToSeries,
 } from '../../store';
-import {CardId, CardMetadata, HeaderEditInfo, HeaderRemoveInfo, XAxisType} from '../../types';
+import {
+  CardId,
+  CardMetadata,
+  HeaderEditInfo,
+  HeaderToggleInfo,
+  XAxisType,
+} from '../../types';
 import {getFilteredRenderableRunsIdsFromRoute} from '../main_view/common_selectors';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
@@ -685,7 +691,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.store.dispatch(metricsSlideoutMenuOpened({mode: tableMode}));
   }
 
-  onRemoveColumn(headerRemoveInfo: HeaderRemoveInfo) {
-    this.store.dispatch(dataTableColumnRemoved(headerRemoveInfo));
+  onRemoveColumn(headerToggleInfo: HeaderToggleInfo) {
+    this.store.dispatch(dataTableColumnToggled(headerToggleInfo));
   }
 }

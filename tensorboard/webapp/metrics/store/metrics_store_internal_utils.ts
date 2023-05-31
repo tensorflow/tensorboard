@@ -602,8 +602,8 @@ export function getCardSelectionStateToBoolean(
 }
 
 export function getCardRangeSelectionEnabled(
-    state: MetricsState,
-    cardId: CardId
+  state: MetricsState,
+  cardId: CardId
 ) {
   const cardStateMap = state.cardStateMap;
   const globalRangeSelectionEnabled = state.rangeSelectionEnabled;
@@ -614,10 +614,10 @@ export function getCardRangeSelectionEnabled(
   }
 
   const cardState = cardStateMap[cardId];
-    return getCardSelectionStateToBoolean(
-      cardState?.rangeSelectionOverride,
-      globalRangeSelectionEnabled
-    );
+  return getCardSelectionStateToBoolean(
+    cardState?.rangeSelectionOverride,
+    globalRangeSelectionEnabled
+  );
 }
 
 export const TEST_ONLY = {
