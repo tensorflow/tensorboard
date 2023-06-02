@@ -26,7 +26,7 @@ export function featureFlagsToSerializableQueryParams<T>(
   return Object.entries(overriddenFeatureFlags)
     .map(([featureFlag, featureValue]) => {
       if (featureValue === undefined) {
-        // Feature flag has no overriden value specified.
+        // Feature flag has no overridden value specified.
         // Return empty item. Will be filtered out.
         return {};
       }
