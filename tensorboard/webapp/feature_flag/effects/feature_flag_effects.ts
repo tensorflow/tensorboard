@@ -90,7 +90,7 @@ export class FeatureFlagEffects {
   );
 
   /**
-   * When a feature flag is overriden this effect persists that override by
+   * When a feature flag is overridden this effect persists that override by
    * putting it in local storage using the dataSource.
    */
   readonly storeFeatureFlag$ = createEffect(
