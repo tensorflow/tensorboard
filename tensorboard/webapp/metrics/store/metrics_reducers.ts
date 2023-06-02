@@ -55,6 +55,7 @@ import {
   buildOrReturnStateWithPinnedCopy,
   buildOrReturnStateWithUnresolvedImportedPins,
   canCreateNewPins,
+  cardRangeSelectionEnabled,
   createPluginDataWithLoadable,
   createRunToLoadState,
   generateNextCardStepIndex,
@@ -62,7 +63,6 @@ import {
   generateNextPinnedCardMappings,
   generateScalarCardMinMaxStep,
   getCardId,
-  getCardRangeSelectionEnabled,
   getRunIds,
   getTimeSeriesLoadable,
 } from './metrics_store_internal_utils';
@@ -1379,7 +1379,15 @@ const reducer = createReducer(
       let rangeSelectionEnabled;
 
       if (cardId) {
-        rangeSelectionEnabled = getCardRangeSelectionEnabled(state, cardId);
+        const cardStateMap = state.cardStateMap;
+        const globalRangeSelectionEnabled = state.rangeSelectionEnabled;
+        const linkedTimeEnabled = state.linkedTimeEnabled;
+        rangeSelectionEnabled = cardRangeSelectionEnabled(
+          cardStateMap,
+          globalRangeSelectionEnabled,
+          linkedTimeEnabled,
+          cardId
+        );
       } else {
         rangeSelectionEnabled = dataTableMode === DataTableMode.RANGE;
       }

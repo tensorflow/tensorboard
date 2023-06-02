@@ -601,14 +601,12 @@ export function getCardSelectionStateToBoolean(
   }
 }
 
-export function getCardRangeSelectionEnabled(
-  state: MetricsState,
+export function cardRangeSelectionEnabled(
+  cardStateMap: CardStateMap,
+  globalRangeSelectionEnabled: boolean,
+  linkedTimeEnabled: boolean,
   cardId: CardId
 ) {
-  const cardStateMap = state.cardStateMap;
-  const globalRangeSelectionEnabled = state.rangeSelectionEnabled;
-  const linkedTimeEnabled = state.linkedTimeEnabled;
-
   if (linkedTimeEnabled) {
     return globalRangeSelectionEnabled;
   }
