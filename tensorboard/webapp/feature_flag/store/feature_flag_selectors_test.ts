@@ -120,7 +120,7 @@ describe('feature_flag_selectors', () => {
   });
 
   describe('#getFeatureFlagsToSendToServer', () => {
-    it('returns overriden flags to send to server', () => {
+    it('returns overridden flags to send to server', () => {
       // Give explicit defaultValues and modify sendToServer value for some of
       // the properties.
       const metadata = {
@@ -165,7 +165,7 @@ describe('feature_flag_selectors', () => {
       expect(actual).toEqual({inColab: true});
     });
 
-    it('ignores overriden flags that should not be sent to server', () => {
+    it('ignores overridden flags that should not be sent to server', () => {
       // Give explicit defaultValues and modify sendToServer value for some of
       // the properties.
       const metadata = {
