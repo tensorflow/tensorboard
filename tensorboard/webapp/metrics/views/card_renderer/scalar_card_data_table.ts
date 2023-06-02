@@ -61,8 +61,6 @@ export class ScalarCardDataTable {
   @Input() sortingInfo!: SortingInfo;
   @Input() columnCustomizationEnabled!: boolean;
   @Input() smoothingEnabled!: boolean;
-  // @Input() dataTableMode!: DataTableMode;
-  // @Input() cardId!: CardId;
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() editColumnHeaders = new EventEmitter<HeaderEditInfo>();

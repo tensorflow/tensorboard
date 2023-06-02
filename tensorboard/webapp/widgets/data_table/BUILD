@@ -35,11 +35,15 @@ tf_ng_module(
     deps = [
         ":data_table_header",
         ":types",
+        "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:formatter",
         "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//@ngrx/store",
+        "@npm//rxjs",
     ],
 )
 
@@ -77,10 +81,15 @@ tf_ts_library(
     deps = [
         ":data_table",
         ":types",
+        "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "//tensorboard/webapp/feature_flag/store",
+        "//tensorboard/webapp/testing:utils",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
+        "@npm//@ngrx/store",
         "@npm//@types/jasmine",
+        "@npm//rxjs",
     ],
 )

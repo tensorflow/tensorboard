@@ -32,6 +32,7 @@ import {
   generateScalarCardMinMaxStep,
   getCardId,
   getCardSelectionStateToBoolean,
+  getCardRangeSelectionEnabled,
   getMinMaxStepFromCardState,
   getPinnedCardId,
   getRunIds,
@@ -1276,6 +1277,93 @@ describe('metrics store utils', () => {
     it('returns global value when selection state is undefined', () => {
       expect(getCardSelectionStateToBoolean(undefined, true)).toBeTrue();
       expect(getCardSelectionStateToBoolean(undefined, false)).toBeFalse();
+    });
+  });
+
+  describe('getCardRangeSelectionEnabled', () => {
+    it('returns card specific value when defined', () => {
+      expect(
+        getCardRangeSelectionEnabled(
+          buildMetricsState({
+            rangeSelectionEnabled: false,
+            cardStateMap: {
+              card1: {
+                rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+              },
+            },
+          }),
+          'card1'
+        )
+      ).toBeTrue();
+      expect(
+        getCardRangeSelectionEnabled(
+          buildMetricsState({
+            rangeSelectionEnabled: true,
+            cardStateMap: {
+              card1: {
+                rangeSelectionOverride:
+                  CardFeatureOverride.OVERRIDE_AS_DISABLED,
+              },
+            },
+          }),
+          'card1'
+        )
+      ).toBeFalse();
+    });
+
+    it('returns global value when card specific value is not defined', () => {
+      expect(
+        getCardRangeSelectionEnabled(
+          buildMetricsState({
+            rangeSelectionEnabled: true,
+            cardStateMap: {
+              card1: {},
+            },
+          }),
+          'card1'
+        )
+      ).toBeTrue();
+      expect(
+        getCardRangeSelectionEnabled(
+          buildMetricsState({
+            rangeSelectionEnabled: false,
+          }),
+          'card1'
+        )
+      ).toBeFalse();
+    });
+
+    it('returns global value when linked time is enabled', () => {
+      expect(
+        getCardRangeSelectionEnabled(
+          buildMetricsState({
+            rangeSelectionEnabled: true,
+            linkedTimeEnabled: true,
+            cardStateMap: {
+              card1: {
+                rangeSelectionOverride:
+                  CardFeatureOverride.OVERRIDE_AS_DISABLED,
+              },
+            },
+          }),
+          'card1'
+        )
+      ).toBeTrue();
+
+      expect(
+        getCardRangeSelectionEnabled(
+          buildMetricsState({
+            rangeSelectionEnabled: false,
+            linkedTimeEnabled: true,
+            cardStateMap: {
+              card1: {
+                rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+              },
+            },
+          }),
+          'card1'
+        )
+      ).toBeFalse();
     });
   });
 });

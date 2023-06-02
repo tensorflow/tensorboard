@@ -19,6 +19,7 @@ import {
   EventEmitter,
   Input,
   OnDestroy,
+  OnInit,
   Output,
 } from '@angular/core';
 import {
@@ -33,6 +34,10 @@ import {
   numberFormatter,
   relativeTimeFormatter,
 } from '../line_chart_v2/lib/formatter';
+import {getEnableHparamsInTimeSeries} from '../../feature_flag/store/feature_flag_selectors';
+import {BehaviorSubject} from 'rxjs';
+import {Store} from '@ngrx/store';
+import {State} from '../../app_state';
 
 enum Side {
   RIGHT,
@@ -49,7 +54,7 @@ const preventDefault = function (e: MouseEvent) {
   styleUrls: ['data_table_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DataTableComponent implements OnDestroy {
+export class DataTableComponent implements OnInit, OnDestroy {
   // The order of this array of headers determines the order which they are
   // displayed in the table.
   @Input() headers!: ColumnHeader[];
@@ -71,9 +76,18 @@ export class DataTableComponent implements OnDestroy {
   draggingHeaderName: string | undefined;
   highlightedColumnName: string | undefined;
   highlightSide: Side = Side.RIGHT;
+  HParamsEnabled = new BehaviorSubject<boolean>(false);
+
+  constructor(private readonly store: Store<State>) {}
 
   ngOnDestroy() {
     document.removeEventListener('dragover', preventDefault);
+  }
+
+  ngOnInit() {
+    this.store.select(getEnableHparamsInTimeSeries).subscribe((enabled) => {
+      this.HParamsEnabled.next(enabled);
+    });
   }
 
   getFormattedDataForColumn(

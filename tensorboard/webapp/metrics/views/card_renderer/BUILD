@@ -382,6 +382,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",
+        "//tensorboard/webapp/metrics/store:types",
         "//tensorboard/webapp/metrics/views/main_view:common_selectors",
         "//tensorboard/webapp/runs/store:testing",
         "//tensorboard/webapp/runs/store:types",

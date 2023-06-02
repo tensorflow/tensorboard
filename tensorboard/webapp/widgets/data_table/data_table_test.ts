@@ -26,6 +26,11 @@ import {
 } from './types';
 import {DataTableComponent} from './data_table_component';
 import {DataTableModule} from './data_table_module';
+import {getEnableHparamsInTimeSeries} from '../../feature_flag/store/feature_flag_selectors';
+import {MockStore} from '@ngrx/store/testing';
+import {State} from '../../app_state';
+import {Store} from '@ngrx/store';
+import {provideMockTbStore} from '../../testing/utils';
 
 @Component({
   selector: 'testable-comp',
@@ -38,6 +43,7 @@ import {DataTableModule} from './data_table_module';
       [smoothingEnabled]="smoothingEnabled"
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
+      (removeColumn)="removeColumn($event)"
     ></tb-data-table>
   `,
 })
@@ -52,16 +58,21 @@ class TestableComponent {
 
   @Input() sortDataBy!: (sortingInfo: SortingInfo) => void;
   @Input() orderColumns!: (newOrder: ColumnHeaderType[]) => void;
+  @Input() removeColumn!: (headerType: ColumnHeaderType) => void;
 }
 
 describe('data table', () => {
+  let store: MockStore<State>;
   let sortDataBySpy: jasmine.Spy;
   let orderColumnsSpy: jasmine.Spy;
+  let removeColumnSpy: jasmine.Spy;
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [TestableComponent, DataTableComponent],
       imports: [MatIconModule, DataTableModule],
+      providers: [provideMockTbStore()],
     }).compileComponents();
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
   });
 
   function createComponent(input: {
@@ -87,6 +98,9 @@ describe('data table', () => {
 
     orderColumnsSpy = jasmine.createSpy();
     fixture.componentInstance.orderColumns = orderColumnsSpy;
+
+    removeColumnSpy = jasmine.createSpy();
+    fixture.componentInstance.removeColumn = removeColumnSpy;
 
     return fixture;
   }
@@ -788,5 +802,126 @@ describe('data table', () => {
     expect(dataElements[2].nativeElement.innerText).toBe('run name');
     expect(dataElements[3].nativeElement.innerText).toBe('1');
     expect(dataElements.length).toBe(4);
+  });
+
+  describe('delete column button', () => {
+    it('emits removeColumn event when delete button clicked', () => {
+      store.overrideSelector(getEnableHparamsInTimeSeries, true);
+      const fixture = createComponent({
+        headers: [
+          {
+            type: ColumnHeaderType.VALUE,
+            name: 'value',
+            displayName: 'Value',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.STEP,
+            name: 'step',
+            displayName: 'Step',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.RELATIVE_TIME,
+            name: 'relativeTime',
+            displayName: 'Relative',
+            enabled: true,
+          },
+        ],
+      });
+      fixture.detectChanges();
+      const headerElements = fixture.debugElement.queryAll(
+        By.css('.header > .col')
+      );
+
+      headerElements[3]
+        .queryAll(By.css('mat-icon'))[1]
+        .triggerEventHandler('click', {});
+      expect(removeColumnSpy).toHaveBeenCalledOnceWith({
+        headerType: ColumnHeaderType.STEP,
+      });
+    });
+
+    it('renders delete button when hparam flag is on', () => {
+      store.overrideSelector(getEnableHparamsInTimeSeries, true);
+      const fixture = createComponent({
+        headers: [
+          {
+            type: ColumnHeaderType.VALUE,
+            name: 'value',
+            displayName: 'Value',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.STEP,
+            name: 'step',
+            displayName: 'Step',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.RELATIVE_TIME,
+            name: 'relativeTime',
+            displayName: 'Relative',
+            enabled: true,
+          },
+        ],
+      });
+      fixture.detectChanges();
+      const headerElements = fixture.debugElement.queryAll(
+        By.css('.header > .col')
+      );
+
+      expect(headerElements[3].queryAll(By.css('mat-icon'))[1]).toBeTruthy();
+    });
+
+    it('does not render delete button when hparam flag is off', () => {
+      store.overrideSelector(getEnableHparamsInTimeSeries, false);
+      const fixture = createComponent({
+        headers: [
+          {
+            type: ColumnHeaderType.VALUE,
+            name: 'value',
+            displayName: 'Value',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.STEP,
+            name: 'step',
+            displayName: 'Step',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.RELATIVE_TIME,
+            name: 'relativeTime',
+            displayName: 'Relative',
+            enabled: true,
+          },
+        ],
+      });
+      fixture.detectChanges();
+      const headerElements = fixture.debugElement.queryAll(
+        By.css('.header > .col')
+      );
+
+      expect(headerElements[3].queryAll(By.css('mat-icon'))[1]).toBeFalsy();
+    });
   });
 });
