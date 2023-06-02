@@ -27,7 +27,6 @@ import {CardState} from '../store/metrics_types';
 import {
   CardId,
   HeaderEditInfo,
-  HeaderRemoveInfo,
   HeaderToggleInfo,
   HistogramMode,
   MinMaxStep,
@@ -240,13 +239,8 @@ export const dataTableColumnEdited = createAction(
   props<HeaderEditInfo>()
 );
 
-export const dataTableColumnRemoved = createAction(
-  '[Metrics] Data table column removed by delete button',
-  props<HeaderRemoveInfo>()
-);
-
 export const dataTableColumnToggled = createAction(
-  '[Metrics] Data table column toggled in edit menu',
+  '[Metrics] Data table column toggled in edit menu or delete button',
   props<HeaderToggleInfo>()
 );
 
