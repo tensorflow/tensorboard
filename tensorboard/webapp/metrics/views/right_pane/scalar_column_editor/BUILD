@@ -23,6 +23,7 @@ tf_ng_module(
         ":scalar_column_editor_styles",
         "scalar_column_editor_component.ng.html",
     ],
+    deprecated_angular_disable_strict_deps = True,
     deps = [
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
