@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
+// INTERNAL-ONLY: Import of deprecated legacy Angular Material styles
 @import 'tensorboard/webapp/theme/tb_palette';
 
 $tb-primary: mat.define-palette($tf-orange, 700, 400, 800);
