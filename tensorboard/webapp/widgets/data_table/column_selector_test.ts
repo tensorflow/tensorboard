@@ -135,6 +135,28 @@ describe('column selector', () => {
     });
   });
 
+  describe('search bar', () => {
+    it('filters columns by displayName', () => {
+      fixture.componentInstance.searchInput = 'Learning Rate';
+      fixture.componentInstance.searchInputChanged();
+      fixture.detectChanges();
+
+      expect(getSelectedButton().nativeElement.innerText).toEqual(
+        'Learning Rate'
+      );
+    });
+
+    it('filters columns by name', () => {
+      fixture.componentInstance.searchInput = 'lr';
+      fixture.componentInstance.searchInputChanged();
+      fixture.detectChanges();
+
+      expect(getSelectedButton().nativeElement.innerText).toEqual(
+        'Learning Rate'
+      );
+    });
+  });
+
   it('selects a column when the it is clicked', fakeAsync(() => {
     let selectedColumn: ColumnHeader;
     fixture.componentInstance.columnSelected.subscribe((column) => {

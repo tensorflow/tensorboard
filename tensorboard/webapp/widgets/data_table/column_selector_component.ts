@@ -48,6 +48,16 @@ export class ColumnSelectorComponent implements OnInit, AfterViewInit {
   selectedIndex$ = new BehaviorSubject(0);
 
   ngOnInit() {
+    /**
+     * This components supports keyboard navigation.
+     * Pressing the up arrow selects the previous column.
+     * Pressing the down arrow selects the next column.
+     * Pressing the enter key adds the selected column.
+     *
+     * When the selected column is outside the visible area (due to scolling)
+     * we update the scrollTop to ensure the visible area follows the selected
+     * column.
+     */
     this.selectedIndex$.subscribe(() => {
       if (!this.columnList) {
         return;
@@ -60,11 +70,13 @@ export class ColumnSelectorComponent implements OnInit, AfterViewInit {
         this.columnList.nativeElement.getBoundingClientRect().height;
       const buttonHeight = selectedButton.getBoundingClientRect().height;
       const scrollTop = this.columnList.nativeElement.scrollTop;
+      // If we need to scroll up.
       if (this.selectedIndex$.getValue() * buttonHeight < scrollTop) {
         this.columnList.nativeElement.scrollTop =
           this.selectedIndex$.getValue() * buttonHeight;
       }
 
+      // If we need to scroll down.
       if (
         (this.selectedIndex$.getValue() + 1) * buttonHeight >
         scrollTop + scrollAreaHeight
@@ -87,8 +99,12 @@ export class ColumnSelectorComponent implements OnInit, AfterViewInit {
   }
 
   getFilteredColumns() {
-    return this.selectableColumns.filter((columnHeader) =>
-      columnHeader.name.toLowerCase().match(this.searchInput.toLowerCase())
+    return this.selectableColumns.filter(
+      (columnHeader) =>
+        columnHeader.name.toLowerCase().match(this.searchInput.toLowerCase()) ||
+        columnHeader.displayName
+          .toLowerCase()
+          .match(this.searchInput.toLowerCase())
     );
   }
 
