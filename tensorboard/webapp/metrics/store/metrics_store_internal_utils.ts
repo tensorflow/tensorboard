@@ -606,7 +606,7 @@ export function cardRangeSelectionEnabled(
   globalRangeSelectionEnabled: boolean,
   linkedTimeEnabled: boolean,
   cardId: CardId
-) {
+): boolean {
   if (linkedTimeEnabled) {
     return globalRangeSelectionEnabled;
   }

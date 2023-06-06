@@ -87,21 +87,21 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
     width: 12px;
   }
 
-  .sorting-icon-container {
-    width: 12px;
-    height: 12px;
-    border-radius: 5px;
-  }
-
   .delete-icon-container {
-    width: 12px;
-    height: 12px;
     border-radius: 5px;
+    height: 12px;
+    width: 12px;
   }
 
   .delete-icon-container:hover {
     background-color: mat.get-color-from-palette(mat.$gray-palette, 300);
     cursor: pointer;
+  }
+
+  .sorting-icon-container {
+    border-radius: 5px;
+    height: 12px;
+    width: 12px;
   }
 
   .show {

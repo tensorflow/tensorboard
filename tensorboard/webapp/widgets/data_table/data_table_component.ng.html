@@ -42,11 +42,11 @@ limitations under the License.
               svgIcon="arrow_downward_24px"
             ></mat-icon>
           </div>
-          <div *ngIf="HParamsEnabled.value" class="delete-icon-container">
+          <div *ngIf="hparamsEnabled" class="delete-icon-container">
             <mat-icon
-              (click)="clickRemoveColumn(header)"
               class="show-on-hover"
               svgIcon="close_24px"
+              (click)="clickRemoveColumn(header)"
             >
             </mat-icon>
           </div>

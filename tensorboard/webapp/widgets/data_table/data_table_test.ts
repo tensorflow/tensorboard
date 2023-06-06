@@ -26,7 +26,6 @@ import {
 } from './types';
 import {DataTableComponent} from './data_table_component';
 import {DataTableModule} from './data_table_module';
-import {getEnableHparamsInTimeSeries} from '../../feature_flag/store/feature_flag_selectors';
 import {MockStore} from '@ngrx/store/testing';
 import {State} from '../../app_state';
 import {Store} from '@ngrx/store';
@@ -41,6 +40,7 @@ import {provideMockTbStore} from '../../testing/utils';
       [data]="data"
       [sortingInfo]="sortingInfo"
       [smoothingEnabled]="smoothingEnabled"
+      [hparamsEnabled]="hparamsEnabled"
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
       (removeColumn)="removeColumn($event)"
@@ -55,6 +55,7 @@ class TestableComponent {
   @Input() data!: TableData[];
   @Input() sortingInfo!: SortingInfo;
   @Input() smoothingEnabled!: boolean;
+  @Input() hparamsEnabled!: boolean;
 
   @Input() sortDataBy!: (sortingInfo: SortingInfo) => void;
   @Input() orderColumns!: (newOrder: ColumnHeaderType[]) => void;
@@ -80,6 +81,7 @@ describe('data table', () => {
     data?: TableData[];
     sortingInfo?: SortingInfo;
     smoothingEnabled?: boolean;
+    hparamsEnabled?: boolean;
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
 
@@ -806,7 +808,6 @@ describe('data table', () => {
 
   describe('delete column button', () => {
     it('emits removeColumn event when delete button clicked', () => {
-      store.overrideSelector(getEnableHparamsInTimeSeries, true);
       const fixture = createComponent({
         headers: [
           {
@@ -835,6 +836,7 @@ describe('data table', () => {
           },
         ],
       });
+      fixture.componentInstance.hparamsEnabled = true;
       fixture.detectChanges();
       const headerElements = fixture.debugElement.queryAll(
         By.css('.header > .col')
@@ -849,7 +851,6 @@ describe('data table', () => {
     });
 
     it('renders delete button when hparam flag is on', () => {
-      store.overrideSelector(getEnableHparamsInTimeSeries, true);
       const fixture = createComponent({
         headers: [
           {
@@ -878,6 +879,7 @@ describe('data table', () => {
           },
         ],
       });
+      fixture.componentInstance.hparamsEnabled = true;
       fixture.detectChanges();
       const headerElements = fixture.debugElement.queryAll(
         By.css('.header > .col')
@@ -887,7 +889,6 @@ describe('data table', () => {
     });
 
     it('does not render delete button when hparam flag is off', () => {
-      store.overrideSelector(getEnableHparamsInTimeSeries, false);
       const fixture = createComponent({
         headers: [
           {
@@ -916,6 +917,7 @@ describe('data table', () => {
           },
         ],
       });
+      fixture.componentInstance.hparamsEnabled = false;
       fixture.detectChanges();
       const headerElements = fixture.debugElement.queryAll(
         By.css('.header > .col')

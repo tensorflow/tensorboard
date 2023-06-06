@@ -1376,23 +1376,17 @@ const reducer = createReducer(
   on(
     actions.dataTableColumnToggled,
     (state, {dataTableMode, headerType, cardId}) => {
-      let rangeSelectionEnabled;
+      const {cardStateMap, rangeSelectionEnabled, linkedTimeEnabled} = state;
+      const rangeEnabled = cardId
+        ? cardRangeSelectionEnabled(
+            cardStateMap,
+            rangeSelectionEnabled,
+            linkedTimeEnabled,
+            cardId
+          )
+        : dataTableMode === DataTableMode.RANGE;
 
-      if (cardId) {
-        const cardStateMap = state.cardStateMap;
-        const globalRangeSelectionEnabled = state.rangeSelectionEnabled;
-        const linkedTimeEnabled = state.linkedTimeEnabled;
-        rangeSelectionEnabled = cardRangeSelectionEnabled(
-          cardStateMap,
-          globalRangeSelectionEnabled,
-          linkedTimeEnabled,
-          cardId
-        );
-      } else {
-        rangeSelectionEnabled = dataTableMode === DataTableMode.RANGE;
-      }
-
-      const targetedHeaders = rangeSelectionEnabled
+      const targetedHeaders = rangeEnabled
         ? state.rangeSelectionHeaders
         : state.singleSelectionHeaders;
 
@@ -1418,7 +1412,7 @@ const reducer = createReducer(
         enabled: !newHeaders[newToggledHeaderIndex].enabled,
       };
 
-      if (rangeSelectionEnabled) {
+      if (rangeEnabled) {
         return {
           ...state,
           rangeSelectionHeaders: newHeaders,

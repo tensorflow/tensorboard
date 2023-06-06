@@ -107,6 +107,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() userViewBox!: Extent | null;
   @Input() columnHeaders!: ColumnHeader[];
   @Input() rangeEnabled!: boolean;
+  @Input() hparamsEnabled!: boolean;
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
@@ -152,11 +153,10 @@ export class ScalarCardComponent<Downloader> {
   }
 
   removeColumn(headerToggleInfo: HeaderToggleInfo) {
-    const toggleInfo = {
+    this.onRemoveColumn.emit({
       headerType: headerToggleInfo.headerType,
       cardId: this.cardId,
-    };
-    this.onRemoveColumn.emit(toggleInfo);
+    });
   }
 
   resetDomain() {

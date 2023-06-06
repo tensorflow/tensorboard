@@ -485,14 +485,13 @@ export const getMetricsCardRangeSelectionEnabled = createSelector(
     linkedTimeEnabled: boolean,
     cardStateMap: CardStateMap,
     cardId: CardId
-  ) => {
-    return cardRangeSelectionEnabled(
+  ) =>
+    cardRangeSelectionEnabled(
       cardStateMap,
       globalRangeSelectionEnabled,
       linkedTimeEnabled,
       cardId
-    );
-  }
+    )
 );
 
 /**

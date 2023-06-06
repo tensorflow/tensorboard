@@ -46,6 +46,7 @@ import {isDatumVisible} from './utils';
       [sortingInfo]="sortingInfo"
       [columnCustomizationEnabled]="columnCustomizationEnabled"
       [smoothingEnabled]="smoothingEnabled"
+      [hparamsEnabled]="hparamsEnabled"
       (sortDataBy)="sortDataBy.emit($event)"
       (orderColumns)="orderColumns($event)"
       (removeColumn)="removeColumn.emit($event)"
@@ -61,6 +62,7 @@ export class ScalarCardDataTable {
   @Input() sortingInfo!: SortingInfo;
   @Input() columnCustomizationEnabled!: boolean;
   @Input() smoothingEnabled!: boolean;
+  @Input() hparamsEnabled!: boolean;
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() editColumnHeaders = new EventEmitter<HeaderEditInfo>();

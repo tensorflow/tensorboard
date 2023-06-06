@@ -100,9 +100,9 @@ export interface HeaderEditInfo {
 }
 
 export interface HeaderToggleInfo {
-  dataTableMode?: DataTableMode;
   headerType: ColumnHeaderType;
   cardId?: CardId;
+  dataTableMode?: DataTableMode;
 }
 
 export const SCALARS_SMOOTHING_MIN = 0;

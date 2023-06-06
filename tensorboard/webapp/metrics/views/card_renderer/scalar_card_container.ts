@@ -184,6 +184,7 @@ function isMinMaxStepValid(minMax: MinMaxStep | undefined): boolean {
       [userViewBox]="userViewBox$ | async"
       [columnHeaders]="columnHeaders$ | async"
       [rangeEnabled]="rangeEnabled$ | async"
+      [hparamsEnabled]="hparamsEnabled$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
       observeIntersection
@@ -234,6 +235,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   stepOrLinkedTimeSelection$?: Observable<TimeSelection | undefined>;
   cardState$?: Observable<Partial<CardState>>;
   rangeEnabled$?: Observable<boolean>;
+  hparamsEnabled$?: Observable<boolean>;
 
   onVisibilityChange({visible}: {visible: boolean}) {
     this.isVisible = visible;
@@ -597,6 +599,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       getMetricsCardRangeSelectionEnabled,
       this.cardId
     );
+
+    this.hparamsEnabled$ = this.store.select(getEnableHparamsInTimeSeries);
   }
 
   ngOnDestroy() {

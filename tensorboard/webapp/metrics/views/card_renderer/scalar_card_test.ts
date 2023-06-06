@@ -4308,7 +4308,7 @@ describe('scalar card', () => {
         ]);
       }));
 
-      it('emits dataTableColumnToggled when onRemoveColumn is called', fakeAsync(() => {
+      it('emits dataTableColumnToggled when onRemoveColumn is called with range selection disabled', fakeAsync(() => {
         store.overrideSelector(getSingleSelectionHeaders, [
           {
             type: ColumnHeaderType.RUN,
@@ -4325,22 +4325,57 @@ describe('scalar card', () => {
         ]);
         store.overrideSelector(getCardStateMap, {
           card1: {
+            rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_DISABLED,
+          },
+        });
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        fixture.componentInstance.onRemoveColumn({
+          cardId: 'card1',
+          headerType: ColumnHeaderType.RUN,
+        });
+
+        expect(dispatchedActions).toEqual([
+          dataTableColumnToggled({
+            cardId: 'card1',
+            headerType: ColumnHeaderType.RUN,
+          }),
+        ]);
+      }));
+
+      it('emits dataTableColumnToggled when onRemoveColumn is called with range selection enabled', fakeAsync(() => {
+        store.overrideSelector(getRangeSelectionHeaders, [
+          {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.MIN_VALUE,
+            name: 'minValue',
+            displayName: 'Min Value',
+            enabled: true,
+          },
+        ]);
+        store.overrideSelector(getCardStateMap, {
+          card1: {
             rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
           },
         });
         const fixture = createComponent('card1');
         fixture.detectChanges();
 
-        const headerToggleInfo = {
+        fixture.componentInstance.onRemoveColumn({
           cardId: 'card1',
-          headerType: ColumnHeaderType.RUN,
-        };
-        fixture.componentInstance.onRemoveColumn(headerToggleInfo);
+          headerType: ColumnHeaderType.MIN_VALUE,
+        });
 
         expect(dispatchedActions).toEqual([
           dataTableColumnToggled({
             cardId: 'card1',
-            headerType: ColumnHeaderType.RUN,
+            headerType: ColumnHeaderType.MIN_VALUE,
           }),
         ]);
       }));
