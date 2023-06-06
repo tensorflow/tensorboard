@@ -22,7 +22,6 @@ import {
   AfterViewInit,
   HostListener,
   OnInit,
-  AfterContentInit,
   ChangeDetectionStrategy,
 } from '@angular/core';
 import {ColumnHeader} from './types';
@@ -109,7 +108,12 @@ export class ColumnSelectorComponent implements OnInit, AfterViewInit {
   }
 
   searchInputChanged() {
-    this.selectedIndex$.next(0);
+    this.selectedIndex$.next(
+      Math.min(
+        this.selectedIndex$.getValue(),
+        this.selectableColumns.length - 1
+      )
+    );
   }
 
   selectColumn(header: ColumnHeader) {

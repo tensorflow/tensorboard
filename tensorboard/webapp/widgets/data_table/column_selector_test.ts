@@ -64,7 +64,7 @@ describe('column selector', () => {
   });
 
   describe('keyboard navigation', () => {
-    it('deccreases selected index when the up arrow is pressed', () => {
+    it('decreases selected index when the up arrow is pressed', () => {
       fixture.componentInstance.selectedIndex$.next(1);
       fixture.detectChanges();
       expect(getSelectedButton().nativeElement.innerText).toEqual(
@@ -87,7 +87,7 @@ describe('column selector', () => {
       );
     });
 
-    it('resets selected index when search input changes', () => {
+    it('does not change index when columns are selected', () => {
       fixture.componentInstance.selectedIndex$.next(1);
       fixture.detectChanges();
       expect(getSelectedButton().nativeElement.innerText).toEqual(
@@ -97,7 +97,9 @@ describe('column selector', () => {
       fixture.componentInstance.searchInputChanged();
       fixture.detectChanges();
 
-      expect(getSelectedButton().nativeElement.innerText).toEqual('Runs');
+      expect(getSelectedButton().nativeElement.innerText).toEqual(
+        'Learning Rate'
+      );
     });
 
     it('selects a column when the enter key is pressed', fakeAsync(() => {
