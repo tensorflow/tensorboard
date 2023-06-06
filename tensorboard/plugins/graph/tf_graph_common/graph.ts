@@ -879,7 +879,10 @@ function extractOutputShapes(
         // into a number.
         return shape.dim.map((dim) => {
           // Size can be -1 if this particular dimension is unknown.
-          return dim.size;
+          // If we actually have a 0-dimension tensor `dim.size` returns null,
+          // so we default to 0 in this case to avoid upstream null-handling
+          // issues.
+          return dim.size || 0;
         });
       });
       // Since we already processed it, remove the entry from the attribute
