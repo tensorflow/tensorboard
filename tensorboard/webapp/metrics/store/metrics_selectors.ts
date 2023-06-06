@@ -477,13 +477,13 @@ export const getTableEditorSelectedTab = createSelector(
 );
 
 export const getMetricsCardRangeSelectionEnabled = createSelector(
+  getCardStateMap,
   getMetricsRangeSelectionEnabled,
   getMetricsLinkedTimeEnabled,
-  getCardStateMap,
   (
+    cardStateMap: CardStateMap,
     globalRangeSelectionEnabled: boolean,
     linkedTimeEnabled: boolean,
-    cardStateMap: CardStateMap,
     cardId: CardId
   ) =>
     cardRangeSelectionEnabled(

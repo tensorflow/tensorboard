@@ -26,10 +26,6 @@ import {
 } from './types';
 import {DataTableComponent} from './data_table_component';
 import {DataTableModule} from './data_table_module';
-import {MockStore} from '@ngrx/store/testing';
-import {State} from '../../app_state';
-import {Store} from '@ngrx/store';
-import {provideMockTbStore} from '../../testing/utils';
 
 @Component({
   selector: 'testable-comp',
@@ -63,7 +59,6 @@ class TestableComponent {
 }
 
 describe('data table', () => {
-  let store: MockStore<State>;
   let sortDataBySpy: jasmine.Spy;
   let orderColumnsSpy: jasmine.Spy;
   let removeColumnSpy: jasmine.Spy;
@@ -71,9 +66,7 @@ describe('data table', () => {
     await TestBed.configureTestingModule({
       declarations: [TestableComponent, DataTableComponent],
       imports: [MatIconModule, DataTableModule],
-      providers: [provideMockTbStore()],
     }).compileComponents();
-    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
   });
 
   function createComponent(input: {

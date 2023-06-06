@@ -107,7 +107,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() userViewBox!: Extent | null;
   @Input() columnHeaders!: ColumnHeader[];
   @Input() rangeEnabled!: boolean;
-  @Input() hparamsEnabled!: boolean;
+  @Input() hparamsEnabled?: boolean;
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
