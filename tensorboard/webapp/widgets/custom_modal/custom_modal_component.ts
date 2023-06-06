@@ -61,7 +61,7 @@ export class CustomModalComponent implements OnInit {
   @ViewChild('content', {static: false})
   private readonly content!: ElementRef;
 
-  private clickListener: any = this.close.bind(this);
+  private clickListener: () => void = this.close.bind(this);
 
   ngOnInit() {
     this.visible$.subscribe((visible) => {
