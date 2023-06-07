@@ -831,13 +831,14 @@ describe('data table', () => {
       });
       fixture.componentInstance.hparamsEnabled = true;
       fixture.detectChanges();
+
       const headerElements = fixture.debugElement.queryAll(
         By.css('.header > .col')
       );
-
       headerElements[3]
         .query(By.css('.delete-icon'))
         .triggerEventHandler('click', {});
+
       expect(removeColumnSpy).toHaveBeenCalledOnceWith({
         headerType: ColumnHeaderType.STEP,
       });
@@ -874,6 +875,7 @@ describe('data table', () => {
       });
       fixture.componentInstance.hparamsEnabled = true;
       fixture.detectChanges();
+
       const headerElements = fixture.debugElement.queryAll(
         By.css('.header > .col')
       );
@@ -912,6 +914,7 @@ describe('data table', () => {
       });
       fixture.componentInstance.hparamsEnabled = false;
       fixture.detectChanges();
+
       const headerElements = fixture.debugElement.queryAll(
         By.css('.header > .col')
       );
