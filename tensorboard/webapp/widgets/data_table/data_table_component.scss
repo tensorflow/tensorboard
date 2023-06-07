@@ -87,10 +87,25 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
     width: 12px;
   }
 
+  .col:hover .delete-icon-container {
+    opacity: 1;
+  }
+
   .delete-icon-container {
     border-radius: 5px;
     height: 12px;
+    margin-left: -12px;
+    opacity: 0;
+    position: absolute;
     width: 12px;
+  }
+
+  .delete-icon {
+    color: mat.get-color-from-palette(mat.$gray-palette, 500);
+  }
+
+  .delete-icon:hover {
+    color: #fff;
   }
 
   .delete-icon-container:hover {

@@ -508,32 +508,32 @@ describe('data table', () => {
 
     expect(
       headerElements[1]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.classList.contains('show')
     ).toBe(true);
     expect(
       headerElements[1]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.getAttribute('svgIcon')
     ).toBe('arrow_upward_24px');
     expect(
       headerElements[2]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.classList.contains('show')
     ).toBe(false);
     expect(
       headerElements[2]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.classList.contains('show-on-hover')
     ).toBe(true);
     expect(
       headerElements[3]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.classList.contains('show')
     ).toBe(false);
     expect(
       headerElements[3]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.classList.contains('show-on-hover')
     ).toBe(true);
   });
@@ -572,32 +572,32 @@ describe('data table', () => {
 
     expect(
       headerElements[1]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.classList.contains('show')
     ).toBe(false);
     expect(
       headerElements[1]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.classList.contains('show-on-hover')
     ).toBe(true);
     expect(
       headerElements[2]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.classList.contains('show')
     ).toBe(false);
     expect(
       headerElements[2]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.classList.contains('show-on-hover')
     ).toBe(true);
     expect(
       headerElements[3]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.classList.contains('show')
     ).toBe(true);
     expect(
       headerElements[3]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.getAttribute('svgIcon')
     ).toBe('arrow_downward_24px');
   });
@@ -836,7 +836,7 @@ describe('data table', () => {
       );
 
       headerElements[3]
-        .queryAll(By.css('mat-icon'))[1]
+        .query(By.css('.delete-icon'))
         .triggerEventHandler('click', {});
       expect(removeColumnSpy).toHaveBeenCalledOnceWith({
         headerType: ColumnHeaderType.STEP,
@@ -878,7 +878,7 @@ describe('data table', () => {
         By.css('.header > .col')
       );
 
-      expect(headerElements[3].queryAll(By.css('mat-icon'))[1]).toBeTruthy();
+      expect(headerElements[3].query(By.css('.delete-icon'))).toBeTruthy();
     });
 
     it('does not render delete button when hparam flag is off', () => {
@@ -916,7 +916,7 @@ describe('data table', () => {
         By.css('.header > .col')
       );
 
-      expect(headerElements[3].queryAll(By.css('mat-icon'))[1]).toBeFalsy();
+      expect(headerElements[3].query(By.css('.delete-icon'))).toBeFalsy();
     });
   });
 });
