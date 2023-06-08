@@ -47,13 +47,6 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
     @include tb-dark-theme {
       background-color: map-get($tb-dark-background, background);
     }
-    .col:hover .show-on-hover {
-      opacity: 0.3;
-    }
-
-    .col {
-      vertical-align: bottom;
-    }
   }
 
   .col {
@@ -89,31 +82,5 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
     ::ng-deep path {
       fill: unset;
     }
-  }
-
-  .sorting-icon-container {
-    width: 12px;
-    height: 12px;
-    border-radius: 5px;
-  }
-
-  .show {
-    opacity: 1;
-  }
-
-  .show-on-hover {
-    opacity: 0;
-  }
-
-  .highlight {
-    background-color: mat.get-color-from-palette(mat.$gray-palette, 200);
-  }
-
-  .highlight-border-right {
-    border-right: 2px solid mat.get-color-from-palette($_accent);
-  }
-
-  .highlight-border-left {
-    border-left: 2px solid mat.get-color-from-palette($_accent);
   }
 }

@@ -1,0 +1,34 @@
+<div
+  class="cell"
+  [draggable]="sortable"
+  (dragstart)="dragStart.emit(header)"
+  (dragend)="dragEnd.emit()"
+  (dragenter)="dragEnter.emit(header)"
+  (click)="headerClicked.emit(header.name)"
+  [ngClass]="highlightStyle$ | async"
+>
+  <ng-content></ng-content>
+  <tb-data-table-header [header]="header"></tb-data-table-header>
+  <div *ngIf="sortable" class="sorting-icon-container">
+    <mat-icon
+      *ngIf="
+            sortingInfo.order === SortingOrder.ASCENDING ||
+            header.name !== sortingInfo.name
+          "
+      [ngClass]="
+            header.name === sortingInfo.name ? 'show' : 'show-on-hover'
+          "
+      svgIcon="arrow_upward_24px"
+    ></mat-icon>
+    <mat-icon
+      *ngIf="
+            sortingInfo.order === SortingOrder.DESCENDING &&
+            header.name === sortingInfo.name
+          "
+      [ngClass]="
+            header.name === sortingInfo.name ? 'show' : 'show-on-hover'
+          "
+      svgIcon="arrow_downward_24px"
+    ></mat-icon>
+  </div>
+</div>

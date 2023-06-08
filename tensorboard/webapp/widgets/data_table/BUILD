@@ -13,6 +13,16 @@ tf_sass_binary(
 )
 
 tf_sass_binary(
+    name = "header_cell_styles",
+    src = "header_cell_component.scss",
+    strict_deps = False,
+    deps = [
+        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/theme",
+    ],
+)
+
+tf_sass_binary(
     name = "data_table_header_styles",
     src = "data_table_header_component.scss",
     strict_deps = False,
@@ -36,11 +46,14 @@ tf_ng_module(
     name = "data_table",
     srcs = [
         "data_table_component.ts",
+        "header_cell_component.ts",
         "data_table_module.ts",
     ],
     assets = [
         "data_table_component.ng.html",
+        "header_cell_component.ng.html",
         ":data_table_styles",
+        ":header_cell_styles"
     ],
     deps = [
         ":data_table_header",
@@ -50,6 +63,7 @@ tf_ng_module(
         "//tensorboard/webapp/widgets/line_chart_v2/lib:formatter",
         "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//rxjs",
     ],
 )
 

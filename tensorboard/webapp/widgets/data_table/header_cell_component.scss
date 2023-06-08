@@ -1,0 +1,51 @@
+@use '@angular/material' as mat;
+@import 'tensorboard/webapp/theme/tb_theme';
+
+$_accent: map-get(mat.get-color-config($tb-theme), accent);
+
+:host {
+  display: table-cell;
+  padding: 1px;
+  vertical-align: bottom;
+}
+.sorting-icon-container {
+  width: 12px;
+  height: 12px;
+  border-radius: 5px;
+}
+.cell mat-icon {
+  height: 12px;
+  width: 12px;
+
+  ::ng-deep path {
+    fill: unset;
+  }
+}
+.cell {
+  align-items: center;
+  display: flex;
+}
+
+.show {
+  opacity: 1;
+}
+
+:host:hover .show-on-hover {
+  opacity: 0.3;
+}
+
+.show-on-hover {
+  opacity: 0;
+}
+
+.highlight {
+  background-color: mat.get-color-from-palette(mat.$gray-palette, 200);
+}
+
+.highlight-border-right {
+  border-right: 2px solid mat.get-color-from-palette($_accent);
+}
+
+.highlight-border-left {
+  border-left: 2px solid mat.get-color-from-palette($_accent);
+}
