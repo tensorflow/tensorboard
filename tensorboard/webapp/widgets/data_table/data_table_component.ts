@@ -80,6 +80,9 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
 
   ngOnDestroy() {
     document.removeEventListener('dragover', preventDefault);
+    this.headerCellSubscriptions.forEach((subscription) => {
+      subscription.unsubscribe();
+    });
   }
 
   ngAfterContentInit() {

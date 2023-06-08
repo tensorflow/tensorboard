@@ -121,6 +121,7 @@ tf_ts_library(
     srcs = [
         "column_selector_test.ts",
         "data_table_test.ts",
+        "header_cell_component_test.ts",
     ],
     deps = [
         ":column_selector",
