@@ -53,7 +53,7 @@ tf_ng_module(
         "data_table_component.ng.html",
         "header_cell_component.ng.html",
         ":data_table_styles",
-        ":header_cell_styles"
+        ":header_cell_styles",
     ],
     deps = [
         ":data_table_header",
