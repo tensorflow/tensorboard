@@ -127,7 +127,7 @@ tf_ts_library(
         ":data_table",
         ":types",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
-        "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "//tensorboard/webapp/testing:mat_icon",
         "@npm//@angular/core",
         "@npm//@angular/forms",
         "@npm//@angular/platform-browser",

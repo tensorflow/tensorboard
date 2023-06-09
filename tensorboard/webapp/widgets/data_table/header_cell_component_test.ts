@@ -15,16 +15,14 @@ limitations under the License.
 
 import {Component, Input, ViewChild} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {MatIconTestingModule} from '@angular/material/icon/testing';
+import {MatIconTestingModule} from '../../testing/mat_icon_module';
 import {By} from '@angular/platform-browser';
 import {
   ColumnHeader,
   ColumnHeaderType,
-  TableData,
   SortingInfo,
   SortingOrder,
 } from './types';
-import {DataTableComponent} from './data_table_component';
 import {DataTableModule} from './data_table_module';
 import {HeaderCellComponent} from './header_cell_component';
 
