@@ -15,7 +15,7 @@ limitations under the License.
 
 import {Component, Input, ViewChild} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {MatIconModule} from '@angular/material/icon';
+import {MatIconTestingModule} from '../../testing/mat_icon_module';
 import {By} from '@angular/platform-browser';
 import {
   ColumnHeader,
@@ -80,7 +80,7 @@ describe('data table', () => {
         DataTableComponent,
         HeaderCellComponent,
       ],
-      imports: [MatIconModule, DataTableModule],
+      imports: [MatIconTestingModule, DataTableModule],
     }).compileComponents();
   });
 
