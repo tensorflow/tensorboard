@@ -19,10 +19,9 @@ import {
   ViewChild,
   ElementRef,
   HostListener,
-  ContentChild,
   OnInit,
 } from '@angular/core';
-import {BehaviorSubject, tap} from 'rxjs';
+import {BehaviorSubject} from 'rxjs';
 
 export interface ModalContent {
   onRender?: () => void;

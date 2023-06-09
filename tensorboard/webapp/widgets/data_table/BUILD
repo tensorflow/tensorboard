@@ -98,7 +98,6 @@ tf_ng_module(
     deps = [
         ":types",
         "//tensorboard/webapp/angular:expect_angular_material_button",
-        "//tensorboard/webapp/angular:expect_angular_material_dialog",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_input",
         "@npm//@angular/common",
