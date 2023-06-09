@@ -15,7 +15,7 @@
 """Experimental framework for generic TensorBoard data providers."""
 
 
-from typing import Collection, Tuple
+from typing import Collection, Optional, Tuple
 import abc
 import dataclasses
 import enum
@@ -558,13 +558,12 @@ class Hyperparameter:
     hyperparameter_name: str = ""
     hyperparameter_display_name: str = ""
     domain_type: HyperparameterDomainType | None = None
-    domain: (
+    domain: Optional[
         Tuple[float, float]
         | Collection[float]
         | Collection[str]
         | Collection[bool]
-        | None
-    ) = None
+     ] = None
 
 
 class _TimeSeries:
