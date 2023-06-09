@@ -48,7 +48,16 @@ import {isDatumVisible} from './utils';
       [smoothingEnabled]="smoothingEnabled"
       (sortDataBy)="sortDataBy.emit($event)"
       (orderColumns)="orderColumns($event)"
-    ></tb-data-table>
+    >
+      <ng-container header>
+        <ng-container *ngFor="let header of columnHeaders">
+          <tb-data-table-header-cell
+            *ngIf="header.enabled"
+            [header]="header"
+            [sortingInfo]="sortingInfo"
+          ></tb-data-table-header-cell> </ng-container
+      ></ng-container>
+    </tb-data-table>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

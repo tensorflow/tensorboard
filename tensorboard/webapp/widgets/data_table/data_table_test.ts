@@ -26,6 +26,7 @@ import {
 } from './types';
 import {DataTableComponent} from './data_table_component';
 import {DataTableModule} from './data_table_module';
+import {HeaderCellComponent} from './header_cell_component';
 
 @Component({
   selector: 'testable-comp',
@@ -38,7 +39,22 @@ import {DataTableModule} from './data_table_module';
       [smoothingEnabled]="smoothingEnabled"
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
-    ></tb-data-table>
+    >
+      <ng-container header>
+        <ng-container *ngFor="let header of headers">
+          <!-- Smoothing and enabled logic is still handled by the table for
+          the content. Soon that logic will all be hanled by the parent. Once
+          moved this ngIf can be removed along with many tests around enabling
+          and disabling columns. -->
+          <tb-data-table-header-cell
+            *ngIf="
+              header.enabled && (header.type !== 'SMOOTHED' || smoothingEnabled)
+            "
+            [header]="header"
+            [sortingInfo]="sortingInfo"
+          ></tb-data-table-header-cell> </ng-container
+      ></ng-container>
+    </tb-data-table>
   `,
 })
 class TestableComponent {
@@ -59,7 +75,11 @@ describe('data table', () => {
   let orderColumnsSpy: jasmine.Spy;
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [TestableComponent, DataTableComponent],
+      declarations: [
+        TestableComponent,
+        DataTableComponent,
+        HeaderCellComponent,
+      ],
       imports: [MatIconModule, DataTableModule],
     }).compileComponents();
   });
@@ -135,26 +155,24 @@ describe('data table', () => {
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(
-      By.css('.header > .col')
+      By.directive(HeaderCellComponent)
     );
 
-    // The first header should always be blank as it is the run color column.
-    expect(headerElements[0].nativeElement.innerText).toBe('');
-    expect(headerElements[1].nativeElement.innerText).toBe('Value');
-    expect(headerElements[2].nativeElement.innerText).toBe('Run');
-    expect(headerElements[3].nativeElement.innerText).toBe('Value');
+    expect(headerElements[0].nativeElement.innerText).toBe('Value');
+    expect(headerElements[1].nativeElement.innerText).toBe('Run');
+    expect(headerElements[2].nativeElement.innerText).toBe('Value');
+    expect(
+      headerElements[2]
+        .queryAll(By.css('mat-icon'))[0]
+        .nativeElement.getAttribute('svgIcon')
+    ).toBe('change_history_24px');
+    expect(headerElements[3].nativeElement.innerText).toBe('%');
     expect(
       headerElements[3]
         .queryAll(By.css('mat-icon'))[0]
         .nativeElement.getAttribute('svgIcon')
     ).toBe('change_history_24px');
-    expect(headerElements[4].nativeElement.innerText).toBe('%');
-    expect(
-      headerElements[4]
-        .queryAll(By.css('mat-icon'))[0]
-        .nativeElement.getAttribute('svgIcon')
-    ).toBe('change_history_24px');
-    expect(headerElements[5].nativeElement.innerText).toBe('Smoothed');
+    expect(headerElements[4].nativeElement.innerText).toBe('Smoothed');
   });
 
   it('displays data in order', () => {
@@ -323,14 +341,14 @@ describe('data table', () => {
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(
-      By.css('.header > .col')
+      By.directive(HeaderCellComponent)
     );
     const dataElements = fixture.debugElement.queryAll(By.css('.row > .col'));
 
-    // The first header should always be blank as it is the run color column.
-    expect(headerElements[0].nativeElement.innerText).toBe('');
-    expect(headerElements[1].nativeElement.innerText).toBe('Value');
-    expect(headerElements[2].nativeElement.innerText).toBe('Step');
+    // The color column is currently hard coded into the data table and is not a
+    // HeaderCellComponent.
+    expect(headerElements[0].nativeElement.innerText).toBe('Value');
+    expect(headerElements[1].nativeElement.innerText).toBe('Step');
 
     // The first column should always be blank as it is the run color column.
     expect(dataElements[0].nativeElement.innerText).toBe('');
@@ -379,7 +397,7 @@ describe('data table', () => {
     expect(dataElements[4].nativeElement.innerText).toBe('');
   });
 
-  it('emits sortDataBy event when header clicked', () => {
+  it('emits sortDataBy event when header emits headerClicked event', () => {
     const fixture = createComponent({
       headers: [
         {
@@ -410,17 +428,17 @@ describe('data table', () => {
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(
-      By.css('.header > .col')
+      By.directive(HeaderCellComponent)
     );
 
-    headerElements[3].triggerEventHandler('click', {});
+    headerElements[3].componentInstance.headerClicked.emit('step');
     expect(sortDataBySpy).toHaveBeenCalledOnceWith({
       name: 'step',
       order: SortingOrder.ASCENDING,
     });
   });
 
-  it('emits sortDataBy event with DESCENDING when header that is currently sorted is clicked', () => {
+  it('emits sortDataBy event with DESCENDING when header that is currently sorted emits headerClick event', () => {
     const fixture = createComponent({
       headers: [
         {
@@ -455,10 +473,10 @@ describe('data table', () => {
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(
-      By.css('.header > .col')
+      By.directive(HeaderCellComponent)
     );
 
-    headerElements[3].triggerEventHandler('click', {});
+    headerElements[3].componentInstance.headerClicked.emit('step');
     expect(sortDataBySpy).toHaveBeenCalledOnceWith({
       name: 'step',
       order: SortingOrder.DESCENDING,
@@ -494,36 +512,36 @@ describe('data table', () => {
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(
-      By.css('.header > .col')
+      By.directive(HeaderCellComponent)
     );
 
     expect(
-      headerElements[1]
+      headerElements[0]
         .queryAll(By.css('mat-icon'))[0]
         .nativeElement.classList.contains('show')
     ).toBe(true);
     expect(
-      headerElements[1]
+      headerElements[0]
         .queryAll(By.css('mat-icon'))[0]
         .nativeElement.getAttribute('svgIcon')
     ).toBe('arrow_upward_24px');
     expect(
-      headerElements[2]
+      headerElements[1]
         .queryAll(By.css('mat-icon'))[0]
         .nativeElement.classList.contains('show')
     ).toBe(false);
     expect(
-      headerElements[2]
+      headerElements[1]
         .queryAll(By.css('mat-icon'))[0]
         .nativeElement.classList.contains('show-on-hover')
     ).toBe(true);
     expect(
-      headerElements[3]
+      headerElements[2]
         .queryAll(By.css('mat-icon'))[0]
         .nativeElement.classList.contains('show')
     ).toBe(false);
     expect(
-      headerElements[3]
+      headerElements[2]
         .queryAll(By.css('mat-icon'))[0]
         .nativeElement.classList.contains('show-on-hover')
     ).toBe(true);
@@ -558,10 +576,20 @@ describe('data table', () => {
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(
-      By.css('.header > .col')
+      By.directive(HeaderCellComponent)
     );
 
     expect(
+      headerElements[0]
+        .queryAll(By.css('mat-icon'))[0]
+        .nativeElement.classList.contains('show')
+    ).toBe(false);
+    expect(
+      headerElements[0]
+        .queryAll(By.css('mat-icon'))[0]
+        .nativeElement.classList.contains('show-on-hover')
+    ).toBe(true);
+    expect(
       headerElements[1]
         .queryAll(By.css('mat-icon'))[0]
         .nativeElement.classList.contains('show')
@@ -575,19 +603,9 @@ describe('data table', () => {
       headerElements[2]
         .queryAll(By.css('mat-icon'))[0]
         .nativeElement.classList.contains('show')
-    ).toBe(false);
+    ).toBe(true);
     expect(
       headerElements[2]
-        .queryAll(By.css('mat-icon'))[0]
-        .nativeElement.classList.contains('show-on-hover')
-    ).toBe(true);
-    expect(
-      headerElements[3]
-        .queryAll(By.css('mat-icon'))[0]
-        .nativeElement.classList.contains('show')
-    ).toBe(true);
-    expect(
-      headerElements[3]
         .queryAll(By.css('mat-icon'))[0]
         .nativeElement.getAttribute('svgIcon')
     ).toBe('arrow_downward_24px');
@@ -622,23 +640,23 @@ describe('data table', () => {
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(
-      By.css('.header > .col')
+      By.directive(HeaderCellComponent)
     );
 
-    headerElements[2].query(By.css('.cell')).triggerEventHandler('dragstart');
-    headerElements[1].query(By.css('.cell')).triggerEventHandler('dragenter');
+    headerElements[1].query(By.css('.cell')).triggerEventHandler('dragstart');
+    headerElements[0].query(By.css('.cell')).triggerEventHandler('dragenter');
     fixture.detectChanges();
     expect(
-      headerElements[1]
+      headerElements[0]
         .query(By.css('.cell'))
         .nativeElement.classList.contains('highlight')
     ).toBe(true);
     expect(
-      headerElements[1]
+      headerElements[0]
         .query(By.css('.cell'))
         .nativeElement.classList.contains('highlight-border-left')
     ).toBe(true);
-    headerElements[2].query(By.css('.cell')).triggerEventHandler('dragend');
+    headerElements[1].query(By.css('.cell')).triggerEventHandler('dragend');
 
     expect(orderColumnsSpy).toHaveBeenCalledOnceWith([
       {
@@ -691,23 +709,23 @@ describe('data table', () => {
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(
-      By.css('.header > .col')
+      By.directive(HeaderCellComponent)
     );
 
-    headerElements[2].query(By.css('.cell')).triggerEventHandler('dragstart');
-    headerElements[3].query(By.css('.cell')).triggerEventHandler('dragenter');
+    headerElements[1].query(By.css('.cell')).triggerEventHandler('dragstart');
+    headerElements[2].query(By.css('.cell')).triggerEventHandler('dragenter');
     fixture.detectChanges();
     expect(
-      headerElements[3]
+      headerElements[2]
         .query(By.css('.cell'))
         .nativeElement.classList.contains('highlight')
     ).toBe(true);
     expect(
-      headerElements[3]
+      headerElements[2]
         .query(By.css('.cell'))
         .nativeElement.classList.contains('highlight-border-right')
     ).toBe(true);
-    headerElements[2].query(By.css('.cell')).triggerEventHandler('dragend');
+    headerElements[1].query(By.css('.cell')).triggerEventHandler('dragend');
 
     expect(orderColumnsSpy).toHaveBeenCalledOnceWith([
       {
@@ -772,17 +790,18 @@ describe('data table', () => {
     });
     fixture.detectChanges();
     const headerElements = fixture.debugElement.queryAll(
-      By.css('.header > .col')
+      By.directive(HeaderCellComponent)
     );
     const dataElements = fixture.debugElement.queryAll(By.css('.row > .col'));
 
-    // The first header should always be blank as it is the run color column.
-    expect(headerElements[0].nativeElement.innerText).toBe('');
-    expect(headerElements[1].nativeElement.innerText).toBe('Value');
-    expect(headerElements[2].nativeElement.innerText).toBe('Run');
-    expect(headerElements[3].nativeElement.innerText).toBe('Step');
-    expect(headerElements.length).toBe(4);
+    // The color column in the header is currently hard coded in and is not a
+    // HeaderCellComponent.
+    expect(headerElements[0].nativeElement.innerText).toBe('Value');
+    expect(headerElements[1].nativeElement.innerText).toBe('Run');
+    expect(headerElements[2].nativeElement.innerText).toBe('Step');
+    expect(headerElements.length).toBe(3);
 
+    // The first header should always be blank as it is the run color column.
     expect(dataElements[0].nativeElement.innerText).toBe('');
     expect(dataElements[1].nativeElement.innerText).toBe('3');
     expect(dataElements[2].nativeElement.innerText).toBe('run name');

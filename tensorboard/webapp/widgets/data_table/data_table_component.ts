@@ -14,12 +14,15 @@ limitations under the License.
 ==============================================================================*/
 
 import {
+  AfterContentInit,
   ChangeDetectionStrategy,
   Component,
+  ContentChildren,
   EventEmitter,
   Input,
   OnDestroy,
   Output,
+  QueryList,
 } from '@angular/core';
 import {
   ColumnHeader,
@@ -33,6 +36,8 @@ import {
   numberFormatter,
   relativeTimeFormatter,
 } from '../line_chart_v2/lib/formatter';
+import {HeaderCellComponent} from './header_cell_component';
+import {Subscription} from 'rxjs';
 
 enum Side {
   RIGHT,
@@ -49,7 +54,7 @@ const preventDefault = function (e: MouseEvent) {
   styleUrls: ['data_table_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DataTableComponent implements OnDestroy {
+export class DataTableComponent implements OnDestroy, AfterContentInit {
   // The order of this array of headers determines the order which they are
   // displayed in the table.
   @Input() headers!: ColumnHeader[];
@@ -57,6 +62,10 @@ export class DataTableComponent implements OnDestroy {
   @Input() sortingInfo!: SortingInfo;
   @Input() columnCustomizationEnabled!: boolean;
   @Input() smoothingEnabled!: boolean;
+
+  @ContentChildren(HeaderCellComponent)
+  headerCells!: QueryList<HeaderCellComponent>;
+  headerCellSubscriptions: Subscription[] = [];
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() orderColumns = new EventEmitter<ColumnHeader[]>();
@@ -71,6 +80,29 @@ export class DataTableComponent implements OnDestroy {
 
   ngOnDestroy() {
     document.removeEventListener('dragover', preventDefault);
+    this.headerCellSubscriptions.forEach((subscription) => {
+      subscription.unsubscribe();
+    });
+  }
+
+  ngAfterContentInit() {
+    this.syncHeaders();
+    this.headerCells.changes.subscribe(this.syncHeaders.bind(this));
+  }
+
+  syncHeaders() {
+    this.headerCellSubscriptions.forEach((subscription) => {
+      subscription.unsubscribe();
+    });
+    this.headerCellSubscriptions = [];
+    this.headerCells.forEach((headerCell) => {
+      this.headerCellSubscriptions.push(
+        headerCell.dragStart.subscribe(this.dragStart.bind(this)),
+        headerCell.dragEnter.subscribe(this.dragEnter.bind(this)),
+        headerCell.dragEnd.subscribe(this.dragEnd.bind(this)),
+        headerCell.headerClicked.subscribe(this.headerClicked.bind(this))
+      );
+    });
   }
 
   getFormattedDataForColumn(
@@ -154,6 +186,9 @@ export class DataTableComponent implements OnDestroy {
     this.draggingHeaderName = undefined;
     this.highlightedColumnName = undefined;
     document.removeEventListener('dragover', preventDefault);
+    this.headerCells.forEach((headerCell) => {
+      headerCell.highlightStyle$.next({});
+    });
   }
 
   dragEnter(header: ColumnHeader) {
@@ -169,6 +204,12 @@ export class DataTableComponent implements OnDestroy {
       this.highlightSide = Side.RIGHT;
     }
     this.highlightedColumnName = header.name;
+
+    this.headerCells.forEach((headerCell) => {
+      headerCell.highlightStyle$.next(
+        this.getHeaderHighlightStyle(headerCell.header.name)
+      );
+    });
   }
 
   // Move the item at sourceIndex to destinationIndex

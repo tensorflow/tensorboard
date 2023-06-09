@@ -17,11 +17,12 @@ import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {MatIconModule} from '@angular/material/icon';
 import {DataTableComponent} from './data_table_component';
+import {HeaderCellComponent} from './header_cell_component';
 import {DataTableHeaderModule} from './data_table_header_module';
 
 @NgModule({
-  declarations: [DataTableComponent],
-  exports: [DataTableComponent],
+  declarations: [DataTableComponent, HeaderCellComponent],
+  exports: [DataTableComponent, HeaderCellComponent],
   imports: [CommonModule, MatIconModule, DataTableHeaderModule],
 })
 export class DataTableModule {}
