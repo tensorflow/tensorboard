@@ -15,7 +15,9 @@
 """Experimental framework for generic TensorBoard data providers."""
 
 
+from typing import Collection, Tuple, Union
 import abc
+import dataclasses
 import enum
 
 import numpy as np
@@ -530,6 +532,7 @@ class HyperparameterDomainType(enum.Enum):
     DISCRETE_BOOL = "discrete_bool"
 
 
+@dataclasses.dataclass(frozen=True)
 class Hyperparameter:
     """Metadata about a hyperparameter.
 
@@ -552,40 +555,16 @@ class Hyperparameter:
           finite set of bool values.
     """
 
-    __slots__ = (
-        "_hyperparameter_name",
-        "_hyperparameter_display_name",
-        "_domain_type",
-        "_domain",
-    )
-
-    def __init__(
-        self,
-        hyperparameter_name,
-        hyperparameter_display_name,
-        domain_type,
-        domain,
-    ):
-        self._hyperparameter_name = hyperparameter_name
-        self._hyperparameter_display_name = hyperparameter_display_name
-        self._domain_type = domain_type
-        self._domain = domain
-
-    @property
-    def hyperparameter_name(self):
-        return self._hyperparameter_name
-
-    @property
-    def hyperparameter_display_name(self):
-        return self._hyperparameter_display_name
-
-    @property
-    def domain_type(self):
-        return self._domain_type
-
-    @property
-    def domain(self):
-        return self._domain
+    hyperparameter_name: str = ""
+    hyperparameter_display_name: str = ""
+    domain_type: Union[HyperparameterDomainType, None] = None
+    domain: Union[
+        Tuple[float, float],
+        Collection[float],
+        Collection[str],
+        Collection[bool],
+        None,
+    ] = None
 
 
 class _TimeSeries:
