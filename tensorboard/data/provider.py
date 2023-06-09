@@ -15,7 +15,7 @@
 """Experimental framework for generic TensorBoard data providers."""
 
 
-from typing import Collection, Optional, Tuple, Union
+from typing import Collection, Tuple, Union
 import abc
 import dataclasses
 import enum
