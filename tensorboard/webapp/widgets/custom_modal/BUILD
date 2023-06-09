@@ -23,6 +23,7 @@ tf_ts_library(
     ],
     deps = [
         ":custom_modal",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
