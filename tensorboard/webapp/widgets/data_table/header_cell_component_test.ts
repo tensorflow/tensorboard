@@ -106,11 +106,14 @@ describe('header cell', () => {
   });
 
   describe('delete column button', () => {
-    it('emits removeColumn event when delete button clicked', () => {
-      const fixture = createComponent({});
+    let fixture: ComponentFixture<TestableComponent>;
+    beforeEach(() => {
+      fixture = createComponent({});
       fixture.componentInstance.hparamsEnabled = true;
       fixture.detectChanges();
+    });
 
+    it('emits removeColumn event when delete button clicked', () => {
       fixture.debugElement
         .query(By.directive(HeaderCellComponent))
         .componentInstance.deleteButtonClicked.subscribe();
@@ -126,20 +129,15 @@ describe('header cell', () => {
       });
     });
 
-    it('renders delete button when hparam flag is on', () => {
-      const fixture = createComponent({});
-      fixture.componentInstance.hparamsEnabled = true;
-      fixture.detectChanges();
-
+    it('renders delete button when hparamsEnabled is true', () => {
       expect(fixture.debugElement.query(By.css('.delete-icon'))).toBeTruthy();
     });
 
-    it('does not render delete button when hparam flag is off', () => {
-      const fixture = createComponent({});
-      fixture.componentInstance.hparamsEnabled = true;
+    it('does not render delete button when hparamsEnabled is false', () => {
+      fixture.componentInstance.hparamsEnabled = false;
       fixture.detectChanges();
 
-      expect(fixture.debugElement.query(By.css('.delete-icon'))).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('.delete-icon'))).toBeFalsy();
     });
   });
 });

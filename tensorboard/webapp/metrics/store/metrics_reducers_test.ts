@@ -1965,6 +1965,7 @@ describe('metrics reducers', () => {
 
     describe('dataTableColumnToggled', () => {
       let beforeState: MetricsState;
+
       beforeEach(() => {
         beforeState = buildMetricsState({
           rangeSelectionHeaders: [
