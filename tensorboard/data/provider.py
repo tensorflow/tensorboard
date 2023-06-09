@@ -557,13 +557,13 @@ class Hyperparameter:
 
     hyperparameter_name: str = ""
     hyperparameter_display_name: str = ""
-    domain_type: HyperparameterDomainType | None = None
+    domain_type: Optional[HyperparameterDomainType] = None
     domain: Optional[
         Tuple[float, float]
         | Collection[float]
         | Collection[str]
         | Collection[bool]
-     ] = None
+    ] = None
 
 
 class _TimeSeries:
