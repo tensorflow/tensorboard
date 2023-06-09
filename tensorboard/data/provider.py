@@ -557,14 +557,13 @@ class Hyperparameter:
 
     hyperparameter_name: str = ""
     hyperparameter_display_name: str = ""
-    domain_type: Optional[HyperparameterDomainType] = None
-    domain: Optional[
-        Union[
-            Tuple[float, float],
-            Collection[float],
-            Collection[str],
-            Collection[bool],
-        ]
+    domain_type: Union[HyperparameterDomainType, None] = None
+    domain: Union[
+        Tuple[float, float],
+        Collection[float],
+        Collection[str],
+        Collection[bool],
+        None,
     ] = None
 
 
