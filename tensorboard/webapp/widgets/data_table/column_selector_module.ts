@@ -1,4 +1,4 @@
-/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2023 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,13 +16,20 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {MatIconModule} from '@angular/material/icon';
-import {DataTableComponent} from './data_table_component';
-import {HeaderCellComponent} from './header_cell_component';
-import {DataTableHeaderModule} from './data_table_header_module';
+import {MatInputModule} from '@angular/material/input';
+import {MatButtonModule} from '@angular/material/button';
+import {ColumnSelectorComponent} from './column_selector_component';
+import {FormsModule} from '@angular/forms';
 
 @NgModule({
-  declarations: [DataTableComponent, HeaderCellComponent],
-  exports: [DataTableComponent, HeaderCellComponent],
-  imports: [CommonModule, MatIconModule, DataTableHeaderModule],
+  declarations: [ColumnSelectorComponent],
+  imports: [
+    CommonModule,
+    MatIconModule,
+    MatInputModule,
+    MatButtonModule,
+    FormsModule,
+  ],
+  exports: [ColumnSelectorComponent],
 })
-export class DataTableModule {}
+export class ColumnSelectorModule {}

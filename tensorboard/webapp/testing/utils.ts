@@ -56,6 +56,7 @@ import {
   createState as createSettings,
   createSettingsState,
 } from '../settings/testing';
+import {HPARAMS_FEATURE_KEY} from '../hparams/_redux/types';
 
 export function buildMockState(overrides: Partial<State> = {}): State {
   return {
@@ -81,7 +82,12 @@ export function buildMockState(overrides: Partial<State> = {}): State {
       buildAppRoutingState(overrides[APP_ROUTING_FEATURE_KEY])
     ),
     ...buildStateFromFeatureFlagsState(buildFeatureFlagState()),
-    ...buildStateFromHparamsState(buildHparamsState()),
+    ...buildStateFromHparamsState(
+      buildHparamsState(
+        overrides[HPARAMS_FEATURE_KEY]?.specs,
+        overrides[HPARAMS_FEATURE_KEY]?.filters
+      )
+    ),
     ...buildStateFromNotificationState(
       buildNotificationState(overrides[NOTIFICATION_FEATURE_KEY] || {})
     ),

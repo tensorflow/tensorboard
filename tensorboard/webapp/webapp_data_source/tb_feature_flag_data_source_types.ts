@@ -43,7 +43,7 @@ export abstract class TBFeatureFlagDataSource {
 
   /**
    * Removes the localStorage override of the given flag. If the flag is not
-   * overriden no changes should occur.
+   * overridden no changes should occur.
    *
    * @param featureFlag The featureFlag to be reset. It must be a key in the
    * FeatureFlags object.

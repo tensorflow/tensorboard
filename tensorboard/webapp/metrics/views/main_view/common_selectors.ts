@@ -25,11 +25,14 @@ import {
   getRunSelectorRegexFilter,
   getRouteKind,
   getRunsFromExperimentIds,
+  getColumnHeadersForCard,
+  getCardMetadata,
 } from '../../../selectors';
 import {DeepReadonly} from '../../../util/types';
 import {
   getHparamFilterMapFromExperimentIds,
   getMetricFilterMapFromExperimentIds,
+  getExperimentsHparamsAndMetricsSpecs,
 } from '../../../hparams/_redux/hparams_selectors';
 import {
   DiscreteFilter,
@@ -48,6 +51,10 @@ import {compareTagNames} from '../../utils';
 import {CardIdWithMetadata} from '../metrics_view_types';
 import {RouteKind} from '../../../app_routing/types';
 import {memoize} from '../../../util/memoize';
+import {
+  ColumnHeader,
+  ColumnHeaderType,
+} from '../card_renderer/scalar_card_types';
 
 export const getScalarTagsForRunSelection = createSelector(
   getMetricsTagMetadata,
@@ -253,6 +260,39 @@ export const getFilteredRenderableRunsIdsFromRoute = createSelector(
     return new Set(filteredRenderableRuns.map(({run: {id}}) => id));
   }
 );
+
+export const getPotentialHparamColumns = createSelector(
+  (state: State) => state,
+  getExperimentIdsFromRoute,
+  (state, experimentIds): ColumnHeader[] => {
+    if (!experimentIds) {
+      return [];
+    }
+
+    const {hparams} = getExperimentsHparamsAndMetricsSpecs(state, {
+      experimentIds,
+    });
+
+    return hparams.map((spec) => ({
+      type: ColumnHeaderType.HPARAM,
+      name: spec.name,
+      // According to the api spec when the displayName is empty, the name should
+      // be displayed tensorboard/plugins/hparams/api.proto
+      displayName: spec.displayName || spec.name,
+      enabled: false,
+    }));
+  }
+);
+
+export const getAllPotentialColumnsForCard = memoize((cardId: string) => {
+  return createSelector(
+    getColumnHeadersForCard(cardId),
+    getPotentialHparamColumns,
+    (staticColumnHeaders, potentialHparamColumns) => {
+      return [...staticColumnHeaders, ...potentialHparamColumns];
+    }
+  );
+});
 
 export const factories = {
   getRenderableRuns,

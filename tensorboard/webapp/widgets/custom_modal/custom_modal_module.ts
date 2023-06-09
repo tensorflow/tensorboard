@@ -1,4 +1,4 @@
-/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2023 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,14 +15,11 @@ limitations under the License.
 
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatIconModule} from '@angular/material/icon';
-import {DataTableComponent} from './data_table_component';
-import {HeaderCellComponent} from './header_cell_component';
-import {DataTableHeaderModule} from './data_table_header_module';
+import {CustomModalComponent} from './custom_modal_component';
 
 @NgModule({
-  declarations: [DataTableComponent, HeaderCellComponent],
-  exports: [DataTableComponent, HeaderCellComponent],
-  imports: [CommonModule, MatIconModule, DataTableHeaderModule],
+  declarations: [CustomModalComponent],
+  imports: [CommonModule],
+  exports: [CustomModalComponent],
 })
-export class DataTableModule {}
+export class CustomModalModule {}

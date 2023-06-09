@@ -293,6 +293,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/widgets:resize_detector_testing",
         "//tensorboard/webapp/widgets/card_fob:card_fob_test",
         "//tensorboard/webapp/widgets/content_wrapping_input:content_wrapping_input_tests",
+        "//tensorboard/webapp/widgets/custom_modal:custom_modal_test",
         "//tensorboard/webapp/widgets/data_table:data_table_test",
         "//tensorboard/webapp/widgets/dropdown:dropdown_tests",
         "//tensorboard/webapp/widgets/experiment_alias:experiment_alias_test",
@@ -319,6 +320,7 @@ tf_svg_bundle(
     # //tensorboard/webapp/testing/mat_icon_module.ts.
     # 'com_google_material_design_icon' in third_party/js.bzl
     srcs = [
+        "@com_google_material_design_icon//:add_24px.svg",
         "@com_google_material_design_icon//:arrow_downward_24px.svg",
         "@com_google_material_design_icon//:arrow_upward_24px.svg",
         "@com_google_material_design_icon//:brightness_6_24px.svg",

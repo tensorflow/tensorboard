@@ -36,31 +36,6 @@ py_test(
 )
 
 py_library(
-    name = "dispatching_provider",
-    srcs = ["dispatching_provider.py"],
-    srcs_version = "PY3",
-    deps = [
-        ":provider",
-        "//tensorboard:errors",
-    ],
-)
-
-py_test(
-    name = "dispatching_provider_test",
-    size = "small",
-    srcs = ["dispatching_provider_test.py"],
-    srcs_version = "PY3",
-    tags = ["support_notf"],
-    deps = [
-        ":dispatching_provider",
-        ":provider",
-        "//tensorboard:context",
-        "//tensorboard:errors",
-        "//tensorboard:test",
-    ],
-)
-
-py_library(
     name = "ingester",
     srcs = ["ingester.py"],
     srcs_version = "PY3",
