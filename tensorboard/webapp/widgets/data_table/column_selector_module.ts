@@ -20,7 +20,6 @@ import {MatInputModule} from '@angular/material/input';
 import {MatButtonModule} from '@angular/material/button';
 import {ColumnSelectorComponent} from './column_selector_component';
 import {FormsModule} from '@angular/forms';
-import {MatDialogModule} from '@angular/material/dialog';
 
 @NgModule({
   declarations: [ColumnSelectorComponent],
@@ -29,7 +28,6 @@ import {MatDialogModule} from '@angular/material/dialog';
     MatIconModule,
     MatInputModule,
     MatButtonModule,
-    MatDialogModule,
     FormsModule,
   ],
   exports: [ColumnSelectorComponent],
