@@ -12,39 +12,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@use '@angular/material' as mat;
-@import 'tensorboard/webapp/theme/tb_theme';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 
-$_accent: map-get(mat.get-color-config($tb-theme), accent);
-
-.data-table {
-  border-spacing: 4px;
-  font-size: 13px;
-  display: table;
-  width: 100%;
-
-  .header {
-    display: table-row;
-  }
-
-  .col {
-    display: table-cell;
-  }
-
-  .header {
-    background-color: mat.get-color-from-palette($tb-background, background);
-    position: sticky;
-    text-align: left;
-    top: 0;
-    font-weight: bold;
-    vertical-align: bottom;
-
-    &:hover {
-      cursor: pointer;
-    }
-
-    @include tb-dark-theme {
-      background-color: map-get($tb-dark-background, background);
-    }
-  }
-}
+@Component({
+  selector: 'tb-data-table-content-row',
+  template: ` <ng-content></ng-content> `,
+  styles: [
+    `
+      :host {
+        display: table-row;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class ContentRowComponent {}

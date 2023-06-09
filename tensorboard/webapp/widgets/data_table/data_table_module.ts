@@ -19,10 +19,22 @@ import {MatIconModule} from '@angular/material/icon';
 import {DataTableComponent} from './data_table_component';
 import {HeaderCellComponent} from './header_cell_component';
 import {DataTableHeaderModule} from './data_table_header_module';
+import {ContentCellComponent} from './content_cell_component';
+import {ContentRowComponent} from './content_row_component';
 
 @NgModule({
-  declarations: [DataTableComponent, HeaderCellComponent],
-  exports: [DataTableComponent, HeaderCellComponent],
+  declarations: [
+    ContentCellComponent,
+    ContentRowComponent,
+    DataTableComponent,
+    HeaderCellComponent,
+  ],
+  exports: [
+    ContentCellComponent,
+    ContentRowComponent,
+    DataTableComponent,
+    HeaderCellComponent,
+  ],
   imports: [CommonModule, MatIconModule, DataTableHeaderModule],
 })
 export class DataTableModule {}

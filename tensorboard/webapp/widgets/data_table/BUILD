@@ -45,6 +45,8 @@ tf_sass_binary(
 tf_ng_module(
     name = "data_table",
     srcs = [
+        "content_cell_component.ts",
+        "content_row_component.ts",
         "data_table_component.ts",
         "data_table_module.ts",
         "header_cell_component.ts",

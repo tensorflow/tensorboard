@@ -291,6 +291,7 @@ tf_ng_module(
         ":scalar_card_styles",
         ":scalar_card_fob_controller_styles",
         "scalar_card_component.ng.html",
+        "scalar_card_data_table.ng.html",
     ],
     deps = [
         ":data_download_dialog",

@@ -71,7 +71,7 @@ class TestableComponent {
   @Input() orderColumns!: (newOrder: ColumnHeaderType[]) => void;
 }
 
-describe('data table', () => {
+fdescribe('data table', () => {
   let sortDataBySpy: jasmine.Spy;
   let orderColumnsSpy: jasmine.Spy;
   beforeEach(async () => {

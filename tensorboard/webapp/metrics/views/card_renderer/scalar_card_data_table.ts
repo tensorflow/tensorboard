@@ -39,28 +39,23 @@ import {isDatumVisible} from './utils';
 
 @Component({
   selector: 'scalar-card-data-table',
-  template: `
-    <tb-data-table
-      [headers]="columnHeaders"
-      [data]="getTimeSelectionTableData()"
-      [sortingInfo]="sortingInfo"
-      [columnCustomizationEnabled]="columnCustomizationEnabled"
-      [smoothingEnabled]="smoothingEnabled"
-      (sortDataBy)="sortDataBy.emit($event)"
-      (orderColumns)="orderColumns($event)"
-      (removeColumn)="removeColumn.emit($event)"
-    >
-      <ng-container header>
-        <ng-container *ngFor="let header of columnHeaders">
-          <tb-data-table-header-cell
-            *ngIf="header.enabled"
-            [header]="header"
-            [sortingInfo]="sortingInfo"
-            [hparamsEnabled]="hparamsEnabled"
-          ></tb-data-table-header-cell> </ng-container
-      ></ng-container>
-    </tb-data-table>
-  `,
+  templateUrl: 'scalar_card_data_table.ng.html',
+  styles: [
+    `
+      .row-circle {
+        height: 12px;
+        width: 12px;
+      }
+      .row-circle > span {
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        display: inline-block;
+        height: 10px;
+        width: 10px;
+        vertical-align: middle;
+      }
+    `,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ScalarCardDataTable {
@@ -79,6 +74,18 @@ export class ScalarCardDataTable {
     headerType: ColumnHeaderType;
   }>();
 
+  ColumnHeaderType = ColumnHeaderType;
+
+  getHeaders(): ColumnHeader[] {
+    return [
+      {
+        name: 'color',
+        displayName: '',
+        type: ColumnHeaderType.COLOR,
+        enabled: true,
+      },
+    ].concat(this.columnHeaders);
+  }
   getMinPointInRange(
     points: ScalarCardPoint[],
     startPointIndex: number,
@@ -287,6 +294,7 @@ export class ScalarCardDataTable {
         return 0;
       });
     }
+    // console.log(JSON.parse(JSON.stringify(dataTableData)) as TableData[]);
     return dataTableData;
   }
 

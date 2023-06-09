@@ -17,34 +17,5 @@ limitations under the License.
     <div class="col"></div>
     <ng-content select="[header]"></ng-content>
   </div>
-  <ng-container *ngFor="let runData of data;">
-    <div class="row">
-      <div class="col row-circle">
-        <span [style.backgroundColor]="runData['color']"></span>
-      </div>
-      <ng-container *ngFor="let header of headers;">
-        <div class="col" *ngIf="showColumn(header)" [ngSwitch]="header.type">
-          <div *ngSwitchCase="ColumnHeaders.VALUE_CHANGE" class="cell">
-            <ng-container
-              *ngTemplateOutlet="arrow; context: {$implicit:runData[header.name]}"
-            ></ng-container>
-            {{ getFormattedDataForColumn(header.type, runData[header.name]) }}
-          </div>
-          <div *ngSwitchCase="ColumnHeaders.PERCENTAGE_CHANGE" class="cell">
-            <ng-container
-              *ngTemplateOutlet="arrow; context: {$implicit:runData[header.name]}"
-            ></ng-container>
-            {{ getFormattedDataForColumn(header.type, runData[header.name]) }}
-          </div>
-          <div *ngSwitchDefault class="cell extra-right-padding">
-            {{ getFormattedDataForColumn(header.type, runData[header.name]) }}
-          </div>
-        </div>
-      </ng-container>
-    </div>
-  </ng-container>
+  <ng-content select="[content]"></ng-content>
 </div>
-<ng-template #arrow let-value>
-  <mat-icon *ngIf="value >= 0" svgIcon="arrow_upward_24px"></mat-icon>
-  <mat-icon *ngIf="value < 0" svgIcon="arrow_downward_24px"></mat-icon>
-</ng-template>
