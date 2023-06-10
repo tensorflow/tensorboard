@@ -34,22 +34,13 @@ import {HeaderCellComponent} from './header_cell_component';
     <tb-data-table
       #DataTable
       [headers]="headers"
-      [data]="data"
       [sortingInfo]="sortingInfo"
-      [smoothingEnabled]="smoothingEnabled"
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
     >
       <ng-container header>
         <ng-container *ngFor="let header of headers">
-          <!-- Smoothing and enabled logic is still handled by the table for
-          the content. Soon that logic will all be hanled by the parent. Once
-          moved this ngIf can be removed along with many tests around enabling
-          and disabling columns. -->
           <tb-data-table-header-cell
-            *ngIf="
-              header.enabled && (header.type !== 'SMOOTHED' || smoothingEnabled)
-            "
             [header]="header"
             [sortingInfo]="sortingInfo"
             [hparamsEnabled]="hparamsEnabled"
@@ -71,7 +62,7 @@ class TestableComponent {
   @Input() orderColumns!: (newOrder: ColumnHeaderType[]) => void;
 }
 
-fdescribe('data table', () => {
+describe('data table', () => {
   let sortDataBySpy: jasmine.Spy;
   let orderColumnsSpy: jasmine.Spy;
   beforeEach(async () => {
@@ -87,22 +78,16 @@ fdescribe('data table', () => {
 
   function createComponent(input: {
     headers?: ColumnHeader[];
-    data?: TableData[];
     sortingInfo?: SortingInfo;
-    smoothingEnabled?: boolean;
     hparamsEnabled?: boolean;
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
 
     fixture.componentInstance.headers = input.headers || [];
-    fixture.componentInstance.data = input.data || [];
     fixture.componentInstance.sortingInfo = input.sortingInfo || {
       name: 'run',
       order: SortingOrder.ASCENDING,
     };
-
-    fixture.componentInstance.smoothingEnabled =
-      input.smoothingEnabled === undefined ? true : input.smoothingEnabled;
 
     sortDataBySpy = jasmine.createSpy();
     fixture.componentInstance.sortDataBy = sortDataBySpy;
@@ -118,285 +103,6 @@ fdescribe('data table', () => {
     fixture.detectChanges();
     const dataTable = fixture.debugElement.query(By.css('.data-table'));
     expect(dataTable).toBeTruthy();
-  });
-
-  it('displays given headers in order', () => {
-    const fixture = createComponent({
-      headers: [
-        {
-          type: ColumnHeaderType.VALUE,
-          name: 'value',
-          displayName: 'Value',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.RUN,
-          name: 'run',
-          displayName: 'Run',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.VALUE_CHANGE,
-          name: 'valueChanged',
-          displayName: 'Value',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.PERCENTAGE_CHANGE,
-          name: 'percentageChanged',
-          displayName: '%',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.SMOOTHED,
-          name: 'smoothed',
-          displayName: 'Smoothed',
-          enabled: true,
-        },
-      ],
-    });
-    fixture.detectChanges();
-    const headerElements = fixture.debugElement.queryAll(
-      By.directive(HeaderCellComponent)
-    );
-
-    expect(headerElements[0].nativeElement.innerText).toBe('Value');
-    expect(headerElements[1].nativeElement.innerText).toBe('Run');
-    expect(headerElements[2].nativeElement.innerText).toBe('Value');
-    expect(
-      headerElements[2]
-        .queryAll(By.css('mat-icon'))[0]
-        .nativeElement.getAttribute('svgIcon')
-    ).toBe('change_history_24px');
-    expect(headerElements[3].nativeElement.innerText).toBe('%');
-    expect(
-      headerElements[3]
-        .queryAll(By.css('mat-icon'))[0]
-        .nativeElement.getAttribute('svgIcon')
-    ).toBe('change_history_24px');
-    expect(headerElements[4].nativeElement.innerText).toBe('Smoothed');
-  });
-
-  it('displays data in order', () => {
-    const fixture = createComponent({
-      headers: [
-        {
-          type: ColumnHeaderType.VALUE,
-          name: 'value',
-          displayName: 'Value',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.RUN,
-          name: 'run',
-          displayName: 'Run',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.STEP,
-          name: 'step',
-          displayName: 'Step',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.RELATIVE_TIME,
-          name: 'relativeTime',
-          displayName: 'Relative',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.VALUE_CHANGE,
-          name: 'valueChange',
-          displayName: 'Value',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.START_STEP,
-          name: 'startStep',
-          displayName: 'Start Step',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.END_STEP,
-          name: 'endStep',
-          displayName: 'End Step',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.START_VALUE,
-          name: 'startValue',
-          displayName: 'Start Value',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.END_VALUE,
-          name: 'endValue',
-          displayName: 'End Value',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.MIN_VALUE,
-          name: 'minValue',
-          displayName: 'Min',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.MAX_VALUE,
-          name: 'maxValue',
-          displayName: 'max',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.PERCENTAGE_CHANGE,
-          name: 'percentageChange',
-          displayName: '%',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.SMOOTHED,
-          name: 'smoothed',
-          displayName: 'Smoothed',
-          enabled: true,
-        },
-      ],
-      data: [
-        {
-          id: 'someid',
-          run: 'run name',
-          value: 31415926535,
-          step: 1,
-          relativeTime: 123,
-          valueChange: -20,
-          startStep: 5,
-          endStep: 30,
-          startValue: 13,
-          endValue: 23,
-          minValue: 0.12345,
-          maxValue: 89793238462,
-          percentageChange: 0.3,
-          smoothed: 3.14e10,
-        },
-      ],
-    });
-    fixture.detectChanges();
-    const dataElements = fixture.debugElement.queryAll(By.css('.row > .col'));
-
-    // The first header should always be blank as it is the run color column.
-    expect(dataElements[0].nativeElement.innerText).toBe('');
-    expect(dataElements[1].nativeElement.innerText).toBe('31,415,926,535');
-    expect(dataElements[2].nativeElement.innerText).toBe('run name');
-    expect(dataElements[3].nativeElement.innerText).toBe('1');
-    expect(dataElements[4].nativeElement.innerText).toBe('123 ms');
-    expect(dataElements[5].nativeElement.innerText).toBe('20');
-    expect(dataElements[5].queryAll(By.css('mat-icon')).length).toBe(1);
-    expect(
-      dataElements[5]
-        .queryAll(By.css('mat-icon'))[0]
-        .nativeElement.getAttribute('svgIcon')
-    ).toBe('arrow_downward_24px');
-    expect(dataElements[6].nativeElement.innerText).toBe('5');
-    expect(dataElements[7].nativeElement.innerText).toBe('30');
-    expect(dataElements[8].nativeElement.innerText).toBe('13');
-    expect(dataElements[9].nativeElement.innerText).toBe('23');
-    expect(dataElements[10].nativeElement.innerText).toBe('0.1235');
-    expect(dataElements[11].nativeElement.innerText).toBe('89,793,238,462');
-    expect(dataElements[12].nativeElement.innerText).toBe('30%');
-    expect(dataElements[12].queryAll(By.css('mat-icon')).length).toBe(1);
-    expect(
-      dataElements[12]
-        .queryAll(By.css('mat-icon'))[0]
-        .nativeElement.getAttribute('svgIcon')
-    ).toBe('arrow_upward_24px');
-    expect(dataElements[13].nativeElement.innerText).toBe('31,400,000,000');
-  });
-
-  it('does not displays headers or data when header is disabled', () => {
-    const fixture = createComponent({
-      headers: [
-        {
-          type: ColumnHeaderType.VALUE,
-          name: 'value',
-          displayName: 'Value',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.RUN,
-          name: 'run',
-          displayName: 'Run',
-          enabled: false,
-        },
-        {
-          type: ColumnHeaderType.STEP,
-          name: 'step',
-          displayName: 'Step',
-          enabled: true,
-        },
-      ],
-      data: [
-        {
-          id: 'someid',
-          run: 'run name',
-          value: 3,
-          step: 1,
-        },
-      ],
-    });
-    fixture.detectChanges();
-    const headerElements = fixture.debugElement.queryAll(
-      By.directive(HeaderCellComponent)
-    );
-    const dataElements = fixture.debugElement.queryAll(By.css('.row > .col'));
-
-    // The color column is currently hard coded into the data table and is not a
-    // HeaderCellComponent.
-    expect(headerElements[0].nativeElement.innerText).toBe('Value');
-    expect(headerElements[1].nativeElement.innerText).toBe('Step');
-
-    // The first column should always be blank as it is the run color column.
-    expect(dataElements[0].nativeElement.innerText).toBe('');
-    expect(dataElements[1].nativeElement.innerText).toBe('3');
-    expect(dataElements[2].nativeElement.innerText).toBe('1');
-  });
-
-  it('displays nothing when no data is available', () => {
-    const fixture = createComponent({
-      headers: [
-        {
-          type: ColumnHeaderType.VALUE,
-          name: 'value',
-          displayName: 'Value',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.RUN,
-          name: 'run',
-          displayName: 'Run',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.STEP,
-          name: 'step',
-          displayName: 'Step',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.RELATIVE_TIME,
-          name: 'relativeTime',
-          displayName: 'Relative',
-          enabled: true,
-        },
-      ],
-      data: [{id: 'someid'}],
-    });
-    fixture.detectChanges();
-    const dataElements = fixture.debugElement.queryAll(By.css('.row > .col'));
-
-    // The first header should always be blank as it is the run color column.
-    expect(dataElements[0].nativeElement.innerText).toBe('');
-    expect(dataElements[1].nativeElement.innerText).toBe('');
-    expect(dataElements[2].nativeElement.innerText).toBe('');
-    expect(dataElements[3].nativeElement.innerText).toBe('');
-    expect(dataElements[4].nativeElement.innerText).toBe('');
   });
 
   it('emits sortDataBy event when header emits headerClicked event', () => {
@@ -749,65 +455,5 @@ fdescribe('data table', () => {
         enabled: true,
       },
     ]);
-  });
-
-  it('does not display Smoothed column when smoothingEnabled is false', () => {
-    const fixture = createComponent({
-      headers: [
-        {
-          type: ColumnHeaderType.VALUE,
-          name: 'value',
-          displayName: 'Value',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.RUN,
-          name: 'run',
-          displayName: 'Run',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.SMOOTHED,
-          name: 'smoothed',
-          displayName: 'Smoothed',
-          enabled: true,
-        },
-        {
-          type: ColumnHeaderType.STEP,
-          name: 'step',
-          displayName: 'Step',
-          enabled: true,
-        },
-      ],
-      data: [
-        {
-          id: 'someid',
-          run: 'run name',
-          value: 3,
-          step: 1,
-          smoothed: 2,
-        },
-      ],
-      smoothingEnabled: false,
-    });
-    fixture.detectChanges();
-    const headerElements = fixture.debugElement.queryAll(
-      By.directive(HeaderCellComponent)
-    );
-    const dataElements = fixture.debugElement.queryAll(By.css('.row > .col'));
-
-    // The color column in the header is currently hard coded in and is not a
-    // HeaderCellComponent.
-    expect(headerElements[0].nativeElement.innerText).toBe('Value');
-    expect(headerElements[1].nativeElement.innerText).toBe('Run');
-    expect(headerElements[2].nativeElement.innerText).toBe('Step');
-    expect(headerElements.length).toBe(3);
-
-    // The first header should always be blank as it is the run color column.
-    expect(dataElements[0].nativeElement.innerText).toBe('');
-    expect(dataElements[1].nativeElement.innerText).toBe('3');
-    expect(dataElements[2].nativeElement.innerText).toBe('run name');
-    expect(dataElements[3].nativeElement.innerText).toBe('1');
-    expect(dataElements.length).toBe(4);
   });
 });

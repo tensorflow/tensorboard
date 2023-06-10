@@ -40,22 +40,7 @@ import {isDatumVisible} from './utils';
 @Component({
   selector: 'scalar-card-data-table',
   templateUrl: 'scalar_card_data_table.ng.html',
-  styles: [
-    `
-      .row-circle {
-        height: 12px;
-        width: 12px;
-      }
-      .row-circle > span {
-        border-radius: 50%;
-        border: 1px solid rgba(255, 255, 255, 0.4);
-        display: inline-block;
-        height: 10px;
-        width: 10px;
-        vertical-align: middle;
-      }
-    `,
-  ],
+  styleUrls: ['scalar_card_data_table.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ScalarCardDataTable {
@@ -294,7 +279,6 @@ export class ScalarCardDataTable {
         return 0;
       });
     }
-    // console.log(JSON.parse(JSON.stringify(dataTableData)) as TableData[]);
     return dataTableData;
   }
 

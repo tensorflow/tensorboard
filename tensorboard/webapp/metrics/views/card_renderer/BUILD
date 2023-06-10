@@ -278,6 +278,16 @@ tf_sass_binary(
     ],
 )
 
+tf_sass_binary(
+    name = "scalar_card_data_table_styles",
+    src = "scalar_card_data_table.scss",
+    strict_deps = False,
+    deps = [
+        "//tensorboard/webapp/metrics/views:metrics_common_styles",
+        "//tensorboard/webapp/theme",
+    ],
+)
+
 tf_ng_module(
     name = "scalar_card",
     srcs = [
@@ -288,6 +298,7 @@ tf_ng_module(
         "scalar_card_module.ts",
     ],
     assets = [
+        ":scalar_card_data_table_styles",
         ":scalar_card_styles",
         ":scalar_card_fob_controller_styles",
         "scalar_card_component.ng.html",

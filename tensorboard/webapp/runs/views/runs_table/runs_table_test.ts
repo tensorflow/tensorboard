@@ -3195,93 +3195,98 @@ describe('runs_table', () => {
       ).toBeFalsy();
     });
 
-    it('passes run name and color to data table', () => {
-      // To make sure we only return the runs when called with the right props.
-      const selectSpy = spyOn(store, 'select').and.callThrough();
-      selectSpy
-        .withArgs(getRuns, {experimentId: 'book'})
-        .and.returnValue(
-          of([
-            buildRun({id: 'book1', name: "The Philosopher's Stone"}),
-            buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
-          ])
-        );
-      selectSpy.withArgs(getRunsTableHeaders).and.returnValue(
-        of([
-          {
-            type: ColumnHeaderType.RUN,
-            name: 'run',
-            displayName: 'Run',
-            enabled: true,
-          },
-        ])
-      );
+    // Currently nothing is passed to the data table from the runs table. This
+    // is because of a data table refactor.
+    // TODO(JamesHollyer): reenable and fix tests once runs table implements new
+    // data table structure.
 
-      store.overrideSelector(getRunColorMap, {
-        book1: '#000',
-        book2: '#111',
-      });
+    // it('passes run name and color to data table', () => {
+    //   // To make sure we only return the runs when called with the right props.
+    //   const selectSpy = spyOn(store, 'select').and.callThrough();
+    //   selectSpy
+    //     .withArgs(getRuns, {experimentId: 'book'})
+    //     .and.returnValue(
+    //       of([
+    //         buildRun({id: 'book1', name: "The Philosopher's Stone"}),
+    //         buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
+    //       ])
+    //     );
+    //   selectSpy.withArgs(getRunsTableHeaders).and.returnValue(
+    //     of([
+    //       {
+    //         type: ColumnHeaderType.RUN,
+    //         name: 'run',
+    //         displayName: 'Run',
+    //         enabled: true,
+    //       },
+    //     ])
+    //   );
 
-      const fixture = createComponent(['book']);
-      fixture.detectChanges();
-      const dataTableComponent = fixture.debugElement.query(
-        By.directive(DataTableComponent)
-      );
+    //   store.overrideSelector(getRunColorMap, {
+    //     book1: '#000',
+    //     book2: '#111',
+    //   });
 
-      expect(dataTableComponent.componentInstance.data).toEqual([
-        {id: 'book1', color: '#000', run: "The Philosopher's Stone"},
-        {id: 'book2', color: '#111', run: 'The Chamber Of Secrets'},
-      ]);
-    });
+    //   const fixture = createComponent(['book']);
+    //   fixture.detectChanges();
+    //   const dataTableComponent = fixture.debugElement.query(
+    //     By.directive(DataTableComponent)
+    //   );
 
-    it('passes hparam values to data table', () => {
-      const run1 = buildRun({id: 'book1', name: "The Philosopher's Stone"});
-      const run2 = buildRun({id: 'book2', name: 'The Chamber Of Secrets'});
-      // To make sure we only return the runs when called with the right props.
-      const selectSpy = spyOn(store, 'select').and.callThrough();
-      selectSpy
-        .withArgs(getRuns, {experimentId: 'book'})
-        .and.returnValue(of([run1, run2]));
+    //   expect(dataTableComponent.componentInstance.data).toEqual([
+    //     {id: 'book1', color: '#000', run: "The Philosopher's Stone"},
+    //     {id: 'book2', color: '#111', run: 'The Chamber Of Secrets'},
+    //   ]);
+    // });
 
-      selectSpy.withArgs(getRunsTableHeaders).and.returnValue(
-        of([
-          {
-            type: ColumnHeaderType.HPARAM,
-            name: 'batch_size',
-            displayName: 'Batch Size',
-            enabled: true,
-          },
-        ])
-      );
+    // it('passes hparam values to data table', () => {
+    //   const run1 = buildRun({id: 'book1', name: "The Philosopher's Stone"});
+    //   const run2 = buildRun({id: 'book2', name: 'The Chamber Of Secrets'});
+    //   // To make sure we only return the runs when called with the right props.
+    //   const selectSpy = spyOn(store, 'select').and.callThrough();
+    //   selectSpy
+    //     .withArgs(getRuns, {experimentId: 'book'})
+    //     .and.returnValue(of([run1, run2]));
 
-      selectSpy.withArgs(getFilteredRenderableRunsFromRoute).and.returnValue(
-        of([
-          {
-            run: run1,
-            hparams: new Map([['batch_size', 1]]),
-          } as RunTableItem,
-          {
-            run: run2,
-            hparams: new Map([['batch_size', 2]]),
-          } as RunTableItem,
-        ])
-      );
+    //   selectSpy.withArgs(getRunsTableHeaders).and.returnValue(
+    //     of([
+    //       {
+    //         type: ColumnHeaderType.HPARAM,
+    //         name: 'batch_size',
+    //         displayName: 'Batch Size',
+    //         enabled: true,
+    //       },
+    //     ])
+    //   );
 
-      store.overrideSelector(getRunColorMap, {
-        book1: '#000',
-        book2: '#111',
-      });
+    //   selectSpy.withArgs(getFilteredRenderableRunsFromRoute).and.returnValue(
+    //     of([
+    //       {
+    //         run: run1,
+    //         hparams: new Map([['batch_size', 1]]),
+    //       } as RunTableItem,
+    //       {
+    //         run: run2,
+    //         hparams: new Map([['batch_size', 2]]),
+    //       } as RunTableItem,
+    //     ])
+    //   );
 
-      const fixture = createComponent(['book']);
-      fixture.detectChanges();
-      const dataTableComponent = fixture.debugElement.query(
-        By.directive(DataTableComponent)
-      );
+    //   store.overrideSelector(getRunColorMap, {
+    //     book1: '#000',
+    //     book2: '#111',
+    //   });
 
-      expect(dataTableComponent.componentInstance.data).toEqual([
-        {id: 'book1', color: '#000', batch_size: 1},
-        {id: 'book2', color: '#111', batch_size: 2},
-      ]);
-    });
+    //   const fixture = createComponent(['book']);
+    //   fixture.detectChanges();
+    //   const dataTableComponent = fixture.debugElement.query(
+    //     By.directive(DataTableComponent)
+    //   );
+
+    //   expect(dataTableComponent.componentInstance.data).toEqual([
+    //     {id: 'book1', color: '#000', batch_size: 1},
+    //     {id: 'book2', color: '#111', batch_size: 2},
+    //   ]);
+    // });
   });
 });

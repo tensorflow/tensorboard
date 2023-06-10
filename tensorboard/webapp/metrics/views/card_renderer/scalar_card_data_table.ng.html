@@ -26,7 +26,7 @@ limitations under the License.
   <ng-container header>
     <ng-container *ngFor="let header of columnHeaders">
       <tb-data-table-header-cell
-        *ngIf="header.enabled"
+        *ngIf="header.enabled && (header.type !== ColumnHeaderType.SMOOTHED || smoothingEnabled)"
         [header]="header"
         [sortingInfo]="sortingInfo"
         [hparamsEnabled]="hparamsEnabled"
@@ -38,7 +38,7 @@ limitations under the License.
       <tb-data-table-content-row>
         <ng-container *ngFor="let header of getHeaders()">
           <tb-data-table-content-cell
-            *ngIf="header.enabled"
+            *ngIf="header.enabled && (header.type !== ColumnHeaderType.SMOOTHED || smoothingEnabled)"
             [header]="header"
             [datum]="dataRow[header.name]"
           >

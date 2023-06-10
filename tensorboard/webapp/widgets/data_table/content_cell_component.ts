@@ -1,4 +1,4 @@
-/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2023 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,55 +22,8 @@ import {
 
 @Component({
   selector: 'tb-data-table-content-cell',
-  template: `
-    <ng-container [ngSwitch]="header.type">
-      <div *ngSwitchCase="ColumnHeaderType.VALUE_CHANGE" class="cell">
-        <ng-container
-          *ngTemplateOutlet="arrow; context: {$implicit: datum}"
-        ></ng-container>
-        {{ getFormattedDataForColumn() }}
-      </div>
-      <div *ngSwitchCase="ColumnHeaderType.PERCENTAGE_CHANGE" class="cell">
-        <ng-container
-          *ngTemplateOutlet="arrow; context: {$implicit: datum}"
-        ></ng-container>
-        {{ getFormattedDataForColumn() }}
-      </div>
-      <div *ngSwitchDefault class="cell extra-right-padding">
-        {{ getFormattedDataForColumn() }}
-      </div>
-      <ng-content></ng-content>
-    </ng-container>
-    <ng-template #arrow let-value>
-      <mat-icon *ngIf="value >= 0" svgIcon="arrow_upward_24px"></mat-icon>
-      <mat-icon *ngIf="value < 0" svgIcon="arrow_downward_24px"></mat-icon>
-    </ng-template>
-  `,
-  styles: [
-    `
-      :host {
-        display: table-cell;
-        padding: 1px;
-      }
-      .cell {
-        align-items: center;
-        display: flex;
-      }
-
-      .cell mat-icon {
-        height: 12px;
-        width: 12px;
-
-        ::ng-deep path {
-          fill: unset;
-        }
-      }
-
-      .extra-right-padding {
-        padding-right: 1px;
-      }
-    `,
-  ],
+  templateUrl: 'content_cell_component.ng.html',
+  styleUrls: ['content_cell_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ContentCellComponent {

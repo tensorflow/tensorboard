@@ -23,6 +23,15 @@ tf_sass_binary(
 )
 
 tf_sass_binary(
+    name = "content_cell_styles",
+    src = "content_cell_component.scss",
+    strict_deps = False,
+    deps = [
+        "//tensorboard/webapp:angular_material_sass_deps",
+    ],
+)
+
+tf_sass_binary(
     name = "data_table_header_styles",
     src = "data_table_header_component.scss",
     strict_deps = False,
@@ -52,8 +61,10 @@ tf_ng_module(
         "header_cell_component.ts",
     ],
     assets = [
+        "content_cell_component.ng.html",
         "data_table_component.ng.html",
         "header_cell_component.ng.html",
+        ":content_cell_styles",
         ":data_table_styles",
         ":header_cell_styles",
     ],
@@ -121,6 +132,7 @@ tf_ts_library(
     testonly = True,
     srcs = [
         "column_selector_test.ts",
+        "content_cell_component_test.ts",
         "data_table_test.ts",
         "header_cell_component_test.ts",
     ],
