@@ -134,7 +134,7 @@ export class DemoDataProvider implements DataProvider {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', embedding.bookmarksPath!);
     xhr.onerror = (err) => {
-      logging.setErrorMessage(xhr.responseText);
+      logging.setErrorMessage(xhr.responseText, 'fetching bookmarks');
     };
     xhr.onload = () => {
       const bookmarks = JSON.parse(xhr.responseText) as State[];
