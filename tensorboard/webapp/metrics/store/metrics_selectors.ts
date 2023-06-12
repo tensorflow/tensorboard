@@ -33,6 +33,7 @@ import {MinMaxStep} from '../views/card_renderer/scalar_card_types';
 import {formatTimeSelection} from '../views/card_renderer/utils';
 import * as storeUtils from './metrics_store_internal_utils';
 import {
+  cardRangeSelectionEnabled,
   getCardSelectionStateToBoolean,
   getMinMaxStepFromCardState,
 } from './metrics_store_internal_utils';
@@ -476,25 +477,21 @@ export const getTableEditorSelectedTab = createSelector(
 );
 
 export const getMetricsCardRangeSelectionEnabled = createSelector(
+  getCardStateMap,
   getMetricsRangeSelectionEnabled,
   getMetricsLinkedTimeEnabled,
-  getCardStateMap,
   (
+    cardStateMap: CardStateMap,
     globalRangeSelectionEnabled: boolean,
     linkedTimeEnabled: boolean,
-    cardStateMap: CardStateMap,
     cardId: CardId
-  ) => {
-    if (linkedTimeEnabled) {
-      return globalRangeSelectionEnabled;
-    }
-
-    const cardState = cardStateMap[cardId];
-    return getCardSelectionStateToBoolean(
-      cardState?.rangeSelectionOverride,
-      globalRangeSelectionEnabled
-    );
-  }
+  ) =>
+    cardRangeSelectionEnabled(
+      cardStateMap,
+      globalRangeSelectionEnabled,
+      linkedTimeEnabled,
+      cardId
+    )
 );
 
 /**

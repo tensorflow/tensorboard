@@ -1964,8 +1964,10 @@ describe('metrics reducers', () => {
     });
 
     describe('dataTableColumnToggled', () => {
-      it('moves header down to the disabled headers when toggling to disabled', () => {
-        const beforeState = buildMetricsState({
+      let beforeState: MetricsState;
+
+      beforeEach(() => {
+        beforeState = buildMetricsState({
           rangeSelectionHeaders: [
             {
               type: ColumnHeaderType.RUN,
@@ -1998,8 +2000,36 @@ describe('metrics reducers', () => {
               enabled: false,
             },
           ],
+          singleSelectionHeaders: [
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.VALUE,
+              name: 'value',
+              displayName: 'Value',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.STEP,
+              name: 'step',
+              displayName: 'Step',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.RELATIVE_TIME,
+              name: 'relativeTime',
+              displayName: 'Relative',
+              enabled: false,
+            },
+          ],
         });
+      });
 
+      it('moves header down to the disabled headers when toggling to disabled with data table mode input', () => {
         const nextState = reducers(
           beforeState,
           actions.dataTableColumnToggled({
@@ -2042,42 +2072,7 @@ describe('metrics reducers', () => {
         ]);
       });
 
-      it('moves header up to the enabled headers when toggling to enabled', () => {
-        const beforeState = buildMetricsState({
-          rangeSelectionHeaders: [
-            {
-              type: ColumnHeaderType.RUN,
-              name: 'run',
-              displayName: 'Run',
-              enabled: true,
-            },
-            {
-              type: ColumnHeaderType.START_VALUE,
-              name: 'startValue',
-              displayName: 'Start Value',
-              enabled: true,
-            },
-            {
-              type: ColumnHeaderType.END_VALUE,
-              name: 'endValue',
-              displayName: 'End Value',
-              enabled: true,
-            },
-            {
-              type: ColumnHeaderType.MIN_VALUE,
-              name: 'minValue',
-              displayName: 'Min',
-              enabled: false,
-            },
-            {
-              type: ColumnHeaderType.MAX_VALUE,
-              name: 'maxValue',
-              displayName: 'Max',
-              enabled: false,
-            },
-          ],
-        });
-
+      it('moves header up to the enabled headers when toggling to enabled with data table mode input', () => {
         const nextState = reducers(
           beforeState,
           actions.dataTableColumnToggled({
@@ -2121,67 +2116,6 @@ describe('metrics reducers', () => {
       });
 
       it('only changes range selection headers when dataTableMode is RANGE', () => {
-        const beforeState = buildMetricsState({
-          rangeSelectionHeaders: [
-            {
-              type: ColumnHeaderType.RUN,
-              name: 'run',
-              displayName: 'Run',
-              enabled: true,
-            },
-            {
-              type: ColumnHeaderType.START_VALUE,
-              name: 'startValue',
-              displayName: 'Start Value',
-              enabled: true,
-            },
-            {
-              type: ColumnHeaderType.END_VALUE,
-              name: 'endValue',
-              displayName: 'End Value',
-              enabled: true,
-            },
-            {
-              type: ColumnHeaderType.MIN_VALUE,
-              name: 'minValue',
-              displayName: 'Min',
-              enabled: false,
-            },
-            {
-              type: ColumnHeaderType.MAX_VALUE,
-              name: 'maxValue',
-              displayName: 'Max',
-              enabled: false,
-            },
-          ],
-          singleSelectionHeaders: [
-            {
-              type: ColumnHeaderType.RUN,
-              name: 'run',
-              displayName: 'Run',
-              enabled: true,
-            },
-            {
-              type: ColumnHeaderType.STEP,
-              name: 'step',
-              displayName: 'Step',
-              enabled: true,
-            },
-            {
-              type: ColumnHeaderType.VALUE,
-              name: 'value',
-              displayName: 'Value',
-              enabled: true,
-            },
-            {
-              type: ColumnHeaderType.RELATIVE_TIME,
-              name: 'relativeTime',
-              displayName: 'Relative',
-              enabled: false,
-            },
-          ],
-        });
-
         const nextState = reducers(
           beforeState,
           actions.dataTableColumnToggled({
@@ -2222,6 +2156,7 @@ describe('metrics reducers', () => {
             enabled: false,
           },
         ]);
+
         expect(nextState.singleSelectionHeaders).toEqual([
           {
             type: ColumnHeaderType.RUN,
@@ -2230,15 +2165,15 @@ describe('metrics reducers', () => {
             enabled: true,
           },
           {
-            type: ColumnHeaderType.STEP,
-            name: 'step',
-            displayName: 'Step',
-            enabled: true,
-          },
-          {
             type: ColumnHeaderType.VALUE,
             name: 'value',
             displayName: 'Value',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.STEP,
+            name: 'step',
+            displayName: 'Step',
             enabled: true,
           },
           {
@@ -2251,67 +2186,6 @@ describe('metrics reducers', () => {
       });
 
       it('only changes single selection headers when dataTableMode is SINGLE', () => {
-        const beforeState = buildMetricsState({
-          rangeSelectionHeaders: [
-            {
-              type: ColumnHeaderType.RUN,
-              name: 'run',
-              displayName: 'Run',
-              enabled: true,
-            },
-            {
-              type: ColumnHeaderType.START_VALUE,
-              name: 'startValue',
-              displayName: 'Start Value',
-              enabled: true,
-            },
-            {
-              type: ColumnHeaderType.END_VALUE,
-              name: 'endValue',
-              displayName: 'End Value',
-              enabled: true,
-            },
-            {
-              type: ColumnHeaderType.MIN_VALUE,
-              name: 'minValue',
-              displayName: 'Min',
-              enabled: false,
-            },
-            {
-              type: ColumnHeaderType.MAX_VALUE,
-              name: 'maxValue',
-              displayName: 'Max',
-              enabled: false,
-            },
-          ],
-          singleSelectionHeaders: [
-            {
-              type: ColumnHeaderType.RUN,
-              name: 'run',
-              displayName: 'Run',
-              enabled: true,
-            },
-            {
-              type: ColumnHeaderType.STEP,
-              name: 'step',
-              displayName: 'Step',
-              enabled: true,
-            },
-            {
-              type: ColumnHeaderType.VALUE,
-              name: 'value',
-              displayName: 'Value',
-              enabled: true,
-            },
-            {
-              type: ColumnHeaderType.RELATIVE_TIME,
-              name: 'relativeTime',
-              displayName: 'Relative',
-              enabled: false,
-            },
-          ],
-        });
-
         const nextState = reducers(
           beforeState,
           actions.dataTableColumnToggled({
@@ -2352,6 +2226,188 @@ describe('metrics reducers', () => {
             enabled: false,
           },
         ]);
+
+        expect(nextState.singleSelectionHeaders).toEqual([
+          {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.VALUE,
+            name: 'value',
+            displayName: 'Value',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.STEP,
+            name: 'step',
+            displayName: 'Step',
+            enabled: false,
+          },
+          {
+            type: ColumnHeaderType.RELATIVE_TIME,
+            name: 'relativeTime',
+            displayName: 'Relative',
+            enabled: false,
+          },
+        ]);
+      });
+
+      it('moves header down to the disabled headers when column is removed with card id input', () => {
+        beforeState = {
+          ...beforeState,
+          cardStateMap: {
+            card1: {
+              rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+            },
+          },
+        };
+
+        const nextState = reducers(
+          beforeState,
+          actions.dataTableColumnToggled({
+            cardId: 'card1',
+            headerType: ColumnHeaderType.RUN,
+          })
+        );
+
+        expect(
+          nextState.rangeSelectionHeaders.map((header) => header.enabled)
+        ).toEqual([true, true, false, false, false]);
+      });
+
+      it('only changes range selection headers when given card has rangeSelectionOverride ENABLED', () => {
+        beforeState = {
+          ...beforeState,
+          cardStateMap: {
+            card1: {
+              rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+            },
+          },
+        };
+
+        const nextState = reducers(
+          beforeState,
+          actions.dataTableColumnToggled({
+            cardId: 'card1',
+            headerType: ColumnHeaderType.MAX_VALUE,
+          })
+        );
+
+        expect(nextState.rangeSelectionHeaders).toEqual([
+          {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.START_VALUE,
+            name: 'startValue',
+            displayName: 'Start Value',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.END_VALUE,
+            name: 'endValue',
+            displayName: 'End Value',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.MAX_VALUE,
+            name: 'maxValue',
+            displayName: 'Max',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.MIN_VALUE,
+            name: 'minValue',
+            displayName: 'Min',
+            enabled: false,
+          },
+        ]);
+
+        expect(nextState.singleSelectionHeaders).toEqual([
+          {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.VALUE,
+            name: 'value',
+            displayName: 'Value',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.STEP,
+            name: 'step',
+            displayName: 'Step',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.RELATIVE_TIME,
+            name: 'relativeTime',
+            displayName: 'Relative',
+            enabled: false,
+          },
+        ]);
+      });
+
+      it('only changes single selection headers when given card has rangeSelectionOverride DISABLED', () => {
+        beforeState = {
+          ...beforeState,
+          cardStateMap: {
+            card1: {
+              rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_DISABLED,
+            },
+          },
+        };
+
+        const nextState = reducers(
+          beforeState,
+          actions.dataTableColumnToggled({
+            cardId: 'card1',
+            headerType: ColumnHeaderType.STEP,
+          })
+        );
+
+        expect(nextState.rangeSelectionHeaders).toEqual([
+          {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.START_VALUE,
+            name: 'startValue',
+            displayName: 'Start Value',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.END_VALUE,
+            name: 'endValue',
+            displayName: 'End Value',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.MIN_VALUE,
+            name: 'minValue',
+            displayName: 'Min',
+            enabled: false,
+          },
+          {
+            type: ColumnHeaderType.MAX_VALUE,
+            name: 'maxValue',
+            displayName: 'Max',
+            enabled: false,
+          },
+        ]);
+
         expect(nextState.singleSelectionHeaders).toEqual([
           {
             type: ColumnHeaderType.RUN,

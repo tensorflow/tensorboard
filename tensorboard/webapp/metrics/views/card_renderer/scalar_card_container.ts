@@ -71,6 +71,7 @@ import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
   cardViewBoxChanged,
   dataTableColumnEdited,
+  dataTableColumnToggled,
   metricsCardFullSizeToggled,
   metricsCardStateUpdated,
   sortingDataTable,
@@ -92,7 +93,13 @@ import {
   getMetricsXAxisType,
   RunToSeries,
 } from '../../store';
-import {CardId, CardMetadata, HeaderEditInfo, XAxisType} from '../../types';
+import {
+  CardId,
+  CardMetadata,
+  HeaderEditInfo,
+  HeaderToggleInfo,
+  XAxisType,
+} from '../../types';
 import {getFilteredRenderableRunsIdsFromRoute} from '../main_view/common_selectors';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
@@ -177,6 +184,7 @@ function isMinMaxStepValid(minMax: MinMaxStep | undefined): boolean {
       [userViewBox]="userViewBox$ | async"
       [columnHeaders]="columnHeaders$ | async"
       [rangeEnabled]="rangeEnabled$ | async"
+      [hparamsEnabled]="hparamsEnabled$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
       observeIntersection
@@ -188,6 +196,7 @@ function isMinMaxStepValid(minMax: MinMaxStep | undefined): boolean {
       (editColumnHeaders)="editColumnHeaders($event)"
       (onCardStateChanged)="onCardStateChanged($event)"
       (openTableEditMenuToMode)="openTableEditMenuToMode($event)"
+      (onRemoveColumn)="onRemoveColumn($event)"
     ></scalar-card-component>
   `,
   styles: [
@@ -226,6 +235,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   stepOrLinkedTimeSelection$?: Observable<TimeSelection | undefined>;
   cardState$?: Observable<Partial<CardState>>;
   rangeEnabled$?: Observable<boolean>;
+  hparamsEnabled$?: Observable<boolean>;
 
   onVisibilityChange({visible}: {visible: boolean}) {
     this.isVisible = visible;
@@ -589,6 +599,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       getMetricsCardRangeSelectionEnabled,
       this.cardId
     );
+
+    this.hparamsEnabled$ = this.store.select(getEnableHparamsInTimeSeries);
   }
 
   ngOnDestroy() {
@@ -681,5 +693,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
   openTableEditMenuToMode(tableMode: DataTableMode) {
     this.store.dispatch(metricsSlideoutMenuOpened({mode: tableMode}));
+  }
+
+  onRemoveColumn(headerToggleInfo: HeaderToggleInfo) {
+    this.store.dispatch(dataTableColumnToggled(headerToggleInfo));
   }
 }

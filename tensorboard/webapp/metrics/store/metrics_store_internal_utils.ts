@@ -601,6 +601,23 @@ export function getCardSelectionStateToBoolean(
   }
 }
 
+export function cardRangeSelectionEnabled(
+  cardStateMap: CardStateMap,
+  globalRangeSelectionEnabled: boolean,
+  linkedTimeEnabled: boolean,
+  cardId: CardId
+): boolean {
+  if (linkedTimeEnabled) {
+    return globalRangeSelectionEnabled;
+  }
+
+  const cardState = cardStateMap[cardId];
+  return getCardSelectionStateToBoolean(
+    cardState?.rangeSelectionOverride,
+    globalRangeSelectionEnabled
+  );
+}
+
 export const TEST_ONLY = {
   getImageCardSteps,
   getSelectedSteps,

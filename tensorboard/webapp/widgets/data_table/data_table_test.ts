@@ -52,6 +52,7 @@ import {HeaderCellComponent} from './header_cell_component';
             "
             [header]="header"
             [sortingInfo]="sortingInfo"
+            [hparamsEnabled]="hparamsEnabled"
           ></tb-data-table-header-cell> </ng-container
       ></ng-container>
     </tb-data-table>
@@ -89,6 +90,7 @@ describe('data table', () => {
     data?: TableData[];
     sortingInfo?: SortingInfo;
     smoothingEnabled?: boolean;
+    hparamsEnabled?: boolean;
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
 
@@ -517,32 +519,32 @@ describe('data table', () => {
 
     expect(
       headerElements[0]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.classList.contains('show')
     ).toBe(true);
     expect(
       headerElements[0]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.getAttribute('svgIcon')
     ).toBe('arrow_upward_24px');
     expect(
       headerElements[1]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.classList.contains('show')
     ).toBe(false);
     expect(
       headerElements[1]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.classList.contains('show-on-hover')
     ).toBe(true);
     expect(
       headerElements[2]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.classList.contains('show')
     ).toBe(false);
     expect(
       headerElements[2]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.classList.contains('show-on-hover')
     ).toBe(true);
   });
@@ -581,32 +583,32 @@ describe('data table', () => {
 
     expect(
       headerElements[0]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.classList.contains('show')
     ).toBe(false);
     expect(
       headerElements[0]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.classList.contains('show-on-hover')
     ).toBe(true);
     expect(
       headerElements[1]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.classList.contains('show')
     ).toBe(false);
     expect(
       headerElements[1]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.classList.contains('show-on-hover')
     ).toBe(true);
     expect(
       headerElements[2]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.classList.contains('show')
     ).toBe(true);
     expect(
       headerElements[2]
-        .queryAll(By.css('mat-icon'))[0]
+        .query(By.css('.sorting-icon-container mat-icon'))
         .nativeElement.getAttribute('svgIcon')
     ).toBe('arrow_downward_24px');
   });

@@ -55,6 +55,7 @@ import {
   buildOrReturnStateWithPinnedCopy,
   buildOrReturnStateWithUnresolvedImportedPins,
   canCreateNewPins,
+  cardRangeSelectionEnabled,
   createPluginDataWithLoadable,
   createRunToLoadState,
   generateNextCardStepIndex,
@@ -1372,46 +1373,58 @@ const reducer = createReducer(
       singleSelectionHeaders: enabledNewHeaders.concat(disabledNewHeaders),
     };
   }),
-  on(actions.dataTableColumnToggled, (state, {dataTableMode, headerType}) => {
-    const targetedHeaders =
-      dataTableMode === DataTableMode.RANGE
+  on(
+    actions.dataTableColumnToggled,
+    (state, {dataTableMode, headerType, cardId}) => {
+      const {cardStateMap, rangeSelectionEnabled, linkedTimeEnabled} = state;
+      const rangeEnabled = cardId
+        ? cardRangeSelectionEnabled(
+            cardStateMap,
+            rangeSelectionEnabled,
+            linkedTimeEnabled,
+            cardId
+          )
+        : dataTableMode === DataTableMode.RANGE;
+
+      const targetedHeaders = rangeEnabled
         ? state.rangeSelectionHeaders
         : state.singleSelectionHeaders;
 
-    const currentToggledHeaderIndex = targetedHeaders.findIndex(
-      (element) => element.type === headerType
-    );
+      const currentToggledHeaderIndex = targetedHeaders.findIndex(
+        (element) => element.type === headerType
+      );
 
-    // If the header is being enabled it goes at the bottom of the currently
-    // enabled headers. If it is being disabled it goes to the top of the
-    // currently disabled headers.
-    let newToggledHeaderIndex = getEnabledCount(targetedHeaders);
-    if (targetedHeaders[currentToggledHeaderIndex].enabled) {
-      newToggledHeaderIndex--;
-    }
-    const newHeaders = moveHeader(
-      currentToggledHeaderIndex,
-      newToggledHeaderIndex,
-      targetedHeaders
-    );
+      // If the header is being enabled it goes at the bottom of the currently
+      // enabled headers. If it is being disabled it goes to the top of the
+      // currently disabled headers.
+      let newToggledHeaderIndex = getEnabledCount(targetedHeaders);
+      if (targetedHeaders[currentToggledHeaderIndex].enabled) {
+        newToggledHeaderIndex--;
+      }
+      const newHeaders = moveHeader(
+        currentToggledHeaderIndex,
+        newToggledHeaderIndex,
+        targetedHeaders
+      );
 
-    newHeaders[newToggledHeaderIndex] = {
-      ...newHeaders[newToggledHeaderIndex],
-      enabled: !newHeaders[newToggledHeaderIndex].enabled,
-    };
+      newHeaders[newToggledHeaderIndex] = {
+        ...newHeaders[newToggledHeaderIndex],
+        enabled: !newHeaders[newToggledHeaderIndex].enabled,
+      };
 
-    if (dataTableMode === DataTableMode.RANGE) {
+      if (rangeEnabled) {
+        return {
+          ...state,
+          rangeSelectionHeaders: newHeaders,
+        };
+      }
+
       return {
         ...state,
-        rangeSelectionHeaders: newHeaders,
+        singleSelectionHeaders: newHeaders,
       };
     }
-
-    return {
-      ...state,
-      singleSelectionHeaders: newHeaders,
-    };
-  }),
+  ),
   on(actions.metricsToggleVisiblePlugin, (state, {plugin}) => {
     let nextFilteredPluginTypes = new Set(state.filteredPluginTypes);
     if (nextFilteredPluginTypes.has(plugin)) {

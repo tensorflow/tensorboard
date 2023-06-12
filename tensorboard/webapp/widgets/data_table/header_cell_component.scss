@@ -31,14 +31,38 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
 .cell mat-icon {
   height: 12px;
   width: 12px;
-
-  ::ng-deep path {
-    fill: unset;
-  }
 }
 .cell {
   align-items: center;
   display: flex;
+}
+.cell .sorting-icon-container {
+  ::ng-deep path {
+    fill: unset;
+  }
+}
+
+.cell:hover .delete-icon-container {
+  opacity: 1;
+}
+
+.delete-icon-container {
+  border-radius: 5px;
+  color: mat.get-color-from-palette(mat.$gray-palette, 500);
+  height: 12px;
+  margin-left: -12px;
+  opacity: 0;
+  position: absolute;
+  width: 12px;
+}
+
+.delete-icon-container:hover {
+  color: #fff;
+}
+
+.delete-icon-container:hover {
+  background-color: mat.get-color-from-palette(mat.$gray-palette, 400);
+  cursor: pointer;
 }
 
 .show {

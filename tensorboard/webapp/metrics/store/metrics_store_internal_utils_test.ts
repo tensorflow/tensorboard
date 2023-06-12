@@ -25,6 +25,7 @@ import {
   buildOrReturnStateWithPinnedCopy,
   buildOrReturnStateWithUnresolvedImportedPins,
   canCreateNewPins,
+  cardRangeSelectionEnabled,
   createPluginDataWithLoadable,
   createRunToLoadState,
   generateNextCardStepIndex,
@@ -1276,6 +1277,88 @@ describe('metrics store utils', () => {
     it('returns global value when selection state is undefined', () => {
       expect(getCardSelectionStateToBoolean(undefined, true)).toBeTrue();
       expect(getCardSelectionStateToBoolean(undefined, false)).toBeFalse();
+    });
+  });
+
+  describe('cardRangeSelectionEnabled', () => {
+    it('returns card specific value when defined', () => {
+      expect(
+        cardRangeSelectionEnabled(
+          {
+            card1: {
+              rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+            },
+          },
+          false,
+          false,
+          'card1'
+        )
+      ).toBeTrue();
+
+      expect(
+        cardRangeSelectionEnabled(
+          {
+            card1: {
+              rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_DISABLED,
+            },
+          },
+          true,
+          false,
+          'card1'
+        )
+      ).toBeFalse();
+    });
+
+    it('returns global value when card specific value is not defined', () => {
+      expect(
+        cardRangeSelectionEnabled(
+          {
+            card1: {},
+          },
+          true,
+          false,
+          'card1'
+        )
+      ).toBeTrue();
+
+      expect(
+        cardRangeSelectionEnabled(
+          {
+            card1: {},
+          },
+          false,
+          false,
+          'card1'
+        )
+      ).toBeFalse();
+    });
+
+    it('returns global value when linked time is enabled', () => {
+      expect(
+        cardRangeSelectionEnabled(
+          {
+            card1: {
+              rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_DISABLED,
+            },
+          },
+          true,
+          true,
+          'card1'
+        )
+      ).toBeTrue();
+
+      expect(
+        cardRangeSelectionEnabled(
+          {
+            card1: {
+              rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+            },
+          },
+          false,
+          true,
+          'card1'
+        )
+      ).toBeFalse();
     });
   });
 });

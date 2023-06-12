@@ -20,7 +20,12 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import {ColumnHeader, SortingInfo, SortingOrder} from './types';
+import {
+  ColumnHeader,
+  ColumnHeaderType,
+  SortingInfo,
+  SortingOrder,
+} from './types';
 import {BehaviorSubject} from 'rxjs';
 
 @Component({
@@ -33,11 +38,15 @@ export class HeaderCellComponent {
   @Input() header!: ColumnHeader;
   @Input() sortingInfo!: SortingInfo;
   @Input() sortable: boolean = true;
+  @Input() hparamsEnabled?: boolean = false;
 
   @Output() dragStart = new EventEmitter<ColumnHeader>();
   @Output() dragEnd = new EventEmitter<void>();
   @Output() dragEnter = new EventEmitter<ColumnHeader>();
   @Output() headerClicked = new EventEmitter<string>();
+  @Output() deleteButtonClicked = new EventEmitter<{
+    headerType: ColumnHeaderType;
+  }>();
 
   highlightStyle$: BehaviorSubject<Object> = new BehaviorSubject<Object>({});
 

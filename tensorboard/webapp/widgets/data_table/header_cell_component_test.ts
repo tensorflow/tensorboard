@@ -32,7 +32,9 @@ import {HeaderCellComponent} from './header_cell_component';
     <tb-data-table-header-cell
       [header]="header"
       [sortingInfo]="sortingInfo"
+      [hparamsEnabled]="hparamsEnabled"
       (headerClicked)="headerClicked($event)"
+      (deleteButtonClicked)="deleteButtonClicked($event)"
     ></tb-data-table-header-cell>
   `,
 })
@@ -42,12 +44,15 @@ class TestableComponent {
 
   @Input() header!: ColumnHeader;
   @Input() sortingInfo!: SortingInfo;
+  @Input() hparamsEnabled?: boolean;
 
   @Input() headerClicked!: (sortingInfo: SortingInfo) => void;
+  @Input() deleteButtonClicked!: (header: ColumnHeader) => void;
 }
 
 describe('header cell', () => {
   let headerClickedSpy: jasmine.Spy;
+  let deleteButtonClickedSpy: jasmine.Spy;
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [TestableComponent, HeaderCellComponent],
@@ -75,6 +80,9 @@ describe('header cell', () => {
     headerClickedSpy = jasmine.createSpy();
     fixture.componentInstance.headerClicked = headerClickedSpy;
 
+    deleteButtonClickedSpy = jasmine.createSpy();
+    fixture.componentInstance.deleteButtonClicked = deleteButtonClickedSpy;
+
     return fixture;
   }
 
@@ -93,5 +101,41 @@ describe('header cell', () => {
       .componentInstance.headerClicked.subscribe();
     fixture.debugElement.query(By.css('.cell')).nativeElement.click();
     expect(headerClickedSpy).toHaveBeenCalledOnceWith('run');
+  });
+
+  describe('delete column button', () => {
+    let fixture: ComponentFixture<TestableComponent>;
+    beforeEach(() => {
+      fixture = createComponent({});
+      fixture.componentInstance.hparamsEnabled = true;
+      fixture.detectChanges();
+    });
+
+    it('emits removeColumn event when delete button clicked', () => {
+      fixture.debugElement
+        .query(By.directive(HeaderCellComponent))
+        .componentInstance.deleteButtonClicked.subscribe();
+      fixture.debugElement
+        .query(By.css('.delete-icon'))
+        .triggerEventHandler('click', {});
+
+      expect(deleteButtonClickedSpy).toHaveBeenCalledOnceWith({
+        name: 'run',
+        displayName: 'Run',
+        type: ColumnHeaderType.RUN,
+        enabled: true,
+      });
+    });
+
+    it('renders delete button when hparamsEnabled is true', () => {
+      expect(fixture.debugElement.query(By.css('.delete-icon'))).toBeTruthy();
+    });
+
+    it('does not render delete button when hparamsEnabled is false', () => {
+      fixture.componentInstance.hparamsEnabled = false;
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.query(By.css('.delete-icon'))).toBeFalsy();
+    });
   });
 });

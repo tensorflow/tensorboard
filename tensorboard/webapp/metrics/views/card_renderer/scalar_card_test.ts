@@ -82,6 +82,7 @@ import {
   timeSelectionChanged,
   metricsSlideoutMenuOpened,
   dataTableColumnEdited,
+  dataTableColumnToggled,
 } from '../../actions';
 import {PluginType} from '../../data_source';
 import {
@@ -122,6 +123,7 @@ import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_w
 import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {provideMockTbStore} from '../../../testing/utils';
 import * as commonSelectors from '../main_view/common_selectors';
+import {CardFeatureOverride} from '../../store/metrics_types';
 
 @Component({
   selector: 'line-chart',
@@ -4302,6 +4304,78 @@ describe('scalar card', () => {
           dataTableColumnEdited({
             headers,
             dataTableMode: DataTableMode.RANGE,
+          }),
+        ]);
+      }));
+
+      it('emits dataTableColumnToggled when onRemoveColumn is called with range selection disabled', fakeAsync(() => {
+        store.overrideSelector(getSingleSelectionHeaders, [
+          {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.VALUE,
+            name: 'value',
+            displayName: 'Value',
+            enabled: false,
+          },
+        ]);
+        store.overrideSelector(getCardStateMap, {
+          card1: {
+            rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_DISABLED,
+          },
+        });
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        fixture.componentInstance.onRemoveColumn({
+          cardId: 'card1',
+          headerType: ColumnHeaderType.RUN,
+        });
+
+        expect(dispatchedActions).toEqual([
+          dataTableColumnToggled({
+            cardId: 'card1',
+            headerType: ColumnHeaderType.RUN,
+          }),
+        ]);
+      }));
+
+      it('emits dataTableColumnToggled when onRemoveColumn is called with range selection enabled', fakeAsync(() => {
+        store.overrideSelector(getRangeSelectionHeaders, [
+          {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.MIN_VALUE,
+            name: 'minValue',
+            displayName: 'Min Value',
+            enabled: true,
+          },
+        ]);
+        store.overrideSelector(getCardStateMap, {
+          card1: {
+            rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+          },
+        });
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        fixture.componentInstance.onRemoveColumn({
+          cardId: 'card1',
+          headerType: ColumnHeaderType.MIN_VALUE,
+        });
+
+        expect(dispatchedActions).toEqual([
+          dataTableColumnToggled({
+            cardId: 'card1',
+            headerType: ColumnHeaderType.MIN_VALUE,
           }),
         ]);
       }));

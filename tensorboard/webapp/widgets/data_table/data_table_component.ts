@@ -69,6 +69,9 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() orderColumns = new EventEmitter<ColumnHeader[]>();
+  @Output() removeColumn = new EventEmitter<{
+    headerType: ColumnHeaderType;
+  }>();
 
   readonly ColumnHeaders = ColumnHeaderType;
   readonly SortingOrder = SortingOrder;
@@ -100,7 +103,10 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
         headerCell.dragStart.subscribe(this.dragStart.bind(this)),
         headerCell.dragEnter.subscribe(this.dragEnter.bind(this)),
         headerCell.dragEnd.subscribe(this.dragEnd.bind(this)),
-        headerCell.headerClicked.subscribe(this.headerClicked.bind(this))
+        headerCell.headerClicked.subscribe(this.headerClicked.bind(this)),
+        headerCell.deleteButtonClicked.subscribe(
+          this.deleteButtonClicked.bind(this)
+        )
       );
     });
   }
@@ -244,6 +250,12 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   getIndexOfHeaderWithName(name: string) {
     return this.headers.findIndex((element) => {
       return name === element.name;
+    });
+  }
+
+  deleteButtonClicked(header: ColumnHeader) {
+    this.removeColumn.emit({
+      headerType: header.type,
     });
   }
 }

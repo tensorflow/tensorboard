@@ -48,6 +48,7 @@ import {isDatumVisible} from './utils';
       [smoothingEnabled]="smoothingEnabled"
       (sortDataBy)="sortDataBy.emit($event)"
       (orderColumns)="orderColumns($event)"
+      (removeColumn)="removeColumn.emit($event)"
     >
       <ng-container header>
         <ng-container *ngFor="let header of columnHeaders">
@@ -55,6 +56,7 @@ import {isDatumVisible} from './utils';
             *ngIf="header.enabled"
             [header]="header"
             [sortingInfo]="sortingInfo"
+            [hparamsEnabled]="hparamsEnabled"
           ></tb-data-table-header-cell> </ng-container
       ></ng-container>
     </tb-data-table>
@@ -69,9 +71,13 @@ export class ScalarCardDataTable {
   @Input() sortingInfo!: SortingInfo;
   @Input() columnCustomizationEnabled!: boolean;
   @Input() smoothingEnabled!: boolean;
+  @Input() hparamsEnabled?: boolean;
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() editColumnHeaders = new EventEmitter<HeaderEditInfo>();
+  @Output() removeColumn = new EventEmitter<{
+    headerType: ColumnHeaderType;
+  }>();
 
   getMinPointInRange(
     points: ScalarCardPoint[],

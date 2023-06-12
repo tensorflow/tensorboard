@@ -240,7 +240,7 @@ export const dataTableColumnEdited = createAction(
 );
 
 export const dataTableColumnToggled = createAction(
-  '[Metrics] Data table column toggled in edit menu',
+  '[Metrics] Data table column toggled in edit menu or delete button clicked',
   props<HeaderToggleInfo>()
 );
 
