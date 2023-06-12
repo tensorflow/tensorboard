@@ -23,12 +23,15 @@ limitations under the License.
 >
   <ng-content></ng-content>
   <div *ngIf="hparamsEnabled" class="delete-icon-container">
-    <mat-icon
+    <button
       class="delete-icon"
-      svgIcon="close_24px"
+      mat-icon-button
+      i18n-aria-label="A button to delete a data table column."
+      aria-label="Delete column"
       (click)="deleteButtonClicked.emit(header)"
     >
-    </mat-icon>
+      <mat-icon svgIcon="close_24px"> </mat-icon>
+    </button>
   </div>
   <tb-data-table-header [header]="header"></tb-data-table-header>
   <div *ngIf="sortable" class="sorting-icon-container">
