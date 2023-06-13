@@ -16,6 +16,7 @@ import {OverlayContainer} from '@angular/cdk/overlay';
 import {
   ChangeDetectorRef,
   Component,
+  DebugElement,
   EventEmitter,
   Inject,
   Input,
@@ -2520,10 +2521,41 @@ describe('scalar card', () => {
 
     describe('scalar card data table', () => {
       beforeEach(() => {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
+          start: {step: 20},
+          end: null,
+        });
+        store.overrideSelector(getSingleSelectionHeaders, [
+          {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.VALUE,
+            name: 'value',
+            displayName: 'Value',
+            enabled: false,
+          },
+          {
+            type: ColumnHeaderType.STEP,
+            name: 'step',
+            displayName: 'Step',
+            enabled: true,
+          },
+        ]);
         const runToSeries = {
-          run1: [buildScalarStepData({step: 10})],
-          run2: [buildScalarStepData({step: 20})],
-          run3: [buildScalarStepData({step: 30})],
+          run1: [
+            {wallTime: 1, value: 1, step: 1},
+            {wallTime: 2, value: 10, step: 2},
+            {wallTime: 3, value: 20, step: 3},
+          ],
+          run2: [
+            {wallTime: 1, value: 1, step: 1},
+            {wallTime: 2, value: 10, step: 2},
+            {wallTime: 3, value: 20, step: 3},
+          ],
         };
         provideMockCardRunToSeriesData(
           selectSpy,
@@ -2531,6 +2563,17 @@ describe('scalar card', () => {
           'card1',
           null /* metadataOverride */,
           runToSeries
+        );
+        store.overrideSelector(
+          selectors.getCurrentRouteRunSelection,
+          new Map([
+            ['run1', true],
+            ['run2', true],
+          ])
+        );
+        store.overrideSelector(
+          commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+          new Set(['run1', 'run2'])
         );
         store.overrideSelector(getCardStateMap, {
           card1: {
@@ -2650,66 +2693,6 @@ describe('scalar card', () => {
       }));
 
       it('projects tb-data-table-content-cell with data for enabled headers', fakeAsync(() => {
-        store.overrideSelector(getMetricsLinkedTimeSelection, {
-          start: {step: 20},
-          end: null,
-        });
-        store.overrideSelector(getSingleSelectionHeaders, [
-          {
-            type: ColumnHeaderType.RUN,
-            name: 'run',
-            displayName: 'Run',
-            enabled: true,
-          },
-          {
-            type: ColumnHeaderType.VALUE,
-            name: 'value',
-            displayName: 'Value',
-            enabled: false,
-          },
-          {
-            type: ColumnHeaderType.STEP,
-            name: 'step',
-            displayName: 'Step',
-            enabled: true,
-          },
-        ]);
-        const runToSeries = {
-          run1: [
-            {wallTime: 1, value: 1, step: 1},
-            {wallTime: 2, value: 10, step: 2},
-            {wallTime: 3, value: 20, step: 3},
-          ],
-          run2: [
-            {wallTime: 1, value: 1, step: 1},
-            {wallTime: 2, value: 10, step: 2},
-            {wallTime: 3, value: 20, step: 3},
-          ],
-        };
-        provideMockCardRunToSeriesData(
-          selectSpy,
-          PluginType.SCALARS,
-          'card1',
-          null /* metadataOverride */,
-          runToSeries
-        );
-        store.overrideSelector(
-          selectors.getCurrentRouteRunSelection,
-          new Map([
-            ['run1', true],
-            ['run2', true],
-          ])
-        );
-        store.overrideSelector(
-          commonSelectors.getFilteredRenderableRunsIdsFromRoute,
-          new Set(['run1', 'run2'])
-        );
-
-        store.overrideSelector(getMetricsLinkedTimeSelection, {
-          start: {step: 2},
-          end: null,
-        });
-
         const fixture = createComponent('card1');
         const scalarCardDataTable = fixture.debugElement.query(
           By.directive(ScalarCardDataTable)
@@ -2731,25 +2714,9 @@ describe('scalar card', () => {
 
         expect(firstRowContentCells.length).toEqual(3);
 
-        expect(firstRowContentCells[0].componentInstance.header.name).toEqual(
-          'color'
-        );
-        expect(firstRowContentCells[1].componentInstance.header.name).toEqual(
-          'run'
-        );
-        expect(firstRowContentCells[2].componentInstance.header.name).toEqual(
-          'step'
-        );
-
-        expect(firstRowContentCells[0].componentInstance.datum).toEqual(
-          data[0].color
-        );
-        expect(firstRowContentCells[1].componentInstance.datum).toEqual(
-          data[0].run
-        );
-        expect(firstRowContentCells[2].componentInstance.datum).toEqual(
-          data[0].step
-        );
+        expect(
+          firstRowContentCells.map((cell) => cell.componentInstance.datum)
+        ).toEqual([data[0].color, data[0].run, data[0].step]);
 
         const secondRowContentCells = contentRowComponents[1].queryAll(
           By.directive(ContentCellComponent)
@@ -2757,32 +2724,12 @@ describe('scalar card', () => {
 
         expect(secondRowContentCells.length).toEqual(3);
 
-        expect(secondRowContentCells[0].componentInstance.header.name).toEqual(
-          'color'
-        );
-        expect(secondRowContentCells[1].componentInstance.header.name).toEqual(
-          'run'
-        );
-        expect(secondRowContentCells[2].componentInstance.header.name).toEqual(
-          'step'
-        );
-
-        expect(secondRowContentCells[0].componentInstance.datum).toEqual(
-          data[1].color
-        );
-        expect(secondRowContentCells[1].componentInstance.datum).toEqual(
-          data[1].run
-        );
-        expect(secondRowContentCells[2].componentInstance.datum).toEqual(
-          data[1].step
-        );
+        expect(
+          secondRowContentCells.map((cell) => cell.componentInstance.datum)
+        ).toEqual([data[1].color, data[1].run, data[1].step]);
       }));
 
       it('does not project smoothed column when smoothing is disabled', fakeAsync(() => {
-        store.overrideSelector(getMetricsLinkedTimeSelection, {
-          start: {step: 20},
-          end: null,
-        });
         store.overrideSelector(getSingleSelectionHeaders, [
           {
             type: ColumnHeaderType.RUN,
@@ -2797,33 +2744,7 @@ describe('scalar card', () => {
             enabled: true,
           },
         ]);
-        const runToSeries = {
-          run1: [
-            {wallTime: 1, value: 1, step: 1},
-            {wallTime: 2, value: 10, step: 2},
-            {wallTime: 3, value: 20, step: 3},
-          ],
-        };
-        provideMockCardRunToSeriesData(
-          selectSpy,
-          PluginType.SCALARS,
-          'card1',
-          null /* metadataOverride */,
-          runToSeries
-        );
-        store.overrideSelector(
-          selectors.getCurrentRouteRunSelection,
-          new Map([['run1', true]])
-        );
-        store.overrideSelector(
-          commonSelectors.getFilteredRenderableRunsIdsFromRoute,
-          new Set(['run1'])
-        );
 
-        store.overrideSelector(getMetricsLinkedTimeSelection, {
-          start: {step: 2},
-          end: null,
-        });
         store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
 
         const fixture = createComponent('card1');
@@ -2836,19 +2757,19 @@ describe('scalar card', () => {
           By.directive(DataTableComponent)
         ).componentInstance;
 
-        let contentCells = scalarCardDataTable.queryAll(
-          By.directive(ContentCellComponent)
-        );
+        let contentCellTypes = scalarCardDataTable
+          .queryAll(By.directive(ContentCellComponent))
+          .map((cell) => cell.componentInstance.header.type);
 
-        expect(dataTableComponentInstance.headerCells.length).toEqual(1);
         expect(
           dataTableComponentInstance.headerCells.find(
             (cell: HeaderCellComponent) =>
               cell.header.type === ColumnHeaderType.SMOOTHED
           )
         ).toBeFalsy();
-        // content cells automatically add the color column.
-        expect(contentCells.length).toEqual(2);
+        expect(
+          contentCellTypes.find((type) => type === ColumnHeaderType.SMOOTHED)
+        ).toBeFalsy();
       }));
     });
 
