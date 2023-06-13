@@ -16,7 +16,6 @@ import {OverlayContainer} from '@angular/cdk/overlay';
 import {
   ChangeDetectorRef,
   Component,
-  DebugElement,
   EventEmitter,
   Inject,
   Input,
