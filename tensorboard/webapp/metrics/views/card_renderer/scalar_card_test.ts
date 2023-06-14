@@ -2649,7 +2649,7 @@ describe('scalar card', () => {
         expect(dataTableComponent).toBeFalsy();
       }));
 
-      it('projects tb-data-table-header-cell for enabled headers', fakeAsync(() => {
+      it('projects tb-data-table-header-cell for color and enabled headers', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 20},
           end: null,
@@ -2681,13 +2681,16 @@ describe('scalar card', () => {
           By.directive(DataTableComponent)
         ).componentInstance;
 
-        expect(dataTableComponentInstance.headerCells.length).toEqual(2);
+        expect(dataTableComponentInstance.headerCells.length).toEqual(3);
 
         expect(
           dataTableComponentInstance.headerCells.get(0).header.name
-        ).toEqual('run');
+        ).toEqual('color');
         expect(
           dataTableComponentInstance.headerCells.get(1).header.name
+        ).toEqual('run');
+        expect(
+          dataTableComponentInstance.headerCells.get(2).header.name
         ).toEqual('step');
       }));
 

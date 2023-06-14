@@ -33,6 +33,7 @@ import {HeaderCellComponent} from './header_cell_component';
       [header]="header"
       [sortingInfo]="sortingInfo"
       [hparamsEnabled]="hparamsEnabled"
+      [controlsEnabled]="controlsEnabled"
       (headerClicked)="headerClicked($event)"
       (deleteButtonClicked)="deleteButtonClicked($event)"
     ></tb-data-table-header-cell>
@@ -44,7 +45,8 @@ class TestableComponent {
 
   @Input() header!: ColumnHeader;
   @Input() sortingInfo!: SortingInfo;
-  @Input() hparamsEnabled?: boolean;
+  @Input() hparamsEnabled!: boolean;
+  @Input() controlsEnabled!: boolean;
 
   @Input() headerClicked!: (sortingInfo: SortingInfo) => void;
   @Input() deleteButtonClicked!: (header: ColumnHeader) => void;
@@ -63,6 +65,8 @@ describe('header cell', () => {
   function createComponent(input: {
     header?: ColumnHeader;
     sortingInfo?: SortingInfo;
+    hparamsEnabled?: boolean;
+    controlsEnabled?: boolean;
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
 
@@ -76,6 +80,10 @@ describe('header cell', () => {
       name: 'run',
       order: SortingOrder.ASCENDING,
     };
+    fixture.componentInstance.hparamsEnabled =
+      input.hparamsEnabled === undefined ? true : input.hparamsEnabled;
+    fixture.componentInstance.controlsEnabled =
+      input.controlsEnabled === undefined ? true : input.controlsEnabled;
 
     headerClickedSpy = jasmine.createSpy();
     fixture.componentInstance.headerClicked = headerClickedSpy;
@@ -83,19 +91,18 @@ describe('header cell', () => {
     deleteButtonClickedSpy = jasmine.createSpy();
     fixture.componentInstance.deleteButtonClicked = deleteButtonClickedSpy;
 
+    fixture.detectChanges();
     return fixture;
   }
 
   it('renders', () => {
     const fixture = createComponent({});
-    fixture.detectChanges();
     const cell = fixture.debugElement.query(By.css('.cell'));
     expect(cell).toBeTruthy();
   });
 
   it('emits headerClicked event when cell element is clicked', () => {
     const fixture = createComponent({});
-    fixture.detectChanges();
     fixture.debugElement
       .query(By.directive(HeaderCellComponent))
       .componentInstance.headerClicked.subscribe();
@@ -104,14 +111,8 @@ describe('header cell', () => {
   });
 
   describe('delete column button', () => {
-    let fixture: ComponentFixture<TestableComponent>;
-    beforeEach(() => {
-      fixture = createComponent({});
-      fixture.componentInstance.hparamsEnabled = true;
-      fixture.detectChanges();
-    });
-
     it('emits removeColumn event when delete button clicked', () => {
+      const fixture = createComponent({hparamsEnabled: true});
       fixture.debugElement
         .query(By.directive(HeaderCellComponent))
         .componentInstance.deleteButtonClicked.subscribe();
@@ -128,14 +129,91 @@ describe('header cell', () => {
     });
 
     it('renders delete button when hparamsEnabled is true', () => {
+      const fixture = createComponent({hparamsEnabled: true});
+
       expect(fixture.debugElement.query(By.css('.delete-icon'))).toBeTruthy();
     });
 
     it('does not render delete button when hparamsEnabled is false', () => {
-      fixture.componentInstance.hparamsEnabled = false;
-      fixture.detectChanges();
+      const fixture = createComponent({hparamsEnabled: false});
 
       expect(fixture.debugElement.query(By.css('.delete-icon'))).toBeFalsy();
+    });
+
+    it('does not render delete button when controlsEnabled is false', () => {
+      const fixture = createComponent({controlsEnabled: false});
+
+      expect(fixture.debugElement.query(By.css('.delete-icon'))).toBeFalsy();
+    });
+  });
+
+  describe('sorting icon', () => {
+    it('shows sorting icon when sortingInfo matches header', () => {
+      const fixture = createComponent({
+        sortingInfo: {
+          name: 'run',
+          order: SortingOrder.ASCENDING,
+        },
+      });
+
+      expect(
+        fixture.debugElement
+          .query(By.css('.sorting-icon-container mat-icon'))
+          .nativeElement.classList.contains('show')
+      ).toBe(true);
+    });
+
+    it('does not render sorting icon when sortingInfo does not match header', () => {
+      const fixture = createComponent({
+        sortingInfo: {
+          name: 'not-this-header',
+          order: SortingOrder.ASCENDING,
+        },
+      });
+
+      expect(
+        fixture.debugElement
+          .query(By.css('.sorting-icon-container mat-icon'))
+          .nativeElement.classList.contains('show')
+      ).toBe(false);
+    });
+
+    it('renders downward arrow if order is DESCENDING', () => {
+      const fixture = createComponent({
+        sortingInfo: {
+          name: 'run',
+          order: SortingOrder.DESCENDING,
+        },
+      });
+
+      expect(
+        fixture.debugElement
+          .query(By.css('.sorting-icon-container mat-icon'))
+          .nativeElement.getAttribute('svgIcon')
+      ).toBe('arrow_downward_24px');
+    });
+
+    it('renders downward arrow if order is DESCENDING', () => {
+      const fixture = createComponent({
+        sortingInfo: {
+          name: 'run',
+          order: SortingOrder.ASCENDING,
+        },
+      });
+
+      expect(
+        fixture.debugElement
+          .query(By.css('.sorting-icon-container mat-icon'))
+          .nativeElement.getAttribute('svgIcon')
+      ).toBe('arrow_upward_24px');
+    });
+
+    it('does not render sorting icon when controlsEnabled is false', () => {
+      const fixture = createComponent({controlsEnabled: false});
+
+      expect(
+        fixture.debugElement.query(By.css('.sorting-icon-container mat-icon'))
+      ).toBeFalsy();
     });
   });
 });

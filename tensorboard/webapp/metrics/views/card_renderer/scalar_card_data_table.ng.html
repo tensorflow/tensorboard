@@ -24,12 +24,13 @@ limitations under the License.
   (removeColumn)="removeColumn.emit($event)"
 >
   <ng-container header>
-    <ng-container *ngFor="let header of columnHeaders">
+    <ng-container *ngFor="let header of getHeaders()">
       <tb-data-table-header-cell
         *ngIf="header.enabled && (header.type !== ColumnHeaderType.SMOOTHED || smoothingEnabled)"
         [header]="header"
         [sortingInfo]="sortingInfo"
         [hparamsEnabled]="hparamsEnabled"
+        [controlsEnabled]="header.type !== ColumnHeaderType.COLOR"
       ></tb-data-table-header-cell> </ng-container
   ></ng-container>
 

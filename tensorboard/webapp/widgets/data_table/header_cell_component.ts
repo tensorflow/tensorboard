@@ -37,7 +37,7 @@ import {BehaviorSubject} from 'rxjs';
 export class HeaderCellComponent {
   @Input() header!: ColumnHeader;
   @Input() sortingInfo!: SortingInfo;
-  @Input() sortable: boolean = true;
+  @Input() controlsEnabled: boolean = true;
   @Input() hparamsEnabled?: boolean = false;
 
   @Output() dragStart = new EventEmitter<ColumnHeader>();
