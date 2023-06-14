@@ -74,3 +74,10 @@ export const getSideBarWidthInPercent = createSelector(
     return state.sideBarWidthInPercent;
   }
 );
+
+export const getRunsTableFullScreen = createSelector(
+  selectCoreState,
+  (state: CoreState): boolean => {
+    return state.runsTableFullScreen;
+  }
+);

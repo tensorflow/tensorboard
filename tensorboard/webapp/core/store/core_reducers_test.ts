@@ -15,6 +15,7 @@ limitations under the License.
 import {persistentSettingsLoaded} from '../../persistent_settings';
 import {DataLoadState} from '../../types/data';
 import * as actions from '../actions';
+import {runsTableFullScreenToggled} from '../actions';
 import {
   buildPluginMetadata,
   createCoreState,
@@ -641,6 +642,19 @@ describe('core reducer', () => {
         })
       );
       expect(state4.sideBarWidthInPercent).toBe(0);
+    });
+  });
+
+  describe('#runsTableFullScreenToggled', () => {
+    it('toggles runsTableFullScreen attribute', () => {
+      const state = createCoreState({
+        runsTableFullScreen: false,
+      });
+      const state2 = reducers(state, runsTableFullScreenToggled());
+      const state3 = reducers(state2, runsTableFullScreenToggled());
+
+      expect(state2.runsTableFullScreen).toBeTrue();
+      expect(state3.runsTableFullScreen).toBeFalse();
     });
   });
 });

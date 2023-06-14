@@ -167,6 +167,12 @@ const reducer = createReducer(
     }
 
     return nextState;
+  }),
+  on(actions.runsTableFullScreenToggled, (state) => {
+    return {
+      ...state,
+      runsTableFullScreen: !state.runsTableFullScreen,
+    };
   })
 );
 
