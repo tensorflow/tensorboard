@@ -31,6 +31,12 @@ tf_sass_binary(
     deps = ["//tensorboard/webapp/theme"],
 )
 
+tf_sass_binary(
+    name = "runs_data_table_styles",
+    src = "runs_data_table.scss",
+    strict_deps = False,
+)
+
 tf_ts_library(
     name = "types",
     srcs = [
@@ -48,6 +54,7 @@ tf_ng_module(
     srcs = [
         "regex_edit_dialog_component.ts",
         "regex_edit_dialog_container.ts",
+        "runs_data_table.ts",
         "runs_group_menu_button_component.ts",
         "runs_group_menu_button_container.ts",
         "runs_table_component.ts",
@@ -56,9 +63,11 @@ tf_ng_module(
     ],
     assets = [
         ":regex_edit_dialog_styles",
+        ":runs_data_table_styles",
         ":runs_group_menu_button_styles",
         ":runs_table_styles",
         "regex_edit_dialog.ng.html",
+        "runs_data_table.ng.html",
         "runs_table_component.ng.html",
         "runs_group_menu_button_component.ng.html",
     ],

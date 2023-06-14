@@ -180,7 +180,7 @@ function matchFilter(
   }
   if (filter.type === DomainType.DISCRETE) {
     // (upcast to work around bad TypeScript libdefs)
-    const values: Readonly<Array<typeof filter.filterValues[number]>> =
+    const values: Readonly<Array<(typeof filter.filterValues)[number]>> =
       filter.filterValues;
     return values.includes(value);
   } else if (filter.type === DomainType.INTERVAL) {
@@ -232,7 +232,7 @@ function matchFilter(
       (onHparamDiscreteFilterChanged)="onHparamDiscreteFilterChanged($event)"
       (onMetricFilterChanged)="onMetricFilterChanged($event)"
     ></runs-table-component>
-    <tb-data-table
+    <runs-data-table
       *ngIf="HParamsEnabled.value"
       [headers]="runsColumns$ | async"
       [data]="allRunsTableData$ | async"
@@ -241,7 +241,7 @@ function matchFilter(
       smoothingEnabled="false"
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
-    ></tb-data-table>
+    ></runs-data-table>
   `,
   host: {
     '[class.flex-layout]': 'useFlexibleLayout',
