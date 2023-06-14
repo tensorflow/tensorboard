@@ -58,10 +58,8 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   // The order of this array of headers determines the order which they are
   // displayed in the table.
   @Input() headers!: ColumnHeader[];
-  @Input() data!: TableData[];
   @Input() sortingInfo!: SortingInfo;
   @Input() columnCustomizationEnabled!: boolean;
-  @Input() smoothingEnabled!: boolean;
 
   @ContentChildren(HeaderCellComponent)
   headerCells!: QueryList<HeaderCellComponent>;
@@ -109,49 +107,6 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
         )
       );
     });
-  }
-
-  getFormattedDataForColumn(
-    columnHeader: ColumnHeaderType,
-    datum: string | number | undefined
-  ): string {
-    if (datum === undefined) {
-      return '';
-    }
-    switch (columnHeader) {
-      case ColumnHeaderType.RUN:
-        return datum as string;
-      case ColumnHeaderType.VALUE:
-      case ColumnHeaderType.STEP:
-      case ColumnHeaderType.SMOOTHED:
-      case ColumnHeaderType.START_STEP:
-      case ColumnHeaderType.END_STEP:
-      case ColumnHeaderType.START_VALUE:
-      case ColumnHeaderType.END_VALUE:
-      case ColumnHeaderType.MIN_VALUE:
-      case ColumnHeaderType.MAX_VALUE:
-      case ColumnHeaderType.STEP_AT_MAX:
-      case ColumnHeaderType.STEP_AT_MIN:
-      case ColumnHeaderType.MEAN:
-      case ColumnHeaderType.HPARAM:
-        if (typeof datum === 'number') {
-          return intlNumberFormatter.formatShort(datum as number);
-        }
-        return datum;
-      case ColumnHeaderType.TIME:
-        const time = new Date(datum!);
-        return time.toISOString();
-      case ColumnHeaderType.RELATIVE_TIME:
-        return relativeTimeFormatter.formatReadable(datum as number);
-      case ColumnHeaderType.VALUE_CHANGE:
-        return intlNumberFormatter.formatShort(Math.abs(datum as number));
-      case ColumnHeaderType.PERCENTAGE_CHANGE:
-        return Math.round((datum as number) * 100).toString() + '%';
-      case ColumnHeaderType.RAW_CHANGE:
-        return numberFormatter.formatShort(Math.abs(datum as number));
-      default:
-        return '';
-    }
   }
 
   headerClicked(name: string) {
@@ -238,13 +193,6 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
       'highlight-border-right': this.highlightSide === Side.RIGHT,
       'highlight-border-left': this.highlightSide === Side.LEFT,
     };
-  }
-
-  showColumn(header: ColumnHeader) {
-    return (
-      header.enabled &&
-      (this.smoothingEnabled || header.type !== ColumnHeaderType.SMOOTHED)
-    );
   }
 
   getIndexOfHeaderWithName(name: string) {

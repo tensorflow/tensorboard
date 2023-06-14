@@ -124,6 +124,9 @@ import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {provideMockTbStore} from '../../../testing/utils';
 import * as commonSelectors from '../main_view/common_selectors';
 import {CardFeatureOverride} from '../../store/metrics_types';
+import {ContentCellComponent} from '../../../widgets/data_table/content_cell_component';
+import {ContentRowComponent} from '../../../widgets/data_table/content_row_component';
+import {HeaderCellComponent} from '../../../widgets/data_table/header_cell_component';
 
 @Component({
   selector: 'line-chart',
@@ -2517,10 +2520,41 @@ describe('scalar card', () => {
 
     describe('scalar card data table', () => {
       beforeEach(() => {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
+          start: {step: 20},
+          end: null,
+        });
+        store.overrideSelector(getSingleSelectionHeaders, [
+          {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.VALUE,
+            name: 'value',
+            displayName: 'Value',
+            enabled: false,
+          },
+          {
+            type: ColumnHeaderType.STEP,
+            name: 'step',
+            displayName: 'Step',
+            enabled: true,
+          },
+        ]);
         const runToSeries = {
-          run1: [buildScalarStepData({step: 10})],
-          run2: [buildScalarStepData({step: 20})],
-          run3: [buildScalarStepData({step: 30})],
+          run1: [
+            {wallTime: 1, value: 1, step: 1},
+            {wallTime: 2, value: 10, step: 2},
+            {wallTime: 3, value: 20, step: 3},
+          ],
+          run2: [
+            {wallTime: 1, value: 1, step: 1},
+            {wallTime: 2, value: 10, step: 2},
+            {wallTime: 3, value: 20, step: 3},
+          ],
         };
         provideMockCardRunToSeriesData(
           selectSpy,
@@ -2528,6 +2562,17 @@ describe('scalar card', () => {
           'card1',
           null /* metadataOverride */,
           runToSeries
+        );
+        store.overrideSelector(
+          selectors.getCurrentRouteRunSelection,
+          new Map([
+            ['run1', true],
+            ['run2', true],
+          ])
+        );
+        store.overrideSelector(
+          commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+          new Set(['run1', 'run2'])
         );
         store.overrideSelector(getCardStateMap, {
           card1: {
@@ -2602,6 +2647,128 @@ describe('scalar card', () => {
         );
 
         expect(dataTableComponent).toBeFalsy();
+      }));
+
+      it('projects tb-data-table-header-cell for enabled headers', fakeAsync(() => {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
+          start: {step: 20},
+          end: null,
+        });
+        store.overrideSelector(getSingleSelectionHeaders, [
+          {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.VALUE,
+            name: 'value',
+            displayName: 'Value',
+            enabled: false,
+          },
+          {
+            type: ColumnHeaderType.STEP,
+            name: 'step',
+            displayName: 'Step',
+            enabled: true,
+          },
+        ]);
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        const dataTableComponentInstance = fixture.debugElement.query(
+          By.directive(DataTableComponent)
+        ).componentInstance;
+
+        expect(dataTableComponentInstance.headerCells.length).toEqual(2);
+
+        expect(
+          dataTableComponentInstance.headerCells.get(0).header.name
+        ).toEqual('run');
+        expect(
+          dataTableComponentInstance.headerCells.get(1).header.name
+        ).toEqual('step');
+      }));
+
+      it('projects tb-data-table-content-cell with data for enabled headers', fakeAsync(() => {
+        const fixture = createComponent('card1');
+        const scalarCardDataTable = fixture.debugElement.query(
+          By.directive(ScalarCardDataTable)
+        );
+        fixture.detectChanges();
+
+        const data =
+          scalarCardDataTable.componentInstance.getTimeSelectionTableData();
+
+        const contentRowComponents = fixture.debugElement.queryAll(
+          By.directive(ContentRowComponent)
+        );
+
+        expect(contentRowComponents.length).toEqual(2);
+
+        const firstRowContentCells = contentRowComponents[0].queryAll(
+          By.directive(ContentCellComponent)
+        );
+
+        expect(firstRowContentCells.length).toEqual(3);
+
+        expect(
+          firstRowContentCells.map((cell) => cell.componentInstance.datum)
+        ).toEqual([data[0].color, data[0].run, data[0].step]);
+
+        const secondRowContentCells = contentRowComponents[1].queryAll(
+          By.directive(ContentCellComponent)
+        );
+
+        expect(secondRowContentCells.length).toEqual(3);
+
+        expect(
+          secondRowContentCells.map((cell) => cell.componentInstance.datum)
+        ).toEqual([data[1].color, data[1].run, data[1].step]);
+      }));
+
+      it('does not project smoothed column when smoothing is disabled', fakeAsync(() => {
+        store.overrideSelector(getSingleSelectionHeaders, [
+          {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.SMOOTHED,
+            name: 'smoothed',
+            displayName: 'Smoothed',
+            enabled: true,
+          },
+        ]);
+
+        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+
+        const fixture = createComponent('card1');
+        const scalarCardDataTable = fixture.debugElement.query(
+          By.directive(ScalarCardDataTable)
+        );
+        fixture.detectChanges();
+
+        let dataTableComponentInstance = fixture.debugElement.query(
+          By.directive(DataTableComponent)
+        ).componentInstance;
+
+        let contentCellTypes = scalarCardDataTable
+          .queryAll(By.directive(ContentCellComponent))
+          .map((cell) => cell.componentInstance.header.type);
+
+        expect(
+          dataTableComponentInstance.headerCells.find(
+            (cell: HeaderCellComponent) =>
+              cell.header.type === ColumnHeaderType.SMOOTHED
+          )
+        ).toBeFalsy();
+        expect(
+          contentCellTypes.find((type) => type === ColumnHeaderType.SMOOTHED)
+        ).toBeFalsy();
       }));
     });
 

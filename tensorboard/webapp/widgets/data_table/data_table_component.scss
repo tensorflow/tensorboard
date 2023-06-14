@@ -23,8 +23,7 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
   display: table;
   width: 100%;
 
-  .header,
-  .row {
+  .header {
     display: table-row;
   }
 
@@ -46,41 +45,6 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
 
     @include tb-dark-theme {
       background-color: map-get($tb-dark-background, background);
-    }
-  }
-
-  .col {
-    padding: 1px;
-  }
-
-  .extra-right-padding {
-    // Add artificial padding to keep consistent with icons which have whitespace
-    padding-right: 1px;
-  }
-
-  $_circle-size: 12px;
-
-  .row-circle > span {
-    border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    display: inline-block;
-    // Subtract by border width (1px on both sides)
-    height: $_circle-size - 2px;
-    width: $_circle-size - 2px;
-    vertical-align: middle;
-  }
-
-  .cell {
-    align-items: center;
-    display: flex;
-  }
-
-  .cell mat-icon {
-    height: 12px;
-    width: 12px;
-
-    ::ng-deep path {
-      fill: unset;
     }
   }
 }
