@@ -80,10 +80,8 @@ describe('header cell', () => {
       name: 'run',
       order: SortingOrder.ASCENDING,
     };
-    fixture.componentInstance.hparamsEnabled =
-      input.hparamsEnabled === undefined ? true : input.hparamsEnabled;
-    fixture.componentInstance.controlsEnabled =
-      input.controlsEnabled === undefined ? true : input.controlsEnabled;
+    fixture.componentInstance.hparamsEnabled = input.hparamsEnabled ?? true;
+    fixture.componentInstance.controlsEnabled = input.controlsEnabled ?? true;
 
     headerClickedSpy = jasmine.createSpy();
     fixture.componentInstance.headerClicked = headerClickedSpy;
