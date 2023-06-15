@@ -93,3 +93,7 @@ export const sideBarWidthChanged = createAction(
   '[Core] Side Bar Width Changed',
   props<{widthInPercent: number}>()
 );
+
+export const runsTableFullScreenToggled = createAction(
+  '[Core] Runs Table Full Screen Toggled'
+);

@@ -38,6 +38,8 @@ export interface CoreState {
   polymerInteropRunSelection: Set<RunId>;
   // Number between 0 and 100.
   sideBarWidthInPercent: number;
+  // Whether the runs table should occupy the full screen.
+  runsTableFullScreen: boolean;
 }
 
 /*
@@ -99,4 +101,5 @@ export const initialState: CoreState = {
   polymerInteropRuns: [],
   polymerInteropRunSelection: new Set(),
   sideBarWidthInPercent: 20,
+  runsTableFullScreen: false,
 };
