@@ -321,7 +321,9 @@ tf_svg_bundle(
     # 'com_google_material_design_icon' in third_party/js.bzl
     srcs = [
         "@com_google_material_design_icon//:add_24px.svg",
+        "@com_google_material_design_icon//:arrow_back_24px.svg",
         "@com_google_material_design_icon//:arrow_downward_24px.svg",
+        "@com_google_material_design_icon//:arrow_forward_24px.svg",
         "@com_google_material_design_icon//:arrow_upward_24px.svg",
         "@com_google_material_design_icon//:brightness_6_24px.svg",
         "@com_google_material_design_icon//:bug_report_24px.svg",

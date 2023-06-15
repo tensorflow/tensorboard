@@ -18,7 +18,10 @@ import {FakeMatIconRegistry} from '@angular/material/icon/testing';
 
 // Keep in sync with the 'svg_bundle' target in tensorboard/webapp/BUILD.
 const KNOWN_SVG_ICON = new Set([
+  'add_24px',
+  'arrow_back_24px',
   'arrow_downward_24px',
+  'arrow_forward_24px',
   'arrow_upward_24px',
   'brightness_6_24px',
   'bug_report_24px',
