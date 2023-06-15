@@ -25,6 +25,18 @@ tf_ng_module(
     ],
 )
 
+tf_ng_module(
+    name = "card_interactions_data_source",
+    srcs = [
+        "card_interactions_data_source.ts",
+        "card_interactions_data_source_module.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/metrics/store:types",
+        "@npm//@angular/core",
+    ],
+)
+
 tf_ts_library(
     name = "types",
     srcs = [
@@ -68,5 +80,19 @@ tf_ts_library(
         "@npm//@ngrx/store",
         "@npm//@types/jasmine",
         "@npm//rxjs",
+    ],
+)
+
+tf_ts_library(
+    name = "card_interactions_data_source_test",
+    testonly = True,
+    srcs = [
+        "card_interactions_data_source_test.ts",
+    ],
+    deps = [
+        ":card_interactions_data_source",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/metrics:internal_types",
+        "@npm//@types/jasmine",
     ],
 )

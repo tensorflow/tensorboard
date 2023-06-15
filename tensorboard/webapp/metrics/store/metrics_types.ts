@@ -27,6 +27,7 @@ import {
 } from '../data_source';
 import {
   CardId,
+  CardIdWithMetadata,
   CardMetadata,
   CardUniqueInfo,
   HistogramMode,
@@ -166,6 +167,12 @@ export type CardStepIndexMap = Record<
   CardStepIndexMetaData | null
 >;
 
+export type CardInteractions = {
+  tagFilters: string[];
+  pins: CardIdWithMetadata[];
+  clicks: CardIdWithMetadata[];
+};
+
 export type CardToPinnedCard = Map<NonPinnedCardId, PinnedCardId>;
 
 export type PinnedCardToCard = Map<PinnedCardId, NonPinnedCardId>;
@@ -254,6 +261,8 @@ export interface MetricsNonNamespacedState {
    * Map from ElementId to CardId. Only contains all visible cards.
    */
   visibleCardMap: Map<ElementId, CardId>;
+  previousCardInteractions: CardInteractions;
+  cardInteractions: CardInteractions;
 }
 
 export type MetricsState = NamespaceContextedState<

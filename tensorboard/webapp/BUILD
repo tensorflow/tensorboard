@@ -269,6 +269,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/metrics:integration_test",
         "//tensorboard/webapp/metrics:test_lib",
         "//tensorboard/webapp/metrics:utils_test",
+        "//tensorboard/webapp/metrics/data_source:card_interactions_data_source_test",
         "//tensorboard/webapp/metrics/data_source:metrics_data_source_test",
         "//tensorboard/webapp/metrics/effects:effects_test",
         "//tensorboard/webapp/metrics/store:store_test",

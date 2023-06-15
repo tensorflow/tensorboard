@@ -2884,6 +2884,23 @@ describe('metrics reducers', () => {
         cardToPinnedCopyCache: new Map([['card1', expectedPinnedCopyId]]),
         pinnedCardToOriginal: new Map([[expectedPinnedCopyId, 'card1']]),
         timeSeriesData,
+        cardInteractions: {
+          pins: [
+            {
+              cardId: 'card1',
+              plugin: PluginType.SCALARS,
+              runId: null,
+              tag: 'tagA',
+            },
+          ],
+          clicks: [],
+          tagFilters: [],
+        },
+        previousCardInteractions: {
+          pins: [],
+          clicks: [],
+          tagFilters: [],
+        },
       });
       expect(nextState).toEqual(expectedState);
     });

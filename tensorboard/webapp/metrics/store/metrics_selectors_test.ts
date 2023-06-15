@@ -25,7 +25,12 @@ import {
   createScalarStepData,
   createTimeSeriesData,
 } from '../testing';
-import {HistogramMode, TooltipSort, XAxisType} from '../types';
+import {
+  CardIdWithMetadata,
+  HistogramMode,
+  TooltipSort,
+  XAxisType,
+} from '../types';
 import {
   ColumnHeader,
   ColumnHeaderType,
@@ -1000,6 +1005,87 @@ describe('metrics selectors', () => {
           cardId: 'pinnedCopy1',
           ...createCardMetadata(PluginType.SCALARS),
         },
+      ]);
+    });
+  });
+
+  describe('getSuggestedCardsWithMetadata', () => {
+    let mockCards: CardIdWithMetadata[];
+    let cardMetadataMap: Record<string, CardIdWithMetadata>;
+
+    beforeEach(() => {
+      mockCards = Array.from({length: 15}).map((_, index) => ({
+        cardId: `card${index}`,
+        tag: 'a',
+        runId: null,
+        plugin: PluginType.SCALARS,
+      }));
+
+      cardMetadataMap = mockCards.reduce((map, card) => {
+        map[card.cardId] = card;
+        return map;
+      }, {} as Record<string, CardIdWithMetadata>);
+    });
+
+    it('does not return more than 3 cards based on previous tag searches', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          cardMetadataMap,
+          previousCardInteractions: {
+            pins: [],
+            clicks: [],
+            tagFilters: ['a'],
+          },
+        })
+      );
+      expect(selectors.getSuggestedCardsWithMetadata(state)).toEqual([
+        mockCards[14],
+        mockCards[13],
+        mockCards[12],
+      ]);
+    });
+
+    it('does not return more than 3 previously clicked cards', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          cardMetadataMap,
+          previousCardInteractions: {
+            pins: [],
+            clicks: mockCards,
+            tagFilters: [],
+          },
+        })
+      );
+      expect(selectors.getSuggestedCardsWithMetadata(state)).toEqual([
+        mockCards[14],
+        mockCards[13],
+        mockCards[12],
+      ]);
+    });
+
+    it('never returns more than 10 cards', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          cardMetadataMap,
+          previousCardInteractions: {
+            pins: mockCards.slice(0, 5),
+            clicks: mockCards.slice(5, 10),
+            tagFilters: ['a'],
+          },
+        })
+      );
+
+      expect(selectors.getSuggestedCardsWithMetadata(state)).toEqual([
+        mockCards[4],
+        mockCards[3],
+        mockCards[2],
+        mockCards[1],
+        mockCards[0],
+        mockCards[14],
+        mockCards[13],
+        mockCards[12],
+        mockCards[9],
+        mockCards[8],
       ]);
     });
   });

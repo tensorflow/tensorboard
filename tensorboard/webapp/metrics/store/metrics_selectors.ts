@@ -46,6 +46,7 @@ import {
   METRICS_FEATURE_KEY,
   RunToSeries,
   TagMetadata,
+  CardInteractions,
 } from './metrics_types';
 import {ColumnHeader, DataTableMode} from '../../widgets/data_table/types';
 import {Extent} from '../../widgets/line_chart_v2/lib/public_types';
@@ -130,7 +131,7 @@ export const getCardTimeSeries = createSelector(
   }
 );
 
-const getCardMetadataMap = createSelector(
+export const getCardMetadataMap = createSelector(
   selectMetricsState,
   (state: MetricsState): CardMetadataMap => {
     return state.cardMetadataMap;
@@ -248,6 +249,76 @@ export const getPinnedCardsWithMetadata = createSelector(
       .filter((cardId) => {
         return metadataMap.hasOwnProperty(cardId);
       })
+      .map((cardId) => {
+        return {cardId, ...metadataMap[cardId]};
+      });
+  }
+);
+
+export const getCardInteractions = createSelector(
+  selectMetricsState,
+  (state): CardInteractions => {
+    return state.cardInteractions;
+  }
+);
+
+export const getPreviousCardInteractions = createSelector(
+  selectMetricsState,
+  (state): CardInteractions => {
+    return state.previousCardInteractions;
+  }
+);
+
+const getSuggestedCardIds = createSelector(
+  getPreviousCardInteractions,
+  getCardToPinnedCopy,
+  getCardMetadataMap,
+  (cardInteractions, cardToPinnedCopy, cardMetadataMap): NonPinnedCardId[] => {
+    const previousPins = cardInteractions.pins
+      .map(({cardId}) => cardId)
+      .filter((cardId) => cardMetadataMap[cardId])
+      .reverse();
+
+    const previousTagSearches = cardInteractions.tagFilters
+      .map((tagFilter) => {
+        return Object.entries(cardMetadataMap)
+          .filter(([, metadata]) => {
+            return metadata.tag.match(tagFilter);
+          })
+          .map(([cardId]) => cardId);
+      })
+      .flat()
+      .filter(Boolean)
+      .slice(-3)
+      .reverse();
+
+    const previouslyClickedCards = cardInteractions.clicks
+      .map(({cardId}) => cardId)
+      .filter((cardId) => cardMetadataMap[cardId])
+      .slice(-3)
+      .reverse();
+
+    return Array.from(
+      new Set([
+        ...previousPins,
+        ...previousTagSearches,
+        ...previouslyClickedCards,
+      ])
+    )
+      .filter((cardId) => !cardToPinnedCopy.get(cardId))
+      .slice(0, 10);
+  }
+);
+
+/**
+ * Returns an ordered list of cards that a user may be interested in.
+ */
+export const getSuggestedCardsWithMetadata = createSelector(
+  getSuggestedCardIds,
+  getCardMetadataMap,
+  (getSuggestedCardIds, metadataMap): DeepReadonly<CardIdWithMetadata[]> => {
+    return getSuggestedCardIds
+      .filter((cardId) => metadataMap.hasOwnProperty(cardId))
       .map((cardId) => {
         return {cardId, ...metadataMap[cardId]};
       });
