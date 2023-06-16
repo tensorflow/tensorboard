@@ -175,6 +175,7 @@ export function getDeepLinkGroup(routeKind: RouteKind): DeepLinkGroup | null {
     case RouteKind.EXPERIMENTS:
       return DeepLinkGroup.EXPERIMENTS;
     case RouteKind.EXPERIMENT:
+    case RouteKind.CARD:
     case RouteKind.COMPARE_EXPERIMENT:
       return DeepLinkGroup.DASHBOARD;
     case RouteKind.UNKNOWN:
