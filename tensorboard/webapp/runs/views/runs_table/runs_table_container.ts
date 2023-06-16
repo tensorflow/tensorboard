@@ -180,7 +180,7 @@ function matchFilter(
   }
   if (filter.type === DomainType.DISCRETE) {
     // (upcast to work around bad TypeScript libdefs)
-    const values: Readonly<Array<(typeof filter.filterValues)[number]>> =
+    const values: Readonly<Array<typeof filter.filterValues[number]>> =
       filter.filterValues;
     return values.includes(value);
   } else if (filter.type === DomainType.INTERVAL) {
@@ -588,7 +588,6 @@ export class RunsTableContainer implements OnInit, OnDestroy {
             id: run.id,
             color: colorMap[run.id],
           };
-
           runsColumns.forEach((column) => {
             switch (column.type) {
               case ColumnHeaderType.RUN:

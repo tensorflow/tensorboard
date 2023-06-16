@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2023 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ class TestableComponent {
   @Input() sortingInfo!: SortingInfo;
 }
 
-fdescribe('runs_data_table', () => {
+describe('runs_data_table', () => {
   function createComponent(input: {
     data?: TableData[];
     headers?: ColumnHeader[];
