@@ -115,6 +115,11 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       queryParamOverride: 'enableHparamsInTimeSeries',
       parseValue: parseBoolean,
     },
+    enableSuggestedCards: {
+      defaultValue: false,
+      queryParamOverride: 'enableSuggestedCards',
+      parseValue: parseBoolean,
+    },
   };
 
 /**
