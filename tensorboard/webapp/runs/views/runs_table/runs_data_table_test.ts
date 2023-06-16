@@ -96,7 +96,6 @@ describe('runs_data_table', () => {
     await TestBed.configureTestingModule({
       imports: [DataTableModule, MatIconTestingModule],
       declarations: [TestableComponent, RunsDataTable],
-      //   schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
 
