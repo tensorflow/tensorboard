@@ -124,6 +124,7 @@ tf_ts_library(
     testonly = True,
     srcs = [
         "regex_edit_dialog_test.ts",
+        "runs_data_table_test.ts",
         "runs_table_test.ts",
     ],
     deps = [

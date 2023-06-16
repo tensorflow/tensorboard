@@ -237,8 +237,6 @@ function matchFilter(
       [headers]="runsColumns$ | async"
       [data]="allRunsTableData$ | async"
       [sortingInfo]="sortingInfo$ | async"
-      columnCustomizationEnabled="true"
-      smoothingEnabled="false"
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
     ></runs-data-table>
@@ -590,6 +588,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
             id: run.id,
             color: colorMap[run.id],
           };
+
           runsColumns.forEach((column) => {
             switch (column.type) {
               case ColumnHeaderType.RUN:
