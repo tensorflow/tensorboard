@@ -91,36 +91,38 @@ export class CardInteractionEffects implements OnInitEffects {
           this.getPreviousCardInteractions$,
           this.store.select(getCardMetadataMap)
         ),
-        tap(([, cardInteractions, previousCardInteractions, metadataMap]) => {
-          const nextCardInteractions = {
-            pins: makeUnique([
-              ...cardInteractions.pins,
-              ...previousCardInteractions.pins,
-            ]),
-            clicks: makeUnique([
-              ...cardInteractions.clicks,
-              ...previousCardInteractions.clicks,
-            ]),
-            tagFilters: Array.from(
-              new Set([
-                ...cardInteractions.tagFilters,
-                ...previousCardInteractions.tagFilters,
-              ])
-            ),
-          };
+        tap(
+          ([, newCardInteractions, previousCardInteractions, metadataMap]) => {
+            const nextCardInteractions = {
+              pins: makeUnique([
+                ...previousCardInteractions.pins,
+                ...newCardInteractions.pins,
+              ]),
+              clicks: makeUnique([
+                ...previousCardInteractions.clicks,
+                ...newCardInteractions.clicks,
+              ]),
+              tagFilters: Array.from(
+                new Set([
+                  ...previousCardInteractions.tagFilters,
+                  ...newCardInteractions.tagFilters,
+                ])
+              ),
+            };
 
-          this.store.dispatch(
-            metricsPreviousCardInteractionsChanged({
-              cardInteractions: nextCardInteractions,
-            })
-          );
+            this.store.dispatch(
+              metricsPreviousCardInteractionsChanged({
+                cardInteractions: nextCardInteractions,
+              })
+            );
 
-          function makeUnique(cardMetadata: CardIdWithMetadata[]) {
-            return Array.from(
-              new Set(cardMetadata.map(({cardId}) => cardId))
-            ).map((cardId) => ({...metadataMap[cardId], cardId}));
+            function makeUnique(cardMetadata: CardIdWithMetadata[]) {
+              return Array.from(
+                new Set(cardMetadata.map(({cardId}) => cardId))
+              ).map((cardId) => ({...metadataMap[cardId], cardId}));
+            }
           }
-        })
+        )
       );
     },
     {dispatch: false}

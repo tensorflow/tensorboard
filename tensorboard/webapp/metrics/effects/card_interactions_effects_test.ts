@@ -201,9 +201,9 @@ describe('CardInteractions Effects', () => {
       expect(dispatchedActions).toEqual([
         actions.metricsPreviousCardInteractionsChanged({
           cardInteractions: {
-            pins: [card1a, card2a],
-            clicks: [card1b, card2b],
-            tagFilters: ['foo', 'bar'],
+            pins: [card2a, card1a],
+            clicks: [card2b, card1b],
+            tagFilters: ['bar', 'foo'],
           },
         }),
       ]);
