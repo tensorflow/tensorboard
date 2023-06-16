@@ -404,7 +404,7 @@ const {initialState, reducers: namespaceContextedReducer} =
         pins: [],
         clicks: [],
       },
-      cardInteractions: {
+      newCardInteractions: {
         tagFilters: [],
         pins: [],
         clicks: [],
@@ -741,39 +741,41 @@ const reducer = createReducer(
     };
   }),
   on(actions.metricsTagFilterChanged, (state, {tagFilter}) => {
-    const nextCardInteractions = {
-      ...state.cardInteractions,
+    const nextNewCardInteractions = {
+      ...state.newCardInteractions,
     };
     const previousTagFilter = state.tagFilter;
     // Ensuring we do not create redundant tag filter as the user types
     if (tagFilter === '') {
-      nextCardInteractions.tagFilters = nextCardInteractions.tagFilters.slice(
-        0,
-        nextCardInteractions.tagFilters.length - 1
-      );
+      nextNewCardInteractions.tagFilters =
+        nextNewCardInteractions.tagFilters.slice(
+          0,
+          nextNewCardInteractions.tagFilters.length - 1
+        );
     } else if (
       previousTagFilter === '' ||
-      !nextCardInteractions.tagFilters.length
+      !nextNewCardInteractions.tagFilters.length
     ) {
-      nextCardInteractions.tagFilters = [
-        ...nextCardInteractions.tagFilters,
+      nextNewCardInteractions.tagFilters = [
+        ...nextNewCardInteractions.tagFilters,
         tagFilter,
       ];
     } else if (
       tagFilter.includes(previousTagFilter) ||
       previousTagFilter.includes(tagFilter)
     ) {
-      nextCardInteractions.tagFilters = nextCardInteractions.tagFilters.slice(
-        0,
-        nextCardInteractions.tagFilters.length - 1
-      );
-      nextCardInteractions.tagFilters.push(tagFilter);
+      nextNewCardInteractions.tagFilters =
+        nextNewCardInteractions.tagFilters.slice(
+          0,
+          nextNewCardInteractions.tagFilters.length - 1
+        );
+      nextNewCardInteractions.tagFilters.push(tagFilter);
     }
 
     return {
       ...state,
       tagFilter,
-      cardInteractions: nextCardInteractions,
+      cardInteractions: nextNewCardInteractions,
     };
   }),
   on(actions.metricsChangeTooltipSort, (state, {sort}) => {
@@ -1127,7 +1129,7 @@ const reducer = createReducer(
     let nextCardMetadataMap = {...state.cardMetadataMap};
     let nextCardStepIndexMap = {...state.cardStepIndex};
     let nextCardStateMap = {...state.cardStateMap};
-    const nextCardInteractions = {...state.cardInteractions};
+    const nextNewCardInteractions = {...state.newCardInteractions};
     const nextPreviousCardInteractions = {...state.previousCardInteractions};
 
     if (isPinnedCopy) {
@@ -1138,7 +1140,7 @@ const reducer = createReducer(
       delete nextCardMetadataMap[cardId];
       delete nextCardStepIndexMap[cardId];
       delete nextCardStateMap[cardId];
-      nextCardInteractions.pins = nextCardInteractions.pins.filter(
+      nextNewCardInteractions.pins = nextNewCardInteractions.pins.filter(
         (cardMetadata) => originalCardId !== cardMetadata.cardId
       );
       nextPreviousCardInteractions.pins =
@@ -1163,12 +1165,12 @@ const reducer = createReducer(
         nextCardStepIndexMap = resolvedResult.cardStepIndex;
         nextCardStateMap = resolvedResult.cardStateMap;
         if (
-          !nextCardInteractions.pins.find(
+          !nextNewCardInteractions.pins.find(
             (metadata) => cardId === metadata.cardId
           )
         ) {
-          nextCardInteractions.pins = [
-            ...nextCardInteractions.pins,
+          nextNewCardInteractions.pins = [
+            ...nextNewCardInteractions.pins,
             {...nextCardMetadataMap[cardId], cardId},
           ];
         }
@@ -1190,7 +1192,7 @@ const reducer = createReducer(
       cardToPinnedCopy: nextCardToPinnedCopy,
       cardToPinnedCopyCache: nextCardToPinnedCopyCache,
       pinnedCardToOriginal: nextPinnedCardToOriginal,
-      cardInteractions: nextCardInteractions,
+      cardInteractions: nextNewCardInteractions,
       previousCardInteractions: nextPreviousCardInteractions,
     };
   }),
@@ -1538,12 +1540,12 @@ const reducer = createReducer(
   ),
   on(actions.metricsCardClicked, (state, {cardId}) => {
     const nextClicksIds = new Set(
-      state.cardInteractions.clicks.map(({cardId}) => cardId)
+      state.newCardInteractions.clicks.map(({cardId}) => cardId)
     );
     nextClicksIds.add(cardId);
 
-    const nextCardInteractions = {
-      ...state.cardInteractions,
+    const nextNewCardInteractions = {
+      ...state.newCardInteractions,
       clicks: Array.from(nextClicksIds).map((cardId) => ({
         ...state.cardMetadataMap[cardId],
         cardId,
@@ -1552,7 +1554,7 @@ const reducer = createReducer(
 
     return {
       ...state,
-      cardInteractions: nextCardInteractions,
+      newCardInteractions: nextNewCardInteractions,
     };
   })
 );

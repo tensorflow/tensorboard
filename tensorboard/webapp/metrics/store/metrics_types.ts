@@ -262,7 +262,7 @@ export interface MetricsNonNamespacedState {
    */
   visibleCardMap: Map<ElementId, CardId>;
   previousCardInteractions: CardInteractions;
-  cardInteractions: CardInteractions;
+  newCardInteractions: CardInteractions;
 }
 
 export type MetricsState = NamespaceContextedState<

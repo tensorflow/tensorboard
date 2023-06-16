@@ -255,10 +255,10 @@ export const getPinnedCardsWithMetadata = createSelector(
   }
 );
 
-export const getCardInteractions = createSelector(
+export const getNewCardInteractions = createSelector(
   selectMetricsState,
   (state): CardInteractions => {
-    return state.cardInteractions;
+    return state.newCardInteractions;
   }
 );
 

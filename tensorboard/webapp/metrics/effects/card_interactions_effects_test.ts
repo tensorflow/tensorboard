@@ -24,7 +24,7 @@ import {provideMockActions} from '@ngrx/effects/testing';
 import * as actions from '../actions';
 import {CardIdWithMetadata, PluginType} from '../internal_types';
 import {
-  getCardInteractions,
+  getNewCardInteractions,
   getCardMetadataMap,
   getPreviousCardInteractions,
 } from '../store';
@@ -117,7 +117,7 @@ describe('CardInteractions Effects', () => {
       effects.cardInteractionsEffect$.subscribe();
       expect(saveSpy).not.toHaveBeenCalled();
 
-      store.overrideSelector(getCardInteractions, {
+      store.overrideSelector(getNewCardInteractions, {
         tagFilters: ['foo', 'bar'],
         pins: [
           {
@@ -185,7 +185,7 @@ describe('CardInteractions Effects', () => {
     });
 
     it('merges current and previous card interactions', () => {
-      store.overrideSelector(getCardInteractions, {
+      store.overrideSelector(getNewCardInteractions, {
         pins: [card1a],
         clicks: [card1b],
         tagFilters: ['foo'],
@@ -210,7 +210,7 @@ describe('CardInteractions Effects', () => {
     });
 
     it('does not emit duplicate cardIds', () => {
-      store.overrideSelector(getCardInteractions, {
+      store.overrideSelector(getNewCardInteractions, {
         pins: [card1a],
         clicks: [card1b],
         tagFilters: ['foo'],

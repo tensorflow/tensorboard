@@ -44,8 +44,6 @@ import {
   CardId,
   CardMetadata,
   HistogramMode,
-  MinMaxStep,
-  NonPinnedCardId,
   TooltipSort,
   XAxisType,
 } from '../types';
@@ -2884,7 +2882,7 @@ describe('metrics reducers', () => {
         cardToPinnedCopyCache: new Map([['card1', expectedPinnedCopyId]]),
         pinnedCardToOriginal: new Map([[expectedPinnedCopyId, 'card1']]),
         timeSeriesData,
-        cardInteractions: {
+        newCardInteractions: {
           pins: [
             {
               cardId: 'card1',

@@ -16,7 +16,7 @@ import {Injectable} from '@angular/core';
 import {Action, Store, createAction} from '@ngrx/store';
 import {
   State,
-  getCardInteractions,
+  getNewCardInteractions,
   getCardMetadataMap,
   getPreviousCardInteractions,
 } from '../store';
@@ -42,7 +42,7 @@ export class CardInteractionEffects implements OnInitEffects {
     return initAction();
   }
 
-  private getCardInteractions$ = this.store.select(getCardInteractions).pipe(
+  private getCardInteractions$ = this.store.select(getNewCardInteractions).pipe(
     // Don't get the initial state
     skip(1)
   );
