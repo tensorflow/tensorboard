@@ -232,16 +232,14 @@ function matchFilter(
       (onHparamDiscreteFilterChanged)="onHparamDiscreteFilterChanged($event)"
       (onMetricFilterChanged)="onMetricFilterChanged($event)"
     ></runs-table-component>
-    <tb-data-table
+    <runs-data-table
       *ngIf="HParamsEnabled.value"
       [headers]="runsColumns$ | async"
       [data]="allRunsTableData$ | async"
       [sortingInfo]="sortingInfo$ | async"
-      columnCustomizationEnabled="true"
-      smoothingEnabled="false"
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
-    ></tb-data-table>
+    ></runs-data-table>
   `,
   host: {
     '[class.flex-layout]': 'useFlexibleLayout',
