@@ -39,6 +39,7 @@ export enum ColumnHeaderType {
   MEAN = 'MEAN',
   RAW_CHANGE = 'RAW_CHANGE',
   HPARAM = 'HPARAM',
+  CUSTOM = 'CUSTOM',
 }
 
 export interface ColumnHeader {
@@ -68,7 +69,7 @@ export interface SortingInfo {
  * DataTable. It will have a value for each required ColumnHeader for a given
  * run.
  */
-export type TableData = Record<string, string | number> & {
+export type TableData = Record<string, string | number | boolean> & {
   id: string;
 };
 

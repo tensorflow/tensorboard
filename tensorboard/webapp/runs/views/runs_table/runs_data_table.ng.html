@@ -29,8 +29,16 @@ limitations under the License.
         [header]="header"
         [sortingInfo]="sortingInfo"
         [hparamsEnabled]="true"
-        [controlsEnabled]="header.type !== ColumnHeaderType.COLOR"
-      ></tb-data-table-header-cell> </ng-container
+        [controlsEnabled]="header.type !== ColumnHeaderType.COLOR && header.type !== ColumnHeaderType.CUSTOM"
+      >
+        <div *ngIf="header.name === 'selected'">
+          <mat-checkbox
+            [checked]="allRowsSelected()"
+            [indeterminate]="!allRowsSelected() && someRowsSelected()"
+            (click)="onAllSelectionToggle.emit(getRunIds())"
+          ></mat-checkbox>
+        </div>
+      </tb-data-table-header-cell> </ng-container
   ></ng-container>
 
   <ng-container content>
@@ -42,12 +50,17 @@ limitations under the License.
             [header]="header"
             [datum]="dataRow[header.name]"
           >
-            <div
-              *ngIf="header.type === ColumnHeaderType.COLOR"
-              class="row-circle"
-            >
-              <span [style.backgroundColor]="dataRow['color']"></span>
-            </div>
+            <ng-container [ngSwitch]="header.name">
+              <div *ngSwitchCase="'color'" class="row-circle">
+                <span [style.backgroundColor]="dataRow['color']"></span>
+              </div>
+              <div *ngSwitchCase="'selected'">
+                <mat-checkbox
+                  [checked]="dataRow['selected']"
+                  (change)="onSelectionToggle.emit(dataRow.id)"
+                ></mat-checkbox>
+              </div>
+            </ng-container>
           </tb-data-table-content-cell>
         </ng-container>
       </tb-data-table-content-row>

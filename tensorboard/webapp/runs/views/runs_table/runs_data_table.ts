@@ -41,15 +41,38 @@ export class RunsDataTable {
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() orderColumns = new EventEmitter<ColumnHeader[]>();
+  @Output() onSelectionToggle = new EventEmitter<string>();
+  @Output() onAllSelectionToggle = new EventEmitter<string[]>();
 
   getHeaders() {
-    return this.headers.concat([
+    return [
       {
-        name: 'color',
+        name: 'selected',
         displayName: '',
-        type: ColumnHeaderType.COLOR,
+        type: ColumnHeaderType.CUSTOM,
         enabled: true,
       },
-    ]);
+    ].concat(
+      this.headers.concat([
+        {
+          name: 'color',
+          displayName: '',
+          type: ColumnHeaderType.COLOR,
+          enabled: true,
+        },
+      ])
+    );
+  }
+
+  getRunIds() {
+    return this.data.map((row) => row.id);
+  }
+
+  allRowsSelected() {
+    return this.data.every((row) => row.selected);
+  }
+
+  someRowsSelected() {
+    return this.data.some((row) => row.selected);
   }
 }
