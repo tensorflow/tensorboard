@@ -32,7 +32,11 @@ import {ScalarCardFobController} from './scalar_card_fob_controller';
 import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_warning_module';
 
 @NgModule({
-  declarations: [ScalarCardContainer, ScalarCardComponent, ScalarCardFobController],
+  declarations: [
+    ScalarCardContainer,
+    ScalarCardComponent,
+    ScalarCardFobController,
+  ],
   exports: [ScalarCardContainer],
   imports: [
     CardFobModule,
