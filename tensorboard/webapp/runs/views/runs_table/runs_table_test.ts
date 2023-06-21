@@ -157,7 +157,7 @@ const Selector = {
   SELECT_ALL_ROW: '.select-all',
 };
 
-describe('runs_table', () => {
+fdescribe('runs_table', () => {
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;
   let overlayContainer: OverlayContainer;

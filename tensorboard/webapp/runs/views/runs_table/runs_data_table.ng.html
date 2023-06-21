@@ -50,17 +50,28 @@ limitations under the License.
             [header]="header"
             [datum]="dataRow[header.name]"
           >
-            <ng-container [ngSwitch]="header.name">
-              <div *ngSwitchCase="'color'" class="row-circle">
-                <span [style.backgroundColor]="dataRow['color']"></span>
-              </div>
-              <div *ngSwitchCase="'selected'">
-                <mat-checkbox
-                  [checked]="dataRow['selected']"
-                  (change)="onSelectionToggle.emit(dataRow.id)"
-                ></mat-checkbox>
-              </div>
-            </ng-container>
+          <ng-container [ngSwitch]="header.name">
+            <span *ngSwitchCase="'color'">
+                <button
+                  [ngClass]="{'run-color-swatch': true}"
+                  [style.background]="dataRow['color']"
+                  [colorPicker]="dataRow['color']"
+                  [cpToggle]="true"
+                  [cpDialogDisplay]="'popup'"
+                  [cpPositionOffset]="-20"
+                  [cpUseRootViewContainer]="true"
+                  [cpOutputFormat]="'hex'"
+                  (colorPickerChange)="onRunColorChange.emit($event)"
+                  (click)="test()"
+                ></button>
+              </span>
+            <div *ngSwitchCase="'selected'">
+              <mat-checkbox
+                [checked]="dataRow['selected']"
+                (change)="onSelectionToggle.emit(dataRow.id)"
+              ></mat-checkbox>
+            </div>
+          </ng-container>
           </tb-data-table-content-cell>
         </ng-container>
       </tb-data-table-content-row>

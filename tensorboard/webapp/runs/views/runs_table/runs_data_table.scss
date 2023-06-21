@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
+@import 'tensorboard/webapp/theme/tb_theme';
 $_circle-size: 12px;
 
 .row-circle {
@@ -25,4 +27,19 @@ $_circle-size: 12px;
   height: $_circle-size - 2px; // size minus border
   width: $_circle-size - 2px; // size minus border
   vertical-align: middle;
+}
+
+.run-color-swatch {
+  $_swatch-size: 20px;
+
+  border-radius: 100%;
+  border: 1px solid mat.get-color-from-palette($tb-foreground, border);
+  height: $_circle-size;
+  width: $_circle-size;
+  outline: none;
+
+  &.no-color {
+    border-color: mat.get-color-from-palette($tf-slate, 300);
+    border-width: 2px;
+  }
 }

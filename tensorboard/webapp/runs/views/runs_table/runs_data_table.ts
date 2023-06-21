@@ -75,4 +75,12 @@ export class RunsDataTable {
   someRowsSelected() {
     return this.data.some((row) => row.selected);
   }
+
+  onRunColorChange(newColor: string) {
+    console.log('onRunColorChange')
+  }
+
+  test() {
+    console.log('clicked');
+  }
 }
