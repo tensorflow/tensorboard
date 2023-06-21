@@ -3221,7 +3221,13 @@ describe('runs_table', () => {
         book2: '#111',
       });
 
-      store.overrideSelector(getCurrentRouteRunSelection, new Map([['book1', true], ['book2', false]]));
+      store.overrideSelector(
+        getCurrentRouteRunSelection,
+        new Map([
+          ['book1', true],
+          ['book2', false],
+        ])
+      );
 
       const fixture = createComponent(['book']);
       fixture.detectChanges();
@@ -3230,8 +3236,18 @@ describe('runs_table', () => {
       );
 
       expect(runsDataTable.componentInstance.data).toEqual([
-        {id: 'book1', color: '#000', run: "The Philosopher's Stone", selected: true},
-        {id: 'book2', color: '#111', run: 'The Chamber Of Secrets', selected: false},
+        {
+          id: 'book1',
+          color: '#000',
+          run: "The Philosopher's Stone",
+          selected: true,
+        },
+        {
+          id: 'book2',
+          color: '#111',
+          run: 'The Chamber Of Secrets',
+          selected: false,
+        },
       ]);
     });
 
@@ -3240,13 +3256,12 @@ describe('runs_table', () => {
       const selectSpy = spyOn(store, 'select').and.callThrough();
       selectSpy
         .withArgs(getRuns, {experimentId: 'book'})
-        .and.returnValue(
-          of([
-            buildRun({id: 'book1'}),
-          ])
-        );
+        .and.returnValue(of([buildRun({id: 'book1'})]));
 
-      store.overrideSelector(getCurrentRouteRunSelection, new Map([['otherbook', true]]));
+      store.overrideSelector(
+        getCurrentRouteRunSelection,
+        new Map([['otherbook', true]])
+      );
 
       const fixture = createComponent(['book']);
       fixture.detectChanges();
