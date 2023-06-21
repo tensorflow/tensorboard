@@ -590,7 +590,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
           const tableData: TableData = {
             id: run.id,
             color: colorMap[run.id],
-            selected: (selectionMap && selectionMap.get(run.id)) ?? false,
+            selected: Boolean(selectionMap?.get(run.id)),
           };
 
           runsColumns.forEach((column) => {

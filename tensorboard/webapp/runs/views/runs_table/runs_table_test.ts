@@ -3194,7 +3194,7 @@ describe('runs_table', () => {
       ).toBeFalsy();
     });
 
-    it('passes run name and color to data table', () => {
+    it('passes run name, selected value, and color to data table', () => {
       // To make sure we only return the runs when called with the right props.
       const selectSpy = spyOn(store, 'select').and.callThrough();
       selectSpy
@@ -3221,6 +3221,8 @@ describe('runs_table', () => {
         book2: '#111',
       });
 
+      store.overrideSelector(getCurrentRouteRunSelection, new Map([['book1', true], ['book2', false]]));
+
       const fixture = createComponent(['book']);
       fixture.detectChanges();
       const runsDataTable = fixture.debugElement.query(
@@ -3228,9 +3230,31 @@ describe('runs_table', () => {
       );
 
       expect(runsDataTable.componentInstance.data).toEqual([
-        {id: 'book1', color: '#000', run: "The Philosopher's Stone"},
-        {id: 'book2', color: '#111', run: 'The Chamber Of Secrets'},
+        {id: 'book1', color: '#000', run: "The Philosopher's Stone", selected: true},
+        {id: 'book2', color: '#111', run: 'The Chamber Of Secrets', selected: false},
       ]);
+    });
+
+    it('passes selected value of false if run is not in selectionMap', () => {
+      // To make sure we only return the runs when called with the right props.
+      const selectSpy = spyOn(store, 'select').and.callThrough();
+      selectSpy
+        .withArgs(getRuns, {experimentId: 'book'})
+        .and.returnValue(
+          of([
+            buildRun({id: 'book1'}),
+          ])
+        );
+
+      store.overrideSelector(getCurrentRouteRunSelection, new Map([['otherbook', true]]));
+
+      const fixture = createComponent(['book']);
+      fixture.detectChanges();
+      const runsDataTable = fixture.debugElement.query(
+        By.directive(RunsDataTable)
+      );
+
+      expect(runsDataTable.componentInstance.data[0].selected).toEqual(false);
     });
 
     it('passes hparam values to data table', () => {
@@ -3277,10 +3301,8 @@ describe('runs_table', () => {
         By.directive(RunsDataTable)
       );
 
-      expect(runsDataTable.componentInstance.data).toEqual([
-        {id: 'book1', color: '#000', batch_size: 1},
-        {id: 'book2', color: '#111', batch_size: 2},
-      ]);
+      expect(runsDataTable.componentInstance.data[0].batch_size).toEqual(1);
+      expect(runsDataTable.componentInstance.data[1].batch_size).toEqual(2);
     });
   });
 });
