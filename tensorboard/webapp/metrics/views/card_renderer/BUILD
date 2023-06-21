@@ -289,23 +289,44 @@ tf_sass_binary(
 )
 
 tf_ng_module(
+    name = "scalar_card_data_table",
+    srcs = [
+        "scalar_card_data_table.ts",
+        "scalar_card_data_table_module.ts",
+    ],
+    assets = [
+        ":scalar_card_data_table_styles",
+        "scalar_card_data_table.ng.html",
+    ],
+    deps = [
+        ":scalar_card_types",
+        ":utils",
+        "//tensorboard/webapp/metrics:types",
+        "//tensorboard/webapp/widgets/card_fob:types",
+        "//tensorboard/webapp/widgets/data_table",
+        "//tensorboard/webapp/widgets/data_table:types",
+        "//tensorboard/webapp/widgets/line_chart_v2/sub_view",
+        "@npm//@angular/common",
+        "@npm//@angular/core",
+    ],
+)
+
+tf_ng_module(
     name = "scalar_card",
     srcs = [
         "scalar_card_component.ts",
         "scalar_card_container.ts",
-        "scalar_card_data_table.ts",
         "scalar_card_fob_controller.ts",
         "scalar_card_module.ts",
     ],
     assets = [
-        ":scalar_card_data_table_styles",
         ":scalar_card_styles",
         ":scalar_card_fob_controller_styles",
         "scalar_card_component.ng.html",
-        "scalar_card_data_table.ng.html",
     ],
     deps = [
         ":data_download_dialog",
+        ":scalar_card_data_table",
         ":scalar_card_types",
         ":utils",
         ":vis_linked_time_selection_warning",
@@ -333,7 +354,6 @@ tf_ng_module(
         "//tensorboard/webapp/widgets:resize_detector",
         "//tensorboard/webapp/widgets/card_fob",
         "//tensorboard/webapp/widgets/card_fob:types",
-        "//tensorboard/webapp/widgets/data_table",
         "//tensorboard/webapp/widgets/data_table:types",
         "//tensorboard/webapp/widgets/experiment_alias",
         "//tensorboard/webapp/widgets/intersection_observer",
@@ -372,6 +392,7 @@ tf_ts_library(
         ":image_card",
         ":run_name",
         ":scalar_card",
+        ":scalar_card_data_table",
         ":scalar_card_types",
         ":utils",
         ":vis_linked_time_selection_warning",

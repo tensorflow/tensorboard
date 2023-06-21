@@ -19,7 +19,6 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {CardFobModule} from '../../../widgets/card_fob/card_fob_module';
-import {DataTableModule} from '../../../widgets/data_table/data_table_module';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {IntersectionObserverModule} from '../../../widgets/intersection_observer/intersection_observer_module';
 import {LineChartModule as LineChartV2Module} from '../../../widgets/line_chart_v2/line_chart_module';
@@ -28,7 +27,7 @@ import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {DataDownloadModule} from './data_download_module';
 import {ScalarCardComponent} from './scalar_card_component';
 import {ScalarCardContainer} from './scalar_card_container';
-import {ScalarCardDataTable} from './scalar_card_data_table';
+import {ScalarCardDataTableModule} from './scalar_card_data_table_module';
 import {ScalarCardFobController} from './scalar_card_fob_controller';
 import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_warning_module';
 
@@ -36,7 +35,6 @@ import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_w
   declarations: [
     ScalarCardContainer,
     ScalarCardComponent,
-    ScalarCardDataTable,
     ScalarCardFobController,
   ],
   exports: [ScalarCardContainer],
@@ -44,7 +42,6 @@ import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_w
     CardFobModule,
     CommonModule,
     DataDownloadModule,
-    DataTableModule,
     ExperimentAliasModule,
     IntersectionObserverModule,
     LineChartV2Module,
@@ -53,6 +50,7 @@ import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_w
     MatMenuModule,
     MatProgressSpinnerModule,
     ResizeDetectorModule,
+    ScalarCardDataTableModule,
     TruncatedPathModule,
     VisLinkedTimeSelectionWarningModule,
   ],
