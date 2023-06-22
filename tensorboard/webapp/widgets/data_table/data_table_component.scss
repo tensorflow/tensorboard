@@ -27,10 +27,6 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
     display: table-row;
   }
 
-  .col {
-    display: table-cell;
-  }
-
   .header {
     background-color: mat.get-color-from-palette($tb-background, background);
     position: sticky;

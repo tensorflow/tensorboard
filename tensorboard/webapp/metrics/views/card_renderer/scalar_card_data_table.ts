@@ -302,7 +302,9 @@ export class ScalarCardDataTable {
   }
 }
 
-function makeValueSortable(value: number | string | null | undefined) {
+function makeValueSortable(
+  value: number | string | boolean | null | undefined
+) {
   if (
     Number.isNaN(value) ||
     value === 'NaN' ||

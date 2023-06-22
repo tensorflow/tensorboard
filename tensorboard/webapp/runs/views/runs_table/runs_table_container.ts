@@ -221,7 +221,7 @@ function matchFilter(
       [regexFilter]="regexFilter$ | async"
       [sortOption]="sortOption$ | async"
       [usePagination]="usePagination"
-      (onSelectionToggle)="onRunSelectionToggle($event)"
+      (onSelectionToggle)="onRunItemSelectionToggle($event)"
       (onSelectionDblClick)="onRunSelectionDblClick($event)"
       (onPageSelectionToggle)="onPageSelectionToggle($event)"
       (onPaginationChange)="onPaginationChange($event)"
@@ -239,6 +239,8 @@ function matchFilter(
       [sortingInfo]="sortingInfo$ | async"
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
+      (onSelectionToggle)="onRunSelectionToggle($event)"
+      (onAllSelectionToggle)="onAllSelectionToggle($event)"
     ></runs-data-table>
   `,
   host: {
@@ -579,15 +581,18 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     return combineLatest([
       this.store.select(getRuns, {experimentId}),
       this.store.select(getRunColorMap),
+      this.store.select(getCurrentRouteRunSelection),
       this.runsColumns$,
       this.runToHParamValues$,
     ]).pipe(
-      map(([runs, colorMap, runsColumns, runToHParamValues]) => {
+      map(([runs, colorMap, selectionMap, runsColumns, runToHParamValues]) => {
         return runs.map((run) => {
           const tableData: TableData = {
             id: run.id,
             color: colorMap[run.id],
+            selected: Boolean(selectionMap?.get(run.id)),
           };
+
           runsColumns.forEach((column) => {
             switch (column.type) {
               case ColumnHeaderType.RUN:
@@ -646,10 +651,18 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     );
   }
 
-  onRunSelectionToggle(item: RunTableItem) {
+  onRunItemSelectionToggle(item: RunTableItem) {
     this.store.dispatch(
       runSelectionToggled({
         runId: item.run.id,
+      })
+    );
+  }
+
+  onRunSelectionToggle(id: string) {
+    this.store.dispatch(
+      runSelectionToggled({
+        runId: id,
       })
     );
   }
@@ -670,6 +683,14 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     this.store.dispatch(
       singleRunSelected({
         runId: item.run.id,
+      })
+    );
+  }
+
+  onAllSelectionToggle(runIds: string[]) {
+    this.store.dispatch(
+      runPageSelectionToggled({
+        runIds,
       })
     );
   }

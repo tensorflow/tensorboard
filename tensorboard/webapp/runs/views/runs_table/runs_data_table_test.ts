@@ -18,6 +18,7 @@ import {TestBed} from '@angular/core/testing';
 import {RunsDataTable} from './runs_data_table';
 import {DataTableModule} from '../../../widgets/data_table/data_table_module';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
+import {MatCheckboxModule} from '@angular/material/checkbox';
 import {
   SortingOrder,
   SortingInfo,
@@ -39,6 +40,8 @@ import {ContentCellComponent} from '../../../widgets/data_table/content_cell_com
       [sortingInfo]="sortingInfo"
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
+      (onSelectionToggle)="onSelectionToggle($event)"
+      (onAllSelectionToggle)="onAllSelectionToggle($event)"
     ></runs-data-table>
   `,
 })
@@ -49,9 +52,14 @@ class TestableComponent {
   @Input() headers!: ColumnHeader[];
   @Input() data!: TableData[];
   @Input() sortingInfo!: SortingInfo;
+
+  @Input() onSelectionToggle!: (runId: string) => void;
+  @Input() onAllSelectionToggle!: (runIds: string[]) => void;
 }
 
 describe('runs_data_table', () => {
+  let onSelectionToggleSpy: jasmine.Spy;
+  let onAllSelectionToggleSpy: jasmine.Spy;
   function createComponent(input: {
     data?: TableData[];
     headers?: ColumnHeader[];
@@ -88,13 +96,19 @@ describe('runs_data_table', () => {
       order: SortingOrder.ASCENDING,
     };
 
+    onSelectionToggleSpy = jasmine.createSpy();
+    fixture.componentInstance.onSelectionToggle = onSelectionToggleSpy;
+
+    onAllSelectionToggleSpy = jasmine.createSpy();
+    fixture.componentInstance.onAllSelectionToggle = onAllSelectionToggleSpy;
+
     fixture.detectChanges();
     return fixture;
   }
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DataTableModule, MatIconTestingModule],
+      imports: [DataTableModule, MatIconTestingModule, MatCheckboxModule],
       declarations: [TestableComponent, RunsDataTable],
     }).compileComponents();
   });
@@ -106,20 +120,21 @@ describe('runs_data_table', () => {
     ).toBeTruthy();
   });
 
-  it('projects enabled headers plus color column', () => {
+  it('projects enabled headers plus color and selected column', () => {
     const fixture = createComponent({});
     const dataTable = fixture.debugElement.query(
       By.directive(DataTableComponent)
     );
     const headers = dataTable.queryAll(By.directive(HeaderCellComponent));
 
-    expect(headers.length).toBe(3);
-    expect(headers[0].componentInstance.header.name).toEqual('run');
-    expect(headers[1].componentInstance.header.name).toEqual('other_header');
-    expect(headers[2].componentInstance.header.name).toEqual('color');
+    expect(headers.length).toBe(4);
+    expect(headers[0].componentInstance.header.name).toEqual('selected');
+    expect(headers[1].componentInstance.header.name).toEqual('run');
+    expect(headers[2].componentInstance.header.name).toEqual('other_header');
+    expect(headers[3].componentInstance.header.name).toEqual('color');
   });
 
-  it('projects content for each enabled header and color column', () => {
+  it('projects content for each enabled header, selected, and color column', () => {
     const fixture = createComponent({
       data: [{id: 'runid', run: 'run name', color: 'red', other_header: 'foo'}],
     });
@@ -128,10 +143,11 @@ describe('runs_data_table', () => {
     );
     const cells = dataTable.queryAll(By.directive(ContentCellComponent));
 
-    expect(cells.length).toBe(3);
-    expect(cells[0].componentInstance.header.name).toEqual('run');
-    expect(cells[1].componentInstance.header.name).toEqual('other_header');
-    expect(cells[2].componentInstance.header.name).toEqual('color');
+    expect(cells.length).toBe(4);
+    expect(cells[0].componentInstance.header.name).toEqual('selected');
+    expect(cells[1].componentInstance.header.name).toEqual('run');
+    expect(cells[2].componentInstance.header.name).toEqual('other_header');
+    expect(cells[3].componentInstance.header.name).toEqual('color');
   });
 
   it('disables controls for color header', () => {
@@ -147,5 +163,81 @@ describe('runs_data_table', () => {
     )!;
 
     expect(colorHeader.componentInstance.controlsEnabled).toBe(false);
+  });
+
+  it('disables controls for selected header', () => {
+    const fixture = createComponent({});
+
+    const dataTable = fixture.debugElement.query(
+      By.directive(DataTableComponent)
+    );
+    const headers = dataTable.queryAll(By.directive(HeaderCellComponent));
+
+    const selectedHeader = headers.find(
+      (h) => h.componentInstance.header.name === 'selected'
+    )!;
+
+    expect(selectedHeader.componentInstance.controlsEnabled).toBe(false);
+  });
+
+  it('adds checkbox to selected column', () => {
+    const fixture = createComponent({});
+
+    const dataTable = fixture.debugElement.query(
+      By.directive(DataTableComponent)
+    );
+    const headers = dataTable.queryAll(By.directive(HeaderCellComponent));
+    const cells = dataTable.queryAll(By.directive(ContentCellComponent));
+
+    const selectedHeader = headers.find(
+      (h) => h.componentInstance.header.name === 'selected'
+    )!;
+
+    const selectedContentCells = cells.filter((cell) => {
+      return cell.componentInstance.header.name === 'selected';
+    });
+
+    expect(selectedHeader.query(By.css('mat-checkbox'))).toBeTruthy();
+    selectedContentCells.forEach((cell) => {
+      expect(cell.query(By.css('mat-checkbox'))).toBeTruthy();
+    });
+  });
+
+  it('emits onAllSelectionToggle event when selected header checkbox is clicked', () => {
+    const fixture = createComponent({});
+
+    const dataTable = fixture.debugElement.query(
+      By.directive(DataTableComponent)
+    );
+    const headers = dataTable.queryAll(By.directive(HeaderCellComponent));
+
+    const selectedHeader = headers.find(
+      (h) => h.componentInstance.header.name === 'selected'
+    )!;
+
+    const selectedCheckbox = selectedHeader.query(By.css('mat-checkbox'));
+
+    selectedCheckbox.nativeElement.dispatchEvent(new MouseEvent('click'));
+
+    expect(onAllSelectionToggleSpy).toHaveBeenCalledWith(['runid']);
+  });
+
+  it('emits onSelectionToggle event when selected content checkbox is clicked', () => {
+    const fixture = createComponent({});
+
+    const dataTable = fixture.debugElement.query(
+      By.directive(DataTableComponent)
+    );
+    const cells = dataTable.queryAll(By.directive(ContentCellComponent));
+
+    const selectedContentCells = cells.filter((cell) => {
+      return cell.componentInstance.header.name === 'selected';
+    });
+
+    const firstCheckbox = selectedContentCells[0].query(By.css('mat-checkbox'));
+
+    firstCheckbox.nativeElement.dispatchEvent(new Event('change'));
+
+    expect(onSelectionToggleSpy).toHaveBeenCalledWith('runid');
   });
 });
