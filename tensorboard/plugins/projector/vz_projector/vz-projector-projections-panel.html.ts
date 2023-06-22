@@ -142,42 +142,30 @@ export const template = html`
     <div id="main">
       <div class="ink-panel-header">
         <div class="ink-tab-group">
-          <div data-tab="umap" id="umap-tab" class="ink-tab projection-tab">
+          <div
+            data-tab="umap"
+            id="umap-tab"
+            class="ink-tab projection-tab"
+            title="Uniform manifold approximation and projection"
+          >
             UMAP
           </div>
-          <paper-tooltip
-            for="umap-tab"
-            position="bottom"
-            animation-delay="0"
-            fit-to-visible-bounds
+          <div
+            data-tab="tsne"
+            id="tsne-tab"
+            class="ink-tab projection-tab"
+            title="t-distributed stochastic neighbor embedding"
           >
-            uniform manifold approximation and projection
-          </paper-tooltip>
-
-          <div data-tab="tsne" id="tsne-tab" class="ink-tab projection-tab">
             t-SNE
           </div>
-          <paper-tooltip
-            for="tsne-tab"
-            position="bottom"
-            animation-delay="0"
-            fit-to-visible-bounds
+          <div
+            data-tab="pca"
+            id="pca-tab"
+            class="ink-tab projection-tab"
+            title="Principal component analysis"
           >
-            t-distributed stochastic neighbor embedding
-          </paper-tooltip>
-
-          <div data-tab="pca" id="pca-tab" class="ink-tab projection-tab">
             PCA
           </div>
-          <paper-tooltip
-            for="pca-tab"
-            position="bottom"
-            animation-delay="0"
-            fit-to-visible-bounds
-          >
-            Principal component analysis
-          </paper-tooltip>
-
           <div
             data-tab="custom"
             id="custom-tab"
@@ -186,14 +174,6 @@ export const template = html`
           >
             Custom
           </div>
-          <paper-tooltip
-            for="custom-tab"
-            position="bottom"
-            animation-delay="0"
-            fit-to-visible-bounds
-          >
-            Search for two vectors upon which to project all points.
-          </paper-tooltip>
         </div>
       </div>
       <div class="container">

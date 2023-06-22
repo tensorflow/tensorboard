@@ -625,17 +625,22 @@ export const template = html`
       </paper-dialog>
     </div>
     <paper-checkbox id="normalize-data-checkbox" checked="{{normalizeData}}">
-      Sphereize data
-      <paper-icon-button icon="help" class="help-icon"></paper-icon-button>
-      <paper-tooltip
-        position="bottom"
-        animation-delay="0"
-        fit-to-visible-bounds
-      >
-        The data is normalized by shifting each point by the centroid and making
-        it unit norm.
-      </paper-tooltip>
+      Spherize data
     </paper-checkbox>
+    <paper-icon-button
+      id="normalize-data-help"
+      icon="help"
+      class="help-icon"
+    ></paper-icon-button>
+    <paper-tooltip
+      for="normalize-data-help"
+      position="bottom"
+      animation-delay="0"
+      fit-to-visible-bounds
+    >
+      The data is normalized by shifting each point by the centroid and making
+      it unit norm.
+    </paper-tooltip>
     <div class="dirs">
       <table>
         <tr>
