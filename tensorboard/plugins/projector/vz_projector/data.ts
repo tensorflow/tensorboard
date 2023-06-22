@@ -336,6 +336,10 @@ export class DataSet {
     this.tSNEIteration = 0;
     let sampledIndices = this.shuffledDataIndices.slice(0, TSNE_SAMPLE_SIZE);
     let step = () => {
+      if (!this.tsne.getSolution()) {
+        this.initTsneSolutionFromCurrentProjection();
+        return;
+      }
       if (this.tSNEShouldStop) {
         this.projections['tsne'] = false;
         stepCallback(null!);
@@ -346,12 +350,11 @@ export class DataSet {
       if (!this.tSNEShouldPause) {
         this.tsne.step();
         let result = this.tsne.getSolution();
+        const d = this.tsne.getDim();
         sampledIndices.forEach((index, i) => {
           let dataPoint = this.points[index];
-          dataPoint.projections['tsne-0'] = result[i * tsneDim + 0];
-          dataPoint.projections['tsne-1'] = result[i * tsneDim + 1];
-          if (tsneDim === 3) {
-            dataPoint.projections['tsne-2'] = result[i * tsneDim + 2];
+          for (let j = 0; j < d; j++) {
+            dataPoint.projections[`tsne-${j}`] = result[i * d + j];
           }
         });
         this.projections['tsne'] = true;
@@ -492,6 +495,20 @@ export class DataSet {
         result.map((neighbors) => neighbors.slice(0, nNeighbors))
       );
     }
+  }
+  /* initialize the new tsne solution from current projection data */
+  initTsneSolutionFromCurrentProjection() {
+    const sampledIndices = this.shuffledDataIndices.slice(0, TSNE_SAMPLE_SIZE);
+    const rng = this.tsne.getRng();
+    const d = this.tsne.getDim();
+    const solution = new Float64Array(sampledIndices.length * d);
+    sampledIndices.forEach((index, i) => {
+      const dataPoint = this.points[index];
+      for (let j = 0; j < d; j++) {
+        solution[i * d + j] = dataPoint.projections[`tsne-${j}`] ?? rng();
+      }
+    });
+    this.tsne.setSolution(solution);
   }
   /* Perturb TSNE and update dataset point coordinates. */
   perturbTsne() {

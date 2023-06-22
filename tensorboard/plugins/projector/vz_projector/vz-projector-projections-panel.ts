@@ -156,6 +156,10 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
   private updateTSNEPerplexityFromSliderChange() {
     if (this.perplexitySlider) {
       this.perplexity = +this.perplexitySlider.value;
+      if (this.dataSet?.hasTSNERun) {
+        this.dataSet.hasTSNERun = false;
+        this.beginProjection(this.currentProjection);
+      }
     }
     (this.$$('.tsne-perplexity span') as HTMLSpanElement).innerText =
       '' + this.perplexity;
@@ -301,6 +305,10 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     }
     if (bookmark.selectedProjection != null) {
       this.showTab(bookmark.selectedProjection);
+      if (this.currentProjection === 'tsne') {
+        this.runTSNE();
+        this.dataSet.initTsneSolutionFromCurrentProjection();
+      }
     }
     this.enablePolymerChangesTriggerReprojection();
   }
@@ -389,6 +397,9 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
   }
   @observe('tSNEis3d')
   _tsneDimensionToggleObserver() {
+    if (this.dataSet?.hasTSNERun) {
+      this.dataSet.hasTSNERun = false;
+    }
     this.beginProjection(this.currentProjection);
   }
   @observe('umapIs3d')

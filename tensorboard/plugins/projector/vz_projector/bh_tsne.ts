@@ -289,8 +289,10 @@ export class TSNE {
   }
   // (re)initializes the solution to random
   initSolution() {
-    // generate random solution to t-SNE
-    this.Y = randnMatrix(this.N, this.dim, this.rng); // the solution
+    if (!this.Y) {
+      // generate random solution to t-SNE
+      this.Y = randnMatrix(this.N, this.dim, this.rng); // the solution
+    }
     this.gains = arrayofs(this.N, this.dim, 1); // step gains
     // to accelerate progress in unchanging directions
     this.ystep = arrayofs(this.N, this.dim, 0); // momentum accumulator
@@ -299,9 +301,15 @@ export class TSNE {
   getDim() {
     return this.dim;
   }
+  getRng() {
+    return this.rng;
+  }
   // return pointer to current solution
   getSolution() {
     return this.Y;
+  }
+  setSolution(solution: Float64Array) {
+    this.Y = solution;
   }
   // For each point, randomly offset point within a 5% hypersphere centered
   // around it, whilst remaining in the assumed t-SNE plot hypersphere
