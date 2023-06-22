@@ -123,8 +123,8 @@ export function retrieveTensorAsBytes(
     let data: Float32Array;
     try {
       data = new Float32Array(xhr.response);
-    } catch (e: any) {
-      logging.setErrorMessage(e, 'parsing tensor bytes');
+    } catch (ex: any) {
+      logging.setErrorMessage((ex as Error).message, 'parsing tensor bytes');
       return;
     }
     let dim = embedding.tensorShape[1];
@@ -241,14 +241,16 @@ export function parseTensors(
         numDim = dataPoint.vector.length;
       }
       if (numDim !== dataPoint.vector.length) {
-        logging.setModalMessage(
-          'Parsing failed. Vector dimensions do not match'
+        logging.setErrorMessage(
+          'Vector dimensions do not match',
+          'parsing tensors'
         );
         throw Error('Parsing failed');
       }
       if (numDim <= 1) {
-        logging.setModalMessage(
-          'Parsing failed. Found a vector with only one dimension?'
+        logging.setErrorMessage(
+          'Found a vector with only one dimension?',
+          'parsing tensors'
         );
         throw Error('Parsing failed');
       }
@@ -445,18 +447,22 @@ export function retrieveSpriteAndMetadataInfo(
       (spriteImage.height > MAX_SPRITE_IMAGE_SIZE_PX ||
         spriteImage.width > MAX_SPRITE_IMAGE_SIZE_PX)
     ) {
-      logging.setModalMessage(
+      logging.setErrorMessage(
         `Error: Sprite image of dimensions ${spriteImage.width}px x ` +
           `${spriteImage.height}px exceeds maximum dimensions ` +
-          `${MAX_SPRITE_IMAGE_SIZE_PX}px x ${MAX_SPRITE_IMAGE_SIZE_PX}px`
+          `${MAX_SPRITE_IMAGE_SIZE_PX}px x ${MAX_SPRITE_IMAGE_SIZE_PX}px`,
+        'parsing sprite images'
       );
     } else {
       metadata.spriteImage = spriteImage!;
       metadata.spriteMetadata = spriteMetadata;
       try {
         callback(metadata);
-      } catch (e) {
-        logging.setModalMessage(String(e));
+      } catch (ex) {
+        logging.setErrorMessage(
+          (ex as Error).message,
+          'parsing sprite metadata'
+        );
       }
     }
   });
