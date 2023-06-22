@@ -54,7 +54,7 @@ def scalar(name, data, step=None, description=None):
     See [Get started with TensorBoard](https://www.tensorflow.org/tensorboard/get_started)
     for more examples of effective usage of `tf.summary.scalar`.
 
-    In general, this API expects that data points are logged iwth a monotonically
+    In general, this API expects that data points are logged with a monotonically
     increasing step value. Duplicate points for a single step or points logged out
     of order by step are not guaranteed to display as desired in TensorBoard.
 
