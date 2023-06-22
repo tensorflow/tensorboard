@@ -1,0 +1,47 @@
+@import 'tensorboard/webapp/theme/tb_theme';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  height: 100%;
+  // padding: $metrics-preferred-gap;
+  // When vertically centered, the title's text-top contains extra space above
+  // the text, which counts towards the visually perceived white space.
+  // padding-top: $_card_padding_top;
+}
+
+line-chart {
+  flex-grow: 1;
+}
+
+.out-of-selected-time {
+  height: 100%;
+  position: absolute;
+
+  $_border-width: 2px;
+
+  &.start {
+    border-right-width: $_border-width;
+    margin-left: -0.5 * $_border-width;
+
+    &.range {
+      left: 0;
+    }
+  }
+
+  &.end {
+    border-left-width: $_border-width;
+    margin-right: -0.5 * $_border-width;
+    right: 0;
+  }
+
+  &.range {
+    // Replace this with backdrop-filter if opacity works.
+    background-color: rgba(255, 255, 255, 0.5);
+
+    @include tb-dark-theme {
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+  }
+}

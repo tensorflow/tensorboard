@@ -261,6 +261,7 @@ export class ScalarCardComponent<Downloader> {
   }
 
   showFobController() {
+    console.log(this.chartMetadataMap);
     return this.xAxisType === XAxisType.STEP && this.minMaxStep;
   }
 

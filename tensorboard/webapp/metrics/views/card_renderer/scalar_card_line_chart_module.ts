@@ -14,42 +14,34 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
-import {MatMenuModule} from '@angular/material/menu';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {IntersectionObserverModule} from '../../../widgets/intersection_observer/intersection_observer_module';
 import {LineChartModule as LineChartV2Module} from '../../../widgets/line_chart_v2/line_chart_module';
 import {ResizeDetectorModule} from '../../../widgets/resize_detector_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
+
 import {DataDownloadModule} from './data_download_module';
-import {ScalarCardComponent} from './scalar_card_component';
-import {ScalarCardContainer} from './scalar_card_container';
-import {ScalarCardDataTableModule} from './scalar_card_data_table_module';
+import {ScalarCardLineChartComponent} from './scalar_card_line_chart_component';
+import {ScalarCardLineChartContainer} from './scalar_card_line_chart_container';
 import {ScalarCardFobControllerModule} from './scalar_card_fob_controller_module';
-import {ScalarCardLineChartModule} from './scalar_card_line_chart_module';
-import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_warning_module';
 
 @NgModule({
-  declarations: [ScalarCardContainer, ScalarCardComponent],
-  exports: [ScalarCardContainer],
+  declarations: [ScalarCardLineChartContainer, ScalarCardLineChartComponent],
+  exports: [ScalarCardLineChartContainer],
   imports: [
     CommonModule,
     DataDownloadModule,
     ExperimentAliasModule,
     IntersectionObserverModule,
     LineChartV2Module,
-    MatButtonModule,
     MatIconModule,
-    MatMenuModule,
     MatProgressSpinnerModule,
     ResizeDetectorModule,
-    ScalarCardDataTableModule,
     ScalarCardFobControllerModule,
-    ScalarCardLineChartModule,
     TruncatedPathModule,
-    VisLinkedTimeSelectionWarningModule,
   ],
 })
-export class ScalarCardModule {}
+export class ScalarCardLineChartModule {}

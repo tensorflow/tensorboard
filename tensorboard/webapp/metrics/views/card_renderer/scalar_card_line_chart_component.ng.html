@@ -1,0 +1,76 @@
+<line-chart
+  [disableUpdate]="disableUpdate"
+  [preferredRendererType]="forceSvg ? RendererType.SVG : RendererType.WEBGL"
+  [seriesData]="seriesData"
+  [seriesMetadataMap]="seriesMetadataMap"
+  [xScaleType]="xScaleType"
+  [yScaleType]="yScaleType"
+  [customXFormatter]="getCustomXFormatter()"
+  [tooltipTemplate]="tooltipTemplate"
+  [ignoreYOutliers]="ignoreOutliers"
+  [useDarkMode]="useDarkMode"
+  [userViewBox]="userViewBox"
+  (onViewBoxOverridden)="isViewBoxOverridden = $event"
+  (viewBoxChanged)="onLineChartZoom.emit($event)"
+  [customVisTemplate]="lineChartCustomVis"
+  [customChartOverlayTemplate]="lineChartCustomXAxisVis"
+></line-chart>
+<ng-template
+  #lineChartCustomVis
+  let-viewExtent="viewExtent"
+  let-domDim="domDimension"
+  let-xScale="xScale"
+>
+  <ng-container *ngIf="stepOrLinkedTimeSelection">
+    <div
+      [ngClass]="{
+        'out-of-selected-time': true,
+        start: true,
+        range: !!stepOrLinkedTimeSelection.end?.step
+      }"
+      [style.right]="
+        xScale.forward(
+          viewExtent.x,
+          [domDim.width, 0],
+          stepOrLinkedTimeSelection.start.step
+        ) + 'px'
+      "
+    ></div>
+    <div
+      *ngIf="stepOrLinkedTimeSelection.end?.step"
+      [ngClass]="{
+        'out-of-selected-time': true,
+        end: true,
+        range: true
+      }"
+      [style.left]="
+        xScale.forward(
+          viewExtent.x,
+          [0, domDim.width],
+          stepOrLinkedTimeSelection.end?.step
+        ) + 'px'
+      "
+    ></div>
+  </ng-container>
+</ng-template>
+
+<ng-template
+  #lineChartCustomXAxisVis
+  let-viewExtent="viewExtent"
+  let-domDim="domDimension"
+  let-xScale="xScale"
+  let-interactionState="interactionState"
+>
+  <ng-container *ngIf="showFobController()">
+    <scalar-card-fob-controller
+      [disableInteraction]="interactionState !== 'NONE'"
+      [timeSelection]="stepOrLinkedTimeSelection"
+      [scale]="xScale"
+      [minMaxHorizontalViewExtend]="viewExtent.x"
+      [minMaxStep]="minMaxStep"
+      [axisSize]="domDim.width"
+      (onTimeSelectionChanged)="onTimeSelectionChanged.emit($event)"
+      (onTimeSelectionToggled)="onFobRemoved()"
+    ></scalar-card-fob-controller>
+  </ng-container>
+</ng-template>
