@@ -238,11 +238,13 @@ function matchFilter(
       [data]="allRunsTableData$ | async"
       [sortingInfo]="sortingInfo$ | async"
       [experimentIds]="experimentIds"
+      [regexFilter]="regexFilter$ | async"
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
       (onSelectionToggle)="onRunSelectionToggle($event)"
       (onAllSelectionToggle)="onAllSelectionToggle($event)"
       (onRunColorChange)="onRunColorChange($event)"
+      (onRegexFilterChange)="onRegexFilterChange($event)"
     ></runs-data-table>
   `,
   host: {

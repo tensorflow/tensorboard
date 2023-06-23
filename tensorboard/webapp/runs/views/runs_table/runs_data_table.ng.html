@@ -15,6 +15,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<div class="filter-row">
+  <tb-filter-input
+    class="run-filter"
+    value="{{ regexFilter }}"
+    (keyup)="onFilterKeyUp($event)"
+    placeholder="Filter runs (regex)"
+  ></tb-filter-input>
+</div>
 <tb-data-table
   [headers]="headers"
   [sortingInfo]="sortingInfo"
