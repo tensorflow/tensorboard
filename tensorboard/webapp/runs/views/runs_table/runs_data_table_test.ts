@@ -200,8 +200,31 @@ describe('runs_data_table', () => {
         // This only tests that the button with the same class as the color
         // picker button is rendered. Technically there could be another button
         // with the same class here and it would still pass.
-        expect(cell.query(By.css('button .run-color-swatch'))).toBeFalsy();
+        expect(cell.query(By.css('button.run-color-swatch'))).toBeTruthy();
       });
+    });
+
+    // If the call to getHeaders produces a new color header on each call, then
+    // the content gets re-rendered when the color picker opens. This causes the
+    // color picker modal to close immediately. This test ensures that we keep
+    // the same reference to the color header and continue to use that reference
+    // instead of creating a new one on each call.
+    it('getHeaders does not produce new color header on each call', () => {
+      const fixture = createComponent({});
+
+      const runsDataTable = fixture.debugElement.query(
+        By.directive(RunsDataTable)
+      );
+
+      expect(
+        runsDataTable.componentInstance
+          .getHeaders()
+          .find((header: ColumnHeader) => header.name === 'color')
+      ).toBe(
+        runsDataTable.componentInstance
+          .getHeaders()
+          .find((header: ColumnHeader) => header.name === 'color')
+      );
     });
   });
 

@@ -49,6 +49,9 @@ export class RunsDataTable {
     newColor: string;
   }>();
 
+  // These columns must be stored and reused to stop needless re-rendering of
+  // the content and headers in these columns. This has been known to cause
+  // problems with the controls in these columns, specifically the color picker.
   beforeColumns = [
     {
       name: 'selected',
@@ -68,7 +71,11 @@ export class RunsDataTable {
   ];
 
   getHeaders() {
-    return this.beforeColumns.concat(this.headers.concat(this.afterColumns));
+    return ([] as Array<ColumnHeader>).concat(
+      this.beforeColumns,
+      this.headers,
+      this.afterColumns
+    );
   }
 
   getRunIds() {
