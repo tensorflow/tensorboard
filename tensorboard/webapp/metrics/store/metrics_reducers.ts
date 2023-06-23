@@ -1375,7 +1375,7 @@ const reducer = createReducer(
   }),
   on(
     actions.dataTableColumnToggled,
-    (state, {dataTableMode, headerType, cardId}) => {
+    (state, {dataTableMode, header, cardId}) => {
       const {cardStateMap, rangeSelectionEnabled, linkedTimeEnabled} = state;
       const rangeEnabled = cardId
         ? cardRangeSelectionEnabled(
@@ -1391,7 +1391,7 @@ const reducer = createReducer(
         : state.singleSelectionHeaders;
 
       const currentToggledHeaderIndex = targetedHeaders.findIndex(
-        (element) => element.type === headerType
+        (element) => element.name === header.name
       );
 
       // If the header is being enabled it goes at the bottom of the currently
