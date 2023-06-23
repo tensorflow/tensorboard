@@ -69,7 +69,7 @@ rust_library(
         "@raze__cfg_if__1_0_0//:cfg_if",
         "@raze__crossbeam_utils__0_8_8//:crossbeam_utils",
         "@raze__lazy_static__1_4_0//:lazy_static",
-        "@raze__memoffset__0_6_1//:memoffset",
+        "@raze__memoffset__0_6_5//:memoffset",
         "@raze__scopeguard__1_1_0//:scopeguard",
     ],
 )
