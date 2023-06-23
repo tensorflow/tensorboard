@@ -16,6 +16,7 @@ import {OverlayContainer} from '@angular/cdk/overlay';
 import {
   ChangeDetectorRef,
   Component,
+  EmbeddedViewRef,
   EventEmitter,
   Inject,
   Input,
@@ -112,11 +113,13 @@ import {ScalarCardLineChartContainer} from './scalar_card_line_chart_container'
 import {ScalarCardDataTable} from './scalar_card_data_table';
 import {ScalarCardFobController} from './scalar_card_fob_controller';
 import {
+  OriginalSeriesMetadata,
   ScalarCardPoint,
   ScalarCardSeriesMetadata,
   ScalarCardSeriesMetadataMap,
   ScalarCardDataSeries,
   SeriesType,
+  SmoothedSeriesMetadata,
 } from './scalar_card_types';
 import {
   ColumnHeader,
@@ -132,6 +135,8 @@ import {CardFeatureOverride} from '../../store/metrics_types';
 import {ContentCellComponent} from '../../../widgets/data_table/content_cell_component';
 import {ContentRowComponent} from '../../../widgets/data_table/content_row_component';
 import {HeaderCellComponent} from '../../../widgets/data_table/header_cell_component';
+import { TooltipTemplate } from '../../../widgets/line_chart_v2/line_chart_component';
+
 // import {buildMetadata, buildSeries} from '../../../widgets/line_chart_v2/lib/testing';
 
 @Component({
@@ -139,7 +144,6 @@ import {HeaderCellComponent} from '../../../widgets/data_table/header_cell_compo
   template: `
     {{ tooltipData | json }}
     <ng-container
-      *ngIf="tooltipTemplate"
       [ngTemplateOutlet]="tooltipTemplate"
       [ngTemplateOutletContext]="{
         data: tooltipDataForTesting,
@@ -237,7 +241,7 @@ function buildScalarCardPoint(override: Partial<ScalarCardPoint>): ScalarCardPoi
   };
 }
 
-function buildCardMetadata(metadata: Partial<ScalarCardSeriesMetadata>): ScalarCardSeriesMetadata {
+function buildOriginalSeriesMetadata(metadata: Partial<OriginalSeriesMetadata>): OriginalSeriesMetadata {
   return {
     type: SeriesType.ORIGINAL,
     id: 'a',
@@ -250,7 +254,22 @@ function buildCardMetadata(metadata: Partial<ScalarCardSeriesMetadata>): ScalarC
   };
 }
 
-fdescribe('scalar card line chart', () => {
+function buildSmoothedSeriesMetadata(metadata: Partial<SmoothedSeriesMetadata>): SmoothedSeriesMetadata {
+  return {
+    type: SeriesType.DERIVED,
+    aux: false,
+    originalSeriesId: 'b',
+    id: 'a',
+    displayName: 'A name',
+    visible: true,
+    color: '#f00',
+    alias: null,
+    opacity: 0,
+    ...metadata,
+  };
+}
+
+describe('scalar card line chart', () => {
   let store: MockStore<State>;
   let selectSpy: jasmine.Spy;
   let overlayContainer: OverlayContainer;
@@ -293,7 +312,7 @@ fdescribe('scalar card line chart', () => {
     cardId: string,
     seriesMetadataMap: ScalarCardSeriesMetadataMap,
     seriesData: ScalarCardDataSeries[],
-    initiallyHidden?: boolean
+    initiallyHidden?: boolean,
   ): ComponentFixture<ScalarCardLineChartContainer> {
     const fixture = TestBed.createComponent(ScalarCardLineChartContainer);
     fixture.componentInstance.cardId = cardId;
@@ -314,7 +333,7 @@ fdescribe('scalar card line chart', () => {
       By.directive(ScalarCardLineChartComponent)
     );
     const lineChartComponent = fixture.debugElement.query(Selector.LINE_CHART);
-    console.log('LIENCAHRT', lineChartComponent);
+
     if (!initiallyHidden) {
       // HACK: we are using viewChild in ScalarCardComponent and there is
       // no good way to provide a stub implementation. Manually set what
@@ -415,23 +434,22 @@ fdescribe('scalar card line chart', () => {
   });
 
   describe('basic renders', () => {
-    // fit('renders empty chart when there is no data', fakeAsync(() => {
-    //   const cardMetadataMap = {'card1': buildCardMetadata({tag: 'tagA', runId: null})}
-    //   const dataSeries = buildCardDataSeries({ null });
-
-    //   const fixture = createComponent('card1', cardMetadataMap, null);
-
-    //   const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
-    //   expect(lineChartEl).toBeTruthy();
-    //   expect(lineChartEl.componentInstance.seriesData.length).toBe(0);
-    // }));
-
-    fit('renders data', fakeAsync(() => {
-      store.overrideSelector(getMetricsScalarSmoothing, 0);
+    it('renders empty chart when there is no data', fakeAsync(() => {
       const cardMetadataMap = {
-        card1: buildCardMetadata({ displayName: 'Run1 name', visible: true})
+        run1: buildOriginalSeriesMetadata({ id: 'run1', displayName: 'Run1 name', visible: true})
         };
 
+      const fixture = createComponent('card1', cardMetadataMap, []);
+
+      const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
+      expect(lineChartEl).toBeTruthy();
+      expect(lineChartEl.componentInstance.seriesData.length).toBe(0);
+    }));
+
+    it('renders data', fakeAsync(() => {
+      const cardMetadataMap = {
+        run1: buildOriginalSeriesMetadata({ id: 'run1', displayName: 'Run1 name', visible: true})
+        };
       const dataSeries = [{ 
         id: 'run1',
         points: [
@@ -439,19 +457,6 @@ fdescribe('scalar card line chart', () => {
           buildScalarCardPoint({ wallTime: 101, y: 2, x: 555 }),
         ]
       }];
-      
-      store.overrideSelector(
-        selectors.getCurrentRouteRunSelection,
-        new Map([['run1', true]])
-      );
-      store.overrideSelector(
-        commonSelectors.getFilteredRenderableRunsIdsFromRoute,
-        new Set(['run1'])
-      );
-      store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
-      selectSpy
-        .withArgs(selectors.getRun, {runId: 'run1'})
-        .and.returnValue(of(buildRun({name: 'Run1 name'})));
 
       const fixture = createComponent('card1', cardMetadataMap, dataSeries);
 
@@ -467,1620 +472,574 @@ fdescribe('scalar card line chart', () => {
         {x: 333, y: 1},
         {x: 555, y: 2},
       ]);
-      console.log(lineChartEl.componentInstance.seriesMetadataMap);
       const {visible, displayName} =
         lineChartEl.componentInstance.seriesMetadataMap[id];
       expect(displayName).toBe('Run1 name');
       expect(visible).toBe(true);
     }));
 
-  //   describe('custom x axis formatter', () => {
-  //     it('uses SI unit formatter when xAxisType is STEP', fakeAsync(() => {
-  //       store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
-
-  //       const cardMetadata = {
-  //         plugin: PluginType.SCALARS,
-  //         tag: 'tagA',
-  //         run: null,
-  //       };
-  //       provideMockCardRunToSeriesData(
-  //         selectSpy,
-  //         PluginType.SCALARS,
-  //         'card1',
-  //         cardMetadata,
-  //         null /* runToSeries */
-  //       );
-
-  //       const fixture = createComponent('card1');
-
-  //       expect(
-  //         fixture.debugElement.query(Selector.LINE_CHART).componentInstance
-  //           .customXFormatter
-  //       ).toBe(siNumberFormatter);
-  //     }));
-
-  //     it('uses relative time formatter when xAxisType is RELATIVE', fakeAsync(() => {
-  //       store.overrideSelector(
-  //         selectors.getMetricsXAxisType,
-  //         XAxisType.RELATIVE
-  //       );
-
-  //       const cardMetadata = {
-  //         plugin: PluginType.SCALARS,
-  //         tag: 'tagA',
-  //         run: null,
-  //       };
-  //       provideMockCardRunToSeriesData(
-  //         selectSpy,
-  //         PluginType.SCALARS,
-  //         'card1',
-  //         cardMetadata,
-  //         null /* runToSeries */
-  //       );
-
-  //       const fixture = createComponent('card1');
-
-  //       expect(
-  //         fixture.debugElement.query(Selector.LINE_CHART).componentInstance
-  //           .customXFormatter
-  //       ).toBe(relativeTimeFormatter);
-  //     }));
-
-  //     it('does not specify a custom X formatter for xAxisType WALL_TIME', fakeAsync(() => {
-  //       store.overrideSelector(
-  //         selectors.getMetricsXAxisType,
-  //         XAxisType.WALL_TIME
-  //       );
-
-  //       const cardMetadata = {
-  //         plugin: PluginType.SCALARS,
-  //         tag: 'tagA',
-  //         run: null,
-  //       };
-  //       provideMockCardRunToSeriesData(
-  //         selectSpy,
-  //         PluginType.SCALARS,
-  //         'card1',
-  //         cardMetadata,
-  //         null /* runToSeries */
-  //       );
-
-  //       const fixture = createComponent('card1');
-
-  //       expect(
-  //         fixture.debugElement.query(Selector.LINE_CHART).componentInstance
-  //           .customXFormatter
-  //       ).toBe(undefined);
-  //     }));
-  //   });
-  //   it('sets useDarkMode when using dark mode', fakeAsync(() => {
-  //     store.overrideSelector(selectors.getDarkModeEnabled, false);
-  //     const fixture = createComponent('card1');
-  //     fixture.detectChanges();
-
-  //     const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
-  //     expect(lineChartEl.componentInstance.useDarkMode).toBe(false);
-
-  //     store.overrideSelector(selectors.getDarkModeEnabled, true);
-  //     store.refreshState();
-  //     fixture.detectChanges();
-
-  //     expect(lineChartEl.componentInstance.useDarkMode).toBe(true);
-  //   }));
-
-  //   it('sets preferredRendererType to SVG when getForceSvgFeatureFlag returns true', fakeAsync(() => {
-  //     store.overrideSelector(selectors.getForceSvgFeatureFlag, false);
-  //     const fixture = createComponent('card1');
-  //     fixture.detectChanges();
-
-  //     const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
-  //     expect(lineChartEl.componentInstance.preferredRendererType).toBe(
-  //       RendererType.WEBGL
-  //     );
-
-  //     store.overrideSelector(selectors.getForceSvgFeatureFlag, true);
-  //     store.refreshState();
-  //     fixture.detectChanges();
-
-  //     expect(lineChartEl.componentInstance.preferredRendererType).toBe(
-  //       RendererType.SVG
-  //     );
-  //   }));
-  // });
-  // describe('displayName', () => {
-  //   beforeEach(() => {
-  //     const cardMetadata = {
-  //       plugin: PluginType.SCALARS,
-  //       tag: 'tagA',
-  //       run: null,
-  //     };
-  //     const runToSeries = {run1: [{wallTime: 101, value: 2, step: 555}]};
-  //     store.overrideSelector(getMetricsScalarSmoothing, 0);
-  //     provideMockCardRunToSeriesData(
-  //       selectSpy,
-  //       PluginType.SCALARS,
-  //       'card1',
-  //       cardMetadata,
-  //       runToSeries
-  //     );
-  //   });
-
-  //   it('sets displayName always as run name', fakeAsync(() => {
-  //     selectSpy
-  //       .withArgs(selectors.getExperimentIdForRunId, {runId: 'run1'})
-  //       .and.returnValue(of('eid1'));
-  //     selectSpy
-  //       .withArgs(selectors.getRun, {runId: 'run1'})
-  //       .and.returnValue(of(buildRun({name: 'Run1 name'})));
-  //     store.overrideSelector(selectors.getExperimentIdToExperimentAliasMap, {
-  //       eid1: {aliasText: 'existing_exp', aliasNumber: 1},
-  //       eid2: {aliasText: 'ERROR!', aliasNumber: 2},
-  //     });
-
-  //     const fixture = createComponent('card1');
-
-  //     const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
-  //     const {displayName, alias} =
-  //       lineChartEl.componentInstance.seriesMetadataMap['run1'];
-  //     expect(displayName).toBe('Run1 name');
-  //     expect(alias).toEqual({
-  //       aliasNumber: 1,
-  //       aliasText: 'existing_exp',
-  //     });
-  //   }));
-
-  //   it('sets run id if a run and experiment are not found', fakeAsync(() => {
-  //     selectSpy
-  //       .withArgs(selectors.getExperimentIdForRunId, {runId: 'run1'})
-  //       .and.returnValue(of(null));
-  //     selectSpy
-  //       .withArgs(selectors.getRun, {runId: 'run1'})
-  //       .and.returnValue(of(null));
-  //     store.overrideSelector(selectors.getExperimentIdToExperimentAliasMap, {});
-
-  //     const fixture = createComponent('card1');
-
-  //     const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
-  //     const {alias, displayName} =
-  //       lineChartEl.componentInstance.seriesMetadataMap['run1'];
-  //     expect(displayName).toBe('run1');
-  //     expect(alias).toBeNull();
-  //   }));
-
-  //   it('shows experiment id and "..." if only run is not found (maybe loading)', fakeAsync(() => {
-  //     selectSpy
-  //       .withArgs(selectors.getExperimentIdForRunId, {runId: 'run1'})
-  //       .and.returnValue(of('eid1'));
-  //     selectSpy
-  //       .withArgs(selectors.getRun, {runId: 'run1'})
-  //       .and.returnValue(of(null));
-  //     store.overrideSelector(selectors.getExperimentIdToExperimentAliasMap, {
-  //       eid1: {aliasText: 'existing_exp', aliasNumber: 1},
-  //     });
-
-  //     const fixture = createComponent('card1');
-
-  //     const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
-  //     expect(lineChartEl.componentInstance.seriesData.length).toBe(1);
-
-  //     const {displayName} =
-  //       lineChartEl.componentInstance.seriesMetadataMap['run1'];
-  //     expect(displayName).toBe('...');
-  //   }));
-
-  //   it('updates displayName with run when run populates', fakeAsync(() => {
-  //     const getRun = new ReplaySubject<Run | null>(1);
-  //     getRun.next(null);
-  //     selectSpy
-  //       .withArgs(selectors.getExperimentIdForRunId, {runId: 'run1'})
-  //       .and.returnValue(of('eid1'));
-  //     selectSpy
-  //       .withArgs(selectors.getRun, {runId: 'run1'})
-  //       .and.returnValue(getRun);
-  //     store.overrideSelector(selectors.getExperimentIdToExperimentAliasMap, {
-  //       eid1: {aliasText: 'existing_exp', aliasNumber: 1},
-  //     });
-
-  //     const fixture = createComponent('card1');
-
-  //     getRun.next(buildRun({name: 'Foobar'}));
-  //     triggerStoreUpdate();
-  //     fixture.detectChanges();
-
-  //     const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
-  //     const {alias, displayName} =
-  //       lineChartEl.componentInstance.seriesMetadataMap['run1'];
-  //     expect(displayName).toBe('Foobar');
-  //     expect(alias).toEqual({
-  //       aliasNumber: 1,
-  //       aliasText: 'existing_exp',
-  //     });
-  //   }));
-  // });
-
-  // describe('xAxisType setting', () => {
-  //   beforeEach(() => {
-  //     const runToSeries = {
-  //       run1: [
-  //         {wallTime: 100, value: 1, step: 333},
-  //         {wallTime: 101, value: 2, step: 555},
-  //       ],
-  //     };
-  //     provideMockCardRunToSeriesData(
-  //       selectSpy,
-  //       PluginType.SCALARS,
-  //       'card1',
-  //       null /* metadataOverride */,
-  //       runToSeries
-  //     );
-  //     store.overrideSelector(
-  //       selectors.getCurrentRouteRunSelection,
-  //       new Map([['run1', true]])
-  //     );
-  //     store.overrideSelector(
-  //       commonSelectors.getFilteredRenderableRunsIdsFromRoute,
-  //       new Set(['run1'])
-  //     );
-  //   });
-
-  //   const expectedPoints = {
-  //     step: [
-  //       {x: 333, y: 1},
-  //       {x: 555, y: 2},
-  //     ],
-  //     wallTime: [
-  //       {x: 100000, y: 1},
-  //       {x: 101000, y: 2},
-  //     ],
-  //     relative: [
-  //       {x: 0, y: 1},
-  //       {x: 1000, y: 2},
-  //     ],
-  //   };
-
-  //   const specs = [
-  //     {
-  //       name: 'step',
-  //       xType: XAxisType.STEP,
-  //       expectedPoints: expectedPoints.step,
-  //     },
-  //     {
-  //       name: 'wall_time',
-  //       xType: XAxisType.WALL_TIME,
-  //       expectedPoints: expectedPoints.wallTime,
-  //     },
-  //     {
-  //       name: 'relative',
-  //       xType: XAxisType.RELATIVE,
-  //       expectedPoints: expectedPoints.relative,
-  //     },
-  //   ];
-  //   for (const spec of specs) {
-  //     it(`formats series data when xAxisType is: ${spec.name}`, fakeAsync(() => {
-  //       store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-  //       store.overrideSelector(selectors.getMetricsXAxisType, spec.xType);
-  //       selectSpy
-  //         .withArgs(selectors.getRun, {runId: 'run1'})
-  //         .and.returnValue(of(buildRun({name: 'Run1 name'})));
-  //       const fixture = createComponent('card1');
-
-  //       const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
-  //       expect(lineChartEl.componentInstance.seriesData.length).toBe(1);
-  //       const {id, points} = lineChartEl.componentInstance.seriesData[0];
-  //       const {visible, displayName} =
-  //         lineChartEl.componentInstance.seriesMetadataMap['run1'];
-  //       expect(id).toBe('run1');
-  //       expect(displayName).toBe('Run1 name');
-  //       expect(visible).toBe(true);
-  //       expect(
-  //         points.map((p: {x: number; y: number}) => ({x: p.x, y: p.y}))
-  //       ).toEqual(spec.expectedPoints);
-  //     }));
-  //   }
-  // });
-
-  // describe('perf', () => {
-  //   it('does not update `seriesData` for irrelevant runSelection changes', fakeAsync(() => {
-  //     const runToSeries = {run1: []};
-  //     provideMockCardRunToSeriesData(
-  //       selectSpy,
-  //       PluginType.SCALARS,
-  //       'card1',
-  //       null /* metadataOverride */,
-  //       runToSeries
-  //     );
-  //     store.overrideSelector(
-  //       selectors.getCurrentRouteRunSelection,
-  //       new Map([['run1', true]])
-  //     );
-
-  //     const fixture = createComponent('card1');
-  //     const lineChartComponent = fixture.debugElement.query(
-  //       Selector.LINE_CHART
-  //     );
-  //     const before = lineChartComponent.componentInstance.seriesData;
-
-  //     store.overrideSelector(
-  //       selectors.getCurrentRouteRunSelection,
-  //       new Map([
-  //         ['run1', true],
-  //         ['shouldBeNoop', true],
-  //       ])
-  //     );
-  //     triggerStoreUpdate();
-  //     fixture.detectChanges();
-
-  //     const after = lineChartComponent.componentInstance.seriesData;
-  //     expect(before).toBe(after);
-  //   }));
-
-  //   it(
-  //     'does not update `seriesData` for relevant runSelection changes but only ' +
-  //       'changes the metadataMap',
-  //     fakeAsync(() => {
-  //       const runToSeries = {run1: []};
-  //       provideMockCardRunToSeriesData(
-  //         selectSpy,
-  //         PluginType.SCALARS,
-  //         'card1',
-  //         null /* metadataOverride */,
-  //         runToSeries
-  //       );
-  //       store.overrideSelector(
-  //         selectors.getCurrentRouteRunSelection,
-  //         new Map([['run1', true]])
-  //       );
-
-  //       const fixture = createComponent('card1');
-  //       const lineChartComponent = fixture.debugElement.query(
-  //         Selector.LINE_CHART
-  //       );
-  //       const beforeSeries = lineChartComponent.componentInstance.seriesData;
-  //       const beforeMap =
-  //         lineChartComponent.componentInstance.seriesMetadataMap;
-
-  //       store.overrideSelector(
-  //         selectors.getCurrentRouteRunSelection,
-  //         new Map([['run1', false]])
-  //       );
-  //       triggerStoreUpdate();
-  //       fixture.detectChanges();
-
-  //       const afterSeries = lineChartComponent.componentInstance.seriesData;
-  //       const afterMap = lineChartComponent.componentInstance.seriesMetadataMap;
-
-  //       expect(beforeSeries).toBe(afterSeries);
-  //       expect(beforeMap).not.toBe(afterMap);
-  //     })
-  //   );
-
-  //   it('updates `seriesData` for xAxisType changes', fakeAsync(() => {
-  //     const runToSeries = {
-  //       run1: [
-  //         {wallTime: 100, value: 1, step: 333},
-  //         {wallTime: 101, value: 2, step: 555},
-  //       ],
-  //     };
-  //     provideMockCardRunToSeriesData(
-  //       selectSpy,
-  //       PluginType.SCALARS,
-  //       'card1',
-  //       null /* metadataOverride */,
-  //       runToSeries
-  //     );
-  //     store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
-  //     store.overrideSelector(
-  //       selectors.getCurrentRouteRunSelection,
-  //       new Map([['run1', true]])
-  //     );
-
-  //     const fixture = createComponent('card1');
-  //     const lineChartComponent = fixture.debugElement.query(
-  //       Selector.LINE_CHART
-  //     );
-  //     const before = lineChartComponent.componentInstance.seriesData;
-
-  //     store.overrideSelector(
-  //       selectors.getMetricsXAxisType,
-  //       XAxisType.WALL_TIME
-  //     );
-  //     triggerStoreUpdate();
-  //     fixture.detectChanges();
-
-  //     const after = lineChartComponent.componentInstance.seriesData;
-  //     expect(before).not.toBe(after);
-  //   }));
-  // });
-
-  // it('passes data series and metadata with smoothed values', fakeAsync(() => {
-  //   store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
-  //   store.overrideSelector(selectors.getRunColorMap, {
-  //     run1: '#f00',
-  //     run2: '#0f0',
-  //   });
-  //   store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.1);
-
-  //   const runToSeries = {
-  //     run1: [
-  //       {wallTime: 2, value: 1, step: 1},
-  //       {wallTime: 4, value: 10, step: 2},
-  //     ],
-  //     run2: [{wallTime: 2, value: 1, step: 1}],
-  //   };
-  //   provideMockCardRunToSeriesData(
-  //     selectSpy,
-  //     PluginType.SCALARS,
-  //     'card1',
-  //     null /* metadataOverride */,
-  //     runToSeries
-  //   );
-
-  //   const fixture = createComponent('card1');
-  //   const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
-
-  //   expect(lineChart.componentInstance.seriesData).toEqual([
-  //     {
-  //       id: 'run1',
-  //       points: [
-  //         // Keeps the data structure as is but do notice adjusted wallTime and
-  //         // line_chart_v2 required "x" and "y" props.
-  //         {wallTime: 2000, relativeTimeInMs: 0, value: 1, step: 1, x: 1, y: 1},
-  //         {
-  //           wallTime: 4000,
-  //           relativeTimeInMs: 2000,
-  //           value: 10,
-  //           step: 2,
-  //           x: 2,
-  //           y: 10,
-  //         },
-  //       ],
-  //     },
-  //     {
-  //       id: 'run2',
-  //       points: [
-  //         {wallTime: 2000, relativeTimeInMs: 0, value: 1, step: 1, x: 1, y: 1},
-  //       ],
-  //     },
-  //     {
-  //       id: '["smoothed","run1"]',
-  //       points: [
-  //         {wallTime: 2000, relativeTimeInMs: 0, value: 1, step: 1, x: 1, y: 1},
-  //         // Exact smoothed value is not too important.
-  //         {
-  //           wallTime: 4000,
-  //           relativeTimeInMs: 2000,
-  //           value: 10,
-  //           step: 2,
-  //           x: 2,
-  //           y: jasmine.any(Number),
-  //         },
-  //       ],
-  //     },
-  //     {
-  //       id: '["smoothed","run2"]',
-  //       points: [
-  //         {wallTime: 2000, relativeTimeInMs: 0, value: 1, step: 1, x: 1, y: 1},
-  //       ],
-  //     },
-  //   ]);
-  //   expect(lineChart.componentInstance.seriesMetadataMap).toEqual({
-  //     run1: {
-  //       id: 'run1',
-  //       displayName: 'run1',
-  //       type: SeriesType.ORIGINAL,
-  //       visible: false,
-  //       color: '#f00',
-  //       opacity: 0.25,
-  //       aux: true,
-  //       alias: null,
-  //     },
-  //     run2: {
-  //       id: 'run2',
-  //       displayName: 'run2',
-  //       type: SeriesType.ORIGINAL,
-  //       visible: false,
-  //       color: '#0f0',
-  //       opacity: 0.25,
-  //       aux: true,
-  //       alias: null,
-  //     },
-  //     '["smoothed","run1"]': {
-  //       id: '["smoothed","run1"]',
-  //       displayName: 'run1',
-  //       type: SeriesType.DERIVED,
-  //       originalSeriesId: 'run1',
-  //       visible: false,
-  //       color: '#f00',
-  //       opacity: 1,
-  //       aux: false,
-  //       alias: null,
-  //     },
-  //     '["smoothed","run2"]': {
-  //       id: '["smoothed","run2"]',
-  //       displayName: 'run2',
-  //       type: SeriesType.DERIVED,
-  //       originalSeriesId: 'run2',
-  //       visible: false,
-  //       color: '#0f0',
-  //       opacity: 1,
-  //       aux: false,
-  //       alias: null,
-  //     },
-  //   });
-  // }));
-
-  // it('does not set smoothed series when it is disabled,', fakeAsync(() => {
-  //   store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
-  //   store.overrideSelector(selectors.getRunColorMap, {
-  //     run1: '#f00',
-  //     run2: '#0f0',
-  //   });
-  //   store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-  //   const runToSeries = {
-  //     run1: [
-  //       {wallTime: 2, value: 1, step: 1},
-  //       {wallTime: 4, value: 10, step: 2},
-  //     ],
-  //     run2: [{wallTime: 2, value: 1, step: 1}],
-  //   };
-  //   provideMockCardRunToSeriesData(
-  //     selectSpy,
-  //     PluginType.SCALARS,
-  //     'card1',
-  //     null /* metadataOverride */,
-  //     runToSeries
-  //   );
-
-  //   const fixture = createComponent('card1');
-  //   const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
-
-  //   expect(lineChart.componentInstance.seriesData).toEqual([
-  //     {
-  //       id: 'run1',
-  //       points: [
-  //         // Keeps the data structure as is but requires "x" and "y" props.
-  //         {wallTime: 2000, value: 1, step: 1, x: 1, y: 1, relativeTimeInMs: 0},
-  //         {
-  //           wallTime: 4000,
-  //           value: 10,
-  //           step: 2,
-  //           x: 2,
-  //           y: 10,
-  //           relativeTimeInMs: 2000,
-  //         },
-  //       ],
-  //     },
-  //     {
-  //       id: 'run2',
-  //       points: [
-  //         {wallTime: 2000, value: 1, step: 1, x: 1, y: 1, relativeTimeInMs: 0},
-  //       ],
-  //     },
-  //   ]);
-  //   expect(lineChart.componentInstance.seriesMetadataMap).toEqual({
-  //     run1: {
-  //       id: 'run1',
-  //       displayName: 'run1',
-  //       type: SeriesType.ORIGINAL,
-  //       visible: false,
-  //       color: '#f00',
-  //       opacity: 1,
-  //       aux: false,
-  //       alias: null,
-  //     },
-  //     run2: {
-  //       id: 'run2',
-  //       displayName: 'run2',
-  //       type: SeriesType.ORIGINAL,
-  //       visible: false,
-  //       color: '#0f0',
-  //       opacity: 1,
-  //       aux: false,
-  //       alias: null,
-  //     },
-  //   });
-  // }));
-
-  // describe('tooltip', () => {
-  //   function buildTooltipDatum(
-  //     metadata?: ScalarCardSeriesMetadata,
-  //     dataPoint: Partial<ScalarCardPoint> = {},
-  //     domPoint: Point = {x: 0, y: 0}
-  //   ): TooltipDatum<ScalarCardSeriesMetadata, ScalarCardPoint> {
-  //     return {
-  //       id: metadata?.id ?? 'a',
-  //       metadata: {
-  //         type: SeriesType.ORIGINAL,
-  //         id: 'a',
-  //         displayName: 'A name',
-  //         visible: true,
-  //         color: '#f00',
-  //         alias: null,
-  //         ...metadata,
-  //       },
-  //       closestPointIndex: 0,
-  //       dataPoint: {
-  //         x: 0,
-  //         y: 0,
-  //         value: 0,
-  //         step: 0,
-  //         wallTime: 0,
-  //         relativeTimeInMs: 0,
-  //         ...dataPoint,
-  //       },
-  //       domPoint,
-  //     };
-  //   }
-
-  //   function setTooltipData(
-  //     fixture: ComponentFixture<ScalarCardLineChartContainer>,
-  //     tooltipData: TooltipDatum[]
-  //   ) {
-  //     const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
-
-  //     lineChart.componentInstance.tooltipDataForTesting = tooltipData;
-  //     lineChart.componentInstance.changeDetectorRef.markForCheck();
-  //   }
-
-  //   function setCursorLocation(
-  //     fixture: ComponentFixture<ScalarCardLineChartContainer>,
-  //     dataPoint?: {x: number; y: number},
-  //     domPoint?: Point
-  //   ) {
-  //     const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
-
-  //     if (dataPoint) {
-  //       lineChart.componentInstance.dataPointForTesting = dataPoint;
-  //     }
-  //     if (domPoint) {
-  //       lineChart.componentInstance.cursorLocationForTesting = domPoint;
-  //     }
-  //     lineChart.componentInstance.changeDetectorRef.markForCheck();
-  //   }
-
-  //   function assertTooltipRows(
-  //     fixture: ComponentFixture<ScalarCardLineChartContainer>,
-  //     expectedTableContent: Array<
-  //       Array<string | ReturnType<typeof jasmine.any>>
-  //     >
-  //   ) {
-  //     const rows = fixture.debugElement.queryAll(Selector.TOOLTIP_ROW);
-  //     const tableContent = rows.map((row) => {
-  //       return row
-  //         .queryAll(By.css('td'))
-  //         .map((td) => td.nativeElement.textContent.trim());
-  //     });
-
-  //     expect(tableContent).toEqual(expectedTableContent);
-  //   }
-
-  //   it('renders the tooltip using the custom template (no smooth)', fakeAsync(() => {
-  //     store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-  //     const fixture = createComponent('card1');
-  //     setTooltipData(fixture, [
-  //       buildTooltipDatum(
-  //         {
-  //           id: 'row1',
-  //           type: SeriesType.ORIGINAL,
-  //           displayName: 'Row 1',
-  //           alias: null,
-  //           visible: true,
-  //           color: '#00f',
-  //         },
-  //         {
-  //           x: 10,
-  //           step: 10,
-  //           y: 1000,
-  //           value: 1000,
-  //           wallTime: new Date('2020-01-01').getTime(),
-  //           relativeTimeInMs: 1000 * 60 * 60 * 24 * 365 * 3,
-  //         }
-  //       ),
-  //       buildTooltipDatum(
-  //         {
-  //           id: 'row2',
-  //           type: SeriesType.ORIGINAL,
-  //           displayName: 'Row 2',
-  //           alias: null,
-  //           visible: true,
-  //           color: '#0f0',
-  //         },
-  //         {
-  //           x: 1000,
-  //           step: 1000,
-  //           y: -1000,
-  //           value: -1000,
-  //           wallTime: new Date('2020-12-31').getTime(),
-  //           relativeTimeInMs: 0,
-  //         }
-  //       ),
-  //     ]);
-  //     fixture.detectChanges();
-
-  //     const headerCols = fixture.debugElement.queryAll(
-  //       Selector.TOOLTIP_HEADER_COLUMN
-  //     );
-  //     const headerText = headerCols.map((col) => col.nativeElement.textContent);
-  //     expect(headerText).toEqual([
-  //       '',
-  //       'Run',
-  //       'Value',
-  //       'Step',
-  //       'Time',
-  //       'Relative',
-  //     ]);
-
-  //     assertTooltipRows(fixture, [
-  //       ['', 'Row 1', '1000', '10', '1/1/20, 12:00 AM', '3 yr'],
-  //       ['', 'Row 2', '-1000', '1,000', '12/31/20, 12:00 AM', '0'],
-  //     ]);
-  //   }));
-
-  //   it('renders the tooltip using the custom template (smooth)', fakeAsync(() => {
-  //     store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.5);
-  //     const fixture = createComponent('card1');
-  //     setTooltipData(fixture, [
-  //       buildTooltipDatum(
-  //         {
-  //           id: 'smoothed_row1',
-  //           type: SeriesType.DERIVED,
-  //           displayName: 'Row 1',
-  //           alias: null,
-  //           visible: true,
-  //           color: '#00f',
-  //           aux: false,
-  //           originalSeriesId: 'row1',
-  //         },
-  //         {
-  //           x: 10,
-  //           step: 10,
-  //           y: 10002000,
-  //           value: 10001337,
-  //           wallTime: new Date('2020-01-01').getTime(),
-  //           relativeTimeInMs: 10,
-  //         }
-  //       ),
-  //       buildTooltipDatum(
-  //         {
-  //           id: 'smoothed_row2',
-  //           type: SeriesType.DERIVED,
-  //           displayName: 'Row 2',
-  //           alias: null,
-  //           visible: true,
-  //           color: '#0f0',
-  //           aux: false,
-  //           originalSeriesId: 'row2',
-  //         },
-  //         {
-  //           x: 1000,
-  //           step: 1000,
-  //           y: -0.0005,
-  //           value: -0.9312345,
-  //           wallTime: new Date('2020-12-31').getTime(),
-  //           relativeTimeInMs: 5000,
-  //         }
-  //       ),
-  //     ]);
-  //     fixture.detectChanges();
-
-  //     const headerCols = fixture.debugElement.queryAll(
-  //       Selector.TOOLTIP_HEADER_COLUMN
-  //     );
-  //     const headerText = headerCols.map((col) => col.nativeElement.textContent);
-  //     expect(headerText).toEqual([
-  //       '',
-  //       'Run',
-  //       'Smoothed',
-  //       'Value',
-  //       'Step',
-  //       'Time',
-  //       'Relative',
-  //     ]);
-
-  //     assertTooltipRows(fixture, [
-  //       ['', 'Row 1', '1e+7', '1e+7', '10', '1/1/20, 12:00 AM', '10 ms'],
-  //       // Print the step with comma for readability. The value is yet optimize for
-  //       // readability (we may use the scientific formatting).
-  //       [
-  //         '',
-  //         'Row 2',
-  //         '-5e-4',
-  //         '-0.9312',
-  //         '1,000',
-  //         '12/31/20, 12:00 AM',
-  //         '5 sec',
-  //       ],
-  //     ]);
-  //   }));
-
-  //   it('shows relative time when XAxisType is RELATIVE', fakeAsync(() => {
-  //     store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.RELATIVE);
-  //     store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-  //     const fixture = createComponent('card1');
-  //     setTooltipData(fixture, [
-  //       buildTooltipDatum(
-  //         {
-  //           id: 'smoothed_row1',
-  //           type: SeriesType.DERIVED,
-  //           displayName: 'Row 1',
-  //           alias: null,
-  //           visible: true,
-  //           color: '#00f',
-  //           aux: false,
-  //           originalSeriesId: 'row1',
-  //         },
-  //         {
-  //           x: 10,
-  //           step: 10,
-  //           y: 1000,
-  //           value: 1000,
-  //           wallTime: new Date('2020-01-01').getTime(),
-  //           relativeTimeInMs: 10,
-  //         }
-  //       ),
-  //       buildTooltipDatum(
-  //         {
-  //           id: 'smoothed_row2',
-  //           type: SeriesType.DERIVED,
-  //           displayName: 'Row 2',
-  //           alias: null,
-  //           visible: true,
-  //           color: '#0f0',
-  //           aux: false,
-  //           originalSeriesId: 'row2',
-  //         },
-  //         {
-  //           x: 432000000,
-  //           step: 1000,
-  //           y: -1000,
-  //           value: -1000,
-  //           wallTime: new Date('2020-01-05').getTime(),
-  //           relativeTimeInMs: 432000000,
-  //         }
-  //       ),
-  //     ]);
-  //     fixture.detectChanges();
-
-  //     const headerCols = fixture.debugElement.queryAll(
-  //       Selector.TOOLTIP_HEADER_COLUMN
-  //     );
-  //     const headerText = headerCols.map((col) => col.nativeElement.textContent);
-  //     expect(headerText).toEqual([
-  //       '',
-  //       'Run',
-  //       'Value',
-  //       'Step',
-  //       'Time',
-  //       'Relative',
-  //     ]);
-
-  //     const rows = fixture.debugElement.queryAll(Selector.TOOLTIP_ROW);
-  //     const tableContent = rows.map((row) => {
-  //       return row
-  //         .queryAll(By.css('td'))
-  //         .map((td) => td.nativeElement.textContent.trim());
-  //     });
-
-  //     expect(tableContent).toEqual([
-  //       ['', 'Row 1', '1000', '10', '1/1/20, 12:00 AM', '10 ms'],
-  //       ['', 'Row 2', '-1000', '1,000', '1/5/20, 12:00 AM', '5 day'],
-  //     ]);
-  //   }));
-
-  //   it('renders alias when alias is non-null', fakeAsync(() => {
-  //     const fixture = createComponent('card1');
-  //     setTooltipData(fixture, [
-  //       buildTooltipDatum({
-  //         id: 'row1',
-  //         type: SeriesType.ORIGINAL,
-  //         displayName: 'Row 1',
-  //         alias: null,
-  //         visible: true,
-  //         color: '#00f',
-  //       }),
-  //       buildTooltipDatum({
-  //         id: 'row2',
-  //         type: SeriesType.ORIGINAL,
-  //         displayName: 'Row 2',
-  //         alias: buildAlias({
-  //           aliasNumber: 50,
-  //           aliasText: 'myAlias',
-  //         }),
-  //         visible: true,
-  //         color: '#0f0',
-  //       }),
-  //     ]);
-  //     fixture.detectChanges();
-
-  //     assertTooltipRows(fixture, [
-  //       ['', 'Row 1', anyString, anyString, anyString, anyString],
-  //       ['', '50myAlias/Row 2', anyString, anyString, anyString, anyString],
-  //     ]);
-  //   }));
-
-  //   it('sorts by ascending', fakeAsync(() => {
-  //     store.overrideSelector(
-  //       selectors.getMetricsTooltipSort,
-  //       TooltipSort.ASCENDING
-  //     );
-  //     store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-  //     const fixture = createComponent('card1');
-  //     setTooltipData(fixture, [
-  //       buildTooltipDatum(
-  //         {
-  //           id: 'row1',
-  //           type: SeriesType.ORIGINAL,
-  //           displayName: 'Row 1',
-  //           alias: null,
-  //           visible: true,
-  //           color: '#f00',
-  //           aux: false,
-  //         },
-  //         {
-  //           x: 10,
-  //           step: 10,
-  //           y: 1000,
-  //           value: 1000,
-  //           wallTime: new Date('2020-01-01').getTime(),
-  //         }
-  //       ),
-  //       buildTooltipDatum(
-  //         {
-  //           id: 'row2',
-  //           type: SeriesType.ORIGINAL,
-  //           displayName: 'Row 2',
-  //           alias: null,
-  //           visible: true,
-  //           color: '#0f0',
-  //           aux: false,
-  //         },
-  //         {
-  //           x: 1000,
-  //           step: 1000,
-  //           y: -500,
-  //           value: -500,
-  //           wallTime: new Date('2020-12-31').getTime(),
-  //         }
-  //       ),
-  //       buildTooltipDatum(
-  //         {
-  //           id: 'row3',
-  //           type: SeriesType.ORIGINAL,
-  //           displayName: 'Row 3',
-  //           alias: null,
-  //           visible: true,
-  //           color: '#00f',
-  //           aux: false,
-  //         },
-  //         {
-  //           x: 10000,
-  //           step: 10000,
-  //           y: 3,
-  //           value: 3,
-  //           wallTime: new Date('2021-01-01').getTime(),
-  //         }
-  //       ),
-  //     ]);
-  //     fixture.detectChanges();
-
-  //     assertTooltipRows(fixture, [
-  //       ['', 'Row 2', '-500', '1,000', anyString, anyString],
-  //       ['', 'Row 3', '3', '10,000', anyString, anyString],
-  //       ['', 'Row 1', '1000', '10', anyString, anyString],
-  //     ]);
-  //   }));
-
-  //   it('sorts by descending', fakeAsync(() => {
-  //     store.overrideSelector(
-  //       selectors.getMetricsTooltipSort,
-  //       TooltipSort.DESCENDING
-  //     );
-  //     store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-  //     const fixture = createComponent('card1');
-  //     setTooltipData(fixture, [
-  //       buildTooltipDatum(
-  //         {
-  //           id: 'row1',
-  //           type: SeriesType.ORIGINAL,
-  //           displayName: 'Row 1',
-  //           alias: null,
-  //           visible: true,
-  //           color: '#f00',
-  //           aux: false,
-  //         },
-  //         {
-  //           x: 10,
-  //           step: 10,
-  //           y: 1000,
-  //           value: 1000,
-  //           wallTime: new Date('2020-01-01').getTime(),
-  //         }
-  //       ),
-  //       buildTooltipDatum(
-  //         {
-  //           id: 'row2',
-  //           type: SeriesType.ORIGINAL,
-  //           displayName: 'Row 2',
-  //           alias: null,
-  //           visible: true,
-  //           color: '#0f0',
-  //           aux: false,
-  //         },
-  //         {
-  //           x: 1000,
-  //           step: 1000,
-  //           y: -500,
-  //           value: -500,
-  //           wallTime: new Date('2020-12-31').getTime(),
-  //         }
-  //       ),
-  //       buildTooltipDatum(
-  //         {
-  //           id: 'row3',
-  //           type: SeriesType.ORIGINAL,
-  //           displayName: 'Row 3',
-  //           alias: null,
-  //           visible: true,
-  //           color: '#00f',
-  //           aux: false,
-  //         },
-  //         {
-  //           x: 10000,
-  //           step: 10000,
-  //           y: 3,
-  //           value: 3,
-  //           wallTime: new Date('2021-01-01').getTime(),
-  //         }
-  //       ),
-  //     ]);
-  //     fixture.detectChanges();
-
-  //     assertTooltipRows(fixture, [
-  //       ['', 'Row 1', '1000', '10', anyString, anyString],
-  //       ['', 'Row 3', '3', '10,000', anyString, anyString],
-  //       ['', 'Row 2', '-500', '1,000', anyString, anyString],
-  //     ]);
-  //   }));
-
-  //   it('sorts by nearest to the cursor', fakeAsync(() => {
-  //     store.overrideSelector(
-  //       selectors.getMetricsTooltipSort,
-  //       TooltipSort.NEAREST
-  //     );
-  //     store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-  //     const fixture = createComponent('card1');
-  //     setTooltipData(fixture, [
-  //       buildTooltipDatum(
-  //         {
-  //           id: 'row1',
-  //           type: SeriesType.ORIGINAL,
-  //           displayName: 'Row 1',
-  //           alias: null,
-  //           visible: true,
-  //           color: '#f00',
-  //           aux: false,
-  //         },
-  //         {
-  //           x: 0,
-  //           step: 0,
-  //           y: 1000,
-  //           value: 1000,
-  //           wallTime: new Date('2020-01-01').getTime(),
-  //         },
-  //         {
-  //           x: 0,
-  //           y: 100,
-  //         }
-  //       ),
-  //       buildTooltipDatum(
-  //         {
-  //           id: 'row2',
-  //           type: SeriesType.ORIGINAL,
-  //           displayName: 'Row 2',
-  //           alias: null,
-  //           visible: true,
-  //           color: '#0f0',
-  //           aux: false,
-  //         },
-  //         {
-  //           x: 1000,
-  //           step: 1000,
-  //           y: -500,
-  //           value: -500,
-  //           wallTime: new Date('2020-12-31').getTime(),
-  //         },
-  //         {
-  //           x: 50,
-  //           y: 0,
-  //         }
-  //       ),
-  //       buildTooltipDatum(
-  //         {
-  //           id: 'row3',
-  //           type: SeriesType.ORIGINAL,
-  //           displayName: 'Row 3',
-  //           alias: null,
-  //           visible: true,
-  //           color: '#00f',
-  //           aux: false,
-  //         },
-  //         {
-  //           x: 10000,
-  //           step: 10000,
-  //           y: 3,
-  //           value: 3,
-  //           wallTime: new Date('2021-01-01').getTime(),
-  //         },
-  //         {
-  //           x: 1000,
-  //           y: 30,
-  //         }
-  //       ),
-  //     ]);
-  //     setCursorLocation(fixture, {x: 500, y: -100}, {x: 50, y: 0});
-  //     fixture.detectChanges();
-  //     assertTooltipRows(fixture, [
-  //       ['', 'Row 2', '-500', '1,000', anyString, anyString],
-  //       ['', 'Row 1', '1000', '0', anyString, anyString],
-  //       ['', 'Row 3', '3', '10,000', anyString, anyString],
-  //     ]);
-
-  //     setCursorLocation(fixture, {x: 500, y: 600}, {x: 50, y: 80});
-  //     fixture.detectChanges();
-  //     assertTooltipRows(fixture, [
-  //       ['', 'Row 1', '1000', '0', anyString, anyString],
-  //       ['', 'Row 2', '-500', '1,000', anyString, anyString],
-  //       ['', 'Row 3', '3', '10,000', anyString, anyString],
-  //     ]);
-
-  //     setCursorLocation(fixture, {x: 10000, y: -100}, {x: 1000, y: 20});
-  //     fixture.detectChanges();
-  //     assertTooltipRows(fixture, [
-  //       ['', 'Row 3', '3', '10,000', anyString, anyString],
-  //       ['', 'Row 2', '-500', '1,000', anyString, anyString],
-  //       ['', 'Row 1', '1000', '0', anyString, anyString],
-  //     ]);
-
-  //     // Right between row 1 and row 2. When tied, original order is used.
-  //     setCursorLocation(fixture, {x: 500, y: 250}, {x: 25, y: 50});
-  //     fixture.detectChanges();
-  //     assertTooltipRows(fixture, [
-  //       ['', 'Row 1', '1000', '0', anyString, anyString],
-  //       ['', 'Row 2', '-500', '1,000', anyString, anyString],
-  //       ['', 'Row 3', '3', '10,000', anyString, anyString],
-  //     ]);
-  //   }));
-
-  //   it('sorts by displayname alphabetical order', fakeAsync(() => {
-  //     store.overrideSelector(
-  //       selectors.getMetricsTooltipSort,
-  //       TooltipSort.ALPHABETICAL
-  //     );
-  //     store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-  //     const fixture = createComponent('card1');
-  //     setTooltipData(fixture, [
-  //       buildTooltipDatum(
-  //         {
-  //           id: 'row1',
-  //           type: SeriesType.ORIGINAL,
-  //           displayName: 'hello',
-  //           alias: null,
-  //           visible: true,
-  //           color: '#f00',
-  //           aux: false,
-  //         },
-  //         {
-  //           x: 0,
-  //           step: 0,
-  //           y: 1000,
-  //           value: 1000,
-  //           wallTime: new Date('2020-01-01').getTime(),
-  //         }
-  //       ),
-  //       buildTooltipDatum(
-  //         {
-  //           id: 'row2',
-  //           type: SeriesType.ORIGINAL,
-  //           displayName: 'world',
-  //           alias: null,
-  //           visible: true,
-  //           color: '#0f0',
-  //           aux: false,
-  //         },
-  //         {
-  //           x: 1000,
-  //           step: 1000,
-  //           y: -500,
-  //           value: -500,
-  //           wallTime: new Date('2020-12-31').getTime(),
-  //         }
-  //       ),
-  //       buildTooltipDatum(
-  //         {
-  //           id: 'row3',
-  //           type: SeriesType.ORIGINAL,
-  //           displayName: 'cat',
-  //           alias: null,
-  //           visible: true,
-  //           color: '#00f',
-  //           aux: false,
-  //         },
-  //         {
-  //           x: 10000,
-  //           step: 10000,
-  //           y: 3,
-  //           value: 3,
-  //           wallTime: new Date('2021-01-01').getTime(),
-  //         }
-  //       ),
-  //     ]);
-  //     fixture.detectChanges();
-  //     assertTooltipRows(fixture, [
-  //       ['', 'cat', '3', '10,000', anyString, anyString],
-  //       ['', 'hello', '1000', '0', anyString, anyString],
-  //       ['', 'world', '-500', '1,000', anyString, anyString],
-  //     ]);
-  //   }));
-  // });
-
-  // describe('non-monotonic increase in x-axis', () => {
-  //   it('partitions to pseudo runs when steps increase non-monotonically', fakeAsync(() => {
-  //     store.overrideSelector(
-  //       selectors.getMetricsScalarPartitionNonMonotonicX,
-  //       true
-  //     );
-  //     store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
-  //     store.overrideSelector(selectors.getRunColorMap, {
-  //       run1: '#f00',
-  //       run2: '#0f0',
-  //     });
-  //     store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-
-  //     const runToSeries = {
-  //       run1: [
-  //         {wallTime: 2, value: 1, step: 1},
-  //         {wallTime: 4, value: 10, step: 2},
-  //         {wallTime: 6, value: 30, step: 2},
-  //         {wallTime: 6, value: 10, step: 1},
-  //         {wallTime: 3, value: 20, step: 4},
-  //       ],
-  //       run2: [{wallTime: 2, value: 1, step: 1}],
-  //     };
-  //     provideMockCardRunToSeriesData(
-  //       selectSpy,
-  //       PluginType.SCALARS,
-  //       'card1',
-  //       null /* metadataOverride */,
-  //       runToSeries
-  //     );
-
-  //     const fixture = createComponent('card1');
-  //     const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
-
-  //     expect(lineChart.componentInstance.seriesData).toEqual([
-  //       {
-  //         id: '["run1",0]',
-  //         points: [
-  //           {
-  //             wallTime: 2000,
-  //             value: 1,
-  //             step: 1,
-  //             x: 1,
-  //             y: 1,
-  //             relativeTimeInMs: 0,
-  //           },
-  //           {
-  //             wallTime: 4000,
-  //             value: 10,
-  //             step: 2,
-  //             x: 2,
-  //             y: 10,
-  //             relativeTimeInMs: 2000,
-  //           },
-  //           {
-  //             wallTime: 6000,
-  //             value: 30,
-  //             step: 2,
-  //             x: 2,
-  //             y: 30,
-  //             relativeTimeInMs: 4000,
-  //           },
-  //         ],
-  //       },
-  //       {
-  //         id: '["run1",1]',
-  //         points: [
-  //           {
-  //             wallTime: 6000,
-  //             value: 10,
-  //             step: 1,
-  //             x: 1,
-  //             y: 10,
-  //             relativeTimeInMs: 0,
-  //           },
-  //           {
-  //             wallTime: 3000,
-  //             value: 20,
-  //             step: 4,
-  //             x: 4,
-  //             y: 20,
-  //             relativeTimeInMs: -3000,
-  //           },
-  //         ],
-  //       },
-  //       {
-  //         id: '["run2",0]',
-  //         points: [
-  //           {
-  //             wallTime: 2000,
-  //             value: 1,
-  //             step: 1,
-  //             x: 1,
-  //             y: 1,
-  //             relativeTimeInMs: 0,
-  //           },
-  //         ],
-  //       },
-  //     ]);
-  //     expect(lineChart.componentInstance.seriesMetadataMap).toEqual({
-  //       '["run1",0]': {
-  //         id: '["run1",0]',
-  //         displayName: 'run1: 0',
-  //         type: SeriesType.ORIGINAL,
-  //         visible: false,
-  //         color: '#f00',
-  //         opacity: 1,
-  //         aux: false,
-  //         alias: null,
-  //       },
-  //       '["run1",1]': {
-  //         id: '["run1",1]',
-  //         displayName: 'run1: 1',
-  //         type: SeriesType.ORIGINAL,
-  //         visible: false,
-  //         color: '#f00',
-  //         opacity: 1,
-  //         aux: false,
-  //         alias: null,
-  //       },
-  //       '["run2",0]': {
-  //         id: '["run2",0]',
-  //         displayName: 'run2',
-  //         type: SeriesType.ORIGINAL,
-  //         visible: false,
-  //         color: '#0f0',
-  //         opacity: 1,
-  //         aux: false,
-  //         alias: null,
-  //       },
-  //     });
-  //   }));
-
-  //   it('partitions to pseudo runs when wall_time increase non-monotonically', fakeAsync(() => {
-  //     store.overrideSelector(
-  //       selectors.getMetricsScalarPartitionNonMonotonicX,
-  //       true
-  //     );
-  //     store.overrideSelector(
-  //       selectors.getMetricsXAxisType,
-  //       XAxisType.WALL_TIME
-  //     );
-  //     store.overrideSelector(selectors.getRunColorMap, {
-  //       run1: '#f00',
-  //       run2: '#0f0',
-  //     });
-  //     store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-
-  //     const runToSeries = {
-  //       run1: [
-  //         {wallTime: 2, value: 1, step: 1},
-  //         {wallTime: 4, value: 10, step: 2},
-  //         {wallTime: 6, value: 30, step: 2},
-  //         {wallTime: 6, value: 10, step: 1},
-  //         {wallTime: 3, value: 20, step: 4},
-  //       ],
-  //     };
-  //     provideMockCardRunToSeriesData(
-  //       selectSpy,
-  //       PluginType.SCALARS,
-  //       'card1',
-  //       null /* metadataOverride */,
-  //       runToSeries
-  //     );
-
-  //     const fixture = createComponent('card1');
-  //     const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
-
-  //     expect(lineChart.componentInstance.seriesData).toEqual([
-  //       {
-  //         id: '["run1",0]',
-  //         points: [
-  //           {
-  //             wallTime: 2000,
-  //             relativeTimeInMs: 0,
-  //             value: 1,
-  //             step: 1,
-  //             x: 2000,
-  //             y: 1,
-  //           },
-  //           {
-  //             wallTime: 4000,
-  //             relativeTimeInMs: 2000,
-  //             value: 10,
-  //             step: 2,
-  //             x: 4000,
-  //             y: 10,
-  //           },
-  //           {
-  //             wallTime: 6000,
-  //             relativeTimeInMs: 4000,
-  //             value: 30,
-  //             step: 2,
-  //             x: 6000,
-  //             y: 30,
-  //           },
-  //           {
-  //             wallTime: 6000,
-  //             relativeTimeInMs: 4000,
-  //             value: 10,
-  //             step: 1,
-  //             x: 6000,
-  //             y: 10,
-  //           },
-  //         ],
-  //       },
-  //       {
-  //         id: '["run1",1]',
-  //         points: [
-  //           {
-  //             wallTime: 3000,
-  //             relativeTimeInMs: 0,
-  //             value: 20,
-  //             step: 4,
-  //             x: 3000,
-  //             y: 20,
-  //           },
-  //         ],
-  //       },
-  //     ]);
-  //     expect(lineChart.componentInstance.seriesMetadataMap).toEqual({
-  //       '["run1",0]': {
-  //         id: '["run1",0]',
-  //         displayName: 'run1: 0',
-  //         type: SeriesType.ORIGINAL,
-  //         visible: false,
-  //         color: '#f00',
-  //         opacity: 1,
-  //         aux: false,
-  //         alias: null,
-  //       },
-  //       '["run1",1]': {
-  //         id: '["run1",1]',
-  //         displayName: 'run1: 1',
-  //         type: SeriesType.ORIGINAL,
-  //         visible: false,
-  //         color: '#f00',
-  //         opacity: 1,
-  //         aux: false,
-  //         alias: null,
-  //       },
-  //     });
-  //   }));
-  // });
-
-  // describe('linked time feature integration', () => {
-  //   beforeEach(() => {
-  //     store.overrideSelector(getMetricsLinkedTimeEnabled, true);
-  //   });
-
-  //   describe('time selection and dataset', () => {
-  //     beforeEach(() => {
-  //       const runToSeries = {
-  //         run1: [buildScalarStepData({step: 10})],
-  //         run2: [buildScalarStepData({step: 20})],
-  //         run3: [buildScalarStepData({step: 30})],
-  //       };
-  //       provideMockCardRunToSeriesData(
-  //         selectSpy,
-  //         PluginType.SCALARS,
-  //         'card1',
-  //         null /* metadataOverride */,
-  //         runToSeries
-  //       );
-  //     });
-
-  //     it('selects time selection to min extent when global setting is too small', fakeAsync(() => {
-  //       store.overrideSelector(getMetricsLinkedTimeSelection, {
-  //         start: {step: -100},
-  //         end: {step: 0},
-  //       });
-  //       // Workaround to align minMax state with minMaxSteps$
-  //       store.overrideSelector(getCardStateMap, {
-  //         card1: {
-  //           dataMinMax: {
-  //             minStep: 10,
-  //             maxStep: 30,
-  //           },
-  //         },
-  //       });
-  //       const fixture = createComponent('card1');
-  //       fixture.detectChanges();
-
-  //       const fobs = fixture.debugElement.queryAll(
-  //         By.directive(CardFobComponent)
-  //       );
-  //       expect(
-  //         fobs[0].query(By.css('span')).nativeElement.textContent.trim()
-  //       ).toEqual('10');
-  //     }));
-
-  //     it('selects time selection to max extent when global setting is too large', fakeAsync(() => {
-  //       store.overrideSelector(getMetricsLinkedTimeSelection, {
-  //         start: {step: 50},
-  //         end: {step: 100},
-  //       });
-  //       // Workaround to align minMax state with minMaxSteps$
-  //       store.overrideSelector(getCardStateMap, {
-  //         card1: {
-  //           dataMinMax: {
-  //             minStep: 10,
-  //             maxStep: 30,
-  //           },
-  //         },
-  //       });
-  //       const fixture = createComponent('card1');
-  //       fixture.detectChanges();
-
-  //       const fobs = fixture.debugElement.queryAll(
-  //         By.directive(CardFobComponent)
-  //       );
-  //       expect(
-  //         fobs[0].query(By.css('span')).nativeElement.textContent.trim()
-  //       ).toEqual('30');
-  //     }));
-  //   });
-
-  //   describe('fob controls', () => {
-  //     beforeEach(() => {
-  //       const runToSeries = {
-  //         run1: [buildScalarStepData({step: 10})],
-  //         run2: [buildScalarStepData({step: 20})],
-  //         run3: [buildScalarStepData({step: 30})],
-  //       };
-  //       provideMockCardRunToSeriesData(
-  //         selectSpy,
-  //         PluginType.SCALARS,
-  //         'card1',
-  //         null /* metadataOverride */,
-  //         runToSeries
-  //       );
-
-  //       store.overrideSelector(getCardStateMap, {
-  //         card1: {
-  //           dataMinMax: {
-  //             minStep: 0,
-  //             maxStep: 100,
-  //           },
-  //         },
-  //       });
-
-  //       store.overrideSelector(getMetricsCardTimeSelection, {
-  //         start: {step: 20},
-  //         end: {step: 40},
-  //       });
-  //     });
-
-  //     it('renders fobs', fakeAsync(() => {
-  //       store.overrideSelector(getMetricsCardTimeSelection, {
-  //         start: {step: 20},
-  //         end: null,
-  //       });
-  //       const fixture = createComponent('card1');
-  //       fixture.detectChanges();
-  //       expect(
-  //         fixture.debugElement.queryAll(By.directive(CardFobComponent)).length
-  //       ).toEqual(1);
-  //     }));
+    describe('custom x axis formatter', () => {
+      it('uses SI unit formatter when xAxisType is STEP', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getMetricsXAxisType,
+          XAxisType.STEP
+        );
+        const cardMetadataMap = {
+          run1: buildOriginalSeriesMetadata({ id: 'run1', displayName: 'Run1 name', visible: true})
+          };
+        const dataSeries = [{ 
+          id: 'run1',
+          points: [
+            buildScalarCardPoint({ wallTime: 100, y: 1, x: 333 }),
+            buildScalarCardPoint({ wallTime: 101, y: 2, x: 555 }),
+          ]
+        }];
+  
+        const fixture = createComponent('card1', cardMetadataMap, dataSeries);
+        // fixture.componentInstance.xAxisType = XAxisType.STEP;
+
+        expect(
+          fixture.debugElement.query(Selector.LINE_CHART).componentInstance
+            .customXFormatter
+        ).toBe(siNumberFormatter);
+      }));
+
+      it('uses relative time formatter when xAxisType is RELATIVE', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getMetricsXAxisType,
+          XAxisType.RELATIVE
+        );
+        const cardMetadataMap = {
+          run1: buildOriginalSeriesMetadata({ id: 'run1', displayName: 'Run1 name', visible: true})
+          };
+        const dataSeries = [{ 
+          id: 'run1',
+          points: [
+            buildScalarCardPoint({ wallTime: 100, y: 1, x: 333 }),
+            buildScalarCardPoint({ wallTime: 101, y: 2, x: 555 }),
+          ]
+        }];
+  
+        const fixture = createComponent('card1', cardMetadataMap, dataSeries);
+
+        expect(
+          fixture.debugElement.query(Selector.LINE_CHART).componentInstance
+            .customXFormatter
+        ).toBe(relativeTimeFormatter);
+      }));
+
+      it('does not specify a custom X formatter for xAxisType WALL_TIME', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getMetricsXAxisType,
+          XAxisType.WALL_TIME
+        );
+        const cardMetadataMap = {
+          run1: buildOriginalSeriesMetadata({ id: 'run1', displayName: 'Run1 name', visible: true})
+          };
+        const dataSeries = [{ 
+          id: 'run1',
+          points: [
+            buildScalarCardPoint({ wallTime: 100, y: 1, x: 333 }),
+            buildScalarCardPoint({ wallTime: 101, y: 2, x: 555 }),
+          ]
+        }];
+  
+        const fixture = createComponent('card1', cardMetadataMap, dataSeries);
+
+        expect(
+          fixture.debugElement.query(Selector.LINE_CHART).componentInstance
+            .customXFormatter
+        ).toBe(undefined);
+      }));
+    });
+    it('sets useDarkMode when using dark mode', fakeAsync(() => {
+      store.overrideSelector(selectors.getDarkModeEnabled, false);
+      const cardMetadataMap = {
+        run1: buildOriginalSeriesMetadata({ id: 'run1', displayName: 'Run1 name', visible: true})
+        };
+      const dataSeries = [{ 
+        id: 'run1',
+        points: [
+          buildScalarCardPoint({ wallTime: 100, y: 1, x: 333 }),
+          buildScalarCardPoint({ wallTime: 101, y: 2, x: 555 }),
+        ]
+      }];
+
+      const fixture = createComponent('card1', cardMetadataMap, dataSeries);
+      fixture.detectChanges();
+
+      const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
+      expect(lineChartEl.componentInstance.useDarkMode).toBe(false);
+
+      store.overrideSelector(selectors.getDarkModeEnabled, true);
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(lineChartEl.componentInstance.useDarkMode).toBe(true);
+    }));
+
+    it('sets preferredRendererType to SVG when getForceSvgFeatureFlag returns true', fakeAsync(() => {
+      store.overrideSelector(selectors.getForceSvgFeatureFlag, false);
+      const cardMetadataMap = {
+        run1: buildOriginalSeriesMetadata({ id: 'run1', displayName: 'Run1 name', visible: true})
+        };
+      const dataSeries = [{ 
+        id: 'run1',
+        points: [
+          buildScalarCardPoint({ wallTime: 100, y: 1, x: 333 }),
+          buildScalarCardPoint({ wallTime: 101, y: 2, x: 555 }),
+        ]
+      }];
+
+      const fixture = createComponent('card1', cardMetadataMap, dataSeries);
+      fixture.detectChanges();
+
+      const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
+      expect(lineChartEl.componentInstance.preferredRendererType).toBe(
+        RendererType.WEBGL
+      );
+
+      store.overrideSelector(selectors.getForceSvgFeatureFlag, true);
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(lineChartEl.componentInstance.preferredRendererType).toBe(
+        RendererType.SVG
+      );
+    }));
+  });
+
+  describe('displayName', () => {
+    beforeEach(() => {
+      const cardMetadata = {
+        plugin: PluginType.SCALARS,
+        tag: 'tagA',
+        run: null,
+      };
+      const runToSeries = {run1: [{wallTime: 101, value: 2, step: 555}]};
+      store.overrideSelector(getMetricsScalarSmoothing, 0);
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        cardMetadata,
+        runToSeries
+      );
+    });
+
+    it('sets displayName always as run name', fakeAsync(() => {
+      const cardMetadataMap = {
+        run1: buildOriginalSeriesMetadata({ id: 'run1', displayName: 'Run1 name', visible: true, 
+      alias: {aliasText: 'existing_exp', aliasNumber: 1}})
+        };
+      const dataSeries = [{ 
+        id: 'run1',
+        points: [
+          buildScalarCardPoint({ wallTime: 100, y: 1, x: 333 }),
+          buildScalarCardPoint({ wallTime: 101, y: 2, x: 555 }),
+        ]
+      }];
+
+      const fixture = createComponent('card1', cardMetadataMap, dataSeries);
+     
+      const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
+      const {displayName, alias} =
+        lineChartEl.componentInstance.seriesMetadataMap['run1'];
+      expect(displayName).toBe('Run1 name');
+      expect(alias).toEqual({
+        aliasNumber: 1,
+        aliasText: 'existing_exp',
+      });
+    }));
+  });
+
+  describe('xAxisType setting', () => {
+    beforeEach(() => {
+      const runToSeries = {
+        run1: [
+          {wallTime: 100, value: 1, step: 333},
+          {wallTime: 101, value: 2, step: 555},
+        ],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([['run1', true]])
+      );
+      store.overrideSelector(
+        commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+        new Set(['run1'])
+      );
+    });
+
+    const expectedPoints = {
+      step: [
+        {x: 333, y: 1},
+        {x: 555, y: 2},
+      ],
+      wallTime: [
+        {x: 100000, y: 1},
+        {x: 101000, y: 2},
+      ],
+      relative: [
+        {x: 0, y: 1},
+        {x: 1000, y: 2},
+      ],
+    };
+
+    const specs = [
+      {
+        name: 'step',
+        xType: XAxisType.STEP,
+        expectedPoints: expectedPoints.step,
+      },
+      {
+        name: 'wall_time',
+        xType: XAxisType.WALL_TIME,
+        expectedPoints: expectedPoints.wallTime,
+      },
+      {
+        name: 'relative',
+        xType: XAxisType.RELATIVE,
+        expectedPoints: expectedPoints.relative,
+      },
+    ];
+    it(`formats series data when xAxisType is STEP`, fakeAsync(() => {
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+      store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+      
+      const cardMetadataMap = {
+        run1: buildOriginalSeriesMetadata({ id: 'run1', displayName: 'Run1 name', visible: true})
+        };
+      const dataSeries = [{ 
+        id: 'run1',
+        points: [
+          buildScalarCardPoint({ wallTime: 100, y: 1, x: 333 }),
+          buildScalarCardPoint({ wallTime: 101, y: 2, x: 555 }),
+        ]
+      }];
+
+      const fixture = createComponent('card1', cardMetadataMap, dataSeries);
+        
+      const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
+      expect(lineChartEl.componentInstance.seriesData.length).toBe(1);
+      const {id, points} = lineChartEl.componentInstance.seriesData[0];
+      const {visible, displayName} =
+        lineChartEl.componentInstance.seriesMetadataMap['run1'];
+      expect(id).toBe('run1');
+      expect(displayName).toBe('Run1 name');
+      expect(visible).toBe(true);
+      
+      expect(
+        points.map((p: {x: number; y: number}) => ({x: p.x, y: p.y}))
+      ).toEqual(expectedPoints.step);
+    }));
+
+    it(`formats series data when xAxisType is WALL_TIME`, fakeAsync(() => {
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+      store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+      
+      const cardMetadataMap = {
+        run1: buildOriginalSeriesMetadata({ id: 'run1', displayName: 'Run1 name', visible: true})
+        };
+      const dataSeries = [{ 
+        id: 'run1',
+        points: [
+          buildScalarCardPoint({ wallTime: 100, y: 1, x: 100000 }),
+          buildScalarCardPoint({ wallTime: 101, y: 2, x: 101000 }),
+        ]
+      }];
+
+      const fixture = createComponent('card1', cardMetadataMap, dataSeries);
+        
+      const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
+      expect(lineChartEl.componentInstance.seriesData.length).toBe(1);
+      const {id, points} = lineChartEl.componentInstance.seriesData[0];
+      const {visible, displayName} =
+        lineChartEl.componentInstance.seriesMetadataMap['run1'];
+      expect(id).toBe('run1');
+      expect(displayName).toBe('Run1 name');
+      expect(visible).toBe(true);
+      
+      expect(
+        points.map((p: {x: number; y: number}) => ({x: p.x, y: p.y}))
+      ).toEqual(expectedPoints.wallTime);
+    }));
+
+    it(`formats series data when xAxisType is RELATIVE`, fakeAsync(() => {
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+      store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+      
+      const cardMetadataMap = {
+        run1: buildOriginalSeriesMetadata({ id: 'run1', displayName: 'Run1 name', visible: true})
+        };
+      const dataSeries = [{ 
+        id: 'run1',
+        points: [
+          buildScalarCardPoint({ wallTime: 100, y: 1, x: 0 }),
+          buildScalarCardPoint({ wallTime: 101, y: 2, x: 1000 }),
+        ]
+      }];
+
+      const fixture = createComponent('card1', cardMetadataMap, dataSeries);
+        
+      const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
+      expect(lineChartEl.componentInstance.seriesData.length).toBe(1);
+      const {id, points} = lineChartEl.componentInstance.seriesData[0];
+      const {visible, displayName} =
+        lineChartEl.componentInstance.seriesMetadataMap['run1'];
+      expect(id).toBe('run1');
+      expect(displayName).toBe('Run1 name');
+      expect(visible).toBe(true);
+      
+      expect(
+        points.map((p: {x: number; y: number}) => ({x: p.x, y: p.y}))
+      ).toEqual(expectedPoints.relative);
+    }));
+  })
+
+  describe('tooltip', () => {
+    function buildTooltipDatum(
+      metadata?: ScalarCardSeriesMetadata,
+      dataPoint: Partial<ScalarCardPoint> = {},
+      domPoint: Point = {x: 0, y: 0}
+    ): TooltipDatum<ScalarCardSeriesMetadata, ScalarCardPoint> {
+      return {
+        id: metadata?.id ?? 'a',
+        metadata: {
+          type: SeriesType.ORIGINAL,
+          id: 'a',
+          displayName: 'A name',
+          visible: true,
+          color: '#f00',
+          alias: null,
+          ...metadata,
+        },
+        closestPointIndex: 0,
+        dataPoint: {
+          x: 0,
+          y: 0,
+          value: 0,
+          step: 0,
+          wallTime: 0,
+          relativeTimeInMs: 0,
+          ...dataPoint,
+        },
+        domPoint,
+      };
+    }
+
+    function setTooltipData(
+      fixture: ComponentFixture<ScalarCardLineChartContainer>,
+      tooltipData: TooltipDatum[]
+    ) {
+      const lineChart = fixture.debugElement.query(Selector.LINE_CHART); 
+      lineChart.componentInstance.tooltipDataForTesting = tooltipData;
+      lineChart.componentInstance.changeDetectorRef.markForCheck();
+      console.log(lineChart.componentInstance.tooltipDataForTesting);
+    }
+
+    function setCursorLocation(
+      fixture: ComponentFixture<ScalarCardLineChartContainer>,
+      dataPoint?: {x: number; y: number},
+      domPoint?: Point
+    ) {
+      const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
+
+      if (dataPoint) {
+        lineChart.componentInstance.dataPointForTesting = dataPoint;
+      }
+      if (domPoint) {
+        lineChart.componentInstance.cursorLocationForTesting = domPoint;
+      }
+      lineChart.componentInstance.changeDetectorRef.markForCheck();
+    }
+
+    function assertTooltipRows(
+      fixture: ComponentFixture<ScalarCardLineChartContainer>,
+      expectedTableContent: Array<
+        Array<string | ReturnType<typeof jasmine.any>>
+      >
+    ) {
+      const rows = fixture.debugElement.queryAll(Selector.TOOLTIP_ROW);
+      const tableContent = rows.map((row) => {
+        return row
+          .queryAll(By.css('td'))
+          .map((td) => td.nativeElement.textContent.trim());
+      });
+
+      expect(tableContent).toEqual(expectedTableContent);
+    }
+
+    fit('renders the tooltip using the custom template (no smooth)', fakeAsync(() => {
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+      const cardMetadataMap = {
+        run1: buildOriginalSeriesMetadata({ id: 'run1', displayName: 'Run1 name', visible: true})
+        };
+      const dataSeries = [{ 
+        id: 'run1',
+        points: [
+          buildScalarCardPoint({ wallTime: 100, y: 1, x: 0 }),
+          buildScalarCardPoint({ wallTime: 101, y: 2, x: 1000 }),
+        ]
+      }];
+
+      const mockTemplateRef: TemplateRef<any> = {
+        createEmbeddedView: (context: any): EmbeddedViewRef<any> => {
+          return {} as EmbeddedViewRef<any>;
+        },
+        get elementRef(): any {
+          // Provide a placeholder value for elementRef
+          return null;
+        }
+      };
+      // const mockTemplateRef: TooltipTemplate= {
+      //   createEmbeddedView: () => {
+      //     return {} as EmbeddedViewRef<TooltipTemplateContext>;
+      //   },
+      //   elementRef: {} as any, // Add a placeholder value for elementRef
+      // };
+
+      const fixture = createComponent('card1', cardMetadataMap, dataSeries);
+      //fixture.componentInstance.tooltipTemplate = mockTemplateRef;
+      console.log(fixture.debugElement.query(By.css('scalar-card-line-chart-component')).nativeElement);
+      
+      setTooltipData(fixture, [
+        buildTooltipDatum(
+          {
+            id: 'row1',
+            type: SeriesType.ORIGINAL,
+            displayName: 'Row 1',
+            alias: null,
+            visible: true,
+            color: '#00f',
+          },
+          {
+            x: 10,
+            step: 10,
+            y: 1000,
+            value: 1000,
+            wallTime: new Date('2020-01-01').getTime(),
+            relativeTimeInMs: 1000 * 60 * 60 * 24 * 365 * 3,
+          }
+        ),
+        buildTooltipDatum(
+          {
+            id: 'row2',
+            type: SeriesType.ORIGINAL,
+            displayName: 'Row 2',
+            alias: null,
+            visible: true,
+            color: '#0f0',
+          },
+          {
+            x: 1000,
+            step: 1000,
+            y: -1000,
+            value: -1000,
+            wallTime: new Date('2020-12-31').getTime(),
+            relativeTimeInMs: 0,
+          }
+        ),
+      ]);
+      fixture.detectChanges();
+      const headerCols = fixture.debugElement.queryAll(
+        Selector.TOOLTIP_HEADER_COLUMN
+      );
+      const headerText = headerCols.map((col) => col.nativeElement.textContent);
+      expect(headerText).toEqual([
+        '',
+        'Run',
+        'Value',
+        'Step',
+        'Time',
+        'Relative',
+      ]);
+
+      // assertTooltipRows(fixture, [
+      //   ['', 'Row 1', '1000', '10', '1/1/20, 12:00 AM', '3 yr'],
+      //   ['', 'Row 2', '-1000', '1,000', '12/31/20, 12:00 AM', '0'],
+      // ]);
+    }));
+  });
+
+  describe('linked time feature integration', () => {
+    beforeEach(() => {
+      store.overrideSelector(getMetricsLinkedTimeEnabled, true);
+      store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+
+    });
+
+    describe('fob controls', () => {
+      beforeEach(() => {
+        const runToSeries = {
+          run1: [buildScalarStepData({step: 10})],
+          run2: [buildScalarStepData({step: 20})],
+          run3: [buildScalarStepData({step: 30})],
+        };
+        provideMockCardRunToSeriesData(
+          selectSpy,
+          PluginType.SCALARS,
+          'card1',
+          null /* metadataOverride */,
+          runToSeries
+        );
+
+        store.overrideSelector(getCardStateMap, {
+          card1: {
+            dataMinMax: {
+              minStep: 0,
+              maxStep: 100,
+            },
+          },
+        });
+
+        store.overrideSelector(getMetricsCardTimeSelection, {
+          start: {step: 20},
+          end: {step: 40},
+        });
+      });
+
+      it('renders fobs', fakeAsync(() => {
+        store.overrideSelector(getMetricsCardTimeSelection, {
+          start: {step: 20},
+          end: null,
+        });
+
+        store.overrideSelector(
+                  selectors.getMetricsXAxisType,
+                  XAxisType.STEP
+                );
+        const cardMetadataMap = {
+          card1: buildOriginalSeriesMetadata({ id: 'card1', displayName: 'Run1 name', visible: true})
+          };
+        const dataSeries = [{ 
+          id: 'card1',
+          points: [
+            buildScalarCardPoint({ wallTime: 100, step: 10, y: 1, x: 0 }),
+            buildScalarCardPoint({ wallTime: 101, step: 20, y: 2, x: 1000 }),
+            buildScalarCardPoint({ wallTime: 101, step: 30, y: 2, x: 1000 }),
+          ]
+        }];
+        
+        const fixture = createComponent('card1', cardMetadataMap, dataSeries);
+        fixture.componentInstance.minMaxStep = {
+          minStep: 0,
+          maxStep: 100,
+        };
+        fixture.detectChanges();
+        console.log(fixture.debugElement.query(By.css('scalar-card-line-chart-component')).nativeElement);
+
+        expect(
+          fixture.debugElement.queryAll(By.directive(CardFobComponent)).length
+        ).toEqual(1);
+      }));
 
   //     it('does not render fobs when axis type is RELATIVE', fakeAsync(() => {
   //       store.overrideSelector(getMetricsLinkedTimeSelection, {
@@ -2251,9 +1210,11 @@ fdescribe('scalar card line chart', () => {
   //       expect(fobController).toBeDefined();
   //       expect(fobController.startFobWrapper).toBeUndefined();
   //       expect(fobController.endFobWrapper).toBeUndefined();
-  //     }));
-  //   });
-  // })
+  //    }));
+    });
+    
+  })
+});
 
   // describe('data table line chart integration', () => {
   //   beforeEach(() => {
@@ -2658,5 +1619,4 @@ fdescribe('scalar card line chart', () => {
   //     y: [11, 22],
   //   });
   // }));
-  })
-})
+
