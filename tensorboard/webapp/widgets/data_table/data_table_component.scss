@@ -18,7 +18,6 @@ limitations under the License.
 $_accent: map-get(mat.get-color-config($tb-theme), accent);
 
 .data-table {
-  border-spacing: 4px;
   font-size: 13px;
   display: table;
   width: 100%;
