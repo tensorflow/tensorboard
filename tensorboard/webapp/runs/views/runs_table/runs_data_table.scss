@@ -14,32 +14,18 @@ limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
-$_circle-size: 12px;
+$_circle-size: 20px;
 
-.row-circle {
-  height: $_circle-size;
-  width: $_circle-size;
-}
-.row-circle > span {
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  display: inline-block;
-  height: $_circle-size - 2px; // size minus border
-  width: $_circle-size - 2px; // size minus border
-  vertical-align: middle;
+.color-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .run-color-swatch {
-  $_swatch-size: 20px;
-
   border-radius: 100%;
   border: 1px solid mat.get-color-from-palette($tb-foreground, border);
   height: $_circle-size;
   width: $_circle-size;
   outline: none;
-
-  &.no-color {
-    border-color: mat.get-color-from-palette($tf-slate, 300);
-    border-width: 2px;
-  }
 }

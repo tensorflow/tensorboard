@@ -36,6 +36,7 @@ export class RunsDataTable {
   @Input() headers!: ColumnHeader[];
   @Input() data!: TableData[];
   @Input() sortingInfo!: SortingInfo;
+  @Input() experimentIds!: string[];
 
   ColumnHeaderType = ColumnHeaderType;
 
@@ -43,25 +44,31 @@ export class RunsDataTable {
   @Output() orderColumns = new EventEmitter<ColumnHeader[]>();
   @Output() onSelectionToggle = new EventEmitter<string>();
   @Output() onAllSelectionToggle = new EventEmitter<string[]>();
+  @Output() onRunColorChange = new EventEmitter<{
+    runId: string;
+    newColor: string;
+  }>();
+
+  beforeColumns = [
+    {
+      name: 'selected',
+      displayName: '',
+      type: ColumnHeaderType.CUSTOM,
+      enabled: true,
+    },
+  ];
+
+  afterColumns = [
+    {
+      name: 'color',
+      displayName: '',
+      type: ColumnHeaderType.COLOR,
+      enabled: true,
+    },
+  ];
 
   getHeaders() {
-    return [
-      {
-        name: 'selected',
-        displayName: '',
-        type: ColumnHeaderType.CUSTOM,
-        enabled: true,
-      },
-    ].concat(
-      this.headers.concat([
-        {
-          name: 'color',
-          displayName: '',
-          type: ColumnHeaderType.COLOR,
-          enabled: true,
-        },
-      ])
-    );
+    return this.beforeColumns.concat(this.headers.concat(this.afterColumns));
   }
 
   getRunIds() {
@@ -74,13 +81,5 @@ export class RunsDataTable {
 
   someRowsSelected() {
     return this.data.some((row) => row.selected);
-  }
-
-  onRunColorChange(newColor: string) {
-    console.log('onRunColorChange')
-  }
-
-  test() {
-    console.log('clicked');
   }
 }
