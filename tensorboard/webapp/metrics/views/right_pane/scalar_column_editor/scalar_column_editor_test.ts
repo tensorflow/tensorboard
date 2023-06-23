@@ -209,7 +209,12 @@ describe('scalar column editor', () => {
       expect(dispatchedActions[0]).toEqual(
         dataTableColumnToggled({
           dataTableMode: DataTableMode.SINGLE,
-          headerType: ColumnHeaderType.RUN,
+          header: {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
         })
       );
     }));
@@ -241,7 +246,12 @@ describe('scalar column editor', () => {
       expect(dispatchedActions[0]).toEqual(
         dataTableColumnToggled({
           dataTableMode: DataTableMode.RANGE,
-          headerType: ColumnHeaderType.MAX_VALUE,
+          header: {
+            type: ColumnHeaderType.MAX_VALUE,
+            name: 'maxValue',
+            displayName: 'Max',
+            enabled: false,
+          },
         })
       );
     }));
