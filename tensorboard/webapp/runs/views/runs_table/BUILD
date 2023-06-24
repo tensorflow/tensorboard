@@ -35,6 +35,10 @@ tf_sass_binary(
     name = "runs_data_table_styles",
     src = "runs_data_table.scss",
     strict_deps = False,
+    deps = [
+        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/theme",
+    ],
 )
 
 tf_ts_library(

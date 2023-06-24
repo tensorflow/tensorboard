@@ -36,6 +36,7 @@ export class RunsDataTable {
   @Input() headers!: ColumnHeader[];
   @Input() data!: TableData[];
   @Input() sortingInfo!: SortingInfo;
+  @Input() experimentIds!: string[];
 
   ColumnHeaderType = ColumnHeaderType;
 
@@ -43,24 +44,37 @@ export class RunsDataTable {
   @Output() orderColumns = new EventEmitter<ColumnHeader[]>();
   @Output() onSelectionToggle = new EventEmitter<string>();
   @Output() onAllSelectionToggle = new EventEmitter<string[]>();
+  @Output() onRunColorChange = new EventEmitter<{
+    runId: string;
+    newColor: string;
+  }>();
+
+  // These columns must be stored and reused to stop needless re-rendering of
+  // the content and headers in these columns. This has been known to cause
+  // problems with the controls in these columns, specifically the color picker.
+  beforeColumns = [
+    {
+      name: 'selected',
+      displayName: '',
+      type: ColumnHeaderType.CUSTOM,
+      enabled: true,
+    },
+  ];
+
+  afterColumns = [
+    {
+      name: 'color',
+      displayName: '',
+      type: ColumnHeaderType.COLOR,
+      enabled: true,
+    },
+  ];
 
   getHeaders() {
-    return [
-      {
-        name: 'selected',
-        displayName: '',
-        type: ColumnHeaderType.CUSTOM,
-        enabled: true,
-      },
-    ].concat(
-      this.headers.concat([
-        {
-          name: 'color',
-          displayName: '',
-          type: ColumnHeaderType.COLOR,
-          enabled: true,
-        },
-      ])
+    return ([] as Array<ColumnHeader>).concat(
+      this.beforeColumns,
+      this.headers,
+      this.afterColumns
     );
   }
 

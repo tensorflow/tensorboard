@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Component, Input, ViewChild} from '@angular/core';
+import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {RunsDataTable} from './runs_data_table';
 import {DataTableModule} from '../../../widgets/data_table/data_table_module';
@@ -110,6 +110,7 @@ describe('runs_data_table', () => {
     await TestBed.configureTestingModule({
       imports: [DataTableModule, MatIconTestingModule, MatCheckboxModule],
       declarations: [TestableComponent, RunsDataTable],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
 
@@ -150,19 +151,81 @@ describe('runs_data_table', () => {
     expect(cells[3].componentInstance.header.name).toEqual('color');
   });
 
-  it('disables controls for color header', () => {
-    const fixture = createComponent({});
+  describe('color column', () => {
+    it('disables controls for color header', () => {
+      const fixture = createComponent({});
 
-    const dataTable = fixture.debugElement.query(
-      By.directive(DataTableComponent)
-    );
-    const headers = dataTable.queryAll(By.directive(HeaderCellComponent));
+      const dataTable = fixture.debugElement.query(
+        By.directive(DataTableComponent)
+      );
+      const headers = dataTable.queryAll(By.directive(HeaderCellComponent));
 
-    const colorHeader = headers.find(
-      (h) => h.componentInstance.header.name === 'color'
-    )!;
+      const colorHeader = headers.find(
+        (h) => h.componentInstance.header.name === 'color'
+      )!;
 
-    expect(colorHeader.componentInstance.controlsEnabled).toBe(false);
+      expect(colorHeader.componentInstance.controlsEnabled).toBe(false);
+    });
+
+    it('renders group by control in color header', () => {
+      const fixture = createComponent({});
+
+      const dataTable = fixture.debugElement.query(
+        By.directive(DataTableComponent)
+      );
+      const headers = dataTable.queryAll(By.directive(HeaderCellComponent));
+
+      const colorHeader = headers.find(
+        (h) => h.componentInstance.header.name === 'color'
+      )!;
+
+      expect(colorHeader.query(By.css('runs-group-menu-button'))).toBeTruthy();
+    });
+
+    it('renders color picker button in color content cells', () => {
+      const fixture = createComponent({});
+
+      const dataTable = fixture.debugElement.query(
+        By.directive(DataTableComponent)
+      );
+      const cells = dataTable.queryAll(By.directive(ContentCellComponent));
+
+      const colorCells = cells.filter((cell) => {
+        return cell.componentInstance.header.name === 'color';
+      });
+
+      expect(colorCells.length).toBe(1);
+
+      colorCells.forEach((cell) => {
+        // This only tests that the button with the same class as the color
+        // picker button is rendered. Technically there could be another button
+        // with the same class here and it would still pass.
+        expect(cell.query(By.css('button.run-color-swatch'))).toBeTruthy();
+      });
+    });
+
+    // If the call to getHeaders produces a new color header on each call, then
+    // the content gets re-rendered when the color picker opens. This causes the
+    // color picker modal to close immediately. This test ensures that we keep
+    // the same reference to the color header and continue to use that reference
+    // instead of creating a new one on each call.
+    it('getHeaders does not produce new color header on each call', () => {
+      const fixture = createComponent({});
+
+      const runsDataTable = fixture.debugElement.query(
+        By.directive(RunsDataTable)
+      );
+
+      expect(
+        runsDataTable.componentInstance
+          .getHeaders()
+          .find((header: ColumnHeader) => header.name === 'color')
+      ).toBe(
+        runsDataTable.componentInstance
+          .getHeaders()
+          .find((header: ColumnHeader) => header.name === 'color')
+      );
+    });
   });
 
   it('disables controls for selected header', () => {
@@ -198,6 +261,8 @@ describe('runs_data_table', () => {
     });
 
     expect(selectedHeader.query(By.css('mat-checkbox'))).toBeTruthy();
+
+    expect(selectedContentCells.length).toBe(1);
     selectedContentCells.forEach((cell) => {
       expect(cell.query(By.css('mat-checkbox'))).toBeTruthy();
     });

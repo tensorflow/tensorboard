@@ -237,10 +237,12 @@ function matchFilter(
       [headers]="runsColumns$ | async"
       [data]="allRunsTableData$ | async"
       [sortingInfo]="sortingInfo$ | async"
+      [experimentIds]="experimentIds"
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
       (onSelectionToggle)="onRunSelectionToggle($event)"
       (onAllSelectionToggle)="onAllSelectionToggle($event)"
+      (onRunColorChange)="onRunColorChange($event)"
     ></runs-data-table>
   `,
   host: {

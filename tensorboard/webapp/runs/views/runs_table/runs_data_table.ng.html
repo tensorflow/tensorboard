@@ -31,13 +31,20 @@ limitations under the License.
         [hparamsEnabled]="true"
         [controlsEnabled]="header.type !== ColumnHeaderType.COLOR && header.type !== ColumnHeaderType.CUSTOM"
       >
-        <div *ngIf="header.name === 'selected'">
-          <mat-checkbox
-            [checked]="allRowsSelected()"
-            [indeterminate]="!allRowsSelected() && someRowsSelected()"
-            (click)="onAllSelectionToggle.emit(getRunIds())"
-          ></mat-checkbox>
-        </div>
+        <ng-container [ngSwitch]="header.name">
+          <div *ngSwitchCase="'selected'">
+            <mat-checkbox
+              [checked]="allRowsSelected()"
+              [indeterminate]="!allRowsSelected() && someRowsSelected()"
+              (click)="onAllSelectionToggle.emit(getRunIds())"
+            ></mat-checkbox>
+          </div>
+          <span *ngSwitchCase="'color'">
+            <runs-group-menu-button
+              [experimentIds]="experimentIds"
+            ></runs-group-menu-button>
+          </span>
+        </ng-container>
       </tb-data-table-header-cell> </ng-container
   ></ng-container>
 
@@ -51,9 +58,18 @@ limitations under the License.
             [datum]="dataRow[header.name]"
           >
             <ng-container [ngSwitch]="header.name">
-              <div *ngSwitchCase="'color'" class="row-circle">
-                <span [style.backgroundColor]="dataRow['color']"></span>
-              </div>
+              <span *ngSwitchCase="'color'" class="color-container">
+                <button
+                  class="run-color-swatch"
+                  [style.background]="dataRow['color']"
+                  [colorPicker]="dataRow['color']"
+                  [cpDialogDisplay]="'popup'"
+                  [cpPositionOffset]="-20"
+                  [cpUseRootViewContainer]="true"
+                  [cpOutputFormat]="'hex'"
+                  (colorPickerChange)="onRunColorChange.emit({runId: dataRow.id, newColor: $event})"
+                ></button>
+              </span>
               <div *ngSwitchCase="'selected'">
                 <mat-checkbox
                   [checked]="dataRow['selected']"
