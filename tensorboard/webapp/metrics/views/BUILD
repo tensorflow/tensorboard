@@ -33,6 +33,7 @@ tf_ng_module(
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/core",
+        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/customization",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/feature_flag/store:types",
