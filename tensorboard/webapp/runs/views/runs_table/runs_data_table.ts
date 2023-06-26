@@ -37,6 +37,7 @@ export class RunsDataTable {
   @Input() data!: TableData[];
   @Input() sortingInfo!: SortingInfo;
   @Input() experimentIds!: string[];
+  @Input() regexFilter!: string;
 
   ColumnHeaderType = ColumnHeaderType;
 
@@ -44,6 +45,7 @@ export class RunsDataTable {
   @Output() orderColumns = new EventEmitter<ColumnHeader[]>();
   @Output() onSelectionToggle = new EventEmitter<string>();
   @Output() onAllSelectionToggle = new EventEmitter<string[]>();
+  @Output() onRegexFilterChange = new EventEmitter<string>();
   @Output() onRunColorChange = new EventEmitter<{
     runId: string;
     newColor: string;
@@ -88,5 +90,10 @@ export class RunsDataTable {
 
   someRowsSelected() {
     return this.data.some((row) => row.selected);
+  }
+
+  onFilterKeyUp(event: KeyboardEvent) {
+    const input = event.target! as HTMLInputElement;
+    this.onRegexFilterChange.emit(input.value);
   }
 }

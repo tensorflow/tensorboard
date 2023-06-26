@@ -30,6 +30,8 @@ import {By} from '@angular/platform-browser';
 import {HeaderCellComponent} from '../../../widgets/data_table/header_cell_component';
 import {DataTableComponent} from '../../../widgets/data_table/data_table_component';
 import {ContentCellComponent} from '../../../widgets/data_table/content_cell_component';
+import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';
+import {sendKeys} from '../../../testing/dom';
 
 @Component({
   selector: 'testable-comp',
@@ -42,6 +44,7 @@ import {ContentCellComponent} from '../../../widgets/data_table/content_cell_com
       (orderColumns)="orderColumns($event)"
       (onSelectionToggle)="onSelectionToggle($event)"
       (onAllSelectionToggle)="onAllSelectionToggle($event)"
+      (onRegexFilterChange)="onRegexFilterChange($event)"
     ></runs-data-table>
   `,
 })
@@ -55,11 +58,13 @@ class TestableComponent {
 
   @Input() onSelectionToggle!: (runId: string) => void;
   @Input() onAllSelectionToggle!: (runIds: string[]) => void;
+  @Input() onRegexFilterChange!: (regex: string) => void;
 }
 
 describe('runs_data_table', () => {
   let onSelectionToggleSpy: jasmine.Spy;
   let onAllSelectionToggleSpy: jasmine.Spy;
+  let onRegexFilterChangeSpy: jasmine.Spy;
   function createComponent(input: {
     data?: TableData[];
     headers?: ColumnHeader[];
@@ -102,13 +107,21 @@ describe('runs_data_table', () => {
     onAllSelectionToggleSpy = jasmine.createSpy();
     fixture.componentInstance.onAllSelectionToggle = onAllSelectionToggleSpy;
 
+    onRegexFilterChangeSpy = jasmine.createSpy();
+    fixture.componentInstance.onRegexFilterChange = onRegexFilterChangeSpy;
+
     fixture.detectChanges();
     return fixture;
   }
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DataTableModule, MatIconTestingModule, MatCheckboxModule],
+      imports: [
+        DataTableModule,
+        FilterInputModule,
+        MatIconTestingModule,
+        MatCheckboxModule,
+      ],
       declarations: [TestableComponent, RunsDataTable],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -304,5 +317,16 @@ describe('runs_data_table', () => {
     firstCheckbox.nativeElement.dispatchEvent(new Event('change'));
 
     expect(onSelectionToggleSpy).toHaveBeenCalledWith('runid');
+  });
+
+  it('fire onRegexFilterChange when input is entered into the tb-filter-input', () => {
+    const fixture = createComponent({});
+    const filterInput = fixture.debugElement.query(By.css('tb-filter-input'));
+
+    expect(filterInput).toBeTruthy();
+
+    sendKeys(fixture, filterInput.query(By.css('input')), 'myRegex');
+
+    expect(onRegexFilterChangeSpy).toHaveBeenCalledWith('myRegex');
   });
 });
