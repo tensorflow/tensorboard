@@ -64,4 +64,9 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
     text-align: left;
     width: 100%;
   }
+
+  .no-actions-message {
+    padding: 8px;
+    text-wrap: nowrap;
+  }
 }

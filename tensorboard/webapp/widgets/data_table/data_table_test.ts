@@ -29,7 +29,7 @@ import {
   SortingInfo,
   SortingOrder,
 } from './types';
-import {DataTableComponent} from './data_table_component';
+import {DataTableComponent, Side} from './data_table_component';
 import {DataTableModule} from './data_table_module';
 import {HeaderCellComponent} from './header_cell_component';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
@@ -120,7 +120,7 @@ describe('data table', () => {
     sortingInfo?: SortingInfo;
     hparamsEnabled?: boolean;
     data?: TableData[];
-    selectabelColumns?: ColumnHeader[];
+    potentialColumns?: ColumnHeader[];
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
 
@@ -134,8 +134,8 @@ describe('data table', () => {
       fixture.componentInstance.data = input.data;
     }
 
-    if (input.selectabelColumns) {
-      fixture.componentInstance.selectableColumns = input.selectabelColumns;
+    if (input.potentialColumns) {
+      fixture.componentInstance.selectableColumns = input.potentialColumns;
     }
 
     sortDataBySpy = jasmine.createSpy();
@@ -514,7 +514,7 @@ describe('data table', () => {
 
   it('renders column selector when + button is clicked', () => {
     const fixture = createComponent({
-      selectabelColumns: [
+      potentialColumns: [
         {
           type: ColumnHeaderType.HPARAM,
           name: 'lr',
@@ -536,7 +536,7 @@ describe('data table', () => {
   describe('context menu', () => {
     let mockTableData: TableData[];
     let mockHeaders: ColumnHeader[];
-    let mockSelectableColumns: ColumnHeader[];
+    let mockPotentialColumns: ColumnHeader[];
 
     beforeEach(() => {
       mockHeaders = [
@@ -567,7 +567,7 @@ describe('data table', () => {
           other_header: 'other header',
         },
       ];
-      mockSelectableColumns = [
+      mockPotentialColumns = [
         {
           type: ColumnHeaderType.HPARAM,
           name: 'lr',
@@ -580,7 +580,7 @@ describe('data table', () => {
       const fixture = createComponent({
         headers: mockHeaders,
         data: mockTableData,
-        selectabelColumns: mockSelectableColumns,
+        potentialColumns: mockPotentialColumns,
       });
       expect(fixture.debugElement.query(By.css('.context-menu'))).toBeNull();
       const cell = fixture.debugElement.query(
@@ -598,7 +598,7 @@ describe('data table', () => {
       const fixture = createComponent({
         headers: mockHeaders,
         data: mockTableData,
-        selectabelColumns: mockSelectableColumns,
+        potentialColumns: mockPotentialColumns,
       });
       expect(fixture.debugElement.query(By.css('.context-menu'))).toBeNull();
       const cell = fixture.debugElement.query(
@@ -616,7 +616,7 @@ describe('data table', () => {
       const fixture = createComponent({
         headers: mockHeaders,
         data: mockTableData,
-        selectabelColumns: mockSelectableColumns,
+        potentialColumns: mockPotentialColumns,
       });
       const cell = fixture.debugElement.query(
         By.directive(ContentCellComponent)
@@ -633,13 +633,18 @@ describe('data table', () => {
       expect(
         fixture.debugElement.query(By.directive(ColumnSelectorComponent))
       ).not.toBeNull();
+      const dataTable = fixture.debugElement.query(
+        By.directive(DataTableComponent)
+      );
+      expect(dataTable.componentInstance.insertColumnTo).toEqual(Side.LEFT);
+      expect(dataTable.componentInstance.contextMenuHeader.name).toEqual('run');
     });
 
     it('renders column selector when add column to the right is clicked', () => {
       const fixture = createComponent({
         headers: mockHeaders,
         data: mockTableData,
-        selectabelColumns: mockSelectableColumns,
+        potentialColumns: mockPotentialColumns,
       });
       const cell = fixture.debugElement.query(
         By.directive(ContentCellComponent)
@@ -656,13 +661,18 @@ describe('data table', () => {
       expect(
         fixture.debugElement.query(By.directive(ColumnSelectorComponent))
       ).not.toBeNull();
+      const dataTable = fixture.debugElement.query(
+        By.directive(DataTableComponent)
+      );
+      expect(dataTable.componentInstance.insertColumnTo).toEqual(Side.RIGHT);
+      expect(dataTable.componentInstance.contextMenuHeader.name).toEqual('run');
     });
 
     it('only shows the disabled button when the column is hparam', () => {
       const fixture = createComponent({
         headers: mockHeaders,
         data: mockTableData,
-        selectabelColumns: mockSelectableColumns,
+        potentialColumns: mockPotentialColumns,
       });
       const cell = fixture.debugElement.query(
         By.directive(ContentCellComponent)
@@ -681,7 +691,7 @@ describe('data table', () => {
       const fixture = createComponent({
         headers: mockHeaders,
         data: mockTableData,
-        selectabelColumns: mockSelectableColumns,
+        potentialColumns: mockPotentialColumns,
       });
       const cell = fixture.debugElement
         .queryAll(By.directive(ContentCellComponent))

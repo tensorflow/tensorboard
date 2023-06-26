@@ -14,6 +14,12 @@ limitations under the License.
 
 <custom-modal #contextMenu>
   <div class="context-menu">
+    <div
+      *ngIf="!canContextMenuRemoveColumn() && !(selectableColumns && selectableColumns.length)"
+      class="no-actions-message"
+    >
+      No Actions Available
+    </div>
     <button
       *ngIf="canContextMenuRemoveColumn()"
       class="context-menu-button"

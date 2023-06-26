@@ -37,7 +37,7 @@ import {CustomModalComponent} from '../custom_modal/custom_modal_component';
 import {ColumnSelectorComponent} from './column_selector_component';
 import {ContentCellComponent} from './content_cell_component';
 
-enum Side {
+export enum Side {
   RIGHT,
   LEFT,
 }
