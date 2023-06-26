@@ -73,6 +73,7 @@ import {
   getRunSelectorSort,
   getRunsLoadState,
   getRunsTableHeaders,
+  getRunsTableSortingInfo,
 } from '../../../selectors';
 import {selectors as settingsSelectors} from '../../../settings';
 import {buildColorPalette} from '../../../settings/testing';
@@ -105,7 +106,10 @@ import {RunsGroupMenuButtonContainer} from './runs_group_menu_button_container';
 import {RunsTableComponent} from './runs_table_component';
 import {RunsTableContainer, TEST_ONLY} from './runs_table_container';
 import {HparamSpec, MetricSpec, RunTableItem, RunsTableColumn} from './types';
-import {ColumnHeaderType} from '../../../widgets/data_table/types';
+import {
+  ColumnHeaderType,
+  SortingOrder,
+} from '../../../widgets/data_table/types';
 import {getFilteredRenderableRunsFromRoute} from '../../../metrics/views/main_view/common_selectors';
 
 @Injectable()
@@ -3318,6 +3322,208 @@ describe('runs_table', () => {
 
       expect(runsDataTable.componentInstance.data[0].batch_size).toEqual(1);
       expect(runsDataTable.componentInstance.data[1].batch_size).toEqual(2);
+    });
+
+    describe('sorting', () => {
+      beforeEach(() => {
+        const run1 = buildRun({id: 'run1', name: 'bbb'});
+        const run2 = buildRun({id: 'run2', name: 'aaa'});
+        const run3 = buildRun({id: 'run3', name: 'ccc'});
+        store.overrideSelector(getRuns, [run1, run2, run3]);
+
+        store.overrideSelector(getRunsTableHeaders, [
+          {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.HPARAM,
+            name: 'batch_size',
+            displayName: 'Batch Size',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.HPARAM,
+            name: 'good_hparam',
+            displayName: 'Really Good',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.HPARAM,
+            name: 'scarce',
+            displayName: 'Missing Data',
+            enabled: true,
+          },
+        ]);
+
+        store.overrideSelector(getFilteredRenderableRunsFromRoute, [
+          {
+            run: run1,
+            hparams: new Map<string, number | string | boolean>([
+              ['batch_size', 2],
+              ['good_hparam', false],
+              ['scarce', 'aaa'],
+            ]),
+          } as RunTableItem,
+          {
+            run: run2,
+            hparams: new Map<string, number | string | boolean>([
+              ['batch_size', 1],
+              ['good_hparam', true],
+            ]),
+          } as RunTableItem,
+          {
+            run: run3,
+            hparams: new Map<string, number | string | boolean>([
+              ['batch_size', 3],
+              ['good_hparam', false],
+              ['scarce', 'ccc'],
+            ]),
+          } as RunTableItem,
+        ]);
+      });
+
+      it('sorts string values', () => {
+        store.overrideSelector(getRunsTableSortingInfo, {
+          name: 'run',
+          order: SortingOrder.ASCENDING,
+        });
+        const fixture = createComponent(['book']);
+        const runsDataTable = fixture.debugElement.query(
+          By.directive(RunsDataTable)
+        );
+
+        expect(runsDataTable.componentInstance.data[0]['run']).toEqual('aaa');
+        expect(runsDataTable.componentInstance.data[1]['run']).toEqual('bbb');
+        expect(runsDataTable.componentInstance.data[2]['run']).toEqual('ccc');
+
+        store.overrideSelector(getRunsTableSortingInfo, {
+          name: 'run',
+          order: SortingOrder.DESCENDING,
+        });
+        store.refreshState();
+        fixture.detectChanges();
+
+        expect(runsDataTable.componentInstance.data[0]['run']).toEqual('ccc');
+        expect(runsDataTable.componentInstance.data[1]['run']).toEqual('bbb');
+        expect(runsDataTable.componentInstance.data[2]['run']).toEqual('aaa');
+      });
+
+      it('sorts number values', () => {
+        store.overrideSelector(getRunsTableSortingInfo, {
+          name: 'batch_size',
+          order: SortingOrder.ASCENDING,
+        });
+        const fixture = createComponent(['book']);
+        const runsDataTable = fixture.debugElement.query(
+          By.directive(RunsDataTable)
+        );
+
+        expect(runsDataTable.componentInstance.data[0]['batch_size']).toEqual(
+          1
+        );
+        expect(runsDataTable.componentInstance.data[1]['batch_size']).toEqual(
+          2
+        );
+        expect(runsDataTable.componentInstance.data[2]['batch_size']).toEqual(
+          3
+        );
+
+        store.overrideSelector(getRunsTableSortingInfo, {
+          name: 'batch_size',
+          order: SortingOrder.DESCENDING,
+        });
+        store.refreshState();
+        fixture.detectChanges();
+
+        expect(runsDataTable.componentInstance.data[0]['batch_size']).toEqual(
+          3
+        );
+        expect(runsDataTable.componentInstance.data[1]['batch_size']).toEqual(
+          2
+        );
+        expect(runsDataTable.componentInstance.data[2]['batch_size']).toEqual(
+          1
+        );
+      });
+
+      it('sorts boolean values', () => {
+        store.overrideSelector(getRunsTableSortingInfo, {
+          name: 'good_hparam',
+          order: SortingOrder.ASCENDING,
+        });
+        const fixture = createComponent(['book']);
+        const runsDataTable = fixture.debugElement.query(
+          By.directive(RunsDataTable)
+        );
+
+        expect(
+          runsDataTable.componentInstance.data[0]['good_hparam']
+        ).toBeFalse();
+        expect(
+          runsDataTable.componentInstance.data[1]['good_hparam']
+        ).toBeFalse();
+        expect(
+          runsDataTable.componentInstance.data[2]['good_hparam']
+        ).toBeTrue();
+
+        store.overrideSelector(getRunsTableSortingInfo, {
+          name: 'good_hparam',
+          order: SortingOrder.DESCENDING,
+        });
+        store.refreshState();
+        fixture.detectChanges();
+
+        expect(
+          runsDataTable.componentInstance.data[0]['good_hparam']
+        ).toBeTrue();
+        expect(
+          runsDataTable.componentInstance.data[1]['good_hparam']
+        ).toBeFalse();
+        expect(
+          runsDataTable.componentInstance.data[2]['good_hparam']
+        ).toBeFalse();
+      });
+
+      it('sorts scarce values with undefined values always below defined ones.', () => {
+        store.overrideSelector(getRunsTableSortingInfo, {
+          name: 'scarce',
+          order: SortingOrder.ASCENDING,
+        });
+        const fixture = createComponent(['book']);
+        const runsDataTable = fixture.debugElement.query(
+          By.directive(RunsDataTable)
+        );
+
+        expect(runsDataTable.componentInstance.data[0]['scarce']).toEqual(
+          'aaa'
+        );
+        expect(runsDataTable.componentInstance.data[1]['scarce']).toEqual(
+          'ccc'
+        );
+        expect(
+          runsDataTable.componentInstance.data[2]['scarce']
+        ).toBeUndefined();
+
+        store.overrideSelector(getRunsTableSortingInfo, {
+          name: 'scarce',
+          order: SortingOrder.DESCENDING,
+        });
+        store.refreshState();
+        fixture.detectChanges();
+
+        expect(runsDataTable.componentInstance.data[0]['scarce']).toEqual(
+          'ccc'
+        );
+        expect(runsDataTable.componentInstance.data[1]['scarce']).toEqual(
+          'aaa'
+        );
+        expect(
+          runsDataTable.componentInstance.data[2]['scarce']
+        ).toBeUndefined();
+      });
     });
   });
 });
