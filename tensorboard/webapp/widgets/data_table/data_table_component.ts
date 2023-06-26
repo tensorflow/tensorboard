@@ -271,6 +271,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   }
 
   canContextMenuRemoveColumn() {
+    // TODO(rileyajones) Update this check to reply upon a new field on the header type.
     return (
       this.contextMenuHeader !== undefined &&
       this.contextMenuHeader.type === ColumnHeaderType.HPARAM
