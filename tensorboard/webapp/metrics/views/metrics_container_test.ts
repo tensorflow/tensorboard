@@ -22,6 +22,8 @@ import {getEnableHparamsInTimeSeries} from '../../feature_flag/store/feature_fla
 import {RunsSelectorContainer} from '../../runs/views/runs_selector/runs_selector_container';
 import {provideMockTbStore} from '../../testing/utils';
 import {MetricsDashboardContainer} from './metrics_container';
+import {getRunsTableFullScreen} from '../../core/store/core_selectors';
+import {MainViewContainer} from './main_view/main_view_container';
 
 describe('metrics view', () => {
   let store: MockStore<State>;
@@ -63,5 +65,15 @@ describe('metrics view', () => {
       fixture.debugElement.query(By.css('runs-selector')).componentInstance
         .showHparamsAndMetrics
     ).toBeFalse();
+  });
+
+  it('hides main view when the runs table is full screen is true', () => {
+    store.overrideSelector(getRunsTableFullScreen, true);
+    const fixture = TestBed.createComponent(MetricsDashboardContainer);
+    fixture.detectChanges();
+
+    expect(
+      fixture.debugElement.query(By.directive(MainViewContainer))
+    ).toBeNull();
   });
 });

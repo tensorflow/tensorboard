@@ -61,7 +61,7 @@ tb-data-table-header-cell {
   // Ensure the button is on the right side then add 2px for the drag target.
   left: calc(100% + 2px);
   top: 0;
-  z-index: 10;
+  z-index: 1;
   display: flex;
   align-items: center;
 
