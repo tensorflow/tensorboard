@@ -313,7 +313,6 @@ function matchFilter(
 })
 export class RunsTableContainer implements OnInit, OnDestroy {
   private allUnsortedRunTableItems$?: Observable<RunTableItem[]>;
-  allRunsTableData$: Observable<TableData[]> = of([]);
   sortedRunsTableData$: Observable<TableData[]> = of([]);
   loading$: Observable<boolean> | null = null;
   filteredItemsLength$?: Observable<number>;
@@ -366,14 +365,21 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     })
   );
 
-  runToHParamValues$ = this.store
+  allRunsTableData$ = this.store
     .select(getFilteredRenderableRunsFromRoute)
     .pipe(
-      map((items) => {
-        return items.reduce((map, item) => {
-          map[item.run.id] = item.hparams;
-          return map;
-        }, {} as RunToHParamValues);
+      map((filteredRenderableRuns) => {
+        return filteredRenderableRuns.map((runTableItem) => {
+          const tableData: TableData = {
+            ...Object.fromEntries(runTableItem.hparams.entries()),
+            id: runTableItem.run.id,
+            run: runTableItem.run.name,
+            experimentName: runTableItem.experimentName,
+            selected: runTableItem.selected,
+            color: runTableItem.runColor,
+          };
+          return tableData;
+        });
       })
     );
 
@@ -393,16 +399,6 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     });
     const getRunTableItemsPerExperiment = this.experimentIds.map((id) =>
       this.getRunTableItemsForExperiment(id)
-    );
-
-    const getRunTableDataPerExperiment$ = this.experimentIds.map((id) =>
-      this.getRunTableDataForExperiment(id)
-    );
-
-    this.allRunsTableData$ = combineLatest(getRunTableDataPerExperiment$).pipe(
-      map((itemsForExperiments: TableData[][]) => {
-        return itemsForExperiments.flat();
-      })
     );
 
     this.sortedRunsTableData$ = combineLatest([
@@ -641,44 +637,6 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     );
 
     return slicedItems;
-  }
-
-  private getRunTableDataForExperiment(
-    experimentId: string
-  ): Observable<TableData[]> {
-    return combineLatest([
-      this.store.select(getRuns, {experimentId}),
-      this.store.select(getRunColorMap),
-      this.store.select(getCurrentRouteRunSelection),
-      this.runsColumns$,
-      this.runToHParamValues$,
-    ]).pipe(
-      map(([runs, colorMap, selectionMap, runsColumns, runToHParamValues]) => {
-        return runs.map((run) => {
-          const tableData: TableData = {
-            id: run.id,
-            color: colorMap[run.id],
-            selected: Boolean(selectionMap?.get(run.id)),
-          };
-
-          runsColumns.forEach((column) => {
-            switch (column.type) {
-              case ColumnHeaderType.RUN:
-                tableData[column.name!] = run.name;
-                break;
-              case ColumnHeaderType.HPARAM:
-                tableData[column.name] = runToHParamValues[run.id]?.get(
-                  column.name
-                ) as string | number;
-                break;
-              default:
-                break;
-            }
-          });
-          return tableData;
-        });
-      })
-    );
   }
 
   sortDataBy(sortingInfo: SortingInfo) {

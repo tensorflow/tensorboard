@@ -3201,14 +3201,24 @@ describe('runs_table', () => {
     it('passes run name, selected value, and color to data table', () => {
       // To make sure we only return the runs when called with the right props.
       const selectSpy = spyOn(store, 'select').and.callThrough();
-      selectSpy
-        .withArgs(getRuns, {experimentId: 'book'})
-        .and.returnValue(
-          of([
-            buildRun({id: 'book1', name: "The Philosopher's Stone"}),
-            buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
-          ])
-        );
+      selectSpy.withArgs(getFilteredRenderableRunsFromRoute).and.returnValue(
+        of([
+          {
+            run: buildRun({id: 'book1', name: "The Philosopher's Stone"}),
+            runColor: '#000',
+            experimentName: 'book',
+            selected: true,
+            hparams: new Map(),
+          },
+          {
+            run: buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
+            runColor: '#111',
+            experimentName: 'book',
+            selected: false,
+            hparams: new Map(),
+          },
+        ])
+      );
       selectSpy.withArgs(getRunsTableHeaders).and.returnValue(
         of([
           {
@@ -3217,19 +3227,6 @@ describe('runs_table', () => {
             displayName: 'Run',
             enabled: true,
           },
-        ])
-      );
-
-      store.overrideSelector(getRunColorMap, {
-        book1: '#000',
-        book2: '#111',
-      });
-
-      store.overrideSelector(
-        getCurrentRouteRunSelection,
-        new Map([
-          ['book1', true],
-          ['book2', false],
         ])
       );
 
@@ -3244,36 +3241,17 @@ describe('runs_table', () => {
           id: 'book1',
           color: '#000',
           run: "The Philosopher's Stone",
+          experimentName: 'book',
           selected: true,
         },
         {
           id: 'book2',
           color: '#111',
           run: 'The Chamber Of Secrets',
+          experimentName: 'book',
           selected: false,
         },
       ]);
-    });
-
-    it('passes selected value of false if run is not in selectionMap', () => {
-      // To make sure we only return the runs when called with the right props.
-      const selectSpy = spyOn(store, 'select').and.callThrough();
-      selectSpy
-        .withArgs(getRuns, {experimentId: 'book'})
-        .and.returnValue(of([buildRun({id: 'book1'})]));
-
-      store.overrideSelector(
-        getCurrentRouteRunSelection,
-        new Map([['otherbook', true]])
-      );
-
-      const fixture = createComponent(['book']);
-      fixture.detectChanges();
-      const runsDataTable = fixture.debugElement.query(
-        By.directive(RunsDataTable)
-      );
-
-      expect(runsDataTable.componentInstance.data[0].selected).toEqual(false);
     });
 
     it('passes hparam values to data table', () => {

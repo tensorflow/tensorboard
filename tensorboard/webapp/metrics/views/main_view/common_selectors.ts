@@ -26,7 +26,6 @@ import {
   getRouteKind,
   getRunsFromExperimentIds,
   getColumnHeadersForCard,
-  getCardMetadata,
 } from '../../../selectors';
 import {DeepReadonly} from '../../../util/types';
 import {
