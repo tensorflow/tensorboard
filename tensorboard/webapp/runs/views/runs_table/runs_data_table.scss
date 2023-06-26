@@ -29,3 +29,26 @@ $_circle-size: 20px;
   width: $_circle-size;
   outline: none;
 }
+
+:host {
+  width: 100%;
+}
+
+tb-data-table-content-row,
+tb-data-table-header-cell {
+  height: 44px;
+}
+
+tb-data-table-content-cell,
+tb-data-table-header-cell {
+  vertical-align: middle;
+  @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
+
+  &:first-child {
+    padding-left: 16px;
+  }
+
+  &:last-child {
+    padding-right: 16px;
+  }
+}
