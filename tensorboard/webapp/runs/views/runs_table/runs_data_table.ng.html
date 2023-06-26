@@ -27,8 +27,11 @@ limitations under the License.
   [headers]="headers"
   [sortingInfo]="sortingInfo"
   [columnCustomizationEnabled]="true"
+  [selectableColumns]="selectableColumns"
   (sortDataBy)="sortDataBy.emit($event)"
   (orderColumns)="orderColumns.emit($event)"
+  (addColumn)="addColumn.emit($event)"
+  (removeColumn)="removeColumn.emit($event)"
 >
   <ng-container header>
     <ng-container *ngFor="let header of getHeaders()">
@@ -38,6 +41,7 @@ limitations under the License.
         [sortingInfo]="sortingInfo"
         [hparamsEnabled]="true"
         [controlsEnabled]="header.type !== ColumnHeaderType.COLOR && header.type !== ColumnHeaderType.CUSTOM"
+        (contextmenu)="openContextMenu($event, header)"
       >
         <ng-container [ngSwitch]="header.name">
           <div *ngSwitchCase="'selected'">

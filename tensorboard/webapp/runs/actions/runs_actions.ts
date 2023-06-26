@@ -107,6 +107,14 @@ export const runsTableHeaderAdded = createAction(
 );
 
 /**
+ * Removes the provided header
+ */
+export const runsTableHeaderRemoved = createAction(
+  '[Runs] Runs Table Header Removed',
+  props<{header: ColumnHeader}>()
+);
+
+/**
  * Updates the sorting logic used by the runs data tabe.
  */
 export const runsTableSortingInfoChanged = createAction(

@@ -22,6 +22,7 @@ import {
 import {createSelector, Store} from '@ngrx/store';
 import {BehaviorSubject, combineLatest, Observable, of, Subject} from 'rxjs';
 import {
+  combineLatestWith,
   distinctUntilChanged,
   filter,
   map,
@@ -66,6 +67,7 @@ import {SortDirection} from '../../../types/ui';
 import {matchRunToRegex} from '../../../util/matcher';
 import {getEnableHparamsInTimeSeries} from '../../../feature_flag/store/feature_flag_selectors';
 import {
+  ColumnHeader,
   ColumnHeaderType,
   SortingInfo,
   TableData,
@@ -78,6 +80,8 @@ import {
   runSelectorRegexFilterChanged,
   runSelectorSortChanged,
   runTableShown,
+  runsTableHeaderAdded,
+  runsTableHeaderRemoved,
   runsTableSortingInfoChanged,
   singleRunSelected,
 } from '../../actions';
@@ -89,7 +93,10 @@ import {
   MetricColumn,
 } from './runs_table_component';
 import {RunsTableColumn, RunTableItem} from './types';
-import {getFilteredRenderableRunsFromRoute} from '../../../metrics/views/main_view/common_selectors';
+import {
+  getFilteredRenderableRunsFromRoute,
+  getPotentialHparamColumns,
+} from '../../../metrics/views/main_view/common_selectors';
 import {RunToHParamValues} from '../../data_source/runs_data_source_types';
 import {runsTableFullScreenToggled} from '../../../core/actions';
 
@@ -238,6 +245,7 @@ function matchFilter(
       *ngIf="HParamsEnabled.value"
       [headers]="runsColumns$ | async"
       [data]="allRunsTableData$ | async"
+      [selectableColumns]="selectableColumns$ | async"
       [sortingInfo]="sortingInfo$ | async"
       [experimentIds]="experimentIds"
       [regexFilter]="regexFilter$ | async"
@@ -249,6 +257,8 @@ function matchFilter(
       (onRunColorChange)="onRunColorChange($event)"
       (onRegexFilterChange)="onRegexFilterChange($event)"
       (toggleFullScreen)="toggleFullScreen()"
+      (addColumn)="addColumn($event)"
+      (removeColumn)="removeColumn($event)"
     ></runs-data-table>
   `,
   host: {
@@ -319,6 +329,16 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   HParamsEnabled = new BehaviorSubject<boolean>(false);
   runsColumns$ = this.store.select(getRunsTableHeaders);
   runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
+
+  selectableColumns$ = this.store.select(getPotentialHparamColumns).pipe(
+    combineLatestWith(this.runsColumns$),
+    map(([potentialColumns, currentColumns]) => {
+      const currentColumnNames = new Set(currentColumns.map(({name}) => name));
+      return potentialColumns.filter((columnHeader) => {
+        return !currentColumnNames.has(columnHeader.name);
+      });
+    })
+  );
 
   runToHParamValues$ = this.store
     .select(getFilteredRenderableRunsFromRoute)
@@ -789,6 +809,15 @@ export class RunsTableContainer implements OnInit, OnDestroy {
 
   toggleFullScreen() {
     this.store.dispatch(runsTableFullScreenToggled());
+  }
+
+  addColumn({header, index}: {header: ColumnHeader; index: number}) {
+    header.enabled = true;
+    this.store.dispatch(runsTableHeaderAdded({header, index}));
+  }
+
+  removeColumn(header: ColumnHeader) {
+    this.store.dispatch(runsTableHeaderRemoved({header}));
   }
 }
 

@@ -17,6 +17,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
+  HostListener,
   Input,
   Output,
 } from '@angular/core';
@@ -47,8 +48,14 @@ export class HeaderCellComponent {
   @Output() deleteButtonClicked = new EventEmitter<{
     headerType: ColumnHeaderType;
   }>();
+  @Output() contextMenuOpened = new EventEmitter<MouseEvent>();
 
   highlightStyle$: BehaviorSubject<Object> = new BehaviorSubject<Object>({});
 
   SortingOrder = SortingOrder;
+
+  @HostListener('contextmenu', ['$event'])
+  onContextMenuOpened(event: MouseEvent) {
+    this.contextMenuOpened.emit(event);
+  }
 }

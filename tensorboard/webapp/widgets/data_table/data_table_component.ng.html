@@ -12,9 +12,65 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<custom-modal #contextMenu>
+  <div class="context-menu">
+    <div
+      *ngIf="!canContextMenuRemoveColumn() && !(selectableColumns && selectableColumns.length)"
+      class="no-actions-message"
+    >
+      No Actions Available
+    </div>
+    <button
+      *ngIf="canContextMenuRemoveColumn()"
+      class="context-menu-button"
+      mat-button
+      (click)="contextMenuRemoveColumn()"
+    >
+      <mat-icon svgIcon="close_24px"></mat-icon>Remove
+    </button>
+    <button
+      mat-button
+      *ngIf="selectableColumns && selectableColumns.length"
+      class="context-menu-button"
+      (click)="openColumnSelector($event, Side.LEFT)"
+    >
+      <mat-icon svgIcon="add_24px"></mat-icon>Insert Column Left
+    </button>
+    <button
+      mat-button
+      *ngIf="selectableColumns && selectableColumns.length"
+      class="context-menu-button"
+      (click)="openColumnSelector($event, Side.RIGHT)"
+    >
+      <mat-icon svgIcon="add_24px"></mat-icon>Insert Column Right
+    </button>
+  </div>
+</custom-modal>
+
+<custom-modal
+  #columnSelectorModal
+  *ngIf="selectableColumns && selectableColumns.length"
+  (onOpen)="focusColumnSelector()"
+  onClose="onColumnSelectorClosed()"
+>
+  <tb-data-table-column-selector-component
+    [selectableColumns]="selectableColumns"
+    (columnSelected)="onColumnAdded($event)"
+  ></tb-data-table-column-selector-component>
+</custom-modal>
+
 <div class="data-table">
   <div class="header">
     <ng-content select="[header]"></ng-content>
+    <button
+      *ngIf="selectableColumns && selectableColumns.length"
+      mat-icon-button
+      class="add-column-btn"
+      (click)="openColumnSelector($event)"
+      title="Add Column"
+    >
+      <mat-icon svgIcon="add_24px"></mat-icon>
+    </button>
   </div>
   <ng-content select="[content]"></ng-content>
 </div>
