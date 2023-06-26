@@ -39,6 +39,7 @@ export class RunsDataTable {
   @Input() experimentIds!: string[];
   @Input() regexFilter!: string;
   @Input() isFullScreen!: boolean;
+  @Input() selectableColumns!: ColumnHeader[];
 
   ColumnHeaderType = ColumnHeaderType;
 
@@ -52,6 +53,11 @@ export class RunsDataTable {
     runId: string;
     newColor: string;
   }>();
+  @Output() addColumn = new EventEmitter<{
+    header: ColumnHeader;
+    index?: number | undefined;
+  }>();
+  @Output() removeColumn = new EventEmitter<ColumnHeader>();
 
   // These columns must be stored and reused to stop needless re-rendering of
   // the content and headers in these columns. This has been known to cause
@@ -87,11 +93,11 @@ export class RunsDataTable {
   }
 
   allRowsSelected() {
-    return this.data.every((row) => row.selected);
+    return this.data.every((row) => row['selected']);
   }
 
   someRowsSelected() {
-    return this.data.some((row) => row.selected);
+    return this.data.some((row) => row['selected']);
   }
 
   onFilterKeyUp(event: KeyboardEvent) {

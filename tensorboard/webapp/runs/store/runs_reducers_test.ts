@@ -1424,6 +1424,50 @@ describe('runs_reducers', () => {
     });
   });
 
+  describe('runsTableHeaderRemoved', () => {
+    it('removes all headers with the same name as the provided header', () => {
+      const state = buildRunsState(
+        {},
+        {
+          runsTableHeaders: [
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.COLOR,
+              name: 'color',
+              displayName: 'Color',
+              enabled: true,
+            },
+          ],
+        }
+      );
+
+      const nextState = runsReducers.reducers(
+        state,
+        actions.runsTableHeaderRemoved({
+          header: {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'RUN',
+            enabled: true,
+          },
+        })
+      );
+      expect(nextState.ui.runsTableHeaders).toEqual([
+        {
+          type: ColumnHeaderType.COLOR,
+          name: 'color',
+          displayName: 'Color',
+          enabled: true,
+        },
+      ]);
+    });
+  });
+
   describe('runsTableSortingInfoChanged', () => {
     it('returns the current runs table sorting info', () => {
       const state = buildRunsState(

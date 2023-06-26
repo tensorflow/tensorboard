@@ -18,6 +18,7 @@ limitations under the License.
 $_accent: map-get(mat.get-color-config($tb-theme), accent);
 
 .data-table {
+  padding: 4px;
   font-size: 13px;
   display: table;
   width: 100%;
@@ -41,5 +42,26 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
     @include tb-dark-theme {
       background-color: map-get($tb-dark-background, background);
     }
+  }
+}
+
+.context-menu {
+  border-radius: 4px;
+  border: 1px solid;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  border-color: mat.get-color-from-palette($tb-foreground, border);
+  background-color: mat.get-color-from-palette($tb-background, background);
+
+  @include tb-dark-theme {
+    border-color: mat.get-color-from-palette($tb-dark-foreground, border);
+    background-color: mat.get-color-from-palette(
+      $tb-dark-background,
+      'background'
+    );
+  }
+
+  .context-menu-button {
+    text-align: left;
+    width: 100%;
   }
 }
