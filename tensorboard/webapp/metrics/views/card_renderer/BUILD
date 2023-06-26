@@ -485,7 +485,6 @@ tf_ts_library(
         "//tensorboard/webapp/widgets/line_chart_v2/lib:formatter",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:scale",
-        "//tensorboard/webapp/widgets/line_chart_v2/lib:testing",
         "//tensorboard/webapp/widgets/text:truncated_path",
         "@npm//@angular/core",
         "@npm//@angular/forms",
