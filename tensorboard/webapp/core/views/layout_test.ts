@@ -86,6 +86,7 @@ describe('layout test', () => {
       dispatchedActions.push(action);
     });
     store.overrideSelector(getSideBarWidthInPercent, 10);
+    store.overrideSelector(getRunsTableFullScreen, false);
   });
 
   afterEach(() => {
