@@ -2034,7 +2034,12 @@ describe('metrics reducers', () => {
           beforeState,
           actions.dataTableColumnToggled({
             dataTableMode: DataTableMode.RANGE,
-            headerType: ColumnHeaderType.RUN,
+            header: {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: false,
+            },
           })
         );
 
@@ -2077,7 +2082,12 @@ describe('metrics reducers', () => {
           beforeState,
           actions.dataTableColumnToggled({
             dataTableMode: DataTableMode.RANGE,
-            headerType: ColumnHeaderType.MAX_VALUE,
+            header: {
+              type: ColumnHeaderType.MAX_VALUE,
+              name: 'maxValue',
+              displayName: 'Max',
+              enabled: true,
+            },
           })
         );
 
@@ -2120,7 +2130,12 @@ describe('metrics reducers', () => {
           beforeState,
           actions.dataTableColumnToggled({
             dataTableMode: DataTableMode.RANGE,
-            headerType: ColumnHeaderType.MAX_VALUE,
+            header: {
+              type: ColumnHeaderType.MAX_VALUE,
+              name: 'maxValue',
+              displayName: 'Max',
+              enabled: true,
+            },
           })
         );
 
@@ -2190,7 +2205,12 @@ describe('metrics reducers', () => {
           beforeState,
           actions.dataTableColumnToggled({
             dataTableMode: DataTableMode.SINGLE,
-            headerType: ColumnHeaderType.STEP,
+            header: {
+              type: ColumnHeaderType.STEP,
+              name: 'step',
+              displayName: 'Step',
+              enabled: false,
+            },
           })
         );
 
@@ -2269,7 +2289,12 @@ describe('metrics reducers', () => {
           beforeState,
           actions.dataTableColumnToggled({
             cardId: 'card1',
-            headerType: ColumnHeaderType.RUN,
+            header: {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+            },
           })
         );
 
@@ -2292,7 +2317,12 @@ describe('metrics reducers', () => {
           beforeState,
           actions.dataTableColumnToggled({
             cardId: 'card1',
-            headerType: ColumnHeaderType.MAX_VALUE,
+            header: {
+              type: ColumnHeaderType.MAX_VALUE,
+              name: 'maxValue',
+              displayName: 'Max',
+              enabled: true,
+            },
           })
         );
 
@@ -2371,7 +2401,12 @@ describe('metrics reducers', () => {
           beforeState,
           actions.dataTableColumnToggled({
             cardId: 'card1',
-            headerType: ColumnHeaderType.STEP,
+            header: {
+              type: ColumnHeaderType.STEP,
+              name: 'step',
+              displayName: 'Step',
+              enabled: false,
+            },
           })
         );
 

@@ -81,8 +81,6 @@ import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {provideMockTbStore} from '../../../testing/utils';
 import {DataLoadState} from '../../../types/data';
 import {SortDirection} from '../../../types/ui';
-import {DataTableModule} from '../../../widgets/data_table/data_table_module';
-import {DataTableComponent} from '../../../widgets/data_table/data_table_component';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';
 import {RangeInputModule} from '../../../widgets/range_input/range_input_module';
@@ -101,6 +99,7 @@ import {DomainType} from '../../data_source/runs_data_source_types';
 import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT, Run} from '../../store/runs_types';
 import {buildRun} from '../../store/testing';
 import {GroupByKey, SortType} from '../../types';
+import {RunsDataTable} from './runs_data_table';
 import {RunsGroupMenuButtonComponent} from './runs_group_menu_button_component';
 import {RunsGroupMenuButtonContainer} from './runs_group_menu_button_container';
 import {RunsTableComponent} from './runs_table_component';
@@ -245,9 +244,9 @@ describe('runs_table', () => {
         FilterInputModule,
         RangeInputModule,
         ExperimentAliasModule,
-        DataTableModule,
       ],
       declarations: [
+        RunsDataTable,
         RunsGroupMenuButtonComponent,
         RunsGroupMenuButtonContainer,
         RunsTableComponent,
@@ -3188,105 +3187,137 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       expect(
-        fixture.debugElement.query(By.directive(DataTableComponent))
+        fixture.debugElement.query(By.directive(RunsDataTable))
       ).toBeTruthy();
       expect(
         fixture.nativeElement.querySelector('runs-table-component')
       ).toBeFalsy();
     });
 
-    // Currently nothing is passed to the data table from the runs table. This
-    // is because of a data table refactor.
-    // TODO(JamesHollyer): reenable and fix tests once runs table implements new
-    // data table structure.
+    it('passes run name, selected value, and color to data table', () => {
+      // To make sure we only return the runs when called with the right props.
+      const selectSpy = spyOn(store, 'select').and.callThrough();
+      selectSpy
+        .withArgs(getRuns, {experimentId: 'book'})
+        .and.returnValue(
+          of([
+            buildRun({id: 'book1', name: "The Philosopher's Stone"}),
+            buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
+          ])
+        );
+      selectSpy.withArgs(getRunsTableHeaders).and.returnValue(
+        of([
+          {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'Run',
+            enabled: true,
+          },
+        ])
+      );
 
-    // it('passes run name and color to data table', () => {
-    //   // To make sure we only return the runs when called with the right props.
-    //   const selectSpy = spyOn(store, 'select').and.callThrough();
-    //   selectSpy
-    //     .withArgs(getRuns, {experimentId: 'book'})
-    //     .and.returnValue(
-    //       of([
-    //         buildRun({id: 'book1', name: "The Philosopher's Stone"}),
-    //         buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
-    //       ])
-    //     );
-    //   selectSpy.withArgs(getRunsTableHeaders).and.returnValue(
-    //     of([
-    //       {
-    //         type: ColumnHeaderType.RUN,
-    //         name: 'run',
-    //         displayName: 'Run',
-    //         enabled: true,
-    //       },
-    //     ])
-    //   );
+      store.overrideSelector(getRunColorMap, {
+        book1: '#000',
+        book2: '#111',
+      });
 
-    //   store.overrideSelector(getRunColorMap, {
-    //     book1: '#000',
-    //     book2: '#111',
-    //   });
+      store.overrideSelector(
+        getCurrentRouteRunSelection,
+        new Map([
+          ['book1', true],
+          ['book2', false],
+        ])
+      );
 
-    //   const fixture = createComponent(['book']);
-    //   fixture.detectChanges();
-    //   const dataTableComponent = fixture.debugElement.query(
-    //     By.directive(DataTableComponent)
-    //   );
+      const fixture = createComponent(['book']);
+      fixture.detectChanges();
+      const runsDataTable = fixture.debugElement.query(
+        By.directive(RunsDataTable)
+      );
 
-    //   expect(dataTableComponent.componentInstance.data).toEqual([
-    //     {id: 'book1', color: '#000', run: "The Philosopher's Stone"},
-    //     {id: 'book2', color: '#111', run: 'The Chamber Of Secrets'},
-    //   ]);
-    // });
+      expect(runsDataTable.componentInstance.data).toEqual([
+        {
+          id: 'book1',
+          color: '#000',
+          run: "The Philosopher's Stone",
+          selected: true,
+        },
+        {
+          id: 'book2',
+          color: '#111',
+          run: 'The Chamber Of Secrets',
+          selected: false,
+        },
+      ]);
+    });
 
-    // it('passes hparam values to data table', () => {
-    //   const run1 = buildRun({id: 'book1', name: "The Philosopher's Stone"});
-    //   const run2 = buildRun({id: 'book2', name: 'The Chamber Of Secrets'});
-    //   // To make sure we only return the runs when called with the right props.
-    //   const selectSpy = spyOn(store, 'select').and.callThrough();
-    //   selectSpy
-    //     .withArgs(getRuns, {experimentId: 'book'})
-    //     .and.returnValue(of([run1, run2]));
+    it('passes selected value of false if run is not in selectionMap', () => {
+      // To make sure we only return the runs when called with the right props.
+      const selectSpy = spyOn(store, 'select').and.callThrough();
+      selectSpy
+        .withArgs(getRuns, {experimentId: 'book'})
+        .and.returnValue(of([buildRun({id: 'book1'})]));
 
-    //   selectSpy.withArgs(getRunsTableHeaders).and.returnValue(
-    //     of([
-    //       {
-    //         type: ColumnHeaderType.HPARAM,
-    //         name: 'batch_size',
-    //         displayName: 'Batch Size',
-    //         enabled: true,
-    //       },
-    //     ])
-    //   );
+      store.overrideSelector(
+        getCurrentRouteRunSelection,
+        new Map([['otherbook', true]])
+      );
 
-    //   selectSpy.withArgs(getFilteredRenderableRunsFromRoute).and.returnValue(
-    //     of([
-    //       {
-    //         run: run1,
-    //         hparams: new Map([['batch_size', 1]]),
-    //       } as RunTableItem,
-    //       {
-    //         run: run2,
-    //         hparams: new Map([['batch_size', 2]]),
-    //       } as RunTableItem,
-    //     ])
-    //   );
+      const fixture = createComponent(['book']);
+      fixture.detectChanges();
+      const runsDataTable = fixture.debugElement.query(
+        By.directive(RunsDataTable)
+      );
 
-    //   store.overrideSelector(getRunColorMap, {
-    //     book1: '#000',
-    //     book2: '#111',
-    //   });
+      expect(runsDataTable.componentInstance.data[0].selected).toEqual(false);
+    });
 
-    //   const fixture = createComponent(['book']);
-    //   fixture.detectChanges();
-    //   const dataTableComponent = fixture.debugElement.query(
-    //     By.directive(DataTableComponent)
-    //   );
+    it('passes hparam values to data table', () => {
+      const run1 = buildRun({id: 'book1', name: "The Philosopher's Stone"});
+      const run2 = buildRun({id: 'book2', name: 'The Chamber Of Secrets'});
+      // To make sure we only return the runs when called with the right props.
+      const selectSpy = spyOn(store, 'select').and.callThrough();
+      selectSpy
+        .withArgs(getRuns, {experimentId: 'book'})
+        .and.returnValue(of([run1, run2]));
 
-    //   expect(dataTableComponent.componentInstance.data).toEqual([
-    //     {id: 'book1', color: '#000', batch_size: 1},
-    //     {id: 'book2', color: '#111', batch_size: 2},
-    //   ]);
-    // });
+      selectSpy.withArgs(getRunsTableHeaders).and.returnValue(
+        of([
+          {
+            type: ColumnHeaderType.HPARAM,
+            name: 'batch_size',
+            displayName: 'Batch Size',
+            enabled: true,
+          },
+        ])
+      );
+
+      selectSpy.withArgs(getFilteredRenderableRunsFromRoute).and.returnValue(
+        of([
+          {
+            run: run1,
+            hparams: new Map([['batch_size', 1]]),
+          } as RunTableItem,
+          {
+            run: run2,
+            hparams: new Map([['batch_size', 2]]),
+          } as RunTableItem,
+        ])
+      );
+
+      store.overrideSelector(getRunColorMap, {
+        book1: '#000',
+        book2: '#111',
+      });
+
+      const fixture = createComponent(['book']);
+      fixture.detectChanges();
+      const runsDataTable = fixture.debugElement.query(
+        By.directive(RunsDataTable)
+      );
+
+      expect(runsDataTable.componentInstance.data[0].batch_size).toEqual(1);
+      expect(runsDataTable.componentInstance.data[1].batch_size).toEqual(2);
+    });
   });
 });

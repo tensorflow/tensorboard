@@ -100,7 +100,7 @@ export interface HeaderEditInfo {
 }
 
 export interface HeaderToggleInfo {
-  headerType: ColumnHeaderType;
+  header: ColumnHeader;
   cardId?: CardId;
   dataTableMode?: DataTableMode;
 }

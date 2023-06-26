@@ -46,9 +46,9 @@ const moveHeader = (
   return newHeaders;
 };
 
-const getIndexOfType = (type: ColumnHeaderType, headers: ColumnHeader[]) => {
+const getIndexOfColumn = (column: ColumnHeader, headers: ColumnHeader[]) => {
   return headers.findIndex((header) => {
-    return header.type === type;
+    return header.name === column.name;
   });
 };
 
@@ -65,8 +65,8 @@ enum Edge {
 })
 export class ScalarColumnEditorComponent implements OnDestroy {
   DataTableMode = DataTableMode;
-  draggingHeaderType: ColumnHeaderType | undefined;
-  highlightedHeaderType: ColumnHeaderType | undefined;
+  draggingHeader: ColumnHeader | undefined;
+  highlightedHeader: ColumnHeader | undefined;
   highlightEdge: Edge = Edge.TOP;
   @Input() rangeHeaders!: ColumnHeader[];
   @Input() singleHeaders!: ColumnHeader[];
@@ -78,7 +78,7 @@ export class ScalarColumnEditorComponent implements OnDestroy {
   }>();
   @Output() onScalarTableColumnToggled = new EventEmitter<{
     dataTableMode: DataTableMode;
-    headerType: ColumnHeaderType;
+    header: ColumnHeader;
   }>();
   @Output() onScalarTableColumnEditorClosed = new EventEmitter<void>();
   @Output() onTabChange = new EventEmitter<DataTableMode>();
@@ -99,25 +99,25 @@ export class ScalarColumnEditorComponent implements OnDestroy {
   }
 
   dragStart(header: ColumnHeader) {
-    this.draggingHeaderType = header.type;
+    this.draggingHeader = header;
     this.hostElement.nativeElement.addEventListener('dragover', preventDefault);
   }
 
   dragEnd(dataTableMode: DataTableMode) {
-    if (!this.draggingHeaderType || !this.highlightedHeaderType) {
+    if (!this.draggingHeader || !this.highlightedHeader) {
       return;
     }
     const headers = this.getHeadersForMode(dataTableMode);
     this.onScalarTableColumnEdit.emit({
       dataTableMode: dataTableMode,
       headers: moveHeader(
-        getIndexOfType(this.draggingHeaderType, headers),
-        getIndexOfType(this.highlightedHeaderType, headers),
+        getIndexOfColumn(this.draggingHeader, headers),
+        getIndexOfColumn(this.highlightedHeader, headers),
         headers
       ),
     });
-    this.draggingHeaderType = undefined;
-    this.highlightedHeaderType = undefined;
+    this.draggingHeader = undefined;
+    this.highlightedHeader = undefined;
     this.hostElement.nativeElement.removeEventListener(
       'dragover',
       preventDefault
@@ -125,33 +125,33 @@ export class ScalarColumnEditorComponent implements OnDestroy {
   }
 
   dragEnter(header: ColumnHeader, dataTableMode: DataTableMode) {
-    if (!this.draggingHeaderType) {
+    if (!this.draggingHeader) {
       return;
     }
 
     // Highlight the position which the dragging header will go when dropped.
     const headers = this.getHeadersForMode(dataTableMode);
     if (
-      getIndexOfType(header.type, headers) <
-      getIndexOfType(this.draggingHeaderType, headers)
+      getIndexOfColumn(header, headers) <
+      getIndexOfColumn(this.draggingHeader, headers)
     ) {
       this.highlightEdge = Edge.TOP;
     } else {
       this.highlightEdge = Edge.BOTTOM;
     }
 
-    this.highlightedHeaderType = header.type;
+    this.highlightedHeader = header;
   }
 
   toggleHeader(header: ColumnHeader, dataTableMode: DataTableMode) {
     this.onScalarTableColumnToggled.emit({
       dataTableMode: dataTableMode,
-      headerType: header.type,
+      header,
     });
   }
 
   getHighlightClasses(header: ColumnHeader) {
-    if (header.type !== this.highlightedHeaderType) {
+    if (header.name !== this.highlightedHeader?.name) {
       return {};
     }
 

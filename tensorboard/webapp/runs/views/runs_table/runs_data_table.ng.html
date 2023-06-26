@@ -1,0 +1,85 @@
+<!--
+@license
+Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<tb-data-table
+  [headers]="headers"
+  [sortingInfo]="sortingInfo"
+  [columnCustomizationEnabled]="true"
+  (sortDataBy)="sortDataBy.emit($event)"
+  (orderColumns)="orderColumns.emit($event)"
+>
+  <ng-container header>
+    <ng-container *ngFor="let header of getHeaders()">
+      <tb-data-table-header-cell
+        *ngIf="header.enabled"
+        [header]="header"
+        [sortingInfo]="sortingInfo"
+        [hparamsEnabled]="true"
+        [controlsEnabled]="header.type !== ColumnHeaderType.COLOR && header.type !== ColumnHeaderType.CUSTOM"
+      >
+        <ng-container [ngSwitch]="header.name">
+          <div *ngSwitchCase="'selected'">
+            <mat-checkbox
+              [checked]="allRowsSelected()"
+              [indeterminate]="!allRowsSelected() && someRowsSelected()"
+              (click)="onAllSelectionToggle.emit(getRunIds())"
+            ></mat-checkbox>
+          </div>
+          <span *ngSwitchCase="'color'">
+            <runs-group-menu-button
+              [experimentIds]="experimentIds"
+            ></runs-group-menu-button>
+          </span>
+        </ng-container>
+      </tb-data-table-header-cell> </ng-container
+  ></ng-container>
+
+  <ng-container content>
+    <ng-container *ngFor="let dataRow of data">
+      <tb-data-table-content-row>
+        <ng-container *ngFor="let header of getHeaders()">
+          <tb-data-table-content-cell
+            *ngIf="header.enabled"
+            [header]="header"
+            [datum]="dataRow[header.name]"
+          >
+            <ng-container [ngSwitch]="header.name">
+              <span *ngSwitchCase="'color'" class="color-container">
+                <button
+                  class="run-color-swatch"
+                  [style.background]="dataRow['color']"
+                  [colorPicker]="dataRow['color']"
+                  [cpDialogDisplay]="'popup'"
+                  [cpPositionOffset]="-20"
+                  [cpUseRootViewContainer]="true"
+                  [cpOutputFormat]="'hex'"
+                  (colorPickerChange)="onRunColorChange.emit({runId: dataRow.id, newColor: $event})"
+                ></button>
+              </span>
+              <div *ngSwitchCase="'selected'">
+                <mat-checkbox
+                  [checked]="dataRow['selected']"
+                  (change)="onSelectionToggle.emit(dataRow.id)"
+                ></mat-checkbox>
+              </div>
+            </ng-container>
+          </tb-data-table-content-cell>
+        </ng-container>
+      </tb-data-table-content-row>
+    </ng-container>
+  </ng-container>
+</tb-data-table>

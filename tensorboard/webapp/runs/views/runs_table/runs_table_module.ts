@@ -39,6 +39,7 @@ import {RegexEditDialogComponent} from './regex_edit_dialog_component';
 import {RegexEditDialogContainer} from './regex_edit_dialog_container';
 import {RunsGroupMenuButtonComponent} from './runs_group_menu_button_component';
 import {RunsGroupMenuButtonContainer} from './runs_group_menu_button_container';
+import {RunsDataTable} from './runs_data_table';
 import {RunsTableComponent} from './runs_table_component';
 import {RunsTableContainer} from './runs_table_container';
 
@@ -68,6 +69,7 @@ import {RunsTableContainer} from './runs_table_container';
   declarations: [
     RegexEditDialogComponent,
     RegexEditDialogContainer,
+    RunsDataTable,
     RunsGroupMenuButtonComponent,
     RunsGroupMenuButtonContainer,
     RunsTableComponent,

@@ -196,7 +196,7 @@ function isMinMaxStepValid(minMax: MinMaxStep | undefined): boolean {
       (editColumnHeaders)="editColumnHeaders($event)"
       (onCardStateChanged)="onCardStateChanged($event)"
       (openTableEditMenuToMode)="openTableEditMenuToMode($event)"
-      (onRemoveColumn)="onRemoveColumn($event)"
+      (removeColumn)="onRemoveColumn($event)"
     ></scalar-card-component>
   `,
   styles: [
@@ -695,7 +695,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.store.dispatch(metricsSlideoutMenuOpened({mode: tableMode}));
   }
 
-  onRemoveColumn(headerToggleInfo: HeaderToggleInfo) {
-    this.store.dispatch(dataTableColumnToggled(headerToggleInfo));
+  onRemoveColumn(header: ColumnHeader) {
+    this.store.dispatch(dataTableColumnToggled({header, cardId: this.cardId}));
   }
 }

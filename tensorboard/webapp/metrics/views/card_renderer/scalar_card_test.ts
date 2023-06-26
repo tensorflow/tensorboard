@@ -4502,14 +4502,21 @@ describe('scalar card', () => {
         fixture.detectChanges();
 
         fixture.componentInstance.onRemoveColumn({
-          cardId: 'card1',
-          headerType: ColumnHeaderType.RUN,
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
         });
 
         expect(dispatchedActions).toEqual([
           dataTableColumnToggled({
             cardId: 'card1',
-            headerType: ColumnHeaderType.RUN,
+            header: {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+            },
           }),
         ]);
       }));
@@ -4538,14 +4545,21 @@ describe('scalar card', () => {
         fixture.detectChanges();
 
         fixture.componentInstance.onRemoveColumn({
-          cardId: 'card1',
-          headerType: ColumnHeaderType.MIN_VALUE,
+          type: ColumnHeaderType.MIN_VALUE,
+          name: 'minValue',
+          displayName: 'Min Value',
+          enabled: true,
         });
 
         expect(dispatchedActions).toEqual([
           dataTableColumnToggled({
             cardId: 'card1',
-            headerType: ColumnHeaderType.MIN_VALUE,
+            header: {
+              type: ColumnHeaderType.MIN_VALUE,
+              name: 'minValue',
+              displayName: 'Min Value',
+              enabled: true,
+            },
           }),
         ]);
       }));

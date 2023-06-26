@@ -330,10 +330,34 @@ tf_ng_module(
 )
 
 tf_ng_module(
+    name = "scalar_card_data_table",
+    srcs = [
+        "scalar_card_data_table.ts",
+        "scalar_card_data_table_module.ts",
+    ],
+    assets = [
+        ":scalar_card_data_table_styles",
+        "scalar_card_data_table.ng.html",
+    ],
+    deps = [
+        ":scalar_card_types",
+        ":utils",
+        "//tensorboard/webapp/metrics:types",
+        "//tensorboard/webapp/widgets/card_fob:types",
+        "//tensorboard/webapp/widgets/data_table",
+        "//tensorboard/webapp/widgets/data_table:types",
+        "//tensorboard/webapp/widgets/line_chart_v2/sub_view",
+        "@npm//@angular/common",
+        "@npm//@angular/core",
+    ],
+)
+
+tf_ng_module(
     name = "scalar_card",
     srcs = [
         "scalar_card_component.ts",
         "scalar_card_container.ts",
+        "scalar_card_fob_controller.ts",
         "scalar_card_module.ts",
     ],
     assets = [
@@ -342,6 +366,7 @@ tf_ng_module(
     ],
     deps = [
         ":data_download_dialog",
+        ":scalar_card_data_table",
         ":scalar_card_types",
         ":scalar_card_line_chart",
         ":scalar_card_fob_controller",

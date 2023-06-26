@@ -67,9 +67,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() orderColumns = new EventEmitter<ColumnHeader[]>();
-  @Output() removeColumn = new EventEmitter<{
-    headerType: ColumnHeaderType;
-  }>();
+  @Output() removeColumn = new EventEmitter<ColumnHeader>();
 
   readonly ColumnHeaders = ColumnHeaderType;
   readonly SortingOrder = SortingOrder;
@@ -202,8 +200,6 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   }
 
   deleteButtonClicked(header: ColumnHeader) {
-    this.removeColumn.emit({
-      headerType: header.type,
-    });
+    this.removeColumn.emit(header);
   }
 }
