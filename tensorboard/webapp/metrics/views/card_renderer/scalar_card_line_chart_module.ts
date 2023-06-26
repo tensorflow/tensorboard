@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2023 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,34 +14,14 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatIconModule} from '@angular/material/icon';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
-
-import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
-import {IntersectionObserverModule} from '../../../widgets/intersection_observer/intersection_observer_module';
 import {LineChartModule as LineChartV2Module} from '../../../widgets/line_chart_v2/line_chart_module';
-import {ResizeDetectorModule} from '../../../widgets/resize_detector_module';
-import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
-
-import {DataDownloadModule} from './data_download_module';
 import {ScalarCardLineChartComponent} from './scalar_card_line_chart_component';
 import {ScalarCardLineChartContainer} from './scalar_card_line_chart_container';
-import {ScalarCardFobControllerModule} from './scalar_card_fob_controller_module';
+import {ScalarCardModule} from './scalar_card_module';
 
 @NgModule({
   declarations: [ScalarCardLineChartContainer, ScalarCardLineChartComponent],
   exports: [ScalarCardLineChartContainer],
-  imports: [
-    CommonModule,
-    DataDownloadModule,
-    ExperimentAliasModule,
-    IntersectionObserverModule,
-    LineChartV2Module,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    ResizeDetectorModule,
-    ScalarCardFobControllerModule,
-    TruncatedPathModule,
-  ],
+  imports: [CommonModule, LineChartV2Module, ScalarCardModule],
 })
 export class ScalarCardLineChartModule {}

@@ -148,7 +148,6 @@ tf_ts_library(
     ],
     visibility = [
         "//tensorboard/webapp/widgets/line_chart_v2:__subpackages__",
-        "//tensorboard/webapp/metrics/views/card_renderer:__subpackages__"
     ],
     deps = [
         ":internal_types",

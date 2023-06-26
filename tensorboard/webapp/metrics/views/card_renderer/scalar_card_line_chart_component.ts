@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2023 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,30 +12,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ComponentType} from '@angular/cdk/overlay';
 import {
   ChangeDetectionStrategy,
   Component,
   ChangeDetectorRef,
-
   ElementRef,
   EventEmitter,
   Input,
   Output,
   ViewChild,
 } from '@angular/core';
-
 import {DataLoadState} from '../../../types/data';
 import {
   TimeSelection,
   TimeSelectionAffordance,
   TimeSelectionToggleAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
-import {
-  ColumnHeaderType,
-  SortingInfo,
-  SortingOrder,
-} from '../../../widgets/data_table/types';
 import {
   Formatter,
   intlNumberFormatter,
@@ -45,13 +37,9 @@ import {
 } from '../../../widgets/line_chart_v2/lib/formatter';
 import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {LineChartComponent} from '../../../widgets/line_chart_v2/line_chart_component';
-import {
-  RendererType,
-  ScaleType,
-} from '../../../widgets/line_chart_v2/types';
+import {RendererType, ScaleType} from '../../../widgets/line_chart_v2/types';
 import {XAxisType} from '../../types';
 import {TooltipTemplate} from '../../../widgets/line_chart_v2/line_chart_component';
-
 import {
   MinMaxStep,
   ScalarCardDataSeries,
@@ -97,13 +85,6 @@ export class ScalarCardLineChartComponent {
   @Output() onLineChartZoom = new EventEmitter<Extent | null>();
 
   @ViewChild(LineChartComponent) lineChart?: LineChartComponent;
-  sortingInfo: SortingInfo = {
-    header: ColumnHeaderType.RUN, // This is no longer used but the type needs it
-    // or it will break sync. TODO(jameshollyer):
-    // remove this once internal code all uses name.
-    name: 'run',
-    order: SortingOrder.ASCENDING,
-  };
 
   @ViewChild('dataTableContainer') dataTableContainer?: ElementRef;
 

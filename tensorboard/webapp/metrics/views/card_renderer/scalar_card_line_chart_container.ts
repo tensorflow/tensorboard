@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2023 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,26 +18,18 @@ import {
   Input,
   OnDestroy,
   OnInit,
-  ViewChild
+  ViewChild,
 } from '@angular/core';
 import {Store} from '@ngrx/store';
-import {combineLatest, from, Observable, of, Subject} from 'rxjs';
-import {
-  map
-} from 'rxjs/operators';
-
+import {Observable, of, Subject} from 'rxjs';
+import {map} from 'rxjs/operators';
 import {State} from '../../../app_state';
-import {
-  getForceSvgFeatureFlag,
-} from '../../../feature_flag/store/feature_flag_selectors';
+import {getForceSvgFeatureFlag} from '../../../feature_flag/store/feature_flag_selectors';
 import {
   getDarkModeEnabled,
-  getMetricsCardDataMinMax,
   getMetricsCardRangeSelectionEnabled,
   getMetricsCardTimeSelection,
   getMetricsCardUserViewBox,
-  getMetricsLinkedTimeEnabled,
-  getMetricsLinkedTimeSelection,
 } from '../../../selectors';
 import {DataLoadState} from '../../../types/data';
 import {
@@ -46,10 +38,7 @@ import {
   TimeSelectionWithAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
 import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
-
-import {
-  ScaleType,
-} from '../../../widgets/line_chart_v2/types';
+import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
   cardViewBoxChanged,
   stepSelectorToggled,
@@ -57,24 +46,18 @@ import {
 } from '../../actions';
 import {
   getCardLoadState,
-  getMetricsCardMinMax,
   getMetricsIgnoreOutliers,
-  getMetricsScalarSmoothing,
   getMetricsTooltipSort,
-  getMetricsXAxisType
+  getMetricsXAxisType,
 } from '../../store';
 import {CardId, XAxisType} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
-
 import {
   MinMaxStep,
   ScalarCardDataSeries,
   ScalarCardSeriesMetadataMap,
 } from './scalar_card_types';
-import {
-  maybeClipTimeSelectionView,
-  TimeSelectionView,
-} from './utils';
+import {TimeSelectionView} from './utils';
 import {TooltipTemplate} from '../../../widgets/line_chart_v2/line_chart_component';
 import {ScalarCardLineChartComponent} from './scalar_card_line_chart_component';
 
@@ -166,14 +149,12 @@ export class ScalarCardLineChartContainer
 
   private readonly ngUnsubscribe = new Subject<void>();
 
-  /**
-   * Build observables once cardId is defined (after onInit).
-   */
   ngOnInit() {
     this.userViewBox$ = this.store.select(
       getMetricsCardUserViewBox,
       this.cardId
     );
+
     this.loadState$ = this.store.select(getCardLoadState, this.cardId);
 
     this.stepOrLinkedTimeSelection$ = this.store.select(
@@ -185,8 +166,6 @@ export class ScalarCardLineChartContainer
       getMetricsCardRangeSelectionEnabled,
       this.cardId
     );
-
-
   }
 
   ngOnDestroy() {

@@ -278,24 +278,6 @@ tf_sass_binary(
     ],
 )
 
-tf_ng_module(
-    name = "scalar_card_fob_controller",
-    srcs = [
-        "scalar_card_fob_controller.ts",
-        "scalar_card_fob_controller_module.ts",
-    ],
-    assets = [
-        ":scalar_card_fob_controller_styles",
-    ],
-    deps = [
-        ":scalar_card_types",
-        "//tensorboard/webapp/widgets/card_fob",
-        "//tensorboard/webapp/widgets/card_fob:types",
-        "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
-        "@npm//@angular/core",
-    ],
-)
-
 tf_sass_binary(
     name = "scalar_card_data_table_styles",
     src = "scalar_card_data_table.scss",
@@ -303,29 +285,6 @@ tf_sass_binary(
     deps = [
         "//tensorboard/webapp/metrics/views:metrics_common_styles",
         "//tensorboard/webapp/theme",
-    ],
-)
-
-tf_ng_module(
-    name = "scalar_card_data_table",
-    srcs = [
-        "scalar_card_data_table.ts",
-        "scalar_card_data_table_module.ts",
-    ],
-    assets = [
-        ":scalar_card_data_table_styles",
-        "scalar_card_data_table.ng.html",
-    ],
-    deps = [
-        ":scalar_card_types",
-        ":utils",
-        "//tensorboard/webapp/metrics:types",
-        "//tensorboard/webapp/widgets/card_fob:types",
-        "//tensorboard/webapp/widgets/data_table",
-        "//tensorboard/webapp/widgets/data_table:types",
-        "//tensorboard/webapp/widgets/line_chart_v2/sub_view",
-        "@npm//@angular/common",
-        "@npm//@angular/core",
     ],
 )
 
@@ -362,15 +321,13 @@ tf_ng_module(
     ],
     assets = [
         ":scalar_card_styles",
+        ":scalar_card_fob_controller_styles",
         "scalar_card_component.ng.html",
     ],
     deps = [
         ":data_download_dialog",
         ":scalar_card_data_table",
         ":scalar_card_types",
-        ":scalar_card_line_chart",
-        ":scalar_card_fob_controller",
-        ":scalar_card_data_table",
         ":utils",
         ":vis_linked_time_selection_warning",
         "//tensorboard/webapp:app_state",
@@ -424,7 +381,6 @@ tf_sass_binary(
     ],
 )
 
-
 tf_ng_module(
     name = "scalar_card_line_chart",
     srcs = [
@@ -437,48 +393,27 @@ tf_ng_module(
         "scalar_card_line_chart_component.ng.html",
     ],
     deps = [
-        ":data_download_dialog",
-        ":scalar_card_data_table",
-        ":scalar_card_fob_controller",
+        ":scalar_card",
         ":scalar_card_types",
         ":utils",
-        ":vis_linked_time_selection_warning",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
-        "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
-        "//tensorboard/webapp/angular:expect_angular_material_button",
-        "//tensorboard/webapp/angular:expect_angular_material_dialog",
-        "//tensorboard/webapp/angular:expect_angular_material_icon",
-        "//tensorboard/webapp/angular:expect_angular_material_menu",
-        "//tensorboard/webapp/angular:expect_angular_material_progress_spinner",
-        "//tensorboard/webapp/experiments:types",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/actions",
-        "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",
         "//tensorboard/webapp/metrics/views:types",
-        "//tensorboard/webapp/metrics/views:utils",
-        "//tensorboard/webapp/metrics/views/main_view:common_selectors",
-        "//tensorboard/webapp/runs/store:types",
         "//tensorboard/webapp/types",
-        "//tensorboard/webapp/types:ui",
-        "//tensorboard/webapp/util:value_formatter",
-        "//tensorboard/webapp/widgets:resize_detector",
+        "//tensorboard/webapp/widgets/card_fob",
         "//tensorboard/webapp/widgets/card_fob:types",
-        "//tensorboard/webapp/widgets/data_table:types",
-        "//tensorboard/webapp/widgets/experiment_alias",
-        "//tensorboard/webapp/widgets/intersection_observer",
         "//tensorboard/webapp/widgets/line_chart_v2",
         "//tensorboard/webapp/widgets/line_chart_v2:line_chart_utils",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:formatter",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
         "//tensorboard/webapp/widgets/line_chart_v2/sub_view",
-        "//tensorboard/webapp/widgets/text:truncated_path",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
-        "@npm//@types/resize-observer-browser",
         "@npm//rxjs",
     ],
 )
@@ -506,7 +441,6 @@ tf_ts_library(
         ":run_name",
         ":scalar_card",
         ":scalar_card_data_table",
-        ":scalar_card_fob_controller",
         ":scalar_card_line_chart",
         ":scalar_card_types",
         ":utils",

@@ -27,9 +27,8 @@ import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {DataDownloadModule} from './data_download_module';
 import {ScalarCardComponent} from './scalar_card_component';
 import {ScalarCardContainer} from './scalar_card_container';
-import {ScalarCardDataTableModuleModule} from './scalar_card_data_table_module_module';
-import {ScalarCardFobControllerModule} from './scalar_card_fob_controller_module';
-import {ScalarCardLineChartModule} from './scalar_card_line_chart_module';
+import {ScalarCardDataTableModule} from './scalar_card_data_table_module';
+import {ScalarCardFobController} from './scalar_card_fob_controller';
 import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_warning_module';
 
 @NgModule({
@@ -40,6 +39,7 @@ import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_w
   ],
   exports: [ScalarCardContainer],
   imports: [
+    CardFobModule,
     CommonModule,
     DataDownloadModule,
     ExperimentAliasModule,
@@ -50,9 +50,6 @@ import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_w
     MatMenuModule,
     MatProgressSpinnerModule,
     ResizeDetectorModule,
-    ScalarCardDataTableModule,
-    ScalarCardFobControllerModule,
-    ScalarCardLineChartModule,
     ScalarCardDataTableModule,
     TruncatedPathModule,
     VisLinkedTimeSelectionWarningModule,
