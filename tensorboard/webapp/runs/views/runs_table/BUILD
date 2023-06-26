@@ -94,6 +94,7 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_table",
         "//tensorboard/webapp/app_routing",
         "//tensorboard/webapp/app_routing:types",
+        "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/experiments:types",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/hparams",

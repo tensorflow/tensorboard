@@ -91,3 +91,16 @@ limitations under the License.
     </ng-container>
   </ng-container>
 </tb-data-table>
+<div class="full-screen-toggle" [ngClass]="{'full-screen': isFullScreen}">
+  <button
+    mat-button
+    class="full-screen-btn"
+    [ngClass]="isFullScreen ? 'collapse' : 'expand'"
+    (click)="toggleFullScreen.emit()"
+  >
+    <mat-icon
+      class="expand-collapse-icon"
+      [svgIcon]="isFullScreen ? 'arrow_back_24px' : 'arrow_forward_24px'"
+    ></mat-icon>
+  </button>
+</div>

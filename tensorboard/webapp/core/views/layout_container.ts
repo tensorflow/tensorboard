@@ -20,11 +20,14 @@ import {
 } from '@angular/core';
 import {Store} from '@ngrx/store';
 import {fromEvent, Observable, Subject} from 'rxjs';
-import {filter, takeUntil} from 'rxjs/operators';
+import {combineLatestWith, filter, map, takeUntil} from 'rxjs/operators';
 import {MouseEventButtons} from '../../util/dom';
 import {sideBarWidthChanged} from '../actions';
 import {State} from '../state';
-import {getSideBarWidthInPercent} from '../store/core_selectors';
+import {
+  getRunsTableFullScreen,
+  getSideBarWidthInPercent,
+} from '../store/core_selectors';
 
 @Component({
   selector: 'tb-dashboard-layout',
@@ -41,6 +44,7 @@ import {getSideBarWidthInPercent} from '../store/core_selectors';
       class="sidebar"
       [style.width.%]="width$ | async"
       [style.minWidth.px]="MINIMUM_SIDEBAR_WIDTH_IN_PX"
+      [style.maxWidth.%]="(runsTableFullScreen$ | async) ? 100 : ''"
     >
       <ng-content select="[sidebar]"></ng-content>
     </nav>
@@ -55,9 +59,15 @@ import {getSideBarWidthInPercent} from '../store/core_selectors';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LayoutContainer implements OnDestroy {
-  readonly width$: Observable<number> = this.store.select(
-    getSideBarWidthInPercent
-  );
+  readonly runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
+  readonly width$: Observable<number> = this.store
+    .select(getSideBarWidthInPercent)
+    .pipe(
+      combineLatestWith(this.runsTableFullScreen$),
+      map(([percentageWidth, fullScreen]) => {
+        return fullScreen ? 100 : percentageWidth;
+      })
+    );
   private readonly ngUnsubscribe = new Subject<void>();
   private resizing: boolean = false;
 

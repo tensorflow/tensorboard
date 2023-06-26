@@ -57,6 +57,7 @@ import {
   getRunSelectorRegexFilter,
   getRunSelectorSort,
   getRunsLoadState,
+  getRunsTableFullScreen,
   getRunsTableHeaders,
   getRunsTableSortingInfo,
 } from '../../../selectors';
@@ -90,6 +91,7 @@ import {
 import {RunsTableColumn, RunTableItem} from './types';
 import {getFilteredRenderableRunsFromRoute} from '../../../metrics/views/main_view/common_selectors';
 import {RunToHParamValues} from '../../data_source/runs_data_source_types';
+import {runsTableFullScreenToggled} from '../../../core/actions';
 
 const getRunsLoading = createSelector<
   State,
@@ -239,12 +241,14 @@ function matchFilter(
       [sortingInfo]="sortingInfo$ | async"
       [experimentIds]="experimentIds"
       [regexFilter]="regexFilter$ | async"
+      [isFullScreen]="runsTableFullScreen$ | async"
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
       (onSelectionToggle)="onRunSelectionToggle($event)"
       (onAllSelectionToggle)="onAllSelectionToggle($event)"
       (onRunColorChange)="onRunColorChange($event)"
       (onRegexFilterChange)="onRegexFilterChange($event)"
+      (toggleFullScreen)="toggleFullScreen()"
     ></runs-data-table>
   `,
   host: {
@@ -252,6 +256,10 @@ function matchFilter(
   },
   styles: [
     `
+      :host {
+        position: relative;
+      }
+
       :host.flex-layout {
         display: flex;
       }
@@ -310,6 +318,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   regexFilter$ = this.store.select(getRunSelectorRegexFilter);
   HParamsEnabled = new BehaviorSubject<boolean>(false);
   runsColumns$ = this.store.select(getRunsTableHeaders);
+  runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
 
   runToHParamValues$ = this.store
     .select(getFilteredRenderableRunsFromRoute)
@@ -776,6 +785,10 @@ export class RunsTableContainer implements OnInit, OnDestroy {
         filterUpperValue,
       })
     );
+  }
+
+  toggleFullScreen() {
+    this.store.dispatch(runsTableFullScreenToggled());
   }
 }
 

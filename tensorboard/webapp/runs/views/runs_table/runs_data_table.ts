@@ -38,6 +38,7 @@ export class RunsDataTable {
   @Input() sortingInfo!: SortingInfo;
   @Input() experimentIds!: string[];
   @Input() regexFilter!: string;
+  @Input() isFullScreen!: boolean;
 
   ColumnHeaderType = ColumnHeaderType;
 
@@ -46,6 +47,7 @@ export class RunsDataTable {
   @Output() onSelectionToggle = new EventEmitter<string>();
   @Output() onAllSelectionToggle = new EventEmitter<string[]>();
   @Output() onRegexFilterChange = new EventEmitter<string>();
+  @Output() toggleFullScreen = new EventEmitter();
   @Output() onRunColorChange = new EventEmitter<{
     runId: string;
     newColor: string;

@@ -23,7 +23,10 @@ import {provideMockTbStore} from '../../testing/utils';
 import {MouseEventButtons} from '../../util/dom';
 import {sideBarWidthChanged} from '../actions';
 import {State} from '../state';
-import {getSideBarWidthInPercent} from '../store/core_selectors';
+import {
+  getRunsTableFullScreen,
+  getSideBarWidthInPercent,
+} from '../store/core_selectors';
 import {LayoutContainer} from './layout_container';
 
 @Component({
@@ -135,6 +138,15 @@ describe('layout test', () => {
     store.refreshState();
     fixture.detectChanges();
     expect(navEl.styles['width']).toBe('70%');
+  });
+
+  it('overrides max width when the runs table full screen is true', () => {
+    store.overrideSelector(getRunsTableFullScreen, true);
+    const fixture = TestBed.createComponent(TestableComponent);
+    fixture.detectChanges();
+
+    const navEl = fixture.debugElement.query(byCss.SIDEBAR_CONTAINER);
+    expect(navEl.styles['width']).toBe('100%');
   });
 
   describe('interactions', () => {
