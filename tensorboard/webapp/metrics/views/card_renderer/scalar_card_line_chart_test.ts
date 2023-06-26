@@ -356,7 +356,7 @@ function buildOriginalSeriesMetadata(
   };
 }
 
-fdescribe('scalar card line chart', () => {
+describe('scalar card line chart', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];
 
