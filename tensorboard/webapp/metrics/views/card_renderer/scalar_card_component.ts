@@ -44,7 +44,12 @@ import {
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
 import {CardState} from '../../store';
-import {HeaderEditInfo, TooltipSort, XAxisType} from '../../types';
+import {
+  HeaderEditInfo,
+  HeaderToggleInfo,
+  TooltipSort,
+  XAxisType,
+} from '../../types';
 import {
   MinMaxStep,
   ScalarCardDataSeries,
@@ -53,6 +58,7 @@ import {
 } from './scalar_card_types';
 import {
   ColumnHeader,
+  ColumnHeaderType,
   DataTableMode,
   SortingInfo,
   SortingOrder,
@@ -114,7 +120,7 @@ export class ScalarCardComponent<Downloader> {
   @Output() onDataTableSorting = new EventEmitter<SortingInfo>();
   @Output() editColumnHeaders = new EventEmitter<HeaderEditInfo>();
   @Output() openTableEditMenuToMode = new EventEmitter<DataTableMode>();
-  @Output() removeColumn = new EventEmitter<ColumnHeader>();
+  @Output() onRemoveColumn = new EventEmitter<HeaderToggleInfo>();
 
   @Output() onLineChartZoom = new EventEmitter<Extent | null>();
 
@@ -144,6 +150,13 @@ export class ScalarCardComponent<Downloader> {
   sortDataBy(sortingInfo: SortingInfo) {
     this.sortingInfo = sortingInfo;
     this.onDataTableSorting.emit(sortingInfo);
+  }
+
+  removeColumn(headerToggleInfo: HeaderToggleInfo) {
+    this.onRemoveColumn.emit({
+      headerType: headerToggleInfo.headerType,
+      cardId: this.cardId,
+    });
   }
 
   resetDomain() {
@@ -248,7 +261,6 @@ export class ScalarCardComponent<Downloader> {
   }
 
   showFobController() {
-    console.log(this.chartMetadataMap);
     return this.xAxisType === XAxisType.STEP && this.minMaxStep;
   }
 
