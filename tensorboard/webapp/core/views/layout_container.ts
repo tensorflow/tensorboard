@@ -59,7 +59,10 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LayoutContainer implements OnDestroy {
-  readonly runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
+  private readonly ngUnsubscribe = new Subject<void>();
+  readonly runsTableFullScreen$ = this.store
+    .select(getRunsTableFullScreen)
+    .pipe(takeUntil(this.ngUnsubscribe));
   readonly width$: Observable<number> = this.store
     .select(getSideBarWidthInPercent)
     .pipe(
@@ -68,7 +71,6 @@ export class LayoutContainer implements OnDestroy {
         return fullScreen ? 100 : percentageWidth;
       })
     );
-  private readonly ngUnsubscribe = new Subject<void>();
   private resizing: boolean = false;
 
   readonly MINIMUM_SIDEBAR_WIDTH_IN_PX = 75;
