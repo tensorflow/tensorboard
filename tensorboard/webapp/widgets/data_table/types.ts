@@ -47,6 +47,9 @@ export interface ColumnHeader {
   name: string;
   displayName: string;
   enabled: boolean;
+  removable?: boolean;
+  sortable?: boolean;
+  movable?: boolean;
 }
 
 export enum SortingOrder {
