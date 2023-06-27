@@ -70,6 +70,7 @@ import {
   ColumnHeader,
   ColumnHeaderType,
   SortingInfo,
+  SortingOrder,
   TableData,
 } from '../../../widgets/data_table/types';
 import {
@@ -180,6 +181,29 @@ function sortRunTableItems(
   return sortedItems;
 }
 
+function sortTableDataItems(
+  items: TableData[],
+  sort: SortingInfo
+): TableData[] {
+  const sortedItems = [...items];
+
+  sortedItems.sort((a, b) => {
+    const aValue = a[sort.name];
+    const bValue = b[sort.name];
+
+    if (aValue === bValue) {
+      return 0;
+    }
+
+    if (aValue === undefined || bValue === undefined) {
+      return bValue === undefined ? -1 : 1;
+    }
+
+    return aValue < bValue === (sort.order === SortingOrder.ASCENDING) ? -1 : 1;
+  });
+  return sortedItems;
+}
+
 function matchFilter(
   filter: DiscreteFilter | IntervalFilter,
   value: number | DiscreteHparamValue | undefined
@@ -244,7 +268,7 @@ function matchFilter(
     <runs-data-table
       *ngIf="HParamsEnabled.value"
       [headers]="runsColumns$ | async"
-      [data]="allRunsTableData$ | async"
+      [data]="sortedRunsTableData$ | async"
       [selectableColumns]="selectableColumns$ | async"
       [sortingInfo]="sortingInfo$ | async"
       [experimentIds]="experimentIds"
@@ -289,6 +313,7 @@ function matchFilter(
 export class RunsTableContainer implements OnInit, OnDestroy {
   private allUnsortedRunTableItems$?: Observable<RunTableItem[]>;
   allRunsTableData$: Observable<TableData[]> = of([]);
+  sortedRunsTableData$: Observable<TableData[]> = of([]);
   loading$: Observable<boolean> | null = null;
   filteredItemsLength$?: Observable<number>;
   allItemsLength$?: Observable<number>;
@@ -376,6 +401,15 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     this.allRunsTableData$ = combineLatest(getRunTableDataPerExperiment$).pipe(
       map((itemsForExperiments: TableData[][]) => {
         return itemsForExperiments.flat();
+      })
+    );
+
+    this.sortedRunsTableData$ = combineLatest([
+      this.allRunsTableData$,
+      this.sortingInfo$,
+    ]).pipe(
+      map(([items, sortingInfo]) => {
+        return sortTableDataItems(items, sortingInfo);
       })
     );
 
