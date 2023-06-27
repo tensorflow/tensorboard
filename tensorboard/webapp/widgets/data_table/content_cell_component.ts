@@ -47,6 +47,7 @@ export class ContentCellComponent {
     }
     switch (this.header.type) {
       case ColumnHeaderType.RUN:
+      case ColumnHeaderType.EXPERIMENT:
         return this.datum as string;
       case ColumnHeaderType.VALUE:
       case ColumnHeaderType.STEP:
@@ -61,7 +62,6 @@ export class ContentCellComponent {
       case ColumnHeaderType.STEP_AT_MIN:
       case ColumnHeaderType.MEAN:
       case ColumnHeaderType.HPARAM:
-      case ColumnHeaderType.EXPERIMENT:
         if (typeof this.datum === 'number') {
           return intlNumberFormatter.formatShort(this.datum as number);
         }

@@ -1354,7 +1354,7 @@ describe('runs_reducers', () => {
       expect(nextState.data.initialGroupBy.key).toBe(GroupByKey.RUN);
     });
 
-    it('adds the experiment name column to the end of the runs table columns list', () => {
+    it('adds the experiment name column to the runs table columns list', () => {
       const state = buildRunsState(
         {},
         {
@@ -1410,6 +1410,39 @@ describe('runs_reducers', () => {
       expect(
         nextState.ui.runsTableHeaders.map((column) => column.name)
       ).toEqual(['experimentName', 'run']);
+    });
+
+    it('removes the experiment name column when changing away comparison view', () => {
+      const state = buildRunsState(
+        {},
+        {
+          runsTableHeaders: [
+            {
+              type: ColumnHeaderType.EXPERIMENT,
+              name: 'experimentName',
+              displayName: 'ExperimentName',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+            },
+          ],
+        }
+      );
+
+      const nextState = runsReducers.reducers(
+        state,
+        buildNavigatedAction({
+          before: buildCompareRoute(['eid1:run1', 'eid1:run2']),
+          after: buildRoute({routeKind: RouteKind.EXPERIMENT}),
+        })
+      );
+      expect(
+        nextState.ui.runsTableHeaders.map((column) => column.name)
+      ).toEqual(['run']);
     });
   });
 
