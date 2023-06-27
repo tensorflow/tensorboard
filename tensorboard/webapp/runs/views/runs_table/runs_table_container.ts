@@ -82,6 +82,7 @@ import {
   runSelectorSortChanged,
   runTableShown,
   runsTableHeaderAdded,
+  runsTableHeaderOrderChanged,
   runsTableHeaderRemoved,
   runsTableSortingInfoChanged,
   singleRunSelected,
@@ -852,6 +853,10 @@ export class RunsTableContainer implements OnInit, OnDestroy {
 
   removeColumn(header: ColumnHeader) {
     this.store.dispatch(runsTableHeaderRemoved({header}));
+  }
+
+  orderColumns(newHeaderOrder: ColumnHeader[]) {
+    this.store.dispatch(runsTableHeaderOrderChanged({newHeaderOrder}));
   }
 }
 

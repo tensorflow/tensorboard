@@ -1468,6 +1468,65 @@ describe('runs_reducers', () => {
     });
   });
 
+  describe('runsTableHeaderOrderChanged', () => {
+    it('sets the new headers as the runsTableHeaders', () => {
+      const state = buildRunsState(
+        {},
+        {
+          runsTableHeaders: [
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.COLOR,
+              name: 'color',
+              displayName: 'Color',
+              enabled: true,
+            },
+          ],
+        }
+      );
+
+      const nextState = runsReducers.reducers(
+        state,
+        actions.runsTableHeaderOrderChanged({
+          newHeaderOrder: [
+            {
+              type: ColumnHeaderType.COLOR,
+              name: 'color',
+              displayName: 'Color',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+            },
+          ],
+        })
+      );
+
+      expect(nextState.ui.runsTableHeaders).toEqual([
+        {
+          type: ColumnHeaderType.COLOR,
+          name: 'color',
+          displayName: 'Color',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+      ]);
+    });
+  });
+
   describe('runsTableSortingInfoChanged', () => {
     it('returns the current runs table sorting info', () => {
       const state = buildRunsState(
