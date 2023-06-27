@@ -18,7 +18,6 @@ limitations under the License.
 $_accent: map-get(mat.get-color-config($tb-theme), accent);
 
 .data-table {
-  padding: 4px;
   font-size: 13px;
   display: table;
   width: 100%;
@@ -43,6 +42,11 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
       background-color: map-get($tb-dark-background, background);
     }
   }
+}
+
+.add-button-cell {
+  display: table-cell;
+  width: 40px;
 }
 
 .context-menu {
