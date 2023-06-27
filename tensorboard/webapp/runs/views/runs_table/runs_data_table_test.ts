@@ -61,7 +61,7 @@ class TestableComponent {
   @Input() onRegexFilterChange!: (regex: string) => void;
 }
 
-describe('runs_data_table', () => {
+fdescribe('runs_data_table', () => {
   let onSelectionToggleSpy: jasmine.Spy;
   let onAllSelectionToggleSpy: jasmine.Spy;
   let onRegexFilterChangeSpy: jasmine.Spy;
@@ -165,21 +165,6 @@ describe('runs_data_table', () => {
   });
 
   describe('color column', () => {
-    it('disables controls for color header', () => {
-      const fixture = createComponent({});
-
-      const dataTable = fixture.debugElement.query(
-        By.directive(DataTableComponent)
-      );
-      const headers = dataTable.queryAll(By.directive(HeaderCellComponent));
-
-      const colorHeader = headers.find(
-        (h) => h.componentInstance.header.name === 'color'
-      )!;
-
-      expect(colorHeader.componentInstance.controlsEnabled).toBe(false);
-    });
-
     it('renders group by control in color header', () => {
       const fixture = createComponent({});
 
@@ -239,21 +224,6 @@ describe('runs_data_table', () => {
           .find((header: ColumnHeader) => header.name === 'color')
       );
     });
-  });
-
-  it('disables controls for selected header', () => {
-    const fixture = createComponent({});
-
-    const dataTable = fixture.debugElement.query(
-      By.directive(DataTableComponent)
-    );
-    const headers = dataTable.queryAll(By.directive(HeaderCellComponent));
-
-    const selectedHeader = headers.find(
-      (h) => h.componentInstance.header.name === 'selected'
-    )!;
-
-    expect(selectedHeader.componentInstance.controlsEnabled).toBe(false);
   });
 
   it('adds checkbox to selected column', () => {

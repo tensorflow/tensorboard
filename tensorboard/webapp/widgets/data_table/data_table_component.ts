@@ -271,17 +271,14 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   }
 
   canContextMenuRemoveColumn() {
-    return (
-      this.contextMenuHeader !== undefined && this.contextMenuHeader.removable
-    );
+    return this.contextMenuHeader?.removable;
   }
 
   canContextMenuInsert() {
     return (
       this.selectableColumns &&
       this.selectableColumns.length &&
-      this.contextMenuHeader !== undefined &&
-      this.contextMenuHeader.movable
+      this.contextMenuHeader?.movable
     );
   }
 

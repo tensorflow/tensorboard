@@ -1001,6 +1001,9 @@ describe('common selectors', () => {
           name: 'foo',
           displayName: 'Foo',
           enabled: false,
+          removable: true,
+          sortable: true,
+          movable: true,
         },
       ]);
     });
@@ -1015,12 +1018,18 @@ describe('common selectors', () => {
           name: 'foo',
           displayName: 'Foo',
           enabled: false,
+          removable: true,
+          sortable: true,
+          movable: true,
         },
         {
           type: ColumnHeaderType.HPARAM,
           name: 'bar',
           displayName: 'bar',
           enabled: false,
+          removable: true,
+          sortable: true,
+          movable: true,
         },
       ]);
     });
