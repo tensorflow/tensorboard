@@ -555,8 +555,8 @@ class Hyperparameter:
           finite set of bool values.
     """
 
-    hyperparameter_name: str = ""
-    hyperparameter_display_name: str = ""
+    hyperparameter_name: str
+    hyperparameter_display_name: str
     domain_type: Union[HyperparameterDomainType, None] = None
     domain: Union[
         Tuple[float, float],
