@@ -61,7 +61,7 @@ class TestableComponent {
   @Input() onRegexFilterChange!: (regex: string) => void;
 }
 
-fdescribe('runs_data_table', () => {
+describe('runs_data_table', () => {
   let onSelectionToggleSpy: jasmine.Spy;
   let onAllSelectionToggleSpy: jasmine.Spy;
   let onRegexFilterChangeSpy: jasmine.Spy;
