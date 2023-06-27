@@ -86,6 +86,8 @@ describe('layout test', () => {
       dispatchedActions.push(action);
     });
     store.overrideSelector(getSideBarWidthInPercent, 10);
+    // When the runs table is full screen the width is overridden to 100%.
+    store.overrideSelector(getRunsTableFullScreen, false);
   });
 
   afterEach(() => {
