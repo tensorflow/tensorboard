@@ -115,6 +115,14 @@ export const runsTableHeaderRemoved = createAction(
 );
 
 /**
+ * Users requested to change the order of the columns in the runs table.
+ */
+export const runsTableHeaderOrderChanged = createAction(
+  '[Runs] Runs Table Header Order Changed',
+  props<{newHeaderOrder: ColumnHeader[]}>()
+);
+
+/**
  * Updates the sorting logic used by the runs data tabe.
  */
 export const runsTableSortingInfoChanged = createAction(

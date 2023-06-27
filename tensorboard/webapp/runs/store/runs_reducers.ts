@@ -449,6 +449,12 @@ const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
       runsTableHeaders: newRunsTableHeaders,
     };
   }),
+  on(runsActions.runsTableHeaderOrderChanged, (state, {newHeaderOrder}) => {
+    return {
+      ...state,
+      runsTableHeaders: newHeaderOrder,
+    };
+  }),
   on(runsActions.runsTableSortingInfoChanged, (state, {sortingInfo}) => {
     return {
       ...state,
