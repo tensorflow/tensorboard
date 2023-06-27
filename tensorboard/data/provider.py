@@ -405,9 +405,8 @@ class DataProvider(metaclass=abc.ABCMeta):
             experiments.
 
         Returns:
-          A Sequence[HyperparameterSessionGroup] describing the groups and their
-          hyperparameter values. The order of groups may be ordered based on
-          sort criteria.
+          A Collection[HyperparameterSessionGroup] describing the groups and
+          their hyperparameter values.
 
         Raises:
           tensorboard.errors.PublicError: See `DataProvider` class docstring.
