@@ -42,6 +42,7 @@ import {
 } from '../../../widgets/card_fob/card_fob_controller_component';
 import {CardFobModule} from '../../../widgets/card_fob/card_fob_module';
 import {
+  TimeSelection,
   TimeSelectionAffordance,
   TimeSelectionToggleAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
@@ -66,10 +67,7 @@ import {
   stepSelectorToggled,
   timeSelectionChanged,
 } from '../../actions';
-import {
-  getMetricsCardRangeSelectionEnabled,
-  getMetricsCardTimeSelection,
-} from '../../store';
+import {getMetricsCardRangeSelectionEnabled} from '../../store';
 import {TooltipSort, XAxisType} from '../../types';
 import {ScalarCardLineChartComponent} from './scalar_card_line_chart_component';
 import {ScalarCardLineChartContainer} from './scalar_card_line_chart_container';
@@ -173,6 +171,7 @@ class TestableLineChart {
       [cardId]="cardId"
       [tooltipTemplate]="tooltip"
       [minMaxStep]="minMaxStep"
+      [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection"
     >
     </scalar-card-line-chart>
     <ng-template
@@ -239,6 +238,7 @@ class TestableLineChart {
 class TestableScalarCardLineChart {
   @Input() cardId!: string;
   @Input() minMaxStep!: MinMaxStep;
+  @Input() stepOrLinkedTimeSelection!: TimeSelection;
   @Input() tooltipDataForTesting: TooltipDatum[] = [];
   @Input() cursorLocationInDataCoordForTesting: {x: number; y: number} = {
     x: 0,
@@ -1373,22 +1373,15 @@ describe('scalar card line chart', () => {
     });
 
     describe('fob controls', () => {
-      beforeEach(() => {
-        store.overrideSelector(getMetricsCardTimeSelection, {
-          start: {step: 20},
-          end: {step: 40},
-        });
-      });
-
       it('renders fobs', fakeAsync(() => {
-        store.overrideSelector(getMetricsCardTimeSelection, {
-          start: {step: 20},
-          end: null,
-        });
         const fixture = createComponent();
         fixture.componentInstance.minMaxStep = {
           minStep: 0,
           maxStep: 100,
+        };
+        fixture.componentInstance.stepOrLinkedTimeSelection = {
+          start: {step: 20},
+          end: null,
         };
         fixture.detectChanges();
 
@@ -1429,6 +1422,10 @@ describe('scalar card line chart', () => {
           minStep: 0,
           maxStep: 100,
         };
+        fixture.componentInstance.stepOrLinkedTimeSelection = {
+          start: {step: 20},
+          end: {step: 40},
+        };
         fixture.detectChanges();
 
         expect(
@@ -1437,15 +1434,15 @@ describe('scalar card line chart', () => {
       }));
 
       it('dispatches timeSelectionChanged action when fob is dragged', fakeAsync(() => {
-        store.overrideSelector(getMetricsCardTimeSelection, {
-          start: {step: 20},
-          end: null,
-        });
         const fixture = createComponent();
         fixture.componentInstance.cardId = 'card1';
         fixture.componentInstance.minMaxStep = {
           minStep: 0,
           maxStep: 100,
+        };
+        fixture.componentInstance.stepOrLinkedTimeSelection = {
+          start: {step: 20},
+          end: null,
         };
         fixture.detectChanges();
         const testController = fixture.debugElement.query(
@@ -1467,10 +1464,10 @@ describe('scalar card line chart', () => {
         testController.mouseMove(fakeEvent);
 
         // Simulate ngrx update from mouseMove;
-        store.overrideSelector(getMetricsCardTimeSelection, {
+        fixture.componentInstance.stepOrLinkedTimeSelection = {
           start: {step: 25},
           end: null,
-        });
+        };
         store.refreshState();
         fixture.detectChanges();
 
@@ -1489,10 +1486,10 @@ describe('scalar card line chart', () => {
         testController.mouseMove(fakeEvent);
 
         // Simulate ngrx update from mouseMove;
-        store.overrideSelector(getMetricsCardTimeSelection, {
+        fixture.componentInstance.stepOrLinkedTimeSelection = {
           start: {step: 30},
           end: null,
-        });
+        };
         store.refreshState();
         fixture.detectChanges();
 
@@ -1538,15 +1535,15 @@ describe('scalar card line chart', () => {
       }));
 
       it('toggles step selection when single fob is deselected even when linked time is enabled', fakeAsync(() => {
-        store.overrideSelector(getMetricsCardTimeSelection, {
-          start: {step: 20},
-          end: null,
-        });
         const fixture = createComponent();
         fixture.componentInstance.cardId = 'card1';
         fixture.componentInstance.minMaxStep = {
           minStep: 0,
           maxStep: 100,
+        };
+        fixture.componentInstance.stepOrLinkedTimeSelection = {
+          start: {step: 20},
+          end: null,
         };
         fixture.detectChanges();
         const fobComponent = fixture.debugElement.query(
@@ -1564,7 +1561,6 @@ describe('scalar card line chart', () => {
       }));
 
       it('does not render fobs when no timeSelection is provided', fakeAsync(() => {
-        store.overrideSelector(getMetricsCardTimeSelection, undefined);
         const fixture = createComponent();
         fixture.componentInstance.cardId = 'card1';
         fixture.componentInstance.minMaxStep = {
@@ -1685,7 +1681,6 @@ describe('scalar card line chart', () => {
       }));
 
       it('dispatches timeSelectionChanged actions when fob is added by clicking prospective fob', fakeAsync(() => {
-        store.overrideSelector(getMetricsCardTimeSelection, undefined);
         const fixture = createComponent();
         fixture.componentInstance.cardId = 'card1';
         fixture.componentInstance.minMaxStep = {
@@ -1709,10 +1704,10 @@ describe('scalar card line chart', () => {
 
         // Click the prospective fob to set the start time
         testController.prospectiveFobClicked(new MouseEvent('mouseclick'));
-        store.overrideSelector(getMetricsCardTimeSelection, {
+        fixture.componentInstance.stepOrLinkedTimeSelection = {
           start: {step: 10},
           end: null,
-        });
+        };
         store.refreshState();
         fixture.detectChanges();
 
@@ -1733,10 +1728,10 @@ describe('scalar card line chart', () => {
 
         // Click the prospective fob to set the end time
         testController.prospectiveFobClicked(new MouseEvent('mouseclick'));
-        store.overrideSelector(getMetricsCardTimeSelection, {
+        fixture.componentInstance.stepOrLinkedTimeSelection = {
           start: {step: 10},
           end: {step: 25},
-        });
+        };
         store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
         store.refreshState();
         fixture.detectChanges();
@@ -1767,15 +1762,15 @@ describe('scalar card line chart', () => {
       }));
 
       it('toggles when single fob is deselected', fakeAsync(() => {
-        store.overrideSelector(getMetricsCardTimeSelection, {
-          start: {step: 20},
-          end: null,
-        });
         const fixture = createComponent();
         fixture.componentInstance.cardId = 'card1';
         fixture.componentInstance.minMaxStep = {
           minStep: 10,
           maxStep: 30,
+        };
+        fixture.componentInstance.stepOrLinkedTimeSelection = {
+          start: {step: 20},
+          end: null,
         };
         fixture.detectChanges();
         const fobComponent = fixture.debugElement.query(
@@ -1793,15 +1788,15 @@ describe('scalar card line chart', () => {
       }));
 
       it('dispatches timeSelectionChanged actions when fob is dragged while linked time is enabled', fakeAsync(() => {
-        store.overrideSelector(getMetricsCardTimeSelection, {
-          start: {step: 20},
-          end: null,
-        });
         const fixture = createComponent();
         fixture.componentInstance.cardId = 'card1';
         fixture.componentInstance.minMaxStep = {
           minStep: 10,
           maxStep: 30,
+        };
+        fixture.componentInstance.stepOrLinkedTimeSelection = {
+          start: {step: 20},
+          end: null,
         };
         fixture.detectChanges();
         const testController = fixture.debugElement.query(
@@ -1823,10 +1818,10 @@ describe('scalar card line chart', () => {
         testController.mouseMove(fakeEvent);
 
         // Simulate ngrx update from mouseMove;
-        store.overrideSelector(getMetricsCardTimeSelection, {
+        fixture.componentInstance.stepOrLinkedTimeSelection = {
           start: {step: 25},
           end: null,
-        });
+        };
         store.refreshState();
         fixture.detectChanges();
 
@@ -1865,15 +1860,15 @@ describe('scalar card line chart', () => {
 
       it('dispatches timeSelectionChanged actions when fob is dragged while linkedTime is disabled', fakeAsync(() => {
         store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);
-        store.overrideSelector(getMetricsCardTimeSelection, {
-          start: {step: 20},
-          end: null,
-        });
         const fixture = createComponent();
         fixture.componentInstance.cardId = 'card1';
         fixture.componentInstance.minMaxStep = {
           minStep: 10,
           maxStep: 30,
+        };
+        fixture.componentInstance.stepOrLinkedTimeSelection = {
+          start: {step: 20},
+          end: null,
         };
         fixture.detectChanges();
         const testController = fixture.debugElement.query(
@@ -1895,10 +1890,10 @@ describe('scalar card line chart', () => {
         testController.mouseMove(fakeEvent);
 
         // Simulate ngrx update from mouseMove
-        store.overrideSelector(getMetricsCardTimeSelection, {
+        fixture.componentInstance.stepOrLinkedTimeSelection = {
           start: {step: 25},
           end: null,
-        });
+        };
         store.refreshState();
         fixture.detectChanges();
 
