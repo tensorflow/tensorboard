@@ -89,15 +89,15 @@ export class RunsDataTable {
   }
 
   getRunIds() {
-    return (this.data || []).map((row) => row.id);
+    return this.data.map((row) => row.id);
   }
 
   allRowsSelected() {
-    return (this.data || []).every((row) => row['selected']);
+    return this.data.every((row) => row['selected']);
   }
 
   someRowsSelected() {
-    return (this.data || []).some((row) => row['selected']);
+    return this.data.some((row) => row['selected']);
   }
 
   onFilterKeyUp(event: KeyboardEvent) {
