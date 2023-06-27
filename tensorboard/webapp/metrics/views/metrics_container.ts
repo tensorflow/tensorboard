@@ -38,12 +38,8 @@ import {Subject, takeUntil} from 'rxjs';
 })
 export class MetricsDashboardContainer implements OnDestroy {
   private ngUnsubscribe = new Subject<void>();
-  showHparamsAndMetrics$ = this.store
-    .select(getEnableHparamsInTimeSeries)
-    .pipe(takeUntil(this.ngUnsubscribe));
-  runsTableFullScreen$ = this.store
-    .select(getRunsTableFullScreen)
-    .pipe(takeUntil(this.ngUnsubscribe));
+  showHparamsAndMetrics$ = this.store.select(getEnableHparamsInTimeSeries);
+  runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
 
   constructor(readonly store: Store<State>) {}
 

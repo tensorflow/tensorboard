@@ -40,6 +40,10 @@ describe('metrics view', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
   });
 
+  afterEach(() => {
+    store.resetSelectors();
+  });
+
   it('renders', () => {
     store.overrideSelector(getEnableHparamsInTimeSeries, false);
     const fixture = TestBed.createComponent(MetricsDashboardContainer);

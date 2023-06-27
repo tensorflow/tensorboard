@@ -26,20 +26,17 @@ describe('metrics integration test', () => {
     SCALARS_SMOOTHING_INPUT: By.css('.scalars-smoothing input'),
   };
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      imports: [
-        IntegrationTestSetupModule,
-        NoopAnimationsModule,
-        MetricsModule,
-      ],
-    });
-  });
-
   describe('dependency injection', () => {
     it('populates correct default settings', async () => {
-      await TestBed.compileComponents();
-      const fixture = TestBed.createComponent(MetricsDashboardContainer);
+      const testBed = TestBed.configureTestingModule({
+        imports: [
+          IntegrationTestSetupModule,
+          NoopAnimationsModule,
+          MetricsModule,
+        ],
+      });
+      await testBed.compileComponents();
+      const fixture = testBed.createComponent(MetricsDashboardContainer);
       fixture.detectChanges();
 
       const input = fixture.debugElement.query(ByCss.SCALARS_SMOOTHING_INPUT);
@@ -47,14 +44,21 @@ describe('metrics integration test', () => {
     });
 
     it('permits overriding default settings with DI', async () => {
-      TestBed.overrideProvider(METRICS_INITIAL_SETTINGS, {
+      const testBed = TestBed.configureTestingModule({
+        imports: [
+          IntegrationTestSetupModule,
+          NoopAnimationsModule,
+          MetricsModule,
+        ],
+      });
+      await testBed.compileComponents();
+      testBed.overrideProvider(METRICS_INITIAL_SETTINGS, {
         useValue: {
           ...METRICS_SETTINGS_DEFAULT,
           scalarSmoothing: 0.3,
         },
       });
-      await TestBed.compileComponents();
-      const fixture = TestBed.createComponent(MetricsDashboardContainer);
+      const fixture = testBed.createComponent(MetricsDashboardContainer);
 
       fixture.detectChanges();
 
