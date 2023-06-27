@@ -23,6 +23,7 @@ export enum ColumnHeaderType {
   RELATIVE_TIME = 'RELATIVE_TIME',
   RUN = 'RUN',
   STEP = 'STEP',
+  EXPERIMENT = 'EXPERIMENT',
   TIME = 'TIME',
   VALUE = 'VALUE',
   SMOOTHED = 'SMOOTHED',

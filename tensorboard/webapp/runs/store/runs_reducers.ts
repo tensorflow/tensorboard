@@ -336,7 +336,30 @@ const {initialState: uiInitialState, reducers: uiNamespaceContextedReducers} =
         order: SortingOrder.DESCENDING,
       },
     },
-    {}
+    {},
+    /* onNavigated() */
+    (state, oldRoute, newRoute) => {
+      if (
+        !areSameRouteKindAndExperiments(oldRoute, newRoute) &&
+        newRoute.routeKind === RouteKind.COMPARE_EXPERIMENT
+      ) {
+        const newRunsTableHeaders = state.runsTableHeaders.filter(
+          (header) => header.name !== 'experimentName'
+        );
+        newRunsTableHeaders.push({
+          type: ColumnHeaderType.EXPERIMENT,
+          name: 'experimentName',
+          displayName: 'Experiment',
+          enabled: true,
+        });
+
+        return {
+          ...state,
+          runsTableHeaders: newRunsTableHeaders,
+        };
+      }
+      return state;
+    }
   );
 
 const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
