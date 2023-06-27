@@ -211,7 +211,6 @@ class ListSessionGroupsTest(tf.test.TestCase):
                 result[run][tag] = t
         return result
 
-
     def _mock_read_scalars(
         self,
         ctx=None,
@@ -222,7 +221,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
         run_tag_filter=None,
     ):
         hparams_time_series = [
-          provider.ScalarDatum(wall_time=123.75, step=0, value=0.0)
+            provider.ScalarDatum(wall_time=123.75, step=0, value=0.0)
         ]
         result_dict = {
             "": {
@@ -235,31 +234,31 @@ class ListSessionGroupsTest(tf.test.TestCase):
                     provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        value = 10.0,
+                        value=10.0,
                     )
                 ],
                 "delta_temp": [
                     provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        value = 20.0,
+                        value=20.0,
                     ),
                     provider.ScalarDatum(
                         wall_time=10,
                         step=2,
-                        value = 15.0,
+                        value=15.0,
                     ),
                 ],
                 "optional_metric": [
                     provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        value = 20.0,
+                        value=20.0,
                     ),
                     provider.ScalarDatum(
                         wall_time=2,
                         step=20,
-                        value = 33.0,
+                        value=33.0,
                     ),
                 ],
             },
@@ -270,19 +269,19 @@ class ListSessionGroupsTest(tf.test.TestCase):
                     provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        value = 100.0,
+                        value=100.0,
                     ),
                 ],
                 "delta_temp": [
                     provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        value = 200.0,
+                        value=200.0,
                     ),
                     provider.ScalarDatum(
                         wall_time=11,
                         step=3,
-                        value = 150.0,
+                        value=150.0,
                     ),
                 ],
             },
@@ -293,19 +292,19 @@ class ListSessionGroupsTest(tf.test.TestCase):
                     provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        value = 1.0,
+                        value=1.0,
                     ),
                 ],
                 "delta_temp": [
                     provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        value = 2.0,
+                        value=2.0,
                     ),
                     provider.ScalarDatum(
                         wall_time=10,
                         step=2,
-                        value = 1.5,
+                        value=1.5,
                     ),
                 ],
             },
@@ -316,19 +315,19 @@ class ListSessionGroupsTest(tf.test.TestCase):
                     provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        value = 101.0,
+                        value=101.0,
                     ),
                 ],
                 "delta_temp": [
                     provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        value = 201.0,
+                        value=201.0,
                     ),
                     provider.ScalarDatum(
                         wall_time=10,
                         step=2,
-                        value = -151.0,
+                        value=-151.0,
                     ),
                 ],
             },
@@ -339,19 +338,19 @@ class ListSessionGroupsTest(tf.test.TestCase):
                     provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        value = 52.0,
+                        value=52.0,
                     ),
                 ],
                 "delta_temp": [
                     provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        value = 2.0,
+                        value=2.0,
                     ),
                     provider.ScalarDatum(
                         wall_time=10,
                         step=2,
-                        value = -18,
+                        value=-18,
                     ),
                 ],
             },
