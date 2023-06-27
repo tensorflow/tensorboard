@@ -249,18 +249,21 @@ describe('data table', () => {
           name: 'value',
           displayName: 'Value',
           enabled: true,
+          sortable: true,
         },
         {
           type: ColumnHeaderType.RUN,
           name: 'run',
           displayName: 'Run',
           enabled: true,
+          sortable: true,
         },
         {
           type: ColumnHeaderType.STEP,
           name: 'step',
           displayName: 'Step',
           enabled: true,
+          sortable: true,
         },
       ],
       sortingInfo: {
@@ -313,18 +316,21 @@ describe('data table', () => {
           name: 'value',
           displayName: 'Value',
           enabled: true,
+          sortable: true,
         },
         {
           type: ColumnHeaderType.RUN,
           name: 'run',
           displayName: 'Run',
           enabled: true,
+          sortable: true,
         },
         {
           type: ColumnHeaderType.STEP,
           name: 'step',
           displayName: 'Step',
           enabled: true,
+          sortable: true,
         },
       ],
       sortingInfo: {
@@ -545,18 +551,31 @@ describe('data table', () => {
           type: ColumnHeaderType.RUN,
           displayName: 'Run',
           enabled: true,
+          movable: true,
         },
         {
           name: 'disabled_header',
           type: ColumnHeaderType.MAX_VALUE,
           displayName: 'disabled',
           enabled: false,
+          removable: true,
+          movable: true,
         },
         {
           name: 'other_header',
           type: ColumnHeaderType.HPARAM,
           displayName: 'Display This',
           enabled: true,
+          removable: true,
+          movable: true,
+        },
+        {
+          name: 'another_hparam',
+          type: ColumnHeaderType.HPARAM,
+          displayName: 'Display This',
+          enabled: true,
+          removable: true,
+          movable: false,
         },
       ];
       mockTableData = [
@@ -668,26 +687,35 @@ describe('data table', () => {
       expect(dataTable.componentInstance.contextMenuHeader.name).toEqual('run');
     });
 
-    it('only shows the disabled button when the column is hparam', () => {
+    it('only shows the disabled button when the column is removable', () => {
       const fixture = createComponent({
         headers: mockHeaders,
         data: mockTableData,
         potentialColumns: mockPotentialColumns,
       });
-      const cell = fixture.debugElement.query(
+      const cells = fixture.debugElement.queryAll(
         By.directive(ContentCellComponent)
       );
-      cell.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
-      fixture.detectChanges();
 
-      const disableBtn = fixture.debugElement
-        .queryAll(By.css('.context-menu button'))
-        .find((btn) => btn.nativeElement.innerHTML.includes('Disable'))!;
+      expect(cells.length).toBe(3);
 
-      expect(disableBtn).toBeUndefined();
+      cells.forEach((cell) => {
+        cell.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
+        fixture.detectChanges();
+
+        const removeButton = fixture.debugElement
+          .queryAll(By.css('.context-menu button'))
+          .find((btn) => btn.nativeElement.innerHTML.includes('Remove'))!;
+
+        if (cell.componentInstance.header.removable) {
+          expect(removeButton).toBeDefined();
+        } else {
+          expect(removeButton).toBeUndefined();
+        }
+      });
     });
 
-    it('removes column when Disable button is clicked', fakeAsync(() => {
+    it('removes column when Remove button is clicked', fakeAsync(() => {
       const fixture = createComponent({
         headers: mockHeaders,
         data: mockTableData,
@@ -735,6 +763,41 @@ describe('data table', () => {
           .queryAll(By.css('.context-menu button'))
           .find((element) => element.nativeElement.innerHTML.includes('Right'))!
       ).toBeUndefined();
+    });
+
+    it('only includes add buttons when header is movable', () => {
+      const fixture = createComponent({
+        headers: mockHeaders,
+        data: mockTableData,
+        potentialColumns: mockPotentialColumns,
+      });
+      const cells = fixture.debugElement.queryAll(
+        By.directive(ContentCellComponent)
+      );
+
+      expect(cells.length).toBe(3);
+
+      cells.forEach((cell) => {
+        cell.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
+        fixture.detectChanges();
+
+        const addLeft = fixture.debugElement
+          .queryAll(By.css('.context-menu button'))
+          .find((element) => element.nativeElement.innerHTML.includes('Left'))!;
+        const addRight = fixture.debugElement
+          .queryAll(By.css('.context-menu button'))
+          .find((element) =>
+            element.nativeElement.innerHTML.includes('Right')
+          )!;
+
+        if (cell.componentInstance.header.movable) {
+          expect(addLeft).toBeDefined();
+          expect(addRight).toBeDefined();
+        } else {
+          expect(addLeft).toBeUndefined();
+          expect(addRight).toBeUndefined();
+        }
+      });
     });
   });
 });

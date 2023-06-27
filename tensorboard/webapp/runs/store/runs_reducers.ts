@@ -328,6 +328,8 @@ const {initialState: uiInitialState, reducers: uiNamespaceContextedReducers} =
           name: 'run',
           displayName: 'Run',
           enabled: true,
+          sortable: true,
+          movable: true,
         },
       ],
       sortingInfo: {

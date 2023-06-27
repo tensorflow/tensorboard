@@ -47,6 +47,8 @@ export interface ColumnHeader {
   name: string;
   displayName: string;
   enabled: boolean;
+
+  // Default to false when not specified.
   removable?: boolean;
   sortable?: boolean;
   movable?: boolean;

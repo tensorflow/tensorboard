@@ -14,15 +14,15 @@ limitations under the License.
 
 <div
   class="cell"
-  [draggable]="controlsEnabled"
+  [draggable]="header.movable"
   (dragstart)="dragStart.emit(header)"
   (dragend)="dragEnd.emit()"
   (dragenter)="dragEnter.emit(header)"
-  (click)="headerClicked.emit(header.name)"
+  (click)="headerClickedHandler()"
   [ngClass]="highlightStyle$ | async"
 >
   <ng-content></ng-content>
-  <div *ngIf="hparamsEnabled && controlsEnabled" class="delete-icon-container">
+  <div *ngIf="hparamsEnabled && header.removable" class="delete-icon-container">
     <button
       class="delete-icon"
       mat-icon-button
@@ -34,7 +34,7 @@ limitations under the License.
     </button>
   </div>
   <tb-data-table-header [header]="header"></tb-data-table-header>
-  <div *ngIf="controlsEnabled" class="sorting-icon-container">
+  <div *ngIf="header.sortable" class="sorting-icon-container">
     <mat-icon
       *ngIf="
             sortingInfo.order === SortingOrder.ASCENDING ||

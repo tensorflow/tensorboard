@@ -280,6 +280,9 @@ export const getPotentialHparamColumns = createSelector(
       // be displayed tensorboard/plugins/hparams/api.proto
       displayName: spec.displayName || spec.name,
       enabled: false,
+      removable: true,
+      sortable: true,
+      movable: true,
     }));
   }
 );
