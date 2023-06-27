@@ -60,9 +60,7 @@ import {
 })
 export class LayoutContainer implements OnDestroy {
   private readonly ngUnsubscribe = new Subject<void>();
-  readonly runsTableFullScreen$ = this.store
-    .select(getRunsTableFullScreen)
-    .pipe(takeUntil(this.ngUnsubscribe));
+  readonly runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
   readonly width$: Observable<number> = this.store
     .select(getSideBarWidthInPercent)
     .pipe(

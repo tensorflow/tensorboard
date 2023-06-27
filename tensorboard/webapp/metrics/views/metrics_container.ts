@@ -12,12 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, OnDestroy} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {getEnableHparamsInTimeSeries} from '../../feature_flag/store/feature_flag_selectors';
 import {State} from '../../app_state';
 import {getRunsTableFullScreen} from '../../core/store/core_selectors';
-import {Subject, takeUntil} from 'rxjs';
 
 @Component({
   selector: 'metrics-dashboard',
@@ -36,15 +35,9 @@ import {Subject, takeUntil} from 'rxjs';
   styleUrls: ['metrics_container.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MetricsDashboardContainer implements OnDestroy {
-  private ngUnsubscribe = new Subject<void>();
+export class MetricsDashboardContainer {
   showHparamsAndMetrics$ = this.store.select(getEnableHparamsInTimeSeries);
   runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
 
   constructor(readonly store: Store<State>) {}
-
-  ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
-  }
 }
