@@ -1353,6 +1353,64 @@ describe('runs_reducers', () => {
 
       expect(nextState.data.initialGroupBy.key).toBe(GroupByKey.RUN);
     });
+
+    it('adds the experiment name column to the end of the runs table columns list', () => {
+      const state = buildRunsState(
+        {},
+        {
+          runsTableHeaders: [
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+            },
+          ],
+        }
+      );
+      const nextState = runsReducers.reducers(
+        state,
+        buildNavigatedAction({
+          before: buildRoute({routeKind: RouteKind.EXPERIMENT}),
+          after: buildCompareRoute(['eid1:run1', 'eid1:run2']),
+        })
+      );
+      expect(
+        nextState.ui.runsTableHeaders.map((column) => column.name)
+      ).toEqual(['run', 'experimentName']);
+    });
+
+    it('does not add duplicate experiment name columns', () => {
+      const state = buildRunsState(
+        {},
+        {
+          runsTableHeaders: [
+            {
+              type: ColumnHeaderType.EXPERIMENT,
+              name: 'experimentName',
+              displayName: 'ExperimentName',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+            },
+          ],
+        }
+      );
+      const nextState = runsReducers.reducers(
+        state,
+        buildNavigatedAction({
+          before: buildRoute({routeKind: RouteKind.EXPERIMENT}),
+          after: buildCompareRoute(['eid1:run1', 'eid1:run2']),
+        })
+      );
+      expect(
+        nextState.ui.runsTableHeaders.map((column) => column.name)
+      ).toEqual(['experimentName', 'run']);
+    });
   });
 
   describe('runsTableHeaderAdded', () => {

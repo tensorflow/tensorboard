@@ -341,17 +341,20 @@ const {initialState: uiInitialState, reducers: uiNamespaceContextedReducers} =
     (state, oldRoute, newRoute) => {
       if (
         !areSameRouteKindAndExperiments(oldRoute, newRoute) &&
-        newRoute.routeKind === RouteKind.COMPARE_EXPERIMENT
+        newRoute.routeKind === RouteKind.COMPARE_EXPERIMENT &&
+        !state.runsTableHeaders.find(
+          (header) => header.name === 'experimentName'
+        )
       ) {
-        const newRunsTableHeaders = state.runsTableHeaders.filter(
-          (header) => header.name !== 'experimentName'
-        );
-        newRunsTableHeaders.push({
-          type: ColumnHeaderType.EXPERIMENT,
-          name: 'experimentName',
-          displayName: 'Experiment',
-          enabled: true,
-        });
+        const newRunsTableHeaders = [
+          ...state.runsTableHeaders,
+          {
+            type: ColumnHeaderType.EXPERIMENT,
+            name: 'experimentName',
+            displayName: 'Experiment',
+            enabled: true,
+          },
+        ];
 
         return {
           ...state,
