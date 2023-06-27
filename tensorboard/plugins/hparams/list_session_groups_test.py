@@ -22,26 +22,18 @@ import tensorflow as tf
 
 from google.protobuf import text_format
 from tensorboard import context
-from tensorboard.backend.event_processing import data_provider
-from tensorboard.backend.event_processing import event_accumulator
-from tensorboard.backend.event_processing import plugin_event_multiplexer
-from tensorboard.compat.proto import summary_pb2
+from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import backend_context
 from tensorboard.plugins.hparams import list_session_groups
 from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import plugin_data_pb2
-from tensorboard.plugins.scalar import metadata as scalars_metadata
 
 
 DATA_TYPE_EXPERIMENT = "experiment"
 DATA_TYPE_SESSION_START_INFO = "session_start_info"
 DATA_TYPE_SESSION_END_INFO = "session_end_info"
-
-
-# Allow us to abbreviate event_accumulator.TensorEvent
-TensorEvent = event_accumulator.TensorEvent  # pylint: disable=invalid-name
 
 
 class ListSessionGroupsTest(tf.test.TestCase):
@@ -50,30 +42,19 @@ class ListSessionGroupsTest(tf.test.TestCase):
 
     def setUp(self):
         self._mock_tb_context = base_plugin.TBContext()
-        # TODO(#3425): Remove mocking or switch to mocking data provider
-        # APIs directly.
-        self._mock_multiplexer = mock.create_autospec(
-            plugin_event_multiplexer.EventMultiplexer
+        self._mock_tb_context.data_provider = mock.create_autospec(
+            provider.DataProvider
         )
-        self._mock_tb_context.multiplexer = self._mock_multiplexer
-        self._mock_multiplexer.PluginRunToTagToContent.side_effect = (
-            self._mock_plugin_run_to_tag_to_content
+        self._mock_tb_context.data_provider.list_tensors.side_effect = (
+            self._mock_list_tensors
         )
-        self._mock_multiplexer.AllSummaryMetadata.side_effect = (
-            self._mock_all_summary_metadata
-        )
-        self._mock_multiplexer.SummaryMetadata.side_effect = (
-            self._mock_summary_metadata
-        )
-        self._mock_multiplexer.Tensors.side_effect = self._mock_tensors
-        self._mock_tb_context.data_provider = (
-            data_provider.MultiplexerDataProvider(
-                self._mock_multiplexer, "/path/to/logs"
-            )
+        self._mock_tb_context.data_provider.read_scalars.side_effect = (
+            self._mock_read_scalars
         )
 
-    def _mock_all_summary_metadata(self):
-        result = {}
+    def _mock_list_tensors(
+        self, ctx, *, experiment_id, plugin_name, run_tag_filter
+    ):
         hparams_content = {
             "": {
                 metadata.EXPERIMENT_TAG: self._serialized_plugin_data(
@@ -216,54 +197,32 @@ class ListSessionGroupsTest(tf.test.TestCase):
                 ),
             },
         }
-        scalars_content = {
-            "session_1": {
-                "current_temp": b"",
-                "delta_temp": b"",
-                "optional_metric": b"",
-            },
-            "session_2": {"current_temp": b"", "delta_temp": b""},
-            "session_3": {"current_temp": b"", "delta_temp": b""},
-            "session_4": {"current_temp": b"", "delta_temp": b""},
-            "session_5": {"current_temp": b"", "delta_temp": b""},
-        }
+        result = {}
         for (run, tag_to_content) in hparams_content.items():
             result.setdefault(run, {})
             for (tag, content) in tag_to_content.items():
-                m = summary_pb2.SummaryMetadata()
-                m.data_class = summary_pb2.DATA_CLASS_TENSOR
-                m.plugin_data.plugin_name = metadata.PLUGIN_NAME
-                m.plugin_data.content = content
-                result[run][tag] = m
-        for (run, tag_to_content) in scalars_content.items():
-            result.setdefault(run, {})
-            for (tag, content) in tag_to_content.items():
-                m = summary_pb2.SummaryMetadata()
-                m.data_class = summary_pb2.DATA_CLASS_SCALAR
-                m.plugin_data.plugin_name = scalars_metadata.PLUGIN_NAME
-                m.plugin_data.content = content
-                result[run][tag] = m
+                t = provider.TensorTimeSeries(
+                    max_step=0,
+                    max_wall_time=0,
+                    plugin_content=content,
+                    description="",
+                    display_name="",
+                )
+                result[run][tag] = t
         return result
 
-    def _mock_plugin_run_to_tag_to_content(self, plugin_name):
-        result = {}
-        for (run, tag_to_metadata) in self._mock_all_summary_metadata().items():
-            for (tag, metadata) in tag_to_metadata.items():
-                if metadata.plugin_data.plugin_name != plugin_name:
-                    continue
-                result.setdefault(run, {})
-                result[run][tag] = metadata.plugin_data.content
-        return result
 
-    def _mock_summary_metadata(self, run, tag):
-        return self._mock_all_summary_metadata()[run][tag]
-
-    # A mock version of EventMultiplexer.Tensors
-    def _mock_tensors(self, run, tag):
+    def _mock_read_scalars(
+        self,
+        ctx=None,
+        *,
+        experiment_id,
+        plugin_name,
+        downsample=None,
+        run_tag_filter=None,
+    ):
         hparams_time_series = [
-            TensorEvent(
-                wall_time=123.75, step=0, tensor_proto=metadata.NULL_TENSOR
-            )
+          provider.ScalarDatum(wall_time=123.75, step=0, value=0.0)
         ]
         result_dict = {
             "": {
@@ -273,34 +232,34 @@ class ListSessionGroupsTest(tf.test.TestCase):
                 metadata.SESSION_START_INFO_TAG: hparams_time_series[:],
                 metadata.SESSION_END_INFO_TAG: hparams_time_series[:],
                 "current_temp": [
-                    TensorEvent(
+                    provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        tensor_proto=tf.compat.v1.make_tensor_proto(10.0),
+                        value = 10.0,
                     )
                 ],
                 "delta_temp": [
-                    TensorEvent(
+                    provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        tensor_proto=tf.compat.v1.make_tensor_proto(20.0),
+                        value = 20.0,
                     ),
-                    TensorEvent(
+                    provider.ScalarDatum(
                         wall_time=10,
                         step=2,
-                        tensor_proto=tf.compat.v1.make_tensor_proto(15.0),
+                        value = 15.0,
                     ),
                 ],
                 "optional_metric": [
-                    TensorEvent(
+                    provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        tensor_proto=tf.compat.v1.make_tensor_proto(20.0),
+                        value = 20.0,
                     ),
-                    TensorEvent(
+                    provider.ScalarDatum(
                         wall_time=2,
                         step=20,
-                        tensor_proto=tf.compat.v1.make_tensor_proto(33.0),
+                        value = 33.0,
                     ),
                 ],
             },
@@ -308,22 +267,22 @@ class ListSessionGroupsTest(tf.test.TestCase):
                 metadata.SESSION_START_INFO_TAG: hparams_time_series[:],
                 metadata.SESSION_END_INFO_TAG: hparams_time_series[:],
                 "current_temp": [
-                    TensorEvent(
+                    provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        tensor_proto=tf.compat.v1.make_tensor_proto(100.0),
+                        value = 100.0,
                     ),
                 ],
                 "delta_temp": [
-                    TensorEvent(
+                    provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        tensor_proto=tf.compat.v1.make_tensor_proto(200.0),
+                        value = 200.0,
                     ),
-                    TensorEvent(
+                    provider.ScalarDatum(
                         wall_time=11,
                         step=3,
-                        tensor_proto=tf.compat.v1.make_tensor_proto(150.0),
+                        value = 150.0,
                     ),
                 ],
             },
@@ -331,22 +290,22 @@ class ListSessionGroupsTest(tf.test.TestCase):
                 metadata.SESSION_START_INFO_TAG: hparams_time_series[:],
                 metadata.SESSION_END_INFO_TAG: hparams_time_series[:],
                 "current_temp": [
-                    TensorEvent(
+                    provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        tensor_proto=tf.compat.v1.make_tensor_proto(1.0),
+                        value = 1.0,
                     ),
                 ],
                 "delta_temp": [
-                    TensorEvent(
+                    provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        tensor_proto=tf.compat.v1.make_tensor_proto(2.0),
+                        value = 2.0,
                     ),
-                    TensorEvent(
+                    provider.ScalarDatum(
                         wall_time=10,
                         step=2,
-                        tensor_proto=tf.compat.v1.make_tensor_proto(1.5),
+                        value = 1.5,
                     ),
                 ],
             },
@@ -354,22 +313,22 @@ class ListSessionGroupsTest(tf.test.TestCase):
                 metadata.SESSION_START_INFO_TAG: hparams_time_series[:],
                 metadata.SESSION_END_INFO_TAG: hparams_time_series[:],
                 "current_temp": [
-                    TensorEvent(
+                    provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        tensor_proto=tf.compat.v1.make_tensor_proto(101.0),
+                        value = 101.0,
                     ),
                 ],
                 "delta_temp": [
-                    TensorEvent(
+                    provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        tensor_proto=tf.compat.v1.make_tensor_proto(201.0),
+                        value = 201.0,
                     ),
-                    TensorEvent(
+                    provider.ScalarDatum(
                         wall_time=10,
                         step=2,
-                        tensor_proto=tf.compat.v1.make_tensor_proto(-151.0),
+                        value = -151.0,
                     ),
                 ],
             },
@@ -377,27 +336,27 @@ class ListSessionGroupsTest(tf.test.TestCase):
                 metadata.SESSION_START_INFO_TAG: hparams_time_series[:],
                 metadata.SESSION_END_INFO_TAG: hparams_time_series[:],
                 "current_temp": [
-                    TensorEvent(
+                    provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        tensor_proto=tf.compat.v1.make_tensor_proto(52.0),
+                        value = 52.0,
                     ),
                 ],
                 "delta_temp": [
-                    TensorEvent(
+                    provider.ScalarDatum(
                         wall_time=1,
                         step=1,
-                        tensor_proto=tf.compat.v1.make_tensor_proto(2.0),
+                        value = 2.0,
                     ),
-                    TensorEvent(
+                    provider.ScalarDatum(
                         wall_time=10,
                         step=2,
-                        tensor_proto=tf.compat.v1.make_tensor_proto(-18),
+                        value = -18,
                     ),
                 ],
             },
         }
-        return result_dict[run][tag]
+        return result_dict
 
     def test_empty_request(self):
         # Since we don't allow any statuses, result should be empty.
