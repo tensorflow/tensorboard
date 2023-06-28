@@ -133,7 +133,7 @@ describe('header cell', () => {
         .query(By.directive(HeaderCellComponent))
         .componentInstance.deleteButtonClicked.subscribe();
       fixture.debugElement
-        .query(By.css('.delete-icon'))
+        .query(By.css('.delete-button'))
         .triggerEventHandler('click', {});
 
       expect(deleteButtonClickedSpy).toHaveBeenCalledOnceWith({
@@ -150,13 +150,13 @@ describe('header cell', () => {
     it('renders delete button when hparamsEnabled is true', () => {
       const fixture = createComponent({hparamsEnabled: true});
 
-      expect(fixture.debugElement.query(By.css('.delete-icon'))).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('.delete-button'))).toBeTruthy();
     });
 
     it('does not render delete button when hparamsEnabled is false', () => {
       const fixture = createComponent({hparamsEnabled: false});
 
-      expect(fixture.debugElement.query(By.css('.delete-icon'))).toBeFalsy();
+      expect(fixture.debugElement.query(By.css('.delete-button'))).toBeFalsy();
     });
 
     it('does not render delete button when removable is false', () => {
@@ -170,7 +170,7 @@ describe('header cell', () => {
         },
       });
 
-      expect(fixture.debugElement.query(By.css('.delete-icon'))).toBeFalsy();
+      expect(fixture.debugElement.query(By.css('.delete-button'))).toBeFalsy();
     });
   });
 
