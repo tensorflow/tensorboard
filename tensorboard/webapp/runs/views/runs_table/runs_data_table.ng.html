@@ -40,7 +40,6 @@ limitations under the License.
         [header]="header"
         [sortingInfo]="sortingInfo"
         [hparamsEnabled]="true"
-        [controlsEnabled]="header.type !== ColumnHeaderType.COLOR && header.type !== ColumnHeaderType.CUSTOM"
         (contextmenu)="openContextMenu($event, header)"
       >
         <ng-container [ngSwitch]="header.name">
