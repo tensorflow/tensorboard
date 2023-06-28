@@ -20,7 +20,7 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
 
 :host {
   display: table-cell;
-  padding: 4px;
+  padding: 2px;
   vertical-align: bottom;
 }
 .sorting-icon-container {
