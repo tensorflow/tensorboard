@@ -42,7 +42,6 @@ limitations under the License.
         [hparamsEnabled]="true"
         [controlsEnabled]="header.type !== ColumnHeaderType.COLOR && header.type !== ColumnHeaderType.CUSTOM"
         (contextmenu)="openContextMenu($event, header)"
-        [ngClass]="header.type === ColumnHeaderType.COLOR ? 'last-header' : ''"
       >
         <ng-container [ngSwitch]="header.name">
           <div *ngSwitchCase="'selected'">

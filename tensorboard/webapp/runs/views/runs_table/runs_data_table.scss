@@ -65,7 +65,7 @@ tb-data-table-header-cell {
   }
 }
 
-.last-header {
+tb-data-table-header-cell:last-of-type {
   @include tb-theme-foreground-prop(border-right, border, 1px solid);
 }
 
