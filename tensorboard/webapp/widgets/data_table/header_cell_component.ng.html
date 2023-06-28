@@ -22,9 +22,12 @@ limitations under the License.
   [ngClass]="highlightStyle$ | async"
 >
   <ng-content></ng-content>
-  <div *ngIf="hparamsEnabled && header.removable" class="delete-icon-container">
+  <div
+    *ngIf="hparamsEnabled && header.removable"
+    class="delete-button-container"
+  >
     <button
-      class="delete-icon"
+      class="delete-button"
       mat-icon-button
       i18n-aria-label="A button to delete a data table column."
       aria-label="Delete column"
