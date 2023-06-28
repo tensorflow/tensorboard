@@ -40,6 +40,12 @@ $_arrow_size: 16px;
   outline: none;
 }
 
+.group-menu-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
 tb-data-table-content-row,
 tb-data-table-header-cell {
   height: 44px;
@@ -55,8 +61,12 @@ tb-data-table-header-cell {
   }
 
   &:last-child {
-    padding-right: 16px;
+    @include tb-theme-foreground-prop(border-right, border, 1px solid);
   }
+}
+
+tb-data-table-header-cell:last-of-type {
+  @include tb-theme-foreground-prop(border-right, border, 1px solid);
 }
 
 .full-screen-toggle {

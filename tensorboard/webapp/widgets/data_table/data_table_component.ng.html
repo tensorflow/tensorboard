@@ -62,15 +62,19 @@ limitations under the License.
 <div class="data-table">
   <div class="header">
     <ng-content select="[header]"></ng-content>
-    <button
+    <div
+      class="add-button-cell"
       *ngIf="selectableColumns && selectableColumns.length"
-      mat-icon-button
-      class="add-column-btn"
-      (click)="openColumnSelector($event)"
-      title="Add Column"
     >
-      <mat-icon svgIcon="add_24px"></mat-icon>
-    </button>
+      <button
+        mat-icon-button
+        class="add-column-btn"
+        (click)="openColumnSelector($event)"
+        title="Add Column"
+      >
+        <mat-icon svgIcon="add_24px"></mat-icon>
+      </button>
+    </div>
   </div>
   <ng-content select="[content]"></ng-content>
 </div>

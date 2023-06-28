@@ -51,7 +51,7 @@ limitations under the License.
               (click)="onAllSelectionToggle.emit(getRunIds())"
             ></mat-checkbox>
           </div>
-          <span *ngSwitchCase="'color'">
+          <span class="group-menu-container" *ngSwitchCase="'color'">
             <runs-group-menu-button
               [experimentIds]="experimentIds"
             ></runs-group-menu-button>
