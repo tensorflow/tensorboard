@@ -22,6 +22,12 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
   display: table-cell;
   padding: 4px;
   vertical-align: bottom;
+
+  &:hover {
+    .context-menu-container {
+      opacity: 0.8;
+    }
+  }
 }
 .sorting-icon-container {
   width: 12px;
@@ -102,4 +108,16 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
 
 .highlight-border-left {
   border-left: 2px solid mat.get-color-from-palette($_accent);
+}
+
+.context-menu-container {
+  opacity: 0;
+
+  .context-menu-trigger {
+    width: 12px;
+
+    mat-icon {
+      height: unset;
+    }
+  }
 }
