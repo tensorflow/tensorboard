@@ -20,6 +20,7 @@ import {
   ElementRef,
   HostListener,
   OnInit,
+  ViewContainerRef,
 } from '@angular/core';
 import {BehaviorSubject} from 'rxjs';
 
@@ -40,7 +41,6 @@ export interface ModalContent {
     `
       :host {
         position: fixed;
-        top: -64px; /* The height of the top bar */
         left: 0;
         z-index: 9001;
       }
@@ -62,6 +62,8 @@ export class CustomModalComponent implements OnInit {
 
   private clickListener: () => void = this.close.bind(this);
 
+  constructor(private readonly viewRef: ViewContainerRef) {}
+
   ngOnInit() {
     this.visible$.subscribe((visible) => {
       // Wait until after the next browser frame.
@@ -76,6 +78,12 @@ export class CustomModalComponent implements OnInit {
   }
 
   public openAtPosition(position: {x: number; y: number}) {
+    const root = this.viewRef.element.nativeElement;
+    const top = root.getBoundingClientRect().top;
+    if (top !== 0) {
+      root.style.top = top * -1 + root.offsetTop + 'px';
+    }
+
     this.content.nativeElement.style.left = position.x + 'px';
     this.content.nativeElement.style.top = position.y + 'px';
     this.visible$.next(true);
