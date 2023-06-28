@@ -59,7 +59,10 @@ limitations under the License.
       svgIcon="arrow_downward_24px"
     ></mat-icon>
   </div>
-  <div *ngIf="controlsEnabled" class="context-menu-container">
+  <div
+    *ngIf="header.removable || header.sortable"
+    class="context-menu-container"
+  >
     <button
       mat-icon-button
       class="context-menu-trigger"
