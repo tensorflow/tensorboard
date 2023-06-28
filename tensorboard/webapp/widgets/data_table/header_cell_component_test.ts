@@ -66,7 +66,6 @@ describe('header cell', () => {
     header?: ColumnHeader;
     sortingInfo?: SortingInfo;
     hparamsEnabled?: boolean;
-    controlsEnabled?: boolean;
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
 
@@ -75,13 +74,15 @@ describe('header cell', () => {
       displayName: 'Run',
       type: ColumnHeaderType.RUN,
       enabled: true,
+      sortable: true,
+      removable: true,
+      movable: true,
     };
     fixture.componentInstance.sortingInfo = input.sortingInfo || {
       name: 'run',
       order: SortingOrder.ASCENDING,
     };
     fixture.componentInstance.hparamsEnabled = input.hparamsEnabled ?? true;
-    fixture.componentInstance.controlsEnabled = input.controlsEnabled ?? true;
 
     headerClickedSpy = jasmine.createSpy();
     fixture.componentInstance.headerClicked = headerClickedSpy;
@@ -108,6 +109,23 @@ describe('header cell', () => {
     expect(headerClickedSpy).toHaveBeenCalledOnceWith('run');
   });
 
+  it('does not emits headerClicked event when cell element is clicked with removable set to false', () => {
+    const fixture = createComponent({
+      header: {
+        name: 'run',
+        displayName: 'Run',
+        type: ColumnHeaderType.RUN,
+        enabled: true,
+        sortable: false,
+      },
+    });
+    fixture.debugElement
+      .query(By.directive(HeaderCellComponent))
+      .componentInstance.headerClicked.subscribe();
+    fixture.debugElement.query(By.css('.cell')).nativeElement.click();
+    expect(headerClickedSpy).not.toHaveBeenCalled();
+  });
+
   describe('delete column button', () => {
     it('emits removeColumn event when delete button clicked', () => {
       const fixture = createComponent({hparamsEnabled: true});
@@ -123,6 +141,9 @@ describe('header cell', () => {
         displayName: 'Run',
         type: ColumnHeaderType.RUN,
         enabled: true,
+        sortable: true,
+        removable: true,
+        movable: true,
       });
     });
 
@@ -138,8 +159,16 @@ describe('header cell', () => {
       expect(fixture.debugElement.query(By.css('.delete-icon'))).toBeFalsy();
     });
 
-    it('does not render delete button when controlsEnabled is false', () => {
-      const fixture = createComponent({controlsEnabled: false});
+    it('does not render delete button when removable is false', () => {
+      const fixture = createComponent({
+        header: {
+          name: 'run',
+          displayName: 'Run',
+          type: ColumnHeaderType.RUN,
+          enabled: true,
+          removable: false,
+        },
+      });
 
       expect(fixture.debugElement.query(By.css('.delete-icon'))).toBeFalsy();
     });
@@ -206,12 +235,46 @@ describe('header cell', () => {
       ).toBe('arrow_upward_24px');
     });
 
-    it('does not render sorting icon when controlsEnabled is false', () => {
-      const fixture = createComponent({controlsEnabled: false});
+    it('does not render sorting icon when sortable is false', () => {
+      const fixture = createComponent({
+        header: {
+          name: 'run',
+          displayName: 'Run',
+          type: ColumnHeaderType.RUN,
+          enabled: true,
+          sortable: false,
+        },
+      });
 
       expect(
         fixture.debugElement.query(By.css('.sorting-icon-container mat-icon'))
       ).toBeFalsy();
+    });
+  });
+
+  describe('drag and drop', () => {
+    it('is draggable if movable is true', () => {
+      const fixture = createComponent({});
+
+      expect(
+        fixture.debugElement.query(By.css('.cell')).nativeElement.draggable
+      ).toBe(true);
+    });
+
+    it('is not draggable if movable is false', () => {
+      const fixture = createComponent({
+        header: {
+          name: 'run',
+          displayName: 'Run',
+          type: ColumnHeaderType.RUN,
+          enabled: true,
+          movable: false,
+        },
+      });
+
+      expect(
+        fixture.debugElement.query(By.css('.cell')).nativeElement.draggable
+      ).toBe(false);
     });
   });
 });

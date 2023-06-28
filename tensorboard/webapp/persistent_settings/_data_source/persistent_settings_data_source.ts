@@ -213,6 +213,12 @@ export class OSSSettingsConverter extends SettingsConverter<
       // If the settings stored in the backend are invalid, reset back to default.
       backendSettings.singleSelectionHeaders[0].name !== undefined
     ) {
+      // Default these properies to true if stored headers are missing them.
+      backendSettings.singleSelectionHeaders.forEach((header) => {
+        header.movable = header.movable ?? true;
+        header.sortable = header.sortable ?? true;
+        header.removable = header.removable ?? true;
+      });
       settings.singleSelectionHeaders = backendSettings.singleSelectionHeaders;
     }
 
@@ -221,6 +227,12 @@ export class OSSSettingsConverter extends SettingsConverter<
       // If the settings stored in the backend are invalid, reset back to default.
       backendSettings.rangeSelectionHeaders[0].name !== undefined
     ) {
+      // Default these properies to true if stored headers are missing them.
+      backendSettings.rangeSelectionHeaders.forEach((header) => {
+        header.movable = header.movable ?? true;
+        header.sortable = header.sortable ?? true;
+        header.removable = header.removable ?? true;
+      });
       settings.rangeSelectionHeaders = backendSettings.rangeSelectionHeaders;
     }
 

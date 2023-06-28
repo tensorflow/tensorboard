@@ -38,7 +38,6 @@ import {BehaviorSubject} from 'rxjs';
 export class HeaderCellComponent {
   @Input() header!: ColumnHeader;
   @Input() sortingInfo!: SortingInfo;
-  @Input() controlsEnabled: boolean = true;
   @Input() hparamsEnabled?: boolean = false;
 
   @Output() dragStart = new EventEmitter<ColumnHeader>();
@@ -57,5 +56,11 @@ export class HeaderCellComponent {
   @HostListener('contextmenu', ['$event'])
   onContextMenuOpened(event: MouseEvent) {
     this.contextMenuOpened.emit(event);
+  }
+
+  headerClickedHandler() {
+    if (this.header.sortable) {
+      this.headerClicked.emit(this.header.name);
+    }
   }
 }

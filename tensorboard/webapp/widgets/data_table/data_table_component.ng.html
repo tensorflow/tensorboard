@@ -30,7 +30,7 @@ limitations under the License.
     </button>
     <button
       mat-button
-      *ngIf="selectableColumns && selectableColumns.length"
+      *ngIf="canContextMenuInsert()"
       class="context-menu-button"
       (click)="openColumnSelector($event, Side.LEFT)"
     >
@@ -38,7 +38,7 @@ limitations under the License.
     </button>
     <button
       mat-button
-      *ngIf="selectableColumns && selectableColumns.length"
+      *ngIf="canContextMenuInsert()"
       class="context-menu-button"
       (click)="openColumnSelector($event, Side.RIGHT)"
     >
