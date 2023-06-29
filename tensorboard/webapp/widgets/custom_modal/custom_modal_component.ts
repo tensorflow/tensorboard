@@ -69,6 +69,7 @@ export class CustomModalComponent implements OnInit {
       // Wait until after the next browser frame.
       window.requestAnimationFrame(() => {
         if (visible) {
+          this.ensureContentIsWithinWindow();
           this.onOpen.emit();
         } else {
           this.onClose.emit();
@@ -88,6 +89,29 @@ export class CustomModalComponent implements OnInit {
     this.content.nativeElement.style.top = position.y + 'px';
     this.visible$.next(true);
     document.addEventListener('click', this.clickListener);
+  }
+
+  private ensureContentIsWithinWindow() {
+    if (!this.content) {
+      return;
+    }
+
+    const boundingBox = this.content.nativeElement.getBoundingClientRect();
+    if (boundingBox.left < 0) {
+      this.content.nativeElement.style.left = 0;
+    }
+    if (boundingBox.left + boundingBox.width > window.innerWidth) {
+      this.content.nativeElement.style.left =
+        window.innerWidth - boundingBox.width + 'px';
+    }
+
+    if (boundingBox.top < 0) {
+      this.content.nativeElement.style.top = 0;
+    }
+    if (boundingBox.top + boundingBox.height > window.innerHeight) {
+      this.content.nativeElement.style.top =
+        window.innerHeight - boundingBox.height + 'px';
+    }
   }
 
   @HostListener('document:keydown.escape', ['$event'])
