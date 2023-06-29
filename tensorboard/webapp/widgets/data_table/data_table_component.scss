@@ -73,4 +73,10 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
     padding: 8px;
     text-wrap: nowrap;
   }
+
+  .sort-button {
+    ::ng-deep path {
+      fill: unset;
+    }
+  }
 }

@@ -120,10 +120,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
         headerCell.dragStart.subscribe(this.dragStart.bind(this)),
         headerCell.dragEnter.subscribe(this.dragEnter.bind(this)),
         headerCell.dragEnd.subscribe(this.dragEnd.bind(this)),
-        headerCell.headerClicked.subscribe(this.headerClicked.bind(this)),
-        headerCell.deleteButtonClicked.subscribe(
-          this.deleteButtonClicked.bind(this)
-        ),
+        headerCell.headerClicked.subscribe(this.sortByHeader.bind(this)),
         headerCell.contextMenuOpened.subscribe(
           this.openContextMenu.bind(this, headerCell.header)
         )
@@ -144,7 +141,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
       .flat();
   }
 
-  headerClicked(name: string) {
+  sortByHeader(name: string) {
     if (
       this.sortingInfo.name === name &&
       this.sortingInfo.order === SortingOrder.ASCENDING
@@ -234,10 +231,6 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     return this.headers.findIndex((element) => {
       return name === element.name;
     });
-  }
-
-  deleteButtonClicked(header: ColumnHeader) {
-    this.removeColumn.emit(header);
   }
 
   focusColumnSelector() {
