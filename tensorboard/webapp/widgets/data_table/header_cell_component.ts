@@ -34,7 +34,7 @@ export class HeaderCellComponent {
   @Input() header!: ColumnHeader;
   @Input() sortingInfo!: SortingInfo;
   @Input() hparamsEnabled?: boolean = false;
-  @Input() hideContextMenu?: boolean = false;
+  @Input() disableContextMenu?: boolean = false;
 
   @Output() dragStart = new EventEmitter<ColumnHeader>();
   @Output() dragEnd = new EventEmitter<void>();
@@ -48,6 +48,9 @@ export class HeaderCellComponent {
 
   @HostListener('contextmenu', ['$event'])
   onContextMenuOpened(event: MouseEvent) {
+    if (this.disableContextMenu) {
+      return;
+    }
     this.contextMenuOpened.emit(event);
   }
 
