@@ -34,17 +34,17 @@ limitations under the License.
       mat-button
       (click)="sortByHeader(contextMenuHeader?.name)"
     >
-      <mat-icon
+      <ng-container
         *ngIf="
           sortingInfo.order === SortingOrder.ASCENDING &&
           sortingInfo.name === contextMenuHeader?.name;
           else descending"
-        svgIcon="arrow_upward_24px"
-      ></mat-icon>
+      >
+        <mat-icon svgIcon="arrow_downward_24px"></mat-icon>Sort Descending
+      </ng-container>
       <ng-template #descending>
-        <mat-icon svgIcon="arrow_downward_24px"></mat-icon>
+        <mat-icon svgIcon="arrow_upward_24px"></mat-icon>Sort Ascending
       </ng-template>
-      Sort
     </button>
     <button
       mat-button

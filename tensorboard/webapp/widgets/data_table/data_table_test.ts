@@ -552,6 +552,7 @@ describe('data table', () => {
           displayName: 'Run',
           enabled: true,
           movable: true,
+          sortable: true,
         },
         {
           name: 'disabled_header',
@@ -576,6 +577,12 @@ describe('data table', () => {
           enabled: true,
           removable: true,
           movable: false,
+        },
+        {
+          name: 'some static column',
+          type: ColumnHeaderType.HPARAM,
+          displayName: 'cant touch this',
+          enabled: true,
         },
       ];
       mockTableData = [
@@ -697,7 +704,7 @@ describe('data table', () => {
         By.directive(ContentCellComponent)
       );
 
-      expect(cells.length).toBe(3);
+      expect(cells.length).toBe(4);
 
       cells.forEach((cell) => {
         cell.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
@@ -775,7 +782,7 @@ describe('data table', () => {
         By.directive(ContentCellComponent)
       );
 
-      expect(cells.length).toBe(3);
+      expect(cells.length).toBe(4);
 
       cells.forEach((cell) => {
         cell.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
@@ -798,6 +805,70 @@ describe('data table', () => {
           expect(addRight).toBeUndefined();
         }
       });
+    });
+
+    it('renders an upwards arrow when the sort direction is ascending', () => {
+      const fixture = createComponent({
+        headers: mockHeaders,
+        data: mockTableData,
+        potentialColumns: mockPotentialColumns,
+        sortingInfo: {
+          name: 'run',
+          order: SortingOrder.ASCENDING,
+        },
+      });
+      const header = fixture.debugElement.query(
+        By.directive(HeaderCellComponent)
+      );
+      header.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
+      fixture.detectChanges();
+
+      expect(
+        fixture.debugElement
+          .query(By.css('.context-menu-button.sort-button mat-icon'))
+          .nativeElement.getAttribute('svgIcon')
+      ).toBe('arrow_downward_24px');
+    });
+
+    it('renders a downwards arrow when the sort direction is descending', () => {
+      const fixture = createComponent({
+        headers: mockHeaders,
+        data: mockTableData,
+        potentialColumns: mockPotentialColumns,
+        sortingInfo: {
+          name: 'run',
+          order: SortingOrder.DESCENDING,
+        },
+      });
+      const header = fixture.debugElement.query(
+        By.directive(HeaderCellComponent)
+      );
+      header.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
+      fixture.detectChanges();
+
+      expect(
+        fixture.debugElement
+          .query(By.css('.context-menu-button.sort-button mat-icon'))
+          .nativeElement.getAttribute('svgIcon')
+      ).toBe('arrow_upward_24px');
+    });
+
+    it('displays a message when empty', () => {
+      const fixture = createComponent({
+        headers: mockHeaders,
+        data: mockTableData,
+        potentialColumns: mockPotentialColumns,
+      });
+      const fixedHeader = fixture.debugElement.queryAll(
+        By.directive(HeaderCellComponent)
+      )[4];
+      fixedHeader.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
+      fixture.detectChanges();
+
+      const contextMenu = fixture.debugElement.query(By.css('.context-menu'));
+      expect(
+        contextMenu.nativeElement.innerHTML.includes('No Actions Available')
+      ).toBeTrue();
     });
   });
 });

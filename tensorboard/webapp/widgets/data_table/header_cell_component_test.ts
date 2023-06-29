@@ -244,7 +244,7 @@ describe('header cell', () => {
   });
 
   describe('context menu', () => {
-    it('context menu dispatches event', () => {
+    it('dispatches event', () => {
       const fixture = createComponent({});
       const component = fixture.debugElement.query(
         By.directive(HeaderCellComponent)
