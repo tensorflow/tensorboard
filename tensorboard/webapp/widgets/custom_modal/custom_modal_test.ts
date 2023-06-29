@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {By} from '@angular/platform-browser';
 import {CustomModalComponent} from './custom_modal_component';
 import {CommonModule} from '@angular/common';
 import {
@@ -133,6 +134,61 @@ describe('custom modal', () => {
       await waitFrame();
 
       expect(fixture.componentInstance.isOpen).toBeFalse();
+    });
+  });
+
+  describe('ensures content is always within the window', () => {
+    beforeEach(() => {
+      window.innerHeight = 1000;
+      window.innerWidth = 1000;
+    });
+
+    it('sets left to 0 if less than 0', async () => {
+      const fixture = TestBed.createComponent(TestableComponent);
+      fixture.detectChanges();
+      fixture.componentInstance.openAtPosition({x: -10, y: 0});
+      expect(fixture.componentInstance.isOpen).toBeFalse();
+      await waitFrame();
+      fixture.detectChanges();
+
+      const content = fixture.debugElement.query(By.css('.content'));
+      expect(content.nativeElement.style.left).toEqual('0px');
+    });
+
+    it('sets top to 0 if less than 0', async () => {
+      const fixture = TestBed.createComponent(TestableComponent);
+      fixture.detectChanges();
+      fixture.componentInstance.openAtPosition({x: 0, y: -10});
+      expect(fixture.componentInstance.isOpen).toBeFalse();
+      await waitFrame();
+      fixture.detectChanges();
+
+      const content = fixture.debugElement.query(By.css('.content'));
+      expect(content.nativeElement.style.top).toEqual('0px');
+    });
+
+    it('sets left to maximum if content overflows the window', async () => {
+      const fixture = TestBed.createComponent(TestableComponent);
+      fixture.detectChanges();
+      fixture.componentInstance.openAtPosition({x: 1010, y: 0});
+      expect(fixture.componentInstance.isOpen).toBeFalse();
+      await waitFrame();
+      fixture.detectChanges();
+      const content = fixture.debugElement.query(By.css('.content'));
+      // While rendering in a test the elements width and height will appear to be 0.
+      expect(content.nativeElement.style.left).toEqual('1000px');
+    });
+
+    it('sets top to maximum if content overflows the window', async () => {
+      const fixture = TestBed.createComponent(TestableComponent);
+      fixture.detectChanges();
+      fixture.componentInstance.openAtPosition({x: 0, y: 1010});
+      expect(fixture.componentInstance.isOpen).toBeFalse();
+      await waitFrame();
+      fixture.detectChanges();
+      const content = fixture.debugElement.query(By.css('.content'));
+      // While rendering in a test the elements width and height will appear to be 0.
+      expect(content.nativeElement.style.top).toEqual('1000px');
     });
   });
 });
