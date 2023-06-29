@@ -287,6 +287,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
       return;
     }
     this.removeColumn.emit(this.contextMenuHeader);
+    this.contextMenu.close();
   }
 
   private getInsertIndex() {

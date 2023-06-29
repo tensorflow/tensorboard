@@ -715,7 +715,7 @@ describe('data table', () => {
       });
     });
 
-    it('removes column when Remove button is clicked', fakeAsync(() => {
+    it('removes column when Remove button is clicked', () => {
       const fixture = createComponent({
         headers: mockHeaders,
         data: mockTableData,
@@ -727,19 +727,16 @@ describe('data table', () => {
       cell.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
       fixture.detectChanges();
 
-      let columnRemoved: ColumnHeader | undefined = undefined;
-      fixture.componentInstance.removeColumn.subscribe((event) => {
-        columnRemoved = event;
-      });
-
+      spyOn(fixture.componentInstance.removeColumn, 'emit');
       fixture.debugElement
         .queryAll(By.css('.context-menu button'))
         .find((btn) => btn.nativeElement.innerHTML.includes('Remove'))!
         .nativeElement.click();
-      flush();
+      fixture.detectChanges();
 
-      expect(columnRemoved).toBeDefined();
-    }));
+      expect(fixture.componentInstance.removeColumn.emit).toHaveBeenCalled();
+      expect(fixture.debugElement.query(By.css('.context-menu'))).toBeNull();
+    });
 
     it('does not include add buttons when there are no selectable columns', () => {
       const fixture = createComponent({
