@@ -355,6 +355,8 @@ const {initialState: uiInitialState, reducers: uiNamespaceContextedReducers} =
               name: 'experimentName',
               displayName: 'Experiment',
               enabled: true,
+              movable: true,
+              sortable: true,
             },
           ];
 
