@@ -239,7 +239,7 @@ function matchFilter(
   selector: 'runs-table',
   template: `
     <runs-table-component
-      *ngIf="!HParamsEnabled.value"
+      *ngIf="!useDataTable()"
       [experimentIds]="experimentIds"
       [useFlexibleLayout]="useFlexibleLayout"
       [numSelectedItems]="numSelectedItems$ | async"
@@ -267,7 +267,7 @@ function matchFilter(
       (onMetricFilterChanged)="onMetricFilterChanged($event)"
     ></runs-table-component>
     <runs-data-table
-      *ngIf="HParamsEnabled.value"
+      *ngIf="useDataTable()"
       [headers]="runsColumns$ | async"
       [data]="sortedRunsTableData$ | async"
       [selectableColumns]="selectableColumns$ | async"
@@ -347,6 +347,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
 
   @Input() experimentIds!: string[];
   @Input() showHparamsAndMetrics = false;
+  @Input() forceLegacyTable = false;
 
   sortOption$ = this.store.select(getRunSelectorSort);
   paginationOption$ = this.store.select(getRunSelectorPaginationOption);
@@ -815,6 +816,11 @@ export class RunsTableContainer implements OnInit, OnDestroy {
 
   orderColumns(newHeaderOrder: ColumnHeader[]) {
     this.store.dispatch(runsTableHeaderOrderChanged({newHeaderOrder}));
+  }
+
+  useDataTable() {
+    console.log('forceLegacyTable', this.forceLegacyTable);
+    return this.HParamsEnabled.value && !this.forceLegacyTable;
   }
 }
 
