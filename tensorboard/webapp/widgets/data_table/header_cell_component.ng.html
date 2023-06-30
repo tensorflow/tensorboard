@@ -22,20 +22,6 @@ limitations under the License.
   [ngClass]="highlightStyle$ | async"
 >
   <ng-content></ng-content>
-  <div
-    *ngIf="hparamsEnabled && header.removable"
-    class="delete-button-container"
-  >
-    <button
-      class="delete-button"
-      mat-icon-button
-      i18n-aria-label="A button to delete a data table column."
-      aria-label="Delete column"
-      (click)="deleteButtonClicked.emit(header)"
-    >
-      <mat-icon svgIcon="close_24px"> </mat-icon>
-    </button>
-  </div>
   <tb-data-table-header [header]="header"></tb-data-table-header>
   <div *ngIf="header.sortable" class="sorting-icon-container">
     <mat-icon
@@ -60,15 +46,12 @@ limitations under the License.
     ></mat-icon>
   </div>
   <div
-    *ngIf="header.removable || header.sortable"
-    class="context-menu-container"
+    *ngIf="(header.removable || header.sortable) && !disableContextMenu"
+    class="context-menu-container show-on-hover"
   >
-    <button
-      mat-icon-button
-      class="context-menu-trigger"
+    <mat-icon
       (click)="onContextMenuOpened($event)"
-    >
-      <mat-icon svgIcon="more_vert_24px"></mat-icon>
-    </button>
+      svgIcon="more_vert_24px"
+    ></mat-icon>
   </div>
 </div>

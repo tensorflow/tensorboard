@@ -15,18 +15,36 @@ limitations under the License.
 <custom-modal #contextMenu>
   <div class="context-menu">
     <div
-      *ngIf="!canContextMenuRemoveColumn() && !(selectableColumns && selectableColumns.length)"
+      *ngIf="!contextMenuHeader?.removable && !contextMenuHeader?.sortable && !canContextMenuInsert()"
       class="no-actions-message"
     >
       No Actions Available
     </div>
     <button
-      *ngIf="canContextMenuRemoveColumn()"
+      *ngIf="contextMenuHeader?.removable"
       class="context-menu-button"
       mat-button
       (click)="contextMenuRemoveColumn()"
     >
       <mat-icon svgIcon="close_24px"></mat-icon>Remove
+    </button>
+    <button
+      *ngIf="contextMenuHeader?.sortable"
+      class="context-menu-button sort-button"
+      mat-button
+      (click)="sortByHeader(contextMenuHeader?.name)"
+    >
+      <ng-container
+        *ngIf="
+          sortingInfo.order === SortingOrder.ASCENDING &&
+          sortingInfo.name === contextMenuHeader?.name;
+          else descending"
+      >
+        <mat-icon svgIcon="arrow_downward_24px"></mat-icon>Sort Descending
+      </ng-container>
+      <ng-template #descending>
+        <mat-icon svgIcon="arrow_upward_24px"></mat-icon>Sort Ascending
+      </ng-template>
     </button>
     <button
       mat-button
