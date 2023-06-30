@@ -100,6 +100,11 @@ export class RunsDataTable {
     return this.data.some((row) => row['selected']);
   }
 
+  handleSelectAll(event: MouseEvent) {
+    event.preventDefault();
+    this.onAllSelectionToggle.emit(this.data.map((row) => row.id));
+  }
+
   onFilterKeyUp(event: KeyboardEvent) {
     const input = event.target! as HTMLInputElement;
     this.onRegexFilterChange.emit(input.value);
