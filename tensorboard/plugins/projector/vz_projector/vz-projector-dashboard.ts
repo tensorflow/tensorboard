@@ -31,7 +31,8 @@ class VzProjectorDashboard extends PolymerElement {
 
           <li>
             You are not saving any checkpoint. To save your model, create a
-            <a href="https://www.tensorflow.org/api_docs/python/tf/train/Saver"
+            <a
+              href="https://www.tensorflow.org/api_docs/python/tf/compat/v1/train/Saver"
               ><code>tf.train.Saver</code></a
             >
             and save your model periodically by calling
