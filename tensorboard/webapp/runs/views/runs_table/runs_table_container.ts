@@ -352,7 +352,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   sortOption$ = this.store.select(getRunSelectorSort);
   paginationOption$ = this.store.select(getRunSelectorPaginationOption);
   regexFilter$ = this.store.select(getRunSelectorRegexFilter);
-  HParamsEnabled = new BehaviorSubject<boolean>(false);
+  hparamsEnabled = new BehaviorSubject<boolean>(false);
   runsColumns$ = this.store.select(getRunsTableHeaders);
   runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
 
@@ -396,7 +396,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.store.select(getEnableHparamsInTimeSeries).subscribe((enabled) => {
-      this.HParamsEnabled.next(enabled);
+      this.hparamsEnabled.next(enabled);
     });
     const getRunTableItemsPerExperiment = this.experimentIds.map((id) =>
       this.getRunTableItemsForExperiment(id)
@@ -819,8 +819,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   }
 
   useDataTable() {
-    console.log('forceLegacyTable', this.forceLegacyTable);
-    return this.HParamsEnabled.value && !this.forceLegacyTable;
+    return this.hparamsEnabled.value && !this.forceLegacyTable;
   }
 }
 
