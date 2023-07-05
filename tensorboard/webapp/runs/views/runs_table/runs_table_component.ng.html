@@ -237,7 +237,7 @@ limitations under the License.
           <mat-checkbox
             [checked]="item.selected"
             (change)="onSelectionToggle.emit(item)"
-            (dblclick)="onSelectionDblClick.emit(item)"
+            (dblclick)="onSelectionDblClick.emit(item.run.id)"
             title="Click to toggle run selection or double click to select only this run."
           ></mat-checkbox>
         </span>

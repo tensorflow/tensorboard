@@ -45,6 +45,7 @@ import {sendKeys} from '../../../testing/dom';
       (onSelectionToggle)="onSelectionToggle($event)"
       (onAllSelectionToggle)="onAllSelectionToggle($event)"
       (onRegexFilterChange)="onRegexFilterChange($event)"
+      (onSelectionDblClick)="onSelectionDblClick($event)"
     ></runs-data-table>
   `,
 })
@@ -59,11 +60,13 @@ class TestableComponent {
   @Input() onSelectionToggle!: (runId: string) => void;
   @Input() onAllSelectionToggle!: (runIds: string[]) => void;
   @Input() onRegexFilterChange!: (regex: string) => void;
+  @Input() onSelectionDblClick!: (runId: string) => void;
 }
 
 describe('runs_data_table', () => {
   let onSelectionToggleSpy: jasmine.Spy;
   let onAllSelectionToggleSpy: jasmine.Spy;
+  let onSelectionDblClickSpy: jasmine.Spy;
   let onRegexFilterChangeSpy: jasmine.Spy;
   function createComponent(input: {
     data?: TableData[];
@@ -106,6 +109,9 @@ describe('runs_data_table', () => {
 
     onAllSelectionToggleSpy = jasmine.createSpy();
     fixture.componentInstance.onAllSelectionToggle = onAllSelectionToggleSpy;
+
+    onSelectionDblClickSpy = jasmine.createSpy();
+    fixture.componentInstance.onSelectionDblClick = onSelectionDblClickSpy;
 
     onRegexFilterChangeSpy = jasmine.createSpy();
     fixture.componentInstance.onRegexFilterChange = onRegexFilterChangeSpy;
@@ -287,6 +293,26 @@ describe('runs_data_table', () => {
     firstCheckbox.nativeElement.dispatchEvent(new Event('change'));
 
     expect(onSelectionToggleSpy).toHaveBeenCalledWith('runid');
+  });
+
+  it('emits onSelectionDblClick event when selected header checkbox is double clicked', () => {
+    const fixture = createComponent({});
+
+    const dataTable = fixture.debugElement.query(
+      By.directive(DataTableComponent)
+    );
+    const cells = dataTable.queryAll(By.directive(ContentCellComponent));
+
+    const selectedContentCells = cells.filter((cell) => {
+      return cell.componentInstance.header.name === 'selected';
+    });
+
+    const firstCheckbox = selectedContentCells[0].query(By.css('mat-checkbox'));
+    firstCheckbox.nativeElement.dispatchEvent(
+      new MouseEvent('click', {detail: 2})
+    );
+
+    expect(onSelectionDblClickSpy).toHaveBeenCalledWith('runid');
   });
 
   it('fire onRegexFilterChange when input is entered into the tb-filter-input', () => {

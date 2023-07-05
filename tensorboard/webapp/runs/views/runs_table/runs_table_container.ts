@@ -281,6 +281,7 @@ function matchFilter(
       (onAllSelectionToggle)="onAllSelectionToggle($event)"
       (onRunColorChange)="onRunColorChange($event)"
       (onRegexFilterChange)="onRegexFilterChange($event)"
+      (onSelectionDblClick)="onRunSelectionDblClick($event)"
       (toggleFullScreen)="toggleFullScreen()"
       (addColumn)="addColumn($event)"
       (removeColumn)="removeColumn($event)"
@@ -694,11 +695,12 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     );
   }
 
-  onRunSelectionDblClick(item: RunTableItem) {
-    // Note that a user's double click will trigger both 'change' and 'dblclick'
-    // events so onRunSelectionToggle() will also be called and we will fire
-    // two somewhat conflicting actions: runSelectionToggled and
-    // singleRunSelected. This is ok as long as singleRunSelected is fired last.
+  onRunSelectionDblClick(runId: string) {
+    // Note that a user's double click in the Legacy RunsTableComponent will
+    // trigger both 'change' and 'dblclick' events so onRunSelectionToggle()
+    // will also be called and we will fire two somewhat conflicting actions:
+    // runSelectionToggled and singleRunSelected. This is ok as long as
+    // singleRunSelected is fired last.
     //
     // We are therefore relying on the mat-checkbox 'change' event consistently
     // being fired before the 'dblclick' event. Although we don't have any
@@ -707,9 +709,10 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     // (see https://www.quirksmode.org/dom/events/click.html). We presume, then,
     // that we can rely on the 'change' event being fired before the 'dblclick'
     // event.
+    console.log('onRunSelectionDblClick', runId);
     this.store.dispatch(
       singleRunSelected({
-        runId: item.run.id,
+        runId,
       })
     );
   }
