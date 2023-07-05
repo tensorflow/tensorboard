@@ -239,7 +239,7 @@ function matchFilter(
   selector: 'runs-table',
   template: `
     <runs-table-component
-      *ngIf="!HParamsEnabled.value"
+      *ngIf="!useDataTable()"
       [experimentIds]="experimentIds"
       [useFlexibleLayout]="useFlexibleLayout"
       [numSelectedItems]="numSelectedItems$ | async"
@@ -267,7 +267,7 @@ function matchFilter(
       (onMetricFilterChanged)="onMetricFilterChanged($event)"
     ></runs-table-component>
     <runs-data-table
-      *ngIf="HParamsEnabled.value"
+      *ngIf="useDataTable()"
       [headers]="runsColumns$ | async"
       [data]="sortedRunsTableData$ | async"
       [selectableColumns]="selectableColumns$ | async"
@@ -347,11 +347,12 @@ export class RunsTableContainer implements OnInit, OnDestroy {
 
   @Input() experimentIds!: string[];
   @Input() showHparamsAndMetrics = false;
+  @Input() forceLegacyTable = false;
 
   sortOption$ = this.store.select(getRunSelectorSort);
   paginationOption$ = this.store.select(getRunSelectorPaginationOption);
   regexFilter$ = this.store.select(getRunSelectorRegexFilter);
-  HParamsEnabled = new BehaviorSubject<boolean>(false);
+  hparamsEnabled = new BehaviorSubject<boolean>(false);
   runsColumns$ = this.store.select(getRunsTableHeaders);
   runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
 
@@ -395,7 +396,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.store.select(getEnableHparamsInTimeSeries).subscribe((enabled) => {
-      this.HParamsEnabled.next(enabled);
+      this.hparamsEnabled.next(enabled);
     });
     const getRunTableItemsPerExperiment = this.experimentIds.map((id) =>
       this.getRunTableItemsForExperiment(id)
@@ -815,6 +816,10 @@ export class RunsTableContainer implements OnInit, OnDestroy {
 
   orderColumns(newHeaderOrder: ColumnHeader[]) {
     this.store.dispatch(runsTableHeaderOrderChanged({newHeaderOrder}));
+  }
+
+  useDataTable() {
+    return this.hparamsEnabled.value && !this.forceLegacyTable;
   }
 }
 

@@ -174,7 +174,8 @@ describe('runs_table', () => {
   function createComponent(
     experimentIds: string[],
     columns?: RunsTableColumn[],
-    usePagination?: boolean
+    usePagination?: boolean,
+    forceLegacyTable?: boolean
   ) {
     const fixture = TestBed.createComponent(RunsTableContainer);
     fixture.componentInstance.experimentIds = experimentIds;
@@ -184,6 +185,7 @@ describe('runs_table', () => {
     if (usePagination !== undefined) {
       fixture.componentInstance.usePagination = usePagination;
     }
+    fixture.componentInstance.forceLegacyTable = forceLegacyTable ?? false;
     fixture.detectChanges();
 
     return fixture;
@@ -3196,6 +3198,16 @@ describe('runs_table', () => {
       expect(
         fixture.nativeElement.querySelector('runs-table-component')
       ).toBeFalsy();
+    });
+
+    it('renders legacy table when forceLegacyTable is true', () => {
+      const fixture = createComponent(['book'], [], false, true);
+      expect(
+        fixture.debugElement.query(By.directive(RunsDataTable))
+      ).toBeFalsy();
+      expect(
+        fixture.nativeElement.querySelector('runs-table-component')
+      ).toBeTruthy();
     });
 
     it('passes run name, selected value, and color to data table', () => {
