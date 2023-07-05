@@ -24,6 +24,7 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
 
   .header {
     display: table-row;
+    z-index: 1;
   }
 
   .header {
