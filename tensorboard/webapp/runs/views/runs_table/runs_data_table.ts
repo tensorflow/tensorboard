@@ -88,16 +88,17 @@ export class RunsDataTable {
     );
   }
 
-  getRunIds() {
-    return this.data.map((row) => row.id);
-  }
-
   allRowsSelected() {
     return this.data.every((row) => row['selected']);
   }
 
   someRowsSelected() {
     return this.data.some((row) => row['selected']);
+  }
+
+  handleSelectAll(event: MouseEvent) {
+    event.preventDefault();
+    this.onAllSelectionToggle.emit(this.data.map((row) => row.id));
   }
 
   onFilterKeyUp(event: KeyboardEvent) {
