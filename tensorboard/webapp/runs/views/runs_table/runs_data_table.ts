@@ -88,10 +88,6 @@ export class RunsDataTable {
     );
   }
 
-  getRunIds() {
-    return this.data.map((row) => row.id);
-  }
-
   allRowsSelected() {
     return this.data.every((row) => row['selected']);
   }
