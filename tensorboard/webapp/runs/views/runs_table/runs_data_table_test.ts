@@ -290,7 +290,9 @@ describe('runs_data_table', () => {
 
     const firstCheckbox = selectedContentCells[0].query(By.css('mat-checkbox'));
 
-    firstCheckbox.nativeElement.dispatchEvent(new Event('change'));
+    firstCheckbox.nativeElement.dispatchEvent(
+      new MouseEvent('click', {detail: 1})
+    );
 
     expect(onSelectionToggleSpy).toHaveBeenCalledWith('runid');
   });
