@@ -16,12 +16,12 @@ import {ScrollingModule} from '@angular/cdk/scrolling';
 import {CommonModule} from '@angular/common';
 import {CustomizationModule} from '../../../customization/customization_module';
 import {NgModule} from '@angular/core';
-import {MatAutocompleteModule} from '@angular/material/autocomplete';
-import {MatButtonModule} from '@angular/material/button';
+import {MatLegacyAutocompleteModule} from '@angular/material/legacy-autocomplete';
+import {MatLegacyButtonModule} from '@angular/material/legacy-button';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import {MatIconModule} from '@angular/material/icon';
-import {MatInputModule} from '@angular/material/input';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatLegacyInputModule} from '@angular/material/legacy-input';
+import {MatLegacyProgressSpinnerModule} from '@angular/material/legacy-progress-spinner';
 import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';
 import {CardRendererModule} from '../card_renderer/card_renderer_module';
 import {RightPaneModule} from '../right_pane/right_pane_module';
@@ -68,12 +68,12 @@ import {PinnedViewContainer} from './pinned_view_container';
     CommonModule,
     CustomizationModule,
     FilterInputModule,
-    MatAutocompleteModule,
-    MatButtonModule,
+    MatLegacyAutocompleteModule,
+    MatLegacyButtonModule,
     MatButtonToggleModule,
     MatIconModule,
-    MatInputModule,
-    MatProgressSpinnerModule,
+    MatLegacyInputModule,
+    MatLegacyProgressSpinnerModule,
     RightPaneModule,
     ScalarColumnEditorModule,
     ScrollingModule,

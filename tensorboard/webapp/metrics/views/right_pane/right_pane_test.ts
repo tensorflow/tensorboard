@@ -20,9 +20,9 @@ import {
   tick,
 } from '@angular/core/testing';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
-import {MatCheckboxModule} from '@angular/material/checkbox';
-import {MatSelectModule} from '@angular/material/select';
-import {MatSliderModule} from '@angular/material/slider';
+import {MatLegacyCheckboxModule} from '@angular/material/legacy-checkbox';
+import {MatLegacySelectModule} from '@angular/material/legacy-select';
+import {MatLegacySliderModule} from '@angular/material/legacy-slider';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
@@ -48,9 +48,9 @@ describe('metrics right_pane', () => {
         NoopAnimationsModule,
         DropdownModule,
         MatButtonToggleModule,
-        MatCheckboxModule,
-        MatSelectModule,
-        MatSliderModule,
+        MatLegacyCheckboxModule,
+        MatLegacySelectModule,
+        MatLegacySliderModule,
       ],
       declarations: [
         RightPaneComponent,
@@ -112,7 +112,7 @@ describe('metrics right_pane', () => {
       });
     });
 
-    function getMatSliderValue(el: DebugElement): string {
+    function getMatLegacySliderValue(el: DebugElement): string {
       return el.query(By.css('.mat-slider-thumb-label-text')).nativeElement
         .textContent;
     }
@@ -151,14 +151,13 @@ describe('metrics right_pane', () => {
       );
 
       expect(
-        select(fixture, '.scalars-ignore-outliers input').attributes[
-          'aria-checked'
-        ]
-      ).toBe('false');
+        select(fixture, '.scalars-ignore-outliers input').componentInstance
+          .checked
+      ).toBe(false);
 
       expect(
-        select(fixture, '.scalars-partition-x input').attributes['aria-checked']
-      ).toBe('true');
+        select(fixture, '.scalars-partition-x input').componentInstance.checked
+      ).toBe(true);
 
       const xAxisTypeSelect = select(fixture, '.x-axis-type tb-dropdown');
       expect(xAxisTypeSelect.componentInstance.value).toBe(XAxisType.STEP);
@@ -177,22 +176,23 @@ describe('metrics right_pane', () => {
       );
       expect(scalarSmoothingInput.nativeElement.value).toBe('0.3');
       expect(
-        getMatSliderValue(select(fixture, '.scalars-smoothing mat-slider'))
+        getMatLegacySliderValue(
+          select(fixture, '.scalars-smoothing mat-slider')
+        )
       ).toBe('0.30');
 
       expect(
-        getMatSliderValue(select(fixture, '.image-brightness mat-slider'))
+        getMatLegacySliderValue(select(fixture, '.image-brightness mat-slider'))
       ).toBe('0.1');
 
       expect(
-        getMatSliderValue(select(fixture, '.image-contrast mat-slider'))
+        getMatLegacySliderValue(select(fixture, '.image-contrast mat-slider'))
       ).toBe('0.2');
 
       expect(
-        select(fixture, '.image-show-actual-size input').attributes[
-          'aria-checked'
-        ]
-      ).toBe('true');
+        select(fixture, '.image-show-actual-size input').componentInstance
+          .checked
+      ).toBe(true);
     });
 
     it('hides settings if images are not supported', () => {
@@ -323,9 +323,9 @@ describe('metrics right_pane', () => {
         expect(el.query(By.css('mat-slider'))).toBeTruthy();
         expect(el.query(By.css('button'))).toBeTruthy();
 
-        expect(getMatSliderValue(select(fixture, CARD_WIDTH_SLIDER))).toBe(
-          TEST_ONLY.MIN_CARD_WIDTH_SLIDER_VALUE.toString()
-        );
+        expect(
+          getMatLegacySliderValue(select(fixture, CARD_WIDTH_SLIDER))
+        ).toBe(TEST_ONLY.MIN_CARD_WIDTH_SLIDER_VALUE.toString());
       });
 
       it('dispatches metricsChangeCardWidth action when adjusting the slider', fakeAsync(() => {
@@ -358,9 +358,9 @@ describe('metrics right_pane', () => {
         const fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
 
-        expect(getMatSliderValue(select(fixture, CARD_WIDTH_SLIDER))).toBe(
-          '400'
-        );
+        expect(
+          getMatLegacySliderValue(select(fixture, CARD_WIDTH_SLIDER))
+        ).toBe('400');
       });
 
       it('does not set invalid value', () => {
@@ -368,9 +368,9 @@ describe('metrics right_pane', () => {
         let fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
 
-        expect(getMatSliderValue(select(fixture, CARD_WIDTH_SLIDER))).toBe(
-          TEST_ONLY.MIN_CARD_WIDTH_SLIDER_VALUE.toString()
-        );
+        expect(
+          getMatLegacySliderValue(select(fixture, CARD_WIDTH_SLIDER))
+        ).toBe(TEST_ONLY.MIN_CARD_WIDTH_SLIDER_VALUE.toString());
       });
     });
 
@@ -402,7 +402,7 @@ describe('metrics right_pane', () => {
 
         const el = fixture.debugElement.query(By.css('.linked-time'));
         const [enabled] = el.queryAll(By.css('mat-checkbox input'));
-        expect(enabled.nativeElement.ariaChecked).toBe('false');
+        expect(enabled.nativeElement.checked).toBe(false);
 
         enabled.nativeElement.click();
 
@@ -415,7 +415,7 @@ describe('metrics right_pane', () => {
         store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, true);
         store.refreshState();
         fixture.detectChanges();
-        expect(enabled.nativeElement.ariaChecked).toBe('true');
+        expect(enabled.nativeElement.checked).toBe(true);
       });
     });
 
@@ -425,10 +425,9 @@ describe('metrics right_pane', () => {
         fixture.detectChanges();
 
         expect(
-          select(fixture, '.scalars-step-selector input').attributes[
-            'aria-checked'
-          ]
-        ).toBe('false');
+          select(fixture, '.scalars-step-selector input').componentInstance
+            .checked
+        ).toBe(false);
       });
 
       it('renders checked feature', () => {
@@ -437,10 +436,9 @@ describe('metrics right_pane', () => {
         fixture.detectChanges();
 
         expect(
-          select(fixture, '.scalars-step-selector input').attributes[
-            'aria-checked'
-          ]
-        ).toBe('true');
+          select(fixture, '.scalars-step-selector input').componentInstance
+            .checked
+        ).toBe(true);
       });
 
       it('dispatches stepSelectorEnableToggled on toggle', () => {

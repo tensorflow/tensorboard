@@ -14,10 +14,10 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatButtonModule} from '@angular/material/button';
+import {MatLegacyButtonModule} from '@angular/material/legacy-button';
 import {MatIconModule} from '@angular/material/icon';
-import {MatMenuModule} from '@angular/material/menu';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatLegacyMenuModule} from '@angular/material/legacy-menu';
+import {MatLegacyProgressSpinnerModule} from '@angular/material/legacy-progress-spinner';
 import {CardFobModule} from '../../../widgets/card_fob/card_fob_module';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {IntersectionObserverModule} from '../../../widgets/intersection_observer/intersection_observer_module';
@@ -45,10 +45,10 @@ import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_w
     ExperimentAliasModule,
     IntersectionObserverModule,
     LineChartV2Module,
-    MatButtonModule,
+    MatLegacyButtonModule,
     MatIconModule,
-    MatMenuModule,
-    MatProgressSpinnerModule,
+    MatLegacyMenuModule,
+    MatLegacyProgressSpinnerModule,
     ResizeDetectorModule,
     ScalarCardDataTableModule,
     TruncatedPathModule,

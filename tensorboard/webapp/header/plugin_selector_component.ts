@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {MatSelectChange} from '@angular/material/select';
+import {MatLegacySelectChange} from '@angular/material/legacy-select';
 import {PluginId} from '../types/api';
 import {UiPluginMetadata} from './types';
 
@@ -44,7 +44,7 @@ export class PluginSelectorComponent {
     this.onPluginSelectionChanged.emit(pluginId);
   }
 
-  onDisabledPluginSelectionChanged(selectChangeEvent: MatSelectChange) {
+  onDisabledPluginSelectionChanged(selectChangeEvent: MatLegacySelectChange) {
     this.onPluginSelectionChanged.emit(selectChangeEvent.value);
   }
 }

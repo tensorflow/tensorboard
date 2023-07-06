@@ -15,10 +15,10 @@ limitations under the License.
 import {OverlayModule} from '@angular/cdk/overlay';
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatButtonModule} from '@angular/material/button';
+import {MatLegacyButtonModule} from '@angular/material/legacy-button';
 import {MatIconModule} from '@angular/material/icon';
-import {MatInputModule} from '@angular/material/input';
-import {MatMenuModule} from '@angular/material/menu';
+import {MatLegacyInputModule} from '@angular/material/legacy-input';
+import {MatLegacyMenuModule} from '@angular/material/legacy-menu';
 import {LineChartAxisComponent} from './line_chart_axis_view';
 import {LineChartGridView} from './line_chart_grid_view';
 import {LineChartInteractiveViewComponent} from './line_chart_interactive_view';
@@ -42,10 +42,10 @@ import {LineChartInteractiveViewComponent} from './line_chart_interactive_view';
   imports: [
     CommonModule,
     OverlayModule,
-    MatButtonModule,
+    MatLegacyButtonModule,
     MatIconModule,
-    MatInputModule,
-    MatMenuModule,
+    MatLegacyInputModule,
+    MatLegacyMenuModule,
   ],
 })
 export class SubViewModule {}

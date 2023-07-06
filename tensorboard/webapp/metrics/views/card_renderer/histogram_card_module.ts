@@ -14,9 +14,9 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatButtonModule} from '@angular/material/button';
+import {MatLegacyButtonModule} from '@angular/material/legacy-button';
 import {MatIconModule} from '@angular/material/icon';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatLegacyProgressSpinnerModule} from '@angular/material/legacy-progress-spinner';
 import {HistogramModule} from '../../../widgets/histogram/histogram_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {HistogramCardComponent} from './histogram_card_component';
@@ -30,9 +30,9 @@ import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_w
   imports: [
     CommonModule,
     HistogramModule,
-    MatButtonModule,
+    MatLegacyButtonModule,
     MatIconModule,
-    MatProgressSpinnerModule,
+    MatLegacyProgressSpinnerModule,
     RunNameModule,
     TruncatedPathModule,
     VisLinkedTimeSelectionWarningModule,

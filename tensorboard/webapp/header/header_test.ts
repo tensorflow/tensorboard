@@ -14,9 +14,9 @@ limitations under the License.
 ==============================================================================*/
 import {DebugElement, NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
-import {MatButtonModule} from '@angular/material/button';
-import {MatSelectModule} from '@angular/material/select';
-import {MatTabsModule} from '@angular/material/tabs';
+import {MatLegacyButtonModule} from '@angular/material/legacy-button';
+import {MatLegacySelectModule} from '@angular/material/legacy-select';
+import {MatLegacyTabsModule} from '@angular/material/legacy-tabs';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
@@ -50,10 +50,10 @@ describe('header test', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        MatButtonModule,
+        MatLegacyButtonModule,
         MatIconTestingModule,
-        MatSelectModule,
-        MatTabsModule,
+        MatLegacySelectModule,
+        MatLegacyTabsModule,
         MatToolbarModule,
         NoopAnimationsModule,
       ],

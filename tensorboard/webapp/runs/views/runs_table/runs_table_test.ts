@@ -27,13 +27,13 @@ import {
   flushMicrotasks,
   TestBed,
 } from '@angular/core/testing';
-import {MatCheckboxModule} from '@angular/material/checkbox';
-import {MatDialogModule} from '@angular/material/dialog';
-import {MatMenuModule} from '@angular/material/menu';
-import {MatPaginatorModule} from '@angular/material/paginator';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatLegacyCheckboxModule} from '@angular/material/legacy-checkbox';
+import {MatLegacyDialogModule} from '@angular/material/legacy-dialog';
+import {MatLegacyMenuModule} from '@angular/material/legacy-menu';
+import {MatLegacyPaginatorModule} from '@angular/material/legacy-paginator';
+import {MatLegacyProgressSpinnerModule} from '@angular/material/legacy-progress-spinner';
 import {MatSortModule} from '@angular/material/sort';
-import {MatTableModule} from '@angular/material/table';
+import {MatLegacyTableModule} from '@angular/material/legacy-table';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
@@ -238,14 +238,14 @@ describe('runs_table', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        MatCheckboxModule,
-        MatDialogModule,
+        MatLegacyCheckboxModule,
+        MatLegacyDialogModule,
         MatIconTestingModule,
-        MatMenuModule,
-        MatPaginatorModule,
-        MatProgressSpinnerModule,
+        MatLegacyMenuModule,
+        MatLegacyPaginatorModule,
+        MatLegacyProgressSpinnerModule,
         MatSortModule,
-        MatTableModule,
+        MatLegacyTableModule,
         NoopAnimationsModule,
         FilterInputModule,
         RangeInputModule,

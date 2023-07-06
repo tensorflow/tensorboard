@@ -18,17 +18,17 @@ limitations under the License.
 
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatButtonModule} from '@angular/material/button';
-import {MatCheckboxModule} from '@angular/material/checkbox';
-import {MatDialogModule} from '@angular/material/dialog';
-import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatLegacyButtonModule} from '@angular/material/legacy-button';
+import {MatLegacyCheckboxModule} from '@angular/material/legacy-checkbox';
+import {MatLegacyDialogModule} from '@angular/material/legacy-dialog';
+import {MatLegacyFormFieldModule} from '@angular/material/legacy-form-field';
 import {MatIconModule} from '@angular/material/icon';
-import {MatInputModule} from '@angular/material/input';
-import {MatMenuModule} from '@angular/material/menu';
-import {MatPaginatorModule} from '@angular/material/paginator';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatLegacyInputModule} from '@angular/material/legacy-input';
+import {MatLegacyMenuModule} from '@angular/material/legacy-menu';
+import {MatLegacyPaginatorModule} from '@angular/material/legacy-paginator';
+import {MatLegacyProgressSpinnerModule} from '@angular/material/legacy-progress-spinner';
 import {MatSortModule} from '@angular/material/sort';
-import {MatTableModule} from '@angular/material/table';
+import {MatLegacyTableModule} from '@angular/material/legacy-table';
 import {ColorPickerModule} from 'ngx-color-picker';
 import {AlertModule} from '../../../alert/alert_module';
 import {DataTableModule} from '../../../widgets/data_table/data_table_module';
@@ -50,17 +50,17 @@ import {RunsTableContainer} from './runs_table_container';
     DataTableModule,
     ExperimentAliasModule,
     FilterInputModule,
-    MatFormFieldModule,
-    MatButtonModule,
-    MatCheckboxModule,
-    MatDialogModule,
-    MatInputModule,
+    MatLegacyFormFieldModule,
+    MatLegacyButtonModule,
+    MatLegacyCheckboxModule,
+    MatLegacyDialogModule,
+    MatLegacyInputModule,
     MatIconModule,
-    MatMenuModule,
-    MatPaginatorModule,
-    MatProgressSpinnerModule,
+    MatLegacyMenuModule,
+    MatLegacyPaginatorModule,
+    MatLegacyProgressSpinnerModule,
     MatSortModule,
-    MatTableModule,
+    MatLegacyTableModule,
     RangeInputModule,
     AlertModule,
   ],
