@@ -709,7 +709,6 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     // (see https://www.quirksmode.org/dom/events/click.html). We presume, then,
     // that we can rely on the 'change' event being fired before the 'dblclick'
     // event.
-    console.log('onRunSelectionDblClick', runId);
     this.store.dispatch(
       singleRunSelected({
         runId,
