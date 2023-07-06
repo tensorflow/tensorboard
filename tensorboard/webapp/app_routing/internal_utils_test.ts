@@ -108,7 +108,14 @@ describe('app_routing/utils', () => {
       expect(actual).toEqual(['1', '2']);
     });
 
-    it('returns ids from card route', () => {
+    it('returns single id from card route', () => {
+      const actual = utils.getExperimentIdsFromRouteParams(RouteKind.CARD, {
+        experimentIds: '1',
+      });
+      expect(actual).toEqual(['1']);
+    });
+
+    it('returns multiple ids from card route', () => {
       const actual = utils.getExperimentIdsFromRouteParams(RouteKind.CARD, {
         experimentIds: 'e1:1,e2:2',
       });

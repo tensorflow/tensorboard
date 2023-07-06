@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
+  CardRouteParams,
   CompareRouteParams,
   DeepLinkGroup,
   DEFAULT_EXPERIMENT_ID,
@@ -23,6 +24,41 @@ import {
   RouteParams,
   SerializableQueryParams,
 } from './types';
+
+/**
+ * Parses single experiments and short experiment name to id map encoded in
+ * string for card route.
+ *
+ * e.g.
+ *
+ * /card/12345/tag/tagid results,
+ * [
+ *   {name: '', id: '12345'}
+ * ]
+ *
+ * /card/exp1:12345,exp2:99999/tag/tagid results,
+ * [
+ *   {name: 'exp1', id: '12345'},
+ *   {name: 'exp2', id: '99999'}
+ * ]
+ */
+export function parseCardExperimentStr(
+  eidStr: string
+): Array<{name: string; id: string}> {
+  return eidStr.split(',').map((nameToIdStr) => {
+    const colonIndex = nameToIdStr.indexOf(':');
+    if (colonIndex < 0) {
+      return {name: '', id: nameToIdStr};
+    }
+    const name = nameToIdStr.slice(0, colonIndex);
+    const id = nameToIdStr.slice(colonIndex + 1);
+    if (!id) {
+      throw new Error(`Expect id to be non-falsy: ${nameToIdStr}`);
+    }
+
+    return {name, id};
+  });
+}
 
 /**
  * Parses short experiment name to id map encoded in string for compare route.
@@ -74,7 +110,12 @@ export function getExperimentIdsFromRouteParams(
       }
       return [DEFAULT_EXPERIMENT_ID];
     }
-    case RouteKind.CARD:
+    case RouteKind.CARD: {
+      const typedParams = params as CardRouteParams;
+      return parseCardExperimentStr(typedParams.experimentIds).map(
+        ({id}) => id
+      );
+    }
     case RouteKind.COMPARE_EXPERIMENT: {
       const typedParams = params as CompareRouteParams;
       return parseCompareExperimentStr(typedParams.experimentIds).map(
