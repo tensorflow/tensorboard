@@ -74,6 +74,7 @@ export function getExperimentIdsFromRouteParams(
       }
       return [DEFAULT_EXPERIMENT_ID];
     }
+    case RouteKind.CARD:
     case RouteKind.COMPARE_EXPERIMENT: {
       const typedParams = params as CompareRouteParams;
       return parseCompareExperimentStr(typedParams.experimentIds).map(
