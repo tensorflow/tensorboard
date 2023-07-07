@@ -153,11 +153,11 @@ describe('metrics right_pane', () => {
       expect(
         select(fixture, '.scalars-ignore-outliers input').componentInstance
           .checked
-      ).toBe(false);
+      ).toBeFalse();
 
       expect(
         select(fixture, '.scalars-partition-x input').componentInstance.checked
-      ).toBe(true);
+      ).toBeTrue();
 
       const xAxisTypeSelect = select(fixture, '.x-axis-type tb-dropdown');
       expect(xAxisTypeSelect.componentInstance.value).toBe(XAxisType.STEP);
@@ -192,7 +192,7 @@ describe('metrics right_pane', () => {
       expect(
         select(fixture, '.image-show-actual-size input').componentInstance
           .checked
-      ).toBe(true);
+      ).toBeTrue();
     });
 
     it('hides settings if images are not supported', () => {
@@ -402,7 +402,7 @@ describe('metrics right_pane', () => {
 
         const el = fixture.debugElement.query(By.css('.linked-time'));
         const [enabled] = el.queryAll(By.css('mat-checkbox input'));
-        expect(enabled.nativeElement.checked).toBe(false);
+        expect(enabled.nativeElement.checked).toBeFalse();
 
         enabled.nativeElement.click();
 
@@ -415,7 +415,7 @@ describe('metrics right_pane', () => {
         store.overrideSelector(selectors.getMetricsLinkedTimeEnabled, true);
         store.refreshState();
         fixture.detectChanges();
-        expect(enabled.nativeElement.checked).toBe(true);
+        expect(enabled.nativeElement.checked).toBeTrue();
       });
     });
 
@@ -427,7 +427,7 @@ describe('metrics right_pane', () => {
         expect(
           select(fixture, '.scalars-step-selector input').componentInstance
             .checked
-        ).toBe(false);
+        ).toBeFalse();
       });
 
       it('renders checked feature', () => {
@@ -438,7 +438,7 @@ describe('metrics right_pane', () => {
         expect(
           select(fixture, '.scalars-step-selector input').componentInstance
             .checked
-        ).toBe(true);
+        ).toBeTrue();
       });
 
       it('dispatches stepSelectorEnableToggled on toggle', () => {
