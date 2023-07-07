@@ -23,7 +23,6 @@ export enum ColumnHeaderType {
   RELATIVE_TIME = 'RELATIVE_TIME',
   RUN = 'RUN',
   STEP = 'STEP',
-  EXPERIMENT = 'EXPERIMENT',
   TIME = 'TIME',
   VALUE = 'VALUE',
   SMOOTHED = 'SMOOTHED',
@@ -75,7 +74,7 @@ export interface SortingInfo {
  * DataTable. It will have a value for each required ColumnHeader for a given
  * run.
  */
-export type TableData = Record<string, string | number | boolean> & {
+export type TableData = Record<string, string | number | boolean | object> & {
   id: string;
 };
 

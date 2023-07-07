@@ -251,6 +251,34 @@ describe('runs_data_table', () => {
     });
   });
 
+  it('adds ExperimentAlias widget on experimentAlias column', () => {
+    const fixture = createComponent({
+      headers: [
+        {
+          name: 'experimentAlias',
+          type: ColumnHeaderType.CUSTOM,
+          displayName: 'Experiment Alias',
+          enabled: true,
+        },
+      ],
+    });
+
+    const dataTable = fixture.debugElement.query(
+      By.directive(DataTableComponent)
+    );
+
+    const cells = dataTable.queryAll(By.directive(ContentCellComponent));
+
+    const selectedContentCells = cells.filter((cell) => {
+      return cell.componentInstance.header.name === 'experimentAlias';
+    });
+
+    expect(selectedContentCells.length).toBe(1);
+    selectedContentCells.forEach((cell) => {
+      expect(cell.query(By.css('tb-experiment-alias'))).toBeTruthy();
+    });
+  });
+
   it('emits onAllSelectionToggle event when selected header checkbox is clicked', () => {
     const fixture = createComponent({});
 

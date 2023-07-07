@@ -1354,7 +1354,7 @@ describe('runs_reducers', () => {
       expect(nextState.data.initialGroupBy.key).toBe(GroupByKey.RUN);
     });
 
-    it('adds the experiment name column to the runs table columns list', () => {
+    it('adds the experiment alias column to the runs table columns list', () => {
       const state = buildRunsState(
         {},
         {
@@ -1377,18 +1377,18 @@ describe('runs_reducers', () => {
       );
       expect(
         nextState.ui.runsTableHeaders.map((column) => column.name)
-      ).toEqual(['run', 'experimentName']);
+      ).toEqual(['run', 'experimentAlias']);
     });
 
-    it('does not add duplicate experiment name columns', () => {
+    it('does not add duplicate experiment alias columns', () => {
       const state = buildRunsState(
         {},
         {
           runsTableHeaders: [
             {
-              type: ColumnHeaderType.EXPERIMENT,
-              name: 'experimentName',
-              displayName: 'ExperimentName',
+              type: ColumnHeaderType.CUSTOM,
+              name: 'experimentAlias',
+              displayName: 'Experiment',
               enabled: true,
             },
             {
@@ -1409,18 +1409,18 @@ describe('runs_reducers', () => {
       );
       expect(
         nextState.ui.runsTableHeaders.map((column) => column.name)
-      ).toEqual(['experimentName', 'run']);
+      ).toEqual(['experimentAlias', 'run']);
     });
 
-    it('removes the experiment name column when changing away comparison view', () => {
+    it('removes the experiment alias column when changing away comparison view', () => {
       const state = buildRunsState(
         {},
         {
           runsTableHeaders: [
             {
-              type: ColumnHeaderType.EXPERIMENT,
-              name: 'experimentName',
-              displayName: 'ExperimentName',
+              type: ColumnHeaderType.CUSTOM,
+              name: 'experimentAlias',
+              displayName: 'Experiment',
               enabled: true,
             },
             {

@@ -3351,6 +3351,7 @@ describe('runs_table', () => {
         store.overrideSelector(getFilteredRenderableRunsFromRoute, [
           {
             run: run1,
+            experimentAlias: {aliasNumber: 1, aliasText: 'ccc'},
             hparams: new Map<string, number | string | boolean>([
               ['batch_size', 2],
               ['good_hparam', false],
@@ -3359,6 +3360,7 @@ describe('runs_table', () => {
           } as RunTableItem,
           {
             run: run2,
+            experimentAlias: {aliasNumber: 2, aliasText: 'bbb'},
             hparams: new Map<string, number | string | boolean>([
               ['batch_size', 1],
               ['good_hparam', true],
@@ -3366,6 +3368,7 @@ describe('runs_table', () => {
           } as RunTableItem,
           {
             run: run3,
+            experimentAlias: {aliasNumber: 3, aliasText: 'aaa'},
             hparams: new Map<string, number | string | boolean>([
               ['batch_size', 3],
               ['good_hparam', false],
@@ -3513,6 +3516,44 @@ describe('runs_table', () => {
         expect(
           runsDataTable.componentInstance.data[2]['scarce']
         ).toBeUndefined();
+      });
+
+      it('sorts experiment alias by alias number.', () => {
+        store.overrideSelector(getRunsTableSortingInfo, {
+          name: 'experimentAlias',
+          order: SortingOrder.ASCENDING,
+        });
+        const fixture = createComponent(['book']);
+        const runsDataTable = fixture.debugElement.query(
+          By.directive(RunsDataTable)
+        );
+
+        expect(
+          runsDataTable.componentInstance.data[0]['experimentAlias'].aliasNumber
+        ).toEqual(1);
+        expect(
+          runsDataTable.componentInstance.data[1]['experimentAlias'].aliasNumber
+        ).toEqual(2);
+        expect(
+          runsDataTable.componentInstance.data[2]['experimentAlias'].aliasNumber
+        ).toEqual(3);
+
+        store.overrideSelector(getRunsTableSortingInfo, {
+          name: 'experimentAlias',
+          order: SortingOrder.DESCENDING,
+        });
+        store.refreshState();
+        fixture.detectChanges();
+
+        expect(
+          runsDataTable.componentInstance.data[0]['experimentAlias'].aliasNumber
+        ).toEqual(3);
+        expect(
+          runsDataTable.componentInstance.data[1]['experimentAlias'].aliasNumber
+        ).toEqual(2);
+        expect(
+          runsDataTable.componentInstance.data[2]['experimentAlias'].aliasNumber
+        ).toEqual(1);
       });
     });
   });

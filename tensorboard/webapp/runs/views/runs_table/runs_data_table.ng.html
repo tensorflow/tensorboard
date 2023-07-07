@@ -86,6 +86,11 @@ limitations under the License.
                   (change)="onSelectionToggle.emit(dataRow.id)"
                 ></mat-checkbox>
               </div>
+              <span *ngSwitchCase="'experimentAlias'">
+                <tb-experiment-alias
+                  [alias]="dataRow['experimentAlias']"
+                ></tb-experiment-alias>
+              </span>
             </ng-container>
           </tb-data-table-content-cell>
         </ng-container>
