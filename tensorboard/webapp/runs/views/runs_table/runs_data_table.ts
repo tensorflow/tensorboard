@@ -58,6 +58,7 @@ export class RunsDataTable {
     index?: number | undefined;
   }>();
   @Output() removeColumn = new EventEmitter<ColumnHeader>();
+  @Output() onSelectionDblClick = new EventEmitter<string>();
 
   // These columns must be stored and reused to stop needless re-rendering of
   // the content and headers in these columns. This has been known to cause
@@ -86,6 +87,22 @@ export class RunsDataTable {
       this.headers,
       this.afterColumns
     );
+  }
+
+  selectionClick(event: MouseEvent, runId: string) {
+    // Prevent checkbox from switching checked state on its own.
+    event.preventDefault();
+
+    // event.details on mouse click events gives the number of clicks in quick
+    // succession. This logic is used to differentiate between single and double
+    // clicks.
+    // Note: This means any successive click after the second are noops.
+    if (event.detail === 1) {
+      this.onSelectionToggle.emit(runId);
+    }
+    if (event.detail === 2) {
+      this.onSelectionDblClick.emit(runId);
+    }
   }
 
   allRowsSelected() {

@@ -83,7 +83,7 @@ limitations under the License.
               <div *ngSwitchCase="'selected'">
                 <mat-checkbox
                   [checked]="dataRow['selected']"
-                  (change)="onSelectionToggle.emit(dataRow.id)"
+                  (click)="selectionClick($event, dataRow['id'])"
                 ></mat-checkbox>
               </div>
             </ng-container>
