@@ -16,8 +16,8 @@ import {HarnessLoader} from '@angular/cdk/testing';
 import {TestbedHarnessEnvironment} from '@angular/cdk/testing/testbed';
 import {Component} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {MatDialogModule} from '@angular/material/dialog';
-import {MatDialogHarness} from '@angular/material/dialog/testing';
+import {MatLegacyDialogModule} from '@angular/material/legacy-dialog';
+import {MatLegacyDialogHarness} from '@angular/material/legacy-dialog/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {MockStore} from '@ngrx/store/testing';
@@ -47,7 +47,7 @@ describe('feature_flag_modal_trigger_container', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MatDialogModule, NoopAnimationsModule],
+      imports: [MatLegacyDialogModule, NoopAnimationsModule],
       providers: [provideMockTbStore()],
     }).compileComponents();
 
@@ -78,7 +78,7 @@ describe('feature_flag_modal_trigger_container', () => {
     store.overrideSelector(getOverriddenFeatureFlags, {});
     store.overrideSelector(getShowFlagsEnabled, true);
     createComponent();
-    const dialog = await rootLoader.getHarness(MatDialogHarness);
+    const dialog = await rootLoader.getHarness(MatLegacyDialogHarness);
     expect(
       (fixture.componentInstance as any).featureFlagsDialog
     ).not.toBeUndefined();

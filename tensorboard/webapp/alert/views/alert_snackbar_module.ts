@@ -14,8 +14,8 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatButtonModule} from '@angular/material/button';
-import {MatSnackBarModule} from '@angular/material/snack-bar';
+import {MatLegacyButtonModule} from '@angular/material/legacy-button';
+import {MatLegacySnackBarModule} from '@angular/material/legacy-snack-bar';
 import {AlertDisplaySnackbarContainer} from './alert_display_snackbar_container';
 import {AlertSnackbarContainer} from './alert_snackbar_container';
 
@@ -25,7 +25,7 @@ import {AlertSnackbarContainer} from './alert_snackbar_container';
 @NgModule({
   declarations: [AlertSnackbarContainer, AlertDisplaySnackbarContainer],
   exports: [AlertSnackbarContainer],
-  imports: [CommonModule, MatButtonModule, MatSnackBarModule],
+  imports: [CommonModule, MatLegacyButtonModule, MatLegacySnackBarModule],
   entryComponents: [
     // Required for non-Ivy Angular apps.
     AlertDisplaySnackbarContainer,

@@ -14,12 +14,12 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatSelectModule} from '@angular/material/select';
+import {MatLegacySelectModule} from '@angular/material/legacy-select';
 import {DropdownComponent} from './dropdown_component';
 
 @NgModule({
   declarations: [DropdownComponent],
   exports: [DropdownComponent],
-  imports: [CommonModule, MatSelectModule],
+  imports: [CommonModule, MatLegacySelectModule],
 })
 export class DropdownModule {}

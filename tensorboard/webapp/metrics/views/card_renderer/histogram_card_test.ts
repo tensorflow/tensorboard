@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatLegacyProgressSpinnerModule} from '@angular/material/legacy-progress-spinner';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
@@ -99,7 +99,7 @@ describe('histogram card', () => {
       imports: [
         NoopAnimationsModule,
         MatIconTestingModule,
-        MatProgressSpinnerModule,
+        MatLegacyProgressSpinnerModule,
         RunNameModule,
         TruncatedPathModule,
         VisLinkedTimeSelectionWarningModule,

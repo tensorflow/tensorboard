@@ -15,11 +15,11 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {MatButtonModule} from '@angular/material/button';
-import {MatCheckboxModule} from '@angular/material/checkbox';
-import {MatDialogModule} from '@angular/material/dialog';
+import {MatLegacyButtonModule} from '@angular/material/legacy-button';
+import {MatLegacyCheckboxModule} from '@angular/material/legacy-checkbox';
+import {MatLegacyDialogModule} from '@angular/material/legacy-dialog';
 import {MatIconModule} from '@angular/material/icon';
-import {MatInputModule} from '@angular/material/input';
+import {MatLegacyInputModule} from '@angular/material/legacy-input';
 import {SettingsPolymerInteropContainer} from './polymer_interop_container';
 import {SettingsButtonComponent} from './settings_button_component';
 import {SettingsButtonContainer} from './settings_button_container';
@@ -45,11 +45,11 @@ import {SettingsDialogContainer} from './settings_dialog_container';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    MatButtonModule,
-    MatCheckboxModule,
-    MatDialogModule,
+    MatLegacyButtonModule,
+    MatLegacyCheckboxModule,
+    MatLegacyDialogModule,
     MatIconModule,
-    MatInputModule,
+    MatLegacyInputModule,
   ],
 })
 export class SettingsModule {}

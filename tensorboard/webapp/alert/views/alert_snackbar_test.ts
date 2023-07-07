@@ -14,8 +14,11 @@ limitations under the License.
 ==============================================================================*/
 import {OverlayContainer} from '@angular/cdk/overlay';
 import {TestBed} from '@angular/core/testing';
-import {MatButtonModule} from '@angular/material/button';
-import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
+import {MatLegacyButtonModule} from '@angular/material/legacy-button';
+import {
+  MatLegacySnackBar,
+  MatLegacySnackBarModule,
+} from '@angular/material/legacy-snack-bar';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, createAction, props, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
@@ -42,11 +45,15 @@ describe('alert snackbar', () => {
   let snackBarOpenSpy: jasmine.Spy;
   let recordedActions: Action[] = [];
   let overlayContainer: OverlayContainer;
-  let snackbar: MatSnackBar;
+  let snackbar: MatLegacySnackBar;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule, MatButtonModule, MatSnackBarModule],
+      imports: [
+        NoopAnimationsModule,
+        MatLegacyButtonModule,
+        MatLegacySnackBarModule,
+      ],
       providers: [
         provideMockStore({
           initialState: buildStateFromAlertState(buildAlertState({})),
@@ -60,7 +67,7 @@ describe('alert snackbar', () => {
       recordedActions.push(action);
     });
     overlayContainer = TestBed.inject(OverlayContainer);
-    snackbar = TestBed.inject(MatSnackBar);
+    snackbar = TestBed.inject(MatLegacySnackBar);
     snackBarOpenSpy = spyOn(snackbar, 'openFromComponent').and.callThrough();
   });
 

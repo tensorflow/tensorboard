@@ -21,7 +21,7 @@ import {
   OnDestroy,
   Output,
 } from '@angular/core';
-import {MatTabChangeEvent} from '@angular/material/tabs';
+import {MatLegacyTabChangeEvent} from '@angular/material/legacy-tabs';
 import {
   ColumnHeader,
   ColumnHeaderType,
@@ -92,7 +92,7 @@ export class ScalarColumnEditorComponent implements OnDestroy {
     );
   }
 
-  tabChange(event: MatTabChangeEvent) {
+  tabChange(event: MatLegacyTabChangeEvent) {
     const newMode =
       event.index === 0 ? DataTableMode.SINGLE : DataTableMode.RANGE;
     this.onTabChange.emit(newMode);

@@ -19,7 +19,7 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import {MatDialog} from '@angular/material/dialog';
+import {MatLegacyDialog} from '@angular/material/legacy-dialog';
 import {GroupBy, GroupByKey} from '../../types';
 import {RegexEditDialogContainer} from './regex_edit_dialog_container';
 
@@ -40,7 +40,7 @@ export class RunsGroupMenuButtonComponent {
   @Output()
   onGroupByChange = new EventEmitter<GroupBy>();
 
-  constructor(private readonly dialog: MatDialog) {}
+  constructor(private readonly dialog: MatLegacyDialog) {}
 
   onRegexStringEdit() {
     // data pass in the experiment id

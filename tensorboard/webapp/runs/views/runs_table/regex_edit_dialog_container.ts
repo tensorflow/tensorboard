@@ -13,7 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component, Inject} from '@angular/core';
-import {MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
+import {
+  MatLegacyDialogRef,
+  MAT_LEGACY_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
 import {Store} from '@ngrx/store';
 import {combineLatest, defer, merge, Observable, Subject} from 'rxjs';
 import {
@@ -120,8 +123,8 @@ export class RegexEditDialogContainer {
 
   constructor(
     private readonly store: Store<State>,
-    public dialogRef: MatDialogRef<RegexEditDialogContainer>,
-    @Inject(MAT_DIALOG_DATA) data: {experimentIds: string[]}
+    public dialogRef: MatLegacyDialogRef<RegexEditDialogContainer>,
+    @Inject(MAT_LEGACY_DIALOG_DATA) data: {experimentIds: string[]}
   ) {
     this.experimentIds = data.experimentIds;
 

@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatButtonModule} from '@angular/material/button';
+import {MatLegacyButtonModule} from '@angular/material/legacy-button';
 import {MatIconModule} from '@angular/material/icon';
 import {LayoutContainer} from './layout_container';
 
@@ -24,6 +24,6 @@ import {LayoutContainer} from './layout_container';
 @NgModule({
   declarations: [LayoutContainer],
   exports: [LayoutContainer],
-  imports: [CommonModule, MatIconModule, MatButtonModule],
+  imports: [CommonModule, MatIconModule, MatLegacyButtonModule],
 })
 export class LayoutModule {}
