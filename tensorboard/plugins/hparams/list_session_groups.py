@@ -50,32 +50,105 @@ class Handler:
         self._request = request
         self._extractors = _create_extractors(request.col_params)
         self._filters = _create_filters(request.col_params, self._extractors)
-        # Query for all Hparams summary metadata up front to minimize calls to
-        # the underlying DataProvider.
-        self._hparams_run_to_tag_to_content = backend_context.hparams_metadata(
-            request_context, experiment_id
-        )
-        # Since an context.experiment() call may search through all the runs, we
-        # cache it here.
-        self._experiment = backend_context.experiment_from_metadata(
-            request_context,
-            experiment_id,
-            self._hparams_run_to_tag_to_content,
-            self._backend_context.hparams_from_data_provider(
-                request_context, experiment_id
-            ),
-        )
 
     def run(self):
         """Handles the request specified on construction.
 
+        This operation first attempts to construct SessionGroup information
+        from hparam tags metadata.EXPERIMENT_TAG and
+        metadata.SESSION_START_INFO.
+
+        If no such tags are found, then will build SessionGroup information
+        using the results from DataProvider.read_hyperparameters().
+
         Returns:
           A ListSessionGroupsResponse object.
         """
+
+        session_groups_from_tags = self._session_groups_from_tags()
+        if session_groups_from_tags:
+            return self._create_response(session_groups_from_tags)
+
+        session_groups_from_data_provider = (
+            self._session_groups_from_data_provider()
+        )
+        if session_groups_from_data_provider:
+            return self._create_response(session_groups_from_data_provider)
+
+        return api_pb2.ListSessionGroupsResponse(
+            session_groups=[], total_size=0
+        )
+
+    def _session_groups_from_tags(self):
+        """Constructs lists of SessionGroups based on hparam tag metadata."""
+        # Query for all Hparams summary metadata up front to minimize calls to
+        # the underlying DataProvider.
+        self._hparams_run_to_tag_to_content = (
+            self._backend_context.hparams_metadata(
+                self._request_context, self._experiment_id
+            )
+        )
+        # Since an context.experiment() call may search through all the runs, we
+        # cache it here.
+        self._experiment = self._backend_context.experiment_from_metadata(
+            self._request_context,
+            self._experiment_id,
+            self._hparams_run_to_tag_to_content,
+            # Don't pass any information from the DataProvider since we are only
+            # examining session groups based on tag metadata
+            [],
+        )
+
         session_groups = self._build_session_groups()
         session_groups = self._filter(session_groups)
         self._sort(session_groups)
-        return self._create_response(session_groups)
+        return session_groups
+
+    def _session_groups_from_data_provider(self):
+        """Constructs lists of SessionGroups based on DataProvider results."""
+        response = self._backend_context.session_groups_from_data_provider(
+            self._request_context, self._experiment_id
+        )
+
+        session_groups = []
+        for provider_group in response:
+            sessions = [
+                api_pb2.Session(name=f"{s.experiment_id}/{s.run}")
+                for s in provider_group.sessions
+            ]
+            name = (
+                f"{provider_group.root.experiment_id}/{provider_group.root.run}"
+                if provider_group.root.run
+                else provider_group.root.experiment_id
+            )
+            session_group = api_pb2.SessionGroup(
+                name=name,
+                sessions=sessions,
+            )
+
+            for provider_hparam in provider_group.hyperparameter_values:
+                hparam = session_group.hparams[
+                    provider_hparam.hyperparameter_name
+                ]
+                if (
+                    provider_hparam.domain_type
+                    == provider.HyperparameterDomainType.DISCRETE_STRING
+                ):
+                    hparam.string_value = provider_hparam.value
+                elif provider_hparam.domain_type in [
+                    provider.HyperparameterDomainType.DISCRETE_FLOAT,
+                    provider.HyperparameterDomainType.INTERVAL,
+                ]:
+                    hparam.number_value = provider_hparam.value
+                elif (
+                    provider_hparam.domain_type
+                    == provider.HyperparameterDomainType.DISCRETE_BOOL
+                ):
+                    hparam.bool_value = provider_hparam.value
+
+            session_groups.append(session_group)
+
+        return session_groups
 
     def _build_session_groups(self):
         """Returns a list of SessionGroups protobuffers from the summary

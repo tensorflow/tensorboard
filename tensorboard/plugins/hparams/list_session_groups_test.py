@@ -51,6 +51,10 @@ class ListSessionGroupsTest(tf.test.TestCase):
         self._mock_tb_context.data_provider.read_scalars.side_effect = (
             self._mock_read_scalars
         )
+        self._mock_tb_context.data_provider.read_hyperparameters.side_effect = (
+            self._mock_read_hyperparameters
+        )
+        self._hyperparameters = []
 
     def _mock_list_tensors(
         self, ctx, *, experiment_id, plugin_name, run_tag_filter
@@ -356,6 +360,14 @@ class ListSessionGroupsTest(tf.test.TestCase):
             },
         }
         return result_dict
+
+    def _mock_read_hyperparameters(
+        self,
+        ctx,
+        *,
+        experiment_ids,
+    ):
+        return self._hyperparameters
 
     def test_empty_request(self):
         # Since we don't allow any statuses, result should be empty.
@@ -1159,6 +1171,413 @@ class ListSessionGroupsTest(tf.test.TestCase):
             expected_session_group_names=["group_1", "group_2", "group_3"],
             expected_total_size=3,
         )
+
+    def test_experiment_without_any_hparams(self):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._hyperparameters = []
+        request = """
+            start_index: 0
+            slice_size: 10
+        """
+        response = self._run_handler(request)
+        self.assertProtoEquals("", response)
+
+    def test_experiment_from_data_provider_with_no_sessions_or_hparam_values(
+        self,
+    ):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._hyperparameters = [
+            provider.HyperparameterSessionGroup(
+                root=provider.HyperparameterSessionRun(
+                    experiment_id="exp1", run="run1"
+                ),
+                sessions=[],
+                hyperparameter_values=[],
+            )
+        ]
+        request = """
+          start_index: 0
+          slice_size: 10
+      """
+        response = self._run_handler(request)
+        self.assertProtoEquals(
+            """
+          session_groups {
+            name: "exp1/run1"
+          }
+          total_size: 1
+          """,
+            response,
+        )
+
+    def test_experiment_from_data_provider_with_no_run_in_root(self):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._hyperparameters = [
+            provider.HyperparameterSessionGroup(
+                root=provider.HyperparameterSessionRun(
+                    experiment_id="exp1", run=""
+                ),
+                sessions=[],
+                hyperparameter_values=[],
+            )
+        ]
+        request = """
+          start_index: 0
+          slice_size: 10
+      """
+        response = self._run_handler(request)
+        self.assertProtoEquals(
+            """
+          session_groups {
+            name: "exp1"
+          }
+          total_size: 1
+          """,
+            response,
+        )
+
+    def test_experiment_from_data_provider_with_sessions(self):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._hyperparameters = [
+            provider.HyperparameterSessionGroup(
+                root=provider.HyperparameterSessionRun(
+                    experiment_id="exp1", run=""
+                ),
+                sessions=[
+                    provider.HyperparameterSessionRun(
+                        experiment_id="exp1", run="run1/train"
+                    ),
+                    provider.HyperparameterSessionRun(
+                        experiment_id="exp1", run="run1/validate"
+                    ),
+                    provider.HyperparameterSessionRun(
+                        experiment_id="exp1", run="run2/train"
+                    ),
+                    provider.HyperparameterSessionRun(
+                        experiment_id="exp1", run="run2/validate"
+                    ),
+                ],
+                hyperparameter_values=[],
+            )
+        ]
+        request = """
+          start_index: 0
+          slice_size: 10
+      """
+        response = self._run_handler(request)
+        self.assertProtoEquals(
+            """
+          session_groups {
+            name: "exp1"
+            sessions: {
+              name: "exp1/run1/train"
+            }
+            sessions: {
+              name: "exp1/run1/validate"
+            }
+            sessions: {
+              name: "exp1/run2/train"
+            }
+            sessions: {
+              name: "exp1/run2/validate"
+            }
+          }
+          total_size: 1
+          """,
+            response,
+        )
+
+    def test_experiment_from_data_provider_with_string_value(self):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._hyperparameters = [
+            provider.HyperparameterSessionGroup(
+                root=provider.HyperparameterSessionRun(
+                    experiment_id="exp1", run=""
+                ),
+                sessions=[],
+                hyperparameter_values=[
+                    provider.HyperparameterValue(
+                        hyperparameter_name="hparam",
+                        domain_type=provider.HyperparameterDomainType.DISCRETE_STRING,
+                        value="string_value",
+                    ),
+                ],
+            )
+        ]
+        request = """
+          start_index: 0
+          slice_size: 10
+      """
+        response = self._run_handler(request)
+        self.assertProtoEquals(
+            """
+          session_groups {
+            name: "exp1"
+            hparams {
+              key: 'hparam'
+              value: {
+                string_value: 'string_value'
+              }
+            }
+          }
+          total_size: 1
+          """,
+            response,
+        )
+
+    def test_experiment_from_data_provider_with_float_value(self):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._hyperparameters = [
+            provider.HyperparameterSessionGroup(
+                root=provider.HyperparameterSessionRun(
+                    experiment_id="exp1", run=""
+                ),
+                sessions=[],
+                hyperparameter_values=[
+                    provider.HyperparameterValue(
+                        hyperparameter_name="hparam1",
+                        domain_type=provider.HyperparameterDomainType.DISCRETE_FLOAT,
+                        value=1.11,
+                    ),
+                    provider.HyperparameterValue(
+                        hyperparameter_name="hparam2",
+                        domain_type=provider.HyperparameterDomainType.INTERVAL,
+                        value=2.22,
+                    ),
+                ],
+            )
+        ]
+        request = """
+          start_index: 0
+          slice_size: 10
+      """
+        response = self._run_handler(request)
+        self.assertProtoEquals(
+            """
+          session_groups {
+            name: "exp1"
+            hparams {
+              key: 'hparam1'
+              value: {
+                number_value: 1.11
+              }
+            }
+            hparams {
+              key: 'hparam2'
+              value: {
+                number_value: 2.22
+              }
+            }
+          }
+          total_size: 1
+          """,
+            response,
+        )
+
+    def test_experiment_from_data_provider_with_bool_value(self):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._hyperparameters = [
+            provider.HyperparameterSessionGroup(
+                root=provider.HyperparameterSessionRun(
+                    experiment_id="exp1", run=""
+                ),
+                sessions=[],
+                hyperparameter_values=[
+                    provider.HyperparameterValue(
+                        hyperparameter_name="hparam1",
+                        domain_type=provider.HyperparameterDomainType.DISCRETE_BOOL,
+                        value=True,
+                    ),
+                    provider.HyperparameterValue(
+                        hyperparameter_name="hparam2",
+                        domain_type=provider.HyperparameterDomainType.DISCRETE_BOOL,
+                        value=False,
+                    ),
+                ],
+            )
+        ]
+        request = """
+          start_index: 0
+          slice_size: 10
+      """
+        response = self._run_handler(request)
+        self.assertProtoEquals(
+            """
+          session_groups {
+            name: "exp1"
+            hparams {
+              key: 'hparam1'
+              value: {
+                bool_value: true
+              }
+            }
+            hparams {
+              key: 'hparam2'
+              value: {
+                bool_value: false
+              }
+            }
+          }
+          total_size: 1
+          """,
+            response,
+        )
+
+    def test_experiment_from_data_provider_with_no_domain(self):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._hyperparameters = [
+            provider.HyperparameterSessionGroup(
+                root=provider.HyperparameterSessionRun(
+                    experiment_id="exp1", run=""
+                ),
+                sessions=[],
+                hyperparameter_values=[
+                    provider.HyperparameterValue(hyperparameter_name="hparam"),
+                ],
+            )
+        ]
+        request = """
+          start_index: 0
+          slice_size: 10
+      """
+        response = self._run_handler(request)
+        self.assertProtoEquals(
+            """
+          session_groups {
+            name: "exp1"
+            hparams {
+              key: 'hparam'
+            }
+          }
+          total_size: 1
+          """,
+            response,
+        )
+
+    def test_experiment_from_data_provider_start_index_and_slize_size(self):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._hyperparameters = [
+            provider.HyperparameterSessionGroup(
+                root=provider.HyperparameterSessionRun(
+                    experiment_id="exp1", run=""
+                ),
+                sessions=[],
+                hyperparameter_values=[],
+            ),
+            provider.HyperparameterSessionGroup(
+                root=provider.HyperparameterSessionRun(
+                    experiment_id="exp2", run=""
+                ),
+                sessions=[],
+                hyperparameter_values=[],
+            ),
+            provider.HyperparameterSessionGroup(
+                root=provider.HyperparameterSessionRun(
+                    experiment_id="exp3", run=""
+                ),
+                sessions=[],
+                hyperparameter_values=[],
+            ),
+            provider.HyperparameterSessionGroup(
+                root=provider.HyperparameterSessionRun(
+                    experiment_id="exp4", run=""
+                ),
+                sessions=[],
+                hyperparameter_values=[],
+            ),
+        ]
+
+        with self.subTest("selects_all"):
+            request = """
+            start_index: 0
+            slice_size: 10
+        """
+            response = self._run_handler(request)
+            self.assertProtoEquals(
+                """
+            session_groups {
+              name: "exp1"
+            }
+            session_groups {
+              name: "exp2"
+            }
+            session_groups {
+              name: "exp3"
+            }
+            session_groups {
+              name: "exp4"
+            }
+            total_size: 4
+            """,
+                response,
+            )
+
+        with self.subTest("selects_start_slice"):
+            request = """
+            start_index: 0
+            slice_size: 2
+        """
+            response = self._run_handler(request)
+            self.assertProtoEquals(
+                """
+            session_groups {
+              name: "exp1"
+            }
+            session_groups {
+              name: "exp2"
+            }
+            total_size: 4
+            """,
+                response,
+            )
+
+        with self.subTest("selects_middle_slice"):
+            request = """
+            start_index: 1
+            slice_size: 2
+        """
+            response = self._run_handler(request)
+            self.assertProtoEquals(
+                """
+            session_groups {
+              name: "exp2"
+            }
+            session_groups {
+              name: "exp3"
+            }
+            total_size: 4
+            """,
+                response,
+            )
+
+        with self.subTest("selects_end_slice"):
+            request = """
+            start_index: 3
+            slice_size: 3
+        """
+            response = self._run_handler(request)
+            self.assertProtoEquals(
+                """
+            session_groups {
+              name: "exp4"
+            }
+            total_size: 4
+            """,
+                response,
+            )
+
+        with self.subTest("selects_none"):
+            request = """
+            start_index: 4
+            slice_size: 2
+        """
+            response = self._run_handler(request)
+            self.assertProtoEquals(
+                """
+            total_size: 4
+            """,
+                response,
+            )
 
     def _run_handler(self, request):
         request_proto = api_pb2.ListSessionGroupsRequest()

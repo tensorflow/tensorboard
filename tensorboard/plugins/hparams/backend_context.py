@@ -196,6 +196,12 @@ class Context:
             ctx, experiment_ids=[experiment_id]
         )
 
+    def session_groups_from_data_provider(self, ctx, experiment_id):
+        """Calls DataProvider.read_hyperparameters() and returns the result."""
+        return self._tb_context.data_provider.read_hyperparameters(
+            ctx, experiment_ids=[experiment_id]
+        )
+
     def _find_experiment_tag(self, hparams_run_to_tag_to_content):
         """Finds the experiment associcated with the metadata.EXPERIMENT_TAG
         tag.
