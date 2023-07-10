@@ -47,7 +47,6 @@ export class ContentCellComponent {
     }
     switch (this.header.type) {
       case ColumnHeaderType.RUN:
-      case ColumnHeaderType.EXPERIMENT:
         return this.datum as string;
       case ColumnHeaderType.VALUE:
       case ColumnHeaderType.STEP:

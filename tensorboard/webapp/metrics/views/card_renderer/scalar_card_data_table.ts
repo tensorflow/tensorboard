@@ -303,8 +303,15 @@ export class ScalarCardDataTable {
 }
 
 function makeValueSortable(
-  value: number | string | boolean | null | undefined
+  value: number | string | boolean | null | undefined | object
 ) {
+  if (typeof value === 'object') {
+    // The Scalar table does not currently support any objects.
+    // When support is added specific sorting logic to that object type should
+    // be added here.
+    return -Infinity;
+  }
+
   if (
     Number.isNaN(value) ||
     value === 'NaN' ||

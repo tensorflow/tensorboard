@@ -189,8 +189,13 @@ function sortTableDataItems(
   const sortedItems = [...items];
 
   sortedItems.sort((a, b) => {
-    const aValue = a[sort.name];
-    const bValue = b[sort.name];
+    let aValue = a[sort.name];
+    let bValue = b[sort.name];
+
+    if (sort.name === 'experimentAlias') {
+      aValue = (aValue as ExperimentAlias).aliasNumber;
+      bValue = (bValue as ExperimentAlias).aliasNumber;
+    }
 
     if (aValue === bValue) {
       return 0;
@@ -376,7 +381,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
             ...Object.fromEntries(runTableItem.hparams.entries()),
             id: runTableItem.run.id,
             run: runTableItem.run.name,
-            experimentName: runTableItem.experimentName,
+            experimentAlias: runTableItem.experimentAlias,
             selected: runTableItem.selected,
             color: runTableItem.runColor,
           };
