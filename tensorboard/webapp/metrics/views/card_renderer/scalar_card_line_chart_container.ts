@@ -103,7 +103,6 @@ export class ScalarCardLineChartContainer
   @Input() seriesMetadataMap!: ScalarCardSeriesMetadataMap;
   @Input() seriesData!: ScalarCardDataSeries[];
   @Input() minMaxStep!: MinMaxStep;
-  @Input() stepOrLinkedTimeSelection!: TimeSelection;
 
   @Input() xAxisType?: XAxisType;
   @Input() yScaleType?: ScaleType = ScaleType.LINEAR;
