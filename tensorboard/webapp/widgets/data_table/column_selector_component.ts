@@ -45,7 +45,7 @@ export class ColumnSelectorComponent implements OnInit, AfterViewInit {
 
   searchInput = '';
   selectedIndex$ = new BehaviorSubject(0);
-  isActive = false;
+  private isActive = false;
 
   ngOnInit() {
     /**
