@@ -3210,7 +3210,7 @@ describe('runs_table', () => {
       ).toBeTruthy();
     });
 
-    fit('passes run name, experiment alias, selected value, and color to data table', () => {
+    it('passes run name, experiment alias, selected value, and color to data table', () => {
       // To make sure we only return the runs when called with the right props.
       const selectSpy = spyOn(store, 'select').and.callThrough();
       selectSpy.withArgs(getFilteredRenderableRunsFromRoute).and.returnValue(
