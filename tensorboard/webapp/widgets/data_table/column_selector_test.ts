@@ -30,6 +30,8 @@ describe('column selector', () => {
     if (props.selectableColumns) {
       fixture.componentInstance.selectableColumns = props.selectableColumns;
     }
+    fixture.componentInstance.activate();
+
     fixture.detectChanges();
 
     return fixture;
@@ -77,6 +79,22 @@ describe('column selector', () => {
       expect(getSelectedButton().nativeElement.innerText).toEqual('Runs');
     });
 
+    it('does not change selected index on up arrow press when deactivated', () => {
+      fixture.componentInstance.selectedIndex$.next(1);
+      fixture.componentInstance.deactivate();
+      fixture.detectChanges();
+      expect(getSelectedButton().nativeElement.innerText).toEqual(
+        'Learning Rate'
+      );
+
+      const event = new KeyboardEvent('keydown', {key: 'arrowup'});
+      document.dispatchEvent(event);
+      fixture.detectChanges();
+      expect(getSelectedButton().nativeElement.innerText).toEqual(
+        'Learning Rate'
+      );
+    });
+
     it('increases selected index when the down arrow is pressed', () => {
       expect(getSelectedButton().nativeElement.innerText).toEqual('Runs');
       const event = new KeyboardEvent('keydown', {key: 'arrowdown'});
@@ -85,6 +103,15 @@ describe('column selector', () => {
       expect(getSelectedButton().nativeElement.innerText).toEqual(
         'Learning Rate'
       );
+    });
+
+    it('does not change selected index when the down arrow is pressed while deactivated', () => {
+      expect(getSelectedButton().nativeElement.innerText).toEqual('Runs');
+      fixture.componentInstance.deactivate();
+      const event = new KeyboardEvent('keydown', {key: 'arrowdown'});
+      document.dispatchEvent(event);
+      fixture.detectChanges();
+      expect(getSelectedButton().nativeElement.innerText).toEqual('Runs');
     });
 
     it('does not change index when columns are selected', () => {
@@ -112,6 +139,17 @@ describe('column selector', () => {
       document.dispatchEvent(event);
       flush();
       expect(selectedColumn!.name).toEqual('runs');
+    }));
+
+    it('does not select a column when the enter key is pressed while deactivated', fakeAsync(() => {
+      fixture.componentInstance.columnSelected.subscribe(() => {
+        fail('should not be called');
+      });
+      fixture.componentInstance.deactivate();
+
+      const event = new KeyboardEvent('keydown', {key: 'enter'});
+      document.dispatchEvent(event);
+      flush();
     }));
 
     it('cannot select indexes below 0', () => {

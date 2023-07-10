@@ -45,6 +45,7 @@ export class ColumnSelectorComponent implements OnInit, AfterViewInit {
 
   searchInput = '';
   selectedIndex$ = new BehaviorSubject(0);
+  private isActive = false;
 
   ngOnInit() {
     /**
@@ -121,13 +122,23 @@ export class ColumnSelectorComponent implements OnInit, AfterViewInit {
     this.columnSelected.emit(header);
   }
 
+  activate() {
+    this.isActive = true;
+  }
+
+  deactivate() {
+    this.isActive = false;
+  }
+
   @HostListener('document:keydown.arrowup', ['$event'])
   onUpArrow() {
+    if (!this.isActive) return;
     this.selectedIndex$.next(Math.max(this.selectedIndex$.getValue() - 1, 0));
   }
 
   @HostListener('document:keydown.arrowdown', ['$event'])
   onDownArrow() {
+    if (!this.isActive) return;
     this.selectedIndex$.next(
       Math.min(
         this.selectedIndex$.getValue() + 1,
@@ -138,6 +149,7 @@ export class ColumnSelectorComponent implements OnInit, AfterViewInit {
 
   @HostListener('document:keydown.enter', ['$event'])
   onEnterPressed() {
+    if (!this.isActive) return;
     this.selectColumn(
       this.getFilteredColumns()[this.selectedIndex$.getValue()]
     );
