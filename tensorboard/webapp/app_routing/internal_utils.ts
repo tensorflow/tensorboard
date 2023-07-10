@@ -25,33 +25,6 @@ import {
 } from './types';
 
 /**
- * Parses single experiments and short experiment name to id map encoded in
- * string for card route.
- *
- * e.g.
- *
- * /card/12345 results,
- * [
- *   {name: '', id: '12345'}
- * ]
- *
- * /card/exp1:12345,exp2:99999 results,
- * [
- *   {name: 'exp1', id: '12345'},
- *   {name: 'exp2', id: '99999'}
- * ]
- */
-export function parseCardExperimentStr(
-  eidStr: string
-): Array<{name: string; id: string}> {
-  if (eidStr.indexOf(',') < 0) {
-    return [{name: '', id: eidStr}];
-  } else {
-    return parseCompareExperimentStr(eidStr);
-  }
-}
-
-/**
  * Parses short experiment name to id map encoded in string for compare route.
  *
  * e.g., /compare/exp1:12345,exp2:99999 results,
@@ -102,10 +75,11 @@ export function getExperimentIdsFromRouteParams(
       return [DEFAULT_EXPERIMENT_ID];
     }
     case RouteKind.CARD: {
-      const typedParams = params as CompareRouteParams;
-      return parseCardExperimentStr(typedParams.experimentIds).map(
-        ({id}) => id
-      );
+      const experimentIds = (params as CompareRouteParams).experimentIds;
+      if (experimentIds.indexOf(',') < 0) {
+        return [experimentIds];
+      }
+      return parseCompareExperimentStr(experimentIds).map(({id}) => id);
     }
     case RouteKind.COMPARE_EXPERIMENT: {
       const typedParams = params as CompareRouteParams;
