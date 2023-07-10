@@ -394,7 +394,7 @@ class DataProvider(metaclass=abc.ABCMeta):
         Raises:
           tensorboard.errors.PublicError: See `DataProvider` class docstring.
         """
-        pass
+        return []
 
     def read_hyperparameters(self, ctx=None, *, experiment_ids):
         """Read hyperparameter values.
@@ -411,7 +411,7 @@ class DataProvider(metaclass=abc.ABCMeta):
         Raises:
           tensorboard.errors.PublicError: See `DataProvider` class docstring.
         """
-        pass
+        return []
 
 
 class ExperimentMetadata:
