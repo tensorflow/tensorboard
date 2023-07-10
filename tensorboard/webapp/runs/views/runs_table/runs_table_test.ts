@@ -3210,7 +3210,7 @@ describe('runs_table', () => {
       ).toBeTruthy();
     });
 
-    it('passes run name, selected value, and color to data table', () => {
+    fit('passes run name, experiment alias, selected value, and color to data table', () => {
       // To make sure we only return the runs when called with the right props.
       const selectSpy = spyOn(store, 'select').and.callThrough();
       selectSpy.withArgs(getFilteredRenderableRunsFromRoute).and.returnValue(
@@ -3218,26 +3218,16 @@ describe('runs_table', () => {
           {
             run: buildRun({id: 'book1', name: "The Philosopher's Stone"}),
             runColor: '#000',
-            experimentName: 'book',
+            experimentAlias: {aliasText: 'book', aliasNumber: 1},
             selected: true,
             hparams: new Map(),
           },
           {
             run: buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
             runColor: '#111',
-            experimentName: 'book',
+            experimentAlias: {aliasText: 'book', aliasNumber: 1},
             selected: false,
             hparams: new Map(),
-          },
-        ])
-      );
-      selectSpy.withArgs(getRunsTableHeaders).and.returnValue(
-        of([
-          {
-            type: ColumnHeaderType.RUN,
-            name: 'run',
-            displayName: 'Run',
-            enabled: true,
           },
         ])
       );
@@ -3253,14 +3243,14 @@ describe('runs_table', () => {
           id: 'book1',
           color: '#000',
           run: "The Philosopher's Stone",
-          experimentName: 'book',
+          experimentAlias: {aliasNumber: 1, aliasText: 'book'},
           selected: true,
         },
         {
           id: 'book2',
           color: '#111',
           run: 'The Chamber Of Secrets',
-          experimentName: 'book',
+          experimentAlias: {aliasNumber: 1, aliasText: 'book'},
           selected: false,
         },
       ]);
@@ -3351,7 +3341,7 @@ describe('runs_table', () => {
         store.overrideSelector(getFilteredRenderableRunsFromRoute, [
           {
             run: run1,
-            experimentAlias: {aliasNumber: 1, aliasText: 'ccc'},
+            experimentAlias: {aliasNumber: 1, aliasText: 'bbb'},
             hparams: new Map<string, number | string | boolean>([
               ['batch_size', 2],
               ['good_hparam', false],
@@ -3360,7 +3350,7 @@ describe('runs_table', () => {
           } as RunTableItem,
           {
             run: run2,
-            experimentAlias: {aliasNumber: 2, aliasText: 'bbb'},
+            experimentAlias: {aliasNumber: 2, aliasText: 'ccc'},
             hparams: new Map<string, number | string | boolean>([
               ['batch_size', 1],
               ['good_hparam', true],
