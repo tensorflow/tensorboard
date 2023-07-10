@@ -86,8 +86,6 @@ export class ScalarCardLineChartComponent {
 
   @ViewChild(LineChartComponent) lineChart?: LineChartComponent;
 
-  @ViewChild('dataTableContainer') dataTableContainer?: ElementRef;
-
   constructor(private readonly changeDetector: ChangeDetectorRef) {}
 
   isViewBoxOverridden: boolean = false;
