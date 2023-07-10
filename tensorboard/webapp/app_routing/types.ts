@@ -45,16 +45,6 @@ export const DEFAULT_EXPERIMENT_ID = 'defaultExperimentId';
  * Because `experimentIds` are declared in routes as string literals, we cannot
  * mangle the property name.
  */
-export declare interface CardRouteParams {
-  experimentIds: string;
-  tag: string;
-}
-
-/**
- * `declare` to express this as a public API that is not to be mangleable.
- * Because `experimentIds` are declared in routes as string literals, we cannot
- * mangle the property name.
- */
 export declare interface CompareRouteParams {
   experimentIds: string;
 }
