@@ -76,7 +76,7 @@ import {ScalarCardLineChartComponent} from './scalar_card_line_chart_component';
       [useDarkMode]="useDarkMode$ | async"
       [tooltipTemplate]="tooltipTemplate"
       [minMaxStep]="minMaxStep"
-      [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection"
+      [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection$ | async"
       [forceSvg]="forceSvg$ | async"
       [userViewBox]="userViewBox$ | async"
       (onTimeSelectionChanged)="onTimeSelectionChanged($event)"
@@ -115,7 +115,7 @@ export class ScalarCardLineChartContainer
   scalarCardLineChart?: ScalarCardLineChartComponent;
 
   loadState$?: Observable<DataLoadState>;
-  linkedTimeSelection$?: Observable<TimeSelectionView | null>;
+  stepOrLinkedTimeSelection$?: Observable<TimeSelection | undefined>;
   userViewBox$?: Observable<Extent | null>;
   rangeEnabled$?: Observable<boolean>;
 
@@ -156,6 +156,11 @@ export class ScalarCardLineChartContainer
     );
 
     this.loadState$ = this.store.select(getCardLoadState, this.cardId);
+
+    this.stepOrLinkedTimeSelection$ = this.store.select(
+      getMetricsCardTimeSelection,
+      this.cardId
+    );
 
     this.rangeEnabled$ = this.store.select(
       getMetricsCardRangeSelectionEnabled,

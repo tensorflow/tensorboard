@@ -1379,7 +1379,10 @@ describe('scalar card line chart', () => {
           minStep: 0,
           maxStep: 100,
         };
-        fixture.componentInstance.stepOrLinkedTimeSelection = {
+        const scalarCardComponent = fixture.debugElement.query(
+          By.directive(ScalarCardLineChartComponent)
+        );
+        scalarCardComponent.componentInstance.stepOrLinkedTimeSelection = {
           start: {step: 20},
           end: null,
         };
@@ -1422,7 +1425,10 @@ describe('scalar card line chart', () => {
           minStep: 0,
           maxStep: 100,
         };
-        fixture.componentInstance.stepOrLinkedTimeSelection = {
+        const scalarCardComponent = fixture.debugElement.query(
+          By.directive(ScalarCardLineChartComponent)
+        );
+        scalarCardComponent.componentInstance.stepOrLinkedTimeSelection = {
           start: {step: 20},
           end: {step: 40},
         };
@@ -1440,7 +1446,10 @@ describe('scalar card line chart', () => {
           minStep: 0,
           maxStep: 100,
         };
-        fixture.componentInstance.stepOrLinkedTimeSelection = {
+        const scalarCardComponent = fixture.debugElement.query(
+          By.directive(ScalarCardLineChartComponent)
+        );
+        scalarCardComponent.componentInstance.stepOrLinkedTimeSelection = {
           start: {step: 20},
           end: null,
         };
@@ -1464,7 +1473,7 @@ describe('scalar card line chart', () => {
         testController.mouseMove(fakeEvent);
 
         // Simulate ngrx update from mouseMove;
-        fixture.componentInstance.stepOrLinkedTimeSelection = {
+        scalarCardComponent.componentInstance.stepOrLinkedTimeSelection = {
           start: {step: 25},
           end: null,
         };
@@ -1486,7 +1495,7 @@ describe('scalar card line chart', () => {
         testController.mouseMove(fakeEvent);
 
         // Simulate ngrx update from mouseMove;
-        fixture.componentInstance.stepOrLinkedTimeSelection = {
+        scalarCardComponent.componentInstance.stepOrLinkedTimeSelection = {
           start: {step: 30},
           end: null,
         };
@@ -1541,7 +1550,10 @@ describe('scalar card line chart', () => {
           minStep: 0,
           maxStep: 100,
         };
-        fixture.componentInstance.stepOrLinkedTimeSelection = {
+        const scalarCardComponent = fixture.debugElement.query(
+          By.directive(ScalarCardLineChartComponent)
+        );
+        scalarCardComponent.componentInstance.stepOrLinkedTimeSelection = {
           start: {step: 20},
           end: null,
         };
@@ -1704,7 +1716,10 @@ describe('scalar card line chart', () => {
 
         // Click the prospective fob to set the start time
         testController.prospectiveFobClicked(new MouseEvent('mouseclick'));
-        fixture.componentInstance.stepOrLinkedTimeSelection = {
+        const scalarCardComponent = fixture.debugElement.query(
+          By.directive(ScalarCardLineChartComponent)
+        );
+        scalarCardComponent.componentInstance.stepOrLinkedTimeSelection = {
           start: {step: 10},
           end: null,
         };
@@ -1728,7 +1743,7 @@ describe('scalar card line chart', () => {
 
         // Click the prospective fob to set the end time
         testController.prospectiveFobClicked(new MouseEvent('mouseclick'));
-        fixture.componentInstance.stepOrLinkedTimeSelection = {
+        scalarCardComponent.componentInstance.stepOrLinkedTimeSelection = {
           start: {step: 10},
           end: {step: 25},
         };
@@ -1768,7 +1783,10 @@ describe('scalar card line chart', () => {
           minStep: 10,
           maxStep: 30,
         };
-        fixture.componentInstance.stepOrLinkedTimeSelection = {
+        const scalarCardComponent = fixture.debugElement.query(
+          By.directive(ScalarCardLineChartComponent)
+        );
+        scalarCardComponent.componentInstance.stepOrLinkedTimeSelection = {
           start: {step: 20},
           end: null,
         };
@@ -1794,7 +1812,10 @@ describe('scalar card line chart', () => {
           minStep: 10,
           maxStep: 30,
         };
-        fixture.componentInstance.stepOrLinkedTimeSelection = {
+        const scalarCardComponent = fixture.debugElement.query(
+          By.directive(ScalarCardLineChartComponent)
+        );
+        scalarCardComponent.componentInstance.stepOrLinkedTimeSelection = {
           start: {step: 20},
           end: null,
         };
@@ -1818,7 +1839,7 @@ describe('scalar card line chart', () => {
         testController.mouseMove(fakeEvent);
 
         // Simulate ngrx update from mouseMove;
-        fixture.componentInstance.stepOrLinkedTimeSelection = {
+        scalarCardComponent.componentInstance.stepOrLinkedTimeSelection = {
           start: {step: 25},
           end: null,
         };
@@ -1846,10 +1867,6 @@ describe('scalar card line chart', () => {
           })
         );
 
-        const scalarCardComponent = fixture.debugElement.query(
-          By.directive(ScalarCardLineChartComponent)
-        );
-
         expect(
           scalarCardComponent.componentInstance.stepOrLinkedTimeSelection
         ).toEqual({
@@ -1866,7 +1883,10 @@ describe('scalar card line chart', () => {
           minStep: 10,
           maxStep: 30,
         };
-        fixture.componentInstance.stepOrLinkedTimeSelection = {
+        const scalarCardComponent = fixture.debugElement.query(
+          By.directive(ScalarCardLineChartComponent)
+        );
+        scalarCardComponent.componentInstance.stepOrLinkedTimeSelection = {
           start: {step: 20},
           end: null,
         };
@@ -1890,7 +1910,7 @@ describe('scalar card line chart', () => {
         testController.mouseMove(fakeEvent);
 
         // Simulate ngrx update from mouseMove
-        fixture.componentInstance.stepOrLinkedTimeSelection = {
+        scalarCardComponent.componentInstance.stepOrLinkedTimeSelection = {
           start: {step: 25},
           end: null,
         };
