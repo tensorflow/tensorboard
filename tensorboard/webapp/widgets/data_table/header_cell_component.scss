@@ -17,75 +17,51 @@ limitations under the License.
 @import 'tensorboard/webapp/theme/tb_theme';
 
 $_accent: map-get(mat.get-color-config($tb-theme), accent);
+$_icon_size: 12px;
 
 :host {
   display: table-cell;
-  padding: 1px;
+  padding: 2px;
   vertical-align: bottom;
+
+  &:hover {
+    .show-on-hover {
+      opacity: 0.3;
+    }
+  }
+
+  .show-on-hover {
+    &:hover {
+      opacity: 1;
+    }
+  }
 }
-.sorting-icon-container {
-  width: 12px;
-  height: 12px;
+
+.sorting-icon-container,
+.context-menu-container {
+  width: $_icon_size;
+  height: $_icon_size;
   border-radius: 5px;
 }
-.cell mat-icon {
-  height: 12px;
-  width: 12px;
-}
+
 .cell {
   align-items: center;
   display: flex;
-}
-.cell .sorting-icon-container {
-  ::ng-deep path {
-    fill: unset;
+
+  mat-icon {
+    height: $_icon_size;
+    width: $_icon_size;
   }
-}
 
-.cell:hover .delete-icon-container {
-  opacity: 1;
-}
-
-.delete-icon {
-  background-color: #fff;
-  border: 0;
-  border-radius: 50%;
-  color: mat.get-color-from-palette(mat.$gray-palette, 500);
-  font-size: 11px;
-  height: 11px;
-  margin-top: 2px;
-  padding: 0;
-  width: 11px;
-
-  .mat-icon {
-    width: 100%;
-    height: 100%;
+  .sorting-icon-container {
+    ::ng-deep path {
+      fill: unset;
+    }
   }
-}
-
-.delete-icon:hover {
-  background-color: mat.get-color-from-palette(mat.$gray-palette, 400);
-  color: #fff;
-  cursor: pointer;
-}
-
-.delete-icon-container {
-  margin-left: -12px;
-  opacity: 0;
-  position: absolute;
-}
-
-.delete-icon:hover {
-  background-color: mat.get-color-from-palette(mat.$gray-palette, 400);
-  cursor: pointer;
 }
 
 .show {
   opacity: 1;
-}
-
-:host:hover .show-on-hover {
-  opacity: 0.3;
 }
 
 .show-on-hover {

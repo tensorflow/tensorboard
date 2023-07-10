@@ -13,8 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Component, Input, ViewChild} from '@angular/core';
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  flush,
+} from '@angular/core/testing';
 import {MatIconTestingModule} from '../../testing/mat_icon_module';
 import {By} from '@angular/platform-browser';
 import {
@@ -34,8 +39,10 @@ import {HeaderCellComponent} from './header_cell_component';
       [sortingInfo]="sortingInfo"
       [hparamsEnabled]="hparamsEnabled"
       [controlsEnabled]="controlsEnabled"
+      [disableContextMenu]="disableContextMenu"
       (headerClicked)="headerClicked($event)"
       (deleteButtonClicked)="deleteButtonClicked($event)"
+      (contextMenuOpened)="contextMenuOpened.emit($event)"
     ></tb-data-table-header-cell>
   `,
 })
@@ -47,9 +54,12 @@ class TestableComponent {
   @Input() sortingInfo!: SortingInfo;
   @Input() hparamsEnabled!: boolean;
   @Input() controlsEnabled!: boolean;
+  @Input() disableContextMenu!: boolean;
 
   @Input() headerClicked!: (sortingInfo: SortingInfo) => void;
   @Input() deleteButtonClicked!: (header: ColumnHeader) => void;
+
+  @Output() contextMenuOpened = new EventEmitter<MouseEvent>();
 }
 
 describe('header cell', () => {
@@ -66,7 +76,7 @@ describe('header cell', () => {
     header?: ColumnHeader;
     sortingInfo?: SortingInfo;
     hparamsEnabled?: boolean;
-    controlsEnabled?: boolean;
+    disableContextMenu?: boolean;
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
 
@@ -75,13 +85,17 @@ describe('header cell', () => {
       displayName: 'Run',
       type: ColumnHeaderType.RUN,
       enabled: true,
+      sortable: true,
+      removable: true,
+      movable: true,
     };
     fixture.componentInstance.sortingInfo = input.sortingInfo || {
       name: 'run',
       order: SortingOrder.ASCENDING,
     };
     fixture.componentInstance.hparamsEnabled = input.hparamsEnabled ?? true;
-    fixture.componentInstance.controlsEnabled = input.controlsEnabled ?? true;
+    fixture.componentInstance.disableContextMenu =
+      input.disableContextMenu ?? false;
 
     headerClickedSpy = jasmine.createSpy();
     fixture.componentInstance.headerClicked = headerClickedSpy;
@@ -108,41 +122,21 @@ describe('header cell', () => {
     expect(headerClickedSpy).toHaveBeenCalledOnceWith('run');
   });
 
-  describe('delete column button', () => {
-    it('emits removeColumn event when delete button clicked', () => {
-      const fixture = createComponent({hparamsEnabled: true});
-      fixture.debugElement
-        .query(By.directive(HeaderCellComponent))
-        .componentInstance.deleteButtonClicked.subscribe();
-      fixture.debugElement
-        .query(By.css('.delete-icon'))
-        .triggerEventHandler('click', {});
-
-      expect(deleteButtonClickedSpy).toHaveBeenCalledOnceWith({
+  it('does not emits headerClicked event when cell element is clicked with removable set to false', () => {
+    const fixture = createComponent({
+      header: {
         name: 'run',
         displayName: 'Run',
         type: ColumnHeaderType.RUN,
         enabled: true,
-      });
+        sortable: false,
+      },
     });
-
-    it('renders delete button when hparamsEnabled is true', () => {
-      const fixture = createComponent({hparamsEnabled: true});
-
-      expect(fixture.debugElement.query(By.css('.delete-icon'))).toBeTruthy();
-    });
-
-    it('does not render delete button when hparamsEnabled is false', () => {
-      const fixture = createComponent({hparamsEnabled: false});
-
-      expect(fixture.debugElement.query(By.css('.delete-icon'))).toBeFalsy();
-    });
-
-    it('does not render delete button when controlsEnabled is false', () => {
-      const fixture = createComponent({controlsEnabled: false});
-
-      expect(fixture.debugElement.query(By.css('.delete-icon'))).toBeFalsy();
-    });
+    fixture.debugElement
+      .query(By.directive(HeaderCellComponent))
+      .componentInstance.headerClicked.subscribe();
+    fixture.debugElement.query(By.css('.cell')).nativeElement.click();
+    expect(headerClickedSpy).not.toHaveBeenCalled();
   });
 
   describe('sorting icon', () => {
@@ -206,12 +200,102 @@ describe('header cell', () => {
       ).toBe('arrow_upward_24px');
     });
 
-    it('does not render sorting icon when controlsEnabled is false', () => {
-      const fixture = createComponent({controlsEnabled: false});
+    it('does not render sorting icon when sortable is false', () => {
+      const fixture = createComponent({
+        header: {
+          name: 'run',
+          displayName: 'Run',
+          type: ColumnHeaderType.RUN,
+          enabled: true,
+          sortable: false,
+        },
+      });
 
       expect(
         fixture.debugElement.query(By.css('.sorting-icon-container mat-icon'))
       ).toBeFalsy();
+    });
+  });
+
+  describe('drag and drop', () => {
+    it('is draggable if movable is true', () => {
+      const fixture = createComponent({});
+
+      expect(
+        fixture.debugElement.query(By.css('.cell')).nativeElement.draggable
+      ).toBe(true);
+    });
+
+    it('is not draggable if movable is false', () => {
+      const fixture = createComponent({
+        header: {
+          name: 'run',
+          displayName: 'Run',
+          type: ColumnHeaderType.RUN,
+          enabled: true,
+          movable: false,
+        },
+      });
+
+      expect(
+        fixture.debugElement.query(By.css('.cell')).nativeElement.draggable
+      ).toBe(false);
+    });
+  });
+
+  describe('context menu', () => {
+    it('dispatches event', () => {
+      const fixture = createComponent({});
+      const component = fixture.debugElement.query(
+        By.directive(HeaderCellComponent)
+      );
+      spyOn(component.componentInstance.contextMenuOpened, 'emit');
+      expect(
+        component.componentInstance.contextMenuOpened.emit
+      ).not.toHaveBeenCalled();
+      component.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
+      expect(
+        component.componentInstance.contextMenuOpened.emit
+      ).toHaveBeenCalled();
+    });
+
+    it('does not render the context menu icon when disableContextMenu is true', () => {
+      const fixture = createComponent({disableContextMenu: true});
+      const contextMenuBtn = fixture.debugElement.query(
+        By.css('.context-menu-container mat-icon')
+      );
+      expect(contextMenuBtn).toBeNull();
+    });
+
+    it('clicking context menu button dispatches event', () => {
+      const fixture = createComponent({});
+      const component = fixture.debugElement.query(
+        By.directive(HeaderCellComponent)
+      );
+      spyOn(component.componentInstance.contextMenuOpened, 'emit');
+      expect(
+        component.componentInstance.contextMenuOpened.emit
+      ).not.toHaveBeenCalled();
+
+      const contextMenuBtn = fixture.debugElement.query(
+        By.css('.context-menu-container mat-icon')
+      );
+      contextMenuBtn.nativeElement.click();
+      expect(
+        component.componentInstance.contextMenuOpened.emit
+      ).toHaveBeenCalled();
+    });
+
+    it('disableContextMenu prevents openContextMenu from emitting', () => {
+      const fixture = createComponent({disableContextMenu: true});
+      const component = fixture.debugElement.query(
+        By.directive(HeaderCellComponent)
+      );
+      spyOn(component.componentInstance.contextMenuOpened, 'emit');
+      component.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
+      expect(
+        component.componentInstance.contextMenuOpened.emit
+      ).not.toHaveBeenCalled();
     });
   });
 });

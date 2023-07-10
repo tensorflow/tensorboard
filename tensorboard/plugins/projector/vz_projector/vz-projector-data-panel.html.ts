@@ -479,15 +479,18 @@ export const template = html`
               <div class="data-step-contents-contents">
                 Example of 3 vectors with dimension 4:
                 <div class="code">
-                  0.1<span class="delimiter"> </span>0.2<span class="delimiter">
-                  </span
-                  >0.5<span class="delimiter"> </span>0.9<br />
-                  0.2<span class="delimiter"> </span>0.1<span class="delimiter">
-                  </span
-                  >5.0<span class="delimiter"> </span>0.2<br />
-                  0.4<span class="delimiter"> </span>0.1<span class="delimiter">
-                  </span
-                  >7.0<span class="delimiter"> </span>0.8
+                  0.1<span class="delimiter">&#92;t</span>0.2<span
+                    class="delimiter"
+                    >&#92;t</span
+                  >0.5<span class="delimiter">&#92;t</span>0.9<br />
+                  0.2<span class="delimiter">&#92;t</span>0.1<span
+                    class="delimiter"
+                    >&#92;t</span
+                  >5.0<span class="delimiter">&#92;t</span>0.2<br />
+                  0.4<span class="delimiter">&#92;t</span>0.1<span
+                    class="delimiter"
+                    >&#92;t</span
+                  >7.0<span class="delimiter">&#92;t</span>0.8
                 </div>
               </div>
               <div class="data-step-contents-upload">
@@ -517,10 +520,11 @@ export const template = html`
                   parsed as column labels.</i
                 >
                 <div class="code">
-                  <b>Pokémon<span class="delimiter"> </span>Species</b><br />
-                  Wartortle<span class="delimiter"> </span>Turtle<br />
-                  Venusaur<span class="delimiter"> </span>Seed<br />
-                  Charmeleon<span class="delimiter"> </span>Flame
+                  <b>Pokémon<span class="delimiter">&#92;t</span>Species</b
+                  ><br />
+                  Wartortle<span class="delimiter">&#92;t</span>Turtle<br />
+                  Venusaur<span class="delimiter">&#92;t</span>Seed<br />
+                  Charmeleon<span class="delimiter">&#92;t</span>Flame
                 </div>
               </div>
               <div class="data-step-contents-upload">

@@ -71,7 +71,7 @@ export class ImageCardComponent {
   }
 
   onSliderInput($event: any) {
-    // Angular Material Slider's MatSliderChange has a loose `number | null`
+    // Angular Material Slider's MatLegacySliderChange has a loose `number | null`
     // type for 'value'. However, it's actual implementation can only emit a
     // `number` on input events.
     // https://github.com/angular/components/blob/master/src/material/slider/slider.ts

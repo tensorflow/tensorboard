@@ -15,7 +15,7 @@
 """Experimental framework for generic TensorBoard data providers."""
 
 
-from typing import Collection, Tuple, Union
+from typing import Collection, Sequence, Tuple, Union
 import abc
 import dataclasses
 import enum
@@ -104,11 +104,16 @@ class DataProvider(metaclass=abc.ABCMeta):
     which describes the set of known values for that hyperparameter across the
     given set of experiments.
 
-    Each run within an experiment may specify a value for a hyperparameter. Runs
-    that were generated together with the same set of hyperparameter values form
-    a hyperparameter session. When querying for hyperparameter values for a set
-    of experiments, the result will group runs by hyperparameter session and
-    provide one set of hyperparameter values for each group.
+    There is a corresponding *hyperparameter value* class, which describes an
+    actual value of a hyperparameter that was logged during experiment
+    execution.
+
+    Each run within an experiment may specify its own value for a
+    hyperparameter. Runs that were logically executed together with the same set
+    of hyperparameter values form a hyperparameter session group. When querying
+    for hyperparameter values for a set of experiments, the result will group
+    runs by hyperparameter session group and provide one set of hyperparameter
+    values for each group.
 
     All methods on this class take a `RequestContext` parameter as the
     first positional argument. This argument is temporarily optional to
@@ -391,6 +396,23 @@ class DataProvider(metaclass=abc.ABCMeta):
         """
         pass
 
+    def read_hyperparameters(self, ctx=None, *, experiment_ids):
+        """Read hyperparameter values.
+
+        Args:
+          ctx: A TensorBoard `RequestContext` value.
+          experiment_ids: A Collection[string] of IDs of the enclosing
+            experiments.
+
+        Returns:
+          A Collection[HyperparameterSessionGroup] describing the groups and
+          their hyperparameter values.
+
+        Raises:
+          tensorboard.errors.PublicError: See `DataProvider` class docstring.
+        """
+        pass
+
 
 class ExperimentMetadata:
     """Metadata about an experiment.
@@ -555,8 +577,8 @@ class Hyperparameter:
           finite set of bool values.
     """
 
-    hyperparameter_name: str = ""
-    hyperparameter_display_name: str = ""
+    hyperparameter_name: str
+    hyperparameter_display_name: str
     domain_type: Union[HyperparameterDomainType, None] = None
     domain: Union[
         Tuple[float, float],
@@ -565,6 +587,78 @@ class Hyperparameter:
         Collection[bool],
         None,
     ] = None
+
+
+@dataclasses.dataclass(frozen=True)
+class HyperparameterValue:
+    """A hyperparameter value.
+
+    Attributes:
+      hyperparameter_name: A string identifier for the hyperparameters. It
+        corresponds to the hyperparameter_name field in the Hyperparameter
+        class.
+      domain_type: A HyperparameterDomainType describing how we represent the
+        set of known values in the `domain` attribute.
+      value: The value of the hyperparameter.
+
+        If domain_type is INTERVAL or DISCRETE_FLOAT, value is a float.
+        If domain_type is DISCRETE_STRING, value is a str.
+        If domain_type is DISCRETE_BOOL, value is a bool.
+        If domain_type is unknown (None), value is None.
+    """
+
+    hyperparameter_name: str
+    domain_type: Union[HyperparameterDomainType, None] = None
+    value: Union[float, str, bool, None] = None
+
+
+@dataclasses.dataclass(frozen=True)
+class HyperparameterSessionRun:
+    """A single run in a HyperparameterSessionGroup.
+
+    Attributes:
+      experiment_id: The id of the experiment to which the run belongs.
+      run: The name of the run.
+    """
+
+    experiment_id: str
+    run: str
+
+
+@dataclasses.dataclass(frozen=True)
+class HyperparameterSessionGroup:
+    """A group of runs logically executed together with the same hparam values.
+
+    The group of runs may have, for example, combined to generate and test a
+    single model or other artifacts.
+
+    We assume these groups of runs were executed with the same set of
+    hyperparameter values. However, having the same set of hyperparameter values
+    is not sufficient to be considered part of the same group -- different
+    groups can exist with the same hyperparameter values.
+
+    Attributes:
+      root: A descriptor of the common ancestor of all sessions in this
+        group.
+
+        In the case where the group contains all runs in the experiment, this
+        would just be a HyperparameterSessionRun with the experiment_id property
+        set to the experiment's id but run property set to empty.
+
+        In the case where the group contains a subset of runs in the experiment,
+        this would be a HyperparameterSessionRun with the experiment_id property
+        set and the run property set to the largest common prefix for runs.
+
+        The root might correspond to a session within the group but it is not
+        necessary.
+      sessions: A sequence of all sessions in this group.
+      hyperparameter_values: A collection of all hyperparameter values in this
+        group.
+    """
+
+    root: HyperparameterSessionRun
+    sessions: Sequence[HyperparameterSessionRun]
+    hyperparameter_values: Collection[HyperparameterValue]
 
 
 class _TimeSeries:

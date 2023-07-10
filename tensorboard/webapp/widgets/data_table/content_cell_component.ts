@@ -12,7 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  HostListener,
+  Input,
+  Output,
+} from '@angular/core';
 import {ColumnHeader, ColumnHeaderType} from './types';
 import {
   intlNumberFormatter,
@@ -30,6 +37,8 @@ export class ContentCellComponent {
   @Input() header!: ColumnHeader;
   @Input() datum!: string | number;
 
+  @Output() contextMenuOpened = new EventEmitter<MouseEvent>();
+
   ColumnHeaderType = ColumnHeaderType;
 
   getFormattedDataForColumn(): string {
@@ -38,6 +47,7 @@ export class ContentCellComponent {
     }
     switch (this.header.type) {
       case ColumnHeaderType.RUN:
+      case ColumnHeaderType.EXPERIMENT:
         return this.datum as string;
       case ColumnHeaderType.VALUE:
       case ColumnHeaderType.STEP:
@@ -70,5 +80,10 @@ export class ContentCellComponent {
       default:
         return '';
     }
+  }
+
+  @HostListener('contextmenu', ['$event'])
+  onContextMenuOpened(event: MouseEvent) {
+    this.contextMenuOpened.emit(event);
   }
 }

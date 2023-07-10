@@ -42,7 +42,7 @@ import {
 import {DataTableHeaderModule} from '../../../../widgets/data_table/data_table_header_module';
 import {ScalarColumnEditorComponent} from './scalar_column_editor_component';
 import {ScalarColumnEditorContainer} from './scalar_column_editor_container';
-import {MatTabsModule} from '@angular/material/tabs';
+import {MatLegacyTabsModule} from '@angular/material/legacy-tabs';
 
 describe('scalar column editor', () => {
   let store: MockStore<State>;
@@ -72,7 +72,11 @@ describe('scalar column editor', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DataTableHeaderModule, MatTabsModule, NoopAnimationsModule],
+      imports: [
+        DataTableHeaderModule,
+        MatLegacyTabsModule,
+        NoopAnimationsModule,
+      ],
       declarations: [ScalarColumnEditorContainer, ScalarColumnEditorComponent],
       providers: [provideMockStore()],
       schemas: [NO_ERRORS_SCHEMA],

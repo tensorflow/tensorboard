@@ -328,6 +328,8 @@ const {initialState: uiInitialState, reducers: uiNamespaceContextedReducers} =
           name: 'run',
           displayName: 'Run',
           enabled: true,
+          sortable: true,
+          movable: true,
         },
       ],
       sortingInfo: {
@@ -336,7 +338,49 @@ const {initialState: uiInitialState, reducers: uiNamespaceContextedReducers} =
         order: SortingOrder.DESCENDING,
       },
     },
-    {}
+    {},
+    /* onNavigated() */
+    (state, oldRoute, newRoute) => {
+      if (!areSameRouteKindAndExperiments(oldRoute, newRoute)) {
+        if (
+          newRoute.routeKind === RouteKind.COMPARE_EXPERIMENT &&
+          !state.runsTableHeaders.find(
+            (header) => header.name === 'experimentName'
+          )
+        ) {
+          const newRunsTableHeaders = [
+            ...state.runsTableHeaders,
+            {
+              type: ColumnHeaderType.EXPERIMENT,
+              name: 'experimentName',
+              displayName: 'Experiment',
+              enabled: true,
+              movable: true,
+              sortable: true,
+            },
+          ];
+
+          return {
+            ...state,
+            runsTableHeaders: newRunsTableHeaders,
+          };
+        }
+        if (
+          oldRoute?.routeKind === RouteKind.COMPARE_EXPERIMENT &&
+          newRoute.routeKind !== RouteKind.COMPARE_EXPERIMENT
+        ) {
+          const newRunsTableHeaders = state.runsTableHeaders.filter(
+            (column) => column.name !== 'experimentName'
+          );
+
+          return {
+            ...state,
+            runsTableHeaders: newRunsTableHeaders,
+          };
+        }
+      }
+      return state;
+    }
   );
 
 const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
@@ -437,6 +481,22 @@ const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
     return {
       ...state,
       runsTableHeaders: newRunsTableHeaders,
+    };
+  }),
+  on(runsActions.runsTableHeaderRemoved, (state, {header}) => {
+    const newRunsTableHeaders = state.runsTableHeaders.filter(
+      ({name}) => name !== header.name
+    );
+
+    return {
+      ...state,
+      runsTableHeaders: newRunsTableHeaders,
+    };
+  }),
+  on(runsActions.runsTableHeaderOrderChanged, (state, {newHeaderOrder}) => {
+    return {
+      ...state,
+      runsTableHeaders: newHeaderOrder,
     };
   }),
   on(runsActions.runsTableSortingInfoChanged, (state, {sortingInfo}) => {

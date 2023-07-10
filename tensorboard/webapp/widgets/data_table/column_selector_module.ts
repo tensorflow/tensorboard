@@ -16,8 +16,8 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {MatIconModule} from '@angular/material/icon';
-import {MatInputModule} from '@angular/material/input';
-import {MatButtonModule} from '@angular/material/button';
+import {MatLegacyInputModule} from '@angular/material/legacy-input';
+import {MatLegacyButtonModule} from '@angular/material/legacy-button';
 import {ColumnSelectorComponent} from './column_selector_component';
 import {FormsModule} from '@angular/forms';
 
@@ -26,8 +26,8 @@ import {FormsModule} from '@angular/forms';
   imports: [
     CommonModule,
     MatIconModule,
-    MatInputModule,
-    MatButtonModule,
+    MatLegacyInputModule,
+    MatLegacyButtonModule,
     FormsModule,
   ],
   exports: [ColumnSelectorComponent],

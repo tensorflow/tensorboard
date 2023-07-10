@@ -23,23 +23,21 @@ import {
   OnDestroy,
   Output,
   QueryList,
+  ViewChild,
 } from '@angular/core';
 import {
   ColumnHeader,
   ColumnHeaderType,
-  TableData,
   SortingInfo,
   SortingOrder,
 } from './types';
-import {
-  intlNumberFormatter,
-  numberFormatter,
-  relativeTimeFormatter,
-} from '../line_chart_v2/lib/formatter';
 import {HeaderCellComponent} from './header_cell_component';
 import {Subscription} from 'rxjs';
+import {CustomModalComponent} from '../custom_modal/custom_modal_component';
+import {ColumnSelectorComponent} from './column_selector_component';
+import {ContentCellComponent} from './content_cell_component';
 
-enum Side {
+export enum Side {
   RIGHT,
   LEFT,
 }
@@ -60,14 +58,34 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   @Input() headers!: ColumnHeader[];
   @Input() sortingInfo!: SortingInfo;
   @Input() columnCustomizationEnabled!: boolean;
+  @Input() selectableColumns?: ColumnHeader[];
 
   @ContentChildren(HeaderCellComponent)
   headerCells!: QueryList<HeaderCellComponent>;
   headerCellSubscriptions: Subscription[] = [];
+  @ContentChildren(ContentCellComponent, {descendants: true})
+  contentCells!: QueryList<ContentCellComponent>;
+  contentCellSubscriptions: Subscription[] = [];
+
+  contextMenuHeader: ColumnHeader | undefined = undefined;
+  insertColumnTo: Side | undefined = undefined;
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() orderColumns = new EventEmitter<ColumnHeader[]>();
   @Output() removeColumn = new EventEmitter<ColumnHeader>();
+  @Output() addColumn = new EventEmitter<{
+    header: ColumnHeader;
+    index?: number | undefined;
+  }>();
+
+  @ViewChild('columnSelectorModal', {static: false})
+  private readonly columnSelectorModal!: CustomModalComponent;
+
+  @ViewChild(ColumnSelectorComponent, {static: false})
+  private readonly columnSelector!: ColumnSelectorComponent;
+
+  @ViewChild('contextMenu', {static: false})
+  private readonly contextMenu!: CustomModalComponent;
 
   readonly ColumnHeaders = ColumnHeaderType;
   readonly SortingOrder = SortingOrder;
@@ -87,6 +105,9 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   ngAfterContentInit() {
     this.syncHeaders();
     this.headerCells.changes.subscribe(this.syncHeaders.bind(this));
+
+    this.syncContent();
+    this.contentCells.changes.subscribe(this.syncContent.bind(this));
   }
 
   syncHeaders() {
@@ -99,15 +120,28 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
         headerCell.dragStart.subscribe(this.dragStart.bind(this)),
         headerCell.dragEnter.subscribe(this.dragEnter.bind(this)),
         headerCell.dragEnd.subscribe(this.dragEnd.bind(this)),
-        headerCell.headerClicked.subscribe(this.headerClicked.bind(this)),
-        headerCell.deleteButtonClicked.subscribe(
-          this.deleteButtonClicked.bind(this)
+        headerCell.headerClicked.subscribe(this.sortByHeader.bind(this)),
+        headerCell.contextMenuOpened.subscribe(
+          this.openContextMenu.bind(this, headerCell.header)
         )
       );
     });
   }
 
-  headerClicked(name: string) {
+  syncContent() {
+    this.contentCellSubscriptions.forEach((subscription) => {
+      subscription.unsubscribe();
+    });
+    this.contentCellSubscriptions = this.contentCells
+      .map((contentCell) => [
+        contentCell.contextMenuOpened.subscribe(
+          this.openContextMenu.bind(this, contentCell.header)
+        ),
+      ])
+      .flat();
+  }
+
+  sortByHeader(name: string) {
     if (
       this.sortingInfo.name === name &&
       this.sortingInfo.order === SortingOrder.ASCENDING
@@ -199,7 +233,76 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     });
   }
 
-  deleteButtonClicked(header: ColumnHeader) {
-    this.removeColumn.emit(header);
+  focusColumnSelector() {
+    this.columnSelector.focus();
+  }
+
+  openContextMenu(header: ColumnHeader, event: MouseEvent) {
+    event.stopPropagation();
+    event.preventDefault();
+
+    this.contextMenuHeader = header;
+    this.contextMenu.openAtPosition({
+      x: event.clientX,
+      y: event.clientY,
+    });
+  }
+
+  openColumnSelector(event: MouseEvent, insertTo?: Side) {
+    event.stopPropagation();
+    this.insertColumnTo = insertTo;
+    const rect = (event.target as HTMLElement).getBoundingClientRect();
+    this.columnSelectorModal.openAtPosition({
+      x: rect.x + rect.width,
+      y: rect.y + rect.height,
+    });
+  }
+
+  onColumnSelectorClosed() {
+    this.contextMenuHeader = undefined;
+    this.insertColumnTo = undefined;
+  }
+
+  canContextMenuRemoveColumn() {
+    return this.contextMenuHeader?.removable;
+  }
+
+  canContextMenuInsert() {
+    return (
+      this.selectableColumns &&
+      this.selectableColumns.length &&
+      this.contextMenuHeader?.movable
+    );
+  }
+
+  contextMenuRemoveColumn() {
+    if (this.contextMenuHeader === undefined) {
+      return;
+    }
+    this.removeColumn.emit(this.contextMenuHeader);
+    this.contextMenu.close();
+  }
+
+  private getInsertIndex() {
+    if (
+      this.contextMenuHeader === undefined ||
+      this.insertColumnTo === undefined
+    ) {
+      return undefined;
+    }
+
+    const index = this.headers.indexOf(this.contextMenuHeader);
+    if (this.insertColumnTo === Side.LEFT) {
+      return index;
+    }
+    if (this.insertColumnTo === Side.RIGHT) {
+      return Math.min(index + 1, this.headers.length);
+    }
+
+    return index;
+  }
+
+  onColumnAdded(header: ColumnHeader) {
+    this.addColumn.emit({header, index: this.getInsertIndex()});
   }
 }

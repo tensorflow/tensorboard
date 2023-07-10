@@ -15,12 +15,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<div class="filter-row">
+  <tb-filter-input
+    class="run-filter"
+    value="{{ regexFilter }}"
+    (keyup)="onFilterKeyUp($event)"
+    placeholder="Filter runs (regex)"
+  ></tb-filter-input>
+</div>
 <tb-data-table
   [headers]="headers"
   [sortingInfo]="sortingInfo"
   [columnCustomizationEnabled]="true"
+  [selectableColumns]="selectableColumns"
   (sortDataBy)="sortDataBy.emit($event)"
   (orderColumns)="orderColumns.emit($event)"
+  (addColumn)="addColumn.emit($event)"
+  (removeColumn)="removeColumn.emit($event)"
 >
   <ng-container header>
     <ng-container *ngFor="let header of getHeaders()">
@@ -29,17 +40,16 @@ limitations under the License.
         [header]="header"
         [sortingInfo]="sortingInfo"
         [hparamsEnabled]="true"
-        [controlsEnabled]="header.type !== ColumnHeaderType.COLOR && header.type !== ColumnHeaderType.CUSTOM"
       >
         <ng-container [ngSwitch]="header.name">
           <div *ngSwitchCase="'selected'">
             <mat-checkbox
               [checked]="allRowsSelected()"
               [indeterminate]="!allRowsSelected() && someRowsSelected()"
-              (click)="onAllSelectionToggle.emit(getRunIds())"
+              (click)="handleSelectAll($event)"
             ></mat-checkbox>
           </div>
-          <span *ngSwitchCase="'color'">
+          <span class="group-menu-container" *ngSwitchCase="'color'">
             <runs-group-menu-button
               [experimentIds]="experimentIds"
             ></runs-group-menu-button>
@@ -73,7 +83,7 @@ limitations under the License.
               <div *ngSwitchCase="'selected'">
                 <mat-checkbox
                   [checked]="dataRow['selected']"
-                  (change)="onSelectionToggle.emit(dataRow.id)"
+                  (click)="selectionClick($event, dataRow['id'])"
                 ></mat-checkbox>
               </div>
             </ng-container>
@@ -83,3 +93,16 @@ limitations under the License.
     </ng-container>
   </ng-container>
 </tb-data-table>
+<div class="full-screen-toggle" [ngClass]="{'full-screen': isFullScreen}">
+  <button
+    mat-button
+    class="full-screen-btn"
+    [ngClass]="isFullScreen ? 'collapse' : 'expand'"
+    (click)="toggleFullScreen.emit()"
+  >
+    <mat-icon
+      class="expand-collapse-icon"
+      [svgIcon]="isFullScreen ? 'arrow_back_24px' : 'arrow_forward_24px'"
+    ></mat-icon>
+  </button>
+</div>

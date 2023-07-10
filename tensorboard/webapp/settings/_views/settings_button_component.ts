@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component, Input} from '@angular/core';
-import {MatDialog} from '@angular/material/dialog';
+import {MatLegacyDialog} from '@angular/material/legacy-dialog';
 import {DataLoadState} from '../../types/data';
 import {SettingsDialogContainer} from './settings_dialog_container';
 
@@ -32,7 +32,7 @@ import {SettingsDialogContainer} from './settings_dialog_container';
 export class SettingsButtonComponent {
   @Input() settingsLoadState!: DataLoadState;
 
-  constructor(private dialog: MatDialog) {}
+  constructor(private dialog: MatLegacyDialog) {}
 
   isButtonDisabled() {
     // Button is disabled if we have not yet attempted to start

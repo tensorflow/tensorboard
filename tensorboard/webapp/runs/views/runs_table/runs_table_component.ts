@@ -23,9 +23,12 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {MatPaginator, MatPaginatorIntl} from '@angular/material/paginator';
+import {
+  MatLegacyPaginator,
+  MatLegacyPaginatorIntl,
+} from '@angular/material/legacy-paginator';
 import {MatSort, Sort} from '@angular/material/sort';
-import {MatTableDataSource} from '@angular/material/table';
+import {MatLegacyTableDataSource} from '@angular/material/legacy-table';
 import {
   DiscreteFilter,
   DiscreteHparamValue,
@@ -41,7 +44,7 @@ import {HparamSpec, MetricSpec, RunsTableColumn, RunTableItem} from './types';
  * Exported because Angular compiler requires decorated classes to be exported.
  */
 @Injectable()
-export class RunsPaginatorIntl extends MatPaginatorIntl {
+export class RunsPaginatorIntl extends MatLegacyPaginatorIntl {
   override itemsPerPageLabel = 'Show runs:';
 }
 
@@ -73,10 +76,10 @@ export interface IntervalFilterChange {
   styleUrls: ['runs_table_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   // Use Element Provider since this text is unique to this element hierarchy.
-  providers: [{provide: MatPaginatorIntl, useClass: RunsPaginatorIntl}],
+  providers: [{provide: MatLegacyPaginatorIntl, useClass: RunsPaginatorIntl}],
 })
 export class RunsTableComponent implements OnChanges {
-  readonly dataSource = new MatTableDataSource<RunTableItem>();
+  readonly dataSource = new MatLegacyTableDataSource<RunTableItem>();
   readonly DomainType = DomainType;
   readonly RunsTableColumn = RunsTableColumn;
   readonly SortType = SortType;
@@ -104,7 +107,7 @@ export class RunsTableComponent implements OnChanges {
 
   @Output() onRegexFilterChange = new EventEmitter<string>();
   @Output() onSelectionToggle = new EventEmitter<RunTableItem>();
-  @Output() onSelectionDblClick = new EventEmitter<RunTableItem>();
+  @Output() onSelectionDblClick = new EventEmitter<string>();
   @Output() onPageSelectionToggle = new EventEmitter<{items: RunTableItem[]}>();
   @Output()
   onPaginationChange = new EventEmitter<{
@@ -134,7 +137,7 @@ export class RunsTableComponent implements OnChanges {
   @ViewChild('filter', {static: true, read: ElementRef})
   filter!: ElementRef<HTMLInputElement>;
 
-  @ViewChild(MatPaginator, {static: true}) paginator!: MatPaginator;
+  @ViewChild(MatLegacyPaginator, {static: true}) paginator!: MatLegacyPaginator;
   @ViewChild(MatSort, {static: true}) sort!: MatSort;
 
   ngOnChanges() {

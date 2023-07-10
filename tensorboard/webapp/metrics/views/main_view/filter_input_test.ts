@@ -15,8 +15,8 @@ limitations under the License.
 import {OverlayContainer} from '@angular/cdk/overlay';
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
-import {MatAutocompleteModule} from '@angular/material/autocomplete';
-import {MatButtonModule} from '@angular/material/button';
+import {MatLegacyAutocompleteModule} from '@angular/material/legacy-autocomplete';
+import {MatLegacyButtonModule} from '@angular/material/legacy-button';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
@@ -42,8 +42,8 @@ describe('metrics filter input', () => {
     await TestBed.configureTestingModule({
       imports: [
         NoopAnimationsModule,
-        MatAutocompleteModule,
-        MatButtonModule,
+        MatLegacyAutocompleteModule,
+        MatLegacyButtonModule,
         MatIconTestingModule,
         FilterInputModule,
       ],

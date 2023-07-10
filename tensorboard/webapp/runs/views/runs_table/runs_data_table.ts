@@ -37,6 +37,9 @@ export class RunsDataTable {
   @Input() data!: TableData[];
   @Input() sortingInfo!: SortingInfo;
   @Input() experimentIds!: string[];
+  @Input() regexFilter!: string;
+  @Input() isFullScreen!: boolean;
+  @Input() selectableColumns!: ColumnHeader[];
 
   ColumnHeaderType = ColumnHeaderType;
 
@@ -44,10 +47,18 @@ export class RunsDataTable {
   @Output() orderColumns = new EventEmitter<ColumnHeader[]>();
   @Output() onSelectionToggle = new EventEmitter<string>();
   @Output() onAllSelectionToggle = new EventEmitter<string[]>();
+  @Output() onRegexFilterChange = new EventEmitter<string>();
+  @Output() toggleFullScreen = new EventEmitter();
   @Output() onRunColorChange = new EventEmitter<{
     runId: string;
     newColor: string;
   }>();
+  @Output() addColumn = new EventEmitter<{
+    header: ColumnHeader;
+    index?: number | undefined;
+  }>();
+  @Output() removeColumn = new EventEmitter<ColumnHeader>();
+  @Output() onSelectionDblClick = new EventEmitter<string>();
 
   // These columns must be stored and reused to stop needless re-rendering of
   // the content and headers in these columns. This has been known to cause
@@ -78,15 +89,37 @@ export class RunsDataTable {
     );
   }
 
-  getRunIds() {
-    return this.data.map((row) => row.id);
+  selectionClick(event: MouseEvent, runId: string) {
+    // Prevent checkbox from switching checked state on its own.
+    event.preventDefault();
+
+    // event.details on mouse click events gives the number of clicks in quick
+    // succession. This logic is used to differentiate between single and double
+    // clicks.
+    // Note: This means any successive click after the second are noops.
+    if (event.detail === 1) {
+      this.onSelectionToggle.emit(runId);
+    }
+    if (event.detail === 2) {
+      this.onSelectionDblClick.emit(runId);
+    }
   }
 
   allRowsSelected() {
-    return this.data.every((row) => row.selected);
+    return this.data.every((row) => row['selected']);
   }
 
   someRowsSelected() {
-    return this.data.some((row) => row.selected);
+    return this.data.some((row) => row['selected']);
+  }
+
+  handleSelectAll(event: MouseEvent) {
+    event.preventDefault();
+    this.onAllSelectionToggle.emit(this.data.map((row) => row.id));
+  }
+
+  onFilterKeyUp(event: KeyboardEvent) {
+    const input = event.target! as HTMLInputElement;
+    this.onRegexFilterChange.emit(input.value);
   }
 }

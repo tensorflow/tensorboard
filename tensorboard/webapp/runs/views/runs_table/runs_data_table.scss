@@ -15,6 +15,16 @@ limitations under the License.
 @use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 $_circle-size: 20px;
+$_arrow_size: 16px;
+
+:host {
+  width: 100%;
+}
+
+:host {
+  overflow-y: scroll;
+  width: 100%;
+}
 
 .color-container {
   display: flex;
@@ -28,4 +38,86 @@ $_circle-size: 20px;
   height: $_circle-size;
   width: $_circle-size;
   outline: none;
+}
+
+.group-menu-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+tb-data-table-content-row,
+tb-data-table-header-cell {
+  height: 44px;
+}
+
+tb-data-table-content-cell,
+tb-data-table-header-cell {
+  vertical-align: middle;
+  @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
+
+  &:first-child {
+    padding-left: 16px;
+  }
+
+  &:last-child {
+    @include tb-theme-foreground-prop(border-right, border, 1px solid);
+  }
+}
+
+tb-data-table-header-cell:last-of-type {
+  @include tb-theme-foreground-prop(border-right, border, 1px solid);
+}
+
+.full-screen-toggle {
+  opacity: 0;
+  position: absolute;
+  height: 100%;
+  // Ensure the button is on the right side then add 2px for the drag target.
+  left: calc(100% + 2px);
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &.full-screen {
+    left: unset;
+    right: 0;
+  }
+
+  .full-screen-btn {
+    background-color: gray;
+    padding: 0;
+    min-width: $_arrow_size;
+    width: $_arrow_size;
+
+    &.expand {
+      border-radius: 0 $_arrow_size $_arrow_size 0;
+    }
+
+    &.collapse {
+      border-radius: $_arrow_size 0 0 $_arrow_size;
+    }
+
+    .expand-collapse-icon {
+      font-size: $_arrow_size;
+      width: $_arrow_size;
+    }
+  }
+}
+
+.filter-row {
+  @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 16px;
+
+  tb-filter-input {
+    flex-grow: 1;
+  }
 }

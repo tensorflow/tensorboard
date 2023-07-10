@@ -18,7 +18,7 @@ import {TestBed} from '@angular/core/testing';
 import {RunsDataTable} from './runs_data_table';
 import {DataTableModule} from '../../../widgets/data_table/data_table_module';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
-import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatLegacyCheckboxModule} from '@angular/material/legacy-checkbox';
 import {
   SortingOrder,
   SortingInfo,
@@ -30,6 +30,8 @@ import {By} from '@angular/platform-browser';
 import {HeaderCellComponent} from '../../../widgets/data_table/header_cell_component';
 import {DataTableComponent} from '../../../widgets/data_table/data_table_component';
 import {ContentCellComponent} from '../../../widgets/data_table/content_cell_component';
+import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';
+import {sendKeys} from '../../../testing/dom';
 
 @Component({
   selector: 'testable-comp',
@@ -42,6 +44,8 @@ import {ContentCellComponent} from '../../../widgets/data_table/content_cell_com
       (orderColumns)="orderColumns($event)"
       (onSelectionToggle)="onSelectionToggle($event)"
       (onAllSelectionToggle)="onAllSelectionToggle($event)"
+      (onRegexFilterChange)="onRegexFilterChange($event)"
+      (onSelectionDblClick)="onSelectionDblClick($event)"
     ></runs-data-table>
   `,
 })
@@ -55,11 +59,15 @@ class TestableComponent {
 
   @Input() onSelectionToggle!: (runId: string) => void;
   @Input() onAllSelectionToggle!: (runIds: string[]) => void;
+  @Input() onRegexFilterChange!: (regex: string) => void;
+  @Input() onSelectionDblClick!: (runId: string) => void;
 }
 
 describe('runs_data_table', () => {
   let onSelectionToggleSpy: jasmine.Spy;
   let onAllSelectionToggleSpy: jasmine.Spy;
+  let onSelectionDblClickSpy: jasmine.Spy;
+  let onRegexFilterChangeSpy: jasmine.Spy;
   function createComponent(input: {
     data?: TableData[];
     headers?: ColumnHeader[];
@@ -102,13 +110,24 @@ describe('runs_data_table', () => {
     onAllSelectionToggleSpy = jasmine.createSpy();
     fixture.componentInstance.onAllSelectionToggle = onAllSelectionToggleSpy;
 
+    onSelectionDblClickSpy = jasmine.createSpy();
+    fixture.componentInstance.onSelectionDblClick = onSelectionDblClickSpy;
+
+    onRegexFilterChangeSpy = jasmine.createSpy();
+    fixture.componentInstance.onRegexFilterChange = onRegexFilterChangeSpy;
+
     fixture.detectChanges();
     return fixture;
   }
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DataTableModule, MatIconTestingModule, MatCheckboxModule],
+      imports: [
+        DataTableModule,
+        FilterInputModule,
+        MatIconTestingModule,
+        MatLegacyCheckboxModule,
+      ],
       declarations: [TestableComponent, RunsDataTable],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -152,21 +171,6 @@ describe('runs_data_table', () => {
   });
 
   describe('color column', () => {
-    it('disables controls for color header', () => {
-      const fixture = createComponent({});
-
-      const dataTable = fixture.debugElement.query(
-        By.directive(DataTableComponent)
-      );
-      const headers = dataTable.queryAll(By.directive(HeaderCellComponent));
-
-      const colorHeader = headers.find(
-        (h) => h.componentInstance.header.name === 'color'
-      )!;
-
-      expect(colorHeader.componentInstance.controlsEnabled).toBe(false);
-    });
-
     it('renders group by control in color header', () => {
       const fixture = createComponent({});
 
@@ -228,21 +232,6 @@ describe('runs_data_table', () => {
     });
   });
 
-  it('disables controls for selected header', () => {
-    const fixture = createComponent({});
-
-    const dataTable = fixture.debugElement.query(
-      By.directive(DataTableComponent)
-    );
-    const headers = dataTable.queryAll(By.directive(HeaderCellComponent));
-
-    const selectedHeader = headers.find(
-      (h) => h.componentInstance.header.name === 'selected'
-    )!;
-
-    expect(selectedHeader.componentInstance.controlsEnabled).toBe(false);
-  });
-
   it('adds checkbox to selected column', () => {
     const fixture = createComponent({});
 
@@ -301,8 +290,41 @@ describe('runs_data_table', () => {
 
     const firstCheckbox = selectedContentCells[0].query(By.css('mat-checkbox'));
 
-    firstCheckbox.nativeElement.dispatchEvent(new Event('change'));
+    firstCheckbox.nativeElement.dispatchEvent(
+      new MouseEvent('click', {detail: 1})
+    );
 
     expect(onSelectionToggleSpy).toHaveBeenCalledWith('runid');
+  });
+
+  it('emits onSelectionDblClick event when selected header checkbox is double clicked', () => {
+    const fixture = createComponent({});
+
+    const dataTable = fixture.debugElement.query(
+      By.directive(DataTableComponent)
+    );
+    const cells = dataTable.queryAll(By.directive(ContentCellComponent));
+
+    const selectedContentCells = cells.filter((cell) => {
+      return cell.componentInstance.header.name === 'selected';
+    });
+
+    const firstCheckbox = selectedContentCells[0].query(By.css('mat-checkbox'));
+    firstCheckbox.nativeElement.dispatchEvent(
+      new MouseEvent('click', {detail: 2})
+    );
+
+    expect(onSelectionDblClickSpy).toHaveBeenCalledWith('runid');
+  });
+
+  it('fire onRegexFilterChange when input is entered into the tb-filter-input', () => {
+    const fixture = createComponent({});
+    const filterInput = fixture.debugElement.query(By.css('tb-filter-input'));
+
+    expect(filterInput).toBeTruthy();
+
+    sendKeys(fixture, filterInput.query(By.css('input')), 'myRegex');
+
+    expect(onRegexFilterChangeSpy).toHaveBeenCalledWith('myRegex');
   });
 });

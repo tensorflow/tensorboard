@@ -17,15 +17,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
+  HostListener,
   Input,
   Output,
 } from '@angular/core';
-import {
-  ColumnHeader,
-  ColumnHeaderType,
-  SortingInfo,
-  SortingOrder,
-} from './types';
+import {ColumnHeader, SortingInfo, SortingOrder} from './types';
 import {BehaviorSubject} from 'rxjs';
 
 @Component({
@@ -37,18 +33,30 @@ import {BehaviorSubject} from 'rxjs';
 export class HeaderCellComponent {
   @Input() header!: ColumnHeader;
   @Input() sortingInfo!: SortingInfo;
-  @Input() controlsEnabled: boolean = true;
   @Input() hparamsEnabled?: boolean = false;
+  @Input() disableContextMenu?: boolean = false;
 
   @Output() dragStart = new EventEmitter<ColumnHeader>();
   @Output() dragEnd = new EventEmitter<void>();
   @Output() dragEnter = new EventEmitter<ColumnHeader>();
   @Output() headerClicked = new EventEmitter<string>();
-  @Output() deleteButtonClicked = new EventEmitter<{
-    headerType: ColumnHeaderType;
-  }>();
+  @Output() contextMenuOpened = new EventEmitter<MouseEvent>();
 
   highlightStyle$: BehaviorSubject<Object> = new BehaviorSubject<Object>({});
 
   SortingOrder = SortingOrder;
+
+  @HostListener('contextmenu', ['$event'])
+  onContextMenuOpened(event: MouseEvent) {
+    if (this.disableContextMenu) {
+      return;
+    }
+    this.contextMenuOpened.emit(event);
+  }
+
+  headerClickedHandler() {
+    if (this.header.sortable) {
+      this.headerClicked.emit(this.header.name);
+    }
+  }
 }

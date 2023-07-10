@@ -15,7 +15,8 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {getEnableHparamsInTimeSeries} from '../../feature_flag/store/feature_flag_selectors';
-import {State} from '../../feature_flag/store/feature_flag_types';
+import {State} from '../../app_state';
+import {getRunsTableFullScreen} from '../../core/store/core_selectors';
 
 @Component({
   selector: 'metrics-dashboard',
@@ -25,7 +26,10 @@ import {State} from '../../feature_flag/store/feature_flag_types';
         [showHparamsAndMetrics]="showHparamsAndMetrics$ | async"
         sidebar
       ></runs-selector>
-      <metrics-main-view main></metrics-main-view>
+      <metrics-main-view
+        main
+        *ngIf="!(runsTableFullScreen$ | async)"
+      ></metrics-main-view>
     </tb-dashboard-layout>
   `,
   styleUrls: ['metrics_container.css'],
@@ -33,6 +37,7 @@ import {State} from '../../feature_flag/store/feature_flag_types';
 })
 export class MetricsDashboardContainer {
   showHparamsAndMetrics$ = this.store.select(getEnableHparamsInTimeSeries);
+  runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
 
   constructor(readonly store: Store<State>) {}
 }

@@ -12,9 +12,87 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<custom-modal #contextMenu>
+  <div class="context-menu">
+    <div
+      *ngIf="!contextMenuHeader?.removable && !contextMenuHeader?.sortable && !canContextMenuInsert()"
+      class="no-actions-message"
+    >
+      No Actions Available
+    </div>
+    <button
+      *ngIf="contextMenuHeader?.removable"
+      class="context-menu-button"
+      mat-button
+      (click)="contextMenuRemoveColumn()"
+    >
+      <mat-icon svgIcon="close_24px"></mat-icon>Remove
+    </button>
+    <button
+      *ngIf="contextMenuHeader?.sortable"
+      class="context-menu-button sort-button"
+      mat-button
+      (click)="sortByHeader(contextMenuHeader?.name)"
+    >
+      <ng-container
+        *ngIf="
+          sortingInfo.order === SortingOrder.ASCENDING &&
+          sortingInfo.name === contextMenuHeader?.name;
+          else descending"
+      >
+        <mat-icon svgIcon="arrow_downward_24px"></mat-icon>Sort Descending
+      </ng-container>
+      <ng-template #descending>
+        <mat-icon svgIcon="arrow_upward_24px"></mat-icon>Sort Ascending
+      </ng-template>
+    </button>
+    <button
+      mat-button
+      *ngIf="canContextMenuInsert()"
+      class="context-menu-button"
+      (click)="openColumnSelector($event, Side.LEFT)"
+    >
+      <mat-icon svgIcon="add_24px"></mat-icon>Insert Column Left
+    </button>
+    <button
+      mat-button
+      *ngIf="canContextMenuInsert()"
+      class="context-menu-button"
+      (click)="openColumnSelector($event, Side.RIGHT)"
+    >
+      <mat-icon svgIcon="add_24px"></mat-icon>Insert Column Right
+    </button>
+  </div>
+</custom-modal>
+
+<custom-modal
+  #columnSelectorModal
+  *ngIf="selectableColumns && selectableColumns.length"
+  (onOpen)="focusColumnSelector()"
+  onClose="onColumnSelectorClosed()"
+>
+  <tb-data-table-column-selector-component
+    [selectableColumns]="selectableColumns"
+    (columnSelected)="onColumnAdded($event)"
+  ></tb-data-table-column-selector-component>
+</custom-modal>
+
 <div class="data-table">
   <div class="header">
     <ng-content select="[header]"></ng-content>
+    <div
+      class="add-button-cell"
+      *ngIf="selectableColumns && selectableColumns.length"
+    >
+      <button
+        mat-icon-button
+        class="add-column-btn"
+        (click)="openColumnSelector($event)"
+        title="Add Column"
+      >
+        <mat-icon svgIcon="add_24px"></mat-icon>
+      </button>
+    </div>
   </div>
   <ng-content select="[content]"></ng-content>
 </div>

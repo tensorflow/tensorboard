@@ -21,6 +21,9 @@ import {HeaderCellComponent} from './header_cell_component';
 import {DataTableHeaderModule} from './data_table_header_module';
 import {ContentCellComponent} from './content_cell_component';
 import {ContentRowComponent} from './content_row_component';
+import {ColumnSelectorModule} from './column_selector_module';
+import {CustomModalModule} from '../custom_modal/custom_modal_module';
+import {MatLegacyButtonModule} from '@angular/material/legacy-button';
 
 @NgModule({
   declarations: [
@@ -35,6 +38,13 @@ import {ContentRowComponent} from './content_row_component';
     DataTableComponent,
     HeaderCellComponent,
   ],
-  imports: [CommonModule, MatIconModule, DataTableHeaderModule],
+  imports: [
+    CommonModule,
+    MatIconModule,
+    MatLegacyButtonModule,
+    DataTableHeaderModule,
+    CustomModalModule,
+    ColumnSelectorModule,
+  ],
 })
 export class DataTableModule {}

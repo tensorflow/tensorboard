@@ -23,6 +23,7 @@ export enum ColumnHeaderType {
   RELATIVE_TIME = 'RELATIVE_TIME',
   RUN = 'RUN',
   STEP = 'STEP',
+  EXPERIMENT = 'EXPERIMENT',
   TIME = 'TIME',
   VALUE = 'VALUE',
   SMOOTHED = 'SMOOTHED',
@@ -47,6 +48,11 @@ export interface ColumnHeader {
   name: string;
   displayName: string;
   enabled: boolean;
+
+  // Default to false when not specified.
+  removable?: boolean;
+  sortable?: boolean;
+  movable?: boolean;
 }
 
 export enum SortingOrder {

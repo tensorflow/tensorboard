@@ -18,7 +18,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import {MatSnackBar} from '@angular/material/snack-bar';
+import {MatLegacySnackBar} from '@angular/material/legacy-snack-bar';
 import {Store} from '@ngrx/store';
 import {Subject} from 'rxjs';
 import {filter, takeUntil} from 'rxjs/operators';
@@ -40,7 +40,7 @@ export class AlertSnackbarContainer implements OnInit, OnDestroy {
 
   constructor(
     private readonly store: Store<State>,
-    private readonly snackBar: MatSnackBar
+    private readonly snackBar: MatLegacySnackBar
   ) {}
 
   ngOnInit() {

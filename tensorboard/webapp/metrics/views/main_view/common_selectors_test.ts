@@ -101,6 +101,7 @@ describe('common selectors', () => {
         },
         experimentName: 'experiment1',
         selected: true,
+        runColor: '#fff',
         hparams: new Map<string, number>([['lr', 5]]),
         metrics: new Map<string, number>([['foo', 1]]),
       },
@@ -118,6 +119,7 @@ describe('common selectors', () => {
         },
         experimentName: 'experiment1',
         selected: true,
+        runColor: '#fff',
         hparams: new Map<string, number>([['lr', 3]]),
         metrics: new Map<string, number>([['foo', 2]]),
       },
@@ -135,6 +137,7 @@ describe('common selectors', () => {
         },
         experimentName: 'experiment2',
         selected: true,
+        runColor: '#fff',
         hparams: new Map<string, number>([['lr', 1]]),
         metrics: new Map<string, number>([['foo', 3]]),
       },
@@ -1001,6 +1004,9 @@ describe('common selectors', () => {
           name: 'foo',
           displayName: 'Foo',
           enabled: false,
+          removable: true,
+          sortable: true,
+          movable: true,
         },
       ]);
     });
@@ -1015,12 +1021,18 @@ describe('common selectors', () => {
           name: 'foo',
           displayName: 'Foo',
           enabled: false,
+          removable: true,
+          sortable: true,
+          movable: true,
         },
         {
           type: ColumnHeaderType.HPARAM,
           name: 'bar',
           displayName: 'bar',
           enabled: false,
+          removable: true,
+          sortable: true,
+          movable: true,
         },
       ]);
     });

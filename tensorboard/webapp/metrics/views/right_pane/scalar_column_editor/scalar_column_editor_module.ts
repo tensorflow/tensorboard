@@ -14,10 +14,10 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatLegacyCheckboxModule} from '@angular/material/legacy-checkbox';
 import {MatIconModule} from '@angular/material/icon';
-import {MatTabsModule} from '@angular/material/tabs';
-import {MatButtonModule} from '@angular/material/button';
+import {MatLegacyTabsModule} from '@angular/material/legacy-tabs';
+import {MatLegacyButtonModule} from '@angular/material/legacy-button';
 import {ScalarColumnEditorComponent} from './scalar_column_editor_component';
 import {ScalarColumnEditorContainer} from './scalar_column_editor_container';
 import {DataTableHeaderModule} from '../../../../widgets/data_table/data_table_header_module';
@@ -28,10 +28,10 @@ import {DataTableHeaderModule} from '../../../../widgets/data_table/data_table_h
   imports: [
     CommonModule,
     DataTableHeaderModule,
-    MatCheckboxModule,
-    MatTabsModule,
+    MatLegacyCheckboxModule,
+    MatLegacyTabsModule,
     MatIconModule,
-    MatButtonModule,
+    MatLegacyButtonModule,
   ],
 })
 export class ScalarColumnEditorModule {}

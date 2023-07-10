@@ -13,7 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Inject} from '@angular/core';
-import {MatSnackBarRef, MAT_SNACK_BAR_DATA} from '@angular/material/snack-bar';
+import {
+  MatLegacySnackBarRef,
+  MAT_LEGACY_SNACK_BAR_DATA,
+} from '@angular/material/legacy-snack-bar';
 import {Store} from '@ngrx/store';
 import {State} from '../../app_state';
 import {splitByURL} from '../../util/string';
@@ -30,8 +33,8 @@ export class AlertDisplaySnackbarContainer {
   readonly splitByURL = splitByURL;
 
   constructor(
-    private readonly snackBarRef: MatSnackBarRef<AlertDisplaySnackbarContainer>,
-    @Inject(MAT_SNACK_BAR_DATA) readonly unknownData: unknown,
+    private readonly snackBarRef: MatLegacySnackBarRef<AlertDisplaySnackbarContainer>,
+    @Inject(MAT_LEGACY_SNACK_BAR_DATA) readonly unknownData: unknown,
     private readonly store: Store<State>
   ) {
     this.alert = unknownData as AlertInfo;

@@ -1353,6 +1353,97 @@ describe('runs_reducers', () => {
 
       expect(nextState.data.initialGroupBy.key).toBe(GroupByKey.RUN);
     });
+
+    it('adds the experiment name column to the runs table columns list', () => {
+      const state = buildRunsState(
+        {},
+        {
+          runsTableHeaders: [
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+            },
+          ],
+        }
+      );
+      const nextState = runsReducers.reducers(
+        state,
+        buildNavigatedAction({
+          before: buildRoute({routeKind: RouteKind.EXPERIMENT}),
+          after: buildCompareRoute(['eid1:run1', 'eid1:run2']),
+        })
+      );
+      expect(
+        nextState.ui.runsTableHeaders.map((column) => column.name)
+      ).toEqual(['run', 'experimentName']);
+    });
+
+    it('does not add duplicate experiment name columns', () => {
+      const state = buildRunsState(
+        {},
+        {
+          runsTableHeaders: [
+            {
+              type: ColumnHeaderType.EXPERIMENT,
+              name: 'experimentName',
+              displayName: 'ExperimentName',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+            },
+          ],
+        }
+      );
+      const nextState = runsReducers.reducers(
+        state,
+        buildNavigatedAction({
+          before: buildRoute({routeKind: RouteKind.EXPERIMENT}),
+          after: buildCompareRoute(['eid1:run1', 'eid1:run2']),
+        })
+      );
+      expect(
+        nextState.ui.runsTableHeaders.map((column) => column.name)
+      ).toEqual(['experimentName', 'run']);
+    });
+
+    it('removes the experiment name column when changing away comparison view', () => {
+      const state = buildRunsState(
+        {},
+        {
+          runsTableHeaders: [
+            {
+              type: ColumnHeaderType.EXPERIMENT,
+              name: 'experimentName',
+              displayName: 'ExperimentName',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+            },
+          ],
+        }
+      );
+
+      const nextState = runsReducers.reducers(
+        state,
+        buildNavigatedAction({
+          before: buildCompareRoute(['eid1:run1', 'eid1:run2']),
+          after: buildRoute({routeKind: RouteKind.EXPERIMENT}),
+        })
+      );
+      expect(
+        nextState.ui.runsTableHeaders.map((column) => column.name)
+      ).toEqual(['run']);
+    });
   });
 
   describe('runsTableHeaderAdded', () => {
@@ -1420,6 +1511,109 @@ describe('runs_reducers', () => {
         ColumnHeaderType.RUN,
         ColumnHeaderType.COLOR,
         ColumnHeaderType.VALUE,
+      ]);
+    });
+  });
+
+  describe('runsTableHeaderRemoved', () => {
+    it('removes all headers with the same name as the provided header', () => {
+      const state = buildRunsState(
+        {},
+        {
+          runsTableHeaders: [
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.COLOR,
+              name: 'color',
+              displayName: 'Color',
+              enabled: true,
+            },
+          ],
+        }
+      );
+
+      const nextState = runsReducers.reducers(
+        state,
+        actions.runsTableHeaderRemoved({
+          header: {
+            type: ColumnHeaderType.RUN,
+            name: 'run',
+            displayName: 'RUN',
+            enabled: true,
+          },
+        })
+      );
+      expect(nextState.ui.runsTableHeaders).toEqual([
+        {
+          type: ColumnHeaderType.COLOR,
+          name: 'color',
+          displayName: 'Color',
+          enabled: true,
+        },
+      ]);
+    });
+  });
+
+  describe('runsTableHeaderOrderChanged', () => {
+    it('sets the new headers as the runsTableHeaders', () => {
+      const state = buildRunsState(
+        {},
+        {
+          runsTableHeaders: [
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.COLOR,
+              name: 'color',
+              displayName: 'Color',
+              enabled: true,
+            },
+          ],
+        }
+      );
+
+      const nextState = runsReducers.reducers(
+        state,
+        actions.runsTableHeaderOrderChanged({
+          newHeaderOrder: [
+            {
+              type: ColumnHeaderType.COLOR,
+              name: 'color',
+              displayName: 'Color',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+            },
+          ],
+        })
+      );
+
+      expect(nextState.ui.runsTableHeaders).toEqual([
+        {
+          type: ColumnHeaderType.COLOR,
+          name: 'color',
+          displayName: 'Color',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
       ]);
     });
   });

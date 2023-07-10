@@ -15,7 +15,7 @@ limitations under the License.
 import {OverlayContainer} from '@angular/cdk/overlay';
 import {Component, Input} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
-import {MatAutocompleteModule} from '@angular/material/autocomplete';
+import {MatLegacyAutocompleteModule} from '@angular/material/legacy-autocomplete';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {KeyType, sendKey} from '../../testing/dom';
@@ -59,7 +59,7 @@ describe('filter input widget', () => {
     await TestBed.configureTestingModule({
       imports: [
         NoopAnimationsModule,
-        MatAutocompleteModule,
+        MatLegacyAutocompleteModule,
         MatIconTestingModule,
         FilterInputModule,
       ],

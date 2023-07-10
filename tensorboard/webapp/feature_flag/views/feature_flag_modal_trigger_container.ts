@@ -14,7 +14,10 @@ limitations under the License.
 ==============================================================================*/
 import {ComponentType} from '@angular/cdk/overlay';
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {
+  MatLegacyDialog,
+  MatLegacyDialogRef,
+} from '@angular/material/legacy-dialog';
 import {Store} from '@ngrx/store';
 import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
@@ -39,12 +42,12 @@ export class FeatureFlagModalTriggerContainer implements OnInit, OnDestroy {
   featureFlagDialogType: ComponentType<any> = FeatureFlagDialogContainer;
 
   readonly showFeatureFlags$ = this.store.select(getShowFlagsEnabled);
-  private featureFlagsDialog?: MatDialogRef<FeatureFlagDialogContainer>;
+  private featureFlagsDialog?: MatLegacyDialogRef<FeatureFlagDialogContainer>;
   private ngUnsubscribe = new Subject<void>();
 
   constructor(
     private readonly store: Store<State>,
-    private dialog: MatDialog
+    private dialog: MatLegacyDialog
   ) {}
 
   ngOnInit() {

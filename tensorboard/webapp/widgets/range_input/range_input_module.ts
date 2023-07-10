@@ -14,11 +14,11 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatSliderModule} from '@angular/material/slider';
+import {MatLegacySliderModule} from '@angular/material/legacy-slider';
 import {RangeInputComponent} from './range_input_component';
 
 @NgModule({
-  imports: [CommonModule, MatSliderModule],
+  imports: [CommonModule, MatLegacySliderModule],
   exports: [RangeInputComponent],
   declarations: [RangeInputComponent],
 })

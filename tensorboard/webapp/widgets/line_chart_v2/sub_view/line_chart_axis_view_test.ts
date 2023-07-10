@@ -17,10 +17,10 @@ import {TestbedHarnessEnvironment} from '@angular/cdk/testing/testbed';
 import {CommonModule} from '@angular/common';
 import {Component, DebugElement, Input} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {MatButtonModule} from '@angular/material/button';
-import {MatInputModule} from '@angular/material/input';
-import {MatMenuModule} from '@angular/material/menu';
-import {MatMenuHarness} from '@angular/material/menu/testing';
+import {MatLegacyButtonModule} from '@angular/material/legacy-button';
+import {MatLegacyInputModule} from '@angular/material/legacy-input';
+import {MatLegacyMenuModule} from '@angular/material/legacy-menu';
+import {MatLegacyMenuHarness} from '@angular/material/legacy-menu/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
@@ -87,10 +87,10 @@ describe('line_chart_v2/sub_view/axis test', () => {
       declarations: [TestableComponent, LineChartAxisComponent],
       imports: [
         CommonModule,
-        MatButtonModule,
+        MatLegacyButtonModule,
         MatIconTestingModule,
-        MatInputModule,
-        MatMenuModule,
+        MatLegacyInputModule,
+        MatLegacyMenuModule,
         NoopAnimationsModule,
         OverlayModule,
       ],
@@ -381,7 +381,7 @@ describe('line_chart_v2/sub_view/axis test', () => {
       fixture.detectChanges();
       const overlay = setMinMax(fixture, '100', '1');
 
-      const menuTesting = await loader.getHarness(MatMenuHarness);
+      const menuTesting = await loader.getHarness(MatLegacyMenuHarness);
       await menuTesting.close();
 
       expect(overlay.querySelectorAll(EditorSelector.INPUT).length).toBe(0);
