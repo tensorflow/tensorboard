@@ -1,0 +1,92 @@
+<!--
+@license
+Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<line-chart
+  [disableUpdate]="disableUpdate"
+  [preferredRendererType]="forceSvg ? RendererType.SVG : RendererType.WEBGL"
+  [seriesData]="seriesData"
+  [seriesMetadataMap]="seriesMetadataMap"
+  [xScaleType]="xScaleType"
+  [yScaleType]="yScaleType"
+  [customXFormatter]="getCustomXFormatter()"
+  [tooltipTemplate]="tooltipTemplate"
+  [ignoreYOutliers]="ignoreOutliers"
+  [useDarkMode]="useDarkMode"
+  [userViewBox]="userViewBox"
+  (onViewBoxOverridden)="isViewBoxOverridden = $event"
+  (viewBoxChanged)="onLineChartZoom.emit($event)"
+  [customVisTemplate]="lineChartCustomVis"
+  [customChartOverlayTemplate]="lineChartCustomXAxisVis"
+></line-chart>
+<ng-template
+  #lineChartCustomVis
+  let-viewExtent="viewExtent"
+  let-domDim="domDimension"
+  let-xScale="xScale"
+>
+  <ng-container *ngIf="stepOrLinkedTimeSelection">
+    <div
+      [ngClass]="{
+        'out-of-selected-time': true,
+        start: true,
+        range: !!stepOrLinkedTimeSelection.end?.step
+      }"
+      [style.right]="
+        xScale.forward(
+          viewExtent.x,
+          [domDim.width, 0],
+          stepOrLinkedTimeSelection.start.step
+        ) + 'px'
+      "
+    ></div>
+    <div
+      *ngIf="stepOrLinkedTimeSelection.end?.step"
+      [ngClass]="{
+        'out-of-selected-time': true,
+        end: true,
+        range: true
+      }"
+      [style.left]="
+        xScale.forward(
+          viewExtent.x,
+          [0, domDim.width],
+          stepOrLinkedTimeSelection.end?.step
+        ) + 'px'
+      "
+    ></div>
+  </ng-container>
+</ng-template>
+
+<ng-template
+  #lineChartCustomXAxisVis
+  let-viewExtent="viewExtent"
+  let-domDim="domDimension"
+  let-xScale="xScale"
+  let-interactionState="interactionState"
+>
+  <ng-container *ngIf="showFobController()">
+    <scalar-card-fob-controller
+      [disableInteraction]="interactionState !== 'NONE'"
+      [timeSelection]="stepOrLinkedTimeSelection"
+      [scale]="xScale"
+      [minMaxHorizontalViewExtend]="viewExtent.x"
+      [minMaxStep]="minMaxStep"
+      [axisSize]="domDim.width"
+      (onTimeSelectionChanged)="onTimeSelectionChanged.emit($event)"
+      (onTimeSelectionToggled)="onFobRemoved()"
+    ></scalar-card-fob-controller>
+  </ng-container>
+</ng-template>

@@ -371,6 +371,53 @@ tf_ng_module(
     ],
 )
 
+tf_sass_binary(
+    name = "scalar_card_line_chart_styles",
+    src = "scalar_card_line_chart_component.scss",
+    strict_deps = False,
+    deps = [
+        "//tensorboard/webapp/metrics/views:metrics_common_styles",
+        "//tensorboard/webapp/theme",
+    ],
+)
+
+tf_ng_module(
+    name = "scalar_card_line_chart",
+    srcs = [
+        "scalar_card_line_chart_component.ts",
+        "scalar_card_line_chart_container.ts",
+        "scalar_card_line_chart_module.ts",
+    ],
+    assets = [
+        ":scalar_card_line_chart_styles",
+        "scalar_card_line_chart_component.ng.html",
+    ],
+    deps = [
+        ":scalar_card",
+        ":scalar_card_types",
+        ":utils",
+        "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp/feature_flag/store",
+        "//tensorboard/webapp/metrics:types",
+        "//tensorboard/webapp/metrics/actions",
+        "//tensorboard/webapp/metrics/store",
+        "//tensorboard/webapp/metrics/views:types",
+        "//tensorboard/webapp/types",
+        "//tensorboard/webapp/widgets/card_fob",
+        "//tensorboard/webapp/widgets/card_fob:types",
+        "//tensorboard/webapp/widgets/line_chart_v2",
+        "//tensorboard/webapp/widgets/line_chart_v2:line_chart_utils",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:formatter",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
+        "//tensorboard/webapp/widgets/line_chart_v2/sub_view",
+        "@npm//@angular/common",
+        "@npm//@angular/core",
+        "@npm//@ngrx/store",
+        "@npm//rxjs",
+    ],
+)
+
 tf_ts_library(
     name = "card_renderer_tests",
     testonly = True,
@@ -382,6 +429,7 @@ tf_ts_library(
         "image_card_test.ts",
         "run_name_test.ts",
         "scalar_card_fob_test.ts",
+        "scalar_card_line_chart_test.ts",
         "scalar_card_test.ts",
         "utils_test.ts",
     ],
@@ -393,6 +441,7 @@ tf_ts_library(
         ":run_name",
         ":scalar_card",
         ":scalar_card_data_table",
+        ":scalar_card_line_chart",
         ":scalar_card_types",
         ":utils",
         ":vis_linked_time_selection_warning",
