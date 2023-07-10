@@ -1196,17 +1196,17 @@ class ListSessionGroupsTest(tf.test.TestCase):
             )
         ]
         request = """
-          start_index: 0
-          slice_size: 10
-      """
+            start_index: 0
+            slice_size: 10
+        """
         response = self._run_handler(request)
         self.assertProtoEquals(
             """
-          session_groups {
-            name: "exp1/run1"
-          }
-          total_size: 1
-          """,
+                session_groups {
+                  name: "exp1/run1"
+                }
+                total_size: 1
+            """,
             response,
         )
 
@@ -1222,17 +1222,17 @@ class ListSessionGroupsTest(tf.test.TestCase):
             )
         ]
         request = """
-          start_index: 0
-          slice_size: 10
-      """
+            start_index: 0
+            slice_size: 10
+        """
         response = self._run_handler(request)
         self.assertProtoEquals(
             """
-          session_groups {
-            name: "exp1"
-          }
-          total_size: 1
-          """,
+                session_groups {
+                  name: "exp1"
+                }
+                total_size: 1
+            """,
             response,
         )
 
@@ -1261,29 +1261,29 @@ class ListSessionGroupsTest(tf.test.TestCase):
             )
         ]
         request = """
-          start_index: 0
-          slice_size: 10
-      """
+            start_index: 0
+            slice_size: 10
+        """
         response = self._run_handler(request)
         self.assertProtoEquals(
             """
-          session_groups {
-            name: "exp1"
-            sessions: {
-              name: "exp1/run1/train"
-            }
-            sessions: {
-              name: "exp1/run1/validate"
-            }
-            sessions: {
-              name: "exp1/run2/train"
-            }
-            sessions: {
-              name: "exp1/run2/validate"
-            }
-          }
-          total_size: 1
-          """,
+                session_groups {
+                  name: "exp1"
+                  sessions: {
+                    name: "exp1/run1/train"
+                  }
+                  sessions: {
+                    name: "exp1/run1/validate"
+                  }
+                  sessions: {
+                    name: "exp1/run2/train"
+                  }
+                  sessions: {
+                    name: "exp1/run2/validate"
+                  }
+                }
+                total_size: 1
+            """,
             response,
         )
 
@@ -1305,23 +1305,23 @@ class ListSessionGroupsTest(tf.test.TestCase):
             )
         ]
         request = """
-          start_index: 0
-          slice_size: 10
-      """
+            start_index: 0
+            slice_size: 10
+        """
         response = self._run_handler(request)
         self.assertProtoEquals(
             """
-          session_groups {
-            name: "exp1"
-            hparams {
-              key: 'hparam'
-              value: {
-                string_value: 'string_value'
-              }
-            }
-          }
-          total_size: 1
-          """,
+                session_groups {
+                  name: "exp1"
+                  hparams {
+                    key: 'hparam'
+                    value: {
+                      string_value: 'string_value'
+                    }
+                  }
+                }
+                total_size: 1
+            """,
             response,
         )
 
@@ -1348,29 +1348,29 @@ class ListSessionGroupsTest(tf.test.TestCase):
             )
         ]
         request = """
-          start_index: 0
-          slice_size: 10
-      """
+            start_index: 0
+            slice_size: 10
+        """
         response = self._run_handler(request)
         self.assertProtoEquals(
             """
-          session_groups {
-            name: "exp1"
-            hparams {
-              key: 'hparam1'
-              value: {
-                number_value: 1.11
-              }
-            }
-            hparams {
-              key: 'hparam2'
-              value: {
-                number_value: 2.22
-              }
-            }
-          }
-          total_size: 1
-          """,
+                session_groups {
+                  name: "exp1"
+                  hparams {
+                    key: 'hparam1'
+                    value: {
+                      number_value: 1.11
+                    }
+                  }
+                  hparams {
+                    key: 'hparam2'
+                    value: {
+                      number_value: 2.22
+                    }
+                  }
+                }
+                total_size: 1
+            """,
             response,
         )
 
@@ -1397,29 +1397,29 @@ class ListSessionGroupsTest(tf.test.TestCase):
             )
         ]
         request = """
-          start_index: 0
-          slice_size: 10
-      """
+            start_index: 0
+            slice_size: 10
+        """
         response = self._run_handler(request)
         self.assertProtoEquals(
             """
-          session_groups {
-            name: "exp1"
-            hparams {
-              key: 'hparam1'
-              value: {
-                bool_value: true
-              }
-            }
-            hparams {
-              key: 'hparam2'
-              value: {
-                bool_value: false
-              }
-            }
-          }
-          total_size: 1
-          """,
+                session_groups {
+                  name: "exp1"
+                  hparams {
+                    key: 'hparam1'
+                    value: {
+                      bool_value: true
+                    }
+                  }
+                  hparams {
+                    key: 'hparam2'
+                    value: {
+                      bool_value: false
+                    }
+                  }
+                }
+                total_size: 1
+            """,
             response,
         )
 
@@ -1437,20 +1437,20 @@ class ListSessionGroupsTest(tf.test.TestCase):
             )
         ]
         request = """
-          start_index: 0
-          slice_size: 10
-      """
+            start_index: 0
+            slice_size: 10
+        """
         response = self._run_handler(request)
         self.assertProtoEquals(
             """
-          session_groups {
-            name: "exp1"
-            hparams {
-              key: 'hparam'
-            }
-          }
-          total_size: 1
-          """,
+                session_groups {
+                  name: "exp1"
+                  hparams {
+                    key: 'hparam'
+                  }
+                }
+                total_size: 1
+            """,
             response,
         )
 
@@ -1489,93 +1489,93 @@ class ListSessionGroupsTest(tf.test.TestCase):
 
         with self.subTest("selects_all"):
             request = """
-            start_index: 0
-            slice_size: 10
-        """
+                start_index: 0
+                slice_size: 10
+            """
             response = self._run_handler(request)
             self.assertProtoEquals(
                 """
-            session_groups {
-              name: "exp1"
-            }
-            session_groups {
-              name: "exp2"
-            }
-            session_groups {
-              name: "exp3"
-            }
-            session_groups {
-              name: "exp4"
-            }
-            total_size: 4
-            """,
+                    session_groups {
+                      name: "exp1"
+                    }
+                    session_groups {
+                      name: "exp2"
+                    }
+                    session_groups {
+                      name: "exp3"
+                    }
+                    session_groups {
+                      name: "exp4"
+                    }
+                    total_size: 4
+                """,
                 response,
             )
 
         with self.subTest("selects_start_slice"):
             request = """
-            start_index: 0
-            slice_size: 2
-        """
+                start_index: 0
+                slice_size: 2
+            """
             response = self._run_handler(request)
             self.assertProtoEquals(
                 """
-            session_groups {
-              name: "exp1"
-            }
-            session_groups {
-              name: "exp2"
-            }
-            total_size: 4
-            """,
+                    session_groups {
+                      name: "exp1"
+                    }
+                    session_groups {
+                      name: "exp2"
+                    }
+                    total_size: 4
+                """,
                 response,
             )
 
         with self.subTest("selects_middle_slice"):
             request = """
-            start_index: 1
-            slice_size: 2
-        """
+                start_index: 1
+                slice_size: 2
+            """
             response = self._run_handler(request)
             self.assertProtoEquals(
                 """
-            session_groups {
-              name: "exp2"
-            }
-            session_groups {
-              name: "exp3"
-            }
-            total_size: 4
-            """,
+                    session_groups {
+                      name: "exp2"
+                    }
+                    session_groups {
+                      name: "exp3"
+                    }
+                    total_size: 4
+                """,
                 response,
             )
 
         with self.subTest("selects_end_slice"):
             request = """
-            start_index: 3
-            slice_size: 3
-        """
+                start_index: 3
+                slice_size: 3
+            """
             response = self._run_handler(request)
             self.assertProtoEquals(
                 """
-            session_groups {
-              name: "exp4"
-            }
-            total_size: 4
-            """,
+                    session_groups {
+                      name: "exp4"
+                    }
+                    total_size: 4
+                """,
                 response,
             )
 
         with self.subTest("selects_none"):
             request = """
-            start_index: 4
-            slice_size: 2
-        """
+                start_index: 4
+                slice_size: 2
+            """
             response = self._run_handler(request)
             self.assertProtoEquals(
                 """
-            total_size: 4
-            """,
+                    total_size: 4
+                """,
                 response,
             )
 
