@@ -611,8 +611,9 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
         };
       } else {
         console.warn(
-            'cannot process domain type %s without discrete domain values',
-            hparam.info.type);
+          'cannot process domain type %s without discrete domain values',
+          hparam.info.type
+        );
       }
       result.push(hparam);
     });

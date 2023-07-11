@@ -154,9 +154,7 @@ class BackendContextTest(tf.test.TestCase):
 
     def _experiment_from_metadata(self):
         """Calls the expected operations for generating an Experiment proto."""
-        ctxt = backend_context.Context(
-            self._mock_tb_context
-        )
+        ctxt = backend_context.Context(self._mock_tb_context)
         request_ctx = context.RequestContext()
         return ctxt.experiment_from_metadata(
             request_ctx,
