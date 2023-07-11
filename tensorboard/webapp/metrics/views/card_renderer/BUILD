@@ -395,7 +395,6 @@ tf_ng_module(
         "scalar_card_line_chart_component.ng.html",
     ],
     deps = [
-        ":scalar_card",
         ":scalar_card_types",
         ":utils",
         "//tensorboard/webapp:app_state",
