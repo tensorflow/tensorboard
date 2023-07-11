@@ -18,6 +18,7 @@ import {MatLegacyButtonModule} from '@angular/material/legacy-button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatLegacyMenuModule} from '@angular/material/legacy-menu';
 import {MatLegacyProgressSpinnerModule} from '@angular/material/legacy-progress-spinner';
+import {CardFobModule} from '../../../widgets/card_fob/card_fob_module';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {IntersectionObserverModule} from '../../../widgets/intersection_observer/intersection_observer_module';
 import {LineChartModule as LineChartV2Module} from '../../../widgets/line_chart_v2/line_chart_module';
@@ -27,13 +28,18 @@ import {DataDownloadModule} from './data_download_module';
 import {ScalarCardComponent} from './scalar_card_component';
 import {ScalarCardContainer} from './scalar_card_container';
 import {ScalarCardDataTableModule} from './scalar_card_data_table_module';
+import {ScalarCardFobController} from './scalar_card_fob_controller';
 import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_warning_module';
-import {ScalarCardLineChartModule} from './scalar_card_line_chart_module';
 
 @NgModule({
-  declarations: [ScalarCardContainer, ScalarCardComponent],
+  declarations: [
+    ScalarCardContainer,
+    ScalarCardComponent,
+    ScalarCardFobController,
+  ],
   exports: [ScalarCardContainer],
   imports: [
+    CardFobModule,
     CommonModule,
     DataDownloadModule,
     ExperimentAliasModule,
@@ -45,7 +51,6 @@ import {ScalarCardLineChartModule} from './scalar_card_line_chart_module';
     MatLegacyProgressSpinnerModule,
     ResizeDetectorModule,
     ScalarCardDataTableModule,
-    ScalarCardLineChartModule,
     TruncatedPathModule,
     VisLinkedTimeSelectionWarningModule,
   ],
