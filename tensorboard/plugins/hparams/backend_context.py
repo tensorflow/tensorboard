@@ -44,18 +44,13 @@ class Context:
     no better place. See http://wiki.c2.com/?MagicContainer
     """
 
-    def __init__(self, tb_context, max_domain_discrete_len=10):
+    def __init__(self, tb_context):
         """Instantiates a context.
 
         Args:
           tb_context: base_plugin.TBContext. The "base" context we extend.
-          max_domain_discrete_len: int. Only used when computing the experiment
-            from the session runs. The maximum number of disticnt values a string
-            hyperparameter can have for us to populate its 'domain_discrete' field.
-            Typically, only tests should specify a value for this parameter.
         """
         self._tb_context = tb_context
-        self._max_domain_discrete_len = max_domain_discrete_len
 
     def experiment_from_metadata(
         self,
@@ -245,8 +240,7 @@ class Context:
         Finds all the SessionStartInfo messages and collects the hparams values
         appearing in each one. For each hparam attempts to deduce a type that fits
         all its values. Finally, sets the 'domain' of the resulting HParamInfo
-        to be discrete if the type is string and the number of distinct values is
-        small enough.
+        to be discrete if the type is string or boolean.
 
         Returns:
           A list of api_pb2.HParamInfo messages.
@@ -309,12 +303,7 @@ class Context:
         if result.type == api_pb2.DATA_TYPE_UNSET:
             return None
 
-        # If the result is a string, set the domain to be the distinct values if
-        # there aren't too many of them.
-        if (
-            result.type == api_pb2.DATA_TYPE_STRING
-            and len(distinct_values) <= self._max_domain_discrete_len
-        ):
+        if result.type == api_pb2.DATA_TYPE_STRING:
             result.domain_discrete.extend(distinct_values)
 
         if result.type == api_pb2.DATA_TYPE_BOOL:

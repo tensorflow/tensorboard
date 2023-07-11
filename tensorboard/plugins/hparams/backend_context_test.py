@@ -152,10 +152,10 @@ class BackendContextTest(tf.test.TestCase):
     ):
         return self._hyperparameters
 
-    def _experiment_from_metadata(self, max_domain_discrete_len=10):
+    def _experiment_from_metadata(self):
         """Calls the expected operations for generating an Experiment proto."""
         ctxt = backend_context.Context(
-            self._mock_tb_context, max_domain_discrete_len
+            self._mock_tb_context
         )
         request_ctx = context.RequestContext()
         return ctxt.experiment_from_metadata(
@@ -303,58 +303,6 @@ class BackendContextTest(tf.test.TestCase):
             }
         """
         actual_exp = self._experiment_from_metadata()
-        _canonicalize_experiment(actual_exp)
-        self.assertProtoEquals(expected_exp, actual_exp)
-
-    def test_experiment_without_experiment_tag_many_distinct_values(self):
-        self.session_1_start_info_ = """
-            hparams:[
-              {key: 'batch_size' value: {number_value: 100}},
-              {key: 'lr' value: {string_value: '0.01'}}
-            ]
-        """
-        self.session_2_start_info_ = """
-            hparams:[
-              {key: 'lr' value: {number_value: 0.02}},
-              {key: 'model_type' value: {string_value: 'CNN'}}
-            ]
-        """
-        self.session_3_start_info_ = """
-            hparams:[
-              {key: 'batch_size' value: {bool_value: true}},
-              {key: 'model_type' value: {string_value: 'CNN'}}
-            ]
-        """
-        expected_exp = """
-            hparam_infos: {
-              name: 'batch_size'
-              type: DATA_TYPE_STRING
-            }
-            hparam_infos: {
-              name: 'lr'
-              type: DATA_TYPE_STRING
-            }
-            hparam_infos: {
-              name: 'model_type'
-              type: DATA_TYPE_STRING
-              domain_discrete: {
-                values: [{string_value: 'CNN'}]
-              }
-            }
-            metric_infos: {
-              name: {group: '', tag: 'accuracy'}
-            }
-            metric_infos: {
-              name: {group: '', tag: 'loss'}
-            }
-            metric_infos: {
-              name: {group: 'eval', tag: 'loss'}
-            }
-            metric_infos: {
-              name: {group: 'train', tag: 'loss'}
-            }
-        """
-        actual_exp = self._experiment_from_metadata(max_domain_discrete_len=1)
         _canonicalize_experiment(actual_exp)
         self.assertProtoEquals(expected_exp, actual_exp)
 
