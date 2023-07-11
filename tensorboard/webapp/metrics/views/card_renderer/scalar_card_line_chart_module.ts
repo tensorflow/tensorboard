@@ -26,7 +26,7 @@ import {ScalarCardFobController} from './scalar_card_fob_controller';
     ScalarCardLineChartComponent,
     ScalarCardFobController,
   ],
-  exports: [ScalarCardLineChartContainer],
+  exports: [ScalarCardLineChartContainer, ScalarCardFobController],
   imports: [CardFobModule, CommonModule, LineChartV2Module],
 })
 export class ScalarCardLineChartModule {}

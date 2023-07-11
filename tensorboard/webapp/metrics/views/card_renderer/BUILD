@@ -316,17 +316,16 @@ tf_ng_module(
     srcs = [
         "scalar_card_component.ts",
         "scalar_card_container.ts",
-        "scalar_card_fob_controller.ts",
         "scalar_card_module.ts",
     ],
     assets = [
         ":scalar_card_styles",
-        ":scalar_card_fob_controller_styles",
         "scalar_card_component.ng.html",
     ],
     deps = [
         ":data_download_dialog",
         ":scalar_card_data_table",
+        ":scalar_card_line_chart",
         ":scalar_card_types",
         ":utils",
         ":vis_linked_time_selection_warning",
