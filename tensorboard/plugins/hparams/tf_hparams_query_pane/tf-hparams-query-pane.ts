@@ -594,7 +594,7 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
           });
         } else {
           // Don't show long lists of values. If the list surpasses a certain
-          // threshold then the user instead specifies regexfilters.
+          // threshold then the user instead specifies regex filters.
           hparam.filter.regexp = '';
         }
       } else if (hparam.info.type === 'DATA_TYPE_FLOAT64') {
