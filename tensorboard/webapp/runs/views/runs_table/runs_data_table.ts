@@ -40,6 +40,7 @@ export class RunsDataTable {
   @Input() regexFilter!: string;
   @Input() isFullScreen!: boolean;
   @Input() selectableColumns!: ColumnHeader[];
+  @Input() loading!: boolean;
 
   ColumnHeaderType = ColumnHeaderType;
 
