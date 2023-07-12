@@ -26,6 +26,7 @@ import {ScalarCardFobController} from './scalar_card_fob_controller';
     ScalarCardLineChartComponent,
     ScalarCardFobController,
   ],
+  // TO-DO(@brendahuang b/288573332): Remove ScalarCardFobController from exports when replacing line chart with ScalarCardLineChart for ScalarCard
   exports: [ScalarCardLineChartContainer, ScalarCardFobController],
   imports: [CardFobModule, CommonModule, LineChartV2Module],
 })
