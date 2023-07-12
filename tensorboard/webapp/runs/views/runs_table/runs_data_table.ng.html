@@ -23,7 +23,11 @@ limitations under the License.
     placeholder="Filter runs (regex)"
   ></tb-filter-input>
 </div>
+<div *ngIf="loading" class="loading">
+  <mat-spinner mode="indeterminate" diameter="28"></mat-spinner>
+</div>
 <tb-data-table
+  *ngIf="!loading"
   [headers]="headers"
   [sortingInfo]="sortingInfo"
   [columnCustomizationEnabled]="true"

@@ -99,7 +99,6 @@ import {
   getFilteredRenderableRunsFromRoute,
   getPotentialHparamColumns,
 } from '../../../metrics/views/main_view/common_selectors';
-import {RunToHParamValues} from '../../data_source/runs_data_source_types';
 import {runsTableFullScreenToggled} from '../../../core/actions';
 
 const getRunsLoading = createSelector<
@@ -280,6 +279,7 @@ function matchFilter(
       [experimentIds]="experimentIds"
       [regexFilter]="regexFilter$ | async"
       [isFullScreen]="runsTableFullScreen$ | async"
+      [loading]="loading$ | async"
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
       (onSelectionToggle)="onRunSelectionToggle($event)"
