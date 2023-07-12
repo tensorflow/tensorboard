@@ -391,7 +391,7 @@ describe('scalar card line chart', () => {
     );
     const lineChartComponent = fixture.debugElement.query(Selector.LINE_CHART);
 
-    // HACK: we are using viewChild in ScalarCardComponent and there is
+    // HACK: we are using viewChild in ScalarCardLineChartComponent and there is
     // no good way to provide a stub implementation. Manually set what
     // would be populated by ViewChild decorator.
     scalarCardLineChartComponent.componentInstance.lineChart =

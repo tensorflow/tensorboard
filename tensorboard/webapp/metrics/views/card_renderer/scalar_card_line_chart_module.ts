@@ -14,14 +14,20 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
+import {CardFobModule} from '../../../widgets/card_fob/card_fob_module';
 import {LineChartModule as LineChartV2Module} from '../../../widgets/line_chart_v2/line_chart_module';
 import {ScalarCardLineChartComponent} from './scalar_card_line_chart_component';
 import {ScalarCardLineChartContainer} from './scalar_card_line_chart_container';
-import {ScalarCardModule} from './scalar_card_module';
+import {ScalarCardFobController} from './scalar_card_fob_controller';
 
 @NgModule({
-  declarations: [ScalarCardLineChartContainer, ScalarCardLineChartComponent],
-  exports: [ScalarCardLineChartContainer],
-  imports: [CommonModule, LineChartV2Module, ScalarCardModule],
+  declarations: [
+    ScalarCardLineChartContainer,
+    ScalarCardLineChartComponent,
+    ScalarCardFobController,
+  ],
+  // TO-DO(@brendahuang b/288573332): Remove ScalarCardFobController from exports when replacing line chart with ScalarCardLineChart for ScalarCard
+  exports: [ScalarCardLineChartContainer, ScalarCardFobController],
+  imports: [CardFobModule, CommonModule, LineChartV2Module],
 })
 export class ScalarCardLineChartModule {}
