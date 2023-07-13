@@ -14,12 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
-import {
-  ComponentFixture,
-  TestBed,
-  fakeAsync,
-  flush,
-} from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatIconTestingModule} from '../../testing/mat_icon_module';
 import {By} from '@angular/platform-browser';
 import {
@@ -866,6 +861,26 @@ describe('data table', () => {
       expect(
         contextMenu.nativeElement.innerHTML.includes('No Actions Available')
       ).toBeTrue();
+    });
+
+    it('closes when the + button is clicked', () => {
+      const fixture = createComponent({
+        headers: mockHeaders,
+        data: mockTableData,
+        potentialColumns: mockPotentialColumns,
+      });
+      const fixedHeader = fixture.debugElement.queryAll(
+        By.directive(HeaderCellComponent)
+      )[0];
+      fixedHeader.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
+      fixture.detectChanges();
+      expect(fixture.debugElement.query(By.css('.context-menu'))).toBeTruthy();
+
+      const addBtn = fixture.debugElement.query(By.css('.add-column-btn'));
+      addBtn.nativeElement.click();
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.query(By.css('.context-menu'))).toBeFalsy();
     });
   });
 });
