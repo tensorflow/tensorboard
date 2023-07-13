@@ -13,13 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
-  HparamValue,
-  MetricValue,
-  DiscreteHparamValues,
-  DomainType,
   HparamSpec,
   MetricSpec,
 } from '../runs/data_source/runs_data_source_types';
+
+export {DiscreteFilter, IntervalFilter} from '../widgets/data_table/types';
 
 export {
   DatasetType,
@@ -49,22 +47,4 @@ export {
 export interface HparamAndMetricSpec {
   hparams: HparamSpec[];
   metrics: MetricSpec[];
-}
-
-export interface DiscreteFilter {
-  type: DomainType.DISCRETE;
-  includeUndefined: boolean;
-  possibleValues: DiscreteHparamValues;
-  // Subset of `possibleValues`
-  filterValues: DiscreteHparamValues;
-}
-
-export interface IntervalFilter {
-  type: DomainType.INTERVAL;
-  includeUndefined: boolean;
-  minValue: number;
-  maxValue: number;
-  // Filter values have to be in between min and max values (inclusive).
-  filterLowerValue: number;
-  filterUpperValue: number;
 }

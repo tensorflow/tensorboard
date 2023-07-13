@@ -381,7 +381,9 @@ export class RunsTableContainer implements OnInit, OnDestroy {
             ...Object.fromEntries(runTableItem.hparams.entries()),
             id: runTableItem.run.id,
             run: runTableItem.run.name,
-            experimentAlias: runTableItem.experimentAlias,
+            // There appears to be a bug in TypeScript where this value needs to
+            // be both string | number | boolean AND ExperimentAlias.
+            experimentAlias: runTableItem.experimentAlias as any,
             selected: runTableItem.selected,
             color: runTableItem.runColor,
           };

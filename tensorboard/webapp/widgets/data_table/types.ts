@@ -23,6 +23,7 @@ export enum ColumnHeaderType {
   RELATIVE_TIME = 'RELATIVE_TIME',
   RUN = 'RUN',
   STEP = 'STEP',
+  EXPERIMENT = 'EXPERIMENT',
   TIME = 'TIME',
   VALUE = 'VALUE',
   SMOOTHED = 'SMOOTHED',
@@ -40,6 +41,44 @@ export enum ColumnHeaderType {
   RAW_CHANGE = 'RAW_CHANGE',
   HPARAM = 'HPARAM',
   CUSTOM = 'CUSTOM',
+}
+
+export enum DomainType {
+  DISCRETE,
+  INTERVAL,
+}
+
+export type DiscreteFilterValues = string[] | number[] | boolean[];
+
+export type DiscreteFilterValue = DiscreteFilterValues[number];
+
+export interface DiscreteFilter {
+  type: DomainType.DISCRETE;
+  includeUndefined: boolean;
+  possibleValues: DiscreteFilterValues;
+  // Subset of `possibleValues`
+  filterValues: DiscreteFilterValues;
+}
+
+export interface DiscreteFilterChange {
+  hparamName: string;
+  includeUndefined: boolean;
+  filterValues: DiscreteFilterValues;
+}
+
+export interface IntervalFilter {
+  type: DomainType.INTERVAL;
+  includeUndefined: boolean;
+  minValue: number;
+  maxValue: number;
+  // Filter values have to be in between min and max values (inclusive).
+  filterLowerValue: number;
+  filterUpperValue: number;
+}
+
+export interface FilterAddedEvent {
+  header: ColumnHeader;
+  value: IntervalFilter | DiscreteFilter;
 }
 
 export interface ColumnHeader {
@@ -69,7 +108,7 @@ export interface SortingInfo {
  * DataTable. It will have a value for each required ColumnHeader for a given
  * run.
  */
-export type TableData = Record<string, string | number | boolean | object> & {
+export type TableData = Record<string, string | number | boolean> & {
   id: string;
 };
 
