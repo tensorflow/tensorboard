@@ -26,6 +26,7 @@ from google.protobuf import struct_pb2
 from tensorboard.data import provider
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import error
+from tensorboard.plugins.hparams import json_format_compat
 from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import metrics
 
@@ -246,6 +247,13 @@ class Handler:
             # There doesn't seem to be a way to initialize a protobuffer map in the
             # constructor.
             for (key, value) in start_info.hparams.items():
+                if not json_format_compat.is_serializable_value(value):
+                    # NaN number_value cannot be serialized by higher level layers
+                    # that are using json_format.MessageToJson(). To workaround
+                    # the issue we do not copy them to the session group and
+                    # effectively treat them as "unset".
+                    continue
+
                 group.hparams[key].CopyFrom(value)
             groups_by_name[group_name] = group
 

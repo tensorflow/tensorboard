@@ -344,6 +344,33 @@ class BackendContextTest(tf.test.TestCase):
         _canonicalize_experiment(actual_exp)
         self.assertProtoEquals(expected_exp, actual_exp)
 
+    def test_experiment_with_string_domain_and_invalid_number_values(self):
+        self.session_1_start_info_ = """
+            hparams:[
+              {key: 'maybe_invalid' value: {string_value: 'force_to_string_type'}}
+            ]
+        """
+        self.session_2_start_info_ = """
+            hparams:[
+              {key: 'maybe_invalid' value: {number_value: NaN}}
+            ]
+        """
+        self.session_3_start_info_ = """
+            hparams:[
+              {key: 'maybe_invalid' value: {number_value: Infinity}}
+            ]
+        """
+        expected_hparam_info = """
+            name: 'maybe_invalid'
+            type: DATA_TYPE_STRING
+            domain_discrete: {
+              values: [{string_value: 'force_to_string_type'}]
+            }
+        """
+        actual_exp = self._experiment_from_metadata()
+        self.assertLen(actual_exp.hparam_infos, 1)
+        self.assertProtoEquals(expected_hparam_info, actual_exp.hparam_infos[0])
+
     def test_experiment_without_any_hparams(self):
         request_ctx = context.RequestContext()
         actual_exp = self._experiment_from_metadata()
