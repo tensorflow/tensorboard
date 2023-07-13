@@ -88,8 +88,7 @@ message HParamInfo {
   // every instance of this hyperparameter will hold a value from this set. It
   // is used by the UI to allow filtering so that only session groups (see
   // below) whose associated hyperparameter value "passes" the filter are
-  // displayed. If this is not populated, the domain is assumed to be the
-  // entire domain of the type of the hyperparameter.
+  // displayed. If this is not populated, the domain is assumed to be empty.
   oneof domain {
     // A discrete set of the values this hyperparameter can hold.
     google.protobuf.ListValue domain_discrete = 5;

@@ -41,6 +41,8 @@ interface ColumnMetric {
   order?: string;
 }
 
+const MAX_DOMAIN_DISCRETE_LIST_LEN = 10;
+
 /**
  * The tf-hparams-query-pane element implements controls for querying the
  * server for a list of session groups. It provides filtering, and
@@ -102,7 +104,7 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
               </paper-input>
             </template>
             <!-- 3. A regexp -->
-            <template is="dom-if" if="[[hparam.filter.regexp]]">
+            <template is="dom-if" if="[[_hasRegexpFilter(hparam)]]">
               <paper-input
                 label="Regular expression"
                 value="{{hparam.filter.regexp}}"
@@ -581,25 +583,22 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
         filter: {} as any,
       };
       if (hparam.info.hasOwnProperty('domainDiscrete')) {
-        hparam.filter.domainDiscrete = [];
-        hparam.info.domainDiscrete.forEach((val) => {
-          hparam.filter.domainDiscrete.push({
-            value: val,
-            checked: true,
+        // Handle a discrete domain. Could be of any data type.
+        if (hparam.info.domainDiscrete.length < MAX_DOMAIN_DISCRETE_LIST_LEN) {
+          hparam.filter.domainDiscrete = [];
+          hparam.info.domainDiscrete.forEach((val: any) => {
+            hparam.filter.domainDiscrete.push({
+              value: val,
+              checked: true,
+            });
           });
-        });
-      } else if (hparam.info.type === 'DATA_TYPE_BOOL') {
-        hparam.filter.domainDiscrete = [
-          {
-            value: false,
-            checked: true,
-          },
-          {
-            value: true,
-            checked: true,
-          },
-        ];
+        } else {
+          // Don't show long lists of values. If the list surpasses a certain
+          // threshold then the user instead specifies regex filters.
+          hparam.filter.regexp = '';
+        }
       } else if (hparam.info.type === 'DATA_TYPE_FLOAT64') {
+        // Handle a float interval domain.
         hparam.filter.interval = {
           min: {
             value: '',
@@ -610,10 +609,11 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
             invalid: false,
           },
         };
-      } else if (hparam.info.type === 'DATA_TYPE_STRING') {
-        hparam.filter.regexp = '';
       } else {
-        console.warn('unknown hparam.info.type: %s', hparam.info.type);
+        console.warn(
+          'cannot process domain type %s without discrete domain values',
+          hparam.info.type
+        );
       }
       result.push(hparam);
     });
@@ -689,6 +689,10 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
       hparamInfos: newHParamInfos,
       metricInfos: newMetricInfos,
     };
+  }
+  // Determines if a regex filter should be rendered.
+  _hasRegexpFilter(hparam) {
+    return hparam.filter.regexp !== undefined;
   }
   // Sends a query to the server for the list of session groups.
   // Asynchronously updates the sessionGroups property with the response.
