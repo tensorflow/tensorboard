@@ -1,5 +1,6 @@
 # Description:
 # Some useful scripts that are bundled with TensorBoard.
+load("@rules_python//python:py_binary.bzl", "py_binary")
 
 package(default_visibility = ["//tensorboard:internal"])
 

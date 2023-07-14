@@ -2,6 +2,8 @@
 # TensorBoard Debugger V2 Plugin: A plugin for inspecting and debugging
 # the internals of a TensorFlow program (e.g., graphs, functions and tensors),
 # with a focus on TensorFlow 2.x.
+load("@rules_python//python:py_library.bzl", "py_library")
+load("@rules_python//python:py_test.bzl", "py_test")
 
 package(default_visibility = ["//tensorboard:internal"])
 

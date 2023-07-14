@@ -1,6 +1,8 @@
 # Description:
 #   Import of html5lib library.
 
+load("@rules_python//python:py_library.bzl", "py_library")
+
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # BSD-like notice-style license, see LICENSE file

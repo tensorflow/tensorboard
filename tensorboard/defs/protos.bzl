@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("@com_google_protobuf//:protobuf.bzl", "proto_gen")
+load("@rules_python//python:py_library.bzl", "py_library")
 
 # TODO(#6185): try to reduce the complexity in this rule.
 def tb_proto_library(
@@ -63,7 +64,7 @@ def tb_proto_library(
     )
 
     py_deps = [s + "_py_pb2" for s in deps] + [runtime]
-    native.py_library(
+    py_library(
         name = name + "_py_pb2",
         srcs = outs_proto,
         imports = [],
@@ -73,7 +74,7 @@ def tb_proto_library(
         visibility = visibility,
     )
     if has_services:
-        native.py_library(
+        py_library(
             name = name + "_py_pb2_grpc",
             srcs = outs_grpc,
             imports = [],

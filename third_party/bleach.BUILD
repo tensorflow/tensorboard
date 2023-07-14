@@ -2,6 +2,8 @@
 #   Build file for Bleach.
 # License:
 #   Apache 2.0
+load("@rules_python//python:py_library.bzl", "py_library")
+
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])

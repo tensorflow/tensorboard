@@ -2,6 +2,8 @@
 # Summary API for TensorBoard.
 
 load("//tensorboard/defs:py_repl.bzl", "py_repl")
+load("@rules_python//python:py_library.bzl", "py_library")
+load("@rules_python//python:py_test.bzl", "py_test")
 
 package(default_visibility = ["//tensorboard:internal"])
 
