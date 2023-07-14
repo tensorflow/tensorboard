@@ -192,8 +192,8 @@ function sortTableDataItems(
     let bValue = b[sort.name];
 
     if (sort.name === 'experimentAlias') {
-      aValue = (aValue as ExperimentAlias).aliasNumber;
-      bValue = (bValue as ExperimentAlias).aliasNumber;
+      aValue = (aValue as ExperimentAlias)!.aliasNumber;
+      bValue = (bValue as ExperimentAlias)!.aliasNumber;
     }
 
     if (aValue === bValue) {

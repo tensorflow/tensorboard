@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {ExperimentAlias} from '../../experiments/types';
+
 /**
  * This enum defines the columns available in the data table. The
  * ScalarCardComponent must know which piece of data is associated with each
@@ -76,6 +78,7 @@ export interface SortingInfo {
  */
 export type TableData = Record<string, string | number | boolean | object> & {
   id: string;
+  experimentAlias?: ExperimentAlias;
 };
 
 export enum DataTableMode {

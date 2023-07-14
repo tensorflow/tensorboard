@@ -128,6 +128,9 @@ tf_ts_library(
     srcs = [
         "types.ts",
     ],
+    deps = [
+        "//tensorboard/webapp/experiments:types",
+    ],
 )
 
 tf_ts_library(
