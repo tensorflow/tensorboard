@@ -36,3 +36,10 @@ interface JSON {
     reviver?: (key: string, value: unknown) => unknown
   ): unknown;
 }
+
+interface Window {
+  tensorboard: {
+    tf_storage?;
+    tf_globals?;
+  };
+}

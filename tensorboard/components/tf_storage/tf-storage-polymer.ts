@@ -22,10 +22,9 @@ class TfStorage extends PolymerElement {
   tf_storage = tf_storage;
   constructor() {
     super();
-    const extendedWindow: any = window;
-    if (!extendedWindow['tensorboard']) {
-      extendedWindow['tensorboard'] = {};
+    if (!window.tensorboard) {
+      window.tensorboard = {};
     }
-    extendedWindow['tensorboard']['tf_storage'] = tf_storage;
+    window.tensorboard.tf_storage = tf_storage;
   }
 }

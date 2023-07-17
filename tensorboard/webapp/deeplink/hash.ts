@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 
 import {Injectable} from '@angular/core';
-import {TfStorageElement} from '../tb_polymer_interop_types';
 import {DeepLinkerInterface, SetStringOption} from './types';
 
 // TODO(tensorboard-team): merge this module with tf_storage/storage.ts when
@@ -30,12 +29,12 @@ export class HashDeepLinker implements DeepLinkerInterface {
   constructor() {
     document.createElement('tf-storage');
     document.createElement('tf-globals');
-    this.tfStorage = (window as any)['tensorboard']['tf_storage'];
+    this.tfStorage = window.tensorboard.tf_storage;
 
     // Note: `migrateLegacyURLScheme()` must be called before `setUseHash`, so
     // that tfStorage reads from the actual URL, not the fake hash for tests
     // only.
-    (window as any)['tensorboard']['tf_globals'].setUseHash(true);
+    window.tensorboard.tf_globals.setUseHash(true);
     this.tfStorage.migrateLegacyURLScheme();
   }
 
