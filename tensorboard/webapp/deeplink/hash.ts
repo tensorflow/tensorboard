@@ -22,28 +22,23 @@ const TAB = '__tab__';
 
 @Injectable()
 export class HashDeepLinker implements DeepLinkerInterface {
-  tfStorage: DeepLinkerInterface & {
-    migrateLegacyURLScheme: () => void;
-  };
-
   constructor() {
     document.createElement('tf-storage');
     document.createElement('tf-globals');
-    this.tfStorage = window.tensorboard.tf_storage;
 
     // Note: `migrateLegacyURLScheme()` must be called before `setUseHash`, so
     // that tfStorage reads from the actual URL, not the fake hash for tests
     // only.
-    window.tensorboard.tf_globals.setUseHash(true);
-    this.tfStorage.migrateLegacyURLScheme();
+    window.tensorboard.tf_globals?.setUseHash(true);
+    window.tensorboard.tf_storage?.migrateLegacyURLScheme();
   }
 
   getString(key: string): string {
-    return this.tfStorage.getString(key);
+    return window.tensorboard.tf_storage?.getString(key) || '';
   }
 
   setString(key: string, value: string, options?: SetStringOption): void {
-    this.tfStorage.setString(key, value, options);
+    window.tensorboard.tf_storage?.setString(key, value, options);
   }
 
   getPluginId(): string {

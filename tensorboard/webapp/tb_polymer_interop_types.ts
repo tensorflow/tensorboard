@@ -18,29 +18,10 @@ declare global {
   // createElement type uses the TagNameMap underneath and returns the right type.
   interface HTMLElementTagNameMap {
     'tf-backend': TfBackendElement;
-    'tf-globals': TfGlobalsElement;
     'tf-feature-flags': TfFeatureFlagsElement;
-    'tf-storage': TfStorageElement;
     'tf-paginated-view-store': TfPaginatedViewStoreElement;
     'vz-histogram-timeseries': VzHistogramTimeSeriesElement;
   }
-}
-
-export declare interface TfGlobals {
-  setUseHash(use: boolean): void;
-}
-
-export declare interface TfGlobalsElement extends HTMLElement {
-  tf_globals: TfGlobals;
-}
-
-export declare interface SetStringOption {
-  defaultValue?: string;
-  /**
-   * When true, setting the string does not push a new state onto the history.
-   * i.e., it uses `history.replaceState` instead of `history.pushState`.
-   */
-  useLocationReplace?: boolean;
 }
 
 export declare interface TfFeatureFlags {
@@ -52,17 +33,6 @@ export declare interface TfFeatureFlags {
 
 export declare interface TfFeatureFlagsElement extends HTMLElement {
   tf_feature_flags: TfFeatureFlags;
-}
-
-export declare interface TfStorage {
-  setString(key: string, value: string, options?: SetStringOption): void;
-  getString(key: string): string;
-  migrateLegacyURLScheme(): void;
-  getUrlHashDict(): Record<string, string>;
-}
-
-export declare interface TfStorageElement extends HTMLElement {
-  tf_storage: TfStorage;
 }
 
 export declare interface Store {

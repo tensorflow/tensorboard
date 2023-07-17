@@ -23,7 +23,6 @@ import {
   getExperimentIdsFromRoute,
   getRuns,
 } from '../../../webapp/selectors';
-import {TfStorageElement} from '../../../webapp/tb_polymer_interop_types';
 import {provideMockTbStore} from '../../../webapp/testing/utils';
 import {PluginCoreApiHostImpl} from './core-host-impl';
 import {MessageId} from './message_types';
@@ -265,7 +264,7 @@ describe('plugin_api_host test', () => {
               };
             },
           },
-        } as unknown as TfStorageElement);
+        } as any);
 
         coreApi.init();
         const actual = triggerGetUrlData({pluginName: 'plugin_id'});

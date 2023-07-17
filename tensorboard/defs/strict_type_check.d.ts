@@ -37,9 +37,29 @@ interface JSON {
   ): unknown;
 }
 
+interface SetStringOption {
+  defaultValue?: string;
+  /**
+   * When true, setting the string does not push a new state onto the history.
+   * i.e., it uses `history.replaceState` instead of `history.pushState`.
+   */
+  useLocationReplace?: boolean;
+}
+
+interface TfStorage {
+  setString(key: string, value: string, options?: SetStringOption): void;
+  getString(key: string): string;
+  migrateLegacyURLScheme(): void;
+  getUrlHashDict(): Record<string, string>;
+}
+
+interface TfGlobalsElement {
+  setUseHash(use: boolean): void;
+}
+
 interface Window {
   tensorboard: {
-    tf_storage?;
-    tf_globals?;
+    tf_storage?: TfStorage;
+    tf_globals?: TfGlobalsElement;
   };
 }

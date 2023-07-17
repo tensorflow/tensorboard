@@ -36,11 +36,12 @@ describe('deeplink', () => {
     // to not make use of the hash (it does).
 
     // Do not rely on Polymer bundle in the test.
-    (window as any).tensorboard = {
+    window.tensorboard = {
       tf_storage: {
         setString: setStringSpy,
         getString: getStringSpy,
         migrateLegacyURLScheme: migrateLegacyURLSchemeSpy,
+        getUrlHashDict: () => ({}),
       },
       tf_globals: {
         setUseHash: setUseHashSpy,
