@@ -628,8 +628,10 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
     });
     // Choose to display the first 5 hparams in the main view initially.
     const kNumHParamsToDisplayByDefault = 5;
-    const numHparamsToDisplay =
-        Math.min(kNumHParamsToDisplayByDefault, result.length);
+    const numHparamsToDisplay = Math.min(
+      kNumHParamsToDisplayByDefault,
+      result.length
+    );
     for (let i = 0; i < numHparamsToDisplay; i++) {
       result[i].displayed = true;
     }

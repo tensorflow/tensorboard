@@ -361,7 +361,7 @@ class BackendContextTest(tf.test.TestCase):
                 hyperparameter_name="hparam2_name",
                 hyperparameter_display_name="hparam2_display_name",
                 differs=False,
-            )
+            ),
         ]
         self._mock_tb_context.data_provider.list_tensors.side_effect = None
         actual_exp = self._experiment_from_metadata()
