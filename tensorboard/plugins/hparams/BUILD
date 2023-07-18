@@ -122,7 +122,10 @@ py_test(
     srcs = [
         "json_format_compat_test.py",
     ],
-    deps = [":hparams_plugin"],
+    deps = [
+        ":hparams_plugin",
+        "//tensorboard:expect_absl_testing_absltest_installed",
+    ],
 )
 
 py_binary(
