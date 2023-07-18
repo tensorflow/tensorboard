@@ -69,7 +69,7 @@ message Experiment {
   repeated MetricInfo metric_infos = 5;
 }
 
-// NEXT_TAG: 7
+// NEXT_TAG: 8
 message HParamInfo {
   // An id for the hyperparameter.
   string name = 1;
@@ -96,6 +96,11 @@ message HParamInfo {
     // hyperparameter are taken.
     Interval domain_interval = 6;
   }
+
+  // Describes whether there are two or more known values for the HParam
+  // in the specified Experiment. HParams for which this is true are made more
+  // prominent or easier to discover in the UI.
+  bool differs = 7;
 }
 
 enum DataType {
