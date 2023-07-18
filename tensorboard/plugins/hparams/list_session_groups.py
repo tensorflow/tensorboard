@@ -49,8 +49,6 @@ class Handler:
         self._backend_context = backend_context
         self._experiment_id = experiment_id
         self._request = request
-        self._extractors = _create_extractors(request.col_params)
-        self._filters = _create_filters(request.col_params, self._extractors)
 
     def run(self):
         """Handles the request specified on construction.
@@ -82,27 +80,29 @@ class Handler:
 
     def _session_groups_from_tags(self):
         """Constructs lists of SessionGroups based on hparam tag metadata."""
-        # Query for all Hparams summary metadata up front to minimize calls to
+        # Query for all Hparams summary metadata one time to minimize calls to
         # the underlying DataProvider.
-        self._hparams_run_to_tag_to_content = (
-            self._backend_context.hparams_metadata(
-                self._request_context, self._experiment_id
-            )
+        hparams_run_to_tag_to_content = self._backend_context.hparams_metadata(
+            self._request_context, self._experiment_id
         )
-        # Since an context.experiment() call may search through all the runs, we
-        # cache it here.
-        self._experiment = self._backend_context.experiment_from_metadata(
+        # Construct the experiment one time since an context.experiment() call
+        # may search through all the runs.
+        experiment = self._backend_context.experiment_from_metadata(
             self._request_context,
             self._experiment_id,
-            self._hparams_run_to_tag_to_content,
+            hparams_run_to_tag_to_content,
             # Don't pass any information from the DataProvider since we are only
             # examining session groups based on tag metadata
             [],
         )
+        extractors = _create_extractors(self._request.col_params)
+        filters = _create_filters(self._request.col_params, extractors)
 
-        session_groups = self._build_session_groups()
-        session_groups = self._filter(session_groups)
-        self._sort(session_groups)
+        session_groups = self._build_session_groups(
+            hparams_run_to_tag_to_content, experiment
+        )
+        session_groups = self._filter(session_groups, filters)
+        self._sort(session_groups, extractors)
         return session_groups
 
     def _session_groups_from_data_provider(self):
@@ -151,7 +151,7 @@ class Handler:
 
         return session_groups
 
-    def _build_session_groups(self):
+    def _build_session_groups(self, hparams_run_to_tag_to_content, experiment):
         """Returns a list of SessionGroups protobuffers from the summary
         data."""
 
@@ -167,13 +167,13 @@ class Handler:
         # contain metrics (may be in subdirectories).
         session_names = [
             run
-            for (run, tags) in self._hparams_run_to_tag_to_content.items()
+            for (run, tags) in hparams_run_to_tag_to_content.items()
             if metadata.SESSION_START_INFO_TAG in tags
         ]
         metric_runs = set()
         metric_tags = set()
         for session_name in session_names:
-            for metric in self._experiment.metric_infos:
+            for metric in experiment.metric_infos:
                 metric_name = metric.name
                 (run, tag) = metrics.run_tag_from_session_and_metric(
                     session_name, metric_name
@@ -190,7 +190,7 @@ class Handler:
         for (
             session_name,
             tag_to_content,
-        ) in self._hparams_run_to_tag_to_content.items():
+        ) in hparams_run_to_tag_to_content.items():
             if metadata.SESSION_START_INFO_TAG not in tag_to_content:
                 continue
             start_info = metadata.parse_session_start_info_plugin_data(
@@ -202,7 +202,7 @@ class Handler:
                     tag_to_content[metadata.SESSION_END_INFO_TAG]
                 )
             session = self._build_session(
-                session_name, start_info, end_info, all_metric_evals
+                experiment, session_name, start_info, end_info, all_metric_evals
             )
             if session.status in self._request.allowed_statuses:
                 self._add_session(session, start_info, groups_by_name)
@@ -257,7 +257,9 @@ class Handler:
                 group.hparams[key].CopyFrom(value)
             groups_by_name[group_name] = group
 
-    def _build_session(self, name, start_info, end_info, all_metric_evals):
+    def _build_session(
+        self, experiment, name, start_info, end_info, all_metric_evals
+    ):
         """Builds a session object."""
 
         assert start_info is not None
@@ -266,7 +268,7 @@ class Handler:
             start_time_secs=start_info.start_time_secs,
             model_uri=start_info.model_uri,
             metric_values=self._build_session_metric_values(
-                name, all_metric_evals
+                experiment, name, all_metric_evals
             ),
             monitor_url=start_info.monitor_url,
         )
@@ -275,13 +277,14 @@ class Handler:
             result.end_time_secs = end_info.end_time_secs
         return result
 
-    def _build_session_metric_values(self, session_name, all_metric_evals):
+    def _build_session_metric_values(
+        self, experiment, session_name, all_metric_evals
+    ):
         """Builds the session metric values."""
 
         # result is a list of api_pb2.MetricValue instances.
         result = []
-        metric_infos = self._experiment.metric_infos
-        for metric_info in metric_infos:
+        for metric_info in experiment.metric_infos:
             metric_name = metric_info.name
             (run, tag) = metrics.run_tag_from_session_and_metric(
                 session_name, metric_name
@@ -327,13 +330,15 @@ class Handler:
                 % self._request.aggregation_type
             )
 
-    def _filter(self, session_groups):
-        return [sg for sg in session_groups if self._passes_all_filters(sg)]
+    def _filter(self, session_groups, filters):
+        return [
+            sg for sg in session_groups if self._passes_all_filters(sg, filters)
+        ]
 
-    def _passes_all_filters(self, session_group):
-        return all(filter_fn(session_group) for filter_fn in self._filters)
+    def _passes_all_filters(self, session_group, filters):
+        return all(filter_fn(session_group) for filter_fn in filters)
 
-    def _sort(self, session_groups):
+    def _sort(self, session_groups, extractors):
         """Sorts 'session_groups' in place according to _request.col_params."""
 
         # Sort by session_group name so we have a deterministic order.
@@ -344,7 +349,7 @@ class Handler:
         # need to iterate on these columns in reverse order (thus the primary key
         # is the key used in the last sort).
         for col_param, extractor in reversed(
-            list(zip(self._request.col_params, self._extractors))
+            list(zip(self._request.col_params, extractors))
         ):
             if col_param.order == api_pb2.ORDER_UNSPECIFIED:
                 continue
