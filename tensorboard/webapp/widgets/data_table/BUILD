@@ -52,8 +52,8 @@ tf_sass_binary(
 )
 
 tf_sass_binary(
-    name = "filter_dialogue_styles",
-    src = "filter_dialogue.scss",
+    name = "filter_dialog_styles",
+    src = "filter_dialog.scss",
     strict_deps = False,
     deps = [
         "//tensorboard/webapp:angular_material_sass_deps",
@@ -81,7 +81,7 @@ tf_ng_module(
     deps = [
         ":column_selector",
         ":data_table_header",
-        ":filter_dialogue",
+        ":filter_dialog",
         ":types",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
@@ -136,14 +136,14 @@ tf_ng_module(
 )
 
 tf_ng_module(
-    name = "filter_dialogue",
+    name = "filter_dialog",
     srcs = [
-        "filter_dialogue.ts",
-        "filter_dialogue_module.ts",
+        "filter_dialog.ts",
+        "filter_dialog_module.ts",
     ],
     assets = [
-        "filter_dialogue.ng.html",
-        ":filter_dialogue_styles",
+        "filter_dialog.ng.html",
+        ":filter_dialog_styles",
     ],
     deps = [
         ":types",
@@ -172,13 +172,13 @@ tf_ts_library(
         "column_selector_test.ts",
         "content_cell_component_test.ts",
         "data_table_test.ts",
-        "filter_dialogue_test.ts",
+        "filter_dialog_test.ts",
         "header_cell_component_test.ts",
     ],
     deps = [
         ":column_selector",
         ":data_table",
-        ":filter_dialogue",
+        ":filter_dialog",
         ":types",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_checkbox",

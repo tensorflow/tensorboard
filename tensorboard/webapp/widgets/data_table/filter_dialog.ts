@@ -23,10 +23,10 @@ import {RangeValues} from '../range_input/types';
 
 @Component({
   selector: 'tb-data-table-filter',
-  templateUrl: 'filter_dialogue.ng.html',
-  styleUrls: ['filter_dialogue.css'],
+  templateUrl: 'filter_dialog.ng.html',
+  styleUrls: ['filter_dialog.css'],
 })
-export class FilterDialogue {
+export class FilterDialog {
   DomainType = DomainType;
 
   discreteValueFilter: string = '';

@@ -11,23 +11,23 @@ limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
 import {DataTableModule} from './data_table_module';
-import {FilterDialogue} from './filter_dialogue';
+import {FilterDialog} from './filter_dialog';
 import {DiscreteFilter, DomainType, IntervalFilter} from './types';
 import {By} from '@angular/platform-browser';
 import {RangeInputComponent} from '../range_input/range_input_component';
 import {RangeInputModule} from '../range_input/range_input_module';
 import {MatLegacyCheckboxModule} from '@angular/material/legacy-checkbox';
 
-describe('filter dialogue', () => {
+describe('filter dialog', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [FilterDialogue],
+      declarations: [FilterDialog],
       imports: [DataTableModule, RangeInputModule, MatLegacyCheckboxModule],
     }).compileComponents();
   });
 
   function createComponent(input: {filter: DiscreteFilter | IntervalFilter}) {
-    const fixture = TestBed.createComponent(FilterDialogue);
+    const fixture = TestBed.createComponent(FilterDialog);
     fixture.componentInstance.filter = input.filter;
     fixture.detectChanges();
     return fixture;

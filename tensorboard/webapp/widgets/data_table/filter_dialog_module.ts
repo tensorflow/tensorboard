@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {NgModule} from '@angular/core';
-import {FilterDialogue} from './filter_dialogue';
+import {FilterDialog} from './filter_dialog';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
@@ -23,7 +23,7 @@ import {RangeInputModule} from '../range_input/range_input_module';
 import {FilterInputModule} from '../filter_input/filter_input_module';
 
 @NgModule({
-  declarations: [FilterDialogue],
+  declarations: [FilterDialog],
   imports: [
     CommonModule,
     MatButtonModule,
@@ -32,6 +32,6 @@ import {FilterInputModule} from '../filter_input/filter_input_module';
     FilterInputModule,
     RangeInputModule,
   ],
-  exports: [FilterDialogue],
+  exports: [FilterDialog],
 })
-export class FilterDialogueModule {}
+export class FilterDialogModule {}
