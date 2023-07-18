@@ -350,6 +350,35 @@ class BackendContextTest(tf.test.TestCase):
         self.assertIsInstance(actual_exp, api_pb2.Experiment)
         self.assertProtoEquals("", actual_exp)
 
+    def test_experiment_from_data_provider_differs(self):
+        self._hyperparameters = [
+            provider.Hyperparameter(
+                hyperparameter_name="hparam1_name",
+                hyperparameter_display_name="hparam1_display_name",
+                differs=True,
+            ),
+            provider.Hyperparameter(
+                hyperparameter_name="hparam2_name",
+                hyperparameter_display_name="hparam2_display_name",
+                differs=False,
+            ),
+        ]
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        actual_exp = self._experiment_from_metadata()
+        expected_exp = """
+            hparam_infos: {
+              name: 'hparam1_name'
+              display_name: 'hparam1_display_name'
+              differs: true
+            }
+            hparam_infos: {
+              name: 'hparam2_name'
+              display_name: 'hparam2_display_name'
+              differs: false
+            }
+        """
+        self.assertProtoEquals(expected_exp, actual_exp)
+
     def test_experiment_from_data_provider_interval_hparam(self):
         self._hyperparameters = [
             provider.Hyperparameter(

@@ -575,11 +575,12 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
   // Updates the _hparams property from the _experiment property.
   _computeHParams() {
     const result: any[] = [];
-    const kNumHParamsToDisplayByDefault = 5;
-    this._experiment.hparamInfos.forEach((anInfo, index) => {
+    this._experiment.hparamInfos.forEach((anInfo) => {
       const hparam = {
         info: anInfo as any,
-        displayed: index < kNumHParamsToDisplayByDefault,
+        // Controls whether the hparam is chosen for display in the main view.
+        // Set later.
+        displayed: false,
         filter: {} as any,
       };
       if (hparam.info.hasOwnProperty('domainDiscrete')) {
@@ -617,6 +618,23 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
       }
       result.push(hparam);
     });
+    // Reorder by moving hparams with 'differs === true' to the top of the list.
+    result.sort((x, y) => {
+      if (x.info.differs === y.info.differs) {
+        return 0;
+      }
+
+      return x.info.differs ? -1 : 1;
+    });
+    // Choose to display the first 5 hparams in the main view initially.
+    const kNumHParamsToDisplayByDefault = 5;
+    const numHparamsToDisplay = Math.min(
+      kNumHParamsToDisplayByDefault,
+      result.length
+    );
+    for (let i = 0; i < numHparamsToDisplay; i++) {
+      result[i].displayed = true;
+    }
     this.set('_hparams', result);
   }
   // Updates the _metrics property from the _experiment property.

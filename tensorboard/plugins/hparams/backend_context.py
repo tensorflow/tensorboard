@@ -348,6 +348,7 @@ class Context:
         hparam_info = api_pb2.HParamInfo(
             name=dp_hparam.hyperparameter_name,
             display_name=dp_hparam.hyperparameter_display_name,
+            differs=dp_hparam.differs,
         )
         if dp_hparam.domain_type == provider.HyperparameterDomainType.INTERVAL:
             hparam_info.type = api_pb2.DATA_TYPE_FLOAT64
