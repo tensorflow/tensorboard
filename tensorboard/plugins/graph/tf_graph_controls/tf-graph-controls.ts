@@ -1340,19 +1340,31 @@ class TfGraphControls extends LegacyElementMixin(
     let minValue = params.minValue;
     let maxValue = params.maxValue;
     if (colorBy === ColorBy.MEMORY) {
+      // TODO: go/ts51upgrade - Auto-added to unblock TS5.1 migration.
+      //   TS2322: Type 'string' is not assignable to type 'number'.
+      // @ts-ignore
       minValue = tf_graph_util.convertUnitsToHumanReadable(
         minValue,
         tf_graph_util.MEMORY_UNITS
       );
+      // TODO: go/ts51upgrade - Auto-added to unblock TS5.1 migration.
+      //   TS2322: Type 'string' is not assignable to type 'number'.
+      // @ts-ignore
       maxValue = tf_graph_util.convertUnitsToHumanReadable(
         maxValue,
         tf_graph_util.MEMORY_UNITS
       );
     } else if (colorBy === ColorBy.COMPUTE_TIME) {
+      // TODO: go/ts51upgrade - Auto-added to unblock TS5.1 migration.
+      //   TS2322: Type 'string' is not assignable to type 'number'.
+      // @ts-ignore
       minValue = tf_graph_util.convertUnitsToHumanReadable(
         minValue,
         tf_graph_util.TIME_UNITS
       );
+      // TODO: go/ts51upgrade - Auto-added to unblock TS5.1 migration.
+      //   TS2322: Type 'string' is not assignable to type 'number'.
+      // @ts-ignore
       maxValue = tf_graph_util.convertUnitsToHumanReadable(
         maxValue,
         tf_graph_util.TIME_UNITS
