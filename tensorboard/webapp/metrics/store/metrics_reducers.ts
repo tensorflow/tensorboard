@@ -1046,8 +1046,13 @@ const reducer = createReducer(
         }
       }
 
+      const newCardMetadataMap: CardMetadataMap = {};
+      const nextCardList: string[] = [];
       if (response.runToSeries && response.plugin === PluginType.SCALARS) {
-        const cardId = getCardId({plugin, tag, runId: null});
+        const cardMetadata = {plugin, tag, runId: null};
+        const cardId = getCardId(cardMetadata);
+        newCardMetadataMap[cardId] = cardMetadata;
+        nextCardList.push(cardId);
         const nextMinMax = generateScalarCardMinMaxStep(
           loadable.runToSeries as RunToSeries<PluginType.SCALARS>
         );
@@ -1075,6 +1080,8 @@ const reducer = createReducer(
         ),
         stepMinMax: nextStepMinMax,
         cardStateMap: nextCardStateMap,
+        cardMetadataMap: newCardMetadataMap,
+        cardList: nextCardList,
       };
       return nextState;
     }
