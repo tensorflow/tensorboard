@@ -252,8 +252,7 @@ describe('plugin_api_host test', () => {
 
       it('returns url data from the tf storage', () => {
         // Do not rely on Polymer bundle in the test.
-        const createElementSpy = spyOn(document, 'createElement');
-        createElementSpy.withArgs('tf-storage').and.returnValue({
+        window.tensorboard = {
           tf_storage: {
             getUrlHashDict: () => {
               return {
@@ -263,15 +262,16 @@ describe('plugin_api_host test', () => {
                 'p.another_plugn.b': '2',
               };
             },
-          },
-        } as any);
-
+          } as any,
+        };
         coreApi.init();
         const actual = triggerGetUrlData({pluginName: 'plugin_id'});
         expect(actual).toEqual({
           a: '1',
           b: 'b',
         });
+
+        delete (window as any).tensorboard;
       });
     });
 
