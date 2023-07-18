@@ -18,7 +18,7 @@ import {FilterDialog} from './filter_dialog';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
-import {MatLegacyCheckboxModule} from '@angular/material/legacy-checkbox';
+import {MatCheckboxModule} from '@angular/material/checkbox';
 import {RangeInputModule} from '../range_input/range_input_module';
 import {FilterInputModule} from '../filter_input/filter_input_module';
 
@@ -27,7 +27,7 @@ import {FilterInputModule} from '../filter_input/filter_input_module';
   imports: [
     CommonModule,
     MatButtonModule,
-    MatLegacyCheckboxModule,
+    MatCheckboxModule,
     FormsModule,
     FilterInputModule,
     RangeInputModule,

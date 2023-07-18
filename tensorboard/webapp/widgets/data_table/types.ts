@@ -108,7 +108,7 @@ export interface SortingInfo {
  * DataTable. It will have a value for each required ColumnHeader for a given
  * run.
  */
-export type TableData = Record<string, string | number | boolean> & {
+export type TableData = Record<string, string | number | boolean | object> & {
   id: string;
 };
 
