@@ -57,7 +57,6 @@ export class ScalarCardLineChartComponent {
   readonly RendererType = RendererType;
   readonly ScaleType = ScaleType;
 
-  @Input() cardId!: string;
   @Input() seriesMetadataMap!: ScalarCardSeriesMetadataMap;
   @Input() seriesData!: ScalarCardDataSeries[];
   @Input() ignoreOutliers!: boolean;
