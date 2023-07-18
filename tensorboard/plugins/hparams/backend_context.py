@@ -300,11 +300,11 @@ class Context:
             return None
 
         if result.type == api_pb2.DATA_TYPE_STRING:
-            distinct_values = set()
-            for value in values:
-                if _protobuf_value_type(value):
-                    if json_format_compat.is_serializable_value(value):
-                        distinct_values.add(_protobuf_value_to_string(value))
+            distinct_values = set(
+                _protobuf_value_to_string(v)
+                for v in values
+                if _can_be_converted_to_string(v)
+            )
             result.domain_discrete.extend(distinct_values)
 
         if result.type == api_pb2.DATA_TYPE_BOOL:
@@ -451,6 +451,12 @@ def _find_longest_parent_path(path_set, path):
             return None
         path = os.path.dirname(path)
     return path
+
+
+def _can_be_converted_to_string(value):
+    if not _protobuf_value_type(value):
+        return False
+    return json_format_compat.is_serializable_value(value)
 
 
 def _protobuf_value_type(value):

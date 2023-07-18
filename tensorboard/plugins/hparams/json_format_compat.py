@@ -31,7 +31,8 @@ def is_serializable_value(value):
       True if the Value should be serializable without error by MessageToJson.
       False, otherwise.
     """
-    return not value.HasField("number_value") or (
-        not math.isnan(value.number_value)
-        and not math.isinf(value.number_value)
-    )
+    if not value.HasField("number_value"):
+        return True
+
+    number_value = value.number_value
+    return not math.isnan(number_value) and not math.isinf(number_value)
