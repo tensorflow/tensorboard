@@ -29,6 +29,7 @@ py_library(
         "download_data.py",
         "get_experiment.py",
         "hparams_plugin.py",
+        "json_format_compat.py",
         "list_metric_evals.py",
         "list_session_groups.py",
         "metrics.py",
@@ -113,6 +114,15 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/data:provider",
     ],
+)
+
+py_test(
+    name = "json_format_compat_test",
+    size = "small",
+    srcs = [
+        "json_format_compat_test.py",
+    ],
+    deps = [":hparams_plugin"],
 )
 
 py_binary(

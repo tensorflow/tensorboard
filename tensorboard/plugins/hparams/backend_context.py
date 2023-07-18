@@ -22,6 +22,7 @@ import os
 
 from tensorboard.data import provider
 from tensorboard.plugins.hparams import api_pb2
+from tensorboard.plugins.hparams import json_format_compat
 from tensorboard.plugins.hparams import metadata
 from google.protobuf import json_format
 from tensorboard.plugins.scalar import metadata as scalar_metadata
@@ -282,11 +283,6 @@ class Context:
         # If all values have the same type, then that is the type used.
         # Otherwise, the returned type is DATA_TYPE_STRING.
         result = api_pb2.HParamInfo(name=name, type=api_pb2.DATA_TYPE_UNSET)
-        distinct_values = set(
-            _protobuf_value_to_string(v)
-            for v in values
-            if _protobuf_value_type(v)
-        )
         for v in values:
             v_type = _protobuf_value_type(v)
             if not v_type:
@@ -304,6 +300,11 @@ class Context:
             return None
 
         if result.type == api_pb2.DATA_TYPE_STRING:
+            distinct_values = set(
+                _protobuf_value_to_string(v)
+                for v in values
+                if _can_be_converted_to_string(v)
+            )
             result.domain_discrete.extend(distinct_values)
 
         if result.type == api_pb2.DATA_TYPE_BOOL:
@@ -451,6 +452,12 @@ def _find_longest_parent_path(path_set, path):
             return None
         path = os.path.dirname(path)
     return path
+
+
+def _can_be_converted_to_string(value):
+    if not _protobuf_value_type(value):
+        return False
+    return json_format_compat.is_serializable_value(value)
 
 
 def _protobuf_value_type(value):

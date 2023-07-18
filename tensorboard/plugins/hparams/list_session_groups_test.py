@@ -1172,6 +1172,137 @@ class ListSessionGroupsTest(tf.test.TestCase):
             expected_total_size=3,
         )
 
+    def _mock_list_tensors_invalid_number_values(
+        self, ctx, *, experiment_id, plugin_name, run_tag_filter
+    ):
+        hparams_content = {
+            "session_1": {
+                metadata.SESSION_START_INFO_TAG: self._serialized_plugin_data(
+                    DATA_TYPE_SESSION_START_INFO,
+                    """
+                    hparams:{ key: 'maybe_bad' value: { number_value: 1 } }
+                    group_name: 'group_1'
+                    """,
+                )
+            },
+            "session_2": {
+                metadata.SESSION_START_INFO_TAG: self._serialized_plugin_data(
+                    DATA_TYPE_SESSION_START_INFO,
+                    """
+                    hparams:{ key: 'maybe_bad' value: { number_value: nan } }
+                    group_name: 'group_2'
+                    """,
+                ),
+            },
+            "session_3": {
+                metadata.SESSION_START_INFO_TAG: self._serialized_plugin_data(
+                    DATA_TYPE_SESSION_START_INFO,
+                    """
+                    hparams:{ key: 'maybe_bad' value: { number_value: -infinity } }
+                    group_name: 'group_3'
+                    """,
+                ),
+            },
+            "session_4": {
+                metadata.SESSION_START_INFO_TAG: self._serialized_plugin_data(
+                    DATA_TYPE_SESSION_START_INFO,
+                    """
+                    hparams:{ key: 'maybe_bad' value: { number_value: 4.0 } }
+                    group_name: 'group_4'
+                    """,
+                ),
+            },
+        }
+        result = {}
+        for (run, tag_to_content) in hparams_content.items():
+            result.setdefault(run, {})
+            for (tag, content) in tag_to_content.items():
+                t = provider.TensorTimeSeries(
+                    max_step=0,
+                    max_wall_time=0,
+                    plugin_content=content,
+                    description="",
+                    display_name="",
+                )
+                result[run][tag] = t
+        return result
+
+    def test_hparams_with_invalid_number_values(self):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = (
+            self._mock_list_tensors_invalid_number_values
+        )
+        request = """
+            start_index: 0
+            slice_size: 10
+            allowed_statuses: [STATUS_UNKNOWN]
+        """
+        groups = self._run_handler(request).session_groups
+        self.assertLen(groups, 4)
+        self.assertEqual(1, groups[0].hparams.get("maybe_bad").number_value)
+        self.assertEqual(None, groups[1].hparams.get("maybe_bad"))
+        self.assertEqual(None, groups[2].hparams.get("maybe_bad"))
+        self.assertEqual(4, groups[3].hparams.get("maybe_bad").number_value)
+
+    def test_sort_hparams_with_invalid_number_values(self):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = (
+            self._mock_list_tensors_invalid_number_values
+        )
+        self._verify_handler(
+            request="""
+                start_index: 0
+                slice_size: 10
+                allowed_statuses: [STATUS_UNKNOWN]
+                col_params: {
+                  hparam: 'maybe_bad'
+                  order: ORDER_DESC
+                }
+            """,
+            expected_session_group_names=[
+                "group_4",
+                "group_1",
+                "group_2",
+                "group_3",
+            ],
+            expected_total_size=4,
+        )
+
+    def test_filter_hparams_include_invalid_number_values(self):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = (
+            self._mock_list_tensors_invalid_number_values
+        )
+        self._verify_handler(
+            request="""
+                start_index: 0
+                slice_size: 10
+                allowed_statuses: [STATUS_UNKNOWN]
+                col_params: {
+                  hparam: 'maybe_bad'
+                  order: ORDER_DESC
+                  filter_interval: { min_value: 2.0 max_value: 10.0 }
+                }
+            """,
+            expected_session_group_names=["group_4", "group_2", "group_3"],
+            expected_total_size=3,
+        )
+
+    def test_filer_hparams_exclude_invalid_number_values(self):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = (
+            self._mock_list_tensors_invalid_number_values
+        )
+        self._verify_handler(
+            request="""
+                start_index: 0
+                slice_size: 10
+                allowed_statuses: [STATUS_UNKNOWN]
+                col_params: {
+                  hparam: 'maybe_bad'
+                  exclude_missing_values: true
+                }
+            """,
+            expected_session_group_names=["group_1", "group_4"],
+            expected_total_size=2,
+        )
+
     def test_experiment_without_any_hparams(self):
         self._mock_tb_context.data_provider.list_tensors.side_effect = None
         self._hyperparameters = []
