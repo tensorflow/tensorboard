@@ -76,14 +76,17 @@ export const getHparamFilterMap = createSelector(
   getHparamFilterMapResultFunction
 );
 
-export function getHparamFilterMapFromExperimentIds(experimentIds: string[]) {
+export function getHparamFilterMapFromExperimentIds(
+  experimentIds: string[],
+  includeDefaults?: boolean
+) {
   return createSelector(
     getHparamsState,
     getHparamsDefaultFiltersForExperimentsFromExperimentIds(experimentIds),
-    (hparamState, combinedDefaultFilterMap) =>
+    (hparamState, defaultFilterMap) =>
       getHparamFilterMapResultFunction(
         hparamState,
-        combinedDefaultFilterMap,
+        includeDefaults ? defaultFilterMap : new Map(),
         experimentIds
       )
   );
@@ -136,12 +139,19 @@ export const getMetricFilterMap = createSelector(
   getMetricFilterMapResultFunction
 );
 
-export function getMetricFilterMapFromExperimentIds(experimentIds: string[]) {
+export function getMetricFilterMapFromExperimentIds(
+  experimentIds: string[],
+  includeDefaults?: boolean
+) {
   return createSelector(
     getHparamsState,
     getMetricsDefaultFiltersForExperimentsFromExperimentIds(experimentIds),
     (state, defaultFilterMap) =>
-      getMetricFilterMapResultFunction(state, defaultFilterMap, experimentIds)
+      getMetricFilterMapResultFunction(
+        state,
+        includeDefaults ? defaultFilterMap : new Map(),
+        experimentIds
+      )
   );
 }
 
