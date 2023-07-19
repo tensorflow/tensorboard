@@ -396,7 +396,7 @@ class DataProvider(metaclass=abc.ABCMeta):
         """
         return []
 
-    def read_hyperparameters(self, ctx=None, *, experiment_ids, filters):
+    def read_hyperparameters(self, ctx=None, *, experiment_ids, filters=None):
         """Read hyperparameter values.
 
         Args:
