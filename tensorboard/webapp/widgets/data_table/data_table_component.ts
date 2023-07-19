@@ -240,6 +240,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   openContextMenu(header: ColumnHeader, event: MouseEvent) {
     event.stopPropagation();
     event.preventDefault();
+    this.columnSelectorModal.close();
 
     this.contextMenuHeader = header;
     this.contextMenu.openAtPosition({
@@ -248,9 +249,18 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     });
   }
 
-  openColumnSelector(event: MouseEvent, insertTo?: Side) {
-    event.stopPropagation();
-    this.insertColumnTo = insertTo;
+  onContextMenuClosed() {
+    this.contextMenuHeader = undefined;
+  }
+
+  openColumnSelector(
+    event: MouseEvent,
+    options?: {insertTo?: Side; isSubMenu?: boolean}
+  ) {
+    if (options?.isSubMenu) {
+      event.stopPropagation();
+    }
+    this.insertColumnTo = options?.insertTo;
     const rect = (event.target as HTMLElement).getBoundingClientRect();
     this.columnSelectorModal.openAtPosition({
       x: rect.x + rect.width,
@@ -260,7 +270,6 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   }
 
   onColumnSelectorClosed() {
-    this.contextMenuHeader = undefined;
     this.insertColumnTo = undefined;
     this.columnSelector.deactivate();
   }

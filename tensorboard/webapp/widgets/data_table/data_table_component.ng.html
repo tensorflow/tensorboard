@@ -12,7 +12,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<custom-modal #contextMenu>
+<custom-modal #contextMenu (onClose)="onContextMenuClosed()">
   <div class="context-menu">
     <div
       *ngIf="!contextMenuHeader?.removable && !contextMenuHeader?.sortable && !canContextMenuInsert()"
@@ -50,7 +50,7 @@ limitations under the License.
       mat-button
       *ngIf="canContextMenuInsert()"
       class="context-menu-button"
-      (click)="openColumnSelector($event, Side.LEFT)"
+      (click)="openColumnSelector($event, {insertTo: Side.LEFT, isSubMenu: true})"
     >
       <mat-icon svgIcon="add_24px"></mat-icon>Insert Column Left
     </button>
@@ -58,7 +58,7 @@ limitations under the License.
       mat-button
       *ngIf="canContextMenuInsert()"
       class="context-menu-button"
-      (click)="openColumnSelector($event, Side.RIGHT)"
+      (click)="openColumnSelector($event, {insertTo: Side.RIGHT, isSubMenu: true})"
     >
       <mat-icon svgIcon="add_24px"></mat-icon>Insert Column Right
     </button>
