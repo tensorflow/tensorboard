@@ -99,13 +99,20 @@ export class TBRunsDataSource implements RunsDataSource {
       );
   }
 
-  fetchHparamsMetadata(experimentId: string): Observable<HparamsAndMetadata> {
+  fetchHparamsMetadata(
+    experimentIds: string[]
+  ): Observable<HparamsAndMetadata> {
+    const experimentName =
+      experimentIds.length === 1
+        ? experimentIds[0]
+        : experimentIds.map((eid) => `:${eid}`).join(',');
     const requestPayload: GetExperimentHparamRequestPayload = {
-      experimentName: experimentId,
+      experimentName,
     };
+    const prefix = experimentIds.length === 1 ? 'experiment' : 'compare';
     return this.http
       .post<backendTypes.BackendHparamsExperimentResponse>(
-        `/experiment/${experimentId}/${HPARAMS_HTTP_PATH_PREFIX}/experiment`,
+        `/${prefix}/${experimentName}/${HPARAMS_HTTP_PATH_PREFIX}/experiment`,
         requestPayload,
         {},
         'request'
@@ -124,7 +131,7 @@ export class TBRunsDataSource implements RunsDataSource {
 
           const listSessionRequestParams: backendTypes.BackendListSessionGroupRequest =
             {
-              experimentName: experimentId,
+              experimentName,
               allowedStatuses: [
                 backendTypes.RunStatus.STATUS_FAILURE,
                 backendTypes.RunStatus.STATUS_RUNNING,
@@ -145,7 +152,7 @@ export class TBRunsDataSource implements RunsDataSource {
         mergeMap(({experimentHparamsInfo, listSessionRequestParams}) => {
           return this.http
             .post<backendTypes.BackendListSessionGroupResponse>(
-              `/experiment/${experimentId}/${HPARAMS_HTTP_PATH_PREFIX}/session_groups`,
+              `/${prefix}/${experimentName}/${HPARAMS_HTTP_PATH_PREFIX}/session_groups`,
               listSessionRequestParams,
               {},
               'request'
@@ -174,7 +181,7 @@ export class TBRunsDataSource implements RunsDataSource {
                 const runName = metricValue.name.group
                   ? `${session.name}/${metricValue.name.group}`
                   : session.name;
-                const runId = `${experimentId}/${runName}`;
+                const runId = `${experimentName}/${runName}`;
                 const hparamsAndMetrics = runToHparamsAndMetrics[runId] || {
                   metrics: [],
                   hparams,

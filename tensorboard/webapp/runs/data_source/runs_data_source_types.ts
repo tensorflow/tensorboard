@@ -81,9 +81,9 @@ export interface Run {
 
 @Injectable({providedIn: 'root'})
 export abstract class RunsDataSource {
-  abstract fetchRuns(experimentId: string): Observable<Run[]>;
+  abstract fetchRuns(experimentIds: string): Observable<Run[]>;
   abstract fetchHparamsMetadata(
-    experimentId: string
+    experimentIds: string[] // DO_NOT_SUBMIT this will cause an issue when syncing.
   ): Observable<HparamsAndMetadata>;
 }
 

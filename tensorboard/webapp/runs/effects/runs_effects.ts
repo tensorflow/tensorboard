@@ -15,28 +15,10 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Store} from '@ngrx/store';
-import {forkJoin, merge, Observable, of, throwError} from 'rxjs';
-import {
-  catchError,
-  distinctUntilChanged,
-  filter,
-  map,
-  mergeMap,
-  take,
-  tap,
-  withLatestFrom,
-} from 'rxjs/operators';
-import {areSameRouteKindAndExperiments} from '../../app_routing';
-import {navigated} from '../../app_routing/actions';
+import {forkJoin, Observable, of} from 'rxjs';
+import {catchError, map, mergeMap, tap} from 'rxjs/operators';
+
 import {State} from '../../app_state';
-import * as coreActions from '../../core/actions';
-import {
-  getActiveRoute,
-  getExperimentIdsFromRoute,
-  getRuns,
-  getRunsLoadState,
-} from '../../selectors';
-import {DataLoadState, LoadState} from '../../types/data';
 import * as actions from '../actions';
 import {
   HparamsAndMetadata,
@@ -44,6 +26,19 @@ import {
   RunsDataSource,
 } from '../data_source/runs_data_source_types';
 import {ExperimentIdToRunsAndMetadata} from '../types';
+
+type RunsAndMetadata = {
+  experimentId: string;
+  runs: Run[];
+} & (
+  | {
+      fromRemote: false;
+    }
+  | {
+      fromRemote: true;
+      metadata: HparamsAndMetadata;
+    }
+);
 
 /**
  * Runs effect for fetching data from the backend.
@@ -60,24 +55,7 @@ export class RunsEffects {
       this.actions$.pipe(
         ofType(actions.runTableShown),
         mergeMap(({experimentIds}) => {
-          const experimentsToFetch$ = this.getExperimentsWithLoadState(
-            experimentIds,
-            (state) => {
-              return (
-                state === DataLoadState.FAILED ||
-                state === DataLoadState.NOT_LOADED
-              );
-            }
-          );
-          return experimentsToFetch$.pipe(
-            filter((experimentIds) => !!experimentIds.length),
-            mergeMap((experimentIdsToBeFetched) => {
-              return this.fetchAllRunsList(
-                experimentIds,
-                experimentIdsToBeFetched
-              );
-            })
-          );
+          return this.fetchAllRunsList(experimentIds);
         })
       ),
     {dispatch: false}
@@ -88,84 +66,6 @@ export class RunsEffects {
     private readonly store: Store<State>,
     private readonly runsDataSource: RunsDataSource
   ) {}
-
-  private getRunsListLoadState(experimentId: string): Observable<LoadState> {
-    return this.store.select(getRunsLoadState, {experimentId}).pipe(take(1));
-  }
-
-  private getExperimentsWithLoadState(
-    experimentIds: string[],
-    loadStateMatcher: (loadState: DataLoadState) => boolean
-  ) {
-    return forkJoin(
-      experimentIds.map((eid) => {
-        return this.getRunsListLoadState(eid);
-      })
-    ).pipe(
-      map((loadStates) => {
-        return experimentIds.filter((unused, index) => {
-          return loadStateMatcher(loadStates[index].state);
-        });
-      })
-    );
-  }
-
-  private readonly experimentsWithStaleRunsOnRouteChange$ = this.actions$.pipe(
-    ofType(navigated),
-    withLatestFrom(this.store.select(getActiveRoute)),
-    distinctUntilChanged(([, prevRoute], [, currRoute]) => {
-      return areSameRouteKindAndExperiments(prevRoute, currRoute);
-    }),
-    withLatestFrom(this.store.select(getExperimentIdsFromRoute)),
-    filter(([, experimentIds]) => !!experimentIds),
-    map(([, experimentIds]) => experimentIds!),
-    mergeMap((experimentIds) => {
-      return this.getExperimentsWithLoadState(experimentIds, (state) => {
-        return (
-          state === DataLoadState.FAILED || state === DataLoadState.NOT_LOADED
-        );
-      }).pipe(
-        map((experimentIdsToBeFetched) => {
-          return {experimentIds, experimentIdsToBeFetched};
-        })
-      );
-    })
-  );
-
-  private readonly experimentsWithStaleRunsOnReload$ = this.actions$.pipe(
-    ofType(coreActions.reload, coreActions.manualReload),
-    withLatestFrom(this.store.select(getExperimentIdsFromRoute)),
-    filter(([, experimentIds]) => !!experimentIds),
-    map(([, experimentIds]) => experimentIds!),
-    mergeMap((experimentIds) => {
-      return this.getExperimentsWithLoadState(experimentIds, (state) => {
-        return state !== DataLoadState.LOADING;
-      }).pipe(
-        map((experimentIdsToBeFetched) => {
-          return {experimentIds, experimentIdsToBeFetched};
-        })
-      );
-    })
-  );
-
-  /**
-   * Fetches runs on navigation or in-app reload.
-   *
-   * @export
-   */
-  loadRunsOnNavigationOrReload$ = createEffect(
-    () => {
-      return merge(
-        this.experimentsWithStaleRunsOnRouteChange$,
-        this.experimentsWithStaleRunsOnReload$
-      ).pipe(
-        mergeMap(({experimentIds, experimentIdsToBeFetched}) => {
-          return this.fetchAllRunsList(experimentIds, experimentIdsToBeFetched);
-        })
-      );
-    },
-    {dispatch: false}
-  );
 
   /**
    * IMPORTANT: actions are dispatched even when there are no experiments to
@@ -179,33 +79,22 @@ export class RunsEffects {
    *    precedence.
    * 4. dispatch succeeded if successful. else, dispatch failed.
    */
-  private fetchAllRunsList(
-    experimentIds: string[],
-    experimentIdsToBeFetched: string[]
-  ): Observable<null> {
-    return of({experimentIds, experimentIdsToBeFetched}).pipe(
+  private fetchAllRunsList(experimentIds: string[]): Observable<null> {
+    return of({experimentIds}).pipe(
       tap(() => {
         this.store.dispatch(
           actions.fetchRunsRequested({
             experimentIds,
-            requestedExperimentIds: experimentIdsToBeFetched,
+            requestedExperimentIds: experimentIds,
           })
         );
       }),
       mergeMap(() => {
-        const eidsToBeFetched = new Set(experimentIdsToBeFetched);
-
-        const fetchOrGetRuns = experimentIds.map((experimentId) => {
-          if (eidsToBeFetched.has(experimentId)) {
-            return this.fetchRunsForExperiment(experimentId);
-          }
-          return this.maybeWaitForRunsAndGetRuns(experimentId);
-        });
-        return forkJoin(fetchOrGetRuns);
+        return this.fetchRunsAndHparamsForExperiments(experimentIds);
       }),
-      map((runsAndMedataList) => {
-        const newRunsAndMetadata = {} as ExperimentIdToRunsAndMetadata;
-        const runsForAllExperiments = [];
+      map((runsAndMedataList: RunsAndMetadata[]) => {
+        const newRunsAndMetadata: ExperimentIdToRunsAndMetadata = {};
+        const runsForAllExperiments: Run[] = [];
 
         for (const runsAndMedata of runsAndMedataList) {
           runsForAllExperiments.push(...runsAndMedata.runs);
@@ -231,7 +120,7 @@ export class RunsEffects {
         this.store.dispatch(
           actions.fetchRunsFailed({
             experimentIds,
-            requestedExperimentIds: experimentIdsToBeFetched,
+            requestedExperimentIds: experimentIds,
           })
         );
         return of(null);
@@ -240,37 +129,35 @@ export class RunsEffects {
     );
   }
 
-  private maybeWaitForRunsAndGetRuns(experimentId: string): Observable<{
-    fromRemote: false;
-    experimentId: string;
-    runs: Run[];
-  }> {
-    return this.store.select(getRunsLoadState, {experimentId}).pipe(
-      filter((loadState) => loadState.state !== DataLoadState.LOADING),
-      take(1),
-      mergeMap((loadState) => {
-        if (loadState.state === DataLoadState.FAILED) {
-          return throwError(new Error('Pending request failed'));
-        }
-        return of(loadState);
-      }),
-      withLatestFrom(this.store.select(getRuns, {experimentId})),
-      map(([, runs]) => ({fromRemote: false, experimentId, runs}))
+  private fetchRunsForExperiments(
+    experimentIds: string[]
+  ): Observable<Record<string, Run[]>> {
+    return forkJoin(
+      experimentIds.map((eid) =>
+        this.runsDataSource.fetchRuns(eid).pipe(map((run) => [eid, run]))
+      )
+    ).pipe(
+      map(([...eidRunPairs]) => {
+        return Object.fromEntries(eidRunPairs as Array<[string, Run[]]>);
+      })
     );
   }
 
-  private fetchRunsForExperiment(experimentId: string): Observable<{
-    fromRemote: true;
-    experimentId: string;
-    runs: Run[];
-    metadata: HparamsAndMetadata;
-  }> {
+  private fetchRunsAndHparamsForExperiments(
+    experimentIds: string[]
+  ): Observable<RunsAndMetadata[]> {
+    if (!experimentIds.length) return of([]);
     return forkJoin([
-      this.runsDataSource.fetchRuns(experimentId),
-      this.runsDataSource.fetchHparamsMetadata(experimentId),
+      this.runsDataSource.fetchHparamsMetadata(experimentIds),
+      this.fetchRunsForExperiments(experimentIds),
     ]).pipe(
-      map(([runs, metadata]) => {
-        return {fromRemote: true, experimentId, runs, metadata};
+      map(([metadata, eidToRuns]) => {
+        return experimentIds.map((experimentId) => ({
+          fromRemote: true,
+          experimentId,
+          runs: eidToRuns[experimentId],
+          metadata,
+        }));
       })
     );
   }
