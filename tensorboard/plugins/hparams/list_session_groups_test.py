@@ -363,9 +363,8 @@ class ListSessionGroupsTest(tf.test.TestCase):
 
     def _mock_read_hyperparameters(
         self,
-        ctx,
-        *,
-        experiment_ids,
+        *args,
+        **kwargs,
     ):
         return self._hyperparameters
 
@@ -1313,6 +1312,165 @@ class ListSessionGroupsTest(tf.test.TestCase):
         response = self._run_handler(request)
         self.assertProtoEquals("", response)
 
+    def test_experiment_from_data_provider_sends_regex_filter(self):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        request = """
+            col_params: {
+              hparam: 'hparam1'
+              filter_regexp: 'v.*ue'
+            }
+        """
+        self._run_handler(request)
+        self.assertEquals(
+            self._get_read_hyperparameters_call_filters(),
+            [
+                provider.HyperparameterFilter(
+                    hyperparameter_name="hparam1",
+                    filter_type=provider.HyperparameterFilterType.REGEX,
+                    filter="v.*ue",
+                )
+            ],
+        )
+
+    def test_experiment_from_data_provider_sends_interval_filter(self):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        request = """
+            col_params: {
+              hparam: 'hparam1'
+              filter_interval: {
+                min_value: 0.1
+                max_value: 0.2
+              }
+            }
+            col_params: {
+              hparam: 'hparam2'
+              filter_interval: {
+                min_value: 0.1
+                max_value: Infinity
+              }
+            }
+            col_params: {
+              hparam: 'hparam3'
+              filter_interval: {
+                min_value: -Infinity
+                max_value: 0.2
+              }
+            }
+            col_params: {
+              hparam: 'hparam4'
+              filter_interval: {
+              }
+            }
+        """
+        self._run_handler(request)
+        self.assertEquals(
+            self._get_read_hyperparameters_call_filters(),
+            [
+                provider.HyperparameterFilter(
+                    hyperparameter_name="hparam1",
+                    filter_type=provider.HyperparameterFilterType.INTERVAL,
+                    filter=(0.1, 0.2),
+                ),
+                provider.HyperparameterFilter(
+                    hyperparameter_name="hparam2",
+                    filter_type=provider.HyperparameterFilterType.INTERVAL,
+                    filter=(0.1, float("inf")),
+                ),
+                provider.HyperparameterFilter(
+                    hyperparameter_name="hparam3",
+                    filter_type=provider.HyperparameterFilterType.INTERVAL,
+                    filter=(float("-inf"), 0.2),
+                ),
+                provider.HyperparameterFilter(
+                    hyperparameter_name="hparam4",
+                    filter_type=provider.HyperparameterFilterType.INTERVAL,
+                    filter=(0.0, 0.0),
+                ),
+            ],
+        )
+
+    def test_experiment_from_data_provider_sends_discrete_filter(self):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        request = """
+            col_params: {
+              hparam: 'hparam1'
+              filter_discrete: {
+                values: {
+                  bool_value: true
+                }
+                values: {
+                  bool_value: false
+                }
+              }
+            }
+            col_params: {
+              hparam: 'hparam2'
+              filter_discrete: {
+                values: {
+                  number_value: 2.0
+                }
+              }
+            }
+            col_params: {
+              hparam: 'hparam3'
+              filter_discrete: {
+                values: {
+                  string_value: '3_string'
+                }
+              }
+            }
+            col_params: {
+              hparam: 'hparam4'
+              filter_discrete: {
+                values: {
+                  string_value: '4_string'
+                }
+                values: {
+                  bool_value: true
+                }
+                values: {
+                  number_value: 4.0
+                }
+              }
+            }
+            col_params: {
+              hparam: 'hparam5'
+              filter_discrete: {}
+            }
+        """
+        self._run_handler(request)
+
+        self.assertEquals(
+            self._get_read_hyperparameters_call_filters(),
+            [
+                provider.HyperparameterFilter(
+                    hyperparameter_name="hparam1",
+                    filter_type=provider.HyperparameterFilterType.DISCRETE,
+                    filter=[True, False],
+                ),
+                provider.HyperparameterFilter(
+                    hyperparameter_name="hparam2",
+                    filter_type=provider.HyperparameterFilterType.DISCRETE,
+                    filter=[2.0],
+                ),
+                provider.HyperparameterFilter(
+                    hyperparameter_name="hparam3",
+                    filter_type=provider.HyperparameterFilterType.DISCRETE,
+                    filter=["3_string"],
+                ),
+                provider.HyperparameterFilter(
+                    hyperparameter_name="hparam4",
+                    filter_type=provider.HyperparameterFilterType.DISCRETE,
+                    filter=["4_string", True, 4.0],
+                ),
+                provider.HyperparameterFilter(
+                    hyperparameter_name="hparam5",
+                    filter_type=provider.HyperparameterFilterType.DISCRETE,
+                    filter=[],
+                ),
+            ],
+        )
+
     def test_experiment_from_data_provider_with_no_sessions_or_hparam_values(
         self,
     ):
@@ -1748,6 +1906,12 @@ class ListSessionGroupsTest(tf.test.TestCase):
         plugin_data = plugin_data_pb2.HParamsPluginData()
         getattr(plugin_data, data_oneof_field).CopyFrom(protobuffer)
         return metadata.create_summary_metadata(plugin_data).plugin_data.content
+
+    def _get_read_hyperparameters_call_filters(self):
+        call_args = (
+            self._mock_tb_context.data_provider.read_hyperparameters.call_args
+        )
+        return call_args[1]["filters"]
 
 
 def _reduce_session_group_to_names(session_group):
