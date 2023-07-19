@@ -255,11 +255,10 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
 
   openColumnSelector(
     event: MouseEvent,
-    options?: {insertTo?: Side; closeContextMenu?: boolean}
+    options?: {insertTo?: Side; isSubMenu?: boolean}
   ) {
-    event.stopPropagation();
-    if (options?.closeContextMenu) {
-      this.contextMenu.close();
+    if (options?.isSubMenu) {
+      event.stopPropagation();
     }
     this.insertColumnTo = options?.insertTo;
     const rect = (event.target as HTMLElement).getBoundingClientRect();

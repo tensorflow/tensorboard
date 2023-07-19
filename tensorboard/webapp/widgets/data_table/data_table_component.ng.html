@@ -50,7 +50,7 @@ limitations under the License.
       mat-button
       *ngIf="canContextMenuInsert()"
       class="context-menu-button"
-      (click)="openColumnSelector($event, {insertTo: Side.LEFT})"
+      (click)="openColumnSelector($event, {insertTo: Side.LEFT, isSubMenu: true})"
     >
       <mat-icon svgIcon="add_24px"></mat-icon>Insert Column Left
     </button>
@@ -58,7 +58,7 @@ limitations under the License.
       mat-button
       *ngIf="canContextMenuInsert()"
       class="context-menu-button"
-      (click)="openColumnSelector($event, {insertTo: Side.RIGHT})"
+      (click)="openColumnSelector($event, {insertTo: Side.RIGHT, isSubMenu: true})"
     >
       <mat-icon svgIcon="add_24px"></mat-icon>Insert Column Right
     </button>
@@ -87,7 +87,7 @@ limitations under the License.
       <button
         mat-icon-button
         class="add-column-btn"
-        (click)="openColumnSelector($event, {closeContextMenu: true})"
+        (click)="openColumnSelector($event)"
         title="Add Column"
       >
         <mat-icon svgIcon="add_24px"></mat-icon>
