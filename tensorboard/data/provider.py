@@ -705,7 +705,7 @@ class HyperparameterFilter:
     filter: Union[
         str,
         Tuple[float, float],
-        Collection[float | str | bool],
+        Collection[Union[float, str, bool]],
     ]
 
 
