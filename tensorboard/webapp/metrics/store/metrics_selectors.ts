@@ -69,12 +69,9 @@ export const getMetricsTagMetadata = createSelector(
 /**
  * Cards
  */
-export const getCardIds = createSelector(
-  selectMetricsState,
-  (state): CardId[] => {
-    return state.cardList;
-  }
-);
+const getCardIds = createSelector(selectMetricsState, (state): CardId[] => {
+  return state.cardList;
+});
 
 export const getCardLoadState = createSelector(
   selectMetricsState,
