@@ -53,6 +53,25 @@ mat-option {
   width: 100%;
 }
 
+// TODO(tensorboard-team): Can probably remove after migrating away from Legacy Material components.
+// These styles exist in `mat-toolbar` already, but the combination of the
+// dark theme selector being `body.dark-theme` and the legacy select component
+// being used causes the styles to be overwritten in a dark theme.
+:host ::ng-deep .mat-form-field.mat-form-field.mat-form-field {
+  .mat-form-field-underline,
+  .mat-form-field-ripple,
+  &.mat-focused .mat-form-field-ripple {
+    background-color: currentColor;
+  }
+
+  .mat-select-value,
+  .mat-select-arrow,
+  &.mat-focused .mat-form-field-label,
+  &.mat-focused .mat-select-arrow {
+    color: inherit;
+  }
+}
+
 :host ::ng-deep .active-plugin-list {
   // Override mat-tab styling. By default, mat-tab has the right styling but,
   // here, we are using it under dark header background. Must invert the color.
