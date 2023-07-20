@@ -41,6 +41,7 @@ import {MinMaxStep} from './scalar_card_types';
       [prospectiveStep]="prospectiveStep"
       [cardFobHelper]="cardFobHelper"
       [showExtendedLine]="true"
+      [allowFobRemoval]="allowFobRemoval"
       (onProspectiveStepChanged)="onProspectiveStepChanged($event)"
       (onTimeSelectionChanged)="onTimeSelectionChanged.emit($event)"
       (onTimeSelectionToggled)="onTimeSelectionToggled.emit($event)"
@@ -56,6 +57,7 @@ export class ScalarCardFobController {
   @Input() minMaxStep!: MinMaxStep;
   @Input() axisSize!: number;
   @Input() disableInteraction: boolean = false;
+  @Input() allowFobRemoval?: boolean;
 
   @Output() onTimeSelectionChanged = new EventEmitter<{
     timeSelection: TimeSelection;
