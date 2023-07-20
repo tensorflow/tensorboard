@@ -107,8 +107,11 @@ class Handler:
 
     def _session_groups_from_data_provider(self):
         """Constructs lists of SessionGroups based on DataProvider results."""
+        filters = _build_data_provider_filters(self._request.col_params)
         response = self._backend_context.session_groups_from_data_provider(
-            self._request_context, self._experiment_id
+            self._request_context,
+            self._experiment_id,
+            filters,
         )
 
         session_groups = []
@@ -811,3 +814,45 @@ def _measurements(session_group, metric_name):
         if not metric_value:
             continue
         yield _Measurement(metric_value, session_index)
+
+
+def _build_data_provider_filters(col_params):
+    """Builds HyperparameterFilters from ColParams."""
+    filters = []
+    for col_param in col_params:
+        fltr = _build_data_provider_filter(col_param)
+        if fltr is None:
+            continue
+        filters.append(fltr)
+    return filters
+
+
+def _build_data_provider_filter(col_param):
+    """Builds HyperparameterFilter from ColParam.
+
+    Args:
+      col_param: ColParam that possibly contains filter information.
+
+    Returns:
+      None if col_param does not specify filter information.
+    """
+    if col_param.HasField("filter_regexp"):
+        filter_type = provider.HyperparameterFilterType.REGEX
+        fltr = col_param.filter_regexp
+    elif col_param.HasField("filter_interval"):
+        filter_type = provider.HyperparameterFilterType.INTERVAL
+        fltr = (
+            col_param.filter_interval.min_value,
+            col_param.filter_interval.max_value,
+        )
+    elif col_param.HasField("filter_discrete"):
+        filter_type = provider.HyperparameterFilterType.DISCRETE
+        fltr = [_value_to_python(b) for b in col_param.filter_discrete.values]
+    else:
+        return None
+
+    return provider.HyperparameterFilter(
+        hyperparameter_name=col_param.hparam,
+        filter_type=filter_type,
+        filter=fltr,
+    )

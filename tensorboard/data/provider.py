@@ -396,13 +396,15 @@ class DataProvider(metaclass=abc.ABCMeta):
         """
         return []
 
-    def read_hyperparameters(self, ctx=None, *, experiment_ids):
+    def read_hyperparameters(self, ctx=None, *, experiment_ids, filters=None):
         """Read hyperparameter values.
 
         Args:
           ctx: A TensorBoard `RequestContext` value.
           experiment_ids: A Collection[string] of IDs of the enclosing
             experiments.
+          filters: A Collection[HyperparameterFilter] that constrain the
+            returned session groups based on hyperparameter value.
 
         Returns:
           A Collection[HyperparameterSessionGroup] describing the groups and
@@ -666,6 +668,45 @@ class HyperparameterSessionGroup:
     root: HyperparameterSessionRun
     sessions: Sequence[HyperparameterSessionRun]
     hyperparameter_values: Collection[HyperparameterValue]
+
+
+class HyperparameterFilterType(enum.Enum):
+    """Describes how to represent filter values."""
+
+    # A regular expression string. Normally represented as str.
+    REGEX = "regex"
+    # A range of numeric values. Normally represented as Tuple[float, float].
+    INTERVAL = "interval"
+    # A finite set of values. Normally represented as Collection[float|str|bool].
+    DISCRETE = "discrete"
+
+
+@dataclasses.dataclass(frozen=True)
+class HyperparameterFilter:
+    """A constraint based on hyperparameter value.
+
+    Attributes:
+      hyperparameter_name: A string identifier for the hyperparameter to use for
+        the filter. It corresponds to the hyperparameter_name field in the
+        Hyperparameter class.
+      filter_type: A HyperparameterFilterType describing how we represent the
+        filter values in the 'filter' attribute.
+      filter: A representation of the set of the filter values.
+
+        If filter_type is REGEX, a str containing the regular expression.
+        If filter_type is INTERVAL, a Tuple[float, float] describing the min and
+          max values of the filter interval.
+        If filter_type is DISCRETE a Collection[float|str|bool] describing the
+          finite set of filter values.
+    """
+
+    hyperparameter_name: str
+    filter_type: HyperparameterFilterType
+    filter: Union[
+        str,
+        Tuple[float, float],
+        Collection[Union[float, str, bool]],
+    ]
 
 
 class _TimeSeries:
