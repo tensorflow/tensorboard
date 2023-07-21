@@ -57,7 +57,7 @@ export class ScalarCardFobController {
   @Input() minMaxStep!: MinMaxStep;
   @Input() axisSize!: number;
   @Input() disableInteraction: boolean = false;
-  @Input() allowFobRemoval?: boolean;
+  @Input() allowFobRemoval?: boolean = true;
 
   @Output() onTimeSelectionChanged = new EventEmitter<{
     timeSelection: TimeSelection;
