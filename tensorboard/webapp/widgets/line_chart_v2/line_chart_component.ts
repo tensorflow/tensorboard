@@ -142,6 +142,8 @@ export class LineChartComponent
   @Input()
   lineOnly?: boolean = false;
 
+  @Input() disableTooltip?: boolean = false;
+
   @Output()
   viewBoxChanged = new EventEmitter<Extent | null>();
 

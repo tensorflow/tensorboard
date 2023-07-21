@@ -132,6 +132,8 @@ export class LineChartInteractiveViewComponent
   @Input()
   tooltipTemplate?: TooltipTemplate;
 
+  @Input() disableTooltip?: boolean;
+
   @Output()
   onViewExtentChange = new EventEmitter<{dataExtent: Extent}>();
 

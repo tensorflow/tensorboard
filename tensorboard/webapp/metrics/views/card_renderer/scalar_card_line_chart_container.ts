@@ -78,6 +78,7 @@ import {ScalarCardLineChartComponent} from './scalar_card_line_chart_component';
       [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection"
       [forceSvg]="forceSvg$ | async"
       [userViewBox]="userViewBox$ | async"
+      [disableTooltip]="disableTooltip"
       (onTimeSelectionChanged)="onTimeSelectionChanged($event)"
       (onStepSelectorToggled)="onStepSelectorToggled($event)"
       (onLineChartZoom)="onLineChartZoom($event)"
@@ -109,6 +110,7 @@ export class ScalarCardLineChartContainer
   @Input() ignoreOutliers?: boolean;
   @Input() disableUpdate?: boolean = false;
   @Input() tooltipTemplate?: TooltipTemplate;
+  @Input() disableTooltip?: boolean = false;
 
   @ViewChild(ScalarCardLineChartComponent)
   scalarCardLineChart?: ScalarCardLineChartComponent;
