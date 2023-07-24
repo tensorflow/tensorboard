@@ -46,6 +46,7 @@ import {
   METRICS_FEATURE_KEY,
   RunToSeries,
   TagMetadata,
+  TimeSeriesData,
 } from './metrics_types';
 import {ColumnHeader, DataTableMode} from '../../widgets/data_table/types';
 import {Extent} from '../../widgets/line_chart_v2/lib/public_types';
@@ -116,20 +117,30 @@ export const getCardLoadState = createSelector(
   }
 );
 
+export const getLoadableTimeSeries = (
+  cardMetadata: CardMetadata,
+  timeSeriesData: TimeSeriesData
+) => {
+  const {plugin, tag, sample} = cardMetadata;
+  const loadable = storeUtils.getTimeSeriesLoadable(
+    timeSeriesData,
+    plugin,
+    tag,
+    sample
+  );
+  return loadable ? loadable.runToSeries : null;
+};
+
 export const getCardTimeSeries = createSelector(
   selectMetricsState,
-  (state: MetricsState, cardId: CardId): DeepReadonly<RunToSeries> | null => {
+  (state: MetricsState, cardId: CardId) => {
     if (!state.cardMetadataMap.hasOwnProperty(cardId)) {
       return null;
     }
-    const {plugin, tag, sample} = state.cardMetadataMap[cardId];
-    const loadable = storeUtils.getTimeSeriesLoadable(
-      state.timeSeriesData,
-      plugin,
-      tag,
-      sample
+    return getLoadableTimeSeries(
+      state.cardMetadataMap[cardId],
+      state.timeSeriesData
     );
-    return loadable ? loadable.runToSeries : null;
   }
 );
 
