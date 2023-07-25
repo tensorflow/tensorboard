@@ -72,6 +72,7 @@ export class ScalarCardLineChartComponent {
   @Input() minMaxStep!: MinMaxStep;
   @Input() userViewBox!: Extent | null;
   @Input() tooltipTemplate!: TooltipTemplate | null;
+  @Input() disableTooltip!: boolean;
 
   @Output()
   onTimeSelectionChanged = new EventEmitter<{
