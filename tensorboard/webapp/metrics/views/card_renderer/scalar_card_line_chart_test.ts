@@ -1580,7 +1580,7 @@ describe('scalar card line chart', () => {
       }));
     });
 
-    it('does not allow for single fob removal when allowFobRemoval is false', fakeAsync(() => {
+    it('does not render dismiss icon for single fob removal when allowFobRemoval is false', fakeAsync(() => {
       const fixture = createComponent();
       fixture.componentInstance.cardId = 'card1';
       fixture.componentInstance.minMaxStep = {
@@ -1600,7 +1600,7 @@ describe('scalar card line chart', () => {
       ).toEqual(0);
     }));
 
-    it('allows for single fob removal when allowFobRemoval is true', fakeAsync(() => {
+    it('renders dismiss icon for single fob removal when allowFobRemoval is true', fakeAsync(() => {
       const fixture = createComponent();
       fixture.componentInstance.cardId = 'card1';
       fixture.componentInstance.minMaxStep = {
@@ -1620,7 +1620,7 @@ describe('scalar card line chart', () => {
       ).toEqual(1);
     }));
 
-    it('allows for range fob removal even when allowFobRemoval is false', fakeAsync(() => {
+    it('renders dismiss icon for range fob removal even when allowFobRemoval is false', fakeAsync(() => {
       const fixture = createComponent();
       fixture.componentInstance.cardId = 'card1';
       fixture.componentInstance.minMaxStep = {
