@@ -348,7 +348,7 @@ describe('metrics selectors', () => {
     });
   });
 
-  describe('getCardTimeSeries', () => {
+  describe('getLoadableTimeSeries', () => {
     it('getCardTimeSeries', () => {
       selectors.getCardTimeSeries.release();
 
@@ -401,6 +401,35 @@ describe('metrics selectors', () => {
         sampleImageRunToSeries
       );
       expect(selectors.getCardTimeSeries(state, 'card-nonexistent')).toBe(null);
+    });
+
+    it('returns time series with direct metadata input', () => {
+      const sampleScalarRunToSeries = {
+        run1: createScalarStepData(),
+        run2: createScalarStepData(),
+      };
+      const state = buildMetricsState({
+        timeSeriesData: {
+          ...createTimeSeriesData(),
+          scalars: {
+            tagA: {
+              runToLoadState: {
+                run1: DataLoadState.LOADED,
+                run2: DataLoadState.LOADED,
+              },
+              runToSeries: sampleScalarRunToSeries,
+            },
+          },
+        },
+      });
+
+      expect(
+        selectors.getLoadableTimeSeries({
+          plugin: PluginType.SCALARS,
+          tag: 'tagA',
+          runId: null,
+        })(state)
+      ).toEqual(sampleScalarRunToSeries);
     });
   });
 
