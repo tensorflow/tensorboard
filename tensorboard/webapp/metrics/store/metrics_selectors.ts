@@ -46,7 +46,6 @@ import {
   METRICS_FEATURE_KEY,
   RunToSeries,
   TagMetadata,
-  TimeSeriesData,
 } from './metrics_types';
 import {ColumnHeader, DataTableMode} from '../../widgets/data_table/types';
 import {Extent} from '../../widgets/line_chart_v2/lib/public_types';
