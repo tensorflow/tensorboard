@@ -348,7 +348,7 @@ describe('metrics selectors', () => {
     });
   });
 
-  describe('getLoadableTimeSeries', () => {
+  describe('getCardTimeSeries', () => {
     it('getCardTimeSeries', () => {
       selectors.getCardTimeSeries.release();
 
@@ -402,8 +402,10 @@ describe('metrics selectors', () => {
       );
       expect(selectors.getCardTimeSeries(state, 'card-nonexistent')).toBe(null);
     });
+  });
 
-    it('returns time series with direct metadata input', () => {
+  describe('getLoadableTimeSeries', () => {
+    it('getLoadableTimeSeries', () => {
       const sampleScalarRunToSeries = {
         run1: createScalarStepData(),
         run2: createScalarStepData(),
@@ -430,6 +432,23 @@ describe('metrics selectors', () => {
           runId: null,
         })(state)
       ).toEqual(sampleScalarRunToSeries);
+    });
+
+    it('returns null when plugin data does not contain tag', () => {
+      const state = buildMetricsState({
+        timeSeriesData: {
+          ...createTimeSeriesData(),
+          scalars: {},
+        },
+      });
+
+      expect(
+        selectors.getLoadableTimeSeries({
+          plugin: PluginType.SCALARS,
+          tag: 'tagA',
+          runId: null,
+        })(state)
+      ).toEqual(null);
     });
   });
 
