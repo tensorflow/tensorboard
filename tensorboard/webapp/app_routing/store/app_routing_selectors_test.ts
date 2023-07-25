@@ -163,6 +163,40 @@ describe('app_routing_selectors', () => {
       });
     });
 
+    it('returns a map of id to alias for CARD route', () => {
+      const state = buildStateFromAppRoutingState(
+        buildAppRoutingState({
+          activeRoute: buildRoute({
+            routeKind: RouteKind.CARD,
+            params: {
+              experimentIds: 'exp1:123,exp2:234,exp2:345',
+            },
+          }),
+        })
+      );
+
+      expect(selectors.getExperimentIdToExperimentAliasMap(state)).toEqual({
+        123: {aliasText: 'exp1', aliasNumber: 1},
+        234: {aliasText: 'exp2', aliasNumber: 2},
+        345: {aliasText: 'exp2', aliasNumber: 3},
+      });
+    });
+
+    it('returns an empty map for CARD route with single experiment', () => {
+      const state = buildStateFromAppRoutingState(
+        buildAppRoutingState({
+          activeRoute: buildRoute({
+            routeKind: RouteKind.CARD,
+            params: {
+              experimentIds: '1234',
+            },
+          }),
+        })
+      );
+
+      expect(selectors.getExperimentIdToExperimentAliasMap(state)).toEqual({});
+    });
+
     it('returns an empty map for non-compare route', () => {
       const state = buildStateFromAppRoutingState(
         buildAppRoutingState({

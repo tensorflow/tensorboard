@@ -116,11 +116,17 @@ export const getExperimentIdToExperimentAliasMap = createSelector(
   getRouteKind,
   getRouteParams,
   (routeKind, routeParams): {[id: string]: ExperimentAlias} => {
-    if (routeKind !== RouteKind.COMPARE_EXPERIMENT) {
+    const compareParams = routeParams as CompareRouteParams;
+    if (
+      routeKind !== RouteKind.COMPARE_EXPERIMENT &&
+      !(
+        routeKind === RouteKind.CARD &&
+        compareParams.experimentIds.indexOf(',') >= 0
+      )
+    ) {
       return {};
     }
 
-    const compareParams = routeParams as CompareRouteParams;
     const map = getCompareExperimentIdAliasWithNumberSpec(compareParams);
     return Object.fromEntries(map.entries());
   }
