@@ -73,6 +73,7 @@ export class ScalarCardLineChartComponent {
   @Input() userViewBox!: Extent | null;
   @Input() tooltipTemplate!: TooltipTemplate | null;
   @Input() allowFobRemoval!: boolean;
+  @Input() disableTooltip!: boolean;
 
   @Output()
   onTimeSelectionChanged = new EventEmitter<{

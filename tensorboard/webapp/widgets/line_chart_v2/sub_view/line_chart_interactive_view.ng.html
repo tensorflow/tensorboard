@@ -52,6 +52,7 @@ limitations under the License.
   #tooltipOrigin="cdkOverlayOrigin"
 ></div>
 <ng-template
+  *ngIf="!disableTooltip"
   cdkConnectedOverlay
   [cdkConnectedOverlayOrigin]="tooltipOriginEl"
   [cdkConnectedOverlayOpen]="tooltipDisplayAttached && state.getValue() === InteractionState.NONE"
