@@ -42,6 +42,15 @@ limitations under the License.
   }
 }
 
+// TODO(tensorboard-team): this component currently uses `mat-button-toggle-group` without
+// projecting `mat-button-toggle` into it. This is an unsupported configuration that breaks
+// with some upcoming Angular Material changes. The following patch aims to preserve the old
+// appearance. Either the buttons should be replaced with `mat-button-toggle` or the
+// `mat-button-toggle-group` should be removed.
+mat-button-toggle-group.filter-view {
+  @include tb-theme-foreground-prop(border, border, 1px solid);
+}
+
 .filter-view {
   border-radius: 4px;
   flex: none;
