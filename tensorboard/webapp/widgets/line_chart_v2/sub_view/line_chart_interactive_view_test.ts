@@ -48,6 +48,7 @@ interface Coord {
       [yScale]="yScale"
       [domDim]="domDim"
       [tooltipOriginEl]="tooltipOrigin"
+      [disableTooltip]="disableTooltip"
       (onViewExtentChange)="onViewExtentChange($event)"
       (onViewExtentReset)="onViewExtentReset()"
       (onInteractionStateChange)="onInteractionStateChange($event)"
@@ -82,6 +83,9 @@ class TestableComponent {
 
   @Input()
   domDim!: Dimension;
+
+  @Input()
+  disableTooltip: boolean = false;
 
   @Input()
   onViewExtentChange!: (extent: Extent) => void;
@@ -266,6 +270,17 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
       fixture.componentInstance.seriesMetadataMap = {
         foo: buildMetadata({id: 'foo', displayName: 'Foo', visible: false}),
       };
+      fixture.detectChanges();
+
+      emitEvent(fixture, 'mouseenter', {clientX: 10, clientY: 10});
+      fixture.detectChanges();
+
+      expect(overlayContainer.getContainerElement().childElementCount).toBe(0);
+    });
+
+    it('does not render tooltip when disableTooltip is true', () => {
+      const fixture = createComponent();
+      fixture.componentInstance.disableTooltip = true;
       fixture.detectChanges();
 
       emitEvent(fixture, 'mouseenter', {clientX: 10, clientY: 10});
