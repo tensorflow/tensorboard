@@ -448,7 +448,7 @@ describe('metrics selectors', () => {
           tag: 'tagA',
           runId: null,
         })(state)
-      ).toEqual(null);
+      ).toBeNull();
     });
   });
 
