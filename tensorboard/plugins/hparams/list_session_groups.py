@@ -108,10 +108,12 @@ class Handler:
     def _session_groups_from_data_provider(self):
         """Constructs lists of SessionGroups based on DataProvider results."""
         filters = _build_data_provider_filters(self._request.col_params)
+        sort = _build_data_provider_sort(self._request.col_params)
         response = self._backend_context.session_groups_from_data_provider(
             self._request_context,
             self._experiment_id,
             filters,
+            sort,
         )
 
         session_groups = []
@@ -855,4 +857,38 @@ def _build_data_provider_filter(col_param):
         hyperparameter_name=col_param.hparam,
         filter_type=filter_type,
         filter=fltr,
+    )
+
+
+def _build_data_provider_sort(col_params):
+    """Builds HyperparameterSorts from ColParams."""
+    sort = []
+    for col_param in col_params:
+        sort_item = _build_data_provider_sort_item(col_param)
+        if sort_item is None:
+            continue
+        sort.append(sort_item)
+    return sort
+
+
+def _build_data_provider_sort_item(col_param):
+    """Builds HyperparameterSort from ColParam.
+
+    Args:
+      col_param: ColParam that possibly contains sort information.
+
+    Returns:
+      None if col_param does not specify sort information.
+    """
+    if col_param.order == api_pb2.ORDER_UNSPECIFIED:
+        return None
+
+    sort_direction = (
+        provider.HyperparameterSortDirection.ASCENDING
+        if col_param.order == api_pb2.ORDER_ASC
+        else provider.HyperparameterSortDirection.DESCENDING
+    )
+    return provider.HyperparameterSort(
+        hyperparameter_name=col_param.hparam,
+        sort_direction=sort_direction,
     )

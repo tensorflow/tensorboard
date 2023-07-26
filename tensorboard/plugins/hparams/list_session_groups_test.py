@@ -1312,6 +1312,26 @@ class ListSessionGroupsTest(tf.test.TestCase):
         response = self._run_handler(request)
         self.assertProtoEquals("", response)
 
+    def test_experiment_from_data_provider_sends_empty_filter_and_sort_from_col_params(
+        self,
+    ):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        # The request specifies col params but without filter or sort information.
+        request = """
+            col_params: {
+              hparam: 'hparam1'
+            }
+            col_params: {
+              hparam: 'hparam2'
+            }
+        """
+        self._run_handler(request)
+        self.assertEquals(
+            self._get_read_hyperparameters_call_filters(),
+            [],
+        )
+        self.assertEquals(self._get_read_hyperparameters_call_sort(), [])
+
     def test_experiment_from_data_provider_sends_regex_filter(self):
         self._mock_tb_context.data_provider.list_tensors.side_effect = None
         request = """
@@ -1467,6 +1487,37 @@ class ListSessionGroupsTest(tf.test.TestCase):
                     hyperparameter_name="hparam5",
                     filter_type=provider.HyperparameterFilterType.DISCRETE,
                     filter=[],
+                ),
+            ],
+        )
+
+    def test_experiment_from_data_provider_sends_sort(self):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        request = """
+            col_params: {
+              hparam: 'hparam1'
+              order: ORDER_ASC
+            }
+            col_params: {
+              hparam: 'hparam2'
+              order: ORDER_UNSPECIFIED
+            }
+            col_params: {
+              hparam: 'hparam3'
+              order: ORDER_DESC
+            }
+        """
+        self._run_handler(request)
+        self.assertEquals(
+            self._get_read_hyperparameters_call_sort(),
+            [
+                provider.HyperparameterSort(
+                    hyperparameter_name="hparam1",
+                    sort_direction=provider.HyperparameterSortDirection.ASCENDING,
+                ),
+                provider.HyperparameterSort(
+                    hyperparameter_name="hparam3",
+                    sort_direction=provider.HyperparameterSortDirection.DESCENDING,
                 ),
             ],
         )
@@ -1912,6 +1963,12 @@ class ListSessionGroupsTest(tf.test.TestCase):
             self._mock_tb_context.data_provider.read_hyperparameters.call_args
         )
         return call_args[1]["filters"]
+
+    def _get_read_hyperparameters_call_sort(self):
+        call_args = (
+            self._mock_tb_context.data_provider.read_hyperparameters.call_args
+        )
+        return call_args[1]["sort"]
 
 
 def _reduce_session_group_to_names(session_group):
