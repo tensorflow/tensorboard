@@ -302,7 +302,7 @@ export function prettyPrint(value) {
     // TODO(erez):Make the precision user-configurable.
     return value.toPrecision(5);
   }
-  if (value === undefined) {
+  if (value === null || value === undefined) {
     return '';
   }
   return value.toString();
