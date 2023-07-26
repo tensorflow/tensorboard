@@ -121,7 +121,7 @@ export const getExperimentIdToExperimentAliasMap = createSelector(
       routeKind !== RouteKind.COMPARE_EXPERIMENT &&
       !(
         routeKind === RouteKind.CARD &&
-        compareParams.experimentIds.indexOf(',') >= 0
+        compareParams.experimentIds.indexOf(',') !== -1
       )
     ) {
       return {};
