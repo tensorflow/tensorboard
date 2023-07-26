@@ -396,7 +396,9 @@ class DataProvider(metaclass=abc.ABCMeta):
         """
         return []
 
-    def read_hyperparameters(self, ctx=None, *, experiment_ids, filters=None):
+    def read_hyperparameters(
+        self, ctx=None, *, experiment_ids, filters=None, sort=None
+    ):
         """Read hyperparameter values.
 
         Args:
@@ -405,6 +407,8 @@ class DataProvider(metaclass=abc.ABCMeta):
             experiments.
           filters: A Collection[HyperparameterFilter] that constrain the
             returned session groups based on hyperparameter value.
+          sort: A Sequence[HyperparameterSort] that specify how the results
+            should be sorted.
 
         Returns:
           A Collection[HyperparameterSessionGroup] describing the groups and
@@ -707,6 +711,30 @@ class HyperparameterFilter:
         Tuple[float, float],
         Collection[Union[float, str, bool]],
     ]
+
+
+class HyperparameterSortDirection(enum.Enum):
+    """Describes which direction to sort a value."""
+
+    # Sort values ascending.
+    ASCENDING = "ascending"
+    # Sort values descending.
+    DESCENDING = "descending"
+
+
+@dataclasses.dataclass(frozen=True)
+class HyperparameterSort:
+    """A sort criterium based on hyperparameter value.
+
+    Attributes:
+      hyperparameter_name: A string identifier for the hyperparameter to use for
+        the sort. It corresponds to the hyperparameter_name field in the
+        Hyperparameter class.
+      sort_direction: The direction to sort.
+    """
+
+    hyperparameter_name: str
+    sort_direction: HyperparameterSortDirection
 
 
 class _TimeSeries:
