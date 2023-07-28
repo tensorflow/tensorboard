@@ -113,20 +113,30 @@ export const getCardLoadState = createSelector(
   }
 );
 
+export const getLoadableTimeSeries = memoize((cardMetadata: CardMetadata) => {
+  return createSelector(
+    (state: MetricsState): MetricsState => state,
+    (state: MetricsState): DeepReadonly<RunToSeries> | null => {
+      const {plugin, tag, sample} = cardMetadata;
+      const loadable = storeUtils.getTimeSeriesLoadable(
+        state.timeSeriesData,
+        plugin,
+        tag,
+        sample
+      );
+      return loadable ? loadable.runToSeries : null;
+    }
+  );
+});
+
 export const getCardTimeSeries = createSelector(
   selectMetricsState,
   (state: MetricsState, cardId: CardId): DeepReadonly<RunToSeries> | null => {
     if (!state.cardMetadataMap.hasOwnProperty(cardId)) {
       return null;
     }
-    const {plugin, tag, sample} = state.cardMetadataMap[cardId];
-    const loadable = storeUtils.getTimeSeriesLoadable(
-      state.timeSeriesData,
-      plugin,
-      tag,
-      sample
-    );
-    return loadable ? loadable.runToSeries : null;
+
+    return getLoadableTimeSeries(state.cardMetadataMap[cardId])(state);
   }
 );
 

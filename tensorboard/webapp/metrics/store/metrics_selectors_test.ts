@@ -404,6 +404,54 @@ describe('metrics selectors', () => {
     });
   });
 
+  describe('getLoadableTimeSeries', () => {
+    it('getLoadableTimeSeries', () => {
+      const sampleScalarRunToSeries = {
+        run1: createScalarStepData(),
+        run2: createScalarStepData(),
+      };
+      const state = buildMetricsState({
+        timeSeriesData: {
+          ...createTimeSeriesData(),
+          scalars: {
+            tagA: {
+              runToLoadState: {
+                run1: DataLoadState.LOADED,
+                run2: DataLoadState.LOADED,
+              },
+              runToSeries: sampleScalarRunToSeries,
+            },
+          },
+        },
+      });
+
+      expect(
+        selectors.getLoadableTimeSeries({
+          plugin: PluginType.SCALARS,
+          tag: 'tagA',
+          runId: null,
+        })(state)
+      ).toEqual(sampleScalarRunToSeries);
+    });
+
+    it('returns null when plugin data does not contain tag', () => {
+      const state = buildMetricsState({
+        timeSeriesData: {
+          ...createTimeSeriesData(),
+          scalars: {},
+        },
+      });
+
+      expect(
+        selectors.getLoadableTimeSeries({
+          plugin: PluginType.SCALARS,
+          tag: 'tagA',
+          runId: null,
+        })(state)
+      ).toBeNull();
+    });
+  });
+
   describe('getCardStepIndex', () => {
     it('returns null if no card exists', () => {
       selectors.getCardStepIndexMetaData.release();
