@@ -77,6 +77,9 @@ export function getExperimentIdsFromRouteParams(
     case RouteKind.CARD: {
       const experimentIds = (params as CompareRouteParams).experimentIds;
       if (experimentIds.indexOf(',') < 0) {
+        if (Object.prototype.hasOwnProperty.call(params, 'experimentId')) {
+          return [(params as ExperimentRouteParams).experimentId];
+        }
         return [experimentIds];
       }
       return parseCompareExperimentStr(experimentIds).map(({id}) => id);
