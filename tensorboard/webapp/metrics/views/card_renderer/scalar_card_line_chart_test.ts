@@ -172,6 +172,7 @@ class TestableLineChart {
       [tooltipTemplate]="tooltip"
       [minMaxStep]="minMaxStep"
       [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection"
+      [allowFobRemoval]="allowFobRemoval"
     >
     </scalar-card-line-chart>
     <ng-template
@@ -248,6 +249,7 @@ class TestableScalarCardLineChart {
   @Input() dataPointForTesting: {x: number; y: number} = {x: 0, y: 0};
   @Input() smoothingEnabled: boolean = false;
   @Input() tooltipSort: TooltipSort = TooltipSort.ALPHABETICAL;
+  @Input() allowFobRemoval: boolean = true;
 
   readonly relativeXFormatter = relativeTimeFormatter;
   readonly valueFormatter = numberFormatter;
@@ -1577,6 +1579,66 @@ describe('scalar card line chart', () => {
         expect(fobController.endFobWrapper).toBeUndefined();
       }));
     });
+
+    it('does not render dismiss icon for single fob removal when allowFobRemoval is false', fakeAsync(() => {
+      const fixture = createComponent();
+      fixture.componentInstance.cardId = 'card1';
+      fixture.componentInstance.minMaxStep = {
+        minStep: 0,
+        maxStep: 100,
+      };
+      fixture.componentInstance.stepOrLinkedTimeSelection = {
+        start: {step: 20},
+        end: null,
+      };
+      fixture.componentInstance.allowFobRemoval = false;
+      fixture.detectChanges();
+
+      expect(
+        fixture.debugElement.queryAll(By.css('[aria-label="Deselect fob"]'))
+          .length
+      ).toEqual(0);
+    }));
+
+    it('renders dismiss icon for single fob removal when allowFobRemoval is true', fakeAsync(() => {
+      const fixture = createComponent();
+      fixture.componentInstance.cardId = 'card1';
+      fixture.componentInstance.minMaxStep = {
+        minStep: 0,
+        maxStep: 100,
+      };
+      fixture.componentInstance.stepOrLinkedTimeSelection = {
+        start: {step: 20},
+        end: null,
+      };
+      fixture.componentInstance.allowFobRemoval = true;
+      fixture.detectChanges();
+
+      expect(
+        fixture.debugElement.queryAll(By.css('[aria-label="Deselect fob"]'))
+          .length
+      ).toEqual(1);
+    }));
+
+    it('renders dismiss icon for range fob removal even when allowFobRemoval is false', fakeAsync(() => {
+      const fixture = createComponent();
+      fixture.componentInstance.cardId = 'card1';
+      fixture.componentInstance.minMaxStep = {
+        minStep: 0,
+        maxStep: 100,
+      };
+      fixture.componentInstance.stepOrLinkedTimeSelection = {
+        start: {step: 20},
+        end: {step: 40},
+      };
+      fixture.componentInstance.allowFobRemoval = false;
+      fixture.detectChanges();
+
+      expect(
+        fixture.debugElement.queryAll(By.css('[aria-label="Deselect fob"]'))
+          .length
+      ).toEqual(2);
+    }));
   });
 
   describe('data table line chart integration', () => {

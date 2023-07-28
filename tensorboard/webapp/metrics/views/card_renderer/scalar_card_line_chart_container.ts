@@ -79,6 +79,7 @@ import {ScalarCardLineChartComponent} from './scalar_card_line_chart_component';
       [forceSvg]="forceSvg$ | async"
       [userViewBox]="userViewBox$ | async"
       [disableTooltip]="disableTooltip"
+      [allowFobRemoval]="allowFobRemoval"
       (onTimeSelectionChanged)="onTimeSelectionChanged($event)"
       (onStepSelectorToggled)="onStepSelectorToggled($event)"
       (onLineChartZoom)="onLineChartZoom($event)"
@@ -111,6 +112,7 @@ export class ScalarCardLineChartContainer
   @Input() disableUpdate?: boolean = false;
   @Input() tooltipTemplate?: TooltipTemplate;
   @Input() disableTooltip?: boolean = false;
+  @Input() allowFobRemoval?: boolean = true;
 
   @ViewChild(ScalarCardLineChartComponent)
   scalarCardLineChart?: ScalarCardLineChartComponent;

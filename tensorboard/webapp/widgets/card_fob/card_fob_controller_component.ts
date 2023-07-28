@@ -63,6 +63,7 @@ export class CardFobControllerComponent {
   @Input() showExtendedLine?: Boolean = false;
   @Input() prospectiveStep: number | null = null;
   @Input() prospectiveStepAxisPosition?: number | null = null;
+  @Input() allowFobRemoval?: boolean = true;
 
   @Output() onTimeSelectionChanged =
     new EventEmitter<TimeSelectionWithAffordance>();

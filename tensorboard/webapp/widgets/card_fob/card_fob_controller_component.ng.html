@@ -52,6 +52,7 @@ limitations under the License.
     ></div>
     <card-fob
       class="startFob"
+      [allowRemoval]="allowFobRemoval ? true : timeSelection.end"
       [ngClass]="isVertical() ? 'vertical-fob' : 'horizontal-fob'"
       [step]="timeSelection.start.step"
       (mousedown)="startDrag(Fob.START, TimeSelectionAffordance.FOB, $event)"

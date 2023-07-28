@@ -86,6 +86,7 @@ limitations under the License.
       [minMaxHorizontalViewExtend]="viewExtent.x"
       [minMaxStep]="minMaxStep"
       [axisSize]="domDim.width"
+      [allowFobRemoval]="allowFobRemoval"
       (onTimeSelectionChanged)="onTimeSelectionChanged.emit($event)"
       (onTimeSelectionToggled)="onFobRemoved()"
     ></scalar-card-fob-controller>
