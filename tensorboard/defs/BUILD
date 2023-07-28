@@ -1,4 +1,6 @@
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
+load("@rules_python//python:py_binary.bzl", "py_binary")
+load("@rules_python//python:py_test.bzl", "py_test")
 load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
 load("@npm//@bazel/concatjs:index.bzl", "ts_library")
 

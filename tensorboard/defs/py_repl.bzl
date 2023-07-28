@@ -16,6 +16,8 @@
 
 # Minimal wrapper over ctx.actions.write to write a string to a file.
 # Simpler than the genrule equivalent since we don't need to escape.
+load("@rules_python//python:py_binary.bzl", "py_binary")
+
 def _write_file_impl(ctx):
     ctx.actions.write(ctx.outputs.out, ctx.attr.content, ctx.attr.is_executable)
 
@@ -82,7 +84,7 @@ def py_repl(name, preamble = None, deps = None, **kwargs):
         content = full_preamble,
     )
 
-    native.py_binary(
+    py_binary(
         name = name + "_py",
         srcs = [name + ".py"],
         main = name + ".py",

@@ -1,6 +1,9 @@
 # Description:
 #  Tools for building the TensorBoard pip package.
 
+load("@rules_python//python:py_binary.bzl", "py_binary")
+load("@rules_python//python:py_test.bzl", "py_test")
+
 package(default_visibility = ["//visibility:private"])
 
 licenses(["notice"])

@@ -1,6 +1,8 @@
 # Description:
 #   Werkzeug provides utilities for making WSGI applications
 
+load("@rules_python//python:py_library.bzl", "py_library")
+
 licenses(["notice"])  # BSD 3-Clause
 
 exports_files(["LICENSE"])
