@@ -28,6 +28,7 @@ import {
 } from 'rxjs/operators';
 import {areSameRouteKindAndExperiments} from '../../app_routing';
 import {navigated} from '../../app_routing/actions';
+import {RouteKind} from '../../app_routing/types';
 import {State} from '../../app_state';
 import * as coreActions from '../../core/actions';
 import {
@@ -159,7 +160,11 @@ export class RunsEffects {
         this.experimentsWithStaleRunsOnRouteChange$,
         this.experimentsWithStaleRunsOnReload$
       ).pipe(
-        mergeMap(({experimentIds, experimentIdsToBeFetched}) => {
+        withLatestFrom(this.store.select(getActiveRoute)),
+        filter(
+          ([, route]) => route !== null && route.routeKind !== RouteKind.CARD
+        ),
+        mergeMap(([{experimentIds, experimentIdsToBeFetched}]) => {
           return this.fetchAllRunsList(experimentIds, experimentIdsToBeFetched);
         })
       );
