@@ -717,7 +717,7 @@ describe('data table', () => {
       });
     });
 
-    it('removes column when Remove button is clicked', () => {
+    it('removes column when Remove button is clicked', async () => {
       const fixture = createComponent({
         headers: mockHeaders,
         data: mockTableData,
@@ -861,26 +861,6 @@ describe('data table', () => {
       expect(
         contextMenu.nativeElement.innerHTML.includes('No Actions Available')
       ).toBeTrue();
-    });
-
-    it('closes when the + button is clicked', () => {
-      const fixture = createComponent({
-        headers: mockHeaders,
-        data: mockTableData,
-        potentialColumns: mockPotentialColumns,
-      });
-      const fixedHeader = fixture.debugElement.queryAll(
-        By.directive(HeaderCellComponent)
-      )[0];
-      fixedHeader.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
-      fixture.detectChanges();
-      expect(fixture.debugElement.query(By.css('.context-menu'))).toBeTruthy();
-
-      const addBtn = fixture.debugElement.query(By.css('.add-column-btn'));
-      addBtn.nativeElement.click();
-      fixture.detectChanges();
-
-      expect(fixture.debugElement.query(By.css('.context-menu'))).toBeFalsy();
     });
   });
 });

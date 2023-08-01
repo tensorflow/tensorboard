@@ -56,11 +56,12 @@ export class CustomModalComponent implements OnInit {
   @Output() onClose = new EventEmitter<void>();
 
   readonly visible$ = new BehaviorSubject(false);
+  private readonly canClose$ = new BehaviorSubject(true);
 
   @ViewChild('content', {static: false})
   private readonly content!: ElementRef;
 
-  private clickListener: () => void = this.close.bind(this);
+  private clickListener: () => void = this.maybeClose.bind(this);
 
   constructor(private readonly viewRef: ViewContainerRef) {}
 
@@ -68,6 +69,7 @@ export class CustomModalComponent implements OnInit {
     this.visible$.subscribe((visible) => {
       // Wait until after the next browser frame.
       window.requestAnimationFrame(() => {
+        this.canClose$.next(true);
         if (visible) {
           this.ensureContentIsWithinWindow();
           this.onOpen.emit();
@@ -87,6 +89,7 @@ export class CustomModalComponent implements OnInit {
 
     this.content.nativeElement.style.left = position.x + 'px';
     this.content.nativeElement.style.top = position.y + 'px';
+    this.canClose$.next(false);
     this.visible$.next(true);
     document.addEventListener('click', this.clickListener);
   }
@@ -115,6 +118,13 @@ export class CustomModalComponent implements OnInit {
   }
 
   @HostListener('document:keydown.escape', ['$event'])
+  private maybeClose() {
+    if (!this.canClose$.getValue()) {
+      return;
+    }
+    this.close();
+  }
+
   public close() {
     document.removeEventListener('click', this.clickListener);
     this.visible$.next(false);
