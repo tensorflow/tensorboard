@@ -717,7 +717,7 @@ describe('data table', () => {
       });
     });
 
-    it('removes column when Remove button is clicked', async () => {
+    it('removes column when Remove button is clicked', () => {
       const fixture = createComponent({
         headers: mockHeaders,
         data: mockTableData,
