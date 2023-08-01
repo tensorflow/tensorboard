@@ -333,7 +333,6 @@ const {initialState: uiInitialState, reducers: uiNamespaceContextedReducers} =
         },
       ],
       sortingInfo: {
-        header: ColumnHeaderType.RUN,
         name: 'run',
         order: SortingOrder.DESCENDING,
       },
