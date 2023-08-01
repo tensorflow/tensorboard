@@ -23,6 +23,7 @@ import {
   buildNavigatedAction,
   buildRoute,
 } from '../../app_routing/testing';
+import {RouteKind} from '../../app_routing/types';
 import {State} from '../../app_state';
 import * as coreActions from '../../core/actions';
 import {
@@ -469,6 +470,24 @@ describe('runs_effects', () => {
             }),
           ]);
         });
+      });
+    });
+
+    [
+      {specAction: buildNavigatedAction, specName: 'navigation'},
+      {specAction: coreActions.manualReload, specName: 'manual reload'},
+      {specAction: coreActions.reload, specName: 'auto reload'},
+    ].forEach(({specAction, specName}) => {
+      it(`does not fetch runs on card route when action is ${specName}`, () => {
+        store.overrideSelector(getActiveRoute, {
+          routeKind: RouteKind.CARD,
+          params: {},
+        });
+        store.refreshState();
+
+        action.next(specAction());
+
+        expect(actualActions).toEqual([]);
       });
     });
 
