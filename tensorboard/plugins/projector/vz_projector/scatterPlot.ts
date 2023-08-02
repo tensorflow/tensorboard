@@ -38,6 +38,8 @@ const PERSP_CAMERA_FOV_VERTICAL = 70;
 const PERSP_CAMERA_NEAR_CLIP_PLANE = 0.01;
 const PERSP_CAMERA_FAR_CLIP_PLANE = 100;
 const ORTHO_CAMERA_FRUSTUM_HALF_EXTENT = 1.2;
+// Key presses.
+const SHIFT_KEY = 16;
 const ORBIT_MOUSE_ROTATION_SPEED = 1;
 const ORBIT_ANIMATION_ROTATION_CYCLE_IN_SECONDS = 7;
 export type OnCameraMoveListener = (
@@ -338,7 +340,7 @@ export class ScatterPlot {
   /** For for circle select */
   private onKeyDown(e: KeyboardEvent) {
     // If shift is pressed, start selecting
-    if (e.shiftKey) {
+    if (e.keyCode === SHIFT_KEY) {
       this.selecting = true;
       this.container.style.cursor = 'crosshair';
     }
@@ -346,7 +348,7 @@ export class ScatterPlot {
   /** For for circle select */
   private onKeyUp(e: KeyboardEvent) {
     // If shift is released, stop selecting
-    if (e.shiftKey) {
+    if (e.keyCode === SHIFT_KEY) {
       this.selecting = this.getMouseMode() === MouseMode.AREA_SELECT;
       if (!this.selecting) {
         this.container.style.cursor = 'default';
