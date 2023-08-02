@@ -1624,7 +1624,6 @@ describe('runs_reducers', () => {
         {},
         {
           sortingInfo: {
-            header: ColumnHeaderType.RUN,
             name: 'run',
             order: SortingOrder.ASCENDING,
           },
@@ -1634,14 +1633,12 @@ describe('runs_reducers', () => {
         state,
         actions.runsTableSortingInfoChanged({
           sortingInfo: {
-            header: ColumnHeaderType.HPARAM,
             name: 'lr',
             order: SortingOrder.DESCENDING,
           },
         })
       );
       expect(nextState.ui.sortingInfo).toEqual({
-        header: ColumnHeaderType.HPARAM,
         name: 'lr',
         order: SortingOrder.DESCENDING,
       });

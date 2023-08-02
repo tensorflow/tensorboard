@@ -633,7 +633,6 @@ describe('runs_selectors', () => {
           {},
           {
             sortingInfo: {
-              header: ColumnHeaderType.RUN,
               name: 'run',
               order: SortingOrder.ASCENDING,
             },
@@ -641,7 +640,6 @@ describe('runs_selectors', () => {
         )
       );
       expect(selectors.getRunsTableSortingInfo(state)).toEqual({
-        header: ColumnHeaderType.RUN,
         name: 'run',
         order: SortingOrder.ASCENDING,
       });

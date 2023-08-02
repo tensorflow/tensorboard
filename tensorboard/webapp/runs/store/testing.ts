@@ -71,7 +71,6 @@ export function buildRunsState(
       selectionState: new Map(),
       runsTableHeaders: [],
       sortingInfo: {
-        header: ColumnHeaderType.RUN,
         name: 'run',
         order: SortingOrder.DESCENDING,
       },

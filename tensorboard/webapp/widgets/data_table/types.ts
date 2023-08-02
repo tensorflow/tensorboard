@@ -60,11 +60,6 @@ export enum SortingOrder {
 }
 
 export interface SortingInfo {
-  // Currently in the process of moving from header to name.
-  // Header is no longer used but is required as to not break sync
-  // TODO(jameshollyer): Remove header once all internal code is switched
-  // to using name.
-  header?: ColumnHeaderType;
   name: string;
   order: SortingOrder;
 }
