@@ -98,7 +98,6 @@ import {RunsTableColumn, RunTableItem} from './types';
 import {
   getFilteredRenderableRunsFromRoute,
   getPotentialHparamColumns,
-  getCurrentColumnFiltersFromRoute,
 } from '../../../metrics/views/main_view/common_selectors';
 import {runsTableFullScreenToggled} from '../../../core/actions';
 
@@ -371,10 +370,6 @@ export class RunsTableContainer implements OnInit, OnDestroy {
         return !currentColumnNames.has(columnHeader.name);
       });
     })
-  );
-
-  columnFilters$ = this.store.select(
-    getCurrentColumnFiltersFromRoute(true /* includeDefaults */)
   );
 
   allRunsTableData$ = this.store

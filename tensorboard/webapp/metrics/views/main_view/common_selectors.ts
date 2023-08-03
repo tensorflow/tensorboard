@@ -245,32 +245,6 @@ const getFilteredRenderableRuns = memoize((experimentIds: string[]) => {
   );
 });
 
-const getCurrentColumnFilters = memoize(
-  (experimentIds: string[], includeDefaults?: boolean) => {
-    return createSelector(
-      getHparamFilterMapFromExperimentIds(experimentIds, includeDefaults),
-      getMetricFilterMapFromExperimentIds(experimentIds, includeDefaults),
-      (hparamFilters, metricFilters) => {
-        return new Map([...hparamFilters, ...metricFilters]);
-      }
-    );
-  }
-);
-
-export const getCurrentColumnFiltersFromRoute = memoize(
-  (includeDefaults?: boolean) =>
-    createSelector(
-      (state) => state,
-      getExperimentIdsFromRoute,
-      (state, experimentIds) => {
-        return getCurrentColumnFilters(
-          experimentIds || [],
-          includeDefaults
-        )(state);
-      }
-    )
-);
-
 export const getFilteredRenderableRunsFromRoute = createSelector(
   (state) => state,
   getExperimentIdsFromRoute,
