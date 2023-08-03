@@ -118,7 +118,7 @@ describe('hparams/_redux/hparams_selectors_test', () => {
   });
 
   describe('#getHparamFilterMapFromExperimentIds()', () => {
-    it('returns default hparam filter map', () => {
+    it('returns default hparam filter map when includeDefaults is true', () => {
       const state = buildStateFromHparamsState(
         buildHparamsState(
           buildSpecs('foo', {
@@ -138,7 +138,7 @@ describe('hparams/_redux/hparams_selectors_test', () => {
       );
 
       expect(
-        selectors.getHparamFilterMapFromExperimentIds(['foo'])(state)
+        selectors.getHparamFilterMapFromExperimentIds(['foo'], true)(state)
       ).toEqual(
         new Map([
           ['optimizer', buildDiscreteFilter({filterValues: ['a', 'b', 'c']})],
@@ -206,6 +206,30 @@ describe('hparams/_redux/hparams_selectors_test', () => {
       expect(
         selectors.getHparamFilterMapFromExperimentIds(['bar'])(state)
       ).toEqual(new Map());
+    });
+
+    it('does not use default filters when includeDefaults is false', () => {
+      const state = buildStateFromHparamsState(
+        buildHparamsState(
+          buildSpecs('foo', {
+            hparam: {
+              specs: [buildHparamSpec({name: 'optimizer'})],
+              defaultFilters: new Map([
+                [
+                  'optimizer',
+                  buildDiscreteFilter({
+                    filterValues: ['a', 'b', 'c'],
+                  }),
+                ],
+              ]),
+            },
+          })
+        )
+      );
+
+      expect(
+        selectors.getHparamFilterMapFromExperimentIds(['foo'], false)(state)
+      ).toEqual(new Map([]));
     });
   });
 
@@ -326,7 +350,7 @@ describe('hparams/_redux/hparams_selectors_test', () => {
   });
 
   describe('#getMetricFilterMapFromExperimentIds', () => {
-    it('returns default metric filter map', () => {
+    it('returns default metric filter map  when includeDefaults is true', () => {
       const state = buildStateFromHparamsState(
         buildHparamsState(
           buildSpecs('foo', {
@@ -347,7 +371,7 @@ describe('hparams/_redux/hparams_selectors_test', () => {
       );
 
       expect(
-        selectors.getMetricFilterMapFromExperimentIds(['foo'])(state)
+        selectors.getMetricFilterMapFromExperimentIds(['foo'], true)(state)
       ).toEqual(
         new Map([
           [
@@ -440,5 +464,31 @@ describe('hparams/_redux/hparams_selectors_test', () => {
         selectors.getMetricFilterMapFromExperimentIds(['bar'])(state)
       ).toEqual(new Map());
     });
+  });
+
+  it('does not use default filters when includeDefaults is false', () => {
+    const state = buildStateFromHparamsState(
+      buildHparamsState(
+        buildSpecs('foo', {
+          metric: {
+            specs: [buildMetricSpec({tag: 'acc'})],
+            defaultFilters: new Map([
+              [
+                'acc',
+                buildIntervalFilter({
+                  filterLowerValue: 0,
+                  filterUpperValue: 1,
+                }),
+              ],
+            ]),
+          },
+        }),
+        {}
+      )
+    );
+
+    expect(
+      selectors.getMetricFilterMapFromExperimentIds(['foo'], false)(state)
+    ).toEqual(new Map());
   });
 });
