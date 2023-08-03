@@ -18,6 +18,7 @@ import {Action, createAction, createSelector, Store} from '@ngrx/store';
 import {forkJoin, merge, Observable, of} from 'rxjs';
 import {
   catchError,
+  debounceTime,
   filter,
   map,
   mergeMap,
@@ -126,6 +127,7 @@ export class MetricsEffects implements OnInitEffects {
       this.store.select(getMetricsTagMetadataLoadState),
       this.store.select(selectors.getExperimentIdsFromRoute)
     ),
+    debounceTime(10),
     filter(([, tagLoadState, experimentIds]) => {
       /**
        * When `experimentIds` is null, the actual ids have not
