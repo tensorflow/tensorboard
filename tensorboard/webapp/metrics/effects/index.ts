@@ -19,6 +19,7 @@ import {forkJoin, merge, Observable, of} from 'rxjs';
 import {
   catchError,
   throttleTime,
+  combineLatestWith,
   filter,
   map,
   mergeMap,
@@ -68,6 +69,12 @@ const getCardFetchInfo = createSelector(
 
 const initAction = createAction('[Metrics Effects] Init');
 
+function parseRunIdFromSampledRunInfoName(eidRun: string): string {
+  if (!eidRun) return '';
+  const [, ...runIdChunks] = eidRun.split('/');
+  return runIdChunks.join('/');
+}
+
 @Injectable()
 export class MetricsEffects implements OnInitEffects {
   constructor(
@@ -75,6 +82,40 @@ export class MetricsEffects implements OnInitEffects {
     private readonly store: Store<State>,
     private readonly dataSource: MetricsDataSource
   ) {}
+
+  readonly tagToEid$: Observable<Record<string, Set<string>>> = this.store
+    .select(selectors.getMetricsTagMetadata)
+    .pipe(
+      combineLatestWith(this.store.select(selectors.getRunIdToExperimentId)),
+      map(([tagMetadata, runToEid]) => {
+        const imageTagToRuns = Object.fromEntries(
+          Object.entries(tagMetadata.images.tagRunSampledInfo).map(
+            ([tag, sampledRunInfo]) => {
+              const runIds = Object.keys(sampledRunInfo).map((runInfoKey) =>
+                parseRunIdFromSampledRunInfoName(runInfoKey)
+              );
+              return [tag, runIds];
+            }
+          )
+        );
+
+        const tagToEid: Record<string, Set<string>> = {};
+        function mapTagsToEid(tagToRun: Record<string, readonly string[]>) {
+          Object.entries(tagToRun).forEach(([tag, runIds]) => {
+            if (!tagToEid[tag]) {
+              tagToEid[tag] = new Set();
+            }
+            runIds.forEach((runId) => tagToEid[tag].add(runToEid[runId]));
+          });
+        }
+
+        mapTagsToEid(tagMetadata.scalars.tagToRuns);
+        mapTagsToEid(tagMetadata.histograms.tagToRuns);
+        mapTagsToEid(imageTagToRuns);
+
+        return tagToEid;
+      })
+    );
 
   /** @export */
   ngrxOnInitEffects(): Action {
@@ -195,23 +236,31 @@ export class MetricsEffects implements OnInitEffects {
     fetchInfos: CardFetchInfo[],
     experimentIds: string[]
   ) {
-    /**
-     * TODO(psybuzz): if 2 cards require the same data, we should dedupe instead of
-     * making 2 identical requests.
-     */
-    const requests: TimeSeriesRequest[] = fetchInfos.map((fetchInfo) => {
-      const {plugin, tag, runId, sample} = fetchInfo;
-      const partialRequest: TimeSeriesRequest = isSingleRunPlugin(plugin)
-        ? {plugin, tag, runId: runId!}
-        : {plugin, tag, experimentIds};
-      if (sample !== undefined) {
-        partialRequest.sample = sample;
-      }
-      return partialRequest;
-    });
-
     // Fetch and handle responses.
-    return of(requests).pipe(
+    return this.tagToEid$.pipe(
+      map((tagToEid): TimeSeriesRequest[] => {
+        const requests = fetchInfos.map((fetchInfo) => {
+          const {plugin, tag, runId, sample} = fetchInfo;
+          const filteredEids = experimentIds.filter((eid) =>
+            tagToEid[tag]?.has(eid)
+          );
+
+          const partialRequest: TimeSeriesRequest = isSingleRunPlugin(plugin)
+            ? {plugin, tag, runId: runId!}
+            : {plugin, tag, experimentIds: filteredEids};
+          if (sample !== undefined) {
+            partialRequest.sample = sample;
+          }
+          return partialRequest;
+        });
+        const uniqueRequests = new Set(
+          requests.map((request) => JSON.stringify(request))
+        );
+
+        return Array.from(uniqueRequests).map(
+          (serialized) => JSON.parse(serialized) as TimeSeriesRequest
+        );
+      }),
       tap((requests) => {
         this.store.dispatch(actions.multipleTimeSeriesRequested({requests}));
       }),
@@ -302,4 +351,5 @@ export class MetricsEffects implements OnInitEffects {
 export const TEST_ONLY = {
   getCardFetchInfo,
   initAction,
+  parseRunIdFromSampledRunInfoName,
 };

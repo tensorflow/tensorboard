@@ -89,7 +89,51 @@ describe('metrics effects', () => {
       selectors.getMetricsTooltipSort,
       TooltipSort.ALPHABETICAL
     );
+
+    overrideTagMetadata();
+    overrideRunToEid();
   });
+
+  function overrideTagMetadata() {
+    store.overrideSelector(selectors.getMetricsTagMetadata, {
+      scalars: {
+        tagDescriptions: {} as any,
+        tagToRuns: {
+          tagA: ['run1'],
+          tagB: ['run2', 'run3'],
+          tagC: ['run4', 'run5'],
+          tagD: ['run6'],
+        },
+      },
+      histograms: {
+        tagDescriptions: {} as any,
+        tagToRuns: {
+          tagA: ['run1'],
+          tagB: ['run4'],
+        },
+      },
+      images: {
+        tagDescriptions: {},
+        tagRunSampledInfo: {
+          tagC: {
+            'defaultExperimentId/run1': {} as any,
+            'exp1/run3': {} as any,
+          },
+        },
+      },
+    });
+  }
+
+  function overrideRunToEid() {
+    store.overrideSelector(selectors.getRunIdToExperimentId, {
+      run1: 'exp1',
+      run2: 'exp1',
+      run3: 'exp2',
+      run4: 'defaultExperimentId',
+      run5: 'defaultExperimentId',
+      run6: 'defaultExperimentId',
+    });
+  }
 
   afterEach(() => {
     store?.resetSelectors();
@@ -365,15 +409,13 @@ describe('metrics effects', () => {
           actions$.next(reloadAction());
 
           expect(fetchTagMetadataSpy).toHaveBeenCalled();
-          expect(fetchTimeSeriesSpy).toHaveBeenCalledTimes(2);
+          expect(fetchTimeSeriesSpy).toHaveBeenCalledTimes(1);
           expect(actualActions).toEqual([
             actions.metricsTagMetadataRequested(),
             actions.metricsTagMetadataLoaded({
               tagMetadata: buildDataSourceTagMetadata(),
             }),
 
-            // Currently we expect 2x the same requests if the cards are the same.
-            // Ideally we should dedupe requests for the same info.
             actions.multipleTimeSeriesRequested({
               requests: [
                 {
@@ -381,15 +423,7 @@ describe('metrics effects', () => {
                   tag: 'tagA',
                   experimentIds: ['exp1'],
                 },
-                {
-                  plugin: PluginType.SCALARS as MultiRunPluginType,
-                  tag: 'tagA',
-                  experimentIds: ['exp1'],
-                },
               ],
-            }),
-            actions.fetchTimeSeriesLoaded({
-              response: buildTimeSeriesResponse(),
             }),
             actions.fetchTimeSeriesLoaded({
               response: buildTimeSeriesResponse(),
@@ -487,6 +521,8 @@ describe('metrics effects', () => {
       it('does not re-fetch time series, until a valid experiment id', () => {
         // Reset any `getExperimentIdsFromRoute` overrides above.
         store.resetSelectors();
+        overrideTagMetadata();
+        overrideRunToEid();
         store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
         store.overrideSelector(
           selectors.getVisibleCardIdSet,
@@ -509,6 +545,43 @@ describe('metrics effects', () => {
         actions$.next(coreActions.reload());
 
         expect(fetchTimeSeriesSpy).toHaveBeenCalledTimes(2);
+      });
+
+      it('does not send requests to experiments lacking a cards tag', () => {
+        store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
+        store.overrideSelector(selectors.getExperimentIdsFromRoute, [
+          'exp1',
+          'exp2',
+        ]);
+        store.overrideSelector(
+          selectors.getVisibleCardIdSet,
+          new Set(['card1', 'card2'])
+        );
+        provideCardFetchInfo([
+          {id: 'card1', tag: 'tagA'},
+          {id: 'card2', tag: 'tagB'},
+        ]);
+        store.refreshState();
+
+        const effectFetchTimeSeriesSpy = spyOn(
+          effects as any,
+          'fetchTimeSeries'
+        ).and.stub();
+
+        actions$.next(coreActions.manualReload());
+
+        expect(effectFetchTimeSeriesSpy).toHaveBeenCalledTimes(2);
+        expect(effectFetchTimeSeriesSpy).toHaveBeenCalledWith({
+          plugin: 'scalars',
+          tag: 'tagA',
+          experimentIds: ['exp1'],
+        });
+
+        expect(effectFetchTimeSeriesSpy).toHaveBeenCalledWith({
+          plugin: 'scalars',
+          tag: 'tagB',
+          experimentIds: ['exp1', 'exp2'],
+        });
       });
     });
 
@@ -776,6 +849,26 @@ describe('metrics effects', () => {
           expect(actualActions).toEqual([]);
         });
       }
+    });
+  });
+
+  describe('#utilities', () => {
+    describe('parseRunIdFromSampledRunInfoName', () => {
+      it('removes prefixed experiment id', () => {
+        expect(
+          TEST_ONLY.parseRunIdFromSampledRunInfoName('experimentId/someRun')
+        ).toEqual('someRun');
+      });
+
+      it('preserves "/" characters in run names', () => {
+        expect(
+          TEST_ONLY.parseRunIdFromSampledRunInfoName('experimentId/some/run')
+        ).toEqual('some/run');
+      });
+
+      it('returns an empty string when an empty string is provided', () => {
+        expect(TEST_ONLY.parseRunIdFromSampledRunInfoName('')).toEqual('');
+      });
     });
   });
 });
