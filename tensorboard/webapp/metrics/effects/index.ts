@@ -18,6 +18,7 @@ import {Action, createAction, createSelector, Store} from '@ngrx/store';
 import {forkJoin, merge, Observable, of} from 'rxjs';
 import {
   catchError,
+  throttleTime,
   filter,
   map,
   mergeMap,
@@ -135,6 +136,7 @@ export class MetricsEffects implements OnInitEffects {
         tagLoadState.state !== DataLoadState.LOADING && experimentIds !== null
       );
     }),
+    throttleTime(10),
     tap(() => {
       this.store.dispatch(actions.metricsTagMetadataRequested());
     }),
