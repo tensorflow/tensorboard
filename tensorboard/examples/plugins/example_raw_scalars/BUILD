@@ -43,5 +43,6 @@ py_test(
     tags = ["support_notf"],
     deps = [
         "//tensorboard",
+        "//tensorboard/examples/plugins/example_raw_scalars/tensorboard_plugin_example_raw_scalars:plugin",
     ],
 )
