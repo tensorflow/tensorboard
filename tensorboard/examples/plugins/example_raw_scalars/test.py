@@ -23,7 +23,9 @@ from werkzeug import test
 from werkzeug import wrappers
 
 from tensorboard.plugins import base_plugin
-from tensorboard.examples.plugins.example_raw_scalars.tensorboard_plugin_example_raw_scalars import plugin
+from tensorboard.examples.plugins.example_raw_scalars.tensorboard_plugin_example_raw_scalars import (
+    plugin,
+)
 
 
 def is_path_safe(path):
