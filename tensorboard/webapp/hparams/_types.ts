@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
+  HparamValue,
+  MetricValue,
   DiscreteHparamValues,
   DomainType,
   HparamSpec,
@@ -27,7 +29,38 @@ export {
   HparamSpec,
   HparamsValueType,
   MetricSpec,
+  Domain,
+  HparamValue,
+  RunToHparamsAndMetrics,
 } from '../runs/data_source/runs_data_source_types';
+
+export {
+  HparamSpec as BackendHparamSpec,
+  DiscreteDomainHparamSpec,
+  BackendHparamsExperimentResponse,
+  BackendListSessionGroupResponse,
+  BackendListSessionGroupRequest,
+  BackendHparamsValueType,
+  RunStatus,
+} from '../runs/data_source/runs_backend_types';
+
+export interface HparamsAndMetricsValues {
+  hparams: HparamValue[];
+  metrics: MetricValue[];
+}
+
+export interface HparamsAndMetricsSpecs {
+  hparams: HparamSpec[];
+  metrics: MetricSpec[];
+}
+
+export type ExperimentToHparamsMetrics = Record<
+  string,
+  {
+    specs: HparamsAndMetricsSpecs;
+    values: HparamsAndMetricsValues;
+  }
+>;
 
 export interface HparamAndMetricSpec {
   hparams: HparamSpec[];

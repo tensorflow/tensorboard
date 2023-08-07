@@ -67,10 +67,9 @@ function transformBackendHparamSpec(
 function transformBackendMetricSpec(
   metricInfo: backendTypes.MetricSpec
 ): MetricSpec {
-  const {name, ...otherSpec} = metricInfo;
   return {
-    ...otherSpec,
-    tag: name.tag,
+    ...metricInfo,
+    tag: metricInfo.name.tag,
   };
 }
 
