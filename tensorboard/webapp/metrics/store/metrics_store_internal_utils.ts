@@ -389,12 +389,19 @@ export function generateNextCardStepIndex(
 export function generateScalarCardMinMaxStep(
   runsToSeries: RunToSeries<PluginType.SCALARS>
 ): MinMaxStep {
-  const allData = Object.values(runsToSeries)
+  let minStep = Infinity;
+  let maxStep = -Infinity;
+
+  Object.values(runsToSeries)
     .flat()
-    .map((stepDatum) => stepDatum.step);
+    .forEach((stepDatum) => {
+      minStep = Math.min(minStep, stepDatum.step);
+      maxStep = Math.max(maxStep, stepDatum.step);
+    });
+
   return {
-    minStep: Math.min(...allData),
-    maxStep: Math.max(...allData),
+    minStep,
+    maxStep,
   };
 }
 
