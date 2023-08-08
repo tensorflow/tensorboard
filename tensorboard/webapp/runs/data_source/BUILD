@@ -39,6 +39,7 @@ tf_ng_module(
     deps = [
         ":backend_types",
         ":data_source",
+        "//tensorboard/webapp/hparams/_redux:testing",
         "@npm//@angular/core",
         "@npm//rxjs",
     ],

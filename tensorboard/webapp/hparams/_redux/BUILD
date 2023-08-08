@@ -81,6 +81,20 @@ tf_ts_library(
     ],
 )
 
+tf_ng_module(
+    name = "hparams_data_source",
+    srcs = [
+        "hparams_data_source.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/hparams:types",
+        "//tensorboard/webapp/webapp_data_source:http_client",
+        "@npm//@angular/core",
+        "@npm//@ngrx/store",
+        "@npm//rxjs",
+    ],
+)
+
 tf_ts_library(
     name = "testing",
     testonly = True,
@@ -98,6 +112,7 @@ tf_ts_library(
     name = "_redux_test_lib",
     testonly = True,
     srcs = [
+        "hparams_data_source_test.ts",
         "hparams_reducers_test.ts",
         "hparams_selectors_test.ts",
         "hparams_selectors_utils_test.ts",
@@ -105,14 +120,17 @@ tf_ts_library(
     ],
     deps = [
         ":hparams_actions",
+        ":hparams_data_source",
         ":hparams_reducers",
         ":hparams_selectors",
         ":testing",
         ":utils",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/hparams:types",
         "//tensorboard/webapp/runs/actions",
         "//tensorboard/webapp/runs/data_source:testing",
         "//tensorboard/webapp/runs/store:testing",
+        "//tensorboard/webapp/webapp_data_source:http_client_testing",
         "@npm//@types/jasmine",
     ],
 )
