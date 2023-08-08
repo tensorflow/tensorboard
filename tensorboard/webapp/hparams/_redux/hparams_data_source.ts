@@ -65,7 +65,7 @@ export class HparamsDataSource {
     return experimentIds.length > 1 ? 'compare' : 'experiment';
   }
 
-  private getExperimentName(experimentIds: string[]) {
+  private formatExperimentIds(experimentIds: string[]) {
     if (experimentIds.length === 1) {
       return experimentIds[0];
     }
@@ -76,13 +76,13 @@ export class HparamsDataSource {
   fetchExperimentInfo(
     experimentIds: string[]
   ): Observable<HparamsAndMetricsSpecs> {
-    const experimentName = this.getExperimentName(experimentIds);
+    const formattedExperimentIds = this.formatExperimentIds(experimentIds);
     return this.http
       .post<BackendHparamsExperimentResponse>(
         `/${this.getPrefix(
           experimentIds
-        )}/${experimentName}/${HPARAMS_HTTP_PATH_PREFIX}/experiment`,
-        {experimentName},
+        )}/${formattedExperimentIds}/${HPARAMS_HTTP_PATH_PREFIX}/experiment`,
+        {experimentName: formattedExperimentIds},
         {},
         'request'
       )
@@ -90,10 +90,7 @@ export class HparamsDataSource {
         map((response) => {
           return {
             hparams: response.hparamInfos.map((hparam) => ({
-              description: hparam.description,
-              displayName: hparam.displayName,
-              name: hparam.name,
-              type: hparam.type,
+              ...hparam,
               domain: getHparamDomain(hparam),
             })),
             metrics: response.metricInfos.map((info) => ({
@@ -109,7 +106,7 @@ export class HparamsDataSource {
     experimentIds: string[],
     hparamsAndMetricsSpecs: HparamsAndMetricsSpecs
   ) {
-    const experimentName = this.getExperimentName(experimentIds);
+    const formattedExperimentIds = this.formatExperimentIds(experimentIds);
 
     const colParams: BackendListSessionGroupRequest['colParams'] = [];
 
@@ -123,7 +120,7 @@ export class HparamsDataSource {
     }
 
     const listSessionRequestParams: BackendListSessionGroupRequest = {
-      experimentName,
+      experimentName: formattedExperimentIds,
       allowedStatuses: [
         RunStatus.STATUS_FAILURE,
         RunStatus.STATUS_RUNNING,
@@ -140,7 +137,7 @@ export class HparamsDataSource {
       .post<BackendListSessionGroupResponse>(
         `/${this.getPrefix(
           experimentIds
-        )}/${experimentName}/${HPARAMS_HTTP_PATH_PREFIX}/session_groups`,
+        )}/${formattedExperimentIds}/${HPARAMS_HTTP_PATH_PREFIX}/session_groups`,
         listSessionRequestParams,
         {},
         'request'
@@ -164,7 +161,7 @@ export class HparamsDataSource {
                 const runName = metricValue.name.group
                   ? `${session.name}/${metricValue.name.group}`
                   : session.name;
-                const runId = `${experimentName}/${runName}`;
+                const runId = `${formattedExperimentIds}/${runName}`;
                 const hparamsAndMetrics = runToHparamsAndMetrics[runId] || {
                   metrics: [],
                   hparams,
