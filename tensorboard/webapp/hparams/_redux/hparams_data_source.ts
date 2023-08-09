@@ -18,22 +18,17 @@ import {map} from 'rxjs/operators';
 
 import {
   Domain,
-  HparamValue,
-  RunToHparamsAndMetrics,
   DomainType,
-} from '../types';
-import {TBHttpClient} from '../../webapp_data_source/tb_http_client';
-
-import {
   BackendListSessionGroupRequest,
   BackendHparamsExperimentResponse,
   BackendHparamSpec,
   DiscreteDomainHparamSpec,
-  DiscreteHparamValue,
+  SessionGroup,
   HparamsAndMetricsSpecs,
   BackendListSessionGroupResponse,
   RunStatus,
 } from '../types';
+import {TBHttpClient} from '../../webapp_data_source/tb_http_client';
 
 const HPARAMS_HTTP_PATH_PREFIX = 'data/plugin/hparams';
 
@@ -70,7 +65,7 @@ export class HparamsDataSource {
       return experimentIds[0];
     }
 
-    return experimentIds.map((eid) => `:${eid}`).join(',');
+    return experimentIds.map((eid) => `${eid}:${eid}`).join(',');
   }
 
   fetchExperimentInfo(
@@ -89,10 +84,17 @@ export class HparamsDataSource {
       .pipe(
         map((response) => {
           return {
-            hparams: response.hparamInfos.map((hparam) => ({
-              ...hparam,
-              domain: getHparamDomain(hparam),
-            })),
+            hparams: response.hparamInfos.map((hparam) => {
+              const feHparam = {
+                ...hparam,
+                domain: getHparamDomain(hparam),
+              };
+
+              delete (feHparam as any).domainInterval;
+              delete (feHparam as any).domainDiscrete;
+
+              return feHparam;
+            }),
             metrics: response.metricInfos.map((info) => ({
               ...info,
               tag: info.name.tag,
@@ -105,7 +107,7 @@ export class HparamsDataSource {
   fetchSessionGroups(
     experimentIds: string[],
     hparamsAndMetricsSpecs: HparamsAndMetricsSpecs
-  ) {
+  ): Observable<SessionGroup[]> {
     const formattedExperimentIds = this.formatExperimentIds(experimentIds);
 
     const colParams: BackendListSessionGroupRequest['colParams'] = [];
@@ -143,40 +145,18 @@ export class HparamsDataSource {
         'request'
       )
       .pipe(
-        map((sessionGroupsList) => {
-          const runToHparamsAndMetrics: RunToHparamsAndMetrics = {};
-
-          // Reorganize the sessionGroup/session into run to <hparams,
-          // metrics>.
-          for (const sessionGroup of sessionGroupsList.sessionGroups) {
-            const hparams: HparamValue[] = Object.entries(
-              sessionGroup.hparams
-            ).map((keyValue) => {
-              const [hparam, value] = keyValue;
-              return {name: hparam, value: value as DiscreteHparamValue};
-            });
-
-            for (const session of sessionGroup.sessions) {
-              for (const metricValue of session.metricValues) {
-                const runName = metricValue.name.group
-                  ? `${session.name}/${metricValue.name.group}`
-                  : session.name;
-                const runId = `${formattedExperimentIds}/${runName}`;
-                const hparamsAndMetrics = runToHparamsAndMetrics[runId] || {
-                  metrics: [],
-                  hparams,
-                };
-                hparamsAndMetrics.metrics.push({
-                  tag: metricValue.name.tag,
-                  trainingStep: metricValue.trainingStep,
-                  value: metricValue.value,
-                });
-                runToHparamsAndMetrics[runId] = hparamsAndMetrics;
+        map((response) =>
+          response.sessionGroups.map((sessionGroup) => {
+            sessionGroup.sessions = sessionGroup.sessions.map((session) => {
+              if (experimentIds.length > 1) {
+                const [, ...runName] = session.name.split(' ');
+                session.name = runName.join(' ');
               }
-            }
-          }
-          return runToHparamsAndMetrics;
-        })
+              return session;
+            });
+            return sessionGroup;
+          })
+        )
       );
   }
 }

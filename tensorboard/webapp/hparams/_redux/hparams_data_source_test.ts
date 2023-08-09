@@ -22,7 +22,12 @@ import {
   createHparamsExperimentResponse,
   createHparamsListSessionGroupResponse,
 } from './testing';
-import {BackendHparamsValueType, DatasetType, DomainType} from '../types';
+import {
+  BackendHparamsValueType,
+  DatasetType,
+  DomainType,
+  SessionGroup,
+} from '../types';
 
 describe('HparamsDataSource Test', () => {
   let httpMock: HttpTestingController;
@@ -52,7 +57,9 @@ describe('HparamsDataSource Test', () => {
       const returnValue = jasmine.createSpy();
       dataSource.fetchExperimentInfo(['eid1', 'eid2']).subscribe(returnValue);
       httpMock
-        .expectOne('/compare/:eid1,:eid2/data/plugin/hparams/experiment')
+        .expectOne(
+          '/compare/eid1:eid1,eid2:eid2/data/plugin/hparams/experiment'
+        )
         .flush(createHparamsExperimentResponse());
       expect(returnValue).toHaveBeenCalled();
     });
@@ -131,70 +138,47 @@ describe('HparamsDataSource Test', () => {
         .fetchSessionGroups(['eid1', 'eid2'], {hparams: [], metrics: []})
         .subscribe(returnValue);
       httpMock
-        .expectOne('/compare/:eid1,:eid2/data/plugin/hparams/session_groups')
+        .expectOne(
+          '/compare/eid1:eid1,eid2:eid2/data/plugin/hparams/session_groups'
+        )
         .flush(createHparamsListSessionGroupResponse());
       expect(returnValue).toHaveBeenCalled();
     });
 
-    it('generates mapping of runId to hparams and metrics', () => {
-      const returnValue = jasmine.createSpy();
+    it('does not rename Session.name in single experiment view', () => {
+      let sessionGroups: SessionGroup[] = [];
+      const callback = (resp: SessionGroup[]) => {
+        sessionGroups = resp;
+      };
       dataSource
         .fetchSessionGroups(['eid'], {hparams: [], metrics: []})
-        .subscribe(returnValue);
+        .subscribe(callback);
       httpMock
         .expectOne('/experiment/eid/data/plugin/hparams/session_groups')
         .flush(createHparamsListSessionGroupResponse());
-      expect(returnValue).toHaveBeenCalledWith({
-        'eid/run_name_1': {
-          hparams: [
-            {name: 'hparams1', value: -100},
-            {name: 'hparams2', value: 'bar'},
-          ],
-          metrics: [
-            {
-              tag: 'metrics1',
-              trainingStep: 1000,
-              value: 1,
-            },
-          ],
-        },
-        'eid/run_name_2/test': {
-          hparams: [
-            {name: 'hparams1', value: 100},
-            {name: 'hparams2', value: 'foo'},
-          ],
-          metrics: [
-            {
-              tag: 'metrics1',
-              trainingStep: 5000,
-              value: 0.6,
-            },
-          ],
-        },
-        'eid/run_name_2/train': {
-          hparams: [
-            {name: 'hparams1', value: 100},
-            {name: 'hparams2', value: 'foo'},
-          ],
-          metrics: [
-            {
-              tag: 'metrics1',
-              trainingStep: 2000,
-              value: 0.1,
-            },
-            {
-              tag: 'metrics1',
-              trainingStep: 10000,
-              value: 0.3,
-            },
-            {
-              tag: 'metrics2',
-              trainingStep: 10000,
-              value: 0,
-            },
-          ],
-        },
-      });
+      expect(sessionGroups.length).toEqual(2);
+      expect(sessionGroups[0].sessions[0].name).toEqual('run_name_1');
+    });
+
+    it('renames Session.name to runId in comparison view', () => {
+      let sessionGroups: SessionGroup[] = [];
+      const callback = (resp: SessionGroup[]) => {
+        sessionGroups = resp;
+      };
+      dataSource
+        .fetchSessionGroups(['eid1', 'eid2'], {hparams: [], metrics: []})
+        .subscribe(callback);
+
+      const response = createHparamsListSessionGroupResponse();
+      // This is the format expected in comparison view.
+      response.sessionGroups[0].sessions[0].name = '[1] eid1/run_name_1';
+      httpMock
+        .expectOne(
+          '/compare/eid1:eid1,eid2:eid2/data/plugin/hparams/session_groups'
+        )
+        .flush(response);
+      expect(sessionGroups.length).toEqual(2);
+      expect(sessionGroups[0].sessions[0].name).toEqual('eid1/run_name_1');
     });
   });
 });

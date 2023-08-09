@@ -42,6 +42,7 @@ export {
   BackendListSessionGroupRequest,
   BackendHparamsValueType,
   RunStatus,
+  SessionGroup,
 } from '../runs/data_source/runs_backend_types';
 
 export interface HparamsAndMetricsValues {
