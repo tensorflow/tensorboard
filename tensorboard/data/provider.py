@@ -388,8 +388,8 @@ class DataProvider(metaclass=abc.ABCMeta):
             experiments.
 
         Returns:
-          A Collection[Hyperparameter] describing the hyperparameter metadata
-          for the experiments.
+          A ListHyperparametersResult describing the hyperparameter-related
+          metadata for the experiments.
 
         Raises:
           tensorboard.errors.PublicError: See `DataProvider` class docstring.
@@ -735,6 +735,21 @@ class HyperparameterSort:
 
     hyperparameter_name: str
     sort_direction: HyperparameterSortDirection
+
+
+@dataclasses.dataclass(frozen=True)
+class ListHyperparametersResult:
+    """The result from calling list_hyperparameters().
+
+    Attributes:
+      hyperparameters: The hyperparameteres belonging to the experiments in the
+        request.
+      session_groups: The session groups present in the experiments in the
+        request.
+    """
+
+    hyperparameters: Collection[Hyperparameter]
+    session_groups: Collection[HyperparameterSessionGroup]
 
 
 class _TimeSeries:
