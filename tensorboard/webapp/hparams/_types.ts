@@ -37,6 +37,7 @@ export {
 export {
   HparamSpec as BackendHparamSpec,
   DiscreteDomainHparamSpec,
+  IntervalDomainHparamSpec,
   BackendHparamsExperimentResponse,
   BackendListSessionGroupResponse,
   BackendListSessionGroupRequest,
@@ -44,24 +45,6 @@ export {
   RunStatus,
   SessionGroup,
 } from '../runs/data_source/runs_backend_types';
-
-export interface HparamsAndMetricsValues {
-  hparams: HparamValue[];
-  metrics: MetricValue[];
-}
-
-export interface HparamsAndMetricsSpecs {
-  hparams: HparamSpec[];
-  metrics: MetricSpec[];
-}
-
-export type ExperimentToHparamsMetrics = Record<
-  string,
-  {
-    specs: HparamsAndMetricsSpecs;
-    values: HparamsAndMetricsValues;
-  }
->;
 
 export interface HparamAndMetricSpec {
   hparams: HparamSpec[];

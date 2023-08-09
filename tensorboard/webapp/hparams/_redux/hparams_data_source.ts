@@ -24,7 +24,8 @@ import {
   BackendHparamSpec,
   DiscreteDomainHparamSpec,
   SessionGroup,
-  HparamsAndMetricsSpecs,
+  HparamAndMetricSpec,
+  IntervalDomainHparamSpec,
   BackendListSessionGroupResponse,
   RunStatus,
 } from '../types';
@@ -38,6 +39,12 @@ function isHparamDiscrete(
   return Boolean((hparam as DiscreteDomainHparamSpec).domainDiscrete);
 }
 
+function isHparamInterval(
+  hparam: BackendHparamSpec
+): hparam is IntervalDomainHparamSpec {
+  return Boolean((hparam as IntervalDomainHparamSpec).domainInterval);
+}
+
 function getHparamDomain(hparam: BackendHparamSpec): Domain {
   if (isHparamDiscrete(hparam)) {
     return {
@@ -46,9 +53,16 @@ function getHparamDomain(hparam: BackendHparamSpec): Domain {
     };
   }
 
+  if (isHparamInterval(hparam)) {
+    return {
+      ...hparam.domainInterval,
+      type: DomainType.INTERVAL,
+    };
+  }
+
   return {
-    ...hparam.domainInterval,
-    type: DomainType.INTERVAL,
+    values: [],
+    type: DomainType.DISCRETE,
   };
 }
 
@@ -70,7 +84,7 @@ export class HparamsDataSource {
 
   fetchExperimentInfo(
     experimentIds: string[]
-  ): Observable<HparamsAndMetricsSpecs> {
+  ): Observable<HparamAndMetricSpec> {
     const formattedExperimentIds = this.formatExperimentIds(experimentIds);
     return this.http
       .post<BackendHparamsExperimentResponse>(
@@ -95,9 +109,9 @@ export class HparamsDataSource {
 
               return feHparam;
             }),
-            metrics: response.metricInfos.map((info) => ({
-              ...info,
-              tag: info.name.tag,
+            metrics: response.metricInfos.map((metric) => ({
+              ...metric,
+              tag: metric.name.tag,
             })),
           };
         })
@@ -106,7 +120,7 @@ export class HparamsDataSource {
 
   fetchSessionGroups(
     experimentIds: string[],
-    hparamsAndMetricsSpecs: HparamsAndMetricsSpecs
+    hparamsAndMetricsSpecs: HparamAndMetricSpec
   ): Observable<SessionGroup[]> {
     const formattedExperimentIds = this.formatExperimentIds(experimentIds);
 

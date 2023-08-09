@@ -14,19 +14,20 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 import {Observable, of} from 'rxjs';
-import {BackendHparamsValueType, DatasetType} from './runs_backend_types';
+import {
+  BackendHparamsExperimentResponse,
+  BackendHparamsValueType,
+  BackendListSessionGroupResponse,
+  DatasetType,
+  HparamSpec,
+  RunStatus,
+} from './runs_backend_types';
 import {
   DomainType,
   HparamsAndMetadata,
   Run,
   RunsDataSource,
 } from './runs_data_source_types';
-
-export {
-  createHparamsListSessionGroupResponse,
-  createHparamsExperimentResponse,
-  createHparamsExperimentNoDomainResponse,
-} from '../../hparams/_redux/testing';
 
 export function buildHparamsAndMetadata(
   override: Partial<HparamsAndMetadata>
@@ -78,4 +79,194 @@ export function provideTestingRunsDataSource() {
     TestingRunsDataSource,
     {provide: RunsDataSource, useExisting: TestingRunsDataSource},
   ];
+}
+
+export function createHparamsExperimentResponse(): BackendHparamsExperimentResponse {
+  return {
+    description: 'some description',
+    hparamInfos: [
+      {
+        description: 'describes hparams one',
+        displayName: 'hparams one',
+        name: 'hparams1',
+        type: BackendHparamsValueType.DATA_TYPE_STRING,
+        domainInterval: {minValue: -100, maxValue: 100},
+      },
+      {
+        description: 'describes hparams two',
+        displayName: 'hparams two',
+        name: 'hparams2',
+        type: BackendHparamsValueType.DATA_TYPE_BOOL,
+        domainDiscrete: ['foo', 'bar', 'baz'],
+      },
+    ],
+    metricInfos: [
+      {
+        name: {
+          group: '',
+          tag: 'metrics1',
+        },
+        displayName: 'Metrics One',
+        description: 'describe metrics one',
+        datasetType: DatasetType.DATASET_UNKNOWN,
+      },
+      {
+        name: {
+          group: 'group',
+          tag: 'metrics2',
+        },
+        displayName: 'Metrics Two',
+        description: 'describe metrics two',
+        datasetType: DatasetType.DATASET_TRAINING,
+      },
+    ],
+    name: 'experiment name',
+    timeCreatedSecs: 1337,
+    user: 'user name',
+  };
+}
+
+export function createHparamsExperimentNoDomainResponse(): BackendHparamsExperimentResponse {
+  return {
+    description: 'some description',
+    hparamInfos: [
+      {
+        description: 'describes hparams one',
+        displayName: 'hparams one',
+        name: 'hparams1',
+        type: BackendHparamsValueType.DATA_TYPE_STRING,
+      } as HparamSpec,
+      {
+        description: 'describes hparams two',
+        displayName: 'hparams two',
+        name: 'hparams2',
+        type: BackendHparamsValueType.DATA_TYPE_BOOL,
+        domainDiscrete: ['foo', 'bar', 'baz'],
+      },
+    ],
+    metricInfos: [
+      {
+        name: {
+          group: '',
+          tag: 'metrics1',
+        },
+        displayName: 'Metrics One',
+        description: 'describe metrics one',
+        datasetType: DatasetType.DATASET_UNKNOWN,
+      },
+      {
+        name: {
+          group: 'group',
+          tag: 'metrics2',
+        },
+        displayName: 'Metrics Two',
+        description: 'describe metrics two',
+        datasetType: DatasetType.DATASET_TRAINING,
+      },
+    ],
+    name: 'experiment name',
+    timeCreatedSecs: 1337,
+    user: 'user name',
+  };
+}
+
+export function createHparamsListSessionGroupResponse(): BackendListSessionGroupResponse {
+  return {
+    sessionGroups: [
+      {
+        name: 'session_id_1',
+        hparams: {
+          hparams1: -100,
+          hparams2: 'bar',
+        },
+        sessions: [
+          {
+            endTimeSecs: 0,
+            metricValues: [
+              {
+                name: {
+                  group: '',
+                  tag: 'metrics1',
+                },
+                trainingStep: 1000,
+                value: 1,
+                wallTimeSecs: 0,
+              },
+            ],
+            modelUri: '',
+            monitorUrl: '',
+            name: 'run_name_1',
+            startTimeSecs: 0,
+            status: RunStatus.STATUS_SUCCESS,
+          },
+        ],
+      },
+      {
+        name: 'session_id_2',
+        hparams: {
+          hparams1: 100,
+          hparams2: 'foo',
+        },
+        sessions: [
+          {
+            endTimeSecs: 0,
+            metricValues: [
+              {
+                name: {
+                  group: 'train',
+                  tag: 'metrics1',
+                },
+                trainingStep: 2000,
+                value: 0.1,
+                wallTimeSecs: 0,
+              },
+              {
+                name: {
+                  group: 'test',
+                  tag: 'metrics1',
+                },
+                trainingStep: 5000,
+                value: 0.6,
+                wallTimeSecs: 0,
+              },
+            ],
+            modelUri: '',
+            monitorUrl: '',
+            name: 'run_name_2',
+            startTimeSecs: 0,
+            status: RunStatus.STATUS_SUCCESS,
+          },
+          {
+            endTimeSecs: 0,
+            metricValues: [
+              {
+                name: {
+                  group: 'train',
+                  tag: 'metrics1',
+                },
+                trainingStep: 10000,
+                value: 0.3,
+                wallTimeSecs: 0,
+              },
+              {
+                name: {
+                  group: 'train',
+                  tag: 'metrics2',
+                },
+                trainingStep: 10000,
+                value: 0,
+                wallTimeSecs: 0,
+              },
+            ],
+            modelUri: '',
+            monitorUrl: '',
+            name: 'run_name_2',
+            startTimeSecs: 0,
+            status: RunStatus.STATUS_RUNNING,
+          },
+        ],
+      },
+    ],
+    totalSize: 2,
+  };
 }
