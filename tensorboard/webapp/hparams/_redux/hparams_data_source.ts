@@ -162,9 +162,19 @@ export class HparamsDataSource {
         map((response) =>
           response.sessionGroups.map((sessionGroup) => {
             sessionGroup.sessions = sessionGroup.sessions.map((session) => {
+              /**
+               * In single experiment mode the Session.name is equal to the runName.
+               * In comparison view it is `[AliasNumber] ExperimentAlias/runName`
+               *
+               * We store runs as experimentId/runName so it is necessary to prepend the experiment name
+               * in single experiment view. In comparison view we pass the experimentId as the alias allowing
+               * us to simply cut off the `[AliasNumber]` portion of the string
+               */
               if (experimentIds.length > 1) {
                 const [, ...runName] = session.name.split(' ');
                 session.name = runName.join(' ');
+              } else {
+                session.name = [experimentIds[0], session.name].join('/');
               }
               return session;
             });

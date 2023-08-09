@@ -118,6 +118,40 @@ describe('HparamsDataSource Test', () => {
         ],
       });
     });
+
+    it('treates missing domains as discrete domains', () => {
+      const returnValue = jasmine.createSpy();
+      dataSource.fetchExperimentInfo(['eid']).subscribe(returnValue);
+      httpMock
+        .expectOne('/experiment/eid/data/plugin/hparams/experiment')
+        .flush(createHparamsExperimentNoDomainResponse());
+      expect(returnValue).toHaveBeenCalledWith(
+        jasmine.objectContaining({
+          hparams: [
+            {
+              description: 'describes hparams one',
+              displayName: 'hparams one',
+              name: 'hparams1',
+              type: BackendHparamsValueType.DATA_TYPE_STRING,
+              domain: {
+                type: DomainType.DISCRETE,
+                values: [],
+              },
+            },
+            {
+              description: 'describes hparams two',
+              displayName: 'hparams two',
+              name: 'hparams2',
+              type: BackendHparamsValueType.DATA_TYPE_BOOL,
+              domain: {
+                type: DomainType.DISCRETE,
+                values: ['foo', 'bar', 'baz'],
+              },
+            },
+          ],
+        })
+      );
+    });
   });
 
   describe('fetchSessionGroups', () => {
@@ -145,7 +179,7 @@ describe('HparamsDataSource Test', () => {
       expect(returnValue).toHaveBeenCalled();
     });
 
-    it('does not rename Session.name in single experiment view', () => {
+    it('renames Session.name in single experiment view', () => {
       let sessionGroups: SessionGroup[] = [];
       const callback = (resp: SessionGroup[]) => {
         sessionGroups = resp;
@@ -157,7 +191,7 @@ describe('HparamsDataSource Test', () => {
         .expectOne('/experiment/eid/data/plugin/hparams/session_groups')
         .flush(createHparamsListSessionGroupResponse());
       expect(sessionGroups.length).toEqual(2);
-      expect(sessionGroups[0].sessions[0].name).toEqual('run_name_1');
+      expect(sessionGroups[0].sessions[0].name).toEqual('eid/run_name_1');
     });
 
     it('renames Session.name to runId in comparison view', () => {
