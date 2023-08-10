@@ -17,6 +17,8 @@ import {
   HparamSpec,
   IntervalFilter,
   MetricSpec,
+  HparamAndMetricSpec,
+  SessionGroup,
 } from '../_types';
 
 export interface HparamsMetricsAndFilters {
@@ -43,6 +45,8 @@ export const HPARAMS_FEATURE_KEY = 'hparams';
 
 export interface HparamsState {
   specs: ExperimentToHparams;
+  currentSpecs: HparamAndMetricSpec;
+  sessionGroups: SessionGroup[];
   /**
    * RATIONALE: we do not use the NamespaceContextedState because of the following reasons.
    * - RunsTable which uses the state renders both on the dashboard view and the

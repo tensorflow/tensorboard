@@ -30,10 +30,13 @@ tf_ng_module(
         "hparams_module.ts",
     ],
     deps = [
+        ":hparams_data_source",
         ":hparams_reducers",
         ":types",
+        ":hparams_effects",
         "//tensorboard/webapp/hparams:types",
         "@npm//@angular/core",
+        "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
     ],
 )
@@ -95,6 +98,30 @@ tf_ng_module(
     ],
 )
 
+tf_ng_module(
+    name = "hparams_effects",
+    srcs = [
+        "hparams_effects.ts",
+    ],
+    deps = [
+        ":hparams_actions",
+        ":hparams_data_source",
+        ":types",
+        "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/app_routing/actions",
+        "//tensorboard/webapp/app_routing/store",
+        "//tensorboard/webapp/core/actions",
+        "//tensorboard/webapp/runs/actions",
+        "//tensorboard/webapp/hparams:types",
+        "//tensorboard/webapp/feature_flag/store",
+        "//tensorboard/webapp/webapp_data_source:http_client",
+        "@npm//@angular/core",
+        "@npm//@ngrx/effects",
+        "@npm//@ngrx/store",
+        "@npm//rxjs",
+    ],
+)
+
 tf_ts_library(
     name = "testing",
     testonly = True,
@@ -105,6 +132,7 @@ tf_ts_library(
         ":types",
         ":utils",
         "//tensorboard/webapp/hparams:_types",
+        "//tensorboard/webapp/util:types",
     ],
 )
 
@@ -116,21 +144,31 @@ tf_ts_library(
         "hparams_reducers_test.ts",
         "hparams_selectors_test.ts",
         "hparams_selectors_utils_test.ts",
+        "hparams_effects_test.ts",
         "utils_test.ts",
     ],
     deps = [
         ":hparams_actions",
+        ":hparams_effects",
         ":hparams_data_source",
         ":hparams_reducers",
         ":hparams_selectors",
         ":testing",
         ":utils",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/hparams:types",
         "//tensorboard/webapp/runs/actions",
         "//tensorboard/webapp/runs/data_source:testing",
+        "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/core/actions",
+        "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/runs/store:testing",
+        "//tensorboard/webapp/app_routing/actions",
         "//tensorboard/webapp/webapp_data_source:http_client_testing",
         "@npm//@types/jasmine",
+        "@npm//@ngrx/effects",
+        "@npm//rxjs",
     ],
 )

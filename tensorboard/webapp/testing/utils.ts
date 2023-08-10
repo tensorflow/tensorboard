@@ -83,10 +83,7 @@ export function buildMockState(overrides: Partial<State> = {}): State {
     ),
     ...buildStateFromFeatureFlagsState(buildFeatureFlagState()),
     ...buildStateFromHparamsState(
-      buildHparamsState(
-        overrides[HPARAMS_FEATURE_KEY]?.specs,
-        overrides[HPARAMS_FEATURE_KEY]?.filters
-      )
+      buildHparamsState(overrides[HPARAMS_FEATURE_KEY])
     ),
     ...buildStateFromNotificationState(
       buildNotificationState(overrides[NOTIFICATION_FEATURE_KEY] || {})

@@ -19,3 +19,9 @@ limitations under the License.
 export type DeepReadonly<T> = {
   readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
+
+export type DeepPartial<T> = T extends object
+  ? {
+      [K in keyof T]?: DeepPartial<T[K]>;
+    }
+  : Partial<T>;
