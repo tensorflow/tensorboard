@@ -68,7 +68,6 @@ tf_ts_library(
     deps = [
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/testing",
         "//tensorboard/webapp:app_state",
-        "//tensorboard/webapp/util:types",
         "//tensorboard/webapp/alert/store:testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/app_routing/store:testing",
@@ -88,6 +87,7 @@ tf_ts_library(
         "//tensorboard/webapp/runs/store:testing",
         "//tensorboard/webapp/runs/store:types",
         "//tensorboard/webapp/settings:testing",
+        "//tensorboard/webapp/util:types",
         "@npm//@ngrx/store",
     ],
 )
