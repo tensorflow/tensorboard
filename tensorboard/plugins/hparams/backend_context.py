@@ -98,7 +98,9 @@ class Context:
             return experiment_from_runs
 
         experiment_from_data_provider_hparams = (
-            self._experiment_from_data_provider_hparams(data_provider_hparams)
+            self._experiment_from_data_provider_hparams(
+                ctx, experiment_id, data_provider_hparams
+            )
         )
         return (
             experiment_from_data_provider_hparams
@@ -224,7 +226,7 @@ class Context:
         """
         hparam_infos = self._compute_hparam_infos(hparams_run_to_tag_to_content)
         if hparam_infos:
-            metric_infos = self._compute_metric_infos(
+            metric_infos = self._compute_metric_infos_from_runs(
                 ctx, experiment_id, hparams_run_to_tag_to_content
             )
         else:
@@ -316,6 +318,8 @@ class Context:
 
     def _experiment_from_data_provider_hparams(
         self,
+        ctx,
+        experiment_id,
         data_provider_hparams,
     ):
         """Returns an experiment protobuffer based on data provider hparams.
@@ -334,18 +338,24 @@ class Context:
             # until all internal implementations of DataProvider can be
             # migrated to use new return value of provider.ListHyperparametersResult.
             hyperparameters = data_provider_hparams
+            session_groups = []
         else:
             # Is instance of provider.ListHyperparametersResult
             hyperparameters = data_provider_hparams.hyperparameters
-
-        if not hyperparameters:
-            return None
+            session_groups = data_provider_hparams.session_groups
 
         hparam_infos = [
             self._convert_data_provider_hparam(dp_hparam)
             for dp_hparam in hyperparameters
         ]
-        return api_pb2.Experiment(hparam_infos=hparam_infos)
+        metric_infos = (
+            self.compute_metric_infos_from_data_provider_session_groups(
+                ctx, experiment_id, session_groups
+            )
+        )
+        return api_pb2.Experiment(
+            hparam_infos=hparam_infos, metric_infos=metric_infos
+        )
 
     def _convert_data_provider_hparam(self, dp_hparam):
         """Builds an HParamInfo message from data provider Hyperparameter.
@@ -374,19 +384,37 @@ class Context:
             hparam_info.domain_discrete.extend(dp_hparam.domain)
         return hparam_info
 
-    def _compute_metric_infos(
+    def _compute_metric_infos_from_runs(
         self, ctx, experiment_id, hparams_run_to_tag_to_content
     ):
+        session_runs = set(
+            run
+            for run, tags in hparams_run_to_tag_to_content.items()
+            if metadata.SESSION_START_INFO_TAG in tags
+        )
         return (
             api_pb2.MetricInfo(name=api_pb2.MetricName(group=group, tag=tag))
             for tag, group in self._compute_metric_names(
-                ctx, experiment_id, hparams_run_to_tag_to_content
+                ctx, experiment_id, session_runs
             )
         )
 
-    def _compute_metric_names(
-        self, ctx, experiment_id, hparams_run_to_tag_to_content
+    def compute_metric_infos_from_data_provider_session_groups(
+        self, ctx, experiment_id, session_groups
     ):
+        session_runs = set(
+            f"{s.experiment_id}/{s.run}"
+            for sg in session_groups
+            for s in sg.sessions
+        )
+        return [
+            api_pb2.MetricInfo(name=api_pb2.MetricName(group=group, tag=tag))
+            for tag, group in self._compute_metric_names(
+                ctx, experiment_id, session_runs
+            )
+        ]
+
+    def _compute_metric_names(self, ctx, experiment_id, session_runs):
         """Computes the list of metric names from all the scalar (run, tag)
         pairs.
 
@@ -412,11 +440,6 @@ class Context:
           A python list containing pairs. Each pair is a (tag, group) pair
           representing a metric name used in some session.
         """
-        session_runs = set(
-            run
-            for run, tags in hparams_run_to_tag_to_content.items()
-            if metadata.SESSION_START_INFO_TAG in tags
-        )
         metric_names_set = set()
         scalars_run_to_tag_to_content = self.scalars_metadata(
             ctx, experiment_id
