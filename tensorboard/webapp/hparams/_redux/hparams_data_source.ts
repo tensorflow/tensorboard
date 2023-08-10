@@ -79,7 +79,8 @@ export class HparamsDataSource {
       return experimentIds[0];
     }
 
-    // The server does not send back experiment ids but rather `[AliasNumber] ExperimentAlias/RunName`
+    // The server does not send back experiment ids. Instead the response is formatted as
+    // `[AliasNumber] ExperimentAlias/RunName`
     // By using the index as the alias we can translate associate the response with an experiment id
     // Note: The experiment id itself cannot be the alias because it may contain ':'
     return experimentIds.map((eid, index) => `${index}:${eid}`).join(',');
@@ -165,13 +166,14 @@ export class HparamsDataSource {
         map((response) =>
           response.sessionGroups.map((sessionGroup) => {
             sessionGroup.sessions = sessionGroup.sessions.map((session) => {
-              /**
+              /*
                * In single experiment mode the Session.name is equal to the runName.
                * In comparison view it is `[AliasNumber] ExperimentAlias/runName`
                *
                * We store runs as experimentId/runName so it is necessary to prepend the experiment name
-               * in single experiment view. In comparison view we pass the index of the experimentId as the alias allowing
-               * us to simply cut off the `[AliasNumber]` portion of the string then retrieve the experiment id from arguments.
+               * in single experiment view. "In comparison view we pass the indeces of the experimentIds
+               * as the aliases in the request. That allows us to parse the indeces from the response and
+               * use them to lookup the correct ids from the experimentIds argument.
                */
               if (experimentIds.length > 1) {
                 const [, ...aliasAndRunName] = session.name.split(' ');

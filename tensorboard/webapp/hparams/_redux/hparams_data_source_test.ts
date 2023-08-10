@@ -117,7 +117,7 @@ describe('HparamsDataSource Test', () => {
       });
     });
 
-    it('treates missing domains as discrete domains', () => {
+    it('treats missing domains as discrete domains', () => {
       const returnValue = jasmine.createSpy();
       dataSource.fetchExperimentInfo(['eid']).subscribe(returnValue);
       httpMock
@@ -202,11 +202,13 @@ describe('HparamsDataSource Test', () => {
       const response = createHparamsListSessionGroupResponse();
       // This is the format expected in comparison view.
       response.sessionGroups[0].sessions[0].name = '[1] 0/run_name_1';
+      response.sessionGroups[1].sessions[0].name = '[2] 1/run_name_2';
       httpMock
         .expectOne('/compare/0:eid1,1:eid2/data/plugin/hparams/session_groups')
         .flush(response);
       expect(sessionGroups.length).toEqual(2);
       expect(sessionGroups[0].sessions[0].name).toEqual('eid1/run_name_1');
+      expect(sessionGroups[1].sessions[0].name).toEqual('eid2/run_name_2');
     });
   });
 });
