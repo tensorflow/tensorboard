@@ -57,9 +57,7 @@ describe('HparamsDataSource Test', () => {
       const returnValue = jasmine.createSpy();
       dataSource.fetchExperimentInfo(['eid1', 'eid2']).subscribe(returnValue);
       httpMock
-        .expectOne(
-          '/compare/eid1:eid1,eid2:eid2/data/plugin/hparams/experiment'
-        )
+        .expectOne('/compare/0:eid1,1:eid2/data/plugin/hparams/experiment')
         .flush(createHparamsExperimentResponse());
       expect(returnValue).toHaveBeenCalled();
     });
@@ -172,9 +170,7 @@ describe('HparamsDataSource Test', () => {
         .fetchSessionGroups(['eid1', 'eid2'], {hparams: [], metrics: []})
         .subscribe(returnValue);
       httpMock
-        .expectOne(
-          '/compare/eid1:eid1,eid2:eid2/data/plugin/hparams/session_groups'
-        )
+        .expectOne('/compare/0:eid1,1:eid2/data/plugin/hparams/session_groups')
         .flush(createHparamsListSessionGroupResponse());
       expect(returnValue).toHaveBeenCalled();
     });
@@ -205,11 +201,9 @@ describe('HparamsDataSource Test', () => {
 
       const response = createHparamsListSessionGroupResponse();
       // This is the format expected in comparison view.
-      response.sessionGroups[0].sessions[0].name = '[1] eid1/run_name_1';
+      response.sessionGroups[0].sessions[0].name = '[1] 0/run_name_1';
       httpMock
-        .expectOne(
-          '/compare/eid1:eid1,eid2:eid2/data/plugin/hparams/session_groups'
-        )
+        .expectOne('/compare/0:eid1,1:eid2/data/plugin/hparams/session_groups')
         .flush(response);
       expect(sessionGroups.length).toEqual(2);
       expect(sessionGroups[0].sessions[0].name).toEqual('eid1/run_name_1');

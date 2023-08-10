@@ -79,7 +79,10 @@ export class HparamsDataSource {
       return experimentIds[0];
     }
 
-    return experimentIds.map((eid) => `${eid}:${eid}`).join(',');
+    // The server does not send back experiment ids but rather `[AliasNumber] ExperimentAlias/RunName`
+    // By using the index as the alias we can translate associate the response with an experiment id
+    // Note: The experiment id itself cannot be the alias because it may contain ':'
+    return experimentIds.map((eid, index) => `${index}:${eid}`).join(',');
   }
 
   fetchExperimentInfo(
@@ -167,12 +170,19 @@ export class HparamsDataSource {
                * In comparison view it is `[AliasNumber] ExperimentAlias/runName`
                *
                * We store runs as experimentId/runName so it is necessary to prepend the experiment name
-               * in single experiment view. In comparison view we pass the experimentId as the alias allowing
-               * us to simply cut off the `[AliasNumber]` portion of the string
+               * in single experiment view. In comparison view we pass the index of the experimentId as the alias allowing
+               * us to simply cut off the `[AliasNumber]` portion of the string then retrieve the experiment id from arguments.
                */
               if (experimentIds.length > 1) {
-                const [, ...runName] = session.name.split(' ');
-                session.name = runName.join(' ');
+                const [, ...aliasAndRunName] = session.name.split(' ');
+                const [experimentIndex, ...runName] = aliasAndRunName
+                  .join(' ')
+                  .split('/');
+                session.name = [
+                  // This parseInt should not be necessary because JS Arrays DO support indexing by string
+                  experimentIds[parseInt(experimentIndex)],
+                  ...runName,
+                ].join('/');
               } else {
                 session.name = [experimentIds[0], session.name].join('/');
               }
