@@ -81,7 +81,7 @@ class Context:
             summary metadata content for the keyed time series.
           data_provider_hparams: The ouput from an hparams_from_data_provider()
             call, corresponding to DataProvider.list_hyperparameters().
-            A Collection[provider.Hyperparameter].
+            A provider.ListHyperpararametersResult.
 
         Returns:
           The experiment proto. If no data is found for an experiment proto to
@@ -323,18 +323,27 @@ class Context:
         Args:
           data_provider_hparams: The ouput from an hparams_from_data_provider()
             call, corresponding to DataProvider.list_hyperparameters().
-            A Collection[provider.Hyperparameter].
+            A provider.ListHyperparametersResult.
 
         Returns:
           The experiment proto. If there are no hyperparameters in the input,
           returns None.
         """
-        if not data_provider_hparams:
+        if isinstance(data_provider_hparams, list):
+            # TODO: Support old return value of Collection[provider.Hyperparameters]
+            # until all internal implementations of DataProvider can be
+            # migrated to use new return value of provider.ListHyperparametersResult.
+            hyperparameters = data_provider_hparams
+        else:
+            # Is instance of provider.ListHyperparametersResult
+            hyperparameters = data_provider_hparams.hyperparameters
+
+        if not hyperparameters:
             return None
 
         hparam_infos = [
             self._convert_data_provider_hparam(dp_hparam)
-            for dp_hparam in data_provider_hparams
+            for dp_hparam in hyperparameters
         ]
         return api_pb2.Experiment(hparam_infos=hparam_infos)
 
