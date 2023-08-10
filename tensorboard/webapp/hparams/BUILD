@@ -22,6 +22,7 @@ tf_ts_library(
     ],
     deps = [
         "//tensorboard/webapp/runs/data_source",
+        "//tensorboard/webapp/runs/data_source:backend_types",
     ],
 )
 

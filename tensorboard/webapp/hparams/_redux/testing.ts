@@ -99,6 +99,11 @@ export function buildMetricSpec(
   override: Partial<MetricSpec> = {}
 ): MetricSpec {
   return {
+    name: {
+      ...override?.name,
+      tag: 'metric',
+      group: 'some group',
+    },
     tag: 'tag',
     displayName: 'Tag',
     description: 'This is a tags',

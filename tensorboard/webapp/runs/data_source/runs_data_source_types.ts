@@ -63,7 +63,8 @@ export interface HparamSpec
   domain: Domain;
 }
 
-export interface MetricSpec extends Omit<backendTypes.MetricSpec, 'name'> {
+// TODO(rileyajones) merge these types by deleting this one.
+export interface MetricSpec extends backendTypes.MetricSpec {
   tag: string;
 }
 

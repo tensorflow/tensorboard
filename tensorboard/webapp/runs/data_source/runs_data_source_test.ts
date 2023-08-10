@@ -97,12 +97,20 @@ describe('TBRunsDataSource test', () => {
           ],
           metricSpecs: [
             {
+              name: {
+                tag: 'metrics1',
+                group: '',
+              },
               tag: 'metrics1',
               displayName: 'Metrics One',
               description: 'describe metrics one',
               datasetType: types.DatasetType.DATASET_UNKNOWN,
             },
             {
+              name: {
+                tag: 'metrics2',
+                group: 'group',
+              },
               tag: 'metrics2',
               displayName: 'Metrics Two',
               description: 'describe metrics two',
@@ -203,12 +211,20 @@ describe('TBRunsDataSource test', () => {
           ],
           metricSpecs: [
             {
+              name: {
+                tag: 'metrics1',
+                group: '',
+              },
               tag: 'metrics1',
               displayName: 'Metrics One',
               description: 'describe metrics one',
               datasetType: types.DatasetType.DATASET_UNKNOWN,
             },
             {
+              name: {
+                tag: 'metrics2',
+                group: 'group',
+              },
               tag: 'metrics2',
               displayName: 'Metrics Two',
               description: 'describe metrics two',
