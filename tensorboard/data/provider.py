@@ -394,9 +394,7 @@ class DataProvider(metaclass=abc.ABCMeta):
         Raises:
           tensorboard.errors.PublicError: See `DataProvider` class docstring.
         """
-        return provider.ListHyperparametersResult(
-            hyperparameters=[], session_groups=[]
-        )
+        return ListHyperparametersResult(hyperparameters=[], session_groups=[])
 
     def read_hyperparameters(
         self, ctx=None, *, experiment_ids, filters=None, sort=None
