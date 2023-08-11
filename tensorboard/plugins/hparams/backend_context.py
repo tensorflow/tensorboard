@@ -403,7 +403,7 @@ class Context:
         self, ctx, experiment_id, session_groups
     ):
         session_runs = set(
-            f"{s.experiment_id}/{s.run}"
+            f"{s.experiment_id}/{s.run}" if s.run else s.experiment_id
             for sg in session_groups
             for s in sg.sessions
         )
