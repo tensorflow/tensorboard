@@ -27,7 +27,10 @@ import {
 } from 'rxjs/operators';
 
 import {navigated} from '../../app_routing/actions';
-import {getExperimentIdsFromRoute} from '../../app_routing/store/app_routing_selectors';
+import {
+  getActiveRoute,
+  getExperimentIdsFromRoute,
+} from '../../app_routing/store/app_routing_selectors';
 import {State} from '../../app_state';
 import * as coreActions from '../../core/actions';
 import * as runsActions from '../../runs/actions/runs_actions';
@@ -37,6 +40,7 @@ import * as hparamsActions from './hparams_actions';
 import {HparamsDataSource} from './hparams_data_source';
 import {HparamAndMetricSpec, SessionGroup} from '../types';
 import {getEnableHparamsInTimeSeries} from '../../feature_flag/store/feature_flag_selectors';
+import {RouteKind} from '../../app_routing/types';
 
 /**
  * Effects for fetching the hparams data from the backend.
@@ -68,9 +72,17 @@ export class HparamsEffects {
       this.runTableShown$,
       this.loadHparamsOnNavigationOrReload$
     ).pipe(
-      combineLatestWith(this.store.select(getEnableHparamsInTimeSeries)),
+      combineLatestWith(
+        this.store.select(getEnableHparamsInTimeSeries),
+        this.store.select(getActiveRoute)
+      ),
       filter(
         ([, getEnableHparamsInTimeSeries]) => getEnableHparamsInTimeSeries
+      ),
+      filter(
+        ([, , activeRoute]) =>
+          activeRoute?.routeKind === RouteKind.EXPERIMENT ||
+          activeRoute?.routeKind === RouteKind.COMPARE_EXPERIMENT
       ),
       throttleTime(10),
       switchMap(([experimentIds]) =>

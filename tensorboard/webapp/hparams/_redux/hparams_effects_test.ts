@@ -30,6 +30,7 @@ import * as runsActions from '../../runs/actions';
 import * as hparamsActions from './hparams_actions';
 import * as appRoutingActions from '../../app_routing/actions';
 import * as coreActions from '../../core/actions';
+import {RouteKind} from '../../app_routing/types';
 
 function mockHparamsDataSourceFactory() {
   return jasmine.createSpyObj<HparamsDataSource>('HparamsDataSource', [
@@ -111,12 +112,29 @@ describe('hparams effects', () => {
         actualActions.push(action);
       });
       store.overrideSelector(selectors.getEnableHparamsInTimeSeries, true);
+      store.overrideSelector(selectors.getActiveRoute, {
+        routeKind: RouteKind.EXPERIMENT,
+        params: {},
+      });
       store.overrideSelector(selectors.getExperimentIdsFromRoute, ['exp1']);
       store.refreshState();
     });
 
     it('does not dispatch requests when enableHparamsInTimeSeries is false', () => {
       store.overrideSelector(selectors.getEnableHparamsInTimeSeries, false);
+      store.refreshState();
+
+      action.next(runsActions.runTableShown({experimentIds: ['exp1']}));
+      expect(dataSource.fetchExperimentInfo).not.toHaveBeenCalled();
+      expect(dataSource.fetchSessionGroups).not.toHaveBeenCalled();
+      expect(actualActions).toEqual([]);
+    });
+
+    it('does not dispatch requests when on experiments route', () => {
+      store.overrideSelector(selectors.getActiveRoute, {
+        routeKind: RouteKind.EXPERIMENTS,
+        params: {},
+      });
       store.refreshState();
 
       action.next(runsActions.runTableShown({experimentIds: ['exp1']}));
