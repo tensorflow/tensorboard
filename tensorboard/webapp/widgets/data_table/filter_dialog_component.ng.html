@@ -30,9 +30,6 @@ limitations under the License.
     </div>
     <div
       *ngFor="let value of getPossibleValues(); index"
-      mat-menu-item
-      class="filter-menu-checkbox-row"
-      role="menuitemcheckbox"
       (click)="$event.stopPropagation()"
     >
       <mat-checkbox
@@ -48,7 +45,6 @@ limitations under the License.
     (click)="$event.stopPropagation()"
     class="range-input-container"
     disableRipple
-    mat-menu-item
   >
     <tb-range-input
       [min]="filter.minValue"

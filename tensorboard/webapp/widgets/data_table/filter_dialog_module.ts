@@ -16,7 +16,6 @@ limitations under the License.
 import {NgModule} from '@angular/core';
 import {FilterDialog} from './filter_dialog_component';
 import {CommonModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {RangeInputModule} from '../range_input/range_input_module';
 import {FilterInputModule} from '../filter_input/filter_input_module';
@@ -26,7 +25,6 @@ import {FilterInputModule} from '../filter_input/filter_input_module';
   imports: [
     CommonModule,
     MatCheckboxModule,
-    FormsModule,
     FilterInputModule,
     RangeInputModule,
   ],

@@ -153,7 +153,6 @@ tf_ng_module(
         "//tensorboard/webapp/widgets/range_input:types",
         "@npm//@angular/common",
         "@npm//@angular/core",
-        "@npm//@angular/forms",
     ],
 )
 
@@ -179,6 +178,8 @@ tf_ts_library(
         ":data_table",
         ":filter_dialog",
         ":types",
+        "//tensorboard/webapp/angular:expect_angular_cdk_testing",
+        "//tensorboard/webapp/angular:expect_angular_cdk_testing_testbed",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_checkbox",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",

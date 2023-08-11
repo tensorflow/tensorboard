@@ -12,7 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
 /**
  * This enum defines the columns available in the data table. The
  * ScalarCardComponent must know which piece of data is associated with each
@@ -60,12 +59,6 @@ export interface DiscreteFilter {
   filterValues: DiscreteFilterValues;
 }
 
-export interface DiscreteFilterChange {
-  hparamName: string;
-  includeUndefined: boolean;
-  filterValues: DiscreteFilterValues;
-}
-
 export interface IntervalFilter {
   type: DomainType.INTERVAL;
   includeUndefined: boolean;
@@ -74,11 +67,6 @@ export interface IntervalFilter {
   // Filter values have to be in between min and max values (inclusive).
   filterLowerValue: number;
   filterUpperValue: number;
-}
-
-export interface FilterAddedEvent {
-  header: ColumnHeader;
-  value: IntervalFilter | DiscreteFilter;
 }
 
 export interface ColumnHeader {
@@ -91,6 +79,7 @@ export interface ColumnHeader {
   removable?: boolean;
   sortable?: boolean;
   movable?: boolean;
+  filterable?: boolean;
 }
 
 export enum SortingOrder {

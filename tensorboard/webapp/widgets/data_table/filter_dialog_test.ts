@@ -13,30 +13,36 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
+import {HarnessLoader} from '@angular/cdk/testing';
+import {TestbedHarnessEnvironment} from '@angular/cdk/testing/testbed';
 import {DataTableModule} from './data_table_module';
 import {FilterDialog} from './filter_dialog_component';
 import {DiscreteFilter, DomainType, IntervalFilter} from './types';
 import {By} from '@angular/platform-browser';
 import {RangeInputComponent} from '../range_input/range_input_component';
 import {RangeInputModule} from '../range_input/range_input_module';
-import {MatLegacyCheckboxModule} from '@angular/material/legacy-checkbox';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatCheckboxHarness} from '@angular/material/checkbox/testing';
 
 describe('filter dialog', () => {
+  let rootLoader: HarnessLoader;
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [FilterDialog],
-      imports: [DataTableModule, RangeInputModule, MatLegacyCheckboxModule],
+      imports: [DataTableModule, RangeInputModule, MatCheckboxModule],
     }).compileComponents();
   });
 
   function createComponent(input: {filter: DiscreteFilter | IntervalFilter}) {
     const fixture = TestBed.createComponent(FilterDialog);
     fixture.componentInstance.filter = input.filter;
+    rootLoader = TestbedHarnessEnvironment.documentRootLoader(fixture);
     fixture.detectChanges();
     return fixture;
   }
 
-  it('dispatches event when an interval filter value is changed', () => {
+  it('dispatches event when an interval filter value is changed', async () => {
     const fixture = createComponent({
       filter: {
         type: DomainType.INTERVAL,
@@ -66,16 +72,15 @@ describe('filter dialog', () => {
       fixture.componentInstance.includeUndefinedToggled,
       'emit'
     );
-    const includeUndefinedCheckbox = Array.from(
-      fixture.debugElement.queryAll(By.css('mat-checkbox'))
-    ).find((elem) =>
-      elem.nativeElement.innerHTML.includes('Include Undefined')
-    )!;
-    includeUndefinedCheckbox.query(By.css('label')).nativeElement.click();
+
+    const includeUndefinedCheckbox = await rootLoader.getHarness(
+      MatCheckboxHarness.with({label: 'Include Undefined'})
+    );
+    await includeUndefinedCheckbox.check();
     expect(includeUndefinedSpy).toHaveBeenCalled();
   });
 
-  it('dispatches event when an discrete filter value is changed', () => {
+  it('dispatches event when an discrete filter value is changed', async () => {
     const fixture = createComponent({
       filter: {
         type: DomainType.DISCRETE,
@@ -84,29 +89,32 @@ describe('filter dialog', () => {
         filterValues: [2, 4, 6],
       },
     });
-    const discreteFilterChagnedSpy = spyOn(
+    const discreteFilterChangedSpy = spyOn(
       fixture.componentInstance.discreteFilterChanged,
       'emit'
     );
+    const checkbox = await rootLoader.getHarness(
+      MatCheckboxHarness.with({label: '2'})
+    );
+    await checkbox.uncheck();
     fixture.debugElement
       .query(By.css('mat-checkbox label'))
       .nativeElement.click();
-    expect(discreteFilterChagnedSpy).toHaveBeenCalled();
+    expect(discreteFilterChangedSpy).toHaveBeenCalled();
 
     const includeUndefinedSpy = spyOn(
       fixture.componentInstance.includeUndefinedToggled,
       'emit'
     );
-    const includeUndefinedCheckbox = Array.from(
-      fixture.debugElement.queryAll(By.css('mat-checkbox'))
-    ).find((elem) =>
-      elem.nativeElement.innerHTML.includes('Include Undefined')
-    )!;
-    includeUndefinedCheckbox.query(By.css('label')).nativeElement.click();
+
+    const includeUndefinedCheckbox = await rootLoader.getHarness(
+      MatCheckboxHarness.with({label: 'Include Undefined'})
+    );
+    await includeUndefinedCheckbox.check();
     expect(includeUndefinedSpy).toHaveBeenCalled();
   });
 
-  it('filters discrete values', () => {
+  it('filters discrete values', async () => {
     const fixture = createComponent({
       filter: {
         type: DomainType.DISCRETE,
@@ -116,19 +124,19 @@ describe('filter dialog', () => {
       },
     });
     expect(
-      fixture.debugElement.queryAll(By.css('mat-checkbox')).length
+      (await rootLoader.getAllHarnesses(MatCheckboxHarness)).length
     ).toEqual(5); // 4 options + the include undefined checkbox
 
     fixture.componentInstance.discreteValueFilter = 'ba';
     fixture.detectChanges();
     expect(
-      fixture.debugElement.queryAll(By.css('mat-checkbox')).length
+      (await rootLoader.getAllHarnesses(MatCheckboxHarness)).length
     ).toEqual(3); // 2 options + the include undefined checkbox
 
     fixture.componentInstance.discreteValueFilter = 'nothing matches me';
     fixture.detectChanges();
     expect(
-      fixture.debugElement.queryAll(By.css('mat-checkbox')).length
+      (await rootLoader.getAllHarnesses(MatCheckboxHarness)).length
     ).toEqual(1); // 0 options + the include undefined checkbox
     expect(fixture.nativeElement.innerHTML).toContain('No Matching Values');
   });
