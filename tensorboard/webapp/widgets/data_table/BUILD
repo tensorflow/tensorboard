@@ -53,7 +53,7 @@ tf_sass_binary(
 
 tf_sass_binary(
     name = "filter_dialog_styles",
-    src = "filter_dialog.scss",
+    src = "filter_dialog_component.scss",
     strict_deps = False,
     deps = [
         "//tensorboard/webapp:angular_material_sass_deps",
@@ -138,16 +138,15 @@ tf_ng_module(
 tf_ng_module(
     name = "filter_dialog",
     srcs = [
-        "filter_dialog.ts",
+        "filter_dialog_component.ts",
         "filter_dialog_module.ts",
     ],
     assets = [
-        "filter_dialog.ng.html",
+        "filter_dialog_component.ng.html",
         ":filter_dialog_styles",
     ],
     deps = [
         ":types",
-        "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_checkbox",
         "//tensorboard/webapp/widgets/filter_input",
         "//tensorboard/webapp/widgets/range_input",
