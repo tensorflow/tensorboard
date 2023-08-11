@@ -411,7 +411,7 @@ class DataProvider(metaclass=abc.ABCMeta):
             should be sorted.
 
         Returns:
-          A Collection[HyperparameterSessionGroup] describing the groups and
+          A Sequence[HyperparameterSessionGroup] describing the groups and
           their hyperparameter values.
 
         Raises:
