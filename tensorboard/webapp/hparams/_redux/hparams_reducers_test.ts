@@ -573,9 +573,9 @@ describe('hparams/_redux/hparams_reducers_test', () => {
   });
 
   describe('hparamsFetchSessionGroupsSucceeded', () => {
-    it('saves action.hparamsAndMetricsSpecs as currentSpecs', () => {
+    it('saves action.hparamsAndMetricsSpecs as dashboardSpecs', () => {
       const state = buildHparamsState({
-        currentSpecs: {},
+        dashboardSpecs: {},
       });
       const state2 = reducers(
         state,
@@ -588,15 +588,15 @@ describe('hparams/_redux/hparams_reducers_test', () => {
         })
       );
 
-      expect(state2.currentSpecs).toEqual({
+      expect(state2.dashboardSpecs).toEqual({
         hparams: [buildHparamSpec({name: 'foo'})],
         metrics: [buildMetricSpec({tag: 'bar'})],
       });
     });
 
-    it('saves action.sessionGroups as sessionGroups', () => {
+    it('saves action.sessionGroups as dashboardSessionGroups', () => {
       const state = buildHparamsState({
-        currentSpecs: {},
+        dashboardSessionGroups: [],
       });
       const mockSessionGroup = {
         name: 'session_group_1',
@@ -627,7 +627,7 @@ describe('hparams/_redux/hparams_reducers_test', () => {
         })
       );
 
-      expect(state2.sessionGroups).toEqual([mockSessionGroup]);
+      expect(state2.dashboardSessionGroups).toEqual([mockSessionGroup]);
     });
   });
 });

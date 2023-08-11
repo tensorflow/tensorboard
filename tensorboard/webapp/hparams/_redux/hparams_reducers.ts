@@ -32,11 +32,11 @@ import {
 const initialState: HparamsState = {
   specs: {},
   filters: {},
-  currentSpecs: {
+  dashboardSpecs: {
     hparams: [],
     metrics: [],
   },
-  sessionGroups: [],
+  dashboardSessionGroups: [],
 };
 
 const reducer: ActionReducer<HparamsState, Action> = createReducer(
@@ -361,13 +361,13 @@ const reducer: ActionReducer<HparamsState, Action> = createReducer(
     };
   }),
   on(actions.hparamsFetchSessionGroupsSucceeded, (state, action) => {
-    const nextCurrentSpecs = action.hparamsAndMetricsSpecs;
-    const nextSessionGroups = action.sessionGroups;
+    const nextDashboardSpecs = action.hparamsAndMetricsSpecs;
+    const nextDashboardSessionGroups = action.sessionGroups;
 
     return {
       ...state,
-      currentSpecs: nextCurrentSpecs,
-      sessionGroups: nextSessionGroups,
+      dashboardSpecs: nextDashboardSpecs,
+      dashboardSessionGroups: nextDashboardSessionGroups,
     };
   })
 );

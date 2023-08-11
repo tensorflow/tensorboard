@@ -76,11 +76,11 @@ export function buildHparamsState(
     filters: {
       ...overrides.filters,
     } as HparamsState['filters'],
-    currentSpecs: {
-      hparams: overrides.currentSpecs?.hparams ?? [],
-      metrics: overrides.currentSpecs?.metrics ?? [],
+    dashboardSpecs: {
+      hparams: overrides.dashboardSpecs?.hparams ?? [],
+      metrics: overrides.dashboardSpecs?.metrics ?? [],
     },
-    sessionGroups: overrides.sessionGroups ?? [],
+    dashboardSessionGroups: overrides.dashboardSessionGroups ?? [],
   } as HparamsState;
 }
 

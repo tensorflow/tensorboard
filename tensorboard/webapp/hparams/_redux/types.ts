@@ -45,8 +45,8 @@ export const HPARAMS_FEATURE_KEY = 'hparams';
 
 export interface HparamsState {
   specs: ExperimentToHparams;
-  currentSpecs: HparamAndMetricSpec;
-  sessionGroups: SessionGroup[];
+  dashboardSpecs: HparamAndMetricSpec;
+  dashboardSessionGroups: SessionGroup[];
   /**
    * RATIONALE: we do not use the NamespaceContextedState because of the following reasons.
    * - RunsTable which uses the state renders both on the dashboard view and the
