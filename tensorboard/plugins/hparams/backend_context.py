@@ -403,7 +403,7 @@ class Context:
         self, ctx, experiment_id, session_groups
     ):
         session_runs = set(
-            f"{s.experiment_id}/{s.run}" if s.run else s.experiment_id
+            generate_data_provider_session_name(experiment_id, s)
             for sg in session_groups
             for s in sg.sessions
         )
@@ -458,6 +458,22 @@ class Context:
         # Sort metrics for determinism.
         metric_names_list.sort()
         return metric_names_list
+
+
+def generate_data_provider_session_name(experiment_id, session):
+    """Generates a name from a HyperparameterSesssionRun.
+
+    If the HyperparameterSessionRun contains no experiment or run information
+    then the name is set to the original experiment_id.
+    """
+    if not session.experiment_id and not session.run:
+        return experiment_id
+    elif not session.experiment_id:
+        return session.run
+    elif not session.run:
+        return session.experiment_id
+    else:
+        return f"{session.experiment_id}/{session.run}"
 
 
 def _find_longest_parent_path(path_set, path):

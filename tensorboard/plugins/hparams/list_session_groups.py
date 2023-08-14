@@ -25,10 +25,12 @@ from google.protobuf import struct_pb2
 
 from tensorboard.data import provider
 from tensorboard.plugins.hparams import api_pb2
+from tensorboard.plugins.hparams import backend_context as backend_context_lib
 from tensorboard.plugins.hparams import error
 from tensorboard.plugins.hparams import json_format_compat
 from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import metrics
+from tensorboard.plugins.hparams import plugin_data_pb2
 
 
 class Handler:
@@ -93,13 +95,15 @@ class Handler:
             hparams_run_to_tag_to_content,
             # Don't pass any information from the DataProvider since we are only
             # examining session groups based on tag metadata
-            [],
+            provider.ListHyperparametersResult(
+                hyperparameters=[], session_groups=[]
+            ),
         )
         extractors = _create_extractors(self._request.col_params)
         filters = _create_filters(self._request.col_params, extractors)
 
         session_groups = self._build_session_groups(
-            hparams_run_to_tag_to_content, experiment
+            hparams_run_to_tag_to_content, experiment.metric_infos
         )
         session_groups = self._filter(session_groups, filters)
         self._sort(session_groups, extractors)
@@ -116,16 +120,37 @@ class Handler:
             sort,
         )
 
+        metric_infos = self._backend_context.compute_metric_infos_from_data_provider_session_groups(
+            self._request_context, self._experiment_id, response
+        )
+
+        all_metric_evals = self._backend_context.read_last_scalars(
+            self._request_context,
+            self._experiment_id,
+            run_tag_filter=None,
+        )
+
         session_groups = []
         for provider_group in response:
-            sessions = [
-                api_pb2.Session(name=f"{s.experiment_id}/{s.run}")
-                for s in provider_group.sessions
-            ]
-            name = (
-                f"{provider_group.root.experiment_id}/{provider_group.root.run}"
-                if provider_group.root.run
-                else provider_group.root.experiment_id
+            sessions = []
+            for session in provider_group.sessions:
+                session_name = (
+                    backend_context_lib.generate_data_provider_session_name(
+                        self._experiment_id, session
+                    )
+                )
+                sessions.append(
+                    self._build_session(
+                        metric_infos,
+                        session_name,
+                        plugin_data_pb2.SessionStartInfo(),
+                        plugin_data_pb2.SessionEndInfo(),
+                        all_metric_evals,
+                    )
+                )
+
+            name = backend_context_lib.generate_data_provider_session_name(
+                self._experiment_id, provider_group.root
             )
             session_group = api_pb2.SessionGroup(
                 name=name,
@@ -154,9 +179,16 @@ class Handler:
 
             session_groups.append(session_group)
 
+        # Compute the session group's aggregated metrics for each group.
+        for group in session_groups:
+            if group.sessions:
+                self._aggregate_metrics(group)
+
         return session_groups
 
-    def _build_session_groups(self, hparams_run_to_tag_to_content, experiment):
+    def _build_session_groups(
+        self, hparams_run_to_tag_to_content, metric_infos
+    ):
         """Returns a list of SessionGroups protobuffers from the summary
         data."""
 
@@ -178,7 +210,7 @@ class Handler:
         metric_runs = set()
         metric_tags = set()
         for session_name in session_names:
-            for metric in experiment.metric_infos:
+            for metric in metric_infos:
                 metric_name = metric.name
                 (run, tag) = metrics.run_tag_from_session_and_metric(
                     session_name, metric_name
@@ -207,7 +239,11 @@ class Handler:
                     tag_to_content[metadata.SESSION_END_INFO_TAG]
                 )
             session = self._build_session(
-                experiment, session_name, start_info, end_info, all_metric_evals
+                metric_infos,
+                session_name,
+                start_info,
+                end_info,
+                all_metric_evals,
             )
             if session.status in self._request.allowed_statuses:
                 self._add_session(session, start_info, groups_by_name)
@@ -263,7 +299,7 @@ class Handler:
             groups_by_name[group_name] = group
 
     def _build_session(
-        self, experiment, name, start_info, end_info, all_metric_evals
+        self, metric_infos, name, start_info, end_info, all_metric_evals
     ):
         """Builds a session object."""
 
@@ -273,7 +309,7 @@ class Handler:
             start_time_secs=start_info.start_time_secs,
             model_uri=start_info.model_uri,
             metric_values=self._build_session_metric_values(
-                experiment, name, all_metric_evals
+                metric_infos, name, all_metric_evals
             ),
             monitor_url=start_info.monitor_url,
         )
@@ -283,13 +319,13 @@ class Handler:
         return result
 
     def _build_session_metric_values(
-        self, experiment, session_name, all_metric_evals
+        self, metric_infos, session_name, all_metric_evals
     ):
         """Builds the session metric values."""
 
         # result is a list of api_pb2.MetricValue instances.
         result = []
-        for metric_info in experiment.metric_infos:
+        for metric_info in metric_infos:
             metric_name = metric_info.name
             (run, tag) = metrics.run_tag_from_session_and_metric(
                 session_name, metric_name
