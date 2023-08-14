@@ -16,8 +16,15 @@ import {NgModule} from '@angular/core';
 import {StoreModule} from '@ngrx/store';
 import {reducers} from './hparams_reducers';
 import {HPARAMS_FEATURE_KEY} from './types';
+import {EffectsModule} from '@ngrx/effects';
+import {HparamsEffects} from './hparams_effects';
+import {HparamsDataSource} from './hparams_data_source';
 
 @NgModule({
-  imports: [StoreModule.forFeature(HPARAMS_FEATURE_KEY, reducers)],
+  providers: [HparamsDataSource],
+  imports: [
+    StoreModule.forFeature(HPARAMS_FEATURE_KEY, reducers),
+    EffectsModule.forFeature([HparamsEffects]),
+  ],
 })
 export class HparamsModule {}

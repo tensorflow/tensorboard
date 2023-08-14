@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {DeepPartial} from '../../util/types';
 import {
   DatasetType,
   DiscreteFilter,
@@ -21,6 +22,7 @@ import {
   HparamsValueType,
   IntervalFilter,
   MetricSpec,
+  SessionGroup,
 } from '../_types';
 import {
   HparamsMetricsAndFilters,
@@ -65,17 +67,21 @@ export function buildFilterState(
 }
 
 export function buildHparamsState(
-  specOverrides?: Partial<HparamsState['specs']>,
-  filterOverrides?: Partial<HparamsState['filters']>
+  overrides: DeepPartial<HparamsState> = {}
 ): HparamsState {
   return {
     specs: {
-      ...specOverrides,
+      ...overrides.specs,
     } as Record<string, HparamsMetricsAndFilters>,
     filters: {
-      ...filterOverrides,
+      ...overrides.filters,
     } as HparamsState['filters'],
-  };
+    dashboardSpecs: {
+      hparams: overrides.dashboardSpecs?.hparams ?? [],
+      metrics: overrides.dashboardSpecs?.metrics ?? [],
+    },
+    dashboardSessionGroups: overrides.dashboardSessionGroups ?? [],
+  } as HparamsState;
 }
 
 export function buildStateFromHparamsState(hparamsState: HparamsState): State {
