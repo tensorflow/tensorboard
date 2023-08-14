@@ -182,8 +182,6 @@ class Handler:
         # Compute the session group's aggregated metrics for each group.
         for group in session_groups:
             if group.sessions:
-                # We sort the sessions in a group so that the order is deterministic.
-                group.sessions.sort(key=operator.attrgetter("name"))
                 self._aggregate_metrics(group)
 
         return session_groups
