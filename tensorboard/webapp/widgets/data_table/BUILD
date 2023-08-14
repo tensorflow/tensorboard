@@ -186,6 +186,7 @@ tf_ts_library(
         "//tensorboard/webapp/testing:mat_icon",
         "//tensorboard/webapp/widgets/custom_modal",
         "//tensorboard/webapp/widgets/range_input",
+        "//tensorboard/webapp/widgets/range_input:types",
         "@npm//@angular/core",
         "@npm//@angular/forms",
         "@npm//@angular/platform-browser",
