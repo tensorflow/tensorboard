@@ -116,7 +116,9 @@ describe('hparams effects', () => {
         routeKind: RouteKind.EXPERIMENT,
         params: {},
       });
-      store.overrideSelector(selectors.getExperimentIdsFromRoute, ['exp1']);
+      store.overrideSelector(selectors.getExperimentIdsFromRoute, [
+        'expFromRoute',
+      ]);
       store.refreshState();
     });
 
@@ -160,11 +162,16 @@ describe('hparams effects', () => {
 
     it('fetches data after navigation', () => {
       action.next(appRoutingActions.navigated({} as any));
-      expect(dataSource.fetchExperimentInfo).toHaveBeenCalledWith(['exp1']);
-      expect(dataSource.fetchSessionGroups).toHaveBeenCalledWith(['exp1'], {
-        hparams: [buildHparamSpec({name: 'h1'})],
-        metrics: [buildMetricSpec({tag: 'm1'})],
-      });
+      expect(dataSource.fetchExperimentInfo).toHaveBeenCalledWith([
+        'expFromRoute',
+      ]);
+      expect(dataSource.fetchSessionGroups).toHaveBeenCalledWith(
+        ['expFromRoute'],
+        {
+          hparams: [buildHparamSpec({name: 'h1'})],
+          metrics: [buildMetricSpec({tag: 'm1'})],
+        }
+      );
       expect(actualActions).toEqual([
         hparamsActions.hparamsFetchSessionGroupsSucceeded({
           hparamsAndMetricsSpecs: mockHparamsAndMetricsSpecs,
@@ -175,11 +182,16 @@ describe('hparams effects', () => {
 
     it('fetches data on reload', () => {
       action.next(coreActions.reload());
-      expect(dataSource.fetchExperimentInfo).toHaveBeenCalledWith(['exp1']);
-      expect(dataSource.fetchSessionGroups).toHaveBeenCalledWith(['exp1'], {
-        hparams: [buildHparamSpec({name: 'h1'})],
-        metrics: [buildMetricSpec({tag: 'm1'})],
-      });
+      expect(dataSource.fetchExperimentInfo).toHaveBeenCalledWith([
+        'expFromRoute',
+      ]);
+      expect(dataSource.fetchSessionGroups).toHaveBeenCalledWith(
+        ['expFromRoute'],
+        {
+          hparams: [buildHparamSpec({name: 'h1'})],
+          metrics: [buildMetricSpec({tag: 'm1'})],
+        }
+      );
       expect(actualActions).toEqual([
         hparamsActions.hparamsFetchSessionGroupsSucceeded({
           hparamsAndMetricsSpecs: mockHparamsAndMetricsSpecs,
@@ -190,17 +202,33 @@ describe('hparams effects', () => {
 
     it('fetches data on manualReload', () => {
       action.next(coreActions.manualReload());
-      expect(dataSource.fetchExperimentInfo).toHaveBeenCalledWith(['exp1']);
-      expect(dataSource.fetchSessionGroups).toHaveBeenCalledWith(['exp1'], {
-        hparams: [buildHparamSpec({name: 'h1'})],
-        metrics: [buildMetricSpec({tag: 'm1'})],
-      });
+      expect(dataSource.fetchExperimentInfo).toHaveBeenCalledWith([
+        'expFromRoute',
+      ]);
+      expect(dataSource.fetchSessionGroups).toHaveBeenCalledWith(
+        ['expFromRoute'],
+        {
+          hparams: [buildHparamSpec({name: 'h1'})],
+          metrics: [buildMetricSpec({tag: 'm1'})],
+        }
+      );
       expect(actualActions).toEqual([
         hparamsActions.hparamsFetchSessionGroupsSucceeded({
           hparamsAndMetricsSpecs: mockHparamsAndMetricsSpecs,
           sessionGroups: mockSessionGroups,
         }),
       ]);
+    });
+
+    it('does not attempt to load hparams when experiment ids are null', () => {
+      store.overrideSelector(selectors.getExperimentIdsFromRoute, null);
+      store.refreshState();
+
+      action.next(coreActions.reload());
+
+      expect(dataSource.fetchExperimentInfo).not.toHaveBeenCalled();
+      expect(dataSource.fetchSessionGroups).not.toHaveBeenCalled();
+      expect(actualActions).toEqual([]);
     });
   });
 });

@@ -102,7 +102,7 @@ export class HparamsEffects {
           .fetchSessionGroups(experimentIds, hparamsAndMetricsSpecs)
           .pipe(
             catchError((error) => {
-              // HParams plugin return 400 when there are no hparams
+              // HParam plugin return 400 when there are no hparams
               // for an experiment.
               if (error instanceof HttpErrorResponse && error.status === 400) {
                 return of([] as SessionGroup[]);
