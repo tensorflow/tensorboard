@@ -22,9 +22,9 @@ class TfGlobals extends PolymerElement {
   tf_globals = tf_globals;
   constructor() {
     super();
-    if (!window.tensorboard) {
-      window.tensorboard = {};
+    if (!window['tensorboard']) {
+      window['tensorboard'] = {};
     }
-    window.tensorboard.tf_globals = tf_globals;
+    window['tensorboard']['tf_globals'] = tf_globals;
   }
 }

@@ -271,7 +271,7 @@ describe('plugin_api_host test', () => {
           b: 'b',
         });
 
-        delete (window as any).tensorboard;
+        delete window.tensorboard;
       });
     });
 

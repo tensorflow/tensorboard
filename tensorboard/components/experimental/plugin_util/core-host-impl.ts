@@ -39,7 +39,7 @@ export class PluginCoreApiHostImpl {
       const result: {
         [key: string]: string;
       } = {};
-      const urlDict = window.tensorboard.tf_storage?.getUrlHashDict();
+      const urlDict = window['tensorboard']['tf_storage']?.getUrlHashDict();
       for (let key in urlDict) {
         if (key.startsWith(prefix)) {
           const pluginKey = key.substring(prefix.length);
