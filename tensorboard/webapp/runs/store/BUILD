@@ -45,6 +45,8 @@ tf_ts_library(
     deps = [
         ":types",
         ":utils",
+        "//tensorboard/webapp/hparams:types",
+        "//tensorboard/webapp/hparams/_redux:hparams_selectors",
         "//tensorboard/webapp/runs:types",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/types:ui",

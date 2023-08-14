@@ -181,16 +181,11 @@ describe('common selectors', () => {
         },
       } as any,
       hparams: {
-        specs: buildSpecs('defaultExperimentId', {
-          hparam: {
-            specs: [buildHparamSpec({name: 'foo', displayName: 'Foo'})],
-            defaultFilters: new Map(),
-          },
-          metric: {
-            specs: [buildMetricSpec({displayName: 'Bar'})],
-            defaultFilters: new Map(),
-          },
-        }),
+        dashboardSpecs: {
+          hparams: [buildHparamSpec({name: 'foo', displayName: 'Foo'})],
+          metrics: [buildMetricSpec({displayName: 'Bar'})],
+        },
+        dashboardSessionGroups: [],
       } as any,
     });
   });

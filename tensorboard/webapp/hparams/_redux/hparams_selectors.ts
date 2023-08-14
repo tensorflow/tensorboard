@@ -13,7 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createFeatureSelector, createSelector} from '@ngrx/store';
-import {DiscreteFilter, HparamAndMetricSpec, IntervalFilter} from '../types';
+import {
+  DiscreteFilter,
+  HparamAndMetricSpec,
+  HparamValue,
+  IntervalFilter,
+  RunToHparamsAndMetrics,
+} from '../types';
 import {combineHparamAndMetricSpecs} from './hparams_selectors_utils';
 import {HparamsState, HPARAMS_FEATURE_KEY} from './types';
 import {
@@ -176,5 +182,49 @@ export const getExperimentsHparamsAndMetricsSpecs = createSelector(
         })
         .filter(Boolean) as HparamAndMetricSpec[])
     );
+  }
+);
+
+export const getDashboardHparamsAndMetricsSpecs = createSelector(
+  getHparamsState,
+  (state: HparamsState) => {
+    return state.dashboardSpecs;
+  }
+);
+
+export const getRunsToHparamsAndMetrics = createSelector(
+  getHparamsState,
+  (state): RunToHparamsAndMetrics => {
+    const runToHparamsAndMetrics: RunToHparamsAndMetrics = {};
+
+    for (const sessionGroup of state.dashboardSessionGroups) {
+      const hparams: HparamValue[] = Object.entries(sessionGroup.hparams).map(
+        (keyValue) => {
+          const [hparam, value] = keyValue;
+          return {name: hparam, value};
+        }
+      );
+
+      for (const session of sessionGroup.sessions) {
+        for (const metricValue of session.metricValues) {
+          const runId = metricValue.name.group
+            ? `${session.name}/${metricValue.name.group}`
+            : session.name;
+          // const [experimentId] = session.name.split('/');
+          // const runId = `${experimentId}/${runName}`;
+          const hparamsAndMetrics = runToHparamsAndMetrics[runId] || {
+            metrics: [],
+            hparams,
+          };
+          hparamsAndMetrics.metrics.push({
+            tag: metricValue.name.tag,
+            trainingStep: metricValue.trainingStep,
+            value: metricValue.value,
+          });
+          runToHparamsAndMetrics[runId] = hparamsAndMetrics;
+        }
+      }
+    }
+    return runToHparamsAndMetrics;
   }
 );

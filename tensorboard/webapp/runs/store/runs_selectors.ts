@@ -27,6 +27,8 @@ import {
 } from './runs_types';
 import {createGroupBy} from './utils';
 import {ColumnHeader, SortingInfo} from '../../widgets/data_table/types';
+import {getRunsToHparamsAndMetrics} from '../../hparams/_redux/hparams_selectors';
+import {RunToHparamsAndMetrics} from '../../hparams/types';
 
 const getRunsState = createFeatureSelector<RunsState>(RUNS_FEATURE_KEY);
 
@@ -72,27 +74,48 @@ export const getRun = createSelector(
  */
 export const getRuns = createSelector(
   getDataState,
-  (state: RunsDataState, props: {experimentId: string}): Run[] => {
+  getRunsToHparamsAndMetrics,
+  (
+    state: RunsDataState,
+    runsToHparamsAndMetrics: RunToHparamsAndMetrics,
+    props: {experimentId: string}
+  ): Run[] => {
     const runIds = state.runIds[props.experimentId] || [];
     return runIds
       .filter((id) => Boolean(state.runMetadata[id]))
-      .map((id) => state.runMetadata[id]);
+      .map((id) => ({...state.runMetadata[id]}))
+      .map((metadata) => {
+        if (runsToHparamsAndMetrics[metadata.id]) {
+          metadata.hparams = runsToHparamsAndMetrics[metadata.id].hparams;
+          metadata.metrics = runsToHparamsAndMetrics[metadata.id].metrics;
+        }
+        return metadata;
+      });
   }
 );
 
 export const getRunsFromExperimentIds = (experimentIds: string[]) =>
   createSelector(
     getDataState,
-    (state: RunsDataState): Array<Run & {experimentId: string}> => {
-      return experimentIds.reduce((runs, experimentId) => {
-        (state.runIds[experimentId] || [])
-          .filter((id) => Boolean(state.runMetadata[id]))
-          .forEach((runId) => {
-            runs.push({...state.runMetadata[runId], experimentId});
-          });
-
-        return runs;
-      }, [] as Array<Run & {experimentId: string}>);
+    getRunsToHparamsAndMetrics,
+    (
+      state: RunsDataState,
+      runsToHparamsAndMetrics: RunToHparamsAndMetrics
+    ): Array<Run & {experimentId: string}> => {
+      return experimentIds
+        .map((experimentId) => {
+          return (state.runIds[experimentId] || [])
+            .filter((id) => Boolean(state.runMetadata[id]))
+            .map((runId) => {
+              const run = {...state.runMetadata[runId], experimentId};
+              if (runsToHparamsAndMetrics[runId]) {
+                run.hparams = runsToHparamsAndMetrics[runId].hparams;
+                run.metrics = runsToHparamsAndMetrics[runId].metrics;
+              }
+              return run;
+            });
+        })
+        .flat();
     }
   );
 

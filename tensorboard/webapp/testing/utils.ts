@@ -57,18 +57,41 @@ import {
   createSettingsState,
 } from '../settings/testing';
 import {HPARAMS_FEATURE_KEY} from '../hparams/_redux/types';
+import {ALERT_FEATURE_KEY, AlertState} from '../alert/store/alert_types';
+import {
+  PERSISTENT_SETTINGS_FEATURE_KEY,
+  PersistentSettingsState,
+} from '../persistent_settings/_redux/persistent_settings_types';
+import {SETTINGS_FEATURE_KEY} from '../settings/_redux/settings_types';
+import {CORE_FEATURE_KEY} from '../core/store/core_types';
+import {
+  DEBUGGER_FEATURE_KEY,
+  DebuggerState,
+} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/store/debugger_types';
 
-export function buildMockState(overrides: Partial<State> = {}): State {
+interface FullState extends State {
+  [DEBUGGER_FEATURE_KEY]: DebuggerState;
+  [ALERT_FEATURE_KEY]: AlertState;
+  [PERSISTENT_SETTINGS_FEATURE_KEY]: PersistentSettingsState;
+}
+
+export function buildMockState(overrides: Partial<FullState> = {}): State {
   return {
-    ...createDebuggerState(),
+    ...createDebuggerState(overrides[DEBUGGER_FEATURE_KEY]),
     ...buildFeatureFlagState(overrides[FEATURE_FLAG_FEATURE_KEY]),
-    ...buildStateFromAlertState(buildAlertState({})),
-    ...buildStateFromPersistentSettingsState(buildPersistentSettingsState({})),
-    ...createCoreState(),
+    ...buildStateFromAlertState(
+      buildAlertState(overrides[ALERT_FEATURE_KEY] ?? {})
+    ),
+    ...buildStateFromPersistentSettingsState(
+      buildPersistentSettingsState(
+        overrides[PERSISTENT_SETTINGS_FEATURE_KEY] ?? {}
+      )
+    ),
+    ...createCoreState(overrides[CORE_FEATURE_KEY]),
     ...appStateFromMetricsState(
       buildMetricsState(overrides[METRICS_FEATURE_KEY])
     ),
-    ...createSettings(createSettingsState()),
+    ...createSettings(createSettingsState(overrides[SETTINGS_FEATURE_KEY])),
     ...buildStateFromRunsState(
       buildRunsState(
         overrides[RUNS_FEATURE_KEY]?.data,
@@ -81,12 +104,14 @@ export function buildMockState(overrides: Partial<State> = {}): State {
     ...buildStateFromAppRoutingState(
       buildAppRoutingState(overrides[APP_ROUTING_FEATURE_KEY])
     ),
-    ...buildStateFromFeatureFlagsState(buildFeatureFlagState()),
+    ...buildStateFromFeatureFlagsState(
+      buildFeatureFlagState(overrides[FEATURE_FLAG_FEATURE_KEY])
+    ),
     ...buildStateFromHparamsState(
       buildHparamsState(overrides[HPARAMS_FEATURE_KEY])
     ),
     ...buildStateFromNotificationState(
-      buildNotificationState(overrides[NOTIFICATION_FEATURE_KEY] || {})
+      buildNotificationState(overrides[NOTIFICATION_FEATURE_KEY] ?? {})
     ),
   };
 }

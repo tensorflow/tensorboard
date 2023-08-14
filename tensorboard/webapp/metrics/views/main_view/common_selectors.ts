@@ -31,7 +31,7 @@ import {DeepReadonly} from '../../../util/types';
 import {
   getHparamFilterMapFromExperimentIds,
   getMetricFilterMapFromExperimentIds,
-  getExperimentsHparamsAndMetricsSpecs,
+  getDashboardHparamsAndMetricsSpecs,
 } from '../../../hparams/_redux/hparams_selectors';
 import {
   DiscreteFilter,
@@ -261,16 +261,12 @@ export const getFilteredRenderableRunsIdsFromRoute = createSelector(
 );
 
 export const getPotentialHparamColumns = createSelector(
-  (state: State) => state,
+  getDashboardHparamsAndMetricsSpecs,
   getExperimentIdsFromRoute,
-  (state, experimentIds): ColumnHeader[] => {
+  ({hparams}, experimentIds): ColumnHeader[] => {
     if (!experimentIds) {
       return [];
     }
-
-    const {hparams} = getExperimentsHparamsAndMetricsSpecs(state, {
-      experimentIds,
-    });
 
     return hparams.map((spec) => ({
       type: ColumnHeaderType.HPARAM,
