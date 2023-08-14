@@ -652,6 +652,43 @@ class BackendContextTest(tf.test.TestCase):
         """
         self.assertProtoEquals(expected_exp, actual_exp)
 
+    def test_experiment_from_data_provider_session_group_without_experiment_name(
+        self,
+    ):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._hyperparameters = provider.ListHyperparametersResult(
+            hyperparameters=[],
+            session_groups=[
+                provider.HyperparameterSessionGroup(
+                    root=provider.HyperparameterSessionRun(
+                        experiment_id="", run="exp/session_1"
+                    ),
+                    sessions=[
+                        provider.HyperparameterSessionRun(
+                            experiment_id="", run="exp/session_1"
+                        ),
+                    ],
+                    hyperparameter_values=[],
+                ),
+            ],
+        )
+        actual_exp = self._experiment_from_metadata()
+        expected_exp = """
+            metric_infos: {
+              name: {group: '', tag: 'accuracy'}
+            }
+            metric_infos: {
+              name: {group: '', tag: 'loss'}
+            }
+            metric_infos: {
+              name: {group: 'eval', tag: 'loss'}
+            }
+            metric_infos: {
+              name: {group: 'train', tag: 'loss'}
+            }
+        """
+        self.assertProtoEquals(expected_exp, actual_exp)
+
     def test_experiment_from_data_provider_old_response_type(self):
         self._hyperparameters = [
             provider.Hyperparameter(
