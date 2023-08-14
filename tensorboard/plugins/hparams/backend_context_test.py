@@ -623,6 +623,9 @@ class BackendContextTest(tf.test.TestCase):
                     root=provider.HyperparameterSessionRun(
                         experiment_id="exp/session_1", run=""
                     ),
+                    # The entire path to the run is encoded in the experiment_id
+                    # to allow us to test empty run name while still generating
+                    # metric_infos.
                     sessions=[
                         provider.HyperparameterSessionRun(
                             experiment_id="exp/session_1", run=""
