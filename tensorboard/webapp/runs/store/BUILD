@@ -105,6 +105,7 @@ tf_ts_library(
         "//tensorboard/webapp/runs/data_source",
         "//tensorboard/webapp/runs/data_source:testing",
         "//tensorboard/webapp/testing:lang",
+        "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/widgets/data_table:types",

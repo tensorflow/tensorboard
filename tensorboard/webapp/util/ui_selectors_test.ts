@@ -400,7 +400,7 @@ describe('ui_selectors test', () => {
       });
     });
 
-    fit('cycles color palette even if ids are high', () => {
+    it('cycles color palette even if ids are high', () => {
       const state = buildState(
         new Map([
           ['234/run1', 5],
