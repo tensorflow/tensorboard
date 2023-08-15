@@ -16,6 +16,9 @@ import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import * as backendTypes from './runs_backend_types';
 
+import {DomainType} from '../../widgets/data_table/types';
+export {DomainType} from '../../widgets/data_table/types';
+
 export {
   BackendHparamsValueType as HparamsValueType,
   DatasetType,
@@ -39,11 +42,6 @@ export interface RunToHparamsAndMetrics {
     hparams: HparamValue[];
     metrics: MetricValue[];
   };
-}
-
-export enum DomainType {
-  DISCRETE,
-  INTERVAL,
 }
 
 interface IntervalDomain {
