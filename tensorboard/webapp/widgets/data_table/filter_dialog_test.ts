@@ -135,9 +135,7 @@ describe('filter dialog', () => {
         filterValues: [2, 4, 6],
       },
     });
-    const checkboxes = await rootLoader.getAllHarnesses(
-      MatCheckboxHarness.with()
-    );
+    const checkboxes = await rootLoader.getAllHarnesses(MatCheckboxHarness);
 
     const checkboxLabels = await Promise.all(
       checkboxes.map((checkbox) => checkbox.getLabelText())
@@ -146,11 +144,12 @@ describe('filter dialog', () => {
   });
 
   it('dispatches event when an discrete filter value is changed', async () => {
+    const possibleValues = [2, 4, 6, 8];
     const fixture = createComponent({
       filter: {
         type: DomainType.DISCRETE,
         includeUndefined: false,
-        possibleValues: [2, 4, 6, 8],
+        possibleValues,
         filterValues: [2, 4, 6],
       },
     });
@@ -158,21 +157,40 @@ describe('filter dialog', () => {
     spyOn(fixture.componentInstance.discreteFilterChanged, 'emit').and.callFake(
       (value: DiscreteFilterValue) => filterValues.push(value)
     );
-    let checkbox = await rootLoader.getHarness(
-      MatCheckboxHarness.with({label: '2'})
-    );
-    await checkbox.uncheck();
+
+    for (const value of possibleValues) {
+      const checkbox = await rootLoader.getHarness(
+        MatCheckboxHarness.with({label: `${value}`})
+      );
+      await checkbox.uncheck();
+    }
+    expect(filterValues).toEqual([2, 4, 6]);
 
     // Unchecking an unchecked box should not trigger an event.
-    await checkbox.uncheck();
+    for (const value of possibleValues) {
+      const checkbox = await rootLoader.getHarness(
+        MatCheckboxHarness.with({label: `${value}`})
+      );
+      await checkbox.uncheck();
+    }
+    expect(filterValues).toEqual([2, 4, 6]);
 
-    await checkbox.check();
-    checkbox = await rootLoader.getHarness(
-      MatCheckboxHarness.with({label: '4'})
-    );
-    await checkbox.uncheck();
+    for (const value of possibleValues) {
+      const checkbox = await rootLoader.getHarness(
+        MatCheckboxHarness.with({label: `${value}`})
+      );
+      await checkbox.check();
+    }
+    expect(filterValues).toEqual([2, 4, 6, 2, 4, 6, 8]);
 
-    expect(filterValues).toEqual([2, 2, 4]);
+    // Checking a checked box should not trigger an event.
+    for (const value of possibleValues) {
+      const checkbox = await rootLoader.getHarness(
+        MatCheckboxHarness.with({label: `${value}`})
+      );
+      await checkbox.check();
+    }
+    expect(filterValues).toEqual([2, 4, 6, 2, 4, 6, 8]);
   });
 
   it('dispatches an event when include undefined is changed while viewing a discrete filter', async () => {
