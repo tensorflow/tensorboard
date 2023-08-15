@@ -170,6 +170,7 @@ tf_ts_library(
         "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/webapp_data_source:http_client_testing",
         "@npm//@ngrx/effects",
+        "@npm//@ngrx/store",
         "@npm//@types/jasmine",
         "@npm//rxjs",
     ],
