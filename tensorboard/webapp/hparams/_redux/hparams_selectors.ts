@@ -206,12 +206,16 @@ export const getRunsToHparamsAndMetrics = createSelector(
       );
 
       for (const session of sessionGroup.sessions) {
+        runToHparamsAndMetrics[session.name] = {
+          metrics: [],
+          hparams,
+        };
+
         for (const metricValue of session.metricValues) {
           const runId = metricValue.name.group
             ? `${session.name}/${metricValue.name.group}`
             : session.name;
-          // const [experimentId] = session.name.split('/');
-          // const runId = `${experimentId}/${runName}`;
+
           const hparamsAndMetrics = runToHparamsAndMetrics[runId] || {
             metrics: [],
             hparams,

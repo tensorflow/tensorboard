@@ -168,6 +168,7 @@ tf_ts_library(
         "//tensorboard/webapp/runs/data_source:testing",
         "//tensorboard/webapp/runs/store:testing",
         "//tensorboard/webapp/testing:utils",
+        "//tensorboard/webapp/util:types",
         "//tensorboard/webapp/webapp_data_source:http_client_testing",
         "@npm//@ngrx/effects",
         "@npm//@types/jasmine",

@@ -13,8 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
-  HparamValue,
-  MetricValue,
   DiscreteHparamValues,
   DomainType,
   HparamSpec,
@@ -44,6 +42,8 @@ export {
   BackendHparamsValueType,
   RunStatus,
   SessionGroup,
+  Session,
+  MetricsValue,
 } from '../runs/data_source/runs_backend_types';
 
 export interface HparamAndMetricSpec {

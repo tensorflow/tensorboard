@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {DeepPartial} from '../../util/types';
+import {RunStatus, SessionGroup, MetricsValue, Session} from '../types';
 import * as selectors from './hparams_selectors';
 import {
   buildDiscreteFilter,
@@ -463,6 +465,270 @@ describe('hparams/_redux/hparams_selectors_test', () => {
       expect(
         selectors.getMetricFilterMapFromExperimentIds(['bar'])(state)
       ).toEqual(new Map());
+    });
+  });
+
+  describe('#getDashboardHparamsAndMetricsSpecs', () => {
+    it('returns dashboard specs', () => {
+      const state = buildStateFromHparamsState(
+        buildHparamsState({
+          dashboardSpecs: {
+            hparams: [buildHparamSpec({name: 'foo'})],
+            metrics: [buildMetricSpec({tag: 'bar'})],
+          },
+        })
+      );
+
+      expect(selectors.getDashboardHparamsAndMetricsSpecs(state)).toEqual({
+        hparams: [buildHparamSpec({name: 'foo'})],
+        metrics: [buildMetricSpec({tag: 'bar'})],
+      });
+    });
+  });
+
+  describe('#getRunsToHparamsAndMetrics', () => {
+    let mockSessionGroups: SessionGroup[];
+    beforeEach(() => {
+      mockSessionGroups = [
+        {
+          name: 'session_group_1',
+          hparams: {
+            hp1: 1,
+            hp2: true,
+            hp3: 'foo',
+          },
+          sessions: [
+            buildSession({
+              name: 'exp1/run1',
+              metricValues: [
+                buildMetricsValue({name: {tag: 'foo', group: '1'}, value: 2}),
+                buildMetricsValue({name: {tag: 'bar', group: '2'}, value: 103}),
+              ],
+            }),
+            buildSession({
+              name: 'exp1/run2',
+              metricValues: [
+                buildMetricsValue({name: {tag: 'foo', group: '1'}, value: 3}),
+                buildMetricsValue({name: {tag: 'bar', group: '2'}, value: 104}),
+                buildMetricsValue({name: {tag: 'baz', group: '3'}, value: 201}),
+              ],
+            }),
+          ],
+        },
+        {
+          name: 'session_group_2',
+          hparams: {
+            hp1: 2,
+            hp2: false,
+            hp3: 'bar',
+          },
+          sessions: [
+            buildSession({
+              name: 'exp1/run3',
+              metricValues: [
+                buildMetricsValue({name: {tag: 'foo', group: '1'}, value: 4}),
+                buildMetricsValue({name: {tag: 'bar', group: '2'}, value: 105}),
+              ],
+            }),
+          ],
+        },
+        {
+          name: 'session_group_3',
+          hparams: {
+            hp4: 'hyperparameter4',
+          },
+          sessions: [
+            buildSession({
+              name: 'exp1/run4',
+              metricValues: [],
+            }),
+          ],
+        },
+        {
+          name: 'session_group_4',
+          hparams: {
+            hp1: 7,
+            hp2: false,
+            hp3: 'foobar',
+          },
+          sessions: [
+            buildSession({
+              name: 'exp2/run1',
+              metricValues: [
+                buildMetricsValue({name: {tag: 'foo', group: '1'}, value: 4}),
+                buildMetricsValue({name: {tag: 'bar', group: '2'}, value: 105}),
+                buildMetricsValue({
+                  name: {tag: 'baz', group: '2'},
+                  value: 1000,
+                }),
+              ],
+            }),
+          ],
+        },
+      ];
+    });
+
+    function buildMetricsValue(
+      override: DeepPartial<MetricsValue>
+    ): MetricsValue {
+      return {
+        trainingStep: 0,
+        value: 1,
+        wallTimeSecs: 123,
+        ...override,
+        name: {
+          tag: override.name?.tag ?? 'someTag',
+          group: override.name?.group ?? 'someGroup',
+        },
+      };
+    }
+
+    function buildSession(override: Partial<Session>): Session {
+      return {
+        name: 'someExperiment/someRun',
+        modelUri: '',
+        monitorUrl: '',
+        startTimeSecs: 123,
+        endTimeSecs: 456,
+        status: RunStatus.STATUS_UNKNOWN,
+        ...override,
+        metricValues: [...(override.metricValues ?? [])],
+      };
+    }
+
+    it('contains entry for each runId', () => {
+      const state = buildStateFromHparamsState(
+        buildHparamsState({
+          dashboardSessionGroups: mockSessionGroups,
+        })
+      );
+
+      expect(selectors.getRunsToHparamsAndMetrics(state)['exp1/run4']).toEqual({
+        metrics: [],
+        hparams: [{name: 'hp4', value: 'hyperparameter4'}],
+      });
+    });
+
+    it('contains entry for each runId/group', () => {
+      const state = buildStateFromHparamsState(
+        buildHparamsState({
+          dashboardSessionGroups: mockSessionGroups,
+        })
+      );
+
+      expect(selectors.getRunsToHparamsAndMetrics(state)).toEqual({
+        'exp1/run1': {
+          metrics: [],
+          hparams: [
+            {name: 'hp1', value: 1},
+            {name: 'hp2', value: true},
+            {name: 'hp3', value: 'foo'},
+          ],
+        },
+        'exp1/run1/1': {
+          metrics: [{tag: 'foo', trainingStep: 0, value: 2}],
+          hparams: [
+            {name: 'hp1', value: 1},
+            {name: 'hp2', value: true},
+            {name: 'hp3', value: 'foo'},
+          ],
+        },
+        'exp1/run1/2': {
+          metrics: [{tag: 'bar', trainingStep: 0, value: 103}],
+          hparams: [
+            {name: 'hp1', value: 1},
+            {name: 'hp2', value: true},
+            {name: 'hp3', value: 'foo'},
+          ],
+        },
+        'exp1/run2': {
+          metrics: [],
+          hparams: [
+            {name: 'hp1', value: 1},
+            {name: 'hp2', value: true},
+            {name: 'hp3', value: 'foo'},
+          ],
+        },
+        'exp1/run2/1': {
+          metrics: [{tag: 'foo', trainingStep: 0, value: 3}],
+          hparams: [
+            {name: 'hp1', value: 1},
+            {name: 'hp2', value: true},
+            {name: 'hp3', value: 'foo'},
+          ],
+        },
+        'exp1/run2/2': {
+          metrics: [{tag: 'bar', trainingStep: 0, value: 104}],
+          hparams: [
+            {name: 'hp1', value: 1},
+            {name: 'hp2', value: true},
+            {name: 'hp3', value: 'foo'},
+          ],
+        },
+        'exp1/run2/3': {
+          metrics: [{tag: 'baz', trainingStep: 0, value: 201}],
+          hparams: [
+            {name: 'hp1', value: 1},
+            {name: 'hp2', value: true},
+            {name: 'hp3', value: 'foo'},
+          ],
+        },
+        'exp1/run3': {
+          metrics: [],
+          hparams: [
+            {name: 'hp1', value: 2},
+            {name: 'hp2', value: false},
+            {name: 'hp3', value: 'bar'},
+          ],
+        },
+        'exp1/run3/1': {
+          metrics: [{tag: 'foo', trainingStep: 0, value: 4}],
+          hparams: [
+            {name: 'hp1', value: 2},
+            {name: 'hp2', value: false},
+            {name: 'hp3', value: 'bar'},
+          ],
+        },
+        'exp1/run3/2': {
+          metrics: [{tag: 'bar', trainingStep: 0, value: 105}],
+          hparams: [
+            {name: 'hp1', value: 2},
+            {name: 'hp2', value: false},
+            {name: 'hp3', value: 'bar'},
+          ],
+        },
+        'exp1/run4': {
+          metrics: [],
+          hparams: [{name: 'hp4', value: 'hyperparameter4'}],
+        },
+        'exp2/run1': {
+          metrics: [],
+          hparams: [
+            {name: 'hp1', value: 7},
+            {name: 'hp2', value: false},
+            {name: 'hp3', value: 'foobar'},
+          ],
+        },
+        'exp2/run1/1': {
+          metrics: [{tag: 'foo', trainingStep: 0, value: 4}],
+          hparams: [
+            {name: 'hp1', value: 7},
+            {name: 'hp2', value: false},
+            {name: 'hp3', value: 'foobar'},
+          ],
+        },
+        'exp2/run1/2': {
+          metrics: [
+            {tag: 'bar', trainingStep: 0, value: 105},
+            {tag: 'baz', trainingStep: 0, value: 1000},
+          ],
+          hparams: [
+            {name: 'hp1', value: 7},
+            {name: 'hp2', value: false},
+            {name: 'hp3', value: 'foobar'},
+          ],
+        },
+      });
     });
   });
 
