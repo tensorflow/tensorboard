@@ -223,11 +223,7 @@ describe('filter dialog', () => {
         filterValues: ['foo', 'bar', 'baz', 'qaz'],
       },
     });
-    const checkboxes = await rootLoader.getAllHarnesses(MatCheckboxHarness);
-    const checkBoxLabels = await Promise.all(
-      checkboxes.map((checkbox) => checkbox.getLabelText())
-    );
-    expect(checkBoxLabels).toEqual([
+    expect(await getCheckboxLabels()).toEqual([
       'foo',
       'bar',
       'baz',
@@ -235,23 +231,36 @@ describe('filter dialog', () => {
       'Include Undefined',
     ]); // 4 options + the include undefined checkbox
 
-    // A mock of a keyboard input event.
-    const mockEvent = {
-      target: {
-        value: 'ba',
-      },
-    };
-    fixture.componentInstance.discreteValueKeyUp(mockEvent as any);
+    fixture.componentInstance.discreteValueKeyUp(
+      // A mock of a keyboard input event.
+      {
+        target: {
+          value: 'ba',
+        },
+      } as any
+    );
     fixture.detectChanges();
-    expect(
-      (await rootLoader.getAllHarnesses(MatCheckboxHarness)).length
-    ).toEqual(3); // 2 options + the include undefined checkbox
+    expect(await getCheckboxLabels()).toEqual([
+      'bar',
+      'baz',
+      'Include Undefined',
+    ]); // 2 options + the include undefined checkbox
 
-    fixture.componentInstance.discreteValueFilter = 'nothing matches me';
+    fixture.componentInstance.discreteValueKeyUp(
+      // A mock of a keyboard input event.
+      {
+        target: {
+          value: 'nothing matches me',
+        },
+      } as any
+    );
     fixture.detectChanges();
-    expect(
-      (await rootLoader.getAllHarnesses(MatCheckboxHarness)).length
-    ).toEqual(1); // 0 options + the include undefined checkbox
+    expect(await getCheckboxLabels()).toEqual(['Include Undefined']); // 0 options + the include undefined checkbox
     expect(fixture.nativeElement.innerHTML).toContain('No Matching Values');
+
+    async function getCheckboxLabels() {
+      const checkboxes = await rootLoader.getAllHarnesses(MatCheckboxHarness);
+      return Promise.all(checkboxes.map((checkbox) => checkbox.getLabelText()));
+    }
   });
 });
