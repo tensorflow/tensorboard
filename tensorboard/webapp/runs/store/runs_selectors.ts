@@ -29,6 +29,8 @@ import {createGroupBy} from './utils';
 import {ColumnHeader, SortingInfo} from '../../widgets/data_table/types';
 import {getDashboardRunsToHparamsAndMetrics} from '../../hparams/_redux/hparams_selectors';
 import {RunToHparamsAndMetrics} from '../../hparams/types';
+import {getActiveRoute} from '../../app_routing/store/app_routing_selectors';
+import {Route, RouteKind} from '../../app_routing/types';
 
 const getRunsState = createFeatureSelector<RunsState>(RUNS_FEATURE_KEY);
 
@@ -74,18 +76,26 @@ export const getRun = createSelector(
  */
 export const getRuns = createSelector(
   getDataState,
+  getActiveRoute,
   getDashboardRunsToHparamsAndMetrics,
   (
     state: RunsDataState,
+    activeRoute: Route | null,
     runsToHparamsAndMetrics: RunToHparamsAndMetrics,
     props: {experimentId: string}
   ): Run[] => {
     const runIds = state.runIds[props.experimentId] || [];
+    const shouldInjectDashboardHparams =
+      activeRoute?.routeKind === RouteKind.EXPERIMENT ||
+      activeRoute?.routeKind === RouteKind.COMPARE_EXPERIMENT;
     return runIds
       .filter((id) => Boolean(state.runMetadata[id]))
       .map((id) => ({...state.runMetadata[id]}))
       .map((metadata) => {
-        if (runsToHparamsAndMetrics[metadata.id]) {
+        if (
+          shouldInjectDashboardHparams &&
+          runsToHparamsAndMetrics[metadata.id]
+        ) {
           metadata.hparams = runsToHparamsAndMetrics[metadata.id].hparams;
           metadata.metrics = runsToHparamsAndMetrics[metadata.id].metrics;
         }
@@ -97,18 +107,26 @@ export const getRuns = createSelector(
 export const getRunsFromExperimentIds = (experimentIds: string[]) =>
   createSelector(
     getDataState,
+    getActiveRoute,
     getDashboardRunsToHparamsAndMetrics,
     (
       state: RunsDataState,
+      activeRoute: Route | null,
       runsToHparamsAndMetrics: RunToHparamsAndMetrics
     ): Array<Run & {experimentId: string}> => {
+      const shouldInjectDashboardHparams =
+        activeRoute?.routeKind === RouteKind.EXPERIMENT ||
+        activeRoute?.routeKind === RouteKind.COMPARE_EXPERIMENT;
       return experimentIds
         .map((experimentId) => {
           return (state.runIds[experimentId] || [])
             .filter((id) => Boolean(state.runMetadata[id]))
             .map((runId) => {
               const run = {...state.runMetadata[runId], experimentId};
-              if (runsToHparamsAndMetrics[runId]) {
+              if (
+                shouldInjectDashboardHparams &&
+                runsToHparamsAndMetrics[runId]
+              ) {
                 run.hparams = runsToHparamsAndMetrics[runId].hparams;
                 run.metrics = runsToHparamsAndMetrics[runId].metrics;
               }

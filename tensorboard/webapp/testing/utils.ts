@@ -13,7 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {provideMockStore} from '@ngrx/store/testing';
-import {createState as createDebuggerState} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/testing';
+import {
+  createState as appStateFromDebuggerState,
+  createDebuggerState,
+} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/testing';
 import {
   buildAlertState,
   buildStateFromAlertState,
@@ -24,7 +27,10 @@ import {
   buildStateFromAppRoutingState,
 } from '../app_routing/store/testing';
 import {State} from '../app_state';
-import {createState as createCoreState} from '../core/testing';
+import {
+  createState as appStateFromCoreState,
+  createCoreState,
+} from '../core/testing';
 import {EXPERIMENTS_FEATURE_KEY} from '../experiments/store/experiments_types';
 import {
   buildExperimentState,
@@ -75,9 +81,15 @@ interface FullState extends State {
   [PERSISTENT_SETTINGS_FEATURE_KEY]: PersistentSettingsState;
 }
 
-export function buildMockState(overrides: Partial<FullState> = {}): State {
+type PartialOverrides = {
+  [K in keyof FullState]?: Partial<FullState[K]>;
+};
+
+export function buildMockState(overrides: PartialOverrides = {}): State {
   return {
-    ...createDebuggerState(overrides[DEBUGGER_FEATURE_KEY]),
+    ...appStateFromDebuggerState(
+      createDebuggerState(overrides[DEBUGGER_FEATURE_KEY])
+    ),
     ...buildFeatureFlagState(overrides[FEATURE_FLAG_FEATURE_KEY]),
     ...buildStateFromAlertState(
       buildAlertState(overrides[ALERT_FEATURE_KEY] ?? {})
@@ -87,7 +99,7 @@ export function buildMockState(overrides: Partial<FullState> = {}): State {
         overrides[PERSISTENT_SETTINGS_FEATURE_KEY] ?? {}
       )
     ),
-    ...createCoreState(overrides[CORE_FEATURE_KEY]),
+    ...appStateFromCoreState(createCoreState(overrides[CORE_FEATURE_KEY])),
     ...appStateFromMetricsState(
       buildMetricsState(overrides[METRICS_FEATURE_KEY])
     ),

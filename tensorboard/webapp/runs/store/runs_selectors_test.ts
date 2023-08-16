@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {RouteKind} from '../../app_routing/types';
 import {buildMockState} from '../../testing/utils';
 import {DataLoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
@@ -175,6 +176,130 @@ describe('runs_selectors', () => {
           experimentId: 'i_do_not_exist',
         })
       ).toEqual([]);
+    });
+
+    it('includes dashboard hparams data when on the dashboard route', () => {
+      const state = buildMockState({
+        app_routing: {
+          activeRoute: {
+            routeKind: RouteKind.EXPERIMENT,
+            params: {},
+          },
+        },
+        runs: buildRunsState({
+          runIds: {
+            eid: ['run1', 'run2'],
+          },
+          runMetadata: {
+            run1: buildRun({id: 'run1'}),
+          },
+        }),
+        hparams: {
+          dashboardSessionGroups: [
+            {
+              name: 'some_session_group',
+              hparams: {hp1: 'foo', hp2: 'bar'},
+              sessions: [
+                {
+                  name: 'run1',
+                  metricValues: [],
+                } as any,
+              ],
+            },
+          ],
+        },
+      });
+      expect(selectors.getRuns(state, {experimentId: 'eid'})).toEqual([
+        buildRun({
+          id: 'run1',
+          hparams: [
+            {name: 'hp1', value: 'foo'},
+            {name: 'hp2', value: 'bar'},
+          ],
+          metrics: [],
+        }),
+      ]);
+    });
+
+    it('includes dashboard hparams data when on the compare route', () => {
+      const state = buildMockState({
+        app_routing: {
+          activeRoute: {
+            routeKind: RouteKind.COMPARE_EXPERIMENT,
+            params: {},
+          },
+        },
+        runs: buildRunsState({
+          runIds: {
+            eid: ['run1', 'run2'],
+          },
+          runMetadata: {
+            run1: buildRun({id: 'run1'}),
+          },
+        }),
+        hparams: {
+          dashboardSessionGroups: [
+            {
+              name: 'some_session_group',
+              hparams: {hp1: 'foo', hp2: 'bar'},
+              sessions: [
+                {
+                  name: 'run1',
+                  metricValues: [],
+                } as any,
+              ],
+            },
+          ],
+        },
+      });
+      expect(selectors.getRuns(state, {experimentId: 'eid'})).toEqual([
+        buildRun({
+          id: 'run1',
+          hparams: [
+            {name: 'hp1', value: 'foo'},
+            {name: 'hp2', value: 'bar'},
+          ],
+          metrics: [],
+        }),
+      ]);
+    });
+
+    it('does not include dashboard hparams data when on the experiments route', () => {
+      const state = buildMockState({
+        app_routing: {
+          activeRoute: {
+            routeKind: RouteKind.EXPERIMENTS,
+            params: {},
+          },
+        },
+        runs: buildRunsState({
+          runIds: {
+            eid: ['run1', 'run2'],
+          },
+          runMetadata: {
+            run1: buildRun({id: 'run1'}),
+          },
+        }),
+        hparams: {
+          dashboardSessionGroups: [
+            {
+              name: 'some_session_group',
+              hparams: {hp1: 'foo', hp2: 'bar'},
+              sessions: [
+                {
+                  name: 'run1',
+                  metricValues: [],
+                } as any,
+              ],
+            },
+          ],
+        },
+      });
+      expect(selectors.getRuns(state, {experimentId: 'eid'})).toEqual([
+        buildRun({
+          id: 'run1',
+        }),
+      ]);
     });
   });
 
