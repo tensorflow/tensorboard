@@ -27,7 +27,7 @@ import {
 } from './runs_types';
 import {createGroupBy} from './utils';
 import {ColumnHeader, SortingInfo} from '../../widgets/data_table/types';
-import {getRunsToHparamsAndMetrics} from '../../hparams/_redux/hparams_selectors';
+import {getDashboardRunsToHparamsAndMetrics} from '../../hparams/_redux/hparams_selectors';
 import {RunToHparamsAndMetrics} from '../../hparams/types';
 
 const getRunsState = createFeatureSelector<RunsState>(RUNS_FEATURE_KEY);
@@ -74,7 +74,7 @@ export const getRun = createSelector(
  */
 export const getRuns = createSelector(
   getDataState,
-  getRunsToHparamsAndMetrics,
+  getDashboardRunsToHparamsAndMetrics,
   (
     state: RunsDataState,
     runsToHparamsAndMetrics: RunToHparamsAndMetrics,
@@ -97,7 +97,7 @@ export const getRuns = createSelector(
 export const getRunsFromExperimentIds = (experimentIds: string[]) =>
   createSelector(
     getDataState,
-    getRunsToHparamsAndMetrics,
+    getDashboardRunsToHparamsAndMetrics,
     (
       state: RunsDataState,
       runsToHparamsAndMetrics: RunToHparamsAndMetrics

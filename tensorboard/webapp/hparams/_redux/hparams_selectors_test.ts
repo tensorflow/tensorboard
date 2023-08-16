@@ -486,7 +486,7 @@ describe('hparams/_redux/hparams_selectors_test', () => {
     });
   });
 
-  describe('#getRunsToHparamsAndMetrics', () => {
+  describe('#getDashboardRunsToHparamsAndMetrics', () => {
     let mockSessionGroups: SessionGroup[];
     beforeEach(() => {
       mockSessionGroups = [
@@ -603,7 +603,9 @@ describe('hparams/_redux/hparams_selectors_test', () => {
         })
       );
 
-      expect(selectors.getRunsToHparamsAndMetrics(state)['exp1/run4']).toEqual({
+      expect(
+        selectors.getDashboardRunsToHparamsAndMetrics(state)['exp1/run4']
+      ).toEqual({
         metrics: [],
         hparams: [{name: 'hp4', value: 'hyperparameter4'}],
       });
@@ -616,7 +618,7 @@ describe('hparams/_redux/hparams_selectors_test', () => {
         })
       );
 
-      expect(selectors.getRunsToHparamsAndMetrics(state)).toEqual({
+      expect(selectors.getDashboardRunsToHparamsAndMetrics(state)).toEqual({
         'exp1/run1': {
           metrics: [],
           hparams: [

@@ -192,7 +192,7 @@ export const getDashboardHparamsAndMetricsSpecs = createSelector(
   }
 );
 
-export const getRunsToHparamsAndMetrics = createSelector(
+export const getDashboardRunsToHparamsAndMetrics = createSelector(
   getHparamsState,
   (state): RunToHparamsAndMetrics => {
     const runToHparamsAndMetrics: RunToHparamsAndMetrics = {};
