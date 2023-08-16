@@ -96,6 +96,15 @@ tf_ts_library(
     ],
 )
 
+# This is a dummy rule used as a @angular/material/checkbox/testing dependency.
+tf_ts_library(
+    name = "expect_angular_material_checkbox_testing",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
 # This is a dummy rule used as a @angular/material/button dependency.
 tf_ts_library(
     name = "expect_angular_material_button",
