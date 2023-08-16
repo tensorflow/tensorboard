@@ -403,7 +403,7 @@ class Context:
         self, ctx, experiment_id, session_groups
     ):
         session_runs = set(
-            generate_data_provider_session_name(experiment_id, s)
+            generate_data_provider_session_name(s)
             for sg in session_groups
             for s in sg.sessions
         )
@@ -446,7 +446,7 @@ class Context:
         )
         for run, tags in scalars_run_to_tag_to_content.items():
             session = _find_longest_parent_path(session_runs, run)
-            if not session:
+            if session is None:
                 continue
             group = os.path.relpath(run, session)
             # relpath() returns "." for the 'session' directory, we use an empty
@@ -460,14 +460,14 @@ class Context:
         return metric_names_list
 
 
-def generate_data_provider_session_name(experiment_id, session):
+def generate_data_provider_session_name(session):
     """Generates a name from a HyperparameterSesssionRun.
 
     If the HyperparameterSessionRun contains no experiment or run information
     then the name is set to the original experiment_id.
     """
     if not session.experiment_id and not session.run:
-        return experiment_id
+        return ""
     elif not session.experiment_id:
         return session.run
     elif not session.run:
