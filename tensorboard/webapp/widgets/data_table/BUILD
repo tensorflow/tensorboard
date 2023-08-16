@@ -147,7 +147,7 @@ tf_ng_module(
     ],
     deps = [
         ":types",
-        "//tensorboard/webapp/angular:expect_angular_material_checkbox",
+        "//tensorboard/webapp/angular:expect_angular_legacy_material_checkbox",
         "//tensorboard/webapp/widgets/filter_input",
         "//tensorboard/webapp/widgets/range_input",
         "//tensorboard/webapp/widgets/range_input:types",

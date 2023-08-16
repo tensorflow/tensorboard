@@ -19,7 +19,7 @@ tf_ng_module(
     deps = [
         "//tensorboard/webapp:tb_polymer_interop_types",
         "//tensorboard/webapp/angular:expect_angular_material_button",
-        "//tensorboard/webapp/angular:expect_angular_material_checkbox",
+        "//tensorboard/webapp/angular:expect_angular_legacy_material_checkbox",
         "//tensorboard/webapp/angular:expect_angular_material_dialog",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_input",
@@ -45,7 +45,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_button",
-        "//tensorboard/webapp/angular:expect_angular_material_checkbox",
+        "//tensorboard/webapp/angular:expect_angular_legacy_material_checkbox",
         "//tensorboard/webapp/angular:expect_angular_material_dialog",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_input",
