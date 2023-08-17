@@ -136,7 +136,7 @@ class Handler:
             for session in provider_group.sessions:
                 session_name = (
                     backend_context_lib.generate_data_provider_session_name(
-                        self._experiment_id, session
+                        session
                     )
                 )
                 sessions.append(
@@ -150,8 +150,10 @@ class Handler:
                 )
 
             name = backend_context_lib.generate_data_provider_session_name(
-                self._experiment_id, provider_group.root
+                provider_group.root
             )
+            if not name:
+                name = self._experiment_id
             session_group = api_pb2.SessionGroup(
                 name=name,
                 sessions=sessions,

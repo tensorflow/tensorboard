@@ -2066,6 +2066,39 @@ class ListSessionGroupsTest(tf.test.TestCase):
             response.session_groups[0].sessions[0],
         )
 
+    def test_experiment_from_data_provider_with_metric_values_empty_session_names(
+        self,
+    ):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._hyperparameters = [
+            provider.HyperparameterSessionGroup(
+                root=provider.HyperparameterSessionRun(
+                    experiment_id="", run=""
+                ),
+                sessions=[
+                    provider.HyperparameterSessionRun(experiment_id="", run="")
+                ],
+                hyperparameter_values=[],
+            ),
+        ]
+        request = """
+            start_index: 0
+            slice_size: 10
+        """
+        response = self._run_handler(request)
+        self.assertLen(response.session_groups, 1)
+        # The name comes from the experiment id.
+        self.assertEquals(response.session_groups[0].name, "123")
+        self.assertLen(response.session_groups[0].sessions, 1)
+        self.assertEquals(response.session_groups[0].sessions[0].name, "")
+        # The result specifies a single session without explicit identifier. It
+        # therefore represents a session that includes all run/tag combinations
+        # as separate metric values.
+        # There are 11 total run/tag combinations across session_1, _2, _3, _4,
+        # and _5.
+        self.assertLen(response.session_groups[0].metric_values, 11)
+        self.assertLen(response.session_groups[0].sessions[0].metric_values, 11)
+
     def test_experiment_from_data_provider_with_metric_values_aggregates(
         self,
     ):

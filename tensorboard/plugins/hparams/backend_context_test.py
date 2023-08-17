@@ -689,6 +689,106 @@ class BackendContextTest(tf.test.TestCase):
         """
         self.assertProtoEquals(expected_exp, actual_exp)
 
+    def test_experiment_from_data_provider_session_group_without_session_names(
+        self,
+    ):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._hyperparameters = provider.ListHyperparametersResult(
+            hyperparameters=[],
+            session_groups=[
+                provider.HyperparameterSessionGroup(
+                    root=provider.HyperparameterSessionRun(
+                        experiment_id="", run=""
+                    ),
+                    sessions=[
+                        provider.HyperparameterSessionRun(
+                            experiment_id="", run=""
+                        ),
+                    ],
+                    hyperparameter_values=[],
+                ),
+            ],
+        )
+        actual_exp = self._experiment_from_metadata()
+        # The result specifies a single session without explicit identifier. It
+        # therefore represents a session that includes all run/tag combinations
+        # as separate metric values.
+        expected_exp = """
+            metric_infos {
+              name {
+                group: "exp/session_1"
+                tag: "accuracy"
+              }
+            }
+            metric_infos {
+              name {
+                group: "exp/session_2"
+                tag: "accuracy"
+              }
+            }
+            metric_infos {
+              name {
+                group: "exp/session_3"
+                tag: "accuracy"
+              }
+            }
+            metric_infos {
+              name {
+                group: "exp/session_1"
+                tag: "loss"
+              }
+            }
+            metric_infos {
+              name {
+                group: "exp/session_1/eval"
+                tag: "loss"
+              }
+            }
+            metric_infos {
+              name {
+                group: "exp/session_1/train"
+                tag: "loss"
+              }
+            }
+            metric_infos {
+              name {
+                group: "exp/session_2"
+                tag: "loss"
+              }
+            }
+            metric_infos {
+              name {
+                group: "exp/session_2/eval"
+                tag: "loss"
+              }
+            }
+            metric_infos {
+              name {
+                group: "exp/session_2/train"
+                tag: "loss"
+              }
+            }
+            metric_infos {
+              name {
+                group: "exp/session_3"
+                tag: "loss"
+              }
+            }
+            metric_infos {
+              name {
+                group: "exp/session_3/eval"
+                tag: "loss"
+              }
+            }
+            metric_infos {
+              name {
+                group: "exp/session_3xyz"
+                tag: "loss2"
+              }
+            }
+        """
+        self.assertProtoEquals(expected_exp, actual_exp)
+
     def test_experiment_from_data_provider_old_response_type(self):
         self._hyperparameters = [
             provider.Hyperparameter(

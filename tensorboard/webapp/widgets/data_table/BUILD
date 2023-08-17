@@ -51,6 +51,16 @@ tf_sass_binary(
     ],
 )
 
+tf_sass_binary(
+    name = "filter_dialog_styles",
+    src = "filter_dialog_component.scss",
+    strict_deps = False,
+    deps = [
+        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/theme",
+    ],
+)
+
 tf_ng_module(
     name = "data_table",
     srcs = [
@@ -71,12 +81,14 @@ tf_ng_module(
     deps = [
         ":column_selector",
         ":data_table_header",
+        ":filter_dialog",
         ":types",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",
         "//tensorboard/webapp/widgets/custom_modal",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:formatter",
+        "//tensorboard/webapp/widgets/range_input:types",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//rxjs",
@@ -123,6 +135,27 @@ tf_ng_module(
     ],
 )
 
+tf_ng_module(
+    name = "filter_dialog",
+    srcs = [
+        "filter_dialog_component.ts",
+        "filter_dialog_module.ts",
+    ],
+    assets = [
+        "filter_dialog_component.ng.html",
+        ":filter_dialog_styles",
+    ],
+    deps = [
+        ":types",
+        "//tensorboard/webapp/angular:expect_angular_material_checkbox",
+        "//tensorboard/webapp/widgets/filter_input",
+        "//tensorboard/webapp/widgets/range_input",
+        "//tensorboard/webapp/widgets/range_input:types",
+        "@npm//@angular/common",
+        "@npm//@angular/core",
+    ],
+)
+
 tf_ts_library(
     name = "types",
     srcs = [
@@ -137,16 +170,24 @@ tf_ts_library(
         "column_selector_test.ts",
         "content_cell_component_test.ts",
         "data_table_test.ts",
+        "filter_dialog_test.ts",
         "header_cell_component_test.ts",
     ],
     deps = [
         ":column_selector",
         ":data_table",
+        ":filter_dialog",
         ":types",
+        "//tensorboard/webapp/angular:expect_angular_cdk_testing",
+        "//tensorboard/webapp/angular:expect_angular_cdk_testing_testbed",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_angular_material_checkbox",
+        "//tensorboard/webapp/angular:expect_angular_material_checkbox_testing",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/testing:mat_icon",
         "//tensorboard/webapp/widgets/custom_modal",
+        "//tensorboard/webapp/widgets/range_input",
+        "//tensorboard/webapp/widgets/range_input:types",
         "@npm//@angular/core",
         "@npm//@angular/forms",
         "@npm//@angular/platform-browser",
