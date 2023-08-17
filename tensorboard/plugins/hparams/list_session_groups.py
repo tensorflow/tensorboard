@@ -186,6 +186,15 @@ class Handler:
             if group.sessions:
                 self._aggregate_metrics(group)
 
+        extractors = _create_extractors(self._request.col_params)
+        filters = _create_filters(
+            self._request.col_params,
+            extractors,
+            # We assume the DataProvider will apply hparam filters and we do not
+            # attempt to reapply them.
+            include_hparam_filters=False,
+        )
+        session_groups = self._filter(session_groups, filters)
         return session_groups
 
     def _build_session_groups(
@@ -552,7 +561,7 @@ def _create_hparam_extractor(hparam_name):
 # True if it should be included in the result. Currently, Filters are functions
 # of a single column value extracted from the session group with a given
 # extractor specified in the construction of the filter.
-def _create_filters(col_params, extractors):
+def _create_filters(col_params, extractors, *, include_hparam_filters=True):
     """Creates filters for the given col_params.
 
     Args:
@@ -560,12 +569,17 @@ def _create_filters(col_params, extractors):
       extractors: list of extractor functions of the same length as col_params.
         Each element should extract the column described by the corresponding
         element of col_params.
+      include_hparam_filters: bool that indicates whether hparam filters should
+        be generated. Defaults to True.
     Returns:
       A list of filter functions. Each corresponding to a single
       col_params.filter oneof field of _request
     """
     result = []
     for col_param, extractor in zip(col_params, extractors):
+        if not include_hparam_filters and col_param.hparam:
+            continue
+
         a_filter = _create_filter(col_param, extractor)
         if a_filter:
             result.append(a_filter)
@@ -860,6 +874,11 @@ def _build_data_provider_filters(col_params):
     """Builds HyperparameterFilters from ColParams."""
     filters = []
     for col_param in col_params:
+        if not col_param.hparam:
+            # We do not pass metric filters to the DataProvider as it does not
+            # have the metric data for filtering.
+            continue
+
         fltr = _build_data_provider_filter(col_param)
         if fltr is None:
             continue
