@@ -560,6 +560,8 @@ describe('metrics effects', () => {
         provideCardFetchInfo([
           {id: 'card1', tag: 'tagA'},
           {id: 'card2', tag: 'tagB'},
+          {id: 'card3', tag: 'tagC'},
+          {id: 'card4', tag: 'tagD'},
         ]);
         store.refreshState();
 
