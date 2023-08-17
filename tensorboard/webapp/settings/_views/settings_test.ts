@@ -15,10 +15,10 @@ limitations under the License.
 import {OverlayContainer} from '@angular/cdk/overlay';
 import {fakeAsync, TestBed, tick} from '@angular/core/testing';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {MatLegacyButtonModule} from '@angular/material/legacy-button';
-import {MatLegacyCheckboxModule} from '@angular/material/legacy-checkbox';
-import {MatLegacyDialogModule} from '@angular/material/legacy-dialog';
-import {MatLegacyInputModule} from '@angular/material/legacy-input';
+import {MatButtonModule} from '@angular/material/button';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatInputModule} from '@angular/material/input';
 import {By} from '@angular/platform-browser';
 import {BrowserDynamicTestingModule} from '@angular/platform-browser-dynamic/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
@@ -46,11 +46,11 @@ describe('settings test', () => {
     await TestBed.configureTestingModule({
       imports: [
         FormsModule,
-        MatLegacyButtonModule,
-        MatLegacyCheckboxModule,
-        MatLegacyDialogModule,
+        MatButtonModule,
+        MatCheckboxModule,
+        MatDialogModule,
         MatIconTestingModule,
-        MatLegacyInputModule,
+        MatInputModule,
         NoopAnimationsModule,
         ReactiveFormsModule,
       ],

@@ -35,6 +35,7 @@ export interface SendKeySpecialArg {
     | 'Tab'
     | 'Enter'
     | 'ArrowLeft'
+    | 'ArrowUp'
     | 'ArrowRight'
     | 'Escape';
   prevString: string;
@@ -86,6 +87,12 @@ export function sendKey<T>(
       nextString = prevString;
       nextCursorIndex = startingCursorIndex - 1;
       keyCode = 0x25;
+      emitKeyPressAndInput = false;
+      break;
+    case 'ArrowUp':
+      nextString = prevString;
+      nextCursorIndex = startingCursorIndex - 1;
+      keyCode = 0x26;
       emitKeyPressAndInput = false;
       break;
     case 'ArrowRight':

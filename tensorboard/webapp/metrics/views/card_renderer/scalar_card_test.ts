@@ -30,12 +30,9 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
-import {
-  MatLegacyDialogModule,
-  MAT_LEGACY_DIALOG_DATA,
-} from '@angular/material/legacy-dialog';
-import {MatLegacyMenuModule} from '@angular/material/legacy-menu';
-import {MatLegacyProgressSpinnerModule} from '@angular/material/legacy-progress-spinner';
+import {MatDialogModule, MAT_DIALOG_DATA} from '@angular/material/dialog';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
@@ -220,7 +217,7 @@ class TestableLineChart {
 })
 class TestableDataDownload {
   cardId = 'hello';
-  constructor(@Inject(MAT_LEGACY_DIALOG_DATA) data: {cardId: string}) {
+  constructor(@Inject(MAT_DIALOG_DATA) data: {cardId: string}) {
     this.cardId = data.cardId;
   }
 }
@@ -336,10 +333,10 @@ describe('scalar card', () => {
         IntersectionObserverTestingModule,
         CardFobModule,
         DataTableModule,
-        MatLegacyDialogModule,
+        MatDialogModule,
         MatIconTestingModule,
-        MatLegacyMenuModule,
-        MatLegacyProgressSpinnerModule,
+        MatMenuModule,
+        MatProgressSpinnerModule,
         NoopAnimationsModule,
         ResizeDetectorTestingModule,
         TruncatedPathModule,

@@ -14,9 +14,9 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatLegacyButtonModule} from '@angular/material/legacy-button';
+import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
-import {MatLegacyProgressSpinnerModule} from '@angular/material/legacy-progress-spinner';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatLegacySliderModule} from '@angular/material/legacy-slider';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {ImageCardComponent} from './image_card_component';
@@ -31,9 +31,9 @@ import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_w
   imports: [
     CommonModule,
     FeatureFlagDirectiveModule,
-    MatLegacyButtonModule,
+    MatButtonModule,
     MatIconModule,
-    MatLegacyProgressSpinnerModule,
+    MatProgressSpinnerModule,
     MatLegacySliderModule,
     RunNameModule,
     TruncatedPathModule,

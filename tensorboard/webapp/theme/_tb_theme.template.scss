@@ -265,9 +265,13 @@ $tb-dark-theme: map_merge(
   // TODO(JamesHollyer): remove legacy component themes once all components
   // are migrated.
   @include mat.core();
+<<<<<<< HEAD
   @include mat.all-legacy-component-typographies();
+=======
+>>>>>>> 7169a2fc3 (Angular Component Migration)
   @include mat.all-component-typographies();
   // Include all theme-styles for the components based on the current theme.
+  @include mat.all-component-themes($tb-theme);
   @include mat.all-legacy-component-themes($tb-theme);
   @include mat.all-component-themes($tb-theme);
 
@@ -303,8 +307,11 @@ $tb-dark-theme: map_merge(
       }
     }
 
+<<<<<<< HEAD
     // TODO(JamesHollyer): remove legacy component themes once all components
     // are migrated.
+=======
+>>>>>>> 7169a2fc3 (Angular Component Migration)
     @include mat.all-component-themes($tb-dark-theme);
     @include mat.all-legacy-component-themes($tb-dark-theme);
   }

@@ -15,7 +15,7 @@ limitations under the License.
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {FormsModule} from '@angular/forms';
-import {MAT_LEGACY_DIALOG_DATA} from '@angular/material/legacy-dialog';
+import {MAT_DIALOG_DATA} from '@angular/material/dialog';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
@@ -55,7 +55,7 @@ describe('metrics/views/data_download_dialog', () => {
       declarations: [DataDownloadDialogContainer, DataDownloadDialogComponent],
       providers: [
         provideMockStore({}),
-        {provide: MAT_LEGACY_DIALOG_DATA, useValue: dialogData},
+        {provide: MAT_DIALOG_DATA, useValue: dialogData},
         {provide: MetricsDataSource, useClass: TestingMetricsDataSource},
       ],
       schemas: [NO_ERRORS_SCHEMA],
