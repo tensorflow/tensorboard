@@ -27,6 +27,7 @@ import {
   take,
   tap,
   withLatestFrom,
+  shareReplay,
 } from 'rxjs/operators';
 import * as routingActions from '../../app_routing/actions';
 import {State} from '../../app_state';
@@ -43,13 +44,17 @@ import {
   TagMetadata,
   TimeSeriesRequest,
   TimeSeriesResponse,
+  SampledPluginType,
+  isSampledPlugin,
+  NonSampledPluginType,
+  SampledTagMetadata,
 } from '../data_source/index';
 import {
   getCardLoadState,
   getCardMetadata,
   getMetricsTagMetadataLoadState,
 } from '../store';
-import {CardId, CardMetadata} from '../types';
+import {CardId, CardMetadata, PluginType} from '../types';
 
 export type CardFetchInfo = CardMetadata & {
   id: CardId;
@@ -75,6 +80,15 @@ function parseRunIdFromSampledRunInfoName(eidRun: string): string {
   return runIdChunks.join('/');
 }
 
+function sampledPluginToTagRunPairs(plugin: SampledTagMetadata) {
+  return Object.fromEntries(
+    Object.entries(plugin.tagRunSampledInfo).map(([tag, sampledRunInfo]) => {
+      const runIds = Object.keys(sampledRunInfo);
+      return [tag, runIds];
+    })
+  );
+}
+
 @Injectable()
 export class MetricsEffects implements OnInitEffects {
   constructor(
@@ -83,22 +97,14 @@ export class MetricsEffects implements OnInitEffects {
     private readonly dataSource: MetricsDataSource
   ) {}
 
+  /**
+   * Computes a record of tag to the experiments it appears in.
+   */
   readonly tagToEid$: Observable<Record<string, Set<string>>> = this.store
     .select(selectors.getMetricsTagMetadata)
     .pipe(
       combineLatestWith(this.store.select(selectors.getRunIdToExperimentId)),
       map(([tagMetadata, runToEid]) => {
-        const imageTagToRuns = Object.fromEntries(
-          Object.entries(tagMetadata.images.tagRunSampledInfo).map(
-            ([tag, sampledRunInfo]) => {
-              const runIds = Object.keys(sampledRunInfo).map((runInfoKey) =>
-                parseRunIdFromSampledRunInfoName(runInfoKey)
-              );
-              return [tag, runIds];
-            }
-          )
-        );
-
         const tagToEid: Record<string, Set<string>> = {};
         function mapTagsToEid(tagToRun: Record<string, readonly string[]>) {
           Object.entries(tagToRun).forEach(([tag, runIds]) => {
@@ -109,12 +115,23 @@ export class MetricsEffects implements OnInitEffects {
           });
         }
 
-        mapTagsToEid(tagMetadata.scalars.tagToRuns);
-        mapTagsToEid(tagMetadata.histograms.tagToRuns);
-        mapTagsToEid(imageTagToRuns);
+        for (const pluginType in tagMetadata) {
+          if (isSampledPlugin(pluginType as PluginType)) {
+            const tagRunPairs = sampledPluginToTagRunPairs(
+              tagMetadata[pluginType as SampledPluginType]
+            );
+            mapTagsToEid(tagRunPairs);
+            continue;
+          }
+
+          mapTagsToEid(
+            tagMetadata[pluginType as NonSampledPluginType].tagToRuns
+          );
+        }
 
         return tagToEid;
-      })
+      }),
+      shareReplay(1)
     );
 
   /** @export */
@@ -238,6 +255,7 @@ export class MetricsEffects implements OnInitEffects {
   ) {
     // Fetch and handle responses.
     return this.tagToEid$.pipe(
+      take(1),
       map((tagToEid): TimeSeriesRequest[] => {
         const requests = fetchInfos.map((fetchInfo) => {
           const {plugin, tag, runId, sample} = fetchInfo;
