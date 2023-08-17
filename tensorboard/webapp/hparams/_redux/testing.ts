@@ -19,9 +19,13 @@ import {
   DiscreteFilter,
   DomainType,
   HparamSpec,
+  HparamValue,
   HparamsValueType,
   IntervalFilter,
   MetricSpec,
+  MetricsValue,
+  RunStatus,
+  Session,
   SessionGroup,
 } from '../_types';
 import {
@@ -142,4 +146,55 @@ export function buildIntervalFilter(
     filterUpperValue: 10,
     ...override,
   };
+}
+
+export function buildMetricsValue(
+  override: DeepPartial<MetricsValue>
+): MetricsValue {
+  return {
+    trainingStep: 0,
+    value: 1,
+    wallTimeSecs: 123,
+    ...override,
+    name: {
+      tag: override.name?.tag ?? 'someTag',
+      group: override.name?.group ?? 'someGroup',
+    },
+  };
+}
+
+export function buildHparamValue(override: Partial<HparamValue>): HparamValue {
+  return {
+    name: 'some_hparam',
+    value: 4,
+    ...override,
+  };
+}
+
+export function buildSession(override: Partial<Session>): Session {
+  return {
+    name: 'someExperiment/someRun',
+    modelUri: '',
+    monitorUrl: '',
+    startTimeSecs: 123,
+    endTimeSecs: 456,
+    status: RunStatus.STATUS_UNKNOWN,
+    ...override,
+    metricValues: [...(override.metricValues ?? [])],
+  };
+}
+
+export function buildSessionGroup(
+  override: DeepPartial<SessionGroup>
+): SessionGroup {
+  return {
+    name: 'some_session_group',
+    ...override,
+    hparams: {
+      ...override.hparams,
+    } as any,
+    sessions: (override.sessions ?? []).map((session) =>
+      buildSession(session as Session)
+    ),
+  } as SessionGroup;
 }

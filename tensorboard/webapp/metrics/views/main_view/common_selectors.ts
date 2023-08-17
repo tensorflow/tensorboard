@@ -24,7 +24,7 @@ import {
   getRunColorMap,
   getRunSelectorRegexFilter,
   getRouteKind,
-  getRunsFromExperimentIds,
+  getDashboardRuns,
   getColumnHeadersForCard,
 } from '../../../selectors';
 import {DeepReadonly} from '../../../util/types';
@@ -187,7 +187,7 @@ const utils = {
 
 const getRenderableRuns = memoize((experimentIds: string[]) => {
   return createSelector(
-    getRunsFromExperimentIds(experimentIds),
+    getDashboardRuns(experimentIds),
     getExperimentNames(experimentIds),
     getCurrentRouteRunSelection,
     getRunColorMap,

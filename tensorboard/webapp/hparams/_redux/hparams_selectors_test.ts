@@ -13,8 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {DeepPartial} from '../../util/types';
-import {RunStatus, SessionGroup, MetricsValue, Session} from '../types';
+import {SessionGroup} from '../types';
 import * as selectors from './hparams_selectors';
 import {
   buildDiscreteFilter,
@@ -23,6 +22,8 @@ import {
   buildHparamsState,
   buildIntervalFilter,
   buildMetricSpec,
+  buildMetricsValue,
+  buildSessionGroup,
   buildSpecs,
   buildStateFromHparamsState,
 } from './testing';
@@ -490,7 +491,7 @@ describe('hparams/_redux/hparams_selectors_test', () => {
     let mockSessionGroups: SessionGroup[];
     beforeEach(() => {
       mockSessionGroups = [
-        {
+        buildSessionGroup({
           name: 'session_group_1',
           hparams: {
             hp1: 1,
@@ -498,24 +499,24 @@ describe('hparams/_redux/hparams_selectors_test', () => {
             hp3: 'foo',
           },
           sessions: [
-            buildSession({
+            {
               name: 'exp1/run1',
               metricValues: [
                 buildMetricsValue({name: {tag: 'foo', group: '1'}, value: 2}),
                 buildMetricsValue({name: {tag: 'bar', group: '2'}, value: 103}),
               ],
-            }),
-            buildSession({
+            },
+            {
               name: 'exp1/run2',
               metricValues: [
                 buildMetricsValue({name: {tag: 'foo', group: '1'}, value: 3}),
                 buildMetricsValue({name: {tag: 'bar', group: '2'}, value: 104}),
                 buildMetricsValue({name: {tag: 'baz', group: '3'}, value: 201}),
               ],
-            }),
+            },
           ],
-        },
-        {
+        }),
+        buildSessionGroup({
           name: 'session_group_2',
           hparams: {
             hp1: 2,
@@ -523,28 +524,28 @@ describe('hparams/_redux/hparams_selectors_test', () => {
             hp3: 'bar',
           },
           sessions: [
-            buildSession({
+            {
               name: 'exp1/run3',
               metricValues: [
                 buildMetricsValue({name: {tag: 'foo', group: '1'}, value: 4}),
                 buildMetricsValue({name: {tag: 'bar', group: '2'}, value: 105}),
               ],
-            }),
+            },
           ],
-        },
-        {
+        }),
+        buildSessionGroup({
           name: 'session_group_3',
           hparams: {
             hp4: 'hyperparameter4',
           },
           sessions: [
-            buildSession({
+            {
               name: 'exp1/run4',
               metricValues: [],
-            }),
+            },
           ],
-        },
-        {
+        }),
+        buildSessionGroup({
           name: 'session_group_4',
           hparams: {
             hp1: 7,
@@ -552,7 +553,7 @@ describe('hparams/_redux/hparams_selectors_test', () => {
             hp3: 'foobar',
           },
           sessions: [
-            buildSession({
+            {
               name: 'exp2/run1',
               metricValues: [
                 buildMetricsValue({name: {tag: 'foo', group: '1'}, value: 4}),
@@ -562,39 +563,11 @@ describe('hparams/_redux/hparams_selectors_test', () => {
                   value: 1000,
                 }),
               ],
-            }),
+            },
           ],
-        },
+        }),
       ];
     });
-
-    function buildMetricsValue(
-      override: DeepPartial<MetricsValue>
-    ): MetricsValue {
-      return {
-        trainingStep: 0,
-        value: 1,
-        wallTimeSecs: 123,
-        ...override,
-        name: {
-          tag: override.name?.tag ?? 'someTag',
-          group: override.name?.group ?? 'someGroup',
-        },
-      };
-    }
-
-    function buildSession(override: Partial<Session>): Session {
-      return {
-        name: 'someExperiment/someRun',
-        modelUri: '',
-        monitorUrl: '',
-        startTimeSecs: 123,
-        endTimeSecs: 456,
-        status: RunStatus.STATUS_UNKNOWN,
-        ...override,
-        metricValues: [...(override.metricValues ?? [])],
-      };
-    }
 
     it('contains entry for each runId', () => {
       const state = buildStateFromHparamsState(
