@@ -29,7 +29,15 @@ import {
   getIdFromExperimentIds,
 } from './utils';
 
-const initialState: HparamsState = {specs: {}, filters: {}};
+const initialState: HparamsState = {
+  specs: {},
+  filters: {},
+  dashboardSpecs: {
+    hparams: [],
+    metrics: [],
+  },
+  dashboardSessionGroups: [],
+};
 
 const reducer: ActionReducer<HparamsState, Action> = createReducer(
   initialState,
@@ -350,6 +358,16 @@ const reducer: ActionReducer<HparamsState, Action> = createReducer(
     return {
       ...state,
       specs: eidToHparams,
+    };
+  }),
+  on(actions.hparamsFetchSessionGroupsSucceeded, (state, action) => {
+    const nextDashboardSpecs = action.hparamsAndMetricsSpecs;
+    const nextDashboardSessionGroups = action.sessionGroups;
+
+    return {
+      ...state,
+      dashboardSpecs: nextDashboardSpecs,
+      dashboardSessionGroups: nextDashboardSessionGroups,
     };
   })
 );

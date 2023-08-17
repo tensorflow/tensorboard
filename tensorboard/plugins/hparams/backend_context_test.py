@@ -378,18 +378,21 @@ class BackendContextTest(tf.test.TestCase):
         self.assertProtoEquals("", actual_exp)
 
     def test_experiment_from_data_provider_differs(self):
-        self._hyperparameters = [
-            provider.Hyperparameter(
-                hyperparameter_name="hparam1_name",
-                hyperparameter_display_name="hparam1_display_name",
-                differs=True,
-            ),
-            provider.Hyperparameter(
-                hyperparameter_name="hparam2_name",
-                hyperparameter_display_name="hparam2_display_name",
-                differs=False,
-            ),
-        ]
+        self._hyperparameters = provider.ListHyperparametersResult(
+            hyperparameters=[
+                provider.Hyperparameter(
+                    hyperparameter_name="hparam1_name",
+                    hyperparameter_display_name="hparam1_display_name",
+                    differs=True,
+                ),
+                provider.Hyperparameter(
+                    hyperparameter_name="hparam2_name",
+                    hyperparameter_display_name="hparam2_display_name",
+                    differs=False,
+                ),
+            ],
+            session_groups=[],
+        )
         self._mock_tb_context.data_provider.list_tensors.side_effect = None
         actual_exp = self._experiment_from_metadata()
         expected_exp = """
@@ -407,14 +410,17 @@ class BackendContextTest(tf.test.TestCase):
         self.assertProtoEquals(expected_exp, actual_exp)
 
     def test_experiment_from_data_provider_interval_hparam(self):
-        self._hyperparameters = [
-            provider.Hyperparameter(
-                hyperparameter_name="hparam1_name",
-                hyperparameter_display_name="hparam1_display_name",
-                domain_type=provider.HyperparameterDomainType.INTERVAL,
-                domain=(-10.0, 15),
-            )
-        ]
+        self._hyperparameters = provider.ListHyperparametersResult(
+            hyperparameters=[
+                provider.Hyperparameter(
+                    hyperparameter_name="hparam1_name",
+                    hyperparameter_display_name="hparam1_display_name",
+                    domain_type=provider.HyperparameterDomainType.INTERVAL,
+                    domain=(-10.0, 15),
+                )
+            ],
+            session_groups=[],
+        )
         self._mock_tb_context.data_provider.list_tensors.side_effect = None
         actual_exp = self._experiment_from_metadata()
         expected_exp = """
@@ -431,32 +437,35 @@ class BackendContextTest(tf.test.TestCase):
         self.assertProtoEquals(expected_exp, actual_exp)
 
     def test_experiment_from_data_provider_discrete_bool_hparam(self):
-        self._hyperparameters = [
-            provider.Hyperparameter(
-                hyperparameter_name="hparam1_name",
-                hyperparameter_display_name="hparam1_display_name",
-                domain_type=provider.HyperparameterDomainType.DISCRETE_BOOL,
-                domain=[True],
-            ),
-            provider.Hyperparameter(
-                hyperparameter_name="hparam2_name",
-                hyperparameter_display_name="hparam2_display_name",
-                domain_type=provider.HyperparameterDomainType.DISCRETE_BOOL,
-                domain=[True, False],
-            ),
-            provider.Hyperparameter(
-                hyperparameter_name="hparam3_name",
-                hyperparameter_display_name="hparam3_display_name",
-                domain_type=provider.HyperparameterDomainType.DISCRETE_BOOL,
-                domain=[False],
-            ),
-            provider.Hyperparameter(
-                hyperparameter_name="hparam4_name",
-                hyperparameter_display_name="hparam4_display_name",
-                domain_type=provider.HyperparameterDomainType.DISCRETE_BOOL,
-                domain=[],
-            ),
-        ]
+        self._hyperparameters = provider.ListHyperparametersResult(
+            hyperparameters=[
+                provider.Hyperparameter(
+                    hyperparameter_name="hparam1_name",
+                    hyperparameter_display_name="hparam1_display_name",
+                    domain_type=provider.HyperparameterDomainType.DISCRETE_BOOL,
+                    domain=[True],
+                ),
+                provider.Hyperparameter(
+                    hyperparameter_name="hparam2_name",
+                    hyperparameter_display_name="hparam2_display_name",
+                    domain_type=provider.HyperparameterDomainType.DISCRETE_BOOL,
+                    domain=[True, False],
+                ),
+                provider.Hyperparameter(
+                    hyperparameter_name="hparam3_name",
+                    hyperparameter_display_name="hparam3_display_name",
+                    domain_type=provider.HyperparameterDomainType.DISCRETE_BOOL,
+                    domain=[False],
+                ),
+                provider.Hyperparameter(
+                    hyperparameter_name="hparam4_name",
+                    hyperparameter_display_name="hparam4_display_name",
+                    domain_type=provider.HyperparameterDomainType.DISCRETE_BOOL,
+                    domain=[],
+                ),
+            ],
+            session_groups=[],
+        )
         self._mock_tb_context.data_provider.list_tensors.side_effect = None
         actual_exp = self._experiment_from_metadata()
         expected_exp = """
@@ -493,14 +502,17 @@ class BackendContextTest(tf.test.TestCase):
         self.assertProtoEquals(expected_exp, actual_exp)
 
     def test_experiment_from_data_provider_discrete_float_hparam(self):
-        self._hyperparameters = [
-            provider.Hyperparameter(
-                hyperparameter_name="hparam1_name",
-                hyperparameter_display_name="hparam1_display_name",
-                domain_type=provider.HyperparameterDomainType.DISCRETE_FLOAT,
-                domain=[-1.0, 1.5, 0.0],
-            ),
-        ]
+        self._hyperparameters = provider.ListHyperparametersResult(
+            hyperparameters=[
+                provider.Hyperparameter(
+                    hyperparameter_name="hparam1_name",
+                    hyperparameter_display_name="hparam1_display_name",
+                    domain_type=provider.HyperparameterDomainType.DISCRETE_FLOAT,
+                    domain=[-1.0, 1.5, 0.0],
+                ),
+            ],
+            session_groups=[],
+        )
         self._mock_tb_context.data_provider.list_tensors.side_effect = None
         actual_exp = self._experiment_from_metadata()
         expected_exp = """
@@ -520,14 +532,17 @@ class BackendContextTest(tf.test.TestCase):
         self.assertProtoEquals(expected_exp, actual_exp)
 
     def test_experiment_from_data_provider_discrete_string_hparam(self):
-        self._hyperparameters = [
-            provider.Hyperparameter(
-                hyperparameter_name="hparam1_name",
-                hyperparameter_display_name="hparam1_display_name",
-                domain_type=provider.HyperparameterDomainType.DISCRETE_STRING,
-                domain=["one", "two", "aaaa"],
-            ),
-        ]
+        self._hyperparameters = provider.ListHyperparametersResult(
+            hyperparameters=[
+                provider.Hyperparameter(
+                    hyperparameter_name="hparam1_name",
+                    hyperparameter_display_name="hparam1_display_name",
+                    domain_type=provider.HyperparameterDomainType.DISCRETE_STRING,
+                    domain=["one", "two", "aaaa"],
+                ),
+            ],
+            session_groups=[],
+        )
         self._mock_tb_context.data_provider.list_tensors.side_effect = None
         actual_exp = self._experiment_from_metadata()
         expected_exp = """
@@ -541,6 +556,158 @@ class BackendContextTest(tf.test.TestCase):
                   {string_value: 'two'},
                   {string_value: 'aaaa'}
                 ]
+              }
+            }
+        """
+        self.assertProtoEquals(expected_exp, actual_exp)
+
+    def test_experiment_from_data_provider_session_groups(self):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        # The sessions chosen here mimic those returned in the implementation
+        # of _mock_list_tensors. These work nicely with the scalars returned
+        # in _mock_list_scalars and generate the same set of metric_infos as
+        # the tensor-based tests in this file.
+        self._hyperparameters = provider.ListHyperparametersResult(
+            hyperparameters=[],
+            session_groups=[
+                provider.HyperparameterSessionGroup(
+                    root=provider.HyperparameterSessionRun(
+                        experiment_id="exp", run=""
+                    ),
+                    sessions=[
+                        provider.HyperparameterSessionRun(
+                            experiment_id="exp", run="session_1"
+                        ),
+                        provider.HyperparameterSessionRun(
+                            experiment_id="exp", run="session_2"
+                        ),
+                    ],
+                    hyperparameter_values=[],
+                ),
+                provider.HyperparameterSessionGroup(
+                    root=provider.HyperparameterSessionRun(
+                        experiment_id="exp", run=""
+                    ),
+                    sessions=[
+                        provider.HyperparameterSessionRun(
+                            experiment_id="exp", run="session_3"
+                        ),
+                    ],
+                    hyperparameter_values=[],
+                ),
+            ],
+        )
+        actual_exp = self._experiment_from_metadata()
+        expected_exp = """
+            metric_infos: {
+              name: {group: '', tag: 'accuracy'}
+            }
+            metric_infos: {
+              name: {group: '', tag: 'loss'}
+            }
+            metric_infos: {
+              name: {group: 'eval', tag: 'loss'}
+            }
+            metric_infos: {
+              name: {group: 'train', tag: 'loss'}
+            }
+        """
+        self.assertProtoEquals(expected_exp, actual_exp)
+
+    def test_experiment_from_data_provider_session_group_without_run_name(self):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._hyperparameters = provider.ListHyperparametersResult(
+            hyperparameters=[],
+            session_groups=[
+                provider.HyperparameterSessionGroup(
+                    root=provider.HyperparameterSessionRun(
+                        experiment_id="exp/session_1", run=""
+                    ),
+                    # The entire path to the run is encoded in the experiment_id
+                    # to allow us to test empty run name while still generating
+                    # metric_infos.
+                    sessions=[
+                        provider.HyperparameterSessionRun(
+                            experiment_id="exp/session_1", run=""
+                        ),
+                    ],
+                    hyperparameter_values=[],
+                ),
+            ],
+        )
+        actual_exp = self._experiment_from_metadata()
+        expected_exp = """
+            metric_infos: {
+              name: {group: '', tag: 'accuracy'}
+            }
+            metric_infos: {
+              name: {group: '', tag: 'loss'}
+            }
+            metric_infos: {
+              name: {group: 'eval', tag: 'loss'}
+            }
+            metric_infos: {
+              name: {group: 'train', tag: 'loss'}
+            }
+        """
+        self.assertProtoEquals(expected_exp, actual_exp)
+
+    def test_experiment_from_data_provider_session_group_without_experiment_name(
+        self,
+    ):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._hyperparameters = provider.ListHyperparametersResult(
+            hyperparameters=[],
+            session_groups=[
+                provider.HyperparameterSessionGroup(
+                    root=provider.HyperparameterSessionRun(
+                        experiment_id="", run="exp/session_1"
+                    ),
+                    sessions=[
+                        provider.HyperparameterSessionRun(
+                            experiment_id="", run="exp/session_1"
+                        ),
+                    ],
+                    hyperparameter_values=[],
+                ),
+            ],
+        )
+        actual_exp = self._experiment_from_metadata()
+        expected_exp = """
+            metric_infos: {
+              name: {group: '', tag: 'accuracy'}
+            }
+            metric_infos: {
+              name: {group: '', tag: 'loss'}
+            }
+            metric_infos: {
+              name: {group: 'eval', tag: 'loss'}
+            }
+            metric_infos: {
+              name: {group: 'train', tag: 'loss'}
+            }
+        """
+        self.assertProtoEquals(expected_exp, actual_exp)
+
+    def test_experiment_from_data_provider_old_response_type(self):
+        self._hyperparameters = [
+            provider.Hyperparameter(
+                hyperparameter_name="hparam1_name",
+                hyperparameter_display_name="hparam1_display_name",
+                domain_type=provider.HyperparameterDomainType.INTERVAL,
+                domain=(-10.0, 15),
+            )
+        ]
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        actual_exp = self._experiment_from_metadata()
+        expected_exp = """
+            hparam_infos: {
+              name: 'hparam1_name'
+              display_name: 'hparam1_display_name'
+              type: DATA_TYPE_FLOAT64
+              domain_interval: {
+                min_value: -10.0
+                max_value: 15
               }
             }
         """

@@ -157,6 +157,7 @@ tb_proto_library(
         ":saved_object_graph",
         ":saver",
         ":struct",
+        ":tensor",
         ":tensor_shape",
         ":types",
     ],

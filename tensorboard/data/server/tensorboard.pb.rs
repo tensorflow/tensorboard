@@ -132,8 +132,9 @@ pub enum DataType {
     DtFloat8E4m3fn = 25,
     // 2 NaNs (0bS1111111).
 
-    /// Do not use!  These are only for parameters.  Every enum above
-    /// should have a corresponding value below (verified by types_test).
+    /// Do not use!  These are only for TF1's obsolete reference Variables.
+    /// Every enum above should have a corresponding value below (verified by
+    /// types_test).
     DtFloatRef = 101,
     DtDoubleRef = 102,
     DtInt32Ref = 103,

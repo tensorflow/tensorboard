@@ -44,6 +44,10 @@ export function buildHparamsAndMetadata(
     ],
     metricSpecs: [
       {
+        name: {
+          tag: 'metric',
+          group: 'some group',
+        },
         tag: 'metric',
         displayName: 'Metric',
         description: 'This is a metric',

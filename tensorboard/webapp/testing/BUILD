@@ -87,6 +87,7 @@ tf_ts_library(
         "//tensorboard/webapp/runs/store:testing",
         "//tensorboard/webapp/runs/store:types",
         "//tensorboard/webapp/settings:testing",
+        "//tensorboard/webapp/util:types",
         "@npm//@ngrx/store",
     ],
 )

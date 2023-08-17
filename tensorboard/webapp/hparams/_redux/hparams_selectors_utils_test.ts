@@ -88,12 +88,20 @@ describe('runs selectors utils test', () => {
           hparams: [],
           metrics: [
             {
+              name: {
+                tag: 'acc',
+                group: '',
+              },
               tag: 'acc',
               displayName: 'Accuracy',
               description: '',
               datasetType: DatasetType.DATASET_TRAINING,
             },
             {
+              name: {
+                tag: 'loss',
+                group: '',
+              },
               tag: 'loss',
               displayName: 'Loss',
               description: '',
@@ -105,6 +113,10 @@ describe('runs selectors utils test', () => {
           hparams: [],
           metrics: [
             {
+              name: {
+                tag: 'acc',
+                group: '',
+              },
               tag: 'acc',
               displayName: 'Accuracy',
               description: '',
@@ -118,12 +130,20 @@ describe('runs selectors utils test', () => {
         hparams: [],
         metrics: [
           {
+            name: {
+              tag: 'acc',
+              group: '',
+            },
             tag: 'acc',
             displayName: 'Accuracy',
             description: '',
             datasetType: DatasetType.DATASET_TRAINING,
           },
           {
+            name: {
+              tag: 'loss',
+              group: '',
+            },
             tag: 'loss',
             displayName: 'Loss',
             description: '',
@@ -233,12 +253,20 @@ describe('runs selectors utils test', () => {
           hparams: [],
           metrics: [
             {
+              name: {
+                tag: 'acc',
+                group: '',
+              },
               tag: 'acc',
               displayName: 'Accuracy',
               description: '',
               datasetType: DatasetType.DATASET_TRAINING,
             },
             {
+              name: {
+                tag: 'acc',
+                group: '',
+              },
               tag: 'acc',
               displayName: 'Accuracy',
               description: '',
@@ -274,6 +302,10 @@ describe('runs selectors utils test', () => {
           ],
           metrics: [
             {
+              name: {
+                tag: 'acc',
+                group: '',
+              },
               tag: 'acc',
               displayName: 'Accuracy',
               description: '',
@@ -298,6 +330,10 @@ describe('runs selectors utils test', () => {
           ],
           metrics: [
             {
+              name: {
+                tag: 'acc',
+                group: ',',
+              },
               tag: 'acc',
               displayName: 'Acc',
               description: '',
@@ -324,6 +360,10 @@ describe('runs selectors utils test', () => {
         ],
         metrics: [
           {
+            name: {
+              tag: 'acc',
+              group: '',
+            },
             tag: 'acc',
             displayName: 'Accuracy or Acc',
             description: '',
