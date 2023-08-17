@@ -851,24 +851,4 @@ describe('metrics effects', () => {
       }
     });
   });
-
-  describe('#utilities', () => {
-    describe('parseRunIdFromSampledRunInfoName', () => {
-      it('removes prefixed experiment id', () => {
-        expect(
-          TEST_ONLY.parseRunIdFromSampledRunInfoName('experimentId/someRun')
-        ).toEqual('someRun');
-      });
-
-      it('preserves "/" characters in run names', () => {
-        expect(
-          TEST_ONLY.parseRunIdFromSampledRunInfoName('experimentId/some/run')
-        ).toEqual('some/run');
-      });
-
-      it('returns an empty string when an empty string is provided', () => {
-        expect(TEST_ONLY.parseRunIdFromSampledRunInfoName('')).toEqual('');
-      });
-    });
-  });
 });

@@ -74,13 +74,7 @@ const getCardFetchInfo = createSelector(
 
 const initAction = createAction('[Metrics Effects] Init');
 
-function parseRunIdFromSampledRunInfoName(eidRun: string): string {
-  if (!eidRun) return '';
-  const [, ...runIdChunks] = eidRun.split('/');
-  return runIdChunks.join('/');
-}
-
-function sampledPluginToTagRunPairs(plugin: SampledTagMetadata) {
+function sampledPluginToTagRunIdPairs(plugin: SampledTagMetadata) {
   return Object.fromEntries(
     Object.entries(plugin.tagRunSampledInfo).map(([tag, sampledRunInfo]) => {
       const runIds = Object.keys(sampledRunInfo);
@@ -99,6 +93,15 @@ export class MetricsEffects implements OnInitEffects {
 
   /**
    * Computes a record of tag to the experiments it appears in.
+   *
+   * The computation is done by translating Plugin -> Tag -> Run -> ExpId
+   * Unfortunately Sampled and NonSampled plugins store the Tag -> Run relationship
+   * differently.
+   *
+   * SampledPlugins contain Record<Tag, Run>
+   * NonSampledPlugins have Record<Run, Tag[]>
+   *
+   * To handle this inconsistency the SampledPlugins datascructure is simplified and inverted.
    */
   readonly tagToEid$: Observable<Record<string, Set<string>>> = this.store
     .select(selectors.getMetricsTagMetadata)
@@ -117,7 +120,7 @@ export class MetricsEffects implements OnInitEffects {
 
         for (const pluginType in tagMetadata) {
           if (isSampledPlugin(pluginType as PluginType)) {
-            const tagRunPairs = sampledPluginToTagRunPairs(
+            const tagRunPairs = sampledPluginToTagRunIdPairs(
               tagMetadata[pluginType as SampledPluginType]
             );
             mapTagsToEid(tagRunPairs);
@@ -369,5 +372,4 @@ export class MetricsEffects implements OnInitEffects {
 export const TEST_ONLY = {
   getCardFetchInfo,
   initAction,
-  parseRunIdFromSampledRunInfoName,
 };
