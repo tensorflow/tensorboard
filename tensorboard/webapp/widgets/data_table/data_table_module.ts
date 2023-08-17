@@ -23,7 +23,7 @@ import {ContentCellComponent} from './content_cell_component';
 import {ContentRowComponent} from './content_row_component';
 import {ColumnSelectorModule} from './column_selector_module';
 import {CustomModalModule} from '../custom_modal/custom_modal_module';
-import {MatLegacyButtonModule} from '@angular/material/legacy-button';
+import {MatButtonModule} from '@angular/material/button';
 
 @NgModule({
   declarations: [
@@ -41,7 +41,7 @@ import {MatLegacyButtonModule} from '@angular/material/legacy-button';
   imports: [
     CommonModule,
     MatIconModule,
-    MatLegacyButtonModule,
+    MatButtonModule,
     DataTableHeaderModule,
     CustomModalModule,
     ColumnSelectorModule,

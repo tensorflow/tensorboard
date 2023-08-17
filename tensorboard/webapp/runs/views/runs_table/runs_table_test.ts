@@ -27,13 +27,13 @@ import {
   flushMicrotasks,
   TestBed,
 } from '@angular/core/testing';
-import {MatLegacyCheckboxModule} from '@angular/material/legacy-checkbox';
-import {MatLegacyDialogModule} from '@angular/material/legacy-dialog';
-import {MatLegacyMenuModule} from '@angular/material/legacy-menu';
-import {MatLegacyPaginatorModule} from '@angular/material/legacy-paginator';
-import {MatLegacyProgressSpinnerModule} from '@angular/material/legacy-progress-spinner';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatPaginatorModule} from '@angular/material/paginator';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSortModule} from '@angular/material/sort';
-import {MatLegacyTableModule} from '@angular/material/legacy-table';
+import {MatTableModule} from '@angular/material/table';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
@@ -238,14 +238,14 @@ describe('runs_table', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        MatLegacyCheckboxModule,
-        MatLegacyDialogModule,
+        MatCheckboxModule,
+        MatDialogModule,
         MatIconTestingModule,
-        MatLegacyMenuModule,
-        MatLegacyPaginatorModule,
-        MatLegacyProgressSpinnerModule,
+        MatMenuModule,
+        MatPaginatorModule,
+        MatProgressSpinnerModule,
         MatSortModule,
-        MatLegacyTableModule,
+        MatTableModule,
         NoopAnimationsModule,
         FilterInputModule,
         RangeInputModule,
@@ -1053,7 +1053,7 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       const label = fixture.debugElement.query(
-        By.css('.mat-paginator-page-size-label')
+        By.css('.mat-mdc-paginator-page-size-label')
       );
       expect(label.nativeElement.textContent).toContain('Show runs:');
     });
@@ -1177,7 +1177,7 @@ describe('runs_table', () => {
       updateTableAndPaginator(fixture);
 
       const label = fixture.nativeElement.querySelector(
-        '.mat-paginator-range-label'
+        '.mat-mdc-paginator-range-label'
       );
       // By default, mat-paginator take the lowest pageSizeOptions.
       expect(label.textContent).toContain('6 – 10 of 10');
@@ -1733,7 +1733,9 @@ describe('runs_table', () => {
         Selector.HEADER_CHECKBOX
       );
 
-      expect(checkbox.classList.contains('mat-checkbox-checked')).toBe(true);
+      expect(checkbox.attributes.getNamedItem('ng-reflect-checked').value).toBe(
+        'true'
+      );
     });
 
     it(
@@ -1769,9 +1771,9 @@ describe('runs_table', () => {
           Selector.HEADER_CHECKBOX
         );
 
-        expect(checkbox.classList.contains('mat-checkbox-indeterminate')).toBe(
-          true
-        );
+        expect(
+          checkbox.attributes.getNamedItem('ng-reflect-indeterminate').value
+        ).toBe('true');
       }
     );
 

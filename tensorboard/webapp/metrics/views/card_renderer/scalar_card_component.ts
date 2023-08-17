@@ -22,7 +22,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {MatLegacyDialog} from '@angular/material/legacy-dialog';
+import {MatDialog} from '@angular/material/dialog';
 import {DataLoadState} from '../../../types/data';
 import {
   TimeSelection,
@@ -131,10 +131,7 @@ export class ScalarCardComponent<Downloader> {
   @ViewChild('dataTableContainer')
   dataTableContainer?: ElementRef;
 
-  constructor(
-    private readonly ref: ElementRef,
-    private dialog: MatLegacyDialog
-  ) {}
+  constructor(private readonly ref: ElementRef, private dialog: MatDialog) {}
 
   yScaleType = ScaleType.LINEAR;
   isViewBoxOverridden: boolean = false;
