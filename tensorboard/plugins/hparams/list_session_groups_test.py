@@ -1543,7 +1543,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
               metric: { tag: 'delta_temp' }
               filter_interval: {
                   min_value: 0
-                  max_value: 100 
+                  max_value: 100
               }
             }
         """
@@ -2246,7 +2246,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
               metric: { tag: 'delta_temp' }
               filter_interval: {
                   min_value: 0
-                  max_value: 100 
+                  max_value: 100
               }
             }
         """
@@ -2290,7 +2290,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
               hparam: 'hparam1'
               filter_interval: {
                   min_value: 0
-                  max_value: 100 
+                  max_value: 100
               }
             }
         """
