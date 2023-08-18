@@ -1536,6 +1536,21 @@ class ListSessionGroupsTest(tf.test.TestCase):
             ],
         )
 
+    def test_experiment_from_data_provider_does_not_send_metric_filters(self):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        request = """
+            col_params: {
+              metric: { tag: 'delta_temp' }
+              filter_interval: {
+                  min_value: 0
+                  max_value: 100
+              }
+            }
+        """
+        self._run_handler(request)
+
+        self.assertEmpty(self._get_read_hyperparameters_call_filters())
+
     def test_experiment_from_data_provider_sends_sort(self):
         self._mock_tb_context.data_provider.list_tensors.side_effect = None
         request = """
@@ -2168,6 +2183,126 @@ class ListSessionGroupsTest(tf.test.TestCase):
             """,
             response.session_groups[0].metric_values[2],
         )
+
+    def test_experiment_from_data_provider_filters_by_metric_values(
+        self,
+    ):
+        # Filters are tested in-depth elsewhere using the Tensor-based hparams.
+        # For DataProvider-based hparam tests we just test one filter to verify
+        # the filter logic is being applied.
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._hyperparameters = [
+            # The sessions names correspond to return values from
+            # _mock_list_scalars() and _mock_read_scalars() in order to
+            # generate metric infos and values.
+            provider.HyperparameterSessionGroup(
+                root=provider.HyperparameterSessionRun(
+                    experiment_id="session_1", run=""
+                ),
+                sessions=[
+                    provider.HyperparameterSessionRun(
+                        experiment_id="session_1", run=""
+                    )
+                ],
+                hyperparameter_values=[],
+            ),
+            provider.HyperparameterSessionGroup(
+                root=provider.HyperparameterSessionRun(
+                    experiment_id="session_2", run=""
+                ),
+                sessions=[
+                    provider.HyperparameterSessionRun(
+                        experiment_id="session_2", run=""
+                    )
+                ],
+                hyperparameter_values=[],
+            ),
+            provider.HyperparameterSessionGroup(
+                root=provider.HyperparameterSessionRun(
+                    experiment_id="session_3", run=""
+                ),
+                sessions=[
+                    provider.HyperparameterSessionRun(
+                        experiment_id="session_3", run=""
+                    )
+                ],
+                hyperparameter_values=[],
+            ),
+        ]
+        request = """
+            start_index: 0
+            slice_size: 10
+        """
+        response = self._run_handler(request)
+        self.assertLen(response.session_groups, 3)
+        self.assertEqual("session_1", response.session_groups[0].name)
+        self.assertEqual("session_2", response.session_groups[1].name)
+        self.assertEqual("session_3", response.session_groups[2].name)
+
+        filtered_request = """
+            start_index: 0
+            slice_size: 10
+            col_params: {
+              metric: { tag: 'delta_temp' }
+              filter_interval: {
+                  min_value: 0
+                  max_value: 100
+              }
+            }
+        """
+        filtered_response = self._run_handler(filtered_request)
+        # The delta_temp values for session_1, session_2, and session_3 are
+        # 10, 150, and 1.5, respectively. We expect session_2 to have been
+        # filtered out.
+        self.assertLen(filtered_response.session_groups, 2)
+        self.assertEqual("session_1", filtered_response.session_groups[0].name)
+        self.assertEqual("session_3", filtered_response.session_groups[1].name)
+
+    def test_experiment_from_data_provider_does_not_filter_by_hparam_values(
+        self,
+    ):
+        # We assume the DataProvider will apply hparam filters and we do not
+        # attempt to reapply them.
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._hyperparameters = [
+            provider.HyperparameterSessionGroup(
+                root=provider.HyperparameterSessionRun(
+                    experiment_id="session_1", run=""
+                ),
+                sessions=[
+                    provider.HyperparameterSessionRun(
+                        experiment_id="session_1", run=""
+                    )
+                ],
+                hyperparameter_values=[
+                    provider.HyperparameterValue(
+                        hyperparameter_name="hparam1",
+                        domain_type=provider.HyperparameterDomainType.INTERVAL,
+                        value=-1.0,
+                    ),
+                ],
+            ),
+        ]
+        request = """
+            start_index: 0
+            slice_size: 10
+            col_params: {
+              hparam: 'hparam1'
+              filter_interval: {
+                  min_value: 0
+                  max_value: 100
+              }
+            }
+        """
+        response = self._run_handler(request)
+        # The one result from the DataProvider call is returned even though
+        # there is an hparam filter that it should not pass. This indicates we
+        # are purposefully not applying the hparam filters.
+        #
+        # Note: The scenario should not happen in practice as we'd expect
+        # the DataProvider to have successfully applied the filter.
+        self.assertLen(response.session_groups, 1)
+        self.assertEqual("session_1", response.session_groups[0].name)
 
     def _run_handler(self, request):
         request_proto = api_pb2.ListSessionGroupsRequest()
