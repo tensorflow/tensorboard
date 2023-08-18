@@ -59,38 +59,25 @@ import {
 import {RUNS_FEATURE_KEY} from '../runs/store/runs_types';
 import {buildRunsState, buildStateFromRunsState} from '../runs/store/testing';
 import {
-  createState as createSettings,
+  createState as appStateFromSettingsState,
   createSettingsState,
 } from '../settings/testing';
 import {HPARAMS_FEATURE_KEY} from '../hparams/_redux/types';
-import {ALERT_FEATURE_KEY, AlertState} from '../alert/store/alert_types';
-import {
-  PERSISTENT_SETTINGS_FEATURE_KEY,
-  PersistentSettingsState,
-} from '../persistent_settings/_redux/persistent_settings_types';
+import {ALERT_FEATURE_KEY} from '../alert/store/alert_types';
+import {PERSISTENT_SETTINGS_FEATURE_KEY} from '../persistent_settings/_redux/persistent_settings_types';
 import {SETTINGS_FEATURE_KEY} from '../settings/_redux/settings_types';
 import {CORE_FEATURE_KEY} from '../core/store/core_types';
-import {
-  DEBUGGER_FEATURE_KEY,
-  DebuggerState,
-} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/store/debugger_types';
-
-interface FullState extends State {
-  [DEBUGGER_FEATURE_KEY]: DebuggerState;
-  [ALERT_FEATURE_KEY]: AlertState;
-  [PERSISTENT_SETTINGS_FEATURE_KEY]: PersistentSettingsState;
-}
+import {DEBUGGER_FEATURE_KEY} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/store/debugger_types';
 
 type PartialOverrides = {
-  [K in keyof FullState]?: Partial<FullState[K]>;
+  [K in keyof State]?: Partial<State[K]>;
 };
 
 export function buildMockState(overrides: PartialOverrides = {}): State {
   return {
     ...appStateFromDebuggerState(
-      createDebuggerState(overrides[DEBUGGER_FEATURE_KEY])
+      createDebuggerState(overrides[DEBUGGER_FEATURE_KEY] ?? {})
     ),
-    ...buildFeatureFlagState(overrides[FEATURE_FLAG_FEATURE_KEY]),
     ...buildStateFromAlertState(
       buildAlertState(overrides[ALERT_FEATURE_KEY] ?? {})
     ),
@@ -103,7 +90,9 @@ export function buildMockState(overrides: PartialOverrides = {}): State {
     ...appStateFromMetricsState(
       buildMetricsState(overrides[METRICS_FEATURE_KEY])
     ),
-    ...createSettings(createSettingsState(overrides[SETTINGS_FEATURE_KEY])),
+    ...appStateFromSettingsState(
+      createSettingsState(overrides[SETTINGS_FEATURE_KEY])
+    ),
     ...buildStateFromRunsState(
       buildRunsState(
         overrides[RUNS_FEATURE_KEY]?.data,
