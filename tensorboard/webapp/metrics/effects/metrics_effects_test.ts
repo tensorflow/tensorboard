@@ -548,7 +548,7 @@ fdescribe('metrics effects', () => {
         expect(fetchTimeSeriesSpy).toHaveBeenCalledTimes(2);
       });
 
-      fit('does not send requests to experiments lacking a cards tag', () => {
+      it('does not send requests to experiments lacking a cards tag', () => {
         store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
         store.overrideSelector(selectors.getExperimentIdsFromRoute, [
           'exp1',
@@ -583,7 +583,6 @@ fdescribe('metrics effects', () => {
         const requests: TimeSeriesRequest[] = [];
         spyOn(effects as any, 'fetchTimeSeries').and.callFake(
           (request: TimeSeriesRequest) => {
-            console.log('request', request);
             requests.push(request);
           }
         );
@@ -885,27 +884,8 @@ fdescribe('metrics effects', () => {
   });
 
   describe('utilities', () => {
-    it('sampledPluginToTagRunIdPairs flattens sampled plugin tag to run mapping', () => {
-      const plugin: SampledTagMetadata = {
-        tagDescriptions: {},
-        tagRunSampledInfo: {
-          tagA: {
-            run1: {maxSamplesPerStep: 1},
-            run2: {maxSamplesPerStep: 1},
-          },
-          tagB: {
-            run3: {maxSamplesPerStep: 1},
-          },
-        },
-      };
-      expect(TEST_ONLY.sampledPluginToTagRunIdPairs(plugin)).toEqual({
-        tagA: ['run1', 'run2'],
-        tagB: ['run3'],
-      });
-    });
-
-    describe('generateTagToEidMapping', () => {
-      it('maps image plugin data', () => {
+    describe('generateNonSampledTagToEidMapping', () => {
+      it('does not map image plugin data', () => {
         const runToEid = {
           run1: 'eid1',
           run2: 'eid2',
@@ -926,11 +906,11 @@ fdescribe('metrics effects', () => {
           },
         };
         expect(
-          TEST_ONLY.generateTagToEidMapping(tagMetadata as any, runToEid)
-        ).toEqual({
-          tagA: new Set(['eid1', 'eid2']),
-          tagB: new Set(['eid1']),
-        });
+          TEST_ONLY.generateNonSampledTagToEidMapping(
+            tagMetadata as any,
+            runToEid
+          )
+        ).toEqual({});
       });
 
       it('maps scalar data', () => {
@@ -950,7 +930,10 @@ fdescribe('metrics effects', () => {
         };
 
         expect(
-          TEST_ONLY.generateTagToEidMapping(tagMetadata as any, runToEid)
+          TEST_ONLY.generateNonSampledTagToEidMapping(
+            tagMetadata as any,
+            runToEid
+          )
         ).toEqual({
           tagA: new Set(['eid1']),
           tagB: new Set(['eid1', 'eid2']),
@@ -974,7 +957,10 @@ fdescribe('metrics effects', () => {
         };
 
         expect(
-          TEST_ONLY.generateTagToEidMapping(tagMetadata as any, runToEid)
+          TEST_ONLY.generateNonSampledTagToEidMapping(
+            tagMetadata as any,
+            runToEid
+          )
         ).toEqual({
           tagA: new Set(['eid1']),
           tagB: new Set(['eid1', 'eid2']),
@@ -1002,7 +988,10 @@ fdescribe('metrics effects', () => {
         };
 
         expect(
-          TEST_ONLY.generateTagToEidMapping(tagMetadata as any, runToEid)
+          TEST_ONLY.generateNonSampledTagToEidMapping(
+            tagMetadata as any,
+            runToEid
+          )
         ).toEqual({
           tagA: new Set(['eid1', 'eid2']),
         });

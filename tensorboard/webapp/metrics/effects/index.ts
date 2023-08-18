@@ -76,16 +76,7 @@ const getCardFetchInfo = createSelector(
 
 const initAction = createAction('[Metrics Effects] Init');
 
-function sampledPluginToTagRunIdPairs(plugin: SampledTagMetadata) {
-  return Object.fromEntries(
-    Object.entries(plugin.tagRunSampledInfo).map(([tag, sampledRunInfo]) => {
-      const runIds = Object.keys(sampledRunInfo);
-      return [tag, runIds];
-    })
-  );
-}
-
-function generateTagToEidMapping(
+function generateNonSampledTagToEidMapping(
   tagMetadata: DeepReadonly<StoreTagMetadata>,
   runToEid: Record<string, string>
 ): Record<string, Set<string>> {
@@ -101,10 +92,6 @@ function generateTagToEidMapping(
 
   for (const pluginType in tagMetadata) {
     if (isSampledPlugin(pluginType as PluginType)) {
-      const tagRunPairs = sampledPluginToTagRunIdPairs(
-        tagMetadata[pluginType as SampledPluginType]
-      );
-      mapTagsToEid(tagRunPairs);
       continue;
     }
 
@@ -126,20 +113,14 @@ export class MetricsEffects implements OnInitEffects {
    * Computes a record of tag to the experiments it appears in.
    *
    * The computation is done by translating Plugin -> Tag -> Run -> ExpId
-   * Unfortunately Sampled and NonSampled plugins store the Tag -> Run relationship
-   * differently.
    *
-   * SampledPlugins contain Record<Tag, Run>
-   * NonSampledPlugins have Record<Run, Tag[]>
-   *
-   * To handle this inconsistency the SampledPlugins datascructure is simplified and inverted.
+   * Sampled plugins are ignored because they are associated with runs, not experiments.
    */
-  readonly tagToEid$: Observable<Record<string, Set<string>>> = this.store
-    .select(selectors.getMetricsTagMetadata)
-    .pipe(
+  readonly nonSampledTagToEid$: Observable<Record<string, Set<string>>> =
+    this.store.select(selectors.getMetricsTagMetadata).pipe(
       combineLatestWith(this.store.select(selectors.getRunIdToExperimentId)),
       map(([tagMetadata, runToEid]) => {
-        return generateTagToEidMapping(tagMetadata, runToEid);
+        return generateNonSampledTagToEidMapping(tagMetadata, runToEid);
       }),
       shareReplay(1)
     );
@@ -264,10 +245,9 @@ export class MetricsEffects implements OnInitEffects {
     experimentIds: string[]
   ) {
     // Fetch and handle responses.
-    return this.tagToEid$.pipe(
+    return this.nonSampledTagToEid$.pipe(
       take(1),
       map((tagToEid): TimeSeriesRequest[] => {
-        console.log('fetchInfos', fetchInfos);
         const requests = fetchInfos
           .map((fetchInfo) => {
             const {plugin, tag, runId, sample} = fetchInfo;
@@ -284,16 +264,6 @@ export class MetricsEffects implements OnInitEffects {
               };
             }
 
-            console.log(
-              tag,
-              'tagToEid',
-              Object.fromEntries(
-                Object.entries(tagToEid).map(([key, value]) => [
-                  key,
-                  Array.from(value),
-                ])
-              )
-            );
             const filteredEids = experimentIds.filter((eid) =>
               tagToEid[tag]?.has(eid)
             );
@@ -304,7 +274,6 @@ export class MetricsEffects implements OnInitEffects {
             return {plugin, tag, experimentIds: filteredEids};
           })
           .filter(Boolean);
-        console.log('requests', requests);
         const uniqueRequests = new Set(
           requests.map((request) => JSON.stringify(request))
         );
@@ -403,6 +372,5 @@ export class MetricsEffects implements OnInitEffects {
 export const TEST_ONLY = {
   getCardFetchInfo,
   initAction,
-  sampledPluginToTagRunIdPairs,
-  generateTagToEidMapping,
+  generateNonSampledTagToEidMapping,
 };
