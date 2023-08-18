@@ -53,8 +53,10 @@ import {
   getCardLoadState,
   getCardMetadata,
   getMetricsTagMetadataLoadState,
+  TagMetadata as StoreTagMetadata,
 } from '../store';
 import {CardId, CardMetadata, PluginType} from '../types';
+import {DeepReadonly} from '../../util/types';
 
 export type CardFetchInfo = CardMetadata & {
   id: CardId;
@@ -83,6 +85,35 @@ function sampledPluginToTagRunIdPairs(plugin: SampledTagMetadata) {
   );
 }
 
+function generateTagToEidMapping(
+  tagMetadata: DeepReadonly<StoreTagMetadata>,
+  runToEid: Record<string, string>
+): Record<string, Set<string>> {
+  const tagToEid: Record<string, Set<string>> = {};
+  function mapTagsToEid(tagToRun: Record<string, readonly string[]>) {
+    Object.entries(tagToRun).forEach(([tag, runIds]) => {
+      if (!tagToEid[tag]) {
+        tagToEid[tag] = new Set();
+      }
+      runIds.forEach((runId) => tagToEid[tag].add(runToEid[runId]));
+    });
+  }
+
+  for (const pluginType in tagMetadata) {
+    if (isSampledPlugin(pluginType as PluginType)) {
+      const tagRunPairs = sampledPluginToTagRunIdPairs(
+        tagMetadata[pluginType as SampledPluginType]
+      );
+      mapTagsToEid(tagRunPairs);
+      continue;
+    }
+
+    mapTagsToEid(tagMetadata[pluginType as NonSampledPluginType].tagToRuns);
+  }
+
+  return tagToEid;
+}
+
 @Injectable()
 export class MetricsEffects implements OnInitEffects {
   constructor(
@@ -108,31 +139,7 @@ export class MetricsEffects implements OnInitEffects {
     .pipe(
       combineLatestWith(this.store.select(selectors.getRunIdToExperimentId)),
       map(([tagMetadata, runToEid]) => {
-        const tagToEid: Record<string, Set<string>> = {};
-        function mapTagsToEid(tagToRun: Record<string, readonly string[]>) {
-          Object.entries(tagToRun).forEach(([tag, runIds]) => {
-            if (!tagToEid[tag]) {
-              tagToEid[tag] = new Set();
-            }
-            runIds.forEach((runId) => tagToEid[tag].add(runToEid[runId]));
-          });
-        }
-
-        for (const pluginType in tagMetadata) {
-          if (isSampledPlugin(pluginType as PluginType)) {
-            const tagRunPairs = sampledPluginToTagRunIdPairs(
-              tagMetadata[pluginType as SampledPluginType]
-            );
-            mapTagsToEid(tagRunPairs);
-            continue;
-          }
-
-          mapTagsToEid(
-            tagMetadata[pluginType as NonSampledPluginType].tagToRuns
-          );
-        }
-
-        return tagToEid;
+        return generateTagToEidMapping(tagMetadata, runToEid);
       }),
       shareReplay(1)
     );
@@ -260,20 +267,44 @@ export class MetricsEffects implements OnInitEffects {
     return this.tagToEid$.pipe(
       take(1),
       map((tagToEid): TimeSeriesRequest[] => {
-        const requests = fetchInfos.map((fetchInfo) => {
-          const {plugin, tag, runId, sample} = fetchInfo;
-          const filteredEids = experimentIds.filter((eid) =>
-            tagToEid[tag]?.has(eid)
-          );
+        console.log('fetchInfos', fetchInfos);
+        const requests = fetchInfos
+          .map((fetchInfo) => {
+            const {plugin, tag, runId, sample} = fetchInfo;
 
-          const partialRequest: TimeSeriesRequest = isSingleRunPlugin(plugin)
-            ? {plugin, tag, runId: runId!}
-            : {plugin, tag, experimentIds: filteredEids};
-          if (sample !== undefined) {
-            partialRequest.sample = sample;
-          }
-          return partialRequest;
-        });
+            if (isSingleRunPlugin(plugin)) {
+              if (!runId) {
+                return;
+              }
+              return {
+                plugin,
+                tag,
+                runId,
+                sample,
+              };
+            }
+
+            console.log(
+              tag,
+              'tagToEid',
+              Object.fromEntries(
+                Object.entries(tagToEid).map(([key, value]) => [
+                  key,
+                  Array.from(value),
+                ])
+              )
+            );
+            const filteredEids = experimentIds.filter((eid) =>
+              tagToEid[tag]?.has(eid)
+            );
+            if (!filteredEids.length) {
+              return;
+            }
+
+            return {plugin, tag, experimentIds: filteredEids};
+          })
+          .filter(Boolean);
+        console.log('requests', requests);
         const uniqueRequests = new Set(
           requests.map((request) => JSON.stringify(request))
         );
@@ -372,4 +403,6 @@ export class MetricsEffects implements OnInitEffects {
 export const TEST_ONLY = {
   getCardFetchInfo,
   initAction,
+  sampledPluginToTagRunIdPairs,
+  generateTagToEidMapping,
 };

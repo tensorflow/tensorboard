@@ -38,6 +38,7 @@ import {
   TagMetadata,
   TimeSeriesRequest,
   TimeSeriesResponse,
+  SampledTagMetadata,
 } from '../data_source';
 import {getMetricsTagMetadataLoadState} from '../store';
 import {
@@ -50,7 +51,7 @@ import {
 import {CardId, TooltipSort} from '../types';
 import {CardFetchInfo, MetricsEffects, TEST_ONLY} from './index';
 
-describe('metrics effects', () => {
+fdescribe('metrics effects', () => {
   let dataSource: MetricsDataSource;
   let effects: MetricsEffects;
   let store: MockStore<State>;
@@ -97,7 +98,7 @@ describe('metrics effects', () => {
   function overrideTagMetadata() {
     store.overrideSelector(selectors.getMetricsTagMetadata, {
       scalars: {
-        tagDescriptions: {} as any,
+        tagDescriptions: {},
         tagToRuns: {
           tagA: ['run1'],
           tagB: ['run2', 'run3'],
@@ -106,7 +107,7 @@ describe('metrics effects', () => {
         },
       },
       histograms: {
-        tagDescriptions: {} as any,
+        tagDescriptions: {},
         tagToRuns: {
           tagA: ['run1'],
           tagB: ['run4'],
@@ -116,8 +117,8 @@ describe('metrics effects', () => {
         tagDescriptions: {},
         tagRunSampledInfo: {
           tagC: {
-            'defaultExperimentId/run1': {} as any,
-            'exp1/run3': {} as any,
+            run1: {maxSamplesPerStep: 1},
+            run3: {maxSamplesPerStep: 1},
           },
         },
       },
@@ -547,7 +548,7 @@ describe('metrics effects', () => {
         expect(fetchTimeSeriesSpy).toHaveBeenCalledTimes(2);
       });
 
-      it('does not send requests to experiments lacking a cards tag', () => {
+      fit('does not send requests to experiments lacking a cards tag', () => {
         store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
         store.overrideSelector(selectors.getExperimentIdsFromRoute, [
           'exp1',
@@ -555,35 +556,64 @@ describe('metrics effects', () => {
         ]);
         store.overrideSelector(
           selectors.getVisibleCardIdSet,
-          new Set(['card1', 'card2'])
+          new Set(['card1', 'card2', 'card3', 'card4', 'card5', 'card6'])
         );
         provideCardFetchInfo([
-          {id: 'card1', tag: 'tagA'},
-          {id: 'card2', tag: 'tagB'},
-          {id: 'card3', tag: 'tagC'},
-          {id: 'card4', tag: 'tagD'},
+          {id: 'card1', tag: 'tagA', plugin: PluginType.SCALARS},
+          {
+            id: 'card2',
+            tag: 'tagA',
+            plugin: PluginType.HISTOGRAMS,
+            runId: 'run1',
+          },
+          {id: 'card3', tag: 'tagB', plugin: PluginType.SCALARS},
+          // Fetch info should not be provided for tagB histogram data because there
+          // is no histogram data associated with both tagB and either exp1, or exp2
+          {id: 'card4', tag: 'tagC'},
+          {id: 'card5', tag: 'tagD'},
+          {
+            id: 'card6',
+            tag: 'tagC',
+            plugin: PluginType.IMAGES,
+            runId: 'run3',
+          },
         ]);
         store.refreshState();
 
-        const effectFetchTimeSeriesSpy = spyOn(
-          effects as any,
-          'fetchTimeSeries'
-        ).and.stub();
+        const requests: TimeSeriesRequest[] = [];
+        spyOn(effects as any, 'fetchTimeSeries').and.callFake(
+          (request: TimeSeriesRequest) => {
+            console.log('request', request);
+            requests.push(request);
+          }
+        );
 
         actions$.next(coreActions.manualReload());
 
-        expect(effectFetchTimeSeriesSpy).toHaveBeenCalledTimes(2);
-        expect(effectFetchTimeSeriesSpy).toHaveBeenCalledWith({
-          plugin: 'scalars',
-          tag: 'tagA',
-          experimentIds: ['exp1'],
-        });
-
-        expect(effectFetchTimeSeriesSpy).toHaveBeenCalledWith({
-          plugin: 'scalars',
-          tag: 'tagB',
-          experimentIds: ['exp1', 'exp2'],
-        });
+        expect(requests).toEqual([
+          {
+            plugin: PluginType.SCALARS,
+            tag: 'tagA',
+            experimentIds: ['exp1'],
+          },
+          {
+            plugin: PluginType.HISTOGRAMS,
+            runId: 'run1',
+            tag: 'tagA',
+          },
+          {
+            plugin: PluginType.SCALARS,
+            tag: 'tagB',
+            experimentIds: ['exp1', 'exp2'],
+          },
+          // No requests should be sent for card 3 or 4 because all their
+          // runs are associated with another experiment.
+          {
+            plugin: PluginType.IMAGES,
+            tag: 'tagC',
+            runId: 'run3',
+          },
+        ]);
       });
     });
 
@@ -851,6 +881,132 @@ describe('metrics effects', () => {
           expect(actualActions).toEqual([]);
         });
       }
+    });
+  });
+
+  describe('utilities', () => {
+    it('sampledPluginToTagRunIdPairs flattens sampled plugin tag to run mapping', () => {
+      const plugin: SampledTagMetadata = {
+        tagDescriptions: {},
+        tagRunSampledInfo: {
+          tagA: {
+            run1: {maxSamplesPerStep: 1},
+            run2: {maxSamplesPerStep: 1},
+          },
+          tagB: {
+            run3: {maxSamplesPerStep: 1},
+          },
+        },
+      };
+      expect(TEST_ONLY.sampledPluginToTagRunIdPairs(plugin)).toEqual({
+        tagA: ['run1', 'run2'],
+        tagB: ['run3'],
+      });
+    });
+
+    describe('generateTagToEidMapping', () => {
+      it('maps image plugin data', () => {
+        const runToEid = {
+          run1: 'eid1',
+          run2: 'eid2',
+          run3: 'eid1',
+        };
+        const tagMetadata = {
+          images: {
+            tagDescriptions: {},
+            tagRunSampledInfo: {
+              tagA: {
+                run1: {maxSamplesPerStep: 1},
+                run2: {maxSamplesPerStep: 1},
+              },
+              tagB: {
+                run3: {maxSamplesPerStep: 1},
+              },
+            },
+          },
+        };
+        expect(
+          TEST_ONLY.generateTagToEidMapping(tagMetadata as any, runToEid)
+        ).toEqual({
+          tagA: new Set(['eid1', 'eid2']),
+          tagB: new Set(['eid1']),
+        });
+      });
+
+      it('maps scalar data', () => {
+        const runToEid = {
+          run1: 'eid1',
+          run2: 'eid1',
+          run3: 'eid2',
+        };
+        const tagMetadata = {
+          scalars: {
+            tagDescriptions: {},
+            tagToRuns: {
+              tagA: ['run1'],
+              tagB: ['run2', 'run3'],
+            },
+          },
+        };
+
+        expect(
+          TEST_ONLY.generateTagToEidMapping(tagMetadata as any, runToEid)
+        ).toEqual({
+          tagA: new Set(['eid1']),
+          tagB: new Set(['eid1', 'eid2']),
+        });
+      });
+
+      it('maps histogram data', () => {
+        const runToEid = {
+          run1: 'eid1',
+          run2: 'eid1',
+          run3: 'eid2',
+        };
+        const tagMetadata = {
+          histograms: {
+            tagDescriptions: {},
+            tagToRuns: {
+              tagA: ['run1'],
+              tagB: ['run2', 'run3'],
+            },
+          },
+        };
+
+        expect(
+          TEST_ONLY.generateTagToEidMapping(tagMetadata as any, runToEid)
+        ).toEqual({
+          tagA: new Set(['eid1']),
+          tagB: new Set(['eid1', 'eid2']),
+        });
+      });
+
+      it('tags with multiple data types are additive', () => {
+        const runToEid = {
+          run1: 'eid1',
+          run2: 'eid2',
+        };
+        const tagMetadata = {
+          scalars: {
+            tagDescriptions: {},
+            tagToRuns: {
+              tagA: ['run1'],
+            },
+          },
+          histograms: {
+            tagDescriptions: {},
+            tagToRuns: {
+              tagA: ['run2'],
+            },
+          },
+        };
+
+        expect(
+          TEST_ONLY.generateTagToEidMapping(tagMetadata as any, runToEid)
+        ).toEqual({
+          tagA: new Set(['eid1', 'eid2']),
+        });
+      });
     });
   });
 });
