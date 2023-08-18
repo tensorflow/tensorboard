@@ -44,10 +44,7 @@ import {
   TagMetadata,
   TimeSeriesRequest,
   TimeSeriesResponse,
-  SampledPluginType,
-  isSampledPlugin,
   NonSampledPluginType,
-  SampledTagMetadata,
 } from '../data_source/index';
 import {
   getCardLoadState,
@@ -76,7 +73,7 @@ const getCardFetchInfo = createSelector(
 
 const initAction = createAction('[Metrics Effects] Init');
 
-function generateNonSampledTagToEidMapping(
+function generateMultiRunTagsToEidMapping(
   tagMetadata: DeepReadonly<StoreTagMetadata>,
   runToEid: Record<string, string>
 ): Record<string, Set<string>> {
@@ -91,7 +88,7 @@ function generateNonSampledTagToEidMapping(
   }
 
   for (const pluginType in tagMetadata) {
-    if (isSampledPlugin(pluginType as PluginType)) {
+    if (isSingleRunPlugin(pluginType as PluginType)) {
       continue;
     }
 
@@ -116,11 +113,11 @@ export class MetricsEffects implements OnInitEffects {
    *
    * Sampled plugins are ignored because they are associated with runs, not experiments.
    */
-  readonly nonSampledTagToEid$: Observable<Record<string, Set<string>>> =
+  readonly multiRunTagsToEid$: Observable<Record<string, Set<string>>> =
     this.store.select(selectors.getMetricsTagMetadata).pipe(
       combineLatestWith(this.store.select(selectors.getRunIdToExperimentId)),
       map(([tagMetadata, runToEid]) => {
-        return generateNonSampledTagToEidMapping(tagMetadata, runToEid);
+        return generateMultiRunTagsToEidMapping(tagMetadata, runToEid);
       }),
       shareReplay(1)
     );
@@ -245,7 +242,7 @@ export class MetricsEffects implements OnInitEffects {
     experimentIds: string[]
   ) {
     // Fetch and handle responses.
-    return this.nonSampledTagToEid$.pipe(
+    return this.multiRunTagsToEid$.pipe(
       take(1),
       map((tagToEid): TimeSeriesRequest[] => {
         const requests = fetchInfos
@@ -372,5 +369,5 @@ export class MetricsEffects implements OnInitEffects {
 export const TEST_ONLY = {
   getCardFetchInfo,
   initAction,
-  generateNonSampledTagToEidMapping,
+  generateMultiRunTagsToEidMapping,
 };

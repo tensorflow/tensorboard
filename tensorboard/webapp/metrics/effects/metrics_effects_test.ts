@@ -51,7 +51,7 @@ import {
 import {CardId, TooltipSort} from '../types';
 import {CardFetchInfo, MetricsEffects, TEST_ONLY} from './index';
 
-fdescribe('metrics effects', () => {
+describe('metrics effects', () => {
   let dataSource: MetricsDataSource;
   let effects: MetricsEffects;
   let store: MockStore<State>;
@@ -884,7 +884,7 @@ fdescribe('metrics effects', () => {
   });
 
   describe('utilities', () => {
-    describe('generateNonSampledTagToEidMapping', () => {
+    describe('generateMultiRunTagsToEidMapping', () => {
       it('does not map image plugin data', () => {
         const runToEid = {
           run1: 'eid1',
@@ -906,7 +906,31 @@ fdescribe('metrics effects', () => {
           },
         };
         expect(
-          TEST_ONLY.generateNonSampledTagToEidMapping(
+          TEST_ONLY.generateMultiRunTagsToEidMapping(
+            tagMetadata as any,
+            runToEid
+          )
+        ).toEqual({});
+      });
+
+      it('does not map histogram data', () => {
+        const runToEid = {
+          run1: 'eid1',
+          run2: 'eid1',
+          run3: 'eid2',
+        };
+        const tagMetadata = {
+          histograms: {
+            tagDescriptions: {},
+            tagToRuns: {
+              tagA: ['run1'],
+              tagB: ['run2', 'run3'],
+            },
+          },
+        };
+
+        expect(
+          TEST_ONLY.generateMultiRunTagsToEidMapping(
             tagMetadata as any,
             runToEid
           )
@@ -930,70 +954,13 @@ fdescribe('metrics effects', () => {
         };
 
         expect(
-          TEST_ONLY.generateNonSampledTagToEidMapping(
+          TEST_ONLY.generateMultiRunTagsToEidMapping(
             tagMetadata as any,
             runToEid
           )
         ).toEqual({
           tagA: new Set(['eid1']),
           tagB: new Set(['eid1', 'eid2']),
-        });
-      });
-
-      it('maps histogram data', () => {
-        const runToEid = {
-          run1: 'eid1',
-          run2: 'eid1',
-          run3: 'eid2',
-        };
-        const tagMetadata = {
-          histograms: {
-            tagDescriptions: {},
-            tagToRuns: {
-              tagA: ['run1'],
-              tagB: ['run2', 'run3'],
-            },
-          },
-        };
-
-        expect(
-          TEST_ONLY.generateNonSampledTagToEidMapping(
-            tagMetadata as any,
-            runToEid
-          )
-        ).toEqual({
-          tagA: new Set(['eid1']),
-          tagB: new Set(['eid1', 'eid2']),
-        });
-      });
-
-      it('tags with multiple data types are additive', () => {
-        const runToEid = {
-          run1: 'eid1',
-          run2: 'eid2',
-        };
-        const tagMetadata = {
-          scalars: {
-            tagDescriptions: {},
-            tagToRuns: {
-              tagA: ['run1'],
-            },
-          },
-          histograms: {
-            tagDescriptions: {},
-            tagToRuns: {
-              tagA: ['run2'],
-            },
-          },
-        };
-
-        expect(
-          TEST_ONLY.generateNonSampledTagToEidMapping(
-            tagMetadata as any,
-            runToEid
-          )
-        ).toEqual({
-          tagA: new Set(['eid1', 'eid2']),
         });
       });
     });
