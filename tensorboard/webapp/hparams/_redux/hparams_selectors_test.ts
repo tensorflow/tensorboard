@@ -488,9 +488,8 @@ describe('hparams/_redux/hparams_selectors_test', () => {
   });
 
   describe('#getDashboardRunsToHparamsAndMetrics', () => {
-    let mockSessionGroups: SessionGroup[];
-    beforeEach(() => {
-      mockSessionGroups = [
+    it('contains entry for each runId/group', () => {
+      const mockSessionGroups = [
         buildSessionGroup({
           name: 'session_group_1',
           hparams: {
@@ -503,7 +502,17 @@ describe('hparams/_redux/hparams_selectors_test', () => {
               name: 'exp1/run1',
               metricValues: [
                 buildMetricsValue({name: {tag: 'foo', group: '1'}, value: 2}),
-                buildMetricsValue({name: {tag: 'bar', group: '2'}, value: 103}),
+                buildMetricsValue({
+                  name: {tag: 'bar', group: '2'},
+                  value: 103,
+                  trainingStep: 4,
+                }),
+                buildMetricsValue({
+                  name: {tag: 'bar', group: '2'},
+                  value: 107,
+                  trainingStep: 5,
+                }),
+                buildMetricsValue({name: {tag: 'abc123', group: ''}, value: 2}),
               ],
             },
             {
@@ -567,24 +576,7 @@ describe('hparams/_redux/hparams_selectors_test', () => {
           ],
         }),
       ];
-    });
 
-    it('contains entry for each runId', () => {
-      const state = buildStateFromHparamsState(
-        buildHparamsState({
-          dashboardSessionGroups: mockSessionGroups,
-        })
-      );
-
-      expect(
-        selectors.getDashboardRunsToHparamsAndMetrics(state)['exp1/run4']
-      ).toEqual({
-        metrics: [],
-        hparams: [{name: 'hp4', value: 'hyperparameter4'}],
-      });
-    });
-
-    it('contains entry for each runId/group', () => {
       const state = buildStateFromHparamsState(
         buildHparamsState({
           dashboardSessionGroups: mockSessionGroups,
@@ -593,7 +585,7 @@ describe('hparams/_redux/hparams_selectors_test', () => {
 
       expect(selectors.getDashboardRunsToHparamsAndMetrics(state)).toEqual({
         'exp1/run1': {
-          metrics: [],
+          metrics: [{tag: 'abc123', trainingStep: 0, value: 2}],
           hparams: [
             {name: 'hp1', value: 1},
             {name: 'hp2', value: true},
@@ -609,7 +601,10 @@ describe('hparams/_redux/hparams_selectors_test', () => {
           ],
         },
         'exp1/run1/2': {
-          metrics: [{tag: 'bar', trainingStep: 0, value: 103}],
+          metrics: [
+            {tag: 'bar', trainingStep: 4, value: 103},
+            {tag: 'bar', trainingStep: 5, value: 107},
+          ],
           hparams: [
             {name: 'hp1', value: 1},
             {name: 'hp2', value: true},

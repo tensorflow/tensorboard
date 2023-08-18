@@ -100,6 +100,7 @@ tf_ts_library(
         "//tensorboard/webapp/app_routing:testing",
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/app_routing/actions",
+        "//tensorboard/webapp/app_routing/store:testing",
         "//tensorboard/webapp/hparams:testing",
         "//tensorboard/webapp/runs:types",
         "//tensorboard/webapp/runs/actions",

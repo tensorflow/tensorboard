@@ -17,15 +17,26 @@ import {
   buildHparamSpec,
   buildMetricSpec,
 } from '../../../hparams/_redux/testing';
-import {buildAppRoutingState} from '../../../app_routing/store/testing';
+import {
+  buildAppRoutingState,
+  buildStateFromAppRoutingState,
+} from '../../../app_routing/store/testing';
 import {buildRoute} from '../../../app_routing/testing';
 import {buildExperiment} from '../../../experiments/store/testing';
 import {IntervalFilter, DiscreteFilter} from '../../../hparams/types';
 import {DomainType, Run} from '../../../runs/store/runs_types';
-import {buildRun, buildRunsState} from '../../../runs/store/testing';
+import {
+  buildRun,
+  buildRunsState,
+  buildStateFromRunsState,
+} from '../../../runs/store/testing';
 import {RunTableItem} from '../../../runs/views/runs_table/types';
 import {buildMockState} from '../../../testing/utils';
-import {buildMetricsSettingsState, buildMetricsState} from '../../testing';
+import {
+  appStateFromMetricsState,
+  buildMetricsSettingsState,
+  buildMetricsState,
+} from '../../testing';
 import {PluginType} from '../../types';
 import * as selectors from './common_selectors';
 import {ColumnHeaderType} from '../card_renderer/scalar_card_types';
@@ -181,40 +192,46 @@ describe('common selectors', () => {
   describe('getScalarTagsForRunSelection', () => {
     it('returns all tags containing scalar data when no runs are selected', () => {
       const state = buildMockState({
-        metrics: buildMetricsState({
-          tagMetadata: {
-            histograms: {
-              tagDescriptions: {},
-              tagToRuns: {},
-            },
-            images: {
-              tagDescriptions: {},
-              tagRunSampledInfo: {},
-            },
-            scalars: {
-              tagDescriptions: {},
-              tagToRuns: {
-                'tag-1': ['run1'],
-                'tag-2': ['run2', 'run3'],
+        ...appStateFromMetricsState(
+          buildMetricsState({
+            tagMetadata: {
+              histograms: {
+                tagDescriptions: {},
+                tagToRuns: {},
+              },
+              images: {
+                tagDescriptions: {},
+                tagRunSampledInfo: {},
+              },
+              scalars: {
+                tagDescriptions: {},
+                tagToRuns: {
+                  'tag-1': ['run1'],
+                  'tag-2': ['run2', 'run3'],
+                },
               },
             },
-          },
-        }),
-        app_routing: buildAppRoutingState({
-          activeRoute: buildRoute({
-            routeKind: RouteKind.EXPERIMENT,
-            params: {},
-          }),
-        }),
-        runs: buildRunsState(
-          {
-            runIds,
-            runIdToExpId,
-            runMetadata,
-          },
-          {
-            selectionState: new Map(),
-          }
+          })
+        ),
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: buildRoute({
+              routeKind: RouteKind.EXPERIMENT,
+              params: {},
+            }),
+          })
+        ),
+        ...buildStateFromRunsState(
+          buildRunsState(
+            {
+              runIds,
+              runIdToExpId,
+              runMetadata,
+            },
+            {
+              selectionState: new Map(),
+            }
+          )
         ),
       });
       expect(selectors.TEST_ONLY.getScalarTagsForRunSelection(state)).toEqual(
@@ -224,45 +241,51 @@ describe('common selectors', () => {
 
     it('returns only tags containing selected runs when some runs are selected', () => {
       const state = buildMockState({
-        metrics: buildMetricsState({
-          tagMetadata: {
-            histograms: {
-              tagDescriptions: {},
-              tagToRuns: {},
-            },
-            images: {
-              tagDescriptions: {},
-              tagRunSampledInfo: {},
-            },
-            scalars: {
-              tagDescriptions: {},
-              tagToRuns: {
-                'tag-1': ['run1'],
-                'tag-2': ['run2', 'run3'],
+        ...appStateFromMetricsState(
+          buildMetricsState({
+            tagMetadata: {
+              histograms: {
+                tagDescriptions: {},
+                tagToRuns: {},
+              },
+              images: {
+                tagDescriptions: {},
+                tagRunSampledInfo: {},
+              },
+              scalars: {
+                tagDescriptions: {},
+                tagToRuns: {
+                  'tag-1': ['run1'],
+                  'tag-2': ['run2', 'run3'],
+                },
               },
             },
-          },
-        }),
-        app_routing: buildAppRoutingState({
-          activeRoute: buildRoute({
-            routeKind: RouteKind.EXPERIMENT,
-            params: {},
-          }),
-        }),
+          })
+        ),
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: buildRoute({
+              routeKind: RouteKind.EXPERIMENT,
+              params: {},
+            }),
+          })
+        ),
 
-        runs: buildRunsState(
-          {
-            runIds,
-            runIdToExpId,
-            runMetadata,
-          },
-          {
-            selectionState: new Map([
-              ['run1', false],
-              ['run2', true],
-              ['run3', false],
-            ]),
-          }
+        ...buildStateFromRunsState(
+          buildRunsState(
+            {
+              runIds,
+              runIdToExpId,
+              runMetadata,
+            },
+            {
+              selectionState: new Map([
+                ['run1', false],
+                ['run2', true],
+                ['run3', false],
+              ]),
+            }
+          )
         ),
       });
       expect(selectors.TEST_ONLY.getScalarTagsForRunSelection(state)).toEqual(
@@ -274,56 +297,62 @@ describe('common selectors', () => {
   describe('getRenderableCardIdsWithMetadata', () => {
     it('returns all tags containing scalar data when no runs are selected', () => {
       const state = buildMockState({
-        metrics: buildMetricsState({
-          cardList: ['card1', 'card2'],
-          cardMetadataMap: {
-            card1: {
-              plugin: PluginType.SCALARS,
-              tag: 'tag-1',
-              runId: null,
-            },
-            card2: {
-              plugin: PluginType.SCALARS,
-              tag: 'tag-2',
-              runId: null,
-            },
-          },
-          tagMetadata: {
-            histograms: {
-              tagDescriptions: {},
-              tagToRuns: {},
-            },
-            images: {
-              tagDescriptions: {},
-              tagRunSampledInfo: {},
-            },
-            scalars: {
-              tagDescriptions: {},
-              tagToRuns: {
-                'tag-1': ['run1'],
-                'tag-2': ['run2', 'run3'],
+        ...appStateFromMetricsState(
+          buildMetricsState({
+            cardList: ['card1', 'card2'],
+            cardMetadataMap: {
+              card1: {
+                plugin: PluginType.SCALARS,
+                tag: 'tag-1',
+                runId: null,
+              },
+              card2: {
+                plugin: PluginType.SCALARS,
+                tag: 'tag-2',
+                runId: null,
               },
             },
-          },
-          settings: buildMetricsSettingsState({
-            hideEmptyCards: true,
-          }),
-        }),
-        app_routing: buildAppRoutingState({
-          activeRoute: buildRoute({
-            routeKind: RouteKind.EXPERIMENT,
-            params: {},
-          }),
-        }),
-        runs: buildRunsState(
-          {
-            runIds,
-            runIdToExpId,
-            runMetadata,
-          },
-          {
-            selectionState: new Map(),
-          }
+            tagMetadata: {
+              histograms: {
+                tagDescriptions: {},
+                tagToRuns: {},
+              },
+              images: {
+                tagDescriptions: {},
+                tagRunSampledInfo: {},
+              },
+              scalars: {
+                tagDescriptions: {},
+                tagToRuns: {
+                  'tag-1': ['run1'],
+                  'tag-2': ['run2', 'run3'],
+                },
+              },
+            },
+            settings: buildMetricsSettingsState({
+              hideEmptyCards: true,
+            }),
+          })
+        ),
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: buildRoute({
+              routeKind: RouteKind.EXPERIMENT,
+              params: {},
+            }),
+          })
+        ),
+        ...buildStateFromRunsState(
+          buildRunsState(
+            {
+              runIds,
+              runIdToExpId,
+              runMetadata,
+            },
+            {
+              selectionState: new Map(),
+            }
+          )
         ),
       });
       expect(
@@ -348,66 +377,72 @@ describe('common selectors', () => {
   describe('getSortedRenderableCardIdsWithMetadata', () => {
     it('shows empty scalar cards when hideEmptyCards is false', () => {
       const state = buildMockState({
-        metrics: buildMetricsState({
-          cardList: ['card1', 'card2', 'card3'],
-          cardMetadataMap: {
-            card1: {
-              plugin: PluginType.SCALARS,
-              tag: 'tag-1',
-              runId: null,
-            },
-            card2: {
-              plugin: PluginType.SCALARS,
-              tag: 'tag-2',
-              runId: null,
-            },
-            card3: {
-              plugin: PluginType.HISTOGRAMS,
-              tag: 'tag-2',
-              runId: 'run1',
-            },
-            card4: {
-              plugin: PluginType.HISTOGRAMS,
-              tag: 'tag-2',
-              runId: 'run2',
-            },
-          },
-          tagMetadata: {
-            histograms: {
-              tagDescriptions: {},
-              tagToRuns: {},
-            },
-            images: {
-              tagDescriptions: {},
-              tagRunSampledInfo: {},
-            },
-            scalars: {
-              tagDescriptions: {},
-              tagToRuns: {
-                'tag-1': ['run1'],
-                'tag-2': ['run2', 'run3'],
+        ...appStateFromMetricsState(
+          buildMetricsState({
+            cardList: ['card1', 'card2', 'card3'],
+            cardMetadataMap: {
+              card1: {
+                plugin: PluginType.SCALARS,
+                tag: 'tag-1',
+                runId: null,
+              },
+              card2: {
+                plugin: PluginType.SCALARS,
+                tag: 'tag-2',
+                runId: null,
+              },
+              card3: {
+                plugin: PluginType.HISTOGRAMS,
+                tag: 'tag-2',
+                runId: 'run1',
+              },
+              card4: {
+                plugin: PluginType.HISTOGRAMS,
+                tag: 'tag-2',
+                runId: 'run2',
               },
             },
-          },
-          settings: buildMetricsSettingsState({
-            hideEmptyCards: false,
-          }),
-        }),
-        app_routing: buildAppRoutingState({
-          activeRoute: buildRoute({
-            routeKind: RouteKind.EXPERIMENT,
-            params: {},
-          }),
-        }),
-        runs: buildRunsState(
-          {
-            runIds,
-            runIdToExpId,
-            runMetadata,
-          },
-          {
-            selectionState: new Map([['run1', true]]),
-          }
+            tagMetadata: {
+              histograms: {
+                tagDescriptions: {},
+                tagToRuns: {},
+              },
+              images: {
+                tagDescriptions: {},
+                tagRunSampledInfo: {},
+              },
+              scalars: {
+                tagDescriptions: {},
+                tagToRuns: {
+                  'tag-1': ['run1'],
+                  'tag-2': ['run2', 'run3'],
+                },
+              },
+            },
+            settings: buildMetricsSettingsState({
+              hideEmptyCards: false,
+            }),
+          })
+        ),
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: buildRoute({
+              routeKind: RouteKind.EXPERIMENT,
+              params: {},
+            }),
+          })
+        ),
+        ...buildStateFromRunsState(
+          buildRunsState(
+            {
+              runIds,
+              runIdToExpId,
+              runMetadata,
+            },
+            {
+              selectionState: new Map([['run1', true]]),
+            }
+          )
         ),
       });
       expect(selectors.getSortedRenderableCardIdsWithMetadata(state)).toEqual([
@@ -434,66 +469,72 @@ describe('common selectors', () => {
 
     it('hides empty scalar cards when hideEmptyCards is true', () => {
       const state = buildMockState({
-        metrics: buildMetricsState({
-          cardList: ['card1', 'card2', 'card3'],
-          cardMetadataMap: {
-            card1: {
-              plugin: PluginType.SCALARS,
-              tag: 'tag-1',
-              runId: null,
-            },
-            card2: {
-              plugin: PluginType.SCALARS,
-              tag: 'tag-2',
-              runId: null,
-            },
-            card3: {
-              plugin: PluginType.HISTOGRAMS,
-              tag: 'tag-2',
-              runId: 'run1',
-            },
-            card4: {
-              plugin: PluginType.HISTOGRAMS,
-              tag: 'tag-2',
-              runId: 'run2',
-            },
-          },
-          tagMetadata: {
-            histograms: {
-              tagDescriptions: {},
-              tagToRuns: {},
-            },
-            images: {
-              tagDescriptions: {},
-              tagRunSampledInfo: {},
-            },
-            scalars: {
-              tagDescriptions: {},
-              tagToRuns: {
-                'tag-1': ['run1'],
-                'tag-2': ['run2', 'run3'],
+        ...appStateFromMetricsState(
+          buildMetricsState({
+            cardList: ['card1', 'card2', 'card3'],
+            cardMetadataMap: {
+              card1: {
+                plugin: PluginType.SCALARS,
+                tag: 'tag-1',
+                runId: null,
+              },
+              card2: {
+                plugin: PluginType.SCALARS,
+                tag: 'tag-2',
+                runId: null,
+              },
+              card3: {
+                plugin: PluginType.HISTOGRAMS,
+                tag: 'tag-2',
+                runId: 'run1',
+              },
+              card4: {
+                plugin: PluginType.HISTOGRAMS,
+                tag: 'tag-2',
+                runId: 'run2',
               },
             },
-          },
-          settings: buildMetricsSettingsState({
-            hideEmptyCards: true,
-          }),
-        }),
-        app_routing: buildAppRoutingState({
-          activeRoute: buildRoute({
-            routeKind: RouteKind.EXPERIMENT,
-            params: {},
-          }),
-        }),
-        runs: buildRunsState(
-          {
-            runIds,
-            runIdToExpId,
-            runMetadata,
-          },
-          {
-            selectionState: new Map([['run1', true]]),
-          }
+            tagMetadata: {
+              histograms: {
+                tagDescriptions: {},
+                tagToRuns: {},
+              },
+              images: {
+                tagDescriptions: {},
+                tagRunSampledInfo: {},
+              },
+              scalars: {
+                tagDescriptions: {},
+                tagToRuns: {
+                  'tag-1': ['run1'],
+                  'tag-2': ['run2', 'run3'],
+                },
+              },
+            },
+            settings: buildMetricsSettingsState({
+              hideEmptyCards: true,
+            }),
+          })
+        ),
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: buildRoute({
+              routeKind: RouteKind.EXPERIMENT,
+              params: {},
+            }),
+          })
+        ),
+        ...buildStateFromRunsState(
+          buildRunsState(
+            {
+              runIds,
+              runIdToExpId,
+              runMetadata,
+            },
+            {
+              selectionState: new Map([['run1', true]]),
+            }
+          )
         ),
       });
       expect(selectors.getSortedRenderableCardIdsWithMetadata(state)).toEqual([

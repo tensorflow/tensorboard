@@ -12,8 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {
+  buildAppRoutingState,
+  buildStateFromAppRoutingState,
+} from '../../app_routing/store/testing';
 import {RouteKind} from '../../app_routing/types';
-import {buildSessionGroup} from '../../hparams/testing';
+import {
+  buildSessionGroup,
+  buildStateFromHparamsState,
+  buildHparamsState,
+} from '../../hparams/testing';
 import {buildMockState} from '../../testing/utils';
 import {DataLoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
@@ -31,13 +39,15 @@ describe('runs_selectors', () => {
 
     it('returns runIdToExpId', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          runIdToExpId: {
-            run1: 'eid1',
-            run2: 'eid1',
-            run3: 'eid2',
-          },
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runIdToExpId: {
+              run1: 'eid1',
+              run2: 'eid1',
+              run3: 'eid2',
+            },
+          })
+        ),
       });
       expect(selectors.getRunIdToExperimentId(state)).toEqual({
         run1: 'eid1',
@@ -54,13 +64,15 @@ describe('runs_selectors', () => {
 
     it('returns eid', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          runIdToExpId: {
-            run1: 'eid1',
-            run2: 'eid1',
-            run3: 'eid2',
-          },
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runIdToExpId: {
+              run1: 'eid1',
+              run2: 'eid1',
+              run3: 'eid2',
+            },
+          })
+        ),
       });
       expect(
         selectors.getExperimentIdForRunId(state, {
@@ -81,9 +93,11 @@ describe('runs_selectors', () => {
 
     it('returns `null` if the runId is unknown', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          runIdToExpId: {run1: 'eid1'},
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runIdToExpId: {run1: 'eid1'},
+          })
+        ),
       });
       expect(
         selectors.getExperimentIdForRunId(state, {
@@ -101,11 +115,13 @@ describe('runs_selectors', () => {
 
     it('returns run', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          runMetadata: {
-            run1: buildRun({id: 'run1'}),
-          },
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runMetadata: {
+              run1: buildRun({id: 'run1'}),
+            },
+          })
+        ),
       });
 
       expect(selectors.getRun(state, {runId: 'run1'})).toEqual(
@@ -117,11 +133,13 @@ describe('runs_selectors', () => {
 
     it('returns `null` if run with `runId` does not exist', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          runMetadata: {
-            run1: buildRun({id: 'run1'}),
-          },
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runMetadata: {
+              run1: buildRun({id: 'run1'}),
+            },
+          })
+        ),
       });
 
       expect(selectors.getRun(state, {runId: 'run10'})).toBe(null);
@@ -136,14 +154,16 @@ describe('runs_selectors', () => {
 
     it('returns runs', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          runIds: {
-            eid: ['run1'],
-          },
-          runMetadata: {
-            run1: buildRun({id: 'run1'}),
-          },
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runIds: {
+              eid: ['run1'],
+            },
+            runMetadata: {
+              run1: buildRun({id: 'run1'}),
+            },
+          })
+        ),
       });
       expect(selectors.getRuns(state, {experimentId: 'eid'})).toEqual([
         buildRun({
@@ -154,14 +174,16 @@ describe('runs_selectors', () => {
 
     it('returns runs for the ones that has metadata', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          runIds: {
-            eid: ['run1', 'run2'],
-          },
-          runMetadata: {
-            run1: buildRun({id: 'run1'}),
-          },
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runIds: {
+              eid: ['run1', 'run2'],
+            },
+            runMetadata: {
+              run1: buildRun({id: 'run1'}),
+            },
+          })
+        ),
       });
       expect(selectors.getRuns(state, {experimentId: 'eid'})).toEqual([
         buildRun({
@@ -183,14 +205,16 @@ describe('runs_selectors', () => {
   describe('#getDashboardRuns', () => {
     it('returns runs', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          runIds: {
-            eid: ['run1'],
-          },
-          runMetadata: {
-            run1: buildRun({id: 'run1'}),
-          },
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runIds: {
+              eid: ['run1'],
+            },
+            runMetadata: {
+              run1: buildRun({id: 'run1'}),
+            },
+          })
+        ),
       });
       expect(selectors.getDashboardRuns(['eid'])(state)).toEqual([
         {
@@ -204,14 +228,16 @@ describe('runs_selectors', () => {
 
     it('returns runs for the ones that has metadata', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          runIds: {
-            eid: ['run1', 'run2'],
-          },
-          runMetadata: {
-            run1: buildRun({id: 'run1'}),
-          },
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runIds: {
+              eid: ['run1', 'run2'],
+            },
+            runMetadata: {
+              run1: buildRun({id: 'run1'}),
+            },
+          })
+        ),
       });
       expect(selectors.getDashboardRuns(['eid'])(state)).toEqual([
         {
@@ -230,34 +256,40 @@ describe('runs_selectors', () => {
 
     it('includes dashboard hparams data', () => {
       const state = buildMockState({
-        app_routing: {
-          activeRoute: {
-            routeKind: RouteKind.EXPERIMENT,
-            params: {},
-          },
-        },
-        runs: buildRunsState({
-          runIds: {
-            eid: ['run1', 'run2'],
-          },
-          runMetadata: {
-            run1: buildRun({id: 'run1'}),
-          },
-        }),
-        hparams: {
-          dashboardSessionGroups: [
-            buildSessionGroup({
-              name: 'some_session_group',
-              hparams: {hp1: 'foo', hp2: 'bar'},
-              sessions: [
-                {
-                  name: 'run1',
-                  metricValues: [],
-                } as any,
-              ],
-            }),
-          ],
-        },
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: {
+              routeKind: RouteKind.EXPERIMENT,
+              params: {},
+            },
+          })
+        ),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runIds: {
+              eid: ['run1', 'run2'],
+            },
+            runMetadata: {
+              run1: buildRun({id: 'run1'}),
+            },
+          })
+        ),
+        ...buildStateFromHparamsState(
+          buildHparamsState({
+            dashboardSessionGroups: [
+              buildSessionGroup({
+                name: 'some_session_group',
+                hparams: {hp1: 'foo', hp2: 'bar'},
+                sessions: [
+                  {
+                    name: 'run1',
+                    metricValues: [],
+                  } as any,
+                ],
+              }),
+            ],
+          })
+        ),
       });
       expect(selectors.getDashboardRuns(['eid'])(state)).toEqual([
         {
@@ -276,18 +308,20 @@ describe('runs_selectors', () => {
 
     it('never returns hparams or metric data from run metadata', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          runIds: {
-            eid: ['run1', 'run2'],
-          },
-          runMetadata: {
-            run1: buildRun({
-              id: 'run1',
-              hparams: [{name: 'foo', value: '1'}],
-              metrics: [{tag: 'm1', value: 4}],
-            }),
-          },
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runIds: {
+              eid: ['run1', 'run2'],
+            },
+            runMetadata: {
+              run1: buildRun({
+                id: 'run1',
+                hparams: [{name: 'foo', value: '1'}],
+                metrics: [{tag: 'm1', value: 4}],
+              }),
+            },
+          })
+        ),
       });
 
       const response = selectors.getDashboardRuns(['eid'])(state)[0];
@@ -304,11 +338,13 @@ describe('runs_selectors', () => {
 
     it('returns runIds', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          runIds: {
-            eid: ['run1', 'run2'],
-          },
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runIds: {
+              eid: ['run1', 'run2'],
+            },
+          })
+        ),
       });
       expect(
         selectors.getRunIdsForExperiment(state, {experimentId: 'eid'})
@@ -333,12 +369,14 @@ describe('runs_selectors', () => {
 
     it('returns a map from RunId to Run', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          runMetadata: {
-            run1: buildRun({id: 'run1'}),
-            run2: buildRun({id: 'run2'}),
-          },
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runMetadata: {
+              run1: buildRun({id: 'run1'}),
+              run2: buildRun({id: 'run2'}),
+            },
+          })
+        ),
       });
 
       expect(selectors.getRunMap(state)).toEqual(
@@ -351,9 +389,11 @@ describe('runs_selectors', () => {
 
     it('returns an empty map if there are no runs', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          runMetadata: {},
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runMetadata: {},
+          })
+        ),
       });
 
       expect(selectors.getRunMap(state)).toEqual(new Map());
@@ -373,7 +413,9 @@ describe('runs_selectors', () => {
       };
 
       const state = buildMockState({
-        runs: buildRunsState({runsLoadState: {id1: loadState}}),
+        ...buildStateFromRunsState(
+          buildRunsState({runsLoadState: {id1: loadState}})
+        ),
       });
       expect(
         selectors.getRunsLoadState(state, {
@@ -384,11 +426,13 @@ describe('runs_selectors', () => {
 
     it('returns NOT_LOADED state if experiment id does not exist', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          runsLoadState: {
-            id1: {state: DataLoadState.FAILED, lastLoadedTimeInMs: 1337},
-          },
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runsLoadState: {
+              id1: {state: DataLoadState.FAILED, lastLoadedTimeInMs: 1337},
+            },
+          })
+        ),
       });
       expect(selectors.getRunsLoadState(state, {experimentId: 'id2'})).toEqual({
         lastLoadedTimeInMs: null,
@@ -520,12 +564,14 @@ describe('runs_selectors', () => {
 
     it('returns override map', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          defaultRunColorIdForGroupBy: new Map([
-            ['foo', 1],
-            ['bar', 2],
-          ]),
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            defaultRunColorIdForGroupBy: new Map([
+              ['foo', 1],
+              ['bar', 2],
+            ]),
+          })
+        ),
       });
 
       expect(selectors.getDefaultRunColorIdMap(state)).toEqual(
@@ -545,11 +591,13 @@ describe('runs_selectors', () => {
 
     it('returns groupBy set by user when it is present', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          colorGroupRegexString: 'hello',
-          initialGroupBy: {key: GroupByKey.RUN},
-          userSetGroupByKey: GroupByKey.REGEX,
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            colorGroupRegexString: 'hello',
+            initialGroupBy: {key: GroupByKey.RUN},
+            userSetGroupByKey: GroupByKey.REGEX,
+          })
+        ),
       });
 
       expect(selectors.getRunUserSetGroupBy(state)).toEqual({
@@ -560,10 +608,12 @@ describe('runs_selectors', () => {
 
     it('returns null if user never has set one', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          initialGroupBy: {key: GroupByKey.RUN},
-          userSetGroupByKey: null,
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            initialGroupBy: {key: GroupByKey.RUN},
+            userSetGroupByKey: null,
+          })
+        ),
       });
 
       expect(selectors.getRunUserSetGroupBy(state)).toEqual(null);
@@ -579,11 +629,13 @@ describe('runs_selectors', () => {
 
     it('returns groupBy set by user when it is present', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          colorGroupRegexString: 'hello',
-          initialGroupBy: {key: GroupByKey.RUN},
-          userSetGroupByKey: GroupByKey.REGEX,
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            colorGroupRegexString: 'hello',
+            initialGroupBy: {key: GroupByKey.RUN},
+            userSetGroupByKey: GroupByKey.REGEX,
+          })
+        ),
       });
 
       expect(selectors.getRunGroupBy(state)).toEqual({
@@ -594,11 +646,13 @@ describe('runs_selectors', () => {
 
     it('returns groupBy set by user with regexString overridden', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          colorGroupRegexString: '',
-          initialGroupBy: {key: GroupByKey.REGEX, regexString: 'hello'},
-          userSetGroupByKey: GroupByKey.REGEX,
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            colorGroupRegexString: '',
+            initialGroupBy: {key: GroupByKey.REGEX, regexString: 'hello'},
+            userSetGroupByKey: GroupByKey.REGEX,
+          })
+        ),
       });
 
       expect(selectors.getRunGroupBy(state)).toEqual({
@@ -609,10 +663,12 @@ describe('runs_selectors', () => {
 
     it('returns initial group by if user never has set one', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          initialGroupBy: {key: GroupByKey.RUN},
-          userSetGroupByKey: null,
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            initialGroupBy: {key: GroupByKey.RUN},
+            userSetGroupByKey: null,
+          })
+        ),
       });
 
       expect(selectors.getRunGroupBy(state)).toEqual({
@@ -629,9 +685,11 @@ describe('runs_selectors', () => {
 
     it('returns regex string when it is group by regex', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          colorGroupRegexString: 'foo(\\d+)',
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            colorGroupRegexString: 'foo(\\d+)',
+          })
+        ),
       });
 
       expect(selectors.getColorGroupRegexString(state)).toEqual('foo(\\d+)');
@@ -645,9 +703,11 @@ describe('runs_selectors', () => {
 
     it('returns regex string even if it is not user set groupby', () => {
       const state = buildMockState({
-        runs: buildRunsState({
-          colorGroupRegexString: 'foo(\\d+)',
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            colorGroupRegexString: 'foo(\\d+)',
+          })
+        ),
       });
 
       expect(selectors.getColorGroupRegexString(state)).toEqual('foo(\\d+)');

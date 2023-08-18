@@ -71,6 +71,8 @@ export const getRun = createSelector(
 
 /**
  * Returns Observable that emits runs list for an experiment.
+ * This is intended to be used in the experiment_list page.
+ * TODO(rileyajones) remove usage of this selector from the timeseries dashboard.
  */
 export const getRuns = createSelector(
   getDataState,

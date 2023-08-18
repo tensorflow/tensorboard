@@ -149,7 +149,7 @@ export function buildIntervalFilter(
 }
 
 export function buildMetricsValue(
-  override: DeepPartial<MetricsValue>
+  override: DeepPartial<MetricsValue> = {}
 ): MetricsValue {
   return {
     trainingStep: 0,
@@ -171,7 +171,7 @@ export function buildHparamValue(override: Partial<HparamValue>): HparamValue {
   };
 }
 
-export function buildSession(override: Partial<Session>): Session {
+export function buildSession(override: DeepPartial<Session> = {}): Session {
   return {
     name: 'someExperiment/someRun',
     modelUri: '',
@@ -180,7 +180,7 @@ export function buildSession(override: Partial<Session>): Session {
     endTimeSecs: 456,
     status: RunStatus.STATUS_UNKNOWN,
     ...override,
-    metricValues: [...(override.metricValues ?? [])],
+    metricValues: [...(override.metricValues ?? [])].map(buildMetricsValue),
   };
 }
 
@@ -193,8 +193,6 @@ export function buildSessionGroup(
     hparams: {
       ...override.hparams,
     } as any,
-    sessions: (override.sessions ?? []).map((session) =>
-      buildSession(session as Session)
-    ),
-  } as SessionGroup;
+    sessions: (override.sessions ?? []).map(buildSession),
+  };
 }
