@@ -12,19 +12,28 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {buildAppRoutingState} from '../app_routing/store/testing';
+import {
+  buildAppRoutingState,
+  buildStateFromAppRoutingState,
+} from '../app_routing/store/testing';
 import {buildRoute} from '../app_routing/testing';
 import {RouteKind} from '../app_routing/types';
 import {State} from '../app_state';
 import {
   buildExperiment,
   buildExperimentState,
+  buildStateFromExperimentsState,
 } from '../experiments/store/testing';
 import {
   buildFeatureFlag,
+  buildState as buildStateFromFeatureFlagsState,
   buildFeatureFlagState,
 } from '../feature_flag/store/testing';
-import {buildRun, buildRunsState} from '../runs/store/testing';
+import {
+  buildRun,
+  buildRunsState,
+  buildStateFromRunsState,
+} from '../runs/store/testing';
 import {
   getExperiment,
   getExperimentIdsFromRoute,
@@ -35,6 +44,7 @@ import {
 import {
   buildColorPalette,
   createSettings as buildSettings,
+  createState as appStateFromSettingsState,
   createSettingsState as buildSettingsState,
 } from '../settings/testing';
 import {buildMockState} from '../testing/utils';
@@ -55,37 +65,42 @@ describe('ui_selectors test', () => {
   describe('#getCurrentRouteRunSelection', () => {
     it('returns selection map of current experiments', () => {
       const state = buildMockState({
-        app_routing:
+        ...buildStateFromAppRoutingState(
           // The route only contains experiments 123 and 234
           buildAppRoutingState({
             activeRoute: buildRoute({
               routeKind: RouteKind.COMPARE_EXPERIMENT,
               params: {experimentIds: 'exp1:123,exp2:234'},
             }),
-          }),
-        runs: buildRunsState(
-          {
-            runIdToExpId: {
-              r1: '123',
-              r2: '234',
-              r3: '345',
-            },
-          },
-          {
-            selectionState: new Map([
-              ['r1', true],
-              ['r2', false],
-              ['r3', true],
-            ]),
-          }
+          })
         ),
-        experiments: buildExperimentState({
-          experimentMap: {
-            '123': buildExperiment({id: '123', name: 'Experiment 123'}),
-            '234': buildExperiment({id: '234', name: 'Experiment 234'}),
-            '345': buildExperiment({id: '345', name: 'Experiment 345'}),
-          },
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState(
+            {
+              runIdToExpId: {
+                r1: '123',
+                r2: '234',
+                r3: '345',
+              },
+            },
+            {
+              selectionState: new Map([
+                ['r1', true],
+                ['r2', false],
+                ['r3', true],
+              ]),
+            }
+          )
+        ),
+        ...buildStateFromExperimentsState(
+          buildExperimentState({
+            experimentMap: {
+              '123': buildExperiment({id: '123', name: 'Experiment 123'}),
+              '234': buildExperiment({id: '234', name: 'Experiment 234'}),
+              '345': buildExperiment({id: '345', name: 'Experiment 345'}),
+            },
+          })
+        ),
       });
 
       // Runs form experiment 345 are not included in the final result.
@@ -99,31 +114,37 @@ describe('ui_selectors test', () => {
 
     it('returns null if current route does not have experimentIds', () => {
       const state = buildMockState({
-        app_routing: buildAppRoutingState({
-          activeRoute: buildRoute({
-            routeKind: RouteKind.UNKNOWN,
-            params: {},
-          }),
-        }),
-        runs: buildRunsState(
-          {
-            runIdToExpId: {
-              r1: '234',
-              r2: '234',
-            },
-          },
-          {
-            selectionState: new Map([
-              ['r1', true],
-              ['r2', false],
-            ]),
-          }
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: buildRoute({
+              routeKind: RouteKind.UNKNOWN,
+              params: {},
+            }),
+          })
         ),
-        experiments: buildExperimentState({
-          experimentMap: {
-            '234': buildExperiment({id: '234', name: 'Experiment 234'}),
-          },
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState(
+            {
+              runIdToExpId: {
+                r1: '234',
+                r2: '234',
+              },
+            },
+            {
+              selectionState: new Map([
+                ['r1', true],
+                ['r2', false],
+              ]),
+            }
+          )
+        ),
+        ...buildStateFromExperimentsState(
+          buildExperimentState({
+            experimentMap: {
+              '234': buildExperiment({id: '234', name: 'Experiment 234'}),
+            },
+          })
+        ),
       });
 
       expect(getCurrentRouteRunSelection(state)).toBeNull();
@@ -132,42 +153,48 @@ describe('ui_selectors test', () => {
     describe('regex filter', () => {
       it('filters runs based on regex and run name', () => {
         const state = buildMockState({
-          app_routing: buildAppRoutingState({
-            activeRoute: buildRoute({
-              routeKind: RouteKind.EXPERIMENT,
-              params: {experimentId: '234'},
-            }),
-          }),
-          runs: buildRunsState(
-            {
-              runIds: {
-                '234': ['234/run1', '234/run2', '234/run3'],
-              },
-              runIdToExpId: {
-                '234/run1': '234',
-                '234/run2': '234',
-                '234/run3': '234',
-              },
-              runMetadata: {
-                '234/run1': buildRun({id: '234/run1', name: 'run1'}),
-                '234/run2': buildRun({id: '234/run2', name: 'run2'}),
-                '234/run3': buildRun({id: '234/run3', name: 'run3'}),
-              },
-              regexFilter: '^r.n[1]',
-            },
-            {
-              selectionState: new Map([
-                ['234/run1', true],
-                ['234/run2', true],
-                ['234/run3', false],
-              ]),
-            }
+          ...buildStateFromAppRoutingState(
+            buildAppRoutingState({
+              activeRoute: buildRoute({
+                routeKind: RouteKind.EXPERIMENT,
+                params: {experimentId: '234'},
+              }),
+            })
           ),
-          experiments: buildExperimentState({
-            experimentMap: {
-              '234': buildExperiment({id: '234', name: 'Experiment 234'}),
-            },
-          }),
+          ...buildStateFromRunsState(
+            buildRunsState(
+              {
+                runIds: {
+                  '234': ['234/run1', '234/run2', '234/run3'],
+                },
+                runIdToExpId: {
+                  '234/run1': '234',
+                  '234/run2': '234',
+                  '234/run3': '234',
+                },
+                runMetadata: {
+                  '234/run1': buildRun({id: '234/run1', name: 'run1'}),
+                  '234/run2': buildRun({id: '234/run2', name: 'run2'}),
+                  '234/run3': buildRun({id: '234/run3', name: 'run3'}),
+                },
+                regexFilter: '^r.n[1]',
+              },
+              {
+                selectionState: new Map([
+                  ['234/run1', true],
+                  ['234/run2', true],
+                  ['234/run3', false],
+                ]),
+              }
+            )
+          ),
+          ...buildStateFromExperimentsState(
+            buildExperimentState({
+              experimentMap: {
+                '234': buildExperiment({id: '234', name: 'Experiment 234'}),
+              },
+            })
+          ),
         });
 
         expect(getCurrentRouteRunSelection(state)).toEqual(
@@ -181,53 +208,59 @@ describe('ui_selectors test', () => {
 
       it('filters run name and alias in compare mode', () => {
         const state = buildMockState({
-          app_routing: buildAppRoutingState({
-            activeRoute: buildRoute({
-              routeKind: RouteKind.COMPARE_EXPERIMENT,
-              params: {experimentIds: 'apple:123,banana:234'},
-            }),
-          }),
-          runs: buildRunsState(
-            {
-              runIds: {
-                '123': ['123/run1', '123/run2', '123/run3'],
-                '234': ['234/run1', '234/run2', '234/run3'],
-              },
-              runIdToExpId: {
-                '123/run1': '123',
-                '123/run2': '123',
-                '123/run3': '123',
-                '234/run1': '234',
-                '234/run2': '234',
-                '234/run3': '234',
-              },
-              runMetadata: {
-                '123/run1': buildRun({id: '123/run1', name: 'run1'}),
-                '123/run2': buildRun({id: '123/run2', name: 'run2'}),
-                '123/run3': buildRun({id: '123/run3', name: 'run3'}),
-                '234/run1': buildRun({id: '234/run1', name: 'run1'}),
-                '234/run2': buildRun({id: '234/run2', name: 'run2'}),
-                '234/run3': buildRun({id: '234/run3', name: 'run3'}),
-              },
-              regexFilter: '^(apple/r..3|r.n[1])',
-            },
-            {
-              selectionState: new Map([
-                ['123/run1', false],
-                ['123/run2', true],
-                ['123/run3', true],
-                ['234/run1', true],
-                ['234/run2', true],
-                ['234/run3', false],
-              ]),
-            }
+          ...buildStateFromAppRoutingState(
+            buildAppRoutingState({
+              activeRoute: buildRoute({
+                routeKind: RouteKind.COMPARE_EXPERIMENT,
+                params: {experimentIds: 'apple:123,banana:234'},
+              }),
+            })
           ),
-          experiments: buildExperimentState({
-            experimentMap: {
-              '123': buildExperiment({id: '123', name: 'Experiment 123'}),
-              '234': buildExperiment({id: '234', name: 'Experiment 234'}),
-            },
-          }),
+          ...buildStateFromRunsState(
+            buildRunsState(
+              {
+                runIds: {
+                  '123': ['123/run1', '123/run2', '123/run3'],
+                  '234': ['234/run1', '234/run2', '234/run3'],
+                },
+                runIdToExpId: {
+                  '123/run1': '123',
+                  '123/run2': '123',
+                  '123/run3': '123',
+                  '234/run1': '234',
+                  '234/run2': '234',
+                  '234/run3': '234',
+                },
+                runMetadata: {
+                  '123/run1': buildRun({id: '123/run1', name: 'run1'}),
+                  '123/run2': buildRun({id: '123/run2', name: 'run2'}),
+                  '123/run3': buildRun({id: '123/run3', name: 'run3'}),
+                  '234/run1': buildRun({id: '234/run1', name: 'run1'}),
+                  '234/run2': buildRun({id: '234/run2', name: 'run2'}),
+                  '234/run3': buildRun({id: '234/run3', name: 'run3'}),
+                },
+                regexFilter: '^(apple/r..3|r.n[1])',
+              },
+              {
+                selectionState: new Map([
+                  ['123/run1', false],
+                  ['123/run2', true],
+                  ['123/run3', true],
+                  ['234/run1', true],
+                  ['234/run2', true],
+                  ['234/run3', false],
+                ]),
+              }
+            )
+          ),
+          ...buildStateFromExperimentsState(
+            buildExperimentState({
+              experimentMap: {
+                '123': buildExperiment({id: '123', name: 'Experiment 123'}),
+                '234': buildExperiment({id: '234', name: 'Experiment 234'}),
+              },
+            })
+          ),
         });
 
         expect(getCurrentRouteRunSelection(state)).toEqual(
@@ -252,47 +285,53 @@ describe('ui_selectors test', () => {
 
       it('does not violently throw when an experiment metadata is null', () => {
         const state = buildMockState({
-          app_routing: buildAppRoutingState({
-            activeRoute: buildRoute({
-              routeKind: RouteKind.COMPARE_EXPERIMENT,
-              params: {experimentIds: 'apple:123,banana:234'},
-            }),
-          }),
-          runs: buildRunsState(
-            {
-              runIds: {
-                '123': ['123/run1', '123/run2'],
-                '234': ['234/run1', '234/run2'],
-              },
-              runIdToExpId: {
-                '123/run1': '123',
-                '123/run2': '123',
-                '234/run1': '234',
-                '234/run2': '234',
-              },
-              runMetadata: {
-                '123/run1': buildRun({id: '123/run1', name: 'run1'}),
-                '123/run2': buildRun({id: '123/run2', name: 'run2'}),
-                '234/run1': buildRun({id: '234/run1', name: 'run1'}),
-                '234/run2': buildRun({id: '234/run2', name: 'run2'}),
-              },
-              regexFilter: 'run1',
-            },
-            {
-              selectionState: new Map([
-                ['123/run1', true],
-                ['123/run2', true],
-                ['234/run1', true],
-                ['234/run2', true],
-              ]),
-            }
+          ...buildStateFromAppRoutingState(
+            buildAppRoutingState({
+              activeRoute: buildRoute({
+                routeKind: RouteKind.COMPARE_EXPERIMENT,
+                params: {experimentIds: 'apple:123,banana:234'},
+              }),
+            })
           ),
-          experiments: buildExperimentState({
-            experimentMap: {
-              '123': buildExperiment({id: '123', name: 'Experiment 123'}),
-              // 234 experiment metadata does not exist.
-            },
-          }),
+          ...buildStateFromRunsState(
+            buildRunsState(
+              {
+                runIds: {
+                  '123': ['123/run1', '123/run2'],
+                  '234': ['234/run1', '234/run2'],
+                },
+                runIdToExpId: {
+                  '123/run1': '123',
+                  '123/run2': '123',
+                  '234/run1': '234',
+                  '234/run2': '234',
+                },
+                runMetadata: {
+                  '123/run1': buildRun({id: '123/run1', name: 'run1'}),
+                  '123/run2': buildRun({id: '123/run2', name: 'run2'}),
+                  '234/run1': buildRun({id: '234/run1', name: 'run1'}),
+                  '234/run2': buildRun({id: '234/run2', name: 'run2'}),
+                },
+                regexFilter: 'run1',
+              },
+              {
+                selectionState: new Map([
+                  ['123/run1', true],
+                  ['123/run2', true],
+                  ['234/run1', true],
+                  ['234/run2', true],
+                ]),
+              }
+            )
+          ),
+          ...buildStateFromExperimentsState(
+            buildExperimentState({
+              experimentMap: {
+                '123': buildExperiment({id: '123', name: 'Experiment 123'}),
+                // 234 experiment metadata does not exist.
+              },
+            })
+          ),
         });
 
         expect(getCurrentRouteRunSelection(state)).toEqual(
@@ -315,18 +354,24 @@ describe('ui_selectors test', () => {
       useDarkMode: boolean = false
     ): State {
       return buildMockState({
-        runs: buildRunsState({
-          defaultRunColorIdForGroupBy,
-          runColorOverrideForGroupBy,
-        }),
-        settings: buildSettingsState({
-          settings: buildSettings({colorPalette}),
-        }),
-        feature: buildFeatureFlagState({
-          defaultFlags: buildFeatureFlag({
-            defaultEnableDarkMode: useDarkMode,
-          }),
-        }),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            defaultRunColorIdForGroupBy,
+            runColorOverrideForGroupBy,
+          })
+        ),
+        ...appStateFromSettingsState(
+          buildSettingsState({
+            settings: buildSettings({colorPalette}),
+          })
+        ),
+        ...buildStateFromFeatureFlagsState(
+          buildFeatureFlagState({
+            defaultFlags: buildFeatureFlag({
+              defaultEnableDarkMode: useDarkMode,
+            }),
+          })
+        ),
       });
     }
 
