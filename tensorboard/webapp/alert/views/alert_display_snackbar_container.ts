@@ -43,9 +43,7 @@ export class AlertDisplaySnackbarContainer {
   async onActionButtonClicked() {
     this.snackBarRef.dismiss();
 
-    const followupAction = await this.alert.followupAction!.getFollowupAction(
-      this.store
-    );
+    const followupAction = await this.alert.followupAction!.getFollowupAction();
     this.store.dispatch(followupAction);
   }
 

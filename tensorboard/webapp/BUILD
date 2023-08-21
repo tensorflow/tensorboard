@@ -142,6 +142,8 @@ tf_ng_module(
         "app_state.ts",
     ],
     deps = [
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
+        "//tensorboard/webapp/alert/store:types",
         "//tensorboard/webapp/app_routing/store:types",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/experiments/store:types",
@@ -149,6 +151,7 @@ tf_ng_module(
         "//tensorboard/webapp/hparams:types",
         "//tensorboard/webapp/metrics/store:types",
         "//tensorboard/webapp/notification_center/_redux:types",
+        "//tensorboard/webapp/persistent_settings/_redux:types",
         "//tensorboard/webapp/runs/store:types",
         "//tensorboard/webapp/settings",
     ],

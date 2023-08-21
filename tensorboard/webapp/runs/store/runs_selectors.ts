@@ -27,6 +27,8 @@ import {
 } from './runs_types';
 import {createGroupBy} from './utils';
 import {ColumnHeader, SortingInfo} from '../../widgets/data_table/types';
+import {getDashboardRunsToHparamsAndMetrics} from '../../hparams/_redux/hparams_selectors';
+import {RunToHparamsAndMetrics} from '../../hparams/types';
 
 const getRunsState = createFeatureSelector<RunsState>(RUNS_FEATURE_KEY);
 
@@ -69,6 +71,8 @@ export const getRun = createSelector(
 
 /**
  * Returns Observable that emits runs list for an experiment.
+ * This is intended to be used in the experiment_list page.
+ * TODO(rileyajones) remove usage of this selector from the timeseries dashboard.
  */
 export const getRuns = createSelector(
   getDataState,
@@ -80,19 +84,33 @@ export const getRuns = createSelector(
   }
 );
 
-export const getRunsFromExperimentIds = (experimentIds: string[]) =>
+/**
+ * Get the runs used on the dashboard.
+ * TODO(rileyajones) get the experiment ids from the state rather than as an argument.
+ * @param experimentIds
+ * @returns
+ */
+export const getDashboardRuns = (experimentIds: string[]) =>
   createSelector(
     getDataState,
-    (state: RunsDataState): Array<Run & {experimentId: string}> => {
-      return experimentIds.reduce((runs, experimentId) => {
-        (state.runIds[experimentId] || [])
-          .filter((id) => Boolean(state.runMetadata[id]))
-          .forEach((runId) => {
-            runs.push({...state.runMetadata[runId], experimentId});
-          });
+    getDashboardRunsToHparamsAndMetrics,
+    (
+      state: RunsDataState,
+      runsToHparamsAndMetrics: RunToHparamsAndMetrics
+    ): Array<Run & {experimentId: string}> => {
+      return experimentIds
+        .map((experimentId) => {
+          return (state.runIds[experimentId] || [])
+            .filter((id) => Boolean(state.runMetadata[id]))
+            .map((runId) => {
+              const run = {...state.runMetadata[runId], experimentId};
+              run.hparams = runsToHparamsAndMetrics[runId]?.hparams ?? null;
+              run.metrics = runsToHparamsAndMetrics[runId]?.metrics ?? null;
 
-        return runs;
-      }, [] as Array<Run & {experimentId: string}>);
+              return run;
+            });
+        })
+        .flat();
     }
   );
 

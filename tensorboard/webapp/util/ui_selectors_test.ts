@@ -26,8 +26,8 @@ import {
 } from '../experiments/store/testing';
 import {
   buildFeatureFlag,
-  buildFeatureFlagState,
   buildState as buildStateFromFeatureFlagState,
+  buildFeatureFlagState,
 } from '../feature_flag/store/testing';
 import {
   buildRun,
@@ -44,9 +44,10 @@ import {
 import {
   buildColorPalette,
   createSettings as buildSettings,
+  createState as appStateFromSettingsState,
   createSettingsState as buildSettingsState,
-  createState as buildStateFromSettingsState,
 } from '../settings/testing';
+import {buildMockState} from '../testing/utils';
 import {ColorPalette} from './colors';
 import {getCurrentRouteRunSelection, getRunColorMap} from './ui_selectors';
 
@@ -63,7 +64,7 @@ describe('ui_selectors test', () => {
 
   describe('#getCurrentRouteRunSelection', () => {
     it('returns selection map of current experiments', () => {
-      const state = {
+      const state = buildMockState({
         ...buildStateFromAppRoutingState(
           // The route only contains experiments 123 and 234
           buildAppRoutingState({
@@ -100,7 +101,7 @@ describe('ui_selectors test', () => {
             },
           })
         ),
-      };
+      });
 
       // Runs form experiment 345 are not included in the final result.
       expect(getCurrentRouteRunSelection(state)).toEqual(
@@ -112,7 +113,7 @@ describe('ui_selectors test', () => {
     });
 
     it('returns null if current route does not have experimentIds', () => {
-      const state = {
+      const state = buildMockState({
         ...buildStateFromAppRoutingState(
           buildAppRoutingState({
             activeRoute: buildRoute({
@@ -144,14 +145,14 @@ describe('ui_selectors test', () => {
             },
           })
         ),
-      };
+      });
 
       expect(getCurrentRouteRunSelection(state)).toBeNull();
     });
 
     describe('regex filter', () => {
       it('filters runs based on regex and run name', () => {
-        const state = {
+        const state = buildMockState({
           ...buildStateFromAppRoutingState(
             buildAppRoutingState({
               activeRoute: buildRoute({
@@ -194,7 +195,7 @@ describe('ui_selectors test', () => {
               },
             })
           ),
-        };
+        });
 
         expect(getCurrentRouteRunSelection(state)).toEqual(
           new Map([
@@ -206,7 +207,7 @@ describe('ui_selectors test', () => {
       });
 
       it('filters run name and alias in compare mode', () => {
-        const state = {
+        const state = buildMockState({
           ...buildStateFromAppRoutingState(
             buildAppRoutingState({
               activeRoute: buildRoute({
@@ -260,7 +261,7 @@ describe('ui_selectors test', () => {
               },
             })
           ),
-        };
+        });
 
         expect(getCurrentRouteRunSelection(state)).toEqual(
           new Map([
@@ -283,7 +284,7 @@ describe('ui_selectors test', () => {
       });
 
       it('does not violently throw when an experiment metadata is null', () => {
-        const state = {
+        const state = buildMockState({
           ...buildStateFromAppRoutingState(
             buildAppRoutingState({
               activeRoute: buildRoute({
@@ -331,7 +332,7 @@ describe('ui_selectors test', () => {
               },
             })
           ),
-        };
+        });
 
         expect(getCurrentRouteRunSelection(state)).toEqual(
           new Map([
@@ -352,14 +353,14 @@ describe('ui_selectors test', () => {
       colorPalette: ColorPalette = buildColorPalette(),
       useDarkMode: boolean = false
     ): State {
-      return {
+      return buildMockState({
         ...buildStateFromRunsState(
           buildRunsState({
             defaultRunColorIdForGroupBy,
             runColorOverrideForGroupBy,
           })
         ),
-        ...buildStateFromSettingsState(
+        ...appStateFromSettingsState(
           buildSettingsState({
             settings: buildSettings({colorPalette}),
           })
@@ -371,7 +372,7 @@ describe('ui_selectors test', () => {
             }),
           })
         ),
-      };
+      });
     }
 
     it('returns color from color id from the default PALETTE', () => {

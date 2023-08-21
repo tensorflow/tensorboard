@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Action, Store} from '@ngrx/store';
-import {State} from '../app_state';
+import {Action} from '@ngrx/store';
 
 /**
  * An alert structure used when creating newly reported alerts.
@@ -35,7 +34,7 @@ export interface AlertReport {
      * when the followup action is requested, a newly created Promise will be
      * awaited, and the resulting action is dispatched.
      */
-    getFollowupAction: (store: Store<State>) => Promise<Action>;
+    getFollowupAction: () => Promise<Action>;
   };
 }
 

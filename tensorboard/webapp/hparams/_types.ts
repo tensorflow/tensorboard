@@ -42,6 +42,8 @@ export {
   BackendHparamsValueType,
   RunStatus,
   SessionGroup,
+  Session,
+  MetricsValue,
 } from '../runs/data_source/runs_backend_types';
 
 export interface HparamAndMetricSpec {

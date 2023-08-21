@@ -24,14 +24,14 @@ import {
   getRunColorMap,
   getRunSelectorRegexFilter,
   getRouteKind,
-  getRunsFromExperimentIds,
+  getDashboardRuns,
   getColumnHeadersForCard,
 } from '../../../selectors';
 import {DeepReadonly} from '../../../util/types';
 import {
   getHparamFilterMapFromExperimentIds,
   getMetricFilterMapFromExperimentIds,
-  getExperimentsHparamsAndMetricsSpecs,
+  getDashboardHparamsAndMetricsSpecs,
 } from '../../../hparams/_redux/hparams_selectors';
 import {
   DiscreteFilter,
@@ -187,7 +187,7 @@ const utils = {
 
 const getRenderableRuns = memoize((experimentIds: string[]) => {
   return createSelector(
-    getRunsFromExperimentIds(experimentIds),
+    getDashboardRuns(experimentIds),
     getExperimentNames(experimentIds),
     getCurrentRouteRunSelection,
     getRunColorMap,
@@ -261,16 +261,12 @@ export const getFilteredRenderableRunsIdsFromRoute = createSelector(
 );
 
 export const getPotentialHparamColumns = createSelector(
-  (state: State) => state,
+  getDashboardHparamsAndMetricsSpecs,
   getExperimentIdsFromRoute,
-  (state, experimentIds): ColumnHeader[] => {
+  ({hparams}, experimentIds): ColumnHeader[] => {
     if (!experimentIds) {
       return [];
     }
-
-    const {hparams} = getExperimentsHparamsAndMetricsSpecs(state, {
-      experimentIds,
-    });
 
     return hparams.map((spec) => ({
       type: ColumnHeaderType.HPARAM,

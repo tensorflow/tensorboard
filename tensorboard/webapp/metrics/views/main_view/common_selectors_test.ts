@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {RouteKind} from '../../../app_routing';
 import {
-  buildSpecs,
   buildHparamSpec,
   buildMetricSpec,
 } from '../../../hparams/_redux/testing';
@@ -181,23 +180,18 @@ describe('common selectors', () => {
         },
       } as any,
       hparams: {
-        specs: buildSpecs('defaultExperimentId', {
-          hparam: {
-            specs: [buildHparamSpec({name: 'foo', displayName: 'Foo'})],
-            defaultFilters: new Map(),
-          },
-          metric: {
-            specs: [buildMetricSpec({displayName: 'Bar'})],
-            defaultFilters: new Map(),
-          },
-        }),
+        dashboardSpecs: {
+          hparams: [buildHparamSpec({name: 'foo', displayName: 'Foo'})],
+          metrics: [buildMetricSpec({displayName: 'Bar'})],
+        },
+        dashboardSessionGroups: [],
       } as any,
     });
   });
 
   describe('getScalarTagsForRunSelection', () => {
     it('returns all tags containing scalar data when no runs are selected', () => {
-      const state = {
+      const state = buildMockState({
         ...appStateFromMetricsState(
           buildMetricsState({
             tagMetadata: {
@@ -239,14 +233,14 @@ describe('common selectors', () => {
             }
           )
         ),
-      };
+      });
       expect(selectors.TEST_ONLY.getScalarTagsForRunSelection(state)).toEqual(
         new Set(['tag-1', 'tag-2'])
       );
     });
 
     it('returns only tags containing selected runs when some runs are selected', () => {
-      const state = {
+      const state = buildMockState({
         ...appStateFromMetricsState(
           buildMetricsState({
             tagMetadata: {
@@ -276,6 +270,7 @@ describe('common selectors', () => {
             }),
           })
         ),
+
         ...buildStateFromRunsState(
           buildRunsState(
             {
@@ -292,7 +287,7 @@ describe('common selectors', () => {
             }
           )
         ),
-      };
+      });
       expect(selectors.TEST_ONLY.getScalarTagsForRunSelection(state)).toEqual(
         new Set(['tag-2'])
       );
@@ -301,7 +296,7 @@ describe('common selectors', () => {
 
   describe('getRenderableCardIdsWithMetadata', () => {
     it('returns all tags containing scalar data when no runs are selected', () => {
-      const state = {
+      const state = buildMockState({
         ...appStateFromMetricsState(
           buildMetricsState({
             cardList: ['card1', 'card2'],
@@ -359,7 +354,7 @@ describe('common selectors', () => {
             }
           )
         ),
-      };
+      });
       expect(
         selectors.TEST_ONLY.getRenderableCardIdsWithMetadata(state)
       ).toEqual([
@@ -381,7 +376,7 @@ describe('common selectors', () => {
 
   describe('getSortedRenderableCardIdsWithMetadata', () => {
     it('shows empty scalar cards when hideEmptyCards is false', () => {
-      const state = {
+      const state = buildMockState({
         ...appStateFromMetricsState(
           buildMetricsState({
             cardList: ['card1', 'card2', 'card3'],
@@ -449,7 +444,7 @@ describe('common selectors', () => {
             }
           )
         ),
-      };
+      });
       expect(selectors.getSortedRenderableCardIdsWithMetadata(state)).toEqual([
         {
           cardId: 'card1',
@@ -473,7 +468,7 @@ describe('common selectors', () => {
     });
 
     it('hides empty scalar cards when hideEmptyCards is true', () => {
-      const state = {
+      const state = buildMockState({
         ...appStateFromMetricsState(
           buildMetricsState({
             cardList: ['card1', 'card2', 'card3'],
@@ -541,7 +536,7 @@ describe('common selectors', () => {
             }
           )
         ),
-      };
+      });
       expect(selectors.getSortedRenderableCardIdsWithMetadata(state)).toEqual([
         {
           cardId: 'card1',
@@ -1012,7 +1007,7 @@ describe('common selectors', () => {
     });
 
     it('sets name as display name when a display name is not provided', () => {
-      state.hparams!.specs['defaultExperimentId'].hparam.specs.push(
+      state.hparams!.dashboardSpecs.hparams.push(
         buildHparamSpec({name: 'bar', displayName: ''})
       );
       expect(selectors.getPotentialHparamColumns(state)).toEqual([

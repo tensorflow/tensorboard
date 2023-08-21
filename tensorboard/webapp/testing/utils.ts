@@ -13,7 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {provideMockStore} from '@ngrx/store/testing';
-import {createState as createDebuggerState} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/testing';
+import {
+  createState as buildStateFromDebuggerState,
+  createDebuggerState,
+} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/testing';
 import {
   buildAlertState,
   buildStateFromAlertState,
@@ -24,7 +27,10 @@ import {
   buildStateFromAppRoutingState,
 } from '../app_routing/store/testing';
 import {State} from '../app_state';
-import {createState as createCoreState} from '../core/testing';
+import {
+  createState as buildStateFromCoreState,
+  createCoreState,
+} from '../core/testing';
 import {EXPERIMENTS_FEATURE_KEY} from '../experiments/store/experiments_types';
 import {
   buildExperimentState,
@@ -33,7 +39,7 @@ import {
 import {FEATURE_FLAG_FEATURE_KEY} from '../feature_flag/store/feature_flag_types';
 import {
   buildFeatureFlagState,
-  buildState as buildStateFromFeatureFlagsState,
+  buildState as buildStateFromFeatureFlagState,
 } from '../feature_flag/store/testing';
 import {
   buildHparamsState,
@@ -53,22 +59,40 @@ import {
 import {RUNS_FEATURE_KEY} from '../runs/store/runs_types';
 import {buildRunsState, buildStateFromRunsState} from '../runs/store/testing';
 import {
-  createState as createSettings,
+  createState as buildStateFromSettingsState,
   createSettingsState,
 } from '../settings/testing';
 import {HPARAMS_FEATURE_KEY} from '../hparams/_redux/types';
+import {ALERT_FEATURE_KEY} from '../alert/store/alert_types';
+import {PERSISTENT_SETTINGS_FEATURE_KEY} from '../persistent_settings/_redux/persistent_settings_types';
+import {SETTINGS_FEATURE_KEY} from '../settings/_redux/settings_types';
+import {CORE_FEATURE_KEY} from '../core/store/core_types';
+import {DEBUGGER_FEATURE_KEY} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/store/debugger_types';
 
-export function buildMockState(overrides: Partial<State> = {}): State {
+type PartialOverrides = {
+  [K in keyof State]?: Partial<State[K]>;
+};
+
+export function buildMockState(overrides: PartialOverrides = {}): State {
   return {
-    ...createDebuggerState(),
-    ...buildFeatureFlagState(overrides[FEATURE_FLAG_FEATURE_KEY]),
-    ...buildStateFromAlertState(buildAlertState({})),
-    ...buildStateFromPersistentSettingsState(buildPersistentSettingsState({})),
-    ...createCoreState(),
+    ...buildStateFromDebuggerState(
+      createDebuggerState(overrides[DEBUGGER_FEATURE_KEY] ?? {})
+    ),
+    ...buildStateFromAlertState(
+      buildAlertState(overrides[ALERT_FEATURE_KEY] ?? {})
+    ),
+    ...buildStateFromPersistentSettingsState(
+      buildPersistentSettingsState(
+        overrides[PERSISTENT_SETTINGS_FEATURE_KEY] ?? {}
+      )
+    ),
+    ...buildStateFromCoreState(createCoreState(overrides[CORE_FEATURE_KEY])),
     ...appStateFromMetricsState(
       buildMetricsState(overrides[METRICS_FEATURE_KEY])
     ),
-    ...createSettings(createSettingsState()),
+    ...buildStateFromSettingsState(
+      createSettingsState(overrides[SETTINGS_FEATURE_KEY])
+    ),
     ...buildStateFromRunsState(
       buildRunsState(
         overrides[RUNS_FEATURE_KEY]?.data,
@@ -81,12 +105,14 @@ export function buildMockState(overrides: Partial<State> = {}): State {
     ...buildStateFromAppRoutingState(
       buildAppRoutingState(overrides[APP_ROUTING_FEATURE_KEY])
     ),
-    ...buildStateFromFeatureFlagsState(buildFeatureFlagState()),
+    ...buildStateFromFeatureFlagState(
+      buildFeatureFlagState(overrides[FEATURE_FLAG_FEATURE_KEY])
+    ),
     ...buildStateFromHparamsState(
       buildHparamsState(overrides[HPARAMS_FEATURE_KEY])
     ),
     ...buildStateFromNotificationState(
-      buildNotificationState(overrides[NOTIFICATION_FEATURE_KEY] || {})
+      buildNotificationState(overrides[NOTIFICATION_FEATURE_KEY] ?? {})
     ),
   };
 }

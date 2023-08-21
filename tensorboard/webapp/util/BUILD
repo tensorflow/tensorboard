@@ -123,6 +123,7 @@ tf_ts_library(
         "//tensorboard/webapp/feature_flag/store:testing",
         "//tensorboard/webapp/runs/store:testing",
         "//tensorboard/webapp/settings:testing",
+        "//tensorboard/webapp/testing:utils",
         "@npm//@ngrx/store",
         "@npm//@types/jasmine",
     ],
