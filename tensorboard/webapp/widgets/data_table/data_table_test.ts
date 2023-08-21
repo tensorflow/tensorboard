@@ -23,6 +23,9 @@ import {
   TableData,
   SortingInfo,
   SortingOrder,
+  DiscreteFilter,
+  IntervalFilter,
+  DomainType,
 } from './types';
 import {DataTableComponent, Side} from './data_table_component';
 import {DataTableModule} from './data_table_module';
@@ -32,6 +35,7 @@ import {ColumnSelectorComponent} from './column_selector_component';
 import {ContentCellComponent} from './content_cell_component';
 import {ColumnSelectorModule} from './column_selector_module';
 import {CustomModalModule} from '../custom_modal/custom_modal_module';
+import {FilterDialog} from './filter_dialog_component';
 
 @Component({
   selector: 'testable-comp',
@@ -41,6 +45,7 @@ import {CustomModalModule} from '../custom_modal/custom_modal_module';
       [headers]="headers"
       [sortingInfo]="sortingInfo"
       [selectableColumns]="selectableColumns"
+      [columnFilters]="columnFilters"
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
       (addColumn)="addColumn.emit($event)"
@@ -82,6 +87,7 @@ class TestableComponent {
   @Input() sortDataBy!: (sortingInfo: SortingInfo) => void;
   @Input() orderColumns!: (newOrder: ColumnHeaderType[]) => void;
   @Input() selectableColumns!: ColumnHeader[];
+  @Input() columnFilters!: Map<string, DiscreteFilter | IntervalFilter>;
 
   @Output() addColumn = new EventEmitter<{
     header: ColumnHeader;
@@ -116,6 +122,7 @@ describe('data table', () => {
     hparamsEnabled?: boolean;
     data?: TableData[];
     potentialColumns?: ColumnHeader[];
+    columnFilters?: Map<string, DiscreteFilter | IntervalFilter>;
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
 
@@ -132,6 +139,8 @@ describe('data table', () => {
     if (input.potentialColumns) {
       fixture.componentInstance.selectableColumns = input.potentialColumns;
     }
+
+    fixture.componentInstance.columnFilters = input.columnFilters || new Map();
 
     sortDataBySpy = jasmine.createSpy();
     fixture.componentInstance.sortDataBy = sortDataBySpy;
@@ -572,6 +581,7 @@ describe('data table', () => {
           enabled: true,
           removable: true,
           movable: false,
+          filterable: true,
         },
         {
           name: 'some static column',
@@ -689,7 +699,7 @@ describe('data table', () => {
       expect(dataTable.componentInstance.contextMenuHeader.name).toEqual('run');
     });
 
-    it('only shows the disabled button when the column is removable', () => {
+    it('only shows the remove button when the column is removable', () => {
       const fixture = createComponent({
         headers: mockHeaders,
         data: mockTableData,
@@ -707,7 +717,7 @@ describe('data table', () => {
 
         const removeButton = fixture.debugElement
           .queryAll(By.css('.context-menu button'))
-          .find((btn) => btn.nativeElement.innerHTML.includes('Remove'))!;
+          .find((btn) => btn.nativeElement.innerHTML.includes('Remove'));
 
         if (cell.componentInstance.header.removable) {
           expect(removeButton).toBeDefined();
@@ -861,6 +871,228 @@ describe('data table', () => {
       expect(
         contextMenu.nativeElement.innerHTML.includes('No Actions Available')
       ).toBeTrue();
+    });
+
+    it('only shows the filter button when then column is filterable', () => {
+      const fixture = createComponent({
+        headers: mockHeaders,
+        data: mockTableData,
+        potentialColumns: mockPotentialColumns,
+      });
+      const cells = fixture.debugElement.queryAll(
+        By.directive(ContentCellComponent)
+      );
+      expect(cells.length).toBe(4);
+      cells.forEach((cell) => {
+        cell.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
+        fixture.detectChanges();
+        const fitlerbutton = fixture.debugElement
+          .queryAll(By.css('.context-menu button'))
+          .find((btn) => btn.nativeElement.innerHTML.includes('Filter'));
+        if (cell.componentInstance.header.filterable) {
+          expect(fitlerbutton).toBeDefined();
+        } else {
+          expect(fitlerbutton).toBeUndefined();
+        }
+      });
+    });
+
+    it('opens filter modal when the filter button is clicked', () => {
+      const fixture = createComponent({
+        headers: mockHeaders,
+        data: mockTableData,
+        potentialColumns: mockPotentialColumns,
+        columnFilters: new Map([
+          [
+            'another_hparam',
+            {
+              type: DomainType.DISCRETE,
+              includeUndefined: true,
+              possibleValues: [1, 2, 3],
+              filterValues: [1, 2, 3],
+            },
+          ],
+        ]),
+      });
+
+      expect(
+        fixture.debugElement.query(By.directive(FilterDialog))
+      ).toBeFalsy();
+
+      const filterableHeader = fixture.debugElement.queryAll(
+        By.directive(HeaderCellComponent)
+      )[3];
+      filterableHeader.nativeElement.dispatchEvent(
+        new MouseEvent('contextmenu')
+      );
+      fixture.detectChanges();
+
+      const filterBtn = fixture.debugElement
+        .queryAll(By.css('.context-menu button'))
+        .find((btn) => btn.nativeElement.innerHTML.includes('Filter'))!;
+      filterBtn.nativeElement.click();
+      fixture.detectChanges();
+
+      expect(
+        fixture.debugElement.query(By.directive(DataTableComponent))
+          .componentInstance.filterColumn
+      ).toBeTruthy();
+      expect(
+        fixture.debugElement.query(By.directive(FilterDialog))
+      ).toBeTruthy();
+    });
+  });
+
+  describe('column filtering', () => {
+    let mockHeaders: ColumnHeader[];
+    beforeEach(() => {
+      mockHeaders = [
+        {
+          name: 'some_hparam',
+          type: ColumnHeaderType.HPARAM,
+          displayName: 'Display This',
+          enabled: true,
+          removable: true,
+          movable: true,
+          filterable: true,
+        },
+      ];
+    });
+
+    function openFilterDialog(fixture: ComponentFixture<TestableComponent>) {
+      fixture.debugElement
+        .query(By.directive(DataTableComponent))
+        .componentInstance.openContextMenu(
+          mockHeaders[0],
+          new MouseEvent('contextmenu')
+        );
+      fixture.detectChanges();
+      const filterBtn = fixture.debugElement
+        .queryAll(By.css('.context-menu button'))
+        .find((btn) => btn.nativeElement.innerHTML.includes('Filter'))!;
+      filterBtn.nativeElement.click();
+      fixture.detectChanges();
+
+      return fixture.debugElement.query(By.directive(FilterDialog));
+    }
+
+    it('converts rangevalues to interval filter when an interval filter is changed', () => {
+      const filter: IntervalFilter = {
+        type: DomainType.INTERVAL,
+        includeUndefined: true,
+        minValue: 2,
+        maxValue: 10,
+        filterLowerValue: 3,
+        filterUpperValue: 8,
+      };
+      const fixture = createComponent({
+        headers: mockHeaders,
+        columnFilters: new Map([['some_hparam', filter]]),
+      });
+      const addFilterSpy = spyOn(
+        fixture.debugElement.query(By.directive(DataTableComponent))
+          .componentInstance.addFilter,
+        'emit'
+      );
+      const filterDialog = openFilterDialog(fixture);
+      filterDialog.componentInstance.intervalFilterChanged.emit({
+        lowerValue: 3,
+        upperValue: 8,
+      });
+
+      expect(addFilterSpy).toHaveBeenCalledOnceWith({
+        header: mockHeaders[0],
+        value: {
+          ...filter,
+          filterLowerValue: 3,
+          filterUpperValue: 8,
+        },
+      });
+    });
+
+    it('removes value from filter values when a discrete filter is toggled off', () => {
+      const filter: DiscreteFilter = {
+        type: DomainType.DISCRETE,
+        includeUndefined: true,
+        possibleValues: [2, 4, 6, 8],
+        filterValues: [2, 4, 6, 8],
+      };
+      const fixture = createComponent({
+        headers: mockHeaders,
+        columnFilters: new Map([['some_hparam', filter]]),
+      });
+      const addFilterSpy = spyOn(
+        fixture.debugElement.query(By.directive(DataTableComponent))
+          .componentInstance.addFilter,
+        'emit'
+      );
+      const filterDialog = openFilterDialog(fixture);
+      filterDialog.componentInstance.discreteFilterChanged.emit(2);
+
+      expect(addFilterSpy).toHaveBeenCalledOnceWith({
+        header: mockHeaders[0],
+        value: {
+          ...filter,
+          filterValues: [4, 6, 8],
+        },
+      });
+    });
+
+    it('adds value to filter values when a discrete filter is toggled on', () => {
+      const filter: DiscreteFilter = {
+        type: DomainType.DISCRETE,
+        includeUndefined: true,
+        possibleValues: [2, 4, 6, 8],
+        filterValues: [2, 4],
+      };
+      const fixture = createComponent({
+        headers: mockHeaders,
+        columnFilters: new Map([['some_hparam', filter]]),
+      });
+      const addFilterSpy = spyOn(
+        fixture.debugElement.query(By.directive(DataTableComponent))
+          .componentInstance.addFilter,
+        'emit'
+      );
+      const filterDialog = openFilterDialog(fixture);
+      filterDialog.componentInstance.discreteFilterChanged.emit(6);
+
+      expect(addFilterSpy).toHaveBeenCalledOnceWith({
+        header: mockHeaders[0],
+        value: {
+          ...filter,
+          filterValues: [2, 4, 6],
+        },
+      });
+    });
+
+    it('toggles includeUndefined when include undefined is toggled', () => {
+      const filter: DiscreteFilter = {
+        type: DomainType.DISCRETE,
+        includeUndefined: true,
+        possibleValues: [2, 4, 6, 8],
+        filterValues: [2, 4, 6, 8],
+      };
+      const fixture = createComponent({
+        headers: mockHeaders,
+        columnFilters: new Map([['some_hparam', filter]]),
+      });
+      const addFilterSpy = spyOn(
+        fixture.debugElement.query(By.directive(DataTableComponent))
+          .componentInstance.addFilter,
+        'emit'
+      );
+      const filterDialog = openFilterDialog(fixture);
+      filterDialog.componentInstance.includeUndefinedToggled.emit();
+
+      expect(addFilterSpy).toHaveBeenCalledOnceWith({
+        header: mockHeaders[0],
+        value: {
+          ...filter,
+          filterValues: [2, 4, 6, 8],
+          includeUndefined: false,
+        },
+      });
     });
   });
 });

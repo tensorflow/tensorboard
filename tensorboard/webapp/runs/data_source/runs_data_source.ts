@@ -20,9 +20,9 @@ import {
   TBHttpClient,
 } from '../../webapp_data_source/tb_http_client';
 import * as backendTypes from './runs_backend_types';
-import {DomainType} from '../../widgets/data_table/types';
 import {
   Domain,
+  DomainType,
   HparamsAndMetadata,
   HparamSpec,
   HparamValue,

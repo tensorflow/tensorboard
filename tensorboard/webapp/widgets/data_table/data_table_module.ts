@@ -24,6 +24,7 @@ import {ContentRowComponent} from './content_row_component';
 import {ColumnSelectorModule} from './column_selector_module';
 import {CustomModalModule} from '../custom_modal/custom_modal_module';
 import {MatLegacyButtonModule} from '@angular/material/legacy-button';
+import {FilterDialogModule} from './filter_dialog_module';
 
 @NgModule({
   declarations: [
@@ -45,6 +46,7 @@ import {MatLegacyButtonModule} from '@angular/material/legacy-button';
     DataTableHeaderModule,
     CustomModalModule,
     ColumnSelectorModule,
+    FilterDialogModule,
   ],
 })
 export class DataTableModule {}

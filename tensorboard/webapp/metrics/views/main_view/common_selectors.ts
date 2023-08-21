@@ -245,6 +245,24 @@ const getFilteredRenderableRuns = memoize((experimentIds: string[]) => {
   );
 });
 
+const getCurrentColumnFilters = memoize((experimentIds: string[]) => {
+  return createSelector(
+    getHparamFilterMapFromExperimentIds(experimentIds, true),
+    getMetricFilterMapFromExperimentIds(experimentIds, true),
+    (hparamFilters, metricFilters) => {
+      return new Map([...hparamFilters, ...metricFilters]);
+    }
+  );
+});
+
+export const getCurrentColumnFiltersFromRoute = createSelector(
+  (state) => state,
+  getExperimentIdsFromRoute,
+  (state, experimentIds) => {
+    return getCurrentColumnFilters(experimentIds || [])(state);
+  }
+);
+
 export const getFilteredRenderableRunsFromRoute = createSelector(
   (state) => state,
   getExperimentIdsFromRoute,
@@ -278,6 +296,7 @@ export const getPotentialHparamColumns = createSelector(
       removable: true,
       sortable: true,
       movable: true,
+      filterable: true,
     }));
   }
 );
@@ -300,5 +319,6 @@ export const factories = {
 export const TEST_ONLY = {
   getRenderableCardIdsWithMetadata,
   getScalarTagsForRunSelection,
+  getCurrentColumnFilters,
   utils,
 };

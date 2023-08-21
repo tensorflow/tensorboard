@@ -68,7 +68,7 @@ import {matchRunToRegex} from '../../../util/matcher';
 import {getEnableHparamsInTimeSeries} from '../../../feature_flag/store/feature_flag_selectors';
 import {
   ColumnHeader,
-  ColumnHeaderType,
+  FilterAddedEvent,
   SortingInfo,
   SortingOrder,
   TableData,
@@ -96,6 +96,7 @@ import {
 } from './runs_table_component';
 import {RunsTableColumn, RunTableItem} from './types';
 import {
+  getCurrentColumnFiltersFromRoute,
   getFilteredRenderableRunsFromRoute,
   getPotentialHparamColumns,
 } from '../../../metrics/views/main_view/common_selectors';
@@ -275,6 +276,7 @@ function matchFilter(
       [headers]="runsColumns$ | async"
       [data]="sortedRunsTableData$ | async"
       [selectableColumns]="selectableColumns$ | async"
+      [columnFilters]="columnFilters$ | async"
       [sortingInfo]="sortingInfo$ | async"
       [experimentIds]="experimentIds"
       [regexFilter]="regexFilter$ | async"
@@ -290,6 +292,7 @@ function matchFilter(
       (toggleFullScreen)="toggleFullScreen()"
       (addColumn)="addColumn($event)"
       (removeColumn)="removeColumn($event)"
+      (addFilter)="addHparamFilter($event)"
     ></runs-data-table>
   `,
   host: {
@@ -371,6 +374,8 @@ export class RunsTableContainer implements OnInit, OnDestroy {
       });
     })
   );
+
+  columnFilters$ = this.store.select(getCurrentColumnFiltersFromRoute);
 
   allRunsTableData$ = this.store
     .select(getFilteredRenderableRunsFromRoute)
@@ -827,6 +832,26 @@ export class RunsTableContainer implements OnInit, OnDestroy {
 
   useDataTable() {
     return this.hparamsEnabled.value && !this.forceLegacyTable;
+  }
+
+  addHparamFilter(event: FilterAddedEvent) {
+    switch (event.value.type) {
+      case DomainType.INTERVAL:
+        this.onHparamIntervalFilterChanged({
+          name: event.header.name,
+          includeUndefined: event.value.includeUndefined,
+          filterLowerValue: (event.value as IntervalFilter).filterLowerValue,
+          filterUpperValue: (event.value as IntervalFilter).filterUpperValue,
+        });
+        break;
+      case DomainType.DISCRETE:
+        this.onHparamDiscreteFilterChanged({
+          hparamName: event.header.name,
+          includeUndefined: event.value.includeUndefined,
+          filterValues: (event.value as DiscreteFilter).filterValues,
+        });
+        break;
+    }
   }
 }
 
