@@ -26,7 +26,7 @@ import {
 } from '../experiments/store/testing';
 import {
   buildFeatureFlag,
-  buildState as buildStateFromFeatureFlagsState,
+  buildState as buildStateFromFeatureFlagState,
   buildFeatureFlagState,
 } from '../feature_flag/store/testing';
 import {
@@ -365,7 +365,7 @@ describe('ui_selectors test', () => {
             settings: buildSettings({colorPalette}),
           })
         ),
-        ...buildStateFromFeatureFlagsState(
+        ...buildStateFromFeatureFlagState(
           buildFeatureFlagState({
             defaultFlags: buildFeatureFlag({
               defaultEnableDarkMode: useDarkMode,

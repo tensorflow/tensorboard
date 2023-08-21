@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {SessionGroup} from '../types';
 import * as selectors from './hparams_selectors';
 import {
   buildDiscreteFilter,

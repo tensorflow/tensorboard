@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {provideMockStore} from '@ngrx/store/testing';
 import {
-  createState as appStateFromDebuggerState,
+  createState as buildStateFromDebuggerState,
   createDebuggerState,
 } from '../../plugins/debugger_v2/tf_debugger_v2_plugin/testing';
 import {
@@ -28,7 +28,7 @@ import {
 } from '../app_routing/store/testing';
 import {State} from '../app_state';
 import {
-  createState as appStateFromCoreState,
+  createState as buildStateFromCoreState,
   createCoreState,
 } from '../core/testing';
 import {EXPERIMENTS_FEATURE_KEY} from '../experiments/store/experiments_types';
@@ -39,7 +39,7 @@ import {
 import {FEATURE_FLAG_FEATURE_KEY} from '../feature_flag/store/feature_flag_types';
 import {
   buildFeatureFlagState,
-  buildState as buildStateFromFeatureFlagsState,
+  buildState as buildStateFromFeatureFlagState,
 } from '../feature_flag/store/testing';
 import {
   buildHparamsState,
@@ -59,7 +59,7 @@ import {
 import {RUNS_FEATURE_KEY} from '../runs/store/runs_types';
 import {buildRunsState, buildStateFromRunsState} from '../runs/store/testing';
 import {
-  createState as appStateFromSettingsState,
+  createState as buildStateFromSettingsState,
   createSettingsState,
 } from '../settings/testing';
 import {HPARAMS_FEATURE_KEY} from '../hparams/_redux/types';
@@ -75,7 +75,7 @@ type PartialOverrides = {
 
 export function buildMockState(overrides: PartialOverrides = {}): State {
   return {
-    ...appStateFromDebuggerState(
+    ...buildStateFromDebuggerState(
       createDebuggerState(overrides[DEBUGGER_FEATURE_KEY] ?? {})
     ),
     ...buildStateFromAlertState(
@@ -86,11 +86,11 @@ export function buildMockState(overrides: PartialOverrides = {}): State {
         overrides[PERSISTENT_SETTINGS_FEATURE_KEY] ?? {}
       )
     ),
-    ...appStateFromCoreState(createCoreState(overrides[CORE_FEATURE_KEY])),
+    ...buildStateFromCoreState(createCoreState(overrides[CORE_FEATURE_KEY])),
     ...appStateFromMetricsState(
       buildMetricsState(overrides[METRICS_FEATURE_KEY])
     ),
-    ...appStateFromSettingsState(
+    ...buildStateFromSettingsState(
       createSettingsState(overrides[SETTINGS_FEATURE_KEY])
     ),
     ...buildStateFromRunsState(
@@ -105,7 +105,7 @@ export function buildMockState(overrides: PartialOverrides = {}): State {
     ...buildStateFromAppRoutingState(
       buildAppRoutingState(overrides[APP_ROUTING_FEATURE_KEY])
     ),
-    ...buildStateFromFeatureFlagsState(
+    ...buildStateFromFeatureFlagState(
       buildFeatureFlagState(overrides[FEATURE_FLAG_FEATURE_KEY])
     ),
     ...buildStateFromHparamsState(
