@@ -21,11 +21,17 @@ import {
   RunToHparamsAndMetrics,
 } from '../types';
 import {combineHparamAndMetricSpecs} from './hparams_selectors_utils';
-import {HparamsState, HPARAMS_FEATURE_KEY} from './types';
+import {
+  HparamsState,
+  HPARAMS_FEATURE_KEY,
+  HparamsAndMetricsFilters,
+} from './types';
 import {
   combineDefaultHparamFilters,
   combineDefaultMetricFilters,
   getIdFromExperimentIds,
+  hparamSpecToDefaultFilter,
+  metricSpecToDefaultFilter,
 } from './utils';
 
 const getHparamsState =
@@ -230,5 +236,41 @@ export const getDashboardRunsToHparamsAndMetrics = createSelector(
       }
     }
     return runToHparamsAndMetrics;
+  }
+);
+
+export const getDashboardDefaultFilters = createSelector(
+  getDashboardHparamsAndMetricsSpecs,
+  (specs): HparamsAndMetricsFilters => {
+    const hparams = new Map(
+      specs.hparams.map((hparamSpec) => {
+        return [hparamSpec.name, hparamSpecToDefaultFilter(hparamSpec)];
+      })
+    );
+
+    const metrics = new Map(
+      specs.metrics.map((metricSpec) => {
+        return [metricSpec.name.tag, metricSpecToDefaultFilter(metricSpec)];
+      })
+    );
+
+    return {
+      hparams,
+      metrics,
+    };
+  }
+);
+
+export const getDashboardHparamFilterMap = createSelector(
+  getHparamsState,
+  (state) => {
+    return state.dashboardFilters.hparams;
+  }
+);
+
+export const getDashboardMetricsFilterMap = createSelector(
+  getHparamsState,
+  (state) => {
+    return state.dashboardFilters.metrics;
   }
 );

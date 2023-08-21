@@ -37,6 +37,10 @@ const initialState: HparamsState = {
     metrics: [],
   },
   dashboardSessionGroups: [],
+  dashboardFilters: {
+    hparams: new Map(),
+    metrics: new Map(),
+  },
 };
 
 const reducer: ActionReducer<HparamsState, Action> = createReducer(
@@ -368,6 +372,30 @@ const reducer: ActionReducer<HparamsState, Action> = createReducer(
       ...state,
       dashboardSpecs: nextDashboardSpecs,
       dashboardSessionGroups: nextDashboardSessionGroups,
+    };
+  }),
+  on(actions.dashboardHparamFilterAdded, (state, action) => {
+    return {
+      ...state,
+      dashboardFilters: {
+        ...state.dashboardFilters,
+        hparams: {
+          ...state.dashboardFilters.hparams,
+          [action.name]: action.filter,
+        },
+      },
+    };
+  }),
+  on(actions.dashboardMetricFilterAdded, (state, action) => {
+    return {
+      ...state,
+      dashboardFilters: {
+        ...state.dashboardFilters,
+        metrics: {
+          ...state.dashboardFilters.metrics,
+          [action.name]: action.filter,
+        },
+      },
     };
   })
 );

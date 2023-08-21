@@ -10,6 +10,7 @@ tf_ts_library(
         "utils.ts",
     ],
     deps = [
+        ":types",
         "//tensorboard/webapp/hparams:types",
     ],
 )
@@ -47,6 +48,7 @@ tf_ts_library(
         "hparams_actions.ts",
     ],
     deps = [
+        ":types",
         "//tensorboard/webapp/hparams:types",
         "@npm//@ngrx/store",
     ],
