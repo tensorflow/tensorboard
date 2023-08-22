@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {State as DebuggerState} from '../plugins/debugger_v2/tf_debugger_v2_plugin/store/debugger_types';
 import {State as AlertState} from './alert/store/alert_types';
 import {State as AppRoutingState} from './app_routing/store/app_routing_types';
 import {State as CoreState} from './core/store/core_types';
@@ -35,6 +34,5 @@ export type State = AppRoutingState &
   RunsState &
   SettingsState &
   NotificationState &
-  DebuggerState &
   AlertState &
   PersistentSettingsState;
