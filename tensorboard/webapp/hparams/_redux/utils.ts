@@ -18,8 +18,11 @@ import {
   DiscreteHparamValue,
   DiscreteHparamValues,
   DomainType,
+  HparamSpec,
   IntervalFilter,
+  MetricSpec,
 } from '../types';
+import {HparamFilter, MetricFilter} from './types';
 
 export function getIdFromExperimentIds(experimentIds: string[]): string {
   return JSON.stringify([...experimentIds].sort());
@@ -146,4 +149,24 @@ export function combineDefaultMetricFilters(
   }
 
   return intervalMetrics;
+}
+
+export function hparamSpecToDefaultFilter(spec: HparamSpec): HparamFilter {
+  if (spec.domain.type === DomainType.DISCRETE) {
+    return {
+      type: DomainType.DISCRETE,
+      includeUndefined: true,
+      possibleValues: spec.domain.values,
+      filterValues: spec.domain.values,
+    };
+  }
+
+  return {
+    type: DomainType.INTERVAL,
+    includeUndefined: true,
+    minValue: spec.domain.minValue,
+    maxValue: spec.domain.maxValue,
+    filterLowerValue: spec.domain.minValue,
+    filterUpperValue: spec.domain.maxValue,
+  };
 }

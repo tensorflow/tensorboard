@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {DomainType} from '../types';
 import * as selectors from './hparams_selectors';
 import {
   buildDiscreteFilter,
@@ -698,6 +699,58 @@ describe('hparams/_redux/hparams_selectors_test', () => {
           ],
         },
       });
+    });
+  });
+
+  describe('#getDashboardDefaultHparamFilters', () => {
+    it('generates default filters for all hparam specs', () => {
+      const state = buildStateFromHparamsState(
+        buildHparamsState({
+          dashboardSpecs: {
+            hparams: [
+              buildHparamSpec({
+                name: 'interval hparam',
+                domain: {
+                  type: DomainType.INTERVAL,
+                  minValue: 2,
+                  maxValue: 5,
+                },
+              }),
+              buildHparamSpec({
+                name: 'discrete hparam',
+                domain: {
+                  type: DomainType.DISCRETE,
+                  values: [2, 4, 6, 8],
+                },
+              }),
+            ],
+          },
+        })
+      );
+      expect(selectors.getDashboardDefaultHparamFilters(state)).toEqual(
+        new Map([
+          [
+            'interval hparam',
+            {
+              type: DomainType.INTERVAL,
+              includeUndefined: true,
+              minValue: 2,
+              maxValue: 5,
+              filterLowerValue: 2,
+              filterUpperValue: 5,
+            },
+          ],
+          [
+            'discrete hparam',
+            {
+              type: DomainType.DISCRETE,
+              includeUndefined: true,
+              possibleValues: [2, 4, 6, 8],
+              filterValues: [2, 4, 6, 8],
+            },
+          ],
+        ])
+      );
     });
   });
 

@@ -21,11 +21,12 @@ import {
   RunToHparamsAndMetrics,
 } from '../types';
 import {combineHparamAndMetricSpecs} from './hparams_selectors_utils';
-import {HparamsState, HPARAMS_FEATURE_KEY} from './types';
+import {HparamsState, HPARAMS_FEATURE_KEY, HparamFilter} from './types';
 import {
   combineDefaultHparamFilters,
   combineDefaultMetricFilters,
   getIdFromExperimentIds,
+  hparamSpecToDefaultFilter,
 } from './utils';
 
 const getHparamsState =
@@ -230,5 +231,32 @@ export const getDashboardRunsToHparamsAndMetrics = createSelector(
       }
     }
     return runToHparamsAndMetrics;
+  }
+);
+
+export const getDashboardDefaultHparamFilters = createSelector(
+  getDashboardHparamsAndMetricsSpecs,
+  (specs): Map<string, HparamFilter> => {
+    const hparams = new Map(
+      specs.hparams.map((hparamSpec) => {
+        return [hparamSpec.name, hparamSpecToDefaultFilter(hparamSpec)];
+      })
+    );
+
+    return hparams;
+  }
+);
+
+export const getDashboardHparamFilterMap = createSelector(
+  getHparamsState,
+  (state) => {
+    return state.dashboardFilters.hparams;
+  }
+);
+
+export const getDashboardMetricsFilterMap = createSelector(
+  getHparamsState,
+  (state) => {
+    return state.dashboardFilters.metrics;
   }
 );

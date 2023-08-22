@@ -21,14 +21,17 @@ import {
   SessionGroup,
 } from '../_types';
 
+export type HparamFilter = DiscreteFilter | IntervalFilter;
+export type MetricFilter = IntervalFilter;
+
 export interface HparamsMetricsAndFilters {
   hparam: {
     specs: HparamSpec[];
-    defaultFilters: Map<string, DiscreteFilter | IntervalFilter>;
+    defaultFilters: Map<string, HparamFilter>;
   };
   metric: {
     specs: MetricSpec[];
-    defaultFilters: Map<string, IntervalFilter>;
+    defaultFilters: Map<string, MetricFilter>;
   };
 }
 
@@ -47,6 +50,10 @@ export interface HparamsState {
   specs: ExperimentToHparams;
   dashboardSpecs: HparamAndMetricSpec;
   dashboardSessionGroups: SessionGroup[];
+  dashboardFilters: {
+    hparams: Map<string, HparamFilter>;
+    metrics: Map<string, MetricFilter>;
+  };
   /**
    * RATIONALE: we do not use the NamespaceContextedState because of the following reasons.
    * - RunsTable which uses the state renders both on the dashboard view and the
@@ -62,8 +69,8 @@ export interface HparamsState {
    */
   filters: {
     [id: string]: {
-      hparams: Map<string, DiscreteFilter | IntervalFilter>;
-      metrics: Map<string, IntervalFilter>;
+      hparams: Map<string, HparamFilter>;
+      metrics: Map<string, MetricFilter>;
     };
   };
 }

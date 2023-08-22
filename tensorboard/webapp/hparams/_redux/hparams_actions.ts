@@ -22,6 +22,7 @@ import {
   HparamAndMetricSpec,
   SessionGroup,
 } from '../types';
+import {HparamFilter, MetricFilter} from './types';
 
 export const hparamsDiscreteHparamFilterChanged = createAction(
   '[Hparams] Hparams Discrete Hparam Filter Changed',
@@ -61,4 +62,14 @@ export const hparamsFetchSessionGroupsSucceeded = createAction(
     hparamsAndMetricsSpecs: HparamAndMetricSpec;
     sessionGroups: SessionGroup[];
   }>()
+);
+
+export const dashboardHparamFilterAdded = createAction(
+  '[Hparams] Dashboard Hparam Filter Added',
+  props<{name: string; filter: HparamFilter}>()
+);
+
+export const dashboardMetricFilterAdded = createAction(
+  '[Hparams] Dashboard Metric Filter Added',
+  props<{name: string; filter: MetricFilter}>()
 );

@@ -630,4 +630,126 @@ describe('hparams/_redux/hparams_reducers_test', () => {
       expect(state2.dashboardSessionGroups).toEqual([mockSessionGroup]);
     });
   });
+
+  describe('dashboardHparamFilterAdded', () => {
+    it('adds entry dashboardFilters', () => {
+      const state = buildHparamsState({
+        dashboardFilters: {
+          hparams: new Map([
+            [
+              'hparam2',
+              {
+                type: DomainType.INTERVAL,
+                includeUndefined: true,
+                minValue: 2,
+                maxValue: 20,
+                filterLowerBound: 2,
+                filterUpperBound: 20,
+              },
+            ],
+          ]),
+        },
+      });
+      const state2 = reducers(
+        state,
+        actions.dashboardHparamFilterAdded({
+          name: 'hparam1',
+          filter: {
+            type: DomainType.DISCRETE,
+            includeUndefined: true,
+            filterValues: [5],
+            possibleValues: [5, 7, 8],
+          },
+        })
+      );
+      expect(state2.dashboardFilters).toEqual({
+        hparams: new Map([
+          [
+            'hparam1',
+            {
+              type: DomainType.DISCRETE,
+              includeUndefined: true,
+              filterValues: [5],
+              possibleValues: [5, 7, 8],
+            },
+          ],
+          [
+            'hparam2',
+            {
+              type: DomainType.INTERVAL,
+              includeUndefined: true,
+              minValue: 2,
+              maxValue: 20,
+              filterLowerBound: 2,
+              filterUpperBound: 20,
+            },
+          ],
+        ]),
+        metrics: new Map(),
+      });
+    });
+  });
+
+  describe('dashboardMetricFilterAdded', () => {
+    it('adds entry dashboardFilters', () => {
+      const state = buildHparamsState({
+        dashboardFilters: {
+          metrics: new Map([
+            [
+              'metric 2',
+              {
+                type: DomainType.INTERVAL,
+                includeUndefined: true,
+                minValue: 1,
+                maxValue: 50,
+                filterLowerValue: 1,
+                filterUpperValue: 51,
+              },
+            ],
+          ]),
+        },
+      });
+      const state2 = reducers(
+        state,
+        actions.dashboardMetricFilterAdded({
+          name: 'metric 1',
+          filter: {
+            type: DomainType.INTERVAL,
+            includeUndefined: true,
+            minValue: -2,
+            maxValue: 42,
+            filterLowerValue: -2,
+            filterUpperValue: 40,
+          },
+        })
+      );
+      expect(state2.dashboardFilters).toEqual({
+        hparams: new Map(),
+        metrics: new Map([
+          [
+            'metric 1',
+            {
+              type: DomainType.INTERVAL,
+              includeUndefined: true,
+              minValue: -2,
+              maxValue: 42,
+              filterLowerValue: -2,
+              filterUpperValue: 40,
+            },
+          ],
+          [
+            'metric 2',
+            {
+              type: DomainType.INTERVAL,
+              includeUndefined: true,
+              minValue: 1,
+              maxValue: 50,
+              filterLowerValue: 1,
+              filterUpperValue: 51,
+            },
+          ],
+        ]),
+      });
+    });
+  });
 });
