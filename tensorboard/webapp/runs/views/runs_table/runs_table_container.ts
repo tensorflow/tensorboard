@@ -96,7 +96,7 @@ import {
 } from './runs_table_component';
 import {RunsTableColumn, RunTableItem} from './types';
 import {
-  getCurrentColumnFiltersFromRoute,
+  getCurrentColumnFilters,
   getFilteredRenderableRunsFromRoute,
   getPotentialHparamColumns,
 } from '../../../metrics/views/main_view/common_selectors';
@@ -375,7 +375,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     })
   );
 
-  columnFilters$ = this.store.select(getCurrentColumnFiltersFromRoute);
+  columnFilters$ = this.store.select(getCurrentColumnFilters);
 
   allRunsTableData$ = this.store
     .select(getFilteredRenderableRunsFromRoute)
@@ -835,23 +835,12 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   }
 
   addHparamFilter(event: FilterAddedEvent) {
-    switch (event.value.type) {
-      case DomainType.INTERVAL:
-        this.onHparamIntervalFilterChanged({
-          name: event.header.name,
-          includeUndefined: event.value.includeUndefined,
-          filterLowerValue: (event.value as IntervalFilter).filterLowerValue,
-          filterUpperValue: (event.value as IntervalFilter).filterUpperValue,
-        });
-        break;
-      case DomainType.DISCRETE:
-        this.onHparamDiscreteFilterChanged({
-          hparamName: event.header.name,
-          includeUndefined: event.value.includeUndefined,
-          filterValues: (event.value as DiscreteFilter).filterValues,
-        });
-        break;
-    }
+    this.store.dispatch(
+      hparamsActions.dashboardHparamFilterAdded({
+        name: event.header.name,
+        filter: event.value,
+      })
+    );
   }
 }
 

@@ -29,9 +29,10 @@ import {
 } from '../../../selectors';
 import {DeepReadonly} from '../../../util/types';
 import {
-  getHparamFilterMapFromExperimentIds,
-  getMetricFilterMapFromExperimentIds,
   getDashboardHparamsAndMetricsSpecs,
+  getDashboardHparamFilterMap,
+  getDashboardMetricsFilterMap,
+  getDashboardDefaultHparamFilters,
 } from '../../../hparams/_redux/hparams_selectors';
 import {
   DiscreteFilter,
@@ -185,6 +186,19 @@ const utils = {
   },
 };
 
+export const getCurrentColumnFilters = createSelector(
+  getDashboardDefaultHparamFilters,
+  getDashboardHparamFilterMap,
+  getDashboardMetricsFilterMap,
+  (defaultHparamsFilters, hparamFilters, metricFilters) => {
+    return new Map([
+      ...defaultHparamsFilters,
+      ...hparamFilters,
+      ...metricFilters,
+    ]);
+  }
+);
+
 const getRenderableRuns = memoize((experimentIds: string[]) => {
   return createSelector(
     getDashboardRuns(experimentIds),
@@ -226,8 +240,8 @@ const getFilteredRenderableRuns = memoize((experimentIds: string[]) => {
   return createSelector(
     getRunSelectorRegexFilter,
     getRenderableRuns(experimentIds),
-    getHparamFilterMapFromExperimentIds(experimentIds),
-    getMetricFilterMapFromExperimentIds(experimentIds),
+    getDashboardHparamFilterMap,
+    getDashboardMetricsFilterMap,
     getRouteKind,
     (regexFilter, runItems, hparamFilters, metricFilters, routeKind) => {
       const regexFilteredItems = utils.filterRunItemsByRegex(
@@ -245,28 +259,10 @@ const getFilteredRenderableRuns = memoize((experimentIds: string[]) => {
   );
 });
 
-const getCurrentColumnFilters = memoize((experimentIds: string[]) => {
-  return createSelector(
-    getHparamFilterMapFromExperimentIds(experimentIds, true),
-    getMetricFilterMapFromExperimentIds(experimentIds, true),
-    (hparamFilters, metricFilters) => {
-      return new Map([...hparamFilters, ...metricFilters]);
-    }
-  );
-});
-
-export const getCurrentColumnFiltersFromRoute = createSelector(
-  (state) => state,
-  getExperimentIdsFromRoute,
-  (state, experimentIds) => {
-    return getCurrentColumnFilters(experimentIds || [])(state);
-  }
-);
-
 export const getFilteredRenderableRunsFromRoute = createSelector(
   (state) => state,
   getExperimentIdsFromRoute,
-  (state, experimentIds) => {
+  (state, experimentIds): RunTableItem[] => {
     return getFilteredRenderableRuns(experimentIds || [])(state);
   }
 );
