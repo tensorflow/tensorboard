@@ -142,7 +142,6 @@ tf_ng_module(
         "app_state.ts",
     ],
     deps = [
-        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
         "//tensorboard/webapp/alert/store:types",
         "//tensorboard/webapp/app_routing/store:types",
         "//tensorboard/webapp/core/store",

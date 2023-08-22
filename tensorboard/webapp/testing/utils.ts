@@ -67,7 +67,6 @@ import {ALERT_FEATURE_KEY} from '../alert/store/alert_types';
 import {PERSISTENT_SETTINGS_FEATURE_KEY} from '../persistent_settings/_redux/persistent_settings_types';
 import {SETTINGS_FEATURE_KEY} from '../settings/_redux/settings_types';
 import {CORE_FEATURE_KEY} from '../core/store/core_types';
-import {DEBUGGER_FEATURE_KEY} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/store/debugger_types';
 
 type PartialOverrides = {
   [K in keyof State]?: Partial<State[K]>;
@@ -75,9 +74,6 @@ type PartialOverrides = {
 
 export function buildMockState(overrides: PartialOverrides = {}): State {
   return {
-    ...buildStateFromDebuggerState(
-      createDebuggerState(overrides[DEBUGGER_FEATURE_KEY] ?? {})
-    ),
     ...buildStateFromAlertState(
       buildAlertState(overrides[ALERT_FEATURE_KEY] ?? {})
     ),
