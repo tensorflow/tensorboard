@@ -47,23 +47,6 @@ export const getExperiment = createSelector(
 );
 
 /**
- * Returns Observable that emits an object mapping the provided
- * experiment ids to experiment names.
- */
-export const getExperimentNames = (experimentIds: string[]) =>
-  createSelector(
-    getDataState,
-    (state: ExperimentsDataState): Record<string, string> =>
-      experimentIds
-        .map((experimentId) => state.experimentMap[experimentId])
-        .filter(Boolean)
-        .reduce((map, experiment) => {
-          map[experiment.id] = experiment.name;
-          return map;
-        }, {} as Record<string, string>)
-  );
-
-/**
  * Returns the names of all experiments present on the current dashboard.
  */
 export const getDashboardExperimentNames = createSelector(

@@ -55,35 +55,6 @@ describe('experiments selectors', () => {
     });
   });
 
-  describe('#getExperimentNames', () => {
-    let state: State;
-
-    beforeEach(() => {
-      const foo = buildExperiment({id: 'foo', name: 'foo name'});
-      const bar = buildExperiment({id: 'bar', name: 'bar name'});
-
-      state = buildStateFromExperimentsState({
-        data: {
-          experimentMap: {foo, bar},
-        },
-      });
-    });
-
-    it('translates experiment ids to experiment names', () => {
-      expect(
-        selectors.getExperimentNames(['foo', 'bar', 'baz'])(state)
-      ).toEqual({
-        foo: 'foo name',
-        bar: 'bar name',
-      });
-    });
-
-    it('returns an empty object when no experiments are provided', () => {
-      expect(selectors.getExperimentNames([])(state)).toEqual({});
-      expect(selectors.getExperimentNames(['abc', '123'])(state)).toEqual({});
-    });
-  });
-
   describe('#getDashboardExperimentNames', () => {
     let state: State;
 
