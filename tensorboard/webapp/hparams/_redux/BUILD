@@ -157,6 +157,7 @@ tf_ts_library(
         ":hparams_reducers",
         ":hparams_selectors",
         ":testing",
+        ":types",
         ":utils",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",

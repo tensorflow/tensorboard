@@ -170,14 +170,3 @@ export function hparamSpecToDefaultFilter(spec: HparamSpec): HparamFilter {
     filterUpperValue: spec.domain.maxValue,
   };
 }
-
-export function metricSpecToDefaultFilter(spec: MetricSpec): MetricFilter {
-  return {
-    type: DomainType.INTERVAL,
-    includeUndefined: true,
-    minValue: -Infinity,
-    maxValue: Infinity,
-    filterLowerValue: -Infinity,
-    filterUpperValue: Infinity,
-  };
-}

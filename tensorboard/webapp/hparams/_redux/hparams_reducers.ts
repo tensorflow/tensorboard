@@ -375,26 +375,26 @@ const reducer: ActionReducer<HparamsState, Action> = createReducer(
     };
   }),
   on(actions.dashboardHparamFilterAdded, (state, action) => {
+    const nextHparamFilters = new Map(state.dashboardFilters.hparams);
+    nextHparamFilters.set(action.name, action.filter);
+
     return {
       ...state,
       dashboardFilters: {
         ...state.dashboardFilters,
-        hparams: {
-          ...state.dashboardFilters.hparams,
-          [action.name]: action.filter,
-        },
+        hparams: nextHparamFilters,
       },
     };
   }),
   on(actions.dashboardMetricFilterAdded, (state, action) => {
+    const nextMetricFilters = new Map(state.dashboardFilters.metrics);
+    nextMetricFilters.set(action.name, action.filter);
+
     return {
       ...state,
       dashboardFilters: {
         ...state.dashboardFilters,
-        metrics: {
-          ...state.dashboardFilters.metrics,
-          [action.name]: action.filter,
-        },
+        metrics: nextMetricFilters,
       },
     };
   })

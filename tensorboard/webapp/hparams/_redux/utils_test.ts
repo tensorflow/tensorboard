@@ -12,12 +12,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {DiscreteFilter, IntervalFilter} from '../types';
-import {buildDiscreteFilter, buildIntervalFilter} from './testing';
+import {DiscreteFilter, DomainType, IntervalFilter} from '../types';
+import {
+  buildDiscreteFilter,
+  buildHparamSpec,
+  buildIntervalFilter,
+} from './testing';
 import {
   combineDefaultHparamFilters,
   combineDefaultMetricFilters,
   getIdFromExperimentIds,
+  hparamSpecToDefaultFilter,
 } from './utils';
 
 describe('hparams/_redux/utils test', () => {
@@ -357,6 +362,47 @@ describe('hparams/_redux/utils test', () => {
           ],
         ])
       );
+    });
+  });
+
+  describe('hparamSpecToDefaultFilter', () => {
+    it('creates discrete filter when domain type is discrete', () => {
+      expect(
+        hparamSpecToDefaultFilter(
+          buildHparamSpec({
+            domain: {
+              type: DomainType.DISCRETE,
+              values: [2, 4, 6],
+            },
+          })
+        )
+      ).toEqual({
+        type: DomainType.DISCRETE,
+        includeUndefined: true,
+        possibleValues: [2, 4, 6],
+        filterValues: [2, 4, 6],
+      });
+    });
+
+    it('creates interval filter when domain type is interval', () => {
+      expect(
+        hparamSpecToDefaultFilter(
+          buildHparamSpec({
+            domain: {
+              type: DomainType.INTERVAL,
+              minValue: 2,
+              maxValue: 4,
+            },
+          })
+        )
+      ).toEqual({
+        type: DomainType.INTERVAL,
+        includeUndefined: true,
+        minValue: 2,
+        maxValue: 4,
+        filterLowerValue: 2,
+        filterUpperValue: 4,
+      });
     });
   });
 });

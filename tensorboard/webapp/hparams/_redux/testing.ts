@@ -85,6 +85,10 @@ export function buildHparamsState(
       metrics: overrides.dashboardSpecs?.metrics ?? [],
     },
     dashboardSessionGroups: overrides.dashboardSessionGroups ?? [],
+    dashboardFilters: {
+      hparams: overrides.dashboardFilters?.hparams ?? new Map(),
+      metrics: overrides.dashboardFilters?.metrics ?? new Map(),
+    },
   } as HparamsState;
 }
 
