@@ -633,7 +633,23 @@ describe('hparams/_redux/hparams_reducers_test', () => {
 
   describe('dashboardHparamFilterAdded', () => {
     it('adds entry dashboardFilters', () => {
-      const state = buildHparamsState();
+      const state = buildHparamsState({
+        dashboardFilters: {
+          hparams: new Map([
+            [
+              'hparam2',
+              {
+                type: DomainType.INTERVAL,
+                includeUndefined: true,
+                minValue: 2,
+                maxValue: 20,
+                filterLowerBound: 2,
+                filterUpperBound: 20,
+              },
+            ],
+          ]),
+        },
+      });
       const state2 = reducers(
         state,
         actions.dashboardHparamFilterAdded({
@@ -657,6 +673,17 @@ describe('hparams/_redux/hparams_reducers_test', () => {
               possibleValues: [5, 7, 8],
             },
           ],
+          [
+            'hparam2',
+            {
+              type: DomainType.INTERVAL,
+              includeUndefined: true,
+              minValue: 2,
+              maxValue: 20,
+              filterLowerBound: 2,
+              filterUpperBound: 20,
+            },
+          ],
         ]),
         metrics: new Map(),
       });
@@ -665,7 +692,23 @@ describe('hparams/_redux/hparams_reducers_test', () => {
 
   describe('dashboardMetricFilterAdded', () => {
     it('adds entry dashboardFilters', () => {
-      const state = buildHparamsState();
+      const state = buildHparamsState({
+        dashboardFilters: {
+          metrics: new Map([
+            [
+              'metric 2',
+              {
+                type: DomainType.INTERVAL,
+                includeUndefined: true,
+                minValue: 1,
+                maxValue: 50,
+                filterLowerValue: 1,
+                filterUpperValue: 51,
+              },
+            ],
+          ]),
+        },
+      });
       const state2 = reducers(
         state,
         actions.dashboardMetricFilterAdded({
@@ -692,6 +735,17 @@ describe('hparams/_redux/hparams_reducers_test', () => {
               maxValue: 42,
               filterLowerValue: -2,
               filterUpperValue: 40,
+            },
+          ],
+          [
+            'metric 2',
+            {
+              type: DomainType.INTERVAL,
+              includeUndefined: true,
+              minValue: 1,
+              maxValue: 50,
+              filterLowerValue: 1,
+              filterUpperValue: 51,
             },
           ],
         ]),

@@ -24,11 +24,6 @@ import {
 export type HparamFilter = DiscreteFilter | IntervalFilter;
 export type MetricFilter = IntervalFilter;
 
-export interface HparamsAndMetricsFilters {
-  hparams: Map<string, HparamFilter>;
-  metrics: Map<string, MetricFilter>;
-}
-
 export interface HparamsMetricsAndFilters {
   hparam: {
     specs: HparamSpec[];
@@ -55,7 +50,10 @@ export interface HparamsState {
   specs: ExperimentToHparams;
   dashboardSpecs: HparamAndMetricSpec;
   dashboardSessionGroups: SessionGroup[];
-  dashboardFilters: HparamsAndMetricsFilters;
+  dashboardFilters: {
+    hparams: Map<string, HparamFilter>;
+    metrics: Map<string, MetricFilter>;
+  };
   /**
    * RATIONALE: we do not use the NamespaceContextedState because of the following reasons.
    * - RunsTable which uses the state renders both on the dashboard view and the
@@ -70,7 +68,10 @@ export interface HparamsState {
    *    separate for the list and the dashboard views, but them shared is not too bad.
    */
   filters: {
-    [id: string]: HparamsAndMetricsFilters;
+    [id: string]: {
+      hparams: Map<string, HparamFilter>;
+      metrics: Map<string, MetricFilter>;
+    };
   };
 }
 
