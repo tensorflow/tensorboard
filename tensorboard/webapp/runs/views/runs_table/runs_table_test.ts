@@ -3058,10 +3058,6 @@ describe('runs_table', () => {
             By.directive(RunsDataTable)
           );
 
-          const intervalFilterAddedSpy = spyOn(
-            fixture.componentInstance,
-            'onHparamIntervalFilterChanged'
-          );
           dataTable.componentInstance.addFilter.emit({
             header: {
               name: 'qaz',
@@ -3071,14 +3067,23 @@ describe('runs_table', () => {
               includeUndefined: true,
               filterLowerValue: 10,
               filterUpperValue: 20,
+              minValue: 10,
+              maxValue: 20,
             },
           });
-          expect(intervalFilterAddedSpy).toHaveBeenCalledOnceWith({
-            name: 'qaz',
-            includeUndefined: true,
-            filterLowerValue: 10,
-            filterUpperValue: 20,
-          });
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            hparamsActions.dashboardHparamFilterAdded({
+              name: 'qaz',
+              filter: {
+                type: DomainType.INTERVAL,
+                includeUndefined: true,
+                filterLowerValue: 10,
+                filterUpperValue: 20,
+                minValue: 10,
+                maxValue: 20,
+              },
+            })
+          );
         });
 
         it('adds discrete filters', () => {
@@ -3088,10 +3093,6 @@ describe('runs_table', () => {
             By.directive(RunsDataTable)
           );
 
-          const discreteFilterAddedSpy = spyOn(
-            fixture.componentInstance,
-            'onHparamDiscreteFilterChanged'
-          );
           dataTable.componentInstance.addFilter.emit({
             header: {
               name: 'foo',
@@ -3100,13 +3101,20 @@ describe('runs_table', () => {
               type: DomainType.DISCRETE,
               includeUndefined: true,
               filterValues: [2, 4, 6, 8],
+              possibleValues: [2, 4, 6, 8, 10],
             },
           });
-          expect(discreteFilterAddedSpy).toHaveBeenCalledOnceWith({
-            hparamName: 'foo',
-            includeUndefined: true,
-            filterValues: [2, 4, 6, 8],
-          });
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            hparamsActions.dashboardHparamFilterAdded({
+              name: 'foo',
+              filter: {
+                type: DomainType.DISCRETE,
+                includeUndefined: true,
+                filterValues: [2, 4, 6, 8],
+                possibleValues: [2, 4, 6, 8, 10],
+              },
+            })
+          );
         });
       });
     });
