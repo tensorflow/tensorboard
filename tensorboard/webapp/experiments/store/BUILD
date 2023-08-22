@@ -26,6 +26,7 @@ tf_ts_library(
     ],
     deps = [
         ":types",
+        "//tensorboard/webapp/app_routing/store",
         "//tensorboard/webapp/experiments:types",
         "//tensorboard/webapp/types",
         "@npm//@ngrx/store",

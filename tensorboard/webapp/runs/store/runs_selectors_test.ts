@@ -205,6 +205,14 @@ describe('runs_selectors', () => {
   describe('#getDashboardRuns', () => {
     it('returns runs', () => {
       const state = buildMockState({
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: {
+              routeKind: RouteKind.EXPERIMENT,
+              params: {experimentId: 'eid'},
+            },
+          })
+        ),
         ...buildStateFromRunsState(
           buildRunsState({
             runIds: {
@@ -216,7 +224,7 @@ describe('runs_selectors', () => {
           })
         ),
       });
-      expect(selectors.getDashboardRuns(['eid'])(state)).toEqual([
+      expect(selectors.getDashboardRuns(state)).toEqual([
         {
           ...buildRun({
             id: 'run1',
@@ -226,8 +234,16 @@ describe('runs_selectors', () => {
       ]);
     });
 
-    it('returns runs for the ones that has metadata', () => {
+    it('returns runs that have metadata', () => {
       const state = buildMockState({
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: {
+              routeKind: RouteKind.EXPERIMENT,
+              params: {experimentId: 'eid'},
+            },
+          })
+        ),
         ...buildStateFromRunsState(
           buildRunsState({
             runIds: {
@@ -239,7 +255,7 @@ describe('runs_selectors', () => {
           })
         ),
       });
-      expect(selectors.getDashboardRuns(['eid'])(state)).toEqual([
+      expect(selectors.getDashboardRuns(state)).toEqual([
         {
           ...buildRun({
             id: 'run1',
@@ -250,8 +266,17 @@ describe('runs_selectors', () => {
     });
 
     it('returns empty list if experiment id does not exist', () => {
-      const state = buildMockState();
-      expect(selectors.getDashboardRuns(['i_do_not_exist'])(state)).toEqual([]);
+      const state = buildMockState(
+        buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: {
+              routeKind: RouteKind.EXPERIMENTS,
+              params: {},
+            },
+          })
+        )
+      );
+      expect(selectors.getDashboardRuns(state)).toEqual([]);
     });
 
     it('includes dashboard hparams data', () => {
@@ -260,7 +285,7 @@ describe('runs_selectors', () => {
           buildAppRoutingState({
             activeRoute: {
               routeKind: RouteKind.EXPERIMENT,
-              params: {},
+              params: {experimentId: 'eid'},
             },
           })
         ),
@@ -291,7 +316,7 @@ describe('runs_selectors', () => {
           })
         ),
       });
-      expect(selectors.getDashboardRuns(['eid'])(state)).toEqual([
+      expect(selectors.getDashboardRuns(state)).toEqual([
         {
           ...buildRun({
             id: 'run1',
@@ -308,6 +333,14 @@ describe('runs_selectors', () => {
 
     it('never returns hparams or metric data from run metadata', () => {
       const state = buildMockState({
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: {
+              routeKind: RouteKind.EXPERIMENT,
+              params: {experimentId: 'eid'},
+            },
+          })
+        ),
         ...buildStateFromRunsState(
           buildRunsState({
             runIds: {
@@ -324,7 +357,7 @@ describe('runs_selectors', () => {
         ),
       });
 
-      const response = selectors.getDashboardRuns(['eid'])(state)[0];
+      const response = selectors.getDashboardRuns(state)[0];
       expect(response.hparams).toBeNull();
       expect(response.metrics).toBeNull();
     });

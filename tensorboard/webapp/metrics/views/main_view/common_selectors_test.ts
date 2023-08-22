@@ -175,10 +175,11 @@ describe('common selectors', () => {
         activeRoute: {
           routeKind: RouteKind.EXPERIMENT,
           params: {
+            experimentId: 'defaultExperimentId',
             experimentIds: 'foo:exp1,bar:exp2',
           },
         },
-      } as any,
+      },
       hparams: {
         dashboardSpecs: {
           hparams: [buildHparamSpec({name: 'foo', displayName: 'Foo'})],
@@ -710,23 +711,20 @@ describe('common selectors', () => {
   });
 
   describe('getRenderableRuns', () => {
-    it('returns all runs associated with experiment', () => {
-      const exp1Result = selectors.factories.getRenderableRuns(['exp1'])(state);
-      expect(exp1Result.length).toEqual(2);
-      expect(exp1Result[0].run).toEqual({...run1, experimentId: 'exp1'});
-      expect(exp1Result[1].run).toEqual({...run2, experimentId: 'exp1'});
-
-      const exp2Result = selectors.factories.getRenderableRuns(['exp2'])(state);
-      expect(exp2Result.length).toEqual(3);
-      expect(exp2Result[0].run).toEqual({...run2, experimentId: 'exp2'});
-      expect(exp2Result[1].run).toEqual({...run3, experimentId: 'exp2'});
-      expect(exp2Result[2].run).toEqual({...run4, experimentId: 'exp2'});
+    it('returns all runs associated with each experiment', () => {
+      state.app_routing!.activeRoute!.routeKind = RouteKind.COMPARE_EXPERIMENT;
+      const results = selectors.TEST_ONLY.getRenderableRuns(state);
+      expect(results.length).toEqual(5);
+      expect(results[0].run).toEqual({...run1, experimentId: 'exp1'});
+      expect(results[1].run).toEqual({...run2, experimentId: 'exp1'});
+      expect(results[2].run).toEqual({...run2, experimentId: 'exp2'});
+      expect(results[3].run).toEqual({...run3, experimentId: 'exp2'});
+      expect(results[4].run).toEqual({...run4, experimentId: 'exp2'});
     });
 
     it('returns two runs when a run is associated with multiple experiments', () => {
-      const result = selectors.factories.getRenderableRuns(['exp1', 'exp2'])(
-        state
-      );
+      state.app_routing!.activeRoute!.routeKind = RouteKind.COMPARE_EXPERIMENT;
+      const result = selectors.TEST_ONLY.getRenderableRuns(state);
       expect(result.length).toEqual(5);
       expect(result[0].run).toEqual({...run1, experimentId: 'exp1'});
       expect(result[1].run).toEqual({...run2, experimentId: 'exp1'});
@@ -736,7 +734,11 @@ describe('common selectors', () => {
     });
 
     it('returns empty list when no experiments are provided', () => {
-      expect(selectors.factories.getRenderableRuns([])(state)).toEqual([]);
+      state.app_routing!.activeRoute = {
+        routeKind: RouteKind.EXPERIMENTS,
+        params: {},
+      };
+      expect(selectors.TEST_ONLY.getRenderableRuns(state)).toEqual([]);
     });
   });
 
@@ -918,18 +920,18 @@ describe('common selectors', () => {
   describe('getFilteredRenderableRuns', () => {
     it('does not use experiment alias when route is not compare', () => {
       state.runs!.data.regexFilter = 'foo';
-      const result = selectors.factories.getFilteredRenderableRuns(['exp1'])(
-        state
-      );
+      state.app_routing!.activeRoute = {
+        routeKind: RouteKind.EXPERIMENT,
+        params: {experimentIds: 'exp1'},
+      };
+      const result = selectors.getFilteredRenderableRuns(state);
       expect(result).toEqual([]);
     });
 
     it('uses experiment alias when route is compare', () => {
       state.runs!.data.regexFilter = 'foo';
       state.app_routing!.activeRoute!.routeKind = RouteKind.COMPARE_EXPERIMENT;
-      const result = selectors.factories.getFilteredRenderableRuns(['exp1'])(
-        state
-      );
+      const result = selectors.getFilteredRenderableRuns(state);
       expect(result.length).toEqual(2);
       expect(result[0].run.name).toEqual('run 1');
       expect(result[1].run.name).toEqual('run 2');
@@ -940,47 +942,32 @@ describe('common selectors', () => {
         selectors.TEST_ONLY.utils,
         'filterRunItemsByHparamAndMetricFilter'
       ).and.callThrough();
-      const results = selectors.factories.getFilteredRenderableRuns(['exp1'])(
-        state
-      );
+      state.app_routing!.activeRoute = {
+        routeKind: RouteKind.EXPERIMENT,
+        params: {experimentIds: 'exp1'},
+      };
+      const results = selectors.getFilteredRenderableRuns(state);
       expect(spy).toHaveBeenCalledOnceWith(results, new Map(), new Map());
     });
 
     it('returns empty list when no experiments are provided', () => {
-      expect(selectors.factories.getFilteredRenderableRuns([])(state)).toEqual(
-        []
-      );
-    });
-  });
-
-  describe('getFilteredRenderableRunsFromRoute', () => {
-    it('calls getFilteredRenderableRuns with experiment ids from the route when in compare view', () => {
-      state.app_routing!.activeRoute!.routeKind = RouteKind.COMPARE_EXPERIMENT;
-      const result = selectors.getFilteredRenderableRunsFromRoute(state);
-      expect(result).toEqual(
-        selectors.factories.getFilteredRenderableRuns(['exp1', 'exp2'])(state)
-      );
-    });
-
-    it('calls getFilteredRenderableRuns with experiment ids from the route when in single experiment view', () => {
-      const result = selectors.getFilteredRenderableRunsFromRoute(state);
-      expect(result).toEqual(
-        selectors.factories.getFilteredRenderableRuns(['defaultExperimentId'])(
-          state
-        )
-      );
+      state.app_routing!.activeRoute = {
+        routeKind: RouteKind.EXPERIMENTS,
+        params: {},
+      };
+      expect(selectors.getFilteredRenderableRuns(state)).toEqual([]);
     });
   });
 
   describe('getFilteredRenderableRunsIdsFromRoute', () => {
     it('returns a set of run ids from the route when in compare view', () => {
       state.app_routing!.activeRoute!.routeKind = RouteKind.COMPARE_EXPERIMENT;
-      const result = selectors.getFilteredRenderableRunsIdsFromRoute(state);
+      const result = selectors.getFilteredRenderableRunsIds(state);
       expect(result).toEqual(new Set(['1', '2', '3', '4']));
     });
 
     it('returns a set of run ids from the route when in single experiment view', () => {
-      const result = selectors.getFilteredRenderableRunsIdsFromRoute(state);
+      const result = selectors.getFilteredRenderableRunsIds(state);
       expect(result).toEqual(new Set());
     });
   });
