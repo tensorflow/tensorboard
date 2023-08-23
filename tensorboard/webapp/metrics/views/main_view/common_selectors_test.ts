@@ -722,18 +722,7 @@ describe('common selectors', () => {
       expect(results[4].run).toEqual({...run4, experimentId: 'exp2'});
     });
 
-    it('returns two runs when a run is associated with multiple experiments', () => {
-      state.app_routing!.activeRoute!.routeKind = RouteKind.COMPARE_EXPERIMENT;
-      const result = selectors.TEST_ONLY.getRenderableRuns(state);
-      expect(result.length).toEqual(5);
-      expect(result[0].run).toEqual({...run1, experimentId: 'exp1'});
-      expect(result[1].run).toEqual({...run2, experimentId: 'exp1'});
-      expect(result[2].run).toEqual({...run2, experimentId: 'exp2'});
-      expect(result[3].run).toEqual({...run3, experimentId: 'exp2'});
-      expect(result[4].run).toEqual({...run4, experimentId: 'exp2'});
-    });
-
-    it('returns empty list when no experiments are provided', () => {
+    it('returns empty list when route does not contain experiments', () => {
       state.app_routing!.activeRoute = {
         routeKind: RouteKind.EXPERIMENTS,
         params: {},

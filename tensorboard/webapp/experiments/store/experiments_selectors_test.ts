@@ -89,7 +89,17 @@ describe('experiments selectors', () => {
     });
 
     it('returns an empty object when no experiments are provided', () => {
-      state.app_routing!.activeRoute!.routeKind = RouteKind.EXPERIMENTS;
+      state = {
+        ...state,
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: {
+              routeKind: RouteKind.EXPERIMENTS,
+              params: {},
+            },
+          })
+        ),
+      };
       expect(selectors.getDashboardExperimentNames(state)).toEqual({});
     });
   });
