@@ -100,7 +100,7 @@ import {
   HeaderToggleInfo,
   XAxisType,
 } from '../../types';
-import {getFilteredRenderableRunsIdsFromRoute} from '../main_view/common_selectors';
+import {getFilteredRenderableRunsIds} from '../main_view/common_selectors';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {DataDownloadDialogContainer} from './data_download_dialog_container';
@@ -499,7 +499,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       combineLatestWith(
         this.store.select(getCurrentRouteRunSelection),
         this.store.select(getEnableHparamsInTimeSeries),
-        this.store.select(getFilteredRenderableRunsIdsFromRoute),
+        this.store.select(getFilteredRenderableRunsIds),
         this.store.select(getRunColorMap),
         this.store.select(getMetricsScalarSmoothing)
       ),

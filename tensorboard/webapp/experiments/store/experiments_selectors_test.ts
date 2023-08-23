@@ -13,8 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as selectors from './experiments_selectors';
-import {State} from './experiments_types';
+import {State} from '../../app_state';
 import {buildExperiment, buildStateFromExperimentsState} from './testing';
+import {buildMockState} from '../../testing/utils';
+import {
+  buildAppRoutingState,
+  buildStateFromAppRoutingState,
+} from '../../app_routing/store/testing';
+import {RouteKind} from '../../app_routing/types';
 
 describe('experiments selectors', () => {
   describe('#getExperiment', () => {
@@ -49,32 +55,52 @@ describe('experiments selectors', () => {
     });
   });
 
-  describe('#getExperimentNames', () => {
+  describe('#getDashboardExperimentNames', () => {
     let state: State;
 
     beforeEach(() => {
       const foo = buildExperiment({id: 'foo', name: 'foo name'});
       const bar = buildExperiment({id: 'bar', name: 'bar name'});
 
-      state = buildStateFromExperimentsState({
-        data: {
-          experimentMap: {foo, bar},
-        },
+      state = buildMockState({
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: {
+              routeKind: RouteKind.COMPARE_EXPERIMENT,
+              params: {
+                experimentIds: 'exp1:foo,exp2:bar,exp3:baz',
+              },
+            },
+          })
+        ),
+        ...buildStateFromExperimentsState({
+          data: {
+            experimentMap: {foo, bar},
+          },
+        }),
       });
     });
 
     it('translates experiment ids to experiment names', () => {
-      expect(
-        selectors.getExperimentNames(['foo', 'bar', 'baz'])(state)
-      ).toEqual({
+      expect(selectors.getDashboardExperimentNames(state)).toEqual({
         foo: 'foo name',
         bar: 'bar name',
       });
     });
 
     it('returns an empty object when no experiments are provided', () => {
-      expect(selectors.getExperimentNames([])(state)).toEqual({});
-      expect(selectors.getExperimentNames(['abc', '123'])(state)).toEqual({});
+      state = {
+        ...state,
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: {
+              routeKind: RouteKind.EXPERIMENTS,
+              params: {},
+            },
+          })
+        ),
+      };
+      expect(selectors.getDashboardExperimentNames(state)).toEqual({});
     });
   });
 });

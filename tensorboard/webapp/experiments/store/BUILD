@@ -26,6 +26,7 @@ tf_ts_library(
     ],
     deps = [
         ":types",
+        "//tensorboard/webapp/app_routing/store",
         "//tensorboard/webapp/experiments:types",
         "//tensorboard/webapp/types",
         "@npm//@ngrx/store",
@@ -65,6 +66,10 @@ tf_ts_library(
         ":selectors",
         ":testing",
         ":types",
+        "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/app_routing:types",
+        "//tensorboard/webapp/app_routing/store:testing",
+        "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/types",
         "@npm//@types/jasmine",
     ],
