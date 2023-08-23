@@ -132,6 +132,7 @@ def reexport_tf_summary():
         "tensorflow._api.v2",
         "tensorflow._api.v2.compat.v2",
         "tensorflow._api.v1.compat.v2",
+        "tensorflow._api.compat.v2",
     ]
 
     def dynamic_wildcard_import(module):
