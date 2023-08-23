@@ -152,13 +152,14 @@ class BackendContextTest(tf.test.TestCase):
     ):
         return self._hyperparameters
 
-    def _experiment_from_metadata(self):
+    def _experiment_from_metadata(self, *, include_metrics=True):
         """Calls the expected operations for generating an Experiment proto."""
         ctxt = backend_context.Context(self._mock_tb_context)
         request_ctx = context.RequestContext()
         return ctxt.experiment_from_metadata(
             request_ctx,
             "123",
+            include_metrics,
             ctxt.hparams_metadata(request_ctx, "123"),
             ctxt.hparams_from_data_provider(request_ctx, "123"),
         )
@@ -187,7 +188,39 @@ class BackendContextTest(tf.test.TestCase):
         }
         self.assertProtoEquals(experiment, self._experiment_from_metadata())
 
-    def test_experiment_without_experiment_tag(self):
+    def test_experiment_with_experiment_tag_include_metrics(self):
+        experiment = """
+            description: 'Test experiment'
+            metric_infos: [
+              { name: { tag: 'current_temp' } },
+              { name: { tag: 'delta_temp' } }
+            ]
+        """
+        run = "exp"
+        tag = metadata.EXPERIMENT_TAG
+        t = provider.TensorTimeSeries(
+            max_step=0,
+            max_wall_time=0,
+            plugin_content=self._serialized_plugin_data(
+                DATA_TYPE_EXPERIMENT, experiment
+            ),
+            description="",
+            display_name="",
+        )
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._mock_tb_context.data_provider.list_tensors.return_value = {
+            run: {tag: t}
+        }
+
+        with self.subTest("False"):
+            response = self._experiment_from_metadata(include_metrics=False)
+            self.assertEmpty(response.metric_infos)
+
+        with self.subTest("True"):
+            response = self._experiment_from_metadata(include_metrics=True)
+            self.assertLen(response.metric_infos, 2)
+
+    def test_experiment_with_session_tags(self):
         self.session_1_start_info_ = """
             hparams: [
               {key: 'batch_size' value: {number_value: 100}},
@@ -243,7 +276,7 @@ class BackendContextTest(tf.test.TestCase):
         _canonicalize_experiment(actual_exp)
         self.assertProtoEquals(expected_exp, actual_exp)
 
-    def test_experiment_without_experiment_tag_different_hparam_types(self):
+    def test_experiment_with_session_tags_different_hparam_types(self):
         self.session_1_start_info_ = """
             hparams:[
               {key: 'batch_size' value: {number_value: 100}},
@@ -304,7 +337,7 @@ class BackendContextTest(tf.test.TestCase):
         _canonicalize_experiment(actual_exp)
         self.assertProtoEquals(expected_exp, actual_exp)
 
-    def test_experiment_with_bool_types(self):
+    def test_experiment_with_session_tags_bool_types(self):
         self.session_1_start_info_ = """
             hparams:[
               {key: 'batch_size' value: {bool_value: true}}
@@ -344,7 +377,9 @@ class BackendContextTest(tf.test.TestCase):
         _canonicalize_experiment(actual_exp)
         self.assertProtoEquals(expected_exp, actual_exp)
 
-    def test_experiment_with_string_domain_and_invalid_number_values(self):
+    def test_experiment_with_session_tags_string_domain_and_invalid_number_values(
+        self,
+    ):
         self.session_1_start_info_ = """
             hparams:[
               {key: 'maybe_invalid' value: {string_value: 'force_to_string_type'}}
@@ -371,8 +406,21 @@ class BackendContextTest(tf.test.TestCase):
         self.assertLen(actual_exp.hparam_infos, 1)
         self.assertProtoEquals(expected_hparam_info, actual_exp.hparam_infos[0])
 
+    def test_experiment_with_session_tags_include_metrics(self):
+        self.session_1_start_info_ = """
+            hparams: [
+              {key: 'batch_size' value: {number_value: 100}}
+            ]
+        """
+        with self.subTest("False"):
+            response = self._experiment_from_metadata(include_metrics=False)
+            self.assertEmpty(response.metric_infos)
+
+        with self.subTest("True"):
+            response = self._experiment_from_metadata(include_metrics=True)
+            self.assertLen(response.metric_infos, 4)
+
     def test_experiment_without_any_hparams(self):
-        request_ctx = context.RequestContext()
         actual_exp = self._experiment_from_metadata()
         self.assertIsInstance(actual_exp, api_pb2.Experiment)
         self.assertProtoEquals("", actual_exp)
@@ -788,6 +836,33 @@ class BackendContextTest(tf.test.TestCase):
             }
         """
         self.assertProtoEquals(expected_exp, actual_exp)
+
+    def test_experiment_from_data_provider_include_metrics(self):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._hyperparameters = provider.ListHyperparametersResult(
+            hyperparameters=[],
+            session_groups=[
+                provider.HyperparameterSessionGroup(
+                    root=provider.HyperparameterSessionRun(
+                        experiment_id="exp", run=""
+                    ),
+                    sessions=[
+                        provider.HyperparameterSessionRun(
+                            experiment_id="exp", run="session_1"
+                        ),
+                    ],
+                    hyperparameter_values=[],
+                ),
+            ],
+        )
+
+        with self.subTest("False"):
+            response = self._experiment_from_metadata(include_metrics=False)
+            self.assertEmpty(response.metric_infos)
+
+        with self.subTest("True"):
+            response = self._experiment_from_metadata(include_metrics=True)
+            self.assertLen(response.metric_infos, 4)
 
     def test_experiment_from_data_provider_old_response_type(self):
         self._hyperparameters = [
