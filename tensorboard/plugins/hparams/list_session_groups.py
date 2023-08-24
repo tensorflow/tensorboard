@@ -52,6 +52,8 @@ class Handler:
         self._experiment_id = experiment_id
         self._request = request
         self._include_metrics = (
+            # Metrics are included by default if include_metrics is not
+            # specified in the request.
             not self._request.HasField("include_metrics")
             or self._request.include_metrics
         )
