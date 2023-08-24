@@ -963,6 +963,52 @@ describe('metrics effects', () => {
           tagB: new Set(['eid1', 'eid2']),
         });
       });
+
+      it('only maps scalar data', () => {
+        const runToEid = {
+          run1: 'eid1',
+          run2: 'eid1',
+          run3: 'eid2',
+        };
+        const tagMetadata = {
+          scalars: {
+            tagDescriptions: {},
+            tagToRuns: {
+              tagA: ['run1'],
+              tagB: ['run2', 'run3'],
+            },
+          },
+          histograms: {
+            tagDescriptions: {},
+            tagToRuns: {
+              tagC: ['run4'],
+              tagD: ['run5', 'run6'],
+            },
+          },
+          images: {
+            tagDescriptions: {},
+            tagRunSampledInfo: {
+              tagE: {
+                run7: {maxSamplesPerStep: 1},
+                run8: {maxSamplesPerStep: 1},
+              },
+              tagF: {
+                run9: {maxSamplesPerStep: 1},
+              },
+            },
+          },
+        };
+
+        expect(
+          TEST_ONLY.generateMultiRunTagsToEidMapping(
+            tagMetadata as any,
+            runToEid
+          )
+        ).toEqual({
+          tagA: new Set(['eid1']),
+          tagB: new Set(['eid1', 'eid2']),
+        });
+      });
     });
   });
 });
