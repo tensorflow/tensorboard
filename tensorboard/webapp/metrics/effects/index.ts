@@ -78,21 +78,19 @@ function generateMultiRunTagsToEidMapping(
   runToEid: Record<string, string>
 ): Record<string, Set<string>> {
   const tagToEid: Record<string, Set<string>> = {};
-  function mapTagsToEid(tagToRun: Record<string, readonly string[]>) {
-    Object.entries(tagToRun).forEach(([tag, runIds]) => {
-      if (!tagToEid[tag]) {
-        tagToEid[tag] = new Set();
-      }
-      runIds.forEach((runId) => tagToEid[tag].add(runToEid[runId]));
-    });
-  }
-
   for (const pluginType in tagMetadata) {
     if (isSingleRunPlugin(pluginType as PluginType)) {
       continue;
     }
 
-    mapTagsToEid(tagMetadata[pluginType as NonSampledPluginType].tagToRuns);
+    Object.entries(
+      tagMetadata[pluginType as NonSampledPluginType].tagToRuns
+    ).forEach(([tag, runIds]) => {
+      if (!tagToEid[tag]) {
+        tagToEid[tag] = new Set();
+      }
+      runIds.forEach((runId) => tagToEid[tag].add(runToEid[runId]));
+    });
   }
 
   return tagToEid;
