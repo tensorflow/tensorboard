@@ -109,7 +109,27 @@ export class MetricsEffects implements OnInitEffects {
    *
    * The computation is done by translating Plugin -> Tag -> Run -> ExpId
    *
-   * Sampled plugins are ignored because they are associated with runs, not experiments.
+   * There are essentially 3 kinds of plugins but here we really only care about
+   * Single Run vs Multi Run
+   *   1) Non-sampled multi-run plugins
+   *   2) Non-sampled single-run plugins
+   *   3) Sampled single-run plugins
+   * Note: There are no sampled multi run plugins
+   *
+   * TensorBoard generates cards for the based on the Tag -> Run relationship it
+   * recieves from the `/timeseries/tags` response.
+   *
+   * As these cards become visible this effect is invoked to fetch data for the
+   * cards using the `/timeseries/timeSeries` endpoint. One request is made for each
+   * kind of data being shown for each experiment being viewed.
+   *
+   * Because runs can only be associated with a single experiment only a single
+   * request is required for single run plugin data.
+   *
+   * Multi run plugins can contain runs from multiple experiments (if they contain
+   * the same tag) and thus may require up to N requests where N is the number of
+   * experiments. This mapping from tag to experiment id is used to ensure we do
+   * not make unnecessary requests fetch data for experiments without the relevant tag.
    */
   readonly multiRunTagsToEid$: Observable<Record<string, Set<string>>> =
     this.store.select(selectors.getMetricsTagMetadata).pipe(
@@ -237,46 +257,42 @@ export class MetricsEffects implements OnInitEffects {
 
   private fetchTimeSeriesForCards(
     fetchInfos: CardFetchInfo[],
-    experimentIds: string[]
+    experimentIds: string[],
+    multiRunTagsToEid: Record<string, Set<string>>
   ) {
+    const requests = fetchInfos
+      .map((fetchInfo) => {
+        const {plugin, tag, runId, sample} = fetchInfo;
+
+        if (isSingleRunPlugin(plugin)) {
+          if (!runId) {
+            return;
+          }
+          return {
+            plugin,
+            tag,
+            runId,
+            sample,
+          };
+        }
+
+        const filteredEids = experimentIds.filter((eid) =>
+          multiRunTagsToEid[tag]?.has(eid)
+        );
+        if (!filteredEids.length) {
+          return;
+        }
+
+        return {plugin, tag, sample, experimentIds: filteredEids};
+      })
+      .filter(Boolean);
+
+    const uniqueRequests = Array.from(
+      new Set(requests.map((request) => JSON.stringify(request)))
+    ).map((serialized) => JSON.parse(serialized) as TimeSeriesRequest);
+
     // Fetch and handle responses.
-    return this.multiRunTagsToEid$.pipe(
-      take(1),
-      map((tagToEid): TimeSeriesRequest[] => {
-        const requests = fetchInfos
-          .map((fetchInfo) => {
-            const {plugin, tag, runId, sample} = fetchInfo;
-
-            if (isSingleRunPlugin(plugin)) {
-              if (!runId) {
-                return;
-              }
-              return {
-                plugin,
-                tag,
-                runId,
-                sample,
-              };
-            }
-
-            const filteredEids = experimentIds.filter((eid) =>
-              tagToEid[tag]?.has(eid)
-            );
-            if (!filteredEids.length) {
-              return;
-            }
-
-            return {plugin, tag, experimentIds: filteredEids};
-          })
-          .filter(Boolean);
-        const uniqueRequests = new Set(
-          requests.map((request) => JSON.stringify(request))
-        );
-
-        return Array.from(uniqueRequests).map(
-          (serialized) => JSON.parse(serialized) as TimeSeriesRequest
-        );
-      }),
+    return of(uniqueRequests).pipe(
       tap((requests) => {
         this.store.dispatch(actions.multipleTimeSeriesRequested({requests}));
       }),
@@ -319,10 +335,15 @@ export class MetricsEffects implements OnInitEffects {
     withLatestFrom(
       this.store
         .select(selectors.getExperimentIdsFromRoute)
-        .pipe(filter((experimentIds) => experimentIds !== null))
+        .pipe(filter((experimentIds) => experimentIds !== null)),
+      this.multiRunTagsToEid$
     ),
-    mergeMap(([fetchInfos, experimentIds]) => {
-      return this.fetchTimeSeriesForCards(fetchInfos, experimentIds!);
+    mergeMap(([fetchInfos, experimentIds, multiRunTagsToEid]) => {
+      return this.fetchTimeSeriesForCards(
+        fetchInfos,
+        experimentIds!,
+        multiRunTagsToEid
+      );
     })
   );
 
