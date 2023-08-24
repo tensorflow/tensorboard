@@ -1329,7 +1329,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
             expected_total_size=3,
         )
 
-    def test_filer_hparams_exclude_invalid_number_values(self):
+    def test_filter_hparams_exclude_invalid_number_values(self):
         self._mock_tb_context.data_provider.list_tensors.side_effect = (
             self._mock_list_tensors_invalid_number_values
         )
@@ -1346,6 +1346,51 @@ class ListSessionGroupsTest(tf.test.TestCase):
             expected_session_group_names=["group_1", "group_4"],
             expected_total_size=2,
         )
+
+    def test_include_metrics(self):
+        with self.subTest("False"):
+            request = """
+                start_index: 0
+                slice_size: 1
+                allowed_statuses: [
+                  STATUS_SUCCESS
+                ]
+                include_metrics: False
+            """
+            response = self._run_handler(request)
+            self.assertEmpty(response.session_groups[0].metric_values)
+            self.assertEmpty(
+                response.session_groups[0].sessions[0].metric_values
+            )
+
+        with self.subTest("True"):
+            request = """
+                start_index: 0
+                slice_size: 1
+                allowed_statuses: [
+                  STATUS_SUCCESS
+                ]
+                include_metrics: True
+            """
+            response = self._run_handler(request)
+            self.assertLen(response.session_groups[0].metric_values, 3)
+            self.assertLen(
+                response.session_groups[0].sessions[0].metric_values, 3
+            )
+
+        with self.subTest("unspecified"):
+            request = """
+                start_index: 0
+                slice_size: 1
+                allowed_statuses: [
+                  STATUS_SUCCESS
+                ]
+            """
+            response = self._run_handler(request)
+            self.assertLen(response.session_groups[0].metric_values, 3)
+            self.assertLen(
+                response.session_groups[0].sessions[0].metric_values, 3
+            )
 
     def test_experiment_without_any_hparams(self):
         self._mock_tb_context.data_provider.list_tensors.side_effect = None
@@ -2303,6 +2348,62 @@ class ListSessionGroupsTest(tf.test.TestCase):
         # the DataProvider to have successfully applied the filter.
         self.assertLen(response.session_groups, 1)
         self.assertEqual("session_1", response.session_groups[0].name)
+
+    def test_experiment_from_data_provider_include_metrics(
+        self,
+    ):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._hyperparameters = [
+            provider.HyperparameterSessionGroup(
+                # The sessions names correspond to return values from
+                # _mock_list_scalars() and _mock_read_scalars() in order to
+                # generate metric infos and values.
+                root=provider.HyperparameterSessionRun(
+                    experiment_id="session_2", run=""
+                ),
+                sessions=[
+                    provider.HyperparameterSessionRun(
+                        experiment_id="session_2", run=""
+                    )
+                ],
+                hyperparameter_values=[],
+            ),
+        ]
+
+        with self.subTest("False"):
+            request = """
+                start_index: 0
+                slice_size: 10
+                include_metrics: False
+            """
+            response = self._run_handler(request)
+            self.assertEmpty(response.session_groups[0].metric_values, 0)
+            self.assertEmpty(
+                response.session_groups[0].sessions[0].metric_values, 0
+            )
+
+        with self.subTest("True"):
+            request = """
+                start_index: 0
+                slice_size: 10
+                include_metrics: True
+            """
+            response = self._run_handler(request)
+            self.assertLen(response.session_groups[0].metric_values, 2)
+            self.assertLen(
+                response.session_groups[0].sessions[0].metric_values, 2
+            )
+
+        with self.subTest("unspecified"):
+            request = """
+                start_index: 0
+                slice_size: 10
+            """
+            response = self._run_handler(request)
+            self.assertLen(response.session_groups[0].metric_values, 2)
+            self.assertLen(
+                response.session_groups[0].sessions[0].metric_values, 2
+            )
 
     def _run_handler(self, request):
         request_proto = api_pb2.ListSessionGroupsRequest()

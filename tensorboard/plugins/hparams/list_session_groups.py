@@ -51,6 +51,12 @@ class Handler:
         self._backend_context = backend_context
         self._experiment_id = experiment_id
         self._request = request
+        self._include_metrics = (
+            # Metrics are included by default if include_metrics is not
+            # specified in the request.
+            not self._request.HasField("include_metrics")
+            or self._request.include_metrics
+        )
 
     def run(self):
         """Handles the request specified on construction.
@@ -92,6 +98,7 @@ class Handler:
         experiment = self._backend_context.experiment_from_metadata(
             self._request_context,
             self._experiment_id,
+            self._include_metrics,
             hparams_run_to_tag_to_content,
             # Don't pass any information from the DataProvider since we are only
             # examining session groups based on tag metadata
@@ -120,14 +127,22 @@ class Handler:
             sort,
         )
 
-        metric_infos = self._backend_context.compute_metric_infos_from_data_provider_session_groups(
-            self._request_context, self._experiment_id, response
+        metric_infos = (
+            self._backend_context.compute_metric_infos_from_data_provider_session_groups(
+                self._request_context, self._experiment_id, response
+            )
+            if self._include_metrics
+            else []
         )
 
-        all_metric_evals = self._backend_context.read_last_scalars(
-            self._request_context,
-            self._experiment_id,
-            run_tag_filter=None,
+        all_metric_evals = (
+            self._backend_context.read_last_scalars(
+                self._request_context,
+                self._experiment_id,
+                run_tag_filter=None,
+            )
+            if self._include_metrics
+            else {}
         )
 
         session_groups = []
@@ -228,12 +243,16 @@ class Handler:
                 )
                 metric_runs.add(run)
                 metric_tags.add(tag)
-        all_metric_evals = self._backend_context.read_last_scalars(
-            self._request_context,
-            self._experiment_id,
-            run_tag_filter=provider.RunTagFilter(
-                runs=metric_runs, tags=metric_tags
-            ),
+        all_metric_evals = (
+            self._backend_context.read_last_scalars(
+                self._request_context,
+                self._experiment_id,
+                run_tag_filter=provider.RunTagFilter(
+                    runs=metric_runs, tags=metric_tags
+                ),
+            )
+            if self._include_metrics
+            else {}
         )
         for (
             session_name,
