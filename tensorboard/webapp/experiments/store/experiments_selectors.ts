@@ -19,6 +19,7 @@ import {
   ExperimentsState,
   EXPERIMENTS_FEATURE_KEY,
 } from './experiments_types';
+import {getExperimentIdsFromRoute} from '../../app_routing/store/app_routing_selectors';
 
 const getExperimentsState = createFeatureSelector<ExperimentsState>(
   EXPERIMENTS_FEATURE_KEY
@@ -46,18 +47,20 @@ export const getExperiment = createSelector(
 );
 
 /**
- * Returns Observable that emits an object mapping the provided
- * experiment ids to experiment names.
+ * Returns the names of all experiments present on the current dashboard.
  */
-export const getExperimentNames = (experimentIds: string[]) =>
-  createSelector(
-    getDataState,
-    (state: ExperimentsDataState): Record<string, string> =>
-      experimentIds
-        .map((experimentId) => state.experimentMap[experimentId])
-        .filter(Boolean)
-        .reduce((map, experiment) => {
-          map[experiment.id] = experiment.name;
-          return map;
-        }, {} as Record<string, string>)
-  );
+export const getDashboardExperimentNames = createSelector(
+  getDataState,
+  getExperimentIdsFromRoute,
+  (
+    state: ExperimentsDataState,
+    experimentIds: string[] | null
+  ): Record<string, string> =>
+    (experimentIds ?? [])
+      .map((experimentId) => state.experimentMap[experimentId])
+      .filter(Boolean)
+      .reduce((map, experiment) => {
+        map[experiment.id] = experiment.name;
+        return map;
+      }, {} as Record<string, string>)
+);

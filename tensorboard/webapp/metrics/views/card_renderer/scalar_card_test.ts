@@ -485,7 +485,7 @@ describe('scalar card', () => {
         new Map([['run1', true]])
       );
       store.overrideSelector(
-        commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+        commonSelectors.getFilteredRenderableRunsIds,
         new Set(['run1'])
       );
       store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
@@ -764,7 +764,7 @@ describe('scalar card', () => {
         new Map([['run1', true]])
       );
       store.overrideSelector(
-        commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+        commonSelectors.getFilteredRenderableRunsIds,
         new Set(['run1'])
       );
     });
@@ -2574,7 +2574,7 @@ describe('scalar card', () => {
           ])
         );
         store.overrideSelector(
-          commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+          commonSelectors.getFilteredRenderableRunsIds,
           new Set(['run1', 'run2'])
         );
         store.overrideSelector(getCardStateMap, {
@@ -2996,7 +2996,7 @@ describe('scalar card', () => {
         ])
       );
       store.overrideSelector(
-        commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+        commonSelectors.getFilteredRenderableRunsIds,
         new Set(['run1', 'run2'])
       );
 
@@ -3066,7 +3066,7 @@ describe('scalar card', () => {
         ])
       );
       store.overrideSelector(
-        commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+        commonSelectors.getFilteredRenderableRunsIds,
         new Set(['run1', 'run2'])
       );
 
@@ -3145,7 +3145,7 @@ describe('scalar card', () => {
         new Map([['run1', true]])
       );
       store.overrideSelector(
-        commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+        commonSelectors.getFilteredRenderableRunsIds,
         new Set(['run1'])
       );
 
@@ -3211,7 +3211,7 @@ describe('scalar card', () => {
         new Map([['run1', true]])
       );
       store.overrideSelector(
-        commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+        commonSelectors.getFilteredRenderableRunsIds,
         new Set(['run1'])
       );
 
@@ -3278,7 +3278,7 @@ describe('scalar card', () => {
         ])
       );
       store.overrideSelector(
-        commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+        commonSelectors.getFilteredRenderableRunsIds,
         new Set(['run1', 'run2'])
       );
 
@@ -3330,7 +3330,7 @@ describe('scalar card', () => {
         ])
       );
       store.overrideSelector(
-        commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+        commonSelectors.getFilteredRenderableRunsIds,
         new Set(['run1', 'run2'])
       );
 
@@ -3382,7 +3382,7 @@ describe('scalar card', () => {
         ])
       );
       store.overrideSelector(
-        commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+        commonSelectors.getFilteredRenderableRunsIds,
         new Set(['run1', 'run2'])
       );
 
@@ -3432,7 +3432,7 @@ describe('scalar card', () => {
         ])
       );
       store.overrideSelector(
-        commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+        commonSelectors.getFilteredRenderableRunsIds,
         new Set(['run1', 'run2'])
       );
       store.overrideSelector(getMetricsLinkedTimeSelection, {
@@ -3481,7 +3481,7 @@ describe('scalar card', () => {
         ])
       );
       store.overrideSelector(
-        commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+        commonSelectors.getFilteredRenderableRunsIds,
         new Set(['run1', 'run2'])
       );
       store.overrideSelector(selectors.getExperimentIdToExperimentAliasMap, {
@@ -3539,7 +3539,7 @@ describe('scalar card', () => {
         new Map([['run1', true]])
       );
       store.overrideSelector(
-        commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+        commonSelectors.getFilteredRenderableRunsIds,
         new Set(['run1'])
       );
       store.overrideSelector(getMetricsLinkedTimeSelection, {
@@ -3586,7 +3586,7 @@ describe('scalar card', () => {
         ])
       );
       store.overrideSelector(
-        commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+        commonSelectors.getFilteredRenderableRunsIds,
         new Set(['run1', 'run2', 'run3'])
       );
 
@@ -3635,7 +3635,7 @@ describe('scalar card', () => {
         ])
       );
       store.overrideSelector(
-        commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+        commonSelectors.getFilteredRenderableRunsIds,
         new Set(['run1', 'run2', 'run3'])
       );
 
@@ -3692,7 +3692,7 @@ describe('scalar card', () => {
         ])
       );
       store.overrideSelector(
-        commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+        commonSelectors.getFilteredRenderableRunsIds,
         new Set(['run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7'])
       );
 
@@ -3754,7 +3754,7 @@ describe('scalar card', () => {
       );
 
       store.overrideSelector(
-        commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+        commonSelectors.getFilteredRenderableRunsIds,
         new Set(['run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7'])
       );
 
@@ -3840,7 +3840,7 @@ describe('scalar card', () => {
         );
 
         store.overrideSelector(
-          commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+          commonSelectors.getFilteredRenderableRunsIds,
           new Set(['run1'])
         );
 
@@ -3952,7 +3952,7 @@ describe('scalar card', () => {
         ])
       );
       store.overrideSelector(
-        commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+        commonSelectors.getFilteredRenderableRunsIds,
         new Set(['run1', 'run2', 'run3', 'run4'])
       );
 
@@ -3981,7 +3981,7 @@ describe('scalar card', () => {
         ])
       );
       store.overrideSelector(
-        commonSelectors.getFilteredRenderableRunsIdsFromRoute,
+        commonSelectors.getFilteredRenderableRunsIds,
         new Set(['run1', 'run2'])
       );
       const fixture = createComponent('card1');

@@ -17,7 +17,7 @@ tf_ng_module(
     ],
     assets = [":layout_styles"],
     deps = [
-        "//tensorboard/webapp/angular:expect_angular_material_button",
+        "//tensorboard/webapp/angular:expect_angular_legacy_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/core:state",
         "//tensorboard/webapp/core:types",

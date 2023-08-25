@@ -113,15 +113,14 @@ class HParamsPlugin(base_plugin.TBPlugin):
         ctx = plugin_util.context(request.environ)
         experiment_id = plugin_util.experiment_id(request.environ)
         try:
-            # This backend currently ignores the request parameters, but (for a POST)
-            # we must advance the input stream to skip them -- otherwise the next HTTP
-            # request will be parsed incorrectly.
-            _ = _parse_request_argument(request, api_pb2.GetExperimentRequest)
+            request_proto = _parse_request_argument(
+                request, api_pb2.GetExperimentRequest
+            )
             return http_util.Respond(
                 request,
                 json_format.MessageToJson(
                     get_experiment.Handler(
-                        ctx, self._context, experiment_id
+                        ctx, self._context, experiment_id, request_proto
                     ).run(),
                     including_default_value_fields=True,
                 ),

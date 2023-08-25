@@ -18,17 +18,26 @@
 class Handler:
     """Handles a GetExperiment request."""
 
-    def __init__(self, request_context, backend_context, experiment_id):
+    def __init__(
+        self, request_context, backend_context, experiment_id, request
+    ):
         """Constructor.
 
         Args:
           request_context: A tensorboard.context.RequestContext.
           backend_context: A backend_context.Context instance.
           experiment_id: A string, as from `plugin_util.experiment_id`.
+          request: A api_pb2.GetExperimentRequest instance.
         """
         self._request_context = request_context
         self._backend_context = backend_context
         self._experiment_id = experiment_id
+        self._include_metrics = (
+            # Metrics are included by default if include_metrics is not
+            # specified in the request.
+            not request.HasField("include_metrics")
+            or request.include_metrics
+        )
 
     def run(self):
         """Handles the request specified on construction.
@@ -36,14 +45,14 @@ class Handler:
         Returns:
           An Experiment object.
         """
-        experiment_id = self._experiment_id
         return self._backend_context.experiment_from_metadata(
             self._request_context,
-            experiment_id,
+            self._experiment_id,
+            self._include_metrics,
             self._backend_context.hparams_metadata(
-                self._request_context, experiment_id
+                self._request_context, self._experiment_id
             ),
             self._backend_context.hparams_from_data_provider(
-                self._request_context, experiment_id
+                self._request_context, self._experiment_id
             ),
         )

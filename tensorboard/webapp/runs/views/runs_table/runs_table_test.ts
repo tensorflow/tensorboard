@@ -110,7 +110,7 @@ import {
   ColumnHeaderType,
   SortingOrder,
 } from '../../../widgets/data_table/types';
-import {getFilteredRenderableRunsFromRoute} from '../../../metrics/views/main_view/common_selectors';
+import {getFilteredRenderableRuns} from '../../../metrics/views/main_view/common_selectors';
 
 @Injectable()
 class ColorPickerTestHelper {
@@ -2977,7 +2977,7 @@ describe('runs_table', () => {
       describe('runs data table integration', () => {
         beforeEach(() => {
           store.overrideSelector(getEnableHparamsInTimeSeries, true);
-          store.overrideSelector(getFilteredRenderableRunsFromRoute, [
+          store.overrideSelector(getFilteredRenderableRuns, [
             {
               run: buildRun({
                 id: 'id1',
@@ -3356,7 +3356,7 @@ describe('runs_table', () => {
     it('passes run name, experiment alias, selected value, and color to data table', () => {
       // To make sure we only return the runs when called with the right props.
       const selectSpy = spyOn(store, 'select').and.callThrough();
-      selectSpy.withArgs(getFilteredRenderableRunsFromRoute).and.returnValue(
+      selectSpy.withArgs(getFilteredRenderableRuns).and.returnValue(
         of([
           {
             run: buildRun({id: 'book1', name: "The Philosopher's Stone"}),
@@ -3419,7 +3419,7 @@ describe('runs_table', () => {
         ])
       );
 
-      selectSpy.withArgs(getFilteredRenderableRunsFromRoute).and.returnValue(
+      selectSpy.withArgs(getFilteredRenderableRuns).and.returnValue(
         of([
           {
             run: run1,
@@ -3481,7 +3481,7 @@ describe('runs_table', () => {
           },
         ]);
 
-        store.overrideSelector(getFilteredRenderableRunsFromRoute, [
+        store.overrideSelector(getFilteredRenderableRuns, [
           {
             run: run1,
             experimentAlias: {aliasNumber: 1, aliasText: 'bbb'},

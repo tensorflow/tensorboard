@@ -254,17 +254,20 @@ enum Status {
 
 // Parameters for a GetExperiment API call.
 // Each experiment is scoped by a unique global id.
-// NEXT_TAG: 2
+// NEXT_TAG: 3
 message GetExperimentRequest {
   // REQUIRED
   string experiment_name = 1;
+
+  // Whether to fetch metrics and include them in the results. Defaults to true.
+  optional bool include_metrics = 2;
 }
 
 // Parameters for a ListSessionGroups API call.
 // Computes a list of the current session groups allowing for filtering and
 // sorting by metrics and hyperparameter values. Returns a "slice" of
 // that list specified by start_index and slice_size.
-// NEXT_TAG: 8
+// NEXT_TAG: 9
 message ListSessionGroupsRequest {
   string experiment_name = 6;
 
@@ -314,6 +317,9 @@ message ListSessionGroupsRequest {
   // sorted and filtered by the parameters above (if start_index > total_size
   // no session groups are returned).
   int32 slice_size = 5;
+
+  // Whether to fetch metrics and include them in the results. Defaults to true.
+  optional bool include_metrics = 8;
 }
 
 // Defines parmeters for a ListSessionGroupsRequest for a specific column.

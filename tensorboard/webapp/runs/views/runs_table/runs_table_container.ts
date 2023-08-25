@@ -97,7 +97,7 @@ import {
 import {RunsTableColumn, RunTableItem} from './types';
 import {
   getCurrentColumnFilters,
-  getFilteredRenderableRunsFromRoute,
+  getFilteredRenderableRuns,
   getPotentialHparamColumns,
 } from '../../../metrics/views/main_view/common_selectors';
 import {runsTableFullScreenToggled} from '../../../core/actions';
@@ -377,23 +377,21 @@ export class RunsTableContainer implements OnInit, OnDestroy {
 
   columnFilters$ = this.store.select(getCurrentColumnFilters);
 
-  allRunsTableData$ = this.store
-    .select(getFilteredRenderableRunsFromRoute)
-    .pipe(
-      map((filteredRenderableRuns) => {
-        return filteredRenderableRuns.map((runTableItem) => {
-          const tableData: TableData = {
-            ...Object.fromEntries(runTableItem.hparams.entries()),
-            id: runTableItem.run.id,
-            run: runTableItem.run.name,
-            experimentAlias: runTableItem.experimentAlias,
-            selected: runTableItem.selected,
-            color: runTableItem.runColor,
-          };
-          return tableData;
-        });
-      })
-    );
+  allRunsTableData$ = this.store.select(getFilteredRenderableRuns).pipe(
+    map((filteredRenderableRuns) => {
+      return filteredRenderableRuns.map((runTableItem) => {
+        const tableData: TableData = {
+          ...Object.fromEntries(runTableItem.hparams.entries()),
+          id: runTableItem.run.id,
+          run: runTableItem.run.name,
+          experimentAlias: runTableItem.experimentAlias,
+          selected: runTableItem.selected,
+          color: runTableItem.runColor,
+        };
+        return tableData;
+      });
+    })
+  );
 
   private readonly ngUnsubscribe = new Subject<void>();
 

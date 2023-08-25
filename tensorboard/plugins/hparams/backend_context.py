@@ -57,6 +57,7 @@ class Context:
         self,
         ctx,
         experiment_id,
+        include_metrics,
         hparams_run_to_tag_to_content,
         data_provider_hparams,
     ):
@@ -76,6 +77,8 @@ class Context:
 
         Args:
           experiment_id: String, from `plugin_util.experiment_id`.
+          include_metrics: Whether to determine metrics_infos and include them
+            in the result.
           hparams_run_to_tag_to_content: The output from an hparams_metadata()
             call. A dict `d` such that `d[run][tag]` is a `bytes` value with the
             summary metadata content for the keyed time series.
@@ -87,19 +90,21 @@ class Context:
           The experiment proto. If no data is found for an experiment proto to
           be built, returns an entirely empty experiment.
         """
-        experiment = self._find_experiment_tag(hparams_run_to_tag_to_content)
+        experiment = self._find_experiment_tag(
+            hparams_run_to_tag_to_content, include_metrics
+        )
         if experiment:
             return experiment
 
         experiment_from_runs = self._compute_experiment_from_runs(
-            ctx, experiment_id, hparams_run_to_tag_to_content
+            ctx, experiment_id, include_metrics, hparams_run_to_tag_to_content
         )
         if experiment_from_runs:
             return experiment_from_runs
 
         experiment_from_data_provider_hparams = (
             self._experiment_from_data_provider_hparams(
-                ctx, experiment_id, data_provider_hparams
+                ctx, experiment_id, include_metrics, data_provider_hparams
             )
         )
         return (
@@ -202,7 +207,9 @@ class Context:
             ctx, experiment_ids=[experiment_id], filters=filters, sort=sort
         )
 
-    def _find_experiment_tag(self, hparams_run_to_tag_to_content):
+    def _find_experiment_tag(
+        self, hparams_run_to_tag_to_content, include_metrics
+    ):
         """Finds the experiment associcated with the metadata.EXPERIMENT_TAG
         tag.
 
@@ -214,23 +221,34 @@ class Context:
         for tags in hparams_run_to_tag_to_content.values():
             maybe_content = tags.get(metadata.EXPERIMENT_TAG)
             if maybe_content is not None:
-                return metadata.parse_experiment_plugin_data(maybe_content)
+                experiment = metadata.parse_experiment_plugin_data(
+                    maybe_content
+                )
+                if not include_metrics:
+                    # metric_infos haven't technically been "calculated" in this
+                    # case. They have been read directly from the Experiment
+                    # proto.
+                    # Delete them from the result so that they are not returned
+                    # to the client.
+                    experiment.ClearField("metric_infos")
+                return experiment
         return None
 
     def _compute_experiment_from_runs(
-        self, ctx, experiment_id, hparams_run_to_tag_to_content
+        self, ctx, experiment_id, include_metrics, hparams_run_to_tag_to_content
     ):
         """Computes a minimal Experiment protocol buffer by scanning the runs.
 
         Returns None if there are no hparam infos logged.
         """
         hparam_infos = self._compute_hparam_infos(hparams_run_to_tag_to_content)
-        if hparam_infos:
-            metric_infos = self._compute_metric_infos_from_runs(
+        metric_infos = (
+            self._compute_metric_infos_from_runs(
                 ctx, experiment_id, hparams_run_to_tag_to_content
             )
-        else:
-            metric_infos = []
+            if hparam_infos and include_metrics
+            else []
+        )
         if not hparam_infos and not metric_infos:
             return None
 
@@ -320,11 +338,15 @@ class Context:
         self,
         ctx,
         experiment_id,
+        include_metrics,
         data_provider_hparams,
     ):
         """Returns an experiment protobuffer based on data provider hparams.
 
         Args:
+          experiment_id: String, from `plugin_util.experiment_id`.
+          include_metrics: Whether to determine metrics_infos and include them
+            in the result.
           data_provider_hparams: The ouput from an hparams_from_data_provider()
             call, corresponding to DataProvider.list_hyperparameters().
             A provider.ListHyperparametersResult.
@@ -352,6 +374,8 @@ class Context:
             self.compute_metric_infos_from_data_provider_session_groups(
                 ctx, experiment_id, session_groups
             )
+            if include_metrics
+            else []
         )
         return api_pb2.Experiment(
             hparam_infos=hparam_infos, metric_infos=metric_infos
