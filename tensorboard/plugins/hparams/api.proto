@@ -376,8 +376,8 @@ message ColParams {
 
   // Specifies whether to include the values for the field in the operation
   // result. Defaults to True.
-  // Note: Hparams and metrics that do not appear in any `ColParams` in a request
-  // will also not be included in the result.
+  // Note: Hparams and metrics that do not appear in any `ColParams` in a
+  // request will also not be included in the result.
   optional bool include_in_result = 9;
 }
 
