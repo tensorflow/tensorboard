@@ -397,7 +397,13 @@ class DataProvider(metaclass=abc.ABCMeta):
         return ListHyperparametersResult(hyperparameters=[], session_groups=[])
 
     def read_hyperparameters(
-        self, ctx=None, *, experiment_ids, filters=None, sort=None
+        self,
+        ctx=None,
+        *,
+        experiment_ids,
+        filters=None,
+        sort=None,
+        hparams_to_include=None,
     ):
         """Read hyperparameter values.
 
@@ -409,6 +415,10 @@ class DataProvider(metaclass=abc.ABCMeta):
             returned session groups based on hyperparameter value.
           sort: A Sequence[HyperparameterSort] that specify how the results
             should be sorted.
+          hparams_to_include: An optional Collection[str] of the full names of
+            hyperparameters to include in the results. This collection will be
+            augmented to include all the hyperparameters specified in `filters`
+            and `sort`. If None, all hyperparameters will be returned.
 
         Returns:
           A Sequence[HyperparameterSessionGroup] describing the groups and
