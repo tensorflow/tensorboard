@@ -205,7 +205,7 @@ class TensorBoard:
             # any positional arguments to `serve`.
             serve_parser = serve_subparser
 
-        for (name, subcommand) in self.subcommands.items():
+        for name, subcommand in self.subcommands.items():
             subparser = subparsers.add_parser(
                 name,
                 help=subcommand.help(),
@@ -647,9 +647,15 @@ def with_port_scanning(cls):
         max_attempts = 100 if should_scan else 1
         base_port = min(base_port + max_attempts, 0x10000) - max_attempts
 
+        def is_port_in_use(port):
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                return s.connect_ex(("localhost", port)) == 0
+
         for port in range(base_port, base_port + max_attempts):
             subflags = argparse.Namespace(**vars(flags))
             subflags.port = port
+            if is_port_in_use(port):
+                continue
             try:
                 return cls(wsgi_app=wsgi_app, flags=subflags)
             except TensorBoardPortInUseError:
