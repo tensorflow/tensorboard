@@ -15,7 +15,7 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Store} from '@ngrx/store';
-import {forkJoin, merge, Observable, of, throwError} from 'rxjs';
+import {forkJoin, merge, Observable, of, throwError, zip} from 'rxjs';
 import {
   catchError,
   distinctUntilChanged,
@@ -267,7 +267,9 @@ export class RunsEffects {
     );
   }
 
-  private maybeFetchHparamsMetadata(experimentId: string) {
+  private maybeFetchHparamsMetadata(
+    experimentId: string
+  ): Observable<HparamsAndMetadata> {
     return this.store.select(getEnableHparamsInTimeSeries).pipe(
       withLatestFrom(this.store.select(getRouteKind)),
       switchMap(([hparamsInTimeSeries, routeKind]) => {
@@ -289,7 +291,7 @@ export class RunsEffects {
     runs: Run[];
     metadata: HparamsAndMetadata;
   }> {
-    return forkJoin([
+    return zip([
       this.runsDataSource.fetchRuns(experimentId),
       this.maybeFetchHparamsMetadata(experimentId),
     ]).pipe(
