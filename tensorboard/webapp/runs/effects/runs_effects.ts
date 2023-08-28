@@ -22,17 +22,20 @@ import {
   filter,
   map,
   mergeMap,
+  switchMap,
   take,
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
 import {areSameRouteKindAndExperiments} from '../../app_routing';
 import {navigated} from '../../app_routing/actions';
-import {RouteKind} from '../../app_routing/types';
+import {RouteKind, isDashboardRoute} from '../../app_routing/types';
 import {State} from '../../app_state';
 import * as coreActions from '../../core/actions';
 import {
   getActiveRoute,
+  getRouteKind,
+  getEnableHparamsInTimeSeries,
   getExperimentIdsFromRoute,
   getRuns,
   getRunsLoadState,
@@ -264,6 +267,22 @@ export class RunsEffects {
     );
   }
 
+  private maybeFetchHparamsMetadata(experimentId: string) {
+    return this.store.select(getEnableHparamsInTimeSeries).pipe(
+      withLatestFrom(this.store.select(getRouteKind)),
+      switchMap(([hparamsInTimeSeries, routeKind]) => {
+        if (hparamsInTimeSeries && isDashboardRoute(routeKind)) {
+          return of({
+            hparamSpecs: [],
+            metricSpecs: [],
+            runToHparamsAndMetrics: {},
+          });
+        }
+        return this.runsDataSource.fetchHparamsMetadata(experimentId);
+      })
+    );
+  }
+
   private fetchRunsForExperiment(experimentId: string): Observable<{
     fromRemote: true;
     experimentId: string;
@@ -272,7 +291,7 @@ export class RunsEffects {
   }> {
     return forkJoin([
       this.runsDataSource.fetchRuns(experimentId),
-      this.runsDataSource.fetchHparamsMetadata(experimentId),
+      this.maybeFetchHparamsMetadata(experimentId),
     ]).pipe(
       map(([runs, metadata]) => {
         return {fromRemote: true, experimentId, runs, metadata};
