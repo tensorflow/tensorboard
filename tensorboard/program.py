@@ -205,7 +205,7 @@ class TensorBoard:
             # any positional arguments to `serve`.
             serve_parser = serve_subparser
 
-        for (name, subcommand) in self.subcommands.items():
+        for name, subcommand in self.subcommands.items():
             subparser = subparsers.add_parser(
                 name,
                 help=subcommand.help(),
@@ -698,7 +698,17 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
         self._url = None  # Will be set by get_url() below
 
         self._fix_werkzeug_logging()
+
+        def is_port_in_use(port):
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                return s.connect_ex(("localhost", port)) == 0
+
         try:
+            if is_port_in_use(port):
+                raise TensorBoardPortInUseError(
+                    "TensorBoard could not bind to port %d, it was already in use"
+                    % port
+                )
             super().__init__(host, port, wsgi_app, _WSGIRequestHandler)
         except socket.error as e:
             if hasattr(errno, "EACCES") and e.errno == errno.EACCES:
