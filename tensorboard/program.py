@@ -647,15 +647,9 @@ def with_port_scanning(cls):
         max_attempts = 100 if should_scan else 1
         base_port = min(base_port + max_attempts, 0x10000) - max_attempts
 
-        def is_port_in_use(port):
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                return s.connect_ex(("localhost", port)) == 0
-
         for port in range(base_port, base_port + max_attempts):
             subflags = argparse.Namespace(**vars(flags))
             subflags.port = port
-            if is_port_in_use(port):
-                continue
             try:
                 return cls(wsgi_app=wsgi_app, flags=subflags)
             except TensorBoardPortInUseError:
@@ -704,7 +698,17 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
         self._url = None  # Will be set by get_url() below
 
         self._fix_werkzeug_logging()
+
+        def is_port_in_use(port):
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                return s.connect_ex(("localhost", port)) == 0
+
         try:
+            if is_port_in_use(port):
+                raise TensorBoardPortInUseError(
+                    "TensorBoard could not bind to port %d, it was already in use"
+                    % port
+                )
             super().__init__(host, port, wsgi_app, _WSGIRequestHandler)
         except socket.error as e:
             if hasattr(errno, "EACCES") and e.errno == errno.EACCES:
