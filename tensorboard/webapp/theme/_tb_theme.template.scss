@@ -262,10 +262,14 @@ $tb-dark-theme: map_merge(
 
 // Apply themed style for the global stylesheet (styles.scss).
 @mixin tb-global-themed-styles() {
+  // TODO(JamesHollyer): remove legacy component themes once all components
+  // are migrated.
   @include mat.core();
   @include mat.all-legacy-component-typographies();
+  @include mat.all-component-typographies();
   // Include all theme-styles for the components based on the current theme.
   @include mat.all-legacy-component-themes($tb-theme);
+  @include mat.all-component-themes($tb-theme);
 
   body {
     // Prevents ngx-color-picker from creating a scrollbar and misposition.
@@ -299,6 +303,9 @@ $tb-dark-theme: map_merge(
       }
     }
 
+    // TODO(JamesHollyer): remove legacy component themes once all components
+    // are migrated.
+    @include mat.all-component-themes($tb-dark-theme);
     @include mat.all-legacy-component-themes($tb-dark-theme);
   }
 }
