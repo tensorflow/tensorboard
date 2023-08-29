@@ -14,10 +14,7 @@ limitations under the License.
 
 <custom-modal #contextMenu (onClose)="onContextMenuClosed()">
   <div class="context-menu">
-    <div
-      *ngIf="!contextMenuHeader?.removable && !contextMenuHeader?.sortable && !canContextMenuInsert() && !contextMenuHeader?.filterable"
-      class="no-actions-message"
-    >
+    <div *ngIf="isContextMenuEmpty()" class="no-actions-message">
       No Actions Available
     </div>
     <button

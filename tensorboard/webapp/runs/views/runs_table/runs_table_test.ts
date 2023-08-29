@@ -3006,27 +3006,6 @@ describe('runs_table', () => {
             },
           ]);
 
-          store.overrideSelector(
-            hparamsSelectors.getHparamFilterMap,
-            buildHparamFilterMap([
-              [
-                'foo',
-                buildDiscreteFilter({
-                  includeUndefined: false,
-                  filterValues: ['bar', 'faz'],
-                }),
-              ],
-              [
-                'qaz',
-                buildIntervalFilter({
-                  includeUndefined: false,
-                  filterLowerValue: 0.4,
-                  filterUpperValue: 1,
-                }),
-              ],
-            ])
-          );
-
           store.overrideSelector(getRunsTableHeaders, [
             {
               type: ColumnHeaderType.HPARAM,

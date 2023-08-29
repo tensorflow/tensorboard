@@ -29,9 +29,9 @@ import {
 } from '../../../selectors';
 import {DeepReadonly} from '../../../util/types';
 import {
+  getDashboardMetricsFilterMap,
   getDashboardHparamsAndMetricsSpecs,
   getDashboardHparamFilterMap,
-  getDashboardMetricsFilterMap,
   getDashboardDefaultHparamFilters,
 } from '../../../hparams/_redux/hparams_selectors';
 import {

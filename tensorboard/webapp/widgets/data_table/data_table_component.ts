@@ -299,6 +299,15 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     );
   }
 
+  isContextMenuEmpty() {
+    return (
+      !this.contextMenuHeader?.removable &&
+      !this.contextMenuHeader?.sortable &&
+      !this.canContextMenuInsert() &&
+      !this.contextMenuHeader?.filterable
+    );
+  }
+
   contextMenuRemoveColumn() {
     if (this.contextMenuHeader === undefined) {
       return;
@@ -326,10 +335,6 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     return index;
   }
 
-  canBeContextMeFiltered() {
-    return this.contextMenuHeader?.filterable;
-  }
-
   onColumnAdded(header: ColumnHeader) {
     this.addColumn.emit({header, index: this.getInsertIndex()});
   }
@@ -351,7 +356,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     if (!this.filterColumn) {
       return;
     }
-    return this.columnFilters.get(this.filterColumn?.name);
+    return this.columnFilters.get(this.filterColumn.name);
   }
 
   onFilterClosed() {
