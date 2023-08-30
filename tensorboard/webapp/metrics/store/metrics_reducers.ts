@@ -267,7 +267,7 @@ const {initialState, reducers: namespaceContextedReducer} =
       tagGroupExpanded: new Map<string, boolean>(),
       linkedTimeSelection: null,
       linkedTimeEnabled: false,
-      stepSelectorEnabled: false,
+      stepSelectorEnabled: true,
       rangeSelectionEnabled: false,
       singleSelectionHeaders: [
         {
