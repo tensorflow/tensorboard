@@ -257,7 +257,6 @@ describe('runs_table', () => {
         RunsGroupMenuButtonContainer,
         RunsTableComponent,
         RunsTableContainer,
-        RunsTableContainer,
         TestableColorPicker,
       ],
       providers: [provideMockTbStore(), ColorPickerTestHelper],
@@ -2973,6 +2972,129 @@ describe('runs_table', () => {
         for (const [action] of dispatchSpy.calls.allArgs()) {
           expect(action.type).not.toBe(runSelectorSortChanged.type);
         }
+      });
+
+      describe('runs data table integration', () => {
+        beforeEach(() => {
+          store.overrideSelector(getEnableHparamsInTimeSeries, true);
+          store.overrideSelector(getFilteredRenderableRuns, [
+            {
+              run: buildRun({
+                id: 'id1',
+                name: 'Book 1',
+                hparams: [{name: 'qaz', value: 0.5}],
+              }),
+              experimentAlias: {aliasNumber: 0, aliasText: 'hp'},
+              experimentName: 'HP',
+              selected: true,
+              runColor: 'fff',
+              hparams: new Map([['qaz', 0.5]]),
+              metrics: new Map<string, any>(),
+            },
+            {
+              run: buildRun({
+                id: 'id2',
+                name: 'Book 2',
+                hparams: [{name: 'qaz', value: 0.5}],
+              }),
+              experimentAlias: {aliasNumber: 0, aliasText: 'hp'},
+              experimentName: 'HP',
+              selected: true,
+              runColor: 'fff',
+              hparams: new Map([['qaz', 0.5]]),
+              metrics: new Map<string, any>(),
+            },
+          ]);
+
+          store.overrideSelector(getRunsTableHeaders, [
+            {
+              type: ColumnHeaderType.HPARAM,
+              name: 'foo',
+              displayName: 'Foo',
+              enabled: true,
+              removable: true,
+              filterable: true,
+              sortable: true,
+              movable: true,
+            },
+            {
+              type: ColumnHeaderType.HPARAM,
+              name: 'qaz',
+              displayName: 'Qaz',
+              enabled: true,
+              removable: true,
+              filterable: true,
+              sortable: true,
+              movable: true,
+            },
+          ]);
+        });
+
+        it('adds interval filters', () => {
+          const fixture = createComponent(TEST_HPARAM_SPECS, TEST_METRIC_SPECS);
+          fixture.detectChanges();
+          const dataTable = fixture.debugElement.query(
+            By.directive(RunsDataTable)
+          );
+
+          dataTable.componentInstance.addFilter.emit({
+            header: {
+              name: 'qaz',
+            },
+            value: {
+              type: DomainType.INTERVAL,
+              includeUndefined: true,
+              filterLowerValue: 10,
+              filterUpperValue: 20,
+              minValue: 10,
+              maxValue: 20,
+            },
+          });
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            hparamsActions.dashboardHparamFilterAdded({
+              name: 'qaz',
+              filter: {
+                type: DomainType.INTERVAL,
+                includeUndefined: true,
+                filterLowerValue: 10,
+                filterUpperValue: 20,
+                minValue: 10,
+                maxValue: 20,
+              },
+            })
+          );
+        });
+
+        it('adds discrete filters', () => {
+          const fixture = createComponent(TEST_HPARAM_SPECS, TEST_METRIC_SPECS);
+          fixture.detectChanges();
+          const dataTable = fixture.debugElement.query(
+            By.directive(RunsDataTable)
+          );
+
+          dataTable.componentInstance.addFilter.emit({
+            header: {
+              name: 'foo',
+            },
+            value: {
+              type: DomainType.DISCRETE,
+              includeUndefined: true,
+              filterValues: [2, 4, 6, 8],
+              possibleValues: [2, 4, 6, 8, 10],
+            },
+          });
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            hparamsActions.dashboardHparamFilterAdded({
+              name: 'foo',
+              filter: {
+                type: DomainType.DISCRETE,
+                includeUndefined: true,
+                filterValues: [2, 4, 6, 8],
+                possibleValues: [2, 4, 6, 8, 10],
+              },
+            })
+          );
+        });
       });
     });
 

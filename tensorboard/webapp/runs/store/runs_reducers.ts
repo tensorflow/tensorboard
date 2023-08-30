@@ -330,6 +330,7 @@ const {initialState: uiInitialState, reducers: uiNamespaceContextedReducers} =
           enabled: true,
           sortable: true,
           movable: true,
+          filterable: false,
         },
       ],
       sortingInfo: {

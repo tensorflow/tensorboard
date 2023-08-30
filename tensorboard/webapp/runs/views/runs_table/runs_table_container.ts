@@ -68,7 +68,7 @@ import {matchRunToRegex} from '../../../util/matcher';
 import {getEnableHparamsInTimeSeries} from '../../../feature_flag/store/feature_flag_selectors';
 import {
   ColumnHeader,
-  ColumnHeaderType,
+  FilterAddedEvent,
   SortingInfo,
   SortingOrder,
   TableData,
@@ -96,6 +96,7 @@ import {
 } from './runs_table_component';
 import {RunsTableColumn, RunTableItem} from './types';
 import {
+  getCurrentColumnFilters,
   getFilteredRenderableRuns,
   getPotentialHparamColumns,
 } from '../../../metrics/views/main_view/common_selectors';
@@ -275,6 +276,7 @@ function matchFilter(
       [headers]="runsColumns$ | async"
       [data]="sortedRunsTableData$ | async"
       [selectableColumns]="selectableColumns$ | async"
+      [columnFilters]="columnFilters$ | async"
       [sortingInfo]="sortingInfo$ | async"
       [experimentIds]="experimentIds"
       [regexFilter]="regexFilter$ | async"
@@ -290,6 +292,7 @@ function matchFilter(
       (toggleFullScreen)="toggleFullScreen()"
       (addColumn)="addColumn($event)"
       (removeColumn)="removeColumn($event)"
+      (addFilter)="addHparamFilter($event)"
     ></runs-data-table>
   `,
   host: {
@@ -371,6 +374,8 @@ export class RunsTableContainer implements OnInit, OnDestroy {
       });
     })
   );
+
+  columnFilters$ = this.store.select(getCurrentColumnFilters);
 
   allRunsTableData$ = this.store.select(getFilteredRenderableRuns).pipe(
     map((filteredRenderableRuns) => {
@@ -825,6 +830,15 @@ export class RunsTableContainer implements OnInit, OnDestroy {
 
   useDataTable() {
     return this.hparamsEnabled.value && !this.forceLegacyTable;
+  }
+
+  addHparamFilter(event: FilterAddedEvent) {
+    this.store.dispatch(
+      hparamsActions.dashboardHparamFilterAdded({
+        name: event.header.name,
+        filter: event.value,
+      })
+    );
   }
 }
 

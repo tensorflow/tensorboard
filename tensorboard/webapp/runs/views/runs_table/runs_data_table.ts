@@ -24,8 +24,10 @@ import {
   TableData,
   SortingInfo,
   ColumnHeaderType,
+  FilterAddedEvent,
+  DiscreteFilter,
+  IntervalFilter,
 } from '../../../widgets/data_table/types';
-
 @Component({
   selector: 'runs-data-table',
   templateUrl: 'runs_data_table.ng.html',
@@ -41,6 +43,7 @@ export class RunsDataTable {
   @Input() isFullScreen!: boolean;
   @Input() selectableColumns!: ColumnHeader[];
   @Input() loading!: boolean;
+  @Input() columnFilters!: Map<string, DiscreteFilter | IntervalFilter>;
 
   ColumnHeaderType = ColumnHeaderType;
 
@@ -60,6 +63,7 @@ export class RunsDataTable {
   }>();
   @Output() removeColumn = new EventEmitter<ColumnHeader>();
   @Output() onSelectionDblClick = new EventEmitter<string>();
+  @Output() addFilter = new EventEmitter<FilterAddedEvent>();
 
   // These columns must be stored and reused to stop needless re-rendering of
   // the content and headers in these columns. This has been known to cause

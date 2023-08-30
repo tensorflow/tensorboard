@@ -978,6 +978,7 @@ describe('common selectors', () => {
           removable: true,
           sortable: true,
           movable: true,
+          filterable: true,
         },
       ]);
     });
@@ -995,6 +996,7 @@ describe('common selectors', () => {
           removable: true,
           sortable: true,
           movable: true,
+          filterable: true,
         },
         {
           type: ColumnHeaderType.HPARAM,
@@ -1004,6 +1006,7 @@ describe('common selectors', () => {
           removable: true,
           sortable: true,
           movable: true,
+          filterable: true,
         },
       ]);
     });

@@ -69,6 +69,11 @@ export interface IntervalFilter {
   filterUpperValue: number;
 }
 
+export interface FilterAddedEvent {
+  header: ColumnHeader;
+  value: IntervalFilter | DiscreteFilter;
+}
+
 export interface ColumnHeader {
   type: ColumnHeaderType;
   name: string;

@@ -28,6 +28,10 @@ import {
 import {
   ColumnHeader,
   ColumnHeaderType,
+  DiscreteFilter,
+  DiscreteFilterValue,
+  FilterAddedEvent,
+  IntervalFilter,
   SortingInfo,
   SortingOrder,
 } from './types';
@@ -36,6 +40,7 @@ import {Subscription} from 'rxjs';
 import {CustomModalComponent} from '../custom_modal/custom_modal_component';
 import {ColumnSelectorComponent} from './column_selector_component';
 import {ContentCellComponent} from './content_cell_component';
+import {RangeValues} from '../range_input/types';
 
 export enum Side {
   RIGHT,
@@ -59,6 +64,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   @Input() sortingInfo!: SortingInfo;
   @Input() columnCustomizationEnabled!: boolean;
   @Input() selectableColumns?: ColumnHeader[];
+  @Input() columnFilters!: Map<string, DiscreteFilter | IntervalFilter>;
 
   @ContentChildren(HeaderCellComponent)
   headerCells!: QueryList<HeaderCellComponent>;
@@ -69,6 +75,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
 
   contextMenuHeader: ColumnHeader | undefined = undefined;
   insertColumnTo: Side | undefined = undefined;
+  filterColumn: ColumnHeader | undefined = undefined;
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() orderColumns = new EventEmitter<ColumnHeader[]>();
@@ -77,6 +84,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     header: ColumnHeader;
     index?: number | undefined;
   }>();
+  @Output() addFilter = new EventEmitter<FilterAddedEvent>();
 
   @ViewChild('columnSelectorModal', {static: false})
   private readonly columnSelectorModal!: CustomModalComponent;
@@ -86,6 +94,9 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
 
   @ViewChild('contextMenu', {static: false})
   private readonly contextMenu!: CustomModalComponent;
+
+  @ViewChild('filterModal', {static: false})
+  private readonly filterModal!: CustomModalComponent;
 
   readonly ColumnHeaders = ColumnHeaderType;
   readonly SortingOrder = SortingOrder;
@@ -240,7 +251,8 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   openContextMenu(header: ColumnHeader, event: MouseEvent) {
     event.stopPropagation();
     event.preventDefault();
-    this.columnSelectorModal.close();
+    this.columnSelectorModal?.close();
+    this.filterModal?.close();
 
     this.contextMenuHeader = header;
     this.contextMenu.openAtPosition({
@@ -260,6 +272,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     if (options?.isSubMenu) {
       event.stopPropagation();
     }
+    this.filterModal?.close();
     this.insertColumnTo = options?.insertTo;
     const rect = (event.target as HTMLElement).getBoundingClientRect();
     this.columnSelectorModal.openAtPosition({
@@ -283,6 +296,15 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
       this.selectableColumns &&
       this.selectableColumns.length &&
       this.contextMenuHeader?.movable
+    );
+  }
+
+  isContextMenuEmpty() {
+    return (
+      !this.contextMenuHeader?.removable &&
+      !this.contextMenuHeader?.sortable &&
+      !this.canContextMenuInsert() &&
+      !this.contextMenuHeader?.filterable
     );
   }
 
@@ -315,5 +337,89 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
 
   onColumnAdded(header: ColumnHeader) {
     this.addColumn.emit({header, index: this.getInsertIndex()});
+  }
+
+  openFilterMenu(event: MouseEvent, header: ColumnHeader) {
+    this.filterColumn = header;
+    const rect = (
+      (event.target as HTMLElement).closest('button') as HTMLButtonElement
+    ).getBoundingClientRect();
+    event.stopPropagation();
+    this.columnSelectorModal?.close();
+    this.filterModal.openAtPosition({
+      x: rect.x + rect.width,
+      y: rect.y + rect.height,
+    });
+  }
+
+  getCurrentColumnFilter() {
+    if (!this.filterColumn) {
+      return;
+    }
+    return this.columnFilters.get(this.filterColumn.name);
+  }
+
+  onFilterClosed() {
+    this.filterColumn = undefined;
+  }
+
+  intervalFilterChanged(value: RangeValues) {
+    if (!this.filterColumn) {
+      return;
+    }
+    const filter = this.getCurrentColumnFilter();
+    if (!filter) {
+      return;
+    }
+
+    this.addFilter.emit({
+      header: this.filterColumn,
+      value: {
+        ...filter,
+        filterLowerValue: value.lowerValue,
+        filterUpperValue: value.upperValue,
+      } as IntervalFilter,
+    });
+  }
+
+  discreteFilterChanged(value: DiscreteFilterValue) {
+    if (!this.filterColumn) {
+      return;
+    }
+    const filter = this.getCurrentColumnFilter();
+    if (!filter) {
+      return;
+    }
+    const newValues = new Set([...(filter as DiscreteFilter).filterValues]);
+    if (newValues.has(value)) {
+      newValues.delete(value);
+    } else {
+      newValues.add(value);
+    }
+
+    this.addFilter.emit({
+      header: this.filterColumn,
+      value: {
+        ...filter,
+        filterValues: Array.from(newValues),
+      } as DiscreteFilter,
+    });
+  }
+
+  includeUndefinedToggled() {
+    if (!this.filterColumn) {
+      return;
+    }
+    const filter = this.getCurrentColumnFilter();
+    if (!filter) {
+      return;
+    }
+    this.addFilter.emit({
+      header: this.filterColumn,
+      value: {
+        ...filter,
+        includeUndefined: !filter.includeUndefined,
+      },
+    });
   }
 }

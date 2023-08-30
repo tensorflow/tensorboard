@@ -32,6 +32,7 @@ import {
   getDashboardMetricsFilterMap,
   getDashboardHparamsAndMetricsSpecs,
   getDashboardHparamFilterMap,
+  getDashboardDefaultHparamFilters,
 } from '../../../hparams/_redux/hparams_selectors';
 import {
   DiscreteFilter,
@@ -185,6 +186,19 @@ const utils = {
   },
 };
 
+export const getCurrentColumnFilters = createSelector(
+  getDashboardDefaultHparamFilters,
+  getDashboardHparamFilterMap,
+  getDashboardMetricsFilterMap,
+  (defaultHparamsFilters, hparamFilters, metricFilters) => {
+    return new Map([
+      ...defaultHparamsFilters,
+      ...hparamFilters,
+      ...metricFilters,
+    ]);
+  }
+);
+
 const getRenderableRuns = createSelector(
   getDashboardRuns,
   getDashboardExperimentNames,
@@ -272,6 +286,7 @@ export const getPotentialHparamColumns = createSelector(
       removable: true,
       sortable: true,
       movable: true,
+      filterable: true,
     }));
   }
 );
@@ -290,5 +305,6 @@ export const TEST_ONLY = {
   getRenderableRuns,
   getRenderableCardIdsWithMetadata,
   getScalarTagsForRunSelection,
+  getCurrentColumnFilters,
   utils,
 };
