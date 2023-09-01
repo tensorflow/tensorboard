@@ -15,6 +15,7 @@ tf_ng_module(
         "//tensorboard/webapp/core",
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
+        "//tensorboard/webapp/metrics/data_source:card_interactions_data_source",
         "//tensorboard/webapp/metrics/effects",
         "//tensorboard/webapp/metrics/store",
         "//tensorboard/webapp/metrics/store:metrics_initial_state_provider",

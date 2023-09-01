@@ -112,6 +112,16 @@ function buildBlankState(): MetricsState {
     isSettingsPaneOpen: false,
     isSlideoutMenuOpen: false,
     tableEditorSelectedTab: DataTableMode.SINGLE,
+    newCardInteractions: {
+      pins: [],
+      clicks: [],
+      tagFilters: [],
+    },
+    previousCardInteractions: {
+      pins: [],
+      clicks: [],
+      tagFilters: [],
+    },
   };
 }
 

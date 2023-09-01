@@ -23,13 +23,12 @@ import {
   TimeSeriesRequest,
   TimeSeriesResponse,
 } from '../data_source';
-import {CardState} from '../store/metrics_types';
+import {CardInteractions, CardState} from '../store/metrics_types';
 import {
   CardId,
   HeaderEditInfo,
   HeaderToggleInfo,
   HistogramMode,
-  MinMaxStep,
   PluginType,
   TooltipSort,
   XAxisType,
@@ -270,6 +269,16 @@ export const rangeSelectionToggled = createAction(
 
 export const metricsHideEmptyCardsToggled = createAction(
   '[Metrics] Hide Empty Cards Changed'
+);
+
+export const metricsPreviousCardInteractionsChanged = createAction(
+  '[Metrics] Card Interactions Changed',
+  props<{cardInteractions: CardInteractions}>()
+);
+
+export const metricsCardClicked = createAction(
+  '[Metrics] Card Clicked',
+  props<{cardId: string}>()
 );
 
 // TODO(jieweiwu): Delete after internal code is updated.

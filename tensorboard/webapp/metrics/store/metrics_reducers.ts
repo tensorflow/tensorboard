@@ -453,6 +453,16 @@ const {initialState, reducers: namespaceContextedReducer} =
       settings: METRICS_SETTINGS_DEFAULT,
       settingOverrides: {},
       visibleCardMap: new Map<ElementId, CardId>(),
+      previousCardInteractions: {
+        tagFilters: [],
+        pins: [],
+        clicks: [],
+      },
+      newCardInteractions: {
+        tagFilters: [],
+        pins: [],
+        clicks: [],
+      },
     },
 
     /** onNavigated */
@@ -785,9 +795,41 @@ const reducer = createReducer(
     };
   }),
   on(actions.metricsTagFilterChanged, (state, {tagFilter}) => {
+    const nextNewCardInteractions = {
+      ...state.newCardInteractions,
+    };
+    const previousTagFilter = state.tagFilter;
+    // Ensuring we do not create redundant tag filter as the user types
+    if (tagFilter === '') {
+      nextNewCardInteractions.tagFilters =
+        nextNewCardInteractions.tagFilters.slice(
+          0,
+          nextNewCardInteractions.tagFilters.length - 1
+        );
+    } else if (
+      previousTagFilter === '' ||
+      !nextNewCardInteractions.tagFilters.length
+    ) {
+      nextNewCardInteractions.tagFilters = [
+        ...nextNewCardInteractions.tagFilters,
+        tagFilter,
+      ];
+    } else if (
+      tagFilter.includes(previousTagFilter) ||
+      previousTagFilter.includes(tagFilter)
+    ) {
+      nextNewCardInteractions.tagFilters =
+        nextNewCardInteractions.tagFilters.slice(
+          0,
+          nextNewCardInteractions.tagFilters.length - 1
+        );
+      nextNewCardInteractions.tagFilters.push(tagFilter);
+    }
+
     return {
       ...state,
       tagFilter,
+      newCardInteractions: nextNewCardInteractions,
     };
   }),
   on(actions.metricsChangeTooltipSort, (state, {sort}) => {
@@ -1141,6 +1183,8 @@ const reducer = createReducer(
     let nextCardMetadataMap = {...state.cardMetadataMap};
     let nextCardStepIndexMap = {...state.cardStepIndex};
     let nextCardStateMap = {...state.cardStateMap};
+    const nextNewCardInteractions = {...state.newCardInteractions};
+    const nextPreviousCardInteractions = {...state.previousCardInteractions};
 
     if (isPinnedCopy) {
       const originalCardId = state.pinnedCardToOriginal.get(cardId);
@@ -1150,6 +1194,13 @@ const reducer = createReducer(
       delete nextCardMetadataMap[cardId];
       delete nextCardStepIndexMap[cardId];
       delete nextCardStateMap[cardId];
+      nextNewCardInteractions.pins = nextNewCardInteractions.pins.filter(
+        (cardMetadata) => originalCardId !== cardMetadata.cardId
+      );
+      nextPreviousCardInteractions.pins =
+        nextPreviousCardInteractions.pins.filter(
+          (cardMetadata) => originalCardId !== cardMetadata.cardId
+        );
     } else {
       if (shouldPin) {
         const resolvedResult = buildOrReturnStateWithPinnedCopy(
@@ -1167,6 +1218,16 @@ const reducer = createReducer(
         nextCardMetadataMap = resolvedResult.cardMetadataMap;
         nextCardStepIndexMap = resolvedResult.cardStepIndex;
         nextCardStateMap = resolvedResult.cardStateMap;
+        if (
+          !nextNewCardInteractions.pins.find(
+            (metadata) => cardId === metadata.cardId
+          )
+        ) {
+          nextNewCardInteractions.pins = [
+            ...nextNewCardInteractions.pins,
+            {...nextCardMetadataMap[cardId], cardId},
+          ];
+        }
       } else {
         const pinnedCardId = state.cardToPinnedCopy.get(cardId)!;
         nextCardToPinnedCopy.delete(cardId);
@@ -1185,6 +1246,8 @@ const reducer = createReducer(
       cardToPinnedCopy: nextCardToPinnedCopy,
       cardToPinnedCopyCache: nextCardToPinnedCopyCache,
       pinnedCardToOriginal: nextPinnedCardToOriginal,
+      newCardInteractions: nextNewCardInteractions,
+      previousCardInteractions: nextPreviousCardInteractions,
     };
   }),
   on(actions.linkedTimeToggled, (state) => {
@@ -1522,6 +1585,31 @@ const reducer = createReducer(
   }),
   on(actions.metricsSlideoutMenuClosed, (state) => {
     return {...state, isSlideoutMenuOpen: false};
+  }),
+  on(
+    actions.metricsPreviousCardInteractionsChanged,
+    (state, {cardInteractions}) => {
+      return {...state, previousCardInteractions: cardInteractions};
+    }
+  ),
+  on(actions.metricsCardClicked, (state, {cardId}) => {
+    const nextClicksIds = state.newCardInteractions.clicks
+      .map(({cardId}) => cardId)
+      .filter((id) => id !== cardId)
+      .concat(cardId);
+
+    const nextNewCardInteractions = {
+      ...state.newCardInteractions,
+      clicks: Array.from(nextClicksIds).map((cardId) => ({
+        ...state.cardMetadataMap[cardId],
+        cardId,
+      })),
+    };
+
+    return {
+      ...state,
+      newCardInteractions: nextNewCardInteractions,
+    };
   })
 );
 

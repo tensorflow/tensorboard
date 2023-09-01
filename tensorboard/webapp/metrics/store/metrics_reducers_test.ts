@@ -28,6 +28,7 @@ import {
   TagMetadata as DataSourceTagMetadata,
 } from '../data_source';
 import {
+  appStateFromMetricsState,
   buildDataSourceTagMetadata,
   buildMetricsSettingsState,
   buildMetricsState,
@@ -44,8 +45,6 @@ import {
   CardId,
   CardMetadata,
   HistogramMode,
-  MinMaxStep,
-  NonPinnedCardId,
   TooltipSort,
   XAxisType,
 } from '../types';
@@ -2919,6 +2918,23 @@ describe('metrics reducers', () => {
         cardToPinnedCopyCache: new Map([['card1', expectedPinnedCopyId]]),
         pinnedCardToOriginal: new Map([[expectedPinnedCopyId, 'card1']]),
         timeSeriesData,
+        newCardInteractions: {
+          pins: [
+            {
+              cardId: 'card1',
+              plugin: PluginType.SCALARS,
+              runId: null,
+              tag: 'tagA',
+            },
+          ],
+          clicks: [],
+          tagFilters: [],
+        },
+        previousCardInteractions: {
+          pins: [],
+          clicks: [],
+          tagFilters: [],
+        },
       });
       expect(nextState).toEqual(expectedState);
     });
@@ -2957,6 +2973,53 @@ describe('metrics reducers', () => {
       expect(() => {
         return reducers(beforeState, action);
       }).toThrow();
+    });
+
+    it('adds an entry to newCardInteractions', () => {
+      const state = buildMetricsState({
+        cardMetadataMap: {
+          card1: {
+            tag: 'foo',
+            runId: null,
+            plugin: PluginType.SCALARS,
+          },
+        },
+      });
+      const state2 = reducers(
+        state,
+        actions.cardPinStateToggled({
+          cardId: 'card1',
+          wasPinned: false,
+          canCreateNewPins: true,
+        })
+      );
+
+      expect(state2.newCardInteractions.pins).toEqual([
+        {
+          cardId: 'card1',
+          plugin: PluginType.SCALARS,
+          runId: null,
+          tag: 'foo',
+        },
+      ]);
+
+      const state3 = reducers(
+        state2,
+        actions.cardPinStateToggled({
+          cardId: 'card1',
+          wasPinned: false,
+          canCreateNewPins: true,
+        })
+      );
+
+      expect(state3.newCardInteractions.pins).toEqual([
+        {
+          cardId: 'card1',
+          plugin: PluginType.SCALARS,
+          runId: null,
+          tag: 'foo',
+        },
+      ]);
     });
   });
 
@@ -3061,6 +3124,20 @@ describe('metrics reducers', () => {
       const action = actions.metricsTagFilterChanged({tagFilter: 'foobar'});
       const nextState = reducers(state, action);
       expect(nextState.tagFilter).toBe('foobar');
+    });
+
+    it('adds entry to newCardInteractions', () => {
+      const state = buildMetricsState({});
+      const state2 = reducers(
+        state,
+        actions.metricsTagFilterChanged({tagFilter: 'foo'})
+      );
+      expect(state2.newCardInteractions.tagFilters).toEqual(['foo']);
+      const state3 = reducers(
+        state2,
+        actions.metricsTagFilterChanged({tagFilter: 'foo'})
+      );
+      expect(state3.newCardInteractions.tagFilters).toEqual(['foo']);
     });
   });
 
@@ -4735,6 +4812,131 @@ describe('metrics reducers', () => {
         const state3 = reducers(state1, actions.metricsSlideoutMenuClosed());
         expect(state3.isSlideoutMenuOpen).toBe(false);
       });
+    });
+  });
+
+  describe('#metricsPreviousCardInteractionsChanged', () => {
+    it('sets previousCardInteractions', () => {
+      const cardInteractions = {
+        pins: [
+          {
+            cardId: 'card1',
+            runId: null,
+            plugin: PluginType.SCALARS,
+            tag: 'bar',
+          },
+        ],
+        clicks: [
+          {
+            cardId: 'card2',
+            runId: null,
+            plugin: PluginType.SCALARS,
+            tag: 'baz',
+          },
+        ],
+        tagFilters: ['foo'],
+      };
+      const state = buildMetricsState({});
+      const state2 = reducers(
+        state,
+        actions.metricsPreviousCardInteractionsChanged({
+          cardInteractions,
+        })
+      );
+
+      expect(state2.previousCardInteractions).toEqual(cardInteractions);
+    });
+  });
+
+  describe('#metricsCardClicked', () => {
+    it('adds entry to newCardInteractions', () => {
+      const state = buildMetricsState({
+        cardMetadataMap: {
+          card1: {
+            plugin: PluginType.SCALARS,
+            tag: 'foo',
+            runId: null,
+          },
+          card2: {
+            plugin: PluginType.SCALARS,
+            tag: 'foo',
+            runId: null,
+          },
+        },
+      });
+      const state2 = reducers(
+        state,
+        actions.metricsCardClicked({cardId: 'card1'})
+      );
+      expect(state2.newCardInteractions.clicks).toEqual([
+        {
+          cardId: 'card1',
+          plugin: PluginType.SCALARS,
+          tag: 'foo',
+          runId: null,
+        },
+      ]);
+      const state3 = reducers(
+        state2,
+        actions.metricsCardClicked({cardId: 'card2'})
+      );
+      expect(state3.newCardInteractions.clicks).toEqual([
+        {
+          cardId: 'card1',
+          plugin: PluginType.SCALARS,
+          tag: 'foo',
+          runId: null,
+        },
+        {
+          cardId: 'card2',
+          plugin: PluginType.SCALARS,
+          tag: 'foo',
+          runId: null,
+        },
+      ]);
+    });
+
+    it('cannot add duplicate entries to newCardInteractions', () => {
+      const state = buildMetricsState({
+        cardMetadataMap: {
+          card1: {
+            plugin: PluginType.SCALARS,
+            tag: 'foo',
+            runId: null,
+          },
+          card2: {
+            plugin: PluginType.SCALARS,
+            tag: 'foo',
+            runId: null,
+          },
+        },
+      });
+      const state2 = reducers(
+        state,
+        actions.metricsCardClicked({cardId: 'card1'})
+      );
+      const state3 = reducers(
+        state2,
+        actions.metricsCardClicked({cardId: 'card2'})
+      );
+      const state4 = reducers(
+        state3,
+        actions.metricsCardClicked({cardId: 'card1'})
+      );
+      expect(state4.newCardInteractions.clicks).toEqual([
+        {
+          cardId: 'card2',
+          plugin: PluginType.SCALARS,
+          tag: 'foo',
+          runId: null,
+        },
+        {
+          cardId: 'card1',
+          plugin: PluginType.SCALARS,
+          tag: 'foo',
+          runId: null,
+        },
+      ]);
     });
   });
 });
