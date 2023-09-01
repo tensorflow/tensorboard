@@ -129,6 +129,7 @@ describe('runs_effects', () => {
     });
     store.overrideSelector(getExperimentIdsFromRoute, null);
     store.overrideSelector(getActiveRoute, buildRoute());
+    store.overrideSelector(getEnableHparamsInTimeSeries, false);
   });
 
   afterEach(() => {
