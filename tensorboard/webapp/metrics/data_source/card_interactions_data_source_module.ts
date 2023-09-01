@@ -16,7 +16,6 @@ import {NgModule} from '@angular/core';
 import {CardInteractionsDataSource} from './card_interactions_data_source';
 
 @NgModule({
-  imports: [],
   providers: [CardInteractionsDataSource],
 })
 export class MetricsCardInteractionsDataSourceModule {}
