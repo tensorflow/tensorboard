@@ -296,7 +296,12 @@ export class RunsEffects {
       this.maybeFetchHparamsMetadata(experimentId),
     ]).pipe(
       map(([runs, metadata]) => {
-        return {fromRemote: true, experimentId, runs, metadata};
+        return {
+          fromRemote: true,
+          experimentId,
+          runs: runs as Run[],
+          metadata: metadata as HparamsAndMetadata,
+        };
       })
     );
   }
