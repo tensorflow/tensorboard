@@ -1020,17 +1020,16 @@ def _get_hparams_to_include(col_params):
 
 
 def _reduce_to_hparams_to_include(session_groups, col_params):
-    """Removes hparams from session_groups that should not be included in the response.
+    """Removes hparams from session_groups that should not be included.
 
     Args:
-      session_groups: A collection of `SessionGroup` protos, which will be modified in place.
+      session_groups: A collection of `SessionGroup` protos, which will be
+        modified in place.
       col_params: A collection of `ColParams` protos.
     """
     hparams_to_include = _get_hparams_to_include(col_params)
-    if hparams_to_include is None:
-        return
 
-    for i, session_group in enumerate(session_groups):
+    for session_group in session_groups:
         new_hparams = {
             hparam: value
             for (hparam, value) in session_group.hparams.items()
