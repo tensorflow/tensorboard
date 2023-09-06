@@ -115,7 +115,10 @@ class Handler:
         session_groups = self._filter(session_groups, filters)
         self._sort(session_groups, extractors)
 
-        _reduce_to_hparams_to_include(session_groups, self._request.col_params)
+        if _specifies_include(self._request.col_params):
+            _reduce_to_hparams_to_include(
+                session_groups, self._request.col_params
+            )
 
         return session_groups
 
@@ -123,12 +126,17 @@ class Handler:
         """Constructs lists of SessionGroups based on DataProvider results."""
         filters = _build_data_provider_filters(self._request.col_params)
         sort = _build_data_provider_sort(self._request.col_params)
+        hparams_to_include = (
+            _get_hparams_to_include(self._request.col_params)
+            if _specifies_include(self._request.col_params)
+            else None
+        )
         response = self._backend_context.session_groups_from_data_provider(
             self._request_context,
             self._experiment_id,
             filters,
             sort,
-            _get_hparams_to_include(self._request.col_params),
+            hparams_to_include,
         )
 
         metric_infos = (
@@ -974,6 +982,17 @@ def _build_data_provider_sort_item(col_param):
     )
 
 
+def _specifies_include(col_params):
+    """Determines whether any `ColParam` contains the `include_in_result` field.
+
+    In the case where none of the col_params contains the field, we should assume
+    that all fields should be included in the response.
+    """
+    return any(
+        col_param.HasField("include_in_result") for col_param in col_params
+    )
+
+
 def _get_hparams_to_include(col_params):
     """Generates the list of hparams to include in the response.
 
@@ -985,15 +1004,8 @@ def _get_hparams_to_include(col_params):
       col_params: A collection of `ColParams` protos.
 
     Returns:
-      A list of names of hyperparameters to include in the response. If None,
-      all hyperparameters will be included.
+      A list of names of hyperparameters to include in the response.
     """
-    # If none of the col_params contains `include_in_result` field, all hparams should be included in the response.
-    if all(
-        not col_param.HasField("include_in_result") for col_param in col_params
-    ):
-        return None
-
     hparams_to_include = []
     for col_param in col_params:
         if (
