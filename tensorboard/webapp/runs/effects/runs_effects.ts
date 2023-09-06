@@ -15,7 +15,7 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Store} from '@ngrx/store';
-import {forkJoin, merge, Observable, of, throwError, zip} from 'rxjs';
+import {combineLatest, forkJoin, merge, Observable, of, throwError} from 'rxjs';
 import {
   catchError,
   distinctUntilChanged,
@@ -209,7 +209,7 @@ export class RunsEffects {
           }
           return this.maybeWaitForRunsAndGetRuns(experimentId);
         });
-        return forkJoin(fetchOrGetRuns);
+        return combineLatest(fetchOrGetRuns);
       }),
       map((runsAndMedataList) => {
         const newRunsAndMetadata = {} as ExperimentIdToRunsAndMetadata;
@@ -270,8 +270,10 @@ export class RunsEffects {
   private maybeFetchHparamsMetadata(
     experimentId: string
   ): Observable<HparamsAndMetadata> {
-    return this.store.select(getEnableHparamsInTimeSeries).pipe(
-      withLatestFrom(this.store.select(getRouteKind)),
+    return combineLatest([
+      this.store.select(getEnableHparamsInTimeSeries),
+      this.store.select(getRouteKind),
+    ]).pipe(
       switchMap(([hparamsInTimeSeries, routeKind]) => {
         if (hparamsInTimeSeries && isDashboardRoute(routeKind)) {
           return of({
@@ -291,7 +293,7 @@ export class RunsEffects {
     runs: Run[];
     metadata: HparamsAndMetadata;
   }> {
-    return zip([
+    return combineLatest([
       this.runsDataSource.fetchRuns(experimentId),
       this.maybeFetchHparamsMetadata(experimentId),
     ]).pipe(
