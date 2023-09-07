@@ -162,7 +162,7 @@ class BackendContextTest(tf.test.TestCase):
             "123",
             include_metrics,
             ctxt.hparams_metadata(request_ctx, "123"),
-            ctxt.hparams_from_data_provider(request_ctx, "123", limit=0),
+            ctxt.hparams_from_data_provider(request_ctx, "123", limit=None),
         )
 
     def test_experiment_with_experiment_tag(self):
