@@ -15,27 +15,24 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Store} from '@ngrx/store';
-import {combineLatest, forkJoin, merge, Observable, of, throwError} from 'rxjs';
+import {forkJoin, merge, Observable, of, throwError} from 'rxjs';
 import {
   catchError,
   distinctUntilChanged,
   filter,
   map,
   mergeMap,
-  switchMap,
   take,
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
 import {areSameRouteKindAndExperiments} from '../../app_routing';
 import {navigated} from '../../app_routing/actions';
-import {RouteKind, isDashboardRoute} from '../../app_routing/types';
+import {RouteKind} from '../../app_routing/types';
 import {State} from '../../app_state';
 import * as coreActions from '../../core/actions';
 import {
   getActiveRoute,
-  getRouteKind,
-  getEnableHparamsInTimeSeries,
   getExperimentIdsFromRoute,
   getRuns,
   getRunsLoadState,
@@ -209,7 +206,7 @@ export class RunsEffects {
           }
           return this.maybeWaitForRunsAndGetRuns(experimentId);
         });
-        return combineLatest(fetchOrGetRuns);
+        return forkJoin(fetchOrGetRuns);
       }),
       map((runsAndMedataList) => {
         const newRunsAndMetadata = {} as ExperimentIdToRunsAndMetadata;
@@ -267,35 +264,15 @@ export class RunsEffects {
     );
   }
 
-  private maybeFetchHparamsMetadata(
-    experimentId: string
-  ): Observable<HparamsAndMetadata> {
-    return combineLatest([
-      this.store.select(getEnableHparamsInTimeSeries),
-      this.store.select(getRouteKind),
-    ]).pipe(
-      switchMap(([hparamsInTimeSeries, routeKind]) => {
-        if (hparamsInTimeSeries && isDashboardRoute(routeKind)) {
-          return of({
-            hparamSpecs: [],
-            metricSpecs: [],
-            runToHparamsAndMetrics: {},
-          });
-        }
-        return this.runsDataSource.fetchHparamsMetadata(experimentId);
-      })
-    );
-  }
-
   private fetchRunsForExperiment(experimentId: string): Observable<{
     fromRemote: true;
     experimentId: string;
     runs: Run[];
     metadata: HparamsAndMetadata;
   }> {
-    return combineLatest([
+    return forkJoin([
       this.runsDataSource.fetchRuns(experimentId),
-      this.maybeFetchHparamsMetadata(experimentId),
+      this.runsDataSource.fetchHparamsMetadata(experimentId),
     ]).pipe(
       map(([runs, metadata]) => {
         return {

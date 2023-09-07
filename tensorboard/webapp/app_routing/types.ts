@@ -38,21 +38,6 @@ export enum RouteKind {
   NOT_SET,
 }
 
-export type DashboardRoute =
-  | RouteKind.EXPERIMENT
-  | RouteKind.COMPARE_EXPERIMENT
-  | RouteKind.CARD;
-
-export function isDashboardRoute(
-  routeKind: RouteKind
-): routeKind is DashboardRoute {
-  return (
-    routeKind === RouteKind.EXPERIMENT ||
-    routeKind === RouteKind.COMPARE_EXPERIMENT ||
-    routeKind === RouteKind.CARD
-  );
-}
-
 export const DEFAULT_EXPERIMENT_ID = 'defaultExperimentId';
 
 /**
