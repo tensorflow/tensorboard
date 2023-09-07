@@ -379,7 +379,7 @@ class DataProvider(metaclass=abc.ABCMeta):
         """
         pass
 
-    def list_hyperparameters(self, ctx=None, *, experiment_ids, limit=0):
+    def list_hyperparameters(self, ctx=None, *, experiment_ids, limit=None):
         """List hyperparameters metadata.
 
         Args:
@@ -387,7 +387,7 @@ class DataProvider(metaclass=abc.ABCMeta):
           experiment_ids: A Collection[string] of IDs of the enclosing
             experiments.
           limit: Optional number of hyperparameter metadata to include in the
-            result. If zero, all metadata will be included.
+            result. If unset or zero, all metadata will be included.
 
         Returns:
           A ListHyperparametersResult describing the hyperparameter-related
