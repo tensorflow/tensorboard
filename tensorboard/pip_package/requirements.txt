@@ -33,4 +33,3 @@ requests >= 2.21.0, < 3
 setuptools >= 41.0.0  # Note: provides pkg_resources as well as setuptools
 tensorboard-data-server >= 0.7.0, < 0.8.0
 werkzeug >= 1.0.1
-wheel >= 0.26
