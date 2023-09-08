@@ -114,17 +114,29 @@ class Handler:
         )
         session_groups = self._filter(session_groups, filters)
         self._sort(session_groups, extractors)
+
+        if _specifies_include(self._request.col_params):
+            _reduce_to_hparams_to_include(
+                session_groups, self._request.col_params
+            )
+
         return session_groups
 
     def _session_groups_from_data_provider(self):
         """Constructs lists of SessionGroups based on DataProvider results."""
         filters = _build_data_provider_filters(self._request.col_params)
         sort = _build_data_provider_sort(self._request.col_params)
+        hparams_to_include = (
+            _get_hparams_to_include(self._request.col_params)
+            if _specifies_include(self._request.col_params)
+            else None
+        )
         response = self._backend_context.session_groups_from_data_provider(
             self._request_context,
             self._experiment_id,
             filters,
             sort,
+            hparams_to_include,
         )
 
         metric_infos = (
@@ -968,3 +980,62 @@ def _build_data_provider_sort_item(col_param):
         hyperparameter_name=col_param.hparam,
         sort_direction=sort_direction,
     )
+
+
+def _specifies_include(col_params):
+    """Determines whether any `ColParam` contains the `include_in_result` field.
+
+    In the case where none of the col_params contains the field, we should assume
+    that all fields should be included in the response.
+    """
+    return any(
+        col_param.HasField("include_in_result") for col_param in col_params
+    )
+
+
+def _get_hparams_to_include(col_params):
+    """Generates the list of hparams to include in the response.
+
+    The determination is based on the `include_in_result` field in ColParam. If
+    a ColParam either has `include_in_result: True` or does not specify the
+    field at all, then it should be included in the result.
+
+    Args:
+      col_params: A collection of `ColParams` protos.
+
+    Returns:
+      A list of names of hyperparameters to include in the response.
+    """
+    hparams_to_include = []
+    for col_param in col_params:
+        if (
+            col_param.HasField("include_in_result")
+            and not col_param.include_in_result
+        ):
+            # Explicitly set to exclude this hparam.
+            continue
+        if col_param.hparam:
+            hparams_to_include.append(col_param.hparam)
+    return hparams_to_include
+
+
+def _reduce_to_hparams_to_include(session_groups, col_params):
+    """Removes hparams from session_groups that should not be included.
+
+    Args:
+      session_groups: A collection of `SessionGroup` protos, which will be
+        modified in place.
+      col_params: A collection of `ColParams` protos.
+    """
+    hparams_to_include = _get_hparams_to_include(col_params)
+
+    for session_group in session_groups:
+        new_hparams = {
+            hparam: value
+            for (hparam, value) in session_group.hparams.items()
+            if hparam in hparams_to_include
+        }
+
+        session_group.ClearField("hparams")
+        for (hparam, value) in new_hparams.items():
+            session_group.hparams[hparam].CopyFrom(value)

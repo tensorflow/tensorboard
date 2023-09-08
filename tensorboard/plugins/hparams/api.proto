@@ -322,9 +322,9 @@ message ListSessionGroupsRequest {
   optional bool include_metrics = 8;
 }
 
-// Defines parmeters for a ListSessionGroupsRequest for a specific column.
+// Defines parameters for a ListSessionGroupsRequest for a specific column.
 // See the comment for "ListSessionGroupsRequest" above for more details.
-// NEXT_TAG: 9
+// NEXT_TAG: 10
 message ColParams {
   oneof name {
     MetricName metric = 1;
@@ -373,6 +373,12 @@ message ColParams {
   // Specifies whether to exclude session groups whose column value is missing
   // from the response.
   bool exclude_missing_values = 8;
+
+  // Specifies whether to include the values for the field in the operation
+  // result. Defaults to True.
+  // Note: Hparams and metrics that do not appear in any `ColParams` in a
+  // request will also not be included in the result.
+  optional bool include_in_result = 9;
 }
 
 enum SortOrder {

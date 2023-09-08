@@ -616,6 +616,43 @@ class ListSessionGroupsTest(tf.test.TestCase):
             ],
         )
 
+    def test_include_in_result(self):
+        request = """
+            start_index: 0
+            slice_size: 3
+            allowed_statuses: [
+              STATUS_UNKNOWN,
+              STATUS_SUCCESS,
+              STATUS_FAILURE,
+              STATUS_RUNNING
+            ]
+            aggregation_type: AGGREGATION_AVG
+            col_params {
+              hparam: "bool_hparam"
+              include_in_result: True
+            }
+            col_params {
+              hparam: "initial_temp"
+            }
+            col_params {
+              hparam: "string_hparam"
+              include_in_result: False
+            }
+        """
+        response = self._run_handler(request)
+
+        # Each of the session groups and sessions have two hparams and three metrics to include.
+        # Only check the first two session groups.
+        self.assertCountEqual(
+            response.session_groups[0].hparams, ["bool_hparam", "initial_temp"]
+        )
+        self.assertLen(response.session_groups[0].metric_values, 3)
+
+        self.assertCountEqual(
+            response.session_groups[0].hparams, ["bool_hparam", "initial_temp"]
+        )
+        self.assertLen(response.session_groups[0].metric_values, 3)
+
     def test_some_allowed_statuses_empty_groups(self):
         request = """
             start_index: 0
@@ -2405,6 +2442,37 @@ class ListSessionGroupsTest(tf.test.TestCase):
                 response.session_groups[0].sessions[0].metric_values, 2
             )
 
+    def test_experiment_from_data_provider_sends_hparams_include_in_result(
+        self,
+    ):
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        request = """
+            col_params: {
+              hparam: 'hparam1'
+              include_in_result: True
+            }
+            col_params: {
+              hparam: 'hparam2'
+              include_in_result: False
+            }
+            col_params: {
+              hparam: 'hparam3'
+            }
+            col_params: {
+              hparam: 'hparam4'
+              include_in_result: True
+            }
+            col_params: {
+              metric: {tag: 'metric1'}
+              include_in_result: True
+            }
+        """
+        self._run_handler(request)
+        self.assertCountEqual(
+            self._get_read_hyperparameters_call_hparams_to_include(),
+            ["hparam1", "hparam3", "hparam4"],
+        )
+
     def _run_handler(self, request):
         request_proto = api_pb2.ListSessionGroupsRequest()
         text_format.Merge(request, request_proto)
@@ -2455,6 +2523,12 @@ class ListSessionGroupsTest(tf.test.TestCase):
             self._mock_tb_context.data_provider.read_hyperparameters.call_args
         )
         return call_args[1]["sort"]
+
+    def _get_read_hyperparameters_call_hparams_to_include(self):
+        call_args = (
+            self._mock_tb_context.data_provider.read_hyperparameters.call_args
+        )
+        return call_args[1]["hparams_to_include"]
 
 
 def _reduce_session_group_to_names(session_group):
