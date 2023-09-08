@@ -845,7 +845,8 @@ describe('hparams/_redux/hparams_reducers_test', () => {
         })
       );
       expect(state2.dashboardFilters).toEqual({
-        hparams: new Map([
+        hparams: new Map(),
+        metrics: new Map([
           [
             'metric 2',
             {
@@ -858,7 +859,6 @@ describe('hparams/_redux/hparams_reducers_test', () => {
             },
           ],
         ]),
-        metrics: new Map(),
       });
     });
   });
