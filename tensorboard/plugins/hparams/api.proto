@@ -254,13 +254,17 @@ enum Status {
 
 // Parameters for a GetExperiment API call.
 // Each experiment is scoped by a unique global id.
-// NEXT_TAG: 3
+// NEXT_TAG: 4
 message GetExperimentRequest {
   // REQUIRED
   string experiment_name = 1;
 
   // Whether to fetch metrics and include them in the results. Defaults to true.
   optional bool include_metrics = 2;
+
+  // Number of hyperparameter metadata to include in the result. If zero, all
+  // hyperparameter metadata will be returned.
+  optional int32 hparams_limit = 3;
 }
 
 // Parameters for a ListSessionGroups API call.

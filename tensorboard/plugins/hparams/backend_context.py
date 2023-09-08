@@ -193,10 +193,10 @@ class Context:
             for (run, tag_to_data) in data_provider_output.items()
         }
 
-    def hparams_from_data_provider(self, ctx, experiment_id):
+    def hparams_from_data_provider(self, ctx, experiment_id, limit):
         """Calls DataProvider.list_hyperparameters() and returns the result."""
         return self._tb_context.data_provider.list_hyperparameters(
-            ctx, experiment_ids=[experiment_id]
+            ctx, experiment_ids=[experiment_id], limit=limit
         )
 
     def session_groups_from_data_provider(

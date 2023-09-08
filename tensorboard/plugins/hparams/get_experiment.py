@@ -38,6 +38,7 @@ class Handler:
             not request.HasField("include_metrics")
             or request.include_metrics
         )
+        self._hparams_limit = request.hparams_limit
 
     def run(self):
         """Handles the request specified on construction.
@@ -53,6 +54,8 @@ class Handler:
                 self._request_context, self._experiment_id
             ),
             self._backend_context.hparams_from_data_provider(
-                self._request_context, self._experiment_id
+                self._request_context,
+                self._experiment_id,
+                limit=self._hparams_limit,
             ),
         )
