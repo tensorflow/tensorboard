@@ -39,12 +39,14 @@ import {
 } from '../../selectors';
 import {DataLoadState, LoadState} from '../../types/data';
 import * as actions from '../actions';
+import * as hparamsActions from '../../hparams/_redux/hparams_actions';
 import {
   HparamsAndMetadata,
   Run,
   RunsDataSource,
 } from '../data_source/runs_data_source_types';
 import {ExperimentIdToRunsAndMetadata} from '../types';
+import {ColumnHeaderType} from '../../widgets/data_table/types';
 
 /**
  * Runs effect for fetching data from the backend.
@@ -169,6 +171,36 @@ export class RunsEffects {
         })
       );
     },
+    {dispatch: false}
+  );
+
+  /**
+   * Removes hparam filter when column is removed.
+   *
+   * @export
+   */
+  removeHparamFilterWhenColumnIsRemoved$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(actions.runsTableHeaderRemoved),
+        tap(({header}) => {
+          if (header.type === ColumnHeaderType.HPARAM) {
+            this.store.dispatch(
+              hparamsActions.dashboardHparamFilterRemoved({
+                name: header.name,
+              })
+            );
+            return;
+          }
+          if (header.type === ColumnHeaderType.METRIC) {
+            this.store.dispatch(
+              hparamsActions.dashboardMetricFilterRemoved({
+                name: header.name,
+              })
+            );
+          }
+        })
+      ),
     {dispatch: false}
   );
 

@@ -73,3 +73,13 @@ export const dashboardMetricFilterAdded = createAction(
   '[Hparams] Dashboard Metric Filter Added',
   props<{name: string; filter: MetricFilter}>()
 );
+
+export const dashboardHparamFilterRemoved = createAction(
+  '[Hparams] Dashboard Hparam Filter Removed',
+  props<{name: string}>()
+);
+
+export const dashboardMetricFilterRemoved = createAction(
+  '[Hparams] Dashboard Metric Filter Removed',
+  props<{name: string}>()
+);

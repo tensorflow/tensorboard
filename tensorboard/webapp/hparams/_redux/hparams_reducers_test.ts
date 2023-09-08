@@ -752,4 +752,114 @@ describe('hparams/_redux/hparams_reducers_test', () => {
       });
     });
   });
+
+  describe('dashboardHparamFilterRemoved', () => {
+    it('removes entry from dashboardFilters', () => {
+      const state = buildHparamsState({
+        dashboardFilters: {
+          hparams: new Map([
+            [
+              'hparam1',
+              {
+                type: DomainType.INTERVAL,
+                includeUndefined: true,
+                minValue: 5,
+                maxValue: 10,
+                filterLowerBound: 5,
+                filterUpperBound: 10,
+              },
+            ],
+            [
+              'hparam2',
+              {
+                type: DomainType.INTERVAL,
+                includeUndefined: true,
+                minValue: 2,
+                maxValue: 20,
+                filterLowerBound: 2,
+                filterUpperBound: 20,
+              },
+            ],
+          ]),
+        },
+      });
+      const state2 = reducers(
+        state,
+        actions.dashboardHparamFilterRemoved({
+          name: 'hparam1',
+        })
+      );
+      expect(state2.dashboardFilters).toEqual({
+        hparams: new Map([
+          [
+            'hparam2',
+            {
+              type: DomainType.INTERVAL,
+              includeUndefined: true,
+              minValue: 2,
+              maxValue: 20,
+              filterLowerBound: 2,
+              filterUpperBound: 20,
+            },
+          ],
+        ]),
+        metrics: new Map(),
+      });
+    });
+  });
+
+  describe('dashboardMetricFilterRemoved', () => {
+    it('removes entry from dashboardFilters', () => {
+      const state = buildHparamsState({
+        dashboardFilters: {
+          metrics: new Map([
+            [
+              'metric 1',
+              {
+                type: DomainType.INTERVAL,
+                includeUndefined: true,
+                minValue: 5,
+                maxValue: 10,
+                filterLowerBound: 5,
+                filterUpperBound: 10,
+              },
+            ],
+            [
+              'metric 2',
+              {
+                type: DomainType.INTERVAL,
+                includeUndefined: true,
+                minValue: 2,
+                maxValue: 20,
+                filterLowerBound: 2,
+                filterUpperBound: 20,
+              },
+            ],
+          ]),
+        },
+      });
+      const state2 = reducers(
+        state,
+        actions.dashboardMetricFilterRemoved({
+          name: 'metric 1',
+        })
+      );
+      expect(state2.dashboardFilters).toEqual({
+        hparams: new Map([
+          [
+            'metric 2',
+            {
+              type: DomainType.INTERVAL,
+              includeUndefined: true,
+              minValue: 2,
+              maxValue: 20,
+              filterLowerBound: 2,
+              filterUpperBound: 20,
+            },
+          ],
+        ]),
+        metrics: new Map(),
+      });
+    });
+  });
 });
