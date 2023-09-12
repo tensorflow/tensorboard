@@ -229,8 +229,8 @@ class RespondTest(tb_test.TestCase):
             q, "<b>hello</b>", "text/html", csp_scripts_sha256s=["abcdefghi"]
         )
         expected_csp = (
-            "default-src 'self';font-src 'self' data:;"
-            "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
+            "default-src 'self';font-src 'self' data:;frame-src 'self';"
+            "frame-ancestors 'none';img-src 'self' data: blob:;object-src 'none';"
             "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
             "connect-src 'self';script-src 'self' 'unsafe-eval' 'sha256-abcdefghi'"
         )
@@ -243,8 +243,8 @@ class RespondTest(tb_test.TestCase):
             q, "<b>hello</b>", "text/html", csp_scripts_sha256s=None
         )
         expected_csp = (
-            "default-src 'self';font-src 'self' data:;"
-            "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
+            "default-src 'self';font-src 'self' data:;frame-src 'self';"
+            "frame-ancestors 'none';img-src 'self' data: blob:;object-src 'none';"
             "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
             "connect-src 'self';script-src 'unsafe-eval'"
         )
@@ -258,8 +258,8 @@ class RespondTest(tb_test.TestCase):
             q, "<b>hello</b>", "text/html", csp_scripts_sha256s=None
         )
         expected_csp = (
-            "default-src 'self';font-src 'self' data:;"
-            "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
+            "default-src 'self';font-src 'self' data:;frame-src 'self';"
+            "frame-ancestors 'none';img-src 'self' data: blob:;object-src 'none';"
             "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
             "connect-src 'self';script-src 'none'"
         )
@@ -273,8 +273,8 @@ class RespondTest(tb_test.TestCase):
             q, "<b>hello</b>", "text/html", csp_scripts_sha256s=None
         )
         expected_csp = (
-            "default-src 'self';font-src 'self' data:;"
-            "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
+            "default-src 'self';font-src 'self' data:;frame-src 'self';"
+            "frame-ancestors 'none';img-src 'self' data: blob:;object-src 'none';"
             "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
             "connect-src 'self';script-src 'self'"
         )
@@ -287,8 +287,8 @@ class RespondTest(tb_test.TestCase):
             q, "<b>hello</b>", "text/html", csp_scripts_sha256s=["abcdefghi"]
         )
         expected_csp = (
-            "default-src 'self';font-src 'self' data:;"
-            "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
+            "default-src 'self';font-src 'self' data:;frame-src 'self';"
+            "frame-ancestors 'none';img-src 'self' data: blob:;object-src 'none';"
             "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
             "connect-src 'self';script-src 'self' 'sha256-abcdefghi'"
         )
@@ -308,6 +308,9 @@ class RespondTest(tb_test.TestCase):
     @mock.patch.object(
         http_util, "_CSP_FRAME_DOMAINS_WHITELIST", ["https://myframe.com"]
     )
+    @mock.patch.object(
+        http_util, "_CSP_FRAME_ANCESTORS_DOMAINS_ALLOWLIST", ["https://foo.bar"]
+    )
     def testCsp_globalDomainWhiteList(self):
         q = wrappers.Request(wtest.EnvironBuilder().get_environ())
         r = http_util.Respond(
@@ -316,6 +319,7 @@ class RespondTest(tb_test.TestCase):
         expected_csp = (
             "default-src 'self';font-src 'self' data:;"
             "frame-src 'self' https://myframe.com;"
+            "frame-ancestors https://foo.bar;"
             "img-src 'self' data: blob: https://example.com;"
             "object-src 'none';style-src 'self' https://www.gstatic.com data: "
             "'unsafe-inline' https://googol.com;connect-src 'self';script-src "
