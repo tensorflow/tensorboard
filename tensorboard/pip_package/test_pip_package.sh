@@ -36,7 +36,7 @@ main() {
   set -x
   command -v curl >/dev/null
   command -v perl >/dev/null
-  command -v virtualenv 
+  command -v virtualenv
   initialize_workdir
   extract_wheels
   smoke python3
@@ -129,7 +129,7 @@ smoke() (
     pip uninstall -qy tensorboard tb-nightly  # Drop any conflicting packages
   fi
   pip install -U "${wheels}"/*py"${py_major_version}"*.whl
-  pip freeze  # Log the results of pip installation
+  pip freeze --all  # Log the results of pip installation
 
   # Test TensorBoard application
   [ -x ./bin/tensorboard ]  # Ensure pip package included binary
