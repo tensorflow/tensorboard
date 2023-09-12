@@ -122,13 +122,13 @@ smoke() (
   export VIRTUAL_ENV=venv
   export PATH="${smoke_venv}/bin:${PATH}"
   unset PYTHON_HOME
-  pip install -qU pip
+  pip install -U pip
 
   if [ -n "${tf_version}" ]; then
     pip install -qU "${tf_version}"
     pip uninstall -qy tensorboard tb-nightly  # Drop any conflicting packages
   fi
-  pip install -qU "${wheels}"/*py"${py_major_version}"*.whl
+  pip install -U "${wheels}"/*py"${py_major_version}"*.whl
   pip freeze  # Log the results of pip installation
 
   # Test TensorBoard application
