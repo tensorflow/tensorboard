@@ -36,7 +36,7 @@ main() {
   set -x
   command -v curl >/dev/null
   command -v perl >/dev/null
-  command -v virtualenv >/dev/null
+  command -v virtualenv 
   initialize_workdir
   extract_wheels
   smoke python3
@@ -116,7 +116,7 @@ smoke() (
   set -x
 
   command -v "${smoke_python}" >/dev/null
-  virtualenv -q -p "${smoke_python}" "${smoke_venv}"
+  virtualenv -p "${smoke_python}" "${smoke_venv}"
   cd "${smoke_venv}"
 
   export VIRTUAL_ENV=venv
