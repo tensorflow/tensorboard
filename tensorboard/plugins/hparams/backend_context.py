@@ -337,7 +337,7 @@ class Context:
             result.domain_discrete.extend([True, False])
 
         if result.type == api_pb2.DATA_TYPE_FLOAT64:
-            # Always uses interval domain type for nuemric values.
+            # Always uses interval domain type for numeric hparam values.
             distinct_float_values = sorted(
                 [v.number_value for v in values if v.HasField("number_value")]
             )
