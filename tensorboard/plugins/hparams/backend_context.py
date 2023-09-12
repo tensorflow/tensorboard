@@ -338,9 +338,7 @@ class Context:
 
         if result.type == api_pb2.DATA_TYPE_FLOAT64:
             # Always uses interval domain type for numeric hparam values.
-            distinct_float_values = sorted(
-                [v.number_value for v in values if v.HasField("number_value")]
-            )
+            distinct_float_values = sorted([v.number_value for v in values])
             if distinct_float_values:
                 result.domain_interval.min_value = distinct_float_values[0]
                 result.domain_interval.max_value = distinct_float_values[-1]
