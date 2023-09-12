@@ -60,6 +60,7 @@ class Context:
         include_metrics,
         hparams_run_to_tag_to_content,
         data_provider_hparams,
+        hparams_limit=None,
     ):
         """Returns the experiment proto defining the experiment.
 
@@ -85,6 +86,8 @@ class Context:
           data_provider_hparams: The ouput from an hparams_from_data_provider()
             call, corresponding to DataProvider.list_hyperparameters().
             A provider.ListHyperpararametersResult.
+          hparams_limit: Optional number of hyperparameter metadata to include in the
+            result. If unset or zero, all metadata will be included.
 
         Returns:
           The experiment proto. If no data is found for an experiment proto to
@@ -94,12 +97,14 @@ class Context:
             hparams_run_to_tag_to_content, include_metrics
         )
         if experiment:
+            _reduce_to_hparams_limit(experiment, hparams_limit)
             return experiment
 
         experiment_from_runs = self._compute_experiment_from_runs(
             ctx, experiment_id, include_metrics, hparams_run_to_tag_to_content
         )
         if experiment_from_runs:
+            _reduce_to_hparams_limit(experiment_from_runs, hparams_limit)
             return experiment_from_runs
 
         experiment_from_data_provider_hparams = (
@@ -576,3 +581,28 @@ def _protobuf_value_to_string(value):
         # Remove the quotations.
         return value_in_json[1:-1]
     return value_in_json
+
+
+def _reduce_to_hparams_limit(experiment, hparams_limit=None):
+    """Reduces the number of hparams in the given experiment proto to `hparams_limit`.
+
+    Args:
+        experiment: An api_pb2.Experiment proto, which will be modified in place.
+        hparams_limit: Optional number of hyperparameter metadata to include in the
+            result. If unset or zero, no changes will be made.
+
+    Returns:
+        None. `experiment` proto will be modified in place.
+    """
+    if not hparams_limit:
+        return
+
+    # Prioritizes returning HParamInfo protos with `differed` values.
+    limited_hparam_infos = sorted(
+        experiment.hparam_infos,
+        key=lambda hparam_info: hparam_info.differs,
+        reverse=True,
+    )[:hparams_limit]
+
+    experiment.ClearField("hparam_infos")
+    experiment.hparam_infos.extend(limited_hparam_infos)
