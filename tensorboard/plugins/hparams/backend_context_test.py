@@ -936,7 +936,7 @@ class BackendContextTest(tf.test.TestCase):
         )
         self._mock_tb_context.data_provider.list_tensors.side_effect = None
         self._mock_tb_context.data_provider.list_tensors.return_value = {
-            'train': {metadata.EXPERIMENT_TAG: t}
+            "train": {metadata.EXPERIMENT_TAG: t}
         }
         expected_exp = """
             name: 'Test experiment'

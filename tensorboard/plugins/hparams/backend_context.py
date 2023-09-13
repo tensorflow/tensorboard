@@ -104,7 +104,8 @@ class Context:
             ctx, experiment_id, include_metrics, hparams_run_to_tag_to_content
         )
         if experiment_from_runs:
-            _reduce_to_hparams_limit(experiment_from_runs, hparams_limit)
+            # YTODO: Apply `hparams_limit` to `experiment_from_runs` after `differs`
+            # fields are populated in `_compute_hparam_info_from_values()`.
             return experiment_from_runs
 
         experiment_from_data_provider_hparams = (
@@ -330,6 +331,7 @@ class Context:
         if result.type == api_pb2.DATA_TYPE_UNSET:
             return None
 
+        # YTODO: Populate `differs` fields for hparams once go/tbpr/6574 is merged.
         if result.type == api_pb2.DATA_TYPE_STRING:
             distinct_string_values = set(
                 _protobuf_value_to_string(v)
