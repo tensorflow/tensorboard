@@ -777,6 +777,7 @@ class _TimeSeries:
         "_plugin_content",
         "_description",
         "_display_name",
+        "_last_value",
     )
 
     def __init__(
@@ -787,12 +788,14 @@ class _TimeSeries:
         plugin_content,
         description,
         display_name,
+        last_value=None,
     ):
         self._max_step = max_step
         self._max_wall_time = max_wall_time
         self._plugin_content = plugin_content
         self._description = description
         self._display_name = display_name
+        self._last_value = last_value
 
     @property
     def max_step(self):
@@ -814,6 +817,10 @@ class _TimeSeries:
     def display_name(self):
         return self._display_name
 
+    @property
+    def last_value(self):
+        return self._last_value
+
 
 class ScalarTimeSeries(_TimeSeries):
     """Metadata about a scalar time series for a particular run and tag.
@@ -830,6 +837,9 @@ class ScalarTimeSeries(_TimeSeries):
         empty if no description was specified.
       display_name: An optional long-form Markdown description, as a `str` that is
         empty if no description was specified. Deprecated; may be removed soon.
+      last_value: An optional value for the latest scalar in the time series,
+        corresponding to the scalar at `max_step`. Note that this field might NOT
+        be populated by all data provider implementations.
     """
 
     def __eq__(self, other):
@@ -845,6 +855,8 @@ class ScalarTimeSeries(_TimeSeries):
             return False
         if self._display_name != other._display_name:
             return False
+        if self._last_value != other._last_value:
+            return False
         return True
 
     def __hash__(self):
@@ -855,6 +867,7 @@ class ScalarTimeSeries(_TimeSeries):
                 self._plugin_content,
                 self._description,
                 self._display_name,
+                self._last_value,
             )
         )
 
@@ -866,6 +879,7 @@ class ScalarTimeSeries(_TimeSeries):
                 "plugin_content=%r" % (self._plugin_content,),
                 "description=%r" % (self._description,),
                 "display_name=%r" % (self._display_name,),
+                "last_value=%r" % (self._last_value,),
             )
         )
 
