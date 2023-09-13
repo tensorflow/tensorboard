@@ -31,6 +31,10 @@ numpy >= 1.12.0
 protobuf >= 3.19.6, < 4.24
 requests >= 2.21.0, < 3
 setuptools >= 41.0.0  # Note: provides pkg_resources as well as setuptools
+# A dependency of our vendored packages. This lower bound has not been correctly
+# vetted, but I wanted to be the least restrictive we can, since it's not a new
+# requirement, and likely this will not disrupt existing users of the package.
+six > 1.9
 tensorboard-data-server >= 0.7.0, < 0.8.0
 werkzeug >= 1.0.1
 wheel >= 0.26
