@@ -453,6 +453,16 @@ const {initialState, reducers: namespaceContextedReducer} =
       settings: METRICS_SETTINGS_DEFAULT,
       settingOverrides: {},
       visibleCardMap: new Map<ElementId, CardId>(),
+      previousCardInteractions: {
+        tagFilters: [],
+        pins: [],
+        clicks: [],
+      },
+      newCardInteractions: {
+        tagFilters: [],
+        pins: [],
+        clicks: [],
+      },
     },
 
     /** onNavigated */
