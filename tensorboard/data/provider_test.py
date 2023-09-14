@@ -91,7 +91,13 @@ class RunTest(tb_test.TestCase):
 
 class ScalarTimeSeriesTest(tb_test.TestCase):
     def _scalar_time_series(
-        self, max_step, max_wall_time, plugin_content, description, display_name
+        self,
+        max_step,
+        max_wall_time,
+        plugin_content,
+        description,
+        display_name,
+        last_value,
     ):
         # Helper to use explicit kwargs.
         return provider.ScalarTimeSeries(
@@ -100,6 +106,7 @@ class ScalarTimeSeriesTest(tb_test.TestCase):
             plugin_content=plugin_content,
             description=description,
             display_name=display_name,
+            last_value=last_value,
         )
 
     def test_repr(self):
@@ -109,6 +116,7 @@ class ScalarTimeSeriesTest(tb_test.TestCase):
             plugin_content=b"AB\xCD\xEF!\x00",
             description="test test",
             display_name="one two",
+            last_value=0.0001,
         )
         repr_ = repr(x)
         self.assertIn(repr(x.max_step), repr_)
@@ -116,19 +124,20 @@ class ScalarTimeSeriesTest(tb_test.TestCase):
         self.assertIn(repr(x.plugin_content), repr_)
         self.assertIn(repr(x.description), repr_)
         self.assertIn(repr(x.display_name), repr_)
+        self.assertIn(repr(x.last_value), repr_)
 
     def test_eq(self):
-        x1 = self._scalar_time_series(77, 1234.5, b"\x12", "one", "two")
-        x2 = self._scalar_time_series(77, 1234.5, b"\x12", "one", "two")
-        x3 = self._scalar_time_series(66, 4321.0, b"\x7F", "hmm", "hum")
+        x1 = self._scalar_time_series(77, 1234.5, b"\x12", "one", "two", 512)
+        x2 = self._scalar_time_series(77, 1234.5, b"\x12", "one", "two", 512)
+        x3 = self._scalar_time_series(66, 4321.0, b"\x7F", "hmm", "hum", 1024)
         self.assertEqual(x1, x2)
         self.assertNotEqual(x1, x3)
         self.assertNotEqual(x1, object())
 
     def test_hash(self):
-        x1 = self._scalar_time_series(77, 1234.5, b"\x12", "one", "two")
-        x2 = self._scalar_time_series(77, 1234.5, b"\x12", "one", "two")
-        x3 = self._scalar_time_series(66, 4321.0, b"\x7F", "hmm", "hum")
+        x1 = self._scalar_time_series(77, 1234.5, b"\x12", "one", "two", 512)
+        x2 = self._scalar_time_series(77, 1234.5, b"\x12", "one", "two", 512)
+        x3 = self._scalar_time_series(66, 4321.0, b"\x7F", "hmm", "hum", 1024)
         self.assertEqual(hash(x1), hash(x2))
         # The next check is technically not required by the `__hash__`
         # contract, but _should_ pass; failure on this assertion would at
