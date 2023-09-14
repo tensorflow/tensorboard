@@ -19,6 +19,9 @@ on:
   pull_request: {}
   workflow_call: {}
 
+permissions:
+  contents: read
+
 env:
   # Keep this Bazel version in sync with the `versions.check` directive
   # in our WORKSPACE file.
