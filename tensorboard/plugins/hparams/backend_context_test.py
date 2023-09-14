@@ -230,6 +230,7 @@ class BackendContextTest(tf.test.TestCase):
         self.session_1_start_info_ = """
             hparams: [
               {key: 'batch_size' value: {number_value: 100}},
+              {key: 'eval.timeout' value: {bool_value: false}},
               {key: 'lr' value: {number_value: 0.01}},
               {key: 'model_type' value: {string_value: 'CNN'}}
             ]
@@ -237,6 +238,7 @@ class BackendContextTest(tf.test.TestCase):
         self.session_2_start_info_ = """
             hparams:[
               {key: 'batch_size' value: {number_value: 200}},
+              {key: 'eval.timeout' value: {bool_value: false}},
               {key: 'lr' value: {number_value: 0.02}},
               {key: 'model_type' value: {string_value: 'LATTICE'}}
             ]
@@ -244,6 +246,7 @@ class BackendContextTest(tf.test.TestCase):
         self.session_3_start_info_ = """
             hparams:[
               {key: 'batch_size' value: {number_value: 300}},
+              {key: 'eval.timeout' value: {bool_value: false}},
               {key: 'lr' value: {number_value: 0.05}},
               {key: 'model_type' value: {string_value: 'CNN'}}
             ]
@@ -256,7 +259,16 @@ class BackendContextTest(tf.test.TestCase):
                 min_value: 100.0
                 max_value: 300.0
               }
-            },
+              differs: true
+            }
+            hparam_infos: {
+              name: 'eval.timeout'
+              type: DATA_TYPE_BOOL
+              domain_discrete: {
+                values: [{bool_value: false}]
+              }
+              differs: false
+            }
             hparam_infos: {
               name: 'lr'
               type: DATA_TYPE_FLOAT64
@@ -264,7 +276,8 @@ class BackendContextTest(tf.test.TestCase):
                 min_value: 0.01
                 max_value: 0.05
               }
-            },
+              differs: true
+            }
             hparam_infos: {
               name: 'model_type'
               type: DATA_TYPE_STRING
@@ -272,6 +285,7 @@ class BackendContextTest(tf.test.TestCase):
                 values: [{string_value: 'CNN'},
                          {string_value: 'LATTICE'}]
               }
+              differs: true
             }
             metric_infos: {
               name: {group: '', tag: 'accuracy'}
@@ -317,6 +331,7 @@ class BackendContextTest(tf.test.TestCase):
                 values: [{string_value: '100.0'},
                          {string_value: 'true'}]
               }
+              differs: true
             }
             hparam_infos: {
               name: 'lr'
@@ -325,6 +340,7 @@ class BackendContextTest(tf.test.TestCase):
                 values: [{string_value: '0.01'},
                          {string_value: '0.02'}]
               }
+              differs: true
             }
             hparam_infos: {
               name: 'model_type'
@@ -333,6 +349,7 @@ class BackendContextTest(tf.test.TestCase):
                 values: [{string_value: 'CNN'},
                          {string_value: 'LATTICE'}]
               }
+              differs: true
             }
             metric_infos: {
               name: {group: '', tag: 'accuracy'}
@@ -371,8 +388,9 @@ class BackendContextTest(tf.test.TestCase):
               name: 'batch_size'
               type: DATA_TYPE_BOOL
               domain_discrete: {
-                values: [{bool_value: true}, {bool_value: false}]
+                values: [{bool_value: true}]
               }
+              differs: false
             }
             metric_infos: {
               name: {group: '', tag: 'accuracy'}

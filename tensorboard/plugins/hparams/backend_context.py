@@ -339,9 +339,12 @@ class Context:
                 if _can_be_converted_to_string(v)
             )
             result.domain_discrete.extend(distinct_string_values)
+            result.differs = len(distinct_string_values) > 1
 
         if result.type == api_pb2.DATA_TYPE_BOOL:
-            result.domain_discrete.extend([True, False])
+            distinct_bool_values = set(v.bool_value for v in values)
+            result.domain_discrete.extend(distinct_bool_values)
+            result.differs = len(distinct_bool_values) > 1
 
         if result.type == api_pb2.DATA_TYPE_FLOAT64:
             # Always uses interval domain type for numeric hparam values.
@@ -349,6 +352,7 @@ class Context:
             if distinct_float_values:
                 result.domain_interval.min_value = distinct_float_values[0]
                 result.domain_interval.max_value = distinct_float_values[-1]
+                result.differs = len(set(distinct_float_values)) > 1
 
         return result
 
