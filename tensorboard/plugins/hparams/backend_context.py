@@ -326,15 +326,22 @@ class Context:
             return None
 
         if result.type == api_pb2.DATA_TYPE_STRING:
-            distinct_values = set(
+            distinct_string_values = set(
                 _protobuf_value_to_string(v)
                 for v in values
                 if _can_be_converted_to_string(v)
             )
-            result.domain_discrete.extend(distinct_values)
+            result.domain_discrete.extend(distinct_string_values)
 
         if result.type == api_pb2.DATA_TYPE_BOOL:
             result.domain_discrete.extend([True, False])
+
+        if result.type == api_pb2.DATA_TYPE_FLOAT64:
+            # Always uses interval domain type for numeric hparam values.
+            distinct_float_values = sorted([v.number_value for v in values])
+            if distinct_float_values:
+                result.domain_interval.min_value = distinct_float_values[0]
+                result.domain_interval.max_value = distinct_float_values[-1]
 
         return result
 

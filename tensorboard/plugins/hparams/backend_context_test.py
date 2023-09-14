@@ -247,10 +247,18 @@ class BackendContextTest(tf.test.TestCase):
             hparam_infos: {
               name: 'batch_size'
               type: DATA_TYPE_FLOAT64
+              domain_interval {
+                min_value: 100.0
+                max_value: 300.0
+              }
             },
             hparam_infos: {
               name: 'lr'
               type: DATA_TYPE_FLOAT64
+              domain_interval {
+                min_value: 0.01
+                max_value: 0.05
+              }
             },
             hparam_infos: {
               name: 'model_type'
