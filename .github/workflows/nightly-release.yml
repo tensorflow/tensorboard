@@ -7,6 +7,9 @@ on:
     # (cron syntax: minute hour day-of-month month day-of-week)
     - cron: '0 11 * * *'
 
+permissions:
+  contents: read
+
 jobs:
   ci:
     uses: ./.github/workflows/ci.yml
