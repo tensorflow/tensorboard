@@ -907,23 +907,26 @@ class BackendContextTest(tf.test.TestCase):
     ):
         experiment = """
             name: 'Test experiment'
-            hparam_infos: [
-              {
-                name: 'batch_size'
-                type: DATA_TYPE_FLOAT64
-                differs: false
-              },
-             {
+            hparam_infos: {
+              name: 'batch_size'
+              type: DATA_TYPE_FLOAT64
+              differs: false
+            }
+            hparam_infos: {
               name: 'lr'
               type: DATA_TYPE_FLOAT64
               differs: true
-            },
-            {
+            }
+            hparam_infos: {
+              name: 'use_batch_norm'
+              type: DATA_TYPE_BOOL
+              differs: false
+            }
+            hparam_infos: {
               name: 'model_type'
               type: DATA_TYPE_STRING
               differs: true
             }
-            ]
         """
         t = provider.TensorTimeSeries(
             max_step=0,
@@ -954,7 +957,66 @@ class BackendContextTest(tf.test.TestCase):
         actual_exp = self._experiment_from_metadata(
             include_metrics=False, hparams_limit=2
         )
-        _canonicalize_experiment(actual_exp)
+        self.assertProtoEquals(expected_exp, actual_exp)
+
+    def test_experiment_from_tags_sorts_differed_hparams_first(self):
+        experiment = """
+            name: 'Test experiment'
+            hparam_infos: {
+              name: 'batch_size'
+              type: DATA_TYPE_FLOAT64
+              differs: false
+            }
+            hparam_infos: {
+              name: 'lr'
+              type: DATA_TYPE_FLOAT64
+              differs: true
+            }
+            hparam_infos: {
+              name: 'use_batch_norm'
+              type: DATA_TYPE_BOOL
+              differs: false
+            }
+            hparam_infos: {
+              name: 'model_type'
+              type: DATA_TYPE_STRING
+              differs: true
+            }
+        """
+        t = provider.TensorTimeSeries(
+            max_step=0,
+            max_wall_time=0,
+            plugin_content=self._serialized_plugin_data(
+                DATA_TYPE_EXPERIMENT, experiment
+            ),
+            description="",
+            display_name="",
+        )
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._mock_tb_context.data_provider.list_tensors.return_value = {
+            "train": {metadata.EXPERIMENT_TAG: t}
+        }
+        expected_exp = """
+            name: 'Test experiment'
+            hparam_infos: {
+              name: 'lr'
+              type: DATA_TYPE_FLOAT64
+              differs: true
+            }
+            hparam_infos: {
+              name: 'model_type'
+              type: DATA_TYPE_STRING
+              differs: true
+            }
+            hparam_infos: {
+              name: 'batch_size'
+              type: DATA_TYPE_FLOAT64
+              differs: false
+            }
+        """
+        actual_exp = self._experiment_from_metadata(
+            include_metrics=False, hparams_limit=None
+        )
         self.assertProtoEquals(expected_exp, actual_exp)
 
     def _serialized_plugin_data(self, data_oneof_field, text_protobuffer):
