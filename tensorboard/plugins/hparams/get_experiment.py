@@ -46,6 +46,13 @@ class Handler:
         Returns:
           An Experiment object.
         """
+        data_provider_hparams = (
+            self._backend_context.hparams_from_data_provider(
+                self._request_context,
+                self._experiment_id,
+                limit=self._hparams_limit,
+            )
+        )
         return self._backend_context.experiment_from_metadata(
             self._request_context,
             self._experiment_id,
@@ -53,9 +60,6 @@ class Handler:
             self._backend_context.hparams_metadata(
                 self._request_context, self._experiment_id
             ),
-            self._backend_context.hparams_from_data_provider(
-                self._request_context,
-                self._experiment_id,
-                limit=self._hparams_limit,
-            ),
+            data_provider_hparams,
+            self._hparams_limit,
         )
