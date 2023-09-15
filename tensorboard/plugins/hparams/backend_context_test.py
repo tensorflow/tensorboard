@@ -301,7 +301,7 @@ class BackendContextTest(tf.test.TestCase):
               {key: 'float_hparam_differs_false' value: {number_value: 1024}},
               {key: 'float_hparam_differs_true' value: {number_value: 0.01}},
               {key: 'string_hparams_differs_false' value: {string_value: 'momentum'}},
-              {key: 'string_hparams_differs_true' value: {string_value: 'CNN'}} 
+              {key: 'string_hparams_differs_true' value: {string_value: 'CNN'}}
             ]
         """
         self.session_2_start_info_ = """
