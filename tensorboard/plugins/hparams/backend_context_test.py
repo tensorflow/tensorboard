@@ -229,26 +229,31 @@ class BackendContextTest(tf.test.TestCase):
     def test_experiment_with_session_tags(self):
         self.session_1_start_info_ = """
             hparams: [
-              {key: 'batch_size' value: {number_value: 100}},
+              {key: 'batch_size' value: {number_value: 1024}},
               {key: 'eval.timeout' value: {bool_value: false}},
               {key: 'lr' value: {number_value: 0.01}},
-              {key: 'model_type' value: {string_value: 'CNN'}}
+              {key: 'model_type' value: {string_value: 'CNN'}},
+              {key: 'optimizer_type' value: {string_value: 'momentum'}},
+              {key: 'use_batch_norm' value: {bool_value: true}}
             ]
         """
         self.session_2_start_info_ = """
             hparams:[
-              {key: 'batch_size' value: {number_value: 200}},
+              {key: 'batch_size' value: {number_value: 1024}},
               {key: 'eval.timeout' value: {bool_value: false}},
               {key: 'lr' value: {number_value: 0.02}},
-              {key: 'model_type' value: {string_value: 'LATTICE'}}
+              {key: 'model_type' value: {string_value: 'LATTICE'}},
+              {key: 'optimizer_type' value: {string_value: 'momentum'}}
             ]
         """
         self.session_3_start_info_ = """
             hparams:[
-              {key: 'batch_size' value: {number_value: 300}},
+              {key: 'batch_size' value: {number_value: 1024}},
               {key: 'eval.timeout' value: {bool_value: false}},
               {key: 'lr' value: {number_value: 0.05}},
-              {key: 'model_type' value: {string_value: 'CNN'}}
+              {key: 'model_type' value: {string_value: 'CNN'}},
+              {key: 'optimizer_type' value: {string_value: 'momentum'}},
+              {key: 'use_batch_norm' value: {bool_value: false}}
             ]
         """
         expected_exp = """
@@ -256,16 +261,16 @@ class BackendContextTest(tf.test.TestCase):
               name: 'batch_size'
               type: DATA_TYPE_FLOAT64
               domain_interval {
-                min_value: 100.0
-                max_value: 300.0
+                min_value: 1024
+                max_value: 1024
               }
-              differs: true
+              differs: false
             }
             hparam_infos: {
               name: 'eval.timeout'
               type: DATA_TYPE_BOOL
               domain_discrete: {
-                values: [{bool_value: false}]
+                values: [{bool_value: true}, {bool_value: false}]
               }
               differs: false
             }
@@ -284,6 +289,22 @@ class BackendContextTest(tf.test.TestCase):
               domain_discrete: {
                 values: [{string_value: 'CNN'},
                          {string_value: 'LATTICE'}]
+              }
+              differs: true
+            }
+            hparam_infos: {
+              name: 'optimizer_type'
+              type: DATA_TYPE_STRING
+              domain_discrete: {
+                values: [{string_value: 'momentum'}]
+              }
+              differs: false
+            }
+            hparam_infos: {
+              name: 'use_batch_norm'
+              type: DATA_TYPE_BOOL
+              domain_discrete: {
+                values: [{bool_value: true}, {bool_value: false}]
               }
               differs: true
             }
@@ -371,12 +392,12 @@ class BackendContextTest(tf.test.TestCase):
     def test_experiment_with_session_tags_bool_types(self):
         self.session_1_start_info_ = """
             hparams:[
-              {key: 'batch_size' value: {bool_value: true}}
+              {key: 'use_batch_norm' value: {bool_value: true}}
             ]
         """
         self.session_2_start_info_ = """
             hparams:[
-              {key: 'batch_size' value: {bool_value: true}}
+              {key: 'use_batch_norm' value: {bool_value: true}}
             ]
         """
         self.session_3_start_info_ = """
@@ -385,10 +406,10 @@ class BackendContextTest(tf.test.TestCase):
         """
         expected_exp = """
             hparam_infos: {
-              name: 'batch_size'
+              name: 'use_batch_norm'
               type: DATA_TYPE_BOOL
               domain_discrete: {
-                values: [{bool_value: true}]
+                values: [{bool_value: true}, {bool_value: false}]
               }
               differs: false
             }
