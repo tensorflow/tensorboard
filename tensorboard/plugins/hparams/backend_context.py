@@ -104,8 +104,7 @@ class Context:
             ctx, experiment_id, include_metrics, hparams_run_to_tag_to_content
         )
         if experiment_from_runs:
-            # TODO(yatbear): Apply `hparams_limit` to `experiment_from_runs` after `differs`
-            # fields are populated in `_compute_hparam_info_from_values()`.
+            # TODO(yatbear): Apply `hparams_limit` to `experiment_from_runs`.
             return experiment_from_runs
 
         experiment_from_data_provider_hparams = (
@@ -331,7 +330,6 @@ class Context:
         if result.type == api_pb2.DATA_TYPE_UNSET:
             return None
 
-        # TODO(yatbear): Populate `differs` fields for hparams once go/tbpr/6574 is merged.
         if result.type == api_pb2.DATA_TYPE_STRING:
             distinct_string_values = set(
                 _protobuf_value_to_string(v)
@@ -339,9 +337,12 @@ class Context:
                 if _can_be_converted_to_string(v)
             )
             result.domain_discrete.extend(distinct_string_values)
+            result.differs = len(distinct_string_values) > 1
 
         if result.type == api_pb2.DATA_TYPE_BOOL:
-            result.domain_discrete.extend([True, False])
+            distinct_bool_values = set(v.bool_value for v in values)
+            result.domain_discrete.extend(distinct_bool_values)
+            result.differs = len(distinct_bool_values) > 1
 
         if result.type == api_pb2.DATA_TYPE_FLOAT64:
             # Always uses interval domain type for numeric hparam values.
@@ -349,6 +350,7 @@ class Context:
             if distinct_float_values:
                 result.domain_interval.min_value = distinct_float_values[0]
                 result.domain_interval.max_value = distinct_float_values[-1]
+                result.differs = len(set(distinct_float_values)) > 1
 
         return result
 

@@ -256,6 +256,7 @@ class BackendContextTest(tf.test.TestCase):
                 min_value: 100.0
                 max_value: 300.0
               }
+              differs: true
             },
             hparam_infos: {
               name: 'lr'
@@ -264,6 +265,7 @@ class BackendContextTest(tf.test.TestCase):
                 min_value: 0.01
                 max_value: 0.05
               }
+              differs: true
             },
             hparam_infos: {
               name: 'model_type'
@@ -272,6 +274,106 @@ class BackendContextTest(tf.test.TestCase):
                 values: [{string_value: 'CNN'},
                          {string_value: 'LATTICE'}]
               }
+              differs: true
+            }
+            metric_infos: {
+              name: {group: '', tag: 'accuracy'}
+            }
+            metric_infos: {
+              name: {group: '', tag: 'loss'}
+            }
+            metric_infos: {
+              name: {group: 'eval', tag: 'loss'}
+            }
+            metric_infos: {
+              name: {group: 'train', tag: 'loss'}
+            }
+        """
+        actual_exp = self._experiment_from_metadata()
+        _canonicalize_experiment(actual_exp)
+        self.assertProtoEquals(expected_exp, actual_exp)
+
+    def test_experiment_with_session_tags_differs_field(self):
+        self.session_1_start_info_ = """
+            hparams: [
+              {key: 'bool_hparam_differs_true' value: {bool_value: false}},
+              {key: 'bool_hparam_differs_true' value: {bool_value: true}},
+              {key: 'float_hparam_differs_false' value: {number_value: 1024}},
+              {key: 'float_hparam_differs_true' value: {number_value: 0.01}},
+              {key: 'string_hparams_differs_false' value: {string_value: 'momentum'}},
+              {key: 'string_hparams_differs_true' value: {string_value: 'CNN'}}
+            ]
+        """
+        self.session_2_start_info_ = """
+            hparams:[
+              {key: 'bool_hparam_differs_true' value: {bool_value: false}},
+              {key: 'float_hparam_differs_false' value: {number_value: 1024}},
+              {key: 'float_hparam_differs_true' value: {number_value: 0.02}},
+              {key: 'string_hparams_differs_false' value: {string_value: 'momentum'}},
+              {key: 'string_hparams_differs_true' value: {string_value: 'LATTICE'}}
+            ]
+        """
+        self.session_3_start_info_ = """
+            hparams:[
+              {key: 'bool_hparam_differs_false' value: {bool_value: false}},
+              {key: 'bool_hparam_differs_true' value: {bool_value: false}},
+              {key: 'float_hparam_differs_false' value: {number_value: 1024}},
+              {key: 'float_hparam_differs_true' value: {number_value: 0.05}},
+              {key: 'string_hparams_differs_false' value: {string_value: 'momentum'}},
+              {key: 'string_hparams_differs_true' value: {string_value: 'CNN'}}
+            ]
+        """
+        expected_exp = """
+            hparam_infos: {
+              name: 'bool_hparam_differs_false'
+              type: DATA_TYPE_BOOL
+              domain_discrete: {
+                values: [{bool_value: false}]
+              }
+              differs: false
+            }
+            hparam_infos: {
+              name: 'bool_hparam_differs_true'
+              type: DATA_TYPE_BOOL
+              domain_discrete: {
+                values: [{bool_value: false}, {bool_value: true}]
+              }
+              differs: true
+            }
+            hparam_infos: {
+              name: 'float_hparam_differs_false'
+              type: DATA_TYPE_FLOAT64
+              domain_interval {
+                min_value: 1024
+                max_value: 1024
+              }
+              differs: false
+            }
+            hparam_infos: {
+              name: 'float_hparam_differs_true'
+              type: DATA_TYPE_FLOAT64
+              domain_interval {
+                min_value: 0.01
+                max_value: 0.05
+              }
+              differs: true
+            }
+            hparam_infos: {
+              name: 'string_hparams_differs_false'
+              type: DATA_TYPE_STRING
+              domain_discrete: {
+                values: [{string_value: 'momentum'}]
+              }
+              differs: false
+            }
+            hparam_infos: {
+              name: 'string_hparams_differs_true'
+              type: DATA_TYPE_STRING
+              domain_discrete: {
+                values: [{string_value: 'CNN'},
+                         {string_value: 'LATTICE'}]
+              }
+              differs: true
             }
             metric_infos: {
               name: {group: '', tag: 'accuracy'}
@@ -317,6 +419,7 @@ class BackendContextTest(tf.test.TestCase):
                 values: [{string_value: '100.0'},
                          {string_value: 'true'}]
               }
+              differs: true
             }
             hparam_infos: {
               name: 'lr'
@@ -325,6 +428,7 @@ class BackendContextTest(tf.test.TestCase):
                 values: [{string_value: '0.01'},
                          {string_value: '0.02'}]
               }
+              differs: true
             }
             hparam_infos: {
               name: 'model_type'
@@ -333,6 +437,7 @@ class BackendContextTest(tf.test.TestCase):
                 values: [{string_value: 'CNN'},
                          {string_value: 'LATTICE'}]
               }
+              differs: true
             }
             metric_infos: {
               name: {group: '', tag: 'accuracy'}
@@ -354,12 +459,12 @@ class BackendContextTest(tf.test.TestCase):
     def test_experiment_with_session_tags_bool_types(self):
         self.session_1_start_info_ = """
             hparams:[
-              {key: 'batch_size' value: {bool_value: true}}
+              {key: 'use_batch_norm' value: {bool_value: true}}
             ]
         """
         self.session_2_start_info_ = """
             hparams:[
-              {key: 'batch_size' value: {bool_value: true}}
+              {key: 'use_batch_norm' value: {bool_value: true}}
             ]
         """
         self.session_3_start_info_ = """
@@ -368,11 +473,12 @@ class BackendContextTest(tf.test.TestCase):
         """
         expected_exp = """
             hparam_infos: {
-              name: 'batch_size'
+              name: 'use_batch_norm'
               type: DATA_TYPE_BOOL
               domain_discrete: {
-                values: [{bool_value: true}, {bool_value: false}]
+                values: [{bool_value: true}]
               }
+              differs: false
             }
             metric_infos: {
               name: {group: '', tag: 'accuracy'}
