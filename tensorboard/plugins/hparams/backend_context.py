@@ -97,14 +97,14 @@ class Context:
             hparams_run_to_tag_to_content, include_metrics
         )
         if experiment:
-            _reduce_to_hparams_limit(experiment, hparams_limit)
+            _sort_and_reduce_to_hparams_limit(experiment, hparams_limit)
             return experiment
 
         experiment_from_runs = self._compute_experiment_from_runs(
             ctx, experiment_id, include_metrics, hparams_run_to_tag_to_content
         )
         if experiment_from_runs:
-            # YTODO: Apply `hparams_limit` to `experiment_from_runs` after `differs`
+            # TODO(yatbear): Apply `hparams_limit` to `experiment_from_runs` after `differs`
             # fields are populated in `_compute_hparam_info_from_values()`.
             return experiment_from_runs
 
@@ -331,7 +331,7 @@ class Context:
         if result.type == api_pb2.DATA_TYPE_UNSET:
             return None
 
-        # YTODO: Populate `differs` fields for hparams once go/tbpr/6574 is merged.
+        # TODO(yatbear): Populate `differs` fields for hparams once go/tbpr/6574 is merged.
         if result.type == api_pb2.DATA_TYPE_STRING:
             distinct_string_values = set(
                 _protobuf_value_to_string(v)
@@ -585,19 +585,19 @@ def _protobuf_value_to_string(value):
     return value_in_json
 
 
-def _reduce_to_hparams_limit(experiment, hparams_limit=None):
-    """Reduces the number of hparams in the given experiment proto to `hparams_limit`.
+def _sort_and_reduce_to_hparams_limit(experiment, hparams_limit=None):
+    """Sorts and applies limit to the hparams in the given experiment proto.
 
     Args:
         experiment: An api_pb2.Experiment proto, which will be modified in place.
         hparams_limit: Optional number of hyperparameter metadata to include in the
-            result. If unset or zero, no changes will be made.
+            result. If unset or zero, no limit will be applied.
 
     Returns:
         None. `experiment` proto will be modified in place.
     """
     if not hparams_limit:
-        return
+        hparams_limit = -1
 
     # Prioritizes returning HParamInfo protos with `differed` values.
     limited_hparam_infos = sorted(
