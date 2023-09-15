@@ -902,6 +902,61 @@ class BackendContextTest(tf.test.TestCase):
         """
         self.assertProtoEquals(expected_exp, actual_exp)
 
+    def test_experiment_from_tags_with_hparams_limit_no_differed_hparams(self):
+        experiment = """
+            name: 'Test experiment'
+            hparam_infos: {
+              name: 'batch_size'
+              type: DATA_TYPE_FLOAT64
+              differs: false
+            }
+            hparam_infos: {
+              name: 'lr'
+              type: DATA_TYPE_FLOAT64
+              differs: false
+            }
+            hparam_infos: {
+              name: 'use_batch_norm'
+              type: DATA_TYPE_BOOL
+              differs: false
+            }
+            hparam_infos: {
+              name: 'model_type'
+              type: DATA_TYPE_STRING
+              differs: false
+            }
+        """
+        t = provider.TensorTimeSeries(
+            max_step=0,
+            max_wall_time=0,
+            plugin_content=self._serialized_plugin_data(
+                DATA_TYPE_EXPERIMENT, experiment
+            ),
+            description="",
+            display_name="",
+        )
+        self._mock_tb_context.data_provider.list_tensors.side_effect = None
+        self._mock_tb_context.data_provider.list_tensors.return_value = {
+            "train": {metadata.EXPERIMENT_TAG: t}
+        }
+        expected_exp = """
+            name: 'Test experiment'
+            hparam_infos: {
+              name: 'batch_size'
+              type: DATA_TYPE_FLOAT64
+              differs: false
+            }
+            hparam_infos: {
+              name: 'lr'
+              type: DATA_TYPE_FLOAT64
+              differs: false
+            }
+        """
+        actual_exp = self._experiment_from_metadata(
+            include_metrics=False, hparams_limit=2
+        )
+        self.assertProtoEquals(expected_exp, actual_exp)
+
     def test_experiment_from_tags_with_hparams_limit_returns_differed_hparams_first(
         self,
     ):
