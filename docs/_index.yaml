@@ -22,32 +22,16 @@ landing_page:
           <li>Profiling TensorFlow programs</li>
           <li>And much more</li>
         </ul>
-        <a href="https://tensorboard.dev">TensorBoard.dev</a> lets you easily
-        host, track, and share your experiment results.
       image_path: /tensorboard/images/tensorboard.gif
       buttons:
       - label: Get started
         path: /tensorboard/get_started
         classname: button
-      - label: Get started with TensorBoard.dev
-        path: https://tensorboard.dev
-        classname: button
 
   - classname: devsite-landing-row-cards
     items:
-    - heading: "TensorBoard.dev: a new way to share your ML experiment results"
-      image_path: /resources/images/tf-logo-card-16x9.png
-      path: https://blog.tensorflow.org/2019/12/introducing-tensorboarddev-new-way-to.html
-      buttons:
-      - label: "Read on TensorFlow blog"
-        path: https://blog.tensorflow.org/2019/12/introducing-tensorboarddev-new-way-to.html
     - heading: "What's new in TensorBoard (TF Dev Summit '19)"
       youtube_id: xM8sO33x_OU
       buttons:
       - label: Watch the video
         path: https://www.youtube.com/watch?v=xM8sO33x_OU
-    - heading: "Collaborative ML with TensorBoard.dev (TF Dev Summit '20)"
-      youtube_id: v9a240kjAx4
-      buttons:
-      - label: Watch the video
-        path: https://www.youtube.com/watch?v=v9a240kjAx4
