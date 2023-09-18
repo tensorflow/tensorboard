@@ -599,7 +599,8 @@ def _sort_and_reduce_to_hparams_limit(experiment, hparams_limit=None):
         None. `experiment` proto will be modified in place.
     """
     if not hparams_limit:
-        hparams_limit = -1
+        # If limit is unset or zero, returns all hparams.
+        hparams_limit = len(experiment.hparam_infos)
 
     # Prioritizes returning HParamInfo protos with `differed` values.
     limited_hparam_infos = sorted(

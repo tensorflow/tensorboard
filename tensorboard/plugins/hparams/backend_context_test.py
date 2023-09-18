@@ -1174,6 +1174,11 @@ class BackendContextTest(tf.test.TestCase):
               type: DATA_TYPE_FLOAT64
               differs: false
             }
+            hparam_infos: {
+              name: 'use_batch_norm'
+              type: DATA_TYPE_BOOL
+              differs: false
+            }
         """
         actual_exp = self._experiment_from_metadata(
             include_metrics=False, hparams_limit=None
