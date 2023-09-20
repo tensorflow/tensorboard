@@ -21,7 +21,7 @@ tf_ng_module(
         ":filter_input_component_styles",
     ],
     deps = [
-        "//tensorboard/webapp/angular:expect_angular_legacy_material_autocomplete",
+        "//tensorboard/webapp/angular:expect_angular_material_autocomplete",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "@npm//@angular/common",
         "@npm//@angular/core",
@@ -38,7 +38,7 @@ tf_ts_library(
         ":filter_input",
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
-        "//tensorboard/webapp/angular:expect_angular_legacy_material_autocomplete",
+        "//tensorboard/webapp/angular:expect_angular_material_autocomplete",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/testing:dom",
         "//tensorboard/webapp/testing:mat_icon",
