@@ -39,6 +39,7 @@ export enum ColumnHeaderType {
   MEAN = 'MEAN',
   RAW_CHANGE = 'RAW_CHANGE',
   HPARAM = 'HPARAM',
+  METRIC = 'METRIC',
   CUSTOM = 'CUSTOM',
 }
 

@@ -26,6 +26,7 @@ import {
 import {RouteKind} from '../../app_routing/types';
 import {State} from '../../app_state';
 import * as coreActions from '../../core/actions';
+import * as hparamsActions from '../../hparams/_redux/hparams_actions';
 import {
   getActiveRoute,
   getExperimentIdsFromRoute,
@@ -42,6 +43,7 @@ import {
   TestingRunsDataSource,
 } from '../data_source/testing';
 import {RunsEffects} from './index';
+import {ColumnHeaderType} from '../../widgets/data_table/types';
 
 function createRun(override: Partial<Run> = {}) {
   return {
@@ -945,6 +947,52 @@ describe('runs_effects', () => {
           }),
         ]);
       });
+    });
+  });
+
+  describe('removeHparamFilterWhenColumnIsRemoved$', () => {
+    beforeEach(() => {
+      effects.removeHparamFilterWhenColumnIsRemoved$.subscribe(() => {});
+    });
+
+    it('dispatches dashboardHparamFilterRemoved when column type is hparam', () => {
+      action.next(
+        actions.runsTableHeaderRemoved({
+          header: {
+            type: ColumnHeaderType.HPARAM,
+            name: 'some_hparam',
+            enabled: true,
+            displayName: 'Some Hparam',
+          },
+        })
+      );
+      store.refreshState();
+
+      expect(actualActions).toEqual([
+        hparamsActions.dashboardHparamFilterRemoved({
+          name: 'some_hparam',
+        }),
+      ]);
+    });
+
+    it('dispatches dashboardMetricFilterRemoved when column type is metric', () => {
+      action.next(
+        actions.runsTableHeaderRemoved({
+          header: {
+            type: ColumnHeaderType.METRIC,
+            name: 'some_metric',
+            enabled: true,
+            displayName: 'Some Metric',
+          },
+        })
+      );
+      store.refreshState();
+
+      expect(actualActions).toEqual([
+        hparamsActions.dashboardMetricFilterRemoved({
+          name: 'some_metric',
+        }),
+      ]);
     });
   });
 });
