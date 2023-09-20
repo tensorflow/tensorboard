@@ -71,7 +71,7 @@ tf_ts_library(
 
 # This is a dummy rule used as a @angular/material/autocomplete dependency.
 tf_ts_library(
-    name = "expect_angular_legacy_material_autocomplete",
+    name = "expect_angular_material_autocomplete",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -81,15 +81,6 @@ tf_ts_library(
 # This is a dummy rule used as a @angular/material/checkbox dependency.
 tf_ts_library(
     name = "expect_angular_material_checkbox",
-    srcs = [],
-    deps = [
-        "@npm//@angular/material",
-    ],
-)
-
-# This is a dummy rule used as a @angular/material/legacy_checkbox dependency.
-tf_ts_library(
-    name = "expect_angular_legacy_material_checkbox",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -107,7 +98,7 @@ tf_ts_library(
 
 # This is a dummy rule used as a @angular/material/button dependency.
 tf_ts_library(
-    name = "expect_angular_legacy_material_button",
+    name = "expect_angular_material_button",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -125,7 +116,7 @@ tf_ts_library(
 
 # This is a dummy rule used as a @angular/material/chips dependency.
 tf_ts_library(
-    name = "expect_angular_legacy_material_chips",
+    name = "expect_angular_material_chips",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -134,7 +125,7 @@ tf_ts_library(
 
 # This is a dummy rule used as a @angular/material/dialog dependency.
 tf_ts_library(
-    name = "expect_angular_legacy_material_dialog",
+    name = "expect_angular_material_dialog",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -143,7 +134,7 @@ tf_ts_library(
 
 # This is a dummy rule used as a @angular/material/dialog/testing dependency.
 tf_ts_library(
-    name = "expect_angular_legacy_material_dialog_testing",
+    name = "expect_angular_material_dialog_testing",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -152,7 +143,7 @@ tf_ts_library(
 
 # This is a dummy rule used as a @angular/material/expansion dependency.
 tf_ts_library(
-    name = "expect_angular_legacy_material_expansion",
+    name = "expect_angular_material_expansion",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -161,7 +152,7 @@ tf_ts_library(
 
 # This is a dummy rule used as a @angular/material/expansion dependency.
 tf_ts_library(
-    name = "expect_angular_legacy_material_form_field",
+    name = "expect_angular_material_form_field",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -188,7 +179,7 @@ tf_ts_library(
 
 # This is a dummy rule used as a @angular/material/input dependency.
 tf_ts_library(
-    name = "expect_angular_legacy_material_input",
+    name = "expect_angular_material_input",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -197,7 +188,7 @@ tf_ts_library(
 
 # This is a dummy rule used as a @angular/material/menu dependency.
 tf_ts_library(
-    name = "expect_angular_legacy_material_menu",
+    name = "expect_angular_material_menu",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -206,7 +197,7 @@ tf_ts_library(
 
 # This is a dummy rule used as a @angular/material/menu/testing dependency.
 tf_ts_library(
-    name = "expect_angular_legacy_material_menu_testing",
+    name = "expect_angular_material_menu_testing",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -215,7 +206,7 @@ tf_ts_library(
 
 # This is a dummy rule used as a @angular/material/paginator dependency.
 tf_ts_library(
-    name = "expect_angular_legacy_material_paginator",
+    name = "expect_angular_material_paginator",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -224,7 +215,7 @@ tf_ts_library(
 
 # This is a dummy rule used as a @angular/material/progress_spinner dependency.
 tf_ts_library(
-    name = "expect_angular_legacy_material_progress_spinner",
+    name = "expect_angular_material_progress_spinner",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -233,7 +224,7 @@ tf_ts_library(
 
 # This is a dummy rule used as a @angular/material/select dependency.
 tf_ts_library(
-    name = "expect_angular_legacy_material_select",
+    name = "expect_angular_material_select",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -242,7 +233,7 @@ tf_ts_library(
 
 # This is a dummy rule used as a @angular/material/select/testing dependency.
 tf_ts_library(
-    name = "expect_angular_legacy_material_select_testing",
+    name = "expect_angular_material_select_testing",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -251,7 +242,7 @@ tf_ts_library(
 
 # This is a dummy rule used as a @angular/material/slide_toggle dependency.
 tf_ts_library(
-    name = "expect_angular_legacy_material_slide_toggle",
+    name = "expect_angular_material_slide_toggle",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -269,7 +260,7 @@ tf_ts_library(
 
 # This is a dummy rule used as a @angular/material/snackbar dependency.
 tf_ts_library(
-    name = "expect_angular_legacy_material_snackbar",
+    name = "expect_angular_material_snackbar",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -287,7 +278,7 @@ tf_ts_library(
 
 # This is a dummy rule used as a @angular/material/table dependency.
 tf_ts_library(
-    name = "expect_angular_legacy_material_table",
+    name = "expect_angular_material_table",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -296,7 +287,7 @@ tf_ts_library(
 
 # This is a dummy rule used as a @angular/material/tabs dependency.
 tf_ts_library(
-    name = "expect_angular_legacy_material_tabs",
+    name = "expect_angular_material_tabs",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -314,7 +305,7 @@ tf_ts_library(
 
 # This is a dummy rule used as a @angular/material/tooltip dependency.
 tf_ts_library(
-    name = "expect_angular_legacy_material_tooltip",
+    name = "expect_angular_material_tooltip",
     srcs = [],
     deps = [
         "@npm//@angular/material",
