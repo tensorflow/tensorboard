@@ -104,7 +104,9 @@ class Context:
             ctx, experiment_id, include_metrics, hparams_run_to_tag_to_content
         )
         if experiment_from_runs:
-            # TODO(yatbear): Apply `hparams_limit` to `experiment_from_runs`.
+            _sort_and_reduce_to_hparams_limit(
+                experiment_from_runs, hparams_limit
+            )
             return experiment_from_runs
 
         experiment_from_data_provider_hparams = (
