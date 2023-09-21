@@ -274,10 +274,12 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     }
     this.filterModal?.close();
     this.insertColumnTo = options?.insertTo;
-    const rect = (event.target as HTMLElement).getBoundingClientRect();
+    const rect = (
+      (event.target as HTMLElement).closest('button') as HTMLButtonElement
+    ).getBoundingClientRect();
     this.columnSelectorModal.openAtPosition({
       x: rect.x + rect.width,
-      y: rect.y + rect.height,
+      y: rect.y,
     });
     this.columnSelector.activate();
   }
@@ -348,7 +350,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     this.columnSelectorModal?.close();
     this.filterModal.openAtPosition({
       x: rect.x + rect.width,
-      y: rect.y + rect.height,
+      y: rect.y,
     });
   }
 
