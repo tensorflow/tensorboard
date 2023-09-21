@@ -314,6 +314,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     }
     this.removeColumn.emit(this.contextMenuHeader);
     this.contextMenu.close();
+    this.filterModal?.close();
   }
 
   private getInsertIndex() {
