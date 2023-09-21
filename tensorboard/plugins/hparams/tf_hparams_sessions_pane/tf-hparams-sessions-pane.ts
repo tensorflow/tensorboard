@@ -201,15 +201,17 @@ class TfHparamsSessionsPane extends PolymerElement {
     // TensorBoard.
     // @ts-ignore
     const dataLayer = window['dataLayer'] || [];
-    // @ts-ignore
 
-    function gtag(...ignore: unknown[]) {
+    // Define gtag() function similar to how it is documented in
+    // https://developers.google.com/tag-platform/gtagjs/install.
+    function gtag() {
       dataLayer.push(arguments);
     }
+    // @ts-ignore
 
     gtag('event', action, {
-      'event_category': 'HParams',
-      'event_label': tabName,
+      event_category: 'HParams',
+      event_label: tabName,
     });
   };
 }
