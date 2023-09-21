@@ -147,6 +147,7 @@ describe('range input test', () => {
         return debugEl.style.left;
       });
     }
+
     describe('single selection', () => {
       it('renders correct slider value', () => {
         const {fixture} = createComponent({lowerValue: 2});
@@ -191,6 +192,16 @@ describe('range input test', () => {
         });
 
         expect(getRangeThumbsStyleLeft(fixture)).toEqual(['50%', '50%']);
+      });
+
+      it('does not render slider when min == max', () => {
+        const {fixture} = createComponent({
+          lowerValue: 2,
+          upperValue: 4,
+          min: 3,
+          max: 3,
+        });
+        expect(fixture.debugElement.query(By.css('.slider-track'))).toBeNull;
       });
     });
   });
