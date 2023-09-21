@@ -335,7 +335,7 @@ const {initialState: uiInitialState, reducers: uiNamespaceContextedReducers} =
       ],
       sortingInfo: {
         name: 'run',
-        order: SortingOrder.DESCENDING,
+        order: SortingOrder.ASCENDING,
       },
     },
     {},
