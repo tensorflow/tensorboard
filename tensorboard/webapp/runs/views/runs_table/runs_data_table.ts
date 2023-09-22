@@ -111,16 +111,16 @@ export class RunsDataTable {
   }
 
   allRowsSelected() {
-    return this.data.every((row) => row['selected']);
+    return this.data?.every((row) => row['selected']);
   }
 
   someRowsSelected() {
-    return this.data.some((row) => row['selected']);
+    return this.data?.some((row) => row['selected']);
   }
 
   handleSelectAll(event: MouseEvent) {
     event.preventDefault();
-    this.onAllSelectionToggle.emit(this.data.map((row) => row.id));
+    this.onAllSelectionToggle.emit(this.data?.map((row) => row.id));
   }
 
   onFilterKeyUp(event: KeyboardEvent) {
