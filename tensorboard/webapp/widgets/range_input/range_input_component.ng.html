@@ -42,7 +42,7 @@ limitations under the License.
 ></mat-slider>
 
 <ng-template #range>
-  <span class="container" #container>
+  <span *ngIf="min !== max" class="container" #container>
     <span class="slider-track"></span>
     <span
       class="slider-track-fill"
