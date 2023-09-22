@@ -53,8 +53,8 @@ limitations under the License.
     flex-direction: column;
     width: 100%;
 
-    max-height: 200px;
-    overflow-y: scroll;
+    max-height: 300px;
+    overflow-y: auto;
   }
 
   .column-button {

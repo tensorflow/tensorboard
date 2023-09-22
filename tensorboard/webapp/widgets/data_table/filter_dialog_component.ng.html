@@ -15,38 +15,42 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div class="filter-dialog">
-  <div
-    *ngIf="filter.type === DomainType.DISCRETE"
-    class="discrete-filters-area"
-  >
-    <tb-filter-input
-      *ngIf="filter.possibleValues"
-      [value]="discreteValueFilter"
-      (keyup)="discreteValueKeyUp($event)"
-      placeholder="Filter Discrete Values (regex)"
-    ></tb-filter-input>
+  <div *ngIf="filter.type === DomainType.DISCRETE" class="filter-container">
+    <div class="input-container">
+      <tb-filter-input
+        *ngIf="filter.possibleValues"
+        [value]="discreteValueFilter"
+        (keyup)="discreteValueKeyUp($event)"
+        placeholder="Filter Discrete Values (regex)"
+      ></tb-filter-input>
+    </div>
     <div *ngIf="!getPossibleValues().length" class="no-matches">
       No Matching Values
     </div>
-    <div
-      *ngFor="let value of getPossibleValues(); index"
-      (click)="$event.stopPropagation()"
-    >
-      <mat-checkbox
-        [checked]="filter.filterValues.includes(value)"
-        (change)="discreteFilterChanged.emit(value)"
-        ><span>{{ value }}</span></mat-checkbox
+
+    <div *ngIf="getPossibleValues().length" class="discrete-filters-container">
+      <div
+        *ngFor="let value of getPossibleValues(); index"
+        (click)="$event.stopPropagation()"
+        class="discrete-value"
       >
+        <mat-checkbox
+          [checked]="filter.filterValues.includes(value)"
+          (change)="discreteFilterChanged.emit(value)"
+          ><span>{{ value }}</span></mat-checkbox
+        >
+      </div>
     </div>
   </div>
 
   <div
     *ngIf="filter.type === DomainType.INTERVAL"
     (click)="$event.stopPropagation()"
-    class="range-input-container"
+    class="filter-container"
     disableRipple
   >
     <tb-range-input
+      class="range-input"
       [min]="filter.minValue"
       [max]="filter.maxValue"
       [lowerValue]="filter.filterLowerValue"
