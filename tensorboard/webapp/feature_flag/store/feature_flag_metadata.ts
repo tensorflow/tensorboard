@@ -111,7 +111,7 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       parseValue: parseBoolean,
     },
     enableHparamsInTimeSeries: {
-      defaultValue: false,
+      defaultValue: true,
       queryParamOverride: 'enableHparamsInTimeSeries',
       parseValue: parseBoolean,
     },

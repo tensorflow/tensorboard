@@ -196,16 +196,22 @@ class TfHparamsSessionsPane extends PolymerElement {
     action: string,
     tabName?: string
   ) => {
-    // If window['ga'] is defined, use it, otherwise any logging calls will be
-    // no-ops. window['ga'] is only defined in the hosted TensorBoard.
+    // If window['dataLayer'] is defined, use it, otherwise any logging calls
+    // will be no-ops. window['dataLayer'] is only defined in the hosted
+    // TensorBoard.
     // @ts-ignore
-    const analytics = window['ga'] || function () {};
+    const dataLayer = window['dataLayer'] || [];
+
+    // Define gtag() function similar to how it is documented in
+    // https://developers.google.com/tag-platform/gtagjs/install.
+    function gtag() {
+      dataLayer.push(arguments);
+    }
     // @ts-ignore
-    analytics('send', {
-      hitType: 'event',
-      eventCategory: 'HParams',
-      eventAction: action,
-      eventLabel: tabName,
+
+    gtag('event', action, {
+      event_category: 'HParams',
+      event_label: tabName,
     });
   };
 }
