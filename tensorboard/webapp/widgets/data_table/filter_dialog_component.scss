@@ -68,6 +68,8 @@ limitations under the License.
 .discrete-value {
   overflow: hidden;
 
+  // This stretches the width of the mat-checkbox label to 100% so that
+  // the entire row is clickable.
   ::ng-deep {
     mat-checkbox,
     .mdc-form-field,
