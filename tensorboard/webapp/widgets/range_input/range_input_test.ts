@@ -183,6 +183,18 @@ describe('range input test', () => {
         expect(getRangeThumbsStyleLeft(fixture)).toEqual(['80%', '40%']);
       });
 
+      it('render slider when min !== max', () => {
+        const {fixture} = createComponent({
+          lowerValue: 2,
+          upperValue: 4,
+          min: 3,
+          max: 4,
+        });
+        expect(
+          fixture.debugElement.query(By.css('.slider-track'))
+        ).toBeTruthy();
+      });
+
       it('does not render slider when min === max', () => {
         const {fixture} = createComponent({
           lowerValue: 2,
@@ -190,7 +202,7 @@ describe('range input test', () => {
           min: 3,
           max: 3,
         });
-        expect(fixture.debugElement.query(By.css('.slider-track'))).toBeNull;
+        expect(fixture.debugElement.query(By.css('.slider-track'))).toBeNull();
       });
     });
   });
