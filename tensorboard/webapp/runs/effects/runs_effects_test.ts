@@ -29,6 +29,7 @@ import * as coreActions from '../../core/actions';
 import * as hparamsActions from '../../hparams/_redux/hparams_actions';
 import {
   getActiveRoute,
+  getEnableHparamsInTimeSeries,
   getExperimentIdsFromRoute,
   getRuns,
   getRunsLoadState,
