@@ -1188,29 +1188,31 @@ class BackendContextTest(tf.test.TestCase):
     def test_experiment_from_runs_with_hparams_limit_no_differed_hparams(self):
         self.session_1_start_info_ = """
             hparams: [
-              {key: 'batch_size' value: {number_value: 100}},
-              {key: 'model_type' value: {string_value: 'LATTICE'}}
+              {key: 'lr' value: {number_value: 100}},
+              {key: 'model_type' value: {string_value: 'LATTICE'}},
+              {key: 'use_batch_norm' value: {bool_value: true}}
             ]
         """
         self.session_2_start_info_ = """
             hparams: [
-              {key: 'batch_size' value: {number_value: 100}},
-              {key: 'model_type' value: {string_value: 'LATTICE'}}
+              {key: 'lr' value: {number_value: 100}},
+              {key: 'model_type' value: {string_value: 'LATTICE'}},
+              {key: 'use_batch_norm' value: {bool_value: true}}
             ]
         """
         self.session_3_start_info_ = """
             hparams: [
-              {key: 'batch_size' value: {number_value: 100}},
-              {key: 'model_type' value: {string_value: 'LATTICE'}}
+              {key: 'lr' value: {number_value: 100}},
+              {key: 'model_type' value: {string_value: 'LATTICE'}},
+              {key: 'use_batch_norm' value: {bool_value: true}}
             ]
         """
         expected_exp = """
             hparam_infos: {
-              name: 'batch_size'
-              type: DATA_TYPE_FLOAT64
-              domain_interval: {
-                min_value: 100
-                max_value: 100
+              name: 'use_batch_norm'
+              type: DATA_TYPE_BOOL
+              domain_discrete: {
+                values: [{bool_value: true}]
               }
               differs: false
             }
@@ -1222,20 +1224,10 @@ class BackendContextTest(tf.test.TestCase):
               }
               differs: false
             }
-            metric_infos: {
-              name: {group: '', tag: 'accuracy'}
-            }
-            metric_infos: {
-              name: {group: '', tag: 'loss'}
-            }
-            metric_infos: {
-              name: {group: 'eval', tag: 'loss'}
-            }
-            metric_infos: {
-              name: {group: 'train', tag: 'loss'}
-            }
         """
-        actual_exp = self._experiment_from_metadata()
+        actual_exp = self._experiment_from_metadata(
+            include_metrics=False, hparams_limit=2
+        )
         self.assertProtoEquals(expected_exp, actual_exp)
 
     def test_experiment_from_runs_with_hparams_limit_returns_differed_hparams_first(
