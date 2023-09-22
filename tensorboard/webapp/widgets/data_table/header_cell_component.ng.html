@@ -23,7 +23,12 @@ limitations under the License.
 >
   <ng-content></ng-content>
   <tb-data-table-header [header]="header"></tb-data-table-header>
-  <div *ngIf="header.sortable" class="sorting-icon-container">
+  <button
+    mat-icon-button
+    *ngIf="header.sortable"
+    class="sorting-icon-container"
+    (click)="$event.stopPropagation(); headerClickedHandler()"
+  >
     <mat-icon
       *ngIf="
             sortingInfo.order === SortingOrder.ASCENDING ||
@@ -44,14 +49,13 @@ limitations under the License.
           "
       svgIcon="arrow_downward_24px"
     ></mat-icon>
-  </div>
-  <div
+  </button>
+  <button
+    mat-icon-button
     *ngIf="(header.removable || header.sortable) && !disableContextMenu"
     class="context-menu-container show-on-hover"
+    (click)="onContextMenuOpened($event)"
   >
-    <mat-icon
-      (click)="onContextMenuOpened($event)"
-      svgIcon="more_vert_24px"
-    ></mat-icon>
-  </div>
+    <mat-icon svgIcon="more_vert_24px"></mat-icon>
+  </button>
 </div>
