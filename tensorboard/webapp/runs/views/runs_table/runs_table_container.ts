@@ -817,7 +817,9 @@ export class RunsTableContainer implements OnInit, OnDestroy {
 
   addColumn({header, index}: {header: ColumnHeader; index: number}) {
     header.enabled = true;
-    this.store.dispatch(runsTableHeaderAdded({header, index}));
+    this.store.dispatch(
+      runsTableHeaderAdded({header: {...header, enabled: true}, index})
+    );
   }
 
   removeColumn(header: ColumnHeader) {
