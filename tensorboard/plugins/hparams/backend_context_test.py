@@ -1185,6 +1185,167 @@ class BackendContextTest(tf.test.TestCase):
         )
         self.assertProtoEquals(expected_exp, actual_exp)
 
+    def test_experiment_from_runs_with_hparams_limit_no_differed_hparams(self):
+        self.session_1_start_info_ = """
+            hparams: [
+              {key: 'lr' value: {number_value: 100}},
+              {key: 'model_type' value: {string_value: 'LATTICE'}},
+              {key: 'use_batch_norm' value: {bool_value: true}}
+            ]
+        """
+        self.session_2_start_info_ = """
+            hparams: [
+              {key: 'lr' value: {number_value: 100}},
+              {key: 'model_type' value: {string_value: 'LATTICE'}},
+              {key: 'use_batch_norm' value: {bool_value: true}}
+            ]
+        """
+        self.session_3_start_info_ = """
+            hparams: [
+              {key: 'lr' value: {number_value: 100}},
+              {key: 'model_type' value: {string_value: 'LATTICE'}},
+              {key: 'use_batch_norm' value: {bool_value: true}}
+            ]
+        """
+        expected_exp = """
+            hparam_infos: {
+              name: 'use_batch_norm'
+              type: DATA_TYPE_BOOL
+              domain_discrete: {
+                values: [{bool_value: true}]
+              }
+              differs: false
+            }
+            hparam_infos: {
+              name: 'model_type'
+              type: DATA_TYPE_STRING
+              domain_discrete: {
+                values: [{string_value: 'LATTICE'}]
+              }
+              differs: false
+            }
+        """
+        actual_exp = self._experiment_from_metadata(
+            include_metrics=False, hparams_limit=2
+        )
+        self.assertProtoEquals(expected_exp, actual_exp)
+
+    def test_experiment_from_runs_with_hparams_limit_returns_differed_hparams_first(
+        self,
+    ):
+        self.session_1_start_info_ = """
+            hparams: [
+              {key: 'batch_size' value: {number_value: 200}},
+              {key: 'lr' value: {number_value: 0.01}},
+              {key: 'model_type' value: {string_value: 'CNN'}}
+            ]
+        """
+        self.session_2_start_info_ = """
+            hparams: [
+              {key: 'batch_size' value: {number_value: 200}},
+              {key: 'lr' value: {number_value: 0.02}},
+              {key: 'model_type' value: {string_value: 'LATTICE'}}
+            ]
+        """
+        self.session_3_start_info_ = """
+            hparams: [
+              {key: 'batch_size' value: {number_value: 200}},
+              {key: 'lr' value: {number_value: 0.05}},
+              {key: 'model_type' value: {string_value: 'CNN'}}
+            ]
+        """
+        expected_exp = """
+            hparam_infos: {
+              name: 'lr'
+              type: DATA_TYPE_FLOAT64
+              domain_interval {
+                min_value: 0.01
+                max_value: 0.05
+              }
+              differs: true
+            }
+            hparam_infos: {
+              name: 'model_type'
+              type: DATA_TYPE_STRING
+              domain_discrete: {
+                values: [{string_value: 'CNN'},
+                         {string_value: 'LATTICE'}]
+              }
+              differs: true
+            }
+        """
+        actual_exp = self._experiment_from_metadata(
+            include_metrics=False, hparams_limit=2
+        )
+        _canonicalize_experiment(actual_exp)
+        self.assertProtoEquals(expected_exp, actual_exp)
+
+    def test_experiment_from_runs_sorts_differed_hparams_first(self):
+        self.session_1_start_info_ = """
+            hparams: [
+              {key: 'batch_size' value: {number_value: 200}},
+              {key: 'lr' value: {number_value: 0.01}},
+              {key: 'model_type' value: {string_value: 'CNN'}},
+              {key: 'use_batch_norm' value: {bool_value: false}}
+            ]
+        """
+        self.session_2_start_info_ = """
+            hparams: [
+              {key: 'batch_size' value: {number_value: 300}},
+              {key: 'lr' value: {number_value: 0.01}},
+              {key: 'model_type' value: {string_value: 'CNN'}},
+              {key: 'use_batch_norm' value: {bool_value: false}}
+            ]
+        """
+        self.session_3_start_info_ = """
+            hparams: [
+              {key: 'batch_size' value: {number_value: 100}},
+              {key: 'lr' value: {number_value: 0.01}},
+              {key: 'model_type' value: {string_value: 'CNN'}},
+              {key: 'use_batch_norm' value: {bool_value: true}}
+            ]
+        """
+        expected_exp = """
+            hparam_infos: {
+              name: 'use_batch_norm'
+              type: DATA_TYPE_BOOL
+              domain_discrete: {
+                values: [{bool_value: false}, {bool_value: true}]
+              }
+              differs: true
+            }
+            hparam_infos: {
+              name: 'batch_size'
+              type: DATA_TYPE_FLOAT64
+              domain_interval {
+                min_value: 100
+                max_value: 300
+              }
+              differs: true
+            }
+            hparam_infos: {
+              name: 'model_type'
+              type: DATA_TYPE_STRING
+              domain_discrete: {
+                values: [{string_value: 'CNN'}]
+              }
+              differs: false
+            }
+            hparam_infos: {
+              name: 'lr'
+              type: DATA_TYPE_FLOAT64
+              domain_interval {
+                min_value: 0.01
+                max_value: 0.01
+              }
+              differs: false
+            }
+        """
+        actual_exp = self._experiment_from_metadata(
+            include_metrics=False, hparams_limit=None
+        )
+        self.assertProtoEquals(expected_exp, actual_exp)
+
     def _serialized_plugin_data(self, data_oneof_field, text_protobuffer):
         oneof_type_dict = {
             DATA_TYPE_EXPERIMENT: api_pb2.Experiment,
