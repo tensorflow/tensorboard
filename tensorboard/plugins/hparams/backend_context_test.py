@@ -1188,31 +1188,32 @@ class BackendContextTest(tf.test.TestCase):
     def test_experiment_from_runs_with_hparams_limit_no_differed_hparams(self):
         self.session_1_start_info_ = """
             hparams: [
-              {key: 'lr' value: {number_value: 100}},
+              {key: 'lr' value: {number_value: 0.001}},
               {key: 'model_type' value: {string_value: 'LATTICE'}},
               {key: 'use_batch_norm' value: {bool_value: true}}
             ]
         """
         self.session_2_start_info_ = """
             hparams: [
-              {key: 'lr' value: {number_value: 100}},
+              {key: 'lr' value: {number_value: 0.001}},
               {key: 'model_type' value: {string_value: 'LATTICE'}},
               {key: 'use_batch_norm' value: {bool_value: true}}
             ]
         """
         self.session_3_start_info_ = """
             hparams: [
-              {key: 'lr' value: {number_value: 100}},
+              {key: 'lr' value: {number_value: 0.001}},
               {key: 'model_type' value: {string_value: 'LATTICE'}},
               {key: 'use_batch_norm' value: {bool_value: true}}
             ]
         """
         expected_exp = """
             hparam_infos: {
-              name: 'use_batch_norm'
-              type: DATA_TYPE_BOOL
-              domain_discrete: {
-                values: [{bool_value: true}]
+              name: 'lr'
+              type: DATA_TYPE_FLOAT64
+              domain_interval {
+                min_value: 0.001
+                max_value: 0.001
               }
               differs: false
             }
@@ -1307,14 +1308,6 @@ class BackendContextTest(tf.test.TestCase):
         """
         expected_exp = """
             hparam_infos: {
-              name: 'use_batch_norm'
-              type: DATA_TYPE_BOOL
-              domain_discrete: {
-                values: [{bool_value: false}, {bool_value: true}]
-              }
-              differs: true
-            }
-            hparam_infos: {
               name: 'batch_size'
               type: DATA_TYPE_FLOAT64
               domain_interval {
@@ -1324,12 +1317,12 @@ class BackendContextTest(tf.test.TestCase):
               differs: true
             }
             hparam_infos: {
-              name: 'model_type'
-              type: DATA_TYPE_STRING
+              name: 'use_batch_norm'
+              type: DATA_TYPE_BOOL
               domain_discrete: {
-                values: [{string_value: 'CNN'}]
+                values: [{bool_value: false}, {bool_value: true}]
               }
-              differs: false
+              differs: true
             }
             hparam_infos: {
               name: 'lr'
@@ -1337,6 +1330,14 @@ class BackendContextTest(tf.test.TestCase):
               domain_interval {
                 min_value: 0.01
                 max_value: 0.01
+              }
+              differs: false
+            }
+            hparam_infos: {
+              name: 'model_type'
+              type: DATA_TYPE_STRING
+              domain_discrete: {
+                values: [{string_value: 'CNN'}]
               }
               differs: false
             }

@@ -605,10 +605,10 @@ def _sort_and_reduce_to_hparams_limit(experiment, hparams_limit=None):
         hparams_limit = len(experiment.hparam_infos)
 
     # Prioritizes returning HParamInfo protos with `differed` values.
+    # Sorts by `differs` (True first), then by name.
     limited_hparam_infos = sorted(
         experiment.hparam_infos,
-        key=lambda hparam_info: hparam_info.differs,
-        reverse=True,
+        key=lambda hparam_info: (not hparam_info.differs, hparam_info.name),
     )[:hparams_limit]
 
     experiment.ClearField("hparam_infos")
