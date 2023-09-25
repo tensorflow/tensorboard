@@ -34,14 +34,20 @@ $_icon_size: 12px;
     &:hover {
       opacity: 1;
     }
+    &:focus {
+      opacity: 1;
+    }
   }
 }
 
 .sorting-icon-container,
 .context-menu-container {
-  width: $_icon_size;
-  height: $_icon_size;
+  width: $_icon_size + 4px;
+  height: $_icon_size + 4px;
   border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .cell {
@@ -51,6 +57,7 @@ $_icon_size: 12px;
   mat-icon {
     height: $_icon_size;
     width: $_icon_size;
+    line-height: 1;
   }
 
   .sorting-icon-container {
