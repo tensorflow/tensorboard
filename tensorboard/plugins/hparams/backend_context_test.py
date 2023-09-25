@@ -1207,12 +1207,29 @@ class BackendContextTest(tf.test.TestCase):
               {key: 'use_batch_norm' value: {bool_value: true}}
             ]
         """
+        expected_exp = """
+            hparam_infos: {
+              name: 'lr'
+              type: DATA_TYPE_FLOAT64
+              domain_interval {
+                min_value: 0.001
+                max_value: 0.001
+              }
+              differs: false
+            }
+            hparam_infos: {
+              name: 'model_type'
+              type: DATA_TYPE_STRING
+              domain_discrete: {
+                values: [{string_value: 'LATTICE'}]
+              }
+              differs: false
+            }
+        """
         actual_exp = self._experiment_from_metadata(
             include_metrics=False, hparams_limit=2
         )
-        self.assertLen(actual_exp.hparam_infos, 2)
-        self.assertFalse(actual_exp.hparam_infos[0].differs)
-        self.assertFalse(actual_exp.hparam_infos[1].differs)
+        self.assertProtoEquals(expected_exp, actual_exp)
 
     def test_experiment_from_runs_with_hparams_limit_returns_differed_hparams_first(
         self,
@@ -1328,11 +1345,6 @@ class BackendContextTest(tf.test.TestCase):
         actual_exp = self._experiment_from_metadata(
             include_metrics=False, hparams_limit=None
         )
-        # Makes sure the "differed" hparams are returned first.
-        self.assertTrue(actual_exp.hparam_infos[0].differs)
-        self.assertTrue(actual_exp.hparam_infos[1].differs)
-        # Verifies all other fields.
-        _sort_hparams_by_differs_then_name(actual_exp)
         self.assertProtoEquals(expected_exp, actual_exp)
 
     def _serialized_plugin_data(self, data_oneof_field, text_protobuffer):
@@ -1358,14 +1370,6 @@ def _canonicalize_experiment(exp):
             hparam_info.domain_discrete.values.sort(
                 key=operator.attrgetter("string_value")
             )
-
-
-def _sort_hparams_by_differs_then_name(exp):
-    """Sorts the `hparam_info` fields of an Experiment by `differs` then by `name`."""
-    # Sorts by `differs` field in reverse order, then by name.
-    exp.hparam_infos.sort(
-        key=lambda hparam_info: (not hparam_info.differs, hparam_info.name)
-    )
 
 
 if __name__ == "__main__":
