@@ -26,84 +26,86 @@ limitations under the License.
 <div *ngIf="loading" class="loading">
   <mat-spinner mode="indeterminate" diameter="28"></mat-spinner>
 </div>
-<tb-data-table
-  *ngIf="!loading"
-  [headers]="headers"
-  [sortingInfo]="sortingInfo"
-  [columnCustomizationEnabled]="true"
-  [selectableColumns]="selectableColumns"
-  [columnFilters]="columnFilters"
-  (sortDataBy)="sortDataBy.emit($event)"
-  (orderColumns)="orderColumns.emit($event)"
-  (addColumn)="addColumn.emit($event)"
-  (removeColumn)="removeColumn.emit($event)"
-  (addFilter)="addFilter.emit($event)"
->
-  <ng-container header>
-    <ng-container *ngFor="let header of getHeaders()">
-      <tb-data-table-header-cell
-        *ngIf="header.enabled"
-        [header]="header"
-        [sortingInfo]="sortingInfo"
-        [hparamsEnabled]="true"
-      >
-        <ng-container [ngSwitch]="header.name">
-          <div *ngSwitchCase="'selected'">
-            <mat-checkbox
-              [checked]="allRowsSelected()"
-              [indeterminate]="!allRowsSelected() && someRowsSelected()"
-              (click)="handleSelectAll($event)"
-            ></mat-checkbox>
-          </div>
-          <span class="group-menu-container" *ngSwitchCase="'color'">
-            <runs-group-menu-button
-              [experimentIds]="experimentIds"
-            ></runs-group-menu-button>
-          </span>
-        </ng-container>
-      </tb-data-table-header-cell> </ng-container
-  ></ng-container>
+<div class="table-container">
+  <tb-data-table
+    *ngIf="!loading"
+    [headers]="headers"
+    [sortingInfo]="sortingInfo"
+    [columnCustomizationEnabled]="true"
+    [selectableColumns]="selectableColumns"
+    [columnFilters]="columnFilters"
+    (sortDataBy)="sortDataBy.emit($event)"
+    (orderColumns)="orderColumns.emit($event)"
+    (addColumn)="addColumn.emit($event)"
+    (removeColumn)="removeColumn.emit($event)"
+    (addFilter)="addFilter.emit($event)"
+  >
+    <ng-container header>
+      <ng-container *ngFor="let header of getHeaders()">
+        <tb-data-table-header-cell
+          *ngIf="header.enabled"
+          [header]="header"
+          [sortingInfo]="sortingInfo"
+          [hparamsEnabled]="true"
+        >
+          <ng-container [ngSwitch]="header.name">
+            <div *ngSwitchCase="'selected'">
+              <mat-checkbox
+                [checked]="allRowsSelected()"
+                [indeterminate]="!allRowsSelected() && someRowsSelected()"
+                (click)="handleSelectAll($event)"
+              ></mat-checkbox>
+            </div>
+            <span class="group-menu-container" *ngSwitchCase="'color'">
+              <runs-group-menu-button
+                [experimentIds]="experimentIds"
+              ></runs-group-menu-button>
+            </span>
+          </ng-container>
+        </tb-data-table-header-cell> </ng-container
+    ></ng-container>
 
-  <ng-container content>
-    <ng-container *ngFor="let dataRow of data">
-      <tb-data-table-content-row>
-        <ng-container *ngFor="let header of getHeaders()">
-          <tb-data-table-content-cell
-            *ngIf="header.enabled"
-            [header]="header"
-            [datum]="dataRow[header.name]"
-          >
-            <ng-container [ngSwitch]="header.name">
-              <span *ngSwitchCase="'color'" class="color-container">
-                <button
-                  class="run-color-swatch"
-                  [style.background]="dataRow['color']"
-                  [colorPicker]="dataRow['color']"
-                  [cpDialogDisplay]="'popup'"
-                  [cpPositionOffset]="-20"
-                  [cpUseRootViewContainer]="true"
-                  [cpOutputFormat]="'hex'"
-                  (colorPickerChange)="onRunColorChange.emit({runId: dataRow.id, newColor: $event})"
-                ></button>
-              </span>
-              <div *ngSwitchCase="'selected'">
-                <mat-checkbox
-                  [checked]="dataRow['selected']"
-                  (click)="selectionClick($event, dataRow['id'])"
-                ></mat-checkbox>
-              </div>
-              <span *ngSwitchCase="'experimentAlias'">
-                <tb-experiment-alias
-                  [alias]="dataRow['experimentAlias']"
-                ></tb-experiment-alias>
-              </span>
-            </ng-container>
-          </tb-data-table-content-cell>
-        </ng-container>
-      </tb-data-table-content-row>
+    <ng-container content>
+      <ng-container *ngFor="let dataRow of data">
+        <tb-data-table-content-row>
+          <ng-container *ngFor="let header of getHeaders()">
+            <tb-data-table-content-cell
+              *ngIf="header.enabled"
+              [header]="header"
+              [datum]="dataRow[header.name]"
+            >
+              <ng-container [ngSwitch]="header.name">
+                <span *ngSwitchCase="'color'" class="color-container">
+                  <button
+                    class="run-color-swatch"
+                    [style.background]="dataRow['color']"
+                    [colorPicker]="dataRow['color']"
+                    [cpDialogDisplay]="'popup'"
+                    [cpPositionOffset]="-20"
+                    [cpUseRootViewContainer]="true"
+                    [cpOutputFormat]="'hex'"
+                    (colorPickerChange)="onRunColorChange.emit({runId: dataRow.id, newColor: $event})"
+                  ></button>
+                </span>
+                <div *ngSwitchCase="'selected'">
+                  <mat-checkbox
+                    [checked]="dataRow['selected']"
+                    (click)="selectionClick($event, dataRow['id'])"
+                  ></mat-checkbox>
+                </div>
+                <span *ngSwitchCase="'experimentAlias'">
+                  <tb-experiment-alias
+                    [alias]="dataRow['experimentAlias']"
+                  ></tb-experiment-alias>
+                </span>
+              </ng-container>
+            </tb-data-table-content-cell>
+          </ng-container>
+        </tb-data-table-content-row>
+      </ng-container>
     </ng-container>
-  </ng-container>
-</tb-data-table>
+  </tb-data-table>
+</div>
 <div class="full-screen-toggle" [ngClass]="{'full-screen': isFullScreen}">
   <button
     mat-button
