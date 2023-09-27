@@ -1,3 +1,10 @@
+# Release 2.14.1
+
+## Bug Fixes
+
+- Fix indirect dependency on the package six. (#6580)
+- Remove wheel from the requirements in setup.py (#6567)
+
 # Release 2.14.0
 
 The 2.14 minor series tracks TensorFlow 2.14.
@@ -30,7 +37,11 @@ The 2.13 minor series tracks TensorFlow 2.13
   - Embedding Projector: fix dark mode button contrast (#6327)
   - Embedding Projector: update tsne learning rate during iteration (#6319)
 
-# Release 2.12.3
+# Release 2.12.3# Release 2.10.1
+
+## Bug Fixes
+
+- Fix embedding projector plugin. (#5944)
 
 ## Bug Fixes
 
