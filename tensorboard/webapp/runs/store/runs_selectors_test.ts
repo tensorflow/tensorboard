@@ -432,6 +432,61 @@ describe('runs_selectors', () => {
         },
       });
     });
+
+    it('matches with longest overlapping session name', () => {
+      const state = buildMockState({
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: {
+              routeKind: RouteKind.COMPARE_EXPERIMENT,
+              params: {experimentIds: 'exp1:123,exp2:456'},
+            },
+          })
+        ),
+        ...buildStateFromHparamsState(
+          buildHparamsState({
+            dashboardSessionGroups: [
+              buildSessionGroup({
+                name: 'SessionGroup1',
+                sessions: [{name: 's11'}],
+                hparams: {hparam: 'value1'},
+              }),
+              buildSessionGroup({
+                name: 'SessionGroup2',
+                sessions: [{name: 's'}],
+                hparams: {hparam: 'value2'},
+              }),
+              buildSessionGroup({
+                name: 'SessionGroup2',
+                sessions: [{name: 's1'}],
+                hparams: {hparam: 'value3'},
+              }),
+            ],
+          })
+        ),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runIds: {
+              123: ['s/train', 's11/train', 's12/train'],
+            },
+          })
+        ),
+      });
+      expect(selectors.getDashboardRunsToHparams(state)).toEqual({
+        's/train': {
+          hparams: [{name: 'hparam', value: 'value2'}],
+          metrics: [],
+        },
+        's11/train': {
+          hparams: [{name: 'hparam', value: 'value1'}],
+          metrics: [],
+        },
+        's12/train': {
+          hparams: [{name: 'hparam', value: 'value3'}],
+          metrics: [],
+        },
+      });
+    });
   });
 
   describe('#getDashboardRuns', () => {
