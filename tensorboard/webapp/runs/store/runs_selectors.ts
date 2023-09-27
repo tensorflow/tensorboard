@@ -111,7 +111,7 @@ export const getDashboardRunsToHparams = createSelector(
       runIds.push(...(state.runIds[experimentId] || []));
     }
 
-    const runToHparamsAndMetrics: RunToHparamsAndMetrics = {};
+    const sessionToHparams: Record<string, HparamValue[]> = {};
     for (const sessionGroup of dashboardSessionGroups) {
       const hparams: HparamValue[] = Object.entries(sessionGroup.hparams).map(
         (keyValue) => {
@@ -119,17 +119,22 @@ export const getDashboardRunsToHparams = createSelector(
           return {name: hparam, value};
         }
       );
-
       for (const session of sessionGroup.sessions) {
-        for (const runId of runIds) {
-          if (runId.startsWith(session.name)) {
-            runToHparamsAndMetrics[runId] = {
-              hparams,
-              // The underlying data source that fetches the session groups data
-              // does not retrieve metrics.
-              metrics: [],
-            };
-          }
+        sessionToHparams[session.name] = hparams;
+      }
+    }
+
+    const runToHparamsAndMetrics: RunToHparamsAndMetrics = {};
+    for (const runId of runIds) {
+      for (const sessionName of Object.keys(sessionToHparams)) {
+        if (runId.startsWith(sessionName)) {
+          runToHparamsAndMetrics[runId] = {
+            hparams: sessionToHparams[sessionName],
+            // The underlying data source that fetches the session groups data
+            // does not retrieve metrics.
+            metrics: [],
+          };
+          break;
         }
       }
     }
