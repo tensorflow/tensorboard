@@ -127,7 +127,9 @@ export const getDashboardRunsToHparams = createSelector(
     // Sort sessions based on length of name. We want to match runs with the
     // longest matching session name. So, for example, given sessions "1" and
     // "11", a run with name "11/train" should match with session "11".
-    const sortedSessionKeys = Object.keys(sessionToHparams).sort((a, b) => b.length - a.length);
+    const sortedSessionKeys = Object.keys(sessionToHparams).sort(
+      (a, b) => b.length - a.length
+    );
 
     const runToHparamsAndMetrics: RunToHparamsAndMetrics = {};
     for (const runId of runIds) {
