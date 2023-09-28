@@ -31,13 +31,11 @@ limitations under the License.
     [attr.aria-checked]="selectedGroupBy.key === GroupByKey.EXPERIMENT"
     (click)="onGroupByChange.emit({key: GroupByKey.EXPERIMENT})"
   >
-    <span>
-      <mat-icon
-        *ngIf="selectedGroupBy.key === GroupByKey.EXPERIMENT"
-        svgIcon="done_24px"
-      ></mat-icon>
-    </span>
-    <label>Experiment</label>
+    <mat-icon
+      *ngIf="selectedGroupBy.key === GroupByKey.EXPERIMENT"
+      svgIcon="done_24px"
+    ></mat-icon>
+    <span>Experiment</span>
   </button>
   <button
     mat-menu-item
@@ -46,13 +44,11 @@ limitations under the License.
     [attr.aria-checked]="selectedGroupBy.key === GroupByKey.RUN"
     (click)="onGroupByChange.emit({key: GroupByKey.RUN})"
   >
-    <span>
-      <mat-icon
-        *ngIf="selectedGroupBy.key === GroupByKey.RUN"
-        svgIcon="done_24px"
-      ></mat-icon>
-    </span>
-    <label>Run</label>
+    <mat-icon
+      *ngIf="selectedGroupBy.key === GroupByKey.RUN"
+      svgIcon="done_24px"
+    ></mat-icon>
+    <span>Run</span>
   </button>
   <button
     mat-menu-item
@@ -61,13 +57,11 @@ limitations under the License.
     [attr.aria-checked]="selectedGroupBy.key === GroupByKey.REGEX"
     (click)="onGroupByRegexClick()"
   >
-    <span>
-      <mat-icon
-        *ngIf="selectedGroupBy.key === GroupByKey.REGEX"
-        svgIcon="done_24px"
-      ></mat-icon>
-    </span>
-    <label>Regex</label>
+    <mat-icon
+      *ngIf="selectedGroupBy.key === GroupByKey.REGEX"
+      svgIcon="done_24px"
+    ></mat-icon>
+    <span>Regex</span>
   </button>
   <button
     mat-menu-item
@@ -76,10 +70,8 @@ limitations under the License.
     (click)="onRegexStringEdit()"
     class="display-regex-string"
   >
-    <span>
-      <mat-icon svgIcon="edit_24px"></mat-icon>
-    </span>
-    <label *ngIf="regexString">{{regexString}}</label>
-    <label *ngIf="!regexString" class="none-set-string">(none set)</label>
+    <mat-icon svgIcon="edit_24px"></mat-icon>
+    <span *ngIf="regexString">{{regexString}}</span>
+    <span *ngIf="!regexString" class="none-set-string">(none set)</span>
   </button>
 </mat-menu>
