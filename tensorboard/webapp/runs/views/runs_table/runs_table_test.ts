@@ -638,7 +638,7 @@ describe('runs_table', () => {
         const items = getOverlayMenuItems();
 
         expect(
-          items.map((element) => element.querySelector('label')!.textContent)
+          items.map((element) => element.querySelector('span')!.textContent)
         ).toEqual(['Experiment', 'Run', 'Regex', '(none set)']);
       });
 
@@ -655,9 +655,10 @@ describe('runs_table', () => {
 
         openColorGroupDialog(fixture);
         const items = getOverlayMenuItems();
+        console.log('items', items);
 
         expect(
-          items.map((element) => element.querySelector('label')!.textContent)
+          items.map((element) => element.querySelector('span')!.textContent)
         ).toEqual(['Run', 'Regex', '(none set)']);
       });
 

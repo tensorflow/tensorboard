@@ -27,12 +27,6 @@ limitations under the License.
     pointer-events: none;
   }
 
-  button {
-    display: grid;
-    gap: 2px 10px;
-    grid-template-columns: $_icon-size auto;
-  }
-
   mat-icon {
     height: $_icon-size;
     width: $_icon-size;
