@@ -23,6 +23,11 @@ const getUiPlugins = createSelector(getPlugins, (listing): UiPluginMetadata[] =>
   Object.keys(listing).map((key) => Object.assign({}, {id: key}, listing[key]))
 );
 
+const getActivePlugins = createSelector(
+  getUiPlugins,
+  (plugins): UiPluginMetadata[] => plugins.filter((plugin) => plugin.enabled)
+);
+
 const getDisabledPlugins = createSelector(
   getUiPlugins,
   (plugins): UiPluginMetadata[] => plugins.filter((plugin) => !plugin.enabled)
@@ -32,7 +37,7 @@ const getDisabledPlugins = createSelector(
   selector: 'plugin-selector',
   template: `
     <plugin-selector-component
-      [activePlugins]="plugins$ | async"
+      [activePlugins]="activePlugins$ | async"
       [disabledPlugins]="disabledPlugins$ | async"
       [selectedPlugin]="activePlugin$ | async"
       (onPluginSelectionChanged)="onPluginSelectionChange($event)"
@@ -41,7 +46,7 @@ const getDisabledPlugins = createSelector(
 })
 export class PluginSelectorContainer {
   readonly activePlugin$ = this.store.pipe(select(getActivePlugin));
-  readonly plugins$ = this.store.pipe(select(getUiPlugins));
+  readonly activePlugins$ = this.store.pipe(select(getActivePlugins));
   readonly disabledPlugins$ = this.store.pipe(select(getDisabledPlugins));
 
   constructor(private readonly store: Store<State>) {}
