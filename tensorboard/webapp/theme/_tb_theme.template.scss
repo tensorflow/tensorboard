@@ -291,6 +291,33 @@ $tb-dark-theme: map_merge(
     }
   }
 
+  body,
+  body.dark-mode {
+    button[mat-icon-button].mat-mdc-icon-button {
+      width: unset;
+      height: unset;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+
+      .mat-mdc-button-touch-target {
+        height: 100%;
+        width: 100%;
+      }
+
+      mat-icon.mat-icon {
+        min-width: 1em;
+      }
+
+      mat-icon.mat-icon,
+      svg {
+        width: 1em;
+        height: 1em;
+      }
+    }
+  }
+
   // Cannot use `tb-dark-theme` as :host-context in the global stylesheet is
   // meaningless.
   body.dark-mode {

@@ -40,16 +40,6 @@ $_icon_size: 12px;
   }
 }
 
-.sorting-icon-container,
-.context-menu-container {
-  width: $_icon_size + 4px;
-  height: $_icon_size + 4px;
-  border-radius: 5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 .cell {
   align-items: center;
   display: flex;
@@ -58,6 +48,18 @@ $_icon_size: 12px;
     height: $_icon_size;
     width: $_icon_size;
     line-height: 1;
+  }
+
+  button.sorting-icon-container,
+  button.context-menu-container {
+    width: $_icon_size + 4px;
+    height: $_icon_size + 4px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    padding: 4px;
   }
 
   .sorting-icon-container {
