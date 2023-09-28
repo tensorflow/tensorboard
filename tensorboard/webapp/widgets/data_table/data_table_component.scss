@@ -66,8 +66,9 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
   }
 
   .context-menu-button {
-    text-align: left;
+    justify-content: left;
     width: 100%;
+    text-wrap: nowrap;
   }
 
   .no-actions-message {
