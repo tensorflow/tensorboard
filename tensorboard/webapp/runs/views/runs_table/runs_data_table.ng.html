@@ -67,7 +67,7 @@ limitations under the License.
 
     <ng-container content>
       <ng-container *ngFor="let dataRow of data">
-        <tb-data-table-content-row>
+        <tb-data-table-content-row [attr.data-id]="dataRow.id">
           <ng-container *ngFor="let header of getHeaders()">
             <tb-data-table-content-cell
               *ngIf="header.enabled"
