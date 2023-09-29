@@ -58,9 +58,6 @@ $_icon_padding: 4px;
       height: $_icon_size + $_icon_padding;
       --tb-icon-size: #{$_icon_size};
       border-radius: 5px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       font-size: 12px;
       padding: $_icon_padding;
     }
