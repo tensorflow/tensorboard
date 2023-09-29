@@ -28,13 +28,15 @@ text {
   user-select: none;
 }
 
+$_icon_size: 16px;
+
 .axis {
   display: flex;
   height: 100%;
   width: 100%;
 
   .extent-edit-button {
-    font-size: 16px;
+    --tb-icon-size: #{$_icon_size};
     height: 24px;
     line-height: 24px;
     position: absolute;
@@ -45,9 +47,9 @@ text {
     padding: 0;
 
     mat-icon {
-      height: 16px;
-      width: 16px;
-      line-height: 16px;
+      height: $_icon_size;
+      width: $_icon_size;
+      line-height: $_icon_size;
     }
   }
 }
