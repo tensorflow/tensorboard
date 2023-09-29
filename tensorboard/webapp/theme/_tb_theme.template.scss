@@ -293,27 +293,30 @@ $tb-dark-theme: map_merge(
 
   body,
   body.dark-mode {
-    button[mat-icon-button].mat-mdc-icon-button {
-      width: unset;
-      height: unset;
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
+    a,
+    button {
+      &[mat-icon-button].mat-mdc-icon-button {
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        --tb-icon-size: 24px;
 
-      .mat-mdc-button-touch-target {
-        height: 100%;
-        width: 100%;
-      }
+        .mat-mdc-button-touch-target {
+          height: 100%;
+          width: 100%;
+        }
 
-      mat-icon.mat-icon {
-        min-width: 1em;
-      }
+        mat-icon.mat-icon {
+          flex-shrink: 0;
+        }
 
-      mat-icon.mat-icon,
-      svg {
-        width: 1em;
-        height: 1em;
+        mat-icon.mat-icon,
+        svg {
+          width: var(--tb-icon-size);
+          height: var(--tb-icon-size);
+        }
       }
     }
   }

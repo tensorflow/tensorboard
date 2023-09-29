@@ -62,9 +62,9 @@ $metrics-min-card-height: 320px;
   @include tb-theme-foreground-prop(color, secondary-text);
   white-space: nowrap;
 
-  ::ng-deep button[mat-icon-button] {
-    font-size: 16px;
-  }
+  // ::ng-deep button[mat-icon-button] {
+  //   font-size: 16px;
+  // }
 }
 
 @mixin metrics-empty-message {
