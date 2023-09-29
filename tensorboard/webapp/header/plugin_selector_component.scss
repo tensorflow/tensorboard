@@ -14,59 +14,154 @@ limitations under the License.
 ==============================================================================*/
 @import 'tensorboard/webapp/theme/tb_theme';
 
-@mixin plugin-text {
-  color: map-get($tb-dark-foreground, text);
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
 :host {
   align-items: center;
   display: flex;
   flex: 1 1 auto;
   font-size: 14px;
   height: 100%;
-  justify-content: space-between;
   overflow: hidden;
+}
 
-  // Mat tabs use the theme primary color as their text color.
-  mat-tab-group ::ng-deep {
-    .mat-mdc-tab {
-      padding: 0 8px;
-      margin: 0 16px;
-      height: 64px;
+mat-form-field {
+  flex: 0 0;
+  /* visually center align with _text_ of the select to the center. */
+  margin-top: 5px;
+  /* default width is 180px */
+  width: 130px;
+}
 
-      .mdc-tab-indicator__content {
-        border-color: currentColor;
-      }
-    }
+mat-label,
+mat-select,
+mat-option {
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.active-plugin-list {
+  align-self: stretch;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.plugin-name {
+  align-items: center;
+  display: inline-flex;
+  height: 100%;
+  justify-content: center;
+  padding: 0 12px;
+  width: 100%;
+}
+
+// TODO(tensorboard-team): Can probably remove after migrating away from Legacy Material components.
+// These styles exist in `mat-toolbar` already, but the combination of the
+// dark theme selector being `body.dark-theme` and the legacy select component
+// being used causes the styles to be overwritten in a dark theme.
+:host ::ng-deep .mat-form-field.mat-form-field.mat-form-field {
+  .mat-form-field-underline,
+  .mat-form-field-ripple,
+  &.mat-focused .mat-form-field-ripple {
+    background-color: currentColor;
   }
 
-  mat-form-field ::ng-deep {
-    // There are only two appearance options
-    //   1) "filled" - with a background
-    //   2) "outline" - with a border
-    // Both will require a restyle like this. I'm opting for filled
-    // because it is the default.
-    .mdc-text-field--filled {
-      background: none;
-    }
-
-    // The bottom border of the select menu.
-    .mdc-text-field--filled {
-      ::before {
-        border-bottom-color: map-get($tb-dark-foreground, text);
-      }
-    }
-
-    mat-label,
-    .mat-mdc-select-arrow {
-      @include plugin-text;
-    }
+  .mat-select-value,
+  .mat-select-arrow,
+  &.mat-focused .mat-form-field-label,
+  &.mat-focused .mat-select-arrow {
+    color: inherit;
   }
 }
 
-mat-option,
-.plugin-name {
-  @include plugin-text;
+:host ::ng-deep .active-plugin-list {
+  // Override mat-tab styling. By default, mat-tab has the right styling but,
+  // here, we are using it under dark header background. Must invert the color.
+
+  &.mat-primary .mat-tab-list .mat-ink-bar {
+    background-color: currentColor;
+  }
+
+  .mat-tab-label,
+  .mat-tab-link {
+    // Inherit from `color` on the toolbar.
+    color: inherit;
+    // default is .6 and it is too dark against dark background.
+    opacity: 0.7;
+
+    &.mat-tab-label-active {
+      opacity: 1;
+    }
+  }
+
+  .mat-tab-header-pagination-chevron {
+    border-color: currentColor;
+  }
+
+  .mat-tab-header-pagination-disabled {
+    visibility: hidden;
+  }
+
+  .mat-tab-disabled {
+    display: none;
+  }
+
+  mat-tab-list,
+  .mat-tab-header,
+  .mat-tab-labels,
+  .mat-tab-label {
+    height: 100%;
+  }
+
+  .mat-tab-label {
+    min-width: 48px; /* default is 160px which is too big for us */
+    padding: 0; /* default is 24px */
+    text-transform: uppercase;
+  }
+
+  .mat-tab-label-content {
+    height: 100%;
+  }
+
+  mat-tab-header {
+    .mat-tab-list {
+      // 36px is the size of the chevron. Please see [1] for the reason.
+      padding: 0 36px;
+    }
+
+    > {
+      :first-child,
+      .mat-tab-label-container,
+      :last-child {
+        // [1]: Reason for customizing the mat-tab-header.
+        //
+        // Default mat-tab only renders the directional overflow chevron when
+        // width of the label container is smaller than mat-tab-header. This
+        // causes visual jank when user resizes the screen as the mat-tab with
+        // the chevron appears to have more padding (visually; directional
+        // chevron can have `visibility: hidden` in case it is not needed and
+        // appear as padding). To have the same experience as the Polymer based
+        // Material tab header, we always set the padding of 36px on each sides
+        // but that causes the scroll calculation to be incorrect and causes a
+        // bug [2].
+        // To work around it, we make everything `position: absolute`.
+        // [2]: https://github.com/tensorflow/tensorboard/issues/4841
+        bottom: 0;
+        position: absolute;
+        top: 0;
+      }
+
+      :first-child,
+      .mat-tab-label-container {
+        left: 0;
+      }
+
+      :last-child,
+      .mat-tab-label-container {
+        right: 0;
+      }
+
+      .mat-tab-header-pagination {
+        @include tb-theme-background-prop(background-color, app-bar);
+      }
+    }
+  }
 }
