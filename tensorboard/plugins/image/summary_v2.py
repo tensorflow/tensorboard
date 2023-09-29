@@ -113,24 +113,7 @@ def image(name, data, step=None, max_outputs=3, description=None):
             tf.debugging.assert_non_negative(max_outputs)
             images = tf.image.convert_image_dtype(data, tf.uint8, saturate=True)
             limited_images = images[:max_outputs]
-            if tf.compat.forward_compatible(2023, 5, 1):
-                encoded_images = tf.image.encode_png(limited_images)
-            else:
-                # TODO(b/276803093): The kernel was updated around 2023/04/15.
-                # After 90 days (2023/07/15), please remove the False branch.
-                encoded_images = tf.map_fn(
-                    tf.image.encode_png,
-                    limited_images,
-                    dtype=tf.string,
-                    name="encode_each_image",
-                )
-                # Workaround for map_fn returning float dtype for an empty
-                # elems input.
-                encoded_images = tf.cond(
-                    tf.shape(input=encoded_images)[0] > 0,
-                    lambda: encoded_images,
-                    lambda: tf.constant([], tf.string),
-                )
+            encoded_images = tf.image.encode_png(limited_images)
             image_shape = tf.shape(input=images)
             dimensions = tf.stack(
                 [
