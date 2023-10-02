@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <mat-tab-group
+  mat-stretch-tabs="false"
   class="active-plugin-list"
   [selectedIndex]="getActivePluginIndex()"
   animationDuration="100ms"
@@ -34,10 +35,15 @@ limitations under the License.
     </ng-template>
   </mat-tab>
 </mat-tab-group>
-<mat-form-field floatLabel="never" *ngIf="disabledPlugins.length > 0">
+<mat-form-field
+  floatLabel="never"
+  *ngIf="disabledPlugins.length > 0"
+  subscriptSizing="dynamic"
+>
   <mat-label>Inactive</mat-label>
   <mat-select
     [value]="selectedPlugin"
+    [hideSingleSelectionIndicator]="true"
     (selectionChange)="onDisabledPluginSelectionChanged($event)"
   >
     <mat-option

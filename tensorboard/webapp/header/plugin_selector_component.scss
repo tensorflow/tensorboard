@@ -23,17 +23,40 @@ limitations under the License.
   overflow: hidden;
 }
 
-mat-form-field {
-  flex: 0 0;
-  /* visually center align with _text_ of the select to the center. */
-  margin-top: 5px;
-  /* default width is 180px */
-  width: 130px;
+:host mat-form-field ::ng-deep {
+  // Default width is calculated by the contents of the longest value in the
+  // select. We override both the trigger and panel widths to be a bit shorter
+  // than what we see in practice.
+  // TODO: In Angular 16+ use the panelWidth attribute to set the width of the
+  //       panel to be different than the trigger. (We would likely want the
+  //       trigger to be shorter and the panel to be longer).
+  width: 144px;
+
+  .mdc-text-field {
+    @include tb-theme-background-prop(background-color, app-bar);
+    // Default padding is "0 16px".
+    padding: 0 4px;
+  }
+
+  label.mdc-floating-label.mat-mdc-floating-label,
+  .mat-mdc-select,
+  .mat-mdc-select-value,
+  .mat-mdc-select-arrow {
+    // Inherit from `color` on the toolbar.
+    color: inherit;
+  }
+
+  .mdc-text-field--filled:not(.mdc-text-field--disabled)
+    .mdc-line-ripple::before {
+    // Inherit from `border-color` on the toolbar.
+    border-color: inherit;
+  }
 }
 
 mat-label,
 mat-select,
 mat-option {
+  font-size: 14px;
   font-weight: 500;
   text-transform: uppercase;
 }
@@ -53,83 +76,64 @@ mat-option {
   width: 100%;
 }
 
-// TODO(tensorboard-team): Can probably remove after migrating away from Legacy Material components.
-// These styles exist in `mat-toolbar` already, but the combination of the
-// dark theme selector being `body.dark-theme` and the legacy select component
-// being used causes the styles to be overwritten in a dark theme.
-:host ::ng-deep .mat-form-field.mat-form-field.mat-form-field {
-  .mat-form-field-underline,
-  .mat-form-field-ripple,
-  &.mat-focused .mat-form-field-ripple {
-    background-color: currentColor;
-  }
-
-  .mat-select-value,
-  .mat-select-arrow,
-  &.mat-focused .mat-form-field-label,
-  &.mat-focused .mat-select-arrow {
-    color: inherit;
-  }
-}
-
 :host ::ng-deep .active-plugin-list {
   // Override mat-tab styling. By default, mat-tab has the right styling but,
   // here, we are using it under dark header background. Must invert the color.
 
-  &.mat-primary .mat-tab-list .mat-ink-bar {
-    background-color: currentColor;
+  .mat-mdc-tab:not(.mat-mdc-tab-disabled)
+    .mdc-tab-indicator__content--underline {
+    border-color: currentColor;
   }
 
-  .mat-tab-label,
-  .mat-tab-link {
-    // Inherit from `color` on the toolbar.
-    color: inherit;
-    // default is .6 and it is too dark against dark background.
-    opacity: 0.7;
+  .mat-mdc-tab:not(.mat-mdc-tab-disabled) {
+    .mdc-tab__text-label {
+      // Inherit from `color` on the toolbar.
+      color: inherit;
+      // default is .6 and it is too dark against dark background.
+      opacity: 0.7;
+    }
 
-    &.mat-tab-label-active {
+    &.mdc-tab--active .mdc-tab__text-label {
+      // Repeat color with more-specific selector to override dark-mode styling.
+      // Inherit from `color` on the toolbar.
+      color: inherit;
       opacity: 1;
     }
   }
 
-  .mat-tab-header-pagination-chevron {
-    border-color: currentColor;
-  }
-
-  .mat-tab-header-pagination-disabled {
+  .mat-mdc-tab-header-pagination-disabled {
     visibility: hidden;
   }
 
-  .mat-tab-disabled {
+  .mat-mdc-tab-disabled {
     display: none;
   }
 
-  mat-tab-list,
-  .mat-tab-header,
-  .mat-tab-labels,
-  .mat-tab-label {
+  mat-mdc-tab-list,
+  .mat-mdc-tab-header,
+  .mat-mdc-tab-labels,
+  // Extra-specific selector to override dark-mode styling.
+  .mat-mdc-tab-header .mat-mdc-tab,
+  .mdc-tab__text-label {
     height: 100%;
   }
 
-  .mat-tab-label {
-    min-width: 48px; /* default is 160px which is too big for us */
+  .mat-mdc-tab {
+    letter-spacing: 0.25px;
+    min-width: 48px; /* default is 90px which is too big for us */
     padding: 0; /* default is 24px */
     text-transform: uppercase;
   }
 
-  .mat-tab-label-content {
-    height: 100%;
-  }
-
   mat-tab-header {
-    .mat-tab-list {
+    .mat-mdc-tab-list {
       // 36px is the size of the chevron. Please see [1] for the reason.
       padding: 0 36px;
     }
 
     > {
       :first-child,
-      .mat-tab-label-container,
+      .mat-mdc-tab-label-container,
       :last-child {
         // [1]: Reason for customizing the mat-tab-header.
         //
@@ -150,16 +154,16 @@ mat-option {
       }
 
       :first-child,
-      .mat-tab-label-container {
+      .mat-mdc-tab-label-container {
         left: 0;
       }
 
       :last-child,
-      .mat-tab-label-container {
+      .mat-mdc-tab-label-container {
         right: 0;
       }
 
-      .mat-tab-header-pagination {
+      .mat-mdc-tab-header-pagination {
         @include tb-theme-background-prop(background-color, app-bar);
       }
     }
