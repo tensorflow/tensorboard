@@ -34,7 +34,10 @@ section {
   margin: 0 0 12px 0;
 }
 
-section .control-row:not(:last-child) {
+// Add additional margin between most control elements. The exception is when
+// the second control row is a checkbox, in which case we just rely on the
+// padding that is already included in the checkbox.
+section .control-row:not(:has(+ .control-row > mat-checkbox)):not(:last-child) {
   margin-bottom: 12px;
 }
 
@@ -89,6 +92,20 @@ section .control-row:not(:last-child) {
   }
 }
 
+mat-checkbox {
+  // Counteract the padding of the checkbox in order to align it vertically
+  // with other items in the pane.
+  margin-left: -11px;
+
+  ::ng-deep label {
+    @include tb-theme-foreground-prop(color, secondary-text);
+    font-size: 12px;
+    letter-spacing: normal;
+    padding-left: 0px;
+    white-space: nowrap;
+  }
+}
+
 mat-slider {
   flex: 1;
   // Reset mat-slider's internal extra space on left/right sides
@@ -125,12 +142,8 @@ tb-dropdown {
   display: block;
 }
 
-.linked-time {
-  padding: 5px 0;
-}
-
 .control-row {
   .indent {
-    margin-left: 25px;
+    margin-left: 28px;
   }
 }
