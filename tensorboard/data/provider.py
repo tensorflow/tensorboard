@@ -661,7 +661,7 @@ class HyperparameterSessionGroup:
 
     A session generally represents a particular execution of a job with a given
     set of hyperparameter values. A session may contain multiple related runs
-    executed together to train and validate a model.
+    executed together to train and/or validate a model.
 
     We assume these groups of runs were executed with the same set of
     hyperparameter values. However, having the same set of hyperparameter values
