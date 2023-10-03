@@ -101,6 +101,14 @@ mat-option {
     }
   }
 
+  .mat-mdc-tab-header-pagination {
+    color: inherit;
+  }
+
+  .mat-mdc-tab-header-pagination-chevron {
+    border-color: currentColor;
+  }
+
   .mat-mdc-tab-header-pagination-disabled {
     visibility: hidden;
   }
