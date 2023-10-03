@@ -56,10 +56,6 @@ tb-data-table-header-cell {
   vertical-align: middle;
   @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
 
-  &:first-child {
-    padding-left: 16px;
-  }
-
   &:last-child {
     @include tb-theme-foreground-prop(border-right, border, 1px solid);
   }
