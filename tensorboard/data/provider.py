@@ -112,7 +112,7 @@ class DataProvider(metaclass=abc.ABCMeta):
     hyperparameter. Runs that were logically executed together with the same set
     of hyperparameter values form a hyperparameter `session`. Sessions that
     include the same hyperparameter values can be grouped together in a
-    hyperparameter `session group`.  Often a session group will contain only a
+    hyperparameter `session group`. Often a session group will contain only a
     single session. However, in some scenarios, the same hyperparameters will be
     used to execute multiple jobs with the idea to aggregate the metrics across
     those jobs and analyze non-deterministic factors. In that case, a session
