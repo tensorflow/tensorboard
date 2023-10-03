@@ -14,6 +14,11 @@ limitations under the License.
 ==============================================================================*/
 $_circle-size: 12px;
 
+tb-data-table-content-cell,
+tb-data-table-header-cell {
+  padding: 4px;
+}
+
 .row-circle {
   height: $_circle-size;
   width: $_circle-size;
