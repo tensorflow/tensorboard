@@ -14,59 +14,166 @@ limitations under the License.
 ==============================================================================*/
 @import 'tensorboard/webapp/theme/tb_theme';
 
-@mixin plugin-text {
-  color: map-get($tb-dark-foreground, text);
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
 :host {
   align-items: center;
   display: flex;
   flex: 1 1 auto;
   font-size: 14px;
   height: 100%;
-  justify-content: space-between;
   overflow: hidden;
+}
 
-  // Mat tabs use the theme primary color as their text color.
-  mat-tab-group ::ng-deep {
-    .mat-mdc-tab {
-      padding: 0 8px;
-      margin: 0 16px;
-      height: 64px;
+:host mat-form-field ::ng-deep {
+  // Default width is calculated by the contents of the longest value in the
+  // select. We override both the trigger and panel widths to be a bit shorter
+  // than what we see in practice.
+  // TODO: In Angular 16+ use the panelWidth attribute to set the width of the
+  //       panel to be different than the trigger. (We would likely want the
+  //       trigger to be shorter and the panel to be longer).
+  width: 144px;
 
-      .mdc-tab-indicator__content {
-        border-color: currentColor;
-      }
-    }
+  .mdc-text-field {
+    @include tb-theme-background-prop(background-color, app-bar);
+    // Default padding is "0 16px".
+    padding: 0 4px;
   }
 
-  mat-form-field ::ng-deep {
-    // There are only two appearance options
-    //   1) "filled" - with a background
-    //   2) "outline" - with a border
-    // Both will require a restyle like this. I'm opting for filled
-    // because it is the default.
-    .mdc-text-field--filled {
-      background: none;
-    }
+  label.mdc-floating-label.mat-mdc-floating-label,
+  .mat-mdc-select,
+  .mat-mdc-select-value,
+  .mat-mdc-select-arrow {
+    // Inherit from `color` on the toolbar.
+    color: inherit;
+  }
 
-    // The bottom border of the select menu.
-    .mdc-text-field--filled {
-      ::before {
-        border-bottom-color: map-get($tb-dark-foreground, text);
-      }
-    }
-
-    mat-label,
-    .mat-mdc-select-arrow {
-      @include plugin-text;
-    }
+  .mdc-text-field--filled:not(.mdc-text-field--disabled)
+    .mdc-line-ripple::before {
+    // Inherit from `border-color` on the toolbar.
+    border-color: inherit;
   }
 }
 
-mat-option,
+mat-label,
+mat-select,
+mat-option {
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.active-plugin-list {
+  align-self: stretch;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
 .plugin-name {
-  @include plugin-text;
+  align-items: center;
+  display: inline-flex;
+  height: 100%;
+  justify-content: center;
+  padding: 0 12px;
+  width: 100%;
+}
+
+:host ::ng-deep .active-plugin-list {
+  // Override mat-tab styling. By default, mat-tab has the right styling but,
+  // here, we are using it under dark header background. Must invert the color.
+
+  .mat-mdc-tab:not(.mat-mdc-tab-disabled)
+    .mdc-tab-indicator__content--underline {
+    border-color: currentColor;
+  }
+
+  .mat-mdc-tab:not(.mat-mdc-tab-disabled) {
+    .mdc-tab__text-label {
+      // Inherit from `color` on the toolbar.
+      color: inherit;
+      // default is .6 and it is too dark against dark background.
+      opacity: 0.7;
+    }
+
+    &.mdc-tab--active .mdc-tab__text-label {
+      // Repeat color with more-specific selector to override dark-mode styling.
+      // Inherit from `color` on the toolbar.
+      color: inherit;
+      opacity: 1;
+    }
+  }
+
+  .mat-mdc-tab-header-pagination {
+    color: inherit;
+  }
+
+  .mat-mdc-tab-header-pagination-chevron {
+    border-color: currentColor;
+  }
+
+  .mat-mdc-tab-header-pagination-disabled {
+    visibility: hidden;
+  }
+
+  .mat-mdc-tab-disabled {
+    display: none;
+  }
+
+  mat-mdc-tab-list,
+  .mat-mdc-tab-header,
+  .mat-mdc-tab-labels,
+  // Extra-specific selector to override dark-mode styling.
+  .mat-mdc-tab-header .mat-mdc-tab,
+  .mdc-tab__text-label {
+    height: 100%;
+  }
+
+  .mat-mdc-tab {
+    letter-spacing: 0.25px;
+    min-width: 48px; /* default is 90px which is too big for us */
+    padding: 0; /* default is 24px */
+    text-transform: uppercase;
+  }
+
+  mat-tab-header {
+    .mat-mdc-tab-list {
+      // 36px is the size of the chevron. Please see [1] for the reason.
+      padding: 0 36px;
+    }
+
+    > {
+      :first-child,
+      .mat-mdc-tab-label-container,
+      :last-child {
+        // [1]: Reason for customizing the mat-tab-header.
+        //
+        // Default mat-tab only renders the directional overflow chevron when
+        // width of the label container is smaller than mat-tab-header. This
+        // causes visual jank when user resizes the screen as the mat-tab with
+        // the chevron appears to have more padding (visually; directional
+        // chevron can have `visibility: hidden` in case it is not needed and
+        // appear as padding). To have the same experience as the Polymer based
+        // Material tab header, we always set the padding of 36px on each sides
+        // but that causes the scroll calculation to be incorrect and causes a
+        // bug [2].
+        // To work around it, we make everything `position: absolute`.
+        // [2]: https://github.com/tensorflow/tensorboard/issues/4841
+        bottom: 0;
+        position: absolute;
+        top: 0;
+      }
+
+      :first-child,
+      .mat-mdc-tab-label-container {
+        left: 0;
+      }
+
+      :last-child,
+      .mat-mdc-tab-label-container {
+        right: 0;
+      }
+
+      .mat-mdc-tab-header-pagination {
+        @include tb-theme-background-prop(background-color, app-bar);
+      }
+    }
+  }
 }
