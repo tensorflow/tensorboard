@@ -79,10 +79,6 @@ $_data_table_initial_height: 100px;
   overflow: hidden;
 }
 
-.pin-button mat-icon {
-  height: 18px;
-}
-
 .controls {
   @include metrics-card-controls;
   flex-shrink: 0;

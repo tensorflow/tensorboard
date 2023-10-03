@@ -18,6 +18,7 @@ limitations under the License.
 
 $_accent: map-get(mat.get-color-config($tb-theme), accent);
 $_icon_size: 12px;
+$_icon_padding: 4px;
 
 :host {
   display: table-cell;
@@ -40,16 +41,6 @@ $_icon_size: 12px;
   }
 }
 
-.sorting-icon-container,
-.context-menu-container {
-  width: $_icon_size + 4px;
-  height: $_icon_size + 4px;
-  border-radius: 5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 .cell {
   align-items: center;
   display: flex;
@@ -58,6 +49,18 @@ $_icon_size: 12px;
     height: $_icon_size;
     width: $_icon_size;
     line-height: 1;
+  }
+
+  button[mat-icon-button].mat-mdc-icon-button {
+    &.sorting-icon-container,
+    &.context-menu-container {
+      width: $_icon_size + $_icon_padding;
+      height: $_icon_size + $_icon_padding;
+      --tb-icon-size: #{$_icon_size};
+      border-radius: 5px;
+      font-size: 12px;
+      padding: $_icon_padding;
+    }
   }
 
   .sorting-icon-container {
