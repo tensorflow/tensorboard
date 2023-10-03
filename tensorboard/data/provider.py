@@ -109,14 +109,16 @@ class DataProvider(metaclass=abc.ABCMeta):
     execution.
 
     Each run within an experiment may specify its own value for a
-    hyperparameter. Runs that were logically executed together with the same
-    set of hyperparameter values form a hyperparameter session. Often a session
-    group will contain only a single session. However, in some scenarios, the
-    same hyperparameters will be used to execute multiple jobs with the idea to
-    aggregate the metrics across those jobs and analyze non-deterministic
-    factors. In that case, a session group will contain multiple sessions.
-    The result will group runs by hyperparameter session group and provide one
-    set of hyperparameter values for each group.
+    hyperparameter. Runs that were logically executed together with the same set
+    of hyperparameter values form a hyperparameter `session`. Sessions that
+    include the same hyperparameter values can be grouped together in a
+    hyperparameter `session group`.  Often a session group will contain only a
+    single session. However, in some scenarios, the same hyperparameters will be
+    used to execute multiple jobs with the idea to aggregate the metrics across
+    those jobs and analyze non-deterministic factors. In that case, a session
+    group will contain multiple sessions. The result will group runs by
+    hyperparameter session group and provide one set of hyperparameter values
+    for each group.
 
     All methods on this class take a `RequestContext` parameter as the
     first positional argument. This argument is temporarily optional to
@@ -660,12 +662,6 @@ class HyperparameterSessionGroup:
     A session generally represents a particular execution of a job with a given
     set of hyperparameter values. A session may contain multiple related runs
     executed together to train and validate a model.
-
-    Often a session group will contain only a single session. However, in some
-    scenarios, the same hyperparameters will be used to execute multiple jobs
-    with the idea to aggregate the metrics across those jobs and analyze
-    non-deterministic factors. In that case, a session group will contain multiple
-    sessions.
 
     We assume these groups of runs were executed with the same set of
     hyperparameter values. However, having the same set of hyperparameter values
