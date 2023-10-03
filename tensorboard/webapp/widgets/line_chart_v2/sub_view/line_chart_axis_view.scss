@@ -28,29 +28,20 @@ text {
   user-select: none;
 }
 
-$_icon_size: 16px;
-
 .axis {
   display: flex;
   height: 100%;
   width: 100%;
 
   .extent-edit-button {
-    --tb-icon-size: #{$_icon_size};
+    --tb-icon-size: 16px;
     height: 24px;
-    line-height: 24px;
     position: absolute;
     right: 5px;
     top: 5px;
     visibility: hidden;
     width: 24px;
     padding: 0;
-
-    mat-icon {
-      height: $_icon_size;
-      width: $_icon_size;
-      line-height: $_icon_size;
-    }
   }
 }
 

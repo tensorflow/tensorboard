@@ -316,6 +316,7 @@ $tb-dark-theme: map_merge(
         svg {
           width: var(--tb-icon-size);
           height: var(--tb-icon-size);
+          line-height: var(--tb-icon-size);
         }
       }
     }
