@@ -283,7 +283,7 @@ $tb-dark-theme: map_merge(
     contain: strict;
   }
 
-  a:not(.mat-button, .mat-icon-button) {
+  a:not(.mdc-button, .mdc-icon-button) {
     color: map-get($tb-foreground, link);
 
     &:visited {
@@ -327,7 +327,7 @@ $tb-dark-theme: map_merge(
   body.dark-mode {
     background-color: map-get($tb-dark-background, background);
 
-    a:not(.mat-button, .mat-icon-button) {
+    a:not(.mdc-button, .mdc-icon-button) {
       color: map-get($tb-dark-foreground, link);
 
       &:visited {
