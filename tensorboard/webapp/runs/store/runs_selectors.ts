@@ -26,10 +26,10 @@ import {
   RUNS_FEATURE_KEY,
 } from './runs_types';
 import {createGroupBy} from './utils';
-import {ColumnHeader, SortingInfo} from '../../widgets/data_table/types';
-import {getDashboardRunsToHparamsAndMetrics} from '../../hparams/_redux/hparams_selectors';
-import {RunToHparamsAndMetrics} from '../../hparams/types';
 import {getExperimentIdsFromRoute} from '../../app_routing/store/app_routing_selectors';
+import {getDashboardSessionGroups} from '../../hparams/_redux/hparams_selectors';
+import {HparamValue, RunToHparamsAndMetrics} from '../../hparams/types';
+import {ColumnHeader, SortingInfo} from '../../widgets/data_table/types';
 
 const getRunsState = createFeatureSelector<RunsState>(RUNS_FEATURE_KEY);
 
@@ -86,15 +86,76 @@ export const getRuns = createSelector(
 );
 
 /**
+ * Determines hparam data for each run in the active route.
+ *
+ * Attempts to match each run with a session and, if found, copies the hparam
+ * values from the corresponding session group to the run.
+ *
+ * Note, it returns an RunToHparamsAndMetrics but leaves the `metrics` field
+ * blank since the Hparams data sources does not actually retrieve metrics
+ * data.
+ *
+ * Meant for usage in the Dashboard views.
+ */
+export const getDashboardRunsToHparams = createSelector(
+  getDashboardSessionGroups,
+  getExperimentIdsFromRoute,
+  getDataState,
+  (dashboardSessionGroups, experimentIds, state): RunToHparamsAndMetrics => {
+    if (!experimentIds) {
+      return {};
+    }
+
+    const runIds: string[] = [];
+    for (const experimentId of experimentIds) {
+      runIds.push(...(state.runIds[experimentId] || []));
+    }
+
+    const sessionToHparams: Record<string, HparamValue[]> = {};
+    for (const sessionGroup of dashboardSessionGroups) {
+      const hparams: HparamValue[] = Object.entries(sessionGroup.hparams).map(
+        (keyValue) => {
+          const [hparam, value] = keyValue;
+          return {name: hparam, value};
+        }
+      );
+      for (const session of sessionGroup.sessions) {
+        sessionToHparams[session.name] = hparams;
+      }
+    }
+
+    // Sort sessions based on length of name. We want to match runs with the
+    // longest matching session name. So, for example, given sessions "1" and
+    // "11", a run with name "11/train" should match with session "11".
+    const sortedSessionKeys = Object.keys(sessionToHparams).sort(
+      (a, b) => b.length - a.length
+    );
+
+    const runToHparamsAndMetrics: RunToHparamsAndMetrics = {};
+    for (const runId of runIds) {
+      for (const sessionName of sortedSessionKeys) {
+        if (runId.startsWith(sessionName)) {
+          runToHparamsAndMetrics[runId] = {
+            hparams: sessionToHparams[sessionName],
+            // The underlying data source that fetches the session groups data
+            // does not retrieve metrics.
+            metrics: [],
+          };
+          break;
+        }
+      }
+    }
+    return runToHparamsAndMetrics;
+  }
+);
+
+/**
  * Get the runs used on the dashboard.
- * TODO(rileyajones) get the experiment ids from the state rather than as an argument.
- * @param experimentIds
- * @returns
  */
 export const getDashboardRuns = createSelector(
   getDataState,
   getExperimentIdsFromRoute,
-  getDashboardRunsToHparamsAndMetrics,
+  getDashboardRunsToHparams,
   (
     state: RunsDataState,
     experimentIds: string[] | null,
@@ -109,9 +170,17 @@ export const getDashboardRuns = createSelector(
           .filter((id) => Boolean(state.runMetadata[id]))
           .map((runId) => {
             const run = {...state.runMetadata[runId], experimentId};
+            // runMetadata contains hparam and metric values that were retrieved
+            // for the run in isolation. This data is incorrect for use in the
+            // dashboard, where we might be comparing multiple experiments and
+            // the set of hparams and metrics may be a superset.
+            //
+            // Instead we override the hparam and metric values with those
+            // calculated by getDashboardRunsToHparamsAndMetrics, which is based
+            // on the hparam and metric data for all active experiments
+            // together.
             run.hparams = runsToHparamsAndMetrics[runId]?.hparams ?? null;
             run.metrics = runsToHparamsAndMetrics[runId]?.metrics ?? null;
-
             return run;
           });
       })

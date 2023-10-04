@@ -193,44 +193,10 @@ export const getDashboardHparamsAndMetricsSpecs = createSelector(
   }
 );
 
-export const getDashboardRunsToHparamsAndMetrics = createSelector(
+export const getDashboardSessionGroups = createSelector(
   getHparamsState,
-  (state): RunToHparamsAndMetrics => {
-    const runToHparamsAndMetrics: RunToHparamsAndMetrics = {};
-
-    for (const sessionGroup of state.dashboardSessionGroups) {
-      const hparams: HparamValue[] = Object.entries(sessionGroup.hparams).map(
-        (keyValue) => {
-          const [hparam, value] = keyValue;
-          return {name: hparam, value};
-        }
-      );
-
-      for (const session of sessionGroup.sessions) {
-        runToHparamsAndMetrics[session.name] = {
-          metrics: [],
-          hparams,
-        };
-
-        for (const metricValue of session.metricValues) {
-          const runId = metricValue.name.group
-            ? `${session.name}/${metricValue.name.group}`
-            : session.name;
-
-          const hparamsAndMetrics = runToHparamsAndMetrics[runId] || {
-            metrics: [],
-            hparams,
-          };
-          hparamsAndMetrics.metrics.push({
-            tag: metricValue.name.tag,
-            trainingStep: metricValue.trainingStep,
-            value: metricValue.value,
-          });
-          runToHparamsAndMetrics[runId] = hparamsAndMetrics;
-        }
-      }
-    }
-    return runToHparamsAndMetrics;
+  (state: HparamsState) => {
+    return state.dashboardSessionGroups;
   }
 );
 

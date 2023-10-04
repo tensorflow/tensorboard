@@ -202,6 +202,293 @@ describe('runs_selectors', () => {
     });
   });
 
+  describe('#getDashboardRunsToHparams', () => {
+    it('matches run with its session', () => {
+      const state = buildMockState({
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: {
+              routeKind: RouteKind.EXPERIMENT,
+              params: {experimentId: '123'},
+            },
+          })
+        ),
+        ...buildStateFromHparamsState(
+          buildHparamsState({
+            dashboardSessionGroups: [
+              buildSessionGroup({
+                name: 'MySessionGroup',
+                sessions: [{name: 'session1'}],
+                hparams: {
+                  hparam1: 'value1',
+                  hparam2: 'value2',
+                  hparam3: 'value3',
+                },
+              }),
+            ],
+          })
+        ),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runIds: {
+              123: ['session1/run1'],
+            },
+          })
+        ),
+      });
+      expect(selectors.getDashboardRunsToHparams(state)).toEqual({
+        'session1/run1': {
+          hparams: [
+            {name: 'hparam1', value: 'value1'},
+            {name: 'hparam2', value: 'value2'},
+            {name: 'hparam3', value: 'value3'},
+          ],
+          metrics: [],
+        },
+      });
+    });
+
+    it('matches multiple experiments, multiple sessions, multiple runs', () => {
+      const state = buildMockState({
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: {
+              routeKind: RouteKind.COMPARE_EXPERIMENT,
+              params: {experimentIds: 'exp1:123,exp2:456,exp3:789'},
+            },
+          })
+        ),
+        ...buildStateFromHparamsState(
+          buildHparamsState({
+            dashboardSessionGroups: [
+              buildSessionGroup({
+                name: 'SessionGroup1',
+                sessions: [{name: 's1'}],
+                hparams: {hparam: 'value1'},
+              }),
+              buildSessionGroup({
+                name: 'SessionGroup2',
+                sessions: [{name: 's2'}],
+                hparams: {hparam: 'value2'},
+              }),
+              buildSessionGroup({
+                name: 'SessionGrup3',
+                sessions: [{name: 's3'}, {name: 's4'}, {name: 's5'}],
+                hparams: {hparam: 'value3'},
+              }),
+            ],
+          })
+        ),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runIds: {
+              123: ['s2/run1', 's2/run2'],
+              456: ['s1/run1', 's3/run1', 's4/run1', 's4/run2', 's5/run1'],
+              // One experiment has a run that does not match any of the
+              // sessions and, so, is not included in the result.
+              789: ['does_not_match'],
+              // Additional experiment's runs are not included in the result.
+              AAA: ['s1/run1'],
+            },
+          })
+        ),
+      });
+      expect(selectors.getDashboardRunsToHparams(state)).toEqual({
+        's2/run1': {
+          hparams: [{name: 'hparam', value: 'value2'}],
+          metrics: [],
+        },
+        's2/run2': {
+          hparams: [{name: 'hparam', value: 'value2'}],
+          metrics: [],
+        },
+        's1/run1': {
+          hparams: [{name: 'hparam', value: 'value1'}],
+          metrics: [],
+        },
+        's3/run1': {
+          hparams: [{name: 'hparam', value: 'value3'}],
+          metrics: [],
+        },
+        's4/run1': {
+          hparams: [{name: 'hparam', value: 'value3'}],
+          metrics: [],
+        },
+        's4/run2': {
+          hparams: [{name: 'hparam', value: 'value3'}],
+          metrics: [],
+        },
+        's5/run1': {
+          hparams: [{name: 'hparam', value: 'value3'}],
+          metrics: [],
+        },
+      });
+    });
+
+    it('matches all to empty session name', () => {
+      const state = buildMockState({
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: {
+              routeKind: RouteKind.EXPERIMENT,
+              params: {experimentId: '123'},
+            },
+          })
+        ),
+        ...buildStateFromHparamsState(
+          buildHparamsState({
+            dashboardSessionGroups: [
+              buildSessionGroup({
+                name: 'MySessionGroup',
+                sessions: [{name: ''}],
+                hparams: {hparam1: 'value1'},
+              }),
+            ],
+          })
+        ),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runIds: {
+              123: ['run1', 's/run2', 'run1/train'],
+            },
+          })
+        ),
+      });
+      expect(selectors.getDashboardRunsToHparams(state)).toEqual({
+        run1: {
+          hparams: [{name: 'hparam1', value: 'value1'}],
+          metrics: [],
+        },
+        's/run2': {
+          hparams: [{name: 'hparam1', value: 'value1'}],
+          metrics: [],
+        },
+        'run1/train': {
+          hparams: [{name: 'hparam1', value: 'value1'}],
+          metrics: [],
+        },
+      });
+    });
+
+    it('matches exact matches', () => {
+      const state = buildMockState({
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: {
+              routeKind: RouteKind.COMPARE_EXPERIMENT,
+              params: {experimentIds: 'exp1:123,exp2:456'},
+            },
+          })
+        ),
+        ...buildStateFromHparamsState(
+          buildHparamsState({
+            dashboardSessionGroups: [
+              buildSessionGroup({
+                name: 'SessionGroup1',
+                sessions: [{name: 's1'}],
+                hparams: {hparam: 'value1'},
+              }),
+              buildSessionGroup({
+                name: 'SessionGroup2',
+                sessions: [{name: 's2'}],
+                hparams: {hparam: 'value2'},
+              }),
+            ],
+          })
+        ),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runIds: {
+              123: ['s1', 's1/train', 's1/validate'],
+              456: ['s2', 's2/train', 's2/validate'],
+            },
+          })
+        ),
+      });
+      expect(selectors.getDashboardRunsToHparams(state)).toEqual({
+        s1: {
+          hparams: [{name: 'hparam', value: 'value1'}],
+          metrics: [],
+        },
+        's1/train': {
+          hparams: [{name: 'hparam', value: 'value1'}],
+          metrics: [],
+        },
+        's1/validate': {
+          hparams: [{name: 'hparam', value: 'value1'}],
+          metrics: [],
+        },
+        s2: {
+          hparams: [{name: 'hparam', value: 'value2'}],
+          metrics: [],
+        },
+        's2/train': {
+          hparams: [{name: 'hparam', value: 'value2'}],
+          metrics: [],
+        },
+        's2/validate': {
+          hparams: [{name: 'hparam', value: 'value2'}],
+          metrics: [],
+        },
+      });
+    });
+
+    it('matches with longest overlapping session name', () => {
+      const state = buildMockState({
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: {
+              routeKind: RouteKind.COMPARE_EXPERIMENT,
+              params: {experimentIds: 'exp1:123,exp2:456'},
+            },
+          })
+        ),
+        ...buildStateFromHparamsState(
+          buildHparamsState({
+            dashboardSessionGroups: [
+              buildSessionGroup({
+                name: 'SessionGroup1',
+                sessions: [{name: 's11'}],
+                hparams: {hparam: 'value1'},
+              }),
+              buildSessionGroup({
+                name: 'SessionGroup2',
+                sessions: [{name: 's'}],
+                hparams: {hparam: 'value2'},
+              }),
+              buildSessionGroup({
+                name: 'SessionGroup2',
+                sessions: [{name: 's1'}],
+                hparams: {hparam: 'value3'},
+              }),
+            ],
+          })
+        ),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runIds: {
+              123: ['s/train', 's11/train', 's12/train'],
+            },
+          })
+        ),
+      });
+      expect(selectors.getDashboardRunsToHparams(state)).toEqual({
+        's/train': {
+          hparams: [{name: 'hparam', value: 'value2'}],
+          metrics: [],
+        },
+        's11/train': {
+          hparams: [{name: 'hparam', value: 'value1'}],
+          metrics: [],
+        },
+        's12/train': {
+          hparams: [{name: 'hparam', value: 'value3'}],
+          metrics: [],
+        },
+      });
+    });
+  });
+
   describe('#getDashboardRuns', () => {
     it('returns runs', () => {
       const state = buildMockState({
