@@ -39,7 +39,7 @@ class Context:
     API handlers for the HParams plugin backend.
 
     Before adding fields to this class, carefully consider whether the
-    field truelly needs to be accessible to all API handlers or if it
+    field truly needs to be accessible to all API handlers or if it
     can be passed separately to the handler constructor. We want to
     avoid this class becoming a magic container of variables that have
     no better place. See http://wiki.c2.com/?MagicContainer
@@ -221,7 +221,7 @@ class Context:
     def _find_experiment_tag(
         self, hparams_run_to_tag_to_content, include_metrics
     ):
-        """Finds the experiment associcated with the metadata.EXPERIMENT_TAG
+        """Finds the experiment associated with the metadata.EXPERIMENT_TAG
         tag.
 
         Returns:
@@ -369,7 +369,7 @@ class Context:
           experiment_id: String, from `plugin_util.experiment_id`.
           include_metrics: Whether to determine metrics_infos and include them
             in the result.
-          data_provider_hparams: The ouput from an hparams_from_data_provider()
+          data_provider_hparams: The output from an hparams_from_data_provider()
             call, corresponding to DataProvider.list_hyperparameters().
             A provider.ListHyperparametersResult.
 
