@@ -33,6 +33,7 @@ limitations under the License.
   margin-left: auto;
 }
 
-button {
+button.mat-mdc-button {
+  color: inherit;
   text-transform: uppercase;
 }
