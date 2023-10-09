@@ -14,8 +14,8 @@ limitations under the License.
 ==============================================================================*/
 import {OverlayContainer} from '@angular/cdk/overlay';
 import {Component, Input} from '@angular/core';
-import {TestBed} from '@angular/core/testing';
-import {MatLegacyAutocompleteModule} from '@angular/material/legacy-autocomplete';
+import {TestBed, fakeAsync, tick} from '@angular/core/testing';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {KeyType, sendKey} from '../../testing/dom';
@@ -59,7 +59,7 @@ describe('filter input widget', () => {
     await TestBed.configureTestingModule({
       imports: [
         NoopAnimationsModule,
-        MatLegacyAutocompleteModule,
+        MatAutocompleteModule,
         MatIconTestingModule,
         FilterInputModule,
       ],
@@ -98,7 +98,7 @@ describe('filter input widget', () => {
     expect(isAutocompleteDisabled || !hasAutocomplete).toBe(true);
   });
 
-  it('shows autocomplete and closes on Enter', () => {
+  it('shows autocomplete and closes on Enter', fakeAsync(() => {
     const fixture = TestBed.createComponent(TestableInputWithCompletions);
     fixture.componentInstance.completions = ['a', 'b', 'c'];
     fixture.detectChanges();
@@ -116,8 +116,9 @@ describe('filter input widget', () => {
       key: 'Enter',
       startingCursorIndex: input.properties['selectionStart'],
     });
+    tick();
 
     const options2 = getAutocompleteOptions(overlayContainer);
     expect(options2.length).toBe(0);
-  });
+  }));
 });

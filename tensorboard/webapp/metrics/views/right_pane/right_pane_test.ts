@@ -20,8 +20,8 @@ import {
   tick,
 } from '@angular/core/testing';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
-import {MatLegacyCheckboxModule} from '@angular/material/legacy-checkbox';
-import {MatLegacySelectModule} from '@angular/material/legacy-select';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatSelectModule} from '@angular/material/select';
 import {MatLegacySliderModule} from '@angular/material/legacy-slider';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
@@ -48,8 +48,8 @@ describe('metrics right_pane', () => {
         NoopAnimationsModule,
         DropdownModule,
         MatButtonToggleModule,
-        MatLegacyCheckboxModule,
-        MatLegacySelectModule,
+        MatCheckboxModule,
+        MatSelectModule,
         MatLegacySliderModule,
       ],
       declarations: [
@@ -112,7 +112,7 @@ describe('metrics right_pane', () => {
       });
     });
 
-    function getMatLegacySliderValue(el: DebugElement): string {
+    function getMatSliderValue(el: DebugElement): string {
       return el.query(By.css('.mat-slider-thumb-label-text')).nativeElement
         .textContent;
     }
@@ -176,17 +176,15 @@ describe('metrics right_pane', () => {
       );
       expect(scalarSmoothingInput.nativeElement.value).toBe('0.3');
       expect(
-        getMatLegacySliderValue(
-          select(fixture, '.scalars-smoothing mat-slider')
-        )
+        getMatSliderValue(select(fixture, '.scalars-smoothing mat-slider'))
       ).toBe('0.30');
 
       expect(
-        getMatLegacySliderValue(select(fixture, '.image-brightness mat-slider'))
+        getMatSliderValue(select(fixture, '.image-brightness mat-slider'))
       ).toBe('0.1');
 
       expect(
-        getMatLegacySliderValue(select(fixture, '.image-contrast mat-slider'))
+        getMatSliderValue(select(fixture, '.image-contrast mat-slider'))
       ).toBe('0.2');
 
       expect(
@@ -323,9 +321,9 @@ describe('metrics right_pane', () => {
         expect(el.query(By.css('mat-slider'))).toBeTruthy();
         expect(el.query(By.css('button'))).toBeTruthy();
 
-        expect(
-          getMatLegacySliderValue(select(fixture, CARD_WIDTH_SLIDER))
-        ).toBe(TEST_ONLY.MIN_CARD_WIDTH_SLIDER_VALUE.toString());
+        expect(getMatSliderValue(select(fixture, CARD_WIDTH_SLIDER))).toBe(
+          TEST_ONLY.MIN_CARD_WIDTH_SLIDER_VALUE.toString()
+        );
       });
 
       it('dispatches metricsChangeCardWidth action when adjusting the slider', fakeAsync(() => {
@@ -358,9 +356,9 @@ describe('metrics right_pane', () => {
         const fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
 
-        expect(
-          getMatLegacySliderValue(select(fixture, CARD_WIDTH_SLIDER))
-        ).toBe('400');
+        expect(getMatSliderValue(select(fixture, CARD_WIDTH_SLIDER))).toBe(
+          '400'
+        );
       });
 
       it('does not set invalid value', () => {
@@ -368,9 +366,9 @@ describe('metrics right_pane', () => {
         let fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
 
-        expect(
-          getMatLegacySliderValue(select(fixture, CARD_WIDTH_SLIDER))
-        ).toBe(TEST_ONLY.MIN_CARD_WIDTH_SLIDER_VALUE.toString());
+        expect(getMatSliderValue(select(fixture, CARD_WIDTH_SLIDER))).toBe(
+          TEST_ONLY.MIN_CARD_WIDTH_SLIDER_VALUE.toString()
+        );
       });
     });
 

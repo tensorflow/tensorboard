@@ -15,8 +15,8 @@ limitations under the License.
 import {TestbedHarnessEnvironment} from '@angular/cdk/testing/testbed';
 import {Component, Input} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {MatLegacySelectModule} from '@angular/material/legacy-select';
-import {MatLegacySelectHarness} from '@angular/material/legacy-select/testing';
+import {MatSelectModule} from '@angular/material/select';
+import {MatSelectHarness} from '@angular/material/select/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {DropdownComponent, DropdownOption} from './dropdown_component';
@@ -50,7 +50,7 @@ describe('tb-dropdown', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MatLegacySelectModule, NoopAnimationsModule],
+      imports: [MatSelectModule, NoopAnimationsModule],
       declarations: [DropdownComponent, TestableComponent],
     }).compileComponents();
   });
@@ -99,7 +99,7 @@ describe('tb-dropdown', () => {
     ]);
 
     // Test DOM content.
-    const selectHarness = await loader.getHarness(MatLegacySelectHarness);
+    const selectHarness = await loader.getHarness(MatSelectHarness);
     await selectHarness.open();
 
     const options = await selectHarness.getOptions();
@@ -137,7 +137,7 @@ describe('tb-dropdown', () => {
     ]);
 
     // Test DOM content.
-    const selectHarness = await loader.getHarness(MatLegacySelectHarness);
+    const selectHarness = await loader.getHarness(MatSelectHarness);
     await selectHarness.open();
 
     const options = await selectHarness.getOptions();

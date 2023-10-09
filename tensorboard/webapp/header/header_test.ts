@@ -14,9 +14,9 @@ limitations under the License.
 ==============================================================================*/
 import {DebugElement, NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
-import {MatLegacyButtonModule} from '@angular/material/legacy-button';
-import {MatLegacySelectModule} from '@angular/material/legacy-select';
-import {MatLegacyTabsModule} from '@angular/material/legacy-tabs';
+import {MatButtonModule} from '@angular/material/button';
+import {MatSelectModule} from '@angular/material/select';
+import {MatTabsModule} from '@angular/material/tabs';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
@@ -50,10 +50,10 @@ describe('header test', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        MatLegacyButtonModule,
+        MatButtonModule,
         MatIconTestingModule,
-        MatLegacySelectModule,
-        MatLegacyTabsModule,
+        MatSelectModule,
+        MatTabsModule,
         MatToolbarModule,
         NoopAnimationsModule,
       ],
@@ -105,7 +105,7 @@ describe('header test', () => {
     const fixture = TestBed.createComponent(HeaderComponent);
     fixture.detectChanges();
 
-    const els = fixture.debugElement.queryAll(By.css('.mat-tab-label'));
+    const els = fixture.debugElement.queryAll(By.css('.mat-mdc-tab'));
     expect(els.length).toBe(2);
 
     assertDebugElementText(els[0], 'FOO FIGHTER');
@@ -125,7 +125,7 @@ describe('header test', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const els = fixture.debugElement.queryAll(By.css('.mat-tab-label'));
+    const els = fixture.debugElement.queryAll(By.css('.mat-mdc-tab'));
     expect(els.length).toBe(3);
     assertDebugElementText(els[0], 'MEOW');
     assertDebugElementText(els[1], 'WOOF');

@@ -14,13 +14,13 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatLegacyAutocompleteModule} from '@angular/material/legacy-autocomplete';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatIconModule} from '@angular/material/icon';
 import {FilterInputComponent} from './filter_input_component';
 
 @NgModule({
   declarations: [FilterInputComponent],
   exports: [FilterInputComponent],
-  imports: [CommonModule, MatLegacyAutocompleteModule, MatIconModule],
+  imports: [CommonModule, MatAutocompleteModule, MatIconModule],
 })
 export class FilterInputModule {}

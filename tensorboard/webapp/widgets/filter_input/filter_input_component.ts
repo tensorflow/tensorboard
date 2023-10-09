@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component, Input, ViewChild} from '@angular/core';
-import {MatLegacyAutocompleteTrigger} from '@angular/material/legacy-autocomplete';
+import {MatAutocompleteTrigger} from '@angular/material/autocomplete';
 
 /**
  * A text input field intended for filtering items.
@@ -42,8 +42,8 @@ export class FilterInputComponent {
   @Input() matAutocomplete?: string;
   @Input() placeholder: string = '';
 
-  @ViewChild(MatLegacyAutocompleteTrigger)
-  private readonly autocompleteTrigger!: MatLegacyAutocompleteTrigger;
+  @ViewChild(MatAutocompleteTrigger)
+  private readonly autocompleteTrigger!: MatAutocompleteTrigger;
 
   onInputKeyUp(event: KeyboardEvent) {
     if (event.key === 'Enter') {

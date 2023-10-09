@@ -20,12 +20,12 @@ import {
   tick,
 } from '@angular/core/testing';
 import {
-  MatLegacyDialogModule,
-  MatLegacyDialogRef,
-  MAT_LEGACY_DIALOG_DATA,
-} from '@angular/material/legacy-dialog';
-import {MatLegacyInputModule} from '@angular/material/legacy-input';
-import {MatLegacyMenuModule} from '@angular/material/legacy-menu';
+  MatDialogModule,
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
+import {MatInputModule} from '@angular/material/input';
+import {MatMenuModule} from '@angular/material/menu';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
@@ -54,20 +54,20 @@ describe('regex_edit_dialog', () => {
   let actualActions: Action[];
   let dispatchSpy: jasmine.Spy;
   let store: MockStore<State>;
-  const matDialogRefSpy = jasmine.createSpyObj('MatLegacyDialogRef', ['close']);
+  const matDialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['close']);
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        MatLegacyMenuModule,
-        MatLegacyInputModule,
-        MatLegacyDialogModule,
+        MatMenuModule,
+        MatInputModule,
+        MatDialogModule,
         NoopAnimationsModule,
       ],
       declarations: [RegexEditDialogComponent, RegexEditDialogContainer],
       providers: [
         provideMockTbStore(),
-        {provide: MatLegacyDialogRef, useValue: matDialogRefSpy},
+        {provide: MatDialogRef, useValue: matDialogRefSpy},
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -78,7 +78,7 @@ describe('regex_edit_dialog', () => {
   });
 
   function createComponent(experimentIds: string[]) {
-    TestBed.overrideProvider(MAT_LEGACY_DIALOG_DATA, {
+    TestBed.overrideProvider(MAT_DIALOG_DATA, {
       useValue: {experimentIds},
     });
 

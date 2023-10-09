@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
+import {MatCheckboxModule} from '@angular/material/checkbox';
 import {
   ComponentFixture,
   fakeAsync,
@@ -42,7 +43,7 @@ import {
 import {DataTableHeaderModule} from '../../../../widgets/data_table/data_table_header_module';
 import {ScalarColumnEditorComponent} from './scalar_column_editor_component';
 import {ScalarColumnEditorContainer} from './scalar_column_editor_container';
-import {MatLegacyTabsModule} from '@angular/material/legacy-tabs';
+import {MatTabsModule} from '@angular/material/tabs';
 
 describe('scalar column editor', () => {
   let store: MockStore<State>;
@@ -60,7 +61,7 @@ describe('scalar column editor', () => {
     let index = mode === DataTableMode.SINGLE ? 0 : 1;
     // Get mat-tab to queue the task of switching tabs
     fixture.debugElement
-      .queryAll(By.css('.mat-tab-label'))
+      .queryAll(By.css('.mat-mdc-tab'))
       [index].nativeElement.click();
     fixture.detectChanges();
 
@@ -74,8 +75,9 @@ describe('scalar column editor', () => {
     await TestBed.configureTestingModule({
       imports: [
         DataTableHeaderModule,
-        MatLegacyTabsModule,
+        MatTabsModule,
         NoopAnimationsModule,
+        MatCheckboxModule,
       ],
       declarations: [ScalarColumnEditorContainer, ScalarColumnEditorComponent],
       providers: [provideMockStore()],
@@ -172,9 +174,15 @@ describe('scalar column editor', () => {
 
     expect(checkboxes.length).toEqual(2);
     expect(checkboxes[0].nativeElement.innerText).toEqual('Run');
-    expect(checkboxes[0].nativeElement.checked).toBeTrue();
+    expect(
+      checkboxes[0].nativeElement.attributes.getNamedItem('ng-reflect-checked')
+        .value
+    ).toEqual('true');
     expect(checkboxes[1].nativeElement.innerText).toEqual('Value');
-    expect(checkboxes[1].nativeElement.checked).toBeFalse();
+    expect(
+      checkboxes[1].nativeElement.attributes.getNamedItem('ng-reflect-checked')
+        .value
+    ).toEqual('false');
   }));
 
   describe('toggling', () => {
@@ -511,13 +519,13 @@ describe('scalar column editor', () => {
     it('update when global tableEditorSelectedTab changes', () => {
       const fixture = createComponent();
       fixture.detectChanges();
-      const tabs = fixture.debugElement.queryAll(By.css('.mat-tab-label'));
+      const tabs = fixture.debugElement.queryAll(By.css('.mat-mdc-tab'));
 
       expect(
-        tabs[0].attributes['class']?.includes('mat-tab-label-active')
+        tabs[0].attributes['class']?.includes('mdc-tab--active')
       ).toBeTrue();
       expect(
-        tabs[1].attributes['class']?.includes('mat-tab-label-active')
+        tabs[1].attributes['class']?.includes('mdc-tab--active')
       ).toBeFalse();
 
       store.overrideSelector(getTableEditorSelectedTab, DataTableMode.RANGE);
@@ -525,10 +533,10 @@ describe('scalar column editor', () => {
       fixture.detectChanges();
 
       expect(
-        tabs[0].attributes['class']?.includes('mat-tab-label-active')
+        tabs[0].attributes['class']?.includes('mdc-tab--active')
       ).toBeFalse();
       expect(
-        tabs[1].attributes['class']?.includes('mat-tab-label-active')
+        tabs[1].attributes['class']?.includes('mdc-tab--active')
       ).toBeTrue();
     });
   });
