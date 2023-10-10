@@ -191,8 +191,8 @@ class Context:
             plugin_name=scalar_metadata.PLUGIN_NAME,
             run_tag_filter=run_tag_filter,
             # TODO(#3436): We assume that downsampling always includes
-            # the most recent datum, which holds for all implementations
-            # of interest but is not yet required by the interface.
+            # the most recent datum for some data provider implementations
+            # of interest. This is not required by the interface.
             downsample=1,
         )
         return {
