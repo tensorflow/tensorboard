@@ -21,7 +21,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {MatLegacyDialogRef} from '@angular/material/legacy-dialog';
+import {MatDialogRef} from '@angular/material/dialog';
 import {Run} from '../../types';
 
 export interface ColorGroup {
@@ -48,7 +48,7 @@ export class RegexEditDialogComponent {
   regexStringInput!: ElementRef<HTMLInputElement>;
 
   constructor(
-    public readonly dialogRef: MatLegacyDialogRef<RegexEditDialogComponent>,
+    public readonly dialogRef: MatDialogRef<RegexEditDialogComponent>,
     private readonly hostElRef: ElementRef
   ) {}
 

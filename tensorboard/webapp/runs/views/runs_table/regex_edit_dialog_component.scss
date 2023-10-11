@@ -14,6 +14,8 @@ limitations under the License.
 ==============================================================================*/
 @import 'tensorboard/webapp/theme/tb_theme';
 
+$padding-size: 16px;
+
 .example-details {
   button {
     background-color: transparent;
@@ -26,13 +28,14 @@ limitations under the License.
       @include tb-theme-foreground-prop(color, link-visited);
     }
   }
+  padding: $padding-size;
 }
 
 .group-container {
-  margin: 10px 0;
+  margin: $padding-size;
 
   h4 {
-    margin-bottom: 10px;
+    margin-bottom: $padding-size;
   }
 
   .warning {
@@ -45,7 +48,7 @@ limitations under the License.
   @include tb-theme-foreground-prop(border, border, 1px solid);
   max-height: 50vh;
   overflow-y: auto;
-  padding: 20px;
+  padding: $padding-size;
 }
 
 .match-container {
@@ -78,7 +81,7 @@ mat-form-field {
   @include tb-theme-foreground-prop(border, border, 1px solid);
   border-radius: 3px;
   margin: 0;
-  padding: 10px;
+  padding: $padding-size;
 
   label {
     @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
@@ -86,7 +89,7 @@ mat-form-field {
     display: grid;
     gap: 10px;
     grid-template-columns: max-content auto;
-    padding: 5px 0;
+    padding: $padding-size 0;
 
     .group-id {
       font-size: 0.95em;
@@ -109,6 +112,10 @@ mat-form-field {
   .more,
   .no-match {
     @include tb-theme-foreground-prop(color, secondary-text);
-    margin-top: 5px;
+    margin-top: $padding-size;
   }
+}
+
+.save-button {
+  color: inherit;
 }

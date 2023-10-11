@@ -17,21 +17,14 @@ limitations under the License.
 }
 
 :host > div {
-  margin: 10px 0;
-}
-
-:host > :first-child {
-  margin-top: 0;
-}
-
-:host > :last-child {
-  margin-bottom: 0;
+  margin: 16px;
 }
 
 h3 {
   font-size: 20px;
+  margin: 16px;
 }
 
 .reload-toggle {
-  margin-bottom: 10px;
+  margin-bottom: 16px;
 }

@@ -14,8 +14,8 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatLegacyButtonModule} from '@angular/material/legacy-button';
-import {MatLegacySelectModule} from '@angular/material/legacy-select';
+import {MatButtonModule} from '@angular/material/button';
+import {MatSelectModule} from '@angular/material/select';
 import {FeatureFlagDialogComponent} from './feature_flag_dialog_component';
 import {FeatureFlagDialogContainer} from './feature_flag_dialog_container';
 
@@ -24,7 +24,7 @@ import {FeatureFlagDialogContainer} from './feature_flag_dialog_container';
  */
 @NgModule({
   declarations: [FeatureFlagDialogComponent, FeatureFlagDialogContainer],
-  imports: [CommonModule, MatLegacyButtonModule, MatLegacySelectModule],
+  imports: [CommonModule, MatButtonModule, MatSelectModule],
   exports: [FeatureFlagDialogContainer],
   entryComponents: [FeatureFlagDialogContainer],
 })

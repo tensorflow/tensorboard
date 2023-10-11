@@ -32,13 +32,10 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
   z-index: 0;
   height: 100%;
 }
-.header-list {
-  margin-top: 5%;
-  margin-left: 5%;
-}
 
 .header-list-item {
   padding: 3px;
+  height: 24px;
 }
 
 .highlighted {
@@ -85,6 +82,6 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
 // allowed for the tab content. Then the child element can correctly decide when
 // a scroll bar is needed. This class is added to a div internal to the
 // mat-tab-group.
-::ng-deep .mat-tab-body-wrapper {
+::ng-deep .mat-mdc-tab-body-wrapper {
   flex: 1;
 }

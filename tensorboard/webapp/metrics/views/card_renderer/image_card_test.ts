@@ -14,8 +14,8 @@ limitations under the License.
 ==============================================================================*/
 import {Component, Input} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {MatLegacyButtonModule} from '@angular/material/legacy-button';
-import {MatLegacyProgressSpinnerModule} from '@angular/material/legacy-progress-spinner';
+import {MatButtonModule} from '@angular/material/button';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatLegacySliderModule} from '@angular/material/legacy-slider';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
@@ -85,9 +85,9 @@ describe('image card', () => {
     await TestBed.configureTestingModule({
       imports: [
         NoopAnimationsModule,
-        MatLegacyButtonModule,
+        MatButtonModule,
         MatIconTestingModule,
-        MatLegacyProgressSpinnerModule,
+        MatProgressSpinnerModule,
         MatLegacySliderModule,
         RunNameModule,
         TruncatedPathModule,

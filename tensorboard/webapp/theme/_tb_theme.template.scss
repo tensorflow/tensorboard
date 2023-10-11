@@ -268,6 +268,7 @@ $tb-dark-theme: map_merge(
   @include mat.all-legacy-component-typographies();
   @include mat.all-component-typographies();
   // Include all theme-styles for the components based on the current theme.
+  @include mat.all-component-themes($tb-theme);
   @include mat.all-legacy-component-themes($tb-theme);
   @include mat.all-component-themes($tb-theme);
 
@@ -282,11 +283,44 @@ $tb-dark-theme: map_merge(
     contain: strict;
   }
 
-  a:not(.mat-button, .mat-icon-button) {
+  a:not(.mdc-button, .mdc-icon-button) {
     color: map-get($tb-foreground, link);
 
     &:visited {
       color: map-get($tb-foreground, link-visited);
+    }
+  }
+
+  body,
+  body.dark-mode {
+    a,
+    button.mat-mdc-button-base {
+      --tb-icon-size: 24px;
+      --mdc-typography-button-letter-spacing: normal;
+
+      &[mat-icon-button].mat-mdc-icon-button {
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+
+        .mat-mdc-button-touch-target {
+          height: 100%;
+          width: 100%;
+        }
+      }
+
+      mat-icon.mat-icon {
+        flex-shrink: 0;
+      }
+
+      mat-icon.mat-icon,
+      svg {
+        width: var(--tb-icon-size);
+        height: var(--tb-icon-size);
+        line-height: var(--tb-icon-size);
+      }
     }
   }
 
@@ -295,7 +329,7 @@ $tb-dark-theme: map_merge(
   body.dark-mode {
     background-color: map-get($tb-dark-background, background);
 
-    a:not(.mat-button, .mat-icon-button) {
+    a:not(.mdc-button, .mdc-icon-button) {
       color: map-get($tb-dark-foreground, link);
 
       &:visited {

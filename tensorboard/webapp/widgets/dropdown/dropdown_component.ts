@@ -35,6 +35,7 @@ export interface DropdownOption {
   template: `
     <mat-select
       [value]="value"
+      [hideSingleSelectionIndicator]="true"
       (selectionChange)="selectionChange.emit($event.value)"
     >
       <mat-option

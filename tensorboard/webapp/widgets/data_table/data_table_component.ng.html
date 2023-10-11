@@ -26,22 +26,24 @@ limitations under the License.
       <mat-icon svgIcon="close_24px"></mat-icon>Remove
     </button>
     <button
-      *ngIf="contextMenuHeader?.sortable"
+      *ngIf="contextMenuHeader?.sortable &&
+      sortingInfo.order === SortingOrder.ASCENDING &&
+      sortingInfo.name === contextMenuHeader?.name"
       class="context-menu-button sort-button"
       mat-button
       (click)="sortByHeader(contextMenuHeader?.name)"
     >
-      <ng-container
-        *ngIf="
-          sortingInfo.order === SortingOrder.ASCENDING &&
-          sortingInfo.name === contextMenuHeader?.name;
-          else descending"
-      >
-        <mat-icon svgIcon="arrow_downward_24px"></mat-icon>Sort Descending
-      </ng-container>
-      <ng-template #descending>
-        <mat-icon svgIcon="arrow_upward_24px"></mat-icon>Sort Ascending
-      </ng-template>
+      <mat-icon svgIcon="arrow_downward_24px"></mat-icon>Sort Descending
+    </button>
+    <button
+      *ngIf="contextMenuHeader?.sortable &&
+      (sortingInfo.order !== SortingOrder.ASCENDING ||
+      sortingInfo.name !== contextMenuHeader?.name)"
+      class="context-menu-button sort-button"
+      mat-button
+      (click)="sortByHeader(contextMenuHeader?.name)"
+    >
+      <mat-icon svgIcon="arrow_upward_24px"></mat-icon>Sort Ascending
     </button>
     <button
       *ngIf="contextMenuHeader?.filterable"

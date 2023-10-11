@@ -127,7 +127,7 @@ describe('range input test', () => {
     return input.map((inputDebugElement) => inputDebugElement.nativeElement);
   }
 
-  function getMatLegacySliderValue(el: DebugElement): string {
+  function getMatSliderValue(el: DebugElement): string {
     return el.query(By.css('.mat-slider-thumb-label-text')).nativeElement
       .textContent;
   }
@@ -151,7 +151,7 @@ describe('range input test', () => {
     describe('single selection', () => {
       it('renders correct slider value', () => {
         const {fixture} = createComponent({lowerValue: 2});
-        expect(getMatLegacySliderValue(fixture.debugElement)).toEqual('2');
+        expect(getMatSliderValue(fixture.debugElement)).toEqual('2');
       });
     });
 

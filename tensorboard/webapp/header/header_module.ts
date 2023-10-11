@@ -15,11 +15,11 @@ limitations under the License.
 // Uses `async` pipe.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatLegacyButtonModule} from '@angular/material/legacy-button';
+import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
-import {MatLegacyMenuModule} from '@angular/material/legacy-menu';
-import {MatLegacySelectModule} from '@angular/material/legacy-select';
-import {MatLegacyTabsModule} from '@angular/material/legacy-tabs';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatSelectModule} from '@angular/material/select';
+import {MatTabsModule} from '@angular/material/tabs';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {CoreModule} from '../core/core_module';
 import {SettingsModule} from '../settings/settings_module';
@@ -47,12 +47,12 @@ import {ReloadContainer} from './reload_container';
   ],
   providers: [],
   imports: [
-    MatLegacyButtonModule,
+    MatButtonModule,
     MatIconModule,
-    MatLegacyTabsModule,
+    MatTabsModule,
     MatToolbarModule,
-    MatLegacySelectModule,
-    MatLegacyMenuModule,
+    MatSelectModule,
+    MatMenuModule,
     CommonModule,
     CoreModule,
     SettingsModule,
