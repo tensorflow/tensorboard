@@ -32,6 +32,17 @@ text {
   display: flex;
   height: 100%;
   width: 100%;
+
+  .extent-edit-button {
+    --tb-icon-size: 16px;
+    height: 24px;
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    visibility: hidden;
+    width: 24px;
+    padding: 0;
+  }
 }
 
 .major,
@@ -109,24 +120,6 @@ text {
       #000 90%,
       #0000 100%
     );
-  }
-}
-
-.extent-edit-button {
-  background-color: mat.get-color-from-palette(mat.$gray-palette, 200);
-  font-size: 0;
-  height: 24px;
-  line-height: 24px;
-  position: absolute;
-  right: 5px;
-  top: 5px;
-  visibility: hidden;
-  width: 24px;
-
-  mat-icon {
-    height: 16px;
-    width: 16px;
-    line-height: 16px;
   }
 }
 

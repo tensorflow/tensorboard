@@ -20,6 +20,16 @@ mat-select {
   border-radius: 3px;
   box-sizing: border-box;
   padding: 6px;
+
+  // Default is 16px.
+  font-size: 12px;
+  // Default is 24px.
+  line-height: normal;
+
+  ::ng-deep .mat-mdc-select-arrow-wrapper {
+    // Default is 24px.
+    height: 12px;
+  }
 }
 
 mat-select:focus {
@@ -29,21 +39,15 @@ mat-select:focus {
   outline-style: auto;
 }
 
-::ng-deep .mat-select-panel {
+::ng-deep .mat-mdc-select-panel {
   max-width: 70vw;
 }
 
 // This selector needs relatively more specificity than Angular Material's
 // to override the fixed height.
-::ng-deep mat-option.mat-option {
-  height: auto;
-}
-
-::ng-deep .mat-option-text {
-  white-space: normal;
-  word-break: break-all;
-}
-
-.option-content {
-  white-space: nowrap;
+::ng-deep mat-option.mat-mdc-option {
+  // Default is 48px.
+  min-height: 32px;
+  // Default is 16px.
+  font-size: 12px;
 }

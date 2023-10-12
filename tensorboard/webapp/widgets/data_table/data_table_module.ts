@@ -16,6 +16,7 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {MatIconModule} from '@angular/material/icon';
+import {MatButtonModule} from '@angular/material/button';
 import {DataTableComponent} from './data_table_component';
 import {HeaderCellComponent} from './header_cell_component';
 import {DataTableHeaderModule} from './data_table_header_module';
@@ -23,7 +24,6 @@ import {ContentCellComponent} from './content_cell_component';
 import {ContentRowComponent} from './content_row_component';
 import {ColumnSelectorModule} from './column_selector_module';
 import {CustomModalModule} from '../custom_modal/custom_modal_module';
-import {MatLegacyButtonModule} from '@angular/material/legacy-button';
 import {FilterDialogModule} from './filter_dialog_module';
 
 @NgModule({
@@ -42,7 +42,7 @@ import {FilterDialogModule} from './filter_dialog_module';
   imports: [
     CommonModule,
     MatIconModule,
-    MatLegacyButtonModule,
+    MatButtonModule,
     DataTableHeaderModule,
     CustomModalModule,
     ColumnSelectorModule,

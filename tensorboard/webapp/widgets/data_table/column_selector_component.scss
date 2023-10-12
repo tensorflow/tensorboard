@@ -38,14 +38,6 @@ limitations under the License.
 
   .search-area {
     margin-bottom: 4px;
-
-    mat-icon.search-icon {
-      font-size: 1em;
-
-      ::ng-deep svg {
-        padding-top: 6px;
-      }
-    }
   }
 
   .column-list {
@@ -58,7 +50,11 @@ limitations under the License.
   }
 
   .column-button {
-    text-align: left;
+    // Don't allow buttons to shrink when there are many of them.
+    flex-shrink: 0;
+    // Match height of button touch target to avoid unnecessary scrollbar.
+    height: 48px;
+    justify-content: left;
     width: 100%;
 
     &.selected {

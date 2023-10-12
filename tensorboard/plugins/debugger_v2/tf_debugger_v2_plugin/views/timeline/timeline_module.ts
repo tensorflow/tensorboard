@@ -15,7 +15,7 @@ limitations under the License.
 
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatLegacyButtonModule} from '@angular/material/legacy-button';
+import {MatButtonModule} from '@angular/material/button';
 import {MatLegacySliderModule} from '@angular/material/legacy-slider';
 import {ExecutionDataModule} from '../execution_data/execution_data_module';
 import {TimelineComponent} from './timeline_component';
@@ -26,7 +26,7 @@ import {TimelineContainer} from './timeline_container';
   imports: [
     CommonModule,
     ExecutionDataModule,
-    MatLegacyButtonModule,
+    MatButtonModule,
     MatLegacySliderModule,
   ],
   // TODO(cais): The following two providers are meant to make the mat-slider

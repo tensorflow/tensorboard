@@ -14,11 +14,11 @@ limitations under the License.
 <div class="contents">
   <mat-form-field class="search-area">
     <mat-icon matPrefix class="search-icon" svgIcon="search_24px"></mat-icon>
+    <mat-label>Search</mat-label>
     <input
       matInput
       #search
       [(ngModel)]="searchInput"
-      placeholder="Search"
       (ngModelChange)="searchInputChanged()"
     />
   </mat-form-field>

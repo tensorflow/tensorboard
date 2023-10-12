@@ -15,8 +15,8 @@ limitations under the License.
 import {OverlayContainer} from '@angular/cdk/overlay';
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {MatLegacyButtonModule} from '@angular/material/legacy-button';
-import {MatLegacyMenuModule} from '@angular/material/legacy-menu';
+import {MatButtonModule} from '@angular/material/button';
+import {MatMenuModule} from '@angular/material/menu';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
@@ -37,9 +37,9 @@ describe('dark mode toggle test', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        MatLegacyButtonModule,
+        MatButtonModule,
         MatIconTestingModule,
-        MatLegacyMenuModule,
+        MatMenuModule,
         NoopAnimationsModule,
       ],
       providers: [provideMockTbStore()],

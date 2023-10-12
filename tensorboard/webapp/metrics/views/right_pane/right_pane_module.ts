@@ -14,11 +14,11 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatLegacyButtonModule} from '@angular/material/legacy-button';
+import {MatButtonModule} from '@angular/material/button';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
-import {MatLegacyCheckboxModule} from '@angular/material/legacy-checkbox';
+import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatIconModule} from '@angular/material/icon';
-import {MatLegacySelectModule} from '@angular/material/legacy-select';
+import {MatSelectModule} from '@angular/material/select';
 import {MatLegacySliderModule} from '@angular/material/legacy-slider';
 import {FeatureFlagModule} from '../../../feature_flag/feature_flag_module';
 import {DropdownModule} from '../../../widgets/dropdown/dropdown_module';
@@ -37,11 +37,11 @@ import {SettingsViewContainer} from './settings_view_container';
   imports: [
     CommonModule,
     DropdownModule,
-    MatLegacyButtonModule,
+    MatButtonModule,
     MatButtonToggleModule,
-    MatLegacyCheckboxModule,
+    MatCheckboxModule,
     MatIconModule,
-    MatLegacySelectModule,
+    MatSelectModule,
     MatLegacySliderModule,
     FeatureFlagModule,
     RangeInputModule,

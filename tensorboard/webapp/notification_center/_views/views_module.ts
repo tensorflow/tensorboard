@@ -14,9 +14,9 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {MatLegacyButtonModule} from '@angular/material/legacy-button';
+import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
-import {MatLegacyMenuModule} from '@angular/material/legacy-menu';
+import {MatMenuModule} from '@angular/material/menu';
 import {MarkdownRendererModule} from '../../widgets/markdown_renderer/markdown_renderer_module';
 import {NotificationCenterComponent} from './notification_center_component';
 import {NotificationCenterContainer} from './notification_center_container';
@@ -29,9 +29,9 @@ import {NotificationCenterContainer} from './notification_center_container';
   exports: [NotificationCenterContainer],
   imports: [
     CommonModule,
-    MatLegacyButtonModule,
+    MatButtonModule,
     MatIconModule,
-    MatLegacyMenuModule,
+    MatMenuModule,
     MarkdownRendererModule,
   ],
 })

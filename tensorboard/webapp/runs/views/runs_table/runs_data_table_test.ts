@@ -18,7 +18,7 @@ import {TestBed} from '@angular/core/testing';
 import {RunsDataTable} from './runs_data_table';
 import {DataTableModule} from '../../../widgets/data_table/data_table_module';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
-import {MatLegacyCheckboxModule} from '@angular/material/legacy-checkbox';
+import {MatCheckboxModule} from '@angular/material/checkbox';
 import {
   SortingOrder,
   SortingInfo,
@@ -126,7 +126,7 @@ describe('runs_data_table', () => {
         DataTableModule,
         FilterInputModule,
         MatIconTestingModule,
-        MatLegacyCheckboxModule,
+        MatCheckboxModule,
       ],
       declarations: [TestableComponent, RunsDataTable],
       schemas: [NO_ERRORS_SCHEMA],
