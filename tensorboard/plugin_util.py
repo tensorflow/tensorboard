@@ -18,9 +18,6 @@
 import threading
 
 from bleach.sanitizer import Cleaner
-
-# pylint: disable=g-bad-import-order
-# Google-only: import markdown_freewisdom
 import markdown
 
 from tensorboard import context as _context
