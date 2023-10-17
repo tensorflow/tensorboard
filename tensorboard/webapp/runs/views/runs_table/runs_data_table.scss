@@ -67,6 +67,11 @@ tb-data-table-header-cell:last-of-type {
   @include tb-theme-foreground-prop(border-right, border, 1px solid);
 }
 
+.table-column-selected,
+.table-column-color {
+  width: 40px;
+}
+
 .full-screen-toggle {
   opacity: 0;
   position: absolute;
