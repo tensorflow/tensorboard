@@ -227,7 +227,8 @@ class DataProvider(metaclass=abc.ABCMeta):
           plugin_name: String name of the TensorBoard plugin that created
             the data to be queried. Required.
           downsample: Integer number of steps to which to downsample the
-            results (e.g., `1000`). See `DataProvider` class docstring
+            results (e.g., `1000`). The most recent datum (last scalar)
+            should always be included. See `DataProvider` class docstring
             for details about this parameter. Required.
           run_tag_filter: Optional `RunTagFilter` value. If provided, a time
             series will only be included in the result if its run and tag

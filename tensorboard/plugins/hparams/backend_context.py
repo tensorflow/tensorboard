@@ -190,9 +190,7 @@ class Context:
             experiment_id=experiment_id,
             plugin_name=scalar_metadata.PLUGIN_NAME,
             run_tag_filter=run_tag_filter,
-            # TODO(#3436): We assume that downsampling always includes
-            # the most recent datum for some data provider implementations
-            # of interest. This is not required by the interface.
+            # Downsampling always includes the most recent datum.
             downsample=1,
         )
         return {
