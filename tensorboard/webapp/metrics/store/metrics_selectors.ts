@@ -486,22 +486,23 @@ export const getTableEditorSelectedTab = createSelector(
   (state): DataTableMode => state.tableEditorSelectedTab
 );
 
-export const getMetricsCardRangeSelectionEnabled = createSelector(
-  getCardStateMap,
-  getMetricsRangeSelectionEnabled,
-  getMetricsLinkedTimeEnabled,
-  (
-    cardStateMap: CardStateMap,
-    globalRangeSelectionEnabled: boolean,
-    linkedTimeEnabled: boolean,
-    cardId: CardId
-  ) =>
-    cardRangeSelectionEnabled(
-      cardStateMap,
-      globalRangeSelectionEnabled,
-      linkedTimeEnabled,
-      cardId
-    )
+export const getMetricsCardRangeSelectionEnabled = memoize((cardId) =>
+  createSelector(
+    getCardStateMap,
+    getMetricsRangeSelectionEnabled,
+    getMetricsLinkedTimeEnabled,
+    (
+      cardStateMap: CardStateMap,
+      globalRangeSelectionEnabled: boolean,
+      linkedTimeEnabled: boolean
+    ) =>
+      cardRangeSelectionEnabled(
+        cardStateMap,
+        globalRangeSelectionEnabled,
+        linkedTimeEnabled,
+        cardId
+      )
+  )
 );
 
 /**
@@ -639,11 +640,15 @@ export const getRangeSelectionHeaders = createSelector(
 
 export const getColumnHeadersForCard = memoize((cardId: string) => {
   return createSelector(
-    (state) => state,
+    getMetricsCardRangeSelectionEnabled(cardId),
     getSingleSelectionHeaders,
     getRangeSelectionHeaders,
-    (state, singleSelectionHeaders, rangeSelectionHeaders) => {
-      return getMetricsCardRangeSelectionEnabled(state, cardId)
+    (
+      cardRangeSelectionEnabled,
+      singleSelectionHeaders,
+      rangeSelectionHeaders
+    ) => {
+      return cardRangeSelectionEnabled
         ? rangeSelectionHeaders
         : singleSelectionHeaders;
     }

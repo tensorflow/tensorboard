@@ -1344,7 +1344,7 @@ describe('metrics selectors', () => {
   describe('getMetricsCardRangeSelectionEnabled', () => {
     it('returns card specific value when defined', () => {
       expect(
-        selectors.getMetricsCardRangeSelectionEnabled(
+        selectors.getMetricsCardRangeSelectionEnabled('card1')(
           appStateFromMetricsState(
             buildMetricsState({
               rangeSelectionEnabled: false,
@@ -1355,12 +1355,11 @@ describe('metrics selectors', () => {
                 },
               },
             })
-          ),
-          'card1'
+          )
         )
       ).toBeTrue();
       expect(
-        selectors.getMetricsCardRangeSelectionEnabled(
+        selectors.getMetricsCardRangeSelectionEnabled('card1')(
           appStateFromMetricsState(
             buildMetricsState({
               rangeSelectionEnabled: true,
@@ -1371,15 +1370,14 @@ describe('metrics selectors', () => {
                 },
               },
             })
-          ),
-          'card1'
+          )
         )
       ).toBeFalse();
     });
 
     it('returns global value when card specific value is not defined', () => {
       expect(
-        selectors.getMetricsCardRangeSelectionEnabled(
+        selectors.getMetricsCardRangeSelectionEnabled('card1')(
           appStateFromMetricsState(
             buildMetricsState({
               rangeSelectionEnabled: true,
@@ -1387,25 +1385,23 @@ describe('metrics selectors', () => {
                 card1: {},
               },
             })
-          ),
-          'card1'
+          )
         )
       ).toBeTrue();
       expect(
-        selectors.getMetricsCardRangeSelectionEnabled(
+        selectors.getMetricsCardRangeSelectionEnabled('card1')(
           appStateFromMetricsState(
             buildMetricsState({
               rangeSelectionEnabled: false,
             })
-          ),
-          'card1'
+          )
         )
       ).toBeFalse();
     });
 
     it('returns global value when linked time is enabled', () => {
       expect(
-        selectors.getMetricsCardRangeSelectionEnabled(
+        selectors.getMetricsCardRangeSelectionEnabled('card1')(
           appStateFromMetricsState(
             buildMetricsState({
               rangeSelectionEnabled: true,
@@ -1417,13 +1413,12 @@ describe('metrics selectors', () => {
                 },
               },
             })
-          ),
-          'card1'
+          )
         )
       ).toBeTrue();
 
       expect(
-        selectors.getMetricsCardRangeSelectionEnabled(
+        selectors.getMetricsCardRangeSelectionEnabled('card1')(
           appStateFromMetricsState(
             buildMetricsState({
               rangeSelectionEnabled: false,
@@ -1435,8 +1430,7 @@ describe('metrics selectors', () => {
                 },
               },
             })
-          ),
-          'card1'
+          )
         )
       ).toBeFalse();
     });

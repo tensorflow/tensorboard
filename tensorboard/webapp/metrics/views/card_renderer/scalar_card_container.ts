@@ -596,8 +596,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
 
     this.rangeEnabled$ = this.store.select(
-      getMetricsCardRangeSelectionEnabled,
-      this.cardId
+      getMetricsCardRangeSelectionEnabled(this.cardId)
     );
 
     this.hparamsEnabled$ = this.store.select(getEnableHparamsInTimeSeries);
