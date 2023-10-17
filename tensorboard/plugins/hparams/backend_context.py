@@ -190,7 +190,8 @@ class Context:
             experiment_id=experiment_id,
             plugin_name=scalar_metadata.PLUGIN_NAME,
             run_tag_filter=run_tag_filter,
-            # Downsampling always includes the most recent datum.
+            # `read_scalars` always includes the most recent datum, therefore
+            # downsampling to one means fetching the latest value.
             downsample=1,
         )
         return {
