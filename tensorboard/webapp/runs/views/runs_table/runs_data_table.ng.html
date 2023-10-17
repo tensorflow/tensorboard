@@ -47,6 +47,7 @@ limitations under the License.
           [header]="header"
           [sortingInfo]="sortingInfo"
           [hparamsEnabled]="true"
+          [ngClass]="['table-column-' + header.name]"
         >
           <ng-container [ngSwitch]="header.name">
             <div *ngSwitchCase="'selected'">
@@ -73,6 +74,7 @@ limitations under the License.
               *ngIf="header.enabled"
               [header]="header"
               [datum]="dataRow[header.name]"
+              [ngClass]="['table-column-' + header.name]"
             >
               <ng-container [ngSwitch]="header.name">
                 <span *ngSwitchCase="'color'" class="color-container">
