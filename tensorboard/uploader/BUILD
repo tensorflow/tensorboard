@@ -68,7 +68,6 @@ py_library(
     visibility = ["//tensorboard:internal"],
     deps = [
         ":auth",
-        ":dry_run_stubs",
         ":exporter",
         ":flags_parser",
         ":formatters",
@@ -79,7 +78,6 @@ py_library(
         "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:program",
-        "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/uploader/proto:protos_all_py_pb2_grpc",
     ],
@@ -90,7 +88,6 @@ py_test(
     srcs = ["uploader_subcommand_test.py"],
     srcs_version = "PY3",
     deps = [
-        ":dry_run_stubs",
         ":server_info",
         ":uploader",
         ":uploader_subcommand",
@@ -104,28 +101,12 @@ py_library(
     srcs = ["uploader.py"],
     srcs_version = "PY3",
     deps = [
-        ":logdir_loader",
-        ":upload_tracker",
         ":util",
         "//tensorboard:expect_grpc_installed",
-        "//tensorboard:expect_protobuf_installed",
-        "//tensorboard/backend:process_graph",
-        "//tensorboard/backend/event_processing:directory_loader",
-        "//tensorboard/backend/event_processing:event_file_loader",
-        "//tensorboard/backend/event_processing:io_wrapper",
-        "//tensorboard/compat/proto:protos_all_py_pb2",
-        "//tensorboard/plugins/graph:metadata",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/util:grpc_util",
         "//tensorboard/util:tb_logging",
-        "//tensorboard/util:tensor_util",
     ],
-)
-
-py_library(
-    name = "upload_tracker",
-    srcs = ["upload_tracker.py"],
-    srcs_version = "PY3",
 )
 
 py_test(
@@ -133,58 +114,15 @@ py_test(
     srcs = ["uploader_test.py"],
     srcs_version = "PY3",
     deps = [
-        ":dry_run_stubs",
         ":server_info",
         ":test_util",
-        ":upload_tracker",
         ":uploader",
-        ":util",
-        "//tensorboard:data_compat",
-        "//tensorboard:dataclass_compat",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:expect_grpc_testing_installed",
-        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat:no_tensorflow",
-        "//tensorboard/compat/proto:protos_all_py_pb2",
-        "//tensorboard/plugins/graph:metadata",
-        "//tensorboard/plugins/histogram:summary_v2",
-        "//tensorboard/plugins/scalar:metadata",
-        "//tensorboard/plugins/scalar:summary_v2",
-        "//tensorboard/summary:summary_v1",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/uploader/proto:protos_all_py_pb2_grpc",
-        "//tensorboard/util:test_util",
-    ],
-)
-
-py_test(
-    name = "upload_tracker_test",
-    srcs = ["upload_tracker_test.py"],
-    srcs_version = "PY3",
-    deps = [
-        ":upload_tracker",
-        "//tensorboard:test",
-    ],
-)
-
-py_library(
-    name = "dry_run_stubs",
-    srcs = ["dry_run_stubs.py"],
-    srcs_version = "PY3",
-    deps = [
-        "//tensorboard/uploader/proto:protos_all_py_pb2",
-    ],
-)
-
-py_test(
-    name = "dry_run_stubs_test",
-    srcs = ["dry_run_stubs_test.py"],
-    srcs_version = "PY3",
-    deps = [
-        ":dry_run_stubs",
-        "//tensorboard:test",
-        "//tensorboard/uploader/proto:protos_all_py_pb2",
     ],
 )
 
@@ -212,30 +150,6 @@ py_test(
 )
 
 py_library(
-    name = "logdir_loader",
-    srcs = ["logdir_loader.py"],
-    srcs_version = "PY3",
-    deps = [
-        "//tensorboard/backend/event_processing:directory_watcher",
-        "//tensorboard/backend/event_processing:io_wrapper",
-        "//tensorboard/util:tb_logging",
-    ],
-)
-
-py_test(
-    name = "logdir_loader_test",
-    srcs = ["logdir_loader_test.py"],
-    deps = [
-        ":logdir_loader",
-        "//tensorboard:test",
-        "//tensorboard/backend/event_processing:directory_loader",
-        "//tensorboard/backend/event_processing:event_file_loader",
-        "//tensorboard/backend/event_processing:io_wrapper",
-        "//tensorboard/util:test_util",
-    ],
-)
-
-py_library(
     name = "test_util",
     testonly = 1,
     srcs = ["test_util.py"],
@@ -257,7 +171,6 @@ py_test(
     name = "util_test",
     srcs = ["util_test.py"],
     deps = [
-        ":test_util",
         ":util",
         "//tensorboard:expect_protobuf_installed",
         "//tensorboard:test",
