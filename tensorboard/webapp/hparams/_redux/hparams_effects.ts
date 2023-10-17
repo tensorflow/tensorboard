@@ -23,7 +23,7 @@ import {
   switchMap,
   withLatestFrom,
   throttleTime,
-  combineLatestWith,
+  distinctUntilChanged,
 } from 'rxjs/operators';
 
 import {navigated} from '../../app_routing/actions';
@@ -72,7 +72,8 @@ export class HparamsEffects {
       this.runTableShown$,
       this.loadHparamsOnNavigationOrReload$
     ).pipe(
-      combineLatestWith(
+      distinctUntilChanged((prev, cur) => prev.join('') === cur.join('')),
+      withLatestFrom(
         this.store.select(getEnableHparamsInTimeSeries),
         this.store.select(getActiveRoute)
       ),
