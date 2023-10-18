@@ -155,7 +155,7 @@ PROTO_REPLACEMENTS = [
     ("tensorflow/core/protobuf/", "tensorboard/compat/proto/"),
     ("tensorflow/core/util/", "tensorboard/compat/proto/"),
     ("tensorflow/python/framework/", "tensorboard/compat/proto/"),
-    ("tensorflow/tsl/protobuf", "tensorboard/compat/proto"),
+    ("tsl/protobuf", "tensorboard/compat/proto"),
     ('package: "tensorflow.tfprof"', 'package: "tensorboard"'),
     ('package: "tensorflow"', 'package: "tensorboard"'),
     ('type_name: ".tensorflow.tfprof', 'type_name: ".tensorboard'),

@@ -26,10 +26,10 @@ rsync --existing "$1"/tensorflow/core/protobuf/*.proto tensorboard/compat/proto/
 rsync --existing "$1"/tensorflow/core/profiler/*.proto tensorboard/compat/proto/
 rsync --existing "$1"/tensorflow/core/util/*.proto tensorboard/compat/proto/
 rsync --existing "$1"/tensorflow/python/framework/*.proto tensorboard/compat/proto/
-if [ -d $1"/tensorflow/tsl/protobuf" ] # This directory first appears in TF 2.11
-then
-  rsync --existing "$1"/tensorflow/tsl/protobuf/*.proto tensorboard/compat/proto/
-fi
+# The "TSL" protos are now in their  own repo, but they are included as a
+# "vendored" package within TF. This dir contains protos that are imported with
+# the tsl/protobuf path that is replaced by the command below.
+rsync --existing "$1"/third_party/xla/third_party/tsl/tsl/protobuf/*.proto tensorboard/compat/proto/
 
 # Rewrite file paths and package names and disable LINT checks.
 #
@@ -40,7 +40,7 @@ find tensorboard/compat/proto/ -type f  -name '*.proto' -exec perl -pi \
   -e 's|tensorflow/core/profiler|tensorboard/compat/proto|g;' \
   -e 's|tensorflow/core/util|tensorboard/compat/proto|g;' \
   -e 's|tensorflow/python/framework|tensorboard/compat/proto|g;' \
-  -e 's|tensorflow/tsl/protobuf|tensorboard/compat/proto|g;' \
+  -e 's|tsl/protobuf|tensorboard/compat/proto|g;' \
   -e 's|package tensorflow.tfprof;|package tensorboard;|g;' \
   -e 's|package tensorflow;|package tensorboard;|g;' \
   -e 's|tensorflow\.DataType|tensorboard.DataType|g;' \
