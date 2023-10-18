@@ -37,8 +37,9 @@ def main():
     if cpu_name == "arm64":
         mac_platform = "macosx_11_0"
     platform_name = {
-        # using platform tag values from TensorFlow releases
-        "Linux": "manylinux2014",
+        # We build on an Ubuntu 20.04 (Focal Fossa) image, which ships with
+        # glibc 2.31 (https://launchpad.net/ubuntu/focal/+source/glibc).
+        "Linux": "manylinux_2_31",
         "Darwin": mac_platform,
     }.get(platform.system())
 
