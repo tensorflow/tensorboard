@@ -109,6 +109,12 @@ py_library(
     ],
 )
 
+py_library(
+    name = "upload_tracker",
+    srcs = ["upload_tracker.py"],
+    srcs_version = "PY3",
+)
+
 py_test(
     name = "uploader_test",
     srcs = ["uploader_test.py"],
@@ -123,6 +129,16 @@ py_test(
         "//tensorboard/compat:no_tensorflow",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/uploader/proto:protos_all_py_pb2_grpc",
+    ],
+)
+
+py_test(
+    name = "upload_tracker_test",
+    srcs = ["upload_tracker_test.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":upload_tracker",
+        "//tensorboard:test",
     ],
 )
 
@@ -150,6 +166,30 @@ py_test(
 )
 
 py_library(
+    name = "logdir_loader",
+    srcs = ["logdir_loader.py"],
+    srcs_version = "PY3",
+    deps = [
+        "//tensorboard/backend/event_processing:directory_watcher",
+        "//tensorboard/backend/event_processing:io_wrapper",
+        "//tensorboard/util:tb_logging",
+    ],
+)
+
+py_test(
+    name = "logdir_loader_test",
+    srcs = ["logdir_loader_test.py"],
+    deps = [
+        ":logdir_loader",
+        "//tensorboard:test",
+        "//tensorboard/backend/event_processing:directory_loader",
+        "//tensorboard/backend/event_processing:event_file_loader",
+        "//tensorboard/backend/event_processing:io_wrapper",
+        "//tensorboard/util:test_util",
+    ],
+)
+
+py_library(
     name = "test_util",
     testonly = 1,
     srcs = ["test_util.py"],
@@ -172,6 +212,7 @@ py_test(
     srcs = ["util_test.py"],
     deps = [
         ":util",
+        "//tensorboard:expect_grpc_installed",
         "//tensorboard:expect_protobuf_installed",
         "//tensorboard:test",
     ],
