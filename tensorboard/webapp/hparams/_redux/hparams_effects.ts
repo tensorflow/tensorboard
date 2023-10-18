@@ -67,7 +67,7 @@ export class HparamsEffects {
     distinctUntilChanged((prev, cur) => prev.join('') === cur.join(''))
   );
 
-  private readonly loadHparamsOnNavigationOrReload$: Observable<string[]> =
+  private readonly loadHparamsOnReload$: Observable<string[]> =
     this.actions$.pipe(
       ofType(coreActions.reload, coreActions.manualReload),
       withLatestFrom(this.store.select(getExperimentIdsFromRoute)),
@@ -80,7 +80,7 @@ export class HparamsEffects {
     return merge(
       this.navigated$,
       this.runTableShown$,
-      this.loadHparamsOnNavigationOrReload$
+      this.loadHparamsOnReload$
     ).pipe(
       withLatestFrom(
         this.store.select(getEnableHparamsInTimeSeries),
