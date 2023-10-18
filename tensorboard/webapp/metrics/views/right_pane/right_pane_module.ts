@@ -19,7 +19,7 @@ import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatIconModule} from '@angular/material/icon';
 import {MatSelectModule} from '@angular/material/select';
-import {MatLegacySliderModule} from '@angular/material/legacy-slider';
+import {MatSliderModule} from '@angular/material/slider';
 import {FeatureFlagModule} from '../../../feature_flag/feature_flag_module';
 import {DropdownModule} from '../../../widgets/dropdown/dropdown_module';
 import {RangeInputModule} from '../../../widgets/range_input/range_input_module';
@@ -42,7 +42,7 @@ import {SettingsViewContainer} from './settings_view_container';
     MatCheckboxModule,
     MatIconModule,
     MatSelectModule,
-    MatLegacySliderModule,
+    MatSliderModule,
     FeatureFlagModule,
     RangeInputModule,
   ],

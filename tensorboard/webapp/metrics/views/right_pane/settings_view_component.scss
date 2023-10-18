@@ -109,9 +109,9 @@ mat-checkbox {
 mat-slider {
   flex: 1;
   // Reset mat-slider's internal extra space on left/right sides
-  // https://github.com/angular/components/blob/master/src/material/slider/slider.scss#L10
-  margin-left: -8px;
-  margin-right: -8px;
+  // https://github.com/angular/components/blob/8a0196786bb6aa09e17ad84c1a2f035fea4fac5a/src/material/slider/slider.scss#L39
+  margin-left: 0px;
+  margin-right: 0px;
 }
 
 .column-edit-menu-toggle {

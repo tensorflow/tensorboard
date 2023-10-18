@@ -74,10 +74,12 @@ limitations under the License.
         [max]="MAX_CARD_WIDTH_SLIDER_VALUE"
         [min]="MIN_CARD_WIDTH_SLIDER_VALUE"
         [step]="50"
-        [value]="cardMinWidth"
-        [thumbLabel]="false"
-        (input)="cardWidthSliderChanged$.emit($event.value)"
-      ></mat-slider>
+      >
+        <input matSliderThumb
+          (valueChange)="cardWidthSliderChanged$.emit($event)"
+          [value]="cardMinWidth"
+        >
+      </mat-slider>
       <button
         class="reset-button"
         mat-icon-button
@@ -104,10 +106,13 @@ limitations under the License.
         [max]="MAX_SMOOTHING_SLIDER_VALUE"
         [min]="0"
         [step]="0.01"
+        [displayWith]="formatLabel"
+      >
+        <input matSliderThumb
+        (valueChange)="scalarSmoothingControlChanged$.emit($event)"
         [value]="scalarSmoothing"
-        [thumbLabel]="true"
-        (input)="scalarSmoothingControlChanged$.emit($event.value)"
-      ></mat-slider>
+        >
+      </mat-slider>
       <input
         class="slider-input"
         aria-labelledby="scalars-smoothing-label"

@@ -191,6 +191,10 @@ export class SettingsViewComponent {
   isAxisTypeStep(): boolean {
     return this.xAxisType === XAxisType.STEP;
   }
+
+  formatLabel(value: number): string {
+    return `${value}`;
+  }
 }
 
 export const TEST_ONLY = {
