@@ -87,7 +87,7 @@ const getRunMatchableMap = createSelector(
   (aliasMap, runs) => {
     const runMatchableMap = new Map<string, RunMatchable>();
     for (const run of runs) {
-      runMatchableMap.set(run.experimentId, {
+      runMatchableMap.set(run.id, {
         runName: run.name,
         experimentAlias: aliasMap[run.experimentId],
       });
