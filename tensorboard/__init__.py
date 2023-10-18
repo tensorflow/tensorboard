@@ -71,13 +71,6 @@ __all__ = [
 # additional discussion.
 
 
-@_lazy.lazy_load("tensorboard.data")
-def data():
-    import importlib
-
-    return importlib.import_module("tensorboard.data")
-
-
 @_lazy.lazy_load("tensorboard.errors")
 def errors():
     import importlib
