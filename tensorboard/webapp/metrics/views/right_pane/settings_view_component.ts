@@ -122,7 +122,7 @@ export class SettingsViewComponent {
   readonly MAX_SMOOTHING_SLIDER_VALUE = MAX_SMOOTHING_SLIDER_VALUE;
 
   readonly scalarSmoothingControlChanged$ = new EventEmitter<number>();
-  @Input() scalarSmoothing!: number;
+  @Input() scalarSmoothing: number = 10;
   @Output()
   scalarSmoothingChanged = this.scalarSmoothingControlChanged$.pipe(
     auditTime(SLIDER_AUDIT_TIME_MS)

@@ -22,7 +22,7 @@ import {
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatSelectModule} from '@angular/material/select';
-import {MatLegacySliderModule} from '@angular/material/legacy-slider';
+import {MatSliderModule} from '@angular/material/slider';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
@@ -50,7 +50,7 @@ describe('metrics right_pane', () => {
         MatButtonToggleModule,
         MatCheckboxModule,
         MatSelectModule,
-        MatLegacySliderModule,
+        MatSliderModule,
       ],
       declarations: [
         RightPaneComponent,
@@ -113,8 +113,9 @@ describe('metrics right_pane', () => {
     });
 
     function getMatSliderValue(el: DebugElement): string {
-      return el.query(By.css('.mat-slider-thumb-label-text')).nativeElement
-        .textContent;
+      return el
+        .query(By.css('input'))
+        .nativeElement.getAttribute('aria-valuetext');
     }
 
     function select(
@@ -124,7 +125,7 @@ describe('metrics right_pane', () => {
       return fixture.debugElement.query(By.css(cssSelector));
     }
 
-    it('renders', () => {
+    it('renders', fakeAsync(() => {
       store.overrideSelector(
         selectors.getMetricsTooltipSort,
         TooltipSort.ALPHABETICAL
@@ -141,6 +142,8 @@ describe('metrics right_pane', () => {
       store.overrideSelector(selectors.getMetricsImageShowActualSize, true);
 
       const fixture = TestBed.createComponent(SettingsViewContainer);
+      fixture.detectChanges();
+      tick(10);
       fixture.detectChanges();
 
       const tooltipSortSelect = select(fixture, '.tooltip-sort tb-dropdown');
@@ -177,7 +180,7 @@ describe('metrics right_pane', () => {
       expect(scalarSmoothingInput.nativeElement.value).toBe('0.3');
       expect(
         getMatSliderValue(select(fixture, '.scalars-smoothing mat-slider'))
-      ).toBe('0.30');
+      ).toBe('0.3');
 
       expect(
         getMatSliderValue(select(fixture, '.image-brightness mat-slider'))
@@ -191,7 +194,7 @@ describe('metrics right_pane', () => {
         select(fixture, '.image-show-actual-size input').componentInstance
           .checked
       ).toBeTrue();
-    });
+    }));
 
     it('hides settings if images are not supported', () => {
       store.overrideSelector(selectors.getIsMetricsImageSupportEnabled, false);
@@ -329,9 +332,9 @@ describe('metrics right_pane', () => {
       it('dispatches metricsChangeCardWidth action when adjusting the slider', fakeAsync(() => {
         const fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
-        const slider = select(fixture, CARD_WIDTH_SLIDER);
+        const sliderThumb = select(fixture, '.card-width mat-slider input');
 
-        slider.triggerEventHandler('input', {value: 350});
+        sliderThumb.triggerEventHandler('valueChange', 350);
         tick(TEST_ONLY.SLIDER_AUDIT_TIME_MS);
 
         expect(dispatchSpy).toHaveBeenCalledOnceWith(
@@ -351,15 +354,20 @@ describe('metrics right_pane', () => {
         );
       });
 
-      it('sets the card width to the value provided', () => {
+      it('sets the card width to the value provided', fakeAsync(() => {
         store.overrideSelector(selectors.getMetricsCardMinWidth, 400);
         const fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
 
-        expect(getMatSliderValue(select(fixture, CARD_WIDTH_SLIDER))).toBe(
-          '400'
-        );
-      });
+        // For some unknown reason sliders which do not display a thumb do not
+        // update aria-valuetext properly in tests. As a workaround I am using
+        // the ng-reflect-value attribute for this test.
+        expect(
+          select(fixture, CARD_WIDTH_SLIDER)
+            .query(By.css('input'))
+            .nativeElement.getAttribute('ng-reflect-value')
+        ).toBe('400');
+      }));
 
       it('does not set invalid value', () => {
         store.overrideSelector(selectors.getMetricsCardMinWidth, null);

@@ -74,10 +74,13 @@ limitations under the License.
         [max]="MAX_CARD_WIDTH_SLIDER_VALUE"
         [min]="MIN_CARD_WIDTH_SLIDER_VALUE"
         [step]="50"
-        [value]="cardMinWidth"
-        [thumbLabel]="false"
-        (input)="cardWidthSliderChanged$.emit($event.value)"
-      ></mat-slider>
+      >
+        <input
+          matSliderThumb
+          (valueChange)="cardWidthSliderChanged$.emit($event)"
+          [value]="cardMinWidth"
+        />
+      </mat-slider>
       <button
         class="reset-button"
         mat-icon-button
@@ -104,10 +107,14 @@ limitations under the License.
         [max]="MAX_SMOOTHING_SLIDER_VALUE"
         [min]="0"
         [step]="0.01"
-        [value]="scalarSmoothing"
-        [thumbLabel]="true"
-        (input)="scalarSmoothingControlChanged$.emit($event.value)"
-      ></mat-slider>
+        discrete
+      >
+        <input
+          matSliderThumb
+          (valueChange)="scalarSmoothingControlChanged$.emit($event)"
+          [value]="scalarSmoothing"
+        />
+      </mat-slider>
       <input
         class="slider-input"
         aria-labelledby="scalars-smoothing-label"
@@ -180,11 +187,15 @@ When enabled, a non-monotonic time series composed of N monotonic pieces will be
         [max]="2000"
         [min]="0"
         [step]="10"
-        [value]="imageBrightnessInMilli"
-        [thumbLabel]="true"
         [displayWith]="formatMilliToZeroth"
-        (input)="imageBrightnessSliderChanged$.emit($event.value)"
-      ></mat-slider>
+        discrete
+      >
+        <input
+          matSliderThumb
+          (valueChange)="imageBrightnessSliderChanged$.emit($event)"
+          [value]="imageBrightnessInMilli"
+        />
+      </mat-slider>
       <button
         class="reset-button"
         mat-icon-button
@@ -207,11 +218,15 @@ When enabled, a non-monotonic time series composed of N monotonic pieces will be
         [max]="5000"
         [min]="0"
         [step]="10"
-        [value]="imageContrastInMilli"
-        [thumbLabel]="true"
         [displayWith]="formatMilliToZeroth"
-        (input)="imageContrastSliderChanged$.emit($event.value)"
-      ></mat-slider>
+        discrete
+      >
+        <input
+          matSliderThumb
+          (valueChange)="imageContrastSliderChanged$.emit($event)"
+          [value]="imageContrastInMilli"
+        />
+      </mat-slider>
       <button
         class="reset-button"
         mat-icon-button
