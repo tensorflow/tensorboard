@@ -453,7 +453,7 @@ describe('scalar card line chart', () => {
     );
     store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
     store.overrideSelector(
-      selectors.getMetricsCardRangeSelectionEnabled,
+      selectors.getMetricsCardRangeSelectionEnabled('card1'),
       false
     );
     store.overrideSelector(selectors.getMetricsCardUserViewBox, null);
@@ -1794,7 +1794,10 @@ describe('scalar card line chart', () => {
           start: {step: 10},
           end: {step: 25},
         };
-        store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
+        store.overrideSelector(
+          getMetricsCardRangeSelectionEnabled('card1'),
+          true
+        );
         store.refreshState();
         fixture.detectChanges();
 

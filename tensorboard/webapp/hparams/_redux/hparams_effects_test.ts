@@ -160,6 +160,17 @@ describe('hparams effects', () => {
       ]);
     });
 
+    it('does not refetch data if experiments have not changed', () => {
+      action.next(runsActions.runTableShown({experimentIds: ['exp1']}));
+      action.next(runsActions.runTableShown({experimentIds: ['exp1']}));
+      expect(actualActions).toEqual([
+        hparamsActions.hparamsFetchSessionGroupsSucceeded({
+          hparamsAndMetricsSpecs: mockHparamsAndMetricsSpecs,
+          sessionGroups: mockSessionGroups,
+        }),
+      ]);
+    });
+
     it('fetches data after navigation', () => {
       action.next(appRoutingActions.navigated({} as any));
       expect(dataSource.fetchExperimentInfo).toHaveBeenCalledWith([
@@ -172,6 +183,17 @@ describe('hparams effects', () => {
           metrics: [buildMetricSpec({tag: 'm1'})],
         }
       );
+      expect(actualActions).toEqual([
+        hparamsActions.hparamsFetchSessionGroupsSucceeded({
+          hparamsAndMetricsSpecs: mockHparamsAndMetricsSpecs,
+          sessionGroups: mockSessionGroups,
+        }),
+      ]);
+    });
+
+    it('does not fetch data when navigating to the same experiment', () => {
+      action.next(appRoutingActions.navigated({} as any));
+      action.next(appRoutingActions.navigated({} as any));
       expect(actualActions).toEqual([
         hparamsActions.hparamsFetchSessionGroupsSucceeded({
           hparamsAndMetricsSpecs: mockHparamsAndMetricsSpecs,

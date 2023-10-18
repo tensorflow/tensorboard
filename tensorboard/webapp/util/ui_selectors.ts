@@ -39,6 +39,7 @@ import {
   getRunColorOverride,
   getRunIdToExperimentId,
   getRuns,
+  getDashboardRuns,
   getRunSelectionMap,
   getRunSelectorRegexFilter,
 } from '../runs/store/runs_selectors';
@@ -80,6 +81,21 @@ const getRunSelectionMapFilteredToCurrentRoute = createSelector<
   }
 );
 
+const getRunMatchableMap = createSelector(
+  getExperimentIdToExperimentAliasMap,
+  getDashboardRuns,
+  (aliasMap, runs) => {
+    const runMatchableMap = new Map<string, RunMatchable>();
+    for (const run of runs) {
+      runMatchableMap.set(run.id, {
+        runName: run.name,
+        experimentAlias: aliasMap[run.experimentId],
+      });
+    }
+    return runMatchableMap;
+  }
+);
+
 /**
  * Selects the run selection (runId to boolean) of current set of experiments.
  *
@@ -89,22 +105,7 @@ export const getCurrentRouteRunSelection = createSelector(
   getExperimentIdsFromRoute,
   getRunSelectionMapFilteredToCurrentRoute,
   getRunSelectorRegexFilter,
-  (state: State): Map<string, RunMatchable> => {
-    const experimentIds = getExperimentIdsFromRoute(state) ?? [];
-    const aliasMap = getExperimentIdToExperimentAliasMap(state);
-
-    const runMatchableMap = new Map<string, RunMatchable>();
-    for (const experimentId of experimentIds) {
-      const runs = getRuns(state, {experimentId});
-      for (const run of runs) {
-        runMatchableMap.set(run.id, {
-          runName: run.name,
-          experimentAlias: aliasMap[experimentId],
-        });
-      }
-    }
-    return runMatchableMap;
-  },
+  getRunMatchableMap,
   getRouteKind,
   (experimentIds, runSelection, regexFilter, runMatchableMap, routeKind) => {
     if (!experimentIds) {

@@ -23,7 +23,7 @@ import {
   switchMap,
   withLatestFrom,
   throttleTime,
-  combineLatestWith,
+  distinctUntilChanged,
 } from 'rxjs/operators';
 
 import {navigated} from '../../app_routing/actions';
@@ -55,12 +55,21 @@ export class HparamsEffects {
 
   private readonly runTableShown$: Observable<string[]> = this.actions$.pipe(
     ofType(runsActions.runTableShown),
-    map(({experimentIds}) => experimentIds)
+    map(({experimentIds}) => experimentIds),
+    distinctUntilChanged((prev, cur) => prev.join('') === cur.join(''))
   );
 
-  private readonly loadHparamsOnNavigationOrReload$: Observable<string[]> =
+  private readonly navigated$: Observable<string[]> = this.actions$.pipe(
+    ofType(navigated),
+    withLatestFrom(this.store.select(getExperimentIdsFromRoute)),
+    filter(([, experimentIds]) => Boolean(experimentIds)),
+    map(([, experimentIds]) => experimentIds as string[]),
+    distinctUntilChanged((prev, cur) => prev.join('') === cur.join(''))
+  );
+
+  private readonly loadHparamsOnReload$: Observable<string[]> =
     this.actions$.pipe(
-      ofType(navigated, coreActions.reload, coreActions.manualReload),
+      ofType(coreActions.reload, coreActions.manualReload),
       withLatestFrom(this.store.select(getExperimentIdsFromRoute)),
       filter(([, experimentIds]) => Boolean(experimentIds)),
       map(([, experimentIds]) => experimentIds as string[])
@@ -69,10 +78,11 @@ export class HparamsEffects {
   /** @export */
   loadHparamsData$ = createEffect(() => {
     return merge(
+      this.navigated$,
       this.runTableShown$,
-      this.loadHparamsOnNavigationOrReload$
+      this.loadHparamsOnReload$
     ).pipe(
-      combineLatestWith(
+      withLatestFrom(
         this.store.select(getEnableHparamsInTimeSeries),
         this.store.select(getActiveRoute)
       ),

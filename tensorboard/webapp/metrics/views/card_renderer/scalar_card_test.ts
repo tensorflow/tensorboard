@@ -386,7 +386,7 @@ describe('scalar card', () => {
     );
     store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
     store.overrideSelector(
-      selectors.getMetricsCardRangeSelectionEnabled,
+      selectors.getMetricsCardRangeSelectionEnabled('card1'),
       false
     );
     store.overrideSelector(selectors.getMetricsCardUserViewBox, null);
@@ -864,7 +864,10 @@ describe('scalar card', () => {
         selectors.getIsScalarColumnCustomizationEnabled,
         true
       );
-      store.overrideSelector(getMetricsCardRangeSelectionEnabled, false);
+      store.overrideSelector(
+        getMetricsCardRangeSelectionEnabled('card1'),
+        false
+      );
       const fixture = createComponent('card1');
 
       openOverflowMenu(fixture);
@@ -882,7 +885,10 @@ describe('scalar card', () => {
         selectors.getIsScalarColumnCustomizationEnabled,
         true
       );
-      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
+      store.overrideSelector(
+        getMetricsCardRangeSelectionEnabled('card1'),
+        true
+      );
       const fixture = createComponent('card1');
 
       openOverflowMenu(fixture);
@@ -3054,7 +3060,10 @@ describe('scalar card', () => {
         runToSeries
       );
       store.overrideSelector(getMetricsRangeSelectionEnabled, true);
-      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
+      store.overrideSelector(
+        getMetricsCardRangeSelectionEnabled('card1'),
+        true
+      );
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([
@@ -3136,7 +3145,10 @@ describe('scalar card', () => {
         runToSeries
       );
       store.overrideSelector(getMetricsRangeSelectionEnabled, true);
-      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
+      store.overrideSelector(
+        getMetricsCardRangeSelectionEnabled('card1'),
+        true
+      );
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([['run1', true]])
@@ -3202,7 +3214,10 @@ describe('scalar card', () => {
         runToSeries
       );
       store.overrideSelector(getMetricsRangeSelectionEnabled, true);
-      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
+      store.overrideSelector(
+        getMetricsCardRangeSelectionEnabled('card1'),
+        true
+      );
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([['run1', true]])
@@ -3318,7 +3333,10 @@ describe('scalar card', () => {
         runToSeries
       );
       store.overrideSelector(getMetricsRangeSelectionEnabled, true);
-      store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
+      store.overrideSelector(
+        getMetricsCardRangeSelectionEnabled('card1'),
+        true
+      );
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([
@@ -4156,7 +4174,10 @@ describe('scalar card', () => {
           start: {step: 10},
           end: {step: 25},
         });
-        store.overrideSelector(getMetricsCardRangeSelectionEnabled, true);
+        store.overrideSelector(
+          getMetricsCardRangeSelectionEnabled('card1'),
+          true
+        );
         store.refreshState();
         fixture.detectChanges();
 
