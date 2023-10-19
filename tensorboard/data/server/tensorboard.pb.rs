@@ -130,8 +130,13 @@ pub enum DataType {
     DtFloat8E5m2 = 24,
     /// 4 exponent bits, 3 mantissa bits, finite-only, with
     DtFloat8E4m3fn = 25,
-    // 2 NaNs (0bS1111111).
-
+    /// 2 NaNs (0bS1111111).
+    /// TODO - b/299182407: Leaving room for remaining float8 types.
+    /// DT_FLOAT8_E4M3FNUZ = 26;
+    /// DT_FLOAT8_E4M3B11FNUZ = 27;
+    /// DT_FLOAT8_E5M2FNUZ = 28;
+    DtInt4 = 29,
+    DtUint4 = 30,
     /// Do not use!  These are only for TF1's obsolete reference Variables.
     /// Every enum above should have a corresponding value below (verified by
     /// types_test).
@@ -160,6 +165,12 @@ pub enum DataType {
     DtUint64Ref = 123,
     DtFloat8E5m2Ref = 124,
     DtFloat8E4m3fnRef = 125,
+    /// TODO - b/299182407: Leaving room for remaining float8 types.
+    /// DT_FLOAT8_E4M3FNUZ_REF = 126;
+    /// DT_FLOAT8_E4M3B11FNUZ_REF = 127;
+    /// DT_FLOAT8_E5M2FNUZ_REF = 128;
+    DtInt4Ref = 129,
+    DtUint4Ref = 130,
 }
 /// Protocol buffer representing a handle to a tensorflow resource. Handles are
 /// not valid across executions, but can be serialized back and forth from within
