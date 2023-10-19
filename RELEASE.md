@@ -1,3 +1,19 @@
+# Release 2.15.0
+
+The 2.15 minor series tracks TensorFlow 2.15.
+
+## Features
+
+- Scalar chart data tables are shown by default. This can be disabled from the general settings panel. (#6563)
+- Hparams support in timeseries. Allows sorting and filtering the Runs Table in the Time Series dashboard using values logged with the Hparams plugin. (#6565)
+- Better default sorting of Hparams in the Hparams plugin. Sort the ones that have multiple values to the top of the list. (#6601)
+- New material components across the UI. (#6631)
+
+## Bug Fixes
+
+- Restricts protobuf dependency to < 4.24 due to protocolbuffers/protobuf#13485 (#6538)
+- Relaxes dependency on google-auth-oauthlib to allow versions 1.x < 2.0 (#6609, thanks @elgalu)
+
 # Release 2.14.1
 
 ## Bug Fixes
