@@ -259,7 +259,7 @@ class DataProvider(metaclass=abc.ABCMeta):
     ):
         """Read the most recent values from scalar time series.
 
-        Note that some impementations might not support not all scalar types.
+        Note that some impementations might not support all scalar types.
 
         Args:
           ctx: A TensorBoard `RequestContext` value.
