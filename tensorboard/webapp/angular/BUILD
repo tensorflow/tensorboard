@@ -249,9 +249,18 @@ tf_ts_library(
     ],
 )
 
-# This is a dummy rule used as a @angular/material/slider dependency.
+# This is a dummy rule used as a @angular/material/legacy-slider dependency.
 tf_ts_library(
     name = "expect_angular_legacy_material_slider",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
+# This is a dummy rule used as a @angular/material/slider dependency.
+tf_ts_library(
+    name = "expect_angular_material_slider",
     srcs = [],
     deps = [
         "@npm//@angular/material",

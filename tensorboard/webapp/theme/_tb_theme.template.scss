@@ -293,6 +293,13 @@ $tb-dark-theme: map_merge(
 
   body,
   body.dark-mode {
+    mat-slider {
+      --mdc-slider-handle-width: 12px;
+      --mdc-slider-handle-height: 12px;
+      --mdc-slider-active-track-height: 2px;
+      --mdc-slider-inactive-track-height: 2px;
+    }
+
     a,
     button.mat-mdc-button-base {
       --tb-icon-size: 24px;
