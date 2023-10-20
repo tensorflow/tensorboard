@@ -65,8 +65,8 @@ describe('filter dialog', () => {
     );
     expect(rangeInput).toBeTruthy();
     const [lower, upper, ...rest] = rangeInput.queryAll(By.css('input'));
-    // There should only be two input fields.
-    expect(rest.length).toEqual(0);
+    // There should two other input fields: one for each thumb in the slider.
+    expect(rest.length).toEqual(2);
     expect(lower.nativeElement.value).toEqual('7');
     expect(upper.nativeElement.value).toEqual('18');
   });

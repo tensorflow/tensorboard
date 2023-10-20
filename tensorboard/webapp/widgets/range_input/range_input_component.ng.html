@@ -25,41 +25,19 @@ limitations under the License.
   class="upper-input"
   type="number"
   [disabled]="!enabled"
-  [value]="upperValue !== null ? upperValue : ''"
+  [value]="upperValue"
   (change)="handleInputChange($event, Position.RIGHT)"
 />
 
-<mat-slider
-  class="single-slider"
-  *ngIf="upperValue === null; else range"
-  [disabled]="!enabled"
-  color="primary"
-  [min]="min"
-  [max]="max"
-  [step]="1"
-  [value]="lowerValue"
-  (input)="handleSingleSliderChange($event.value)"
-></mat-slider>
-
-<ng-template #range>
-  <span *ngIf="min !== max" class="container" #container>
-    <span class="slider-track"></span>
-    <span
-      class="slider-track-fill"
-      [style.left]="getThumbPosition(lowerValue)"
-      [style.width]="getTrackWidth()"
-    ></span>
-    <span
-      class="thumb"
-      (mousedown)="handleMouseDown($event, Position.LEFT)"
-      [style.left]="getThumbPosition(lowerValue)"
-      [class.active]="isThumbActive(Position.LEFT)"
-    ></span>
-    <span
-      class="thumb"
-      (mousedown)="handleMouseDown($event, Position.RIGHT)"
-      [style.left]="getThumbPosition(upperValue)"
-      [class.active]="isThumbActive(Position.RIGHT)"
-    ></span>
-  </span>
-</ng-template>
+<mat-slider class="slider" [min]="min" [max]="max" [step]="calculateStepSize()">
+  <input
+    matSliderStartThumb
+    (valueChange)="startThumbDrag($event)"
+    [(ngModel)]="lowerValue"
+  />
+  <input
+    matSliderEndThumb
+    (valueChange)="endThumbDrag($event)"
+    [(ngModel)]="upperValue"
+  />
+</mat-slider>

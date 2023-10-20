@@ -15,10 +15,11 @@ limitations under the License.
 
 import {Component, DebugElement, Input} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {MatLegacySliderModule} from '@angular/material/legacy-slider';
+import {FormsModule} from '@angular/forms';
+import {MatSliderModule} from '@angular/material/slider';
 import {By} from '@angular/platform-browser';
-import {RangeInputComponent, TEST_ONLY} from './range_input_component';
-import {RangeInputSource, RangeValues, SingleValue} from './types';
+import {RangeInputComponent} from './range_input_component';
+import {RangeInputSource, RangeValues} from './types';
 
 @Component({
   selector: 'testable-range-input',
@@ -30,22 +31,9 @@ import {RangeInputSource, RangeValues, SingleValue} from './types';
       [upperValue]="upperValue"
       [enabled]="enabled"
       [tickCount]="tickCount"
-      [returnIntegers]="returnIntegers"
       (rangeValuesChanged)="onRangeValuesChanged($event)"
-      (singleValueChanged)="onSingleValueChanged($event)"
     ></tb-range-input>
   `,
-  styles: [
-    `
-      tb-range-input {
-        position: fixed;
-        /* account for 6px padding and align left of track to 100px. */
-        left: ${100 - TEST_ONLY.THUMB_SIZE_PX / 2}px;
-        top: 50px;
-        width: ${200 + TEST_ONLY.THUMB_SIZE_PX}px;
-      }
-    `,
-  ],
 })
 class TestableComponent {
   @Input() min!: number;
@@ -60,13 +48,8 @@ class TestableComponent {
 
   @Input() tickCount!: number | null;
 
-  @Input() returnIntegers!: boolean;
-
   @Input()
   onRangeValuesChanged!: (event: RangeValues) => void;
-
-  @Input()
-  onSingleValueChanged!: (event: SingleValue) => void;
 }
 
 describe('range input test', () => {
@@ -77,7 +60,6 @@ describe('range input test', () => {
     lowerValue: number;
     upperValue?: number;
     useRange?: boolean;
-    returnIntegers?: boolean;
   }
 
   function createComponent(props: CreateComponentInput) {
@@ -86,13 +68,11 @@ describe('range input test', () => {
       max: 5,
       tickCount: 10,
       enabled: true,
-      returnIntegers: false,
       ...props,
     };
     const fixture = TestBed.createComponent(TestableComponent);
 
     const onRangeValuesChanged = jasmine.createSpy();
-    const onSingleValueChanged = jasmine.createSpy();
     fixture.componentInstance.lowerValue = propsWithDefault.lowerValue;
     if (propsWithDefault.upperValue !== undefined) {
       fixture.componentInstance.upperValue = propsWithDefault.upperValue;
@@ -102,22 +82,12 @@ describe('range input test', () => {
     fixture.componentInstance.min = propsWithDefault.min;
     fixture.componentInstance.max = propsWithDefault.max;
     fixture.componentInstance.tickCount = propsWithDefault.tickCount;
-    fixture.componentInstance.returnIntegers = propsWithDefault.returnIntegers!;
     fixture.componentInstance.onRangeValuesChanged = onRangeValuesChanged;
-    fixture.componentInstance.onSingleValueChanged = onSingleValueChanged;
     fixture.detectChanges();
     return {
       fixture,
       onRangeValuesChanged,
-      onSingleValueChanged,
     };
-  }
-
-  function getThumbsOnRange(
-    fixture: ComponentFixture<TestableComponent>
-  ): HTMLElement[] {
-    const thumbs = fixture.debugElement.queryAll(By.css('.thumb'));
-    return thumbs.map((thumbDebugElement) => thumbDebugElement.nativeElement);
   }
 
   function getInputs(
@@ -127,362 +97,79 @@ describe('range input test', () => {
     return input.map((inputDebugElement) => inputDebugElement.nativeElement);
   }
 
-  function getMatSliderValue(el: DebugElement): string {
-    return el.query(By.css('.mat-slider-thumb-label-text')).nativeElement
-      .textContent;
-  }
-
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MatLegacySliderModule],
+      imports: [FormsModule, MatSliderModule],
       declarations: [RangeInputComponent, TestableComponent],
     }).compileComponents();
   });
 
-  describe('render', () => {
-    function getRangeThumbsStyleLeft(
-      fixture: ComponentFixture<TestableComponent>
-    ): string[] {
-      return getThumbsOnRange(fixture).map((debugEl) => {
-        return debugEl.style.left;
+  describe('slider', () => {
+    it('uses correct values in slider', () => {
+      const {fixture} = createComponent({
+        lowerValue: 2,
+        upperValue: 3,
       });
-    }
 
-    describe('single selection', () => {
-      it('renders correct slider value', () => {
-        const {fixture} = createComponent({lowerValue: 2});
-        expect(getMatSliderValue(fixture.debugElement)).toEqual('2');
+      let thumbs = fixture.debugElement.queryAll(By.css('mat-slider input'));
+      expect(thumbs[0].nativeElement.getAttribute('ng-reflect-model')).toEqual(
+        '2'
+      );
+      expect(thumbs[1].nativeElement.getAttribute('ng-reflect-model')).toEqual(
+        '3'
+      );
+    });
+
+    it('dispatches actions when making range step change', () => {
+      const {fixture, onRangeValuesChanged} = createComponent({
+        lowerValue: -1,
+        upperValue: 1,
+        tickCount: null,
+      });
+      const sliderThumb = fixture.debugElement.queryAll(
+        By.css('mat-slider input')
+      )[0];
+
+      sliderThumb.triggerEventHandler('valueChange', -4);
+      expect(onRangeValuesChanged).toHaveBeenCalledWith({
+        lowerValue: -4,
+        upperValue: 1,
+        source: RangeInputSource.SLIDER,
       });
     });
 
-    describe('range selection', () => {
-      it('renders correct thumb positions', () => {
-        const {fixture} = createComponent({
-          lowerValue: 2,
-          upperValue: 3,
-        });
-
-        expect(getRangeThumbsStyleLeft(fixture)).toEqual(['70%', '80%']);
+    it('calculates ticks based on input', () => {
+      const {fixture} = createComponent({
+        lowerValue: 0,
+        upperValue: 10,
+        min: 0,
+        max: 10,
+        tickCount: 20,
       });
 
-      it('clips min and max within the slider', () => {
-        const {fixture} = createComponent({
-          lowerValue: -100,
-          upperValue: 100,
-        });
-
-        expect(getRangeThumbsStyleLeft(fixture)).toEqual(['0%', '100%']);
-      });
-
-      it('does not check lowerValue > upperValue and render them', () => {
-        const {fixture} = createComponent({
-          lowerValue: 3,
-          upperValue: -1,
-        });
-
-        expect(getRangeThumbsStyleLeft(fixture)).toEqual(['80%', '40%']);
-      });
-
-      it('render slider when min !== max', () => {
-        const {fixture} = createComponent({
-          lowerValue: 2,
-          upperValue: 4,
-          min: 3,
-          max: 4,
-        });
-        expect(
-          fixture.debugElement.query(By.css('.slider-track'))
-        ).toBeTruthy();
-      });
-
-      it('does not render slider when min === max', () => {
-        const {fixture} = createComponent({
-          lowerValue: 2,
-          upperValue: 4,
-          min: 3,
-          max: 3,
-        });
-        expect(fixture.debugElement.query(By.css('.slider-track'))).toBeNull();
-      });
-    });
-  });
-
-  describe('move', () => {
-    function startMovingThumb(
-      thumb: HTMLElement,
-      relativePosition: number = TEST_ONLY.THUMB_SIZE_PX / 2
-    ) {
-      const {left} = thumb.getBoundingClientRect();
-      // Simulate clicking right in the middle of the thumb.
-      const mouseDownEvent = new MouseEvent('mousedown', {
-        clientX: left + relativePosition,
-      });
-      thumb.dispatchEvent(mouseDownEvent);
-    }
-
-    function moveThumb(
-      thumb: HTMLElement,
-      absolutePositionInScreenInPx: number
-    ) {
-      const mouseMoveEvent = new MouseEvent('mousemove', {
-        clientX: absolutePositionInScreenInPx,
-      });
-      document.dispatchEvent(mouseMoveEvent);
-    }
-
-    describe('single selection', () => {
-      it('dispatches actions when making single step change', () => {
-        const {fixture, onSingleValueChanged} = createComponent({
-          lowerValue: -1,
-          tickCount: null,
-        });
-
-        const slider = fixture.debugElement.query(By.css('mat-slider'));
-
-        slider.triggerEventHandler('input', {
-          value: 5,
-        });
-
-        expect(onSingleValueChanged).toHaveBeenCalledOnceWith({
-          value: 5,
-          source: RangeInputSource.SLIDER,
-        });
-      });
+      const slider = fixture.debugElement.queryAll(By.css('mat-slider'))[0];
+      expect(slider.nativeElement.getAttribute('ng-reflect-step')).toEqual(
+        '0.5'
+      );
     });
 
-    describe('range selection', () => {
-      it('dispatches actions when making range step change', () => {
-        const {fixture, onRangeValuesChanged} = createComponent({
-          lowerValue: -1,
-          upperValue: 1,
-          tickCount: null,
-        });
-        const [leftThumb] = getThumbsOnRange(fixture);
-        startMovingThumb(leftThumb);
-        // range-input starts from 100px and ends at 300px.
-        moveThumb(leftThumb, 120);
-        expect(onRangeValuesChanged).toHaveBeenCalledWith({
-          lowerValue: -4,
-          upperValue: 1,
-          source: RangeInputSource.SLIDER,
-        });
+    it('does not trigger change when value does not change', () => {
+      const {fixture, onRangeValuesChanged} = createComponent({
+        lowerValue: -5,
+        upperValue: 1,
+        tickCount: 10,
       });
+      const sliderThumb = fixture.debugElement.queryAll(
+        By.css('mat-slider input')
+      )[0];
 
-      it('rounds number to filter out floating point math noise', () => {
-        const {fixture, onRangeValuesChanged} = createComponent({
-          min: 0.1,
-          max: 0.3,
-          lowerValue: 0.1,
-          upperValue: 0.3,
-          tickCount: null,
-        });
-        const [leftThumb] = getThumbsOnRange(fixture);
-        startMovingThumb(leftThumb);
-        // range-input starts from 100px and ends at 300px so 102px is about 2%
-        // from left edge.
-        moveThumb(leftThumb, 102);
-        // Without our logic to round, lowerValue would be 0.10200000000000001.
-        expect(onRangeValuesChanged).toHaveBeenCalledWith({
-          lowerValue: 0.102,
-          upperValue: 0.3,
-          source: RangeInputSource.SLIDER,
-        });
-      });
-
-      it('rounds down to integer when returnIntegers is set to true', () => {
-        const {fixture, onRangeValuesChanged} = createComponent({
-          min: 0,
-          max: 6,
-          lowerValue: 1,
-          upperValue: 5,
-          tickCount: 10,
-          returnIntegers: true,
-        });
-        const [leftThumb] = getThumbsOnRange(fixture);
-        startMovingThumb(leftThumb);
-        moveThumb(leftThumb, 170);
-        // Without rounding, lowerValue would be 2.4.
-        expect(onRangeValuesChanged).toHaveBeenCalledWith({
-          lowerValue: 2,
-          upperValue: 5,
-          source: 'SLIDER',
-        });
-      });
-
-      it('rounds up to integer when returnIntegers is set to true', () => {
-        const {fixture, onRangeValuesChanged} = createComponent({
-          min: 0,
-          max: 6,
-          lowerValue: 1,
-          upperValue: 5,
-          tickCount: 20,
-          returnIntegers: true,
-        });
-        const [leftThumb] = getThumbsOnRange(fixture);
-        startMovingThumb(leftThumb);
-        moveThumb(leftThumb, 190);
-        // Without rounding, lowerValue would be 2.7.
-        expect(onRangeValuesChanged).toHaveBeenCalledWith({
-          lowerValue: 3,
-          upperValue: 5,
-          source: 'SLIDER',
-        });
-      });
-
-      it('Keeps integer value if already an integer when returnIntegers is set to true', () => {
-        const {fixture, onRangeValuesChanged} = createComponent({
-          min: 0,
-          max: 6,
-          lowerValue: 1,
-          upperValue: 5,
-          tickCount: 10,
-          returnIntegers: true,
-        });
-        const [leftThumb] = getThumbsOnRange(fixture);
-        startMovingThumb(leftThumb);
-        moveThumb(leftThumb, 200);
-        // Without rounding, lowerValue is 3.
-        expect(onRangeValuesChanged).toHaveBeenCalledWith({
-          lowerValue: 3,
-          upperValue: 5,
-          source: 'SLIDER',
-        });
-      });
-
-      it('compensates position of mousedown relative to thumb center', () => {
-        const {fixture, onRangeValuesChanged} = createComponent({
-          lowerValue: -1,
-          upperValue: 1,
-          tickCount: null,
-        });
-        const values: Array<RangeValues> = [];
-        onRangeValuesChanged.and.callFake((value: RangeValues) => {
-          values.push(value);
-        });
-        const [leftThumb] = getThumbsOnRange(fixture);
-        startMovingThumb(leftThumb, TEST_ONLY.THUMB_SIZE_PX);
-        // Because we started to drag from right edge of the thumb, moving the
-        // thumb to 120 is equivalent to putting it at 126px (thumb radius is
-        // 6px).
-        moveThumb(leftThumb, 120);
-        expect(values).toEqual([
-          {
-            lowerValue: -4.3,
-            upperValue: 1,
-            source: RangeInputSource.SLIDER,
-          },
-        ]);
-
-        startMovingThumb(leftThumb, 0);
-        // Because we started to drag from left edge of the thumb, moving the
-        // thumb to 120 is equivalent to putting it at 114px (thumb radius is
-        // 6px).
-        moveThumb(leftThumb, 120);
-        expect(values).toEqual([
-          {
-            lowerValue: -4.3,
-            upperValue: 1,
-            source: RangeInputSource.SLIDER,
-          },
-          {
-            lowerValue: -3.7,
-            upperValue: 1,
-            source: RangeInputSource.SLIDER,
-          },
-        ]);
-      });
-
-      it('ignores mousemove when mousedown never happened', () => {
-        const {fixture, onRangeValuesChanged} = createComponent({
-          lowerValue: -1,
-          upperValue: 1,
-        });
-        const [leftThumb] = getThumbsOnRange(fixture);
-
-        moveThumb(leftThumb, 0);
-        expect(onRangeValuesChanged).not.toHaveBeenCalled();
-
-        moveThumb(leftThumb, 1000);
-        expect(onRangeValuesChanged).not.toHaveBeenCalled();
-      });
-
-      it('does not trigger change when value does not change', () => {
-        const {fixture, onRangeValuesChanged} = createComponent({
-          lowerValue: -5,
-          upperValue: 1,
-          tickCount: 10,
-        });
-        const [leftThumb] = getThumbsOnRange(fixture);
-        startMovingThumb(leftThumb);
-
-        moveThumb(leftThumb, 101);
-        expect(onRangeValuesChanged).not.toHaveBeenCalled();
-      });
-
-      it('emits change when moved by more than one', () => {
-        const {fixture, onRangeValuesChanged} = createComponent({
-          lowerValue: -5,
-          upperValue: 1,
-          tickCount: 10,
-        });
-        const [leftThumb] = getThumbsOnRange(fixture);
-        startMovingThumb(leftThumb);
-
-        moveThumb(leftThumb, 109);
-        expect(onRangeValuesChanged).not.toHaveBeenCalled();
-
-        // In 200px wide slider, we have 10 ticks which means every tick should
-        // occupy 20px. When you move the cursor a little bit left/right between
-        // two ticks, we change the value.
-        moveThumb(leftThumb, 111);
-        expect(onRangeValuesChanged).toHaveBeenCalledWith({
-          lowerValue: -4,
-          upperValue: 1,
-          source: RangeInputSource.SLIDER,
-        });
-      });
-
-      it('triggers change for minute movement when tickCount is null', () => {
-        const {fixture, onRangeValuesChanged} = createComponent({
-          lowerValue: -5,
-          upperValue: 1,
-          tickCount: null,
-        });
-        const [leftThumb] = getThumbsOnRange(fixture);
-        startMovingThumb(leftThumb);
-
-        moveThumb(leftThumb, 101);
-        expect(onRangeValuesChanged).toHaveBeenCalledWith({
-          lowerValue: -4.95,
-          upperValue: 1,
-          source: RangeInputSource.SLIDER,
-        });
-      });
-
-      it('changes upperValue when min knob crosses upperValue', () => {
-        const {fixture, onRangeValuesChanged} = createComponent({
-          lowerValue: -5,
-          upperValue: 0,
-          tickCount: null,
-        });
-        const [leftThumb] = getThumbsOnRange(fixture);
-        startMovingThumb(leftThumb);
-
-        moveThumb(leftThumb, 250);
-        expect(onRangeValuesChanged).toHaveBeenCalledWith({
-          lowerValue: 0,
-          upperValue: 2.5,
-          source: RangeInputSource.SLIDER,
-        });
-      });
+      sliderThumb.triggerEventHandler('valueChange', -5);
+      expect(onRangeValuesChanged).not.toHaveBeenCalled();
     });
   });
 
   describe('input control', () => {
-    let fixture: ComponentFixture<TestableComponent>;
-    let onRangeValuesChanged: jasmine.Spy;
-
-    it('emits change when user changes input on range slider', () => {
+    it('emits change when user changes input', () => {
       const {fixture, onRangeValuesChanged} = createComponent({
         min: 0,
         max: 10,
@@ -496,22 +183,6 @@ describe('range input test', () => {
       expect(onRangeValuesChanged).toHaveBeenCalledWith({
         lowerValue: 0,
         upperValue: 5,
-        source: RangeInputSource.TEXT,
-      });
-    });
-
-    it('emits change when user changes input on single slider', () => {
-      const {fixture, onSingleValueChanged} = createComponent({
-        min: 0,
-        max: 10,
-        lowerValue: 5,
-      });
-      const [minInput] = getInputs(fixture);
-      minInput.value = '2';
-      minInput.dispatchEvent(new InputEvent('change'));
-
-      expect(onSingleValueChanged).toHaveBeenCalledWith({
-        value: 2,
         source: RangeInputSource.TEXT,
       });
     });
@@ -530,19 +201,6 @@ describe('range input test', () => {
       minInput.dispatchEvent(new InputEvent('up'));
 
       expect(onRangeValuesChanged).not.toHaveBeenCalled();
-
-      const {fixture: fixture2, onSingleValueChanged} = createComponent({
-        min: 0,
-        max: 10,
-        lowerValue: 5,
-      });
-      const [minInput2] = getInputs(fixture2);
-      minInput2.value = '0';
-      minInput2.dispatchEvent(new InputEvent('keydown'));
-      minInput2.dispatchEvent(new InputEvent('input'));
-      minInput2.dispatchEvent(new InputEvent('up'));
-
-      expect(onSingleValueChanged).not.toHaveBeenCalled();
     });
 
     it('swaps min and max when new upperValue is smaller than lowerValue', () => {
@@ -559,22 +217,6 @@ describe('range input test', () => {
       expect(onRangeValuesChanged).toHaveBeenCalledWith({
         lowerValue: 2,
         upperValue: 5,
-        source: RangeInputSource.TEXT,
-      });
-    });
-
-    it('updates value to be min in single slider on input cleared', () => {
-      const {fixture, onSingleValueChanged} = createComponent({
-        min: 0,
-        max: 10,
-        lowerValue: 5,
-      });
-      const [minInput] = getInputs(fixture);
-      minInput.value = '';
-      minInput.dispatchEvent(new InputEvent('change'));
-
-      expect(onSingleValueChanged).toHaveBeenCalledWith({
-        value: 0,
         source: RangeInputSource.TEXT,
       });
     });
@@ -611,23 +253,6 @@ describe('range input test', () => {
         lowerValue: 5,
         upperValue: 7,
         source: RangeInputSource.TEXT,
-      });
-    });
-
-    it('dispatches action when upper value removed on range slider', () => {
-      const {fixture, onSingleValueChanged} = createComponent({
-        min: 0,
-        max: 10,
-        lowerValue: 5,
-        upperValue: 6,
-      });
-      const [, maxInput] = getInputs(fixture);
-      maxInput.value = '';
-      maxInput.dispatchEvent(new InputEvent('change'));
-
-      expect(onSingleValueChanged).toHaveBeenCalledWith({
-        value: 5,
-        source: RangeInputSource.TEXT_DELETED,
       });
     });
   });
