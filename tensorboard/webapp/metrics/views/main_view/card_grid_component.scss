@@ -92,10 +92,8 @@ card-view {
 }
 
 .pagination-button {
-  @include tb-theme-foreground-prop(color, secondary-text);
   background-color: $metrics-button-background-color-on-gray;
-
-  &:disabled {
-    @include tb-theme-foreground-prop(color, disabled-text);
+  @include tb-dark-theme {
+    background-color: transparent;
   }
 }
