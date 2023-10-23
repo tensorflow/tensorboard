@@ -215,7 +215,6 @@ class DataProvider(metaclass=abc.ABCMeta):
         ctx=None,
         *,
         experiment_id,
-        plugin_name,
         downsample=None,
         run_tag_filter=None,
     ):
@@ -224,8 +223,6 @@ class DataProvider(metaclass=abc.ABCMeta):
         Args:
           ctx: A TensorBoard `RequestContext` value.
           experiment_id: ID of enclosing experiment.
-          plugin_name: String name of the TensorBoard plugin that created
-            the data to be queried. Required.
           downsample: Integer number of steps to which to downsample the
             results (e.g., `1000`). The most recent datum (last scalar)
             should always be included. See `DataProvider` class docstring
