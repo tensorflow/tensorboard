@@ -143,7 +143,7 @@ describe('data table', () => {
       fixture.componentInstance.selectableColumns = input.potentialColumns;
     }
 
-    if(input.loading !== undefined) {
+    if (input.loading !== undefined) {
       fixture.componentInstance.loading = input.loading;
     }
 
