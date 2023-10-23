@@ -16,6 +16,7 @@
 
 
 import base64
+import collections
 import json
 import random
 
@@ -136,6 +137,30 @@ class MultiplexerDataProvider(provider.DataProvider):
             plugin_name, run_tag_filter, summary_pb2.DATA_CLASS_SCALAR
         )
         return self._read(_convert_scalar_event, index, downsample)
+
+    def read_last_scalars(
+        self,
+        ctx=None,
+        *,
+        experiment_id,
+        plugin_name,
+        run_tag_filter=None,
+    ):
+        self._validate_context(ctx)
+        self._validate_experiment_id(experiment_id)
+        index = self._index(
+            plugin_name, run_tag_filter, summary_pb2.DATA_CLASS_SCALAR
+        )
+        run_tag_to_last_scalar_datum = collections.defaultdict(dict)
+        for (run, tags_for_run) in index.items():
+            for (tag, metadata) in tags_for_run.items():
+                events = self._multiplexer.Tensors(run, tag)
+                if events:
+                    run_tag_to_last_scalar_datum[run][
+                        tag
+                    ] = _convert_scalar_event(events[-1])
+
+        return run_tag_to_last_scalar_datum
 
     def list_tensors(
         self, ctx=None, *, experiment_id, plugin_name, run_tag_filter=None
