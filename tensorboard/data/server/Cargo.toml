@@ -15,7 +15,7 @@
 
 [package]
 name = "rustboard"
-version = "0.7.2"
+version = "0.8.0-alpha.0"
 authors = ["The TensorFlow Authors <tensorboard-gardener@google.com>"]
 # Keep in sync with `edition` in rustfmt.toml.
 edition = "2018"

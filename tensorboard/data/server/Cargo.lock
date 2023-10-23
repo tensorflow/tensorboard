@@ -1154,7 +1154,7 @@ dependencies = [
 
 [[package]]
 name = "rustboard"
-version = "0.7.2"
+version = "0.8.0-alpha.0"
 dependencies = [
  "async-stream",
  "async-trait",
