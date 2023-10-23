@@ -255,6 +255,7 @@ class GrpcDataProviderTest(tb_test.TestCase):
         actual = self.provider.read_last_scalars(
             self.ctx,
             experiment_id="123",
+            plugin_name="scalars",
             run_tag_filter=provider.RunTagFilter(
                 runs=["train", "test", "nope"]
             ),
@@ -276,6 +277,7 @@ class GrpcDataProviderTest(tb_test.TestCase):
 
         req = data_provider_pb2.ReadScalarsRequest()
         req.experiment_id = "123"
+        req.plugin_filter.plugin_name = "scalars"
         req.run_tag_filter.runs.names.extend(
             ["nope", "test", "train"]
         )  # sorted

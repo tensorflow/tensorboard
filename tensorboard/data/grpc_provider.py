@@ -155,11 +155,13 @@ class GrpcDataProvider(provider.DataProvider):
         ctx,
         *,
         experiment_id,
+        plugin_name,
         run_tag_filter=None,
     ):
         with timing.log_latency("build request"):
             req = data_provider_pb2.ReadScalarsRequest()
             req.experiment_id = experiment_id
+            req.plugin_filter.plugin_name = plugin_name
             _populate_rtf(run_tag_filter, req.run_tag_filter)
             # `ReadScalars` always includes the most recent datum, therefore
             # downsampling to one means fetching the latest value.
