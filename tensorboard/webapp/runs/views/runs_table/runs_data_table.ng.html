@@ -23,17 +23,14 @@ limitations under the License.
     placeholder="Filter runs (regex)"
   ></tb-filter-input>
 </div>
-<div *ngIf="loading" class="loading">
-  <mat-spinner mode="indeterminate" diameter="28"></mat-spinner>
-</div>
 <div class="table-container">
   <tb-data-table
-    *ngIf="!loading"
     [headers]="headers"
     [sortingInfo]="sortingInfo"
     [columnCustomizationEnabled]="true"
     [selectableColumns]="selectableColumns"
     [columnFilters]="columnFilters"
+    [loading]="loading"
     (sortDataBy)="sortDataBy.emit($event)"
     (orderColumns)="orderColumns.emit($event)"
     (addColumn)="addColumn.emit($event)"
