@@ -85,6 +85,7 @@ tf_ng_module(
         ":types",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "//tensorboard/webapp/angular:expect_angular_material_progress_spinner",
         "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",
         "//tensorboard/webapp/widgets/custom_modal",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:formatter",
