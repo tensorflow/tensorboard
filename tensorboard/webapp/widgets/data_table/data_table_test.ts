@@ -46,6 +46,7 @@ import {FilterDialog} from './filter_dialog_component';
       [sortingInfo]="sortingInfo"
       [selectableColumns]="selectableColumns"
       [columnFilters]="columnFilters"
+      [loading]="loading"
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
       (addColumn)="addColumn.emit($event)"
@@ -88,6 +89,7 @@ class TestableComponent {
   @Input() orderColumns!: (newOrder: ColumnHeaderType[]) => void;
   @Input() selectableColumns!: ColumnHeader[];
   @Input() columnFilters!: Map<string, DiscreteFilter | IntervalFilter>;
+  @Input() loading!: boolean;
 
   @Output() addColumn = new EventEmitter<{
     header: ColumnHeader;
@@ -123,6 +125,7 @@ describe('data table', () => {
     data?: TableData[];
     potentialColumns?: ColumnHeader[];
     columnFilters?: Map<string, DiscreteFilter | IntervalFilter>;
+    loading?: boolean;
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
 
@@ -138,6 +141,10 @@ describe('data table', () => {
 
     if (input.potentialColumns) {
       fixture.componentInstance.selectableColumns = input.potentialColumns;
+    }
+
+    if (input.loading !== undefined) {
+      fixture.componentInstance.loading = input.loading;
     }
 
     fixture.componentInstance.columnFilters = input.columnFilters || new Map();
@@ -157,6 +164,20 @@ describe('data table', () => {
     fixture.detectChanges();
     const dataTable = fixture.debugElement.query(By.css('.data-table'));
     expect(dataTable).toBeTruthy();
+  });
+
+  it('renders spinner when loading', () => {
+    const fixture = createComponent({loading: true});
+    fixture.detectChanges();
+    const spinner = fixture.debugElement.query(By.css('.loading'));
+    expect(spinner).toBeTruthy();
+  });
+
+  it('does not renders spinner when not loading', () => {
+    const fixture = createComponent({loading: false});
+    fixture.detectChanges();
+    const spinner = fixture.debugElement.query(By.css('.loading'));
+    expect(spinner).toBeFalsy();
   });
 
   it('emits sortDataBy event when header emits headerClicked event', () => {
