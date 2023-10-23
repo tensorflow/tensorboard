@@ -275,14 +275,17 @@ class GrpcDataProviderTest(tb_test.TestCase):
 
         self.assertEqual(actual, expected)
 
-        req = data_provider_pb2.ReadScalarsRequest()
-        req.experiment_id = "123"
-        req.plugin_filter.plugin_name = "scalars"
-        req.run_tag_filter.runs.names.extend(
-            ["nope", "test", "train"]
-        )  # sorted
-        req.downsample.num_points = 1
-        self.stub.ReadScalars.assert_called_once_with(req)
+        expected_req = data_provider_pb2.ReadScalarsRequest(
+            experiment_id="123",
+            plugin_filter=data_provider_pb2.PluginFilter(plugin_name="scalars"),
+            run_tag_filter=data_provider_pb2.RunTagFilter(
+                runs=data_provider_pb2.RunFilter(
+                    names=["nope", "test", "train"]  # sorted
+                )
+            ),
+            downsample=data_provider_pb2.Downsample(num_points=1),
+        )
+        self.stub.ReadScalars.assert_called_once_with(expected_req)
 
     def test_list_tensors(self):
         res = data_provider_pb2.ListTensorsResponse()
