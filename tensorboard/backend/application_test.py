@@ -153,7 +153,7 @@ class FakeDataProvider(provider.DataProvider):
     def read_scalars(self, ctx=None, *, experiment_id):
         raise NotImplementedError()
 
-    def read_last_scalars(self, ctx=None, *, experiment_id):
+    def read_last_scalars(self, ctx=None, *, experiment_id, plugin_name):
         raise NotImplementedError()
 
 
