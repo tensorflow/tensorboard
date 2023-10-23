@@ -522,6 +522,17 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
         del experiment_id, plugin_name, downsample, run_tag_filter
         raise TypeError("Debugger V2 DataProvider doesn't support scalars.")
 
+    def read_last_scalars(
+        self,
+        ctx=None,
+        *,
+        experiment_id,
+        plugin_name,
+        run_tag_filter=None,
+    ):
+        del experiment_id, plugin_name, run_tag_filter
+        raise TypeError("Debugger V2 DataProvider doesn't support scalars.")
+
     def list_blob_sequences(
         self, ctx=None, *, experiment_id, plugin_name, run_tag_filter=None
     ):
