@@ -113,3 +113,6 @@ limitations under the License.
   </div>
   <ng-content select="[content]"></ng-content>
 </div>
+<div *ngIf="loading" class="loading">
+  <mat-spinner mode="indeterminate" diameter="28"></mat-spinner>
+</div>

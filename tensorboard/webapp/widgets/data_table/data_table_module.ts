@@ -17,6 +17,7 @@ import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {DataTableComponent} from './data_table_component';
 import {HeaderCellComponent} from './header_cell_component';
 import {DataTableHeaderModule} from './data_table_header_module';
@@ -43,6 +44,7 @@ import {FilterDialogModule} from './filter_dialog_module';
     CommonModule,
     MatIconModule,
     MatButtonModule,
+    MatProgressSpinnerModule,
     DataTableHeaderModule,
     CustomModalModule,
     ColumnSelectorModule,
