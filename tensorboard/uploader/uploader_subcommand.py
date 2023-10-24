@@ -419,7 +419,11 @@ def _die_if_bad_experiment_description(description):
 
 
 class UploadIntent(_Intent):
-    """The user intends to upload an experiment from the given logdir."""
+    """The user intends to upload an experiment from the given logdir.
+
+    However, TensorBoard.dev is being turned down and we no longer allow
+    upload.
+    """
 
     def get_ack_message_body(self):
         """Does nothing.
