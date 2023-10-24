@@ -5,6 +5,21 @@ import {
 } from '../../../widgets/data_table/types';
 import {ExperimentAlias} from '../../../experiments/types';
 
+enum UndefinedStrategy {
+  BEFORE,
+  AFTER,
+}
+
+interface SortOptions {
+  insertUndefined: UndefinedStrategy;
+}
+
+const POTENTIALLY_NUMERIC = new Set(['string', 'number']);
+
+const DEFAULT_SORT_OPTIONS: SortOptions = {
+  insertUndefined: UndefinedStrategy.AFTER,
+};
+
 export function parseNumericPrefix(value: string | number) {
   if (typeof value === 'number') {
     return isNaN(value) ? undefined : value;
@@ -23,8 +38,6 @@ export function parseNumericPrefix(value: string | number) {
 
   return;
 }
-
-const POTENTIALLY_NUMERIC = new Set(['string', 'number']);
 
 export function sortTableDataItems(
   items: TableData[],
@@ -55,12 +68,14 @@ export function sortTableDataItems(
     ) {
       const aPrefix = parseNumericPrefix(aValue as string | number);
       const bPrefix = parseNumericPrefix(bValue as string | number);
-      // Show runs with numbers prior to runs without numbers
+      // Show runs with numbers before to runs without numbers
       if (
         (aPrefix === undefined || bPrefix === undefined) &&
         aPrefix !== bPrefix
       ) {
-        return orderFromLocalComparison(aPrefix, bPrefix);
+        return orderFromLocalComparison(aPrefix, bPrefix, {
+          insertUndefined: UndefinedStrategy.BEFORE,
+        });
       }
       if (aPrefix !== undefined && bPrefix !== undefined) {
         if (aPrefix === bPrefix) {
@@ -68,7 +83,9 @@ export function sortTableDataItems(
             aValue.toString().slice(aPrefix.toString().length) || undefined;
           const bPostfix =
             bValue.toString().slice(bPrefix.toString().length) || undefined;
-          return orderFromLocalComparison(aPostfix, bPostfix);
+          return orderFromLocalComparison(aPostfix, bPostfix, {
+            insertUndefined: UndefinedStrategy.BEFORE,
+          });
         }
 
         return orderFromLocalComparison(aPrefix, bPrefix);
@@ -81,17 +98,18 @@ export function sortTableDataItems(
 
   function orderFromLocalComparison(
     a: TableData[string] | undefined,
-    b: TableData[string] | undefined
+    b: TableData[string] | undefined,
+    {insertUndefined}: SortOptions = DEFAULT_SORT_OPTIONS
   ) {
     if (a === b) {
       return 0;
     }
 
     if (a === undefined) {
-      return 1;
+      return insertUndefined === UndefinedStrategy.AFTER ? 1 : -1;
     }
     if (b === undefined) {
-      return -1;
+      return insertUndefined === UndefinedStrategy.AFTER ? -1 : 1;
     }
 
     return a < b === (sort.order === SortingOrder.ASCENDING) ? -1 : 1;
