@@ -28,7 +28,7 @@ interface SortOptions {
   insertUndefined: UndefinedStrategy;
 }
 
-const POTENTIALLY_NUMERIC = new Set(['string', 'number']);
+const POTENTIALLY_NUMERIC_TYPES = new Set(['string', 'number']);
 
 const DEFAULT_SORT_OPTIONS: SortOptions = {
   insertUndefined: UndefinedStrategy.AFTER,
@@ -73,12 +73,12 @@ export function sortTableDataItems(
     }
 
     if (aValue === undefined || bValue === undefined) {
-      return orderFromLocalComparison(aValue, bValue);
+      return compareValues(aValue, bValue);
     }
 
     if (
-      POTENTIALLY_NUMERIC.has(typeof aValue) &&
-      POTENTIALLY_NUMERIC.has(typeof bValue)
+      POTENTIALLY_NUMERIC_TYPES.has(typeof aValue) &&
+      POTENTIALLY_NUMERIC_TYPES.has(typeof bValue)
     ) {
       const aPrefix = parseNumericPrefix(aValue as string | number);
       const bPrefix = parseNumericPrefix(bValue as string | number);
@@ -87,7 +87,7 @@ export function sortTableDataItems(
         (aPrefix === undefined || bPrefix === undefined) &&
         aPrefix !== bPrefix
       ) {
-        return orderFromLocalComparison(aPrefix, bPrefix, {
+        return compareValues(aPrefix, bPrefix, {
           insertUndefined: UndefinedStrategy.BEFORE,
         });
       }
@@ -97,20 +97,20 @@ export function sortTableDataItems(
             aValue.toString().slice(aPrefix.toString().length) || undefined;
           const bPostfix =
             bValue.toString().slice(bPrefix.toString().length) || undefined;
-          return orderFromLocalComparison(aPostfix, bPostfix, {
+          return compareValues(aPostfix, bPostfix, {
             insertUndefined: UndefinedStrategy.BEFORE,
           });
         }
 
-        return orderFromLocalComparison(aPrefix, bPrefix);
+        return compareValues(aPrefix, bPrefix);
       }
     }
 
-    return orderFromLocalComparison(aValue, bValue);
+    return compareValues(aValue, bValue);
   });
   return sortedItems;
 
-  function orderFromLocalComparison(
+  function compareValues(
     a: TableData[string] | undefined,
     b: TableData[string] | undefined,
     {insertUndefined}: SortOptions = DEFAULT_SORT_OPTIONS

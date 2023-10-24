@@ -28,6 +28,7 @@ describe('sorting utils', () => {
       expect(parseNumericPrefix('0')).toEqual(0);
       expect(parseNumericPrefix('123')).toEqual(123);
       expect(parseNumericPrefix('123/')).toEqual(123);
+      expect(parseNumericPrefix('123/foo')).toEqual(123);
       expect(parseNumericPrefix('123/foo/456')).toEqual(123);
     });
 
