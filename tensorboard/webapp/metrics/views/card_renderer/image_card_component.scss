@@ -17,7 +17,6 @@ limitations under the License.
 @import '../common';
 
 $_title-to-heading-gap: 12px;
-$_tick_width: 14px;
 
 :host {
   box-sizing: border-box;
@@ -143,6 +142,11 @@ $_tick_width: 14px;
   // https://github.com/angular/components/blob/master/src/material/slider/slider.scss#L10
   height: 24px;
   position: relative;
+
+  mat-slider {
+    margin-left: 6px;
+    margin-right: 6px;
+  }
 }
 
 .step-slider {
@@ -171,28 +175,8 @@ $_tick_width: 14px;
 .linked-time-tick {
   @include tb-theme-background-prop(background-color, selected-button);
   border-radius: 50%;
-  height: 14px;
+  height: 12px;
   position: absolute;
-  width: 14px;
-}
-
-.slider-track,
-.slider-track-fill {
-  height: 2px;
-  top: 6px;
-  position: absolute;
-}
-
-.slider-track {
-  @include tb-theme-foreground-prop(background, slider-off);
-  left: $_tick_width / 2;
-  width: calc(100% - #{$_tick_width});
-}
-
-.slider-track-fill {
-  background: mat.get-color-from-palette($tb-primary);
-
-  @include tb-dark-theme {
-    background: mat.get-color-from-palette($tb-dark-primary);
-  }
+  width: 12px;
+  z-index: -1;
 }

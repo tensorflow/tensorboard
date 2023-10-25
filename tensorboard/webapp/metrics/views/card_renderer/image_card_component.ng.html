@@ -81,24 +81,18 @@ limitations under the License.
     <mat-slider
       class="step-slider"
       color="primary"
-      [ngClass]="[linkedTimeSelection && linkedTimeSelection.endStep !== null ? 'hide-slider' : '']"
       [disabled]="steps.length <= 1"
       [min]="0"
       [max]="steps.length - 1"
       [step]="1"
-      [tickInterval]="1"
-      [value]="stepIndex"
-      (input)="onSliderInput($event)"
-    ></mat-slider>
+    >
+      <input
+        matSliderThumb
+        (valueChange)="onSliderInput($event)"
+        [value]="stepIndex"
+      />
+    </mat-slider>
     <div class="linked-time-wrapper" *ngIf="linkedTimeSelection">
-      <span *ngIf="linkedTimeSelection.endStep !== null">
-        <span class="slider-track"></span>
-        <span
-          class="slider-track-fill"
-          [style.left]="sliderStartPosition"
-          [style.width]="sliderTrackWidth"
-        ></span>
-      </span>
       <div
         class="linked-time-tick"
         *ngFor="let step of selectedSteps"
