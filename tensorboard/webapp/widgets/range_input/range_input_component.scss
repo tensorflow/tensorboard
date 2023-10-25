@@ -15,9 +15,6 @@ limitations under the License.
 @use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 
-// Keep this in sync with range_input_component.ts's `THUMB_SIZE_PX`.
-$_thumb-size: 12px;
-
 :host {
   box-sizing: border-box;
   display: inline-grid;
@@ -28,7 +25,6 @@ $_thumb-size: 12px;
   grid-template-columns: 1fr 1fr;
   font-size: 0;
   min-width: 100px;
-  padding: $_thumb-size * 0.5;
 }
 
 input {
@@ -49,71 +45,6 @@ input {
   justify-self: flex-end;
 }
 
-.single-slider {
+.slider {
   grid-area: slider;
-  padding: 0px;
-  ::ng-deep .mat-slider-wrapper {
-    top: 5px;
-    left: 0px;
-    right: 0px;
-  }
-}
-::ng-deep .single-slider.mat-slider-horizontal {
-  height: 12px;
-}
-
-.container {
-  grid-area: slider;
-  align-items: center;
-  box-sizing: border-box;
-  display: inline-flex;
-  height: $_thumb-size;
-  justify-content: center;
-  position: relative;
-  width: 100%;
-}
-
-.slider-track {
-  @include tb-theme-foreground-prop(background, slider-off);
-  height: 2px;
-  width: 100%;
-}
-
-.slider-track-fill {
-  position: absolute;
-  height: 2px;
-}
-
-.thumb {
-  @include tb-theme-foreground-prop(box-sadhow, slider-off, 0 0 0 1px);
-  border-radius: 100%;
-  display: inline-block;
-  height: $_thumb-size;
-  margin-left: -$_thumb-size * 0.5;
-  position: absolute;
-  top: 0;
-  transform-origin: center;
-  transition: transform 0.3s ease;
-  width: $_thumb-size;
-  will-change: transform;
-
-  &:hover {
-    cursor: grab;
-  }
-  &:active {
-    cursor: grabbing;
-  }
-}
-
-.thumb.active {
-  transform: scale(1.2);
-}
-
-.slider-track-fill,
-.thumb {
-  background: mat.get-color-from-palette($tb-primary);
-
-  @include tb-dark-theme {
-    background: mat.get-color-from-palette($tb-dark-primary);
-  }
 }

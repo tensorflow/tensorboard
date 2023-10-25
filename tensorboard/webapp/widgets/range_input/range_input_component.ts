@@ -14,22 +14,14 @@ limitations under the License.
 ==============================================================================*/
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
   Input,
-  OnDestroy,
-  OnInit,
   Output,
   ViewChild,
 } from '@angular/core';
-import {fromEvent, Subject} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
 import {RangeInputSource, RangeValues, SingleValue} from './types';
-
-// Keep this in sync with range_input_component.scss's `$_thumb-size`.
-const THUMB_SIZE_PX = 12;
 
 enum Position {
   NONE,
@@ -42,23 +34,6 @@ enum Position {
  * value or a numeric range. It renders one of the two sliders.
  *
  * Anatomy of the component:
- *
- * Single slider:
- *
- *        left input             right input
- *   +-----------------+     +----------------+
- *   |                 |     |    [empty]     |
- *   +-----------------+     +----------------+
- *       <lowerValue>          <no upperValue>
- *
- *                 thumb
- *                 +---+
- *                 |   |
- *   x+==============+------------------------+x
- * <min>           |   |                    <max>
- *                 +---+
- *              <lowerValue>
- *
  *
  * Double thumbed slider:
  *
@@ -77,17 +52,12 @@ enum Position {
  *        <lowerValue>        <upperValue>
  *
  * Features:
- * - `useRange` controls whether renders a single or double thumbed slider
  * - you can drag a thumb to change lowerValue or upperValue
- * - you cannot click on track to change any value on double thumbed slider
- *   but click anywhere in a single slider sets the value to where clicked.
  * - a thumb is centered (origin of the circle) w.r.t a value.
- * - when lowerValue cross upperValue, lowerValue = upperValue and upperValue
- *     changes. Converse is true, too.
  * - does not validate input (e.g., lowerValue can be lower than min) but thumbs
  *   are clipped to `min` and `max`. Also, when emitting changes, the values can
  *   never exceed `min` and `max`.
- * - emits actions on both single and range value changed
+ * - emits actions on range value changed
  */
 @Component({
   selector: 'tb-range-input',
@@ -95,7 +65,7 @@ enum Position {
   styleUrls: ['./range_input_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RangeInputComponent implements OnInit, OnDestroy {
+export class RangeInputComponent {
   @ViewChild('container', {static: false, read: ElementRef})
   container!: ElementRef<HTMLElement>;
 
@@ -119,26 +89,21 @@ export class RangeInputComponent implements OnInit, OnDestroy {
   @Input() lowerValue!: number;
 
   /**
-   * Maximum value for the slider thumb. Expect the number to be greater than
+   * Maximum value for the slider thumb. Expect the number to be less than
    * or equal to `max`. If lower, the thumb will still be clipped to the `max`
    * value.
    */
-  @Input() upperValue!: number | null;
+  @Input() upperValue!: number;
 
   /**
-   * `null` denotes contiguous "ticks"
+   * number of discrete ticks in the slider
    */
-  @Input() tickCount: number | null = 20;
+  @Input() tickCount: number = 20;
 
   /**
    * Whether the text input is editable.
    */
   @Input() enabled: boolean = true;
-
-  /**
-   * Whether the slider returns discrete integers or allows for floating points.
-   */
-  @Input() returnIntegers: boolean = false;
 
   @Output()
   rangeValuesChanged = new EventEmitter<RangeValues>();
@@ -148,172 +113,29 @@ export class RangeInputComponent implements OnInit, OnDestroy {
 
   readonly Position = Position;
 
-  private activeThumb = Position.NONE;
-
-  /**
-   * Accounts for position of cursor when pressing down on the thumb.
-   *
-   * To illustrate the point, imagine the case when min=0, max=1, thumb has
-   * radius of 100px, the thumb is set to max, and the input is positioned from
-   * (0, 0) in the viewport. User can change max by mouse downing at (51, 0) but
-   * that should not change the upperValue to 0.51. Instead, it should stay
-   * at 1. In this case, since you cannot move the mouse past (0, 0), you can
-   * never set the value to <= 49 but, normnally, the input does not get
-   * rendered in (0, 0), thumb radius is 6px, and user can mouse down at middle
-   * of the thumb.
-   */
-  private offsetXFromOriginOfActiveThumb: number = 0;
-
-  private readonly ngUnsubscribe = new Subject<void>();
-
-  constructor(private readonly changeDetector: ChangeDetectorRef) {}
-
-  getThumbPosition(value: number): string {
-    const clippedValue = this.getClippedValue(value);
-    const boundSize = this.max - this.min;
-
-    if (boundSize <= 0) {
-      return '50%';
-    }
-
-    const percentDifference = ((clippedValue - this.min) / boundSize) * 100;
-    return `${percentDifference}%`;
+  startThumbDrag(value: number) {
+    this.maybeNotifyNextRangeValues(
+      [value, this.upperValue],
+      RangeInputSource.SLIDER
+    );
   }
 
-  getTrackWidth(): string {
-    if (this.upperValue === null) {
-      return '0%';
-    }
-    const boundSize = this.max - this.min;
+  endThumbDrag(value: number) {
+    this.maybeNotifyNextRangeValues(
+      [this.lowerValue, value],
+      RangeInputSource.SLIDER
+    );
+  }
 
-    if (boundSize <= 0) {
-      return '0%';
+  calculateStepSize() {
+    if (this.tickCount === null || this.tickCount <= 0) {
+      return 1;
     }
-
-    const valDiff =
-      this.getClippedValue(this.upperValue) -
-      this.getClippedValue(this.lowerValue);
-    const percentDifference = (valDiff / boundSize) * 100;
-    return `${percentDifference}%`;
+    return (this.max - this.min) / this.tickCount;
   }
 
   private getClippedValue(value: number) {
     return Math.min(Math.max(value, this.min), this.max);
-  }
-
-  ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
-  }
-
-  ngOnInit() {
-    fromEvent(document, 'mousemove', {passive: true})
-      .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe((event) => {
-        this.handleMouseMove(event as MouseEvent);
-      });
-    fromEvent(document, 'mouseup', {passive: true})
-      .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe((event) => {
-        this.handleMouseOut(event as MouseEvent);
-      });
-  }
-
-  handleMouseDown(event: MouseEvent, position: Position) {
-    event.stopPropagation();
-    event.preventDefault();
-    this.activeThumb = position;
-    // Mouse event reports cursor position w.r.t the top left edge of the target
-    // (in this case, a thumb) element.
-    const offsetXFromLeftOfThumb = event.offsetX;
-    // The thumb is visually centered w.r.t. a value using negative margin of
-    // THUMB_SIZE_PX / 2. Account for cursor offset w.r.t the origin of the
-    // active thumb so the value does not change simply by mousing down on the
-    // thumb.
-    const offsetXFromCenterOfThumb = THUMB_SIZE_PX / 2 - offsetXFromLeftOfThumb;
-    this.offsetXFromOriginOfActiveThumb = offsetXFromCenterOfThumb;
-  }
-
-  private calculateValueFromMouseEvent(event: MouseEvent) {
-    const {left, right} = this.container.nativeElement.getBoundingClientRect();
-    // Compute cursor position relative to left edge of the range-input element.
-    const relativeXPx = event.clientX - left;
-    // Compensate for cursor offset from origin of the active thumb.
-    const compensatedRelativeXInPx =
-      relativeXPx + this.offsetXFromOriginOfActiveThumb;
-
-    let xPositionInPercent: number;
-    if (this.tickCount !== null && this.tickCount > 0) {
-      const tickWidthInPx = (right - left) / this.tickCount;
-      const tickStuckRelativePx =
-        Math.round(compensatedRelativeXInPx / tickWidthInPx) * tickWidthInPx;
-      xPositionInPercent = tickStuckRelativePx / (right - left);
-    } else {
-      xPositionInPercent = compensatedRelativeXInPx / (right - left);
-    }
-
-    const newValue = this.getClippedValue(
-      this.min + (this.max - this.min) * xPositionInPercent
-    );
-
-    if (this.returnIntegers) {
-      return Math.round(newValue);
-    }
-
-    // Make sure floating point arithmatic does not pollute the number with
-    // noise (e.g., 0.2 + 0.1 = 0.30000000000000004; we don't want 4e-17). Clip
-    // to 10th decimal.
-    return Number(newValue.toFixed(10));
-  }
-
-  /**
-   * Handles `mousemove` event in the document and, if dragging (mousedown on
-   * thumb happened before), compute new relative position of the active thumb
-   * and, if changed, event it to parent. If the left thumb is dragged past the
-   * right thumb, the effect (from the user perspective) is that the left thumb
-   * stays where the right thumb was, and the drag continues, moving the right
-   * thumb instead.
-   *
-   * Implementation note: especially when `lowerValue` and `upperValue` are
-   * nearby, you need to know which value is currently being changed (imagine
-   * the cursor being right in between): to disambiguate, we have
-   * `this.activeThumb`. However, of course, when `lowerValue` crosses
-   * `upperValue`, or vice a versa, we need to update the `this.activeThumb`
-   * accordingly. This is especially important because the component is a
-   * "controlled component" [1] and, when props update, we do not know whether
-   * `lowerValue` or `upperValue` correspond to the activeThumb (i.e., if this
-   * were completely uncontrolled component, we can take initial position of the
-   * thumb via prop, track DOM/position of active and inactive thumbs to
-   * update/move the correct DOM).
-   *
-   * [1]: https://reactjs.org/docs/forms.html#controlled-components
-   */
-  private handleMouseMove(event: MouseEvent) {
-    if (this.activeThumb === Position.NONE) {
-      return;
-    }
-    if (this.upperValue === null) {
-      return;
-    }
-
-    const newValue = this.calculateValueFromMouseEvent(event);
-
-    let nextValues: [number, number] = [this.lowerValue, this.upperValue];
-
-    if (this.activeThumb === Position.LEFT) {
-      if (newValue > this.upperValue) {
-        this.activeThumb = Position.RIGHT;
-      }
-      nextValues = [newValue, this.upperValue];
-    } else {
-      if (newValue < this.lowerValue) {
-        this.activeThumb = Position.LEFT;
-      }
-      nextValues = [this.lowerValue, newValue];
-    }
-
-    this.maybeNotifyNextRangeValues(nextValues, RangeInputSource.SLIDER);
-    this.changeDetector.markForCheck();
   }
 
   private maybeNotifyNextRangeValues(
@@ -326,20 +148,6 @@ export class RangeInputComponent implements OnInit, OnDestroy {
     }
   }
 
-  private handleMouseOut(event: MouseEvent) {
-    if (this.activeThumb !== Position.NONE) {
-      this.activeThumb = Position.NONE;
-      this.changeDetector.markForCheck();
-    }
-  }
-
-  handleSingleSliderChange(value: number) {
-    this.singleValueChanged.emit({
-      value,
-      source: RangeInputSource.SLIDER,
-    });
-  }
-
   handleInputChange(event: InputEvent, position: Position) {
     const input = event.target! as HTMLInputElement;
     const numValue = this.getClippedValue(Number(input.value));
@@ -348,43 +156,15 @@ export class RangeInputComponent implements OnInit, OnDestroy {
     }
 
     if (position === Position.LEFT) {
-      // Lower value has changed.
-      if (this.upperValue === null) {
-        // There is currently no upper value so we are already in single selection mode
-        // and can update just the single value.
-        this.singleValueChanged.emit({
-          value: numValue,
-          source: RangeInputSource.TEXT,
-        });
-      } else {
-        this.maybeNotifyNextRangeValues(
-          [numValue, this.upperValue],
-          RangeInputSource.TEXT
-        );
-      }
+      this.maybeNotifyNextRangeValues(
+        [numValue, this.upperValue],
+        RangeInputSource.TEXT
+      );
     } else {
-      // Upper value has changed.
-      if (input.value === '') {
-        // Upper value is being deleted so we now enter single selection mode, using the current
-        // lower value.
-        this.singleValueChanged.emit({
-          value: this.lowerValue,
-          source: RangeInputSource.TEXT_DELETED,
-        });
-      } else {
-        this.maybeNotifyNextRangeValues(
-          [this.lowerValue, numValue],
-          RangeInputSource.TEXT
-        );
-      }
+      this.maybeNotifyNextRangeValues(
+        [this.lowerValue, numValue],
+        RangeInputSource.TEXT
+      );
     }
   }
-
-  isThumbActive(position: Position) {
-    return this.activeThumb === position;
-  }
 }
-
-export const TEST_ONLY = {
-  THUMB_SIZE_PX,
-};
