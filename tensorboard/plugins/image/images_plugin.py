@@ -34,6 +34,7 @@ _IMGHDR_TO_MIMETYPE = {
     "jpeg": "image/jpeg",
     "png": "image/png",
     "svg": "image/svg+xml",
+    "webp": "image/webp"
 }
 
 _DEFAULT_IMAGE_MIMETYPE = "application/octet-stream"
