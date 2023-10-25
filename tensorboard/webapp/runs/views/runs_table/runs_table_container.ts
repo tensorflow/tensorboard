@@ -70,7 +70,6 @@ import {
   ColumnHeader,
   FilterAddedEvent,
   SortingInfo,
-  SortingOrder,
   TableData,
 } from '../../../widgets/data_table/types';
 import {
@@ -101,6 +100,7 @@ import {
   getPotentialHparamColumns,
 } from '../../../metrics/views/main_view/common_selectors';
 import {runsTableFullScreenToggled} from '../../../core/actions';
+import {sortTableDataItems} from './sorting_utils';
 
 const getRunsLoading = createSelector<
   State,
@@ -178,34 +178,6 @@ function sortRunTableItems(
       return valA < valB === (sort.direction === SortDirection.ASC) ? -1 : 1;
     }
     return 0;
-  });
-  return sortedItems;
-}
-
-function sortTableDataItems(
-  items: TableData[],
-  sort: SortingInfo
-): TableData[] {
-  const sortedItems = [...items];
-
-  sortedItems.sort((a, b) => {
-    let aValue = a[sort.name];
-    let bValue = b[sort.name];
-
-    if (sort.name === 'experimentAlias') {
-      aValue = (aValue as ExperimentAlias).aliasNumber;
-      bValue = (bValue as ExperimentAlias).aliasNumber;
-    }
-
-    if (aValue === bValue) {
-      return 0;
-    }
-
-    if (aValue === undefined || bValue === undefined) {
-      return bValue === undefined ? -1 : 1;
-    }
-
-    return aValue < bValue === (sort.order === SortingOrder.ASCENDING) ? -1 : 1;
   });
   return sortedItems;
 }
