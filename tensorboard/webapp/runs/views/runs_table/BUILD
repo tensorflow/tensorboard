@@ -64,6 +64,7 @@ tf_ng_module(
         "runs_table_component.ts",
         "runs_table_container.ts",
         "runs_table_module.ts",
+        "sorting_utils.ts",
     ],
     assets = [
         ":regex_edit_dialog_styles",
@@ -131,6 +132,7 @@ tf_ts_library(
         "regex_edit_dialog_test.ts",
         "runs_data_table_test.ts",
         "runs_table_test.ts",
+        "sorting_utils_test.ts",
     ],
     deps = [
         ":runs_table",
