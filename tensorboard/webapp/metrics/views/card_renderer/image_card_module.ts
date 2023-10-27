@@ -17,7 +17,7 @@ import {NgModule} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
-import {MatLegacySliderModule} from '@angular/material/legacy-slider';
+import {MatSliderModule} from '@angular/material/slider';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {ImageCardComponent} from './image_card_component';
 import {ImageCardContainer} from './image_card_container';
@@ -34,7 +34,7 @@ import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_w
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatLegacySliderModule,
+    MatSliderModule,
     RunNameModule,
     TruncatedPathModule,
     VisLinkedTimeSelectionWarningModule,

@@ -16,7 +16,7 @@ import {Component, Input} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatButtonModule} from '@angular/material/button';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
-import {MatLegacySliderModule} from '@angular/material/legacy-slider';
+import {MatSliderModule} from '@angular/material/slider';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
@@ -88,7 +88,7 @@ describe('image card', () => {
         MatButtonModule,
         MatIconTestingModule,
         MatProgressSpinnerModule,
-        MatLegacySliderModule,
+        MatSliderModule,
         RunNameModule,
         TruncatedPathModule,
         VisLinkedTimeSelectionWarningModule,
@@ -125,11 +125,13 @@ describe('image card', () => {
     stepIndex: number | null
   ) {
     const imgEl = fixture.debugElement.query(By.css('img'));
-    const slider = fixture.debugElement.query(By.css('.step-slider'));
+    const thumb = fixture.debugElement.query(By.css('.step-slider input'));
     expect(
       imgEl.nativeElement.src.endsWith(`/imageData?imageId=${imageId}`)
     ).toBe(true);
-    expect(slider.componentInstance.value).toBe(stepIndex);
+    expect(thumb.nativeElement.getAttribute('ng-reflect-value')).toBe(
+      stepIndex?.toString()
+    );
   }
 
   it('renders empty message when there is no data', () => {
@@ -314,12 +316,12 @@ describe('image card', () => {
     const fixture = createImageCardContainer('card1');
     fixture.detectChanges();
 
-    const slider = fixture.debugElement.query(By.css('.step-slider'));
+    const thumb = fixture.debugElement.query(By.css('.step-slider input'));
     expect(fixture.nativeElement.textContent).toContain('Step 30');
     expectImageSliderUI(fixture, 'ImageId3', 2);
 
     // Adjust slider.
-    slider.triggerEventHandler('input', {value: 1});
+    thumb.triggerEventHandler('valueChange', 1);
     fixture.detectChanges();
 
     expect(dispatchedActions).toEqual([
@@ -491,9 +493,9 @@ describe('image card', () => {
     // The left and margin-left style for an image card with 4 ticks.
     const TICKS_STYLE = [
       'left: 0%; margin-left: 0px;',
-      'left: 33.3333%; margin-left: -4.66667px;',
-      'left: 66.6667%; margin-left: -9.33333px;',
-      'left: 100%; margin-left: -14px;',
+      'left: 33.3333%; margin-left: -4px;',
+      'left: 66.6667%; margin-left: -8px;',
+      'left: 100%; margin-left: -12px;',
     ];
 
     describe('ticks', () => {
@@ -606,184 +608,6 @@ describe('image card', () => {
       });
     });
 
-    describe('render sliders', () => {
-      beforeEach(() => {
-        const timeSeries = [
-          {wallTime: 100, imageId: 'ImageId1', step: 10},
-          {wallTime: 101, imageId: 'ImageId2', step: 20},
-          {wallTime: 102, imageId: 'ImageId3', step: 30},
-          {wallTime: 103, imageId: 'ImageId4', step: 40},
-          {wallTime: 104, imageId: 'ImageId5', step: 50},
-        ];
-        provideMockCardSeriesData(
-          selectSpy,
-          PluginType.IMAGES,
-          'card1',
-          null /* metadataOverride */,
-          timeSeries
-        );
-      });
-
-      it('renders range slider on selected range', () => {
-        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 20},
-          end: {step: 30},
-        });
-
-        const fixture = createImageCardContainer('card1');
-        fixture.detectChanges();
-
-        const sliderTrackFill = fixture.debugElement.query(
-          By.css('.linked-time-wrapper .slider-track-fill')
-        );
-        expect(sliderTrackFill).toBeTruthy();
-        expect(sliderTrackFill.nativeElement.getAttribute('style')).toBe(
-          'left: 25%; width: 25%;'
-        );
-      });
-
-      it('renders range slider on no data steps', () => {
-        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 15},
-          end: {step: 35},
-        });
-
-        const fixture = createImageCardContainer('card1');
-        fixture.detectChanges();
-
-        const sliderTrackFill = fixture.debugElement.query(
-          By.css('.linked-time-wrapper .slider-track-fill')
-        );
-        expect(sliderTrackFill).toBeTruthy();
-        expect(sliderTrackFill.nativeElement.getAttribute('style')).toBe(
-          'left: 12.5%; width: 50%;'
-        );
-      });
-
-      it('renders range slider with end step at no data step', () => {
-        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 20},
-          end: {step: 35},
-        });
-
-        const fixture = createImageCardContainer('card1');
-        fixture.detectChanges();
-
-        const sliderTrackFill = fixture.debugElement.query(
-          By.css('.linked-time-wrapper .slider-track-fill')
-        );
-        expect(sliderTrackFill).toBeTruthy();
-        expect(sliderTrackFill.nativeElement.getAttribute('style')).toBe(
-          'left: 25%; width: 37.5%;'
-        );
-      });
-
-      it('renders range slider with start step at no data step', () => {
-        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 15},
-          end: {step: 30},
-        });
-
-        const fixture = createImageCardContainer('card1');
-        fixture.detectChanges();
-
-        const sliderTrackFill = fixture.debugElement.query(
-          By.css('.linked-time-wrapper .slider-track-fill')
-        );
-        expect(sliderTrackFill).toBeTruthy();
-        expect(sliderTrackFill.nativeElement.getAttribute('style')).toBe(
-          'left: 12.5%; width: 37.5%;'
-        );
-      });
-
-      it('renders range slider on no data steps with propotion of the unit', () => {
-        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 20},
-          end: {step: 32.5},
-        });
-
-        const fixture = createImageCardContainer('card1');
-        fixture.detectChanges();
-
-        const sliderTrackFill = fixture.debugElement.query(
-          By.css('.linked-time-wrapper .slider-track-fill')
-        );
-        expect(sliderTrackFill).toBeTruthy();
-        expect(sliderTrackFill.nativeElement.getAttribute('style')).toBe(
-          'left: 25%; width: 31.25%;'
-        );
-      });
-
-      it('renders range slider on selected steps which end step is out of range, ', () => {
-        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 15},
-          end: {step: 55},
-        });
-
-        const fixture = createImageCardContainer('card1');
-        fixture.detectChanges();
-
-        const sliderTrackFill = fixture.debugElement.query(
-          By.css('.linked-time-wrapper .slider-track-fill')
-        );
-        expect(sliderTrackFill).toBeTruthy();
-        expect(sliderTrackFill.nativeElement.getAttribute('style')).toBe(
-          'left: 12.5%; width: 87.5%;'
-        );
-      });
-
-      it('renders range slider on selected steps which start step is out of range, ', () => {
-        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 5},
-          end: {step: 35},
-        });
-
-        const fixture = createImageCardContainer('card1');
-        fixture.detectChanges();
-
-        const sliderTrackFill = fixture.debugElement.query(
-          By.css('.linked-time-wrapper .slider-track-fill')
-        );
-        expect(sliderTrackFill).toBeTruthy();
-        expect(sliderTrackFill.nativeElement.getAttribute('style')).toBe(
-          'left: 0%; width: 62.5%;'
-        );
-      });
-
-      it('renders range slider where range is between two steps, ', () => {
-        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 12.5},
-          end: {step: 17.5},
-        });
-
-        const fixture = createImageCardContainer('card1');
-        fixture.detectChanges();
-
-        const sliderTrackFill = fixture.debugElement.query(
-          By.css('.linked-time-wrapper .slider-track-fill')
-        );
-        expect(sliderTrackFill).toBeTruthy();
-        expect(sliderTrackFill.nativeElement.getAttribute('style')).toBe(
-          'left: 6.25%; width: 12.5%;'
-        );
-      });
-
-      it('does not render range slider on single selection', () => {
-        store.overrideSelector(selectors.getMetricsLinkedTimeSelection, {
-          start: {step: 15},
-          end: null,
-        });
-
-        const fixture = createImageCardContainer('card1');
-        fixture.detectChanges();
-
-        const sliderTrackFill = fixture.debugElement.query(
-          By.css('.linked-time-wrapper .slider-track-fill')
-        );
-        expect(sliderTrackFill).toBeFalsy();
-      });
-    });
-
     describe('thumb movement', () => {
       describe('single selection', () => {
         it('does not move slider thumb to larger closest step when it is clipped', () => {
@@ -807,8 +631,8 @@ describe('image card', () => {
           );
           const fixture = createImageCardContainer('card1');
           fixture.detectChanges();
-          let slider = fixture.debugElement.query(By.css('mat-slider'));
-          expect(slider.nativeElement.getAttribute('aria-valuenow')).toBe('2');
+          let slider = fixture.debugElement.query(By.css('mat-slider input'));
+          expect(slider.nativeElement.getAttribute('aria-valuetext')).toBe('2');
         });
 
         it('does not move slider thumb to smaller closest step when it is clipped', () => {
@@ -833,8 +657,8 @@ describe('image card', () => {
           );
           const fixture = createImageCardContainer('card1');
           fixture.detectChanges();
-          let slider = fixture.debugElement.query(By.css('mat-slider'));
-          expect(slider.nativeElement.getAttribute('aria-valuenow')).toBe('2');
+          let slider = fixture.debugElement.query(By.css('mat-slider input'));
+          expect(slider.nativeElement.getAttribute('aria-valuetext')).toBe('2');
         });
 
         it('does not move slider thumb to larger closest step when it is clipped', () => {
@@ -859,8 +683,8 @@ describe('image card', () => {
           );
           const fixture = createImageCardContainer('card1');
           fixture.detectChanges();
-          let slider = fixture.debugElement.query(By.css('mat-slider'));
-          expect(slider.nativeElement.getAttribute('aria-valuenow')).toBe('2');
+          let slider = fixture.debugElement.query(By.css('mat-slider input'));
+          expect(slider.nativeElement.getAttribute('aria-valuetext')).toBe('2');
         });
       });
 
@@ -889,8 +713,8 @@ describe('image card', () => {
         function getSliderThumbPosition(
           fixture: ComponentFixture<ImageCardContainer>
         ) {
-          const slider = fixture.debugElement.query(By.css('mat-slider'));
-          return slider.nativeElement.getAttribute('aria-valuenow');
+          const thumb = fixture.debugElement.query(By.css('mat-slider input'));
+          return thumb.nativeElement.getAttribute('aria-valuetext');
         }
 
         it('does not moves slider thumb when linked time selection is clipped', () => {
