@@ -71,7 +71,7 @@ export class ImageCardComponent {
   }
 
   onSliderInput(value: number) {
-    this.stepIndexChange.emit(value as number);
+    this.stepIndexChange.emit(value);
   }
 
   changeDistinct(change: SimpleChange) {
