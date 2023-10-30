@@ -328,6 +328,42 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
                 downsample=100,
             )
 
+    def test_read_last_scalars(self):
+        multiplexer = self.create_multiplexer()
+        provider = data_provider.MultiplexerDataProvider(
+            multiplexer, self.logdir
+        )
+
+        run_tag_filter = base_provider.RunTagFilter(
+            runs=["waves", "polynomials", "unicorns"],
+            tags=["sine", "square", "cube", "iridescence"],
+        )
+        result = provider.read_last_scalars(
+            self.ctx,
+            experiment_id="unused",
+            plugin_name=scalar_metadata.PLUGIN_NAME,
+            run_tag_filter=run_tag_filter,
+        )
+
+        self.assertCountEqual(result.keys(), ["polynomials", "waves"])
+        self.assertCountEqual(result["polynomials"].keys(), ["square", "cube"])
+        self.assertCountEqual(result["waves"].keys(), ["square", "sine"])
+        for run in result:
+            for tag in result[run]:
+                events = multiplexer.Tensors(run, tag)
+                if events:
+                    last_event = events[-1]
+                    datum = result[run][tag]
+                    self.assertIsInstance(datum, base_provider.ScalarDatum)
+                    self.assertEqual(datum.step, last_event.step)
+                    self.assertEqual(datum.wall_time, last_event.wall_time)
+                    self.assertEqual(
+                        datum.value,
+                        tensor_util.make_ndarray(
+                            last_event.tensor_proto
+                        ).item(),
+                    )
+
     def test_list_tensors_all(self):
         provider = self.create_provider()
         result = provider.list_tensors(

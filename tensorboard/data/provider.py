@@ -248,6 +248,43 @@ class DataProvider(metaclass=abc.ABCMeta):
         """
         pass
 
+    @abc.abstractmethod
+    def read_last_scalars(
+        self,
+        ctx=None,
+        *,
+        experiment_id,
+        plugin_name,
+        run_tag_filter=None,
+    ):
+        """Read the most recent values from scalar time series.
+
+        The most recent scalar value for each tag under each run is retrieved
+        from the latest event (at the latest step).
+
+        Args:
+          ctx: A TensorBoard `RequestContext` value.
+          experiment_id: ID of enclosing experiment.
+          plugin_name: String name of the TensorBoard plugin that created
+            the data to be queried. Required.
+          run_tag_filter: Optional `RunTagFilter` value. If provided, a datum
+            series will only be included in the result if its run and tag
+            both pass this filter. If `None`, all time series will be
+            included.
+
+        The result will only contain keys for run-tag combinations that
+        actually exist, which may not include all entries in the
+        `run_tag_filter`.
+
+        Returns:
+          A nested map `d` such that `d[run][tag]` is a `ScalarDatum`
+          representing the latest scalar in the time series.
+
+        Raises:
+          tensorboard.errors.PublicError: See `DataProvider` class docstring.
+        """
+        pass
+
     def list_tensors(
         self, ctx=None, *, experiment_id, plugin_name, run_tag_filter=None
     ):

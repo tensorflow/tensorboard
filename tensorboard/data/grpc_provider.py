@@ -14,6 +14,7 @@
 # ==============================================================================
 """A data provider that talks to a gRPC server."""
 
+import collections
 import contextlib
 
 import grpc
@@ -146,6 +147,44 @@ class GrpcDataProvider(provider.DataProvider):
                             value=value,
                         )
                         series.append(point)
+            return result
+
+    @timing.log_latency
+    def read_last_scalars(
+        self,
+        ctx,
+        *,
+        experiment_id,
+        plugin_name,
+        run_tag_filter=None,
+    ):
+        with timing.log_latency("build request"):
+            req = data_provider_pb2.ReadScalarsRequest()
+            req.experiment_id = experiment_id
+            req.plugin_filter.plugin_name = plugin_name
+            _populate_rtf(run_tag_filter, req.run_tag_filter)
+            # `ReadScalars` always includes the most recent datum, therefore
+            # downsampling to one means fetching the latest value.
+            req.downsample.num_points = 1
+        with timing.log_latency("_stub.ReadScalars"):
+            with _translate_grpc_error():
+                res = self._stub.ReadScalars(req)
+        with timing.log_latency("build result"):
+            result = collections.defaultdict(dict)
+            for run_entry in res.runs:
+                run_name = run_entry.run_name
+                for tag_entry in run_entry.tags:
+                    d = tag_entry.data
+                    # There should be no more than one datum in
+                    # `tag_entry.data` since downsample was set to 1.
+                    for (step, wt, value) in zip(d.step, d.wall_time, d.value):
+                        result[run_name][
+                            tag_entry.tag_name
+                        ] = provider.ScalarDatum(
+                            step=step,
+                            wall_time=wt,
+                            value=value,
+                        )
             return result
 
     @timing.log_latency

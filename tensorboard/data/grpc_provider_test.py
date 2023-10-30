@@ -230,6 +230,63 @@ class GrpcDataProviderTest(tb_test.TestCase):
         req.downsample.num_points = 4
         self.stub.ReadScalars.assert_called_once_with(req)
 
+    def test_read_last_scalars(self):
+        tag1 = data_provider_pb2.ReadScalarsResponse.TagEntry(
+            tag_name="tag1",
+            data=data_provider_pb2.ScalarData(
+                step=[10000], wall_time=[1234.0], value=[1]
+            ),
+        )
+        tag2 = data_provider_pb2.ReadScalarsResponse.TagEntry(
+            tag_name="tag2",
+            data=data_provider_pb2.ScalarData(
+                step=[10000], wall_time=[1235.0], value=[0.50]
+            ),
+        )
+        run1 = data_provider_pb2.ReadScalarsResponse.RunEntry(
+            run_name="run1", tags=[tag1]
+        )
+        run2 = data_provider_pb2.ReadScalarsResponse.RunEntry(
+            run_name="run2", tags=[tag2]
+        )
+        res = data_provider_pb2.ReadScalarsResponse(runs=[run1, run2])
+        self.stub.ReadScalars.return_value = res
+
+        actual = self.provider.read_last_scalars(
+            self.ctx,
+            experiment_id="123",
+            plugin_name="scalars",
+            run_tag_filter=provider.RunTagFilter(
+                runs=["train", "test", "nope"]
+            ),
+        )
+        expected = {
+            "run1": {
+                "tag1": provider.ScalarDatum(
+                    step=10000, wall_time=1234.0, value=1
+                ),
+            },
+            "run2": {
+                "tag2": provider.ScalarDatum(
+                    step=10000, wall_time=1235.0, value=0.50
+                ),
+            },
+        }
+
+        self.assertEqual(actual, expected)
+
+        expected_req = data_provider_pb2.ReadScalarsRequest(
+            experiment_id="123",
+            plugin_filter=data_provider_pb2.PluginFilter(plugin_name="scalars"),
+            run_tag_filter=data_provider_pb2.RunTagFilter(
+                runs=data_provider_pb2.RunFilter(
+                    names=["nope", "test", "train"]  # sorted
+                )
+            ),
+            downsample=data_provider_pb2.Downsample(num_points=1),
+        )
+        self.stub.ReadScalars.assert_called_once_with(expected_req)
+
     def test_list_tensors(self):
         res = data_provider_pb2.ListTensorsResponse()
         run1 = res.runs.add(run_name="val")

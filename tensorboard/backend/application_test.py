@@ -153,6 +153,9 @@ class FakeDataProvider(provider.DataProvider):
     def read_scalars(self, ctx=None, *, experiment_id):
         raise NotImplementedError()
 
+    def read_last_scalars(self, ctx=None, *, experiment_id, plugin_name):
+        raise NotImplementedError()
+
 
 class HandlingErrorsTest(tb_test.TestCase):
     def test_successful_response_passes_through(self):
