@@ -22,8 +22,33 @@ import unittest
 from unittest import mock
 
 from google.protobuf import timestamp_pb2
+from tensorboard.uploader import test_util
 from tensorboard.uploader import util
 from tensorboard import test as tb_test
+
+
+class RateLimiterTest(tb_test.TestCase):
+    def test_rate_limiting(self):
+        rate_limiter = util.RateLimiter(10)
+        fake_time = test_util.FakeTime(current=1000)
+        with mock.patch.object(rate_limiter, "_time", fake_time):
+            self.assertEqual(1000, fake_time.time())
+            # No sleeping for initial tick.
+            rate_limiter.tick()
+            self.assertEqual(1000, fake_time.time())
+            # Second tick requires a full sleep.
+            rate_limiter.tick()
+            self.assertEqual(1010, fake_time.time())
+            # Third tick requires a sleep just to make up the remaining second.
+            fake_time.sleep(9)
+            self.assertEqual(1019, fake_time.time())
+            rate_limiter.tick()
+            self.assertEqual(1020, fake_time.time())
+            # Fourth tick requires no sleep since we have no remaining seconds.
+            fake_time.sleep(11)
+            self.assertEqual(1031, fake_time.time())
+            rate_limiter.tick()
+            self.assertEqual(1031, fake_time.time())
 
 
 class GetUserConfigDirectoryTest(tb_test.TestCase):
