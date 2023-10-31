@@ -52,6 +52,7 @@ class Context:
           tb_context: base_plugin.TBContext. The "base" context we extend.
         """
         self._tb_context = tb_context
+        self._data_provider = tb_context.data_provider
 
     def experiment_from_metadata(
         self,
@@ -124,6 +125,10 @@ class Context:
     def tb_context(self):
         return self._tb_context
 
+    @property
+    def data_provider(self):
+        return self._data_provider
+
     def _convert_plugin_metadata(self, data_provider_output):
         return {
             run: {
@@ -146,7 +151,7 @@ class Context:
           summary metadata content for the keyed time series.
         """
         return self._convert_plugin_metadata(
-            self._tb_context.data_provider.list_tensors(
+            self._data_provider.list_tensors(
                 ctx,
                 experiment_id=experiment_id,
                 plugin_name=metadata.PLUGIN_NAME,
@@ -165,36 +170,16 @@ class Context:
           summary metadata content for the keyed time series.
         """
         return self._convert_plugin_metadata(
-            self._tb_context.data_provider.list_scalars(
+            self._data_provider.list_scalars(
                 ctx,
                 experiment_id=experiment_id,
                 plugin_name=scalar_metadata.PLUGIN_NAME,
             )
         )
 
-    def read_last_scalars(self, ctx, experiment_id, run_tag_filter):
-        """Reads the most recent values from scalar time series.
-
-        Args:
-          experiment_id: String.
-          run_tag_filter: Required `data.provider.RunTagFilter`, with
-            the semantics as in `read_last_scalars`.
-
-        Returns:
-          A dict `d` such that `d[run][tag]` is a `provider.ScalarDatum`
-          value, with keys only for runs and tags that actually had
-          data, which may be a subset of what was requested.
-        """
-        return self._tb_context.data_provider.read_last_scalars(
-            ctx,
-            experiment_id=experiment_id,
-            plugin_name=scalar_metadata.PLUGIN_NAME,
-            run_tag_filter=run_tag_filter,
-        )
-
     def hparams_from_data_provider(self, ctx, experiment_id, limit):
         """Calls DataProvider.list_hyperparameters() and returns the result."""
-        return self._tb_context.data_provider.list_hyperparameters(
+        return self._data_provider.list_hyperparameters(
             ctx, experiment_ids=[experiment_id], limit=limit
         )
 
@@ -202,7 +187,7 @@ class Context:
         self, ctx, experiment_id, filters, sort, hparams_to_include
     ):
         """Calls DataProvider.read_hyperparameters() and returns the result."""
-        return self._tb_context.data_provider.read_hyperparameters(
+        return self._data_provider.read_hyperparameters(
             ctx,
             experiment_ids=[experiment_id],
             filters=filters,
