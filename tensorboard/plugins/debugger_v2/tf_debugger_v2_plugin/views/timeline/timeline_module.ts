@@ -16,7 +16,7 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
-import {MatLegacySliderModule} from '@angular/material/legacy-slider';
+import {MatSliderModule} from '@angular/material/slider';
 import {ExecutionDataModule} from '../execution_data/execution_data_module';
 import {TimelineComponent} from './timeline_component';
 import {TimelineContainer} from './timeline_container';
@@ -27,7 +27,7 @@ import {TimelineContainer} from './timeline_container';
     CommonModule,
     ExecutionDataModule,
     MatButtonModule,
-    MatLegacySliderModule,
+    MatSliderModule,
   ],
   // TODO(cais): The following two providers are meant to make the mat-slider
   // dragging to work. But the dragging is still not working, needs more
