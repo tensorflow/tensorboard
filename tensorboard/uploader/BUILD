@@ -211,6 +211,7 @@ py_test(
     name = "util_test",
     srcs = ["util_test.py"],
     deps = [
+        ":test_util",
         ":util",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:expect_protobuf_installed",
