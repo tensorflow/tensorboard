@@ -83,7 +83,7 @@ class Context:
           hparams_run_to_tag_to_content: The output from an hparams_metadata()
             call. A dict `d` such that `d[run][tag]` is a `bytes` value with the
             summary metadata content for the keyed time series.
-          data_provider_hparams: The ouput from an hparams_from_data_provider()
+          data_provider_hparams: The output from an hparams_from_data_provider()
             call, corresponding to DataProvider.list_hyperparameters().
             A provider.ListHyperpararametersResult.
           hparams_limit: Optional number of hyperparameter metadata to include in the
