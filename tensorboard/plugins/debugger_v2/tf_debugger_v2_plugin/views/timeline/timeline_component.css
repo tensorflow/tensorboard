@@ -65,14 +65,14 @@ limitations under the License.
   padding: 0;
   position: absolute;
   right: 40px;
+  --mdc-slider-handle-width: 80px;
+  --mdc-slider-handle-height: 16px;
+  --mdc-slider-handle-shape: 5px;
 }
 
-/deep/ .timeline-slider .mat-slider-thumb {
-  border-radius: 5px;
-  right: -40px;
-  width: 80px;
+::ng-deep .mat-mdc-focus-indicator {
+  display: none;
 }
-/* TODO(cais): Apply color #293241 to the thumb and the track. */
 
 .navigation-position-info {
   display: inline-flex;

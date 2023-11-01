@@ -50,9 +50,13 @@ limitations under the License.
         step="1"
         [min]="0"
         [max]="scrollBeginIndexUpperLimit"
-        [value]="scrollBeginIndex"
-        (input)="onSliderChange.emit($event.value)"
-      ></mat-slider>
+      >
+        <input
+          matSliderThumb
+          (valueChange)="onSliderChange.emit($event)"
+          [value]="scrollBeginIndex"
+        />
+      </mat-slider>
     </div>
 
     <div *ngIf="numExecutions" class="execution-timeline">

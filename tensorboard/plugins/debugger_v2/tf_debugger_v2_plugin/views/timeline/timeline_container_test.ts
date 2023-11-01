@@ -270,11 +270,12 @@ describe('Timeline Container', () => {
           );
           expect(sliders.length).toBe(1);
           const [slider] = sliders;
-          expect(slider.attributes['aria-valuemin']).toBe('0');
-          expect(slider.attributes['aria-valuemax']).toBe(
+          expect(slider.attributes['ng-reflect-min']).toBe('0');
+          expect(slider.attributes['ng-reflect-max']).toBe(
             String(numExecutions - displayCount)
           );
-          expect(slider.attributes['aria-valuenow']).toBe(
+          const thumb = slider.query(By.css('input'));
+          expect(thumb.attributes['aria-valuetext']).toBe(
             String(scrollBeginIndex)
           );
         }
@@ -298,9 +299,11 @@ describe('Timeline Container', () => {
       store.setState(createState(debuggerState));
       fixture.detectChanges();
 
-      const slider = fixture.debugElement.query(By.css('.timeline-slider'));
+      const thumb = fixture.debugElement.query(
+        By.css('.timeline-slider input')
+      );
 
-      slider.triggerEventHandler('input', {value: scrollBeginIndex});
+      thumb.triggerEventHandler('valueChange', scrollBeginIndex);
       fixture.detectChanges();
       expect(dispatchSpy).toHaveBeenCalledWith(
         executionScrollToIndex({index: scrollBeginIndex})
