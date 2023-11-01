@@ -31,7 +31,6 @@ from tensorboard.plugins.hparams import json_format_compat
 from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import metrics
 from tensorboard.plugins.hparams import plugin_data_pb2
-from tensorboard.plugins.scalar import metadata as scalar_metadata
 
 
 class Handler:
@@ -149,10 +148,9 @@ class Handler:
         )
 
         all_metric_evals = (
-            self._backend_context.data_provider.read_last_scalars(
+            self._backend_context.read_last_scalars(
                 self._request_context,
-                experiment_id=self._experiment_id,
-                plugin_name=scalar_metadata.PLUGIN_NAME,
+                self._experiment_id,
                 run_tag_filter=None,
             )
             if self._include_metrics
@@ -258,10 +256,9 @@ class Handler:
                 metric_runs.add(run)
                 metric_tags.add(tag)
         all_metric_evals = (
-            self._backend_context.data_provider.read_last_scalars(
+            self._backend_context.read_last_scalars(
                 self._request_context,
-                experiment_id=self._experiment_id,
-                plugin_name=scalar_metadata.PLUGIN_NAME,
+                self._experiment_id,
                 run_tag_filter=provider.RunTagFilter(
                     runs=metric_runs, tags=metric_tags
                 ),
