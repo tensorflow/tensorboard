@@ -260,7 +260,13 @@ class DataProvider(metaclass=abc.ABCMeta):
         """Read the most recent values from scalar time series.
 
         The most recent scalar value for each tag under each run is retrieved
-        from the latest event (at the latest step).
+        from the latest event (at the latest timestamp). Note that this is
+        different from the sorting used in `read_scalars`, which is by step.
+        This was an accidental misalignment that would need considerable effort
+        to change across our implementations, so we're leaving it as is for now.
+        In most cases this should not matter, but if the same log dir is used
+        for multiple runs, this might not match the last data point returned by
+        the `read_scalars`.
 
         Args:
           ctx: A TensorBoard `RequestContext` value.
