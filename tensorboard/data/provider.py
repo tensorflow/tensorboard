@@ -260,7 +260,7 @@ class DataProvider(metaclass=abc.ABCMeta):
         """Read the most recent values from scalar time series.
 
         The most recent scalar value for each tag under each run is retrieved
-        from the latest event (at the latest step).
+        from the latest event (at the latest timestamp).
 
         Args:
           ctx: A TensorBoard `RequestContext` value.
