@@ -83,7 +83,7 @@ class Context:
           hparams_run_to_tag_to_content: The output from an hparams_metadata()
             call. A dict `d` such that `d[run][tag]` is a `bytes` value with the
             summary metadata content for the keyed time series.
-          data_provider_hparams: The ouput from an hparams_from_data_provider()
+          data_provider_hparams: The output from an hparams_from_data_provider()
             call, corresponding to DataProvider.list_hyperparameters().
             A provider.ListHyperpararametersResult.
           hparams_limit: Optional number of hyperparameter metadata to include in the
@@ -178,26 +178,19 @@ class Context:
         Args:
           experiment_id: String.
           run_tag_filter: Required `data.provider.RunTagFilter`, with
-            the semantics as in `read_scalars`.
+            the semantics as in `read_last_scalars`.
 
         Returns:
           A dict `d` such that `d[run][tag]` is a `provider.ScalarDatum`
           value, with keys only for runs and tags that actually had
           data, which may be a subset of what was requested.
         """
-        data_provider_output = self._tb_context.data_provider.read_scalars(
+        return self._tb_context.data_provider.read_last_scalars(
             ctx,
             experiment_id=experiment_id,
             plugin_name=scalar_metadata.PLUGIN_NAME,
             run_tag_filter=run_tag_filter,
-            # `read_scalars` always includes the most recent datum, therefore
-            # downsampling to one means fetching the latest value.
-            downsample=1,
         )
-        return {
-            run: {tag: data[-1] for (tag, data) in tag_to_data.items()}
-            for (run, tag_to_data) in data_provider_output.items()
-        }
 
     def hparams_from_data_provider(self, ctx, experiment_id, limit):
         """Calls DataProvider.list_hyperparameters() and returns the result."""
