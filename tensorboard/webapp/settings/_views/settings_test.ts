@@ -72,13 +72,7 @@ describe('settings test', () => {
         SettingsButtonComponent,
         SettingsButtonContainer,
       ],
-    })
-      .overrideModule(BrowserDynamicTestingModule, {
-        set: {
-          entryComponents: [SettingsDialogContainer],
-        },
-      })
-      .compileComponents();
+    }).compileComponents();
     store = TestBed.inject<Store>(Store) as MockStore;
     dispatchSpy = spyOn(store, 'dispatch');
     overlayContainer = TestBed.inject(OverlayContainer);

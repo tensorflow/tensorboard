@@ -46,7 +46,6 @@ export class ParentComponent {
 @NgModule({
   imports: [CustomizationModule],
   declarations: [ParentComponent],
-  entryComponents: [ParentComponent],
 })
 export class ParentComponentModule {}
 
@@ -65,7 +64,6 @@ export class CustomizableComponent {}
  */
 @NgModule({
   declarations: [CustomizableComponent],
-  entryComponents: [CustomizableComponent],
   providers: [
     {
       provide: CustomizableComponentType,

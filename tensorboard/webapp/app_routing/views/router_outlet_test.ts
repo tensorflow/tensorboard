@@ -59,13 +59,7 @@ describe('router_outlet', () => {
         SecondTestableComponent,
       ],
       schemas: [NO_ERRORS_SCHEMA],
-    })
-      .overrideModule(BrowserDynamicTestingModule, {
-        set: {
-          entryComponents: [FirstTestableComponent, SecondTestableComponent],
-        },
-      })
-      .compileComponents();
+    }).compileComponents();
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getActiveRoute, null);

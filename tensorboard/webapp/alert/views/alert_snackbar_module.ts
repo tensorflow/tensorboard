@@ -26,9 +26,5 @@ import {AlertSnackbarContainer} from './alert_snackbar_container';
   declarations: [AlertSnackbarContainer, AlertDisplaySnackbarContainer],
   exports: [AlertSnackbarContainer],
   imports: [CommonModule, MatButtonModule, MatSnackBarModule],
-  entryComponents: [
-    // Required for non-Ivy Angular apps.
-    AlertDisplaySnackbarContainer,
-  ],
 })
 export class AlertSnackbarModule {}

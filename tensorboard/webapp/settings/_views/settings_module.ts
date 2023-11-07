@@ -40,7 +40,6 @@ import {SettingsDialogContainer} from './settings_dialog_container';
     SettingsDialogContainer,
     SettingsPolymerInteropContainer,
   ],
-  entryComponents: [SettingsDialogContainer],
   imports: [
     CommonModule,
     FormsModule,
