@@ -36,6 +36,7 @@ export {
   HparamSpec as BackendHparamSpec,
   DiscreteDomainHparamSpec,
   IntervalDomainHparamSpec,
+  BackendHparamsExperimentRequest,
   BackendHparamsExperimentResponse,
   BackendListSessionGroupResponse,
   BackendListSessionGroupRequest,

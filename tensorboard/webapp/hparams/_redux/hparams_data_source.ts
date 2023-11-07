@@ -20,6 +20,7 @@ import {
   Domain,
   DomainType,
   BackendListSessionGroupRequest,
+  BackendHparamsExperimentRequest,
   BackendHparamsExperimentResponse,
   BackendHparamSpec,
   DiscreteDomainHparamSpec,
@@ -90,12 +91,20 @@ export class HparamsDataSource {
     experimentIds: string[]
   ): Observable<HparamAndMetricSpec> {
     const formattedExperimentIds = this.formatExperimentIds(experimentIds);
+
+    const experimentRequest: BackendHparamsExperimentRequest = {
+      experimentName: formattedExperimentIds,
+      // The hparams feature generates its own metric data and does not require
+      // the backend to calculate it.
+      includeMetrics: false,
+    };
+
     return this.http
       .post<BackendHparamsExperimentResponse>(
         `/${this.getPrefix(
           experimentIds
         )}/${formattedExperimentIds}/${HPARAMS_HTTP_PATH_PREFIX}/experiment`,
-        {experimentName: formattedExperimentIds},
+        experimentRequest,
         {},
         'request'
       )
@@ -151,6 +160,9 @@ export class HparamsDataSource {
       startIndex: 0,
       // arbitrary large number so it does not get clipped.
       sliceSize: 1e6,
+      // The hparams feature generates its own metric data and does not require
+      // the backend to calculate it.
+      includeMetrics: false,
     };
 
     return this.http
