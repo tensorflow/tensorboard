@@ -26,5 +26,4 @@ import {FeatureFlagDialogModule} from './feature_flag_dialog_module';
   imports: [CommonModule, FeatureFlagDialogModule],
   exports: [FeatureFlagModalTriggerContainer],
 })
-export class FeatureFlagModalTriggerModule {
-}
+export class FeatureFlagModalTriggerModule {}
