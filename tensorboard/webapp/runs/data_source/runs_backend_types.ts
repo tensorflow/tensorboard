@@ -85,6 +85,11 @@ export function isDiscreteDomainHparamSpec(
   return spec.hasOwnProperty('domainDiscrete');
 }
 
+export interface BackendHparamsExperimentRequest {
+  experimentName: string;
+  includeMetrics?: boolean;
+}
+
 export interface BackendHparamsExperimentResponse {
   description: string;
   hparamInfos: HparamSpec[];
@@ -108,6 +113,7 @@ export interface BackendListSessionGroupRequest {
   colParams: Array<HparamsColFilterParams | MetricsColFilterParams>;
   startIndex: number;
   sliceSize: number;
+  includeMetrics?: boolean;
 }
 
 export interface Session {
