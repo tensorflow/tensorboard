@@ -92,7 +92,6 @@ export class RouteRegistryModule {
    *   imports: [
    *     RouteRegistryModule.registerRoutes(routesProvider),
    *   ],
-   *   entryComponents: [ScalarsDashboard]
    * })
    */
   static registerRoutes(
