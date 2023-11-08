@@ -5,16 +5,6 @@ package(default_visibility = ["//tensorboard:internal"])
 licenses(["notice"])
 
 tf_sass_binary(
-    name = "runs_table_styles",
-    src = "runs_table_component.scss",
-    strict_deps = False,
-    deps = [
-        "//tensorboard/webapp:angular_material_sass_deps",
-        "//tensorboard/webapp/theme",
-    ],
-)
-
-tf_sass_binary(
     name = "runs_group_menu_button_styles",
     src = "runs_group_menu_button_component.scss",
     strict_deps = False,
@@ -61,7 +51,6 @@ tf_ng_module(
         "runs_data_table.ts",
         "runs_group_menu_button_component.ts",
         "runs_group_menu_button_container.ts",
-        "runs_table_component.ts",
         "runs_table_container.ts",
         "runs_table_module.ts",
         "sorting_utils.ts",
@@ -70,10 +59,8 @@ tf_ng_module(
         ":regex_edit_dialog_styles",
         ":runs_data_table_styles",
         ":runs_group_menu_button_styles",
-        ":runs_table_styles",
         "regex_edit_dialog.ng.html",
         "runs_data_table.ng.html",
-        "runs_table_component.ng.html",
         "runs_group_menu_button_component.ng.html",
     ],
     deps = [

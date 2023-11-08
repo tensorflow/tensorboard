@@ -18,10 +18,9 @@ limitations under the License.
 
 import {NamespaceContextedState} from '../../app_routing/namespaced_state_reducer_helper';
 import {LoadState} from '../../types/data';
-import {SortDirection} from '../../types/ui';
 import {ColumnHeader, SortingInfo} from '../../widgets/data_table/types';
 import {HparamValue} from '../data_source/runs_data_source_types';
-import {GroupBy, GroupByKey, SortKey} from '../types';
+import {GroupBy, GroupByKey} from '../types';
 
 export {Domain, DomainType} from '../data_source/runs_data_source_types';
 
@@ -74,8 +73,6 @@ export type RunsDataState = NamespaceContextedState<
 >;
 
 export interface RunsUiNamespacedState {
-  paginationOption: {pageIndex: number; pageSize: number};
-  sort: {key: SortKey | null; direction: SortDirection};
   /**
    * Indicates whether the run is selected.
    */

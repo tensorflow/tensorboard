@@ -24,9 +24,8 @@ import {
 } from '../../hparams/testing';
 import {buildMockState} from '../../testing/utils';
 import {DataLoadState} from '../../types/data';
-import {SortDirection} from '../../types/ui';
 import {ColumnHeaderType, SortingOrder} from '../../widgets/data_table/types';
-import {GroupByKey, SortType} from '../types';
+import {GroupByKey} from '../types';
 import * as selectors from './runs_selectors';
 import {buildRun, buildRunsState, buildStateFromRunsState} from './testing';
 
@@ -790,29 +789,6 @@ describe('runs_selectors', () => {
     });
   });
 
-  describe('#getRunSelectorPaginationOption', () => {
-    beforeEach(() => {
-      // Clear the memoization.
-      selectors.getRunSelectorPaginationOption.release();
-    });
-
-    it('returns pagination option', () => {
-      const state = buildStateFromRunsState(
-        buildRunsState(undefined, {
-          paginationOption: {
-            pageIndex: 1,
-            pageSize: 20,
-          },
-        })
-      );
-
-      expect(selectors.getRunSelectorPaginationOption(state)).toEqual({
-        pageIndex: 1,
-        pageSize: 20,
-      });
-    });
-  });
-
   describe('#getRunSelectorRegexFilter', () => {
     beforeEach(() => {
       // Clear the memoization.
@@ -825,29 +801,6 @@ describe('runs_selectors', () => {
       );
 
       expect(selectors.getRunSelectorRegexFilter(state)).toBe('meow');
-    });
-  });
-
-  describe('#getRunSelectorSort', () => {
-    beforeEach(() => {
-      // Clear the memoization.
-      selectors.getRunSelectorSort.release();
-    });
-
-    it('returns sort options', () => {
-      const state = buildStateFromRunsState(
-        buildRunsState(undefined, {
-          sort: {
-            key: {type: SortType.RUN_NAME},
-            direction: SortDirection.UNSET,
-          },
-        })
-      );
-
-      expect(selectors.getRunSelectorSort(state)).toEqual({
-        key: {type: SortType.RUN_NAME},
-        direction: SortDirection.UNSET,
-      });
     });
   });
 

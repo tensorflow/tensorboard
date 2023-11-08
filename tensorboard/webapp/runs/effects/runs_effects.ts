@@ -40,12 +40,8 @@ import {
 import {DataLoadState, LoadState} from '../../types/data';
 import * as actions from '../actions';
 import * as hparamsActions from '../../hparams/_redux/hparams_actions';
-import {
-  HparamsAndMetadata,
-  Run,
-  RunsDataSource,
-} from '../data_source/runs_data_source_types';
-import {ExperimentIdToRunsAndMetadata} from '../types';
+import {Run, RunsDataSource} from '../data_source/runs_data_source_types';
+import {ExperimentIdToRuns} from '../types';
 import {ColumnHeaderType} from '../../widgets/data_table/types';
 
 /**
@@ -241,25 +237,24 @@ export class RunsEffects {
         return forkJoin(fetchOrGetRuns);
       }),
       map((runsAndMedataList) => {
-        const newRunsAndMetadata = {} as ExperimentIdToRunsAndMetadata;
+        const newRuns: ExperimentIdToRuns = {};
         const runsForAllExperiments = [];
 
         for (const runsAndMedata of runsAndMedataList) {
           runsForAllExperiments.push(...runsAndMedata.runs);
           if (runsAndMedata.fromRemote) {
-            newRunsAndMetadata[runsAndMedata.experimentId] = {
+            newRuns[runsAndMedata.experimentId] = {
               runs: runsAndMedata.runs,
-              metadata: runsAndMedata.metadata,
             };
           }
         }
-        return {newRunsAndMetadata, runsForAllExperiments};
+        return {newRuns, runsForAllExperiments};
       }),
-      tap(({newRunsAndMetadata, runsForAllExperiments}) => {
+      tap(({newRuns, runsForAllExperiments}) => {
         this.store.dispatch(
           actions.fetchRunsSucceeded({
             experimentIds,
-            newRunsAndMetadata,
+            newRuns,
             runsForAllExperiments,
           })
         );
@@ -300,18 +295,13 @@ export class RunsEffects {
     fromRemote: true;
     experimentId: string;
     runs: Run[];
-    metadata: HparamsAndMetadata;
   }> {
-    return forkJoin([
-      this.runsDataSource.fetchRuns(experimentId),
-      this.runsDataSource.fetchHparamsMetadata(experimentId),
-    ]).pipe(
-      map(([runs, metadata]) => {
+    return this.runsDataSource.fetchRuns(experimentId).pipe(
+      map((runs) => {
         return {
           fromRemote: true,
           experimentId,
           runs: runs as Run[],
-          metadata: metadata as HparamsAndMetadata,
         };
       })
     );

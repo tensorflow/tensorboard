@@ -21,11 +21,9 @@ import {
 import {RouteKind} from '../../app_routing/types';
 import {deepFreeze} from '../../testing/lang';
 import {DataLoadState} from '../../types/data';
-import {SortDirection} from '../../types/ui';
 import {ColumnHeaderType, SortingOrder} from '../../widgets/data_table/types';
 import * as actions from '../actions';
-import {buildHparamsAndMetadata} from '../data_source/testing';
-import {GroupByKey, SortType, URLDeserializedState} from '../types';
+import {GroupByKey, URLDeserializedState} from '../types';
 import * as runsReducers from './runs_reducers';
 import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT, Run, RunsState} from './runs_types';
 import {buildRun, buildRunsState} from './testing';
@@ -152,17 +150,12 @@ describe('runs_reducers', () => {
       const action = actions.fetchRunsSucceeded({
         experimentIds: [],
         runsForAllExperiments: [],
-        newRunsAndMetadata: {
+        newRuns: {
           eid1: {
             runs: [
               {id: 'rid1', name: 'Run 1', startTime: 1},
               {id: 'rid2', name: 'Run 2', startTime: 1},
             ],
-            metadata: buildHparamsAndMetadata({
-              runToHparamsAndMetrics: {
-                rid1: {hparams: [{name: 'foo', value: 'bar'}], metrics: []},
-              },
-            }),
           },
         },
       });
@@ -180,8 +173,8 @@ describe('runs_reducers', () => {
           id: 'rid1',
           name: 'Run 1',
           startTime: 1,
-          hparams: [{name: 'foo', value: 'bar'}],
-          metrics: [],
+          hparams: null,
+          metrics: null,
         },
         rid2: {
           id: 'rid2',
@@ -222,7 +215,7 @@ describe('runs_reducers', () => {
           buildRun({id: 'gamma'}),
           buildRun({id: 'lambda'}),
         ],
-        newRunsAndMetadata: {
+        newRuns: {
           eid1: {
             runs: [
               buildRun({id: 'baz'}),
@@ -233,7 +226,6 @@ describe('runs_reducers', () => {
               buildRun({id: 'gamma'}),
               buildRun({id: 'lambda'}),
             ],
-            metadata: buildHparamsAndMetadata({}),
           },
         },
       });
@@ -295,14 +287,13 @@ describe('runs_reducers', () => {
             buildRun({id: 'gamma'}),
             buildRun({id: 'lambda'}),
           ],
-          newRunsAndMetadata: {
+          newRuns: {
             eid1: {
               runs: [
                 buildRun({id: 'baz'}),
                 buildRun({id: 'foo'}),
                 buildRun({id: 'qaz'}),
               ],
-              metadata: buildHparamsAndMetadata({}),
             },
             eid2: {
               runs: [
@@ -311,7 +302,6 @@ describe('runs_reducers', () => {
                 buildRun({id: 'gamma'}),
                 buildRun({id: 'lambda'}),
               ],
-              metadata: buildHparamsAndMetadata({}),
             },
           },
         });
@@ -350,7 +340,7 @@ describe('runs_reducers', () => {
             buildRun({id: 'eid2/alpha', name: 'alpha'}),
             buildRun({id: 'eid2/delta', name: 'delta'}),
           ],
-          newRunsAndMetadata: {},
+          newRuns: {},
         });
 
         const nextState = runsReducers.reducers(state, action);
@@ -385,10 +375,9 @@ describe('runs_reducers', () => {
         actions.fetchRunsSucceeded({
           experimentIds: ['b'],
           runsForAllExperiments: [...existingRuns, ...fewNewRuns],
-          newRunsAndMetadata: {
+          newRuns: {
             b: {
               runs: fewNewRuns,
-              metadata: buildHparamsAndMetadata({}),
             },
           },
         })
@@ -418,10 +407,9 @@ describe('runs_reducers', () => {
         actions.fetchRunsSucceeded({
           experimentIds: ['b'],
           runsForAllExperiments: [...existingRuns, ...manyNewRuns],
-          newRunsAndMetadata: {
+          newRuns: {
             b: {
               runs: manyNewRuns,
-              metadata: buildHparamsAndMetadata({}),
             },
           },
         })
@@ -684,30 +672,6 @@ describe('runs_reducers', () => {
     });
   });
 
-  describe('runSelectorPaginationOptionChanged', () => {
-    it('updates the pagination option', () => {
-      const state = buildRunsState(undefined, {
-        paginationOption: {
-          pageSize: 20,
-          pageIndex: 2,
-        },
-      });
-
-      const nextState = runsReducers.reducers(
-        state,
-        actions.runSelectorPaginationOptionChanged({
-          pageSize: 10,
-          pageIndex: 0,
-        })
-      );
-
-      expect(nextState.ui.paginationOption).toEqual({
-        pageSize: 10,
-        pageIndex: 0,
-      });
-    });
-  });
-
   describe('runSelectorRegexFilterChanged', () => {
     it('updates the regex filter', () => {
       const state = buildRunsState(
@@ -723,49 +687,6 @@ describe('runs_reducers', () => {
       );
 
       expect(nextState.data.regexFilter).toBe('foo rocks');
-    });
-
-    it('resets the pagination index', () => {
-      const state = buildRunsState(
-        {regexFilter: 'foo'},
-        {
-          paginationOption: {
-            pageSize: 10,
-            pageIndex: 100,
-          },
-        }
-      );
-
-      const nextState = runsReducers.reducers(
-        state,
-        actions.runSelectorRegexFilterChanged({regexString: 'bar'})
-      );
-
-      expect(nextState.ui.paginationOption.pageIndex).toBe(0);
-    });
-  });
-
-  describe('runSelectorSortChanged', () => {
-    it('updates the sort changed', () => {
-      const state = buildRunsState(undefined, {
-        sort: {
-          key: null,
-          direction: SortDirection.UNSET,
-        },
-      });
-
-      const nextState = runsReducers.reducers(
-        state,
-        actions.runSelectorSortChanged({
-          key: {type: SortType.EXPERIMENT_NAME},
-          direction: SortDirection.ASC,
-        })
-      );
-
-      expect(nextState.ui.sort).toEqual({
-        key: {type: SortType.EXPERIMENT_NAME},
-        direction: SortDirection.ASC,
-      });
     });
   });
 

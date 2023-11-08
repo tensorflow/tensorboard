@@ -17,9 +17,8 @@ limitations under the License.
  */
 
 import {createAction, props} from '@ngrx/store';
-import {SortDirection} from '../../types/ui';
 import {Run} from '../data_source/runs_data_source_types';
-import {ExperimentIdToRunsAndMetadata, GroupBy, SortKey} from '../types';
+import {ExperimentIdToRuns, GroupBy} from '../types';
 import {ColumnHeader, SortingInfo} from '../../widgets/data_table/types';
 
 /**
@@ -40,7 +39,7 @@ export const fetchRunsSucceeded = createAction(
   props<{
     experimentIds: string[];
     runsForAllExperiments: Run[];
-    newRunsAndMetadata: ExperimentIdToRunsAndMetadata;
+    newRuns: ExperimentIdToRuns;
   }>()
 );
 
@@ -66,16 +65,6 @@ export const singleRunSelected = createAction(
 export const runPageSelectionToggled = createAction(
   '[Runs] Run Page Selection Toggled',
   props<{runIds: string[]}>()
-);
-
-export const runSelectorPaginationOptionChanged = createAction(
-  '[Runs] Run Selector Pagination Option Changed',
-  props<{pageSize: number; pageIndex: number}>()
-);
-
-export const runSelectorSortChanged = createAction(
-  '[Runs] Run Selector Sort Changed',
-  props<{key: SortKey; direction: SortDirection}>()
 );
 
 export const runSelectorRegexFilterChanged = createAction(

@@ -29,7 +29,6 @@ import * as coreActions from '../../core/actions';
 import * as hparamsActions from '../../hparams/_redux/hparams_actions';
 import {
   getActiveRoute,
-  getEnableHparamsInTimeSeries,
   getExperimentIdsFromRoute,
   getRuns,
   getRunsLoadState,
@@ -37,9 +36,8 @@ import {
 import {provideMockTbStore} from '../../testing/utils';
 import {DataLoadState} from '../../types/data';
 import * as actions from '../actions';
-import {HparamsAndMetadata, Run} from '../data_source/runs_data_source_types';
+import {Run} from '../data_source/runs_data_source_types';
 import {
-  buildHparamsAndMetadata,
   provideTestingRunsDataSource,
   TestingRunsDataSource,
 } from '../data_source/testing';
@@ -61,8 +59,6 @@ describe('runs_effects', () => {
   let store: MockStore<State>;
   let action: ReplaySubject<Action>;
   let fetchRunsSubjects: Array<ReplaySubject<Run[]>>;
-  let fetchHparamsMetadataSubjects: Array<ReplaySubject<HparamsAndMetadata>>;
-  let dispatchSpy: jasmine.Spy;
   let actualActions: Action[];
   let selectSpy: jasmine.Spy;
 
@@ -76,15 +72,6 @@ describe('runs_effects', () => {
     expect(fetchRunsSubjects.length).toBeGreaterThan(requestIndex);
     fetchRunsSubjects[requestIndex].error(new ErrorEvent('error'));
     fetchRunsSubjects[requestIndex].complete();
-  }
-
-  function flushFetchHparamsMetadata(
-    requestIndex: number,
-    metadata: HparamsAndMetadata
-  ) {
-    expect(fetchHparamsMetadataSubjects.length).toBeGreaterThan(requestIndex);
-    fetchHparamsMetadataSubjects[requestIndex].next(metadata);
-    fetchHparamsMetadataSubjects[requestIndex].complete();
   }
 
   beforeEach(async () => {
@@ -103,7 +90,7 @@ describe('runs_effects', () => {
     selectSpy = spyOn(store, 'select').and.callThrough();
 
     actualActions = [];
-    dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
+    spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
     });
     effects = TestBed.inject(RunsEffects);
@@ -115,20 +102,12 @@ describe('runs_effects', () => {
       return subject;
     });
 
-    fetchHparamsMetadataSubjects = [];
-    spyOn(runsDataSource, 'fetchHparamsMetadata').and.callFake(() => {
-      const subject = new ReplaySubject<HparamsAndMetadata>(1);
-      fetchHparamsMetadataSubjects.push(subject);
-      return subject;
-    });
-
     store.overrideSelector(getRunsLoadState, {
       state: DataLoadState.NOT_LOADED,
       lastLoadedTimeInMs: 0,
     });
     store.overrideSelector(getExperimentIdsFromRoute, null);
     store.overrideSelector(getActiveRoute, buildRoute());
-    store.overrideSelector(getEnableHparamsInTimeSeries, false);
   });
 
   afterEach(() => {
@@ -151,8 +130,7 @@ describe('runs_effects', () => {
       },
     ].forEach(({runLoadState}) => {
       it(
-        'fetches runs and hparams when runLoadState is ' +
-          DataLoadState[runLoadState],
+        'fetches runs when runLoadState is ' + DataLoadState[runLoadState],
         () => {
           store.overrideSelector(getRunsLoadState, {
             state: runLoadState,
@@ -174,14 +152,6 @@ describe('runs_effects', () => {
             }),
           ];
           flushFetchRuns(0, createRuns());
-          flushFetchHparamsMetadata(
-            0,
-            buildHparamsAndMetadata({
-              runToHparamsAndMetrics: {
-                'a/runA': {hparams: [{name: 'param', value: 1}], metrics: []},
-              },
-            })
-          );
 
           const expectedExperimentId = 'a';
 
@@ -193,17 +163,9 @@ describe('runs_effects', () => {
             actions.fetchRunsSucceeded({
               experimentIds: ['a'],
               runsForAllExperiments: createRuns(),
-              newRunsAndMetadata: {
+              newRuns: {
                 [expectedExperimentId]: {
                   runs: createRuns(),
-                  metadata: buildHparamsAndMetadata({
-                    runToHparamsAndMetrics: {
-                      'a/runA': {
-                        hparams: [{name: 'param', value: 1}],
-                        metrics: [],
-                      },
-                    },
-                  }),
                 },
               },
             }),
@@ -254,25 +216,6 @@ describe('runs_effects', () => {
       ]);
     });
 
-    it('fires FAILED action when failed to fetch hparams', () => {
-      action.next(actions.runTableShown({experimentIds: ['a']}));
-      const expectedExperimentId = 'a';
-
-      fetchHparamsMetadataSubjects[0].error(new ErrorEvent('error'));
-      fetchHparamsMetadataSubjects[0].complete();
-
-      expect(actualActions).toEqual([
-        actions.fetchRunsRequested({
-          experimentIds: [expectedExperimentId],
-          requestedExperimentIds: [expectedExperimentId],
-        }),
-        actions.fetchRunsFailed({
-          experimentIds: [expectedExperimentId],
-          requestedExperimentIds: [expectedExperimentId],
-        }),
-      ]);
-    });
-
     it('allows concurrent requests that arrive out of order', () => {
       const firstExperimentId = 'a';
       const secondExperimentId = 'b';
@@ -298,9 +241,7 @@ describe('runs_effects', () => {
       // fetchRuns arrived out of order.
       expect(fetchRunsSubjects.length).toBe(2);
       flushFetchRuns(1, [RUN_B, RUN_B_1]);
-      flushFetchHparamsMetadata(1, buildHparamsAndMetadata({}));
       flushFetchRuns(0, [RUN_A]);
-      flushFetchHparamsMetadata(0, buildHparamsAndMetadata({}));
 
       expect(actualActions).toEqual([
         actions.fetchRunsRequested({
@@ -314,20 +255,18 @@ describe('runs_effects', () => {
         actions.fetchRunsSucceeded({
           experimentIds: ['b'],
           runsForAllExperiments: [RUN_B, RUN_B_1],
-          newRunsAndMetadata: {
+          newRuns: {
             [secondExperimentId]: {
               runs: [RUN_B, RUN_B_1],
-              metadata: buildHparamsAndMetadata({}),
             },
           },
         }),
         actions.fetchRunsSucceeded({
           experimentIds: ['a'],
           runsForAllExperiments: [RUN_A],
-          newRunsAndMetadata: {
+          newRuns: {
             [firstExperimentId]: {
               runs: [RUN_A],
-              metadata: buildHparamsAndMetadata({}),
             },
           },
         }),
@@ -346,7 +285,7 @@ describe('runs_effects', () => {
       {specAction: coreActions.reload, specName: 'auto reload'},
     ].forEach(({specAction, specName}) => {
       describe(`on ${specName}`, () => {
-        it(`fetches runs and hparams based on expIds in the route`, () => {
+        it(`fetches runs based on expIds in the route`, () => {
           store.overrideSelector(
             getActiveRoute,
             buildCompareRoute(['exp1:123', 'exp2:456'])
@@ -369,9 +308,7 @@ describe('runs_effects', () => {
           action.next(specAction());
           // Flush second request first to spice things up.
           flushFetchRuns(1, createBarRuns());
-          flushFetchHparamsMetadata(1, buildHparamsAndMetadata({}));
           flushFetchRuns(0, createFooRuns());
-          flushFetchHparamsMetadata(0, buildHparamsAndMetadata({}));
 
           expect(actualActions).toEqual([
             actions.fetchRunsRequested({
@@ -381,14 +318,12 @@ describe('runs_effects', () => {
             actions.fetchRunsSucceeded({
               experimentIds: ['123', '456'],
               runsForAllExperiments: [...createFooRuns(), ...createBarRuns()],
-              newRunsAndMetadata: {
+              newRuns: {
                 456: {
                   runs: createBarRuns(),
-                  metadata: buildHparamsAndMetadata({}),
                 },
                 123: {
                   runs: createFooRuns(),
-                  metadata: buildHparamsAndMetadata({}),
                 },
               },
             }),
@@ -440,7 +375,6 @@ describe('runs_effects', () => {
 
           action.next(specAction());
           flushFetchRuns(0, createBarRuns());
-          flushFetchHparamsMetadata(0, buildHparamsAndMetadata({}));
 
           expect(actualActions).toEqual([
             actions.fetchRunsRequested({
@@ -465,10 +399,9 @@ describe('runs_effects', () => {
             actions.fetchRunsSucceeded({
               experimentIds: ['123', '456'],
               runsForAllExperiments: [...createFooRuns(), ...createBarRuns()],
-              newRunsAndMetadata: {
+              newRuns: {
                 456: {
                   runs: createBarRuns(),
-                  metadata: buildHparamsAndMetadata({}),
                 },
               },
             }),
@@ -541,7 +474,6 @@ describe('runs_effects', () => {
 
         action.next(buildNavigatedAction());
         flushFetchRuns(0, createBarRuns());
-        flushFetchHparamsMetadata(0, buildHparamsAndMetadata({}));
 
         expect(actualActions).toEqual([
           actions.fetchRunsRequested({
@@ -551,10 +483,9 @@ describe('runs_effects', () => {
           actions.fetchRunsSucceeded({
             experimentIds: ['123', '456'],
             runsForAllExperiments: [...createFooRuns(), ...createBarRuns()],
-            newRunsAndMetadata: {
+            newRuns: {
               456: {
                 runs: createBarRuns(),
-                metadata: buildHparamsAndMetadata({}),
               },
             },
           }),
@@ -591,7 +522,7 @@ describe('runs_effects', () => {
           actions.fetchRunsSucceeded({
             experimentIds: ['123'],
             runsForAllExperiments: [...createFooRuns()],
-            newRunsAndMetadata: {},
+            newRuns: {},
           }),
         ]);
 
@@ -632,7 +563,7 @@ describe('runs_effects', () => {
           actions.fetchRunsSucceeded({
             experimentIds: ['foo'],
             runsForAllExperiments: [...createFooRuns()],
-            newRunsAndMetadata: {},
+            newRuns: {},
           }),
         ]);
       });
@@ -650,8 +581,6 @@ describe('runs_effects', () => {
 
       flushRunsError(0);
       flushFetchRuns(1, [createRun({id: 'bar/runB', name: 'runB'})]);
-      flushFetchHparamsMetadata(0, buildHparamsAndMetadata({}));
-      flushFetchHparamsMetadata(1, buildHparamsAndMetadata({}));
 
       expect(actualActions).toEqual([
         actions.fetchRunsRequested({
@@ -694,9 +623,7 @@ describe('runs_effects', () => {
       action.next(buildNavigatedAction());
 
       flushFetchRuns(1, createBarRuns());
-      flushFetchHparamsMetadata(1, buildHparamsAndMetadata({}));
       flushFetchRuns(0, createFooRuns());
-      flushFetchHparamsMetadata(0, buildHparamsAndMetadata({}));
 
       expect(actualActions).toEqual([
         actions.fetchRunsRequested({
@@ -710,15 +637,15 @@ describe('runs_effects', () => {
         actions.fetchRunsSucceeded({
           experimentIds: ['456'],
           runsForAllExperiments: createBarRuns(),
-          newRunsAndMetadata: {
-            456: {runs: createBarRuns(), metadata: buildHparamsAndMetadata({})},
+          newRuns: {
+            456: {runs: createBarRuns()},
           },
         }),
         actions.fetchRunsSucceeded({
           experimentIds: ['123'],
           runsForAllExperiments: createFooRuns(),
-          newRunsAndMetadata: {
-            123: {runs: createFooRuns(), metadata: buildHparamsAndMetadata({})},
+          newRuns: {
+            123: {runs: createFooRuns()},
           },
         }),
       ]);
@@ -735,37 +662,7 @@ describe('runs_effects', () => {
       action.next(buildNavigatedAction());
 
       flushRunsError(0);
-      flushFetchHparamsMetadata(0, buildHparamsAndMetadata({}));
       flushFetchRuns(1, []);
-      flushFetchHparamsMetadata(1, buildHparamsAndMetadata({}));
-
-      expect(actualActions).toEqual([
-        actions.fetchRunsRequested({
-          experimentIds: ['123', '456'],
-          requestedExperimentIds: ['123', '456'],
-        }),
-        actions.fetchRunsFailed({
-          experimentIds: ['123', '456'],
-          requestedExperimentIds: ['123', '456'],
-        }),
-      ]);
-    });
-
-    it('fires FAILED action when at least one hparams fetch failed', () => {
-      store.overrideSelector(
-        getActiveRoute,
-        buildCompareRoute(['exp1:123', 'exp2:456'])
-      );
-      store.overrideSelector(getExperimentIdsFromRoute, ['123', '456']);
-      store.refreshState();
-
-      action.next(buildNavigatedAction());
-
-      flushFetchRuns(0, [createRun({id: 'foo/runA', name: 'runA'})]);
-      fetchHparamsMetadataSubjects[0].error(new ErrorEvent('error'));
-      fetchHparamsMetadataSubjects[0].complete();
-      flushFetchRuns(1, []);
-      flushFetchHparamsMetadata(1, buildHparamsAndMetadata({}));
 
       expect(actualActions).toEqual([
         actions.fetchRunsRequested({
@@ -848,11 +745,9 @@ describe('runs_effects', () => {
 
         // Flush the request for `bar`'s runs.
         flushFetchRuns(1, createBarRuns());
-        flushFetchHparamsMetadata(1, buildHparamsAndMetadata({}));
 
         // Flush the request for `foo`'s runs.
         flushFetchRuns(0, createFooAfterRuns());
-        flushFetchHparamsMetadata(0, buildHparamsAndMetadata({}));
         runsSubject.next(createFooAfterRuns());
         runsLoadStateSubject.next({
           state: DataLoadState.LOADED,
@@ -871,10 +766,9 @@ describe('runs_effects', () => {
           actions.fetchRunsSucceeded({
             experimentIds: ['foo'],
             runsForAllExperiments: [...createFooAfterRuns()],
-            newRunsAndMetadata: {
+            newRuns: {
               foo: {
                 runs: createFooAfterRuns(),
-                metadata: buildHparamsAndMetadata({}),
               },
             },
           }),
@@ -884,10 +778,9 @@ describe('runs_effects', () => {
               ...createFooAfterRuns(),
               ...createBarRuns(),
             ],
-            newRunsAndMetadata: {
+            newRuns: {
               bar: {
                 runs: createBarRuns(),
-                metadata: buildHparamsAndMetadata({}),
               },
             },
           }),
@@ -924,7 +817,6 @@ describe('runs_effects', () => {
         action.next(coreActions.manualReload());
 
         flushRunsError(0);
-        flushFetchHparamsMetadata(0, buildHparamsAndMetadata({}));
         runsLoadStateSubject.next({
           state: DataLoadState.FAILED,
           lastLoadedTimeInMs: 0,
