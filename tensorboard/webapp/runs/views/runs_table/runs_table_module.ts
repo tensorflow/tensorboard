@@ -65,7 +65,6 @@ import {RunsTableContainer} from './runs_table_container';
     AlertModule,
   ],
   exports: [RunsTableContainer],
-  entryComponents: [RegexEditDialogContainer],
   declarations: [
     RegexEditDialogComponent,
     RegexEditDialogContainer,

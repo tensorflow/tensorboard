@@ -26,6 +26,5 @@ import {FeatureFlagDialogContainer} from './feature_flag_dialog_container';
   declarations: [FeatureFlagDialogComponent, FeatureFlagDialogContainer],
   imports: [CommonModule, MatButtonModule, MatSelectModule],
   exports: [FeatureFlagDialogContainer],
-  entryComponents: [FeatureFlagDialogContainer],
 })
 export class FeatureFlagDialogModule {}

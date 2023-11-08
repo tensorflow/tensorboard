@@ -189,6 +189,5 @@ export function getRangeSelectionHeadersFactory() {
       useValue: METRICS_SETTINGS_DEFAULT,
     },
   ],
-  entryComponents: [MetricsDashboardContainer],
 })
 export class MetricsModule {}

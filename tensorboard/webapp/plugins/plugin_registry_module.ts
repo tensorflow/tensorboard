@@ -53,7 +53,6 @@ export class PluginRegistryModule {
    *   imports: [
    *     PluginRegistryModule.forPlugin('scalars', ScalarsDashboard)
    *   ],
-   *   entryComponents: [ScalarsDashboard]
    * })
    */
   static forPlugin(

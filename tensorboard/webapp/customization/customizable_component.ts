@@ -67,7 +67,6 @@ import {
  *
  *    @NgModule({
  *      declarations: [MyCustomButtonComponent],
- *      entryComponents: [MyCustomButtonComponent],
  *      providers: [{
  *        provide: CustomizableButton,
  *        useClass: MyCustomButtonComponent,

@@ -37,6 +37,5 @@ import {DataDownloadDialogContainer} from './data_download_dialog_container';
     MatSelectModule,
     MetricsDataSourceModule,
   ],
-  entryComponents: [DataDownloadDialogContainer],
 })
 export class DataDownloadModule {}

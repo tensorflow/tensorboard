@@ -25,6 +25,5 @@ import {TensorBoardWrapperComponent} from './tb_wrapper_component';
   declarations: [TensorBoardWrapperComponent],
   imports: [CommonModule, PluginsModule, ReloaderModule],
   exports: [TensorBoardWrapperComponent],
-  entryComponents: [TensorBoardWrapperComponent],
 })
 export class TensorBoardWrapperModule {}

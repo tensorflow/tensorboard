@@ -52,6 +52,5 @@ import {TimelineModule} from './views/timeline/timeline_module';
     PluginRegistryModule.forPlugin(PLUGIN_ID, DebuggerContainer),
   ],
   exports: [DebuggerContainer],
-  entryComponents: [DebuggerContainer],
 })
 export class DebuggerModule {}
