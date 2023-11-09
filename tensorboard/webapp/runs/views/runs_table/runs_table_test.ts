@@ -47,7 +47,6 @@ import {DataLoadState} from '../../../types/data';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';
 import {RangeInputModule} from '../../../widgets/range_input/range_input_module';
-import {runTableShown} from '../../actions';
 import {DomainType} from '../../data_source/runs_data_source_types';
 import {buildRun} from '../../store/testing';
 import {RunsDataTable} from './runs_data_table';
@@ -128,20 +127,6 @@ describe('runs_table', () => {
     });
     store.overrideSelector(getActiveRoute, buildExperimentRouteFromId('123'));
     dispatchSpy = spyOn(store, 'dispatch');
-  });
-
-  it('dispatches `runTableShown` when shown', () => {
-    const fixture = createComponent(
-      ['book'],
-      [RunsTableColumn.EXPERIMENT_NAME, RunsTableColumn.RUN_NAME]
-    );
-    fixture.detectChanges();
-
-    expect(dispatchSpy).toHaveBeenCalledWith(
-      runTableShown({
-        experimentIds: ['book'],
-      })
-    );
   });
 
   describe('runs data table integration', () => {

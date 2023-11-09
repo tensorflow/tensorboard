@@ -33,7 +33,6 @@ import {
 } from '../../app_routing/store/app_routing_selectors';
 import {State} from '../../app_state';
 import * as coreActions from '../../core/actions';
-import * as runsActions from '../../runs/actions/runs_actions';
 import {HttpErrorResponse} from '../../webapp_data_source/tb_http_client';
 
 import * as hparamsActions from './hparams_actions';
@@ -53,12 +52,6 @@ export class HparamsEffects {
     private readonly dataSource: HparamsDataSource
   ) {}
 
-  private readonly runTableShown$: Observable<string[]> = this.actions$.pipe(
-    ofType(runsActions.runTableShown),
-    map(({experimentIds}) => experimentIds),
-    distinctUntilChanged((prev, cur) => prev.join('') === cur.join(''))
-  );
-
   private readonly navigated$: Observable<string[]> = this.actions$.pipe(
     ofType(navigated),
     withLatestFrom(this.store.select(getExperimentIdsFromRoute)),
@@ -77,11 +70,7 @@ export class HparamsEffects {
 
   /** @export */
   loadHparamsData$ = createEffect(() => {
-    return merge(
-      this.navigated$,
-      this.runTableShown$,
-      this.loadHparamsOnReload$
-    ).pipe(
+    return merge(this.navigated$, this.loadHparamsOnReload$).pipe(
       withLatestFrom(
         this.store.select(getEnableHparamsInTimeSeries),
         this.store.select(getActiveRoute)

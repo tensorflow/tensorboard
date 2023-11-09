@@ -49,39 +49,6 @@ import {ColumnHeaderType} from '../../widgets/data_table/types';
  */
 @Injectable()
 export class RunsEffects {
-  /**
-   * Ensures runs are loaded when a run table is shown.
-   *
-   * @export
-   */
-  loadRunsOnRunTableShown$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(actions.runTableShown),
-        mergeMap(({experimentIds}) => {
-          const experimentsToFetch$ = this.getExperimentsWithLoadState(
-            experimentIds,
-            (state) => {
-              return (
-                state === DataLoadState.FAILED ||
-                state === DataLoadState.NOT_LOADED
-              );
-            }
-          );
-          return experimentsToFetch$.pipe(
-            filter((experimentIds) => !!experimentIds.length),
-            mergeMap((experimentIdsToBeFetched) => {
-              return this.fetchAllRunsList(
-                experimentIds,
-                experimentIdsToBeFetched
-              );
-            })
-          );
-        })
-      ),
-    {dispatch: false}
-  );
-
   constructor(
     private readonly actions$: Actions,
     private readonly store: Store<State>,

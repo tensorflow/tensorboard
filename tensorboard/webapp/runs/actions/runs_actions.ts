@@ -77,11 +77,6 @@ export const runColorChanged = createAction(
   props<{runId: string; newColor: string}>()
 );
 
-export const runTableShown = createAction(
-  '[Runs] Run Table Shown',
-  props<{experimentIds: string[]}>()
-);
-
 export const runGroupByChanged = createAction(
   '[Runs] Run Group By Changed',
   props<{experimentIds: string[]; groupBy: GroupBy}>()

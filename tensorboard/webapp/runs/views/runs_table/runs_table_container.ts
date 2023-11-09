@@ -59,7 +59,6 @@ import {
   runPageSelectionToggled,
   runSelectionToggled,
   runSelectorRegexFilterChanged,
-  runTableShown,
   runsTableHeaderAdded,
   runsTableHeaderOrderChanged,
   runsTableHeaderRemoved,
@@ -251,8 +250,6 @@ export class RunsTableContainer implements OnInit, OnDestroy {
         );
       });
     }
-
-    this.store.dispatch(runTableShown({experimentIds: this.experimentIds}));
   }
 
   ngOnDestroy() {
