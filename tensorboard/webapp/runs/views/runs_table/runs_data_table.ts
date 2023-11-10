@@ -127,4 +127,10 @@ export class RunsDataTable {
     const input = event.target! as HTMLInputElement;
     this.onRegexFilterChange.emit(input.value);
   }
+
+  trackByRuns(index: number, data: TableData) {
+    const dataWithoutColor = {...data};
+    delete dataWithoutColor.color;
+    return JSON.stringify(dataWithoutColor);
+  }
 }

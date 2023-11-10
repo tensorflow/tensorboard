@@ -64,7 +64,7 @@ limitations under the License.
     ></ng-container>
 
     <ng-container content>
-      <ng-container *ngFor="let dataRow of data">
+      <ng-container *ngFor="let dataRow of data; trackBy: trackByRuns">
         <tb-data-table-content-row [attr.data-id]="dataRow.id">
           <ng-container *ngFor="let header of getHeaders()">
             <tb-data-table-content-cell
