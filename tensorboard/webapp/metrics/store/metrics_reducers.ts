@@ -775,7 +775,7 @@ const reducer = createReducer(
     return {
       ...state,
       tagFilter,
-      cardInteractions: nextNewCardInteractions,
+      newCardInteractions: nextNewCardInteractions,
     };
   }),
   on(actions.metricsChangeTooltipSort, (state, {sort}) => {
@@ -1192,7 +1192,7 @@ const reducer = createReducer(
       cardToPinnedCopy: nextCardToPinnedCopy,
       cardToPinnedCopyCache: nextCardToPinnedCopyCache,
       pinnedCardToOriginal: nextPinnedCardToOriginal,
-      cardInteractions: nextNewCardInteractions,
+      newCardInteractions: nextNewCardInteractions,
       previousCardInteractions: nextPreviousCardInteractions,
     };
   }),
@@ -1539,10 +1539,10 @@ const reducer = createReducer(
     }
   ),
   on(actions.metricsCardClicked, (state, {cardId}) => {
-    const nextClicksIds = new Set(
-      state.newCardInteractions.clicks.map(({cardId}) => cardId)
-    );
-    nextClicksIds.add(cardId);
+    const nextClicksIds = state.newCardInteractions.clicks
+      .map(({cardId}) => cardId)
+      .filter((id) => id !== cardId)
+      .concat(cardId);
 
     const nextNewCardInteractions = {
       ...state.newCardInteractions,
