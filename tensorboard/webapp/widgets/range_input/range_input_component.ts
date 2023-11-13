@@ -113,18 +113,12 @@ export class RangeInputComponent {
 
   readonly Position = Position;
 
-  startThumbDrag(value: number) {
-    this.maybeNotifyNextRangeValues(
-      [value, this.upperValue],
-      RangeInputSource.SLIDER
-    );
-  }
-
-  endThumbDrag(value: number) {
-    this.maybeNotifyNextRangeValues(
-      [this.lowerValue, value],
-      RangeInputSource.SLIDER
-    );
+  thumbDrag() {
+    this.rangeValuesChanged.emit({
+      lowerValue: this.lowerValue,
+      upperValue: this.upperValue,
+      source: RangeInputSource.SLIDER,
+    });
   }
 
   calculateStepSize() {

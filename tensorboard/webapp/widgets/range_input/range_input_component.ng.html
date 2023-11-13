@@ -32,12 +32,12 @@ limitations under the License.
 <mat-slider class="slider" [min]="min" [max]="max" [step]="calculateStepSize()">
   <input
     matSliderStartThumb
-    (valueChange)="startThumbDrag($event)"
+    (valueChange)="thumbDrag()"
     [(ngModel)]="lowerValue"
   />
   <input
     matSliderEndThumb
-    (valueChange)="endThumbDrag($event)"
+    (valueChange)="thumbDrag()"
     [(ngModel)]="upperValue"
   />
 </mat-slider>

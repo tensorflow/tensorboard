@@ -120,7 +120,7 @@ describe('range input test', () => {
       );
     });
 
-    it('dispatches actions when making range step change', () => {
+    it('dispatches actions when slider emits valueChange event', () => {
       const {fixture, onRangeValuesChanged} = createComponent({
         lowerValue: -1,
         upperValue: 1,
@@ -130,9 +130,9 @@ describe('range input test', () => {
         By.css('mat-slider input')
       )[0];
 
-      sliderThumb.triggerEventHandler('valueChange', -4);
+      sliderThumb.triggerEventHandler('valueChange');
       expect(onRangeValuesChanged).toHaveBeenCalledWith({
-        lowerValue: -4,
+        lowerValue: -1,
         upperValue: 1,
         source: RangeInputSource.SLIDER,
       });
@@ -151,20 +151,6 @@ describe('range input test', () => {
       expect(slider.nativeElement.getAttribute('ng-reflect-step')).toEqual(
         '0.5'
       );
-    });
-
-    it('does not trigger change when value does not change', () => {
-      const {fixture, onRangeValuesChanged} = createComponent({
-        lowerValue: -5,
-        upperValue: 1,
-        tickCount: 10,
-      });
-      const sliderThumb = fixture.debugElement.queryAll(
-        By.css('mat-slider input')
-      )[0];
-
-      sliderThumb.triggerEventHandler('valueChange', -5);
-      expect(onRangeValuesChanged).not.toHaveBeenCalled();
     });
   });
 
