@@ -63,7 +63,7 @@ class CallbackTest(tf.test.TestCase):
         initial_time = mock_time.time
         with mock.patch("time.time", mock_time):
             self._initialize_model(writer=self.logdir)
-            self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+            self.model.fit(x=[1], y=[2], callbacks=[self.callback])
         final_time = mock_time.time
 
         files = os.listdir(self.logdir)
@@ -136,7 +136,7 @@ class CallbackTest(tf.test.TestCase):
             filename_suffix=".magic",
         )
         self._initialize_model(writer=writer)
-        self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+        self.model.fit(x=[1], y=[2], callbacks=[self.callback])
 
         files = os.listdir(self.logdir)
         self.assertEqual(len(files), 1, files)
@@ -152,15 +152,15 @@ class CallbackTest(tf.test.TestCase):
             with self.assertRaisesRegex(
                 RuntimeError, "only supported in TensorFlow eager mode"
             ):
-                self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+                self.model.fit(x=[1], y=[2], callbacks=[self.callback])
 
     def test_reuse_failure(self):
         self._initialize_model(writer=self.logdir)
-        self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+        self.model.fit(x=[1], y=[2], callbacks=[self.callback])
         with self.assertRaisesRegex(
             RuntimeError, "cannot be reused across training sessions"
         ):
-            self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+            self.model.fit(x=[1], y=[2], callbacks=[self.callback])
 
     def test_invalid_writer(self):
         with self.assertRaisesRegex(
