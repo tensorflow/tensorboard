@@ -101,10 +101,10 @@ def _norm_to_list_of_layers(maybe_layers):
     """Normalizes to a list of layers.
 
     Args:
-      maybe_layers: A list of data[1] or a list of list of data.
+      maybe_layers: Data or a list of data.
 
     Returns:
-      List of list of data.
+      List of data.
 
     [1]: A Functional model has fields 'inbound_nodes' and 'output_layers' which can
     look like below:
@@ -113,7 +113,7 @@ def _norm_to_list_of_layers(maybe_layers):
     The data inside the list seems to describe [name, size, index].
     """
     return (
-        maybe_layers if isinstance(maybe_layers[0], (list,)) else [maybe_layers]
+        maybe_layers if isinstance(maybe_layers, list) else [maybe_layers]
     )
 
 
