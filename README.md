@@ -10,12 +10,6 @@ Documentation on how to use TensorBoard to work with images, graphs, hyper
 parameters, and more are linked from there, along with tutorial walk-throughs in
 Colab.
 
-You may also be interested in the hosted TensorBoard solution at
-[TensorBoard.dev][]. You can use TensorBoard.dev to easily host, track, and
-share your ML experiments for free. For example, [this experiment][] shows a
-working example featuring the scalars, graphs, histograms, distributions, and
-hparams dashboards.
-
 TensorBoard is designed to run entirely offline, without requiring any access
 to the Internet. For instance, this may be on your local machine, behind a
 corporate firewall, or in a datacenter.
