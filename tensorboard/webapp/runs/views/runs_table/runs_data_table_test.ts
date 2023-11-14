@@ -355,4 +355,21 @@ describe('runs_data_table', () => {
 
     expect(onRegexFilterChangeSpy).toHaveBeenCalledWith('myRegex');
   });
+
+  it('trackByRuns serializes data while ignoring color', () => {
+    const fixture = createComponent({});
+    const dataTable = fixture.debugElement.query(By.directive(RunsDataTable));
+    expect(
+      dataTable.componentInstance.trackByRuns(0, {
+        id: 'run1',
+        color: 'orange',
+        hparam1: 1.234,
+      })
+    ).toEqual(
+      JSON.stringify({
+        id: 'run1',
+        hparam1: 1.234,
+      })
+    );
+  });
 });
