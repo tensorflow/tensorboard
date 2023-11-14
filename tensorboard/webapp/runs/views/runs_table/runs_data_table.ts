@@ -127,4 +127,16 @@ export class RunsDataTable {
     const input = event.target! as HTMLInputElement;
     this.onRegexFilterChange.emit(input.value);
   }
+
+  /**
+   * Using the `trackBy` directive allows you to control when an element contained
+   * by an `ngFor` is rerendered. In this case it is important that changes to
+   * the `color` attribute do NOT trigger rerenders because doing so will recreate
+   * and close the colorPicker.
+   */
+  trackByRuns(index: number, data: TableData) {
+    const dataWithoutColor = {...data};
+    delete dataWithoutColor.color;
+    return JSON.stringify(dataWithoutColor);
+  }
 }
