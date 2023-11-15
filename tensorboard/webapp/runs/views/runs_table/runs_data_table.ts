@@ -136,7 +136,7 @@ export class RunsDataTable {
    */
   trackByRuns(index: number, data: TableData) {
     const dataWithoutColor = {...data};
-    delete dataWithoutColor.color;
+    delete dataWithoutColor['color'];
     return JSON.stringify(dataWithoutColor);
   }
 }
