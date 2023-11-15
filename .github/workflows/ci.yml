@@ -31,6 +31,7 @@ env:
   BUILDIFIER_SHA256SUM: 'e92a6793c7134c5431c58fbc34700664f101e5c9b1c1fcd93b97978e8b7f88db'
   BUILDOZER_SHA256SUM: '3d58a0b6972e4535718cdd6c12778170ea7382de7c75bc3728f5719437ffb84d'
   TENSORFLOW_VERSION: 'tf-nightly'
+  TF_KERAS_VERSION: 'tf-keras-nightly' # Keras 2
 
 jobs:
   build:
@@ -79,10 +80,10 @@ jobs:
           pip install "${TENSORFLOW_VERSION}"
         if: matrix.tf_version_id != 'notf'
       # TODO: Remove this after migrating to Keras 3.
-      - name: 'Install tf-keras (Keras 2)'
+      - name: 'Install TF-Keras (Keras 2)'
         run: |
           python -m pip install -U pip
-          pip install tf-keras
+          pip install "${TF_KERAS_VERSION}"
       - name: 'Install Python dependencies'
         run: |
           python -m pip install -U pip
