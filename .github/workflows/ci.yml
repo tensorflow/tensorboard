@@ -78,7 +78,7 @@ jobs:
           python -m pip install -U pip
           pip install "${TENSORFLOW_VERSION}"
         if: matrix.tf_version_id != 'notf'
-      # TODO: Remove this after migrating to Keras 3. 
+      # TODO: Remove this after migrating to Keras 3.
       - name: 'Install tf-keras (Keras 2)'
         run: |
           python -m pip install -U pip
