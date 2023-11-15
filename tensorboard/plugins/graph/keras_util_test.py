@@ -21,6 +21,13 @@ import tensorflow as tf
 
 from tensorboard.plugins.graph import keras_util
 
+# Stay on Keras 2 for now: https://github.com/keras-team/keras/issues/18467.
+version_fn = getattr(tf.keras, "version", None)
+if version_fn and version_fn().startswith("3."):
+    import tf_keras as keras  # Keras 2
+else:
+    keras = tf.keras  # Keras 2
+
 
 class KerasUtilTest(tf.test.TestCase):
     def assertGraphDefToModel(self, expected_proto, model):

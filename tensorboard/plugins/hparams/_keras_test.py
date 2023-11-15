@@ -25,6 +25,12 @@ from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import plugin_data_pb2
 from tensorboard.plugins.hparams import summary_v2 as hp
 
+# Stay on Keras 2 for now: https://github.com/keras-team/keras/issues/18467.
+version_fn = getattr(tf.keras, "version", None)
+if version_fn and version_fn().startswith("3."):
+    import tf_keras as keras  # Keras 2
+else:
+    keras = tf.keras  # Keras 2
 
 tf.compat.v1.enable_eager_execution()
 
