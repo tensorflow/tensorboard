@@ -46,12 +46,12 @@ class CallbackTest(tf.test.TestCase):
             "optimizer": "adam",
             HP_DENSE_NEURONS: 8,
         }
-        self.model = tf.keras.models.Sequential(
+        self.model = keras.models.Sequential(
             [
-                tf.keras.layers.Dense(
+                keras.layers.Dense(
                     self.hparams[HP_DENSE_NEURONS], input_shape=(1,)
                 ),
-                tf.keras.layers.Dense(1, activation="sigmoid"),
+                keras.layers.Dense(1, activation="sigmoid"),
             ]
         )
         self.model.compile(loss="mse", optimizer=self.hparams["optimizer"])

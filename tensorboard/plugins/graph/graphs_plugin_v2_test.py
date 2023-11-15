@@ -41,10 +41,10 @@ class GraphsPluginV2Test(
         x, y = np.ones((10, 10)), np.ones((10, 1))
         val_x, val_y = np.ones((4, 10)), np.ones((4, 1))
 
-        model = tf.keras.Sequential(
+        model = keras.Sequential(
             [
-                tf.keras.layers.Dense(10, activation="relu"),
-                tf.keras.layers.Dense(1, activation="sigmoid"),
+                keras.layers.Dense(10, activation="relu"),
+                keras.layers.Dense(1, activation="sigmoid"),
             ]
         )
         model.compile("rmsprop", "binary_crossentropy")
