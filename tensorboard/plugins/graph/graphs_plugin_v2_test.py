@@ -56,7 +56,7 @@ class GraphsPluginV2Test(
             batch_size=2,
             epochs=1,
             callbacks=[
-                tf.compat.v2.keras.callbacks.TensorBoard(
+                keras.callbacks.TensorBoard(
                     log_dir=os.path.join(logdir, run_name),
                     write_graph=include_graph,
                 )
