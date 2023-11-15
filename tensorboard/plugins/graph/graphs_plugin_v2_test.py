@@ -24,6 +24,13 @@ import tensorflow as tf
 from tensorboard.compat.proto import graph_pb2
 from tensorboard.plugins.graph import graphs_plugin_test
 
+# Stay on Keras 2 for now: https://github.com/keras-team/keras/issues/18467.
+version_fn = getattr(tf.keras, "version", None)
+if version_fn and version_fn().startswith("3."):
+    import tf_keras as keras  # Keras 2
+else:
+    keras = tf.keras  # Keras 2
+
 
 class GraphsPluginV2Test(
     graphs_plugin_test.GraphsPluginBaseTest, tf.test.TestCase
