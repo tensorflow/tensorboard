@@ -84,7 +84,7 @@ jobs:
       # TODO: Remove this after migrating to Keras 3.
       - name: 'Make user to use tf-keras-nightly with tf-nightly'
         run: |
-          sed -i "s/tf-keras/${TF_KERAS_VERSION}/g" ./tensorboard/pip_package/requirements.txt
+          sed -i "s/^tf-keras.*/${TF_KERAS_VERSION}/g" ./tensorboard/pip_package/requirements.txt
       - name: 'Install Python dependencies'
         run: |
           python -m pip install -U pip
