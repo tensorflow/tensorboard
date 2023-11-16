@@ -34,4 +34,7 @@ setuptools >= 41.0.0  # Note: provides pkg_resources as well as setuptools
 # requirement, and likely this will not disrupt existing users of the package.
 six > 1.9
 tensorboard-data-server >= 0.7.0, < 0.8.0
+# Stay on Keras 2 for now: https://github.com/keras-team/keras/issues/18467.
+# TODO: Remove this after migrating to Keras 3.
+tf-keras >= 2.15.0
 werkzeug >= 1.0.1

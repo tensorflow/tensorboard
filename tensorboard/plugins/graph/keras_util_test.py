@@ -21,6 +21,13 @@ import tensorflow as tf
 
 from tensorboard.plugins.graph import keras_util
 
+# Stay on Keras 2 for now: https://github.com/keras-team/keras/issues/18467.
+version_fn = getattr(tf.keras, "version", None)
+if version_fn and version_fn().startswith("3."):
+    import tf_keras as keras  # Keras 2
+else:
+    keras = tf.keras  # Keras 2
+
 
 class KerasUtilTest(tf.test.TestCase):
     def assertGraphDefToModel(self, expected_proto, model):
@@ -112,12 +119,12 @@ class KerasUtilTest(tf.test.TestCase):
               }
             }
         """
-        model = tf.keras.models.Sequential(
+        model = keras.models.Sequential(
             [
-                tf.keras.layers.Dense(32, input_shape=(784,)),
-                tf.keras.layers.Activation("relu", name="my_relu"),
-                tf.keras.layers.Dense(10),
-                tf.keras.layers.Activation("softmax"),
+                keras.layers.Dense(32, input_shape=(784,)),
+                keras.layers.Activation("relu", name="my_relu"),
+                keras.layers.Dense(10),
+                keras.layers.Activation("softmax"),
             ]
         )
         self.assertGraphDefToModel(expected_proto, model)
@@ -188,12 +195,12 @@ class KerasUtilTest(tf.test.TestCase):
               }
             }
         """
-        inputs = tf.keras.layers.Input(shape=(784,), name="functional_input")
-        d0 = tf.keras.layers.Dense(64, activation="relu")
-        d1 = tf.keras.layers.Dense(64, activation="relu")
-        d2 = tf.keras.layers.Dense(64, activation="relu")
+        inputs = keras.layers.Input(shape=(784,), name="functional_input")
+        d0 = keras.layers.Dense(64, activation="relu")
+        d1 = keras.layers.Dense(64, activation="relu")
+        d2 = keras.layers.Dense(64, activation="relu")
 
-        model = tf.keras.models.Model(
+        model = keras.models.Model(
             inputs=inputs, outputs=d2(d1(d0(inputs))), name="model"
         )
         self.assertGraphDefToModel(expected_proto, model)
@@ -265,12 +272,12 @@ class KerasUtilTest(tf.test.TestCase):
               }
             }
         """
-        inputs = tf.keras.layers.Input(shape=(784,), name="cycle_input")
-        d0 = tf.keras.layers.Dense(64, activation="relu")
-        d1 = tf.keras.layers.Dense(64, activation="relu")
-        d2 = tf.keras.layers.Dense(64, activation="relu")
+        inputs = keras.layers.Input(shape=(784,), name="cycle_input")
+        d0 = keras.layers.Dense(64, activation="relu")
+        d1 = keras.layers.Dense(64, activation="relu")
+        d2 = keras.layers.Dense(64, activation="relu")
 
-        model = tf.keras.models.Model(
+        model = keras.models.Model(
             inputs=inputs, outputs=d1(d2(d1(d0(inputs)))), name="model"
         )
         self.assertGraphDefToModel(expected_proto, model)
@@ -309,10 +316,10 @@ class KerasUtilTest(tf.test.TestCase):
               }
             }
         """
-        inputs = tf.keras.layers.Input(shape=(None, 5), name="lstm_input")
-        encoder = tf.keras.layers.SimpleRNN(256)
+        inputs = keras.layers.Input(shape=(None, 5), name="lstm_input")
+        encoder = keras.layers.SimpleRNN(256)
 
-        model = tf.keras.models.Model(
+        model = keras.models.Model(
             inputs=inputs, outputs=encoder(inputs), name="model"
         )
         self.assertGraphDefToModel(expected_proto, model)
@@ -447,25 +454,25 @@ class KerasUtilTest(tf.test.TestCase):
               }
             }
         """
-        sub_sub_model = tf.keras.models.Sequential(
+        sub_sub_model = keras.models.Sequential(
             [
-                tf.keras.layers.Dense(32, input_shape=(784,)),
-                tf.keras.layers.Activation("relu"),
+                keras.layers.Dense(32, input_shape=(784,)),
+                keras.layers.Activation("relu"),
             ]
         )
 
-        sub_model = tf.keras.models.Sequential(
+        sub_model = keras.models.Sequential(
             [
                 sub_sub_model,
-                tf.keras.layers.Activation("relu", name="my_relu"),
+                keras.layers.Activation("relu", name="my_relu"),
             ]
         )
 
-        model = tf.keras.models.Sequential(
+        model = keras.models.Sequential(
             [
                 sub_model,
-                tf.keras.layers.Dense(10),
-                tf.keras.layers.Activation("softmax"),
+                keras.layers.Dense(10),
+                keras.layers.Activation("softmax"),
             ]
         )
 
@@ -601,27 +608,27 @@ class KerasUtilTest(tf.test.TestCase):
               }
             }
         """
-        main_input = tf.keras.layers.Input(
+        main_input = keras.layers.Input(
             shape=(100,), dtype="int32", name="main_input"
         )
-        x = tf.keras.layers.Embedding(
+        x = keras.layers.Embedding(
             output_dim=512, input_dim=10000, input_length=100
         )(main_input)
-        rnn_out = tf.keras.layers.SimpleRNN(32)(x)
+        rnn_out = keras.layers.SimpleRNN(32)(x)
 
-        auxiliary_output = tf.keras.layers.Dense(
+        auxiliary_output = keras.layers.Dense(
             1, activation="sigmoid", name="aux_output"
         )(rnn_out)
-        auxiliary_input = tf.keras.layers.Input(shape=(5,), name="aux_input")
+        auxiliary_input = keras.layers.Input(shape=(5,), name="aux_input")
 
-        x = tf.keras.layers.concatenate([rnn_out, auxiliary_input])
-        x = tf.keras.layers.Dense(64, activation="relu")(x)
+        x = keras.layers.concatenate([rnn_out, auxiliary_input])
+        x = keras.layers.Dense(64, activation="relu")(x)
 
-        main_output = tf.keras.layers.Dense(
+        main_output = keras.layers.Dense(
             1, activation="sigmoid", name="main_output"
         )(x)
 
-        model = tf.keras.models.Model(
+        model = keras.models.Model(
             inputs=[main_input, auxiliary_input],
             outputs=[main_output, auxiliary_output],
             name="model",
@@ -757,22 +764,22 @@ class KerasUtilTest(tf.test.TestCase):
               }
             }
         """
-        inputs1 = tf.keras.layers.Input(shape=(784,), name="sub_func_input_1")
-        inputs2 = tf.keras.layers.Input(shape=(784,), name="sub_func_input_2")
-        d0 = tf.keras.layers.Dense(64, activation="relu")
-        d1 = tf.keras.layers.Dense(64, activation="relu")
-        d2 = tf.keras.layers.Dense(64, activation="relu")
+        inputs1 = keras.layers.Input(shape=(784,), name="sub_func_input_1")
+        inputs2 = keras.layers.Input(shape=(784,), name="sub_func_input_2")
+        d0 = keras.layers.Dense(64, activation="relu")
+        d1 = keras.layers.Dense(64, activation="relu")
+        d2 = keras.layers.Dense(64, activation="relu")
 
-        sub_model = tf.keras.models.Model(
+        sub_model = keras.models.Model(
             inputs=[inputs2, inputs1],
             outputs=[d0(inputs1), d1(inputs2)],
             name="model",
         )
 
         main_outputs = d2(
-            tf.keras.layers.concatenate(sub_model([inputs2, inputs1]))
+            keras.layers.concatenate(sub_model([inputs2, inputs1]))
         )
-        model = tf.keras.models.Model(
+        model = keras.models.Model(
             inputs=[inputs2, inputs1],
             outputs=main_outputs,
             name="model_1",
@@ -864,16 +871,16 @@ class KerasUtilTest(tf.test.TestCase):
               }
             }
         """
-        inputs = tf.keras.layers.Input(shape=(784,), name="func_seq_input")
-        sub_model = tf.keras.models.Sequential(
+        inputs = keras.layers.Input(shape=(784,), name="func_seq_input")
+        sub_model = keras.models.Sequential(
             [
-                tf.keras.layers.Dense(32, input_shape=(784,)),
-                tf.keras.layers.Activation("relu", name="my_relu"),
+                keras.layers.Dense(32, input_shape=(784,)),
+                keras.layers.Activation("relu", name="my_relu"),
             ]
         )
-        dense = tf.keras.layers.Dense(64, activation="relu")
+        dense = keras.layers.Dense(64, activation="relu")
 
-        model = tf.keras.models.Model(
+        model = keras.models.Model(
             inputs=inputs, outputs=dense(sub_model(inputs))
         )
 
@@ -962,15 +969,15 @@ class KerasUtilTest(tf.test.TestCase):
               }
             }
         """
-        inputs = tf.keras.layers.Input(shape=(784,), name="func_seq_input")
-        dense = tf.keras.layers.Dense(64, activation="relu")
+        inputs = keras.layers.Input(shape=(784,), name="func_seq_input")
+        dense = keras.layers.Dense(64, activation="relu")
 
-        sub_model = tf.keras.models.Model(inputs=inputs, outputs=dense(inputs))
-        model = tf.keras.models.Sequential(
+        sub_model = keras.models.Model(inputs=inputs, outputs=dense(inputs))
+        model = keras.models.Sequential(
             [
                 sub_model,
-                tf.keras.layers.Dense(32, input_shape=(784,)),
-                tf.keras.layers.Activation("relu", name="my_relu"),
+                keras.layers.Dense(32, input_shape=(784,)),
+                keras.layers.Activation("relu", name="my_relu"),
             ]
         )
 
@@ -1029,16 +1036,16 @@ class KerasUtilTest(tf.test.TestCase):
               }
             }
         """
-        inputs = tf.keras.Input(shape=(2,))
+        inputs = keras.Input(shape=(2,))
         doubling_layer = _DoublingLayer()
-        reducing_layer = tf.keras.layers.Add()
+        reducing_layer = keras.layers.Add()
         outputs = reducing_layer(doubling_layer(inputs))
-        model = tf.keras.Model(inputs=[inputs], outputs=outputs)
+        model = keras.Model(inputs=[inputs], outputs=outputs)
 
         self.assertGraphDefToModel(expected_proto, model)
 
 
-class _DoublingLayer(tf.keras.layers.Layer):
+class _DoublingLayer(keras.layers.Layer):
     def call(self, inputs):
         return inputs, inputs
 
