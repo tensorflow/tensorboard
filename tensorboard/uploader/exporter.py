@@ -191,7 +191,8 @@ class TensorBoardExporter:
                 if e.code() == grpc.StatusCode.CANCELLED:
                     raise GrpcTimeoutException(experiment_id)
                 else:
-                    raise
+                    import traceback
+                    traceback.print_exc()
 
     def _request_json_data(self, experiment_id, read_time):
         """Given experiment id, generates JSON data and destination file name.
