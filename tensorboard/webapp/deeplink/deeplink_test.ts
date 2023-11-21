@@ -36,7 +36,7 @@ describe('deeplink', () => {
     // to not make use of the hash (it does).
 
     // Do not rely on Polymer bundle in the test.
-    window.tensorboard = {
+    (window as any).tensorboard = {
       tf_storage: {
         setString: setStringSpy,
         getString: getStringSpy,
