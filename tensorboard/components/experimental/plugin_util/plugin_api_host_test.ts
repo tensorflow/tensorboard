@@ -253,6 +253,7 @@ describe('plugin_api_host test', () => {
       it('returns url data from the tf storage', () => {
         // Do not rely on Polymer bundle in the test.
         window.tensorboard = {
+          tf_globals: {},
           tf_storage: {
             getUrlHashDict: () => {
               return {
@@ -271,7 +272,7 @@ describe('plugin_api_host test', () => {
           b: 'b',
         });
 
-        delete window.tensorboard;
+        delete (window as any)['tensorboard'];
       });
     });
 
