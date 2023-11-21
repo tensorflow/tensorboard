@@ -17,6 +17,7 @@ limitations under the License.
  */
 import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
+import {getStorage} from '../../../webapp/angular_polymer_bridge';
 import {distinctUntilChanged, filter} from 'rxjs/operators';
 import {State} from '../../../webapp/app_state';
 import {getAppLastLoadedTimeInMs} from '../../../webapp/selectors';
@@ -39,7 +40,8 @@ export class PluginCoreApiHostImpl {
       const result: {
         [key: string]: string;
       } = {};
-      const urlDict = window['tensorboard']['tf_storage']?.getUrlHashDict();
+
+      const urlDict = getStorage('getUrlHashDict')?.();
       for (let key in urlDict) {
         if (key.startsWith(prefix)) {
           const pluginKey = key.substring(prefix.length);

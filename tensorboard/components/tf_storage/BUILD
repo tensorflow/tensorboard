@@ -14,6 +14,7 @@ tf_ts_library(
     strict_checks = False,
     deps = [
         ":tf_storage_lib",
+        "//tensorboard/webapp/angular_polymer_bridge",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
         "@npm//@types/lodash",

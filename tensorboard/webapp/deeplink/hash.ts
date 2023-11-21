@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {Injectable} from '@angular/core';
+import {getGlobals, getStorage} from '../angular_polymer_bridge';
 import {DeepLinkerInterface, SetStringOption} from './types';
 
 // TODO(tensorboard-team): merge this module with tf_storage/storage.ts when
@@ -29,20 +30,20 @@ export class HashDeepLinker implements DeepLinkerInterface {
     // Note: `migrateLegacyURLScheme()` must be called before `setUseHash`, so
     // that tfStorage reads from the actual URL, not the fake hash for tests
     // only.
-    window['tensorboard']['tf_globals']?.setUseHash(true);
-    window['tensorboard']['tf_storage']?.migrateLegacyURLScheme();
+    getGlobals('setUseHash')?.(true);
+    getStorage('migrateLegacyURLScheme')?.();
   }
 
   getString(key: string): string {
-    return window['tensorboard']['tf_storage']?.getString(key) || '';
+    return getStorage('getString')?.(key) ?? '';
   }
 
   setString(key: string, value: string, options?: SetStringOption): void {
-    window['tensorboard']['tf_storage']?.setString(key, value, options);
+    getStorage('setString')?.(key, value, options);
   }
 
   getPluginId(): string {
-    return this.getString(TAB);
+    return getStorage('getString')?.(TAB) ?? '';
   }
 
   setPluginId(pluginId: string, options?: SetStringOption): void {

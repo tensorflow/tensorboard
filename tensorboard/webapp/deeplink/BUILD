@@ -12,6 +12,7 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp:tb_polymer_interop_types",
+        "//tensorboard/webapp/angular_polymer_bridge",
         "@npm//@angular/core",
     ],
 )

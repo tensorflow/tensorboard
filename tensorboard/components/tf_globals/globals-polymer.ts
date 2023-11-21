@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {customElement} from '@polymer/decorators';
 import {PolymerElement} from '@polymer/polymer';
+import {addToGlobals} from '../../webapp/angular_polymer_bridge';
 import * as tf_globals from './globals';
 
 @customElement('tf-globals')
@@ -22,9 +23,6 @@ class TfGlobals extends PolymerElement {
   tf_globals = tf_globals;
   constructor() {
     super();
-    if (!window['tensorboard']) {
-      window['tensorboard'] = {};
-    }
-    window['tensorboard']['tf_globals'] = tf_globals;
+    addToGlobals('setUseHash', tf_globals.setUseHash);
   }
 }
