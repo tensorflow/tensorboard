@@ -78,6 +78,8 @@ tf_ts_library(
         "tb_polymer_interop_types.ts",
     ],
     deps = [
+        # This build target is shared with the polymer binary, do not
+        # add any more dependencies.
         "//tensorboard/webapp/feature_flag:types",
     ],
 )

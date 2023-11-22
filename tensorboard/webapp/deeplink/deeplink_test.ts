@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import '../tb_polymer_interop_types';
 import {TestBed} from '@angular/core/testing';
 import {HashDeepLinker, TEST_ONLY} from './hash';
 
@@ -36,7 +37,7 @@ describe('deeplink', () => {
     // to not make use of the hash (it does).
 
     // Do not rely on Polymer bundle in the test.
-    (window as any).tensorboard = {
+    window.tensorboard = {
       tf_storage: {
         setString: setStringSpy,
         getString: getStringSpy,
@@ -49,6 +50,10 @@ describe('deeplink', () => {
     };
 
     deepLinker = TestBed.inject(HashDeepLinker);
+  });
+
+  afterEach(() => {
+    window.tensorboard = {tf_globals: {}, tf_storage: {}};
   });
 
   it('uses real hash and migrates legacy URLs', () => {

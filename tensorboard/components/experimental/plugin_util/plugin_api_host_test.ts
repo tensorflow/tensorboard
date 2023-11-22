@@ -65,6 +65,10 @@ describe('plugin_api_host test', () => {
     store?.resetSelectors();
   });
 
+  afterEach(() => {
+    window.tensorboard = {tf_globals: {}, tf_storage: {}};
+  });
+
   describe('runs apis', () => {
     describe('#experimental.RunsChanged', () => {
       it('broadcasts runs when runs change', () => {
@@ -252,7 +256,7 @@ describe('plugin_api_host test', () => {
 
       it('returns url data from the tf storage', () => {
         // Do not rely on Polymer bundle in the test.
-        (window as any).tensorboard = {
+        window.tensorboard = {
           tf_globals: {},
           tf_storage: {
             getUrlHashDict: () => {

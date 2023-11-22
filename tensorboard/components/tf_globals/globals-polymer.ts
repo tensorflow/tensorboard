@@ -12,9 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import '../../webapp/tb_polymer_interop_types';
 import {customElement} from '@polymer/decorators';
 import {PolymerElement} from '@polymer/polymer';
-import {addToGlobals} from '../../webapp/angular_polymer_bridge';
 import * as tf_globals from './globals';
 
 @customElement('tf-globals')
@@ -23,6 +23,8 @@ class TfGlobals extends PolymerElement {
   tf_globals = tf_globals;
   constructor() {
     super();
-    addToGlobals('setUseHash', tf_globals.setUseHash);
+    window['tensorboard']['tf_globals'] = {
+      ['setUseHash']: tf_globals.setUseHash,
+    };
   }
 }

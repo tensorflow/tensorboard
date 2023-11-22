@@ -12,10 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import '../../webapp/tb_polymer_interop_types';
 import {customElement} from '@polymer/decorators';
 import {PolymerElement} from '@polymer/polymer';
 import * as tf_storage from './index';
-import {addToStorage} from '../../webapp/angular_polymer_bridge';
 
 @customElement('tf-storage')
 class TfStorage extends PolymerElement {
@@ -23,9 +23,11 @@ class TfStorage extends PolymerElement {
   tf_storage = tf_storage;
   constructor() {
     super();
-    addToStorage('setString', tf_storage.setString);
-    addToStorage('getString', tf_storage.getString);
-    addToStorage('migrateLegacyURLScheme', tf_storage.migrateLegacyURLScheme);
-    addToStorage('getUrlHashDict', tf_storage.getUrlHashDict);
+    window['tensorboard']['tf_storage'] = {
+      ['setString']: tf_storage.setString,
+      ['getString']: tf_storage.getString,
+      ['migrateLegacyURLScheme']: tf_storage.migrateLegacyURLScheme,
+      ['getUrlHashDict']: tf_storage.getUrlHashDict,
+    };
   }
 }

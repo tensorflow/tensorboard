@@ -24,7 +24,37 @@ declare global {
     'tf-paginated-view-store': TfPaginatedViewStoreElement;
     'vz-histogram-timeseries': VzHistogramTimeSeriesElement;
   }
+
+  interface Window {
+    tensorboard:
+        {tf_storage: Partial<TfStorage>; tf_globals: Partial<TfGlobals>;};
+  }
 }
+
+if (!window.tensorboard) {
+  window.tensorboard = {tf_storage: {}, tf_globals: {}};
+}
+
+export interface SetStringOption {
+  defaultValue?: string;
+  /**
+   * When true, setting the string does not push a new state onto the history.
+   * i.e., it uses `history.replaceState` instead of `history.pushState`.
+   */
+  useLocationReplace?: boolean;
+}
+
+export interface TfStorage {
+  setString(key: string, value: string, options?: SetStringOption): void;
+  getString(key: string): string;
+  migrateLegacyURLScheme(): void;
+  getUrlHashDict(): Record<string, string>;
+}
+
+export interface TfGlobals {
+  setUseHash(use: boolean): void;
+}
+
 
 export declare interface TfGlobals {
   setUseHash(use: boolean): void;
