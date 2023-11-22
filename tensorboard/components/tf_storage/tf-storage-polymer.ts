@@ -13,21 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import '../../webapp/tb_polymer_interop_types';
-import {customElement} from '@polymer/decorators';
-import {PolymerElement} from '@polymer/polymer';
 import * as tf_storage from './index';
 
-@customElement('tf-storage')
-class TfStorage extends PolymerElement {
-  override _template = null;
-  tf_storage = tf_storage;
-  constructor() {
-    super();
-    window['tensorboard']['tf_storage'] = {
-      ['setString']: tf_storage.setString,
-      ['getString']: tf_storage.getString,
-      ['migrateLegacyURLScheme']: tf_storage.migrateLegacyURLScheme,
-      ['getUrlHashDict']: tf_storage.getUrlHashDict,
-    };
-  }
-}
+window['tensorboard']['tf_storage'] = {
+  ['setString']: tf_storage.setString,
+  ['getString']: tf_storage.getString,
+  ['migrateLegacyURLScheme']: tf_storage.migrateLegacyURLScheme,
+  ['getUrlHashDict']: tf_storage.getUrlHashDict,
+};

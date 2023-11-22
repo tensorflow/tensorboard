@@ -37,19 +37,6 @@ describe('hash storage test', () => {
     // to not make use of the hash (it does).
 
     // Do not rely on Polymer bundle in the test.
-    const createElement = spyOn(document, 'createElement');
-    createElement.withArgs('tf-storage').and.returnValue({
-      tf_storage: {
-        setString: setStringSpy,
-        getString: getStringSpy,
-      },
-    } as any);
-    createElement.withArgs('tf-globals').and.returnValue({
-      tf_globals: {
-        setUseHash: jasmine.createSpy(),
-      },
-    } as any);
-    createElement.and.callThrough();
   });
 
   afterEach(() => {

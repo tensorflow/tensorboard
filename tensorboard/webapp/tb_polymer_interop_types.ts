@@ -18,16 +18,16 @@ declare global {
   // createElement type uses the TagNameMap underneath and returns the right type.
   interface HTMLElementTagNameMap {
     'tf-backend': TfBackendElement;
-    'tf-globals': TfGlobalsElement;
     'tf-feature-flags': TfFeatureFlagsElement;
-    'tf-storage': TfStorageElement;
     'tf-paginated-view-store': TfPaginatedViewStoreElement;
     'vz-histogram-timeseries': VzHistogramTimeSeriesElement;
   }
 
   interface Window {
-    tensorboard:
-        {tf_storage: Partial<TfStorage>; tf_globals: Partial<TfGlobals>;};
+    tensorboard: {
+      tf_storage: Partial<TfStorage>;
+      tf_globals: Partial<TfGlobals>;
+    };
   }
 }
 
@@ -54,7 +54,6 @@ export interface TfStorage {
 export interface TfGlobals {
   setUseHash(use: boolean): void;
 }
-
 
 export declare interface TfGlobals {
   setUseHash(use: boolean): void;
