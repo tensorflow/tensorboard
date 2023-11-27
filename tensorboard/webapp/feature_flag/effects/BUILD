@@ -31,6 +31,7 @@ tf_ng_module(
     deps = [
         ":effects",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_ngrx_effects_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/feature_flag:testing",
         "//tensorboard/webapp/feature_flag:types",
@@ -40,7 +41,6 @@ tf_ng_module(
         "//tensorboard/webapp/feature_flag/store:types",
         "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/webapp_data_source:feature_flag_testing",
-        "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
         "@npm//@types/jasmine",
         "@npm//rxjs",
