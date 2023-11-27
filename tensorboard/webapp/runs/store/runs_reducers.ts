@@ -24,7 +24,6 @@ import {stateRehydratedFromUrl} from '../../app_routing/actions';
 import {createNamespaceContextedState} from '../../app_routing/namespaced_state_reducer_helper';
 import {RouteKind} from '../../app_routing/types';
 import {DataLoadState} from '../../types/data';
-import {SortDirection} from '../../types/ui';
 import {composeReducers} from '../../util/ngrx';
 import * as runsActions from '../actions';
 import {GroupByKey, URLDeserializedState} from '../types';
@@ -157,8 +156,8 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     const nextRunIdToExpId = {...state.runIdToExpId};
     const nextRunsLoadState = {...state.runsLoadState};
 
-    for (const eid of Object.keys(action.newRunsAndMetadata)) {
-      const {runs, metadata} = action.newRunsAndMetadata[eid];
+    for (const eid of Object.keys(action.newRuns)) {
+      const {runs} = action.newRuns[eid];
       nextRunIds[eid] = runs.map(({id}) => id);
       nextRunsLoadState[eid] = {
         ...nextRunsLoadState[eid],
@@ -167,11 +166,13 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
       };
 
       for (const run of runs) {
-        const hparamAndMetrics = metadata.runToHparamsAndMetrics[run.id];
         nextRunMetadata[run.id] = {
           ...run,
-          hparams: hparamAndMetrics ? hparamAndMetrics.hparams : null,
-          metrics: hparamAndMetrics ? hparamAndMetrics.metrics : null,
+          // fetchRunsSucceeded once contained hparam and metric information.
+          // No longer. These are always null in state and augmented downstream
+          // by the hparams feature.
+          hparams: null,
+          metrics: null,
         };
         nextRunIdToExpId[run.id] = eid;
       }
@@ -306,21 +307,12 @@ const dataReducers = composeReducers(
   dataNamespaceContextedReducers
 );
 
-const initialSort: RunsUiNamespacedState['sort'] = {
-  key: null,
-  direction: SortDirection.UNSET,
-};
 const {initialState: uiInitialState, reducers: uiNamespaceContextedReducers} =
   createNamespaceContextedState<
     RunsUiNamespacedState,
     RunsUiNonNamespacedState
   >(
     {
-      paginationOption: {
-        pageIndex: 0,
-        pageSize: 10,
-      },
-      sort: initialSort,
       selectionState: new Map<string, boolean>(),
       runsTableHeaders: [
         {
@@ -385,37 +377,6 @@ const {initialState: uiInitialState, reducers: uiNamespaceContextedReducers} =
 
 const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
   uiInitialState,
-  on(
-    runsActions.runSelectorPaginationOptionChanged,
-    (state, {pageSize, pageIndex}) => {
-      return {
-        ...state,
-        paginationOption: {
-          pageSize,
-          pageIndex,
-        },
-      };
-    }
-  ),
-  on(runsActions.runSelectorRegexFilterChanged, (state, action) => {
-    return {
-      ...state,
-      paginationOption: {
-        ...state.paginationOption,
-        // Reset the page index to 0 to emulate mat-table behavior.
-        pageIndex: 0,
-      },
-    };
-  }),
-  on(runsActions.runSelectorSortChanged, (state, action) => {
-    return {
-      ...state,
-      sort: {
-        key: action.key,
-        direction: action.direction,
-      },
-    };
-  }),
   on(runsActions.fetchRunsSucceeded, (state, action) => {
     const nextSelectionState = new Map(state.selectionState);
 

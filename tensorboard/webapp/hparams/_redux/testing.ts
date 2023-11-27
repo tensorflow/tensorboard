@@ -16,70 +16,22 @@ limitations under the License.
 import {DeepPartial} from '../../util/types';
 import {
   DatasetType,
-  DiscreteFilter,
   DomainType,
   HparamSpec,
   HparamValue,
   HparamsValueType,
-  IntervalFilter,
   MetricSpec,
   MetricsValue,
   RunStatus,
   Session,
   SessionGroup,
 } from '../_types';
-import {
-  HparamsMetricsAndFilters,
-  HparamsState,
-  HPARAMS_FEATURE_KEY,
-  State,
-} from './types';
-import {getIdFromExperimentIds} from './utils';
-
-export function buildSpecs(
-  experimentId: string,
-  override: Partial<HparamsMetricsAndFilters> = {}
-): Record<string, HparamsMetricsAndFilters> {
-  const {
-    hparam = {
-      specs: [],
-      defaultFilters: new Map(),
-    },
-    metric = {
-      specs: [],
-      defaultFilters: new Map(),
-    },
-  } = override;
-
-  return {
-    [experimentId]: {hparam, metric},
-  };
-}
-
-export function buildFilterState(
-  experimentIds: string[],
-  override: Partial<HparamsState['filters'][string]> = {}
-): HparamsState['filters'] {
-  const {hparams = new Map(), metrics = new Map()} = override;
-
-  return {
-    [getIdFromExperimentIds(experimentIds)]: {
-      hparams,
-      metrics,
-    },
-  };
-}
+import {HparamsState, HPARAMS_FEATURE_KEY, State} from './types';
 
 export function buildHparamsState(
   overrides: DeepPartial<HparamsState> = {}
 ): HparamsState {
   return {
-    specs: {
-      ...overrides.specs,
-    } as Record<string, HparamsMetricsAndFilters>,
-    filters: {
-      ...overrides.filters,
-    } as HparamsState['filters'],
     dashboardSpecs: {
       hparams: overrides.dashboardSpecs?.hparams ?? [],
       metrics: overrides.dashboardSpecs?.metrics ?? [],
@@ -122,32 +74,6 @@ export function buildMetricSpec(
     displayName: 'Tag',
     description: 'This is a tags',
     datasetType: DatasetType.DATASET_TRAINING,
-    ...override,
-  };
-}
-
-export function buildDiscreteFilter(
-  override: Partial<DiscreteFilter> = {}
-): DiscreteFilter {
-  return {
-    type: DomainType.DISCRETE,
-    includeUndefined: true,
-    possibleValues: [1, 10, 100],
-    filterValues: [1, 100],
-    ...override,
-  };
-}
-
-export function buildIntervalFilter(
-  override: Partial<IntervalFilter> = {}
-): IntervalFilter {
-  return {
-    type: DomainType.INTERVAL,
-    includeUndefined: true,
-    minValue: 0,
-    maxValue: 100,
-    filterLowerValue: 5,
-    filterUpperValue: 10,
     ...override,
   };
 }

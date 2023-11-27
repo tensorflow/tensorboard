@@ -12,15 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {HparamsAndMetadata, Run} from './data_source/runs_data_source_types';
+import {Run} from './data_source/runs_data_source_types';
 
 export {Run} from './data_source/runs_data_source_types';
 
-export type ExperimentIdToRunsAndMetadata = Record<
+export type ExperimentIdToRuns = Record<
   string,
   {
     runs: Run[];
-    metadata: HparamsAndMetadata;
   }
 >;
 
@@ -28,28 +27,6 @@ export interface RunGroup {
   matches: Record<string, Run[]>;
   nonMatches: Run[];
 }
-
-export enum SortType {
-  EXPERIMENT_NAME,
-  HPARAM,
-  METRIC,
-  RUN_NAME,
-}
-
-export interface HparamsSortKey {
-  type: SortType.HPARAM;
-  name: string;
-}
-
-export interface MetricsSortKey {
-  type: SortType.METRIC;
-  tag: string;
-}
-
-export type SortKey =
-  | HparamsSortKey
-  | MetricsSortKey
-  | {type: SortType.RUN_NAME | SortType.EXPERIMENT_NAME};
 
 export enum GroupByKey {
   // Group runs by run names.

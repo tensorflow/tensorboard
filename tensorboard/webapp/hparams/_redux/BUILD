@@ -73,7 +73,6 @@ tf_ts_library(
     name = "hparams_selectors",
     srcs = [
         "hparams_selectors.ts",
-        "hparams_selectors_utils.ts",
     ],
     deps = [
         ":hparams_actions",
@@ -147,7 +146,6 @@ tf_ts_library(
         "hparams_effects_test.ts",
         "hparams_reducers_test.ts",
         "hparams_selectors_test.ts",
-        "hparams_selectors_utils_test.ts",
         "utils_test.ts",
     ],
     deps = [
