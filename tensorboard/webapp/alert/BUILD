@@ -55,6 +55,7 @@ tf_ts_library(
         "//tensorboard/webapp/alert/effects",
         "//tensorboard/webapp/alert/store",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_ngrx_effects_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "@npm//@angular/common",
         "@npm//@angular/core",
