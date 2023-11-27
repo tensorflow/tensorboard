@@ -364,6 +364,17 @@ tf_ts_library(
     ],
 )
 
+# This is a dummy rule used as a @ngrx/effects/testing dependency.
+# This is not a replacement for @ngrx/effects dependency.
+tf_ts_library(
+    name = "expect_ngrx_effects_testing",
+    testonly = True,
+    srcs = [],
+    deps = [
+        "@npm//@ngrx/effects",
+    ],
+)
+
 # This is a dummy rule used as a @ngrx/store/testing dependency.
 # This is not a replacement for @ngrx/store dependency.
 tf_ts_library(
