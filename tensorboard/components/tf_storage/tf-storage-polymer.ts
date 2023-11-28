@@ -15,9 +15,4 @@ limitations under the License.
 import '../../webapp/tb_polymer_interop_types';
 import * as tf_storage from './index';
 
-window['tensorboard']['tf_storage'] = {
-  ['setString']: tf_storage.setString,
-  ['getString']: tf_storage.getString,
-  ['migrateLegacyURLScheme']: tf_storage.migrateLegacyURLScheme,
-  ['getUrlHashDict']: tf_storage.getUrlHashDict,
-};
+window.tensorboard.tf_storage = tf_storage;

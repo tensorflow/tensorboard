@@ -75,6 +75,7 @@ tf_ng_module(
 tf_ts_library(
     name = "tb_polymer_interop_types",
     srcs = [
+        "tb_polymer_interop_type_definitions.d.ts",
         "tb_polymer_interop_types.ts",
     ],
     deps = [
@@ -109,6 +110,7 @@ tf_ng_module(
         ":oss_plugins_module",
         ":selectors",
         ":store_module",
+        ":tb_polymer_interop_types",
         "//tensorboard/components/experimental/plugin_util:plugin_host",
         "//tensorboard/webapp/alert",
         "//tensorboard/webapp/alert/views:alert_snackbar",

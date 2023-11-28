@@ -15,6 +15,4 @@ limitations under the License.
 import '../../webapp/tb_polymer_interop_types';
 import * as tf_globals from './globals';
 
-window['tensorboard']['tf_globals'] = {
-  ['setUseHash']: tf_globals.setUseHash,
-};
+window.tensorboard.tf_globals = tf_globals;

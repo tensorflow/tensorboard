@@ -26,20 +26,20 @@ export class HashDeepLinker implements DeepLinkerInterface {
     // Note: `migrateLegacyURLScheme()` must be called before `setUseHash`, so
     // that tfStorage reads from the actual URL, not the fake hash for tests
     // only.
-    window['tensorboard']['tf_storage']['migrateLegacyURLScheme']?.();
-    window['tensorboard']['tf_globals']['setUseHash']?.(true);
+    window.tensorboard.tf_storage.migrateLegacyURLScheme?.();
+    window.tensorboard.tf_globals.setUseHash?.(true);
   }
 
   getString(key: string): string {
-    return window['tensorboard']['tf_storage']['getString']?.(key) ?? '';
+    return window.tensorboard.tf_storage.getString?.(key) ?? '';
   }
 
   setString(key: string, value: string, options?: SetStringOption): void {
-    window['tensorboard']['tf_storage']['setString']?.(key, value, options);
+    window.tensorboard.tf_storage.setString?.(key, value, options);
   }
 
   getPluginId(): string {
-    return window['tensorboard']['tf_storage']['getString']?.(TAB) ?? '';
+    return window.tensorboard.tf_storage.getString?.(TAB) ?? '';
   }
 
   setPluginId(pluginId: string, options?: SetStringOption): void {
