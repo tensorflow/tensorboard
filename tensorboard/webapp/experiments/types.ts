@@ -22,12 +22,29 @@ export declare interface Experiment {
   hparams?: string;
   tags?: string[];
   related_links?: Array<{name: string; url: string}>;
+  // The resource name of the default table serving the metrics data of the
+  // experiment, as in https://google.aip.dev/122. Format:
+  // repos/{repo-id}/tables/{table-id}
+  default_metrics_data_source?: string;
+  metrics_data_sources?: MetricsDataSource[];
   // These state values were chosen to follow these AIPs
   // https://google.aip.dev/164 and https://google.aip.dev/216.
   // However, we replaced 'delete' with 'hidden' as this feature is different
   // from the soft delete described in the AIP. In this case 'hidden' simply
   // means that the experiment is not shown in the experiment list.
   state?: 'active' | 'hidden' | 'unspecified';
+}
+
+export declare interface MetricsDataSource {
+  // The resource name of the table serving the metrics data of the
+  // experiment, as in https://google.aip.dev/122. Format:
+  // repos/{repo-id}/tables/{table-id}
+  name: string;
+  repo_id: string;
+  table_id: string;
+  // The Datatable UI url for for Datatable data source. Format:
+  // https://datatable/xid/{xid}/{table_path}
+  datatable_uri?: string;
 }
 
 export interface ExperimentAlias {
