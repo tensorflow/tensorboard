@@ -14,7 +14,11 @@ limitations under the License.
 ==============================================================================*/
 import {TimeSelection} from '../widgets/card_fob/card_fob_types';
 import {HistogramMode} from '../widgets/histogram/histogram_types';
-import {ColumnHeader, DataTableMode} from '../widgets/data_table/types';
+import {
+  ColumnHeader,
+  ColumnHeaderType,
+  DataTableMode,
+} from '../widgets/data_table/types';
 
 export {HistogramMode, TimeSelection};
 

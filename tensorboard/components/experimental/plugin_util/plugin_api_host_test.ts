@@ -267,7 +267,7 @@ describe('plugin_api_host test', () => {
                 'p.another_plugn.b': '2',
               };
             },
-          } as any,
+          },
         };
         coreApi.init();
         const actual = triggerGetUrlData({pluginName: 'plugin_id'});
@@ -275,8 +275,6 @@ describe('plugin_api_host test', () => {
           a: '1',
           b: 'b',
         });
-
-        delete (window as any)['tensorboard'];
       });
     });
 
