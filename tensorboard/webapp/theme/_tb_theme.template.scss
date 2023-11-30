@@ -280,7 +280,15 @@ $tb-dark-theme: map_merge(
   // Prevent color-picker from briefly showing scrollbar when calculating its
   // position.
   .cdk-overlay-container {
+    // Prevent color-picker from briefly showing scrollbar when calculating its
+    // position.
     contain: strict;
+    // The old dialog had a default 24px padding. When migrating to the
+    // new dialog this padding was added to avoid adding it to them all
+    // individually.
+    .mat-mdc-dialog-surface {
+      padding: 24px;
+    }
   }
 
   a:not(.mdc-button, .mdc-icon-button) {
