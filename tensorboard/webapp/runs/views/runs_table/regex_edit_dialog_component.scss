@@ -28,11 +28,11 @@ $padding-size: 16px;
       @include tb-theme-foreground-prop(color, link-visited);
     }
   }
-  padding: $padding-size;
+  padding-bottom: $padding-size;
 }
 
 .group-container {
-  margin: $padding-size;
+  margin: $padding-size 0;
 
   h4 {
     margin-bottom: $padding-size;
