@@ -12,7 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {TestBed} from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {HparamFilterbarComponent} from './hparam_filterbar_component';
 import {HparamFilterbarContainer} from './hparam_filterbar_container';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
@@ -76,6 +77,7 @@ describe('hparam_filterbar', () => {
       ],
       declarations: [HparamFilterbarComponent, HparamFilterbarContainer],
       providers: [provideMockTbStore()],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
 
@@ -83,7 +85,7 @@ describe('hparam_filterbar', () => {
     store?.resetSelectors();
   });
 
-  function createComponent() {
+  function createComponent(): ComponentFixture<HparamFilterbarContainer> {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     actualActions = [];
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
