@@ -22,6 +22,13 @@ tf_sass_binary(
 )
 
 tf_sass_binary(
+    name = "hparam_filterbar_styles",
+    src = "hparam_filterbar_component.scss",
+    strict_deps = False,
+    deps = ["//tensorboard/webapp/theme"],
+)
+
+tf_sass_binary(
     name = "runs_data_table_styles",
     src = "runs_data_table.scss",
     strict_deps = False,
@@ -46,6 +53,8 @@ tf_ts_library(
 tf_ng_module(
     name = "runs_table",
     srcs = [
+        "hparam_filterbar_component.ts",
+        "hparam_filterbar_container.ts",
         "regex_edit_dialog_component.ts",
         "regex_edit_dialog_container.ts",
         "runs_data_table.ts",
@@ -57,8 +66,10 @@ tf_ng_module(
     ],
     assets = [
         ":regex_edit_dialog_styles",
+        ":hparam_filterbar_styles",
         ":runs_data_table_styles",
         ":runs_group_menu_button_styles",
+        "hparam_filterbar_component.ng.html",
         "regex_edit_dialog.ng.html",
         "runs_data_table.ng.html",
         "runs_group_menu_button_component.ng.html",
@@ -99,11 +110,14 @@ tf_ng_module(
         "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/util:colors",
         "//tensorboard/webapp/util:matcher",
+        "//tensorboard/webapp/widgets/custom_modal",
         "//tensorboard/webapp/widgets/data_table",
+        "//tensorboard/webapp/widgets/data_table:filter_dialog",
         "//tensorboard/webapp/widgets/data_table:types",
         "//tensorboard/webapp/widgets/experiment_alias",
         "//tensorboard/webapp/widgets/filter_input",
         "//tensorboard/webapp/widgets/range_input",
+        "//tensorboard/webapp/widgets/range_input:types",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
@@ -116,6 +130,7 @@ tf_ts_library(
     name = "runs_table_test",
     testonly = True,
     srcs = [
+        "hparam_filterbar_test.ts",
         "regex_edit_dialog_test.ts",
         "runs_data_table_test.ts",
         "runs_table_test.ts",
@@ -146,7 +161,6 @@ tf_ts_library(
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/hparams",
         "//tensorboard/webapp/hparams:testing",
-        "//tensorboard/webapp/hparams:types",
         "//tensorboard/webapp/metrics/views/main_view:common_selectors",
         "//tensorboard/webapp/runs:types",
         "//tensorboard/webapp/runs/actions",
@@ -160,7 +174,9 @@ tf_ts_library(
         "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/types:ui",
+        "//tensorboard/webapp/widgets/custom_modal",
         "//tensorboard/webapp/widgets/data_table",
+        "//tensorboard/webapp/widgets/data_table:filter_dialog",
         "//tensorboard/webapp/widgets/data_table:types",
         "//tensorboard/webapp/widgets/experiment_alias",
         "//tensorboard/webapp/widgets/filter_input",

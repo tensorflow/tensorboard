@@ -71,7 +71,7 @@ export interface IntervalFilter {
 }
 
 export interface FilterAddedEvent {
-  header: ColumnHeader;
+  name: string;
   value: IntervalFilter | DiscreteFilter;
 }
 
