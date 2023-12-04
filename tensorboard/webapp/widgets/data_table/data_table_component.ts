@@ -377,7 +377,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     }
 
     this.addFilter.emit({
-      header: this.filterColumn,
+      name: this.filterColumn.name,
       value: {
         ...filter,
         filterLowerValue: value.lowerValue,
@@ -402,7 +402,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     }
 
     this.addFilter.emit({
-      header: this.filterColumn,
+      name: this.filterColumn.name,
       value: {
         ...filter,
         filterValues: Array.from(newValues),
@@ -419,7 +419,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
       return;
     }
     this.addFilter.emit({
-      header: this.filterColumn,
+      name: this.filterColumn.name,
       value: {
         ...filter,
         includeUndefined: !filter.includeUndefined,

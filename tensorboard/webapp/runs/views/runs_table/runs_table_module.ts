@@ -25,6 +25,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 import {MatMenuModule} from '@angular/material/menu';
+import {MatChipsModule} from '@angular/material/chips';
 import {MatPaginatorModule} from '@angular/material/paginator';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSortModule} from '@angular/material/sort';
@@ -34,11 +35,15 @@ import {AlertModule} from '../../../alert/alert_module';
 import {DataTableModule} from '../../../widgets/data_table/data_table_module';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';
+import {FilterDialogModule} from '../../../widgets/data_table/filter_dialog_module';
 import {RangeInputModule} from '../../../widgets/range_input/range_input_module';
 import {RegexEditDialogComponent} from './regex_edit_dialog_component';
 import {RegexEditDialogContainer} from './regex_edit_dialog_container';
+import {HparamFilterbarComponent} from './hparam_filterbar_component';
+import {HparamFilterbarContainer} from './hparam_filterbar_container';
 import {RunsGroupMenuButtonComponent} from './runs_group_menu_button_component';
 import {RunsGroupMenuButtonContainer} from './runs_group_menu_button_container';
+import {CustomModalModule} from '../../../widgets/custom_modal/custom_modal_module';
 import {RunsDataTable} from './runs_data_table';
 import {RunsTableContainer} from './runs_table_container';
 
@@ -54,19 +59,24 @@ import {RunsTableContainer} from './runs_table_container';
     MatCheckboxModule,
     MatDialogModule,
     MatInputModule,
+    FilterDialogModule,
     MatIconModule,
     MatMenuModule,
+    MatChipsModule,
     MatPaginatorModule,
     MatProgressSpinnerModule,
     MatSortModule,
     MatTableModule,
     RangeInputModule,
+    CustomModalModule,
     AlertModule,
   ],
   exports: [RunsTableContainer],
   declarations: [
     RegexEditDialogComponent,
     RegexEditDialogContainer,
+    HparamFilterbarComponent,
+    HparamFilterbarContainer,
     RunsDataTable,
     RunsGroupMenuButtonComponent,
     RunsGroupMenuButtonContainer,
