@@ -14,8 +14,8 @@ limitations under the License.
 ==============================================================================*/
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {NO_ERRORS_SCHEMA} from '@angular/core';
-import {HparamFilterbarComponent} from './hparam_filterbar_component';
-import {HparamFilterbarContainer} from './hparam_filterbar_container';
+import {FilterbarComponent} from './filterbar_component';
+import {FilterbarContainer} from './filterbar_container';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {provideMockTbStore} from '../../../testing/utils';
 import {MockStore} from '@ngrx/store/testing';
@@ -75,7 +75,7 @@ describe('hparam_filterbar', () => {
         MatIconTestingModule,
         FilterDialogModule,
       ],
-      declarations: [HparamFilterbarComponent, HparamFilterbarContainer],
+      declarations: [FilterbarComponent, FilterbarContainer],
       providers: [provideMockTbStore()],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -85,23 +85,21 @@ describe('hparam_filterbar', () => {
     store?.resetSelectors();
   });
 
-  function createComponent(): ComponentFixture<HparamFilterbarContainer> {
+  function createComponent(): ComponentFixture<FilterbarContainer> {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     actualActions = [];
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
     });
 
-    return TestBed.createComponent(HparamFilterbarContainer);
+    return TestBed.createComponent(FilterbarContainer);
   }
 
   it('renders hparam filterbar', () => {
     const fixture = createComponent();
     fixture.detectChanges();
 
-    const dialog = fixture.debugElement.query(
-      By.directive(HparamFilterbarComponent)
-    );
+    const dialog = fixture.debugElement.query(By.directive(FilterbarComponent));
 
     expect(dialog).toBeTruthy();
   });
@@ -164,7 +162,7 @@ describe('hparam_filterbar', () => {
       fakeFilterMap
     );
     const component = fixture.debugElement.query(
-      By.directive(HparamFilterbarComponent)
+      By.directive(FilterbarComponent)
     ).componentInstance;
     const openAtPositionSpy = spyOn(
       CustomModalComponent.prototype,

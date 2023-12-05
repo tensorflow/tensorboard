@@ -23,17 +23,17 @@ import {
 import {FilterAddedEvent} from '../../../widgets/data_table/types';
 
 @Component({
-  selector: 'hparam-filterbar',
-  template: `<hparam-filterbar-component
+  selector: 'filterbar',
+  template: `<filterbar-component
     [filters]="filters$ | async"
     (removeHparamFilter)="removeHparamFilter($event)"
     (addFilter)="addHparamFilter($event)"
   >
-  </hparam-filterbar-component>`,
+  </filterbar-component>`,
   styles: [``],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HparamFilterbarContainer implements OnDestroy {
+export class FilterbarContainer implements OnDestroy {
   filters$ = this.store.select(hparamsSelectors.getDashboardHparamFilterMap);
 
   private readonly ngUnsubscribe = new Subject<void>();

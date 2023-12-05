@@ -30,12 +30,12 @@ import {RangeValues} from '../../../widgets/range_input/types';
 import {CustomModalComponent} from '../../../widgets/custom_modal/custom_modal_component';
 
 @Component({
-  selector: 'hparam-filterbar-component',
-  templateUrl: 'hparam_filterbar_component.ng.html',
-  styleUrls: ['hparam_filterbar_component.css'],
+  selector: 'filterbar-component',
+  templateUrl: 'filterbar_component.ng.html',
+  styleUrls: ['filterbar_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HparamFilterbarComponent {
+export class FilterbarComponent {
   @Input() filters!: Map<string, DiscreteFilter | IntervalFilter>;
 
   @Output() removeHparamFilter = new EventEmitter<string>();
@@ -56,8 +56,6 @@ export class HparamFilterbarComponent {
   get selectedFilter(): DiscreteFilter | IntervalFilter | undefined {
     return this.filters.get(this.selectedFilterName);
   }
-
-  constructor() {}
 
   openFilterMenu(event: MouseEvent, filterName: string) {
     this.selectedFilterName = filterName;

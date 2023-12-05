@@ -39,8 +39,8 @@ import {FilterDialogModule} from '../../../widgets/data_table/filter_dialog_modu
 import {RangeInputModule} from '../../../widgets/range_input/range_input_module';
 import {RegexEditDialogComponent} from './regex_edit_dialog_component';
 import {RegexEditDialogContainer} from './regex_edit_dialog_container';
-import {HparamFilterbarComponent} from './hparam_filterbar_component';
-import {HparamFilterbarContainer} from './hparam_filterbar_container';
+import {FilterbarComponent} from './filterbar_component';
+import {FilterbarContainer} from './filterbar_container';
 import {RunsGroupMenuButtonComponent} from './runs_group_menu_button_component';
 import {RunsGroupMenuButtonContainer} from './runs_group_menu_button_container';
 import {CustomModalModule} from '../../../widgets/custom_modal/custom_modal_module';
@@ -75,8 +75,8 @@ import {RunsTableContainer} from './runs_table_container';
   declarations: [
     RegexEditDialogComponent,
     RegexEditDialogContainer,
-    HparamFilterbarComponent,
-    HparamFilterbarContainer,
+    FilterbarComponent,
+    FilterbarContainer,
     RunsDataTable,
     RunsGroupMenuButtonComponent,
     RunsGroupMenuButtonContainer,

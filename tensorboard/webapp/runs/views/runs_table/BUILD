@@ -22,8 +22,8 @@ tf_sass_binary(
 )
 
 tf_sass_binary(
-    name = "hparam_filterbar_styles",
-    src = "hparam_filterbar_component.scss",
+    name = "filterbar_styles",
+    src = "filterbar_component.scss",
     strict_deps = False,
     deps = ["//tensorboard/webapp/theme"],
 )
@@ -53,8 +53,8 @@ tf_ts_library(
 tf_ng_module(
     name = "runs_table",
     srcs = [
-        "hparam_filterbar_component.ts",
-        "hparam_filterbar_container.ts",
+        "filterbar_component.ts",
+        "filterbar_container.ts",
         "regex_edit_dialog_component.ts",
         "regex_edit_dialog_container.ts",
         "runs_data_table.ts",
@@ -66,10 +66,10 @@ tf_ng_module(
     ],
     assets = [
         ":regex_edit_dialog_styles",
-        ":hparam_filterbar_styles",
+        ":filterbar_styles",
         ":runs_data_table_styles",
         ":runs_group_menu_button_styles",
-        "hparam_filterbar_component.ng.html",
+        "filterbar_component.ng.html",
         "regex_edit_dialog.ng.html",
         "runs_data_table.ng.html",
         "runs_group_menu_button_component.ng.html",
@@ -130,7 +130,7 @@ tf_ts_library(
     name = "runs_table_test",
     testonly = True,
     srcs = [
-        "hparam_filterbar_test.ts",
+        "filterbar_test.ts",
         "regex_edit_dialog_test.ts",
         "runs_data_table_test.ts",
         "runs_table_test.ts",
