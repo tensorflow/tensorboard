@@ -214,7 +214,7 @@ def tensorboard_js_workspace():
                 "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/navigation/arrow_forward/materialicons/24px.svg",
                 "https://raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/navigation/arrow_forward/materialicons/24px.svg",
             ],
-            "62517f12ccdaef9d5ffe156d7acff9b9a845c8f48e00eacfe6a9b3d8f8299265", [
+            "62517f12ccdaef9d5ffe156d7acff9b9a845c8f48e00eacfe6a9b3d8f8299265": [
                 "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/content/filter_list/materialicons/24px.svg",
                 "https://raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/content/filter_list/materialicons/24px.svg",
             ],
