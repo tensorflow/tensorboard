@@ -214,6 +214,10 @@ def tensorboard_js_workspace():
                 "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/navigation/arrow_forward/materialicons/24px.svg",
                 "https://raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/navigation/arrow_forward/materialicons/24px.svg",
             ],
+            "da5f9ac466b2a296bdbbcee8eef2eaecf992207e83b8304451701e2e13a2bc0f": [
+                "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/content/filter_list/materialicons/24px.svg",
+                "https://raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/content/filter_list/materialicons/24px.svg",
+            ],
         },
         rename = {
             "ic_arrow_downward_24px.svg": "arrow_downward_24px.svg",
@@ -284,5 +288,7 @@ def tensorboard_js_workspace():
             "https://raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/navigation/arrow_back/materialicons/24px.svg": "arrow_back_24px.svg",
             "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/navigation/arrow_forward/materialicons/24px.svg": "arrow_forward_24px.svg",
             "https://raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/navigation/arrow_forward/materialicons/24px.svg": "arrow_forward_24px.svg",
+            "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/content/filter_list/materialicons/24px.svg": "filter_list_24px.svg",
+            "https://raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/content/filter_list/materialicons/24px.svg": "filter_list_24px.svg",
         },
     )
