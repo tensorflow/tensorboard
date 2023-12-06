@@ -15,8 +15,8 @@ limitations under the License.
 declare global {
   interface Window {
     tensorboard: {
-      tf_storage: Partial<TfStorage>;
-      tf_globals: Partial<TfGlobals>;
+      tf_storage: TfStorage;
+      tf_globals: TfGlobals;
     };
   }
 }

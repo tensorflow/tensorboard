@@ -26,14 +26,10 @@ declare global {
 
   interface Window {
     tensorboard: {
-      tf_storage: Partial<TfStorage>;
-      tf_globals: Partial<TfGlobals>;
+      tf_storage: TfStorage;
+      tf_globals: TfGlobals;
     };
   }
-}
-
-if (!window.tensorboard) {
-  window.tensorboard = {tf_storage: {}, tf_globals: {}};
 }
 
 export declare interface TfFeatureFlags {
