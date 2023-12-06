@@ -52,10 +52,6 @@ describe('deeplink', () => {
     deepLinker = TestBed.inject(HashDeepLinker);
   });
 
-  afterEach(() => {
-    window.tensorboard = {tf_globals: {}, tf_storage: {}};
-  });
-
   it('uses real hash and migrates legacy URLs', () => {
     expect(setUseHashSpy).toHaveBeenCalledWith(true);
     expect(migrateLegacyURLSchemeSpy).toHaveBeenCalled();

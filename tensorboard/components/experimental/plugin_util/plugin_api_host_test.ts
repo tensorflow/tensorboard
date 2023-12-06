@@ -65,10 +65,6 @@ describe('plugin_api_host test', () => {
     store?.resetSelectors();
   });
 
-  afterEach(() => {
-    window.tensorboard = {tf_globals: {}, tf_storage: {}};
-  });
-
   describe('runs apis', () => {
     describe('#experimental.RunsChanged', () => {
       it('broadcasts runs when runs change', () => {
@@ -268,7 +264,7 @@ describe('plugin_api_host test', () => {
               };
             },
           },
-        };
+        } as any;
         coreApi.init();
         const actual = triggerGetUrlData({pluginName: 'plugin_id'});
         expect(actual).toEqual({
