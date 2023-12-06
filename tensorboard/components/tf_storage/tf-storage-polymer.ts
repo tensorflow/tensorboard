@@ -15,4 +15,13 @@ limitations under the License.
 import '../../webapp/tb_polymer_interop_types';
 import * as tf_storage from './index';
 
-window.tensorboard.tf_storage = tf_storage;
+/**
+ * Attach API to window for interoperability with the Angular binary.
+ * The full shared type is defined in tensorboard/webapp/tb_polymer_interop_type_definitions.d.ts
+ * Defining it this way doesn't matter too much while property renaming is turned off,
+ * but at some point in the future we would like to enable it.
+ */
+window.tensorboard = {
+  ...window.tensorboard,
+  tf_storage,
+};
