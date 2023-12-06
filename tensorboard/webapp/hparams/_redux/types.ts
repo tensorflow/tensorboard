@@ -14,9 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {
   DiscreteFilter,
-  HparamSpec,
   IntervalFilter,
-  MetricSpec,
   HparamAndMetricSpec,
   SessionGroup,
 } from '../_types';
@@ -24,54 +22,17 @@ import {
 export type HparamFilter = DiscreteFilter | IntervalFilter;
 export type MetricFilter = IntervalFilter;
 
-export interface HparamsMetricsAndFilters {
-  hparam: {
-    specs: HparamSpec[];
-    defaultFilters: Map<string, HparamFilter>;
-  };
-  metric: {
-    specs: MetricSpec[];
-    defaultFilters: Map<string, MetricFilter>;
-  };
-}
-
-export type ExperimentToHparams = Record<
-  // experiemnt Id.
-  string,
-  HparamsMetricsAndFilters
->;
-
 /**
  * Key used to namespace the hparams reducer.
  */
 export const HPARAMS_FEATURE_KEY = 'hparams';
 
 export interface HparamsState {
-  specs: ExperimentToHparams;
   dashboardSpecs: HparamAndMetricSpec;
   dashboardSessionGroups: SessionGroup[];
   dashboardFilters: {
     hparams: Map<string, HparamFilter>;
     metrics: Map<string, MetricFilter>;
-  };
-  /**
-   * RATIONALE: we do not use the NamespaceContextedState because of the following reasons.
-   * - RunsTable which uses the state renders both on the dashboard view and the
-   *     experiments list view.
-   * - For the RunsTable on the list view, we have to key the state by an experimentId
-   *    since we cannot have filter for multiple experiments in the view mutate the same
-   *    object.
-   * - For the dashboard view that supports comparison, we need to remember filter state
-   *    when viewing multiple experiments separate from a single version one; while we can
-   *    technically have a reasonable UX, it makes things more complex.
-   * - We can use NamespaceContextedState to separate single experiment filter selection to be
-   *    separate for the list and the dashboard views, but them shared is not too bad.
-   */
-  filters: {
-    [id: string]: {
-      hparams: Map<string, HparamFilter>;
-      metrics: Map<string, MetricFilter>;
-    };
   };
 }
 

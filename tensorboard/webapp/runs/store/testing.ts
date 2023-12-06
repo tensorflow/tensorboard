@@ -16,8 +16,7 @@ limitations under the License.
  * @fileoverview Testing utility for testing runs.
  */
 
-import {SortDirection} from '../../types/ui';
-import {ColumnHeaderType, SortingOrder} from '../../widgets/data_table/types';
+import {SortingOrder} from '../../widgets/data_table/types';
 import {GroupByKey} from '../types';
 import {
   Run,
@@ -66,8 +65,6 @@ export function buildRunsState(
       ...dataOverride,
     },
     ui: {
-      paginationOption: {pageIndex: 0, pageSize: 0},
-      sort: {key: null, direction: SortDirection.UNSET},
       selectionState: new Map(),
       runsTableHeaders: [],
       sortingInfo: {

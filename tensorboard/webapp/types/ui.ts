@@ -17,12 +17,6 @@ limitations under the License.
  * and data sources.
  */
 
-export enum SortDirection {
-  ASC = 'asc',
-  DESC = 'desc',
-  UNSET = '',
-}
-
 export enum SearchTokenKey {
   EXPERIMENT_ID = 'id',
   USER = 'user',

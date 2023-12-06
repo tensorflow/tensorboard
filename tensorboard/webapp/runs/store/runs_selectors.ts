@@ -14,8 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {DataLoadState, LoadState} from '../../types/data';
-import {SortDirection} from '../../types/ui';
-import {GroupBy, SortKey} from '../types';
+import {GroupBy} from '../types';
 import {
   ExperimentId,
   Run,
@@ -170,15 +169,6 @@ export const getDashboardRuns = createSelector(
           .filter((id) => Boolean(state.runMetadata[id]))
           .map((runId) => {
             const run = {...state.runMetadata[runId], experimentId};
-            // runMetadata contains hparam and metric values that were retrieved
-            // for the run in isolation. This data is incorrect for use in the
-            // dashboard, where we might be comparing multiple experiments and
-            // the set of hparams and metrics may be a superset.
-            //
-            // Instead we override the hparam and metric values with those
-            // calculated by getDashboardRunsToHparamsAndMetrics, which is based
-            // on the hparam and metric data for all active experiments
-            // together.
             run.hparams = runsToHparamsAndMetrics[runId]?.hparams ?? null;
             run.metrics = runsToHparamsAndMetrics[runId]?.metrics ?? null;
             return run;
@@ -271,26 +261,6 @@ const getUiState = createSelector(
   getRunsState,
   (state: RunsState): RunsUiState => {
     return state.ui;
-  }
-);
-
-/**
- * Returns Observable that emits pagination option on the run selector.
- */
-export const getRunSelectorPaginationOption = createSelector(
-  getUiState,
-  (state: RunsUiState): {pageIndex: number; pageSize: number} => {
-    return state.paginationOption;
-  }
-);
-
-/**
- * Returns Observable that emits sort options on the run selector.
- */
-export const getRunSelectorSort = createSelector(
-  getUiState,
-  (state: RunsUiState): {key: SortKey | null; direction: SortDirection} => {
-    return state.sort;
   }
 );
 

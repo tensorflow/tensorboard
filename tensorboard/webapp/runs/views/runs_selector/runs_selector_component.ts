@@ -19,7 +19,6 @@ import {RunsTableColumn} from '../runs_table/types';
   selector: 'runs-selector-component',
   template: `
     <runs-table
-      [useFlexibleLayout]="true"
       [columns]="columns"
       [experimentIds]="experimentIds"
       [showHparamsAndMetrics]="showHparamsAndMetrics"

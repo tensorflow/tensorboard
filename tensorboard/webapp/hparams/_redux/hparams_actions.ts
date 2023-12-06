@@ -17,44 +17,8 @@ limitations under the License.
  */
 
 import {createAction, props} from '@ngrx/store';
-import {
-  DiscreteHparamValues,
-  HparamAndMetricSpec,
-  SessionGroup,
-} from '../types';
+import {HparamAndMetricSpec, SessionGroup} from '../types';
 import {HparamFilter, MetricFilter} from './types';
-
-export const hparamsDiscreteHparamFilterChanged = createAction(
-  '[Hparams] Hparams Discrete Hparam Filter Changed',
-  props<{
-    experimentIds: string[];
-    hparamName: string;
-    filterValues: DiscreteHparamValues;
-    includeUndefined: boolean;
-  }>()
-);
-
-export const hparamsIntervalHparamFilterChanged = createAction(
-  '[Hparams] Hparams Interval Hparam Filter Changed',
-  props<{
-    experimentIds: string[];
-    hparamName: string;
-    filterLowerValue: number;
-    filterUpperValue: number;
-    includeUndefined: boolean;
-  }>()
-);
-
-export const hparamsMetricFilterChanged = createAction(
-  '[Hparams] Hparams Metric Filter Changed',
-  props<{
-    experimentIds: string[];
-    metricTag: string;
-    filterLowerValue: number;
-    filterUpperValue: number;
-    includeUndefined: boolean;
-  }>()
-);
 
 export const hparamsFetchSessionGroupsSucceeded = createAction(
   '[Hparams] Hparams Fetch Session Groups Succeeded',

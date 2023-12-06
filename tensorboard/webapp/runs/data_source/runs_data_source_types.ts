@@ -66,12 +66,6 @@ export interface MetricSpec extends backendTypes.MetricSpec {
   tag: string;
 }
 
-export interface HparamsAndMetadata {
-  hparamSpecs: HparamSpec[];
-  metricSpecs: MetricSpec[];
-  runToHparamsAndMetrics: RunToHparamsAndMetrics;
-}
-
 export interface Run {
   id: string;
   name: string;
@@ -81,9 +75,6 @@ export interface Run {
 @Injectable({providedIn: 'root'})
 export abstract class RunsDataSource {
   abstract fetchRuns(experimentId: string): Observable<Run[]>;
-  abstract fetchHparamsMetadata(
-    experimentId: string
-  ): Observable<HparamsAndMetadata>;
 }
 
 export type RunToHParamValues = Record<

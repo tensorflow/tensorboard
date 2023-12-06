@@ -126,7 +126,7 @@ describe('hparams effects', () => {
       store.overrideSelector(selectors.getEnableHparamsInTimeSeries, false);
       store.refreshState();
 
-      action.next(runsActions.runTableShown({experimentIds: ['exp1']}));
+      action.next(appRoutingActions.navigated({} as any));
       expect(dataSource.fetchExperimentInfo).not.toHaveBeenCalled();
       expect(dataSource.fetchSessionGroups).not.toHaveBeenCalled();
       expect(actualActions).toEqual([]);
@@ -139,36 +139,10 @@ describe('hparams effects', () => {
       });
       store.refreshState();
 
-      action.next(runsActions.runTableShown({experimentIds: ['exp1']}));
+      action.next(appRoutingActions.navigated({} as any));
       expect(dataSource.fetchExperimentInfo).not.toHaveBeenCalled();
       expect(dataSource.fetchSessionGroups).not.toHaveBeenCalled();
       expect(actualActions).toEqual([]);
-    });
-
-    it('fetches data when runTable is shown', () => {
-      action.next(runsActions.runTableShown({experimentIds: ['exp1']}));
-      expect(dataSource.fetchExperimentInfo).toHaveBeenCalledWith(['exp1']);
-      expect(dataSource.fetchSessionGroups).toHaveBeenCalledWith(['exp1'], {
-        hparams: [buildHparamSpec({name: 'h1'})],
-        metrics: [buildMetricSpec({tag: 'm1'})],
-      });
-      expect(actualActions).toEqual([
-        hparamsActions.hparamsFetchSessionGroupsSucceeded({
-          hparamsAndMetricsSpecs: mockHparamsAndMetricsSpecs,
-          sessionGroups: mockSessionGroups,
-        }),
-      ]);
-    });
-
-    it('does not refetch data if experiments have not changed', () => {
-      action.next(runsActions.runTableShown({experimentIds: ['exp1']}));
-      action.next(runsActions.runTableShown({experimentIds: ['exp1']}));
-      expect(actualActions).toEqual([
-        hparamsActions.hparamsFetchSessionGroupsSucceeded({
-          hparamsAndMetricsSpecs: mockHparamsAndMetricsSpecs,
-          sessionGroups: mockSessionGroups,
-        }),
-      ]);
     });
 
     it('fetches data after navigation', () => {

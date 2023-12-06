@@ -17,12 +17,11 @@ limitations under the License.
 }
 
 :host > div {
-  margin: 16px;
+  margin: 16px 0;
 }
 
 h3 {
   font-size: 20px;
-  margin: 16px;
 }
 
 .reload-toggle {
