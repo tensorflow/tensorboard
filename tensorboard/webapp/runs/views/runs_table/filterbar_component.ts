@@ -44,15 +44,14 @@ export class FilterbarComponent {
   @ViewChild('filterModal', {static: false})
   private readonly filterModal!: CustomModalComponent;
 
-  _selectedFilterName = '';
+  private internalSelectedFilterName = '';
   get selectedFilterName(): string {
-    return this._selectedFilterName;
+    return this.internalSelectedFilterName;
   }
   set selectedFilterName(filterName: string) {
-    this._selectedFilterName = filterName;
+    this.internalSelectedFilterName = filterName;
   }
   // selectedFilter indirectly set using selectedFilterName.
-  _selectedFilter?: DiscreteFilter | IntervalFilter | undefined;
   get selectedFilter(): DiscreteFilter | IntervalFilter | undefined {
     return this.filters.get(this.selectedFilterName);
   }
