@@ -311,7 +311,10 @@ $tb-dark-theme: map_merge(
     a,
     button.mat-mdc-button-base {
       --tb-icon-size: 24px;
-      --mdc-typography-button-letter-spacing: normal;
+      --mdc-text-button-label-text-tracking: normal;
+      --mdc-filled-button-label-text-tracking: normal;
+      --mdc-outlined-button-label-text-tracking: normal;
+      --mdc-protected-button-label-text-tracking: normal;
 
       &[mat-icon-button].mat-mdc-icon-button {
         width: 40px;
