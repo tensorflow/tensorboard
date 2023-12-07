@@ -190,9 +190,7 @@ describe('runs_table', () => {
       const dataTable = fixture.debugElement.query(By.directive(RunsDataTable));
 
       dataTable.componentInstance.addFilter.emit({
-        header: {
-          name: 'qaz',
-        },
+        name: 'qaz',
         value: {
           type: DomainType.INTERVAL,
           includeUndefined: true,
@@ -223,9 +221,7 @@ describe('runs_table', () => {
       const dataTable = fixture.debugElement.query(By.directive(RunsDataTable));
 
       dataTable.componentInstance.addFilter.emit({
-        header: {
-          name: 'foo',
-        },
+        name: 'foo',
         value: {
           type: DomainType.DISCRETE,
           includeUndefined: true,

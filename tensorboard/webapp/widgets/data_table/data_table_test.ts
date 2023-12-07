@@ -1022,7 +1022,7 @@ describe('data table', () => {
       });
 
       expect(addFilterSpy).toHaveBeenCalledOnceWith({
-        header: mockHeaders[0],
+        name: 'some_hparam',
         value: {
           ...filter,
           filterLowerValue: 3,
@@ -1051,7 +1051,7 @@ describe('data table', () => {
       filterDialog.componentInstance.discreteFilterChanged.emit(2);
 
       expect(addFilterSpy).toHaveBeenCalledOnceWith({
-        header: mockHeaders[0],
+        name: 'some_hparam',
         value: {
           ...filter,
           filterValues: [4, 6, 8],
@@ -1079,7 +1079,7 @@ describe('data table', () => {
       filterDialog.componentInstance.discreteFilterChanged.emit(6);
 
       expect(addFilterSpy).toHaveBeenCalledOnceWith({
-        header: mockHeaders[0],
+        name: 'some_hparam',
         value: {
           ...filter,
           filterValues: [2, 4, 6],
@@ -1107,7 +1107,7 @@ describe('data table', () => {
       filterDialog.componentInstance.includeUndefinedToggled.emit();
 
       expect(addFilterSpy).toHaveBeenCalledOnceWith({
-        header: mockHeaders[0],
+        name: 'some_hparam',
         value: {
           ...filter,
           filterValues: [2, 4, 6, 8],

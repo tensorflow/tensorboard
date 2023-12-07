@@ -349,7 +349,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   addHparamFilter(event: FilterAddedEvent) {
     this.store.dispatch(
       hparamsActions.dashboardHparamFilterAdded({
-        name: event.header.name,
+        name: event.name,
         filter: event.value,
       })
     );
