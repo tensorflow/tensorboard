@@ -32,11 +32,6 @@ describe('hash storage test', () => {
 
     setStringSpy = jasmine.createSpy();
     getStringSpy = jasmine.createSpy();
-
-    // Cannot safely stub out window.location.hash or rely on test framework
-    // to not make use of the hash (it does).
-
-    // Do not rely on Polymer bundle in the test.
   });
 
   afterEach(() => {

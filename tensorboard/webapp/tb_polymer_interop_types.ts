@@ -24,6 +24,8 @@ declare global {
     'vz-histogram-timeseries': VzHistogramTimeSeriesElement;
   }
 
+  // This type needs to be redeclared here due to an inconsistency with the
+  // internal and external compilers.
   interface Window {
     tensorboard: {
       tf_storage: TfStorage;

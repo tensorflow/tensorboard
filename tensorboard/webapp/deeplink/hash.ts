@@ -31,7 +31,7 @@ export class HashDeepLinker implements DeepLinkerInterface {
   }
 
   getString(key: string): string {
-    return window.tensorboard.tf_storage.getString(key) ?? '';
+    return window.tensorboard.tf_storage.getString(key);
   }
 
   setString(key: string, value: string, options?: SetStringOption): void {
@@ -39,7 +39,7 @@ export class HashDeepLinker implements DeepLinkerInterface {
   }
 
   getPluginId(): string {
-    return window.tensorboard.tf_storage.getString(TAB) ?? '';
+    return window.tensorboard.tf_storage.getString(TAB);
   }
 
   setPluginId(pluginId: string, options?: SetStringOption): void {
