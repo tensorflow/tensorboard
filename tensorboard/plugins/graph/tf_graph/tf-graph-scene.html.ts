@@ -489,7 +489,7 @@ export const template = html`
     }
     .expandbutton,
     .collapsebutton {
-      stroke: white;
+      stroke: #444;
     }
     /* Do not let the path elements in the button take pointer focus */
     .node > .nodeshape > .buttoncontainer > .expandbutton,

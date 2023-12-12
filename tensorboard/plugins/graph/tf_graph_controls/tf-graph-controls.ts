@@ -382,7 +382,7 @@ class TfGraphControls extends LegacyElementMixin(
       }
 
       .legend-clarifier {
-        color: #266236;
+        color: var(--tb-graph-controls-text-color);
         cursor: help;
         display: inline-block;
         text-decoration: underline;
