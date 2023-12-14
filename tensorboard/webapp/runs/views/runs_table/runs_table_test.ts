@@ -265,6 +265,7 @@ describe('runs_table', () => {
             run: buildRun({id: 'book1', name: "The Philosopher's Stone"}),
             runColor: '#000',
             experimentAlias: {aliasText: 'book', aliasNumber: 1},
+            experimentName: 'Harry Potter',
             selected: true,
             hparams: new Map(),
           },
@@ -272,6 +273,7 @@ describe('runs_table', () => {
             run: buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
             runColor: '#111',
             experimentAlias: {aliasText: 'book', aliasNumber: 1},
+            experimentName: 'Harry Potter',
             selected: false,
             hparams: new Map(),
           },
@@ -290,6 +292,7 @@ describe('runs_table', () => {
           color: '#000',
           run: "The Philosopher's Stone",
           experimentAlias: {aliasNumber: 1, aliasText: 'book'},
+          experimentName: 'Harry Potter',
           selected: true,
         },
         {
@@ -297,6 +300,7 @@ describe('runs_table', () => {
           color: '#111',
           run: 'The Chamber Of Secrets',
           experimentAlias: {aliasNumber: 1, aliasText: 'book'},
+          experimentName: 'Harry Potter',
           selected: false,
         },
       ]);
