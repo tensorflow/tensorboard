@@ -96,6 +96,7 @@ limitations under the License.
                 <span *ngSwitchCase="'experimentAlias'">
                   <tb-experiment-alias
                     [alias]="dataRow['experimentAlias']"
+                    [title]="dataRow['experimentName']"
                   ></tb-experiment-alias>
                 </span>
               </ng-container>
