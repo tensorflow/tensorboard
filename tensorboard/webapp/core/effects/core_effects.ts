@@ -38,7 +38,6 @@ import {
 } from '../../app_routing/store/app_routing_selectors';
 import {RouteKind} from '../../app_routing/types';
 import {getEnabledExperimentalPlugins} from '../../feature_flag/store/feature_flag_selectors';
-import '../../tb_polymer_interop_types';
 import {DataLoadState} from '../../types/data';
 import {
   TBServerDataSource,

@@ -12,12 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {customElement} from '@polymer/decorators';
-import {PolymerElement} from '@polymer/polymer';
+import '../../webapp/tb_polymer_interop_types';
 import * as tf_globals from './globals';
 
-@customElement('tf-globals')
-class TfGlobals extends PolymerElement {
-  override _template = null;
-  tf_globals = tf_globals;
-}
+/**
+ * Attach API to window for interoperability with the Angular binary.
+ * The full shared type is defined in tensorboard/webapp/tb_polymer_interop_type_definitions.d.ts
+ * Defining it this way doesn't matter too much while property renaming is turned off,
+ * but at some point in the future we would like to enable it.
+ */
+window.tensorboard = {
+  ...window.tensorboard,
+  tf_globals,
+};

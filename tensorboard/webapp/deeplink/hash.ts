@@ -12,9 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
+import '../tb_polymer_interop_types';
 import {Injectable} from '@angular/core';
-import {TfStorageElement} from '../tb_polymer_interop_types';
 import {DeepLinkerInterface, SetStringOption} from './types';
 
 // TODO(tensorboard-team): merge this module with tf_storage/storage.ts when
@@ -23,29 +22,24 @@ const TAB = '__tab__';
 
 @Injectable()
 export class HashDeepLinker implements DeepLinkerInterface {
-  private readonly tfStorage: TfStorageElement;
-
   constructor() {
-    this.tfStorage = document.createElement('tf-storage');
-    const tfGlobals = document.createElement('tf-globals');
-
     // Note: `migrateLegacyURLScheme()` must be called before `setUseHash`, so
     // that tfStorage reads from the actual URL, not the fake hash for tests
     // only.
-    tfGlobals.tf_globals.setUseHash(true);
-    this.tfStorage.tf_storage.migrateLegacyURLScheme();
+    window.tensorboard.tf_storage.migrateLegacyURLScheme();
+    window.tensorboard.tf_globals.setUseHash(true);
   }
 
   getString(key: string): string {
-    return this.tfStorage.tf_storage.getString(key);
+    return window.tensorboard.tf_storage.getString(key);
   }
 
   setString(key: string, value: string, options?: SetStringOption): void {
-    this.tfStorage.tf_storage.setString(key, value, options);
+    window.tensorboard.tf_storage.setString(key, value, options);
   }
 
   getPluginId(): string {
-    return this.getString(TAB);
+    return window.tensorboard.tf_storage.getString(TAB);
   }
 
   setPluginId(pluginId: string, options?: SetStringOption): void {

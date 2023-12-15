@@ -24,6 +24,7 @@ tf_ng_module(
     ],
     deps = [
         ":deeplink",
+        "//tensorboard/webapp:tb_polymer_interop_types",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "@npm//@types/jasmine",
     ],

@@ -11,6 +11,7 @@ tf_ts_library(
     ],
     deps = [
         ":tf_globals_lib",
+        "//tensorboard/webapp:tb_polymer_interop_types",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
     ],

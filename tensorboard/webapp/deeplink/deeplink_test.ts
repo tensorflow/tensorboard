@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import '../tb_polymer_interop_types';
 import {TestBed} from '@angular/core/testing';
 import {HashDeepLinker, TEST_ONLY} from './hash';
 
@@ -36,20 +37,17 @@ describe('deeplink', () => {
     // to not make use of the hash (it does).
 
     // Do not rely on Polymer bundle in the test.
-    const createElementSpy = spyOn(document, 'createElement');
-    createElementSpy.withArgs('tf-storage').and.returnValue({
+    window.tensorboard = {
       tf_storage: {
         setString: setStringSpy,
         getString: getStringSpy,
         migrateLegacyURLScheme: migrateLegacyURLSchemeSpy,
+        getUrlHashDict: () => ({}),
       },
-    } as any);
-    createElementSpy.withArgs('tf-globals').and.returnValue({
       tf_globals: {
         setUseHash: setUseHashSpy,
       },
-    } as any);
-    createElementSpy.and.callThrough();
+    };
 
     deepLinker = TestBed.inject(HashDeepLinker);
   });
