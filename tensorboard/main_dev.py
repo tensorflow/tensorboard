@@ -19,10 +19,10 @@ import sys
 
 from absl import app
 from tensorboard import default
+from tensorboard import legacy_tbdev_subcommand
 from tensorboard import main_lib
 from tensorboard import program
 from tensorboard.plugins import base_plugin
-from tensorboard.uploader import uploader_subcommand
 
 
 def run_main():
@@ -33,7 +33,7 @@ def run_main():
     tensorboard = program.TensorBoard(
         plugins=default.get_plugins(),
         assets_zip_provider=lambda: open(path, "rb"),
-        subcommands=[uploader_subcommand.UploaderSubcommand()],
+        subcommands=[legacy_tbdev_subcommand.LegacyTbdevSubcommand()],
     )
 
     try:
