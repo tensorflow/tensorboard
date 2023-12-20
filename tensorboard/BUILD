@@ -29,12 +29,12 @@ py_binary(
         ":assets_lib",  # link dep for webfiles assets
         ":default",
         ":dynamic_plugins",  # loads internal dynamic plugin like projector
+        ":legacy_tbdev_subcommand",
         ":lib",
         ":main_lib",
         ":program",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
-        "//tensorboard/uploader:uploader_subcommand",
         "//tensorboard/util:tb_logging",
         "//tensorboard/util:timing",  # non-strict dep, for patching convenience
     ],
@@ -59,10 +59,10 @@ py_binary(
     deps = [
         ":default",
         ":dynamic_plugins",  # loads internal dynamic plugin like projector
+        ":legacy_tbdev_subcommand",
         ":lib",
         ":main_lib",
         ":program",
-        "//tensorboard/uploader:uploader_subcommand",
     ],
 )
 
@@ -646,4 +646,10 @@ py_test(
     srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [":lazy"],
+)
+
+py_library(
+    name = "legacy_tbdev_subcommand",
+    srcs = ["legacy_tbdev_subcommand.py"],
+    srcs_version = "PY3",
 )
