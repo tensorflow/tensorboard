@@ -444,6 +444,7 @@ const {initialState, reducers: namespaceContextedReducer} =
     {
       isSettingsPaneOpen: true,
       isSlideoutMenuOpen: false,
+      lastPinnedCardTime: 0,
       tableEditorSelectedTab: DataTableMode.SINGLE,
       timeSeriesData: {
         scalars: {},
@@ -1151,6 +1152,7 @@ const reducer = createReducer(
     let nextCardMetadataMap = {...state.cardMetadataMap};
     let nextCardStepIndexMap = {...state.cardStepIndex};
     let nextCardStateMap = {...state.cardStateMap};
+    let nextLastPinnedCardTime = state.lastPinnedCardTime;
 
     if (isPinnedCopy) {
       const originalCardId = state.pinnedCardToOriginal.get(cardId);
@@ -1177,6 +1179,7 @@ const reducer = createReducer(
         nextCardMetadataMap = resolvedResult.cardMetadataMap;
         nextCardStepIndexMap = resolvedResult.cardStepIndex;
         nextCardStateMap = resolvedResult.cardStateMap;
+        nextLastPinnedCardTime = Date.now();
       } else {
         const pinnedCardId = state.cardToPinnedCopy.get(cardId)!;
         nextCardToPinnedCopy.delete(cardId);
@@ -1195,6 +1198,7 @@ const reducer = createReducer(
       cardToPinnedCopy: nextCardToPinnedCopy,
       cardToPinnedCopyCache: nextCardToPinnedCopyCache,
       pinnedCardToOriginal: nextPinnedCardToOriginal,
+      lastPinnedCardTime: nextLastPinnedCardTime,
     };
   }),
   on(actions.linkedTimeToggled, (state) => {

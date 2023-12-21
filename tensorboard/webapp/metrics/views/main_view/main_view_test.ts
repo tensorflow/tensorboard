@@ -1572,25 +1572,24 @@ describe('metrics main view', () => {
         INDICATOR: By.css('.new-card-pinned'),
       };
 
-      function updatePinnedCards(
-        fixture: ComponentFixture<MainViewContainer>,
-        pinnedCardMetadata: CardIdWithMetadata[]
-      ) {
-        store.overrideSelector(
-          selectors.getPinnedCardsWithMetadata,
-          pinnedCardMetadata
-        );
+      it('does not show any indicator when no cards ever pinned', () => {
+        store.overrideSelector(selectors.getLastPinnedCardTime, 0);
         store.refreshState();
-        fixture.detectChanges();
-      }
 
-      it('does not show any indicator initially', () => {
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
-        updatePinnedCards(fixture, [
-          {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
-        ]);
+        const indicator = fixture.debugElement.query(byCss.INDICATOR);
+        expect(indicator).toBeNull();
+      });
+
+      it('does not show any indicator if card pinned before load', () => {
+        store.overrideSelector(selectors.getLastPinnedCardTime, 100);
+        store.refreshState();
+
+        const fixture = TestBed.createComponent(MainViewContainer);
+        fixture.detectChanges();
+
         const indicator = fixture.debugElement.query(byCss.INDICATOR);
         expect(indicator).toBeNull();
       });
@@ -1599,81 +1598,9 @@ describe('metrics main view', () => {
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
-        updatePinnedCards(fixture, [
-          {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
-        ]);
-        updatePinnedCards(fixture, [
-          {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
-          {cardId: 'card2', ...createCardMetadata(PluginType.SCALARS)},
-        ]);
-
-        const indicator = fixture.debugElement.query(byCss.INDICATOR);
-        expect(indicator).toBeTruthy();
-      });
-
-      it('shows the indicator when the same card gets pinned toggled', fakeAsync(() => {
-        const fixture = TestBed.createComponent(MainViewContainer);
+        store.overrideSelector(selectors.getLastPinnedCardTime, 100);
+        store.refreshState();
         fixture.detectChanges();
-
-        updatePinnedCards(fixture, [
-          {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
-        ]);
-        updatePinnedCards(fixture, [
-          {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
-          {cardId: 'card2', ...createCardMetadata(PluginType.SCALARS)},
-        ]);
-        const card2IndicatorBefore = fixture.debugElement.query(
-          byCss.INDICATOR
-        );
-        // Unpin card2.
-        updatePinnedCards(fixture, [
-          {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
-        ]);
-        // Wait for 100ms before repinning to avoid flakiness.
-        tick(100);
-        updatePinnedCards(fixture, [
-          {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
-          {cardId: 'card2', ...createCardMetadata(PluginType.SCALARS)},
-        ]);
-        const card2IndicatorAfter = fixture.debugElement.query(byCss.INDICATOR);
-
-        // It should be a different new-card-pinned indicator instance.
-        expect(card2IndicatorBefore.nativeElement).not.toBe(
-          card2IndicatorAfter.nativeElement
-        );
-        expect(card2IndicatorBefore.attributes['data-id']).not.toBe(
-          card2IndicatorAfter.attributes['data-id']
-        );
-      }));
-
-      it('does not show indicator when you remove a pin', () => {
-        const fixture = TestBed.createComponent(MainViewContainer);
-        fixture.detectChanges();
-
-        updatePinnedCards(fixture, [
-          {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
-          {cardId: 'card2', ...createCardMetadata(PluginType.SCALARS)},
-        ]);
-        updatePinnedCards(fixture, [
-          {cardId: 'card2', ...createCardMetadata(PluginType.SCALARS)},
-        ]);
-
-        const indicator = fixture.debugElement.query(byCss.INDICATOR);
-        expect(indicator).toBeNull();
-      });
-
-      it('shows an indicator a change contains both removal and addition', () => {
-        const fixture = TestBed.createComponent(MainViewContainer);
-        fixture.detectChanges();
-
-        updatePinnedCards(fixture, [
-          {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
-          {cardId: 'card2', ...createCardMetadata(PluginType.SCALARS)},
-        ]);
-        updatePinnedCards(fixture, [
-          {cardId: 'card2', ...createCardMetadata(PluginType.SCALARS)},
-          {cardId: 'card3', ...createCardMetadata(PluginType.SCALARS)},
-        ]);
 
         const indicator = fixture.debugElement.query(byCss.INDICATOR);
         expect(indicator).toBeTruthy();
