@@ -2858,6 +2858,8 @@ describe('metrics reducers', () => {
     });
 
     it('creates a pinned copy with the same metadata, step index', () => {
+      jasmine.clock().mockDate(new Date(10000));
+
       const cardMetadata = {
         plugin: PluginType.SCALARS,
         tag: 'tagA',
@@ -2918,6 +2920,7 @@ describe('metrics reducers', () => {
         cardToPinnedCopy: new Map([['card1', expectedPinnedCopyId]]),
         cardToPinnedCopyCache: new Map([['card1', expectedPinnedCopyId]]),
         pinnedCardToOriginal: new Map([[expectedPinnedCopyId, 'card1']]),
+        lastPinnedCardTime: 10000,
         timeSeriesData,
       });
       expect(nextState).toEqual(expectedState);
