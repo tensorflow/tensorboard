@@ -28,12 +28,14 @@ import {CardIdWithMetadata} from '../metrics_view_types';
         <span *ngIf="cardIdsWithMetadata.length > 1" class="group-card-count"
           >{{ cardIdsWithMetadata.length }} cards</span
         >
-        <span
-          *ngFor="let id of lastPinnedCardTime"
-          [attr.data-id]="id"
-          class="new-card-pinned"
-          >New card pinned</span
-        >
+        <span *ngIf="lastPinnedCardTime">
+          <span
+            *ngFor="let id of [lastPinnedCardTime]"
+            [attr.data-id]="id"
+            class="new-card-pinned"
+            >New card pinned</span
+          >
+        </span>
       </span>
     </div>
     <metrics-card-grid
@@ -51,5 +53,5 @@ import {CardIdWithMetadata} from '../metrics_view_types';
 export class PinnedViewComponent {
   @Input() cardObserver!: CardObserver;
   @Input() cardIdsWithMetadata!: CardIdWithMetadata[];
-  @Input() lastPinnedCardTime!: [number];
+  @Input() lastPinnedCardTime!: number;
 }

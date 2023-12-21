@@ -15,7 +15,7 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
-import {map, skip, startWith} from 'rxjs/operators';
+import {skip, startWith} from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {DeepReadonly} from '../../../util/types';
 import {getLastPinnedCardTime, getPinnedCardsWithMetadata} from '../../store';
@@ -45,7 +45,6 @@ export class PinnedViewContainer {
   readonly lastPinnedCardTime$ = this.store.select(getLastPinnedCardTime).pipe(
     // Ignore the first value on component load, only reacting to new
     // pins after page load.
-    skip(1),
-    map((time) => [time])
+    skip(1)
   );
 }
