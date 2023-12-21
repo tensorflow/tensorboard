@@ -308,36 +308,38 @@ $tb-dark-theme: map_merge(
       --mdc-slider-inactive-track-height: 2px;
     }
 
-    a,
-    button.mat-mdc-button-base {
-      --tb-icon-size: 24px;
-      --mdc-text-button-label-text-tracking: normal;
-      --mdc-filled-button-label-text-tracking: normal;
-      --mdc-outlined-button-label-text-tracking: normal;
-      --mdc-protected-button-label-text-tracking: normal;
+    ::ng-deep :not(mat-calendar) {
+      a,
+      button.mat-mdc-button-base {
+        --tb-icon-size: 24px;
+        --mdc-text-button-label-text-tracking: normal;
+        --mdc-filled-button-label-text-tracking: normal;
+        --mdc-outlined-button-label-text-tracking: normal;
+        --mdc-protected-button-label-text-tracking: normal;
 
-      &[mat-icon-button].mat-mdc-icon-button {
-        width: 40px;
-        height: 40px;
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
+        &[mat-icon-button].mat-mdc-icon-button {
+          width: 40px;
+          height: 40px;
+          display: inline-flex;
+          justify-content: center;
+          align-items: center;
 
-        .mat-mdc-button-touch-target {
-          height: 100%;
-          width: 100%;
+          .mat-mdc-button-touch-target {
+            height: 100%;
+            width: 100%;
+          }
         }
-      }
 
-      mat-icon.mat-icon {
-        flex-shrink: 0;
-      }
+        mat-icon.mat-icon {
+          flex-shrink: 0;
+        }
 
-      mat-icon.mat-icon,
-      svg {
-        width: var(--tb-icon-size);
-        height: var(--tb-icon-size);
-        line-height: var(--tb-icon-size);
+        mat-icon.mat-icon,
+        svg {
+          width: var(--tb-icon-size);
+          height: var(--tb-icon-size);
+          line-height: var(--tb-icon-size);
+        }
       }
     }
   }
