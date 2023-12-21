@@ -298,11 +298,12 @@ export const getCanCreateNewPins = createSelector(
   }
 );
 
-export const getLastPinnedCardTime =
-    createSelector(selectMetricsState, (state: MetricsState): number => {
-      return state.lastPinnedCardTime;
-    });
-
+export const getLastPinnedCardTime = createSelector(
+  selectMetricsState,
+  (state: MetricsState): number => {
+    return state.lastPinnedCardTime;
+  }
+);
 
 const selectSettings = createSelector(
   selectMetricsState,

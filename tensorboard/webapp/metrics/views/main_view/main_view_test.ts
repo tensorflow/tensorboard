@@ -1573,10 +1573,7 @@ describe('metrics main view', () => {
       };
 
       it('does not show any indicator when no cards ever pinned', () => {
-        store.overrideSelector(
-          selectors.getLastPinnedCardTime,
-          0,
-        );
+        store.overrideSelector(selectors.getLastPinnedCardTime, 0);
         store.refreshState();
 
         const fixture = TestBed.createComponent(MainViewContainer);
@@ -1587,10 +1584,7 @@ describe('metrics main view', () => {
       });
 
       it('does not show any indicator if card pinned before load', () => {
-        store.overrideSelector(
-          selectors.getLastPinnedCardTime,
-          100,
-        );
+        store.overrideSelector(selectors.getLastPinnedCardTime, 100);
         store.refreshState();
 
         const fixture = TestBed.createComponent(MainViewContainer);
@@ -1604,10 +1598,7 @@ describe('metrics main view', () => {
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
-        store.overrideSelector(
-          selectors.getLastPinnedCardTime,
-          100,
-        );
+        store.overrideSelector(selectors.getLastPinnedCardTime, 100);
         store.refreshState();
         fixture.detectChanges();
 

@@ -42,11 +42,10 @@ export class PinnedViewContainer {
     DeepReadonly<CardIdWithMetadata[]>
   > = this.store.select(getPinnedCardsWithMetadata).pipe(startWith([]));
 
-  readonly lastPinnedCardTime$ =
-      this.store.select(getLastPinnedCardTime)
-          .pipe(
-              // Ignore the first value on component load, only reacting to new
-              // pins after page load.
-              skip(1),
-              map((time) => [time]),);
+  readonly lastPinnedCardTime$ = this.store.select(getLastPinnedCardTime).pipe(
+    // Ignore the first value on component load, only reacting to new
+    // pins after page load.
+    skip(1),
+    map((time) => [time])
+  );
 }
