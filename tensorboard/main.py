@@ -25,7 +25,6 @@ import sys
 
 from absl import app
 from tensorboard import default
-from tensorboard import legacy_tbdev_subcommand
 from tensorboard import main_lib
 from tensorboard import program
 from tensorboard.plugins import base_plugin
@@ -37,11 +36,7 @@ logger = tb_logging.get_logger()
 def run_main():
     """Initializes flags and calls main()."""
     main_lib.global_init()
-
-    tensorboard = program.TensorBoard(
-        plugins=default.get_plugins(),
-        subcommands=[legacy_tbdev_subcommand.LegacyTbdevSubcommand()],
-    )
+    tensorboard = program.TensorBoard(plugins=default.get_plugins())
     try:
         app.run(tensorboard.main, flags_parser=tensorboard.configure)
     except base_plugin.FlagsError as e:

@@ -19,7 +19,6 @@ import sys
 
 from absl import app
 from tensorboard import default
-from tensorboard import legacy_tbdev_subcommand
 from tensorboard import main_lib
 from tensorboard import program
 from tensorboard.plugins import base_plugin
@@ -33,7 +32,6 @@ def run_main():
     tensorboard = program.TensorBoard(
         plugins=default.get_plugins(),
         assets_zip_provider=lambda: open(path, "rb"),
-        subcommands=[legacy_tbdev_subcommand.LegacyTbdevSubcommand()],
     )
 
     try:
