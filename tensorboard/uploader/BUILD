@@ -49,18 +49,6 @@ py_test(
 )
 
 py_library(
-    name = "test_util",
-    testonly = 1,
-    srcs = ["test_util.py"],
-    srcs_version = "PY3",
-    deps = [
-        "//tensorboard:expect_grpc_installed",
-        "//tensorboard:expect_protobuf_installed",
-        "//tensorboard/compat/proto:protos_all_py_pb2",
-    ],
-)
-
-py_library(
     name = "util",
     srcs = ["util.py"],
     srcs_version = "PY3",
@@ -70,10 +58,7 @@ py_test(
     name = "util_test",
     srcs = ["util_test.py"],
     deps = [
-        ":test_util",
         ":util",
-        "//tensorboard:expect_grpc_installed",
-        "//tensorboard:expect_protobuf_installed",
         "//tensorboard:test",
     ],
 )
