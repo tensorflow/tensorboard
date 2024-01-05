@@ -34,7 +34,6 @@ py_binary(
         ":program",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
-        "//tensorboard/uploader:uploader_subcommand",
         "//tensorboard/util:tb_logging",
         "//tensorboard/util:timing",  # non-strict dep, for patching convenience
     ],
@@ -62,7 +61,6 @@ py_binary(
         ":lib",
         ":main_lib",
         ":program",
-        "//tensorboard/uploader:uploader_subcommand",
     ],
 )
 

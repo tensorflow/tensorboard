@@ -22,6 +22,16 @@ import absl.logging
 from tensorboard.compat import tf
 
 
+_TBDEV_SHUTDOWN_MESSAGE = """\
+======================================================================
+ERROR: The `tensorboard dev` command is no longer available.
+
+TensorBoard.dev has been shut down. For further information,
+see the FAQ at <https://tensorboard.dev/>.
+======================================================================
+"""
+
+
 def global_init():
     """Modifies the global environment for running TensorBoard as main.
 
@@ -45,3 +55,9 @@ def global_init():
 
     # Only emit log messages at WARNING and above by default to reduce spam.
     absl.logging.set_verbosity(absl.logging.WARNING)
+
+    # Intercept attempts to invoke `tensorboard dev` and print turndown message.
+    if sys.argv[1:] and sys.argv[1] == "dev":
+        sys.stderr.write(_TBDEV_SHUTDOWN_MESSAGE)
+        sys.stderr.flush()
+        sys.exit(1)

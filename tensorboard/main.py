@@ -28,7 +28,6 @@ from tensorboard import default
 from tensorboard import main_lib
 from tensorboard import program
 from tensorboard.plugins import base_plugin
-from tensorboard.uploader import uploader_subcommand
 from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
@@ -37,11 +36,7 @@ logger = tb_logging.get_logger()
 def run_main():
     """Initializes flags and calls main()."""
     main_lib.global_init()
-
-    tensorboard = program.TensorBoard(
-        plugins=default.get_plugins(),
-        subcommands=[uploader_subcommand.UploaderSubcommand()],
-    )
+    tensorboard = program.TensorBoard(plugins=default.get_plugins())
     try:
         app.run(tensorboard.main, flags_parser=tensorboard.configure)
     except base_plugin.FlagsError as e:
