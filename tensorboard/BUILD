@@ -443,11 +443,6 @@ py_library(name = "expect_absl_flags_installed")
 # This is a dummy rule used as a absl-py dependency in open-source.
 # We expect absl-py to already be installed on the system, e.g. via
 # `pip install absl-py`
-py_library(name = "expect_absl_flags_argparse_flags_installed")
-
-# This is a dummy rule used as a absl-py dependency in open-source.
-# We expect absl-py to already be installed on the system, e.g. via
-# `pip install absl-py`
 py_library(name = "expect_absl_logging_installed")
 
 # This is a dummy rule used as a absl-py dependency in open-source.
@@ -455,25 +450,10 @@ py_library(name = "expect_absl_logging_installed")
 # `pip install absl-py`
 py_library(name = "expect_absl_testing_absltest_installed")
 
-# This is a dummy rule used as a google_auth dependency in open-source.
-# We expect google_auth to already be installed on the system, e.g., via
-# `pip install google-auth`.
-py_library(name = "expect_google_auth_installed")
-
-# This is a dummy rule used as a google_auth oauthlib_dependency in open-source.
-# We expect google_auth_oauthlib to already be installed on the system, e.g., via
-# `pip install google-auth-oauthlib`.
-py_library(name = "expect_google_auth_oauthlib_installed")
-
 # This is a dummy rule used as a pkg-resources dependency in open-source.
 # We expect pkg-resources to already be installed on the system, e.g., via
 # `pip install setuptools`.
 py_library(name = "expect_pkg_resources_installed")
-
-# This is a dummy rule used as a requests dependency in open-source.
-# We expect requests to already be installed on the system, e.g., via
-# `pip install requests`.
-py_library(name = "expect_requests_installed")
 
 # This is a dummy rule used as a pandas dependency in open-source.
 # We expect pandas to already be installed on the system, e.g. via
