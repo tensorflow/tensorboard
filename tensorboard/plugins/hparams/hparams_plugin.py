@@ -93,7 +93,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
                 ctx, self._context, experiment_id, request_proto
             ).run()
             experiment = get_experiment.Handler(
-                ctx, self._context, experiment_id
+                ctx, self._context, experiment_id, request_proto
             ).run()
             body, mime_type = download_data.Handler(
                 self._context,
