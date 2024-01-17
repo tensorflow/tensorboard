@@ -35,6 +35,7 @@ tf_ng_module(
         ":header_styles",
         "plugin_selector_component.ng.html",
     ],
+    slow_development_build = True,
     deps = [
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_material_button",
