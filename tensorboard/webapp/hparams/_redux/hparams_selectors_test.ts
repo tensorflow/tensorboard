@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {ColumnHeaderType} from '../../widgets/data_table/types';
 import {DomainType} from '../types';
 import * as selectors from './hparams_selectors';
 import {
@@ -108,6 +109,34 @@ describe('hparams/_redux/hparams_selectors_test', () => {
             },
           ],
         ])
+      );
+    });
+  });
+
+  describe('#getDashboardDisplayedHparamColumns', () => {
+    it('returns dashboard displayed hparam columns', () => {
+      const fakeColumns = [
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_layers',
+          displayName: 'Conv Layers',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_kernel_size',
+          displayName: 'Conv Kernel Size',
+          enabled: true,
+        },
+      ];
+      const state = buildStateFromHparamsState(
+        buildHparamsState({
+          dashboardDisplayedHparamColumns: fakeColumns,
+        })
+      );
+
+      expect(selectors.getDashboardDisplayedHparamColumns(state)).toEqual(
+        fakeColumns
       );
     });
   });

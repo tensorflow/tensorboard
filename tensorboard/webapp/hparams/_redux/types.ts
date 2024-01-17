@@ -15,6 +15,7 @@ limitations under the License.
 import {
   DiscreteFilter,
   IntervalFilter,
+  ColumnHeader,
   HparamAndMetricSpec,
   SessionGroup,
 } from '../_types';
@@ -34,6 +35,7 @@ export interface HparamsState {
     hparams: Map<string, HparamFilter>;
     metrics: Map<string, MetricFilter>;
   };
+  dashboardDisplayedHparamColumns: ColumnHeader[];
 }
 
 export interface State {

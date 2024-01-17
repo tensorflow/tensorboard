@@ -41,6 +41,8 @@ export function buildHparamsState(
       hparams: overrides.dashboardFilters?.hparams ?? new Map(),
       metrics: overrides.dashboardFilters?.metrics ?? new Map(),
     },
+    dashboardDisplayedHparamColumns:
+      overrides.dashboardDisplayedHparamColumns ?? [],
   } as HparamsState;
 }
 

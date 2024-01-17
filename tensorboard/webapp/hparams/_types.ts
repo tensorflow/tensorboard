@@ -17,7 +17,11 @@ import {
   MetricSpec,
 } from '../runs/data_source/runs_data_source_types';
 
-export {DiscreteFilter, IntervalFilter} from '../widgets/data_table/types';
+export {
+  DiscreteFilter,
+  IntervalFilter,
+  ColumnHeader,
+} from '../widgets/data_table/types';
 
 export {
   DatasetType,
