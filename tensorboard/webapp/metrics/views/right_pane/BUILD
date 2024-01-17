@@ -24,6 +24,7 @@ tf_ng_module(
         ":settings_view_styles",
         "settings_view_component.ng.html",
     ],
+    slow_development_build = True,
     deps = [
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
