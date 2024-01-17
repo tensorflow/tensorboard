@@ -17,14 +17,10 @@
 load("@io_bazel_rules_closure//closure/private:defs.bzl", "unfurl")
 
 def _tensorboard_zip_file(ctx):
-    deps = unfurl(ctx.attr.deps, provider = "webfiles")
-    manifests = depset(order = "postorder")
-    files = depset()
-    webpaths = depset()
-    for dep in deps:
-        manifests = depset(transitive = [manifests, dep.webfiles.manifests])
-        webpaths = depset(transitive = [webpaths, dep.webfiles.webpaths])
-        files = depset(transitive = [files, dep.data_runfiles.files])
+    deps = unfurl(ctx.attr.deps, provider = WebFilesInfo).exports
+    manifests = depset(order = "postorder", transitive = [dep[WebFilesInfo].manifests for dep in deps])
+    webpaths = depset(transitive = [dep[WebFilesInfo].webpaths for dep in deps])
+    files = depset(transitive = [dep.data_runfiles.files for dep in deps])
     ctx.actions.run(
         mnemonic = "Zipper",
         inputs = depset(transitive = [manifests, files]).to_list(),
@@ -40,7 +36,7 @@ def _tensorboard_zip_file(ctx):
             transitive_runfiles,
             dep.data_runfiles.files,
         ])
-    return struct(
+    return DefaultInfo(
         files = depset([ctx.outputs.zip]),
         runfiles = ctx.runfiles(
             files = ctx.files.data + [ctx.outputs.zip],
@@ -52,7 +48,7 @@ tensorboard_zip_file = rule(
     implementation = _tensorboard_zip_file,
     attrs = {
         "data": attr.label_list(allow_files = True),
-        "deps": attr.label_list(providers = ["webfiles"], mandatory = True),
+        "deps": attr.label_list(providers = [WebFilesInfo], mandatory = True),
         "_Zipper": attr.label(
             default = Label("//tensorboard/java/org/tensorflow/tensorboard/vulcanize:Zipper"),
             executable = True,

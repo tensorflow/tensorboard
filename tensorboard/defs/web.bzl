@@ -22,6 +22,8 @@ load(
     "@io_bazel_rules_closure//closure/private:defs.bzl",
     "CLOSURE_LIBRARY_BASE_ATTR",
     "CLOSURE_WORKER_ATTR",
+    "ClosureJsLibraryInfo",
+    "WebFilesInfo",
     "collect_js",
     "collect_runfiles",
     "difference",
@@ -49,10 +51,8 @@ def _tf_web_library(ctx):
         fail("when \"*\" is suppressed no other items should be present")
 
     # process what came before
-    deps = unfurl(ctx.attr.deps, provider = "webfiles")
-    webpaths = depset()
-    for dep in deps:
-        webpaths = depset(transitive = [webpaths, dep.webfiles.webpaths])
+    deps = unfurl(ctx.attr.deps, provider = WebFilesInfo).exports
+    webpaths = depset(transitive = [dep[WebFilesInfo].webpaths for dep in deps])
 
     # process what comes now
     manifest_srcs = []
@@ -93,11 +93,11 @@ def _tf_web_library(ctx):
         # If a rule exists purely to export other build rules, then it's
         # appropriate for the exported sources to be included in the
         # development web server.
-        export_deps = unfurl(ctx.attr.exports)
+        export_deps = unfurl(ctx.attr.exports).exports
         devserver_manifests = depset(
             order = "postorder",
             transitive = (
-                [manifests] + [dep.webfiles.manifests for dep in export_deps]
+                [manifests] + [dep[WebFilesInfo].manifests for dep in export_deps]
             ),
         )
     params = struct(
@@ -125,38 +125,38 @@ def _tf_web_library(ctx):
     # rule from rules_closure: because `tf_web_library`s may depend on
     # either other `tf_web_library`s or base `web_library`s, the
     # interfaces ~must be the same.
-    #
-    # buildozer: disable=rule-impl-return
-    return struct(
-        files = depset(web_srcs + [dummy]),
-        exports = unfurl(ctx.attr.exports),
-        webfiles = struct(
+    return [
+        WebFilesInfo(
             manifest = manifest,
             manifests = manifests,
             webpaths = webpaths,
             dummy = dummy,
         ),
-        closure_js_library = collect_js(
-            unfurl(ctx.attr.deps, provider = "closure_js_library"),
+        unfurl(ctx.attr.exports),
+        collect_js(
+            unfurl(ctx.attr.deps, provider = ClosureJsLibraryInfo).exports,
             ctx.files._closure_library_base,
         ),
-        runfiles = ctx.runfiles(
-            files = (ctx.files.srcs +
-                     ctx.files.data +
-                     ctx.files._closure_library_base + [
-                manifest,
-                params_file,
-                ctx.outputs.executable,
-                dummy,
-            ]),
-            transitive_files = depset(transitive = [
-                collect_runfiles([ctx.attr._WebfilesServer]),
-                collect_runfiles(deps),
-                collect_runfiles(export_deps),
-                collect_runfiles(ctx.attr.data),
-            ]),
+        DefaultInfo(
+            files = depset(web_srcs + [dummy]),
+            runfiles = ctx.runfiles(
+                files = (ctx.files.srcs +
+                         ctx.files.data +
+                         ctx.files._closure_library_base + [
+                    manifest,
+                    params_file,
+                    ctx.outputs.executable,
+                    dummy,
+                ]),
+                transitive_files = depset(transitive = [
+                    collect_runfiles([ctx.attr._WebfilesServer]),
+                    collect_runfiles(deps),
+                    collect_runfiles(export_deps),
+                    collect_runfiles(ctx.attr.data),
+                ]),
+            ),
         ),
-    )
+    ]
 
 def _make_manifest(ctx, src_list):
     manifest = _new_file(ctx, "-webfiles.pbtxt")
@@ -171,9 +171,7 @@ def _make_manifest(ctx, src_list):
 
 def _run_webfiles_validator(ctx, srcs, deps, manifest):
     dummy = _new_file(ctx, "-webfiles.ignoreme")
-    manifests = depset(order = "postorder")
-    for dep in deps:
-        manifests = depset(transitive = [manifests, dep.webfiles.manifests])
+    manifests = depset(order = "postorder", transitive = [dep[WebFilesInfo].manifests for dep in deps])
     if srcs:
         args = [
             "WebfilesValidator",
@@ -188,17 +186,13 @@ def _run_webfiles_validator(ctx, srcs, deps, manifest):
                 args.append(category)
         inputs = []  # list of depsets
         inputs.append(depset([manifest] + srcs))
-        direct_manifests = depset()
+        direct_manifests = depset([dep[WebFilesInfo].manifest for dep in deps])
         for dep in deps:
-            inputs.append(depset([dep.webfiles.dummy]))
+            inputs.append(depset([dep[WebFilesInfo].dummy]))
             inputs.append(dep.files)
-            direct_manifests = depset(
-                [dep.webfiles.manifest],
-                transitive = [direct_manifests],
-            )
-            inputs.append(depset([dep.webfiles.manifest]))
+            inputs.append(depset([dep[WebFilesInfo].manifest]))
             args.append("--direct_dep")
-            args.append(dep.webfiles.manifest.path)
+            args.append(dep[WebFilesInfo].manifest.path)
         for man in difference(manifests, direct_manifests):
             inputs.append(depset([man]))
             args.append("--transitive_dep")
