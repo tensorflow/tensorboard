@@ -6,6 +6,8 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "inlineSourceMap": true,
+    // Transpile each file as a separate module (similar to 'ts.transpileModule').
+    "isolatedModules": true,
     "lib": ["dom", "es2021", "dom.iterable"],
     "moduleResolution": "node",
     "module": "es2022",
