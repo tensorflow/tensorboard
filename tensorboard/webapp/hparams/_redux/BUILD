@@ -50,6 +50,7 @@ tf_ts_library(
     deps = [
         ":types",
         "//tensorboard/webapp/hparams:types",
+        "//tensorboard/webapp/widgets/data_table:types",
         "@npm//@ngrx/store",
     ],
 )
@@ -65,6 +66,7 @@ tf_ts_library(
         ":utils",
         "//tensorboard/webapp/hparams:_types",
         "//tensorboard/webapp/runs/actions",
+        "//tensorboard/webapp/widgets/data_table:types",
         "@npm//@ngrx/store",
     ],
 )
