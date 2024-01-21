@@ -14,6 +14,8 @@
 # ==============================================================================
 """Classes and functions for handling the GetExperiment API call."""
 
+from tensorboard.plugins.hparams import api_pb2
+
 
 class Handler:
     """Handles a GetExperiment request."""
@@ -27,7 +29,7 @@ class Handler:
           request_context: A tensorboard.context.RequestContext.
           backend_context: A backend_context.Context instance.
           experiment_id: A string, as from `plugin_util.experiment_id`.
-          request: A api_pb2.GetExperimentRequest instance.
+          request: A request proto.
         """
         self._request_context = request_context
         self._backend_context = backend_context
@@ -38,7 +40,11 @@ class Handler:
             not request.HasField("include_metrics")
             or request.include_metrics
         )
-        self._hparams_limit = request.hparams_limit
+        self._hparams_limit = (
+            request.hparams_limit
+            if isinstance(request, api_pb2.GetExperimentRequest)
+            else None
+        )
 
     def run(self):
         """Handles the request specified on construction.
