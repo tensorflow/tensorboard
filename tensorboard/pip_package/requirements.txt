@@ -18,8 +18,6 @@
 absl-py >= 0.4
 # NOTE: this version should be >= the grpc version in our WORKSPACE file.
 grpcio >= 1.48.2
-google-auth >= 1.6.3, < 3
-google-auth-oauthlib >= 0.5, < 2
 markdown >= 2.6.8
 numpy >= 1.12.0
 # NOTE: this version must be >= the protoc version in our WORKSPACE file.
@@ -27,7 +25,6 @@ numpy >= 1.12.0
 # version to be installed that is also compatible with TensorFlow's constraints:
 # https://github.com/tensorflow/tensorflow/blob/9d22f4a0a9499c8e10a4312503e63e0da35ccd94/tensorflow/tools/pip_package/setup.py#L100-L107
 protobuf >= 3.19.6
-requests >= 2.21.0, < 3
 setuptools >= 41.0.0  # Note: provides pkg_resources as well as setuptools
 # A dependency of our vendored packages. This lower bound has not been correctly
 # vetted, but I wanted to be the least restrictive we can, since it's not a new
