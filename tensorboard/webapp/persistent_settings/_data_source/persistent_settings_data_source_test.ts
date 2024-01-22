@@ -212,61 +212,10 @@ describe('persistent_settings data_source test', () => {
               name: 'run',
               displayName: 'Run',
               enabled: true,
-              removable: true,
+              removable: false,
               sortable: true,
-              movable: true,
-            },
-            {
-              type: ColumnHeaderType.VALUE,
-              name: 'value',
-              displayName: 'Value',
-              enabled: false,
-              removable: true,
-              sortable: true,
-              movable: true,
-            },
-          ],
-        });
-      });
-
-      it('keeps control booleans in singleSelectionHeaders', async () => {
-        getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
-          JSON.stringify({
-            singleSelectionHeaders: [
-              {
-                type: ColumnHeaderType.RUN,
-                name: 'run',
-                displayName: 'Run',
-                enabled: true,
-                removable: true,
-                sortable: false,
-                movable: false,
-              },
-              {
-                type: ColumnHeaderType.VALUE,
-                name: 'value',
-                displayName: 'Value',
-                enabled: false,
-                removable: false,
-                sortable: true,
-                movable: true,
-              },
-            ],
-          })
-        );
-
-        const actual = await firstValueFrom(dataSource.getSettings());
-
-        expect(actual).toEqual({
-          singleSelectionHeaders: [
-            {
-              type: ColumnHeaderType.RUN,
-              name: 'run',
-              displayName: 'Run',
-              enabled: true,
-              removable: true,
-              sortable: false,
               movable: false,
+              hidable: false,
             },
             {
               type: ColumnHeaderType.VALUE,
@@ -276,12 +225,13 @@ describe('persistent_settings data_source test', () => {
               removable: false,
               sortable: true,
               movable: true,
+              hidable: true,
             },
           ],
         });
       });
 
-      it('properly converts rangeSelectionEnabled', async () => {
+      it('properly converts rangeSelectionHeaders', async () => {
         getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
           JSON.stringify({
             rangeSelectionHeaders: [
@@ -295,7 +245,7 @@ describe('persistent_settings data_source test', () => {
                 type: ColumnHeaderType.MIN_VALUE,
                 name: 'minValue',
                 displayName: 'Min',
-                enabled: true,
+                enabled: false,
               },
             ],
           })
@@ -310,70 +260,20 @@ describe('persistent_settings data_source test', () => {
               name: 'run',
               displayName: 'Run',
               enabled: true,
-              removable: true,
+              removable: false,
               sortable: true,
-              movable: true,
+              movable: false,
+              hidable: false,
             },
             {
               type: ColumnHeaderType.MIN_VALUE,
               name: 'minValue',
               displayName: 'Min',
-              enabled: true,
-              removable: true,
-              sortable: true,
-              movable: true,
-            },
-          ],
-        });
-      });
-
-      it('keeps control booleans in singleSelectionHeaders', async () => {
-        getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
-          JSON.stringify({
-            rangeSelectionHeaders: [
-              {
-                type: ColumnHeaderType.RUN,
-                name: 'run',
-                displayName: 'Run',
-                enabled: true,
-                removable: true,
-                sortable: false,
-                movable: false,
-              },
-              {
-                type: ColumnHeaderType.VALUE,
-                name: 'value',
-                displayName: 'Value',
-                enabled: false,
-                removable: false,
-                sortable: true,
-                movable: true,
-              },
-            ],
-          })
-        );
-
-        const actual = await firstValueFrom(dataSource.getSettings());
-
-        expect(actual).toEqual({
-          rangeSelectionHeaders: [
-            {
-              type: ColumnHeaderType.RUN,
-              name: 'run',
-              displayName: 'Run',
-              enabled: true,
-              removable: true,
-              sortable: false,
-              movable: false,
-            },
-            {
-              type: ColumnHeaderType.VALUE,
-              name: 'value',
-              displayName: 'Value',
               enabled: false,
               removable: false,
               sortable: true,
               movable: true,
+              hidable: true,
             },
           ],
         });
