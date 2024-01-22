@@ -420,6 +420,46 @@ describe('persistent_settings data_source test', () => {
 
         expect(actual).toEqual({});
       });
+
+      it('properly converts dashboardDisplayedHparamColumns', async () => {
+        getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
+          JSON.stringify({
+            dashboardDisplayedHparamColumns: [
+              {
+                type: ColumnHeaderType.HPARAM,
+                name: 'conv_layers',
+                displayName: 'Conv Layers',
+                enabled: true,
+              },
+              {
+                type: ColumnHeaderType.HPARAM,
+                name: 'conv_kernel_size',
+                displayName: 'Conv Kernel Size',
+                enabled: true,
+              },
+            ],
+          })
+        );
+
+        const actual = await firstValueFrom(dataSource.getSettings());
+
+        expect(actual).toEqual({
+          dashboardDisplayedHparamColumns: [
+            {
+              type: ColumnHeaderType.HPARAM,
+              name: 'conv_layers',
+              displayName: 'Conv Layers',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.HPARAM,
+              name: 'conv_kernel_size',
+              displayName: 'Conv Kernel Size',
+              enabled: true,
+            },
+          ],
+        });
+      });
     });
 
     describe('#setSettings', () => {
@@ -500,6 +540,51 @@ describe('persistent_settings data_source test', () => {
           TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY,
           JSON.stringify({
             linkedTimeEnabled: true,
+          })
+        );
+      });
+
+      it('properly converts dashboardDisplayedHparamColumns', async () => {
+        getItemSpy
+          .withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY)
+          .and.returnValue(null);
+
+        await firstValueFrom(
+          dataSource.setSettings({
+            dashboardDisplayedHparamColumns: [
+              {
+                type: ColumnHeaderType.HPARAM,
+                name: 'conv_layers',
+                displayName: 'Conv Layers',
+                enabled: true,
+              },
+              {
+                type: ColumnHeaderType.HPARAM,
+                name: 'conv_kernel_size',
+                displayName: 'Conv Kernel Size',
+                enabled: true,
+              },
+            ],
+          })
+        );
+
+        expect(setItemSpy).toHaveBeenCalledOnceWith(
+          TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY,
+          JSON.stringify({
+            dashboardDisplayedHparamColumns: [
+              {
+                type: ColumnHeaderType.HPARAM,
+                name: 'conv_layers',
+                displayName: 'Conv Layers',
+                enabled: true,
+              },
+              {
+                type: ColumnHeaderType.HPARAM,
+                name: 'conv_kernel_size',
+                displayName: 'Conv Kernel Size',
+                enabled: true,
+              },
+            ],
           })
         );
       });

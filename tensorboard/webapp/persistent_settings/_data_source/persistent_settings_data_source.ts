@@ -102,6 +102,10 @@ export class OSSSettingsConverter extends SettingsConverter<
       serializableSettings.rangeSelectionHeaders =
         settings.rangeSelectionHeaders;
     }
+    if (settings.dashboardDisplayedHparamColumns !== undefined) {
+      serializableSettings.dashboardDisplayedHparamColumns =
+        settings.dashboardDisplayedHparamColumns;
+    }
     return serializableSettings;
   }
 
@@ -234,6 +238,11 @@ export class OSSSettingsConverter extends SettingsConverter<
         header.removable = header.removable ?? true;
       });
       settings.rangeSelectionHeaders = backendSettings.rangeSelectionHeaders;
+    }
+
+    if (Array.isArray(backendSettings.dashboardDisplayedHparamColumns)) {
+      settings.dashboardDisplayedHparamColumns =
+        backendSettings.dashboardDisplayedHparamColumns;
     }
 
     return settings;
