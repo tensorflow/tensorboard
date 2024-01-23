@@ -651,40 +651,40 @@ describe('hparams/_redux/hparams_reducers_test', () => {
         testDesc: 'to front if side is left',
         side: Side.LEFT,
         expectedResult: [
-        fakeColumns[1],
-        fakeColumns[0],
-        ...fakeColumns.slice(2),
-      ],
+          fakeColumns[1],
+          fakeColumns[0],
+          ...fakeColumns.slice(2),
+        ],
       },
       {
         testDesc: 'to back if side is right',
         side: Side.RIGHT,
         expectedResult: [
-        fakeColumns[0],
-        ...fakeColumns.slice(2),
-        fakeColumns[1],
-      ],
+          fakeColumns[0],
+          ...fakeColumns.slice(2),
+          fakeColumns[1],
+        ],
       },
     ].forEach(({testDesc, side, expectedResult}) => {
       it(`if destination not found, moves source ${testDesc}`, () => {
-      const state = buildHparamsState({
-        dashboardDisplayedHparamColumns: fakeColumns,
-      });
-      const state2 = reducers(
-        state,
-        actions.dashboardHparamColumnOrderChanged({
-          source: fakeColumns[1],
-          destination: {
-            type: ColumnHeaderType.HPARAM,
-            name: 'nonexistent param',
-            displayName: 'Nonexistent param',
-            enabled: true,
-          },
-          side,
-        })
-      );
+        const state = buildHparamsState({
+          dashboardDisplayedHparamColumns: fakeColumns,
+        });
+        const state2 = reducers(
+          state,
+          actions.dashboardHparamColumnOrderChanged({
+            source: fakeColumns[1],
+            destination: {
+              type: ColumnHeaderType.HPARAM,
+              name: 'nonexistent param',
+              displayName: 'Nonexistent param',
+              enabled: true,
+            },
+            side,
+          })
+        );
 
-      expect(state2.dashboardDisplayedHparamColumns).toEqual(expectedResult);
+        expect(state2.dashboardDisplayedHparamColumns).toEqual(expectedResult);
       });
     });
 
