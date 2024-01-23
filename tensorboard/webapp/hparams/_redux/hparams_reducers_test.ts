@@ -325,6 +325,18 @@ describe('hparams/_redux/hparams_reducers_test', () => {
         displayName: 'Conv Kernel Size',
         enabled: true,
       },
+      {
+        type: ColumnHeaderType.HPARAM,
+        name: 'dense_layers',
+        displayName: 'Dense Layers',
+        enabled: true,
+      },
+      {
+        type: ColumnHeaderType.HPARAM,
+        name: 'dropout',
+        displayName: 'Dropout',
+        enabled: true,
+      },
     ];
 
     it('appends an hparam column to the end', () => {
@@ -354,73 +366,60 @@ describe('hparams/_redux/hparams_reducers_test', () => {
       ]);
     });
 
-    it('inserts an hparam column to the left of an existing column', () => {
-      const state = buildHparamsState({
-        dashboardDisplayedHparamColumns: fakeColumns,
-      });
-      const state2 = reducers(
-        state,
-        actions.dashboardHparamColumnAdded({
-          column: {
+    [
+      {
+        testDesc: 'to the left',
+        side: Side.LEFT,
+        expectedResult: [
+          {
             type: ColumnHeaderType.HPARAM,
             name: 'dense_layers',
             displayName: 'Dense Layers',
             enabled: true,
           },
-          nextTo: {
-            type: ColumnHeaderType.HPARAM,
-            name: 'conv_layers',
-            displayName: 'Conv Layers',
-            enabled: true,
-          },
-          side: Side.LEFT,
-        })
-      );
-
-      expect(state2.dashboardDisplayedHparamColumns).toEqual([
-        {
-          type: ColumnHeaderType.HPARAM,
-          name: 'dense_layers',
-          displayName: 'Dense Layers',
-          enabled: true,
-        },
-        ...fakeColumns,
-      ]);
-    });
-
-    it('inserts an hparam column to the right of an existing column', () => {
-      const state = buildHparamsState({
-        dashboardDisplayedHparamColumns: fakeColumns,
-      });
-      const state2 = reducers(
-        state,
-        actions.dashboardHparamColumnAdded({
-          column: {
+          ...fakeColumns,
+        ],
+      },
+      {
+        testDesc: 'to the right',
+        side: Side.RIGHT,
+        expectedResult: [
+          fakeColumns[0],
+          {
             type: ColumnHeaderType.HPARAM,
             name: 'dense_layers',
             displayName: 'Dense Layers',
             enabled: true,
           },
-          nextTo: {
-            type: ColumnHeaderType.HPARAM,
-            name: 'conv_layers',
-            displayName: 'Conv Layers',
-            enabled: true,
-          },
-          side: Side.RIGHT,
-        })
-      );
+          ...fakeColumns.slice(1),
+        ],
+      },
+    ].forEach(({testDesc, side, expectedResult}) => {
+      it(`inserts an hparam column ${testDesc} of an existing column`, () => {
+        const state = buildHparamsState({
+          dashboardDisplayedHparamColumns: fakeColumns,
+        });
+        const state2 = reducers(
+          state,
+          actions.dashboardHparamColumnAdded({
+            column: {
+              type: ColumnHeaderType.HPARAM,
+              name: 'dense_layers',
+              displayName: 'Dense Layers',
+              enabled: true,
+            },
+            nextTo: {
+              type: ColumnHeaderType.HPARAM,
+              name: 'conv_layers',
+              displayName: 'Conv Layers',
+              enabled: true,
+            },
+            side,
+          })
+        );
 
-      expect(state2.dashboardDisplayedHparamColumns).toEqual([
-        fakeColumns[0],
-        {
-          type: ColumnHeaderType.HPARAM,
-          name: 'dense_layers',
-          displayName: 'Dense Layers',
-          enabled: true,
-        },
-        ...fakeColumns.slice(1),
-      ]);
+        expect(state2.dashboardDisplayedHparamColumns).toEqual(expectedResult);
+      });
     });
 
     it('appends an hparam column at the end if nextTo is not found', () => {
@@ -587,6 +586,12 @@ describe('hparams/_redux/hparams_reducers_test', () => {
         displayName: 'Dense Layers',
         enabled: true,
       },
+      {
+        type: ColumnHeaderType.HPARAM,
+        name: 'dropout',
+        displayName: 'Dropout',
+        enabled: true,
+      },
     ];
 
     it('does nothing if source is not found', () => {
@@ -641,7 +646,27 @@ describe('hparams/_redux/hparams_reducers_test', () => {
       expect(state2.dashboardDisplayedHparamColumns).toEqual(fakeColumns);
     });
 
-    it('moves source to front if dest not found and side is left', () => {
+    [
+      {
+        testDesc: 'to front if side is left',
+        side: Side.LEFT,
+        expectedResult: [
+        fakeColumns[1],
+        fakeColumns[0],
+        ...fakeColumns.slice(2),
+      ],
+      },
+      {
+        testDesc: 'to back if side is right',
+        side: Side.RIGHT,
+        expectedResult: [
+        fakeColumns[0],
+        ...fakeColumns.slice(2),
+        fakeColumns[1],
+      ],
+      },
+    ].forEach(({testDesc, side, expectedResult}) => {
+      it(`if destination not found, moves source ${testDesc}`, () => {
       const state = buildHparamsState({
         dashboardDisplayedHparamColumns: fakeColumns,
       });
@@ -655,42 +680,15 @@ describe('hparams/_redux/hparams_reducers_test', () => {
             displayName: 'Nonexistent param',
             enabled: true,
           },
-          side: Side.LEFT,
+          side,
         })
       );
 
-      expect(state2.dashboardDisplayedHparamColumns).toEqual([
-        fakeColumns[1],
-        ...fakeColumns.slice(0, 1),
-        ...fakeColumns.slice(2),
-      ]);
-    });
-
-    it('moves source to back if dest not found and side is right', () => {
-      const state = buildHparamsState({
-        dashboardDisplayedHparamColumns: fakeColumns,
+      expect(state2.dashboardDisplayedHparamColumns).toEqual(expectedResult);
       });
-      const state2 = reducers(
-        state,
-        actions.dashboardHparamColumnOrderChanged({
-          source: fakeColumns[0],
-          destination: {
-            type: ColumnHeaderType.HPARAM,
-            name: 'nonexistent param',
-            displayName: 'Nonexistent param',
-            enabled: true,
-          },
-          side: Side.RIGHT,
-        })
-      );
-
-      expect(state2.dashboardDisplayedHparamColumns).toEqual([
-        ...fakeColumns.slice(1),
-        fakeColumns[0],
-      ]);
     });
 
-    it('inserts source to the left of dest when side is left', () => {
+    it('swaps source and destination positions if destination is found', () => {
       const state = buildHparamsState({
         dashboardDisplayedHparamColumns: fakeColumns,
       });
@@ -705,27 +703,7 @@ describe('hparams/_redux/hparams_reducers_test', () => {
 
       expect(state2.dashboardDisplayedHparamColumns).toEqual([
         fakeColumns[1],
-        ...fakeColumns.slice(0, 1),
-        ...fakeColumns.slice(2),
-      ]);
-    });
-
-    it('inserts source to the right of dest when side is right', () => {
-      const state = buildHparamsState({
-        dashboardDisplayedHparamColumns: fakeColumns,
-      });
-      const state2 = reducers(
-        state,
-        actions.dashboardHparamColumnOrderChanged({
-          source: fakeColumns[0],
-          destination: fakeColumns[1],
-          side: Side.LEFT,
-        })
-      );
-
-      expect(state2.dashboardDisplayedHparamColumns).toEqual([
-        fakeColumns[1],
-        ...fakeColumns.slice(0, 1),
+        fakeColumns[0],
         ...fakeColumns.slice(2),
       ]);
     });

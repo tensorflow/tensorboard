@@ -102,8 +102,8 @@ const reducer: ActionReducer<HparamsState, Action> = createReducer(
         destinationIndex = side === Side.RIGHT ? nextToIndex + 1 : nextToIndex;
       }
     }
-    let newColumn = {...column, enabled: true};
-    let newColumns = [...oldColumns];
+    const newColumn = {...column, enabled: true};
+    const newColumns = [...oldColumns];
     newColumns.splice(destinationIndex, 0, newColumn);
 
     return {
@@ -128,9 +128,8 @@ const reducer: ActionReducer<HparamsState, Action> = createReducer(
           ...column,
           enabled: !toggledColumn.enabled,
         };
-      } else {
-        return column;
       }
+      return column;
     });
 
     return {
@@ -142,7 +141,7 @@ const reducer: ActionReducer<HparamsState, Action> = createReducer(
     actions.dashboardHparamColumnOrderChanged,
     (state, {source, destination, side}) => {
       const {dashboardDisplayedHparamColumns: columns} = state;
-      let sourceIndex = columns.findIndex(
+      const sourceIndex = columns.findIndex(
         (column: ColumnHeader) => column.name === source.name
       );
       let destinationIndex = columns.findIndex(
@@ -152,7 +151,12 @@ const reducer: ActionReducer<HparamsState, Action> = createReducer(
         return state;
       }
       if (destinationIndex === -1) {
-        destinationIndex = side === Side.LEFT ? 0 : columns.length - 1;
+        // Use side as a backup to determine source position if destination isn't found.
+        if (side !== undefined) {
+          destinationIndex = side === Side.LEFT ? 0 : columns.length - 1;
+        } else {
+          return state;
+        }
       }
 
       const newColumns = [...columns];
