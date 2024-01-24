@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {RouteKind} from '../../../app_routing';
+import { RouteKind } from '../../../app_routing';
 import {
   buildHparamSpec,
   buildMetricSpec,
@@ -21,25 +21,26 @@ import {
   buildAppRoutingState,
   buildStateFromAppRoutingState,
 } from '../../../app_routing/store/testing';
-import {buildRoute} from '../../../app_routing/testing';
-import {buildExperiment} from '../../../experiments/store/testing';
-import {IntervalFilter, DiscreteFilter} from '../../../hparams/types';
-import {DomainType, Run} from '../../../runs/store/runs_types';
+import { buildRoute } from '../../../app_routing/testing';
+import { buildExperiment } from '../../../experiments/store/testing';
+import { IntervalFilter, DiscreteFilter } from '../../../hparams/types';
+import { DomainType, Run } from '../../../runs/store/runs_types';
+import { getRunsTableHeaders } from '../../../runs/store/runs_selectors';
 import {
   buildRun,
   buildRunsState,
   buildStateFromRunsState,
 } from '../../../runs/store/testing';
-import {RunTableItem} from '../../../runs/views/runs_table/types';
-import {buildMockState} from '../../../testing/utils';
+import { RunTableItem } from '../../../runs/views/runs_table/types';
+import { buildMockState } from '../../../testing/utils';
 import {
   appStateFromMetricsState,
   buildMetricsSettingsState,
   buildMetricsState,
 } from '../../testing';
-import {PluginType} from '../../types';
+import { PluginType } from '../../types';
 import * as selectors from './common_selectors';
-import {ColumnHeaderType} from '../card_renderer/scalar_card_types';
+import { ColumnHeaderType } from '../card_renderer/scalar_card_types';
 
 describe('common selectors', () => {
   let runIds: Record<string, string[]>;
@@ -55,7 +56,7 @@ describe('common selectors', () => {
   let state: ReturnType<typeof buildMockState>;
 
   beforeEach(() => {
-    runIds = {defaultExperimentId: ['run1', 'run2', 'run3']};
+    runIds = { defaultExperimentId: ['run1', 'run2', 'run3'] };
     runIdToExpId = {
       run1: 'defaultExperimentId',
       run2: 'defaultExperimentId',
@@ -142,10 +143,10 @@ describe('common selectors', () => {
       },
     ];
 
-    run1 = buildRun({name: 'run 1'});
-    run2 = buildRun({id: '2', name: 'run 2'});
-    run3 = buildRun({id: '3', name: 'run 3'});
-    run4 = buildRun({id: '4', name: 'run 4'});
+    run1 = buildRun({ name: 'run 1' });
+    run2 = buildRun({ id: '2', name: 'run 2' });
+    run3 = buildRun({ id: '3', name: 'run 3' });
+    run4 = buildRun({ id: '4', name: 'run 4' });
     state = buildMockState({
       runs: {
         data: {
@@ -161,13 +162,41 @@ describe('common selectors', () => {
             run4,
           },
         } as any,
-        ui: {} as any,
+        ui: {
+          runsTableHeaders: [
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+              sortable: true,
+              removable: false,
+              movable: false,
+              filterable: false,
+              hidable: false,
+            },
+            {
+              type: ColumnHeaderType.CUSTOM,
+              name: 'experimentAlias',
+              displayName: 'Experiment',
+              enabled: true,
+              movable: false,
+              sortable: true,
+            },
+            {
+              type: ColumnHeaderType.CUSTOM,
+              name: 'fakeRunsHeader',
+              displayName: 'Fake Runs Header',
+              enabled: true,
+            },
+          ]
+        } as any,
       },
       experiments: {
         data: {
           experimentMap: {
-            exp1: buildExperiment({name: 'experiment1', id: 'exp1'}),
-            exp2: buildExperiment({name: 'experiment2', id: 'exp2'}),
+            exp1: buildExperiment({ name: 'experiment1', id: 'exp1' }),
+            exp2: buildExperiment({ name: 'experiment2', id: 'exp2' }),
           },
         },
       },
@@ -182,10 +211,35 @@ describe('common selectors', () => {
       },
       hparams: {
         dashboardSpecs: {
-          hparams: [buildHparamSpec({name: 'foo', displayName: 'Foo'})],
-          metrics: [buildMetricSpec({displayName: 'Bar'})],
+          hparams: [
+            buildHparamSpec({ name: 'conv_layers', displayName: 'Conv Layers' }),
+            buildHparamSpec({
+              name: 'conv_kernel_size',
+              displayName: 'Conv Kernel Size',
+            }),
+            buildHparamSpec({
+              name: 'dense_layers',
+              displayName: 'Dense Layers',
+            }),
+            buildHparamSpec({ name: 'dropout', displayName: 'Dropout' }),
+          ],
+          metrics: [buildMetricSpec({ displayName: 'Bar' })],
         },
         dashboardSessionGroups: [],
+        dashboardDisplayedHparamColumns: [
+          {
+            type: ColumnHeaderType.HPARAM,
+            name: 'conv_layers',
+            displayName: 'Conv Layers',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.HPARAM,
+            name: 'dense_layers',
+            displayName: 'Dense Layers',
+            enabled: true,
+          },
+        ],
       } as any,
     });
   });
@@ -715,11 +769,11 @@ describe('common selectors', () => {
       state.app_routing!.activeRoute!.routeKind = RouteKind.COMPARE_EXPERIMENT;
       const results = selectors.TEST_ONLY.getRenderableRuns(state);
       expect(results.length).toEqual(5);
-      expect(results[0].run).toEqual({...run1, experimentId: 'exp1'});
-      expect(results[1].run).toEqual({...run2, experimentId: 'exp1'});
-      expect(results[2].run).toEqual({...run2, experimentId: 'exp2'});
-      expect(results[3].run).toEqual({...run3, experimentId: 'exp2'});
-      expect(results[4].run).toEqual({...run4, experimentId: 'exp2'});
+      expect(results[0].run).toEqual({ ...run1, experimentId: 'exp1' });
+      expect(results[1].run).toEqual({ ...run2, experimentId: 'exp1' });
+      expect(results[2].run).toEqual({ ...run2, experimentId: 'exp2' });
+      expect(results[3].run).toEqual({ ...run3, experimentId: 'exp2' });
+      expect(results[4].run).toEqual({ ...run4, experimentId: 'exp2' });
     });
 
     it('returns empty list when route does not contain experiments', () => {
@@ -911,7 +965,7 @@ describe('common selectors', () => {
       state.runs!.data.regexFilter = 'foo';
       state.app_routing!.activeRoute = {
         routeKind: RouteKind.EXPERIMENT,
-        params: {experimentIds: 'exp1'},
+        params: { experimentIds: 'exp1' },
       };
       const result = selectors.getFilteredRenderableRuns(state);
       expect(result).toEqual([]);
@@ -933,7 +987,7 @@ describe('common selectors', () => {
       ).and.callThrough();
       state.app_routing!.activeRoute = {
         routeKind: RouteKind.EXPERIMENT,
-        params: {experimentIds: 'exp1'},
+        params: { experimentIds: 'exp1' },
       };
       const results = selectors.getFilteredRenderableRuns(state);
       expect(spy).toHaveBeenCalledOnceWith(results, new Map(), new Map());
@@ -962,6 +1016,15 @@ describe('common selectors', () => {
   });
 
   describe('getPotentialHparamColumns', () => {
+    const expectedBooleanFlags = {
+      enabled: false,
+      removable: true,
+      sortable: true,
+      movable: true,
+      filterable: true,
+      hidable: true,
+    };
+
     it('returns empty list when there are no experiments', () => {
       state.app_routing!.activeRoute!.routeKind = RouteKind.EXPERIMENTS;
 
@@ -972,42 +1035,121 @@ describe('common selectors', () => {
       expect(selectors.getPotentialHparamColumns(state)).toEqual([
         {
           type: ColumnHeaderType.HPARAM,
-          name: 'foo',
-          displayName: 'Foo',
-          enabled: false,
-          removable: true,
-          sortable: true,
-          movable: true,
-          filterable: true,
+          name: 'conv_layers',
+          displayName: 'Conv Layers',
+          ...expectedBooleanFlags,
+        },
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_kernel_size',
+          displayName: 'Conv Kernel Size',
+          ...expectedBooleanFlags,
+        },
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'dense_layers',
+          displayName: 'Dense Layers',
+          ...expectedBooleanFlags,
+        },
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'dropout',
+          displayName: 'Dropout',
+          ...expectedBooleanFlags,
         },
       ]);
     });
 
     it('sets name as display name when a display name is not provided', () => {
-      state.hparams!.dashboardSpecs.hparams.push(
-        buildHparamSpec({name: 'bar', displayName: ''})
-      );
+      state.hparams!.dashboardSpecs.hparams = [
+        buildHparamSpec({ name: 'conv_layers', displayName: '' }),
+      ];
+
       expect(selectors.getPotentialHparamColumns(state)).toEqual([
         {
           type: ColumnHeaderType.HPARAM,
-          name: 'foo',
-          displayName: 'Foo',
-          enabled: false,
-          removable: true,
-          sortable: true,
-          movable: true,
-          filterable: true,
+          name: 'conv_layers',
+          displayName: 'conv_layers',
+          ...expectedBooleanFlags,
         },
-        {
+      ]);
+    });
+  });
+
+  describe('getSelectableColumns', () => {
+    it('returns the full list of hparam columns if none are currently displayed', () => {
+      state.hparams!.dashboardDisplayedHparamColumns = [];
+
+      expect(selectors.getSelectableColumns(state)).toEqual([
+        jasmine.objectContaining({
           type: ColumnHeaderType.HPARAM,
-          name: 'bar',
-          displayName: 'bar',
-          enabled: false,
-          removable: true,
-          sortable: true,
-          movable: true,
-          filterable: true,
-        },
+          name: 'conv_layers',
+          displayName: 'Conv Layers',
+        }),
+        jasmine.objectContaining({
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_kernel_size',
+          displayName: 'Conv Kernel Size',
+        }),
+        jasmine.objectContaining({
+          type: ColumnHeaderType.HPARAM,
+          name: 'dense_layers',
+          displayName: 'Dense Layers',
+        }),
+        jasmine.objectContaining({
+          type: ColumnHeaderType.HPARAM,
+          name: 'dropout',
+          displayName: 'Dropout',
+        }),
+      ]);
+    });
+
+    it('returns only columns that are not displayed', () => {
+      expect(selectors.getSelectableColumns(state)).toEqual([
+        jasmine.objectContaining({
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_kernel_size',
+          displayName: 'Conv Kernel Size',
+        }),
+        jasmine.objectContaining({
+          type: ColumnHeaderType.HPARAM,
+          name: 'dropout',
+          displayName: 'Dropout',
+        }),
+      ]);
+    });
+  });
+
+  describe('getGroupedColumns', () => {
+    it('returns a grouped list of columns given a list of standard columns', () => {
+      expect(selectors.getGroupedColumns(getRunsTableHeaders)(state)).toEqual([
+        jasmine.objectContaining({
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+        }),
+        jasmine.objectContaining({
+          type: ColumnHeaderType.CUSTOM,
+          name: 'experimentAlias',
+          displayName: 'Experiment',
+        }),
+        jasmine.objectContaining({
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_layers',
+          displayName: 'Conv Layers',
+          enabled: true,
+        }),
+        jasmine.objectContaining({
+          type: ColumnHeaderType.HPARAM,
+          name: 'dense_layers',
+          displayName: 'Dense Layers',
+          enabled: true,
+        }),
+        jasmine.objectContaining({
+          type: ColumnHeaderType.CUSTOM,
+          name: 'fakeRunsHeader',
+          displayName: 'Fake Runs Header',
+        }),
       ]);
     });
   });
