@@ -50,8 +50,10 @@ export const getDashboardDisplayedHparamColumns = createSelector(
   getDashboardHparamsAndMetricsSpecs,
   getHparamsState,
   ({hparams}, state) => {
-    const hparamSet = new Set(hparams.map(hparam => hparam.name));
-    return state.dashboardDisplayedHparamColumns.filter(column => hparamSet.has(column.name));
+    const hparamSet = new Set(hparams.map((hparam) => hparam.name));
+    return state.dashboardDisplayedHparamColumns.filter((column) =>
+      hparamSet.has(column.name)
+    );
   }
 );
 

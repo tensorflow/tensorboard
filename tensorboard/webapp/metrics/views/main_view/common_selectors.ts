@@ -12,8 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import { createSelector, Selector } from '@ngrx/store';
-import { State } from '../../../app_state';
+import {createSelector, Selector} from '@ngrx/store';
+import {State} from '../../../app_state';
 import {
   getCurrentRouteRunSelection,
   getMetricsHideEmptyCards,
@@ -27,7 +27,7 @@ import {
   getColumnHeadersForCard,
   getDashboardExperimentNames,
 } from '../../../selectors';
-import { DeepReadonly } from '../../../util/types';
+import {DeepReadonly} from '../../../util/types';
 import {
   getDashboardMetricsFilterMap,
   getDashboardHparamsAndMetricsSpecs,
@@ -45,14 +45,14 @@ import {
   RunTableItem,
   RunTableExperimentItem,
 } from '../../../runs/views/runs_table/types';
-import { getRunsTableHeaders } from '../../../runs/store/runs_selectors';
-import { matchRunToRegex } from '../../../util/matcher';
-import { isSingleRunPlugin, PluginType } from '../../data_source';
-import { getNonEmptyCardIdsWithMetadata, TagMetadata } from '../../store';
-import { compareTagNames } from '../../utils';
-import { CardIdWithMetadata } from '../metrics_view_types';
-import { RouteKind } from '../../../app_routing/types';
-import { memoize } from '../../../util/memoize';
+import {getRunsTableHeaders} from '../../../runs/store/runs_selectors';
+import {matchRunToRegex} from '../../../util/matcher';
+import {isSingleRunPlugin, PluginType} from '../../data_source';
+import {getNonEmptyCardIdsWithMetadata, TagMetadata} from '../../store';
+import {compareTagNames} from '../../utils';
+import {CardIdWithMetadata} from '../metrics_view_types';
+import {RouteKind} from '../../../app_routing/types';
+import {memoize} from '../../../util/memoize';
 import {
   ColumnHeader,
   ColumnHeaderType,
@@ -168,7 +168,7 @@ const utils = {
     hparamFilters: Map<string, IntervalFilter | DiscreteFilter>,
     metricFilters: Map<string, IntervalFilter>
   ) {
-    return runItems.filter(({ hparams, metrics }) => {
+    return runItems.filter(({hparams, metrics}) => {
       const hparamMatches = [...hparamFilters.entries()].every(
         ([hparamName, filter]) => {
           const value = hparams.get(hparamName);
@@ -266,14 +266,14 @@ export const getFilteredRenderableRuns = createSelector(
 export const getFilteredRenderableRunsIds = createSelector(
   getFilteredRenderableRuns,
   (filteredRenderableRuns) => {
-    return new Set(filteredRenderableRuns.map(({ run: { id } }) => id));
+    return new Set(filteredRenderableRuns.map(({run: {id}}) => id));
   }
 );
 
 export const getPotentialHparamColumns = createSelector(
   getDashboardHparamsAndMetricsSpecs,
   getExperimentIdsFromRoute,
-  ({ hparams }, experimentIds): ColumnHeader[] => {
+  ({hparams}, experimentIds): ColumnHeader[] => {
     if (!experimentIds) {
       return [];
     }
@@ -298,7 +298,7 @@ export const getSelectableColumns = createSelector(
   getPotentialHparamColumns,
   getDashboardDisplayedHparamColumns,
   (potentialColumns, currentColumns) => {
-    const currentColumnNames = new Set(currentColumns.map(({ name }) => name));
+    const currentColumnNames = new Set(currentColumns.map(({name}) => name));
     return potentialColumns.filter((columnHeader) => {
       return !currentColumnNames.has(columnHeader.name);
     });
@@ -306,9 +306,9 @@ export const getSelectableColumns = createSelector(
 );
 
 /** Returns a list of columns that have been sorted into logical groups.
- * 
+ *
  * Column order: | RUN | experimentAlias | HPARAMs | other |
-*/
+ */
 export const getGroupedColumns = (
   headersSelector: Selector<object, ColumnHeader[]>
 ) =>
@@ -318,9 +318,16 @@ export const getGroupedColumns = (
     (tableHeaders, hparamHeaders): ColumnHeader[] => {
       return [
         ...tableHeaders.filter((header) => header.type === 'RUN'),
-        ...tableHeaders.filter((header) => header.type === 'CUSTOM' && header.name === 'experimentAlias'),
+        ...tableHeaders.filter(
+          (header) =>
+            header.type === 'CUSTOM' && header.name === 'experimentAlias'
+        ),
         ...hparamHeaders,
-        ...tableHeaders.filter((header) => header.type !== 'RUN' && !(header.type === 'CUSTOM' && header.name === 'experimentAlias')),
+        ...tableHeaders.filter(
+          (header) =>
+            header.type !== 'RUN' &&
+            !(header.type === 'CUSTOM' && header.name === 'experimentAlias')
+        ),
       ];
     }
   );
