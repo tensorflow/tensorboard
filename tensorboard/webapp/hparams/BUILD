@@ -37,7 +37,9 @@ tf_ng_module(
         "//tensorboard/webapp/hparams/_redux:hparams_actions",
         "//tensorboard/webapp/hparams/_redux:hparams_module",
         "//tensorboard/webapp/hparams/_redux:hparams_selectors",
+        "//tensorboard/webapp/persistent_settings:config_module",
         "@npm//@angular/core",
+        "@npm//@ngrx/store",
     ],
 )
 

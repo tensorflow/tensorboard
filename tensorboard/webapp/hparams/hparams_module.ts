@@ -13,9 +13,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
+import {createSelector} from '@ngrx/store';
+import {PersistentSettingsConfigModule} from '../persistent_settings/persistent_settings_config_module';
 import {HparamsModule as ReduxModule} from './_redux/hparams_module';
+import {getDashboardDisplayedHparamColumns} from './_redux/hparams_selectors';
+
+export function getRunsTableHeadersFactory() {
+  return createSelector(
+    getDashboardDisplayedHparamColumns,
+    (dashboardDisplayedHparamColumns) => {
+      return {dashboardDisplayedHparamColumns};
+    }
+  );
+}
 
 @NgModule({
-  imports: [ReduxModule],
+  imports: [
+    ReduxModule,
+    PersistentSettingsConfigModule.defineGlobalSetting(
+      getRunsTableHeadersFactory
+    ),
+  ],
 })
 export class HparamsModule {}

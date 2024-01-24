@@ -321,8 +321,10 @@ const {initialState: uiInitialState, reducers: uiNamespaceContextedReducers} =
           displayName: 'Run',
           enabled: true,
           sortable: true,
-          movable: true,
+          removable: false,
+          movable: false,
           filterable: false,
+          hidable: false,
         },
       ],
       sortingInfo: {
@@ -347,7 +349,7 @@ const {initialState: uiInitialState, reducers: uiNamespaceContextedReducers} =
               name: 'experimentAlias',
               displayName: 'Experiment',
               enabled: true,
-              movable: true,
+              movable: false,
               sortable: true,
             },
           ];
