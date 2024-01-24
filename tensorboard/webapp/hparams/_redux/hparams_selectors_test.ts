@@ -141,7 +141,7 @@ describe('hparams/_redux/hparams_selectors_test', () => {
       expect(selectors.getDashboardDisplayedHparamColumns(state)).toEqual([]);
     });
 
-    it('returns only dashboard displayed hparam columns', () => {
+    it('returns only hparam columns that have specs', () => {
       const state = buildStateFromHparamsState(
         buildHparamsState({
           dashboardSpecs: {
