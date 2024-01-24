@@ -506,6 +506,10 @@ def _should_use_data_server(flags):
 class TensorBoardSubcommand(metaclass=ABCMeta):
     """Experimental private API for defining subcommands for tensorboard.
 
+    The intended use is something like:
+
+    `tensorboard <sub_cmd_name> <additional_args...>`
+
     Since our hosted service at http://tensorboard.dev has been shut down, this
     functionality is no longer used, but the support for subcommands remains,
     in case it is ever useful again.
