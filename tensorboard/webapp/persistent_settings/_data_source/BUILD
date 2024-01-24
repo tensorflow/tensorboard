@@ -11,6 +11,7 @@ tf_ng_module(
     deps = [
         ":types",
         "//tensorboard/webapp/metrics:types",
+        "//tensorboard/webapp/widgets/data_table:types",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",

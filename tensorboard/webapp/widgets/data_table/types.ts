@@ -86,6 +86,7 @@ export interface ColumnHeader {
   sortable?: boolean;
   movable?: boolean;
   filterable?: boolean;
+  hidable?: boolean;
 }
 
 export enum SortingOrder {
@@ -110,4 +111,21 @@ export type TableData = Record<string, string | number | boolean | object> & {
 export enum DataTableMode {
   SINGLE,
   RANGE,
+}
+
+export enum Side {
+  RIGHT,
+  LEFT,
+}
+
+export interface ReorderColumnEvent {
+  source: ColumnHeader;
+  destination: ColumnHeader;
+  side?: Side | undefined;
+}
+
+export interface AddColumnEvent {
+  column: ColumnHeader;
+  nextTo?: ColumnHeader | undefined;
+  side?: Side | undefined;
 }

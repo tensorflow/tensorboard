@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, ActionReducer, createReducer, on} from '@ngrx/store';
+import {ColumnHeader, Side} from '../../widgets/data_table/types';
 import * as actions from './hparams_actions';
 import {HparamsState} from './types';
 
@@ -26,6 +27,7 @@ const initialState: HparamsState = {
     hparams: new Map(),
     metrics: new Map(),
   },
+  dashboardDisplayedHparamColumns: [],
 };
 
 const reducer: ActionReducer<HparamsState, Action> = createReducer(
@@ -87,7 +89,86 @@ const reducer: ActionReducer<HparamsState, Action> = createReducer(
         metrics: nextMetricFilters,
       },
     };
-  })
+  }),
+  on(actions.dashboardHparamColumnAdded, (state, {column, nextTo, side}) => {
+    const {dashboardDisplayedHparamColumns: oldColumns} = state;
+
+    let destinationIndex = oldColumns.length; // Default to append at end.
+    if (nextTo !== undefined && side !== undefined) {
+      const nextToIndex = oldColumns.findIndex(
+        (col) => col.name === nextTo.name
+      );
+      if (nextToIndex !== -1) {
+        destinationIndex = side === Side.RIGHT ? nextToIndex + 1 : nextToIndex;
+      }
+    }
+    const newColumn = {...column, enabled: true};
+    const newColumns = [...oldColumns];
+    newColumns.splice(destinationIndex, 0, newColumn);
+
+    return {
+      ...state,
+      dashboardDisplayedHparamColumns: newColumns,
+    };
+  }),
+  on(actions.dashboardHparamColumnRemoved, (state, {column}) => {
+    const newColumns = state.dashboardDisplayedHparamColumns.filter(
+      ({name}) => name !== column.name
+    );
+
+    return {
+      ...state,
+      dashboardDisplayedHparamColumns: newColumns,
+    };
+  }),
+  on(actions.dashboardHparamColumnToggled, (state, {column: toggledColumn}) => {
+    const newColumns = state.dashboardDisplayedHparamColumns.map((column) => {
+      if (column.name === toggledColumn.name) {
+        return {
+          ...column,
+          enabled: !toggledColumn.enabled,
+        };
+      }
+      return column;
+    });
+
+    return {
+      ...state,
+      dashboardDisplayedHparamColumns: newColumns,
+    };
+  }),
+  on(
+    actions.dashboardHparamColumnOrderChanged,
+    (state, {source, destination, side}) => {
+      const {dashboardDisplayedHparamColumns: columns} = state;
+      const sourceIndex = columns.findIndex(
+        (column: ColumnHeader) => column.name === source.name
+      );
+      let destinationIndex = columns.findIndex(
+        (column: ColumnHeader) => column.name === destination.name
+      );
+      if (sourceIndex === -1 || sourceIndex === destinationIndex) {
+        return state;
+      }
+      if (destinationIndex === -1) {
+        // Use side as a backup to determine source position if destination isn't found.
+        if (side !== undefined) {
+          destinationIndex = side === Side.LEFT ? 0 : columns.length - 1;
+        } else {
+          return state;
+        }
+      }
+
+      const newColumns = [...columns];
+      newColumns.splice(sourceIndex, 1);
+      newColumns.splice(destinationIndex, 0, source);
+
+      return {
+        ...state,
+        dashboardDisplayedHparamColumns: newColumns,
+      };
+    }
+  )
 );
 
 export function reducers(state: HparamsState | undefined, action: Action) {

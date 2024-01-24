@@ -15,11 +15,31 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {EMPTY, Observable, of} from 'rxjs';
 import {map, tap} from 'rxjs/operators';
+import {ColumnHeader} from '../../widgets/data_table/types';
 import {BackendSettings, PersistableSettings, ThemeValue} from './types';
 
 const LEGACY_METRICS_LOCAL_STORAGE_KEY = '_tb_global_settings.timeseries';
 const GLOBAL_LOCAL_STORAGE_KEY = '_tb_global_settings';
 const NOTIFICATION_LAST_READ_TIME_KEY = 'notificationLastReadTimestamp';
+
+/** Updates context menu related properties for given headers.
+ *
+ * Useful for correcting properties that were saved to backend in a possibly inconsistent state.
+ */
+function updateScalarContextMenuOptions(headers: ColumnHeader[]) {
+  headers.forEach((header) => {
+    header.sortable = true;
+    header.removable = false;
+
+    if (header.type === 'RUN') {
+      header.movable = false;
+      header.hidable = false;
+    } else {
+      header.movable = true;
+      header.hidable = true;
+    }
+  });
+}
 
 @Injectable()
 export abstract class PersistentSettingsDataSource<UiSettings> {
@@ -101,6 +121,10 @@ export class OSSSettingsConverter extends SettingsConverter<
     if (settings.rangeSelectionHeaders !== undefined) {
       serializableSettings.rangeSelectionHeaders =
         settings.rangeSelectionHeaders;
+    }
+    if (settings.dashboardDisplayedHparamColumns !== undefined) {
+      serializableSettings.dashboardDisplayedHparamColumns =
+        settings.dashboardDisplayedHparamColumns;
     }
     return serializableSettings;
   }
@@ -213,12 +237,7 @@ export class OSSSettingsConverter extends SettingsConverter<
       // If the settings stored in the backend are invalid, reset back to default.
       backendSettings.singleSelectionHeaders[0].name !== undefined
     ) {
-      // Default these properies to true if stored headers are missing them.
-      backendSettings.singleSelectionHeaders.forEach((header) => {
-        header.movable = header.movable ?? true;
-        header.sortable = header.sortable ?? true;
-        header.removable = header.removable ?? true;
-      });
+      updateScalarContextMenuOptions(backendSettings.singleSelectionHeaders);
       settings.singleSelectionHeaders = backendSettings.singleSelectionHeaders;
     }
 
@@ -227,13 +246,13 @@ export class OSSSettingsConverter extends SettingsConverter<
       // If the settings stored in the backend are invalid, reset back to default.
       backendSettings.rangeSelectionHeaders[0].name !== undefined
     ) {
-      // Default these properies to true if stored headers are missing them.
-      backendSettings.rangeSelectionHeaders.forEach((header) => {
-        header.movable = header.movable ?? true;
-        header.sortable = header.sortable ?? true;
-        header.removable = header.removable ?? true;
-      });
+      updateScalarContextMenuOptions(backendSettings.rangeSelectionHeaders);
       settings.rangeSelectionHeaders = backendSettings.rangeSelectionHeaders;
+    }
+
+    if (Array.isArray(backendSettings.dashboardDisplayedHparamColumns)) {
+      settings.dashboardDisplayedHparamColumns =
+        backendSettings.dashboardDisplayedHparamColumns;
     }
 
     return settings;

@@ -17,6 +17,7 @@ import {DomainType, RunStatus} from '../types';
 import * as actions from './hparams_actions';
 import {reducers} from './hparams_reducers';
 import {buildHparamSpec, buildHparamsState, buildMetricSpec} from './testing';
+import {ColumnHeaderType, Side} from '../../widgets/data_table/types';
 
 describe('hparams/_redux/hparams_reducers_test', () => {
   describe('hparamsFetchSessionGroupsSucceeded', () => {
@@ -307,6 +308,404 @@ describe('hparams/_redux/hparams_reducers_test', () => {
           ],
         ]),
       });
+    });
+  });
+
+  describe('dashboardHparamColumnAdded', () => {
+    const fakeColumns = [
+      {
+        type: ColumnHeaderType.HPARAM,
+        name: 'conv_layers',
+        displayName: 'Conv Layers',
+        enabled: true,
+      },
+      {
+        type: ColumnHeaderType.HPARAM,
+        name: 'conv_kernel_size',
+        displayName: 'Conv Kernel Size',
+        enabled: true,
+      },
+      {
+        type: ColumnHeaderType.HPARAM,
+        name: 'dense_layers',
+        displayName: 'Dense Layers',
+        enabled: true,
+      },
+      {
+        type: ColumnHeaderType.HPARAM,
+        name: 'dropout',
+        displayName: 'Dropout',
+        enabled: true,
+      },
+    ];
+
+    it('appends an hparam column to the end', () => {
+      const state = buildHparamsState({
+        dashboardDisplayedHparamColumns: fakeColumns,
+      });
+      const state2 = reducers(
+        state,
+        actions.dashboardHparamColumnAdded({
+          column: {
+            type: ColumnHeaderType.HPARAM,
+            name: 'dense_layers',
+            displayName: 'Dense Layers',
+            enabled: true,
+          },
+        })
+      );
+
+      expect(state2.dashboardDisplayedHparamColumns).toEqual([
+        ...fakeColumns,
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'dense_layers',
+          displayName: 'Dense Layers',
+          enabled: true,
+        },
+      ]);
+    });
+
+    [
+      {
+        testDesc: 'to the left',
+        side: Side.LEFT,
+        expectedResult: [
+          {
+            type: ColumnHeaderType.HPARAM,
+            name: 'dense_layers',
+            displayName: 'Dense Layers',
+            enabled: true,
+          },
+          ...fakeColumns,
+        ],
+      },
+      {
+        testDesc: 'to the right',
+        side: Side.RIGHT,
+        expectedResult: [
+          fakeColumns[0],
+          {
+            type: ColumnHeaderType.HPARAM,
+            name: 'dense_layers',
+            displayName: 'Dense Layers',
+            enabled: true,
+          },
+          ...fakeColumns.slice(1),
+        ],
+      },
+    ].forEach(({testDesc, side, expectedResult}) => {
+      it(`inserts an hparam column ${testDesc} of an existing column`, () => {
+        const state = buildHparamsState({
+          dashboardDisplayedHparamColumns: fakeColumns,
+        });
+        const state2 = reducers(
+          state,
+          actions.dashboardHparamColumnAdded({
+            column: {
+              type: ColumnHeaderType.HPARAM,
+              name: 'dense_layers',
+              displayName: 'Dense Layers',
+              enabled: true,
+            },
+            nextTo: {
+              type: ColumnHeaderType.HPARAM,
+              name: 'conv_layers',
+              displayName: 'Conv Layers',
+              enabled: true,
+            },
+            side,
+          })
+        );
+
+        expect(state2.dashboardDisplayedHparamColumns).toEqual(expectedResult);
+      });
+    });
+
+    it('appends an hparam column at the end if nextTo is not found', () => {
+      const state = buildHparamsState({
+        dashboardDisplayedHparamColumns: fakeColumns,
+      });
+      const state2 = reducers(
+        state,
+        actions.dashboardHparamColumnAdded({
+          column: {
+            type: ColumnHeaderType.HPARAM,
+            name: 'dense_layers',
+            displayName: 'Dense Layers',
+            enabled: true,
+          },
+          nextTo: {
+            type: ColumnHeaderType.HPARAM,
+            name: 'nonexistent_layer',
+            displayName: 'Nonexistent layer',
+            enabled: true,
+          },
+          side: Side.RIGHT,
+        })
+      );
+
+      expect(state2.dashboardDisplayedHparamColumns).toEqual([
+        ...fakeColumns,
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'dense_layers',
+          displayName: 'Dense Layers',
+          enabled: true,
+        },
+      ]);
+    });
+  });
+
+  describe('dashboardHparamColumnRemoved', () => {
+    it('removes an existing column', () => {
+      const state = buildHparamsState({
+        dashboardDisplayedHparamColumns: [
+          {
+            type: ColumnHeaderType.HPARAM,
+            name: 'conv_layers',
+            displayName: 'Conv Layers',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.HPARAM,
+            name: 'conv_kernel_size',
+            displayName: 'Conv Kernel Size',
+            enabled: true,
+          },
+        ],
+      });
+      const state2 = reducers(
+        state,
+        actions.dashboardHparamColumnRemoved({
+          column: {
+            type: ColumnHeaderType.HPARAM,
+            name: 'conv_layers',
+            displayName: 'Conv Layers',
+            enabled: true,
+          },
+        })
+      );
+
+      expect(state2.dashboardDisplayedHparamColumns).toEqual([
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_kernel_size',
+          displayName: 'Conv Kernel Size',
+          enabled: true,
+        },
+      ]);
+    });
+  });
+
+  describe('dashboardHparamColumnToggled', () => {
+    it('enables a disabled column', () => {
+      const state = buildHparamsState({
+        dashboardDisplayedHparamColumns: [
+          {
+            type: ColumnHeaderType.HPARAM,
+            name: 'conv_layers',
+            displayName: 'Conv Layers',
+            enabled: false,
+          },
+        ],
+      });
+      const state2 = reducers(
+        state,
+        actions.dashboardHparamColumnToggled({
+          column: {
+            type: ColumnHeaderType.HPARAM,
+            name: 'conv_layers',
+            displayName: 'Conv Layers',
+            enabled: false,
+          },
+        })
+      );
+
+      expect(state2.dashboardDisplayedHparamColumns).toEqual([
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_layers',
+          displayName: 'Conv Layers',
+          enabled: true,
+        },
+      ]);
+    });
+
+    it('disables an enabled column', () => {
+      const state = buildHparamsState({
+        dashboardDisplayedHparamColumns: [
+          {
+            type: ColumnHeaderType.HPARAM,
+            name: 'conv_layers',
+            displayName: 'Conv Layers',
+            enabled: true,
+          },
+        ],
+      });
+      const state2 = reducers(
+        state,
+        actions.dashboardHparamColumnToggled({
+          column: {
+            type: ColumnHeaderType.HPARAM,
+            name: 'conv_layers',
+            displayName: 'Conv Layers',
+            enabled: true,
+          },
+        })
+      );
+
+      expect(state2.dashboardDisplayedHparamColumns).toEqual([
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_layers',
+          displayName: 'Conv Layers',
+          enabled: false,
+        },
+      ]);
+    });
+  });
+
+  describe('dashboardHparamColumnOrderChanged', () => {
+    const fakeColumns = [
+      {
+        type: ColumnHeaderType.HPARAM,
+        name: 'conv_layers',
+        displayName: 'Conv Layers',
+        enabled: true,
+      },
+      {
+        type: ColumnHeaderType.HPARAM,
+        name: 'conv_kernel_size',
+        displayName: 'Conv Kernel Size',
+        enabled: true,
+      },
+      {
+        type: ColumnHeaderType.HPARAM,
+        name: 'dense_layers',
+        displayName: 'Dense Layers',
+        enabled: true,
+      },
+      {
+        type: ColumnHeaderType.HPARAM,
+        name: 'dropout',
+        displayName: 'Dropout',
+        enabled: true,
+      },
+    ];
+
+    it('does nothing if source is not found', () => {
+      const state = buildHparamsState({
+        dashboardDisplayedHparamColumns: fakeColumns,
+      });
+      const state2 = reducers(
+        state,
+        actions.dashboardHparamColumnOrderChanged({
+          source: {
+            type: ColumnHeaderType.HPARAM,
+            name: 'nonexistent_param',
+            displayName: 'Nonexistent param',
+            enabled: false,
+          },
+          destination: {
+            type: ColumnHeaderType.HPARAM,
+            name: 'conv_kernel_size',
+            displayName: 'Conv Kernel Size',
+            enabled: true,
+          },
+          side: Side.LEFT,
+        })
+      );
+
+      expect(state2.dashboardDisplayedHparamColumns).toEqual(fakeColumns);
+    });
+
+    it('does nothing if source equals dest', () => {
+      const state = buildHparamsState({
+        dashboardDisplayedHparamColumns: fakeColumns,
+      });
+      const state2 = reducers(
+        state,
+        actions.dashboardHparamColumnOrderChanged({
+          source: {
+            type: ColumnHeaderType.HPARAM,
+            name: 'conv_kernel_size',
+            displayName: 'Conv Kernel Size',
+            enabled: false,
+          },
+          destination: {
+            type: ColumnHeaderType.HPARAM,
+            name: 'conv_kernel_size',
+            displayName: 'Conv Kernel Size',
+            enabled: true,
+          },
+          side: Side.LEFT,
+        })
+      );
+
+      expect(state2.dashboardDisplayedHparamColumns).toEqual(fakeColumns);
+    });
+
+    [
+      {
+        testDesc: 'to front if side is left',
+        side: Side.LEFT,
+        expectedResult: [
+          fakeColumns[1],
+          fakeColumns[0],
+          ...fakeColumns.slice(2),
+        ],
+      },
+      {
+        testDesc: 'to back if side is right',
+        side: Side.RIGHT,
+        expectedResult: [
+          fakeColumns[0],
+          ...fakeColumns.slice(2),
+          fakeColumns[1],
+        ],
+      },
+    ].forEach(({testDesc, side, expectedResult}) => {
+      it(`if destination not found, moves source ${testDesc}`, () => {
+        const state = buildHparamsState({
+          dashboardDisplayedHparamColumns: fakeColumns,
+        });
+        const state2 = reducers(
+          state,
+          actions.dashboardHparamColumnOrderChanged({
+            source: fakeColumns[1],
+            destination: {
+              type: ColumnHeaderType.HPARAM,
+              name: 'nonexistent param',
+              displayName: 'Nonexistent param',
+              enabled: true,
+            },
+            side,
+          })
+        );
+
+        expect(state2.dashboardDisplayedHparamColumns).toEqual(expectedResult);
+      });
+    });
+
+    it('swaps source and destination positions if destination is found', () => {
+      const state = buildHparamsState({
+        dashboardDisplayedHparamColumns: fakeColumns,
+      });
+      const state2 = reducers(
+        state,
+        actions.dashboardHparamColumnOrderChanged({
+          source: fakeColumns[1],
+          destination: fakeColumns[0],
+          side: Side.LEFT,
+        })
+      );
+
+      expect(state2.dashboardDisplayedHparamColumns).toEqual([
+        fakeColumns[1],
+        fakeColumns[0],
+        ...fakeColumns.slice(2),
+      ]);
     });
   });
 });

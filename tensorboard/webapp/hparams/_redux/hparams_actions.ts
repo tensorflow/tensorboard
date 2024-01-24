@@ -17,7 +17,11 @@ limitations under the License.
  */
 
 import {createAction, props} from '@ngrx/store';
-import {HparamAndMetricSpec, SessionGroup} from '../types';
+import {
+  AddColumnEvent,
+  ReorderColumnEvent,
+} from '../../widgets/data_table/types';
+import {HparamAndMetricSpec, SessionGroup, ColumnHeader} from '../types';
 import {HparamFilter, MetricFilter} from './types';
 
 export const hparamsFetchSessionGroupsSucceeded = createAction(
@@ -46,4 +50,24 @@ export const dashboardHparamFilterRemoved = createAction(
 export const dashboardMetricFilterRemoved = createAction(
   '[Hparams] Dashboard Metric Filter Removed',
   props<{name: string}>()
+);
+
+export const dashboardHparamColumnAdded = createAction(
+  '[Hparams] Dashboard Hparam Column Added',
+  props<AddColumnEvent>()
+);
+
+export const dashboardHparamColumnRemoved = createAction(
+  '[Hparams] Dashboard Hparam Column Removed',
+  props<{column: ColumnHeader}>()
+);
+
+export const dashboardHparamColumnToggled = createAction(
+  '[Hparams] Dashboard Hparam Column Toggled',
+  props<{column: ColumnHeader}>()
+);
+
+export const dashboardHparamColumnOrderChanged = createAction(
+  '[Hparams] Dashboard Hparam Column Order Changed',
+  props<ReorderColumnEvent>()
 );
