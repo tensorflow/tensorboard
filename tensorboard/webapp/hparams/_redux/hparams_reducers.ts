@@ -13,9 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, ActionReducer, createReducer, on} from '@ngrx/store';
-import {
-  Side,
-} from '../../widgets/data_table/types';
+import {Side} from '../../widgets/data_table/types';
 import {DataTableUtils} from '../../widgets/data_table/utils';
 import * as actions from './hparams_actions';
 import {HparamsState} from './types';

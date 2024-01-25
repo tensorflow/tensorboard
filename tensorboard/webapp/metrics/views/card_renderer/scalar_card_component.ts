@@ -44,11 +44,7 @@ import {
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
 import {CardState} from '../../store';
-import {
-  HeaderEditInfo,
-  TooltipSort,
-  XAxisType,
-} from '../../types';
+import {HeaderEditInfo, TooltipSort, XAxisType} from '../../types';
 import {
   MinMaxStep,
   ScalarCardDataSeries,
