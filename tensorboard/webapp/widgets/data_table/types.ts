@@ -121,7 +121,7 @@ export enum Side {
 export interface ReorderColumnEvent {
   source: ColumnHeader;
   destination: ColumnHeader;
-  side?: Side | undefined;
+  side?: Side | undefined; // Only used when destination is not found.
 }
 
 export interface AddColumnEvent {

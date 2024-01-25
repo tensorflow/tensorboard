@@ -33,6 +33,7 @@ tf_ts_library(
         "//tensorboard/webapp/util:types",
         "//tensorboard/webapp/widgets/card_fob:types",
         "//tensorboard/webapp/widgets/data_table:types",
+        "//tensorboard/webapp/widgets/data_table:utils",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
         "@npm//@ngrx/store",
     ],

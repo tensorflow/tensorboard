@@ -39,6 +39,7 @@ import {
 import {
   ColumnHeaderType,
   DataTableMode,
+  Side,
 } from '../../../../widgets/data_table/types';
 import {DataTableHeaderModule} from '../../../../widgets/data_table/data_table_header_module';
 import {ScalarColumnEditorComponent} from './scalar_column_editor_component';
@@ -101,9 +102,9 @@ describe('scalar column editor', () => {
   it('renders single selection headers when selectedTab is set to SINGLE', fakeAsync(() => {
     store.overrideSelector(getSingleSelectionHeaders, [
       {
-        type: ColumnHeaderType.RUN,
-        name: 'run',
-        displayName: 'Run',
+        type: ColumnHeaderType.SMOOTHED,
+        name: 'smoothed',
+        displayName: 'Smoothed',
         enabled: true,
       },
       {
@@ -121,16 +122,16 @@ describe('scalar column editor', () => {
     );
 
     expect(headerElements.length).toEqual(2);
-    expect(headerElements[0].nativeElement.innerText).toEqual('Run');
+    expect(headerElements[0].nativeElement.innerText).toEqual('Smoothed');
     expect(headerElements[1].nativeElement.innerText).toEqual('Value');
   }));
 
   it('renders range selection headers when selectedTab is set to RANGE', fakeAsync(() => {
     store.overrideSelector(getRangeSelectionHeaders, [
       {
-        type: ColumnHeaderType.RUN,
-        name: 'run',
-        displayName: 'Run',
+        type: ColumnHeaderType.SMOOTHED,
+        name: 'smoothed',
+        displayName: 'Smoothed',
         enabled: true,
       },
       {
@@ -148,16 +149,62 @@ describe('scalar column editor', () => {
     );
 
     expect(headerElements.length).toEqual(2);
-    expect(headerElements[0].nativeElement.innerText).toEqual('Run');
+    expect(headerElements[0].nativeElement.innerText).toEqual('Smoothed');
     expect(headerElements[1].nativeElement.innerText).toEqual('Value');
   }));
+
+  [
+    {
+      testDesc: 'for singleSelectionHeaders',
+      selector: getSingleSelectionHeaders,
+      mode: DataTableMode.SINGLE,
+    },
+    {
+      testDesc: 'for rangeSelectionHeaders',
+      selector: getRangeSelectionHeaders,
+      mode: DataTableMode.RANGE,
+    },
+  ].forEach(({testDesc, selector, mode}) => {
+    it(`hides the runs column ${testDesc}`, fakeAsync(() => {
+      store.overrideSelector(selector, [
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.SMOOTHED,
+          name: 'smoothed',
+          displayName: 'Smoothed',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.VALUE,
+          name: 'value',
+          displayName: 'Value',
+          enabled: true,
+        },
+      ]);
+      const fixture = createComponent();
+
+      switchTabs(fixture, mode);
+      const headerElements = fixture.debugElement.queryAll(
+        By.css('.header-list-item')
+      );
+
+      expect(headerElements.length).toEqual(2);
+      expect(headerElements[0].nativeElement.innerText).toEqual('Smoothed');
+      expect(headerElements[1].nativeElement.innerText).toEqual('Value');
+    }));
+  });
 
   it('checkboxes reflect enabled state', fakeAsync(() => {
     store.overrideSelector(getSingleSelectionHeaders, [
       {
-        type: ColumnHeaderType.RUN,
-        name: 'run',
-        displayName: 'Run',
+        type: ColumnHeaderType.SMOOTHED,
+        name: 'smoothed',
+        displayName: 'Smoothed',
         enabled: true,
       },
       {
@@ -173,7 +220,7 @@ describe('scalar column editor', () => {
     const checkboxes = fixture.debugElement.queryAll(By.css('mat-checkbox'));
 
     expect(checkboxes.length).toEqual(2);
-    expect(checkboxes[0].nativeElement.innerText).toEqual('Run');
+    expect(checkboxes[0].nativeElement.innerText).toEqual('Smoothed');
     expect(
       checkboxes[0].nativeElement.attributes.getNamedItem('ng-reflect-checked')
         .value
@@ -197,9 +244,9 @@ describe('scalar column editor', () => {
     it('dispatches dataTableColumnToggled action with singe selection when checkbox is clicked', fakeAsync(() => {
       store.overrideSelector(getSingleSelectionHeaders, [
         {
-          type: ColumnHeaderType.RUN,
-          name: 'run',
-          displayName: 'Run',
+          type: ColumnHeaderType.SMOOTHED,
+          name: 'smoothed',
+          displayName: 'Smoothed',
           enabled: true,
         },
         {
@@ -222,9 +269,9 @@ describe('scalar column editor', () => {
         dataTableColumnToggled({
           dataTableMode: DataTableMode.SINGLE,
           header: {
-            type: ColumnHeaderType.RUN,
-            name: 'run',
-            displayName: 'Run',
+            type: ColumnHeaderType.SMOOTHED,
+            name: 'smoothed',
+            displayName: 'Smoothed',
             enabled: true,
           },
         })
@@ -278,12 +325,12 @@ describe('scalar column editor', () => {
       });
     });
 
-    it('dispatches dataTableColumnEdited action with singe selection when header is dragged', fakeAsync(() => {
+    it('dispatches dataTableColumnEdited action with single selection when header is dragged', fakeAsync(() => {
       store.overrideSelector(getSingleSelectionHeaders, [
         {
-          type: ColumnHeaderType.RUN,
-          name: 'run',
-          displayName: 'Run',
+          type: ColumnHeaderType.SMOOTHED,
+          name: 'smoothed',
+          displayName: 'Smoothed',
           enabled: true,
         },
         {
@@ -313,27 +360,20 @@ describe('scalar column editor', () => {
 
       expect(dispatchedActions[0]).toEqual(
         dataTableColumnEdited({
+          source: {
+            type: ColumnHeaderType.SMOOTHED,
+            name: 'smoothed',
+            displayName: 'Smoothed',
+            enabled: true,
+          },
+          destination: {
+            type: ColumnHeaderType.VALUE,
+            name: 'value',
+            displayName: 'Value',
+            enabled: true,
+          },
+          side: Side.RIGHT,
           dataTableMode: DataTableMode.SINGLE,
-          headers: [
-            {
-              type: ColumnHeaderType.VALUE,
-              name: 'value',
-              displayName: 'Value',
-              enabled: true,
-            },
-            {
-              type: ColumnHeaderType.RUN,
-              name: 'run',
-              displayName: 'Run',
-              enabled: true,
-            },
-            {
-              type: ColumnHeaderType.STEP,
-              name: 'step',
-              displayName: 'Step',
-              enabled: true,
-            },
-          ],
         })
       );
     }));
@@ -341,9 +381,9 @@ describe('scalar column editor', () => {
     it('dispatches dataTableColumnEdited action with range selection when header is dragged', fakeAsync(() => {
       store.overrideSelector(getRangeSelectionHeaders, [
         {
-          type: ColumnHeaderType.RUN,
-          name: 'run',
-          displayName: 'Run',
+          type: ColumnHeaderType.SMOOTHED,
+          name: 'smoothed',
+          displayName: 'Smoothed',
           enabled: true,
         },
         {
@@ -373,27 +413,20 @@ describe('scalar column editor', () => {
 
       expect(dispatchedActions[0]).toEqual(
         dataTableColumnEdited({
+          source: {
+            type: ColumnHeaderType.MAX_VALUE,
+            name: 'maxValue',
+            displayName: 'Max',
+            enabled: true,
+          },
+          destination: {
+            type: ColumnHeaderType.SMOOTHED,
+            name: 'smoothed',
+            displayName: 'Smoothed',
+            enabled: true,
+          },
+          side: Side.LEFT,
           dataTableMode: DataTableMode.RANGE,
-          headers: [
-            {
-              type: ColumnHeaderType.MAX_VALUE,
-              name: 'maxValue',
-              displayName: 'Max',
-              enabled: true,
-            },
-            {
-              type: ColumnHeaderType.RUN,
-              name: 'run',
-              displayName: 'Run',
-              enabled: true,
-            },
-            {
-              type: ColumnHeaderType.MIN_VALUE,
-              name: 'minValue',
-              displayName: 'Min',
-              enabled: true,
-            },
-          ],
         })
       );
     }));
@@ -401,9 +434,9 @@ describe('scalar column editor', () => {
     it('highlights item with bottom edge when dragging below item being dragged', fakeAsync(() => {
       store.overrideSelector(getRangeSelectionHeaders, [
         {
-          type: ColumnHeaderType.RUN,
-          name: 'run',
-          displayName: 'Run',
+          type: ColumnHeaderType.SMOOTHED,
+          name: 'smoothed',
+          displayName: 'Smoothed',
           enabled: true,
         },
         {
@@ -437,9 +470,9 @@ describe('scalar column editor', () => {
     it('highlights item with top edge when dragging above item being dragged', fakeAsync(() => {
       store.overrideSelector(getRangeSelectionHeaders, [
         {
-          type: ColumnHeaderType.RUN,
-          name: 'run',
-          displayName: 'Run',
+          type: ColumnHeaderType.SMOOTHED,
+          name: 'smoothed',
+          displayName: 'Smoothed',
           enabled: true,
         },
         {

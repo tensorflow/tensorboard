@@ -44,7 +44,11 @@ import {
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
 import {CardState} from '../../store';
-import {HeaderEditInfo, TooltipSort, XAxisType} from '../../types';
+import {
+  HeaderEditInfo,
+  TooltipSort,
+  XAxisType,
+} from '../../types';
 import {
   MinMaxStep,
   ScalarCardDataSeries,
@@ -114,10 +118,8 @@ export class ScalarCardComponent<Downloader> {
   @Output() onDataTableSorting = new EventEmitter<SortingInfo>();
   @Output() editColumnHeaders = new EventEmitter<HeaderEditInfo>();
   @Output() openTableEditMenuToMode = new EventEmitter<DataTableMode>();
-  @Output() removeColumn = new EventEmitter<ColumnHeader>();
 
   @Output() onLineChartZoom = new EventEmitter<Extent | null>();
-
   @Output() onCardStateChanged = new EventEmitter<Partial<CardState>>();
 
   // Line chart may not exist when was never visible (*ngIf).

@@ -18,6 +18,7 @@ import * as actions from './hparams_actions';
 import {reducers} from './hparams_reducers';
 import {buildHparamSpec, buildHparamsState, buildMetricSpec} from './testing';
 import {ColumnHeaderType, Side} from '../../widgets/data_table/types';
+import {DataTableUtils} from '../../widgets/data_table/utils';
 
 describe('hparams/_redux/hparams_reducers_test', () => {
   describe('hparamsFetchSessionGroupsSucceeded', () => {
@@ -594,104 +595,15 @@ describe('hparams/_redux/hparams_reducers_test', () => {
       },
     ];
 
-    it('does nothing if source is not found', () => {
+    it('moves source to destination using moveColumn', () => {
       const state = buildHparamsState({
         dashboardDisplayedHparamColumns: fakeColumns,
       });
-      const state2 = reducers(
-        state,
-        actions.dashboardHparamColumnOrderChanged({
-          source: {
-            type: ColumnHeaderType.HPARAM,
-            name: 'nonexistent_param',
-            displayName: 'Nonexistent param',
-            enabled: false,
-          },
-          destination: {
-            type: ColumnHeaderType.HPARAM,
-            name: 'conv_kernel_size',
-            displayName: 'Conv Kernel Size',
-            enabled: true,
-          },
-          side: Side.LEFT,
-        })
-      );
+      const moveColumnSpy = spyOn(
+        DataTableUtils,
+        'moveColumn'
+      ).and.callThrough();
 
-      expect(state2.dashboardDisplayedHparamColumns).toEqual(fakeColumns);
-    });
-
-    it('does nothing if source equals dest', () => {
-      const state = buildHparamsState({
-        dashboardDisplayedHparamColumns: fakeColumns,
-      });
-      const state2 = reducers(
-        state,
-        actions.dashboardHparamColumnOrderChanged({
-          source: {
-            type: ColumnHeaderType.HPARAM,
-            name: 'conv_kernel_size',
-            displayName: 'Conv Kernel Size',
-            enabled: false,
-          },
-          destination: {
-            type: ColumnHeaderType.HPARAM,
-            name: 'conv_kernel_size',
-            displayName: 'Conv Kernel Size',
-            enabled: true,
-          },
-          side: Side.LEFT,
-        })
-      );
-
-      expect(state2.dashboardDisplayedHparamColumns).toEqual(fakeColumns);
-    });
-
-    [
-      {
-        testDesc: 'to front if side is left',
-        side: Side.LEFT,
-        expectedResult: [
-          fakeColumns[1],
-          fakeColumns[0],
-          ...fakeColumns.slice(2),
-        ],
-      },
-      {
-        testDesc: 'to back if side is right',
-        side: Side.RIGHT,
-        expectedResult: [
-          fakeColumns[0],
-          ...fakeColumns.slice(2),
-          fakeColumns[1],
-        ],
-      },
-    ].forEach(({testDesc, side, expectedResult}) => {
-      it(`if destination not found, moves source ${testDesc}`, () => {
-        const state = buildHparamsState({
-          dashboardDisplayedHparamColumns: fakeColumns,
-        });
-        const state2 = reducers(
-          state,
-          actions.dashboardHparamColumnOrderChanged({
-            source: fakeColumns[1],
-            destination: {
-              type: ColumnHeaderType.HPARAM,
-              name: 'nonexistent param',
-              displayName: 'Nonexistent param',
-              enabled: true,
-            },
-            side,
-          })
-        );
-
-        expect(state2.dashboardDisplayedHparamColumns).toEqual(expectedResult);
-      });
-    });
-
-    it('swaps source and destination positions if destination is found', () => {
-      const state = buildHparamsState({
-        dashboardDisplayedHparamColumns: fakeColumns,
-      });
       const state2 = reducers(
         state,
         actions.dashboardHparamColumnOrderChanged({
@@ -701,6 +613,13 @@ describe('hparams/_redux/hparams_reducers_test', () => {
         })
       );
 
+      // Edge cases are tested by moveColumn tests.
+      expect(moveColumnSpy).toHaveBeenCalledWith(
+        fakeColumns,
+        fakeColumns[1],
+        fakeColumns[0],
+        Side.LEFT
+      );
       expect(state2.dashboardDisplayedHparamColumns).toEqual([
         fakeColumns[1],
         fakeColumns[0],

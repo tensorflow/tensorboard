@@ -235,7 +235,8 @@ export class OSSSettingsConverter extends SettingsConverter<
     if (
       Array.isArray(backendSettings.singleSelectionHeaders) &&
       // If the settings stored in the backend are invalid, reset back to default.
-      backendSettings.singleSelectionHeaders[0].name !== undefined
+      backendSettings.singleSelectionHeaders[0].name !== undefined &&
+      backendSettings.singleSelectionHeaders[0].type === 'RUN'
     ) {
       updateScalarContextMenuOptions(backendSettings.singleSelectionHeaders);
       settings.singleSelectionHeaders = backendSettings.singleSelectionHeaders;
@@ -244,7 +245,8 @@ export class OSSSettingsConverter extends SettingsConverter<
     if (
       Array.isArray(backendSettings.rangeSelectionHeaders) &&
       // If the settings stored in the backend are invalid, reset back to default.
-      backendSettings.rangeSelectionHeaders[0].name !== undefined
+      backendSettings.rangeSelectionHeaders[0].name !== undefined &&
+      backendSettings.rangeSelectionHeaders[0].type === 'RUN'
     ) {
       updateScalarContextMenuOptions(backendSettings.rangeSelectionHeaders);
       settings.rangeSelectionHeaders = backendSettings.rangeSelectionHeaders;

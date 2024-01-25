@@ -67,6 +67,7 @@ tf_ts_library(
         "//tensorboard/webapp/hparams:_types",
         "//tensorboard/webapp/runs/actions",
         "//tensorboard/webapp/widgets/data_table:types",
+        "//tensorboard/webapp/widgets/data_table:utils",
         "@npm//@ngrx/store",
     ],
 )
@@ -174,6 +175,7 @@ tf_ts_library(
         "//tensorboard/webapp/util:types",
         "//tensorboard/webapp/webapp_data_source:http_client_testing",
         "//tensorboard/webapp/widgets/data_table:types",
+        "//tensorboard/webapp/widgets/data_table:utils",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
         "@npm//@types/jasmine",

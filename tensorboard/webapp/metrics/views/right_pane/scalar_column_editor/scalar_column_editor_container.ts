@@ -27,7 +27,15 @@ import {
   getTableEditorSelectedTab,
 } from '../../../store/metrics_selectors';
 import {HeaderEditInfo, HeaderToggleInfo} from '../../../types';
-import {DataTableMode} from '../../../../widgets/data_table/types';
+import {
+  ColumnHeader,
+  DataTableMode,
+} from '../../../../widgets/data_table/types';
+import {map} from 'rxjs';
+
+function headersWithoutRuns(headers: ColumnHeader[]) {
+  return headers.filter((header) => header.type !== 'RUN');
+}
 
 @Component({
   selector: 'metrics-scalar-column-editor',
@@ -48,16 +56,27 @@ import {DataTableMode} from '../../../../widgets/data_table/types';
 export class ScalarColumnEditorContainer {
   constructor(private readonly store: Store<State>) {}
 
-  readonly singleHeaders$ = this.store.select(getSingleSelectionHeaders);
-  readonly rangeHeaders$ = this.store.select(getRangeSelectionHeaders);
+  readonly singleHeaders$ = this.store
+    .select(getSingleSelectionHeaders)
+    .pipe(map(headersWithoutRuns));
+  readonly rangeHeaders$ = this.store
+    .select(getRangeSelectionHeaders)
+    .pipe(map(headersWithoutRuns));
   readonly selectedTab$ = this.store.select(getTableEditorSelectedTab);
 
-  onScalarTableColumnToggled(toggleInfo: HeaderToggleInfo) {
-    this.store.dispatch(dataTableColumnToggled(toggleInfo));
+  onScalarTableColumnToggled({dataTableMode, header}: HeaderToggleInfo) {
+    this.store.dispatch(dataTableColumnToggled({dataTableMode, header}));
   }
 
-  onScalarTableColumnEdit(editInfo: HeaderEditInfo) {
-    this.store.dispatch(dataTableColumnEdited(editInfo));
+  onScalarTableColumnEdit({
+    source,
+    destination,
+    side,
+    dataTableMode,
+  }: HeaderEditInfo) {
+    this.store.dispatch(
+      dataTableColumnEdited({source, destination, side, dataTableMode})
+    );
   }
 
   onScalarTableColumnEditorClosed() {

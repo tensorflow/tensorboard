@@ -300,6 +300,27 @@ describe('persistent_settings data_source test', () => {
         expect(actual).toEqual({});
       });
 
+      it('resets singleSelectionEnabled if runs header is not first', async () => {
+        getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
+          JSON.stringify({
+            singleSelectionHeaders: [
+              {
+                type: ColumnHeaderType.VALUE,
+                enabled: false,
+              },
+              {
+                type: ColumnHeaderType.RUN,
+                enabled: true,
+              },
+            ],
+          })
+        );
+
+        const actual = await firstValueFrom(dataSource.getSettings());
+
+        expect(actual).toEqual({});
+      });
+
       it('resets rangeSelectionEnabled if old ColumnHeader is stored', async () => {
         getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
           JSON.stringify({
@@ -310,6 +331,27 @@ describe('persistent_settings data_source test', () => {
               },
               {
                 type: ColumnHeaderType.MIN_VALUE,
+                enabled: true,
+              },
+            ],
+          })
+        );
+
+        const actual = await firstValueFrom(dataSource.getSettings());
+
+        expect(actual).toEqual({});
+      });
+
+      it('resets rangeSelectionEnabled if runs header is not first', async () => {
+        getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
+          JSON.stringify({
+            rangeSelectionHeaders: [
+              {
+                type: ColumnHeaderType.MIN_VALUE,
+                enabled: true,
+              },
+              {
+                type: ColumnHeaderType.RUN,
                 enabled: true,
               },
             ],

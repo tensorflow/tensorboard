@@ -58,6 +58,7 @@ import {
   getRunColorMap,
   getCurrentRouteRunSelection,
   getColumnHeadersForCard,
+  getDashboardRunsToHparams,
 } from '../../../selectors';
 import {DataLoadState} from '../../../types/data';
 import {
@@ -71,7 +72,6 @@ import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
   cardViewBoxChanged,
   dataTableColumnEdited,
-  dataTableColumnToggled,
   metricsCardFullSizeToggled,
   metricsCardStateUpdated,
   sortingDataTable,
@@ -93,13 +93,7 @@ import {
   getMetricsXAxisType,
   RunToSeries,
 } from '../../store';
-import {
-  CardId,
-  CardMetadata,
-  HeaderEditInfo,
-  HeaderToggleInfo,
-  XAxisType,
-} from '../../types';
+import {CardId, CardMetadata, HeaderEditInfo, XAxisType} from '../../types';
 import {getFilteredRenderableRunsIds} from '../main_view/common_selectors';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
@@ -150,11 +144,6 @@ function areSeriesEqual(
   });
 }
 
-function isMinMaxStepValid(minMax: MinMaxStep | undefined): boolean {
-  if (!minMax) return false;
-  return !(minMax.minStep === -Infinity && minMax.maxStep === Infinity);
-}
-
 @Component({
   selector: 'scalar-card',
   template: `
@@ -196,7 +185,6 @@ function isMinMaxStepValid(minMax: MinMaxStep | undefined): boolean {
       (editColumnHeaders)="editColumnHeaders($event)"
       (onCardStateChanged)="onCardStateChanged($event)"
       (openTableEditMenuToMode)="openTableEditMenuToMode($event)"
-      (removeColumn)="onRemoveColumn($event)"
     ></scalar-card-component>
   `,
   styles: [
@@ -686,15 +674,18 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     );
   }
 
-  editColumnHeaders(headerEditInfo: HeaderEditInfo) {
-    this.store.dispatch(dataTableColumnEdited(headerEditInfo));
+  editColumnHeaders({
+    source,
+    destination,
+    side,
+    dataTableMode,
+  }: HeaderEditInfo) {
+    this.store.dispatch(
+      dataTableColumnEdited({source, destination, side, dataTableMode})
+    );
   }
 
   openTableEditMenuToMode(tableMode: DataTableMode) {
     this.store.dispatch(metricsSlideoutMenuOpened({mode: tableMode}));
-  }
-
-  onRemoveColumn(header: ColumnHeader) {
-    this.store.dispatch(dataTableColumnToggled({header, cardId: this.cardId}));
   }
 }

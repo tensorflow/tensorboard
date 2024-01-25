@@ -117,13 +117,14 @@ import {
   ColumnHeader,
   ColumnHeaderType,
   DataTableMode,
+  ReorderColumnEvent,
+  Side,
   SortingOrder,
 } from '../../../widgets/data_table/types';
 import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_warning_module';
 import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {provideMockTbStore} from '../../../testing/utils';
 import * as commonSelectors from '../main_view/common_selectors';
-import {CardFeatureOverride} from '../../store/metrics_types';
 import {ContentCellComponent} from '../../../widgets/data_table/content_cell_component';
 import {ContentRowComponent} from '../../../widgets/data_table/content_row_component';
 import {HeaderCellComponent} from '../../../widgets/data_table/header_cell_component';
@@ -4430,26 +4431,29 @@ describe('scalar card', () => {
         const scalarCardDataTable = fixture.debugElement.query(
           By.directive(ScalarCardDataTable)
         );
-
-        const headers = [
-          {
+        const reorderColumnEvent: ReorderColumnEvent = {
+          source: {
             type: ColumnHeaderType.RUN,
             name: 'run',
             displayName: 'Run',
             enabled: true,
           },
-          {
+          destination: {
             type: ColumnHeaderType.VALUE,
             name: 'value',
             displayName: 'Value',
             enabled: true,
           },
-        ];
-        scalarCardDataTable.componentInstance.orderColumns(headers);
+          side: Side.RIGHT,
+        };
+
+        scalarCardDataTable.componentInstance.onOrderColumns(
+          reorderColumnEvent
+        );
 
         expect(dispatchedActions).toEqual([
           dataTableColumnEdited({
-            headers,
+            ...reorderColumnEvent,
             dataTableMode: DataTableMode.SINGLE,
           }),
         ]);
@@ -4474,113 +4478,30 @@ describe('scalar card', () => {
         const scalarCardDataTable = fixture.debugElement.query(
           By.directive(ScalarCardDataTable)
         );
-
-        const headers = [
-          {
+        const reorderColumnEvent: ReorderColumnEvent = {
+          source: {
             type: ColumnHeaderType.RUN,
             name: 'run',
             displayName: 'Run',
             enabled: true,
           },
-          {
+          destination: {
             type: ColumnHeaderType.VALUE,
             name: 'value',
             displayName: 'Value',
             enabled: true,
           },
-        ];
-        scalarCardDataTable.componentInstance.orderColumns(headers);
+          side: Side.RIGHT,
+        };
+
+        scalarCardDataTable.componentInstance.onOrderColumns(
+          reorderColumnEvent
+        );
 
         expect(dispatchedActions).toEqual([
           dataTableColumnEdited({
-            headers,
+            ...reorderColumnEvent,
             dataTableMode: DataTableMode.RANGE,
-          }),
-        ]);
-      }));
-
-      it('emits dataTableColumnToggled when onRemoveColumn is called with range selection disabled', fakeAsync(() => {
-        store.overrideSelector(getSingleSelectionHeaders, [
-          {
-            type: ColumnHeaderType.RUN,
-            name: 'run',
-            displayName: 'Run',
-            enabled: true,
-          },
-          {
-            type: ColumnHeaderType.VALUE,
-            name: 'value',
-            displayName: 'Value',
-            enabled: false,
-          },
-        ]);
-        store.overrideSelector(getCardStateMap, {
-          card1: {
-            rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_DISABLED,
-          },
-        });
-        const fixture = createComponent('card1');
-        fixture.detectChanges();
-
-        fixture.componentInstance.onRemoveColumn({
-          type: ColumnHeaderType.RUN,
-          name: 'run',
-          displayName: 'Run',
-          enabled: true,
-        });
-
-        expect(dispatchedActions).toEqual([
-          dataTableColumnToggled({
-            cardId: 'card1',
-            header: {
-              type: ColumnHeaderType.RUN,
-              name: 'run',
-              displayName: 'Run',
-              enabled: true,
-            },
-          }),
-        ]);
-      }));
-
-      it('emits dataTableColumnToggled when onRemoveColumn is called with range selection enabled', fakeAsync(() => {
-        store.overrideSelector(getRangeSelectionHeaders, [
-          {
-            type: ColumnHeaderType.RUN,
-            name: 'run',
-            displayName: 'Run',
-            enabled: true,
-          },
-          {
-            type: ColumnHeaderType.MIN_VALUE,
-            name: 'minValue',
-            displayName: 'Min Value',
-            enabled: true,
-          },
-        ]);
-        store.overrideSelector(getCardStateMap, {
-          card1: {
-            rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
-          },
-        });
-        const fixture = createComponent('card1');
-        fixture.detectChanges();
-
-        fixture.componentInstance.onRemoveColumn({
-          type: ColumnHeaderType.MIN_VALUE,
-          name: 'minValue',
-          displayName: 'Min Value',
-          enabled: true,
-        });
-
-        expect(dispatchedActions).toEqual([
-          dataTableColumnToggled({
-            cardId: 'card1',
-            header: {
-              type: ColumnHeaderType.MIN_VALUE,
-              name: 'minValue',
-              displayName: 'Min Value',
-              enabled: true,
-            },
           }),
         ]);
       }));

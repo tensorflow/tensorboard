@@ -26,8 +26,9 @@ import {
   DiscreteFilter,
   IntervalFilter,
   DomainType,
+  Side,
 } from './types';
-import {DataTableComponent, Side} from './data_table_component';
+import {DataTableComponent} from './data_table_component';
 import {DataTableModule} from './data_table_module';
 import {HeaderCellComponent} from './header_cell_component';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
@@ -447,26 +448,21 @@ describe('data table', () => {
     ).toBe(true);
     headerElements[1].query(By.css('.cell')).triggerEventHandler('dragend');
 
-    expect(orderColumnsSpy).toHaveBeenCalledOnceWith([
-      {
+    expect(orderColumnsSpy).toHaveBeenCalledOnceWith({
+      source: {
         type: ColumnHeaderType.RUN,
         name: 'run',
         displayName: 'Run',
         enabled: true,
       },
-      {
+      destination: {
         type: ColumnHeaderType.VALUE,
         name: 'value',
         displayName: 'Value',
         enabled: true,
       },
-      {
-        type: ColumnHeaderType.STEP,
-        name: 'step',
-        displayName: 'Step',
-        enabled: true,
-      },
-    ]);
+      side: Side.LEFT,
+    });
   });
 
   it('emits orderColumns with new order when dragged right', () => {
@@ -516,26 +512,21 @@ describe('data table', () => {
     ).toBe(true);
     headerElements[1].query(By.css('.cell')).triggerEventHandler('dragend');
 
-    expect(orderColumnsSpy).toHaveBeenCalledOnceWith([
-      {
-        type: ColumnHeaderType.VALUE,
-        name: 'value',
-        displayName: 'Value',
-        enabled: true,
-      },
-      {
-        type: ColumnHeaderType.STEP,
-        name: 'step',
-        displayName: 'Step',
-        enabled: true,
-      },
-      {
+    expect(orderColumnsSpy).toHaveBeenCalledOnceWith({
+      source: {
         type: ColumnHeaderType.RUN,
         name: 'run',
         displayName: 'Run',
         enabled: true,
       },
-    ]);
+      destination: {
+        type: ColumnHeaderType.STEP,
+        name: 'step',
+        displayName: 'Step',
+        enabled: true,
+      },
+      side: Side.RIGHT,
+    });
   });
 
   it('does not show add button when there are no selectable columns', () => {
