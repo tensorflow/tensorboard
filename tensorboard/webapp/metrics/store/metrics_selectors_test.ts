@@ -33,6 +33,14 @@ import {
 } from '../../widgets/data_table/types';
 import * as selectors from './metrics_selectors';
 import {CardFeatureOverride, MetricsState} from './metrics_types';
+import {buildMockState} from '../../testing/utils';
+import {
+  buildHparamSpec,
+  buildHparamsState,
+  buildStateFromHparamsState,
+} from '../../hparams/testing';
+import {DeepPartial} from '../../util/types';
+import {HparamsState} from '../../hparams/_redux/types';
 
 describe('metrics selectors', () => {
   beforeEach(() => {
@@ -1743,6 +1751,194 @@ describe('metrics selectors', () => {
           )
         )
       ).toEqual(rangeSelectionHeaders);
+    });
+  });
+
+  describe('getGroupedHeadersForCard', () => {
+    let singleSelectionHeaders: ColumnHeader[];
+    let rangeSelectionHeaders: ColumnHeader[];
+    let hparamsState: DeepPartial<HparamsState>;
+
+    beforeEach(() => {
+      singleSelectionHeaders = [
+        {
+          type: ColumnHeaderType.COLOR,
+          name: 'color',
+          displayName: 'Color',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'My Run name',
+          enabled: false,
+        },
+      ];
+      rangeSelectionHeaders = [
+        {
+          type: ColumnHeaderType.MEAN,
+          name: 'mean',
+          displayName: 'Mean',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'My Run name',
+          enabled: false,
+        },
+      ];
+      hparamsState = {
+        dashboardSpecs: {
+          hparams: [
+            buildHparamSpec({name: 'conv_layers'}),
+            buildHparamSpec({name: 'conv_kernel_size'}),
+          ],
+        },
+        dashboardDisplayedHparamColumns: [
+          {
+            type: ColumnHeaderType.HPARAM,
+            name: 'conv_layers',
+            displayName: 'Conv Layers',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.HPARAM,
+            name: 'conv_kernel_size',
+            displayName: 'Conv Kernel Size',
+            enabled: true,
+          },
+        ],
+      };
+    });
+
+    it('returns grouped single selection headers when card range selection is disabled', () => {
+      const state = buildMockState({
+        ...appStateFromMetricsState(
+          buildMetricsState({
+            singleSelectionHeaders,
+            rangeSelectionHeaders,
+            cardStateMap: {
+              card1: {
+                rangeSelectionOverride:
+                  CardFeatureOverride.OVERRIDE_AS_DISABLED,
+              },
+            },
+          })
+        ),
+        ...buildStateFromHparamsState(buildHparamsState(hparamsState)),
+      });
+
+      expect(selectors.getGroupedHeadersForCard('card1')(state)).toEqual([
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'My Run name',
+          enabled: false,
+        },
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_layers',
+          displayName: 'Conv Layers',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_kernel_size',
+          displayName: 'Conv Kernel Size',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.COLOR,
+          name: 'color',
+          displayName: 'Color',
+          enabled: true,
+        },
+      ]);
+    });
+
+    it('returns grouped range selection headers when card range selection is enabled', () => {
+      const state = buildMockState({
+        ...appStateFromMetricsState(
+          buildMetricsState({
+            singleSelectionHeaders,
+            rangeSelectionHeaders,
+            cardStateMap: {
+              card1: {
+                rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
+              },
+            },
+          })
+        ),
+        ...buildStateFromHparamsState(buildHparamsState(hparamsState)),
+      });
+
+      expect(selectors.getGroupedHeadersForCard('card1')(state)).toEqual([
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'My Run name',
+          enabled: false,
+        },
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_layers',
+          displayName: 'Conv Layers',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_kernel_size',
+          displayName: 'Conv Kernel Size',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.MEAN,
+          name: 'mean',
+          displayName: 'Mean',
+          enabled: true,
+        },
+      ]);
+    });
+
+    it('returns grouped range selection headers when global range selection is enabled', () => {
+      const state = buildMockState({
+        ...appStateFromMetricsState(
+          buildMetricsState({
+            singleSelectionHeaders,
+            rangeSelectionHeaders,
+            rangeSelectionEnabled: true,
+          })
+        ),
+        ...buildStateFromHparamsState(buildHparamsState(hparamsState)),
+      });
+
+      expect(selectors.getGroupedHeadersForCard('card1')(state)).toEqual([
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'My Run name',
+          enabled: false,
+        },
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_layers',
+          displayName: 'Conv Layers',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_kernel_size',
+          displayName: 'Conv Kernel Size',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.MEAN,
+          name: 'mean',
+          displayName: 'Mean',
+          enabled: true,
+        },
+      ]);
     });
   });
 });

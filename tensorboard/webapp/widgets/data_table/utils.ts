@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {ColumnHeader, Side} from './types';
+import {ColumnHeader, Side, ColumnGroup} from './types';
 
 /**
  * Returns a new copy of the column headers with source moved to the index of destination.
@@ -49,6 +49,35 @@ function moveColumn(
   return newColumns;
 }
 
+function columnToGroup(column: ColumnHeader): ColumnGroup {
+  if (column.type === 'RUN') {
+    return 'RUN';
+  } else if (column.type === 'CUSTOM' && column.name === 'experimentAlias') {
+    return 'EXPERIMENT_ALIAS';
+  } else if (column.type === 'HPARAM') {
+    return 'HPARAM';
+  } else {
+    return 'OTHER';
+  }
+}
+
+/**
+ * Sorts columns into predefined groups. Preserves relative order within groups.
+ */
+function groupColumns(columns: ColumnHeader[]): ColumnHeader[] {
+  const headerGroups = new Map<ColumnGroup, ColumnHeader[]>([
+    ['RUN', []],
+    ['EXPERIMENT_ALIAS', []],
+    ['HPARAM', []],
+    ['OTHER', []],
+  ]);
+  columns.forEach((column) => {
+    headerGroups.get(columnToGroup(column))?.push(column);
+  });
+  return Array.from(headerGroups.values()).flat();
+}
+
 export const DataTableUtils = {
   moveColumn,
+  groupColumns,
 };

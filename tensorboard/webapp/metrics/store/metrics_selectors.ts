@@ -50,6 +50,8 @@ import {
 import {ColumnHeader, DataTableMode} from '../../widgets/data_table/types';
 import {Extent} from '../../widgets/line_chart_v2/lib/public_types';
 import {memoize} from '../../util/memoize';
+import {getDashboardDisplayedHparamColumns} from '../../hparams/_redux/hparams_selectors';
+import {DataTableUtils} from '../../widgets/data_table/utils';
 
 const selectMetricsState =
   createFeatureSelector<MetricsState>(METRICS_FEATURE_KEY);
@@ -661,3 +663,12 @@ export const getColumnHeadersForCard = memoize((cardId: string) => {
     }
   );
 });
+
+export const getGroupedHeadersForCard = memoize((cardId: string) =>
+  createSelector(
+    getColumnHeadersForCard(cardId),
+    getDashboardDisplayedHparamColumns,
+    (standardColumns, hparamColumns) =>
+      DataTableUtils.groupColumns([...standardColumns, ...hparamColumns])
+  )
+);

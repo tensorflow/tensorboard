@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {createSelector, Selector} from '@ngrx/store';
+import {createSelector} from '@ngrx/store';
 import {State} from '../../../app_state';
 import {
   getCurrentRouteRunSelection,
@@ -45,7 +45,6 @@ import {
   RunTableItem,
   RunTableExperimentItem,
 } from '../../../runs/views/runs_table/types';
-import {getRunsTableHeaders} from '../../../runs/store/runs_selectors';
 import {matchRunToRegex} from '../../../util/matcher';
 import {isSingleRunPlugin, PluginType} from '../../data_source';
 import {getNonEmptyCardIdsWithMetadata, TagMetadata} from '../../store';
@@ -304,33 +303,6 @@ export const getSelectableColumns = createSelector(
     });
   }
 );
-
-/** Returns a list of columns that have been sorted into logical groups.
- *
- * Column order: | RUN | experimentAlias | HPARAMs | other |
- */
-export const getGroupedColumns = (
-  headersSelector: Selector<object, ColumnHeader[]>
-) =>
-  createSelector(
-    headersSelector,
-    getDashboardDisplayedHparamColumns,
-    (tableHeaders, hparamHeaders): ColumnHeader[] => {
-      return [
-        ...tableHeaders.filter((header) => header.type === 'RUN'),
-        ...tableHeaders.filter(
-          (header) =>
-            header.type === 'CUSTOM' && header.name === 'experimentAlias'
-        ),
-        ...hparamHeaders,
-        ...tableHeaders.filter(
-          (header) =>
-            header.type !== 'RUN' &&
-            !(header.type === 'CUSTOM' && header.name === 'experimentAlias')
-        ),
-      ];
-    }
-  );
 
 export const getAllPotentialColumnsForCard = memoize((cardId: string) => {
   return createSelector(
