@@ -330,6 +330,17 @@ export const getRunsTableSortingInfo = createSelector(
 export const getGroupedRunsTableHeaders = createSelector(
   getRunsTableHeaders,
   getDashboardDisplayedHparamColumns,
-  (runsTableHeaders, hparamColumns) =>
-    DataTableUtils.groupColumns([...runsTableHeaders, ...hparamColumns])
+  (runsTableHeaders, hparamColumns) => {
+    let columns = [...runsTableHeaders, ...hparamColumns];
+    // Override hparam options to match runs table requirements.
+    columns = columns.map((column) => {
+      const newColumn = {...column};
+      if (column.type === 'HPARAM') {
+        newColumn.removable = true;
+        newColumn.hidable = false;
+      }
+      return newColumn;
+    });
+    return DataTableUtils.groupColumns(columns);
+  }
 );

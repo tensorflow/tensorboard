@@ -24,6 +24,7 @@ import {
   buildHparamSpec,
 } from '../../hparams/testing';
 import {buildMockState} from '../../testing/utils';
+import {State} from '../../app_state';
 import {DataLoadState} from '../../types/data';
 import {ColumnHeaderType, SortingOrder} from '../../widgets/data_table/types';
 import {GroupByKey} from '../types';
@@ -1029,8 +1030,10 @@ describe('runs_selectors', () => {
   });
 
   describe('#getGroupedRunsTableHeaders', () => {
-    it('returns runs table headers grouped with other headers', () => {
-      const state = buildMockState({
+    let state: State;
+
+    beforeEach(() => {
+      state = buildMockState({
         runs: buildRunsState(
           {},
           {
@@ -1081,38 +1084,70 @@ describe('runs_selectors', () => {
           })
         ),
       });
+    });
 
+    it('returns runs table headers grouped with other headers', () => {
       expect(selectors.getGroupedRunsTableHeaders(state)).toEqual([
-        {
+        jasmine.objectContaining({
           type: ColumnHeaderType.RUN,
           name: 'run',
           displayName: 'Run',
           enabled: true,
-        },
-        {
+        }),
+        jasmine.objectContaining({
           type: ColumnHeaderType.CUSTOM,
           name: 'experimentAlias',
           displayName: 'Experiment Alias',
           enabled: true,
-        },
-        {
+        }),
+        jasmine.objectContaining({
           type: ColumnHeaderType.HPARAM,
           name: 'conv_layers',
           displayName: 'Conv Layers',
           enabled: true,
-        },
-        {
+        }),
+        jasmine.objectContaining({
           type: ColumnHeaderType.HPARAM,
           name: 'conv_kernel_size',
           displayName: 'Conv Kernel Size',
           enabled: true,
-        },
-        {
+        }),
+        jasmine.objectContaining({
           type: ColumnHeaderType.COLOR,
           name: 'color',
           displayName: 'Color',
           enabled: true,
-        },
+        }),
+      ]);
+    });
+
+    it('sets the hparam column context options for the runs table', () => {
+      expect(selectors.getGroupedRunsTableHeaders(state)).toEqual([
+        jasmine.objectContaining({
+          type: ColumnHeaderType.RUN,
+        }),
+        jasmine.objectContaining({
+          type: ColumnHeaderType.CUSTOM,
+        }),
+        jasmine.objectContaining({
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_layers',
+          displayName: 'Conv Layers',
+          enabled: true,
+          removable: true,
+          hidable: false,
+        }),
+        jasmine.objectContaining({
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_kernel_size',
+          displayName: 'Conv Kernel Size',
+          enabled: true,
+          removable: true,
+          hidable: false,
+        }),
+        jasmine.objectContaining({
+          type: ColumnHeaderType.COLOR,
+        }),
       ]);
     });
   });

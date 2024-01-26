@@ -36,6 +36,7 @@ import {
   SortingOrder,
   ReorderColumnEvent,
   Side,
+  AddColumnEvent,
 } from './types';
 import {HeaderCellComponent} from './header_cell_component';
 import {Subscription} from 'rxjs';
@@ -78,10 +79,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() orderColumns = new EventEmitter<ReorderColumnEvent>();
   @Output() removeColumn = new EventEmitter<ColumnHeader>();
-  @Output() addColumn = new EventEmitter<{
-    header: ColumnHeader;
-    index?: number | undefined;
-  }>();
+  @Output() addColumn = new EventEmitter<AddColumnEvent>();
   @Output() addFilter = new EventEmitter<FilterAddedEvent>();
 
   @ViewChild('columnSelectorModal', {static: false})
@@ -347,7 +345,11 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   }
 
   onColumnAdded(header: ColumnHeader) {
-    this.addColumn.emit({header, index: this.getInsertIndex()});
+    this.addColumn.emit({
+      column: header,
+      nextTo: this.contextMenuHeader,
+      side: this.insertColumnTo,
+    });
   }
 
   openFilterMenu(event: MouseEvent, header: ColumnHeader) {

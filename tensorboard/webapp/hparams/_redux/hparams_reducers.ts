@@ -13,8 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, ActionReducer, createReducer, on} from '@ngrx/store';
-import {Side} from '../../widgets/data_table/types';
 import {DataTableUtils} from '../../widgets/data_table/utils';
+import {persistentSettingsLoaded} from '../../persistent_settings';
+import {Side} from '../../widgets/data_table/types';
 import * as actions from './hparams_actions';
 import {HparamsState} from './types';
 
@@ -33,6 +34,16 @@ const initialState: HparamsState = {
 
 const reducer: ActionReducer<HparamsState, Action> = createReducer(
   initialState,
+  on(persistentSettingsLoaded, (state, {partialSettings}) => {
+    const {dashboardDisplayedHparamColumns: storedColumns} = partialSettings;
+    if (storedColumns) {
+      return {
+        ...state,
+        dashboardDisplayedHparamColumns: storedColumns,
+      };
+    }
+    return state;
+  }),
   on(actions.hparamsFetchSessionGroupsSucceeded, (state, action) => {
     const nextDashboardSpecs = action.hparamsAndMetricsSpecs;
     const nextDashboardSessionGroups = action.sessionGroups;
