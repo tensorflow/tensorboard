@@ -129,3 +129,5 @@ export interface AddColumnEvent {
   nextTo?: ColumnHeader | undefined;
   side?: Side | undefined;
 }
+
+export type ColumnGroup = 'RUN' | 'EXPERIMENT_ALIAS' | 'HPARAM' | 'OTHER';

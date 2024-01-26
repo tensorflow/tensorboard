@@ -21,6 +21,7 @@ import {
   buildSessionGroup,
   buildStateFromHparamsState,
   buildHparamsState,
+  buildHparamSpec,
 } from '../../hparams/testing';
 import {buildMockState} from '../../testing/utils';
 import {DataLoadState} from '../../types/data';
@@ -1022,6 +1023,95 @@ describe('runs_selectors', () => {
           name: 'color',
           displayName: 'Color',
           enabled: false,
+        },
+      ]);
+    });
+  });
+
+  describe('#getGroupedRunsTableHeaders', () => {
+    it('returns runs table headers grouped with other headers', () => {
+      const state = buildMockState({
+        runs: buildRunsState(
+          {},
+          {
+            runsTableHeaders: [
+              {
+                type: ColumnHeaderType.COLOR,
+                name: 'color',
+                displayName: 'Color',
+                enabled: true,
+              },
+              {
+                type: ColumnHeaderType.CUSTOM,
+                name: 'experimentAlias',
+                displayName: 'Experiment Alias',
+                enabled: true,
+              },
+              {
+                type: ColumnHeaderType.RUN,
+                name: 'run',
+                displayName: 'Run',
+                enabled: true,
+              },
+            ],
+          }
+        ),
+        ...buildStateFromHparamsState(
+          buildHparamsState({
+            dashboardSpecs: {
+              hparams: [
+                buildHparamSpec({name: 'conv_layers'}),
+                buildHparamSpec({name: 'conv_kernel_size'}),
+              ],
+            },
+            dashboardDisplayedHparamColumns: [
+              {
+                type: ColumnHeaderType.HPARAM,
+                name: 'conv_layers',
+                displayName: 'Conv Layers',
+                enabled: true,
+              },
+              {
+                type: ColumnHeaderType.HPARAM,
+                name: 'conv_kernel_size',
+                displayName: 'Conv Kernel Size',
+                enabled: true,
+              },
+            ],
+          })
+        ),
+      });
+
+      expect(selectors.getGroupedRunsTableHeaders(state)).toEqual([
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.CUSTOM,
+          name: 'experimentAlias',
+          displayName: 'Experiment Alias',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_layers',
+          displayName: 'Conv Layers',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_kernel_size',
+          displayName: 'Conv Kernel Size',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.COLOR,
+          name: 'color',
+          displayName: 'Color',
+          enabled: true,
         },
       ]);
     });

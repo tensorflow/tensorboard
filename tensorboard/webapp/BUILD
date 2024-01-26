@@ -301,6 +301,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/widgets/content_wrapping_input:content_wrapping_input_tests",
         "//tensorboard/webapp/widgets/custom_modal:custom_modal_test",
         "//tensorboard/webapp/widgets/data_table:data_table_test",
+        "//tensorboard/webapp/widgets/data_table:utils_test",
         "//tensorboard/webapp/widgets/dropdown:dropdown_tests",
         "//tensorboard/webapp/widgets/experiment_alias:experiment_alias_test",
         "//tensorboard/webapp/widgets/filter_input:filter_input_test",

@@ -25,7 +25,6 @@ import {buildRoute} from '../../../app_routing/testing';
 import {buildExperiment} from '../../../experiments/store/testing';
 import {IntervalFilter, DiscreteFilter} from '../../../hparams/types';
 import {DomainType, Run} from '../../../runs/store/runs_types';
-import {getRunsTableHeaders} from '../../../runs/store/runs_selectors';
 import {
   buildRun,
   buildRunsState,
@@ -1115,40 +1114,6 @@ describe('common selectors', () => {
           type: ColumnHeaderType.HPARAM,
           name: 'dropout',
           displayName: 'Dropout',
-        }),
-      ]);
-    });
-  });
-
-  describe('getGroupedColumns', () => {
-    it('returns a grouped list of columns given a list of standard columns', () => {
-      expect(selectors.getGroupedColumns(getRunsTableHeaders)(state)).toEqual([
-        jasmine.objectContaining({
-          type: ColumnHeaderType.RUN,
-          name: 'run',
-          displayName: 'Run',
-        }),
-        jasmine.objectContaining({
-          type: ColumnHeaderType.CUSTOM,
-          name: 'experimentAlias',
-          displayName: 'Experiment',
-        }),
-        jasmine.objectContaining({
-          type: ColumnHeaderType.HPARAM,
-          name: 'conv_layers',
-          displayName: 'Conv Layers',
-          enabled: true,
-        }),
-        jasmine.objectContaining({
-          type: ColumnHeaderType.HPARAM,
-          name: 'dense_layers',
-          displayName: 'Dense Layers',
-          enabled: true,
-        }),
-        jasmine.objectContaining({
-          type: ColumnHeaderType.CUSTOM,
-          name: 'fakeRunsHeader',
-          displayName: 'Fake Runs Header',
         }),
       ]);
     });

@@ -28,14 +28,12 @@ import {
   TimeSeriesRequest,
   TimeSeriesResponse,
 } from './data_source';
+import * as selectors from './store/metrics_selectors';
 import {
   MetricsState,
   METRICS_FEATURE_KEY,
   TagMetadata,
   TimeSeriesData,
-} from './store';
-import * as selectors from './store/metrics_selectors';
-import {
   CardStepIndexMetaData,
   MetricsSettings,
   RunToSeries,
