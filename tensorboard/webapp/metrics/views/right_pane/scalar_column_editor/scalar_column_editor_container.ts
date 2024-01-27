@@ -64,19 +64,12 @@ export class ScalarColumnEditorContainer {
     .pipe(map(headersWithoutRuns));
   readonly selectedTab$ = this.store.select(getTableEditorSelectedTab);
 
-  onScalarTableColumnToggled({dataTableMode, header}: HeaderToggleInfo) {
-    this.store.dispatch(dataTableColumnToggled({dataTableMode, header}));
+  onScalarTableColumnToggled(toggleInfo: HeaderToggleInfo) {
+    this.store.dispatch(dataTableColumnToggled(toggleInfo));
   }
 
-  onScalarTableColumnEdit({
-    source,
-    destination,
-    side,
-    dataTableMode,
-  }: HeaderEditInfo) {
-    this.store.dispatch(
-      dataTableColumnEdited({source, destination, side, dataTableMode})
-    );
+  onScalarTableColumnEdit(editInfo: HeaderEditInfo) {
+    this.store.dispatch(dataTableColumnEdited(editInfo));
   }
 
   onScalarTableColumnEditorClosed() {

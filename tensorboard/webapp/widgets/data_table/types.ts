@@ -130,4 +130,9 @@ export interface AddColumnEvent {
   side?: Side | undefined;
 }
 
-export type ColumnGroup = 'RUN' | 'EXPERIMENT_ALIAS' | 'HPARAM' | 'OTHER';
+export enum ColumnGroup {
+  RUN = 'RUN',
+  EXPERIMENT_ALIAS = 'EXPERIMENT_ALIAS',
+  HPARAM = 'HPARAM',
+  OTHER = 'OTHER'
+}
