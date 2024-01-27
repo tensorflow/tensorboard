@@ -674,15 +674,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     );
   }
 
-  editColumnHeaders({
-    source,
-    destination,
-    side,
-    dataTableMode,
-  }: HeaderEditInfo) {
-    this.store.dispatch(
-      dataTableColumnEdited({source, destination, side, dataTableMode})
-    );
+  editColumnHeaders(headerEditInfo: HeaderEditInfo) {
+    this.store.dispatch(dataTableColumnEdited(headerEditInfo));
   }
 
   openTableEditMenuToMode(tableMode: DataTableMode) {
