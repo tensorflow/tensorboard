@@ -14,26 +14,28 @@ import {ColumnHeader, ColumnGroup} from './types';
 
 function columnToGroup(column: ColumnHeader): ColumnGroup {
   if (column.type === 'RUN') {
-    return 'RUN';
+    return ColumnGroup.RUN;
   } else if (column.type === 'CUSTOM' && column.name === 'experimentAlias') {
-    return 'EXPERIMENT_ALIAS';
+    return ColumnGroup.EXPERIMENT_ALIAS;
   } else if (column.type === 'HPARAM') {
-    return 'HPARAM';
+    return ColumnGroup.HPARAM;
   } else {
-    return 'OTHER';
+    return ColumnGroup.OTHER;
   }
 }
 
-/** Sorts columns into predefined groups.
+/**
+ * Sorts columns into predefined groups.
  *
- * Preserves relative order within groups.
+ * Preserves relative column order within groups.
  */
 function groupColumns(columns: ColumnHeader[]): ColumnHeader[] {
+  // Using Map ensures that keys preserve order.
   const headerGroups = new Map<ColumnGroup, ColumnHeader[]>([
-    ['RUN', []],
-    ['EXPERIMENT_ALIAS', []],
-    ['HPARAM', []],
-    ['OTHER', []],
+    [ColumnGroup.RUN, []],
+    [ColumnGroup.EXPERIMENT_ALIAS, []],
+    [ColumnGroup.HPARAM, []],
+    [ColumnGroup.OTHER, []],
   ]);
   columns.forEach((column) => {
     headerGroups.get(columnToGroup(column))?.push(column);
