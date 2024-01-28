@@ -18,6 +18,14 @@ limitations under the License.
       No Actions Available
     </div>
     <button
+      *ngIf="contextMenuHeader?.hidable"
+      class="context-menu-button"
+      mat-button
+      (click)="contextMenuHideColumn()"
+    >
+      <mat-icon svgIcon="visibility_off_24px"></mat-icon>Hide
+    </button>
+    <button
       *ngIf="contextMenuHeader?.removable"
       class="context-menu-button"
       mat-button

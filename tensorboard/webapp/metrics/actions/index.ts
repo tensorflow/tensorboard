@@ -29,12 +29,15 @@ import {
   HeaderEditInfo,
   HeaderToggleInfo,
   HistogramMode,
-  MinMaxStep,
   PluginType,
   TooltipSort,
   XAxisType,
 } from '../types';
-import {SortingInfo, DataTableMode} from '../../widgets/data_table/types';
+import {
+  SortingInfo,
+  DataTableMode,
+  ColumnHeader,
+} from '../../widgets/data_table/types';
 import {Extent} from '../../widgets/line_chart_v2/lib/public_types';
 
 export const metricsSettingsPaneClosed = createAction(
@@ -242,6 +245,11 @@ export const dataTableColumnEdited = createAction(
 export const dataTableColumnToggled = createAction(
   '[Metrics] Data table column toggled in edit menu or delete button clicked',
   props<HeaderToggleInfo>()
+);
+
+export const dataTableColumnAdded = createAction(
+  '[Metrics] Data table column added in edit menu',
+  props<{header: ColumnHeader}>()
 );
 
 export const stepSelectorToggled = createAction(

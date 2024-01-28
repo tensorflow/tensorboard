@@ -331,9 +331,8 @@ export const getGroupedRunsTableHeaders = createSelector(
   getRunsTableHeaders,
   getDashboardDisplayedHparamColumns,
   (runsTableHeaders, hparamColumns) => {
-    let columns = [...runsTableHeaders, ...hparamColumns];
     // Override hparam options to match runs table requirements.
-    columns = columns.map((column) => {
+    const columns = [...runsTableHeaders, ...hparamColumns].map((column) => {
       const newColumn = {...column};
       if (column.type === 'HPARAM') {
         newColumn.removable = true;

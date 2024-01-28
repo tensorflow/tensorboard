@@ -21,11 +21,13 @@ import {
 } from '@angular/core';
 import {TimeSelection} from '../../../widgets/card_fob/card_fob_types';
 import {findClosestIndex} from '../../../widgets/line_chart_v2/sub_view/line_chart_interactive_utils';
-import {HeaderEditInfo} from '../../types';
+import {HeaderEditInfo, HeaderToggleInfo} from '../../types';
+import {RunToHparams} from '../../../runs/types';
 import {
   ScalarCardDataSeries,
   ScalarCardPoint,
   ScalarCardSeriesMetadataMap,
+  SmoothedSeriesMetadata,
 } from './scalar_card_types';
 import {
   ColumnHeader,
@@ -34,7 +36,11 @@ import {
   TableData,
   SortingInfo,
   SortingOrder,
+  DiscreteFilter,
+  IntervalFilter,
+  FilterAddedEvent,
   ReorderColumnEvent,
+  AddColumnEvent,
 } from '../../../widgets/data_table/types';
 import {isDatumVisible} from './utils';
 
@@ -53,9 +59,15 @@ export class ScalarCardDataTable {
   @Input() columnCustomizationEnabled!: boolean;
   @Input() smoothingEnabled!: boolean;
   @Input() hparamsEnabled?: boolean;
+  @Input() columnFilters!: Map<string, DiscreteFilter | IntervalFilter>;
+  @Input() selectableColumns!: ColumnHeader[];
+  @Input() runToHparams!: RunToHparams;
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() editColumnHeaders = new EventEmitter<HeaderEditInfo>();
+  @Output() hideColumn = new EventEmitter<HeaderToggleInfo>();
+  @Output() addColumn = new EventEmitter<AddColumnEvent>();
+  @Output() addFilter = new EventEmitter<FilterAddedEvent>();
 
   ColumnHeaderType = ColumnHeaderType;
 
@@ -69,6 +81,7 @@ export class ScalarCardDataTable {
       },
     ].concat(this.columnHeaders);
   }
+
   getMinPointInRange(
     points: ScalarCardPoint[],
     startPointIndex: number,
@@ -251,6 +264,16 @@ export class ScalarCardDataTable {
               selectedStepData[header.name] =
                 closestEndPoint.value - closestStartPoint.value;
               continue;
+            case ColumnHeaderType.HPARAM:
+              let runId: string;
+              if ((metadata as SmoothedSeriesMetadata).originalSeriesId) {
+                runId = (metadata as SmoothedSeriesMetadata).originalSeriesId;
+              } else {
+                runId = metadata.id;
+              }
+              selectedStepData[header.name] =
+                this.runToHparams?.[runId]?.[header.name] ?? '';
+              continue;
             default:
               continue;
           }
@@ -303,6 +326,10 @@ export class ScalarCardDataTable {
       side,
       dataTableMode: this.getDataTableMode(),
     });
+  }
+
+  onHideColumn(header: ColumnHeader) {
+    this.hideColumn.emit({header, dataTableMode: this.getDataTableMode()});
   }
 }
 

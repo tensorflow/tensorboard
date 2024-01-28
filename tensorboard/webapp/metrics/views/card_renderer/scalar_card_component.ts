@@ -44,7 +44,12 @@ import {
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
 import {CardState} from '../../store';
-import {HeaderEditInfo, TooltipSort, XAxisType} from '../../types';
+import {
+  HeaderEditInfo,
+  HeaderToggleInfo,
+  TooltipSort,
+  XAxisType,
+} from '../../types';
 import {
   MinMaxStep,
   ScalarCardDataSeries,
@@ -56,8 +61,13 @@ import {
   DataTableMode,
   SortingInfo,
   SortingOrder,
+  DiscreteFilter,
+  IntervalFilter,
+  FilterAddedEvent,
+  AddColumnEvent,
 } from '../../../widgets/data_table/types';
 import {isDatumVisible, TimeSelectionView} from './utils';
+import {RunToHparams} from '../../../runs/types';
 
 type ScalarTooltipDatum = TooltipDatum<
   ScalarCardSeriesMetadata & {
@@ -102,6 +112,9 @@ export class ScalarCardComponent<Downloader> {
   @Input() columnHeaders!: ColumnHeader[];
   @Input() rangeEnabled!: boolean;
   @Input() hparamsEnabled?: boolean;
+  @Input() columnFilters!: Map<string, DiscreteFilter | IntervalFilter>;
+  @Input() selectableColumns!: ColumnHeader[];
+  @Input() runToHparams!: RunToHparams[];
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
@@ -114,6 +127,9 @@ export class ScalarCardComponent<Downloader> {
   @Output() onDataTableSorting = new EventEmitter<SortingInfo>();
   @Output() editColumnHeaders = new EventEmitter<HeaderEditInfo>();
   @Output() openTableEditMenuToMode = new EventEmitter<DataTableMode>();
+  @Output() addColumn = new EventEmitter<AddColumnEvent>();
+  @Output() hideColumn = new EventEmitter<HeaderToggleInfo>();
+  @Output() addFilter = new EventEmitter<FilterAddedEvent>();
 
   @Output() onLineChartZoom = new EventEmitter<Extent | null>();
   @Output() onCardStateChanged = new EventEmitter<Partial<CardState>>();

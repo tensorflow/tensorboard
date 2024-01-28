@@ -60,7 +60,6 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   // displayed in the table.
   @Input() headers!: ColumnHeader[];
   @Input() sortingInfo!: SortingInfo;
-  @Input() columnCustomizationEnabled!: boolean;
   @Input() selectableColumns?: ColumnHeader[];
   @Input() columnFilters!: Map<string, DiscreteFilter | IntervalFilter>;
   @Input() loading: boolean = false;
@@ -79,6 +78,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() orderColumns = new EventEmitter<ReorderColumnEvent>();
   @Output() removeColumn = new EventEmitter<ColumnHeader>();
+  @Output() hideColumn = new EventEmitter<ColumnHeader>();
   @Output() addColumn = new EventEmitter<AddColumnEvent>();
   @Output() addFilter = new EventEmitter<FilterAddedEvent>();
 
@@ -303,7 +303,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     return (
       this.selectableColumns &&
       this.selectableColumns.length &&
-      this.contextMenuHeader?.movable
+      this.contextMenuHeader?.type === 'HPARAM'
     );
   }
 
@@ -314,6 +314,15 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
       !this.canContextMenuInsert() &&
       !this.contextMenuHeader?.filterable
     );
+  }
+
+  contextMenuHideColumn() {
+    if (this.contextMenuHeader === undefined) {
+      return;
+    }
+    this.hideColumn.emit(this.contextMenuHeader);
+    this.contextMenu.close();
+    this.filterModal?.close();
   }
 
   contextMenuRemoveColumn() {
