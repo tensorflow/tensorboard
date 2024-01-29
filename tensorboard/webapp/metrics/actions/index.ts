@@ -234,8 +234,8 @@ export const sortingDataTable = createAction(
   props<SortingInfo>()
 );
 
-export const dataTableColumnEdited = createAction(
-  '[Metrics] Data table columns edited in edit menu',
+export const dataTableColumnOrderChanged = createAction(
+  '[Metrics] Data table columns order changed',
   props<HeaderEditInfo>()
 );
 

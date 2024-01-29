@@ -1432,7 +1432,7 @@ const reducer = createReducer(
     };
   }),
   on(
-    actions.dataTableColumnEdited,
+    actions.dataTableColumnOrderChanged,
     (state, {source, destination, side, dataTableMode}) => {
       let headers =
         dataTableMode === DataTableMode.RANGE

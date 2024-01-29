@@ -76,13 +76,6 @@ export class ScalarColumnEditorComponent implements OnDestroy {
     );
   }
 
-  getHeaderByName(
-    headers: ColumnHeader[],
-    name: string
-  ): ColumnHeader | undefined {
-    return headers.find((header) => header.name === name);
-  }
-
   tabChange(event: MatTabChangeEvent) {
     const newMode =
       event.index === 0 ? DataTableMode.SINGLE : DataTableMode.RANGE;
@@ -99,12 +92,9 @@ export class ScalarColumnEditorComponent implements OnDestroy {
       return;
     }
     const headers = this.getHeadersForMode(dataTableMode);
-    const source = this.getHeaderByName(headers, this.draggingHeader.name);
-    const destination = this.getHeaderByName(
-      headers,
-      this.highlightedHeader.name
-    );
-    if (source && destination && source !== destination) {
+    const source = {...this.draggingHeader};
+    const destination = {...this.highlightedHeader};
+    if (source && destination && source.name !== destination.name) {
       this.onScalarTableColumnEdit.emit({
         source,
         destination,

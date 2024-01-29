@@ -1601,7 +1601,7 @@ describe('metrics reducers', () => {
 
         const nextState = reducers(
           beforeState,
-          actions.dataTableColumnEdited({
+          actions.dataTableColumnOrderChanged({
             source: {
               type: ColumnHeaderType.END_VALUE,
               name: 'endValue',
@@ -1742,7 +1742,7 @@ describe('metrics reducers', () => {
 
         const nextState = reducers(
           beforeState,
-          actions.dataTableColumnEdited({
+          actions.dataTableColumnOrderChanged({
             source: {
               type: ColumnHeaderType.STEP,
               name: 'step',
