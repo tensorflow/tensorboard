@@ -81,7 +81,7 @@ import {
   stepSelectorToggled,
   timeSelectionChanged,
   metricsSlideoutMenuOpened,
-  dataTableColumnEdited,
+  dataTableColumnOrderChanged,
   dataTableColumnToggled,
 } from '../../actions';
 import {PluginType} from '../../data_source';
@@ -4607,7 +4607,7 @@ describe('scalar card', () => {
         expect(dataTableComponent).toBeFalsy();
       }));
 
-      it('dispatches dataTableColumnEdited with DataTableMode.SINGLE when orderColumns is called while in Single Selection', fakeAsync(() => {
+      it('emits dataTableColumnOrderChanged with DataTableMode.SINGLE when orderColumns is called while in Single Selection', fakeAsync(() => {
         store.overrideSelector(getCardStateMap, {
           card1: {
             dataMinMax: {
@@ -4647,14 +4647,14 @@ describe('scalar card', () => {
         );
 
         expect(dispatchedActions).toEqual([
-          dataTableColumnEdited({
+          dataTableColumnOrderChanged({
             ...reorderColumnEvent,
             dataTableMode: DataTableMode.SINGLE,
           }),
         ]);
       }));
 
-      it('dispatches dataTableColumnEdited with DataTableMode.RANGE when orderColumns is called while in Range Selection', fakeAsync(() => {
+      it('emits dataTableColumnOrderChanged with DataTableMode.RANGE when orderColumns is called while in Range Selection', fakeAsync(() => {
         store.overrideSelector(getCardStateMap, {
           card1: {
             dataMinMax: {
@@ -4694,7 +4694,7 @@ describe('scalar card', () => {
         );
 
         expect(dispatchedActions).toEqual([
-          dataTableColumnEdited({
+          dataTableColumnOrderChanged({
             ...reorderColumnEvent,
             dataTableMode: DataTableMode.RANGE,
           }),

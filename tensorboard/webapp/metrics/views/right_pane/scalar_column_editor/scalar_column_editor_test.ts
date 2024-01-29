@@ -26,7 +26,7 @@ import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../../app_state';
 import {
-  dataTableColumnEdited,
+  dataTableColumnOrderChanged,
   dataTableColumnToggled,
   metricsSlideoutMenuClosed,
   tableEditorTabChanged,
@@ -359,7 +359,7 @@ describe('scalar column editor', () => {
       headerListItems[0].triggerEventHandler('dragend');
 
       expect(dispatchedActions[0]).toEqual(
-        dataTableColumnEdited({
+        dataTableColumnOrderChanged({
           source: {
             type: ColumnHeaderType.SMOOTHED,
             name: 'smoothed',
@@ -412,7 +412,7 @@ describe('scalar column editor', () => {
       headerListItems[1].triggerEventHandler('dragend');
 
       expect(dispatchedActions[0]).toEqual(
-        dataTableColumnEdited({
+        dataTableColumnOrderChanged({
           source: {
             type: ColumnHeaderType.MAX_VALUE,
             name: 'maxValue',
