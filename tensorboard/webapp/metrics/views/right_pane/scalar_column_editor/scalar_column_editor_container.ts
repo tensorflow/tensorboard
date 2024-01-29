@@ -28,10 +28,17 @@ import {
 } from '../../../store/metrics_selectors';
 import {HeaderEditInfo, HeaderToggleInfo} from '../../../types';
 import {
+  AddColumnEvent,
   ColumnHeader,
   DataTableMode,
 } from '../../../../widgets/data_table/types';
 import {map} from 'rxjs';
+import {getSelectableColumns} from '../../main_view/common_selectors';
+import {
+  actions as hparamsActions,
+  selectors as hparamSelectors,
+} from '../../../../hparams';
+import {getEnableHparamsInTimeSeries} from '../../../../feature_flag/store/feature_flag_selectors';
 
 function headersWithoutRuns(headers: ColumnHeader[]) {
   return headers.filter((header) => header.type !== 'RUN');
@@ -43,11 +50,15 @@ function headersWithoutRuns(headers: ColumnHeader[]) {
     <metrics-scalar-column-editor-component
       [singleHeaders]="singleHeaders$ | async"
       [rangeHeaders]="rangeHeaders$ | async"
+      [hparamHeaders]="hparamHeaders$ | async"
+      [hparamsEnabled]="hparamsEnabled$ | async"
       [selectedTab]="selectedTab$ | async"
+      [selectableColumns]="selectableColumns$ | async"
       (onScalarTableColumnToggled)="onScalarTableColumnToggled($event)"
       (onScalarTableColumnEdit)="onScalarTableColumnEdit($event)"
       (onScalarTableColumnEditorClosed)="onScalarTableColumnEditorClosed()"
       (onTabChange)="onTabChange($event)"
+      (onColumnAdded)="onColumnAdded($event)"
     >
     </metrics-scalar-column-editor-component>
   `,
@@ -62,10 +73,21 @@ export class ScalarColumnEditorContainer {
   readonly rangeHeaders$ = this.store
     .select(getRangeSelectionHeaders)
     .pipe(map(headersWithoutRuns));
+  readonly hparamHeaders$ = this.store.select(
+    hparamSelectors.getDashboardDisplayedHparamColumns
+  );
   readonly selectedTab$ = this.store.select(getTableEditorSelectedTab);
+  readonly selectableColumns$ = this.store.select(getSelectableColumns);
+  readonly hparamsEnabled$ = this.store.select(getEnableHparamsInTimeSeries);
 
   onScalarTableColumnToggled({dataTableMode, header}: HeaderToggleInfo) {
-    this.store.dispatch(dataTableColumnToggled({dataTableMode, header}));
+    if (header.type === 'HPARAM') {
+      this.store.dispatch(
+        hparamsActions.dashboardHparamColumnToggled({column: header})
+      );
+    } else {
+      this.store.dispatch(dataTableColumnToggled({dataTableMode, header}));
+    }
   }
 
   onScalarTableColumnEdit({
@@ -74,9 +96,19 @@ export class ScalarColumnEditorContainer {
     side,
     dataTableMode,
   }: HeaderEditInfo) {
-    this.store.dispatch(
-      dataTableColumnEdited({source, destination, side, dataTableMode})
-    );
+    if (source.type === 'HPARAM') {
+      this.store.dispatch(
+        hparamsActions.dashboardHparamColumnOrderChanged({
+          source,
+          destination,
+          side,
+        })
+      );
+    } else {
+      this.store.dispatch(
+        dataTableColumnEdited({source, destination, side, dataTableMode})
+      );
+    }
   }
 
   onScalarTableColumnEditorClosed() {
@@ -85,5 +117,9 @@ export class ScalarColumnEditorContainer {
 
   onTabChange(tab: DataTableMode) {
     this.store.dispatch(tableEditorTabChanged({tab}));
+  }
+
+  onColumnAdded(event: AddColumnEvent) {
+    this.store.dispatch(hparamsActions.dashboardHparamColumnAdded(event));
   }
 }

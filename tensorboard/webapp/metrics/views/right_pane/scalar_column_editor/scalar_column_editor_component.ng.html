@@ -66,4 +66,41 @@ limitations under the License.
       ><tb-data-table-header [header]="header"></tb-data-table-header
     ></mat-checkbox>
   </div>
+  <ng-container *ngIf="hparamsEnabled">
+    <div class="hparams-header">
+      <h3 class="hparams-title">Hyperparameters</h3>
+      <button
+        mat-icon-button
+        class="hparams-add-button"
+        (click)="openColumnSelector($event)"
+        title="Add Hyperparameter"
+      >
+        <mat-icon svgIcon="add_24px"></mat-icon>
+      </button>
+    </div>
+    <div class="hparams-list">
+      <div
+        class="header-list-item"
+        *ngFor="let hparamHeader of hparamHeaders;"
+        draggable="true"
+        (dragstart)="dragStart(hparamHeader)"
+        (dragend)="dragEnd(dataTableMode)"
+        (dragenter)="dragEnter(hparamHeader, dataTableMode)"
+        [ngClass]="getHighlightClasses(hparamHeader)"
+      >
+        <mat-checkbox
+          [checked]="hparamHeader.enabled"
+          (change)="toggleHeader(hparamHeader, dataTableMode)"
+          ><tb-data-table-header [header]="hparamHeader"></tb-data-table-header
+        ></mat-checkbox>
+      </div>
+    </div>
+  </ng-container>
 </ng-template>
+
+<custom-modal #columnSelectorModal (onOpen)="focusColumnSelector()">
+  <tb-data-table-column-selector-component
+    [selectableColumns]="selectableColumns"
+    (columnSelected)="onColumnSelected($event)"
+  ></tb-data-table-column-selector-component>
+</custom-modal>

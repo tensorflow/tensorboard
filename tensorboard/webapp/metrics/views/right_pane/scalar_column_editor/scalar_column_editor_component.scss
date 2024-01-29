@@ -85,3 +85,22 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
 ::ng-deep .mat-mdc-tab-body-wrapper {
   flex: 1;
 }
+
+.hparams {
+  &-header {
+    display: flex;
+    align-items: center;
+    margin: 10px 10px 0;
+  }
+
+  &-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: normal;
+  }
+
+  &-add-button {
+    height: 30px;
+    width: 30px;
+  }
+}

@@ -45,6 +45,14 @@ import {DataTableHeaderModule} from '../../../../widgets/data_table/data_table_h
 import {ScalarColumnEditorComponent} from './scalar_column_editor_component';
 import {ScalarColumnEditorContainer} from './scalar_column_editor_container';
 import {MatTabsModule} from '@angular/material/tabs';
+import {getEnableHparamsInTimeSeries} from '../../../../feature_flag/store/feature_flag_selectors';
+import {getDashboardDisplayedHparamColumns} from '../../../../hparams/_redux/hparams_selectors';
+import {provideMockTbStore} from '../../../../testing/utils';
+import {CustomModalComponent} from '../../../../widgets/custom_modal/custom_modal_component';
+import {ColumnSelectorComponent} from '../../../../widgets/data_table/column_selector_component';
+import {CustomModalModule} from '../../../../widgets/custom_modal/custom_modal_module';
+import {ColumnSelectorModule} from '../../../../widgets/data_table/column_selector_module';
+import * as hparamsActions from '../../../../hparams/_redux/hparams_actions';
 
 describe('scalar column editor', () => {
   let store: MockStore<State>;
@@ -79,15 +87,38 @@ describe('scalar column editor', () => {
         MatTabsModule,
         NoopAnimationsModule,
         MatCheckboxModule,
+        CustomModalModule,
+        ColumnSelectorModule,
       ],
       declarations: [ScalarColumnEditorContainer, ScalarColumnEditorComponent],
-      providers: [provideMockStore()],
+      providers: [provideMockTbStore()],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getRangeSelectionHeaders, []);
     store.overrideSelector(getSingleSelectionHeaders, []);
     store.overrideSelector(getTableEditorSelectedTab, DataTableMode.SINGLE);
+    store.overrideSelector(getDashboardDisplayedHparamColumns, [
+      {
+        type: ColumnHeaderType.HPARAM,
+        name: 'conv_layers',
+        displayName: 'Conv Layers',
+        enabled: true,
+      },
+      {
+        type: ColumnHeaderType.HPARAM,
+        name: 'conv_kernel_size',
+        displayName: 'Conv Kernel Size',
+        enabled: true,
+      },
+      {
+        type: ColumnHeaderType.HPARAM,
+        name: 'dense_layers',
+        displayName: 'Dense Layers',
+        enabled: true,
+      },
+    ]);
+    store.overrideSelector(getEnableHparamsInTimeSeries, false);
   });
 
   afterEach(() => {
@@ -571,6 +602,181 @@ describe('scalar column editor', () => {
       expect(
         tabs[1].attributes['class']?.includes('mdc-tab--active')
       ).toBeTrue();
+    });
+  });
+
+  describe('hparam columns', () => {
+    beforeEach(() => {
+      store.overrideSelector(getEnableHparamsInTimeSeries, true);
+    });
+
+    it('hides hparam sections when hparams in time series is disabled', () => {
+      store.overrideSelector(getEnableHparamsInTimeSeries, false);
+
+      const fixture = createComponent();
+
+      expect(fixture.debugElement.query(By.css('.hparams-header'))).toBeFalsy();
+    });
+
+    it('shows hparam sections when hparams in time series is enabled', () => {
+      const fixture = createComponent();
+
+      expect(
+        fixture.debugElement.query(By.css('.hparams-header'))
+      ).toBeTruthy();
+    });
+
+    it('opens column selector modal on add button click', async () => {
+      const focusSpy = spyOn(ColumnSelectorComponent.prototype, 'focus');
+      const fixture = createComponent();
+
+      const addButton = fixture.debugElement.query(
+        By.css('.hparams-add-button')
+      );
+      addButton.nativeElement.click();
+      fixture.detectChanges();
+      // Wait for modal init.
+      await new Promise((resolve) => window.requestAnimationFrame(resolve));
+
+      expect(
+        fixture.debugElement.query(By.directive(CustomModalComponent))
+      ).toBeTruthy();
+      expect(
+        fixture.debugElement.query(By.directive(ColumnSelectorComponent))
+      ).toBeTruthy();
+      expect(focusSpy).toHaveBeenCalled();
+    });
+
+    it('dispatches dashboardHparamColumnAdded on column select', async () => {
+      const dispatchSpy = spyOn(store, 'dispatch');
+      const fixture = createComponent();
+
+      const addButton = fixture.debugElement.query(
+        By.css('.hparams-add-button')
+      );
+      addButton.nativeElement.click();
+      fixture.detectChanges();
+      // Wait for modal init.
+      await new Promise((resolve) => window.requestAnimationFrame(resolve));
+      fixture.debugElement
+        .query(By.directive(ColumnSelectorComponent))
+        .componentInstance.columnSelected.emit({
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_layers',
+          displayName: 'Conv Layers',
+          enabled: true,
+        });
+
+      expect(dispatchSpy).toHaveBeenCalledOnceWith(
+        hparamsActions.dashboardHparamColumnAdded({
+          column: {
+            type: ColumnHeaderType.HPARAM,
+            name: 'conv_layers',
+            displayName: 'Conv Layers',
+            enabled: true,
+          },
+        })
+      );
+    });
+
+    it('lists hparam columns', () => {
+      const fixture = createComponent();
+
+      const headerElements = fixture.debugElement.queryAll(
+        By.css('.hparams-list .header-list-item')
+      );
+      expect(headerElements.length).toEqual(3);
+      expect(headerElements[0].nativeElement.innerText).toEqual('Conv Layers');
+      expect(headerElements[1].nativeElement.innerText).toEqual(
+        'Conv Kernel Size'
+      );
+      expect(headerElements[2].nativeElement.innerText).toEqual('Dense Layers');
+    });
+
+    it('dispatches dashboardHparamColumnOrderChanged hparam header is dragged', () => {
+      const dispatchSpy = spyOn(store, 'dispatch');
+      const fixture = createComponent();
+      const headerListItems = fixture.debugElement.queryAll(
+        By.css('.header-list-item')
+      );
+
+      headerListItems[0].triggerEventHandler('dragstart');
+      headerListItems[1].triggerEventHandler('dragenter');
+      headerListItems[0].triggerEventHandler('dragend');
+
+      expect(dispatchSpy).toHaveBeenCalledOnceWith(
+        hparamsActions.dashboardHparamColumnOrderChanged({
+          source: {
+            type: ColumnHeaderType.HPARAM,
+            name: 'conv_layers',
+            displayName: 'Conv Layers',
+            enabled: true,
+          },
+          destination: {
+            type: ColumnHeaderType.HPARAM,
+            name: 'conv_kernel_size',
+            displayName: 'Conv Kernel Size',
+            enabled: true,
+          },
+          side: Side.RIGHT,
+        })
+      );
+    });
+
+    it('prevents interaction between hparam and standard headers', () => {
+      const dispatchSpy = spyOn(store, 'dispatch');
+      store.overrideSelector(getSingleSelectionHeaders, [
+        {
+          type: ColumnHeaderType.SMOOTHED,
+          name: 'smoothed',
+          displayName: 'Smoothed',
+          enabled: true,
+        },
+      ]);
+      const fixture = createComponent();
+      const standardHeaderDebugEl = fixture.debugElement
+        .queryAll(By.css('.header-list-item'))
+        .find((debugEl) =>
+          debugEl.nativeElement.innerHTML.includes('Smoothed')
+        )!;
+      const hparamHeaderDebugEl = fixture.debugElement
+        .queryAll(By.css('.header-list-item'))
+        .find((debugEl) =>
+          debugEl.nativeElement.innerHTML.includes('Conv Layers')
+        )!;
+
+      // Moving standard to hparam header
+      standardHeaderDebugEl.triggerEventHandler('dragstart');
+      hparamHeaderDebugEl.triggerEventHandler('dragenter');
+      standardHeaderDebugEl.triggerEventHandler('dragend');
+      // Moving hparam header to standard header
+      hparamHeaderDebugEl.triggerEventHandler('dragstart');
+      standardHeaderDebugEl.triggerEventHandler('dragenter');
+      hparamHeaderDebugEl.triggerEventHandler('dragend');
+
+      expect(dispatchSpy).not.toHaveBeenCalled();
+    });
+
+    it('dispatches dashboardHparamColumnToggled on hparam header checkbox click', () => {
+      const dispatchSpy = spyOn(store, 'dispatch');
+      const fixture = createComponent();
+      const checkbox = fixture.debugElement.query(
+        By.css('.hparams-list mat-checkbox')
+      );
+
+      checkbox.triggerEventHandler('change');
+      fixture.detectChanges();
+
+      expect(dispatchSpy).toHaveBeenCalledOnceWith(
+        hparamsActions.dashboardHparamColumnToggled({
+          column: {
+            type: ColumnHeaderType.HPARAM,
+            name: 'conv_layers',
+            displayName: 'Conv Layers',
+            enabled: true,
+          },
+        })
+      );
     });
   });
 });

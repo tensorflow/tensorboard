@@ -21,6 +21,8 @@ import {MatButtonModule} from '@angular/material/button';
 import {ScalarColumnEditorComponent} from './scalar_column_editor_component';
 import {ScalarColumnEditorContainer} from './scalar_column_editor_container';
 import {DataTableHeaderModule} from '../../../../widgets/data_table/data_table_header_module';
+import {CustomModalModule} from '../../../../widgets/custom_modal/custom_modal_module';
+import {ColumnSelectorModule} from '../../../../widgets/data_table/column_selector_module';
 
 @NgModule({
   declarations: [ScalarColumnEditorComponent, ScalarColumnEditorContainer],
@@ -32,6 +34,8 @@ import {DataTableHeaderModule} from '../../../../widgets/data_table/data_table_h
     MatTabsModule,
     MatIconModule,
     MatButtonModule,
+    CustomModalModule,
+    ColumnSelectorModule,
   ],
 })
 export class ScalarColumnEditorModule {}
