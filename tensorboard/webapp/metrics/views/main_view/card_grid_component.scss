@@ -48,8 +48,8 @@ card-view {
   @include tb-theme-foreground-prop(border, border, 1px solid);
   border-radius: 4px;
   box-sizing: border-box;
-  display: block;
   contain: layout paint;
+  display: block;
   // Make sure the cards generally have some guaranteed minimum height to avoid
   // jank as cards load.
   min-height: $metrics-min-card-height;
