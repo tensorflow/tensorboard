@@ -48,6 +48,7 @@ card-view {
   @include tb-theme-foreground-prop(border, border, 1px solid);
   border-radius: 4px;
   box-sizing: border-box;
+  contain: layout paint;
   display: block;
   contain: layout paint;
   // Make sure the cards generally have some guaranteed minimum height to avoid
