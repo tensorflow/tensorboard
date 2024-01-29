@@ -91,16 +91,16 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
     display: flex;
     align-items: center;
     margin: 10px 10px 0;
+
+    &-add-button {
+      height: 30px;
+      width: 30px;
+    }
   }
 
   &-title {
     margin: 0;
     font-size: 14px;
     font-weight: normal;
-  }
-
-  &-add-button {
-    height: 30px;
-    width: 30px;
   }
 }

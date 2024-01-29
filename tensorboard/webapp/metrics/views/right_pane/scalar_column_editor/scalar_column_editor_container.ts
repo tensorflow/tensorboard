@@ -106,7 +106,7 @@ export class ScalarColumnEditorContainer {
       );
     } else {
       this.store.dispatch(
-        dataTableColumnEdited({source, destination, side, dataTableMode})
+        dataTableColumnOrderChanged({source, destination, side, dataTableMode})
       );
     }
   }
