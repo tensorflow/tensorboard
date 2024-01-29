@@ -16,7 +16,7 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {State} from '../../../../app_state';
 import {
-  dataTableColumnEdited,
+  dataTableColumnOrderChanged,
   dataTableColumnToggled,
   metricsSlideoutMenuClosed,
   tableEditorTabChanged,
@@ -69,7 +69,7 @@ export class ScalarColumnEditorContainer {
   }
 
   onScalarTableColumnEdit(editInfo: HeaderEditInfo) {
-    this.store.dispatch(dataTableColumnEdited(editInfo));
+    this.store.dispatch(dataTableColumnOrderChanged(editInfo));
   }
 
   onScalarTableColumnEditorClosed() {
