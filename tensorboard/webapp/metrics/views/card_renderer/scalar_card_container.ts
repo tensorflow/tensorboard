@@ -72,13 +72,13 @@ import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
   cardViewBoxChanged,
-  dataTableColumnEdited,
   metricsCardFullSizeToggled,
   metricsCardStateUpdated,
   sortingDataTable,
   stepSelectorToggled,
   timeSelectionChanged,
   metricsSlideoutMenuOpened,
+  dataTableColumnOrderChanged,
   dataTableColumnToggled,
 } from '../../actions';
 import {PluginType, ScalarStepDatum} from '../../data_source';
@@ -732,7 +732,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       );
     } else {
       this.store.dispatch(
-        dataTableColumnEdited({source, destination, side, dataTableMode})
+        dataTableColumnOrderChanged({source, destination, side, dataTableMode})
       );
     }
   }
