@@ -50,7 +50,6 @@ card-view {
   box-sizing: border-box;
   contain: layout paint;
   display: block;
-  contain: layout paint;
   // Make sure the cards generally have some guaranteed minimum height to avoid
   // jank as cards load.
   min-height: $metrics-min-card-height;
