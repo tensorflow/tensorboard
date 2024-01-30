@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Run, DiscreteHparamValue} from './data_source/runs_data_source_types';
+import {Run, HparamValue} from './data_source/runs_data_source_types';
 
 export {Run, DiscreteHparamValue} from './data_source/runs_data_source_types';
 
@@ -59,8 +59,6 @@ export interface URLDeserializedState {
   };
 }
 
-export type RunToHparams = {
-  [runName: string]: {
-    [hparamName: string]: DiscreteHparamValue;
-  };
-};
+export type HparamMap = Map<HparamValue['name'], HparamValue['value']>;
+
+export type RunToHparamMap = Record<Run['id'], HparamMap>;

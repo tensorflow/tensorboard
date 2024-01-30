@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {DataLoadState, LoadState} from '../../types/data';
-import {GroupBy, RunToHparams} from '../types';
+import {GroupBy, RunToHparamMap} from '../types';
 import {
   ExperimentId,
   Run,
@@ -152,18 +152,16 @@ export const getDashboardRunsToHparams = createSelector(
   }
 );
 
-/** Returns a mapping from run to `{hparam: value}`. */
-export const getRunToHparams = createSelector(
+export const getRunToHparamMap = createSelector(
   getDashboardRunsToHparams,
-  (runToHparamsAndMetrics: RunToHparamsAndMetrics): RunToHparams => {
-    const runToHparams: RunToHparams = {};
+  (runToHparamsAndMetrics: RunToHparamsAndMetrics): RunToHparamMap => {
+    const runToHparamMap: RunToHparamMap = {};
     for (const [runName, {hparams}] of Object.entries(runToHparamsAndMetrics)) {
-      runToHparams[runName] = {};
-      for (const {name: hparamName, value} of hparams) {
-        runToHparams[runName][hparamName] = value;
-      }
+      runToHparamMap[runName] = new Map(
+        hparams.map(({name, value}) => [name, value])
+      );
     }
-    return runToHparams;
+    return runToHparamMap;
   }
 );
 

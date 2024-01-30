@@ -2885,6 +2885,36 @@ describe('scalar card', () => {
           },
         ]);
       }));
+
+      it('disables context menus when column customization is disabled', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getIsScalarColumnCustomizationEnabled,
+          false
+        );
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        const headerCellComponentInstance = fixture.debugElement.query(
+          By.directive(HeaderCellComponent)
+        ).componentInstance;
+
+        expect(headerCellComponentInstance.disableContextMenu).toBeTrue;
+      }));
+
+      it('enables context menus when column customization is enabled', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getIsScalarColumnCustomizationEnabled,
+          true
+        );
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        const headerCellComponentInstance = fixture.debugElement.query(
+          By.directive(HeaderCellComponent)
+        ).componentInstance;
+
+        expect(headerCellComponentInstance.disableContextMenu).toBeFalse;
+      }));
     });
 
     describe('line chart integration', () => {
@@ -3989,21 +4019,15 @@ describe('scalar card', () => {
             },
           ]
         );
-        store.overrideSelector(runsSelectors.getDashboardRunsToHparams, {
-          run1: {
-            hparams: [
-              {name: 'conv_layers', value: 1},
-              {name: 'conv_kernel_size', value: 2},
-            ],
-            metrics: [],
-          },
-          run2: {
-            hparams: [
-              {name: 'conv_layers', value: 3},
-              {name: 'conv_kernel_size', value: 4},
-            ],
-            metrics: [],
-          },
+        store.overrideSelector(runsSelectors.getRunToHparamMap, {
+          run1: new Map([
+            ['conv_layers', 1],
+            ['conv_kernel_size', 2],
+          ]),
+          run2: new Map([
+            ['conv_layers', 3],
+            ['conv_kernel_size', 4],
+          ]),
         });
       });
 

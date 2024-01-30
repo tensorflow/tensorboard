@@ -58,9 +58,8 @@ import {
   getRun,
   getRunColorMap,
   getCurrentRouteRunSelection,
-  getDashboardRunsToHparams,
   getGroupedHeadersForCard,
-  getRunToHparams,
+  getRunToHparamMap,
 } from '../../../selectors';
 import {DataLoadState} from '../../../types/data';
 import {
@@ -103,7 +102,7 @@ import {
   HeaderToggleInfo,
   XAxisType,
 } from '../../types';
-import {RunToHparams} from '../../../runs/types';
+import {RunToHparamMap} from '../../../runs/types';
 import {
   getFilteredRenderableRunsIds,
   getCurrentColumnFilters,
@@ -133,7 +132,6 @@ import {
   partitionSeries,
   TimeSelectionView,
 } from './utils';
-import {RunToHparamsAndMetrics} from '../../../hparams/types';
 
 type ScalarCardMetadata = CardMetadata & {
   plugin: PluginType.SCALARS;
@@ -192,7 +190,7 @@ function areSeriesEqual(
       [rangeEnabled]="rangeEnabled$ | async"
       [hparamsEnabled]="hparamsEnabled$ | async"
       [columnFilters]="columnFilters$ | async"
-      [runToHparams]="runToHparams$ | async"
+      [runToHparamMap]="runToHparamMap$ | async"
       [selectableColumns]="selectableColumns$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
@@ -248,7 +246,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   rangeEnabled$?: Observable<boolean>;
   hparamsEnabled$?: Observable<boolean>;
   columnFilters$ = this.store.select(getCurrentColumnFilters);
-  runToHparams$?: Observable<RunToHparams>;
+  runToHparamMap$?: Observable<RunToHparamMap>;
   selectableColumns$?: Observable<ColumnHeader[]>;
 
   onVisibilityChange({visible}: {visible: boolean}) {
@@ -615,7 +613,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
     this.hparamsEnabled$ = this.store.select(getEnableHparamsInTimeSeries);
 
-    this.runToHparams$ = this.store.select(getRunToHparams);
+    this.runToHparamMap$ = this.store.select(getRunToHparamMap);
 
     this.selectableColumns$ = this.store.select(getSelectableColumns);
   }

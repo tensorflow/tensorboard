@@ -22,7 +22,7 @@ import {
 import {TimeSelection} from '../../../widgets/card_fob/card_fob_types';
 import {findClosestIndex} from '../../../widgets/line_chart_v2/sub_view/line_chart_interactive_utils';
 import {HeaderEditInfo, HeaderToggleInfo} from '../../types';
-import {RunToHparams} from '../../../runs/types';
+import {RunToHparamMap} from '../../../runs/types';
 import {
   ScalarCardDataSeries,
   ScalarCardPoint,
@@ -61,7 +61,7 @@ export class ScalarCardDataTable {
   @Input() hparamsEnabled?: boolean;
   @Input() columnFilters!: Map<string, DiscreteFilter | IntervalFilter>;
   @Input() selectableColumns!: ColumnHeader[];
-  @Input() runToHparams!: RunToHparams;
+  @Input() runToHparamMap!: RunToHparamMap;
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() editColumnHeaders = new EventEmitter<HeaderEditInfo>();
@@ -269,7 +269,7 @@ export class ScalarCardDataTable {
                 (metadata as SmoothedSeriesMetadata).originalSeriesId ||
                 metadata.id;
               selectedStepData[header.name] =
-                this.runToHparams?.[runId]?.[header.name] ?? '';
+                this.runToHparamMap?.[runId].get(header.name) ?? '';
               continue;
             default:
               continue;

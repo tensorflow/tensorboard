@@ -67,7 +67,7 @@ import {
   AddColumnEvent,
 } from '../../../widgets/data_table/types';
 import {isDatumVisible, TimeSelectionView} from './utils';
-import {RunToHparams} from '../../../runs/types';
+import {RunToHparamMap} from '../../../runs/types';
 
 type ScalarTooltipDatum = TooltipDatum<
   ScalarCardSeriesMetadata & {
@@ -114,7 +114,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() hparamsEnabled?: boolean;
   @Input() columnFilters!: Map<string, DiscreteFilter | IntervalFilter>;
   @Input() selectableColumns!: ColumnHeader[];
-  @Input() runToHparams!: RunToHparams[];
+  @Input() runToHparamMap!: RunToHparamMap;
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();

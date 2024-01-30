@@ -76,8 +76,3 @@ export interface Run {
 export abstract class RunsDataSource {
   abstract fetchRuns(experimentId: string): Observable<Run[]>;
 }
-
-export type RunToHParamValues = Record<
-  string,
-  Map<string, HparamValue['value']>
->;

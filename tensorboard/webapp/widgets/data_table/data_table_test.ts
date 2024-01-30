@@ -413,9 +413,9 @@ describe('data table', () => {
           enabled: true,
         },
         {
-          type: ColumnHeaderType.RUN,
-          name: 'run',
-          displayName: 'Run',
+          type: ColumnHeaderType.SMOOTHED,
+          name: 'smoothed',
+          displayName: 'Smoothed',
           enabled: true,
         },
         {
@@ -452,9 +452,9 @@ describe('data table', () => {
 
     expect(orderColumnsSpy).toHaveBeenCalledOnceWith({
       source: {
-        type: ColumnHeaderType.RUN,
-        name: 'run',
-        displayName: 'Run',
+        type: ColumnHeaderType.SMOOTHED,
+        name: 'smoothed',
+        displayName: 'Smoothed',
         enabled: true,
       },
       destination: {
@@ -477,9 +477,9 @@ describe('data table', () => {
           enabled: true,
         },
         {
-          type: ColumnHeaderType.RUN,
-          name: 'run',
-          displayName: 'Run',
+          type: ColumnHeaderType.SMOOTHED,
+          name: 'smoothed',
+          displayName: 'Smoothed',
           enabled: true,
         },
         {
@@ -516,9 +516,9 @@ describe('data table', () => {
 
     expect(orderColumnsSpy).toHaveBeenCalledOnceWith({
       source: {
-        type: ColumnHeaderType.RUN,
-        name: 'run',
-        displayName: 'Run',
+        type: ColumnHeaderType.SMOOTHED,
+        name: 'smoothed',
+        displayName: 'Smoothed',
         enabled: true,
       },
       destination: {
@@ -529,6 +529,51 @@ describe('data table', () => {
       },
       side: Side.RIGHT,
     });
+  });
+
+  it('does not emit orderColumns when dragging between column groups', () => {
+    const fixture = createComponent({
+      headers: [
+        {
+          type: ColumnHeaderType.VALUE,
+          name: 'value',
+          displayName: 'Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.SMOOTHED,
+          name: 'smoothed',
+          displayName: 'Smoothed',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+      ],
+      sortingInfo: {
+        name: 'step',
+        order: SortingOrder.DESCENDING,
+      },
+    });
+    fixture.detectChanges();
+    const headerElements = fixture.debugElement.queryAll(
+      By.directive(HeaderCellComponent)
+    );
+
+    headerElements[1].query(By.css('.cell')).triggerEventHandler('dragstart');
+    headerElements[2].query(By.css('.cell')).triggerEventHandler('dragenter');
+    fixture.detectChanges();
+    expect(
+      headerElements[2]
+        .query(By.css('.cell'))
+        .nativeElement.classList.contains('highlight')
+    ).toBe(false);
+    headerElements[1].query(By.css('.cell')).triggerEventHandler('dragend');
+
+    expect(orderColumnsSpy).not.toHaveBeenCalled();
   });
 
   it('does not show add button when there are no selectable columns', () => {
