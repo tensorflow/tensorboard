@@ -673,7 +673,7 @@ export const getGroupedHeadersForCard = memoize((cardId: string) =>
       const columns = [...standardColumns, ...hparamColumns].map((column) => {
         const newColumn = {...column};
         if (column.type === 'HPARAM') {
-          newColumn.removable = false;
+          newColumn.removable = true;
           newColumn.hidable = true;
         }
         return newColumn;

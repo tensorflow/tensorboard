@@ -1974,12 +1974,12 @@ describe('metrics selectors', () => {
           }),
           jasmine.objectContaining({
             type: ColumnHeaderType.HPARAM,
-            removable: false,
+            removable: true,
             hidable: true,
           }),
           jasmine.objectContaining({
             type: ColumnHeaderType.HPARAM,
-            removable: false,
+            removable: true,
             hidable: true,
           }),
           jasmine.objectContaining({

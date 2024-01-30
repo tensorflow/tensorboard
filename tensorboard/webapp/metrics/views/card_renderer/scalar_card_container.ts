@@ -60,6 +60,7 @@ import {
   getCurrentRouteRunSelection,
   getDashboardRunsToHparams,
   getGroupedHeadersForCard,
+  getRunToHparams,
 } from '../../../selectors';
 import {DataLoadState} from '../../../types/data';
 import {
@@ -614,20 +615,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
     this.hparamsEnabled$ = this.store.select(getEnableHparamsInTimeSeries);
 
-    this.runToHparams$ = this.store.select(getDashboardRunsToHparams).pipe(
-      map((runToHparamsAndMetrics: RunToHparamsAndMetrics): RunToHparams => {
-        const runToHparams: RunToHparams = {};
-        for (const [runName, {hparams}] of Object.entries(
-          runToHparamsAndMetrics
-        )) {
-          runToHparams[runName] = {};
-          for (const {name: hparamName, value} of hparams) {
-            runToHparams[runName][hparamName] = value;
-          }
-        }
-        return runToHparams;
-      })
-    );
+    this.runToHparams$ = this.store.select(getRunToHparams);
 
     this.selectableColumns$ = this.store.select(getSelectableColumns);
   }

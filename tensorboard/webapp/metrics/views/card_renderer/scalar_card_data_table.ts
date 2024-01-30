@@ -265,12 +265,9 @@ export class ScalarCardDataTable {
                 closestEndPoint.value - closestStartPoint.value;
               continue;
             case ColumnHeaderType.HPARAM:
-              let runId: string;
-              if ((metadata as SmoothedSeriesMetadata).originalSeriesId) {
-                runId = (metadata as SmoothedSeriesMetadata).originalSeriesId;
-              } else {
-                runId = metadata.id;
-              }
+              let runId =
+                (metadata as SmoothedSeriesMetadata).originalSeriesId ||
+                metadata.id;
               selectedStepData[header.name] =
                 this.runToHparams?.[runId]?.[header.name] ?? '';
               continue;

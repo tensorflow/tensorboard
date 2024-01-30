@@ -698,7 +698,7 @@ describe('data table', () => {
       });
       const cell = fixture.debugElement
         .queryAll(By.directive(HeaderCellComponent))
-        .find((cell) => cell.nativeElement.innerHTML.includes('Hparam 2'))!;
+        .find((cell) => cell.nativeElement.innerHTML.includes('Hparam 1'))!;
       cell.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
       fixture.detectChanges();
 
@@ -716,7 +716,7 @@ describe('data table', () => {
       );
       expect(dataTable.componentInstance.insertColumnTo).toEqual(Side.RIGHT);
       expect(dataTable.componentInstance.contextMenuHeader.name).toEqual(
-        'another_hparam'
+        'other_header'
       );
     });
 
@@ -847,7 +847,7 @@ describe('data table', () => {
       ).toBeUndefined();
     });
 
-    it('only includes add buttons for hparams', () => {
+    it('only includes add buttons for non-movable hparams', () => {
       const fixture = createComponent({
         headers: mockHeaders,
         data: mockTableData,
@@ -872,7 +872,10 @@ describe('data table', () => {
             element.nativeElement.innerHTML.includes('Right')
           )!;
 
-        if (cell.componentInstance.header.type === 'HPARAM') {
+        if (
+          cell.componentInstance.header.type === 'HPARAM' &&
+          cell.componentInstance.header.movable
+        ) {
           expect(addLeft).toBeDefined();
           expect(addRight).toBeDefined();
         } else {

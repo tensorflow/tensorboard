@@ -303,6 +303,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     return (
       this.selectableColumns &&
       this.selectableColumns.length &&
+      this.contextMenuHeader?.movable &&
       this.contextMenuHeader?.type === 'HPARAM'
     );
   }
@@ -317,7 +318,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   }
 
   contextMenuHideColumn() {
-    if (this.contextMenuHeader === undefined) {
+    if (!this.contextMenuHeader) {
       return;
     }
     this.hideColumn.emit(this.contextMenuHeader);
