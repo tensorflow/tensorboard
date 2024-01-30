@@ -247,11 +247,6 @@ export const dataTableColumnToggled = createAction(
   props<HeaderToggleInfo>()
 );
 
-export const dataTableColumnAdded = createAction(
-  '[Metrics] Data table column added in edit menu',
-  props<{header: ColumnHeader}>()
-);
-
 export const stepSelectorToggled = createAction(
   '[Metrics] Time Selector Enable Toggle',
   props<{
