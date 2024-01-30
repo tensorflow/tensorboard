@@ -20,9 +20,13 @@ import {
   Input,
   OnDestroy,
   Output,
+  ViewChild,
 } from '@angular/core';
 import {MatTabChangeEvent} from '@angular/material/tabs';
+import {CustomModalComponent} from '../../../../widgets/custom_modal/custom_modal_component';
+import {ColumnSelectorComponent} from '../../../../widgets/data_table/column_selector_component';
 import {
+  AddColumnEvent,
   ColumnHeader,
   DataTableMode,
   Side,
@@ -57,7 +61,10 @@ export class ScalarColumnEditorComponent implements OnDestroy {
   highlightEdge: Edge = Edge.TOP;
   @Input() rangeHeaders!: ColumnHeader[];
   @Input() singleHeaders!: ColumnHeader[];
+  @Input() hparamHeaders!: ColumnHeader[];
+  @Input() hparamsEnabled!: boolean;
   @Input() selectedTab!: DataTableMode;
+  @Input() selectableColumns!: ColumnHeader[];
 
   @Output() onScalarTableColumnEdit = new EventEmitter<HeaderEditInfo>();
   @Output() onScalarTableColumnToggled = new EventEmitter<{
@@ -66,6 +73,12 @@ export class ScalarColumnEditorComponent implements OnDestroy {
   }>();
   @Output() onScalarTableColumnEditorClosed = new EventEmitter<void>();
   @Output() onTabChange = new EventEmitter<DataTableMode>();
+  @Output() onColumnAdded = new EventEmitter<AddColumnEvent>();
+
+  @ViewChild('columnSelectorModal', {static: false})
+  private readonly columnSelectorModal!: CustomModalComponent;
+  @ViewChild(ColumnSelectorComponent, {static: false})
+  private readonly columnSelector!: ColumnSelectorComponent;
 
   constructor(private readonly hostElement: ElementRef) {}
 
@@ -91,7 +104,12 @@ export class ScalarColumnEditorComponent implements OnDestroy {
     if (!this.draggingHeader || !this.highlightedHeader) {
       return;
     }
-    const headers = this.getHeadersForMode(dataTableMode);
+    let headers: ColumnHeader[];
+    if (this.draggingHeader.type === 'HPARAM') {
+      headers = this.hparamHeaders;
+    } else {
+      headers = this.getHeadersForMode(dataTableMode);
+    }
     const source = {...this.draggingHeader};
     const destination = {...this.highlightedHeader};
     if (source && destination && source.name !== destination.name) {
@@ -116,8 +134,21 @@ export class ScalarColumnEditorComponent implements OnDestroy {
       return;
     }
 
+    // Prevent hparam columns from interacting with standard columns.
+    if (
+      [this.draggingHeader, header].some((h) => h.type === 'HPARAM') &&
+      this.draggingHeader.type !== header.type
+    ) {
+      return;
+    }
+
     // Highlight the position which the dragging header will go when dropped.
-    const headers = this.getHeadersForMode(dataTableMode);
+    let headers: ColumnHeader[];
+    if (this.draggingHeader.type === 'HPARAM') {
+      headers = this.hparamHeaders;
+    } else {
+      headers = this.getHeadersForMode(dataTableMode);
+    }
     if (
       getIndexOfColumn(header, headers) <
       getIndexOfColumn(this.draggingHeader, headers)
@@ -157,5 +188,24 @@ export class ScalarColumnEditorComponent implements OnDestroy {
     return dataTableMode === DataTableMode.SINGLE
       ? this.singleHeaders
       : this.rangeHeaders;
+  }
+
+  openColumnSelector(event: MouseEvent) {
+    const rect = (
+      (event.target as HTMLElement).closest('button') as HTMLButtonElement
+    ).getBoundingClientRect();
+    this.columnSelectorModal.openAtPosition({
+      x: rect.x + rect.width,
+      y: rect.y,
+    });
+    this.columnSelector.activate();
+  }
+
+  focusColumnSelector() {
+    this.columnSelector.focus();
+  }
+
+  onColumnSelected(header: ColumnHeader) {
+    this.onColumnAdded.emit({column: header});
   }
 }
