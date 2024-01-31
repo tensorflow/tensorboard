@@ -161,7 +161,35 @@ describe('common selectors', () => {
             run4,
           },
         } as any,
-        ui: {} as any,
+        ui: {
+          runsTableHeaders: [
+            {
+              type: ColumnHeaderType.RUN,
+              name: 'run',
+              displayName: 'Run',
+              enabled: true,
+              sortable: true,
+              removable: false,
+              movable: false,
+              filterable: false,
+              hidable: false,
+            },
+            {
+              type: ColumnHeaderType.CUSTOM,
+              name: 'experimentAlias',
+              displayName: 'Experiment',
+              enabled: true,
+              movable: false,
+              sortable: true,
+            },
+            {
+              type: ColumnHeaderType.CUSTOM,
+              name: 'fakeRunsHeader',
+              displayName: 'Fake Runs Header',
+              enabled: true,
+            },
+          ],
+        } as any,
       },
       experiments: {
         data: {
@@ -182,10 +210,35 @@ describe('common selectors', () => {
       },
       hparams: {
         dashboardSpecs: {
-          hparams: [buildHparamSpec({name: 'foo', displayName: 'Foo'})],
+          hparams: [
+            buildHparamSpec({name: 'conv_layers', displayName: 'Conv Layers'}),
+            buildHparamSpec({
+              name: 'conv_kernel_size',
+              displayName: 'Conv Kernel Size',
+            }),
+            buildHparamSpec({
+              name: 'dense_layers',
+              displayName: 'Dense Layers',
+            }),
+            buildHparamSpec({name: 'dropout', displayName: 'Dropout'}),
+          ],
           metrics: [buildMetricSpec({displayName: 'Bar'})],
         },
         dashboardSessionGroups: [],
+        dashboardDisplayedHparamColumns: [
+          {
+            type: ColumnHeaderType.HPARAM,
+            name: 'conv_layers',
+            displayName: 'Conv Layers',
+            enabled: true,
+          },
+          {
+            type: ColumnHeaderType.HPARAM,
+            name: 'dense_layers',
+            displayName: 'Dense Layers',
+            enabled: true,
+          },
+        ],
       } as any,
     });
   });
@@ -962,6 +1015,15 @@ describe('common selectors', () => {
   });
 
   describe('getPotentialHparamColumns', () => {
+    const expectedBooleanFlags = {
+      enabled: false,
+      removable: true,
+      sortable: true,
+      movable: true,
+      filterable: true,
+      hidable: true,
+    };
+
     it('returns empty list when there are no experiments', () => {
       state.app_routing!.activeRoute!.routeKind = RouteKind.EXPERIMENTS;
 
@@ -972,42 +1034,87 @@ describe('common selectors', () => {
       expect(selectors.getPotentialHparamColumns(state)).toEqual([
         {
           type: ColumnHeaderType.HPARAM,
-          name: 'foo',
-          displayName: 'Foo',
-          enabled: false,
-          removable: true,
-          sortable: true,
-          movable: true,
-          filterable: true,
+          name: 'conv_layers',
+          displayName: 'Conv Layers',
+          ...expectedBooleanFlags,
+        },
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_kernel_size',
+          displayName: 'Conv Kernel Size',
+          ...expectedBooleanFlags,
+        },
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'dense_layers',
+          displayName: 'Dense Layers',
+          ...expectedBooleanFlags,
+        },
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'dropout',
+          displayName: 'Dropout',
+          ...expectedBooleanFlags,
         },
       ]);
     });
 
     it('sets name as display name when a display name is not provided', () => {
-      state.hparams!.dashboardSpecs.hparams.push(
-        buildHparamSpec({name: 'bar', displayName: ''})
-      );
+      state.hparams!.dashboardSpecs.hparams = [
+        buildHparamSpec({name: 'conv_layers', displayName: ''}),
+      ];
+
       expect(selectors.getPotentialHparamColumns(state)).toEqual([
         {
           type: ColumnHeaderType.HPARAM,
-          name: 'foo',
-          displayName: 'Foo',
-          enabled: false,
-          removable: true,
-          sortable: true,
-          movable: true,
-          filterable: true,
+          name: 'conv_layers',
+          displayName: 'conv_layers',
+          ...expectedBooleanFlags,
         },
-        {
+      ]);
+    });
+  });
+
+  describe('getSelectableColumns', () => {
+    it('returns the full list of hparam columns if none are currently displayed', () => {
+      state.hparams!.dashboardDisplayedHparamColumns = [];
+
+      expect(selectors.getSelectableColumns(state)).toEqual([
+        jasmine.objectContaining({
           type: ColumnHeaderType.HPARAM,
-          name: 'bar',
-          displayName: 'bar',
-          enabled: false,
-          removable: true,
-          sortable: true,
-          movable: true,
-          filterable: true,
-        },
+          name: 'conv_layers',
+          displayName: 'Conv Layers',
+        }),
+        jasmine.objectContaining({
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_kernel_size',
+          displayName: 'Conv Kernel Size',
+        }),
+        jasmine.objectContaining({
+          type: ColumnHeaderType.HPARAM,
+          name: 'dense_layers',
+          displayName: 'Dense Layers',
+        }),
+        jasmine.objectContaining({
+          type: ColumnHeaderType.HPARAM,
+          name: 'dropout',
+          displayName: 'Dropout',
+        }),
+      ]);
+    });
+
+    it('returns only columns that are not displayed', () => {
+      expect(selectors.getSelectableColumns(state)).toEqual([
+        jasmine.objectContaining({
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_kernel_size',
+          displayName: 'Conv Kernel Size',
+        }),
+        jasmine.objectContaining({
+          type: ColumnHeaderType.HPARAM,
+          name: 'dropout',
+          displayName: 'Dropout',
+        }),
       ]);
     });
   });

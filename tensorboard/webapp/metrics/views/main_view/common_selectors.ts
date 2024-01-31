@@ -33,6 +33,7 @@ import {
   getDashboardHparamsAndMetricsSpecs,
   getDashboardHparamFilterMap,
   getDashboardDefaultHparamFilters,
+  getDashboardDisplayedHparamColumns,
 } from '../../../hparams/_redux/hparams_selectors';
 import {
   DiscreteFilter,
@@ -287,7 +288,19 @@ export const getPotentialHparamColumns = createSelector(
       sortable: true,
       movable: true,
       filterable: true,
+      hidable: true,
     }));
+  }
+);
+
+export const getSelectableColumns = createSelector(
+  getPotentialHparamColumns,
+  getDashboardDisplayedHparamColumns,
+  (potentialColumns, currentColumns) => {
+    const currentColumnNames = new Set(currentColumns.map(({name}) => name));
+    return potentialColumns.filter((columnHeader) => {
+      return !currentColumnNames.has(columnHeader.name);
+    });
   }
 );
 

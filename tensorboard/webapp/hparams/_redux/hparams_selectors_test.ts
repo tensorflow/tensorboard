@@ -15,6 +15,7 @@ limitations under the License.
 
 import {ColumnHeaderType} from '../../widgets/data_table/types';
 import {DomainType} from '../types';
+import {State} from './types';
 import * as selectors from './hparams_selectors';
 import {
   buildHparamSpec,
@@ -114,30 +115,63 @@ describe('hparams/_redux/hparams_selectors_test', () => {
   });
 
   describe('#getDashboardDisplayedHparamColumns', () => {
-    it('returns dashboard displayed hparam columns', () => {
-      const fakeColumns = [
+    it('returns no columns if no hparam specs', () => {
+      const state = buildStateFromHparamsState(
+        buildHparamsState({
+          dashboardSpecs: {
+            hparams: [],
+          },
+          dashboardDisplayedHparamColumns: [
+            {
+              type: ColumnHeaderType.HPARAM,
+              name: 'conv_layers',
+              displayName: 'Conv Layers',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.HPARAM,
+              name: 'conv_kernel_size',
+              displayName: 'Conv Kernel Size',
+              enabled: true,
+            },
+          ],
+        })
+      );
+
+      expect(selectors.getDashboardDisplayedHparamColumns(state)).toEqual([]);
+    });
+
+    it('returns only hparam columns that have specs', () => {
+      const state = buildStateFromHparamsState(
+        buildHparamsState({
+          dashboardSpecs: {
+            hparams: [buildHparamSpec({name: 'conv_layers'})],
+          },
+          dashboardDisplayedHparamColumns: [
+            {
+              type: ColumnHeaderType.HPARAM,
+              name: 'conv_layers',
+              displayName: 'Conv Layers',
+              enabled: true,
+            },
+            {
+              type: ColumnHeaderType.HPARAM,
+              name: 'conv_kernel_size',
+              displayName: 'Conv Kernel Size',
+              enabled: true,
+            },
+          ],
+        })
+      );
+
+      expect(selectors.getDashboardDisplayedHparamColumns(state)).toEqual([
         {
           type: ColumnHeaderType.HPARAM,
           name: 'conv_layers',
           displayName: 'Conv Layers',
           enabled: true,
         },
-        {
-          type: ColumnHeaderType.HPARAM,
-          name: 'conv_kernel_size',
-          displayName: 'Conv Kernel Size',
-          enabled: true,
-        },
-      ];
-      const state = buildStateFromHparamsState(
-        buildHparamsState({
-          dashboardDisplayedHparamColumns: fakeColumns,
-        })
-      );
-
-      expect(selectors.getDashboardDisplayedHparamColumns(state)).toEqual(
-        fakeColumns
-      );
+      ]);
     });
   });
 });

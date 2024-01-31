@@ -52,6 +52,7 @@ tf_ts_library(
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/widgets/data_table:types",
+        "//tensorboard/webapp/widgets/data_table:utils",
         "@npm//@ngrx/store",
     ],
 )

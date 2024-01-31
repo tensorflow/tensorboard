@@ -47,8 +47,14 @@ export const getDashboardDefaultHparamFilters = createSelector(
 );
 
 export const getDashboardDisplayedHparamColumns = createSelector(
+  getDashboardHparamsAndMetricsSpecs,
   getHparamsState,
-  (state) => state.dashboardDisplayedHparamColumns
+  ({hparams}, state) => {
+    const hparamSet = new Set(hparams.map((hparam) => hparam.name));
+    return state.dashboardDisplayedHparamColumns.filter((column) =>
+      hparamSet.has(column.name)
+    );
+  }
 );
 
 export const getDashboardHparamFilterMap = createSelector(

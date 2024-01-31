@@ -165,6 +165,29 @@ tf_ts_library(
 )
 
 tf_ts_library(
+    name = "utils",
+    srcs = [
+        "utils.ts",
+    ],
+    deps = [
+        ":types",
+    ],
+)
+
+tf_ts_library(
+    name = "utils_test",
+    testonly = True,
+    srcs = [
+        "utils_test.ts",
+    ],
+    deps = [
+        ":types",
+        ":utils",
+        "@npm//@types/jasmine",
+    ],
+)
+
+tf_ts_library(
     name = "data_table_test",
     testonly = True,
     srcs = [

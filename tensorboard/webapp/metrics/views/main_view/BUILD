@@ -91,6 +91,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics/views:utils",
         "//tensorboard/webapp/metrics/views/card_renderer:scalar_card_types",
         "//tensorboard/webapp/runs:types",
+        "//tensorboard/webapp/runs/store:selectors",
         "//tensorboard/webapp/runs/views/runs_table:types",
         "//tensorboard/webapp/util:matcher",
         "//tensorboard/webapp/util:memoize",

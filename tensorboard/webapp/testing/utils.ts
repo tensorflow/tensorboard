@@ -45,7 +45,7 @@ import {
   buildHparamsState,
   buildStateFromHparamsState,
 } from '../hparams/_redux/testing';
-import {METRICS_FEATURE_KEY} from '../metrics/store';
+import {METRICS_FEATURE_KEY} from '../metrics/store/metrics_types';
 import {appStateFromMetricsState, buildMetricsState} from '../metrics/testing';
 import {NOTIFICATION_FEATURE_KEY} from '../notification_center/_redux/notification_center_types';
 import {
