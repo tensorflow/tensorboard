@@ -1536,7 +1536,7 @@ describe('metrics reducers', () => {
       expect(nextState.timeSeriesData).toEqual(createTimeSeriesData());
     });
 
-    describe('dataTableColumnEdited', () => {
+    describe('dataTableColumnOrderChanged', () => {
       it('edits range selection when dataTableMode is range', () => {
         const beforeState = buildMetricsState({
           rangeSelectionHeaders: [
