@@ -19,8 +19,81 @@ import {reducers} from './hparams_reducers';
 import {buildHparamSpec, buildHparamsState, buildMetricSpec} from './testing';
 import {ColumnHeaderType, Side} from '../../widgets/data_table/types';
 import {DataTableUtils} from '../../widgets/data_table/utils';
+import {persistentSettingsLoaded} from '../../persistent_settings';
 
 describe('hparams/_redux/hparams_reducers_test', () => {
+  describe('#persistentSettingsLoaded', () => {
+    it('loads dashboardDisplayedHparamColumns from the persistent settings storage', () => {
+      const state = buildHparamsState({
+        dashboardDisplayedHparamColumns: [],
+      });
+      const state2 = reducers(
+        state,
+        persistentSettingsLoaded({
+          partialSettings: {
+            dashboardDisplayedHparamColumns: [
+              {
+                type: ColumnHeaderType.HPARAM,
+                name: 'conv_layers',
+                displayName: 'Conv Layers',
+                enabled: true,
+              },
+              {
+                type: ColumnHeaderType.HPARAM,
+                name: 'conv_kernel_size',
+                displayName: 'Conv Kernel Size',
+                enabled: true,
+              },
+            ],
+          },
+        })
+      );
+
+      expect(state2.dashboardDisplayedHparamColumns).toEqual([
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_layers',
+          displayName: 'Conv Layers',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_kernel_size',
+          displayName: 'Conv Kernel Size',
+          enabled: true,
+        },
+      ]);
+    });
+
+    it('does nothing if persistent settings does not contain dashboardDisplayedHparamColumns', () => {
+      const state = buildHparamsState({
+        dashboardDisplayedHparamColumns: [
+          {
+            type: ColumnHeaderType.HPARAM,
+            name: 'conv_layers',
+            displayName: 'Conv Layers',
+            enabled: true,
+          },
+        ],
+      });
+      const state2 = reducers(
+        state,
+        persistentSettingsLoaded({
+          partialSettings: {},
+        })
+      );
+
+      expect(state2.dashboardDisplayedHparamColumns).toEqual([
+        {
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_layers',
+          displayName: 'Conv Layers',
+          enabled: true,
+        },
+      ]);
+    });
+  });
+
   describe('hparamsFetchSessionGroupsSucceeded', () => {
     it('saves action.hparamsAndMetricsSpecs as dashboardSpecs', () => {
       const state = buildHparamsState({

@@ -28,6 +28,7 @@ import {
   DiscreteFilter,
   IntervalFilter,
   ReorderColumnEvent,
+  AddColumnEvent,
 } from '../../../widgets/data_table/types';
 @Component({
   selector: 'runs-data-table',
@@ -58,10 +59,7 @@ export class RunsDataTable {
     runId: string;
     newColor: string;
   }>();
-  @Output() addColumn = new EventEmitter<{
-    header: ColumnHeader;
-    index?: number | undefined;
-  }>();
+  @Output() addColumn = new EventEmitter<AddColumnEvent>();
   @Output() removeColumn = new EventEmitter<ColumnHeader>();
   @Output() onSelectionDblClick = new EventEmitter<string>();
   @Output() addFilter = new EventEmitter<FilterAddedEvent>();

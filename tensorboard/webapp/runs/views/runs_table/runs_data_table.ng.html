@@ -28,7 +28,6 @@ limitations under the License.
   <tb-data-table
     [headers]="headers"
     [sortingInfo]="sortingInfo"
-    [columnCustomizationEnabled]="true"
     [selectableColumns]="selectableColumns"
     [columnFilters]="columnFilters"
     [loading]="loading"
@@ -41,7 +40,6 @@ limitations under the License.
     <ng-container header>
       <ng-container *ngFor="let header of getHeaders()">
         <tb-data-table-header-cell
-          *ngIf="header.enabled"
           [header]="header"
           [sortingInfo]="sortingInfo"
           [hparamsEnabled]="true"
@@ -69,7 +67,6 @@ limitations under the License.
         <tb-data-table-content-row [attr.data-id]="dataRow.id">
           <ng-container *ngFor="let header of getHeaders()">
             <tb-data-table-content-cell
-              *ngIf="header.enabled"
               [header]="header"
               [datum]="dataRow[header.name]"
               [ngClass]="['table-column-' + header.name]"

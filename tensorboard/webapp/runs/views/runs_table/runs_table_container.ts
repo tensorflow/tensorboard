@@ -22,7 +22,6 @@ import {
 import {createSelector, Store} from '@ngrx/store';
 import {combineLatest, Observable, of, Subject} from 'rxjs';
 import {
-  combineLatestWith,
   distinctUntilChanged,
   filter,
   map,
@@ -44,13 +43,15 @@ import {
   getRunSelectorRegexFilter,
   getRunsLoadState,
   getRunsTableFullScreen,
-  getRunsTableHeaders,
   getRunsTableSortingInfo,
+  getGroupedRunsTableHeaders,
 } from '../../../selectors';
 import {DataLoadState, LoadState} from '../../../types/data';
 import {
+  AddColumnEvent,
   ColumnHeader,
   FilterAddedEvent,
+  ReorderColumnEvent,
   SortingInfo,
   TableData,
 } from '../../../widgets/data_table/types';
@@ -59,9 +60,6 @@ import {
   runPageSelectionToggled,
   runSelectionToggled,
   runSelectorRegexFilterChanged,
-  runsTableHeaderAdded,
-  runsTableHeaderOrderChanged,
-  runsTableHeaderRemoved,
   runsTableSortingInfoChanged,
   singleRunSelected,
 } from '../../actions';
@@ -70,7 +68,7 @@ import {RunsTableColumn, RunTableItem} from './types';
 import {
   getCurrentColumnFilters,
   getFilteredRenderableRuns,
-  getPotentialHparamColumns,
+  getSelectableColumns,
 } from '../../../metrics/views/main_view/common_selectors';
 import {runsTableFullScreenToggled} from '../../../core/actions';
 import {sortTableDataItems} from './sorting_utils';
@@ -143,18 +141,9 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   @Input() showHparamsAndMetrics = false;
 
   regexFilter$ = this.store.select(getRunSelectorRegexFilter);
-  runsColumns$ = this.store.select(getRunsTableHeaders);
+  runsColumns$ = this.store.select(getGroupedRunsTableHeaders);
   runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
-
-  selectableColumns$ = this.store.select(getPotentialHparamColumns).pipe(
-    combineLatestWith(this.runsColumns$),
-    map(([potentialColumns, currentColumns]) => {
-      const currentColumnNames = new Set(currentColumns.map(({name}) => name));
-      return potentialColumns.filter((columnHeader) => {
-        return !currentColumnNames.has(columnHeader.name);
-      });
-    })
-  );
+  selectableColumns$ = this.store.select(getSelectableColumns);
 
   columnFilters$ = this.store.select(getCurrentColumnFilters);
 
@@ -332,19 +321,26 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     this.store.dispatch(runsTableFullScreenToggled());
   }
 
-  addColumn({header, index}: {header: ColumnHeader; index: number}) {
-    header.enabled = true;
+  addColumn({column, nextTo, side}: AddColumnEvent) {
     this.store.dispatch(
-      runsTableHeaderAdded({header: {...header, enabled: true}, index})
+      hparamsActions.dashboardHparamColumnAdded({
+        column,
+        nextTo,
+        side,
+      })
     );
   }
 
   removeColumn(header: ColumnHeader) {
-    this.store.dispatch(runsTableHeaderRemoved({header}));
+    this.store.dispatch(
+      hparamsActions.dashboardHparamColumnRemoved({column: header})
+    );
   }
 
-  orderColumns(newHeaderOrder: ColumnHeader[]) {
-    this.store.dispatch(runsTableHeaderOrderChanged({newHeaderOrder}));
+  orderColumns(event: ReorderColumnEvent) {
+    this.store.dispatch(
+      hparamsActions.dashboardHparamColumnOrderChanged(event)
+    );
   }
 
   addHparamFilter(event: FilterAddedEvent) {

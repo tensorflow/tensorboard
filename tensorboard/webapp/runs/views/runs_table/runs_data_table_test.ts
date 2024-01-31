@@ -140,21 +140,22 @@ describe('runs_data_table', () => {
     ).toBeTruthy();
   });
 
-  it('projects enabled headers plus color and selected column', () => {
+  it('projects headers plus color and selected column', () => {
     const fixture = createComponent({});
     const dataTable = fixture.debugElement.query(
       By.directive(DataTableComponent)
     );
     const headers = dataTable.queryAll(By.directive(HeaderCellComponent));
 
-    expect(headers.length).toBe(4);
+    expect(headers.length).toBe(5);
     expect(headers[0].componentInstance.header.name).toEqual('selected');
     expect(headers[1].componentInstance.header.name).toEqual('run');
-    expect(headers[2].componentInstance.header.name).toEqual('other_header');
-    expect(headers[3].componentInstance.header.name).toEqual('color');
+    expect(headers[2].componentInstance.header.name).toEqual('disabled_header');
+    expect(headers[3].componentInstance.header.name).toEqual('other_header');
+    expect(headers[4].componentInstance.header.name).toEqual('color');
   });
 
-  it('projects content for each enabled header, selected, and color column', () => {
+  it('projects content for each header, selected, and color column', () => {
     const fixture = createComponent({
       data: [{id: 'runid', run: 'run name', color: 'red', other_header: 'foo'}],
     });
@@ -163,11 +164,12 @@ describe('runs_data_table', () => {
     );
     const cells = dataTable.queryAll(By.directive(ContentCellComponent));
 
-    expect(cells.length).toBe(4);
+    expect(cells.length).toBe(5);
     expect(cells[0].componentInstance.header.name).toEqual('selected');
     expect(cells[1].componentInstance.header.name).toEqual('run');
-    expect(cells[2].componentInstance.header.name).toEqual('other_header');
-    expect(cells[3].componentInstance.header.name).toEqual('color');
+    expect(cells[2].componentInstance.header.name).toEqual('disabled_header');
+    expect(cells[3].componentInstance.header.name).toEqual('other_header');
+    expect(cells[4].componentInstance.header.name).toEqual('color');
   });
 
   describe('color column', () => {
