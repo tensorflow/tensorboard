@@ -34,7 +34,8 @@ text {
   width: 100%;
 
   .extent-edit-button {
-    --tb-icon-size: 16px;
+    --tb-icon-width: 16px;
+    --tb-icon-height: 16px;
     height: 24px;
     position: absolute;
     right: 5px;
