@@ -340,6 +340,6 @@ export const getGroupedRunsTableHeaders = createSelector(
       }
       return newColumn;
     });
-    return DataTableUtils.groupColumns(columns);
+    return dataTableUtils.groupColumns(columns);
   }
 );
