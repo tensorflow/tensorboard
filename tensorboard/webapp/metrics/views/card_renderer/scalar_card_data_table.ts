@@ -67,6 +67,7 @@ export class ScalarCardDataTable {
   @Output() editColumnHeaders = new EventEmitter<HeaderEditInfo>();
   @Output() hideColumn = new EventEmitter<HeaderToggleInfo>();
   @Output() addColumn = new EventEmitter<AddColumnEvent>();
+  @Output() removeColumn = new EventEmitter<ColumnHeader>();
   @Output() addFilter = new EventEmitter<FilterAddedEvent>();
 
   ColumnHeaderType = ColumnHeaderType;

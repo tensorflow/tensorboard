@@ -4809,6 +4809,41 @@ describe('scalar card', () => {
         ]);
       }));
 
+      it('dispatches dashboardHparamColumnRemoved on column remove event', fakeAsync(() => {
+        store.overrideSelector(getCardStateMap, {
+          card1: {
+            dataMinMax: {
+              minStep: 0,
+              maxStep: 100,
+            },
+          },
+        });
+        store.overrideSelector(getMetricsCardTimeSelection, {
+          start: {step: 1},
+          end: null,
+        });
+        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+        const dataTableComponentInstance = fixture.debugElement.query(
+          By.directive(DataTableComponent)
+        ).componentInstance;
+        const removeColumnEvent: ColumnHeader = {
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_layers',
+          displayName: 'Conv Layers',
+          enabled: true,
+        };
+
+        dataTableComponentInstance.removeColumn.emit(removeColumnEvent);
+
+        expect(dispatchedActions).toEqual([
+          hparamsActions.dashboardHparamColumnRemoved({
+            column: removeColumnEvent,
+          }),
+        ]);
+      }));
+
       [
         {
           testDesc: 'for single selection',

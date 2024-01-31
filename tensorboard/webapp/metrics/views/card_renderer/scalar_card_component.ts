@@ -129,6 +129,7 @@ export class ScalarCardComponent<Downloader> {
   @Output() openTableEditMenuToMode = new EventEmitter<DataTableMode>();
   @Output() addColumn = new EventEmitter<AddColumnEvent>();
   @Output() hideColumn = new EventEmitter<HeaderToggleInfo>();
+  @Output() removeColumn = new EventEmitter<ColumnHeader>();
   @Output() addFilter = new EventEmitter<FilterAddedEvent>();
 
   @Output() onLineChartZoom = new EventEmitter<Extent | null>();

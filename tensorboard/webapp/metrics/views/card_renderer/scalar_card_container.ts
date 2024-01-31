@@ -204,6 +204,7 @@ function areSeriesEqual(
       (onCardStateChanged)="onCardStateChanged($event)"
       (openTableEditMenuToMode)="openTableEditMenuToMode($event)"
       (addColumn)="onAddColumn($event)"
+      (removeColumn)="onRemoveColumn($event)"
       (hideColumn)="onHideColumn($event)"
       (addFilter)="addHparamFilter($event)"
     ></scalar-card-component>
@@ -731,6 +732,10 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.store.dispatch(
       hparamsActions.dashboardHparamColumnAdded(addColumnEvent)
     );
+  }
+
+  onRemoveColumn(column: ColumnHeader) {
+    this.store.dispatch(hparamsActions.dashboardHparamColumnRemoved({column}));
   }
 
   onHideColumn({header, dataTableMode}: HeaderToggleInfo) {
