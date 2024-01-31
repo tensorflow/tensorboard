@@ -310,7 +310,8 @@ $tb-dark-theme: map_merge(
 
     a,
     button.mat-mdc-button-base {
-      --tb-icon-size: 24px;
+      --tb-icon-width: 24px;
+      --tb-icon-height: 24px;
       --mdc-text-button-label-text-tracking: normal;
       --mdc-filled-button-label-text-tracking: normal;
       --mdc-outlined-button-label-text-tracking: normal;
@@ -335,9 +336,9 @@ $tb-dark-theme: map_merge(
 
       mat-icon.mat-icon,
       svg {
-        width: var(--tb-icon-size);
-        height: var(--tb-icon-size);
-        line-height: var(--tb-icon-size);
+        width: var(--tb-icon-size, var(--tb-icon-width));
+        height: var(--tb-icon-size, var(--tb-icon-height));
+        line-height: var(--tb-icon-size, var(--tb-icon-height));
       }
     }
   }

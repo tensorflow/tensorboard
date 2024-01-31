@@ -113,6 +113,8 @@ class TensorBoard:
           server_class: An optional factory for a `TensorBoardServer` to use
             for serving the TensorBoard WSGI app. If provided, its callable
             signature should match that of `TensorBoardServer.__init__`.
+          subcommands: An optional list of TensorBoardSubcommand objects, which
+            extend the functionality of the CLI.
 
         :type plugins:
           list[
@@ -502,7 +504,16 @@ def _should_use_data_server(flags):
 
 
 class TensorBoardSubcommand(metaclass=ABCMeta):
-    """Experimental private API for defining subcommands to tensorboard(1)."""
+    """Experimental private API for defining subcommands for tensorboard.
+
+    The intended use is something like:
+
+    `tensorboard <sub_cmd_name> <additional_args...>`
+
+    Since our hosted service at http://tensorboard.dev has been shut down, this
+    functionality is no longer used, but the support for subcommands remains,
+    in case it is ever useful again.
+    """
 
     @abstractmethod
     def name(self):
