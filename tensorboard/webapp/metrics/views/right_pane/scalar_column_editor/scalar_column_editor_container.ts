@@ -16,7 +16,7 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {State} from '../../../../app_state';
 import {
-  dataTableColumnEdited,
+  dataTableColumnOrderChanged,
   dataTableColumnToggled,
   metricsSlideoutMenuClosed,
   tableEditorTabChanged,
@@ -27,7 +27,15 @@ import {
   getTableEditorSelectedTab,
 } from '../../../store/metrics_selectors';
 import {HeaderEditInfo, HeaderToggleInfo} from '../../../types';
-import {DataTableMode} from '../../../../widgets/data_table/types';
+import {
+  ColumnHeader,
+  DataTableMode,
+} from '../../../../widgets/data_table/types';
+import {map} from 'rxjs';
+
+function headersWithoutRuns(headers: ColumnHeader[]) {
+  return headers.filter((header) => header.type !== 'RUN');
+}
 
 @Component({
   selector: 'metrics-scalar-column-editor',
@@ -48,8 +56,12 @@ import {DataTableMode} from '../../../../widgets/data_table/types';
 export class ScalarColumnEditorContainer {
   constructor(private readonly store: Store<State>) {}
 
-  readonly singleHeaders$ = this.store.select(getSingleSelectionHeaders);
-  readonly rangeHeaders$ = this.store.select(getRangeSelectionHeaders);
+  readonly singleHeaders$ = this.store
+    .select(getSingleSelectionHeaders)
+    .pipe(map(headersWithoutRuns));
+  readonly rangeHeaders$ = this.store
+    .select(getRangeSelectionHeaders)
+    .pipe(map(headersWithoutRuns));
   readonly selectedTab$ = this.store.select(getTableEditorSelectedTab);
 
   onScalarTableColumnToggled(toggleInfo: HeaderToggleInfo) {
@@ -57,7 +69,7 @@ export class ScalarColumnEditorContainer {
   }
 
   onScalarTableColumnEdit(editInfo: HeaderEditInfo) {
-    this.store.dispatch(dataTableColumnEdited(editInfo));
+    this.store.dispatch(dataTableColumnOrderChanged(editInfo));
   }
 
   onScalarTableColumnEditorClosed() {

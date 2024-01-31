@@ -24,26 +24,13 @@ import {
 import {MatTabChangeEvent} from '@angular/material/tabs';
 import {
   ColumnHeader,
-  ColumnHeaderType,
   DataTableMode,
+  Side,
 } from '../../../../widgets/data_table/types';
+import {HeaderEditInfo} from '../../../types';
 
 const preventDefault = (e: MouseEvent) => {
   e.preventDefault();
-};
-
-// Move the item at sourceIndex to destinationIndex
-const moveHeader = (
-  sourceIndex: number,
-  destinationIndex: number,
-  headers: ColumnHeader[]
-) => {
-  const newHeaders = [...headers];
-  // Delete from original location
-  newHeaders.splice(sourceIndex, 1);
-  // Insert at destinationIndex.
-  newHeaders.splice(destinationIndex, 0, headers[sourceIndex]);
-  return newHeaders;
 };
 
 const getIndexOfColumn = (column: ColumnHeader, headers: ColumnHeader[]) => {
@@ -72,10 +59,7 @@ export class ScalarColumnEditorComponent implements OnDestroy {
   @Input() singleHeaders!: ColumnHeader[];
   @Input() selectedTab!: DataTableMode;
 
-  @Output() onScalarTableColumnEdit = new EventEmitter<{
-    dataTableMode: DataTableMode;
-    headers: ColumnHeader[];
-  }>();
+  @Output() onScalarTableColumnEdit = new EventEmitter<HeaderEditInfo>();
   @Output() onScalarTableColumnToggled = new EventEmitter<{
     dataTableMode: DataTableMode;
     header: ColumnHeader;
@@ -108,14 +92,17 @@ export class ScalarColumnEditorComponent implements OnDestroy {
       return;
     }
     const headers = this.getHeadersForMode(dataTableMode);
-    this.onScalarTableColumnEdit.emit({
-      dataTableMode: dataTableMode,
-      headers: moveHeader(
-        getIndexOfColumn(this.draggingHeader, headers),
-        getIndexOfColumn(this.highlightedHeader, headers),
-        headers
-      ),
-    });
+    const source = {...this.draggingHeader};
+    const destination = {...this.highlightedHeader};
+    if (source && destination && source.name !== destination.name) {
+      this.onScalarTableColumnEdit.emit({
+        source,
+        destination,
+        side: this.highlightEdge === Edge.TOP ? Side.LEFT : Side.RIGHT,
+        dataTableMode,
+      });
+    }
+
     this.draggingHeader = undefined;
     this.highlightedHeader = undefined;
     this.hostElement.nativeElement.removeEventListener(

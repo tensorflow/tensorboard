@@ -13,7 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, ActionReducer, createReducer, on} from '@ngrx/store';
-import {ColumnHeader, Side} from '../../widgets/data_table/types';
+import {Side} from '../../widgets/data_table/types';
+import {DataTableUtils} from '../../widgets/data_table/utils';
 import * as actions from './hparams_actions';
 import {HparamsState} from './types';
 
@@ -141,28 +142,12 @@ const reducer: ActionReducer<HparamsState, Action> = createReducer(
     actions.dashboardHparamColumnOrderChanged,
     (state, {source, destination, side}) => {
       const {dashboardDisplayedHparamColumns: columns} = state;
-      const sourceIndex = columns.findIndex(
-        (column: ColumnHeader) => column.name === source.name
+      const newColumns = DataTableUtils.moveColumn(
+        columns,
+        source,
+        destination,
+        side
       );
-      let destinationIndex = columns.findIndex(
-        (column: ColumnHeader) => column.name === destination.name
-      );
-      if (sourceIndex === -1 || sourceIndex === destinationIndex) {
-        return state;
-      }
-      if (destinationIndex === -1) {
-        // Use side as a backup to determine source position if destination isn't found.
-        if (side !== undefined) {
-          destinationIndex = side === Side.LEFT ? 0 : columns.length - 1;
-        } else {
-          return state;
-        }
-      }
-
-      const newColumns = [...columns];
-      newColumns.splice(sourceIndex, 1);
-      newColumns.splice(destinationIndex, 0, source);
-
       return {
         ...state,
         dashboardDisplayedHparamColumns: newColumns,

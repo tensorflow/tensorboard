@@ -46,11 +46,7 @@ import {
   URLDeserializedState,
 } from '../types';
 import {groupCardIdWithMetdata} from '../utils';
-import {
-  ColumnHeader,
-  ColumnHeaderType,
-  DataTableMode,
-} from '../../widgets/data_table/types';
+import {ColumnHeaderType, DataTableMode} from '../../widgets/data_table/types';
 import {
   buildOrReturnStateWithPinnedCopy,
   buildOrReturnStateWithUnresolvedImportedPins,
@@ -82,6 +78,7 @@ import {
   TimeSeriesData,
   TimeSeriesLoadable,
 } from './metrics_types';
+import {DataTableUtils} from '../../widgets/data_table/utils';
 
 function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {
   const results: CardMetadata[] = [];
@@ -1434,34 +1431,30 @@ const reducer = createReducer(
       tableEditorSelectedTab: tab,
     };
   }),
-  on(actions.dataTableColumnEdited, (state, {dataTableMode, headers}) => {
-    const enabledNewHeaders: ColumnHeader[] = [];
-    const disabledNewHeaders: ColumnHeader[] = [];
+  on(
+    actions.dataTableColumnOrderChanged,
+    (state, {source, destination, side, dataTableMode}) => {
+      let headers =
+        dataTableMode === DataTableMode.RANGE
+          ? [...state.rangeSelectionHeaders]
+          : [...state.singleSelectionHeaders];
+      headers = DataTableUtils.moveColumn(headers, source, destination, side);
 
-    // All enabled headers appear above all disabled headers.
-    headers.forEach((header) => {
-      if (header.enabled) {
-        enabledNewHeaders.push(header);
-      } else {
-        disabledNewHeaders.push(header);
+      if (dataTableMode === DataTableMode.RANGE) {
+        return {
+          ...state,
+          rangeSelectionHeaders: headers,
+        };
       }
-    });
-
-    if (dataTableMode === DataTableMode.RANGE) {
       return {
         ...state,
-        rangeSelectionHeaders: enabledNewHeaders.concat(disabledNewHeaders),
+        singleSelectionHeaders: headers,
       };
     }
-
-    return {
-      ...state,
-      singleSelectionHeaders: enabledNewHeaders.concat(disabledNewHeaders),
-    };
-  }),
+  ),
   on(
     actions.dataTableColumnToggled,
-    (state, {dataTableMode, header, cardId}) => {
+    (state, {dataTableMode, header: toggledHeader, cardId}) => {
       const {cardStateMap, rangeSelectionEnabled, linkedTimeEnabled} = state;
       const rangeEnabled = cardId
         ? cardRangeSelectionEnabled(
@@ -1471,32 +1464,17 @@ const reducer = createReducer(
             cardId
           )
         : dataTableMode === DataTableMode.RANGE;
-
       const targetedHeaders = rangeEnabled
         ? state.rangeSelectionHeaders
         : state.singleSelectionHeaders;
 
-      const currentToggledHeaderIndex = targetedHeaders.findIndex(
-        (element) => element.name === header.name
-      );
-
-      // If the header is being enabled it goes at the bottom of the currently
-      // enabled headers. If it is being disabled it goes to the top of the
-      // currently disabled headers.
-      let newToggledHeaderIndex = getEnabledCount(targetedHeaders);
-      if (targetedHeaders[currentToggledHeaderIndex].enabled) {
-        newToggledHeaderIndex--;
-      }
-      const newHeaders = moveHeader(
-        currentToggledHeaderIndex,
-        newToggledHeaderIndex,
-        targetedHeaders
-      );
-
-      newHeaders[newToggledHeaderIndex] = {
-        ...newHeaders[newToggledHeaderIndex],
-        enabled: !newHeaders[newToggledHeaderIndex].enabled,
-      };
+      const newHeaders = targetedHeaders.map((header) => {
+        const newHeader = {...header};
+        if (header.name === toggledHeader.name) {
+          newHeader.enabled = !newHeader.enabled;
+        }
+        return newHeader;
+      });
 
       if (rangeEnabled) {
         return {
@@ -1504,7 +1482,6 @@ const reducer = createReducer(
           rangeSelectionHeaders: newHeaders,
         };
       }
-
       return {
         ...state,
         singleSelectionHeaders: newHeaders,
@@ -1582,31 +1559,4 @@ function buildTagToRuns(runTagInfo: {[run: string]: string[]}) {
     }
   }
   return tagToRuns;
-}
-
-/**
- * Returns a copy of the headers array with item at sourceIndex moved to
- * destinationIndex.
- */
-function moveHeader(
-  sourceIndex: number,
-  destinationIndex: number,
-  headers: ColumnHeader[]
-) {
-  const newHeaders = [...headers];
-  // Delete from original location
-  newHeaders.splice(sourceIndex, 1);
-  // Insert at destinationIndex.
-  newHeaders.splice(destinationIndex, 0, headers[sourceIndex]);
-  return newHeaders;
-}
-
-function getEnabledCount(headers: ColumnHeader[]) {
-  let count = 0;
-  headers.forEach((header) => {
-    if (header.enabled) {
-      count++;
-    }
-  });
-  return count;
 }

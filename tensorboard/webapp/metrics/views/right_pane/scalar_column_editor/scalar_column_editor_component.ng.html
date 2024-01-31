@@ -21,16 +21,16 @@ limitations under the License.
     (selectedTabChange)="tabChange($event)"
   >
     <mat-tab [label]="'Single'">
-      <ngContext
+      <ng-container
         [ngTemplateOutlet]="headerList"
         [ngTemplateOutletContext]="{headers: singleHeaders, dataTableMode:DataTableMode.SINGLE}"
-      ></ngContext>
+      ></ng-container>
     </mat-tab>
     <mat-tab [label]="'Range'">
-      <ngContext
+      <ng-container
         [ngTemplateOutlet]="headerList"
         [ngTemplateOutletContext]="{headers: rangeHeaders, dataTableMode:DataTableMode.RANGE}"
-      ></ngContext>
+      ></ng-container>
     </mat-tab>
   </mat-tab-group>
 </div>

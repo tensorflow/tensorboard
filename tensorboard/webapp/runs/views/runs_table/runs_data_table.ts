@@ -27,6 +27,7 @@ import {
   FilterAddedEvent,
   DiscreteFilter,
   IntervalFilter,
+  ReorderColumnEvent,
 } from '../../../widgets/data_table/types';
 @Component({
   selector: 'runs-data-table',
@@ -48,7 +49,7 @@ export class RunsDataTable {
   ColumnHeaderType = ColumnHeaderType;
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
-  @Output() orderColumns = new EventEmitter<ColumnHeader[]>();
+  @Output() orderColumns = new EventEmitter<ReorderColumnEvent>();
   @Output() onSelectionToggle = new EventEmitter<string>();
   @Output() onAllSelectionToggle = new EventEmitter<string[]>();
   @Output() onRegexFilterChange = new EventEmitter<string>();

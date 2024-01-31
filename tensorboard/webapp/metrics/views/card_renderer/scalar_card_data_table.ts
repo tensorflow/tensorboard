@@ -34,6 +34,7 @@ import {
   TableData,
   SortingInfo,
   SortingOrder,
+  ReorderColumnEvent,
 } from '../../../widgets/data_table/types';
 import {isDatumVisible} from './utils';
 
@@ -55,9 +56,6 @@ export class ScalarCardDataTable {
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() editColumnHeaders = new EventEmitter<HeaderEditInfo>();
-  @Output() removeColumn = new EventEmitter<{
-    headerType: ColumnHeaderType;
-  }>();
 
   ColumnHeaderType = ColumnHeaderType;
 
@@ -292,12 +290,18 @@ export class ScalarCardDataTable {
     return makeValueSortable(point[header.name]);
   }
 
-  orderColumns(headers: ColumnHeader[]) {
+  private getDataTableMode(): DataTableMode {
+    return this.stepOrLinkedTimeSelection.end
+      ? DataTableMode.RANGE
+      : DataTableMode.SINGLE;
+  }
+
+  onOrderColumns({source, destination, side}: ReorderColumnEvent) {
     this.editColumnHeaders.emit({
-      headers: headers,
-      dataTableMode: this.stepOrLinkedTimeSelection.end
-        ? DataTableMode.RANGE
-        : DataTableMode.SINGLE,
+      source,
+      destination,
+      side,
+      dataTableMode: this.getDataTableMode(),
     });
   }
 }

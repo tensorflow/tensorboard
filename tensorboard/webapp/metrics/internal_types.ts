@@ -16,8 +16,8 @@ import {TimeSelection} from '../widgets/card_fob/card_fob_types';
 import {HistogramMode} from '../widgets/histogram/histogram_types';
 import {
   ColumnHeader,
-  ColumnHeaderType,
   DataTableMode,
+  ReorderColumnEvent,
 } from '../widgets/data_table/types';
 
 export {HistogramMode, TimeSelection};
@@ -94,15 +94,14 @@ export interface URLDeserializedState {
   };
 }
 
-export interface HeaderEditInfo {
+export interface HeaderEditInfo extends ReorderColumnEvent {
   dataTableMode: DataTableMode;
-  headers: ColumnHeader[];
 }
 
 export interface HeaderToggleInfo {
   header: ColumnHeader;
   cardId?: CardId;
-  dataTableMode?: DataTableMode;
+  dataTableMode?: DataTableMode | undefined;
 }
 
 export const SCALARS_SMOOTHING_MIN = 0;

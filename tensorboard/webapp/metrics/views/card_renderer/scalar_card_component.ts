@@ -114,10 +114,8 @@ export class ScalarCardComponent<Downloader> {
   @Output() onDataTableSorting = new EventEmitter<SortingInfo>();
   @Output() editColumnHeaders = new EventEmitter<HeaderEditInfo>();
   @Output() openTableEditMenuToMode = new EventEmitter<DataTableMode>();
-  @Output() removeColumn = new EventEmitter<ColumnHeader>();
 
   @Output() onLineChartZoom = new EventEmitter<Extent | null>();
-
   @Output() onCardStateChanged = new EventEmitter<Partial<CardState>>();
 
   // Line chart may not exist when was never visible (*ngIf).
