@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {ColumnHeaderType, Side} from './types';
-import {DataTableUtils} from './utils';
+import {dataTableUtils} from './utils';
 
 describe('data table utils', () => {
   describe('groupColumns', () => {
@@ -58,7 +58,7 @@ describe('data table utils', () => {
         },
       ];
 
-      expect(DataTableUtils.groupColumns(inputColumns)).toEqual([
+      expect(dataTableUtils.groupColumns(inputColumns)).toEqual([
         {
           type: ColumnHeaderType.RUN,
           name: 'run',
@@ -128,7 +128,7 @@ describe('data table utils', () => {
     ];
 
     it('returns original headers if source is not found', () => {
-      const moveResult = DataTableUtils.moveColumn(
+      const moveResult = dataTableUtils.moveColumn(
         fakeColumns,
         {
           type: ColumnHeaderType.HPARAM,
@@ -149,7 +149,7 @@ describe('data table utils', () => {
     });
 
     it('returns original headers if source equals dest', () => {
-      const moveResult = DataTableUtils.moveColumn(
+      const moveResult = dataTableUtils.moveColumn(
         fakeColumns,
         {
           type: ColumnHeaderType.HPARAM,
@@ -190,7 +190,7 @@ describe('data table utils', () => {
       },
     ].forEach(({testDesc, side, expectedResult}) => {
       it(`if destination not found, moves source ${testDesc}`, () => {
-        const moveResult = DataTableUtils.moveColumn(
+        const moveResult = dataTableUtils.moveColumn(
           fakeColumns,
           fakeColumns[1],
           {
@@ -207,7 +207,7 @@ describe('data table utils', () => {
     });
 
     it('swaps source and destination positions if destination is found', () => {
-      const moveResult = DataTableUtils.moveColumn(
+      const moveResult = dataTableUtils.moveColumn(
         fakeColumns,
         fakeColumns[1],
         fakeColumns[0],

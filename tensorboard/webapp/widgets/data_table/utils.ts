@@ -80,7 +80,7 @@ function groupColumns(columns: ColumnHeader[]): ColumnHeader[] {
   return Array.from(headerGroups.values()).flat();
 }
 
-export const DataTableUtils = {
+export const dataTableUtils = {
   moveColumn,
   groupColumns,
 };

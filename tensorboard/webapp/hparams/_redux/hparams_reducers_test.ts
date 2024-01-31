@@ -18,8 +18,8 @@ import * as actions from './hparams_actions';
 import {reducers} from './hparams_reducers';
 import {buildHparamSpec, buildHparamsState, buildMetricSpec} from './testing';
 import {ColumnHeaderType, Side} from '../../widgets/data_table/types';
-import {DataTableUtils} from '../../widgets/data_table/utils';
 import {persistentSettingsLoaded} from '../../persistent_settings';
+import {dataTableUtils} from '../../widgets/data_table/utils';
 
 describe('hparams/_redux/hparams_reducers_test', () => {
   describe('#persistentSettingsLoaded', () => {
@@ -673,7 +673,7 @@ describe('hparams/_redux/hparams_reducers_test', () => {
         dashboardDisplayedHparamColumns: fakeColumns,
       });
       const moveColumnSpy = spyOn(
-        DataTableUtils,
+        dataTableUtils,
         'moveColumn'
       ).and.callThrough();
 
