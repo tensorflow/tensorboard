@@ -5,7 +5,6 @@ package(default_visibility = ["//tensorboard:internal"])
 tf_sass_binary(
     name = "layout_styles",
     src = "layout_container.scss",
-    strict_deps = False,
     deps = ["//tensorboard/webapp/theme"],
 )
 

@@ -7,7 +7,6 @@ licenses(["notice"])
 tf_sass_binary(
     name = "graph_styles",
     src = "graph_component.scss",
-    strict_deps = False,
     deps = [
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/common:style_lib",
         "//tensorboard/webapp/theme",
@@ -17,7 +16,6 @@ tf_sass_binary(
 tf_sass_binary(
     name = "graph_op_styles",
     src = "graph_op_component.scss",
-    strict_deps = False,
     deps = [
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/common:style_lib",
         "//tensorboard/webapp/theme",

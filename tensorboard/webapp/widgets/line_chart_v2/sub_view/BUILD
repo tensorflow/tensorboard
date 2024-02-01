@@ -5,7 +5,6 @@ package(default_visibility = ["//tensorboard:internal"])
 tf_sass_binary(
     name = "line_chart_axis_view_styles",
     src = "line_chart_axis_view.scss",
-    strict_deps = False,
     deps = [
         "//tensorboard/webapp:angular_material_sass_deps",
         "//tensorboard/webapp/theme",
@@ -15,7 +14,6 @@ tf_sass_binary(
 tf_sass_binary(
     name = "line_chart_interactive_view_styles",
     src = "line_chart_interactive_view.scss",
-    strict_deps = False,
     deps = ["//tensorboard/webapp/theme"],
 )
 
