@@ -23,6 +23,7 @@ tf_sass_binary(
 tf_sass_binary(
     name = "content_cell_styles",
     src = "content_cell_component.scss",
+    strict_deps = False,
     deps = [
         "//tensorboard/webapp:angular_material_sass_deps",
     ],
@@ -31,6 +32,7 @@ tf_sass_binary(
 tf_sass_binary(
     name = "data_table_header_styles",
     src = "data_table_header_component.scss",
+    strict_deps = False,
     deps = [
         "//tensorboard/webapp:angular_material_sass_deps",
         "//tensorboard/webapp/theme",
