@@ -668,17 +668,7 @@ export const getGroupedHeadersForCard = memoize((cardId: string) =>
   createSelector(
     getColumnHeadersForCard(cardId),
     getDashboardDisplayedHparamColumns,
-    (standardColumns, hparamColumns) => {
-      // Override hparam options to match scalar card table requirements.
-      const columns = [...standardColumns, ...hparamColumns].map((column) => {
-        const newColumn = {...column};
-        if (column.type === 'HPARAM') {
-          newColumn.removable = true;
-          newColumn.hidable = true;
-        }
-        return newColumn;
-      });
-      return DataTableUtils.groupColumns(columns);
-    }
+    (standardColumns, hparamColumns) =>
+      dataTableUtils.groupColumns([...standardColumns, ...hparamColumns])
   )
 );

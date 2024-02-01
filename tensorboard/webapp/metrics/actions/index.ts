@@ -33,11 +33,7 @@ import {
   TooltipSort,
   XAxisType,
 } from '../types';
-import {
-  SortingInfo,
-  DataTableMode,
-  ColumnHeader,
-} from '../../widgets/data_table/types';
+import {SortingInfo, DataTableMode} from '../../widgets/data_table/types';
 import {Extent} from '../../widgets/line_chart_v2/lib/public_types';
 
 export const metricsSettingsPaneClosed = createAction(
