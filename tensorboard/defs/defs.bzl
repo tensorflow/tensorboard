@@ -246,7 +246,7 @@ def tf_svg_bundle(name, srcs, out):
         ],
     )
 
-def tf_sass_binary(deps = [], include_paths = [], strict_deps = True, **kwargs):
+def tf_sass_binary(deps = [], include_paths = [], **kwargs):
     """TensorBoard wrap for declaring SASS binary.
 
     It adds dependency on theme by default then add include Angular material
