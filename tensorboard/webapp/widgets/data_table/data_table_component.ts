@@ -79,7 +79,6 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() orderColumns = new EventEmitter<ReorderColumnEvent>();
   @Output() removeColumn = new EventEmitter<ColumnHeader>();
-  @Output() hideColumn = new EventEmitter<ColumnHeader>();
   @Output() addColumn = new EventEmitter<AddColumnEvent>();
   @Output() addFilter = new EventEmitter<FilterAddedEvent>();
 
@@ -326,15 +325,6 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
       !this.canContextMenuInsert() &&
       !this.contextMenuHeader?.filterable
     );
-  }
-
-  contextMenuHideColumn() {
-    if (!this.contextMenuHeader) {
-      return;
-    }
-    this.hideColumn.emit(this.contextMenuHeader);
-    this.contextMenu.close();
-    this.filterModal?.close();
   }
 
   contextMenuRemoveColumn() {

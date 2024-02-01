@@ -205,7 +205,6 @@ function areSeriesEqual(
       (openTableEditMenuToMode)="openTableEditMenuToMode($event)"
       (addColumn)="onAddColumn($event)"
       (removeColumn)="onRemoveColumn($event)"
-      (hideColumn)="onHideColumn($event)"
       (addFilter)="addHparamFilter($event)"
     ></scalar-card-component>
   `,
@@ -734,14 +733,10 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     );
   }
 
-  onRemoveColumn(column: ColumnHeader) {
-    this.store.dispatch(hparamsActions.dashboardHparamColumnRemoved({column}));
-  }
-
-  onHideColumn({header, dataTableMode}: HeaderToggleInfo) {
+  onRemoveColumn({header, dataTableMode}: HeaderToggleInfo) {
     if (header.type === 'HPARAM') {
       this.store.dispatch(
-        hparamsActions.dashboardHparamColumnToggled({column: header})
+        hparamsActions.dashboardHparamColumnRemoved({column: header})
       );
     } else {
       this.store.dispatch(

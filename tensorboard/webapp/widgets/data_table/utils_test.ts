@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {ColumnHeaderType, Side} from './types';
+import {ColumnGroup, ColumnHeaderType, Side} from './types';
 import {dataTableUtils} from './utils';
 
 describe('data table utils', () => {

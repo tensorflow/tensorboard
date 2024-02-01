@@ -65,9 +65,8 @@ export class ScalarCardDataTable {
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() editColumnHeaders = new EventEmitter<HeaderEditInfo>();
-  @Output() hideColumn = new EventEmitter<HeaderToggleInfo>();
   @Output() addColumn = new EventEmitter<AddColumnEvent>();
-  @Output() removeColumn = new EventEmitter<ColumnHeader>();
+  @Output() removeColumn = new EventEmitter<HeaderToggleInfo>();
   @Output() addFilter = new EventEmitter<FilterAddedEvent>();
 
   ColumnHeaderType = ColumnHeaderType;
@@ -266,7 +265,7 @@ export class ScalarCardDataTable {
                 closestEndPoint.value - closestStartPoint.value;
               continue;
             case ColumnHeaderType.HPARAM:
-              let runId =
+              const runId =
                 (metadata as SmoothedSeriesMetadata).originalSeriesId ||
                 metadata.id;
               selectedStepData[header.name] =
@@ -326,8 +325,8 @@ export class ScalarCardDataTable {
     });
   }
 
-  onHideColumn(header: ColumnHeader) {
-    this.hideColumn.emit({header, dataTableMode: this.getDataTableMode()});
+  onRemoveColumn(header: ColumnHeader) {
+    this.removeColumn.emit({header, dataTableMode: this.getDataTableMode()});
   }
 }
 

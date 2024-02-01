@@ -51,7 +51,6 @@ import {FilterDialog} from './filter_dialog_component';
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
       (addColumn)="addColumn.emit($event)"
-      (hideColumn)="hideColumn.emit($event)"
       (removeColumn)="removeColumn.emit($event)"
     >
       <ng-container header>
@@ -97,7 +96,6 @@ class TestableComponent {
     header: ColumnHeader;
     index?: number;
   }>();
-  @Output() hideColumn = new EventEmitter<ColumnHeader>();
   @Output() removeColumn = new EventEmitter<ColumnHeader>();
 }
 
@@ -632,7 +630,6 @@ describe('data table', () => {
           enabled: true,
           removable: true,
           movable: true,
-          hidable: true,
         },
         {
           name: 'another_hparam',
@@ -813,58 +810,6 @@ describe('data table', () => {
       fixture.detectChanges();
 
       expect(fixture.componentInstance.removeColumn.emit).toHaveBeenCalled();
-      expect(fixture.debugElement.query(By.css('.context-menu'))).toBeNull();
-    });
-
-    it('only shows the hide button when the column is hidable', () => {
-      const fixture = createComponent({
-        headers: mockHeaders,
-        data: mockTableData,
-        potentialColumns: mockPotentialColumns,
-      });
-      const cells = fixture.debugElement.queryAll(
-        By.directive(ContentCellComponent)
-      );
-
-      cells.forEach((cell) => {
-        cell.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
-        fixture.detectChanges();
-
-        const hideButton = fixture.debugElement
-          .queryAll(By.css('.context-menu button'))
-          .find((btn) => btn.nativeElement.innerHTML.includes('Hide'));
-
-        if (cell.componentInstance.header.hidable) {
-          expect(hideButton).toBeDefined();
-        } else {
-          expect(hideButton).toBeUndefined();
-        }
-      });
-    });
-
-    it('hides column when Hide button is clicked', () => {
-      const fixture = createComponent({
-        headers: mockHeaders,
-        data: mockTableData,
-        potentialColumns: mockPotentialColumns,
-      });
-      const cell = fixture.debugElement
-        .queryAll(By.directive(ContentCellComponent))
-        .find((cell) => cell.nativeElement.innerHTML.includes('other header'))!;
-      cell.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
-      fixture.detectChanges();
-      const hideColumnEmitSpy = spyOn(
-        fixture.componentInstance.hideColumn,
-        'emit'
-      );
-
-      fixture.debugElement
-        .queryAll(By.css('.context-menu button'))
-        .find((btn) => btn.nativeElement.innerHTML.includes('Hide'))!
-        .nativeElement.click();
-      fixture.detectChanges();
-
-      expect(hideColumnEmitSpy).toHaveBeenCalled();
       expect(fixture.debugElement.query(By.css('.context-menu'))).toBeNull();
     });
 

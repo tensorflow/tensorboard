@@ -82,7 +82,6 @@ import {
   timeSelectionChanged,
   metricsSlideoutMenuOpened,
   dataTableColumnOrderChanged,
-  dataTableColumnOrderChanged,
   dataTableColumnToggled,
 } from '../../actions';
 import {PluginType} from '../../data_source';
@@ -4810,7 +4809,7 @@ describe('scalar card', () => {
         ]);
       }));
 
-      it('dispatches dashboardHparamColumnRemoved on column remove event', fakeAsync(() => {
+      it('dispatches dashboardHparamColumnRemoved on column remove event for hparam columns', fakeAsync(() => {
         store.overrideSelector(getCardStateMap, {
           card1: {
             dataMinMax: {
@@ -4863,7 +4862,7 @@ describe('scalar card', () => {
           expectedDataTableMode: DataTableMode.RANGE,
         },
       ].forEach(({testDesc, timeSelectionOverride, expectedDataTableMode}) => {
-        it(`dispatches dataTableColumnToggled on column hide event ${testDesc}`, fakeAsync(() => {
+        it(`dispatches dataTableColumnToggled on column remove event for standard columns ${testDesc}`, fakeAsync(() => {
           store.overrideSelector(getCardStateMap, {
             card1: {
               dataMinMax: {
@@ -4882,57 +4881,24 @@ describe('scalar card', () => {
           const dataTableComponentInstance = fixture.debugElement.query(
             By.directive(DataTableComponent)
           ).componentInstance;
-          const columnToHide: ColumnHeader = {
+          const columnToRemove: ColumnHeader = {
             type: ColumnHeaderType.VALUE,
             name: 'value',
             displayName: 'Value',
             enabled: true,
           };
 
-          dataTableComponentInstance.hideColumn.emit(columnToHide);
+          dataTableComponentInstance.removeColumn.emit(columnToRemove);
 
           expect(dispatchedActions).toEqual([
             dataTableColumnToggled({
-              header: columnToHide,
+              header: columnToRemove,
               cardId: 'card1',
               dataTableMode: expectedDataTableMode,
             }),
           ]);
         }));
       });
-
-      it('dispatches dashboardHparamColumnToggled on column hide event for hparam columns', fakeAsync(() => {
-        store.overrideSelector(getCardStateMap, {
-          card1: {
-            dataMinMax: {
-              minStep: 0,
-              maxStep: 100,
-            },
-          },
-        });
-        store.overrideSelector(getMetricsCardTimeSelection, {
-          start: {step: 1},
-          end: null,
-        });
-        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);
-        const fixture = createComponent('card1');
-        fixture.detectChanges();
-        const dataTableComponentInstance = fixture.debugElement.query(
-          By.directive(DataTableComponent)
-        ).componentInstance;
-        const columnToHide: ColumnHeader = {
-          type: ColumnHeaderType.HPARAM,
-          name: 'conv_kernel_size',
-          displayName: 'Conv Kernel Size',
-          enabled: true,
-        };
-
-        dataTableComponentInstance.hideColumn.emit(columnToHide);
-
-        expect(dispatchedActions).toEqual([
-          hparamsActions.dashboardHparamColumnToggled({column: columnToHide}),
-        ]);
-      }));
 
       it('dispatches dashboardHparamFilterAdded on column filter event', fakeAsync(() => {
         store.overrideSelector(getCardStateMap, {

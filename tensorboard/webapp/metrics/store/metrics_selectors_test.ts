@@ -1940,53 +1940,5 @@ describe('metrics selectors', () => {
         }),
       ]);
     });
-
-    [
-      {
-        testDesc: 'for single selection',
-        rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_DISABLED,
-      },
-      {
-        testDesc: 'for range selection',
-        rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
-      },
-    ].forEach(({testDesc, rangeSelectionOverride}) => {
-      it(`sets proper context menu options for hparam columns ${testDesc}`, () => {
-        const state = buildMockState({
-          ...appStateFromMetricsState(
-            buildMetricsState({
-              singleSelectionHeaders,
-              rangeSelectionHeaders,
-              cardStateMap: {
-                'card1': {
-                  rangeSelectionOverride:
-                    CardFeatureOverride.OVERRIDE_AS_ENABLED,
-                },
-              },
-            })
-          ),
-          ...buildStateFromHparamsState(buildHparamsState(hparamsState)),
-        });
-
-        expect(selectors.getGroupedHeadersForCard('card1')(state)).toEqual([
-          jasmine.objectContaining({
-            type: ColumnHeaderType.RUN,
-          }),
-          jasmine.objectContaining({
-            type: ColumnHeaderType.HPARAM,
-            removable: true,
-            hidable: true,
-          }),
-          jasmine.objectContaining({
-            type: ColumnHeaderType.HPARAM,
-            removable: true,
-            hidable: true,
-          }),
-          jasmine.objectContaining({
-            type: ColumnHeaderType.MEAN,
-          }),
-        ]);
-      });
-    });
   });
 });
