@@ -128,10 +128,6 @@ import * as commonSelectors from '../main_view/common_selectors';
 import {ContentCellComponent} from '../../../widgets/data_table/content_cell_component';
 import {ContentRowComponent} from '../../../widgets/data_table/content_row_component';
 import {HeaderCellComponent} from '../../../widgets/data_table/header_cell_component';
-import {HparamFilter} from '../../../hparams/_redux/types';
-import * as hparamsSelectors from '../../../hparams/_redux/hparams_selectors';
-import * as hparamsActions from '../../../hparams/_redux/hparams_actions';
-import * as runsSelectors from '../../../runs/store/runs_selectors';
 import {getIsScalarColumnContextMenusEnabled} from '../../../selectors';
 
 @Component({
