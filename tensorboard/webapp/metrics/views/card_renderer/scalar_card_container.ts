@@ -41,6 +41,7 @@ import {actions as hparamsActions} from '../../../hparams';
 import {
   getEnableHparamsInTimeSeries,
   getForceSvgFeatureFlag,
+  getIsScalarColumnContextMenusEnabled,
   getIsScalarColumnCustomizationEnabled,
 } from '../../../feature_flag/store/feature_flag_selectors';
 import {
@@ -184,6 +185,7 @@ function areSeriesEqual(
       [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection$ | async"
       [forceSvg]="forceSvg$ | async"
       [columnCustomizationEnabled]="columnCustomizationEnabled$ | async"
+      [columnContextMenusEnabled]="columnContextMenusEnabled$ | async"
       [minMaxStep]="minMaxSteps$ | async"
       [userViewBox]="userViewBox$ | async"
       [columnHeaders]="columnHeaders$ | async"
@@ -260,6 +262,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   readonly forceSvg$ = this.store.select(getForceSvgFeatureFlag);
   readonly columnCustomizationEnabled$ = this.store.select(
     getIsScalarColumnCustomizationEnabled
+  );
+  readonly columnContextMenusEnabled$ = this.store.select(
+    getIsScalarColumnContextMenusEnabled
   );
   readonly xScaleType$ = this.store.select(getMetricsXAxisType).pipe(
     map((xAxisType) => {

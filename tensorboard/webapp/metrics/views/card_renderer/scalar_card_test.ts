@@ -136,6 +136,7 @@ import {HparamFilter} from '../../../hparams/_redux/types';
 import * as hparamsSelectors from '../../../hparams/_redux/hparams_selectors';
 import * as hparamsActions from '../../../hparams/_redux/hparams_actions';
 import * as runsSelectors from '../../../runs/store/runs_selectors';
+import {getIsScalarColumnContextMenusEnabled} from '../../../selectors';
 
 @Component({
   selector: 'line-chart',
@@ -391,6 +392,10 @@ describe('scalar card', () => {
     store.overrideSelector(selectors.getForceSvgFeatureFlag, false);
     store.overrideSelector(
       selectors.getIsScalarColumnCustomizationEnabled,
+      false
+    );
+    store.overrideSelector(
+      selectors.getIsScalarColumnContextMenusEnabled,
       false
     );
     store.overrideSelector(selectors.getMetricsStepSelectorEnabled, false);
@@ -4629,6 +4634,56 @@ describe('scalar card', () => {
         );
 
         expect(dataTableComponent).toBeFalsy();
+      }));
+
+      it('disables context menus if columnContextMenusEnabled is not set', fakeAsync(() => {
+        store.overrideSelector(getIsScalarColumnContextMenusEnabled, false);
+        store.overrideSelector(getCardStateMap, {
+          card1: {
+            dataMinMax: {
+              minStep: 0,
+              maxStep: 100,
+            },
+          },
+        });
+        store.overrideSelector(getMetricsCardTimeSelection, {
+          start: {step: 0},
+          end: {step: 100},
+        });
+        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        const headerCellComponentInstance = fixture.debugElement.query(
+          By.directive(HeaderCellComponent)
+        ).componentInstance;
+
+        expect(headerCellComponentInstance.disableContextMenu).toBeTrue();
+      }));
+
+      it('enables context menus if columnContextMenusEnabled is set', fakeAsync(() => {
+        store.overrideSelector(getIsScalarColumnContextMenusEnabled, true);
+        store.overrideSelector(getCardStateMap, {
+          card1: {
+            dataMinMax: {
+              minStep: 0,
+              maxStep: 100,
+            },
+          },
+        });
+        store.overrideSelector(getMetricsCardTimeSelection, {
+          start: {step: 0},
+          end: {step: 100},
+        });
+        store.overrideSelector(selectors.getMetricsStepSelectorEnabled, true);
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        const headerCellComponentInstance = fixture.debugElement.query(
+          By.directive(HeaderCellComponent)
+        ).componentInstance;
+
+        expect(headerCellComponentInstance.disableContextMenu).toBeFalse();
       }));
 
       it('emits dataTableColumnOrderChanged with DataTableMode.SINGLE when orderColumns is called while in Single Selection', fakeAsync(() => {

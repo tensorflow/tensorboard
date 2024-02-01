@@ -147,6 +147,13 @@ export const getIsScalarColumnCustomizationEnabled = createSelector(
   }
 );
 
+export const getIsScalarColumnContextMenusEnabled = createSelector(
+  getFeatureFlags,
+  (flags: FeatureFlags): boolean => {
+    return flags.enableScalarColumnContextMenus;
+  }
+);
+
 export const getEnableHparamsInTimeSeries = createSelector(
   getFeatureFlags,
   (flags: FeatureFlags): boolean => {
