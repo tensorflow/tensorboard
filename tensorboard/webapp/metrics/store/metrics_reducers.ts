@@ -78,7 +78,7 @@ import {
   TimeSeriesData,
   TimeSeriesLoadable,
 } from './metrics_types';
-import {DataTableUtils} from '../../widgets/data_table/utils';
+import {dataTableUtils} from '../../widgets/data_table/utils';
 
 function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {
   const results: CardMetadata[] = [];
@@ -1438,7 +1438,7 @@ const reducer = createReducer(
         dataTableMode === DataTableMode.RANGE
           ? [...state.rangeSelectionHeaders]
           : [...state.singleSelectionHeaders];
-      headers = DataTableUtils.moveColumn(headers, source, destination, side);
+      headers = dataTableUtils.moveColumn(headers, source, destination, side);
 
       if (dataTableMode === DataTableMode.RANGE) {
         return {

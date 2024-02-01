@@ -82,6 +82,7 @@ import {
   timeSelectionChanged,
   metricsSlideoutMenuOpened,
   dataTableColumnOrderChanged,
+  dataTableColumnOrderChanged,
   dataTableColumnToggled,
 } from '../../actions';
 import {PluginType} from '../../data_source';

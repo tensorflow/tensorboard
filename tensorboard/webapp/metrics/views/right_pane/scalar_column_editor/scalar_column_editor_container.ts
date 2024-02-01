@@ -31,7 +31,7 @@ import {
   ColumnHeader,
   DataTableMode,
 } from '../../../../widgets/data_table/types';
-import {map} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 function headersWithoutRuns(headers: ColumnHeader[]) {
   return headers.filter((header) => header.type !== 'RUN');

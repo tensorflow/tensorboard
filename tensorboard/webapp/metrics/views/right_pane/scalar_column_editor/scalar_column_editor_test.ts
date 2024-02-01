@@ -325,7 +325,7 @@ describe('scalar column editor', () => {
       });
     });
 
-    it('dispatches dataTableColumnEdited action with single selection when header is dragged', fakeAsync(() => {
+    it('dispatches dataTableColumnOrderChanged action with single selection when header is dragged', fakeAsync(() => {
       store.overrideSelector(getSingleSelectionHeaders, [
         {
           type: ColumnHeaderType.SMOOTHED,
@@ -378,7 +378,7 @@ describe('scalar column editor', () => {
       );
     }));
 
-    it('dispatches dataTableColumnEdited action with range selection when header is dragged', fakeAsync(() => {
+    it('dispatches dataTableColumnOrderChanged action with range selection when header is dragged', fakeAsync(() => {
       store.overrideSelector(getRangeSelectionHeaders, [
         {
           type: ColumnHeaderType.SMOOTHED,

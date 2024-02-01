@@ -44,7 +44,7 @@ import {CustomModalComponent} from '../custom_modal/custom_modal_component';
 import {ColumnSelectorComponent} from './column_selector_component';
 import {ContentCellComponent} from './content_cell_component';
 import {RangeValues} from '../range_input/types';
-import {DataTableUtils} from './utils';
+import {dataTableUtils} from './utils';
 
 const preventDefault = function (e: MouseEvent) {
   e.preventDefault();
@@ -206,8 +206,8 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     // Prevent drag between groups
     if (
       draggingHeader &&
-      DataTableUtils.columnToGroup(header) !==
-        DataTableUtils.columnToGroup(draggingHeader)
+      dataTableUtils.columnToGroup(header) !==
+        dataTableUtils.columnToGroup(draggingHeader)
     ) {
       return;
     }

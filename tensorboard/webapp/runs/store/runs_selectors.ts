@@ -32,7 +32,7 @@ import {
 } from '../../hparams/_redux/hparams_selectors';
 import {HparamValue, RunToHparamsAndMetrics} from '../../hparams/types';
 import {ColumnHeader, SortingInfo} from '../../widgets/data_table/types';
-import {DataTableUtils} from '../../widgets/data_table/utils';
+import {dataTableUtils} from '../../widgets/data_table/utils';
 
 const getRunsState = createFeatureSelector<RunsState>(RUNS_FEATURE_KEY);
 
@@ -353,6 +353,6 @@ export const getGroupedRunsTableHeaders = createSelector(
       }
       return newColumn;
     });
-    return DataTableUtils.groupColumns(columns);
+    return dataTableUtils.groupColumns(columns);
   }
 );
