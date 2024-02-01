@@ -95,6 +95,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() useDarkMode!: boolean;
   @Input() forceSvg!: boolean;
   @Input() columnCustomizationEnabled!: boolean;
+  @Input() columnContextMenusEnabled!: boolean;
   @Input() linkedTimeSelection: TimeSelectionView | undefined;
   @Input() stepOrLinkedTimeSelection: TimeSelection | undefined;
   @Input() minMaxStep!: MinMaxStep;
