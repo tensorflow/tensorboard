@@ -86,7 +86,6 @@ export declare interface ColumnHeader {
   sortable?: boolean;
   movable?: boolean;
   filterable?: boolean;
-  hidable?: boolean;
 }
 
 export enum SortingOrder {

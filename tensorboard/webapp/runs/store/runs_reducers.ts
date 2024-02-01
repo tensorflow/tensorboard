@@ -324,7 +324,6 @@ const {initialState: uiInitialState, reducers: uiNamespaceContextedReducers} =
           removable: false,
           movable: false,
           filterable: false,
-          hidable: false,
         },
       ],
       sortingInfo: {

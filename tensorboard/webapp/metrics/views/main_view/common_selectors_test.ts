@@ -172,7 +172,6 @@ describe('common selectors', () => {
               removable: false,
               movable: false,
               filterable: false,
-              hidable: false,
             },
             {
               type: ColumnHeaderType.CUSTOM,
@@ -1021,7 +1020,6 @@ describe('common selectors', () => {
       sortable: true,
       movable: true,
       filterable: true,
-      hidable: true,
     };
 
     it('returns empty list when there are no experiments', () => {
