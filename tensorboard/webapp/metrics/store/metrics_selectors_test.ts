@@ -1819,7 +1819,7 @@ describe('metrics selectors', () => {
             singleSelectionHeaders,
             rangeSelectionHeaders,
             cardStateMap: {
-              'card1': {
+              card1: {
                 rangeSelectionOverride:
                   CardFeatureOverride.OVERRIDE_AS_DISABLED,
               },
@@ -1864,7 +1864,7 @@ describe('metrics selectors', () => {
             singleSelectionHeaders,
             rangeSelectionHeaders,
             cardStateMap: {
-              'card1': {
+              card1: {
                 rangeSelectionOverride: CardFeatureOverride.OVERRIDE_AS_ENABLED,
               },
             },
