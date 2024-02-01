@@ -288,7 +288,6 @@ export const getPotentialHparamColumns = createSelector(
       sortable: true,
       movable: true,
       filterable: true,
-      hidable: true,
     }));
   }
 );

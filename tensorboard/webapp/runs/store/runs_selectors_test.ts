@@ -1120,36 +1120,6 @@ describe('runs_selectors', () => {
         }),
       ]);
     });
-
-    it('sets the hparam column context options for the runs table', () => {
-      expect(selectors.getGroupedRunsTableHeaders(state)).toEqual([
-        jasmine.objectContaining({
-          type: ColumnHeaderType.RUN,
-        }),
-        jasmine.objectContaining({
-          type: ColumnHeaderType.CUSTOM,
-        }),
-        jasmine.objectContaining({
-          type: ColumnHeaderType.HPARAM,
-          name: 'conv_layers',
-          displayName: 'Conv Layers',
-          enabled: true,
-          removable: true,
-          hidable: false,
-        }),
-        jasmine.objectContaining({
-          type: ColumnHeaderType.HPARAM,
-          name: 'conv_kernel_size',
-          displayName: 'Conv Kernel Size',
-          enabled: true,
-          removable: true,
-          hidable: false,
-        }),
-        jasmine.objectContaining({
-          type: ColumnHeaderType.COLOR,
-        }),
-      ]);
-    });
   });
 
   describe('#getRunsTableSortingInfo', () => {

@@ -29,14 +29,13 @@ const NOTIFICATION_LAST_READ_TIME_KEY = 'notificationLastReadTimestamp';
 function updateScalarContextMenuOptions(headers: ColumnHeader[]) {
   headers.forEach((header) => {
     header.sortable = true;
-    header.removable = false;
 
     if (header.type === 'RUN') {
       header.movable = false;
-      header.hidable = false;
+      header.removable = false;
     } else {
       header.movable = true;
-      header.hidable = true;
+      header.removable = true;
     }
   });
 }
