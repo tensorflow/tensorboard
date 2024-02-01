@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, ActionReducer, createReducer, on} from '@ngrx/store';
-import {DataTableUtils} from '../../widgets/data_table/utils';
+import {dataTableUtils} from '../../widgets/data_table/utils';
 import {persistentSettingsLoaded} from '../../persistent_settings';
 import {Side} from '../../widgets/data_table/types';
 import * as actions from './hparams_actions';
@@ -153,7 +153,7 @@ const reducer: ActionReducer<HparamsState, Action> = createReducer(
     actions.dashboardHparamColumnOrderChanged,
     (state, {source, destination, side}) => {
       const {dashboardDisplayedHparamColumns: columns} = state;
-      const newColumns = DataTableUtils.moveColumn(
+      const newColumns = dataTableUtils.moveColumn(
         columns,
         source,
         destination,
