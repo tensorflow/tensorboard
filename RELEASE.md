@@ -1,3 +1,19 @@
+# Release 2.15.1
+
+## Breaking Changes
+
+- TensorBoard.dev is shutting down. See the FAQ at https://tensorboard.dev.
+  - No longer able to upload new data to TensorBoard.dev. The `tensorboard dev upload` command will fail. (#6638)
+  - The experimental dataframe api has been deleted. (#6644)
+
+## Bug Fixes
+
+- Time Series dashboard:
+  - Sort run names with leading numbers differently. (#6664)
+  - Show scrollbar in runs table only when needed. (#6656)
+  - Fix 'Prev' and 'Next' buttons in dark mode. (#6663)
+  - Better loading/reloading behavior for runs table. (#6658)
+
 # Release 2.15.0
 
 The 2.15 minor series tracks TensorFlow 2.15.
