@@ -34,5 +34,4 @@ tensorboard-data-server >= 0.7.0, < 0.8.0
 # Stay on Keras 2 for now: https://github.com/keras-team/keras/issues/18467.
 # TODO: Remove this after migrating to Keras 3.
 tf-keras >= 2.15.0
-werkzeug >= 1.0.1
-
+werkzeug >= 1.0.1 
