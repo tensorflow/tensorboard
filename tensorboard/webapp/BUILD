@@ -88,7 +88,6 @@ tf_ts_library(
 tf_sass_binary(
     name = "app_styles",
     src = "app_container.scss",
-    strict_deps = False,
     deps = ["//tensorboard/webapp/theme"],
 )
 
@@ -385,6 +384,5 @@ tf_external_sass_libray(
 tf_sass_binary(
     name = "styles",
     src = "styles.scss",
-    strict_deps = False,
     deps = ["//tensorboard/webapp/theme"],
 )

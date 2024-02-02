@@ -7,7 +7,6 @@ licenses(["notice"])
 tf_sass_binary(
     name = "style",
     src = "feature_flag_dialog_component.scss",
-    strict_deps = False,
     deps = [
         "//tensorboard/webapp:angular_material_sass_deps",
         "//tensorboard/webapp/theme",

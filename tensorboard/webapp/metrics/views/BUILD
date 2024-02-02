@@ -12,7 +12,6 @@ tf_sass_library(
 tf_sass_binary(
     name = "metrics_container_styles",
     src = "metrics_container.scss",
-    strict_deps = False,
     deps = [
         "//tensorboard/webapp:angular_material_sass_deps",
         "//tensorboard/webapp/theme",

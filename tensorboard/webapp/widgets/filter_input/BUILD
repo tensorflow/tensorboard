@@ -7,7 +7,6 @@ licenses(["notice"])
 tf_sass_binary(
     name = "filter_input_component_styles",
     src = "filter_input_component.scss",
-    strict_deps = False,
     deps = ["//tensorboard/webapp/theme"],
 )
 

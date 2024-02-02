@@ -5,7 +5,6 @@ package(default_visibility = ["//tensorboard:internal"])
 tf_sass_binary(
     name = "scalar_column_editor_styles",
     src = "scalar_column_editor_component.scss",
-    strict_deps = False,
     deps = [
         "//tensorboard/webapp:angular_material_sass_deps",
         "//tensorboard/webapp/theme",
