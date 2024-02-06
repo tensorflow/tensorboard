@@ -255,8 +255,6 @@ def tf_sass_binary(deps = [], include_paths = [], strict_deps = True, **kwargs):
     strict_deps is included here and intentionally ignored so it can be used
     internally.
     """
-    if (strict_deps):
-        fail("all tf_sass_binary calls need to have the strict_deps = False override for internal calls");
     sass_binary(
         deps = deps,
         include_paths = include_paths + [

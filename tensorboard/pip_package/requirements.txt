@@ -23,8 +23,10 @@ numpy >= 1.12.0
 # NOTE: this version must be >= the protoc version in our WORKSPACE file.
 # At the same time, any constraints we specify here must allow at least some
 # version to be installed that is also compatible with TensorFlow's constraints:
-# https://github.com/tensorflow/tensorflow/blob/9d22f4a0a9499c8e10a4312503e63e0da35ccd94/tensorflow/tools/pip_package/setup.py#L100-L107
-protobuf >= 3.19.6
+# https://github.com/tensorflow/tensorflow/blob/25adc4fccb4b0bb5a933eba1d246380e7b87d7f7/tensorflow/tools/pip_package/setup.py#L101
+# 4.24.0 had an issue that broke our tests, so we should avoid that release:
+# https://github.com/protocolbuffers/protobuf/issues/13485
+protobuf >= 3.19.6, != 4.24.0
 setuptools >= 41.0.0  # Note: provides pkg_resources as well as setuptools
 # A dependency of our vendored packages. This lower bound has not been correctly
 # vetted, but I wanted to be the least restrictive we can, since it's not a new

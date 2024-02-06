@@ -8,7 +8,6 @@ licenses(["notice"])
 tf_sass_binary(
     name = "debugger_component_style",
     src = "debugger_component.scss",
-    strict_deps = False,
     deps = ["//tensorboard/webapp/theme"],
 )
 

@@ -5,7 +5,6 @@ package(default_visibility = ["//tensorboard:internal"])
 tf_sass_binary(
     name = "settings_view_styles",
     src = "settings_view_component.scss",
-    strict_deps = False,
     deps = [
         "//tensorboard/webapp:angular_material_sass_deps",
         "//tensorboard/webapp/theme",

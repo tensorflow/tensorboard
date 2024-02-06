@@ -7,7 +7,6 @@ licenses(["notice"])
 tf_sass_binary(
     name = "plugins_component_styles",
     src = "plugins_component.scss",
-    strict_deps = False,
     deps = ["//tensorboard/webapp/theme"],
 )
 
