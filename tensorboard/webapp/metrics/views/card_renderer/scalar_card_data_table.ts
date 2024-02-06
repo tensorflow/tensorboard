@@ -21,11 +21,13 @@ import {
 } from '@angular/core';
 import {TimeSelection} from '../../../widgets/card_fob/card_fob_types';
 import {findClosestIndex} from '../../../widgets/line_chart_v2/sub_view/line_chart_interactive_utils';
-import {HeaderEditInfo} from '../../types';
+import {HeaderEditInfo, HeaderToggleInfo} from '../../types';
+import {RunToHparamMap} from '../../../runs/types';
 import {
   ScalarCardDataSeries,
   ScalarCardPoint,
   ScalarCardSeriesMetadataMap,
+  SmoothedSeriesMetadata,
 } from './scalar_card_types';
 import {
   ColumnHeader,
@@ -34,7 +36,11 @@ import {
   TableData,
   SortingInfo,
   SortingOrder,
+  DiscreteFilter,
+  IntervalFilter,
+  FilterAddedEvent,
   ReorderColumnEvent,
+  AddColumnEvent,
 } from '../../../widgets/data_table/types';
 import {isDatumVisible} from './utils';
 
@@ -54,9 +60,15 @@ export class ScalarCardDataTable {
   @Input() columnContextMenusEnabled!: boolean;
   @Input() smoothingEnabled!: boolean;
   @Input() hparamsEnabled?: boolean;
+  @Input() columnFilters!: Map<string, DiscreteFilter | IntervalFilter>;
+  @Input() selectableColumns!: ColumnHeader[];
+  @Input() runToHparamMap!: RunToHparamMap;
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();
   @Output() editColumnHeaders = new EventEmitter<HeaderEditInfo>();
+  @Output() addColumn = new EventEmitter<AddColumnEvent>();
+  @Output() removeColumn = new EventEmitter<HeaderToggleInfo>();
+  @Output() addFilter = new EventEmitter<FilterAddedEvent>();
 
   ColumnHeaderType = ColumnHeaderType;
 
@@ -70,6 +82,7 @@ export class ScalarCardDataTable {
       },
     ].concat(this.columnHeaders);
   }
+
   getMinPointInRange(
     points: ScalarCardPoint[],
     startPointIndex: number,
@@ -252,6 +265,13 @@ export class ScalarCardDataTable {
               selectedStepData[header.name] =
                 closestEndPoint.value - closestStartPoint.value;
               continue;
+            case ColumnHeaderType.HPARAM:
+              const runId =
+                (metadata as SmoothedSeriesMetadata).originalSeriesId ||
+                metadata.id;
+              selectedStepData[header.name] =
+                this.runToHparamMap?.[runId].get(header.name) ?? '';
+              continue;
             default:
               continue;
           }
@@ -304,6 +324,10 @@ export class ScalarCardDataTable {
       side,
       dataTableMode: this.getDataTableMode(),
     });
+  }
+
+  onRemoveColumn(header: ColumnHeader) {
+    this.removeColumn.emit({header, dataTableMode: this.getDataTableMode()});
   }
 }
 

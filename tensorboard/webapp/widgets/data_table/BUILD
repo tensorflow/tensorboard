@@ -79,6 +79,7 @@ tf_ng_module(
         ":data_table_header",
         ":filter_dialog",
         ":types",
+        ":utils",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_progress_spinner",

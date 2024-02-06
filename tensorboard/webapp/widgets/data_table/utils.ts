@@ -83,4 +83,5 @@ function groupColumns(columns: ColumnHeader[]): ColumnHeader[] {
 export const dataTableUtils = {
   moveColumn,
   groupColumns,
+  columnToGroup,
 };

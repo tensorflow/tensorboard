@@ -29,7 +29,6 @@ import {
   HeaderEditInfo,
   HeaderToggleInfo,
   HistogramMode,
-  MinMaxStep,
   PluginType,
   TooltipSort,
   XAxisType,

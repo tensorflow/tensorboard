@@ -37,6 +37,7 @@ import {
 } from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {ExperimentAlias} from '../../../experiments/types';
+import {actions as hparamsActions} from '../../../hparams';
 import {
   getEnableHparamsInTimeSeries,
   getForceSvgFeatureFlag,
@@ -58,8 +59,8 @@ import {
   getRun,
   getRunColorMap,
   getCurrentRouteRunSelection,
-  getColumnHeadersForCard,
-  getDashboardRunsToHparams,
+  getGroupedHeadersForCard,
+  getRunToHparamMap,
 } from '../../../selectors';
 import {DataLoadState} from '../../../types/data';
 import {
@@ -79,6 +80,7 @@ import {
   timeSelectionChanged,
   metricsSlideoutMenuOpened,
   dataTableColumnOrderChanged,
+  dataTableColumnToggled,
 } from '../../actions';
 import {PluginType, ScalarStepDatum} from '../../data_source';
 import {
@@ -94,8 +96,19 @@ import {
   getMetricsXAxisType,
   RunToSeries,
 } from '../../store';
-import {CardId, CardMetadata, HeaderEditInfo, XAxisType} from '../../types';
-import {getFilteredRenderableRunsIds} from '../main_view/common_selectors';
+import {
+  CardId,
+  CardMetadata,
+  HeaderEditInfo,
+  HeaderToggleInfo,
+  XAxisType,
+} from '../../types';
+import {RunToHparamMap} from '../../../runs/types';
+import {
+  getFilteredRenderableRunsIds,
+  getCurrentColumnFilters,
+  getSelectableColumns,
+} from '../main_view/common_selectors';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {DataDownloadDialogContainer} from './data_download_dialog_container';
@@ -112,6 +125,8 @@ import {
   ColumnHeader,
   DataTableMode,
   SortingInfo,
+  FilterAddedEvent,
+  AddColumnEvent,
 } from '../../../widgets/data_table/types';
 import {
   maybeClipTimeSelectionView,
@@ -176,6 +191,9 @@ function areSeriesEqual(
       [columnHeaders]="columnHeaders$ | async"
       [rangeEnabled]="rangeEnabled$ | async"
       [hparamsEnabled]="hparamsEnabled$ | async"
+      [columnFilters]="columnFilters$ | async"
+      [runToHparamMap]="runToHparamMap$ | async"
+      [selectableColumns]="selectableColumns$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
       observeIntersection
@@ -187,6 +205,9 @@ function areSeriesEqual(
       (editColumnHeaders)="editColumnHeaders($event)"
       (onCardStateChanged)="onCardStateChanged($event)"
       (openTableEditMenuToMode)="openTableEditMenuToMode($event)"
+      (addColumn)="onAddColumn($event)"
+      (removeColumn)="onRemoveColumn($event)"
+      (addFilter)="addHparamFilter($event)"
     ></scalar-card-component>
   `,
   styles: [
@@ -226,6 +247,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   cardState$?: Observable<Partial<CardState>>;
   rangeEnabled$?: Observable<boolean>;
   hparamsEnabled$?: Observable<boolean>;
+  columnFilters$ = this.store.select(getCurrentColumnFilters);
+  runToHparamMap$?: Observable<RunToHparamMap>;
+  selectableColumns$?: Observable<ColumnHeader[]>;
 
   onVisibilityChange({visible}: {visible: boolean}) {
     this.isVisible = visible;
@@ -464,7 +488,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     );
 
     this.columnHeaders$ = this.store.select(
-      getColumnHeadersForCard(this.cardId)
+      getGroupedHeadersForCard(this.cardId)
     );
 
     this.chartMetadataMap$ = partitionedSeries$.pipe(
@@ -593,6 +617,10 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     );
 
     this.hparamsEnabled$ = this.store.select(getEnableHparamsInTimeSeries);
+
+    this.runToHparamMap$ = this.store.select(getRunToHparamMap);
+
+    this.selectableColumns$ = this.store.select(getSelectableColumns);
   }
 
   ngOnDestroy() {
@@ -679,11 +707,55 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     );
   }
 
-  editColumnHeaders(headerEditInfo: HeaderEditInfo) {
-    this.store.dispatch(dataTableColumnOrderChanged(headerEditInfo));
+  editColumnHeaders({
+    source,
+    destination,
+    side,
+    dataTableMode,
+  }: HeaderEditInfo) {
+    if (source.type === 'HPARAM') {
+      this.store.dispatch(
+        hparamsActions.dashboardHparamColumnOrderChanged({
+          source,
+          destination,
+          side,
+        })
+      );
+    } else {
+      this.store.dispatch(
+        dataTableColumnOrderChanged({source, destination, side, dataTableMode})
+      );
+    }
   }
 
   openTableEditMenuToMode(tableMode: DataTableMode) {
     this.store.dispatch(metricsSlideoutMenuOpened({mode: tableMode}));
+  }
+
+  onAddColumn(addColumnEvent: AddColumnEvent) {
+    this.store.dispatch(
+      hparamsActions.dashboardHparamColumnAdded(addColumnEvent)
+    );
+  }
+
+  onRemoveColumn({header, dataTableMode}: HeaderToggleInfo) {
+    if (header.type === 'HPARAM') {
+      this.store.dispatch(
+        hparamsActions.dashboardHparamColumnRemoved({column: header})
+      );
+    } else {
+      this.store.dispatch(
+        dataTableColumnToggled({header, cardId: this.cardId, dataTableMode})
+      );
+    }
+  }
+
+  addHparamFilter(event: FilterAddedEvent) {
+    this.store.dispatch(
+      hparamsActions.dashboardHparamFilterAdded({
+        name: event.name,
+        filter: event.value,
+      })
+    );
   }
 }

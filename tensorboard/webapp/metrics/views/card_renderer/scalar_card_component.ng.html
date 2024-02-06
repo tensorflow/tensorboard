@@ -201,8 +201,15 @@ limitations under the License.
       [columnContextMenusEnabled]="columnContextMenusEnabled"
       [smoothingEnabled]="smoothingEnabled"
       [hparamsEnabled]="hparamsEnabled"
+      [columnFilters]="columnFilters"
+      [runToHparamMap]="runToHparamMap"
+      [selectableColumns]="selectableColumns"
       (sortDataBy)="sortDataBy($event)"
       (editColumnHeaders)="editColumnHeaders.emit($event)"
+      (addColumn)="addColumn.emit($event)"
+      (removeColumn)="removeColumn.emit($event)"
+      (hideColumn)="hideColumn.emit($event)"
+      (addFilter)="addFilter.emit($event)"
     >
     </scalar-card-data-table>
   </div>

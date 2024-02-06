@@ -82,10 +82,11 @@ export class CustomModalComponent implements OnInit {
 
   public openAtPosition(position: {x: number; y: number}) {
     const root = this.viewRef.element.nativeElement;
-    const top = root.getBoundingClientRect().top;
-    if (top !== 0) {
-      root.style.top = top * -1 + root.offsetTop + 'px';
-    }
+    // Set left/top to viewport (0,0) if the element has another "containing block" ancestor.
+    root.style.top = `${root.offsetTop - root.getBoundingClientRect().top}px`;
+    root.style.left = `${
+      root.offsetLeft - root.getBoundingClientRect().left
+    }px`;
 
     this.content.nativeElement.style.left = position.x + 'px';
     this.content.nativeElement.style.top = position.y + 'px';

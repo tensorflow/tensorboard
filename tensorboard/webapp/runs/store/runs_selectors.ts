@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {DataLoadState, LoadState} from '../../types/data';
-import {GroupBy} from '../types';
+import {GroupBy, RunToHparamMap} from '../types';
 import {
   ExperimentId,
   Run,
@@ -149,6 +149,19 @@ export const getDashboardRunsToHparams = createSelector(
       }
     }
     return runToHparamsAndMetrics;
+  }
+);
+
+export const getRunToHparamMap = createSelector(
+  getDashboardRunsToHparams,
+  (runToHparamsAndMetrics: RunToHparamsAndMetrics): RunToHparamMap => {
+    const runToHparamMap: RunToHparamMap = {};
+    for (const [runName, {hparams}] of Object.entries(runToHparamsAndMetrics)) {
+      runToHparamMap[runName] = new Map(
+        hparams.map(({name, value}) => [name, value])
+      );
+    }
+    return runToHparamMap;
   }
 );
 

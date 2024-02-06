@@ -18,8 +18,13 @@ limitations under the License.
 <tb-data-table
   [headers]="columnHeaders"
   [sortingInfo]="sortingInfo"
+  [columnFilters]="columnFilters"
+  [selectableColumns]="selectableColumns"
   (sortDataBy)="sortDataBy.emit($event)"
   (orderColumns)="onOrderColumns($event)"
+  (addColumn)="addColumn.emit($event)"
+  (removeColumn)="onRemoveColumn($event)"
+  (addFilter)="addFilter.emit($event)"
 >
   <ng-container header>
     <ng-container *ngFor="let header of getHeaders()">

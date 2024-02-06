@@ -1830,30 +1830,30 @@ describe('metrics selectors', () => {
       });
 
       expect(selectors.getGroupedHeadersForCard('card1')(state)).toEqual([
-        {
+        jasmine.objectContaining({
           type: ColumnHeaderType.RUN,
           name: 'run',
           displayName: 'My Run name',
           enabled: false,
-        },
-        {
+        }),
+        jasmine.objectContaining({
           type: ColumnHeaderType.HPARAM,
           name: 'conv_layers',
           displayName: 'Conv Layers',
           enabled: true,
-        },
-        {
+        }),
+        jasmine.objectContaining({
           type: ColumnHeaderType.HPARAM,
           name: 'conv_kernel_size',
           displayName: 'Conv Kernel Size',
           enabled: true,
-        },
-        {
+        }),
+        jasmine.objectContaining({
           type: ColumnHeaderType.COLOR,
           name: 'color',
           displayName: 'Color',
           enabled: true,
-        },
+        }),
       ]);
     });
 
@@ -1874,30 +1874,30 @@ describe('metrics selectors', () => {
       });
 
       expect(selectors.getGroupedHeadersForCard('card1')(state)).toEqual([
-        {
+        jasmine.objectContaining({
           type: ColumnHeaderType.RUN,
           name: 'run',
           displayName: 'My Run name',
           enabled: false,
-        },
-        {
+        }),
+        jasmine.objectContaining({
           type: ColumnHeaderType.HPARAM,
           name: 'conv_layers',
           displayName: 'Conv Layers',
           enabled: true,
-        },
-        {
+        }),
+        jasmine.objectContaining({
           type: ColumnHeaderType.HPARAM,
           name: 'conv_kernel_size',
           displayName: 'Conv Kernel Size',
           enabled: true,
-        },
-        {
+        }),
+        jasmine.objectContaining({
           type: ColumnHeaderType.MEAN,
           name: 'mean',
           displayName: 'Mean',
           enabled: true,
-        },
+        }),
       ]);
     });
 
@@ -1914,30 +1914,30 @@ describe('metrics selectors', () => {
       });
 
       expect(selectors.getGroupedHeadersForCard('card1')(state)).toEqual([
-        {
+        jasmine.objectContaining({
           type: ColumnHeaderType.RUN,
           name: 'run',
           displayName: 'My Run name',
           enabled: false,
-        },
-        {
+        }),
+        jasmine.objectContaining({
           type: ColumnHeaderType.HPARAM,
           name: 'conv_layers',
           displayName: 'Conv Layers',
           enabled: true,
-        },
-        {
+        }),
+        jasmine.objectContaining({
           type: ColumnHeaderType.HPARAM,
           name: 'conv_kernel_size',
           displayName: 'Conv Kernel Size',
           enabled: true,
-        },
-        {
+        }),
+        jasmine.objectContaining({
           type: ColumnHeaderType.MEAN,
           name: 'mean',
           displayName: 'Mean',
           enabled: true,
-        },
+        }),
       ]);
     });
   });

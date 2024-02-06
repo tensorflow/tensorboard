@@ -411,9 +411,9 @@ describe('data table', () => {
           enabled: true,
         },
         {
-          type: ColumnHeaderType.RUN,
-          name: 'run',
-          displayName: 'Run',
+          type: ColumnHeaderType.SMOOTHED,
+          name: 'smoothed',
+          displayName: 'Smoothed',
           enabled: true,
         },
         {
@@ -450,9 +450,9 @@ describe('data table', () => {
 
     expect(orderColumnsSpy).toHaveBeenCalledOnceWith({
       source: {
-        type: ColumnHeaderType.RUN,
-        name: 'run',
-        displayName: 'Run',
+        type: ColumnHeaderType.SMOOTHED,
+        name: 'smoothed',
+        displayName: 'Smoothed',
         enabled: true,
       },
       destination: {
@@ -475,9 +475,9 @@ describe('data table', () => {
           enabled: true,
         },
         {
-          type: ColumnHeaderType.RUN,
-          name: 'run',
-          displayName: 'Run',
+          type: ColumnHeaderType.SMOOTHED,
+          name: 'smoothed',
+          displayName: 'Smoothed',
           enabled: true,
         },
         {
@@ -514,9 +514,9 @@ describe('data table', () => {
 
     expect(orderColumnsSpy).toHaveBeenCalledOnceWith({
       source: {
-        type: ColumnHeaderType.RUN,
-        name: 'run',
-        displayName: 'Run',
+        type: ColumnHeaderType.SMOOTHED,
+        name: 'smoothed',
+        displayName: 'Smoothed',
         enabled: true,
       },
       destination: {
@@ -527,6 +527,51 @@ describe('data table', () => {
       },
       side: Side.RIGHT,
     });
+  });
+
+  it('does not emit orderColumns when dragging between column groups', () => {
+    const fixture = createComponent({
+      headers: [
+        {
+          type: ColumnHeaderType.VALUE,
+          name: 'value',
+          displayName: 'Value',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.SMOOTHED,
+          name: 'smoothed',
+          displayName: 'Smoothed',
+          enabled: true,
+        },
+        {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+      ],
+      sortingInfo: {
+        name: 'step',
+        order: SortingOrder.DESCENDING,
+      },
+    });
+    fixture.detectChanges();
+    const headerElements = fixture.debugElement.queryAll(
+      By.directive(HeaderCellComponent)
+    );
+
+    headerElements[1].query(By.css('.cell')).triggerEventHandler('dragstart');
+    headerElements[2].query(By.css('.cell')).triggerEventHandler('dragenter');
+    fixture.detectChanges();
+    expect(
+      headerElements[2]
+        .query(By.css('.cell'))
+        .nativeElement.classList.contains('highlight')
+    ).toBe(false);
+    headerElements[1].query(By.css('.cell')).triggerEventHandler('dragend');
+
+    expect(orderColumnsSpy).not.toHaveBeenCalled();
   });
 
   it('does not show add button when there are no selectable columns', () => {
@@ -581,7 +626,7 @@ describe('data table', () => {
         {
           name: 'other_header',
           type: ColumnHeaderType.HPARAM,
-          displayName: 'Display This',
+          displayName: 'Hparam 1',
           enabled: true,
           removable: true,
           movable: true,
@@ -589,7 +634,7 @@ describe('data table', () => {
         {
           name: 'another_hparam',
           type: ColumnHeaderType.HPARAM,
-          displayName: 'Display This',
+          displayName: 'Hparam 2',
           enabled: true,
           removable: true,
           movable: false,
@@ -597,7 +642,7 @@ describe('data table', () => {
         },
         {
           name: 'some static column',
-          type: ColumnHeaderType.HPARAM,
+          type: ColumnHeaderType.MEAN,
           displayName: 'cant touch this',
           enabled: true,
         },
@@ -647,6 +692,7 @@ describe('data table', () => {
       const cell = fixture.debugElement.query(
         By.directive(HeaderCellComponent)
       );
+
       cell.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
       fixture.detectChanges();
 
@@ -661,9 +707,10 @@ describe('data table', () => {
         data: mockTableData,
         potentialColumns: mockPotentialColumns,
       });
-      const cell = fixture.debugElement.query(
-        By.directive(ContentCellComponent)
-      );
+      const cell = fixture.debugElement
+        .queryAll(By.directive(HeaderCellComponent))
+        .find((cell) => cell.nativeElement.innerHTML.includes('Hparam 1'))!;
+
       cell.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
       fixture.detectChanges();
 
@@ -680,7 +727,9 @@ describe('data table', () => {
         By.directive(DataTableComponent)
       );
       expect(dataTable.componentInstance.insertColumnTo).toEqual(Side.LEFT);
-      expect(dataTable.componentInstance.contextMenuHeader.name).toEqual('run');
+      expect(dataTable.componentInstance.contextMenuHeader.name).toEqual(
+        'other_header'
+      );
     });
 
     it('renders column selector when add column to the right is clicked', () => {
@@ -689,9 +738,9 @@ describe('data table', () => {
         data: mockTableData,
         potentialColumns: mockPotentialColumns,
       });
-      const cell = fixture.debugElement.query(
-        By.directive(ContentCellComponent)
-      );
+      const cell = fixture.debugElement
+        .queryAll(By.directive(HeaderCellComponent))
+        .find((cell) => cell.nativeElement.innerHTML.includes('Hparam 1'))!;
       cell.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
       fixture.detectChanges();
 
@@ -708,7 +757,9 @@ describe('data table', () => {
         By.directive(DataTableComponent)
       );
       expect(dataTable.componentInstance.insertColumnTo).toEqual(Side.RIGHT);
-      expect(dataTable.componentInstance.contextMenuHeader.name).toEqual('run');
+      expect(dataTable.componentInstance.contextMenuHeader.name).toEqual(
+        'other_header'
+      );
     });
 
     it('only shows the remove button when the column is removable', () => {
@@ -786,7 +837,7 @@ describe('data table', () => {
       ).toBeUndefined();
     });
 
-    it('only includes add buttons when header is movable', () => {
+    it('only includes add buttons for non-movable hparams', () => {
       const fixture = createComponent({
         headers: mockHeaders,
         data: mockTableData,
@@ -811,7 +862,10 @@ describe('data table', () => {
             element.nativeElement.innerHTML.includes('Right')
           )!;
 
-        if (cell.componentInstance.header.movable) {
+        if (
+          cell.componentInstance.header.type === 'HPARAM' &&
+          cell.componentInstance.header.movable
+        ) {
           expect(addLeft).toBeDefined();
           expect(addRight).toBeDefined();
         } else {

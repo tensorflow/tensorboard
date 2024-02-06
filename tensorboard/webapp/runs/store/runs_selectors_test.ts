@@ -490,6 +490,65 @@ describe('runs_selectors', () => {
     });
   });
 
+  describe('#getRunToHparamMap', () => {
+    it('returns a map from run id to hparam name to hparam value', () => {
+      const state = buildMockState({
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: {
+              routeKind: RouteKind.COMPARE_EXPERIMENT,
+              params: {experimentIds: 'exp1:123,exp2:456,exp3:789'},
+            },
+          })
+        ),
+        ...buildStateFromHparamsState(
+          buildHparamsState({
+            dashboardSessionGroups: [
+              buildSessionGroup({
+                name: 'SessionGroup1',
+                sessions: [{name: 's1'}],
+                hparams: {hparam: 'value1'},
+              }),
+              buildSessionGroup({
+                name: 'SessionGroup2',
+                sessions: [{name: 's2'}],
+                hparams: {hparam: 'value2'},
+              }),
+              buildSessionGroup({
+                name: 'SessionGrup3',
+                sessions: [{name: 's3'}, {name: 's4'}, {name: 's5'}],
+                hparams: {hparam: 'value3'},
+              }),
+            ],
+          })
+        ),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            runIds: {
+              123: ['s2/run1', 's2/run2'],
+              456: ['s1/run1', 's3/run1', 's4/run1', 's4/run2', 's5/run1'],
+              // One experiment has a run that does not match any of the
+              // sessions and, so, is not included in the result.
+              789: ['does_not_match'],
+              // Additional experiment's runs are not included in the result.
+              AAA: ['s1/run1'],
+            },
+          })
+        ),
+      });
+
+      expect(selectors.getRunToHparamMap(state)).toEqual({
+        's2/run1': new Map([['hparam', 'value2']]),
+        's2/run2': new Map([['hparam', 'value2']]),
+        's1/run1': new Map([['hparam', 'value1']]),
+        's3/run1': new Map([['hparam', 'value3']]),
+        's4/run1': new Map([['hparam', 'value3']]),
+        's4/run2': new Map([['hparam', 'value3']]),
+        's5/run1': new Map([['hparam', 'value3']]),
+      });
+    });
+  });
+
   describe('#getDashboardRuns', () => {
     it('returns runs', () => {
       const state = buildMockState({

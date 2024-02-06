@@ -44,6 +44,7 @@ import {CustomModalComponent} from '../custom_modal/custom_modal_component';
 import {ColumnSelectorComponent} from './column_selector_component';
 import {ContentCellComponent} from './content_cell_component';
 import {RangeValues} from '../range_input/types';
+import {dataTableUtils} from './utils';
 
 const preventDefault = function (e: MouseEvent) {
   e.preventDefault();
@@ -60,7 +61,6 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   // displayed in the table.
   @Input() headers!: ColumnHeader[];
   @Input() sortingInfo!: SortingInfo;
-  @Input() columnCustomizationEnabled!: boolean;
   @Input() selectableColumns?: ColumnHeader[];
   @Input() columnFilters!: Map<string, DiscreteFilter | IntervalFilter>;
   @Input() loading: boolean = false;
@@ -201,6 +201,16 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     ) {
       return;
     }
+    const draggingHeader = this.getHeaderByName(this.draggingHeaderName);
+    // Prevent drag between groups
+    if (
+      draggingHeader &&
+      dataTableUtils.columnToGroup(header) !==
+        dataTableUtils.columnToGroup(draggingHeader)
+    ) {
+      return;
+    }
+
     if (
       this.getIndexOfHeaderWithName(header.name) <
       this.getIndexOfHeaderWithName(this.draggingHeaderName!)
@@ -303,7 +313,8 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     return (
       this.selectableColumns &&
       this.selectableColumns.length &&
-      this.contextMenuHeader?.movable
+      this.contextMenuHeader?.movable &&
+      this.contextMenuHeader?.type === 'HPARAM'
     );
   }
 

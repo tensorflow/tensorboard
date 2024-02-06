@@ -13,10 +13,69 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {ColumnHeaderType, Side} from './types';
+import {ColumnGroup, ColumnHeaderType, Side} from './types';
 import {dataTableUtils} from './utils';
 
 describe('data table utils', () => {
+  describe('columnToGroup', () => {
+    [
+      {
+        testDesc: 'run column',
+        column: {
+          type: ColumnHeaderType.RUN,
+          name: 'run',
+          displayName: 'Run',
+          enabled: true,
+        },
+        expectedGroup: ColumnGroup.RUN,
+      },
+      {
+        testDesc: 'experiment alias column',
+        column: {
+          type: ColumnHeaderType.CUSTOM,
+          name: 'experimentAlias',
+          displayName: 'Experiment Alias',
+          enabled: true,
+        },
+        expectedGroup: ColumnGroup.EXPERIMENT_ALIAS,
+      },
+      {
+        testDesc: 'hparam column',
+        column: {
+          type: ColumnHeaderType.HPARAM,
+          name: 'conv_layers',
+          displayName: 'Conv Layers',
+          enabled: true,
+        },
+        expectedGroup: ColumnGroup.HPARAM,
+      },
+      {
+        testDesc: 'standard column',
+        column: {
+          type: ColumnHeaderType.VALUE,
+          name: 'value',
+          displayName: 'Value',
+          enabled: true,
+        },
+        expectedGroup: ColumnGroup.OTHER,
+      },
+      {
+        testDesc: 'custom column not named experiment alias',
+        column: {
+          type: ColumnHeaderType.CUSTOM,
+          name: 'notExperimentAlias',
+          displayName: 'Not Experiment Alias',
+          enabled: true,
+        },
+        expectedGroup: ColumnGroup.OTHER,
+      },
+    ].forEach(({testDesc, column, expectedGroup}) => {
+      it(`returns the group for ${testDesc}`, () => {
+        expect(dataTableUtils.columnToGroup(column)).toEqual(expectedGroup);
+      });
+    });
+  });
+
   describe('groupColumns', () => {
     it('groups columns according to a predefined order', () => {
       const inputColumns = [
