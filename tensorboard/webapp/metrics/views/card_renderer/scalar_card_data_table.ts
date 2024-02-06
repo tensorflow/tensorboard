@@ -51,6 +51,7 @@ export class ScalarCardDataTable {
   @Input() columnHeaders!: ColumnHeader[];
   @Input() sortingInfo!: SortingInfo;
   @Input() columnCustomizationEnabled!: boolean;
+  @Input() columnContextMenusEnabled!: boolean;
   @Input() smoothingEnabled!: boolean;
   @Input() hparamsEnabled?: boolean;
 
