@@ -1,8 +1,15 @@
+# Release 2.15.2
+
+## Breaking Changes
+
+- Updates restriction on protobuf dependency to avoid bad version while still
+  allowing newer versions.(#6660 & #6746)
+
 # Release 2.15.1
 
 ## Breaking Changes
 
-- TensorBoard.dev is shutting down. See the FAQ at https://tensorboard.dev.
+  - TensorBoard.dev is shutting down. See the FAQ at https://tensorboard.dev.
   - No longer able to upload new data to TensorBoard.dev. The `tensorboard dev upload` command will fail. (#6638)
   - The experimental dataframe api has been deleted. (#6644)
 
