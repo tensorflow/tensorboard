@@ -16,7 +16,6 @@ limitations under the License.
 @import 'tensorboard/webapp/theme/tb_theme';
 
 ::ng-deep .run-table-color-group-by {
-  $_icon-size: 20px;
   font-size: 16px;
 
   .label {
@@ -28,8 +27,7 @@ limitations under the License.
   }
 
   mat-icon {
-    height: $_icon-size;
-    width: $_icon-size;
+    --mat-menu-item-icon-size: 20px;
   }
 
   .display-regex-string {
