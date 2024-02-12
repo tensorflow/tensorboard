@@ -1,3 +1,28 @@
+# Release 2.16.0
+
+The 2.16 minor series tracks TensorFlow 2.16.
+
+## Features
+- Time Series dashboard:
+  - Improved sorting of runs whose names begin with integers. (#6664)
+  - Improved hparams filtering. (#6680, #6692)
+  - Usability improvements and fixes in runs table. (#6656, #6658, #6678, #6736)
+- Graph plugin:
+  - Improved support for dark theme. (#6691, thanks @tummala-manasa)
+- Removed dependencies on `google-auth`, `google-auth-oauthlib`, and `requests` libraries. (#6705)
+- Relaxed restriction on protobuf dependency, given that issue @protocolbuffers/protobuf#13485 was fixed. (#6660, #6746)
+
+## Bug Fixes
+- Hparams plugin:
+  - Fixed Download data links. (#6719 fixes #6088, thanks @louis49)
+- Time Series dashboard:
+  - Fixed color picker usability regression. (#6682)
+- Brings the `tensorboard-data-server` wheel into conformance with [PEP 600](https://peps.python.org/pep-0600/), enabling support for the `--load-fast` flag in systems with GLIBC >= 2.29. (Requires installing/updating package `tensorboard-data-server==0.7.2`) (#6636 fixes #6578)
+
+## Breaking Changes
+- `tensorboard dev` subcommand will now show an error message without sending any requests, as our hosted service at http://tensorboard.dev has been shut down.
+- Not quite a breaking change, but to something to be aware of: TensorBoard releases generally follow TensorFlow’s releases. However, while TF 2.16 will start using Keras 3 by default, TensorBoard plugins’ implementation remains with keras 2 support only. See @keras-team/keras#18467 for details.
+
 # Release 2.15.2
 
 ## Breaking Changes
