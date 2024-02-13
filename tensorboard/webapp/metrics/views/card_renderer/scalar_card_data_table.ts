@@ -270,7 +270,7 @@ export class ScalarCardDataTable {
                 (metadata as SmoothedSeriesMetadata).originalSeriesId ||
                 metadata.id;
               selectedStepData[header.name] =
-                this.runToHparamMap?.[runId].get(header.name) ?? '';
+                this.runToHparamMap?.[runId]?.get(header.name) ?? '';
               continue;
             default:
               continue;
