@@ -1,3 +1,8 @@
+# Release 2.16.1
+
+## Bug Fixes
+- Depend on tf-keras instead of tf-keras-nightly.
+
 # Release 2.16.0
 
 The 2.16 minor series tracks TensorFlow 2.16.
