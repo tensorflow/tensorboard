@@ -72,6 +72,8 @@ class _FlagValuesWrapper:
     def __getattribute__(self, name):
         if name == "__dict__":
             return super().__getattribute__(name)
+        elif name == "__class__":
+            return super.__class__
         return self.__dict__["__wrapped"].__getattribute__(name)
 
     def __getattr__(self, name):
