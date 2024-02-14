@@ -4005,8 +4005,6 @@ describe('scalar card', () => {
           new Set(['run1'])
         );
 
-        store.overrideSelector(selectors.getEnableHparamsInTimeSeries, true);
-
         store.overrideSelector(
           hparamsSelectors.getDashboardDisplayedHparamColumns,
           [
@@ -4036,7 +4034,7 @@ describe('scalar card', () => {
         });
       });
 
-      it('filters runs by hparam when enableHparamsInTimeSeries is true', fakeAsync(() => {
+      it('filters runs by hparam', fakeAsync(() => {
         const fixture = createComponent('card1');
         const scalarCardDataTable = fixture.debugElement.query(
           By.directive(ScalarCardDataTable)
@@ -4047,21 +4045,6 @@ describe('scalar card', () => {
 
         expect(data.length).toEqual(1);
         expect(data[0].run).toEqual('run1');
-      }));
-
-      it('does not filter runs by hparam when enableHparamsInTimeSeries is false', fakeAsync(() => {
-        store.overrideSelector(selectors.getEnableHparamsInTimeSeries, false);
-        const fixture = createComponent('card1');
-        const scalarCardDataTable = fixture.debugElement.query(
-          By.directive(ScalarCardDataTable)
-        );
-
-        const data =
-          scalarCardDataTable.componentInstance.getTimeSelectionTableData();
-
-        expect(data.length).toEqual(2);
-        expect(data[0].run).toEqual('run1');
-        expect(data[1].run).toEqual('run2');
       }));
 
       it('shows hparam values for selected hparam columns', fakeAsync(() => {

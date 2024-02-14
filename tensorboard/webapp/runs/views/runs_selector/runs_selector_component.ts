@@ -21,7 +21,6 @@ import {RunsTableColumn} from '../runs_table/types';
     <runs-table
       [columns]="columns"
       [experimentIds]="experimentIds"
-      [showHparamsAndMetrics]="showHparamsAndMetrics"
     ></runs-table>
   `,
   styles: [
@@ -35,6 +34,5 @@ import {RunsTableColumn} from '../runs_table/types';
 })
 export class RunsSelectorComponent {
   @Input() experimentIds!: string[];
-  @Input() showHparamsAndMetrics?: boolean;
   @Input() columns!: RunsTableColumn[];
 }

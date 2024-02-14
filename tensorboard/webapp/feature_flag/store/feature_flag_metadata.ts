@@ -115,11 +115,6 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       queryParamOverride: 'enableScalarColumnContextMenus',
       parseValue: parseBoolean,
     },
-    enableHparamsInTimeSeries: {
-      defaultValue: true,
-      queryParamOverride: 'enableHparamsInTimeSeries',
-      parseValue: parseBoolean,
-    },
     enableSuggestedCards: {
       defaultValue: false,
       queryParamOverride: 'enableSuggestedCards',

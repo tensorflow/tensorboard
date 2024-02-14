@@ -39,7 +39,6 @@ import {State} from '../../../app_state';
 import {ExperimentAlias} from '../../../experiments/types';
 import {actions as hparamsActions} from '../../../hparams';
 import {
-  getEnableHparamsInTimeSeries,
   getForceSvgFeatureFlag,
   getIsScalarColumnContextMenusEnabled,
   getIsScalarColumnCustomizationEnabled,
@@ -190,7 +189,6 @@ function areSeriesEqual(
       [userViewBox]="userViewBox$ | async"
       [columnHeaders]="columnHeaders$ | async"
       [rangeEnabled]="rangeEnabled$ | async"
-      [hparamsEnabled]="hparamsEnabled$ | async"
       [columnFilters]="columnFilters$ | async"
       [runToHparamMap]="runToHparamMap$ | async"
       [selectableColumns]="selectableColumns$ | async"
@@ -515,7 +513,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       }),
       combineLatestWith(
         this.store.select(getCurrentRouteRunSelection),
-        this.store.select(getEnableHparamsInTimeSeries),
         this.store.select(getFilteredRenderableRunsIds),
         this.store.select(getRunColorMap),
         this.store.select(getMetricsScalarSmoothing)
@@ -529,7 +526,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
         ([
           namedPartitionedSeries,
           runSelectionMap,
-          hparamsInTimeSeriesEnabled,
           renderableRuns,
           colorMap,
           smoothing,
@@ -558,7 +554,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
               visible: Boolean(
                 runSelectionMap &&
                   runSelectionMap.get(runId) &&
-                  (!hparamsInTimeSeriesEnabled || renderableRuns.has(runId))
+                  renderableRuns.has(runId)
               ),
               color: colorMap[runId] ?? '#fff',
               aux: false,
@@ -615,8 +611,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.rangeEnabled$ = this.store.select(
       getMetricsCardRangeSelectionEnabled(this.cardId)
     );
-
-    this.hparamsEnabled$ = this.store.select(getEnableHparamsInTimeSeries);
 
     this.runToHparamMap$ = this.store.select(getRunToHparamMap);
 

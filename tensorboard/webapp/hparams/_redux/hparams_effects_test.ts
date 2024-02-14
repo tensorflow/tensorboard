@@ -111,7 +111,6 @@ describe('hparams effects', () => {
       effects.loadHparamsData$.subscribe((action) => {
         actualActions.push(action);
       });
-      store.overrideSelector(selectors.getEnableHparamsInTimeSeries, true);
       store.overrideSelector(selectors.getActiveRoute, {
         routeKind: RouteKind.EXPERIMENT,
         params: {},
@@ -120,16 +119,6 @@ describe('hparams effects', () => {
         'expFromRoute',
       ]);
       store.refreshState();
-    });
-
-    it('does not dispatch requests when enableHparamsInTimeSeries is false', () => {
-      store.overrideSelector(selectors.getEnableHparamsInTimeSeries, false);
-      store.refreshState();
-
-      action.next(appRoutingActions.navigated({} as any));
-      expect(dataSource.fetchExperimentInfo).not.toHaveBeenCalled();
-      expect(dataSource.fetchSessionGroups).not.toHaveBeenCalled();
-      expect(actualActions).toEqual([]);
     });
 
     it('does not dispatch requests when on experiments route', () => {

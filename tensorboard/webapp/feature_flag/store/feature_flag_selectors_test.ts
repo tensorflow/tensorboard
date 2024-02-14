@@ -365,28 +365,4 @@ describe('feature_flag_selectors', () => {
       expect(selectors.getIsMetricsImageSupportEnabled(state)).toEqual(true);
     });
   });
-
-  describe('#getEnableHparamsInTimeSeries', () => {
-    it('returns true when enableHparamsInTimeSeries is true', () => {
-      let state = buildState(
-        buildFeatureFlagState({
-          defaultFlags: buildFeatureFlag({
-            enableHparamsInTimeSeries: true,
-          }),
-        })
-      );
-      expect(selectors.getEnableHparamsInTimeSeries(state)).toBeTrue();
-    });
-
-    it('returns false when enableHparamsInTimeSeries is false', () => {
-      let state = buildState(
-        buildFeatureFlagState({
-          defaultFlags: buildFeatureFlag({
-            enableHparamsInTimeSeries: false,
-          }),
-        })
-      );
-      expect(selectors.getEnableHparamsInTimeSeries(state)).toBeFalse();
-    });
-  });
 });

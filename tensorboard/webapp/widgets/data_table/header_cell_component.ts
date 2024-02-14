@@ -33,7 +33,6 @@ import {BehaviorSubject} from 'rxjs';
 export class HeaderCellComponent {
   @Input() header!: ColumnHeader;
   @Input() sortingInfo!: SortingInfo;
-  @Input() hparamsEnabled?: boolean = false;
   @Input() disableContextMenu?: boolean = false;
 
   @Output() dragStart = new EventEmitter<ColumnHeader>();

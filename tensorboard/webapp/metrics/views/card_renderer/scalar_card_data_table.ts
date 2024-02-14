@@ -59,7 +59,6 @@ export class ScalarCardDataTable {
   @Input() columnCustomizationEnabled!: boolean;
   @Input() columnContextMenusEnabled!: boolean;
   @Input() smoothingEnabled!: boolean;
-  @Input() hparamsEnabled?: boolean;
   @Input() columnFilters!: Map<string, DiscreteFilter | IntervalFilter>;
   @Input() selectableColumns!: ColumnHeader[];
   @Input() runToHparamMap!: RunToHparamMap;
