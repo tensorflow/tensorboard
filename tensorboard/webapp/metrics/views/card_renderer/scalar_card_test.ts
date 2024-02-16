@@ -4074,6 +4074,35 @@ describe('scalar card', () => {
         ]);
       }));
 
+      // This can easily happen in multi-experiment Time Series dashboards.
+      it('shows empty cells for runs that do not have given hparams', fakeAsync(() => {
+        store.overrideSelector(
+          commonSelectors.getFilteredRenderableRunsIds,
+          new Set(['run1', 'run2'])
+        );
+        store.overrideSelector(runsSelectors.getRunToHparamMap, {});
+        const fixture = createComponent('card1');
+        const scalarCardDataTable = fixture.debugElement.query(
+          By.directive(ScalarCardDataTable)
+        );
+
+        const data =
+          scalarCardDataTable.componentInstance.getTimeSelectionTableData();
+
+        expect(data).toEqual([
+          jasmine.objectContaining({
+            id: 'run1',
+            conv_layers: '',
+            conv_kernel_size: '',
+          }),
+          jasmine.objectContaining({
+            id: 'run2',
+            conv_layers: '',
+            conv_kernel_size: '',
+          }),
+        ]);
+      }));
+
       it('shows hparam values with smoothing enabled', fakeAsync(() => {
         store.overrideSelector(
           commonSelectors.getFilteredRenderableRunsIds,

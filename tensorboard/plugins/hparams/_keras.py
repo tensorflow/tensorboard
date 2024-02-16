@@ -24,15 +24,8 @@ from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import summary
 from tensorboard.plugins.hparams import summary_v2
 
-# Stay on Keras 2 for now: https://github.com/keras-team/keras/issues/18467.
-version_fn = getattr(tf.keras, "version", None)
-if version_fn and version_fn().startswith("3."):
-    import tf_keras as keras  # Keras 2
-else:
-    keras = tf.keras  # Keras 2
 
-
-class Callback(keras.callbacks.Callback):
+class Callback(tf.keras.callbacks.Callback):
     """Callback for logging hyperparameters to TensorBoard.
 
     NOTE: This callback only works in TensorFlow eager mode.
@@ -41,7 +34,7 @@ class Callback(keras.callbacks.Callback):
     def __init__(self, writer, hparams, trial_id=None):
         """Create a callback for logging hyperparameters to TensorBoard.
 
-        As with the standard `keras.callbacks.TensorBoard` class, each
+        As with the standard `tf.keras.callbacks.TensorBoard` class, each
         callback object is valid for only one call to `model.fit`.
 
         Args:
