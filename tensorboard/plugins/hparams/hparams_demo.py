@@ -137,7 +137,11 @@ def model_fn(hparams, seed):
         conv_filters *= 2
 
     model.add(tf.keras.layers.Flatten())
-    model.add(tf.keras.layers.Dropout(hparams[HP_DROPOUT], seed=rng.random()))
+    model.add(
+        tf.keras.layers.Dropout(
+            hparams[HP_DROPOUT], seed=rng.randrange(1 << 32)
+        )
+    )
 
     # Add fully connected layers.
     dense_neurons = 32
