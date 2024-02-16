@@ -1,3 +1,8 @@
+# Release 2.16.2
+
+## Bug Fixes
+- Remove dependency on tf-keras pip package. (#6759)
+
 # Release 2.16.1
 
 ## Bug Fixes
