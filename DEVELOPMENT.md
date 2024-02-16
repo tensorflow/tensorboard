@@ -19,7 +19,8 @@ TensorBoard at HEAD relies on the nightly installation of TensorFlow: this allow
 $ virtualenv -p python3 tf
 $ source tf/bin/activate
 (tf)$ pip install --upgrade pip
-(tf)$ pip install tf-nightly -r tensorboard/pip_package/requirements.txt -r tensorboard/pip_package/requirements_dev.txt
+(tf)$ pip install tf-nightly tf-keras-nightly -r tensorboard/pip_package/requirements.txt -r tensorboard/pip_package/requirements_dev.txt
+(tf)$ pip uninstall -y tb-nightly
 ```
 
 TensorBoard builds are done with [Bazel](https://bazel.build), so you may need to [install Bazel](https://docs.bazel.build/versions/master/install.html). The Bazel build will automatically "vulcanize" all the HTML files and generate a "binary" launcher script. When HTML is vulcanized, it means all the script tags and HTML imports are inlined into one big HTML file. Then the Bazel build puts that index.html file inside a static assets zip. The python HTTP server then reads static assets from that zip while serving.
