@@ -18,7 +18,6 @@ import os
 from unittest import mock
 
 from google.protobuf import text_format
-import numpy as np
 import tensorflow as tf
 
 from tensorboard.plugins.hparams import _keras
