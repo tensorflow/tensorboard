@@ -1,31 +1,20 @@
-// import { Chart } from "./chart";
+// import * as Model from './model.js';
+// import * as Views from './views.js';
+import * as d3 from "d3";
+
 
 export async function render() {
-  var script = document.createElement("script");
-  script.src = "https://d3js.org/d3.v7.min.js";
-  script.onload = function () {
-    // D3.js is loaded, you can start using it
-    createElements();
-  };
-  document.head.appendChild(script);
+
+  const stylesheet = document.createElement('link');
+  stylesheet.rel = 'stylesheet';
+  stylesheet.href = './static/style.css';
+
+  document.body.appendChild(stylesheet);
 
   const msg = createElement("h1", "My Plugin");
   document.body.appendChild(msg);
 
   var data = [10, 20, 30, 40, 50];
-
-  // Select the container div using D3.js
-  var container = d3.select("body").append("div").attr("id", "container");
-
-  // Use D3.js to bind data and create elements
-  container
-    .selectAll("p")
-    .data(data)
-    .enter()
-    .append("p")
-    .text(function (d) {
-      return "Data value: " + d;
-    });
 
   const labels = [
     "January",
@@ -75,75 +64,63 @@ export async function render() {
     ctx.fill();
   });
 
-  var buttonStyles = {
-    padding: "10px 20px",
-    backgroundColor: "#4CAF50",
-    border: "none",
-    color: "white",
-    textAlign: "center",
-    textDecoration: "none",
-    display: "inline-block",
-    fontSize: "16px",
-    margin: "4px 2px",
-    cursor: "pointer",
-    borderRadius: "10px",
-  };
+  // var buttonStyles = {
+  //   padding: "10px 20px",
+  //   backgroundColor: "#4CAF50",
+  //   border: "none",
+  //   color: "white",
+  //   textAlign: "center",
+  //   textDecoration: "none",
+  //   display: "inline-block",
+  //   fontSize: "16px",
+  //   margin: "4px 2px",
+  //   cursor: "pointer",
+  //   borderRadius: "10px",
+  // };
 
-  var downloadButton = createElement("button", "Download PNG");
-  applyStyles(downloadButton, buttonStyles);
+  var exportGraph = createElement("button", "Download PNG");
+  exportGraph.classList.add("graph-button");
+  // applyStyles(exportGraph, buttonStyles);
 
-  downloadButton.addEventListener("click", function () {
-    var downloadLink = document.createElement("a");
-    downloadLink.href = canvas.toDataURL("image/png");
-    downloadLink.download = "graph.png";
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
+  exportGraph.addEventListener("click", function () {
+    var downloadGraph = document.createElement("a");
+    
+    downloadGraph.href = canvas.toDataURL("image/png");
+    downloadGraph.download = "custom_graph.png";
+
+    document.body.appendChild(downloadGraph);
+    
+    downloadGraph.click();
+    document.body.removeChild(downloadGraph);
+
   });
-  document.body.appendChild(downloadButton);
 
-  // Declare the chart dimensions and margins.
-  const width = 640;
-  const height = 400;
-  const marginTop = 20;
-  const marginRight = 20;
-  const marginBottom = 30;
-  const marginLeft = 40;
 
-  // Declare the x (horizontal position) scale.
-  const x = d3
-    .scaleUtc()
-    .domain([new Date("2023-01-01"), new Date("2024-01-01")])
-    .range([marginLeft, width - marginRight]);
+  document.body.appendChild(exportGraph);
 
-  // Declare the y (vertical position) scale.
-  const y = d3
-    .scaleLinear()
-    .domain([0, 100])
-    .range([height - marginBottom, marginTop]);
 
-  // Create the SVG container.
-  const svg = d3.create("svg").attr("width", width).attr("height", height);
+  // Create a simple dataset
+const dataset = [10, 20, 30, 40, 50];
 
-  // Add the x-axis.
-  svg
-    .append("g")
-    .attr("transform", `translate(0,${height - marginBottom})`)
-    .call(d3.axisBottom(x));
+// Create a SVG element
+const svg = d3.create("svg")
+  .attr("width", 400)
+  .attr("height", 300);
 
-  // Add the y-axis.
-  svg
-    .append("g")
-    .attr("transform", `translate(${marginLeft},0)`)
-    .call(d3.axisLeft(y));
+// Create bars for each data point
+svg.selectAll("rect")
+  .data(dataset)
+  .enter()
+  .append("rect")
+  .attr("x", (d, i) => i * 80)
+  .attr("y", (d) => 300 - d)
+  .attr("width", 50)
+  .attr("height", (d) => d)
+  .attr("fill", "orange");
 
-  // Append the SVG element.
-  container.append(svg.node());
+// Append the SVG to the body or another container element
+document.body.appendChild(svg.node());
 
-  // Render the graph
-
-  //   const runToFlag = await fetch("./tags").then((response) => response.json());
-  //   const data = await Promise.all();
 }
 
 function createElement(tag, children) {
