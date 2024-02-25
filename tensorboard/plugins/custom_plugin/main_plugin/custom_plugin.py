@@ -32,7 +32,18 @@ class MyPlugin(base_plugin.TBPlugin):
         }
 
     def is_active(self):
-        return True
+
+        if self._data_provider:
+            return True
+        return False
+    
+        ctx = plugin_util.context()
+        experiment = plugin_util.experiment_id()
+        all_scalars = self._data_provider.list_scalars(
+            ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME
+        )
+        return any(all_scalars)
+
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
@@ -47,6 +58,7 @@ class MyPlugin(base_plugin.TBPlugin):
     @wrappers.Request.application
     def _serve_static_file(self, request):
         static_path_part = request.path[len(_PLUGIN_DIRECTORY_PATH_PART) :]
+        print(static_path_part)
         resource_name = os.path.normpath(
             os.path.join(*static_path_part.split("/"))
         )
@@ -72,13 +84,13 @@ class MyPlugin(base_plugin.TBPlugin):
     #         contents = infile.read()
     #     return werkzeug.Response(contents, content_type="text/javascript")
 
-    # @wrappers.Request.application
-    # def _serve_chart_js(self, request):
-    #     del request  # unused
-    #     filepath = os.path.join(os.path.dirname(__file__), "static", "chart.js")
-    #     with open(filepath) as infile:
-    #         contents = infile.read()
-    #     return werkzeug.Response(contents, content_type="text/javascript")
+    @wrappers.Request.application
+    def _serve_chart_js(self, request):
+        del request  # unused
+        filepath = os.path.join(os.path.dirname(__file__), "static", "d3.v7.min.js")
+        with open(filepath) as infile:
+            contents = infile.read()
+        return werkzeug.Response(contents, content_type="text/javascript")
 
     @wrappers.Request.application
     def _serve_greetings(self, request):
