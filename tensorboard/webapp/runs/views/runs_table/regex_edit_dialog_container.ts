@@ -141,7 +141,7 @@ export class RegexEditDialogContainer {
                 colorPalette.colors[
                   groupKeyToColorString.size % colorPalette.colors.length
                 ];
-              colorHex = darkModeEanbled ? color.darkHex : color.lightHex;
+              colorHex = darkModeEnabled ? color.darkHex : color.lightHex;
               groupKeyToColorString.set(groupId, colorHex);
             }
             colorRunPairList.push({groupId, color: colorHex, runs});
