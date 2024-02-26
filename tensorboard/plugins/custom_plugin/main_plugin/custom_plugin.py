@@ -1,19 +1,19 @@
 import os
 import json
 import mimetypes
+import werkzeug
+
+
 from tensorboard.plugins import base_plugin
 from tensorboard import plugin_util
 from tensorboard.data import provider
 from tensorboard.backend import http_util
 from tensorboard import errors
 
-import werkzeug
-from werkzeug import wrappers, exceptions
-
+from werkzeug import wrappers
 from main_plugin import metadata
 
 _PLUGIN_DIRECTORY_PATH_PART = "/data/plugin/custom_plugin/"
-
 
 
 class MyPlugin(base_plugin.TBPlugin):
@@ -36,14 +36,6 @@ class MyPlugin(base_plugin.TBPlugin):
         if self._data_provider:
             return True
         return False
-    
-        ctx = plugin_util.context()
-        experiment = plugin_util.experiment_id()
-        all_scalars = self._data_provider.list_scalars(
-            ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME
-        )
-        return any(all_scalars)
-
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
@@ -52,8 +44,17 @@ class MyPlugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def _serve_tags(self, request):
-        #Handle Routes
-        pass
+        # Handle Routes
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
+        run_tag_mapping = self._data_provider.list_scalars(
+            ctx,
+            experiment_id=experiment,
+            plugin_name=metadata.PLUGIN_NAME,
+        )
+        run_info = {run: list(tags) for (run, tags) in run_tag_mapping.items()}
+
+        return http_util.Respond(request, run_info, "application/json")
 
     @wrappers.Request.application
     def _serve_static_file(self, request):
@@ -67,27 +68,28 @@ class MyPlugin(base_plugin.TBPlugin):
             return http_util.Respond(
                 request, "Not found", "text/plain", code=404
             )
-        
+
         resource_path = os.path.join(os.path.dirname(__file__), resource_name)
         with open(resource_path, "rb") as read_file:
             mimetype = mimetypes.guess_type(resource_path)[0]
             return http_util.Respond(
                 request, read_file.read(), content_type=mimetype
-        )
+            )
 
-
-    # @wrappers.Request.application
-    # def _serve_js(self, request):
-    #     del request  # unused
-    #     filepath = os.path.join(os.path.dirname(__file__), "static", "index.js")
-    #     with open(filepath) as infile:
-    #         contents = infile.read()
-    #     return werkzeug.Response(contents, content_type="text/javascript")
+    @wrappers.Request.application
+    def _serve_js(self, request):
+        del request  # unused
+        filepath = os.path.join(os.path.dirname(__file__), "static", "index.js")
+        with open(filepath) as infile:
+            contents = infile.read()
+        return werkzeug.Response(contents, content_type="text/javascript")
 
     @wrappers.Request.application
     def _serve_chart_js(self, request):
         del request  # unused
-        filepath = os.path.join(os.path.dirname(__file__), "static", "d3.v7.min.js")
+        filepath = os.path.join(
+            os.path.dirname(__file__), "static", "d3.v7.min.js"
+        )
         with open(filepath) as infile:
             contents = infile.read()
         return werkzeug.Response(contents, content_type="text/javascript")
