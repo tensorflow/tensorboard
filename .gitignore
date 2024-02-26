@@ -5,3 +5,4 @@
 *.egg-info/
 *.swp
 node_modules
+/.vscode

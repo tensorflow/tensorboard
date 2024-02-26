@@ -1,0 +1,69 @@
+.graph-button {
+  padding: 10px 20px;
+  background-color: #4caf50;
+  border: none;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.graph-button:hover {
+}
+
+h1 {
+  margin: auto;
+  display: block;
+  align-items: center;
+  text-align: center;
+}
+
+.graph {
+  margin: auto;
+  margin-top: 50px;
+  display: block;
+  align-items: center;
+  text-align: center;
+  background-color: white;
+  border-radius: 10px;
+  padding: 10px;
+  margin-left: 10px;
+  margin-top: -200px;
+  width: 650px;
+}
+
+.graph-area {
+  /* Dark Mode */
+  /* background-color: #303030; */
+  display: flex;
+  margin: auto;
+  top: 0;
+}
+
+.side-toolbar {
+  width: 20%;
+  height: 100vh;
+  background-color: #f57c00;
+  margin-right: 10px;
+  display: block;
+}
+
+.main-container {
+  background-color: lightgray;
+  display: flex;
+  flex-direction: row;
+}
+
+.toolbar-title {
+  color: white;
+  margin: auto;
+  margin-top: 20px;
+  display: block;
+  width: fit-content;
+  font-family: Roboto, sans-serif;
+}
