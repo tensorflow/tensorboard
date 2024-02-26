@@ -90,7 +90,7 @@ export class RegexEditDialogContainer {
         this.store.select(getDarkModeEnabled)
       ),
       map(
-        ([regexString, allRuns, runIdToEid, colorPalette, darkModeEanbled]) => {
+        ([regexString, allRuns, runIdToEid, colorPalette, darkModeEnabled]) => {
           const groupBy = {
             key: GroupByKey.REGEX,
             regexString,
@@ -107,7 +107,7 @@ export class RegexEditDialogContainer {
                 colorPalette.colors[
                   groupKeyToColorString.size % colorPalette.colors.length
                 ];
-              colorHex = darkModeEanbled ? color.darkHex : color.lightHex;
+              colorHex = darkModeEnabled ? color.darkHex : color.lightHex;
               groupKeyToColorString.set(groupId, colorHex);
             }
             colorRunPairList.push({groupId, color: colorHex, runs});
