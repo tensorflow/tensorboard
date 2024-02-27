@@ -133,3 +133,6 @@ data_attr = "glob([\"src/**/*.der\"])"
 [package.metadata.raze.crates.webpki.'0.22.0']
 gen_buildrs = true
 data_attr = "glob([\"src/**/*.der\"])"
+
+[profile.release]
+strip = true
