@@ -55,11 +55,13 @@ py_repositories()
 
 http_archive(
     name = "io_bazel_rules_closure",
-    sha256 = "6a900831c1eb8dbfc9d6879b5820fd614d4ea1db180eb5ff8aedcb75ee747c1f",
-    strip_prefix = "rules_closure-db4683a2a1836ac8e265804ca5fa31852395185b",
+    sha256 = "b2ead8bdcf6d2d56b9cb797699a0ea707d33998edb9067825a588d9ccd3805e0",
+    # Temporarily pin to this commit to unblock go/tbpr/6721: https://github.com/bazelbuild/rules_closure/pull/599
+    # TODO: b/327605070 - Unpin this.
+    strip_prefix = "rules_closure-c56b953045c883b393d6f0f5dbf9900df71949c1",
     urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_closure/archive/db4683a2a1836ac8e265804ca5fa31852395185b.tar.gz",
-        "https://github.com/bazelbuild/rules_closure/archive/db4683a2a1836ac8e265804ca5fa31852395185b.tar.gz",  # 2020-01-15
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_closure/archive/c56b953045c883b393d6f0f5dbf9900df71949c1.tar.gz",
+        "https://github.com/bazelbuild/rules_closure/archive/c56b953045c883b393d6f0f5dbf9900df71949c1.tar.gz",  # 2024-02-28
     ],
 )
 
