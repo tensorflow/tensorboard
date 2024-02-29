@@ -26,7 +26,6 @@ browser(
     visibility = ["//visibility:public"],
     deps = [
         "//third_party/chromium",
-        "//third_party/chromium:chromedriver",
         "@io_bazel_rules_webtesting//go/wsl",
     ],
 )

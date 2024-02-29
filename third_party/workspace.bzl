@@ -71,6 +71,20 @@ def tensorboard_workspace(name = ""):
     )
 
     platform_archive(
+        name = "org_chromium_chromium_macos_arm64",
+        licenses = ["notice"],  # BSD 3-clause (maybe more?)
+        sha256 = "4845ce895d030aeb8bfd877a599f1f07d8c7a77d1e08513e80e60bb0093fca24",
+        # 94.0.4578.0
+        urls = [
+            "https://storage.googleapis.com/chromium-browser-snapshots/Mac_Arm/902390/chrome-mac.zip",
+            "https://storage.googleapis.com/dev-infra-mirror/chromium/902390/chrome-mac_arm64.zip",
+        ],
+        named_files = {
+            "CHROMIUM": "chrome-mac/Chromium.app/Contents/MacOS/Chromium",
+        },
+    )
+
+    platform_archive(
         name = "org_chromium_chromium_windows_x64",  # pinned to Chromium 84.0.4147.0
         licenses = ["notice"],  # BSD 3-clause (maybe more?)
         sha256 = "f441a079046a35afc249a95d29356f33945c0a60b59236b9cf6db532c69dba6f",
@@ -100,6 +114,19 @@ def tensorboard_workspace(name = ""):
         sha256 = "fd32a27148f44796a55f5ce3397015c89ebd9f600d9dda2bcaca54575e2497ae",
         urls = [
             "https://chromedriver.storage.googleapis.com/2.41/chromedriver_mac64.zip",
+        ],
+        named_files = {
+            "CHROMEDRIVER": "chromedriver_mac64/chromedriver",
+        },
+    )
+
+    platform_archive(
+        name = "org_chromium_chromedriver_macos_arm64",
+        licenses = ["reciprocal"],  # BSD 3-clause, ICU, MPL 1.1, libpng (BSD/MIT-like), Academic Free License v. 2.0, BSD 2-clause, MIT
+        sha256 = "1f100aacf4bab4b3ac4218ecf654b17d66f2e07dd455f887bb3d9aa8d21862e1",
+        urls = [
+            "https://storage.googleapis.com/chromium-browser-snapshots/Mac_Arm/902390/chromedriver_mac64.zip",
+            "https://storage.googleapis.com/dev-infra-mirror/chromium/902390/chromedriver_mac_arm64.zip",
         ],
         named_files = {
             "CHROMEDRIVER": "chromedriver_mac64/chromedriver",
