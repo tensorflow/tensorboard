@@ -17,7 +17,7 @@ TensorBoard external dependencies that can be loaded in WORKSPACE files.
 """
 
 load("@bazel_tools//tools/build_defs/repo:java.bzl", "java_import_external")
-load("@io_bazel_rules_webtesting//web/internal:platform_http_file.bzl", "platform_http_file")  # buildifier: disable=bzl-visibility
+load("@io_bazel_rules_webtesting//web/versioned:browsers-0.3.3.bzl", "browser_repositories")
 load("//third_party:fonts.bzl", "tensorboard_fonts_workspace")
 load("//third_party:python.bzl", "tensorboard_python_workspace")
 load("//third_party:js.bzl", "tensorboard_js_workspace")
@@ -46,45 +46,8 @@ def tensorboard_workspace(name = ""):
         actual = "@com_github_grpc_grpc//src/compiler:grpc_python_plugin",
     )
 
-    platform_http_file(
-        name = "org_chromium_chromium",  # pinned to Chromium 84.0.4147.0
-        licenses = ["notice"],  # BSD 3-clause (maybe more?)
-        amd64_sha256 =
-            "49b25bf32b797558eb7957ac7c60e065433bdef278f669291f71edd329505e27",
-        amd64_urls = [
-            "https://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/768959/chrome-linux.zip",
-        ],
-        macos_sha256 =
-            "f0c7dc5c26061e2f179d1cb9819cb786d2c37cca9f53155e57ac2b6ab60c5cbc",
-        macos_urls = [
-            "https://commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/768938/chrome-mac.zip",
-        ],
-        windows_sha256 =
-            "f441a079046a35afc249a95d29356f33945c0a60b59236b9cf6db532c69dba6f",
-        windows_urls = [
-            "https://commondatastorage.googleapis.com/chromium-browser-snapshots/Win_x64/768952/chrome-win.zip",
-        ],
-    )
-
-    platform_http_file(
-        name = "org_chromium_chromedriver",
-        licenses = ["reciprocal"],  # BSD 3-clause, ICU, MPL 1.1, libpng (BSD/MIT-like), Academic Free License v. 2.0, BSD 2-clause, MIT
-        amd64_sha256 =
-            "71eafe087900dbca4bc0b354a1d172df48b31a4a502e21f7c7b156d7e76c95c7",
-        amd64_urls = [
-            "https://chromedriver.storage.googleapis.com/2.41/chromedriver_linux64.zip",
-        ],
-        macos_sha256 =
-            "fd32a27148f44796a55f5ce3397015c89ebd9f600d9dda2bcaca54575e2497ae",
-        macos_urls = [
-            "https://chromedriver.storage.googleapis.com/2.41/chromedriver_mac64.zip",
-        ],
-        windows_sha256 =
-            "a8fa028acebef7b931ef9cb093f02865f9f7495e49351f556e919f7be77f072e",
-        windows_urls = [
-            "https://chromedriver.storage.googleapis.com/2.38/chromedriver_win32.zip",
-        ],
-    )
+    # Use the versioned browsers provided by the web testing rules package.
+    browser_repositories(chromium=True)
 
     java_import_external(
         name = "org_apache_commons_lang3",
