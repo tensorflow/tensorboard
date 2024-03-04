@@ -7,7 +7,7 @@ licenses(["notice"])
 py_web_test_suite(
     name = "core_test",
     srcs = ["core_test.py"],
-    browsers = ["//tensorboard/functionaltests/browsers:chromium"],
+    browsers = ["@io_bazel_rules_webtesting//browsers:chromium-local"],
     data = [
         "//tensorboard",
     ],

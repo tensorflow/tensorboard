@@ -24,20 +24,6 @@ versions.check(
     minimum_bazel_version = "4.2.2",
 )
 
-http_archive(
-    name = "io_bazel_rules_webtesting",
-    sha256 = "41d500a97ad9621dcf92fcb0cd77916e517388b196e5c3f0e63c7753e983b2bb",
-    strip_prefix = "rules_webtesting-4d7ec75d1cbb289f977b41638fc8b630bdf22bee",
-    urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_webtesting/archive/4d7ec75d1cbb289f977b41638fc8b630bdf22bee.tar.gz",
-        "https://github.com/bazelbuild/rules_webtesting/archive/4d7ec75d1cbb289f977b41638fc8b630bdf22bee.tar.gz",
-    ],
-)
-
-load("@io_bazel_rules_webtesting//web:repositories.bzl", "web_test_repositories")
-
-web_test_repositories(omit_bazel_skylib = True)
-
 # rules_python has to be placed before load("@io_bazel_rules_closure//closure:repositories.bzl")
 # in the dependencies list, otherwise we get "cannot load '@rules_python//python:py_xxx.bzl': no such file"
 http_archive(
@@ -50,7 +36,7 @@ http_archive(
     ],
 )
 
-load("@io_bazel_rules_webtesting//web:py_repositories.bzl", "py_repositories")
+load("@rules_python//python:repositories.bzl", "py_repositories")
 
 py_repositories()
 
@@ -73,6 +59,10 @@ rules_closure_dependencies(
     omit_com_google_protobuf = True,
     omit_com_google_protobuf_js = True,
 )
+
+load("@io_bazel_rules_closure//closure:defs.bzl", "setup_web_test_repositories")
+
+setup_web_test_repositories(chromium=True)
 
 http_archive(
     name = "build_bazel_rules_nodejs",
