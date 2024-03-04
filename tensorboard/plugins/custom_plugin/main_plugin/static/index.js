@@ -37,9 +37,11 @@ export async function render() {
 
   document.body.appendChild(sideToolbar);
   document.body.appendChild(graphArea);
+  graphArea.onclick = convertSvgToImage;
 
   mainContainer.appendChild(sideToolbar);
   mainContainer.appendChild(graphArea);
+  graphArea.onclick = convertSvgToImage;
 
   document.body.appendChild(mainContainer);
 
@@ -295,6 +297,43 @@ function applyStyles(element, styles) {
   for (var style in styles) {
     element.style[style] = styles[style];
   }
+}
+
+function convertSvgToImage(svg) {
+  // Get the SVG element as a string
+  const svgString = new XMLSerializer().serializeToString(svg.node());
+
+  // Create Blob object from SVG string
+  const blob = new Blob([svgString], {type: 'image/svg+xml;charset=utf-8'});
+
+  // Create a URL for the Blob
+  const url = URL.createObjectURL(blob);
+
+  // Create an image element
+  const img = new Image();
+
+  img.onload = function () {
+    // Create a canvas element
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+
+    // Draw the image onto the canvas
+    ctx.drawImage(img, 0, 0);
+
+    // Convert canvas to PNG image
+    const pngImage = canvas.toDataURL('image/png');
+
+    // Open the PNG image in a new window
+    window.open(pngImage);
+
+    // Clean up
+    URL.revokeObjectURL(url);
+  };
+
+  // Set the source of the image element to the Blob URL
+  img.src = url;
 }
 
 // Function to load D3.js dynamically
