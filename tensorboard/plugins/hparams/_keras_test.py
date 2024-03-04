@@ -18,6 +18,7 @@ import os
 from unittest import mock
 
 from google.protobuf import text_format
+import numpy as np
 import tensorflow as tf
 
 from tensorboard.plugins.hparams import _keras
@@ -150,19 +151,18 @@ class CallbackTest(tf.test.TestCase):
         # We'll assume that the contents are correct, as in the case where
         # the file writer was constructed implicitly.
 
-    # def test_non_eager_failure(self):
-    #     with tf.compat.v1.Graph().as_default():
-    #         assert not tf.executing_eagerly()
-    #         self._initialize_model(writer=self.logdir)
-    #         with self.assertRaisesRegex(
-    #             RuntimeError, "only supported in TensorFlow eager mode"
-    #         ):
-    #             self.model.fit(
-    #                 x=tf.constant([(1,)]),
-    #                 y=tf.constant([(2,)]),
-    #                 steps_per_epoch=1,
-    #                 callbacks=[self.callback],
-    #             )
+    def test_non_eager_failure(self):
+        with tf.compat.v1.Graph().as_default():
+            assert not tf.executing_eagerly()
+            self._initialize_model(writer=self.logdir)
+            with self.assertRaisesRegex(
+                RuntimeError, "only supported in TensorFlow eager mode"
+            ):
+                self.model.fit(
+                    x=np.ones((1,)),
+                    y=np.ones((1,)),
+                    callbacks=[self.callback],
+                )
 
     def test_reuse_failure(self):
         self._initialize_model(writer=self.logdir)
