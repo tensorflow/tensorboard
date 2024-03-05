@@ -159,8 +159,8 @@ class CallbackTest(tf.test.TestCase):
                 RuntimeError, "only supported in TensorFlow eager mode"
             ):
                 self.model.fit(
-                    x=np.ones((10, 10)),
-                    y=np.ones((10, 10)),
+                    x=np.ones((1,)),
+                    y=np.ones((1,)),
                     callbacks=[self.callback],
                 )
 
