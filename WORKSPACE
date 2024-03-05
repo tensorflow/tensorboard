@@ -24,18 +24,6 @@ versions.check(
     minimum_bazel_version = "4.2.2",
 )
 
-# rules_python has to be placed before load("@io_bazel_rules_closure//closure:repositories.bzl")
-# in the dependencies list, otherwise we get "cannot load '@rules_python//python:py_xxx.bzl': no such file"
-http_archive(
-    name = "rules_python",
-    sha256 = "0a8003b044294d7840ac7d9d73eef05d6ceb682d7516781a4ec62eeb34702578",
-    strip_prefix = "rules_python-0.24.0",
-    urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_python/releases/download/0.24.0/rules_python-0.24.0.tar.gz",
-        "https://github.com/bazelbuild/rules_python/releases/download/0.24.0/rules_python-0.24.0.tar.gz",  # 2023-07-11
-    ],
-)
-
 # Use the same rules_webtesting version required by rules_closure: 
 # https://github.com/bazelbuild/rules_closure/blob/c56b953045c883b393d6f0f5dbf9900df71949c1/closure/repositories.bzl#L1099
 http_archive(
@@ -45,6 +33,18 @@ http_archive(
     urls = [
         "http://mirror.tensorflow.org/github.com/bazelbuild/rules_webtesting/archive/4d7ec75d1cbb289f977b41638fc8b630bdf22bee.tar.gz",
         "https://github.com/bazelbuild/rules_webtesting/archive/4d7ec75d1cbb289f977b41638fc8b630bdf22bee.tar.gz",
+    ],
+)
+
+# rules_python has to be placed before load("@io_bazel_rules_closure//closure:repositories.bzl")
+# in the dependencies list, otherwise we get "cannot load '@rules_python//python:py_xxx.bzl': no such file"
+http_archive(
+    name = "rules_python",
+    sha256 = "0a8003b044294d7840ac7d9d73eef05d6ceb682d7516781a4ec62eeb34702578",
+    strip_prefix = "rules_python-0.24.0",
+    urls = [
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_python/releases/download/0.24.0/rules_python-0.24.0.tar.gz",
+        "https://github.com/bazelbuild/rules_python/releases/download/0.24.0/rules_python-0.24.0.tar.gz",  # 2023-07-11
     ],
 )
 
