@@ -48,7 +48,7 @@ def tensorboard_workspace(name = ""):
     )
 
     # We use our own browser definition below, but this seems to be required by
-    # bazel if we want to reference the new version of rules_webtesting.
+    # the rules_webtesting dependency.
     browser_repositories(chromium = True)
 
     # Chromium browser for multiple platforms, pinned to Chromium 84.0.4147.0.
