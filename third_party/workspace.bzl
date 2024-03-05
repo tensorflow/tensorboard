@@ -18,6 +18,7 @@ TensorBoard external dependencies that can be loaded in WORKSPACE files.
 
 load("@bazel_tools//tools/build_defs/repo:java.bzl", "java_import_external")
 load("@io_bazel_rules_webtesting//web:web.bzl", "platform_archive")
+load("@io_bazel_rules_webtesting//web/versioned:browsers-0.3.3.bzl", "browser_repositories")
 load("//third_party:fonts.bzl", "tensorboard_fonts_workspace")
 load("//third_party:python.bzl", "tensorboard_python_workspace")
 load("//third_party:js.bzl", "tensorboard_js_workspace")
@@ -45,6 +46,10 @@ def tensorboard_workspace(name = ""):
         name = "grpc_python_plugin",
         actual = "@com_github_grpc_grpc//src/compiler:grpc_python_plugin",
     )
+
+    # We use our own browser definition below, but this seems to be required by
+    # bazel if we want to reference the new version of rules_webtesting.
+    browser_repositories(chromium = True)
 
     # Chromium browser for multiple platforms, pinned to Chromium 84.0.4147.0.
     platform_archive(
