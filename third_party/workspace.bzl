@@ -47,8 +47,8 @@ def tensorboard_workspace(name = ""):
         actual = "@com_github_grpc_grpc//src/compiler:grpc_python_plugin",
     )
 
-    # We use our own browser definition below, but this seems to be required by
-    # the rules_webtesting dependency.
+    # We use our own browser definition based on the archives defined below, but
+    # this seems to be required by the rules_webtesting dependency.
     browser_repositories(chromium = True)
 
     # Chromium browser for multiple platforms, pinned to Chromium 84.0.4147.0.
