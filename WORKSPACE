@@ -37,7 +37,7 @@ http_archive(
 )
 
 # Use the same rules_webtesting version required by rules_closure: 
-# https://github.com/bazelbuild/rules_closure/blob/c56b953045c883b393d6f0f5dbf9900df71949c1/closure/repositories.bzl#L1098
+# https://github.com/bazelbuild/rules_closure/blob/c56b953045c883b393d6f0f5dbf9900df71949c1/closure/repositories.bzl#L1099
 http_archive(
     name = "io_bazel_rules_webtesting",
     sha256 = "41d500a97ad9621dcf92fcb0cd77916e517388b196e5c3f0e63c7753e983b2bb",
