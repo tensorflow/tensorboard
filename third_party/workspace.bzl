@@ -18,8 +18,8 @@ TensorBoard external dependencies that can be loaded in WORKSPACE files.
 
 load("@bazel_tools//tools/build_defs/repo:java.bzl", "java_import_external")
 load("//third_party:fonts.bzl", "tensorboard_fonts_workspace")
-load("//third_party:python.bzl", "tensorboard_python_workspace")
 load("//third_party:js.bzl", "tensorboard_js_workspace")
+load("//third_party:python.bzl", "tensorboard_python_workspace")
 load("//third_party:rust.bzl", "tensorboard_rust_workspace")
 
 def tensorboard_workspace(name = ""):
