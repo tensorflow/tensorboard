@@ -138,7 +138,6 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   columns: RunsTableColumn[] = [RunsTableColumn.RUN_NAME];
 
   @Input() experimentIds!: string[];
-  @Input() showHparamsAndMetrics = false;
 
   regexFilter$ = this.store.select(getRunSelectorRegexFilter);
   runsColumns$ = this.store.select(getGroupedRunsTableHeaders);

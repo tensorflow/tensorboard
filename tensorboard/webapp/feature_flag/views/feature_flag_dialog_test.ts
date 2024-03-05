@@ -239,7 +239,7 @@ describe('feature_flag_dialog_container', () => {
     beforeEach(() => {
       store.overrideSelector(getDefaultFeatureFlags, {
         defaultEnableDarkMode: true,
-        enableHparamsInTimeSeries: true,
+        enableSuggestedCards: true,
         inColab: false,
         forceSvg: true,
       } as FeatureFlags);
@@ -277,7 +277,7 @@ describe('feature_flag_dialog_container', () => {
       expect(component.querySelectorAll('tr').length).toEqual(3);
 
       store.overrideSelector(getOverriddenFeatureFlags, {
-        showFlags: 'Hparams',
+        showFlags: 'Suggested',
       });
       store.refreshState();
       fixture.detectChanges();

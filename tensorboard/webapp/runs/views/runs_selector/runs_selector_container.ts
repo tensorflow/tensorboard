@@ -25,14 +25,11 @@ import {RunsTableColumn} from '../runs_table/types';
     <runs-selector-component
       [experimentIds]="experimentIds$ | async"
       [columns]="columns$ | async"
-      [showHparamsAndMetrics]="showHparamsAndMetrics"
     ></runs-selector-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RunsSelectorContainer {
-  @Input() showHparamsAndMetrics?: boolean;
-
   readonly experimentIds$ = this.store
     .select(getExperimentIdsFromRoute)
     .pipe(map((experimentIdsOrNull) => experimentIdsOrNull ?? []));

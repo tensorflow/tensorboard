@@ -153,10 +153,3 @@ export const getIsScalarColumnContextMenusEnabled = createSelector(
     return flags.enableScalarColumnContextMenus;
   }
 );
-
-export const getEnableHparamsInTimeSeries = createSelector(
-  getFeatureFlags,
-  (flags: FeatureFlags): boolean => {
-    return flags.enableHparamsInTimeSeries;
-  }
-);

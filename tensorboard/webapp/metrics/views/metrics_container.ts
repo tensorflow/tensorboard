@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {getEnableHparamsInTimeSeries} from '../../feature_flag/store/feature_flag_selectors';
 import {State} from '../../app_state';
 import {getRunsTableFullScreen} from '../../core/store/core_selectors';
 
@@ -22,10 +21,7 @@ import {getRunsTableFullScreen} from '../../core/store/core_selectors';
   selector: 'metrics-dashboard',
   template: `
     <tb-dashboard-layout>
-      <runs-selector
-        [showHparamsAndMetrics]="showHparamsAndMetrics$ | async"
-        sidebar
-      ></runs-selector>
+      <runs-selector sidebar></runs-selector>
       <metrics-main-view
         main
         *ngIf="!(runsTableFullScreen$ | async)"
@@ -36,7 +32,6 @@ import {getRunsTableFullScreen} from '../../core/store/core_selectors';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MetricsDashboardContainer {
-  showHparamsAndMetrics$ = this.store.select(getEnableHparamsInTimeSeries);
   runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
 
   constructor(readonly store: Store<State>) {}

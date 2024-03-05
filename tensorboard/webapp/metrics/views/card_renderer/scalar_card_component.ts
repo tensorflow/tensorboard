@@ -112,7 +112,6 @@ export class ScalarCardComponent<Downloader> {
   @Input() userViewBox!: Extent | null;
   @Input() columnHeaders!: ColumnHeader[];
   @Input() rangeEnabled!: boolean;
-  @Input() hparamsEnabled?: boolean;
   @Input() columnFilters!: Map<string, DiscreteFilter | IntervalFilter>;
   @Input() selectableColumns!: ColumnHeader[];
   @Input() runToHparamMap!: RunToHparamMap;
