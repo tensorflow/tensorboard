@@ -26,10 +26,13 @@ versions.check(
 
 http_archive(
     name = "io_bazel_rules_webtesting",
-    sha256 = "9bb461d5ef08e850025480bab185fd269242d4e533bca75bfb748001ceb343c3",
+    #    sha256 = "41d500a97ad9621dcf92fcb0cd77916e517388b196e5c3f0e63c7753e983b2bb",
+    #    strip_prefix = "rules_webtesting-4d7ec75d1cbb289f977b41638fc8b630bdf22bee",
+    sha256 = "e9abb7658b6a129740c0b3ef6f5a2370864e102a5ba5ffca2cea565829ed825a",
     urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_webtesting/releases/download/0.3.3/rules_webtesting.tar.gz",
-        "https://github.com/bazelbuild/rules_webtesting/releases/download/0.3.3/rules_webtesting.tar.gz",
+        #        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_webtesting/archive/4d7ec75d1cbb289f977b41638fc8b630bdf22bee.tar.gz",
+        #        "https://github.com/bazelbuild/rules_webtesting/archive/4d7ec75d1cbb289f977b41638fc8b630bdf22bee.tar.gz",
+        "https://github.com/bazelbuild/rules_webtesting/releases/download/0.3.5/rules_webtesting.tar.gz",
     ],
 )
 
