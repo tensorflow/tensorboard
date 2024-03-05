@@ -29,11 +29,11 @@ import {
 } from '../../../selectors';
 import {DeepReadonly} from '../../../util/types';
 import {
-  getDashboardMetricsFilterMap,
-  getDashboardHparamsAndMetricsSpecs,
-  getDashboardHparamFilterMap,
   getDashboardDefaultHparamFilters,
   getDashboardDisplayedHparamColumns,
+  getDashboardHparamFilterMap,
+  getDashboardHparamSpecs,
+  getDashboardMetricsFilterMap,
 } from '../../../hparams/_redux/hparams_selectors';
 import {
   DiscreteFilter,
@@ -270,19 +270,19 @@ export const getFilteredRenderableRunsIds = createSelector(
 );
 
 export const getPotentialHparamColumns = createSelector(
-  getDashboardHparamsAndMetricsSpecs,
+  getDashboardHparamSpecs,
   getExperimentIdsFromRoute,
-  ({hparams}, experimentIds): ColumnHeader[] => {
+  (hparamSpecs, experimentIds): ColumnHeader[] => {
     if (!experimentIds) {
       return [];
     }
 
-    return hparams.map((spec) => ({
+    return hparamSpecs.map((hparamSpec) => ({
       type: ColumnHeaderType.HPARAM,
-      name: spec.name,
+      name: hparamSpec.name,
       // According to the api spec when the displayName is empty, the name should
       // be displayed tensorboard/plugins/hparams/api.proto
-      displayName: spec.displayName || spec.name,
+      displayName: hparamSpec.displayName || hparamSpec.name,
       enabled: false,
       removable: true,
       sortable: true,

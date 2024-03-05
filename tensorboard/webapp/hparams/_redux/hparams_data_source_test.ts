@@ -68,53 +68,29 @@ describe('HparamsDataSource Test', () => {
       httpMock
         .expectOne('/experiment/eid/data/plugin/hparams/experiment')
         .flush(createHparamsExperimentResponse());
-      expect(returnValue).toHaveBeenCalledWith({
-        hparams: [
-          {
-            description: 'describes hparams one',
-            displayName: 'hparams one',
-            name: 'hparams1',
-            type: BackendHparamsValueType.DATA_TYPE_STRING,
-            domain: {
-              type: DomainType.INTERVAL,
-              minValue: -100,
-              maxValue: 100,
-            },
+      expect(returnValue).toHaveBeenCalledWith([
+        {
+          description: 'describes hparams one',
+          displayName: 'hparams one',
+          name: 'hparams1',
+          type: BackendHparamsValueType.DATA_TYPE_STRING,
+          domain: {
+            type: DomainType.INTERVAL,
+            minValue: -100,
+            maxValue: 100,
           },
-          {
-            description: 'describes hparams two',
-            displayName: 'hparams two',
-            name: 'hparams2',
-            type: BackendHparamsValueType.DATA_TYPE_BOOL,
-            domain: {
-              type: DomainType.DISCRETE,
-              values: ['foo', 'bar', 'baz'],
-            },
+        },
+        {
+          description: 'describes hparams two',
+          displayName: 'hparams two',
+          name: 'hparams2',
+          type: BackendHparamsValueType.DATA_TYPE_BOOL,
+          domain: {
+            type: DomainType.DISCRETE,
+            values: ['foo', 'bar', 'baz'],
           },
-        ],
-        metrics: [
-          {
-            name: {
-              tag: 'metrics1',
-              group: '',
-            },
-            tag: 'metrics1',
-            displayName: 'Metrics One',
-            description: 'describe metrics one',
-            datasetType: DatasetType.DATASET_UNKNOWN,
-          },
-          {
-            name: {
-              tag: 'metrics2',
-              group: 'group',
-            },
-            tag: 'metrics2',
-            displayName: 'Metrics Two',
-            description: 'describe metrics two',
-            datasetType: DatasetType.DATASET_TRAINING,
-          },
-        ],
-      });
+        },
+      ]);
     });
 
     it('treats missing domains as discrete domains', () => {
@@ -123,41 +99,35 @@ describe('HparamsDataSource Test', () => {
       httpMock
         .expectOne('/experiment/eid/data/plugin/hparams/experiment')
         .flush(createHparamsExperimentNoDomainResponse());
-      expect(returnValue).toHaveBeenCalledWith(
-        jasmine.objectContaining({
-          hparams: [
-            {
-              description: 'describes hparams one',
-              displayName: 'hparams one',
-              name: 'hparams1',
-              type: BackendHparamsValueType.DATA_TYPE_STRING,
-              domain: {
-                type: DomainType.DISCRETE,
-                values: [],
-              },
-            },
-            {
-              description: 'describes hparams two',
-              displayName: 'hparams two',
-              name: 'hparams2',
-              type: BackendHparamsValueType.DATA_TYPE_BOOL,
-              domain: {
-                type: DomainType.DISCRETE,
-                values: ['foo', 'bar', 'baz'],
-              },
-            },
-          ],
-        })
-      );
+      expect(returnValue).toHaveBeenCalledWith([
+        {
+          description: 'describes hparams one',
+          displayName: 'hparams one',
+          name: 'hparams1',
+          type: BackendHparamsValueType.DATA_TYPE_STRING,
+          domain: {
+            type: DomainType.DISCRETE,
+            values: [],
+          },
+        },
+        {
+          description: 'describes hparams two',
+          displayName: 'hparams two',
+          name: 'hparams2',
+          type: BackendHparamsValueType.DATA_TYPE_BOOL,
+          domain: {
+            type: DomainType.DISCRETE,
+            values: ['foo', 'bar', 'baz'],
+          },
+        },
+      ]);
     });
   });
 
   describe('fetchSessionGroups', () => {
     it('uses /experiment when a single experiment id is provided', () => {
       const returnValue = jasmine.createSpy();
-      dataSource
-        .fetchSessionGroups(['eid'], {hparams: [], metrics: []})
-        .subscribe(returnValue);
+      dataSource.fetchSessionGroups(['eid'], []).subscribe(returnValue);
       httpMock
         .expectOne('/experiment/eid/data/plugin/hparams/session_groups')
         .flush(createHparamsListSessionGroupResponse());
@@ -167,7 +137,7 @@ describe('HparamsDataSource Test', () => {
     it('uses /compare when a multiple experiment ids are provided', () => {
       const returnValue = jasmine.createSpy();
       dataSource
-        .fetchSessionGroups(['eid1', 'eid2'], {hparams: [], metrics: []})
+        .fetchSessionGroups(['eid1', 'eid2'], [])
         .subscribe(returnValue);
       httpMock
         .expectOne('/compare/0:eid1,1:eid2/data/plugin/hparams/session_groups')
@@ -180,9 +150,7 @@ describe('HparamsDataSource Test', () => {
       const callback = (resp: SessionGroup[]) => {
         sessionGroups = resp;
       };
-      dataSource
-        .fetchSessionGroups(['eid'], {hparams: [], metrics: []})
-        .subscribe(callback);
+      dataSource.fetchSessionGroups(['eid'], []).subscribe(callback);
       httpMock
         .expectOne('/experiment/eid/data/plugin/hparams/session_groups')
         .flush(createHparamsListSessionGroupResponse());
@@ -195,9 +163,7 @@ describe('HparamsDataSource Test', () => {
       const callback = (resp: SessionGroup[]) => {
         sessionGroups = resp;
       };
-      dataSource
-        .fetchSessionGroups(['eid1', 'eid2'], {hparams: [], metrics: []})
-        .subscribe(callback);
+      dataSource.fetchSessionGroups(['eid1', 'eid2'], []).subscribe(callback);
 
       const response = createHparamsListSessionGroupResponse();
       // This is the format expected in comparison view.
@@ -333,26 +299,7 @@ export function createHparamsExperimentResponse(): BackendHparamsExperimentRespo
         domainDiscrete: ['foo', 'bar', 'baz'],
       },
     ],
-    metricInfos: [
-      {
-        name: {
-          group: '',
-          tag: 'metrics1',
-        },
-        displayName: 'Metrics One',
-        description: 'describe metrics one',
-        datasetType: DatasetType.DATASET_UNKNOWN,
-      },
-      {
-        name: {
-          group: 'group',
-          tag: 'metrics2',
-        },
-        displayName: 'Metrics Two',
-        description: 'describe metrics two',
-        datasetType: DatasetType.DATASET_TRAINING,
-      },
-    ],
+    metricInfos: [],
     name: 'experiment name',
     timeCreatedSecs: 1337,
     user: 'user name',
@@ -377,26 +324,7 @@ export function createHparamsExperimentNoDomainResponse(): BackendHparamsExperim
         domainDiscrete: ['foo', 'bar', 'baz'],
       },
     ],
-    metricInfos: [
-      {
-        name: {
-          group: '',
-          tag: 'metrics1',
-        },
-        displayName: 'Metrics One',
-        description: 'describe metrics one',
-        datasetType: DatasetType.DATASET_UNKNOWN,
-      },
-      {
-        name: {
-          group: 'group',
-          tag: 'metrics2',
-        },
-        displayName: 'Metrics Two',
-        description: 'describe metrics two',
-        datasetType: DatasetType.DATASET_TRAINING,
-      },
-    ],
+    metricInfos: [],
     name: 'experiment name',
     timeCreatedSecs: 1337,
     user: 'user name',

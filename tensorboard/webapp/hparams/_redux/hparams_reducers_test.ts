@@ -16,7 +16,7 @@ limitations under the License.
 import {DomainType, RunStatus} from '../types';
 import * as actions from './hparams_actions';
 import {reducers} from './hparams_reducers';
-import {buildHparamSpec, buildHparamsState, buildMetricSpec} from './testing';
+import {buildHparamSpec, buildHparamsState} from './testing';
 import {ColumnHeaderType, Side} from '../../widgets/data_table/types';
 import {persistentSettingsLoaded} from '../../persistent_settings';
 import {dataTableUtils} from '../../widgets/data_table/utils';
@@ -95,25 +95,21 @@ describe('hparams/_redux/hparams_reducers_test', () => {
   });
 
   describe('hparamsFetchSessionGroupsSucceeded', () => {
-    it('saves action.hparamsAndMetricsSpecs as dashboardSpecs', () => {
+    it('saves action.hparamSpecs as dashboardHparamSpecs', () => {
       const state = buildHparamsState({
-        dashboardSpecs: {},
+        dashboardHparamSpecs: [],
       });
       const state2 = reducers(
         state,
         actions.hparamsFetchSessionGroupsSucceeded({
-          hparamsAndMetricsSpecs: {
-            hparams: [buildHparamSpec({name: 'foo'})],
-            metrics: [buildMetricSpec({tag: 'bar'})],
-          },
+          hparamSpecs: [buildHparamSpec({name: 'foo'})],
           sessionGroups: [],
         })
       );
 
-      expect(state2.dashboardSpecs).toEqual({
-        hparams: [buildHparamSpec({name: 'foo'})],
-        metrics: [buildMetricSpec({tag: 'bar'})],
-      });
+      expect(state2.dashboardHparamSpecs).toEqual([
+        buildHparamSpec({name: 'foo'}),
+      ]);
     });
 
     it('saves action.sessionGroups as dashboardSessionGroups', () => {
@@ -141,10 +137,7 @@ describe('hparams/_redux/hparams_reducers_test', () => {
       const state2 = reducers(
         state,
         actions.hparamsFetchSessionGroupsSucceeded({
-          hparamsAndMetricsSpecs: {
-            hparams: [],
-            metrics: [],
-          },
+          hparamSpecs: [],
           sessionGroups: [mockSessionGroup],
         })
       );

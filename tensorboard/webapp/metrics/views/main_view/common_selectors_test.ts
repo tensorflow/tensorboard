@@ -13,10 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {RouteKind} from '../../../app_routing';
-import {
-  buildHparamSpec,
-  buildMetricSpec,
-} from '../../../hparams/_redux/testing';
+import {buildHparamSpec} from '../../../hparams/_redux/testing';
 import {
   buildAppRoutingState,
   buildStateFromAppRoutingState,
@@ -208,21 +205,18 @@ describe('common selectors', () => {
         },
       },
       hparams: {
-        dashboardSpecs: {
-          hparams: [
-            buildHparamSpec({name: 'conv_layers', displayName: 'Conv Layers'}),
-            buildHparamSpec({
-              name: 'conv_kernel_size',
-              displayName: 'Conv Kernel Size',
-            }),
-            buildHparamSpec({
-              name: 'dense_layers',
-              displayName: 'Dense Layers',
-            }),
-            buildHparamSpec({name: 'dropout', displayName: 'Dropout'}),
-          ],
-          metrics: [buildMetricSpec({displayName: 'Bar'})],
-        },
+        dashboardHparamSpecs: [
+          buildHparamSpec({name: 'conv_layers', displayName: 'Conv Layers'}),
+          buildHparamSpec({
+            name: 'conv_kernel_size',
+            displayName: 'Conv Kernel Size',
+          }),
+          buildHparamSpec({
+            name: 'dense_layers',
+            displayName: 'Dense Layers',
+          }),
+          buildHparamSpec({name: 'dropout', displayName: 'Dropout'}),
+        ],
         dashboardSessionGroups: [],
         dashboardDisplayedHparamColumns: [
           {
@@ -1058,7 +1052,7 @@ describe('common selectors', () => {
     });
 
     it('sets name as display name when a display name is not provided', () => {
-      state.hparams!.dashboardSpecs.hparams = [
+      state.hparams!.dashboardHparamSpecs = [
         buildHparamSpec({name: 'conv_layers', displayName: ''}),
       ];
 

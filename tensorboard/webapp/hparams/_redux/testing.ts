@@ -20,7 +20,6 @@ import {
   HparamSpec,
   HparamValue,
   HparamsValueType,
-  MetricSpec,
   MetricsValue,
   RunStatus,
   Session,
@@ -32,10 +31,7 @@ export function buildHparamsState(
   overrides: DeepPartial<HparamsState> = {}
 ): HparamsState {
   return {
-    dashboardSpecs: {
-      hparams: overrides.dashboardSpecs?.hparams ?? [],
-      metrics: overrides.dashboardSpecs?.metrics ?? [],
-    },
+    dashboardHparamSpecs: overrides.dashboardHparamSpecs ?? [],
     dashboardSessionGroups: overrides.dashboardSessionGroups ?? [],
     dashboardFilters: {
       hparams: overrides.dashboardFilters?.hparams ?? new Map(),
@@ -59,23 +55,6 @@ export function buildHparamSpec(
     domain: {type: DomainType.INTERVAL, minValue: 0, maxValue: 1},
     name: 'sample_param',
     type: HparamsValueType.DATA_TYPE_FLOAT64,
-    ...override,
-  };
-}
-
-export function buildMetricSpec(
-  override: Partial<MetricSpec> = {}
-): MetricSpec {
-  return {
-    name: {
-      ...override?.name,
-      tag: 'metric',
-      group: 'some group',
-    },
-    tag: 'tag',
-    displayName: 'Tag',
-    description: 'This is a tags',
-    datasetType: DatasetType.DATASET_TRAINING,
     ...override,
   };
 }

@@ -20,26 +20,21 @@ import * as selectors from './hparams_selectors';
 import {
   buildHparamSpec,
   buildHparamsState,
-  buildMetricSpec,
   buildStateFromHparamsState,
 } from './testing';
 
 describe('hparams/_redux/hparams_selectors_test', () => {
-  describe('#getDashboardHparamsAndMetricsSpecs', () => {
+  describe('#getDashboardHparamSpecs', () => {
     it('returns dashboard specs', () => {
       const state = buildStateFromHparamsState(
         buildHparamsState({
-          dashboardSpecs: {
-            hparams: [buildHparamSpec({name: 'foo'})],
-            metrics: [buildMetricSpec({tag: 'bar'})],
-          },
+          dashboardHparamSpecs: [buildHparamSpec({name: 'foo'})],
         })
       );
 
-      expect(selectors.getDashboardHparamsAndMetricsSpecs(state)).toEqual({
-        hparams: [buildHparamSpec({name: 'foo'})],
-        metrics: [buildMetricSpec({tag: 'bar'})],
-      });
+      expect(selectors.getDashboardHparamSpecs(state)).toEqual([
+        buildHparamSpec({name: 'foo'}),
+      ]);
     });
   });
 
@@ -66,25 +61,23 @@ describe('hparams/_redux/hparams_selectors_test', () => {
     it('generates default filters for all hparam specs', () => {
       const state = buildStateFromHparamsState(
         buildHparamsState({
-          dashboardSpecs: {
-            hparams: [
-              buildHparamSpec({
-                name: 'interval hparam',
-                domain: {
-                  type: DomainType.INTERVAL,
-                  minValue: 2,
-                  maxValue: 5,
-                },
-              }),
-              buildHparamSpec({
-                name: 'discrete hparam',
-                domain: {
-                  type: DomainType.DISCRETE,
-                  values: [2, 4, 6, 8],
-                },
-              }),
-            ],
-          },
+          dashboardHparamSpecs: [
+            buildHparamSpec({
+              name: 'interval hparam',
+              domain: {
+                type: DomainType.INTERVAL,
+                minValue: 2,
+                maxValue: 5,
+              },
+            }),
+            buildHparamSpec({
+              name: 'discrete hparam',
+              domain: {
+                type: DomainType.DISCRETE,
+                values: [2, 4, 6, 8],
+              },
+            }),
+          ],
         })
       );
       expect(selectors.getDashboardDefaultHparamFilters(state)).toEqual(
@@ -118,9 +111,7 @@ describe('hparams/_redux/hparams_selectors_test', () => {
     it('returns no columns if no hparam specs', () => {
       const state = buildStateFromHparamsState(
         buildHparamsState({
-          dashboardSpecs: {
-            hparams: [],
-          },
+          dashboardHparamSpecs: [],
           dashboardDisplayedHparamColumns: [
             {
               type: ColumnHeaderType.HPARAM,
@@ -144,9 +135,7 @@ describe('hparams/_redux/hparams_selectors_test', () => {
     it('returns only hparam columns that have specs', () => {
       const state = buildStateFromHparamsState(
         buildHparamsState({
-          dashboardSpecs: {
-            hparams: [buildHparamSpec({name: 'conv_layers'})],
-          },
+          dashboardHparamSpecs: [buildHparamSpec({name: 'conv_layers'})],
           dashboardDisplayedHparamColumns: [
             {
               type: ColumnHeaderType.HPARAM,
