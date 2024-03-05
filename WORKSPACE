@@ -36,7 +36,19 @@ http_archive(
     ],
 )
 
-load("@rules_python//python:repositories.bzl", "py_repositories")
+# Use the same rules_webtesting version required by rules_closure: 
+# https://github.com/bazelbuild/rules_closure/blob/c56b953045c883b393d6f0f5dbf9900df71949c1/closure/repositories.bzl#L1098
+http_archive(
+    name = "io_bazel_rules_webtesting",
+    sha256 = "41d500a97ad9621dcf92fcb0cd77916e517388b196e5c3f0e63c7753e983b2bb",
+    strip_prefix = "rules_webtesting-4d7ec75d1cbb289f977b41638fc8b630bdf22bee",
+    urls = [
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_webtesting/archive/4d7ec75d1cbb289f977b41638fc8b630bdf22bee.tar.gz",
+        "https://github.com/bazelbuild/rules_webtesting/archive/4d7ec75d1cbb289f977b41638fc8b630bdf22bee.tar.gz",
+    ],
+)
+
+load("@io_bazel_rules_webtesting//web:py_repositories.bzl", "py_repositories")
 
 py_repositories()
 
@@ -169,9 +181,14 @@ load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
 
 grpc_deps()
 
-load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
-
-grpc_extra_deps()
+http_archive(
+    name = "build_bazel_rules_swift",
+    sha256 = "32f95dbe6a88eb298aaa790f05065434f32a662c65ec0a6aabdaf6881e4f169f",
+    urls = [
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_swift/releases/download/1.5.0/rules_swift.1.5.0.tar.gz",
+        "https://github.com/bazelbuild/rules_swift/releases/download/1.5.0/rules_swift.1.5.0.tar.gz",
+    ],
+)
 
 http_archive(
     name = "rules_rust",
