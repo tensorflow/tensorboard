@@ -18,7 +18,6 @@ import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
 import {MockStore} from '@ngrx/store/testing';
 import {State} from '../../app_state';
-import {getEnableHparamsInTimeSeries} from '../../feature_flag/store/feature_flag_selectors';
 import {RunsSelectorContainer} from '../../runs/views/runs_selector/runs_selector_container';
 import {provideMockTbStore} from '../../testing/utils';
 import {MetricsDashboardContainer} from './metrics_container';
@@ -45,30 +44,9 @@ describe('metrics view', () => {
   });
 
   it('renders', () => {
-    store.overrideSelector(getEnableHparamsInTimeSeries, false);
     const fixture = TestBed.createComponent(MetricsDashboardContainer);
     fixture.detectChanges();
     expect(fixture.debugElement.query(By.css('runs-selector'))).not.toBeNull();
-  });
-
-  it('enables hparamsAndMetrics when enableHparamsInTimeSeries is true', () => {
-    store.overrideSelector(getEnableHparamsInTimeSeries, true);
-    const fixture = TestBed.createComponent(MetricsDashboardContainer);
-    fixture.detectChanges();
-    expect(
-      fixture.debugElement.query(By.css('runs-selector')).componentInstance
-        .showHparamsAndMetrics
-    ).toBeTrue();
-  });
-
-  it('disables hparamsAndMetrics when enableHparamsInTimeSeries is false', () => {
-    store.overrideSelector(getEnableHparamsInTimeSeries, false);
-    const fixture = TestBed.createComponent(MetricsDashboardContainer);
-    fixture.detectChanges();
-    expect(
-      fixture.debugElement.query(By.css('runs-selector')).componentInstance
-        .showHparamsAndMetrics
-    ).toBeFalse();
   });
 
   it('hides main view when the runs table is full screen is true', () => {

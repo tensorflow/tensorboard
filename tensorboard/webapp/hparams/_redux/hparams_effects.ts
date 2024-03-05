@@ -38,7 +38,6 @@ import {HttpErrorResponse} from '../../webapp_data_source/tb_http_client';
 import * as hparamsActions from './hparams_actions';
 import {HparamsDataSource} from './hparams_data_source';
 import {HparamAndMetricSpec, SessionGroup} from '../types';
-import {getEnableHparamsInTimeSeries} from '../../feature_flag/store/feature_flag_selectors';
 import {RouteKind} from '../../app_routing/types';
 
 /**
@@ -71,15 +70,9 @@ export class HparamsEffects {
   /** @export */
   loadHparamsData$ = createEffect(() => {
     return merge(this.navigated$, this.loadHparamsOnReload$).pipe(
-      withLatestFrom(
-        this.store.select(getEnableHparamsInTimeSeries),
-        this.store.select(getActiveRoute)
-      ),
+      withLatestFrom(this.store.select(getActiveRoute)),
       filter(
-        ([, getEnableHparamsInTimeSeries]) => getEnableHparamsInTimeSeries
-      ),
-      filter(
-        ([, , activeRoute]) =>
+        ([, activeRoute]) =>
           activeRoute?.routeKind === RouteKind.EXPERIMENT ||
           activeRoute?.routeKind === RouteKind.COMPARE_EXPERIMENT
       ),
