@@ -20,10 +20,7 @@ import * as actions from './hparams_actions';
 import {HparamsState} from './types';
 
 const initialState: HparamsState = {
-  dashboardSpecs: {
-    hparams: [],
-    metrics: [],
-  },
+  dashboardHparamSpecs: [],
   dashboardSessionGroups: [],
   dashboardFilters: {
     hparams: new Map(),
@@ -45,12 +42,12 @@ const reducer: ActionReducer<HparamsState, Action> = createReducer(
     return state;
   }),
   on(actions.hparamsFetchSessionGroupsSucceeded, (state, action) => {
-    const nextDashboardSpecs = action.hparamsAndMetricsSpecs;
+    const nextDashboardHparamSpecs = action.hparamSpecs;
     const nextDashboardSessionGroups = action.sessionGroups;
 
     return {
       ...state,
-      dashboardSpecs: nextDashboardSpecs,
+      dashboardHparamSpecs: nextDashboardHparamSpecs,
       dashboardSessionGroups: nextDashboardSessionGroups,
     };
   }),

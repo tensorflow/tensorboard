@@ -1789,12 +1789,10 @@ describe('metrics selectors', () => {
         },
       ];
       hparamsState = {
-        dashboardSpecs: {
-          hparams: [
-            buildHparamSpec({name: 'conv_layers'}),
-            buildHparamSpec({name: 'conv_kernel_size'}),
-          ],
-        },
+        dashboardHparamSpecs: [
+          buildHparamSpec({name: 'conv_layers'}),
+          buildHparamSpec({name: 'conv_kernel_size'}),
+        ],
         dashboardDisplayedHparamColumns: [
           {
             type: ColumnHeaderType.HPARAM,

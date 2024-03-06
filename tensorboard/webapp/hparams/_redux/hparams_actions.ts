@@ -21,13 +21,13 @@ import {
   AddColumnEvent,
   ReorderColumnEvent,
 } from '../../widgets/data_table/types';
-import {HparamAndMetricSpec, SessionGroup, ColumnHeader} from '../types';
+import {HparamSpec, SessionGroup, ColumnHeader} from '../types';
 import {HparamFilter, MetricFilter} from './types';
 
 export const hparamsFetchSessionGroupsSucceeded = createAction(
   '[Hparams] Hparams Fetch Session Groups Succeeded',
   props<{
-    hparamsAndMetricsSpecs: HparamAndMetricSpec;
+    hparamSpecs: HparamSpec[];
     sessionGroups: SessionGroup[];
   }>()
 );

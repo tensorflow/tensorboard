@@ -26,7 +26,6 @@ export {
   DomainType,
   HparamSpec,
   HparamValue,
-  MetricSpec,
 } from '../../data_source/runs_data_source_types';
 
 export enum RunsTableColumn {

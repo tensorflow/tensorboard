@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
-  DiscreteFilter,
-  IntervalFilter,
   ColumnHeader,
-  HparamAndMetricSpec,
+  DiscreteFilter,
+  HparamSpec,
+  IntervalFilter,
   SessionGroup,
 } from '../_types';
 
@@ -29,7 +29,7 @@ export type MetricFilter = IntervalFilter;
 export const HPARAMS_FEATURE_KEY = 'hparams';
 
 export interface HparamsState {
-  dashboardSpecs: HparamAndMetricSpec;
+  dashboardHparamSpecs: HparamSpec[];
   dashboardSessionGroups: SessionGroup[];
   dashboardFilters: {
     hparams: Map<string, HparamFilter>;

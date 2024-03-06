@@ -12,11 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {
-  HparamSpec,
-  MetricSpec,
-} from '../runs/data_source/runs_data_source_types';
-
 export {
   DiscreteFilter,
   IntervalFilter,
@@ -30,7 +25,6 @@ export {
   DomainType,
   HparamSpec,
   HparamsValueType,
-  MetricSpec,
   Domain,
   HparamValue,
   RunToHparamsAndMetrics,
@@ -50,8 +44,3 @@ export {
   Session,
   MetricsValue,
 } from '../runs/data_source/runs_backend_types';
-
-export interface HparamAndMetricSpec {
-  hparams: HparamSpec[];
-  metrics: MetricSpec[];
-}
