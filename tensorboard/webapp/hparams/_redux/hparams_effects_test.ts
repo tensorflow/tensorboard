@@ -23,10 +23,9 @@ import {State} from '../../app_state';
 import {provideMockTbStore} from '../../testing/utils';
 import {HparamsDataSource} from './hparams_data_source';
 import {of, ReplaySubject} from 'rxjs';
-import {buildHparamSpec, buildMetricSpec} from './testing';
-import {HparamAndMetricSpec, RunStatus, SessionGroup} from '../types';
+import {buildHparamSpec} from './testing';
+import {HparamSpec, RunStatus, SessionGroup} from '../types';
 import * as selectors from '../../selectors';
-import * as runsActions from '../../runs/actions';
 import * as hparamsActions from './hparams_actions';
 import * as appRoutingActions from '../../app_routing/actions';
 import * as coreActions from '../../core/actions';
@@ -47,7 +46,7 @@ describe('hparams effects', () => {
   let dispatchSpy: jasmine.Spy;
   let actualActions: Action[];
 
-  let mockHparamsAndMetricsSpecs: HparamAndMetricSpec;
+  let mockHparamSpecs: HparamSpec[];
   let mockSessionGroups: SessionGroup[];
 
   beforeEach(async () => {
@@ -74,10 +73,7 @@ describe('hparams effects', () => {
       HparamsDataSource
     ) as jasmine.SpyObj<HparamsDataSource>;
 
-    mockHparamsAndMetricsSpecs = {
-      hparams: [buildHparamSpec({name: 'h1'})],
-      metrics: [buildMetricSpec({tag: 'm1'})],
-    };
+    mockHparamSpecs = [buildHparamSpec({name: 'h1'})];
     mockSessionGroups = [
       {
         name: 'session_group_1',
@@ -99,9 +95,7 @@ describe('hparams effects', () => {
       },
     ];
 
-    dataSource.fetchExperimentInfo.and.returnValue(
-      of(mockHparamsAndMetricsSpecs)
-    );
+    dataSource.fetchExperimentInfo.and.returnValue(of(mockHparamSpecs));
 
     dataSource.fetchSessionGroups.and.returnValue(of(mockSessionGroups));
   });
@@ -141,14 +135,11 @@ describe('hparams effects', () => {
       ]);
       expect(dataSource.fetchSessionGroups).toHaveBeenCalledWith(
         ['expFromRoute'],
-        {
-          hparams: [buildHparamSpec({name: 'h1'})],
-          metrics: [buildMetricSpec({tag: 'm1'})],
-        }
+        [buildHparamSpec({name: 'h1'})]
       );
       expect(actualActions).toEqual([
         hparamsActions.hparamsFetchSessionGroupsSucceeded({
-          hparamsAndMetricsSpecs: mockHparamsAndMetricsSpecs,
+          hparamSpecs: mockHparamSpecs,
           sessionGroups: mockSessionGroups,
         }),
       ]);
@@ -159,7 +150,7 @@ describe('hparams effects', () => {
       action.next(appRoutingActions.navigated({} as any));
       expect(actualActions).toEqual([
         hparamsActions.hparamsFetchSessionGroupsSucceeded({
-          hparamsAndMetricsSpecs: mockHparamsAndMetricsSpecs,
+          hparamSpecs: mockHparamSpecs,
           sessionGroups: mockSessionGroups,
         }),
       ]);
@@ -172,14 +163,11 @@ describe('hparams effects', () => {
       ]);
       expect(dataSource.fetchSessionGroups).toHaveBeenCalledWith(
         ['expFromRoute'],
-        {
-          hparams: [buildHparamSpec({name: 'h1'})],
-          metrics: [buildMetricSpec({tag: 'm1'})],
-        }
+        [buildHparamSpec({name: 'h1'})]
       );
       expect(actualActions).toEqual([
         hparamsActions.hparamsFetchSessionGroupsSucceeded({
-          hparamsAndMetricsSpecs: mockHparamsAndMetricsSpecs,
+          hparamSpecs: mockHparamSpecs,
           sessionGroups: mockSessionGroups,
         }),
       ]);
@@ -192,14 +180,11 @@ describe('hparams effects', () => {
       ]);
       expect(dataSource.fetchSessionGroups).toHaveBeenCalledWith(
         ['expFromRoute'],
-        {
-          hparams: [buildHparamSpec({name: 'h1'})],
-          metrics: [buildMetricSpec({tag: 'm1'})],
-        }
+        [buildHparamSpec({name: 'h1'})]
       );
       expect(actualActions).toEqual([
         hparamsActions.hparamsFetchSessionGroupsSucceeded({
-          hparamsAndMetricsSpecs: mockHparamsAndMetricsSpecs,
+          hparamSpecs: mockHparamSpecs,
           sessionGroups: mockSessionGroups,
         }),
       ]);

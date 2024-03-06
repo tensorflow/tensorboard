@@ -19,10 +19,10 @@ import {hparamSpecToDefaultFilter} from './utils';
 const getHparamsState =
   createFeatureSelector<HparamsState>(HPARAMS_FEATURE_KEY);
 
-export const getDashboardHparamsAndMetricsSpecs = createSelector(
+export const getDashboardHparamSpecs = createSelector(
   getHparamsState,
   (state: HparamsState) => {
-    return state.dashboardSpecs;
+    return state.dashboardHparamSpecs;
   }
 );
 
@@ -34,10 +34,10 @@ export const getDashboardSessionGroups = createSelector(
 );
 
 export const getDashboardDefaultHparamFilters = createSelector(
-  getDashboardHparamsAndMetricsSpecs,
-  (specs): Map<string, HparamFilter> => {
+  getDashboardHparamSpecs,
+  (hparamSpecs): Map<string, HparamFilter> => {
     const hparams = new Map(
-      specs.hparams.map((hparamSpec) => {
+      hparamSpecs.map((hparamSpec) => {
         return [hparamSpec.name, hparamSpecToDefaultFilter(hparamSpec)];
       })
     );
@@ -47,10 +47,11 @@ export const getDashboardDefaultHparamFilters = createSelector(
 );
 
 export const getDashboardDisplayedHparamColumns = createSelector(
-  getDashboardHparamsAndMetricsSpecs,
   getHparamsState,
-  ({hparams}, state) => {
-    const hparamSet = new Set(hparams.map((hparam) => hparam.name));
+  (state) => {
+    const hparamSet = new Set(
+      state.dashboardHparamSpecs.map((hparamSpec) => hparamSpec.name)
+    );
     return state.dashboardDisplayedHparamColumns.filter((column) =>
       hparamSet.has(column.name)
     );

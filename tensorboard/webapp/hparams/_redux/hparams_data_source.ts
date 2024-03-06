@@ -17,6 +17,7 @@ import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 import {
+  BackendListSessionGroupResponse,
   Domain,
   DomainType,
   BackendListSessionGroupRequest,
@@ -24,11 +25,10 @@ import {
   BackendHparamsExperimentResponse,
   BackendHparamSpec,
   DiscreteDomainHparamSpec,
-  SessionGroup,
-  HparamAndMetricSpec,
+  HparamSpec,
   IntervalDomainHparamSpec,
-  BackendListSessionGroupResponse,
   RunStatus,
+  SessionGroup,
 } from '../types';
 import {TBHttpClient} from '../../webapp_data_source/tb_http_client';
 
@@ -87,9 +87,7 @@ export class HparamsDataSource {
     return experimentIds.map((eid, index) => `${index}:${eid}`).join(',');
   }
 
-  fetchExperimentInfo(
-    experimentIds: string[]
-  ): Observable<HparamAndMetricSpec> {
+  fetchExperimentInfo(experimentIds: string[]): Observable<HparamSpec[]> {
     const formattedExperimentIds = this.formatExperimentIds(experimentIds);
 
     const experimentRequest: BackendHparamsExperimentRequest = {
@@ -110,42 +108,31 @@ export class HparamsDataSource {
       )
       .pipe(
         map((response) => {
-          return {
-            hparams: response.hparamInfos.map((hparam) => {
-              const feHparam = {
-                ...hparam,
-                domain: getHparamDomain(hparam),
-              };
+          return response.hparamInfos.map((hparam) => {
+            const feHparam = {
+              ...hparam,
+              domain: getHparamDomain(hparam),
+            };
 
-              delete (feHparam as any).domainInterval;
-              delete (feHparam as any).domainDiscrete;
+            delete (feHparam as any).domainInterval;
+            delete (feHparam as any).domainDiscrete;
 
-              return feHparam;
-            }),
-            metrics: response.metricInfos.map((metric) => ({
-              ...metric,
-              tag: metric.name.tag,
-            })),
-          };
+            return feHparam;
+          });
         })
       );
   }
 
   fetchSessionGroups(
     experimentIds: string[],
-    hparamsAndMetricsSpecs: HparamAndMetricSpec
+    hparamSpecs: HparamSpec[]
   ): Observable<SessionGroup[]> {
     const formattedExperimentIds = this.formatExperimentIds(experimentIds);
 
     const colParams: BackendListSessionGroupRequest['colParams'] = [];
 
-    for (const hparam of hparamsAndMetricsSpecs.hparams) {
-      colParams.push({hparam: hparam.name});
-    }
-    for (const mectric of hparamsAndMetricsSpecs.metrics) {
-      colParams.push({
-        metric: mectric.name,
-      });
+    for (const hparamSpec of hparamSpecs) {
+      colParams.push({hparam: hparamSpec.name});
     }
 
     const listSessionRequestParams: BackendListSessionGroupRequest = {

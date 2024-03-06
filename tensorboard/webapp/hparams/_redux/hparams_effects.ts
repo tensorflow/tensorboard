@@ -37,7 +37,7 @@ import {HttpErrorResponse} from '../../webapp_data_source/tb_http_client';
 
 import * as hparamsActions from './hparams_actions';
 import {HparamsDataSource} from './hparams_data_source';
-import {HparamAndMetricSpec, SessionGroup} from '../types';
+import {HparamSpec, SessionGroup} from '../types';
 import {RouteKind} from '../../app_routing/types';
 
 /**
@@ -85,13 +85,13 @@ export class HparamsEffects {
   });
 
   private loadHparamsForExperiments(experimentIds: string[]): Observable<{
-    hparamsAndMetricsSpecs: HparamAndMetricSpec;
+    hparamSpecs: HparamSpec[];
     sessionGroups: SessionGroup[];
   }> {
     return this.dataSource.fetchExperimentInfo(experimentIds).pipe(
-      switchMap((hparamsAndMetricsSpecs) => {
+      switchMap((hparamSpecs) => {
         return this.dataSource
-          .fetchSessionGroups(experimentIds, hparamsAndMetricsSpecs)
+          .fetchSessionGroups(experimentIds, hparamSpecs)
           .pipe(
             catchError((error) => {
               // HParam plugin return 400 when there are no hparams
@@ -101,7 +101,7 @@ export class HparamsEffects {
               }
               return throwError(() => error);
             }),
-            map((sessionGroups) => ({hparamsAndMetricsSpecs, sessionGroups}))
+            map((sessionGroups) => ({hparamSpecs, sessionGroups}))
           );
       })
     );
