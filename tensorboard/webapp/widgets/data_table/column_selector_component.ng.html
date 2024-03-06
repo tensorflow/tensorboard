@@ -12,7 +12,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div class="contents">
-  <mat-form-field class="search-area">
+  <mat-form-field class="search-area" subscriptSizing="dynamic">
     <mat-icon matPrefix class="search-icon" svgIcon="search_24px"></mat-icon>
     <mat-label>Search</mat-label>
     <input
@@ -22,6 +22,13 @@ limitations under the License.
       (ngModelChange)="searchInputChanged()"
     />
   </mat-form-field>
+
+  <div class="column-load-info">
+    <label>{{ numColumnsLoaded }} columns loaded.</label>
+    <label *ngIf="hasMoreColumnsToLoad">
+      Warning: There were too many columns to load all of them.
+    </label>
+  </div>
 
   <div #columnList class="column-list">
     <button

@@ -87,7 +87,8 @@ export function isDiscreteDomainHparamSpec(
 
 export interface BackendHparamsExperimentRequest {
   experimentName: string;
-  includeMetrics?: boolean;
+  hparamsLimit: number;
+  includeMetrics: boolean;
 }
 
 export interface BackendHparamsExperimentResponse {
@@ -101,10 +102,12 @@ export interface BackendHparamsExperimentResponse {
 
 interface HparamsColFilterParams {
   hparam: string;
+  includeInResult: boolean;
 }
 
 interface MetricsColFilterParams {
   metric: MetricName;
+  includeInResult: boolean;
 }
 
 export interface BackendListSessionGroupRequest {

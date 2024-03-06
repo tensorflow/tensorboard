@@ -114,6 +114,8 @@ export class ScalarCardComponent<Downloader> {
   @Input() rangeEnabled!: boolean;
   @Input() columnFilters!: Map<string, DiscreteFilter | IntervalFilter>;
   @Input() selectableColumns!: ColumnHeader[];
+  @Input() numColumnsLoaded!: number;
+  @Input() numColumnsToLoad!: number;
   @Input() runToHparamMap!: RunToHparamMap;
 
   @Output() onFullSizeToggle = new EventEmitter<void>();

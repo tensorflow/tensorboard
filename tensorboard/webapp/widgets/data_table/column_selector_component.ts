@@ -35,6 +35,8 @@ import {BehaviorSubject} from 'rxjs';
 })
 export class ColumnSelectorComponent implements OnInit, AfterViewInit {
   @Input() selectableColumns: ColumnHeader[] = [];
+  @Input() numColumnsLoaded!: number;
+  @Input() hasMoreColumnsToLoad!: boolean;
   @Output() columnSelected = new EventEmitter<ColumnHeader>();
 
   @ViewChild('search')

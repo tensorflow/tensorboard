@@ -197,7 +197,7 @@ describe('column selector', () => {
     });
   });
 
-  it('selects a column when the it is clicked', fakeAsync(() => {
+  it('selects a column when it is clicked', fakeAsync(() => {
     let selectedColumn: ColumnHeader;
     fixture.componentInstance.columnSelected.subscribe((column) => {
       selectedColumn = column;
@@ -206,5 +206,24 @@ describe('column selector', () => {
     flush();
 
     expect(selectedColumn!.name).toEqual('runs');
+  }));
+
+  it('renders number of loaded columns', fakeAsync(() => {
+    fixture.componentInstance.numColumnsLoaded = 100;
+    fixture.detectChanges();
+
+    const numColumns = fixture.debugElement.query(By.css('.column-load-info'));
+    expect(numColumns.nativeElement.textContent).toEqual('100 columns loaded.');
+  }));
+
+  it('renders too many columns warning', fakeAsync(() => {
+    fixture.componentInstance.numColumnsLoaded = 100;
+    fixture.componentInstance.hasMoreColumnsToLoad = true;
+    fixture.detectChanges();
+
+    const numColumns = fixture.debugElement.query(By.css('.column-load-info'));
+    expect(numColumns.nativeElement.textContent).toContain(
+      'Warning: There were too many columns to load all of them.'
+    );
   }));
 });
