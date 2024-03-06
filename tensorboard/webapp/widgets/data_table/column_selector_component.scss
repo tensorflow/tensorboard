@@ -65,4 +65,13 @@ limitations under the License.
       }
     }
   }
+
+  .tag {
+    background-color: mat.get-color-from-palette($tb-primary, 500);
+    border-radius: 8px;
+    font-size: 12px;
+    font-style: italic;
+    font-weight: normal;
+    padding: 4px;
+  }
 }

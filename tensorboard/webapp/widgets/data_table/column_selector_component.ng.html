@@ -34,6 +34,7 @@ limitations under the License.
       (click)="selectColumn(column)"
     >
       {{column.displayName}}
+      <span *ngFor="let tag of column.tags" class="tag"> {{ tag }} </span>
     </button>
   </div>
 </div>

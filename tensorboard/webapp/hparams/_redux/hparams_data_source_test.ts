@@ -79,6 +79,7 @@ describe('HparamsDataSource Test', () => {
             minValue: -100,
             maxValue: 100,
           },
+          differs: true,
         },
         {
           description: 'describes hparams two',
@@ -89,6 +90,7 @@ describe('HparamsDataSource Test', () => {
             type: DomainType.DISCRETE,
             values: ['foo', 'bar', 'baz'],
           },
+          differs: true,
         },
       ]);
     });
@@ -109,6 +111,7 @@ describe('HparamsDataSource Test', () => {
             type: DomainType.DISCRETE,
             values: [],
           },
+          differs: false,
         },
         {
           description: 'describes hparams two',
@@ -119,6 +122,7 @@ describe('HparamsDataSource Test', () => {
             type: DomainType.DISCRETE,
             values: ['foo', 'bar', 'baz'],
           },
+          differs: true,
         },
       ]);
     });
@@ -290,6 +294,7 @@ export function createHparamsExperimentResponse(): BackendHparamsExperimentRespo
         name: 'hparams1',
         type: BackendHparamsValueType.DATA_TYPE_STRING,
         domainInterval: {minValue: -100, maxValue: 100},
+        differs: true,
       },
       {
         description: 'describes hparams two',
@@ -297,6 +302,7 @@ export function createHparamsExperimentResponse(): BackendHparamsExperimentRespo
         name: 'hparams2',
         type: BackendHparamsValueType.DATA_TYPE_BOOL,
         domainDiscrete: ['foo', 'bar', 'baz'],
+        differs: true,
       },
     ],
     metricInfos: [],
@@ -315,6 +321,7 @@ export function createHparamsExperimentNoDomainResponse(): BackendHparamsExperim
         displayName: 'hparams one',
         name: 'hparams1',
         type: BackendHparamsValueType.DATA_TYPE_STRING,
+        differs: false,
       } as BackendHparamSpec,
       {
         description: 'describes hparams two',
@@ -322,6 +329,7 @@ export function createHparamsExperimentNoDomainResponse(): BackendHparamsExperim
         name: 'hparams2',
         type: BackendHparamsValueType.DATA_TYPE_BOOL,
         domainDiscrete: ['foo', 'bar', 'baz'],
+        differs: true,
       },
     ],
     metricInfos: [],

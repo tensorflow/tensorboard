@@ -80,6 +80,7 @@ export declare interface ColumnHeader {
   name: string;
   displayName: string;
   enabled: boolean;
+  tags?: string[];
 
   // Default to false when not specified.
   removable?: boolean;
