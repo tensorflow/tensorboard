@@ -15,7 +15,6 @@ limitations under the License.
 
 import {ColumnHeaderType} from '../../widgets/data_table/types';
 import {DomainType} from '../types';
-import {State} from './types';
 import * as selectors from './hparams_selectors';
 import {
   buildHparamSpec,
@@ -165,7 +164,13 @@ describe('hparams/_redux/hparams_selectors_test', () => {
   });
 
   describe('#getNumDashboardHparamsToLoad', () => {
-    it('returns dashboard specs', () => {
+    beforeEach(() => {
+      // Clear the memoization.
+      selectors.getNumDashboardHparamsToLoad.clearResult();
+      selectors.getNumDashboardHparamsToLoad.release();
+    });
+
+    it('returns value', () => {
       const state = buildStateFromHparamsState(
         buildHparamsState({
           numDashboardHparamsToLoad: 5,
@@ -176,8 +181,14 @@ describe('hparams/_redux/hparams_selectors_test', () => {
     });
   });
 
-  describe('#getNumDashboardHparamsToLoad', () => {
-    it('returns dashboard specs', () => {
+  describe('#getNumDashboardHparamsLoaded', () => {
+    beforeEach(() => {
+      // Clear the memoization.
+      selectors.getNumDashboardHparamsLoaded.clearResult();
+      selectors.getNumDashboardHparamsLoaded.release();
+    });
+
+    it('returns value', () => {
       const state = buildStateFromHparamsState(
         buildHparamsState({
           numDashboardHparamsLoaded: 22,

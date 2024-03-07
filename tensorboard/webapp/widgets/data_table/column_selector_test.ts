@@ -41,6 +41,10 @@ describe('column selector', () => {
     return fixture.debugElement.query(By.css('button.selected'));
   }
 
+  function getLoadAllColumnsButton() {
+    return fixture.debugElement.query(By.css('.column-load-info button'));
+  }
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ColumnSelectorComponent],
@@ -217,13 +221,34 @@ describe('column selector', () => {
   }));
 
   it('renders too many columns warning', fakeAsync(() => {
-    fixture.componentInstance.numColumnsLoaded = 100;
     fixture.componentInstance.hasMoreColumnsToLoad = true;
     fixture.detectChanges();
 
-    const numColumns = fixture.debugElement.query(By.css('.column-load-info'));
-    expect(numColumns.nativeElement.textContent).toContain(
-      'Warning: There were too many columns to load all of them.'
+    const numColumnsEl = fixture.debugElement.query(
+      By.css('.column-load-info')
     );
+    expect(numColumnsEl.nativeElement.textContent).toContain(
+      'Warning: There were too many columns to load all of them efficiently.'
+    );
+  }));
+
+  it('does not render "load all" button by default', fakeAsync(() => {
+    const loadAllButton = getLoadAllColumnsButton();
+    expect(loadAllButton).toBeFalsy();
+  }));
+
+  it('renders "load all" button and responds to click', fakeAsync(() => {
+    let loadAllColumnsClicked = false;
+    fixture.componentInstance.loadAllColumns.subscribe(() => {
+      loadAllColumnsClicked = true;
+    });
+    fixture.componentInstance.hasMoreColumnsToLoad = true;
+    fixture.detectChanges();
+
+    const loadAllButton = getLoadAllColumnsButton();
+    loadAllButton.nativeElement.click();
+    flush();
+
+    expect(loadAllColumnsClicked).toBeTrue();
   }));
 });

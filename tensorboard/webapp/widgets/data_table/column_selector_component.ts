@@ -38,6 +38,7 @@ export class ColumnSelectorComponent implements OnInit, AfterViewInit {
   @Input() numColumnsLoaded!: number;
   @Input() hasMoreColumnsToLoad!: boolean;
   @Output() columnSelected = new EventEmitter<ColumnHeader>();
+  @Output() loadAllColumns = new EventEmitter<null>();
 
   @ViewChild('search')
   private readonly searchField!: ElementRef;
@@ -122,6 +123,10 @@ export class ColumnSelectorComponent implements OnInit, AfterViewInit {
   selectColumn(header: ColumnHeader) {
     this.selectedIndex$.next(0);
     this.columnSelected.emit(header);
+  }
+
+  loadAllColumnsClicked() {
+    this.loadAllColumns.emit();
   }
 
   activate() {
