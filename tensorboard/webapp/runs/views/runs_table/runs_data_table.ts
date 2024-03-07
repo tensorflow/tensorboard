@@ -44,6 +44,8 @@ export class RunsDataTable {
   @Input() regexFilter!: string;
   @Input() isFullScreen!: boolean;
   @Input() selectableColumns!: ColumnHeader[];
+  @Input() numColumnsLoaded!: number;
+  @Input() numColumnsToLoad!: number;
   @Input() loading!: boolean;
   @Input() columnFilters!: Map<string, DiscreteFilter | IntervalFilter>;
 

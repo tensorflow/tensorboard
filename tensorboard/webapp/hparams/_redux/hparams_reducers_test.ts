@@ -144,6 +144,25 @@ describe('hparams/_redux/hparams_reducers_test', () => {
 
       expect(state2.dashboardSessionGroups).toEqual([mockSessionGroup]);
     });
+
+    it('calculates numDashboardHparamsLoaded from action.hparamSpecs', () => {
+      const state = buildHparamsState({
+        numDashboardHparamsLoaded: 0,
+      });
+      const state2 = reducers(
+        state,
+        actions.hparamsFetchSessionGroupsSucceeded({
+          hparamSpecs: [
+            buildHparamSpec(),
+            buildHparamSpec(),
+            buildHparamSpec(),
+          ],
+          sessionGroups: [],
+        })
+      );
+
+      expect(state2.numDashboardHparamsLoaded).toEqual(3);
+    });
   });
 
   describe('dashboardHparamFilterAdded', () => {

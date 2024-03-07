@@ -71,3 +71,17 @@ export const getDashboardMetricsFilterMap = createSelector(
     return state.dashboardFilters.metrics;
   }
 );
+
+export const getNumDashboardHparamsToLoad = createSelector(
+  getHparamsState,
+  (state) => {
+    return state.numDashboardHparamsToLoad;
+  }
+);
+
+export const getNumDashboardHparamsLoaded = createSelector(
+  getHparamsState,
+  (state) => {
+    return state.numDashboardHparamsLoaded;
+  }
+);

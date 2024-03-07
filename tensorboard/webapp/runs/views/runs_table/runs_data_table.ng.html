@@ -29,6 +29,8 @@ limitations under the License.
     [headers]="headers"
     [sortingInfo]="sortingInfo"
     [selectableColumns]="selectableColumns"
+    [numColumnsLoaded]="numColumnsLoaded"
+    [hasMoreColumnsToLoad]="numColumnsLoaded === numColumnsToLoad"
     [columnFilters]="columnFilters"
     [loading]="loading"
     (sortDataBy)="sortDataBy.emit($event)"
