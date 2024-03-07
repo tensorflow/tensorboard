@@ -27,6 +27,7 @@ import {buildHparamSpec} from './testing';
 import {HparamSpec, RunStatus, SessionGroup} from '../types';
 import * as selectors from '../../selectors';
 import * as hparamsActions from './hparams_actions';
+import * as hparamsSelectors from './hparams_selectors';
 import * as appRoutingActions from '../../app_routing/actions';
 import * as coreActions from '../../core/actions';
 import {RouteKind} from '../../app_routing/types';
@@ -112,6 +113,10 @@ describe('hparams effects', () => {
       store.overrideSelector(selectors.getExperimentIdsFromRoute, [
         'expFromRoute',
       ]);
+      store.overrideSelector(
+        hparamsSelectors.getNumDashboardHparamsToLoad,
+        1111
+      );
       store.refreshState();
     });
 
@@ -130,9 +135,10 @@ describe('hparams effects', () => {
 
     it('fetches data after navigation', () => {
       action.next(appRoutingActions.navigated({} as any));
-      expect(dataSource.fetchExperimentInfo).toHaveBeenCalledWith([
-        'expFromRoute',
-      ]);
+      expect(dataSource.fetchExperimentInfo).toHaveBeenCalledWith(
+        ['expFromRoute'],
+        1111
+      );
       expect(dataSource.fetchSessionGroups).toHaveBeenCalledWith(
         ['expFromRoute'],
         [buildHparamSpec({name: 'h1'})]
@@ -158,9 +164,10 @@ describe('hparams effects', () => {
 
     it('fetches data on reload', () => {
       action.next(coreActions.reload());
-      expect(dataSource.fetchExperimentInfo).toHaveBeenCalledWith([
-        'expFromRoute',
-      ]);
+      expect(dataSource.fetchExperimentInfo).toHaveBeenCalledWith(
+        ['expFromRoute'],
+        1111
+      );
       expect(dataSource.fetchSessionGroups).toHaveBeenCalledWith(
         ['expFromRoute'],
         [buildHparamSpec({name: 'h1'})]
@@ -175,9 +182,10 @@ describe('hparams effects', () => {
 
     it('fetches data on manualReload', () => {
       action.next(coreActions.manualReload());
-      expect(dataSource.fetchExperimentInfo).toHaveBeenCalledWith([
-        'expFromRoute',
-      ]);
+      expect(dataSource.fetchExperimentInfo).toHaveBeenCalledWith(
+        ['expFromRoute'],
+        1111
+      );
       expect(dataSource.fetchSessionGroups).toHaveBeenCalledWith(
         ['expFromRoute'],
         [buildHparamSpec({name: 'h1'})]

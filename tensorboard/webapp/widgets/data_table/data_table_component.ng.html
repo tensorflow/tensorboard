@@ -80,6 +80,8 @@ limitations under the License.
 >
   <tb-data-table-column-selector-component
     [selectableColumns]="selectableColumns"
+    [numColumnsLoaded]="numColumnsLoaded"
+    [hasMoreColumnsToLoad]="hasMoreColumnsToLoad"
     (columnSelected)="onColumnAdded($event)"
   ></tb-data-table-column-selector-component>
 </custom-modal>

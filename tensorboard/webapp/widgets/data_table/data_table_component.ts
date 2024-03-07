@@ -62,6 +62,8 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   @Input() headers!: ColumnHeader[];
   @Input() sortingInfo!: SortingInfo;
   @Input() selectableColumns?: ColumnHeader[];
+  @Input() numColumnsLoaded!: number;
+  @Input() hasMoreColumnsToLoad!: boolean;
   @Input() columnFilters!: Map<string, DiscreteFilter | IntervalFilter>;
   @Input() loading: boolean = false;
 

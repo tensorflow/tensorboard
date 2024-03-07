@@ -32,7 +32,10 @@ import {
 import * as alertActions from '../../../alert/actions';
 import {areSameRouteKindAndExperiments} from '../../../app_routing';
 import {State} from '../../../app_state';
-import {actions as hparamsActions} from '../../../hparams';
+import {
+  actions as hparamsActions,
+  selectors as hparamsSelectors,
+} from '../../../hparams';
 import {
   getActiveRoute,
   getCurrentRouteRunSelection,
@@ -93,6 +96,8 @@ const getRunsLoading = createSelector<
       [headers]="runsColumns$ | async"
       [data]="sortedRunsTableData$ | async"
       [selectableColumns]="selectableColumns$ | async"
+      [numColumnsLoaded]="numColumnsLoaded$ | async"
+      [numColumnsToLoad]="numColumnsToLoad$ | async"
       [columnFilters]="columnFilters$ | async"
       [sortingInfo]="sortingInfo$ | async"
       [experimentIds]="experimentIds"
@@ -143,6 +148,12 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   runsColumns$ = this.store.select(getGroupedRunsTableHeaders);
   runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
   selectableColumns$ = this.store.select(getSelectableColumns);
+  numColumnsLoaded$ = this.store.select(
+    hparamsSelectors.getNumDashboardHparamsLoaded
+  );
+  numColumnsToLoad$ = this.store.select(
+    hparamsSelectors.getNumDashboardHparamsToLoad
+  );
 
   columnFilters$ = this.store.select(getCurrentColumnFilters);
 

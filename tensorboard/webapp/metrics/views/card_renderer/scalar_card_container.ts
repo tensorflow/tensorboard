@@ -37,7 +37,10 @@ import {
 } from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {ExperimentAlias} from '../../../experiments/types';
-import {actions as hparamsActions} from '../../../hparams';
+import {
+  actions as hparamsActions,
+  selectors as hparamsSelectors,
+} from '../../../hparams';
 import {
   getForceSvgFeatureFlag,
   getIsScalarColumnContextMenusEnabled,
@@ -192,6 +195,8 @@ function areSeriesEqual(
       [columnFilters]="columnFilters$ | async"
       [runToHparamMap]="runToHparamMap$ | async"
       [selectableColumns]="selectableColumns$ | async"
+      [numColumnsLoaded]="numColumnsLoaded$ | async"
+      [numColumnsToLoad]="numColumnsToLoad$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
       observeIntersection
@@ -248,6 +253,12 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   columnFilters$ = this.store.select(getCurrentColumnFilters);
   runToHparamMap$?: Observable<RunToHparamMap>;
   selectableColumns$?: Observable<ColumnHeader[]>;
+  numColumnsLoaded$ = this.store.select(
+    hparamsSelectors.getNumDashboardHparamsLoaded
+  );
+  numColumnsToLoad$ = this.store.select(
+    hparamsSelectors.getNumDashboardHparamsToLoad
+  );
 
   onVisibilityChange({visible}: {visible: boolean}) {
     this.isVisible = visible;

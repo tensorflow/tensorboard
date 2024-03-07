@@ -19,6 +19,8 @@ import {Side} from '../../widgets/data_table/types';
 import * as actions from './hparams_actions';
 import {HparamsState} from './types';
 
+const INITIAL_NUM_HPARAMS_TO_LOAD = 1000;
+
 const initialState: HparamsState = {
   dashboardHparamSpecs: [],
   dashboardSessionGroups: [],
@@ -27,6 +29,8 @@ const initialState: HparamsState = {
     metrics: new Map(),
   },
   dashboardDisplayedHparamColumns: [],
+  numDashboardHparamsToLoad: INITIAL_NUM_HPARAMS_TO_LOAD,
+  numDashboardHparamsLoaded: 0,
 };
 
 const reducer: ActionReducer<HparamsState, Action> = createReducer(
@@ -49,6 +53,7 @@ const reducer: ActionReducer<HparamsState, Action> = createReducer(
       ...state,
       dashboardHparamSpecs: nextDashboardHparamSpecs,
       dashboardSessionGroups: nextDashboardSessionGroups,
+      numDashboardHparamsLoaded: nextDashboardHparamSpecs.length,
     };
   }),
   on(actions.dashboardHparamFilterAdded, (state, action) => {
