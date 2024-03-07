@@ -30,7 +30,7 @@ limitations under the License.
     [sortingInfo]="sortingInfo"
     [selectableColumns]="selectableColumns"
     [numColumnsLoaded]="numColumnsLoaded"
-    [hasMoreColumnsToLoad]="numColumnsLoaded == numColumnsToLoad"
+    [hasMoreColumnsToLoad]="numColumnsLoaded === numColumnsToLoad"
     [columnFilters]="columnFilters"
     [loading]="loading"
     (sortDataBy)="sortDataBy.emit($event)"
