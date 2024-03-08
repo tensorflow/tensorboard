@@ -27,7 +27,10 @@ limitations under the License.
   ></mat-icon>
   <div *ngSwitchDefault class="extra-right-padding"></div>
 
-  <span [ngClass]="getSpecialTypeClasses(header.type)"
+  <span
+    [ngClass]="getSpecialTypeClasses(header.type)"
+    [matTooltip]="header.name"
+    [matTooltipDisabled]="header.name.localeCompare(header.displayName, undefined, {sensitivity: 'accent'}) === 0"
     >{{ header.displayName }}</span
   >
 </div>
