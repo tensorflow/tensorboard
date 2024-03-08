@@ -101,6 +101,10 @@ describe('hparams effects', () => {
     dataSource.fetchSessionGroups.and.returnValue(of(mockSessionGroups));
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   describe('loadHparamsData$', () => {
     beforeEach(() => {
       effects.loadHparamsData$.subscribe((action) => {
