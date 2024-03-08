@@ -1,12 +1,52 @@
 // Define your render function
 export async function render() {
-  try {
-    await loadD3();
-    console.log('D3.js has been loaded successfully.');
 
-    // Now you can safely use D3.js here
-    const container = createElement('div');
-    // Your D3.js code here...
+  const aapl = [
+    {date: new Date('2007-04-23'), close: 10.24},
+    {date: new Date('2007-04-24'), close: 20.35},
+    {date: new Date('2007-04-25'), close: 30.84},
+    {date: new Date('2007-04-26'), close: 40.92},
+    {date: new Date('2007-04-29'), close: 50.8},
+    {date: new Date('2007-05-01'), close: 60.47},
+    {date: new Date('2007-05-02'), close: 70.39},
+    {date: new Date('2007-05-03'), close: 80.4},
+    {date: new Date('2007-05-04'), close: 90.81},
+    {date: new Date('2007-05-07'), close: 10.92},
+    {date: new Date('2007-05-08'), close: 11.06},
+    {date: new Date('2007-05-09'), close: 12.88},
+    // Add more objects as needed
+  ];
+
+  const aapl2 = [
+    {date: new Date('2007-04-23'), close: 5.24},
+    {date: new Date('2007-04-24'), close: 45.35},
+    {date: new Date('2007-04-25'), close: 30.84},
+    {date: new Date('2007-04-26'), close: 50.92},
+    {date: new Date('2007-04-29'), close: 60.8},
+    {date: new Date('2007-05-01'), close: 70.47},
+    {date: new Date('2007-05-02'), close: 20.39},
+    {date: new Date('2007-05-03'), close: 80.4},
+    {date: new Date('2007-05-04'), close: 10.81},
+    {date: new Date('2007-05-07'), close: 20.92},
+    {date: new Date('2007-05-08'), close: 21.06},
+    {date: new Date('2007-05-09'), close: 22.88}
+    // Add more objects as needed
+];
+
+const multiData = [aapl,aapl2]
+
+  try {
+    // await loadD3();
+    await createJSElement("d3.v7.min.js","d3");
+
+  } catch (error) {
+    console.error('Failed to load D3.js:', error);
+  }
+
+  try {
+    // await loadD3();
+    await createJSElement("jspdf.umd.min.js","converter");
+
   } catch (error) {
     console.error('Failed to load D3.js:', error);
   }
@@ -16,24 +56,50 @@ export async function render() {
   stylesheet.href = './static/style.css';
   document.body.appendChild(stylesheet);
 
+  // Heading
   const msg = createElement('h1', 'BERT- Custom Plugin');
   document.body.appendChild(msg);
 
+  //Body
   var mainContainer = createElement('div');
   mainContainer.classList.add('main-container');
 
+  // Where Graph is drawn and settled.
   var graphArea = createElement('div');
   graphArea.classList.add('graph-area');
 
+
+  // Side toolbar div
   var sideToolbar = createElement('div');
   sideToolbar.classList.add('side-toolbar');
 
+  //heading of toolbar div
   var toolbarTitle = createElement('h2', 'Settings');
   toolbarTitle.classList.add('toolbar-title');
-  sideToolbar.appendChild(toolbarTitle);
 
-  graphArea.appendChild(createScaleLinear());
-  graphArea.appendChild(createLineChart());
+  /* Graph settings like width Height */
+  var widthInput = createElement('input');
+  widthInput.type = 'number';
+  widthInput.placeholder = 'Width';
+  widthInput.addEventListener('input', updateGraph);
+
+  var heightInput = createElement('input');
+  heightInput.type = 'number';
+  heightInput.placeholder = 'Height';
+  heightInput.addEventListener('input', updateGraph);
+
+  var applyButton = createElement('button', 'Apply');
+  applyButton.addEventListener('click', updateGraph);
+
+  sideToolbar.appendChild(toolbarTitle);
+  sideToolbar.appendChild(widthInput);
+  sideToolbar.appendChild(heightInput);
+  sideToolbar.appendChild(applyButton);
+
+// =========================================
+
+  graphArea.appendChild(createScaleLinear(aapl));
+  graphArea.appendChild(createLineChart(multiData));
 
   document.body.appendChild(sideToolbar);
   document.body.appendChild(graphArea);
@@ -41,23 +107,9 @@ export async function render() {
 
   mainContainer.appendChild(sideToolbar);
   mainContainer.appendChild(graphArea);
-  graphArea.onclick = convertSvgToImage;
+  graphArea.onclick = generatePDF;
 
   document.body.appendChild(mainContainer);
-
-  // var exportGraph = createElement('button', 'Download PNG');
-  // exportGraph.classList.add('graph-button');
-
-  // exportGraph.addEventListener('click', function () {
-  //   var downloadGraph = document.createElement('a');
-  //   downloadGraph.href = canvas.toDataURL('image/png');
-  //   downloadGraph.download = 'custom_graph.png';
-  //   document.body.appendChild(downloadGraph);
-  //   downloadGraph.click();
-  //   document.body.removeChild(downloadGraph);
-  // });
-
-  // document.body.appendChild(exportGraph);
 }
 
 function createElement(tag, children) {
@@ -186,34 +238,21 @@ function createLineChart(
   marginBottom = 30,
   marginLeft = 40
 ) {
+
+
+
   var container = createElement('div');
   container.classList.add('graph');
 
-  const aapl = [
-    {date: new Date('2007-04-23'), close: 10.24},
-    {date: new Date('2007-04-24'), close: 20.35},
-    {date: new Date('2007-04-25'), close: 30.84},
-    {date: new Date('2007-04-26'), close: 40.92},
-    {date: new Date('2007-04-29'), close: 50.8},
-    {date: new Date('2007-05-01'), close: 60.47},
-    {date: new Date('2007-05-02'), close: 70.39},
-    {date: new Date('2007-05-03'), close: 80.4},
-    {date: new Date('2007-05-04'), close: 90.81},
-    {date: new Date('2007-05-07'), close: 10.92},
-    {date: new Date('2007-05-08'), close: 11.06},
-    {date: new Date('2007-05-09'), close: 12.88},
-    // Add more objects as needed
-  ];
-
   // Declare the x (horizontal position) scale.
   const x = d3.scaleUtc(
-    d3.extent(aapl, (d) => d.date),
+    d3.extent(data[0], (d) => d.date),
     [marginLeft, width - marginRight]
   );
 
   // Declare the y (vertical position) scale.
   const y = d3.scaleLinear(
-    [0, d3.max(aapl, (d) => d.close)],
+    [0, d3.max(data[0], (d) => d.close)],
     [height - marginBottom, marginTop]
   );
 
@@ -266,12 +305,31 @@ function createLineChart(
     );
 
   // Append a path for the line.
-  svg
+
+  for (let index = 0; index < data.length; index++) {
+    svg
     .append('path')
     .attr('fill', 'none')
     .attr('stroke', 'red')
     .attr('stroke-width', 1.5)
-    .attr('d', line(aapl));
+    .attr('d', line(data[index]));
+    
+    console.log(data[index]);
+  }
+
+  // svg
+  //   .append('path')
+  //   .attr('fill', 'none')
+  //   .attr('stroke', 'red')
+  //   .attr('stroke-width', 1.5)
+  //   .attr('d', line(data[0]));
+
+  //   svg
+  //   .append('path')
+  //   .attr('fill', 'none')
+  //   .attr('stroke', 'blue')
+  //   .attr('stroke-width', 1.5)
+  //   .attr('d', line(data[1]));
 
   container.append(svg.node());
   container.classList.add('graph');
@@ -301,7 +359,7 @@ function applyStyles(element, styles) {
 
 function convertSvgToImage(svg) {
   // Get the SVG element as a string
-  const svgString = new XMLSerializer().serializeToString(svg.node());
+  const svgString = new XMLSerializer().serializeToString(svg);
 
   // Create Blob object from SVG string
   const blob = new Blob([svgString], {type: 'image/svg+xml;charset=utf-8'});
@@ -336,33 +394,101 @@ function convertSvgToImage(svg) {
   img.src = url;
 }
 
-// Function to load D3.js dynamically
-function loadD3() {
-  return new Promise((resolve, reject) => {
-    // Check if D3 is already loaded
-    if (typeof d3 !== 'undefined') {
-      console.log('D3.js is already loaded.');
+function createJSElement(file,object,path="./static"){
+
+  return new Promise((resolve,rejetct)=>{
+
+    const list = {
+      "d3": typeof d3, 
+      "converter": typeof jsPDF
+    };
+
+    if (list[object] !== 'undefined'){
+      console.log(file +' Loaded.');
       resolve();
       return;
     }
 
-    // Create a script element
     const script = document.createElement('script');
 
-    // Set the source to the D3.js CDN link
-    script.src = './static/d3.v7.min.js';
+    script.src = path + '/' + file;
 
-    // Add an onload event handler to execute code after script loaded
     script.onload = function () {
-      console.log('D3.js loaded successfully.');
+      console.log(file +' loaded successfully.');
       resolve();
     };
 
     script.onerror = function () {
-      reject(new Error('Failed to load D3.js'));
+      reject(new Error('Failed to load '+ file));
     };
 
     // Append the script element to the document's head
     document.head.appendChild(script);
   });
 }
+
+function generatePDF(id) {
+  const svgElement = document.querySelector("svg");
+  console.log(svgElement);
+  const svgString = new XMLSerializer().serializeToString(svgElement);
+
+  // Create a new jsPDF instance
+  const doc = new jsPDF();
+
+  // Add SVG to PDF
+  doc.text(10, 10, "D3.js SVG to PDF Example");
+  doc.addSvgAsImage(svgString, 15, 15, 180, 120);
+
+  // Save the PDF
+  doc.save("graph.pdf");
+}
+
+
+// Function to load D3.js dynamically
+// function loadD3() {
+//   return new Promise((resolve, reject) => {
+//     // Check if D3 is already loaded
+//     if (typeof d3 !== 'undefined') {
+//       console.log('D3.js is already loaded.');
+//       resolve();
+//       return;
+//     }
+
+//     // Create a script element
+//     const script = document.createElement('script');
+
+//     // Set the source to the D3.js CDN link
+//     script.src = './static/d3.v7.min.js';
+
+//     // Add an onload event handler to execute code after script loaded
+//     script.onload = function () {
+//       console.log('D3.js loaded successfully.');
+//       resolve();
+//     };
+
+//     script.onerror = function () {
+//       reject(new Error('Failed to load D3.js'));
+//     };
+
+//     // Append the script element to the document's head
+//     document.head.appendChild(script);
+//   });
+// }
+
+function updateGraph() {
+  const width = parseInt(document.querySelector('.width-height-options input:nth-child(1)').value);
+  const height = parseInt(document.querySelector('.width-height-options input:nth-child(2)').value);
+  
+  // Get the existing graph container
+  const graphContainer = document.querySelector('.graph');
+  
+  // Remove the existing graph
+  graphContainer.innerHTML = '';
+  
+  // Create the new graph with updated width and height
+  const newGraph = createLineChart(width, height);
+  
+  // Append the new graph to the container
+  graphContainer.appendChild(newGraph);
+}
+

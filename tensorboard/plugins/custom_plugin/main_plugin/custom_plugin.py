@@ -39,7 +39,7 @@ class MyPlugin(base_plugin.TBPlugin):
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
-            es_module_path="/static/index.js", tab_name="BERT Visualizer"
+            es_module_path="/static/index.js", tab_name="Custom Plugin"
         )
 
     @wrappers.Request.application

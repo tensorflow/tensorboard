@@ -35,7 +35,7 @@ h1 {
   padding: 10px;
   margin-left: 10px;
   margin-top: -200px;
-  width: 650px;
+  width: 500px;
 }
 
 .graph-area {
@@ -43,6 +43,7 @@ h1 {
   /* background-color: #303030; */
   display: flex;
   margin: auto;
+  margin-top:300px;
   top: 0;
 }
 
@@ -51,6 +52,7 @@ h1 {
   height: 100vh;
   background-color: #f57c00;
   margin-right: 10px;
+  margin-left: 0px;
   display: block;
 }
 
@@ -58,6 +60,8 @@ h1 {
   background-color: lightgray;
   display: flex;
   flex-direction: row;
+  margin-left:-10px;
+
 }
 
 .toolbar-title {
@@ -67,4 +71,15 @@ h1 {
   display: block;
   width: fit-content;
   font-family: Roboto, sans-serif;
+}
+
+button{
+  border: 1px;
+  z-index: 10;
+}
+
+input[type=text]{
+  border-radius: 2px solid white;
+  margin: auto;
+  padding: 10px;
 }

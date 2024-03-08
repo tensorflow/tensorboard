@@ -10,7 +10,7 @@ package(default_visibility = ["//tensorboard:internal"])
 licenses(["notice"])
 
 sh_test(
-    name = "smoke_test",
+    name = "custom_test",
     size = "large",
     timeout = "moderate",
     srcs = ["custom_test.sh"],
