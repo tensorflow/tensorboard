@@ -39,6 +39,8 @@ limitations under the License.
         'selected': i === (selectedIndex$ | async)
       }"
       (click)="selectColumn(column)"
+      [matTooltip]="column.name"
+      [matTooltipDisabled]="column.name.localeCompare(column.displayName, undefined, {sensitivity: 'accent'}) === 0"
     >
       {{column.displayName}}
     </button>
