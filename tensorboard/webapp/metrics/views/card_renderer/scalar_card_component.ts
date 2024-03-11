@@ -132,6 +132,7 @@ export class ScalarCardComponent<Downloader> {
   @Output() addColumn = new EventEmitter<AddColumnEvent>();
   @Output() removeColumn = new EventEmitter<HeaderToggleInfo>();
   @Output() addFilter = new EventEmitter<FilterAddedEvent>();
+  @Output() loadAllColumns = new EventEmitter<null>();
 
   @Output() onLineChartZoom = new EventEmitter<Extent | null>();
   @Output() onCardStateChanged = new EventEmitter<Partial<CardState>>();

@@ -83,6 +83,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   @Output() removeColumn = new EventEmitter<ColumnHeader>();
   @Output() addColumn = new EventEmitter<AddColumnEvent>();
   @Output() addFilter = new EventEmitter<FilterAddedEvent>();
+  @Output() loadAllColumns = new EventEmitter<null>();
 
   @ViewChild('columnSelectorModal', {static: false})
   private readonly columnSelectorModal!: CustomModalComponent;

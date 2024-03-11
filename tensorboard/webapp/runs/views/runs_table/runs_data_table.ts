@@ -65,6 +65,7 @@ export class RunsDataTable {
   @Output() removeColumn = new EventEmitter<ColumnHeader>();
   @Output() onSelectionDblClick = new EventEmitter<string>();
   @Output() addFilter = new EventEmitter<FilterAddedEvent>();
+  @Output() loadAllColumns = new EventEmitter<null>();
 
   // These columns must be stored and reused to stop needless re-rendering of
   // the content and headers in these columns. This has been known to cause

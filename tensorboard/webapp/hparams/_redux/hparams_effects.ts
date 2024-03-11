@@ -62,7 +62,11 @@ export class HparamsEffects {
 
   private readonly loadHparamsOnReload$: Observable<string[]> =
     this.actions$.pipe(
-      ofType(coreActions.reload, coreActions.manualReload),
+      ofType(
+        coreActions.reload,
+        coreActions.manualReload,
+        hparamsActions.loadAllDashboardHparams
+      ),
       withLatestFrom(this.store.select(getExperimentIdsFromRoute)),
       filter(([, experimentIds]) => Boolean(experimentIds)),
       map(([, experimentIds]) => experimentIds as string[])

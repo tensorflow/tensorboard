@@ -71,3 +71,7 @@ export const dashboardHparamColumnOrderChanged = createAction(
   '[Hparams] Dashboard Hparam Column Order Changed',
   props<ReorderColumnEvent>()
 );
+
+export const loadAllDashboardHparams = createAction(
+  '[Hparams] Load all Hparams'
+);
