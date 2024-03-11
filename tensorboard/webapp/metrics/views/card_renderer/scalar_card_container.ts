@@ -211,6 +211,7 @@ function areSeriesEqual(
       (addColumn)="onAddColumn($event)"
       (removeColumn)="onRemoveColumn($event)"
       (addFilter)="addHparamFilter($event)"
+      (loadAllColumns)="loadAllColumns()"
     ></scalar-card-component>
   `,
   styles: [
@@ -762,5 +763,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
         filter: event.value,
       })
     );
+  }
+
+  loadAllColumns() {
+    this.store.dispatch(hparamsActions.loadAllDashboardHparams());
   }
 }

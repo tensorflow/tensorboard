@@ -166,7 +166,13 @@ const reducer: ActionReducer<HparamsState, Action> = createReducer(
         dashboardDisplayedHparamColumns: newColumns,
       };
     }
-  )
+  ),
+  on(actions.loadAllDashboardHparams, (state) => {
+    return {
+      ...state,
+      numDashboardHparamsToLoad: 0, // All.
+    };
+  })
 );
 
 export function reducers(state: HparamsState | undefined, action: Action) {

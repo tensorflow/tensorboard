@@ -83,6 +83,7 @@ limitations under the License.
     [numColumnsLoaded]="numColumnsLoaded"
     [hasMoreColumnsToLoad]="hasMoreColumnsToLoad"
     (columnSelected)="onColumnAdded($event)"
+    (loadAllColumns)="loadAllColumns.emit()"
   ></tb-data-table-column-selector-component>
 </custom-modal>
 

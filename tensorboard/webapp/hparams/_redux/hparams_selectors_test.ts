@@ -15,7 +15,6 @@ limitations under the License.
 
 import {ColumnHeaderType} from '../../widgets/data_table/types';
 import {DomainType} from '../types';
-import {State} from './types';
 import * as selectors from './hparams_selectors';
 import {
   buildHparamSpec,

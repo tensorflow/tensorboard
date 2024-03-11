@@ -115,6 +115,7 @@ const getRunsLoading = createSelector<
       (addColumn)="addColumn($event)"
       (removeColumn)="removeColumn($event)"
       (addFilter)="addHparamFilter($event)"
+      (loadAllColumns)="loadAllColumns()"
     ></runs-data-table>
   `,
   styles: [
@@ -360,6 +361,10 @@ export class RunsTableContainer implements OnInit, OnDestroy {
         filter: event.value,
       })
     );
+  }
+
+  loadAllColumns() {
+    this.store.dispatch(hparamsActions.loadAllDashboardHparams());
   }
 }
 

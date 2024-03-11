@@ -38,6 +38,7 @@ limitations under the License.
     (addColumn)="addColumn.emit($event)"
     (removeColumn)="removeColumn.emit($event)"
     (addFilter)="addFilter.emit($event)"
+    (loadAllColumns)="loadAllColumns.emit()"
   >
     <ng-container header>
       <ng-container *ngFor="let header of getHeaders()">
