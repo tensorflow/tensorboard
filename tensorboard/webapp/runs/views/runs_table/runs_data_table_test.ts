@@ -133,6 +133,16 @@ describe('runs_data_table', () => {
     }).compileComponents();
   });
 
+  afterAll(() => {
+    // These elements are being left in the dom from the tooltip. Removing them
+    // to prevent them from affecting other tests.
+    document
+      .querySelectorAll('.cdk-describedby-message-container')
+      .forEach((el) => {
+        el.remove();
+      });
+  });
+
   it('renders', () => {
     const fixture = createComponent({});
     expect(

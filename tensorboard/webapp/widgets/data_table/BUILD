@@ -106,6 +106,7 @@ tf_ng_module(
     deps = [
         ":types",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "//tensorboard/webapp/angular:expect_angular_material_tooltip",
         "@npm//@angular/common",
         "@npm//@angular/core",
     ],
@@ -126,6 +127,7 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_input",
+        "//tensorboard/webapp/angular:expect_angular_material_tooltip",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/forms",
