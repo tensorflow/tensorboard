@@ -18,6 +18,7 @@ import {NgModule} from '@angular/core';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 import {MatButtonModule} from '@angular/material/button';
+import {MatTooltipModule} from '@angular/material/tooltip';
 import {ColumnSelectorComponent} from './column_selector_component';
 import {FormsModule} from '@angular/forms';
 
@@ -29,6 +30,7 @@ import {FormsModule} from '@angular/forms';
     MatInputModule,
     MatButtonModule,
     FormsModule,
+    MatTooltipModule,
   ],
   exports: [ColumnSelectorComponent],
 })

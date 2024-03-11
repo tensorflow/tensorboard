@@ -712,4 +712,16 @@ describe('hparams/_redux/hparams_reducers_test', () => {
       ]);
     });
   });
+
+  describe('loadAllDashboardHparams', () => {
+    it('sets numDashboardHparamsToLoad to 0', () => {
+      const state = buildHparamsState({
+        numDashboardHparamsToLoad: 1000,
+      });
+
+      const state2 = reducers(state, actions.loadAllDashboardHparams());
+
+      expect(state2.numDashboardHparamsToLoad).toEqual(0);
+    });
+  });
 });

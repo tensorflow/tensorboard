@@ -70,6 +70,7 @@ export class ScalarCardDataTable {
   @Output() addColumn = new EventEmitter<AddColumnEvent>();
   @Output() removeColumn = new EventEmitter<HeaderToggleInfo>();
   @Output() addFilter = new EventEmitter<FilterAddedEvent>();
+  @Output() loadAllColumns = new EventEmitter<null>();
 
   ColumnHeaderType = ColumnHeaderType;
 

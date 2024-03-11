@@ -101,6 +101,10 @@ describe('hparams effects', () => {
     dataSource.fetchSessionGroups.and.returnValue(of(mockSessionGroups));
   });
 
+  afterEach(() => {
+    store?.resetSelectors();
+  });
+
   describe('loadHparamsData$', () => {
     beforeEach(() => {
       effects.loadHparamsData$.subscribe((action) => {
@@ -162,41 +166,32 @@ describe('hparams effects', () => {
       ]);
     });
 
-    it('fetches data on reload', () => {
-      action.next(coreActions.reload());
-      expect(dataSource.fetchExperimentInfo).toHaveBeenCalledWith(
-        ['expFromRoute'],
-        1111
-      );
-      expect(dataSource.fetchSessionGroups).toHaveBeenCalledWith(
-        ['expFromRoute'],
-        [buildHparamSpec({name: 'h1'})]
-      );
-      expect(actualActions).toEqual([
-        hparamsActions.hparamsFetchSessionGroupsSucceeded({
-          hparamSpecs: mockHparamSpecs,
-          sessionGroups: mockSessionGroups,
-        }),
-      ]);
-    });
-
-    it('fetches data on manualReload', () => {
-      action.next(coreActions.manualReload());
-      expect(dataSource.fetchExperimentInfo).toHaveBeenCalledWith(
-        ['expFromRoute'],
-        1111
-      );
-      expect(dataSource.fetchSessionGroups).toHaveBeenCalledWith(
-        ['expFromRoute'],
-        [buildHparamSpec({name: 'h1'})]
-      );
-      expect(actualActions).toEqual([
-        hparamsActions.hparamsFetchSessionGroupsSucceeded({
-          hparamSpecs: mockHparamSpecs,
-          sessionGroups: mockSessionGroups,
-        }),
-      ]);
-    });
+    for (const {actionName, actionInstance} of [
+      {actionName: 'reload', actionInstance: coreActions.reload()},
+      {actionName: 'manualReload', actionInstance: coreActions.manualReload()},
+      {
+        actionName: 'loadAllDashboardHparams',
+        actionInstance: hparamsActions.loadAllDashboardHparams(),
+      },
+    ]) {
+      it(`fetches data on ${actionName}`, () => {
+        action.next(actionInstance);
+        expect(dataSource.fetchExperimentInfo).toHaveBeenCalledWith(
+          ['expFromRoute'],
+          1111
+        );
+        expect(dataSource.fetchSessionGroups).toHaveBeenCalledWith(
+          ['expFromRoute'],
+          [buildHparamSpec({name: 'h1'})]
+        );
+        expect(actualActions).toEqual([
+          hparamsActions.hparamsFetchSessionGroupsSucceeded({
+            hparamSpecs: mockHparamSpecs,
+            sessionGroups: mockSessionGroups,
+          }),
+        ]);
+      });
+    }
 
     it('does not attempt to load hparams when experiment ids are null', () => {
       store.overrideSelector(selectors.getExperimentIdsFromRoute, null);

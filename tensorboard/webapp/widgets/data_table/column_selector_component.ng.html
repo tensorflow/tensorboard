@@ -25,9 +25,14 @@ limitations under the License.
 
   <div class="column-load-info">
     <label>{{ numColumnsLoaded }} columns loaded.</label>
-    <label *ngIf="hasMoreColumnsToLoad">
-      Warning: There were too many columns to load all of them.
-    </label>
+    <div *ngIf="hasMoreColumnsToLoad" class="load-more-columns">
+      <label>
+        Warning: There were too many columns to load all of them efficiently.
+      </label>
+      <button mat-stroked-button (click)="loadAllColumnsClicked()">
+        Load all anyway
+      </button>
+    </div>
   </div>
 
   <div #columnList class="column-list">
@@ -39,6 +44,8 @@ limitations under the License.
         'selected': i === (selectedIndex$ | async)
       }"
       (click)="selectColumn(column)"
+      [matTooltip]="column.name"
+      [matTooltipDisabled]="column.name.localeCompare(column.displayName, undefined, {sensitivity: 'accent'}) === 0"
     >
       {{column.displayName}}
       <span *ngFor="let tag of column.tags" class="tag"> {{ tag }} </span>
