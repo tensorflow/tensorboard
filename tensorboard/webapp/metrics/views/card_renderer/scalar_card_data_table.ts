@@ -61,6 +61,8 @@ export class ScalarCardDataTable {
   @Input() smoothingEnabled!: boolean;
   @Input() columnFilters!: Map<string, DiscreteFilter | IntervalFilter>;
   @Input() selectableColumns!: ColumnHeader[];
+  @Input() numColumnsLoaded!: number;
+  @Input() numColumnsToLoad!: number;
   @Input() runToHparamMap!: RunToHparamMap;
 
   @Output() sortDataBy = new EventEmitter<SortingInfo>();

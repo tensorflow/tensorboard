@@ -111,6 +111,7 @@ tf_ng_module(
     deps = [
         ":hparams_actions",
         ":hparams_data_source",
+        ":hparams_selectors",
         ":types",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/app_routing:types",

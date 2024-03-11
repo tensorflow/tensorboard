@@ -39,6 +39,7 @@ import * as hparamsActions from './hparams_actions';
 import {HparamsDataSource} from './hparams_data_source';
 import {HparamSpec, SessionGroup} from '../types';
 import {RouteKind} from '../../app_routing/types';
+import {getNumDashboardHparamsToLoad} from './hparams_selectors';
 
 /**
  * Effects for fetching the hparams data from the backend.
@@ -70,40 +71,51 @@ export class HparamsEffects {
   /** @export */
   loadHparamsData$ = createEffect(() => {
     return merge(this.navigated$, this.loadHparamsOnReload$).pipe(
-      withLatestFrom(this.store.select(getActiveRoute)),
+      withLatestFrom(
+        this.store.select(getActiveRoute),
+        this.store.select(getNumDashboardHparamsToLoad)
+      ),
       filter(
         ([, activeRoute]) =>
           activeRoute?.routeKind === RouteKind.EXPERIMENT ||
           activeRoute?.routeKind === RouteKind.COMPARE_EXPERIMENT
       ),
       throttleTime(10),
-      switchMap(([experimentIds]) =>
-        this.loadHparamsForExperiments(experimentIds)
+      switchMap(([experimentIds, , numHparamsToLoad]) =>
+        this.loadHparamsForExperiments(experimentIds, numHparamsToLoad)
       ),
       map((resp) => hparamsActions.hparamsFetchSessionGroupsSucceeded(resp))
     );
   });
 
-  private loadHparamsForExperiments(experimentIds: string[]): Observable<{
+  private loadHparamsForExperiments(
+    experimentIds: string[],
+    hparamsLimit: number
+  ): Observable<{
     hparamSpecs: HparamSpec[];
     sessionGroups: SessionGroup[];
   }> {
-    return this.dataSource.fetchExperimentInfo(experimentIds).pipe(
-      switchMap((hparamSpecs) => {
-        return this.dataSource
-          .fetchSessionGroups(experimentIds, hparamSpecs)
-          .pipe(
-            catchError((error) => {
-              // HParam plugin return 400 when there are no hparams
-              // for an experiment.
-              if (error instanceof HttpErrorResponse && error.status === 400) {
-                return of([] as SessionGroup[]);
-              }
-              return throwError(() => error);
-            }),
-            map((sessionGroups) => ({hparamSpecs, sessionGroups}))
-          );
-      })
-    );
+    return this.dataSource
+      .fetchExperimentInfo(experimentIds, hparamsLimit)
+      .pipe(
+        switchMap((hparamSpecs) => {
+          return this.dataSource
+            .fetchSessionGroups(experimentIds, hparamSpecs)
+            .pipe(
+              catchError((error) => {
+                // HParam plugin return 400 when there are no hparams
+                // for an experiment.
+                if (
+                  error instanceof HttpErrorResponse &&
+                  error.status === 400
+                ) {
+                  return of([] as SessionGroup[]);
+                }
+                return throwError(() => error);
+              }),
+              map((sessionGroups) => ({hparamSpecs, sessionGroups}))
+            );
+        })
+      );
   }
 }

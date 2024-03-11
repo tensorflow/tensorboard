@@ -36,6 +36,9 @@ export interface HparamsState {
     metrics: Map<string, MetricFilter>;
   };
   dashboardDisplayedHparamColumns: ColumnHeader[];
+  // 0 means load "all".
+  numDashboardHparamsToLoad: number;
+  numDashboardHparamsLoaded: number;
 }
 
 export interface State {

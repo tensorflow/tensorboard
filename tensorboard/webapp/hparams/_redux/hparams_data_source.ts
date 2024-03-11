@@ -87,11 +87,15 @@ export class HparamsDataSource {
     return experimentIds.map((eid, index) => `${index}:${eid}`).join(',');
   }
 
-  fetchExperimentInfo(experimentIds: string[]): Observable<HparamSpec[]> {
+  fetchExperimentInfo(
+    experimentIds: string[],
+    hparamsLimit: number
+  ): Observable<HparamSpec[]> {
     const formattedExperimentIds = this.formatExperimentIds(experimentIds);
 
     const experimentRequest: BackendHparamsExperimentRequest = {
       experimentName: formattedExperimentIds,
+      hparamsLimit,
       // The hparams feature generates its own metric data and does not require
       // the backend to calculate it.
       includeMetrics: false,
@@ -132,7 +136,7 @@ export class HparamsDataSource {
     const colParams: BackendListSessionGroupRequest['colParams'] = [];
 
     for (const hparamSpec of hparamSpecs) {
-      colParams.push({hparam: hparamSpec.name});
+      colParams.push({hparam: hparamSpec.name, includeInResult: true});
     }
 
     const listSessionRequestParams: BackendListSessionGroupRequest = {

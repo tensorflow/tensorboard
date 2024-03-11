@@ -37,7 +37,15 @@ limitations under the License.
   }
 
   .search-area {
-    margin-bottom: 4px;
+    margin-bottom: 12px;
+  }
+
+  .column-load-info {
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
+    font-style: italic;
+    margin-bottom: 12px;
   }
 
   .column-list {

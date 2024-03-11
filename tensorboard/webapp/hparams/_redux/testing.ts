@@ -39,6 +39,8 @@ export function buildHparamsState(
     },
     dashboardDisplayedHparamColumns:
       overrides.dashboardDisplayedHparamColumns ?? [],
+    numDashboardHparamsLoaded: overrides.numDashboardHparamsLoaded ?? 0,
+    numDashboardHparamsToLoad: overrides.numDashboardHparamsToLoad ?? 0,
   } as HparamsState;
 }
 

@@ -28,6 +28,7 @@ import {
   BackendListSessionGroupResponse,
   RunStatus,
 } from '../types';
+import {buildHparamSpec} from './testing';
 
 describe('HparamsDataSource Test', () => {
   let httpMock: HttpTestingController;
@@ -46,7 +47,7 @@ describe('HparamsDataSource Test', () => {
   describe('fetchExperimentInfo', () => {
     it('uses /experiment when a single experiment id is provided', () => {
       const returnValue = jasmine.createSpy();
-      dataSource.fetchExperimentInfo(['eid']).subscribe(returnValue);
+      dataSource.fetchExperimentInfo(['eid'], 0).subscribe(returnValue);
       httpMock
         .expectOne('/experiment/eid/data/plugin/hparams/experiment')
         .flush(createHparamsExperimentResponse());
@@ -55,7 +56,9 @@ describe('HparamsDataSource Test', () => {
 
     it('uses /compare when a multiple experiment ids are provided', () => {
       const returnValue = jasmine.createSpy();
-      dataSource.fetchExperimentInfo(['eid1', 'eid2']).subscribe(returnValue);
+      dataSource
+        .fetchExperimentInfo(['eid1', 'eid2'], 0)
+        .subscribe(returnValue);
       httpMock
         .expectOne('/compare/0:eid1,1:eid2/data/plugin/hparams/experiment')
         .flush(createHparamsExperimentResponse());
@@ -64,7 +67,7 @@ describe('HparamsDataSource Test', () => {
 
     it('maps interval and discrete domains to domain', () => {
       const returnValue = jasmine.createSpy();
-      dataSource.fetchExperimentInfo(['eid']).subscribe(returnValue);
+      dataSource.fetchExperimentInfo(['eid'], 0).subscribe(returnValue);
       httpMock
         .expectOne('/experiment/eid/data/plugin/hparams/experiment')
         .flush(createHparamsExperimentResponse());
@@ -97,7 +100,7 @@ describe('HparamsDataSource Test', () => {
 
     it('treats missing domains as discrete domains', () => {
       const returnValue = jasmine.createSpy();
-      dataSource.fetchExperimentInfo(['eid']).subscribe(returnValue);
+      dataSource.fetchExperimentInfo(['eid'], 0).subscribe(returnValue);
       httpMock
         .expectOne('/experiment/eid/data/plugin/hparams/experiment')
         .flush(createHparamsExperimentNoDomainResponse());
@@ -125,6 +128,15 @@ describe('HparamsDataSource Test', () => {
           differs: true,
         },
       ]);
+    });
+
+    it('sets hparamsLimit and includeMetrics', () => {
+      dataSource.fetchExperimentInfo(['eid'], 100).subscribe();
+      const actual = httpMock.expectOne(
+        '/experiment/eid/data/plugin/hparams/experiment'
+      );
+      expect(actual.request.body.hparamsLimit).toEqual(100);
+      expect(actual.request.body.includeMetrics).toBeFalse();
     });
   });
 
@@ -179,6 +191,25 @@ describe('HparamsDataSource Test', () => {
       expect(sessionGroups.length).toEqual(2);
       expect(sessionGroups[0].sessions[0].name).toEqual('eid1/run_name_1');
       expect(sessionGroups[1].sessions[0].name).toEqual('eid2/run_name_2');
+    });
+
+    it('adds hparams as colParams', () => {
+      dataSource
+        .fetchSessionGroups(
+          ['eid'],
+          [
+            buildHparamSpec({name: 'hparam1'}),
+            buildHparamSpec({name: 'hparam2'}),
+          ]
+        )
+        .subscribe();
+      const actual = httpMock.expectOne(
+        '/experiment/eid/data/plugin/hparams/session_groups'
+      );
+      expect(actual.request.body.colParams).toEqual([
+        {hparam: 'hparam1', includeInResult: true},
+        {hparam: 'hparam2', includeInResult: true},
+      ]);
     });
   });
 });

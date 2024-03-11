@@ -163,4 +163,28 @@ describe('hparams/_redux/hparams_selectors_test', () => {
       ]);
     });
   });
+
+  describe('#getNumDashboardHparamsToLoad', () => {
+    it('returns dashboard specs', () => {
+      const state = buildStateFromHparamsState(
+        buildHparamsState({
+          numDashboardHparamsToLoad: 5,
+        })
+      );
+
+      expect(selectors.getNumDashboardHparamsToLoad(state)).toEqual(5);
+    });
+  });
+
+  describe('#getNumDashboardHparamsToLoad', () => {
+    it('returns dashboard specs', () => {
+      const state = buildStateFromHparamsState(
+        buildHparamsState({
+          numDashboardHparamsLoaded: 22,
+        })
+      );
+
+      expect(selectors.getNumDashboardHparamsLoaded(state)).toEqual(22);
+    });
+  });
 });
