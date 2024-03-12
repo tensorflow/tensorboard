@@ -316,7 +316,7 @@ describe('core deeplink provider', () => {
         const state = provider.deserializeQueryParams([
           {key: 'pinnedCards', value: 'foo=bar'},
         ]);
-        expect(state.core.pluginQueryParams).toEqual({
+        expect(state.pluginQueryParams).toEqual({
           foo: 'bar',
         });
       });
