@@ -54,6 +54,7 @@ interface BaseHparamSpec {
   displayName: string;
   name: string;
   type: BackendHparamsValueType;
+  differs: boolean;
 }
 
 export interface IntervalDomainHparamSpec extends BaseHparamSpec {

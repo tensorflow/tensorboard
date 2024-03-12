@@ -57,6 +57,7 @@ export function buildHparamSpec(
     domain: {type: DomainType.INTERVAL, minValue: 0, maxValue: 1},
     name: 'sample_param',
     type: HparamsValueType.DATA_TYPE_FLOAT64,
+    differs: false,
     ...override,
   };
 }

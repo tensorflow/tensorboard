@@ -212,6 +212,24 @@ describe('column selector', () => {
     expect(selectedColumn!.name).toEqual('runs');
   }));
 
+  it('renders tags', () => {
+    fixture.componentInstance.selectableColumns = [
+      {
+        type: ColumnHeaderType.HPARAM,
+        name: 'lr',
+        displayName: 'Learning Rate',
+        enabled: true,
+        tags: ['tag1', 'tag2'],
+      },
+    ];
+    fixture.detectChanges();
+
+    const tagEls = fixture.debugElement.queryAll(By.css('.tag'));
+    expect(tagEls.length).toEqual(2);
+    expect(tagEls[0].nativeElement.textContent.trim()).toEqual('tag1');
+    expect(tagEls[1].nativeElement.textContent.trim()).toEqual('tag2');
+  });
+
   it('renders number of loaded columns', fakeAsync(() => {
     fixture.componentInstance.numColumnsLoaded = 100;
     fixture.detectChanges();
