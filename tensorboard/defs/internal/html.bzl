@@ -77,10 +77,10 @@ def _tb_combine_html_impl(ctx):
     manifest = ctx.actions.declare_file("%s.pbtxt" % ctx.label.name)
     ctx.actions.write(
         output = manifest,
-        content = struct(
+        content = proto.encode_text(struct(
             label = str(ctx.label),
             src = manifest_srcs,
-        ).to_proto(),
+        )),
     )
     manifests = depset([manifest], transitive = [manifests])
 
