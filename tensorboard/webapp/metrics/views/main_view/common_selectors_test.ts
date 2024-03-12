@@ -1008,12 +1008,13 @@ describe('common selectors', () => {
   });
 
   describe('getPotentialHparamColumns', () => {
-    const expectedBooleanFlags = {
+    const expectedCommonProperties = {
       enabled: false,
       removable: true,
       sortable: true,
       movable: true,
       filterable: true,
+      tags: [],
     };
 
     it('returns empty list when there are no experiments', () => {
@@ -1028,25 +1029,25 @@ describe('common selectors', () => {
           type: ColumnHeaderType.HPARAM,
           name: 'conv_layers',
           displayName: 'Conv Layers',
-          ...expectedBooleanFlags,
+          ...expectedCommonProperties,
         },
         {
           type: ColumnHeaderType.HPARAM,
           name: 'conv_kernel_size',
           displayName: 'Conv Kernel Size',
-          ...expectedBooleanFlags,
+          ...expectedCommonProperties,
         },
         {
           type: ColumnHeaderType.HPARAM,
           name: 'dense_layers',
           displayName: 'Dense Layers',
-          ...expectedBooleanFlags,
+          ...expectedCommonProperties,
         },
         {
           type: ColumnHeaderType.HPARAM,
           name: 'dropout',
           displayName: 'Dropout',
-          ...expectedBooleanFlags,
+          ...expectedCommonProperties,
         },
       ]);
     });
@@ -1061,8 +1062,16 @@ describe('common selectors', () => {
           type: ColumnHeaderType.HPARAM,
           name: 'conv_layers',
           displayName: 'conv_layers',
-          ...expectedBooleanFlags,
+          ...expectedCommonProperties,
         },
+      ]);
+    });
+
+    it('sets differs tag', () => {
+      state.hparams!.dashboardHparamSpecs = [buildHparamSpec({differs: true})];
+
+      expect(selectors.getPotentialHparamColumns(state)[0].tags).toEqual([
+        'differs',
       ]);
     });
   });

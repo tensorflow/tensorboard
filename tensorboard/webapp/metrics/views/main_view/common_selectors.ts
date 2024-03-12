@@ -284,6 +284,7 @@ export const getPotentialHparamColumns = createSelector(
       // be displayed tensorboard/plugins/hparams/api.proto
       displayName: hparamSpec.displayName || hparamSpec.name,
       enabled: false,
+      tags: hparamSpec.differs ? ['differs'] : [],
       removable: true,
       sortable: true,
       movable: true,

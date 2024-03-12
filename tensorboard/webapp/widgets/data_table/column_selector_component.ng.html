@@ -48,6 +48,7 @@ limitations under the License.
       [matTooltipDisabled]="column.name.localeCompare(column.displayName, undefined, {sensitivity: 'accent'}) === 0"
     >
       {{column.displayName}}
+      <span *ngFor="let tag of column.tags" class="tag"> {{ tag }} </span>
     </button>
   </div>
 </div>
