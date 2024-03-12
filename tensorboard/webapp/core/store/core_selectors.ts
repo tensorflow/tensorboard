@@ -61,6 +61,13 @@ export const getPlugins = createSelector(
   }
 );
 
+export const getPluginQueryParams = createSelector(
+  selectCoreState,
+  (state: CoreState) => {
+    return state.pluginQueryParams;
+  }
+);
+
 export const getEnvironment = createSelector(
   selectCoreState,
   (state: CoreState): Environment => {

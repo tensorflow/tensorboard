@@ -30,3 +30,7 @@ export enum PluginsListFailureCode {
 export const TB_BRAND_NAME = new InjectionToken<string>(
   'TensorBoard brand name'
 );
+
+export interface URLDeserializedState {
+  pluginQueryParams: Record<string, string>;
+}

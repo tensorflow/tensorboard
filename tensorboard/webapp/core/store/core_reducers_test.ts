@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {stateRehydratedFromUrl} from '../../app_routing/actions/app_routing_actions';
+import {RouteKind} from '../../app_routing/types';
 import {persistentSettingsLoaded} from '../../persistent_settings';
 import {DataLoadState} from '../../types/data';
 import * as actions from '../actions';
@@ -655,6 +657,22 @@ describe('core reducer', () => {
 
       expect(state2.runsTableFullScreen).toBeTrue();
       expect(state3.runsTableFullScreen).toBeFalse();
+    });
+  });
+
+  describe('#stateRehydratedFromUrl', () => {
+    it('stores pluginQueryParams', () => {
+      const state = createCoreState();
+      const state2 = reducers(
+        state,
+        stateRehydratedFromUrl({
+          routeKind: RouteKind.EXPERIMENT,
+          partialState: {pluginQueryParams: {foo: 'bar'}},
+        })
+      );
+      expect(state2.pluginQueryParams).toEqual({
+        foo: 'bar',
+      });
     });
   });
 });

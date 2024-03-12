@@ -13,6 +13,7 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp/app_routing:namespaced_state_reducer_helper",
+        "//tensorboard/webapp/app_routing/actions",
         "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/deeplink",

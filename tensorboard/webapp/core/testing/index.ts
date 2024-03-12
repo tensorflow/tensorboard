@@ -73,6 +73,7 @@ export function createCoreState(override?: Partial<CoreState>): CoreState {
     polymerInteropRunSelection: new Set(),
     sideBarWidthInPercent: 0,
     runsTableFullScreen: false,
+    pluginQueryParams: {},
     ...override,
   };
 }

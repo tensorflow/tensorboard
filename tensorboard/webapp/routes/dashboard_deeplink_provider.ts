@@ -148,6 +148,13 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
           return [{key: RUN_FILTER_KEY, value}];
         })
       ),
+      store
+        .select(selectors.getPluginQueryParams)
+        .pipe(
+          map((queryParams) =>
+            Object.entries(queryParams).map(([key, value]) => ({key, value}))
+          )
+        ),
     ]).pipe(
       map((queryParamList) => {
         return queryParamList.flat();
@@ -163,6 +170,7 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
     let tagFilter = null;
     let groupBy: GroupBy | null = null;
     let runFilter = null;
+    const pluginQueryParams: Record<string, string> = {};
 
     for (const {key, value} of queryParams) {
       switch (key) {
@@ -196,10 +204,14 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
         case RUN_FILTER_KEY:
           runFilter = value;
           break;
+        default:
+          pluginQueryParams[key] = value;
+          break;
       }
     }
 
     return {
+      pluginQueryParams,
       metrics: {
         pinnedCards: pinnedCards || [],
         smoothing,

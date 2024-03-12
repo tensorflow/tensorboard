@@ -25,6 +25,7 @@ import * as selectors from '../selectors';
 import {provideMockTbStore} from '../testing/utils';
 import {DashboardDeepLinkProvider} from './dashboard_deeplink_provider';
 import {buildDeserializedState} from './testing';
+import {expectArrayBuffersEqual} from '@tensorflow/tfjs-core/dist/test_util';
 
 describe('core deeplink provider', () => {
   let store: MockStore<State>;
@@ -310,6 +311,15 @@ describe('core deeplink provider', () => {
           expect(state.metrics.pinnedCards).toEqual(expectedPinnedCards);
         }
       });
+
+      it('associated unrecognized query params with other plugins', () => {
+        const state = provider.deserializeQueryParams([
+          {key: 'pinnedCards', value: 'foo=bar'},
+        ]);
+        expect(state.core.pluginQueryParams).toEqual({
+          foo: 'bar',
+        });
+      });
     });
 
     describe('tag filter', () => {
@@ -358,10 +368,14 @@ describe('core deeplink provider', () => {
     store.overrideSelector(selectors.getOverriddenFeatureFlags, {
       enabledExperimentalPlugins: ['foo', 'bar', 'baz'],
     });
+    store.overrideSelector(selectors.getPluginQueryParams, {
+      foo: 'bar',
+    });
     store.refreshState();
 
     expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
       {key: 'experimentalPlugin', value: 'foo,bar,baz'},
+      {key: 'foo', value: 'bar'},
     ]);
   });
 

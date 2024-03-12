@@ -40,6 +40,7 @@ export interface CoreState {
   sideBarWidthInPercent: number;
   // Whether the runs table should occupy the full screen.
   runsTableFullScreen: boolean;
+  pluginQueryParams: Record<string, string>;
 }
 
 /*
@@ -102,4 +103,5 @@ export const initialState: CoreState = {
   polymerInteropRunSelection: new Set(),
   sideBarWidthInPercent: 20,
   runsTableFullScreen: false,
+  pluginQueryParams: {},
 };
