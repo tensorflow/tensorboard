@@ -104,7 +104,7 @@ def _tf_web_library(ctx):
       external_asset=[struct(webpath=k, path=v)
                       for k, v in ctx.attr.external_assets.items()])
   params_file = _new_file(ctx, "-params.pbtxt")
-  ctx.actions.write(output=params_file, content=params.to_proto())
+  ctx.actions.write(output=params_file, content=proto.encode_text(params))
   ctx.actions.write(
       is_executable=True,
       output=ctx.outputs.executable,
@@ -150,9 +150,9 @@ def _make_manifest(ctx, src_list):
   manifest = _new_file(ctx, "-webfiles.pbtxt")
   ctx.actions.write(
       output=manifest,
-      content=struct(
+      content=proto.encode_text(struct(
           label=str(ctx.label),
-          src=src_list).to_proto())
+          src=src_list)))
   return manifest
 
 def _run_webfiles_validator(ctx, srcs, deps, manifest):
