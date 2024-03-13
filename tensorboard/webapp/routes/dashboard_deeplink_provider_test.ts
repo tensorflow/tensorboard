@@ -25,7 +25,6 @@ import * as selectors from '../selectors';
 import {provideMockTbStore} from '../testing/utils';
 import {DashboardDeepLinkProvider} from './dashboard_deeplink_provider';
 import {buildDeserializedState} from './testing';
-import {expectArrayBuffersEqual} from '@tensorflow/tfjs-core/dist/test_util';
 
 describe('core deeplink provider', () => {
   let store: MockStore<State>;

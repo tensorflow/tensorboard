@@ -36,6 +36,8 @@ tf_ts_library(
     ],
     deps = [
         ":store",
+        "//tensorboard/webapp/app_routing:types",
+        "//tensorboard/webapp/app_routing/actions",
         "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/testing",
