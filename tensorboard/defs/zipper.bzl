@@ -14,13 +14,14 @@
 
 """Rule for zipping Webfiles."""
 
-load("@io_bazel_rules_closure//closure/private:defs.bzl", "unfurl")
+load("@io_bazel_rules_closure//closure/private:defs.bzl", "WebFilesInfo", "collect_runfiles", "extract_providers", "unfurl")
 
 def _tensorboard_zip_file(ctx):
-    deps = unfurl(ctx.attr.deps, provider = WebFilesInfo).exports
-    manifests = depset(order = "postorder", transitive = [dep[WebFilesInfo].manifests for dep in deps])
-    webpaths = depset(transitive = [dep[WebFilesInfo].webpaths for dep in deps])
-    files = depset(transitive = [dep.data_runfiles.files for dep in deps])
+    deps = extract_providers(ctx.attr.deps, provider = WebFilesInfo)
+    deps = unfurl(deps)
+    manifests = depset(order = "postorder", transitive = [dep.manifests for dep in deps])
+    webpaths = depset(transitive = [dep.webpaths for dep in deps])
+    files = depset(transitive = [dep[DefaultInfo].data_runfiles.files for dep in ctx.attr.deps])
     ctx.actions.run(
         mnemonic = "Zipper",
         inputs = depset(transitive = [manifests, files]).to_list(),
@@ -30,17 +31,11 @@ def _tensorboard_zip_file(ctx):
                      [m.path for m in manifests.to_list()]),
         progress_message = "Zipping %d files" % len(webpaths.to_list()),
     )
-    transitive_runfiles = depset()
-    for dep in deps:
-        transitive_runfiles = depset(transitive = [
-            transitive_runfiles,
-            dep.data_runfiles.files,
-        ])
     return DefaultInfo(
         files = depset([ctx.outputs.zip]),
-        runfiles = ctx.runfiles(
+        runfiles = collect_runfiles(
+            ctx,
             files = ctx.files.data + [ctx.outputs.zip],
-            transitive_files = transitive_runfiles,
         ),
     )
 

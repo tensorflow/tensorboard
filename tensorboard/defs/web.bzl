@@ -27,6 +27,7 @@ load(
     "collect_js",
     "collect_runfiles",
     "difference",
+    "extract_providers",
     "long_path",
     "unfurl",
 )
@@ -51,8 +52,8 @@ def _tf_web_library(ctx):
         fail("when \"*\" is suppressed no other items should be present")
 
     # process what came before
-    deps = unfurl(ctx.attr.deps, provider = WebFilesInfo).exports
-    webpaths = depset(transitive = [dep[WebFilesInfo].webpaths for dep in deps])
+    deps = extract_providers(ctx.attr.deps, provider = WebFilesInfo)
+    webpaths = depset(transitive = [dep.webpaths for dep in deps])
 
     # process what comes now
     manifest_srcs = []
@@ -93,7 +94,7 @@ def _tf_web_library(ctx):
         # If a rule exists purely to export other build rules, then it's
         # appropriate for the exported sources to be included in the
         # development web server.
-        export_deps = unfurl(ctx.attr.exports).exports
+        export_deps = unfurl(extract_providers(ctx.attr.exports))
         devserver_manifests = depset(
             order = "postorder",
             transitive = (
@@ -131,15 +132,16 @@ def _tf_web_library(ctx):
             manifests = manifests,
             webpaths = webpaths,
             dummy = dummy,
+            exports = export_deps,
         ),
-        unfurl(ctx.attr.exports),
         collect_js(
-            unfurl(ctx.attr.deps, provider = ClosureJsLibraryInfo).exports,
+            unfurl(deps),
             ctx.files._closure_library_base,
         ),
         DefaultInfo(
             files = depset(web_srcs + [dummy]),
-            runfiles = ctx.runfiles(
+            runfiles = collect_runfiles(
+                ctx,
                 files = (ctx.files.srcs +
                          ctx.files.data +
                          ctx.files._closure_library_base + [
@@ -148,12 +150,7 @@ def _tf_web_library(ctx):
                     ctx.outputs.executable,
                     dummy,
                 ]),
-                transitive_files = depset(transitive = [
-                    collect_runfiles([ctx.attr._WebfilesServer]),
-                    collect_runfiles(deps),
-                    collect_runfiles(export_deps),
-                    collect_runfiles(ctx.attr.data),
-                ]),
+                extra_runfiles_attrs = ["export_deps", "_WebfilesServer"],
             ),
         ),
     ]
@@ -171,7 +168,7 @@ def _make_manifest(ctx, src_list):
 
 def _run_webfiles_validator(ctx, srcs, deps, manifest):
     dummy = _new_file(ctx, "-webfiles.ignoreme")
-    manifests = depset(order = "postorder", transitive = [dep[WebFilesInfo].manifests for dep in deps])
+    manifests = depset(order = "postorder", transitive = [dep.manifests for dep in deps])
     if srcs:
         args = [
             "WebfilesValidator",
@@ -186,13 +183,12 @@ def _run_webfiles_validator(ctx, srcs, deps, manifest):
                 args.append(category)
         inputs = []  # list of depsets
         inputs.append(depset([manifest] + srcs))
-        direct_manifests = depset([dep[WebFilesInfo].manifest for dep in deps])
+        direct_manifests = depset([dep.manifest for dep in deps])
         for dep in deps:
-            inputs.append(depset([dep[WebFilesInfo].dummy]))
-            inputs.append(dep.files)
-            inputs.append(depset([dep[WebFilesInfo].manifest]))
+            inputs.append(depset([dep.dummy]))
+            inputs.append(depset([dep.manifest]))
             args.append("--direct_dep")
-            args.append(dep[WebFilesInfo].manifest.path)
+            args.append(dep.manifest.path)
         for man in difference(manifests, direct_manifests):
             inputs.append(depset([man]))
             args.append("--transitive_dep")

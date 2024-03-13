@@ -15,7 +15,7 @@
 """Rule for building the HTML binary."""
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_aspect")
-load("@io_bazel_rules_closure//closure/private:defs.bzl", "WebFilesInfo", "long_path", "unfurl")  # buildifier: disable=bzl-visibility
+load("@io_bazel_rules_closure//closure/private:defs.bzl", "WebFilesInfo", "collect_runfiles", "extract_providers", "long_path", "unfurl")  # buildifier: disable=bzl-visibility
 
 def _tb_combine_html_impl(ctx):
     """Compiles HTMLs into one HTML.
@@ -25,10 +25,11 @@ def _tb_combine_html_impl(ctx):
     JavaScript file when `js_path` is specified.
     """
 
-    deps = unfurl(ctx.attr.deps, provider = WebFilesInfo).exports
-    manifests = depset(order = "postorder", transitive = [dep[WebFilesInfo].manifests for dep in deps])
-    webpaths = depset(transitive = [dep[WebFilesInfo].webpaths for dep in deps])
-    files = depset(transitive = [dep.data_runfiles.files for dep in deps])
+    deps = extract_providers(ctx.attr.deps, provider = WebFilesInfo)
+    deps = unfurl(deps)
+    manifests = depset(order = "postorder", transitive = [dep.manifests for dep in deps])
+    webpaths = depset(transitive = [dep.webpaths for dep in deps])
+    files = depset(transitive = [dep[DefaultInfo].data_runfiles.files for dep in ctx.attr.deps])
     webpaths = depset([ctx.attr.output_path], transitive = [webpaths])
 
     # vulcanize
@@ -77,23 +78,16 @@ def _tb_combine_html_impl(ctx):
     )
     manifests = depset([manifest], transitive = [manifests])
 
-    transitive_runfiles = depset()
-    for dep in deps:
-        transitive_runfiles = depset(transitive = [
-            transitive_runfiles,
-            dep.data_runfiles.files,
-        ])
-
     return [
         DefaultInfo(
             files = depset([ctx.outputs.html, ctx.outputs.js]),
-            runfiles = ctx.runfiles(
+            runfiles = collect_runfiles(
+                ctx,
                 files = ctx.files.data + [
                     manifest,
                     ctx.outputs.html,
                     ctx.outputs.js,
                 ],
-                transitive_files = transitive_runfiles,
             ),
         ),
         WebFilesInfo(
