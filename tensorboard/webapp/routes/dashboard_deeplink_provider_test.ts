@@ -313,7 +313,7 @@ describe('core deeplink provider', () => {
 
       it('associated unrecognized query params with other plugins', () => {
         const state = provider.deserializeQueryParams([
-          {key: 'pinnedCards', value: 'foo=bar'},
+          {key: 'foo', value: 'bar'},
         ]);
         expect(state.pluginQueryParams).toEqual({
           foo: 'bar',
