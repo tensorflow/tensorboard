@@ -177,10 +177,10 @@ const reducer = createReducer(
     };
   }),
   on(stateRehydratedFromUrl, (state, {partialState}) => {
-    const {pluginQueryParams} = partialState as URLDeserializedState;
+    const {unknownQueryParams} = partialState as URLDeserializedState;
     return {
       ...state,
-      pluginQueryParams,
+      unknownQueryParams,
     };
   })
 );

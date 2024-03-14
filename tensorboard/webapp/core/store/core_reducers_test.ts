@@ -661,16 +661,16 @@ describe('core reducer', () => {
   });
 
   describe('#stateRehydratedFromUrl', () => {
-    it('stores pluginQueryParams', () => {
+    it('stores unknownQueryParams', () => {
       const state = createCoreState();
       const state2 = reducers(
         state,
         stateRehydratedFromUrl({
           routeKind: RouteKind.EXPERIMENT,
-          partialState: {pluginQueryParams: {foo: 'bar'}},
+          partialState: {unknownQueryParams: {foo: 'bar'}},
         })
       );
-      expect(state2.pluginQueryParams).toEqual({
+      expect(state2.unknownQueryParams).toEqual({
         foo: 'bar',
       });
     });

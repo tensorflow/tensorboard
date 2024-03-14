@@ -18,7 +18,7 @@ export function buildDeserializedState(
   override: Partial<DeserializedState> = {}
 ) {
   return {
-    pluginQueryParams: {},
+    unknownQueryParams: {},
     runs: {
       groupBy: null,
       regexFilter: null,

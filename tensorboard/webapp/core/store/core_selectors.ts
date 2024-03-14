@@ -61,10 +61,10 @@ export const getPlugins = createSelector(
   }
 );
 
-export const getPluginQueryParams = createSelector(
+export const getUnknownQueryParams = createSelector(
   selectCoreState,
   (state: CoreState) => {
-    return state.pluginQueryParams;
+    return state.unknownQueryParams;
   }
 );
 

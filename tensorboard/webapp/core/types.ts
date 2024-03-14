@@ -32,5 +32,8 @@ export const TB_BRAND_NAME = new InjectionToken<string>(
 );
 
 export interface URLDeserializedState {
-  pluginQueryParams: Record<string, string>;
+  // Query parameters not recognized by TensorBoard will be stored here.
+  // This is necessary so that they can be readded to the query params
+  // when the application serializes itself in the deeplink_provider.
+  unknownQueryParams: Record<string, string>;
 }

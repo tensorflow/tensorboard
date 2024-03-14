@@ -314,9 +314,13 @@ describe('core deeplink provider', () => {
       it('associated unrecognized query params with other plugins', () => {
         const state = provider.deserializeQueryParams([
           {key: 'foo', value: 'bar'},
+          {key: 'bar', value: 'foo'},
+          {key: 'smoothing', value: '4'},
+          {key: 'tagFilter', value: 'mytagfilter'},
         ]);
-        expect(state.pluginQueryParams).toEqual({
+        expect(state.unknownQueryParams).toEqual({
           foo: 'bar',
+          bar: 'foo',
         });
       });
     });
@@ -367,7 +371,7 @@ describe('core deeplink provider', () => {
     store.overrideSelector(selectors.getOverriddenFeatureFlags, {
       enabledExperimentalPlugins: ['foo', 'bar', 'baz'],
     });
-    store.overrideSelector(selectors.getPluginQueryParams, {
+    store.overrideSelector(selectors.getUnknownQueryParams, {
       foo: 'bar',
     });
     store.refreshState();
