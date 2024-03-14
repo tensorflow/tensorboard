@@ -21,7 +21,7 @@ versions.check(
     maximum_bazel_version = "6.999.0",
     # Keep this version in sync with:
     #  * The BAZEL environment variable defined in .github/workflows/ci.yml, which is used for CI and nightly builds.
-    minimum_bazel_version = "4.2.2",
+    minimum_bazel_version = "6.5.0",
 )
 
 http_archive(
