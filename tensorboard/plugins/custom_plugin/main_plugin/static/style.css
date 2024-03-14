@@ -105,6 +105,29 @@ input[type="number"] {
   width: 500px;
 } */
 
+.navbar{
+  display: flex;
+  flex-direction: row;
+  background-color: lightgray;
+  width: 100%;
+  position: fixed;
+  margin-left: -6px;
+  margin-top: -10px;
+}
+
+.nav-option{
+  background-color: #f57c00; /* Green */
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 5px;
+  width: 50%;
+}
 
 button {
   background-color: #4CAF50; /* Green */

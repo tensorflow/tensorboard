@@ -102,6 +102,13 @@ class MyPlugin(base_plugin.TBPlugin):
         )
         print("read_result=",read_result)
         print(type(read_result))
+        # serialized_result = {}
+        # for key, value in read_result.items():
+        #     serialized_result[key] = {}
+        #     for inner_key, inner_value in value.items():
+        #         serialized_result[key][inner_key] = [(x.wall_time, x.step, x.value)]
+        # result_json = json.dumps(read_result)
+
 
         # scalars = read_result.get(run, {}).get(tag, None)
         # if scalars is None:
@@ -109,7 +116,7 @@ class MyPlugin(base_plugin.TBPlugin):
         #         "No scalar data for run=%r, tag=%r" % (run, tag)
         #     )
         # return [(x.wall_time, x.step, x.value) for x in scalars]
-        return werkzeug.Response(json.dumps(read_result, indent = 4) , content_type="application/json")
+        return werkzeug.Response(str(read_result), content_type="text/plain")
 
 
         # run_info = {run: list(tags) for (run, tags) in read_result.items()}

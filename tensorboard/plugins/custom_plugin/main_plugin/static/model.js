@@ -28,6 +28,7 @@ async function updateRunInfo() {
   
     const scalarPromises = tags.map(async (tag) => {
       const scalars = await getScalars(run, tag);
+      console.log(scalars);
       if (scalars) {
         result.set(tag, scalars);
       }
