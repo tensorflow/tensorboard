@@ -78,8 +78,74 @@ button{
   z-index: 10;
 }
 
-input[type=text]{
-  border-radius: 2px solid white;
+input[type="number"] {
+  width: 200px; /* Set the width of the input field */
+  padding: 10px; /* Add some padding */
+  border: 1px solid #ccc; /* Add a border */
+  border-radius: 5px; /* Add rounded corners */
+  box-sizing: border-box; /* Ensure that padding and border are included in the width */
+  font-size: 16px; /* Set the font size */
   margin: auto;
+  display: block;
+  margin-top: 20px;
+}
+
+/* 
+.preview-container{
+  margin: auto;
+  margin-bottom: 10px;
+  display: block;
+  align-items: center;
+  text-align: center;
+  background-color: white;
+  border-radius: 10px;
   padding: 10px;
+  margin-left: 85px;
+  margin-top: 50px;
+  width: 500px;
+} */
+
+
+button {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 5px;
+  margin: auto;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  margin-left: 85px;
+}
+
+button:hover {
+  background-color: #45a049; /* Darker Green */
+}
+
+select {
+  width: 200px; /* Set the width of the select dropdown */
+  padding: 10px; /* Add some padding */
+  border: 1px solid #ccc; /* Add a border */
+  border-radius: 5px; /* Add rounded corners */
+  box-sizing: border-box; /* Ensure that padding and border are included in the width */
+  font-size: 16px; /* Set the font size */
+  appearance: none; /* Remove the default appearance */
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%231f1f1f" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.25 7.25l7.5 5.25 7.5-5.25v1.5l-7.5 5.25-7.5-5.25z"/></svg>'); /* Add custom arrow */
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 15px 15px;
+  margin: auto;
+  display: block;
+}
+
+/* Style for when the select dropdown is focused */
+select:focus {
+  outline: none; /* Remove the default focus outline */
+  border-color: #5b9dd9; /* Add a different border color when focused */
 }

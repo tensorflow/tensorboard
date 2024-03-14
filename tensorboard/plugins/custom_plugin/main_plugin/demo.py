@@ -29,3 +29,27 @@ def main(unused_argv):
 
 if __name__ == "__main__":
     app.run(main)
+
+# from absl import app
+# import tensorflow as tf
+
+# from main_plugin import summary_v2
+# import os
+
+# # Sample energy data
+# energy_data = {
+#     "cpu": {"time_elapsed": [0, 1, 2, 3, 4], "energy (J)": [1, 2, 3, 4, 5]},
+#     "ram": {"time_elapsed": [0, 1, 2, 3, 4], "energy (J)": [1, 2, 3, 4, 5]},
+#     "gpu": {"time_elapsed": [0, 1, 2, 3, 4], "energy (J)": [1, 2, 3, 4, 5]}
+# }
+
+# def main(unused_argv):
+#     log_dir = "logs/system_performance"
+#     os.makedirs(log_dir, exist_ok=True)  # Create logs directory if not exists
+#     summary_writer = tf.summary.create_file_writer(log_dir)  # Create a summary writer
+
+#     with summary_writer.as_default():
+#         summary_v2.mydata(energy_data)
+
+# if __name__ == "__main__":
+#     app.run(main)

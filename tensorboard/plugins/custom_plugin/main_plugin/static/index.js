@@ -1,5 +1,25 @@
+
+import * as Model from './model.js';
+import * as Views from './view.js';
+
+
 // Define your render function
 export async function render() {
+
+
+ const previewContainer = document.createElement('div');
+  const runs = await Model.getRuns();
+  const runSelector = Views.createRunSelector(runs);
+  const updatePreviewBound = updatePreview.bind(
+    null,
+    runSelector,
+    previewContainer
+  );
+
+  runSelector.onchange = updatePreviewBound;
+
+  updatePreviewBound();
+
 
   const aapl = [
     {date: new Date('2007-04-23'), close: 10.24},
@@ -95,6 +115,10 @@ const multiData = [aapl,aapl2]
   sideToolbar.appendChild(widthInput);
   sideToolbar.appendChild(heightInput);
   sideToolbar.appendChild(applyButton);
+
+  //Selector
+  sideToolbar.appendChild(runSelector);
+  sideToolbar.appendChild(previewContainer);
 
 // =========================================
 
@@ -314,7 +338,7 @@ function createLineChart(
     .attr('stroke-width', 1.5)
     .attr('d', line(data[index]));
     
-    console.log(data[index]);
+    // console.log(data[index]);
   }
 
   // svg
@@ -443,6 +467,20 @@ function generatePDF(id) {
   doc.save("graph.pdf");
 }
 
+async function updatePreview(runSelector, container) {
+  container.textContent = 'Loading...';
+  console.log("update Preview")
+  const requestedRun = runSelector.value;
+  const tagsToScalars = await Model.getTagsToScalars(requestedRun);
+  const preview = Views.createPreviews(tagsToScalars);
+
+  // Cancel the update if the UI has a different run selected.
+  if (runSelector.value !== requestedRun) {
+    return;
+  }
+  container.textContent = '';
+  container.appendChild(preview);
+}
 
 // Function to load D3.js dynamically
 // function loadD3() {
