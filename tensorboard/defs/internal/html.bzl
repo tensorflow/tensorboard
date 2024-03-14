@@ -15,7 +15,7 @@
 """Rule for building the HTML binary."""
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_aspect")
-load("@io_bazel_rules_closure//closure/private:defs.bzl", "collect_js", "long_path", "unfurl")  # buildifier: disable=bzl-visibility
+load("@io_bazel_rules_closure//closure/private:defs.bzl", "WebFilesInfo", "collect_runfiles", "extract_providers", "long_path", "unfurl")  # buildifier: disable=bzl-visibility
 
 def _tb_combine_html_impl(ctx):
     """Compiles HTMLs into one HTML.
@@ -25,18 +25,12 @@ def _tb_combine_html_impl(ctx):
     JavaScript file when `js_path` is specified.
     """
 
-    deps = unfurl(ctx.attr.deps, provider = "webfiles")
-    manifests = depset(order = "postorder")
-    files = depset()
-    webpaths = depset()
-    for dep in deps:
-        manifests = depset(transitive = [manifests, dep.webfiles.manifests])
-        webpaths = depset(transitive = [webpaths, dep.webfiles.webpaths])
-        files = depset(transitive = [files, dep.data_runfiles.files])
+    deps = extract_providers(ctx.attr.deps, provider = WebFilesInfo)
+    deps = unfurl(deps)
+    manifests = depset(order = "postorder", transitive = [dep.manifests for dep in deps])
+    webpaths = depset(transitive = [dep.webpaths for dep in deps])
+    files = depset(transitive = [dep[DefaultInfo].data_runfiles.files for dep in ctx.attr.deps])
     webpaths = depset([ctx.attr.output_path], transitive = [webpaths])
-    closure_js_library = collect_js(
-        unfurl(ctx.attr.deps, provider = "closure_js_library"),
-    )
 
     # vulcanize
     ctx.actions.run(
@@ -84,30 +78,25 @@ def _tb_combine_html_impl(ctx):
     )
     manifests = depset([manifest], transitive = [manifests])
 
-    transitive_runfiles = depset()
-    for dep in deps:
-        transitive_runfiles = depset(transitive = [
-            transitive_runfiles,
-            dep.data_runfiles.files,
-        ])
-
-    return struct(
-        files = depset([ctx.outputs.html, ctx.outputs.js]),
-        webfiles = struct(
+    return [
+        DefaultInfo(
+            files = depset([ctx.outputs.html, ctx.outputs.js]),
+            runfiles = collect_runfiles(
+                ctx,
+                files = ctx.files.data + [
+                    manifest,
+                    ctx.outputs.html,
+                    ctx.outputs.js,
+                ],
+            ),
+        ),
+        WebFilesInfo(
             manifest = manifest,
             manifests = manifests,
             webpaths = webpaths,
             dummy = ctx.outputs.html,
         ),
-        runfiles = ctx.runfiles(
-            files = ctx.files.data + [
-                manifest,
-                ctx.outputs.html,
-                ctx.outputs.js,
-            ],
-            transitive_files = transitive_runfiles,
-        ),
-    )
+    ]
 
 tb_combine_html = rule(
     implementation = _tb_combine_html_impl,

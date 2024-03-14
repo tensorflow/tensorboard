@@ -14,47 +14,43 @@
 
 """Rule for zipping Webfiles."""
 
-load("@io_bazel_rules_closure//closure/private:defs.bzl", "unfurl")
+load("@io_bazel_rules_closure//closure/private:defs.bzl", "WebFilesInfo", "collect_runfiles", "extract_providers", "unfurl")
 
 def _tensorboard_zip_file(ctx):
-  deps = unfurl(ctx.attr.deps, provider="webfiles")
-  manifests = depset(order="postorder")
-  files = depset()
-  webpaths = depset()
-  for dep in deps:
-    manifests = depset(transitive=[manifests, dep.webfiles.manifests])
-    webpaths = depset(transitive=[webpaths, dep.webfiles.webpaths])
-    files = depset(transitive=[files, dep.data_runfiles.files])
-  ctx.actions.run(
-      mnemonic="Zipper",
-      inputs=depset(transitive=[manifests, files]).to_list(),
-      outputs=[ctx.outputs.zip],
-      executable=ctx.executable._Zipper,
-      arguments=([ctx.outputs.zip.path] +
-                 [m.path for m in manifests.to_list()]),
-      progress_message="Zipping %d files" % len(webpaths.to_list()))
-  transitive_runfiles = depset()
-  for dep in deps:
-    transitive_runfiles = depset(transitive=[
-        transitive_runfiles,
-        dep.data_runfiles.files,
-    ])
-  return struct(
-      files=depset([ctx.outputs.zip]),
-      runfiles=ctx.runfiles(
-          files=ctx.files.data + [ctx.outputs.zip],
-          transitive_files=transitive_runfiles))
+    deps = extract_providers(ctx.attr.deps, provider = WebFilesInfo)
+    deps = unfurl(deps)
+    manifests = depset(order = "postorder", transitive = [dep.manifests for dep in deps])
+    webpaths = depset(transitive = [dep.webpaths for dep in deps])
+    files = depset(transitive = [dep[DefaultInfo].data_runfiles.files for dep in ctx.attr.deps])
+    ctx.actions.run(
+        mnemonic = "Zipper",
+        inputs = depset(transitive = [manifests, files]).to_list(),
+        outputs = [ctx.outputs.zip],
+        executable = ctx.executable._Zipper,
+        arguments = ([ctx.outputs.zip.path] +
+                     [m.path for m in manifests.to_list()]),
+        progress_message = "Zipping %d files" % len(webpaths.to_list()),
+    )
+    return DefaultInfo(
+        files = depset([ctx.outputs.zip]),
+        runfiles = collect_runfiles(
+            ctx,
+            files = ctx.files.data + [ctx.outputs.zip],
+        ),
+    )
 
 tensorboard_zip_file = rule(
-    implementation=_tensorboard_zip_file,
-    attrs={
-        "data": attr.label_list(allow_files=True),
-        "deps": attr.label_list(providers=["webfiles"], mandatory=True),
+    implementation = _tensorboard_zip_file,
+    attrs = {
+        "data": attr.label_list(allow_files = True),
+        "deps": attr.label_list(providers = [WebFilesInfo], mandatory = True),
         "_Zipper": attr.label(
-            default=Label("//tensorboard/java/org/tensorflow/tensorboard/vulcanize:Zipper"),
-            executable=True,
-            cfg="exec"),
+            default = Label("//tensorboard/java/org/tensorflow/tensorboard/vulcanize:Zipper"),
+            executable = True,
+            cfg = "exec",
+        ),
     },
-    outputs={
+    outputs = {
         "zip": "%{name}.zip",
-    })
+    },
+)

@@ -21,16 +21,14 @@ versions.check(
     maximum_bazel_version = "6.999.0",
     # Keep this version in sync with:
     #  * The BAZEL environment variable defined in .github/workflows/ci.yml, which is used for CI and nightly builds.
-    minimum_bazel_version = "4.2.2",
+    minimum_bazel_version = "6.5.0",
 )
 
 http_archive(
     name = "io_bazel_rules_webtesting",
-    sha256 = "e9abb7658b6a129740c0b3ef6f5a2370864e102a5ba5ffca2cea565829ed825a",
-    urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_webtesting/releases/download/0.3.5/rules_webtesting.tar.gz",
-        "https://github.com/bazelbuild/rules_webtesting/releases/download/0.3.5/rules_webtesting.tar.gz",
-    ],
+    sha256 = "6e104e54c283c94ae3d5c6573cf3233ce478e89e0f541a869057521966a35b8f",
+    strip_prefix = "rules_webtesting-b6fc79c5a37cd18a5433fd080c9d2cc59548222c",
+    urls = ["https://github.com/bazelbuild/rules_webtesting/archive/b6fc79c5a37cd18a5433fd080c9d2cc59548222c.tar.gz"],
 )
 
 load("@io_bazel_rules_webtesting//web:repositories.bzl", "web_test_repositories")
@@ -55,11 +53,10 @@ py_repositories()
 
 http_archive(
     name = "io_bazel_rules_closure",
-    sha256 = "6a900831c1eb8dbfc9d6879b5820fd614d4ea1db180eb5ff8aedcb75ee747c1f",
-    strip_prefix = "rules_closure-db4683a2a1836ac8e265804ca5fa31852395185b",
+    sha256 = "ae060075a7c468eee42e6a08ddbb83f5a6663bdfdbd461261a465f4a3ae8598c",
+    strip_prefix = "rules_closure-7f3d3351a8cc31fbaa403de7d35578683c17b447",
     urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_closure/archive/db4683a2a1836ac8e265804ca5fa31852395185b.tar.gz",
-        "https://github.com/bazelbuild/rules_closure/archive/db4683a2a1836ac8e265804ca5fa31852395185b.tar.gz",  # 2020-01-15
+        "https://github.com/bazelbuild/rules_closure/archive/7f3d3351a8cc31fbaa403de7d35578683c17b447.tar.gz",  # 2024-03-11
     ],
 )
 
@@ -190,6 +187,11 @@ http_archive(
         "https://github.com/bazelbuild/rules_rust/archive/d5ab4143245af8b33d1947813d411a6cae838409.tar.gz",
     ],
 )
+
+# WORKAROUND for rules_webtesting not declaring used com_github_gorilla_mux repo:
+load("@io_bazel_rules_webtesting//web:go_repositories.bzl", "com_github_gorilla_mux")
+
+com_github_gorilla_mux()
 
 # Please add all new dependencies in workspace.bzl.
 load("//third_party:workspace.bzl", "tensorboard_workspace")
