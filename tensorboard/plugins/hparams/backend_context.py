@@ -185,12 +185,19 @@ class Context:
           value, with keys only for runs and tags that actually had
           data, which may be a subset of what was requested.
         """
-        return self._tb_context.data_provider.read_last_scalars(
+        last_scalars = self._tb_context.data_provider.read_last_scalars(
             ctx,
             experiment_id=experiment_id,
             plugin_name=scalar_metadata.PLUGIN_NAME,
             run_tag_filter=run_tag_filter,
         )
+        # Transform keys from the data provider using some of the same os-level
+        # filesystem operations used to generate metric names elsewhere.
+        # This will, for example, translate runs with name 'SOMETHING/.' to
+        # 'SOMETHING'.
+        return {
+            os.path.normpath(key): value for key, value in last_scalars.items()
+        }
 
     def hparams_from_data_provider(self, ctx, experiment_id, limit):
         """Calls DataProvider.list_hyperparameters() and returns the result."""
