@@ -14,7 +14,10 @@
 
 """Rule for zipping Webfiles."""
 
-load("@io_bazel_rules_closure//closure/private:defs.bzl", "WebFilesInfo", "collect_runfiles", "extract_providers", "unfurl")
+load("@io_bazel_rules_closure//closure/private:defs.bzl", "WebFilesInfo", "collect_runfiles", "unfurl")  # buildifier: disable=bzl-visibility
+
+def extract_providers(deps, provider):
+    return [dep[provider] for dep in deps if provider in dep]
 
 def _tensorboard_zip_file(ctx):
     deps = extract_providers(ctx.attr.deps, provider = WebFilesInfo)
