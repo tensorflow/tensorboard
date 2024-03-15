@@ -49,6 +49,15 @@ tf_sass_binary(
 )
 
 tf_sass_binary(
+    name = "context_menu_component_styles",
+    src = "context_menu_component.scss",
+    deps = [
+        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/theme",
+    ],
+)
+
+tf_sass_binary(
     name = "filter_dialog_styles",
     src = "filter_dialog_component.scss",
     deps = [
@@ -76,6 +85,7 @@ tf_ng_module(
     ],
     deps = [
         ":column_selector",
+        ":context_menu",
         ":data_table_header",
         ":filter_dialog",
         ":types",
@@ -126,6 +136,27 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_input",
+        "@npm//@angular/common",
+        "@npm//@angular/core",
+        "@npm//@angular/forms",
+        "@npm//rxjs",
+    ],
+)
+
+tf_ng_module(
+    name = "context_menu",
+    srcs = [
+        "context_menu_component.ts",
+        "context_menu_module.ts",
+    ],
+    assets = [
+        "context_menu_component.ng.html",
+        ":context_menu_component_styles",
+    ],
+    deps = [
+        ":types",
+        "//tensorboard/webapp/angular:expect_angular_material_button",
+        "//tensorboard/webapp/angular:expect_angular_material_icon",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/forms",
@@ -190,12 +221,14 @@ tf_ts_library(
     srcs = [
         "column_selector_test.ts",
         "content_cell_component_test.ts",
+        "context_menu_test.ts",
         "data_table_test.ts",
         "filter_dialog_test.ts",
         "header_cell_component_test.ts",
     ],
     deps = [
         ":column_selector",
+        ":context_menu",
         ":data_table",
         ":filter_dialog",
         ":types",
