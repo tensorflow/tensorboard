@@ -371,14 +371,23 @@ describe('core deeplink provider', () => {
     store.overrideSelector(selectors.getOverriddenFeatureFlags, {
       enabledExperimentalPlugins: ['foo', 'bar', 'baz'],
     });
-    store.overrideSelector(selectors.getUnknownQueryParams, {
-      foo: 'bar',
-    });
     store.refreshState();
 
     expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
       {key: 'experimentalPlugin', value: 'foo,bar,baz'},
+    ]);
+  });
+
+  it('serializes unknown query params', () => {
+    store.overrideSelector(selectors.getUnknownQueryParams, {
+      foo: 'bar',
+      bar: 'foo',
+    });
+    store.refreshState();
+
+    expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
       {key: 'foo', value: 'bar'},
+      {key: 'bar', value: 'foo'},
     ]);
   });
 
