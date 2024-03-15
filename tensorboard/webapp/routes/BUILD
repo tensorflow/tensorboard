@@ -24,6 +24,7 @@ tf_ts_library(
         "dashboard_deeplink_provider_types.ts",
     ],
     deps = [
+        "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/runs:types",
     ],

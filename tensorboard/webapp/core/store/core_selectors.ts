@@ -61,6 +61,13 @@ export const getPlugins = createSelector(
   }
 );
 
+export const getUnknownQueryParams = createSelector(
+  selectCoreState,
+  (state: CoreState) => {
+    return state.unknownQueryParams;
+  }
+);
+
 export const getEnvironment = createSelector(
   selectCoreState,
   (state: CoreState): Environment => {

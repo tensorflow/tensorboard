@@ -30,3 +30,10 @@ export enum PluginsListFailureCode {
 export const TB_BRAND_NAME = new InjectionToken<string>(
   'TensorBoard brand name'
 );
+
+export interface URLDeserializedState {
+  // Query parameters not recognized by TensorBoard will be stored here.
+  // This is necessary so that they can be readded to the query params
+  // when the application serializes itself in the deeplink_provider.
+  unknownQueryParams: Record<string, string>;
+}
