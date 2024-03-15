@@ -36,7 +36,11 @@ export class ContextMenuComponent {
   @Output() removeColumn = new EventEmitter<ColumnHeader>();
   @Output() sortByHeader = new EventEmitter<string>();
   @Output() openFilterMenu = new EventEmitter<MouseEvent>();
-  @Output() openColumnSelector = new EventEmitter<{event: MouseEvent, insertTo: Side, isSubmenu: boolean}>;
+  @Output() openColumnSelector = new EventEmitter<{
+    event: MouseEvent;
+    insertTo: Side;
+    isSubmenu: boolean;
+  }>();
 
   readonly Side = Side;
   readonly SortingOrder = SortingOrder;
