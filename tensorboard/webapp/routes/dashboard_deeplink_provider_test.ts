@@ -310,6 +310,19 @@ describe('core deeplink provider', () => {
           expect(state.metrics.pinnedCards).toEqual(expectedPinnedCards);
         }
       });
+
+      it('associated unrecognized query params with other plugins', () => {
+        const state = provider.deserializeQueryParams([
+          {key: 'foo', value: 'bar'},
+          {key: 'bar', value: 'foo'},
+          {key: 'smoothing', value: '4'},
+          {key: 'tagFilter', value: 'mytagfilter'},
+        ]);
+        expect(state.unknownQueryParams).toEqual({
+          foo: 'bar',
+          bar: 'foo',
+        });
+      });
     });
 
     describe('tag filter', () => {
@@ -362,6 +375,19 @@ describe('core deeplink provider', () => {
 
     expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
       {key: 'experimentalPlugin', value: 'foo,bar,baz'},
+    ]);
+  });
+
+  it('serializes unknown query params', () => {
+    store.overrideSelector(selectors.getUnknownQueryParams, {
+      foo: 'bar',
+      bar: 'foo',
+    });
+    store.refreshState();
+
+    expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
+      {key: 'foo', value: 'bar'},
+      {key: 'bar', value: 'foo'},
     ]);
   });
 

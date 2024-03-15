@@ -14,11 +14,13 @@ limitations under the License.
 ==============================================================================*/
 import {URLDeserializedState as MetricsURLDeserializedState} from '../metrics/types';
 import {URLDeserializedState as RunsURLDeserializedState} from '../runs/types';
+import {URLDeserializedState as CoreURLDeserializedState} from '../core/types';
 
 // No need to deserialize the Experimental Plugins as it is immutable and is only read at
 // the start of the application.
 export type DeserializedState = MetricsURLDeserializedState &
-  RunsURLDeserializedState;
+  RunsURLDeserializedState &
+  CoreURLDeserializedState;
 
 export const SMOOTHING_KEY = 'smoothing';
 
