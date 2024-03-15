@@ -22,7 +22,6 @@ load(
     "@io_bazel_rules_closure//closure/private:defs.bzl",
     "CLOSURE_LIBRARY_BASE_ATTR",
     "CLOSURE_WORKER_ATTR",
-    "ClosureJsLibraryInfo",
     "WebFilesInfo",
     "collect_js",
     "collect_runfiles",
