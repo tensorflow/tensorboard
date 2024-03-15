@@ -16,6 +16,7 @@
 
 load("@io_bazel_rules_closure//closure/private:defs.bzl", "WebFilesInfo", "collect_runfiles", "unfurl")  # buildifier: disable=bzl-visibility
 
+# TODO(ytjing): Directly import this function once it's synced from OSS to internal rules_closure repo.
 def extract_providers(deps, provider):
     return [dep[provider] for dep in deps if provider in dep]
 

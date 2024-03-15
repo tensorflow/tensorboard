@@ -31,6 +31,7 @@ load(
 )
 load("//tensorboard/defs/internal:html.bzl", _tb_combine_html = "tb_combine_html")
 
+# TODO(ytjing): Directly import this function once it's synced from OSS to internal rules_closure repo.
 def extract_providers(deps, provider):
     return [dep[provider] for dep in deps if provider in dep]
 
