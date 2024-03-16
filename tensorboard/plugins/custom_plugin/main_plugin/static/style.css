@@ -172,3 +172,14 @@ select:focus {
   outline: none; /* Remove the default focus outline */
   border-color: #5b9dd9; /* Add a different border color when focused */
 }
+
+.data-container{
+  /* background-color: red; */
+  width: fit-content;
+  height: fit-content;
+}
+
+
+.table{
+  margin-top: 20px;
+}

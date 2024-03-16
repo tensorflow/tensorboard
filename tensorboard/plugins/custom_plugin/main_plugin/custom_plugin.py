@@ -95,13 +95,23 @@ class MyPlugin(base_plugin.TBPlugin):
 
         if run is None or tag is None:
             raise werkzeug.exceptions.BadRequest("Must specify run and tag")
-        read_result = self.data_provider.list_scalars(
+        read_result = self.data_provider.read_scalars(
             ctx,
             experiment_id=experiment,
             plugin_name=scalar_metadata.PLUGIN_NAME,
+            downsample=5000,
+            run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
         )
         print("read_result=",read_result)
         print(type(read_result))
+
+        scalars = read_result.get(run, {}).get(tag, None)
+        if scalars is None:
+            raise errors.NotFoundError(
+                "No scalar data for run=%r, tag=%r" % (run, tag)
+            )
+        body = [(x.wall_time, x.step, x.value) for x in scalars]
+        return http_util.Respond(request, body, "application/json")
         # serialized_result = {}
         # for key, value in read_result.items():
         #     serialized_result[key] = {}

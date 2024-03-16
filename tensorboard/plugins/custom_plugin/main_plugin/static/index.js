@@ -2,6 +2,33 @@
 import * as Model from './model.js';
 import * as Views from './view.js';
 
+const mapData = new Map([
+  ["cpu/energy", [
+      [1710167130.099288, 0, 1],
+      [1710167130.102882, 1, 2],
+      [1710167130.104154, 2, 3],
+      [1710167130.105229, 3, 4],
+      [1710167130.106213, 4, 5]
+  ]],
+  ["ram/energy", [
+      [1710167130.106944, 0, 1],
+      [1710167130.107675, 1, 2],
+      [1710167130.108619, 2, 3],
+      [1710167130.109336, 3, 4],
+      [1710167130.110029, 4, 5]
+  ]],
+  ["gpu/energy", [
+      [1710167130.110726, 0, 1],
+      [1710167130.115905, 1, 2],
+      [1710167130.116649, 2, 3],
+      [1710167130.117752, 3, 4],
+      [1710167130.118884, 4, 5]
+  ]]
+]);
+
+const chartData = mapToChartData(mapData);
+
+
 const aapl = [
   {date: new Date('2007-04-23'), close: 10.24},
   {date: new Date('2007-04-24'), close: 20.35},
@@ -40,6 +67,7 @@ export async function render() {
 
 
  const previewContainer = document.createElement('div');
+  previewContainer.classList.add('data-container');
   const runs = await Model.getRuns();
   const runSelector = Views.createRunSelector(runs);
   const updatePreviewBound = updatePreview.bind(
@@ -51,6 +79,7 @@ export async function render() {
   runSelector.onchange = updatePreviewBound;
 
   updatePreviewBound();
+
 
 const multiData = [aapl,aapl2]
 
@@ -130,7 +159,7 @@ const multiData = [aapl,aapl2]
 // =========================================
 
   graphArea.appendChild(createScaleLinear(aapl));
-  graphArea.appendChild(createLineChart(multiData));
+  graphArea.appendChild(createLineChart(chartData));
 
   document.body.appendChild(sideToolbar);
   document.body.appendChild(graphArea);
@@ -142,6 +171,8 @@ const multiData = [aapl,aapl2]
   
 
   document.body.appendChild(mainContainer);
+  // mainContainer.appendChild(createLineChart());
+
 
 }
 
@@ -246,6 +277,9 @@ function createScaleLinear(
   container.append(downloadGraph());
   return container;
 }
+
+
+
 
 function createLineChart(
   data,
@@ -524,3 +558,6 @@ function updateGraph() {
   // Append the new graph to the container
   graphContainer.appendChild(newGraph);
 }
+
+
+
