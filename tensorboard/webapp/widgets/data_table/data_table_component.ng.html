@@ -28,7 +28,6 @@ limitations under the License.
   #columnSelectorModal
   *ngIf="selectableColumns && selectableColumns.length"
   (onOpen)="focusColumnSelector()"
-  (onClose)="onColumnSelectorClosed()"
 >
   <tb-data-table-column-selector-component
     [selectableColumns]="selectableColumns"

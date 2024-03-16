@@ -306,10 +306,6 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     this.columnSelector.activate();
   }
 
-  onColumnSelectorClosed() {
-    this.insertColumnTo = undefined;
-  }
-
   canContextMenuRemoveColumn() {
     return this.contextMenuHeader?.removable;
   }
