@@ -112,38 +112,34 @@ class MyPlugin(base_plugin.TBPlugin):
             )
         body = [(x.wall_time, x.step, x.value) for x in scalars]
         return http_util.Respond(request, body, "application/json")
-        # serialized_result = {}
-        # for key, value in read_result.items():
-        #     serialized_result[key] = {}
-        #     for inner_key, inner_value in value.items():
-        #         serialized_result[key][inner_key] = [(x.wall_time, x.step, x.value)]
-        # result_json = json.dumps(read_result)
-
-
-        # scalars = read_result.get(run, {}).get(tag, None)
-        # if scalars is None:
-        #     raise errors.NotFoundError(
-        #         "No scalar data for run=%r, tag=%r" % (run, tag)
-        #     )
-        # return [(x.wall_time, x.step, x.value) for x in scalars]
-        return werkzeug.Response(str(read_result), content_type="text/plain")
-
-
-        # run_info = {run: list(tags) for (run, tags) in read_result.items()}
-        # return http_util.Respond(request, run_info, "application/json")
-
-        # data = read_result.get(run, {}).get(tag, [])
-        # print(data)
-        # if not data:
-        #     raise werkzeug.exceptions.BadRequest("Invalid run or tag")
-        # event_data = [datum.numpy.item().decode("utf-8") for datum in data]
-
-        # contents = json.dumps(event_data, sort_keys=True)
-        # print(contents)
-        # return werkzeug.Response(contents, content_type="application/json")
 
     def preprocess_data(self):
         pass
+
+    def define_flags(self, parser):
+        group = parser.add_argument_group('my_plugin')
+        
+        group.add_argument(
+            '--enable_flops',
+            action='store_true',
+            help='Enable Flop Calculation.'
+        )
+
+        group.add_argument(
+            '--enable_system_performance',
+            action='store_true',
+            help='Enable ML System Performance.'
+        )
+
+    def fix_flags(self, flags):
+        if flags.enable_my_extras:
+            print("Extra features are enabled.")
+        else:
+            print("Extra failed to run")
+        
+        # print(f"Using custom threshold: {flags.custom_threshold}")
+        # print(f"Logging level set to: {flags.log_level}")
+
 
 
 # This is optional for taking custom flags when running the log files

@@ -1,0 +1,209 @@
+[
+    {
+        "tensorflow.data.Dataset.from_tensor_slices((x_train, y_train)).shuffle(10000).batch()":
+        {
+
+            "energy_data":
+            {
+                "cpu": "{\"columns\":[\"time_elapsed\",\"energy (J)\"],\"index\":[0,1,2,3,4,5],\"data\":[[0.50055409,21.1],[1.001148636,17.77],[1.501765556,17.99],[2.002418307,17.35],[2.503068382,17.14],[3.003722191,17.14]]}",
+                "ram": "{\"columns\":[\"time_elapsed\",\"energy (J)\"],\"index\":[0,1,2,3,4,5],\"data\":[[0.50055409,21.1],[1.001148636,17.77],[1.501765556,17.99],[2.002418307,17.35],[2.503068382,17.14],[3.003722191,17.14]]}",
+                "gpu": "{\"columns\":[\"time_elapsed\",\"energy (J)\"],\"index\":[0,1,2,3,4,5],\"data\":[[0.50055409,21.1],[1.001148636,17.77],[1.501765556,17.99],[2.002418307,17.35],[2.503068382,17.14],[3.003722191,17.14]]}"
+            
+            },
+            "time":{
+                "start_time_execution": 1702011436291936300,
+                "end_time_execution": 1702011437199823400,
+                "start_time_perf": 1252.597565774,
+                "end_time_perf": 1253.598843922,
+                "sys_start_time_perf": 1702010183445336800,
+                "start_time_nvidia": 1252.4580001831055,
+                "end_time_nvidia": 1253.460000038147,
+                "sys_start_time_nvidia": 1702010183452307700,
+                "begin_stable_check_time": 1702011416266536700,
+                "begin_temperature_check_time": 1702011416265316400
+            },
+            "cpu_temperatures": "{\"columns\":[\"time_elapsed\",\"temperature\",\"timestamp\"],\"index\":[0,1,2],\"data\":[[0.0,34,1.702011413e+18],[1.007205632,33,1.702011414e+18],[2.016180736,33,1.702011415e+18]]}",
+            "settings": {
+                "max_wait_s": 120,
+                "wait_after_run_s": 30,
+                "wait_per_stable_check_loop_s": 20,
+                "tolerance": 0,
+                "measurement_interval_s": 0.5,
+                "cpu_std_to_mean": 0.03,
+                "ram_std_to_mean": 0.03,
+                "gpu_std_to_mean": 0.01,
+                "check_last_n_points": 20,
+                "cpu_max_temp": 55,
+                "gpu_max_temp": 40,
+                "cpu_temperature_interval_s": 1
+              },
+              "input_sizes": {
+                "args_size": 32,
+                "kwargs_size": 0,
+                "object_size": 0
+              },
+              "project_metadata": {
+                "project_name": "tensorflow_docs",
+                "project_repository": "https://github.com/tensorflow/docs.git",
+                "project_owner": "tensorflow",
+                "project_branch": "master",
+                "project_commit": "03190f3b6f327a1dbaba9a712bdf102616010cfc",
+                "project_commit_date": "2023-12-04T18:28:08-08:00",
+                "script_path": "/home/saurabh/method-energy-dataset/projects/tensorflow_docs_patched/site/en/tutorials/quickstart/advanced.ipynb",
+                "api_call_line": 13
+              }
+        },
+        "tensorflow.data.Dataset.from_tensor_slices((x_test, y_test)).batch()":
+        {
+            "energy_data":{
+                "cpu": "{\"columns\":[\"time_elapsed\",\"energy (J)\"],\"index\":[0,1,2,3,4],\"data\":[[0.50055409,21.1],[1.001148636,17.77],[1.501765556,17.99],[2.002418307,17.35],[2.503068382,17.14]]}",
+                "ram": "{\"columns\":[\"time_elapsed\",\"energy (J)\"],\"index\":[0,1,2,3,4],\"data\":[[0.50055409,21.1],[1.001148636,17.77],[1.501765556,17.99],[2.002418307,17.35],[2.503068382,17.14]]}",
+                "gpu": "{\"columns\":[\"time_elapsed\",\"energy (J)\"],\"index\":[0,1,2,3,4],\"data\":[[0.50055409,21.1],[1.001148636,17.77],[1.501765556,17.99],[2.002418307,17.35],[2.503068382,17.14]]}"
+            },
+            "time":{
+                "start_time_execution": 1702011436291936300,
+                "end_time_execution": 1702011437199823400,
+                "start_time_perf": 1252.597565774,
+                "end_time_perf": 1253.598843922,
+                "sys_start_time_perf": 1702010183445336800,
+                "start_time_nvidia": 1252.4580001831055,
+                "end_time_nvidia": 1253.460000038147,
+                "sys_start_time_nvidia": 1702010183452307700,
+                "begin_stable_check_time": 1702011416266536700,
+                "begin_temperature_check_time": 1702011416265316400
+            },
+
+            "cpu_temperatures": "{\"columns\":[\"time_elapsed\",\"temperature\",\"timestamp\"],\"index\":[0,1,2],\"data\":[[0.0,34,1.702011413e+18],[1.007205632,33,1.702011414e+18],[2.016180736,33,1.702011415e+18]]}",
+
+            "settings": {
+                "max_wait_s": 120,
+                "wait_after_run_s": 30,
+                "wait_per_stable_check_loop_s": 20,
+                "tolerance": 0,
+                "measurement_interval_s": 0.5,
+                "cpu_std_to_mean": 0.03,
+                "ram_std_to_mean": 0.03,
+                "gpu_std_to_mean": 0.01,
+                "check_last_n_points": 20,
+                "cpu_max_temp": 55,
+                "gpu_max_temp": 40,
+                "cpu_temperature_interval_s": 1
+              },
+              "input_sizes": {
+                "args_size": 32,
+                "kwargs_size": 0,
+                "object_size": 0
+              },
+              "project_metadata": {
+                "project_name": "tensorflow_docs",
+                "project_repository": "https://github.com/tensorflow/docs.git",
+                "project_owner": "tensorflow",
+                "project_branch": "master",
+                "project_commit": "03190f3b6f327a1dbaba9a712bdf102616010cfc",
+                "project_commit_date": "2023-12-04T18:28:08-08:00",
+                "script_path": "/home/saurabh/method-energy-dataset/projects/tensorflow_docs_patched/site/en/tutorials/quickstart/advanced.ipynb",
+                "api_call_line": 13
+              }
+        },
+        "model.fit()": 
+        {
+            "energy_data": {
+                "cpu": "{\"columns\":[\"time_elapsed\",\"energy (J)\"],\"index\":[0,1,2,3,4],\"data\":[[0.50055409,21.1],[1.001148636,17.77],[1.501765556,17.99],[2.002418307,17.35],[2.503068382,17.14]]}",
+                "ram": "{\"columns\":[\"time_elapsed\",\"energy (J)\"],\"index\":[0,1,2,3,4],\"data\":[[0.50055409,21.1],[1.001148636,17.77],[1.501765556,17.99],[2.002418307,17.35],[2.503068382,17.14]]}",
+                "gpu": "{\"columns\":[\"time_elapsed\",\"energy (J)\"],\"index\":[0,1,2,3,4],\"data\":[[0.50055409,21.1],[1.001148636,17.77],[1.501765556,17.99],[2.002418307,17.35],[2.503068382,17.14]]}"
+            },
+            "time": {
+                "start_time_execution": 1702011436291936300,
+                "end_time_execution": 1702011437199823400,
+                "start_time_perf": 1252.597565774,
+                "end_time_perf": 1253.598843922,
+                "sys_start_time_perf": 1702010183445336800,
+                "start_time_nvidia": 1252.4580001831055,
+                "end_time_nvidia": 1253.460000038147,
+                "sys_start_time_nvidia": 1702010183452307700,
+                "begin_stable_check_time": 1702011416266536700,
+                "begin_temperature_check_time": 1702011416265316400
+            },
+            "cpu_temperatures": "{\"columns\":[\"time_elapsed\",\"temperature\",\"timestamp\"],\"index\":[0,1,2],\"data\":[[0.0,34,1.702011413e+18],[1.007205632,33,1.702011414e+18],[2.016180736,33,1.702011415e+18]]}",
+            "settings": {
+                "max_wait_s": 120,
+                "wait_after_run_s": 30,
+                "wait_per_stable_check_loop_s": 20,
+                "tolerance": 0,
+                "measurement_interval_s": 0.5,
+                "cpu_std_to_mean": 0.03,
+                "ram_std_to_mean": 0.03,
+                "gpu_std_to_mean": 0.01,
+                "check_last_n_points": 20,
+                "cpu_max_temp": 55,
+                "gpu_max_temp": 40,
+                "cpu_temperature_interval_s": 1
+              },
+              "input_sizes": {
+                "args_size": 32,
+                "kwargs_size": 0,
+                "object_size": 0
+              },
+              "project_metadata": {
+                "project_name": "tensorflow_docs",
+                "project_repository": "abc",
+                "project_owner": "tensorflow",
+                "project_branch": "master",
+                "project_commit": "03190f3b6f327a1dbaba9a712bdf102616010cfc",
+                "project_commit_date": "2023-12-04T18:28:08-08:00",
+                "script_path": "/home/saurabh/method-energy-dataset/projects/tensorflow_docs_patched/site/en/tutorials/quickstart/advanced.ipynb",
+                "api_call_line": 13
+              }
+        },
+        "model.evaluate()": 
+        {
+        "energy_data": {
+            "cpu": "{\"columns\":[\"time_elapsed\",\"energy (J)\"],\"index\":[0,1,2,3,4,5],\"data\":[[0.50055409,21.1],[1.001148636,17.77],[1.501765556,17.99],[2.002418307,17.35],[2.503068382,17.14],[3.003722191,17.14]]}",
+            "ram": "{\"columns\":[\"time_elapsed\",\"energy (J)\"],\"index\":[0,1,2,3,4,5],\"data\":[[0.50055409,21.1],[1.001148636,17.77],[1.501765556,17.99],[2.002418307,17.35],[2.503068382,17.14],[3.003722191,17.14]]}",
+            "gpu": "{\"columns\":[\"time_elapsed\",\"energy (J)\"],\"index\":[0,1,2,3,4,5],\"data\":[[0.50055409,21.1],[1.001148636,17.77],[1.501765556,17.99],[2.002418307,17.35],[2.503068382,17.14],[3.003722191,17.14]]}"
+        },
+        "time": {
+            "start_time_execution": 1702011436291936300,
+            "end_time_execution": 1702011437199823400,
+            "start_time_perf": 1252.597565774,
+            "end_time_perf": 1253.598843922,
+            "sys_start_time_perf": 1702010183445336800,
+            "start_time_nvidia": 1252.4580001831055,
+            "end_time_nvidia": 1253.460000038147,
+            "sys_start_time_nvidia": 1702010183452307700,
+            "begin_stable_check_time": 1702011416266536700,
+            "begin_temperature_check_time": 1702011416265316400
+        },
+        "cpu_temperatures": "{\"columns\":[\"time_elapsed\",\"temperature\",\"timestamp\"],\"index\":[0,1,2],\"data\":[[0.0,34,1.702011413e+18],[1.007205632,33,1.702011414e+18],[2.016180736,33,1.702011415e+18]]}",
+        "settings": {
+            "max_wait_s": 120,
+            "wait_after_run_s": 30,
+            "wait_per_stable_check_loop_s": 20,
+            "tolerance": 0,
+            "measurement_interval_s": 0.5,
+            "cpu_std_to_mean": 0.03,
+            "ram_std_to_mean": 0.03,
+            "gpu_std_to_mean": 0.01,
+            "check_last_n_points": 20,
+            "cpu_max_temp": 55,
+            "gpu_max_temp": 40,
+            "cpu_temperature_interval_s": 1
+          },
+          "input_sizes": {
+            "args_size": 32,
+            "kwargs_size": 0,
+            "object_size": 0
+          },
+          "project_metadata": {
+            "project_name": "tensorflow_docs",
+            "project_repository": "abc",
+            "project_owner": "tensorflow",
+            "project_branch": "master",
+            "project_commit": "03190f3b6f327a1dbaba9a712bdf102616010cfc",
+            "project_commit_date": "2023-12-04T18:28:08-08:00",
+            "script_path": "/home/saurabh/method-energy-dataset/projects/tensorflow_docs_patched/site/en/tutorials/quickstart/advanced.ipynb",
+            "api_call_line": 13
+          }
+        }
+    }    
+]
