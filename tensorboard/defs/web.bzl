@@ -22,6 +22,7 @@ load(
     "@io_bazel_rules_closure//closure/private:defs.bzl",
     "CLOSURE_LIBRARY_BASE_ATTR",
     "CLOSURE_WORKER_ATTR",
+    "ClosureJsLibraryInfo",
     "WebFilesInfo",
     "collect_js",
     "collect_runfiles",
@@ -55,6 +56,7 @@ def _tf_web_library(ctx):
 
     # process what came before
     deps = extract_providers(ctx.attr.deps, provider = WebFilesInfo)
+    deps = unfurl(deps)
     webpaths = depset(transitive = [dep.webpaths for dep in deps])
 
     # process what comes now
@@ -96,11 +98,11 @@ def _tf_web_library(ctx):
         # If a rule exists purely to export other build rules, then it's
         # appropriate for the exported sources to be included in the
         # development web server.
-        export_deps = unfurl(extract_providers(ctx.attr.exports))
+        export_deps = unfurl(extract_providers(ctx.attr.exports, WebFilesInfo))
         devserver_manifests = depset(
             order = "postorder",
             transitive = (
-                [manifests] + [dep[WebFilesInfo].manifests for dep in export_deps]
+                [manifests] + [dep.manifests for dep in export_deps]
             ),
         )
     params = struct(
@@ -134,10 +136,10 @@ def _tf_web_library(ctx):
             manifests = manifests,
             webpaths = webpaths,
             dummy = dummy,
-            exports = export_deps,
+            exports = unfurl(extract_providers(ctx.attr.exports, WebFilesInfo)),
         ),
         collect_js(
-            unfurl(deps),
+            unfurl(extract_providers(ctx.attr.deps, provider = ClosureJsLibraryInfo)),
             ctx.files._closure_library_base,
         ),
         DefaultInfo(
@@ -152,7 +154,7 @@ def _tf_web_library(ctx):
                     ctx.outputs.executable,
                     dummy,
                 ]),
-                extra_runfiles_attrs = ["export_deps", "_WebfilesServer"],
+                extra_runfiles_attrs = ["exports", "_WebfilesServer"],
             ),
         ),
     ]
