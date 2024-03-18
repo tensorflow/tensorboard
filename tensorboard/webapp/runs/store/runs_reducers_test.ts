@@ -358,6 +358,10 @@ describe('runs_reducers', () => {
           ])
         );
       });
+
+      it('assigns non-matched colors to regex non-matched runs', () => {
+        // TODO(anuartb@): Make test for reducer.
+      });
     });
 
     it('auto-selects new runs if total num <= N', () => {
@@ -916,6 +920,8 @@ describe('runs_reducers', () => {
       expect(nextState.data.colorGroupRegexString).toBe('foo(\\d+)');
     });
 
+    it('reassigns color to REGEX from RUN', () => {});
+
     it('preserves regexString when reassigning color to RUN from REGEX', () => {
       const state = buildRunsState({
         initialGroupBy: {key: GroupByKey.RUN},
@@ -976,6 +982,8 @@ describe('runs_reducers', () => {
       );
       expect(state4.data.colorGroupRegexString).toBe('updated regexString');
     });
+
+    it('preserves experiment regexString when reassigning color to RUN from REGEX', () => {});
   });
 
   describe('#stateRehydratedFromUrl', () => {

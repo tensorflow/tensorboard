@@ -21,6 +21,7 @@ import {
   debounceTime,
   filter,
   map,
+  shareReplay,
   startWith,
   take,
 } from 'rxjs/operators';
@@ -31,6 +32,7 @@ import {runGroupByChanged} from '../../actions';
 import {
   getColorGroupRegexString,
   getRunIdsForExperiment,
+  getRunGroupBy,
   getRuns,
 } from '../../store/runs_selectors';
 import {groupRuns} from '../../store/utils';
@@ -44,8 +46,10 @@ const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
   template: `<regex-edit-dialog-component
     [regexString]="groupByRegexString$ | async"
     [colorRunPairList]="colorRunPairList$ | async"
-    (onSave)="onSave($event)"
+    [selectedGroupBy]="groupByRegexType$ | async"
+    (onSave)="onSave()"
     (regexInputOnChange)="onRegexInputOnChange($event)"
+    (regexTypeOnChange)="onRegexTypeOnChange($event)"
   ></regex-edit-dialog-component>`,
   styles: [
     `
@@ -60,18 +64,32 @@ const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
 })
 export class RegexEditDialogContainer {
   private readonly experimentIds: string[];
+  private readonly expNameByExpId: Record<string, string>;
   private readonly runIdToEid$: Observable<Record<string, string>>;
   private readonly allRuns$: Observable<Run[]>;
   private readonly tentativeRegexString$: Subject<string> =
-    new Subject<string>();
+      new Subject<string>();
+  private readonly tentativeRegexType$: Subject<GroupByKey> =
+      new Subject<GroupByKey>();
 
   readonly groupByRegexString$: Observable<string> = defer(() => {
     return merge(
       this.store.select(getColorGroupRegexString).pipe(take(1)),
       this.tentativeRegexString$
     );
-  }).pipe(startWith(''));
+  }).pipe(startWith(''), shareReplay(1));
 
+  readonly groupByRegexType$: Observable<GroupByKey> = 
+    merge(
+      this.store.select(getRunGroupBy).pipe(take(1), map(group => group.key)),
+      this.tentativeRegexType$
+    ).pipe(
+      filter(
+        key => key === GroupByKey.REGEX || key === GroupByKey.REGEX_BY_EXP),
+        startWith(GroupByKey.REGEX), 
+        shareReplay(1)
+      );
+  
   readonly colorRunPairList$: Observable<ColorGroup[]> = defer(() => {
     return this.groupByRegexString$.pipe(
       debounceTime(INPUT_CHANGE_DEBOUNCE_INTERVAL_MS),
@@ -84,18 +102,21 @@ export class RegexEditDialogContainer {
         }
       }),
       combineLatestWith(
-        this.allRuns$,
-        this.runIdToEid$,
+        this.groupByRegexType$,
+        this.allRuns$, this.runIdToEid$,
         this.store.select(settingsSelectors.getColorPalette),
         this.store.select(getDarkModeEnabled)
       ),
-      map(
-        ([regexString, allRuns, runIdToEid, colorPalette, darkModeEnabled]) => {
+      map(([
+            regexString, regexType, allRuns, runIdToEid, colorPalette,
+            darkModeEanbled
+          ]) => {
           const groupBy = {
-            key: GroupByKey.REGEX,
+            key: regexType,
             regexString,
           };
-          const groups = groupRuns(groupBy, allRuns, runIdToEid);
+          const groups =
+              groupRuns(groupBy, allRuns, runIdToEid, this.expNameByExpId);
           const groupKeyToColorString = new Map<string, string>();
           const colorRunPairList: ColorGroup[] = [];
 
@@ -118,12 +139,15 @@ export class RegexEditDialogContainer {
     );
   }).pipe(startWith([]));
 
-  constructor(
-    private readonly store: Store<State>,
-    public dialogRef: MatDialogRef<RegexEditDialogContainer>,
-    @Inject(MAT_DIALOG_DATA) data: {experimentIds: string[]}
-  ) {
+constructor(
+  private readonly store: Store<State>,
+  public dialogRef: MatDialogRef<RegexEditDialogContainer>,
+  @Inject(MAT_DIALOG_DATA) data: {
+    experimentIds: string[],
+    expNameByExpId: Record<string, string>,
+  }) {
     this.experimentIds = data.experimentIds;
+    this.expNameByExpId = data.expNameByExpId;
 
     this.runIdToEid$ = combineLatest(
       this.experimentIds.map((experimentId) => {
@@ -155,16 +179,26 @@ export class RegexEditDialogContainer {
   }
 
   onRegexInputOnChange(regexString: string) {
+    // Whenever regex input changes the subject emits new object.
     this.tentativeRegexString$.next(regexString);
   }
 
-  onSave(regexString: string): void {
-    this.store.dispatch(
-      runGroupByChanged({
-        experimentIds: this.experimentIds,
-        groupBy: {key: GroupByKey.REGEX, regexString: regexString},
-      })
-    );
+  onRegexTypeOnChange(regexType: GroupByKey) {
+    // Whenever regex type changes the subject emits new object.
+    this.tentativeRegexType$.next(regexType);
+  }
+
+  onSave(): void {
+    this.groupByRegexString$.pipe(combineLatestWith(this.groupByRegexType$))
+        .subscribe(([regexString, key]) => {
+          if (regexString) {
+            this.store.dispatch(runGroupByChanged({
+              experimentIds: this.experimentIds,
+              groupBy: {key, regexString},
+              expNameByExpId: this.expNameByExpId,
+            }));
+          }
+        });
   }
 }
 

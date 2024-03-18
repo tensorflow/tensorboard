@@ -20,11 +20,18 @@ limitations under the License.
   <mat-dialog-content>
     <p>Enter a regex with capturing groups to match against run names:</p>
     <mat-form-field>
+      <mat-label>Regex type</mat-label>
+      <mat-select [(value)]="regexMatchType" (selectionChange)="regexTypeChange($event)">
+        <mat-option value="regex_by_run">Run Name</mat-option>
+        <mat-option value="regex_by_exp">Experiment Name</mat-option>
+      </mat-select>
+    <!-- </mat-form-field>
+    <mat-form-field> -->
       <input
         matInput
         #regexStringInput
         value="{{ regexString }}"
-        (keydown.enter)="onEnter($event.target.value)"
+        (keydown.enter)="onEnter()"
         (input)="regexInputChange($event.target.value)"
         i18n-aria-label="Color Runs by Regex Query"
         aria-label="Color Runs by Regex Query"
@@ -95,7 +102,7 @@ limitations under the License.
       mat-raised-button
       color="primary"
       mat-dialog-close
-      (click)="onSaveClick(regexStringInput.value)"
+      (click)="onSaveClick()"
     >
       Save
     </button>
