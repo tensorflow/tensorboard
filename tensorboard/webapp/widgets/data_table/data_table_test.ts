@@ -762,6 +762,72 @@ describe('data table', () => {
       );
     });
 
+    [
+      {
+        testDesc: 'left',
+        contextMenuButtonText: 'Left',
+        expectedSide: Side.LEFT,
+      },
+      {
+        testDesc: 'right',
+        contextMenuButtonText: 'Right',
+        expectedSide: Side.RIGHT,
+      },
+    ].forEach(({testDesc, contextMenuButtonText, expectedSide}) => {
+      fit(`adds column to the ${testDesc}`, () => {
+        const fixture = createComponent({
+          headers: mockHeaders,
+          data: mockTableData,
+          potentialColumns: mockPotentialColumns,
+        });
+        const cell = fixture.debugElement
+          .queryAll(By.directive(HeaderCellComponent))
+          .find((cell) => cell.nativeElement.innerHTML.includes('Hparam 1'))!;
+        cell.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
+        fixture.detectChanges();
+        fixture.debugElement
+          .queryAll(By.css('.context-menu button'))
+          .find((element) =>
+            element.nativeElement.innerHTML.includes(contextMenuButtonText)
+          )!
+          .nativeElement.click();
+        fixture.detectChanges();
+
+        const addColumnEmitSpy = spyOn(
+          fixture.debugElement.query(By.directive(DataTableComponent))
+            .componentInstance.addColumn,
+          'emit'
+        );
+        fixture.debugElement
+          .query(By.directive(ColumnSelectorComponent))
+          .componentInstance.columnSelected.emit({
+            type: ColumnHeaderType.HPARAM,
+            name: 'lr',
+            displayName: 'Learning Rate',
+            enabled: false,
+          });
+        fixture.detectChanges();
+
+        expect(addColumnEmitSpy).toHaveBeenCalledOnceWith({
+          column: {
+            type: ColumnHeaderType.HPARAM,
+            name: 'lr',
+            displayName: 'Learning Rate',
+            enabled: false,
+          },
+          nextTo: {
+            name: 'other_header',
+            type: ColumnHeaderType.HPARAM,
+            displayName: 'Hparam 1',
+            enabled: true,
+            removable: true,
+            movable: true,
+          },
+          side: expectedSide,
+        });
+      });
+    });
+
     it('removes column when Remove button is clicked', () => {
       const fixture = createComponent({
         headers: mockHeaders,
