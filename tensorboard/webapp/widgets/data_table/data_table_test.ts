@@ -774,7 +774,7 @@ describe('data table', () => {
         expectedSide: Side.RIGHT,
       },
     ].forEach(({testDesc, contextMenuButtonText, expectedSide}) => {
-      fit(`adds column to the ${testDesc}`, () => {
+      it(`adds column to the ${testDesc}`, () => {
         const fixture = createComponent({
           headers: mockHeaders,
           data: mockTableData,
