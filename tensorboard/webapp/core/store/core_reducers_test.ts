@@ -674,5 +674,19 @@ describe('core reducer', () => {
         foo: 'bar',
       });
     });
+
+    it('stores an empty object when no value is provided', () => {
+      const state = createCoreState({
+        unknownQueryParams: {foo: 'bar'},
+      });
+      const state2 = reducers(
+        state,
+        stateRehydratedFromUrl({
+          routeKind: RouteKind.EXPERIMENT,
+          partialState: {},
+        })
+      );
+      expect(state2.unknownQueryParams).toEqual({});
+    });
   });
 });
