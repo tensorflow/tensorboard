@@ -36,6 +36,8 @@ export enum GroupByKey {
   // Group runs by regex that matches on the run name. The specification for
   // the grouping is to be defined.
   REGEX,
+  // Group runs by regex that matches on the experiment name.
+  REGEX_BY_EXP
 }
 
 export interface BaseGroupBy {
@@ -43,7 +45,7 @@ export interface BaseGroupBy {
 }
 
 export interface RegexGroupBy {
-  key: GroupByKey.REGEX;
+  key: GroupByKey.REGEX | GroupByKey.REGEX_BY_EXP;
   regexString: string;
 }
 

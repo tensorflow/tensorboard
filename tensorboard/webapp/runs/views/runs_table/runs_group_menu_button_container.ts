@@ -15,10 +15,10 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {map, take} from 'rxjs/operators';
 import {RouteKind} from '../../../app_routing/types';
 import {State} from '../../../app_state';
-import {getRegisteredRouteKinds} from '../../../selectors';
+import {getRegisteredRouteKinds, getDashboardExperimentNames} from '../../../selectors';
 import {runGroupByChanged} from '../../actions';
 import {
   getColorGroupRegexString,
@@ -37,6 +37,7 @@ import {GroupBy} from '../../types';
       [selectedGroupBy]="selectedGroupBy$ | async"
       [showExperimentsGroupBy]="showExperimentsGroupBy$ | async"
       [experimentIds]="experimentIds"
+      [expNameByExpId]="expNameByExpId$ | async"
       (onGroupByChange)="onGroupByChange($event)"
     ></runs-group-menu-button-component>
   `,
@@ -62,12 +63,16 @@ export class RunsGroupMenuButtonContainer {
     getColorGroupRegexString
   );
 
+  readonly expNameByExpId$: Observable<Record<string, string>> =
+      this.store.select(getDashboardExperimentNames);
+
   onGroupByChange(groupBy: GroupBy) {
-    this.store.dispatch(
-      runGroupByChanged({
+    this.expNameByExpId$.pipe(take(1)).subscribe(expNameByExpId => {
+      this.store.dispatch(runGroupByChanged({
         experimentIds: this.experimentIds,
         groupBy,
-      })
-    );
+        expNameByExpId,
+      }));
+    });
   }
 }

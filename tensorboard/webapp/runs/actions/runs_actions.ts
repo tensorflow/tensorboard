@@ -77,10 +77,11 @@ export const runColorChanged = createAction(
   props<{runId: string; newColor: string}>()
 );
 
-export const runGroupByChanged = createAction(
-  '[Runs] Run Group By Changed',
-  props<{experimentIds: string[]; groupBy: GroupBy}>()
-);
+export const runGroupByChanged =
+    createAction('[Runs] Run Group By Changed', props<{
+                   experimentIds: string[]; groupBy: GroupBy;
+                   expNameByExpId?: Record<string, string>
+                 }>());
 
 /**
  * Inserts the provided column header at the specified index.

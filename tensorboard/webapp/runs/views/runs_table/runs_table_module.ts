@@ -21,7 +21,6 @@ import {NgModule} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatDialogModule} from '@angular/material/dialog';
-import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 import {MatMenuModule} from '@angular/material/menu';
@@ -31,6 +30,7 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSortModule} from '@angular/material/sort';
 import {MatTableModule} from '@angular/material/table';
 import {ColorPickerModule} from 'ngx-color-picker';
+import {MatSelectModule} from '@angular/material/select';
 import {AlertModule} from '../../../alert/alert_module';
 import {DataTableModule} from '../../../widgets/data_table/data_table_module';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
@@ -46,6 +46,7 @@ import {RunsGroupMenuButtonContainer} from './runs_group_menu_button_container';
 import {CustomModalModule} from '../../../widgets/custom_modal/custom_modal_module';
 import {RunsDataTable} from './runs_data_table';
 import {RunsTableContainer} from './runs_table_container';
+import {ReactiveFormsModule} from '@angular/forms';
 
 @NgModule({
   imports: [
@@ -54,7 +55,6 @@ import {RunsTableContainer} from './runs_table_container';
     DataTableModule,
     ExperimentAliasModule,
     FilterInputModule,
-    MatFormFieldModule,
     MatButtonModule,
     MatCheckboxModule,
     MatDialogModule,
@@ -70,6 +70,8 @@ import {RunsTableContainer} from './runs_table_container';
     RangeInputModule,
     CustomModalModule,
     AlertModule,
+    MatSelectModule,
+    ReactiveFormsModule,
   ],
   exports: [RunsTableContainer],
   declarations: [
