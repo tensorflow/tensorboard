@@ -26,6 +26,7 @@ import {ContentRowComponent} from './content_row_component';
 import {ColumnSelectorModule} from './column_selector_module';
 import {CustomModalModule} from '../custom_modal/custom_modal_module';
 import {FilterDialogModule} from './filter_dialog_module';
+import {ContextMenuModule} from './context_menu_module';
 
 @NgModule({
   declarations: [
@@ -49,6 +50,7 @@ import {FilterDialogModule} from './filter_dialog_module';
     CustomModalModule,
     ColumnSelectorModule,
     FilterDialogModule,
+    ContextMenuModule,
   ],
 })
 export class DataTableModule {}

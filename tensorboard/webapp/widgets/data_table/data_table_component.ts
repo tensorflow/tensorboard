@@ -284,15 +284,21 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     this.contextMenuHeader = undefined;
   }
 
-  openColumnSelector(
-    event: MouseEvent,
-    options?: {insertTo?: Side; isSubMenu?: boolean}
-  ) {
-    if (options?.isSubMenu) {
+  openColumnSelector({
+    event,
+    insertTo,
+    isSubMenu,
+  }: {
+    event: MouseEvent;
+    insertTo?: Side;
+    isSubMenu?: boolean;
+  }) {
+    if (isSubMenu) {
       event.stopPropagation();
+      this.filterModal?.close();
+      this.columnSelectorModal?.close();
     }
-    this.filterModal?.close();
-    this.insertColumnTo = options?.insertTo;
+    this.insertColumnTo = insertTo;
     const rect = (
       (event.target as HTMLElement).closest('button') as HTMLButtonElement
     ).getBoundingClientRect();
@@ -303,59 +309,14 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     this.columnSelector.activate();
   }
 
-  onColumnSelectorClosed() {
-    this.insertColumnTo = undefined;
-    this.columnSelector.deactivate();
-  }
-
   canContextMenuRemoveColumn() {
     return this.contextMenuHeader?.removable;
   }
 
-  canContextMenuInsert() {
-    return (
-      this.selectableColumns &&
-      this.selectableColumns.length &&
-      this.contextMenuHeader?.movable &&
-      this.contextMenuHeader?.type === 'HPARAM'
-    );
-  }
-
-  isContextMenuEmpty() {
-    return (
-      !this.contextMenuHeader?.removable &&
-      !this.contextMenuHeader?.sortable &&
-      !this.canContextMenuInsert() &&
-      !this.contextMenuHeader?.filterable
-    );
-  }
-
-  contextMenuRemoveColumn() {
-    if (this.contextMenuHeader === undefined) {
-      return;
-    }
-    this.removeColumn.emit(this.contextMenuHeader);
+  onRemoveColumn(header: ColumnHeader) {
+    this.removeColumn.emit(header);
     this.contextMenu.close();
     this.filterModal?.close();
-  }
-
-  private getInsertIndex() {
-    if (
-      this.contextMenuHeader === undefined ||
-      this.insertColumnTo === undefined
-    ) {
-      return undefined;
-    }
-
-    const index = this.headers.indexOf(this.contextMenuHeader);
-    if (this.insertColumnTo === Side.LEFT) {
-      return index;
-    }
-    if (this.insertColumnTo === Side.RIGHT) {
-      return Math.min(index + 1, this.headers.length);
-    }
-
-    return index;
   }
 
   onColumnAdded(header: ColumnHeader) {
@@ -366,8 +327,8 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     });
   }
 
-  openFilterMenu(event: MouseEvent, header: ColumnHeader) {
-    this.filterColumn = header;
+  openFilterMenu(event: MouseEvent) {
+    this.filterColumn = this.contextMenuHeader;
     const rect = (
       (event.target as HTMLElement).closest('button') as HTMLButtonElement
     ).getBoundingClientRect();
