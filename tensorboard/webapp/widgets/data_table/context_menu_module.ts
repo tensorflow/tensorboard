@@ -1,4 +1,4 @@
-/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2024 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,27 +12,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@import 'tensorboard/webapp/theme/tb_theme';
 
-:host {
-  display: flex;
-  font-size: 13px;
-  min-width: 210px;
-}
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {MatIconModule} from '@angular/material/icon';
+import {MatButtonModule} from '@angular/material/button';
 
-mat-icon {
-  @include tb-theme-foreground-prop(color, secondary-text);
-  flex: none;
-  margin-right: 5px;
-}
+import {ContextMenuComponent} from './context_menu_component';
 
-input {
-  background-color: inherit;
-  caret-color: currentColor;
-  color: currentColor;
-  font: inherit;
-  border: none;
-  outline: none;
-  padding: 0;
-  flex-grow: 1;
-}
+@NgModule({
+  declarations: [ContextMenuComponent],
+  imports: [CommonModule, MatIconModule, MatButtonModule],
+  exports: [ContextMenuComponent],
+})
+export class ContextMenuModule {}

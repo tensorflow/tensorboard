@@ -772,31 +772,69 @@ describe('data table', () => {
       );
     });
 
-    it('only shows the remove button when the column is removable', () => {
-      const fixture = createComponent({
-        headers: mockHeaders,
-        data: mockTableData,
-        potentialColumns: mockPotentialColumns,
-      });
-      const cells = fixture.debugElement.queryAll(
-        By.directive(ContentCellComponent)
-      );
-
-      expect(cells.length).toBe(4);
-
-      cells.forEach((cell) => {
+    [
+      {
+        testDesc: 'left',
+        contextMenuButtonText: 'Left',
+        expectedSide: Side.LEFT,
+      },
+      {
+        testDesc: 'right',
+        contextMenuButtonText: 'Right',
+        expectedSide: Side.RIGHT,
+      },
+    ].forEach(({testDesc, contextMenuButtonText, expectedSide}) => {
+      it(`adds column to the ${testDesc}`, () => {
+        const fixture = createComponent({
+          headers: mockHeaders,
+          data: mockTableData,
+          potentialColumns: mockPotentialColumns,
+        });
+        const cell = fixture.debugElement
+          .queryAll(By.directive(HeaderCellComponent))
+          .find((cell) => cell.nativeElement.innerHTML.includes('Hparam 1'))!;
         cell.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
         fixture.detectChanges();
-
-        const removeButton = fixture.debugElement
+        fixture.debugElement
           .queryAll(By.css('.context-menu button'))
-          .find((btn) => btn.nativeElement.innerHTML.includes('Remove'));
+          .find((element) =>
+            element.nativeElement.innerHTML.includes(contextMenuButtonText)
+          )!
+          .nativeElement.click();
+        fixture.detectChanges();
 
-        if (cell.componentInstance.header.removable) {
-          expect(removeButton).toBeDefined();
-        } else {
-          expect(removeButton).toBeUndefined();
-        }
+        const addColumnEmitSpy = spyOn(
+          fixture.debugElement.query(By.directive(DataTableComponent))
+            .componentInstance.addColumn,
+          'emit'
+        );
+        fixture.debugElement
+          .query(By.directive(ColumnSelectorComponent))
+          .componentInstance.columnSelected.emit({
+            type: ColumnHeaderType.HPARAM,
+            name: 'lr',
+            displayName: 'Learning Rate',
+            enabled: false,
+          });
+        fixture.detectChanges();
+
+        expect(addColumnEmitSpy).toHaveBeenCalledOnceWith({
+          column: {
+            type: ColumnHeaderType.HPARAM,
+            name: 'lr',
+            displayName: 'Learning Rate',
+            enabled: false,
+          },
+          nextTo: {
+            name: 'other_header',
+            type: ColumnHeaderType.HPARAM,
+            displayName: 'Hparam 1',
+            enabled: true,
+            removable: true,
+            movable: true,
+          },
+          side: expectedSide,
+        });
       });
     });
 
@@ -821,156 +859,6 @@ describe('data table', () => {
 
       expect(fixture.componentInstance.removeColumn.emit).toHaveBeenCalled();
       expect(fixture.debugElement.query(By.css('.context-menu'))).toBeNull();
-    });
-
-    it('does not include add buttons when there are no selectable columns', () => {
-      const fixture = createComponent({
-        headers: mockHeaders,
-        data: mockTableData,
-      });
-      const cell = fixture.debugElement
-        .queryAll(By.directive(ContentCellComponent))
-        .find((cell) => cell.nativeElement.innerHTML.includes('other header'))!;
-      cell.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
-      fixture.detectChanges();
-
-      expect(
-        fixture.debugElement
-          .queryAll(By.css('.context-menu button'))
-          .find((element) => element.nativeElement.innerHTML.includes('Left'))!
-      ).toBeUndefined();
-
-      expect(
-        fixture.debugElement
-          .queryAll(By.css('.context-menu button'))
-          .find((element) => element.nativeElement.innerHTML.includes('Right'))!
-      ).toBeUndefined();
-    });
-
-    it('only includes add buttons for non-movable hparams', () => {
-      const fixture = createComponent({
-        headers: mockHeaders,
-        data: mockTableData,
-        potentialColumns: mockPotentialColumns,
-      });
-      const cells = fixture.debugElement.queryAll(
-        By.directive(ContentCellComponent)
-      );
-
-      expect(cells.length).toBe(4);
-
-      cells.forEach((cell) => {
-        cell.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
-        fixture.detectChanges();
-
-        const addLeft = fixture.debugElement
-          .queryAll(By.css('.context-menu button'))
-          .find((element) => element.nativeElement.innerHTML.includes('Left'))!;
-        const addRight = fixture.debugElement
-          .queryAll(By.css('.context-menu button'))
-          .find((element) =>
-            element.nativeElement.innerHTML.includes('Right')
-          )!;
-
-        if (
-          cell.componentInstance.header.type === 'HPARAM' &&
-          cell.componentInstance.header.movable
-        ) {
-          expect(addLeft).toBeDefined();
-          expect(addRight).toBeDefined();
-        } else {
-          expect(addLeft).toBeUndefined();
-          expect(addRight).toBeUndefined();
-        }
-      });
-    });
-
-    it('renders an upwards arrow when the sort direction is ascending', () => {
-      const fixture = createComponent({
-        headers: mockHeaders,
-        data: mockTableData,
-        potentialColumns: mockPotentialColumns,
-        sortingInfo: {
-          name: 'run',
-          order: SortingOrder.ASCENDING,
-        },
-      });
-      const header = fixture.debugElement.query(
-        By.directive(HeaderCellComponent)
-      );
-      header.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
-      fixture.detectChanges();
-
-      expect(
-        fixture.debugElement
-          .query(By.css('.context-menu-button.sort-button mat-icon'))
-          .nativeElement.getAttribute('svgIcon')
-      ).toBe('arrow_downward_24px');
-    });
-
-    it('renders a downwards arrow when the sort direction is descending', () => {
-      const fixture = createComponent({
-        headers: mockHeaders,
-        data: mockTableData,
-        potentialColumns: mockPotentialColumns,
-        sortingInfo: {
-          name: 'run',
-          order: SortingOrder.DESCENDING,
-        },
-      });
-      const header = fixture.debugElement.query(
-        By.directive(HeaderCellComponent)
-      );
-      header.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
-      fixture.detectChanges();
-
-      expect(
-        fixture.debugElement
-          .query(By.css('.context-menu-button.sort-button mat-icon'))
-          .nativeElement.getAttribute('svgIcon')
-      ).toBe('arrow_upward_24px');
-    });
-
-    it('displays a message when empty', () => {
-      const fixture = createComponent({
-        headers: mockHeaders,
-        data: mockTableData,
-        potentialColumns: mockPotentialColumns,
-      });
-      const fixedHeader = fixture.debugElement.queryAll(
-        By.directive(HeaderCellComponent)
-      )[4];
-      fixedHeader.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
-      fixture.detectChanges();
-
-      const contextMenu = fixture.debugElement.query(By.css('.context-menu'));
-      expect(
-        contextMenu.nativeElement.innerHTML.includes('No Actions Available')
-      ).toBeTrue();
-    });
-
-    it('only shows the filter button when then column is filterable', () => {
-      const fixture = createComponent({
-        headers: mockHeaders,
-        data: mockTableData,
-        potentialColumns: mockPotentialColumns,
-      });
-      const cells = fixture.debugElement.queryAll(
-        By.directive(ContentCellComponent)
-      );
-      expect(cells.length).toBe(4);
-      cells.forEach((cell) => {
-        cell.nativeElement.dispatchEvent(new MouseEvent('contextmenu'));
-        fixture.detectChanges();
-        const fitlerbutton = fixture.debugElement
-          .queryAll(By.css('.context-menu button'))
-          .find((btn) => btn.nativeElement.innerHTML.includes('Filter'));
-        if (cell.componentInstance.header.filterable) {
-          expect(fitlerbutton).toBeDefined();
-        } else {
-          expect(fitlerbutton).toBeUndefined();
-        }
-      });
     });
 
     it('opens filter modal when the filter button is clicked', () => {
