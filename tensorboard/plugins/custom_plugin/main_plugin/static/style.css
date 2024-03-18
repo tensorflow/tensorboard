@@ -1,3 +1,7 @@
+.main-container{
+  position: relative;
+}
+
 .graph-button {
   padding: 10px 20px;
   background-color: #4caf50;
@@ -28,40 +32,41 @@ h1 {
   margin: auto;
   margin-top: 50px;
   display: block;
-  align-items: center;
   text-align: center;
   background-color: white;
   border-radius: 10px;
   padding: 10px;
   margin-left: 10px;
-  margin-top: -200px;
   width: 500px;
 }
 
 .graph-area {
-  /* Dark Mode */
-  /* background-color: #303030; */
   display: flex;
-  margin: auto;
-  margin-top:300px;
+  flex-direction: column;
+  margin-top:40px;
+  margin-left: 305px;
+  width: 80%;
   top: 0;
+  height: 200vh;
+  /* background-color: red; */
 }
 
 .side-toolbar {
+  margin-top: 40px;
   width: 20%;
   height: 100vh;
   background-color: #f57c00;
   margin-right: 10px;
-  margin-left: 0px;
+  margin-left: -4px;
   display: block;
+  z-index: 2;
+  position: fixed;
 }
 
 .main-container {
   background-color: lightgray;
   display: flex;
   flex-direction: row;
-  margin-left:-10px;
-
 }
 
 .toolbar-title {
@@ -106,13 +111,15 @@ input[type="number"] {
 } */
 
 .navbar{
+  margin-top: -10px;
+  position: fixed;
+  z-index: 10;
   display: flex;
   flex-direction: row;
   background-color: lightgray;
   width: 100%;
   position: fixed;
   margin-left: -6px;
-  margin-top: -10px;
 }
 
 .nav-option{
@@ -182,4 +189,38 @@ select:focus {
 
 .table{
   margin-top: 20px;
+}
+
+
+.cards-container {
+  display: flex;
+  /* flex-wrap: wrap; */
+  gap: 20px;
+  justify-content: center;
+  padding: 20px;
+  flex-direction: row;
+}
+
+.card{
+  flex: 1 2 200px;
+  background-color: #f7f7f7;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width: 300px;
+}
+
+@media (max-width: 600px) {
+  .cards-container {
+    flex-direction: column;
+  }
+
+  .card {
+    flex-basis: auto;
+  }
 }

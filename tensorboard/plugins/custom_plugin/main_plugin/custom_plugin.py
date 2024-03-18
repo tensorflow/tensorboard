@@ -136,6 +136,10 @@ class MyPlugin(base_plugin.TBPlugin):
             print("Extra features are enabled.")
         else:
             print("Extra failed to run")
+
+
+    def load(self, context):
+        return MyPlugin(context)
         
         # print(f"Using custom threshold: {flags.custom_threshold}")
         # print(f"Logging level set to: {flags.log_level}")
