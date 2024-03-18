@@ -239,6 +239,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_checkbox",
         "//tensorboard/webapp/angular:expect_angular_material_checkbox_testing",
+        "//tensorboard/webapp/angular:expect_angular_material_icon_testing",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/testing:mat_icon",
         "//tensorboard/webapp/widgets/custom_modal",
