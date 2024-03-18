@@ -37,7 +37,7 @@ export enum GroupByKey {
   // the grouping is to be defined.
   REGEX,
   // Group runs by regex that matches on the experiment name.
-  REGEX_BY_EXP
+  REGEX_BY_EXP,
 }
 
 export interface BaseGroupBy {

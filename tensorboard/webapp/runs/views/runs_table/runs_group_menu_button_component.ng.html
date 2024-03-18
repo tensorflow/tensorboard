@@ -62,8 +62,12 @@ limitations under the License.
       svgIcon="done_24px"
     ></mat-icon>
     <span>Regex</span>
-    <span *ngIf="selectedGroupBy.key === GroupByKey.REGEX"><strong> By Run Name</strong></span>
-    <span *ngIf="selectedGroupBy.key === GroupByKey.REGEX_BY_EXP"><strong> By Experiment Name</strong></span>
+    <span *ngIf="selectedGroupBy.key === GroupByKey.REGEX"
+      ><strong> By Run Name</strong></span
+    >
+    <span *ngIf="selectedGroupBy.key === GroupByKey.REGEX_BY_EXP"
+      ><strong> By Experiment Name</strong></span
+    >
   </button>
   <button
     mat-menu-item

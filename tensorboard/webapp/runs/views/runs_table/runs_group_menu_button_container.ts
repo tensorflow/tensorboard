@@ -18,7 +18,10 @@ import {Observable} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {RouteKind} from '../../../app_routing/types';
 import {State} from '../../../app_state';
-import {getRegisteredRouteKinds, getDashboardExperimentNames} from '../../../selectors';
+import {
+  getRegisteredRouteKinds,
+  getDashboardExperimentNames,
+} from '../../../selectors';
 import {runGroupByChanged} from '../../actions';
 import {
   getColorGroupRegexString,
@@ -64,15 +67,17 @@ export class RunsGroupMenuButtonContainer {
   );
 
   readonly expNameByExpId$: Observable<Record<string, string>> =
-      this.store.select(getDashboardExperimentNames);
+    this.store.select(getDashboardExperimentNames);
 
   onGroupByChange(groupBy: GroupBy) {
-    this.expNameByExpId$.pipe(take(1)).subscribe(expNameByExpId => {
-      this.store.dispatch(runGroupByChanged({
-        experimentIds: this.experimentIds,
-        groupBy,
-        expNameByExpId,
-      }));
+    this.expNameByExpId$.pipe(take(1)).subscribe((expNameByExpId) => {
+      this.store.dispatch(
+        runGroupByChanged({
+          experimentIds: this.experimentIds,
+          groupBy,
+          expNameByExpId,
+        })
+      );
     });
   }
 }

@@ -118,7 +118,8 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     let {colorGroupRegexString, userSetGroupByKey} = state;
     if (groupBy) {
       const regexString =
-        groupBy.key === GroupByKey.REGEX || groupBy.key === GroupByKey.REGEX_BY_EXP
+        groupBy.key === GroupByKey.REGEX ||
+        groupBy.key === GroupByKey.REGEX_BY_EXP
           ? groupBy.regexString
           : state.colorGroupRegexString;
       colorGroupRegexString = regexString;
@@ -244,7 +245,10 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
   }),
   on(
     runsActions.runGroupByChanged,
-    (state: RunsDataState, {experimentIds, groupBy, expNameByExpId}): RunsDataState => {
+    (
+      state: RunsDataState,
+      {experimentIds, groupBy, expNameByExpId}
+    ): RunsDataState => {
       // Reset the groupKeyToColorId
       const groupKeyToColorId = new Map<string, number>();
       const defaultRunColorIdForGroupBy = new Map(
@@ -255,8 +259,12 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
         .flatMap((experimentId) => state.runIds[experimentId])
         .map((runId) => state.runMetadata[runId]);
 
-      const groups =
-          groupRuns(groupBy, allRuns, state.runIdToExpId, expNameByExpId);
+      const groups = groupRuns(
+        groupBy,
+        allRuns,
+        state.runIdToExpId,
+        expNameByExpId
+      );
 
       Object.entries(groups.matches).forEach(([groupId, runs]) => {
         const colorId =
@@ -273,10 +281,11 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
         defaultRunColorIdForGroupBy.set(run.id, -1);
       }
 
-      const updatedRegexString = (groupBy.key === GroupByKey.REGEX ||
-                                  groupBy.key === GroupByKey.REGEX_BY_EXP) ?
-          groupBy.regexString :
-          state.colorGroupRegexString;
+      const updatedRegexString =
+        groupBy.key === GroupByKey.REGEX ||
+        groupBy.key === GroupByKey.REGEX_BY_EXP
+          ? groupBy.regexString
+          : state.colorGroupRegexString;
 
       return {
         ...state,

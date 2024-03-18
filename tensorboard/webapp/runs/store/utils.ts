@@ -17,9 +17,11 @@ import {GroupBy, GroupByKey, Run, RunGroup} from '../types';
 import {ExperimentId, RunId} from './runs_types';
 
 export function groupRuns(
-    groupBy: GroupBy, runs: Run[],
-    runIdToExpId: Readonly<Record<RunId, ExperimentId>>,
-    expNameByExpId?: Record<string, string>): RunGroup {
+  groupBy: GroupBy,
+  runs: Run[],
+  runIdToExpId: Readonly<Record<RunId, ExperimentId>>,
+  expNameByExpId?: Record<string, string>
+): RunGroup {
   const matches: {[id: string]: Run[]} = {};
   const nonMatches: Run[] = [];
   const runGroup: RunGroup = {matches, nonMatches};
@@ -93,8 +95,9 @@ export function groupRuns(
           const hasCapturingGroup = matchesList.length > 1;
           // In case regex string does not have a capturing group, we use pseudo
           // group id of `pseudo_group`.
-          const id = hasCapturingGroup ? JSON.stringify(matchesList.slice(1)) :
-                                         'pseudo_group';
+          const id = hasCapturingGroup
+            ? JSON.stringify(matchesList.slice(1))
+            : 'pseudo_group';
           const runs = matches[id] || [];
           runs.push(run);
           matches[id] = runs;

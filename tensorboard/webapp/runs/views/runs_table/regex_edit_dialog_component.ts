@@ -23,8 +23,8 @@ import {
 } from '@angular/core';
 import {MatDialogRef} from '@angular/material/dialog';
 import {GroupByKey, Run} from '../../types';
-import { MatSelectChange } from '@angular/material/select';
-import { ChangeDetectorRef } from '@angular/core';
+import {MatSelectChange} from '@angular/material/select';
+import {ChangeDetectorRef} from '@angular/core';
 
 export interface ColorGroup {
   groupId: string;
@@ -59,7 +59,10 @@ export class RegexEditDialogComponent {
   ) {}
 
   ngOnInit() {
-    this.regexMatchType = this.selectedGroupBy === GroupByKey.REGEX_BY_EXP ? 'regex_by_exp' : 'regex_by_run';
+    this.regexMatchType =
+      this.selectedGroupBy === GroupByKey.REGEX_BY_EXP
+        ? 'regex_by_exp'
+        : 'regex_by_run';
   }
 
   private resetFocus() {
@@ -97,7 +100,9 @@ export class RegexEditDialogComponent {
     // This line is needed to update the value on the HTML element.
     this.cdRef.detectChanges();
     this.regexTypeOnChange.emit(
-        event.value === 'regex_by_run' ? GroupByKey.REGEX :
-                                          GroupByKey.REGEX_BY_EXP);
+      event.value === 'regex_by_run'
+        ? GroupByKey.REGEX
+        : GroupByKey.REGEX_BY_EXP
+    );
   }
 }
