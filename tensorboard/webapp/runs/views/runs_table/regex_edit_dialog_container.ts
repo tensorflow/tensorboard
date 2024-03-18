@@ -93,6 +93,17 @@ export class RegexEditDialogContainer {
     shareReplay(1)
   );
 
+  readonly groupByRegexType$: Observable<GroupByKey> = 
+    merge(
+      this.store.select(getRunGroupBy).pipe(take(1), map(group => group.key)),
+      this.tentativeRegexType$
+    ).pipe(
+      filter(
+        key => key === GroupByKey.REGEX || key === GroupByKey.REGEX_BY_EXP),
+        startWith(GroupByKey.REGEX), 
+        shareReplay(1)
+      );
+  
   readonly colorRunPairList$: Observable<ColorGroup[]> = defer(() => {
     return this.groupByRegexString$.pipe(
       debounceTime(INPUT_CHANGE_DEBOUNCE_INTERVAL_MS),
