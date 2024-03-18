@@ -136,7 +136,9 @@ export function createScaleLinear(
       d3.extent(data[0], (d) => d.date),
       [marginLeft, width - marginRight]
     );
-  
+
+    // const x = d3.scaleTime().range([0, width]);
+
     // Declare the y (vertical position) scale.
     const y = d3.scaleLinear(
       [0, d3.max(data[0], (d) => d.close)],
@@ -240,4 +242,3 @@ export function createScaleLinear(
     });
     return exportGraph;
   }
-  

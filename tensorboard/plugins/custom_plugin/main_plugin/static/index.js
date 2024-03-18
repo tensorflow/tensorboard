@@ -35,7 +35,7 @@ const aapl2 = [
   // Add more objects as needed
 ];
 
-const multiData = [aapl,aapl2]
+const multiData = [aapl,aapl2];
 
 
 
@@ -69,6 +69,11 @@ export async function render() {
   stylesheet.rel = 'stylesheet';
   stylesheet.href = './static/style.css';
   document.body.appendChild(stylesheet);
+
+  const stylesheet2 = document.createElement('link');
+  stylesheet2.rel = 'stylesheet';
+  stylesheet2.href = './static/collapse.css';
+  document.body.appendChild(stylesheet2);
 
   // Heading
   const header = createElement('div', '');
@@ -122,6 +127,7 @@ export async function render() {
   sideToolbar.appendChild(runSelector);
   graphArea.appendChild(previewContainer);
 
+
 // =========================================
 
   // graphArea.appendChild(Utils.createScaleLinear(aapl));
@@ -131,7 +137,7 @@ export async function render() {
   mainContainer.appendChild(sideToolbar);
   mainContainer.appendChild(graphArea);
   
-  cardformat(graphArea);
+  // cardformat(graphArea);
 
   document.body.appendChild(mainContainer);
 }
@@ -213,6 +219,5 @@ function updateGraph() {
   // Append the new graph to the container
   graphContainer.appendChild(newGraph);
 }
-
 
 
