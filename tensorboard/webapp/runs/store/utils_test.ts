@@ -256,8 +256,8 @@ describe('run store utils test', () => {
             'eid2/gamma': 'eid2',
           },
           {
-            'eid1': 'experiment1',
-            'eid2': 'expiriment2'
+            eid1: 'experiment1',
+            eid2: 'expiriment2',
           }
         );
         expect(actual).toEqual({
@@ -282,8 +282,8 @@ describe('run store utils test', () => {
             'eid2/gamma': 'eid2',
           },
           {
-            'eid1': 'experiment1',
-            'eid2': 'expiriment2'
+            eid1: 'experiment1',
+            eid2: 'expiriment2',
           }
         );
         expect(actual).toEqual({
@@ -307,12 +307,12 @@ describe('run store utils test', () => {
             'eid1/beta': 'eid1',
             'eid2/beta': 'eid2',
             'eid2/gamma': 'eid2',
-            'eid3/theta': 'eid3'
+            'eid3/theta': 'eid3',
           },
           {
-            'eid1': 'foobar',
-            'eid2': 'bar',
-            'eid3': 'foodoo'
+            eid1: 'foobar',
+            eid2: 'bar',
+            eid3: 'foodoo',
           }
         );
 
@@ -353,10 +353,10 @@ describe('run store utils test', () => {
             'eid4/gamma': 'eid4',
           },
           {
-            'eid1': 'foo1bar',
-            'eid2': 'foo2bar',
-            'eid3': 'foo1bar',
-            'eid4': 'theta',
+            eid1: 'foo1bar',
+            eid2: 'foo2bar',
+            eid3: 'foo1bar',
+            eid4: 'theta',
           }
         );
 
@@ -439,7 +439,10 @@ describe('run store utils test', () => {
     it('groups by experiment name regex', () => {
       const actual = createGroupBy(GroupByKey.REGEX_BY_EXP, 'world');
 
-      expect(actual).toEqual({key: GroupByKey.REGEX_BY_EXP, regexString: 'world'});
+      expect(actual).toEqual({
+        key: GroupByKey.REGEX_BY_EXP,
+        regexString: 'world',
+      });
     });
   });
 });
