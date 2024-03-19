@@ -82,6 +82,11 @@ export async function render() {
   const tab2 = createElement('button', 'System Performance');
   tab1.classList.add('nav-option');
   tab2.classList.add('nav-option');
+
+// Adding click event listeners to both buttons
+  tab1.addEventListener('click', onTab1Click);
+  tab2.addEventListener('click', onTab2Click);
+
   header.appendChild(tab1);
   header.appendChild(tab2);
 
@@ -127,41 +132,13 @@ export async function render() {
   sideToolbar.appendChild(runSelector);
   graphArea.appendChild(previewContainer);
 
-
-// =========================================
-
-  // graphArea.appendChild(Utils.createScaleLinear(aapl));
-  // graphArea.appendChild(Utils.createLineChart(multiData));
-
-
   mainContainer.appendChild(sideToolbar);
   mainContainer.appendChild(graphArea);
-  
-  // cardformat(graphArea);
 
   document.body.appendChild(mainContainer);
 }
 
-function cardformat(mainContainer){
-  
-    // Create cards container
-    const cardsContainer = document.createElement('div');
-    cardsContainer.className = 'cards-container';
 
-    // Define the number of cards you want
-    const numberOfCards = 3;
-
-    // Create and append cards to the cards container
-    for (let i = 1; i <= numberOfCards; i++) {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.appendChild(Utils.createLineChart(multiData));
-      cardsContainer.appendChild(card);
-    }
-
-    // Append the cards container to the body or any specific element
-    mainContainer.appendChild(cardsContainer);
-}
 
 function createElement(tag, children) {
   const result = document.createElement(tag);
@@ -219,5 +196,27 @@ function updateGraph() {
   // Append the new graph to the container
   graphContainer.appendChild(newGraph);
 }
+
+
+  // Defining the function to be called when tab1 is clicked
+  function onTab1Click() {
+    const element = document.getElementById('run-selector');
+    element.value="fake_bert"
+    console.log('Tab 1 Clicked: Flop Calculation');
+    element.dispatchEvent(new Event('change'));
+
+  }
+  
+  // Defining the function to be called when tab2 is clicked
+  function onTab2Click() {
+    const element = document.getElementById('run-selector');
+    element.value="system_performance"
+    console.log('Tab 2 Clicked: System Performance');
+    element.dispatchEvent(new Event('change'));
+
+  }
+  
+
+
 
 

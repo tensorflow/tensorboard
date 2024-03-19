@@ -42,7 +42,7 @@ def collect_data_from_json_file(json_file):
                         continue  # Skip to the next device_type or layer_name
 
 # Provide the path to your JSON file
-json_file_path = 'small_sample.json'
+json_file_path = 'large_sample.json'
 
 # Collect data from JSON file
 collected_data = collect_data_from_json_file(json_file_path)

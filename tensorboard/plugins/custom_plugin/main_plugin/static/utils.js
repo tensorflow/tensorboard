@@ -111,6 +111,24 @@ export function createScaleLinear(
             .duration(1000) // Animation duration in milliseconds
             .attr('cy', 50) // Move circles to new Y position
       );
+
+      var zoom = d3.zoom().scaleExtent([1, 10]).on("zoom", zoomed);
+      svg.call(zoom);
+    
+      function zoomed(event) {
+        // Create new scale objects based on event
+        const newX = event.transform.rescaleX(x);
+        const newY = event.transform.rescaleY(y);
+        
+        // Redraw the axes
+        gx.call(d3.axisBottom(newX).ticks(width / 80).tickSizeOuter(0));
+        gy.call(d3.axisLeft(newY).ticks(height / 40));
+    
+        // Redraw the area with new scales
+        svg.select('path')
+          .datum(aapl) // Re-bind data to the area
+          .attr('d', area.x((d) => newX(d.date)).y0(height - marginBottom).y1((d) => newY(d.close)));
+      }
   
     container.append(svg.node());
     container.classList.add('graph');
@@ -210,7 +228,6 @@ export function createScaleLinear(
     container.append(downloadGraph());
     return container;
   }
-
 
   function createElement(tag, children) {
     const result = document.createElement(tag);

@@ -1,3 +1,5 @@
+import * as Utils from './utils.js';
+
 const aapl = [
   {date: new Date('2007-04-23'), close: 10.24},
   {date: new Date('2007-04-24'), close: 20.35},
@@ -41,6 +43,7 @@ export function createRunSelector(runs,class_name="run-selector") {
      *   </select>
      */
     const element = createElement('select', class_name);
+    element.id="run-selector"
     for (const run of runs) {
       element.options.add(new Option(run, run));
     }
@@ -58,25 +61,9 @@ export function createPreviews(tagsToScalars) {
       return fragment;
     }
     else{
-      const table = createElement('table', 'preview-table');
-      
-
-
-      for (const [tag, scalars] of tagsToScalars) {
-        // console.log(scalars);
-        // createCollapsibleComponent(fragment);
-        const row = table.insertRow();
-        row.insertCell().textContent = tag;
-        const cell = row.insertCell();
-        // cell.textContent = scalars
-        cell.appendChild(createDataSelector(scalars));
-      }
-
       let extra = createLayerDrawers(tagsToScalars);
       fragment.appendChild(extra);
 
-      fragment.appendChild(table);
-      // fragment.appendChild
       return fragment;
     }
 }
@@ -104,25 +91,21 @@ export function createLayerDrawers(tagsToScalars) {
   container.className = 'container';
 
   let uniqueArray = [];
+  let flag = false;
+
   // Create each FAQ drawer and append to the container
   tagsToScalars.forEach((scalars, run) => {
 
     let [prefix_run, tag] = run.split("/");
 
-
     if (!uniqueArray.includes(prefix_run)) {
           uniqueArray.push(prefix_run);
+          flag = true;
+    }else{
+      flag = false;
     }
 
-    let map_info = {
-      "tag_name":tag,
-      "tag_scalar":scalars,
-    };
-
-
-    console.log(tagsToScalars);
-    console.log(tag);
-    console.log("abc ="+scalars);
+    if (flag) {
       const drawer = document.createElement('div');
       drawer.classList.add('faq-drawer');
 
@@ -142,6 +125,8 @@ export function createLayerDrawers(tagsToScalars) {
       const content = document.createElement('div');
       content.className = 'faq-drawer__content';
       content.innerHTML = prefix_run.content || ''; // Ensure content is a string, even if empty
+      content.appendChild(createDataSelector(scalars));
+      cardformat(content);
 
       contentWrapper.appendChild(content);
 
@@ -150,9 +135,36 @@ export function createLayerDrawers(tagsToScalars) {
       drawer.appendChild(contentWrapper);
 
       container.appendChild(drawer);
+    }
+    else{
+      
+    }
+
+
   });
 
   return container;
+}
+
+function cardformat(mainContainer){
+  
+  // Create cards container
+  const cardsContainer = createElement('div');
+  cardsContainer.className = 'cards-container';
+
+  // Define the number of cards you want
+  const numberOfCards = 3;
+
+  // Create and append cards to the cards container
+  for (let i = 1; i <= numberOfCards; i++) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.appendChild(Utils.createLineChart(multiData));
+    cardsContainer.appendChild(card);
+  }
+
+  // Append the cards container to the body or any specific element
+  mainContainer.appendChild(cardsContainer);
 }
 
 
