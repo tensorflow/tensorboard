@@ -13,7 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {NO_ERRORS_SCHEMA} from '@angular/core';
+import {
+  ApplicationRef,
+  Component,
+  NO_ERRORS_SCHEMA,
+  ViewChild,
+  ViewContainerRef,
+} from '@angular/core';
 import {FilterbarComponent} from './filterbar_component';
 import {FilterbarContainer} from './filterbar_container';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
@@ -39,6 +45,7 @@ import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {CustomModalComponent} from '../../../widgets/custom_modal/custom_modal_component';
 import {FilterDialogModule} from '../../../widgets/data_table/filter_dialog_module';
 import {FilterDialog} from '../../../widgets/data_table/filter_dialog_component';
+import {CustomModal} from '../../../widgets/custom_modal/custom_modal';
 
 const discreteFilter: DiscreteFilter = {
   type: DomainType.DISCRETE,
@@ -61,6 +68,20 @@ const fakeFilterMap = new Map<string, DiscreteFilter | IntervalFilter>([
   ['filter2', intervalFilter],
 ]);
 
+@Component({
+  selector: 'testable-component',
+  template: `
+    <filterbar></filterbar>
+    <div #modal_container></div>
+  `,
+})
+class TestableComponent {
+  @ViewChild('modal_container', {read: ViewContainerRef})
+  readonly modalViewContainerRef!: ViewContainerRef;
+
+  constructor(readonly customModal: CustomModal) {}
+}
+
 describe('hparam_filterbar', () => {
   let actualActions: Action[];
   let store: MockStore<State>;
@@ -75,7 +96,7 @@ describe('hparam_filterbar', () => {
         MatIconTestingModule,
         FilterDialogModule,
       ],
-      declarations: [FilterbarComponent, FilterbarContainer],
+      declarations: [FilterbarComponent, FilterbarContainer, TestableComponent],
       providers: [provideMockTbStore()],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -85,14 +106,18 @@ describe('hparam_filterbar', () => {
     store?.resetSelectors();
   });
 
-  function createComponent(): ComponentFixture<FilterbarContainer> {
+  function createComponent(): ComponentFixture<TestableComponent> {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     actualActions = [];
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
     });
 
-    return TestBed.createComponent(FilterbarContainer);
+    const fixture = TestBed.createComponent(TestableComponent);
+    // Add component to app ref for modal testing.
+    const appRef = TestBed.inject(ApplicationRef);
+    appRef.components.push(fixture.componentRef);
+    return fixture;
   }
 
   it('renders hparam filterbar', () => {
@@ -234,6 +259,7 @@ describe('hparam_filterbar', () => {
       const chip = await chipHarness.host();
       await chip.click();
       fixture.detectChanges();
+      TestBed.inject(CustomModal).runChangeDetection();
       fixture.debugElement
         .query(By.directive(FilterDialog))
         .componentInstance.discreteFilterChanged.emit(4);

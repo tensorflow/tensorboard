@@ -23,7 +23,7 @@ import {
   OnDestroy,
   EmbeddedViewRef,
 } from '@angular/core';
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, filter} from 'rxjs';
 
 export interface ModalContent {
   onRender?: () => void;
@@ -77,16 +77,11 @@ export class CustomModalComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.visible$.subscribe((visible) => {
-      // Wait until after the next browser frame.
+    this.visible$.pipe(filter((visible) => !!visible)).subscribe((visible) => {
       window.requestAnimationFrame(() => {
         this.canClose = true;
-        if (visible) {
-          this.ensureContentIsWithinWindow();
-          this.onOpen.emit();
-        } else {
-          this.onClose.emit();
-        }
+        this.ensureContentIsWithinWindow();
+        this.onOpen.emit();
       });
     });
   }
@@ -136,7 +131,7 @@ export class CustomModalComponent implements OnInit, OnDestroy {
 
   public close() {
     document.removeEventListener('click', this.clickListener);
-    this.visible$.next(false);
+    this.onClose.emit();
     // Clean up enclosing embedded view if it exists.
     setTimeout(() => {
       this.parentEmbeddedViewRef?.destroy();

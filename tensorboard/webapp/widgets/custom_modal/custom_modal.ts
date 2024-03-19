@@ -42,8 +42,8 @@ import {CustomModalComponent} from './custom_modal_component';
  * ```
  *
  * Define a ViewChild to reference the template in the component file:
- * // my_component.ts
  * ```
+ * // my_component.ts
  * ...
  * @ViewChild('myModalTemplate', {read: TemplateRef})
  * myModalTemplate!: TemplateRef<unknown>;
@@ -51,16 +51,16 @@ import {CustomModalComponent} from './custom_modal_component';
  * ```
  *
  * Inject CustomModal into the component
- * // my_component.ts
  * ```
+ * // my_component.ts
  * ...
  * constructor(private readonly customModal: CustomModal) {}
  * ...
  * ```
  *
  * To create a modal, call createAtPosition():
- * // my_component.ts
  * ```
+ * // my_component.ts
  * ...
  * onSomeButtonClick() {
  *   this.customModal.createAtPosition(this.myModalTemplate, {x: 100, y: 100});
@@ -74,18 +74,55 @@ import {CustomModalComponent} from './custom_modal_component';
  * will not affect functionality). This will correctly run embedded view change detection
  * in the same change detection cycle as the component defining the template.
  *
+ * ```
  * // my_component.ts
  * ngAfterViewChecked() {
  *   this.customModal.runChangeDetection();
  * }
+ * ```
  *
+ * # Testing
+ * A similar setup is required for testing modal behavior from another component.
+ *
+ * Define a separate root component to hold the modal container and ref:
+ * ```
+ * @Component({
+ *   ...,
+ *   template: `
+ *   <actual-component-to-test></actual-component-to-test>
+ *   <div #modal_container></div>
+ *   `
+ * })
+ * class TestableComponent {
+ *   @ViewChild('modal_container', {read: ViewContainerRef})
+ *   readonly modalViewContainerRef!: ViewContainerRef;
+ *
+ *   constructor(readonly customModal: CustomModal) {}
+ *   ...
+ * }
+ * ```
+ *
+ * Before each test (e.g. in beforeEach), make sure to add the TestableComponent
+ * to the app component list:
+ * ```
+ * ...
+ * const fixture = TestBed.createComponent(TestableComponent);
+ * const appRef = TestBed.inject(ApplicationRef);
+ * appRef.components.push(fixture.componentRef);
+ * ```
  */
 @Injectable({providedIn: 'root'})
 export class CustomModal {
   constructor(private appRef: ApplicationRef) {}
 
   private getModalViewContainerRef(): ViewContainerRef | undefined {
-    const appInstance = this.appRef.components[0].instance;
+    const appComponents = this.appRef.components;
+    if (appComponents.length === 0) {
+      // appComponents can be empty in tests.
+      return;
+    }
+
+    const appInstance = appComponents[0].instance;
     let viewContainerRef: ViewContainerRef = appInstance.modalViewContainerRef;
     if (!viewContainerRef) {
       console.warn(

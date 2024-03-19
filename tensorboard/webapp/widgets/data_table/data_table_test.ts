@@ -13,7 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
+import {
+  ApplicationRef,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+  ViewContainerRef,
+} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatIconTestingModule} from '../../testing/mat_icon_module';
 import {By} from '@angular/platform-browser';
@@ -37,6 +45,7 @@ import {ContentCellComponent} from './content_cell_component';
 import {ColumnSelectorModule} from './column_selector_module';
 import {CustomModalModule} from '../custom_modal/custom_modal_module';
 import {FilterDialog} from './filter_dialog_component';
+import {CustomModal} from '../custom_modal/custom_modal';
 
 @Component({
   selector: 'testable-comp',
@@ -75,11 +84,15 @@ import {FilterDialog} from './filter_dialog_component';
         </ng-container>
       </ng-container>
     </tb-data-table>
+    <div #modal_container></div>
   `,
 })
 class TestableComponent {
   @ViewChild('DataTable')
   dataTable!: DataTableComponent;
+
+  @ViewChild('modal_container', {read: ViewContainerRef})
+  readonly modalViewContainerRef!: ViewContainerRef;
 
   @Input() headers!: ColumnHeader[];
   @Input() data!: TableData[];
@@ -97,6 +110,8 @@ class TestableComponent {
     index?: number;
   }>();
   @Output() removeColumn = new EventEmitter<ColumnHeader>();
+
+  constructor(readonly customModal: CustomModal) {}
 }
 
 describe('data table', () => {
@@ -167,6 +182,9 @@ describe('data table', () => {
     fixture.componentInstance.orderColumns = orderColumnsSpy;
     fixture.detectChanges();
 
+    // Add component to app ref for modal testing.
+    const appRef = TestBed.inject(ApplicationRef);
+    appRef.components.push(fixture.componentRef);
     return fixture;
   }
 

@@ -27,9 +27,7 @@ limitations under the License.
 </ng-template>
 
 <ng-template #columnSelectorModalTemplate>
-  <custom-modal
-    (onClose)="onColumnSelectorClosed()"
-  >
+  <custom-modal>
     <tb-data-table-column-selector-component
       [selectableColumns]="selectableColumns"
       (columnSelected)="onColumnAdded($event)"

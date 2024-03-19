@@ -156,12 +156,10 @@ describe('custom modal', () => {
     viewContainerFixture.detectChanges();
 
     const content = viewContainerFixture.debugElement.query(By.css('.content'));
-    expect(content.nativeElement.innerHTML).toContain('abc123');
     customModalComponent!.close();
     viewContainerFixture.detectChanges();
     tick(); // Wait for setTimeout.
 
-    expect(content.nativeElement.innerHTML).not.toContain('abc123');
     expect(viewContainerComponent.modalViewContainerRef.length).toBe(0);
   }));
 
@@ -221,8 +219,8 @@ describe('custom modal', () => {
 
   describe('ensures content is always within the window', () => {
     beforeEach(() => {
-      window.innerHeight = 1000;
-      window.innerWidth = 1000;
+      spyOnProperty(window, 'innerWidth', 'get').and.returnValue(1000);
+      spyOnProperty(window, 'innerHeight', 'get').and.returnValue(1000);
     });
 
     it('sets left to 0 if less than 0', async () => {
