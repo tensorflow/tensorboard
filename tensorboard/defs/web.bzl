@@ -26,14 +26,11 @@ load(
     "collect_js",
     "collect_runfiles",
     "difference",
+    "extract_providers",
     "long_path",
     "unfurl",
 )
 load("//tensorboard/defs/internal:html.bzl", _tb_combine_html = "tb_combine_html")
-
-# TODO(ytjing): Directly import this function once it's synced from OSS to internal rules_closure repo.
-def extract_providers(deps, provider):
-    return [dep[provider] for dep in deps if provider in dep]
 
 def _tf_web_library(ctx):
     if not ctx.attr.srcs:
