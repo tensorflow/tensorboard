@@ -5,9 +5,9 @@ package(default_visibility = ["//tensorboard:internal"])
 tf_ng_module(
     name = "custom_modal",
     srcs = [
+        "custom_modal.ts",
         "custom_modal_component.ts",
         "custom_modal_module.ts",
-        "custom_modal.ts",
     ],
     deps = [
         "@npm//@angular/common",
