@@ -84,10 +84,9 @@ import {CustomModalComponent} from './custom_modal_component';
  *
  * ## Important note
  * runChangeDetection() must be called after view checked to prevent annoying
- * https://angular.io/errors/NG0100 errors when using input bindings (omitting this
- * will not affect functionality). This will correctly run embedded view change detection
- * in the same change detection cycle as the component defining the template.
- *
+ * https://angular.io/errors/NG0100 errors when using input bindings: this
+ * will run embedded view change detection in the correct order. Note that
+ * omitting this will not affect actual modal behavior.
  * ```
  * // my_component.ts
  * ngAfterViewChecked() {
