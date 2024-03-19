@@ -128,6 +128,7 @@ import {CustomModalComponent} from './custom_modal_component';
 export class CustomModal {
   constructor(private appRef: ApplicationRef) {}
 
+  /** Gets the ViewContainerRef of the app's root component if it exists. */
   private getModalViewContainerRef(): ViewContainerRef | undefined {
     const appComponents = this.appRef.components;
     if (appComponents.length === 0) {
@@ -146,6 +147,7 @@ export class CustomModal {
     return viewContainerRef;
   }
 
+  /** Creates a modal using the given template at the given position. */
   createAtPosition(
     templateRef: TemplateRef<unknown>,
     position: {x: number; y: number}
@@ -160,6 +162,7 @@ export class CustomModal {
     return modalComponent;
   }
 
+  /** Triggers change detection for all modals in the view container. */
   runChangeDetection() {
     const viewContainerRef = this.getModalViewContainerRef();
     if (!viewContainerRef) return;
@@ -168,6 +171,7 @@ export class CustomModal {
     }
   }
 
+  /** Destroys all modals in the view container. */
   closeAll() {
     const viewContainerRef = this.getModalViewContainerRef();
     if (!viewContainerRef) return;
