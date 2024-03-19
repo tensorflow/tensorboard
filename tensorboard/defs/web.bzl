@@ -93,7 +93,7 @@ def _tf_web_library(ctx):
         # If a rule exists purely to export other build rules, then it's
         # appropriate for the exported sources to be included in the
         # development web server.
-        export_deps = unfurl(extract_providers(ctx.attr.exports))
+        export_deps = unfurl(extract_providers(ctx.attr.exports, WebFilesInfo))
         devserver_manifests = depset(
             order = "postorder",
             transitive = (
