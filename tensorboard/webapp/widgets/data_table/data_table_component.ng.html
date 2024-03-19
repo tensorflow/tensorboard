@@ -12,41 +12,42 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<custom-modal #contextMenu (onClose)="onContextMenuClosed()">
-  <tb-data-table-context-menu
-    [contextMenuHeader]="contextMenuHeader"
-    [selectableColumns]="selectableColumns"
-    [sortingInfo]="sortingInfo"
-    (removeColumn)="onRemoveColumn($event)"
-    (sortByHeader)="sortByHeader($event)"
-    (openFilterMenu)="openFilterMenu($event)"
-    (openColumnSelector)="openColumnSelector($event)"
-  ></tb-data-table-context-menu>
-</custom-modal>
+<ng-template #contextMenuTemplate>
+  <custom-modal #contextMenu (onClose)="onContextMenuClosed()">
+    <tb-data-table-context-menu
+      [contextMenuHeader]="contextMenuHeader"
+      [selectableColumns]="selectableColumns"
+      [sortingInfo]="sortingInfo"
+      (removeColumn)="onRemoveColumn($event)"
+      (sortByHeader)="sortByHeader($event)"
+      (openFilterMenu)="openFilterMenu($event)"
+      (openColumnSelector)="openColumnSelector($event)"
+    ></tb-data-table-context-menu>
+  </custom-modal>
+</ng-template>
 
-<custom-modal
-  #columnSelectorModal
-  *ngIf="selectableColumns && selectableColumns.length"
-  (onOpen)="focusColumnSelector()"
->
-  <tb-data-table-column-selector-component
-    [selectableColumns]="selectableColumns"
-    [numColumnsLoaded]="numColumnsLoaded"
-    [hasMoreColumnsToLoad]="hasMoreColumnsToLoad"
-    (columnSelected)="onColumnAdded($event)"
-    (loadAllColumns)="loadAllColumns.emit()"
-  ></tb-data-table-column-selector-component>
-</custom-modal>
+<ng-template #columnSelectorModalTemplate>
+  <custom-modal
+    (onClose)="onColumnSelectorClosed()"
+  >
+    <tb-data-table-column-selector-component
+      [selectableColumns]="selectableColumns"
+      (columnSelected)="onColumnAdded($event)"
+    ></tb-data-table-column-selector-component>
+  </custom-modal>
+</ng-template>
 
-<custom-modal #filterModal (onClose)="onFilterClosed()">
-  <tb-data-table-filter
-    *ngIf="getCurrentColumnFilter()"
-    [filter]="getCurrentColumnFilter()"
-    (intervalFilterChanged)="intervalFilterChanged($event)"
-    (discreteFilterChanged)="discreteFilterChanged($event)"
-    (includeUndefinedToggled)="includeUndefinedToggled()"
-  ></tb-data-table-filter>
-</custom-modal>
+<ng-template #filterModalTemplate>
+  <custom-modal (onClose)="onFilterClosed()">
+    <tb-data-table-filter
+      *ngIf="getCurrentColumnFilter()"
+      [filter]="getCurrentColumnFilter()"
+      (intervalFilterChanged)="intervalFilterChanged($event)"
+      (discreteFilterChanged)="discreteFilterChanged($event)"
+      (includeUndefinedToggled)="includeUndefinedToggled()"
+    ></tb-data-table-filter>
+  </custom-modal>
+</ng-template>
 
 <div class="data-table">
   <div class="header">

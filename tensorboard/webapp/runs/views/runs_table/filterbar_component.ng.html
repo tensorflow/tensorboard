@@ -31,12 +31,14 @@ limitations under the License.
   </mat-chip-set>
 </div>
 
-<custom-modal #filterModal (onClose)="deselectFilter()">
-  <tb-data-table-filter
-    *ngIf="selectedFilter"
-    [filter]="selectedFilter"
-    (intervalFilterChanged)="emitIntervalFilterChanged($event)"
-    (discreteFilterChanged)="emitDiscreteFilterChanged($event)"
-    (includeUndefinedToggled)="emitIncludeUndefinedToggled()"
-  ></tb-data-table-filter>
-</custom-modal>
+<ng-template #filterModalTemplate>
+  <custom-modal (onClose)="deselectFilter()">
+    <tb-data-table-filter
+      *ngIf="selectedFilter"
+      [filter]="selectedFilter"
+      (intervalFilterChanged)="emitIntervalFilterChanged($event)"
+      (discreteFilterChanged)="emitDiscreteFilterChanged($event)"
+      (includeUndefinedToggled)="emitIncludeUndefinedToggled()"
+    ></tb-data-table-filter>
+  </custom-modal>
+</ng-template>

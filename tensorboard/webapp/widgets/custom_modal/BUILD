@@ -7,6 +7,7 @@ tf_ng_module(
     srcs = [
         "custom_modal_component.ts",
         "custom_modal_module.ts",
+        "custom_modal.ts",
     ],
     deps = [
         "@npm//@angular/common",

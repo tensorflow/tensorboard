@@ -19,6 +19,8 @@ import {
   EventEmitter,
   Component,
   ViewChild,
+  TemplateRef,
+  AfterViewChecked,
 } from '@angular/core';
 import {
   DiscreteFilter,
@@ -27,7 +29,7 @@ import {
   FilterAddedEvent,
 } from '../../../widgets/data_table/types';
 import {RangeValues} from '../../../widgets/range_input/types';
-import {CustomModalComponent} from '../../../widgets/custom_modal/custom_modal_component';
+import {CustomModal} from '../../../widgets/custom_modal/custom_modal';
 
 @Component({
   selector: 'filterbar-component',
@@ -35,14 +37,14 @@ import {CustomModalComponent} from '../../../widgets/custom_modal/custom_modal_c
   styleUrls: ['filterbar_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FilterbarComponent {
+export class FilterbarComponent implements AfterViewChecked {
   @Input() filters!: Map<string, DiscreteFilter | IntervalFilter>;
 
   @Output() removeHparamFilter = new EventEmitter<string>();
   @Output() addFilter = new EventEmitter<FilterAddedEvent>();
 
-  @ViewChild('filterModal', {static: false})
-  private readonly filterModal!: CustomModalComponent;
+  @ViewChild('filterModalTemplate', {read: TemplateRef})
+  filterModalTemplate!: TemplateRef<unknown>;
 
   private internalSelectedFilterName = '';
   get selectedFilterName(): string {
@@ -56,12 +58,18 @@ export class FilterbarComponent {
     return this.filters.get(this.selectedFilterName);
   }
 
+  constructor(private readonly customModal: CustomModal) {}
+
+  ngAfterViewChecked() {
+    this.customModal.runChangeDetection();
+  }
+
   openFilterMenu(event: MouseEvent, filterName: string) {
     this.selectedFilterName = filterName;
     const rect = (
       (event.target as HTMLElement).closest('mat-chip') as HTMLElement
     ).getBoundingClientRect();
-    this.filterModal.openAtPosition({
+    this.customModal.createAtPosition(this.filterModalTemplate, {
       x: rect.x + rect.width,
       y: rect.y,
     });

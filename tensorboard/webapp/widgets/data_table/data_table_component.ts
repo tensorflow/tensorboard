@@ -15,6 +15,7 @@ limitations under the License.
 
 import {
   AfterContentInit,
+  AfterViewChecked,
   ChangeDetectionStrategy,
   Component,
   ContentChildren,
@@ -23,11 +24,11 @@ import {
   OnDestroy,
   Output,
   QueryList,
+  TemplateRef,
   ViewChild,
 } from '@angular/core';
 import {
   ColumnHeader,
-  ColumnHeaderType,
   DiscreteFilter,
   DiscreteFilterValue,
   FilterAddedEvent,
@@ -41,10 +42,10 @@ import {
 import {HeaderCellComponent} from './header_cell_component';
 import {Subscription} from 'rxjs';
 import {CustomModalComponent} from '../custom_modal/custom_modal_component';
-import {ColumnSelectorComponent} from './column_selector_component';
 import {ContentCellComponent} from './content_cell_component';
 import {RangeValues} from '../range_input/types';
 import {dataTableUtils} from './utils';
+import {CustomModal} from '../custom_modal/custom_modal';
 
 const preventDefault = function (e: MouseEvent) {
   e.preventDefault();
@@ -56,7 +57,9 @@ const preventDefault = function (e: MouseEvent) {
   styleUrls: ['data_table_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DataTableComponent implements OnDestroy, AfterContentInit {
+export class DataTableComponent
+  implements OnDestroy, AfterContentInit, AfterViewChecked
+{
   // The order of this array of headers determines the order which they are
   // displayed in the table.
   @Input() headers!: ColumnHeader[];
@@ -85,31 +88,35 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   @Output() addFilter = new EventEmitter<FilterAddedEvent>();
   @Output() loadAllColumns = new EventEmitter<null>();
 
-  @ViewChild('columnSelectorModal', {static: false})
-  private readonly columnSelectorModal!: CustomModalComponent;
+  @ViewChild('contextMenuTemplate', {read: TemplateRef})
+  contextMenuTemplate!: TemplateRef<unknown>;
+  @ViewChild('filterModalTemplate', {read: TemplateRef})
+  filterModalTemplate!: TemplateRef<unknown>;
+  @ViewChild('columnSelectorModalTemplate', {read: TemplateRef})
+  columnSelectorModalTemplate!: TemplateRef<unknown>;
 
-  @ViewChild(ColumnSelectorComponent, {static: false})
-  private readonly columnSelector!: ColumnSelectorComponent;
-
-  @ViewChild('contextMenu', {static: false})
-  private readonly contextMenu!: CustomModalComponent;
-
-  @ViewChild('filterModal', {static: false})
-  private readonly filterModal!: CustomModalComponent;
-
-  readonly ColumnHeaders = ColumnHeaderType;
-  readonly SortingOrder = SortingOrder;
-  readonly Side = Side;
+  contextMenuModal?: CustomModalComponent | undefined;
+  filterModal?: CustomModalComponent | undefined;
+  columnSelectorModal?: CustomModalComponent | undefined;
 
   draggingHeaderName: string | undefined;
   highlightedColumnName: string | undefined;
   highlightSide: Side = Side.RIGHT;
+
+  readonly SortingOrder = SortingOrder;
+  readonly Side = Side;
+
+  constructor(private readonly customModal: CustomModal) {}
 
   ngOnDestroy() {
     document.removeEventListener('dragover', preventDefault);
     this.headerCellSubscriptions.forEach((subscription) => {
       subscription.unsubscribe();
     });
+  }
+
+  ngAfterViewChecked() {
+    this.customModal.runChangeDetection();
   }
 
   ngAfterContentInit() {
@@ -263,21 +270,19 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     });
   }
 
-  focusColumnSelector() {
-    this.columnSelector.focus();
-  }
-
   openContextMenu(header: ColumnHeader, event: MouseEvent) {
     event.stopPropagation();
     event.preventDefault();
-    this.columnSelectorModal?.close();
-    this.filterModal?.close();
+    this.customModal.closeAll();
 
     this.contextMenuHeader = header;
-    this.contextMenu.openAtPosition({
-      x: event.clientX,
-      y: event.clientY,
-    });
+    this.contextMenuModal = this.customModal.createAtPosition(
+      this.contextMenuTemplate,
+      {
+        x: event.clientX,
+        y: event.clientY,
+      }
+    );
   }
 
   onContextMenuClosed() {
@@ -302,11 +307,13 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     const rect = (
       (event.target as HTMLElement).closest('button') as HTMLButtonElement
     ).getBoundingClientRect();
-    this.columnSelectorModal.openAtPosition({
-      x: rect.x + rect.width,
-      y: rect.y,
-    });
-    this.columnSelector.activate();
+    this.columnSelectorModal = this.customModal.createAtPosition(
+      this.columnSelectorModalTemplate,
+      {
+        x: rect.x + rect.width,
+        y: rect.y,
+      }
+    );
   }
 
   canContextMenuRemoveColumn() {
@@ -315,8 +322,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
 
   onRemoveColumn(header: ColumnHeader) {
     this.removeColumn.emit(header);
-    this.contextMenu.close();
-    this.filterModal?.close();
+    this.customModal.closeAll();
   }
 
   onColumnAdded(header: ColumnHeader) {
@@ -328,16 +334,19 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   }
 
   openFilterMenu(event: MouseEvent) {
+    event.stopPropagation();
+    this.columnSelectorModal?.close();
     this.filterColumn = this.contextMenuHeader;
     const rect = (
       (event.target as HTMLElement).closest('button') as HTMLButtonElement
     ).getBoundingClientRect();
-    event.stopPropagation();
-    this.columnSelectorModal?.close();
-    this.filterModal.openAtPosition({
-      x: rect.x + rect.width,
-      y: rect.y,
-    });
+    this.filterModal = this.customModal.createAtPosition(
+      this.filterModalTemplate,
+      {
+        x: rect.x + rect.width,
+        y: rect.y,
+      }
+    );
   }
 
   getCurrentColumnFilter() {

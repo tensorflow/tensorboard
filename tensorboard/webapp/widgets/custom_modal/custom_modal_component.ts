@@ -20,7 +20,8 @@ import {
   ElementRef,
   HostListener,
   OnInit,
-  ViewContainerRef,
+  OnDestroy,
+  EmbeddedViewRef,
 } from '@angular/core';
 import {BehaviorSubject} from 'rxjs';
 
@@ -28,6 +29,8 @@ export interface ModalContent {
   onRender?: () => void;
 }
 
+/** A modal that can be configured using a Component's template. Use it via the
+ * CustomModal Service rather than directly. */
 @Component({
   selector: 'custom-modal',
   template: `
@@ -43,27 +46,35 @@ export interface ModalContent {
         position: fixed;
         left: 0;
         z-index: 9001;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
       }
 
       .content {
         position: absolute;
+        pointer-events: initial;
       }
     `,
   ],
 })
-export class CustomModalComponent implements OnInit {
+export class CustomModalComponent implements OnInit, OnDestroy {
   @Output() onOpen = new EventEmitter<void>();
   @Output() onClose = new EventEmitter<void>();
 
   readonly visible$ = new BehaviorSubject(false);
   private canClose = true;
 
-  @ViewChild('content', {static: false})
+  @ViewChild('content', {static: true})
   private readonly content!: ElementRef;
 
-  private clickListener: () => void = this.maybeClose.bind(this);
+  static latestInstance: CustomModalComponent;
+  parentEmbeddedViewRef?: EmbeddedViewRef<unknown>;
+  clickListener: () => void = this.maybeClose.bind(this);
 
-  constructor(private readonly viewRef: ViewContainerRef) {}
+  constructor() {
+    CustomModalComponent.latestInstance = this;
+  }
 
   ngOnInit() {
     this.visible$.subscribe((visible) => {
@@ -80,14 +91,11 @@ export class CustomModalComponent implements OnInit {
     });
   }
 
-  public openAtPosition(position: {x: number; y: number}) {
-    const root = this.viewRef.element.nativeElement;
-    // Set left/top to viewport (0,0) if the element has another "containing block" ancestor.
-    root.style.top = `${root.offsetTop - root.getBoundingClientRect().top}px`;
-    root.style.left = `${
-      root.offsetLeft - root.getBoundingClientRect().left
-    }px`;
+  ngOnDestroy(): void {
+    document.removeEventListener('click', this.clickListener);
+  }
 
+  public openAtPosition(position: {x: number; y: number}) {
     this.content.nativeElement.style.left = position.x + 'px';
     this.content.nativeElement.style.top = position.y + 'px';
     this.canClose = false;
@@ -129,5 +137,9 @@ export class CustomModalComponent implements OnInit {
   public close() {
     document.removeEventListener('click', this.clickListener);
     this.visible$.next(false);
+    // Clean up enclosing embedded view if it exists.
+    setTimeout(() => {
+      this.parentEmbeddedViewRef?.destroy();
+    });
   }
 }

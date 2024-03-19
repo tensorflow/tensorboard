@@ -12,7 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, ViewContainerRef} from '@angular/core';
+import {
+  Component,
+  ViewChild,
+  ViewContainerRef,
+} from '@angular/core';
 
 @Component({
   selector: 'tb-webapp',
@@ -20,6 +24,10 @@ import {Component, ViewContainerRef} from '@angular/core';
   styleUrls: ['./app_container.css'],
 })
 export class AppContainer {
+  // Container for dynamically created CustomModalComponents.
+  @ViewChild('modal_container', {read: ViewContainerRef})
+  readonly modalViewContainerRef!: ViewContainerRef;
+
   // vcRef is required by ngx-color-picker in order for it to place the popup
   // in the root node in a modal mode.
   // https://github.com/zefoy/ngx-color-picker/blob/94a7c862bb61d7207f21281526fcd94453219b54/projects/lib/src/lib/color-picker.directive.ts#L168-L175

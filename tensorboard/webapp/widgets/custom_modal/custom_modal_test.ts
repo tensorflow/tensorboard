@@ -12,16 +12,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {CustomModalComponent} from './custom_modal_component';
+import {CustomModal} from './custom_modal';
 import {CommonModule} from '@angular/common';
 import {
+  ApplicationRef,
   Component,
-  ElementRef,
-  EventEmitter,
-  Output,
+  TemplateRef,
   ViewChild,
+  ViewContainerRef,
+  ViewRef,
 } from '@angular/core';
 
 function waitFrame() {
@@ -29,111 +36,186 @@ function waitFrame() {
 }
 
 @Component({
-  selector: 'testable-modal',
-  template: `<custom-modal #modal (onOpen)="setOpen()" (onClose)="setClosed()">
-    <div>My great content</div>
-  </custom-modal> `,
+  selector: 'fake-modal-view-container',
+  template: `
+    <div #modal_container></div>
+    <!-- In real use cases, the modal template below should be in a separate component. -->
+    <ng-template #modalTemplate>
+      <custom-modal>
+        <div [style]="'width: 100px; height: 100px'">abc123</div>
+      </custom-modal>
+    </ng-template>
+  `,
 })
-class TestableComponent {
-  @ViewChild('modal', {static: false})
-  modalComponent!: CustomModalComponent;
+class FakeViewContainerComponent {
+  @ViewChild('modal_container', {read: ViewContainerRef})
+  readonly modalViewContainerRef!: ViewContainerRef;
 
-  @ViewChild('content', {static: false})
-  content!: ElementRef;
+  @ViewChild('modalTemplate', {read: TemplateRef})
+  readonly modalTemplateRef!: TemplateRef<unknown>;
 
-  isOpen = false;
-
-  @Output() onOpen = new EventEmitter();
-  @Output() onClose = new EventEmitter();
-
-  setOpen() {
-    this.isOpen = true;
-    this.onOpen.emit();
-  }
-
-  setClosed() {
-    this.isOpen = false;
-    this.onClose.emit();
-  }
-
-  close() {
-    this.modalComponent.close();
-  }
-
-  getContentStyle() {
-    return (this.modalComponent as any).content.nativeElement.style;
-  }
-
-  public openAtPosition(position: {x: number; y: number}) {
-    this.modalComponent.openAtPosition(position);
-  }
+  constructor(readonly customModal: CustomModal) {}
 }
 
 describe('custom modal', () => {
+  let viewContainerFixture: ComponentFixture<FakeViewContainerComponent>;
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [TestableComponent, CustomModalComponent],
+      declarations: [FakeViewContainerComponent, CustomModalComponent],
       imports: [CommonModule],
     }).compileComponents();
+
+    viewContainerFixture = TestBed.createComponent(FakeViewContainerComponent);
+    // Make FakeViewContainerComponent the app root component.
+    const appRef = TestBed.inject(ApplicationRef);
+    appRef.components.push(viewContainerFixture.componentRef);
+    viewContainerFixture.detectChanges();
   });
+
+  it('creates a modal', async () => {
+    const viewContainerComponent = viewContainerFixture.componentInstance;
+
+    viewContainerComponent.customModal.createAtPosition(
+      viewContainerComponent.modalTemplateRef,
+      {x: 10, y: 20}
+    );
+    viewContainerFixture.detectChanges();
+
+    const content = viewContainerFixture.debugElement.query(By.css('.content'));
+    expect(content.nativeElement.innerHTML).toContain('abc123');
+    expect(content.nativeElement.style.left).toEqual('10px');
+    expect(content.nativeElement.style.top).toEqual('20px');
+  });
+
+  describe('runChangeDetection', () => {
+    it('runs change detection on all modals in the modal ViewContainerRef', () => {
+      const component = viewContainerFixture.componentInstance;
+      component.customModal.createAtPosition(component.modalTemplateRef, {
+        x: 10,
+        y: 20,
+      });
+      component.customModal.createAtPosition(component.modalTemplateRef, {
+        x: 11,
+        y: 20,
+      });
+      component.customModal.createAtPosition(component.modalTemplateRef, {
+        x: 12,
+        y: 20,
+      });
+      const detectChangesSpies = [...Array(3)].map((_, i) =>
+        spyOn(
+          viewContainerFixture.componentInstance.modalViewContainerRef.get(
+            i
+          ) as ViewRef,
+          'detectChanges'
+        )
+      );
+      viewContainerFixture.detectChanges();
+
+      component.customModal.runChangeDetection();
+
+      expect(detectChangesSpies[0]).toHaveBeenCalled();
+      expect(detectChangesSpies[1]).toHaveBeenCalled();
+      expect(detectChangesSpies[2]).toHaveBeenCalled();
+    });
+  });
+
+  describe('closeAll', () => {
+    it('clears all modals in the modal ViewContainerRef', () => {
+      const component = viewContainerFixture.componentInstance;
+      component.customModal.createAtPosition(component.modalTemplateRef, {
+        x: 10,
+        y: 20,
+      });
+      component.customModal.createAtPosition(component.modalTemplateRef, {
+        x: 11,
+        y: 20,
+      });
+      component.customModal.createAtPosition(component.modalTemplateRef, {
+        x: 12,
+        y: 20,
+      });
+      viewContainerFixture.detectChanges();
+
+      component.customModal.closeAll();
+
+      expect(
+        viewContainerFixture.componentInstance.modalViewContainerRef.length
+      ).toBe(0);
+    });
+  });
+
+  it('cleans up enclosing embeddedView on close', fakeAsync(() => {
+    const viewContainerComponent = viewContainerFixture.componentInstance;
+    const customModalComponent =
+      viewContainerComponent.customModal.createAtPosition(
+        viewContainerComponent.modalTemplateRef,
+        {x: -10, y: -10}
+      );
+    viewContainerFixture.detectChanges();
+
+    const content = viewContainerFixture.debugElement.query(By.css('.content'));
+    expect(content.nativeElement.innerHTML).toContain('abc123');
+    customModalComponent!.close();
+    viewContainerFixture.detectChanges();
+    tick(); // Wait for setTimeout.
+
+    expect(content.nativeElement.innerHTML).not.toContain('abc123');
+    expect(viewContainerComponent.modalViewContainerRef.length).toBe(0);
+  }));
 
   it('waits a frame before emitting onOpen or onClose', async () => {
-    const fixture = TestBed.createComponent(TestableComponent);
-    fixture.detectChanges();
-    fixture.componentInstance.openAtPosition({x: 0, y: 0});
-    expect(fixture.componentInstance.isOpen).toBeFalse();
+    const viewContainerComponent = viewContainerFixture.componentInstance;
+    const customModalComponent =
+      viewContainerComponent.customModal.createAtPosition(
+        viewContainerComponent.modalTemplateRef,
+        {x: 0, y: 0}
+      );
+    const onOpenSpy = spyOn(customModalComponent!.onOpen, 'emit');
+    const onCloseSpy = spyOn(customModalComponent!.onClose, 'emit');
+    expect(onOpenSpy).not.toHaveBeenCalled();
+    viewContainerFixture.detectChanges();
     await waitFrame();
-    expect(fixture.componentInstance.isOpen).toBeTrue();
-    fixture.componentInstance.close();
-    fixture.detectChanges();
+    expect(onOpenSpy).toHaveBeenCalled();
+    customModalComponent!.close();
+    viewContainerFixture.detectChanges();
     await waitFrame();
-    expect(fixture.componentInstance.isOpen).toBeFalse();
-  });
-
-  describe('openAtPosition', () => {
-    it('applies top and left offsets', () => {
-      const fixture = TestBed.createComponent(TestableComponent);
-      fixture.detectChanges();
-      fixture.componentInstance.openAtPosition({x: 20, y: 10});
-      expect(fixture.componentInstance.getContentStyle().top).toEqual('10px');
-      expect(fixture.componentInstance.getContentStyle().left).toEqual('20px');
-    });
-
-    it('emits onOpen', async () => {
-      const fixture = TestBed.createComponent(TestableComponent);
-      const spy = spyOn(fixture.componentInstance.onOpen, 'emit');
-      fixture.detectChanges();
-      fixture.componentInstance.openAtPosition({x: 20, y: 10});
-      expect(spy).not.toHaveBeenCalled();
-      await waitFrame();
-      expect(spy).toHaveBeenCalled();
-    });
+    expect(onCloseSpy).toHaveBeenCalled();
   });
 
   describe('closing behavior', () => {
-    let fixture: ComponentFixture<TestableComponent>;
+    let onOpenSpy: jasmine.Spy;
+    let onCloseSpy: jasmine.Spy;
+
     beforeEach(async () => {
-      fixture = TestBed.createComponent(TestableComponent);
-      fixture.detectChanges();
-      fixture.componentInstance.openAtPosition({x: 0, y: 0});
+      const viewContainerComponent = viewContainerFixture.componentInstance;
+      const customModalComponent =
+        viewContainerComponent.customModal.createAtPosition(
+          viewContainerComponent.modalTemplateRef,
+          {x: 0, y: 0}
+        );
+      onOpenSpy = spyOn(customModalComponent!.onOpen, 'emit');
+      onCloseSpy = spyOn(customModalComponent!.onClose, 'emit');
+      viewContainerFixture.detectChanges();
       await waitFrame();
     });
 
     it('closes when escape key is pressed', async () => {
-      expect(fixture.componentInstance.isOpen).toBeTrue();
+      expect(onOpenSpy).toHaveBeenCalled();
       const event = new KeyboardEvent('keydown', {key: 'escape'});
       document.dispatchEvent(event);
       await waitFrame();
 
-      expect(fixture.componentInstance.isOpen).toBeFalse();
+      expect(onCloseSpy).toHaveBeenCalled();
     });
 
     it('closes when user clicks outside modal', async () => {
-      expect(fixture.componentInstance.isOpen).toBeTrue();
+      expect(onOpenSpy).toHaveBeenCalled();
       document.body.click();
       await waitFrame();
 
-      expect(fixture.componentInstance.isOpen).toBeFalse();
+      expect(onCloseSpy).toHaveBeenCalled();
     });
   });
 
@@ -144,51 +226,75 @@ describe('custom modal', () => {
     });
 
     it('sets left to 0 if less than 0', async () => {
-      const fixture = TestBed.createComponent(TestableComponent);
-      fixture.detectChanges();
-      fixture.componentInstance.openAtPosition({x: -10, y: 0});
-      expect(fixture.componentInstance.isOpen).toBeFalse();
+      const viewContainerComponent = viewContainerFixture.componentInstance;
+      const customModalComponent =
+        viewContainerComponent.customModal.createAtPosition(
+          viewContainerComponent.modalTemplateRef,
+          {x: -10, y: -10}
+        );
+      const onOpenSpy = spyOn(customModalComponent!.onOpen, 'emit');
+      expect(onOpenSpy).not.toHaveBeenCalled();
+      viewContainerFixture.detectChanges();
       await waitFrame();
-      fixture.detectChanges();
 
-      const content = fixture.debugElement.query(By.css('.content'));
+      const content = viewContainerFixture.debugElement.query(
+        By.css('.content')
+      );
       expect(content.nativeElement.style.left).toEqual('0px');
     });
 
     it('sets top to 0 if less than 0', async () => {
-      const fixture = TestBed.createComponent(TestableComponent);
-      fixture.detectChanges();
-      fixture.componentInstance.openAtPosition({x: 0, y: -10});
-      expect(fixture.componentInstance.isOpen).toBeFalse();
+      const viewContainerComponent = viewContainerFixture.componentInstance;
+      const customModalComponent =
+        viewContainerComponent.customModal.createAtPosition(
+          viewContainerComponent.modalTemplateRef,
+          {x: 0, y: -10}
+        );
+      const onOpenSpy = spyOn(customModalComponent!.onOpen, 'emit');
+      expect(onOpenSpy).not.toHaveBeenCalled();
+      viewContainerFixture.detectChanges();
       await waitFrame();
-      fixture.detectChanges();
 
-      const content = fixture.debugElement.query(By.css('.content'));
+      const content = viewContainerFixture.debugElement.query(
+        By.css('.content')
+      );
       expect(content.nativeElement.style.top).toEqual('0px');
     });
 
     it('sets left to maximum if content overflows the window', async () => {
-      const fixture = TestBed.createComponent(TestableComponent);
-      fixture.detectChanges();
-      fixture.componentInstance.openAtPosition({x: 1010, y: 0});
-      expect(fixture.componentInstance.isOpen).toBeFalse();
+      const viewContainerComponent = viewContainerFixture.componentInstance;
+      const customModalComponent =
+        viewContainerComponent.customModal.createAtPosition(
+          viewContainerComponent.modalTemplateRef,
+          {x: 1010, y: 0}
+        );
+      const onOpenSpy = spyOn(customModalComponent!.onOpen, 'emit');
+      expect(onOpenSpy).not.toHaveBeenCalled();
+      viewContainerFixture.detectChanges();
       await waitFrame();
-      fixture.detectChanges();
-      const content = fixture.debugElement.query(By.css('.content'));
+      const content = viewContainerFixture.debugElement.query(
+        By.css('.content')
+      );
       // While rendering in a test the elements width and height will appear to be 0.
-      expect(content.nativeElement.style.left).toEqual('1000px');
+      expect(content.nativeElement.style.left).toEqual('900px');
     });
 
     it('sets top to maximum if content overflows the window', async () => {
-      const fixture = TestBed.createComponent(TestableComponent);
-      fixture.detectChanges();
-      fixture.componentInstance.openAtPosition({x: 0, y: 1010});
-      expect(fixture.componentInstance.isOpen).toBeFalse();
+      const viewContainerComponent = viewContainerFixture.componentInstance;
+      const customModalComponent =
+        viewContainerComponent.customModal.createAtPosition(
+          viewContainerComponent.modalTemplateRef,
+          {x: 0, y: 1010}
+        );
+      const onOpenSpy = spyOn(customModalComponent!.onOpen, 'emit');
+      expect(onOpenSpy).not.toHaveBeenCalled();
+      viewContainerFixture.detectChanges();
       await waitFrame();
-      fixture.detectChanges();
-      const content = fixture.debugElement.query(By.css('.content'));
+      const content = viewContainerFixture.debugElement.query(
+        By.css('.content')
+      );
       // While rendering in a test the elements width and height will appear to be 0.
-      expect(content.nativeElement.style.top).toEqual('1000px');
+      expect(content.nativeElement.style.top).toEqual('900px');
     });
   });
 });
