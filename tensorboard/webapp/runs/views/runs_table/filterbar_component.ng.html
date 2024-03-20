@@ -32,9 +32,8 @@ limitations under the License.
 </div>
 
 <ng-template #filterModalTemplate>
-  <custom-modal (onClose)="deselectFilter()">
+  <custom-modal>
     <tb-data-table-filter
-      *ngIf="selectedFilter"
       [filter]="selectedFilter"
       (intervalFilterChanged)="emitIntervalFilterChanged($event)"
       (discreteFilterChanged)="emitDiscreteFilterChanged($event)"

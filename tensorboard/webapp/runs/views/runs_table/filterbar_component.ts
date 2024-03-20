@@ -75,10 +75,6 @@ export class FilterbarComponent implements AfterViewChecked {
     });
   }
 
-  deselectFilter() {
-    this.selectedFilterName = '';
-  }
-
   emitIntervalFilterChanged(value: RangeValues) {
     if (!this.selectedFilter) {
       return;
