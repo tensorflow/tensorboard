@@ -38,6 +38,7 @@ import {
   TagMetadata,
   TimeSeriesRequest,
   TimeSeriesResponse,
+  SampledTagMetadata,
 } from '../data_source';
 import {getMetricsTagMetadataLoadState} from '../store';
 import {
@@ -89,7 +90,51 @@ describe('metrics effects', () => {
       selectors.getMetricsTooltipSort,
       TooltipSort.ALPHABETICAL
     );
+
+    overrideTagMetadata();
+    overrideRunToEid();
   });
+
+  function overrideTagMetadata() {
+    store.overrideSelector(selectors.getMetricsTagMetadata, {
+      scalars: {
+        tagDescriptions: {},
+        tagToRuns: {
+          tagA: ['run1'],
+          tagB: ['run2', 'run3'],
+          tagC: ['run4', 'run5'],
+          tagD: ['run6'],
+        },
+      },
+      histograms: {
+        tagDescriptions: {},
+        tagToRuns: {
+          tagA: ['run1'],
+          tagB: ['run4'],
+        },
+      },
+      images: {
+        tagDescriptions: {},
+        tagRunSampledInfo: {
+          tagC: {
+            run1: {maxSamplesPerStep: 1},
+            run3: {maxSamplesPerStep: 1},
+          },
+        },
+      },
+    });
+  }
+
+  function overrideRunToEid() {
+    store.overrideSelector(selectors.getRunIdToExperimentId, {
+      run1: 'exp1',
+      run2: 'exp1',
+      run3: 'exp2',
+      run4: 'defaultExperimentId',
+      run5: 'defaultExperimentId',
+      run6: 'defaultExperimentId',
+    });
+  }
 
   afterEach(() => {
     store?.resetSelectors();
@@ -365,15 +410,13 @@ describe('metrics effects', () => {
           actions$.next(reloadAction());
 
           expect(fetchTagMetadataSpy).toHaveBeenCalled();
-          expect(fetchTimeSeriesSpy).toHaveBeenCalledTimes(2);
+          expect(fetchTimeSeriesSpy).toHaveBeenCalledTimes(1);
           expect(actualActions).toEqual([
             actions.metricsTagMetadataRequested(),
             actions.metricsTagMetadataLoaded({
               tagMetadata: buildDataSourceTagMetadata(),
             }),
 
-            // Currently we expect 2x the same requests if the cards are the same.
-            // Ideally we should dedupe requests for the same info.
             actions.multipleTimeSeriesRequested({
               requests: [
                 {
@@ -381,15 +424,7 @@ describe('metrics effects', () => {
                   tag: 'tagA',
                   experimentIds: ['exp1'],
                 },
-                {
-                  plugin: PluginType.SCALARS as MultiRunPluginType,
-                  tag: 'tagA',
-                  experimentIds: ['exp1'],
-                },
               ],
-            }),
-            actions.fetchTimeSeriesLoaded({
-              response: buildTimeSeriesResponse(),
             }),
             actions.fetchTimeSeriesLoaded({
               response: buildTimeSeriesResponse(),
@@ -487,6 +522,8 @@ describe('metrics effects', () => {
       it('does not re-fetch time series, until a valid experiment id', () => {
         // Reset any `getExperimentIdsFromRoute` overrides above.
         store.resetSelectors();
+        overrideTagMetadata();
+        overrideRunToEid();
         store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
         store.overrideSelector(
           selectors.getVisibleCardIdSet,
@@ -509,6 +546,73 @@ describe('metrics effects', () => {
         actions$.next(coreActions.reload());
 
         expect(fetchTimeSeriesSpy).toHaveBeenCalledTimes(2);
+      });
+
+      it('does not send requests to experiments lacking a cards tag', () => {
+        store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
+        store.overrideSelector(selectors.getExperimentIdsFromRoute, [
+          'exp1',
+          'exp2',
+        ]);
+        store.overrideSelector(
+          selectors.getVisibleCardIdSet,
+          new Set(['card1', 'card2', 'card3', 'card4', 'card5', 'card6'])
+        );
+        provideCardFetchInfo([
+          {id: 'card1', tag: 'tagA', plugin: PluginType.SCALARS},
+          {
+            id: 'card2',
+            tag: 'tagA',
+            plugin: PluginType.HISTOGRAMS,
+            runId: 'run1',
+          },
+          {id: 'card3', tag: 'tagB', plugin: PluginType.SCALARS},
+          // Fetch info should not be provided for tagB histogram data because there
+          // is no histogram data associated with both tagB and either exp1, or exp2
+          {id: 'card4', tag: 'tagC'},
+          {id: 'card5', tag: 'tagD'},
+          {
+            id: 'card6',
+            tag: 'tagC',
+            plugin: PluginType.IMAGES,
+            runId: 'run3',
+          },
+        ]);
+        store.refreshState();
+
+        const requests: TimeSeriesRequest[] = [];
+        spyOn(effects as any, 'fetchTimeSeries').and.callFake(
+          (request: TimeSeriesRequest) => {
+            requests.push(request);
+          }
+        );
+
+        actions$.next(coreActions.manualReload());
+
+        expect(requests).toEqual([
+          {
+            plugin: PluginType.SCALARS,
+            tag: 'tagA',
+            experimentIds: ['exp1'],
+          },
+          {
+            plugin: PluginType.HISTOGRAMS,
+            runId: 'run1',
+            tag: 'tagA',
+          },
+          {
+            plugin: PluginType.SCALARS,
+            tag: 'tagB',
+            experimentIds: ['exp1', 'exp2'],
+          },
+          // No requests should be sent for card 3 or 4 because all their
+          // runs are associated with another experiment.
+          {
+            plugin: PluginType.IMAGES,
+            tag: 'tagC',
+            runId: 'run3',
+          },
+        ]);
       });
     });
 
@@ -776,6 +880,135 @@ describe('metrics effects', () => {
           expect(actualActions).toEqual([]);
         });
       }
+    });
+  });
+
+  describe('utilities', () => {
+    describe('generateMultiRunTagsToEidMapping', () => {
+      it('does not map image plugin data', () => {
+        const runToEid = {
+          run1: 'eid1',
+          run2: 'eid2',
+          run3: 'eid1',
+        };
+        const tagMetadata = {
+          images: {
+            tagDescriptions: {},
+            tagRunSampledInfo: {
+              tagA: {
+                run1: {maxSamplesPerStep: 1},
+                run2: {maxSamplesPerStep: 1},
+              },
+              tagB: {
+                run3: {maxSamplesPerStep: 1},
+              },
+            },
+          },
+        };
+        expect(
+          TEST_ONLY.generateMultiRunTagsToEidMapping(
+            tagMetadata as any,
+            runToEid
+          )
+        ).toEqual({});
+      });
+
+      it('does not map histogram data', () => {
+        const runToEid = {
+          run1: 'eid1',
+          run2: 'eid1',
+          run3: 'eid2',
+        };
+        const tagMetadata = {
+          histograms: {
+            tagDescriptions: {},
+            tagToRuns: {
+              tagA: ['run1'],
+              tagB: ['run2', 'run3'],
+            },
+          },
+        };
+
+        expect(
+          TEST_ONLY.generateMultiRunTagsToEidMapping(
+            tagMetadata as any,
+            runToEid
+          )
+        ).toEqual({});
+      });
+
+      it('maps scalar data', () => {
+        const runToEid = {
+          run1: 'eid1',
+          run2: 'eid1',
+          run3: 'eid2',
+        };
+        const tagMetadata = {
+          scalars: {
+            tagDescriptions: {},
+            tagToRuns: {
+              tagA: ['run1'],
+              tagB: ['run2', 'run3'],
+            },
+          },
+        };
+
+        expect(
+          TEST_ONLY.generateMultiRunTagsToEidMapping(
+            tagMetadata as any,
+            runToEid
+          )
+        ).toEqual({
+          tagA: new Set(['eid1']),
+          tagB: new Set(['eid1', 'eid2']),
+        });
+      });
+
+      it('only maps scalar data', () => {
+        const runToEid = {
+          run1: 'eid1',
+          run2: 'eid1',
+          run3: 'eid2',
+        };
+        const tagMetadata = {
+          scalars: {
+            tagDescriptions: {},
+            tagToRuns: {
+              tagA: ['run1'],
+              tagB: ['run2', 'run3'],
+            },
+          },
+          histograms: {
+            tagDescriptions: {},
+            tagToRuns: {
+              tagC: ['run4'],
+              tagD: ['run5', 'run6'],
+            },
+          },
+          images: {
+            tagDescriptions: {},
+            tagRunSampledInfo: {
+              tagE: {
+                run7: {maxSamplesPerStep: 1},
+                run8: {maxSamplesPerStep: 1},
+              },
+              tagF: {
+                run9: {maxSamplesPerStep: 1},
+              },
+            },
+          },
+        };
+
+        expect(
+          TEST_ONLY.generateMultiRunTagsToEidMapping(
+            tagMetadata as any,
+            runToEid
+          )
+        ).toEqual({
+          tagA: new Set(['eid1']),
+          tagB: new Set(['eid1', 'eid2']),
+        });
+      });
     });
   });
 });
