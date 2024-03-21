@@ -40,7 +40,7 @@ class MyPlugin(base_plugin.TBPlugin):
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
-            es_module_path="/static/index.js", tab_name="Custom Plugin"
+            es_module_path="/static/index.js", tab_name="System_Performance"
         )
 
     #Retrieves information about tags associated with the plugin's data and returns it in JSON format.
@@ -102,8 +102,6 @@ class MyPlugin(base_plugin.TBPlugin):
             downsample=5000,
             run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
         )
-        print("read_result=",read_result)
-        print(type(read_result))
 
         scalars = read_result.get(run, {}).get(tag, None)
         if scalars is None:

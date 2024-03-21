@@ -67,7 +67,7 @@
  .faq-drawer__trigger:checked
     + .faq-drawer__title
     + .faq-drawer__content-wrapper {
-    max-height: 500px;
+    max-height: fit-content;
  }
  
  .faq-drawer__trigger:checked + .faq-drawer__title {

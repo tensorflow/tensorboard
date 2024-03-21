@@ -37,7 +37,7 @@ h1 {
   border-radius: 10px;
   padding: 10px;
   margin-left: 10px;
-  width: 500px;
+  /* width: 500px; */
 }
 
 .graph-area {
@@ -213,7 +213,7 @@ select:focus {
   justify-content: center;
   align-items: center;
   text-align: center;
-  width: 500px;
+  width: fit-content;
 }
 
 @media (max-width: 600px) {

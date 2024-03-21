@@ -135,6 +135,8 @@ export async function render() {
   mainContainer.appendChild(sideToolbar);
   mainContainer.appendChild(graphArea);
 
+  // document.body.appendChild(Utils.initializeChart());
+
   document.body.appendChild(mainContainer);
 }
 
