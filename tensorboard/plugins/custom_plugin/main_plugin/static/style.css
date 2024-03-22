@@ -65,7 +65,6 @@ h1 {
 }
 
 .main-container {
-  background-color: lightgray;
   display: flex;
   flex-direction: row;
 }
@@ -138,24 +137,14 @@ input[type="number"] {
 }
 
 button {
-  background-color: #4CAF50; /* Green */
   border: none;
   color: white;
-  padding: 15px 32px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 4px 2px;
+  padding: 15px 15px;
   cursor: pointer;
-  border-radius: 5px;
-  margin: auto;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  margin-left: 85px;
+
 }
 
-button:hover {
+.nav-option:hover {
   background-color: #45a049; /* Darker Green */
 }
 
@@ -233,4 +222,31 @@ select:focus {
 
 .collapsible-content{
   
+}
+
+.line{
+
+}
+
+.download{
+background-image: url("./logo/svg.png");
+background-size: contain;
+background-repeat: no-repeat;
+margin-left: 5px;
+
+}
+
+.expand{
+  background-image: url("./logo/expand.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  margin-left: 5px;
+
+}
+
+.palette{
+  background-image: url("./logo/palate.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  margin-left: 5px;
 }

@@ -34,6 +34,150 @@ const aapl2 = [
 
 const multiData = [aapl,aapl2]
 
+
+export function livechart(tagsToScalars){
+
+  livechart = document.createElement('div');
+  livechart.classList.add('container');
+
+  const margin = { top: 20, right: 20, bottom: 30, left: 50 },
+      width = 1400 - margin.left - margin.right,
+      height = 400 - margin.top - margin.bottom;
+
+// Append SVG object to the body
+const svg = d3.select(livechart).append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+// Initialize scale for x as a time scale
+const xScale = d3.scaleTime().range([0, width]);
+const yScale = d3.scaleLinear().range([height, 0]);
+
+// Adjust the yScale domain for seconds (0 to 59)
+yScale.domain([0, 59]);
+
+// Define the line
+const valueLine = d3.line()
+    .x(d => xScale(d.x))
+    .y(d => yScale(d.y));
+
+// Get the start time
+const startTime = new Date();
+
+// Initialize data array
+let data = [];
+
+// Initial domain for scales; xScale will dynamically update
+xScale.domain([startTime, new Date(startTime.getTime() + 1000)]);
+
+// Create the line path element
+const linePath = svg.append("path")
+    .attr("class", "line")
+    .attr("stroke", "blue")
+    .attr("stroke-width", 2)
+    .attr("fill", "none");
+
+  svg.append("text")
+  .attr("class","chart-title")
+  .attr("x", margin.left- 115)
+  .attr("y", margin.top - 100)
+  .style("font-size", "24px")
+  .style("font-weight", "bold")
+  .style("font-family", "sans-serif")
+  .text("Energy Usage");
+
+// Add the X and Y Axis
+const xAxis = svg.append("g")
+    .attr("transform", `translate(0,${height})`);
+const yAxis = svg.append("g")
+    .call(d3.axisLeft(yScale)); // y-axis is static, we set it up here
+
+
+// function updateChart() {
+//     // Calculate elapsed time as x-value
+//     const now = new Date();
+//     const elapsed = new Date(now - startTime);
+
+//     // Get the current second for y-value
+//     const second = now.getSeconds();
+    
+//     // Add new data point
+//     data.push({ x: now, y: second });
+
+//     // Update xScale domain to include the new range
+//     xScale.domain([startTime, now]);
+
+//     // Update the line path and axes with a smooth transition
+//     linePath
+//         .datum(data)
+//         .transition().duration(950) // slightly less than interval to smooth out transition
+//         .attr("d", valueLine);
+
+//     xAxis.transition().duration(950)
+//         .call(d3.axisBottom(xScale));
+// }
+const displayDuration = 100 * 1000; // Display window in milliseconds (e.g., last 100 seconds)
+
+// Define transition duration
+const transitionDuration = 1000; // 1 second
+
+function updateDataKeepOld() {
+    // Assuming 'now' is the current time for the new data point
+//     
+  const newX = new Date(); // Example for adding a new timestamp
+    const newY = Math.random() * 59; // Random value for demonstration
+    data.push({ x: newX, y: newY });
+
+    // Update the xScale domain
+    const timeExtent = d3.extent(data, d => d.x);
+    xScale.domain(timeExtent);
+
+    // Update the line
+    linePath.datum(data)
+        .transition()
+        .duration(transitionDuration)
+        .attr("d", valueLine);
+
+    // Update xAxis with new domain
+    xAxis.transition().duration(transitionDuration)
+        .call(d3.axisBottom(xScale));
+
+    // Apply dynamic tick formatting
+    formatTicksForTimeSpan();
+  
+  // formatTicksForTimeSpan();
+}
+
+// Periodically update the chart with new data
+setInterval(updateDataKeepOld, 1000); // Update every 2 seconds for a more observable transition
+
+function formatTicksForTimeSpan() {
+    const domain = xScale.domain(); // Get the current domain of the xScale
+    const span = domain[1] - domain[0]; // Calculate the span in milliseconds
+
+    // Decide on the format based on the span
+    let format;
+    if (span > 86400000) { // More than 24 hours
+        format = d3.timeFormat("%H:%M"); // Hours and minutes
+    } else if (span > 3600000) { // More than 1 hour
+        format = d3.timeFormat("%H:%M"); // Hours and minutes
+    } else if (span > 60000) { // More than 1 minute
+        format = d3.timeFormat("%M:%S"); // Minutes and seconds
+    } else { // Less than 1 minute
+        format = d3.timeFormat("%S.%L"); // Seconds and milliseconds
+    }
+
+    // Update the xAxis with the new format
+    xAxis.call(d3.axisBottom(xScale).tickFormat(format));
+
+  }
+
+  return livechart;
+}
+
+
 export function createRunSelector(runs,class_name="run-selector") {
     /**
      * Build a component in this form:
@@ -61,12 +205,17 @@ export function createPreviews(tagsToScalars) {
       return fragment;
     }
     else{
+      // console.log("run="+run);
+      // if(run == "system_performance"){
+        fragment.appendChild(livechart(tagsToScalars));
+      // }
       let extra = createLayerDrawers(tagsToScalars);
       fragment.appendChild(extra);
 
       return fragment;
     }
 }
+
 
 
 function createDataSelector(scalars) {
@@ -87,8 +236,6 @@ export function createLayerDrawers(tagsToScalars) {
   }
 
 
-
-
   // Create the container div
   const container = document.createElement('div');
   container.className = 'container';
@@ -98,64 +245,93 @@ export function createLayerDrawers(tagsToScalars) {
   let uniqueArray = [];
 
   let layer_map = [];
+  var index = 1;
+
+  // Utils.SimulateData(tagsToScalars);
   // Create each FAQ drawer and append to the container
   tagsToScalars.forEach((scalars, run) => {
 
-    let [prefix_run, tag] = run.split("/");
+    let [prefix_run, resource] = run.split("/");
 
     if (!uniqueArray.includes(prefix_run)) {
-          uniqueArray.push();
+
+          uniqueArray.push(prefix_run);
           flag = true;
-          layer_map.push({prefix_run:[tag,scalars]});
                     
     }else{
-
+      flag = false;
     }
 
-    // if (flag) {
+    if (flag) {
       const drawer = document.createElement('div');
       drawer.classList.add('faq-drawer');
 
       const input = document.createElement('input');
-      input.id = prefix_run+"_layer";
+      input.id = "drawer_"+index;
       input.className = 'faq-drawer__trigger';
       input.type = 'checkbox';
 
       const label = document.createElement('label');
       label.className = 'faq-drawer__title';
-      label.setAttribute('for', prefix_run+"_layer");
-      label.textContent = prefix_run + " " + tag;
+      label.setAttribute('for', "drawer_"+index);
+      label.textContent = prefix_run;
 
       const contentWrapper = document.createElement('div');
       contentWrapper.className = 'faq-drawer__content-wrapper';
+      contentWrapper.id =  "wrapper_"+index;
 
       const content = document.createElement('div');
-      content.id = prefix_run+"_content";
-      uniqueDrawer.push(content);
+      content.id = "wrapper_content_"+index;
+      // uniqueDrawer.push(content);
 
       content.className = 'faq-drawer__content';
       content.innerHTML = prefix_run.content || '';
-      content.appendChild(cardformat(prefix_run,tag,scalars));
+      index = index + 1;
 
+      content.appendChild(cardformat(prefix_run,resource,scalars,index));
       contentWrapper.appendChild(content);
       drawer.appendChild(input);
       drawer.appendChild(label);
-
       drawer.appendChild(contentWrapper);
-
-      container.appendChild(drawer);
+      uniqueDrawer.push(drawer);
+    }
   });
+
+  uniqueDrawer.forEach((drawer) => {
+    container.appendChild(drawer);
+  });
+
+  index = 1;
+  tagsToScalars.forEach((scalars, run) => {
+
+    let [prefix_run, resource] = run.split("/");
+
+    let title  = uniqueDrawer[index-1].querySelector('label');
+
+    if(title == prefix_run){
+      uniqueDrawer[index].appendChild(cardformat());
+    }
+    let drawer = document.getElementById("wrapper_content__"+index);
+    
+
+
+  });
+  
+  // uniqueDrawer.forEach((drawer) => {
+    
+  // });
+
+
 
   return container;
 }
 
-function cardformat(layer,tag,scalar){
+function cardformat(layer,tag,scalar,idx){
   
   // Create cards container
   const cardsContainer = createElement('div');
   cardsContainer.className = 'cards-container';
   cardsContainer.id = layer + "-" + tag;
-  console.log(scalar);
 
   const data = [
     { date: new Date('2020-01-01'), value: 10 },
@@ -223,9 +399,7 @@ const simplifiedData = [
   { date: "2018-03-01", value: 11052.3 },
   { date: "2018-04-01", value: 7060.95 }
 ];
-
-console.log(scalar)
-
+// 
 // for()
 
     const card = document.createElement('div');
@@ -233,8 +407,8 @@ console.log(scalar)
     // card.appendChild(Utils.createLineChart(multiData));
     // card.appendChild(Utils.createZoomableLineChart (data));
     // card.appendChild(Utils.SmoothLineChart());
-    console.log(scalar);
-    card.appendChild(Utils.generateLineChart(scalar));
+    // Utils.generateLineChart(scalar);
+    card.appendChild(Utils.generateLineChart(layer,tag,scalar,idx));
 
     // Example usage
     // Utils.createD3Chart({

@@ -25,7 +25,7 @@ def generate_random_data():
                     try:
                         times, energies = zip(*data["data"])
                         for time_point, energy in zip(times, energies):
-                            tf.summary.scalar(f"{layer_name}/{device_type} Energy (J)",
+                            tf.summary.scalar(f"{layer_name}/{device_type}",
                                               energy,
                                               step=int(time_point*1000))
                         # Ensure summaries are written to disk

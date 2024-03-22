@@ -27,17 +27,35 @@ def collect_data_from_json_file(json_file):
                 for device_type, data in [('CPU', cpu_data), ('RAM', ram_data), ('GPU', gpu_data)]:
                     print(device_type, data)
 
+                    
+
                     try:
                         times, energies = zip(*data["data"])
-                        print(times, energies)
+                        # print(times, energies)
                         for time_point, energy in zip(times, energies):
-                            tf.summary.scalar(f"{layer_name}/{device_type} Energy (J)",
+                            tf.summary.scalar(f"{layer_name}/{device_type}",
                                             energy,
                                             step=int(time_point*1000))
                             # Ensure summaries are written to disk
                             writer.flush()
                     except:
-                        print(f"Error processing {layer_name}")
+
+                        try:
+                            if(device_type == 'GPU'):
+                                timestamps, tempratures, times, energies = zip(*data["data"])
+                                for tstamp, temp, time_point, energy in zip(timestamps,tempratures, times, energies):
+                                    tf.summary.scalar(f"{layer_name}/{device_type}/temperature",
+                                                temp,
+                                                step=int(tstamp))
+                                    tf.summary.scalar(f"{layer_name}/{device_type}/energy",
+                                            energy,
+                                            step=int(time_point*1000))
+
+                                    # Ensure summaries are written to disk
+                                    writer.flush()
+                        except ValueError as e:
+                                                            # Ensure summaries are written to disk
+                            print(f"Error processing {layer_name}")
                         # print(f"Data: {device_data['data']}")
                         continue  # Skip to the next device_type or layer_name
 

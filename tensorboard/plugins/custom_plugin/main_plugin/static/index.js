@@ -110,23 +110,23 @@ export async function render() {
   toolbarTitle.classList.add('toolbar-title');
 
   /* Graph settings like width Height */
-  var widthInput = createElement('input');
-  widthInput.type = 'number';
-  widthInput.placeholder = 'Width';
-  widthInput.addEventListener('input', updateGraph);
+  // var widthInput = createElement('input');
+  // widthInput.type = 'number';
+  // widthInput.placeholder = 'Width';
+  // widthInput.addEventListener('input', updateGraph);
 
-  var heightInput = createElement('input');
-  heightInput.type = 'number';
-  heightInput.placeholder = 'Height';
-  heightInput.addEventListener('input', updateGraph);
+  // var heightInput = createElement('input');
+  // heightInput.type = 'number';
+  // heightInput.placeholder = 'Height';
+  // heightInput.addEventListener('input', updateGraph);
 
-  var applyButton = createElement('button', 'Apply');
-  applyButton.addEventListener('click', updateGraph);
+  // var applyButton = createElement('button', 'Apply');
+  // applyButton.addEventListener('click', updateGraph);
 
-  sideToolbar.appendChild(toolbarTitle);
-  sideToolbar.appendChild(widthInput);
-  sideToolbar.appendChild(heightInput);
-  sideToolbar.appendChild(applyButton);
+  // sideToolbar.appendChild(toolbarTitle);
+  // sideToolbar.appendChild(widthInput);
+  // sideToolbar.appendChild(heightInput);
+  // sideToolbar.appendChild(applyButton);
 
   //Selector
   sideToolbar.appendChild(runSelector);
@@ -134,8 +134,6 @@ export async function render() {
 
   mainContainer.appendChild(sideToolbar);
   mainContainer.appendChild(graphArea);
-
-  // document.body.appendChild(Utils.initializeChart());
 
   document.body.appendChild(mainContainer);
 }
@@ -180,23 +178,6 @@ async function updatePreview(runSelector, container) {
   }
   container.textContent = '';
   container.appendChild(preview);
-}
-
-function updateGraph() {
-  const width = parseInt(document.querySelector('.width-height-options input:nth-child(1)').value);
-  const height = parseInt(document.querySelector('.width-height-options input:nth-child(2)').value);
-  
-  // Get the existing graph container
-  const graphContainer = document.querySelector('.graph');
-  
-  // Remove the existing graph
-  graphContainer.innerHTML = '';
-  
-  // Create the new graph with updated width and height
-  const newGraph = createLineChart(width, height);
-  
-  // Append the new graph to the container
-  graphContainer.appendChild(newGraph);
 }
 
 

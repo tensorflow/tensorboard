@@ -23,6 +23,8 @@ class MyPlugin(base_plugin.TBPlugin):
     def __init__(self, context):
         self.data_provider = context.data_provider
         self.multiplexer = context.multiplexer
+        self.layer_dict = {}
+        self.preprocess_data()
 
     def get_plugin_apps(self):
         return {
@@ -110,8 +112,22 @@ class MyPlugin(base_plugin.TBPlugin):
             )
         body = [(x.wall_time, x.step, x.value) for x in scalars]
         return http_util.Respond(request, body, "application/json")
+    
+    @werkzeug.Request.application
+    def getLayer(self,request):
+        print("Request is ",request)
+        print("Request is ",request.args)
+        print("Request is ",request.args.get("layer"))
+        layer = request.args.get("layer")
+        print("Layer is ",layer)
+        return http_util.Respond(request, "Layer is "+layer, "text/plain")
+
 
     def preprocess_data(self):
+
+        # store layer dict key and value as a list of tuples
+        # self.layer_dict = {
+
         pass
 
     def define_flags(self, parser):
