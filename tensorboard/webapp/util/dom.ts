@@ -40,3 +40,14 @@ export function nextElementId(): ElementId {
   currElementId++;
   return Symbol(currElementId);
 }
+
+/** Checks whether a mouse event is within an element's bounding box. */
+export function isMouseEventInElement(event: MouseEvent, el: Element): boolean {
+  const rect = el.getBoundingClientRect();
+  return (
+    rect.x <= event.clientX &&
+    event.clientX <= rect.x + rect.width &&
+    rect.y <= event.clientY &&
+    event.clientY <= rect.y + rect.height
+  );
+}
