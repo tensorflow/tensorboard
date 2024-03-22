@@ -20,7 +20,6 @@ import {
   Component,
   ViewChild,
   TemplateRef,
-  AfterViewChecked,
 } from '@angular/core';
 import {
   DiscreteFilter,
@@ -37,7 +36,7 @@ import {CustomModal} from '../../../widgets/custom_modal/custom_modal';
   styleUrls: ['filterbar_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FilterbarComponent implements AfterViewChecked {
+export class FilterbarComponent {
   @Input() filters!: Map<string, DiscreteFilter | IntervalFilter>;
 
   @Output() removeHparamFilter = new EventEmitter<string>();
@@ -60,19 +59,12 @@ export class FilterbarComponent implements AfterViewChecked {
 
   constructor(private readonly customModal: CustomModal) {}
 
-  ngAfterViewChecked() {
-    this.customModal.runChangeDetection();
-  }
-
   openFilterMenu(event: MouseEvent, filterName: string) {
     this.selectedFilterName = filterName;
-    const rect = (
+    this.customModal.createNextToElement(
+      this.filterModalTemplate,
       (event.target as HTMLElement).closest('mat-chip') as HTMLElement
-    ).getBoundingClientRect();
-    this.customModal.createAtPosition(this.filterModalTemplate, {
-      x: rect.x + rect.width,
-      y: rect.y,
-    });
+    );
   }
 
   emitIntervalFilterChanged(value: RangeValues) {

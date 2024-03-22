@@ -19,7 +19,6 @@ import {
   tick,
 } from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-import {CustomModalComponent} from './custom_modal_component';
 import {CustomModal} from './custom_modal';
 import {CommonModule} from '@angular/common';
 import {
@@ -28,33 +27,55 @@ import {
   TemplateRef,
   ViewChild,
   ViewContainerRef,
-  ViewRef,
 } from '@angular/core';
-
-function waitFrame() {
-  return new Promise((resolve) => window.requestAnimationFrame(resolve));
-}
+import {
+  Overlay,
+  OverlayModule,
+  OverlayRef,
+} from '@angular/cdk/overlay';
 
 @Component({
   selector: 'fake-modal-view-container',
   template: `
-    <div #modal_container></div>
-    <!-- In real use cases, the modal template below should be in a separate component. -->
+    <button class="modal-trigger-button">Modal trigger button</button>
+    <button class="another-modal-trigger-button">
+      Another modal trigger button
+    </button>
     <ng-template #modalTemplate>
-      <custom-modal>
-        <div [style]="'width: 100px; height: 100px'">abc123</div>
-      </custom-modal>
+      <div class="content">abc123</div>
+    </ng-template>
+    <ng-template #anotherModalTemplate>
+      <div class="another-content">xyz</div>
     </ng-template>
   `,
+  styles: [
+    `
+      :host {
+        display: block;
+        width: 400px;
+        height: 400px;
+      }
+
+      .content,
+      .another-content {
+        // Make modals small to allow easily testing clicking outside of modals.
+        width: 10px;
+        height: 10px;
+      }
+    `,
+  ],
 })
 class FakeViewContainerComponent {
-  @ViewChild('modal_container', {read: ViewContainerRef})
-  readonly modalViewContainerRef!: ViewContainerRef;
-
   @ViewChild('modalTemplate', {read: TemplateRef})
   readonly modalTemplateRef!: TemplateRef<unknown>;
 
-  constructor(readonly customModal: CustomModal) {}
+  @ViewChild('anotherModalTemplate', {read: TemplateRef})
+  readonly anotherModalTemplateRef!: TemplateRef<unknown>;
+
+  constructor(
+    readonly customModal: CustomModal,
+    readonly vcRef: ViewContainerRef
+  ) {}
 }
 
 describe('custom modal', () => {
@@ -62,8 +83,8 @@ describe('custom modal', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [FakeViewContainerComponent, CustomModalComponent],
-      imports: [CommonModule],
+      declarations: [FakeViewContainerComponent],
+      imports: [CommonModule, OverlayModule],
     }).compileComponents();
 
     viewContainerFixture = TestBed.createComponent(FakeViewContainerComponent);
@@ -73,226 +94,168 @@ describe('custom modal', () => {
     viewContainerFixture.detectChanges();
   });
 
-  it('creates a modal', async () => {
+  it('creates a modal', () => {
     const viewContainerComponent = viewContainerFixture.componentInstance;
+    const modalTriggerButton = viewContainerFixture.debugElement.query(
+      By.css('.modal-trigger-button')
+    ).nativeElement;
+    const overlay = TestBed.inject(Overlay);
+    const createSpy = spyOn(overlay, 'create').and.callThrough();
+    const attachSpy = spyOn(OverlayRef.prototype, 'attach').and.callThrough();
 
-    viewContainerComponent.customModal.createAtPosition(
+    viewContainerComponent.customModal.createNextToElement(
       viewContainerComponent.modalTemplateRef,
-      {x: 10, y: 20}
+      modalTriggerButton
     );
     viewContainerFixture.detectChanges();
 
     const content = viewContainerFixture.debugElement.query(By.css('.content'));
     expect(content.nativeElement.innerHTML).toContain('abc123');
-    expect(content.nativeElement.style.left).toEqual('10px');
-    expect(content.nativeElement.style.top).toEqual('20px');
-  });
-
-  describe('runChangeDetection', () => {
-    it('runs change detection on all modals in the modal ViewContainerRef', () => {
-      const component = viewContainerFixture.componentInstance;
-      component.customModal.createAtPosition(component.modalTemplateRef, {
-        x: 10,
-        y: 20,
-      });
-      component.customModal.createAtPosition(component.modalTemplateRef, {
-        x: 11,
-        y: 20,
-      });
-      component.customModal.createAtPosition(component.modalTemplateRef, {
-        x: 12,
-        y: 20,
-      });
-      const detectChangesSpies = [...Array(3)].map((_, i) =>
-        spyOn(
-          viewContainerFixture.componentInstance.modalViewContainerRef.get(
-            i
-          ) as ViewRef,
-          'detectChanges'
-        )
-      );
-      viewContainerFixture.detectChanges();
-
-      component.customModal.runChangeDetection();
-
-      expect(detectChangesSpies[0]).toHaveBeenCalled();
-      expect(detectChangesSpies[1]).toHaveBeenCalled();
-      expect(detectChangesSpies[2]).toHaveBeenCalled();
-    });
+    const createArg = createSpy.calls.mostRecent().args[0]!;
+    expect(createArg.positionStrategy).toEqual(
+      jasmine.objectContaining({
+        positions: [
+          {
+            originX: 'end',
+            originY: 'top',
+            overlayX: 'start',
+            overlayY: 'top',
+          },
+        ],
+      })
+    );
+    const attachArgs = attachSpy.calls.mostRecent().args[0];
+    expect(attachArgs.templateRef).toBe(
+      viewContainerComponent.modalTemplateRef
+    );
+    expect(attachArgs.viewContainerRef).toBe(viewContainerComponent.vcRef);
   });
 
   describe('closeAll', () => {
     it('clears all modals in the modal ViewContainerRef', () => {
-      const component = viewContainerFixture.componentInstance;
-      component.customModal.createAtPosition(component.modalTemplateRef, {
-        x: 10,
-        y: 20,
-      });
-      component.customModal.createAtPosition(component.modalTemplateRef, {
-        x: 11,
-        y: 20,
-      });
-      component.customModal.createAtPosition(component.modalTemplateRef, {
-        x: 12,
-        y: 20,
-      });
+      const viewContainerComponent = viewContainerFixture.componentInstance;
+      const modalTriggerButton = viewContainerFixture.debugElement.query(
+        By.css('.modal-trigger-button')
+      ).nativeElement;
+      const anotherModalTriggerButton = viewContainerFixture.debugElement.query(
+        By.css('.another-modal-trigger-button')
+      ).nativeElement;
+      viewContainerComponent.customModal.createNextToElement(
+        viewContainerComponent.modalTemplateRef,
+        modalTriggerButton
+      );
+      viewContainerComponent.customModal.createNextToElement(
+        viewContainerComponent.anotherModalTemplateRef,
+        anotherModalTriggerButton
+      );
       viewContainerFixture.detectChanges();
 
-      component.customModal.closeAll();
+      TestBed.inject(CustomModal).closeAll();
 
-      expect(
-        viewContainerFixture.componentInstance.modalViewContainerRef.length
-      ).toBe(0);
+      const content = viewContainerFixture.debugElement.query(
+        By.css('.content')
+      );
+      const anotherContent = viewContainerFixture.debugElement.query(
+        By.css('.another-content')
+      );
+      expect(content).toBeNull();
+      expect(anotherContent).toBeNull();
+      expect(viewContainerComponent.vcRef.length).toBe(0);
     });
-  });
-
-  it('cleans up enclosing embeddedView on close', fakeAsync(() => {
-    const viewContainerComponent = viewContainerFixture.componentInstance;
-    const customModalComponent =
-      viewContainerComponent.customModal.createAtPosition(
-        viewContainerComponent.modalTemplateRef,
-        {x: -10, y: -10}
-      );
-    viewContainerFixture.detectChanges();
-
-    const content = viewContainerFixture.debugElement.query(By.css('.content'));
-    customModalComponent!.close();
-    viewContainerFixture.detectChanges();
-    tick(); // Wait for setTimeout.
-
-    expect(viewContainerComponent.modalViewContainerRef.length).toBe(0);
-  }));
-
-  it('waits a frame before emitting onOpen or onClose', async () => {
-    const viewContainerComponent = viewContainerFixture.componentInstance;
-    const customModalComponent =
-      viewContainerComponent.customModal.createAtPosition(
-        viewContainerComponent.modalTemplateRef,
-        {x: 0, y: 0}
-      );
-    const onOpenSpy = spyOn(customModalComponent!.onOpen, 'emit');
-    const onCloseSpy = spyOn(customModalComponent!.onClose, 'emit');
-    expect(onOpenSpy).not.toHaveBeenCalled();
-    viewContainerFixture.detectChanges();
-    await waitFrame();
-    expect(onOpenSpy).toHaveBeenCalled();
-    customModalComponent!.close();
-    viewContainerFixture.detectChanges();
-    await waitFrame();
-    expect(onCloseSpy).toHaveBeenCalled();
   });
 
   describe('closing behavior', () => {
-    let onOpenSpy: jasmine.Spy;
-    let onCloseSpy: jasmine.Spy;
-
-    beforeEach(async () => {
+    it('closes when escape key is pressed', fakeAsync(() => {
       const viewContainerComponent = viewContainerFixture.componentInstance;
-      const customModalComponent =
-        viewContainerComponent.customModal.createAtPosition(
-          viewContainerComponent.modalTemplateRef,
-          {x: 0, y: 0}
-        );
-      onOpenSpy = spyOn(customModalComponent!.onOpen, 'emit');
-      onCloseSpy = spyOn(customModalComponent!.onClose, 'emit');
+      const modalTriggerButton = viewContainerFixture.debugElement.query(
+        By.css('.modal-trigger-button')
+      ).nativeElement;
+      viewContainerComponent.customModal.createNextToElement(
+        viewContainerComponent.modalTemplateRef,
+        modalTriggerButton
+      );
       viewContainerFixture.detectChanges();
-      await waitFrame();
-    });
+      tick();
+      const content = viewContainerFixture.debugElement.query(
+        By.css('.content')
+      );
 
-    it('closes when escape key is pressed', async () => {
-      expect(onOpenSpy).toHaveBeenCalled();
-      const event = new KeyboardEvent('keydown', {key: 'escape'});
-      document.dispatchEvent(event);
-      await waitFrame();
+      const event = new KeyboardEvent('keydown', {key: 'Escape'});
+      document.body.dispatchEvent(event);
+      viewContainerFixture.detectChanges();
+      tick();
 
-      expect(onCloseSpy).toHaveBeenCalled();
-    });
+      expect(viewContainerComponent.vcRef.length).toBe(0);
+      expect(
+        viewContainerFixture.debugElement.query(By.css('.content'))
+      ).toBeNull();
+    }));
 
-    it('closes when user clicks outside modal', async () => {
-      expect(onOpenSpy).toHaveBeenCalled();
-      document.body.click();
-      await waitFrame();
-
-      expect(onCloseSpy).toHaveBeenCalled();
-    });
-  });
-
-  describe('ensures content is always within the window', () => {
-    beforeEach(() => {
-      spyOnProperty(window, 'innerWidth', 'get').and.returnValue(1000);
-      spyOnProperty(window, 'innerHeight', 'get').and.returnValue(1000);
-    });
-
-    it('sets left to 0 if less than 0', async () => {
+    it('closes all modals when user clicks an area outside all modals', fakeAsync(() => {
       const viewContainerComponent = viewContainerFixture.componentInstance;
-      const customModalComponent =
-        viewContainerComponent.customModal.createAtPosition(
-          viewContainerComponent.modalTemplateRef,
-          {x: -10, y: -10}
-        );
-      const onOpenSpy = spyOn(customModalComponent!.onOpen, 'emit');
-      expect(onOpenSpy).not.toHaveBeenCalled();
+      const modalTriggerButton = viewContainerFixture.debugElement.query(
+        By.css('.modal-trigger-button')
+      ).nativeElement;
+      const anotherModalTriggerButton = viewContainerFixture.debugElement.query(
+        By.css('.another-modal-trigger-button')
+      ).nativeElement;
+      viewContainerComponent.customModal.createNextToElement(
+        viewContainerComponent.modalTemplateRef,
+        modalTriggerButton
+      );
+      viewContainerComponent.customModal.createNextToElement(
+        viewContainerComponent.anotherModalTemplateRef,
+        anotherModalTriggerButton
+      );
       viewContainerFixture.detectChanges();
-      await waitFrame();
+      tick();
+
+      const event = new MouseEvent('click', {clientX: 300, clientY: 300});
+      viewContainerFixture.nativeElement.dispatchEvent(event);
+      viewContainerFixture.detectChanges();
 
       const content = viewContainerFixture.debugElement.query(
         By.css('.content')
       );
-      expect(content.nativeElement.style.left).toEqual('0px');
-    });
+      const anotherContent = viewContainerFixture.debugElement.query(
+        By.css('.another-content')
+      );
+      expect(content).toBeNull();
+      expect(anotherContent).toBeNull();
+      expect(viewContainerComponent.vcRef.length).toBe(0);
+    }));
 
-    it('sets top to 0 if less than 0', async () => {
+    it('does not close when a click is inside at least one modal', async () => {
       const viewContainerComponent = viewContainerFixture.componentInstance;
-      const customModalComponent =
-        viewContainerComponent.customModal.createAtPosition(
-          viewContainerComponent.modalTemplateRef,
-          {x: 0, y: -10}
-        );
-      const onOpenSpy = spyOn(customModalComponent!.onOpen, 'emit');
-      expect(onOpenSpy).not.toHaveBeenCalled();
+      const modalTriggerButton = viewContainerFixture.debugElement.query(
+        By.css('.modal-trigger-button')
+      ).nativeElement;
+      const anotherModalTriggerButton = viewContainerFixture.debugElement.query(
+        By.css('.another-modal-trigger-button')
+      ).nativeElement;
+      viewContainerComponent.customModal.createNextToElement(
+        viewContainerComponent.modalTemplateRef,
+        modalTriggerButton
+      );
+      viewContainerComponent.customModal.createNextToElement(
+        viewContainerComponent.anotherModalTemplateRef,
+        anotherModalTriggerButton
+      );
       viewContainerFixture.detectChanges();
-      await waitFrame();
-
       const content = viewContainerFixture.debugElement.query(
         By.css('.content')
       );
-      expect(content.nativeElement.style.top).toEqual('0px');
-    });
-
-    it('sets left to maximum if content overflows the window', async () => {
-      const viewContainerComponent = viewContainerFixture.componentInstance;
-      const customModalComponent =
-        viewContainerComponent.customModal.createAtPosition(
-          viewContainerComponent.modalTemplateRef,
-          {x: 1010, y: 0}
-        );
-      const onOpenSpy = spyOn(customModalComponent!.onOpen, 'emit');
-      expect(onOpenSpy).not.toHaveBeenCalled();
-      viewContainerFixture.detectChanges();
-      await waitFrame();
-      const content = viewContainerFixture.debugElement.query(
-        By.css('.content')
+      const anotherContent = viewContainerFixture.debugElement.query(
+        By.css('.another-content')
       );
-      // While rendering in a test the elements width and height will appear to be 0.
-      expect(content.nativeElement.style.left).toEqual('900px');
-    });
 
-    it('sets top to maximum if content overflows the window', async () => {
-      const viewContainerComponent = viewContainerFixture.componentInstance;
-      const customModalComponent =
-        viewContainerComponent.customModal.createAtPosition(
-          viewContainerComponent.modalTemplateRef,
-          {x: 0, y: 1010}
-        );
-      const onOpenSpy = spyOn(customModalComponent!.onOpen, 'emit');
-      expect(onOpenSpy).not.toHaveBeenCalled();
+      // Event is in first modal.
+      const event = new MouseEvent('click', {clientX: 101, clientY: 101});
+      content.nativeElement.dispatchEvent(event);
       viewContainerFixture.detectChanges();
-      await waitFrame();
-      const content = viewContainerFixture.debugElement.query(
-        By.css('.content')
-      );
-      // While rendering in a test the elements width and height will appear to be 0.
-      expect(content.nativeElement.style.top).toEqual('900px');
+
+      expect(content.nativeElement.innerHTML).toContain('abc123');
+      expect(anotherContent.nativeElement.innerHTML).toContain('xyz');
     });
   });
 });

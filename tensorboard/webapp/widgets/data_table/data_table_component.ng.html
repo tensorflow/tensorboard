@@ -13,38 +13,31 @@ limitations under the License.
 -->
 
 <ng-template #contextMenuTemplate>
-  <custom-modal #contextMenu (onClose)="onContextMenuClosed()">
-    <tb-data-table-context-menu
-      [contextMenuHeader]="contextMenuHeader"
-      [selectableColumns]="selectableColumns"
-      [sortingInfo]="sortingInfo"
-      (removeColumn)="onRemoveColumn($event)"
-      (sortByHeader)="sortByHeader($event)"
-      (openFilterMenu)="openFilterMenu($event)"
-      (openColumnSelector)="openColumnSelector($event)"
-    ></tb-data-table-context-menu>
-  </custom-modal>
+  <tb-data-table-context-menu
+    [contextMenuHeader]="contextMenuHeader"
+    [selectableColumns]="selectableColumns"
+    [sortingInfo]="sortingInfo"
+    (removeColumn)="onRemoveColumn($event)"
+    (sortByHeader)="sortByHeader($event)"
+    (openFilterMenu)="openFilterMenu($event)"
+    (openColumnSelector)="openColumnSelector($event)"
+  ></tb-data-table-context-menu>
 </ng-template>
 
 <ng-template #columnSelectorModalTemplate>
-  <custom-modal>
-    <tb-data-table-column-selector-component
-      [selectableColumns]="selectableColumns"
-      (columnSelected)="onColumnAdded($event)"
-    ></tb-data-table-column-selector-component>
-  </custom-modal>
+  <tb-data-table-column-selector-component
+    [selectableColumns]="selectableColumns"
+    (columnSelected)="onColumnAdded($event)"
+  ></tb-data-table-column-selector-component>
 </ng-template>
 
 <ng-template #filterModalTemplate>
-  <custom-modal (onClose)="onFilterClosed()">
-    <tb-data-table-filter
-      *ngIf="getCurrentColumnFilter()"
-      [filter]="getCurrentColumnFilter()"
-      (intervalFilterChanged)="intervalFilterChanged($event)"
-      (discreteFilterChanged)="discreteFilterChanged($event)"
-      (includeUndefinedToggled)="includeUndefinedToggled()"
-    ></tb-data-table-filter>
-  </custom-modal>
+  <tb-data-table-filter
+    [filter]="getCurrentColumnFilter()"
+    (intervalFilterChanged)="intervalFilterChanged($event)"
+    (discreteFilterChanged)="discreteFilterChanged($event)"
+    (includeUndefinedToggled)="includeUndefinedToggled()"
+  ></tb-data-table-filter>
 </ng-template>
 
 <div class="data-table">

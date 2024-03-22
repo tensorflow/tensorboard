@@ -32,12 +32,10 @@ limitations under the License.
 </div>
 
 <ng-template #filterModalTemplate>
-  <custom-modal>
-    <tb-data-table-filter
-      [filter]="selectedFilter"
-      (intervalFilterChanged)="emitIntervalFilterChanged($event)"
-      (discreteFilterChanged)="emitDiscreteFilterChanged($event)"
-      (includeUndefinedToggled)="emitIncludeUndefinedToggled()"
-    ></tb-data-table-filter>
-  </custom-modal>
+  <tb-data-table-filter
+    [filter]="selectedFilter"
+    (intervalFilterChanged)="emitIntervalFilterChanged($event)"
+    (discreteFilterChanged)="emitDiscreteFilterChanged($event)"
+    (includeUndefinedToggled)="emitIncludeUndefinedToggled()"
+  ></tb-data-table-filter>
 </ng-template>

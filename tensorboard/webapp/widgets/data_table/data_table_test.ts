@@ -43,7 +43,6 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {ColumnSelectorComponent} from './column_selector_component';
 import {ContentCellComponent} from './content_cell_component';
 import {ColumnSelectorModule} from './column_selector_module';
-import {CustomModalModule} from '../custom_modal/custom_modal_module';
 import {FilterDialog} from './filter_dialog_component';
 import {CustomModal} from '../custom_modal/custom_modal';
 
@@ -67,7 +66,6 @@ import {CustomModal} from '../custom_modal/custom_modal';
           <tb-data-table-header-cell
             [header]="header"
             [sortingInfo]="sortingInfo"
-            [hparamsEnabled]="hparamsEnabled"
           ></tb-data-table-header-cell> </ng-container
       ></ng-container>
       <ng-container content>
@@ -84,15 +82,11 @@ import {CustomModal} from '../custom_modal/custom_modal';
         </ng-container>
       </ng-container>
     </tb-data-table>
-    <div #modal_container></div>
   `,
 })
 class TestableComponent {
   @ViewChild('DataTable')
   dataTable!: DataTableComponent;
-
-  @ViewChild('modal_container', {read: ViewContainerRef})
-  readonly modalViewContainerRef!: ViewContainerRef;
 
   @Input() headers!: ColumnHeader[];
   @Input() data!: TableData[];
@@ -111,7 +105,10 @@ class TestableComponent {
   }>();
   @Output() removeColumn = new EventEmitter<ColumnHeader>();
 
-  constructor(readonly customModal: CustomModal) {}
+  constructor(
+    readonly customModal: CustomModal,
+    readonly vcRef: ViewContainerRef
+  ) {}
 }
 
 describe('data table', () => {
@@ -128,7 +125,6 @@ describe('data table', () => {
         MatIconTestingModule,
         DataTableModule,
         ColumnSelectorModule,
-        CustomModalModule,
         NoopAnimationsModule,
       ],
     }).compileComponents();
@@ -147,7 +143,6 @@ describe('data table', () => {
   function createComponent(input: {
     headers?: ColumnHeader[];
     sortingInfo?: SortingInfo;
-    hparamsEnabled?: boolean;
     data?: TableData[];
     potentialColumns?: ColumnHeader[];
     columnFilters?: Map<string, DiscreteFilter | IntervalFilter>;
@@ -942,12 +937,18 @@ describe('data table', () => {
     });
 
     function openFilterDialog(fixture: ComponentFixture<TestableComponent>) {
-      fixture.debugElement
-        .query(By.directive(DataTableComponent))
-        .componentInstance.openContextMenu(
-          mockHeaders[0],
-          new MouseEvent('contextmenu')
-        );
+      const dataTableDebugEl = fixture.debugElement.query(
+        By.directive(DataTableComponent)
+      );
+      const mouseEvent = new MouseEvent('contextmenu');
+      const headerEl = fixture.debugElement.query(
+        By.css('.context-menu-container')
+      ).nativeElement;
+      spyOnProperty(mouseEvent, 'target').and.returnValue(headerEl);
+      dataTableDebugEl.componentInstance.openContextMenu(
+        mockHeaders[0],
+        mouseEvent
+      );
       fixture.detectChanges();
       const filterBtn = fixture.debugElement
         .queryAll(By.css('.context-menu button'))

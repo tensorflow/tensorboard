@@ -15,7 +15,6 @@ limitations under the License.
 
 import {
   AfterContentInit,
-  AfterViewChecked,
   ChangeDetectionStrategy,
   Component,
   ContentChildren,
@@ -41,11 +40,10 @@ import {
 } from './types';
 import {HeaderCellComponent} from './header_cell_component';
 import {Subscription} from 'rxjs';
-import {CustomModalComponent} from '../custom_modal/custom_modal_component';
 import {ContentCellComponent} from './content_cell_component';
 import {RangeValues} from '../range_input/types';
 import {dataTableUtils} from './utils';
-import {CustomModal} from '../custom_modal/custom_modal';
+import {CustomModal, CustomModalRef} from '../custom_modal/custom_modal';
 
 const preventDefault = function (e: MouseEvent) {
   e.preventDefault();
@@ -57,9 +55,7 @@ const preventDefault = function (e: MouseEvent) {
   styleUrls: ['data_table_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DataTableComponent
-  implements OnDestroy, AfterContentInit, AfterViewChecked
-{
+export class DataTableComponent implements OnDestroy, AfterContentInit {
   // The order of this array of headers determines the order which they are
   // displayed in the table.
   @Input() headers!: ColumnHeader[];
@@ -95,9 +91,8 @@ export class DataTableComponent
   @ViewChild('columnSelectorModalTemplate', {read: TemplateRef})
   columnSelectorModalTemplate!: TemplateRef<unknown>;
 
-  contextMenuModal?: CustomModalComponent | undefined;
-  filterModal?: CustomModalComponent | undefined;
-  columnSelectorModal?: CustomModalComponent | undefined;
+  filterModalRef?: CustomModalRef | undefined;
+  columnSelectorModalRef?: CustomModalRef | undefined;
 
   draggingHeaderName: string | undefined;
   highlightedColumnName: string | undefined;
@@ -113,10 +108,6 @@ export class DataTableComponent
     this.headerCellSubscriptions.forEach((subscription) => {
       subscription.unsubscribe();
     });
-  }
-
-  ngAfterViewChecked() {
-    this.customModal.runChangeDetection();
   }
 
   ngAfterContentInit() {
@@ -273,46 +264,29 @@ export class DataTableComponent
   openContextMenu(header: ColumnHeader, event: MouseEvent) {
     event.stopPropagation();
     event.preventDefault();
-    this.customModal.closeAll();
 
     this.contextMenuHeader = header;
-    this.contextMenuModal = this.customModal.createAtPosition(
+    // For right clicks, open context menu near button rather than all the way outside of the
+    // header cell, which looks weird.
+    const descendantButton = (event.target as HTMLElement).querySelector(
+      'button.context-menu-container'
+    );
+    const targetElement = descendantButton ?? (event.target as HTMLElement);
+
+    this.customModal.createNextToElement(
       this.contextMenuTemplate,
-      {
-        x: event.clientX,
-        y: event.clientY,
-      }
+      targetElement
     );
   }
 
-  onContextMenuClosed() {
-    this.contextMenuHeader = undefined;
-  }
+  openColumnSelector({event, insertTo}: {event: MouseEvent; insertTo?: Side}) {
+    event.stopPropagation();
+    this.closeSubmenus();
 
-  openColumnSelector({
-    event,
-    insertTo,
-    isSubMenu,
-  }: {
-    event: MouseEvent;
-    insertTo?: Side;
-    isSubMenu?: boolean;
-  }) {
-    if (isSubMenu) {
-      event.stopPropagation();
-      this.filterModal?.close();
-      this.columnSelectorModal?.close();
-    }
     this.insertColumnTo = insertTo;
-    const rect = (
-      (event.target as HTMLElement).closest('button') as HTMLButtonElement
-    ).getBoundingClientRect();
-    this.columnSelectorModal = this.customModal.createAtPosition(
+    this.columnSelectorModalRef = this.customModal.createNextToElement(
       this.columnSelectorModalTemplate,
-      {
-        x: rect.x + rect.width,
-        y: rect.y,
-      }
+      (event.target as HTMLElement).closest('button') as HTMLButtonElement
     );
   }
 
@@ -333,19 +307,23 @@ export class DataTableComponent
     });
   }
 
+  closeSubmenus() {
+    if (this.filterModalRef) {
+      this.customModal.close(this.filterModalRef);
+    }
+    if (this.columnSelectorModalRef) {
+      this.customModal.close(this.columnSelectorModalRef);
+    }
+  }
+
   openFilterMenu(event: MouseEvent) {
     event.stopPropagation();
-    this.columnSelectorModal?.close();
+    this.closeSubmenus();
+
     this.filterColumn = this.contextMenuHeader;
-    const rect = (
-      (event.target as HTMLElement).closest('button') as HTMLButtonElement
-    ).getBoundingClientRect();
-    this.filterModal = this.customModal.createAtPosition(
+    this.filterModalRef = this.customModal.createNextToElement(
       this.filterModalTemplate,
-      {
-        x: rect.x + rect.width,
-        y: rect.y,
-      }
+      (event.target as HTMLElement).closest('button') as HTMLButtonElement
     );
   }
 
@@ -354,10 +332,6 @@ export class DataTableComponent
       return;
     }
     return this.columnFilters.get(this.filterColumn.name);
-  }
-
-  onFilterClosed() {
-    this.filterColumn = undefined;
   }
 
   intervalFilterChanged(value: RangeValues) {

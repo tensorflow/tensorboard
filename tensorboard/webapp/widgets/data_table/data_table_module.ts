@@ -24,7 +24,6 @@ import {DataTableHeaderModule} from './data_table_header_module';
 import {ContentCellComponent} from './content_cell_component';
 import {ContentRowComponent} from './content_row_component';
 import {ColumnSelectorModule} from './column_selector_module';
-import {CustomModalModule} from '../custom_modal/custom_modal_module';
 import {FilterDialogModule} from './filter_dialog_module';
 import {ContextMenuModule} from './context_menu_module';
 
@@ -47,7 +46,6 @@ import {ContextMenuModule} from './context_menu_module';
     MatButtonModule,
     MatProgressSpinnerModule,
     DataTableHeaderModule,
-    CustomModalModule,
     ColumnSelectorModule,
     FilterDialogModule,
     ContextMenuModule,
