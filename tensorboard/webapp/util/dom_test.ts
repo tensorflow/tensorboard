@@ -15,7 +15,7 @@ limitations under the License.
 
 import {isMouseEventInElement} from './dom';
 
-fdescribe('dom utils', () => {
+describe('dom utils', () => {
   describe('isMouseEventInElement', () => {
     [
       {
