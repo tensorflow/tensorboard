@@ -97,6 +97,7 @@ tf_ts_library(
     name = "util_tests",
     testonly = True,
     srcs = [
+        "dom_test.ts",
         "lang_test.ts",
         "matcher_test.ts",
         "memoize_test.ts",
@@ -107,6 +108,7 @@ tf_ts_library(
     ],
     deps = [
         ":colors",
+        ":dom",
         ":lang",
         ":matcher",
         ":memoize",
