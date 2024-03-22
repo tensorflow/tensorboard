@@ -33,12 +33,14 @@ interface ColumnHparam {
   filterInterval?: MinMax | null;
   filterRegexp?: string;
   order?: string;
+  includeInResult: boolean;
 }
 
 interface ColumnMetric {
   metric: string;
   filterInterval?: MinMax | null;
   order?: string;
+  includeInResult: boolean;
 }
 
 const MAX_DOMAIN_DISCRETE_LIST_LEN = 10;
@@ -56,6 +58,12 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
     <hparams-split-layout orientation="vertical">
       <div slot="content" class="section hyperparameters">
         <div class="section-title">Hyperparameters</div>
+        <template is="dom-if" if="[[_TooManyHparams]]">
+          <div class="too-many-hparams">
+            Warning: There were too many hparams to load all of them
+            efficiently. Only [[_maxNumHparamsToLoad]] were loaded.
+          </div>
+        </template>
         <template is="dom-repeat" items="{{_hparams}}" as="hparam">
           <div class="hparam">
             <paper-checkbox
@@ -271,6 +279,12 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
         text-decoration: underline;
         margin-bottom: 7px;
       }
+      .too-many-hparams {
+        color: var(--tb-orange-dark);
+        font-size: 13px;
+        font-style: italic;
+        margin: 12px 0;
+      }
       .discrete-value-checkbox,
       .metric-checkbox,
       .hparam-checkbox {
@@ -432,6 +446,12 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
   //   'regexp' string field containing the filtering regexp.
   @property({type: Array})
   _hparams: any[];
+  // The limit to the number of hparams we will load. Loading too many will slow
+  // down the UI noticeably and possibly crash it.
+  @property({type: Number}) _maxNumHparamsToLoad: number = 1000;
+  // Tracks whether we loaded the maximum number of allowed hparams as defined
+  // by _maxNumHparamsToLoad.
+  @property({type: Boolean}) _tooManyHparams: boolean = false;
   // An array of objects--each storing information about the user
   // setting for a single metric. Each object has the following fields:
   // info: The MetricInfo object returned by the backend in the
@@ -545,6 +565,7 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
     }
     const experimentRequest = {
       experimentName: this.experimentName,
+      hparamsLimit: this._maxNumHparamsToLoad,
     };
     this.backend
       .getExperiment(experimentRequest)
@@ -636,6 +657,7 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
       result[i].displayed = true;
     }
     this.set('_hparams', result);
+    this.set('_TooManyHparams', result.length >= this._maxNumHparamsToLoad);
   }
   // Updates the _metrics property from the _experiment property.
   _computeMetrics() {
@@ -851,7 +873,10 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
     let colParams: (ColumnHparam | ColumnMetric)[] = [];
     // Build the hparams filters in the request.
     this._hparams.forEach((hparam, index) => {
-      let colParam: ColumnHparam = {hparam: hparam.info.name};
+      let colParam: ColumnHparam = {
+        hparam: hparam.info.name,
+        includeInResult: true,
+      };
       if (hparam.filter.domainDiscrete) {
         const allChecked = hparam.filter.domainDiscrete.every(
           (filterVal) => filterVal.checked
@@ -880,6 +905,7 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
     this._metrics.forEach((metric, index) => {
       let colParam: ColumnMetric = {
         metric: metric.info.name,
+        includeInResult: true,
       };
       if (isIntervalSet(metric.filter.interval)) {
         colParam.filterInterval = parseInputInterval(
