@@ -28,11 +28,7 @@ import {
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
-import {
-  Overlay,
-  OverlayModule,
-  OverlayRef,
-} from '@angular/cdk/overlay';
+import {Overlay, OverlayModule, OverlayRef} from '@angular/cdk/overlay';
 
 @Component({
   selector: 'fake-modal-view-container',
