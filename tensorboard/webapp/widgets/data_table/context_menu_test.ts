@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {MatIconTestingModule} from '@angular/material/icon/testing';
+import {TestBed} from '@angular/core/testing';
+import {MatIconTestingModule} from '../../testing/mat_icon_module';
 import {By} from '@angular/platform-browser';
 import {ContextMenuComponent} from './context_menu_component';
 import {ContextMenuModule} from './context_menu_module';

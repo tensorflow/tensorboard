@@ -177,7 +177,7 @@ const reducer = createReducer(
     };
   }),
   on(stateRehydratedFromUrl, (state, {partialState}) => {
-    const {unknownQueryParams} = partialState as URLDeserializedState;
+    const {unknownQueryParams = {}} = partialState as URLDeserializedState;
     return {
       ...state,
       unknownQueryParams,
