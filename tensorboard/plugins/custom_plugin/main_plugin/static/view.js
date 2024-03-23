@@ -33,7 +33,7 @@ export function createPreviews(run,tagsToScalars) {
       if(run === "system_performance"){
          fragment.appendChild(Utils.livechart(tagsToScalars));
       }
-      if(run==="fake_bert"){
+      if(run ==="fake_bert"){
         fragment.appendChild(Utils.multilinechart(tagsToScalars));
       }
       let extra = createLayerDrawers(tagsToScalars);
@@ -54,108 +54,164 @@ function createDataSelector(scalars) {
 
 }
 
-export function createLayerDrawers(tagsToScalars) {
+export function createLayerDrawers(tagScalars) {
 
-  if (!tagsToScalars || tagsToScalars.length === 0) {
+  if (!tagScalars || tagScalars.length === 0) {
       console.error('No FAQ data provided.');
       alert('No FAQ data provided.');
       return null;
   }
 
-
   // Create the container div
   const container = document.createElement('div');
   container.className = 'container';
 
-  let flag = false;
-  let uniqueDrawer = [];
-  let uniqueArray = [];
+  tagScalars.forEach((scalars, run) => {
 
-  let layer_map = [];
-  var index = 1;
+      console.log(run,scalars);
 
-  // Utils.SimulateData(tagsToScalars);
-  // Create each FAQ drawer and append to the container
-  tagsToScalars.forEach((scalars, run) => {
-
-    let [prefix_run, resource] = run.split("/");
-
-    if (!uniqueArray.includes(prefix_run)) {
-
-          uniqueArray.push(prefix_run);
-          flag = true;
-                    
-    }else{
-      flag = false;
-    }
-
-    if (flag) {
       const drawer = document.createElement('div');
       drawer.classList.add('faq-drawer');
 
+
       const input = document.createElement('input');
-      input.id = "drawer_"+index;
       input.className = 'faq-drawer__trigger';
       input.type = 'checkbox';
+      input.id = `drawer_${run}`;
+
 
       const label = document.createElement('label');
       label.className = 'faq-drawer__title';
-      label.setAttribute('for', "drawer_"+index);
-      label.textContent = prefix_run;
+      label.setAttribute('for', `drawer_${run}`);
+      label.textContent = run;
+
 
       const contentWrapper = document.createElement('div');
       contentWrapper.className = 'faq-drawer__content-wrapper';
-      contentWrapper.id =  "wrapper_"+index;
+      contentWrapper.id =  `wrapper_${run}`;
+
 
       const content = document.createElement('div');
-      content.id = "wrapper_content_"+index;
-      // uniqueDrawer.push(content);
-
       content.className = 'faq-drawer__content';
-      content.innerHTML = prefix_run.content || '';
-      index = index + 1;
 
-      content.appendChild(cardformat(prefix_run,resource,scalars,index));
+      content.appendChild(cardformat(scalars));
       contentWrapper.appendChild(content);
       drawer.appendChild(input);
       drawer.appendChild(label);
       drawer.appendChild(contentWrapper);
-      uniqueDrawer.push(drawer);
-    }
+      container.appendChild(drawer);
   });
-
-  uniqueDrawer.forEach((drawer) => {
-    container.appendChild(drawer);
-  });
-
-  index = 1;
-  tagsToScalars.forEach((scalars, run) => {
-
-    let [prefix_run, resource] = run.split("/");
-
-    let title  = uniqueDrawer[index-1].querySelector('label');
-
-    if(title == prefix_run){
-      uniqueDrawer[index].appendChild(cardformat());
-    }
-    let drawer = document.getElementById("wrapper_content__"+index);
-  });
-  
-  // uniqueDrawer.forEach((drawer) => {
-    
-  // });
-
-
 
   return container;
 }
 
-function cardformat(layer,tag,scalar,idx){
+// export function createLayerDrawers(tagsToScalars) {
+
+//   if (!tagsToScalars || tagsToScalars.length === 0) {
+//       console.error('No FAQ data provided.');
+//       alert('No FAQ data provided.');
+//       return null;
+//   }
+
+
+//   // Create the container div
+//   const container = document.createElement('div');
+//   container.className = 'container';
+
+//   let flag = false;
+//   let uniqueDrawer = [];
+//   let uniqueArray = [];
+
+//   let layer_map = [];
+//   var index = 1;
+
+//   // Utils.SimulateData(tagsToScalars);
+//   // Create each FAQ drawer and append to the container
+//   tagsToScalars.forEach((scalars, run) => {
+
+//     let [prefix_run, resource] = run.split("/");
+
+//     if (!uniqueArray.includes(prefix_run)) {
+
+//           uniqueArray.push(prefix_run);
+//           flag = true;
+                    
+//     }else{
+//       flag = false;
+//     }
+
+//     if (flag) {
+//       const drawer = document.createElement('div');
+//       drawer.classList.add('faq-drawer');
+
+//       const input = document.createElement('input');
+//       input.id = "drawer_"+index;
+//       input.className = 'faq-drawer__trigger';
+//       input.type = 'checkbox';
+
+//       const label = document.createElement('label');
+//       label.className = 'faq-drawer__title';
+//       label.setAttribute('for', "drawer_"+index);
+//       label.textContent = prefix_run;
+
+//       const contentWrapper = document.createElement('div');
+//       contentWrapper.className = 'faq-drawer__content-wrapper';
+//       contentWrapper.id =  "wrapper_"+index;
+
+//       const content = document.createElement('div');
+//       content.id = "wrapper_content_"+index;
+//       // uniqueDrawer.push(content);
+
+//       content.className = 'faq-drawer__content';
+//       content.innerHTML = prefix_run.content || '';
+//       index = index + 1;
+
+//       content.appendChild(cardformat(prefix_run,resource,scalars,index));
+//       contentWrapper.appendChild(content);
+//       drawer.appendChild(input);
+//       drawer.appendChild(label);
+//       drawer.appendChild(contentWrapper);
+//       uniqueDrawer.push(drawer);
+//     }
+//   });
+
+
+
+//   index = 1;
+//   tagsToScalars.forEach((scalars, run) => {
+
+//     let [prefix_run, resource] = run.split("/");
+
+//     let title  = uniqueDrawer[index-1].querySelector('label');
+//     console.log(title);
+
+//     if(title == prefix_run){
+//       uniqueDrawer[index].appendChild();
+//     }
+//     index = index + 1;
+//     let drawer = document.getElementById("wrapper_content__"+index);
+//   });
+
+//   uniqueDrawer.forEach((drawer) => {
+//     container.appendChild(drawer);
+//   });
+  
+//   // uniqueDrawer.forEach((drawer) => {
+    
+//   // });
+
+
+
+//   return container;
+// }
+
+
+function cardformat(scalars){
   
   // Create cards container
   const cardsContainer = createElement('div');
   cardsContainer.className = 'cards-container';
-  cardsContainer.id = layer + "-" + tag;
+  // cardsContainer.id = layer + "-" + tag;
 
   const data = [
     { date: new Date('2020-01-01'), value: 10 },
@@ -225,14 +281,24 @@ const simplifiedData = [
 ];
 // 
 // for()
-
+// const scalar = [
+  scalars.forEach((scalar) => {
     const card = document.createElement('div');
     card.className = 'card';
+    console.log(scalar);
+    card.appendChild(Utils.generateLineChart(scalar));
+    cardsContainer.appendChild(card);
+  });
+
+    // const card = document.createElement('div');
+    // card.className = 'card';
     // card.appendChild(Utils.createLineChart(multiData));
     // card.appendChild(Utils.createZoomableLineChart (data));
     // card.appendChild(Utils.SmoothLineChart());
     // Utils.generateLineChart(scalar);
-    card.appendChild(Utils.generateLineChart(layer,tag,scalar,idx));
+
+  
+    // card.appendChild(Utils.generateLineChart(layer,tag,scalar,idx));
 
     // Example usage
     // Utils.createD3Chart({
@@ -254,13 +320,13 @@ const simplifiedData = [
     // });
 
     // Create a new div element
-    var chartContainer = document.createElement('div');
-    chartContainer.id = 'chartContainer'; // Assign an ID or class for selection
+    // var chartContainer = document.createElement('div');
+    // chartContainer.id = 'chartContainer'; // Assign an ID or class for selection
 
     // Append the new div to the body or another container element
-    document.body.appendChild(chartContainer); // Append to body or any specific container
+    // document.body.appendChild(chartContainer); // Append to body or any specific container
 
-    return card;
+    return cardsContainer;
 
   // Append the cards container to the body or any specific element
   mainContainer.appendChild(cardsContainer);

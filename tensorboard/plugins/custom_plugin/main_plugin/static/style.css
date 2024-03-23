@@ -181,38 +181,19 @@ select:focus {
   margin-top: 20px;
 }
 
-
 .cards-container {
-  display: flex;
-  /* flex-wrap: wrap; */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
   gap: 20px;
-  justify-content: center;
   padding: 20px;
-  flex-direction: row;
 }
 
-.card{
-  flex: 1 2 200px;
+.card {
   background-color: #f7f7f7;
   padding: 5px;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   min-height: 100px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  width: fit-content;
-}
-
-@media (max-width: 600px) {
-  .cards-container {
-    flex-direction: column;
-  }
-
-  .card {
-    flex-basis: auto;
-  }
 }
 
 
