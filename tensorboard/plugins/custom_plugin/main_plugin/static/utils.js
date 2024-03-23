@@ -38,7 +38,7 @@ export function generateLineChart(layer, tag,dataArray,idx) {
   // document.body.appendChild(container); // Append the container to the DOM
   // Process the data
   const data = dataArray.map(d => ({
-      date: new Date(d[0] * 1000),
+      date: new Date(d[1] * 1000),
       value: +d[2]
   }));
 
@@ -252,6 +252,154 @@ paletteExpand.addEventListener('click', function() {
   return container;
 }
 
+export function livechart(tagsToScalars){
+
+  const chartDiv = document.createElement('div');
+  chartDiv.classList.add('container');
+
+  const margin = { top: 20, right: 20, bottom: 30, left: 50 },
+      width = 1400 - margin.left - margin.right,
+      height = 400 - margin.top - margin.bottom;
+
+// Append SVG object to the body
+const svg = d3.select(chartDiv).append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+// Initialize scale for x as a time scale
+const xScale = d3.scaleTime().range([0, width]);
+const yScale = d3.scaleLinear().range([height, 0]);
+
+// Adjust the yScale domain for seconds (0 to 59)
+yScale.domain([0, 59]);
+
+// Define the line
+const valueLine = d3.line()
+    .x(d => xScale(d.x))
+    .y(d => yScale(d.y));
+
+// Get the start time
+const startTime = new Date();
+
+// Initialize data array
+let data = [];
+
+// Initial domain for scales; xScale will dynamically update
+xScale.domain([startTime, new Date(startTime.getTime() + 1000)]);
+
+// Create the line path element
+const linePath = svg.append("path")
+    .attr("class", "line")
+    .attr("stroke", "blue")
+    .attr("stroke-width", 2)
+    .attr("fill", "none");
+
+  svg.append("text")
+  .attr("class","chart-title")
+  .attr("x", margin.left- 115)
+  .attr("y", margin.top - 100)
+  .style("font-size", "24px")
+  .style("font-weight", "bold")
+  .style("font-family", "sans-serif")
+  .text("Energy Usage");
+
+// Add the X and Y Axis
+const xAxis = svg.append("g")
+    .attr("transform", `translate(0,${height})`);
+const yAxis = svg.append("g")
+    .call(d3.axisLeft(yScale)); // y-axis is static, we set it up here
+
+
+// function updateChart() {
+//     // Calculate elapsed time as x-value
+//     const now = new Date();
+//     const elapsed = new Date(now - startTime);
+
+//     // Get the current second for y-value
+//     const second = now.getSeconds();
+    
+//     // Add new data point
+//     data.push({ x: now, y: second });
+
+//     // Update xScale domain to include the new range
+//     xScale.domain([startTime, now]);
+
+//     // Update the line path and axes with a smooth transition
+//     linePath
+//         .datum(data)
+//         .transition().duration(950) // slightly less than interval to smooth out transition
+//         .attr("d", valueLine);
+
+//     xAxis.transition().duration(950)
+//         .call(d3.axisBottom(xScale));
+// }
+const displayDuration = 100 * 1000; // Display window in milliseconds (e.g., last 100 seconds)
+
+// Define transition duration
+const transitionDuration = 1000; // 1 second
+
+function updateDataKeepOld() {
+    // Assuming 'now' is the current time for the new data point
+//     
+  const newX = new Date(); // Example for adding a new timestamp
+    const newY = Math.random() * 59; // Random value for demonstration
+    data.push({ x: newX, y: newY });
+
+    // Update the xScale domain
+    const timeExtent = d3.extent(data, d => d.x);
+    xScale.domain(timeExtent);
+
+    // Update the line
+    linePath.datum(data)
+        .transition()
+        .duration(transitionDuration)
+        .attr("d", valueLine);
+
+    // Update xAxis with new domain
+    xAxis.transition().duration(transitionDuration)
+        .call(d3.axisBottom(xScale));
+
+    // Apply dynamic tick formatting
+    formatTicksForTimeSpan();
+  
+  // formatTicksForTimeSpan();
+}
+
+// Periodically update the chart with new data
+setInterval(updateDataKeepOld, 1000); // Update every 2 seconds for a more observable transition
+
+function formatTicksForTimeSpan() {
+    const domain = xScale.domain(); // Get the current domain of the xScale
+    const span = domain[1] - domain[0]; // Calculate the span in milliseconds
+
+    // Decide on the format based on the span
+    let format;
+    if (span > 86400000) { // More than 24 hours
+        format = d3.timeFormat("%H:%M"); // Hours and minutes
+    } else if (span > 3600000) { // More than 1 hour
+        format = d3.timeFormat("%H:%M"); // Hours and minutes
+    } else if (span > 60000) { // More than 1 minute
+        format = d3.timeFormat("%M:%S"); // Minutes and seconds
+    } else { // Less than 1 minute
+        format = d3.timeFormat("%S.%L"); // Seconds and milliseconds
+    }
+
+    // Update the xAxis with the new format
+    xAxis.call(d3.axisBottom(xScale).tickFormat(format));
+
+  }
+
+  return chartDiv;
+}
+
+export function multilinechart(tagsToScalars){
+  const div = document.createElement('div');
+  div.classList.add('container');
+  
+  return div;
+}
 
 // export function SimulateData(dataArray) {
 

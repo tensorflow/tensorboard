@@ -20,6 +20,7 @@ async function updateRunInfo() {
   
 
   export async function getTagsToScalars(run) {
+    console.log("run="+run);
     const result = new Map();
     const tags = await getTags(run);
     if (!tags) {

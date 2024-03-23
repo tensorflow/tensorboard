@@ -109,24 +109,7 @@ export async function render() {
   var toolbarTitle = createElement('h2', 'Settings');
   toolbarTitle.classList.add('toolbar-title');
 
-  /* Graph settings like width Height */
-  // var widthInput = createElement('input');
-  // widthInput.type = 'number';
-  // widthInput.placeholder = 'Width';
-  // widthInput.addEventListener('input', updateGraph);
-
-  // var heightInput = createElement('input');
-  // heightInput.type = 'number';
-  // heightInput.placeholder = 'Height';
-  // heightInput.addEventListener('input', updateGraph);
-
-  // var applyButton = createElement('button', 'Apply');
-  // applyButton.addEventListener('click', updateGraph);
-
-  // sideToolbar.appendChild(toolbarTitle);
-  // sideToolbar.appendChild(widthInput);
-  // sideToolbar.appendChild(heightInput);
-  // sideToolbar.appendChild(applyButton);
+ 
 
   //Selector
   sideToolbar.appendChild(runSelector);
@@ -170,12 +153,13 @@ async function updatePreview(runSelector, container) {
   const requestedRun = runSelector.value;
   const tagsToScalars = await Model.getTagsToScalars(requestedRun);
   console.log(tagsToScalars);
-  const preview = Views.createPreviews(tagsToScalars);
+  const preview = Views.createPreviews(requestedRun,tagsToScalars);
 
   // Cancel the update if the UI has a different run selected.
   if (runSelector.value !== requestedRun) {
     return;
   }
+
   container.textContent = '';
   container.appendChild(preview);
 }
@@ -198,8 +182,22 @@ async function updatePreview(runSelector, container) {
     element.dispatchEvent(new Event('change'));
 
   }
-  
 
+ /* Graph settings like width Height */
+  // var widthInput = createElement('input');
+  // widthInput.type = 'number';
+  // widthInput.placeholder = 'Width';
+  // widthInput.addEventListener('input', updateGraph);
 
+  // var heightInput = createElement('input');
+  // heightInput.type = 'number';
+  // heightInput.placeholder = 'Height';
+  // heightInput.addEventListener('input', updateGraph);
 
+  // var applyButton = createElement('button', 'Apply');
+  // applyButton.addEventListener('click', updateGraph);
 
+  // sideToolbar.appendChild(toolbarTitle);
+  // sideToolbar.appendChild(widthInput);
+  // sideToolbar.appendChild(heightInput);
+  // sideToolbar.appendChild(applyButton);
