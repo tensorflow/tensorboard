@@ -32,9 +32,10 @@ export function createJSElement(file,object,path="./static"){
   }
 
 // export function generateLineChart(layer, tag,dataArray,idx) {
-  export function generateLineChart(dataArray) {
+  export function generateLineChart(main_tag,scalar_tag,dataArray) {
 
-
+  main_tag = main_tag.replace(/[.,]/g, "-").split("").reverse().join("").replace(/\)\(/, "").split("").reverse().join("");
+  console.log("main_tag=",main_tag);
   var container = document.createElement('div');
   // container.classList.add('graph');
   // document.body.appendChild(container); // Append the container to the DOM
@@ -53,7 +54,7 @@ export function createJSElement(file,object,path="./static"){
     .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
-      // .attr("id", `${tag+String(idx)}`) // Set the SVG ID here
+      .attr("id", `${main_tag}_${scalar_tag}`) // Set the SVG ID here
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);    
 
@@ -130,7 +131,7 @@ export function createJSElement(file,object,path="./static"){
     .attr("class", "line")
     .attr("fill", "none")      
     .attr("stroke", "steelblue")
-    .attr("stroke-width", 1.5)
+    .attr("stroke-width", 2.5)
     .attr("d", d3.line()
       .x(function(d) { return x(d.date) })
       .y(function(d) { return y(d.value) })
@@ -173,83 +174,85 @@ export function createJSElement(file,object,path="./static"){
   function idled() { idleTimeout = null; }
 
   // Create a new button element
-//   var downloadButton = document.createElement("button");
-//   // downloadButton.id = tag + "" + String(idx) + "_download";
-//   downloadButton.classList.add("download"); 
-//   container.appendChild(downloadButton);
+  var downloadButton = document.createElement("button");
+  downloadButton.id = `${main_tag}_${scalar_tag}download`;
+  downloadButton.classList.add("download"); 
+  container.appendChild(downloadButton);
 
 
-//   downloadButton.addEventListener('click', function(event) {
 
-//     var buttonIdParts = event.target.id.split("_");
-//     var svgId = buttonIdParts[1] + "_" + buttonIdParts[2]; // Adjust based on your ID structure
-//     console.log("id="+svgId);
-//     var svg = document.getElementById(svgId);
-//     // var svg = document.querySelector("svg");
-//     console.log(svg);
-//     var serializer = new XMLSerializer();
-//     var svgStr = serializer.serializeToString(svg);
 
-//     var svgBlob = new Blob([svgStr], {type:"image/svg+xml;charset=utf-8"});
-//     var svgUrl = URL.createObjectURL(svgBlob);
+  downloadButton.addEventListener('click', function(event) {
 
-//     var downloadLink = document.createElement("a");
-//     downloadLink.href = svgUrl;
-//     downloadLink.download = "chart.svg";
-//     document.body.appendChild(downloadLink);
-//     downloadLink.click();
-//     document.body.removeChild(downloadLink);
-// });
+    var buttonIdParts = event.target.id.split("download");
+    var svgId = buttonIdParts[0];
 
-  // var expandButton = document.createElement("button");
+    var svg = document.getElementById(svgId);
+    console.log(svg);
+
+    var serializer = new XMLSerializer();
+    var svgStr = serializer.serializeToString(svg);
+
+    var svgBlob = new Blob([svgStr], {type:"image/svg+xml;charset=utf-8"});
+    var svgUrl = URL.createObjectURL(svgBlob);
+
+    var downloadLink = document.createElement("a");
+    downloadLink.href = svgUrl;
+    downloadLink.download = "chart.svg";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+});
+
+  var expandButton = document.createElement("button");
   // expandButton.id =  layer+"_"+ tag+"_expand";
-  // expandButton.classList.add("expand");
+  expandButton.classList.add("expand");
 
 
 
   // Create and setup the button
-// var paletteExpand = document.createElement("button");
-// paletteExpand.id = "palette_expand";
-// paletteExpand.innerText = "Show Color Palette";
-// paletteExpand.classList.add("expand");
-// container.appendChild(expandButton);
+var paletteExpand = document.createElement("button");
+paletteExpand.id = "palette_expand";
+paletteExpand.innerText = "Show Color Palette";
+paletteExpand.classList.add("expand");
+container.appendChild(expandButton);
 
 // // Create the color palette container
-// var colorPalette = document.createElement("div");
-// colorPalette.id = "colorPalette";
-// colorPalette.classList.add("color-palette");
+var colorPalette = document.createElement("div");
+colorPalette.id = "colorPalette";
+colorPalette.classList.add("color-palette");
 
 // // Array of colors for the palette
-// var colors = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"];
+var colors = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"];
 
-// // Populate the color palette with colors
-// colors.forEach(function(color) {
-//     var colorOption = document.createElement("div");
-//     colorOption.classList.add("color-option");
-//     colorOption.style.backgroundColor = color;
-//     colorPalette.appendChild(colorOption);
+// Populate the color palette with colors
+colors.forEach(function(color) {
+    var colorOption = document.createElement("div");
+    colorOption.classList.add("color-option");
+    colorOption.style.backgroundColor = color;
+    colorPalette.appendChild(colorOption);
     
-//     // Optionally, add click event to each color to do something when a color is selected
-//     colorOption.addEventListener('click', function() {
-//         console.log("Color selected:", color);
-//         // You can extend this function to do more when a color is selected
-//     });
-// });
+    // Optionally, add click event to each color to do something when a color is selected
+    colorOption.addEventListener('click', function() {
+        console.log("Color selected:", color);
+        // You can extend this function to do more when a color is selected
+    });
+});
 
 // // Add click event listener to the button to show the color palette
-// paletteExpand.addEventListener('click', function() {
-//     // Toggle display of the color palette
-//     if (colorPalette.style.display === "none") {
-//         colorPalette.style.display = "block";
-//     } else {
-//         colorPalette.style.display = "none";
-//     }
-// });
+paletteExpand.addEventListener('click', function() {
+    // Toggle display of the color palette
+    if (colorPalette.style.display === "none") {
+        colorPalette.style.display = "block";
+    } else {
+        colorPalette.style.display = "none";
+    }
+});
 
-// // document.body.appendChild(downloadButton);
+// document.body.appendChild(downloadButton);
 
 //   container.appendChild(expandButton);
-//   container.appendChild(colorPalette);
+  container.appendChild(colorPalette);
 
   return container;
 }

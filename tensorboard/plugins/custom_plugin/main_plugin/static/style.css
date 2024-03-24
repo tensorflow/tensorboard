@@ -45,9 +45,9 @@ h1 {
   flex-direction: column;
   margin-top:40px;
   /* margin-left: 305px; */
-  width: 80%;
+  width: 100%;
   top: 0;
-  height: 200vh;
+  /* height: 200vh; */
   /* background-color: red; */
 }
 
@@ -172,7 +172,7 @@ select:focus {
 
 .data-container{
   /* background-color: red; */
-  width: fit-content;
+  width: 100%;
   height: fit-content;
 }
 
