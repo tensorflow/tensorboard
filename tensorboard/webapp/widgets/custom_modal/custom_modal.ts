@@ -12,27 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {
-  ApplicationRef,
-  Injectable,
-  TemplateRef,
-  ViewContainerRef,
-} from '@angular/core';
+import {Injectable, TemplateRef, ViewContainerRef} from '@angular/core';
 import {ConnectedPosition, Overlay, OverlayRef} from '@angular/cdk/overlay';
 import {TemplatePortal} from '@angular/cdk/portal';
-import {Subscription} from 'rxjs';
+import {Subject, Subscription} from 'rxjs';
 import {isMouseEventInElement} from '../../util/dom';
 
 /**
  * Enables dynamic creation of modal components.
- *
- * # Prerequisites
- * App root component must define a ViewContainerRef named `vcRef`
- * e.g.:
- * ```
- * // my_app_root.ts
- * constructor(readonly vcRef: ViewContainerRef) {}
- * ```
  *
  * # Usage
  * Define a modal using an ng-template:
@@ -55,11 +42,14 @@ import {isMouseEventInElement} from '../../util/dom';
  * ...
  * ```
  *
- * Inject CustomModal into the component
+ * Inject CustomModal and ViewContainerRef into the component
  * ```
  * // my_component.ts
  * ...
- * constructor(private readonly customModal: CustomModal) {}
+ * constructor(
+ *  private readonly customModal: CustomModal,
+ *  private readonly viewContainerRef: ViewContainerRef,
+ * ) {}
  * ...
  * ```
  *
@@ -68,43 +58,23 @@ import {isMouseEventInElement} from '../../util/dom';
  * // my_component.ts
  * ...
  * onSomeButtonClick(mouseEvent: MouseEventj) {
- *   this.customModal.createNextToElement(this.myModalTemplate, mouseEvent.target as HTMLElement);
+ *   this.customModal.createNextToElement(
+ *     this.myModalTemplate,
+ *     mouseEvent.target as HTMLElement,
+ *     this.viewContainerRef
+ *   );
  * }
  * ...
- * ```
- *
- * # Testing
- * A similar setup is required for testing modal behavior from another component.
- *
- * Define a separate root component to hold the modal container and ref:
- * ```
- * @Component({
- *   ...,
- *   template: `<actual-component-to-test></actual-component-to-test>`
- * })
- * class TestableComponent {
- *   constructor(readonly vcRef: ViewContainerRef) {}
- *   ...
- * }
- * ```
- *
- * Before each test (e.g. in beforeEach), make sure to add the TestableComponent
- * to the app component list:
- * ```
- * ...
- * const fixture = TestBed.createComponent(TestableComponent);
- * const appRef = TestBed.inject(ApplicationRef);
- * appRef.components.push(fixture.componentRef);
  * ```
  */
 
 export class CustomModalRef {
   overlayRef: OverlayRef;
-  subscriptions: Subscription[];
+  subscriptions: Subscription[] = [];
+  onClose = new Subject<void>();
 
-  constructor(overlayRef: OverlayRef, subscriptions: Subscription[] = []) {
+  constructor(overlayRef: OverlayRef) {
     this.overlayRef = overlayRef;
-    this.subscriptions = subscriptions;
   }
 }
 
@@ -112,34 +82,13 @@ export class CustomModalRef {
 export class CustomModal {
   private customModalRefs: CustomModalRef[] = [];
 
-  constructor(
-    private readonly appRef: ApplicationRef,
-    private readonly overlay: Overlay
-  ) {}
-
-  /** Gets the ViewContainerRef of the app's root component if it exists. */
-  private getModalViewContainerRef(): ViewContainerRef | undefined {
-    const appComponents = this.appRef.components;
-    if (appComponents.length === 0) {
-      // appComponents can potentially be empty in tests.
-      return;
-    }
-
-    const appInstance = appComponents[0].instance;
-    let viewContainerRef: ViewContainerRef = appInstance.vcRef;
-    if (!viewContainerRef) {
-      console.warn(
-        'For proper custom modal function, an ViewContainerRef named `vcRef` is required in the root component.'
-      );
-      return;
-    }
-    return viewContainerRef;
-  }
+  constructor(private readonly overlay: Overlay) {}
 
   /** Creates a modal from a template next to an element. */
   createNextToElement(
     templateRef: TemplateRef<unknown>,
     element: Element,
+    viewContainerRef: ViewContainerRef,
     connectedPosition: ConnectedPosition = {
       originX: 'end',
       originY: 'top',
@@ -147,9 +96,6 @@ export class CustomModal {
       overlayY: 'top',
     }
   ): CustomModalRef | undefined {
-    const viewContainerRef = this.getModalViewContainerRef();
-    if (!viewContainerRef) return;
-
     let positionStrategy = this.overlay.position().flexibleConnectedTo(element);
     if (connectedPosition) {
       positionStrategy = positionStrategy.withPositions([connectedPosition]);
@@ -210,6 +156,9 @@ export class CustomModal {
     customModalRef.overlayRef?.dispose();
 
     this.customModalRefs.splice(index, 1);
+
+    customModalRef.onClose.next();
+    customModalRef.onClose.complete();
   }
 
   /** Destroys all created modals. */

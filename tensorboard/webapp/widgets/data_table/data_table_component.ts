@@ -25,6 +25,7 @@ import {
   QueryList,
   TemplateRef,
   ViewChild,
+  ViewContainerRef,
 } from '@angular/core';
 import {
   ColumnHeader,
@@ -39,7 +40,7 @@ import {
   AddColumnEvent,
 } from './types';
 import {HeaderCellComponent} from './header_cell_component';
-import {Subscription} from 'rxjs';
+import {Subscription, first} from 'rxjs';
 import {ContentCellComponent} from './content_cell_component';
 import {RangeValues} from '../range_input/types';
 import {dataTableUtils} from './utils';
@@ -101,7 +102,10 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   readonly SortingOrder = SortingOrder;
   readonly Side = Side;
 
-  constructor(private readonly customModal: CustomModal) {}
+  constructor(
+    private readonly customModal: CustomModal,
+    private readonly viewContainerRef: ViewContainerRef
+  ) {}
 
   ngOnDestroy() {
     document.removeEventListener('dragover', preventDefault);
@@ -275,7 +279,8 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
 
     this.customModal.createNextToElement(
       this.contextMenuTemplate,
-      targetElement
+      targetElement,
+      this.viewContainerRef
     );
   }
 
@@ -286,8 +291,12 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     this.insertColumnTo = insertTo;
     this.columnSelectorModalRef = this.customModal.createNextToElement(
       this.columnSelectorModalTemplate,
-      (event.target as HTMLElement).closest('button') as HTMLButtonElement
+      (event.target as HTMLElement).closest('button') as HTMLButtonElement,
+      this.viewContainerRef
     );
+    this.columnSelectorModalRef?.onClose.pipe(first()).subscribe(() => {
+      this.columnSelectorModalRef = undefined;
+    });
   }
 
   canContextMenuRemoveColumn() {
@@ -323,8 +332,12 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
     this.filterColumn = this.contextMenuHeader;
     this.filterModalRef = this.customModal.createNextToElement(
       this.filterModalTemplate,
-      (event.target as HTMLElement).closest('button') as HTMLButtonElement
+      (event.target as HTMLElement).closest('button') as HTMLButtonElement,
+      this.viewContainerRef
     );
+    this.filterModalRef?.onClose.pipe(first()).subscribe(() => {
+      this.filterModalRef = undefined;
+    });
   }
 
   getCurrentColumnFilter() {

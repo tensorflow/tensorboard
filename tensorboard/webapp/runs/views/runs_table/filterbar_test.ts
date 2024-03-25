@@ -108,9 +108,6 @@ describe('hparam_filterbar', () => {
     });
 
     const fixture = TestBed.createComponent(TestableComponent);
-    // Add component to app ref for modal testing.
-    const appRef = TestBed.inject(ApplicationRef);
-    appRef.components.push(fixture.componentRef);
     return fixture;
   }
 
@@ -199,7 +196,8 @@ describe('hparam_filterbar', () => {
 
     expect(createNextToElementSpy).toHaveBeenCalledWith(
       component.filterModalTemplate,
-      fixture.debugElement.query(By.css('mat-chip')).nativeElement
+      fixture.debugElement.query(By.css('mat-chip')).nativeElement,
+      component.viewContainerRef
     );
     expect(component.selectedFilterName).toBe('filter1');
   });

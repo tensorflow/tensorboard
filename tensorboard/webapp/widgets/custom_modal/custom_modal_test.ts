@@ -22,13 +22,13 @@ import {By} from '@angular/platform-browser';
 import {CustomModal} from './custom_modal';
 import {CommonModule} from '@angular/common';
 import {
-  ApplicationRef,
   Component,
   TemplateRef,
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
 import {Overlay, OverlayModule, OverlayRef} from '@angular/cdk/overlay';
+import {first} from 'rxjs';
 
 @Component({
   selector: 'fake-modal-view-container',
@@ -84,9 +84,6 @@ describe('custom modal', () => {
     }).compileComponents();
 
     viewContainerFixture = TestBed.createComponent(FakeViewContainerComponent);
-    // Make FakeViewContainerComponent the app root component.
-    const appRef = TestBed.inject(ApplicationRef);
-    appRef.components.push(viewContainerFixture.componentRef);
     viewContainerFixture.detectChanges();
   });
 
@@ -101,7 +98,8 @@ describe('custom modal', () => {
 
     viewContainerComponent.customModal.createNextToElement(
       viewContainerComponent.modalTemplateRef,
-      modalTriggerButton
+      modalTriggerButton,
+      viewContainerComponent.vcRef
     );
     viewContainerFixture.detectChanges();
 
@@ -127,6 +125,43 @@ describe('custom modal', () => {
     expect(attachArgs.viewContainerRef).toBe(viewContainerComponent.vcRef);
   });
 
+  describe('overlay event subscriptions', () => {
+    it('subscribes to click and pointer events on create', fakeAsync(() => {
+      const viewContainerComponent = viewContainerFixture.componentInstance;
+      const modalTriggerButton = viewContainerFixture.debugElement.query(
+        By.css('.modal-trigger-button')
+      ).nativeElement;
+
+      const customModalRef =
+        viewContainerComponent.customModal.createNextToElement(
+          viewContainerComponent.modalTemplateRef,
+          modalTriggerButton,
+          viewContainerComponent.vcRef
+        )!;
+      tick();
+
+      expect(customModalRef.subscriptions.length).toEqual(2);
+    }));
+
+    it('cleans up subscriptions on removal', fakeAsync(() => {
+      const viewContainerComponent = viewContainerFixture.componentInstance;
+      const modalTriggerButton = viewContainerFixture.debugElement.query(
+        By.css('.modal-trigger-button')
+      ).nativeElement;
+      const customModalRef =
+        viewContainerComponent.customModal.createNextToElement(
+          viewContainerComponent.modalTemplateRef,
+          modalTriggerButton,
+          viewContainerComponent.vcRef
+        )!;
+      tick();
+
+      viewContainerComponent.customModal.close(customModalRef);
+
+      expect(customModalRef.subscriptions.length).toEqual(0);
+    }));
+  });
+
   describe('closeAll', () => {
     it('clears all modals in the modal ViewContainerRef', () => {
       const viewContainerComponent = viewContainerFixture.componentInstance;
@@ -138,11 +173,13 @@ describe('custom modal', () => {
       ).nativeElement;
       viewContainerComponent.customModal.createNextToElement(
         viewContainerComponent.modalTemplateRef,
-        modalTriggerButton
+        modalTriggerButton,
+        viewContainerComponent.vcRef
       );
       viewContainerComponent.customModal.createNextToElement(
         viewContainerComponent.anotherModalTemplateRef,
-        anotherModalTriggerButton
+        anotherModalTriggerButton,
+        viewContainerComponent.vcRef
       );
       viewContainerFixture.detectChanges();
 
@@ -161,6 +198,27 @@ describe('custom modal', () => {
   });
 
   describe('closing behavior', () => {
+    it('emits onClose event on close', fakeAsync(() => {
+      const viewContainerComponent = viewContainerFixture.componentInstance;
+      const modalTriggerButton = viewContainerFixture.debugElement.query(
+        By.css('.modal-trigger-button')
+      ).nativeElement;
+      const customModalRef =
+        viewContainerComponent.customModal.createNextToElement(
+          viewContainerComponent.modalTemplateRef,
+          modalTriggerButton,
+          viewContainerComponent.vcRef
+        )!;
+
+      customModalRef.onClose.pipe(first()).subscribe((val) => {
+        // onClose should emit an empty value.
+        expect(val).toBeUndefined();
+      });
+
+      viewContainerComponent.customModal.close(customModalRef);
+      tick();
+    }));
+
     it('closes when escape key is pressed', fakeAsync(() => {
       const viewContainerComponent = viewContainerFixture.componentInstance;
       const modalTriggerButton = viewContainerFixture.debugElement.query(
@@ -168,7 +226,8 @@ describe('custom modal', () => {
       ).nativeElement;
       viewContainerComponent.customModal.createNextToElement(
         viewContainerComponent.modalTemplateRef,
-        modalTriggerButton
+        modalTriggerButton,
+        viewContainerComponent.vcRef
       );
       viewContainerFixture.detectChanges();
       tick();
@@ -197,11 +256,13 @@ describe('custom modal', () => {
       ).nativeElement;
       viewContainerComponent.customModal.createNextToElement(
         viewContainerComponent.modalTemplateRef,
-        modalTriggerButton
+        modalTriggerButton,
+        viewContainerComponent.vcRef
       );
       viewContainerComponent.customModal.createNextToElement(
         viewContainerComponent.anotherModalTemplateRef,
-        anotherModalTriggerButton
+        anotherModalTriggerButton,
+        viewContainerComponent.vcRef
       );
       viewContainerFixture.detectChanges();
       tick();
@@ -231,11 +292,13 @@ describe('custom modal', () => {
       ).nativeElement;
       viewContainerComponent.customModal.createNextToElement(
         viewContainerComponent.modalTemplateRef,
-        modalTriggerButton
+        modalTriggerButton,
+        viewContainerComponent.vcRef
       );
       viewContainerComponent.customModal.createNextToElement(
         viewContainerComponent.anotherModalTemplateRef,
-        anotherModalTriggerButton
+        anotherModalTriggerButton,
+        viewContainerComponent.vcRef
       );
       viewContainerFixture.detectChanges();
       const content = viewContainerFixture.debugElement.query(

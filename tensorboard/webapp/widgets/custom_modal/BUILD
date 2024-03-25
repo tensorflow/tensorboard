@@ -30,5 +30,6 @@ tf_ts_library(
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@types/jasmine",
+        "@npm//rxjs",
     ],
 )

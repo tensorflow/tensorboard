@@ -20,6 +20,7 @@ import {
   Component,
   ViewChild,
   TemplateRef,
+  ViewContainerRef,
 } from '@angular/core';
 import {
   DiscreteFilter,
@@ -57,13 +58,17 @@ export class FilterbarComponent {
     return this.filters.get(this.selectedFilterName);
   }
 
-  constructor(private readonly customModal: CustomModal) {}
+  constructor(
+    private readonly customModal: CustomModal,
+    private readonly viewContainerRef: ViewContainerRef
+  ) {}
 
   openFilterMenu(event: MouseEvent, filterName: string) {
     this.selectedFilterName = filterName;
     this.customModal.createNextToElement(
       this.filterModalTemplate,
-      (event.target as HTMLElement).closest('mat-chip') as HTMLElement
+      (event.target as HTMLElement).closest('mat-chip') as HTMLElement,
+      this.viewContainerRef
     );
   }
 
