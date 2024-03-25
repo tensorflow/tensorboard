@@ -22,7 +22,7 @@ for epoch in range(num_epochs):
 
     # Generate and log random FLOP counts for different types of layers
     flops_conv2d = np.random.randint(100000, 200000)  # Random FLOP count for Conv2D
-    flops_flatten = np.random.randint(1000, 2000)  # Random FLOP count for Flatten
+    flops_flatten = np.random.randint(310000, 302000)  # Random FLOP count for Flatten
     flops_dense = np.random.randint(200000, 300000)  # Random FLOP count for Dense
 
     writer.add_scalar('FLOPs/Conv2D', flops_conv2d, epoch)

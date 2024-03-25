@@ -3,39 +3,39 @@ import * as Model from './model.js';
 import * as Views from './view.js';
 import * as Utils from './utils.js';
 
-const aapl = [
-  {date: new Date('2007-04-23'), close: 10.24},
-  {date: new Date('2007-04-24'), close: 20.35},
-  {date: new Date('2007-04-25'), close: 30.84},
-  {date: new Date('2007-04-26'), close: 40.92},
-  {date: new Date('2007-04-29'), close: 50.8},
-  {date: new Date('2007-05-01'), close: 60.47},
-  {date: new Date('2007-05-02'), close: 70.39},
-  {date: new Date('2007-05-03'), close: 80.4},
-  {date: new Date('2007-05-04'), close: 90.81},
-  {date: new Date('2007-05-07'), close: 10.92},
-  {date: new Date('2007-05-08'), close: 11.06},
-  {date: new Date('2007-05-09'), close: 12.88},
-  // Add more objects as needed
-];
+// const aapl = [
+//   {date: new Date('2007-04-23'), close: 10.24},
+//   {date: new Date('2007-04-24'), close: 20.35},
+//   {date: new Date('2007-04-25'), close: 30.84},
+//   {date: new Date('2007-04-26'), close: 40.92},
+//   {date: new Date('2007-04-29'), close: 50.8},
+//   {date: new Date('2007-05-01'), close: 60.47},
+//   {date: new Date('2007-05-02'), close: 70.39},
+//   {date: new Date('2007-05-03'), close: 80.4},
+//   {date: new Date('2007-05-04'), close: 90.81},
+//   {date: new Date('2007-05-07'), close: 10.92},
+//   {date: new Date('2007-05-08'), close: 11.06},
+//   {date: new Date('2007-05-09'), close: 12.88},
+//   // Add more objects as needed
+// ];
 
-const aapl2 = [
-  {date: new Date('2007-04-23'), close: 5.24},
-  {date: new Date('2007-04-24'), close: 45.35},
-  {date: new Date('2007-04-25'), close: 30.84},
-  {date: new Date('2007-04-26'), close: 50.92},
-  {date: new Date('2007-04-29'), close: 60.8},
-  {date: new Date('2007-05-01'), close: 70.47},
-  {date: new Date('2007-05-02'), close: 20.39},
-  {date: new Date('2007-05-03'), close: 80.4},
-  {date: new Date('2007-05-04'), close: 10.81},
-  {date: new Date('2007-05-07'), close: 20.92},
-  {date: new Date('2007-05-08'), close: 21.06},
-  {date: new Date('2007-05-09'), close: 22.88}
-  // Add more objects as needed
-];
+// const aapl2 = [
+//   {date: new Date('2007-04-23'), close: 5.24},
+//   {date: new Date('2007-04-24'), close: 45.35},
+//   {date: new Date('2007-04-25'), close: 30.84},
+//   {date: new Date('2007-04-26'), close: 50.92},
+//   {date: new Date('2007-04-29'), close: 60.8},
+//   {date: new Date('2007-05-01'), close: 70.47},
+//   {date: new Date('2007-05-02'), close: 20.39},
+//   {date: new Date('2007-05-03'), close: 80.4},
+//   {date: new Date('2007-05-04'), close: 10.81},
+//   {date: new Date('2007-05-07'), close: 20.92},
+//   {date: new Date('2007-05-08'), close: 21.06},
+//   {date: new Date('2007-05-09'), close: 22.88}
+//   // Add more objects as needed
+// ];
 
-const multiData = [aapl,aapl2];
+// const multiData = [aapl,aapl2];
 
 
 
@@ -46,6 +46,7 @@ export async function render() {
   try {
     // await loadD3();
     await Utils.createJSElement("d3.v7.min.js","d3");
+    await Utils.createJSElement("apexchart.js","apexchart");
 
   } catch (error) {
     console.error('Failed to load D3.js:', error);
@@ -78,7 +79,7 @@ export async function render() {
   // Heading
   const header = createElement('div', '');
   header.classList.add('navbar');
-  const tab1 = createElement('button', 'Flop Calculation');
+  const tab1 = createElement('button', 'PyTorch Model Calculations');
   const tab2 = createElement('button', 'System Performance');
   tab1.classList.add('nav-option');
   tab2.classList.add('nav-option');
@@ -183,21 +184,3 @@ async function updatePreview(runSelector, container) {
 
   }
 
- /* Graph settings like width Height */
-  // var widthInput = createElement('input');
-  // widthInput.type = 'number';
-  // widthInput.placeholder = 'Width';
-  // widthInput.addEventListener('input', updateGraph);
-
-  // var heightInput = createElement('input');
-  // heightInput.type = 'number';
-  // heightInput.placeholder = 'Height';
-  // heightInput.addEventListener('input', updateGraph);
-
-  // var applyButton = createElement('button', 'Apply');
-  // applyButton.addEventListener('click', updateGraph);
-
-  // sideToolbar.appendChild(toolbarTitle);
-  // sideToolbar.appendChild(widthInput);
-  // sideToolbar.appendChild(heightInput);
-  // sideToolbar.appendChild(applyButton);

@@ -1,5 +1,7 @@
 import * as Utils from './utils.js';
 
+
+
 export function createRunSelector(runs,class_name="run-selector") {
     /**
      * Build a component in this form:
@@ -27,16 +29,8 @@ export function createPreviews(run,tagsToScalars) {
       return fragment;
     }
     else{
-      console.log("run="+run);
-      console.log("run=system_performance");
-
-      if(run === "system_performance"){
-        //  fragment.appendChild(Utils.livechart(tagsToScalars));
-      }
-      if(run ==="fake_bert"){
-        fragment.appendChild(Utils.multilinechart(tagsToScalars));
-      }
-      let extra = createLayerDrawers(tagsToScalars);
+  
+      let extra = createLayerDrawers(run, tagsToScalars);
       fragment.appendChild(extra);
 
       return fragment;
@@ -54,7 +48,7 @@ function createDataSelector(scalars) {
 
 }
 
-export function createLayerDrawers(tagScalars) {
+export function createLayerDrawers(run,tagScalars) {
 
   if (!tagScalars || tagScalars.length === 0) {
       console.error('No FAQ data provided.');
@@ -93,7 +87,7 @@ export function createLayerDrawers(tagScalars) {
       const content = document.createElement('div');
       content.className = 'faq-drawer__content';
 
-      content.appendChild(cardformat(tag,scalars));
+      content.appendChild(cardformat(run,tag,scalars));
       contentWrapper.appendChild(content);
       drawer.appendChild(input);
       drawer.appendChild(label);
@@ -105,9 +99,12 @@ export function createLayerDrawers(tagScalars) {
 }
 
 
-function cardformat(tag,scalars){
+function cardformat(run,tag,scalars){
   
   // Create cards container
+  const container = createElement('div');
+
+
   const cardsContainer = createElement('div');
   cardsContainer.className = 'cards-container';
   cardsContainer.id = `cards-container_${tag}`;
@@ -179,48 +176,53 @@ const simplifiedData = [
   { date: "2018-04-01", value: 7060.95 }
 ];
 
-  scalars.forEach((scalar, scalar_tag) => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.id = `card_${tag}_${scalar_tag}`;
-    console.log(scalar);
-    card.appendChild(Utils.generateLineChart(tag,scalar_tag,scalar));
-    cardsContainer.appendChild(card);
-  });
 
-    // const card = document.createElement('div');
-    // card.className = 'card';
-    // card.appendChild(Utils.createLineChart(multiData));
-    // card.appendChild(Utils.createZoomableLineChart (data));
-    // card.appendChild(Utils.SmoothLineChart());
-    // Utils.generateLineChart(scalar);
+  if(run === "system_performance"){
 
+    scalars.forEach((scalar, scalar_tag) => {
+
+      if(scalar_tag != "start_time_execution" && scalar_tag != "end_time_execution")
+      {
+        
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.id = `card_${tag}_${scalar_tag}`;
+      console.log(scalar);
   
-    // card.appendChild(Utils.generateLineChart(layer,tag,scalar,idx));
+      card.appendChild(Utils.EnergyUsageChart(tag,scalar_tag,scalar));
+      cardsContainer.appendChild(card);
 
-    // Example usage
-    // Utils.createD3Chart({
-    //   svgWidth: 600,
-    //   svgHeight: 400,
-    //   margin: { top: 20, right: 20, bottom: 70, left: 40 },
-    //   chartTitleDim: 30,
-    //   xTitleDim: 20,
-    //   xAxisDim: 20,
-    //   navChartDim: 70,
-    //   border: true,
-    //   xTitle: "Time",
-    //   yTitle: "Energy Usage",
-    //   chartTitle: "Resource Monitoring",
-    //   xDomain: [new Date(2020, 0, 1), new Date(2020, 11, 31)],
-    //   navXDomain: [new Date(2020, 0, 1), new Date(2020, 11, 31)],
-    //   yDomain: ['A', 'B', 'C', 'D'],
-    //   tickFormat: d3.timeFormat("%b"),
-    // });
+      }
+      else
+      {
+      }
 
-    return cardsContainer;
+
+    });
+  }
+  else if(run === "fake_bert"){
+
+    if(tag == "FLOPs"){
+      container.appendChild(Utils.multilinechart(scalars));
+    }
+
+    scalars.forEach((scalar, scalar_tag) => {
+      
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.id = `card_${tag}_${scalar_tag}`;
+      console.log(scalar);
+  
+      card.appendChild(Utils.CalculationChart(tag,scalar_tag,scalar));
+      cardsContainer.appendChild(card);
+    });
+
+  }
+
+   container.appendChild(cardsContainer);
+    return container;
 
   // Append the cards container to the body or any specific element
-  mainContainer.appendChild(cardsContainer);
 }
 
 
@@ -231,4 +233,15 @@ function createElement(tag, className) {
     }
     return result;
   }
+
+
+// Extra graphs created to check visulizations of different kinds
+    // const card = document.createElement('div');
+    // card.className = 'card';
+    // card.appendChild(Utils.createLineChart(multiData));
+    // card.appendChild(Utils.createZoomableLineChart (data));
+    // card.appendChild(Utils.SmoothLineChart());
+    // Utils.generateLineChart(scalar);
+
   
+    // card.appendChild(Utils.generateLineChart(layer,tag,scalar,idx));
