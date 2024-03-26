@@ -13,13 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {
-  ApplicationRef,
-  Component,
-  NO_ERRORS_SCHEMA,
-  ViewChild,
-  ViewContainerRef,
-} from '@angular/core';
+import {Component, NO_ERRORS_SCHEMA} from '@angular/core';
 import {FilterbarComponent} from './filterbar_component';
 import {FilterbarContainer} from './filterbar_container';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
@@ -71,10 +65,7 @@ const fakeFilterMap = new Map<string, DiscreteFilter | IntervalFilter>([
   template: ` <filterbar></filterbar> `,
 })
 class TestableComponent {
-  constructor(
-    readonly customModal: CustomModal,
-    readonly vcRef: ViewContainerRef
-  ) {}
+  constructor(readonly customModal: CustomModal) {}
 }
 
 describe('hparam_filterbar', () => {

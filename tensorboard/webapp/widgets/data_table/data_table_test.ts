@@ -20,7 +20,6 @@ import {
   Input,
   Output,
   ViewChild,
-  ViewContainerRef,
 } from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatIconTestingModule} from '../../testing/mat_icon_module';
@@ -105,10 +104,7 @@ class TestableComponent {
   }>();
   @Output() removeColumn = new EventEmitter<ColumnHeader>();
 
-  constructor(
-    readonly customModal: CustomModal,
-    readonly vcRef: ViewContainerRef
-  ) {}
+  constructor(readonly customModal: CustomModal) {}
 }
 
 describe('data table', () => {
