@@ -28,7 +28,7 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import {Overlay, OverlayModule, OverlayRef} from '@angular/cdk/overlay';
-import {first} from 'rxjs';
+import {first} from 'rxjs/operators';
 
 @Component({
   selector: 'fake-modal-view-container',
