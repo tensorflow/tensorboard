@@ -12,7 +12,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<custom-modal #contextMenu (onClose)="onContextMenuClosed()">
+<ng-template #contextMenuTemplate>
   <tb-data-table-context-menu
     [contextMenuHeader]="contextMenuHeader"
     [selectableColumns]="selectableColumns"
@@ -22,31 +22,23 @@ limitations under the License.
     (openFilterMenu)="openFilterMenu($event)"
     (openColumnSelector)="openColumnSelector($event)"
   ></tb-data-table-context-menu>
-</custom-modal>
+</ng-template>
 
-<custom-modal
-  #columnSelectorModal
-  *ngIf="selectableColumns && selectableColumns.length"
-  (onOpen)="focusColumnSelector()"
->
+<ng-template #columnSelectorModalTemplate>
   <tb-data-table-column-selector-component
     [selectableColumns]="selectableColumns"
-    [numColumnsLoaded]="numColumnsLoaded"
-    [hasMoreColumnsToLoad]="hasMoreColumnsToLoad"
     (columnSelected)="onColumnAdded($event)"
-    (loadAllColumns)="loadAllColumns.emit()"
   ></tb-data-table-column-selector-component>
-</custom-modal>
+</ng-template>
 
-<custom-modal #filterModal (onClose)="onFilterClosed()">
+<ng-template #filterModalTemplate>
   <tb-data-table-filter
-    *ngIf="getCurrentColumnFilter()"
     [filter]="getCurrentColumnFilter()"
     (intervalFilterChanged)="intervalFilterChanged($event)"
     (discreteFilterChanged)="discreteFilterChanged($event)"
     (includeUndefinedToggled)="includeUndefinedToggled()"
   ></tb-data-table-filter>
-</custom-modal>
+</ng-template>
 
 <div class="data-table">
   <div class="header">

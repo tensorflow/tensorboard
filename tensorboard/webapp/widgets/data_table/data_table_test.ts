@@ -13,7 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
+import {
+  ApplicationRef,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatIconTestingModule} from '../../testing/mat_icon_module';
 import {By} from '@angular/platform-browser';
@@ -35,8 +42,8 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {ColumnSelectorComponent} from './column_selector_component';
 import {ContentCellComponent} from './content_cell_component';
 import {ColumnSelectorModule} from './column_selector_module';
-import {CustomModalModule} from '../custom_modal/custom_modal_module';
 import {FilterDialog} from './filter_dialog_component';
+import {CustomModal} from '../custom_modal/custom_modal';
 
 @Component({
   selector: 'testable-comp',
@@ -58,7 +65,6 @@ import {FilterDialog} from './filter_dialog_component';
           <tb-data-table-header-cell
             [header]="header"
             [sortingInfo]="sortingInfo"
-            [hparamsEnabled]="hparamsEnabled"
           ></tb-data-table-header-cell> </ng-container
       ></ng-container>
       <ng-container content>
@@ -97,6 +103,8 @@ class TestableComponent {
     index?: number;
   }>();
   @Output() removeColumn = new EventEmitter<ColumnHeader>();
+
+  constructor(readonly customModal: CustomModal) {}
 }
 
 describe('data table', () => {
@@ -113,7 +121,6 @@ describe('data table', () => {
         MatIconTestingModule,
         DataTableModule,
         ColumnSelectorModule,
-        CustomModalModule,
         NoopAnimationsModule,
       ],
     }).compileComponents();
@@ -132,7 +139,6 @@ describe('data table', () => {
   function createComponent(input: {
     headers?: ColumnHeader[];
     sortingInfo?: SortingInfo;
-    hparamsEnabled?: boolean;
     data?: TableData[];
     potentialColumns?: ColumnHeader[];
     columnFilters?: Map<string, DiscreteFilter | IntervalFilter>;
@@ -167,6 +173,9 @@ describe('data table', () => {
     fixture.componentInstance.orderColumns = orderColumnsSpy;
     fixture.detectChanges();
 
+    // Add component to app ref for modal testing.
+    const appRef = TestBed.inject(ApplicationRef);
+    appRef.components.push(fixture.componentRef);
     return fixture;
   }
 
@@ -924,12 +933,18 @@ describe('data table', () => {
     });
 
     function openFilterDialog(fixture: ComponentFixture<TestableComponent>) {
-      fixture.debugElement
-        .query(By.directive(DataTableComponent))
-        .componentInstance.openContextMenu(
-          mockHeaders[0],
-          new MouseEvent('contextmenu')
-        );
+      const dataTableDebugEl = fixture.debugElement.query(
+        By.directive(DataTableComponent)
+      );
+      const mouseEvent = new MouseEvent('contextmenu');
+      const headerEl = fixture.debugElement.query(
+        By.css('.context-menu-container')
+      ).nativeElement;
+      spyOnProperty(mouseEvent, 'target').and.returnValue(headerEl);
+      dataTableDebugEl.componentInstance.openContextMenu(
+        mockHeaders[0],
+        mouseEvent
+      );
       fixture.detectChanges();
       const filterBtn = fixture.debugElement
         .queryAll(By.css('.context-menu button'))

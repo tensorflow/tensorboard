@@ -43,7 +43,6 @@ import {FilterbarComponent} from './filterbar_component';
 import {FilterbarContainer} from './filterbar_container';
 import {RunsGroupMenuButtonComponent} from './runs_group_menu_button_component';
 import {RunsGroupMenuButtonContainer} from './runs_group_menu_button_container';
-import {CustomModalModule} from '../../../widgets/custom_modal/custom_modal_module';
 import {RunsDataTable} from './runs_data_table';
 import {RunsTableContainer} from './runs_table_container';
 import {ReactiveFormsModule} from '@angular/forms';
@@ -68,7 +67,6 @@ import {ReactiveFormsModule} from '@angular/forms';
     MatSortModule,
     MatTableModule,
     RangeInputModule,
-    CustomModalModule,
     AlertModule,
     MatSelectModule,
     ReactiveFormsModule,

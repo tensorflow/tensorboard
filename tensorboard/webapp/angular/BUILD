@@ -373,6 +373,15 @@ tf_ts_library(
     ],
 )
 
+# This is a dummy rule used as a @angular/cdk/portal dependency.
+tf_ts_library(
+    name = "expect_angular_cdk_portal",
+    srcs = [],
+    deps = [
+        "@npm//@angular/cdk",
+    ],
+)
+
 # This is a dummy rule used as a @angular/cdk/scrolling dependency.
 tf_ts_library(
     name = "expect_angular_cdk_scrolling",
