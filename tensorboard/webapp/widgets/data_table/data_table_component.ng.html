@@ -27,7 +27,10 @@ limitations under the License.
 <ng-template #columnSelectorModalTemplate>
   <tb-data-table-column-selector-component
     [selectableColumns]="selectableColumns"
+    [numColumnsLoaded]="numColumnsLoaded"
+    [hasMoreColumnsToLoad]="hasMoreColumnsToLoad"
     (columnSelected)="onColumnAdded($event)"
+    (loadAllColumns)="loadAllColumns.emit()"
   ></tb-data-table-column-selector-component>
 </ng-template>
 
