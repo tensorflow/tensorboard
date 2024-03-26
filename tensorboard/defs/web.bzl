@@ -151,7 +151,7 @@ def _tf_web_library(ctx):
                     ctx.outputs.executable,
                     dummy,
                 ]),
-                extra_runfiles_attrs = ["export_deps", "_WebfilesServer"],
+                extra_runfiles_attrs = ["exports", "_WebfilesServer"],
             ),
         ),
     ]
