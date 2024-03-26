@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {NO_ERRORS_SCHEMA} from '@angular/core';
+import {Component, NO_ERRORS_SCHEMA} from '@angular/core';
 import {FilterbarComponent} from './filterbar_component';
 import {FilterbarContainer} from './filterbar_container';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
@@ -22,7 +22,6 @@ import {MockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
 import {Action, Store} from '@ngrx/store';
 import {By} from '@angular/platform-browser';
-import {CustomModalModule} from '../../../widgets/custom_modal/custom_modal_module';
 import {
   actions as hparamsActions,
   selectors as hparamsSelectors,
@@ -36,9 +35,9 @@ import {MatChipHarness} from '@angular/material/chips/testing';
 import {TestbedHarnessEnvironment} from '@angular/cdk/testing/testbed';
 import {MatChipRemove, MatChipsModule} from '@angular/material/chips';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
-import {CustomModalComponent} from '../../../widgets/custom_modal/custom_modal_component';
 import {FilterDialogModule} from '../../../widgets/data_table/filter_dialog_module';
 import {FilterDialog} from '../../../widgets/data_table/filter_dialog_component';
+import {CustomModal} from '../../../widgets/custom_modal/custom_modal';
 
 const discreteFilter: DiscreteFilter = {
   type: DomainType.DISCRETE,
@@ -61,6 +60,14 @@ const fakeFilterMap = new Map<string, DiscreteFilter | IntervalFilter>([
   ['filter2', intervalFilter],
 ]);
 
+@Component({
+  selector: 'testable-component',
+  template: ` <filterbar></filterbar> `,
+})
+class TestableComponent {
+  constructor(readonly customModal: CustomModal) {}
+}
+
 describe('hparam_filterbar', () => {
   let actualActions: Action[];
   let store: MockStore<State>;
@@ -69,13 +76,12 @@ describe('hparam_filterbar', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        CustomModalModule,
         NoopAnimationsModule,
         MatChipsModule,
         MatIconTestingModule,
         FilterDialogModule,
       ],
-      declarations: [FilterbarComponent, FilterbarContainer],
+      declarations: [FilterbarComponent, FilterbarContainer, TestableComponent],
       providers: [provideMockTbStore()],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -85,23 +91,26 @@ describe('hparam_filterbar', () => {
     store?.resetSelectors();
   });
 
-  function createComponent(): ComponentFixture<FilterbarContainer> {
+  function createComponent(): ComponentFixture<TestableComponent> {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     actualActions = [];
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
     });
 
-    return TestBed.createComponent(FilterbarContainer);
+    const fixture = TestBed.createComponent(TestableComponent);
+    return fixture;
   }
 
   it('renders hparam filterbar', () => {
     const fixture = createComponent();
     fixture.detectChanges();
 
-    const dialog = fixture.debugElement.query(By.directive(FilterbarComponent));
+    const filterBarComponent = fixture.debugElement.query(
+      By.directive(FilterbarComponent)
+    );
 
-    expect(dialog).toBeTruthy();
+    expect(filterBarComponent).toBeTruthy();
   });
 
   it("doesn't render if no filters are set", async () => {
@@ -164,23 +173,23 @@ describe('hparam_filterbar', () => {
     const component = fixture.debugElement.query(
       By.directive(FilterbarComponent)
     ).componentInstance;
-    const openAtPositionSpy = spyOn(
-      CustomModalComponent.prototype,
-      'openAtPosition'
+    const createNextToElementSpy = spyOn(
+      TestBed.inject(CustomModal),
+      'createNextToElement'
     );
     const loader = TestbedHarnessEnvironment.loader(fixture);
     fixture.detectChanges();
 
     const chipHarness = await loader.getHarness(MatChipHarness);
     const chip = await chipHarness.host();
-    const chipDimensions = await chip.getDimensions();
     await chip.click();
     fixture.detectChanges();
 
-    expect(openAtPositionSpy).toHaveBeenCalledWith({
-      x: chipDimensions.left + chipDimensions.width,
-      y: chipDimensions.top,
-    });
+    expect(createNextToElementSpy).toHaveBeenCalledWith(
+      component.filterModalTemplate,
+      fixture.debugElement.query(By.css('mat-chip')).nativeElement,
+      component.viewContainerRef
+    );
     expect(component.selectedFilterName).toBe('filter1');
   });
 

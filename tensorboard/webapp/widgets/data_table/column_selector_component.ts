@@ -93,12 +93,12 @@ export class ColumnSelectorComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     this.searchInput = '';
-    this.searchField.nativeElement.focus();
     this.selectedIndex$.next(0);
-  }
-
-  focus() {
-    this.searchField?.nativeElement.focus();
+    this.activate();
+    // Wait until next tick to prevent https://angular.io/errors/NG0100
+    setTimeout(() => {
+      this.searchField?.nativeElement.focus();
+    });
   }
 
   getFilteredColumns() {

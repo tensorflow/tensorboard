@@ -12,183 +12,309 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-import {CustomModalComponent} from './custom_modal_component';
+import {CustomModal} from './custom_modal';
 import {CommonModule} from '@angular/common';
 import {
   Component,
-  ElementRef,
-  EventEmitter,
-  Output,
+  TemplateRef,
   ViewChild,
+  ViewContainerRef,
 } from '@angular/core';
-
-function waitFrame() {
-  return new Promise((resolve) => window.requestAnimationFrame(resolve));
-}
+import {Overlay, OverlayModule, OverlayRef} from '@angular/cdk/overlay';
+import {first} from 'rxjs';
 
 @Component({
-  selector: 'testable-modal',
-  template: `<custom-modal #modal (onOpen)="setOpen()" (onClose)="setClosed()">
-    <div>My great content</div>
-  </custom-modal> `,
+  selector: 'fake-modal-view-container',
+  template: `
+    <button class="modal-trigger-button">Modal trigger button</button>
+    <button class="another-modal-trigger-button">
+      Another modal trigger button
+    </button>
+    <ng-template #modalTemplate>
+      <div class="content">abc123</div>
+    </ng-template>
+    <ng-template #anotherModalTemplate>
+      <div class="another-content">xyz</div>
+    </ng-template>
+  `,
+  styles: [
+    `
+      :host {
+        display: block;
+        width: 400px;
+        height: 400px;
+      }
+
+      .content,
+      .another-content {
+        // Make modals small to allow easily testing clicking outside of modals.
+        width: 10px;
+        height: 10px;
+      }
+    `,
+  ],
 })
-class TestableComponent {
-  @ViewChild('modal', {static: false})
-  modalComponent!: CustomModalComponent;
+class FakeViewContainerComponent {
+  @ViewChild('modalTemplate', {read: TemplateRef})
+  readonly modalTemplateRef!: TemplateRef<unknown>;
 
-  @ViewChild('content', {static: false})
-  content!: ElementRef;
+  @ViewChild('anotherModalTemplate', {read: TemplateRef})
+  readonly anotherModalTemplateRef!: TemplateRef<unknown>;
 
-  isOpen = false;
-
-  @Output() onOpen = new EventEmitter();
-  @Output() onClose = new EventEmitter();
-
-  setOpen() {
-    this.isOpen = true;
-    this.onOpen.emit();
-  }
-
-  setClosed() {
-    this.isOpen = false;
-    this.onClose.emit();
-  }
-
-  close() {
-    this.modalComponent.close();
-  }
-
-  getContentStyle() {
-    return (this.modalComponent as any).content.nativeElement.style;
-  }
-
-  public openAtPosition(position: {x: number; y: number}) {
-    this.modalComponent.openAtPosition(position);
-  }
+  constructor(
+    readonly customModal: CustomModal,
+    readonly vcRef: ViewContainerRef
+  ) {}
 }
 
 describe('custom modal', () => {
+  let viewContainerFixture: ComponentFixture<FakeViewContainerComponent>;
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [TestableComponent, CustomModalComponent],
-      imports: [CommonModule],
+      declarations: [FakeViewContainerComponent],
+      imports: [CommonModule, OverlayModule],
     }).compileComponents();
+
+    viewContainerFixture = TestBed.createComponent(FakeViewContainerComponent);
+    viewContainerFixture.detectChanges();
   });
 
-  it('waits a frame before emitting onOpen or onClose', async () => {
-    const fixture = TestBed.createComponent(TestableComponent);
-    fixture.detectChanges();
-    fixture.componentInstance.openAtPosition({x: 0, y: 0});
-    expect(fixture.componentInstance.isOpen).toBeFalse();
-    await waitFrame();
-    expect(fixture.componentInstance.isOpen).toBeTrue();
-    fixture.componentInstance.close();
-    fixture.detectChanges();
-    await waitFrame();
-    expect(fixture.componentInstance.isOpen).toBeFalse();
+  it('creates a modal', () => {
+    const viewContainerComponent = viewContainerFixture.componentInstance;
+    const modalTriggerButton = viewContainerFixture.debugElement.query(
+      By.css('.modal-trigger-button')
+    ).nativeElement;
+    const overlay = TestBed.inject(Overlay);
+    const createSpy = spyOn(overlay, 'create').and.callThrough();
+    const attachSpy = spyOn(OverlayRef.prototype, 'attach').and.callThrough();
+
+    viewContainerComponent.customModal.createNextToElement(
+      viewContainerComponent.modalTemplateRef,
+      modalTriggerButton,
+      viewContainerComponent.vcRef
+    );
+    viewContainerFixture.detectChanges();
+
+    const content = viewContainerFixture.debugElement.query(By.css('.content'));
+    expect(content.nativeElement.innerHTML).toContain('abc123');
+    const createArg = createSpy.calls.mostRecent().args[0]!;
+    expect(createArg.positionStrategy).toEqual(
+      jasmine.objectContaining({
+        positions: [
+          {
+            originX: 'end',
+            originY: 'top',
+            overlayX: 'start',
+            overlayY: 'top',
+          },
+        ],
+      })
+    );
+    const attachArgs = attachSpy.calls.mostRecent().args[0];
+    expect(attachArgs.templateRef).toBe(
+      viewContainerComponent.modalTemplateRef
+    );
+    expect(attachArgs.viewContainerRef).toBe(viewContainerComponent.vcRef);
   });
 
-  describe('openAtPosition', () => {
-    it('applies top and left offsets', () => {
-      const fixture = TestBed.createComponent(TestableComponent);
-      fixture.detectChanges();
-      fixture.componentInstance.openAtPosition({x: 20, y: 10});
-      expect(fixture.componentInstance.getContentStyle().top).toEqual('10px');
-      expect(fixture.componentInstance.getContentStyle().left).toEqual('20px');
-    });
+  describe('overlay event subscriptions', () => {
+    it('subscribes to click and pointer events on create', fakeAsync(() => {
+      const viewContainerComponent = viewContainerFixture.componentInstance;
+      const modalTriggerButton = viewContainerFixture.debugElement.query(
+        By.css('.modal-trigger-button')
+      ).nativeElement;
 
-    it('emits onOpen', async () => {
-      const fixture = TestBed.createComponent(TestableComponent);
-      const spy = spyOn(fixture.componentInstance.onOpen, 'emit');
-      fixture.detectChanges();
-      fixture.componentInstance.openAtPosition({x: 20, y: 10});
-      expect(spy).not.toHaveBeenCalled();
-      await waitFrame();
-      expect(spy).toHaveBeenCalled();
+      const customModalRef =
+        viewContainerComponent.customModal.createNextToElement(
+          viewContainerComponent.modalTemplateRef,
+          modalTriggerButton,
+          viewContainerComponent.vcRef
+        )!;
+      tick();
+
+      expect(customModalRef.subscriptions.length).toEqual(2);
+    }));
+
+    it('cleans up subscriptions on removal', fakeAsync(() => {
+      const viewContainerComponent = viewContainerFixture.componentInstance;
+      const modalTriggerButton = viewContainerFixture.debugElement.query(
+        By.css('.modal-trigger-button')
+      ).nativeElement;
+      const customModalRef =
+        viewContainerComponent.customModal.createNextToElement(
+          viewContainerComponent.modalTemplateRef,
+          modalTriggerButton,
+          viewContainerComponent.vcRef
+        )!;
+      tick();
+
+      viewContainerComponent.customModal.close(customModalRef);
+
+      expect(customModalRef.subscriptions.length).toEqual(0);
+    }));
+  });
+
+  describe('closeAll', () => {
+    it('clears all modals in the modal ViewContainerRef', () => {
+      const viewContainerComponent = viewContainerFixture.componentInstance;
+      const modalTriggerButton = viewContainerFixture.debugElement.query(
+        By.css('.modal-trigger-button')
+      ).nativeElement;
+      const anotherModalTriggerButton = viewContainerFixture.debugElement.query(
+        By.css('.another-modal-trigger-button')
+      ).nativeElement;
+      viewContainerComponent.customModal.createNextToElement(
+        viewContainerComponent.modalTemplateRef,
+        modalTriggerButton,
+        viewContainerComponent.vcRef
+      );
+      viewContainerComponent.customModal.createNextToElement(
+        viewContainerComponent.anotherModalTemplateRef,
+        anotherModalTriggerButton,
+        viewContainerComponent.vcRef
+      );
+      viewContainerFixture.detectChanges();
+
+      TestBed.inject(CustomModal).closeAll();
+
+      const content = viewContainerFixture.debugElement.query(
+        By.css('.content')
+      );
+      const anotherContent = viewContainerFixture.debugElement.query(
+        By.css('.another-content')
+      );
+      expect(content).toBeNull();
+      expect(anotherContent).toBeNull();
+      expect(viewContainerComponent.vcRef.length).toBe(0);
     });
   });
 
   describe('closing behavior', () => {
-    let fixture: ComponentFixture<TestableComponent>;
-    beforeEach(async () => {
-      fixture = TestBed.createComponent(TestableComponent);
-      fixture.detectChanges();
-      fixture.componentInstance.openAtPosition({x: 0, y: 0});
-      await waitFrame();
-    });
+    it('emits onClose event on close', fakeAsync(() => {
+      const viewContainerComponent = viewContainerFixture.componentInstance;
+      const modalTriggerButton = viewContainerFixture.debugElement.query(
+        By.css('.modal-trigger-button')
+      ).nativeElement;
+      const customModalRef =
+        viewContainerComponent.customModal.createNextToElement(
+          viewContainerComponent.modalTemplateRef,
+          modalTriggerButton,
+          viewContainerComponent.vcRef
+        )!;
 
-    it('closes when escape key is pressed', async () => {
-      expect(fixture.componentInstance.isOpen).toBeTrue();
-      const event = new KeyboardEvent('keydown', {key: 'escape'});
-      document.dispatchEvent(event);
-      await waitFrame();
+      customModalRef.onClose.pipe(first()).subscribe((val) => {
+        // onClose should emit an empty value.
+        expect(val).toBeUndefined();
+      });
 
-      expect(fixture.componentInstance.isOpen).toBeFalse();
-    });
+      viewContainerComponent.customModal.close(customModalRef);
+      tick();
+    }));
 
-    it('closes when user clicks outside modal', async () => {
-      expect(fixture.componentInstance.isOpen).toBeTrue();
-      document.body.click();
-      await waitFrame();
+    it('closes when escape key is pressed', fakeAsync(() => {
+      const viewContainerComponent = viewContainerFixture.componentInstance;
+      const modalTriggerButton = viewContainerFixture.debugElement.query(
+        By.css('.modal-trigger-button')
+      ).nativeElement;
+      viewContainerComponent.customModal.createNextToElement(
+        viewContainerComponent.modalTemplateRef,
+        modalTriggerButton,
+        viewContainerComponent.vcRef
+      );
+      viewContainerFixture.detectChanges();
+      tick();
+      const content = viewContainerFixture.debugElement.query(
+        By.css('.content')
+      );
 
-      expect(fixture.componentInstance.isOpen).toBeFalse();
-    });
-  });
+      const event = new KeyboardEvent('keydown', {key: 'Escape'});
+      document.body.dispatchEvent(event);
+      viewContainerFixture.detectChanges();
+      tick();
 
-  describe('ensures content is always within the window', () => {
-    beforeEach(() => {
-      window.innerHeight = 1000;
-      window.innerWidth = 1000;
-    });
+      expect(viewContainerComponent.vcRef.length).toBe(0);
+      expect(
+        viewContainerFixture.debugElement.query(By.css('.content'))
+      ).toBeNull();
+    }));
 
-    it('sets left to 0 if less than 0', async () => {
-      const fixture = TestBed.createComponent(TestableComponent);
-      fixture.detectChanges();
-      fixture.componentInstance.openAtPosition({x: -10, y: 0});
-      expect(fixture.componentInstance.isOpen).toBeFalse();
-      await waitFrame();
-      fixture.detectChanges();
+    it('closes all modals when user clicks an area outside all modals', fakeAsync(() => {
+      const viewContainerComponent = viewContainerFixture.componentInstance;
+      const modalTriggerButton = viewContainerFixture.debugElement.query(
+        By.css('.modal-trigger-button')
+      ).nativeElement;
+      const anotherModalTriggerButton = viewContainerFixture.debugElement.query(
+        By.css('.another-modal-trigger-button')
+      ).nativeElement;
+      viewContainerComponent.customModal.createNextToElement(
+        viewContainerComponent.modalTemplateRef,
+        modalTriggerButton,
+        viewContainerComponent.vcRef
+      );
+      viewContainerComponent.customModal.createNextToElement(
+        viewContainerComponent.anotherModalTemplateRef,
+        anotherModalTriggerButton,
+        viewContainerComponent.vcRef
+      );
+      viewContainerFixture.detectChanges();
+      tick();
 
-      const content = fixture.debugElement.query(By.css('.content'));
-      expect(content.nativeElement.style.left).toEqual('0px');
-    });
+      const event = new MouseEvent('click', {clientX: 300, clientY: 300});
+      viewContainerFixture.nativeElement.dispatchEvent(event);
+      viewContainerFixture.detectChanges();
 
-    it('sets top to 0 if less than 0', async () => {
-      const fixture = TestBed.createComponent(TestableComponent);
-      fixture.detectChanges();
-      fixture.componentInstance.openAtPosition({x: 0, y: -10});
-      expect(fixture.componentInstance.isOpen).toBeFalse();
-      await waitFrame();
-      fixture.detectChanges();
+      const content = viewContainerFixture.debugElement.query(
+        By.css('.content')
+      );
+      const anotherContent = viewContainerFixture.debugElement.query(
+        By.css('.another-content')
+      );
+      expect(content).toBeNull();
+      expect(anotherContent).toBeNull();
+      expect(viewContainerComponent.vcRef.length).toBe(0);
+    }));
 
-      const content = fixture.debugElement.query(By.css('.content'));
-      expect(content.nativeElement.style.top).toEqual('0px');
-    });
+    it('does not close when a click is inside at least one modal', async () => {
+      const viewContainerComponent = viewContainerFixture.componentInstance;
+      const modalTriggerButton = viewContainerFixture.debugElement.query(
+        By.css('.modal-trigger-button')
+      ).nativeElement;
+      const anotherModalTriggerButton = viewContainerFixture.debugElement.query(
+        By.css('.another-modal-trigger-button')
+      ).nativeElement;
+      viewContainerComponent.customModal.createNextToElement(
+        viewContainerComponent.modalTemplateRef,
+        modalTriggerButton,
+        viewContainerComponent.vcRef
+      );
+      viewContainerComponent.customModal.createNextToElement(
+        viewContainerComponent.anotherModalTemplateRef,
+        anotherModalTriggerButton,
+        viewContainerComponent.vcRef
+      );
+      viewContainerFixture.detectChanges();
+      const content = viewContainerFixture.debugElement.query(
+        By.css('.content')
+      );
+      const anotherContent = viewContainerFixture.debugElement.query(
+        By.css('.another-content')
+      );
 
-    it('sets left to maximum if content overflows the window', async () => {
-      const fixture = TestBed.createComponent(TestableComponent);
-      fixture.detectChanges();
-      fixture.componentInstance.openAtPosition({x: 1010, y: 0});
-      expect(fixture.componentInstance.isOpen).toBeFalse();
-      await waitFrame();
-      fixture.detectChanges();
-      const content = fixture.debugElement.query(By.css('.content'));
-      // While rendering in a test the elements width and height will appear to be 0.
-      expect(content.nativeElement.style.left).toEqual('1000px');
-    });
+      // Event is in first modal.
+      const event = new MouseEvent('click', {clientX: 101, clientY: 101});
+      content.nativeElement.dispatchEvent(event);
+      viewContainerFixture.detectChanges();
 
-    it('sets top to maximum if content overflows the window', async () => {
-      const fixture = TestBed.createComponent(TestableComponent);
-      fixture.detectChanges();
-      fixture.componentInstance.openAtPosition({x: 0, y: 1010});
-      expect(fixture.componentInstance.isOpen).toBeFalse();
-      await waitFrame();
-      fixture.detectChanges();
-      const content = fixture.debugElement.query(By.css('.content'));
-      // While rendering in a test the elements width and height will appear to be 0.
-      expect(content.nativeElement.style.top).toEqual('1000px');
+      expect(content.nativeElement.innerHTML).toContain('abc123');
+      expect(anotherContent.nativeElement.innerHTML).toContain('xyz');
     });
   });
 });
