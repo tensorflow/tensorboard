@@ -146,10 +146,3 @@ export const getIsScalarColumnCustomizationEnabled = createSelector(
     return flags.enableScalarColumnCustomization;
   }
 );
-
-export const getIsScalarColumnContextMenusEnabled = createSelector(
-  getFeatureFlags,
-  (flags: FeatureFlags): boolean => {
-    return flags.enableScalarColumnContextMenus;
-  }
-);

@@ -110,11 +110,6 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       queryParamOverride: 'enableScalarColumnCustomization',
       parseValue: parseBoolean,
     },
-    enableScalarColumnContextMenus: {
-      defaultValue: false,
-      queryParamOverride: 'enableScalarColumnContextMenus',
-      parseValue: parseBoolean,
-    },
     enableSuggestedCards: {
       defaultValue: false,
       queryParamOverride: 'enableSuggestedCards',
