@@ -112,7 +112,7 @@ def _tf_web_library(ctx):
         ],
     )
     params_file = _new_file(ctx, "-params.pbtxt")
-    ctx.actions.write(output = params_file, content = params.to_proto())
+    ctx.actions.write(output = params_file, content = proto.encode_text(params))
     ctx.actions.write(
         is_executable = True,
         output = ctx.outputs.executable,
