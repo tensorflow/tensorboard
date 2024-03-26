@@ -40,7 +40,8 @@ import {
   AddColumnEvent,
 } from './types';
 import {HeaderCellComponent} from './header_cell_component';
-import {Subscription, first} from 'rxjs';
+import {Subscription} from 'rxjs';
+import {first} from 'rxjs/operators';
 import {ContentCellComponent} from './content_cell_component';
 import {RangeValues} from '../range_input/types';
 import {dataTableUtils} from './utils';
