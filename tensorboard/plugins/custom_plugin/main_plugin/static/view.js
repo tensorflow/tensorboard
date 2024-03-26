@@ -29,24 +29,31 @@ export function createPreviews(run,tagsToScalars) {
       return fragment;
     }
     else{
-  
-      let extra = createLayerDrawers(run, tagsToScalars);
-      fragment.appendChild(extra);
 
+      if(run == "system_performance"){
+        
+        fragment.appendChild(Utils.Resource());
+            // Create a new div element
+        fragment.appendChild(Utils.Resource1());
+        
+   
+      }
+      else{
+        let extra = createLayerDrawers(run, tagsToScalars);
+        fragment.appendChild(extra);
+      }
       return fragment;
     }
 }
 
+// function createDataSelector(scalars) {
+//   const Array = [];
+//   for (const scalar of scalars) {
+//     Array.push(scalar);
+//   }
+//   return createRunSelector(Array,"data-selector");
 
-
-function createDataSelector(scalars) {
-  const Array = [];
-  for (const scalar of scalars) {
-    Array.push(scalar);
-  }
-  return createRunSelector(Array,"data-selector");
-
-}
+// }
 
 export function createLayerDrawers(run,tagScalars) {
 
@@ -193,16 +200,15 @@ const simplifiedData = [
       cardsContainer.appendChild(card);
 
       }
-      else
-      {
-      }
-
 
     });
   }
   else if(run === "fake_bert"){
 
     if(tag == "FLOPs"){
+      container.appendChild(Utils.multilinechart(scalars,"Steps","Flop Counts"));
+    }
+    else{
       container.appendChild(Utils.multilinechart(scalars));
     }
 

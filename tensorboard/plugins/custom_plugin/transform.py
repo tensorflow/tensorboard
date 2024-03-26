@@ -49,7 +49,7 @@ def collect_data_from_json_file(json_file):
                         for time_point, energy in zip(times, energies):
                             tf.summary.scalar(f"{layer_name}/{device_type}",
                                             energy,
-                                            step=int(time_point*1000))
+                                            step=int(time_point*1000000000))
                             # Ensure summaries are written to disk
                             writer.flush()
                     except:
@@ -58,12 +58,12 @@ def collect_data_from_json_file(json_file):
                             if(device_type == 'GPU'):
                                 timestamps, tempratures, times, energies = zip(*data["data"])
                                 for tstamp, temp, time_point, energy in zip(timestamps,tempratures, times, energies):
-                                    tf.summary.scalar(f"{layer_name}/{device_type}-temperature",
+                                    tf.summary.scalar(f"{layer_name}/{device_type}/temperature",
                                                 temp,
                                                 step=int(tstamp))
-                                    tf.summary.scalar(f"{layer_name}/{device_type}-energy",
+                                    tf.summary.scalar(f"{layer_name}/{device_type}/energy",
                                             energy,
-                                            step=int(time_point*1000))
+                                            step=int(time_point*1000000000))
 
                                     # Ensure summaries are written to disk
                                     writer.flush()

@@ -1,3 +1,4 @@
+// For Loading Javascript files dynamically
 export function createJSElement(file,object,path="./static"){
 
     return new Promise((resolve,rejetct)=>{
@@ -283,6 +284,7 @@ paletteExpand.addEventListener('click', function() {
   return container;
 }
 
+// For Pytorch Model Calculations like loss,Accuracy, Flop Calculation.
 export function CalculationChart(main_tag,scalar_tag,dataArray) {
 
   main_tag = main_tag.replace(/[.,]/g, "-").split("").reverse().join("").replace(/\)\(/, "").split("").reverse().join("");
@@ -290,12 +292,12 @@ export function CalculationChart(main_tag,scalar_tag,dataArray) {
   var container = document.createElement('div');
 
   const data = dataArray.map(d => ({
-      date: new Date(d[1] * 1000),
+      step: +d[1],
       value: +d[2]
   }));
 
   // Set the dimensions and margins of the graph
-  const margin = {top: 10, right: 30, bottom: 30, left: 60},
+  const margin = {top: 30, right: 30, bottom: 30, left: 60},
         width = 600 - margin.left - margin.right,
         height = 400 - margin.top - margin.bottom;
 
@@ -312,9 +314,9 @@ export function CalculationChart(main_tag,scalar_tag,dataArray) {
       .attr("transform", `translate(${margin.left},${margin.top})`);    
 
   // Add X axis --> it is a date format
-  const x = d3.scaleTime()
-    .domain(d3.extent(data, d => d.date))
-    .range([0, width]);
+  const x = d3.scaleLinear()
+  .domain([d3.min(data, d => d.step), d3.max(data, d => d.step) + 10]) // Use step values for domain
+  .range([0, width]);
     
   const xAxis = svg.append("g")
     .attr("transform", `translate(0,${height})`)
@@ -347,6 +349,14 @@ export function CalculationChart(main_tag,scalar_tag,dataArray) {
   .attr("stroke", "#e0e0e0")
   .attr("stroke-width",1);
 
+  svg.append("text") // Append text element
+   .attr("x", (width + margin.left + margin.right) / 2) // Center the text (assuming 'width' is the width of the chart area)
+   .attr("y", 0 - (margin.top / 2)) // Position above the chart by half the top margin
+   .attr("text-anchor", "middle") // Ensure the text is centered at its position
+   .style("font-size", "16px") // Set the text size
+   .style("font-weight", "bold") // Make the title bold
+   .text(scalar_tag);
+
   // Clipping path
   svg.append("defs").append("clipPath")
       .attr("id", "clip")
@@ -363,7 +373,7 @@ export function CalculationChart(main_tag,scalar_tag,dataArray) {
 
   // Line generation
   const line = d3.line()
-      .x(d => x(d.date))
+      .x(d => x(d.step))
       .y(d => y(d.value));
 
   // Add the line
@@ -377,7 +387,7 @@ export function CalculationChart(main_tag,scalar_tag,dataArray) {
     .attr("stroke", "steelblue")
     .attr("stroke-width", 2.5)
     .attr("d", d3.line()
-      .x(function(d) { return x(d.date) })
+      .x(function(d) { return x(d.step) })
       .y(function(d) { return y(d.value) })
       )
     // .attr("d", line);
@@ -392,7 +402,7 @@ export function CalculationChart(main_tag,scalar_tag,dataArray) {
       const selection = event.selection;
       if (!selection) {
           if (!idleTimeout) return idleTimeout = setTimeout(() => idleTimeout = null, 350);
-          x.domain(d3.extent(data, d => d.date));
+          x.domain(d3.extent(data, d => d.step));
       } else {
           x.domain([x.invert(selection[0]), x.invert(selection[1])]);
           lineChart.select(".brush").call(brush.move, null);
@@ -406,7 +416,7 @@ export function CalculationChart(main_tag,scalar_tag,dataArray) {
 
   // If user double clicks, reset the chart
   svg.on("dblclick", function() {
-      x.domain(d3.extent(data, function(d) { return d.date; }));
+      x.domain(d3.extent(data, function(d) { return d.step; }));
       xAxis.transition().call(d3.axisBottom(x));
       lineChart
         .select('.line')
@@ -459,7 +469,7 @@ var paletteExpand = document.createElement("button");
 paletteExpand.id = "palette_expand";
 paletteExpand.innerText = "Show Color Palette";
 paletteExpand.classList.add("expand");
-container.appendChild(expandButton);
+// container.appendChild(expandButton);
 
 // // Create the color palette container
 var colorPalette = document.createElement("div");
@@ -501,6 +511,332 @@ paletteExpand.addEventListener('click', function() {
   return container;
 }
 
+
+export function ResorceMonitorChart(main_tag,scalar_tag,dataArray) {
+
+  const container = document.createElement('div');
+  container.id ="resorce_monitor";
+
+  // Sample data for CPU, RAM, GPU. Each inner array represents a segment of data points.
+var cpu = [[15, 72, 61], [24, 3, 22, 53], [30, 38, 2]];
+var ram = [[89, 49, 91], [60, 80, 15], [62, 47, 62]];
+var gpu = [[39, 18, 4, 89], [2, 84, 92], [47, 35]];
+
+// Individual elapsed times for each CPU data subset, in seconds
+var cpuElapsedTimes = [
+  [0.5, 1.0, 1.5], // Elapsed times for the first CPU data subset
+  [2.0, 2.5, 3.0, 3.5], // Second subset
+  [4.0, 4.5, 5.0] // Third subset
+];
+
+// Starting execution time (in milliseconds) - Example timestamp
+var startExecutionTime = 1702011520384; // Simplified for demonstration
+
+// Function to convert CPU data and its elapsed times to [timestamp, value] pairs
+function convertCPUsToTimeSeries(cpuData, cpuElapsed, startTime) {
+  var timeSeries = [];
+  var currentTime = startTime;
+  cpuData.forEach((segment, segmentIndex) => {
+    segment.forEach((value, valueIndex) => {
+      currentTime += cpuElapsed[segmentIndex][valueIndex] * 1000; // Convert seconds to milliseconds
+      timeSeries.push([currentTime, value]);
+    });
+  });
+  return timeSeries;
+}
+
+
+
+// Simulated elapsed times in seconds for each data point
+// Assuming a uniform distribution of time for simplicity
+var elapsedTimes = Array.from({length: cpu.flat().length}, (_, i) => i * 0.5 + 0.5);
+console.log(elapsedTimes);
+// Convert the data arrays to [timestamp, value] pairs
+function convertToTimeSeries(data, startTime, elapsed) {
+  var timeSeries = [];
+  var currentTime = startTime;
+  var elapsedTimesCopy = [...elapsed]; // Copy to avoid modifying the original array
+  data.flat().forEach((value, index) => {
+    currentTime += elapsedTimesCopy[index] * 1000; // Convert seconds to milliseconds
+    timeSeries.push([currentTime, value]);
+  });
+  return timeSeries;
+}
+
+var cpuTimeSeries = convertToTimeSeries(cpu, startExecutionTime, elapsedTimes);
+var ramTimeSeries = convertToTimeSeries(ram, startExecutionTime, elapsedTimes);
+var gpuTimeSeries = convertToTimeSeries(gpu, startExecutionTime, elapsedTimes);
+
+// Prepare the series data for CPU, RAM, GPU with time series data
+var seriesData = [
+  { name: "CPU", data: cpuTimeSeries },
+  { name: "RAM", data: ramTimeSeries },
+  { name: "GPU", data: gpuTimeSeries }
+];
+
+// Annotations at the end of each CPU segment
+var cpuAnnotations = [];
+var segmentEnds = cpu.map(segment => segment.length).reduce((acc, cur, i) => {
+  acc.push((acc[i - 1] || 0) + cur);
+  return acc;
+}, []);
+
+segmentEnds.forEach((endIndex, index) => {
+  if (index < cpu.length - 1) { // Skip the last segment, as it naturally ends without a marker
+    cpuAnnotations.push({
+      x: cpuTimeSeries[endIndex - 1][0], // Timestamp of the last point in each segment
+      borderColor: "#FEB019",
+      label: {
+        orientation: "horizontal",
+        text: `CPU Segment ${index + 1} End`
+      }
+    });
+  }
+});
+
+// Combine all modifications into the ApexCharts options
+var options = {
+  annotations: {
+    xaxis: cpuAnnotations
+  },
+  chart: {
+    height: 380,
+    type: "line"
+  },
+  series: seriesData,
+  xaxis: {
+    type: "datetime"
+  },
+  // Additional configuration as needed...
+};
+
+var chart = new ApexCharts(document.querySelector("#resorce_monitor"), options);
+chart.render();
+
+}
+
+export function Resource(){
+  // Example datasets
+  const cpu = [
+      [1, 2, 3, 4, 5, 6, 7],
+      [11, 23, 20, 10, 5],
+      [0, 5, 2, 2, 7, 1, 6, 2]
+  ];
+  const gpu = [
+      [5, 7, 20, 25, 30, 45, 50],
+      [55, 6, 6, 7, 7],
+      [30, 35, 120, 2, 7, 15, 67, 2]
+
+  ];
+  const ram = [
+      [10, 20, 30, 40, 50, 60, 70],
+      [55, 60, 65, 70, 75],
+      [30, 35, 12, 2, 7, 15, 67, 2]
+
+  ];
+
+  const container = document.createElement("div");
+  container.id = "chart1";
+  document.body.appendChild(container);
+
+
+  // Function to adjust color brightness remains the same
+  function adjustColorBrightness(hex, lum) {
+      hex = String(hex).replace(/[^0-9a-f]/gi, '');
+      if (hex.length < 6) {
+          hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+      }
+      lum = lum || 0;
+
+      let rgb = "", c, i;
+      for (i = 0; i < 3; i++) {
+          c = parseInt(hex.substr(i * 2, 2), 16);
+          c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+          rgb += ("00" + c).substr(c.length);
+      }
+
+      return "#" + rgb;
+  }
+
+
+  // Function to generate annotations for sub-arrays needs a slight adjustment to accommodate multiple datasets
+  // Function to generate annotations for the CPU sub-arrays with unique non-matching colors
+  function generateAnnotationsForCPUSubArrays(cpuDataset) {
+      const annotations = { xaxis: [] };
+      let startPosition = 1; // Initial start position on the x-axis
+      // Define a unique color palette for annotations, ensuring these don't match the series line colors
+      const annotationColors = ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#ff9f40', '#ff6384', '#4bc0c0'];
+
+      cpuDataset.forEach((subArray, index) => {
+          const length = subArray.length;
+          const endPosition = startPosition + length - 1;
+          // Cycle through the annotation color palette based on the current index
+          const fillColor = annotationColors[index % annotationColors.length]; // Use modulus to cycle through colors
+
+          annotations.xaxis.push({
+              x: startPosition,
+              x2: endPosition,
+              fillColor: fillColor,
+              opacity: 0.1,
+              label: {
+                  borderColor: fillColor,
+                  style: {
+                      fontSize: '12px',
+                      color: '#fff',
+                      background: fillColor,
+                  },
+                  text: `Layer ${index + 1}`
+              }
+          });
+
+          startPosition += length; // Prepare the start position for the next dataset
+      });
+
+      return annotations;
+  }
+
+  // Continue using the rest of your code as it was, with this updated function for generating CPU annotations.
+  // This ensures the annotations have distinct colors that do not match the line colors for CPU, GPU, and RAM data.
+
+
+  // Flatten the datasets for the series data
+  const flatCpuData = cpu.flat();
+  const flatGpuData = gpu.flat();
+  const flatRamData = ram.flat();
+
+  // Determine the max categories needed for the x-axis
+  const maxCategories = Math.max(flatCpuData.length, flatGpuData.length, flatRamData.length);
+
+  // Configuring the chart options to include CPU, GPU, and RAM data
+  var options = {
+      chart: {
+          type: 'line',
+          height: 350
+      },
+      series: [{
+          name: 'CPU',
+          data: flatCpuData
+      }, {
+          name: 'GPU',
+          data: flatGpuData
+      }, {
+          name: 'RAM',
+          data: flatRamData
+      }],
+      stroke: {
+          width: 2 // Set this to make the series lines thin
+      },
+      xaxis: {
+          categories: Array.from({length: maxCategories}, (_, i) => i + 1)
+      },
+      annotations: generateAnnotationsForCPUSubArrays(cpu),
+      tooltip: {
+          shared: true,
+          intersect: false,
+          y: {
+              formatter: function (y) {
+                  if (typeof y !== "undefined") {
+                      return `${y} Units`;
+                  }
+                  return y;
+              }
+          }
+      }
+  };
+
+  // Initialize and render the chart
+  var chart = new ApexCharts(document.querySelector("#chart1"), options);
+  chart.render();
+
+return container;
+
+}
+
+export function Resource1(){
+  var chartDiv = document.createElement('div');
+    
+  // Assign an ID to the div
+  chartDiv.id = 'chart';
+  
+  // Append the newly created div to the body or another container element
+  document.body.appendChild(chartDiv);
+  
+  // Adjusted example data with timestamps in epoch milliseconds and energy values
+  let exampleTimestamps = [1702011431291, 1702011432291, 1702011433291, 1702011434291, 1702011435291, 1702011436291, 1702011437291, 1702011438291, 1702011439291, 1702011440291, 1702011441291];
+  let exampleEnergy = [2, 2, 2, 1, 1, 3, 2, 3, 2, 1, 2]; // Example energy values
+  
+  // Assuming CPU, RAM, and GPU have the same timestamp and energy data for demonstration
+  let cpuData = {
+      timestamps: exampleTimestamps,
+      energy: exampleEnergy
+  };
+  
+  let ramData = {
+      timestamps: exampleTimestamps,
+      energy: exampleEnergy
+  };
+  
+  let gpuData = {
+      timestamps: exampleTimestamps,
+      energy: exampleEnergy
+  };
+  
+  // Function to convert epoch nanoseconds to JavaScript Date objects
+  function convertTimestamps(timestamps) {
+      return timestamps.map(ts => new Date(ts)); // These are already in milliseconds
+  }
+  
+  // Preparing the series data for ApexCharts
+  let series = [
+      {
+          name: 'CPU',
+          data: cpuData.timestamps.map((ts, index) => [ts, cpuData.energy[index]])
+      },
+      {
+          name: 'RAM',
+          data: ramData.timestamps.map((ts, index) => [ts, ramData.energy[index]])
+      },
+      {
+          name: 'GPU',
+          data: gpuData.timestamps.map((ts, index) => [ts, gpuData.energy[index]])
+      }
+  ];
+  
+  // Chart options
+  let options = {
+      chart: {
+          type: 'line',
+          height: 350,
+          zoom: {
+            enabled: true, // Enable zoom
+            type: 'x', // Optional: Specify the type of zoom ('x', 'y', 'xy')
+            autoScaleYaxis: true // Optional: Automatically scale the Y-axis as the chart is zoomed
+          }
+      },
+      series: series,
+      xaxis: {
+          type: 'datetime'
+      },
+      yaxis: {
+          title: {
+              text: 'Energy (Joules)'
+          }
+      },
+      tooltip: {
+          x: {
+              format: 'dd MMM yyyy HH:mm:ss:SSS'
+          }
+      }
+  };
+  
+  // Initialize the chart
+  let chart = new ApexCharts(document.querySelector("#chart"), options);
+  
+  // Render the chart
+  chart.render();
+  return chartDiv;
+
+}
 // export function livechart(tagsToScalars){
 
 //   const chartDiv = document.createElement('div');
@@ -646,7 +982,7 @@ paletteExpand.addEventListener('click', function() {
 // }
 
 
-export function multilinechart(tagsToScalars){
+export function multilinechart(tagsToScalars,xTitle="",yTitle="",chartTitle=""){
   
 const container = document.createElement("div");
 container.classList.add("background-pink");
@@ -709,7 +1045,26 @@ var options = {
   dataLabels: {
     enabled: false
   },
-  colors: ["#FF1654", "#247BA0","FFFFFF"], // Adjust colors as needed
+  colors: ["#FF1654", "#247BA0", '#cc65fe', '#ffce56', '#ff9f40', '#ff6384', '#4bc0c0',"#008FFB", // Vivid Blue
+  "#00E396", // Bright Green
+  "#FEB019", // Sunny Yellow
+  "#FF4560", // Fiery Red
+  "#775DD0", // Deep Purple
+  "#546E7A", // Cool Grey
+  "#26a69a", // Teal
+  "#D10CE8", // Magenta
+  "#FF9800", // Orange
+  "#3F51B5", // Indigo
+  "#00D084", // Mint Green
+  "#4CAF50", // Green
+  "#F9C80E", // Lightning Yellow
+  "#663399", // Rebecca Purple
+  "#9C27B0", // Violet
+  "#1E88E5", // Blue
+  "#D81B60", // Pink
+  "#FFC107", // Amber
+  "#004D40", // Dark Teal
+  "#E91E63"],  // Light Pink], // Adjust colors as needed
   series: seriesData,
   stroke: {
     width: [2, 2] // Adjust line thickness
@@ -727,12 +1082,12 @@ var options = {
     // max: maxX,
     // tickAmount: tickAmount,
     title: {
-      text: 'Epoch Steps'
+      text: xTitle
     }
   },
   yaxis: {
     title: {
-      text: 'FLOP Counts'
+      text: yTitle
     }
   },
   tooltip: {
