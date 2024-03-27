@@ -31,6 +31,30 @@ export function createPreviews(run,tagsToScalars) {
     else{
 
       if(run == "system_performance"){
+
+        // console.log(tagsToScalars);
+
+        let startTime = new Map();
+
+        tagsToScalars.forEach((scalars, tag) => {
+
+
+          let time = scalars.get("start_time_execution");
+
+          startTime.set(tag,time[0][2]);
+          // console.log(time);
+
+          console.log(tag,scalars);
+
+          if(tag == "start_time_execution"){
+            // console.log(tag,scalars.keys());
+          }
+        });
+
+        fragment.appendChild(Utils.Energy("hello"));
+
+        const sortedMap = new Map([...startTime.entries()].sort((a, b) => a[1] - b[1]));
+        console.log("sorted values",sortedMap);
         
         fragment.appendChild(Utils.Resource());
             // Create a new div element
@@ -44,16 +68,9 @@ export function createPreviews(run,tagsToScalars) {
       }
       return fragment;
     }
-}
 
-// function createDataSelector(scalars) {
-//   const Array = [];
-//   for (const scalar of scalars) {
-//     Array.push(scalar);
-//   }
-//   return createRunSelector(Array,"data-selector");
+  }
 
-// }
 
 export function createLayerDrawers(run,tagScalars) {
 
@@ -68,7 +85,7 @@ export function createLayerDrawers(run,tagScalars) {
 
   tagScalars.forEach((scalars, tag) => {
 
-      console.log(tag,scalars);
+      // console.log(tag,scalars);
 
       const drawer = document.createElement('div');
       drawer.classList.add('faq-drawer');

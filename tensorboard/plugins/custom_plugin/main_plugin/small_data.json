@@ -37,36 +37,6 @@
         "sys_start_time_nvidia": 1702011930404255200,
         "begin_stable_check_time": 1702011942886244000,
         "begin_temperature_check_time": 1702011942885256700
-      },
-      "cpu_temperatures": "{\"columns\":[\"time_elapsed\",\"temperature\",\"timestamp\"],\"index\":[0,1,2],\"data\":[[0.0,31,1.70201194e+18],[1.01089792,31,1.702011941e+18],[2.019592704,31,1.702011942e+18]]}",
-      "settings": {
-        "max_wait_s": 120,
-        "wait_after_run_s": 30,
-        "wait_per_stable_check_loop_s": 20,
-        "tolerance": 0,
-        "measurement_interval_s": 0.5,
-        "cpu_std_to_mean": 0.03,
-        "ram_std_to_mean": 0.03,
-        "gpu_std_to_mean": 0.01,
-        "check_last_n_points": 20,
-        "cpu_max_temp": 55,
-        "gpu_max_temp": 40,
-        "cpu_temperature_interval_s": 1
-      },
-      "input_sizes": {
-        "args_size": 0,
-        "kwargs_size": 56,
-        "object_size": 0
-      },
-      "project_metadata": {
-        "project_name": "tensorflow_docs",
-        "project_repository": "https://github.com/tensorflow/docs.git",
-        "project_owner": "tensorflow",
-        "project_branch": "master",
-        "project_commit": "03190f3b6f327a1dbaba9a712bdf102616010cfc",
-        "project_commit_date": "2023-12-04T18:28:08-08:00",
-        "script_path": "/home/saurabh/method-energy-dataset/projects/tensorflow_docs_patched/site/en/tutorials/quickstart/advanced.ipynb",
-        "api_call_line": 36
       }
     }
   }

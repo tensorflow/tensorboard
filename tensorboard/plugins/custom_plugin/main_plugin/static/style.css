@@ -231,3 +231,10 @@ margin-left: 5px;
   background-repeat: no-repeat;
   margin-left: 5px;
 }
+
+
+.graph-custom{
+  width: 100%;
+  height: 600px;
+  overflow: hidden;
+}

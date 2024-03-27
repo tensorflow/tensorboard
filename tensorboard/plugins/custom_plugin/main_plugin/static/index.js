@@ -153,7 +153,7 @@ async function updatePreview(runSelector, container) {
   console.log("update Preview")
   const requestedRun = runSelector.value;
   const tagsToScalars = await Model.getTagsToScalars(requestedRun);
-  console.log(tagsToScalars);
+  // console.log(tagsToScalars);
   const preview = Views.createPreviews(requestedRun,tagsToScalars);
 
   // Cancel the update if the UI has a different run selected.

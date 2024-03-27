@@ -4,6 +4,12 @@ import * as Model from './model.js';
 let runToTagInfo = null;
 let uniqueTags = [];
 
+// Specific Tag Information Handling
+let start_time_execution = [];
+let end_time_execution = [];
+
+
+
 // WSGI server will serve the data from the backend.
 async function updateRunInfo() {
     if (!runToTagInfo) {
@@ -26,6 +32,8 @@ async function updateRunInfo() {
       return result;
     }
   
+
+    // Impliment some loginc here to save start_time_execution and end_time_execution
     const scalarPromises = tags.map(async (tag) => {
       const [prefix, type] = tag.split("/"); // Split the tag into prefix and type.
 
@@ -51,6 +59,13 @@ async function updateRunInfo() {
   
     await Promise.all(scalarPromises);
     return result;
+  }
+
+
+  export function process_data(data) {
+    if(runToTagInfo){
+      
+    }
   }
   
   
