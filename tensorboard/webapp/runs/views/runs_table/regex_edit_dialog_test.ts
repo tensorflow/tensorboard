@@ -83,7 +83,6 @@ describe('regex_edit_dialog', () => {
   ) {
     TestBed.overrideProvider(MAT_DIALOG_DATA, {
       useValue: {experimentIds, expNameByExpId},
-      useValue: {experimentIds, expNameByExpId},
     });
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
@@ -183,14 +182,8 @@ describe('regex_edit_dialog', () => {
     const matSelect = fixture.debugElement.query(By.css('mat-select'));
     matSelect.triggerEventHandler('selectionChange', {value: 'regex_by_exp'});
 
-    console.log('hello');
-
-    const matSelect = fixture.debugElement.query(By.css('mat-select'));
-    matSelect.triggerEventHandler('selectionChange', {value: 'regex_by_exp'});
-
     const input = fixture.debugElement.query(By.css('input'));
     const keyArgs: SendKeyArgs = {
-      key: 'test',
       key: 'test',
       prevString: '',
       type: KeyType.CHARACTER,

@@ -22,7 +22,6 @@ import {
   filter,
   map,
   shareReplay,
-  shareReplay,
   startWith,
   take,
 } from 'rxjs/operators';
@@ -33,7 +32,6 @@ import {runGroupByChanged} from '../../actions';
 import {
   getColorGroupRegexString,
   getRunIdsForExperiment,
-  getRunGroupBy,
   getRunGroupBy,
   getRuns,
 } from '../../store/runs_selectors';
@@ -50,10 +48,7 @@ const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
     [colorRunPairList]="colorRunPairList$ | async"
     [selectedGroupBy]="groupByRegexType$ | async"
     (onSave)="onSave()"
-    [selectedGroupBy]="groupByRegexType$ | async"
-    (onSave)="onSave()"
     (regexInputOnChange)="onRegexInputOnChange($event)"
-    (regexTypeOnChange)="onRegexTypeOnChange($event)"
     (regexTypeOnChange)="onRegexTypeOnChange($event)"
   ></regex-edit-dialog-component>`,
   styles: [
@@ -69,7 +64,6 @@ const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
 })
 export class RegexEditDialogContainer {
   private readonly experimentIds: string[];
-  private readonly expNameByExpId: Record<string, string>;
   private readonly expNameByExpId: Record<string, string>;
   private readonly runIdToEid$: Observable<Record<string, string>>;
   private readonly allRuns$: Observable<Run[]>;
@@ -128,7 +122,6 @@ export class RegexEditDialogContainer {
         ]) => {
           const groupBy = {
             key: regexType,
-            key: regexType,
             regexString,
           };
           const groups = groupRuns(
@@ -169,7 +162,6 @@ export class RegexEditDialogContainer {
     }
   ) {
     this.experimentIds = data.experimentIds;
-    this.expNameByExpId = data.expNameByExpId;
     this.expNameByExpId = data.expNameByExpId;
 
     this.runIdToEid$ = combineLatest(
