@@ -169,11 +169,11 @@ bazel build third_party/chromium
 
 ### Debugging Angular UI Tests Locally
 
-Here is a short summary of the various commands and their primary function. Please see below for more details. We recommand using `ibazle test` for regular work and `bazel run` for deep dive debugging.
+Here is a short summary of the various commands and their primary function. Please see below for more details. We recommand using `ibazel test` for regular work and `bazel run` for deep dive debugging.
 
 - `bazel test/run`: runs tests once and done.
 - `ibazel test`: supports file watching.
-- `ibazle run`: provides karma console breakpoint debugging; does not support file watching.
+- `ibazel run`: provides karma console breakpoint debugging; does not support file watching.
 - Both `ibazel test` and `ibazel run` supports `console.log` and `fit/fdescribe`, which are used to narrow down the test amount.
 
 1.  Just run all webapp tests. The job stops after finished. `console.log` is not
