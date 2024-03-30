@@ -962,6 +962,8 @@ return container;
 
 export function FinalResource(datasets,layerLabels) {
 
+
+
   // console.log("datasets=",datasets,typeof(layerLabels));
 
   const container = document.createElement('div');
@@ -973,7 +975,7 @@ export function FinalResource(datasets,layerLabels) {
 
   let data = [];
 
-  datasets.forEach((dataset, index) => {
+  datasets[0].forEach((dataset, index) => {
 
     dataset.forEach(dataPoint => {
       data.push({
@@ -1080,140 +1082,142 @@ export function FinalResource(datasets,layerLabels) {
 }
 
 
-export function Resource1(gpu){
-  var chartDiv = document.createElement('div');
+// export function Resource1(gpu){
+//   var chartDiv = document.createElement('div');
     
-  // Assign an ID to the div
-  chartDiv.id = 'chart';
+//   // Assign an ID to the div
+//   chartDiv.id = 'chart';
   
-  // Append the newly created div to the body or another container element
-  document.body.appendChild(chartDiv);
+//   // Append the newly created div to the body or another container element
+//   document.body.appendChild(chartDiv);
 
-  gpu = gpu.map(d => ({
-    timestamp: d[1],
-    energy: d[2]
-  }));
+//   gpu = gpu.map(d => ({
+//     timestamp: d[1],
+//     energy: d[2]
+//   }));
   
-  // Assuming CPU, RAM, and GPU have the same timestamp and energy data for demonstration
-  // let cpuData = {
-  //     timestamps: exampleTimestamps,
-  //     energy: exampleEnergy
-  // };
+//   // Assuming CPU, RAM, and GPU have the same timestamp and energy data for demonstration
+//   // let cpuData = {
+//   //     timestamps: exampleTimestamps,
+//   //     energy: exampleEnergy
+//   // };
   
-  // let ramData = {
-  //     timestamps: exampleTimestamps,
-  //     energy: exampleEnergy
-  // };
+//   // let ramData = {
+//   //     timestamps: exampleTimestamps,
+//   //     energy: exampleEnergy
+//   // };
   
-  let gpuData = {
-      timestamps: gpu.map(d => d.timestamp/1000000),
-      energy: gpu.map(d => d.energy)
-  };
+//   let gpuData = {
+//       timestamps: gpu.map(d => d.timestamp/1000000),
+//       energy: gpu.map(d => d.energy)
+//   };
 
-  console.log(gpuData);
+//   console.log(gpuData);
 
 
 
-  // Preparing the series data for ApexCharts
-  let series = [
-      // {
-      //     name: 'CPU',
-      //     data: cpuData.timestamps.map((ts, index) => [ts, cpuData.energy[index]])
-      // },
-      // {
-      //     name: 'RAM',
-      //     data: ramData.timestamps.map((ts, index) => [ts, ramData.energy[index]])
-      // },
-      {
-          name: 'GPU',
-          data: gpuData.timestamps.map((ts, index) => [ts, gpuData.energy[index]])
-      }
-  ];
+//   // Preparing the series data for ApexCharts
+//   let series = [
+//       // {
+//       //     name: 'CPU',
+//       //     data: cpuData.timestamps.map((ts, index) => [ts, cpuData.energy[index]])
+//       // },
+//       // {
+//       //     name: 'RAM',
+//       //     data: ramData.timestamps.map((ts, index) => [ts, ramData.energy[index]])
+//       // },
+//       {
+//           name: 'GPU',
+//           data: gpuData.timestamps.map((ts, index) => [ts, gpuData.energy[index]])
+//       }
+//   ];
   
-  // Chart options
-  let options = {
-      chart: {
-          type: 'line',
-          height: 350,
-          zoom: {
-            enabled: true, // Enable zoom
-            type: 'x', // Optional: Specify the type of zoom ('x', 'y', 'xy')
-            autoScaleYaxis: true // Optional: Automatically scale the Y-axis as the chart is zoomed
-          }
-      },
-      series: series,
-      xaxis: {
-          type: 'datetime',          
-          labels: {
-              year: 'yyyy',
-              month: 'MMM \'yy',
-              day: 'dd MMM',
-              hour: 'HH:mm:ss',
-              minute: 'HH:mm:ss',
-              milisecond: 'HH:mm:ss.fff',
-            },
-      },
-      yaxis: {
-          title: {
-              text: 'Energy (Joules)'
-          },
-          labels: {
-            formatter: function (value) {
-              return value.toFixed(2);
-            }
-          }
+//   // Chart options
+//   let options = {
+//       chart: {
+//           type: 'line',
+//           height: 350,
+//           zoom: {
+//             enabled: true, // Enable zoom
+//             type: 'x', // Optional: Specify the type of zoom ('x', 'y', 'xy')
+//             autoScaleYaxis: true // Optional: Automatically scale the Y-axis as the chart is zoomed
+//           }
+//       },
+//       series: series,
+//       xaxis: {
+//           type: 'datetime',          
+//           labels: {
+//               year: 'yyyy',
+//               month: 'MMM \'yy',
+//               day: 'dd MMM',
+//               hour: 'HH:mm:ss',
+//               minute: 'HH:mm:ss',
+//               milisecond: 'HH:mm:ss.fff',
+//             },
+//       },
+//       yaxis: {
+//           title: {
+//               text: 'Energy (Joules)'
+//           },
+//           labels: {
+//             formatter: function (value) {
+//               return value.toFixed(2);
+//             }
+//           }
       
-      },
-      // annotations: generateAnnotationsForCPUSubArrays(cpu),
-      tooltip: {
-          x: {
-              format: 'dd MMM yyyy HH:mm:ss.fff'
-          }
-      }
-  };
+//       },
+//       // annotations: generateAnnotationsForCPUSubArrays(cpu),
+//       tooltip: {
+//           x: {
+//               format: 'dd MMM yyyy HH:mm:ss.fff'
+//           }
+//       }
+//   };
 
-  function generateAnnotationsForCPUSubArrays(cpuDataset) {
-  const annotations = { xaxis: [] };
-  let startPosition = 1; // Initial start position on the x-axis
-  // Define a unique color palette for annotations, ensuring these don't match the series line colors
-  const annotationColors = ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#ff9f40', '#ff6384', '#4bc0c0'];
+//   function generateAnnotationsForCPUSubArrays(cpuDataset) {
+//   const annotations = { xaxis: [] };
+//   let startPosition = 1; // Initial start position on the x-axis
+//   // Define a unique color palette for annotations, ensuring these don't match the series line colors
+//   const annotationColors = ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#ff9f40', '#ff6384', '#4bc0c0'];
 
-  cpuDataset.forEach((subArray, index) => {
-      const length = subArray.length;
-      const endPosition = startPosition + length - 1;
-      // Cycle through the annotation color palette based on the current index
-      const fillColor = annotationColors[index % annotationColors.length]; // Use modulus to cycle through colors
+//   cpuDataset.forEach((subArray, index) => {
+//       const length = subArray.length;
+//       const endPosition = startPosition + length - 1;
+//       // Cycle through the annotation color palette based on the current index
+//       const fillColor = annotationColors[index % annotationColors.length]; // Use modulus to cycle through colors
 
-      annotations.xaxis.push({
-          x: startPosition,
-          x2: endPosition,
-          fillColor: fillColor,
-          opacity: 0.1,
-          label: {
-              borderColor: fillColor,
-              style: {
-                  fontSize: '12px',
-                  color: '#fff',
-                  background: fillColor,
-              },
-              text: `Layer ${index + 1}`
-          }
-      });
+//       annotations.xaxis.push({
+//           x: startPosition,
+//           x2: endPosition,
+//           fillColor: fillColor,
+//           opacity: 0.1,
+//           label: {
+//               borderColor: fillColor,
+//               style: {
+//                   fontSize: '12px',
+//                   color: '#fff',
+//                   background: fillColor,
+//               },
+//               text: `Layer ${index + 1}`
+//           }
+//       });
 
-      startPosition += length; // Prepare the start position for the next dataset
-  });
+//       startPosition += length; // Prepare the start position for the next dataset
+//   });
 
-  return annotations;
-}
+//   return annotations;
+// }
   
-  // Initialize the chart
-  let chart = new ApexCharts(document.querySelector("#chart"), options);
+//   // Initialize the chart
+//   let chart = new ApexCharts(document.querySelector("#chart"), options);
   
-  // Render the chart
-  chart.render();
-  return chartDiv;
+//   // Render the chart
+//   chart.render();
+//   return chartDiv;
 
-}
+// }
+
+
 // export function livechart(tagsToScalars){
 
 //   const chartDiv = document.createElement('div');
@@ -1417,7 +1421,13 @@ var options = {
   chart: {
     height: 350,
     type: "line",
-    stacked: false
+    stacked: false,
+    zoom: {
+            enabled: true, // Enable zoom
+            type: 'x', // Optional: Specify the type of zoom ('x', 'y', 'xy')
+            autoScaleYaxis: true, // Optional: Automatically scale the Y-axis as the chart is zoomed
+            autoScaleXaxis: true // Optional: Automatically scale the Y-axis as the chart is zoomed
+    }
   },
   dataLabels: {
     enabled: false
@@ -1457,7 +1467,7 @@ var options = {
     // type: 'numeric', // Use 'numeric' type for better control over the scale
     // min: minX,
     // max: maxX,
-    // tickAmount: tickAmount,
+    tickAmount: 100,
     title: {
       text: xTitle
     }
@@ -1468,7 +1478,12 @@ var options = {
     },
     labels: {
       formatter: function (val) {
-        return val.toFixed(2);
+        if (val > 1000) {
+          return (val / 1000).toFixed(2) + "K";
+        }
+        else{
+          return val.toFixed(2);
+        }
       }
     }
   },

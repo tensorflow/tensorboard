@@ -38,9 +38,7 @@ export function createPreviews(run, tagsToScalars) {
 
         tagsToScalars.forEach((scalars, tag) => {
 
-
           let time = scalars.get("start_time_execution");
-
           startTime.set(tag,time[0][2]);
           // console.log(time);
 
@@ -48,6 +46,7 @@ export function createPreviews(run, tagsToScalars) {
           if(tag == "start_time_execution"){
             // console.log(tag,scalars.keys());
           }
+
         });
 
 
@@ -57,12 +56,7 @@ export function createPreviews(run, tagsToScalars) {
         const data = merge(tagsToScalars,sortedMap);
         console.log("merged data",data);
         
-        fragment.appendChild(Utils.FinalResource(data,Array.from(sortedMap.keys())));
-        // fragment.appendChild(Utils.Energy(data));
-        // fragment.appendChild(Utils.Resource());
-        // fragment.appendChild(Utils.Resource1(data));
-        
-   
+        fragment.appendChild(Utils.FinalResource(data,Array.from(sortedMap.keys()))); 
       }
       else{
         let extra = createLayerDrawers(run, tagsToScalars);
@@ -76,6 +70,7 @@ export function createPreviews(run, tagsToScalars) {
 function merge(tagsToScalars, map){
 
 
+  let tagData = new Map();
   let cpu = [];
   let ram = [];
   let gpu = [];
@@ -86,29 +81,34 @@ function merge(tagsToScalars, map){
   map.keys().forEach((tag) => {
 
     let target = tagsToScalars.get(tag);
-    // cpu.push(target.get("CPU"));
 
+    // console.log("target",target.keys());
+    // target.keys().forEach((key) => {
+
+      
     let cpuData = target.get("GPU").map((item) => {
       // console.log("item=",item);
       return {timestamp:item[1]/1000000, energy:item[2]};
     });
-    
-    gpu.push(cpuData);
+
+    let ramData = target.get("RAM").map((item) => {
+      return {timestamp:item[1]/1000000, energy:item[2]};
+    });
+
+    let gpuData = target.get("CPU").map((item) => {
+      return {timestamp:item[1]/1000000, energy:item[2]};
+    });
+
+    cpu.push(cpuData);
+    gpu.push(gpuData);
+    ram.push(ramData);
+
+    // });
 
   });
 
-  // console.log("gpu=check",gpu);
-  // cpu = [].concat(...cpu);
-  
-  // const modifyCPU = cpu.map((item) => {
 
-  //   let [,second, third] = item;
-  //   second = second / 1000000000;
-  //   console.log(second,third);
-  //   return [second, third];
-  // });
-
-  return gpu;
+  return [cpu,ram,gpu];
 }
 
 export function createLayerDrawers(run,tagScalars) {
