@@ -57,9 +57,10 @@ export function createPreviews(run, tagsToScalars) {
         const data = merge(tagsToScalars,sortedMap);
         console.log("merged data",data);
         
+        fragment.appendChild(Utils.FinalResource(data,Array.from(sortedMap.keys())));
         // fragment.appendChild(Utils.Energy(data));
         // fragment.appendChild(Utils.Resource());
-        fragment.appendChild(Utils.Resource1(data));
+        // fragment.appendChild(Utils.Resource1(data));
         
    
       }
@@ -84,14 +85,20 @@ function merge(tagsToScalars, map){
 
   map.keys().forEach((tag) => {
 
-    const target = tagsToScalars.get(tag);
+    let target = tagsToScalars.get(tag);
     // cpu.push(target.get("CPU"));
-    gpu.push(target.get("GPU"));
+
+    let cpuData = target.get("GPU").map((item) => {
+      // console.log("item=",item);
+      return {timestamp:item[1]/1000000, energy:item[2]};
+    });
+    
+    gpu.push(cpuData);
 
   });
 
+  // console.log("gpu=check",gpu);
   // cpu = [].concat(...cpu);
-  gpu = [].concat(...gpu);
   
   // const modifyCPU = cpu.map((item) => {
 
@@ -167,22 +174,22 @@ function cardformat(run,tag,scalars){
 
   if(run === "system_performance"){
 
-    scalars.forEach((scalar, scalar_tag) => {
+    // scalars.forEach((scalar, scalar_tag) => {
 
-      if(scalar_tag != "start_time_execution" && scalar_tag != "end_time_execution")
-      {
+    //   if(scalar_tag != "start_time_execution" && scalar_tag != "end_time_execution")
+    //   {
         
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.id = `card_${tag}_${scalar_tag}`;
-      console.log(scalar);
+    //   const card = document.createElement('div');
+    //   card.className = 'card';
+    //   card.id = `card_${tag}_${scalar_tag}`;
+    //   console.log(scalar);
   
-      card.appendChild(Utils.EnergyUsageChart(tag,scalar_tag,scalar));
-      cardsContainer.appendChild(card);
+    //   card.appendChild(Utils.EnergyUsageChart(tag,scalar_tag,scalar));
+    //   cardsContainer.appendChild(card);
 
-      }
+    //   }
 
-    });
+    // });
   }
   else if(run === "fake_bert"){
 

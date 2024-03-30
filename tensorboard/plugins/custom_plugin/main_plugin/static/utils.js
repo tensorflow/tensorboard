@@ -960,6 +960,126 @@ return container;
 
 }
 
+export function FinalResource(datasets,layerLabels) {
+
+  // console.log("datasets=",datasets,typeof(layerLabels));
+
+  const container = document.createElement('div');
+  container.id = "chart";
+  document.body.appendChild(container);
+
+  let seriesData = [];
+  let annotations = [];
+
+  let data = [];
+
+  datasets.forEach((dataset, index) => {
+
+    dataset.forEach(dataPoint => {
+      data.push({
+        x: new Date(dataPoint.timestamp),
+        y: dataPoint.energy
+      });
+    });
+
+    // Define colors for the annotations and box areas for each dataset
+    const annotationColors = ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#ff9f40', '#ff6384', '#4bc0c0'];
+    const fillColor = annotationColors[index % annotationColors.length]; // Use modulus to cycle through colors
+
+    // Add annotation for the starting and ending of the dataset
+    annotations.push({
+      x: dataset[0].timestamp,
+      strokeDashArray: 0,
+      borderColor: fillColor,
+      label: {
+        style: {
+          color: '#fff',
+          background: fillColor,
+        },
+        // offsetY:300,
+        // orientation: "horizontal",
+        text: `${layerLabels[index]} Start`
+      }
+    });
+    annotations.push({
+      x: dataset[dataset.length - 1].timestamp,
+      strokeDashArray: 0,
+      borderColor: fillColor,
+      label: {
+        style: {
+          color: '#fff',
+          background: fillColor
+        },
+      }
+    });
+
+    // Add annotation to highlight the area of the dataset
+    annotations.push({
+      x: dataset[0].timestamp,
+      x2: dataset[dataset.length - 1].timestamp,
+      fillColor: fillColor,
+      opacity: 0.2,
+      label: {
+        text: '',
+        position: 'back'
+      }
+    });
+
+
+  });
+
+  seriesData.push({
+    name: `Dataset`,
+    data: data
+  });
+
+  // Sort seriesData based on timestamp
+  seriesData.sort((a, b) => {
+    return a.data[0].x - b.data[0].x;
+  });
+
+  const options = {
+    chart: {
+      height: 500,
+      type: 'line',
+       zoom: {
+        enabled: true, // Enable zoom
+        type: 'x', // Optional: Specify the type of zoom ('x', 'y', 'xy')
+        autoScaleYaxis: true // Optional: Automatically scale the Y-axis as the chart is zoomed
+      }
+    },
+    annotations: {
+      xaxis: annotations
+    },
+    series: seriesData,
+    xaxis: {
+      type: 'datetime',
+      title:{
+        text: 'Time & API Call Sequence'
+      }
+    },
+    yaxis:{
+      title: {
+          text: 'Energy (Joules)'
+      },
+      labels: {
+        formatter: function (value) {
+          return value.toFixed(2);
+        }
+      }
+    },
+     legend: {
+      show: true
+    }
+  };
+
+  const chart = new ApexCharts(document.querySelector("#chart"), options);
+  chart.render();
+
+  return container;
+}
+
+
 export function Resource1(gpu){
   var chartDiv = document.createElement('div');
     

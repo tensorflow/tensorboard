@@ -58,10 +58,10 @@ def collect_data_from_json_file(json_file):
                             if(device_type == 'GPU'):
                                 timestamps, powers, times, temprature = zip(*data["data"])
                                 for tstamp, energy, time_point, temp in zip(timestamps, powers, times, temprature):
-                                    tf.summary.scalar(f"{layer_name}/{device_type}/temperature",
+                                    tf.summary.scalar(f"{layer_name}/{device_type}-temperature",
                                                 temp,
                                                 step=int(tstamp))
-                                    tf.summary.scalar(f"{layer_name}/{device_type}/energy",
+                                    tf.summary.scalar(f"{layer_name}/{device_type}",
                                             energy,
                                             step=int(tstamp*1000000000))
 
