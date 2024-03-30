@@ -511,41 +511,51 @@ paletteExpand.addEventListener('click', function() {
   return container;
 }
 
-export function Energy(main_tag="Energy",scalar_tag="Experiment",dataArray) {
+export function Energy(dataArray, main_tag="Energy",scalar_tag="Experiment") {
 
   // dataArray
 
-  const data1 = [
-    { timestamp: 1702011251398996000, energy: 10 },
-    { timestamp: 1702011351398996500, energy: 7 },
-    { timestamp: 1702011451398997000, energy: 15 },
-    { timestamp: 1702011551398997500, energy: 9 },
-    { timestamp: 1702011651398998000, energy: 20 },
-    { timestamp: 1702011751398998500, energy: 15 },
-    { timestamp: 1702012251398999000, energy: 25 },
-    { timestamp: 1702012251398999500, energy: 20 },
-    { timestamp: 1702012751399000000, energy: 30 },
-    { timestamp: 1702012851399000500, energy: 25 },
-    { timestamp: 1702012951399000400, energy: 22 },
-    { timestamp: 1702013251399001500, energy: 15 },
-    { timestamp: 1702013551399002000, energy: 10 },
-    { timestamp: 1702013751399002500, energy: 5 },
-    { timestamp: 1702013951399003000, energy: 12 },
-    { timestamp: 1702014251509003500, energy: 8 },
-    { timestamp: 1702014251999004000, energy: 16 },
-    { timestamp: 1702015251399004500, energy: 23 },
-    { timestamp: 1702015251399005000, energy: 19 },
-    // Add more data points as needed
-  ].map(d => ({ timestamp: d.timestamp / 1000000, energy: d.energy }));
-  
+  const data1 = dataArray.map(d => ({
+    timestamp: d[1],
+    energy: d[2]
+  }));
 
+  console.log("data1",data1);
+
+
+  // const data1 = [
+  //   { timestamp: 1702011251398996000, energy: 10 },
+  //   { timestamp: 1702011351398996500, energy: 7 },
+  //   { timestamp: 1702011451398997000, energy: 15 },
+  //   { timestamp: 1702011551398997500, energy: 9 },
+  //   { timestamp: 1702011651398998000, energy: 20 },
+  //   { timestamp: 1702011751398998500, energy: 15 },
+  //   { timestamp: 1702012251398999000, energy: 25 },
+  //   { timestamp: 1702012251398999500, energy: 20 },
+  //   { timestamp: 1702012751399000000, energy: 30 },
+  //   { timestamp: 1702012851399000500, energy: 25 },
+  //   { timestamp: 1702012951399000400, energy: 22 },
+  //   { timestamp: 1702013251399001500, energy: 15 },
+  //   { timestamp: 1702013551399002000, energy: 10 },
+  //   { timestamp: 1702013751399002500, energy: 5 },
+  //   { timestamp: 1702013951399003000, energy: 12 },
+  //   { timestamp: 1702014251509003500, energy: 8 },
+  //   { timestamp: 1702014251999004000, energy: 16 },
+  //   { timestamp: 1702015251399004500, energy: 23 },
+  //   { timestamp: 1702015251399005000, energy: 19 },
+  //   // Add more data points as needed
+  // ].map(d => ({ timestamp: d.timestamp / 1000000, energy: d.energy }));
+  
+  console.log("defualt",data1);
   var container = document.createElement('div');
   container.id = "graph-custom"
 
   const data = data1.map(d => ({
-      step: d.timestamp,
+      step: d.timestamp/1000000,
       value: d.energy
   }));
+
+  console.log("data",data);
 
   // Set the dimensions and margins of the graph
   const margin = {top: 30, right: 30, bottom: 30, left: 60},
@@ -636,11 +646,11 @@ export function Energy(main_tag="Energy",scalar_tag="Experiment",dataArray) {
     .attr("fill", "none")      
     .attr("stroke", "steelblue")
     .attr("stroke-width", 1)
-    .attr("d", d3.line()
-      .x(function(d) { return x(d.step) })
-      .y(function(d) { return y(d.value) })
-      )
-    .attr("d", line);
+    // .attr("d", d3.line()
+    //   .x(function(d) { return x(d.step) })
+    //   .y(function(d) { return y(d.value) })
+    //   )
+    // .attr("d", line);
 
   // Add the brushing
   lineChart.append("g")
@@ -716,8 +726,8 @@ export function ResorceMonitorChart(main_tag,scalar_tag,dataArray) {
   container.id ="resorce_monitor";
 
   // Sample data for CPU, RAM, GPU. Each inner array represents a segment of data points.
-var cpu = [[15, 72, 61], [24, 3, 22, 53], [30, 38, 2]];
-var ram = [[89, 49, 91], [60, 80, 15], [62, 47, 62]];
+// var cpu = [[15, 72, 61], [24, 3, 22, 53], [30, 38, 2]];
+// var ram = [[89, 49, 91], [60, 80, 15], [62, 47, 62]];
 var gpu = [[39, 18, 4, 89], [2, 84, 92], [47, 35]];
 
 // Individual elapsed times for each CPU data subset, in seconds
@@ -761,14 +771,14 @@ function convertToTimeSeries(data, startTime, elapsed) {
   return timeSeries;
 }
 
-var cpuTimeSeries = convertToTimeSeries(cpu, startExecutionTime, elapsedTimes);
-var ramTimeSeries = convertToTimeSeries(ram, startExecutionTime, elapsedTimes);
+// var cpuTimeSeries = convertToTimeSeries(cpu, startExecutionTime, elapsedTimes);
+// var ramTimeSeries = convertToTimeSeries(ram, startExecutionTime, elapsedTimes);
 var gpuTimeSeries = convertToTimeSeries(gpu, startExecutionTime, elapsedTimes);
 
 // Prepare the series data for CPU, RAM, GPU with time series data
 var seriesData = [
-  { name: "CPU", data: cpuTimeSeries },
-  { name: "RAM", data: ramTimeSeries },
+  // { name: "CPU", data: cpuTimeSeries },
+  // { name: "RAM", data: ramTimeSeries },
   { name: "GPU", data: gpuTimeSeries }
 ];
 
@@ -950,7 +960,7 @@ return container;
 
 }
 
-export function Resource1(){
+export function Resource1(gpu){
   var chartDiv = document.createElement('div');
     
   // Assign an ID to the div
@@ -958,42 +968,42 @@ export function Resource1(){
   
   // Append the newly created div to the body or another container element
   document.body.appendChild(chartDiv);
-  
-  // Adjusted example data with timestamps in epoch milliseconds and energy values
-  let exampleTimestamps = [1702011431291, 1702011432291, 1702011433291, 1702011434291, 1702011435291, 1702011436291, 1702011437291, 1702011438291, 1702011439291, 1702011440291, 1702011441291];
-  let exampleEnergy = [2, 2, 2, 1, 1, 3, 2, 3, 2, 1, 2]; // Example energy values
+
+  gpu = gpu.map(d => ({
+    timestamp: d[1],
+    energy: d[2]
+  }));
   
   // Assuming CPU, RAM, and GPU have the same timestamp and energy data for demonstration
-  let cpuData = {
-      timestamps: exampleTimestamps,
-      energy: exampleEnergy
-  };
+  // let cpuData = {
+  //     timestamps: exampleTimestamps,
+  //     energy: exampleEnergy
+  // };
   
-  let ramData = {
-      timestamps: exampleTimestamps,
-      energy: exampleEnergy
-  };
+  // let ramData = {
+  //     timestamps: exampleTimestamps,
+  //     energy: exampleEnergy
+  // };
   
   let gpuData = {
-      timestamps: exampleTimestamps,
-      energy: exampleEnergy
+      timestamps: gpu.map(d => d.timestamp/1000000),
+      energy: gpu.map(d => d.energy)
   };
-  
-  // Function to convert epoch nanoseconds to JavaScript Date objects
-  function convertTimestamps(timestamps) {
-      return timestamps.map(ts => new Date(ts)); // These are already in milliseconds
-  }
-  
+
+  console.log(gpuData);
+
+
+
   // Preparing the series data for ApexCharts
   let series = [
-      {
-          name: 'CPU',
-          data: cpuData.timestamps.map((ts, index) => [ts, cpuData.energy[index]])
-      },
-      {
-          name: 'RAM',
-          data: ramData.timestamps.map((ts, index) => [ts, ramData.energy[index]])
-      },
+      // {
+      //     name: 'CPU',
+      //     data: cpuData.timestamps.map((ts, index) => [ts, cpuData.energy[index]])
+      // },
+      // {
+      //     name: 'RAM',
+      //     data: ramData.timestamps.map((ts, index) => [ts, ramData.energy[index]])
+      // },
       {
           name: 'GPU',
           data: gpuData.timestamps.map((ts, index) => [ts, gpuData.energy[index]])
@@ -1013,19 +1023,68 @@ export function Resource1(){
       },
       series: series,
       xaxis: {
-          type: 'datetime'
+          type: 'datetime',          
+          labels: {
+              year: 'yyyy',
+              month: 'MMM \'yy',
+              day: 'dd MMM',
+              hour: 'HH:mm:ss',
+              minute: 'HH:mm:ss',
+              milisecond: 'HH:mm:ss.fff',
+            },
       },
       yaxis: {
           title: {
               text: 'Energy (Joules)'
+          },
+          labels: {
+            formatter: function (value) {
+              return value.toFixed(2);
+            }
           }
+      
       },
+      // annotations: generateAnnotationsForCPUSubArrays(cpu),
       tooltip: {
           x: {
-              format: 'dd MMM yyyy HH:mm:ss:SSS'
+              format: 'dd MMM yyyy HH:mm:ss.fff'
           }
       }
   };
+
+  function generateAnnotationsForCPUSubArrays(cpuDataset) {
+  const annotations = { xaxis: [] };
+  let startPosition = 1; // Initial start position on the x-axis
+  // Define a unique color palette for annotations, ensuring these don't match the series line colors
+  const annotationColors = ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#ff9f40', '#ff6384', '#4bc0c0'];
+
+  cpuDataset.forEach((subArray, index) => {
+      const length = subArray.length;
+      const endPosition = startPosition + length - 1;
+      // Cycle through the annotation color palette based on the current index
+      const fillColor = annotationColors[index % annotationColors.length]; // Use modulus to cycle through colors
+
+      annotations.xaxis.push({
+          x: startPosition,
+          x2: endPosition,
+          fillColor: fillColor,
+          opacity: 0.1,
+          label: {
+              borderColor: fillColor,
+              style: {
+                  fontSize: '12px',
+                  color: '#fff',
+                  background: fillColor,
+              },
+              text: `Layer ${index + 1}`
+          }
+      });
+
+      startPosition += length; // Prepare the start position for the next dataset
+  });
+
+  return annotations;
+}
   
   // Initialize the chart
   let chart = new ApexCharts(document.querySelector("#chart"), options);
@@ -1286,6 +1345,11 @@ var options = {
   yaxis: {
     title: {
       text: yTitle
+    },
+    labels: {
+      formatter: function (val) {
+        return val.toFixed(2);
+      }
     }
   },
   tooltip: {
