@@ -13,8 +13,8 @@ tf_ng_module(
     ],
     deps = [
         ":backend_types",
-        ":types",
         ":saved_pins_data_source",
+        ":types",
         "//tensorboard/webapp/feature_flag",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/feature_flag/store:types",
