@@ -19,7 +19,7 @@ tf_sass_binary(
     deps = [
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/common:style_lib",
         "//tensorboard/webapp/theme",
-        "@npm//@angular/material",
+        "//tensorboard/webapp:angular_material_sass_deps",
     ],
 )
 

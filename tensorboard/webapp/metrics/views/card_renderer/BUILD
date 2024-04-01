@@ -257,7 +257,7 @@ tf_sass_binary(
     deps = [
         "//tensorboard/webapp/metrics/views:metrics_common_styles",
         "//tensorboard/webapp/theme",
-        "@npm//@angular/material",
+        "//tensorboard/webapp:angular_material_sass_deps",
     ],
 )
 
