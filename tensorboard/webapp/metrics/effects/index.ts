@@ -42,13 +42,14 @@ import {
   TagMetadata,
   TimeSeriesRequest,
   TimeSeriesResponse,
+  SavedPinsDataSource,
 } from '../data_source/index';
 import {
   getCardLoadState,
   getCardMetadata,
   getMetricsTagMetadataLoadState,
 } from '../store';
-import {CardId, CardMetadata} from '../types';
+import {CardId, CardMetadata, PluginType} from '../types';
 
 export type CardFetchInfo = CardMetadata & {
   id: CardId;
@@ -73,7 +74,8 @@ export class MetricsEffects implements OnInitEffects {
   constructor(
     private readonly actions$: Actions,
     private readonly store: Store<State>,
-    private readonly dataSource: MetricsDataSource
+    private readonly metricsDataSource: MetricsDataSource,
+    private readonly savedPinsDataSource: SavedPinsDataSource
   ) {}
 
   /** @export */
@@ -141,7 +143,7 @@ export class MetricsEffects implements OnInitEffects {
       this.store.dispatch(actions.metricsTagMetadataRequested());
     }),
     switchMap(([, , experimentIds]) => {
-      return this.dataSource.fetchTagMetadata(experimentIds!).pipe(
+      return this.metricsDataSource.fetchTagMetadata(experimentIds!).pipe(
         tap((tagMetadata: TagMetadata) => {
           this.store.dispatch(actions.metricsTagMetadataLoaded({tagMetadata}));
         }),
@@ -174,7 +176,7 @@ export class MetricsEffects implements OnInitEffects {
   }
 
   private fetchTimeSeries(request: TimeSeriesRequest) {
-    return this.dataSource.fetchTimeSeries([request]).pipe(
+    return this.metricsDataSource.fetchTimeSeries([request]).pipe(
       tap((responses: TimeSeriesResponse[]) => {
         const errors = responses.filter(isFailedTimeSeriesResponse);
         if (errors.length) {
@@ -261,6 +263,23 @@ export class MetricsEffects implements OnInitEffects {
     })
   );
 
+  private readonly loadSavedPins$ = this.actions$.pipe(
+    ofType(actions.cardPinStateToggled),
+    withLatestFrom(this.getVisibleCardFetchInfos()),
+    map(([{cardId, canCreateNewPins, wasPinned}, fetchInfos]) => {
+      const card = fetchInfos.find((value) => value.id === cardId);
+      // Saving only scalar pinned cards.
+      if (!card || card.plugin !== PluginType.SCALARS) {
+        return;
+      }
+      if (wasPinned) {
+        this.savedPinsDataSource.removeScalarPin(card.tag);
+      } else if (canCreateNewPins) {
+        this.savedPinsDataSource.saveScalarPin(card.tag);
+      }
+    })
+  );
+
   /**
    * In general, this effect dispatch the following actions:
    *
@@ -292,7 +311,12 @@ export class MetricsEffects implements OnInitEffects {
         /**
          * Subscribes to: card visibility, reloads.
          */
-        this.loadTimeSeries$
+        this.loadTimeSeries$,
+
+        /**
+         * Subscribes to: cardPinStateToggled.
+         */
+        this.loadSavedPins$
       );
     },
     {dispatch: false}

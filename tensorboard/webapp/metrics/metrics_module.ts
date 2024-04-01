@@ -22,7 +22,11 @@ import {CoreModule} from '../core/core_module';
 import {PersistentSettingsConfigModule} from '../persistent_settings/persistent_settings_config_module';
 import {PluginRegistryModule} from '../plugins/plugin_registry_module';
 import * as actions from './actions';
-import {MetricsDataSourceModule, METRICS_PLUGIN_ID} from './data_source';
+import {
+  MetricsDataSourceModule,
+  METRICS_PLUGIN_ID,
+  SavedPinsDataSourceModule,
+} from './data_source';
 import {MetricsEffects} from './effects';
 import {
   getMetricsCardMinWidth,
@@ -145,6 +149,7 @@ export function getRangeSelectionHeadersFactory() {
       reducers,
       METRICS_STORE_CONFIG_TOKEN
     ),
+    SavedPinsDataSourceModule,
     EffectsModule.forFeature([MetricsEffects]),
     AlertActionModule.registerAlertActions(alertActionProvider),
     PersistentSettingsConfigModule.defineGlobalSetting(
