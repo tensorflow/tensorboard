@@ -265,19 +265,31 @@ export class MetricsEffects implements OnInitEffects {
 
   private readonly addOrRemovePin$ = this.actions$.pipe(
     ofType(actions.cardPinStateToggled),
-    withLatestFrom(this.getVisibleCardFetchInfos()),
-    map(([{cardId, canCreateNewPins, wasPinned}, fetchInfos]) => {
-      const card = fetchInfos.find((value) => value.id === cardId);
-      // Saving only scalar pinned cards.
-      if (!card || card.plugin !== PluginType.SCALARS) {
-        return;
+    withLatestFrom(
+      this.getVisibleCardFetchInfos(),
+      this.store.select(selectors.getEnableGlobalPins)
+    ),
+    map(
+      ([
+        {cardId, canCreateNewPins, wasPinned},
+        fetchInfos,
+        enableGlobalPins,
+      ]) => {
+        if (!enableGlobalPins) {
+          return;
+        }
+        const card = fetchInfos.find((value) => value.id === cardId);
+        // Saving only scalar pinned cards.
+        if (!card || card.plugin !== PluginType.SCALARS) {
+          return;
+        }
+        if (wasPinned) {
+          this.savedPinsDataSource.removeScalarPin(card.tag);
+        } else if (canCreateNewPins) {
+          this.savedPinsDataSource.saveScalarPin(card.tag);
+        }
       }
-      if (wasPinned) {
-        this.savedPinsDataSource.removeScalarPin(card.tag);
-      } else if (canCreateNewPins) {
-        this.savedPinsDataSource.saveScalarPin(card.tag);
-      }
-    })
+    )
   );
 
   /**

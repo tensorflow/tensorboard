@@ -45,6 +45,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",
+        "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/util:dom",
         "//tensorboard/webapp/webapp_data_source:http_client_testing",

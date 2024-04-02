@@ -51,6 +51,7 @@ import {
 } from '../testing';
 import {CardId, TooltipSort} from '../types';
 import {CardFetchInfo, MetricsEffects, TEST_ONLY} from './index';
+import {buildMockState} from '../../testing/utils';
 
 describe('metrics effects', () => {
   let metricsDataSource: MetricsDataSource;
@@ -73,8 +74,10 @@ describe('metrics effects', () => {
         MetricsEffects,
         provideMockStore({
           initialState: {
-            ...appStateFromMetricsState(buildMetricsState()),
-            ...coreTesting.createState(coreTesting.createCoreState()),
+            ...buildMockState({
+              ...appStateFromMetricsState(buildMetricsState()),
+              ...coreTesting.createState(coreTesting.createCoreState()),
+            }),
           },
         }),
       ],
@@ -791,6 +794,7 @@ describe('metrics effects', () => {
         saveScalarPinSpy = spyOn(savedPinsDataSource, 'saveScalarPin');
         removeScalarPinSpy = spyOn(savedPinsDataSource, 'removeScalarPin');
 
+        store.overrideSelector(selectors.getEnableGlobalPins, true);
         store.overrideSelector(TEST_ONLY.getCardFetchInfo, {
           id: 'card1',
           plugin: PluginType.SCALARS,
@@ -874,6 +878,22 @@ describe('metrics effects', () => {
         actions$.next(
           actions.cardPinStateToggled({
             cardId: 'card3',
+            wasPinned: false,
+            canCreateNewPins: true,
+          })
+        );
+
+        expect(saveScalarPinSpy).not.toHaveBeenCalled();
+        expect(removeScalarPinSpy).not.toHaveBeenCalled();
+      });
+
+      it('does not pin the card if getEnableGlobalPins is false', () => {
+        store.overrideSelector(selectors.getEnableGlobalPins, false);
+        store.refreshState();
+
+        actions$.next(
+          actions.cardPinStateToggled({
+            cardId: 'card1',
             wasPinned: false,
             canCreateNewPins: true,
           })
