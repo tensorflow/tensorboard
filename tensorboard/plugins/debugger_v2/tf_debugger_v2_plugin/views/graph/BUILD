@@ -18,8 +18,8 @@ tf_sass_binary(
     src = "graph_op_component.scss",
     deps = [
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/common:style_lib",
-        "//tensorboard/webapp:angular_material_sass_deps",
         "//tensorboard/webapp/theme",
+        "//tensorboard/webapp:angular_material_sass_deps",
     ],
 )
 

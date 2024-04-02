@@ -255,9 +255,9 @@ tf_sass_binary(
     name = "scalar_card_styles",
     src = "scalar_card_component.scss",
     deps = [
-        "//tensorboard/webapp:angular_material_sass_deps",
         "//tensorboard/webapp/metrics/views:metrics_common_styles",
         "//tensorboard/webapp/theme",
+        "//tensorboard/webapp:angular_material_sass_deps",
     ],
 )
 
