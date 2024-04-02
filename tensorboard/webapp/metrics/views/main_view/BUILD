@@ -24,9 +24,7 @@ tf_sass_binary(
 tf_sass_binary(
     name = "filtered_view_component_styles",
     src = "filtered_view_component.scss",
-    strict_deps = False,
     deps = [
-        "//tensorboard/webapp:angular_material_sass_deps",
         "//tensorboard/webapp/metrics/views:metrics_common_styles",
         "//tensorboard/webapp/theme",
     ],

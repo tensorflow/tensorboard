@@ -14,11 +14,6 @@ tf_sass_binary(
 tf_sass_binary(
     name = "card_fob_controller_styles",
     src = "card_fob_controller_component.scss",
-    strict_deps = False,
-    deps = [
-        "//tensorboard/webapp:angular_material_sass_deps",
-        "//tensorboard/webapp/theme",
-    ],
 )
 
 tf_ng_module(

@@ -5,8 +5,6 @@ package(default_visibility = ["//tensorboard:internal"])
 tf_sass_binary(
     name = "alert_display_snackbar_styles",
     src = "alert_display_snackbar_container.scss",
-    strict_deps = False,
-    deps = ["//tensorboard/webapp/theme"],
 )
 
 tf_ng_module(
