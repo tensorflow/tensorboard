@@ -24,19 +24,22 @@ export class SavedPinsDataSource {
     if (!existingPins.includes(tag)) {
       existingPins.push(tag);
     }
-    localStorage.setItem(SAVED_SCALAR_PINS_KEY, JSON.stringify(existingPins));
+    window.localStorage.setItem(
+      SAVED_SCALAR_PINS_KEY,
+      JSON.stringify(existingPins)
+    );
   }
 
   removeScalarPin(tag: Tag): void {
     const existingPins = this.getSavedScalarPins();
-    localStorage.setItem(
+    window.localStorage.setItem(
       SAVED_SCALAR_PINS_KEY,
       JSON.stringify(existingPins.filter((pin) => pin !== tag))
     );
   }
 
   getSavedScalarPins(): Tag[] {
-    const savedPins = localStorage.getItem(SAVED_SCALAR_PINS_KEY);
+    const savedPins = window.localStorage.getItem(SAVED_SCALAR_PINS_KEY);
     if (savedPins) {
       return JSON.parse(savedPins) as Tag[];
     }

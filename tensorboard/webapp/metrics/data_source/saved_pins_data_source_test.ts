@@ -75,7 +75,10 @@ describe('SavedPinsDataSource Test', () => {
     });
 
     it('adds the provided tag to the existing list', () => {
-      localStorage.setItem(SAVED_SCALAR_PINS_KEY, JSON.stringify(['tag1']));
+      window.localStorage.setItem(
+        SAVED_SCALAR_PINS_KEY,
+        JSON.stringify(['tag1'])
+      );
 
       dataSource.saveScalarPin('tag2');
 
@@ -83,7 +86,7 @@ describe('SavedPinsDataSource Test', () => {
     });
 
     it('does not addd the provided tag if it already exists', () => {
-      localStorage.setItem(
+      window.localStorage.setItem(
         SAVED_SCALAR_PINS_KEY,
         JSON.stringify(['tag1', 'tag2'])
       );
