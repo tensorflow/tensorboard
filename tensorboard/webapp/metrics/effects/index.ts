@@ -263,7 +263,7 @@ export class MetricsEffects implements OnInitEffects {
     })
   );
 
-  private readonly loadSavedPins$ = this.actions$.pipe(
+  private readonly addOrRemovePin$ = this.actions$.pipe(
     ofType(actions.cardPinStateToggled),
     withLatestFrom(this.getVisibleCardFetchInfos()),
     map(([{cardId, canCreateNewPins, wasPinned}, fetchInfos]) => {
@@ -316,7 +316,7 @@ export class MetricsEffects implements OnInitEffects {
         /**
          * Subscribes to: cardPinStateToggled.
          */
-        this.loadSavedPins$
+        this.addOrRemovePin$
       );
     },
     {dispatch: false}

@@ -783,7 +783,7 @@ describe('metrics effects', () => {
       }
     });
 
-    describe('loadSavedPins', () => {
+    describe('addOrRemovePin', () => {
       let saveScalarPinSpy: jasmine.Spy;
       let removeScalarPinSpy: jasmine.Spy;
 
@@ -814,7 +814,6 @@ describe('metrics effects', () => {
           })
         );
 
-        expect(removeScalarPinSpy).toHaveBeenCalled();
         expect(removeScalarPinSpy).toHaveBeenCalledWith('tagA');
         expect(saveScalarPinSpy).not.toHaveBeenCalled();
       });
@@ -828,7 +827,6 @@ describe('metrics effects', () => {
           })
         );
 
-        expect(saveScalarPinSpy).toHaveBeenCalled();
         expect(saveScalarPinSpy).toHaveBeenCalledWith('tagA');
         expect(removeScalarPinSpy).not.toHaveBeenCalled();
       });

@@ -71,7 +71,6 @@ describe('SavedPinsDataSource Test', () => {
     it('stores the provided tag in the local storage', () => {
       dataSource.saveScalarPin('tag1');
 
-      expect(dataSource.getSavedScalarPins().length).toEqual(1);
       expect(dataSource.getSavedScalarPins()).toEqual(['tag1']);
     });
 
@@ -80,7 +79,6 @@ describe('SavedPinsDataSource Test', () => {
 
       dataSource.saveScalarPin('tag2');
 
-      expect(dataSource.getSavedScalarPins().length).toEqual(2);
       expect(dataSource.getSavedScalarPins()).toEqual(['tag1', 'tag2']);
     });
 
@@ -92,7 +90,6 @@ describe('SavedPinsDataSource Test', () => {
 
       dataSource.saveScalarPin('tag2');
 
-      expect(dataSource.getSavedScalarPins().length).toEqual(2);
       expect(dataSource.getSavedScalarPins()).toEqual(['tag1', 'tag2']);
     });
   });
@@ -111,7 +108,7 @@ describe('SavedPinsDataSource Test', () => {
 
       dataSource.removeScalarPin('tag3');
 
-      expect(dataSource.getSavedScalarPins().length).toEqual(1);
+      expect(dataSource.getSavedScalarPins()).toEqual(['tag1']);
     });
   });
 });
