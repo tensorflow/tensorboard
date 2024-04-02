@@ -120,6 +120,11 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       queryParamOverride: 'enableSuggestedCards',
       parseValue: parseBoolean,
     },
+    enableGlobalPins: {
+      defaultValue: false,
+      queryParamOverride: 'enableGlobalPins',
+      parseValue: parseBoolean,
+    },
   };
 
 /**
