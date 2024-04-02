@@ -56,6 +56,8 @@ async function updateRunInfo() {
         typeMap.set(type, scalars);
       }
     });
+
+    console.log("result",result)
   
     await Promise.all(scalarPromises);
     return result;

@@ -30,6 +30,8 @@ export function createPreviews(run, tagsToScalars) {
     }
     else{
 
+
+      console.log(tagsToScalars);
       if(run == "system_performance"){
 
         // console.log(tagsToScalars);
@@ -67,6 +69,67 @@ export function createPreviews(run, tagsToScalars) {
 
   }
 
+
+  function convertToNanoseconds(startTime, elapsedTimeInSeconds) {
+    // Convert seconds to nanoseconds
+    const elapsedTimeInNanoseconds = elapsedTimeInSeconds * 1e9;
+  
+    
+    // Add elapsed time to the start time
+    const newTimestamp = startTime + elapsedTimeInNanoseconds;
+    
+    return newTimestamp;
+}
+
+function calculateNewTimestamp1(originalTimestamp, timeElapsedInSeconds) {
+  // Convert time elapsed from seconds to nanoseconds
+  const timeElapsedInNanoseconds = Math.floor(timeElapsedInSeconds * 1e9);
+  
+  // Add time elapsed to the original timestamp
+  const newTimestamp = BigInt(originalTimestamp) + BigInt(timeElapsedInNanoseconds);
+  
+  return Number(newTimestamp);
+}
+
+// function addElapsedtime(timestamp, elapsedtime) {
+//   // Ensure timestamp has correct length
+//   if (typeof timestamp !== 'number' || timestamp.toString().length !== 19) {
+//       console.error('Invalid timestamp format.');
+//       return null;
+//   }
+
+//   // Parse the timestamp into its components
+//   const year = Math.floor(timestamp / 1000000000000000);
+//   const month = Math.floor(timestamp / 10000000000000) % 100;
+//   const day = Math.floor(timestamp / 100000000000) % 100;
+//   const hours = Math.floor(timestamp / 1000000000) % 100;
+//   const minutes = Math.floor(timestamp / 10000000) % 100;
+//   const seconds = Math.floor(timestamp / 100000) % 100;
+//   const milliseconds = timestamp % 100000;
+
+//   // Create a new Date object with the parsed components
+//   const originalDate = new Date(year, month - 1, day, hours, minutes, seconds, milliseconds);
+
+//   // Add elapsed time in milliseconds
+//   const newTimestamp = new Date(originalDate.getTime() + elapsedtime * 1000);
+
+//   // Convert the new timestamp to number format
+//   const formattedNewTimestamp = Number(
+//       `${padZero(newTimestamp.getFullYear())}` +
+//       `${padZero(newTimestamp.getMonth() + 1)}` +
+//       `${padZero(newTimestamp.getDate())}` +
+//       `${padZero(newTimestamp.getHours())}` +
+//       `${padZero(newTimestamp.getMinutes())}` +
+//       `${padZero(newTimestamp.getSeconds())}${padZero(newTimestamp.getMilliseconds(), 3)}`
+//   );
+
+//   return formattedNewTimestamp;
+// }
+
+function padZero(number, width = 2) {
+    return String(number).padStart(width, '0');
+}
+
 function merge(tagsToScalars, map){
 
 
@@ -81,21 +144,18 @@ function merge(tagsToScalars, map){
   map.keys().forEach((tag) => {
 
     let target = tagsToScalars.get(tag);
-
-    // console.log("target",target.keys());
-    // target.keys().forEach((key) => {
-
+    let start = target.get("start_time_execution")[0][1];
       
-    let cpuData = target.get("GPU").map((item) => {
+    let cpuData = target.get("CPU").map((item) => {
       // console.log("item=",item);
-      return {timestamp:item[1]/1000000, energy:item[2]};
+      return {timestamp:convertToNanoseconds(start,item[1]/1000000000)/1000000, energy:item[2]};
     });
 
     let ramData = target.get("RAM").map((item) => {
-      return {timestamp:item[1]/1000000, energy:item[2]};
+      return {timestamp:convertToNanoseconds(start,item[1]/1000000000)/1000000, energy:item[2]};
     });
 
-    let gpuData = target.get("CPU").map((item) => {
+    let gpuData = target.get("GPU").map((item) => {
       return {timestamp:item[1]/1000000, energy:item[2]};
     });
 
@@ -107,8 +167,9 @@ function merge(tagsToScalars, map){
 
   });
 
+  return {cpu:cpu,ram:ram,gpu:gpu};
+  // return {gpu:gpu};
 
-  return [cpu,ram,gpu];
 }
 
 export function createLayerDrawers(run,tagScalars) {

@@ -13,6 +13,8 @@ from tensorboard import program
 from werkzeug import wrappers
 from main_plugin import metadata
 from tensorboard.plugins.scalar import metadata as scalar_metadata
+from tensorboard.plugins.histogram import metadata as histogram_metadata
+
 
 _PLUGIN_DIRECTORY_PATH_PART = "/data/plugin/custom_plugin/"
 
@@ -63,6 +65,18 @@ class MyPlugin(base_plugin.TBPlugin):
         run_info = {run: list(tags) for (run, tags) in run_tag_mapping.items()}
         print("run_info",run_info)
 
+        return http_util.Respond(request, run_info, "application/json")
+    
+    @wrappers.Request.application
+    def serveTag(self, request):
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
+        run_tag_mapping = self.data_provider.list_tensors(
+            ctx,
+            experiment_id=experiment,
+            plugin_name=histogram_metadata.PLUGIN_NAME,
+        )
+        run_info = {run: list(tags) for (run, tags) in run_tag_mapping.items()}
         return http_util.Respond(request, run_info, "application/json")
 
     # For Providing the static files to tensorboard IFrame

@@ -10,10 +10,12 @@ writer = tf.summary.create_file_writer(log_path)
 def collect_data_from_json_file(json_file):
     with open("./main_plugin/"+json_file, 'r') as f:
         json_data = json.load(f)
-        print(json_data)
+        # print(json_data)
     
     collected_data = []
     for layer_data in json_data:
+        l = 0 
+
         for layer_name, data in layer_data.items():
             energy_data = data.get('energy_data', {})
             time_data = data.get('times',{})
@@ -27,31 +29,32 @@ def collect_data_from_json_file(json_file):
 
             start_time_execution = time_data.get('start_time_execution')
             end_time_execution = time_data.get('end_time_execution')
-
+            l += 1
             with writer.as_default():
-
                 if start_time_execution and end_time_execution:
                     tf.summary.scalar(f"{layer_name}/start_time_execution",
-                                      float(start_time_execution),
-                                      step=0)
-                    tf.summary.scalar(f"{layer_name}/end_time_execution",
-                                      float(end_time_execution),
-                                      step=0)
+                                      0,
+                                      step=start_time_execution)
+                    print("Start time: ", start_time_execution)
 
                 for device_type, data in [('CPU', cpu_data), ('RAM', ram_data), ('GPU', gpu_data)]:
-                    print(device_type, data)
+                    # print(device_type, data)
 
-                    
+                    count = 0
 
                     try:
                         times, energies = zip(*data["data"])
                         # print(times, energies)
                         for time_point, energy in zip(times, energies):
-                            tf.summary.scalar(f"{layer_name}/{device_type}",
-                                            energy,
-                                            step=int(time_point*1000000000))
-                            # Ensure summaries are written to disk
-                            writer.flush()
+                            count += 1
+                            try:
+                                tf.summary.scalar(f"{layer_name}/{device_type}",
+                                                energy,
+                                                step=int(time_point*1000000000))
+                                writer.flush()
+                            except:
+                                print(f"Error processing {layer_name} - internal {count}")
+
                     except:
 
                         try:

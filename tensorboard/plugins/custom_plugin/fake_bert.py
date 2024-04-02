@@ -2,7 +2,7 @@ from torch.utils.tensorboard import SummaryWriter
 import numpy as np
 
 # Create a SummaryWriter to log information for TensorBoard in the specified directory
-writer = SummaryWriter('logs/fake_bert')
+writer = SummaryWriter('main_plugin/logs/fake_bert')
 
 # Number of epochs to simulate
 num_epochs = 100

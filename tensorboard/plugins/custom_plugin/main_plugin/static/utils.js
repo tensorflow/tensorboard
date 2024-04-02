@@ -956,89 +956,155 @@ export function Resource(){
   var chart = new ApexCharts(document.querySelector("#chart1"), options);
   chart.render();
 
+  
+
 return container;
 
 }
 
-export function FinalResource(datasets,layerLabels) {
+export function FinalResource(datasets,layerLabels,key="cpu") {
 
+  var color = [
+    '#008FFB', // Blue
+    '#00E396', // Green
+    '#FEB019', // Orange
+    '#FF4560', // Red
+    '#775DD0', // Purple
+    '#EA5455', // Tomato
+    '#785EF0', // Violet
+    '#66A8FF', // Sky Blue
+    '#F6C23E', // Yellow
+    '#1BC5BD', // Turquoise
+    '#F64E60', // Coral
+    '#2DCE89', // Emerald
+    '#FD7E14', // Mango
+    '#45Aaf2', // Dodger Blue
+    '#F78DB2', // Light Pink
+    '#4AD8D9', // Cyan
+    '#F97B8B', // Pink
+    '#8D82B9', // Lavender
+    '#3A77B8', // Cerulean
+    '#ECCB7D'  // Buff
+];
 
 
   // console.log("datasets=",datasets,typeof(layerLabels));
 
-  const container = document.createElement('div');
+  var container = document.createElement('div');
   container.id = "chart";
+
+  // var label = document.createElement("label");
+  // label.setAttribute("for", "autoScaleCheckbox");
+  // label.textContent = "Auto Scale Y-axis:";
+
+  // // Create checkbox element
+  // var checkbox = document.createElement("input");
+  // checkbox.setAttribute("type", "checkbox");
+  // checkbox.setAttribute("id", "autoScaleCheckbox");
+  // checkbox.checked = true;
+
+  // // Append label and checkbox to a container
+ 
+
   document.body.appendChild(container);
+  // document.body.appendChild(checkbox);
+  // document.body.appendChild(label);
 
   let seriesData = [];
-  let annotations = [];
+  let allAnnotations = new Map();
+const annotationVisibility = {};
 
-  let data = [];
+console.log("Final",datasets);
 
-  datasets[0].forEach((dataset, index) => {
+  Object.entries(datasets).forEach(([keys, val]) => {
 
-    dataset.forEach(dataPoint => {
-      data.push({
-        x: new Date(dataPoint.timestamp),
-        y: dataPoint.energy
+    let annotations = [];
+
+    console.log(keys, val);
+    let data = [];
+
+    val.forEach((dataset, index) => {
+
+      dataset.forEach(dataPoint => {
+        data.push({
+          x: new Date(dataPoint.timestamp),
+          y: dataPoint.energy
+        });
       });
+
+      // if (keys == key){
+         // Define colors for the annotations and box areas for each dataset
+        const annotationColors = ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#ff9f40', '#ff6384', '#4bc0c0'];
+        const fillColor = annotationColors[index % annotationColors.length]; // Use modulus to cycle through colors
+
+        const startAnnotationId = `${keys}_start_${index}`;
+        const endAnnotationId = `${keys}_end_${index}`;
+    
+        // Add annotation for the starting and ending of the dataset
+        annotations.push({
+          id: startAnnotationId,
+          x: dataset[0].timestamp,
+          strokeDashArray: 0,
+          borderColor: fillColor,
+          label: {
+            style: {
+              color: '#fff',
+              background: fillColor,
+            },
+            // offsetY:300,
+            // orientation: "horizontal",
+            text: `${layerLabels[index]} Start`
+          }
+        });
+        annotations.push({
+          id: endAnnotationId,
+          x: dataset[dataset.length - 1].timestamp,
+          strokeDashArray: 0,
+          borderColor: fillColor,
+          label: {
+            style: {
+              color: '#fff',
+              background: fillColor
+            },
+          }
+        });
+    
+        // Add annotation to highlight the area of the dataset
+        const highlightAnnotationId = `${keys}_highlight_${index}`;
+        annotations.push({
+          id: highlightAnnotationId,
+          x: dataset[0].timestamp,
+          x2: dataset[dataset.length - 1].timestamp,
+          fillColor: fillColor,
+          opacity: 0.2,
+          label: {
+            text: '',
+            position: 'back'
+          }
+        });
+      // }
+  
     });
 
-    // Define colors for the annotations and box areas for each dataset
-    const annotationColors = ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#ff9f40', '#ff6384', '#4bc0c0'];
-    const fillColor = annotationColors[index % annotationColors.length]; // Use modulus to cycle through colors
+    allAnnotations.set(keys, annotations);
 
-    // Add annotation for the starting and ending of the dataset
-    annotations.push({
-      x: dataset[0].timestamp,
-      strokeDashArray: 0,
-      borderColor: fillColor,
-      label: {
-        style: {
-          color: '#fff',
-          background: fillColor,
-        },
-        // offsetY:300,
-        // orientation: "horizontal",
-        text: `${layerLabels[index]} Start`
-      }
+    seriesData.push({
+      name: `${keys}`,
+      data: data
     });
-    annotations.push({
-      x: dataset[dataset.length - 1].timestamp,
-      strokeDashArray: 0,
-      borderColor: fillColor,
-      label: {
-        style: {
-          color: '#fff',
-          background: fillColor
-        },
-      }
-    });
-
-    // Add annotation to highlight the area of the dataset
-    annotations.push({
-      x: dataset[0].timestamp,
-      x2: dataset[dataset.length - 1].timestamp,
-      fillColor: fillColor,
-      opacity: 0.2,
-      label: {
-        text: '',
-        position: 'back'
-      }
-    });
-
 
   });
 
-  seriesData.push({
-    name: `Dataset`,
-    data: data
-  });
+  console.log("seriesData",seriesData);
+
+  
+
+
 
   // Sort seriesData based on timestamp
-  seriesData.sort((a, b) => {
-    return a.data[0].x - b.data[0].x;
-  });
+  // seriesData.sort((a, b) => {
+  //   return a.data[0].x - b.data[0].x;
+  // });
 
   const options = {
     chart: {
@@ -1047,11 +1113,11 @@ export function FinalResource(datasets,layerLabels) {
        zoom: {
         enabled: true, // Enable zoom
         type: 'x', // Optional: Specify the type of zoom ('x', 'y', 'xy')
-        autoScaleYaxis: true // Optional: Automatically scale the Y-axis as the chart is zoomed
-      }
+        autoScaleYaxis: true // Optional: Automatically scale the Y-axis as the chart is zoomed,
+      },
     },
     annotations: {
-      xaxis: annotations
+      xaxis: allAnnotations.get(key)
     },
     series: seriesData,
     xaxis: {
@@ -1071,12 +1137,112 @@ export function FinalResource(datasets,layerLabels) {
       }
     },
      legend: {
-      show: true
+      show: true,
+      
+    },
+    stroke: {
+      width: 1, // You can adjust this value to make the stroke thinner or thicker
+      colors: [
+        '#008FFB', // Blue
+        '#00E396', // Green
+        '#FEB019', // Orange
+        '#FF4560', // Red
+        '#00E396', // Green
+        '#775DD0', // Purple
+        '#EA5455', // Tomato
+        '#785EF0', // Violet
+        '#66A8FF', // Sky Blue
+        '#F6C23E', // Yellow
+        '#1BC5BD', // Turquoise
+        '#F64E60', // Coral
+        '#2DCE89', // Emerald
+        '#FD7E14', // Mango
+        '#45Aaf2', // Dodger Blue
+        '#F78DB2', // Light Pink
+        '#4AD8D9', // Cyan
+        '#F97B8B', // Pink
+        '#8D82B9', // Lavender
+        '#3A77B8', // Cerulean
+        '#ECCB7D'  // Buff
+      ]
     }
   };
 
+//   function toggleAnnotationVisibility(annotationId) {
+//   const annotation = chart.annotations.get(annotationId);
+//   if (annotation) {
+//     annotationVisibility[annotationId] = !annotationVisibility[annotationId];
+//     annotationOptions.visible = annotationVisibility[annotationId] ? true : false;
+//     chart.annotations.updateOptions(annotationId, annotationOptions);
+//   }
+// }
+
+function toggleAnnotationVisibility(groupId, annotationsData) {
+  console.log(annotationsData);
+  annotationsData.forEach(annotation => {
+    // if (annotation.group === groupId) {
+      annotation.hidden = !annotation.hidden;
+    // }
+  });
+  chart.updateOptions({
+    annotations: {
+      xaxis: annotationsData
+    }
+  });
+}
+ 
+
+
   const chart = new ApexCharts(document.querySelector("#chart"), options);
   chart.render();
+
+  let annotationContainer = document.createElement("div");
+  annotationContainer.classList.add("annotation-container");
+
+  var count = 0;
+  allAnnotations.forEach((annotations, groupId) => {
+    const toggleButton = document.createElement("button");
+    toggleButton.style.backgroundColor = color[count++];
+    toggleButton.classList.add("toggle-button");
+    toggleButton.textContent = groupId;
+    toggleButton.dataset.groupId = groupId; // Set dataset attribute for group ID
+    annotationContainer.appendChild(toggleButton);
+
+    toggleButton.addEventListener("click", function(event) {
+      // Toggle the visibility of the annotation group
+      const groupId = event.target.dataset.groupId;
+      toggleAnnotationVisibility(groupId, allAnnotations.get(groupId)); // Example: toggles annotations with group identifier 'group1'
+    });
+
+  });
+
+  document.body.appendChild(annotationContainer);
+
+  // Add event listener to the button
+  // toggleButton.addEventListener("click", function() {
+  //   // Toggle the visibility of the first annotation
+  //   toggleAnnotationVisibility(0, annotations);
+  //   toggleAnnotationVisibility(1, annotations);
+  //   console.log(annotations);
+
+  // });
+
+  // Function to toggle annotation visibility
+  // function toggleAnnotationVisibility(annotationIndex, annotationsData) {
+
+  //   annotationsData.forEach((annotation, index) => {
+  //     annotationsData[annotationIndex].hidden = !annotationsData[annotationIndex].hidden;
+  //     console.log(annotationsData[annotationIndex]);
+  //     chart.updateOptions({
+  //       annotations: {
+  //         xaxis: annotationsData.filter(annotation => !annotation.hidden)
+  //       }
+  //     });
+  //   });
+
+  // }
+
+
 
   return container;
 }

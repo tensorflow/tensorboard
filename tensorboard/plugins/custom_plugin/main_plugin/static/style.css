@@ -144,6 +144,12 @@ button {
 
 }
 
+.toggle-button{
+ color: teal;
+ background-color: tomato;
+ margin: auto;
+}
+
 .nav-option:hover {
   background-color: #45a049; /* Darker Green */
 }
@@ -196,6 +202,20 @@ select:focus {
   min-height: 100px;
 }
 
+
+.annotation-container {
+  display: flex;
+  justify-content: center; /* Center items horizontally */
+  /* width: 100px; */
+  padding: 20px;
+  background-color: #d3d3d3;
+  border-radius: 20px;
+}
+
+.toggle-button {
+  color: white;
+  /* margin-left: 20px; */
+}
 
 .collapsible-trigge{
 
