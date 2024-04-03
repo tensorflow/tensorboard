@@ -64,6 +64,7 @@ class SubprocessServerDataIngesterTest(tb_test.TestCase):
         error_file = os.path.join(tmpdir.name, "startup_error")
 
         real_popen = subprocess.Popen
+
         # Stub out `subprocess.Popen` to write the port file.
         def fake_popen(subprocess_args, *args, **kwargs):
             def target():

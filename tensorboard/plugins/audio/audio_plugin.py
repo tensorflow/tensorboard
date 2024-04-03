@@ -101,8 +101,8 @@ class AudioPlugin(base_plugin.TBPlugin):
             plugin_name=metadata.PLUGIN_NAME,
         )
         result = {run: {} for run in mapping}
-        for (run, tag_to_time_series) in mapping.items():
-            for (tag, time_series) in tag_to_time_series.items():
+        for run, tag_to_time_series in mapping.items():
+            for tag, time_series in tag_to_time_series.items():
                 md = metadata.parse_plugin_metadata(time_series.plugin_content)
                 if not self._version_checker.ok(md.version, run, tag):
                     continue

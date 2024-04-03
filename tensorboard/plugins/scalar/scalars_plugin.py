@@ -84,8 +84,8 @@ class ScalarsPlugin(base_plugin.TBPlugin):
             plugin_name=metadata.PLUGIN_NAME,
         )
         result = {run: {} for run in mapping}
-        for (run, tag_to_content) in mapping.items():
-            for (tag, metadatum) in tag_to_content.items():
+        for run, tag_to_content in mapping.items():
+            for tag, metadatum in tag_to_content.items():
                 md = metadata.parse_plugin_metadata(metadatum.plugin_content)
                 if not self._version_checker.ok(md.version, run, tag):
                     continue

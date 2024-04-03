@@ -349,7 +349,7 @@ def _display_colab(port, height, display_handle):
         ("%PORT%", "%d" % port),
         ("%HEIGHT%", "%d" % height),
     ]
-    for (k, v) in replacements:
+    for k, v in replacements:
         shell = shell.replace(k, v)
     script = IPython.display.Javascript(shell)
 
@@ -398,7 +398,7 @@ def _display_ipython(port, height, display_handle):
             ("%URL%", json.dumps("/")),
         ]
 
-    for (k, v) in replacements:
+    for k, v in replacements:
         shell = shell.replace(k, v)
     iframe = IPython.display.HTML(shell)
     if display_handle:

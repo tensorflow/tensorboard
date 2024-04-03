@@ -116,7 +116,7 @@ class DashboardsTest(BasicTest):
             "reload_button": "paper-icon-button#reload-button",
         }
         elements = {}
-        for (name, selector) in selectors.items():
+        for name, selector in selectors.items():
             locator = (by.By.CSS_SELECTOR, selector)
             self.wait.until(
                 expected_conditions.presence_of_element_located(locator)

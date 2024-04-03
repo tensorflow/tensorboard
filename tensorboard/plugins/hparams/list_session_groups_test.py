@@ -205,9 +205,9 @@ class ListSessionGroupsTest(tf.test.TestCase):
             },
         }
         result = {}
-        for (run, tag_to_content) in hparams_content.items():
+        for run, tag_to_content in hparams_content.items():
             result.setdefault(run, {})
-            for (tag, content) in tag_to_content.items():
+            for tag, content in tag_to_content.items():
                 t = provider.TensorTimeSeries(
                     max_step=0,
                     max_wall_time=0,
@@ -1242,9 +1242,9 @@ class ListSessionGroupsTest(tf.test.TestCase):
             },
         }
         result = {}
-        for (run, tag_to_content) in hparams_content.items():
+        for run, tag_to_content in hparams_content.items():
             result.setdefault(run, {})
-            for (tag, content) in tag_to_content.items():
+            for tag, content in tag_to_content.items():
                 t = provider.TensorTimeSeries(
                     max_step=0,
                     max_wall_time=0,

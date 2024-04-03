@@ -131,14 +131,14 @@ class MetricsPluginTest(tf.test.TestCase):
         place."""
         for response in responses:
             run_to_series = response.get("runToSeries", {})
-            for (run, series) in run_to_series.items():
+            for run, series in run_to_series.items():
                 for datum in series:
                     if "wallTime" in datum:
                         datum["wallTime"] = "<wall_time>"
 
             # Clean images.
             run_to_image_series = response.get("runToSeries", {})
-            for (run, series) in run_to_image_series.items():
+            for run, series in run_to_image_series.items():
                 for datum in series:
                     if "wallTime" in datum:
                         datum["wallTime"] = "<wall_time>"

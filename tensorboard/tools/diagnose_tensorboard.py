@@ -503,7 +503,7 @@ def main():
     markdown_code_fence = "``````"  # seems likely to be sufficient
     print(markdown_code_fence)
     suggestions = []
-    for (i, check) in enumerate(CHECKS):
+    for i, check in enumerate(CHECKS):
         if i > 0:
             print()
         print("--- check: %s" % check.__name__)

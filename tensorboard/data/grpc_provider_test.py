@@ -513,7 +513,7 @@ class GrpcDataProviderTest(tb_test.TestCase):
             (grpc.StatusCode.NOT_FOUND, errors.NotFoundError),
             (grpc.StatusCode.PERMISSION_DENIED, errors.PermissionDeniedError),
         ]
-        for (code, error_type) in cases:
+        for code, error_type in cases:
             with self.subTest(code.name):
                 msg = "my favorite cause"
                 e = _grpc_error(code, msg)
