@@ -50,4 +50,6 @@ export interface FeatureFlags {
   // Adds a new section at the top of the time series metrics view
   // containing suggested cards based on the users previous interactions.
   enableSuggestedCards: boolean;
+  // Persists pinned scalar cards across multiple experiments.
+  enableGlobalPins: boolean;
 }

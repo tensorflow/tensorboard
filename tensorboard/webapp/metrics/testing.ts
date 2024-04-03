@@ -27,6 +27,8 @@ import {
   TagMetadata as DataSourceTagMetadata,
   TimeSeriesRequest,
   TimeSeriesResponse,
+  SavedPinsDataSource,
+  Tag,
 } from './data_source';
 import * as selectors from './store/metrics_selectors';
 import {
@@ -392,4 +394,22 @@ export function buildStepIndexMetadata(
     isClosest: false,
     ...override,
   };
+}
+
+@Injectable()
+export class TestingSavedPinsDataSource {
+  saveScalarPin(tag: Tag) {}
+
+  removeScalarPin(tag: Tag) {}
+
+  getSavedScalarPins() {
+    return [];
+  }
+}
+
+export function provideTestingSavedPinsDataSource() {
+  return [
+    TestingSavedPinsDataSource,
+    {provide: SavedPinsDataSource, useExisting: TestingSavedPinsDataSource},
+  ];
 }

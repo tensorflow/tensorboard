@@ -183,3 +183,5 @@ export function isFailedTimeSeriesResponse(
 ): response is TimeSeriesFailedResponse {
   return response.hasOwnProperty('error');
 }
+
+export type Tag = string;

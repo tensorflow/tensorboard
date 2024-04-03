@@ -38,6 +38,7 @@ import {
   TagMetadata,
   TimeSeriesRequest,
   TimeSeriesResponse,
+  SavedPinsDataSource,
 } from '../data_source';
 import {getMetricsTagMetadataLoadState} from '../store';
 import {
@@ -46,12 +47,15 @@ import {
   buildMetricsState,
   createScalarStepData,
   provideTestingMetricsDataSource,
+  provideTestingSavedPinsDataSource,
 } from '../testing';
 import {CardId, TooltipSort} from '../types';
 import {CardFetchInfo, MetricsEffects, TEST_ONLY} from './index';
+import {buildMockState} from '../../testing/utils';
 
 describe('metrics effects', () => {
-  let dataSource: MetricsDataSource;
+  let metricsDataSource: MetricsDataSource;
+  let savedPinsDataSource: SavedPinsDataSource;
   let effects: MetricsEffects;
   let store: MockStore<State>;
   let actions$: Subject<Action>;
@@ -66,11 +70,14 @@ describe('metrics effects', () => {
       providers: [
         provideMockActions(actions$),
         provideTestingMetricsDataSource(),
+        provideTestingSavedPinsDataSource(),
         MetricsEffects,
         provideMockStore({
           initialState: {
-            ...appStateFromMetricsState(buildMetricsState()),
-            ...coreTesting.createState(coreTesting.createCoreState()),
+            ...buildMockState({
+              ...appStateFromMetricsState(buildMetricsState()),
+              ...coreTesting.createState(coreTesting.createCoreState()),
+            }),
           },
         }),
       ],
@@ -81,7 +88,8 @@ describe('metrics effects', () => {
       actualActions.push(action);
     });
     effects = TestBed.inject(MetricsEffects);
-    dataSource = TestBed.inject(MetricsDataSource);
+    metricsDataSource = TestBed.inject(MetricsDataSource);
+    savedPinsDataSource = TestBed.inject(SavedPinsDataSource);
     store.overrideSelector(selectors.getExperimentIdsFromRoute, null);
     store.overrideSelector(selectors.getMetricsIgnoreOutliers, false);
     store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.3);
@@ -107,7 +115,7 @@ describe('metrics effects', () => {
       beforeEach(() => {
         fetchTagMetadataSubject = new Subject();
         fetchTagMetadataSpy = spyOn(
-          dataSource,
+          metricsDataSource,
           'fetchTagMetadata'
         ).and.returnValue(fetchTagMetadataSubject);
       });
@@ -307,10 +315,10 @@ describe('metrics effects', () => {
 
       beforeEach(() => {
         fetchTagMetadataSpy = spyOn(
-          dataSource,
+          metricsDataSource,
           'fetchTagMetadata'
         ).and.returnValue(of(buildDataSourceTagMetadata()));
-        fetchTimeSeriesSpy = spyOn(dataSource, 'fetchTimeSeries');
+        fetchTimeSeriesSpy = spyOn(metricsDataSource, 'fetchTimeSeries');
         selectSpy = spyOn(store, 'select').and.callThrough();
       });
 
@@ -530,7 +538,7 @@ describe('metrics effects', () => {
 
       it('does not fetch when nothing is visible', () => {
         fetchTimeSeriesSpy = spyOn(
-          dataSource,
+          metricsDataSource,
           'fetchTimeSeries'
         ).and.returnValue(of(sampleBackendResponses));
         store.overrideSelector(selectors.getExperimentIdsFromRoute, ['exp1']);
@@ -553,7 +561,7 @@ describe('metrics effects', () => {
 
       it('fetches only once when hiding then showing a card', () => {
         fetchTimeSeriesSpy = spyOn(
-          dataSource,
+          metricsDataSource,
           'fetchTimeSeries'
         ).and.returnValue(of(sampleBackendResponses));
         store.overrideSelector(selectors.getExperimentIdsFromRoute, ['exp1']);
@@ -608,7 +616,7 @@ describe('metrics effects', () => {
 
       it('does not fetch when a loaded card exits and re-enters', () => {
         fetchTimeSeriesSpy = spyOn(
-          dataSource,
+          metricsDataSource,
           'fetchTimeSeries'
         ).and.returnValue(of(sampleBackendResponses));
         store.overrideSelector(selectors.getExperimentIdsFromRoute, ['exp1']);
@@ -704,7 +712,7 @@ describe('metrics effects', () => {
             sample: 5,
           },
         ];
-        fetchTimeSeriesSpy = spyOn(dataSource, 'fetchTimeSeries');
+        fetchTimeSeriesSpy = spyOn(metricsDataSource, 'fetchTimeSeries');
         fetchTimeSeriesSpy
           .withArgs([expectedRequests[0]])
           .and.returnValue(of([sampleBackendResponses[0]]));
@@ -758,7 +766,7 @@ describe('metrics effects', () => {
                 loadState,
               })
             );
-          fetchTimeSeriesSpy = spyOn(dataSource, 'fetchTimeSeries');
+          fetchTimeSeriesSpy = spyOn(metricsDataSource, 'fetchTimeSeries');
 
           store.overrideSelector(
             selectors.getVisibleCardIdSet,
@@ -776,6 +784,124 @@ describe('metrics effects', () => {
           expect(actualActions).toEqual([]);
         });
       }
+    });
+
+    describe('addOrRemovePin', () => {
+      let saveScalarPinSpy: jasmine.Spy;
+      let removeScalarPinSpy: jasmine.Spy;
+
+      beforeEach(() => {
+        saveScalarPinSpy = spyOn(savedPinsDataSource, 'saveScalarPin');
+        removeScalarPinSpy = spyOn(savedPinsDataSource, 'removeScalarPin');
+
+        store.overrideSelector(selectors.getEnableGlobalPins, true);
+        store.overrideSelector(TEST_ONLY.getCardFetchInfo, {
+          id: 'card1',
+          plugin: PluginType.SCALARS,
+          tag: 'tagA',
+          runId: null,
+          loadState: DataLoadState.LOADED,
+        });
+        store.overrideSelector(
+          selectors.getVisibleCardIdSet,
+          new Set(['card1'])
+        );
+        store.refreshState();
+      });
+
+      it('removes scalar pin if the given card was pinned', () => {
+        actions$.next(
+          actions.cardPinStateToggled({
+            cardId: 'card1',
+            wasPinned: true,
+            canCreateNewPins: true,
+          })
+        );
+
+        expect(removeScalarPinSpy).toHaveBeenCalledWith('tagA');
+        expect(saveScalarPinSpy).not.toHaveBeenCalled();
+      });
+
+      it('pins the card if the given card was not pinned and canCreateNewPins is true', () => {
+        actions$.next(
+          actions.cardPinStateToggled({
+            cardId: 'card1',
+            wasPinned: false,
+            canCreateNewPins: true,
+          })
+        );
+
+        expect(saveScalarPinSpy).toHaveBeenCalledWith('tagA');
+        expect(removeScalarPinSpy).not.toHaveBeenCalled();
+      });
+
+      it('does not pin the card if the given card was not pinned and canCreateNewPins is false', () => {
+        actions$.next(
+          actions.cardPinStateToggled({
+            cardId: 'card1',
+            wasPinned: false,
+            canCreateNewPins: false,
+          })
+        );
+
+        expect(saveScalarPinSpy).not.toHaveBeenCalled();
+        expect(removeScalarPinSpy).not.toHaveBeenCalled();
+      });
+
+      it('does not pin the card if the plugin type is not a scalar', () => {
+        store.overrideSelector(TEST_ONLY.getCardFetchInfo, {
+          id: 'card2',
+          plugin: PluginType.HISTOGRAMS,
+          tag: 'tagA',
+          runId: null,
+          loadState: DataLoadState.LOADED,
+        });
+        store.overrideSelector(
+          selectors.getVisibleCardIdSet,
+          new Set(['card2'])
+        );
+        store.refreshState();
+
+        actions$.next(
+          actions.cardPinStateToggled({
+            cardId: 'card2',
+            wasPinned: false,
+            canCreateNewPins: true,
+          })
+        );
+
+        expect(saveScalarPinSpy).not.toHaveBeenCalled();
+        expect(removeScalarPinSpy).not.toHaveBeenCalled();
+      });
+
+      it('does not pin the card if there is no matching card', () => {
+        actions$.next(
+          actions.cardPinStateToggled({
+            cardId: 'card3',
+            wasPinned: false,
+            canCreateNewPins: true,
+          })
+        );
+
+        expect(saveScalarPinSpy).not.toHaveBeenCalled();
+        expect(removeScalarPinSpy).not.toHaveBeenCalled();
+      });
+
+      it('does not pin the card if getEnableGlobalPins is false', () => {
+        store.overrideSelector(selectors.getEnableGlobalPins, false);
+        store.refreshState();
+
+        actions$.next(
+          actions.cardPinStateToggled({
+            cardId: 'card1',
+            wasPinned: false,
+            canCreateNewPins: true,
+          })
+        );
+
+        expect(saveScalarPinSpy).not.toHaveBeenCalled();
+        expect(removeScalarPinSpy).not.toHaveBeenCalled();
+      });
     });
   });
 });
