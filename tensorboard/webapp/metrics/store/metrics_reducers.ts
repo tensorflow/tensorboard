@@ -1513,6 +1513,15 @@ const reducer = createReducer(
   }),
   on(actions.metricsSlideoutMenuClosed, (state) => {
     return {...state, isSlideoutMenuOpen: false};
+  }),
+  on(actions.metricsUnresolvedPinnedCardsAdded, (state, {cards}) => {
+    return {
+      ...state,
+      unresolvedImportedPinnedCards: [
+        ...state.unresolvedImportedPinnedCards,
+        ...cards,
+      ],
+    };
   })
 );
 
