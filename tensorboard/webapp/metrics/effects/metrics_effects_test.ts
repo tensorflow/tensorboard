@@ -902,6 +902,22 @@ describe('metrics effects', () => {
         expect(saveScalarPinSpy).not.toHaveBeenCalled();
         expect(removeScalarPinSpy).not.toHaveBeenCalled();
       });
+
+      it('does not pin the card if getShouldPersistSettings is false', () => {
+        store.overrideSelector(selectors.getShouldPersistSettings, false);
+        store.refreshState();
+
+        actions$.next(
+          actions.cardPinStateToggled({
+            cardId: 'card1',
+            wasPinned: false,
+            canCreateNewPins: true,
+          })
+        );
+
+        expect(saveScalarPinSpy).not.toHaveBeenCalled();
+        expect(removeScalarPinSpy).not.toHaveBeenCalled();
+      });
     });
 
     describe('loadSavedPins', () => {
@@ -949,6 +965,19 @@ describe('metrics effects', () => {
           'getSavedScalarPins'
         ).and.returnValue(['tagA', 'tagB']);
         store.overrideSelector(selectors.getEnableGlobalPins, false);
+        store.refreshState();
+
+        actions$.next(TEST_ONLY.initAction());
+
+        expect(actualActions).toEqual([]);
+      });
+
+      it('does not load saved pins if getShouldPersistSettings is false', () => {
+        getSavedScalarPinsSpy = spyOn(
+          savedPinsDataSource,
+          'getSavedScalarPins'
+        ).and.returnValue(['tagA', 'tagB']);
+        store.overrideSelector(selectors.getShouldPersistSettings, false);
         store.refreshState();
 
         actions$.next(TEST_ONLY.initAction());

@@ -267,9 +267,13 @@ export class MetricsEffects implements OnInitEffects {
     ofType(actions.cardPinStateToggled),
     withLatestFrom(
       this.getVisibleCardFetchInfos(),
-      this.store.select(selectors.getEnableGlobalPins)
+      this.store.select(selectors.getEnableGlobalPins),
+      this.store.select(selectors.getShouldPersistSettings)
     ),
-    filter(([, , enableGlobalPins]) => enableGlobalPins),
+    filter(
+      ([, , enableGlobalPins, shouldPersistSettings]) =>
+        enableGlobalPins && shouldPersistSettings
+    ),
     map(([{cardId, canCreateNewPins, wasPinned}, fetchInfos]) => {
       const card = fetchInfos.find((value) => value.id === cardId);
       // Saving only scalar pinned cards.
@@ -286,8 +290,14 @@ export class MetricsEffects implements OnInitEffects {
 
   private readonly loadSavedPins$ = this.actions$.pipe(
     ofType(initAction, coreActions.pluginsListingLoaded),
-    withLatestFrom(this.store.select(selectors.getEnableGlobalPins)),
-    filter(([, enableGlobalPins]) => enableGlobalPins),
+    withLatestFrom(
+      this.store.select(selectors.getEnableGlobalPins),
+      this.store.select(selectors.getShouldPersistSettings)
+    ),
+    filter(
+      ([, enableGlobalPins, shouldPersistSettings]) =>
+        enableGlobalPins && shouldPersistSettings
+    ),
     map(() => {
       const tags = this.savedPinsDataSource.getSavedScalarPins();
       if (!tags || tags.length === 0) {
