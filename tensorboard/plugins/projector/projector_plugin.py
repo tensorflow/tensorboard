@@ -523,7 +523,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     def _append_plugin_asset_directories(self, run_path_pairs):
         extra = []
         plugin_assets_name = metadata.PLUGIN_ASSETS_NAME
-        for (run, logdir) in run_path_pairs:
+        for run, logdir in run_path_pairs:
             assets = plugin_asset_util.ListAssets(logdir, plugin_assets_name)
             if metadata.PROJECTOR_FILENAME not in assets:
                 continue

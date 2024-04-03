@@ -158,7 +158,7 @@ class FileIoTest(tb_test.TestCase):
         all_dirs = []
         all_subdirs = []
         all_files = []
-        for (w_dir, w_subdirs, w_files) in gfile.walk(dir_path, topdown=True):
+        for w_dir, w_subdirs, w_files in gfile.walk(dir_path, topdown=True):
             all_dirs.append(w_dir)
             all_subdirs.append(w_subdirs)
             all_files.append(w_files)
@@ -198,7 +198,7 @@ class FileIoTest(tb_test.TestCase):
         all_dirs = []
         all_subdirs = []
         all_files = []
-        for (w_dir, w_subdirs, w_files) in gfile.walk(dir_path, topdown=False):
+        for w_dir, w_subdirs, w_files in gfile.walk(dir_path, topdown=False):
             all_dirs.append(w_dir)
             all_subdirs.append(w_subdirs)
             all_files.append(w_files)
@@ -237,7 +237,7 @@ class FileIoTest(tb_test.TestCase):
         all_dirs = []
         all_subdirs = []
         all_files = []
-        for (w_dir, w_subdirs, w_files) in gfile.walk(dir_path, topdown=False):
+        for w_dir, w_subdirs, w_files in gfile.walk(dir_path, topdown=False):
             all_dirs.append(w_dir)
             all_subdirs.append(w_subdirs)
             all_files.append(w_files)

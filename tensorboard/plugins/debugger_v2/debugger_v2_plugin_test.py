@@ -116,6 +116,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.plugin = debugger_v2_plugin.DebuggerV2Plugin(context)
         wsgi_app = application.TensorBoardWSGI([self.plugin])
         self.server = werkzeug_test.Client(wsgi_app, wrappers.Response)
+
         # The multiplexer reads data asynchronously on a separate thread, so
         # as not to block the main thread of the TensorBoard backend. During
         # unit test, we disable the asynchronous behavior, so that we can

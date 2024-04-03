@@ -96,7 +96,7 @@ class EventMultiplexer:
                 "Event Multplexer doing initialization load for %s",
                 run_path_map,
             )
-            for (run, path) in run_path_map.items():
+            for run, path in run_path_map.items():
                 self.AddRun(path, run)
         logger.info("Event Multiplexer done initializing")
 

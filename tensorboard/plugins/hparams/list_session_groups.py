@@ -329,7 +329,7 @@ class Handler:
             # hyperparameter values) into result.
             # There doesn't seem to be a way to initialize a protobuffer map in the
             # constructor.
-            for (key, value) in start_info.hparams.items():
+            for key, value in start_info.hparams.items():
                 if not json_format_compat.is_serializable_value(value):
                     # NaN number_value cannot be serialized by higher level layers
                     # that are using json_format.MessageToJson(). To workaround
@@ -811,7 +811,7 @@ def _set_avg_session_metrics(session_group):
             stats.total_wall_time_secs += metric_value.wall_time_secs
 
     del session_group.metric_values[:]
-    for (metric_name, stats) in metric_stats.items():
+    for metric_name, stats in metric_stats.items():
         session_group.metric_values.add(
             name=api_pb2.MetricName(
                 group=metric_name.group, tag=metric_name.tag
@@ -1037,5 +1037,5 @@ def _reduce_to_hparams_to_include(session_groups, col_params):
         }
 
         session_group.ClearField("hparams")
-        for (hparam, value) in new_hparams.items():
+        for hparam, value in new_hparams.items():
             session_group.hparams[hparam].CopyFrom(value)

@@ -83,7 +83,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
                 ("very smooth", (0.0, 0.25, 0.5, 0.75, 1.0), "uniform"),
                 ("very smoothn't", (0.0, 0.01, 0.99, 1.0), "bimodal"),
             ]
-            for (description, distribution, name) in data:
+            for description, distribution, name in data:
                 tensor = tf.constant([distribution], dtype=tf.float64)
                 for i in range(1, 11):
                     histogram_summary.histogram(
@@ -97,7 +97,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
                 ("blue", (1, 91, 158), "bottom-left"),
                 ("yellow", (239, 220, 111), "bottom-right"),
             ]
-            for (name, color, description) in data:
+            for name, color, description in data:
                 image_1x1 = tf.constant([[[color]]], dtype=tf.uint8)
                 for i in range(1, 11):
                     # Use a non-monotonic sequence of sample sizes to
@@ -289,7 +289,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             for tag in result[run]:
                 tensor_events = multiplexer.Tensors(run, tag)
                 self.assertLen(result[run][tag], len(tensor_events))
-                for (datum, event) in zip(result[run][tag], tensor_events):
+                for datum, event in zip(result[run][tag], tensor_events):
                     self.assertEqual(datum.step, event.step)
                     self.assertEqual(datum.wall_time, event.wall_time)
                     self.assertEqual(
@@ -424,7 +424,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             for tag in result[run]:
                 tensor_events = multiplexer.Tensors(run, tag)
                 self.assertLen(result[run][tag], len(tensor_events))
-                for (datum, event) in zip(result[run][tag], tensor_events):
+                for datum, event in zip(result[run][tag], tensor_events):
                     self.assertEqual(datum.step, event.step)
                     self.assertEqual(datum.wall_time, event.wall_time)
                     np.testing.assert_equal(

@@ -152,13 +152,13 @@ class MultiplexerDataProvider(provider.DataProvider):
             plugin_name, run_tag_filter, summary_pb2.DATA_CLASS_SCALAR
         )
         run_tag_to_last_scalar_datum = collections.defaultdict(dict)
-        for (run, tags_for_run) in index.items():
-            for (tag, metadata) in tags_for_run.items():
+        for run, tags_for_run in index.items():
+            for tag, metadata in tags_for_run.items():
                 events = self._multiplexer.Tensors(run, tag)
                 if events:
-                    run_tag_to_last_scalar_datum[run][
-                        tag
-                    ] = _convert_scalar_event(events[-1])
+                    run_tag_to_last_scalar_datum[run][tag] = (
+                        _convert_scalar_event(events[-1])
+                    )
 
         return run_tag_to_last_scalar_datum
 
@@ -222,11 +222,11 @@ class MultiplexerDataProvider(provider.DataProvider):
             all_metadata = self._multiplexer.AllSummaryMetadata()
 
         result = {}
-        for (run, tag_to_metadata) in all_metadata.items():
+        for run, tag_to_metadata in all_metadata.items():
             if runs is not None and run not in runs:
                 continue
             result_for_run = {}
-            for (tag, metadata) in tag_to_metadata.items():
+            for tag, metadata in tag_to_metadata.items():
                 if tags is not None and tag not in tags:
                     continue
                 if metadata.data_class != data_class_filter:
@@ -250,10 +250,10 @@ class MultiplexerDataProvider(provider.DataProvider):
           suitable to be returned from `list_scalars` or `list_tensors`.
         """
         result = {}
-        for (run, tag_to_metadata) in index.items():
+        for run, tag_to_metadata in index.items():
             result_for_run = {}
             result[run] = result_for_run
-            for (tag, summary_metadata) in tag_to_metadata.items():
+            for tag, summary_metadata in tag_to_metadata.items():
                 max_step = None
                 max_wall_time = None
                 for event in self._multiplexer.Tensors(run, tag):
@@ -286,10 +286,10 @@ class MultiplexerDataProvider(provider.DataProvider):
           suitable to be returned from `read_scalars` or `read_tensors`.
         """
         result = {}
-        for (run, tags_for_run) in index.items():
+        for run, tags_for_run in index.items():
             result_for_run = {}
             result[run] = result_for_run
-            for (tag, metadata) in tags_for_run.items():
+            for tag, metadata in tags_for_run.items():
                 events = self._multiplexer.Tensors(run, tag)
                 data = [convert_event(e) for e in events]
                 result_for_run[tag] = _downsample(data, downsample)
@@ -304,10 +304,10 @@ class MultiplexerDataProvider(provider.DataProvider):
             plugin_name, run_tag_filter, summary_pb2.DATA_CLASS_BLOB_SEQUENCE
         )
         result = {}
-        for (run, tag_to_metadata) in index.items():
+        for run, tag_to_metadata in index.items():
             result_for_run = {}
             result[run] = result_for_run
-            for (tag, metadata) in tag_to_metadata.items():
+            for tag, metadata in tag_to_metadata.items():
                 max_step = None
                 max_wall_time = None
                 max_length = None
@@ -345,7 +345,7 @@ class MultiplexerDataProvider(provider.DataProvider):
             plugin_name, run_tag_filter, summary_pb2.DATA_CLASS_BLOB_SEQUENCE
         )
         result = {}
-        for (run, tags) in index.items():
+        for run, tags in index.items():
             result_for_run = {}
             result[run] = result_for_run
             for tag in tags:

@@ -60,6 +60,7 @@ _ALLOWED_TAGS = [
     "th",
 ]
 
+
 # Cache Markdown converter to avoid expensive initialization at each
 # call to `markdown_to_safe_html`. Cache a different instance per thread.
 class _MarkdownStore(threading.local):

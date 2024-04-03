@@ -74,8 +74,8 @@ class ExamplePlugin(base_plugin.TBPlugin):
         )
 
         result = {run: {} for run in mapping}
-        for (run, tag_to_timeseries) in mapping.items():
-            for (tag, timeseries) in tag_to_timeseries.items():
+        for run, tag_to_timeseries in mapping.items():
+            for tag, timeseries in tag_to_timeseries.items():
                 result[run][tag] = {
                     "description": timeseries.description,
                 }
