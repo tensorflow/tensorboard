@@ -269,27 +269,40 @@ export class MetricsEffects implements OnInitEffects {
       this.getVisibleCardFetchInfos(),
       this.store.select(selectors.getEnableGlobalPins)
     ),
-    map(
-      ([
-        {cardId, canCreateNewPins, wasPinned},
-        fetchInfos,
-        enableGlobalPins,
-      ]) => {
-        if (!enableGlobalPins) {
-          return;
-        }
-        const card = fetchInfos.find((value) => value.id === cardId);
-        // Saving only scalar pinned cards.
-        if (!card || card.plugin !== PluginType.SCALARS) {
-          return;
-        }
-        if (wasPinned) {
-          this.savedPinsDataSource.removeScalarPin(card.tag);
-        } else if (canCreateNewPins) {
-          this.savedPinsDataSource.saveScalarPin(card.tag);
-        }
+    filter(([, , enableGlobalPins]) => enableGlobalPins),
+    map(([{cardId, canCreateNewPins, wasPinned}, fetchInfos]) => {
+      const card = fetchInfos.find((value) => value.id === cardId);
+      // Saving only scalar pinned cards.
+      if (!card || card.plugin !== PluginType.SCALARS) {
+        return;
       }
-    )
+      if (wasPinned) {
+        this.savedPinsDataSource.removeScalarPin(card.tag);
+      } else if (canCreateNewPins) {
+        this.savedPinsDataSource.saveScalarPin(card.tag);
+      }
+    })
+  );
+
+  private readonly loadSavedPins$ = this.actions$.pipe(
+    ofType(initAction, coreActions.pluginsListingLoaded),
+    withLatestFrom(this.store.select(selectors.getEnableGlobalPins)),
+    filter(([, enableGlobalPins]) => enableGlobalPins),
+    map(() => {
+      const tags = this.savedPinsDataSource.getSavedScalarPins();
+      if (!tags || tags.length === 0) {
+        return;
+      }
+      const unresolvedPinnedCards = tags.map((tag) => ({
+        plugin: PluginType.SCALARS,
+        tag: tag,
+      }));
+      this.store.dispatch(
+        actions.metricsUnresolvedPinnedCardsAdded({
+          cards: unresolvedPinnedCards,
+        })
+      );
+    })
   );
 
   /**
@@ -328,7 +341,11 @@ export class MetricsEffects implements OnInitEffects {
         /**
          * Subscribes to: cardPinStateToggled.
          */
-        this.addOrRemovePin$
+        this.addOrRemovePin$,
+        /**
+         * Subscribes to: dashboard shown.
+         */
+        this.loadSavedPins$
       );
     },
     {dispatch: false}

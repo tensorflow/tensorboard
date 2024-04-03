@@ -903,5 +903,58 @@ describe('metrics effects', () => {
         expect(removeScalarPinSpy).not.toHaveBeenCalled();
       });
     });
+
+    describe('loadSavedPins', () => {
+      const fakeTagList = ['tagA', 'tagB'];
+      const fakeUniqueCardInfos = fakeTagList.map((tag) => ({
+        plugin: PluginType.SCALARS,
+        tag: tag,
+      }));
+      let getSavedScalarPinsSpy: jasmine.Spy;
+
+      beforeEach(() => {
+        store.overrideSelector(selectors.getEnableGlobalPins, true);
+        store.refreshState();
+      });
+
+      it('dispatches unresolvedPinnedCards action if tag is given', () => {
+        getSavedScalarPinsSpy = spyOn(
+          savedPinsDataSource,
+          'getSavedScalarPins'
+        ).and.returnValue(['tagA', 'tagB']);
+
+        actions$.next(TEST_ONLY.initAction());
+
+        expect(actualActions).toEqual([
+          actions.metricsUnresolvedPinnedCardsAdded({
+            cards: fakeUniqueCardInfos,
+          }),
+        ]);
+      });
+
+      it('does not dispatch unresolvedPinnedCards action if tag is an empty list', () => {
+        getSavedScalarPinsSpy = spyOn(
+          savedPinsDataSource,
+          'getSavedScalarPins'
+        ).and.returnValue([]);
+
+        actions$.next(TEST_ONLY.initAction());
+
+        expect(actualActions).toEqual([]);
+      });
+
+      it('does not load saved pins if getEnableGlobalPins is false', () => {
+        getSavedScalarPinsSpy = spyOn(
+          savedPinsDataSource,
+          'getSavedScalarPins'
+        ).and.returnValue(['tagA', 'tagB']);
+        store.overrideSelector(selectors.getEnableGlobalPins, false);
+        store.refreshState();
+
+        actions$.next(TEST_ONLY.initAction());
+
+        expect(actualActions).toEqual([]);
+      });
+    });
   });
 });
