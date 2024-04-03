@@ -214,7 +214,12 @@ select:focus {
 
 .toggle-button {
   color: white;
+  
   /* margin-left: 20px; */
+}
+
+.active{
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.9); /* Horizontal offset, vertical offset, blur radius, color */
 }
 
 .collapsible-trigge{

@@ -6,6 +6,14 @@
  input[type="checkbox"] {
     display: none;
  }
+
+ .yAutoScale {
+    display: block !important;
+ }
+
+ #yaxis{
+      display: flex;
+ }
  
  .faq-drawer {
     margin-bottom: .4rem;
