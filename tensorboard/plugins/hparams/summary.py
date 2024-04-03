@@ -125,7 +125,7 @@ def session_start_pb(
         group_name=group_name,
         start_time_secs=start_time_secs,
     )
-    for (hp_name, hp_val) in hparams.items():
+    for hp_name, hp_val in hparams.items():
         # Boolean typed values need to be checked before integers since in Python
         # isinstance(True/False, int) returns True.
         if isinstance(hp_val, bool):

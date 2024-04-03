@@ -108,8 +108,8 @@ class GraphsPlugin(base_plugin.TBPlugin):
             experiment_id=experiment,
             plugin_name=metadata.PLUGIN_NAME_RUN_METADATA_WITH_GRAPH,
         )
-        for (run_name, tags) in mapping.items():
-            for (tag, tag_data) in tags.items():
+        for run_name, tags in mapping.items():
+            for tag, tag_data in tags.items():
                 # The Summary op is defined in TensorFlow and does not use a stringified proto
                 # as a content of plugin data. It contains single string that denotes a version.
                 # https://github.com/tensorflow/tensorflow/blob/11f4ecb54708865ec757ca64e4805957b05d7570/tensorflow/python/ops/summary_ops_v2.py#L789-L790
@@ -128,8 +128,8 @@ class GraphsPlugin(base_plugin.TBPlugin):
             experiment_id=experiment,
             plugin_name=metadata.PLUGIN_NAME_RUN_METADATA,
         )
-        for (run_name, tags) in mapping.items():
-            for (tag, tag_data) in tags.items():
+        for run_name, tags in mapping.items():
+            for tag, tag_data in tags.items():
                 if tag_data.plugin_content != b"1":
                     logger.warning(
                         "Ignoring unrecognizable version of RunMetadata."
@@ -146,8 +146,8 @@ class GraphsPlugin(base_plugin.TBPlugin):
             experiment_id=experiment,
             plugin_name=metadata.PLUGIN_NAME_KERAS_MODEL,
         )
-        for (run_name, tags) in mapping.items():
-            for (tag, tag_data) in tags.items():
+        for run_name, tags in mapping.items():
+            for tag, tag_data in tags.items():
                 if tag_data.plugin_content != b"1":
                     logger.warning(
                         "Ignoring unrecognizable version of RunMetadata."
@@ -161,7 +161,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
             experiment_id=experiment,
             plugin_name=metadata.PLUGIN_NAME,
         )
-        for (run_name, tags) in mapping.items():
+        for run_name, tags in mapping.items():
             if metadata.RUN_GRAPH_NAME in tags:
                 (run_item, _) = add_row_item(run_name, None)
                 run_item["run_graph"] = True
@@ -172,7 +172,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
             experiment_id=experiment,
             plugin_name=metadata.PLUGIN_NAME_TAGGED_RUN_METADATA,
         )
-        for (run_name, tags) in mapping.items():
+        for run_name, tags in mapping.items():
             for tag in tags:
                 (_, tag_item) = add_row_item(run_name, tag)
                 tag_item["profile"] = True

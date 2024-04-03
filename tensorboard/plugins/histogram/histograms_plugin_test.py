@@ -190,7 +190,7 @@ class HistogramsPluginTest(tf.test.TestCase):
             % (expected_length, len(data), downsample),
         )
         last_step_seen = None
-        for (i, datum) in enumerate(data):
+        for i, datum in enumerate(data):
             [_unused_wall_time, step, buckets] = datum
             if last_step_seen is not None:
                 self.assertGreater(step, last_step_seen)

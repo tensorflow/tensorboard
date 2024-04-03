@@ -60,7 +60,7 @@ def _walk_layers(keras_layer):
     if keras_layer.get("config").get("layers"):
         name_scope = keras_layer.get("config").get("name")
         for layer in keras_layer.get("config").get("layers"):
-            for (sub_name_scope, sublayer) in _walk_layers(layer):
+            for sub_name_scope, sublayer in _walk_layers(layer):
                 sub_name_scope = (
                     "%s/%s" % (name_scope, sub_name_scope)
                     if sub_name_scope
@@ -157,7 +157,7 @@ def _update_dicts(
     is_parent_functional_model = bool(inbound_nodes)
 
     if is_parent_functional_model and is_functional_model:
-        for (input_layer, inbound_node) in zip(input_layers, inbound_nodes):
+        for input_layer, inbound_node in zip(input_layers, inbound_nodes):
             input_layer_name = _scoped_name(node_name, input_layer)
             inbound_node_name = _scoped_name(name_scope, inbound_node[0])
             input_to_in_layer[input_layer_name] = inbound_node_name
@@ -209,7 +209,7 @@ def keras_model_to_graph_def(keras_layer):
     # instead are defined implicitly via order of layers.
     prev_node_name = None
 
-    for (name_scope, layer) in _walk_layers(keras_layer):
+    for name_scope, layer in _walk_layers(keras_layer):
         if _is_model(layer):
             (
                 input_to_layer,

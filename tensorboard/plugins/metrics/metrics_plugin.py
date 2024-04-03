@@ -65,8 +65,8 @@ def _get_tag_description_info(mapping):
     """
     tag_to_descriptions = collections.defaultdict(set)
     description_to_runs = collections.defaultdict(set)
-    for (run, tag_to_content) in mapping.items():
-        for (tag, metadatum) in tag_to_content.items():
+    for run, tag_to_content in mapping.items():
+        for tag, metadatum in tag_to_content.items():
             description = metadatum.description
             if len(description):
                 tag_to_descriptions[tag].add(description)
@@ -216,8 +216,8 @@ def _get_tag_run_image_info(mapping):
         }
     """
     tag_run_image_info = collections.defaultdict(dict)
-    for (run, tag_to_content) in mapping.items():
-        for (tag, metadatum) in tag_to_content.items():
+    for run, tag_to_content in mapping.items():
+        for tag, metadatum in tag_to_content.items():
             tag_run_image_info[tag][run] = {
                 "maxSamplesPerStep": metadatum.max_length - 2  # width, height
             }
@@ -365,8 +365,8 @@ class MetricsPlugin(base_plugin.TBPlugin):
     def _filter_by_version(self, mapping, parse_metadata, version_checker):
         """Filter `DataProvider.list_*` output by summary metadata version."""
         result = {run: {} for run in mapping}
-        for (run, tag_to_content) in mapping.items():
-            for (tag, metadatum) in tag_to_content.items():
+        for run, tag_to_content in mapping.items():
+            for tag, metadatum in tag_to_content.items():
                 md = parse_metadata(metadatum.plugin_content)
                 if not version_checker.ok(md.version, run, tag):
                     continue
@@ -509,7 +509,7 @@ class MetricsPlugin(base_plugin.TBPlugin):
         )
 
         run_to_series = {}
-        for (result_run, tag_data) in mapping.items():
+        for result_run, tag_data in mapping.items():
             if tag not in tag_data:
                 continue
             values = [
@@ -558,7 +558,7 @@ class MetricsPlugin(base_plugin.TBPlugin):
         )
 
         run_to_series = {}
-        for (result_run, tag_data) in mapping.items():
+        for result_run, tag_data in mapping.items():
             if tag not in tag_data:
                 continue
             values = [
@@ -595,7 +595,7 @@ class MetricsPlugin(base_plugin.TBPlugin):
         )
 
         run_to_series = {}
-        for (result_run, tag_data) in mapping.items():
+        for result_run, tag_data in mapping.items():
             if tag not in tag_data:
                 continue
             blob_sequence_datum_list = tag_data[tag]

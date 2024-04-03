@@ -108,7 +108,7 @@ class MeshPlugin(base_plugin.TBPlugin):
         response = dict()
         for run, tags in all_runs.items():
             response[run] = dict()
-            for (instance_tag, metadatum) in tags.items():
+            for instance_tag, metadatum in tags.items():
                 md = metadata.parse_plugin_metadata(metadatum.plugin_content)
                 if not self._version_checker.ok(md.version, run, instance_tag):
                     continue

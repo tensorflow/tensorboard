@@ -177,9 +177,9 @@ class CustomScalarsPluginTest(tf.test.TestCase):
             custom_scalars_plugin_instance,
         ]
         for plugin_instance in plugin_instances:
-            plugin_name_to_instance[
-                plugin_instance.plugin_name
-            ] = plugin_instance
+            plugin_name_to_instance[plugin_instance.plugin_name] = (
+                plugin_instance
+            )
         return custom_scalars_plugin_instance
 
     def test_download_url_json(self):

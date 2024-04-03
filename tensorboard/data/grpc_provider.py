@@ -140,7 +140,7 @@ class GrpcDataProvider(provider.DataProvider):
                     series = []
                     tags[tag_entry.tag_name] = series
                     d = tag_entry.data
-                    for (step, wt, value) in zip(d.step, d.wall_time, d.value):
+                    for step, wt, value in zip(d.step, d.wall_time, d.value):
                         point = provider.ScalarDatum(
                             step=step,
                             wall_time=wt,
@@ -177,13 +177,13 @@ class GrpcDataProvider(provider.DataProvider):
                     d = tag_entry.data
                     # There should be no more than one datum in
                     # `tag_entry.data` since downsample was set to 1.
-                    for (step, wt, value) in zip(d.step, d.wall_time, d.value):
-                        result[run_name][
-                            tag_entry.tag_name
-                        ] = provider.ScalarDatum(
-                            step=step,
-                            wall_time=wt,
-                            value=value,
+                    for step, wt, value in zip(d.step, d.wall_time, d.value):
+                        result[run_name][tag_entry.tag_name] = (
+                            provider.ScalarDatum(
+                                step=step,
+                                wall_time=wt,
+                                value=value,
+                            )
                         )
             return result
 
@@ -243,7 +243,7 @@ class GrpcDataProvider(provider.DataProvider):
                     series = []
                     tags[tag_entry.tag_name] = series
                     d = tag_entry.data
-                    for (step, wt, value) in zip(d.step, d.wall_time, d.value):
+                    for step, wt, value in zip(d.step, d.wall_time, d.value):
                         point = provider.TensorDatum(
                             step=step,
                             wall_time=wt,
@@ -308,7 +308,7 @@ class GrpcDataProvider(provider.DataProvider):
                     series = []
                     tags[tag_entry.tag_name] = series
                     d = tag_entry.data
-                    for (step, wt, blob_sequence) in zip(
+                    for step, wt, blob_sequence in zip(
                         d.step, d.wall_time, d.values
                     ):
                         values = []
