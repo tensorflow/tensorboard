@@ -153,3 +153,10 @@ export const getIsScalarColumnContextMenusEnabled = createSelector(
     return flags.enableScalarColumnContextMenus;
   }
 );
+
+export const getEnableGlobalPins = createSelector(
+  getFeatureFlags,
+  (flags: FeatureFlags): boolean => {
+    return flags.enableGlobalPins;
+  }
+);
