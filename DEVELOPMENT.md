@@ -19,7 +19,7 @@ TensorBoard at HEAD relies on the nightly installation of TensorFlow: this allow
 $ virtualenv -p python3 tf
 $ source tf/bin/activate
 (tf)$ pip install --upgrade pip
-(tf)$ pip install tf-nightly tf-keras-nightly -r tensorboard/pip_package/requirements.txt -r tensorboard/pip_package/requirements_dev.txt
+(tf)$ pip install tf-nightly -r tensorboard/pip_package/requirements.txt -r tensorboard/pip_package/requirements_dev.txt
 (tf)$ pip uninstall -y tb-nightly
 ```
 
