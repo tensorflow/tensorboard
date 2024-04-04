@@ -185,19 +185,12 @@ class Context:
           value, with keys only for runs and tags that actually had
           data, which may be a subset of what was requested.
         """
-        last_scalars = self._tb_context.data_provider.read_last_scalars(
+        return self._tb_context.data_provider.read_last_scalars(
             ctx,
             experiment_id=experiment_id,
             plugin_name=scalar_metadata.PLUGIN_NAME,
             run_tag_filter=run_tag_filter,
         )
-        # Transform keys from the data provider using some of the same os-level
-        # filesystem operations used to generate metric names elsewhere.
-        # This will, for example, translate runs with name 'SOMETHING/.' to
-        # 'SOMETHING'.
-        return {
-            os.path.normpath(key): value for key, value in last_scalars.items()
-        }
 
     def hparams_from_data_provider(self, ctx, experiment_id, limit):
         """Calls DataProvider.list_hyperparameters() and returns the result."""
@@ -494,9 +487,13 @@ class Context:
             if session is None:
                 continue
             group = os.path.relpath(run, session)
+            # Do not normalize the path since the run name could be ".", note that 
+            # `os.path.relpath` would remove the the trailing "/.".
+            if run.endswith("/."):
+                group += "/."
             # relpath() returns "." for the 'session' directory, we use an empty
-            # string.
-            if group == ".":
+            # string, unless the run name ends with ".".
+            if group == "." and not run.endswith("."):
                 group = ""
             metric_names_set.update((tag, group) for tag in tags)
         metric_names_list = list(metric_names_set)
