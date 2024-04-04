@@ -63,7 +63,7 @@ def collect_data_from_json_file(json_file):
                                 for tstamp, energy, time_point, temp in zip(timestamps, powers, times, temprature):
                                     tf.summary.scalar(f"{layer_name}/{device_type}-temperature",
                                                 temp,
-                                                step=int(tstamp))
+                                                step=int(tstamp*1000000000))
                                     tf.summary.scalar(f"{layer_name}/{device_type}",
                                             energy,
                                             step=int(tstamp*1000000000))

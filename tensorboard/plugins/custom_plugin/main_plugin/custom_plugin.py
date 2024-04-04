@@ -1,5 +1,4 @@
 import os
-import json
 import mimetypes
 import werkzeug
 
@@ -13,7 +12,6 @@ from tensorboard import program
 from werkzeug import wrappers
 from main_plugin import metadata
 from tensorboard.plugins.scalar import metadata as scalar_metadata
-from tensorboard.plugins.histogram import metadata as histogram_metadata
 
 
 _PLUGIN_DIRECTORY_PATH_PART = "/data/plugin/custom_plugin/"

@@ -28,8 +28,8 @@ export function createPreviews(run, tagsToScalars) {
       fragment.appendChild(messageElement);
       return fragment;
     }
-    else{
 
+    else{
 
       console.log(tagsToScalars);
       if(run == "system_performance"){
@@ -42,12 +42,6 @@ export function createPreviews(run, tagsToScalars) {
 
           let time = scalars.get("start_time_execution");
           startTime.set(tag,time[0][2]);
-          // console.log(time);
-
-
-          if(tag == "start_time_execution"){
-            // console.log(tag,scalars.keys());
-          }
 
         });
 
@@ -91,52 +85,17 @@ function calculateNewTimestamp1(originalTimestamp, timeElapsedInSeconds) {
   return Number(newTimestamp);
 }
 
-// function addElapsedtime(timestamp, elapsedtime) {
-//   // Ensure timestamp has correct length
-//   if (typeof timestamp !== 'number' || timestamp.toString().length !== 19) {
-//       console.error('Invalid timestamp format.');
-//       return null;
-//   }
-
-//   // Parse the timestamp into its components
-//   const year = Math.floor(timestamp / 1000000000000000);
-//   const month = Math.floor(timestamp / 10000000000000) % 100;
-//   const day = Math.floor(timestamp / 100000000000) % 100;
-//   const hours = Math.floor(timestamp / 1000000000) % 100;
-//   const minutes = Math.floor(timestamp / 10000000) % 100;
-//   const seconds = Math.floor(timestamp / 100000) % 100;
-//   const milliseconds = timestamp % 100000;
-
-//   // Create a new Date object with the parsed components
-//   const originalDate = new Date(year, month - 1, day, hours, minutes, seconds, milliseconds);
-
-//   // Add elapsed time in milliseconds
-//   const newTimestamp = new Date(originalDate.getTime() + elapsedtime * 1000);
-
-//   // Convert the new timestamp to number format
-//   const formattedNewTimestamp = Number(
-//       `${padZero(newTimestamp.getFullYear())}` +
-//       `${padZero(newTimestamp.getMonth() + 1)}` +
-//       `${padZero(newTimestamp.getDate())}` +
-//       `${padZero(newTimestamp.getHours())}` +
-//       `${padZero(newTimestamp.getMinutes())}` +
-//       `${padZero(newTimestamp.getSeconds())}${padZero(newTimestamp.getMilliseconds(), 3)}`
-//   );
-
-//   return formattedNewTimestamp;
-// }
-
 function padZero(number, width = 2) {
     return String(number).padStart(width, '0');
 }
 
 function merge(tagsToScalars, map){
 
-
   let tagData = new Map();
   let cpu = [];
   let ram = [];
   let gpu = [];
+  let gpuTemp = [];
 
 // let mergedCPU = [].concat(...tagsToScalars.forEach(t => t.get("CPU")));
 // console.log(mergedCPU);
@@ -144,31 +103,42 @@ function merge(tagsToScalars, map){
   map.keys().forEach((tag) => {
 
     let target = tagsToScalars.get(tag);
+
+    target.forEach((value,key) => {
+      console.log(key,value);
+    });
+
     let start = target.get("start_time_execution")[0][1];
       
     let cpuData = target.get("CPU").map((item) => {
       // console.log("item=",item);
-      return {timestamp:convertToNanoseconds(start,item[1]/1000000000)/1000000, energy:item[2]};
+      return {timestamp:Math.floor(convertToNanoseconds(start,item[1]/1000000000)/1000000), energy:item[2]};
     });
 
     let ramData = target.get("RAM").map((item) => {
-      return {timestamp:convertToNanoseconds(start,item[1]/1000000000)/1000000, energy:item[2]};
+      return {timestamp:Math.floor(convertToNanoseconds(start,item[1]/1000000000)/1000000), energy:item[2]};
     });
 
     let gpuData = target.get("GPU").map((item) => {
       return {timestamp:item[1]/1000000, energy:item[2]};
     });
 
-    cpu.push(cpuData);
-    gpu.push(gpuData);
-    ram.push(ramData);
+    let gpuTempData = target.get("GPU-temperature").map((item) => {
+      return {timestamp:item[1]/1000000, energy:item[2]};
+    });
 
-    // });
+    tagData.set("cpu",cpuData);
+    tagData.set("ram",ramData);
+    tagData.set("gpu",gpuData);
+    tagData.set("GPU-temperature",gpuTempData);
+
+    // cpu.push(cpuData);
+    // gpu.push(gpuData);
+    // ram.push(ramData);
 
   });
 
-  return {cpu:cpu,ram:ram,gpu:gpu};
-  // return {gpu:gpu};
+  return tagData;
 
 }
 
@@ -234,23 +204,7 @@ function cardformat(run,tag,scalars){
   cardsContainer.id = `cards-container_${tag}`;
 
   if(run === "system_performance"){
-
-    // scalars.forEach((scalar, scalar_tag) => {
-
-    //   if(scalar_tag != "start_time_execution" && scalar_tag != "end_time_execution")
-    //   {
-        
-    //   const card = document.createElement('div');
-    //   card.className = 'card';
-    //   card.id = `card_${tag}_${scalar_tag}`;
-    //   console.log(scalar);
-  
-    //   card.appendChild(Utils.EnergyUsageChart(tag,scalar_tag,scalar));
-    //   cardsContainer.appendChild(card);
-
-    //   }
-
-    // });
+    //deprecated - direct controll is passed 
   }
   else if(run === "fake_bert"){
 
@@ -293,47 +247,6 @@ function createElement(tag, className) {
 //     { date: new Date('2020-01-01'), value: 10 },
 //     { date: new Date('2020-01-02'), value: 12 },
 //     { date: new Date('2020-01-03'), value: 13 },
-//     { date: new Date('2020-01-04'), value: 15 },
-//     { date: new Date('2020-01-05'), value: 17 },
-//     { date: new Date('2020-01-06'), value: 18 },
-//     { date: new Date('2020-01-07'), value: 20 },
-//     { date: new Date('2020-01-08'), value: 22 },
-//     { date: new Date('2020-01-09'), value: 23 },
-//     { date: new Date('2020-01-10'), value: 25 },
-//     { date: new Date('2020-01-11'), value: 15 }, // Jump of 5
-//     { date: new Date('2020-01-12'), value: 24 },
-//     { date: new Date('2020-01-13'), value: 30 },
-//     { date: new Date('2020-01-14'), value: 34 },
-//     { date: new Date('2020-01-15'), value: 36 },
-//     { date: new Date('2020-01-16'), value: 20 },
-//     { date: new Date('2020-01-17'), value: 26 },
-//     { date: new Date('2020-01-18'), value: 41 },
-//     { date: new Date('2020-01-19'), value: 42 },
-//     { date: new Date('2020-01-20'), value: 44 },
-//     { date: new Date('2020-01-21'), value: 10 },
-//     { date: new Date('2020-01-22'), value: 12 },
-//     { date: new Date('2020-01-24'), value: 13 },
-//     { date: new Date('2020-01-25'), value: 15 },
-//     { date: new Date('2020-01-26'), value: 17 },
-//     { date: new Date('2020-01-27'), value: 18 },
-//     { date: new Date('2020-01-28'), value: 20 },
-//     { date: new Date('2020-01-29'), value: 22 },
-//     { date: new Date('2020-01-30'), value: 23 },
-//     { date: new Date('2020-01-31'), value: 25 },
-//     { date: new Date('2020-02-01'), value: 15 }, // Jump of 5
-//     { date: new Date('2020-02-02'), value: 24 },
-//     { date: new Date('2020-02-03'), value: 30 },
-//     { date: new Date('2020-02-04'), value: 34 },
-//     { date: new Date('2020-02-05'), value: 36 },
-//     { date: new Date('2020-02-06'), value: 20 },
-//     { date: new Date('2020-02-07'), value: 26 },
-//     { date: new Date('2020-02-08'), value: 41 },
-//     { date: new Date('2020-02-09'), value: 42 },
-//     { date: new Date('2020-02-10'), value: 44 },
-//     { date: new Date('2020-02-11'), value: 10 },
-//     { date: new Date('2020-02-12'), value: 12 },
-//     { date: new Date('2020-02-13'), value: 13 },
-//     { date: new Date('2020-02-14'), value: 15 },
 // ];
 
 // const simplifiedData = [
@@ -341,22 +254,12 @@ function createElement(tag, className) {
 //   { date: "2013-05-01", value: 139.89 },
 //   { date: "2013-06-01", value: 129.78 },
 //   { date: "2013-07-01", value: 97.66 },
-//   { date: "2013-08-01", value: 108 },
-//   { date: "2013-09-01", value: 145.81 },
-//   { date: "2013-10-01", value: 134.63 },
-//   { date: "2013-11-01", value: 206.65 },
-//   { date: "2013-12-01", value: 1133.08 },
-//   { date: "2014-01-01", value: 775.35 },
-//   // Continue for each month...
-//   { date: "2017-11-01", value: 6767.31 },
-//   { date: "2017-12-01", value: 11046.7 },
-//   { date: "2018-01-01", value: 14112.2 },
-//   { date: "2018-02-01", value: 10288.8 },
-//   { date: "2018-03-01", value: 11052.3 },
-//   { date: "2018-04-01", value: 7060.95 }
 // ];
 
-// Extra graphs created to check visulizations of different kinds
+
+// Extra graphs created to check visulizations of different kinds - if you are modifying the extension send appropriatedata
+// Different graph uses different data so analyze the method to decide what is the format. - Above are few examples only.
+
     // const card = document.createElement('div');
     // card.className = 'card';
     // card.appendChild(Utils.createLineChart(multiData));

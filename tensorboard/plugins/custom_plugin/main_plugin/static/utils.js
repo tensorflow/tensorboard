@@ -719,7 +719,7 @@ export function Energy(dataArray, main_tag="Energy",scalar_tag="Experiment") {
   return container;
 }
 
-export function FinalResource(datasets,layerLabels,key="cpu") {
+export function FinalResource(datasets,layerLabels,key="gpu") {
 
   var color = [
     '#008FFB', // Blue
@@ -747,32 +747,36 @@ export function FinalResource(datasets,layerLabels,key="cpu") {
 
   // console.log("datasets=",datasets,typeof(layerLabels));
 
+
+  var sys = document.createElement('div');
+  sys.id = "system";
+
   var container = document.createElement('div');
   container.id = "chart";
 
 
-  // const yaxis = document.createElement('div');
-  // yaxis.id = "yaxis";
+  const yaxis = document.createElement('div');
+  yaxis.id = "yaxis";
 
-  // var label = document.createElement("label");
-  // label.setAttribute("for", "autoScaleCheckbox");
-  // label.textContent = "Auto Scale Y-axis:";
+  var label = document.createElement("label");
+  label.setAttribute("for", "autoScaleCheckbox");
+  label.textContent = "Auto Scale Y-axis:";
 
-  // // Create checkbox element
-  // var checkbox = document.createElement("input");
-  // checkbox.setAttribute("type", "checkbox");
-  // checkbox.setAttribute("id", "autoScaleCheckbox");
-  // checkbox.classList.add("yAutoScale");
-  // checkbox.checked = true;
+  // Create checkbox element
+  var checkbox = document.createElement("input");
+  checkbox.setAttribute("type", "checkbox");
+  checkbox.setAttribute("id", "autoScaleCheckbox");
+  checkbox.classList.add("yAutoScale");
+  checkbox.checked = true;
 
-  // checkbox.addEventListener('change', function() {
-  //   var checked = this.checked;
-  //   // chart.updateOptions({
-  //   //   yaxis: {
-  //   //     forceNiceScale: checked
-  //   //   }
-  //   // });
-  // });
+  checkbox.addEventListener('change', function() {
+    var checked = this.checked;
+    // chart.updateOptions({
+    //   yaxis: {
+    //     forceNiceScale: checked
+    //   }
+    // });
+  });
 
   // // Append label and checkbox to a container
  
@@ -799,7 +803,7 @@ console.log("Final",datasets);
 
       dataset.forEach(dataPoint => {
         data.push({
-          x: new Date(dataPoint.timestamp),
+          x: dataPoint.timestamp,
           y: dataPoint.energy
         });
       });
@@ -876,7 +880,7 @@ console.log("Final",datasets);
 
   const options = {
     chart: {
-      height: 600,
+      height: 600 ,
       type: 'line',
        zoom: {
         // enabled: true, // Enable zoom
@@ -886,6 +890,12 @@ console.log("Final",datasets);
         // min: 20, // Specify the minimum y-axis value to show initially
         // max: 100 
       },
+      events: {
+        rendered: function(chartContext, config) {
+          console.log('Chart has been rendered!');
+          // Your code to trigger actions when chart rendering is complete
+        }
+      }
     },
     annotations: {
       xaxis: allAnnotations.get(key)
@@ -895,6 +905,10 @@ console.log("Final",datasets);
       type: 'datetime',
       title:{
         text: 'Time & API Call Sequence'
+      },
+      labels: {
+        datetimeUTC: false,
+        format: 'HH:mm:ss'
       }
     },
     yaxis:{
@@ -904,7 +918,7 @@ console.log("Final",datasets);
       labels: {
         formatter: function (value) {
           return value.toFixed(2);
-        }
+        },
       }
     },
      legend: {
@@ -913,9 +927,9 @@ console.log("Final",datasets);
     },
     tooltip: {
       x: {
-          
-          format: 'dd MMM yyyy HH:mm:ss'
+          format: 'dd MMM yyyy HH:mm:ss.fff'
       },
+      
     },
     stroke: {
       width: 1, // You can adjust this value to make the stroke thinner or thicker
@@ -992,8 +1006,9 @@ function toggleAnnotationVisibility(groupId, annotationsData) {
 
   });
 
-  document.body.appendChild(annotationContainer);
-  return container;
+  sys.appendChild(container);
+  sys.appendChild(annotationContainer);
+  return sys;
 }
 
 export function multilinechart(tagsToScalars,xTitle="",yTitle="",chartTitle=""){
@@ -1218,16 +1233,16 @@ createColorPickers(seriesData);
   }
 
 
-  function downloadGraph(name = 'graph.png') {
-    var exportGraph = createElement('button', 'Download PNG');
-    exportGraph.classList.add('graph-button');
-    exportGraph.addEventListener('click', function () {
-      var downloadGraph = document.createElement('a');
-      downloadGraph.href = canvas.toDataURL('image/png');
-      downloadGraph.download = 'custom_graph.png';
-      document.body.appendChild(downloadGraph);
-      downloadGraph.click();
-      document.body.removeChild(downloadGraph);
-    });
-    return exportGraph;
-  }
+  // function downloadGraph(name = 'graph.png') {
+  //   var exportGraph = createElement('button', 'Download PNG');
+  //   exportGraph.classList.add('graph-button');
+  //   exportGraph.addEventListener('click', function () {
+  //     var downloadGraph = document.createElement('a');
+  //     downloadGraph.href = canvas.toDataURL('image/png');
+  //     downloadGraph.download = 'custom_graph.png';
+  //     document.body.appendChild(downloadGraph);
+  //     downloadGraph.click();
+  //     document.body.removeChild(downloadGraph);
+  //   });
+  //   return exportGraph;
+  // }
