@@ -129,7 +129,7 @@ class BackendContextTest(tf.test.TestCase):
             "exp/session_3xyz/": {
                 "loss2": b"",
             },
-            "exp/session_4/.": {
+            ".": {
                 "entropy": b"",
             },
         }
@@ -905,7 +905,7 @@ class BackendContextTest(tf.test.TestCase):
             }
             metric_infos {
               name {
-                group: "exp/session_4/."
+                group: "."
                 tag: "entropy"
               }
             }

@@ -487,12 +487,8 @@ class Context:
             if session is None:
                 continue
             group = os.path.relpath(run, session)
-            # Do not normalize the path since the run name could be ".", note that 
-            # `os.path.relpath` would remove the the trailing "/.".
-            if run.endswith("/."):
-                group += "/."
             # relpath() returns "." for the 'session' directory, we use an empty
-            # string, unless the run name ends with ".".
+            # string, unless the run name actually ends with ".".
             if group == "." and not run.endswith("."):
                 group = ""
             metric_names_set.update((tag, group) for tag in tags)
