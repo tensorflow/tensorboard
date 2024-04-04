@@ -4471,5 +4471,22 @@ describe('metrics reducers', () => {
         expect(state3.isSlideoutMenuOpen).toBe(false);
       });
     });
+
+    describe('#metricsUnresolvedPinnedCardsFromLocalStorageAdded', () => {
+      it('adds unresolved pinned card to unresolvedImportedPinnedCards', () => {
+        const fakePinnedCard = {tag: 'tagA', plugin: PluginType.SCALARS};
+        const state1 = buildMetricsState({
+          unresolvedImportedPinnedCards: [],
+        });
+
+        const state2 = reducers(
+          state1,
+          actions.metricsUnresolvedPinnedCardsFromLocalStorageAdded({
+            cards: [fakePinnedCard],
+          })
+        );
+        expect(state2.unresolvedImportedPinnedCards).toEqual([fakePinnedCard]);
+      });
+    });
   });
 });

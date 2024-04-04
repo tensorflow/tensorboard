@@ -26,6 +26,7 @@ import {
 import {CardState} from '../store/metrics_types';
 import {
   CardId,
+  CardUniqueInfo,
   HeaderEditInfo,
   HeaderToggleInfo,
   HistogramMode,
@@ -269,6 +270,11 @@ export const rangeSelectionToggled = createAction(
 
 export const metricsHideEmptyCardsToggled = createAction(
   '[Metrics] Hide Empty Cards Changed'
+);
+
+export const metricsUnresolvedPinnedCardsFromLocalStorageAdded = createAction(
+  '[Metrics] Unresolved Pinned Cards From Local Storage Added',
+  props<{cards: CardUniqueInfo[]}>()
 );
 
 // TODO(jieweiwu): Delete after internal code is updated.
