@@ -4472,8 +4472,8 @@ describe('metrics reducers', () => {
       });
     });
 
-    describe('#metricsUnresolvedPinnedCardsAdded', () => {
-      it('add unresolved pinned card to unresolvedImportedPinnedCards', () => {
+    describe('#metricsUnresolvedPinnedCardsFromLocalStorageAdded', () => {
+      it('adds unresolved pinned card to unresolvedImportedPinnedCards', () => {
         const fakePinnedCard = {tag: 'tagA', plugin: PluginType.SCALARS};
         const state1 = buildMetricsState({
           unresolvedImportedPinnedCards: [],
@@ -4481,7 +4481,9 @@ describe('metrics reducers', () => {
 
         const state2 = reducers(
           state1,
-          actions.metricsUnresolvedPinnedCardsAdded({cards: [fakePinnedCard]})
+          actions.metricsUnresolvedPinnedCardsFromLocalStorageAdded({
+            cards: [fakePinnedCard],
+          })
         );
         expect(state2.unresolvedImportedPinnedCards).toEqual([fakePinnedCard]);
       });

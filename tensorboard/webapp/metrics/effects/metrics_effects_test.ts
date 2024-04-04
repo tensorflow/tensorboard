@@ -942,7 +942,7 @@ describe('metrics effects', () => {
         actions$.next(TEST_ONLY.initAction());
 
         expect(actualActions).toEqual([
-          actions.metricsUnresolvedPinnedCardsAdded({
+          actions.metricsUnresolvedPinnedCardsFromLocalStorageAdded({
             cards: fakeUniqueCardInfos,
           }),
         ]);

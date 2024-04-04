@@ -274,7 +274,7 @@ export class MetricsEffects implements OnInitEffects {
       ([, , enableGlobalPins, shouldPersistSettings]) =>
         enableGlobalPins && shouldPersistSettings
     ),
-    map(([{cardId, canCreateNewPins, wasPinned}, fetchInfos]) => {
+    tap(([{cardId, canCreateNewPins, wasPinned}, fetchInfos]) => {
       const card = fetchInfos.find((value) => value.id === cardId);
       // Saving only scalar pinned cards.
       if (!card || card.plugin !== PluginType.SCALARS) {
@@ -289,7 +289,8 @@ export class MetricsEffects implements OnInitEffects {
   );
 
   private readonly loadSavedPins$ = this.actions$.pipe(
-    ofType(initAction, coreActions.pluginsListingLoaded),
+    // Should be dispatch before stateRehydratedFromUrl.
+    ofType(initAction),
     withLatestFrom(
       this.store.select(selectors.getEnableGlobalPins),
       this.store.select(selectors.getShouldPersistSettings)
@@ -298,7 +299,7 @@ export class MetricsEffects implements OnInitEffects {
       ([, enableGlobalPins, shouldPersistSettings]) =>
         enableGlobalPins && shouldPersistSettings
     ),
-    map(() => {
+    tap(() => {
       const tags = this.savedPinsDataSource.getSavedScalarPins();
       if (!tags || tags.length === 0) {
         return;
@@ -308,7 +309,7 @@ export class MetricsEffects implements OnInitEffects {
         tag: tag,
       }));
       this.store.dispatch(
-        actions.metricsUnresolvedPinnedCardsAdded({
+        actions.metricsUnresolvedPinnedCardsFromLocalStorageAdded({
           cards: unresolvedPinnedCards,
         })
       );
@@ -353,7 +354,7 @@ export class MetricsEffects implements OnInitEffects {
          */
         this.addOrRemovePin$,
         /**
-         * Subscribes to: dashboard shown.
+         * Subscribes to: dashboard shown (initAction).
          */
         this.loadSavedPins$
       );

@@ -272,8 +272,8 @@ export const metricsHideEmptyCardsToggled = createAction(
   '[Metrics] Hide Empty Cards Changed'
 );
 
-export const metricsUnresolvedPinnedCardsAdded = createAction(
-  '[Metrics] Unresolved Pinned Cards Added',
+export const metricsUnresolvedPinnedCardsFromLocalStorageAdded = createAction(
+  '[Metrics] Unresolved Pinned Cards From Local Storage Added',
   props<{cards: CardUniqueInfo[]}>()
 );
 
