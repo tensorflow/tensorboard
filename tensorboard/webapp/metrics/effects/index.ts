@@ -267,29 +267,53 @@ export class MetricsEffects implements OnInitEffects {
     ofType(actions.cardPinStateToggled),
     withLatestFrom(
       this.getVisibleCardFetchInfos(),
-      this.store.select(selectors.getEnableGlobalPins)
+      this.store.select(selectors.getEnableGlobalPins),
+      this.store.select(selectors.getShouldPersistSettings)
     ),
-    map(
-      ([
-        {cardId, canCreateNewPins, wasPinned},
-        fetchInfos,
-        enableGlobalPins,
-      ]) => {
-        if (!enableGlobalPins) {
-          return;
-        }
-        const card = fetchInfos.find((value) => value.id === cardId);
-        // Saving only scalar pinned cards.
-        if (!card || card.plugin !== PluginType.SCALARS) {
-          return;
-        }
-        if (wasPinned) {
-          this.savedPinsDataSource.removeScalarPin(card.tag);
-        } else if (canCreateNewPins) {
-          this.savedPinsDataSource.saveScalarPin(card.tag);
-        }
+    filter(
+      ([, , enableGlobalPins, shouldPersistSettings]) =>
+        enableGlobalPins && shouldPersistSettings
+    ),
+    tap(([{cardId, canCreateNewPins, wasPinned}, fetchInfos]) => {
+      const card = fetchInfos.find((value) => value.id === cardId);
+      // Saving only scalar pinned cards.
+      if (!card || card.plugin !== PluginType.SCALARS) {
+        return;
       }
-    )
+      if (wasPinned) {
+        this.savedPinsDataSource.removeScalarPin(card.tag);
+      } else if (canCreateNewPins) {
+        this.savedPinsDataSource.saveScalarPin(card.tag);
+      }
+    })
+  );
+
+  private readonly loadSavedPins$ = this.actions$.pipe(
+    // Should be dispatch before stateRehydratedFromUrl.
+    ofType(initAction),
+    withLatestFrom(
+      this.store.select(selectors.getEnableGlobalPins),
+      this.store.select(selectors.getShouldPersistSettings)
+    ),
+    filter(
+      ([, enableGlobalPins, shouldPersistSettings]) =>
+        enableGlobalPins && shouldPersistSettings
+    ),
+    tap(() => {
+      const tags = this.savedPinsDataSource.getSavedScalarPins();
+      if (!tags || tags.length === 0) {
+        return;
+      }
+      const unresolvedPinnedCards = tags.map((tag) => ({
+        plugin: PluginType.SCALARS,
+        tag: tag,
+      }));
+      this.store.dispatch(
+        actions.metricsUnresolvedPinnedCardsFromLocalStorageAdded({
+          cards: unresolvedPinnedCards,
+        })
+      );
+    })
   );
 
   /**
@@ -328,7 +352,11 @@ export class MetricsEffects implements OnInitEffects {
         /**
          * Subscribes to: cardPinStateToggled.
          */
-        this.addOrRemovePin$
+        this.addOrRemovePin$,
+        /**
+         * Subscribes to: dashboard shown (initAction).
+         */
+        this.loadSavedPins$
       );
     },
     {dispatch: false}

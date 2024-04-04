@@ -19,7 +19,6 @@ import {Action, createSelector, StoreModule} from '@ngrx/store';
 import {AlertActionModule} from '../alert/alert_action_module';
 import {AppRoutingModule} from '../app_routing/app_routing_module';
 import {CoreModule} from '../core/core_module';
-import {PersistentSettingsConfigModule} from '../persistent_settings/persistent_settings_config_module';
 import {PluginRegistryModule} from '../plugins/plugin_registry_module';
 import * as actions from './actions';
 import {
@@ -50,6 +49,11 @@ import {
 } from './store/metrics_initial_state_provider';
 import {MetricsDashboardContainer} from './views/metrics_container';
 import {MetricsViewsModule} from './views/metrics_views_module';
+import {FeatureFlagModule} from '../feature_flag/feature_flag_module';
+import {
+  PersistentSettingsConfigModule,
+  PersistentSettingsModule,
+} from '../persistent_settings';
 
 const CREATE_PIN_MAX_EXCEEDED_TEXT =
   `Max pin limit exceeded. Remove existing` +
@@ -150,6 +154,8 @@ export function getRangeSelectionHeadersFactory() {
       METRICS_STORE_CONFIG_TOKEN
     ),
     SavedPinsDataSourceModule,
+    FeatureFlagModule,
+    PersistentSettingsModule,
     EffectsModule.forFeature([MetricsEffects]),
     AlertActionModule.registerAlertActions(alertActionProvider),
     PersistentSettingsConfigModule.defineGlobalSetting(

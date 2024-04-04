@@ -55,6 +55,7 @@ tf_ng_module(
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/metrics/store",
         "//tensorboard/webapp/notification_center/_redux",
+        "//tensorboard/webapp/persistent_settings/_redux",
         "//tensorboard/webapp/runs/store:selectors",
         "//tensorboard/webapp/util:ui_selectors",
     ],
