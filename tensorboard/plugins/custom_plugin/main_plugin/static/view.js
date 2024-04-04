@@ -23,9 +23,16 @@ export function createPreviews(run, tagsToScalars) {
     const fragment = document.createDocumentFragment();
   
     if (!tagsToScalars.size) {
+      const NotagsElement = createElement('div');
+      NotagsElement.className = 'no-tags';
+
       const messageElement = createElement('h2');
+      messageElement.className = 'no-tags__message';
       messageElement.textContent = 'No tags found.';
-      fragment.appendChild(messageElement);
+
+      NotagsElement.appendChild(messageElement);
+
+      fragment.appendChild(NotagsElement);
       return fragment;
     }
 
@@ -45,14 +52,48 @@ export function createPreviews(run, tagsToScalars) {
 
         });
 
-
         const sortedMap = new Map([...startTime.entries()].sort((a, b) => a[1] - b[1]));
         console.log("sorted values",sortedMap);
 
         const data = merge(tagsToScalars,sortedMap);
         console.log("merged data",data);
-        
-        fragment.appendChild(Utils.FinalResource(data,Array.from(sortedMap.keys()))); 
+
+        data.forEach((value,context) => {
+
+          const drawer = document.createElement('div');
+          drawer.classList.add('faq-drawer');
+    
+    
+          const input = document.createElement('input');
+          input.className = 'faq-drawer__trigger';
+          input.type = 'checkbox';
+          input.id = `drawer_${context != undefined ? context : "Energy"}`;
+    
+    
+          const label = document.createElement('label');
+          label.className = 'faq-drawer__title';
+          label.setAttribute('for', `drawer_${context != undefined ? context : "Energy"}`);
+          label.textContent = context != undefined ? context : "Energy";
+    
+    
+          const contentWrapper = document.createElement('div');
+          contentWrapper.className = 'faq-drawer__content-wrapper';
+          contentWrapper.id =  `wrapper_${context != undefined ? context : "Energy"}`;
+    
+    
+          const content = document.createElement('div');
+          content.className = 'faq-drawer__content';
+    
+          content.appendChild(Utils.FinalResource(context,value,Array.from(sortedMap.keys())));
+          contentWrapper.appendChild(content);
+          drawer.appendChild(input);
+          drawer.appendChild(label);
+          drawer.appendChild(contentWrapper);
+          fragment.appendChild(drawer);
+
+          // fragment.appendChild(Utils.FinalResource(context,value,Array.from(sortedMap.keys()))); 
+        });
+
       }
       else{
         let extra = createLayerDrawers(run, tagsToScalars);
@@ -89,13 +130,15 @@ function padZero(number, width = 2) {
     return String(number).padStart(width, '0');
 }
 
-function merge(tagsToScalars, map){
+function merge(tagsToScalars, map, timeOffset = 1) {
 
-  let tagData = new Map();
-  let cpu = [];
-  let ram = [];
-  let gpu = [];
-  let gpuTemp = [];
+  let uniqeContext = [];
+  let graphData = new Map();
+  // let tagData = new Map();
+  // let cpu = [];
+  // let ram = [];
+  // let gpu = [];
+  // let gpuTemp = [];
 
 // let mergedCPU = [].concat(...tagsToScalars.forEach(t => t.get("CPU")));
 // console.log(mergedCPU);
@@ -103,34 +146,110 @@ function merge(tagsToScalars, map){
   map.keys().forEach((tag) => {
 
     let target = tagsToScalars.get(tag);
+    let start = target.get("start_time_execution")[0][1];
+      
+    // let cpuData = target.get("CPU").map((item) => {
+    //   // console.log("item=",item);
+    //   return {timestamp:Math.floor(convertToNanoseconds(start,item[1]/1000000000)/1000000), energy:item[2]};
+    // });
+
+    // let ramData = target.get("RAM").map((item) => {
+    //   return {timestamp:Math.floor(convertToNanoseconds(start,item[1]/1000000000)/1000000), energy:item[2]};
+    // });
+
+    // let gpuData = target.get("GPU").map((item) => {
+    //   return {timestamp:item[1]/1000000, energy:item[2]};
+    // });
+
+    // let gpuTempData = target.get("GPU-temperature").map((item) => {
+    //   return {timestamp:item[1]/1000000, energy:item[2]};
+    // });
 
     target.forEach((value,key) => {
       console.log(key,value);
+
+      let [resorceKey,context] = key.split("-");
+      console.log(resorceKey,context);
+
+      if (!uniqeContext.includes(context)) {
+        uniqeContext.push(context);
+
+        let tagData = new Map();
+
+        if (tagData.has(key) && key != "start_time_execution" && key != "end_time_execution") {
+          const existingArray = tagData.get(key);
+    
+          let arrayToAppend = target.get(key).map((item) => {
+            return {timestamp:(item[1]/timeOffset)/1000000, energy:item[2]};
+          });
+    
+          existingArray.push(arrayToAppend);
+          tagData.set(key, existingArray);
+        } 
+        else if(key != "start_time_execution" && key != "end_time_execution")
+        {
+            let arrayToAppend = target.get(key).map((item) => {
+              return {timestamp:(item[1]/timeOffset)/1000000, energy:item[2]};
+            });
+    
+            tagData.set(key, [arrayToAppend]);
+        }
+
+        graphData.set(context,tagData);
+      }
+      else{
+
+        let tagData = graphData.get(context);
+
+        if (tagData.has(key) && key != "start_time_execution" && key != "end_time_execution") {
+          const existingArray = tagData.get(key);
+    
+          let arrayToAppend = target.get(key).map((item) => {
+            return {timestamp:(item[1]/timeOffset)/1000000, energy:item[2]};
+          });
+    
+          existingArray.push(arrayToAppend);
+          tagData.set(key, existingArray);
+        } 
+        else if(key != "start_time_execution" && key != "end_time_execution")
+        {
+            let arrayToAppend = target.get(key).map((item) => {
+              return {timestamp:(item[1]/timeOffset)/1000000, energy:item[2]};
+            });
+    
+            tagData.set(key, [arrayToAppend]);
+        }
+
+      }
+
+      // if (tagData.has(key) && key != "start_time_execution" && key != "end_time_execution") {
+      //   const existingArray = tagData.get(key);
+  
+      //   let arrayToAppend = target.get(key).map((item) => {
+      //     return {timestamp:(item[1]/timeOffset)/1000000, energy:item[2]};
+      //   });
+  
+      //   existingArray.push(arrayToAppend);
+      //   tagData.set(key, existingArray);
+      // } 
+      // else if(key != "start_time_execution" && key != "end_time_execution")
+      // {
+      //     let arrayToAppend = target.get(key).map((item) => {
+      //       return {timestamp:(item[1]/timeOffset)/1000000, energy:item[2]};
+      //     });
+  
+      //     tagData.set(key, [arrayToAppend]);
+      // }
+
     });
 
-    let start = target.get("start_time_execution")[0][1];
-      
-    let cpuData = target.get("CPU").map((item) => {
-      // console.log("item=",item);
-      return {timestamp:Math.floor(convertToNanoseconds(start,item[1]/1000000000)/1000000), energy:item[2]};
-    });
+    
+    
 
-    let ramData = target.get("RAM").map((item) => {
-      return {timestamp:Math.floor(convertToNanoseconds(start,item[1]/1000000000)/1000000), energy:item[2]};
-    });
-
-    let gpuData = target.get("GPU").map((item) => {
-      return {timestamp:item[1]/1000000, energy:item[2]};
-    });
-
-    let gpuTempData = target.get("GPU-temperature").map((item) => {
-      return {timestamp:item[1]/1000000, energy:item[2]};
-    });
-
-    tagData.set("cpu",cpuData);
-    tagData.set("ram",ramData);
-    tagData.set("gpu",gpuData);
-    tagData.set("GPU-temperature",gpuTempData);
+    // tagData.set("cpu",cpuData);
+    // tagData.set("ram",ramData);
+    // tagData.set("gpu",gpuData);
+    // tagData.set("GPU-temperature",gpuTempData);
 
     // cpu.push(cpuData);
     // gpu.push(gpuData);
@@ -138,7 +257,7 @@ function merge(tagsToScalars, map){
 
   });
 
-  return tagData;
+  return graphData;
 
 }
 

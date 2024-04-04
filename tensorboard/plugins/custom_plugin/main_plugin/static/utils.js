@@ -511,215 +511,215 @@ paletteExpand.addEventListener('click', function() {
   return container;
 }
 
-export function Energy(dataArray, main_tag="Energy",scalar_tag="Experiment") {
+// export function Energy(dataArray, main_tag="Energy",scalar_tag="Experiment") {
 
-  // dataArray
+//   // dataArray
 
-  const data1 = dataArray.map(d => ({
-    timestamp: d[1],
-    energy: d[2]
-  }));
+//   const data1 = dataArray.map(d => ({
+//     timestamp: d[1],
+//     energy: d[2]
+//   }));
 
-  console.log("data1",data1);
+//   console.log("data1",data1);
 
 
-  // const data1 = [
-  //   { timestamp: 1702011251398996000, energy: 10 },
-  //   { timestamp: 1702011351398996500, energy: 7 },
-  //   { timestamp: 1702011451398997000, energy: 15 },
-  //   { timestamp: 1702011551398997500, energy: 9 },
-  //   { timestamp: 1702011651398998000, energy: 20 },
-  //   { timestamp: 1702011751398998500, energy: 15 },
-  //   { timestamp: 1702012251398999000, energy: 25 },
-  //   { timestamp: 1702012251398999500, energy: 20 },
-  //   { timestamp: 1702012751399000000, energy: 30 },
-  //   { timestamp: 1702012851399000500, energy: 25 },
-  //   { timestamp: 1702012951399000400, energy: 22 },
-  //   { timestamp: 1702013251399001500, energy: 15 },
-  //   { timestamp: 1702013551399002000, energy: 10 },
-  //   { timestamp: 1702013751399002500, energy: 5 },
-  //   { timestamp: 1702013951399003000, energy: 12 },
-  //   { timestamp: 1702014251509003500, energy: 8 },
-  //   { timestamp: 1702014251999004000, energy: 16 },
-  //   { timestamp: 1702015251399004500, energy: 23 },
-  //   { timestamp: 1702015251399005000, energy: 19 },
-  //   // Add more data points as needed
-  // ].map(d => ({ timestamp: d.timestamp / 1000000, energy: d.energy }));
+//   // const data1 = [
+//   //   { timestamp: 1702011251398996000, energy: 10 },
+//   //   { timestamp: 1702011351398996500, energy: 7 },
+//   //   { timestamp: 1702011451398997000, energy: 15 },
+//   //   { timestamp: 1702011551398997500, energy: 9 },
+//   //   { timestamp: 1702011651398998000, energy: 20 },
+//   //   { timestamp: 1702011751398998500, energy: 15 },
+//   //   { timestamp: 1702012251398999000, energy: 25 },
+//   //   { timestamp: 1702012251398999500, energy: 20 },
+//   //   { timestamp: 1702012751399000000, energy: 30 },
+//   //   { timestamp: 1702012851399000500, energy: 25 },
+//   //   { timestamp: 1702012951399000400, energy: 22 },
+//   //   { timestamp: 1702013251399001500, energy: 15 },
+//   //   { timestamp: 1702013551399002000, energy: 10 },
+//   //   { timestamp: 1702013751399002500, energy: 5 },
+//   //   { timestamp: 1702013951399003000, energy: 12 },
+//   //   { timestamp: 1702014251509003500, energy: 8 },
+//   //   { timestamp: 1702014251999004000, energy: 16 },
+//   //   { timestamp: 1702015251399004500, energy: 23 },
+//   //   { timestamp: 1702015251399005000, energy: 19 },
+//   //   // Add more data points as needed
+//   // ].map(d => ({ timestamp: d.timestamp / 1000000, energy: d.energy }));
   
-  console.log("defualt",data1);
-  var container = document.createElement('div');
-  container.id = "graph-custom"
+//   console.log("defualt",data1);
+//   var container = document.createElement('div');
+//   container.id = "graph-custom"
 
-  const data = data1.map(d => ({
-      step: d.timestamp/1000000,
-      value: d.energy
-  }));
+//   const data = data1.map(d => ({
+//       step: d.timestamp/1000000,
+//       value: d.energy
+//   }));
 
-  console.log("data",data);
+//   console.log("data",data);
 
-  // Set the dimensions and margins of the graph
-  const margin = {top: 30, right: 30, bottom: 30, left: 60},
-        width = 950 - margin.left - margin.right,
-        height = 300 - margin.top - margin.bottom;
+//   // Set the dimensions and margins of the graph
+//   const margin = {top: 30, right: 30, bottom: 30, left: 60},
+//         width = 950 - margin.left - margin.right,
+//         height = 300 - margin.top - margin.bottom;
 
-  let svg = d3.select(container)
-    .append("svg")
-      // .attr("width", width + margin.left + margin.right)
-      // .attr("height", height + margin.top + margin.bottom)
-      // .attr("id", `${main_tag}_${scalar_tag}`) // Set the SVG ID here
-      .attr('width', '100%') // Make the SVG width responsive
-      .attr('height', '100%') // Make the SVG height responsive
-      .attr('viewBox', `0 0 ${width+ margin.left + margin.right} ${height + margin.top + margin.bottom}`)
-      .attr('preserveAspectRatio', 'xMidYMid meet')
-      .append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);    
+//   let svg = d3.select(container)
+//     .append("svg")
+//       // .attr("width", width + margin.left + margin.right)
+//       // .attr("height", height + margin.top + margin.bottom)
+//       // .attr("id", `${main_tag}_${scalar_tag}`) // Set the SVG ID here
+//       .attr('width', '100%') // Make the SVG width responsive
+//       .attr('height', '100%') // Make the SVG height responsive
+//       .attr('viewBox', `0 0 ${width+ margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+//       .attr('preserveAspectRatio', 'xMidYMid meet')
+//       .append("g")
+//       .attr("transform", `translate(${margin.left},${margin.top})`);    
 
-  // Add X axis --> it is a date format
-  const x = d3.scaleTime().range([0, width]).domain(d3.extent(data, d => new Date(d.timestamp)));
+//   // Add X axis --> it is a date format
+//   const x = d3.scaleTime().range([0, width]).domain(d3.extent(data, d => new Date(d.timestamp)));
     
-  const xAxis = svg.append("g")
-    .attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(x));
+//   const xAxis = svg.append("g")
+//     .attr("transform", `translate(0,${height})`)
+//     .call(d3.axisBottom(x));
 
-  // Add Y axis
-  const y = d3.scaleLinear()
-    .domain([0, d3.max(data, d => +d.value)])
-    .range([height, 0]);
-  const yAxis = svg.append("g")
-    .call(d3.axisLeft(y));
+//   // Add Y axis
+//   const y = d3.scaleLinear()
+//     .domain([0, d3.max(data, d => +d.value)])
+//     .range([height, 0]);
+//   const yAxis = svg.append("g")
+//     .call(d3.axisLeft(y));
 
-  // svg.call(d3.axisLeft(y).tickFormat(d => { return `${d} J`}))
+//   // svg.call(d3.axisLeft(y).tickFormat(d => { return `${d} J`}))
 
-  svg.selectAll("xGrid").data(x.ticks())
-  .join("line")
-  .attr("x1", d => x(d))
-  .attr("x2", d => x(d))
-  .attr("y1", 0)
-  .attr("y2", height)
-  .attr("stroke", "#e0e0e0")
-  .attr("stroke-width",1);
+//   svg.selectAll("xGrid").data(x.ticks())
+//   .join("line")
+//   .attr("x1", d => x(d))
+//   .attr("x2", d => x(d))
+//   .attr("y1", 0)
+//   .attr("y2", height)
+//   .attr("stroke", "#e0e0e0")
+//   .attr("stroke-width",1);
 
-  svg.selectAll("yGrid").data(x.ticks())
-  .join("line")
-  .attr("x1", 0)
-  .attr("x2", width)
-  .attr("y1", d => x(d))
-  .attr("y2", d => x(d))
-  .attr("stroke", "#e0e0e0")
-  .attr("stroke-width",1);
+//   svg.selectAll("yGrid").data(x.ticks())
+//   .join("line")
+//   .attr("x1", 0)
+//   .attr("x2", width)
+//   .attr("y1", d => x(d))
+//   .attr("y2", d => x(d))
+//   .attr("stroke", "#e0e0e0")
+//   .attr("stroke-width",1);
 
-  svg.append("text") // Append text element
-   .attr("x", (width + margin.left + margin.right) / 2) // Center the text (assuming 'width' is the width of the chart area)
-   .attr("y", 0 - (margin.top / 2)) // Position above the chart by half the top margin
-   .attr("text-anchor", "middle") // Ensure the text is centered at its position
-   .style("font-size", "16px") // Set the text size
-   .style("font-weight", "bold") // Make the title bold
-   .text(scalar_tag);
+//   svg.append("text") // Append text element
+//    .attr("x", (width + margin.left + margin.right) / 2) // Center the text (assuming 'width' is the width of the chart area)
+//    .attr("y", 0 - (margin.top / 2)) // Position above the chart by half the top margin
+//    .attr("text-anchor", "middle") // Ensure the text is centered at its position
+//    .style("font-size", "16px") // Set the text size
+//    .style("font-weight", "bold") // Make the title bold
+//    .text(scalar_tag);
 
-  // Clipping path
-  svg.append("defs").append("clipPath")
-      .attr("id", "clip")
-      .append("rect")
-      .attr("width", width)
-      .attr("height", height)
-      .attr("x", 0)
-      .attr("y", 0);
+//   // Clipping path
+//   svg.append("defs").append("clipPath")
+//       .attr("id", "clip")
+//       .append("rect")
+//       .attr("width", width)
+//       .attr("height", height)
+//       .attr("x", 0)
+//       .attr("y", 0);
 
-  // Add brushing
-  const brush = d3.brushX()                   
-      .extent([[0, 0], [width, height]])   
-      .on("end", updateChart);              
+//   // Add brushing
+//   const brush = d3.brushX()                   
+//       .extent([[0, 0], [width, height]])   
+//       .on("end", updateChart);              
 
-  // Line generation
-  const line = d3.line()
-      .x(d => x(d.step))
-      .y(d => y(d.value));    
-      // .curve(d3.curveMonotoneX); // This makes the line smoother
+//   // Line generation
+//   const line = d3.line()
+//       .x(d => x(d.step))
+//       .y(d => y(d.value));    
+//       // .curve(d3.curveMonotoneX); // This makes the line smoother
 
-  // Add the line
-  const lineChart = svg.append("g")
-    .attr("clip-path", "url(#clip)");
+//   // Add the line
+//   const lineChart = svg.append("g")
+//     .attr("clip-path", "url(#clip)");
 
-  lineChart.append("path")
-    .datum(data)
-    .attr("class", "line")
-    .attr("fill", "none")      
-    .attr("stroke", "steelblue")
-    .attr("stroke-width", 1)
-    // .attr("d", d3.line()
-    //   .x(function(d) { return x(d.step) })
-    //   .y(function(d) { return y(d.value) })
-    //   )
-    // .attr("d", line);
+//   lineChart.append("path")
+//     .datum(data)
+//     .attr("class", "line")
+//     .attr("fill", "none")      
+//     .attr("stroke", "steelblue")
+//     .attr("stroke-width", 1)
+//     // .attr("d", d3.line()
+//     //   .x(function(d) { return x(d.step) })
+//     //   .y(function(d) { return y(d.value) })
+//     //   )
+//     // .attr("d", line);
 
-  // Add the brushing
-  lineChart.append("g")
-    .attr("class", "brush")
-    .call(brush);
+//   // Add the brushing
+//   lineChart.append("g")
+//     .attr("class", "brush")
+//     .call(brush);
 
-  // A function that updates the chart
-  function updateChart(event) {
-      const selection = event.selection;
-      if (!selection) {
-          if (!idleTimeout) return idleTimeout = setTimeout(() => idleTimeout = null, 350);
-          x.domain(d3.extent(data, d => d.step));
-      } else {
-          x.domain([x.invert(selection[0]), x.invert(selection[1])]);
-          lineChart.select(".brush").call(brush.move, null);
-      }
-      xAxis.transition().call(d3.axisBottom(x));
-      lineChart
-          .select('.line')
-          .transition()
-          .attr("d", line);
-  }
+//   // A function that updates the chart
+//   function updateChart(event) {
+//       const selection = event.selection;
+//       if (!selection) {
+//           if (!idleTimeout) return idleTimeout = setTimeout(() => idleTimeout = null, 350);
+//           x.domain(d3.extent(data, d => d.step));
+//       } else {
+//           x.domain([x.invert(selection[0]), x.invert(selection[1])]);
+//           lineChart.select(".brush").call(brush.move, null);
+//       }
+//       xAxis.transition().call(d3.axisBottom(x));
+//       lineChart
+//           .select('.line')
+//           .transition()
+//           .attr("d", line);
+//   }
 
-  // If user double clicks, reset the chart
-  svg.on("dblclick", function() {
-      x.domain(d3.extent(data, function(d) { return d.step; }));
-      xAxis.transition().call(d3.axisBottom(x));
-      lineChart
-        .select('.line')
-        .transition()
-        .attr("d", line);
-  });
+//   // If user double clicks, reset the chart
+//   svg.on("dblclick", function() {
+//       x.domain(d3.extent(data, function(d) { return d.step; }));
+//       xAxis.transition().call(d3.axisBottom(x));
+//       lineChart
+//         .select('.line')
+//         .transition()
+//         .attr("d", line);
+//   });
 
-  let idleTimeout;
-  function idled() { idleTimeout = null; }
+//   let idleTimeout;
+//   function idled() { idleTimeout = null; }
 
-  // Create a new button element
-  var downloadButton = document.createElement("button");
-  // downloadButton.id = `${main_tag}_${scalar_tag}download`;
-  downloadButton.classList.add("download"); 
-  container.appendChild(downloadButton);
+//   // Create a new button element
+//   var downloadButton = document.createElement("button");
+//   // downloadButton.id = `${main_tag}_${scalar_tag}download`;
+//   downloadButton.classList.add("download"); 
+//   container.appendChild(downloadButton);
 
-  downloadButton.addEventListener('click', function(event) {
+//   downloadButton.addEventListener('click', function(event) {
 
-    var buttonIdParts = event.target.id.split("download");
-    var svgId = buttonIdParts[0];
+//     var buttonIdParts = event.target.id.split("download");
+//     var svgId = buttonIdParts[0];
 
-    var svg = document.getElementById(svgId);
-    console.log(svg);
+//     var svg = document.getElementById(svgId);
+//     console.log(svg);
 
-    var serializer = new XMLSerializer();
-    var svgStr = serializer.serializeToString(svg);
+//     var serializer = new XMLSerializer();
+//     var svgStr = serializer.serializeToString(svg);
 
-    var svgBlob = new Blob([svgStr], {type:"image/svg+xml;charset=utf-8"});
-    var svgUrl = URL.createObjectURL(svgBlob);
+//     var svgBlob = new Blob([svgStr], {type:"image/svg+xml;charset=utf-8"});
+//     var svgUrl = URL.createObjectURL(svgBlob);
 
-    var downloadLink = document.createElement("a");
-    downloadLink.href = svgUrl;
-    downloadLink.download = "chart.svg";
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-});
+//     var downloadLink = document.createElement("a");
+//     downloadLink.href = svgUrl;
+//     downloadLink.download = "chart.svg";
+//     document.body.appendChild(downloadLink);
+//     downloadLink.click();
+//     document.body.removeChild(downloadLink);
+// });
 
 
-  return container;
-}
+//   return container;
+// }
 
-export function FinalResource(datasets,layerLabels,key="gpu") {
+export function FinalResource(context="Energy",datasets,layerLabels,default_key="gpu") {
 
   var color = [
     '#008FFB', // Blue
@@ -792,12 +792,11 @@ const annotationVisibility = {};
 
 console.log("Final",datasets);
 
-  Object.entries(datasets).forEach(([keys, val]) => {
+  datasets.forEach((val, key) => {
 
     let annotations = [];
-
-    console.log(keys, val);
     let data = [];
+    console.log("val",val);
 
     val.forEach((dataset, index) => {
 
@@ -813,8 +812,8 @@ console.log("Final",datasets);
         const annotationColors = ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#ff9f40', '#ff6384', '#4bc0c0'];
         const fillColor = annotationColors[index % annotationColors.length]; // Use modulus to cycle through colors
 
-        const startAnnotationId = `${keys}_start_${index}`;
-        const endAnnotationId = `${keys}_end_${index}`;
+        const startAnnotationId = `${key}_start_${index}`;
+        const endAnnotationId = `${key}_end_${index}`;
     
         // Add annotation for the starting and ending of the dataset
         annotations.push({
@@ -846,7 +845,7 @@ console.log("Final",datasets);
         });
     
         // Add annotation to highlight the area of the dataset
-        const highlightAnnotationId = `${keys}_highlight_${index}`;
+        const highlightAnnotationId = `${key}_highlight_${index}`;
         annotations.push({
           id: highlightAnnotationId,
           x: dataset[0].timestamp,
@@ -862,10 +861,10 @@ console.log("Final",datasets);
   
     });
 
-    allAnnotations.set(keys, annotations);
+    allAnnotations.set(key, annotations);
 
     seriesData.push({
-      name: `${keys}`,
+      name: `${key}`,
       data: data
     });
 
@@ -898,7 +897,7 @@ console.log("Final",datasets);
       }
     },
     annotations: {
-      xaxis: allAnnotations.get(key)
+      xaxis: allAnnotations.get(default_key)
     },
     series: seriesData,
     xaxis: {
@@ -913,7 +912,7 @@ console.log("Final",datasets);
     },
     yaxis:{
       title: {
-          text: 'Energy (Joules)'
+          text: `${context}`
       },
       labels: {
         formatter: function (value) {
@@ -932,13 +931,13 @@ console.log("Final",datasets);
       
     },
     stroke: {
+      curve: 'smooth',
       width: 1, // You can adjust this value to make the stroke thinner or thicker
       colors: [
         '#008FFB', // Blue
         '#00E396', // Green
         '#FEB019', // Orange
         '#FF4560', // Red
-        '#00E396', // Green
         '#775DD0', // Purple
         '#EA5455', // Tomato
         '#785EF0', // Violet
@@ -978,6 +977,10 @@ function toggleAnnotationVisibility(groupId, annotationsData) {
   chart.updateOptions({
     annotations: {
       xaxis: annotationsData
+    },
+    legend: {
+      show: true,
+      
     }
   });
 }

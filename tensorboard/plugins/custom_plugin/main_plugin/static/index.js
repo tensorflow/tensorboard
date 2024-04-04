@@ -49,8 +49,8 @@ export async function render() {
   tab2.classList.add('nav-option');
 
 // Adding click event listeners to both buttons
-  tab1.addEventListener('click', onTab1Click);
-  tab2.addEventListener('click', onTab2Click);
+  tab1.addEventListener('click', function() {TorchCalculations(tab1,tab2)});
+  tab2.addEventListener('click', function() {SystemCalculations(tab2,tab1)});
 
   header.appendChild(tab1);
   header.appendChild(tab2);
@@ -131,18 +131,22 @@ async function updatePreview(runSelector, container) {
 
 
   // Defining the function to be called when tab1 is clicked
-  function onTab1Click() {
+  function TorchCalculations(tab,systemTab) {
     const element = document.getElementById('run-selector');
     element.value="fake_bert"
+    tab.classList.add('active');
+    systemTab.classList.remove('active');
     console.log('Tab 1 Clicked: Flop Calculation');
     element.dispatchEvent(new Event('change'));
 
   }
   
   // Defining the function to be called when tab2 is clicked
-  function onTab2Click() {
+  function SystemCalculations(tab,torchTab) {
     const element = document.getElementById('run-selector');
     element.value="system_performance"
+    tab.classList.add('active');
+    torchTab.classList.remove('active');
     console.log('Tab 2 Clicked: System Performance');
     element.dispatchEvent(new Event('change'));
 
