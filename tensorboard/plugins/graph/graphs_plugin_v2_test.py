@@ -25,6 +25,10 @@ from tensorboard.compat.proto import graph_pb2
 from tensorboard.plugins.graph import graphs_plugin_test
 
 
+# Graph plugin V2 Keras 3 is only supported in TensorFlow eager mode.
+tf.compat.v1.enable_eager_execution()
+
+
 class GraphsPluginV2Test(
     graphs_plugin_test.GraphsPluginBaseTest, tf.test.TestCase
 ):
@@ -40,7 +44,7 @@ class GraphsPluginV2Test(
                 tf.keras.layers.Dense(1, activation="sigmoid"),
             ]
         )
-        model.compile("rmsprop", "binary_crossentropy")
+        model.compile(optimizer="rmsprop", loss="binary_crossentropy")
 
         model.fit(
             x,
