@@ -117,6 +117,24 @@ def _norm_to_list_of_layers(maybe_layers):
     )
 
 
+def _get_inbound_nodes(layer):
+    """Returns a list of [name, size, index] for all inbound nodes of the given layer."""
+    inbound_nodes = []
+    if layer.get("inbound_nodes") is not None:
+        for maybe_inbound_node in layer.get("inbound_nodes", []):
+            for inbound_node_args in maybe_inbound_node.get("args", []):
+                # Sometimes this field is a list when there are multiple inbound nodes
+                # for the given layer.
+                if not isinstance(inbound_node_args, list):
+                    inbound_node_args = [inbound_node_args]
+                for arg in inbound_node_args:
+                    history = arg.get("config", {}).get("keras_history", [])
+                    if len(history) < 3:
+                        continue
+                    inbound_nodes.append(history[:3])
+    return inbound_nodes
+
+
 def _update_dicts(
     name_scope,
     model_layer,
@@ -149,7 +167,7 @@ def _update_dicts(
     node_name = _scoped_name(name_scope, layer_config.get("name"))
     input_layers = layer_config.get("input_layers")
     output_layers = layer_config.get("output_layers")
-    inbound_nodes = model_layer.get("inbound_nodes")
+    inbound_nodes = _get_inbound_nodes(model_layer)
 
     is_functional_model = bool(input_layers and output_layers)
     # In case of [1] and the parent model is functional, current layer
@@ -164,7 +182,7 @@ def _update_dicts(
     elif is_parent_functional_model and not is_functional_model:
         # Sequential model can take only one input. Make sure inbound to the
         # model is linked to the first layer in the Sequential model.
-        prev_node_name = _scoped_name(name_scope, inbound_nodes[0][0][0])
+        prev_node_name = _scoped_name(name_scope, inbound_nodes[0][0])
     elif (
         not is_parent_functional_model
         and prev_node_name
@@ -244,33 +262,31 @@ def keras_model_to_graph_def(keras_layer):
             tf_dtype = dtypes.as_dtype(layer_config.get("dtype"))
             node_def.attr["dtype"].type = tf_dtype.as_datatype_enum
         if layer.get("inbound_nodes") is not None:
-            for maybe_inbound_node in layer.get("inbound_nodes"):
-                inbound_nodes = _norm_to_list_of_layers(maybe_inbound_node)
-                for [name, size, index, _] in inbound_nodes:
-                    inbound_name = _scoped_name(name_scope, name)
-                    # An input to a layer can be output from a model. In that case, the name
-                    # of inbound_nodes to a layer is a name of a model. Remap the name of the
-                    # model to output layer of the model. Also, since there can be multiple
-                    # outputs in a model, make sure we pick the right output_layer from the model.
-                    inbound_node_names = model_name_to_output.get(
-                        inbound_name, [inbound_name]
-                    )
-                    # There can be multiple inbound_nodes that reference the
-                    # same upstream layer. This causes issues when looking for
-                    # a particular index in that layer, since the indices
-                    # captured in `inbound_nodes` doesn't necessarily match the
-                    # number of entries in the `inbound_node_names` list. To
-                    # avoid IndexErrors, we just use the last element in the
-                    # `inbound_node_names` in this situation.
-                    # Note that this is a quick hack to avoid IndexErrors in
-                    # this situation, and might not be an appropriate solution
-                    # to this problem in general.
-                    input_name = (
-                        inbound_node_names[index]
-                        if index < len(inbound_node_names)
-                        else inbound_node_names[-1]
-                    )
-                    node_def.input.append(input_name)
+            for name, size, index in _get_inbound_nodes(layer):
+                inbound_name = _scoped_name(name_scope, name)
+                # An input to a layer can be output from a model. In that case, the name
+                # of inbound_nodes to a layer is a name of a model. Remap the name of the
+                # model to output layer of the model. Also, since there can be multiple
+                # outputs in a model, make sure we pick the right output_layer from the model.
+                inbound_node_names = model_name_to_output.get(
+                    inbound_name, [inbound_name]
+                )
+                # There can be multiple inbound_nodes that reference the
+                # same upstream layer. This causes issues when looking for
+                # a particular index in that layer, since the indices
+                # captured in `inbound_nodes` doesn't necessarily match the
+                # number of entries in the `inbound_node_names` list. To
+                # avoid IndexErrors, we just use the last element in the
+                # `inbound_node_names` in this situation.
+                # Note that this is a quick hack to avoid IndexErrors in
+                # this situation, and might not be an appropriate solution
+                # to this problem in general.
+                input_name = (
+                    inbound_node_names[index]
+                    if index < len(inbound_node_names)
+                    else inbound_node_names[-1]
+                )
+                node_def.input.append(input_name)
         elif prev_node_name is not None:
             node_def.input.append(prev_node_name)
 

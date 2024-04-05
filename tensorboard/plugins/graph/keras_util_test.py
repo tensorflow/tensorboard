@@ -23,6 +23,12 @@ from tensorboard.plugins.graph import keras_util
 
 
 class KerasUtilTest(tf.test.TestCase):
+
+    def setUp(self):
+        super(KerasUtilTest, self).setUp()
+        # Resets all generated states before each test.
+        tf.keras.backend.clear_session()
+
     def assertGraphDefToModel(self, expected_proto, model):
         model_config = json.loads(model.to_json())
 
@@ -604,9 +610,9 @@ class KerasUtilTest(tf.test.TestCase):
         main_input = tf.keras.layers.Input(
             shape=(100,), dtype="int32", name="main_input"
         )
-        x = tf.keras.layers.Embedding(
-            output_dim=512, input_dim=10000, input_length=100
-        )(main_input)
+        x = tf.keras.layers.Embedding(output_dim=512, input_dim=10000)(
+            main_input
+        )
         rnn_out = tf.keras.layers.SimpleRNN(32)(x)
 
         auxiliary_output = tf.keras.layers.Dense(
@@ -662,7 +668,7 @@ class KerasUtilTest(tf.test.TestCase):
               }
             }
             node {
-            name: "model_1/model/sub_func_input_1"
+              name: "model_1/model/sub_func_input_1"
               attr {
                 key: "dtype"
                 value {
@@ -981,7 +987,7 @@ class KerasUtilTest(tf.test.TestCase):
     ):
         expected_proto = """
             node {
-              name: "model/input_1"
+              name: "functional_1/input_layer"
               attr {
                 key: "keras_class"
                 value {
@@ -996,8 +1002,8 @@ class KerasUtilTest(tf.test.TestCase):
               }
             }
             node {
-              name: "model/private__doubling_layer"
-              input: "model/input_1"
+              name: "functional_1/__doubling_layer"
+              input: "functional_1/input_layer"
               attr {
                 key: "keras_class"
                 value {
@@ -1012,9 +1018,9 @@ class KerasUtilTest(tf.test.TestCase):
               }
             }
             node {
-              name: "model/add"
-              input: "model/private__doubling_layer"
-              input: "model/private__doubling_layer"
+              name: "functional_1/add"
+              input: "functional_1/__doubling_layer"
+              input: "functional_1/__doubling_layer"
               attr {
                 key: "keras_class"
                 value {
