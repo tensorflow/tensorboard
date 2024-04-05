@@ -958,14 +958,6 @@ console.log("Final",datasets);
     }
   };
 
-//   function toggleAnnotationVisibility(annotationId) {
-//   const annotation = chart.annotations.get(annotationId);
-//   if (annotation) {
-//     annotationVisibility[annotationId] = !annotationVisibility[annotationId];
-//     annotationOptions.visible = annotationVisibility[annotationId] ? true : false;
-//     chart.annotations.updateOptions(annotationId, annotationOptions);
-//   }
-// }
 
 function toggleAnnotationVisibility(groupId, annotationsData) {
   console.log(annotationsData);
@@ -1030,6 +1022,7 @@ const colorpicker = document.createElement("div");
 colorpicker.classList.add("color-picker");
 colorpicker.id = "colorPickerContainer";
 
+
 // Append the linechart and colorpicker to the container
 container.appendChild(linechart);
 container.appendChild(colorpicker);
@@ -1037,13 +1030,6 @@ container.appendChild(colorpicker);
 // Finally, append the container to the document body
 document.body.appendChild(container);
 
-
-// Define the Map with the specified format
-var layerData = new Map([
-  ["Dense", [[1, 1, 5320], [2, 2, 7600], [3, 3, 12500], [4, 4, 9000], [5, 5, 10000], [6, 6, 16800], [7, 7, 25080], [8, 8, 39560]]],
-  ["Flatten", [[1, 1, 2000], [2, 2, 3000], [3, 3, 4000], [4, 4, 5000], [5, 5, 6000], [6, 6, 7000], [7, 7, 8000], [8, 8, 9000]]],
-  // Additional layer data can be added here in the same format
-]);
 
 // Function to transform Map data into series format used by ApexCharts
 function transformMapDataToSeries(mapData) {
@@ -1067,6 +1053,15 @@ function transformMapDataToSeries(mapData) {
 
 // Generate the series data from the Map
 var seriesData = transformMapDataToSeries(tagsToScalars);
+
+function calculateDeviation(data) {
+  const mean = data.reduce((acc, val) => acc + val, 0) / data.length;
+  return data.map(val => Math.abs(val - mean));
+}
+
+const deviationData = seriesData.map(series => calculateDeviation(series.data));
+let deviationSeriesIds = []; // To store the IDs of deviation series added to the chart
+
 
 var options = {
   chart: {
@@ -1152,7 +1147,8 @@ var options = {
   },
   legend: {
     horizontalAlign: "left",
-    offsetX: 40
+    offsetX: 40,
+    show: true
   }
 };
 
@@ -1161,14 +1157,36 @@ var options = {
 // Update chart color function
 function updateChartColor(seriesIndex, color) {
   chart.updateOptions({
-    colors: options.colors.map((c, i) => i === seriesIndex ? color : c)
+    colors: options.colors.map((c, i) => i === seriesIndex ? color : c),
+    legend:{
+      show: true
+    }
   });
 }
 
+function appendDeviationSeries() {
+  deviationData.forEach((deviation, index) => {
+      const seriesName = `${seriesData[index].name} Deviation`;
+      chart.appendSeries({
+          name: seriesName,
+          data: deviation,
+          type: 'line',
+          show: true,
+          line: {
+              opacity: 0.5,
+              dashArray: [5, 5]
+          }
+      });
+  });
+}
+
+// Append deviation series to the chart
 
 var chart = new ApexCharts(document.querySelector("#chart"), options);
-
 chart.render();
+
+appendDeviationSeries();
+
 
 // Dynamically create color pickers for each series
 function createColorPickers(seriesData) {
@@ -1204,18 +1222,7 @@ function createColorPickers(seriesData) {
 // }
 
 createColorPickers(seriesData);
-
-  tagsToScalars.forEach((value, key) => {
-    if(key === "FLOPs"){
-
-      
-
-    }
-
-
-  });
-
-  console.log("multiline chart=",tagsToScalars);  
+ 
   return container;
 }
 
@@ -1235,17 +1242,3 @@ createColorPickers(seriesData);
     return result;
   }
 
-
-  // function downloadGraph(name = 'graph.png') {
-  //   var exportGraph = createElement('button', 'Download PNG');
-  //   exportGraph.classList.add('graph-button');
-  //   exportGraph.addEventListener('click', function () {
-  //     var downloadGraph = document.createElement('a');
-  //     downloadGraph.href = canvas.toDataURL('image/png');
-  //     downloadGraph.download = 'custom_graph.png';
-  //     document.body.appendChild(downloadGraph);
-  //     downloadGraph.click();
-  //     document.body.removeChild(downloadGraph);
-  //   });
-  //   return exportGraph;
-  // }

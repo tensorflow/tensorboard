@@ -133,7 +133,7 @@ async function updatePreview(runSelector, container) {
   // Defining the function to be called when tab1 is clicked
   function TorchCalculations(tab,systemTab) {
     const element = document.getElementById('run-selector');
-    element.value="fake_bert"
+    element.value="calculate_states"
     tab.classList.add('active');
     systemTab.classList.remove('active');
     console.log('Tab 1 Clicked: Flop Calculation');

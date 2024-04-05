@@ -27,7 +27,7 @@ setuptools.setup(
     },
     entry_points={
         "tensorboard_plugins": [
-            "mytensorboard = main_plugin.custom_plugin:MyPlugin",
+            "mytensorboard = main_plugin.plugin:System",
         ],
     },
 )

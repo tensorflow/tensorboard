@@ -1,44 +1,70 @@
-# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-"""Tests for the example plugin."""
-
 import ntpath
 import posixpath
 import unittest
 from unittest import mock
+from unittest.mock import MagicMock, Mock,patch
 
 from werkzeug import test
 from werkzeug import wrappers
+from werkzeug.test import EnvironBuilder
 
 from tensorboard.plugins import base_plugin
-from tensorboard.examples.plugins.example_raw_scalars.tensorboard_plugin_example_raw_scalars import (
-    plugin,
-)
-
+from main_plugin import plugin
+from tensorboard.plugins.scalar import metadata as scalar_metadata
+from main_plugin import metadata
+from main_plugin.plugin import System
 
 def is_path_safe(path):
     """Returns the result depending on the plugin's static file handler."""
-    example_plugin = plugin.ExampleRawScalarsPlugin(base_plugin.TBContext())
+    example_plugin = plugin.System(base_plugin.TBContext())
     serve_static_file = example_plugin._serve_static_file
 
     client = test.Client(serve_static_file, wrappers.Response)
     response = client.get(plugin._PLUGIN_DIRECTORY_PATH_PART + path)
     return response.status_code == 200
 
+class TestSystem(unittest.TestCase):
 
-class UrlSafetyTest(unittest.TestCase):
+    def setUp(self):
+        self.mock_data_provider = MagicMock()
+
+        # Create a mock context
+        self.mock_context = MagicMock()
+        self.experiment_id = MagicMock()
+
+
+        # Create an instance of System with the mock data provider and context
+        self.system = System(context=MagicMock(data_provider=self.mock_data_provider))
+
+    # def test_get_plugin_apps(self):
+    #     # Check if get_plugin_apps returns a dictionary
+    #     self.assertIsInstance(self.plugin_instance.get_plugin_apps(), dict)
+
+    @patch('main_plugin.plugin.System._serve_tags')
+    def test_serve_tags(self, mock_serve_tags):
+        mock_request = EnvironBuilder(path='/tags').get_environ()
+
+        self.mock_data_provider.list_scalars.return_value = {
+            'run1': ['tag1', 'tag2'],
+            'run2': ['tag3']
+        }
+
+        response = self.system._serve_tags(mock_request)
+        print("response",response.data)
+
+        self.mock_data_provider.list_scalars.assert_called_once_with(
+            self.mock_context,
+            experiment_id=self.experiment_id,
+            plugin_name=scalar_metadata.PLUGIN_NAME
+        )
+
+        expected_response = {
+            'run1': ['tag1', 'tag2'],
+            'run2': ['tag3']
+        }
+        self.assertEqual(response.data, expected_response)
+        self.assertEqual(response.status_code, 200)
+
     def test_path_traversal(self):
         """Properly check whether a URL can be served from the static folder."""
         with mock.patch("builtins.open", mock.mock_open(read_data="data")):
@@ -83,5 +109,5 @@ class UrlSafetyTest(unittest.TestCase):
                 self.assertFalse(is_path_safe("static/\\index.js"))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

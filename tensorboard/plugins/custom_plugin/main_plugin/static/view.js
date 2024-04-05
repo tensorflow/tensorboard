@@ -29,6 +29,7 @@ export function createPreviews(run, tagsToScalars) {
       const messageElement = createElement('h2');
       messageElement.className = 'no-tags__message';
       messageElement.textContent = 'No tags found.';
+      console.log(tagsToScalars);
 
       NotagsElement.appendChild(messageElement);
 
@@ -325,7 +326,7 @@ function cardformat(run,tag,scalars){
   if(run === "system_performance"){
     //deprecated - direct controll is passed 
   }
-  else if(run === "fake_bert"){
+  else if(run === "calculate_states"){
 
     if(tag == "FLOPs"){
       container.appendChild(Utils.multilinechart(scalars,"Steps","Flop Counts"));

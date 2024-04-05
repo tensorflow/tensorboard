@@ -99,7 +99,7 @@ async function updateRunInfo() {
 
   async function getScalars(run, tag) {
     const params = new URLSearchParams({run, tag});
-    return await fetchJSON(`./systerm_performance?${params}`);
+    return await fetchJSON(`./systerm?${params}`);
   }
 
 
