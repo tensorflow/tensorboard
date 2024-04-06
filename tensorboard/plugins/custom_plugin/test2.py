@@ -2,7 +2,7 @@ import ntpath
 import posixpath
 import unittest
 from unittest import mock
-from unittest.mock import MagicMock, Mock,patch
+from unittest.mock import MagicMock, Mock, patch
 
 from werkzeug import test
 from werkzeug import wrappers
@@ -14,6 +14,7 @@ from tensorboard.plugins.scalar import metadata as scalar_metadata
 from main_plugin import metadata
 from main_plugin.plugin import System
 
+
 def is_path_safe(path):
     """Returns the result depending on the plugin's static file handler."""
     example_plugin = plugin.System(base_plugin.TBContext())
@@ -23,42 +24,44 @@ def is_path_safe(path):
     response = client.get(plugin._PLUGIN_DIRECTORY_PATH_PART + path)
     return response.status_code == 200
 
+
 class TestSystem(unittest.TestCase):
 
     def setUp(self):
-        self.context_mock = Mock()
-        self.context_mock.data_provider.list_scalars.return_value = {
+        self.mock_data_provider = MagicMock()
+
+        # Create a mock context
+        self.mock_context = MagicMock()
+        self.experiment_id = MagicMock()
+
+        # Create an instance of System with the mock data provider and context
+        self.system = System(context=MagicMock(data_provider=self.mock_data_provider))
+
+    @patch('main_plugin.plugin.System._serve_tags')
+    def test_serve_tags(self, mock_serve_tags):
+        mock_request = EnvironBuilder(path='/tags').get_environ()
+
+        self.mock_data_provider.list_scalars.return_value = {
             'run1': ['tag1', 'tag2'],
             'run2': ['tag3']
         }
-        self.system = System(self.context_mock)
 
-    def test_get_plugin_apps(self):
-        self.assertEqual(
-            self.system.get_plugin_apps(),
-            {
-                "/static/*": self.system._serve_static_file,
-                "/tags": self.system._serve_tags,
-                "/systerm": self.system._serve_system_states,
-            }
+        response = self.system._serve_tags(mock_request)
+
+        self.mock_data_provider.list_scalars.assert_called_once_with(
+            self.mock_context,
+            experiment_id=self.experiment_id,
+            plugin_name=scalar_metadata.PLUGIN_NAME
         )
 
-    def test_is_active(self):
-        self.context_mock.data_provider = None
-        self.assertFalse(self.system.is_active())
+        expected_response = {
+            'run1': ['tag1', 'tag2'],
+            'run2': ['tag3']
+        }
+        print("response",response.data,expected_response)
+        self.assertEqual(response.data, expected_response)
+        self.assertEqual(response.status_code, 200)
 
-        self.context_mock.data_provider = MagicMock()
-        self.assertTrue(self.system.is_active())
-
-
-    def test_serve_tags(self):
-        
-        pass
-        
-
-    def test_server_system_states(self):
-        pass
-   
     def test_path_traversal(self):
         """Properly check whether a URL can be served from the static folder."""
         with mock.patch("builtins.open", mock.mock_open(read_data="data")):

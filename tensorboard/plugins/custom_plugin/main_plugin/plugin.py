@@ -32,9 +32,12 @@ class System(base_plugin.TBPlugin):
 
     def is_active(self):
 
+        print("data_provider=",self.data_provider)
+
         if self.data_provider:
             return True
-        return False
+        else:
+            return False
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
@@ -49,11 +52,14 @@ class System(base_plugin.TBPlugin):
     
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
+        print("ctx=",ctx)
+        print("experiment=",experiment)
         run_tag_mapping = self.data_provider.list_scalars(
             ctx,
             experiment_id=experiment,
             plugin_name=scalar_metadata.PLUGIN_NAME,
         )
+        print(run_tag_mapping)
         run_info = {run: list(tags) for (run, tags) in run_tag_mapping.items()}
         return http_util.Respond(request, run_info, "application/json")
 

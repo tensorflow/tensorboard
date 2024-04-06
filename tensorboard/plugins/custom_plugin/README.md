@@ -16,7 +16,7 @@ In this custom plugin, I define a two type of visualization which are represente
 
 Note: when you write summary for visualization there will be two differnt format for writting the summary. Choose appropriate based on your usecase.
 
-## Guide : How to install, generate logs and visulize 
+## Guide : How to install, generate logs and visualize 
 
 ## 1. Setup Virtualenv (Recommanded - Development mode)
 
@@ -112,21 +112,38 @@ Here are some attached Screenshots.
 ![home](https://drive.google.com/file/d/1jpf7EFN9goIaez3713pBZBU1S5rGSkFo/view?usp=drive_link)
 
 
+# How to write the summary for this plugin
+
+## 1. calculate_states:
+
+When writting a summary in order seperate the 
 
 
 
 
 
 
-
-## How to modify
+## Development Guid
 
 Built using Python as backend and Native JavaScript as frontend, no Bazel is used for the development.
+
+Frontend : 
 
 1. index.js - Dynamoically add the HTML element to the browser.
 2. style.css - Styling HTML components.
 3. model.js - data binding with entity and backend server requests.
 4. views.js - Contains  list of Custom HTML Fragments added dynamically to browser.
+5. apexchart.js - ApexChart is javascript library for creating vizualization with customization.
+6. d3.v7.min.js - D3.js is also javascript library which provides highly customizatized graph and it is very powerfull. Graph generation is done throgh SVG.
+7. logo - This folder contains some images for svg download and color picker button.
+
+Backend :
+
+1. metadata.py - Usually contains small information about plugin.
+2. summary_v2.py - This file usually developed for custom summary writting without using any in-build methods provided by tensorboard for writting summary
+3. plugin.py - Main logic of the plugin such as how to read and parse data to send it to designated frontend API calls.
+4. setup.py - This file is an entry point to install the plugin into your current environment.
+5. test.py - This file contains all the unittestcases for the plugin.py file
 
 ## Running the example
 
