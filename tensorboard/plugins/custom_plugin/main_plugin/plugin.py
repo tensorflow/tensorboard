@@ -21,7 +21,10 @@ class System(base_plugin.TBPlugin):
     plugin_name = metadata.PLUGIN_NAME
 
     def __init__(self, context):
+        super().__init__(context)
         self.data_provider = context.data_provider
+        self.multiplexer = context.multiplexer
+        self._target_run_names = ['calculate_states', 'system_performance']
 
     def get_plugin_apps(self):
         return {
@@ -30,37 +33,30 @@ class System(base_plugin.TBPlugin):
             "/systerm": self._serve_system_states,
         }
 
+
     def is_active(self):
-
-        print("data_provider=",self.data_provider)
-
-        if self.data_provider:
-            return True
-        else:
-            return False
+        runs = self.multiplexer.Runs().keys()
+        target_run_names_exist = any(run in runs for run in self._target_run_names)
+        return target_run_names_exist
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
-            es_module_path="/static/index.js", tab_name="System_Performance"
+            es_module_path=metadata.PLUGIN_INDEX_FILE, tab_name=metadata.PLUGIN_TITLE
         )
 
     #Retrieves information about tags associated with the plugin's data and returns it in JSON format.
     @wrappers.Request.application
     def _serve_tags(self, request):
-
         print("Serve tags is running.....")
-    
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
-        print("ctx=",ctx)
-        print("experiment=",experiment)
         run_tag_mapping = self.data_provider.list_scalars(
             ctx,
             experiment_id=experiment,
             plugin_name=scalar_metadata.PLUGIN_NAME,
         )
-        print(run_tag_mapping)
         run_info = {run: list(tags) for (run, tags) in run_tag_mapping.items()}
+        print("Tags are served successfully.....")
         return http_util.Respond(request, run_info, "application/json")
 
     # For Providing the static files to tensorboard IFrame
