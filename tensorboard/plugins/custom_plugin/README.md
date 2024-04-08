@@ -88,9 +88,9 @@ Here are some attached Screenshots.
 
 <img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-2.png" alt="Home" width="300" height="200">
 
-<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-3.png" alt="Home" width="300" height="200">
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-3.png" alt="loss" width="300" height="200">
 
-<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-4.png" alt="Home" width="300" height="200">
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-4.png" alt="train_test" wi_dth="300" height="200">
 
 <img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-5.png" alt="Home" width="300" height="200">
 
@@ -124,8 +124,29 @@ this command will run the tensorboard server on port [localhost](http://localhos
 
 Here are some attached Screenshots.
 
-<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-1.png" alt="Home" width="300" height="200">
+<div style="display: flex; justify-content: space-between;">
 
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/system_performance-1.png" alt="System Performance 1" width="300" height="200">
+
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/system_performance-2.png" alt="System Performance 2" width="300" height="200">
+
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/system_performance-3.png" alt="System Performance 3" width="300" height="200">
+
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/system_performance-4.png" alt="System Performance 4" width="300" height="200">
+
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/system_performance-5.png" alt="System Performance 5" width="300" height="200">
+
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/system_performance-5-5.png" alt="System Performance 5" width="300" height="200">
+
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/system_performance-6.png" alt="System Performance 6" width="300" height="200">
+
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/system_performance-7.png" alt="System Performance 7" width="300" height="200">
+
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/system_performance-8.png" alt="System Performance 8" width="300" height="200">
+
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/system_performance-9.png" alt="System Performance 9" width="300" height="200">
+
+</div>
 
 
 # How to write the summary for this plugin
