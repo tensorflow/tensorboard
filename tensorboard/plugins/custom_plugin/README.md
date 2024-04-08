@@ -84,6 +84,8 @@ this command will run the tensorboard server on port [localhost](http://localhos
 
 Here are some attached Screenshots.
 
+<div style="display: flex; justify-content: space-between;">
+
 <img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-2.png" alt="Home" width="300" height="200">
 
 <img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-3.png" alt="Home" width="300" height="200">
@@ -95,6 +97,8 @@ Here are some attached Screenshots.
 <img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-6.png" alt="Home" width="300" height="200">
 
 <img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-7.png" alt="Home" width="300" height="200">
+
+</div>
 
 
 
