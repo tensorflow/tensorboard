@@ -391,6 +391,27 @@ describe('core deeplink provider', () => {
     ]);
   });
 
+  it('dedupes unknown query params with feature flags', () => {
+    store.overrideSelector(selectors.getOverriddenFeatureFlags, {
+      enabledExperimentalPlugins: ['foo', 'bar', 'baz'],
+      showFlags: '',
+    });
+    store.overrideSelector(selectors.getUnknownQueryParams, {
+      foo: 'bar',
+      bar: 'foo',
+      experimentalPlugin: 'has_different_value_for_some_reason',
+      showFlags: '',
+    });
+    store.refreshState();
+
+    expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
+      {key: 'experimentalPlugin', value: 'foo,bar,baz'},
+      {key: 'showFlags', value: ''},
+      {key: 'foo', value: 'bar'},
+      {key: 'bar', value: 'foo'},
+    ]);
+  });
+
   describe('runs', () => {
     describe('color group', () => {
       it('does not put state in the URL when user set color group is null', () => {
