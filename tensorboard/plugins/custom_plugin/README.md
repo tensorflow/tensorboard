@@ -109,7 +109,7 @@ this command will run the tensorboard server on port [localhost](http://localhos
 
 Here are some attached Screenshots.
 
-![home](https://drive.google.com/file/d/1jpf7EFN9goIaez3713pBZBU1S5rGSkFo/view?usp=drive_link)
+![home](https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-1.png)
 
 
 # How to write the summary for this plugin
