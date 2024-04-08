@@ -70,28 +70,6 @@ async function updateRunInfo() {
     }
   }
   
-  
-
-  // export async function oldgetTagsToScalars(run) {
-  //   const result = new Map();
-  //   const tags = await getTags(run);
-  //   if (!tags) {
-  //     return result;
-  //   }
-  
-  //   const scalarPromises = tags.map(async (tag) => {
-  //     const scalars = await getScalars(run, tag);
-  //     // console.log(scalars);
-  //     if (scalars) {
-  //       result.set(tag, scalars);
-  //     }
-  //   });
-  //   await Promise.all(scalarPromises);
-  
-  //   return result;
-  // }
-
-// Get tags for furthure usage.
   async function getTags(run) {
     await updateRunInfo();
     return runToTagInfo[run] || null;

@@ -120,7 +120,6 @@ async function updatePreview(runSelector, container) {
   // console.log(tagsToScalars);
   const preview = Views.createPreviews(requestedRun,tagsToScalars);
 
-  // Cancel the update if the UI has a different run selected.
   if (runSelector.value !== requestedRun) {
     return;
   }
@@ -130,7 +129,6 @@ async function updatePreview(runSelector, container) {
 }
 
 
-  // Defining the function to be called when tab1 is clicked
   function TorchCalculations(tab,systemTab) {
     const element = document.getElementById('run-selector');
     element.value="calculate_states"
@@ -141,7 +139,6 @@ async function updatePreview(runSelector, container) {
 
   }
   
-  // Defining the function to be called when tab2 is clicked
   function SystemCalculations(tab,torchTab) {
     const element = document.getElementById('run-selector');
     element.value="system_performance"

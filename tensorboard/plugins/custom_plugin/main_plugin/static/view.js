@@ -49,7 +49,7 @@ export function createPreviews(run, tagsToScalars) {
         tagsToScalars.forEach((scalars, tag) => {
 
           let time = scalars.get("start_time_execution");
-          startTime.set(tag,time[0][2]);
+          startTime.set(tag,time[0][2]); // tf.summary.scalar() -> ["max-time"[0],"start_time_execution"[1], time.timeStamp[2]]
 
         });
 
@@ -92,7 +92,6 @@ export function createPreviews(run, tagsToScalars) {
           drawer.appendChild(contentWrapper);
           fragment.appendChild(drawer);
 
-          // fragment.appendChild(Utils.FinalResource(context,value,Array.from(sortedMap.keys()))); 
         });
 
       }
@@ -148,6 +147,8 @@ function merge(tagsToScalars, map, timeOffset = 1) {
 
     let target = tagsToScalars.get(tag);
     let start = target.get("start_time_execution")[0][1];
+
+    // Kept for Future changes for modification if necessary - RAM, CPU timestamp not given instead time_elapsed is given
       
     // let cpuData = target.get("CPU").map((item) => {
     //   // console.log("item=",item);
@@ -261,6 +262,33 @@ function merge(tagsToScalars, map, timeOffset = 1) {
   return graphData;
 
 }
+
+/** Creates iterative Drwer for Summary Type - 1 in this form but dynamically
+
+// <div class="container">
+//     <div class="faq-drawer">
+//         <input id="faq-drawer" class="faq-drawer__trigger" type="checkbox"/>
+//         <label class="faq-drawer__title" for="faq-drawer">Drawer Title</label>
+//         <div class="faq-drawer__content-wrapper">
+//             <div class="faq-drawer__content">
+          
+//             </div>
+//         </div>
+//     </div>
+
+//     <div class="faq-drawer">
+//         <input id="faq-drawer-2" class="faq-drawer__trigger" type="checkbox"/>
+//         <label class="faq-drawer__title" for="faq-drawer-2">Drawer Title #2</label>
+//         <div class="faq-drawer__content-wrapper">
+//             <div class="faq-drawer__content">
+//                 <p>👌🏻</p>
+//             </div>
+//         </div>
+//     </div>
+// </div>
+
+*/ 
+
 
 export function createLayerDrawers(run,tagScalars) {
 
@@ -379,6 +407,7 @@ function createElement(tag, className) {
 
 // Extra graphs created to check visulizations of different kinds - if you are modifying the extension send appropriatedata
 // Different graph uses different data so analyze the method to decide what is the format. - Above are few examples only.
+// If you dont find this function anywhere then look into old commits
 
     // const card = document.createElement('div');
     // card.className = 'card';
