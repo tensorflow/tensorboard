@@ -302,9 +302,11 @@ if there was one more context then the plugin would create 3 three graphs so on 
 ## Additional Feature
 
 1. Convert graphs to SVG PNG and CSV.
-2. Zoom In - Zoom out Clipping.
-3. Color Picker for line.
-4. Annotation on the graph for Type-2 Summary which is controllable by button for individual resources.
+2. Zoom In - Zoom out Clipping: 
+    When you zoom In and press annotation button it will set that particular zoom clip as default reset zoom. So when you click on reset zoom button, it will not zoom out instead you have to use zoom out maginfier.
+3. Color Picker for a line.
+4. Annotation on the graph for Type-2 Summary 
+    This is controllable by button for individual resources. - Double Click on the button to activate particular annotation. 
 5. Standard deviation plot.
 
 
