@@ -84,7 +84,18 @@ this command will run the tensorboard server on port [localhost](http://localhos
 
 Here are some attached Screenshots.
 
-![home](https://drive.google.com/file/d/1jpf7EFN9goIaez3713pBZBU1S5rGSkFo/view?usp=drive_link)
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-2.png" alt="Home" width="300" height="200">
+
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-3.png" alt="Home" width="300" height="200">
+
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-4.png" alt="Home" width="300" height="200">
+
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-5.png" alt="Home" width="300" height="200">
+
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-6.png" alt="Home" width="300" height="200">
+
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-7.png" alt="Home" width="300" height="200">
+
 
 
 ### Demo 2: system_performance
@@ -109,7 +120,8 @@ this command will run the tensorboard server on port [localhost](http://localhos
 
 Here are some attached Screenshots.
 
-![home](https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-1.png)
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-1.png" alt="Home" width="300" height="200">
+
 
 
 # How to write the summary for this plugin
