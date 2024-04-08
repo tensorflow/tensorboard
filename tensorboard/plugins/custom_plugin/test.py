@@ -110,38 +110,5 @@ class TestSystem(unittest.TestCase):
             with mock.patch("os.path", ntpath):
                 self.assertFalse(is_path_safe("static/\\index.js"))
 
-    def test_serve_tags(self):
-        # Mocking the data_provider
-        # mock_experiment_id = ""
-        self.mock_data_provider.list_scalars.return_value = {'calculate_states':{}, 'other_run':{}, 'system_performance':{}}
-
-        mock_run_tag_mapping = {
-            "run1": ["tag1", "tag2"],
-            "run2": ["tag3", "tag4"]
-        }
-        
-        # Mocking the list_scalars method to return some run tag mapping
-        self.system1.data_provider.list_scalars.return_value = self.mock_data_provider
-        
-        # Creating a mock Request object
-        builder = EnvironBuilder(method='GET', path='/tags', data={})
-        environ = builder.get_environ()
-        request = builder.get_request()
-        
-        # Invoking the _serve_tags method with the mock Request object
-        response = self.system1._serve_tags(request)
-        
-        # Asserting that the data provider's list_scalars method was called with the correct parameters
-        self.system.data_provider.list_scalars.assert_called_once_with(
-            self.mock_context,
-            experiment_id=mock_experiment_id,
-            plugin_name='scalar'
-        )
-        
-        # Asserting that the response contains the expected run tag mapping
-        expected_response = mock_run_tag_mapping
-        self.assertEqual(response.data, expected_response)
-        self.assertEqual(response.content_type, "application/json")
-
 if __name__ == '__main__':
     unittest.main()

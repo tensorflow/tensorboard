@@ -114,13 +114,161 @@ Here are some attached Screenshots.
 
 # How to write the summary for this plugin
 
-## 1. calculate_states:
+## Directory Structure of generated logs
 
-When writting a summary in order seperate the 
+Usually one plugin is used for single type of visualization but this plugin contains two different type of visaulization. Therefore the summary needs to be mentioned in a specific folder
+
+```
+├── Folder_Name
+│   ├── calculate_states
+│   │   ├── tf.event file (Summary Type - 1)
+│   ├── system_performance
+│   │   ├── tf.event file (Summary Type - 2)
+```
+
+## How to create  log file for this plugin
+
+### 1. calculate_states (Type - 1 Summary):
+
+When writting a summary in order seperate the details for plugin type-1 summary. Create a `SummaryWriter` to log information for TensorBoard in the specified directory.
+
+```
+from torch.utils.tensorboard import SummaryWriter
+writer = SummaryWriter('logs/calculate_states')
+```
+Once you initiate `SummaryWriter()` you can use that instatce to flush out summary information to tensorflow event file.  
+
+```
+writer.add_scalar('Tag1/train', value, step)
+writer.add_scalar('Tag1/test', value, step)
+  
+writer.add_scalar('Tag2/train', value, step)
+writer.add_scalar('Tag2/test', value, step)
+
+writer.add_scalar('Tag3/Conv2D', value, step)
+writer.add_scalar('Tag3/Flatten', value, step)
+writer.add_scalar('Tag3/Dense', value, step)
+```
+
+Above calculate_states will have basically 3 multiline chart sequencially based on the summary mentioned in above code.
+`Tag1`, `Tag2`, `Tag3` will create multilinechart between the same `tag` name and additionally also create seperate line plot.
+
+`value` can be int,float that you want to plot on the chart and `step` represent data point number as Linear scale. 
+
+Note If you mention the same step number for same `tag/graph` then it's going to overwrite the previous value.
+
+```
+writer.close() # To end the Summary
+```
+
+### 2. system_performance (Type - 2 Summary):
+
+The system_performance summary is used to visualize performance metrics of a system, such as CPU, GPU, and RAM usage, over time. Pleas check `tensorboard/plugins/custom_plugin/main_plugin/demo/large_sample.json` containing energy and time data for different layers and also time vs temprature for GPU.
+
+This summary is complex as compare to previous one because there are specific `flags` that need to be mentioned depending upon the data. For example, data containing `start_execution_time` infotmation to decide the ploting sequence. Another is `timeOffset` which is optional.
 
 
+lets begin how to write summary
 
+```
+import tensorflow as tf
 
+log_path = "logs/system_performance"
+writer = tf.summary.create_file_writer(log_path)
+```
+
+Once you get `writer` variable from `tf.summary.create_file_writer()` you can use that instatce to flush out summary information to tensorflow event file. Remember that there are multiple layers so this entire code will run iteratively for each `layers/API calls`.  
+
+```
+tf.summary.scalar("LayerName/resource", value, step=timestamp)
+```
+for example,
+
+```
+tf.summary.scalar("tensorflow.data.from_tensor_slices()/CPU", 12, step=1782110112050000000)
+tf.summary.scalar("tensorflow.data.from_tensor_slices()/GPU", 15, step=1782110112050000000)
+tf.summary.scalar("tensorflow.data.from_tensor_slices()/RAM", 10, step=1782110112050000000)
+```
+
+Above example `tf.summary.scalar()` method has argument called step which takes `timestamp` and it is  mentioned as `19` digit number. `step` argument can only take data in `int` format without floating point. 
+
+So, convert timestamp like `1782110112.052030000` to `1782110112052030000` by multiplying `10000...(Number of digit after floating point)`.
+
+```
+tf.summary.scalar("tensorflow.data.from_tensor_slices()/RAM", 10, step=1782110112.050000000 * 1000000000)
+```
+Now lets see  this with multiple layer.
+
+```
+lst = [
+    "layer1",
+    "layer2",
+    "layer3"
+    ]
+    
+layer_start_time = [
+                    1782110112052030000, 
+                    1782110113052030000, 
+                    1782110114052030000
+                    ]
+i = 0
+
+for layer in lst:
+
+    # Start time is important to mentioned because plugin is going to use the start_time to decide the sequence of the data ploting of each API call/layer.
+
+    tf.summary.scalar(f"{layer}/start_execution_time",0,step=layer_start_time[i])
+    i += 1
+
+    for itr in range(100):
+
+        tf.summary.scalar(f"{layer}/RAM", 10 * itr, step=int(1782110112.050000000 * 1000000000))
+        tf.summary.scalar(f"{layer}/GPU", 20 * itr, step=int(1782110112.050000000 * 1000000000))
+        tf.summary.scalar(f"{layer}/CPU", 30 * itr, step=int(1782110112.050000000 * 1000000000))
+    
+    writer.flush() #depends when you want to flush information to tf event file.
+
+```
+
+This was very simplified form of summary. But to make it more dynamic, Please refer to the example mentioned in the file located at `tensorboard/plugins/custom_plugin/main_plugin/demo/` and a file is `transform.py` which reads data from json file and write summary of mentioned data.
+
+Note: `start_time_execution` should be mentioned as third argument which specify the `step` number. because `tf.summary.scalar summary()`'s  `value` argument does not support `19` digit int number.
+
+Additonally, Plugin also look into the context of the resource passed. For example, `CPU`, `GPU`, `RAM`, `GPU-temprature`, `CPU-temprature`.
+
+```
+...
+    ...
+    ...
+    tf.summary.scalar(f"{layer}/RAM", 10 * itr, step=int(1782110112.050000000 * 1000000000))
+    tf.summary.scalar(f"{layer}/GPU", 20 * itr, step=int(1782110112.050000000 * 1000000000))
+    tf.summary.scalar(f"{layer}/CPU", 30 * itr, step=int(1782110112.050000000 * 1000000000))
+
+    tf.summary.scalar(f"{layer}/GPU-temprature", 30 * itr, step=int(1782110112.050000000 * 1000000000))
+    tf.summary.scalar(f"{layer}/CPU-temprature", 30 * itr, step=int(1782110112.050000000 * 1000000000))
+    
+    ...
+    ...
+...
+...
+    
+```
+
+Plugin will automatically sperate the graph and name them based on context. For example, above default plot is `Energy` and another will be `temprature`.
+
+So total there will be `2` graph with multiple `line plots`.
+1. `Energy (y-axis) vs Timestamp (x-axis)` - `CPU`, `GPU`, `RAM` data as line chart
+2. `temprature (y-axis) vs Timestamp (x-axis)` - `CPU`, `GPU` data as line chart
+
+if there was one more context then the plugin would create 3 three graphs so on and so forth.
+
+## Additional Feature
+
+1. Convert graphs to SVG PNG and CSV.
+2. Zoom In - Zoom out Clipping.
+3. Color Picker for line.
+4. Annotation on the graph for Type-2 Summary which is controllable by button for individual resources.
+5. Standard deviation plot.
 
 
 ## Development Guid
@@ -145,10 +293,4 @@ Backend :
 4. setup.py - This file is an entry point to install the plugin into your current environment.
 5. test.py - This file contains all the unittestcases for the plugin.py file
 
-## Running the example
-
-Generate some sample Greeting summaries by running [`transform.py`][demo_py] and torch. Alternatively, to write Greetings from your own Python program, import [`summary_v2.py`][summary_v2_py], create a summary file writer, and call `summary_v2.greeting("very important people", "you", step)`.
-
-[demo_py]: tensorboard_plugin_example/demo.py
-[summary_v2_py]: tensorboard_plugin_example/summary_v2.py
 

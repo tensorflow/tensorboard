@@ -47,7 +47,7 @@ class System(base_plugin.TBPlugin):
     #Retrieves information about tags associated with the plugin's data and returns it in JSON format.
     @wrappers.Request.application
     def _serve_tags(self, request):
-        print("Serve tags is running.....")
+        # print("Serve tags is running.....")
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
         run_tag_mapping = self.data_provider.list_scalars(
@@ -56,7 +56,7 @@ class System(base_plugin.TBPlugin):
             plugin_name=scalar_metadata.PLUGIN_NAME,
         )
         run_info = {run: list(tags) for (run, tags) in run_tag_mapping.items()}
-        print("Tags are served successfully.....")
+        # print("Tags are served successfully.....")
         return http_util.Respond(request, run_info, "application/json")
 
     # For Providing the static files to tensorboard IFrame
