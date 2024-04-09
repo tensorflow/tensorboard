@@ -122,6 +122,11 @@ def _get_inbound_nodes(layer):
     inbound_nodes = []
     if layer.get("inbound_nodes") is not None:
         for maybe_inbound_node in layer.get("inbound_nodes", []):
+            if not isinstance(maybe_inbound_node, dict):
+                # Note that the inbound node parsing is not backward compatible with
+                # Keras 2. If given a Keras 2 model, the input nodes will be missing
+                # in the final graph.
+                continue
             for inbound_node_args in maybe_inbound_node.get("args", []):
                 # Sometimes this field is a list when there are multiple inbound nodes
                 # for the given layer.
