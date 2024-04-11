@@ -316,6 +316,21 @@ export class MetricsEffects implements OnInitEffects {
     })
   );
 
+  private readonly removeAllPins$ = this.actions$.pipe(
+    ofType(actions.metricsClearAllPinnedCards),
+    withLatestFrom(
+      this.store.select(selectors.getEnableGlobalPins),
+      this.store.select(selectors.getShouldPersistSettings)
+    ),
+    filter(
+      ([, enableGlobalPins, shouldPersistSettings]) =>
+        enableGlobalPins && shouldPersistSettings
+    ),
+    tap(() => {
+      this.savedPinsDataSource.removeAllScalarPins();
+    })
+  );
+
   /**
    * In general, this effect dispatch the following actions:
    *
@@ -356,7 +371,11 @@ export class MetricsEffects implements OnInitEffects {
         /**
          * Subscribes to: dashboard shown (initAction).
          */
-        this.loadSavedPins$
+        this.loadSavedPins$,
+        /**
+         * Subscribes to: metricsClearAllPinnedCards.
+         */
+        this.removeAllPins$
       );
     },
     {dispatch: false}
