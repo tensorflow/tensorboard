@@ -1525,7 +1525,30 @@ const reducer = createReducer(
         ],
       };
     }
-  )
+  ),
+  on(actions.metricsClearAllPinnedCards, (state) => {
+    let nextCardMetadataMap = {...state.cardMetadataMap};
+    let nextCardStepIndexMap = {...state.cardStepIndex};
+    let nextCardStateMap = {...state.cardStateMap};
+    let nextLastPinnedCardTime = state.lastPinnedCardTime;
+
+    for (const [cardId, _] of state.pinnedCardToOriginal) {
+      delete nextCardMetadataMap[cardId];
+      delete nextCardStepIndexMap[cardId];
+      delete nextCardStateMap[cardId];
+    }
+
+    return {
+      ...state,
+      cardMetadataMap: nextCardMetadataMap,
+      cardStateMap: nextCardStateMap,
+      cardStepIndex: nextCardStepIndexMap,
+      cardToPinnedCopy: new Map(),
+      cardToPinnedCopyCache: new Map(),
+      pinnedCardToOriginal: new Map(),
+      lastPinnedCardTime: nextLastPinnedCardTime,
+    };
+  })
 );
 
 export function reducers(state: MetricsState | undefined, action: Action) {

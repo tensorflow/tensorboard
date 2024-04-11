@@ -4488,5 +4488,57 @@ describe('metrics reducers', () => {
         expect(state2.unresolvedImportedPinnedCards).toEqual([fakePinnedCard]);
       });
     });
+
+    describe('#metricsClearAllPinnedCards', () => {
+      it('unpins all pinned cards', () => {
+        const beforeState = buildMetricsState({
+          cardMetadataMap: {
+            card1: createScalarCardMetadata(),
+            pinnedCopy1: createScalarCardMetadata(),
+            card2: createScalarCardMetadata(),
+            pinnedCopy2: createScalarCardMetadata(),
+          },
+          cardList: ['card1', 'card2'],
+          cardStepIndex: {
+            card1: buildStepIndexMetadata({index: 10}),
+            pinnedCopy1: buildStepIndexMetadata({index: 20}),
+            card2: buildStepIndexMetadata({index: 11}),
+            pinnedCopy2: buildStepIndexMetadata({index: 21}),
+          },
+          cardToPinnedCopy: new Map([
+            ['card1', 'pinnedCopy1'],
+            ['card2', 'pinnedCopy2'],
+          ]),
+          cardToPinnedCopyCache: new Map([
+            ['card1', 'pinnedCopy1'],
+            ['card2', 'pinnedCopy2'],
+          ]),
+          pinnedCardToOriginal: new Map([
+            ['pinnedCopy1', 'card1'],
+            ['pinnedCopy2', 'card2'],
+          ]),
+        });
+        const nextState = reducers(
+          beforeState,
+          actions.metricsClearAllPinnedCards()
+        );
+
+        const expectedState = buildMetricsState({
+          cardMetadataMap: {
+            card1: createScalarCardMetadata(),
+            card2: createScalarCardMetadata(),
+          },
+          cardList: ['card1', 'card2'],
+          cardStepIndex: {
+            card1: buildStepIndexMetadata({index: 10}),
+            card2: buildStepIndexMetadata({index: 11}),
+          },
+          cardToPinnedCopy: new Map(),
+          cardToPinnedCopyCache: new Map(),
+          pinnedCardToOriginal: new Map(),
+        });
+        expect(nextState).toEqual(expectedState);
+      });
+    });
   });
 });
