@@ -77,6 +77,8 @@ import {
   TagMetadata,
   TimeSeriesData,
   TimeSeriesLoadable,
+  CardToPinnedCard,
+  PinnedCardToCard,
 } from './metrics_types';
 import {dataTableUtils} from '../../widgets/data_table/utils';
 
@@ -1532,7 +1534,7 @@ const reducer = createReducer(
     let nextCardStateMap = {...state.cardStateMap};
     let nextLastPinnedCardTime = state.lastPinnedCardTime;
 
-    for (const [cardId, _] of state.pinnedCardToOriginal) {
+    for (const cardId of state.pinnedCardToOriginal.keys()) {
       delete nextCardMetadataMap[cardId];
       delete nextCardStepIndexMap[cardId];
       delete nextCardStateMap[cardId];
@@ -1543,9 +1545,9 @@ const reducer = createReducer(
       cardMetadataMap: nextCardMetadataMap,
       cardStateMap: nextCardStateMap,
       cardStepIndex: nextCardStepIndexMap,
-      cardToPinnedCopy: new Map(),
-      cardToPinnedCopyCache: new Map(),
-      pinnedCardToOriginal: new Map(),
+      cardToPinnedCopy: new Map() as CardToPinnedCard,
+      cardToPinnedCopyCache: new Map() as CardToPinnedCard,
+      pinnedCardToOriginal: new Map() as PinnedCardToCard,
       lastPinnedCardTime: nextLastPinnedCardTime,
     };
   })
