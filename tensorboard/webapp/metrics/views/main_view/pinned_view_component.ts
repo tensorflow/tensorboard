@@ -45,8 +45,15 @@ import {CardIdWithMetadata} from '../metrics_view_types';
           </span>
         </span>
       </div>
-      <div class="right-items" *ngIf="cardIdsWithMetadata.length > 0">
-        <button mat-stroked-button (click)="onClearAllPinsClicked.emit()">
+      <div
+        class="right-items"
+        *ngIf="cardIdsWithMetadata.length > 0 && globalPinsEnabled"
+      >
+        <button
+          mat-stroked-button
+          aria-label="Clear all pinned cards"
+          (click)="onClearAllPinsClicked.emit()"
+        >
           Clear all pins
         </button>
       </div>
@@ -67,5 +74,6 @@ export class PinnedViewComponent {
   @Input() cardObserver!: CardObserver;
   @Input() cardIdsWithMetadata!: CardIdWithMetadata[];
   @Input() lastPinnedCardTime!: number;
+  @Input() globalPinsEnabled: boolean = false;
   @Output() onClearAllPinsClicked = new EventEmitter<void>();
 }

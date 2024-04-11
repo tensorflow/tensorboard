@@ -69,6 +69,7 @@ import {MainViewComponent, SHARE_BUTTON_COMPONENT} from './main_view_component';
 import {MainViewContainer} from './main_view_container';
 import {PinnedViewComponent} from './pinned_view_component';
 import {PinnedViewContainer} from './pinned_view_container';
+import {buildMockState} from '../../../testing/utils';
 
 @Component({
   selector: 'card-view',
@@ -182,7 +183,11 @@ describe('metrics main view', () => {
       ],
       providers: [
         provideMockStore({
-          initialState: appStateFromMetricsState(buildMetricsState()),
+          initialState: {
+            ...buildMockState({
+              ...appStateFromMetricsState(buildMetricsState()),
+            }),
+          },
         }),
       ],
       // Skip errors for card renderers, which are tested separately.
@@ -1604,6 +1609,67 @@ describe('metrics main view', () => {
 
         const indicator = fixture.debugElement.query(byCss.INDICATOR);
         expect(indicator).toBeTruthy();
+      });
+    });
+
+    describe('clear all pins button', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectors.getEnableGlobalPins, true);
+      });
+
+      it('does not show the button if getEnableGlobalPins is false', () => {
+        store.overrideSelector(selectors.getEnableGlobalPins, false);
+        store.overrideSelector(selectors.getPinnedCardsWithMetadata, []);
+        const fixture = TestBed.createComponent(MainViewContainer);
+        fixture.detectChanges();
+
+        const clearAllButton = fixture.debugElement.query(
+          By.css('[aria-label="Clear all pinned cards"]')
+        );
+        expect(clearAllButton).toBeNull();
+      });
+
+      it('does not show the button if there is no pinned card', () => {
+        store.overrideSelector(selectors.getPinnedCardsWithMetadata, []);
+        const fixture = TestBed.createComponent(MainViewContainer);
+        fixture.detectChanges();
+
+        const clearAllButton = fixture.debugElement.query(
+          By.css('[aria-label="Clear all pinned cards"]')
+        );
+        expect(clearAllButton).toBeNull();
+      });
+
+      it('shows the button if there is a pinned card', () => {
+        store.overrideSelector(selectors.getPinnedCardsWithMetadata, [
+          {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
+          {cardId: 'card2', ...createCardMetadata(PluginType.IMAGES)},
+        ]);
+        const fixture = TestBed.createComponent(MainViewContainer);
+        fixture.detectChanges();
+
+        const clearAllButton = fixture.debugElement.query(
+          By.css('[aria-label="Clear all pinned cards"]')
+        );
+        expect(clearAllButton).toBeTruthy();
+      });
+
+      it('dispatch clear all action when the button is clicked', () => {
+        store.overrideSelector(selectors.getPinnedCardsWithMetadata, [
+          {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
+          {cardId: 'card2', ...createCardMetadata(PluginType.IMAGES)},
+        ]);
+        const fixture = TestBed.createComponent(MainViewContainer);
+        fixture.detectChanges();
+
+        const clearAllButton = fixture.debugElement.query(
+          By.css('[aria-label="Clear all pinned cards"]')
+        );
+        clearAllButton.nativeElement.click();
+
+        expect(dispatchedActions).toEqual([
+          actions.metricsClearAllPinnedCards(),
+        ]);
       });
     });
   });
