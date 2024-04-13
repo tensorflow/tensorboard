@@ -1529,14 +1529,13 @@ const reducer = createReducer(
     }
   ),
   on(actions.metricsClearAllPinnedCards, (state) => {
-    let nextCardMetadataMap = {...state.cardMetadataMap};
-    let nextCardStepIndexMap = {...state.cardStepIndex};
-    let nextCardStateMap = {...state.cardStateMap};
-    let nextLastPinnedCardTime = state.lastPinnedCardTime;
+    const nextCardMetadataMap = {...state.cardMetadataMap};
+    const nextCardStepIndex = {...state.cardStepIndex};
+    const nextCardStateMap = {...state.cardStateMap};
 
     for (const cardId of state.pinnedCardToOriginal.keys()) {
       delete nextCardMetadataMap[cardId];
-      delete nextCardStepIndexMap[cardId];
+      delete nextCardStepIndex[cardId];
       delete nextCardStateMap[cardId];
     }
 
@@ -1544,11 +1543,10 @@ const reducer = createReducer(
       ...state,
       cardMetadataMap: nextCardMetadataMap,
       cardStateMap: nextCardStateMap,
-      cardStepIndex: nextCardStepIndexMap,
+      cardStepIndex: nextCardStepIndex,
       cardToPinnedCopy: new Map() as CardToPinnedCard,
       cardToPinnedCopyCache: new Map() as CardToPinnedCard,
       pinnedCardToOriginal: new Map() as PinnedCardToCard,
-      lastPinnedCardTime: nextLastPinnedCardTime,
     };
   })
 );
