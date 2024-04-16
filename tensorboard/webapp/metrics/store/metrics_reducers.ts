@@ -933,6 +933,19 @@ const reducer = createReducer(
       },
     };
   }),
+  on(actions.metricsEnableSavingPinsToggled, (state) => {
+    const nextSavingPinsEnabled = !(
+      state.settingOverrides.savingPinsEnabled ??
+      state.settings.savingPinsEnabled
+    );
+    return {
+      ...state,
+      settingOverrides: {
+        ...state.settingOverrides,
+        savingPinsEnabled: nextSavingPinsEnabled,
+      },
+    };
+  }),
   on(
     actions.multipleTimeSeriesRequested,
     (

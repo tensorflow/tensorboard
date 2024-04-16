@@ -1232,6 +1232,21 @@ describe('metrics reducers', () => {
       expect(thirdState.settings.hideEmptyCards).toBe(false);
       expect(thirdState.settingOverrides.hideEmptyCards).toBe(false);
     });
+
+    it('changes savingPinsEnabled on metricsEnableSavingPinsToggled', () => {
+      const prevState = buildMetricsState({
+        settings: buildMetricsSettingsState({
+          savingPinsEnabled: true,
+        }),
+        settingOverrides: {},
+      });
+      const nextState = reducers(
+        prevState,
+        actions.metricsEnableSavingPinsToggled()
+      );
+      expect(nextState.settings.savingPinsEnabled).toBe(true);
+      expect(nextState.settingOverrides.savingPinsEnabled).toBe(false);
+    });
   });
 
   describe('loading time series data', () => {
