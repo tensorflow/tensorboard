@@ -59,6 +59,7 @@ export function buildMetricsSettingsState(
     imageContrastInMilli: 123,
     imageShowActualSize: true,
     histogramMode: HistogramMode.OFFSET,
+    savingPinsEnabled: true,
     ...overrides,
   };
 }

@@ -246,6 +246,7 @@ export interface MetricsSettings {
   imageContrastInMilli: number;
   imageShowActualSize: boolean;
   histogramMode: HistogramMode;
+  savingPinsEnabled: boolean;
 }
 
 export interface MetricsNonNamespacedState {
@@ -287,4 +288,5 @@ export const METRICS_SETTINGS_DEFAULT: MetricsSettings = {
   imageContrastInMilli: 1000,
   imageShowActualSize: false,
   histogramMode: HistogramMode.OFFSET,
+  savingPinsEnabled: true,
 };
