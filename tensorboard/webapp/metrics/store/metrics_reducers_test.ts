@@ -3157,6 +3157,7 @@ describe('metrics reducers', () => {
           scalarSmoothing: 0.3,
           ignoreOutliers: false,
           tooltipSort: TooltipSort.ASCENDING,
+          savingPinsEnabled: true,
         }),
         settingOverrides: {
           scalarSmoothing: 0.5,
@@ -3170,6 +3171,7 @@ describe('metrics reducers', () => {
           partialSettings: {
             ignoreOutliers: true,
             tooltipSort: TooltipSort.DESCENDING,
+            savingPinsEnabled: false,
           },
         })
       );
@@ -3177,6 +3179,7 @@ describe('metrics reducers', () => {
       expect(nextState.settings.scalarSmoothing).toBe(0.3);
       expect(nextState.settings.ignoreOutliers).toBe(true);
       expect(nextState.settings.tooltipSort).toBe(TooltipSort.DESCENDING);
+      expect(nextState.settings.savingPinsEnabled).toBe(false);
       expect(nextState.settingOverrides.scalarSmoothing).toBe(0.5);
       expect(nextState.settingOverrides.tooltipSort).toBe(
         TooltipSort.ALPHABETICAL
