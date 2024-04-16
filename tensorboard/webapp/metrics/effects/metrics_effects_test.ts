@@ -985,5 +985,42 @@ describe('metrics effects', () => {
         expect(actualActions).toEqual([]);
       });
     });
+
+    describe('removeAllPins', () => {
+      let removeAllScalarPinsSpy: jasmine.Spy;
+
+      beforeEach(() => {
+        removeAllScalarPinsSpy = spyOn(
+          savedPinsDataSource,
+          'removeAllScalarPins'
+        );
+        store.overrideSelector(selectors.getEnableGlobalPins, true);
+        store.refreshState();
+      });
+
+      it('removes all pins by calling removeAllScalarPins method', () => {
+        actions$.next(actions.metricsClearAllPinnedCards());
+
+        expect(removeAllScalarPinsSpy).toHaveBeenCalled();
+      });
+
+      it('does not remove pins if getEnableGlobalPins is false', () => {
+        store.overrideSelector(selectors.getEnableGlobalPins, false);
+        store.refreshState();
+
+        actions$.next(actions.metricsClearAllPinnedCards());
+
+        expect(removeAllScalarPinsSpy).not.toHaveBeenCalled();
+      });
+
+      it('does not remove pins if getShouldPersistSettings is false', () => {
+        store.overrideSelector(selectors.getShouldPersistSettings, false);
+        store.refreshState();
+
+        actions$.next(actions.metricsClearAllPinnedCards());
+
+        expect(removeAllScalarPinsSpy).not.toHaveBeenCalled();
+      });
+    });
   });
 });

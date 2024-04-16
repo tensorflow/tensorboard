@@ -45,4 +45,8 @@ export class SavedPinsDataSource {
     }
     return [];
   }
+
+  removeAllScalarPins(): void {
+    window.localStorage.setItem(SAVED_SCALAR_PINS_KEY, JSON.stringify([]));
+  }
 }
