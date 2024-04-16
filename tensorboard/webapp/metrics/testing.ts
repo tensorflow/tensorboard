@@ -405,6 +405,8 @@ export class TestingSavedPinsDataSource {
   getSavedScalarPins() {
     return [];
   }
+
+  removeAllScalarPins() {}
 }
 
 export function provideTestingSavedPinsDataSource() {

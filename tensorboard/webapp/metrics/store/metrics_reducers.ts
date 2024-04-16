@@ -77,6 +77,8 @@ import {
   TagMetadata,
   TimeSeriesData,
   TimeSeriesLoadable,
+  CardToPinnedCard,
+  PinnedCardToCard,
 } from './metrics_types';
 import {dataTableUtils} from '../../widgets/data_table/utils';
 
@@ -1525,7 +1527,28 @@ const reducer = createReducer(
         ],
       };
     }
-  )
+  ),
+  on(actions.metricsClearAllPinnedCards, (state) => {
+    const nextCardMetadataMap = {...state.cardMetadataMap};
+    const nextCardStepIndex = {...state.cardStepIndex};
+    const nextCardStateMap = {...state.cardStateMap};
+
+    for (const cardId of state.pinnedCardToOriginal.keys()) {
+      delete nextCardMetadataMap[cardId];
+      delete nextCardStepIndex[cardId];
+      delete nextCardStateMap[cardId];
+    }
+
+    return {
+      ...state,
+      cardMetadataMap: nextCardMetadataMap,
+      cardStateMap: nextCardStateMap,
+      cardStepIndex: nextCardStepIndex,
+      cardToPinnedCopy: new Map() as CardToPinnedCard,
+      cardToPinnedCopyCache: new Map() as CardToPinnedCard,
+      pinnedCardToOriginal: new Map() as PinnedCardToCard,
+    };
+  })
 );
 
 export function reducers(state: MetricsState | undefined, action: Action) {
