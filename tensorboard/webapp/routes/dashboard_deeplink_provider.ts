@@ -15,7 +15,7 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {combineLatest, Observable} from 'rxjs';
-import {map, withLatestFrom} from 'rxjs/operators';
+import {combineLatestWith, map} from 'rxjs/operators';
 import {DeepLinkProvider} from '../app_routing/deep_link_provider';
 import {SerializableQueryParams} from '../app_routing/types';
 import {State} from '../app_state';
@@ -96,6 +96,17 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
           return [{key: TAG_FILTER_KEY, value: filterText}];
         })
       ),
+      combineLatest([
+        store.select(getOverriddenFeatureFlags),
+        store.select(getFeatureFlagsMetadata),
+      ]).pipe(
+        map(([overriddenFeatureFlags, featureFlagsMetadata]) => {
+          return featureFlagsToSerializableQueryParams(
+            overriddenFeatureFlags,
+            featureFlagsMetadata
+          );
+        })
+      ),
       store.select(selectors.getMetricsSettingOverrides).pipe(
         map((settingOverrides) => {
           if (Number.isFinite(settingOverrides.scalarSmoothing)) {
@@ -137,38 +148,18 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
           return [{key: RUN_FILTER_KEY, value}];
         })
       ),
-      combineLatest([
-        store.select(getOverriddenFeatureFlags),
-        store.select(getFeatureFlagsMetadata),
-      ]).pipe(
-        map(([overriddenFeatureFlags, featureFlagsMetadata]) => {
-          return featureFlagsToSerializableQueryParams(
-            overriddenFeatureFlags,
-            featureFlagsMetadata
-          );
-        })
-      ),
-      store.select(selectors.getUnknownQueryParams).pipe(
-        withLatestFrom(store.select(getFeatureFlagsMetadata)),
-        map(([queryParams, featureFlags]) => {
-          const featureFlagKeys = new Set(
-            Object.values(featureFlags).map(
-              (featureFlag) => featureFlag.queryParamOverride
-            )
-          );
-          return (
-            Object.entries(queryParams)
-              // deserializeQueryParams doesn't check feature flag metadata before
-              // identifying some query params as "unknown". We check that here
-              // instead.
-              .filter(([key]) => !featureFlagKeys.has(key))
-              .map(([key, value]) => ({key, value}))
-          );
-        })
-      ),
     ]).pipe(
-      map((queryParamList) => {
-        return queryParamList.flat();
+      combineLatestWith(store.select(selectors.getUnknownQueryParams)),
+      map(([queryParamList, unknownQueryParams]) => {
+        // Filter out any known params from unknownQueryParams.
+        const knownQueryParamKeys = new Set(
+          queryParamList.flat().map((qp) => qp.key)
+        );
+        const filteredUnknownQueryParams = Object.entries(unknownQueryParams)
+          .filter(([key]) => !knownQueryParamKeys.has(key))
+          .map(([key, value]) => ({key, value}));
+
+        return [...queryParamList, ...filteredUnknownQueryParams].flat();
       })
     );
   }
