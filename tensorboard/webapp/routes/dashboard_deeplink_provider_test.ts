@@ -378,7 +378,7 @@ describe('core deeplink provider', () => {
     ]);
   });
 
-  fit('serializes unknown query params', () => {
+  it('serializes unknown query params', () => {
     store.overrideSelector(selectors.getUnknownQueryParams, {
       foo: 'bar',
       bar: 'foo',
@@ -391,7 +391,7 @@ describe('core deeplink provider', () => {
     ]);
   });
 
-  fit('dedupes unknown query params with feature flags', () => {
+  it('dedupes unknown query params with feature flags', () => {
     store.overrideSelector(selectors.getOverriddenFeatureFlags, {
       enabledExperimentalPlugins: ['foo', 'bar', 'baz'],
       showFlags: '',
