@@ -93,6 +93,19 @@ limitations under the License.
       </button>
     </div>
   </div>
+
+  <div class="control-row saving-pins" *ngIf="globalPinsFeatureEnabled">
+    <mat-checkbox
+      [checked]="isSavingPinsEnabled"
+      (change)="onEnableSavingPinsToggled.emit()"
+      >Enable saving pins (Scalars only)</mat-checkbox
+    >
+    <mat-icon
+      class="info"
+      svgIcon="help_outline_24px"
+      title="When saving pins are enabled, pinned cards will be shared across multiple experiments."
+    ></mat-icon>
+  </div>
 </section>
 
 <section class="scalars">

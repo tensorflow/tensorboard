@@ -146,3 +146,16 @@ tb-dropdown {
     margin-left: 28px;
   }
 }
+
+.saving-pins {
+  align-items: center;
+  display: flex;
+
+  .info {
+    $_dim: 15px;
+    height: $_dim;
+    margin-left: 5px;
+    width: $_dim;
+    min-width: $_dim;
+  }
+}
