@@ -79,7 +79,8 @@ section .control-row:not(:has(+ .control-row > mat-checkbox)):not(:last-child) {
   width: 5em;
 }
 
-.scalars-partition-x {
+.scalars-partition-x,
+.saving-pins {
   align-items: center;
   display: flex;
 
@@ -144,18 +145,5 @@ tb-dropdown {
 .control-row {
   .indent {
     margin-left: 28px;
-  }
-}
-
-.saving-pins {
-  align-items: center;
-  display: flex;
-
-  .info {
-    $_dim: 15px;
-    height: $_dim;
-    margin-left: 5px;
-    width: $_dim;
-    min-width: $_dim;
   }
 }
