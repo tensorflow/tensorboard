@@ -1234,18 +1234,22 @@ describe('metrics reducers', () => {
     });
 
     it('changes savingPinsEnabled on metricsEnableSavingPinsToggled', () => {
-      const prevState = buildMetricsState({
-        settings: buildMetricsSettingsState({
-          savingPinsEnabled: true,
-        }),
-        settingOverrides: {},
+      [{value: true}, {value: false}].forEach(({value: initValue}) => {
+        const prevState = buildMetricsState({
+          settings: buildMetricsSettingsState({
+            savingPinsEnabled: initValue,
+          }),
+          settingOverrides: {},
+        });
+
+        const nextState = reducers(
+          prevState,
+          actions.metricsEnableSavingPinsToggled()
+        );
+
+        expect(nextState.settings.savingPinsEnabled).toBe(initValue);
+        expect(nextState.settingOverrides.savingPinsEnabled).toBe(!initValue);
       });
-      const nextState = reducers(
-        prevState,
-        actions.metricsEnableSavingPinsToggled()
-      );
-      expect(nextState.settings.savingPinsEnabled).toBe(true);
-      expect(nextState.settingOverrides.savingPinsEnabled).toBe(false);
     });
   });
 

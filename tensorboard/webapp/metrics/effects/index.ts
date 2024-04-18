@@ -333,7 +333,7 @@ export class MetricsEffects implements OnInitEffects {
     })
   );
 
-  private readonly removeAllPins$ = this.actions$.pipe(
+  private readonly removeSavedPinsOnDisable$ = this.actions$.pipe(
     ofType(actions.metricsClearAllPinnedCards),
     withLatestFrom(
       this.store.select(selectors.getEnableGlobalPins),
@@ -423,11 +423,7 @@ export class MetricsEffects implements OnInitEffects {
         /**
          * Subscribes to: metricsClearAllPinnedCards.
          */
-        this.removeAllPins$,
-        /**
-         * Subscribes to: metricsEnableSavingPinsToggled.
-         */
-        this.disableSavingPins$
+        this.removeSavedPinsOnDisable$
       );
     },
     {dispatch: false}

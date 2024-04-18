@@ -1300,15 +1300,17 @@ describe('metrics selectors', () => {
     });
 
     it('returns savingPinsEnabled when called getMetricsSavingPinsEnabled', () => {
-      selectors.getMetricsSavingPinsEnabled.release();
-      const state = appStateFromMetricsState(
-        buildMetricsState({
-          settings: buildMetricsSettingsState({
-            savingPinsEnabled: false,
-          }),
-        })
-      );
-      expect(selectors.getMetricsSavingPinsEnabled(state)).toBe(false);
+      [{value: true}, {value: false}].forEach(({value}) => {
+        selectors.getMetricsSavingPinsEnabled.release();
+        const state = appStateFromMetricsState(
+          buildMetricsState({
+            settings: buildMetricsSettingsState({
+              savingPinsEnabled: value,
+            }),
+          })
+        );
+        expect(selectors.getMetricsSavingPinsEnabled(state)).toBe(value);
+      });
     });
   });
 
