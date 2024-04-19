@@ -398,6 +398,20 @@ describe('persistent_settings data_source test', () => {
           ],
         });
       });
+
+      it('properly converts savingPinsEnabled', async () => {
+        getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
+          JSON.stringify({
+            savingPinsEnabled: false,
+          })
+        );
+
+        const actual = await firstValueFrom(dataSource.getSettings());
+
+        expect(actual).toEqual({
+          savingPinsEnabled: false,
+        });
+      });
     });
 
     describe('#setSettings', () => {
@@ -523,6 +537,25 @@ describe('persistent_settings data_source test', () => {
                 enabled: true,
               },
             ],
+          })
+        );
+      });
+
+      it('properly converts savingPinsEnabled', async () => {
+        getItemSpy
+          .withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY)
+          .and.returnValue(null);
+
+        await firstValueFrom(
+          dataSource.setSettings({
+            savingPinsEnabled: false,
+          })
+        );
+
+        expect(setItemSpy).toHaveBeenCalledOnceWith(
+          TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY,
+          JSON.stringify({
+            savingPinsEnabled: false,
           })
         );
       });

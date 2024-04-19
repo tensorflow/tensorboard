@@ -281,5 +281,9 @@ export const metricsClearAllPinnedCards = createAction(
   '[Metrics] Clear all pinned cards'
 );
 
+export const metricsEnableSavingPinsToggled = createAction(
+  '[Metrics] Enable Saving Pins Toggled'
+);
+
 // TODO(jieweiwu): Delete after internal code is updated.
 export const stepSelectorTimeSelectionChanged = timeSelectionChanged;

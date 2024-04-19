@@ -47,6 +47,7 @@ export declare interface BackendSettings {
   singleSelectionHeaders?: ColumnHeader[];
   rangeSelectionHeaders?: ColumnHeader[];
   dashboardDisplayedHparamColumns?: ColumnHeader[];
+  savingPinsEnabled?: boolean;
 }
 
 /**
@@ -72,4 +73,5 @@ export interface PersistableSettings {
   singleSelectionHeaders?: ColumnHeader[];
   rangeSelectionHeaders?: ColumnHeader[];
   dashboardDisplayedHparamColumns?: ColumnHeader[];
+  savingPinsEnabled?: boolean;
 }
