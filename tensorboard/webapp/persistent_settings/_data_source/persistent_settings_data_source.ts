@@ -125,6 +125,9 @@ export class OSSSettingsConverter extends SettingsConverter<
       serializableSettings.dashboardDisplayedHparamColumns =
         settings.dashboardDisplayedHparamColumns;
     }
+    if (settings.savingPinsEnabled !== undefined) {
+      serializableSettings.savingPinsEnabled = settings.savingPinsEnabled;
+    }
     return serializableSettings;
   }
 
@@ -254,6 +257,13 @@ export class OSSSettingsConverter extends SettingsConverter<
     if (Array.isArray(backendSettings.dashboardDisplayedHparamColumns)) {
       settings.dashboardDisplayedHparamColumns =
         backendSettings.dashboardDisplayedHparamColumns;
+    }
+
+    if (
+      backendSettings.hasOwnProperty('savingPinsEnabled') &&
+      typeof backendSettings.savingPinsEnabled === 'boolean'
+    ) {
+      settings.savingPinsEnabled = backendSettings.savingPinsEnabled;
     }
 
     return settings;

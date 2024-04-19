@@ -79,7 +79,8 @@ section .control-row:not(:has(+ .control-row > mat-checkbox)):not(:last-child) {
   width: 5em;
 }
 
-.scalars-partition-x {
+.scalars-partition-x,
+.saving-pins {
   align-items: center;
   display: flex;
 

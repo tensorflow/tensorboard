@@ -608,6 +608,9 @@ const reducer = createReducer(
     if (typeof partialSettings.scalarSmoothing === 'number') {
       metricsSettings.scalarSmoothing = partialSettings.scalarSmoothing;
     }
+    if (typeof partialSettings.savingPinsEnabled === 'boolean') {
+      metricsSettings.savingPinsEnabled = partialSettings.savingPinsEnabled;
+    }
 
     const isSettingsPaneOpen =
       partialSettings.timeSeriesSettingsPaneOpened ?? state.isSettingsPaneOpen;
@@ -930,6 +933,19 @@ const reducer = createReducer(
       settingOverrides: {
         ...state.settingOverrides,
         hideEmptyCards: !state.settingOverrides.hideEmptyCards,
+      },
+    };
+  }),
+  on(actions.metricsEnableSavingPinsToggled, (state) => {
+    const nextSavingPinsEnabled = !(
+      state.settingOverrides.savingPinsEnabled ??
+      state.settings.savingPinsEnabled
+    );
+    return {
+      ...state,
+      settingOverrides: {
+        ...state.settingOverrides,
+        savingPinsEnabled: nextSavingPinsEnabled,
       },
     };
   }),

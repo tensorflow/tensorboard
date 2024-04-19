@@ -268,11 +268,20 @@ export class MetricsEffects implements OnInitEffects {
     withLatestFrom(
       this.getVisibleCardFetchInfos(),
       this.store.select(selectors.getEnableGlobalPins),
-      this.store.select(selectors.getShouldPersistSettings)
+      this.store.select(selectors.getShouldPersistSettings),
+      this.store.select(selectors.getMetricsSavingPinsEnabled)
     ),
     filter(
-      ([, , enableGlobalPins, shouldPersistSettings]) =>
-        enableGlobalPins && shouldPersistSettings
+      ([
+        ,
+        ,
+        enableGlobalPinsFeature,
+        shouldPersistSettings,
+        isMetricsSavingPinsEnabled,
+      ]) =>
+        enableGlobalPinsFeature &&
+        shouldPersistSettings &&
+        isMetricsSavingPinsEnabled
     ),
     tap(([{cardId, canCreateNewPins, wasPinned}, fetchInfos]) => {
       const card = fetchInfos.find((value) => value.id === cardId);
@@ -293,11 +302,19 @@ export class MetricsEffects implements OnInitEffects {
     ofType(initAction),
     withLatestFrom(
       this.store.select(selectors.getEnableGlobalPins),
-      this.store.select(selectors.getShouldPersistSettings)
+      this.store.select(selectors.getShouldPersistSettings),
+      this.store.select(selectors.getMetricsSavingPinsEnabled)
     ),
     filter(
-      ([, enableGlobalPins, shouldPersistSettings]) =>
-        enableGlobalPins && shouldPersistSettings
+      ([
+        ,
+        enableGlobalPinsFeature,
+        shouldPersistSettings,
+        isMetricsSavingPinsEnabled,
+      ]) =>
+        enableGlobalPinsFeature &&
+        shouldPersistSettings &&
+        isMetricsSavingPinsEnabled
     ),
     tap(() => {
       const tags = this.savedPinsDataSource.getSavedScalarPins();
@@ -316,15 +333,46 @@ export class MetricsEffects implements OnInitEffects {
     })
   );
 
-  private readonly removeAllPins$ = this.actions$.pipe(
+  private readonly removeSavedPinsOnDisable$ = this.actions$.pipe(
     ofType(actions.metricsClearAllPinnedCards),
     withLatestFrom(
       this.store.select(selectors.getEnableGlobalPins),
-      this.store.select(selectors.getShouldPersistSettings)
+      this.store.select(selectors.getShouldPersistSettings),
+      this.store.select(selectors.getMetricsSavingPinsEnabled)
     ),
     filter(
-      ([, enableGlobalPins, shouldPersistSettings]) =>
-        enableGlobalPins && shouldPersistSettings
+      ([
+        ,
+        enableGlobalPinsFeature,
+        shouldPersistSettings,
+        isMetricsSavingPinsEnabled,
+      ]) =>
+        enableGlobalPinsFeature &&
+        shouldPersistSettings &&
+        isMetricsSavingPinsEnabled
+    ),
+    tap(() => {
+      this.savedPinsDataSource.removeAllScalarPins();
+    })
+  );
+
+  private readonly disableSavingPins$ = this.actions$.pipe(
+    ofType(actions.metricsEnableSavingPinsToggled),
+    withLatestFrom(
+      this.store.select(selectors.getEnableGlobalPins),
+      this.store.select(selectors.getShouldPersistSettings),
+      this.store.select(selectors.getMetricsSavingPinsEnabled)
+    ),
+    filter(
+      ([
+        ,
+        enableGlobalPins,
+        getShouldPersistSettings,
+        getMetricsSavingPinsEnabled,
+      ]) =>
+        enableGlobalPins &&
+        getShouldPersistSettings &&
+        !getMetricsSavingPinsEnabled
     ),
     tap(() => {
       this.savedPinsDataSource.removeAllScalarPins();
@@ -375,7 +423,7 @@ export class MetricsEffects implements OnInitEffects {
         /**
          * Subscribes to: metricsClearAllPinnedCards.
          */
-        this.removeAllPins$
+        this.removeSavedPinsOnDisable$
       );
     },
     {dispatch: false}

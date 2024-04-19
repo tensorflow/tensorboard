@@ -1232,6 +1232,25 @@ describe('metrics reducers', () => {
       expect(thirdState.settings.hideEmptyCards).toBe(false);
       expect(thirdState.settingOverrides.hideEmptyCards).toBe(false);
     });
+
+    it('changes savingPinsEnabled on metricsEnableSavingPinsToggled', () => {
+      [{value: true}, {value: false}].forEach(({value: initValue}) => {
+        const prevState = buildMetricsState({
+          settings: buildMetricsSettingsState({
+            savingPinsEnabled: initValue,
+          }),
+          settingOverrides: {},
+        });
+
+        const nextState = reducers(
+          prevState,
+          actions.metricsEnableSavingPinsToggled()
+        );
+
+        expect(nextState.settings.savingPinsEnabled).toBe(initValue);
+        expect(nextState.settingOverrides.savingPinsEnabled).toBe(!initValue);
+      });
+    });
   });
 
   describe('loading time series data', () => {
@@ -3142,6 +3161,7 @@ describe('metrics reducers', () => {
           scalarSmoothing: 0.3,
           ignoreOutliers: false,
           tooltipSort: TooltipSort.ASCENDING,
+          savingPinsEnabled: true,
         }),
         settingOverrides: {
           scalarSmoothing: 0.5,
@@ -3155,6 +3175,7 @@ describe('metrics reducers', () => {
           partialSettings: {
             ignoreOutliers: true,
             tooltipSort: TooltipSort.DESCENDING,
+            savingPinsEnabled: false,
           },
         })
       );
@@ -3162,6 +3183,7 @@ describe('metrics reducers', () => {
       expect(nextState.settings.scalarSmoothing).toBe(0.3);
       expect(nextState.settings.ignoreOutliers).toBe(true);
       expect(nextState.settings.tooltipSort).toBe(TooltipSort.DESCENDING);
+      expect(nextState.settings.savingPinsEnabled).toBe(false);
       expect(nextState.settingOverrides.scalarSmoothing).toBe(0.5);
       expect(nextState.settingOverrides.tooltipSort).toBe(
         TooltipSort.ALPHABETICAL
