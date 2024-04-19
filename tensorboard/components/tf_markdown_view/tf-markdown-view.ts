@@ -46,6 +46,9 @@ class TfMarkdownView extends LegacyElementMixin(PolymerElement) {
       #markdown > p:last-child {
         margin-bottom: 0.3em;
       }
+      #markdown p {
+        white-space: pre;
+      }
 
       /* Pleasant styles for Markdown tables. */
       #markdown table {
