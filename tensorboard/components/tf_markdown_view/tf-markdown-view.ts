@@ -47,6 +47,9 @@ class TfMarkdownView extends LegacyElementMixin(PolymerElement) {
         margin-bottom: 0.3em;
       }
       #markdown p {
+        /* Some users include multiple spaces and would like them preserved in
+         * the text visualization in TB. Googlers, see b/335770352.
+         */
         white-space: break-spaces;
       }
 
