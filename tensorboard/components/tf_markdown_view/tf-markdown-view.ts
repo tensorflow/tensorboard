@@ -47,7 +47,7 @@ class TfMarkdownView extends LegacyElementMixin(PolymerElement) {
         margin-bottom: 0.3em;
       }
       #markdown p {
-        white-space: pre;
+        white-space: break-spaces;
       }
 
       /* Pleasant styles for Markdown tables. */
