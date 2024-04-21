@@ -41,7 +41,7 @@ limitations under the License.
     (loadAllColumns)="loadAllColumns.emit()"
   >
     <ng-container header>
-      <ng-container *ngFor="let header of getHeaders()">
+      <ng-container *ngFor="let header of extendHeaders(headers)">
         <tb-data-table-header-cell
           [header]="header"
           [sortingInfo]="sortingInfo"
@@ -67,7 +67,7 @@ limitations under the License.
     <ng-container content>
       <ng-container *ngFor="let dataRow of data; trackBy: trackByRuns">
         <tb-data-table-content-row [attr.data-id]="dataRow.id">
-          <ng-container *ngFor="let header of getHeaders()">
+          <ng-container *ngFor="let header of extendHeaders(headers)">
             <tb-data-table-content-cell
               [header]="header"
               [datum]="dataRow[header.name]"

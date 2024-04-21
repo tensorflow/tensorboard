@@ -43,6 +43,7 @@ import {
   AddColumnEvent,
 } from '../../../widgets/data_table/types';
 import {isDatumVisible} from './utils';
+import {memoize} from '../../../util/memoize';
 
 @Component({
   selector: 'scalar-card-data-table',
@@ -74,15 +75,23 @@ export class ScalarCardDataTable {
 
   ColumnHeaderType = ColumnHeaderType;
 
-  getHeaders(): ColumnHeader[] {
-    return [
-      {
-        name: 'color',
-        displayName: '',
-        type: ColumnHeaderType.COLOR,
-        enabled: true,
-      },
-    ].concat(this.columnHeaders);
+  // Columns must be memoized to stop needless re-rendering of the content and headers in these
+  // columns. This has been known to cause problems with the controls in these columns,
+  // specifically the add button.
+  extendHeaders = memoize(this.internalExtendHeaders);
+
+  private internalExtendHeaders(headers: ColumnHeader[]) {
+    return ([] as Array<ColumnHeader>).concat(
+      [
+        {
+          name: 'color',
+          displayName: '',
+          type: ColumnHeaderType.COLOR,
+          enabled: true,
+        },
+      ],
+      headers
+    );
   }
 
   getMinPointInRange(

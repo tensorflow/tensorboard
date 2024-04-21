@@ -286,6 +286,7 @@ tf_ng_module(
         ":utils",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/runs:types",
+        "//tensorboard/webapp/util:memoize",
         "//tensorboard/webapp/widgets/card_fob:types",
         "//tensorboard/webapp/widgets/data_table",
         "//tensorboard/webapp/widgets/data_table:types",

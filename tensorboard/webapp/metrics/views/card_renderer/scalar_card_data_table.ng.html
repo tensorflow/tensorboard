@@ -30,7 +30,7 @@ limitations under the License.
   (loadAllColumns)="loadAllColumns.emit()"
 >
   <ng-container header>
-    <ng-container *ngFor="let header of getHeaders()">
+    <ng-container *ngFor="let header of extendHeaders(columnHeaders)">
       <tb-data-table-header-cell
         *ngIf="header.enabled && (header.type !== ColumnHeaderType.SMOOTHED || smoothingEnabled)"
         [header]="header"
@@ -42,7 +42,7 @@ limitations under the License.
   <ng-container content>
     <ng-container *ngFor="let dataRow of getTimeSelectionTableData()">
       <tb-data-table-content-row>
-        <ng-container *ngFor="let header of getHeaders()">
+        <ng-container *ngFor="let header of extendHeaders(columnHeaders)">
           <tb-data-table-content-cell
             *ngIf="header.enabled && (header.type !== ColumnHeaderType.SMOOTHED || smoothingEnabled)"
             [header]="header"
