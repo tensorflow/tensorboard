@@ -28,6 +28,7 @@ import {
   metricsChangeScalarSmoothing,
   metricsChangeTooltipSort,
   metricsChangeXAxisType,
+  metricsEnableSavingPinsToggled,
   metricsResetCardWidth,
   metricsResetImageBrightness,
   metricsResetImageContrast,
@@ -83,6 +84,9 @@ import {HistogramMode, TooltipSort, XAxisType} from '../../types';
       (stepSelectorToggled)="onStepSelectorToggled()"
       (rangeSelectionToggled)="onRangeSelectionToggled()"
       (onSlideOutToggled)="onSlideOutToggled()"
+      [isSavingPinsEnabled]="isSavingPinsEnabled$ | async"
+      (onEnableSavingPinsToggled)="onEnableSavingPinsToggled()"
+      [globalPinsFeatureEnabled]="globalPinsFeatureEnabled$ | async"
     >
     </metrics-dashboard-settings-component>
   `,
@@ -145,6 +149,13 @@ export class SettingsViewContainer {
   );
   readonly imageShowActualSize$ = this.store.select(
     selectors.getMetricsImageShowActualSize
+  );
+  readonly isSavingPinsEnabled$ = this.store.select(
+    selectors.getMetricsSavingPinsEnabled
+  );
+  // Feature flag for global pins.
+  readonly globalPinsFeatureEnabled$ = this.store.select(
+    selectors.getEnableGlobalPins
   );
 
   onTooltipSortChanged(sort: TooltipSort) {
@@ -221,5 +232,9 @@ export class SettingsViewContainer {
 
   onSlideOutToggled() {
     this.store.dispatch(metricsSlideoutMenuToggled());
+  }
+
+  onEnableSavingPinsToggled() {
+    this.store.dispatch(metricsEnableSavingPinsToggled());
   }
 }

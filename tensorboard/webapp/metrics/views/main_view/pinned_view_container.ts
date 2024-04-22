@@ -21,6 +21,8 @@ import {DeepReadonly} from '../../../util/types';
 import {getLastPinnedCardTime, getPinnedCardsWithMetadata} from '../../store';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
+import {metricsClearAllPinnedCards} from '../../actions';
+import {getEnableGlobalPins} from '../../../selectors';
 
 @Component({
   selector: 'metrics-pinned-view',
@@ -29,6 +31,8 @@ import {CardIdWithMetadata} from '../metrics_view_types';
       [cardIdsWithMetadata]="cardIdsWithMetadata$ | async"
       [lastPinnedCardTime]="lastPinnedCardTime$ | async"
       [cardObserver]="cardObserver"
+      [globalPinsEnabled]="globalPinsEnabled$ | async"
+      (onClearAllPinsClicked)="onClearAllPinsClicked()"
     ></metrics-pinned-view-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -47,4 +51,10 @@ export class PinnedViewContainer {
     // pins after page load.
     skip(1)
   );
+
+  readonly globalPinsEnabled$ = this.store.select(getEnableGlobalPins);
+
+  onClearAllPinsClicked() {
+    this.store.dispatch(metricsClearAllPinnedCards());
+  }
 }

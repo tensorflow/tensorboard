@@ -114,4 +114,15 @@ describe('SavedPinsDataSource Test', () => {
       expect(dataSource.getSavedScalarPins()).toEqual(['tag1']);
     });
   });
+
+  describe('removeAllScalarPins', () => {
+    it('removes all existing pins', () => {
+      dataSource.saveScalarPin('tag3');
+      dataSource.saveScalarPin('tag4');
+
+      dataSource.removeAllScalarPins();
+
+      expect(dataSource.getSavedScalarPins().length).toEqual(0);
+    });
+  });
 });

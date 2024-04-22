@@ -35,6 +35,7 @@ import {
   getMetricsScalarSmoothing,
   getMetricsStepSelectorEnabled,
   getMetricsTooltipSort,
+  getMetricsSavingPinsEnabled,
   getRangeSelectionHeaders,
   getSingleSelectionHeaders,
   isMetricsSettingsPaneOpen,
@@ -125,6 +126,12 @@ export function getMetricsTimeSeriesLinkedTimeEnabled() {
   });
 }
 
+export function getMetricsTimeSeriesSavingPinsEnabled() {
+  return createSelector(getMetricsSavingPinsEnabled, (isEnabled) => {
+    return {savingPinsEnabled: isEnabled};
+  });
+}
+
 export function getSingleSelectionHeadersFactory() {
   return createSelector(getSingleSelectionHeaders, (singleSelectionHeaders) => {
     return {singleSelectionHeaders};
@@ -187,6 +194,9 @@ export function getRangeSelectionHeadersFactory() {
     ),
     PersistentSettingsConfigModule.defineGlobalSetting(
       getRangeSelectionHeadersFactory
+    ),
+    PersistentSettingsConfigModule.defineGlobalSetting(
+      getMetricsTimeSeriesSavingPinsEnabled
     ),
   ],
   providers: [

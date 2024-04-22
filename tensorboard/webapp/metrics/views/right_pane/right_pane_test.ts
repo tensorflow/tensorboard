@@ -548,5 +548,43 @@ describe('metrics right_pane', () => {
         ).toHaveClass('toggle-opened');
       });
     });
+
+    describe('saving pins check box', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectors.getEnableGlobalPins, true);
+        store.overrideSelector(selectors.getMetricsSavingPinsEnabled, false);
+      });
+
+      it('does not render if getEnableGlobalPins feature flag is false', () => {
+        store.overrideSelector(selectors.getEnableGlobalPins, false);
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+
+        expect(select(fixture, '.saving-pins')).toBeFalsy();
+      });
+
+      it('renders checked saving pins check box if isSavingpinsEnabled is true', () => {
+        store.overrideSelector(selectors.getMetricsSavingPinsEnabled, true);
+
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+
+        expect(
+          select(fixture, '.saving-pins input').componentInstance.checked
+        ).toBeTrue();
+      });
+
+      it('dispatches metricsEnableSavingPinsToggled on toggle', () => {
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+
+        const checkbox = select(fixture, '.saving-pins input');
+        checkbox.nativeElement.click();
+
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          actions.metricsEnableSavingPinsToggled()
+        );
+      });
+    });
   });
 });
