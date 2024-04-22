@@ -67,7 +67,7 @@ describe('layout test', () => {
   let dispatchedActions: Action[] = [];
 
   const byCss = {
-    EXPANDER: By.css('.expand'),
+    EXPANDER: By.css('.expand-collapsed-sidebar'),
     RESIZER: By.css('.resizer'),
     SIDEBAR_CONTAINER: By.css('nav'),
     LAYOUT: By.directive(LayoutContainer),

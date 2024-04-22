@@ -24,18 +24,34 @@ limitations under the License.
 
 .sidebar {
   max-width: 80vw;
+  position: relative;
 }
 
 .resizer,
-.expand {
+.expand-collapsed-sidebar {
   @include tb-theme-foreground-prop(border-color, border);
   box-sizing: border-box;
   flex: 0 0;
   justify-self: stretch;
 }
 
-.expand {
+.expand-collapsed-sidebar {
   width: 20px;
+  align-items: center;
+  background: transparent;
+  border-style: solid;
+  border-width: 0 1px 0 0;
+  color: inherit;
+  contain: content;
+  cursor: pointer;
+  display: flex;
+  justify-self: stretch;
+  padding: 0;
+
+  mat-icon {
+    transform: rotate(-90deg);
+    transform-origin: center;
+  }
 }
 
 .resizer {
@@ -63,20 +79,46 @@ limitations under the License.
   }
 }
 
-.expand {
-  align-items: center;
-  background: transparent;
-  border-style: solid;
-  border-width: 0 1px 0 0;
-  color: inherit;
-  contain: content;
-  cursor: pointer;
+.full-screen-toggle {
+  opacity: 0;
+  position: absolute;
+  height: 100%;
+  // Ensure the button is on the right side then add 2px for the drag target.
+  left: calc(100% + 2px);
+  top: 0;
+  z-index: 1;
   display: flex;
-  justify-self: stretch;
-  padding: 0;
+  align-items: center;
 
-  mat-icon {
-    transform: rotate(-90deg);
-    transform-origin: center;
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &.full-screen {
+    left: unset;
+    right: 0;
+  }
+
+  .full-screen-btn {
+    $_arrow_size: 16px;
+    $_arrow_button_size: calc($_arrow_size + 4px);
+
+    background-color: gray;
+    padding: 0;
+    min-width: $_arrow_button_size;
+    width: $_arrow_button_size;
+
+    &.expand {
+      border-radius: 0 $_arrow_button_size $_arrow_button_size 0;
+    }
+
+    &.collapse {
+      border-radius: $_arrow_button_size 0 0 $_arrow_button_size;
+    }
+
+    .expand-collapse-icon {
+      font-size: $_arrow_size;
+      margin-right: 0; // Removes default
+    }
   }
 }

@@ -22,7 +22,7 @@ import {Store} from '@ngrx/store';
 import {fromEvent, Observable, Subject} from 'rxjs';
 import {combineLatestWith, filter, map, takeUntil} from 'rxjs/operators';
 import {MouseEventButtons} from '../../util/dom';
-import {sideBarWidthChanged} from '../actions';
+import {runsTableFullScreenToggled, sideBarWidthChanged} from '../actions';
 import {State} from '../state';
 import {
   getRunsTableFullScreen,
@@ -34,7 +34,7 @@ import {
   template: `
     <button
       *ngIf="(width$ | async) === 0"
-      class="expand"
+      class="expand-collapsed-sidebar"
       (click)="expandSidebar()"
     >
       <mat-icon svgIcon="expand_more_24px"></mat-icon>
@@ -47,6 +47,26 @@ import {
       [style.maxWidth.%]="(runsTableFullScreen$ | async) ? 100 : ''"
     >
       <ng-content select="[sidebar]"></ng-content>
+      <div
+        class="full-screen-toggle"
+        [ngClass]="{'full-screen': (runsTableFullScreen$ | async)}"
+      >
+        <button
+          mat-button
+          class="full-screen-btn"
+          [ngClass]="(runsTableFullScreen$ | async) ? 'collapse' : 'expand'"
+          (click)="toggleFullScreen()"
+        >
+          <mat-icon
+            class="expand-collapse-icon"
+            [svgIcon]="
+              (runsTableFullScreen$ | async)
+                ? 'arrow_back_24px'
+                : 'arrow_forward_24px'
+            "
+          ></mat-icon>
+        </button>
+      </div>
     </nav>
     <div
       *ngIf="(width$ | async) > 0"
@@ -124,5 +144,9 @@ export class LayoutContainer implements OnDestroy {
         widthInPercent: 20,
       })
     );
+  }
+
+  toggleFullScreen() {
+    this.store.dispatch(runsTableFullScreenToggled());
   }
 }

@@ -25,6 +25,13 @@ import {RunsTableColumn} from '../runs_table/types';
   `,
   styles: [
     `
+      :host {
+        display: block;
+        height: 100%;
+        width: 100%;
+        overflow: auto;
+      }
+
       runs-table {
         height: 100%;
       }
