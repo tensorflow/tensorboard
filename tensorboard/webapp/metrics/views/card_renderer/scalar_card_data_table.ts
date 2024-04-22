@@ -41,6 +41,7 @@ import {
   FilterAddedEvent,
   ReorderColumnEvent,
   AddColumnEvent,
+  AddColumnSize,
 } from '../../../widgets/data_table/types';
 import {isDatumVisible} from './utils';
 import {memoize} from '../../../util/memoize';
@@ -73,7 +74,8 @@ export class ScalarCardDataTable {
   @Output() addFilter = new EventEmitter<FilterAddedEvent>();
   @Output() loadAllColumns = new EventEmitter<null>();
 
-  ColumnHeaderType = ColumnHeaderType;
+  readonly ColumnHeaderType = ColumnHeaderType;
+  readonly AddColumnSize = AddColumnSize;
 
   // Columns must be memoized to stop needless re-rendering of the content and headers in these
   // columns. This has been known to cause problems with the controls in these columns,

@@ -15,14 +15,9 @@ limitations under the License.
 @use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 $_circle-size: 20px;
-$_arrow_size: 16px;
 
 :host {
   min-width: 100%;
-
-  & ::ng-deep tb-data-table .data-table {
-    @include tb-theme-foreground-prop(border-top, border, 1px solid);
-  }
 }
 
 .color-container {
@@ -56,14 +51,6 @@ tb-data-table-header-cell {
   padding: 0 4px;
   vertical-align: middle;
   @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
-
-  &:last-child {
-    @include tb-theme-foreground-prop(border-right, border, 1px solid);
-  }
-}
-
-tb-data-table-header-cell:last-of-type {
-  @include tb-theme-foreground-prop(border-right, border, 1px solid);
 }
 
 .table-column-selected,

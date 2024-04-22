@@ -43,16 +43,23 @@ limitations under the License.
   ></tb-data-table-filter>
 </ng-template>
 
-<div class="data-table">
-  <div class="header">
-    <ng-content select="[header]"></ng-content>
+<div class="data-table-wrapper" [class.should-add-borders]="shouldAddBorders">
+  <div class="left-section">
+    <div class="data-table">
+      <div class="header">
+        <ng-content select="[header]"></ng-content>
+      </div>
+      <ng-content select="[content]"> </ng-content>
+    </div>
+  </div>
+  <div class="right-section">
     <div
-      class="add-button-cell"
-      *ngIf="selectableColumns && selectableColumns.length"
+      class="add-button-column"
+      [class.small-add-button]="addColumnSize == AddColumnSize.SMALL"
     >
       <button
         mat-icon-button
-        class="add-column-btn"
+        class="add-button"
         (click)="openColumnSelector({event: $event})"
         title="Add Column"
       >
@@ -60,7 +67,6 @@ limitations under the License.
       </button>
     </div>
   </div>
-  <ng-content select="[content]"></ng-content>
 </div>
 <div *ngIf="loading" class="loading">
   <mat-spinner mode="indeterminate" diameter="28"></mat-spinner>
