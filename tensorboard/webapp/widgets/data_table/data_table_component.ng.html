@@ -49,10 +49,13 @@ limitations under the License.
       <div class="header">
         <ng-content select="[header]"></ng-content>
       </div>
-      <ng-content select="[content]"> </ng-content>
+      <ng-content select="[content]"></ng-content>
     </div>
   </div>
-  <div class="right-section">
+  <div
+    class="right-section"
+    *ngIf="selectableColumns && selectableColumns.length"
+  >
     <div
       class="add-button-column"
       [class.small-add-button]="addColumnSize == AddColumnSize.SMALL"

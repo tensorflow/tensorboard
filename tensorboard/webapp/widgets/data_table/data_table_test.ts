@@ -45,6 +45,8 @@ import {ColumnSelectorModule} from './column_selector_module';
 import {FilterDialog} from './filter_dialog_component';
 import {CustomModal} from '../custom_modal/custom_modal';
 
+const ADD_BUTTON_PREDICATE = By.css('.add-button');
+
 @Component({
   selector: 'testable-comp',
   template: `
@@ -595,7 +597,7 @@ describe('data table', () => {
 
   it('does not show add button when there are no selectable columns', () => {
     const fixture = createComponent({});
-    expect(fixture.debugElement.query(By.css('.add-column-button'))).toBeNull();
+    expect(fixture.debugElement.query(ADD_BUTTON_PREDICATE)).toBeNull();
   });
 
   it('renders column selector when + button is clicked', () => {
@@ -612,7 +614,7 @@ describe('data table', () => {
     expect(
       fixture.debugElement.query(By.directive(ColumnSelectorComponent))
     ).toBeNull();
-    const addBtn = fixture.debugElement.query(By.css('.add-column-btn'));
+    const addBtn = fixture.debugElement.query(ADD_BUTTON_PREDICATE);
     addBtn.nativeElement.click();
     expect(
       fixture.debugElement.query(By.directive(ColumnSelectorComponent))
