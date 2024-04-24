@@ -110,6 +110,7 @@ tf_ng_module(
         "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/util:colors",
         "//tensorboard/webapp/util:matcher",
+        "//tensorboard/webapp/util:memoize",
         "//tensorboard/webapp/widgets/custom_modal",
         "//tensorboard/webapp/widgets/data_table",
         "//tensorboard/webapp/widgets/data_table:filter_dialog",
