@@ -111,7 +111,7 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       parseValue: parseBoolean,
     },
     enableScalarColumnContextMenus: {
-      defaultValue: true,
+      defaultValue: false,
       queryParamOverride: 'enableScalarColumnContextMenus',
       parseValue: parseBoolean,
     },
