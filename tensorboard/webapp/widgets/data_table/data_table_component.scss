@@ -98,9 +98,7 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
   width: 24px;
 
   .add-button {
-    // Override very high specificity with !important
-    // Ref: https://github.com/tensorflow/tensorboard/blob/f2e8bd82a533c175f6dc5be3da65344d719ae0f6/tensorboard/webapp/theme/_tb_theme.template.scss#L320
-    width: 20px !important;
-    height: 20px !important;
+    --tb-icon-button-width: 20px;
+    --tb-icon-button-height: 20px;
   }
 }
