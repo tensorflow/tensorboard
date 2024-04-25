@@ -35,7 +35,7 @@ if you don't have tensorboard install then git clone the repositiory from [Tenso
 
 ## How to install the plugin
 
-Copy the directory `tensorboard/plugins/custom_plugin` into a desired folder. In a virtualenv with TensorBoard installed, run:
+Copy the directory `tensorboard/examples/plugins/custom_plugin` into a desired folder. In a virtualenv with TensorBoard installed, run:
 
 ```
 python setup.py develop
@@ -54,7 +54,7 @@ tensorboard --logdir=logs
 
 ## Example : Generating the summary using demo files given.
 
-locate this directory `tensorboard/plugins/custom_plugin/main_plugin/demo` you will find several mentiond `.py` files which can generate different summaries.
+locate this directory `tensorboard/examples/plugins/custom_plugin/main_plugin/demo` you will find several mentiond `.py` files which can generate different summaries.
 
 Remember the entrie plugin has two spetate summary supported.
 
@@ -86,17 +86,17 @@ Here are some attached Screenshots.
 
 <div style="display: flex; justify-content: space-between;">
 
-<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-2.png" alt="Home" width="300" height="200">
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/examples/plugins/custom_plugin/images/fake_bert-2.png" alt="Home" width="300" height="200">
 
-<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-3.png" alt="loss" width="300" height="200">
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/examples/plugins/custom_plugin/images/fake_bert-3.png" alt="loss" width="300" height="200">
 
-<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-4.png" alt="train_test" wi_dth="300" height="200">
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/examples/plugins/custom_plugin/images/fake_bert-4.png" alt="train_test" wi_dth="300" height="200">
 
-<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-5.png" alt="Home" width="300" height="200">
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/examples/plugins/custom_plugin/images/fake_bert-5.png" alt="Home" width="300" height="200">
 
-<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-6.png" alt="Home" width="300" height="200">
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/examples/plugins/custom_plugin/images/fake_bert-6.png" alt="Home" width="300" height="200">
 
-<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/fake_bert-7.png" alt="Home" width="300" height="200">
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/examples/plugins/custom_plugin/images/fake_bert-7.png" alt="Home" width="300" height="200">
 
 </div>
 
@@ -126,25 +126,25 @@ Here are some attached Screenshots.
 
 <div style="display: flex; justify-content: space-between;">
 
-<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/system_performance-1.png" alt="System Performance 1" width="300" height="200">
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/examples/plugins/custom_plugin/images/system_performance-1.png" alt="System Performance 1" width="300" height="200">
 
-<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/system_performance-2.png" alt="System Performance 2" width="300" height="200">
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/examples/plugins/custom_plugin/images/system_performance-2.png" alt="System Performance 2" width="300" height="200">
 
-<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/system_performance-3.png" alt="System Performance 3" width="300" height="200">
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/examples/plugins/custom_plugin/images/system_performance-3.png" alt="System Performance 3" width="300" height="200">
 
-<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/system_performance-4.png" alt="System Performance 4" width="300" height="200">
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/examples/plugins/custom_plugin/images/system_performance-4.png" alt="System Performance 4" width="300" height="200">
 
-<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/system_performance-5.png" alt="System Performance 5" width="300" height="200">
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/examples/plugins/custom_plugin/images/system_performance-5.png" alt="System Performance 5" width="300" height="200">
 
-<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/system_performance-5-5.png" alt="System Performance 5" width="300" height="200">
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/examples/plugins/custom_plugin/images/system_performance-5-5.png" alt="System Performance 5" width="300" height="200">
 
-<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/system_performance-6.png" alt="System Performance 6" width="300" height="200">
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/examples/plugins/custom_plugin/images/system_performance-6.png" alt="System Performance 6" width="300" height="200">
 
-<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/system_performance-7.png" alt="System Performance 7" width="300" height="200">
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/examples/plugins/custom_plugin/images/system_performance-7.png" alt="System Performance 7" width="300" height="200">
 
-<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/system_performance-8.png" alt="System Performance 8" width="300" height="200">
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/examples/plugins/custom_plugin/images/system_performance-8.png" alt="System Performance 8" width="300" height="200">
 
-<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/plugins/custom_plugin/images/system_performance-9.png" alt="System Performance 9" width="300" height="200">
+<img src="https://github.com/Darshil580/tensorboard/blob/test/tensorboard/examples/plugins/custom_plugin/images/system_performance-9.png" alt="System Performance 9" width="300" height="200">
 
 </div>
 
@@ -200,7 +200,7 @@ writer.close() # To end the Summary
 
 ### 2. system_performance (Type - 2 Summary):
 
-The system_performance summary is used to visualize performance metrics of a system, such as CPU, GPU, and RAM usage, over time. Pleas check `tensorboard/plugins/custom_plugin/main_plugin/demo/large_sample.json` containing energy and time data for different layers and also time vs temprature for GPU.
+The system_performance summary is used to visualize performance metrics of a system, such as CPU, GPU, and RAM usage, over time. Pleas check `tensorboard/examples/plugins/custom_plugin/main_plugin/demo/large_sample.json` containing energy and time data for different layers and also time vs temprature for GPU.
 
 This summary is complex as compare to previous one because there are specific `flags` that need to be mentioned depending upon the data. For example, data containing `start_execution_time` infotmation to decide the ploting sequence. Another is `timeOffset` which is optional.
 
@@ -267,7 +267,7 @@ for layer in lst:
 
 ```
 
-This was very simplified form of summary. But to make it more dynamic, Please refer to the example mentioned in the file located at `tensorboard/plugins/custom_plugin/main_plugin/demo/` and a file is `transform.py` which reads data from json file and write summary of mentioned data.
+This was very simplified form of summary. But to make it more dynamic, Please refer to the example mentioned in the file located at `tensorboard/examples/plugins/custom_plugin/main_plugin/demo/` and a file is `transform.py` which reads data from json file and write summary of mentioned data.
 
 Note: `start_time_execution` should be mentioned as third argument which specify the `step` number. because `tf.summary.scalar summary()`'s  `value` argument does not support `19` digit int number.
 
