@@ -26,12 +26,15 @@ import {RangeInputModule} from '../../../widgets/range_input/range_input_module'
 import {RightPaneComponent} from './right_pane_component';
 import {SettingsViewComponent} from './settings_view_component';
 import {SettingsViewContainer} from './settings_view_container';
+import {SavingPinsCheckboxComponent} from './saving_pins_checkbox_component';
+import {SavingPinsDialogModule} from './saving_pins_dialog/saving_pins_dialog_module';
 
 @NgModule({
   declarations: [
     RightPaneComponent,
     SettingsViewComponent,
     SettingsViewContainer,
+    SavingPinsCheckboxComponent,
   ],
   exports: [RightPaneComponent],
   imports: [
