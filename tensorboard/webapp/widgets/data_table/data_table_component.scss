@@ -17,23 +17,35 @@ limitations under the License.
 
 $_accent: map-get(mat.get-color-config($tb-theme), accent);
 
+.data-table-wrapper {
+  display: flex;
+
+  &.should-add-borders {
+    .left-section,
+    .right-section {
+      @include tb-theme-foreground-prop(border-top, border, 1px solid);
+    }
+
+    .add-button-column {
+      @include tb-theme-foreground-prop(border-left, border, 1px solid);
+    }
+  }
+}
+
 .data-table {
   font-size: 13px;
   display: table;
   width: 100%;
 
   .header {
-    display: table-row;
-    z-index: 1;
-  }
-
-  .header {
     background-color: mat.get-color-from-palette($tb-background, background);
+    display: table-row;
+    font-weight: bold;
     position: sticky;
     text-align: left;
     top: 0;
-    font-weight: bold;
     vertical-align: bottom;
+    z-index: 1;
 
     &:hover {
       cursor: pointer;
@@ -55,7 +67,38 @@ $_accent: map-get(mat.get-color-config($tb-theme), accent);
   justify-content: center;
 }
 
-.add-button-cell {
-  display: table-cell;
-  width: 40px;
+.left-section {
+  flex-grow: 1;
+}
+
+.right-section {
+  background-color: mat.get-color-from-palette($tb-background, background);
+  position: sticky;
+  right: -1px; // Prevent fractional width from creating a gap.
+  z-index: 1;
+
+  @include tb-dark-theme {
+    background-color: map-get($tb-dark-background, background);
+  }
+
+  .add-button-column {
+    width: 40px;
+    height: 100%;
+
+    .add-button {
+      position: sticky;
+      top: 0;
+    }
+  }
+}
+
+.right-section .add-button-column.small-add-button {
+  display: flex;
+  justify-content: center;
+  width: 24px;
+
+  .add-button {
+    --tb-icon-button-width: 20px;
+    --tb-icon-button-height: 20px;
+  }
 }
