@@ -38,6 +38,7 @@ import {
   ReorderColumnEvent,
   Side,
   AddColumnEvent,
+  AddColumnSize,
 } from './types';
 import {HeaderCellComponent} from './header_cell_component';
 import {Subscription} from 'rxjs';
@@ -67,6 +68,8 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
   @Input() hasMoreColumnsToLoad!: boolean;
   @Input() columnFilters!: Map<string, DiscreteFilter | IntervalFilter>;
   @Input() loading: boolean = false;
+  @Input() shouldAddBorders: boolean = false;
+  @Input() addColumnSize: AddColumnSize = AddColumnSize.DEFAULT;
 
   @ContentChildren(HeaderCellComponent)
   headerCells!: QueryList<HeaderCellComponent>;
@@ -102,6 +105,7 @@ export class DataTableComponent implements OnDestroy, AfterContentInit {
 
   readonly SortingOrder = SortingOrder;
   readonly Side = Side;
+  readonly AddColumnSize = AddColumnSize;
 
   constructor(
     private readonly customModal: CustomModal,
