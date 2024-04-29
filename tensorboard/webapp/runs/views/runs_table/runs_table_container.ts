@@ -45,7 +45,6 @@ import {
   getRuns,
   getRunSelectorRegexFilter,
   getRunsLoadState,
-  getRunsTableFullScreen,
   getRunsTableSortingInfo,
   getGroupedRunsTableHeaders,
 } from '../../../selectors';
@@ -73,7 +72,6 @@ import {
   getFilteredRenderableRuns,
   getSelectableColumns,
 } from '../../../metrics/views/main_view/common_selectors';
-import {runsTableFullScreenToggled} from '../../../core/actions';
 import {sortTableDataItems} from './sorting_utils';
 
 const getRunsLoading = createSelector<
@@ -102,7 +100,6 @@ const getRunsLoading = createSelector<
       [sortingInfo]="sortingInfo$ | async"
       [experimentIds]="experimentIds"
       [regexFilter]="regexFilter$ | async"
-      [isFullScreen]="runsTableFullScreen$ | async"
       [loading]="loading$ | async"
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
@@ -111,7 +108,6 @@ const getRunsLoading = createSelector<
       (onRunColorChange)="onRunColorChange($event)"
       (onRegexFilterChange)="onRegexFilterChange($event)"
       (onSelectionDblClick)="onRunSelectionDblClick($event)"
-      (toggleFullScreen)="toggleFullScreen()"
       (addColumn)="addColumn($event)"
       (removeColumn)="removeColumn($event)"
       (addFilter)="addHparamFilter($event)"
@@ -147,7 +143,6 @@ export class RunsTableContainer implements OnInit, OnDestroy {
 
   regexFilter$ = this.store.select(getRunSelectorRegexFilter);
   runsColumns$ = this.store.select(getGroupedRunsTableHeaders);
-  runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
   selectableColumns$ = this.store.select(getSelectableColumns);
   numColumnsLoaded$ = this.store.select(
     hparamsSelectors.getNumDashboardHparamsLoaded
@@ -326,10 +321,6 @@ export class RunsTableContainer implements OnInit, OnDestroy {
 
   onRunColorChange({runId, newColor}: {runId: string; newColor: string}) {
     this.store.dispatch(runColorChanged({runId, newColor}));
-  }
-
-  toggleFullScreen() {
-    this.store.dispatch(runsTableFullScreenToggled());
   }
 
   addColumn({column, nextTo, side}: AddColumnEvent) {
