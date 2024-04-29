@@ -43,6 +43,7 @@ import {SavingPinsDialogModule} from './saving_pins_dialog/saving_pins_dialog_mo
     MatButtonModule,
     MatButtonToggleModule,
     MatCheckboxModule,
+    SavingPinsDialogModule,
     MatIconModule,
     MatSelectModule,
     MatSliderModule,
