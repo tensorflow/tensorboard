@@ -20,7 +20,7 @@ import {MatDialogRef} from '@angular/material/dialog';
 import {SavingPinsDialogModule} from './saving_pins_dialog_module';
 import {SavingPinsDialogComponent} from './saving_pins_dialog_component';
 
-describe('saving_pins_dialog', () => {
+describe('saving pins dialog', () => {
   let mockMatDialogRef: {close: jasmine.Spy};
 
   beforeEach(async () => {
