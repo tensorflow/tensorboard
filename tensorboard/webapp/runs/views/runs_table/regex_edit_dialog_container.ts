@@ -22,7 +22,6 @@ import {
   filter,
   map,
   shareReplay,
-  shareReplay,
   startWith,
   take,
 } from 'rxjs/operators';
@@ -33,7 +32,6 @@ import {runGroupByChanged} from '../../actions';
 import {
   getColorGroupRegexString,
   getRunIdsForExperiment,
-  getRunGroupBy,
   getRunGroupBy,
   getRuns,
 } from '../../store/runs_selectors';
@@ -50,10 +48,7 @@ const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
     [colorRunPairList]="colorRunPairList$ | async"
     [selectedGroupBy]="groupByRegexType$ | async"
     (onSave)="onSave()"
-    [selectedGroupBy]="groupByRegexType$ | async"
-    (onSave)="onSave()"
     (regexInputOnChange)="onRegexInputOnChange($event)"
-    (regexTypeOnChange)="onRegexTypeOnChange($event)"
     (regexTypeOnChange)="onRegexTypeOnChange($event)"
   ></regex-edit-dialog-component>`,
   styles: [
@@ -69,7 +64,6 @@ const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
 })
 export class RegexEditDialogContainer {
   private readonly experimentIds: string[];
-  private readonly expNameByExpId: Record<string, string>;
   private readonly expNameByExpId: Record<string, string>;
   private readonly runIdToEid$: Observable<Record<string, string>>;
   private readonly allRuns$: Observable<Run[]>;
@@ -99,17 +93,6 @@ export class RegexEditDialogContainer {
     shareReplay(1)
   );
 
-  readonly groupByRegexType$: Observable<GroupByKey> = 
-    merge(
-      this.store.select(getRunGroupBy).pipe(take(1), map(group => group.key)),
-      this.tentativeRegexType$
-    ).pipe(
-      filter(
-        key => key === GroupByKey.REGEX || key === GroupByKey.REGEX_BY_EXP),
-        startWith(GroupByKey.REGEX), 
-        shareReplay(1)
-      );
-  
   readonly colorRunPairList$: Observable<ColorGroup[]> = defer(() => {
     return this.groupByRegexString$.pipe(
       debounceTime(INPUT_CHANGE_DEBOUNCE_INTERVAL_MS),
@@ -135,10 +118,9 @@ export class RegexEditDialogContainer {
           allRuns,
           runIdToEid,
           colorPalette,
-          darkModeEanbled,
+          darkModeEnabled,
         ]) => {
           const groupBy = {
-            key: regexType,
             key: regexType,
             regexString,
           };
@@ -180,7 +162,6 @@ export class RegexEditDialogContainer {
     }
   ) {
     this.experimentIds = data.experimentIds;
-    this.expNameByExpId = data.expNameByExpId;
     this.expNameByExpId = data.expNameByExpId;
 
     this.runIdToEid$ = combineLatest(

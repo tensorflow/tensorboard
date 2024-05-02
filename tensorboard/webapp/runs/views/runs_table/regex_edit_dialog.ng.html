@@ -24,11 +24,12 @@ limitations under the License.
       <mat-select
         [(value)]="regexMatchType"
         (selectionChange)="regexTypeChange($event)"
+        #regexTypeSelect="matSelect"
       >
         <mat-option value="regex_by_run">Run Name</mat-option>
         <mat-option value="regex_by_exp">Experiment Name</mat-option>
       </mat-select>
-      </mat-form-field>
+    </mat-form-field>
     <mat-form-field>
       <input
         matInput

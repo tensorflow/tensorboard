@@ -50,6 +50,7 @@ import {
   RegexEditDialogContainer,
   TEST_ONLY,
 } from './regex_edit_dialog_container';
+import {MatSelectModule} from '@angular/material/select';
 
 describe('regex_edit_dialog', () => {
   let actualActions: Action[];
@@ -64,6 +65,7 @@ describe('regex_edit_dialog', () => {
         MatInputModule,
         MatDialogModule,
         NoopAnimationsModule,
+        MatSelectModule,
       ],
       declarations: [RegexEditDialogComponent, RegexEditDialogContainer],
       providers: [
@@ -84,13 +86,15 @@ describe('regex_edit_dialog', () => {
   ) {
     TestBed.overrideProvider(MAT_DIALOG_DATA, {
       useValue: {experimentIds, expNameByExpId},
-      useValue: {experimentIds, expNameByExpId},
     });
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getColorGroupRegexString, 'test regex string');
     store.overrideSelector(getRuns, []);
-    store.overrideSelector(getRunGroupBy, {key: GroupByKey.REGEX, regexString: ''});
+    store.overrideSelector(getRunGroupBy, {
+      key: GroupByKey.REGEX,
+      regexString: '',
+    });
     store.overrideSelector(getRunIdsForExperiment, []);
     store.overrideSelector(getDarkModeEnabled, false);
     store.overrideSelector(
@@ -105,7 +109,7 @@ describe('regex_edit_dialog', () => {
     return TestBed.createComponent(RegexEditDialogContainer);
   }
 
-  fit('renders regex edit dialog', () => {
+  it('renders regex edit dialog', () => {
     const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
     fixture.detectChanges();
 
@@ -176,23 +180,15 @@ describe('regex_edit_dialog', () => {
     );
   });
 
-  it('emits groupby experiment action if user chooses the dropdown', () => {
+  it('emits groupby experiment action if user chooses the dropdown and saves', () => {
     const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
     fixture.detectChanges();
-
-    console.log('hello');
-
-    const matSelect = fixture.debugElement.query(By.css('mat-select'));
-    matSelect.triggerEventHandler('selectionChange', {value: 'regex_by_exp'});
-
-    console.log('hello');
 
     const matSelect = fixture.debugElement.query(By.css('mat-select'));
     matSelect.triggerEventHandler('selectionChange', {value: 'regex_by_exp'});
 
     const input = fixture.debugElement.query(By.css('input'));
     const keyArgs: SendKeyArgs = {
-      key: 'test',
       key: 'test',
       prevString: '',
       type: KeyType.CHARACTER,
@@ -204,7 +200,7 @@ describe('regex_edit_dialog', () => {
     );
     buttons[1].nativeElement.click();
 
-    expect(matSelect.nativeNode.value).toBe('regex_by_exp');
+    expect(matSelect.nativeNode.textContent).toBe('Experiment Name');
     expect(dispatchSpy).toHaveBeenCalledWith(
       runGroupByChanged({
         experimentIds: ['rose'],
