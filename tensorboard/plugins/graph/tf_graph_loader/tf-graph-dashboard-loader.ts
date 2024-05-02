@@ -112,7 +112,7 @@ class TfGraphDashboardLoader extends LegacyElementMixin(PolymerElement) {
         // Clear stats about the previous graph.
         (function () {
           this._setOutStats(null);
-        }.bind(this)());
+        }).bind(this)();
         const params = new URLSearchParams();
         params.set('run', run);
         params.set(

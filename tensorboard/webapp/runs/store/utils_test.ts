@@ -412,11 +412,9 @@ describe('run store utils test', () => {
               buildRun({id: 'eid2/beta', name: 'gamma'}),
               buildRun({id: 'eid2/gamma', name: 'foo2bar3'}),
             ],
-            '["1","2"]': [
-              buildRun({id: 'eid3/alpha', name: 'theta'}),
-            ],
+            '["1","2"]': [buildRun({id: 'eid3/alpha', name: 'theta'})],
           },
-          nonMatches: [buildRun({id: 'eid4/gamma', name: 'foo3bar'}),],
+          nonMatches: [buildRun({id: 'eid4/gamma', name: 'foo3bar'})],
         });
       });
     });

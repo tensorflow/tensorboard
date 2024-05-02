@@ -306,7 +306,7 @@ export function analyzeMetadata(
   const mapOfValues: [
     {
       [value: string]: number;
-    }
+    },
   ] = columnNames.map(() => new Object());
   pointsMetadata.forEach((metadata) => {
     columnNames.forEach((name: string, colIndex: number) => {

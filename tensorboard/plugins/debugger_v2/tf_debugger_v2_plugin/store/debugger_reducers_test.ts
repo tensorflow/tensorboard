@@ -1018,9 +1018,7 @@ describe('Debugger graphs reducers', () => {
     });
   }
 
-  for (const scrollBeginIndex of [
-    0, 1, 50, 100, 999, 1000, 1001, 1234, 1449,
-  ]) {
+  for (const scrollBeginIndex of [0, 1, 50, 100, 999, 1000, 1001, 1234, 1449]) {
     it(`executionScrollRight takes effect: ${scrollBeginIndex}`, () => {
       const state =
         createDebuggerStateWithLoadedExecutionDigests(scrollBeginIndex);

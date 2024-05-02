@@ -148,7 +148,10 @@ export class ScalarCardComponent<Downloader> {
   @ViewChild('dataTableContainer')
   dataTableContainer?: ElementRef;
 
-  constructor(private readonly ref: ElementRef, private dialog: MatDialog) {}
+  constructor(
+    private readonly ref: ElementRef,
+    private dialog: MatDialog
+  ) {}
 
   yScaleType = ScaleType.LINEAR;
   isViewBoxOverridden: boolean = false;

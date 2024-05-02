@@ -125,7 +125,7 @@ function createSampledTagDataWithLoadable<P extends SampledPluginType>(
 }
 
 function buildTimeSeriesLoadable<
-  P extends PluginType
+  P extends PluginType,
 >(): TimeSeriesLoadables[P] {
   return {
     runToSeries: {},

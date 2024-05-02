@@ -277,10 +277,9 @@ export class TBMetricsDataSource implements MetricsDataSource {
     const body = new FormData();
     body.append('requests', JSON.stringify([backendRequest]));
     return this.http
-      .post<BackendTimeSeriesResponse[]>(
-        `/experiment/${experimentId}/${HTTP_PATH_PREFIX}/timeSeries`,
-        body
-      )
+      .post<
+        BackendTimeSeriesResponse[]
+      >(`/experiment/${experimentId}/${HTTP_PATH_PREFIX}/timeSeries`, body)
       .pipe(
         map((responses: BackendTimeSeriesResponse[]) => {
           return {response: responses[0], experimentId};

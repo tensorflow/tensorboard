@@ -34,6 +34,7 @@ import {State} from '../../../app_state';
 import {
   getColorGroupRegexString,
   getDarkModeEnabled,
+  getRunGroupBy,
   getRunIdsForExperiment,
   getRuns,
 } from '../../../selectors';
@@ -89,6 +90,7 @@ describe('regex_edit_dialog', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getColorGroupRegexString, 'test regex string');
     store.overrideSelector(getRuns, []);
+    store.overrideSelector(getRunGroupBy, {key: GroupByKey.REGEX, regexString: ''});
     store.overrideSelector(getRunIdsForExperiment, []);
     store.overrideSelector(getDarkModeEnabled, false);
     store.overrideSelector(
@@ -103,7 +105,7 @@ describe('regex_edit_dialog', () => {
     return TestBed.createComponent(RegexEditDialogContainer);
   }
 
-  it('renders regex edit dialog', () => {
+  fit('renders regex edit dialog', () => {
     const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
     fixture.detectChanges();
 

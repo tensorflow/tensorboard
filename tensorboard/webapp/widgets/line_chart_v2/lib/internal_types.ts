@@ -48,7 +48,7 @@ export interface DataSeriesMetadata {
 }
 
 export interface DataSeriesMetadataMap<
-  Metadata extends DataSeriesMetadata = DataSeriesMetadata
+  Metadata extends DataSeriesMetadata = DataSeriesMetadata,
 > {
   [id: string]: Metadata;
 }

@@ -59,8 +59,11 @@ export const getDashboardExperimentNames = createSelector(
     (experimentIds ?? [])
       .map((experimentId) => state.experimentMap[experimentId])
       .filter(Boolean)
-      .reduce((map, experiment) => {
-        map[experiment.id] = experiment.name;
-        return map;
-      }, {} as Record<string, string>)
+      .reduce(
+        (map, experiment) => {
+          map[experiment.id] = experiment.name;
+          return map;
+        },
+        {} as Record<string, string>
+      )
 );

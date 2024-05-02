@@ -652,12 +652,12 @@ export function addHealthPills(
   // that its code later refers to.
   let healthPillId = 1;
   let svgRootSelection = d3.select(svgRoot);
-  svgRootSelection
-    .selectAll('g.nodeshape')
-    .each(function (nodeInfo: render.RenderNodeInfo) {
-      // Only show health pill data for this node if it is available.
-      const healthPills = nodeNamesToHealthPills[nodeInfo.node.name];
-      const healthPill = healthPills ? healthPills[healthPillStepIndex] : null;
-      addHealthPill(this as SVGElement, healthPill!, nodeInfo, healthPillId++);
-    });
+  svgRootSelection.selectAll('g.nodeshape').each(function (
+    nodeInfo: render.RenderNodeInfo
+  ) {
+    // Only show health pill data for this node if it is available.
+    const healthPills = nodeNamesToHealthPills[nodeInfo.node.name];
+    const healthPill = healthPills ? healthPills[healthPillStepIndex] : null;
+    addHealthPill(this as SVGElement, healthPill!, nodeInfo, healthPillId++);
+  });
 }

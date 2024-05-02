@@ -77,7 +77,7 @@ interface PrivateState<NamespacedState> {
  */
 export type NamespaceContextedState<
   NamespacedState extends {},
-  NonNamespacedState extends {}
+  NonNamespacedState extends {},
 > = NonNamespacedState & NamespacedState & PrivateState<NamespacedState>;
 
 /**
@@ -113,7 +113,7 @@ export type NamespaceContextedState<
  */
 export function createNamespaceContextedState<
   NamespacedState extends {},
-  NonNamespacedState extends {}
+  NonNamespacedState extends {},
 >(
   namespacedInitialState: NamespacedState,
   nonNamespacedInitialState: NonNamespacedState,

@@ -158,7 +158,7 @@ describe('runs_reducers', () => {
             ],
           },
         },
-        expNameByExpId: {}
+        expNameByExpId: {},
       });
 
       const nextState = runsReducers.reducers(state, action);
@@ -229,7 +229,7 @@ describe('runs_reducers', () => {
             ],
           },
         },
-        expNameByExpId: {}
+        expNameByExpId: {},
       });
 
       const nextState = runsReducers.reducers(state, action);
@@ -306,7 +306,7 @@ describe('runs_reducers', () => {
               ],
             },
           },
-          expNameByExpId: {}
+          expNameByExpId: {},
         });
 
         const nextState = runsReducers.reducers(state, action);
@@ -344,7 +344,7 @@ describe('runs_reducers', () => {
             buildRun({id: 'eid2/delta', name: 'delta'}),
           ],
           newRuns: {},
-          expNameByExpId: {}
+          expNameByExpId: {},
         });
 
         const nextState = runsReducers.reducers(state, action);
@@ -365,7 +365,10 @@ describe('runs_reducers', () => {
 
       it('assigns non-matched colors to regex by experiment, non-matched runs', () => {
         const state = buildRunsState({
-          initialGroupBy: {key: GroupByKey.REGEX_BY_EXP, regexString: 'foo(\\d+)'},
+          initialGroupBy: {
+            key: GroupByKey.REGEX_BY_EXP,
+            regexString: 'foo(\\d+)',
+          },
           defaultRunColorIdForGroupBy: new Map([
             ['foo', 0],
             ['bar', 0],
@@ -377,7 +380,7 @@ describe('runs_reducers', () => {
             'eid2/gamma': 'eid2',
             'eid2/alpha': 'eid2',
             'eid3/delta': 'eid3',
-            'eid4/theta': 'eid4'
+            'eid4/theta': 'eid4',
           },
         });
         const action = actions.fetchRunsSucceeded({
@@ -396,8 +399,8 @@ describe('runs_reducers', () => {
             eid1: 'foo1',
             eid2: 'foo2bar1',
             eid3: 'foo1bar2',
-            eid4: 'theta'
-          }
+            eid4: 'theta',
+          },
         });
 
         const nextState = runsReducers.reducers(state, action);
@@ -438,7 +441,7 @@ describe('runs_reducers', () => {
               runs: fewNewRuns,
             },
           },
-          expNameByExpId: {}
+          expNameByExpId: {},
         })
       );
 
@@ -471,7 +474,7 @@ describe('runs_reducers', () => {
               runs: manyNewRuns,
             },
           },
-          expNameByExpId: {}
+          expNameByExpId: {},
         })
       );
 
@@ -983,7 +986,7 @@ describe('runs_reducers', () => {
           eid1: ['run1', 'run2'],
           eid2: ['run3', 'run4', 'run5', 'run6'],
           eid3: ['run7'],
-          eid4: ['run8']
+          eid4: ['run8'],
         },
         runIdToExpId: {
           run1: 'eid1',
@@ -993,7 +996,7 @@ describe('runs_reducers', () => {
           run5: 'eid2',
           run6: 'eid2',
           run7: 'eid3',
-          run8: 'eid4'
+          run8: 'eid4',
         },
         runMetadata: {
           run1: buildRun({id: 'run1', name: 'foo1bar1'}),
@@ -1023,11 +1026,11 @@ describe('runs_reducers', () => {
           experimentIds: ['eid1', 'eid2', 'eid3', 'eid4'],
           groupBy: {key: GroupByKey.REGEX_BY_EXP, regexString: 'foo(\\d+)'},
           expNameByExpId: {
-            eid1: 'foo1', 
+            eid1: 'foo1',
             eid2: 'foo2',
             eid3: 'foo1bar1',
-            eid4: 'theta'
-          }
+            eid4: 'theta',
+          },
         })
       );
 
@@ -1152,7 +1155,10 @@ describe('runs_reducers', () => {
         state,
         actions.runGroupByChanged({
           experimentIds: ['eid1', 'eid2'],
-          groupBy: {key: GroupByKey.REGEX_BY_EXP, regexString: 'initial regex string'},
+          groupBy: {
+            key: GroupByKey.REGEX_BY_EXP,
+            regexString: 'initial regex string',
+          },
         })
       );
       const state3 = runsReducers.reducers(
@@ -1170,7 +1176,10 @@ describe('runs_reducers', () => {
         state3,
         actions.runGroupByChanged({
           experimentIds: ['eid1', 'eid2'],
-          groupBy: {key: GroupByKey.REGEX_BY_EXP, regexString: 'updated regexString'},
+          groupBy: {
+            key: GroupByKey.REGEX_BY_EXP,
+            regexString: 'updated regexString',
+          },
         })
       );
       expect(state4.data.colorGroupRegexString).toBe('updated regexString');
