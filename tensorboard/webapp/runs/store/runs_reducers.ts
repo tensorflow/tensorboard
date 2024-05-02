@@ -204,7 +204,7 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     }
     return {...state, runsLoadState: nextRunsLoadState};
   }),
-  on(runsActions.fetchRunsSucceeded, (state, {runsForAllExperiments}) => {
+  on(runsActions.fetchRunsSucceeded, (state, {runsForAllExperiments, expNameByExpId}) => {
     const groupKeyToColorId = new Map(state.groupKeyToColorId);
     const defaultRunColorIdForGroupBy = new Map(
       state.defaultRunColorIdForGroupBy
@@ -220,7 +220,8 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     const groups = groupRuns(
       groupBy,
       runsForAllExperiments,
-      state.runIdToExpId
+      state.runIdToExpId,
+      expNameByExpId
     );
 
     Object.entries(groups.matches).forEach(([groupId, runs]) => {

@@ -36,6 +36,7 @@ import {
   getExperimentIdsFromRoute,
   getRuns,
   getRunsLoadState,
+  getDashboardExperimentNames
 } from '../../selectors';
 import {DataLoadState, LoadState} from '../../types/data';
 import * as actions from '../actions';
@@ -217,12 +218,20 @@ export class RunsEffects {
         }
         return {newRuns, runsForAllExperiments};
       }),
-      tap(({newRuns, runsForAllExperiments}) => {
+      withLatestFrom(
+        this.store.select(getDashboardExperimentNames)
+      ),
+      map(([runsData, expNameByExpId]) => {
+        const {newRuns, runsForAllExperiments} = runsData;
+        return {newRuns, runsForAllExperiments, expNameByExpId};
+      }),
+      tap(({newRuns, runsForAllExperiments, expNameByExpId}) => {
         this.store.dispatch(
           actions.fetchRunsSucceeded({
             experimentIds,
             newRuns,
             runsForAllExperiments,
+            expNameByExpId
           })
         );
       }),
