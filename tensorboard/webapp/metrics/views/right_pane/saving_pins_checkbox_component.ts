@@ -28,7 +28,10 @@ import {
   selector: 'saving-pins-checkbox',
   template: `
     <div class="saving-pins-checkbox">
-      <mat-checkbox [checked]="isChecked" (click)="onCheckboxToggled.emit()"
+      <mat-checkbox
+        color="primary"
+        [checked]="isChecked"
+        (click)="onCheckboxToggled.emit()"
         >Enable saving pins (Scalars only)</mat-checkbox
       >
       <mat-icon
