@@ -218,7 +218,7 @@ describe('run store utils test', () => {
     });
 
     describe('by experiment regex', () => {
-      fit('does not group when run id to experiment map is not provided', () => {
+      it('does not group when run id to experiment map is not provided', () => {
         const actual = groupRuns(
           {key: GroupByKey.REGEX_BY_EXP, regexString: 'foo'},
           [
@@ -240,7 +240,7 @@ describe('run store utils test', () => {
         });
       });
 
-      fit('does not group when regex is empty', () => {
+      it('does not group when regex is empty', () => {
         const actual = groupRuns(
           {key: GroupByKey.REGEX_BY_EXP, regexString: ''},
           [
@@ -266,7 +266,7 @@ describe('run store utils test', () => {
         });
       });
 
-      fit('does not group when regex is invalid', () => {
+      it('does not group when regex is invalid', () => {
         const actual = groupRuns(
           {key: GroupByKey.REGEX_BY_EXP, regexString: 'foo\\d+)bar'},
           [
@@ -292,7 +292,7 @@ describe('run store utils test', () => {
         });
       });
 
-      fit('groups run by regex without capture group', () => {
+      it('groups run by regex without capture group', () => {
         const actual = groupRuns(
           {key: GroupByKey.REGEX_BY_EXP, regexString: 'foo'},
           [
@@ -316,8 +316,6 @@ describe('run store utils test', () => {
           }
         );
 
-        console.log(actual);
-
         expect(actual).toEqual({
           matches: {
             pseudo_group: [
@@ -333,7 +331,7 @@ describe('run store utils test', () => {
         });
       });
 
-      fit('groups run by regex with one capture group', () => {
+      it('groups run by regex with one capture group', () => {
         const actual = groupRuns(
           {key: GroupByKey.REGEX_BY_EXP, regexString: 'foo(\\d+)bar.*'},
           [
@@ -376,36 +374,49 @@ describe('run store utils test', () => {
         });
       });
 
-      fit('groups run by regex with multiple capture groups', () => {
+      it('groups run by regex with multiple capture groups', () => {
         // TODO
         const actual = groupRuns(
           {key: GroupByKey.REGEX_BY_EXP, regexString: 'foo(\\d+)bar(\\d+).*'},
           [
-            buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
-            buildRun({id: 'eid1/beta', name: 'foo2bar1'}),
-            buildRun({id: 'eid2/beta', name: 'foo2bar2'}),
-            buildRun({id: 'eid2/gamma', name: 'foo2bar2bar'}),
-            buildRun({id: 'eid2/alpha', name: 'alpha'}),
+            buildRun({id: 'eid1/alpha', name: 'alpha'}),
+            buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
+            buildRun({id: 'eid2/beta', name: 'gamma'}),
+            buildRun({id: 'eid2/gamma', name: 'foo2bar3'}),
+            buildRun({id: 'eid3/alpha', name: 'theta'}),
+            buildRun({id: 'eid4/gamma', name: 'foo3bar'}),
           ],
           {
             'eid1/alpha': 'eid1',
             'eid1/beta': 'eid1',
             'eid2/beta': 'eid2',
             'eid2/gamma': 'eid2',
-            'eid2/alpha': 'eid2',
+            'eid3/alpha': 'eid3',
+            'eid4/gamma': 'eid4',
+          },
+          {
+            eid1: 'foo1bar1',
+            eid2: 'foo2bar1',
+            eid3: 'foo1bar2',
+            eid4: 'theta',
           }
         );
 
         expect(actual).toEqual({
           matches: {
-            '["1","1"]': [buildRun({id: 'eid1/alpha', name: 'foo1bar1'})],
-            '["2","1"]': [buildRun({id: 'eid1/beta', name: 'foo2bar1'})],
-            '["2","2"]': [
-              buildRun({id: 'eid2/beta', name: 'foo2bar2'}),
-              buildRun({id: 'eid2/gamma', name: 'foo2bar2bar'}),
+            '["1","1"]': [
+              buildRun({id: 'eid1/alpha', name: 'alpha'}),
+              buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
+            ],
+            '["2","1"]': [
+              buildRun({id: 'eid2/beta', name: 'gamma'}),
+              buildRun({id: 'eid2/gamma', name: 'foo2bar3'}),
+            ],
+            '["1","2"]': [
+              buildRun({id: 'eid3/alpha', name: 'theta'}),
             ],
           },
-          nonMatches: [buildRun({id: 'eid2/alpha', name: 'alpha'})],
+          nonMatches: [buildRun({id: 'eid4/gamma', name: 'foo3bar'}),],
         });
       });
     });
