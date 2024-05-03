@@ -116,7 +116,7 @@ export function groupRuns(
  * Util function for composing `GroupBy` key and regex string.
  */
 export function createGroupBy(
-    groupByKey: GroupByKey,
+  groupByKey: GroupByKey,
   regexString?: string
 ): GroupBy {
   switch (groupByKey) {

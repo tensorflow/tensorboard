@@ -21,12 +21,15 @@ limitations under the License.
     <p>Enter a regex with capturing groups to match against run names:</p>
     <mat-form-field>
       <mat-label>Regex type</mat-label>
-      <mat-select [(value)]="regexMatchType" (selectionChange)="regexTypeChange($event)">
+      <mat-select
+        [(value)]="regexMatchType"
+        (selectionChange)="regexTypeChange($event)"
+      >
         <mat-option value="regex_by_run">Run Name</mat-option>
         <mat-option value="regex_by_exp">Experiment Name</mat-option>
       </mat-select>
-    <!-- </mat-form-field>
-    <mat-form-field> -->
+    </mat-form-field>
+    <mat-form-field>
       <input
         matInput
         #regexStringInput

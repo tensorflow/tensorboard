@@ -118,7 +118,7 @@ export class RegexEditDialogContainer {
           allRuns,
           runIdToEid,
           colorPalette,
-          darkModeEanbled,
+          darkModeEnabled,
         ]) => {
           const groupBy = {
             key: regexType,
@@ -194,7 +194,6 @@ export class RegexEditDialogContainer {
   }
 
   onRegexInputOnChange(regexString: string) {
-    // Whenever regex input changes the subject emits new object.
     // Whenever regex input changes the subject emits new object.
     this.tentativeRegexString$.next(regexString);
   }

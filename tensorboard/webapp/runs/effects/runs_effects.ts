@@ -36,7 +36,7 @@ import {
   getExperimentIdsFromRoute,
   getRuns,
   getRunsLoadState,
-  getDashboardExperimentNames
+  getDashboardExperimentNames,
 } from '../../selectors';
 import {DataLoadState, LoadState} from '../../types/data';
 import * as actions from '../actions';
@@ -218,9 +218,7 @@ export class RunsEffects {
         }
         return {newRuns, runsForAllExperiments};
       }),
-      withLatestFrom(
-        this.store.select(getDashboardExperimentNames)
-      ),
+      withLatestFrom(this.store.select(getDashboardExperimentNames)),
       map(([runsData, expNameByExpId]) => {
         const {newRuns, runsForAllExperiments} = runsData;
         return {newRuns, runsForAllExperiments, expNameByExpId};
@@ -231,7 +229,7 @@ export class RunsEffects {
             experimentIds,
             newRuns,
             runsForAllExperiments,
-            expNameByExpId
+            expNameByExpId,
           })
         );
       }),

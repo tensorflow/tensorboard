@@ -134,7 +134,7 @@ describe('runs_effects', () => {
           store.overrideSelector(getExperimentIdsFromRoute, ['123', '456']);
           store.overrideSelector(getDashboardExperimentNames, {
             456: 'exp2',
-            123: 'exp1'
+            123: 'exp1',
           });
           const createFooRuns = () => [
             createRun({
@@ -173,8 +173,8 @@ describe('runs_effects', () => {
               },
               expNameByExpId: {
                 456: 'exp2',
-                123: 'exp1'
-              }
+                123: 'exp1',
+              },
             }),
           ]);
         });
@@ -222,7 +222,7 @@ describe('runs_effects', () => {
           store.overrideSelector(getExperimentIdsFromRoute, ['123', '456']);
           store.overrideSelector(getDashboardExperimentNames, {
             456: 'exp2',
-            123: 'exp1'
+            123: 'exp1',
           });
           store.refreshState();
 
@@ -259,8 +259,8 @@ describe('runs_effects', () => {
               },
               expNameByExpId: {
                 456: 'exp2',
-                123: 'exp1'
-              }
+                123: 'exp1',
+              },
             }),
           ]);
         });
@@ -329,7 +329,7 @@ describe('runs_effects', () => {
         store.overrideSelector(getExperimentIdsFromRoute, ['123', '456']);
         store.overrideSelector(getDashboardExperimentNames, {
           456: 'exp1',
-          123: 'exp2'
+          123: 'exp2',
         });
         store.refreshState();
 
@@ -351,8 +351,8 @@ describe('runs_effects', () => {
             },
             expNameByExpId: {
               456: 'exp1',
-              123: 'exp2'
-            }
+              123: 'exp2',
+            },
           }),
         ]);
       });
@@ -389,7 +389,7 @@ describe('runs_effects', () => {
             experimentIds: ['123'],
             runsForAllExperiments: [...createFooRuns()],
             newRuns: {},
-            expNameByExpId: {123: 'exp1'}
+            expNameByExpId: {123: 'exp1'},
           }),
         ]);
 
@@ -432,7 +432,7 @@ describe('runs_effects', () => {
             experimentIds: ['foo'],
             runsForAllExperiments: [...createFooRuns()],
             newRuns: {},
-            expNameByExpId: {foo: 'exp1'}
+            expNameByExpId: {foo: 'exp1'},
           }),
         ]);
       });
@@ -486,7 +486,10 @@ describe('runs_effects', () => {
       // Emulate navigation to a new experiment route.
       store.overrideSelector(getActiveRoute, buildExperimentRouteFromId('456'));
       store.overrideSelector(getExperimentIdsFromRoute, ['456']);
-      store.overrideSelector(getDashboardExperimentNames, {456: 'exp1', 123: 'exp2'});
+      store.overrideSelector(getDashboardExperimentNames, {
+        456: 'exp1',
+        123: 'exp2',
+      });
       // Force selectors to re-evaluate with a change in store.
       store.refreshState();
 
@@ -510,7 +513,7 @@ describe('runs_effects', () => {
           newRuns: {
             456: {runs: createBarRuns()},
           },
-          expNameByExpId: {456: 'exp1', 123: 'exp2'}
+          expNameByExpId: {456: 'exp1', 123: 'exp2'},
         }),
         actions.fetchRunsSucceeded({
           experimentIds: ['123'],
@@ -518,7 +521,7 @@ describe('runs_effects', () => {
           newRuns: {
             123: {runs: createFooRuns()},
           },
-          expNameByExpId: {456: 'exp1', 123: 'exp2'}
+          expNameByExpId: {456: 'exp1', 123: 'exp2'},
         }),
       ]);
     });
@@ -584,7 +587,10 @@ describe('runs_effects', () => {
         });
 
         store.overrideSelector(getExperimentIdsFromRoute, ['foo']);
-        store.overrideSelector(getDashboardExperimentNames, {foo: 'exp1', bar: 'exp2'});
+        store.overrideSelector(getDashboardExperimentNames, {
+          foo: 'exp1',
+          bar: 'exp2',
+        });
         selectSpy
           .withArgs(getRuns, {experimentId: 'foo'})
           .and.returnValue(runsSubject);
@@ -644,7 +650,7 @@ describe('runs_effects', () => {
                 runs: createFooAfterRuns(),
               },
             },
-            expNameByExpId: {foo: 'exp1', bar: 'exp2'}
+            expNameByExpId: {foo: 'exp1', bar: 'exp2'},
           }),
           actions.fetchRunsSucceeded({
             experimentIds: ['foo', 'bar'],
@@ -657,7 +663,7 @@ describe('runs_effects', () => {
                 runs: createBarRuns(),
               },
             },
-            expNameByExpId: {foo: 'exp1', bar: 'exp2'}
+            expNameByExpId: {foo: 'exp1', bar: 'exp2'},
           }),
         ]);
       });
