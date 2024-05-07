@@ -132,15 +132,6 @@ tf_ts_library(
     ],
 )
 
-# This is a dummy rule used as a @angular/material/chips dependency.
-tf_ts_library(
-    name = "expect_angular_material_core",
-    srcs = [],
-    deps = [
-        "@npm//@angular/material",
-    ],
-)
-
 # This is a dummy rule used as a @angular/material/dialog dependency.
 tf_ts_library(
     name = "expect_angular_material_dialog",
