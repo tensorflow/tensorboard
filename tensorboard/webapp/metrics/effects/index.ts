@@ -43,6 +43,7 @@ import {
   TimeSeriesRequest,
   TimeSeriesResponse,
   SavedPinsDataSource,
+  Tag,
 } from '../data_source/index';
 import {
   getCardLoadState,
@@ -356,26 +357,29 @@ export class MetricsEffects implements OnInitEffects {
     })
   );
 
-  private readonly removeSavedPinsOnDisable$ = this.actions$.pipe(
+  private readonly addOrRemovePinsOnToggle$ = this.actions$.pipe(
     ofType(actions.metricsEnableSavingPinsToggled),
     withLatestFrom(
+      this.store.select(selectors.getPinnedCardsWithMetadata),
       this.store.select(selectors.getEnableGlobalPins),
       this.store.select(selectors.getShouldPersistSettings),
       this.store.select(selectors.getMetricsSavingPinsEnabled)
     ),
     filter(
-      ([
-        ,
-        enableGlobalPins,
-        getShouldPersistSettings,
-        getMetricsSavingPinsEnabled,
-      ]) =>
-        enableGlobalPins &&
-        getShouldPersistSettings &&
-        !getMetricsSavingPinsEnabled
+      ([, , enableGlobalPins, getShouldPersistSettings]) =>
+        enableGlobalPins && getShouldPersistSettings
     ),
-    tap(() => {
-      this.savedPinsDataSource.removeAllScalarPins();
+    tap(([, pinnedCards, , , getMetricsSavingPinsEnabled]) => {
+      if (getMetricsSavingPinsEnabled) {
+        const tags = pinnedCards
+          .map((card) => {
+            return card.plugin === PluginType.SCALARS ? card.tag : null;
+          })
+          .filter((v) => v) as Tag[];
+        this.savedPinsDataSource.saveScalarPins(tags);
+      } else {
+        this.savedPinsDataSource.removeAllScalarPins();
+      }
     })
   );
 
@@ -427,7 +431,7 @@ export class MetricsEffects implements OnInitEffects {
         /**
          * Subscribes to: metricsEnableSavingPinsToggled.
          */
-        this.removeSavedPinsOnDisable$
+        this.addOrRemovePinsOnToggle$
       );
     },
     {dispatch: false}
