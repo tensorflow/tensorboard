@@ -22,7 +22,9 @@ import {
   ViewChild,
 } from '@angular/core';
 import {MatDialogRef} from '@angular/material/dialog';
-import {Run} from '../../types';
+import {GroupByKey, Run} from '../../types';
+import {MatSelectChange} from '@angular/material/select';
+import {ChangeDetectorRef} from '@angular/core';
 
 export interface ColorGroup {
   groupId: string;
@@ -39,18 +41,29 @@ export interface ColorGroup {
 export class RegexEditDialogComponent {
   @Input() regexString!: string;
   @Input() colorRunPairList!: ColorGroup[];
+  @Input() selectedGroupBy!: GroupByKey;
 
-  @Output() onSave = new EventEmitter<string>();
+  @Output() onSave = new EventEmitter();
   @Output() regexInputOnChange = new EventEmitter<string>();
+  @Output() regexTypeOnChange = new EventEmitter<GroupByKey>();
 
   timeOutId = 0;
   @ViewChild('regexStringInput', {static: true})
   regexStringInput!: ElementRef<HTMLInputElement>;
+  regexMatchType = '';
 
   constructor(
     public readonly dialogRef: MatDialogRef<RegexEditDialogComponent>,
-    private readonly hostElRef: ElementRef
+    private readonly hostElRef: ElementRef,
+    private cdRef: ChangeDetectorRef
   ) {}
+
+  ngOnInit() {
+    this.regexMatchType =
+      this.selectedGroupBy === GroupByKey.REGEX_BY_EXP
+        ? 'regex_by_exp'
+        : 'regex_by_run';
+  }
 
   private resetFocus() {
     if (!this.hostElRef.nativeElement.contains(document.activeElement)) {
@@ -59,13 +72,13 @@ export class RegexEditDialogComponent {
     }
   }
 
-  onEnter(regexString: string) {
-    this.onSaveClick(regexString);
+  onEnter() {
+    this.onSaveClick();
     this.dialogRef.close();
   }
 
-  onSaveClick(regexString: string) {
-    this.onSave.emit(regexString);
+  onSaveClick() {
+    this.onSave.emit();
   }
 
   fillExample(regexExample: string): void {
@@ -80,5 +93,16 @@ export class RegexEditDialogComponent {
   handleFocusOut() {
     clearTimeout(this.timeOutId);
     this.timeOutId = setTimeout(this.resetFocus.bind(this), 0);
+  }
+
+  regexTypeChange(event: MatSelectChange) {
+    this.regexMatchType = event.value;
+    // This line is needed to update the value on the HTML element.
+    this.cdRef.detectChanges();
+    this.regexTypeOnChange.emit(
+      event.value === 'regex_by_run'
+        ? GroupByKey.REGEX
+        : GroupByKey.REGEX_BY_EXP
+    );
   }
 }

@@ -49,6 +49,7 @@ import {
   RegexEditDialogContainer,
   TEST_ONLY,
 } from './regex_edit_dialog_container';
+import {MatSelectModule} from '@angular/material/select';
 
 describe('regex_edit_dialog', () => {
   let actualActions: Action[];
@@ -63,6 +64,7 @@ describe('regex_edit_dialog', () => {
         MatInputModule,
         MatDialogModule,
         NoopAnimationsModule,
+        MatSelectModule,
       ],
       declarations: [RegexEditDialogComponent, RegexEditDialogContainer],
       providers: [
@@ -77,9 +79,12 @@ describe('regex_edit_dialog', () => {
     store?.resetSelectors();
   });
 
-  function createComponent(experimentIds: string[]) {
+  function createComponent(
+    experimentIds: string[],
+    expNameByExpId: Record<string, string>
+  ) {
     TestBed.overrideProvider(MAT_DIALOG_DATA, {
-      useValue: {experimentIds},
+      useValue: {experimentIds, expNameByExpId},
     });
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
@@ -100,7 +105,7 @@ describe('regex_edit_dialog', () => {
   }
 
   it('renders regex edit dialog', () => {
-    const fixture = createComponent(['rose']);
+    const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
     fixture.detectChanges();
 
     const dialog = fixture.debugElement.query(
@@ -110,7 +115,7 @@ describe('regex_edit_dialog', () => {
   });
 
   it('renders regexString populated from store', () => {
-    const fixture = createComponent(['rose']);
+    const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
     fixture.detectChanges();
 
     const input = fixture.debugElement.query(By.css('input'));
@@ -119,7 +124,7 @@ describe('regex_edit_dialog', () => {
   });
 
   it('emits groupby action with regexString when clicking on save button', () => {
-    const fixture = createComponent(['rose']);
+    const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
     fixture.detectChanges();
 
     const input = fixture.debugElement.query(By.css('input'));
@@ -138,13 +143,14 @@ describe('regex_edit_dialog', () => {
     expect(dispatchSpy).toHaveBeenCalledWith(
       runGroupByChanged({
         experimentIds: ['rose'],
+        expNameByExpId: {rose: 'exp_name_rose'},
         groupBy: {key: GroupByKey.REGEX, regexString: 'test(\\d+)'},
       })
     );
   });
 
   it('emits groupby action with non regexString when clicking on save button', () => {
-    const fixture = createComponent(['rose']);
+    const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
     fixture.detectChanges();
 
     const input = fixture.debugElement.query(By.css('input'));
@@ -163,39 +169,44 @@ describe('regex_edit_dialog', () => {
     expect(dispatchSpy).toHaveBeenCalledWith(
       runGroupByChanged({
         experimentIds: ['rose'],
+        expNameByExpId: {rose: 'exp_name_rose'},
         groupBy: {key: GroupByKey.REGEX, regexString: 'test'},
       })
     );
   });
 
-  it('emits groupby action with empty string when clicking on save button', () => {
-    const fixture = createComponent(['rose']);
+  it('emits groupby experiment action if user chooses the dropdown and saves', () => {
+    const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
     fixture.detectChanges();
+
+    const matSelect = fixture.debugElement.query(By.css('mat-select'));
+    matSelect.triggerEventHandler('selectionChange', {value: 'regex_by_exp'});
 
     const input = fixture.debugElement.query(By.css('input'));
     const keyArgs: SendKeyArgs = {
-      key: '',
+      key: 'test',
       prevString: '',
       type: KeyType.CHARACTER,
       startingCursorIndex: 0,
     };
     sendKey(fixture, input, keyArgs);
-
     const buttons = fixture.debugElement.queryAll(
       By.css('div[mat-dialog-actions] button')
     );
     buttons[1].nativeElement.click();
 
+    expect(matSelect.nativeNode.textContent).toBe('Experiment Name');
     expect(dispatchSpy).toHaveBeenCalledWith(
       runGroupByChanged({
         experimentIds: ['rose'],
-        groupBy: {key: GroupByKey.REGEX, regexString: ''},
+        expNameByExpId: {rose: 'exp_name_rose'},
+        groupBy: {key: GroupByKey.REGEX_BY_EXP, regexString: 'test'},
       })
     );
   });
 
   it('closes the dialog when clicking on cancel button ', () => {
-    const fixture = createComponent(['rose']);
+    const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
     fixture.detectChanges();
 
     const buttons = fixture.debugElement.queryAll(
@@ -207,7 +218,7 @@ describe('regex_edit_dialog', () => {
   });
 
   it('does not emits groupby action when clicking on cancel button', () => {
-    const fixture = createComponent(['rose']);
+    const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
     fixture.detectChanges();
 
     const input = fixture.debugElement.query(By.css('input'));
@@ -227,7 +238,7 @@ describe('regex_edit_dialog', () => {
   });
 
   it('closes the dialog when clicking on save button ', () => {
-    const fixture = createComponent(['rose']);
+    const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
     fixture.detectChanges();
 
     const buttons = fixture.debugElement.queryAll(
@@ -238,7 +249,7 @@ describe('regex_edit_dialog', () => {
   });
 
   it('emits groupby action with regex string when pressing enter key ', () => {
-    const fixture = createComponent(['rose']);
+    const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
     fixture.detectChanges();
 
     const input = fixture.debugElement.query(By.css('input'));
@@ -253,13 +264,14 @@ describe('regex_edit_dialog', () => {
     expect(dispatchSpy).toHaveBeenCalledWith(
       runGroupByChanged({
         experimentIds: ['rose'],
+        expNameByExpId: {rose: 'exp_name_rose'},
         groupBy: {key: GroupByKey.REGEX, regexString: 'test'},
       })
     );
   });
 
   it('closes the dialog when pressing enter key', () => {
-    const fixture = createComponent(['rose']);
+    const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
     fixture.detectChanges();
 
     const input = fixture.debugElement.query(By.css('input'));
@@ -274,13 +286,14 @@ describe('regex_edit_dialog', () => {
     expect(dispatchSpy).toHaveBeenCalledWith(
       runGroupByChanged({
         experimentIds: ['rose'],
+        expNameByExpId: {rose: 'exp_name_rose'},
         groupBy: {key: GroupByKey.REGEX, regexString: 'test regex string'},
       })
     );
   });
 
   it('fills example and generates warning', () => {
-    const fixture = createComponent(['rose']);
+    const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
     fixture.detectChanges();
 
     const button = fixture.debugElement.query(
@@ -296,7 +309,7 @@ describe('regex_edit_dialog', () => {
   });
 
   it('fills example and generates group preview', fakeAsync(() => {
-    const fixture = createComponent(['rose']);
+    const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
     store.overrideSelector(getRuns, [
       buildRun({id: 'run1', name: 'run 1'}),
       buildRun({id: 'run2', name: 'run 2'}),
@@ -323,7 +336,7 @@ describe('regex_edit_dialog', () => {
 
   describe('live grouping result preview', () => {
     it('renders grouping result based on regex in store', fakeAsync(() => {
-      const fixture = createComponent(['rose']);
+      const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
       store.overrideSelector(getRuns, [
         buildRun({id: 'run1', name: 'run 1'}),
         buildRun({id: 'run2', name: 'run 2'}),
@@ -342,7 +355,7 @@ describe('regex_edit_dialog', () => {
     }));
 
     it('renders grouping preview on regex query input', fakeAsync(() => {
-      const fixture = createComponent(['rose']);
+      const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
       store.overrideSelector(getRuns, [
         buildRun({id: 'run1', name: 'run 1'}),
         buildRun({id: 'run2', name: 'run 2'}),
@@ -372,7 +385,7 @@ describe('regex_edit_dialog', () => {
     }));
 
     it('renders multiple groups preview on regex query input', fakeAsync(() => {
-      const fixture = createComponent(['rose']);
+      const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
       store.overrideSelector(getRuns, [
         buildRun({id: 'run1', name: 'run1 name'}),
         buildRun({id: 'run2', name: 'run2 name'}),
@@ -396,7 +409,7 @@ describe('regex_edit_dialog', () => {
     }));
 
     it('renders groupByRegexString on tentativeString after initialization', fakeAsync(() => {
-      const fixture = createComponent(['rose']);
+      const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
       store.overrideSelector(getRuns, [
         buildRun({id: 'run1', name: 'run 1'}),
         buildRun({id: 'run2', name: 'run 2'}),
@@ -423,7 +436,7 @@ describe('regex_edit_dialog', () => {
     }));
 
     it('does not render grouping preview on empty regex query input', fakeAsync(() => {
-      const fixture = createComponent(['rose']);
+      const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
       store.overrideSelector(getRuns, [
         buildRun({id: 'run1', name: 'run 1'}),
         buildRun({id: 'run2', name: 'run 2'}),
@@ -449,7 +462,7 @@ describe('regex_edit_dialog', () => {
     }));
 
     it('renders warning when no runs match', fakeAsync(() => {
-      const fixture = createComponent(['rose']);
+      const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
       store.overrideSelector(getRuns, [
         buildRun({id: 'run1', name: 'run 1'}),
         buildRun({id: 'run2', name: 'run 2'}),
@@ -475,7 +488,7 @@ describe('regex_edit_dialog', () => {
     }));
 
     it('does not update grouping preview on invalid regex input', fakeAsync(() => {
-      const fixture = createComponent(['rose']);
+      const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
       store.overrideSelector(getRuns, [
         buildRun({id: 'run1', name: 'run 1'}),
         buildRun({id: 'run2', name: 'run 2'}),
@@ -515,7 +528,7 @@ describe('regex_edit_dialog', () => {
   });
 
   it('renders `and X more` when the grouping result is more than 5', fakeAsync(() => {
-    const fixture = createComponent(['rose']);
+    const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
     store.overrideSelector(getRuns, [
       buildRun({id: 'run1', name: 'run1 name'}),
       buildRun({id: 'run2', name: 'run2 name'}),
@@ -554,7 +567,7 @@ describe('regex_edit_dialog', () => {
   }));
 
   it('makes focus stay in the regex dialog', fakeAsync(() => {
-    const fixture = createComponent(['rose']);
+    const fixture = createComponent(['rose'], {rose: 'exp_name_rose'});
     fixture.detectChanges();
     const input = fixture.debugElement.query(By.css('input'));
     // Works around for input element focus initial (cdkFocusInitial)
