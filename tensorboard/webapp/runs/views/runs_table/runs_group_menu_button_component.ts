@@ -34,7 +34,6 @@ export class RunsGroupMenuButtonComponent {
 
   @Input() showExperimentsGroupBy!: boolean;
   @Input() experimentIds!: string[];
-  @Input() expNameByExpId!: Record<string, string>;
   @Input() regexString!: string;
   @Input() selectedGroupBy!: GroupBy;
 
@@ -44,13 +43,11 @@ export class RunsGroupMenuButtonComponent {
   constructor(private readonly dialog: MatDialog) {}
 
   onRegexStringEdit() {
-    this.dialog.open(RegexEditDialogContainer, {
+    // data pass in the experiment id
+    const dialogRef = this.dialog.open(RegexEditDialogContainer, {
       maxHeight: '95vh',
       maxWidth: '80vw',
-      data: {
-        experimentIds: this.experimentIds,
-        expNameByExpId: this.expNameByExpId,
-      },
+      data: {experimentIds: this.experimentIds},
     });
   }
 
