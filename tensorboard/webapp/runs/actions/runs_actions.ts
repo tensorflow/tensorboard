@@ -40,7 +40,7 @@ export const fetchRunsSucceeded = createAction(
     experimentIds: string[];
     runsForAllExperiments: Run[];
     newRuns: ExperimentIdToRuns;
-    expNameByExpId?: Record<string, string>; // Should we make this optional?
+    expNameByExpId?: Record<string, string>;
   }>()
 );
 
