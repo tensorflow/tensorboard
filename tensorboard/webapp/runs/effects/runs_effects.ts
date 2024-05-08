@@ -219,11 +219,8 @@ export class RunsEffects {
         return {newRuns, runsForAllExperiments};
       }),
       withLatestFrom(this.store.select(getDashboardExperimentNames)),
-      map(([runsData, expNameByExpId]) => {
+      tap(([runsData, expNameByExpId]) => {
         const {newRuns, runsForAllExperiments} = runsData;
-        return {newRuns, runsForAllExperiments, expNameByExpId};
-      }),
-      tap(({newRuns, runsForAllExperiments, expNameByExpId}) => {
         this.store.dispatch(
           actions.fetchRunsSucceeded({
             experimentIds,

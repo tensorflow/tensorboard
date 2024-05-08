@@ -158,7 +158,6 @@ describe('runs_reducers', () => {
             ],
           },
         },
-        expNameByExpId: {},
       });
 
       const nextState = runsReducers.reducers(state, action);
@@ -229,7 +228,6 @@ describe('runs_reducers', () => {
             ],
           },
         },
-        expNameByExpId: {},
       });
 
       const nextState = runsReducers.reducers(state, action);
@@ -306,7 +304,6 @@ describe('runs_reducers', () => {
               ],
             },
           },
-          expNameByExpId: {},
         });
 
         const nextState = runsReducers.reducers(state, action);
@@ -344,7 +341,6 @@ describe('runs_reducers', () => {
             buildRun({id: 'eid2/delta', name: 'delta'}),
           ],
           newRuns: {},
-          expNameByExpId: {},
         });
 
         const nextState = runsReducers.reducers(state, action);
@@ -441,7 +437,6 @@ describe('runs_reducers', () => {
               runs: fewNewRuns,
             },
           },
-          expNameByExpId: {},
         })
       );
 
@@ -474,7 +469,6 @@ describe('runs_reducers', () => {
               runs: manyNewRuns,
             },
           },
-          expNameByExpId: {},
         })
       );
 
