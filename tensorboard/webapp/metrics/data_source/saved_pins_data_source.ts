@@ -30,6 +30,16 @@ export class SavedPinsDataSource {
     );
   }
 
+  saveScalarPins(tags: Tag[]): void {
+    const existingPins = this.getSavedScalarPins();
+    const newTags = tags.filter((v) => !existingPins.includes(v));
+    existingPins.push(...newTags);
+    window.localStorage.setItem(
+      SAVED_SCALAR_PINS_KEY,
+      JSON.stringify(existingPins)
+    );
+  }
+
   removeScalarPin(tag: Tag): void {
     const existingPins = this.getSavedScalarPins();
     window.localStorage.setItem(
