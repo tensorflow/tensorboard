@@ -371,11 +371,11 @@ export class MetricsEffects implements OnInitEffects {
     ),
     tap(([, pinnedCards, , , getMetricsSavingPinsEnabled]) => {
       if (getMetricsSavingPinsEnabled) {
-        const tags = pinnedCards
+        const tags: Tag[] = pinnedCards
           .map((card) => {
             return card.plugin === PluginType.SCALARS ? card.tag : null;
           })
-          .filter((v) => v) as Tag[];
+          .filter((v): v is Tag => v !== null);
         this.savedPinsDataSource.saveScalarPins(tags);
       } else {
         this.savedPinsDataSource.removeAllScalarPins();
