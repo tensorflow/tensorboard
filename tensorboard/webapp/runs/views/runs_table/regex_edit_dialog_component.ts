@@ -25,6 +25,7 @@ import {MatDialogRef} from '@angular/material/dialog';
 import {GroupByKey, Run} from '../../types';
 import {MatSelectChange} from '@angular/material/select';
 import {ChangeDetectorRef} from '@angular/core';
+import {memoize} from '../../../util/memoize';
 
 export interface ColorGroup {
   groupId: string;
@@ -47,6 +48,10 @@ export class RegexEditDialogComponent {
   @Output() regexInputOnChange = new EventEmitter<string>();
   @Output() regexTypeOnChange = new EventEmitter<GroupByKey>();
 
+  // Constants
+  REGEX_BY_RUN_STR = 'regex_by_run';
+  REGEX_BY_EXP_STR = 'regex_by_exp';
+
   timeOutId = 0;
   @ViewChild('regexStringInput', {static: true})
   regexStringInput!: ElementRef<HTMLInputElement>;
@@ -58,11 +63,11 @@ export class RegexEditDialogComponent {
     private cdRef: ChangeDetectorRef
   ) {}
 
-  ngOnInit() {
-    this.regexMatchType =
-      this.selectedGroupBy === GroupByKey.REGEX_BY_EXP
-        ? 'regex_by_exp'
-        : 'regex_by_run';
+  regexTypeFn = memoize(this.internalRegexTypeFn.bind(this));
+  private internalRegexTypeFn(key: GroupByKey) {
+    return key === GroupByKey.REGEX_BY_EXP
+      ? this.REGEX_BY_EXP_STR
+      : this.REGEX_BY_RUN_STR;
   }
 
   private resetFocus() {
@@ -96,11 +101,10 @@ export class RegexEditDialogComponent {
   }
 
   regexTypeChange(event: MatSelectChange) {
-    this.regexMatchType = event.value;
     // This line is needed to update the value on the HTML element.
     this.cdRef.detectChanges();
     this.regexTypeOnChange.emit(
-      event.value === 'regex_by_run'
+      event.value === this.REGEX_BY_RUN_STR
         ? GroupByKey.REGEX
         : GroupByKey.REGEX_BY_EXP
     );

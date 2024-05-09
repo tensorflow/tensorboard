@@ -34,7 +34,6 @@ export class RunsGroupMenuButtonComponent {
 
   @Input() showExperimentsGroupBy!: boolean;
   @Input() experimentIds!: string[];
-  @Input() expNameByExpId!: Record<string, string>;
   @Input() regexString!: string;
   @Input() selectedGroupBy!: GroupBy;
 
@@ -49,7 +48,6 @@ export class RunsGroupMenuButtonComponent {
       maxWidth: '80vw',
       data: {
         experimentIds: this.experimentIds,
-        expNameByExpId: this.expNameByExpId,
       },
     });
   }
@@ -59,7 +57,10 @@ export class RunsGroupMenuButtonComponent {
       this.onRegexStringEdit();
     } else {
       this.onGroupByChange.emit({
-        key: GroupByKey.REGEX,
+        key:
+          this.selectedGroupBy.key === GroupByKey.REGEX
+            ? GroupByKey.REGEX_BY_EXP
+            : GroupByKey.REGEX,
         regexString: this.regexString,
       });
     }

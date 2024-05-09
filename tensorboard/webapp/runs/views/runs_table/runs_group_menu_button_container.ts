@@ -40,7 +40,6 @@ import {GroupBy} from '../../types';
       [selectedGroupBy]="selectedGroupBy$ | async"
       [showExperimentsGroupBy]="showExperimentsGroupBy$ | async"
       [experimentIds]="experimentIds"
-      [expNameByExpId]="expNameByExpId$ | async"
       (onGroupByChange)="onGroupByChange($event)"
     ></runs-group-menu-button-component>
   `,
