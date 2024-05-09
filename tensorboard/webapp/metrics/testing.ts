@@ -422,6 +422,8 @@ export function buildStepIndexMetadata(
 export class TestingSavedPinsDataSource {
   saveScalarPin(tag: Tag) {}
 
+  saveScalarPins(tag: Tag[]) {}
+
   removeScalarPin(tag: Tag) {}
 
   getSavedScalarPins() {

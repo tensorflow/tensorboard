@@ -13,16 +13,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {GroupBy, GroupByKey, Run, RunGroup} from '../types';
+
 import {ExperimentId, RunId} from './runs_types';
 
 export function groupRuns(
   groupBy: GroupBy,
   runs: Run[],
-  runIdToExpId: Readonly<Record<RunId, ExperimentId>>
+  runIdToExpId: Readonly<Record<RunId, ExperimentId>>,
+  expNameByExpId?: Record<string, string>
 ): RunGroup {
   const matches: {[id: string]: Run[]} = {};
   const nonMatches: Run[] = [];
   const runGroup: RunGroup = {matches, nonMatches};
+  let regExp: RegExp;
 
   switch (groupBy.key) {
     case GroupByKey.RUN:
@@ -44,7 +47,6 @@ export function groupRuns(
         //TODO(japie1235813): propagate invalidity of regex string to user more gracefully
         break;
       }
-      let regExp: RegExp;
 
       // TODO(japie1235813): add additonal `\` to convert string to regex, which
       // makes `new RegExp()` construct properly
@@ -73,7 +75,39 @@ export function groupRuns(
         }
       }
       break;
+
+    case GroupByKey.REGEX_BY_EXP:
+      if (!groupBy.regexString || !expNameByExpId) {
+        break;
+      }
+
+      try {
+        regExp = new RegExp(groupBy.regexString);
+      } catch (e) {
+        break;
+      }
+
+      for (const run of runs) {
+        // Tries to match against experiment alias of the run.
+        const experimentName = expNameByExpId[runIdToExpId[run.id]];
+        const matchesList = experimentName.match(regExp);
+        if (matchesList) {
+          const hasCapturingGroup = matchesList.length > 1;
+          // In case regex string does not have a capturing group, we use pseudo
+          // group id of `pseudo_group`.
+          const id = hasCapturingGroup
+            ? JSON.stringify(matchesList.slice(1))
+            : 'pseudo_group';
+          const runs = matches[id] || [];
+          runs.push(run);
+          matches[id] = runs;
+        } else {
+          nonMatches.push(run);
+        }
+      }
+      break;
     default:
+      break;
   }
   return runGroup;
 }
@@ -87,6 +121,7 @@ export function createGroupBy(
 ): GroupBy {
   switch (groupByKey) {
     case GroupByKey.REGEX:
+    case GroupByKey.REGEX_BY_EXP:
       return {key: groupByKey, regexString: regexString ?? ''};
     case GroupByKey.RUN:
     case GroupByKey.EXPERIMENT:

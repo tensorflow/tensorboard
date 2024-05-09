@@ -64,6 +64,7 @@ tf_ts_library(
     ],
     deps = [
         "//tensorboard/webapp/app_routing:namespaced_state_reducer_helper",
+        "//tensorboard/webapp/experiments:types",
         "//tensorboard/webapp/runs:types",
         "//tensorboard/webapp/runs/data_source",
         "//tensorboard/webapp/types",
