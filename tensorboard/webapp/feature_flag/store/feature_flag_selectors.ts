@@ -160,3 +160,10 @@ export const getEnableGlobalPins = createSelector(
     return flags.enableGlobalPins;
   }
 );
+
+export const getEnableColorByExperiment = createSelector(
+  getFeatureFlags,
+  (flags: FeatureFlags): boolean => {
+    return flags.enableColorByExperiment;
+  }
+);

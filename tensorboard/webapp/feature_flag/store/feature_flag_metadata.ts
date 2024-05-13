@@ -125,6 +125,11 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       queryParamOverride: 'enableGlobalPins',
       parseValue: parseBoolean,
     },
+    enableColorByExperiment: {
+      defaultValue: false,
+      queryParamOverride: 'enableColorByExperiment',
+      parseValue: parseBoolean,
+    },
   };
 
 /**
