@@ -36,6 +36,7 @@ export class RunsGroupMenuButtonComponent {
   @Input() experimentIds!: string[];
   @Input() regexString!: string;
   @Input() selectedGroupBy!: GroupBy;
+  @Input() enableColorByExperiment!: boolean;
 
   @Output()
   onGroupByChange = new EventEmitter<GroupBy>();
@@ -56,11 +57,16 @@ export class RunsGroupMenuButtonComponent {
     if (!this.regexString) {
       this.onRegexStringEdit();
     } else {
+      // If feature is enabled user can toggle between run and experiment name regex matching.
+      let next_key = GroupByKey.REGEX;
+      if (
+        this.enableColorByExperiment &&
+        this.selectedGroupBy.key === GroupByKey.REGEX
+      ) {
+        next_key = GroupByKey.REGEX_BY_EXP;
+      }
       this.onGroupByChange.emit({
-        key:
-          this.selectedGroupBy.key === GroupByKey.REGEX
-            ? GroupByKey.REGEX_BY_EXP
-            : GroupByKey.REGEX,
+        key: next_key,
         regexString: this.regexString,
       });
     }

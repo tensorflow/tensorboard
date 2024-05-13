@@ -21,6 +21,7 @@ import {State} from '../../../app_state';
 import {
   getRegisteredRouteKinds,
   getDashboardExperimentNames,
+  getEnableColorByExperiment,
 } from '../../../selectors';
 import {runGroupByChanged} from '../../actions';
 import {
@@ -67,6 +68,10 @@ export class RunsGroupMenuButtonContainer {
 
   readonly expNameByExpId$: Observable<Record<string, string>> =
     this.store.select(getDashboardExperimentNames);
+
+  readonly colorByExperiment: Observable<boolean> = this.store.select(
+    getEnableColorByExperiment
+  );
 
   onGroupByChange(groupBy: GroupBy) {
     this.expNameByExpId$.pipe(take(1)).subscribe((expNameByExpId) => {

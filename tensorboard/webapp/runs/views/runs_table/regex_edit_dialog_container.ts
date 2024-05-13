@@ -26,7 +26,10 @@ import {
   take,
 } from 'rxjs/operators';
 import {State} from '../../../app_state';
-import {getDarkModeEnabled} from '../../../selectors';
+import {
+  getDarkModeEnabled,
+  getEnableColorByExperiment,
+} from '../../../selectors';
 import {selectors as settingsSelectors} from '../../../settings/';
 import {runGroupByChanged} from '../../actions';
 import {
@@ -48,6 +51,7 @@ const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
     [regexString]="groupByRegexString$ | async"
     [colorRunPairList]="colorRunPairList$ | async"
     [selectedGroupBy]="groupByRegexType$ | async"
+    [enableColorByExperiment]="enableColorByExperiment$ | async"
     (onSave)="onSave()"
     (regexInputOnChange)="onRegexInputOnChange($event)"
     (regexTypeOnChange)="onRegexTypeOnChange($event)"
@@ -69,6 +73,9 @@ export class RegexEditDialogContainer {
   private readonly allRuns$: Observable<Run[]>;
   private readonly expNameByExpId$: Observable<Record<string, string>> =
     this.store.select(getDashboardExperimentNames);
+  readonly enableColorByExperiment$: Observable<boolean> = this.store.select(
+    getEnableColorByExperiment
+  );
 
   // Tentative regex string and type are used locally in this component
   // to act as a callback to changes in the UI for string and type of regex

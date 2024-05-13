@@ -37,6 +37,7 @@ import {
   getDarkModeEnabled,
   getRunIdsForExperiment,
   getRuns,
+  getEnableColorByExperiment,
 } from '../../../selectors';
 import {selectors as settingsSelectors} from '../../../settings';
 import {buildColorPalette} from '../../../settings/testing';
@@ -97,6 +98,7 @@ describe('regex_edit_dialog', () => {
     store.overrideSelector(getDashboardExperimentNames, {
       rose: 'exp_name_rose',
     });
+    store.overrideSelector(getEnableColorByExperiment, true);
     actualActions = [];
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
@@ -204,6 +206,21 @@ describe('regex_edit_dialog', () => {
         groupBy: {key: GroupByKey.REGEX_BY_EXP, regexString: 'test'},
       })
     );
+  });
+
+  it('show only one dropdown option if colorByExperiment flag is disabled', () => {
+    const fixture = createComponent(['rose']);
+    store.overrideSelector(getEnableColorByExperiment, false);
+    fixture.detectChanges();
+
+    const matSelect = fixture.debugElement.query(
+      By.css('mat-select')
+    ).nativeElement;
+    matSelect.click();
+    fixture.detectChanges();
+
+    const options = fixture.debugElement.queryAll(By.css('mat-option'));
+    expect(options.length).toBe(1);
   });
 
   it('closes the dialog when clicking on cancel button ', () => {

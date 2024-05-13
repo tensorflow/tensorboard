@@ -43,6 +43,7 @@ export class RegexEditDialogComponent {
   @Input() regexString!: string;
   @Input() colorRunPairList!: ColorGroup[];
   @Input() selectedGroupBy!: GroupByKey;
+  @Input() enableColorByExperiment!: boolean;
 
   @Output() onSave = new EventEmitter();
   @Output() regexInputOnChange = new EventEmitter<string>();
