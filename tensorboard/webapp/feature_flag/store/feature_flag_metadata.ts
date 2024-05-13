@@ -121,7 +121,7 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       parseValue: parseBoolean,
     },
     enableGlobalPins: {
-      defaultValue: false,
+      defaultValue: true,
       queryParamOverride: 'enableGlobalPins',
       parseValue: parseBoolean,
     },
