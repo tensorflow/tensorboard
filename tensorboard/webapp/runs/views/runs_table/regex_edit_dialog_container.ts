@@ -77,9 +77,8 @@ export class RegexEditDialogContainer {
     getEnableColorByExperiment
   );
 
-  // Tentative regex string and type are used locally in this component
-  // to act as a callback to changes in the UI for string and type of regex
-  // respectively.
+  // Tentative regex string and type are used because we don't want to change the state
+  // every time we type in or select the dropdown option.
   private readonly tentativeRegexString$: Subject<string> =
     new Subject<string>();
   private readonly tentativeRegexType$: Subject<GroupByKey> =
@@ -99,10 +98,10 @@ export class RegexEditDialogContainer {
     ),
     this.tentativeRegexType$
   ).pipe(
+    startWith(GroupByKey.REGEX),
     filter(
       (key) => key === GroupByKey.REGEX || key === GroupByKey.REGEX_BY_EXP
     ),
-    startWith(GroupByKey.REGEX),
     shareReplay(1)
   );
 
