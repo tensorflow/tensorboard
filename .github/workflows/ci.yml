@@ -76,7 +76,7 @@ jobs:
       - name: 'Install TensorFlow'
         run: |
           python -m pip install -U pip
-          pip install "${TENSORFLOW_VERSION}"
+          pip install "${TENSORFLOW_VERSION}" keras-nightly==3.3.3.dev2024051503
         if: matrix.tf_version_id != 'notf'
       - name: 'Install Python dependencies'
         run: |
