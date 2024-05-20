@@ -52,4 +52,6 @@ export interface FeatureFlags {
   enableSuggestedCards: boolean;
   // Persists pinned scalar cards across multiple experiments.
   enableGlobalPins: boolean;
+  // Adds a new mode of coloring, by matching the regexp of experiment name.
+  enableColorByExperiment: boolean;
 }

@@ -22,7 +22,9 @@ import {
   ViewChild,
 } from '@angular/core';
 import {MatDialogRef} from '@angular/material/dialog';
-import {Run} from '../../types';
+import {GroupByKey, Run} from '../../types';
+import {MatSelectChange} from '@angular/material/select';
+import {memoize} from '../../../util/memoize';
 
 export interface ColorGroup {
   groupId: string;
@@ -39,9 +41,16 @@ export interface ColorGroup {
 export class RegexEditDialogComponent {
   @Input() regexString!: string;
   @Input() colorRunPairList!: ColorGroup[];
+  @Input() selectedGroupBy!: GroupByKey;
+  @Input() enableColorByExperiment!: boolean;
 
-  @Output() onSave = new EventEmitter<string>();
+  @Output() onSave = new EventEmitter();
   @Output() regexInputOnChange = new EventEmitter<string>();
+  @Output() regexTypeOnChange = new EventEmitter<GroupByKey>();
+
+  // Constants
+  REGEX_BY_RUN_STR = 'regex_by_run';
+  REGEX_BY_EXP_STR = 'regex_by_exp';
 
   timeOutId = 0;
   @ViewChild('regexStringInput', {static: true})
@@ -52,6 +61,13 @@ export class RegexEditDialogComponent {
     private readonly hostElRef: ElementRef
   ) {}
 
+  regexTypeFn = memoize(this.internalRegexTypeFn.bind(this));
+  private internalRegexTypeFn(key: GroupByKey) {
+    return key === GroupByKey.REGEX_BY_EXP
+      ? this.REGEX_BY_EXP_STR
+      : this.REGEX_BY_RUN_STR;
+  }
+
   private resetFocus() {
     if (!this.hostElRef.nativeElement.contains(document.activeElement)) {
       const input = this.regexStringInput.nativeElement;
@@ -59,13 +75,13 @@ export class RegexEditDialogComponent {
     }
   }
 
-  onEnter(regexString: string) {
-    this.onSaveClick(regexString);
+  onEnter() {
+    this.onSaveClick();
     this.dialogRef.close();
   }
 
-  onSaveClick(regexString: string) {
-    this.onSave.emit(regexString);
+  onSaveClick() {
+    this.onSave.emit();
   }
 
   fillExample(regexExample: string): void {
@@ -80,5 +96,13 @@ export class RegexEditDialogComponent {
   handleFocusOut() {
     clearTimeout(this.timeOutId);
     this.timeOutId = setTimeout(this.resetFocus.bind(this), 0);
+  }
+
+  regexTypeChange(event: MatSelectChange) {
+    this.regexTypeOnChange.emit(
+      event.value === this.REGEX_BY_RUN_STR
+        ? GroupByKey.REGEX
+        : GroupByKey.REGEX_BY_EXP
+    );
   }
 }

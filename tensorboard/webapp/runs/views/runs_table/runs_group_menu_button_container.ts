@@ -15,16 +15,20 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {map, take, filter, startWith, shareReplay} from 'rxjs/operators';
 import {RouteKind} from '../../../app_routing/types';
 import {State} from '../../../app_state';
-import {getRegisteredRouteKinds} from '../../../selectors';
+import {
+  getRegisteredRouteKinds,
+  getDashboardExperimentNames,
+  getEnableColorByExperiment,
+} from '../../../selectors';
 import {runGroupByChanged} from '../../actions';
 import {
   getColorGroupRegexString,
   getRunGroupBy,
 } from '../../store/runs_selectors';
-import {GroupBy} from '../../types';
+import {GroupBy, GroupByKey} from '../../types';
 
 /**
  * Renders run grouping menu controls.
@@ -35,6 +39,7 @@ import {GroupBy} from '../../types';
     <runs-group-menu-button-component
       [regexString]="groupByRegexString$ | async"
       [selectedGroupBy]="selectedGroupBy$ | async"
+      [lastRegexGroupByKey]="lastRegexGroupByKey$ | async"
       [showExperimentsGroupBy]="showExperimentsGroupBy$ | async"
       [experimentIds]="experimentIds"
       (onGroupByChange)="onGroupByChange($event)"
@@ -58,16 +63,32 @@ export class RunsGroupMenuButtonContainer {
   readonly selectedGroupBy$: Observable<GroupBy> =
     this.store.select(getRunGroupBy);
 
+  readonly lastRegexGroupByKey$: Observable<GroupByKey> = this.store
+    .select(getRunGroupBy)
+    .pipe(
+      map((group) => group.key),
+      filter(
+        (key) => key === GroupByKey.REGEX || key === GroupByKey.REGEX_BY_EXP
+      ),
+      startWith(GroupByKey.REGEX)
+    );
+
   readonly groupByRegexString$: Observable<string> = this.store.select(
     getColorGroupRegexString
   );
 
+  readonly expNameByExpId$: Observable<Record<string, string>> =
+    this.store.select(getDashboardExperimentNames);
+
   onGroupByChange(groupBy: GroupBy) {
-    this.store.dispatch(
-      runGroupByChanged({
-        experimentIds: this.experimentIds,
-        groupBy,
-      })
-    );
+    this.expNameByExpId$.pipe(take(1)).subscribe((expNameByExpId) => {
+      this.store.dispatch(
+        runGroupByChanged({
+          experimentIds: this.experimentIds,
+          groupBy,
+          expNameByExpId,
+        })
+      );
+    });
   }
 }
