@@ -283,6 +283,10 @@ def keras_model_to_graph_def(keras_layer):
             has_unsupported_value = True
 
         if has_unsupported_value:
+            # There's at least one known case when this happens, which is when
+            # mixed precision dtype policies are used, as described in issue
+            # #5548. (See https://keras.io/api/mixed_precision/).
+            # There might be a better way to handle this, but here we are.
             logger.warning(
                 "Unsupported dtype value in graph model config (json):\n%s",
                 dtype_or_policy,
