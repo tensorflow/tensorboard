@@ -146,7 +146,7 @@ describe('regex_edit_dialog', () => {
     expect(dispatchSpy).toHaveBeenCalledWith(
       runGroupByChanged({
         experimentIds: ['rose'],
-        expNameByExpId: {rose: 'exp_name_rose'},
+        expNameByExpId: {'rose': 'exp_name_rose'},
         groupBy: {key: GroupByKey.REGEX, regexString: 'test(\\d+)'},
       })
     );
@@ -172,7 +172,7 @@ describe('regex_edit_dialog', () => {
     expect(dispatchSpy).toHaveBeenCalledWith(
       runGroupByChanged({
         experimentIds: ['rose'],
-        expNameByExpId: {rose: 'exp_name_rose'},
+        expNameByExpId: {'rose': 'exp_name_rose'},
         groupBy: {key: GroupByKey.REGEX, regexString: 'test'},
       })
     );
@@ -202,7 +202,7 @@ describe('regex_edit_dialog', () => {
     expect(dispatchSpy).toHaveBeenCalledWith(
       runGroupByChanged({
         experimentIds: ['rose'],
-        expNameByExpId: {rose: 'exp_name_rose'},
+        expNameByExpId: {'rose': 'exp_name_rose'},
         groupBy: {key: GroupByKey.REGEX_BY_EXP, regexString: 'test'},
       })
     );
@@ -282,7 +282,7 @@ describe('regex_edit_dialog', () => {
     expect(dispatchSpy).toHaveBeenCalledWith(
       runGroupByChanged({
         experimentIds: ['rose'],
-        expNameByExpId: {rose: 'exp_name_rose'},
+        expNameByExpId: {'rose': 'exp_name_rose'},
         groupBy: {key: GroupByKey.REGEX, regexString: 'test'},
       })
     );
@@ -304,7 +304,7 @@ describe('regex_edit_dialog', () => {
     expect(dispatchSpy).toHaveBeenCalledWith(
       runGroupByChanged({
         experimentIds: ['rose'],
-        expNameByExpId: {rose: 'exp_name_rose'},
+        expNameByExpId: {'rose': 'exp_name_rose'},
         groupBy: {key: GroupByKey.REGEX, regexString: 'test regex string'},
       })
     );
