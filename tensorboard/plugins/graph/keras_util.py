@@ -258,13 +258,19 @@ def keras_model_to_graph_def(keras_layer):
             node_def.attr["keras_class"].s = keras_cls_name
 
         dtype_or_policy = layer_config.get("dtype")
-        # Skip dtype processing if this is a dict, since it's presumably a instance of
-        # tf/keras/mixed_precision/Policy rather than a single dtype.
+        dtype = None
+        # If this is a dict, try and extract the dtype string from
+        # `config.name`; keras will export like this for non-input layers. If
+        # we can't find `config.name`, we skip it as it's presumably a instance
+        # of tf/keras/mixed_precision/Policy rather than a single dtype.
         # TODO(#5548): parse the policy dict and populate the dtype attr with the variable dtype.
-        if dtype_or_policy is not None and not isinstance(
-            dtype_or_policy, dict
-        ):
-            tf_dtype = dtypes.as_dtype(layer_config.get("dtype"))
+        if isinstance(dtype_or_policy, dict):
+            if "config" in dtype_or_policy:
+                dtype = dtype_or_policy.get("config").get("name")
+        elif dtype_or_policy is not None:
+            dtype = dtype_or_policy
+        if dtype is not None:
+            tf_dtype = dtypes.as_dtype(dtype)
             node_def.attr["dtype"].type = tf_dtype.as_datatype_enum
         if layer.get("inbound_nodes") is not None:
             for name, size, index in _get_inbound_nodes(layer):
