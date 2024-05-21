@@ -154,6 +154,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_material_menu",
         "//tensorboard/webapp/angular:expect_angular_material_paginator",
         "//tensorboard/webapp/angular:expect_angular_material_progress_spinner",
+        "//tensorboard/webapp/angular:expect_angular_material_select",
         "//tensorboard/webapp/angular:expect_angular_material_sort",
         "//tensorboard/webapp/angular:expect_angular_material_table",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
