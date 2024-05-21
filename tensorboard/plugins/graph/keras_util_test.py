@@ -1043,6 +1043,20 @@ class KerasUtilTest(tf.test.TestCase):
 
         self.assertGraphDefToModel(expected_proto, model)
 
+    def test__keras_model_to_graph_def__does_not_crash_with_mixed_precision_dtype_policy(
+        self,
+    ):
+        # See https://keras.io/api/mixed_precision/ for more info.
+        # Test to avoid regression on issue #5548
+        first_layer = tf.keras.layers.Dense(
+            1, input_shape=(1,), dtype="mixed_float16"
+        )
+        model = tf.keras.Sequential([first_layer])
+
+        model_config = json.loads(model.to_json())
+        # This line should not raise errors:
+        keras_util.keras_model_to_graph_def(model_config)
+
 
 class _DoublingLayer(tf.keras.layers.Layer):
     def call(self, inputs):
