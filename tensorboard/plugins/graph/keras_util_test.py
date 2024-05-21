@@ -149,12 +149,6 @@ class KerasUtilTest(tf.test.TestCase):
               name: "model/dense"
               input: "model/functional_input"
               attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
-              attr {
                 key: "keras_class"
                 value {
                   s: "Dense"
@@ -165,12 +159,6 @@ class KerasUtilTest(tf.test.TestCase):
               name: "model/dense_1"
               input: "model/dense"
               attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
-              attr {
                 key: "keras_class"
                 value {
                   s: "Dense"
@@ -180,12 +168,6 @@ class KerasUtilTest(tf.test.TestCase):
             node {
               name: "model/dense_2"
               input: "model/dense_1"
-              attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
               attr {
                 key: "keras_class"
                 value {
@@ -225,12 +207,6 @@ class KerasUtilTest(tf.test.TestCase):
               name: "model/dense"
               input: "model/cycle_input"
               attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
-              attr {
                 key: "keras_class"
                 value {
                   s: "Dense"
@@ -242,12 +218,6 @@ class KerasUtilTest(tf.test.TestCase):
               input: "model/dense"
               input: "model/dense_2"
               attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
-              attr {
                 key: "keras_class"
                 value {
                   s: "Dense"
@@ -257,12 +227,6 @@ class KerasUtilTest(tf.test.TestCase):
             node {
               name: "model/dense_2"
               input: "model/dense_1"
-              attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
               attr {
                 key: "keras_class"
                 value {
@@ -301,12 +265,6 @@ class KerasUtilTest(tf.test.TestCase):
             node {
               name: "model/simple_rnn"
               input: "model/lstm_input"
-              attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
               attr {
                 key: "keras_class"
                 value {
@@ -498,12 +456,6 @@ class KerasUtilTest(tf.test.TestCase):
               name: "model/embedding"
               input: "model/main_input"
               attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
-              attr {
                 key: "keras_class"
                 value {
                   s: "Embedding"
@@ -513,12 +465,6 @@ class KerasUtilTest(tf.test.TestCase):
             node {
               name: "model/simple_rnn"
               input: "model/embedding"
-              attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
               attr {
                 key: "keras_class"
                 value {
@@ -546,12 +492,6 @@ class KerasUtilTest(tf.test.TestCase):
               input: "model/simple_rnn"
               input: "model/aux_input"
               attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
-              attr {
                 key: "keras_class"
                 value {
                   s: "Concatenate"
@@ -561,12 +501,6 @@ class KerasUtilTest(tf.test.TestCase):
             node {
               name: "model/dense"
               input: "model/concatenate"
-              attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
               attr {
                 key: "keras_class"
                 value {
@@ -578,12 +512,6 @@ class KerasUtilTest(tf.test.TestCase):
               name: "model/main_output"
               input: "model/dense"
               attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
-              attr {
                 key: "keras_class"
                 value {
                   s: "Dense"
@@ -593,12 +521,6 @@ class KerasUtilTest(tf.test.TestCase):
             node {
               name: "model/aux_output"
               input: "model/simple_rnn"
-              attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
               attr {
                 key: "keras_class"
                 value {
@@ -701,12 +623,6 @@ class KerasUtilTest(tf.test.TestCase):
               name: "model_1/model/dense"
               input: "model_1/model/sub_func_input_1"
               attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
-              attr {
                 key: "keras_class"
                 value {
                   s: "Dense"
@@ -716,12 +632,6 @@ class KerasUtilTest(tf.test.TestCase):
             node {
               name: "model_1/model/dense_1"
               input: "model_1/model/sub_func_input_2"
-              attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
               attr {
                 key: "keras_class"
                 value {
@@ -734,12 +644,6 @@ class KerasUtilTest(tf.test.TestCase):
               input: "model_1/model/dense"
               input: "model_1/model/dense_1"
               attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
-              attr {
                 key: "keras_class"
                 value {
                   s: "Concatenate"
@@ -749,12 +653,6 @@ class KerasUtilTest(tf.test.TestCase):
             node {
               name: "model_1/dense_2"
               input: "model_1/concatenate"
-              attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
               attr {
                 key: "keras_class"
                 value {
@@ -1010,12 +908,6 @@ class KerasUtilTest(tf.test.TestCase):
                   s: "_DoublingLayer"
                 }
               }
-              attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
             }
             node {
               name: "functional_1/add"
@@ -1025,12 +917,6 @@ class KerasUtilTest(tf.test.TestCase):
                 key: "keras_class"
                 value {
                   s: "Add"
-                }
-              }
-              attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
                 }
               }
             }
