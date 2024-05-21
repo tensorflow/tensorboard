@@ -43,6 +43,10 @@ for more complete definition.
 """
 from tensorboard.compat.proto.graph_pb2 import GraphDef
 from tensorboard.compat.tensorflow_stub import dtypes
+from tensorboard.util import tb_logging
+
+
+logger = tb_logging.get_logger()
 
 
 def _walk_layers(keras_layer):
@@ -259,19 +263,34 @@ def keras_model_to_graph_def(keras_layer):
 
         dtype_or_policy = layer_config.get("dtype")
         dtype = None
+        has_unsupported_value = False
         # If this is a dict, try and extract the dtype string from
-        # `config.name`; keras will export like this for non-input layers. If
-        # we can't find `config.name`, we skip it as it's presumably a instance
-        # of tf/keras/mixed_precision/Policy rather than a single dtype.
-        # TODO(#5548): parse the policy dict and populate the dtype attr with the variable dtype.
-        if isinstance(dtype_or_policy, dict):
-            if "config" in dtype_or_policy:
-                dtype = dtype_or_policy.get("config").get("name")
+        # `config.name`. Keras will export like this for non-input layers and
+        # some other cases (e.g. tf/keras/mixed_precision/Policy, as described
+        # in issue #5548).
+        if isinstance(dtype_or_policy, dict) and "config" in dtype_or_policy:
+            dtype = dtype_or_policy.get("config").get("name")
         elif dtype_or_policy is not None:
             dtype = dtype_or_policy
+
         if dtype is not None:
-            tf_dtype = dtypes.as_dtype(dtype)
-            node_def.attr["dtype"].type = tf_dtype.as_datatype_enum
+            try:
+                tf_dtype = dtypes.as_dtype(dtype)
+                node_def.attr["dtype"].type = tf_dtype.as_datatype_enum
+            except TypeError:
+                has_unsupported_value = True
+        elif dtype_or_policy is not None:
+            has_unsupported_value = True
+
+        if has_unsupported_value:
+            # There's at least one known case when this happens, which is when
+            # mixed precision dtype policies are used, as described in issue
+            # #5548. (See https://keras.io/api/mixed_precision/).
+            # There might be a better way to handle this, but here we are.
+            logger.warning(
+                "Unsupported dtype value in graph model config (json):\n%s",
+                dtype_or_policy,
+            )
         if layer.get("inbound_nodes") is not None:
             for name, size, index in _get_inbound_nodes(layer):
                 inbound_name = _scoped_name(name_scope, name)
