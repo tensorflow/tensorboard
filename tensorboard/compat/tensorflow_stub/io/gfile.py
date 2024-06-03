@@ -19,7 +19,7 @@ pure Python implementation, limited to the features required for
 TensorBoard.  This allows running TensorBoard without depending on
 TensorFlow for file operations.
 """
-
+from adlfs import AzureBlobFileSystem
 import dataclasses
 import glob as py_glob
 import io
@@ -602,11 +602,9 @@ class FSSpecFileSystem:
         prefix = self._get_chain_protocol_prefix(filename)
 
         return [
-            (
-                file
-                if (self.SEPARATOR in file or self.CHAIN_SEPARATOR in file)
-                else prefix + file
-            )
+            file
+            if (self.SEPARATOR in file or self.CHAIN_SEPARATOR in file)
+            else prefix + file
             for file in files
         ]
 
@@ -639,6 +637,11 @@ class FSSpecFileSystem:
 
 _FSSPEC_FILESYSTEM = FSSpecFileSystem()
 
+def _get_fs_class(filename):
+    filename = compat.as_str_any(filename)
+    segment = filename.partition(FSSpecFileSystem.CHAIN_SEPARATOR)[0]
+    protocol = segment.partition(FSSpecFileSystem.SEPARATOR)[0]
+    return fsspec.get_filesystem_class(protocol)
 
 def _get_fsspec_filesystem(filename):
     """
@@ -648,12 +651,7 @@ def _get_fsspec_filesystem(filename):
     if not FSSPEC_ENABLED:
         return None
 
-    segment = filename.partition(FSSpecFileSystem.CHAIN_SEPARATOR)[0]
-    protocol = segment.partition(FSSpecFileSystem.SEPARATOR)[0]
-    if fsspec.get_filesystem_class(protocol):
-        return _FSSPEC_FILESYSTEM
-    else:
-        return None
+    return _FSSPEC_FILESYSTEM if _get_fs_class(filename) else None
 
 
 register_filesystem("", LocalFileSystem())
@@ -671,7 +669,10 @@ class GFile:
             )
         self.filename = compat.as_bytes(filename)
         self.fs = get_filesystem(self.filename)
-        self.fs_supports_append = hasattr(self.fs, "append")
+        if _get_fs_class(self.filename) == AzureBlobFileSystem:
+            self.fs_supports_append = False
+        else:
+            self.fs_supports_append = hasattr(self.fs, "append")
         self.buff = None
         # The buffer offset and the buffer chunk size are measured in the
         # natural units of the underlying stream, i.e. bytes for binary mode,
