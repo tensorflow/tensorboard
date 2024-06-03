@@ -602,9 +602,11 @@ class FSSpecFileSystem:
         prefix = self._get_chain_protocol_prefix(filename)
 
         return [
-            file
-            if (self.SEPARATOR in file or self.CHAIN_SEPARATOR in file)
-            else prefix + file
+            (
+                file
+                if (self.SEPARATOR in file or self.CHAIN_SEPARATOR in file)
+                else prefix + file
+            )
             for file in files
         ]
 
