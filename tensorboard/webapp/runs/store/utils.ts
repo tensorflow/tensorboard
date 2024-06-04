@@ -77,7 +77,11 @@ export function groupRuns(
       break;
 
     case GroupByKey.REGEX_BY_EXP:
-      if (!groupBy.regexString || !expNameByExpId) {
+      if (
+        !groupBy.regexString ||
+        !expNameByExpId ||
+        Object.keys(expNameByExpId).length === 0
+      ) {
         break;
       }
 

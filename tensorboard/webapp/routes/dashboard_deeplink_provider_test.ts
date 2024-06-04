@@ -123,10 +123,19 @@ describe('core deeplink provider', () => {
         assert('run', {key: GroupByKey.RUN});
         assert('regex:', {key: GroupByKey.REGEX, regexString: ''});
         assert('regex:hello', {key: GroupByKey.REGEX, regexString: 'hello'});
+        assert('regex_by_exp:', {
+          key: GroupByKey.REGEX_BY_EXP,
+          regexString: '',
+        });
+        assert('regex_by_exp:world', {
+          key: GroupByKey.REGEX_BY_EXP,
+          regexString: 'world',
+        });
         assert('', null);
         assert('regex', null);
         assert('runs', null);
         assert('experiments', null);
+        assert('regex_by_exp', null);
       });
     });
 
@@ -434,6 +443,15 @@ describe('core deeplink provider', () => {
         expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
           [{key: 'runColorGroup', value: 'regex:hello:world'}]
         );
+
+        store.overrideSelector(selectors.getRunUserSetGroupBy, {
+          key: GroupByKey.REGEX_BY_EXP,
+          regexString: 'exp_name',
+        });
+        store.refreshState();
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [{key: 'runColorGroup', value: 'regex_by_exp:exp_name'}]
+        );
       });
 
       it('serializes interesting regex strings', () => {
@@ -453,6 +471,24 @@ describe('core deeplink provider', () => {
         store.refreshState();
         expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
           [{key: 'runColorGroup', value: 'regex:hello/(world):goodbye'}]
+        );
+
+        store.overrideSelector(selectors.getRunUserSetGroupBy, {
+          key: GroupByKey.REGEX_BY_EXP,
+          regexString: '',
+        });
+        store.refreshState();
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [{key: 'runColorGroup', value: 'regex_by_exp:'}]
+        );
+
+        store.overrideSelector(selectors.getRunUserSetGroupBy, {
+          key: GroupByKey.REGEX_BY_EXP,
+          regexString: 'one|two',
+        });
+        store.refreshState();
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [{key: 'runColorGroup', value: 'regex_by_exp:one|two'}]
         );
       });
     });

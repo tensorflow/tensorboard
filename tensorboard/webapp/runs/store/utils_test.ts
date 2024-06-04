@@ -292,6 +292,29 @@ describe('run store utils test', () => {
         });
       });
 
+      it('does not group if no experiment names are provided', () => {
+        const actual = groupRuns(
+          {key: GroupByKey.REGEX_BY_EXP, regexString: 'foo\\d+)bar'},
+          [
+            buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
+            buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
+            buildRun({id: 'eid2/beta', name: 'foo2bar1'}),
+            buildRun({id: 'eid2/gamma', name: 'gamma'}),
+          ],
+          {
+            'eid1/alpha': 'eid1',
+            'eid1/beta': 'eid1',
+            'eid2/beta': 'eid2',
+            'eid2/gamma': 'eid2',
+          },
+          {}
+        );
+        expect(actual).toEqual({
+          matches: {},
+          nonMatches: [],
+        });
+      });
+
       it('groups run by regex without capture group', () => {
         const actual = groupRuns(
           {key: GroupByKey.REGEX_BY_EXP, regexString: 'foo'},
