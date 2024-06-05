@@ -34,8 +34,9 @@ def run_tag_from_session_and_metric(session_name, metric_name):
     assert isinstance(metric_name, api_pb2.MetricName)
     # os.path.join() will append a final slash if the group is empty; it seems
     # like multiplexer.Tensors won't recognize paths that end with a '/' so
-    # we normalize the result of os.path.join() to remove the final '/' in that
-    # case.
-    run = os.path.normpath(os.path.join(session_name, metric_name.group))
+    # we remove the final '/' in that case.
+    run = os.path.join(session_name, metric_name.group)
+    if run.endswith("/"):
+        run = run[:-1]
     tag = metric_name.tag
     return run, tag

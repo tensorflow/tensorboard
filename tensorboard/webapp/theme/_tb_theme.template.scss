@@ -312,14 +312,16 @@ $tb-dark-theme: map_merge(
     button.mat-mdc-button-base {
       --tb-icon-width: 24px;
       --tb-icon-height: 24px;
+      --tb-icon-button-width: 40px;
+      --tb-icon-button-height: 40px;
       --mdc-text-button-label-text-tracking: normal;
       --mdc-filled-button-label-text-tracking: normal;
       --mdc-outlined-button-label-text-tracking: normal;
       --mdc-protected-button-label-text-tracking: normal;
 
       &[mat-icon-button].mat-mdc-icon-button {
-        width: 40px;
-        height: 40px;
+        width: var(--tb-icon-button-width);
+        height: var(--tb-icon-button-height);
         display: inline-flex;
         justify-content: center;
         align-items: center;

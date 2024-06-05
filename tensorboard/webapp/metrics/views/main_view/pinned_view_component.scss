@@ -26,6 +26,25 @@ mat-icon {
   margin-right: 5px;
 }
 
+.group-toolbar {
+  justify-content: space-between;
+}
+
+.left-items {
+  display: flex;
+  align-items: center;
+}
+
+.right-items {
+  button {
+    $_height: 25px;
+    font-size: 12px;
+    font-weight: normal;
+    height: $_height;
+    line-height: $_height;
+  }
+}
+
 .group-text {
   display: flex;
   align-items: baseline;

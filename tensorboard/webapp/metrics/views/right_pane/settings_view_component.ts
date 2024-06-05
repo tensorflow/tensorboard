@@ -70,12 +70,15 @@ export class SettingsViewComponent {
   @Input() linkedTimeSelection!: TimeSelection | null;
   @Input() stepMinMax!: {min: number; max: number};
   @Input() isSlideOutMenuOpen!: boolean;
+  @Input() isSavingPinsEnabled!: boolean;
+  @Input() globalPinsFeatureEnabled: boolean = false;
 
   @Output() linkedTimeToggled = new EventEmitter<void>();
 
   @Output() stepSelectorToggled = new EventEmitter<void>();
   @Output() rangeSelectionToggled = new EventEmitter<void>();
   @Output() onSlideOutToggled = new EventEmitter<void>();
+  @Output() onEnableSavingPinsToggled = new EventEmitter<void>();
 
   @Input() isImageSupportEnabled!: boolean;
 

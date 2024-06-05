@@ -75,7 +75,7 @@ export function metricName(metricInfo) {
   if (tag === undefined) {
     tag = '';
   }
-  if (group === '') {
+  if (group === '' || group === '.') {
     return tag;
   }
   return group + '.' + tag;

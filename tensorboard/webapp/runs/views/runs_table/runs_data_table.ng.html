@@ -33,6 +33,7 @@ limitations under the License.
     [hasMoreColumnsToLoad]="numColumnsLoaded === numColumnsToLoad"
     [columnFilters]="columnFilters"
     [loading]="loading"
+    [shouldAddBorders]="true"
     (sortDataBy)="sortDataBy.emit($event)"
     (orderColumns)="orderColumns.emit($event)"
     (addColumn)="addColumn.emit($event)"
@@ -41,7 +42,7 @@ limitations under the License.
     (loadAllColumns)="loadAllColumns.emit()"
   >
     <ng-container header>
-      <ng-container *ngFor="let header of getHeaders()">
+      <ng-container *ngFor="let header of extendHeaders(headers)">
         <tb-data-table-header-cell
           [header]="header"
           [sortingInfo]="sortingInfo"
@@ -67,7 +68,7 @@ limitations under the License.
     <ng-container content>
       <ng-container *ngFor="let dataRow of data; trackBy: trackByRuns">
         <tb-data-table-content-row [attr.data-id]="dataRow.id">
-          <ng-container *ngFor="let header of getHeaders()">
+          <ng-container *ngFor="let header of extendHeaders(headers)">
             <tb-data-table-content-cell
               [header]="header"
               [datum]="dataRow[header.name]"
@@ -105,17 +106,4 @@ limitations under the License.
       </ng-container>
     </ng-container>
   </tb-data-table>
-</div>
-<div class="full-screen-toggle" [ngClass]="{'full-screen': isFullScreen}">
-  <button
-    mat-button
-    class="full-screen-btn"
-    [ngClass]="isFullScreen ? 'collapse' : 'expand'"
-    (click)="toggleFullScreen.emit()"
-  >
-    <mat-icon
-      class="expand-collapse-icon"
-      [svgIcon]="isFullScreen ? 'arrow_back_24px' : 'arrow_forward_24px'"
-    ></mat-icon>
-  </button>
 </div>

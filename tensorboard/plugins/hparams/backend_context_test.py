@@ -129,6 +129,9 @@ class BackendContextTest(tf.test.TestCase):
             "exp/session_3xyz/": {
                 "loss2": b"",
             },
+            ".": {
+                "entropy": b"",
+            },
         }
         result = {}
         for run, tag_to_content in scalars_content.items():
@@ -898,6 +901,12 @@ class BackendContextTest(tf.test.TestCase):
               name {
                 group: "exp/session_3"
                 tag: "accuracy"
+              }
+            }
+            metric_infos {
+              name {
+                group: "."
+                tag: "entropy"
               }
             }
             metric_infos {

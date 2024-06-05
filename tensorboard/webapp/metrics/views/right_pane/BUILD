@@ -11,17 +11,28 @@ tf_sass_binary(
     ],
 )
 
+tf_sass_binary(
+    name = "saving_pins_checkbox_styles",
+    src = "saving_pins_checkbox_component.scss",
+    deps = [
+        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/theme",
+    ],
+)
+
 tf_ng_module(
     name = "right_pane",
     srcs = [
         "right_pane_component.ts",
         "right_pane_module.ts",
+        "saving_pins_checkbox_component.ts",
         "settings_view_component.ts",
         "settings_view_container.ts",
     ],
     assets = [
         ":settings_view_styles",
         "settings_view_component.ng.html",
+        ":saving_pins_checkbox_styles",
     ],
     deps = [
         "//tensorboard/webapp:app_state",
@@ -29,12 +40,14 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_button_toggle",
         "//tensorboard/webapp/angular:expect_angular_material_checkbox",
+        "//tensorboard/webapp/angular:expect_angular_material_dialog",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_select",
         "//tensorboard/webapp/angular:expect_angular_material_slider",
         "//tensorboard/webapp/feature_flag",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/actions",
+        "//tensorboard/webapp/metrics/views/right_pane/saving_pins_dialog",
         "//tensorboard/webapp/widgets/card_fob:types",
         "//tensorboard/webapp/widgets/dropdown",
         "//tensorboard/webapp/widgets/range_input",
@@ -56,6 +69,7 @@ tf_ts_library(
         ":right_pane",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_button_toggle",
         "//tensorboard/webapp/angular:expect_angular_material_checkbox",
@@ -66,6 +80,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/store",
+        "//tensorboard/webapp/metrics/views/right_pane/saving_pins_dialog",
         "//tensorboard/webapp/testing:utils",
         "//tensorboard/webapp/widgets/card_fob:types",
         "//tensorboard/webapp/widgets/dropdown",

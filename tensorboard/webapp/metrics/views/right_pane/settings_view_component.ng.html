@@ -93,6 +93,14 @@ limitations under the License.
       </button>
     </div>
   </div>
+
+  <div class="control-row saving-pins" *ngIf="globalPinsFeatureEnabled">
+    <saving-pins-checkbox
+      [isChecked]="isSavingPinsEnabled"
+      (onCheckboxToggled)="onEnableSavingPinsToggled.emit(isSavingPinsEnabled)"
+    >
+    </saving-pins-checkbox>
+  </div>
 </section>
 
 <section class="scalars">

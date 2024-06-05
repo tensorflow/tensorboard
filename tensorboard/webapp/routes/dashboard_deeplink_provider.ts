@@ -42,6 +42,7 @@ import {
 import {featureFlagsToSerializableQueryParams} from './feature_flag_serializer';
 
 const COLOR_GROUP_REGEX_VALUE_PREFIX = 'regex:';
+const COLOR_GROUP_REGEX_BY_EXP_VALUE_PREFIX = 'regex_by_exp:';
 
 /**
  * Provides deeplinking for the core dashboards page.
@@ -135,6 +136,9 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
             case GroupByKey.REGEX:
               value = `${COLOR_GROUP_REGEX_VALUE_PREFIX}${groupBy.regexString}`;
               break;
+            case GroupByKey.REGEX_BY_EXP:
+              value = `${COLOR_GROUP_REGEX_BY_EXP_VALUE_PREFIX}${groupBy.regexString}`;
+              break;
             default:
               throw new RangeError(`Serialization not implemented`);
           }
@@ -197,6 +201,12 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
               COLOR_GROUP_REGEX_VALUE_PREFIX.length
             );
             groupBy = {key: GroupByKey.REGEX, regexString};
+          }
+          if (value.startsWith(COLOR_GROUP_REGEX_BY_EXP_VALUE_PREFIX)) {
+            const regexString = value.slice(
+              COLOR_GROUP_REGEX_BY_EXP_VALUE_PREFIX.length
+            );
+            groupBy = {key: GroupByKey.REGEX_BY_EXP, regexString};
           }
           break;
         }

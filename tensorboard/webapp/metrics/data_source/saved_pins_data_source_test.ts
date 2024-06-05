@@ -85,7 +85,7 @@ describe('SavedPinsDataSource Test', () => {
       expect(dataSource.getSavedScalarPins()).toEqual(['tag1', 'tag2']);
     });
 
-    it('does not addd the provided tag if it already exists', () => {
+    it('does not add the provided tag if it already exists', () => {
       window.localStorage.setItem(
         SAVED_SCALAR_PINS_KEY,
         JSON.stringify(['tag1', 'tag2'])
@@ -94,6 +94,36 @@ describe('SavedPinsDataSource Test', () => {
       dataSource.saveScalarPin('tag2');
 
       expect(dataSource.getSavedScalarPins()).toEqual(['tag1', 'tag2']);
+    });
+  });
+
+  describe('saveScalarPins', () => {
+    it('stores the provided tags in the local storage', () => {
+      dataSource.saveScalarPins(['tag1', 'tag2']);
+
+      expect(dataSource.getSavedScalarPins()).toEqual(['tag1', 'tag2']);
+    });
+
+    it('adds the provided tags to the existing list', () => {
+      window.localStorage.setItem(
+        SAVED_SCALAR_PINS_KEY,
+        JSON.stringify(['tag1'])
+      );
+
+      dataSource.saveScalarPins(['tag2']);
+
+      expect(dataSource.getSavedScalarPins()).toEqual(['tag1', 'tag2']);
+    });
+
+    it('does not add the tag if it already exists', () => {
+      window.localStorage.setItem(
+        SAVED_SCALAR_PINS_KEY,
+        JSON.stringify(['tag1', 'tag2'])
+      );
+
+      dataSource.saveScalarPins(['tag2', 'tag3']);
+
+      expect(dataSource.getSavedScalarPins()).toEqual(['tag1', 'tag2', 'tag3']);
     });
   });
 
@@ -112,6 +142,17 @@ describe('SavedPinsDataSource Test', () => {
       dataSource.removeScalarPin('tag3');
 
       expect(dataSource.getSavedScalarPins()).toEqual(['tag1']);
+    });
+  });
+
+  describe('removeAllScalarPins', () => {
+    it('removes all existing pins', () => {
+      dataSource.saveScalarPin('tag3');
+      dataSource.saveScalarPin('tag4');
+
+      dataSource.removeAllScalarPins();
+
+      expect(dataSource.getSavedScalarPins().length).toEqual(0);
     });
   });
 });

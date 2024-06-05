@@ -110,6 +110,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_dynamic_testing",
+        "//tensorboard/webapp/feature_flag",
         "//tensorboard/webapp/metrics/store:metrics_initial_state_provider",
         "//tensorboard/webapp/metrics/store:types",
         "//tensorboard/webapp/metrics/views",

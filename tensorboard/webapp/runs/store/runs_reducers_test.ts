@@ -322,7 +322,7 @@ describe('runs_reducers', () => {
         );
       });
 
-      it('assigns non-matched colors to regex non-matched runs', () => {
+      it('assigns non-matched colors to regex by run, non-matched runs', () => {
         const state = buildRunsState({
           initialGroupBy: {key: GroupByKey.REGEX, regexString: 'foo(\\d+)'},
           defaultRunColorIdForGroupBy: new Map([
@@ -355,6 +355,63 @@ describe('runs_reducers', () => {
             ['eid2/gamma', 1],
             ['eid2/alpha', -1],
             ['eid2/delta', -1],
+          ])
+        );
+      });
+
+      it('assigns non-matched colors to regex by experiment, non-matched runs', () => {
+        const state = buildRunsState({
+          initialGroupBy: {
+            key: GroupByKey.REGEX_BY_EXP,
+            regexString: 'foo(\\d+)',
+          },
+          defaultRunColorIdForGroupBy: new Map([
+            ['foo', 0],
+            ['bar', 0],
+          ]),
+          runIdToExpId: {
+            'eid1/alpha': 'eid1',
+            'eid1/beta': 'eid1',
+            'eid2/beta': 'eid2',
+            'eid2/gamma': 'eid2',
+            'eid2/alpha': 'eid2',
+            'eid3/delta': 'eid3',
+            'eid4/theta': 'eid4',
+          },
+        });
+        const action = actions.fetchRunsSucceeded({
+          experimentIds: ['eid1', 'eid2', 'eid3', 'eid4'],
+          runsForAllExperiments: [
+            buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
+            buildRun({id: 'eid1/beta', name: 'foo2bar1'}),
+            buildRun({id: 'eid2/beta', name: 'foo2bar2'}),
+            buildRun({id: 'eid2/gamma', name: 'foo2bar2bar'}),
+            buildRun({id: 'eid2/alpha', name: 'alpha'}),
+            buildRun({id: 'eid3/delta', name: 'delta'}),
+            buildRun({id: 'eid4/theta', name: 'theta'}),
+          ],
+          newRuns: {},
+          expNameByExpId: {
+            eid1: 'foo1',
+            eid2: 'foo2bar1',
+            eid3: 'foo1bar2',
+            eid4: 'theta',
+          },
+        });
+
+        const nextState = runsReducers.reducers(state, action);
+
+        expect(nextState.data.defaultRunColorIdForGroupBy).toEqual(
+          new Map([
+            ['foo', 0],
+            ['bar', 0],
+            ['eid1/alpha', 0],
+            ['eid1/beta', 0],
+            ['eid2/beta', 1],
+            ['eid2/gamma', 1],
+            ['eid2/alpha', 1],
+            ['eid3/delta', 0],
+            ['eid4/theta', -1],
           ])
         );
       });
@@ -916,6 +973,84 @@ describe('runs_reducers', () => {
       expect(nextState.data.colorGroupRegexString).toBe('foo(\\d+)');
     });
 
+    it('reassigns color to REGEX_BY_EXP from RUN', () => {
+      const state = buildRunsState({
+        initialGroupBy: {key: GroupByKey.RUN},
+        runIds: {
+          eid1: ['run1', 'run2'],
+          eid2: ['run3', 'run4', 'run5', 'run6'],
+          eid3: ['run7'],
+          eid4: ['run8'],
+        },
+        runIdToExpId: {
+          run1: 'eid1',
+          run2: 'eid1',
+          run3: 'eid2',
+          run4: 'eid2',
+          run5: 'eid2',
+          run6: 'eid2',
+          run7: 'eid3',
+          run8: 'eid4',
+        },
+        runMetadata: {
+          run1: buildRun({id: 'run1', name: 'foo1bar1'}),
+          run2: buildRun({id: 'run2', name: 'foo2bar1'}),
+          run3: buildRun({id: 'run3', name: 'foo2bar2'}),
+          run4: buildRun({id: 'run4', name: 'foo2bar2bar'}),
+          run5: buildRun({id: 'run5', name: 'beta'}),
+          run6: buildRun({id: 'run6', name: 'gamma'}),
+          run7: buildRun({id: 'run7', name: 'foo1bar1'}),
+          run8: buildRun({id: 'run8', name: 'theta'}),
+        },
+        defaultRunColorIdForGroupBy: new Map([
+          ['run1', 0],
+          ['run2', 1],
+          ['run3', 2],
+          ['run4', 3],
+          ['run5', 4],
+          ['run6', 5],
+          ['run7', 6],
+          ['run8', 7],
+        ]),
+      });
+
+      const nextState = runsReducers.reducers(
+        state,
+        actions.runGroupByChanged({
+          experimentIds: ['eid1', 'eid2', 'eid3', 'eid4'],
+          groupBy: {key: GroupByKey.REGEX_BY_EXP, regexString: 'foo(\\d+)'},
+          expNameByExpId: {
+            eid1: 'foo1',
+            eid2: 'foo2',
+            eid3: 'foo1bar1',
+            eid4: 'theta',
+          },
+        })
+      );
+
+      expect(nextState.data.userSetGroupByKey).toEqual(GroupByKey.REGEX_BY_EXP);
+      expect(nextState.data.groupKeyToColorId).toEqual(
+        new Map([
+          ['["1"]', 0],
+          ['["2"]', 1],
+        ])
+      );
+      expect(nextState.data.defaultRunColorIdForGroupBy).toEqual(
+        new Map([
+          ['run1', 0],
+          ['run2', 0],
+          ['run3', 1],
+          ['run4', 1],
+          ['run5', 1],
+          ['run6', 1],
+          ['run7', 0],
+          ['run8', -1],
+        ])
+      );
+      expect(nextState.data.runColorOverrideForGroupBy).toEqual(new Map());
+      expect(nextState.data.colorGroupRegexString).toBe('foo(\\d+)');
+    });
+
     it('preserves regexString when reassigning color to RUN from REGEX', () => {
       const state = buildRunsState({
         initialGroupBy: {key: GroupByKey.RUN},
@@ -972,6 +1107,73 @@ describe('runs_reducers', () => {
         actions.runGroupByChanged({
           experimentIds: ['eid1', 'eid2'],
           groupBy: {key: GroupByKey.REGEX, regexString: 'updated regexString'},
+        })
+      );
+      expect(state4.data.colorGroupRegexString).toBe('updated regexString');
+    });
+
+    it('preserves experiment regexString when reassigning color to RUN from REGEX_BY_EXP', () => {
+      const state = buildRunsState({
+        initialGroupBy: {key: GroupByKey.RUN},
+        runIds: {
+          eid1: ['run1', 'run2'],
+          eid2: ['run3', 'run4', 'run5', 'run6'],
+        },
+        runIdToExpId: {
+          run1: 'eid1',
+          run2: 'eid1',
+          run3: 'eid2',
+          run4: 'eid2',
+          run5: 'eid2',
+          run6: 'eid2',
+        },
+        runMetadata: {
+          run1: buildRun({id: 'run1', name: 'foo1bar1'}),
+          run2: buildRun({id: 'run2', name: 'foo2bar1'}),
+          run3: buildRun({id: 'run3', name: 'foo2bar2'}),
+          run4: buildRun({id: 'run4', name: 'foo2bar2bar'}),
+          run5: buildRun({id: 'run5', name: 'beta'}),
+          run6: buildRun({id: 'run6', name: 'gamma'}),
+        },
+        defaultRunColorIdForGroupBy: new Map([
+          ['run1', 0],
+          ['run2', 1],
+          ['run3', 2],
+          ['run4', 3],
+          ['run5', 4],
+          ['run6', 5],
+        ]),
+      });
+
+      const state2 = runsReducers.reducers(
+        state,
+        actions.runGroupByChanged({
+          experimentIds: ['eid1', 'eid2'],
+          groupBy: {
+            key: GroupByKey.REGEX_BY_EXP,
+            regexString: 'initial regex string',
+          },
+        })
+      );
+      const state3 = runsReducers.reducers(
+        state2,
+        actions.runGroupByChanged({
+          experimentIds: ['eid1', 'eid2'],
+          groupBy: {key: GroupByKey.RUN},
+        })
+      );
+
+      expect(state3.data.colorGroupRegexString).toBe('initial regex string');
+
+      // Updates colorGroupRegexString with new regexString when type GroupBy is RegexGroupBy
+      const state4 = runsReducers.reducers(
+        state3,
+        actions.runGroupByChanged({
+          experimentIds: ['eid1', 'eid2'],
+          groupBy: {
+            key: GroupByKey.REGEX_BY_EXP,
+            regexString: 'updated regexString',
+          },
         })
       );
       expect(state4.data.colorGroupRegexString).toBe('updated regexString');
@@ -1138,6 +1340,28 @@ describe('runs_reducers', () => {
       expect(nextState.data.colorGroupRegexString).toBe('regex string');
     });
 
+    it('sets regexString on groupBy REGEX_BY_EXP', () => {
+      const state = buildRunsState({
+        initialGroupBy: {key: GroupByKey.EXPERIMENT},
+      });
+
+      const partialState: URLDeserializedState = {
+        runs: {
+          groupBy: {key: GroupByKey.REGEX_BY_EXP, regexString: 'regex string'},
+          regexFilter: null,
+        },
+      };
+      const nextState = runsReducers.reducers(
+        state,
+        stateRehydratedFromUrl({
+          routeKind: RouteKind.COMPARE_EXPERIMENT,
+          partialState,
+        })
+      );
+
+      expect(nextState.data.colorGroupRegexString).toBe('regex string');
+    });
+
     it('does not set regexFilter when null value provided', () => {
       const state = buildRunsState({
         regexFilter: 'hello',
@@ -1209,7 +1433,7 @@ describe('runs_reducers', () => {
       expect(nextState.data.userSetGroupByKey).toBe(GroupByKey.EXPERIMENT);
     });
 
-    it('set regexFilter and userSetGroupBy to be group by regex', () => {
+    it('set regexFilter and userSetGroupBy to be group by run name regex', () => {
       const state = buildRunsState({
         colorGroupRegexString: '',
         initialGroupBy: {key: GroupByKey.RUN},
@@ -1234,6 +1458,34 @@ describe('runs_reducers', () => {
 
       expect(nextState.data.regexFilter).toBe('world');
       expect(nextState.data.userSetGroupByKey).toBe(GroupByKey.REGEX);
+      expect(nextState.data.colorGroupRegexString).toBe('train');
+    });
+
+    it('set regexFilter and userSetGroupBy to be group by experiment name regex', () => {
+      const state = buildRunsState({
+        colorGroupRegexString: '',
+        initialGroupBy: {key: GroupByKey.RUN},
+        userSetGroupByKey: GroupByKey.EXPERIMENT,
+        regexFilter: 'hello',
+      });
+
+      const partialState: URLDeserializedState = {
+        runs: {
+          groupBy: {key: GroupByKey.REGEX_BY_EXP, regexString: 'train'},
+          regexFilter: 'world',
+        },
+      };
+
+      const nextState = runsReducers.reducers(
+        state,
+        stateRehydratedFromUrl({
+          routeKind: RouteKind.EXPERIMENT,
+          partialState,
+        })
+      );
+
+      expect(nextState.data.regexFilter).toBe('world');
+      expect(nextState.data.userSetGroupByKey).toBe(GroupByKey.REGEX_BY_EXP);
       expect(nextState.data.colorGroupRegexString).toBe('train');
     });
   });

@@ -136,3 +136,8 @@ export enum ColumnGroup {
   HPARAM = 'HPARAM',
   OTHER = 'OTHER',
 }
+
+export enum AddColumnSize {
+  DEFAULT = 'DEFAULT',
+  SMALL = 'SMALL',
+}

@@ -15,15 +15,9 @@ limitations under the License.
 @use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 $_circle-size: 20px;
-$_arrow_size: 16px;
 
 :host {
-  width: 100%;
-}
-
-:host {
-  overflow-y: auto;
-  width: 100%;
+  min-width: 100%;
 }
 
 .color-container {
@@ -57,14 +51,6 @@ tb-data-table-header-cell {
   padding: 0 4px;
   vertical-align: middle;
   @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
-
-  &:last-child {
-    @include tb-theme-foreground-prop(border-right, border, 1px solid);
-  }
-}
-
-tb-data-table-header-cell:last-of-type {
-  @include tb-theme-foreground-prop(border-right, border, 1px solid);
 }
 
 .table-column-selected,
@@ -72,49 +58,7 @@ tb-data-table-header-cell:last-of-type {
   width: 40px;
 }
 
-.full-screen-toggle {
-  opacity: 0;
-  position: absolute;
-  height: 100%;
-  // Ensure the button is on the right side then add 2px for the drag target.
-  left: calc(100% + 2px);
-  top: 0;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-
-  &:hover {
-    opacity: 0.8;
-  }
-
-  &.full-screen {
-    left: unset;
-    right: 0;
-  }
-
-  .full-screen-btn {
-    background-color: gray;
-    padding: 0;
-    min-width: $_arrow_size;
-    width: $_arrow_size;
-
-    &.expand {
-      border-radius: 0 $_arrow_size $_arrow_size 0;
-    }
-
-    &.collapse {
-      border-radius: $_arrow_size 0 0 $_arrow_size;
-    }
-
-    .expand-collapse-icon {
-      font-size: $_arrow_size;
-      width: $_arrow_size;
-    }
-  }
-}
-
 .filter-row {
-  @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
   display: flex;
   align-items: center;
   height: 48px;
@@ -124,7 +68,4 @@ tb-data-table-header-cell:last-of-type {
     padding-left: 16px;
     flex-grow: 1;
   }
-}
-.table-container {
-  overflow-x: auto;
 }

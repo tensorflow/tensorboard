@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
+import {MatDialog} from '@angular/material/dialog';
 import {Observable} from 'rxjs';
 import {filter, map, take, withLatestFrom} from 'rxjs/operators';
 import {State} from '../../../app_state';
@@ -28,6 +29,7 @@ import {
   metricsChangeScalarSmoothing,
   metricsChangeTooltipSort,
   metricsChangeXAxisType,
+  metricsEnableSavingPinsToggled,
   metricsResetCardWidth,
   metricsResetImageBrightness,
   metricsResetImageContrast,
@@ -39,6 +41,10 @@ import {
   stepSelectorToggled,
 } from '../../actions';
 import {HistogramMode, TooltipSort, XAxisType} from '../../types';
+import {
+  SavingPinsDialogComponent,
+  SavingPinsDialogResult,
+} from './saving_pins_dialog/saving_pins_dialog_component';
 
 @Component({
   selector: 'metrics-dashboard-settings',
@@ -83,13 +89,19 @@ import {HistogramMode, TooltipSort, XAxisType} from '../../types';
       (stepSelectorToggled)="onStepSelectorToggled()"
       (rangeSelectionToggled)="onRangeSelectionToggled()"
       (onSlideOutToggled)="onSlideOutToggled()"
+      [isSavingPinsEnabled]="isSavingPinsEnabled$ | async"
+      (onEnableSavingPinsToggled)="onEnableSavingPinsToggled($event)"
+      [globalPinsFeatureEnabled]="globalPinsFeatureEnabled$ | async"
     >
     </metrics-dashboard-settings-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SettingsViewContainer {
-  constructor(private readonly store: Store<State>) {}
+  constructor(
+    private readonly store: Store<State>,
+    private readonly dialog: MatDialog
+  ) {}
 
   readonly isScalarStepSelectorEnabled$: Observable<boolean> =
     this.store.select(selectors.getMetricsStepSelectorEnabled);
@@ -145,6 +157,13 @@ export class SettingsViewContainer {
   );
   readonly imageShowActualSize$ = this.store.select(
     selectors.getMetricsImageShowActualSize
+  );
+  readonly isSavingPinsEnabled$ = this.store.select(
+    selectors.getMetricsSavingPinsEnabled
+  );
+  // Feature flag for global pins.
+  readonly globalPinsFeatureEnabled$ = this.store.select(
+    selectors.getEnableGlobalPins
   );
 
   onTooltipSortChanged(sort: TooltipSort) {
@@ -221,5 +240,19 @@ export class SettingsViewContainer {
 
   onSlideOutToggled() {
     this.store.dispatch(metricsSlideoutMenuToggled());
+  }
+
+  onEnableSavingPinsToggled(isChecked: boolean) {
+    if (isChecked) {
+      // Show a dialog when user disables the saving pins feature.
+      const dialogRef = this.dialog.open(SavingPinsDialogComponent);
+      dialogRef.afterClosed().subscribe((result?: SavingPinsDialogResult) => {
+        if (result?.shouldDisable) {
+          this.store.dispatch(metricsEnableSavingPinsToggled());
+        }
+      });
+    } else {
+      this.store.dispatch(metricsEnableSavingPinsToggled());
+    }
   }
 }

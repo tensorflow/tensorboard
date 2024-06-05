@@ -24,12 +24,9 @@ import tensorflow as tf
 from tensorboard.compat.proto import graph_pb2
 from tensorboard.plugins.graph import graphs_plugin_test
 
-# Stay on Keras 2 for now: https://github.com/keras-team/keras/issues/18467.
-version_fn = getattr(tf.keras, "version", None)
-if version_fn and version_fn().startswith("3."):
-    import tf_keras as keras  # Keras 2
-else:
-    keras = tf.keras  # Keras 2
+
+# Graph plugin V2 Keras 3 is only supported in TensorFlow eager mode.
+tf.compat.v1.enable_eager_execution()
 
 
 class GraphsPluginV2Test(
@@ -41,13 +38,13 @@ class GraphsPluginV2Test(
         x, y = np.ones((10, 10)), np.ones((10, 1))
         val_x, val_y = np.ones((4, 10)), np.ones((4, 1))
 
-        model = keras.Sequential(
+        model = tf.keras.Sequential(
             [
-                keras.layers.Dense(10, activation="relu"),
-                keras.layers.Dense(1, activation="sigmoid"),
+                tf.keras.layers.Dense(10, activation="relu"),
+                tf.keras.layers.Dense(1, activation="sigmoid"),
             ]
         )
-        model.compile("rmsprop", "binary_crossentropy")
+        model.compile(optimizer="rmsprop", loss="binary_crossentropy")
 
         model.fit(
             x,
@@ -56,7 +53,7 @@ class GraphsPluginV2Test(
             batch_size=2,
             epochs=1,
             callbacks=[
-                keras.callbacks.TensorBoard(
+                tf.keras.callbacks.TensorBoard(
                     log_dir=os.path.join(logdir, run_name),
                     write_graph=include_graph,
                 )

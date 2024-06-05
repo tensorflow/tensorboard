@@ -40,6 +40,7 @@ export const fetchRunsSucceeded = createAction(
     experimentIds: string[];
     runsForAllExperiments: Run[];
     newRuns: ExperimentIdToRuns;
+    expNameByExpId?: Record<string, string>;
   }>()
 );
 
@@ -79,7 +80,11 @@ export const runColorChanged = createAction(
 
 export const runGroupByChanged = createAction(
   '[Runs] Run Group By Changed',
-  props<{experimentIds: string[]; groupBy: GroupBy}>()
+  props<{
+    experimentIds: string[];
+    groupBy: GroupBy;
+    expNameByExpId?: Record<string, string>;
+  }>()
 );
 
 /**

@@ -77,6 +77,8 @@ import {
   TagMetadata,
   TimeSeriesData,
   TimeSeriesLoadable,
+  CardToPinnedCard,
+  PinnedCardToCard,
 } from './metrics_types';
 import {dataTableUtils} from '../../widgets/data_table/utils';
 
@@ -606,6 +608,9 @@ const reducer = createReducer(
     if (typeof partialSettings.scalarSmoothing === 'number') {
       metricsSettings.scalarSmoothing = partialSettings.scalarSmoothing;
     }
+    if (typeof partialSettings.savingPinsEnabled === 'boolean') {
+      metricsSettings.savingPinsEnabled = partialSettings.savingPinsEnabled;
+    }
 
     const isSettingsPaneOpen =
       partialSettings.timeSeriesSettingsPaneOpened ?? state.isSettingsPaneOpen;
@@ -928,6 +933,19 @@ const reducer = createReducer(
       settingOverrides: {
         ...state.settingOverrides,
         hideEmptyCards: !state.settingOverrides.hideEmptyCards,
+      },
+    };
+  }),
+  on(actions.metricsEnableSavingPinsToggled, (state) => {
+    const nextSavingPinsEnabled = !(
+      state.settingOverrides.savingPinsEnabled ??
+      state.settings.savingPinsEnabled
+    );
+    return {
+      ...state,
+      settingOverrides: {
+        ...state.settingOverrides,
+        savingPinsEnabled: nextSavingPinsEnabled,
       },
     };
   }),
@@ -1525,7 +1543,28 @@ const reducer = createReducer(
         ],
       };
     }
-  )
+  ),
+  on(actions.metricsClearAllPinnedCards, (state) => {
+    const nextCardMetadataMap = {...state.cardMetadataMap};
+    const nextCardStepIndex = {...state.cardStepIndex};
+    const nextCardStateMap = {...state.cardStateMap};
+
+    for (const cardId of state.pinnedCardToOriginal.keys()) {
+      delete nextCardMetadataMap[cardId];
+      delete nextCardStepIndex[cardId];
+      delete nextCardStateMap[cardId];
+    }
+
+    return {
+      ...state,
+      cardMetadataMap: nextCardMetadataMap,
+      cardStateMap: nextCardStateMap,
+      cardStepIndex: nextCardStepIndex,
+      cardToPinnedCopy: new Map() as CardToPinnedCard,
+      cardToPinnedCopyCache: new Map() as CardToPinnedCard,
+      pinnedCardToOriginal: new Map() as PinnedCardToCard,
+    };
+  })
 );
 
 export function reducers(state: MetricsState | undefined, action: Action) {

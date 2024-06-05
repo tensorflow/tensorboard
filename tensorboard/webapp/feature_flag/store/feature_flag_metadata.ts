@@ -111,7 +111,7 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       parseValue: parseBoolean,
     },
     enableScalarColumnContextMenus: {
-      defaultValue: true,
+      defaultValue: false,
       queryParamOverride: 'enableScalarColumnContextMenus',
       parseValue: parseBoolean,
     },
@@ -121,8 +121,13 @@ export const FeatureFlagMetadataMap: FeatureFlagMetadataMapType<FeatureFlags> =
       parseValue: parseBoolean,
     },
     enableGlobalPins: {
-      defaultValue: false,
+      defaultValue: true,
       queryParamOverride: 'enableGlobalPins',
+      parseValue: parseBoolean,
+    },
+    enableColorByExperiment: {
+      defaultValue: false,
+      queryParamOverride: 'enableColorByExperiment',
       parseValue: parseBoolean,
     },
   };

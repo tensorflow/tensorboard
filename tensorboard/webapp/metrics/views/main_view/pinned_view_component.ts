@@ -12,7 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
 
@@ -20,23 +26,37 @@ import {CardIdWithMetadata} from '../metrics_view_types';
   selector: 'metrics-pinned-view-component',
   template: `
     <div class="group-toolbar">
-      <mat-icon svgIcon="keep_24px"></mat-icon>
-      <span class="group-text">
-        <span class="group-title" aria-role="heading" aria-level="3"
-          >Pinned</span
-        >
-        <span *ngIf="cardIdsWithMetadata.length > 1" class="group-card-count"
-          >{{ cardIdsWithMetadata.length }} cards</span
-        >
-        <span *ngIf="lastPinnedCardTime">
-          <span
-            *ngFor="let id of [lastPinnedCardTime]"
-            [attr.data-id]="id"
-            class="new-card-pinned"
-            >New card pinned</span
+      <div class="left-items">
+        <mat-icon svgIcon="keep_24px"></mat-icon>
+        <span class="group-text">
+          <span class="group-title" aria-role="heading" aria-level="3"
+            >Pinned</span
           >
+          <span *ngIf="cardIdsWithMetadata.length > 1" class="group-card-count"
+            >{{ cardIdsWithMetadata.length }} cards</span
+          >
+          <span *ngIf="lastPinnedCardTime">
+            <span
+              *ngFor="let id of [lastPinnedCardTime]"
+              [attr.data-id]="id"
+              class="new-card-pinned"
+              >New card pinned</span
+            >
+          </span>
         </span>
-      </span>
+      </div>
+      <div
+        class="right-items"
+        *ngIf="cardIdsWithMetadata.length > 0 && globalPinsEnabled"
+      >
+        <button
+          mat-stroked-button
+          aria-label="Clear all pinned cards"
+          (click)="onClearAllPinsClicked.emit()"
+        >
+          Clear all pins
+        </button>
+      </div>
     </div>
     <metrics-card-grid
       *ngIf="cardIdsWithMetadata.length; else emptyPinnedView"
@@ -54,4 +74,6 @@ export class PinnedViewComponent {
   @Input() cardObserver!: CardObserver;
   @Input() cardIdsWithMetadata!: CardIdWithMetadata[];
   @Input() lastPinnedCardTime!: number;
+  @Input() globalPinsEnabled: boolean = false;
+  @Output() onClearAllPinsClicked = new EventEmitter<void>();
 }

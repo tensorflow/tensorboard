@@ -59,6 +59,28 @@ export function buildMetricsSettingsState(
     imageContrastInMilli: 123,
     imageShowActualSize: true,
     histogramMode: HistogramMode.OFFSET,
+    savingPinsEnabled: true,
+    ...overrides,
+  };
+}
+
+// Since Settings proto has missing fields, we need to build a partial of
+// Settings to be used in tests.
+export function buildMetricsSettingsOverrides(
+  overrides?: Partial<MetricsSettings>
+): Partial<MetricsSettings> {
+  return {
+    cardMinWidth: null,
+    tooltipSort: TooltipSort.NEAREST,
+    ignoreOutliers: false,
+    xAxisType: XAxisType.WALL_TIME,
+    scalarSmoothing: 0.3,
+    hideEmptyCards: true,
+    scalarPartitionNonMonotonicX: false,
+    imageBrightnessInMilli: 123,
+    imageContrastInMilli: 123,
+    imageShowActualSize: true,
+    histogramMode: HistogramMode.OFFSET,
     ...overrides,
   };
 }
@@ -400,11 +422,15 @@ export function buildStepIndexMetadata(
 export class TestingSavedPinsDataSource {
   saveScalarPin(tag: Tag) {}
 
+  saveScalarPins(tag: Tag[]) {}
+
   removeScalarPin(tag: Tag) {}
 
   getSavedScalarPins() {
     return [];
   }
+
+  removeAllScalarPins() {}
 }
 
 export function provideTestingSavedPinsDataSource() {

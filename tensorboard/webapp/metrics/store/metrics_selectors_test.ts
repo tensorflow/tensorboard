@@ -1298,6 +1298,20 @@ describe('metrics selectors', () => {
       );
       expect(selectors.getMetricsCardMinWidth(state)).toBe(400);
     });
+
+    it('returns savingPinsEnabled when called getMetricsSavingPinsEnabled', () => {
+      [{value: true}, {value: false}].forEach(({value}) => {
+        selectors.getMetricsSavingPinsEnabled.release();
+        const state = appStateFromMetricsState(
+          buildMetricsState({
+            settings: buildMetricsSettingsState({
+              savingPinsEnabled: value,
+            }),
+          })
+        );
+        expect(selectors.getMetricsSavingPinsEnabled(state)).toBe(value);
+      });
+    });
   });
 
   describe('getMetricsTagFilter', () => {

@@ -33,9 +33,11 @@ import {MockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
 import {
   getColorGroupRegexString,
+  getDashboardExperimentNames,
   getDarkModeEnabled,
   getRunIdsForExperiment,
   getRuns,
+  getEnableColorByExperiment,
 } from '../../../selectors';
 import {selectors as settingsSelectors} from '../../../settings';
 import {buildColorPalette} from '../../../settings/testing';
@@ -49,6 +51,7 @@ import {
   RegexEditDialogContainer,
   TEST_ONLY,
 } from './regex_edit_dialog_container';
+import {MatSelectModule} from '@angular/material/select';
 
 describe('regex_edit_dialog', () => {
   let actualActions: Action[];
@@ -63,6 +66,7 @@ describe('regex_edit_dialog', () => {
         MatInputModule,
         MatDialogModule,
         NoopAnimationsModule,
+        MatSelectModule,
       ],
       declarations: [RegexEditDialogComponent, RegexEditDialogContainer],
       providers: [
@@ -91,6 +95,10 @@ describe('regex_edit_dialog', () => {
       settingsSelectors.getColorPalette,
       buildColorPalette()
     );
+    store.overrideSelector(getDashboardExperimentNames, {
+      rose: 'exp_name_rose',
+    });
+    store.overrideSelector(getEnableColorByExperiment, true);
     actualActions = [];
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
@@ -138,6 +146,7 @@ describe('regex_edit_dialog', () => {
     expect(dispatchSpy).toHaveBeenCalledWith(
       runGroupByChanged({
         experimentIds: ['rose'],
+        expNameByExpId: {rose: 'exp_name_rose'},
         groupBy: {key: GroupByKey.REGEX, regexString: 'test(\\d+)'},
       })
     );
@@ -163,35 +172,55 @@ describe('regex_edit_dialog', () => {
     expect(dispatchSpy).toHaveBeenCalledWith(
       runGroupByChanged({
         experimentIds: ['rose'],
+        expNameByExpId: {rose: 'exp_name_rose'},
         groupBy: {key: GroupByKey.REGEX, regexString: 'test'},
       })
     );
   });
 
-  it('emits groupby action with empty string when clicking on save button', () => {
+  it('emits groupby experiment action if user chooses the dropdown and saves', () => {
     const fixture = createComponent(['rose']);
     fixture.detectChanges();
 
+    const matSelect = fixture.debugElement.query(By.css('mat-select'));
+    matSelect.triggerEventHandler('selectionChange', {value: 'regex_by_exp'});
+
     const input = fixture.debugElement.query(By.css('input'));
     const keyArgs: SendKeyArgs = {
-      key: '',
+      key: 'test',
       prevString: '',
       type: KeyType.CHARACTER,
       startingCursorIndex: 0,
     };
     sendKey(fixture, input, keyArgs);
-
     const buttons = fixture.debugElement.queryAll(
       By.css('div[mat-dialog-actions] button')
     );
     buttons[1].nativeElement.click();
 
+    expect(matSelect.nativeNode.textContent).toBe('Experiment Name');
     expect(dispatchSpy).toHaveBeenCalledWith(
       runGroupByChanged({
         experimentIds: ['rose'],
-        groupBy: {key: GroupByKey.REGEX, regexString: ''},
+        expNameByExpId: {rose: 'exp_name_rose'},
+        groupBy: {key: GroupByKey.REGEX_BY_EXP, regexString: 'test'},
       })
     );
+  });
+
+  it('show only one dropdown option if colorByExperiment flag is disabled', () => {
+    const fixture = createComponent(['rose']);
+    store.overrideSelector(getEnableColorByExperiment, false);
+    fixture.detectChanges();
+
+    const matSelect = fixture.debugElement.query(
+      By.css('mat-select')
+    ).nativeElement;
+    matSelect.click();
+    fixture.detectChanges();
+
+    const options = fixture.debugElement.queryAll(By.css('mat-option'));
+    expect(options.length).toBe(1);
   });
 
   it('closes the dialog when clicking on cancel button ', () => {
@@ -253,6 +282,7 @@ describe('regex_edit_dialog', () => {
     expect(dispatchSpy).toHaveBeenCalledWith(
       runGroupByChanged({
         experimentIds: ['rose'],
+        expNameByExpId: {rose: 'exp_name_rose'},
         groupBy: {key: GroupByKey.REGEX, regexString: 'test'},
       })
     );
@@ -274,6 +304,7 @@ describe('regex_edit_dialog', () => {
     expect(dispatchSpy).toHaveBeenCalledWith(
       runGroupByChanged({
         experimentIds: ['rose'],
+        expNameByExpId: {rose: 'exp_name_rose'},
         groupBy: {key: GroupByKey.REGEX, regexString: 'test regex string'},
       })
     );

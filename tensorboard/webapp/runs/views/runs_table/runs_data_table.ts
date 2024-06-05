@@ -30,6 +30,7 @@ import {
   ReorderColumnEvent,
   AddColumnEvent,
 } from '../../../widgets/data_table/types';
+import {memoize} from '../../../util/memoize';
 @Component({
   selector: 'runs-data-table',
   templateUrl: 'runs_data_table.ng.html',
@@ -42,7 +43,6 @@ export class RunsDataTable {
   @Input() sortingInfo!: SortingInfo;
   @Input() experimentIds!: string[];
   @Input() regexFilter!: string;
-  @Input() isFullScreen!: boolean;
   @Input() selectableColumns!: ColumnHeader[];
   @Input() numColumnsLoaded!: number;
   @Input() numColumnsToLoad!: number;
@@ -56,7 +56,6 @@ export class RunsDataTable {
   @Output() onSelectionToggle = new EventEmitter<string>();
   @Output() onAllSelectionToggle = new EventEmitter<string[]>();
   @Output() onRegexFilterChange = new EventEmitter<string>();
-  @Output() toggleFullScreen = new EventEmitter();
   @Output() onRunColorChange = new EventEmitter<{
     runId: string;
     newColor: string;
@@ -67,32 +66,30 @@ export class RunsDataTable {
   @Output() addFilter = new EventEmitter<FilterAddedEvent>();
   @Output() loadAllColumns = new EventEmitter<null>();
 
-  // These columns must be stored and reused to stop needless re-rendering of
-  // the content and headers in these columns. This has been known to cause
-  // problems with the controls in these columns, specifically the color picker.
-  beforeColumns = [
-    {
-      name: 'selected',
-      displayName: '',
-      type: ColumnHeaderType.CUSTOM,
-      enabled: true,
-    },
-  ];
+  // Columns must be memoized to stop needless re-rendering of the content and headers in these
+  // columns. This has been known to cause problems with the controls in these columns,
+  // specifically the add button.
+  extendHeaders = memoize(this.internalExtendHeaders);
 
-  afterColumns = [
-    {
-      name: 'color',
-      displayName: '',
-      type: ColumnHeaderType.COLOR,
-      enabled: true,
-    },
-  ];
-
-  getHeaders() {
+  private internalExtendHeaders(headers: ColumnHeader[]) {
     return ([] as Array<ColumnHeader>).concat(
-      this.beforeColumns,
-      this.headers,
-      this.afterColumns
+      [
+        {
+          name: 'selected',
+          displayName: '',
+          type: ColumnHeaderType.CUSTOM,
+          enabled: true,
+        },
+      ],
+      headers,
+      [
+        {
+          name: 'color',
+          displayName: '',
+          type: ColumnHeaderType.COLOR,
+          enabled: true,
+        },
+      ]
     );
   }
 

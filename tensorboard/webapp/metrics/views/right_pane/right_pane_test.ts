@@ -19,6 +19,7 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
+import {OverlayContainer} from '@angular/cdk/overlay';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatSelectModule} from '@angular/material/select';
@@ -37,10 +38,13 @@ import {HistogramMode, TooltipSort, XAxisType} from '../../types';
 import {RightPaneComponent} from './right_pane_component';
 import {SettingsViewComponent, TEST_ONLY} from './settings_view_component';
 import {SettingsViewContainer} from './settings_view_container';
+import {SavingPinsDialogModule} from './saving_pins_dialog/saving_pins_dialog_module';
+import {SavingPinsCheckboxComponent} from './saving_pins_checkbox_component';
 
 describe('metrics right_pane', () => {
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;
+  let overlayContainer: OverlayContainer;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -49,6 +53,7 @@ describe('metrics right_pane', () => {
         DropdownModule,
         MatButtonToggleModule,
         MatCheckboxModule,
+        SavingPinsDialogModule,
         MatSelectModule,
         MatSliderModule,
       ],
@@ -56,6 +61,7 @@ describe('metrics right_pane', () => {
         RightPaneComponent,
         SettingsViewComponent,
         SettingsViewContainer,
+        SavingPinsCheckboxComponent,
       ],
       providers: [provideMockTbStore()],
       // Ignore errors from components that are out-of-scope for this test:
@@ -65,6 +71,7 @@ describe('metrics right_pane', () => {
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     dispatchSpy = spyOn(store, 'dispatch');
+    overlayContainer = TestBed.inject(OverlayContainer);
   });
 
   afterEach(() => {
@@ -546,6 +553,91 @@ describe('metrics right_pane', () => {
           fixture.debugElement.query(By.css('.column-edit-menu-toggle'))
             .nativeElement
         ).toHaveClass('toggle-opened');
+      });
+    });
+
+    describe('saving pins check box', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectors.getEnableGlobalPins, true);
+        store.overrideSelector(selectors.getMetricsSavingPinsEnabled, false);
+      });
+
+      it('does not render if getEnableGlobalPins feature flag is false', () => {
+        store.overrideSelector(selectors.getEnableGlobalPins, false);
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+
+        expect(select(fixture, '.saving-pins')).toBeFalsy();
+      });
+
+      it('renders checked saving pins check box if isSavingpinsEnabled is true', () => {
+        store.overrideSelector(selectors.getMetricsSavingPinsEnabled, true);
+
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+
+        expect(
+          select(fixture, '.saving-pins input').componentInstance.checked
+        ).toBeTrue();
+      });
+
+      it('dispatches metricsEnableSavingPinsToggled if user checks the box', () => {
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+
+        const checkbox = select(fixture, '.saving-pins input');
+        checkbox.nativeElement.click();
+
+        const savingPinsDialog = overlayContainer
+          .getContainerElement()
+          .querySelectorAll('saving-pins-dialog');
+        expect(savingPinsDialog.length).toBe(0);
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          actions.metricsEnableSavingPinsToggled()
+        );
+      });
+
+      it('dispatches metricsEnableSavingPinsToggled if users clicks disable in the dialog', async () => {
+        store.overrideSelector(selectors.getMetricsSavingPinsEnabled, true);
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+
+        const checkbox = select(fixture, '.saving-pins input');
+        checkbox.nativeElement.click();
+
+        const savingPinsDialog = overlayContainer
+          .getContainerElement()
+          .querySelectorAll('saving-pins-dialog');
+
+        const disableButton = overlayContainer
+          .getContainerElement()
+          .querySelector('.disable-button');
+        (disableButton as HTMLButtonElement).click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        expect(savingPinsDialog.length).toBe(1);
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          actions.metricsEnableSavingPinsToggled()
+        );
+      });
+
+      it('does not dispatch metricsEnableSavingPinsToggled if users cancels the dialog', async () => {
+        store.overrideSelector(selectors.getMetricsSavingPinsEnabled, true);
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+
+        const checkbox = select(fixture, '.saving-pins input');
+        checkbox.nativeElement.click();
+
+        const disableButton = overlayContainer
+          .getContainerElement()
+          .querySelector('.cancel-button');
+        (disableButton as HTMLButtonElement).click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        expect(dispatchSpy).not.toHaveBeenCalled();
       });
     });
   });

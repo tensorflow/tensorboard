@@ -382,6 +382,11 @@ export const getMetricsImageShowActualSize = createSelector(
   (settings): boolean => settings.imageShowActualSize
 );
 
+export const getMetricsSavingPinsEnabled = createSelector(
+  selectSettings,
+  (settings): boolean => settings.savingPinsEnabled
+);
+
 export const getMetricsTagFilter = createSelector(
   selectMetricsState,
   (state): string => state.tagFilter

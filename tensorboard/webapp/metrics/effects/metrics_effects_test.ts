@@ -45,6 +45,7 @@ import {
   appStateFromMetricsState,
   buildDataSourceTagMetadata,
   buildMetricsState,
+  createCardMetadata,
   createScalarStepData,
   provideTestingMetricsDataSource,
   provideTestingSavedPinsDataSource,
@@ -918,6 +919,22 @@ describe('metrics effects', () => {
         expect(saveScalarPinSpy).not.toHaveBeenCalled();
         expect(removeScalarPinSpy).not.toHaveBeenCalled();
       });
+
+      it('does not pin the card if getMetricsSavingPinsEnabled is false', () => {
+        store.overrideSelector(selectors.getMetricsSavingPinsEnabled, false);
+        store.refreshState();
+
+        actions$.next(
+          actions.cardPinStateToggled({
+            cardId: 'card1',
+            wasPinned: false,
+            canCreateNewPins: true,
+          })
+        );
+
+        expect(saveScalarPinSpy).not.toHaveBeenCalled();
+        expect(removeScalarPinSpy).not.toHaveBeenCalled();
+      });
     });
 
     describe('loadSavedPins', () => {
@@ -983,6 +1000,135 @@ describe('metrics effects', () => {
         actions$.next(TEST_ONLY.initAction());
 
         expect(actualActions).toEqual([]);
+      });
+
+      it('does not load saved pins if getMetricsSavingPinsEnabled is false', () => {
+        getSavedScalarPinsSpy = spyOn(
+          savedPinsDataSource,
+          'getSavedScalarPins'
+        ).and.returnValue(['tagA', 'tagB']);
+        store.overrideSelector(selectors.getMetricsSavingPinsEnabled, false);
+        store.refreshState();
+
+        actions$.next(TEST_ONLY.initAction());
+
+        expect(actualActions).toEqual([]);
+      });
+    });
+
+    describe('removeAllPins', () => {
+      let removeAllScalarPinsSpy: jasmine.Spy;
+
+      beforeEach(() => {
+        removeAllScalarPinsSpy = spyOn(
+          savedPinsDataSource,
+          'removeAllScalarPins'
+        );
+        store.overrideSelector(selectors.getEnableGlobalPins, true);
+        store.refreshState();
+      });
+
+      it('removes all pins by calling removeAllScalarPins method', () => {
+        actions$.next(actions.metricsClearAllPinnedCards());
+
+        expect(removeAllScalarPinsSpy).toHaveBeenCalled();
+      });
+
+      it('does not remove pins if getEnableGlobalPins is false', () => {
+        store.overrideSelector(selectors.getEnableGlobalPins, false);
+        store.refreshState();
+
+        actions$.next(actions.metricsClearAllPinnedCards());
+
+        expect(removeAllScalarPinsSpy).not.toHaveBeenCalled();
+      });
+
+      it('does not remove pins if getShouldPersistSettings is false', () => {
+        store.overrideSelector(selectors.getShouldPersistSettings, false);
+        store.refreshState();
+
+        actions$.next(actions.metricsClearAllPinnedCards());
+
+        expect(removeAllScalarPinsSpy).not.toHaveBeenCalled();
+      });
+
+      it('does not remove pins if getMetricsSavingPinsEnabled is false', () => {
+        store.overrideSelector(selectors.getMetricsSavingPinsEnabled, false);
+        store.refreshState();
+
+        actions$.next(actions.metricsClearAllPinnedCards());
+
+        expect(removeAllScalarPinsSpy).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('addOrRemovePinsOnToggle', () => {
+      let removeAllScalarPinsSpy: jasmine.Spy;
+      let saveScalarPinsSpy: jasmine.Spy;
+
+      beforeEach(() => {
+        removeAllScalarPinsSpy = spyOn(
+          savedPinsDataSource,
+          'removeAllScalarPins'
+        );
+        saveScalarPinsSpy = spyOn(savedPinsDataSource, 'saveScalarPins');
+        store.overrideSelector(selectors.getPinnedCardsWithMetadata, [
+          {
+            cardId: 'card1',
+            ...createCardMetadata(PluginType.SCALARS),
+            tag: 'tag1',
+          },
+          {
+            cardId: 'card2',
+            ...createCardMetadata(PluginType.IMAGES),
+            tag: 'tag2',
+          },
+          {
+            cardId: 'card3',
+            ...createCardMetadata(PluginType.SCALARS),
+            tag: 'tag3',
+          },
+        ]);
+        store.overrideSelector(selectors.getEnableGlobalPins, true);
+        store.overrideSelector(selectors.getMetricsSavingPinsEnabled, false);
+        store.refreshState();
+      });
+
+      it('removes all pins if getMetricsSavingPinsEnabled is false', () => {
+        actions$.next(actions.metricsEnableSavingPinsToggled());
+
+        expect(removeAllScalarPinsSpy).toHaveBeenCalled();
+        expect(saveScalarPinsSpy).not.toHaveBeenCalled();
+      });
+
+      it('add existing pins if getMetricsSavingPinsEnabled is true', () => {
+        store.overrideSelector(selectors.getMetricsSavingPinsEnabled, true);
+        store.refreshState();
+
+        actions$.next(actions.metricsEnableSavingPinsToggled());
+
+        expect(saveScalarPinsSpy).toHaveBeenCalledWith(['tag1', 'tag3']);
+        expect(removeAllScalarPinsSpy).not.toHaveBeenCalled();
+      });
+
+      it('does not add or remove pins if getEnableGlobalPins is false', () => {
+        store.overrideSelector(selectors.getEnableGlobalPins, false);
+        store.refreshState();
+
+        actions$.next(actions.metricsEnableSavingPinsToggled());
+
+        expect(removeAllScalarPinsSpy).not.toHaveBeenCalled();
+        expect(saveScalarPinsSpy).not.toHaveBeenCalled();
+      });
+
+      it('does not add or remove pins if getShouldPersistSettings is false', () => {
+        store.overrideSelector(selectors.getShouldPersistSettings, false);
+        store.refreshState();
+
+        actions$.next(actions.metricsEnableSavingPinsToggled());
+
+        expect(removeAllScalarPinsSpy).not.toHaveBeenCalled();
+        expect(saveScalarPinsSpy).not.toHaveBeenCalled();
       });
     });
   });
