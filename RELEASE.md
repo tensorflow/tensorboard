@@ -1,3 +1,22 @@
+# Release 2.17.0
+
+The 2.17 minor series tracks TensorFlow 2.17.
+
+## Features
+- Enable adding hparams columns in scalar data tables in Time Series dashboard (#6737 accidentally omitted from notes in release 2.16.0)
+- Usability improvements for runs table and hparams in Time Series dashboard (#6837, #6839)
+- Global pins: Store pinned cards in local storage, so they’d be pinned when similar experiments are loaded. (#6850, #6819, #6821, etc)
+- Handle large number of Hparams (#6777, #6780, #6807)
+- Infra: Reduce binary size of [`tensorboard-data-server`](http://pypi.org/project/tensorboard-data-server/) (aka “Rustboard”). (#6765, thanks @Corwinpro)
+
+## Bug Fixes
+- Text plugin: Preserve whitespace. (#6833)
+- Hparams plugin: load metrics when run name is “.” (#6822)
+- Resolved Graph plugin compatibility issues with Keras 3. (#6759, #6823, #6761, #6857, etc. thanks @mloc)
+- Restricts the protobuf dependency to be < 5.0.0, due to a recent breaking change (see #6808 for details).
+- Fixes internal flag wrapper class to not crash when its `__class__` attribute is accessed, which was blocking debugging with pyCharm (#6751, thanks @lostinplace)
+
+
 # Release 2.16.2
 
 ## Bug Fixes
