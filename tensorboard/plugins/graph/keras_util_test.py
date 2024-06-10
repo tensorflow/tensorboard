@@ -982,12 +982,13 @@ class KerasUtilTest(tf.test.TestCase):
 
         self.assertGraphDefToModel(expected_proto, model)
 
-    def test_keras_model_to_graph_def_functional_multiple_inbound_nodes_from_same_node(
+    # Enable after next sync to internal repo from Keras team.
+    def DISABLED_test_keras_model_to_graph_def_functional_multiple_inbound_nodes_from_same_node(
         self,
     ):
         expected_proto = """
             node {
-              name: "functional_1/input_layer"
+              name: "functional/input_layer"
               attr {
                 key: "keras_class"
                 value {
@@ -1002,8 +1003,8 @@ class KerasUtilTest(tf.test.TestCase):
               }
             }
             node {
-              name: "functional_1/__doubling_layer"
-              input: "functional_1/input_layer"
+              name: "functional/__doubling_layer"
+              input: "functional/input_layer"
               attr {
                 key: "keras_class"
                 value {
@@ -1018,9 +1019,9 @@ class KerasUtilTest(tf.test.TestCase):
               }
             }
             node {
-              name: "functional_1/add"
-              input: "functional_1/__doubling_layer"
-              input: "functional_1/__doubling_layer"
+              name: "functional/add"
+              input: "functional/__doubling_layer"
+              input: "functional/__doubling_layer"
               attr {
                 key: "keras_class"
                 value {
