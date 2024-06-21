@@ -674,7 +674,7 @@ def as_dtype(type_value):
         # dtype with a single constant (np.string does not exist) to decide
         # dtype is a "string" type. We need to compare the dtype.type to be
         # sure it's a string type.
-        if type_value.type == np.string_ or type_value.type == np.unicode_:
+        if type_value.type == np.bytes_ or type_value.type == np.str_:
             return string
 
     if isinstance(type_value, (type, np.dtype)):

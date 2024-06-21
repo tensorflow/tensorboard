@@ -137,7 +137,7 @@ def GetNumpyAppendFn(dtype):
     # dtype with a single constant (np.string does not exist) to decide
     # dtype is a "string" type. We need to compare the dtype.type to be
     # sure it's a string type.
-    if dtype.type == np.string_ or dtype.type == np.unicode_:
+    if dtype.type == np.bytes_ or dtype.type == np.str_:
         return SlowAppendObjectArrayToTensorProto
     return GetFromNumpyDTypeDict(_NP_TO_APPEND_FN, dtype)
 
