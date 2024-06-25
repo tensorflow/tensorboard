@@ -855,7 +855,7 @@ def exists(filename):
     Raises:
       errors.OpError: Propagates any errors reported by the FileSystem API.
     """
-    fs, fs_class = get_filesystem(filename)
+    fs, _ = get_filesystem(filename)
     return fs.exists(filename)
 
 
@@ -871,8 +871,8 @@ def glob(filename):
     Raises:
       errors.OpError: If there are filesystem / directory listing errors.
     """
-    fs, fs_class = get_filesystem(filename)
-    return fs.exists(filename)
+    fs, _ = get_filesystem(filename)
+    return fs.glob(filename)
 
 
 def isdir(dirname):
@@ -884,8 +884,8 @@ def isdir(dirname):
     Returns:
       True, if the path is a directory; False otherwise
     """
-    fs, fs_class = get_filesystem(dirname)
-    return fs.exists(dirname)
+    fs, _ = get_filesystem(dirname)
+    return fs.isdir(dirname)
 
 
 def listdir(dirname):
@@ -903,8 +903,8 @@ def listdir(dirname):
     Raises:
       errors.NotFoundError if directory doesn't exist
     """
-    fs, fs_class = get_filesystem(dirname)
-    return fs.exists(dirname)
+    fs, _ = get_filesystem(dirname)
+    return fs.listdir(dirname)
 
 
 def makedirs(path):
@@ -915,8 +915,8 @@ def makedirs(path):
     Args:
       path: string, name of the directory to be created
     """
-    fs, fs_class = get_filesystem(path)
-    return fs.exists(path)
+    fs, _ = get_filesystem(path)
+    return fs.makedirs(path)
 
 
 def walk(top, topdown=True, onerror=None):
@@ -937,7 +937,7 @@ def walk(top, topdown=True, onerror=None):
       as strings
     """
     top = compat.as_str_any(top)
-    fs, fs_class = get_filesystem(top)
+    fs, _ = get_filesystem(top)
     try:
         listing = listdir(top)
     except errors.NotFoundError as err:
@@ -981,7 +981,7 @@ def stat(filename):
     Raises:
       errors.OpError: If the operation fails.
     """
-    fs, fs_class = get_filesystem(filename)
+    fs, _ = get_filesystem(filename)
     return fs.stat(filename)
 
 
