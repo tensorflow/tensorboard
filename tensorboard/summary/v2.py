@@ -21,5 +21,6 @@ This module exposes v2 summary ops for the standard TensorBoard plugins.
 from tensorboard.plugins.audio.summary_v2 import audio  # noqa: F401
 from tensorboard.plugins.histogram.summary_v2 import histogram  # noqa: F401
 from tensorboard.plugins.image.summary_v2 import image  # noqa: F401
+from google3.third_party.tensorboard.plugins.mesh.summary_v2 import mesh  # noqa: F401
 from tensorboard.plugins.scalar.summary_v2 import scalar  # noqa: F401
 from tensorboard.plugins.text.summary_v2 import text  # noqa: F401
