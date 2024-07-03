@@ -28,6 +28,7 @@ limitations under the License.
   right: 10px;
   top: 10px;
   width: $_dim;
+  z-index: 2;
 }
 
 ::ng-deep .notification-menu.mat-mdc-menu-panel {
