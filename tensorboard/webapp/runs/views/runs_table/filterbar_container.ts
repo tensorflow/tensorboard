@@ -34,11 +34,15 @@ import {FilterAddedEvent} from '../../../widgets/data_table/types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FilterbarContainer implements OnDestroy {
-  filters$ = this.store.select(hparamsSelectors.getDashboardHparamFilterMap);
+  filters$;
 
   private readonly ngUnsubscribe = new Subject<void>();
 
-  constructor(private readonly store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {
+    this.filters$ = this.store.select(
+      hparamsSelectors.getDashboardHparamFilterMap,
+    );
+  }
 
   addHparamFilter(event: FilterAddedEvent) {
     this.store.dispatch(

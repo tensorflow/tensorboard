@@ -38,14 +38,16 @@ export class FeatureFlagModalTriggerContainer implements OnInit, OnDestroy {
   // Allow the dialog component type to be overridden for testing purposes.
   featureFlagDialogType: ComponentType<any> = FeatureFlagDialogContainer;
 
-  readonly showFeatureFlags$ = this.store.select(getShowFlagsEnabled);
+  readonly showFeatureFlags$;
   private featureFlagsDialog?: MatDialogRef<FeatureFlagDialogContainer>;
   private ngUnsubscribe = new Subject<void>();
 
   constructor(
     private readonly store: Store<State>,
     private dialog: MatDialog
-  ) {}
+  ) {
+    this.showFeatureFlags$ = this.store.select(getShowFlagsEnabled);
+  }
 
   ngOnInit() {
     this.showFeatureFlags$

@@ -27,12 +27,8 @@ import {selectors as settingsSelectors, State} from '../settings';
 })
 export class ReloaderComponent {
   private readonly onVisibilityChange = this.onVisibilityChangeImpl.bind(this);
-  private readonly reloadEnabled$ = this.store.pipe(
-    select(settingsSelectors.getReloadEnabled)
-  );
-  private readonly reloadPeriodInMs$ = this.store.pipe(
-    select(settingsSelectors.getReloadPeriodInMs)
-  );
+  private readonly reloadEnabled$;
+  private readonly reloadPeriodInMs$;
   private reloadTimerId: ReturnType<typeof setTimeout> | null = null;
   private missedAutoReload: boolean = false;
   private ngUnsubscribe = new Subject<void>();
@@ -40,7 +36,14 @@ export class ReloaderComponent {
   constructor(
     private store: Store<State>,
     @Inject(DOCUMENT) private readonly document: Document
-  ) {}
+  ) {
+    this.reloadEnabled$ = this.store.pipe(
+      select(settingsSelectors.getReloadEnabled),
+    );
+    this.reloadPeriodInMs$ = this.store.pipe(
+      select(settingsSelectors.getReloadPeriodInMs),
+    );
+  }
 
   ngOnInit() {
     this.document.addEventListener('visibilitychange', this.onVisibilityChange);
