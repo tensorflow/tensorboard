@@ -36,12 +36,14 @@ import {State} from '../_redux/settings_types';
 })
 export class SettingsPolymerInteropContainer {
   private readonly ngUnsubscribe = new Subject<void>();
-  private readonly getPageSize$ = this.store.pipe(select(getPageSize));
+  private readonly getPageSize$;
   private readonly paginatedViewStore = document.createElement(
     'tf-paginated-view-store'
   ).tf_paginated_view;
 
-  constructor(private store: Store<State>) {}
+  constructor(private store: Store<State>) {
+    this.getPageSize$ = this.store.pipe(select(getPageSize));
+  }
 
   ngOnInit() {
     this.getPageSize$
