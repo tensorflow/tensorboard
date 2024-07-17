@@ -44,7 +44,7 @@ export class EmptyTagMatchMessageContainer {
       .pipe(
         map((cardList) => {
           return new Set(cardList.map(({tag}) => tag)).size;
-        }),
+        })
       );
   }
 
