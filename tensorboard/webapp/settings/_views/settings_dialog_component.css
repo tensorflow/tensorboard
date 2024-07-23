@@ -28,3 +28,7 @@ h3 {
 .reload-toggle {
   margin-bottom: 16px;
 }
+
+mat-form-field {
+  width: 100%;
+}
