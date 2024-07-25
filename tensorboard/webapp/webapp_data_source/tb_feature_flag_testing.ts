@@ -42,5 +42,6 @@ export class TestingTBFeatureFlagDataSource extends TBFeatureFlagDataSource {
       useExisting: TestingTBFeatureFlagDataSource,
     },
   ],
+  jit: true,
 })
 export class TBFeatureFlagTestingModule {}

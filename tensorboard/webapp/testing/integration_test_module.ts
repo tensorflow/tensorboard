@@ -62,5 +62,6 @@ export function provideRoute(): RouteDef[] {
   ],
   declarations: [TestableComponent],
   exports: [TestableComponent],
+  jit: true,
 })
 export class IntegrationTestSetupModule {}
