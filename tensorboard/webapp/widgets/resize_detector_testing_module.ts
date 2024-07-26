@@ -29,6 +29,7 @@ class ResizeDetectorTestingDirective {
 @NgModule({
   exports: [ResizeDetectorTestingDirective],
   declarations: [ResizeDetectorTestingDirective],
+  jit: true,
 })
 export class ResizeDetectorTestingModule {
   simulateResize<T>(fixture: ComponentFixture<T>) {
