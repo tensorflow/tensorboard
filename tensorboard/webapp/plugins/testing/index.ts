@@ -26,5 +26,6 @@ export class ExtraDashboardComponent {}
   imports: [
     PluginRegistryModule.forPlugin('extra-plugin', ExtraDashboardComponent),
   ],
+  jit: true,
 })
 export class ExtraDashboardModule {}

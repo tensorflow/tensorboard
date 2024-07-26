@@ -34,5 +34,6 @@ import {TBHttpClientModule} from './tb_http_client_module';
       ),
     }),
   ],
+  jit: true,
 })
 export class TBHttpClientTestingModule {}

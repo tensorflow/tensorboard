@@ -37,6 +37,7 @@ import {
 @Component({
   selector: 'testable-feature-flag-dialog-container',
   template: '<div>Test</div>',
+  jit: true,
 })
 class TestableFeatureFlagDialogContainer {}
 
