@@ -20,14 +20,18 @@ absl-py >= 0.4
 grpcio >= 1.48.2
 markdown >= 2.6.8
 numpy >= 1.12.0
+# NOTE: The packaging dependency was introduced in order to compare installed
+# package versions and conditionally use different supported kwargs
+# (specifically the protobuf dependency). If we restrict protobuf >= 5.0.0 we
+# can get rid of the packaging dependency.
+packaging
 # NOTE: this version must be >= the protoc version in our WORKSPACE file.
 # At the same time, any constraints we specify here must allow at least some
 # version to be installed that is also compatible with TensorFlow's constraints:
 # https://github.com/tensorflow/tensorflow/blob/25adc4fccb4b0bb5a933eba1d246380e7b87d7f7/tensorflow/tools/pip_package/setup.py#L101
 # 4.24.0 had an issue that broke our tests, so we should avoid that release:
 # https://github.com/protocolbuffers/protobuf/issues/13485
-# 5.26.0 introduced a breaking change, so we restricted it for now. See issue #6808 for details.
-protobuf >= 3.19.6, != 4.24.0, < 5.0.0
+protobuf >= 3.19.6, != 4.24.0
 setuptools >= 41.0.0  # Note: provides pkg_resources as well as setuptools
 # A dependency of our vendored packages. This lower bound has not been correctly
 # vetted, but I wanted to be the least restrictive we can, since it's not a new

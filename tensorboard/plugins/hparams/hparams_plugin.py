@@ -18,9 +18,7 @@ See `http_api.md` in this directory for specifications of the routes for
 this plugin.
 """
 
-
 import json
-
 
 import werkzeug
 from werkzeug import wrappers
@@ -116,14 +114,16 @@ class HParamsPlugin(base_plugin.TBPlugin):
             request_proto = _parse_request_argument(
                 request, api_pb2.GetExperimentRequest
             )
+            response_proto = get_experiment.Handler(
+                ctx,
+                self._context,
+                experiment_id,
+                request_proto,
+            ).run()
+            response = plugin_util.proto_to_json(response_proto)
             return http_util.Respond(
                 request,
-                json_format.MessageToJson(
-                    get_experiment.Handler(
-                        ctx, self._context, experiment_id, request_proto
-                    ).run(),
-                    including_default_value_fields=True,
-                ),
+                response,
                 "application/json",
             )
         except error.HParamsError as e:
@@ -139,14 +139,16 @@ class HParamsPlugin(base_plugin.TBPlugin):
             request_proto = _parse_request_argument(
                 request, api_pb2.ListSessionGroupsRequest
             )
+            response_proto = list_session_groups.Handler(
+                ctx,
+                self._context,
+                experiment_id,
+                request_proto,
+            ).run()
+            response = plugin_util.proto_to_json(response_proto)
             return http_util.Respond(
                 request,
-                json_format.MessageToJson(
-                    list_session_groups.Handler(
-                        ctx, self._context, experiment_id, request_proto
-                    ).run(),
-                    including_default_value_fields=True,
-                ),
+                response,
                 "application/json",
             )
         except error.HParamsError as e:
