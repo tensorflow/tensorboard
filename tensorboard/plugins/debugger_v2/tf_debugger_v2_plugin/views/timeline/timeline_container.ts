@@ -108,61 +108,73 @@ function getExecutionDigestForDisplay(
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TimelineContainer {
-  readonly activeRunId$ = this.store.pipe(select(getActiveRunId));
+  readonly activeRunId$;
 
-  readonly loadingNumExecutions$ = this.store.pipe(
-    select(
-      createSelector(getNumExecutionsLoaded, (loaded) => {
-        return loaded.state == DataLoadState.LOADING;
-      })
-    )
-  );
+  readonly loadingNumExecutions$;
 
-  readonly scrollBeginIndex$ = this.store.pipe(
-    select(getExecutionScrollBeginIndex)
-  );
+  readonly scrollBeginIndex$;
 
-  readonly scrollBeginIndexUpperLimit$ = this.store.pipe(
-    select(
-      createSelector(
-        getNumExecutions,
-        getDisplayCount,
-        (numExecutions, displayCount) => {
-          return Math.max(0, numExecutions - displayCount);
-        }
-      )
-    )
-  );
+  readonly scrollBeginIndexUpperLimit$;
 
-  readonly pageSize$ = this.store.pipe(select(getExecutionPageSize));
+  readonly pageSize$;
 
-  readonly displayCount$ = this.store.pipe(select(getDisplayCount));
+  readonly displayCount$;
 
-  readonly displayExecutionDigests$ = this.store.pipe(
-    select(
-      createSelector(getVisibleExecutionDigests, (visibleDigests) => {
-        return visibleDigests.map((digest) =>
-          getExecutionDigestForDisplay(digest)
-        );
-      })
-    )
-  );
+  readonly displayExecutionDigests$;
 
-  readonly displayFocusedAlertTypes$ = this.store.pipe(
-    select(getFocusAlertTypesOfVisibleExecutionDigests)
-  );
+  readonly displayFocusedAlertTypes$;
 
-  readonly focusedExecutionIndex$ = this.store.pipe(
-    select(getFocusedExecutionIndex)
-  );
+  readonly focusedExecutionIndex$;
 
-  readonly focusedExecutionDisplayIndex$ = this.store.pipe(
-    select(getFocusedExecutionDisplayIndex)
-  );
+  readonly focusedExecutionDisplayIndex$;
 
-  readonly numExecutions$ = this.store.pipe(select(getNumExecutions));
+  readonly numExecutions$;
 
-  constructor(private readonly store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {
+    this.activeRunId$ = this.store.pipe(select(getActiveRunId));
+    this.loadingNumExecutions$ = this.store.pipe(
+      select(
+        createSelector(getNumExecutionsLoaded, (loaded) => {
+          return loaded.state == DataLoadState.LOADING;
+        }),
+      ),
+    );
+    this.scrollBeginIndex$ = this.store.pipe(
+      select(getExecutionScrollBeginIndex),
+    );
+    this.scrollBeginIndexUpperLimit$ = this.store.pipe(
+      select(
+        createSelector(
+          getNumExecutions,
+          getDisplayCount,
+          (numExecutions, displayCount) => {
+            return Math.max(0, numExecutions - displayCount);
+          },
+        ),
+      ),
+    );
+    this.pageSize$ = this.store.pipe(select(getExecutionPageSize));
+    this.displayCount$ = this.store.pipe(select(getDisplayCount));
+    this.displayExecutionDigests$ = this.store.pipe(
+      select(
+        createSelector(getVisibleExecutionDigests, (visibleDigests) => {
+          return visibleDigests.map((digest) =>
+            getExecutionDigestForDisplay(digest),
+          );
+        }),
+      ),
+    );
+    this.displayFocusedAlertTypes$ = this.store.pipe(
+      select(getFocusAlertTypesOfVisibleExecutionDigests),
+    );
+    this.focusedExecutionIndex$ = this.store.pipe(
+      select(getFocusedExecutionIndex),
+    );
+    this.focusedExecutionDisplayIndex$ = this.store.pipe(
+      select(getFocusedExecutionDisplayIndex),
+    );
+    this.numExecutions$ = this.store.pipe(select(getNumExecutions));
+  }
 
   onNavigateLeft() {
     this.store.dispatch(executionScrollLeft());

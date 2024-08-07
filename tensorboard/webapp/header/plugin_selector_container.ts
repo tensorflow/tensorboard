@@ -40,11 +40,15 @@ const getDisabledPlugins = createSelector(
   `,
 })
 export class PluginSelectorContainer {
-  readonly activePlugin$ = this.store.pipe(select(getActivePlugin));
-  readonly plugins$ = this.store.pipe(select(getUiPlugins));
-  readonly disabledPlugins$ = this.store.pipe(select(getDisabledPlugins));
+  readonly activePlugin$;
+  readonly plugins$;
+  readonly disabledPlugins$;
 
-  constructor(private readonly store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {
+    this.activePlugin$ = this.store.pipe(select(getActivePlugin));
+    this.plugins$ = this.store.pipe(select(getUiPlugins));
+    this.disabledPlugins$ = this.store.pipe(select(getDisabledPlugins));
+  }
 
   onPluginSelectionChange(pluginId: PluginId) {
     this.store.dispatch(changePlugin({plugin: pluginId}));

@@ -34,14 +34,17 @@ import {State as DebuggerState} from '../../store/debugger_types';
   `,
 })
 export class SourceFilesContainer {
-  constructor(private readonly store: Store<DebuggerState & OtherAppState>) {}
+  constructor(private readonly store: Store<DebuggerState & OtherAppState>) {
+    this.focusedSourceFileContent$ = this.store.select(
+      getFocusedSourceFileContent,
+    );
+    this.focusedSourceLineSpec$ = this.store.select(getFocusedSourceLineSpec);
+    this.useDarkMode$ = this.store.select(getDarkModeEnabled);
+  }
 
-  readonly focusedSourceFileContent$ = this.store.select(
-    getFocusedSourceFileContent
-  );
+  readonly focusedSourceFileContent$;
 
-  readonly focusedSourceLineSpec$ = this.store.select(getFocusedSourceLineSpec);
+  readonly focusedSourceLineSpec$;
 
-  readonly useDarkMode$: Observable<boolean> =
-    this.store.select(getDarkModeEnabled);
+  readonly useDarkMode$: Observable<boolean>;
 }

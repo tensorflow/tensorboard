@@ -77,24 +77,22 @@ const isReloadDisabledByPlugin = createSelector(
   ],
 })
 export class ReloadContainer {
-  readonly reloadDisabled$: Observable<boolean> = this.store.select(
-    isReloadDisabledByPlugin
-  );
+  readonly reloadDisabled$: Observable<boolean>;
 
-  isReloading$: Observable<boolean> = this.store
-    .select(getCoreDataLoadedState)
-    .pipe(
+  isReloading$: Observable<boolean>;
+
+  lastLoadedTimeInMs$: Observable<number | null>;
+
+  constructor(private readonly store: Store<State>) {
+    this.reloadDisabled$ = this.store.select(isReloadDisabledByPlugin);
+    this.isReloading$ = this.store.select(getCoreDataLoadedState).pipe(
       combineLatestWith(this.reloadDisabled$),
       map(([loadState, reloadDisabled]) => {
         return !reloadDisabled && loadState === DataLoadState.LOADING;
-      })
+      }),
     );
-
-  lastLoadedTimeInMs$: Observable<number | null> = this.store.select(
-    getAppLastLoadedTimeInMs
-  );
-
-  constructor(private readonly store: Store<State>) {}
+    this.lastLoadedTimeInMs$ = this.store.select(getAppLastLoadedTimeInMs);
+  }
 
   triggerReload() {
     this.store.dispatch(manualReload());

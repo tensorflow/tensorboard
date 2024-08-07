@@ -225,7 +225,47 @@ function areSeriesEqual(
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
-  constructor(private readonly store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {
+    this.columnFilters$ = this.store.select(getCurrentColumnFilters);
+    this.numColumnsLoaded$ = this.store.select(
+      hparamsSelectors.getNumDashboardHparamsLoaded,
+    );
+    this.numColumnsToLoad$ = this.store.select(
+      hparamsSelectors.getNumDashboardHparamsToLoad,
+    );
+    this.useDarkMode$ = this.store.select(getDarkModeEnabled);
+    this.ignoreOutliers$ = this.store.select(getMetricsIgnoreOutliers);
+    this.tooltipSort$ = this.store.select(getMetricsTooltipSort);
+    this.xAxisType$ = this.store.select(getMetricsXAxisType);
+    this.forceSvg$ = this.store.select(getForceSvgFeatureFlag);
+    this.columnCustomizationEnabled$ = this.store.select(
+      getIsScalarColumnCustomizationEnabled,
+    );
+    this.columnContextMenusEnabled$ = this.store.select(
+      getIsScalarColumnContextMenusEnabled,
+    );
+    this.xScaleType$ = this.store.select(getMetricsXAxisType).pipe(
+      map((xAxisType) => {
+        switch (xAxisType) {
+          case XAxisType.STEP:
+          case XAxisType.RELATIVE:
+            return ScaleType.LINEAR;
+          case XAxisType.WALL_TIME:
+            return ScaleType.TIME;
+          default:
+            const neverType = xAxisType as never;
+            throw new Error(`Invalid xAxisType for line chart. ${neverType}`);
+        }
+      }),
+    );
+    this.scalarSmoothing$ = this.store.select(getMetricsScalarSmoothing);
+    this.smoothingEnabled$ = this.store
+      .select(getMetricsScalarSmoothing)
+      .pipe(map((smoothing) => smoothing > 0));
+    this.showFullWidth$ = this.store
+      .select(getCardStateMap)
+      .pipe(map((map) => map[this.cardId]?.fullWidth));
+  }
 
   // Angular Component constructor for DataDownload dialog. It is customizable for
   // testability, without mocking out data for the component's internals, but defaults to
@@ -251,54 +291,29 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   cardState$?: Observable<Partial<CardState>>;
   rangeEnabled$?: Observable<boolean>;
   hparamsEnabled$?: Observable<boolean>;
-  columnFilters$ = this.store.select(getCurrentColumnFilters);
+  columnFilters$;
   runToHparamMap$?: Observable<RunToHparamMap>;
   selectableColumns$?: Observable<ColumnHeader[]>;
-  numColumnsLoaded$ = this.store.select(
-    hparamsSelectors.getNumDashboardHparamsLoaded
-  );
-  numColumnsToLoad$ = this.store.select(
-    hparamsSelectors.getNumDashboardHparamsToLoad
-  );
+  numColumnsLoaded$;
+  numColumnsToLoad$;
 
   onVisibilityChange({visible}: {visible: boolean}) {
     this.isVisible = visible;
   }
 
-  readonly useDarkMode$ = this.store.select(getDarkModeEnabled);
-  readonly ignoreOutliers$ = this.store.select(getMetricsIgnoreOutliers);
-  readonly tooltipSort$ = this.store.select(getMetricsTooltipSort);
-  readonly xAxisType$ = this.store.select(getMetricsXAxisType);
-  readonly forceSvg$ = this.store.select(getForceSvgFeatureFlag);
-  readonly columnCustomizationEnabled$ = this.store.select(
-    getIsScalarColumnCustomizationEnabled
-  );
-  readonly columnContextMenusEnabled$ = this.store.select(
-    getIsScalarColumnContextMenusEnabled
-  );
-  readonly xScaleType$ = this.store.select(getMetricsXAxisType).pipe(
-    map((xAxisType) => {
-      switch (xAxisType) {
-        case XAxisType.STEP:
-        case XAxisType.RELATIVE:
-          return ScaleType.LINEAR;
-        case XAxisType.WALL_TIME:
-          return ScaleType.TIME;
-        default:
-          const neverType = xAxisType as never;
-          throw new Error(`Invalid xAxisType for line chart. ${neverType}`);
-      }
-    })
-  );
+  readonly useDarkMode$;
+  readonly ignoreOutliers$;
+  readonly tooltipSort$;
+  readonly xAxisType$;
+  readonly forceSvg$;
+  readonly columnCustomizationEnabled$;
+  readonly columnContextMenusEnabled$;
+  readonly xScaleType$;
 
-  readonly scalarSmoothing$ = this.store.select(getMetricsScalarSmoothing);
-  readonly smoothingEnabled$ = this.store
-    .select(getMetricsScalarSmoothing)
-    .pipe(map((smoothing) => smoothing > 0));
+  readonly scalarSmoothing$;
+  readonly smoothingEnabled$;
 
-  readonly showFullWidth$ = this.store
-    .select(getCardStateMap)
-    .pipe(map((map) => map[this.cardId]?.fullWidth));
+  readonly showFullWidth$;
 
   private readonly ngUnsubscribe = new Subject<void>();
 
