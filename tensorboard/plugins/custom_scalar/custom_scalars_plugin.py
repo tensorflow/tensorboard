@@ -21,7 +21,8 @@ See `http_api.md` in this directory for specifications of the routes for
 this plugin.
 """
 
-
+from importlib.metadata import version as importlib_version
+from packaging import version
 import re
 
 from google.protobuf import json_format
@@ -318,9 +319,16 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
                     title_to_category[category.title] = category
 
         if merged_layout:
-            return json_format.MessageToJson(
-                merged_layout, including_default_value_fields=True
-            )
+            current_protobuf_version = importlib_version("protobuf")
+            if version.parse(current_protobuf_version) < version.parse("5.0"):
+                return json_format.MessageToJson(
+                    merged_layout, including_default_value_fields=True
+                )
+            else:
+                return json_format.MessageToJson(
+                    merged_layout,
+                    always_print_fields_with_no_presence=True,
+                )
         else:
             # No layout was found.
             return {}

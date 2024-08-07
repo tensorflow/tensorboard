@@ -18,7 +18,8 @@ See `http_api.md` in this directory for specifications of the routes for
 this plugin.
 """
 
-
+from importlib.metadata import version as importlib_version
+from packaging import version
 import json
 
 
@@ -116,14 +117,24 @@ class HParamsPlugin(base_plugin.TBPlugin):
             request_proto = _parse_request_argument(
                 request, api_pb2.GetExperimentRequest
             )
+            response_proto = get_experiment.Handler(
+                ctx,
+                self._context,
+                experiment_id,
+                request_proto,
+            ).run()
+            current_protobuf_version = importlib_version("protobuf")
+            if version.parse(current_protobuf_version) < version.parse("5.0"):
+                response = json_format.MessageToJson(
+                    response_proto, including_default_value_fields=True
+                )
+            else:
+                response = json_format.MessageToJson(
+                    response_proto, always_print_fields_with_no_presence=True
+                )
             return http_util.Respond(
                 request,
-                json_format.MessageToJson(
-                    get_experiment.Handler(
-                        ctx, self._context, experiment_id, request_proto
-                    ).run(),
-                    including_default_value_fields=True,
-                ),
+                response,
                 "application/json",
             )
         except error.HParamsError as e:
@@ -139,14 +150,24 @@ class HParamsPlugin(base_plugin.TBPlugin):
             request_proto = _parse_request_argument(
                 request, api_pb2.ListSessionGroupsRequest
             )
+            response_proto = list_session_groups.Handler(
+                ctx,
+                self._context,
+                experiment_id,
+                request_proto,
+            ).run()
+            current_protobuf_version = importlib_version("protobuf")
+            if version.parse(current_protobuf_version) < version.parse("5.0"):
+                response = json_format.MessageToJson(
+                    response_proto, including_default_value_fields=True
+                )
+            else:
+                response = json_format.MessageToJson(
+                    response_proto, always_print_fields_with_no_presence=True
+                )
             return http_util.Respond(
                 request,
-                json_format.MessageToJson(
-                    list_session_groups.Handler(
-                        ctx, self._context, experiment_id, request_proto
-                    ).run(),
-                    including_default_value_fields=True,
-                ),
+                response,
                 "application/json",
             )
         except error.HParamsError as e:
