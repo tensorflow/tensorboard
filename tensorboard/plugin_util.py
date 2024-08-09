@@ -14,7 +14,9 @@
 # ==============================================================================
 """Provides utilities that may be especially useful to plugins."""
 
-
+from google.protobuf import json_format
+from importlib import metadata
+from packaging import version
 import threading
 
 from bleach.sanitizer import Cleaner
@@ -191,6 +193,24 @@ def experiment_id(environ):
       A experiment ID, as a possibly-empty `str`.
     """
     return environ.get(_experiment_id.WSGI_ENVIRON_KEY, "")
+
+
+def proto_to_json(proto):
+    """Utility method to convert proto to JSON, accounting for different version support.
+
+    Args:
+      proto: The proto to convert to JSON.
+    """
+    current_version = metadata.version("protobuf")
+    if version.parse(current_version) >= version.parse("5.0.0"):
+        return json_format.MessageToJson(
+            proto,
+            always_print_fields_with_no_presence=True,
+        )
+    return json_format.MessageToJson(
+        proto,
+        including_default_value_fields=True,
+    )
 
 
 class _MetadataVersionChecker:
