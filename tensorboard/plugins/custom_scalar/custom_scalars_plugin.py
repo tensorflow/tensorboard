@@ -21,10 +21,7 @@ See `http_api.md` in this directory for specifications of the routes for
 this plugin.
 """
 
-
 import re
-
-from google.protobuf import json_format
 
 from werkzeug import wrappers
 
@@ -318,9 +315,7 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
                     title_to_category[category.title] = category
 
         if merged_layout:
-            return json_format.MessageToJson(
-                merged_layout, including_default_value_fields=True
-            )
+            return plugin_util.proto_to_json(merged_layout)
         else:
             # No layout was found.
             return {}
