@@ -16,6 +16,7 @@ import {Injectable, TemplateRef, ViewContainerRef} from '@angular/core';
 import {ConnectedPosition, Overlay, OverlayRef} from '@angular/cdk/overlay';
 import {TemplatePortal} from '@angular/cdk/portal';
 import {skipUntil} from 'rxjs/operators';
+import {Subject, Subscription} from 'rxjs';
 import {isMouseEventInElement} from '../../util/dom';
 
 /**
