@@ -15,7 +15,7 @@ limitations under the License.
 import {Injectable, TemplateRef, ViewContainerRef} from '@angular/core';
 import {ConnectedPosition, Overlay, OverlayRef} from '@angular/cdk/overlay';
 import {TemplatePortal} from '@angular/cdk/portal';
-import {delay, pipe, skipUntil, Subject, Subscription, timer} from 'rxjs';
+import {skipUntil, Subject, Subscription, timer} from 'rxjs';
 import {isMouseEventInElement} from '../../util/dom';
 
 /**
