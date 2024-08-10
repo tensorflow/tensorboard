@@ -15,7 +15,7 @@ limitations under the License.
 import {Injectable, TemplateRef, ViewContainerRef} from '@angular/core';
 import {ConnectedPosition, Overlay, OverlayRef} from '@angular/cdk/overlay';
 import {TemplatePortal} from '@angular/cdk/portal';
-import {Subject, Subscription} from 'rxjs';
+import {delay, pipe, skipUntil, Subject, Subscription, timer} from 'rxjs';
 import {isMouseEventInElement} from '../../util/dom';
 
 /**
@@ -109,23 +109,23 @@ export class CustomModal {
     const customModalRef = new CustomModalRef(overlayRef);
     this.customModalRefs.push(customModalRef);
 
-    // setTimeout to prevent closing immediately after modal open.
-    setTimeout(() => {
-      const outsidePointerEventsSubscription = overlayRef
-        .outsidePointerEvents()
-        .subscribe((event) => {
-          // Only close when click is outside of every modal
-          if (
-            this.customModalRefs.every(
-              (ref) =>
-                !isMouseEventInElement(event, ref.overlayRef.overlayElement)
-            )
-          ) {
-            this.closeAll();
-          }
-        });
-      customModalRef.subscriptions.push(outsidePointerEventsSubscription);
-    });
+    const outsidePointerEventsSubscription = overlayRef
+      .outsidePointerEvents()
+      .pipe(
+        skipUntil(timer(250)) // prevent closing immediately after modal open.
+      )
+      .subscribe((event) => {
+        // Only close when click is outside of every modal
+        if (
+          this.customModalRefs.every(
+            (ref) =>
+              !isMouseEventInElement(event, ref.overlayRef.overlayElement)
+          )
+        ) {
+          this.closeAll();
+        }
+      });
+    customModalRef.subscriptions.push(outsidePointerEventsSubscription);
 
     const keydownEventsSubscription = overlayRef
       .keydownEvents()
