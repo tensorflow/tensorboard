@@ -109,23 +109,23 @@ export class CustomModal {
     const customModalRef = new CustomModalRef(overlayRef);
     this.customModalRefs.push(customModalRef);
 
-    // setTimeout to prevent closing immediately after modal open.
-    setTimeout(() => {
-      const outsidePointerEventsSubscription = overlayRef
-        .outsidePointerEvents()
-        .subscribe((event) => {
-          // Only close when click is outside of every modal
-          if (
-            this.customModalRefs.every(
-              (ref) =>
-                !isMouseEventInElement(event, ref.overlayRef.overlayElement)
-            )
-          ) {
-            this.closeAll();
-          }
-        });
-      customModalRef.subscriptions.push(outsidePointerEventsSubscription);
-    });
+    const outsidePointerEventsSubscription = overlayRef
+      .outsidePointerEvents()
+      .subscribe((event) => {
+        // Prevent the right click mouseup event from immediately closing the modal.
+        if (event.type === 'auxclick') return;
+
+        // Only close when click is outside of every modal
+        if (
+          this.customModalRefs.every(
+            (ref) =>
+              !isMouseEventInElement(event, ref.overlayRef.overlayElement)
+          )
+        ) {
+          this.closeAll();
+        }
+      });
+    customModalRef.subscriptions.push(outsidePointerEventsSubscription);
 
     const keydownEventsSubscription = overlayRef
       .keydownEvents()
