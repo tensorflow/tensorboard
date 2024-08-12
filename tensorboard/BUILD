@@ -584,6 +584,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":context",
+        ":expect_protobuf_installed",
         "//tensorboard/backend:experiment_id",
         "//tensorboard/util:tb_logging",
         "@org_mozilla_bleach",
