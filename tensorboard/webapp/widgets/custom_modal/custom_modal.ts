@@ -15,8 +15,7 @@ limitations under the License.
 import {Injectable, TemplateRef, ViewContainerRef} from '@angular/core';
 import {ConnectedPosition, Overlay, OverlayRef} from '@angular/cdk/overlay';
 import {TemplatePortal} from '@angular/cdk/portal';
-import {skipUntil} from 'rxjs/operators';
-import {Subject, Subscription, timer} from 'rxjs';
+import {Subject, Subscription} from 'rxjs';
 import {isMouseEventInElement} from '../../util/dom';
 
 /**
@@ -112,10 +111,10 @@ export class CustomModal {
 
     const outsidePointerEventsSubscription = overlayRef
       .outsidePointerEvents()
-      .pipe(
-        skipUntil(timer(250)) // prevent closing immediately after modal open.
-      )
       .subscribe((event) => {
+        // Prevent the right click mouseup event from immediately closing the modal.
+        if (event.type === 'auxclick') return;
+
         // Only close when click is outside of every modal
         if (
           this.customModalRefs.every(
