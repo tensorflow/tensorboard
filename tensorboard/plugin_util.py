@@ -201,7 +201,14 @@ def proto_to_json(proto):
     Args:
       proto: The proto to convert to JSON.
     """
-    current_version = metadata.version("protobuf")
+    # Fallback for internal usage, since non third-party code doesn't really
+    # have the concept of "versions" in a monorepo. The package version chosen
+    # below is the minimum value to choose the non-deprecated kwarg to
+    # `MessageToJson`.
+    try:
+        current_version = metadata.version("protobuf")
+    except metadata.PackageNotFoundError:
+        current_version = "5.0.0"
     if version.parse(current_version) >= version.parse("5.0.0"):
         return json_format.MessageToJson(
             proto,
