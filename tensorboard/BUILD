@@ -485,7 +485,7 @@ py_library(
     srcs = ["data_compat.py"],
     srcs_version = "PY3",
     deps = [
-        ":expect_protobuf_installed",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/audio:metadata",
         "//tensorboard/plugins/histogram:metadata",
@@ -584,7 +584,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":context",
-        ":expect_protobuf_installed",
+        "//tensorboard:expect_protobuf_installed",
         "//tensorboard/backend:experiment_id",
         "//tensorboard/util:tb_logging",
         "@org_mozilla_bleach",
