@@ -1,3 +1,11 @@
+# Release 2.17.1
+
+## Bug Fixes
+- Relax restriction on protobuf dependency (#6887)
+- Update usage of numpy to reflect numpy 2.0 changes (#6871)
+- Fix stacking of notification dot (#6875, thanks @crisbeto)
+- Fix setting dialog styling regression (#6885)
+
 # Release 2.17.0
 
 The 2.17 minor series tracks TensorFlow 2.17.
