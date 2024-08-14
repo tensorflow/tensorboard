@@ -30,4 +30,4 @@ flake8==3.7.8
 yamllint==1.17.0
 
 # For building Pip package
-virtualenv==20.0.31
+virtualenv
