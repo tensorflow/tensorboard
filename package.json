@@ -59,7 +59,7 @@
     "patch-package": "6.4.7",
     "prettier": "2.4.1",
     "prettier-plugin-organize-imports": "2.3.4",
-    "requirejs": "^2.3.6",
+    "requirejs": "^2.3.7",
     "tslib": "^2.3.0",
     "typescript": "4.9.5",
     "yarn-deduplicate": "^5.0.0"
