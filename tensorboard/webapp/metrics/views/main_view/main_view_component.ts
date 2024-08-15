@@ -62,7 +62,12 @@ export class MainViewComponent {
     @Optional()
     @Inject(SHARE_BUTTON_COMPONENT)
     readonly customShareButton: Type<Component>
-  ) {}
+  ) {
+    this.cardObserver = new CardObserver(
+      this.host.nativeElement,
+      '600px 0px 600px 0px'
+    );
+  }
 
   readonly PluginType = PluginType;
 
@@ -70,8 +75,5 @@ export class MainViewComponent {
    * Load cards that are not yet visible, if they are roughly 1 card row away in
    * scroll distance.
    */
-  readonly cardObserver = new CardObserver(
-    this.host.nativeElement,
-    '600px 0px 600px 0px'
-  );
+  readonly cardObserver;
 }
