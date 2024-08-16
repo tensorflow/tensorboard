@@ -36,18 +36,19 @@ import {getSortedRenderableCardIdsWithMetadata} from './common_selectors';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EmptyTagMatchMessageContainer {
-  constructor(private readonly store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {
+    this.pluginTypes$ = this.store.select(getMetricsFilteredPluginTypes);
+    this.tagFilterRegex$ = this.store.select(getMetricsTagFilter);
+    this.tagCounts$ = this.store
+      .select(getSortedRenderableCardIdsWithMetadata)
+      .pipe(
+        map((cardList) => {
+          return new Set(cardList.map(({tag}) => tag)).size;
+        })
+      );
+  }
 
-  readonly pluginTypes$: Observable<Set<PluginType>> = this.store.select(
-    getMetricsFilteredPluginTypes
-  );
-  readonly tagFilterRegex$: Observable<string> =
-    this.store.select(getMetricsTagFilter);
-  readonly tagCounts$: Observable<number> = this.store
-    .select(getSortedRenderableCardIdsWithMetadata)
-    .pipe(
-      map((cardList) => {
-        return new Set(cardList.map(({tag}) => tag)).size;
-      })
-    );
+  readonly pluginTypes$: Observable<Set<PluginType>>;
+  readonly tagFilterRegex$: Observable<string>;
+  readonly tagCounts$: Observable<number>;
 }

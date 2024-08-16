@@ -51,42 +51,42 @@ import {PluginType} from '../../types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MainViewContainer {
-  constructor(private readonly store: Store<State>) {}
-
-  readonly isSidepaneOpen$: Observable<boolean> = this.store.select(
-    isMetricsSettingsPaneOpen
-  );
-
-  readonly initialTagsLoading$: Observable<boolean> = this.store
-    .select(getMetricsTagMetadataLoadState)
-    .pipe(
-      // disconnect and don't listen to store if tags are loaded at least once.
-      takeWhile((loadState) => {
-        return loadState.lastLoadedTimeInMs === null;
-      }, true /** inclusive */),
-      map((loadState) => {
-        return (
-          loadState.state === DataLoadState.LOADING &&
-          loadState.lastLoadedTimeInMs === null
-        );
-      })
-    );
-
-  readonly showFilteredView$: Observable<boolean> = this.store
-    .select(getMetricsTagFilter)
-    .pipe(
+  constructor(private readonly store: Store<State>) {
+    this.isSidepaneOpen$ = this.store.select(isMetricsSettingsPaneOpen);
+    this.initialTagsLoading$ = this.store
+      .select(getMetricsTagMetadataLoadState)
+      .pipe(
+        // disconnect and don't listen to store if tags are loaded at least once.
+        takeWhile((loadState) => {
+          return loadState.lastLoadedTimeInMs === null;
+        }, true /** inclusive */),
+        map((loadState) => {
+          return (
+            loadState.state === DataLoadState.LOADING &&
+            loadState.lastLoadedTimeInMs === null
+          );
+        })
+      );
+    this.showFilteredView$ = this.store.select(getMetricsTagFilter).pipe(
       map((filter) => {
         return filter.length > 0;
       })
     );
+    this.filteredPluginTypes$ = this.store.select(
+      getMetricsFilteredPluginTypes
+    );
+    this.isSlideoutMenuOpen$ = this.store.select(isMetricsSlideoutMenuOpen);
+  }
 
-  readonly filteredPluginTypes$ = this.store.select(
-    getMetricsFilteredPluginTypes
-  );
+  readonly isSidepaneOpen$: Observable<boolean>;
 
-  readonly isSlideoutMenuOpen$: Observable<boolean> = this.store.select(
-    isMetricsSlideoutMenuOpen
-  );
+  readonly initialTagsLoading$: Observable<boolean>;
+
+  readonly showFilteredView$: Observable<boolean>;
+
+  readonly filteredPluginTypes$;
+
+  readonly isSlideoutMenuOpen$: Observable<boolean>;
 
   onSettingsButtonClicked() {
     this.store.dispatch(metricsSettingsPaneToggled());

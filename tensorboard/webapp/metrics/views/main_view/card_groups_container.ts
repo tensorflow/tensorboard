@@ -36,18 +36,20 @@ import {getSortedRenderableCardIdsWithMetadata} from './common_selectors';
 export class CardGroupsContainer {
   @Input() cardObserver!: CardObserver;
 
-  constructor(private readonly store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {
+    this.cardGroups$ = this.store
+      .select(getSortedRenderableCardIdsWithMetadata)
+      .pipe(
+        combineLatestWith(this.store.select(getMetricsFilteredPluginTypes)),
+        map(([cardList, filteredPlugins]) => {
+          if (!filteredPlugins.size) return cardList;
+          return cardList.filter((card) => {
+            return filteredPlugins.has(card.plugin);
+          });
+        }),
+        map((cardList) => groupCardIdWithMetdata(cardList))
+      );
+  }
 
-  readonly cardGroups$: Observable<CardGroup[]> = this.store
-    .select(getSortedRenderableCardIdsWithMetadata)
-    .pipe(
-      combineLatestWith(this.store.select(getMetricsFilteredPluginTypes)),
-      map(([cardList, filteredPlugins]) => {
-        if (!filteredPlugins.size) return cardList;
-        return cardList.filter((card) => {
-          return filteredPlugins.has(card.plugin);
-        });
-      }),
-      map((cardList) => groupCardIdWithMetdata(cardList))
-    );
+  readonly cardGroups$: Observable<CardGroup[]>;
 }
