@@ -89,7 +89,7 @@ export class ReloadContainer {
       combineLatestWith(this.reloadDisabled$),
       map(([loadState, reloadDisabled]) => {
         return !reloadDisabled && loadState === DataLoadState.LOADING;
-      }),
+      })
     );
     this.lastLoadedTimeInMs$ = this.store.select(getAppLastLoadedTimeInMs);
   }

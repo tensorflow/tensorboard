@@ -83,33 +83,33 @@ export class MetricsEffects implements OnInitEffects {
         initAction,
         coreActions.changePlugin,
         coreActions.pluginsListingLoaded,
-        routingActions.navigated,
+        routingActions.navigated
       ),
       withLatestFrom(
         this.store.select(getActivePlugin),
-        this.store.select(getMetricsTagMetadataLoadState),
+        this.store.select(getMetricsTagMetadataLoadState)
       ),
       filter(([, activePlugin, tagLoadState]) => {
         return (
           activePlugin === METRICS_PLUGIN_ID &&
           tagLoadState.state === DataLoadState.NOT_LOADED
         );
-      }),
+      })
     );
     this.reloadRequestedWhileShown$ = this.actions$.pipe(
       ofType(coreActions.reload, coreActions.manualReload),
       withLatestFrom(this.store.select(getActivePlugin)),
       filter(([, activePlugin]) => {
         return activePlugin === METRICS_PLUGIN_ID;
-      }),
+      })
     );
     this.loadTagMetadata$ = merge(
       this.dashboardShownWithoutData$,
-      this.reloadRequestedWhileShown$,
+      this.reloadRequestedWhileShown$
     ).pipe(
       withLatestFrom(
         this.store.select(getMetricsTagMetadataLoadState),
-        this.store.select(selectors.getExperimentIdsFromRoute),
+        this.store.select(selectors.getExperimentIdsFromRoute)
       ),
       filter(([, tagLoadState, experimentIds]) => {
         /**
@@ -128,15 +128,15 @@ export class MetricsEffects implements OnInitEffects {
         return this.metricsDataSource.fetchTagMetadata(experimentIds!).pipe(
           tap((tagMetadata: TagMetadata) => {
             this.store.dispatch(
-              actions.metricsTagMetadataLoaded({tagMetadata}),
+              actions.metricsTagMetadataLoaded({tagMetadata})
             );
           }),
           catchError(() => {
             this.store.dispatch(actions.metricsTagMetadataFailed());
             return of(null);
-          }),
+          })
         );
-      }),
+      })
     );
     this.visibleCardsWithoutDataChanged$ = this.actions$.pipe(
       ofType(actions.cardVisibilityChanged),
@@ -145,7 +145,7 @@ export class MetricsEffects implements OnInitEffects {
         return fetchInfos.filter((fetchInfo) => {
           return fetchInfo.loadState === DataLoadState.NOT_LOADED;
         });
-      }),
+      })
     );
     this.visibleCardsReloaded$ = this.reloadRequestedWhileShown$.pipe(
       withLatestFrom(this.getVisibleCardFetchInfos()),
@@ -153,11 +153,11 @@ export class MetricsEffects implements OnInitEffects {
         return fetchInfos.filter((fetchInfo) => {
           return fetchInfo.loadState !== DataLoadState.LOADING;
         });
-      }),
+      })
     );
     this.loadTimeSeries$ = merge(
       this.visibleCardsWithoutDataChanged$,
-      this.visibleCardsReloaded$,
+      this.visibleCardsReloaded$
     ).pipe(
       filter((fetchInfos) => fetchInfos.length > 0),
 
@@ -166,11 +166,11 @@ export class MetricsEffects implements OnInitEffects {
       withLatestFrom(
         this.store
           .select(selectors.getExperimentIdsFromRoute)
-          .pipe(filter((experimentIds) => experimentIds !== null)),
+          .pipe(filter((experimentIds) => experimentIds !== null))
       ),
       mergeMap(([fetchInfos, experimentIds]) => {
         return this.fetchTimeSeriesForCards(fetchInfos, experimentIds!);
-      }),
+      })
     );
     this.addOrRemovePin$ = this.actions$.pipe(
       ofType(actions.cardPinStateToggled),
@@ -178,7 +178,7 @@ export class MetricsEffects implements OnInitEffects {
         this.getVisibleCardFetchInfos(),
         this.store.select(selectors.getEnableGlobalPins),
         this.store.select(selectors.getShouldPersistSettings),
-        this.store.select(selectors.getMetricsSavingPinsEnabled),
+        this.store.select(selectors.getMetricsSavingPinsEnabled)
       ),
       filter(
         ([
@@ -190,7 +190,7 @@ export class MetricsEffects implements OnInitEffects {
         ]) =>
           enableGlobalPinsFeature &&
           shouldPersistSettings &&
-          isMetricsSavingPinsEnabled,
+          isMetricsSavingPinsEnabled
       ),
       tap(([{cardId, canCreateNewPins, wasPinned}, fetchInfos]) => {
         const card = fetchInfos.find((value) => value.id === cardId);
@@ -203,7 +203,7 @@ export class MetricsEffects implements OnInitEffects {
         } else if (canCreateNewPins) {
           this.savedPinsDataSource.saveScalarPin(card.tag);
         }
-      }),
+      })
     );
     this.loadSavedPins$ = this.actions$.pipe(
       // Should be dispatch before stateRehydratedFromUrl.
@@ -211,7 +211,7 @@ export class MetricsEffects implements OnInitEffects {
       withLatestFrom(
         this.store.select(selectors.getEnableGlobalPins),
         this.store.select(selectors.getShouldPersistSettings),
-        this.store.select(selectors.getMetricsSavingPinsEnabled),
+        this.store.select(selectors.getMetricsSavingPinsEnabled)
       ),
       filter(
         ([
@@ -222,7 +222,7 @@ export class MetricsEffects implements OnInitEffects {
         ]) =>
           enableGlobalPinsFeature &&
           shouldPersistSettings &&
-          isMetricsSavingPinsEnabled,
+          isMetricsSavingPinsEnabled
       ),
       tap(() => {
         const tags = this.savedPinsDataSource.getSavedScalarPins();
@@ -236,16 +236,16 @@ export class MetricsEffects implements OnInitEffects {
         this.store.dispatch(
           actions.metricsUnresolvedPinnedCardsFromLocalStorageAdded({
             cards: unresolvedPinnedCards,
-          }),
+          })
         );
-      }),
+      })
     );
     this.removeAllPins$ = this.actions$.pipe(
       ofType(actions.metricsClearAllPinnedCards),
       withLatestFrom(
         this.store.select(selectors.getEnableGlobalPins),
         this.store.select(selectors.getShouldPersistSettings),
-        this.store.select(selectors.getMetricsSavingPinsEnabled),
+        this.store.select(selectors.getMetricsSavingPinsEnabled)
       ),
       filter(
         ([
@@ -256,11 +256,11 @@ export class MetricsEffects implements OnInitEffects {
         ]) =>
           enableGlobalPinsFeature &&
           shouldPersistSettings &&
-          isMetricsSavingPinsEnabled,
+          isMetricsSavingPinsEnabled
       ),
       tap(() => {
         this.savedPinsDataSource.removeAllScalarPins();
-      }),
+      })
     );
     this.addOrRemovePinsOnToggle$ = this.actions$.pipe(
       ofType(actions.metricsEnableSavingPinsToggled),
@@ -268,11 +268,11 @@ export class MetricsEffects implements OnInitEffects {
         this.store.select(selectors.getPinnedCardsWithMetadata),
         this.store.select(selectors.getEnableGlobalPins),
         this.store.select(selectors.getShouldPersistSettings),
-        this.store.select(selectors.getMetricsSavingPinsEnabled),
+        this.store.select(selectors.getMetricsSavingPinsEnabled)
       ),
       filter(
         ([, , enableGlobalPins, getShouldPersistSettings]) =>
-          enableGlobalPins && getShouldPersistSettings,
+          enableGlobalPins && getShouldPersistSettings
       ),
       tap(([, pinnedCards, , , getMetricsSavingPinsEnabled]) => {
         if (getMetricsSavingPinsEnabled) {
@@ -285,7 +285,7 @@ export class MetricsEffects implements OnInitEffects {
         } else {
           this.savedPinsDataSource.removeAllScalarPins();
         }
-      }),
+      })
     );
   }
 

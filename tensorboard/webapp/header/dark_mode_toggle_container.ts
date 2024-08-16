@@ -42,7 +42,7 @@ export class DarkModeToggleContainer {
         return override
           ? DarkModeOverride.DARK_MODE_ON
           : DarkModeOverride.DARK_MODE_OFF;
-      }),
+      })
     );
   }
 

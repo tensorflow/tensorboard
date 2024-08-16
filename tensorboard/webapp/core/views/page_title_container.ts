@@ -72,7 +72,7 @@ export class PageTitleContainer {
     this.getExperimentId$ = this.store.select(getExperimentIdsFromRoute).pipe(
       map((experimentIds) => {
         return experimentIds?.[0];
-      }),
+      })
     );
     this.experimentName$ = this.getExperimentId$.pipe(
       filter(Boolean),
@@ -82,7 +82,7 @@ export class PageTitleContainer {
         // tslint:disable-next-line:deprecation
         return this.store.select(getExperiment, {experimentId});
       }),
-      map((experiment) => (experiment ? experiment.name : null)),
+      map((experiment) => (experiment ? experiment.name : null))
     );
     this.title$ = this.store.select(getEnvironment).pipe(
       combineLatestWith(this.store.select(getRouteKind), this.experimentName$),
@@ -98,7 +98,7 @@ export class PageTitleContainer {
         return tbBrandName;
       }),
       startWith(this.customBrandName || DEFAULT_BRAND_NAME),
-      distinctUntilChanged(),
+      distinctUntilChanged()
     );
   }
 }

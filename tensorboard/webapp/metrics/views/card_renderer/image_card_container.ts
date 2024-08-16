@@ -111,11 +111,11 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
     private readonly dataSource: MetricsDataSource
   ) {
     this.brightnessInMilli$ = this.store.select(
-      getMetricsImageBrightnessInMilli,
+      getMetricsImageBrightnessInMilli
     );
     this.contrastInMilli$ = this.store.select(getMetricsImageContrastInMilli);
     this.actualSizeGlobalSetting$ = this.store.select(
-      getMetricsImageShowActualSize,
+      getMetricsImageShowActualSize
     );
   }
 

@@ -161,20 +161,20 @@ export class RegexEditDialogContainer {
   ) {
     this.expNameByExpId$ = this.store.select(getDashboardExperimentNames);
     this.enableColorByExperiment$ = this.store.select(
-      getEnableColorByExperiment,
+      getEnableColorByExperiment
     );
     this.groupByRegexType$ = merge(
       this.store.select(getRunGroupBy).pipe(
         take(1),
-        map((group) => group.key),
+        map((group) => group.key)
       ),
-      this.tentativeRegexType$,
+      this.tentativeRegexType$
     ).pipe(
       startWith(GroupByKey.REGEX),
       filter(
-        (key) => key === GroupByKey.REGEX || key === GroupByKey.REGEX_BY_EXP,
+        (key) => key === GroupByKey.REGEX || key === GroupByKey.REGEX_BY_EXP
       ),
-      shareReplay(1),
+      shareReplay(1)
     );
     this.experimentIds = data.experimentIds;
 

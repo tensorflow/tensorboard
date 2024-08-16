@@ -48,8 +48,8 @@ export class ExecutionDataContainer {
   readonly debugTensorDtypes$;
 
   constructor(private readonly store: Store<State>) {
-      this.focusedExecutionData$ = this.store.pipe(
-      select(getFocusedExecutionData),
+    this.focusedExecutionData$ = this.store.pipe(
+      select(getFocusedExecutionData)
     );
     this.tensorDebugMode$ = this.store.pipe(
       select(
@@ -61,9 +61,9 @@ export class ExecutionDataContainer {
             } else {
               return execution.tensor_debug_mode;
             }
-          },
-        ),
-      ),
+          }
+        )
+      )
     );
     this.hasDebugTensorValues$ = this.store.pipe(
       select(
@@ -83,9 +83,9 @@ export class ExecutionDataContainer {
               }
               return false;
             }
-          },
-        ),
-      ),
+          }
+        )
+      )
     );
     this.debugTensorValues$ = this.store.pipe(
       select(
@@ -97,9 +97,9 @@ export class ExecutionDataContainer {
             } else {
               return execution.debug_tensor_values;
             }
-          },
-        ),
-      ),
+          }
+        )
+      )
     );
     this.debugTensorDtypes$ = this.store.pipe(
       select(
@@ -124,17 +124,17 @@ export class ExecutionDataContainer {
                 const dtypeEnum = String(
                   execution.tensor_debug_mode === TensorDebugMode.FULL_HEALTH
                     ? tensorValue[2] // tensor_debug_mode: FULL_HEALTH
-                    : tensorValue[1], // tensor_debug_mode: SHAPE
+                    : tensorValue[1] // tensor_debug_mode: SHAPE
                 );
                 dtypes.push(
-                  DTYPE_ENUM_TO_NAME[dtypeEnum] || UNKNOWN_DTYPE_NAME,
+                  DTYPE_ENUM_TO_NAME[dtypeEnum] || UNKNOWN_DTYPE_NAME
                 );
               }
             }
             return dtypes;
-          },
-        ),
-      ),
+          }
+        )
+      )
     );
   }
 }

@@ -41,16 +41,7 @@ import {StackFrameForDisplay} from './stack_trace_component';
   `,
 })
 export class StackTraceContainer {
-  readonly codeLocationType$ = this.store.pipe(
-    select(
-      createSelector(
-        getCodeLocationOrigin,
-        (originInfo): CodeLocationType | null => {
-          return originInfo === null ? null : originInfo.codeLocationType;
-        }
-      )
-    )
-  );
+  readonly codeLocationType$;
 
   readonly opType$;
 
@@ -69,16 +60,16 @@ export class StackTraceContainer {
           getCodeLocationOrigin,
           (originInfo): CodeLocationType | null => {
             return originInfo === null ? null : originInfo.codeLocationType;
-          },
-        ),
-      ),
+          }
+        )
+      )
     );
     this.opType$ = this.store.pipe(
       select(
         createSelector(getCodeLocationOrigin, (originInfo): string | null => {
           return originInfo === null ? null : originInfo.opType;
-        }),
-      ),
+        })
+      )
     );
     this.opName$ = this.store.pipe(
       select(
@@ -90,8 +81,8 @@ export class StackTraceContainer {
             return null;
           }
           return originInfo.opName;
-        }),
-      ),
+        })
+      )
     );
     this.executionIndex$ = this.store.pipe(
       select(
@@ -103,11 +94,11 @@ export class StackTraceContainer {
             return null;
           }
           return originInfo.executionIndex;
-        }),
-      ),
+        })
+      )
     );
     this.stickToBottommostFrameInFocusedFile$ = this.store.pipe(
-      select(getStickToBottommostFrameInFocusedFile),
+      select(getStickToBottommostFrameInFocusedFile)
     );
     this.stackFramesForDisplay$ = this.store.pipe(
       select(
@@ -116,7 +107,7 @@ export class StackTraceContainer {
           getFocusedSourceLineSpec,
           (
             stackFrames,
-            focusedSourceLineSpec,
+            focusedSourceLineSpec
           ): StackFrameForDisplay[] | null => {
             if (stackFrames === null) {
               return null;
@@ -145,9 +136,9 @@ export class StackTraceContainer {
               });
             }
             return output;
-          },
-        ),
-      ),
+          }
+        )
+      )
     );
   }
 

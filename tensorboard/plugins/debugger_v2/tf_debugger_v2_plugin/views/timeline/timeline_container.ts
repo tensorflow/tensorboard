@@ -136,11 +136,11 @@ export class TimelineContainer {
       select(
         createSelector(getNumExecutionsLoaded, (loaded) => {
           return loaded.state == DataLoadState.LOADING;
-        }),
-      ),
+        })
+      )
     );
     this.scrollBeginIndex$ = this.store.pipe(
-      select(getExecutionScrollBeginIndex),
+      select(getExecutionScrollBeginIndex)
     );
     this.scrollBeginIndexUpperLimit$ = this.store.pipe(
       select(
@@ -149,9 +149,9 @@ export class TimelineContainer {
           getDisplayCount,
           (numExecutions, displayCount) => {
             return Math.max(0, numExecutions - displayCount);
-          },
-        ),
-      ),
+          }
+        )
+      )
     );
     this.pageSize$ = this.store.pipe(select(getExecutionPageSize));
     this.displayCount$ = this.store.pipe(select(getDisplayCount));
@@ -159,19 +159,19 @@ export class TimelineContainer {
       select(
         createSelector(getVisibleExecutionDigests, (visibleDigests) => {
           return visibleDigests.map((digest) =>
-            getExecutionDigestForDisplay(digest),
+            getExecutionDigestForDisplay(digest)
           );
-        }),
-      ),
+        })
+      )
     );
     this.displayFocusedAlertTypes$ = this.store.pipe(
-      select(getFocusAlertTypesOfVisibleExecutionDigests),
+      select(getFocusAlertTypesOfVisibleExecutionDigests)
     );
     this.focusedExecutionIndex$ = this.store.pipe(
-      select(getFocusedExecutionIndex),
+      select(getFocusedExecutionIndex)
     );
     this.focusedExecutionDisplayIndex$ = this.store.pipe(
-      select(getFocusedExecutionDisplayIndex),
+      select(getFocusedExecutionDisplayIndex)
     );
     this.numExecutions$ = this.store.pipe(select(getNumExecutions));
   }

@@ -42,10 +42,7 @@ export class FeatureFlagModalTriggerContainer implements OnInit, OnDestroy {
   private featureFlagsDialog?: MatDialogRef<FeatureFlagDialogContainer>;
   private ngUnsubscribe = new Subject<void>();
 
-  constructor(
-    private readonly store: Store<State>,
-    private dialog: MatDialog
-  ) {
+  constructor(private readonly store: Store<State>, private dialog: MatDialog) {
     this.showFeatureFlags$ = this.store.select(getShowFlagsEnabled);
   }
 

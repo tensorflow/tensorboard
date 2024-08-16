@@ -40,7 +40,7 @@ export class FilterbarContainer implements OnDestroy {
 
   constructor(private readonly store: Store<State>) {
     this.filters$ = this.store.select(
-      hparamsSelectors.getDashboardHparamFilterMap,
+      hparamsSelectors.getDashboardHparamFilterMap
     );
   }
 

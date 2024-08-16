@@ -38,10 +38,10 @@ export class ReloaderComponent {
     @Inject(DOCUMENT) private readonly document: Document
   ) {
     this.reloadEnabled$ = this.store.pipe(
-      select(settingsSelectors.getReloadEnabled),
+      select(settingsSelectors.getReloadEnabled)
     );
     this.reloadPeriodInMs$ = this.store.pipe(
-      select(settingsSelectors.getReloadPeriodInMs),
+      select(settingsSelectors.getReloadPeriodInMs)
     );
   }
 

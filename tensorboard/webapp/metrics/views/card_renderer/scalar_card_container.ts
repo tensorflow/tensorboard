@@ -228,10 +228,10 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   constructor(private readonly store: Store<State>) {
     this.columnFilters$ = this.store.select(getCurrentColumnFilters);
     this.numColumnsLoaded$ = this.store.select(
-      hparamsSelectors.getNumDashboardHparamsLoaded,
+      hparamsSelectors.getNumDashboardHparamsLoaded
     );
     this.numColumnsToLoad$ = this.store.select(
-      hparamsSelectors.getNumDashboardHparamsToLoad,
+      hparamsSelectors.getNumDashboardHparamsToLoad
     );
     this.useDarkMode$ = this.store.select(getDarkModeEnabled);
     this.ignoreOutliers$ = this.store.select(getMetricsIgnoreOutliers);
@@ -239,10 +239,10 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.xAxisType$ = this.store.select(getMetricsXAxisType);
     this.forceSvg$ = this.store.select(getForceSvgFeatureFlag);
     this.columnCustomizationEnabled$ = this.store.select(
-      getIsScalarColumnCustomizationEnabled,
+      getIsScalarColumnCustomizationEnabled
     );
     this.columnContextMenusEnabled$ = this.store.select(
-      getIsScalarColumnContextMenusEnabled,
+      getIsScalarColumnContextMenusEnabled
     );
     this.xScaleType$ = this.store.select(getMetricsXAxisType).pipe(
       map((xAxisType) => {
@@ -256,7 +256,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
             const neverType = xAxisType as never;
             throw new Error(`Invalid xAxisType for line chart. ${neverType}`);
         }
-      }),
+      })
     );
     this.scalarSmoothing$ = this.store.select(getMetricsScalarSmoothing);
     this.smoothingEnabled$ = this.store

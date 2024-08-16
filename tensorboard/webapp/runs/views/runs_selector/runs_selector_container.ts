@@ -45,7 +45,7 @@ export class RunsSelectorContainer {
           ids && ids.length > 1 ? RunsTableColumn.EXPERIMENT_NAME : null,
           RunsTableColumn.RUN_COLOR,
         ].filter((col) => col !== null) as RunsTableColumn[];
-      }),
+      })
     );
   }
 }
