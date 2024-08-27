@@ -109,7 +109,15 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
   constructor(
     private readonly store: Store<State>,
     private readonly dataSource: MetricsDataSource
-  ) {}
+  ) {
+    this.brightnessInMilli$ = this.store.select(
+      getMetricsImageBrightnessInMilli
+    );
+    this.contrastInMilli$ = this.store.select(getMetricsImageContrastInMilli);
+    this.actualSizeGlobalSetting$ = this.store.select(
+      getMetricsImageShowActualSize
+    );
+  }
 
   @Input() cardId!: CardId;
   @Input() groupName!: string | null;
@@ -139,9 +147,9 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
   isPinned$?: Observable<boolean>;
   linkedTimeSelection$?: Observable<TimeSelectionView | null>;
   selectedSteps$?: Observable<number[]>;
-  brightnessInMilli$ = this.store.select(getMetricsImageBrightnessInMilli);
-  contrastInMilli$ = this.store.select(getMetricsImageContrastInMilli);
-  actualSizeGlobalSetting$ = this.store.select(getMetricsImageShowActualSize);
+  brightnessInMilli$;
+  contrastInMilli$;
+  actualSizeGlobalSetting$;
   showActualSize = false;
 
   // The UI toggle is overridden by the global setting.

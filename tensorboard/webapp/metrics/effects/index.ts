@@ -72,13 +72,6 @@ const initAction = createAction('[Metrics Effects] Init');
 
 @Injectable()
 export class MetricsEffects implements OnInitEffects {
-  constructor(
-    private readonly actions$: Actions,
-    private readonly store: Store<State>,
-    private readonly metricsDataSource: MetricsDataSource,
-    private readonly savedPinsDataSource: SavedPinsDataSource
-  ) {}
-
   /** @export */
   ngrxOnInitEffects(): Action {
     return initAction();
@@ -95,66 +88,11 @@ export class MetricsEffects implements OnInitEffects {
    *   first `activePlugin` set.
    * [App Routing] Navigated - experiment id updates.
    */
-  private readonly dashboardShownWithoutData$ = this.actions$.pipe(
-    ofType(
-      initAction,
-      coreActions.changePlugin,
-      coreActions.pluginsListingLoaded,
-      routingActions.navigated
-    ),
-    withLatestFrom(
-      this.store.select(getActivePlugin),
-      this.store.select(getMetricsTagMetadataLoadState)
-    ),
-    filter(([, activePlugin, tagLoadState]) => {
-      return (
-        activePlugin === METRICS_PLUGIN_ID &&
-        tagLoadState.state === DataLoadState.NOT_LOADED
-      );
-    })
-  );
+  private readonly dashboardShownWithoutData$;
 
-  private readonly reloadRequestedWhileShown$ = this.actions$.pipe(
-    ofType(coreActions.reload, coreActions.manualReload),
-    withLatestFrom(this.store.select(getActivePlugin)),
-    filter(([, activePlugin]) => {
-      return activePlugin === METRICS_PLUGIN_ID;
-    })
-  );
+  private readonly reloadRequestedWhileShown$;
 
-  private readonly loadTagMetadata$ = merge(
-    this.dashboardShownWithoutData$,
-    this.reloadRequestedWhileShown$
-  ).pipe(
-    withLatestFrom(
-      this.store.select(getMetricsTagMetadataLoadState),
-      this.store.select(selectors.getExperimentIdsFromRoute)
-    ),
-    filter(([, tagLoadState, experimentIds]) => {
-      /**
-       * When `experimentIds` is null, the actual ids have not
-       * appeared in the store yet.
-       */
-      return (
-        tagLoadState.state !== DataLoadState.LOADING && experimentIds !== null
-      );
-    }),
-    throttleTime(10),
-    tap(() => {
-      this.store.dispatch(actions.metricsTagMetadataRequested());
-    }),
-    switchMap(([, , experimentIds]) => {
-      return this.metricsDataSource.fetchTagMetadata(experimentIds!).pipe(
-        tap((tagMetadata: TagMetadata) => {
-          this.store.dispatch(actions.metricsTagMetadataLoaded({tagMetadata}));
-        }),
-        catchError(() => {
-          this.store.dispatch(actions.metricsTagMetadataFailed());
-          return of(null);
-        })
-      );
-    })
-  );
+  private readonly loadTagMetadata$;
 
   private getVisibleCardFetchInfos(): Observable<CardFetchInfo[]> {
     const visibleCardIds$ = this.store.select(selectors.getVisibleCardIdSet);
@@ -227,161 +165,19 @@ export class MetricsEffects implements OnInitEffects {
     );
   }
 
-  private readonly visibleCardsWithoutDataChanged$ = this.actions$.pipe(
-    ofType(actions.cardVisibilityChanged),
-    withLatestFrom(this.getVisibleCardFetchInfos()),
-    map(([, fetchInfos]) => {
-      return fetchInfos.filter((fetchInfo) => {
-        return fetchInfo.loadState === DataLoadState.NOT_LOADED;
-      });
-    })
-  );
+  private readonly visibleCardsWithoutDataChanged$;
 
-  private readonly visibleCardsReloaded$ = this.reloadRequestedWhileShown$.pipe(
-    withLatestFrom(this.getVisibleCardFetchInfos()),
-    map(([, fetchInfos]) => {
-      return fetchInfos.filter((fetchInfo) => {
-        return fetchInfo.loadState !== DataLoadState.LOADING;
-      });
-    })
-  );
+  private readonly visibleCardsReloaded$;
 
-  private readonly loadTimeSeries$ = merge(
-    this.visibleCardsWithoutDataChanged$,
-    this.visibleCardsReloaded$
-  ).pipe(
-    filter((fetchInfos) => fetchInfos.length > 0),
+  private readonly loadTimeSeries$;
 
-    // Ignore card visibility events until we have non-null
-    // experimentIds.
-    withLatestFrom(
-      this.store
-        .select(selectors.getExperimentIdsFromRoute)
-        .pipe(filter((experimentIds) => experimentIds !== null))
-    ),
-    mergeMap(([fetchInfos, experimentIds]) => {
-      return this.fetchTimeSeriesForCards(fetchInfos, experimentIds!);
-    })
-  );
+  private readonly addOrRemovePin$;
 
-  private readonly addOrRemovePin$ = this.actions$.pipe(
-    ofType(actions.cardPinStateToggled),
-    withLatestFrom(
-      this.getVisibleCardFetchInfos(),
-      this.store.select(selectors.getEnableGlobalPins),
-      this.store.select(selectors.getShouldPersistSettings),
-      this.store.select(selectors.getMetricsSavingPinsEnabled)
-    ),
-    filter(
-      ([
-        ,
-        ,
-        enableGlobalPinsFeature,
-        shouldPersistSettings,
-        isMetricsSavingPinsEnabled,
-      ]) =>
-        enableGlobalPinsFeature &&
-        shouldPersistSettings &&
-        isMetricsSavingPinsEnabled
-    ),
-    tap(([{cardId, canCreateNewPins, wasPinned}, fetchInfos]) => {
-      const card = fetchInfos.find((value) => value.id === cardId);
-      // Saving only scalar pinned cards.
-      if (!card || card.plugin !== PluginType.SCALARS) {
-        return;
-      }
-      if (wasPinned) {
-        this.savedPinsDataSource.removeScalarPin(card.tag);
-      } else if (canCreateNewPins) {
-        this.savedPinsDataSource.saveScalarPin(card.tag);
-      }
-    })
-  );
+  private readonly loadSavedPins$;
 
-  private readonly loadSavedPins$ = this.actions$.pipe(
-    // Should be dispatch before stateRehydratedFromUrl.
-    ofType(initAction),
-    withLatestFrom(
-      this.store.select(selectors.getEnableGlobalPins),
-      this.store.select(selectors.getShouldPersistSettings),
-      this.store.select(selectors.getMetricsSavingPinsEnabled)
-    ),
-    filter(
-      ([
-        ,
-        enableGlobalPinsFeature,
-        shouldPersistSettings,
-        isMetricsSavingPinsEnabled,
-      ]) =>
-        enableGlobalPinsFeature &&
-        shouldPersistSettings &&
-        isMetricsSavingPinsEnabled
-    ),
-    tap(() => {
-      const tags = this.savedPinsDataSource.getSavedScalarPins();
-      if (!tags || tags.length === 0) {
-        return;
-      }
-      const unresolvedPinnedCards = tags.map((tag) => ({
-        plugin: PluginType.SCALARS,
-        tag: tag,
-      }));
-      this.store.dispatch(
-        actions.metricsUnresolvedPinnedCardsFromLocalStorageAdded({
-          cards: unresolvedPinnedCards,
-        })
-      );
-    })
-  );
+  private readonly removeAllPins$;
 
-  private readonly removeAllPins$ = this.actions$.pipe(
-    ofType(actions.metricsClearAllPinnedCards),
-    withLatestFrom(
-      this.store.select(selectors.getEnableGlobalPins),
-      this.store.select(selectors.getShouldPersistSettings),
-      this.store.select(selectors.getMetricsSavingPinsEnabled)
-    ),
-    filter(
-      ([
-        ,
-        enableGlobalPinsFeature,
-        shouldPersistSettings,
-        isMetricsSavingPinsEnabled,
-      ]) =>
-        enableGlobalPinsFeature &&
-        shouldPersistSettings &&
-        isMetricsSavingPinsEnabled
-    ),
-    tap(() => {
-      this.savedPinsDataSource.removeAllScalarPins();
-    })
-  );
-
-  private readonly addOrRemovePinsOnToggle$ = this.actions$.pipe(
-    ofType(actions.metricsEnableSavingPinsToggled),
-    withLatestFrom(
-      this.store.select(selectors.getPinnedCardsWithMetadata),
-      this.store.select(selectors.getEnableGlobalPins),
-      this.store.select(selectors.getShouldPersistSettings),
-      this.store.select(selectors.getMetricsSavingPinsEnabled)
-    ),
-    filter(
-      ([, , enableGlobalPins, getShouldPersistSettings]) =>
-        enableGlobalPins && getShouldPersistSettings
-    ),
-    tap(([, pinnedCards, , , getMetricsSavingPinsEnabled]) => {
-      if (getMetricsSavingPinsEnabled) {
-        const tags: Tag[] = pinnedCards
-          .map((card) => {
-            return card.plugin === PluginType.SCALARS ? card.tag : null;
-          })
-          .filter((v): v is Tag => v !== null);
-        this.savedPinsDataSource.saveScalarPins(tags);
-      } else {
-        this.savedPinsDataSource.removeAllScalarPins();
-      }
-    })
-  );
+  private readonly addOrRemovePinsOnToggle$;
 
   /**
    * In general, this effect dispatch the following actions:
@@ -403,39 +199,267 @@ export class MetricsEffects implements OnInitEffects {
    * - fetchTimeSeriesFailed
    */
   /** @export */
-  readonly dataEffects$ = createEffect(
-    () => {
-      return merge(
-        /**
-         * Subscribes to: dashboard shown, route navigation, reloads.
-         */
-        this.loadTagMetadata$,
+  readonly dataEffects$;
 
-        /**
-         * Subscribes to: card visibility, reloads.
-         */
-        this.loadTimeSeries$,
+  constructor(
+    private readonly actions$: Actions,
+    private readonly store: Store<State>,
+    private readonly metricsDataSource: MetricsDataSource,
+    private readonly savedPinsDataSource: SavedPinsDataSource
+  ) {
+    this.dashboardShownWithoutData$ = actions$.pipe(
+      ofType(
+        initAction,
+        coreActions.changePlugin,
+        coreActions.pluginsListingLoaded,
+        routingActions.navigated
+      ),
+      withLatestFrom(
+        this.store.select(getActivePlugin),
+        this.store.select(getMetricsTagMetadataLoadState)
+      ),
+      filter(([, activePlugin, tagLoadState]) => {
+        return (
+          activePlugin === METRICS_PLUGIN_ID &&
+          tagLoadState.state === DataLoadState.NOT_LOADED
+        );
+      })
+    );
 
+    this.reloadRequestedWhileShown$ = actions$.pipe(
+      ofType(coreActions.reload, coreActions.manualReload),
+      withLatestFrom(this.store.select(getActivePlugin)),
+      filter(([, activePlugin]) => {
+        return activePlugin === METRICS_PLUGIN_ID;
+      })
+    );
+
+    this.loadTagMetadata$ = merge(
+      this.dashboardShownWithoutData$,
+      this.reloadRequestedWhileShown$
+    ).pipe(
+      withLatestFrom(
+        this.store.select(getMetricsTagMetadataLoadState),
+        this.store.select(selectors.getExperimentIdsFromRoute)
+      ),
+      filter(([, tagLoadState, experimentIds]) => {
         /**
-         * Subscribes to: cardPinStateToggled.
+         * When `experimentIds` is null, the actual ids have not
+         * appeared in the store yet.
          */
-        this.addOrRemovePin$,
-        /**
-         * Subscribes to: dashboard shown (initAction).
-         */
-        this.loadSavedPins$,
-        /**
-         * Subscribes to: metricsClearAllPinnedCards.
-         */
-        this.removeAllPins$,
-        /**
-         * Subscribes to: metricsEnableSavingPinsToggled.
-         */
-        this.addOrRemovePinsOnToggle$
-      );
-    },
-    {dispatch: false}
-  );
+        return (
+          tagLoadState.state !== DataLoadState.LOADING && experimentIds !== null
+        );
+      }),
+      throttleTime(10),
+      tap(() => {
+        this.store.dispatch(actions.metricsTagMetadataRequested());
+      }),
+      switchMap(([, , experimentIds]) => {
+        return this.metricsDataSource.fetchTagMetadata(experimentIds!).pipe(
+          tap((tagMetadata: TagMetadata) => {
+            this.store.dispatch(
+              actions.metricsTagMetadataLoaded({tagMetadata})
+            );
+          }),
+          catchError(() => {
+            this.store.dispatch(actions.metricsTagMetadataFailed());
+            return of(null);
+          })
+        );
+      })
+    );
+
+    this.visibleCardsWithoutDataChanged$ = this.actions$.pipe(
+      ofType(actions.cardVisibilityChanged),
+      withLatestFrom(this.getVisibleCardFetchInfos()),
+      map(([, fetchInfos]) => {
+        return fetchInfos.filter((fetchInfo) => {
+          return fetchInfo.loadState === DataLoadState.NOT_LOADED;
+        });
+      })
+    );
+
+    this.visibleCardsReloaded$ = this.reloadRequestedWhileShown$.pipe(
+      withLatestFrom(this.getVisibleCardFetchInfos()),
+      map(([, fetchInfos]) => {
+        return fetchInfos.filter((fetchInfo) => {
+          return fetchInfo.loadState !== DataLoadState.LOADING;
+        });
+      })
+    );
+
+    this.loadTimeSeries$ = merge(
+      this.visibleCardsWithoutDataChanged$,
+      this.visibleCardsReloaded$
+    ).pipe(
+      filter((fetchInfos) => fetchInfos.length > 0),
+
+      // Ignore card visibility events until we have non-null
+      // experimentIds.
+      withLatestFrom(
+        this.store
+          .select(selectors.getExperimentIdsFromRoute)
+          .pipe(filter((experimentIds) => experimentIds !== null))
+      ),
+      mergeMap(([fetchInfos, experimentIds]) => {
+        return this.fetchTimeSeriesForCards(fetchInfos, experimentIds!);
+      })
+    );
+
+    this.addOrRemovePin$ = this.actions$.pipe(
+      ofType(actions.cardPinStateToggled),
+      withLatestFrom(
+        this.getVisibleCardFetchInfos(),
+        this.store.select(selectors.getEnableGlobalPins),
+        this.store.select(selectors.getShouldPersistSettings),
+        this.store.select(selectors.getMetricsSavingPinsEnabled)
+      ),
+      filter(
+        ([
+          ,
+          ,
+          enableGlobalPinsFeature,
+          shouldPersistSettings,
+          isMetricsSavingPinsEnabled,
+        ]) =>
+          enableGlobalPinsFeature &&
+          shouldPersistSettings &&
+          isMetricsSavingPinsEnabled
+      ),
+      tap(([{cardId, canCreateNewPins, wasPinned}, fetchInfos]) => {
+        const card = fetchInfos.find((value) => value.id === cardId);
+        // Saving only scalar pinned cards.
+        if (!card || card.plugin !== PluginType.SCALARS) {
+          return;
+        }
+        if (wasPinned) {
+          this.savedPinsDataSource.removeScalarPin(card.tag);
+        } else if (canCreateNewPins) {
+          this.savedPinsDataSource.saveScalarPin(card.tag);
+        }
+      })
+    );
+
+    this.loadSavedPins$ = this.actions$.pipe(
+      // Should be dispatch before stateRehydratedFromUrl.
+      ofType(initAction),
+      withLatestFrom(
+        this.store.select(selectors.getEnableGlobalPins),
+        this.store.select(selectors.getShouldPersistSettings),
+        this.store.select(selectors.getMetricsSavingPinsEnabled)
+      ),
+      filter(
+        ([
+          ,
+          enableGlobalPinsFeature,
+          shouldPersistSettings,
+          isMetricsSavingPinsEnabled,
+        ]) =>
+          enableGlobalPinsFeature &&
+          shouldPersistSettings &&
+          isMetricsSavingPinsEnabled
+      ),
+      tap(() => {
+        const tags = this.savedPinsDataSource.getSavedScalarPins();
+        if (!tags || tags.length === 0) {
+          return;
+        }
+        const unresolvedPinnedCards = tags.map((tag) => ({
+          plugin: PluginType.SCALARS,
+          tag: tag,
+        }));
+        this.store.dispatch(
+          actions.metricsUnresolvedPinnedCardsFromLocalStorageAdded({
+            cards: unresolvedPinnedCards,
+          })
+        );
+      })
+    );
+
+    this.removeAllPins$ = this.actions$.pipe(
+      ofType(actions.metricsClearAllPinnedCards),
+      withLatestFrom(
+        this.store.select(selectors.getEnableGlobalPins),
+        this.store.select(selectors.getShouldPersistSettings),
+        this.store.select(selectors.getMetricsSavingPinsEnabled)
+      ),
+      filter(
+        ([
+          ,
+          enableGlobalPinsFeature,
+          shouldPersistSettings,
+          isMetricsSavingPinsEnabled,
+        ]) =>
+          enableGlobalPinsFeature &&
+          shouldPersistSettings &&
+          isMetricsSavingPinsEnabled
+      ),
+      tap(() => {
+        this.savedPinsDataSource.removeAllScalarPins();
+      })
+    );
+
+    this.addOrRemovePinsOnToggle$ = this.actions$.pipe(
+      ofType(actions.metricsEnableSavingPinsToggled),
+      withLatestFrom(
+        this.store.select(selectors.getPinnedCardsWithMetadata),
+        this.store.select(selectors.getEnableGlobalPins),
+        this.store.select(selectors.getShouldPersistSettings),
+        this.store.select(selectors.getMetricsSavingPinsEnabled)
+      ),
+      filter(
+        ([, , enableGlobalPins, getShouldPersistSettings]) =>
+          enableGlobalPins && getShouldPersistSettings
+      ),
+      tap(([, pinnedCards, , , getMetricsSavingPinsEnabled]) => {
+        if (getMetricsSavingPinsEnabled) {
+          const tags: Tag[] = pinnedCards
+            .map((card) => {
+              return card.plugin === PluginType.SCALARS ? card.tag : null;
+            })
+            .filter((v): v is Tag => v !== null);
+          this.savedPinsDataSource.saveScalarPins(tags);
+        } else {
+          this.savedPinsDataSource.removeAllScalarPins();
+        }
+      })
+    );
+
+    this.dataEffects$ = createEffect(
+      () => {
+        return merge(
+          /**
+           * Subscribes to: dashboard shown, route navigation, reloads.
+           */
+          this.loadTagMetadata$,
+
+          /**
+           * Subscribes to: card visibility, reloads.
+           */
+          this.loadTimeSeries$,
+
+          /**
+           * Subscribes to: cardPinStateToggled.
+           */
+          this.addOrRemovePin$,
+          /**
+           * Subscribes to: dashboard shown (initAction).
+           */
+          this.loadSavedPins$,
+          /**
+           * Subscribes to: metricsClearAllPinnedCards.
+           */
+          this.removeAllPins$,
+          /**
+           * Subscribes to: metricsEnableSavingPinsToggled.
+           */
+          this.addOrRemovePinsOnToggle$
+        );
+      },
+      {dispatch: false}
+    );
+  }
 }
 
 export const TEST_ONLY = {

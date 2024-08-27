@@ -71,11 +71,8 @@ export class RegexEditDialogContainer {
   private readonly experimentIds: string[];
   private readonly runIdToEid$: Observable<Record<string, string>>;
   private readonly allRuns$: Observable<Run[]>;
-  private readonly expNameByExpId$: Observable<Record<string, string>> =
-    this.store.select(getDashboardExperimentNames);
-  readonly enableColorByExperiment$: Observable<boolean> = this.store.select(
-    getEnableColorByExperiment
-  );
+  private readonly expNameByExpId$: Observable<Record<string, string>>;
+  readonly enableColorByExperiment$: Observable<boolean>;
 
   // Tentative regex string and type are used because we don't want to change the state
   // every time we type in or select the dropdown option.
@@ -91,19 +88,7 @@ export class RegexEditDialogContainer {
     );
   }).pipe(startWith(''), shareReplay(1));
 
-  readonly groupByRegexType$: Observable<GroupByKey> = merge(
-    this.store.select(getRunGroupBy).pipe(
-      take(1),
-      map((group) => group.key)
-    ),
-    this.tentativeRegexType$
-  ).pipe(
-    startWith(GroupByKey.REGEX),
-    filter(
-      (key) => key === GroupByKey.REGEX || key === GroupByKey.REGEX_BY_EXP
-    ),
-    shareReplay(1)
-  );
+  readonly groupByRegexType$: Observable<GroupByKey>;
 
   readonly colorRunPairList$: Observable<ColorGroup[]> = defer(() => {
     return this.groupByRegexString$.pipe(
@@ -174,6 +159,23 @@ export class RegexEditDialogContainer {
       experimentIds: string[];
     }
   ) {
+    this.expNameByExpId$ = this.store.select(getDashboardExperimentNames);
+    this.enableColorByExperiment$ = this.store.select(
+      getEnableColorByExperiment
+    );
+    this.groupByRegexType$ = merge(
+      this.store.select(getRunGroupBy).pipe(
+        take(1),
+        map((group) => group.key)
+      ),
+      this.tentativeRegexType$
+    ).pipe(
+      startWith(GroupByKey.REGEX),
+      filter(
+        (key) => key === GroupByKey.REGEX || key === GroupByKey.REGEX_BY_EXP
+      ),
+      shareReplay(1)
+    );
     this.experimentIds = data.experimentIds;
 
     this.runIdToEid$ = combineLatest(

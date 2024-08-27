@@ -30,19 +30,22 @@ import {RunsTableColumn} from '../runs_table/types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RunsSelectorContainer {
-  readonly experimentIds$ = this.store
-    .select(getExperimentIdsFromRoute)
-    .pipe(map((experimentIdsOrNull) => experimentIdsOrNull ?? []));
-  readonly columns$ = this.store.select(getExperimentIdsFromRoute).pipe(
-    map((ids) => {
-      return [
-        RunsTableColumn.CHECKBOX,
-        RunsTableColumn.RUN_NAME,
-        ids && ids.length > 1 ? RunsTableColumn.EXPERIMENT_NAME : null,
-        RunsTableColumn.RUN_COLOR,
-      ].filter((col) => col !== null) as RunsTableColumn[];
-    })
-  );
+  readonly experimentIds$;
+  readonly columns$;
 
-  constructor(private readonly store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {
+    this.experimentIds$ = this.store
+      .select(getExperimentIdsFromRoute)
+      .pipe(map((experimentIdsOrNull) => experimentIdsOrNull ?? []));
+    this.columns$ = this.store.select(getExperimentIdsFromRoute).pipe(
+      map((ids) => {
+        return [
+          RunsTableColumn.CHECKBOX,
+          RunsTableColumn.RUN_NAME,
+          ids && ids.length > 1 ? RunsTableColumn.EXPERIMENT_NAME : null,
+          RunsTableColumn.RUN_COLOR,
+        ].filter((col) => col !== null) as RunsTableColumn[];
+      })
+    );
+  }
 }

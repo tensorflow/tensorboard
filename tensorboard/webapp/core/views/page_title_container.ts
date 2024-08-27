@@ -57,46 +57,48 @@ const DEFAULT_BRAND_NAME = 'TensorBoard';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PageTitleContainer {
-  private readonly getExperimentId$ = this.store
-    .select(getExperimentIdsFromRoute)
-    .pipe(
-      map((experimentIds) => {
-        return experimentIds?.[0];
-      })
-    );
+  private readonly getExperimentId$;
 
-  private readonly experimentName$ = this.getExperimentId$.pipe(
-    filter(Boolean),
-    mergeMap((experimentId) => {
-      // Selectors with props are deprecated (getExperiment):
-      // https://github.com/ngrx/platform/issues/2980
-      // tslint:disable-next-line:deprecation
-      return this.store.select(getExperiment, {experimentId});
-    }),
-    map((experiment) => (experiment ? experiment.name : null))
-  );
+  private readonly experimentName$;
 
-  readonly title$ = this.store.select(getEnvironment).pipe(
-    combineLatestWith(this.store.select(getRouteKind), this.experimentName$),
-    map(([env, routeKind, experimentName]) => {
-      const tbBrandName = this.customBrandName || DEFAULT_BRAND_NAME;
-      if (env.window_title) {
-        // (it's an empty string when the `--window_title` flag is not set)
-        return env.window_title;
-      }
-      if (routeKind === RouteKind.EXPERIMENT && experimentName) {
-        return `${experimentName} - ${tbBrandName}`;
-      }
-      return tbBrandName;
-    }),
-    startWith(this.customBrandName || DEFAULT_BRAND_NAME),
-    distinctUntilChanged()
-  );
+  readonly title$;
 
   constructor(
     private readonly store: Store<State>,
     @Optional()
     @Inject(TB_BRAND_NAME)
     private readonly customBrandName: string | null
-  ) {}
+  ) {
+    this.getExperimentId$ = this.store.select(getExperimentIdsFromRoute).pipe(
+      map((experimentIds) => {
+        return experimentIds?.[0];
+      })
+    );
+    this.experimentName$ = this.getExperimentId$.pipe(
+      filter(Boolean),
+      mergeMap((experimentId) => {
+        // Selectors with props are deprecated (getExperiment):
+        // https://github.com/ngrx/platform/issues/2980
+        // tslint:disable-next-line:deprecation
+        return this.store.select(getExperiment, {experimentId});
+      }),
+      map((experiment) => (experiment ? experiment.name : null))
+    );
+    this.title$ = this.store.select(getEnvironment).pipe(
+      combineLatestWith(this.store.select(getRouteKind), this.experimentName$),
+      map(([env, routeKind, experimentName]) => {
+        const tbBrandName = this.customBrandName || DEFAULT_BRAND_NAME;
+        if (env.window_title) {
+          // (it's an empty string when the `--window_title` flag is not set)
+          return env.window_title;
+        }
+        if (routeKind === RouteKind.EXPERIMENT && experimentName) {
+          return `${experimentName} - ${tbBrandName}`;
+        }
+        return tbBrandName;
+      }),
+      startWith(this.customBrandName || DEFAULT_BRAND_NAME),
+      distinctUntilChanged()
+    );
+  }
 }

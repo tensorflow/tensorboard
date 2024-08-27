@@ -34,15 +34,19 @@ import {State} from '../../store/debugger_types';
   `,
 })
 export class GraphContainer {
-  readonly opInfo$ = this.store.pipe(select(getFocusedGraphOpInfo));
+  readonly opInfo$;
 
-  readonly inputOps$ = this.store.pipe(select(getFocusedGraphOpInputs));
+  readonly inputOps$;
 
-  readonly consumerOps$ = this.store.pipe(select(getFocusedGraphOpConsumers));
+  readonly consumerOps$;
 
   onGraphOpNavigate(event: {graph_id: string; op_name: string}) {
     this.store.dispatch(graphOpFocused(event));
   }
 
-  constructor(private readonly store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {
+    this.opInfo$ = this.store.pipe(select(getFocusedGraphOpInfo));
+    this.inputOps$ = this.store.pipe(select(getFocusedGraphOpInputs));
+    this.consumerOps$ = this.store.pipe(select(getFocusedGraphOpConsumers));
+  }
 }

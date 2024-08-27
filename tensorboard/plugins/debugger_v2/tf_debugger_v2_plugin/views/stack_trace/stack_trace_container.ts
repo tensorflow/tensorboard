@@ -41,95 +41,106 @@ import {StackFrameForDisplay} from './stack_trace_component';
   `,
 })
 export class StackTraceContainer {
-  readonly codeLocationType$ = this.store.pipe(
-    select(
-      createSelector(
-        getCodeLocationOrigin,
-        (originInfo): CodeLocationType | null => {
-          return originInfo === null ? null : originInfo.codeLocationType;
-        }
+  readonly codeLocationType$;
+
+  readonly opType$;
+
+  readonly opName$;
+
+  readonly executionIndex$;
+
+  readonly stickToBottommostFrameInFocusedFile$;
+
+  readonly stackFramesForDisplay$;
+
+  constructor(private readonly store: Store<State>) {
+    this.codeLocationType$ = this.store.pipe(
+      select(
+        createSelector(
+          getCodeLocationOrigin,
+          (originInfo): CodeLocationType | null => {
+            return originInfo === null ? null : originInfo.codeLocationType;
+          }
+        )
       )
-    )
-  );
-
-  readonly opType$ = this.store.pipe(
-    select(
-      createSelector(getCodeLocationOrigin, (originInfo): string | null => {
-        return originInfo === null ? null : originInfo.opType;
-      })
-    )
-  );
-
-  readonly opName$ = this.store.pipe(
-    select(
-      createSelector(getCodeLocationOrigin, (originInfo): string | null => {
-        if (
-          originInfo === null ||
-          originInfo.codeLocationType !== CodeLocationType.GRAPH_OP_CREATION
-        ) {
-          return null;
-        }
-        return originInfo.opName;
-      })
-    )
-  );
-
-  readonly executionIndex$ = this.store.pipe(
-    select(
-      createSelector(getCodeLocationOrigin, (originInfo): number | null => {
-        if (
-          originInfo === null ||
-          originInfo.codeLocationType !== CodeLocationType.EXECUTION
-        ) {
-          return null;
-        }
-        return originInfo.executionIndex;
-      })
-    )
-  );
-
-  readonly stickToBottommostFrameInFocusedFile$ = this.store.pipe(
-    select(getStickToBottommostFrameInFocusedFile)
-  );
-
-  readonly stackFramesForDisplay$ = this.store.pipe(
-    select(
-      createSelector(
-        getFocusedStackFrames,
-        getFocusedSourceLineSpec,
-        (stackFrames, focusedSourceLineSpec): StackFrameForDisplay[] | null => {
-          if (stackFrames === null) {
+    );
+    this.opType$ = this.store.pipe(
+      select(
+        createSelector(getCodeLocationOrigin, (originInfo): string | null => {
+          return originInfo === null ? null : originInfo.opType;
+        })
+      )
+    );
+    this.opName$ = this.store.pipe(
+      select(
+        createSelector(getCodeLocationOrigin, (originInfo): string | null => {
+          if (
+            originInfo === null ||
+            originInfo.codeLocationType !== CodeLocationType.GRAPH_OP_CREATION
+          ) {
             return null;
           }
-          const output: StackFrameForDisplay[] = [];
-          // Correctly label all the stack frames for display.
-          for (const stackFrame of stackFrames) {
-            const {host_name, file_path, lineno, function_name} = stackFrame;
-            const pathItems = file_path.split('/');
-            const concise_file_path = pathItems[pathItems.length - 1];
-            const belongsToFocusedFile =
-              focusedSourceLineSpec !== null &&
-              host_name === focusedSourceLineSpec.host_name &&
-              file_path === focusedSourceLineSpec.file_path;
-            const focused =
-              belongsToFocusedFile && lineno === focusedSourceLineSpec!.lineno;
-            output.push({
-              host_name,
-              file_path,
-              concise_file_path,
-              lineno,
-              function_name,
-              belongsToFocusedFile,
-              focused,
-            });
-          }
-          return output;
-        }
+          return originInfo.opName;
+        })
       )
-    )
-  );
-
-  constructor(private readonly store: Store<State>) {}
+    );
+    this.executionIndex$ = this.store.pipe(
+      select(
+        createSelector(getCodeLocationOrigin, (originInfo): number | null => {
+          if (
+            originInfo === null ||
+            originInfo.codeLocationType !== CodeLocationType.EXECUTION
+          ) {
+            return null;
+          }
+          return originInfo.executionIndex;
+        })
+      )
+    );
+    this.stickToBottommostFrameInFocusedFile$ = this.store.pipe(
+      select(getStickToBottommostFrameInFocusedFile)
+    );
+    this.stackFramesForDisplay$ = this.store.pipe(
+      select(
+        createSelector(
+          getFocusedStackFrames,
+          getFocusedSourceLineSpec,
+          (
+            stackFrames,
+            focusedSourceLineSpec
+          ): StackFrameForDisplay[] | null => {
+            if (stackFrames === null) {
+              return null;
+            }
+            const output: StackFrameForDisplay[] = [];
+            // Correctly label all the stack frames for display.
+            for (const stackFrame of stackFrames) {
+              const {host_name, file_path, lineno, function_name} = stackFrame;
+              const pathItems = file_path.split('/');
+              const concise_file_path = pathItems[pathItems.length - 1];
+              const belongsToFocusedFile =
+                focusedSourceLineSpec !== null &&
+                host_name === focusedSourceLineSpec.host_name &&
+                file_path === focusedSourceLineSpec.file_path;
+              const focused =
+                belongsToFocusedFile &&
+                lineno === focusedSourceLineSpec!.lineno;
+              output.push({
+                host_name,
+                file_path,
+                concise_file_path,
+                lineno,
+                function_name,
+                belongsToFocusedFile,
+                focused,
+              });
+            }
+            return output;
+          }
+        )
+      )
+    );
+  }
 
   onSourceLineClicked(args: StackFrameForDisplay) {
     const {host_name, file_path, lineno, function_name} = args;
