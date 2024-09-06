@@ -716,7 +716,7 @@ const reducer = createReducer(
       if (state.tagGroupExpanded.size === 0) {
         const cardListWithMetadata = nextCardList
           .map((cardId) => {
-            return {...newCardMetadataMap[cardId], cardId} ?? null;
+            return {...newCardMetadataMap[cardId], cardId};
           })
           .filter(Boolean);
         const cardGroups = groupCardIdWithMetdata(cardListWithMetadata);
