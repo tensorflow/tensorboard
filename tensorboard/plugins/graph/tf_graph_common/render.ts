@@ -18,8 +18,8 @@ limitations under the License.
 import * as d3 from 'd3';
 import {graphlib} from 'dagre';
 import * as _ from 'lodash';
-import * as tf_graph_common from './common';
-import * as tf_graph from './graph';
+import * as tfGraphCommon from './common';
+import * as tfGraph from './graph';
 import {
   BridgeNode,
   createGraph,
@@ -37,7 +37,7 @@ import {
   OpNodeImpl,
 } from './graph';
 import {Hierarchy} from './hierarchy';
-import * as tf_graph_util from './util';
+import * as tfGraphUtil from './util';
 
 export type EdgeData = {
   v: string;
@@ -199,7 +199,7 @@ const PARAMS = {
  */
 const nodeDisplayNameRegex = new RegExp(
   '^(?:' +
-    tf_graph.FUNCTION_LIBRARY_NODE_PREFIX +
+    tfGraph.FUNCTION_LIBRARY_NODE_PREFIX +
     ')?(\\w+)_[a-z0-9]{8}(?:_\\d+)?$'
 );
 /**
@@ -301,14 +301,11 @@ export class RenderGraphInfo {
       .domain([0, maxComputeTime as unknown as number])
       .range(PARAMS.minMaxColors);
     this.edgeWidthSizedBasedScale = this.hierarchy.hasShapeInfo
-      ? tf_graph_common.EDGE_WIDTH_SIZE_BASED_SCALE
+      ? tfGraphCommon.EDGE_WIDTH_SIZE_BASED_SCALE
       : d3
           .scaleLinear()
           .domain([1, this.hierarchy.maxMetaEdgeSize])
-          .range([
-            tf_graph_common.MIN_EDGE_WIDTH,
-            tf_graph_common.MAX_EDGE_WIDTH,
-          ]);
+          .range([tfGraphCommon.MIN_EDGE_WIDTH, tfGraphCommon.MAX_EDGE_WIDTH]);
   }
   /**
    * Get a previously created RenderNodeInfo by its node name.
@@ -376,8 +373,7 @@ export class RenderGraphInfo {
     }
     // We only fade nodes when we're displaying stats.
     renderInfo.isFadedOut =
-      this.displayingStats &&
-      !tf_graph_util.hasDisplayableNodeStats(node.stats);
+      this.displayingStats && !tfGraphUtil.hasDisplayableNodeStats(node.stats);
     var deviceHistogram: {} | null = null;
     var xlaClusterHistogram: {} | null = null;
     var opCompatibility: number | null = null;
@@ -628,7 +624,7 @@ export class RenderGraphInfo {
     newPrefix: string,
     functionOutputIndexToNode: {[key: string]: Node}
   ): Metanode {
-    const newMetanode = tf_graph.createMetanode(
+    const newMetanode = tfGraph.createMetanode(
       libraryMetanode.name.replace(oldPrefix, newPrefix)
     );
     // Copy over various properties.
@@ -685,7 +681,7 @@ export class RenderGraphInfo {
           // This logic should never run because the meta graph should only
           // contain meta and op nodes.
           console.warn(
-            node.name + ' is oddly neither a metanode nor an opnode.'
+            `${node.name} is oddly neither a metanode nor an opnode.`
           );
       }
     });
@@ -873,7 +869,7 @@ export class RenderGraphInfo {
           // This node is not a function call.
           return;
         }
-        if (childName.indexOf(tf_graph.FUNCTION_LIBRARY_NODE_PREFIX) === 0) {
+        if (childName.indexOf(tfGraph.FUNCTION_LIBRARY_NODE_PREFIX) === 0) {
           // Do not replace library functions in the graph. The library
           // functions serve as templates for other nodes.
           return;
@@ -951,7 +947,7 @@ export class RenderGraphInfo {
     if (!_.isEmpty(this.hierarchy.libraryFunctions)) {
       this.buildSubhierarchiesForNeededFunctions(metagraph);
     }
-    if (nodeName === tf_graph.ROOT_NAME) {
+    if (nodeName === tfGraph.ROOT_NAME) {
       // Add all metanodes representing library function templates into the
       // library function scene group for the root node.
       _.forOwn(
@@ -1344,11 +1340,11 @@ export class RenderGraphInfo {
       let metaedge = metagraph.edge(edgeObj);
       let renderMetaedgeInfo = new RenderMetaedgeInfo(metaedge as any);
       _.forEach(renderMetaedgeInfo.metaedge.baseEdgeList, (baseEdge) => {
-        const sourcePathList = baseEdge.v!.split(tf_graph.NAMESPACE_DELIM);
+        const sourcePathList = baseEdge.v!.split(tfGraph.NAMESPACE_DELIM);
         for (let i = sourcePathList.length; i >= 0; i--) {
           const fromBeginningPathList = sourcePathList.slice(0, i);
           const node = this.hierarchy.node(
-            fromBeginningPathList.join(tf_graph.NAMESPACE_DELIM)
+            fromBeginningPathList.join(tfGraph.NAMESPACE_DELIM)
           );
           if (node) {
             if (
@@ -1359,7 +1355,7 @@ export class RenderGraphInfo {
                 // Expand all hierarchies including the parent.
                 const currentNodeName = fromBeginningPathList
                   .slice(0, j)
-                  .join(tf_graph.NAMESPACE_DELIM);
+                  .join(tfGraph.NAMESPACE_DELIM);
                 if (!currentNodeName) {
                   continue;
                 }
@@ -1507,7 +1503,7 @@ export class AnnotationList {
       ellipsisNode.setNumMoreNodes(++ellipsisNode.numMoreNodes);
       return;
     }
-    let ellipsisNode = new tf_graph.EllipsisNodeImpl(1);
+    let ellipsisNode = new tfGraph.EllipsisNodeImpl(1);
     this.list.push(
       new Annotation(
         ellipsisNode,
@@ -1682,7 +1678,7 @@ export class RenderNodeInfo {
     // Only use the portion beyond the last delimiter as the display
     // name.
     this.displayName = node.name.substring(
-      node.name.lastIndexOf(tf_graph.NAMESPACE_DELIM) + 1
+      node.name.lastIndexOf(tfGraph.NAMESPACE_DELIM) + 1
     );
     if (node.type === NodeType.META && (node as Metanode).associatedFunction) {
       // Function names are suffixed with a length-8 hexadecimal string
@@ -1700,13 +1696,13 @@ export class RenderNodeInfo {
         // common scenario.
         this.displayName = match[1];
       } else if (
-        _.startsWith(this.displayName, tf_graph.FUNCTION_LIBRARY_NODE_PREFIX)
+        _.startsWith(this.displayName, tfGraph.FUNCTION_LIBRARY_NODE_PREFIX)
       ) {
         // The string does not match the usual pattern for how functions are
         // named. Just use the entire second portion of the string as the name
         // if we can successfully remove the prefix.
         this.displayName = this.displayName.substring(
-          tf_graph.FUNCTION_LIBRARY_NODE_PREFIX.length
+          tfGraph.FUNCTION_LIBRARY_NODE_PREFIX.length
         );
       }
     }
@@ -1750,7 +1746,7 @@ export class RenderMetaedgeInfo {
   weight: number;
   /**
    * X and Y coordinate pairs of the points in the path of the edge.
-   * @see tf_graph.node.subsceneAdjustPaths
+   * @see tfGraph.node.subsceneAdjustPaths
    */
   points: Point[];
   /**
@@ -1822,7 +1818,7 @@ function setGraphDepth(graph: graphlib.Graph, depth: number) {
   });
 }
 export class RenderGroupNodeInfo extends RenderNodeInfo {
-  override node: GroupNode;
+  declare node: GroupNode;
   /**
    * The core graph is derived from the underlying node's metagraph, minus
    * the extracted source-like and sink-like nodes.
@@ -1851,10 +1847,7 @@ export class RenderGroupNodeInfo extends RenderNodeInfo {
   isolatedOutExtract: RenderNodeInfo[];
   /** Array of nodes to show in the function library scene group. */
   libraryFunctionsExtract: RenderNodeInfo[];
-  constructor(
-    groupNode: GroupNode,
-    graphOptions: tf_graph.LabeledGraphOptions
-  ) {
+  constructor(groupNode: GroupNode, graphOptions: tfGraph.LabeledGraphOptions) {
     super(groupNode);
     let metagraph = groupNode.metagraph;
     let gl = metagraph.graph() as any;
@@ -1999,7 +1992,7 @@ function extractSpecifiedNodes(renderNode: RenderGroupNodeInfo) {
     let renderInfo = graph.node(n);
     if (
       renderInfo.node.include === InclusionType.EXCLUDE &&
-      !n.startsWith(tf_graph.FUNCTION_LIBRARY_NODE_PREFIX)
+      !n.startsWith(tfGraph.FUNCTION_LIBRARY_NODE_PREFIX)
     ) {
       // Move the node if the node is excluded and not part of the library
       // function scene group, which contains nodes that do not represent ops in
@@ -2287,7 +2280,7 @@ export function expandUntilNodeIsShown(
   let renderNode = renderHierarchy.getRenderNodeByName(nodeName);
   for (let i = 1; i < splitTensorName.length; i++) {
     // Op nodes are not expandable.
-    if (renderNode.node.type === tf_graph.NodeType.OP) {
+    if (renderNode.node.type === tfGraph.NodeType.OP) {
       break;
     }
     renderHierarchy.buildSubhierarchy(nodeName);
