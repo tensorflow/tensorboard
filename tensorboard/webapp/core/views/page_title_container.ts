@@ -43,6 +43,7 @@ const DEFAULT_BRAND_NAME = 'TensorBoard';
  * Renders page title.
  */
 @Component({
+  standalone: false,
   selector: 'page-title',
   template: `
     <page-title-component [title]="title$ | async"></page-title-component>

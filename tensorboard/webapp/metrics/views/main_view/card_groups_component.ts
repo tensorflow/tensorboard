@@ -18,6 +18,7 @@ import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardGroup} from '../metrics_view_types';
 
 @Component({
+  standalone: false,
   selector: 'metrics-card-groups-component',
   template: `
     <div

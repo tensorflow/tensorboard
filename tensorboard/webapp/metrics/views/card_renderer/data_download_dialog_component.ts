@@ -24,6 +24,7 @@ import {PluginType} from '../../data_source/types';
 import {CardMetadata} from '../../types';
 
 @Component({
+  standalone: false,
   selector: 'data_download_dialog_component',
   templateUrl: 'data_download_dialog_component.ng.html',
   styleUrls: ['data_download_dialog_component.css'],

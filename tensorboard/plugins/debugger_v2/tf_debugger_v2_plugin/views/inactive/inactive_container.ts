@@ -19,6 +19,7 @@ import {Store} from '@ngrx/store';
 export interface InactiveState {}
 
 @Component({
+  standalone: false,
   selector: 'tf-debugger-v2-inactive',
   template: ` <inactive-component></inactive-component> `,
 })

@@ -18,6 +18,7 @@ import {getSettingsLoadState} from '../_redux/settings_selectors';
 import {State} from '../_redux/settings_types';
 
 @Component({
+  standalone: false,
   selector: 'settings-button',
   template: `
     <settings-button-component

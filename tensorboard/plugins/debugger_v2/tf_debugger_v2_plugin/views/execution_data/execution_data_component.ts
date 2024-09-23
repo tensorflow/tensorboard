@@ -17,6 +17,7 @@ import {Execution, TensorDebugMode} from '../../store/debugger_types';
 import {parseDebugTensorValue} from '../../store/debug_tensor_value';
 
 @Component({
+  standalone: false,
   selector: 'execution-data-component',
   templateUrl: './execution_data_component.ng.html',
   styleUrls: ['./execution_data_component.css'],

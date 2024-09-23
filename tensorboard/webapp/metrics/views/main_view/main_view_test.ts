@@ -72,6 +72,7 @@ import {PinnedViewContainer} from './pinned_view_container';
 import {buildMockState} from '../../../testing/utils';
 
 @Component({
+  standalone: false,
   selector: 'card-view',
   template: `{{ pluginType }}: {{ cardId }}`,
 })
@@ -82,6 +83,7 @@ class TestableCard {
 }
 
 @Component({
+  standalone: false,
   selector: 'test-share-button',
   template: ``,
 })

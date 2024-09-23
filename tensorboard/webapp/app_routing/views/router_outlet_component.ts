@@ -24,6 +24,7 @@ import {
 } from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'router-outlet-component',
   template: ` <ng-container #routeContainer></ng-container> `,
   changeDetection: ChangeDetectionStrategy.OnPush,

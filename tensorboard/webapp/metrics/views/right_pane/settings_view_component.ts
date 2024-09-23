@@ -55,6 +55,7 @@ const MAX_SMOOTHING_VALUE = SCALARS_SMOOTHING_MAX;
 const MAX_SMOOTHING_SLIDER_VALUE = 0.99;
 
 @Component({
+  standalone: false,
   selector: 'metrics-dashboard-settings-component',
   templateUrl: 'settings_view_component.ng.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

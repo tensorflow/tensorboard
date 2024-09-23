@@ -68,6 +68,7 @@ type ImageCardMetadata = CardMetadata & {
 };
 
 @Component({
+  standalone: false,
   selector: 'image-card',
   template: `
     <image-card-component

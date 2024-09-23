@@ -58,6 +58,7 @@ import {RunNameModule} from './run_name_module';
 import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_warning_module';
 
 @Component({
+  standalone: false,
   selector: 'tb-histogram',
   template: ``,
 })

@@ -18,6 +18,7 @@ import {PluginId} from '../types/api';
 import {UiPluginMetadata} from './types';
 
 @Component({
+  standalone: false,
   selector: 'plugin-selector-component',
   templateUrl: './plugin_selector_component.ng.html',
   styleUrls: ['./plugin_selector_component.css'],

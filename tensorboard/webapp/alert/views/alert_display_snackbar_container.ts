@@ -20,6 +20,7 @@ import {splitByURL} from '../../util/string';
 import {AlertInfo} from '../types';
 
 @Component({
+  standalone: false,
   selector: 'alert-display-snackbar',
   templateUrl: './alert_display_snackbar_container.ng.html',
   styleUrls: ['./alert_display_snackbar_container.css'],

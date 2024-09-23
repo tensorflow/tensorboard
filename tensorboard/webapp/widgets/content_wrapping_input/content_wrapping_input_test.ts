@@ -20,6 +20,7 @@ import {KeyType, sendKey} from '../../testing/dom';
 import {ContentWrappingInputComponent} from './content_wrapping_input_component';
 
 @Component({
+  standalone: false,
   selector: 'testing-component',
   template: `
     <content-wrapping-input

@@ -24,6 +24,7 @@ import {SourceFileContent, StackFrame} from '../../store/debugger_types';
  * displayed by this component.
  */
 @Component({
+  standalone: false,
   selector: 'source-files-component',
   templateUrl: './source_files_component.ng.html',
   styleUrls: ['./source_files_component.css'],

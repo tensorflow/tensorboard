@@ -152,6 +152,7 @@ export class CardObserver {
  * ></div>
  */
 @Directive({
+  standalone: false,
   selector: '[cardLazyLoader]',
 })
 export class CardLazyLoader implements OnInit, OnDestroy {

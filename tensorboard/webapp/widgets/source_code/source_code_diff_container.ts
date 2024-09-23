@@ -24,6 +24,7 @@ import {MonacoShim} from './load_monaco_shim';
  * - inline: 1 scrollable frame showing modified and original lines
  */
 @Component({
+  standalone: false,
   selector: 'source-code-diff',
   template: `
     <source-code-diff-component

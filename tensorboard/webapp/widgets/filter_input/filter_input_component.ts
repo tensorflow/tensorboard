@@ -19,6 +19,7 @@ import {MatAutocompleteTrigger} from '@angular/material/autocomplete';
  * A text input field intended for filtering items.
  */
 @Component({
+  standalone: false,
   selector: 'tb-filter-input',
   template: `
     <mat-icon svgIcon="search_24px"></mat-icon>

@@ -30,6 +30,7 @@ declare namespace Intl {
 }
 
 @Component({
+  standalone: false,
   selector: 'metrics-empty-tag-match-component',
   template: `No matches for tag filter <code>/{{ tagFilterRegex }}/</code
     ><span *ngIf="pluginTypes.size">

@@ -33,12 +33,14 @@ import {RouterOutletComponent} from './router_outlet_component';
 import {RouterOutletContainer} from './router_outlet_container';
 
 @Component({
+  standalone: false,
   selector: 'first',
   template: 'I am a test',
 })
 class FirstTestableComponent {}
 
 @Component({
+  standalone: false,
   selector: 'second',
   template: 'I am inevitable',
 })

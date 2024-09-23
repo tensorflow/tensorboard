@@ -34,6 +34,7 @@ import {GroupBy, GroupByKey} from '../../types';
  * Renders run grouping menu controls.
  */
 @Component({
+  standalone: false,
   selector: 'runs-group-menu-button',
   template: `
     <runs-group-menu-button-component

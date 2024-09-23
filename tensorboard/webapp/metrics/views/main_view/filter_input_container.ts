@@ -26,6 +26,7 @@ import {getMetricsFilteredPluginTypes} from '../../store';
 import {compareTagNames} from '../../utils';
 
 @Component({
+  standalone: false,
   selector: 'metrics-tag-filter',
   template: `
     <metrics-tag-filter-component

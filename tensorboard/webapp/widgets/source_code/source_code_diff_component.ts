@@ -28,6 +28,7 @@ import {
 } from './editor_options';
 
 @Component({
+  standalone: false,
   selector: 'source-code-diff-component',
   template: `
     <div

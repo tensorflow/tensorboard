@@ -28,6 +28,7 @@ import {ViewNotificationExt} from './view_types';
 const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
 
 @Component({
+  standalone: false,
   selector: 'notification-center',
   template: `
     <notification-center-component

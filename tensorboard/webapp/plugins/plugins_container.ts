@@ -53,6 +53,7 @@ const activePlugin = createSelector(
 );
 
 @Component({
+  standalone: false,
   selector: 'plugins',
   template: `
     <plugins-component

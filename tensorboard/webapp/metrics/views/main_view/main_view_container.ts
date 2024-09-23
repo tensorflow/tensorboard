@@ -34,6 +34,7 @@ import {
 import {PluginType} from '../../types';
 
 @Component({
+  standalone: false,
   selector: 'metrics-main-view',
   template: `
     <metrics-main-view-component

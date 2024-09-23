@@ -33,6 +33,7 @@ export const SHARE_BUTTON_COMPONENT = new InjectionToken<Type<Component>>(
 );
 
 @Component({
+  standalone: false,
   selector: 'metrics-main-view-component',
   templateUrl: 'main_view_component.ng.html',
   styleUrls: ['main_view_component.css'],

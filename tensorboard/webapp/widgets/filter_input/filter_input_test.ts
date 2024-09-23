@@ -24,6 +24,7 @@ import {MatIconTestingModule} from '../../testing/mat_icon_module';
 import {FilterInputModule} from './filter_input_module';
 
 @Component({
+  standalone: false,
   selector: 'test',
   template: `
     <tb-filter-input [value]="value" [matAutocomplete]="filterMatches">
@@ -45,6 +46,7 @@ class TestableInputWithCompletions {
 }
 
 @Component({
+  standalone: false,
   selector: 'test',
   template: ` <tb-filter-input></tb-filter-input> `,
 })

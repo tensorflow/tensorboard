@@ -41,6 +41,7 @@ export function createIntegerValidator(): ValidatorFn {
 }
 
 @Component({
+  standalone: false,
   selector: 'settings-dialog-component',
   templateUrl: 'settings_dialog_component.ng.html',
   styleUrls: ['./settings_dialog_component.css'],

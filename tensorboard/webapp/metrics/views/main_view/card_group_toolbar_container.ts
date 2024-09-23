@@ -20,6 +20,7 @@ import {getMetricsTagGroupExpansionState} from '../../../selectors';
 import {metricsTagGroupExpansionChanged} from '../../actions';
 
 @Component({
+  standalone: false,
   selector: 'metrics-card-group-toolbar',
   template: `
     <metrics-card-group-toolbar-component

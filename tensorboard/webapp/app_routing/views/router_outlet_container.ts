@@ -25,6 +25,7 @@ import {
 } from '../store/app_routing_selectors';
 
 @Component({
+  standalone: false,
   selector: 'router-outlet',
   template: `
     <router-outlet-component

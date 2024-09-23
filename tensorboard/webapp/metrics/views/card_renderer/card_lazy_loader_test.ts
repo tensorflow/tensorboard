@@ -25,6 +25,7 @@ import {CardId} from '../../types';
 import {CardLazyLoader, CardObserver} from '../card_renderer/card_lazy_loader';
 
 @Component({
+  standalone: false,
   selector: 'card-view',
   template: `{{ cardId }}`,
 })
@@ -38,6 +39,7 @@ interface TestableCardConfig {
 }
 
 @Component({
+  standalone: false,
   selector: 'testable-cards',
   template: `
     <ng-container *ngFor="let config of configs">

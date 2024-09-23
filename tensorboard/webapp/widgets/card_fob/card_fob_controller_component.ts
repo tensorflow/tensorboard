@@ -43,6 +43,7 @@ const TIME_SELECTION_TO_FOB: Record<keyof TimeSelection, Fob> = {
 };
 
 @Component({
+  standalone: false,
   selector: 'card-fob-controller',
   templateUrl: 'card_fob_controller_component.ng.html',
   styleUrls: ['card_fob_controller_component.css'],

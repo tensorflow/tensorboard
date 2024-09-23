@@ -26,6 +26,7 @@ interface PolymerChangeEvent extends CustomEvent {
 }
 
 @Component({
+  standalone: false,
   selector: 'tb-legacy-runs-selector-component',
   template: ` <tf-runs-selector #selector></tf-runs-selector> `,
 })

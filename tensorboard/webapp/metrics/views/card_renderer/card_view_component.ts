@@ -24,6 +24,7 @@ import {PluginType} from '../../data_source';
 import {CardId} from '../../types';
 
 @Component({
+  standalone: false,
   selector: 'card-view-component',
   templateUrl: 'card_view_component.ng.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

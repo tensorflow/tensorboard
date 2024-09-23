@@ -38,6 +38,7 @@ function headersWithoutRuns(headers: ColumnHeader[]) {
 }
 
 @Component({
+  standalone: false,
   selector: 'metrics-scalar-column-editor',
   template: `
     <metrics-scalar-column-editor-component

@@ -29,6 +29,7 @@ import {
 } from './editor_options';
 
 @Component({
+  standalone: false,
   selector: 'source-code-component',
   templateUrl: './source_code_component.ng.html',
   styleUrls: ['./source_code_component.css'],

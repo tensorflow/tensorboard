@@ -26,6 +26,7 @@ import {fakes, setUpMonacoFakes, spies, tearDownMonacoFakes} from './testing';
 
 // Does not use OnPush change detector, making it easier to test with.
 @Component({
+  standalone: false,
   selector: 'testable-component',
   template: `
     <source-code-diff [useDarkMode]="useDarkMode"></source-code-diff>

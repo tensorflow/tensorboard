@@ -33,6 +33,7 @@ export interface ColorGroup {
 }
 
 @Component({
+  standalone: false,
   selector: 'regex-edit-dialog-component',
   templateUrl: 'regex_edit_dialog.ng.html',
   styleUrls: ['regex_edit_dialog_component.css'],

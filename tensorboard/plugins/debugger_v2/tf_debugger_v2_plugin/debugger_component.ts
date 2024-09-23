@@ -16,6 +16,7 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {DebuggerRunListing} from './store/debugger_types';
 
 @Component({
+  standalone: false,
   selector: 'debugger-component',
   templateUrl: './debugger_component.ng.html',
   styleUrls: ['./debugger_component.css'],

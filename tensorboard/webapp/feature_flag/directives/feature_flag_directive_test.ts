@@ -26,6 +26,7 @@ import {State as FeatureFlagState} from '../store/feature_flag_types';
 import {FeatureFlagDirective} from './feature_flag_directive';
 
 @Component({
+  standalone: false,
   selector: 'test-matching-selector',
   template: `
     <p>
@@ -40,6 +41,7 @@ export class TestMatchingComponent {
 }
 
 @Component({
+  standalone: false,
   selector: 'test-nonmatching-selector',
   template: `
     <p>

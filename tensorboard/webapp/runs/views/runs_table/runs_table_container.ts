@@ -88,6 +88,7 @@ const getRunsLoading = createSelector<
  * update when input bindings change.
  */
 @Component({
+  standalone: false,
   selector: 'runs-table',
   template: `
     <runs-data-table

@@ -27,6 +27,7 @@ export interface SavingPinsDialogResult {
  * A confirmation dialog for disabling saving pin feature.
  */
 @Component({
+  standalone: false,
   selector: 'saving-pins-dialog',
   templateUrl: './saving_pins_dialog_component.ng.html',
   styleUrls: ['saving_pins_dialog_component.css'],

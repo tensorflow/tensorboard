@@ -36,6 +36,7 @@ const isReloadDisabledByPlugin = createSelector(
 );
 
 @Component({
+  standalone: false,
   selector: 'app-header-reload',
   template: `
     <button

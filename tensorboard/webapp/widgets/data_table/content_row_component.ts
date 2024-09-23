@@ -15,6 +15,7 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'tb-data-table-content-row',
   template: ` <ng-content></ng-content> `,
   styles: [

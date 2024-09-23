@@ -30,18 +30,21 @@ import {
 import {LayoutContainer} from './layout_container';
 
 @Component({
+  standalone: false,
   selector: 'sidebar',
   template: `sidebar content`,
 })
 class Sidebar {}
 
 @Component({
+  standalone: false,
   selector: 'main',
   template: `main content`,
 })
 class Main {}
 
 @Component({
+  standalone: false,
   selector: 'testable-component',
   template: `
     <tb-dashboard-layout>

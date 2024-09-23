@@ -27,6 +27,7 @@ import {
 } from '../../store/debugger_types';
 
 @Component({
+  standalone: false,
   selector: 'graph-component',
   templateUrl: './graph_component.ng.html',
   styleUrls: ['./graph_component.css'],

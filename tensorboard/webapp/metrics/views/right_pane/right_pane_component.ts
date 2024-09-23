@@ -15,6 +15,7 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'metrics-dashboard-right-pane',
   template: `<metrics-dashboard-settings></metrics-dashboard-settings>`,
   changeDetection: ChangeDetectionStrategy.OnPush,

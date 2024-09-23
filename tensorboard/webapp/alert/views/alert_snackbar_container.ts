@@ -31,6 +31,7 @@ import {AlertDisplaySnackbarContainer} from './alert_display_snackbar_container'
  * Renders alerts in a 'snackbar' to indicate them to the user.
  */
 @Component({
+  standalone: false,
   selector: 'alert-snackbar',
   template: '',
   changeDetection: ChangeDetectionStrategy.OnPush,

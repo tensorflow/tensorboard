@@ -27,6 +27,7 @@ import {Scale} from '../../../widgets/line_chart_v2/lib/public_types';
 import {MinMaxStep} from './scalar_card_types';
 
 @Component({
+  standalone: false,
   selector: 'scalar-card-fob-controller',
   template: `
     <card-fob-controller

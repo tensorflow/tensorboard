@@ -23,6 +23,7 @@ import {
 import {ColumnHeader, Side, SortingInfo, SortingOrder} from './types';
 
 @Component({
+  standalone: false,
   selector: 'tb-data-table-context-menu',
   templateUrl: 'context_menu_component.ng.html',
   styleUrls: ['context_menu_component.css'],

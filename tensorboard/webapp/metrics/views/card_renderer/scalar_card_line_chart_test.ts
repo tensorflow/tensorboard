@@ -85,6 +85,7 @@ import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {provideMockTbStore} from '../../../testing/utils';
 
 @Component({
+  standalone: false,
   selector: 'line-chart',
   template: `
     {{ tooltipData | json }}
@@ -165,6 +166,7 @@ class TestableLineChart {
 }
 
 @Component({
+  standalone: false,
   selector: 'test-scalar-card-line-chart',
   template: `
     <scalar-card-line-chart

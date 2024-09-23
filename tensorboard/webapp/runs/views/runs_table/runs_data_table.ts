@@ -32,6 +32,7 @@ import {
 } from '../../../widgets/data_table/types';
 import {memoize} from '../../../util/memoize';
 @Component({
+  standalone: false,
   selector: 'runs-data-table',
   templateUrl: 'runs_data_table.ng.html',
   styleUrls: ['runs_data_table.css'],

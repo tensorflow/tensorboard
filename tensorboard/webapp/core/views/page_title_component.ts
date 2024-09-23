@@ -29,6 +29,7 @@ const utils = {
 };
 
 @Component({
+  standalone: false,
   selector: 'page-title-component',
   template: '',
   changeDetection: ChangeDetectionStrategy.OnPush,

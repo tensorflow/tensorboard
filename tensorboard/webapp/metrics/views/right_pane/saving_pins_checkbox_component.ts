@@ -25,6 +25,7 @@ import {
 } from '@angular/material/checkbox';
 
 @Component({
+  standalone: false,
   selector: 'saving-pins-checkbox',
   template: `
     <div class="saving-pins-checkbox">

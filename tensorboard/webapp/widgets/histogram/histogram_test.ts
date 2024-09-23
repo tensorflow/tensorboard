@@ -66,6 +66,7 @@ function buildHistogramDatum(
 // Wrapper component required to properly trigger Angular lifecycles.
 // Without it, ngOnChanges do not get triggered before ngOnInit.
 @Component({
+  standalone: false,
   selector: 'testable-tb-histogram',
   template: `
     <tb-histogram

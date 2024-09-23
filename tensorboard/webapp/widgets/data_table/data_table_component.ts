@@ -53,6 +53,7 @@ const preventDefault = function (e: MouseEvent) {
 };
 
 @Component({
+  standalone: false,
   selector: 'tb-data-table',
   templateUrl: 'data_table_component.ng.html',
   styleUrls: ['data_table_component.css'],

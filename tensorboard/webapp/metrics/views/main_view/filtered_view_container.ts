@@ -37,6 +37,7 @@ export const FILTER_VIEW_DEBOUNCE_IN_MS = 200;
  * An area showing cards that match the tag filter.
  */
 @Component({
+  standalone: false,
   selector: 'metrics-filtered-view',
   template: `
     <metrics-filtered-view-component

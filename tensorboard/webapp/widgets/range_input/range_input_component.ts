@@ -60,6 +60,7 @@ enum Position {
  * - emits actions on range value changed
  */
 @Component({
+  standalone: false,
   selector: 'tb-range-input',
   templateUrl: './range_input_component.ng.html',
   styleUrls: ['./range_input_component.css'],

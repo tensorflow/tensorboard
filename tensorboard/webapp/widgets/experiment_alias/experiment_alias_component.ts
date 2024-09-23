@@ -20,6 +20,7 @@ import {ExperimentAlias} from '../../experiments/types';
  * this experiment from others.
  */
 @Component({
+  standalone: false,
   selector: 'tb-experiment-alias',
   template: `
     <span class="alias-number">{{ alias.aliasNumber }}</span>

@@ -30,6 +30,7 @@ import {AxisUtils, MajorTick, MinorTick} from './line_chart_axis_utils';
 const AXIS_FONT = '11px Roboto, sans-serif';
 
 @Component({
+  standalone: false,
   selector: 'line-chart-axis',
   templateUrl: 'line_chart_axis_view.ng.html',
   styleUrls: ['line_chart_axis_view.css'],

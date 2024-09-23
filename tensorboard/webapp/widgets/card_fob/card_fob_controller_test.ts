@@ -27,6 +27,7 @@ import {
 } from './card_fob_types';
 
 @Component({
+  standalone: false,
   selector: 'testable-comp',
   template: `
     <card-fob-controller

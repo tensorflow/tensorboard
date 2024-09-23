@@ -28,6 +28,7 @@ import {
 } from '../line_chart_v2/lib/formatter';
 
 @Component({
+  standalone: false,
   selector: 'tb-data-table-content-cell',
   templateUrl: 'content_cell_component.ng.html',
   styleUrls: ['content_cell_component.css'],

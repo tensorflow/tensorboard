@@ -23,6 +23,7 @@ import {
 import {FilterAddedEvent} from '../../../widgets/data_table/types';
 
 @Component({
+  standalone: false,
   selector: 'filterbar',
   template: `<filterbar-component
     [filters]="filters$ | async"

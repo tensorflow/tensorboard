@@ -21,6 +21,7 @@ import {createScale} from '../lib/scale';
 import {LineChartGridView} from './line_chart_grid_view';
 
 @Component({
+  standalone: false,
   selector: 'testable-comp',
   template: `
     <line-chart-grid-view

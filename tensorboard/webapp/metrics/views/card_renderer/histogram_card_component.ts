@@ -31,6 +31,7 @@ import {TimeSelection, XAxisType} from '../../types';
 import {TimeSelectionView} from './utils';
 
 @Component({
+  standalone: false,
   selector: 'histogram-card-component',
   templateUrl: 'histogram_card_component.ng.html',
   styleUrls: ['histogram_card_component.css'],

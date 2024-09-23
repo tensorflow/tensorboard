@@ -20,6 +20,7 @@ import {getActivePlugin} from '../store';
 import {ChangedProp} from './hash_storage_component';
 
 @Component({
+  standalone: false,
   selector: 'hash-storage',
   template: `
     <hash-storage-component

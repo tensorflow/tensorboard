@@ -25,6 +25,7 @@ import {
 import {marked} from '../../third_party/marked';
 
 @Component({
+  standalone: false,
   selector: 'markdown-renderer',
   templateUrl: './markdown_renderer_component.ng.html',
   styleUrls: ['./markdown_renderer_component.css'],

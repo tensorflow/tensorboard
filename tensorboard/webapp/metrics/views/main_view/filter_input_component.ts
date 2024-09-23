@@ -23,6 +23,7 @@ import {
 import {escapeForRegex} from '../../../util/string';
 
 @Component({
+  standalone: false,
   selector: 'metrics-tag-filter-component',
   templateUrl: 'filter_input_component.ng.html',
   styleUrls: [`filter_input_component.css`],

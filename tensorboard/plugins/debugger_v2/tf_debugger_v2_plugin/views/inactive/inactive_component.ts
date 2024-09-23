@@ -15,6 +15,7 @@ limitations under the License.
 import {Component} from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'inactive-component',
   templateUrl: './inactive_component.ng.html',
   styleUrls: ['./inactive_component.css'],

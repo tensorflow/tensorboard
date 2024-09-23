@@ -34,6 +34,7 @@ import {FilterInputModule} from '../../../widgets/filter_input/filter_input_modu
 import {sendKeys} from '../../../testing/dom';
 
 @Component({
+  standalone: false,
   selector: 'testable-comp',
   template: `
     <runs-data-table

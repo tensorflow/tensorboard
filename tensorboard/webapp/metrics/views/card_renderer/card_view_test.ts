@@ -35,6 +35,7 @@ import {CardViewComponent} from './card_view_component';
 import {CardViewContainer} from './card_view_container';
 
 @Component({
+  standalone: false,
   selector: 'scalar-card',
   template: ``,
 })

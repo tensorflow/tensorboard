@@ -15,6 +15,7 @@ limitations under the License.
 import {Component, ViewContainerRef} from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'tb-webapp',
   templateUrl: './app_container.ng.html',
   styleUrls: ['./app_container.css'],

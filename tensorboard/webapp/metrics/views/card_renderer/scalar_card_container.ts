@@ -163,6 +163,7 @@ function areSeriesEqual(
 }
 
 @Component({
+  standalone: false,
   selector: 'scalar-card',
   template: `
     <scalar-card-component

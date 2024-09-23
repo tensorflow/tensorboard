@@ -32,6 +32,7 @@ export enum ChangedProp {
 }
 
 @Component({
+  standalone: false,
   selector: 'hash-storage-component',
   template: '',
   changeDetection: ChangeDetectionStrategy.OnPush,

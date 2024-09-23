@@ -27,6 +27,7 @@ import {
 import {State} from '../../store/debugger_types';
 
 @Component({
+  standalone: false,
   selector: 'tf-debugger-v2-graph-executions',
   template: `
     <graph-executions-component

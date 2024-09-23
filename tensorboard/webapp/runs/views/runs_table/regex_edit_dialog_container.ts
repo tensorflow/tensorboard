@@ -46,6 +46,7 @@ import {ColorGroup} from './regex_edit_dialog_component';
 const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
 
 @Component({
+  standalone: false,
   selector: 'regex-edit-dialog',
   template: `<regex-edit-dialog-component
     [regexString]="groupByRegexString$ | async"

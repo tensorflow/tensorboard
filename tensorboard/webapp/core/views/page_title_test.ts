@@ -112,6 +112,7 @@ describe('page title test', () => {
 });
 
 @Component({
+  standalone: false,
   selector: 'my-tester',
   template: ` <page-title></page-title> `,
 })

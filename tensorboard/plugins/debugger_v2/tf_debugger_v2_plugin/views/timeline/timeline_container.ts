@@ -85,6 +85,7 @@ function getExecutionDigestForDisplay(
 }
 
 @Component({
+  standalone: false,
   selector: 'tf-debugger-v2-timeline',
   template: `
     <timeline-component

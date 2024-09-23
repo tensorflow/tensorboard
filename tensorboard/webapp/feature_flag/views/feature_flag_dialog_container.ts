@@ -40,6 +40,7 @@ import {
 } from './types';
 
 @Component({
+  standalone: false,
   selector: 'feature-flag-dialog',
   template: `<feature-flag-dialog-component
     [featureFlagStatuses]="featureFlags$ | async"

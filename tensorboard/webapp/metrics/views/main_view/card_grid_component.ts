@@ -32,6 +32,7 @@ const MIN_CARD_MIN_WIDTH_IN_PX = 335;
 const MAX_CARD_MIN_WIDTH_IN_PX = 735;
 
 @Component({
+  standalone: false,
   selector: 'metrics-card-grid-component',
   templateUrl: './card_grid_component.ng.html',
   styleUrls: ['./card_grid_component.css'],

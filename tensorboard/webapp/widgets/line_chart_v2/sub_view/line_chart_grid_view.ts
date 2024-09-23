@@ -20,6 +20,7 @@ import {
 } from './chart_view_utils';
 
 @Component({
+  standalone: false,
   selector: 'line-chart-grid-view',
   template: `<svg>
     <line
