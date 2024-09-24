@@ -222,7 +222,38 @@ To get this test passing, follow these steps:
 
     bazel run //tensorboard/data/server:update_protos
 
-6. Review and commit any changes.
+6. The source file from TF seems to have a formatting that differs from the one
+   we use on our repo, so you might need to reformat the BUILD file.
+   The instructions below reproduce the check our CI workflow does, for
+   convenience, but they might need to be updated if this process is updated
+   in our CI workflow.
+
+   To reformat the file the way our lint will check, you'll need to copy the
+   values for the `BUILDTOOLS_VERSION` and `BUILDIFIER_SHA256SUM` from our CI
+   workflow, and then download the buildifier binary to a local directory,
+   e.g. `~/tb_buildifier/buildifier`:
+
+    ```
+    $ BUILDTOOLS_VERSION='3.0.0'
+    $ BUILDIFIER_SHA256SUM='e92a6793c7134c5431c58fbc34700664f101e5c9b1c1fcd93b97978e8b7f88db'
+    $ ci/download_buildifier.sh "${BUILDTOOLS_VERSION}" "${BUILDIFIER_SHA256SUM}" ~/tb_buildifier/buildifier
+    ```
+
+    If a file needs reformatting, you'll see the file that needs to be
+    reformatted as the output of this command (the same one that is run by CI
+    workflow):
+
+    ```
+    $ git ls-files -z '*BUILD' third_party/js.bzl third_party/workspace.bzl WORKSPACE | xargs -0 ~/tb_buildifier/buildifier --mode=check --lint=warn --warnings=-native-py,-native-java
+    ```
+
+    To reformat, execute the command without the "mode" and "lint" parameters:
+
+    ```
+    $ git ls-files -z '*BUILD' third_party/js.bzl third_party/workspace.bzl WORKSPACE | xargs -0 ~/tb_buildifier/buildifier
+    ```
+
+7. Review and commit any changes.
 
 """
 
