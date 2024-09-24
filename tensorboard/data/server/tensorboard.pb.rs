@@ -203,8 +203,10 @@ pub mod resource_handle_proto {
     /// Protocol buffer representing a pair of (data type, tensor shape).
     #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct DtypeAndShape {
+        /// Data type of the tensor.
         #[prost(enumeration="super::DataType", tag="1")]
         pub dtype: i32,
+        /// Shape of the tensor.
         #[prost(message, optional, tag="2")]
         pub shape: ::core::option::Option<super::TensorShapeProto>,
     }
@@ -212,6 +214,7 @@ pub mod resource_handle_proto {
 /// Protocol buffer representing a tensor.
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct TensorProto {
+    /// Data type of the tensor.
     #[prost(enumeration="DataType", tag="1")]
     pub dtype: i32,
     /// Shape of the tensor.  TODO(touts): sort out the 0-rank issues.

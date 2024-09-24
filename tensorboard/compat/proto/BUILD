@@ -246,12 +246,12 @@ tb_proto_library(
 tb_proto_library(
     name = "summary",
     srcs = ["summary.proto"],
-    exports = [
-        ":histogram",
-    ],
     deps = [
         ":histogram",
         ":tensor",
+    ],
+    exports = [
+        ":histogram",
     ],
 )
 
