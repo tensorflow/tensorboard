@@ -23,6 +23,7 @@ export interface AlertTypeDisplay {
 }
 
 @Component({
+  standalone: false,
   selector: 'alerts-component',
   templateUrl: './alerts_component.ng.html',
   styleUrls: ['./alerts_component.css'],

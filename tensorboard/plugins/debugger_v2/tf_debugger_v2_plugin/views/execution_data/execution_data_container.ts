@@ -21,6 +21,7 @@ import {DTYPE_ENUM_TO_NAME} from '../../tf_dtypes';
 const UNKNOWN_DTYPE_NAME = 'Unknown dtype';
 
 @Component({
+  standalone: false,
   selector: 'tf-debugger-v2-execution-data',
   template: `
     <execution-data-component

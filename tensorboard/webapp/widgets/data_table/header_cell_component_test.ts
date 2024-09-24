@@ -32,6 +32,7 @@ import {DataTableModule} from './data_table_module';
 import {HeaderCellComponent} from './header_cell_component';
 
 @Component({
+  standalone: false,
   selector: 'testable-comp',
   template: `
     <tb-data-table-header-cell

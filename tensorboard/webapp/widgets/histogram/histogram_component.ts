@@ -82,6 +82,7 @@ export interface TooltipData {
 }
 
 @Component({
+  standalone: false,
   selector: 'tb-histogram',
   templateUrl: 'histogram_component.ng.html',
   styleUrls: ['histogram_component.css'],

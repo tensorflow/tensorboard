@@ -22,6 +22,7 @@ import {DataTableModule} from './data_table_module';
 import {ContentCellComponent} from './content_cell_component';
 
 @Component({
+  standalone: false,
   selector: 'testable-comp',
   template: `
     <tb-data-table-content-cell

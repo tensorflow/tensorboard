@@ -31,6 +31,7 @@ export interface DropdownOption {
  * A generic dropdown with options, similar to <select>.
  */
 @Component({
+  standalone: false,
   selector: 'tb-dropdown',
   template: `
     <mat-select

@@ -15,6 +15,7 @@ limitations under the License.
 import {Component} from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'app-header',
   template: `
     <mat-toolbar>

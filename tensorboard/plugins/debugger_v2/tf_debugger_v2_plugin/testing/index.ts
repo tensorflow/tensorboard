@@ -354,6 +354,7 @@ export function createState(
 // that use it.
 
 @Component({
+  standalone: false,
   selector: 'tf-debugger-v2',
   template: ``,
 })

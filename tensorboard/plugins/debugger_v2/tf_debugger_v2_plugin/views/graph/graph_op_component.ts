@@ -17,6 +17,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {GraphOpInfo} from '../../store/debugger_types';
 
 @Component({
+  standalone: false,
   selector: 'graph-op',
   templateUrl: 'graph_op_component.ng.html',
   styleUrls: ['./graph_op_component.css'],

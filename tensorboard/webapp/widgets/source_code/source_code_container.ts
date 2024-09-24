@@ -30,6 +30,7 @@ import {MonacoShim} from './load_monaco_shim';
  * time.
  */
 @Component({
+  standalone: false,
   selector: 'source-code',
   template: `
     <source-code-component

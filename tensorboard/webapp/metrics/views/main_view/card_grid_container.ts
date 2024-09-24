@@ -34,6 +34,7 @@ import {CardIdWithMetadata} from '../metrics_view_types';
 import * as selectors from '../../../selectors';
 
 @Component({
+  standalone: false,
   selector: 'metrics-card-grid',
   template: `
     <metrics-card-grid-component

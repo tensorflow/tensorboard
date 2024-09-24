@@ -23,6 +23,7 @@ import {State as FeatureFlagState} from '../feature_flag/store/feature_flag_type
 import {DarkModeOverride} from './dark_mode_toggle_component';
 
 @Component({
+  standalone: false,
   selector: 'app-header-dark-mode-toggle',
   template: `
     <app-header-dark-mode-toggle-component

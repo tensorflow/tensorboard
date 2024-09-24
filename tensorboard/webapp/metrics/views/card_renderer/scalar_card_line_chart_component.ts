@@ -47,6 +47,7 @@ import {
 } from './scalar_card_types';
 
 @Component({
+  standalone: false,
   selector: 'scalar-card-line-chart-component',
   templateUrl: 'scalar_card_line_chart_component.ng.html',
   styleUrls: ['scalar_card_line_chart_component.css'],

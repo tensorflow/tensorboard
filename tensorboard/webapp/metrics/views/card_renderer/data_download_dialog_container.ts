@@ -32,6 +32,7 @@ export interface DataDownloadDialogData {
 }
 
 @Component({
+  standalone: false,
   selector: 'data_download_dialog',
   template: `<data_download_dialog_component
     [cardMetadata]="cardMetadata$ | async"

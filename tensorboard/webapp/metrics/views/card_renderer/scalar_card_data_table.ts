@@ -47,6 +47,7 @@ import {isDatumVisible} from './utils';
 import {memoize} from '../../../util/memoize';
 
 @Component({
+  standalone: false,
   selector: 'scalar-card-data-table',
   templateUrl: 'scalar_card_data_table.ng.html',
   styleUrls: ['scalar_card_data_table.css'],

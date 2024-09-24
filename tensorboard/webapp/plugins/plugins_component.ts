@@ -56,6 +56,7 @@ export enum PluginLoadState {
 }
 
 @Component({
+  standalone: false,
   selector: 'plugins-component',
   templateUrl: './plugins_component.ng.html',
   styleUrls: ['plugins_component.css'],

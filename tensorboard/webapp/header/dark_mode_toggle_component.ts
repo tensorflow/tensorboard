@@ -21,6 +21,7 @@ export enum DarkModeOverride {
 }
 
 @Component({
+  standalone: false,
   selector: 'app-header-dark-mode-toggle-component',
   template: `
     <button

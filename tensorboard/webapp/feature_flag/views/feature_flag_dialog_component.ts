@@ -18,6 +18,7 @@ import {FeatureFlags} from '../types';
 import {FeatureFlagStatus, FeatureFlagStatusEvent} from './types';
 
 @Component({
+  standalone: false,
   selector: 'feature-flag-dialog-component',
   styleUrls: ['feature_flag_dialog_component.css'],
   templateUrl: `feature_flag_dialog_component.ng.html`,

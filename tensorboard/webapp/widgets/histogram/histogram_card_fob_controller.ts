@@ -25,6 +25,7 @@ import {
 import {TemporalScale} from './histogram_component';
 
 @Component({
+  standalone: false,
   selector: 'histogram-card-fob-controller',
   template: `
     <card-fob-controller

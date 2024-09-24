@@ -25,6 +25,7 @@ import {getSortedRenderableCardIdsWithMetadata} from './common_selectors';
  * Warning message that displays when no tags do not match filter query.
  */
 @Component({
+  standalone: false,
   selector: 'metrics-empty-tag-match',
   template: `
     <metrics-empty-tag-match-component

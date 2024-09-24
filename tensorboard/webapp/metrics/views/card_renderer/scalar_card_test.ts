@@ -139,6 +139,7 @@ import * as runsSelectors from '../../../runs/store/runs_selectors';
 import {getIsScalarColumnContextMenusEnabled} from '../../../selectors';
 
 @Component({
+  standalone: false,
   selector: 'line-chart',
   template: `
     {{ tooltipData | json }}
@@ -222,6 +223,7 @@ class TestableLineChart {
 // DataDownloadContainer pulls in entire redux and, for this test, we don't want to
 // know about their data requirements.
 @Component({
+  standalone: false,
   selector: 'testable-data-download-dialog',
   template: `{{ cardId }}`,
 })

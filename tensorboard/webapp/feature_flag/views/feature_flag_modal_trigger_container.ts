@@ -30,6 +30,7 @@ const util = {
 };
 
 @Component({
+  standalone: false,
   selector: 'feature-flag-modal-trigger',
   template: ``,
   styles: [],

@@ -30,6 +30,7 @@ const basicDebugInfoStyle = `
 `;
 
 @Component({
+  standalone: false,
   selector: 'debug-tensor-dtype',
   template: ` {{ dtype }} `,
   styles: [basicDebugInfoStyle],
@@ -40,6 +41,7 @@ export class DebugTensorDTypeComponent {
 }
 
 @Component({
+  standalone: false,
   selector: 'debug-tensor-rank',
   template: ` {{ rank }}D `,
   styles: [basicDebugInfoStyle],
@@ -50,6 +52,7 @@ export class DebugTensorRankComponent {
 }
 
 @Component({
+  standalone: false,
   selector: 'debug-tensor-shape',
   template: ` shape:{{ shapeString }} `,
   styles: [basicDebugInfoStyle],
@@ -72,6 +75,7 @@ export class DebugTensorShapeComponent {
 }
 
 @Component({
+  standalone: false,
   selector: 'debug-tensor-numeric-breakdown',
   template: `
     <div class="size">
@@ -205,6 +209,7 @@ export class DebugTensorNumericBreakdownComponent {
 }
 
 @Component({
+  standalone: false,
   selector: 'debug-tensor-has-inf-or-nan',
   template: `
     <div [ngClass]="['container', hasInfOrNaN ? 'has-inf-or-nan' : '']">
@@ -242,6 +247,7 @@ export class DebugTensorHasInfOrNaNComponent {
 }
 
 @Component({
+  standalone: false,
   selector: 'debug-tensor-value',
   template: `
     <debug-tensor-dtype

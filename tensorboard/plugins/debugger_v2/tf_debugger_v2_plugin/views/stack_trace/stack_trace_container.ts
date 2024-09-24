@@ -25,6 +25,7 @@ import {CodeLocationType, State} from '../../store/debugger_types';
 import {StackFrameForDisplay} from './stack_trace_component';
 
 @Component({
+  standalone: false,
   selector: 'tf-debugger-v2-stack-trace',
   template: `
     <stack-trace-component

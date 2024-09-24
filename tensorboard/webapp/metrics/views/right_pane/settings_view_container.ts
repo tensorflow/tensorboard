@@ -47,6 +47,7 @@ import {
 } from './saving_pins_dialog/saving_pins_dialog_component';
 
 @Component({
+  standalone: false,
   selector: 'metrics-dashboard-settings',
   template: `
     <metrics-dashboard-settings-component

@@ -70,6 +70,7 @@ export interface TemplateContext {
 }
 
 @Component({
+  standalone: false,
   selector: 'line-chart',
   templateUrl: 'line_chart_component.ng.html',
   styleUrls: ['line_chart_component.css'],

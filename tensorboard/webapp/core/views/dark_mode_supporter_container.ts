@@ -18,6 +18,7 @@ import {State} from '../../app_state';
 import {getDarkModeEnabled} from '../../selectors';
 
 @Component({
+  standalone: false,
   selector: 'dark-mode-supporter',
   template: ``,
   styles: [

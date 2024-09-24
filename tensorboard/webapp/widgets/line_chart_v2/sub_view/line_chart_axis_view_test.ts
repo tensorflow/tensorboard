@@ -30,6 +30,7 @@ import {AxisUtils} from './line_chart_axis_utils';
 import {LineChartAxisComponent} from './line_chart_axis_view';
 
 @Component({
+  standalone: false,
   selector: 'testable-comp',
   template: `
     <line-chart-axis

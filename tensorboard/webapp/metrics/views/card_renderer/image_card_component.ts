@@ -28,6 +28,7 @@ import {TimeSelectionView} from './utils';
 const TICK_WIDTH = 12; // In px
 
 @Component({
+  standalone: false,
   selector: 'image-card-component',
   templateUrl: 'image_card_component.ng.html',
   styleUrls: ['image_card_component.css'],

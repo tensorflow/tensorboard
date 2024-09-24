@@ -25,6 +25,7 @@ import {metricsClearAllPinnedCards} from '../../actions';
 import {getEnableGlobalPins} from '../../../selectors';
 
 @Component({
+  standalone: false,
   selector: 'metrics-pinned-view',
   template: `
     <metrics-pinned-view-component

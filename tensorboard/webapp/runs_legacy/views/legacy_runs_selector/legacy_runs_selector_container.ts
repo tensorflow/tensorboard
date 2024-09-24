@@ -18,6 +18,7 @@ import {State} from '../../../app_state';
 import {polymerInteropRunSelectionChanged} from '../../../core/actions';
 
 @Component({
+  standalone: false,
   selector: 'tb-legacy-runs-selector',
   template: `
     <tb-legacy-runs-selector-component

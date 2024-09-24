@@ -26,6 +26,7 @@ export class CustomizableComponentType {}
  * Parent class that uses the <tb-customization> component.
  */
 @Component({
+  standalone: false,
   selector: 'parent-component',
   template: `
     <tb-customization [customizableComponent]="customizableComponent">
@@ -54,6 +55,7 @@ export class ParentComponentModule {}
  * into the ParentComponent for some tests.
  */
 @Component({
+  standalone: false,
   selector: 'customizable-component',
   template: ` <div>Showing Customized Text!</div> `,
 })

@@ -29,6 +29,7 @@ const getDisabledPlugins = createSelector(
 );
 
 @Component({
+  standalone: false,
   selector: 'plugin-selector',
   template: `
     <plugin-selector-component

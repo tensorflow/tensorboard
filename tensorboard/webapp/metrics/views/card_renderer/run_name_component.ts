@@ -16,6 +16,7 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {ExperimentAlias} from '../../../experiments/types';
 
 @Component({
+  standalone: false,
   selector: 'card-run-name-component',
   template: `<tb-experiment-alias
       *ngIf="experimentAlias != null"

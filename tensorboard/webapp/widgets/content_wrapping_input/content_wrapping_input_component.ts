@@ -54,6 +54,7 @@ declare global {
  * will not respond to those.
  */
 @Component({
+  standalone: false,
   selector: 'content-wrapping-input',
   template: `
     <span [class.container]="true" [class.is-valid]="isValid">

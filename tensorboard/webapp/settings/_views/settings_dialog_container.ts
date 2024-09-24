@@ -27,6 +27,7 @@ import {
 import {State} from '../_redux/settings_types';
 
 @Component({
+  standalone: false,
   selector: 'settings-dialog',
   template: `
     <settings-dialog-component

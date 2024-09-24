@@ -19,18 +19,21 @@ import {RouteRegistryModule} from './route_registry_module';
 import {RouteKind} from './types';
 
 @Component({
+  standalone: false,
   selector: 'experiment',
   template: 'I am experiment',
 })
 class Experiment {}
 
 @Component({
+  standalone: false,
   selector: 'experiments',
   template: 'List of experiment',
 })
 class Experiments {}
 
 @Component({
+  standalone: false,
   selector: 'not_found',
   template: 'Unknown route',
 })

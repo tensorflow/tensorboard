@@ -18,6 +18,7 @@ import {DataLoadState} from '../../types/data';
 import {SettingsDialogContainer} from './settings_dialog_container';
 
 @Component({
+  standalone: false,
   selector: 'settings-button-component',
   template: `
     <button

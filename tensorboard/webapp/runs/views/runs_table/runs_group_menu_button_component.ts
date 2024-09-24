@@ -24,6 +24,7 @@ import {GroupBy, GroupByKey} from '../../types';
 import {RegexEditDialogContainer} from './regex_edit_dialog_container';
 
 @Component({
+  standalone: false,
   selector: 'runs-group-menu-button-component',
   templateUrl: 'runs_group_menu_button_component.ng.html',
   styleUrls: ['runs_group_menu_button_component.css'],

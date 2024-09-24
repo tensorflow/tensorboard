@@ -58,6 +58,7 @@ import {
  *
  *    @Injectable()
  *    @Component({
+ *      standalone: false,
  *      selector: 'my-custom-button-component',
  *      template: '<button mat-button>I am a special button!</button>'
  *    })
@@ -74,6 +75,7 @@ import {
  *    })
  */
 @Component({
+  standalone: false,
   selector: 'tb-customization',
   template: `
     <ng-container *ngIf="!customizableComponent">

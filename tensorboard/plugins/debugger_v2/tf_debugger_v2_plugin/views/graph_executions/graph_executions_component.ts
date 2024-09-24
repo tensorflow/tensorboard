@@ -28,6 +28,7 @@ import {GraphExecution} from '../../store/debugger_types';
 import {parseDebugTensorValue} from '../../store/debug_tensor_value';
 
 @Component({
+  standalone: false,
   selector: 'graph-executions-component',
   templateUrl: './graph_executions_component.ng.html',
   styleUrls: ['./graph_executions_component.css'],

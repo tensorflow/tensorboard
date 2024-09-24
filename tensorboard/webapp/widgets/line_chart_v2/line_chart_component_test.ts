@@ -38,6 +38,7 @@ import {buildMetadata, buildSeries} from './lib/testing';
 import {LineChartComponent} from './line_chart_component';
 
 @Component({
+  standalone: false,
   selector: 'line-chart-grid-view',
   template: ``,
 })
@@ -50,6 +51,7 @@ class FakeGridComponent {
 }
 
 @Component({
+  standalone: false,
   selector: 'testable-comp',
   template: `
     <line-chart

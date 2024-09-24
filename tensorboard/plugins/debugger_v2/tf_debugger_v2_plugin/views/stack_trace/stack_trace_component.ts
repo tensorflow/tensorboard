@@ -40,6 +40,7 @@ export interface StackFrameForDisplay {
 }
 
 @Component({
+  standalone: false,
   selector: 'stack-trace-component',
   templateUrl: './stack_trace_component.ng.html',
   styleUrls: ['./stack_trace_component.css'],

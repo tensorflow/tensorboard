@@ -48,6 +48,7 @@ import {CardGridContainer} from './card_grid_container';
 const scrollElementHeight = 100;
 
 @Component({
+  standalone: false,
   selector: 'testable-scrolling-container',
   template: `
     <div cdkScrollable>

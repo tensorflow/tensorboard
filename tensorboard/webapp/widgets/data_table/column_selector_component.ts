@@ -28,6 +28,7 @@ import {ColumnHeader} from './types';
 import {BehaviorSubject} from 'rxjs';
 
 @Component({
+  standalone: false,
   selector: 'tb-data-table-column-selector-component',
   templateUrl: 'column_selector_component.ng.html',
   styleUrls: ['column_selector_component.css'],

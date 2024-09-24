@@ -21,6 +21,7 @@ import {ContentWrappingInputModule} from '../content_wrapping_input/content_wrap
 import {ExperimentAliasComponent} from './experiment_alias_component';
 
 @Component({
+  standalone: false,
   selector: 'testable',
   template: `<tb-experiment-alias
     [alias]="alias"

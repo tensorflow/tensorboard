@@ -36,6 +36,7 @@ import {CardId} from '../../types';
 const RUN_COLOR_UPDATE_THROTTLE_TIME_IN_MS = 350;
 
 @Component({
+  standalone: false,
   selector: 'card-view',
   template: `
     <card-view-component

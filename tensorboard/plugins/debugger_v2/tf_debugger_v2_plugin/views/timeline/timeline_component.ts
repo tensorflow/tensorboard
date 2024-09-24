@@ -31,6 +31,7 @@ export interface ExecutionDigestForDisplay {
 }
 
 @Component({
+  standalone: false,
   selector: 'timeline-component',
   templateUrl: './timeline_component.ng.html',
   styleUrls: ['./timeline_component.css'],

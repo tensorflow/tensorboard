@@ -19,6 +19,7 @@ import {TestBed} from '@angular/core/testing';
 import {IntersectionObserverDirective} from './intersection_observer_directive';
 
 @Component({
+  standalone: false,
   selector: 'testing-component',
   template: `
     <div class="container" cdkScrollable>

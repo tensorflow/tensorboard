@@ -65,6 +65,7 @@ type HistogramCardMetadata = CardMetadata & {
 };
 
 @Component({
+  standalone: false,
   selector: 'histogram-card',
   template: `
     <histogram-card-component

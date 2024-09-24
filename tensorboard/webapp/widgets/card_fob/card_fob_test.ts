@@ -20,6 +20,7 @@ import {CardFobComponent} from './card_fob_component';
 import {AxisDirection} from './card_fob_types';
 
 @Component({
+  standalone: false,
   selector: 'testable-fob-comp',
   template: `
     <card-fob

@@ -48,6 +48,7 @@ import {CustomModal} from '../custom_modal/custom_modal';
 const ADD_BUTTON_PREDICATE = By.css('.add-button');
 
 @Component({
+  standalone: false,
   selector: 'testable-comp',
   template: `
     <tb-data-table

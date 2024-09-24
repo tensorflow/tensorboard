@@ -87,6 +87,7 @@ export interface TooltipTemplateContext {
 export type TooltipTemplate = TemplateRef<TooltipTemplateContext>;
 
 @Component({
+  standalone: false,
   selector: 'line-chart-interactive-view',
   templateUrl: './line_chart_interactive_view.ng.html',
   styleUrls: ['./line_chart_interactive_view.css'],

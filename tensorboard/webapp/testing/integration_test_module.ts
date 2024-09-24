@@ -31,6 +31,7 @@ import {RunsModule} from '../runs/runs_module';
 import {MatIconTestingModule} from './mat_icon_module';
 
 @Component({
+  standalone: false,
   selector: 'test',
   template: 'hello',
 })

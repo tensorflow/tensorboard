@@ -21,6 +21,7 @@ import {reload} from '../core/actions';
 import {selectors as settingsSelectors, State} from '../settings';
 
 @Component({
+  standalone: false,
   selector: 'reloader',
   template: '',
   changeDetection: ChangeDetectionStrategy.OnPush,

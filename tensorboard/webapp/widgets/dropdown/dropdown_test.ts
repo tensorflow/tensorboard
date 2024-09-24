@@ -25,6 +25,7 @@ import {DropdownComponent, DropdownOption} from './dropdown_component';
  * Test class that uses the <tb-dropdown> component.
  */
 @Component({
+  standalone: false,
   selector: 'testing-component',
   template: `
     <tb-dropdown

@@ -18,6 +18,7 @@ import {TimeSelection} from '../../types';
 export type TimeSelectionWithClipped = TimeSelection & {clipped: boolean};
 
 @Component({
+  standalone: false,
   selector: 'vis-linked-time-selection-warning',
   template: `
     <mat-icon

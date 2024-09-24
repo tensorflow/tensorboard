@@ -18,6 +18,7 @@ import {State} from '../../app_state';
 import {getRunsTableFullScreen} from '../../core/store/core_selectors';
 
 @Component({
+  standalone: false,
   selector: 'metrics-dashboard',
   template: `
     <tb-dashboard-layout>

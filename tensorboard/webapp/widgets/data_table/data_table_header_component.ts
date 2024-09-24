@@ -17,6 +17,7 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {ColumnHeader, ColumnHeaderType} from './types';
 
 @Component({
+  standalone: false,
   selector: 'tb-data-table-header',
   templateUrl: 'data_table_header_component.ng.html',
   styleUrls: ['data_table_header_component.css'],

@@ -30,6 +30,7 @@ import {
 } from '../store/core_selectors';
 
 @Component({
+  standalone: false,
   selector: 'tb-dashboard-layout',
   template: `
     <button

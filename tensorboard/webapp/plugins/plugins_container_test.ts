@@ -64,6 +64,7 @@ function expectPluginIframe(element: HTMLElement, name: string) {
  * the `plugins` component.
  */
 @Component({
+  standalone: false,
   template: `
     <ng-template #environmentFailureNotFoundTemplate>
       <h3 class="custom-not-found-template">Custom Not Found Error</h3>

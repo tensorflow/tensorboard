@@ -25,6 +25,7 @@ import {
 } from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'card-fob',
   templateUrl: 'card_fob_component.ng.html',
   styleUrls: ['card_fob_component.css'],

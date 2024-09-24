@@ -24,6 +24,7 @@ import {CardGroup} from '../metrics_view_types';
 import {getSortedRenderableCardIdsWithMetadata} from './common_selectors';
 
 @Component({
+  standalone: false,
   selector: 'metrics-card-groups',
   template: `
     <metrics-card-groups-component

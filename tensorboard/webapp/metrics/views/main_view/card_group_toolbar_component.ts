@@ -21,6 +21,7 @@ import {
 } from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'metrics-card-group-toolbar-component',
   template: `
     <button

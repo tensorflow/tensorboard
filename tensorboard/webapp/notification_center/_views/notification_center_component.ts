@@ -17,6 +17,7 @@ import {CategoryEnum} from '../_redux/notification_center_types';
 import {ViewNotificationExt} from './view_types';
 
 @Component({
+  standalone: false,
   selector: 'notification-center-component',
   templateUrl: './notification_center_component.ng.html',
   styleUrls: ['./notification_center_component.css'],

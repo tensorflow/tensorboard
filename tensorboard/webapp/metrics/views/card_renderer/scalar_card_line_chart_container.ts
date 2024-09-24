@@ -62,6 +62,7 @@ import {TooltipTemplate} from '../../../widgets/line_chart_v2/line_chart_compone
 import {ScalarCardLineChartComponent} from './scalar_card_line_chart_component';
 
 @Component({
+  standalone: false,
   selector: 'scalar-card-line-chart',
   template: `
     <scalar-card-line-chart-component

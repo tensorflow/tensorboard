@@ -25,6 +25,7 @@ import {ColumnHeader, SortingInfo, SortingOrder} from './types';
 import {BehaviorSubject} from 'rxjs';
 
 @Component({
+  standalone: false,
   selector: 'tb-data-table-header-cell',
   templateUrl: 'header_cell_component.ng.html',
   styleUrls: ['header_cell_component.css'],

@@ -45,6 +45,7 @@ const ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL: {
 };
 
 @Component({
+  standalone: false,
   selector: 'tf-debugger-v2-alerts',
   template: `
     <alerts-component

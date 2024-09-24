@@ -20,6 +20,7 @@ import {getExperimentIdsFromRoute} from '../../../selectors';
 import {RunsTableColumn} from '../runs_table/types';
 
 @Component({
+  standalone: false,
   selector: 'runs-selector',
   template: `
     <runs-selector-component

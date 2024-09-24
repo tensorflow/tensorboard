@@ -45,6 +45,7 @@ enum Edge {
 }
 
 @Component({
+  standalone: false,
   selector: 'metrics-scalar-column-editor-component',
   templateUrl: 'scalar_column_editor_component.ng.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

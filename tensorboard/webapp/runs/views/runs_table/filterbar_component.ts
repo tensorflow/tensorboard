@@ -32,6 +32,7 @@ import {RangeValues} from '../../../widgets/range_input/types';
 import {CustomModal} from '../../../widgets/custom_modal/custom_modal';
 
 @Component({
+  standalone: false,
   selector: 'filterbar-component',
   templateUrl: 'filterbar_component.ng.html',
   styleUrls: ['filterbar_component.css'],

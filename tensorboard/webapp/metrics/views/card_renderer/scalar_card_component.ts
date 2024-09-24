@@ -76,6 +76,7 @@ type ScalarTooltipDatum = TooltipDatum<
 >;
 
 @Component({
+  standalone: false,
   selector: 'scalar-card-component',
   templateUrl: 'scalar_card_component.ng.html',
   styleUrls: ['scalar_card_component.css'],

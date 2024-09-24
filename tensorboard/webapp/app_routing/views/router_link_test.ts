@@ -27,6 +27,7 @@ import {LocationModule} from '../location_module';
 import {RouterLinkDirectiveContainer} from './router_link_directive_container';
 
 @Component({
+  standalone: false,
   selector: 'test',
   template: '<a [routerLink]="link">testable link</a>',
 })
@@ -36,6 +37,7 @@ class TestableComponent {
 }
 
 @Component({
+  standalone: false,
   selector: 'test-with-reset',
   template:
     '<a [routerLink]="link" [resetNamespacedState]="resetNamespacedState">testable link</a>',

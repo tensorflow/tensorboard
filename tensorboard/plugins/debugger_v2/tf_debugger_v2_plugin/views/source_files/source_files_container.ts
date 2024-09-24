@@ -24,6 +24,7 @@ import {
 import {State as DebuggerState} from '../../store/debugger_types';
 
 @Component({
+  standalone: false,
   selector: 'tf-debugger-v2-source-files',
   template: `
     <source-files-component

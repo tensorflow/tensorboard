@@ -24,6 +24,7 @@ import {
 import {MarkdownRendererComponent} from './markdown_renderer_component';
 
 @Component({
+  standalone: false,
   selector: 'testable-markdown-renderer',
   template: `<markdown-renderer [markdown]="content"> </markdown-renderer>`,
 })

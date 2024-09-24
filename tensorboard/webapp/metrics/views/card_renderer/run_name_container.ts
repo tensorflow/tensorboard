@@ -26,6 +26,7 @@ import {
 import {getDisplayNameForRun} from './utils';
 
 @Component({
+  standalone: false,
   selector: 'card-run-name',
   template: `
     <card-run-name-component

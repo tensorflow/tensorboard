@@ -21,6 +21,7 @@ import {Component, Input} from '@angular/core';
  * ellipsis.
  */
 @Component({
+  standalone: false,
   selector: 'tb-truncated-path',
   template: `
     <span *ngIf="firstTextPart().length > 0" class="first-text-part">{{

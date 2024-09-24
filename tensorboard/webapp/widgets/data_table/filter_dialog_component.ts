@@ -22,6 +22,7 @@ import {
 import {RangeValues} from '../range_input/types';
 
 @Component({
+  standalone: false,
   selector: 'tb-data-table-filter',
   templateUrl: 'filter_dialog_component.ng.html',
   styleUrls: ['filter_dialog_component.css'],

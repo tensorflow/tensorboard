@@ -23,6 +23,7 @@ import {SourceCodeContainer} from './source_code_container';
 import {fakes, setUpMonacoFakes, spies, tearDownMonacoFakes} from './testing';
 
 @Component({
+  standalone: false,
   selector: 'testable-component',
   template: `
     <source-code

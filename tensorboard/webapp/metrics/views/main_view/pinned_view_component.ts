@@ -23,6 +23,7 @@ import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
 
 @Component({
+  standalone: false,
   selector: 'metrics-pinned-view-component',
   template: `
     <div class="group-toolbar">

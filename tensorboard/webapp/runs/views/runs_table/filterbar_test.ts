@@ -61,6 +61,7 @@ const fakeFilterMap = new Map<string, DiscreteFilter | IntervalFilter>([
 ]);
 
 @Component({
+  standalone: false,
   selector: 'testable-component',
   template: ` <filterbar></filterbar> `,
 })

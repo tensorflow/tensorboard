@@ -74,6 +74,7 @@ const KNOWN_SVG_ICON = new Set([
  * compilation time due to unknown input onto the template.
  */
 @Component({
+  standalone: false,
   template: '<ng-container>{{svgIcon}}</ng-container>',
   selector: 'mat-icon',
 })

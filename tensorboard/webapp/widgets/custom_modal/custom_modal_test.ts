@@ -31,6 +31,7 @@ import {Overlay, OverlayModule, OverlayRef} from '@angular/cdk/overlay';
 import {first} from 'rxjs/operators';
 
 @Component({
+  standalone: false,
   selector: 'fake-modal-view-container',
   template: `
     <button class="modal-trigger-button">Modal trigger button</button>

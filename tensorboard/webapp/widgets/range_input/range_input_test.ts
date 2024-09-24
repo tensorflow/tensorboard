@@ -22,6 +22,7 @@ import {RangeInputComponent} from './range_input_component';
 import {RangeInputSource, RangeValues} from './types';
 
 @Component({
+  standalone: false,
   selector: 'testable-range-input',
   template: `
     <tb-range-input

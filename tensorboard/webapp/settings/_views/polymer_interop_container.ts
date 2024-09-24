@@ -30,6 +30,7 @@ import {State} from '../_redux/settings_types';
  * only (2) kinds. For (1), please refer to the hash_storage.
  */
 @Component({
+  standalone: false,
   selector: 'settings-polymer-interop',
   template: '',
   changeDetection: ChangeDetectionStrategy.OnPush,

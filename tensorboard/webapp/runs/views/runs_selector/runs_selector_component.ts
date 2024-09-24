@@ -16,6 +16,7 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {RunsTableColumn} from '../runs_table/types';
 
 @Component({
+  standalone: false,
   selector: 'runs-selector-component',
   template: `
     <runs-table
