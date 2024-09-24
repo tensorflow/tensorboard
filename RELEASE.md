@@ -1,3 +1,15 @@
+# Release 2.18.0
+
+The 2.18 minor series tracks TensorFlow 2.18.
+
+## Features
+- Compatibility updates for changes in Numpy 2.0 (#6871)
+- Relax `protobuf` restriction to work with versions < 5.0.0 (in addition to >= 5.0.0) (#6888)
+
+## Bug Fixes
+- Fixes a floating menu disappearing immediately after right-clicking on the trigger point. (#6891)
+
+
 # Release 2.17.1
 
 ## Bug Fixes
