@@ -103,7 +103,7 @@ py_library(
     name = "lib_init_only",
     srcs = ["__init__.py"],
     srcs_version = "PY3",
-    visibility = ["//tensorboard:internal"],
+    visibility = ["//visibility:public"],
     deps = [
         ":lazy",
         ":version",
