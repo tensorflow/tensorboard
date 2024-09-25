@@ -36,10 +36,10 @@ class KerasUtilTest(tf.test.TestCase):
             expected_proto, keras_util.keras_model_to_graph_def(model_config)
         )
 
-    def DISABLED_test_keras_model_to_graph_def_sequential_model(self):
+    def test_keras_model_to_graph_def_sequential_model(self):
         expected_proto = """
             node {
-              name: "sequential/dense_input"
+              name: "sequential/input_layer"
               attr {
                 key: "dtype"
                 value {
@@ -55,7 +55,7 @@ class KerasUtilTest(tf.test.TestCase):
             }
             node {
               name: "sequential/dense"
-              input: "sequential/dense_input"
+              input: "sequential/input_layer"
               attr {
                 key: "dtype"
                 value {
@@ -323,42 +323,10 @@ class KerasUtilTest(tf.test.TestCase):
         )
         self.assertGraphDefToModel(expected_proto, model)
 
-    def DISABLED_test_keras_model_to_graph_def_nested_sequential_model(self):
+    def test_keras_model_to_graph_def_nested_sequential_model(self):
         expected_proto = """
             node {
-              name: "sequential_2/sequential_1_input"
-              attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
-              attr {
-                key: "keras_class"
-                value {
-                  s: "InputLayer"
-                }
-              }
-            }
-            node {
-              name: "sequential_2/sequential_1/sequential_input"
-              input: "sequential_2/sequential_1_input"
-              attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
-              attr {
-                key: "keras_class"
-                value {
-                  s: "InputLayer"
-                }
-              }
-            }
-            node {
-              name: "sequential_2/sequential_1/sequential/dense_input"
-              input: "sequential_2/sequential_1/sequential_input"
+              name: "sequential_2/sequential_1/sequential/input_layer"
               attr {
                 key: "dtype"
                 value {
@@ -374,7 +342,7 @@ class KerasUtilTest(tf.test.TestCase):
             }
             node {
               name: "sequential_2/sequential_1/sequential/dense"
-              input: "sequential_2/sequential_1/sequential/dense_input"
+              input: "sequential_2/sequential_1/sequential/input_layer"
               attr {
                 key: "dtype"
                 value {
@@ -786,12 +754,12 @@ class KerasUtilTest(tf.test.TestCase):
 
         self.assertGraphDefToModel(expected_proto, model)
 
-    def DISABLED_test_keras_model_to_graph_def_functional_sequential_model(
+    def test_keras_model_to_graph_def_functional_sequential_model(
         self,
     ):
         expected_proto = """
             node {
-              name: "model/func_seq_input"
+              name: "functional_1/func_seq_input"
               attr {
                 key: "dtype"
                 value {
@@ -806,8 +774,8 @@ class KerasUtilTest(tf.test.TestCase):
               }
             }
             node {
-              name: "model/sequential/dense_input"
-              input: "model/func_seq_input"
+              name: "functional_1/sequential/input_layer"
+              input: "functional_1/func_seq_input"
               attr {
                 key: "dtype"
                 value {
@@ -822,8 +790,8 @@ class KerasUtilTest(tf.test.TestCase):
               }
             }
             node {
-              name: "model/sequential/dense"
-              input: "model/sequential/dense_input"
+              name: "functional_1/sequential/dense"
+              input: "functional_1/sequential/input_layer"
               attr {
                 key: "dtype"
                 value {
@@ -838,8 +806,8 @@ class KerasUtilTest(tf.test.TestCase):
               }
             }
             node {
-              name: "model/sequential/my_relu"
-              input: "model/sequential/dense"
+              name: "functional_1/sequential/my_relu"
+              input: "functional_1/sequential/dense"
               attr {
                 key: "dtype"
                 value {
@@ -854,8 +822,8 @@ class KerasUtilTest(tf.test.TestCase):
               }
             }
             node {
-              name: "model/dense_1"
-              input: "model/sequential/my_relu"
+              name: "functional_1/dense_1"
+              input: "functional_1/sequential/my_relu"
               attr {
                 key: "dtype"
                 value {
@@ -885,12 +853,12 @@ class KerasUtilTest(tf.test.TestCase):
 
         self.assertGraphDefToModel(expected_proto, model)
 
-    def DISABLED_test_keras_model_to_graph_def_sequential_functional_model(
+    def test_keras_model_to_graph_def_sequential_functional_model(
         self,
     ):
         expected_proto = """
             node {
-              name: "sequential/model_input"
+              name: "sequential/functional/func_seq_input"
               attr {
                 key: "dtype"
                 value {
@@ -905,23 +873,8 @@ class KerasUtilTest(tf.test.TestCase):
               }
             }
             node {
-              name: "sequential/model/func_seq_input"
-              attr {
-                key: "dtype"
-                value {
-                  type: DT_FLOAT
-                }
-              }
-              attr {
-                key: "keras_class"
-                value {
-                  s: "InputLayer"
-                }
-              }
-            }
-            node {
-              name: "sequential/model/dense"
-              input: "sequential/model/func_seq_input"
+              name: "sequential/functional/dense"
+              input: "sequential/functional/func_seq_input"
               attr {
                 key: "dtype"
                 value {
@@ -937,7 +890,7 @@ class KerasUtilTest(tf.test.TestCase):
             }
             node {
               name: "sequential/dense_1"
-              input: "sequential/model/dense"
+              input: "sequential/functional/dense"
               attr {
                 key: "dtype"
                 value {
@@ -982,8 +935,7 @@ class KerasUtilTest(tf.test.TestCase):
 
         self.assertGraphDefToModel(expected_proto, model)
 
-    # Enable after next sync to internal repo from Keras team.
-    def DISABLED_test_keras_model_to_graph_def_functional_multiple_inbound_nodes_from_same_node(
+    def test_keras_model_to_graph_def_functional_multiple_inbound_nodes_from_same_node(
         self,
     ):
         expected_proto = """
