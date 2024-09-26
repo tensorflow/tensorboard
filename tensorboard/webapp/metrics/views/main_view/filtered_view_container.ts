@@ -51,49 +51,54 @@ export const FILTER_VIEW_DEBOUNCE_IN_MS = 200;
 export class FilteredViewContainer {
   @Input() cardObserver!: CardObserver;
 
-  constructor(private readonly store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {
+    this.cardIdsWithMetadata$ = this.store
+      .select(getSortedRenderableCardIdsWithMetadata)
+      .pipe(
+        combineLatestWith(this.store.select(getMetricsFilteredPluginTypes)),
+        map(([cardList, filteredPluginTypes]) => {
+          if (!filteredPluginTypes.size) return cardList;
+          return cardList.filter((card) =>
+            filteredPluginTypes.has(card.plugin)
+          );
+        }),
+        combineLatestWith(this.store.select(getMetricsTagFilter)),
+        debounceTime(FILTER_VIEW_DEBOUNCE_IN_MS),
+        map(([cardList, tagFilter]) => {
+          try {
+            return {cardList, regex: new RegExp(tagFilter, 'i')};
+          } catch (e) {
+            return {cardList, regex: null};
+          }
+        }),
+        filter(({regex}) => regex !== null),
+        map(({cardList, regex}) => {
+          return cardList.filter(({tag}) => regex!.test(tag));
+        }),
+        distinctUntilChanged<DeepReadonly<CardIdWithMetadata>[]>(
+          (prev, updated) => {
+            if (prev.length !== updated.length) {
+              return false;
+            }
+            return prev.every((prevVal, index) => {
+              return prevVal.cardId === updated[index].cardId;
+            });
+          }
+        ),
+        share(),
+        startWith([])
+      ) as Observable<DeepReadonly<CardIdWithMetadata>[]>;
+    this.isEmptyMatch$ = this.cardIdsWithMetadata$.pipe(
+      combineLatestWith(
+        this.store.select(getSortedRenderableCardIdsWithMetadata)
+      ),
+      map(([filteredCardList, fullCardList]) => {
+        return Boolean(fullCardList.length) && filteredCardList.length === 0;
+      })
+    );
+  }
 
-  readonly cardIdsWithMetadata$: Observable<
-    DeepReadonly<CardIdWithMetadata>[]
-  > = this.store.select(getSortedRenderableCardIdsWithMetadata).pipe(
-    combineLatestWith(this.store.select(getMetricsFilteredPluginTypes)),
-    map(([cardList, filteredPluginTypes]) => {
-      if (!filteredPluginTypes.size) return cardList;
-      return cardList.filter((card) => filteredPluginTypes.has(card.plugin));
-    }),
-    combineLatestWith(this.store.select(getMetricsTagFilter)),
-    debounceTime(FILTER_VIEW_DEBOUNCE_IN_MS),
-    map(([cardList, tagFilter]) => {
-      try {
-        return {cardList, regex: new RegExp(tagFilter, 'i')};
-      } catch (e) {
-        return {cardList, regex: null};
-      }
-    }),
-    filter(({regex}) => regex !== null),
-    map(({cardList, regex}) => {
-      return cardList.filter(({tag}) => regex!.test(tag));
-    }),
-    distinctUntilChanged<DeepReadonly<CardIdWithMetadata>[]>(
-      (prev, updated) => {
-        if (prev.length !== updated.length) {
-          return false;
-        }
-        return prev.every((prevVal, index) => {
-          return prevVal.cardId === updated[index].cardId;
-        });
-      }
-    ),
-    share(),
-    startWith([])
-  ) as Observable<DeepReadonly<CardIdWithMetadata>[]>;
+  readonly cardIdsWithMetadata$: Observable<DeepReadonly<CardIdWithMetadata>[]>;
 
-  readonly isEmptyMatch$: Observable<boolean> = this.cardIdsWithMetadata$.pipe(
-    combineLatestWith(
-      this.store.select(getSortedRenderableCardIdsWithMetadata)
-    ),
-    map(([filteredCardList, fullCardList]) => {
-      return Boolean(fullCardList.length) && filteredCardList.length === 0;
-    })
-  );
+  readonly isEmptyMatch$: Observable<boolean>;
 }

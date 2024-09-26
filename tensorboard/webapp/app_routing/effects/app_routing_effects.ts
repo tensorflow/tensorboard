@@ -135,14 +135,7 @@ export class AppRoutingEffects {
     private readonly programmaticalNavModule: ProgrammaticalNavigationModule,
     private readonly appRootProvider: AppRootProvider
   ) {
-    this.routeConfigs = registry.getRouteConfigs();
-  }
-
-  /**
-   * Generates InternalNavigation from navigationRequested action.
-   */
-  private readonly onNavigationRequested$: Observable<InternalNavigation> =
-    this.actions$.pipe(
+    this.onNavigationRequested$ = this.actions$.pipe(
       ofType(navigationRequested),
       map((navigation) => {
         const resolvedPathname = navigation.pathname.startsWith('/')
@@ -162,27 +155,17 @@ export class AppRoutingEffects {
         };
       })
     );
-
-  /**
-   * @exports
-   */
-  readonly bootstrapReducers$ = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(initAction),
-      map(() => {
-        return routeConfigLoaded({
-          routeKinds: new Set(this.registry.getRegisteredRouteKinds()),
-        });
-      })
-    );
-  });
-
-  /**
-   * Generates InternalNavigation from application load.
-   */
-  private readonly onInit$: Observable<InternalNavigation> = this.actions$
-    .pipe(ofType(initAction))
-    .pipe(
+    this.bootstrapReducers$ = createEffect(() => {
+      return this.actions$.pipe(
+        ofType(initAction),
+        map(() => {
+          return routeConfigLoaded({
+            routeKinds: new Set(this.registry.getRegisteredRouteKinds()),
+          });
+        })
+      );
+    });
+    this.onInit$ = this.actions$.pipe(ofType(initAction)).pipe(
       delay(0),
       map(() => {
         const namespaceId: string | undefined =
@@ -214,13 +197,7 @@ export class AppRoutingEffects {
         };
       })
     );
-
-  /**
-   * Generates InternalNavigation from browser history popstate event.
-   */
-  private readonly onPopState$: Observable<InternalNavigation> = this.location
-    .onPopState()
-    .pipe(
+    this.onPopState$ = this.location.onPopState().pipe(
       map((navigation) => {
         const namespaceUpdate: NamespaceUpdate =
           navigation.state?.namespaceId === undefined
@@ -254,6 +231,344 @@ export class AppRoutingEffects {
         };
       })
     );
+    this.userInitNavRoute$ = merge(
+      this.onNavigationRequested$,
+      this.onInit$,
+      this.onPopState$
+    ).pipe(
+      map<InternalNavigation, InternalNavigation>((navigation) => {
+        // Expect to have absolute navigation here.
+        if (!navigation.pathname.startsWith('/')) {
+          throw new Error(
+            `[App routing] pathname must start with '/'. Got: ${navigation.pathname}`
+          );
+        }
+        return {
+          ...navigation,
+          pathname: this.appRootProvider.getAppRootlessPathname(
+            navigation.pathname
+          ),
+        };
+      }),
+      map((navigationWithAbsolutePath) => {
+        const routeMatch = this.routeConfigs.match(navigationWithAbsolutePath);
+        return {
+          routeMatch,
+          options: navigationWithAbsolutePath.options,
+        };
+      })
+    );
+    this.programmaticalNavRoute$ = this.actions$.pipe(
+      map((action) => {
+        return this.programmaticalNavModule.getNavigation(action);
+      }),
+      filter((nav) => {
+        return nav !== null;
+      }),
+      map((programmaticalNavigation) => {
+        const nav = programmaticalNavigation!;
+        const {replaceState = false, resetNamespacedState, routeKind} = nav;
+
+        // TODO(stephanwlee): currently, the RouteParams is ill-typed and you
+        // can currently add any property without any type error. Better type
+        // it.
+        let routeParams: RouteParams;
+        switch (nav.routeKind) {
+          case RouteKind.COMPARE_EXPERIMENT:
+            routeParams = {
+              experimentIds: serializeCompareExperimentParams(
+                nav.routeParams.aliasAndExperimentIds
+              ),
+            };
+            break;
+          default:
+            routeParams = nav.routeParams;
+        }
+        return {replaceState, routeKind, routeParams, resetNamespacedState};
+      }),
+      map(({replaceState, routeKind, routeParams, resetNamespacedState}) => {
+        const routeMatch = this.routeConfigs
+          ? this.routeConfigs.matchByRouteKind(routeKind, routeParams)
+          : null;
+        return {
+          routeMatch,
+          options: {
+            replaceState,
+            browserInitiated: false,
+            namespaceUpdate: {
+              option: resetNamespacedState
+                ? NamespaceUpdateOption.NEW
+                : NamespaceUpdateOption.UNCHANGED,
+            },
+          } as NavigationOptions,
+        };
+      })
+    );
+    this.validatedRouteMatch$ = merge(
+      this.userInitNavRoute$,
+      this.programmaticalNavRoute$
+    ).pipe(
+      filter(({routeMatch}) => Boolean(routeMatch)),
+      map(({routeMatch, options}) => {
+        return {
+          routeMatch: routeMatch!,
+          options,
+        };
+      })
+    );
+    this.navigate$ = createEffect(() => {
+      const dispatchNavigating$ = this.validatedRouteMatch$.pipe(
+        withLatestFrom(this.store.select(getActiveRoute)),
+        mergeMap(([internalRouteMatch, oldRoute]) => {
+          // Check for unsaved updates and only proceed if the user confirms they
+          // want to continue without saving.
+          const sameRouteAndExperiments =
+            oldRoute !== null &&
+            areSameRouteKindAndExperiments(
+              oldRoute,
+              internalRouteMatch.routeMatch
+            );
+          const dirtySelectors =
+            this.dirtyUpdatesRegistry.getDirtyUpdatesSelectors();
+          // Do not warn about unsaved updates when route and experiments are the
+          // same (e.g. when changing tabs in the same experiment page or query
+          // params in experiment list).
+          if (sameRouteAndExperiments || !dirtySelectors.length)
+            return of(internalRouteMatch);
+          return forkJoin(
+            this.dirtyUpdatesRegistry
+              .getDirtyUpdatesSelectors()
+              .map((selector) => this.store.select(selector).pipe(take(1)))
+          ).pipe(
+            map(
+              (updates) =>
+                updates[0].experimentIds !== undefined &&
+                updates[0].experimentIds.length > 0
+            ),
+            filter((hasDirtyUpdates) => {
+              if (hasDirtyUpdates) {
+                const discardChanges = window.confirm(
+                  `You have unsaved edits, are you sure you want to discard them?`
+                );
+                if (discardChanges) {
+                  this.store.dispatch(discardDirtyUpdates());
+                }
+                return discardChanges;
+              }
+              return true;
+            }),
+            map(() => {
+              return internalRouteMatch;
+            })
+          );
+        }),
+        withLatestFrom(this.store.select(getRehydratedDeepLinks)),
+        tap(([{routeMatch, options}, rehydratedDeepLinks]) => {
+          // Possibly rehydrate state from the URL.
+
+          if (!options.browserInitiated || !routeMatch.deepLinkProvider) {
+            return;
+          }
+
+          if (
+            options.namespaceUpdate.option ===
+              NamespaceUpdateOption.FROM_HISTORY &&
+            !canRehydrateDeepLink(
+              routeMatch.routeKind,
+              options.namespaceUpdate.namespaceId,
+              rehydratedDeepLinks
+            )
+          ) {
+            // A deeplink has already been rehydrated for this RouteKind/Namespace
+            // combination so don't do it again.
+            return;
+          }
+
+          // Query parameter formed by the redirector is passed to the
+          // deserializer instead of one from Location.getSearch(). This
+          // behavior emulates redirected URL to be on the URL bar such as
+          // "/compare?foo=bar" based on information provided by redirector (do
+          // note that location.getSearch() will return current query parameter
+          // which is pre-redirection URL).
+          const queryParams =
+            routeMatch.originateFromRedirection &&
+            routeMatch.redirectionOnlyQueryParams
+              ? routeMatch.redirectionOnlyQueryParams
+              : this.location.getSearch();
+          const rehydratingState =
+            routeMatch.deepLinkProvider.deserializeQueryParams(queryParams);
+          this.store.dispatch(
+            stateRehydratedFromUrl({
+              routeKind: routeMatch.routeKind,
+              partialState: rehydratingState,
+            })
+          );
+        }),
+        tap(([{routeMatch}]) => {
+          // Some route configurations can generate actions that should be
+          // dispatched early in app routing handling.
+          if (routeMatch.action) {
+            this.store.dispatch(routeMatch.action);
+          }
+        }),
+        switchMap(([{routeMatch, options}]): Observable<InternalRoute> => {
+          if (routeMatch.deepLinkProvider === null) {
+            // Without a DeepLinkProvider emit a single result without query
+            // params.
+            return of({
+              route: {
+                routeKind: routeMatch.routeKind,
+                params: routeMatch.params,
+              },
+              pathname: routeMatch.pathname,
+              queryParams: [],
+              options,
+            });
+          }
+
+          // With a DeepLinkProvider emit a new result each time the query
+          // params change.
+          return routeMatch
+            .deepLinkProvider!.serializeStateToQueryParams(this.store)
+            .pipe(
+              map((queryParams, index) => {
+                return {
+                  route: {
+                    routeKind: routeMatch.routeKind,
+                    params: routeMatch.params,
+                  },
+                  pathname: routeMatch.pathname,
+                  queryParams,
+                  // Only honor replaceState value on first emit. On subsequent
+                  // emits we always want to replaceState rather than pushState.
+                  options:
+                    index === 0
+                      ? options
+                      : {
+                          ...options,
+                          namespaceUpdate: {
+                            option: NamespaceUpdateOption.UNCHANGED,
+                          },
+                          replaceState: true,
+                        },
+                };
+              })
+            );
+        }),
+        tap(({route}) => {
+          // b/160185039: Allows the route store + router outlet to change
+          // before the route change. Because we debounceTime, technically, it does
+          // not fire two actions sequentially.
+          this.store.dispatch(navigating({after: route}));
+        }),
+        // Inject some async-ness so:
+        // 1. the router-outlet flush the change in a microtask.
+        // 2. we do not have composite action (synchronous dispatchment of
+        //    actions).
+        debounceTime(0)
+      );
+
+      const changeUrl$ = dispatchNavigating$.pipe(
+        withLatestFrom(this.store.select(getActiveRoute)),
+        map(([newRoute, oldRoute]) => {
+          // The URL hash can be set via HashStorageComponent (which uses
+          // Polymer's tf-storage). DeepLinkProviders also modify the URL when
+          // a provider's serializeStateToQueryParams() emits. These result in
+          // the URL updated without the previous hash. HashStorageComponent
+          // makes no attempt to restore the hash, so it is dropped.
+
+          // This results in bad behavior when refreshing (e.g. lost active
+          // plugin) and when changing dashboards (e.g. lost tagFilter).
+
+          // TODO(b/169799696): either AppRouting should manage the URL entirely
+          // (including hash), or we make the app wait for AppRouting to
+          // initialize before setting the active plugin hash.
+          // See https://github.com/tensorflow/tensorboard/issues/4207.
+          const preserveHash =
+            oldRoute === null ||
+            newRoute.route === null ||
+            areSameRouteKindAndExperiments(oldRoute, newRoute.route);
+          return {
+            ...newRoute,
+            preserveHash,
+          };
+        }),
+        tap(({preserveHash, pathname, queryParams, options}) => {
+          const shouldUpdateHistory = !arePathsAndQueryParamsEqual(
+            {pathname, queryParams},
+            {
+              pathname: this.appRootProvider.getAppRootlessPathname(
+                this.location.getPath()
+              ),
+              queryParams: this.location.getSearch(),
+            }
+          );
+          if (!shouldUpdateHistory) return;
+
+          if (options.replaceState) {
+            this.location.replaceStateUrl(
+              this.appRootProvider.getAbsPathnameWithAppRoot(
+                this.location.getFullPath(pathname, queryParams, preserveHash)
+              )
+            );
+          } else {
+            this.location.pushStateUrl(
+              this.appRootProvider.getAbsPathnameWithAppRoot(
+                this.location.getFullPath(pathname, queryParams, preserveHash)
+              )
+            );
+          }
+        })
+      );
+
+      return changeUrl$.pipe(
+        withLatestFrom(
+          this.store.select(getActiveRoute),
+          this.store.select(getActiveNamespaceId)
+        ),
+        map(([{route, options}, oldRoute, beforeNamespaceId]) => {
+          const afterNamespaceId = getAfterNamespaceId(
+            route,
+            options,
+            beforeNamespaceId
+          );
+
+          this.location.replaceStateData({
+            ...this.location.getHistoryState(),
+            namespaceId: afterNamespaceId,
+          });
+
+          return navigated({
+            before: oldRoute,
+            after: route,
+            beforeNamespaceId,
+            afterNamespaceId,
+          });
+        })
+      );
+    });
+    this.routeConfigs = registry.getRouteConfigs();
+  }
+
+  /**
+   * Generates InternalNavigation from navigationRequested action.
+   */
+  private readonly onNavigationRequested$: Observable<InternalNavigation>;
+
+  /**
+   * @export
+   */
+  readonly bootstrapReducers$;
+
+  /**
+   * Generates InternalNavigation from application load.
+   */
+  private readonly onInit$: Observable<InternalNavigation>;
+
+  /**
+   * Generates InternalNavigation from browser history popstate event.
+   */
+  private readonly onPopState$: Observable<InternalNavigation>;
 
   /**
    * Generates an InternalRouteMatch from the following events:
@@ -265,33 +580,7 @@ export class AppRoutingEffects {
    * The input InternalNavigation values must have absolute pathname with
    * appRoot prefixed (e.g., window.location.pathname) when appRoot is defined.
    */
-  private readonly userInitNavRoute$ = merge(
-    this.onNavigationRequested$,
-    this.onInit$,
-    this.onPopState$
-  ).pipe(
-    map<InternalNavigation, InternalNavigation>((navigation) => {
-      // Expect to have absolute navigation here.
-      if (!navigation.pathname.startsWith('/')) {
-        throw new Error(
-          `[App routing] pathname must start with '/'. Got: ${navigation.pathname}`
-        );
-      }
-      return {
-        ...navigation,
-        pathname: this.appRootProvider.getAppRootlessPathname(
-          navigation.pathname
-        ),
-      };
-    }),
-    map((navigationWithAbsolutePath) => {
-      const routeMatch = this.routeConfigs.match(navigationWithAbsolutePath);
-      return {
-        routeMatch,
-        options: navigationWithAbsolutePath.options,
-      };
-    })
-  );
+  private readonly userInitNavRoute$;
 
   /**
    * Generates an InternalNavigation then InternalRouteMatch for programmatical
@@ -299,304 +588,18 @@ export class AppRoutingEffects {
    *
    * See: ProgrammaticalNavigationModule.
    */
-  private readonly programmaticalNavRoute$ = this.actions$.pipe(
-    map((action) => {
-      return this.programmaticalNavModule.getNavigation(action);
-    }),
-    filter((nav) => {
-      return nav !== null;
-    }),
-    map((programmaticalNavigation) => {
-      const nav = programmaticalNavigation!;
-      const {replaceState = false, resetNamespacedState, routeKind} = nav;
-
-      // TODO(stephanwlee): currently, the RouteParams is ill-typed and you
-      // can currently add any property without any type error. Better type
-      // it.
-      let routeParams: RouteParams;
-      switch (nav.routeKind) {
-        case RouteKind.COMPARE_EXPERIMENT:
-          routeParams = {
-            experimentIds: serializeCompareExperimentParams(
-              nav.routeParams.aliasAndExperimentIds
-            ),
-          };
-          break;
-        default:
-          routeParams = nav.routeParams;
-      }
-      return {replaceState, routeKind, routeParams, resetNamespacedState};
-    }),
-    map(({replaceState, routeKind, routeParams, resetNamespacedState}) => {
-      const routeMatch = this.routeConfigs
-        ? this.routeConfigs.matchByRouteKind(routeKind, routeParams)
-        : null;
-      return {
-        routeMatch,
-        options: {
-          replaceState,
-          browserInitiated: false,
-          namespaceUpdate: {
-            option: resetNamespacedState
-              ? NamespaceUpdateOption.NEW
-              : NamespaceUpdateOption.UNCHANGED,
-          },
-        } as NavigationOptions,
-      };
-    })
-  );
+  private readonly programmaticalNavRoute$;
 
   /**
    * Merges all the event paths, ensuring they have generated a valid
    * InternalRouteMatch.
    */
-  private readonly validatedRouteMatch$: Observable<InternalRouteMatch> = merge(
-    this.userInitNavRoute$,
-    this.programmaticalNavRoute$
-  ).pipe(
-    filter(({routeMatch}) => Boolean(routeMatch)),
-    map(({routeMatch, options}) => {
-      return {
-        routeMatch: routeMatch!,
-        options,
-      };
-    })
-  );
+  private readonly validatedRouteMatch$: Observable<InternalRouteMatch>;
 
   /**
    * @export
    */
-  navigate$ = createEffect(() => {
-    const dispatchNavigating$ = this.validatedRouteMatch$.pipe(
-      withLatestFrom(this.store.select(getActiveRoute)),
-      mergeMap(([internalRouteMatch, oldRoute]) => {
-        // Check for unsaved updates and only proceed if the user confirms they
-        // want to continue without saving.
-        const sameRouteAndExperiments =
-          oldRoute !== null &&
-          areSameRouteKindAndExperiments(
-            oldRoute,
-            internalRouteMatch.routeMatch
-          );
-        const dirtySelectors =
-          this.dirtyUpdatesRegistry.getDirtyUpdatesSelectors();
-        // Do not warn about unsaved updates when route and experiments are the
-        // same (e.g. when changing tabs in the same experiment page or query
-        // params in experiment list).
-        if (sameRouteAndExperiments || !dirtySelectors.length)
-          return of(internalRouteMatch);
-        return forkJoin(
-          this.dirtyUpdatesRegistry
-            .getDirtyUpdatesSelectors()
-            .map((selector) => this.store.select(selector).pipe(take(1)))
-        ).pipe(
-          map(
-            (updates) =>
-              updates[0].experimentIds !== undefined &&
-              updates[0].experimentIds.length > 0
-          ),
-          filter((hasDirtyUpdates) => {
-            if (hasDirtyUpdates) {
-              const discardChanges = window.confirm(
-                `You have unsaved edits, are you sure you want to discard them?`
-              );
-              if (discardChanges) {
-                this.store.dispatch(discardDirtyUpdates());
-              }
-              return discardChanges;
-            }
-            return true;
-          }),
-          map(() => {
-            return internalRouteMatch;
-          })
-        );
-      }),
-      withLatestFrom(this.store.select(getRehydratedDeepLinks)),
-      tap(([{routeMatch, options}, rehydratedDeepLinks]) => {
-        // Possibly rehydrate state from the URL.
-
-        if (!options.browserInitiated || !routeMatch.deepLinkProvider) {
-          return;
-        }
-
-        if (
-          options.namespaceUpdate.option ===
-            NamespaceUpdateOption.FROM_HISTORY &&
-          !canRehydrateDeepLink(
-            routeMatch.routeKind,
-            options.namespaceUpdate.namespaceId,
-            rehydratedDeepLinks
-          )
-        ) {
-          // A deeplink has already been rehydrated for this RouteKind/Namespace
-          // combination so don't do it again.
-          return;
-        }
-
-        // Query parameter formed by the redirector is passed to the
-        // deserializer instead of one from Location.getSearch(). This
-        // behavior emulates redirected URL to be on the URL bar such as
-        // "/compare?foo=bar" based on information provided by redirector (do
-        // note that location.getSearch() will return current query parameter
-        // which is pre-redirection URL).
-        const queryParams =
-          routeMatch.originateFromRedirection &&
-          routeMatch.redirectionOnlyQueryParams
-            ? routeMatch.redirectionOnlyQueryParams
-            : this.location.getSearch();
-        const rehydratingState =
-          routeMatch.deepLinkProvider.deserializeQueryParams(queryParams);
-        this.store.dispatch(
-          stateRehydratedFromUrl({
-            routeKind: routeMatch.routeKind,
-            partialState: rehydratingState,
-          })
-        );
-      }),
-      tap(([{routeMatch}]) => {
-        // Some route configurations can generate actions that should be
-        // dispatched early in app routing handling.
-        if (routeMatch.action) {
-          this.store.dispatch(routeMatch.action);
-        }
-      }),
-      switchMap(([{routeMatch, options}]): Observable<InternalRoute> => {
-        if (routeMatch.deepLinkProvider === null) {
-          // Without a DeepLinkProvider emit a single result without query
-          // params.
-          return of({
-            route: {
-              routeKind: routeMatch.routeKind,
-              params: routeMatch.params,
-            },
-            pathname: routeMatch.pathname,
-            queryParams: [],
-            options,
-          });
-        }
-
-        // With a DeepLinkProvider emit a new result each time the query
-        // params change.
-        return routeMatch
-          .deepLinkProvider!.serializeStateToQueryParams(this.store)
-          .pipe(
-            map((queryParams, index) => {
-              return {
-                route: {
-                  routeKind: routeMatch.routeKind,
-                  params: routeMatch.params,
-                },
-                pathname: routeMatch.pathname,
-                queryParams,
-                // Only honor replaceState value on first emit. On subsequent
-                // emits we always want to replaceState rather than pushState.
-                options:
-                  index === 0
-                    ? options
-                    : {
-                        ...options,
-                        namespaceUpdate: {
-                          option: NamespaceUpdateOption.UNCHANGED,
-                        },
-                        replaceState: true,
-                      },
-              };
-            })
-          );
-      }),
-      tap(({route}) => {
-        // b/160185039: Allows the route store + router outlet to change
-        // before the route change. Because we debounceTime, technically, it does
-        // not fire two actions sequentially.
-        this.store.dispatch(navigating({after: route}));
-      }),
-      // Inject some async-ness so:
-      // 1. the router-outlet flush the change in a microtask.
-      // 2. we do not have composite action (synchronous dispatchment of
-      //    actions).
-      debounceTime(0)
-    );
-
-    const changeUrl$ = dispatchNavigating$.pipe(
-      withLatestFrom(this.store.select(getActiveRoute)),
-      map(([newRoute, oldRoute]) => {
-        // The URL hash can be set via HashStorageComponent (which uses
-        // Polymer's tf-storage). DeepLinkProviders also modify the URL when
-        // a provider's serializeStateToQueryParams() emits. These result in
-        // the URL updated without the previous hash. HashStorageComponent
-        // makes no attempt to restore the hash, so it is dropped.
-
-        // This results in bad behavior when refreshing (e.g. lost active
-        // plugin) and when changing dashboards (e.g. lost tagFilter).
-
-        // TODO(b/169799696): either AppRouting should manage the URL entirely
-        // (including hash), or we make the app wait for AppRouting to
-        // initialize before setting the active plugin hash.
-        // See https://github.com/tensorflow/tensorboard/issues/4207.
-        const preserveHash =
-          oldRoute === null ||
-          newRoute.route === null ||
-          areSameRouteKindAndExperiments(oldRoute, newRoute.route);
-        return {
-          ...newRoute,
-          preserveHash,
-        };
-      }),
-      tap(({preserveHash, pathname, queryParams, options}) => {
-        const shouldUpdateHistory = !arePathsAndQueryParamsEqual(
-          {pathname, queryParams},
-          {
-            pathname: this.appRootProvider.getAppRootlessPathname(
-              this.location.getPath()
-            ),
-            queryParams: this.location.getSearch(),
-          }
-        );
-        if (!shouldUpdateHistory) return;
-
-        if (options.replaceState) {
-          this.location.replaceStateUrl(
-            this.appRootProvider.getAbsPathnameWithAppRoot(
-              this.location.getFullPath(pathname, queryParams, preserveHash)
-            )
-          );
-        } else {
-          this.location.pushStateUrl(
-            this.appRootProvider.getAbsPathnameWithAppRoot(
-              this.location.getFullPath(pathname, queryParams, preserveHash)
-            )
-          );
-        }
-      })
-    );
-
-    return changeUrl$.pipe(
-      withLatestFrom(
-        this.store.select(getActiveRoute),
-        this.store.select(getActiveNamespaceId)
-      ),
-      map(([{route, options}, oldRoute, beforeNamespaceId]) => {
-        const afterNamespaceId = getAfterNamespaceId(
-          route,
-          options,
-          beforeNamespaceId
-        );
-
-        this.location.replaceStateData({
-          ...this.location.getHistoryState(),
-          namespaceId: afterNamespaceId,
-        });
-
-        return navigated({
-          before: oldRoute,
-          after: route,
-          beforeNamespaceId,
-          afterNamespaceId,
-        });
-      })
-    );
-  });
+  navigate$;
 
   /** @export */
   ngrxOnInitEffects(): Action {

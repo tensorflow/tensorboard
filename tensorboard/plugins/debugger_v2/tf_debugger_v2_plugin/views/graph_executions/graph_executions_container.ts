@@ -42,33 +42,19 @@ import {State} from '../../store/debugger_types';
   `,
 })
 export class GraphExecutionsContainer {
-  readonly numGraphExecutions$ = this.store.pipe(select(getNumGraphExecutions));
+  readonly numGraphExecutions$;
 
-  readonly graphExecutionData$ = this.store.pipe(select(getGraphExecutionData));
+  readonly graphExecutionData$;
 
-  readonly graphExecutionIndices$ = this.store.pipe(
-    select(
-      createSelector(
-        getNumGraphExecutions,
-        (numGraphExecution: number): number[] | null => {
-          if (numGraphExecution === 0) {
-            return null;
-          }
-          return Array.from({length: numGraphExecution}).map((_, i) => i);
-        }
-      )
-    )
-  );
+  readonly graphExecutionIndices$;
 
-  readonly focusIndex$ = this.store.pipe(select(getGraphExecutionFocusIndex));
+  readonly focusIndex$;
 
   /**
    * Inferred graph-execution indices that belong to the immediate inputs
    * to the currently-focused graph op.
    */
-  readonly focusInputIndices$ = this.store.pipe(
-    select(getFocusedGraphExecutionInputIndices)
-  );
+  readonly focusInputIndices$;
 
   onScrolledIndexChange(scrolledIndex: number) {
     this.store.dispatch(graphExecutionScrollToIndex({index: scrolledIndex}));
@@ -78,5 +64,25 @@ export class GraphExecutionsContainer {
     this.store.dispatch(graphExecutionFocused(event));
   }
 
-  constructor(private readonly store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {
+    this.numGraphExecutions$ = this.store.pipe(select(getNumGraphExecutions));
+    this.graphExecutionData$ = this.store.pipe(select(getGraphExecutionData));
+    this.graphExecutionIndices$ = this.store.pipe(
+      select(
+        createSelector(
+          getNumGraphExecutions,
+          (numGraphExecution: number): number[] | null => {
+            if (numGraphExecution === 0) {
+              return null;
+            }
+            return Array.from({length: numGraphExecution}).map((_, i) => i);
+          }
+        )
+      )
+    );
+    this.focusIndex$ = this.store.pipe(select(getGraphExecutionFocusIndex));
+    this.focusInputIndices$ = this.store.pipe(
+      select(getFocusedGraphExecutionInputIndices)
+    );
+  }
 }

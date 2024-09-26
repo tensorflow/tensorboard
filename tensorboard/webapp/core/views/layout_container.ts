@@ -80,21 +80,22 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LayoutContainer implements OnDestroy {
-  readonly runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
-  readonly width$: Observable<number> = this.store
-    .select(getSideBarWidthInPercent)
-    .pipe(
-      combineLatestWith(this.runsTableFullScreen$),
-      map(([percentageWidth, fullScreen]) => {
-        return fullScreen ? 100 : percentageWidth;
-      })
-    );
-  private readonly ngUnsubscribe = new Subject<void>();
+  readonly runsTableFullScreen$;
+  readonly width$: Observable<number>;
+  private readonly ngUnsubscribe;
   private resizing: boolean = false;
 
   readonly MINIMUM_SIDEBAR_WIDTH_IN_PX = 75;
 
   constructor(private readonly store: Store<State>, hostElRef: ElementRef) {
+    this.runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
+    this.width$ = this.store.select(getSideBarWidthInPercent).pipe(
+      combineLatestWith(this.runsTableFullScreen$),
+      map(([percentageWidth, fullScreen]) => {
+        return fullScreen ? 100 : percentageWidth;
+      })
+    );
+    this.ngUnsubscribe = new Subject<void>();
     fromEvent<MouseEvent>(hostElRef.nativeElement, 'mousemove')
       .pipe(
         takeUntil(this.ngUnsubscribe),

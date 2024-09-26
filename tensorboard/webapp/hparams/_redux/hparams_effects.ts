@@ -15,15 +15,15 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Store} from '@ngrx/store';
-import {Observable, of, throwError, merge} from 'rxjs';
+import {merge, Observable, of, throwError} from 'rxjs';
 import {
   catchError,
+  distinctUntilChanged,
   filter,
   map,
   switchMap,
-  withLatestFrom,
   throttleTime,
-  distinctUntilChanged,
+  withLatestFrom,
 } from 'rxjs/operators';
 
 import {navigated} from '../../app_routing/actions';
@@ -35,10 +35,10 @@ import {State} from '../../app_state';
 import * as coreActions from '../../core/actions';
 import {HttpErrorResponse} from '../../webapp_data_source/tb_http_client';
 
+import {RouteKind} from '../../app_routing/types';
+import {HparamSpec, SessionGroup} from '../types';
 import * as hparamsActions from './hparams_actions';
 import {HparamsDataSource} from './hparams_data_source';
-import {HparamSpec, SessionGroup} from '../types';
-import {RouteKind} from '../../app_routing/types';
 import {getNumDashboardHparamsToLoad} from './hparams_selectors';
 
 /**
@@ -50,18 +50,15 @@ export class HparamsEffects {
     private readonly actions$: Actions,
     private readonly store: Store<State>,
     private readonly dataSource: HparamsDataSource
-  ) {}
-
-  private readonly navigated$: Observable<string[]> = this.actions$.pipe(
-    ofType(navigated),
-    withLatestFrom(this.store.select(getExperimentIdsFromRoute)),
-    filter(([, experimentIds]) => Boolean(experimentIds)),
-    map(([, experimentIds]) => experimentIds as string[]),
-    distinctUntilChanged((prev, cur) => prev.join('') === cur.join(''))
-  );
-
-  private readonly loadHparamsOnReload$: Observable<string[]> =
-    this.actions$.pipe(
+  ) {
+    this.navigated$ = this.actions$.pipe(
+      ofType(navigated),
+      withLatestFrom(this.store.select(getExperimentIdsFromRoute)),
+      filter(([, experimentIds]) => Boolean(experimentIds)),
+      map(([, experimentIds]) => experimentIds as string[]),
+      distinctUntilChanged((prev, cur) => prev.join('') === cur.join(''))
+    );
+    this.loadHparamsOnReload$ = this.actions$.pipe(
       ofType(
         coreActions.reload,
         coreActions.manualReload,
@@ -71,26 +68,32 @@ export class HparamsEffects {
       filter(([, experimentIds]) => Boolean(experimentIds)),
       map(([, experimentIds]) => experimentIds as string[])
     );
+    this.loadHparamsData$ = createEffect(() => {
+      return merge(this.navigated$, this.loadHparamsOnReload$).pipe(
+        withLatestFrom(
+          this.store.select(getActiveRoute),
+          this.store.select(getNumDashboardHparamsToLoad)
+        ),
+        filter(
+          ([, activeRoute]) =>
+            activeRoute?.routeKind === RouteKind.EXPERIMENT ||
+            activeRoute?.routeKind === RouteKind.COMPARE_EXPERIMENT
+        ),
+        throttleTime(10),
+        switchMap(([experimentIds, , numHparamsToLoad]) =>
+          this.loadHparamsForExperiments(experimentIds, numHparamsToLoad)
+        ),
+        map((resp) => hparamsActions.hparamsFetchSessionGroupsSucceeded(resp))
+      );
+    });
+  }
+
+  private readonly navigated$: Observable<string[]>;
+
+  private readonly loadHparamsOnReload$: Observable<string[]>;
 
   /** @export */
-  loadHparamsData$ = createEffect(() => {
-    return merge(this.navigated$, this.loadHparamsOnReload$).pipe(
-      withLatestFrom(
-        this.store.select(getActiveRoute),
-        this.store.select(getNumDashboardHparamsToLoad)
-      ),
-      filter(
-        ([, activeRoute]) =>
-          activeRoute?.routeKind === RouteKind.EXPERIMENT ||
-          activeRoute?.routeKind === RouteKind.COMPARE_EXPERIMENT
-      ),
-      throttleTime(10),
-      switchMap(([experimentIds, , numHparamsToLoad]) =>
-        this.loadHparamsForExperiments(experimentIds, numHparamsToLoad)
-      ),
-      map((resp) => hparamsActions.hparamsFetchSessionGroupsSucceeded(resp))
-    );
-  });
+  loadHparamsData$;
 
   private loadHparamsForExperiments(
     experimentIds: string[],

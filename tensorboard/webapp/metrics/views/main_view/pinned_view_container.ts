@@ -17,12 +17,12 @@ import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {skip, startWith} from 'rxjs/operators';
 import {State} from '../../../app_state';
+import {getEnableGlobalPins} from '../../../selectors';
 import {DeepReadonly} from '../../../util/types';
+import {metricsClearAllPinnedCards} from '../../actions';
 import {getLastPinnedCardTime, getPinnedCardsWithMetadata} from '../../store';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
-import {metricsClearAllPinnedCards} from '../../actions';
-import {getEnableGlobalPins} from '../../../selectors';
 
 @Component({
   standalone: false,
@@ -41,19 +41,23 @@ import {getEnableGlobalPins} from '../../../selectors';
 export class PinnedViewContainer {
   @Input() cardObserver!: CardObserver;
 
-  constructor(private readonly store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {
+    this.cardIdsWithMetadata$ = this.store
+      .select(getPinnedCardsWithMetadata)
+      .pipe(startWith([]));
+    this.lastPinnedCardTime$ = this.store.select(getLastPinnedCardTime).pipe(
+      // Ignore the first value on component load, only reacting to new
+      // pins after page load.
+      skip(1)
+    );
+    this.globalPinsEnabled$ = this.store.select(getEnableGlobalPins);
+  }
 
-  readonly cardIdsWithMetadata$: Observable<
-    DeepReadonly<CardIdWithMetadata[]>
-  > = this.store.select(getPinnedCardsWithMetadata).pipe(startWith([]));
+  readonly cardIdsWithMetadata$: Observable<DeepReadonly<CardIdWithMetadata[]>>;
 
-  readonly lastPinnedCardTime$ = this.store.select(getLastPinnedCardTime).pipe(
-    // Ignore the first value on component load, only reacting to new
-    // pins after page load.
-    skip(1)
-  );
+  readonly lastPinnedCardTime$;
 
-  readonly globalPinsEnabled$ = this.store.select(getEnableGlobalPins);
+  readonly globalPinsEnabled$;
 
   onClearAllPinsClicked() {
     this.store.dispatch(metricsClearAllPinnedCards());
