@@ -57,24 +57,8 @@ const RUN_COLOR_UPDATE_THROTTLE_TIME_IN_MS = 350;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardViewContainer {
-  constructor(private readonly store: Store<State>) {}
-
-  isEverVisible = false;
-
-  @Input() cardId!: CardId;
-  @Input() groupName!: string | null;
-  @Input() pluginType!: PluginType;
-
-  @Output() fullWidthChanged = new EventEmitter<boolean>();
-  @Output() fullHeightChanged = new EventEmitter<boolean>();
-
-  onVisibilityChange({visible}: {visible: boolean}) {
-    this.isEverVisible = this.isEverVisible || visible;
-  }
-
-  readonly runColorScale$: Observable<RunColorScale> = this.store
-    .select(selectors.getRunColorMap)
-    .pipe(
+  constructor(private readonly store: Store<State>) {
+    this.runColorScale$ = this.store.select(selectors.getRunColorMap).pipe(
       throttleTime(RUN_COLOR_UPDATE_THROTTLE_TIME_IN_MS, undefined, {
         leading: true,
         trailing: true,
@@ -90,6 +74,22 @@ export class CardViewContainer {
         };
       })
     );
+  }
+
+  isEverVisible = false;
+
+  @Input() cardId!: CardId;
+  @Input() groupName!: string | null;
+  @Input() pluginType!: PluginType;
+
+  @Output() fullWidthChanged = new EventEmitter<boolean>();
+  @Output() fullHeightChanged = new EventEmitter<boolean>();
+
+  onVisibilityChange({visible}: {visible: boolean}) {
+    this.isEverVisible = this.isEverVisible || visible;
+  }
+
+  readonly runColorScale$: Observable<RunColorScale>;
 
   onFullWidthChanged(showFullWidth: boolean) {
     this.fullWidthChanged.emit(showFullWidth);

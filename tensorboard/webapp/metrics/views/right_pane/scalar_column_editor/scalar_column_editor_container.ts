@@ -14,7 +14,12 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
+import {map} from 'rxjs/operators';
 import {State} from '../../../../app_state';
+import {
+  ColumnHeader,
+  DataTableMode,
+} from '../../../../widgets/data_table/types';
 import {
   dataTableColumnOrderChanged,
   dataTableColumnToggled,
@@ -27,11 +32,6 @@ import {
   getTableEditorSelectedTab,
 } from '../../../store/metrics_selectors';
 import {HeaderEditInfo, HeaderToggleInfo} from '../../../types';
-import {
-  ColumnHeader,
-  DataTableMode,
-} from '../../../../widgets/data_table/types';
-import {map} from 'rxjs/operators';
 
 function headersWithoutRuns(headers: ColumnHeader[]) {
   return headers.filter((header) => header.type !== 'RUN');
@@ -54,15 +54,19 @@ function headersWithoutRuns(headers: ColumnHeader[]) {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ScalarColumnEditorContainer {
-  constructor(private readonly store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {
+    this.singleHeaders$ = this.store
+      .select(getSingleSelectionHeaders)
+      .pipe(map(headersWithoutRuns));
+    this.rangeHeaders$ = this.store
+      .select(getRangeSelectionHeaders)
+      .pipe(map(headersWithoutRuns));
+    this.selectedTab$ = this.store.select(getTableEditorSelectedTab);
+  }
 
-  readonly singleHeaders$ = this.store
-    .select(getSingleSelectionHeaders)
-    .pipe(map(headersWithoutRuns));
-  readonly rangeHeaders$ = this.store
-    .select(getRangeSelectionHeaders)
-    .pipe(map(headersWithoutRuns));
-  readonly selectedTab$ = this.store.select(getTableEditorSelectedTab);
+  readonly singleHeaders$;
+  readonly rangeHeaders$;
+  readonly selectedTab$;
 
   onScalarTableColumnToggled(toggleInfo: HeaderToggleInfo) {
     this.store.dispatch(dataTableColumnToggled(toggleInfo));

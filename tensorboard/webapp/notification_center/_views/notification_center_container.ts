@@ -38,8 +38,12 @@ const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
   `,
 })
 export class NotificationCenterContainer {
-  readonly notificationNotes$: Observable<ViewNotificationExt[]> =
-    combineLatest([
+  readonly notificationNotes$: Observable<ViewNotificationExt[]>;
+
+  readonly hasUnreadMessages$;
+
+  constructor(private readonly store: Store<State>) {
+    this.notificationNotes$ = combineLatest([
       this.store.select(getNotifications),
       this.store.select(getLastReadTime),
     ]).pipe(
@@ -54,14 +58,12 @@ export class NotificationCenterContainer {
       }),
       shareReplay()
     );
-
-  readonly hasUnreadMessages$ = this.notificationNotes$.pipe(
-    map((notifications) => {
-      return notifications.some(({hasRead}) => !hasRead);
-    })
-  );
-
-  constructor(private readonly store: Store<State>) {}
+    this.hasUnreadMessages$ = this.notificationNotes$.pipe(
+      map((notifications) => {
+        return notifications.some(({hasRead}) => !hasRead);
+      })
+    );
+  }
 
   onBellButtonClicked() {
     this.store.dispatch(actions.notificationBellClicked());
