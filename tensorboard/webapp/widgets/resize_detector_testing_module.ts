@@ -16,7 +16,10 @@ import {Directive, EventEmitter, Input, NgModule, Output} from '@angular/core';
 import {ComponentFixture} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 
-@Directive({selector: '[detectResize]'})
+@Directive({
+  standalone: false,
+  selector: '[detectResize]',
+})
 class ResizeDetectorTestingDirective {
   @Input() resizeEventDebouncePeriodInMs: number = 100;
   @Output() onResize = new EventEmitter<void>();

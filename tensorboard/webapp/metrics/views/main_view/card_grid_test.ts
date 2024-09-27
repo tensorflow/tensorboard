@@ -82,7 +82,7 @@ class TestableScrollingContainer {
 /**
  * Stub 'card-view' component for ease of testing.
  */
-@Component({selector: 'card-view'})
+@Component({standalone: false, selector: 'card-view'})
 class TestableCardView {
   @Output() fullHeightChanged = new EventEmitter<boolean>();
   @Output() fullWidthChanged = new EventEmitter<boolean>();

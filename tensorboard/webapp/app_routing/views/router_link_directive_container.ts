@@ -19,7 +19,10 @@ import {navigationRequested} from '../actions';
 import {AppRootProvider} from '../app_root';
 import {Location} from '../location';
 
-@Directive({selector: 'a[routerLink]'})
+@Directive({
+  standalone: false,
+  selector: 'a[routerLink]',
+})
 export class RouterLinkDirectiveContainer {
   private pathname: string | null = null;
 

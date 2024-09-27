@@ -19,7 +19,7 @@ import {RouteConfigs, RouteMatch} from './route_config';
 import {ConcreteRouteDef, RedirectionRouteDef} from './route_config_types';
 import {Navigation, RouteKind} from './types';
 
-@Component({selector: 'test', template: ''})
+@Component({standalone: false, selector: 'test', template: ''})
 class TestableComponent {}
 
 function buildConcreteRouteDef(override: Partial<ConcreteRouteDef>) {
