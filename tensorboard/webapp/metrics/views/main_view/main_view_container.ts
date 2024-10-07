@@ -65,15 +65,15 @@ export class MainViewContainer {
             loadState.state === DataLoadState.LOADING &&
             loadState.lastLoadedTimeInMs === null
           );
-        }),
+        })
       );
     this.showFilteredView$ = this.store.select(getMetricsTagFilter).pipe(
       map((filter) => {
         return filter.length > 0;
-      }),
+      })
     );
     this.filteredPluginTypes$ = this.store.select(
-      getMetricsFilteredPluginTypes,
+      getMetricsFilteredPluginTypes
     );
     this.isSlideoutMenuOpen$ = this.store.select(isMetricsSlideoutMenuOpen);
   }
