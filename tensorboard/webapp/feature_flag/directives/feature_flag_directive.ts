@@ -27,7 +27,10 @@ import {FEATURE_FLAGS_QUERY_STRING_NAME} from '../http/const';
 import {getFeatureFlagsToSendToServer} from '../store/feature_flag_selectors';
 import {State as FeatureFlagState} from '../store/feature_flag_types';
 
-@Directive({selector: 'a[includeFeatureFlags], img[includeFeatureFlags]'})
+@Directive({
+  standalone: false,
+  selector: 'a[includeFeatureFlags], img[includeFeatureFlags]',
+})
 export class FeatureFlagDirective {
   @HostBinding('attr.href') hrefAttr: string | undefined = undefined;
   @HostBinding('attr.src') srcAttr: string | undefined = undefined;

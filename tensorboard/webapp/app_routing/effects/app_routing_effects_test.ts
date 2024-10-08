@@ -48,7 +48,7 @@ import {
 } from '../types';
 import {AppRoutingEffects, TEST_ONLY} from './app_routing_effects';
 
-@Component({selector: 'test', template: '', jit: true})
+@Component({standalone: false, selector: 'test', template: '', jit: true})
 class TestableComponent {}
 
 const testAction = createAction('[TEST] test action');

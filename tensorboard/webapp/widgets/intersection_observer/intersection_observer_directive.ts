@@ -29,7 +29,10 @@ import {take, takeUntil} from 'rxjs/operators';
 /**
  * A directive that calls `onVisibilityChange` when element visiblity changes.
  */
-@Directive({selector: '[observeIntersection]'})
+@Directive({
+  standalone: false,
+  selector: '[observeIntersection]',
+})
 export class IntersectionObserverDirective implements OnInit, OnDestroy {
   @Input() intersectionObserverMargin?: string;
   @Output() onVisibilityChange = new EventEmitter<{visible: boolean}>();

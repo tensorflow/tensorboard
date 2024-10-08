@@ -16,7 +16,11 @@ import {Directive, EventEmitter, NgModule, Output} from '@angular/core';
 import {ComponentFixture} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 
-@Directive({selector: '[observeIntersection]', jit: true})
+@Directive({
+  standalone: false,
+  selector: '[observeIntersection]',
+  jit: true,
+})
 class IntersectionObserverTestingDirective {
   @Output() onVisibilityChange = new EventEmitter<{visible: boolean}>();
 

@@ -29,7 +29,10 @@ import {debounceTime, skip, takeUntil} from 'rxjs/operators';
  *
  * It does not emit `onResize` on the initial render.
  */
-@Directive({selector: '[detectResize]'})
+@Directive({
+  standalone: false,
+  selector: '[detectResize]',
+})
 export class ResizeDetectorDirective implements OnDestroy, OnInit {
   @Input() resizeEventDebouncePeriodInMs: number = 100;
   @Output() onResize = new EventEmitter<void>();
