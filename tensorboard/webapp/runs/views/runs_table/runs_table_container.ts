@@ -37,16 +37,21 @@ import {
   selectors as hparamsSelectors,
 } from '../../../hparams';
 import {
+  getCurrentColumnFilters,
+  getFilteredRenderableRuns,
+  getSelectableColumns,
+} from '../../../metrics/views/main_view/common_selectors';
+import {
   getActiveRoute,
   getCurrentRouteRunSelection,
   getExperiment,
   getExperimentIdToExperimentAliasMap,
+  getGroupedRunsTableHeaders,
   getRunColorMap,
   getRuns,
   getRunSelectorRegexFilter,
   getRunsLoadState,
   getRunsTableSortingInfo,
-  getGroupedRunsTableHeaders,
 } from '../../../selectors';
 import {DataLoadState, LoadState} from '../../../types/data';
 import {
@@ -66,13 +71,8 @@ import {
   singleRunSelected,
 } from '../../actions';
 import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT} from '../../store/runs_types';
-import {RunsTableColumn, RunTableItem} from './types';
-import {
-  getCurrentColumnFilters,
-  getFilteredRenderableRuns,
-  getSelectableColumns,
-} from '../../../metrics/views/main_view/common_selectors';
 import {sortTableDataItems} from './sorting_utils';
+import {RunsTableColumn, RunTableItem} from './types';
 
 const getRunsLoading = createSelector<
   State,
@@ -133,51 +133,62 @@ const getRunsLoading = createSelector<
 export class RunsTableContainer implements OnInit, OnDestroy {
   sortedRunsTableData$: Observable<TableData[]> = of([]);
   loading$: Observable<boolean> | null = null;
-  sortingInfo$ = this.store.select(getRunsTableSortingInfo);
+  sortingInfo$;
 
   // Column to disable in the table. The columns are rendered in the order as
   // defined by this input.
   @Input()
-  columns: RunsTableColumn[] = [RunsTableColumn.RUN_NAME];
+  columns: RunsTableColumn[];
 
   @Input() experimentIds!: string[];
 
-  regexFilter$ = this.store.select(getRunSelectorRegexFilter);
-  runsColumns$ = this.store.select(getGroupedRunsTableHeaders);
-  selectableColumns$ = this.store.select(getSelectableColumns);
-  numColumnsLoaded$ = this.store.select(
-    hparamsSelectors.getNumDashboardHparamsLoaded
-  );
-  numColumnsToLoad$ = this.store.select(
-    hparamsSelectors.getNumDashboardHparamsToLoad
-  );
+  regexFilter$;
+  runsColumns$;
+  selectableColumns$;
+  numColumnsLoaded$;
+  numColumnsToLoad$;
 
-  columnFilters$ = this.store.select(getCurrentColumnFilters);
+  columnFilters$;
 
-  allRunsTableData$ = this.store.select(getFilteredRenderableRuns).pipe(
-    map((filteredRenderableRuns) => {
-      return filteredRenderableRuns.map((runTableItem) => {
-        const tableData: TableData = {
-          ...Object.fromEntries(runTableItem.hparams.entries()),
-          id: runTableItem.run.id,
-          run: runTableItem.run.name,
-          experimentName: runTableItem.experimentName,
-          experimentAlias: runTableItem.experimentAlias,
-          selected: runTableItem.selected,
-          color: runTableItem.runColor,
-        };
-        return tableData;
-      });
-    })
-  );
+  allRunsTableData$;
 
-  private readonly ngUnsubscribe = new Subject<void>();
+  private readonly ngUnsubscribe;
 
-  constructor(private readonly store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {
+    this.sortingInfo$ = this.store.select(getRunsTableSortingInfo);
+    this.columns = [RunsTableColumn.RUN_NAME];
+    this.regexFilter$ = this.store.select(getRunSelectorRegexFilter);
+    this.runsColumns$ = this.store.select(getGroupedRunsTableHeaders);
+    this.selectableColumns$ = this.store.select(getSelectableColumns);
+    this.numColumnsLoaded$ = this.store.select(
+      hparamsSelectors.getNumDashboardHparamsLoaded,
+    );
+    this.numColumnsToLoad$ = this.store.select(
+      hparamsSelectors.getNumDashboardHparamsToLoad,
+    );
+    this.columnFilters$ = this.store.select(getCurrentColumnFilters);
+    this.allRunsTableData$ = this.store.select(getFilteredRenderableRuns).pipe(
+      map((filteredRenderableRuns) => {
+        return filteredRenderableRuns.map((runTableItem) => {
+          const tableData: TableData = {
+            ...Object.fromEntries(runTableItem.hparams.entries()),
+            id: runTableItem.run.id,
+            run: runTableItem.run.name,
+            experimentName: runTableItem.experimentName,
+            experimentAlias: runTableItem.experimentAlias,
+            selected: runTableItem.selected,
+            color: runTableItem.runColor,
+          };
+          return tableData;
+        });
+      }),
+    );
+    this.ngUnsubscribe = new Subject<void>();
+  }
 
   ngOnInit() {
     const getRunTableItemsPerExperiment = this.experimentIds.map((id) =>
-      this.getRunTableItemsForExperiment(id)
+      this.getRunTableItemsForExperiment(id),
     );
 
     this.sortedRunsTableData$ = combineLatest([
@@ -186,16 +197,16 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     ]).pipe(
       map(([items, sortingInfo]) => {
         return sortTableDataItems(items, sortingInfo);
-      })
+      }),
     );
 
     const rawAllUnsortedRunTableItems$ = combineLatest(
-      getRunTableItemsPerExperiment
+      getRunTableItemsPerExperiment,
     ).pipe(
       map((itemsForExperiments: RunTableItem[][]) => {
         const items = [] as RunTableItem[];
         return items.concat(...itemsForExperiments);
-      })
+      }),
     );
 
     const getRunsLoadingPerExperiment = this.experimentIds.map((id) => {
@@ -204,7 +215,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     this.loading$ = combineLatest(getRunsLoadingPerExperiment).pipe(
       map((experimentsLoading) => {
         return experimentsLoading.some((isLoading) => isLoading);
-      })
+      }),
     );
 
     /**
@@ -233,9 +244,9 @@ export class RunsTableContainer implements OnInit, OnDestroy {
             filter((runTableItems: RunTableItem[]) => {
               return runTableItems.length > MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT;
             }),
-            take(1)
+            take(1),
           );
-        })
+        }),
       );
       runsExceedLimitForRoute$.subscribe(() => {
         const text =
@@ -243,7 +254,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
           `${MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT}. New runs are unselected ` +
           `for performance reasons.`;
         this.store.dispatch(
-          alertActions.alertReported({localizedMessage: text})
+          alertActions.alertReported({localizedMessage: text}),
         );
       });
     }
@@ -259,7 +270,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   }
 
   private getRunTableItemsForExperiment(
-    experimentId: string
+    experimentId: string,
   ): Observable<RunTableItem[]> {
     return combineLatest([
       this.store.select(getRuns, {experimentId}),
@@ -288,7 +299,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
             metrics: metricMap,
           };
         });
-      })
+      }),
     );
   }
 
@@ -296,7 +307,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     this.store.dispatch(
       runSelectionToggled({
         runId: id,
-      })
+      }),
     );
   }
 
@@ -304,7 +315,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     this.store.dispatch(
       singleRunSelected({
         runId,
-      })
+      }),
     );
   }
 
@@ -312,7 +323,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     this.store.dispatch(
       runPageSelectionToggled({
         runIds,
-      })
+      }),
     );
   }
 
@@ -330,19 +341,19 @@ export class RunsTableContainer implements OnInit, OnDestroy {
         column,
         nextTo,
         side,
-      })
+      }),
     );
   }
 
   removeColumn(header: ColumnHeader) {
     this.store.dispatch(
-      hparamsActions.dashboardHparamColumnRemoved({column: header})
+      hparamsActions.dashboardHparamColumnRemoved({column: header}),
     );
   }
 
   orderColumns(event: ReorderColumnEvent) {
     this.store.dispatch(
-      hparamsActions.dashboardHparamColumnOrderChanged(event)
+      hparamsActions.dashboardHparamColumnOrderChanged(event),
     );
   }
 
@@ -351,7 +362,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
       hparamsActions.dashboardHparamFilterAdded({
         name: event.name,
         filter: event.value,
-      })
+      }),
     );
   }
 

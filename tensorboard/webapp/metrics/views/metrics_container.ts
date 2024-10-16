@@ -33,7 +33,9 @@ import {getRunsTableFullScreen} from '../../core/store/core_selectors';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MetricsDashboardContainer {
-  runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
+  runsTableFullScreen$;
 
-  constructor(readonly store: Store<State>) {}
+  constructor(readonly store: Store<State>) {
+    this.runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
+  }
 }

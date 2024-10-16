@@ -59,27 +59,31 @@ const ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL: {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlertsContainer {
-  readonly numAlerts$ = this.store.pipe(select(getNumAlerts));
+  readonly numAlerts$;
 
-  readonly alertsBreakdown$ = this.store.pipe(
-    select(
-      createSelector(getAlertsBreakdown, (alertsBreakdown) => {
-        const alertTypes = Object.keys(alertsBreakdown);
-        alertTypes.sort();
-        return alertTypes.map((alertType): AlertTypeDisplay => {
-          return {
-            type: alertType as AlertType,
-            ...ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL[alertType],
-            count: alertsBreakdown[alertType],
-          };
-        });
-      })
-    )
-  );
+  readonly alertsBreakdown$;
 
-  readonly focusType$ = this.store.pipe(select(getAlertsFocusType));
+  readonly focusType$;
 
-  constructor(private readonly store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {
+    this.numAlerts$ = this.store.pipe(select(getNumAlerts));
+    this.alertsBreakdown$ = this.store.pipe(
+      select(
+        createSelector(getAlertsBreakdown, (alertsBreakdown) => {
+          const alertTypes = Object.keys(alertsBreakdown);
+          alertTypes.sort();
+          return alertTypes.map((alertType): AlertTypeDisplay => {
+            return {
+              type: alertType as AlertType,
+              ...ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL[alertType],
+              count: alertsBreakdown[alertType],
+            };
+          });
+        }),
+      ),
+    );
+    this.focusType$ = this.store.pipe(select(getAlertsFocusType));
+  }
 
   onToggleFocusType(alertType: AlertType) {
     this.store.dispatch(alertTypeFocusToggled({alertType}));

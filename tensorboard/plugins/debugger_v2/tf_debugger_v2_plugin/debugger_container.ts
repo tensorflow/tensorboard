@@ -38,19 +38,23 @@ import {State} from './store/debugger_types';
   ],
 })
 export class DebuggerContainer implements OnInit, OnDestroy {
-  readonly runs$ = this.store.pipe(select(getDebuggerRunListing));
+  readonly runs$;
 
-  readonly runsIds$ = this.store.pipe(
-    select(
-      createSelector(getDebuggerRunListing, (runs): string[] =>
-        Object.keys(runs)
-      )
-    )
-  );
+  readonly runsIds$;
 
-  readonly activeRunId$ = this.store.pipe(select(getActiveRunId));
+  readonly activeRunId$;
 
-  constructor(private readonly store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {
+    this.runs$ = this.store.pipe(select(getDebuggerRunListing));
+    this.runsIds$ = this.store.pipe(
+      select(
+        createSelector(getDebuggerRunListing, (runs): string[] =>
+          Object.keys(runs),
+        ),
+      ),
+    );
+    this.activeRunId$ = this.store.pipe(select(getActiveRunId));
+  }
 
   ngOnInit(): void {
     this.store.dispatch(debuggerLoaded());

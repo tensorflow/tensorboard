@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {Store} from '@ngrx/store';
 import {MatDialog} from '@angular/material/dialog';
+import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {filter, map, take, withLatestFrom} from 'rxjs/operators';
 import {State} from '../../../app_state';
@@ -101,71 +101,92 @@ import {
 export class SettingsViewContainer {
   constructor(
     private readonly store: Store<State>,
-    private readonly dialog: MatDialog
-  ) {}
-
-  readonly isScalarStepSelectorEnabled$: Observable<boolean> =
-    this.store.select(selectors.getMetricsStepSelectorEnabled);
-  readonly isScalarStepSelectorRangeEnabled$: Observable<boolean> =
-    this.store.select(selectors.getMetricsRangeSelectionEnabled);
-  readonly isLinkedTimeEnabled$: Observable<boolean> = this.store.select(
-    selectors.getMetricsLinkedTimeEnabled
-  );
-  readonly isScalarColumnCustomizationEnabled$ = this.store.select(
-    selectors.getIsScalarColumnCustomizationEnabled
-  );
-  readonly linkedTimeSelection$ = this.store.select(
-    selectors.getMetricsLinkedTimeSelectionSetting
-  );
-  readonly stepMinMax$ = this.store.select(selectors.getMetricsStepMinMax);
-  readonly isSlideOutMenuOpen$ = this.store.select(
-    selectors.isMetricsSlideoutMenuOpen
-  );
-
-  readonly isImageSupportEnabled$ = this.store
-    .select(selectors.getIsFeatureFlagsLoaded)
-    .pipe(
-      filter(Boolean),
-      take(1),
-      withLatestFrom(
-        this.store.select(selectors.getIsMetricsImageSupportEnabled)
-      ),
-      map(([, isImagesSupported]) => {
-        return isImagesSupported;
-      })
+    private readonly dialog: MatDialog,
+  ) {
+    this.isScalarStepSelectorEnabled$ = this.store.select(
+      selectors.getMetricsStepSelectorEnabled,
     );
+    this.isScalarStepSelectorRangeEnabled$ = this.store.select(
+      selectors.getMetricsRangeSelectionEnabled,
+    );
+    this.isLinkedTimeEnabled$ = this.store.select(
+      selectors.getMetricsLinkedTimeEnabled,
+    );
+    this.isScalarColumnCustomizationEnabled$ = this.store.select(
+      selectors.getIsScalarColumnCustomizationEnabled,
+    );
+    this.linkedTimeSelection$ = this.store.select(
+      selectors.getMetricsLinkedTimeSelectionSetting,
+    );
+    this.stepMinMax$ = this.store.select(selectors.getMetricsStepMinMax);
+    this.isSlideOutMenuOpen$ = this.store.select(
+      selectors.isMetricsSlideoutMenuOpen,
+    );
+    this.isImageSupportEnabled$ = this.store
+      .select(selectors.getIsFeatureFlagsLoaded)
+      .pipe(
+        filter(Boolean),
+        take(1),
+        withLatestFrom(
+          this.store.select(selectors.getIsMetricsImageSupportEnabled),
+        ),
+        map(([, isImagesSupported]) => {
+          return isImagesSupported;
+        }),
+      );
+    this.tooltipSort$ = this.store.select(selectors.getMetricsTooltipSort);
+    this.ignoreOutliers$ = this.store.select(
+      selectors.getMetricsIgnoreOutliers,
+    );
+    this.xAxisType$ = this.store.select(selectors.getMetricsXAxisType);
+    this.cardMinWidth$ = this.store.select(selectors.getMetricsCardMinWidth);
+    this.histogramMode$ = this.store.select(selectors.getMetricsHistogramMode);
+    this.scalarSmoothing$ = this.store.select(
+      selectors.getMetricsScalarSmoothing,
+    );
+    this.scalarPartitionX$ = this.store.select(
+      selectors.getMetricsScalarPartitionNonMonotonicX,
+    );
+    this.imageBrightnessInMilli$ = this.store.select(
+      selectors.getMetricsImageBrightnessInMilli,
+    );
+    this.imageContrastInMilli$ = this.store.select(
+      selectors.getMetricsImageContrastInMilli,
+    );
+    this.imageShowActualSize$ = this.store.select(
+      selectors.getMetricsImageShowActualSize,
+    );
+    this.isSavingPinsEnabled$ = this.store.select(
+      selectors.getMetricsSavingPinsEnabled,
+    );
+    this.globalPinsFeatureEnabled$ = this.store.select(
+      selectors.getEnableGlobalPins,
+    );
+  }
 
-  readonly tooltipSort$ = this.store.select(selectors.getMetricsTooltipSort);
-  readonly ignoreOutliers$ = this.store.select(
-    selectors.getMetricsIgnoreOutliers
-  );
-  readonly xAxisType$ = this.store.select(selectors.getMetricsXAxisType);
-  readonly cardMinWidth$ = this.store.select(selectors.getMetricsCardMinWidth);
-  readonly histogramMode$ = this.store.select(
-    selectors.getMetricsHistogramMode
-  );
-  readonly scalarSmoothing$ = this.store.select(
-    selectors.getMetricsScalarSmoothing
-  );
-  readonly scalarPartitionX$ = this.store.select(
-    selectors.getMetricsScalarPartitionNonMonotonicX
-  );
-  readonly imageBrightnessInMilli$ = this.store.select(
-    selectors.getMetricsImageBrightnessInMilli
-  );
-  readonly imageContrastInMilli$ = this.store.select(
-    selectors.getMetricsImageContrastInMilli
-  );
-  readonly imageShowActualSize$ = this.store.select(
-    selectors.getMetricsImageShowActualSize
-  );
-  readonly isSavingPinsEnabled$ = this.store.select(
-    selectors.getMetricsSavingPinsEnabled
-  );
+  readonly isScalarStepSelectorEnabled$: Observable<boolean>;
+  readonly isScalarStepSelectorRangeEnabled$: Observable<boolean>;
+  readonly isLinkedTimeEnabled$: Observable<boolean>;
+  readonly isScalarColumnCustomizationEnabled$;
+  readonly linkedTimeSelection$;
+  readonly stepMinMax$;
+  readonly isSlideOutMenuOpen$;
+
+  readonly isImageSupportEnabled$;
+
+  readonly tooltipSort$;
+  readonly ignoreOutliers$;
+  readonly xAxisType$;
+  readonly cardMinWidth$;
+  readonly histogramMode$;
+  readonly scalarSmoothing$;
+  readonly scalarPartitionX$;
+  readonly imageBrightnessInMilli$;
+  readonly imageContrastInMilli$;
+  readonly imageShowActualSize$;
+  readonly isSavingPinsEnabled$;
   // Feature flag for global pins.
-  readonly globalPinsFeatureEnabled$ = this.store.select(
-    selectors.getEnableGlobalPins
-  );
+  readonly globalPinsFeatureEnabled$;
 
   onTooltipSortChanged(sort: TooltipSort) {
     this.store.dispatch(metricsChangeTooltipSort({sort}));
@@ -221,13 +242,15 @@ export class SettingsViewContainer {
 
   onLinkedTimeToggled() {
     this.store.dispatch(
-      linkedTimeToggled({affordance: TimeSelectionToggleAffordance.CHECK_BOX})
+      linkedTimeToggled({affordance: TimeSelectionToggleAffordance.CHECK_BOX}),
     );
   }
 
   onStepSelectorToggled() {
     this.store.dispatch(
-      stepSelectorToggled({affordance: TimeSelectionToggleAffordance.CHECK_BOX})
+      stepSelectorToggled({
+        affordance: TimeSelectionToggleAffordance.CHECK_BOX,
+      }),
     );
   }
 
@@ -235,7 +258,7 @@ export class SettingsViewContainer {
     this.store.dispatch(
       rangeSelectionToggled({
         affordance: TimeSelectionToggleAffordance.CHECK_BOX,
-      })
+      }),
     );
   }
 

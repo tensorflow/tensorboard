@@ -31,19 +31,19 @@ import {navigated} from '../../app_routing/actions';
 import {RouteKind} from '../../app_routing/types';
 import {State} from '../../app_state';
 import * as coreActions from '../../core/actions';
+import * as hparamsActions from '../../hparams/_redux/hparams_actions';
 import {
   getActiveRoute,
+  getDashboardExperimentNames,
   getExperimentIdsFromRoute,
   getRuns,
   getRunsLoadState,
-  getDashboardExperimentNames,
 } from '../../selectors';
 import {DataLoadState, LoadState} from '../../types/data';
+import {ColumnHeaderType} from '../../widgets/data_table/types';
 import * as actions from '../actions';
-import * as hparamsActions from '../../hparams/_redux/hparams_actions';
 import {Run, RunsDataSource} from '../data_source/runs_data_source_types';
 import {ExperimentIdToRuns} from '../types';
-import {ColumnHeaderType} from '../../widgets/data_table/types';
 
 /**
  * Runs effect for fetching data from the backend.
@@ -53,8 +53,89 @@ export class RunsEffects {
   constructor(
     private readonly actions$: Actions,
     private readonly store: Store<State>,
-    private readonly runsDataSource: RunsDataSource
-  ) {}
+    private readonly runsDataSource: RunsDataSource,
+  ) {
+    this.experimentsWithStaleRunsOnRouteChange$ = this.actions$.pipe(
+      ofType(navigated),
+      withLatestFrom(this.store.select(getActiveRoute)),
+      distinctUntilChanged(([, prevRoute], [, currRoute]) => {
+        return areSameRouteKindAndExperiments(prevRoute, currRoute);
+      }),
+      withLatestFrom(this.store.select(getExperimentIdsFromRoute)),
+      filter(([, experimentIds]) => !!experimentIds),
+      map(([, experimentIds]) => experimentIds!),
+      mergeMap((experimentIds) => {
+        return this.getExperimentsWithLoadState(experimentIds, (state) => {
+          return (
+            state === DataLoadState.FAILED || state === DataLoadState.NOT_LOADED
+          );
+        }).pipe(
+          map((experimentIdsToBeFetched) => {
+            return {experimentIds, experimentIdsToBeFetched};
+          }),
+        );
+      }),
+    );
+    this.experimentsWithStaleRunsOnReload$ = this.actions$.pipe(
+      ofType(coreActions.reload, coreActions.manualReload),
+      withLatestFrom(this.store.select(getExperimentIdsFromRoute)),
+      filter(([, experimentIds]) => !!experimentIds),
+      map(([, experimentIds]) => experimentIds!),
+      mergeMap((experimentIds) => {
+        return this.getExperimentsWithLoadState(experimentIds, (state) => {
+          return state !== DataLoadState.LOADING;
+        }).pipe(
+          map((experimentIdsToBeFetched) => {
+            return {experimentIds, experimentIdsToBeFetched};
+          }),
+        );
+      }),
+    );
+    this.loadRunsOnNavigationOrReload$ = createEffect(
+      () => {
+        return merge(
+          this.experimentsWithStaleRunsOnRouteChange$,
+          this.experimentsWithStaleRunsOnReload$,
+        ).pipe(
+          withLatestFrom(this.store.select(getActiveRoute)),
+          filter(
+            ([, route]) => route !== null && route.routeKind !== RouteKind.CARD,
+          ),
+          mergeMap(([{experimentIds, experimentIdsToBeFetched}]) => {
+            return this.fetchAllRunsList(
+              experimentIds,
+              experimentIdsToBeFetched,
+            );
+          }),
+        );
+      },
+      {dispatch: false},
+    );
+    this.removeHparamFilterWhenColumnIsRemoved$ = createEffect(
+      () =>
+        this.actions$.pipe(
+          ofType(actions.runsTableHeaderRemoved),
+          tap(({header}) => {
+            if (header.type === ColumnHeaderType.HPARAM) {
+              this.store.dispatch(
+                hparamsActions.dashboardHparamFilterRemoved({
+                  name: header.name,
+                }),
+              );
+              return;
+            }
+            if (header.type === ColumnHeaderType.METRIC) {
+              this.store.dispatch(
+                hparamsActions.dashboardMetricFilterRemoved({
+                  name: header.name,
+                }),
+              );
+            }
+          }),
+        ),
+      {dispatch: false},
+    );
+  }
 
   private getRunsListLoadState(experimentId: string): Observable<LoadState> {
     return this.store.select(getRunsLoadState, {experimentId}).pipe(take(1));
@@ -62,111 +143,38 @@ export class RunsEffects {
 
   private getExperimentsWithLoadState(
     experimentIds: string[],
-    loadStateMatcher: (loadState: DataLoadState) => boolean
+    loadStateMatcher: (loadState: DataLoadState) => boolean,
   ) {
     return forkJoin(
       experimentIds.map((eid) => {
         return this.getRunsListLoadState(eid);
-      })
+      }),
     ).pipe(
       map((loadStates) => {
         return experimentIds.filter((unused, index) => {
           return loadStateMatcher(loadStates[index].state);
         });
-      })
+      }),
     );
   }
 
-  private readonly experimentsWithStaleRunsOnRouteChange$ = this.actions$.pipe(
-    ofType(navigated),
-    withLatestFrom(this.store.select(getActiveRoute)),
-    distinctUntilChanged(([, prevRoute], [, currRoute]) => {
-      return areSameRouteKindAndExperiments(prevRoute, currRoute);
-    }),
-    withLatestFrom(this.store.select(getExperimentIdsFromRoute)),
-    filter(([, experimentIds]) => !!experimentIds),
-    map(([, experimentIds]) => experimentIds!),
-    mergeMap((experimentIds) => {
-      return this.getExperimentsWithLoadState(experimentIds, (state) => {
-        return (
-          state === DataLoadState.FAILED || state === DataLoadState.NOT_LOADED
-        );
-      }).pipe(
-        map((experimentIdsToBeFetched) => {
-          return {experimentIds, experimentIdsToBeFetched};
-        })
-      );
-    })
-  );
+  private readonly experimentsWithStaleRunsOnRouteChange$;
 
-  private readonly experimentsWithStaleRunsOnReload$ = this.actions$.pipe(
-    ofType(coreActions.reload, coreActions.manualReload),
-    withLatestFrom(this.store.select(getExperimentIdsFromRoute)),
-    filter(([, experimentIds]) => !!experimentIds),
-    map(([, experimentIds]) => experimentIds!),
-    mergeMap((experimentIds) => {
-      return this.getExperimentsWithLoadState(experimentIds, (state) => {
-        return state !== DataLoadState.LOADING;
-      }).pipe(
-        map((experimentIdsToBeFetched) => {
-          return {experimentIds, experimentIdsToBeFetched};
-        })
-      );
-    })
-  );
+  private readonly experimentsWithStaleRunsOnReload$;
 
   /**
    * Fetches runs on navigation or in-app reload.
    *
    * @export
    */
-  loadRunsOnNavigationOrReload$ = createEffect(
-    () => {
-      return merge(
-        this.experimentsWithStaleRunsOnRouteChange$,
-        this.experimentsWithStaleRunsOnReload$
-      ).pipe(
-        withLatestFrom(this.store.select(getActiveRoute)),
-        filter(
-          ([, route]) => route !== null && route.routeKind !== RouteKind.CARD
-        ),
-        mergeMap(([{experimentIds, experimentIdsToBeFetched}]) => {
-          return this.fetchAllRunsList(experimentIds, experimentIdsToBeFetched);
-        })
-      );
-    },
-    {dispatch: false}
-  );
+  loadRunsOnNavigationOrReload$;
 
   /**
    * Removes hparam filter when column is removed.
    *
    * @export
    */
-  removeHparamFilterWhenColumnIsRemoved$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(actions.runsTableHeaderRemoved),
-        tap(({header}) => {
-          if (header.type === ColumnHeaderType.HPARAM) {
-            this.store.dispatch(
-              hparamsActions.dashboardHparamFilterRemoved({
-                name: header.name,
-              })
-            );
-            return;
-          }
-          if (header.type === ColumnHeaderType.METRIC) {
-            this.store.dispatch(
-              hparamsActions.dashboardMetricFilterRemoved({
-                name: header.name,
-              })
-            );
-          }
-        })
-      ),
-    {dispatch: false}
-  );
+  removeHparamFilterWhenColumnIsRemoved$;
 
   /**
    * IMPORTANT: actions are dispatched even when there are no experiments to
@@ -182,7 +190,7 @@ export class RunsEffects {
    */
   private fetchAllRunsList(
     experimentIds: string[],
-    experimentIdsToBeFetched: string[]
+    experimentIdsToBeFetched: string[],
   ): Observable<null> {
     return of({experimentIds, experimentIdsToBeFetched}).pipe(
       tap(() => {
@@ -190,7 +198,7 @@ export class RunsEffects {
           actions.fetchRunsRequested({
             experimentIds,
             requestedExperimentIds: experimentIdsToBeFetched,
-          })
+          }),
         );
       }),
       mergeMap(() => {
@@ -227,7 +235,7 @@ export class RunsEffects {
             newRuns,
             runsForAllExperiments,
             expNameByExpId,
-          })
+          }),
         );
       }),
       catchError((error) => {
@@ -235,11 +243,11 @@ export class RunsEffects {
           actions.fetchRunsFailed({
             experimentIds,
             requestedExperimentIds: experimentIdsToBeFetched,
-          })
+          }),
         );
         return of(null);
       }),
-      map(() => null)
+      map(() => null),
     );
   }
 
@@ -258,7 +266,7 @@ export class RunsEffects {
         return of(loadState);
       }),
       withLatestFrom(this.store.select(getRuns, {experimentId})),
-      map(([, runs]) => ({fromRemote: false, experimentId, runs}))
+      map(([, runs]) => ({fromRemote: false, experimentId, runs})),
     );
   }
 
@@ -274,7 +282,7 @@ export class RunsEffects {
           experimentId,
           runs: runs as Run[],
         };
-      })
+      }),
     );
   }
 }

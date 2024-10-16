@@ -39,26 +39,20 @@ import {compareTagNames} from '../../utils';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MetricsFilterInputContainer {
-  constructor(private readonly store: Store<State>) {}
-
-  readonly tagFilter$: Observable<string> =
-    this.store.select(getMetricsTagFilter);
-
-  readonly isTagFilterRegexValid$: Observable<boolean> = this.tagFilter$.pipe(
-    map((tagFilterString) => {
-      try {
-        // tslint:disable-next-line:no-unused-expression Check for validity of filter.
-        new RegExp(tagFilterString);
-        return true;
-      } catch (err) {
-        return false;
-      }
-    })
-  );
-
-  readonly completions$: Observable<string[]> = this.store
-    .select(getNonEmptyCardIdsWithMetadata)
-    .pipe(
+  constructor(private readonly store: Store<State>) {
+    this.tagFilter$ = this.store.select(getMetricsTagFilter);
+    this.isTagFilterRegexValid$ = this.tagFilter$.pipe(
+      map((tagFilterString) => {
+        try {
+          // tslint:disable-next-line:no-unused-expression Check for validity of filter.
+          new RegExp(tagFilterString);
+          return true;
+        } catch (err) {
+          return false;
+        }
+      }),
+    );
+    this.completions$ = this.store.select(getNonEmptyCardIdsWithMetadata).pipe(
       combineLatestWith(this.store.select(getMetricsFilteredPluginTypes)),
       map(([cardList, filteredPluginTypes]) => {
         return cardList
@@ -80,13 +74,20 @@ export class MetricsFilterInputContainer {
           } catch (e) {
             return [tags, null];
           }
-        }
+        },
       ),
       filter(([, tagFilterRegex]) => tagFilterRegex !== null),
       map(([tags, tagFilterRegex]) => {
         return tags.filter((tag: string) => tagFilterRegex!.test(tag));
-      })
+      }),
     );
+  }
+
+  readonly tagFilter$: Observable<string>;
+
+  readonly isTagFilterRegexValid$: Observable<boolean>;
+
+  readonly completions$: Observable<string[]>;
 
   onTagFilterChange(tagFilter: string) {
     this.store.dispatch(metricsTagFilterChanged({tagFilter}));

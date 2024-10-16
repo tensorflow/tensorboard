@@ -24,6 +24,7 @@ import {Store} from '@ngrx/store';
 import {BehaviorSubject, combineLatest, Observable, of, Subject} from 'rxjs';
 import {map, shareReplay, switchMap, takeUntil, tap} from 'rxjs/operators';
 import {State} from '../../../app_state';
+import * as selectors from '../../../selectors';
 import {
   getMetricsCardMinWidth,
   getMetricsTagGroupExpansionState,
@@ -31,7 +32,6 @@ import {
 import {selectors as settingsSelectors} from '../../../settings';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
-import * as selectors from '../../../selectors';
 
 @Component({
   standalone: false,
@@ -62,68 +62,76 @@ export class CardGridContainer implements OnChanges, OnDestroy {
   readonly pageIndex$ = new BehaviorSubject<number>(0);
   private readonly items$ = new BehaviorSubject<CardIdWithMetadata[]>([]);
   private readonly ngUnsubscribe = new Subject<void>();
-  readonly cardStateMap$ = this.store.select(selectors.getCardStateMap);
+  readonly cardStateMap$;
 
-  readonly numPages$ = combineLatest([
-    this.items$,
-    this.store.select(settingsSelectors.getPageSize),
-  ]).pipe(
-    map(([items, pageSize]) => {
-      return Math.ceil(items.length / pageSize);
-    })
-  );
+  readonly numPages$;
 
-  readonly isGroupExpanded$: Observable<boolean> = this.groupName$.pipe(
-    switchMap((groupName) => {
-      return groupName !== null
-        ? this.store.select(getMetricsTagGroupExpansionState, groupName)
-        : of(true);
-    })
-  );
+  readonly isGroupExpanded$: Observable<boolean>;
 
-  readonly showPaginationControls$: Observable<boolean> = this.numPages$.pipe(
-    map((numPages) => numPages > 1)
-  );
+  readonly showPaginationControls$: Observable<boolean>;
 
-  readonly normalizedPageIndex$ = combineLatest([
-    this.pageIndex$,
-    this.numPages$,
-  ]).pipe(
-    takeUntil(this.ngUnsubscribe),
-    tap(([pageIndex, numPages]) => {
-      // Cycle in the Observable but only loops when pageIndex is not
-      // valid and does not repeat more than once.
-      if (numPages === 0) {
-        return;
-      }
-      if (pageIndex >= numPages) {
-        this.pageIndex$.next(numPages - 1);
-      } else if (pageIndex < 0) {
-        this.pageIndex$.next(0);
-      }
-    }),
-    map(([pageIndex, numPages]) => {
-      return Math.min(Math.max(pageIndex, 0), numPages - 1);
-    }),
-    shareReplay(1)
-  );
+  readonly normalizedPageIndex$;
 
-  readonly pagedItems$ = combineLatest([
-    this.items$,
-    this.store.select(settingsSelectors.getPageSize),
-    this.normalizedPageIndex$,
-    this.isGroupExpanded$,
-  ]).pipe(
-    map(([items, pageSize, pageIndex, expanded]) => {
-      const startIndex = pageSize * pageIndex;
-      const endIndex = pageSize * pageIndex + (expanded ? pageSize : 0);
-      return items.slice(startIndex, endIndex);
-    })
-  );
+  readonly pagedItems$;
 
-  readonly cardMinWidth$ = this.store.select(getMetricsCardMinWidth);
+  readonly cardMinWidth$;
 
-  constructor(private readonly store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {
+    this.cardStateMap$ = this.store.select(selectors.getCardStateMap);
+    this.numPages$ = combineLatest([
+      this.items$,
+      this.store.select(settingsSelectors.getPageSize),
+    ]).pipe(
+      map(([items, pageSize]) => {
+        return Math.ceil(items.length / pageSize);
+      }),
+    );
+    this.isGroupExpanded$ = this.groupName$.pipe(
+      switchMap((groupName) => {
+        return groupName !== null
+          ? this.store.select(getMetricsTagGroupExpansionState, groupName)
+          : of(true);
+      }),
+    );
+    this.showPaginationControls$ = this.numPages$.pipe(
+      map((numPages) => numPages > 1),
+    );
+    this.normalizedPageIndex$ = combineLatest([
+      this.pageIndex$,
+      this.numPages$,
+    ]).pipe(
+      takeUntil(this.ngUnsubscribe),
+      tap(([pageIndex, numPages]) => {
+        // Cycle in the Observable but only loops when pageIndex is not
+        // valid and does not repeat more than once.
+        if (numPages === 0) {
+          return;
+        }
+        if (pageIndex >= numPages) {
+          this.pageIndex$.next(numPages - 1);
+        } else if (pageIndex < 0) {
+          this.pageIndex$.next(0);
+        }
+      }),
+      map(([pageIndex, numPages]) => {
+        return Math.min(Math.max(pageIndex, 0), numPages - 1);
+      }),
+      shareReplay(1),
+    );
+    this.pagedItems$ = combineLatest([
+      this.items$,
+      this.store.select(settingsSelectors.getPageSize),
+      this.normalizedPageIndex$,
+      this.isGroupExpanded$,
+    ]).pipe(
+      map(([items, pageSize, pageIndex, expanded]) => {
+        const startIndex = pageSize * pageIndex;
+        const endIndex = pageSize * pageIndex + (expanded ? pageSize : 0);
+        return items.slice(startIndex, endIndex);
+      }),
+    );
+    this.cardMinWidth$ = this.store.select(getMetricsCardMinWidth);
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['cardIdsWithMetadata']) {
