@@ -155,7 +155,7 @@ export class ScalarCardLineChartContainer
   ngOnInit() {
     this.userViewBox$ = this.store.select(
       getMetricsCardUserViewBox,
-      this.cardId
+      this.cardId,
     );
 
     this.loadState$ = this.store.select(getCardLoadState, this.cardId);
