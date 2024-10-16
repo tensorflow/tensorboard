@@ -84,17 +84,17 @@ export class CardGridContainer implements OnChanges, OnDestroy {
     ]).pipe(
       map(([items, pageSize]) => {
         return Math.ceil(items.length / pageSize);
-      }),
+      })
     );
     this.isGroupExpanded$ = this.groupName$.pipe(
       switchMap((groupName) => {
         return groupName !== null
           ? this.store.select(getMetricsTagGroupExpansionState, groupName)
           : of(true);
-      }),
+      })
     );
     this.showPaginationControls$ = this.numPages$.pipe(
-      map((numPages) => numPages > 1),
+      map((numPages) => numPages > 1)
     );
     this.normalizedPageIndex$ = combineLatest([
       this.pageIndex$,
@@ -116,7 +116,7 @@ export class CardGridContainer implements OnChanges, OnDestroy {
       map(([pageIndex, numPages]) => {
         return Math.min(Math.max(pageIndex, 0), numPages - 1);
       }),
-      shareReplay(1),
+      shareReplay(1)
     );
     this.pagedItems$ = combineLatest([
       this.items$,
@@ -128,7 +128,7 @@ export class CardGridContainer implements OnChanges, OnDestroy {
         const startIndex = pageSize * pageIndex;
         const endIndex = pageSize * pageIndex + (expanded ? pageSize : 0);
         return items.slice(startIndex, endIndex);
-      }),
+      })
     );
     this.cardMinWidth$ = this.store.select(getMetricsCardMinWidth);
   }

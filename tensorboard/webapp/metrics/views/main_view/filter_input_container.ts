@@ -50,7 +50,7 @@ export class MetricsFilterInputContainer {
         } catch (err) {
           return false;
         }
-      }),
+      })
     );
     this.completions$ = this.store.select(getNonEmptyCardIdsWithMetadata).pipe(
       combineLatestWith(this.store.select(getMetricsFilteredPluginTypes)),
@@ -74,12 +74,12 @@ export class MetricsFilterInputContainer {
           } catch (e) {
             return [tags, null];
           }
-        },
+        }
       ),
       filter(([, tagFilterRegex]) => tagFilterRegex !== null),
       map(([tags, tagFilterRegex]) => {
         return tags.filter((tag: string) => tagFilterRegex!.test(tag));
-      }),
+      })
     );
   }
 

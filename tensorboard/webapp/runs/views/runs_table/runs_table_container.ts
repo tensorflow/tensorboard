@@ -161,10 +161,10 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     this.runsColumns$ = this.store.select(getGroupedRunsTableHeaders);
     this.selectableColumns$ = this.store.select(getSelectableColumns);
     this.numColumnsLoaded$ = this.store.select(
-      hparamsSelectors.getNumDashboardHparamsLoaded,
+      hparamsSelectors.getNumDashboardHparamsLoaded
     );
     this.numColumnsToLoad$ = this.store.select(
-      hparamsSelectors.getNumDashboardHparamsToLoad,
+      hparamsSelectors.getNumDashboardHparamsToLoad
     );
     this.columnFilters$ = this.store.select(getCurrentColumnFilters);
     this.allRunsTableData$ = this.store.select(getFilteredRenderableRuns).pipe(
@@ -181,14 +181,14 @@ export class RunsTableContainer implements OnInit, OnDestroy {
           };
           return tableData;
         });
-      }),
+      })
     );
     this.ngUnsubscribe = new Subject<void>();
   }
 
   ngOnInit() {
     const getRunTableItemsPerExperiment = this.experimentIds.map((id) =>
-      this.getRunTableItemsForExperiment(id),
+      this.getRunTableItemsForExperiment(id)
     );
 
     this.sortedRunsTableData$ = combineLatest([
@@ -197,16 +197,16 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     ]).pipe(
       map(([items, sortingInfo]) => {
         return sortTableDataItems(items, sortingInfo);
-      }),
+      })
     );
 
     const rawAllUnsortedRunTableItems$ = combineLatest(
-      getRunTableItemsPerExperiment,
+      getRunTableItemsPerExperiment
     ).pipe(
       map((itemsForExperiments: RunTableItem[][]) => {
         const items = [] as RunTableItem[];
         return items.concat(...itemsForExperiments);
-      }),
+      })
     );
 
     const getRunsLoadingPerExperiment = this.experimentIds.map((id) => {
@@ -215,7 +215,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     this.loading$ = combineLatest(getRunsLoadingPerExperiment).pipe(
       map((experimentsLoading) => {
         return experimentsLoading.some((isLoading) => isLoading);
-      }),
+      })
     );
 
     /**
@@ -244,9 +244,9 @@ export class RunsTableContainer implements OnInit, OnDestroy {
             filter((runTableItems: RunTableItem[]) => {
               return runTableItems.length > MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT;
             }),
-            take(1),
+            take(1)
           );
-        }),
+        })
       );
       runsExceedLimitForRoute$.subscribe(() => {
         const text =
@@ -254,7 +254,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
           `${MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT}. New runs are unselected ` +
           `for performance reasons.`;
         this.store.dispatch(
-          alertActions.alertReported({localizedMessage: text}),
+          alertActions.alertReported({localizedMessage: text})
         );
       });
     }
@@ -270,7 +270,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   }
 
   private getRunTableItemsForExperiment(
-    experimentId: string,
+    experimentId: string
   ): Observable<RunTableItem[]> {
     return combineLatest([
       this.store.select(getRuns, {experimentId}),
@@ -299,7 +299,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
             metrics: metricMap,
           };
         });
-      }),
+      })
     );
   }
 
@@ -307,7 +307,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     this.store.dispatch(
       runSelectionToggled({
         runId: id,
-      }),
+      })
     );
   }
 
@@ -315,7 +315,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     this.store.dispatch(
       singleRunSelected({
         runId,
-      }),
+      })
     );
   }
 
@@ -323,7 +323,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     this.store.dispatch(
       runPageSelectionToggled({
         runIds,
-      }),
+      })
     );
   }
 
@@ -341,19 +341,19 @@ export class RunsTableContainer implements OnInit, OnDestroy {
         column,
         nextTo,
         side,
-      }),
+      })
     );
   }
 
   removeColumn(header: ColumnHeader) {
     this.store.dispatch(
-      hparamsActions.dashboardHparamColumnRemoved({column: header}),
+      hparamsActions.dashboardHparamColumnRemoved({column: header})
     );
   }
 
   orderColumns(event: ReorderColumnEvent) {
     this.store.dispatch(
-      hparamsActions.dashboardHparamColumnOrderChanged(event),
+      hparamsActions.dashboardHparamColumnOrderChanged(event)
     );
   }
 
@@ -362,7 +362,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
       hparamsActions.dashboardHparamFilterAdded({
         name: event.name,
         filter: event.value,
-      }),
+      })
     );
   }
 

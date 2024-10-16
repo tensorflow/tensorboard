@@ -101,26 +101,26 @@ import {
 export class SettingsViewContainer {
   constructor(
     private readonly store: Store<State>,
-    private readonly dialog: MatDialog,
+    private readonly dialog: MatDialog
   ) {
     this.isScalarStepSelectorEnabled$ = this.store.select(
-      selectors.getMetricsStepSelectorEnabled,
+      selectors.getMetricsStepSelectorEnabled
     );
     this.isScalarStepSelectorRangeEnabled$ = this.store.select(
-      selectors.getMetricsRangeSelectionEnabled,
+      selectors.getMetricsRangeSelectionEnabled
     );
     this.isLinkedTimeEnabled$ = this.store.select(
-      selectors.getMetricsLinkedTimeEnabled,
+      selectors.getMetricsLinkedTimeEnabled
     );
     this.isScalarColumnCustomizationEnabled$ = this.store.select(
-      selectors.getIsScalarColumnCustomizationEnabled,
+      selectors.getIsScalarColumnCustomizationEnabled
     );
     this.linkedTimeSelection$ = this.store.select(
-      selectors.getMetricsLinkedTimeSelectionSetting,
+      selectors.getMetricsLinkedTimeSelectionSetting
     );
     this.stepMinMax$ = this.store.select(selectors.getMetricsStepMinMax);
     this.isSlideOutMenuOpen$ = this.store.select(
-      selectors.isMetricsSlideoutMenuOpen,
+      selectors.isMetricsSlideoutMenuOpen
     );
     this.isImageSupportEnabled$ = this.store
       .select(selectors.getIsFeatureFlagsLoaded)
@@ -128,39 +128,39 @@ export class SettingsViewContainer {
         filter(Boolean),
         take(1),
         withLatestFrom(
-          this.store.select(selectors.getIsMetricsImageSupportEnabled),
+          this.store.select(selectors.getIsMetricsImageSupportEnabled)
         ),
         map(([, isImagesSupported]) => {
           return isImagesSupported;
-        }),
+        })
       );
     this.tooltipSort$ = this.store.select(selectors.getMetricsTooltipSort);
     this.ignoreOutliers$ = this.store.select(
-      selectors.getMetricsIgnoreOutliers,
+      selectors.getMetricsIgnoreOutliers
     );
     this.xAxisType$ = this.store.select(selectors.getMetricsXAxisType);
     this.cardMinWidth$ = this.store.select(selectors.getMetricsCardMinWidth);
     this.histogramMode$ = this.store.select(selectors.getMetricsHistogramMode);
     this.scalarSmoothing$ = this.store.select(
-      selectors.getMetricsScalarSmoothing,
+      selectors.getMetricsScalarSmoothing
     );
     this.scalarPartitionX$ = this.store.select(
-      selectors.getMetricsScalarPartitionNonMonotonicX,
+      selectors.getMetricsScalarPartitionNonMonotonicX
     );
     this.imageBrightnessInMilli$ = this.store.select(
-      selectors.getMetricsImageBrightnessInMilli,
+      selectors.getMetricsImageBrightnessInMilli
     );
     this.imageContrastInMilli$ = this.store.select(
-      selectors.getMetricsImageContrastInMilli,
+      selectors.getMetricsImageContrastInMilli
     );
     this.imageShowActualSize$ = this.store.select(
-      selectors.getMetricsImageShowActualSize,
+      selectors.getMetricsImageShowActualSize
     );
     this.isSavingPinsEnabled$ = this.store.select(
-      selectors.getMetricsSavingPinsEnabled,
+      selectors.getMetricsSavingPinsEnabled
     );
     this.globalPinsFeatureEnabled$ = this.store.select(
-      selectors.getEnableGlobalPins,
+      selectors.getEnableGlobalPins
     );
   }
 
@@ -242,7 +242,7 @@ export class SettingsViewContainer {
 
   onLinkedTimeToggled() {
     this.store.dispatch(
-      linkedTimeToggled({affordance: TimeSelectionToggleAffordance.CHECK_BOX}),
+      linkedTimeToggled({affordance: TimeSelectionToggleAffordance.CHECK_BOX})
     );
   }
 
@@ -250,7 +250,7 @@ export class SettingsViewContainer {
     this.store.dispatch(
       stepSelectorToggled({
         affordance: TimeSelectionToggleAffordance.CHECK_BOX,
-      }),
+      })
     );
   }
 
@@ -258,7 +258,7 @@ export class SettingsViewContainer {
     this.store.dispatch(
       rangeSelectionToggled({
         affordance: TimeSelectionToggleAffordance.CHECK_BOX,
-      }),
+      })
     );
   }
 

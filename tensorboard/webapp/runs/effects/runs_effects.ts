@@ -53,7 +53,7 @@ export class RunsEffects {
   constructor(
     private readonly actions$: Actions,
     private readonly store: Store<State>,
-    private readonly runsDataSource: RunsDataSource,
+    private readonly runsDataSource: RunsDataSource
   ) {
     this.experimentsWithStaleRunsOnRouteChange$ = this.actions$.pipe(
       ofType(navigated),
@@ -72,9 +72,9 @@ export class RunsEffects {
         }).pipe(
           map((experimentIdsToBeFetched) => {
             return {experimentIds, experimentIdsToBeFetched};
-          }),
+          })
         );
-      }),
+      })
     );
     this.experimentsWithStaleRunsOnReload$ = this.actions$.pipe(
       ofType(coreActions.reload, coreActions.manualReload),
@@ -87,29 +87,29 @@ export class RunsEffects {
         }).pipe(
           map((experimentIdsToBeFetched) => {
             return {experimentIds, experimentIdsToBeFetched};
-          }),
+          })
         );
-      }),
+      })
     );
     this.loadRunsOnNavigationOrReload$ = createEffect(
       () => {
         return merge(
           this.experimentsWithStaleRunsOnRouteChange$,
-          this.experimentsWithStaleRunsOnReload$,
+          this.experimentsWithStaleRunsOnReload$
         ).pipe(
           withLatestFrom(this.store.select(getActiveRoute)),
           filter(
-            ([, route]) => route !== null && route.routeKind !== RouteKind.CARD,
+            ([, route]) => route !== null && route.routeKind !== RouteKind.CARD
           ),
           mergeMap(([{experimentIds, experimentIdsToBeFetched}]) => {
             return this.fetchAllRunsList(
               experimentIds,
-              experimentIdsToBeFetched,
+              experimentIdsToBeFetched
             );
-          }),
+          })
         );
       },
-      {dispatch: false},
+      {dispatch: false}
     );
     this.removeHparamFilterWhenColumnIsRemoved$ = createEffect(
       () =>
@@ -120,7 +120,7 @@ export class RunsEffects {
               this.store.dispatch(
                 hparamsActions.dashboardHparamFilterRemoved({
                   name: header.name,
-                }),
+                })
               );
               return;
             }
@@ -128,12 +128,12 @@ export class RunsEffects {
               this.store.dispatch(
                 hparamsActions.dashboardMetricFilterRemoved({
                   name: header.name,
-                }),
+                })
               );
             }
-          }),
+          })
         ),
-      {dispatch: false},
+      {dispatch: false}
     );
   }
 
@@ -143,18 +143,18 @@ export class RunsEffects {
 
   private getExperimentsWithLoadState(
     experimentIds: string[],
-    loadStateMatcher: (loadState: DataLoadState) => boolean,
+    loadStateMatcher: (loadState: DataLoadState) => boolean
   ) {
     return forkJoin(
       experimentIds.map((eid) => {
         return this.getRunsListLoadState(eid);
-      }),
+      })
     ).pipe(
       map((loadStates) => {
         return experimentIds.filter((unused, index) => {
           return loadStateMatcher(loadStates[index].state);
         });
-      }),
+      })
     );
   }
 
@@ -190,7 +190,7 @@ export class RunsEffects {
    */
   private fetchAllRunsList(
     experimentIds: string[],
-    experimentIdsToBeFetched: string[],
+    experimentIdsToBeFetched: string[]
   ): Observable<null> {
     return of({experimentIds, experimentIdsToBeFetched}).pipe(
       tap(() => {
@@ -198,7 +198,7 @@ export class RunsEffects {
           actions.fetchRunsRequested({
             experimentIds,
             requestedExperimentIds: experimentIdsToBeFetched,
-          }),
+          })
         );
       }),
       mergeMap(() => {
@@ -235,7 +235,7 @@ export class RunsEffects {
             newRuns,
             runsForAllExperiments,
             expNameByExpId,
-          }),
+          })
         );
       }),
       catchError((error) => {
@@ -243,11 +243,11 @@ export class RunsEffects {
           actions.fetchRunsFailed({
             experimentIds,
             requestedExperimentIds: experimentIdsToBeFetched,
-          }),
+          })
         );
         return of(null);
       }),
-      map(() => null),
+      map(() => null)
     );
   }
 
@@ -266,7 +266,7 @@ export class RunsEffects {
         return of(loadState);
       }),
       withLatestFrom(this.store.select(getRuns, {experimentId})),
-      map(([, runs]) => ({fromRemote: false, experimentId, runs})),
+      map(([, runs]) => ({fromRemote: false, experimentId, runs}))
     );
   }
 
@@ -282,7 +282,7 @@ export class RunsEffects {
           experimentId,
           runs: runs as Run[],
         };
-      }),
+      })
     );
   }
 }

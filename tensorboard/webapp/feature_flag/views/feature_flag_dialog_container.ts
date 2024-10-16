@@ -55,7 +55,7 @@ export class FeatureFlagDialogContainer {
     this.showFlagsFilter$ = this.store.select(getOverriddenFeatureFlags).pipe(
       map((overriddenFeatureFlags) => {
         return overriddenFeatureFlags.showFlags?.toLowerCase();
-      }),
+      })
     );
     this.hasFlagsSentToServer$ = this.store
       .select(getFeatureFlagsMetadata)
@@ -65,13 +65,13 @@ export class FeatureFlagDialogContainer {
             return (metadata as AdvancedFeatureFlagMetadata<FeatureFlagType>)
               .sendToServerWhenOverridden;
           });
-        }),
+        })
       );
     this.featureFlags$ = this.store.select(getOverriddenFeatureFlags).pipe(
       withLatestFrom(
         this.store.select(getDefaultFeatureFlags),
         this.store.select(getFeatureFlagsMetadata),
-        this.showFlagsFilter$,
+        this.showFlagsFilter$
       ),
       map(
         ([
@@ -90,7 +90,7 @@ export class FeatureFlagDialogContainer {
             .map(([flagName, defaultValue]) => {
               const status = getFlagStatus(
                 flagName as keyof FeatureFlags,
-                overriddenFeatureFlags,
+                overriddenFeatureFlags
               );
               const metadata = flagMetadata[flagName as keyof FeatureFlags];
               return {
@@ -102,8 +102,8 @@ export class FeatureFlagDialogContainer {
                 ).sendToServerWhenOverridden,
               } as FeatureFlagStatus<keyof FeatureFlags>;
             });
-        },
-      ),
+        }
+      )
     );
   }
 
@@ -120,12 +120,12 @@ export class FeatureFlagDialogContainer {
         break;
       case FeatureFlagOverrideStatus.ENABLED:
         this.store.dispatch(
-          featureFlagOverrideChanged({flags: {[flag]: true}}),
+          featureFlagOverrideChanged({flags: {[flag]: true}})
         );
         break;
       case FeatureFlagOverrideStatus.DISABLED:
         this.store.dispatch(
-          featureFlagOverrideChanged({flags: {[flag]: false}}),
+          featureFlagOverrideChanged({flags: {[flag]: false}})
         );
         break;
       default:
@@ -140,7 +140,7 @@ export class FeatureFlagDialogContainer {
 
 function getFlagStatus(
   flagName: keyof FeatureFlags,
-  overriddenFeatureFlags: Partial<FeatureFlags>,
+  overriddenFeatureFlags: Partial<FeatureFlags>
 ): FeatureFlagOverrideStatus {
   if (overriddenFeatureFlags[flagName] === undefined) {
     return FeatureFlagOverrideStatus.DEFAULT;

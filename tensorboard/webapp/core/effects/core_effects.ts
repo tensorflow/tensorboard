@@ -130,14 +130,14 @@ export class CoreEffects {
     return this.webappDataSource.fetchEnvironment().pipe(
       tap((environment) => {
         this.store.dispatch(environmentLoaded({environment}));
-      }),
+      })
     );
   }
 
   constructor(
     private actions$: Actions,
     private store: Store<State>,
-    private webappDataSource: TBServerDataSource,
+    private webappDataSource: TBServerDataSource
   ) {
     this.onDashboardLoad$ = merge(
       this.actions$.pipe(
@@ -145,35 +145,35 @@ export class CoreEffects {
         withLatestFrom(this.store.select(getActiveRoute)),
         distinctUntilChanged(([, beforeRoute], [, afterRoute]) => {
           return areSameRouteKindAndExperiments(beforeRoute, afterRoute);
-        }),
+        })
       ),
-      this.actions$.pipe(ofType(reload, manualReload)),
+      this.actions$.pipe(ofType(reload, manualReload))
     ).pipe(
       withLatestFrom(this.store.select(getRouteKind)),
       filter(([, routeKind]) => DASHBOARD_ROUTE_KIND.has(routeKind)),
       throttleTime(DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS, undefined, {
         leading: true,
-      }),
+      })
     );
     this.fetchWebAppData$ = createEffect(
       () => {
         const pluginsListingReload$ = this.onDashboardLoad$.pipe(
           withLatestFrom(
             this.store.select(getPluginsListLoaded),
-            this.store.select(getEnabledExperimentalPlugins),
+            this.store.select(getEnabledExperimentalPlugins)
           ),
           filter(([, {state}]) => state !== DataLoadState.LOADING),
           tap(() => this.store.dispatch(pluginsListingRequested())),
           mergeMap(([, , enabledExperimentalPlugins]) => {
             return zip(
               this.webappDataSource.fetchPluginsListing(
-                enabledExperimentalPlugins,
+                enabledExperimentalPlugins
               ),
               // TODO(tensorboard-team): consider brekaing the environments out of
               // the pluginsListingLoaded; currently, plugins listing load state
               // is connected to the environments which is not ideal. Have its own
               // load state.
-              this.fetchEnvironment(),
+              this.fetchEnvironment()
             ).pipe(
               map(([plugins]) => {
                 this.store.dispatch(pluginsListingLoaded({plugins}));
@@ -181,19 +181,19 @@ export class CoreEffects {
               catchError((e) => {
                 if (e instanceof TBServerError) {
                   this.store.dispatch(
-                    pluginsListingFailed({failureCode: e.failureCode}),
+                    pluginsListingFailed({failureCode: e.failureCode})
                   );
                 } else {
                   this.store.dispatch(
                     pluginsListingFailed({
                       failureCode: PluginsListFailureCode.UNKNOWN,
-                    }),
+                    })
                   );
                 }
                 return EMPTY;
-              }),
+              })
             );
-          }),
+          })
         );
 
         const runsReload$ = this.onDashboardLoad$.pipe(
@@ -260,12 +260,12 @@ export class CoreEffects {
               throttleTime(ALIAS_CHANGE_RUNS_RELOAD_THROTTLE_IN_MS, undefined, {
                 leading: true,
                 trailing: true,
-              }),
+              })
             );
           }),
           withLatestFrom(
             this.store.select(getRouteKind),
-            this.store.select(getPolymerRunsLoadState),
+            this.store.select(getPolymerRunsLoadState)
           ),
           filter(([, routeKind, loadState]) => {
             // While the same check was applied earlier, `delay` + `throttleTime`
@@ -289,18 +289,18 @@ export class CoreEffects {
           catchError(() => {
             this.store.dispatch(polymerRunsFetchFailed());
             return EMPTY;
-          }),
+          })
         );
 
         return merge(pluginsListingReload$, runsReload$);
       },
-      {dispatch: false},
+      {dispatch: false}
     );
     this.dispatchChangePlugin$ = createEffect(
       () => {
         return merge(
           this.onDashboardLoad$,
-          this.actions$.pipe(ofType(pluginsListingLoaded)),
+          this.actions$.pipe(ofType(pluginsListingLoaded))
         ).pipe(
           withLatestFrom(this.store.select(getActivePlugin)),
           map(([, activePlugin]) => activePlugin),
@@ -309,10 +309,10 @@ export class CoreEffects {
           take(1),
           tap((plugin) => {
             this.store.dispatch(changePlugin({plugin: plugin!}));
-          }),
+          })
         );
       },
-      {dispatch: false},
+      {dispatch: false}
     );
   }
 }

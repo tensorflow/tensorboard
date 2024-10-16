@@ -122,10 +122,10 @@ export class ScalarCardLineChartContainer
               default:
                 const neverType = xAxisType as never;
                 throw new Error(
-                  `Invalid xAxisType for line chart. ${neverType}`,
+                  `Invalid xAxisType for line chart. ${neverType}`
                 );
             }
-          }),
+          })
         );
     this.ngUnsubscribe = new Subject<void>();
   }
@@ -165,13 +165,13 @@ export class ScalarCardLineChartContainer
   ngOnInit() {
     this.userViewBox$ = this.store.select(
       getMetricsCardUserViewBox,
-      this.cardId,
+      this.cardId
     );
 
     this.loadState$ = this.store.select(getCardLoadState, this.cardId);
 
     this.rangeEnabled$ = this.store.select(
-      getMetricsCardRangeSelectionEnabled(this.cardId),
+      getMetricsCardRangeSelectionEnabled(this.cardId)
     );
   }
 
@@ -181,13 +181,13 @@ export class ScalarCardLineChartContainer
   }
 
   onTimeSelectionChanged(
-    newTimeSelectionWithAffordance: TimeSelectionWithAffordance,
+    newTimeSelectionWithAffordance: TimeSelectionWithAffordance
   ) {
     this.store.dispatch(
       timeSelectionChanged({
         ...newTimeSelectionWithAffordance,
         cardId: this.cardId,
-      }),
+      })
     );
   }
 
@@ -200,7 +200,7 @@ export class ScalarCardLineChartContainer
       cardViewBoxChanged({
         userViewBox: lineChartViewBox,
         cardId: this.cardId,
-      }),
+      })
     );
   }
 }

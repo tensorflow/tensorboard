@@ -49,7 +49,7 @@ const activePlugin = createSelector(
   (plugins, id): UiPluginMetadata | null => {
     if (!id || !plugins[id]) return null;
     return Object.assign({id}, plugins[id]);
-  },
+  }
 );
 
 @Component({
@@ -102,7 +102,7 @@ export class PluginsContainer {
     this.pluginLoadState$ = combineLatest(
       this.activeKnownPlugin$,
       this.activePluginId$,
-      this.store.select(getPluginsListLoaded),
+      this.store.select(getPluginsListLoaded)
     ).pipe(
       map(([activePlugin, activePluginId, loadState]) => {
         if (loadState.failureCode !== null) {
@@ -136,18 +136,18 @@ export class PluginsContainer {
         }
 
         return PluginLoadState.NO_ENABLED_PLUGINS;
-      }),
+      })
     );
     this.lastLoadedTimeInMs$ = this.store.select(getAppLastLoadedTimeInMs);
     this.dataLocation$ = this.store.select(getEnvironment).pipe(
       map((env) => {
         return env.data_location;
-      }),
+      })
     );
     this.isFeatureFlagsLoaded$ = this.store.select(getIsFeatureFlagsLoaded);
     this.featureFlags$ = this.store.select(getFeatureFlags);
     this.settingsLoadState$ = this.store.select(
-      settingsSelectors.getSettingsLoadState,
+      settingsSelectors.getSettingsLoadState
     );
   }
 }

@@ -79,8 +79,8 @@ export class AlertsContainer {
               count: alertsBreakdown[alertType],
             };
           });
-        }),
-      ),
+        })
+      )
     );
     this.focusType$ = this.store.pipe(select(getAlertsFocusType));
   }
