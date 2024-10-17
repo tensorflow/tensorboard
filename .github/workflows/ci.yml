@@ -317,7 +317,7 @@ jobs:
           node-version: 16
       - run: yarn install --ignore-engines
         # You can run `yarn fix-lint` to fix all Prettier complaints.
-      - run: yarn lint || echo 'Try running `$ prettier --write $(git diff-tree --no-commit-id --name-only <latest commit> <parent branch commit> -r)`.'
+      - run: yarn lint || echo 'Try running `$ prettier --write $(git diff-tree --no-commit-id --name-only <latest commit> <parent branch commit> -r)`.' && false
         # Make sure no tests are skipped with "focused" tests.
       - run: |
           ! git grep -E 'f(it|describe)\(' 'tensorboard/*_test.ts'
