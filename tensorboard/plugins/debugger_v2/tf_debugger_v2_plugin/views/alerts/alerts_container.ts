@@ -73,8 +73,8 @@ export class AlertsContainer {
             count: alertsBreakdown[alertType],
           };
         });
-      }),
-    ),
+      })
+    )
   );
 
   readonly focusType$ = this.store.pipe(select(getAlertsFocusType));
