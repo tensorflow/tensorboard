@@ -51,27 +51,23 @@ import {
   ></feature-flag-dialog-component>`,
 })
 export class FeatureFlagDialogContainer {
-  constructor(private readonly store: Store<State>) {}
-
-  readonly showFlagsFilter$ = this.store.select(getOverriddenFeatureFlags).pipe(
-    map((overriddenFeatureFlags) => {
-      return overriddenFeatureFlags.showFlags?.toLowerCase();
-    })
-  );
-
-  readonly hasFlagsSentToServer$: Observable<boolean> = this.store
-    .select(getFeatureFlagsMetadata)
-    .pipe(
-      map((flagMetadata) => {
-        return Object.values(flagMetadata).some((metadata) => {
-          return (metadata as AdvancedFeatureFlagMetadata<FeatureFlagType>)
-            .sendToServerWhenOverridden;
-        });
+  constructor(private readonly store: Store<State>) {
+    this.showFlagsFilter$ = this.store.select(getOverriddenFeatureFlags).pipe(
+      map((overriddenFeatureFlags) => {
+        return overriddenFeatureFlags.showFlags?.toLowerCase();
       })
     );
-
-  readonly featureFlags$: Observable<FeatureFlagStatus<keyof FeatureFlags>[]> =
-    this.store.select(getOverriddenFeatureFlags).pipe(
+    this.hasFlagsSentToServer$ = this.store
+      .select(getFeatureFlagsMetadata)
+      .pipe(
+        map((flagMetadata) => {
+          return Object.values(flagMetadata).some((metadata) => {
+            return (metadata as AdvancedFeatureFlagMetadata<FeatureFlagType>)
+              .sendToServerWhenOverridden;
+          });
+        })
+      );
+    this.featureFlags$ = this.store.select(getOverriddenFeatureFlags).pipe(
       withLatestFrom(
         this.store.select(getDefaultFeatureFlags),
         this.store.select(getFeatureFlagsMetadata),
@@ -109,6 +105,13 @@ export class FeatureFlagDialogContainer {
         }
       )
     );
+  }
+
+  readonly showFlagsFilter$;
+
+  readonly hasFlagsSentToServer$: Observable<boolean>;
+
+  readonly featureFlags$: Observable<FeatureFlagStatus<keyof FeatureFlags>[]>;
 
   onFlagChanged({flag, status}: FeatureFlagStatusEvent) {
     switch (status) {

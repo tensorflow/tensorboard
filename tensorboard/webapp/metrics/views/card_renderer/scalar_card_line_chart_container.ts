@@ -38,6 +38,7 @@ import {
   TimeSelectionWithAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
 import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
+import {TooltipTemplate} from '../../../widgets/line_chart_v2/line_chart_component';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {
   cardViewBoxChanged,
@@ -52,14 +53,13 @@ import {
 } from '../../store';
 import {CardId, XAxisType} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
+import {ScalarCardLineChartComponent} from './scalar_card_line_chart_component';
 import {
   MinMaxStep,
   ScalarCardDataSeries,
   ScalarCardSeriesMetadataMap,
 } from './scalar_card_types';
 import {TimeSelectionView} from './utils';
-import {TooltipTemplate} from '../../../widgets/line_chart_v2/line_chart_component';
-import {ScalarCardLineChartComponent} from './scalar_card_line_chart_component';
 
 @Component({
   standalone: false,
@@ -99,7 +99,36 @@ import {ScalarCardLineChartComponent} from './scalar_card_line_chart_component';
 export class ScalarCardLineChartContainer
   implements CardRenderer, OnInit, OnDestroy
 {
-  constructor(private readonly store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {
+    this.useDarkMode$ = this.store.select(getDarkModeEnabled);
+    this.tooltipSort$ = this.store.select(getMetricsTooltipSort);
+    this.forceSvg$ = this.store.select(getForceSvgFeatureFlag);
+    this.ignoreOutliers$ = this.ignoreOutliers
+      ? of(this.ignoreOutliers)
+      : this.store.select(getMetricsIgnoreOutliers);
+    this.xAxisType$ = this.xAxisType
+      ? of(this.xAxisType)
+      : this.store.select(getMetricsXAxisType);
+    this.xScaleType$ = this.xAxisType
+      ? ScaleType.LINEAR
+      : this.store.select(getMetricsXAxisType).pipe(
+          map((xAxisType) => {
+            switch (xAxisType) {
+              case XAxisType.STEP:
+              case XAxisType.RELATIVE:
+                return ScaleType.LINEAR;
+              case XAxisType.WALL_TIME:
+                return ScaleType.TIME;
+              default:
+                const neverType = xAxisType as never;
+                throw new Error(
+                  `Invalid xAxisType for line chart. ${neverType}`
+                );
+            }
+          })
+        );
+    this.ngUnsubscribe = new Subject<void>();
+  }
 
   @Input() cardId!: CardId;
   @Input() seriesMetadataMap!: ScalarCardSeriesMetadataMap;
@@ -122,35 +151,16 @@ export class ScalarCardLineChartContainer
   userViewBox$?: Observable<Extent | null>;
   rangeEnabled$?: Observable<boolean>;
 
-  readonly useDarkMode$ = this.store.select(getDarkModeEnabled);
-  readonly tooltipSort$ = this.store.select(getMetricsTooltipSort);
-  readonly forceSvg$ = this.store.select(getForceSvgFeatureFlag);
+  readonly useDarkMode$;
+  readonly tooltipSort$;
+  readonly forceSvg$;
 
-  readonly ignoreOutliers$ = this.ignoreOutliers
-    ? of(this.ignoreOutliers)
-    : this.store.select(getMetricsIgnoreOutliers);
+  readonly ignoreOutliers$;
 
-  readonly xAxisType$ = this.xAxisType
-    ? of(this.xAxisType)
-    : this.store.select(getMetricsXAxisType);
-  readonly xScaleType$ = this.xAxisType
-    ? ScaleType.LINEAR
-    : this.store.select(getMetricsXAxisType).pipe(
-        map((xAxisType) => {
-          switch (xAxisType) {
-            case XAxisType.STEP:
-            case XAxisType.RELATIVE:
-              return ScaleType.LINEAR;
-            case XAxisType.WALL_TIME:
-              return ScaleType.TIME;
-            default:
-              const neverType = xAxisType as never;
-              throw new Error(`Invalid xAxisType for line chart. ${neverType}`);
-          }
-        })
-      );
+  readonly xAxisType$;
+  readonly xScaleType$;
 
-  private readonly ngUnsubscribe = new Subject<void>();
+  private readonly ngUnsubscribe;
 
   ngOnInit() {
     this.userViewBox$ = this.store.select(
