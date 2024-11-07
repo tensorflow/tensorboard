@@ -2,6 +2,7 @@
 # TensorBoard, a dashboard for investigating TensorFlow
 
 load("@rules_python//python:py_test.bzl", "py_test")
+load("@com_google_protobuf//bazel:java_proto_library.bzl", "java_proto_library")
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
 package(default_visibility = ["//tensorboard:internal"])
