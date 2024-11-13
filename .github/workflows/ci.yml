@@ -135,7 +135,7 @@ jobs:
         # file(s) to be unique per workflow run, so make sure that the name is unique for each
         # "matrix" combination for which this is executed.
         if: matrix.tf_version_id == 'tf' && github.repository == 'tensorflow/tensorboard' && github.ref == 'refs/heads/master'
-        uses: actions/upload-artifact@v4.4.3
+        uses: actions/upload-artifact@v4
         with:
           name: tb-nightly_py${{ matrix.python_version }}
           path: /tmp/tb_nightly_pip_package/*
