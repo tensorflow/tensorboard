@@ -42,9 +42,14 @@ export declare interface MetricsDataSource {
   name: string;
   repo_id: string;
   table_id: string;
+  // TODO: remove this field once it's not used. Use the more generic `url`
+  // field below.
+  //
   // The Datatable UI url for for Datatable data source. Format:
   // https://datatable/xid/{xid}/{table_path}
   datatable_uri?: string;
+  // An (often external) url associated with this data source.
+  url?: string;
 }
 
 export interface ExperimentAlias {
