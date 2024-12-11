@@ -42,13 +42,9 @@ export declare interface MetricsDataSource {
   name: string;
   repo_id: string;
   table_id: string;
-  // TODO: remove this field once it's not used. Use the more generic `url`
-  // field below.
-  //
-  // The Datatable UI url for for Datatable data source. Format:
-  // https://datatable/xid/{xid}/{table_path}
-  datatable_uri?: string;
-  // An (often external) url associated with this data source.
+  // An arbitrary url associated with this data source.
+  // It would often be a link to another tool where the data can be viewed, but
+  // it could also just point to some documentation, or something else relevant.
   url?: string;
 }
 
