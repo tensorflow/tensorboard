@@ -1400,11 +1400,11 @@ class ListSessionGroupsTest(tf.test.TestCase):
             }
         """
         self._run_handler(request)
-        self.assertEquals(
+        self.assertEqual(
             self._get_read_hyperparameters_call_filters(),
             [],
         )
-        self.assertEquals(self._get_read_hyperparameters_call_sort(), [])
+        self.assertEqual(self._get_read_hyperparameters_call_sort(), [])
 
     def test_experiment_from_data_provider_sends_regex_filter(self):
         self._mock_tb_context.data_provider.list_tensors.side_effect = None
@@ -1415,7 +1415,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
             }
         """
         self._run_handler(request)
-        self.assertEquals(
+        self.assertEqual(
             self._get_read_hyperparameters_call_filters(),
             [
                 provider.HyperparameterFilter(
@@ -1457,7 +1457,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
             }
         """
         self._run_handler(request)
-        self.assertEquals(
+        self.assertEqual(
             self._get_read_hyperparameters_call_filters(),
             [
                 provider.HyperparameterFilter(
@@ -1534,7 +1534,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
         """
         self._run_handler(request)
 
-        self.assertEquals(
+        self.assertEqual(
             self._get_read_hyperparameters_call_filters(),
             [
                 provider.HyperparameterFilter(
@@ -1597,7 +1597,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
             }
         """
         self._run_handler(request)
-        self.assertEquals(
+        self.assertEqual(
             self._get_read_hyperparameters_call_sort(),
             [
                 provider.HyperparameterSort(
@@ -2034,7 +2034,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
         """
         response = self._run_handler(request)
         self.assertLen(response.session_groups, 1)
-        self.assertEquals("session_2", response.session_groups[0].name)
+        self.assertEqual("session_2", response.session_groups[0].name)
         self.assertLen(response.session_groups[0].sessions, 1)
         self.assertProtoEquals(
             """
@@ -2085,7 +2085,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
         """
         response = self._run_handler(request)
         self.assertLen(response.session_groups, 1)
-        self.assertEquals("session_2", response.session_groups[0].name)
+        self.assertEqual("session_2", response.session_groups[0].name)
         self.assertLen(response.session_groups[0].sessions, 1)
         self.assertProtoEquals(
             """
@@ -2132,9 +2132,9 @@ class ListSessionGroupsTest(tf.test.TestCase):
         response = self._run_handler(request)
         self.assertLen(response.session_groups, 1)
         # The name comes from the experiment id.
-        self.assertEquals(response.session_groups[0].name, "123")
+        self.assertEqual(response.session_groups[0].name, "123")
         self.assertLen(response.session_groups[0].sessions, 1)
-        self.assertEquals(response.session_groups[0].sessions[0].name, "")
+        self.assertEqual(response.session_groups[0].sessions[0].name, "")
         # The result specifies a single session without explicit identifier. It
         # therefore represents a session that includes all run/tag combinations
         # as separate metric values.
