@@ -236,7 +236,7 @@ To get this test passing, follow these steps:
     ```
     $ BUILDTOOLS_VERSION='3.0.0'
     $ BUILDIFIER_SHA256SUM='e92a6793c7134c5431c58fbc34700664f101e5c9b1c1fcd93b97978e8b7f88db'
-    $ ci/download_buildifier.sh "${BUILDTOOLS_VERSION}" "${BUILDIFIER_SHA256SUM}" ~/tb_buildifier/buildifier
+    $ ci/download_buildifier.sh "${{BUILDTOOLS_VERSION}}" "${{BUILDIFIER_SHA256SUM}}" ~/tb_buildifier/buildifier
     ```
 
     If a file needs reformatting, you'll see the file that needs to be
