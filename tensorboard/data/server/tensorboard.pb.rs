@@ -131,10 +131,19 @@ pub enum DataType {
     /// 4 exponent bits, 3 mantissa bits, finite-only, with
     DtFloat8E4m3fn = 25,
     /// 2 NaNs (0bS1111111).
-    /// TODO - b/299182407: Leaving room for remaining float8 types.
-    /// DT_FLOAT8_E4M3FNUZ = 26;
-    /// DT_FLOAT8_E4M3B11FNUZ = 27;
-    /// DT_FLOAT8_E5M2FNUZ = 28;
+    ///
+    /// 4 exponent bits, 3 mantissa bits, finite-only,
+    DtFloat8E4m3fnuz = 26,
+    /// with NaN.
+    ///
+    /// 4 exponent bits, 3 mantissa bits, 11 bits
+    DtFloat8E4m3b11fnuz = 27,
+    /// bias, finite-only, with NaNs.
+    ///
+    /// 5 exponent bits, 2 mantissa bits, finite-only,
+    DtFloat8E5m2fnuz = 28,
+    // with NaN.
+
     DtInt4 = 29,
     DtUint4 = 30,
     /// Do not use!  These are only for TF1's obsolete reference Variables.
@@ -165,10 +174,9 @@ pub enum DataType {
     DtUint64Ref = 123,
     DtFloat8E5m2Ref = 124,
     DtFloat8E4m3fnRef = 125,
-    /// TODO - b/299182407: Leaving room for remaining float8 types.
-    /// DT_FLOAT8_E4M3FNUZ_REF = 126;
-    /// DT_FLOAT8_E4M3B11FNUZ_REF = 127;
-    /// DT_FLOAT8_E5M2FNUZ_REF = 128;
+    DtFloat8E4m3fnuzRef = 126,
+    DtFloat8E4m3b11fnuzRef = 127,
+    DtFloat8E5m2fnuzRef = 128,
     DtInt4Ref = 129,
     DtUint4Ref = 130,
 }
