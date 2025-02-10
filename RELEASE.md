@@ -1,3 +1,10 @@
+# Release 2.19.0
+
+The 2.19 minor series tracks TensorFlow 2.19.
+
+This release contains only internal cleanups, with no particular new features or bug fixes.
+
+
 # Release 2.18.0
 
 The 2.18 minor series tracks TensorFlow 2.18.
