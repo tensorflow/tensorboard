@@ -160,7 +160,7 @@ jobs:
           architecture: 'x64'
       - name: 'Cache Cargo artifacts'
         if: matrix.mode == 'native'
-        uses: actions/cache@58c146cc91c5b9e778e71775dfe9bf1442ad9a12 # v3.2.2
+        uses: actions/cache@4.0.0
         with:
           path: |
             tensorboard/data/server/target/
@@ -279,7 +279,7 @@ jobs:
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
       - name: 'Cache Cargo artifacts'
-        uses: actions/cache@58c146cc91c5b9e778e71775dfe9bf1442ad9a12 # v3.2.2
+        uses: actions/cache@4.0.0
         with:
           path: |
             tensorboard/data/server/target/
