@@ -34,6 +34,7 @@ from tensorboard import manager
 # details).
 _CONTEXT_COLAB = "_CONTEXT_COLAB"
 _CONTEXT_IPYTHON = "_CONTEXT_IPYTHON"
+_CONTEXT_JUPYTERHUB = "_CONTEXT_JUPYTERHUB"
 _CONTEXT_NONE = "_CONTEXT_NONE"
 
 
@@ -70,10 +71,29 @@ def _get_context():
     else:
         ipython = IPython.get_ipython()
         if ipython is not None and ipython.has_trait("kernel"):
+            if os.environ.get("JUPYTERHUB_SERVICE_PREFIX") is not None:
+                return _CONTEXT_JUPYTERHUB
             return _CONTEXT_IPYTHON
 
     # Otherwise, we're not in a known notebook context.
     return _CONTEXT_NONE
+
+
+def _prefix_jupyterhub(port):
+    prefix = os.path.join(
+        os.environ["JUPYTERHUB_SERVICE_PREFIX"], "proxy/absolute"
+    )
+    return "%s/%d/" % (prefix, port)
+
+
+def _patch_args_jupyterhub(parsed_args):
+    if "--port" in parsed_args:
+        arg_idx = parsed_args.index("--port")
+        port = int(parsed_args[arg_idx + 1])
+    else:
+        port = 6006
+        parsed_args += ["--port", str(port)]
+    return parsed_args + ["--path_prefix", _prefix_jupyterhub(port)]
 
 
 def load_ipython_extension(ipython):
@@ -149,6 +169,9 @@ def start(args_string):
             handle.update(IPython.display.Pretty(message))
 
     parsed_args = shlex.split(args_string, comments=True, posix=True)
+    if context == _CONTEXT_JUPYTERHUB:
+        parsed_args = _patch_args_jupyterhub(parsed_args)
+
     start_result = manager.start(parsed_args)
 
     if isinstance(start_result, manager.StartLaunched):
@@ -305,6 +328,7 @@ def _display(port=None, height=None, print_message=False, display_handle=None):
     fn = {
         _CONTEXT_COLAB: _display_colab,
         _CONTEXT_IPYTHON: _display_ipython,
+        _CONTEXT_JUPYTERHUB: _display_jupyterhub,
         _CONTEXT_NONE: _display_cli,
     }[_get_context()]
     return fn(port=port, height=height, display_handle=display_handle)
@@ -399,6 +423,36 @@ def _display_ipython(port, height, display_handle):
         ]
 
     for k, v in replacements:
+        shell = shell.replace(k, v)
+    iframe = IPython.display.HTML(shell)
+    if display_handle:
+        display_handle.update(iframe)
+    else:
+        IPython.display.display(iframe)
+
+
+def _display_jupyterhub(port, height, display_handle):
+    import IPython.display
+
+    frame_id = "tensorboard-frame-{:08x}".format(random.getrandbits(64))
+    shell = """
+      <iframe id="%HTML_ID%" width="100%" height="%HEIGHT%" frameborder="0">
+      </iframe>
+      <script>
+        (function() {
+          const frame = document.getElementById(%JSON_ID%);
+          const url = new URL("%PREFIX%", window.location);
+          frame.src = url;
+        })();
+      </script>
+  """
+    replacements = [
+        ("%HTML_ID%", html_escape(frame_id, quote=True)),
+        ("%JSON_ID%", json.dumps(frame_id)),
+        ("%PREFIX%", _prefix_jupyterhub(port)),
+        ("%HEIGHT%", "%d" % height),
+    ]
+    for (k, v) in replacements:
         shell = shell.replace(k, v)
     iframe = IPython.display.HTML(shell)
     if display_handle:
