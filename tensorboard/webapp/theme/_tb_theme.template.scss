@@ -303,9 +303,13 @@ $tb-dark-theme: map_merge(
   body.dark-mode {
     mat-slider {
       --mdc-slider-handle-width: 12px;
+      --mat-slider-handle-width: 12px;
       --mdc-slider-handle-height: 12px;
+      --mat-slider-handle-height: 12px;
       --mdc-slider-active-track-height: 2px;
+      --mat-slider-active-track-height: 2px;
       --mdc-slider-inactive-track-height: 2px;
+      --mat-slider-inactive-track-height: 2px;
     }
 
     a,
@@ -315,9 +319,13 @@ $tb-dark-theme: map_merge(
       --tb-icon-button-width: 40px;
       --tb-icon-button-height: 40px;
       --mdc-text-button-label-text-tracking: normal;
+      --mat-text-button-label-text-tracking: normal;
       --mdc-filled-button-label-text-tracking: normal;
+      --mat-filled-button-label-text-tracking: normal;
       --mdc-outlined-button-label-text-tracking: normal;
+      --mat-outlined-button-label-text-tracking: normal;
       --mdc-protected-button-label-text-tracking: normal;
+      --mat-protected-button-label-text-tracking: normal;
 
       &[mat-icon-button].mat-mdc-icon-button {
         width: var(--tb-icon-button-width);
