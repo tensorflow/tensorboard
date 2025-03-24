@@ -66,8 +66,11 @@ limitations under the License.
   position: absolute;
   right: 40px;
   --mdc-slider-handle-width: 80px;
+  --mat-slider-handle-width: 80px;
   --mdc-slider-handle-height: 16px;
+  --mat-slider-handle-height: 16px;
   --mdc-slider-handle-shape: 5px;
+  --mat-slider-handle-shape: 5px;
 }
 
 ::ng-deep .mat-mdc-focus-indicator {
