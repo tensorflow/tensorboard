@@ -508,7 +508,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
     }
     return tf_graph_util.convertUnitsToHumanReadable(
       stats.totalBytes,
-      tf_graph_util.MEMORY_UNITS
+      tf_graph_util.MEMORY_UNITS,
     );
   }
   @computed('_nodeStats')
@@ -519,7 +519,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
     }
     return tf_graph_util.convertUnitsToHumanReadable(
       stats.getTotalMicros(),
-      tf_graph_util.TIME_UNITS
+      tf_graph_util.TIME_UNITS,
     );
   }
   @computed('_nodeStats')
@@ -553,7 +553,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
         attrs = attrs.concat(
           entry.value.list.s.map(function (key) {
             return {key: key, value: 'Too large to show...'};
-          })
+          }),
         );
       } else {
         attrs.push({
@@ -565,7 +565,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
     return attrs;
   }
   @computed('_node')
-  get _device(): string {
+  get _device(): string | null {
     var node = this._node;
     return node ? node.device : null;
   }
@@ -580,7 +580,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
     return this._convertEdgeListToEdgeInfoList(
       hierarchy.getSuccessors(node.name),
       false,
-      node.isGroupNode
+      node.isGroupNode,
     );
   }
   @computed('_node', 'graphHierarchy')
@@ -594,7 +594,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
     return this._convertEdgeListToEdgeInfoList(
       hierarchy.getPredecessors(node.name),
       true,
-      node.isGroupNode
+      node.isGroupNode,
     );
   }
   // Only relevant if this is a library function. A list of nodes that
@@ -635,7 +635,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
           node: this._getNode(name, this.graphHierarchy),
           edgeLabel: tf_graph_scene_edge.getLabelForBaseEdge(
             baseEdge,
-            this.renderHierarchy
+            this.renderHierarchy,
           ),
           renderInfo: this._getRenderInfo(name, this.renderHierarchy),
         };
@@ -659,7 +659,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
             node: this._getNode(name, this.graphHierarchy),
             edgeLabel: tf_graph_scene_edge.getLabelForEdge(
               metaedge,
-              this.renderHierarchy
+              this.renderHierarchy,
             ),
             renderInfo: this._getRenderInfo(name, this.renderHierarchy),
           });
@@ -673,7 +673,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
     };
   }
   @computed('_node')
-  get _subnodes(): unknown[] {
+  get _subnodes(): unknown[] | null {
     var node = this._node;
     return node && node.metagraph ? node.metagraph.nodes() : null;
   }
@@ -704,7 +704,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
     this._openedControlSucc = false;
     this.set(
       '_groupButtonText',
-      tf_graph_scene_node.getGroupSettingLabel(this._node)
+      tf_graph_scene_node.getGroupSettingLabel(this._node),
     );
   }
   _resizeList(selector) {
@@ -740,7 +740,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
       tf_graph_hierarchy.HierarchyEvent.TEMPLATES_UPDATED,
       () => {
         this._templateIndex = this.graphHierarchy.getTemplateIndex();
-      }
+      },
     );
   }
 }

@@ -59,7 +59,7 @@ class IntervalBrushFilter implements AxisBrushFilter {
     lower: number,
     upper: number,
     lowerOpen: boolean,
-    upperOpen: boolean
+    upperOpen: boolean,
   ) {
     this._lower = lower;
     this._upper = upper;
@@ -121,7 +121,7 @@ export class Axis {
     svgProps: tf_hparams_parallel_coords_plot_interaction_manager.SVGProperties,
     schema: Schema,
     interactionManager: tf_hparams_parallel_coords_plot_interaction_manager.InteractionManager,
-    colIndex: number
+    colIndex: number,
   ) {
     this._svgProps = svgProps;
     this._schema = schema;
@@ -152,7 +152,7 @@ export class Axis {
     this._brushFilter = this._buildBrushFilter(
       this.brushSelection()!,
       this.scaleType()!,
-      this.yScale()
+      this.yScale(),
     );
   }
   /**
@@ -165,7 +165,7 @@ export class Axis {
       // Pass a copy since createAxisScale may permute the domainValues array.
       domainValues.slice(),
       this._svgProps.height,
-      this.scaleType()
+      this.scaleType(),
     );
     // TODO(erez): Try to modify the brush selection so that it selects
     // the same subset of the axis domain which was selected before
@@ -216,7 +216,7 @@ export class Axis {
       .style('text-anchor', 'middle')
       .attr('y', -9)
       .text((colIndex) =>
-        tf_hparams_utils.schemaColumnName(this._schema, colIndex)
+        tf_hparams_utils.schemaColumnName(this._schema, colIndex),
       );
     // Add dragging event handlers.
     axisParentSel.call(
@@ -233,7 +233,7 @@ export class Axis {
         .on('end', () => {
           this._interactionManager.onDragEnd();
           axisParent.removeAttribute('is-dragging');
-        })
+        }),
     );
     // Add the brush.
     const d3Brush = d3
@@ -259,7 +259,7 @@ export class Axis {
         axisParent.setAttribute('is-brushing', '');
         this._interactionManager.onBrushChanged(
           this.colIndex(),
-          d3.event.selection
+          d3.event.selection,
         );
       })
       .on('brush', () => {
@@ -268,7 +268,7 @@ export class Axis {
         }
         this._interactionManager.onBrushChanged(
           this.colIndex(),
-          d3.event.selection
+          d3.event.selection,
         );
       })
       .on('end', () => {
@@ -277,7 +277,7 @@ export class Axis {
         }
         this._interactionManager.onBrushChanged(
           this.colIndex(),
-          d3.event.selection
+          d3.event.selection,
         );
         axisParent.removeAttribute('is-brushing');
       });
@@ -301,7 +301,7 @@ export class Axis {
   private _buildBrushFilter(
     brushSelection: d3.BrushSelection,
     scaleType: ScaleType,
-    yScale: any /* D3 scale */
+    yScale: any /* D3 scale */,
   ) {
     if (brushSelection === null) {
       return new AlwaysPassingBrushFilter();
@@ -309,7 +309,7 @@ export class Axis {
     if (scaleType === null) {
       console.error(
         "Scale type is null, but brushSelection isn't: ",
-        brushSelection
+        brushSelection,
       );
       return new AlwaysPassingBrushFilter();
     }
@@ -321,13 +321,13 @@ export class Axis {
           tf_hparams_parallel_coords_plot_utils.continuousScaleInverseImage(
             yScale,
             brushSelection[0],
-            brushSelection[1]
+            brushSelection[1],
           );
         return new IntervalBrushFilter(
           lower,
           upper,
           /*lowerOpen=*/ false,
-          /*upperOpen=*/ false
+          /*upperOpen=*/ false,
         );
       }
       case ScaleType.QUANTILE: {
@@ -335,13 +335,13 @@ export class Axis {
           tf_hparams_parallel_coords_plot_utils.quantileScaleInverseImage(
             yScale,
             brushSelection[0],
-            brushSelection[1]
+            brushSelection[1],
           );
         return new IntervalBrushFilter(
           lower as number,
           upper as number,
           /*lowerOpen=*/ false,
-          /*upperOpen=*/ true
+          /*upperOpen=*/ true,
         );
       }
       case ScaleType.NON_NUMERIC:
@@ -349,8 +349,8 @@ export class Axis {
           tf_hparams_parallel_coords_plot_utils.pointScaleInverseImage(
             yScale,
             brushSelection[0],
-            brushSelection[1]
-          )
+            brushSelection[1],
+          ),
         );
     }
     console.error('Unknown scale type: ', scaleType);
@@ -375,7 +375,7 @@ export class AxesCollection {
   public constructor(
     svgProps: tf_hparams_parallel_coords_plot_interaction_manager.SVGProperties,
     schema: Schema,
-    interactionManager: tf_hparams_parallel_coords_plot_interaction_manager.InteractionManager
+    interactionManager: tf_hparams_parallel_coords_plot_interaction_manager.InteractionManager,
   ) {
     this._svgProps = svgProps;
     this._schema = schema;
@@ -396,7 +396,7 @@ export class AxesCollection {
    */
   public updateAxes(
     options: any,
-    sessionGroups: tf_hparams_api.SessionGroup[]
+    sessionGroups: tf_hparams_api.SessionGroup[],
   ) {
     console.assert(!this.isAxisDragging());
     // Traverse options.columns, and update each corresponding axis.
@@ -406,7 +406,7 @@ export class AxesCollection {
       let axis = this._axes[colIndex];
       axis.setDisplayed(true);
       const domainValues = sessionGroups.map((sg) =>
-        tf_hparams_utils.columnValueByIndex(this._schema, sg, colIndex)
+        tf_hparams_utils.columnValueByIndex(this._schema, sg, colIndex),
       );
       axis.setDomainAndScale(domainValues, column.scale);
       visibleColIndices.add(colIndex);
@@ -421,7 +421,7 @@ export class AxesCollection {
     // Update the DOM.
     this._parentsSel = this._parentsSel.data(
       Array.from(visibleColIndices),
-      /*key=*/ (colIndex) => colIndex
+      /*key=*/ (colIndex) => colIndex,
     );
     this._parentsSel.exit().remove();
     this._parentsSel = this._parentsSel
@@ -447,7 +447,7 @@ export class AxesCollection {
     return this._stationaryAxesPositions
       .domain()
       .map((colIndex) =>
-        mapFunction(this.getAxisPosition(colIndex), this._axes[colIndex])
+        mapFunction(this.getAxisPosition(colIndex), this._axes[colIndex]),
       );
   }
   /**
@@ -456,12 +456,12 @@ export class AxesCollection {
    *     the first time it returns false.
    */
   public allVisibleAxesSatisfy(
-    predicate: (xPosition, axis) => boolean
+    predicate: (xPosition, axis) => boolean,
   ): boolean {
     return this._stationaryAxesPositions
       .domain()
       .every((colIndex) =>
-        predicate(this.getAxisPosition(colIndex), this._axes[colIndex])
+        predicate(this.getAxisPosition(colIndex), this._axes[colIndex]),
       );
   }
   public getAxisForColIndex(colIndex: number): Axis {
@@ -490,7 +490,7 @@ export class AxesCollection {
     this._draggedAxisPosition = newX;
     let visibleColIndices = this._stationaryAxesPositions.domain();
     visibleColIndices.sort(
-      (ci1, ci2) => this.getAxisPosition(ci1) - this.getAxisPosition(ci2)
+      (ci1, ci2) => this.getAxisPosition(ci1) - this.getAxisPosition(ci2),
     );
     this._stationaryAxesPositions.domain(visibleColIndices);
     this._updateAxesPositionsInDOM(this._parentsSel);
@@ -500,13 +500,13 @@ export class AxesCollection {
     this._draggedAxisPosition = null;
     this._draggedAxis = null;
     this._updateAxesPositionsInDOM(
-      this._parentsSel.transition().duration(duration)
+      this._parentsSel.transition().duration(duration),
     );
   }
   public isAxisDragging(): boolean {
     return this._draggedAxis !== null;
   }
-  public getAxisPosition(colIndex: number): number {
+  public getAxisPosition(colIndex: number): number | null {
     return this._draggedAxis !== null &&
       this._draggedAxis.colIndex() === colIndex
       ? this._draggedAxisPosition
@@ -531,13 +531,13 @@ export class AxesCollection {
       .domain()
       .filter((colIndex) => visibleColIndices.has(colIndex));
     const newDomain = Array.from(
-      new Set([...visibleDomain, ...Array.from(visibleColIndices)])
+      new Set([...visibleDomain, ...Array.from(visibleColIndices)]),
     );
     this._stationaryAxesPositions.domain(newDomain);
   }
   private _updateAxesPositionsInDOM(selectionOrTransition) {
     selectionOrTransition.attr('transform', (colIndex) =>
-      tf_hparams_utils.translateStr(this.getAxisPosition(colIndex))
+      tf_hparams_utils.translateStr(this.getAxisPosition(colIndex)),
     );
   }
   private _createAxes(
@@ -547,7 +547,7 @@ export class AxesCollection {
       .range(tf_hparams_utils.numColumns(this._schema))
       .map(
         (colIndex) =>
-          new Axis(this._svgProps, this._schema, interactionManager, colIndex)
+          new Axis(this._svgProps, this._schema, interactionManager, colIndex),
       );
   }
   private _svgProps: tf_hparams_parallel_coords_plot_interaction_manager.SVGProperties;
