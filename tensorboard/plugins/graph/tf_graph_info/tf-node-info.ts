@@ -567,6 +567,10 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
   @computed('_node')
   get _device(): string {
     var node = this._node;
+    // TODO: go/ts58upgrade - Fix type mismatch caused by improved checking of
+    // returned conditional operators after upgrade
+    //   TS2322: Type 'null' is not assignable to type 'string'.
+    // @ts-ignore
     return node ? node.device : null;
   }
   @computed('_node', 'graphHierarchy')
@@ -675,6 +679,10 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
   @computed('_node')
   get _subnodes(): unknown[] {
     var node = this._node;
+    // TODO: go/ts58upgrade - Fix type mismatch caused by improved checking of
+    // returned conditional operators after upgrade
+    //   TS2322: Type 'null' is not assignable to type 'unknown[]'.
+    // @ts-ignore
     return node && node.metagraph ? node.metagraph.nodes() : null;
   }
   @computed('_predecessors')
