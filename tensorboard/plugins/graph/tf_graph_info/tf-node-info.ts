@@ -740,7 +740,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
   }
   _isInSeries(node) {
     return tf_graph_scene_node.canBeInSeries(node);
-  },
+  }
   @observe('graphHierarchy')
   _graphHierarchyChanged() {
     this._templateIndex = this.graphHierarchy.getTemplateIndex();
@@ -748,7 +748,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
       tf_graph_hierarchy.HierarchyEvent.TEMPLATES_UPDATED,
       () => {
         this._templateIndex = this.graphHierarchy.getTemplateIndex();
-      }
+      },
     );
   }
 }
