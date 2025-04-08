@@ -509,7 +509,11 @@ export class AxesCollection {
   public getAxisPosition(colIndex: number): number {
     return this._draggedAxis !== null &&
       this._draggedAxis.colIndex() === colIndex
-      ? this._draggedAxisPosition
+      ? // TODO: go/ts58upgrade - Fix type mismatch caused by improved checking
+        // of returned conditional operators after upgrade
+        //   TS2322: Type 'number | null' is not assignable to type 'number'.
+        // @ts-ignore
+        this._draggedAxisPosition
       : this._stationaryAxesPositions(colIndex);
   }
   /**
