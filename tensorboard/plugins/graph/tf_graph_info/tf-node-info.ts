@@ -508,7 +508,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
     }
     return tf_graph_util.convertUnitsToHumanReadable(
       stats.totalBytes,
-      tf_graph_util.MEMORY_UNITS
+      tf_graph_util.MEMORY_UNITS,
     );
   }
   @computed('_nodeStats')
@@ -519,7 +519,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
     }
     return tf_graph_util.convertUnitsToHumanReadable(
       stats.getTotalMicros(),
-      tf_graph_util.TIME_UNITS
+      tf_graph_util.TIME_UNITS,
     );
   }
   @computed('_nodeStats')
@@ -553,7 +553,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
         attrs = attrs.concat(
           entry.value.list.s.map(function (key) {
             return {key: key, value: 'Too large to show...'};
-          })
+          }),
         );
       } else {
         attrs.push({
@@ -567,6 +567,10 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
   @computed('_node')
   get _device(): string {
     var node = this._node;
+    // TODO: go/ts58upgrade - Fix type mismatch caused by improved checking of
+    // returned conditional operators after upgrade
+    //   TS2322: Type 'null' is not assignable to type 'string'.
+    // @ts-ignore
     return node ? node.device : null;
   }
   @computed('_node', 'graphHierarchy')
@@ -580,7 +584,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
     return this._convertEdgeListToEdgeInfoList(
       hierarchy.getSuccessors(node.name),
       false,
-      node.isGroupNode
+      node.isGroupNode,
     );
   }
   @computed('_node', 'graphHierarchy')
@@ -594,7 +598,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
     return this._convertEdgeListToEdgeInfoList(
       hierarchy.getPredecessors(node.name),
       true,
-      node.isGroupNode
+      node.isGroupNode,
     );
   }
   // Only relevant if this is a library function. A list of nodes that
@@ -635,7 +639,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
           node: this._getNode(name, this.graphHierarchy),
           edgeLabel: tf_graph_scene_edge.getLabelForBaseEdge(
             baseEdge,
-            this.renderHierarchy
+            this.renderHierarchy,
           ),
           renderInfo: this._getRenderInfo(name, this.renderHierarchy),
         };
@@ -659,7 +663,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
             node: this._getNode(name, this.graphHierarchy),
             edgeLabel: tf_graph_scene_edge.getLabelForEdge(
               metaedge,
-              this.renderHierarchy
+              this.renderHierarchy,
             ),
             renderInfo: this._getRenderInfo(name, this.renderHierarchy),
           });
@@ -675,6 +679,10 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
   @computed('_node')
   get _subnodes(): unknown[] {
     var node = this._node;
+    // TODO: go/ts58upgrade - Fix type mismatch caused by improved checking of
+    // returned conditional operators after upgrade
+    //   TS2322: Type 'null' is not assignable to type 'unknown[]'.
+    // @ts-ignore
     return node && node.metagraph ? node.metagraph.nodes() : null;
   }
   @computed('_predecessors')
@@ -704,7 +712,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
     this._openedControlSucc = false;
     this.set(
       '_groupButtonText',
-      tf_graph_scene_node.getGroupSettingLabel(this._node)
+      tf_graph_scene_node.getGroupSettingLabel(this._node),
     );
   }
   _resizeList(selector) {
@@ -732,7 +740,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
   }
   _isInSeries(node) {
     return tf_graph_scene_node.canBeInSeries(node);
-  }
+  },
   @observe('graphHierarchy')
   _graphHierarchyChanged() {
     this._templateIndex = this.graphHierarchy.getTemplateIndex();
