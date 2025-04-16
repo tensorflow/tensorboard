@@ -146,11 +146,11 @@ jobs:
       fail-fast: false
       matrix:
         mode: ['native']
-        platform: ['ubuntu-20.04', 'macos-13']
+        platform: ['ubuntu-22.04', 'macos-13']
         rust_version: ['1.65.0']
         include:
           - mode: 'universal'
-            platform: 'ubuntu-20.04'
+            platform: 'ubuntu-22.04'
             rust_version: '1.65.0'
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
