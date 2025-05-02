@@ -38,7 +38,7 @@ const effectsInitialized = createAction('[FEATURE FLAG] Effects Init');
 @Injectable()
 export class FeatureFlagEffects {
   private readonly actions$ = inject(Actions);
-  private readonly store = inject<Store<State>>(Store);
+  private readonly store: Store<State> = inject(Store);
   private readonly dataSource = inject(TBFeatureFlagDataSource);
 
   // Ngrx assumes all Effect classes have properties that inherit from the base
