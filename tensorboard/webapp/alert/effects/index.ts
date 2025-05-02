@@ -23,7 +23,7 @@ import {AlertActionModule} from '../alert_action_module';
 @Injectable()
 export class AlertEffects {
   private readonly actions$ = inject(Actions);
-  private readonly store = inject(Store<State>);
+  private readonly store: Store<State> = inject(Store);
   private readonly alertActionModule = inject(AlertActionModule);
 
   /** @export */
