@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Injectable} from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Action, createAction, Store} from '@ngrx/store';
 import {combineLatestWith, map, tap, withLatestFrom} from 'rxjs/operators';
@@ -37,6 +37,10 @@ const effectsInitialized = createAction('[FEATURE FLAG] Effects Init');
 
 @Injectable()
 export class FeatureFlagEffects {
+  private readonly actions$ = inject(Actions);
+  private readonly store = inject<Store<State>>(Store);
+  private readonly dataSource = inject(TBFeatureFlagDataSource);
+
   // Ngrx assumes all Effect classes have properties that inherit from the base
   // JS Object. `tf_feature_flags` does not, so we wrap it.
   private readonly tfFeatureFlags = {
@@ -127,12 +131,6 @@ export class FeatureFlagEffects {
       ),
     {dispatch: false}
   );
-
-  constructor(
-    private readonly actions$: Actions,
-    private readonly store: Store<State>,
-    private readonly dataSource: TBFeatureFlagDataSource
-  ) {}
 
   /** @export */
   ngrxOnInitEffects(): Action {

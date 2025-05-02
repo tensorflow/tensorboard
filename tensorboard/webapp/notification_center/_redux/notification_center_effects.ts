@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Injectable} from '@angular/core';
+import {Injectable, inject} from '@angular/core';
 import {Actions, createEffect, ofType, OnInitEffects} from '@ngrx/effects';
 import {Action, createAction, Store} from '@ngrx/store';
 import {EMPTY, Observable} from 'rxjs';
@@ -26,11 +26,9 @@ export const initAction = createAction('[NotificationCenter Effects] Init');
 
 @Injectable()
 export class NotificationCenterEffects implements OnInitEffects {
-  constructor(
-    private readonly actions$: Actions,
-    private readonly store: Store<State>,
-    private readonly dataSource: NotificationCenterDataSource
-  ) {}
+  private readonly actions$ = inject(Actions);
+  private readonly store: Store<State> = inject(Store);
+  private readonly dataSource = inject(NotificationCenterDataSource);
 
   /** @export */
   ngrxOnInitEffects(): Action {
