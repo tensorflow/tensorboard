@@ -15,7 +15,7 @@ limitations under the License.
 @use '@angular/material' as mat;
 
 @mixin debugger-op-type {
-  background-color: mat.get-color-from-palette(mat.$blue-grey-palette, 50);
+  background-color: /*m2*/mat.get-color-from-palette(/*m2$*/mat.$blue-grey-palette, 50);
   @include tb-theme-foreground-prop(border, border, 1px solid);
   border-radius: 4px;
   font-family: 'Roboto Mono', monospace;
@@ -26,13 +26,13 @@ limitations under the License.
   width: max-content;
 
   @include tb-dark-theme {
-    background-color: mat.get-color-from-palette(mat.$blue-grey-palette, 700);
+    background-color: /*m2*/mat.get-color-from-palette(/*m2$*/mat.$blue-grey-palette, 700);
   }
 }
 
 @mixin debugger-highlight-background {
   background-color: #fff099;
   @include tb-dark-theme {
-    background-color: mat.get-color-from-palette(mat.$orange-palette, 900);
+    background-color: /*m2*/mat.get-color-from-palette(/*m2$*/mat.$orange-palette, 900);
   }
 }

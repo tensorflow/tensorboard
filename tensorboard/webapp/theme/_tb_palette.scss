@@ -43,15 +43,15 @@ $tf-slate: (
    several orange values, but only one of them (--tb-orange-strong) is used
    widely. */
 $tf-orange: (
-  100: mat.get-color-from-palette(mat.$orange-palette, 100),
-  200: mat.get-color-from-palette(mat.$orange-palette, 200),
-  300: mat.get-color-from-palette(mat.$orange-palette, 300),
-  400: mat.get-color-from-palette(mat.$orange-palette, 400),
-  500: mat.get-color-from-palette(mat.$orange-palette, 500),
-  600: mat.get-color-from-palette(mat.$orange-palette, 600),
-  700: mat.get-color-from-palette(mat.$orange-palette, 700),
-  800: mat.get-color-from-palette(mat.$orange-palette, 800),
-  900: mat.get-color-from-palette(mat.$orange-palette, 900),
+  100: /*m2*/mat.get-color-from-palette(/*m2$*/mat.$orange-palette, 100),
+  200: /*m2*/mat.get-color-from-palette(/*m2$*/mat.$orange-palette, 200),
+  300: /*m2*/mat.get-color-from-palette(/*m2$*/mat.$orange-palette, 300),
+  400: /*m2*/mat.get-color-from-palette(/*m2$*/mat.$orange-palette, 400),
+  500: /*m2*/mat.get-color-from-palette(/*m2$*/mat.$orange-palette, 500),
+  600: /*m2*/mat.get-color-from-palette(/*m2$*/mat.$orange-palette, 600),
+  700: /*m2*/mat.get-color-from-palette(/*m2$*/mat.$orange-palette, 700),
+  800: /*m2*/mat.get-color-from-palette(/*m2$*/mat.$orange-palette, 800),
+  900: /*m2*/mat.get-color-from-palette(/*m2$*/mat.$orange-palette, 900),
   contrast: (
     100: rgba(black, 0.87),
     200: rgba(black, 0.87),

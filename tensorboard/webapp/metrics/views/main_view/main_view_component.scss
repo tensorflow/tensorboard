@@ -86,7 +86,7 @@ mat-button-toggle-group.filter-view {
 .main,
 .sidebar {
   contain: strict;
-  background-color: mat.get-color-from-palette($tb-background, background);
+  background-color: /*m2*/mat.get-color-from-palette($tb-background, background);
   overflow-x: hidden;
   overflow-y: auto;
   will-change: transform, scroll-position;
@@ -97,7 +97,7 @@ mat-button-toggle-group.filter-view {
 }
 
 .main {
-  background-color: mat.get-color-from-palette($tf-slate, 200);
+  background-color: /*m2*/mat.get-color-from-palette($tf-slate, 200);
   flex: 1 1;
   display: flex;
   flex-direction: column;
@@ -153,16 +153,16 @@ mat-button-toggle-group.filter-view {
 
 /** TODO(psybuzz): consider making a tb-button instead. */
 :host .settings-button {
-  color: mat.get-color-from-palette($tb-foreground, secondary-text);
+  color: /*m2*/mat.get-color-from-palette($tb-foreground, secondary-text);
   display: inline-flex;
 
   @include tb-dark-theme {
-    color: mat.get-color-from-palette($tb-dark-foreground, secondary-text);
+    color: /*m2*/mat.get-color-from-palette($tb-dark-foreground, secondary-text);
   }
 
   &.checked {
     @include tb-theme-background-prop(background-color, selected-button);
-    border-color: mat.get-color-from-palette(mat.$gray-palette, 300);
+    border-color: /*m2*/mat.get-color-from-palette(mat.$gray-palette, 300);
   }
 
   ::ng-deep .mat-button-wrapper {
@@ -176,7 +176,7 @@ mat-button-toggle-group.filter-view {
 }
 
 .slide-out-menu {
-  background-color: mat.get-color-from-palette($tb-background, background);
+  background-color: /*m2*/mat.get-color-from-palette($tb-background, background);
   // Make the menu the full height minus the size of the toolbar.
   height: calc(100% - 49px);
   position: absolute;

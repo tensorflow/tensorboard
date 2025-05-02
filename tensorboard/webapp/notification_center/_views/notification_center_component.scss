@@ -21,7 +21,7 @@ limitations under the License.
 
 .red-dot {
   $_dim: 10px;
-  background-color: mat.get-color-from-palette(mat.$red-palette, 700);
+  background-color: /*m2*/mat.get-color-from-palette(mat.$red-palette, 700);
   border-radius: $_dim * 0.5;
   height: $_dim;
   position: absolute;
@@ -52,7 +52,7 @@ limitations under the License.
 }
 
 .category-icon {
-  color: mat.get-color-from-palette(mat.$blue-palette, 700);
+  color: /*m2*/mat.get-color-from-palette(mat.$blue-palette, 700);
   height: 15px;
   margin-right: 6px;
   vertical-align: middle;

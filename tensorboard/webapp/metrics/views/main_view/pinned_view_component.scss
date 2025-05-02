@@ -65,7 +65,7 @@ mat-icon {
 
 .new-card-pinned {
   animation: pinned-view-fade-out 3s linear;
-  background: mat.get-color-from-palette(mat.$red-palette, 500);
+  background: /*m2*/mat.get-color-from-palette(mat.$red-palette, 500);
   border-radius: 5px;
   color: #fff;
   display: inline-block;

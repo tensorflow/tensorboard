@@ -32,7 +32,7 @@ limitations under the License.
   text-align: right;
   width: 200px;
   @include tb-dark-theme {
-    box-shadow: 1px 3px mat.get-color-from-palette(mat.$gray-palette, 600);
+    box-shadow: 1px 3px /*m2*/mat.get-color-from-palette(mat.$gray-palette, 600);
   }
 }
 

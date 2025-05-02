@@ -17,13 +17,13 @@ limitations under the License.
 
 .message {
   .warning {
-    color: mat.get-color-from-palette($tb-warn);
+    color: /*m2*/mat.get-color-from-palette($tb-warn);
   }
   margin-bottom: 16px;
 }
 
 .note-1 {
-  color: mat.get-color-from-palette($tb-accent);
+  color: /*m2*/mat.get-color-from-palette($tb-accent);
 }
 
 .scrolling-page {

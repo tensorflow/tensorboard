@@ -23,19 +23,19 @@ limitations under the License.
 
 // Value for `app-bar` property in $tb-background. Can specify an override in
 // _variable.scss to specifically customize this value.
-$tb-app-bar-color: mat.get-color-from-palette($tb-primary, default) !default;
+$tb-app-bar-color: /*m2*/mat.get-color-from-palette($tb-primary, default) !default;
 
 $tb-dark-primary: $tb-primary !default;
 $tb-dark-accent: $tb-accent !default;
 $tb-dark-warn: $tb-warn !default;
 // Value for `app-bar` property in $tb-dark-background. Can specify an override
 // in _variable.scss to specifically customize this value.
-$tb-dark-app-bar-color: mat.get-color-from-palette(
+$tb-dark-app-bar-color: /*m2*/mat.get-color-from-palette(
   $tb-dark-primary,
   default
 ) !default;
 
-$tb-theme: mat.define-light-theme(
+$tb-theme: /*m2*/mat.define-light-theme(
   (
     color: (
       primary: $tb-primary,
@@ -51,13 +51,13 @@ $tb-theme: mat.define-light-theme(
 $tb-foreground: map_merge(
   mat.$light-theme-foreground-palette,
   (
-    text: mat.get-color-from-palette(mat.$gray-palette, 900),
-    secondary-text: mat.get-color-from-palette(mat.$gray-palette, 700),
-    disabled-text: mat.get-color-from-palette(mat.$gray-palette, 600),
+    text: /*m2*/mat.get-color-from-palette(mat.$gray-palette, 900),
+    secondary-text: /*m2*/mat.get-color-from-palette(mat.$gray-palette, 700),
+    disabled-text: /*m2*/mat.get-color-from-palette(mat.$gray-palette, 600),
     // TB specific variable.
     border: #ebebeb,
-    link: mat.get-color-from-palette(mat.$blue-palette, 700),
-    link-visited: mat.get-color-from-palette(mat.$purple-palette, 700),
+    link: /*m2*/mat.get-color-from-palette(mat.$blue-palette, 700),
+    link-visited: /*m2*/mat.get-color-from-palette(mat.$purple-palette, 700),
   )
 );
 $tb-background: map_merge(
@@ -103,16 +103,16 @@ $tb-dark-theme: mat.define-dark-theme(
   )
 );
 $tb-dark-foreground: map_merge(
-  map-get(mat.get-color-config($tb-dark-theme), foreground),
+  map-get(/*m2*/mat.get-color-config($tb-dark-theme), foreground),
   (
     border: #555,
-    disabled-text: mat.get-color-from-palette(mat.$gray-palette, 700),
-    link: mat.get-color-from-palette(mat.$blue-palette, 400),
-    link-visited: mat.get-color-from-palette(mat.$purple-palette, 300),
+    disabled-text: /*m2*/mat.get-color-from-palette(mat.$gray-palette, 700),
+    link: /*m2*/mat.get-color-from-palette(mat.$blue-palette, 400),
+    link-visited: /*m2*/mat.get-color-from-palette(mat.$purple-palette, 300),
   )
 );
 $tb-dark-background: map_merge(
-  map-get(mat.get-color-config($tb-dark-theme), background),
+  map-get(/*m2*/mat.get-color-config($tb-dark-theme), background),
   (
     app-bar: $tb-dark-app-bar-color,
   )
