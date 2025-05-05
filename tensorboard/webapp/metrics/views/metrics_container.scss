@@ -26,10 +26,11 @@ limitations under the License.
 
 .notice {
   background-color: rgba(
-    mat.get-color-from-palette(mat.$yellow-palette, 200),
+    /*m2*/ mat.get-color-from-palette(mat.$yellow-palette, 200),
     0.85
   );
-  border-bottom: 1px solid mat.get-color-from-palette(mat.$yellow-palette, 500);
+  $yellow-500: /*m2*/ mat.get-color-from-palette(mat.$yellow-palette, 500);
+  border-bottom: 1px solid $yellow-500;
   color: map-get($tb-foreground, text);
   display: block;
   flex: 0 0;
@@ -41,14 +42,21 @@ tb-dashboard-layout {
 }
 
 nav {
-  background-color: mat.get-color-from-palette($tb-background, background);
-  border-right: 1px solid mat.get-color-from-palette($tb-foreground, border);
+  background-color: /*m2*/ mat.get-color-from-palette(
+    $tb-background,
+    background
+  );
+  $border: /*m2*/ mat.get-color-from-palette($tb-foreground, border);
+  border-right: 1px solid $border;
   flex: none;
   width: 340px;
 
   @include tb-dark-theme {
     background-color: map-get($tb-dark-background, background);
-    border-right-color: mat.get-color-from-palette($tb-dark-foreground, border);
+    border-right-color: /*m2*/ mat.get-color-from-palette(
+      $tb-dark-foreground,
+      border
+    );
   }
 }
 

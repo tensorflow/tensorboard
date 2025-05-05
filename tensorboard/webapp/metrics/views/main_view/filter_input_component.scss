@@ -28,7 +28,7 @@ tb-filter-input {
   @include tb-theme-foreground-prop(color, text);
 
   &:not(.valid) {
-    $_error-color: mat.get-color-from-palette($tb-warn, 800);
+    $_error-color: /*m2*/ mat.get-color-from-palette($tb-warn, 800);
 
     color: $_error-color;
 
