@@ -16,7 +16,7 @@ limitations under the License.
 @import 'tensorboard/webapp/theme/tb_theme';
 
 mat-select {
-  border: 1px solid /*m2*/mat.get-color-from-palette($tf-slate, 500);
+  border: 1px solid /*m2*/ mat.get-color-from-palette($tf-slate, 500);
   border-radius: 3px;
   box-sizing: border-box;
   padding: 6px;

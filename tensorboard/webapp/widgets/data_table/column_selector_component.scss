@@ -25,12 +25,18 @@ limitations under the License.
   border: 1px solid;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
 
-  border-color: /*m2*/mat.get-color-from-palette($tb-foreground, border);
-  background-color: /*m2*/mat.get-color-from-palette($tb-background, background);
+  border-color: /*m2*/ mat.get-color-from-palette($tb-foreground, border);
+  background-color: /*m2*/ mat.get-color-from-palette(
+    $tb-background,
+    background
+  );
 
   @include tb-dark-theme {
-    border-color: /*m2*/mat.get-color-from-palette($tb-dark-foreground, border);
-    background-color: /*m2*/mat.get-color-from-palette(
+    border-color: /*m2*/ mat.get-color-from-palette(
+      $tb-dark-foreground,
+      border
+    );
+    background-color: /*m2*/ mat.get-color-from-palette(
       $tb-dark-background,
       'background'
     );
@@ -49,7 +55,7 @@ limitations under the License.
   }
 
   .load-more-columns {
-    color: /*m2*/mat.get-color-from-palette($tb-warn, 600);
+    color: /*m2*/ mat.get-color-from-palette($tb-warn, 600);
     display: flex;
     flex-direction: column;
     margin-top: 6px;
@@ -80,16 +86,22 @@ limitations under the License.
     width: 100%;
 
     &.selected {
-      background-color: /*m2*/mat.get-color-from-palette(mat.$gray-palette, 200);
+      background-color: /*m2*/ mat.get-color-from-palette(
+        mat.$gray-palette,
+        200
+      );
 
       @include tb-dark-theme {
-        background-color: /*m2*/mat.get-color-from-palette(mat.$gray-palette, 400);
+        background-color: /*m2*/ mat.get-color-from-palette(
+          mat.$gray-palette,
+          400
+        );
       }
     }
   }
 
   .tag {
-    background-color: /*m2*/mat.get-color-from-palette($tb-primary, 500);
+    background-color: /*m2*/ mat.get-color-from-palette($tb-primary, 500);
     border-radius: 8px;
     font-size: 12px;
     font-style: italic;

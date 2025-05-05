@@ -45,7 +45,10 @@ limitations under the License.
 }
 
 .focus-execution-container {
-  background-color: /*m2*/mat.get-color-from-palette(/*m2$*/mat.$orange-palette, 200);
+  background-color: /*m2*/ mat.get-color-from-palette(
+    /*m2$*/ mat.$orange-palette,
+    200
+  );
   border-radius: 4px;
   font-size: 12px;
   height: 120px;
@@ -53,7 +56,10 @@ limitations under the License.
   width: 360px;
 
   @include tb-dark-theme {
-    background-color: /*m2*/mat.get-color-from-palette(/*m2$*/mat.$orange-palette, 900);
+    background-color: /*m2*/ mat.get-color-from-palette(
+      /*m2$*/ mat.$orange-palette,
+      900
+    );
   }
 }
 

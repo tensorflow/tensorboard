@@ -28,7 +28,7 @@ $_circle-size: 20px;
 
 .run-color-swatch {
   border-radius: 100%;
-  border: 1px solid /*m2*/mat.get-color-from-palette($tb-foreground, border);
+  border: 1px solid /*m2*/ mat.get-color-from-palette($tb-foreground, border);
   height: $_circle-size;
   width: $_circle-size;
   outline: none;

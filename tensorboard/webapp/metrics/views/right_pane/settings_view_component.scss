@@ -58,7 +58,7 @@ section .control-row:not(:has(+ .control-row > mat-checkbox)):not(:last-child) {
 
   .slider-input {
     background-color: inherit;
-    border: 1px solid /*m2*/mat.get-color-from-palette($tf-slate, 500);
+    border: 1px solid /*m2*/ mat.get-color-from-palette($tf-slate, 500);
     border-radius: 2px;
     box-sizing: border-box;
     color: inherit;
@@ -67,7 +67,7 @@ section .control-row:not(:has(+ .control-row > mat-checkbox)):not(:last-child) {
     padding: 0 4px;
 
     @include tb-dark-theme {
-      border-color: /*m2*/mat.get-color-from-palette($tf-slate, 700);
+      border-color: /*m2*/ mat.get-color-from-palette($tf-slate, 700);
     }
   }
 }
@@ -127,9 +127,15 @@ mat-slider {
     align-items: center;
   }
   &.toggle-opened {
-    background-color: /*m2*/mat.get-color-from-palette(/*m2$*/mat.$grey-palette, 200);
+    background-color: /*m2*/ mat.get-color-from-palette(
+      /*m2$*/ mat.$grey-palette,
+      200
+    );
     @include tb-dark-theme {
-      background-color: /*m2*/mat.get-color-from-palette(/*m2$*/mat.$grey-palette, 800);
+      background-color: /*m2*/ mat.get-color-from-palette(
+        /*m2$*/ mat.$grey-palette,
+        800
+      );
     }
   }
   mat-icon {

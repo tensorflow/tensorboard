@@ -183,7 +183,8 @@ text {
   }
 }
 
-$_border-style: 1px solid /*m2*/mat.get-color-from-palette(mat.$gray-palette, 500);
+$border: /*m2*/ mat.get-color-from-palette(mat.$gray-palette, 500);
+$_border-style: 1px solid $border;
 
 .x-axis .major-label {
   border-left: $_border-style;
