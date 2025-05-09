@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Inject} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import {Store} from '@ngrx/store';
 import {combineLatest, defer, merge, Observable, Subject} from 'rxjs';
@@ -69,6 +69,9 @@ const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
   ],
 })
 export class RegexEditDialogContainer {
+  private readonly store = inject<Store<State>>(Store);
+  dialogRef = inject<MatDialogRef<RegexEditDialogContainer>>(MatDialogRef);
+
   private readonly experimentIds: string[];
   private readonly runIdToEid$: Observable<Record<string, string>>;
   private readonly allRuns$: Observable<Run[]>;
@@ -152,14 +155,11 @@ export class RegexEditDialogContainer {
     );
   }).pipe(startWith([]));
 
-  constructor(
-    private readonly store: Store<State>,
-    public dialogRef: MatDialogRef<RegexEditDialogContainer>,
-    @Inject(MAT_DIALOG_DATA)
-    data: {
+  constructor() {
+    const data = inject<{
       experimentIds: string[];
-    }
-  ) {
+    }>(MAT_DIALOG_DATA);
+
     this.expNameByExpId$ = this.store.select(getDashboardExperimentNames);
     this.enableColorByExperiment$ = this.store.select(
       getEnableColorByExperiment
