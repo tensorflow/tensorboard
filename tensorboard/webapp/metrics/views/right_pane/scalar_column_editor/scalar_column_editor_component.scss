@@ -39,7 +39,7 @@ $_accent: map-get(/*m2*/ mat.get-color-config($tb-theme), accent);
 }
 
 .highlighted {
-  background-color: /*m2*/ mat.get-color-from-palette(mat.$gray-palette, 200);
+  background-color: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$grey-palette, 200);
 }
 
 .highlight-bottom {

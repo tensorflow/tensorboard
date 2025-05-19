@@ -87,13 +87,13 @@ limitations under the License.
 
     &.selected {
       background-color: /*m2*/ mat.get-color-from-palette(
-        mat.$gray-palette,
+        mat.$grey-palette,
         200
       );
 
       @include tb-dark-theme {
         background-color: /*m2*/ mat.get-color-from-palette(
-          mat.$gray-palette,
+          mat.$grey-palette,
           400
         );
       }

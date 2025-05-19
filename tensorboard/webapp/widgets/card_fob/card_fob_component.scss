@@ -21,7 +21,7 @@ limitations under the License.
 
 .fob {
   display: inline-flex;
-  background-color: /*m2*/ mat.get-color-from-palette(mat.$gray-palette, 300);
+  background-color: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$grey-palette, 300);
   border-radius: 25px;
   padding: 2px 2px 2px 4px;
   font-size: 11px;
@@ -50,7 +50,7 @@ limitations under the License.
   &.prospective {
     align-items: center;
     box-sizing: border-box;
-    border: 1px dashed /*m2*/ mat.get-color-from-palette(mat.$gray-palette, 500);
+    border: 1px dashed /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$grey-palette, 500);
     font-weight: bold;
     height: 17px;
   }
@@ -61,7 +61,7 @@ span {
   display: inline-block;
 
   @include tb-dark-theme {
-    color: /*m2*/ mat.get-color-from-palette(mat.$gray-palette, 700);
+    color: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$grey-palette, 700);
   }
 }
 
@@ -84,17 +84,17 @@ button {
   }
 
   @include tb-dark-theme {
-    color: /*m2*/ mat.get-color-from-palette(mat.$gray-palette, 700);
+    color: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$grey-palette, 700);
   }
 }
 
 button:hover {
-  background-color: /*m2*/ mat.get-color-from-palette(mat.$gray-palette, 500);
-  color: /*m2*/ mat.get-color-from-palette(mat.$gray-palette, 200);
+  background-color: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$grey-palette, 500);
+  color: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$grey-palette, 200);
   cursor: pointer;
 
   @include tb-dark-theme {
-    background-color: /*m2*/ mat.get-color-from-palette(mat.$gray-palette, 700);
-    color: /*m2*/ mat.get-color-from-palette(mat.$gray-palette, 300);
+    background-color: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$grey-palette, 700);
+    color: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$grey-palette, 300);
   }
 }
