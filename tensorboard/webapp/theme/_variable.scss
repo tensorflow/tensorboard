@@ -18,7 +18,7 @@ limitations under the License.
 
 $tb-primary: /*m2*/ mat.define-palette($tf-orange, 700, 400, 800);
 $tb-accent: /*m2*/ mat.define-palette($tf-orange);
-$tb-warn: /*m2*/ mat.define-palette(mat.$red-palette);
+$tb-warn: /*m2*/ mat.define-palette(/*m2$*/ mat.$red-palette);
 
 $tb-dark-primary: /*m2*/ mat.define-palette($tf-orange, 800, 600, 900);
 $tb-dark-accent: $tb-dark-primary;
