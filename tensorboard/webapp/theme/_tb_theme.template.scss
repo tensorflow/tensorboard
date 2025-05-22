@@ -23,7 +23,8 @@ limitations under the License.
 
 // Value for `app-bar` property in $tb-background. Can specify an override in
 // _variable.scss to specifically customize this value.
-$tb-app-bar-color: /*m2*/ mat.get-color-from-palette(
+$tb-app-bar-color:
+  /*m2*/ mat.get-color-from-palette(
   $tb-primary,
   default
 ) !default;
@@ -33,12 +34,14 @@ $tb-dark-accent: $tb-accent !default;
 $tb-dark-warn: $tb-warn !default;
 // Value for `app-bar` property in $tb-dark-background. Can specify an override
 // in _variable.scss to specifically customize this value.
-$tb-dark-app-bar-color: /*m2*/ mat.get-color-from-palette(
+$tb-dark-app-bar-color:
+  /*m2*/ mat.get-color-from-palette(
   $tb-dark-primary,
   default
 ) !default;
 
-$tb-theme: /*m2*/ mat.define-light-theme(
+$tb-theme:
+  /*m2*/ mat.define-light-theme(
   (
     color: (
       primary: $tb-primary,
@@ -52,19 +55,22 @@ $tb-theme: /*m2*/ mat.define-light-theme(
 
 // Overriding mat-light-theme-foreground variables.
 $tb-foreground: map_merge(
-  mat.$light-theme-foreground-palette,
+  /*m2$*/ mat.$light-theme-foreground-palette,
   (
-    text: /*m2*/ mat.get-color-from-palette(mat.$gray-palette, 900),
-    secondary-text: /*m2*/ mat.get-color-from-palette(mat.$gray-palette, 700),
-    disabled-text: /*m2*/ mat.get-color-from-palette(mat.$gray-palette, 600),
+    text: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$gray-palette, 900),
+    secondary-text: /*m2*/
+      mat.get-color-from-palette(/*m2$*/ mat.$gray-palette, 700),
+    disabled-text: /*m2*/
+      mat.get-color-from-palette(/*m2$*/ mat.$gray-palette, 600),
     // TB specific variable.
     border: #ebebeb,
-    link: /*m2*/ mat.get-color-from-palette(mat.$blue-palette, 700),
-    link-visited: /*m2*/ mat.get-color-from-palette(mat.$purple-palette, 700),
+    link: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$blue-palette, 700),
+    link-visited: /*m2*/
+      mat.get-color-from-palette(/*m2$*/ mat.$purple-palette, 700),
   )
 );
 $tb-background: map_merge(
-  mat.$light-theme-background-palette,
+  /*m2*/ mat.$light-theme-background-palette,
   (
     app-bar: $tb-app-bar-color,
     // Default is `map.get($grey-palette, 50)`.
@@ -98,11 +104,13 @@ $tb-theme: map_merge(
   color,
   system,
   (
-    on-surface: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$gray-palette, 900)
+    on-surface: /*m2*/
+      mat.get-color-from-palette(/*m2$*/ mat.$gray-palette, 900),
   )
 );
 
-$tb-dark-theme: mat.define-dark-theme(
+$tb-dark-theme:
+  /*m2*/ mat.define-dark-theme(
   (
     color: (
       primary: $tb-dark-primary,
@@ -117,9 +125,11 @@ $tb-dark-foreground: map_merge(
   map-get(/*m2*/ mat.get-color-config($tb-dark-theme), foreground),
   (
     border: #555,
-    disabled-text: /*m2*/ mat.get-color-from-palette(mat.$gray-palette, 700),
-    link: /*m2*/ mat.get-color-from-palette(mat.$blue-palette, 400),
-    link-visited: /*m2*/ mat.get-color-from-palette(mat.$purple-palette, 300),
+    disabled-text: /*m2*/
+      mat.get-color-from-palette(/*m2$*/ mat.$gray-palette, 700),
+    link: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$blue-palette, 400),
+    link-visited: /*m2*/
+      mat.get-color-from-palette(/*m2$*/ mat.$purple-palette, 300),
   )
 );
 $tb-dark-background: map_merge(
@@ -190,6 +200,7 @@ $tb-dark-theme: map_merge(
   @if (not $light-color) {
     @error "Name '#{$dict-name}' is not found in light #{$object-name}.";
   }
+
   @if (not $dark-color) {
     @error "Name '#{$dict-name}' is not found in dark #{$object-name}.";
   }
@@ -294,6 +305,7 @@ $tb-dark-theme: map_merge(
     // Prevent color-picker from briefly showing scrollbar when calculating its
     // position.
     contain: strict;
+
     // The old dialog had a default 24px padding. When migrating to the
     // new dialog this padding was added to avoid adding it to them all
     // individually.

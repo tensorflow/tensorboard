@@ -31,7 +31,7 @@ limitations under the License.
   padding: 2px 6px;
   text-align: right;
   width: 200px;
-  $grey-600: /*m2*/ mat.get-color-from-palette(mat.$gray-palette, 600);
+  $grey-600: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$grey-palette, 600);
   @include tb-dark-theme {
     box-shadow: 1px 3px $grey-600;
   }

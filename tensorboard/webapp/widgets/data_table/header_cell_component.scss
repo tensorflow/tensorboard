@@ -79,7 +79,10 @@ $_icon_padding: 4px;
 }
 
 .highlight {
-  background-color: /*m2*/ mat.get-color-from-palette(mat.$gray-palette, 200);
+  background-color: /*m2*/ mat.get-color-from-palette(
+    /*m2$*/ mat.$grey-palette,
+    200
+  );
 }
 
 .highlight-border-right {

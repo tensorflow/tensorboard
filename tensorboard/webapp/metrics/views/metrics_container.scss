@@ -26,10 +26,13 @@ limitations under the License.
 
 .notice {
   background-color: rgba(
-    /*m2*/ mat.get-color-from-palette(mat.$yellow-palette, 200),
+    /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$yellow-palette, 200),
     0.85
   );
-  $yellow-500: /*m2*/ mat.get-color-from-palette(mat.$yellow-palette, 500);
+  $yellow-500: /*m2*/ mat.get-color-from-palette(
+    /*m2$*/ mat.$yellow-palette,
+    500
+  );
   border-bottom: 1px solid $yellow-500;
   color: map-get($tb-foreground, text);
   display: block;

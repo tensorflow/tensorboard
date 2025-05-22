@@ -42,10 +42,16 @@ limitations under the License.
   }
 
   &.high-contrast .container {
-    border-color: /*m2*/ mat.get-color-from-palette(mat.$gray-palette, 400);
+    border-color: /*m2*/ mat.get-color-from-palette(
+      /*m2$*/ mat.$grey-palette,
+      400
+    );
 
     &:hover {
-      border-color: /*m2*/ mat.get-color-from-palette(mat.$gray-palette, 600);
+      border-color: /*m2*/ mat.get-color-from-palette(
+        /*m2$*/ mat.$grey-palette,
+        600
+      );
     }
   }
 }
