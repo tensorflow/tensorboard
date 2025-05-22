@@ -13,17 +13,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
+@use '@angular/material' as matm2;
+@use '@angular/material' as matm2var;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 .message {
   .warning {
-    color: /*m2*/ mat.get-color-from-palette($tb-warn);
+    color: matm2.get-color-from-palette($tb-warn);
   }
+
   margin-bottom: 16px;
 }
 
 .note-1 {
-  color: /*m2*/ mat.get-color-from-palette($tb-accent);
+  color: matm2.get-color-from-palette($tb-accent);
 }
 
 .scrolling-page {

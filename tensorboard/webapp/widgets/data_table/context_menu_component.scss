@@ -14,6 +14,8 @@ limitations under the License.
 ==============================================================================*/
 
 @use '@angular/material' as mat;
+@use '@angular/material' as matm2;
+@use '@angular/material' as matm2var;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 .context-menu {
@@ -22,18 +24,12 @@ limitations under the License.
   border-radius: 4px;
   border: 1px solid;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-  border-color: /*m2*/ mat.get-color-from-palette($tb-foreground, border);
-  background-color: /*m2*/ mat.get-color-from-palette(
-    $tb-background,
-    background
-  );
+  border-color: matm2.get-color-from-palette($tb-foreground, border);
+  background-color: matm2.get-color-from-palette($tb-background, background);
 
   @include tb-dark-theme {
-    border-color: /*m2*/ mat.get-color-from-palette(
-      $tb-dark-foreground,
-      border
-    );
-    background-color: /*m2*/ mat.get-color-from-palette(
+    border-color: matm2.get-color-from-palette($tb-dark-foreground, border);
+    background-color: matm2.get-color-from-palette(
       $tb-dark-background,
       'background'
     );

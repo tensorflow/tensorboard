@@ -14,11 +14,13 @@ limitations under the License.
 ==============================================================================*/
 // INTERNAL-ONLY: Import of deprecated legacy Angular Material styles
 @use '@angular/material' as mat;
+@use '@angular/material' as matm2;
+@use '@angular/material' as matm2var;
 @import 'tensorboard/webapp/theme/tb_palette';
 
-$tb-primary: /*m2*/ mat.define-palette($tf-orange, 700, 400, 800);
-$tb-accent: /*m2*/ mat.define-palette($tf-orange);
-$tb-warn: /*m2*/ mat.define-palette(/*m2$*/ mat.$red-palette);
+$tb-primary: matm2.define-palette($tf-orange, 700, 400, 800);
+$tb-accent: matm2.define-palette($tf-orange);
+$tb-warn: matm2.define-palette(matm2var.$red-palette);
 
-$tb-dark-primary: /*m2*/ mat.define-palette($tf-orange, 800, 600, 900);
+$tb-dark-primary: matm2.define-palette($tf-orange, 800, 600, 900);
 $tb-dark-accent: $tb-dark-primary;

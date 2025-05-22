@@ -13,13 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
+@use '@angular/material' as matm2;
+@use '@angular/material' as matm2var;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 ::ng-deep .run-table-color-group-by {
   font-size: 16px;
 
   .label {
-    color: /*m2*/ mat.get-color-from-palette($tb-foreground, secondary-text);
+    color: matm2.get-color-from-palette($tb-foreground, secondary-text);
     font-size: 0.9em;
     margin: 10px 0;
     padding: 0 16px;
@@ -32,6 +34,7 @@ limitations under the License.
 
   .display-regex-string {
     padding-left: 40px;
+
     .none-set-string {
       @include tb-theme-foreground-prop(color, secondary-text);
     }

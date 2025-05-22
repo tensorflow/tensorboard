@@ -14,9 +14,11 @@ limitations under the License.
 ==============================================================================*/
 
 @use '@angular/material' as mat;
+@use '@angular/material' as matm2;
+@use '@angular/material' as matm2var;
 @import 'tensorboard/webapp/theme/tb_theme';
 
-$_accent: map-get(/*m2*/ mat.get-color-config($tb-theme), accent);
+$_accent: map-get(matm2.get-color-config($tb-theme), accent);
 $_icon_size: 12px;
 $_icon_padding: 4px;
 
@@ -34,6 +36,7 @@ $_icon_padding: 4px;
     &:hover {
       opacity: 1;
     }
+
     &:focus {
       opacity: 1;
     }
@@ -79,16 +82,13 @@ $_icon_padding: 4px;
 }
 
 .highlight {
-  background-color: /*m2*/ mat.get-color-from-palette(
-    /*m2$*/ mat.$grey-palette,
-    200
-  );
+  background-color: matm2.get-color-from-palette(matm2var.$grey-palette, 200);
 }
 
 .highlight-border-right {
-  border-right: 2px solid /*m2*/ mat.get-color-from-palette($_accent);
+  border-right: 2px solid matm2.get-color-from-palette($_accent);
 }
 
 .highlight-border-left {
-  border-left: 2px solid /*m2*/ mat.get-color-from-palette($_accent);
+  border-left: 2px solid matm2.get-color-from-palette($_accent);
 }

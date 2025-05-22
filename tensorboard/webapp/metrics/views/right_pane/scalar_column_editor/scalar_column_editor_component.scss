@@ -13,18 +13,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
+@use '@angular/material' as matm2;
+@use '@angular/material' as matm2var;
 @import 'tensorboard/webapp/theme/tb_theme';
 
-$_accent: map-get(/*m2*/ mat.get-color-config($tb-theme), accent);
+$_accent: map-get(matm2.get-color-config($tb-theme), accent);
 
 :host ::ng-deep .mat-tab-label {
   min-width: 0;
   padding: 0 30px;
 }
+
 .editor-controls {
   // controls should fill the full height except for the height of the footer.
   height: calc(100% - 45px);
 }
+
 .tab-group {
   // Override static position so this object is not seen in front of the
   // settings panel.
@@ -39,18 +43,15 @@ $_accent: map-get(/*m2*/ mat.get-color-config($tb-theme), accent);
 }
 
 .highlighted {
-  background-color: /*m2*/ mat.get-color-from-palette(
-    /*m2$*/ mat.$grey-palette,
-    200
-  );
+  background-color: matm2.get-color-from-palette(matm2var.$grey-palette, 200);
 }
 
 .highlight-bottom {
-  border-bottom: 2px solid /*m2*/ mat.get-color-from-palette($_accent);
+  border-bottom: 2px solid matm2.get-color-from-palette($_accent);
 }
 
 .highlight-top {
-  border-top: 2px solid /*m2*/ mat.get-color-from-palette($_accent);
+  border-top: 2px solid matm2.get-color-from-palette($_accent);
 }
 
 .footer {
@@ -63,26 +64,20 @@ $_accent: map-get(/*m2*/ mat.get-color-config($tb-theme), accent);
   align-items: center;
   justify-content: flex-end;
   padding: 4px;
-  $border: /*m2*/ mat.get-color-from-palette($tb-foreground, border);
+  $border: matm2.get-color-from-palette($tb-foreground, border);
   border-top: 1px solid $border;
 
   @include tb-dark-theme {
-    border-color: /*m2*/ mat.get-color-from-palette(
-      $tb-dark-foreground,
-      border
-    );
+    border-color: matm2.get-color-from-palette($tb-dark-foreground, border);
   }
 }
 
 .close-button {
-  color: /*m2*/ mat.get-color-from-palette($tb-foreground, secondary-text);
+  color: matm2.get-color-from-palette($tb-foreground, secondary-text);
   width: 84px;
 
   @include tb-dark-theme {
-    color: /*m2*/ mat.get-color-from-palette(
-      $tb-dark-foreground,
-      secondary-text
-    );
+    color: matm2.get-color-from-palette($tb-dark-foreground, secondary-text);
   }
 }
 

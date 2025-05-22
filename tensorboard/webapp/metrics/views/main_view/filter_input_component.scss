@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
+@use '@angular/material' as matm2;
+@use '@angular/material' as matm2var;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 .tag-filter {
@@ -28,7 +30,7 @@ tb-filter-input {
   @include tb-theme-foreground-prop(color, text);
 
   &:not(.valid) {
-    $_error-color: /*m2*/ mat.get-color-from-palette($tb-warn, 800);
+    $_error-color: matm2.get-color-from-palette($tb-warn, 800);
 
     color: $_error-color;
 
