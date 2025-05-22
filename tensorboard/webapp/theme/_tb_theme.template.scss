@@ -98,7 +98,9 @@ $tb-theme: map_merge(
   color,
   system,
   (
-    on-surface: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$gray-palette, 900)
+    on-surface: /*m2*/
+      mat.get-color-from-palette(/*m2$*/ mat.$gray-palette, 900),
+
   )
 );
 
