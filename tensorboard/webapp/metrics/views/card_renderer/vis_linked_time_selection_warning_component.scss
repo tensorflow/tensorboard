@@ -13,11 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
+@use '@angular/material' as matm2;
+@use '@angular/material' as matm2var;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 :host {
-  color: /*m2*/ mat.get-color-from-palette(
-    map-get(/*m2*/ mat.get-color-config($tb-theme), warn),
+  color: matm2.get-color-from-palette(
+    map-get(matm2.get-color-config($tb-theme), warn),
     700
   );
   height: 1em;
@@ -25,8 +27,8 @@ limitations under the License.
   display: inline-flex;
 
   @include tb-dark-theme {
-    color: /*m2*/ mat.get-color-from-palette(
-      map-get(/*m2*/ mat.get-color-config($tb-dark-theme), warn),
+    color: matm2.get-color-from-palette(
+      map-get(matm2.get-color-config($tb-dark-theme), warn),
       700
     );
   }

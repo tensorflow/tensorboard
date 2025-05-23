@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
+@use '@angular/material' as matm2;
+@use '@angular/material' as matm2var;
 
 $tf-slate: (
   100: #f5f6f7,
@@ -43,15 +45,15 @@ $tf-slate: (
    several orange values, but only one of them (--tb-orange-strong) is used
    widely. */
 $tf-orange: (
-  100: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$orange-palette, 100),
-  200: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$orange-palette, 200),
-  300: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$orange-palette, 300),
-  400: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$orange-palette, 400),
-  500: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$orange-palette, 500),
-  600: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$orange-palette, 600),
-  700: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$orange-palette, 700),
-  800: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$orange-palette, 800),
-  900: /*m2*/ mat.get-color-from-palette(/*m2$*/ mat.$orange-palette, 900),
+  100: matm2.get-color-from-palette(matm2var.$orange-palette, 100),
+  200: matm2.get-color-from-palette(matm2var.$orange-palette, 200),
+  300: matm2.get-color-from-palette(matm2var.$orange-palette, 300),
+  400: matm2.get-color-from-palette(matm2var.$orange-palette, 400),
+  500: matm2.get-color-from-palette(matm2var.$orange-palette, 500),
+  600: matm2.get-color-from-palette(matm2var.$orange-palette, 600),
+  700: matm2.get-color-from-palette(matm2var.$orange-palette, 700),
+  800: matm2.get-color-from-palette(matm2var.$orange-palette, 800),
+  900: matm2.get-color-from-palette(matm2var.$orange-palette, 900),
   contrast: (
     100: rgba(black, 0.87),
     200: rgba(black, 0.87),

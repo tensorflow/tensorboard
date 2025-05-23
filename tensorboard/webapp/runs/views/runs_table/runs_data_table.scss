@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
+@use '@angular/material' as matm2;
+@use '@angular/material' as matm2var;
 @import 'tensorboard/webapp/theme/tb_theme';
 $_circle-size: 20px;
 
@@ -28,7 +30,7 @@ $_circle-size: 20px;
 
 .run-color-swatch {
   border-radius: 100%;
-  border: 1px solid /*m2*/ mat.get-color-from-palette($tb-foreground, border);
+  border: 1px solid matm2.get-color-from-palette($tb-foreground, border);
   height: $_circle-size;
   width: $_circle-size;
   outline: none;
