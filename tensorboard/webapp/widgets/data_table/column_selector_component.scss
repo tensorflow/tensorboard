@@ -82,10 +82,16 @@ limitations under the License.
     width: 100%;
 
     &.selected {
-      background-color: matm2.get-color-from-palette(mat.$grey-palette, 200);
+      background-color: matm2.get-color-from-palette(
+        matm2var.$grey-palette,
+        200
+      );
 
       @include tb-dark-theme {
-        background-color: matm2.get-color-from-palette(mat.$grey-palette, 400);
+        background-color: matm2.get-color-from-palette(
+          matm2var.$grey-palette,
+          400
+        );
       }
     }
   }

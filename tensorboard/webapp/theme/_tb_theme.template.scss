@@ -61,7 +61,7 @@ $tb-foreground: map_merge(
   )
 );
 $tb-background: map_merge(
-  matm2.$light-theme-background-palette,
+  matm2var.$light-theme-background-palette,
   (
     app-bar: $tb-app-bar-color,
     // Default is `map.get($grey-palette, 50)`.
