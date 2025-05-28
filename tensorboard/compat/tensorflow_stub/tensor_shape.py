@@ -14,6 +14,8 @@
 # ==============================================================================
 """Helper classes for tensor shape inference."""
 
+# pytype: skip-file
+
 from . import compat, dtypes
 from tensorboard.compat.proto import tensor_shape_pb2
 
