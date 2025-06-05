@@ -344,6 +344,8 @@ $tb-dark-theme: map_merge(
 
       mat-icon.mat-icon {
         flex-shrink: 0;
+        /* stylelint-disable-next-line declaration-no-important -- see cl/760092703 */
+        min-height: auto !important;
       }
 
       mat-icon.mat-icon,
