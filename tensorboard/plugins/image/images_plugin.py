@@ -15,7 +15,6 @@
 """The TensorBoard Images plugin."""
 
 
-import imghdr
 import urllib.parse
 
 from werkzeug import wrappers
@@ -26,6 +25,7 @@ from tensorboard.backend import http_util
 from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.image import metadata
+from tensorboard.util import imghdr
 
 
 _IMGHDR_TO_MIMETYPE = {

@@ -16,7 +16,6 @@
 
 
 import collections
-import imghdr
 import json
 
 from werkzeug import wrappers
@@ -30,6 +29,7 @@ from tensorboard.plugins.histogram import metadata as histogram_metadata
 from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.metrics import metadata
 from tensorboard.plugins.scalar import metadata as scalar_metadata
+from tensorboard.util import imghdr
 
 
 _IMGHDR_TO_MIMETYPE = {
