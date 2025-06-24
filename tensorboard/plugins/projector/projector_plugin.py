@@ -17,7 +17,6 @@
 
 import collections
 import functools
-import imghdr
 import mimetypes
 import os
 import threading
@@ -35,7 +34,7 @@ from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.projector import metadata
 from tensorboard.plugins.projector.projector_config_pb2 import ProjectorConfig
-from tensorboard.util import tb_logging
+from tensorboard.util import tb_logging, imghdr
 
 logger = tb_logging.get_logger()
 
