@@ -17,7 +17,8 @@
 
 import collections
 import functools
-import imghdr
+from PIL import Image
+import io
 import mimetypes
 import os
 import threading
@@ -699,96 +700,58 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             tensor = tensor.astype(dtype="float32", copy=False)
         data_bytes = tensor.tobytes()
         return Respond(request, data_bytes, "application/octet-stream")
-
-    @wrappers.Request.application
-    def _serve_bookmarks(self, request):
-        run = request.args.get("run")
-        if not run:
-            return Respond(
-                request, 'query parameter "run" is required', "text/plain", 400
-            )
-
-        name = request.args.get("name")
-        if name is None:
-            return Respond(
-                request, 'query parameter "name" is required', "text/plain", 400
-            )
-
-        self._update_configs()
-        config = self._configs.get(run)
-        if config is None:
-            return Respond(
-                request, 'Unknown run: "%s"' % run, "text/plain", 400
-            )
-        fpath = self._get_bookmarks_file_for_tensor(name, config)
-        if not fpath:
-            return Respond(
-                request,
-                'No bookmarks file found for tensor "%s" in the config file "%s"'
-                % (name, self.config_fpaths[run]),
-                "text/plain",
-                400,
-            )
-        fpath = _rel_to_abs_asset_path(fpath, self.config_fpaths[run])
-        if not tf.io.gfile.exists(fpath) or tf.io.gfile.isdir(fpath):
-            return Respond(
-                request,
-                '"%s" not found, or is not a file' % fpath,
-                "text/plain",
-                400,
-            )
-
-        bookmarks_json = None
-        with tf.io.gfile.GFile(fpath, "rb") as f:
-            bookmarks_json = f.read()
-        return Respond(request, bookmarks_json, "application/json")
-
+    
     @wrappers.Request.application
     def _serve_sprite_image(self, request):
-        run = request.args.get("run")
-        if not run:
-            return Respond(
-                request, 'query parameter "run" is required', "text/plain", 400
-            )
+      run = request.args.get("run")
+      if not run:
+        return Respond(
+            request, 'query parameter "run" is required', "text/plain", 400
+        )
 
-        name = request.args.get("name")
-        if name is None:
-            return Respond(
-                request, 'query parameter "name" is required', "text/plain", 400
-            )
+      name = request.args.get("name")
+      if name is None:
+        return Respond(
+            request, 'query parameter "name" is required', "text/plain", 400
+        )
 
-        self._update_configs()
-        config = self._configs.get(run)
-        if config is None:
-            return Respond(
-                request, 'Unknown run: "%s"' % run, "text/plain", 400
-            )
+      self._update_configs()
+      config = self._configs.get(run)
+      if config is None:
+          return Respond(
+             request, 'Unknown run: "%s"' % run, "text/plain", 400
+        )
 
-        embedding_info = self._get_embedding(name, config)
-        if not embedding_info or not embedding_info.sprite.image_path:
-            return Respond(
-                request,
-                'No sprite image file found for tensor "%s" in the config file "%s"'
-                % (name, self.config_fpaths[run]),
-                "text/plain",
-                400,
-            )
+      embedding_info = self._get_embedding(name, config)
+      if not embedding_info or not embedding_info.sprite.image_path:
+        return Respond(
+            request,
+            'No sprite image file found for tensor "%s" in the config file "%s"'
+            % (name, self.config_fpaths[run]),
+            "text/plain",
+            400,
+        )
 
-        fpath = os.path.expanduser(embedding_info.sprite.image_path)
-        fpath = _rel_to_abs_asset_path(fpath, self.config_fpaths[run])
-        if not tf.io.gfile.exists(fpath) or tf.io.gfile.isdir(fpath):
-            return Respond(
-                request,
-                '"%s" does not exist or is directory' % fpath,
-                "text/plain",
-                400,
-            )
-        f = tf.io.gfile.GFile(fpath, "rb")
-        encoded_image_string = f.read()
-        f.close()
-        image_type = imghdr.what(None, encoded_image_string)
-        mime_type = _IMGHDR_TO_MIMETYPE.get(image_type, _DEFAULT_IMAGE_MIMETYPE)
-        return Respond(request, encoded_image_string, mime_type)
+      fpath = os.path.expanduser(embedding_info.sprite.image_path)
+      fpath = _rel_to_abs_asset_path(fpath, self.config_fpaths[run])
+      if not tf.io.gfile.exists(fpath) or tf.io.gfile.isdir(fpath):
+          return Respond(
+            request,
+            '"%s" does not exist or is directory' % fpath,
+            "text/plain",
+            400,
+        )
+      with tf.io.gfile.GFile(fpath, "rb") as f:
+             encoded_image_string = f.read()
+
+    # Pillow ile image tipi belirleme
+      try:
+           image = Image.open(io.BytesIO(encoded_image_string))
+           mime_type = Image.MIME.get(image.format, _DEFAULT_IMAGE_MIMETYPE)
+      except Exception:
+            mime_type = _DEFAULT_IMAGE_MIMETYPE
+ 
+            return Respond(request, encoded_image_string, mime_type)
 
 
 def _find_latest_checkpoint(dir_path):

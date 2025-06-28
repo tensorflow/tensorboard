@@ -16,7 +16,9 @@
 
 
 import collections
-import imghdr
+
+from PIL import Image
+import io
 import json
 
 from werkzeug import wrappers
@@ -619,20 +621,24 @@ class MetricsPlugin(base_plugin.TBPlugin):
         return http_util.Respond(request, data, content_type)
 
     def _image_data_impl(self, ctx, blob_key):
-        """Gets the image data for a blob key.
+      """Gets the image data for a blob key.
 
-        Args:
-            ctx: A `tensorboard.context.RequestContext` value.
-            blob_key: a string identifier for a DataProvider blob.
+     Args:
+         ctx: A `tensorboard.context.RequestContext` value.
+         blob_key: a string identifier for a DataProvider blob.
 
-        Returns:
-            A tuple containing:
-              data: a raw bytestring of the requested image's contents.
-              content_type: a string HTTP content type.
-        """
-        data = self._data_provider.read_blob(ctx, blob_key=blob_key)
-        image_type = imghdr.what(None, data)
-        content_type = _IMGHDR_TO_MIMETYPE.get(
-            image_type, _DEFAULT_IMAGE_MIMETYPE
-        )
-        return (data, content_type)
+     Returns:
+         A tuple containing:
+           data: a raw bytestring of the requested image's contents.
+           content_type: a string HTTP content type.
+     """
+      data = self._data_provider.read_blob(ctx, blob_key=blob_key)
+      try:
+         image = Image.open(io.BytesIO(data))
+         image_type = image.format.lower()  # e.g., 'jpeg', 'png', etc.
+      except Exception:
+        image_type = None
+      content_type = _IMGHDR_TO_MIMETYPE.get(
+        image_type, _DEFAULT_IMAGE_MIMETYPE
+    )
+      return (data, content_type)

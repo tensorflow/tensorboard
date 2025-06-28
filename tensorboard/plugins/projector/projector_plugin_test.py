@@ -209,7 +209,7 @@ class ProjectorAppTest(tf.test.TestCase):
 
     def _AssertTensorResponse(self, tensor_bytes, expected_tensor):
         tensor = np.reshape(
-            np.fromstring(tensor_bytes, dtype=np.float32), expected_tensor.shape
+            np.frombuffer(tensor_bytes, dtype=np.float32), expected_tensor.shape
         )
         self.assertTrue(np.array_equal(tensor, expected_tensor))
 

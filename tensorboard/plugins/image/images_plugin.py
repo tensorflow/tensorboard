@@ -14,8 +14,8 @@
 # ==============================================================================
 """The TensorBoard Images plugin."""
 
-
-import imghdr
+from PIL import Image
+import io
 import urllib.parse
 
 from werkzeug import wrappers
@@ -27,7 +27,6 @@ from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.image import metadata
 
-
 _IMGHDR_TO_MIMETYPE = {
     "bmp": "image/bmp",
     "gif": "image/gif",
@@ -38,18 +37,6 @@ _IMGHDR_TO_MIMETYPE = {
 
 _DEFAULT_IMAGE_MIMETYPE = "application/octet-stream"
 _DEFAULT_DOWNSAMPLING = 10  # images per time series
-
-
-# Extend imghdr.tests to include svg.
-def detect_svg(data, f):
-    del f  # Unused.
-    # Assume XML documents attached to image tag to be SVG.
-    if data.startswith(b"<?xml ") or data.startswith(b"<svg "):
-        return "svg"
-
-
-imghdr.tests.append(detect_svg)
-
 
 class ImagesPlugin(base_plugin.TBPlugin):
     """Images Plugin for TensorBoard."""
@@ -137,24 +124,7 @@ class ImagesPlugin(base_plugin.TBPlugin):
         return http_util.Respond(request, response, "application/json")
 
     def _image_response_for_run(self, ctx, experiment, run, tag, sample):
-        """Builds a JSON-serializable object with information about images.
-
-        Args:
-          run: The name of the run.
-          tag: The name of the tag the images all belong to.
-          sample: The zero-indexed sample of the image for which to retrieve
-            information. For instance, setting `sample` to `2` will fetch
-            information about only the third image of each batch. Steps with
-            fewer than three images will be omitted from the results.
-
-        Returns:
-          A list of dictionaries containing the wall time, step, and URL
-          for each image.
-
-        Raises:
-          KeyError, NotFoundError: If no image data exists for the given
-            parameters.
-        """
+        """Builds a JSON-serializable object with information about images."""
         all_images = self._data_provider.read_blob_sequences(
             ctx,
             experiment_id=experiment,
@@ -188,23 +158,6 @@ class ImagesPlugin(base_plugin.TBPlugin):
         ]
 
     def _query_for_individual_image(self, run, tag, sample, index):
-        """Builds a URL for accessing the specified image.
-
-        This should be kept in sync with _serve_image_metadata. Note that the URL is
-        *not* guaranteed to always return the same image, since images may be
-        unloaded from the reservoir as new images come in.
-
-        Args:
-          run: The name of the run.
-          tag: The tag.
-          sample: The relevant sample index, zero-indexed. See documentation
-            on `_image_response_for_run` for more details.
-          index: The index of the image. Negative values are OK.
-
-        Returns:
-          A string representation of a URL that will load the index-th sampled image
-          in the given run with the given tag.
-        """
         query_string = urllib.parse.urlencode(
             {
                 "run": run,
@@ -219,15 +172,19 @@ class ImagesPlugin(base_plugin.TBPlugin):
         return urllib.parse.urlencode({"blob_key": blob_reference.blob_key})
 
     def _get_generic_data_individual_image(self, ctx, blob_key):
-        """Returns the actual image bytes for a given image.
-
-        Args:
-          blob_key: As returned by a previous `read_blob_sequences` call.
-
-        Returns:
-          A bytestring of the raw image bytes.
-        """
+        """Returns the actual image bytes for a given image."""
         return self._data_provider.read_blob(ctx, blob_key=blob_key)
+
+    def _detect_image_type(self, image_bytes):
+        """Returns image type using Pillow for MIME detection."""
+        try:
+            img = Image.open(io.BytesIO(image_bytes))
+            format_lower = img.format.lower()
+            if format_lower == "jpg":
+                return "jpeg"
+            return format_lower
+        except Exception:
+            return None
 
     @wrappers.Request.application
     def _serve_individual_image(self, request):
@@ -243,7 +200,7 @@ class ImagesPlugin(base_plugin.TBPlugin):
                 "text/plain",
                 code=400,
             )
-        image_type = imghdr.what(None, data)
+        image_type = self._detect_image_type(data)
         content_type = _IMGHDR_TO_MIMETYPE.get(
             image_type, _DEFAULT_IMAGE_MIMETYPE
         )

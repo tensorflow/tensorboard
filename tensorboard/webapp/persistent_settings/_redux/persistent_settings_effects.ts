@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Injectable} from '@angular/core';
+import {Injectable, inject} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Store} from '@ngrx/store';
 import {EMPTY, Observable, merge} from 'rxjs';
@@ -45,6 +45,15 @@ const DEBOUNCE_PERIOD_IN_MS = 500;
  */
 @Injectable()
 export class PersistentSettingsEffects {
+  private readonly actions$: Actions = inject(Actions);
+  private readonly store: Store<{}> = inject(Store);
+  private readonly configModule: PersistentSettingsConfigModule<
+    {},
+    PersistableSettings
+  > = inject(PersistentSettingsConfigModule);
+  private readonly dataSource: PersistentSettingsDataSource<PersistableSettings> =
+    inject(PersistentSettingsDataSource);
+
   /** @export */
   readonly initializeAndUpdateSettings$: Observable<void> = createEffect(
     () => {
@@ -109,16 +118,6 @@ export class PersistentSettingsEffects {
     },
     {dispatch: false}
   );
-
-  constructor(
-    private readonly actions$: Actions,
-    private readonly store: Store<{}>,
-    private readonly configModule: PersistentSettingsConfigModule<
-      {},
-      PersistableSettings
-    >,
-    private readonly dataSource: PersistentSettingsDataSource<PersistableSettings>
-  ) {}
 }
 
 export const TEST_ONLY = {DEBOUNCE_PERIOD_IN_MS};

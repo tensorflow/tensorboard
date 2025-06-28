@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Injectable} from '@angular/core';
+import {Injectable, inject} from '@angular/core';
 import {Actions, createEffect} from '@ngrx/effects';
 import {Store} from '@ngrx/store';
 import {tap} from 'rxjs/operators';
@@ -22,11 +22,9 @@ import {AlertActionModule} from '../alert_action_module';
 
 @Injectable()
 export class AlertEffects {
-  constructor(
-    private readonly actions$: Actions,
-    private readonly store: Store<State>,
-    private readonly alertActionModule: AlertActionModule
-  ) {}
+  private readonly actions$ = inject(Actions);
+  private readonly store: Store<State> = inject(Store);
+  private readonly alertActionModule = inject(AlertActionModule);
 
   /** @export */
   reportRegisteredActionAlerts$ = createEffect(
