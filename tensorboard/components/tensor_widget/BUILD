@@ -36,6 +36,7 @@ tf_js_binary(
     ],
     compile = 1,
     entry_point = ":tensor-widget-interop.ts",
+    use_precompiled_libraries = False,
     deps = [
         ":tensor_widget_binary_lib",
     ],
