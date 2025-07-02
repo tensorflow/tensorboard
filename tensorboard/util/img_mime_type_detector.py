@@ -38,4 +38,3 @@ def from_bytes(img_bytes: bytes) -> str:
         # Let the default value be returned.
         pass
     return _IMGHDR_TO_MIMETYPE.get(format_lower, _DEFAULT_IMAGE_MIMETYPE)
-
