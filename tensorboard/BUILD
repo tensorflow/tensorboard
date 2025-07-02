@@ -397,6 +397,11 @@ tensorboard_zip_file(
 # `pip install numpy`
 py_library(name = "expect_numpy_installed")
 
+# This is a dummy rule used as a pillow dependency in open-source.
+# We expect pillow to already be installed on the system, e.g. via
+# `pip install pillow`
+py_library(name = "expect_pillow_installed")
+
 # This is a dummy rule used as a grpc dependency in open-source.
 # We expect grpc to already be installed on the system, e.g. via
 # `pip install grpcio`

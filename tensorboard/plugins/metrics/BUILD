@@ -24,6 +24,7 @@ py_library(
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
         "//tensorboard/plugins/scalar:metadata",
+        "//tensorboard/util:img_mime_type_detector",
         "@org_pocoo_werkzeug",
     ],
 )
