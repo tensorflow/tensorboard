@@ -778,7 +778,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         f = tf.io.gfile.GFile(fpath, "rb")
         encoded_image_string = f.read()
         f.close()
-        mime_type = img_mime_time_detector.from_bytes(encoded_image_string)
+        mime_type = img_mime_type_detector.from_bytes(encoded_image_string)
         return Respond(request, encoded_image_string, mime_type)
 
 
