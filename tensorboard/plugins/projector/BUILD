@@ -26,6 +26,7 @@ py_library(
         "//tensorboard/backend/event_processing:plugin_asset_util",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:img_mime_type_detector",
         "//tensorboard/util:tb_logging",
         "@org_pocoo_werkzeug",
     ],

@@ -34,8 +34,7 @@ from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.projector import metadata
 from tensorboard.plugins.projector.projector_config_pb2 import ProjectorConfig
-from tensorboard.util import img_mime_type_detector
-from tensorboard.util import tb_logging
+from tensorboard.util import img_mime_type_detector, tb_logging
 
 logger = tb_logging.get_logger()
 
