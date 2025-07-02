@@ -14,8 +14,6 @@
 # ==============================================================================
 """The TensorBoard Images plugin."""
 
-
-import imghdr
 import urllib.parse
 
 from werkzeug import wrappers
@@ -26,29 +24,10 @@ from tensorboard.backend import http_util
 from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.image import metadata
+from tensorboard.util import img_mime_type_detector
 
 
-_IMGHDR_TO_MIMETYPE = {
-    "bmp": "image/bmp",
-    "gif": "image/gif",
-    "jpeg": "image/jpeg",
-    "png": "image/png",
-    "svg": "image/svg+xml",
-}
-
-_DEFAULT_IMAGE_MIMETYPE = "application/octet-stream"
 _DEFAULT_DOWNSAMPLING = 10  # images per time series
-
-
-# Extend imghdr.tests to include svg.
-def detect_svg(data, f):
-    del f  # Unused.
-    # Assume XML documents attached to image tag to be SVG.
-    if data.startswith(b"<?xml ") or data.startswith(b"<svg "):
-        return "svg"
-
-
-imghdr.tests.append(detect_svg)
 
 
 class ImagesPlugin(base_plugin.TBPlugin):
@@ -243,11 +222,8 @@ class ImagesPlugin(base_plugin.TBPlugin):
                 "text/plain",
                 code=400,
             )
-        image_type = imghdr.what(None, data)
-        content_type = _IMGHDR_TO_MIMETYPE.get(
-            image_type, _DEFAULT_IMAGE_MIMETYPE
-        )
-        return http_util.Respond(request, data, content_type)
+        mime_type = img_mime_type_detector.from_bytes(data)
+        return http_util.Respond(request, data, mime_type)
 
     @wrappers.Request.application
     def _serve_tags(self, request):

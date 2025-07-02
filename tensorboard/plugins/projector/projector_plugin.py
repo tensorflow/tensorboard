@@ -17,7 +17,6 @@
 
 import collections
 import functools
-import imghdr
 import mimetypes
 import os
 import threading
@@ -35,6 +34,7 @@ from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.projector import metadata
 from tensorboard.plugins.projector.projector_config_pb2 import ProjectorConfig
+from tensorboard.util import img_mime_type_detector
 from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
@@ -49,14 +49,6 @@ METADATA_ROUTE = "/metadata"
 RUNS_ROUTE = "/runs"
 BOOKMARKS_ROUTE = "/bookmarks"
 SPRITE_IMAGE_ROUTE = "/sprite_image"
-
-_IMGHDR_TO_MIMETYPE = {
-    "bmp": "image/bmp",
-    "gif": "image/gif",
-    "jpeg": "image/jpeg",
-    "png": "image/png",
-}
-_DEFAULT_IMAGE_MIMETYPE = "application/octet-stream"
 
 
 class LRUCache:
@@ -786,8 +778,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         f = tf.io.gfile.GFile(fpath, "rb")
         encoded_image_string = f.read()
         f.close()
-        image_type = imghdr.what(None, encoded_image_string)
-        mime_type = _IMGHDR_TO_MIMETYPE.get(image_type, _DEFAULT_IMAGE_MIMETYPE)
+        mime_type = img_mime_time_detector.from_bytes(encoded_image_string)
         return Respond(request, encoded_image_string, mime_type)
 
 
