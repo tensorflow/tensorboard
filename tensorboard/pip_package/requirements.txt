@@ -25,6 +25,7 @@ numpy >= 1.12.0
 # (specifically the protobuf dependency). If we restrict protobuf >= 5.0.0 we
 # can get rid of the packaging dependency.
 packaging
+pillow
 # NOTE: this version must be >= the protoc version in our WORKSPACE file.
 # At the same time, any constraints we specify here must allow at least some
 # version to be installed that is also compatible with TensorFlow's constraints:
