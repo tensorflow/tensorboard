@@ -27,15 +27,15 @@ _DEFAULT_IMAGE_MIMETYPE = "application/octet-stream"
 
 
 def from_bytes(img_bytes: bytes) -> str:
-  """Returns the MIME type of an image from its bytes."""
-  format_lower = None
-  try:
-    img = Image.open(io.BytesIO(img_bytes))
-    format_lower = img.format.lower()
-    if format_lower == "jpg":
-      format_lower = "jpeg"
-  except:
-    # Let the default value be returned.
-    pass
-  return _IMGHDR_TO_MIMETYPE.get(format_lower, _DEFAULT_IMAGE_MIMETYPE)
+    """Returns the MIME type of an image from its bytes."""
+    format_lower = None
+    try:
+        img = Image.open(io.BytesIO(img_bytes))
+        format_lower = img.format.lower()
+        if format_lower == "jpg":
+            format_lower = "jpeg"
+    except:
+        # Let the default value be returned.
+        pass
+    return _IMGHDR_TO_MIMETYPE.get(format_lower, _DEFAULT_IMAGE_MIMETYPE)
 
