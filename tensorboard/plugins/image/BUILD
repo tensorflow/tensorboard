@@ -25,6 +25,7 @@ py_library(
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
+        "//tensorboard/util:img_mime_type_detector",
         "@org_pocoo_werkzeug",
     ],
 )
