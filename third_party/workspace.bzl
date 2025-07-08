@@ -143,7 +143,9 @@ def tensorboard_workspace(name = ""):
         name = "org_jsoup_external",
         jar_sha256 = "436adf71fe9f326e04fe134cd2785b261f0f4b9b60876adda1de3b6919463394",
         jar_urls = [
+            "https://storage.googleapis.com/mirror.tensorflow.org/jsoup.org/packages/jsoup-1.21.1.jar",
+            "https://repo1.maven.org/maven2/org/jsoup/jsoup/1.21.1/jsoup-1.21.1.jar",
             "https://jsoup.org/packages/jsoup-1.21.1.jar",
         ],
-        licenses = ["reciprocal"],  # BSD 3-clause, ICU, MPL 1.1, libpng (BSD/MIT-like), Academic Free License v. 2.0, BSD 2-clause, MIT
+        licenses = ["notice"],  # MIT
     )
