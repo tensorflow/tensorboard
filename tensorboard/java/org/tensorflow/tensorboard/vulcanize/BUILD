@@ -17,7 +17,7 @@ java_binary(
         "@com_google_protobuf//:protobuf_java",
         "@io_bazel_rules_closure//java/io/bazel/rules/closure:webpath",
         "@io_bazel_rules_closure//java/io/bazel/rules/closure/webfiles:build_info_java_proto",
-        "@org_jsoup",
+        "@org_jsoup_external",
     ],
 )
 
