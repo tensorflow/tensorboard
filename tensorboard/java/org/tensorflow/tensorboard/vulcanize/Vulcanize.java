@@ -460,9 +460,6 @@ public final class Vulcanize {
       }
     }
 
-    // Create `<html>`, `<head>` and `<body>`.
-    flatDoc.normalise();
-
     document.traverse(new FlatDocumentCopier(flatDoc));
 
     for (Element subdoc : flatDoc.getElementsByTag("#root")) {
