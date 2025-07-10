@@ -35,12 +35,6 @@ def tensorboard_workspace(name = ""):
     tensorboard_js_workspace()
     tensorboard_rust_workspace()
 
-    # Protobuf's BUILD file depends on //external:six.
-    native.bind(
-        name = "six",
-        actual = "@org_pythonhosted_six",
-    )
-
     # Needed by Protobuf.
     native.bind(
         name = "grpc_python_plugin",
