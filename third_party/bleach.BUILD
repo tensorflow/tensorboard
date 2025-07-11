@@ -14,11 +14,8 @@ py_library(
     name = "org_mozilla_bleach",
     srcs = [
         "bleach/__init__.py",
-        "bleach/callbacks.py",
-        "bleach/encoding.py",
-        "bleach/linkifier.py",
+        "bleach/html5lib_shim.py",
+        "bleach/parse_shim.py",
         "bleach/sanitizer.py",
-        "bleach/utils.py",
-        "bleach/version.py",
     ],
 )
