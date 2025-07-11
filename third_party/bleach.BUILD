@@ -15,15 +15,11 @@ py_library(
     srcs = [
         "bleach/__init__.py",
         "bleach/callbacks.py",
-        "bleach/encoding.py",
+        "bleach/html5lib_shim.py",
         "bleach/linkifier.py",
+        "bleach/parse_shim.py",
         "bleach/sanitizer.py",
-        "bleach/utils.py",
-        "bleach/version.py",
-    ],
-    srcs_version = "PY3",
-    deps = [
-        "@org_html5lib",
-        "@org_pythonhosted_six",
-    ],
+        "bleach/six_shim.py",
+    ] + glob(["bleach/_vendor/**/*.py"]),
+    deps = ["@org_pythonhosted_webencodings"],
 )

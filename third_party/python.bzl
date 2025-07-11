@@ -45,24 +45,13 @@ def tensorboard_python_workspace():
     )
 
     http_archive(
-        name = "org_html5lib",
-        urls = [
-            "http://mirror.tensorflow.org/github.com/html5lib/html5lib-python/archive/1.1.tar.gz",
-            "https://github.com/html5lib/html5lib-python/archive/1.1.tar.gz",
-        ],
-        sha256 = "66e9e24a53c10c27abb6be8a3cf2cf55824c6ea1cef8570a633cb223ec46e894",
-        strip_prefix = "html5lib-python-1.1",
-        build_file = str(Label("//third_party:html5lib.BUILD")),
-    )
-
-    http_archive(
         name = "org_mozilla_bleach",
         urls = [
-            "http://mirror.tensorflow.org/github.com/mozilla/bleach/archive/v2.0.tar.gz",
-            "https://github.com/mozilla/bleach/archive/v2.0.tar.gz",
+            "http://mirror.tensorflow.org/files.pythonhosted.org/packages/76/9a/0e33f5054c54d349ea62c277191c020c2d6ef1d65ab2cb1993f91ec846d1/bleach-6.2.0.tar.gz",
+            "https://files.pythonhosted.org/packages/76/9a/0e33f5054c54d349ea62c277191c020c2d6ef1d65ab2cb1993f91ec846d1/bleach-6.2.0.tar.gz"
         ],
-        strip_prefix = "bleach-2.0",
-        sha256 = "789dcf3e7daf79c4c78518c6ebafd51bbaf111ac4263a97c08cf8d6a27eda820",
+        strip_prefix = "bleach-6.2.0",
+        sha256 = "123e894118b8a599fd80d3ec1a6d4cc7ce4e5882b1317a7e1ba69b56e95f991f",
         build_file = str(Label("//third_party:bleach.BUILD")),
     )
 
@@ -99,13 +88,3 @@ def tensorboard_python_workspace():
         ],
     )
 
-    http_archive(
-        name = "org_pythonhosted_six",
-        urls = [
-            "http://mirror.tensorflow.org/pypi.python.org/packages/source/s/six/six-1.13.0.tar.gz",
-            "https://pypi.python.org/packages/source/s/six/six-1.13.0.tar.gz",
-        ],
-        sha256 = "30f610279e8b2578cab6db20741130331735c781b56053c59c4076da27f06b66",
-        strip_prefix = "six-1.13.0",
-        build_file = str(Label("//third_party:six.BUILD")),
-    )

@@ -86,7 +86,6 @@ genrule(
         "@npm//:node_modules/d3/LICENSE",
         "@com_google_fonts_roboto//:LICENSE",
         "@org_mozilla_bleach//:LICENSE",
-        "@org_html5lib//:LICENSE",
         "@org_pythonhosted_webencodings//:LICENSE",
         "//third_party:bh_tsne.LICENSE",
     ],

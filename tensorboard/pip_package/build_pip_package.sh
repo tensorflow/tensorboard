@@ -86,15 +86,12 @@ build() (
 
   mkdir -p tensorboard/_vendor
   >tensorboard/_vendor/__init__.py
-  cp -LR "${RUNFILES}/org_html5lib/html5lib" tensorboard/_vendor
   cp -LR "${RUNFILES}/org_mozilla_bleach/bleach" tensorboard/_vendor
   cp -LR "${RUNFILES}/org_pythonhosted_webencodings/webencodings" tensorboard/_vendor
 
   chmod -R u+w,go+r .
 
   find tensorboard -name \*.py -exec $sedi -e '
-      s/^import html5lib$/from tensorboard._vendor import html5lib/
-      s/^from html5lib/from tensorboard._vendor.html5lib/
       s/^import bleach$/from tensorboard._vendor import bleach/
       s/^from bleach/from tensorboard._vendor.bleach/
       s/^import webencodings$/from tensorboard._vendor import webencodings/
