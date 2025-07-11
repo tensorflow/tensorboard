@@ -14,8 +14,12 @@ py_library(
     name = "org_mozilla_bleach",
     srcs = [
         "bleach/__init__.py",
+        "bleach/callbacks.py",
         "bleach/html5lib_shim.py",
+        "bleach/linkifier.py",
         "bleach/parse_shim.py",
         "bleach/sanitizer.py",
-    ],
+        "bleach/six_shim.py",
+    ] + glob(["bleach/_vendor/**/*.py"]),
+    deps = ["@org_pythonhosted_webencodings"],
 )
