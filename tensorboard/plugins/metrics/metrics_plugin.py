@@ -16,7 +16,6 @@
 
 
 import collections
-import imghdr
 import json
 
 from werkzeug import wrappers
@@ -30,17 +29,8 @@ from tensorboard.plugins.histogram import metadata as histogram_metadata
 from tensorboard.plugins.image import metadata as image_metadata
 from tensorboard.plugins.metrics import metadata
 from tensorboard.plugins.scalar import metadata as scalar_metadata
+from tensorboard.util import img_mime_type_detector
 
-
-_IMGHDR_TO_MIMETYPE = {
-    "bmp": "image/bmp",
-    "gif": "image/gif",
-    "jpeg": "image/jpeg",
-    "png": "image/png",
-    "svg": "image/svg+xml",
-}
-
-_DEFAULT_IMAGE_MIMETYPE = "application/octet-stream"
 
 _SINGLE_RUN_PLUGINS = frozenset(
     [histogram_metadata.PLUGIN_NAME, image_metadata.PLUGIN_NAME]
@@ -615,8 +605,8 @@ class MetricsPlugin(base_plugin.TBPlugin):
         if not blob_key:
             raise errors.InvalidArgumentError("Missing 'imageId' field")
 
-        (data, content_type) = self._image_data_impl(ctx, blob_key)
-        return http_util.Respond(request, data, content_type)
+        (data, mime_type) = self._image_data_impl(ctx, blob_key)
+        return http_util.Respond(request, data, mime_type)
 
     def _image_data_impl(self, ctx, blob_key):
         """Gets the image data for a blob key.
@@ -631,8 +621,5 @@ class MetricsPlugin(base_plugin.TBPlugin):
               content_type: a string HTTP content type.
         """
         data = self._data_provider.read_blob(ctx, blob_key=blob_key)
-        image_type = imghdr.what(None, data)
-        content_type = _IMGHDR_TO_MIMETYPE.get(
-            image_type, _DEFAULT_IMAGE_MIMETYPE
-        )
-        return (data, content_type)
+        mime_type = img_mime_type_detector.from_bytes(data)
+        return (data, mime_type)

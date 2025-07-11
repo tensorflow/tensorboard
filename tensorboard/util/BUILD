@@ -104,6 +104,14 @@ py_test(
 )
 
 py_library(
+    name = "img_mime_type_detector",
+    srcs = ["img_mime_type_detector.py"],
+    deps = [
+        "//tensorboard:expect_pillow_installed",
+    ],
+)
+
+py_library(
     name = "io_util",
     srcs = ["io_util.py"],
     srcs_version = "PY3",
