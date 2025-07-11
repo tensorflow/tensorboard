@@ -47,6 +47,7 @@ def tensorboard_python_workspace():
     http_archive(
         name = "org_mozilla_bleach",
         urls = [
+            "http://mirror.tensorflow.org/files.pythonhosted.org/packages/76/9a/0e33f5054c54d349ea62c277191c020c2d6ef1d65ab2cb1993f91ec846d1/bleach-6.2.0.tar.gz",
             "https://files.pythonhosted.org/packages/76/9a/0e33f5054c54d349ea62c277191c020c2d6ef1d65ab2cb1993f91ec846d1/bleach-6.2.0.tar.gz"
         ],
         strip_prefix = "bleach-6.2.0",
