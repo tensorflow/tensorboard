@@ -40,7 +40,8 @@ jobs:
       fail-fast: false
       matrix:
         tf_version_id: ['tf', 'notf']
-        python_version: ['3.9']
+        # Lower and upper bounds for python versions that we're intending to support.
+        python_version: ['3.9', 3.13]
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
       - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
