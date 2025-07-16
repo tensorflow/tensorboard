@@ -146,6 +146,8 @@ pub enum DataType {
 
     DtInt4 = 29,
     DtUint4 = 30,
+    DtInt2 = 31,
+    DtUint2 = 32,
     /// Do not use!  These are only for TF1's obsolete reference Variables.
     /// Every enum above should have a corresponding value below (verified by
     /// types_test).
@@ -179,6 +181,8 @@ pub enum DataType {
     DtFloat8E5m2fnuzRef = 128,
     DtInt4Ref = 129,
     DtUint4Ref = 130,
+    DtInt2Ref = 131,
+    DtUint2Ref = 132,
 }
 /// Protocol buffer representing a handle to a tensorflow resource. Handles are
 /// not valid across executions, but can be serialized back and forth from within
