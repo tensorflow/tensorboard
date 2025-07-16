@@ -1,3 +1,13 @@
+# Release 2.20.0
+
+The 2.20 minor series tracks TensorFlow 2.20.
+
+## Features
+- Compatible with Python 3.13 (see next point)
+- Added a dependency to Pillow (https://python-pillow.github.io/), to replace use of deprecated standard library `imghdr` (removed in Python 3.13) (#7009, thanks @Zamanhuseyinli)
+- Updated vendored version of `bleach` library to 6.2.0 and removed dependency on `six` library. (#7013)
+
+
 # Release 2.19.0
 
 The 2.19 minor series tracks TensorFlow 2.19.
