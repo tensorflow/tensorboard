@@ -44,6 +44,9 @@ def tensorboard_python_workspace():
         build_file = str(Label("//third_party:markdown.BUILD")),
     )
 
+    # urllib3 is a transitive dependency from TF (or perhaps other
+    # dependencies), not directly used in TB code. We use a specific version to
+    # have a controlled environment, e.g. for CI.
     http_archive(
         name = "org_pythonhosted_urllib3",
         urls = [
