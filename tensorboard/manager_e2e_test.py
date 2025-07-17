@@ -20,9 +20,9 @@ import datetime
 import errno
 import json
 import os
-import pipes
-import signal
+import shlex
 import shutil
+import signal
 import subprocess
 import tempfile
 import textwrap
@@ -275,7 +275,7 @@ class ManagerEndToEndTest(tf.test.TestCase):
                 rm -r %s
                 exit 22
                 """
-                % pipes.quote(self.tmproot),
+                % shlex.quote(self.tmproot),
             ).lstrip(),
         )
         start_result = manager.start(["--logdir=./logs", "--port=0"])
@@ -305,7 +305,7 @@ class ManagerEndToEndTest(tf.test.TestCase):
                 printf >&2 'warn: I am tired\n'
                 sleep 60
                 """
-                % pipes.quote(os.path.realpath(pid_file)),
+                % shlex.quote(os.path.realpath(pid_file)),
             ).lstrip(),
         )
         start_result = manager.start(
