@@ -50,8 +50,9 @@ def tensorboard_python_workspace():
     http_archive(
         name = "org_pythonhosted_urllib3",
         urls = [
-            "http://mirror.tensorflow.org/files.pythonhosted.org/packages/e4/e8/6ff5e6bc22095cfc59b6ea711b687e2b7ed4bdb373f7eeec370a97d7392f/urllib3-1.26.20.tar.gz"
-            "https://files.pythonhosted.org/packages/e4/e8/6ff5e6bc22095cfc59b6ea711b687e2b7ed4bdb373f7eeec370a97d7392f/urllib3-1.26.20.tar.gz"
+            # Will upload to mirror after CI passes.
+            # "http://mirror.tensorflow.org/files.pythonhosted.org/packages/e4/e8/6ff5e6bc22095cfc59b6ea711b687e2b7ed4bdb373f7eeec370a97d7392f/urllib3-1.26.20.tar.gz",
+            "https://files.pythonhosted.org/packages/e4/e8/6ff5e6bc22095cfc59b6ea711b687e2b7ed4bdb373f7eeec370a97d7392f/urllib3-1.26.20.tar.gz",
         ],
         sha256 = "be35dfb571d8e1baefbf909756fa6526d000fd4e",
         strip_prefix = "urllib3-1.26.20/src",
