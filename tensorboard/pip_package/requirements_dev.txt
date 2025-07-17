@@ -19,10 +19,20 @@
 grpcio-testing==1.24.3
 pandas~=2.0
 # For gfile S3 test
-boto3==1.9.86
+# Python >= 3.13 requires a version after
+# https://github.com/boto/botocore/pull/2794
+# (Couldn't exactly pin-point the next version,
+# but this was published less than a month after
+# that change.)
+boto3>=1.29.41
 moto==1.3.7
 # For gfile fsspec test
 fsspec>=2021.06.0
+
+# Transitive dependency required by TF
+# For details on why this version, see:
+# https://github.com/tensorflow/tensorboard/pull/7016
+urllib3>=1.26.5
 
 # For linting
 black==24.3.0
