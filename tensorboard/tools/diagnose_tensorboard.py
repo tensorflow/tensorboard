@@ -29,7 +29,6 @@ import hashlib
 import inspect
 import logging
 import os
-import pipes
 import shlex
 import socket
 import subprocess
@@ -394,8 +393,7 @@ def stat_tensorboardinfo():
         )
         # This error should only appear on Unices, so it's okay to use
         # Unix-specific utilities and shell syntax.
-        quote = getattr(shlex, "quote", None) or pipes.quote  # Python <3.3
-        command = "chmod 777 %s" % quote(path)
+        command = "chmod 777 %s" % shlex.quote(path)
         message = "%s\n\n\t%s" % (preamble, command)
         yield Suggestion('Fix permissions on "%s"' % path, message)
 
