@@ -13,7 +13,19 @@
 # limitations under the License.
 
 # TensorBoard external dependencies that are used on the python side.
-# Protobuf and six were deliberately left in the top-level workspace, as they
+#
+# A couple of these are "vendored" with our package, see:
+# https://github.com/tensorflow/tensorboard/blob/b94d9294eeb29ff5a673ef21843e060461ac78c2/tensorboard/pip_package/build_pip_package.sh#L87
+#
+# When building from source (i.e. whenever `bazel run` / `bazel test`
+# is used, including for CI), these are the dependencies used, rather than
+# whatever is already present (installed) in the system or runtime used.
+#
+# When not using bazel, but rather a "distributed" package of TB
+# (e.g. the one installed with pip), the non-vendored dependencies must be
+# already installed.
+#
+# Protobuf is deliberately left in the top-level workspace, as they
 # are used in TensorFlow as well.
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
@@ -32,15 +44,17 @@ def tensorboard_python_workspace():
         build_file = str(Label("//third_party:markdown.BUILD")),
     )
 
+    # urllib3 is a transitive dependency from TF (or perhaps other
+    # dependencies), not directly used in TB code. We use a specific version to
+    # have a controlled environment, e.g. for CI.
     http_archive(
         name = "org_pythonhosted_urllib3",
         urls = [
-            "http://mirror.tensorflow.org/pypi.python.org/packages/cb/34/db09a2f1e27c6ded5dd42afb0e3e2cf6f51ace7d75726385e8a3b1993b17/urllib3-1.25.tar.gz",
-            "https://pypi.python.org/packages/cb/34/db09a2f1e27c6ded5dd42afb0e3e2cf6f51ace7d75726385e8a3b1993b17/urllib3-1.25.tar.gz",
-            "https://files.pythonhosted.org/packages/cb/34/db09a2f1e27c6ded5dd42afb0e3e2cf6f51ace7d75726385e8a3b1993b17/urllib3-1.25.tar.gz",
+            "http://mirror.tensorflow.org/files.pythonhosted.org/packages/e4/e8/6ff5e6bc22095cfc59b6ea711b687e2b7ed4bdb373f7eeec370a97d7392f/urllib3-1.26.20.tar.gz",
+            "https://files.pythonhosted.org/packages/e4/e8/6ff5e6bc22095cfc59b6ea711b687e2b7ed4bdb373f7eeec370a97d7392f/urllib3-1.26.20.tar.gz",
         ],
-        sha256 = "f03eeb431c77b88cf8747d47e94233a91d0e0fdae1cf09e0b21405a885700266",
-        strip_prefix = "urllib3-1.25/src",
+        sha256 = "be35dfb571d8e1baefbf909756fa6526d000fd4e",
+        strip_prefix = "urllib3-1.26.20/src",
         build_file = str(Label("//third_party:urllib3.BUILD")),
     )
 
