@@ -21,18 +21,11 @@ pandas~=2.0
 # For gfile S3 test
 # Python >= 3.13 requires a version after
 # https://github.com/boto/botocore/pull/2794
-# (Couldn't exactly pin-point the next version,
-# but this was published less than a month after
-# that change.)
+# (Both versions picked somewhat arbitrarily after that date)
 boto3==1.33.13
 moto==4.1.9
 # For gfile fsspec test
 fsspec>=2021.06.0
-
-# Transitive dependency required by TF
-# For details on why this version, see:
-# https://github.com/tensorflow/tensorboard/pull/7016
-#turllib3>=1.26.5
 
 # For linting
 black==24.3.0
