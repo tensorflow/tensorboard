@@ -24,8 +24,8 @@ pandas~=2.0
 # (Couldn't exactly pin-point the next version,
 # but this was published less than a month after
 # that change.)
-boto3>=1.29.41
-moto>=4.1.0
+boto3==1.33.13
+moto==4.1.9
 # For gfile fsspec test
 fsspec>=2021.06.0
 
