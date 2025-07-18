@@ -32,7 +32,7 @@ fsspec>=2021.06.0
 # Transitive dependency required by TF
 # For details on why this version, see:
 # https://github.com/tensorflow/tensorboard/pull/7016
-urllib3>=1.26.5
+#turllib3>=1.26.5
 
 # For linting
 black==24.3.0
