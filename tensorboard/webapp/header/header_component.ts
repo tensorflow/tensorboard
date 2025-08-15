@@ -19,7 +19,7 @@ import {Component} from '@angular/core';
   selector: 'app-header',
   template: `
     <mat-toolbar>
-      <span class="brand">TensorBoard</span>
+      <span class="brand">PAIA BOARD</span>
       <plugin-selector class="plugins"></plugin-selector>
       <app-header-dark-mode-toggle></app-header-dark-mode-toggle>
       <app-header-reload></app-header-reload>
