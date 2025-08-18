@@ -21,7 +21,7 @@ import {
 } from '@angular/core';
 
 function setDocumentTitle(title: string) {
-  document.title = title;
+  document.title = 'PAIA BOARD';
 }
 
 const utils = {
