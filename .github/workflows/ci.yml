@@ -98,6 +98,10 @@ jobs:
             bazel build //tensorboard/... |&\
             grep -v 'external/com_google_protobuf/python: warning: directory' |&\
             grep -v 'INFO: From ProtoCompile ' )
+      - name: 'Purge pip cache'
+        # The provisioned VM is running out of space, so we attempt to
+        # delete cached package info to release some disk space.
+        run: pip cache purge
       - name: 'Bazel: test (with TensorFlow support)'
         run: bazel test //tensorboard/...
         if: matrix.tf_version_id != 'notf'
