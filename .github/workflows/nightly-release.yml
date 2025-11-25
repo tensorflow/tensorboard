@@ -14,6 +14,7 @@ jobs:
   ci:
     uses: ./.github/workflows/ci.yml
     # Allow the reused workflow to access the secrets.
+    # See: https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows#passing-inputs-and-secrets-to-a-reusable-workflow
     secrets: inherit
 
   nightly-release:
