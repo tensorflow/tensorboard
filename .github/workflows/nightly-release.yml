@@ -13,6 +13,8 @@ permissions:
 jobs:
   ci:
     uses: ./.github/workflows/ci.yml
+    # Allow the reused workflow to access the secrets.
+    secrets: inherit
 
   nightly-release:
     runs-on: ubuntu-22.04
