@@ -149,10 +149,13 @@ export class ScalarCardComponent<Downloader> {
   @ViewChild('dataTableContainer')
   dataTableContainer?: ElementRef;
 
+  readonly MAX_TOOLTIP_ITEMS = 5;
+
   constructor(private readonly ref: ElementRef, private dialog: MatDialog) {}
 
   yScaleType = ScaleType.LINEAR;
   isViewBoxOverridden: boolean = false;
+  tooltipTotalCount = 0;
 
   toggleYScaleType() {
     this.yScaleType =
@@ -224,22 +227,31 @@ export class ScalarCardComponent<Downloader> {
       scalarTooltipData[minIndex].metadata.closest = true;
     }
 
+    let sortedData: ScalarTooltipDatum[];
     switch (this.tooltipSort) {
       case TooltipSort.ASCENDING:
-        return scalarTooltipData.sort((a, b) => a.dataPoint.y - b.dataPoint.y);
+        sortedData = scalarTooltipData.sort(
+          (a, b) => a.dataPoint.y - b.dataPoint.y
+        );
+        break;
       case TooltipSort.DESCENDING:
-        return scalarTooltipData.sort((a, b) => b.dataPoint.y - a.dataPoint.y);
+        sortedData = scalarTooltipData.sort(
+          (a, b) => b.dataPoint.y - a.dataPoint.y
+        );
+        break;
       case TooltipSort.NEAREST:
-        return scalarTooltipData.sort((a, b) => {
+        sortedData = scalarTooltipData.sort((a, b) => {
           return a.metadata.distToCursorPixels - b.metadata.distToCursorPixels;
         });
+        break;
       case TooltipSort.NEAREST_Y:
-        return scalarTooltipData.sort((a, b) => {
+        sortedData = scalarTooltipData.sort((a, b) => {
           return a.metadata.distToCursorY - b.metadata.distToCursorY;
         });
+        break;
       case TooltipSort.DEFAULT:
       case TooltipSort.ALPHABETICAL:
-        return scalarTooltipData.sort((a, b) => {
+        sortedData = scalarTooltipData.sort((a, b) => {
           if (a.metadata.displayName < b.metadata.displayName) {
             return -1;
           }
@@ -248,7 +260,15 @@ export class ScalarCardComponent<Downloader> {
           }
           return 0;
         });
+        break;
     }
+
+    this.tooltipTotalCount = sortedData.length;
+    return sortedData.slice(0, this.MAX_TOOLTIP_ITEMS);
+  }
+
+  get additionalItemsCount(): number {
+    return Math.max(0, this.tooltipTotalCount - this.MAX_TOOLTIP_ITEMS);
   }
 
   openDataDownloadDialog(): void {
