@@ -34,7 +34,10 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    # Self-hosted runner since the ones provided by GH were running out of space.
+    # Other workflows are likely ok to use standard GH runners for now.
+    # Googlers, see b/460874304.
+    runs-on: linux-x86-n2-32
     needs: lint-python-flake8 # fail fast in case of "undefined variable" errors
     strategy:
       fail-fast: false
@@ -53,26 +56,6 @@ jobs:
           sudo mv ~/bazel /usr/local/bin/bazel
           sudo chmod +x /usr/local/bin/bazel
           cp ./ci/bazelrc ~/.bazelrc
-      - name: 'Configure build cache write credentials'
-        env:
-          CREDS: ${{ secrets.BAZEL_CACHE_SERVICE_ACCOUNT_CREDS }}
-          EVENT_TYPE: ${{ github.event_name }}
-        run: |
-          if [ -z "${CREDS}" ]; then
-            printf 'Using read-only cache (no credentials)\n'
-            exit
-          fi
-          if [ "${EVENT_TYPE}" = pull_request ]; then
-            printf 'Using read-only cache (PR build)\n'
-            exit
-          fi
-          printf 'Using writable cache\n'
-          creds_file=/tmp/service_account_creds.json
-          printf '%s\n' "${CREDS}" >"${creds_file}"
-          printf '%s\n' >>~/.bazelrc \
-            "common --google_credentials=${creds_file}" \
-            "common --remote_upload_local_results=true" \
-            ;
       - name: 'Install TensorFlow'
         run: |
           python -m pip install -U pip
@@ -120,25 +103,6 @@ jobs:
           bazel test //tensorboard/summary/writer:event_file_writer_s3_test &&
           bazel test //tensorboard/compat/tensorflow_stub:gfile_fsspec_test &&
           bazel test //tensorboard/summary/writer:event_file_writer_fsspec_test
-      - name: 'Bazel: build Pip package (master branch TF build only)'
-        # This pip package is only needed if we will upload it, so run this step
-        # only under the same conditions as the next step (see comment below).
-        if: matrix.tf_version_id == 'tf' && github.repository == 'tensorflow/tensorboard' && github.ref == 'refs/heads/master'
-        run: |
-          ./tensorboard/tools/set_nightly_version.sh
-          rm -rf /tmp/tb_nightly_pip_package && mkdir /tmp/tb_nightly_pip_package
-          bazel run //tensorboard/pip_package:build_pip_package -- /tmp/tb_nightly_pip_package
-      - name: 'Upload Pip package as an artifact (master branch TF build only)'
-        # Prevent uploads when running on forks or non-master branch.
-        #
-        # Note that upload-artifact GH action, starting in v4, requires the name of the uploaded
-        # file(s) to be unique per workflow run, so make sure that the name is unique for each
-        # "matrix" combination for which this is executed.
-        if: matrix.tf_version_id == 'tf' && github.repository == 'tensorflow/tensorboard' && github.ref == 'refs/heads/master'
-        uses: actions/upload-artifact@v4
-        with:
-          name: tb-nightly_py${{ matrix.python_version }}
-          path: /tmp/tb_nightly_pip_package/*
 
   build-data-server-pip:
     runs-on: ${{ matrix.platform }}
