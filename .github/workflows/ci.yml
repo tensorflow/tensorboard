@@ -103,6 +103,25 @@ jobs:
           bazel test //tensorboard/summary/writer:event_file_writer_s3_test &&
           bazel test //tensorboard/compat/tensorflow_stub:gfile_fsspec_test &&
           bazel test //tensorboard/summary/writer:event_file_writer_fsspec_test
+      - name: 'Bazel: build Pip package (master branch TF build only)'
+        # This pip package is only needed if we will upload it, so run this step
+        # only under the same conditions as the next step (see comment below).
+        if: matrix.tf_version_id == 'tf' && github.repository == 'tensorflow/tensorboard' && github.ref == 'refs/heads/master'
+        run: |
+          ./tensorboard/tools/set_nightly_version.sh
+          rm -rf /tmp/tb_nightly_pip_package && mkdir /tmp/tb_nightly_pip_package
+          bazel run //tensorboard/pip_package:build_pip_package -- /tmp/tb_nightly_pip_package
+      - name: 'Upload Pip package as an artifact (master branch TF build only)'
+        # Prevent uploads when running on forks or non-master branch.
+        #
+        # Note that upload-artifact GH action, starting in v4, requires the name of the uploaded
+        # file(s) to be unique per workflow run, so make sure that the name is unique for each
+        # "matrix" combination for which this is executed.
+        if: matrix.tf_version_id == 'tf' && github.repository == 'tensorflow/tensorboard' && github.ref == 'refs/heads/master'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tb-nightly_py${{ matrix.python_version }}
+          path: /tmp/tb_nightly_pip_package/*
 
   build-data-server-pip:
     runs-on: ${{ matrix.platform }}
