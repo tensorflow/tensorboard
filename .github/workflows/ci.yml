@@ -32,6 +32,10 @@ env:
   BUILDOZER_SHA256SUM: '3d58a0b6972e4535718cdd6c12778170ea7382de7c75bc3728f5719437ffb84d'
   TENSORFLOW_VERSION: 'tf-nightly'
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   build:
     # Self-hosted runner since the ones provided by GH were running out of space.
@@ -79,8 +83,8 @@ jobs:
         # for removing this kludge.
         run: |
           ( set -o pipefail;
-            bazel build //tensorboard/... 2>&1 |\
-            grep -v 'external/com_google_protobuf/python: warning: directory' 2>&1 |\
+            bazel build //tensorboard/... |&\
+            grep -v 'external/com_google_protobuf/python: warning: directory' |&\
             grep -v 'INFO: From ProtoCompile ' )
       - name: 'Bazel: test (with TensorFlow support)'
         run: bazel test //tensorboard/...
