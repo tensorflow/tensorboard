@@ -38,7 +38,7 @@ jobs:
     # Other workflows are likely ok to use standard GH runners for now.
     # Googlers, see b/460874304.
     runs-on: linux-x86-n2-32
-    container: ubuntu:22.04
+    container: us-docker.pkg.dev/ml-oss-artifacts-published/ml-public-container/ml-build:latest
     needs: lint-python-flake8 # fail fast in case of "undefined variable" errors
     strategy:
       fail-fast: false
