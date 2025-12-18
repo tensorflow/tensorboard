@@ -79,8 +79,8 @@ jobs:
         # for removing this kludge.
         run: |
           ( set -o pipefail;
-            bazel build //tensorboard/... |&\
-            grep -v 'external/com_google_protobuf/python: warning: directory' |&\
+            bazel build //tensorboard/... 2>&1 |\
+            grep -v 'external/com_google_protobuf/python: warning: directory' 2>&1 |\
             grep -v 'INFO: From ProtoCompile ' )
       - name: 'Bazel: test (with TensorFlow support)'
         run: bazel test //tensorboard/...
