@@ -125,6 +125,7 @@ class WerkzeugServerTest(tb_test.TestCase):
             self._StubApplication(), self.make_flags(port=0, path_prefix="")
         )
         self.assertStartsWith(server.get_url(), "http://")
+        server.shutdown()
 
     def testPathPrefixSlash(self):
         # Test that checks the path prefix ends with one trailing slash
@@ -133,12 +134,14 @@ class WerkzeugServerTest(tb_test.TestCase):
             self.make_flags(port=0, path_prefix="/test"),
         )
         self.assertEndsWith(server.get_url(), "/test/")
+        server.shutdown()
 
         server = program.WerkzeugServer(
             self._StubApplication(),
             self.make_flags(port=0, path_prefix="/test/"),
         )
         self.assertEndsWith(server.get_url(), "/test/")
+        server.shutdown()
 
     def testSpecifiedHost(self):
         one_passed = False
@@ -148,6 +151,7 @@ class WerkzeugServerTest(tb_test.TestCase):
                 self.make_flags(host="127.0.0.1", port=0, path_prefix=""),
             )
             self.assertStartsWith(server.get_url(), "http://127.0.0.1:")
+            server.shutdown()
             one_passed = True
         except program.TensorBoardServerException:
             # IPv4 is not supported
@@ -158,6 +162,7 @@ class WerkzeugServerTest(tb_test.TestCase):
                 self.make_flags(host="::1", port=0, path_prefix=""),
             )
             self.assertStartsWith(server.get_url(), "http://[::1]:")
+            server.shutdown()
             one_passed = True
         except program.TensorBoardServerException:
             # IPv6 is not supported
