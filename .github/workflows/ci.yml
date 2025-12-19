@@ -32,9 +32,17 @@ env:
   BUILDOZER_SHA256SUM: '3d58a0b6972e4535718cdd6c12778170ea7382de7c75bc3728f5719437ffb84d'
   TENSORFLOW_VERSION: 'tf-nightly'
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    # Self-hosted runner since the ones provided by GH were running out of space.
+    # Other workflows are likely ok to use standard GH runners for now.
+    # Googlers, see b/460874304.
+    runs-on: linux-x86-n2-32
+    container: us-docker.pkg.dev/ml-oss-artifacts-published/ml-public-container/ml-build:latest
     needs: lint-python-flake8 # fail fast in case of "undefined variable" errors
     strategy:
       fail-fast: false
@@ -53,26 +61,6 @@ jobs:
           sudo mv ~/bazel /usr/local/bin/bazel
           sudo chmod +x /usr/local/bin/bazel
           cp ./ci/bazelrc ~/.bazelrc
-      - name: 'Configure build cache write credentials'
-        env:
-          CREDS: ${{ secrets.BAZEL_CACHE_SERVICE_ACCOUNT_CREDS }}
-          EVENT_TYPE: ${{ github.event_name }}
-        run: |
-          if [ -z "${CREDS}" ]; then
-            printf 'Using read-only cache (no credentials)\n'
-            exit
-          fi
-          if [ "${EVENT_TYPE}" = pull_request ]; then
-            printf 'Using read-only cache (PR build)\n'
-            exit
-          fi
-          printf 'Using writable cache\n'
-          creds_file=/tmp/service_account_creds.json
-          printf '%s\n' "${CREDS}" >"${creds_file}"
-          printf '%s\n' >>~/.bazelrc \
-            "common --google_credentials=${creds_file}" \
-            "common --remote_upload_local_results=true" \
-            ;
       - name: 'Install TensorFlow'
         run: |
           python -m pip install -U pip
