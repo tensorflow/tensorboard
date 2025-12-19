@@ -67,7 +67,7 @@ limitations under the License.
     <ng-container
       [ngTemplateOutlet]="tooltipTemplate ? tooltipTemplate : defaultTooltip"
       [ngTemplateOutletContext]="{
-        data: cursoredData,
+        data: tooltipTemplate ? cursoredData : limitedCursoredData,
         cursorLocationInDataCoord: cursorLocationInDataCoord,
         cursorLocation: cursorLocation
       }"
@@ -98,6 +98,12 @@ limitations under the License.
           <td>{{ datum.dataPoint.x }}</td>
         </tr>
       </ng-container>
+      <tr class="legend" *ngIf="additionalItemsCount > 0">
+        <td colspan="100">
+          {{ additionalItemsCount }} additional {{ additionalItemsCount === 1 ?
+          'item' : 'items' }}
+        </td>
+      </tr>
     </tbody>
   </table>
 </ng-template>
