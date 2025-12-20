@@ -33,6 +33,6 @@ pillow
 # 4.24.0 had an issue that broke our tests, so we should avoid that release:
 # https://github.com/protocolbuffers/protobuf/issues/13485
 protobuf >= 3.19.6, != 4.24.0
-setuptools >= 41.0.0  # Note: provides pkg_resources as well as setuptools
+setuptools >= 41.0.0
 tensorboard-data-server >= 0.7.0, < 0.8.0
 werkzeug >= 1.0.1

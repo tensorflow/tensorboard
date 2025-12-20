@@ -22,7 +22,7 @@ import tempfile
 import time
 
 import grpc
-import pkg_resources
+from packaging.version import parse as parse_version
 
 from tensorboard.data import grpc_provider
 from tensorboard.data import ingester
@@ -152,10 +152,7 @@ class SubprocessServerDataIngester(ingester.DataIngester):
             if popen.poll() is not None:
                 msg = (_maybe_read_file(error_file_path) or "").strip()
                 if not msg:
-                    msg = (
-                        "exited with %d; check stderr for details"
-                        % popen.poll()
-                    )
+                    msg = "exited with %d; check stderr for details" % popen.poll()
                 raise DataServerStartupError(msg)
             logger.info("Polling for data server port (attempt %d)", i)
             port_file_contents = _maybe_read_file(port_file_path)
@@ -230,11 +227,7 @@ class ServerBinary:
             it's on you to make sure that it's up to date.
         """
         self._path = path
-        self._version = (
-            pkg_resources.parse_version(version)
-            if version is not None
-            else version
-        )
+        self._version = parse_version(version) if version is not None else version
 
     @property
     def path(self):
@@ -260,7 +253,7 @@ class ServerBinary:
         """
         if self._version is None:
             return True
-        return self._version >= pkg_resources.parse_version(required_version)
+        return self._version >= parse_version(required_version)
 
 
 def get_server_binary():
@@ -287,9 +280,7 @@ def get_server_binary():
     else:
         pkg_result = tensorboard_data_server.server_binary()
         version = tensorboard_data_server.__version__
-        logging.info(
-            "Server binary (from Python package v%s): %s", version, pkg_result
-        )
+        logging.info("Server binary (from Python package v%s): %s", version, pkg_result)
         if pkg_result is None:
             raise NoDataServerError(
                 "TensorBoard data server not supported on this platform."
