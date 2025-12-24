@@ -566,6 +566,9 @@ async function slimGraphToHierarchy(
   );
 }
 
+// TODO: go/ts59upgrade - Remove this suppression after TS 5.9.2 upgrade
+// TS2345: Argument of type 'Uint8Array<ArrayBuffer>' is not assignable to parameter of type 'ArrayBuffer'.
+// @ts-ignore
 async function pbtxtToGraphDef(text: string): Promise<tf_graph_proto.GraphDef> {
   const encoder = new TextEncoder();
   return tf_graph_parser.parseGraphPbTxt(encoder.encode(text));
