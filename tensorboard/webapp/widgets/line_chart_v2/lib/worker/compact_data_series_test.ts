@@ -141,6 +141,9 @@ describe('line_chart_v2/lib/compact_data_series', () => {
             length: 2,
           },
         ],
+        // TODO: go/ts59upgrade - Remove this suppression after TS 5.9.2 upgrade
+        // TS2322: Type 'Float32Array<ArrayBuffer>' is not assignable to type 'ArrayBuffer'.
+        // @ts-ignore
         flattenedSeries: new Float32Array([1, 2, 3]),
       };
 
