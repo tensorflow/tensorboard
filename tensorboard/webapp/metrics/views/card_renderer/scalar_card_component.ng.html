@@ -178,6 +178,12 @@ limitations under the License.
               </td>
             </tr>
           </ng-container>
+          <tr class="legend" *ngIf="additionalItemsCount > 0">
+            <td colspan="100">
+              {{ additionalItemsCount }} additional {{ additionalItemsCount ===
+              1 ? 'item' : 'items' }}
+            </td>
+          </tr>
         </tbody>
       </table>
     </ng-template>
