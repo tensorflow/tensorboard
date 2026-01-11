@@ -408,9 +408,9 @@ describe('scalar card', () => {
     store.overrideSelector(selectors.getMetricsCardUserViewBox, null);
 
     dispatchedActions = [];
-    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+    spyOn(store, 'dispatch').and.callFake(((action: Action) => {
       dispatchedActions.push(action);
-    });
+    }) as any);
   });
 
   afterEach(() => {
