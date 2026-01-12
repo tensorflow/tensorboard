@@ -109,9 +109,9 @@ describe('card view test', () => {
 
     dispatchedActions = [];
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+    spyOn(store, 'dispatch').and.callFake(((action: Action) => {
       dispatchedActions.push(action);
-    });
+    }) as any);
 
     observeSpy = spyOn(IntersectionObserver.prototype, 'observe');
     unobserveSpy = spyOn(IntersectionObserver.prototype, 'unobserve');

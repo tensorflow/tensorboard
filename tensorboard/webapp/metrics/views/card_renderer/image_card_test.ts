@@ -107,9 +107,9 @@ describe('image card', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     dataSource = TestBed.inject<MetricsDataSource>(MetricsDataSource);
     selectSpy = spyOn(store, 'select').and.callThrough();
-    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+    spyOn(store, 'dispatch').and.callFake(((action: Action) => {
       dispatchedActions.push(action);
-    });
+    }) as any);
 
     store.overrideSelector(getExperimentIdForRunId, null);
     store.overrideSelector(getExperimentIdToExperimentAliasMap, {});
