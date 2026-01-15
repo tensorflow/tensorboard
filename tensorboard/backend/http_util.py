@@ -36,7 +36,7 @@ _DISALLOWED_CHAR_IN_DOMAIN = re.compile(r"\s")
 # @vaadin/vaadin-lumo-styles/font-icons(via vaadin-grid) uses data URI for
 # loading font icons.
 _CSP_FONT_DOMAINS_WHITELIST = ["data:"]
-_CSP_FRAME_DOMAINS_WHITELIST = []
+_CSP_FRAME_DOMAINS_WHITELIST = ["https://ui.perfetto.dev"]
 _CSP_IMG_DOMAINS_WHITELIST = []
 _CSP_SCRIPT_DOMAINS_WHITELIST = []
 _CSP_CONNECT_DOMAINS_WHITELIST = []
