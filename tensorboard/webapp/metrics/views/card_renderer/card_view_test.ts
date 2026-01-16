@@ -65,9 +65,9 @@ describe('card view test', () => {
 
     dispatchedActions = [];
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+    spyOn(store, 'dispatch').and.callFake(((action: Action) => {
       dispatchedActions.push(action);
-    });
+    }) as any);
     store.overrideSelector(selectors.getRunColorMap, {});
     intersectionObserver = TestBed.inject(IntersectionObserverTestingModule);
   });

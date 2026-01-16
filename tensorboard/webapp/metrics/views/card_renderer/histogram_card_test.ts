@@ -267,9 +267,9 @@ describe('histogram card', () => {
       provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
 
       dispatchedActions = [];
-      spyOn(store, 'dispatch').and.callFake((action: Action) => {
+      spyOn(store, 'dispatch').and.callFake(((action: Action) => {
         dispatchedActions.push(action);
-      });
+      }) as any);
     });
 
     it('dispatches metricsCardFullSizeToggled on full size toggle', () => {
@@ -301,9 +301,9 @@ describe('histogram card', () => {
       const fixture = createHistogramCardContainer();
       fixture.detectChanges();
       const dispatchedActions: Action[] = [];
-      spyOn(store, 'dispatch').and.callFake((action: Action) => {
+      spyOn(store, 'dispatch').and.callFake(((action: Action) => {
         dispatchedActions.push(action);
-      });
+      }) as any);
 
       const histogramWidget = fixture.debugElement.query(
         By.directive(TestableHistogramWidget)
@@ -584,9 +584,9 @@ describe('histogram card', () => {
         const fixture = createHistogramCardContainer();
         fixture.detectChanges();
         const dispatchedActions: Action[] = [];
-        spyOn(store, 'dispatch').and.callFake((action: Action) => {
+        spyOn(store, 'dispatch').and.callFake(((action: Action) => {
           dispatchedActions.push(action);
-        });
+        }) as any);
 
         const histogramWidget = fixture.debugElement.query(
           By.directive(TestableHistogramWidget)
