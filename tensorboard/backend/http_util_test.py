@@ -229,10 +229,14 @@ class RespondTest(tb_test.TestCase):
             q, "<b>hello</b>", "text/html", csp_scripts_sha256s=["abcdefghi"]
         )
         expected_csp = (
-            "default-src 'self';font-src 'self' data:;"
-            "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
+            "default-src 'self';"
+            "font-src 'self' data:;"
+            "frame-src 'self' https://ui.perfetto.dev;"
+            "img-src 'self' data: blob:;"
+            "object-src 'none';"
             "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
-            "connect-src 'self';script-src 'self' 'unsafe-eval' 'sha256-abcdefghi'"
+            "connect-src 'self';"
+            "script-src 'self' 'unsafe-eval' 'sha256-abcdefghi'"
         )
         self.assertEqual(r.headers.get("Content-Security-Policy"), expected_csp)
 
@@ -243,10 +247,14 @@ class RespondTest(tb_test.TestCase):
             q, "<b>hello</b>", "text/html", csp_scripts_sha256s=None
         )
         expected_csp = (
-            "default-src 'self';font-src 'self' data:;"
-            "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
+            "default-src 'self';"
+            "font-src 'self' data:;"
+            "frame-src 'self' https://ui.perfetto.dev;"
+            "img-src 'self' data: blob:;"
+            "object-src 'none';"
             "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
-            "connect-src 'self';script-src 'unsafe-eval'"
+            "connect-src 'self';"
+            "script-src 'unsafe-eval'"
         )
         self.assertEqual(r.headers.get("Content-Security-Policy"), expected_csp)
 
@@ -258,10 +266,14 @@ class RespondTest(tb_test.TestCase):
             q, "<b>hello</b>", "text/html", csp_scripts_sha256s=None
         )
         expected_csp = (
-            "default-src 'self';font-src 'self' data:;"
-            "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
+            "default-src 'self';"
+            "font-src 'self' data:;"
+            "frame-src 'self' https://ui.perfetto.dev;"
+            "img-src 'self' data: blob:;"
+            "object-src 'none';"
             "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
-            "connect-src 'self';script-src 'none'"
+            "connect-src 'self';"
+            "script-src 'none'"
         )
         self.assertEqual(r.headers.get("Content-Security-Policy"), expected_csp)
 
@@ -273,10 +285,14 @@ class RespondTest(tb_test.TestCase):
             q, "<b>hello</b>", "text/html", csp_scripts_sha256s=None
         )
         expected_csp = (
-            "default-src 'self';font-src 'self' data:;"
-            "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
+            "default-src 'self';"
+            "font-src 'self' data:;"
+            "frame-src 'self' https://ui.perfetto.dev;"
+            "img-src 'self' data: blob:;"
+            "object-src 'none';"
             "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
-            "connect-src 'self';script-src 'self'"
+            "connect-src 'self';"
+            "script-src 'self'"
         )
         self.assertEqual(r.headers.get("Content-Security-Policy"), expected_csp)
 
@@ -287,10 +303,14 @@ class RespondTest(tb_test.TestCase):
             q, "<b>hello</b>", "text/html", csp_scripts_sha256s=["abcdefghi"]
         )
         expected_csp = (
-            "default-src 'self';font-src 'self' data:;"
-            "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
+            "default-src 'self';"
+            "font-src 'self' data:;"
+            "frame-src 'self' https://ui.perfetto.dev;"
+            "img-src 'self' data: blob:;"
+            "object-src 'none';"
             "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
-            "connect-src 'self';script-src 'self' 'sha256-abcdefghi'"
+            "connect-src 'self';"
+            "script-src 'self' 'sha256-abcdefghi'"
         )
         self.assertEqual(r.headers.get("Content-Security-Policy"), expected_csp)
 
