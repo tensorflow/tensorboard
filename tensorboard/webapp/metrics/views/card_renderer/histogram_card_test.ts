@@ -268,9 +268,11 @@ describe('histogram card', () => {
 
       dispatchedActions = [];
       // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
-      (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake((action: Action) => {
-        dispatchedActions.push(action);
-      });
+      (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake(
+        (action: Action) => {
+          dispatchedActions.push(action);
+        }
+      );
     });
 
     it('dispatches metricsCardFullSizeToggled on full size toggle', () => {
@@ -303,9 +305,11 @@ describe('histogram card', () => {
       fixture.detectChanges();
       const dispatchedActions: Action[] = [];
       // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
-      (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake((action: Action) => {
-        dispatchedActions.push(action);
-      });
+      (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake(
+        (action: Action) => {
+          dispatchedActions.push(action);
+        }
+      );
 
       const histogramWidget = fixture.debugElement.query(
         By.directive(TestableHistogramWidget)
@@ -587,9 +591,11 @@ describe('histogram card', () => {
         fixture.detectChanges();
         const dispatchedActions: Action[] = [];
         // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
-        (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake((action: Action) => {
-          dispatchedActions.push(action);
-        });
+        (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake(
+          (action: Action) => {
+            dispatchedActions.push(action);
+          }
+        );
 
         const histogramWidget = fixture.debugElement.query(
           By.directive(TestableHistogramWidget)
