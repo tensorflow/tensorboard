@@ -208,11 +208,7 @@ export class LineChartInteractiveViewComponent
   cursorLocationInDataCoord: {x: number; y: number} | null = null;
   cursorLocation: {x: number; y: number} | null = null;
   cursoredData: TooltipDatum[] = [];
-  limitedCursoredData: TooltipDatum[] = [];
   tooltipDisplayAttached: boolean = false;
-
-  readonly MAX_TOOLTIP_ITEMS = 5;
-  tooltipTotalCount = 0;
 
   @HostBinding('class.show-zoom-instruction')
   showZoomInstruction: boolean = false;
@@ -490,10 +486,6 @@ export class LineChartInteractiveViewComponent
     return datum.id;
   }
 
-  get additionalItemsCount(): number {
-    return Math.max(0, this.tooltipTotalCount - this.MAX_TOOLTIP_ITEMS);
-  }
-
   getDomX(uiCoord: number): number {
     return this.xScale.forward(
       this.viewExtent.x,
@@ -550,8 +542,6 @@ export class LineChartInteractiveViewComponent
     const cursorLoc = this.cursorLocationInDataCoord;
     if (cursorLoc === null) {
       this.cursoredData = [];
-      this.limitedCursoredData = [];
-      this.tooltipTotalCount = 0;
       this.tooltipDisplayAttached = false;
       return;
     }
@@ -583,12 +573,6 @@ export class LineChartInteractiveViewComponent
           })
           .filter((tooltipDatumOrNull) => tooltipDatumOrNull) as TooltipDatum[])
       : [];
-
-    this.tooltipTotalCount = this.cursoredData.length;
-    this.limitedCursoredData = this.cursoredData.slice(
-      0,
-      this.MAX_TOOLTIP_ITEMS
-    );
     this.tooltipDisplayAttached = Boolean(this.cursoredData.length);
   }
 }

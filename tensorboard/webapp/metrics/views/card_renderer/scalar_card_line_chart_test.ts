@@ -199,9 +199,9 @@ class TestableLineChart {
           <ng-container
             *ngFor="
               let datum of getCursorAwareTooltipData(
-                tooltipData,
-                cursorLocationInDataCoord,
-                cursorLocation
+                tooltipDataForTesting,
+                cursorLocationInDataCoordForTesting,
+                cursorLocationForTesting
               )
             "
           >
@@ -233,12 +233,6 @@ class TestableLineChart {
               </td>
             </tr>
           </ng-container>
-          <tr class="legend" *ngIf="additionalItemsCount > 0">
-            <td colspan="100">
-              {{ additionalItemsCount }} additional
-              {{ additionalItemsCount === 1 ? 'item' : 'items' }}
-            </td>
-          </tr>
         </tbody>
       </table>
     </ng-template>
@@ -263,13 +257,10 @@ class TestableScalarCardLineChart {
   readonly valueFormatter = numberFormatter;
   readonly stepFormatter = intlNumberFormatter;
 
-  readonly MAX_TOOLTIP_ITEMS = 5;
-  tooltipTotalCount = 0;
-
   constructor(public readonly changeDetectorRef: ChangeDetectorRef) {}
 
   getCursorAwareTooltipData(
-    tooltipData: TooltipDatum<ScalarCardSeriesMetadata, ScalarCardPoint>[],
+    tooltipData: TooltipDatum<ScalarCardSeriesMetadata>[],
     cursorLocationInDataCoord: {x: number; y: number},
     cursorLocation: {x: number; y: number}
   ) {
@@ -302,31 +293,22 @@ class TestableScalarCardLineChart {
       scalarTooltipData[minIndex].metadata.closest = true;
     }
 
-    let sortedData;
     switch (this.tooltipSort) {
       case TooltipSort.ASCENDING:
-        sortedData = scalarTooltipData.sort(
-          (a, b) => a.dataPoint.y - b.dataPoint.y
-        );
-        break;
+        return scalarTooltipData.sort((a, b) => a.dataPoint.y - b.dataPoint.y);
       case TooltipSort.DESCENDING:
-        sortedData = scalarTooltipData.sort(
-          (a, b) => b.dataPoint.y - a.dataPoint.y
-        );
-        break;
+        return scalarTooltipData.sort((a, b) => b.dataPoint.y - a.dataPoint.y);
       case TooltipSort.NEAREST:
-        sortedData = scalarTooltipData.sort((a, b) => {
+        return scalarTooltipData.sort((a, b) => {
           return a.metadata.distToCursorPixels - b.metadata.distToCursorPixels;
         });
-        break;
       case TooltipSort.NEAREST_Y:
-        sortedData = scalarTooltipData.sort((a, b) => {
+        return scalarTooltipData.sort((a, b) => {
           return a.metadata.distToCursorY - b.metadata.distToCursorY;
         });
-        break;
       case TooltipSort.DEFAULT:
       case TooltipSort.ALPHABETICAL:
-        sortedData = scalarTooltipData.sort((a, b) => {
+        return scalarTooltipData.sort((a, b) => {
           if (a.metadata.displayName < b.metadata.displayName) {
             return -1;
           }
@@ -335,15 +317,7 @@ class TestableScalarCardLineChart {
           }
           return 0;
         });
-        break;
     }
-
-    this.tooltipTotalCount = sortedData.length;
-    return sortedData.slice(0, this.MAX_TOOLTIP_ITEMS);
-  }
-
-  get additionalItemsCount(): number {
-    return Math.max(0, this.tooltipTotalCount - this.MAX_TOOLTIP_ITEMS);
   }
 }
 
@@ -487,9 +461,9 @@ describe('scalar card line chart', () => {
     store.overrideSelector(selectors.getMetricsCardUserViewBox, null);
 
     dispatchedActions = [];
-    spyOn(store, 'dispatch').and.callFake(((action: Action) => {
+    spyOn(store, 'dispatch').and.callFake((action: Action) => {
       dispatchedActions.push(action);
-    }) as any);
+    });
   });
 
   afterEach(() => {
@@ -810,11 +784,6 @@ describe('scalar card line chart', () => {
       tooltipData: TooltipDatum[]
     ) {
       fixture.componentInstance.tooltipDataForTesting = tooltipData;
-      const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
-      if (lineChart) {
-        lineChart.componentInstance.tooltipDataForTesting = tooltipData;
-        lineChart.componentInstance.changeDetectorRef.markForCheck();
-      }
       fixture.componentInstance.changeDetectorRef.markForCheck();
     }
 
@@ -823,23 +792,11 @@ describe('scalar card line chart', () => {
       dataPoint?: {x: number; y: number},
       domPoint?: Point
     ) {
-      const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
       if (dataPoint) {
         fixture.componentInstance.dataPointForTesting = dataPoint;
-        if (lineChart) {
-          lineChart.componentInstance.dataPointForTesting = dataPoint;
-          lineChart.componentInstance.cursorLocationInDataCoordForTesting =
-            dataPoint;
-        }
       }
       if (domPoint) {
         fixture.componentInstance.cursorLocationForTesting = domPoint;
-        if (lineChart) {
-          lineChart.componentInstance.cursorLocationForTesting = domPoint;
-        }
-      }
-      if (lineChart) {
-        lineChart.componentInstance.changeDetectorRef.markForCheck();
       }
       fixture.componentInstance.changeDetectorRef.markForCheck();
     }
@@ -1412,96 +1369,6 @@ describe('scalar card line chart', () => {
         ['', 'world', '-500', '1,000', anyString, anyString],
       ]);
     }));
-
-    describe('tooltip item limiting and legend', () => {
-      const colors = [
-        '#00f',
-        '#0f0',
-        '#f00',
-        '#ff0',
-        '#0ff',
-        '#f0f',
-        '#fff',
-        '#000',
-      ];
-
-      function buildTooltipData(count: number) {
-        return Array.from({length: count}, (_, i) =>
-          buildTooltipDatum({
-            id: `row${i + 1}`,
-            type: SeriesType.ORIGINAL,
-            displayName: `Row ${i + 1}`,
-            alias: null,
-            visible: true,
-            color: colors[i % colors.length],
-          })
-        );
-      }
-
-      function getLegendRow(
-        fixture: ComponentFixture<TestableScalarCardLineChart>
-      ) {
-        return fixture.debugElement.query(By.css('table.tooltip tr.legend'));
-      }
-
-      it('displays all items when there are 5 or fewer', fakeAsync(() => {
-        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-        const fixture = createComponent();
-        setTooltipData(fixture, buildTooltipData(5));
-        fixture.detectChanges();
-
-        expect(fixture.debugElement.queryAll(Selector.TOOLTIP_ROW).length).toBe(
-          5
-        );
-        expect(getLegendRow(fixture)).toBeNull();
-      }));
-
-      it('limits tooltip to 5 items when there are more than 5', fakeAsync(() => {
-        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-        const fixture = createComponent();
-        setTooltipData(fixture, buildTooltipData(7));
-        fixture.detectChanges();
-
-        expect(fixture.debugElement.queryAll(Selector.TOOLTIP_ROW).length).toBe(
-          5
-        );
-      }));
-
-      it('shows legend with singular text for 1 additional item', fakeAsync(() => {
-        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-        const fixture = createComponent();
-        setTooltipData(fixture, buildTooltipData(6));
-        fixture.detectChanges();
-
-        const legendRow = getLegendRow(fixture);
-        expect(legendRow).not.toBeNull();
-        expect(legendRow.nativeElement.textContent.trim()).toBe(
-          '1 additional item'
-        );
-      }));
-
-      it('shows legend with plural text for multiple additional items', fakeAsync(() => {
-        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-        const fixture = createComponent();
-        setTooltipData(fixture, buildTooltipData(8));
-        fixture.detectChanges();
-
-        const legendRow = getLegendRow(fixture);
-        expect(legendRow).not.toBeNull();
-        expect(legendRow.nativeElement.textContent.trim()).toBe(
-          '3 additional items'
-        );
-      }));
-
-      it('does not show legend when there are exactly 5 items', fakeAsync(() => {
-        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-        const fixture = createComponent();
-        setTooltipData(fixture, buildTooltipData(5));
-        fixture.detectChanges();
-
-        expect(getLegendRow(fixture)).toBeNull();
-      }));
-    });
   });
 
   describe('linked time feature integration', () => {
