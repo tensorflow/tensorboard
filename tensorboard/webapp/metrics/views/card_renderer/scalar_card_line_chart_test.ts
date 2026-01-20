@@ -461,7 +461,8 @@ describe('scalar card line chart', () => {
     store.overrideSelector(selectors.getMetricsCardUserViewBox, null);
 
     dispatchedActions = [];
-    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+    // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+    (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake((action: Action) => {
       dispatchedActions.push(action);
     });
   });

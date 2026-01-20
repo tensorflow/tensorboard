@@ -115,11 +115,19 @@ $_data_table_initial_height: 100px;
 }
 
 .tooltip {
-  border-spacing: 4px;
+  border-spacing: 8px;
   font-size: 13px;
 
   th {
     text-align: left;
+  }
+
+  td {
+    text-align: justify;
+
+    .legend {
+      font-weight: 500;
+    }
   }
 
   $_circle-size: 12px;

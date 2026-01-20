@@ -408,7 +408,8 @@ describe('scalar card', () => {
     store.overrideSelector(selectors.getMetricsCardUserViewBox, null);
 
     dispatchedActions = [];
-    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+    // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+    (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake((action: Action) => {
       dispatchedActions.push(action);
     });
   });
@@ -1885,6 +1886,107 @@ describe('scalar card', () => {
         ['', 'world', '-500', '1,000', anyString, anyString],
       ]);
     }));
+
+    describe('tooltip item limiting and legend', () => {
+      const colors = [
+        '#00f',
+        '#0f0',
+        '#f00',
+        '#ff0',
+        '#0ff',
+        '#f0f',
+        '#fff',
+        '#000',
+      ];
+
+      function buildTooltipData(count: number) {
+        return Array.from({length: count}, (_, i) =>
+          buildTooltipDatum({
+            id: `row${i + 1}`,
+            type: SeriesType.ORIGINAL,
+            displayName: `Row ${i + 1}`,
+            alias: null,
+            visible: true,
+            color: colors[i % colors.length],
+          })
+        );
+      }
+
+      function getLegendRow(fixture: ComponentFixture<ScalarCardContainer>) {
+        return fixture.debugElement.query(By.css('table.tooltip tr.legend'));
+      }
+
+      it('displays all items when there are 5 or fewer', fakeAsync(() => {
+        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+        const fixture = createComponent('card1');
+        setTooltipData(fixture, buildTooltipData(5));
+        fixture.detectChanges();
+
+        expect(fixture.debugElement.queryAll(Selector.TOOLTIP_ROW).length).toBe(
+          5
+        );
+        expect(getLegendRow(fixture)).toBeNull();
+      }));
+
+      it('limits tooltip to 5 items when there are more than 5', fakeAsync(() => {
+        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+        const fixture = createComponent('card1');
+        setTooltipData(fixture, buildTooltipData(7));
+        fixture.detectChanges();
+
+        expect(fixture.debugElement.queryAll(Selector.TOOLTIP_ROW).length).toBe(
+          5
+        );
+      }));
+
+      it('shows legend with singular text for 1 additional item', fakeAsync(() => {
+        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+        const fixture = createComponent('card1');
+        setTooltipData(fixture, buildTooltipData(6));
+        fixture.detectChanges();
+
+        const legendRow = getLegendRow(fixture);
+        expect(legendRow).not.toBeNull();
+        expect(legendRow.nativeElement.textContent.trim()).toBe(
+          '1 additional item'
+        );
+      }));
+
+      it('shows legend with plural text for multiple additional items', fakeAsync(() => {
+        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+        const fixture = createComponent('card1');
+        setTooltipData(fixture, buildTooltipData(8));
+        fixture.detectChanges();
+
+        const legendRow = getLegendRow(fixture);
+        expect(legendRow).not.toBeNull();
+        expect(legendRow.nativeElement.textContent.trim()).toBe(
+          '3 additional items'
+        );
+      }));
+
+      it('does not show legend when there are exactly 5 items', fakeAsync(() => {
+        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+        const fixture = createComponent('card1');
+        setTooltipData(fixture, buildTooltipData(5));
+        fixture.detectChanges();
+
+        expect(getLegendRow(fixture)).toBeNull();
+      }));
+
+      it('shows legend with correct colspan when smoothing is enabled', fakeAsync(() => {
+        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.5);
+        const fixture = createComponent('card1');
+        setTooltipData(fixture, buildTooltipData(6));
+        fixture.detectChanges();
+
+        const legendRow = getLegendRow(fixture);
+        expect(legendRow).not.toBeNull();
+        expect(
+          legendRow.query(By.css('td')).nativeElement.getAttribute('colspan')
+        ).toBe('100');
+      }));
+    });
   });
 
   describe('non-monotonic increase in x-axis', () => {

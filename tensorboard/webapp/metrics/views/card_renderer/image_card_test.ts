@@ -107,7 +107,8 @@ describe('image card', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     dataSource = TestBed.inject<MetricsDataSource>(MetricsDataSource);
     selectSpy = spyOn(store, 'select').and.callThrough();
-    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+    // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+    (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake((action: Action) => {
       dispatchedActions.push(action);
     });
 

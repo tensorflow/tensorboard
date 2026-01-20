@@ -75,6 +75,8 @@ type ScalarTooltipDatum = TooltipDatum<
   }
 >;
 
+const MAX_TOOLTIP_ITEMS = 5;
+
 @Component({
   standalone: false,
   selector: 'scalar-card-component',
@@ -153,6 +155,7 @@ export class ScalarCardComponent<Downloader> {
 
   yScaleType = ScaleType.LINEAR;
   isViewBoxOverridden: boolean = false;
+  additionalItemsCount = 0;
 
   toggleYScaleType() {
     this.yScaleType =
@@ -226,20 +229,24 @@ export class ScalarCardComponent<Downloader> {
 
     switch (this.tooltipSort) {
       case TooltipSort.ASCENDING:
-        return scalarTooltipData.sort((a, b) => a.dataPoint.y - b.dataPoint.y);
+        scalarTooltipData.sort((a, b) => a.dataPoint.y - b.dataPoint.y);
+        break;
       case TooltipSort.DESCENDING:
-        return scalarTooltipData.sort((a, b) => b.dataPoint.y - a.dataPoint.y);
+        scalarTooltipData.sort((a, b) => b.dataPoint.y - a.dataPoint.y);
+        break;
       case TooltipSort.NEAREST:
-        return scalarTooltipData.sort((a, b) => {
+        scalarTooltipData.sort((a, b) => {
           return a.metadata.distToCursorPixels - b.metadata.distToCursorPixels;
         });
+        break;
       case TooltipSort.NEAREST_Y:
-        return scalarTooltipData.sort((a, b) => {
+        scalarTooltipData.sort((a, b) => {
           return a.metadata.distToCursorY - b.metadata.distToCursorY;
         });
+        break;
       case TooltipSort.DEFAULT:
       case TooltipSort.ALPHABETICAL:
-        return scalarTooltipData.sort((a, b) => {
+        scalarTooltipData.sort((a, b) => {
           if (a.metadata.displayName < b.metadata.displayName) {
             return -1;
           }
@@ -248,7 +255,14 @@ export class ScalarCardComponent<Downloader> {
           }
           return 0;
         });
+        break;
     }
+
+    this.additionalItemsCount = Math.max(
+      0,
+      scalarTooltipData.length - MAX_TOOLTIP_ITEMS
+    );
+    return scalarTooltipData.slice(0, MAX_TOOLTIP_ITEMS);
   }
 
   openDataDownloadDialog(): void {
