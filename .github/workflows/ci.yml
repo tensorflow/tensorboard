@@ -134,7 +134,7 @@ jobs:
       fail-fast: false
       matrix:
         mode: ['native']
-        platform: ['ubuntu-22.04', 'macos-13']
+        platform: ['ubuntu-22.04', 'macos-15']
         rust_version: ['1.65.0']
         include:
           - mode: 'universal'
