@@ -15,6 +15,7 @@
 
 
 import os
+from pathlib import Path
 from unittest import mock
 
 from google.protobuf import text_format
@@ -151,6 +152,14 @@ class CallbackTest(tf.test.TestCase):
         # We'll assume that the contents are correct, as in the case where
         # the file writer was constructed implicitly.
 
+    def test_pathlib_writer(self):
+        writer = Path(self.logdir)
+        self._initialize_model(writer=writer)
+        self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
+
+        files = os.listdir(self.logdir)
+        self.assertEqual(len(files), 1, files)
+
     def test_non_eager_failure(self):
         with tf.compat.v1.Graph().as_default():
             assert not tf.executing_eagerly()
@@ -183,7 +192,7 @@ class CallbackTest(tf.test.TestCase):
     def test_invalid_writer(self):
         with self.assertRaisesRegex(
             TypeError,
-            "writer must be a `SummaryWriter` or `str`, not None",
+            "writer must be a `SummaryWriter`, `str` or `PathLike`, not None",
         ):
             _keras.Callback(writer=None, hparams={})
 
