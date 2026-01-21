@@ -5,3 +5,6 @@
 *.egg-info/
 *.swp
 node_modules
+dist
+build
+.vscode
