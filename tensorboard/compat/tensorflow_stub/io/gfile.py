@@ -19,7 +19,6 @@ pure Python implementation, limited to the features required for
 TensorBoard.  This allows running TensorBoard without depending on
 TensorFlow for file operations.
 """
-
 import dataclasses
 import glob as py_glob
 import io
@@ -77,11 +76,12 @@ def get_filesystem(filename):
     if index >= 0:
         prefix = filename[:index]
     fs = _REGISTERED_FILESYSTEMS.get(prefix, None)
+    fs_class = None
     if fs is None:
-        fs = _get_fsspec_filesystem(filename)
+        fs, fs_class = _get_fsspec_filesystem(filename)
     if fs is None:
         raise ValueError("No recognized filesystem for prefix %s" % prefix)
-    return fs
+    return fs, fs_class
 
 
 @dataclasses.dataclass(frozen=True)
@@ -639,6 +639,12 @@ class FSSpecFileSystem:
 
 _FSSPEC_FILESYSTEM = FSSpecFileSystem()
 
+def _get_fs_class(filename):
+    """Returns the filesystem class for the given filename."""
+    filename = compat.as_str_any(filename)
+    segment = filename.partition(FSSpecFileSystem.CHAIN_SEPARATOR)[0]
+    protocol = segment.partition(FSSpecFileSystem.SEPARATOR)[0]
+    return fsspec.get_filesystem_class(protocol)
 
 def _get_fsspec_filesystem(filename):
     """
@@ -647,13 +653,9 @@ def _get_fsspec_filesystem(filename):
     """
     if not FSSPEC_ENABLED:
         return None
-
-    segment = filename.partition(FSSpecFileSystem.CHAIN_SEPARATOR)[0]
-    protocol = segment.partition(FSSpecFileSystem.SEPARATOR)[0]
-    if fsspec.get_filesystem_class(protocol):
-        return _FSSPEC_FILESYSTEM
-    else:
-        return None
+    fs_class = _get_fs_class(filename)
+    fs_wrapper = _FSSPEC_FILESYSTEM if fs_class else None
+    return fs_wrapper, fs_class
 
 
 register_filesystem("", LocalFileSystem())
@@ -670,8 +672,11 @@ class GFile:
                 "mode {} not supported by compat GFile".format(mode)
             )
         self.filename = compat.as_bytes(filename)
-        self.fs = get_filesystem(self.filename)
-        self.fs_supports_append = hasattr(self.fs, "append")
+        self.fs, self.fs_class = get_filesystem(self.filename)
+        if "Azure" in str(self.fs_class):
+            self.fs_supports_append = False
+        else:
+            self.fs_supports_append = hasattr(self.fs, "append")
         self.buff = None
         # The buffer offset and the buffer chunk size are measured in the
         # natural units of the underlying stream, i.e. bytes for binary mode,
@@ -850,7 +855,8 @@ def exists(filename):
     Raises:
       errors.OpError: Propagates any errors reported by the FileSystem API.
     """
-    return get_filesystem(filename).exists(filename)
+    fs, _ = get_filesystem(filename)
+    return fs.exists(filename)
 
 
 def glob(filename):
@@ -865,7 +871,8 @@ def glob(filename):
     Raises:
       errors.OpError: If there are filesystem / directory listing errors.
     """
-    return get_filesystem(filename).glob(filename)
+    fs, _ = get_filesystem(filename)
+    return fs.glob(filename)
 
 
 def isdir(dirname):
@@ -877,7 +884,8 @@ def isdir(dirname):
     Returns:
       True, if the path is a directory; False otherwise
     """
-    return get_filesystem(dirname).isdir(dirname)
+    fs, _ = get_filesystem(dirname)
+    return fs.isdir(dirname)
 
 
 def listdir(dirname):
@@ -895,7 +903,8 @@ def listdir(dirname):
     Raises:
       errors.NotFoundError if directory doesn't exist
     """
-    return get_filesystem(dirname).listdir(dirname)
+    fs, _ = get_filesystem(dirname)
+    return fs.listdir(dirname)
 
 
 def makedirs(path):
@@ -906,7 +915,8 @@ def makedirs(path):
     Args:
       path: string, name of the directory to be created
     """
-    return get_filesystem(path).makedirs(path)
+    fs, _ = get_filesystem(path)
+    return fs.makedirs(path)
 
 
 def walk(top, topdown=True, onerror=None):
@@ -927,7 +937,7 @@ def walk(top, topdown=True, onerror=None):
       as strings
     """
     top = compat.as_str_any(top)
-    fs = get_filesystem(top)
+    fs, _ = get_filesystem(top)
     try:
         listing = listdir(top)
     except errors.NotFoundError as err:
@@ -971,7 +981,8 @@ def stat(filename):
     Raises:
       errors.OpError: If the operation fails.
     """
-    return get_filesystem(filename).stat(filename)
+    fs, _ = get_filesystem(filename)
+    return fs.stat(filename)
 
 
 # Used for tests only
