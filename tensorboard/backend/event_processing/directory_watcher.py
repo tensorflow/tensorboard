@@ -120,7 +120,7 @@ class DirectoryWatcher:
 
             next_path = self._GetNextPath()
             if not next_path:
-                logger.info("No path found after %s", self._path)
+                logger.debug("No path found after %s", self._path)
                 # Current path is empty and there are no new paths, so we're done.
                 return
 
@@ -143,7 +143,7 @@ class DirectoryWatcher:
             for event in self._loader.Load():
                 yield event
 
-            logger.info(
+            logger.debug(
                 "Directory watcher advancing from %s to %s",
                 self._path,
                 next_path,
