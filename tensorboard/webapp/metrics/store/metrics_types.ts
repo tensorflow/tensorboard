@@ -278,7 +278,7 @@ export interface State {
 
 export const METRICS_SETTINGS_DEFAULT: MetricsSettings = {
   cardMinWidth: null,
-  tooltipSort: TooltipSort.ALPHABETICAL,
+  tooltipSort: TooltipSort.NEAREST,
   ignoreOutliers: true,
   xAxisType: XAxisType.STEP,
   hideEmptyCards: true,

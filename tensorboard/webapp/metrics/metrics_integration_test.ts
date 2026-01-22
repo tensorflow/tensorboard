@@ -24,6 +24,7 @@ import {MetricsDashboardContainer} from './views/metrics_container';
 describe('metrics integration test', () => {
   const ByCss = {
     SCALARS_SMOOTHING_INPUT: By.css('.scalars-smoothing input'),
+    TOOLTIP_SORT_DROPDOWN: By.css('.tooltip-sort tb-dropdown'),
   };
 
   beforeEach(() => {
@@ -44,6 +45,13 @@ describe('metrics integration test', () => {
 
       const input = fixture.debugElement.query(ByCss.SCALARS_SMOOTHING_INPUT);
       expect(input.nativeElement.value).toBe('0.6');
+
+      const tooltipSortDropdown = fixture.debugElement.query(
+        ByCss.TOOLTIP_SORT_DROPDOWN
+      );
+      expect(tooltipSortDropdown.componentInstance.value).toBe(
+        METRICS_SETTINGS_DEFAULT.tooltipSort
+      );
     });
 
     it('permits overriding default settings with DI', async () => {
