@@ -119,7 +119,7 @@
     "@vaadin/vaadin-grid": "^20.0.2",
     "d3": "5.7.0",
     "dagre": "^0.8.5",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.23",
     "marked": "^4.0.10",
     "monaco-editor-core": "^0.26.0",
     "monaco-languages": "^2.6.0",
