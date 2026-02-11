@@ -211,10 +211,10 @@ py_library(
 
 py_test(
     name = "manager_test",
-    size = "small",
+    size = "large",
     srcs = ["manager_test.py"],
     srcs_version = "PY3",
-    tags = ["support_notf"],
+    tags = ["support_notf", "exclusive"],
     visibility = ["//tensorboard:internal"],
     deps = [
         ":manager",
@@ -273,10 +273,10 @@ py_library(
 
 py_test(
     name = "program_test",
-    size = "small",
+    size = "large",
     srcs = ["program_test.py"],
     srcs_version = "PY3",
-    tags = ["support_notf"],
+    tags = ["support_notf", "exclusive"],
     deps = [
         ":default",
         ":program",
