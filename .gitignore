@@ -5,3 +5,8 @@
 *.egg-info/
 *.swp
 node_modules
+
+# Ignore files for Angular upgrade
+yarn.lock
+.yarnrc.yml
+.yarn/install-state.gz
