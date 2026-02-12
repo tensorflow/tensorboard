@@ -140,7 +140,7 @@ class WerkzeugServerTest(tb_test.TestCase):
         )
         self.assertEndsWith(server.get_url(), "/test/")
 
-def testSpecifiedHost(self):
+    def testSpecifiedHost(self):
         one_passed = False
         try:
             server = program.WerkzeugServer(
