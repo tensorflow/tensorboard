@@ -309,7 +309,6 @@ py_library(
     srcs = ["default.py"],
     srcs_version = "PY3",
     deps = [
-        "//tensorboard:expect_pkg_resources_installed",
         "//tensorboard/backend:experimental_plugin",
         "//tensorboard/plugins/audio:audio_plugin",
         "//tensorboard/plugins/core:core_plugin",
@@ -347,7 +346,6 @@ py_test(
     deps = [
         ":default",
         ":test",
-        "//tensorboard:expect_pkg_resources_installed",
         "//tensorboard/plugins:base_plugin",
     ],
 )
@@ -367,7 +365,6 @@ py_test(
     deps = [
         ":test",
         ":version",
-        "//tensorboard:expect_pkg_resources_installed",
     ],
 )
 
@@ -460,11 +457,6 @@ py_library(name = "expect_absl_logging_installed")
 # We expect absl-py to already be installed on the system, e.g. via
 # `pip install absl-py`
 py_library(name = "expect_absl_testing_absltest_installed")
-
-# This is a dummy rule used as a pkg-resources dependency in open-source.
-# We expect pkg-resources to already be installed on the system, e.g., via
-# `pip install setuptools`.
-py_library(name = "expect_pkg_resources_installed")
 
 # This is a dummy rule used as a pandas dependency in open-source.
 # We expect pandas to already be installed on the system, e.g. via
