@@ -166,7 +166,7 @@ def testSpecifiedHost(self):
 
         self.assertTrue(
             one_passed,
-            "Neither IPv4 (127.0.0.1) nor IPv6 (::1) could be bound. Environment network issue."
+            "Neither IPv4 (127.0.0.1) nor IPv6 (::1) could be bound."
         )
 
 
@@ -175,8 +175,14 @@ class SubcommandTest(tb_test.TestCase):
         super().setUp()
         self.stderr = io.StringIO()
         patchers = [
-            mock.patch.object(program.TensorBoard, "_install_signal_handler"),
-            mock.patch.object(program.TensorBoard, "_run_serve_subcommand"),
+            mock.patch.object(
+                program.TensorBoard,
+                "_install_signal_handler"
+            ),
+            mock.patch.object(
+                program.TensorBoard,
+                "_run_serve_subcommand"
+            ),
             mock.patch.object(_TestSubcommand, "run"),
             mock.patch.object(sys, "stderr", self.stderr),
         ]
