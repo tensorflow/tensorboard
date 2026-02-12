@@ -30,7 +30,7 @@
   "devDependencies": {
     "@angular-devkit/build-angular": "^15.2.9",
     "@angular/build-tooling": "https://github.com/angular/dev-infra-private-build-tooling-builds.git#fb42478534df7d48ec23a6834fea94a776cb89a0",
-    "@angular/cli": "^15.2.9",
+    "@angular/cli": "^16.2.0",
     "@angular/compiler": "15.2.9",
     "@angular/compiler-cli": "^15.2.9",
     "@babel/core": "^7.16.12",
