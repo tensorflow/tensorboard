@@ -224,8 +224,8 @@ def tf_ng_web_test_suite(name, deps = [], **kwargs):
         name = name,
         bootstrap =
             [
-                "@npm//:node_modules/zone.js/dist/zone-evergreen.js",
-                "@npm//:node_modules/zone.js/dist/zone-testing.js",
+                "@npm//:node_modules/zone.js/bundles/zone.umd.js",
+                "@npm//:node_modules/zone.js/bundles/zone-testing.umd.js",
                 "@npm//:node_modules/reflect-metadata/Reflect.js",
             ],
         # The only dependency is the esbuild bundle from spec_bundle().
