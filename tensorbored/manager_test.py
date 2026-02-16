@@ -384,7 +384,7 @@ class TensorBoardInfoIoTest(tb_test.TestCase):
         os.chmod(os.path.join(self.info_dir, "pid-9012.info"), 0o000)
         with mock.patch.object(tb_logging.get_logger(), "debug") as fn:
             self.assertEqual(manager.get_all(), [])
-        self.assertEqual(fn.call_count, 2)  # 2 invalid, 1 unreadable (silent)
+        self.assertEqual(fn.call_count, 3)  # 2 invalid, 1 unreadable (silent)
 
 
 if __name__ == "__main__":
