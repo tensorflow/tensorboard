@@ -132,6 +132,13 @@ export class SettingsViewComponent {
     auditTime(SLIDER_AUDIT_TIME_MS)
   );
 
+  readonly symlogLinearThresholdControlChanged$ = new EventEmitter<number>();
+  @Input() symlogLinearThreshold: number = 1;
+  @Output()
+  symlogLinearThresholdChanged = this.symlogLinearThresholdControlChanged$.pipe(
+    auditTime(SLIDER_AUDIT_TIME_MS)
+  );
+
   @Input() scalarPartitionX!: boolean;
   @Output() scalarPartitionXToggled = new EventEmitter();
 
@@ -150,6 +157,19 @@ export class SettingsViewComponent {
       input.value = String(nextValue);
     }
     this.scalarSmoothingControlChanged$.emit(nextValue);
+  }
+
+  onSymlogLinearThresholdInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.value) {
+      return;
+    }
+    const nextValue = Math.max(0.001, parseFloat(input.value));
+
+    if (nextValue !== parseFloat(input.value)) {
+      input.value = String(nextValue);
+    }
+    this.symlogLinearThresholdControlChanged$.emit(nextValue);
   }
 
   readonly imageBrightnessSliderChanged$ = new EventEmitter<number>();

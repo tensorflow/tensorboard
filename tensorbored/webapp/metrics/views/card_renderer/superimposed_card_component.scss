@@ -191,6 +191,26 @@ limitations under the License.
   }
 }
 
+.symlog-threshold-menu {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+
+  label {
+    white-space: nowrap;
+  }
+
+  input {
+    width: 5em;
+    padding: 2px 4px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    font-size: 12px;
+  }
+}
+
 :host-context(.dark-mode) {
   .superimposed-card {
     border-color: #9c27b0;

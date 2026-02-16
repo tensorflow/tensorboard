@@ -127,6 +127,11 @@ export const metricsScalarPartitionNonMonotonicXToggled = createAction(
   '[Metrics] Metrics Setting Partition Non Monotonic X Toggled'
 );
 
+export const metricsChangeSymlogLinearThreshold = createAction(
+  '[Metrics] Metrics Setting Change Symlog Linear Threshold',
+  props<{symlogLinearThreshold: number}>()
+);
+
 export const metricsChangeImageBrightness = createAction(
   '[Metrics] Metrics Setting Change Image Brightness',
   props<{brightnessInMilli: number}>()
@@ -312,6 +317,11 @@ export const metricsTagXAxisScaleChanged = createAction(
   props<{tag: string; scaleType: ScaleType}>()
 );
 
+export const metricsTagSymlogLinearThresholdChanged = createAction(
+  '[Metrics] Tag Symlog Linear Threshold Changed',
+  props<{tag: string; symlogLinearThreshold: number}>()
+);
+
 // TODO(jieweiwu): Delete after internal code is updated.
 export const stepSelectorTimeSelectionChanged = timeSelectionChanged;
 
@@ -406,6 +416,8 @@ export const profileMetricsSettingsApplied = createAction(
       string,
       {yAxisScale: ScaleType; xAxisScale: ScaleType}
     >;
+    symlogLinearThreshold?: number;
+    tagSymlogLinearThresholds?: Record<string, number>;
   }>()
 );
 

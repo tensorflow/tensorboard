@@ -129,6 +129,14 @@ export class LineChartComponent
   @Input()
   yScaleType: ScaleType = ScaleType.LINEAR;
 
+  /**
+   * Linear threshold for the SYMLOG10 scale type.
+   * Controls the width of the linear region near zero.
+   * Only affects SYMLOG10 scale types; ignored for other scale types.
+   */
+  @Input()
+  symlogLinearThreshold: number = 1;
+
   @Input()
   customXFormatter?: Formatter;
 
@@ -206,13 +214,13 @@ export class LineChartComponent
     // OnChanges only decides whether props need to be updated and do not directly update
     // the line chart.
 
-    if (changes['xScaleType']) {
-      this.xScale = createScale(this.xScaleType);
+    if (changes['xScaleType'] || changes['symlogLinearThreshold']) {
+      this.xScale = createScale(this.xScaleType, this.symlogLinearThreshold);
       this.scaleUpdated = true;
     }
 
-    if (changes['yScaleType']) {
-      this.yScale = createScale(this.yScaleType);
+    if (changes['yScaleType'] || changes['symlogLinearThreshold']) {
+      this.yScale = createScale(this.yScaleType, this.symlogLinearThreshold);
       this.scaleUpdated = true;
     }
 
@@ -308,6 +316,7 @@ export class LineChartComponent
     if (
       changes['xScaleType'] ||
       changes['yScaleType'] ||
+      changes['symlogLinearThreshold'] ||
       changes['ignoreYOutliers']
     ) {
       return true;

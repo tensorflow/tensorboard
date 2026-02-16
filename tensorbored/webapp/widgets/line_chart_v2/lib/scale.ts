@@ -18,14 +18,17 @@ import {Scale, ScaleType} from './scale_types';
 
 export {ScaleType} from './scale_types';
 
-export function createScale(type: ScaleType): Scale {
+export function createScale(
+  type: ScaleType,
+  symlogLinearThreshold: number = 1
+): Scale {
   switch (type) {
     case ScaleType.LINEAR:
       return new LinearScale();
     case ScaleType.LOG10:
       return new Log10Scale();
     case ScaleType.SYMLOG10:
-      return new SymLog10Scale();
+      return new SymLog10Scale(symlogLinearThreshold);
     case ScaleType.TIME:
       return new TemporalScale();
     default:
@@ -187,27 +190,38 @@ class Log10Scale implements Scale {
 
 /**
  * Symmetric log scale (base 10) that handles both positive and negative values.
- * Uses the log-modulus transformation: sign(x) * log10(|x| + 1)
+ * Uses the log-modulus transformation: sign(x) * log10(|x|/c + 1)
+ * where c is the linear threshold parameter.
  *
  * Key properties:
  * - Handles zero: symlog(0) = 0
  * - Handles negative values: symlog(-x) = -symlog(x)
- * - Behaves linearly near zero (when |x| << 1)
+ * - Behaves linearly near zero (when |x| << c)
  * - Behaves logarithmically for large |x|
+ * - c controls the width of the linear region:
+ *   c = 1 (default): linear near |x| < 1
+ *   c = 10: linear near |x| < 10
+ *   c = 0.01: linear near |x| < 0.01
  */
 class SymLog10Scale implements Scale {
-  /**
-   * Symmetric log transformation: sign(x) * log10(|x| + 1)
-   */
-  private transform(x: number): number {
-    return Math.sign(x) * Math.log10(Math.abs(x) + 1);
+  private readonly c: number;
+
+  constructor(linearThreshold: number = 1) {
+    this.c = Math.max(linearThreshold, Number.MIN_VALUE);
   }
 
   /**
-   * Inverse of symmetric log: sign(y) * (10^|y| - 1)
+   * Symmetric log transformation: sign(x) * log10(|x|/c + 1)
+   */
+  private transform(x: number): number {
+    return Math.sign(x) * Math.log10(Math.abs(x) / this.c + 1);
+  }
+
+  /**
+   * Inverse of symmetric log: sign(y) * c * (10^|y| - 1)
    */
   private untransform(y: number): number {
-    return Math.sign(y) * (Math.pow(10, Math.abs(y)) - 1);
+    return Math.sign(y) * this.c * (Math.pow(10, Math.abs(y)) - 1);
   }
 
   forward(

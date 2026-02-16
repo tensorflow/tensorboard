@@ -31,6 +31,7 @@ export enum ThemeValue {
  */
 export declare interface BackendSettings {
   scalarSmoothing?: number;
+  symlogLinearThreshold?: number;
   tooltipSort?: TooltipSort;
   ignoreOutliers?: boolean;
   autoReload?: boolean;
@@ -57,6 +58,7 @@ export declare interface BackendSettings {
  */
 export interface PersistableSettings {
   scalarSmoothing?: number;
+  symlogLinearThreshold?: number;
   tooltipSort?: TooltipSort;
   ignoreOutliers?: boolean;
   autoReload?: boolean;

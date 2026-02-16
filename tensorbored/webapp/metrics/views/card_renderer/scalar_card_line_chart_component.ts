@@ -67,6 +67,7 @@ export class ScalarCardLineChartComponent {
   @Input() xAxisType!: XAxisType;
   @Input() xScaleType!: ScaleType;
   @Input() yScaleType!: ScaleType;
+  @Input() symlogLinearThreshold: number = 1;
   @Input() useDarkMode!: boolean;
   @Input() forceSvg!: boolean;
   @Input() stepOrLinkedTimeSelection: TimeSelection | undefined;

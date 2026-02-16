@@ -371,6 +371,11 @@ export const getMetricsScalarPartitionNonMonotonicX = createSelector(
   (settings): boolean => settings.scalarPartitionNonMonotonicX
 );
 
+export const getMetricsSymlogLinearThreshold = createSelector(
+  selectSettings,
+  (settings): number => settings.symlogLinearThreshold
+);
+
 export const getMetricsImageBrightnessInMilli = createSelector(
   selectSettings,
   (settings): number => settings.imageBrightnessInMilli
@@ -399,6 +404,24 @@ export const getMetricsYAxisScale = createSelector(
 export const getMetricsXAxisScale = createSelector(
   selectSettings,
   (settings): ScaleType => settings.xAxisScale
+);
+
+export const getTagSymlogLinearThresholds = createSelector(
+  selectMetricsState,
+  (state): Record<string, number> => state.tagSymlogLinearThresholds
+);
+
+/**
+ * Returns the effective symlog linear threshold for a specific tag.
+ * Per-tag override takes priority over the global default.
+ */
+export const getEffectiveTagSymlogLinearThreshold = memoize((tag: string) =>
+  createSelector(
+    getTagSymlogLinearThresholds,
+    getMetricsSymlogLinearThreshold,
+    (tagThresholds, globalThreshold): number =>
+      tagThresholds[tag] ?? globalThreshold
+  )
 );
 
 export const getTagAxisScales = createSelector(

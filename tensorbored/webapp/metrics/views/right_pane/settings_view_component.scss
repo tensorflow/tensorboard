@@ -81,6 +81,19 @@ section .control-row:not(:has(+ .control-row > mat-checkbox)):not(:last-child) {
   width: 5em;
 }
 
+.symlog-linear-threshold .slider-input {
+  flex: none;
+  width: 6em;
+}
+
+.symlog-linear-threshold .info {
+  $_dim: 15px;
+  height: $_dim;
+  margin-left: 5px;
+  width: $_dim;
+  min-width: $_dim;
+}
+
 .scalars-partition-x {
   align-items: center;
   display: flex;

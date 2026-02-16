@@ -39,20 +39,21 @@ TensorBored is a fork of [TensorBoard](https://github.com/tensorflow/tensorboard
 
 The key features added on top of TensorBoard are:
 
-| Feature | Issue | PR(s) |
-|---------|-------|-------|
-| Stable/programmatic run colors | #1 | #12 |
-| Upstream sync bot | #2 | #10 |
-| Log/symlog x-axis scales | #3 | #8 |
-| Superimposed plots | #4 | #9, #19 |
-| Dashboard profiles (localStorage) | #5 | #12 |
-| CI wheel builds | #6 | #7, #11, #15 |
-| Metric descriptions | #20 | #23 |
-| Pinned card reordering | #21 | #22 |
-| Shift-select runs | #25 | — |
-| PR preview deployments | — | #24 |
-| HuggingFace Spaces demo | — | #16, #27, #28, #29, #30 |
-| Default axis scales in profiles | #32 | — |
+| Feature                              | Issue | PR(s)                   |
+| ------------------------------------ | ----- | ----------------------- |
+| Stable/programmatic run colors       | #1    | #12                     |
+| Upstream sync bot                    | #2    | #10                     |
+| Log/symlog x-axis scales             | #3    | #8                      |
+| Superimposed plots                   | #4    | #9, #19                 |
+| Dashboard profiles (localStorage)    | #5    | #12                     |
+| CI wheel builds                      | #6    | #7, #11, #15            |
+| Metric descriptions                  | #20   | #23                     |
+| Pinned card reordering               | #21   | #22                     |
+| Shift-select runs                    | #25   | —                       |
+| PR preview deployments               | —     | #24                     |
+| HuggingFace Spaces demo              | —     | #16, #27, #28, #29, #30 |
+| Default axis scales in profiles      | #32   | —                       |
+| Configurable symlog linear threshold | #34   | —                       |
 
 ---
 
@@ -145,11 +146,11 @@ The frontend uses Angular with NgRx for state management. The pattern is:
 
 ### Key State Slices
 
-| Slice | Location | Contents |
-|-------|----------|----------|
+| Slice     | Location                | Contents                                                                               |
+| --------- | ----------------------- | -------------------------------------------------------------------------------------- |
 | `metrics` | `webapp/metrics/store/` | Card data, pinned cards, superimposed cards, tag filter, smoothing, x/y scale settings |
-| `runs` | `webapp/runs/store/` | Run metadata, selection state (visible/hidden), color overrides, group colors |
-| `profile` | `webapp/profile/store/` | Available profiles, active profile, unsaved changes flag |
+| `runs`    | `webapp/runs/store/`    | Run metadata, selection state (visible/hidden), color overrides, group colors          |
+| `profile` | `webapp/profile/store/` | Available profiles, active profile, unsaved changes flag                               |
 
 ### Component Patterns
 
@@ -160,24 +161,24 @@ The frontend uses Angular with NgRx for state management. The pattern is:
 
 ### Key Feature Files
 
-| Feature | Key Files |
-|---------|-----------|
-| **Superimposed cards** | `webapp/metrics/views/card_renderer/superimposed_card_container.ts`, `superimposed_card_component.ts`, `superimposed_card_component.ng.html` |
-| **Superimposed state** | `webapp/metrics/store/metrics_reducers.ts` (actions: `superimposedCardCreated`, `superimposedCardTagAdded`, `superimposedCardTagRemoved`, `superimposedCardDeleted`) |
-| **Pinned cards** | `webapp/metrics/store/metrics_reducers.ts` (pin/unpin reducers, reorder action `metricsPinnedCardsReordered`) |
-| **Pinned card reorder UI** | `webapp/metrics/views/main_view/` (CDK Drag&Drop, arrow buttons on card headers) |
-| **Run selection** | `webapp/runs/store/runs_reducers.ts` (single toggle, range toggle, page toggle) |
-| **Shift-select runs** | `webapp/runs/views/runs_table/runs_data_table.ts` (`selectionClick` with shift key, `lastClickedIndex`), `webapp/runs/actions/runs_actions.ts` (`runRangeSelectionToggled`) |
-| **Run colors** | `webapp/runs/store/runs_reducers.ts` (hash-based fallback, profile overrides) |
-| **Profile system** | `webapp/profile/` directory (types, data_source, store, effects, views) |
-| **Profile menu** | `webapp/profile/views/profile_menu_component.ts` (mat-icon-button, bookmark icon, unsaved dot indicator) |
-| **Tag filter** | `webapp/metrics/views/main_view/filter_input_*` |
-| **Tag filter persistence** | `webapp/metrics/effects/index.ts` (`persistTagFilter$`, `loadTagFilterFromStorage$`) |
-| **Scale types** | `webapp/widgets/line_chart_v2/lib/scale.ts` (LINEAR, LOG10, SYMLOG10), `webapp/widgets/line_chart_v2/lib/scale_types.ts` |
-| **Axis scales** | `webapp/metrics/store/metrics_types.ts` (yAxisScale, xAxisScale in MetricsSettings), `webapp/profile/types.ts` (AxisScaleName, conversion utils) |
-| **Legacy symlog** | `components/vz_line_chart2/symlog-scale.ts` (Plottable-based `SymLogScale`) |
-| **Metric descriptions** | `webapp/metrics/views/utils.ts` (`htmlToText`, `buildTagTooltip`), card components fetch `tagDescription` |
-| **Card scale cycling** | Scalar cards and superimposed cards cycle `LINEAR → LOG10 → SYMLOG10 → LINEAR` on click for both X and Y axes (X-axis only for STEP/RELATIVE) |
+| Feature                    | Key Files                                                                                                                                                                   |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Superimposed cards**     | `webapp/metrics/views/card_renderer/superimposed_card_container.ts`, `superimposed_card_component.ts`, `superimposed_card_component.ng.html`                                |
+| **Superimposed state**     | `webapp/metrics/store/metrics_reducers.ts` (actions: `superimposedCardCreated`, `superimposedCardTagAdded`, `superimposedCardTagRemoved`, `superimposedCardDeleted`)        |
+| **Pinned cards**           | `webapp/metrics/store/metrics_reducers.ts` (pin/unpin reducers, reorder action `metricsPinnedCardsReordered`)                                                               |
+| **Pinned card reorder UI** | `webapp/metrics/views/main_view/` (CDK Drag&Drop, arrow buttons on card headers)                                                                                            |
+| **Run selection**          | `webapp/runs/store/runs_reducers.ts` (single toggle, range toggle, page toggle)                                                                                             |
+| **Shift-select runs**      | `webapp/runs/views/runs_table/runs_data_table.ts` (`selectionClick` with shift key, `lastClickedIndex`), `webapp/runs/actions/runs_actions.ts` (`runRangeSelectionToggled`) |
+| **Run colors**             | `webapp/runs/store/runs_reducers.ts` (hash-based fallback, profile overrides)                                                                                               |
+| **Profile system**         | `webapp/profile/` directory (types, data_source, store, effects, views)                                                                                                     |
+| **Profile menu**           | `webapp/profile/views/profile_menu_component.ts` (mat-icon-button, bookmark icon, unsaved dot indicator)                                                                    |
+| **Tag filter**             | `webapp/metrics/views/main_view/filter_input_*`                                                                                                                             |
+| **Tag filter persistence** | `webapp/metrics/effects/index.ts` (`persistTagFilter$`, `loadTagFilterFromStorage$`)                                                                                        |
+| **Scale types**            | `webapp/widgets/line_chart_v2/lib/scale.ts` (LINEAR, LOG10, SYMLOG10 with configurable linearThreshold), `webapp/widgets/line_chart_v2/lib/scale_types.ts`                  |
+| **Axis scales**            | `webapp/metrics/store/metrics_types.ts` (yAxisScale, xAxisScale in MetricsSettings), `webapp/profile/types.ts` (AxisScaleName, conversion utils)                            |
+| **Legacy symlog**          | `components/vz_line_chart2/symlog-scale.ts` (Plottable-based `SymLogScale`)                                                                                                 |
+| **Metric descriptions**    | `webapp/metrics/views/utils.ts` (`htmlToText`, `buildTagTooltip`), card components fetch `tagDescription`                                                                   |
+| **Card scale cycling**     | Scalar cards and superimposed cards cycle `LINEAR → LOG10 → SYMLOG10 → LINEAR` on click for both X and Y axes (X-axis only for STEP/RELATIVE)                               |
 
 ---
 
@@ -186,6 +187,7 @@ The frontend uses Angular with NgRx for state management. The pattern is:
 ### Plugin System
 
 Each backend plugin provides:
+
 - Data loading from tfevents files
 - HTTP endpoints consumed by the frontend
 - (Optionally) summary writing utilities
@@ -199,6 +201,7 @@ Plugins are registered via entry points in `pyproject.toml` or discovered by the
 Python API for training scripts to configure default dashboard profiles. Writes `<logdir>/.tensorboard/default_profile.json`.
 
 Key functions:
+
 - `create_profile(...)` — builds a profile dict
 - `write_profile(logdir, profile)` — writes to disk
 - `set_default_profile(logdir, ...)` — convenience: create + write in one call
@@ -214,6 +217,7 @@ Profile data schema version is tracked via `PROFILE_VERSION = 1`.
 Generates perceptually uniform colors using the OKLCH color space (OKLCH → OKLAB → Linear sRGB → sRGB → Hex).
 
 Key API:
+
 - `sample_colors(n, lightness, chroma, hue_start, hue_range)` — n evenly-spaced colors
 - `sample_colors_varied(n)` — varied lightness/chroma for >8 colors
 - `ColorMap(n)` — callable class: `cm(i)` returns the i-th color
@@ -224,6 +228,7 @@ Key API:
 ### Core Plugin Endpoints
 
 The core plugin (`core_plugin.py`) exposes a `/data/profile` endpoint:
+
 - **GET**: Returns the default profile JSON from `<logdir>/.tensorboard/default_profile.json`
 - The frontend fetches this on navigation and auto-applies it (if present and no user profile is active)
 
@@ -235,18 +240,19 @@ The metrics plugin (`metrics_plugin.py`) merges `metric_descriptions` from the d
 
 The frontend persists state to browser localStorage. This is the core mechanism for TensorBored's "persistent settings" feature.
 
-| Key | Purpose | Format | Persisted By |
-|-----|---------|--------|--------------|
-| `_tb_profile.*` | Saved profile data | JSON `ProfileData` | Profile effects |
-| `_tb_profiles_index` | List of profile names | JSON string array | Profile effects |
-| `_tb_active_profile` | Currently active profile name | Plain string | Profile effects |
-| `_tb_run_selection.v1` | Run visibility states | `{version: 1, runSelection: [[id, bool], ...]}` | Runs effects |
-| `_tb_run_colors.v1` | Color overrides | `{version: 1, runColorOverrides: [...], groupKeyToColorId: [...]}` | Runs effects |
-| `_tb_tag_filter.v1` | Tag filter regex | `{value: string, timestamp: number}` | Metrics effects |
-| `_tb_axis_scales.v1` | Axis scales | `{version: 1, yAxisScale?: string, xAxisScale?: string}` | Metrics effects |
-| `tb-saved-pins` | Pinned cards | JSON `CardUniqueInfo[]` | Metrics effects |
+| Key                    | Purpose                       | Format                                                             | Persisted By    |
+| ---------------------- | ----------------------------- | ------------------------------------------------------------------ | --------------- |
+| `_tb_profile.*`        | Saved profile data            | JSON `ProfileData`                                                 | Profile effects |
+| `_tb_profiles_index`   | List of profile names         | JSON string array                                                  | Profile effects |
+| `_tb_active_profile`   | Currently active profile name | Plain string                                                       | Profile effects |
+| `_tb_run_selection.v1` | Run visibility states         | `{version: 1, runSelection: [[id, bool], ...]}`                    | Runs effects    |
+| `_tb_run_colors.v1`    | Color overrides               | `{version: 1, runColorOverrides: [...], groupKeyToColorId: [...]}` | Runs effects    |
+| `_tb_tag_filter.v1`    | Tag filter regex              | `{value: string, timestamp: number}`                               | Metrics effects |
+| `_tb_axis_scales.v1`   | Axis scales                   | `{version: 1, yAxisScale?: string, xAxisScale?: string}`           | Metrics effects |
+| `tb-saved-pins`        | Pinned cards                  | JSON `CardUniqueInfo[]`                                            | Metrics effects |
 
 Important behaviors:
+
 - When loading run selection from localStorage, if **all** runs would be hidden, the selection is discarded and all runs default to visible.
 - Tag filter persistence uses timestamps: user-set values override profile defaults.
 - Pins are synced to localStorage both when saving profiles and when pinning/unpinning cards directly.
@@ -306,16 +312,17 @@ bazel test //tensorbored/plugins/...
 
 ## CI/CD Workflows
 
-| Workflow | File | Trigger | Purpose |
-|----------|------|---------|---------|
-| CI | `ci.yml` | Push, PR | Build, test, lint, build wheel (master only), PR preview deploy |
-| Wheel Prerelease | `wheel-prerelease.yml` | Push to master | Build RC wheel, publish to PyPI, trigger demo deploy |
-| Deploy Demo | `deploy-demo.yml` | Called by wheel-prerelease | Deploy to HuggingFace Spaces (`demonstrandum-tensorbored-sample`) |
-| PR Preview | Part of `ci.yml` | PR open/sync | Deploy PR preview to `Demonstrandum/tensorbored-pr-{N}` HF Space |
-| Nightly Release | `nightly-release.yml` | Scheduled | Nightly wheel build |
-| Upstream Sync | `upstream-sync.yml` | Daily 06:00 UTC | Merge latest changes from `tensorflow/tensorboard` |
+| Workflow         | File                   | Trigger                    | Purpose                                                           |
+| ---------------- | ---------------------- | -------------------------- | ----------------------------------------------------------------- |
+| CI               | `ci.yml`               | Push, PR                   | Build, test, lint, build wheel (master only), PR preview deploy   |
+| Wheel Prerelease | `wheel-prerelease.yml` | Push to master             | Build RC wheel, publish to PyPI, trigger demo deploy              |
+| Deploy Demo      | `deploy-demo.yml`      | Called by wheel-prerelease | Deploy to HuggingFace Spaces (`demonstrandum-tensorbored-sample`) |
+| PR Preview       | Part of `ci.yml`       | PR open/sync               | Deploy PR preview to `Demonstrandum/tensorbored-pr-{N}` HF Space  |
+| Nightly Release  | `nightly-release.yml`  | Scheduled                  | Nightly wheel build                                               |
+| Upstream Sync    | `upstream-sync.yml`    | Daily 06:00 UTC            | Merge latest changes from `tensorflow/tensorboard`                |
 
 Key CI details:
+
 - Wheel artifacts are named `tensorbored-wheel_py*` (not `tensorbored-nightly_py*`)
 - The HF Spaces deploy uses a `.build-version` file to bust Docker layer caches
 - PR preview spaces are auto-deleted when the PR is closed/merged
@@ -383,7 +390,7 @@ Key CI details:
 
 ## Feature History and Context
 
-This section provides context on *why* features were built the way they were, based on the issue and PR history.
+This section provides context on _why_ features were built the way they were, based on the issue and PR history.
 
 ### Stable Run Colors (#1)
 
@@ -392,6 +399,7 @@ TensorBoard assigned random colors to runs, which changed on every page refresh.
 ### Dashboard Profiles (#5, #12)
 
 The single biggest architectural addition. TensorBoard stored all dashboard state in URL parameters, hitting browser URL length limits with many pins. TensorBored moved everything to localStorage-based profiles:
+
 - Save/load/delete/export/import profiles
 - Backend can provide a `default_profile.json` that auto-applies on first load
 - Profiles store: pinned cards, run colors, group colors, superimposed cards, run selection, tag filter, smoothing, groupBy, metric descriptions
@@ -401,6 +409,7 @@ The single biggest architectural addition. TensorBoard stored all dashboard stat
 ### Superimposed Plots (#4, #9, #19)
 
 Users wanted to compare metrics on a single chart. The implementation adds a new card type (`SuperimposedCard`) to the existing card system:
+
 - State: `SuperimposedCardId`, `SuperimposedCardMetadata` with ordered tag lists
 - Scalar cards have "Add to superimposed plot" in their overflow menu with a submenu to create new or add to existing
 - Titles auto-update as `tag1 + tag2 + ...`
@@ -408,9 +417,17 @@ Users wanted to compare metrics on a single chart. The implementation adds a new
 - Pan/zoom is wired up via viewBox
 - Cards are persisted in profiles and localStorage
 
-### Log/Symlog Scales (#3, #8)
+### Log/Symlog Scales (#3, #8, #34)
 
-Added `SYMLOG10` to the `ScaleType` enum. The symmetric log scale uses the log-modulus transformation: `sign(x) * log10(|x| + 1)`. This handles zero and negative values gracefully. Both X and Y axes cycle `LINEAR → LOG10 → SYMLOG10`. X-axis scale is only available for STEP and RELATIVE axis types (not WALL_TIME). A legacy Plottable-based `SymLogScale` was also added for `vz_line_chart2`.
+Added `SYMLOG10` to the `ScaleType` enum. The symmetric log scale uses the log-modulus transformation: `sign(x) * log10(|x|/c + 1)`, where `c` is the **linear threshold** parameter. This handles zero and negative values gracefully. Both X and Y axes cycle `LINEAR → LOG10 → SYMLOG10`. X-axis scale is only available for STEP and RELATIVE axis types (not WALL_TIME). A legacy Plottable-based `SymLogScale` was also added for `vz_line_chart2`.
+
+The linear threshold `c` (default 1) controls where the scale transitions from linear to logarithmic behavior:
+
+- `c = 1`: linear for |x| < 1 (default, original behavior)
+- `c = 10`: linear for |x| < 10 (good for data with large values near zero)
+- `c = 0.01`: linear for |x| < 0.01 (good for very small-scale data)
+
+The threshold is configurable via the Settings pane under "Scalars → Symlog Linear Threshold" and is persisted in profiles and backend settings. The Python `profile_writer` also accepts `symlog_linear_threshold` when creating profiles.
 
 ### Pinned Card Reordering (#21, #22)
 
@@ -423,6 +440,7 @@ Long-form descriptions for metrics, set via `metric_descriptions` in the profile
 ### Shift-Select Runs (#25)
 
 Users wanted to select a whole range of runs at once using the classic shift+click start+end shortcut. The implementation adds shift-click range selection to the runs data table:
+
 - A `lastClickedIndex` is tracked in `RunsDataTable` as component state. Normal clicks set the anchor index and emit the existing single-toggle event.
 - Shift+click computes the range `[min(anchor, clicked), max(anchor, clicked)]`, collects all run IDs in that range from the displayed `data` array, and emits a new `onRangeSelectionToggle` event with the run IDs and target selected state (toggled from the clicked run's current state).
 - A new NgRx action `runRangeSelectionToggled({runIds, selected})` sets all specified runs to the given state.
@@ -450,9 +468,9 @@ In scalar card and superimposed card components, the profile's scale is applied 
 
 ## Open Issues and Future Work
 
-| Issue | Status | Description |
-|-------|--------|-------------|
-| #25 | Implemented | Shift-select runs to toggle a range (shift+click to select a contiguous range of runs) |
+| Issue | Status      | Description                                                                            |
+| ----- | ----------- | -------------------------------------------------------------------------------------- |
+| #25   | Implemented | Shift-select runs to toggle a range (shift+click to select a contiguous range of runs) |
 
 ---
 
@@ -469,6 +487,7 @@ Check the browser DevTools Network tab. TensorBored should only make requests to
 ### Empty Charts
 
 If charts appear blank:
+
 1. Check if time series data exists in state (Redux DevTools → `metrics` slice)
 2. Verify run selection — are runs set to visible? (`runs` slice → `selectionState`)
 3. Check card visibility — intersection observer may not have triggered

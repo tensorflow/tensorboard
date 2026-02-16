@@ -33,6 +33,7 @@ import {
   getMetricsLinkedTimeEnabled,
   getMetricsRangeSelectionEnabled,
   getMetricsScalarSmoothing,
+  getMetricsSymlogLinearThreshold,
   getMetricsStepSelectorEnabled,
   getMetricsTooltipSort,
   getMetricsSavingPinsEnabled,
@@ -84,6 +85,15 @@ export function getSmoothingSettingFactory() {
   return createSelector(getMetricsScalarSmoothing, (smoothing) => {
     return {scalarSmoothing: smoothing};
   });
+}
+
+export function getSymlogLinearThresholdSettingFactory() {
+  return createSelector(
+    getMetricsSymlogLinearThreshold,
+    (symlogLinearThreshold) => {
+      return {symlogLinearThreshold};
+    }
+  );
 }
 
 export function getMetricsIgnoreOutliersSettingFactory() {
@@ -167,6 +177,9 @@ export function getRangeSelectionHeadersFactory() {
     AlertActionModule.registerAlertActions(alertActionProvider),
     PersistentSettingsConfigModule.defineGlobalSetting(
       getSmoothingSettingFactory
+    ),
+    PersistentSettingsConfigModule.defineGlobalSetting(
+      getSymlogLinearThresholdSettingFactory
     ),
     PersistentSettingsConfigModule.defineGlobalSetting(
       getMetricsIgnoreOutliersSettingFactory

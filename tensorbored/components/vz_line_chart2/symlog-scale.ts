@@ -17,18 +17,22 @@ import * as Plottable from 'plottable';
 import {TfScale} from './tf-scale';
 
 /**
- * Symmetric log transformation: sign(x) * log10(|x| + 1)
+ * Symmetric log transformation: sign(x) * log10(|x|/c + 1)
  * This handles zero and negative values gracefully.
+ * @param x Input value
+ * @param c Linear threshold: the region |x| < c is approximately linear (default 1)
  */
-function symlog(x: number): number {
-  return Math.sign(x) * Math.log10(Math.abs(x) + 1);
+function symlog(x: number, c: number = 1): number {
+  return Math.sign(x) * Math.log10(Math.abs(x) / c + 1);
 }
 
 /**
- * Inverse of symmetric log: sign(y) * (10^|y| - 1)
+ * Inverse of symmetric log: sign(y) * c * (10^|y| - 1)
+ * @param y Transformed value
+ * @param c Linear threshold (must match the c used in symlog)
  */
-function symexp(y: number): number {
-  return Math.sign(y) * (Math.pow(10, Math.abs(y)) - 1);
+function symexp(y: number, c: number = 1): number {
+  return Math.sign(y) * c * (Math.pow(10, Math.abs(y)) - 1);
 }
 
 /**

@@ -189,6 +189,26 @@ $_data_table_initial_height: 100px;
   }
 }
 
+.symlog-threshold-menu {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+
+  label {
+    white-space: nowrap;
+  }
+
+  input {
+    width: 5em;
+    padding: 2px 4px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    font-size: 12px;
+  }
+}
+
 .data-table-container {
   height: $_data_table_initial_height;
   min-height: $_data_table_initial_height;

@@ -162,6 +162,12 @@ export interface ProfileData {
   smoothing: number;
 
   /**
+   * Symlog linear threshold value (> 0, default 1).
+   * Controls how wide the linear region is near zero for symlog scale.
+   */
+  symlogLinearThreshold?: number;
+
+  /**
    * Run grouping configuration.
    */
   groupBy: ProfileGroupBy | null;
@@ -182,6 +188,12 @@ export interface ProfileData {
    * Takes priority over the global yAxisScale/xAxisScale.
    */
   tagAxisScales?: Record<string, TagAxisScale>;
+
+  /**
+   * Per-tag symlog linear threshold overrides. Key is the tag name.
+   * Takes priority over the global symlogLinearThreshold.
+   */
+  tagSymlogLinearThresholds?: Record<string, number>;
 }
 
 /**
@@ -244,6 +256,7 @@ export function createEmptyProfile(name: string): ProfileData {
     metricDescriptions: {},
     runFilter: '',
     smoothing: 0.6,
+    symlogLinearThreshold: 1,
     groupBy: null,
   };
 }

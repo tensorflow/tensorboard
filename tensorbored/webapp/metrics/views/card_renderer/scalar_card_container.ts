@@ -102,6 +102,7 @@ import {
   getMetricsXAxisType,
   getEffectiveTagYAxisScale,
   getEffectiveTagXAxisScale,
+  getEffectiveTagSymlogLinearThreshold,
   getSuperimposedCardsWithMetadata,
   RunToSeries,
 } from '../../store';
@@ -196,6 +197,7 @@ function areSeriesEqual(
       [xScaleType]="xScaleType$ | async"
       [yAxisScale]="yAxisScale$ | async"
       [xAxisScale]="xAxisScale$ | async"
+      [symlogLinearThreshold]="symlogLinearThreshold$ | async"
       [useDarkMode]="useDarkMode$ | async"
       [linkedTimeSelection]="linkedTimeSelection$ | async"
       [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection$ | async"
@@ -230,6 +232,7 @@ function areSeriesEqual(
       (onXAxisScaleChanged)="onXAxisScaleChanged($event)"
       (onAddToSuperimposed)="onAddToSuperimposed()"
       (onAddToSuperimposedCard)="onAddToSuperimposedCard($event)"
+      (onSymlogLinearThresholdChanged)="onSymlogLinearThresholdChanged($event)"
     ></scalar-card-component>
   `,
   styles: [
@@ -335,6 +338,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   xAxisScale$!: Observable<ScaleType>;
 
   readonly scalarSmoothing$;
+  symlogLinearThreshold$!: Observable<number>;
   readonly smoothingEnabled$;
   readonly superimposedCards$: Observable<SuperimposedCardMetadata[]>;
 
@@ -658,6 +662,14 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       )
     );
 
+    this.symlogLinearThreshold$ = cardMetadata$.pipe(
+      switchMap((cardMetadata) =>
+        this.store.select(
+          getEffectiveTagSymlogLinearThreshold(cardMetadata.tag)
+        )
+      )
+    );
+
     this.tagDescription$ = combineLatest([
       cardMetadata$,
       this.store.select(getMetricsTagMetadata),
@@ -873,6 +885,22 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       .subscribe((tag) => {
         this.store.dispatch(
           actions.metricsTagXAxisScaleChanged({tag, scaleType})
+        );
+      });
+  }
+
+  onSymlogLinearThresholdChanged(symlogLinearThreshold: number) {
+    this.tag$
+      ?.pipe(
+        filter((tag): tag is string => !!tag),
+        take(1)
+      )
+      .subscribe((tag) => {
+        this.store.dispatch(
+          actions.metricsTagSymlogLinearThresholdChanged({
+            tag,
+            symlogLinearThreshold,
+          })
         );
       });
   }

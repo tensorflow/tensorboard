@@ -242,6 +242,13 @@ export interface MetricsSettings {
   ignoreOutliers: boolean;
   xAxisType: XAxisType;
   scalarSmoothing: number;
+  /**
+   * Linear threshold for the symmetric log (SYMLOG10) scale.
+   * Controls the width of the linear region near zero.
+   * A value of c means the scale is approximately linear for |x| < c.
+   * Must be positive. Default is 1.
+   */
+  symlogLinearThreshold: number;
   hideEmptyCards: boolean;
   /**
    * https://github.com/tensorflow/tensorboard/issues/3732
@@ -297,6 +304,11 @@ export interface MetricsNonNamespacedState {
    * Takes priority over the global yAxisScale/xAxisScale in settings.
    */
   tagAxisScales: Record<string, {yAxisScale: ScaleType; xAxisScale: ScaleType}>;
+  /**
+   * Per-tag symlog linear threshold overrides. Key is the tag name.
+   * Takes priority over the global symlogLinearThreshold in settings.
+   */
+  tagSymlogLinearThresholds: Record<string, number>;
 }
 
 export type MetricsState = NamespaceContextedState<
@@ -315,6 +327,7 @@ export const METRICS_SETTINGS_DEFAULT: MetricsSettings = {
   xAxisType: XAxisType.STEP,
   hideEmptyCards: true,
   scalarSmoothing: 0.6,
+  symlogLinearThreshold: 1,
   scalarPartitionNonMonotonicX: false,
   imageBrightnessInMilli: 1000,
   imageContrastInMilli: 1000,

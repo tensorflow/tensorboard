@@ -136,6 +136,28 @@ limitations under the License.
     </div>
   </div>
 
+  <div class="control-row symlog-linear-threshold">
+    <div class="control-name" id="symlog-linear-threshold-label">
+      Symlog Linear Threshold
+      <mat-icon
+        class="info"
+        svgIcon="help_outline_24px"
+        title="Controls the width of the linear region near zero for the symmetric log (SymLog) scale. A value of c means the scale is approximately linear for |x| &lt; c. Increase for data with large values near zero, decrease for data with small values."
+      ></mat-icon>
+    </div>
+    <div class="slider-row">
+      <input
+        class="slider-input"
+        aria-labelledby="symlog-linear-threshold-label"
+        type="number"
+        min="0.001"
+        step="0.1"
+        [value]="symlogLinearThreshold"
+        (input)="onSymlogLinearThresholdInput($event)"
+      />
+    </div>
+  </div>
+
   <div class="control-row tooltip-sort">
     <div class="control-name">Tooltip sorting method</div>
     <tb-dropdown

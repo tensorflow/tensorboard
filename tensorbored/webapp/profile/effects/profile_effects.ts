@@ -33,6 +33,7 @@ import {getExperimentIdsFromRoute} from '../../selectors';
 import {DataLoadState} from '../../types/data';
 import {
   getMetricsScalarSmoothing,
+  getMetricsSymlogLinearThreshold,
   getMetricsTagFilter,
   getPinnedCardsWithMetadata,
   getUnresolvedImportedPinnedCards,
@@ -40,6 +41,7 @@ import {
   getMetricsYAxisScale,
   getMetricsXAxisScale,
   getTagAxisScales,
+  getTagSymlogLinearThresholds,
 } from '../../metrics/store/metrics_selectors';
 import {
   getRunColorOverride,
@@ -370,6 +372,12 @@ export class ProfileEffects {
                 ])
               )
             : {},
+          ...(profile.symlogLinearThreshold !== undefined
+            ? {symlogLinearThreshold: profile.symlogLinearThreshold}
+            : {}),
+          ...(profile.tagSymlogLinearThresholds !== undefined
+            ? {tagSymlogLinearThresholds: profile.tagSymlogLinearThresholds}
+            : {}),
         });
       })
     )
@@ -474,12 +482,14 @@ export class ProfileEffects {
         this.store.select(getMetricsTagFilter),
         this.store.select(getRunSelectorRegexFilter),
         this.store.select(getMetricsScalarSmoothing),
+        this.store.select(getMetricsSymlogLinearThreshold),
         this.store.select(getRunUserSetGroupBy),
         this.store.select(getRunSelectionMap),
         this.store.select(getDashboardRuns),
         this.store.select(getMetricsYAxisScale),
         this.store.select(getMetricsXAxisScale),
-        this.store.select(getTagAxisScales)
+        this.store.select(getTagAxisScales),
+        this.store.select(getTagSymlogLinearThresholds)
       ),
       map(
         ([
@@ -492,12 +502,14 @@ export class ProfileEffects {
           tagFilter,
           runFilter,
           smoothing,
+          symlogLinearThreshold,
           groupBy,
           runSelectionMap,
           runs,
           yAxisScale,
           xAxisScale,
           tagAxisScales,
+          tagSymlogLinearThresholds,
         ]) => {
           // Convert pinned cards to CardUniqueInfo format
           const pinnedCardsInfo: CardUniqueInfo[] = pinnedCards.map((card) => {
@@ -563,10 +575,14 @@ export class ProfileEffects {
             tagFilter,
             runFilter,
             smoothing,
+            symlogLinearThreshold,
             groupBy: profileGroupBy,
             yAxisScale: scaleTypeToName(yAxisScale),
             xAxisScale: scaleTypeToName(xAxisScale),
             tagAxisScales: buildTagAxisScalesForProfile(tagAxisScales),
+            ...(Object.keys(tagSymlogLinearThresholds).length > 0
+              ? {tagSymlogLinearThresholds}
+              : {}),
           };
 
           // Save to localStorage

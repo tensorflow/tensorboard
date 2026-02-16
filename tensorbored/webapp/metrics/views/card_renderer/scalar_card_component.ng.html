@@ -98,6 +98,26 @@ limitations under the License.
         </button>
         <button
           mat-menu-item
+          [matMenuTriggerFor]="symlogThresholdMenu"
+          aria-label="Set symlog linear threshold for this card"
+        >
+          <mat-icon svgIcon="line_weight_24px"></mat-icon>
+          <span>Symlog threshold: {{ symlogLinearThreshold }}</span>
+        </button>
+        <mat-menu #symlogThresholdMenu="matMenu">
+          <div class="symlog-threshold-menu" (click)="$event.stopPropagation()">
+            <label>Linear threshold:</label>
+            <input
+              type="number"
+              min="0.001"
+              step="0.1"
+              [value]="symlogLinearThreshold"
+              (input)="onSymlogLinearThresholdInput($event)"
+            />
+          </div>
+        </mat-menu>
+        <button
+          mat-menu-item
           (click)="openDataDownloadDialog()"
           aria-label="Open dialog to download data"
         >
@@ -158,6 +178,7 @@ limitations under the License.
       [seriesMetadataMap]="chartMetadataMap"
       [xScaleType]="getEffectiveXScaleType()"
       [yScaleType]="yAxisScale"
+      [symlogLinearThreshold]="symlogLinearThreshold"
       [customXFormatter]="getCustomXFormatter()"
       [ignoreYOutliers]="ignoreOutliers"
       [tooltipTemplate]="tooltip"

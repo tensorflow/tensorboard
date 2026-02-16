@@ -38,6 +38,8 @@ type StoredAxisScalesV1 = {
   yAxisScale?: string;
   xAxisScale?: string;
   tagAxisScales?: Record<string, {y?: string; x?: string}>;
+  symlogLinearThreshold?: number;
+  tagSymlogLinearThresholds?: Record<string, number>;
 };
 
 type StoredSuperimposedCard = {
@@ -100,6 +102,8 @@ import {
   getMetricsYAxisScale,
   getMetricsXAxisScale,
   getTagAxisScales,
+  getMetricsSymlogLinearThreshold,
+  getTagSymlogLinearThresholds,
   getSuperimposedCardsWithMetadata,
 } from '../store';
 import {
@@ -713,50 +717,75 @@ export class MetricsEffects implements OnInitEffects {
         actions.metricsChangeXAxisScale,
         actions.metricsTagYAxisScaleChanged,
         actions.metricsTagXAxisScaleChanged,
+        actions.metricsChangeSymlogLinearThreshold,
+        actions.metricsTagSymlogLinearThresholdChanged,
         actions.profileMetricsSettingsApplied
       ),
       debounceTime(200),
       withLatestFrom(
         this.store.select(getMetricsYAxisScale),
         this.store.select(getMetricsXAxisScale),
-        this.store.select(getTagAxisScales)
+        this.store.select(getTagAxisScales),
+        this.store.select(getMetricsSymlogLinearThreshold),
+        this.store.select(getTagSymlogLinearThresholds)
       ),
-      tap(([, yScale, xScale, tagScales]) => {
-        const tagAxisScalesPayload: Record<string, {y?: string; x?: string}> =
-          {};
-        for (const [tag, scales] of Object.entries(tagScales)) {
-          const entry: {y?: string; x?: string} = {};
-          if (scales.yAxisScale !== ScaleType.LINEAR) {
-            entry.y = scaleTypeToName(scales.yAxisScale);
+      tap(
+        ([
+          ,
+          yScale,
+          xScale,
+          tagScales,
+          symlogThreshold,
+          tagSymlogThresholds,
+        ]) => {
+          const tagAxisScalesPayload: Record<string, {y?: string; x?: string}> =
+            {};
+          for (const [tag, scales] of Object.entries(tagScales)) {
+            const entry: {y?: string; x?: string} = {};
+            if (scales.yAxisScale !== ScaleType.LINEAR) {
+              entry.y = scaleTypeToName(scales.yAxisScale);
+            }
+            if (scales.xAxisScale !== ScaleType.LINEAR) {
+              entry.x = scaleTypeToName(scales.xAxisScale);
+            }
+            if (entry.y || entry.x) {
+              tagAxisScalesPayload[tag] = entry;
+            }
           }
-          if (scales.xAxisScale !== ScaleType.LINEAR) {
-            entry.x = scaleTypeToName(scales.xAxisScale);
-          }
-          if (entry.y || entry.x) {
-            tagAxisScalesPayload[tag] = entry;
+          const payload: StoredAxisScalesV1 = {
+            version: 1,
+            ...(yScale !== ScaleType.LINEAR
+              ? {yAxisScale: scaleTypeToName(yScale)}
+              : undefined),
+            ...(xScale !== ScaleType.LINEAR
+              ? {xAxisScale: scaleTypeToName(xScale)}
+              : undefined),
+            ...(Object.keys(tagAxisScalesPayload).length > 0
+              ? {tagAxisScales: tagAxisScalesPayload}
+              : undefined),
+            ...(symlogThreshold !== 1
+              ? {symlogLinearThreshold: symlogThreshold}
+              : undefined),
+            ...(Object.keys(tagSymlogThresholds).length > 0
+              ? {tagSymlogLinearThresholds: tagSymlogThresholds}
+              : undefined),
+          };
+          if (
+            payload.yAxisScale ||
+            payload.xAxisScale ||
+            payload.tagAxisScales ||
+            payload.symlogLinearThreshold ||
+            payload.tagSymlogLinearThresholds
+          ) {
+            window.localStorage.setItem(
+              AXIS_SCALES_STORAGE_KEY,
+              JSON.stringify(payload)
+            );
+          } else {
+            window.localStorage.removeItem(AXIS_SCALES_STORAGE_KEY);
           }
         }
-        const payload: StoredAxisScalesV1 = {
-          version: 1,
-          ...(yScale !== ScaleType.LINEAR
-            ? {yAxisScale: scaleTypeToName(yScale)}
-            : undefined),
-          ...(xScale !== ScaleType.LINEAR
-            ? {xAxisScale: scaleTypeToName(xScale)}
-            : undefined),
-          ...(Object.keys(tagAxisScalesPayload).length > 0
-            ? {tagAxisScales: tagAxisScalesPayload}
-            : undefined),
-        };
-        if (payload.yAxisScale || payload.xAxisScale || payload.tagAxisScales) {
-          window.localStorage.setItem(
-            AXIS_SCALES_STORAGE_KEY,
-            JSON.stringify(payload)
-          );
-        } else {
-          window.localStorage.removeItem(AXIS_SCALES_STORAGE_KEY);
-        }
-      })
+      )
     );
 
     // Load axis scales from localStorage on navigation
@@ -799,6 +828,30 @@ export class MetricsEffects implements OnInitEffects {
                   actions.metricsTagXAxisScaleChanged({
                     tag,
                     scaleType: nameToScaleType(entry.x),
+                  })
+                );
+              }
+            }
+          }
+          if (
+            typeof parsed.symlogLinearThreshold === 'number' &&
+            parsed.symlogLinearThreshold > 0
+          ) {
+            scaleActions.push(
+              actions.metricsChangeSymlogLinearThreshold({
+                symlogLinearThreshold: parsed.symlogLinearThreshold,
+              })
+            );
+          }
+          if (parsed.tagSymlogLinearThresholds) {
+            for (const [tag, threshold] of Object.entries(
+              parsed.tagSymlogLinearThresholds
+            )) {
+              if (typeof threshold === 'number' && threshold > 0) {
+                scaleActions.push(
+                  actions.metricsTagSymlogLinearThresholdChanged({
+                    tag,
+                    symlogLinearThreshold: threshold,
                   })
                 );
               }

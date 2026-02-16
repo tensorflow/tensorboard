@@ -112,6 +112,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() xScaleType!: ScaleType;
   @Input() yAxisScale!: ScaleType;
   @Input() xAxisScale!: ScaleType;
+  @Input() symlogLinearThreshold: number = 1;
   @Input() useDarkMode!: boolean;
   @Input() forceSvg!: boolean;
   @Input() columnCustomizationEnabled!: boolean;
@@ -150,6 +151,8 @@ export class ScalarCardComponent<Downloader> {
   @Output() onXAxisScaleChanged = new EventEmitter<ScaleType>();
   @Output() onAddToSuperimposed = new EventEmitter<void>();
   @Output() onAddToSuperimposedCard = new EventEmitter<SuperimposedCardId>();
+  @Output()
+  onSymlogLinearThresholdChanged = new EventEmitter<number>();
 
   // Line chart may not exist when was never visible (*ngIf).
   @ViewChild(LineChartComponent)
@@ -220,6 +223,20 @@ export class ScalarCardComponent<Downloader> {
 
   getXScaleLabel(): string {
     return ScalarCardComponent.scaleLabel(this.getEffectiveXScaleType());
+  }
+
+  /**
+   * Called when the user changes the per-card symlog linear threshold.
+   */
+  onSymlogLinearThresholdInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.value) {
+      return;
+    }
+    const value = parseFloat(input.value);
+    if (value > 0) {
+      this.onSymlogLinearThresholdChanged.emit(value);
+    }
   }
 
   /**

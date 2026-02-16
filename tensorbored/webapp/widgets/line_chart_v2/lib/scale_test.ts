@@ -558,4 +558,60 @@ describe('line_chart_v2/lib/scale test', () => {
       });
     });
   });
+
+  describe('symlog10 with custom linearThreshold', () => {
+    it('with threshold=10, the linear region extends to |x| < 10', () => {
+      const scale = createScale(ScaleType.SYMLOG10, 10);
+
+      // symlog(0) should always be 0 regardless of threshold
+      expect(scale.forward([-100, 100], [0, 100], 0)).toBeCloseTo(50, 0);
+
+      // Forward/reverse should be cyclic consistent
+      const initialX = 42;
+      const forward = scale.forward([-100, 100], [0, 100], initialX);
+      const inverse = scale.reverse([-100, 100], [0, 100], forward);
+      expect(inverse).toBeCloseTo(initialX, 0);
+    });
+
+    it('with threshold=10, values near zero are more spread out', () => {
+      // With c=1 (default), symlog(5) = log10(5 + 1) ≈ 0.778
+      // With c=10,           symlog(5) = log10(5/10 + 1) = log10(1.5) ≈ 0.176
+      // So c=10 keeps values under 10 closer to linear (more spread out near zero).
+      const scaleC1 = createScale(ScaleType.SYMLOG10, 1);
+      const scaleC10 = createScale(ScaleType.SYMLOG10, 10);
+
+      // For small values (|x| << c), the scale should be more linear with higher c.
+      // Specifically, with c=10, 5 should be closer to the midpoint between 0 and 10.
+      const forwardC1 = scaleC1.forward([0, 100], [0, 100], 5);
+      const forwardC10 = scaleC10.forward([0, 100], [0, 100], 5);
+
+      // With c=10, values up to 10 behave more linearly, so 5 (half of 10)
+      // maps closer to the halfway point in the 0-100 range.
+      // With c=1, log kicks in sooner, so 5 maps further up.
+      expect(forwardC10).toBeLessThan(forwardC1);
+    });
+
+    it('with threshold=0.01, the linear region is very narrow', () => {
+      const scale = createScale(ScaleType.SYMLOG10, 0.01);
+
+      // Forward/reverse cyclic consistency
+      const initialX = -50;
+      const forward = scale.forward([-100, 100], [0, 100], initialX);
+      const inverse = scale.reverse([-100, 100], [0, 100], forward);
+      expect(inverse).toBeCloseTo(initialX, 0);
+    });
+
+    it('niceDomain works with custom threshold', () => {
+      const scale = createScale(ScaleType.SYMLOG10, 10);
+      const [low, high] = scale.niceDomain([1, 100]);
+      expect(low).toBeLessThan(1);
+      expect(high).toBeGreaterThan(100);
+    });
+
+    it('ticks works with custom threshold', () => {
+      const scale = createScale(ScaleType.SYMLOG10, 10);
+      const ticks = scale.ticks([1, 100], 5);
+      expect(ticks.length).toBeGreaterThan(0);
+    });
+  });
 });

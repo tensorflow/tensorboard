@@ -27,6 +27,7 @@ import {
   metricsChangeImageBrightness,
   metricsChangeImageContrast,
   metricsChangeScalarSmoothing,
+  metricsChangeSymlogLinearThreshold,
   metricsChangeTooltipSort,
   metricsChangeXAxisType,
   metricsEnableSavingPinsToggled,
@@ -65,6 +66,8 @@ import {
       (histogramModeChanged)="onHistogramModeChanged($event)"
       [scalarSmoothing]="scalarSmoothing$ | async"
       (scalarSmoothingChanged)="onScalarSmoothingChanged($event)"
+      [symlogLinearThreshold]="symlogLinearThreshold$ | async"
+      (symlogLinearThresholdChanged)="onSymlogLinearThresholdChanged($event)"
       [scalarPartitionX]="scalarPartitionX$ | async"
       (scalarPartitionXToggled)="onScalarPartitionXToggled()"
       [imageBrightnessInMilli]="imageBrightnessInMilli$ | async"
@@ -144,6 +147,9 @@ export class SettingsViewContainer {
     this.scalarSmoothing$ = this.store.select(
       selectors.getMetricsScalarSmoothing
     );
+    this.symlogLinearThreshold$ = this.store.select(
+      selectors.getMetricsSymlogLinearThreshold
+    );
     this.scalarPartitionX$ = this.store.select(
       selectors.getMetricsScalarPartitionNonMonotonicX
     );
@@ -180,6 +186,7 @@ export class SettingsViewContainer {
   readonly cardMinWidth$;
   readonly histogramMode$;
   readonly scalarSmoothing$;
+  readonly symlogLinearThreshold$;
   readonly scalarPartitionX$;
   readonly imageBrightnessInMilli$;
   readonly imageContrastInMilli$;
@@ -214,6 +221,12 @@ export class SettingsViewContainer {
 
   onScalarSmoothingChanged(smoothing: number) {
     this.store.dispatch(metricsChangeScalarSmoothing({smoothing}));
+  }
+
+  onSymlogLinearThresholdChanged(symlogLinearThreshold: number) {
+    this.store.dispatch(
+      metricsChangeSymlogLinearThreshold({symlogLinearThreshold})
+    );
   }
 
   onScalarPartitionXToggled() {

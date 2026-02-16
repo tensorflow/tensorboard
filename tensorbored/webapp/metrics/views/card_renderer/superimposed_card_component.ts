@@ -77,6 +77,7 @@ export class SuperimposedCardComponent {
   @Input() xScaleType!: ScaleType;
   @Input() yAxisScale!: ScaleType;
   @Input() xAxisScale!: ScaleType;
+  @Input() symlogLinearThreshold: number = 1;
   @Input() useDarkMode!: boolean;
   @Input() forceSvg!: boolean;
   @Input() userViewBox: Extent | null = null;
@@ -86,6 +87,8 @@ export class SuperimposedCardComponent {
   @Output() onViewBoxChange = new EventEmitter<Extent | null>();
   @Output() onFullWidthChanged = new EventEmitter<boolean>();
   @Output() onFullHeightChanged = new EventEmitter<boolean>();
+  @Output()
+  onSymlogLinearThresholdChanged = new EventEmitter<number>();
   @Output() onYAxisScaleChanged = new EventEmitter<ScaleType>();
   @Output() onXAxisScaleChanged = new EventEmitter<ScaleType>();
 
@@ -165,6 +168,17 @@ export class SuperimposedCardComponent {
     return (
       this.xAxisType === XAxisType.STEP || this.xAxisType === XAxisType.RELATIVE
     );
+  }
+
+  onSymlogLinearThresholdInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.value) {
+      return;
+    }
+    const value = parseFloat(input.value);
+    if (value > 0) {
+      this.onSymlogLinearThresholdChanged.emit(value);
+    }
   }
 
   resetDomain() {

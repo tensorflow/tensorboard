@@ -62,6 +62,7 @@ import {PluginType, ScalarStepDatum} from '../../data_source';
 import {
   getMetricsIgnoreOutliers,
   getMetricsScalarSmoothing,
+  getMetricsSymlogLinearThreshold,
   getMetricsTooltipSort,
   getMetricsXAxisType,
   getMetricsYAxisScale,
@@ -108,6 +109,7 @@ import {getFilteredRenderableRunsIds} from '../main_view/common_selectors';
       [xScaleType]="xScaleType$ | async"
       [yAxisScale]="yAxisScale$ | async"
       [xAxisScale]="xAxisScale$ | async"
+      [symlogLinearThreshold]="symlogLinearThreshold$ | async"
       [useDarkMode]="useDarkMode$ | async"
       [forceSvg]="forceSvg$ | async"
       [userViewBox]="userViewBox$ | async"
@@ -156,6 +158,9 @@ export class SuperimposedCardContainer implements OnInit, OnDestroy {
     this.yAxisScale$ = this.store.select(getMetricsYAxisScale);
     this.xAxisScale$ = this.store.select(getMetricsXAxisScale);
     this.scalarSmoothing$ = this.store.select(getMetricsScalarSmoothing);
+    this.symlogLinearThreshold$ = this.store.select(
+      getMetricsSymlogLinearThreshold
+    );
     this.smoothingEnabled$ = this.store
       .select(getMetricsScalarSmoothing)
       .pipe(map((smoothing) => smoothing > 0));
@@ -186,6 +191,7 @@ export class SuperimposedCardContainer implements OnInit, OnDestroy {
   readonly yAxisScale$;
   readonly xAxisScale$;
   readonly scalarSmoothing$;
+  readonly symlogLinearThreshold$;
   readonly smoothingEnabled$;
 
   private readonly userViewBoxSubject = new BehaviorSubject<Extent | null>(

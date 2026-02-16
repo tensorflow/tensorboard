@@ -70,6 +70,10 @@ export class OSSSettingsConverter extends SettingsConverter<
     if (settings.scalarSmoothing !== undefined) {
       serializableSettings.scalarSmoothing = settings.scalarSmoothing;
     }
+    if (settings.symlogLinearThreshold !== undefined) {
+      serializableSettings.symlogLinearThreshold =
+        settings.symlogLinearThreshold;
+    }
     if (settings.tooltipSort !== undefined) {
       // TooltipSort is a string enum and has string values; no need to
       // serialize it differently to account for their unintended changes.
@@ -138,6 +142,13 @@ export class OSSSettingsConverter extends SettingsConverter<
       typeof backendSettings.scalarSmoothing === 'number'
     ) {
       settings.scalarSmoothing = backendSettings.scalarSmoothing;
+    }
+
+    if (
+      backendSettings.hasOwnProperty('symlogLinearThreshold') &&
+      typeof backendSettings.symlogLinearThreshold === 'number'
+    ) {
+      settings.symlogLinearThreshold = backendSettings.symlogLinearThreshold;
     }
 
     if (
