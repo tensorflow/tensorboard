@@ -30,8 +30,14 @@ export const template = html`
 
     #svg {
       flex: 1;
-      font-family: Inter, Roboto, system-ui, -apple-system, BlinkMacSystemFont,
-        'Segoe UI', sans-serif;
+      font-family:
+        Inter,
+        Roboto,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        sans-serif;
       height: 100%;
       overflow: hidden;
       width: 100%;

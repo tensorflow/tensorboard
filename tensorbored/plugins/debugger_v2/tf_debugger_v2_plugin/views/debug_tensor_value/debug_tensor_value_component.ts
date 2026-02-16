@@ -129,8 +129,9 @@ export class DebugTensorShapeComponent {
         background-color: #e3e5e8;
         border: 1px solid #c0c0c0;
         border-radius: 4px;
-        font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo,
-          Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+        font-family:
+          'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco,
+          Consolas, 'Liberation Mono', 'Courier New', monospace;
         font-size: 10px;
         margin: 0 2px;
         padding: 1px;
@@ -225,8 +226,9 @@ export class DebugTensorNumericBreakdownComponent {
         border: 1px solid #c0c0c0;
         border-radius: 4px;
         color: #666666;
-        font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo,
-          Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+        font-family:
+          'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco,
+          Consolas, 'Liberation Mono', 'Courier New', monospace;
         height: 14px;
         line-height: 14px;
         margin: 0 2px;

@@ -501,7 +501,7 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
           name,
           shape: this.getEmbeddingInfoByName(name)?.tensorShape as [
             number,
-            number
+            number,
           ],
         };
       });

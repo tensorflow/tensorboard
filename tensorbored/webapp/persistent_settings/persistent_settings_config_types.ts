@@ -18,7 +18,7 @@ import {PersistableSettings} from './_data_source/types';
 
 export type SettingSelector<
   State,
-  Settings extends PersistableSettings
+  Settings extends PersistableSettings,
 > = Selector<State, Partial<Settings>>;
 
 export const GLOBAL_PERSISTENT_SETTINGS_TOKEN = new InjectionToken(

@@ -93,12 +93,12 @@ class TfHparamsParallelCoordsPlot extends LegacyElementMixin(
     <style>
       :host {
         display: block;
-        --tf-hparams-parallel-coords-plot-axis-shadow: 0 1px 0 #fff,
-          1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+        --tf-hparams-parallel-coords-plot-axis-shadow:
+          0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
       }
       :host(.dark-mode) {
-        --tf-hparams-parallel-coords-plot-axis-shadow: 0 1px 0 #000,
-          1px 0 0 #000, 0 -1px 0 #000, -1px 0 0 #000;
+        --tf-hparams-parallel-coords-plot-axis-shadow:
+          0 1px 0 #000, 1px 0 0 #000, 0 -1px 0 #000, -1px 0 0 #000;
       }
       svg {
         font: 10px sans-serif;

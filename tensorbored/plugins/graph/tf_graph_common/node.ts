@@ -804,8 +804,8 @@ export function getFillForNode(
         return renderInfo.structural
           ? '#f0e'
           : (<BridgeNode>renderInfo.node).inbound
-          ? '#0ef'
-          : '#fe0';
+            ? '#0ef'
+            : '#fe0';
       } else if (_.isNumber((renderInfo.node as OpNode).functionInputIndex)) {
         // This is an input of a TensorFlow function.
         return '#795548';

@@ -26,9 +26,7 @@ const LABEL_FILL_WIDTH = 6;
  * Creates and maintains a 2d canvas on top of the GL canvas. All labels, when
  * active, are rendered to the 2d canvas as part of the visible render pass.
  */
-export class ScatterPlotVisualizerCanvasLabels
-  implements ScatterPlotVisualizer
-{
+export class ScatterPlotVisualizerCanvasLabels implements ScatterPlotVisualizer {
   private worldSpacePointPositions: Float32Array;
   private gc: CanvasRenderingContext2D;
   private canvas: HTMLCanvasElement;

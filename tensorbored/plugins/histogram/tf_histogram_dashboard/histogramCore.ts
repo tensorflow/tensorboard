@@ -18,12 +18,12 @@ import * as d3 from 'd3';
 export type BackendHistogramBin = [
   number, // left
   number, // right
-  number // count
+  number, // count
 ];
 export type BackendHistogram = [
   number, // wall_time, in seconds
   number, // step
-  BackendHistogramBin[]
+  BackendHistogramBin[],
 ];
 export type IntermediateHistogram = {
   wall_time: number; // in seconds

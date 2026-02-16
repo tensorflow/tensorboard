@@ -29,7 +29,7 @@ import {TfDomRepeat} from './tf-dom-repeat';
 
 @customElement('tf-category-paginated-view')
 class TfCategoryPaginatedView<
-  CategoryItem extends {}
+  CategoryItem extends {},
 > extends TfDomRepeat<CategoryItem> {
   static readonly template = html`
     <template is="dom-if" if="[[_paneRendered]]" id="ifRendered">

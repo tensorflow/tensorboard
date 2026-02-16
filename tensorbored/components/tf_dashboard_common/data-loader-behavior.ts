@@ -24,8 +24,10 @@ export enum LoadState {
   LOADED,
 }
 
-export interface DataLoaderBehaviorInterface<Item, Data>
-  extends PolymerElement {
+export interface DataLoaderBehaviorInterface<
+  Item,
+  Data,
+> extends PolymerElement {
   active: boolean;
   reset(): void;
   reload(): void;

@@ -62,7 +62,7 @@ import {
 
 export interface TooltipDatum<
   Metadata extends DataSeriesMetadata = DataSeriesMetadata,
-  PointDatum extends Point = Point
+  PointDatum extends Point = Point,
 > {
   id: string;
   metadata: Metadata;

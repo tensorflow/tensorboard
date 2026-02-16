@@ -181,7 +181,7 @@ export function createAxisScale(domainValues, axisHeight, scaleType) {
     }
     const [min, max] = d3.extent(domainValues) as [unknown, unknown] as [
       number,
-      number
+      number,
     ];
     if (min !== max) {
       return [min, max];

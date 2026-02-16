@@ -138,7 +138,7 @@ class TfHparamsSessionsPane extends PolymerElement {
         --paper-tabs-selection-bar-color: white;
         --paper-tabs-content: {
           -webkit-font-smoothing: antialiased;
-        }
+        };
       }
       tf-hparams-table-view {
         width: 100%;

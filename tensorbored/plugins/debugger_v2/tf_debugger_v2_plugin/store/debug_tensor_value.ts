@@ -30,7 +30,7 @@ export interface RawDebugTensorValueCurtHealth extends RawDebugTensorValue {
   tensorDebugMode: TensorDebugMode.CURT_HEALTH;
   array: [
     number, // Tensor ID.
-    number // 0-1 indicator for the presence of inf/nan.
+    number, // 0-1 indicator for the presence of inf/nan.
   ];
 }
 
@@ -41,7 +41,7 @@ export interface RawDebugTensorValueConciseHealth extends RawDebugTensorValue {
     number, // Element count (size).
     number, // -inf count.
     number, // +inf count.
-    number // nan count.
+    number, // nan count.
   ];
 }
 
@@ -57,7 +57,7 @@ export interface RawDebugTensorValueShape extends RawDebugTensorValue {
     number,
     number,
     number,
-    number
+    number,
   ];
 }
 
@@ -74,7 +74,7 @@ export interface RawDebugTensorValueFullHealth extends RawDebugTensorValue {
     number, // nan count.
     number, // -finite count.
     number, // zero count.
-    number // +finite count.
+    number, // +finite count.
   ];
 }
 

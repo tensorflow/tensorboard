@@ -78,7 +78,7 @@ export class ProgrammaticalNavigationModule {
    */
   static registerProgrammaticalNavigation<
     AC extends ActionCreator<string, Creator>,
-    U extends Action = Action
+    U extends Action = Action,
   >(
     providerFactory: () => {
       actionCreator: AC;

@@ -21,9 +21,7 @@ import {
 } from './backend_types';
 
 @Injectable()
-export class TestingNotificationCenterDataSource
-  implements NotificationCenterDataSource
-{
+export class TestingNotificationCenterDataSource implements NotificationCenterDataSource {
   fetchNotifications() {
     return of({
       notifications: [],
