@@ -142,7 +142,10 @@ export class SuperimposedCardComponent {
     order: SortingOrder.ASCENDING,
   };
 
-  readonly emptyColumnFilters = new Map<string, DiscreteFilter | IntervalFilter>();
+  readonly emptyColumnFilters = new Map<
+    string,
+    DiscreteFilter | IntervalFilter
+  >();
   readonly emptyRunToHparamMap: RunToHparamMap = {};
   readonly emptySelectableColumns: ColumnHeader[] = [];
 
@@ -310,7 +313,9 @@ export class SuperimposedCardComponent {
   }
 
   showDataTable(): boolean {
-    return this.xAxisType === XAxisType.STEP && !!this.stepOrLinkedTimeSelection;
+    return (
+      this.xAxisType === XAxisType.STEP && !!this.stepOrLinkedTimeSelection
+    );
   }
 
   onFobRemoved() {
@@ -330,8 +335,7 @@ export class SuperimposedCardComponent {
 
   shouldExpandTable(): boolean {
     return Boolean(
-      this.dataTableContainer?.nativeElement.style.height ||
-        !this.tableExpanded
+      this.dataTableContainer?.nativeElement.style.height || !this.tableExpanded
     );
   }
 

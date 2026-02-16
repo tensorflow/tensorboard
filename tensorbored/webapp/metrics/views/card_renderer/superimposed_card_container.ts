@@ -210,8 +210,7 @@ export class SuperimposedCardContainer implements OnInit, OnDestroy {
   private readonly localTimeSelectionSubject = new BehaviorSubject<
     TimeSelection | undefined
   >(undefined);
-  readonly localTimeSelection$ =
-    this.localTimeSelectionSubject.asObservable();
+  readonly localTimeSelection$ = this.localTimeSelectionSubject.asObservable();
 
   private readonly ngUnsubscribe = new Subject<void>();
 
@@ -458,8 +457,8 @@ export class SuperimposedCardContainer implements OnInit, OnDestroy {
                   : `[${tag}] ${displayName}`,
               visible: Boolean(
                 runSelectionMap &&
-                  runSelectionMap.get(originalRunId) &&
-                  renderableRuns.has(originalRunId)
+                runSelectionMap.get(originalRunId) &&
+                renderableRuns.has(originalRunId)
               ),
               color,
               aux: false,
@@ -531,10 +530,12 @@ export class SuperimposedCardContainer implements OnInit, OnDestroy {
           if (linkedTimeEnabled && linkedTimeSelection) {
             return linkedTimeSelection;
           }
-          return localTimeSelection ?? {
-            start: {step: minMaxStep.maxStep},
-            end: null,
-          };
+          return (
+            localTimeSelection ?? {
+              start: {step: minMaxStep.maxStep},
+              end: null,
+            }
+          );
         }
       )
     );
@@ -558,9 +559,9 @@ export class SuperimposedCardContainer implements OnInit, OnDestroy {
     ]).pipe(
       map(([experimentId, idToAlias, run]) => {
         const alias =
-          experimentId !== null ? idToAlias[experimentId] ?? null : null;
+          experimentId !== null ? (idToAlias[experimentId] ?? null) : null;
         return {
-          displayName: !run && !alias ? runId : run?.name ?? '...',
+          displayName: !run && !alias ? runId : (run?.name ?? '...'),
           alias: alias,
         };
       })
