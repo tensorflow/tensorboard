@@ -609,8 +609,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
                   : displayName,
               visible: Boolean(
                 runSelectionMap &&
-                  runSelectionMap.get(runId) &&
-                  renderableRuns.has(runId)
+                runSelectionMap.get(runId) &&
+                renderableRuns.has(runId)
               ),
               color: colorMap[runId] ?? '#fff',
               aux: false,
@@ -720,9 +720,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     ]).pipe(
       map(([experimentId, idToAlias, run]) => {
         const alias =
-          experimentId !== null ? idToAlias[experimentId] ?? null : null;
+          experimentId !== null ? (idToAlias[experimentId] ?? null) : null;
         return {
-          displayName: !run && !alias ? runId : run?.name ?? '...',
+          displayName: !run && !alias ? runId : (run?.name ?? '...'),
           alias: alias,
         };
       })
