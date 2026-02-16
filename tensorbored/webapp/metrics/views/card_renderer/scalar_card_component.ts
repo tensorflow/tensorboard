@@ -162,10 +162,7 @@ export class ScalarCardComponent<Downloader> {
   @ViewChild('dataTableContainer')
   dataTableContainer?: ElementRef;
 
-  constructor(
-    private readonly ref: ElementRef,
-    private dialog: MatDialog
-  ) {}
+  constructor(private readonly ref: ElementRef, private dialog: MatDialog) {}
 
   isViewBoxOverridden: boolean = false;
   additionalItemsCount = 0;
@@ -379,7 +376,7 @@ export class ScalarCardComponent<Downloader> {
     // Otherwise the table should be toggled.
     return Boolean(
       this.dataTableContainer?.nativeElement.style.height ||
-      !this.cardState?.tableExpanded
+        !this.cardState?.tableExpanded
     );
   }
 

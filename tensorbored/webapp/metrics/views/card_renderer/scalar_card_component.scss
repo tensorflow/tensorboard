@@ -99,9 +99,7 @@ $_data_table_initial_height: 100px;
   mat-spinner {
     $mat-icon-button-diameter: 40px;
     $spinner-diameter: 18px;
-    $spinner-to-container-edge: (
-        $mat-icon-button-diameter - $spinner-diameter
-      ) *
+    $spinner-to-container-edge: ($mat-icon-button-diameter - $spinner-diameter) *
       0.5;
 
     // Position horizontally to be centered with the 'more options' button.

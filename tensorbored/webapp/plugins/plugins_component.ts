@@ -134,7 +134,7 @@ export class PluginsComponent implements OnChanges {
 
     const shouldCreatePlugin = Boolean(
       this.activeKnownPlugin &&
-      !this.pluginInstances.has(this.activeKnownPlugin.id)
+        !this.pluginInstances.has(this.activeKnownPlugin.id)
     );
 
     if (

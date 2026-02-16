@@ -587,8 +587,8 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
   _computeDataFound() {
     const result = Boolean(
       this._experiment &&
-      this._experiment.hparamInfos &&
-      this._experiment.hparamInfos.length > 0
+        this._experiment.hparamInfos &&
+        this._experiment.hparamInfos.length > 0
     );
     this.set('dataLoadedWithNonEmptyHparams', result);
     this.set('dataLoadedWithEmptyHparams', !result);

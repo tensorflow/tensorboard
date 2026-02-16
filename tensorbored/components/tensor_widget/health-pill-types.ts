@@ -30,7 +30,8 @@ export interface BaseTensorNumericSummary {
   elementCount: number;
 }
 
-export interface BooleanOrNumericTensorNumericSummary extends BaseTensorNumericSummary {
+export interface BooleanOrNumericTensorNumericSummary
+  extends BaseTensorNumericSummary {
   /** Minimum of all finite values. */
   minimum: number | boolean;
 

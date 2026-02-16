@@ -275,10 +275,9 @@ export class OSSSettingsConverter extends SettingsConverter<
  * in browser local storage.
  */
 @Injectable()
-export class PersistentSettingsDataSourceImpl<
-  UiSettings,
-  StorageSettings,
-> implements PersistentSettingsDataSource<UiSettings> {
+export class PersistentSettingsDataSourceImpl<UiSettings, StorageSettings>
+  implements PersistentSettingsDataSource<UiSettings>
+{
   constructor(
     private readonly converter: SettingsConverter<UiSettings, StorageSettings>
   ) {}

@@ -151,7 +151,7 @@ import {getIsScalarColumnContextMenusEnabled} from '../../../selectors';
       [ngTemplateOutletContext]="{
         data: tooltipDataForTesting,
         cursorLocationInDataCoord: cursorLocationInDataCoordForTesting,
-        cursorLocation: cursorLocationForTesting,
+        cursorLocation: cursorLocationForTesting
       }"
     ></ng-container>
     <ng-container

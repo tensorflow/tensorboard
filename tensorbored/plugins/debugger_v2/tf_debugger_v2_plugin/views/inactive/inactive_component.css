@@ -20,22 +20,15 @@ limitations under the License.
 }
 
 .code {
-  font-family:
-    'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    'Liberation Mono', 'Courier New', monospace;
+  font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, 'Liberation Mono', 'Courier New', monospace;
   margin: 10px;
 }
 
 .container {
   height: 100%;
-  font-family:
-    Inter,
-    Roboto,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    sans-serif;
+  font-family: Inter, Roboto, system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
   font-size: 15px;
   overflow-y: auto;
   padding: 50px;

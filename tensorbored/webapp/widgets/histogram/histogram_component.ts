@@ -243,9 +243,9 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
   ): linkedTime is TimeSelection {
     return Boolean(
       this.mode === HistogramMode.OFFSET &&
-      this.timeProperty === TimeProperty.STEP &&
-      this.scales &&
-      linkedTime
+        this.timeProperty === TimeProperty.STEP &&
+        this.scales &&
+        linkedTime
     );
   }
 

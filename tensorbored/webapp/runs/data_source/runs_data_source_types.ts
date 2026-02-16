@@ -56,10 +56,8 @@ interface DiscreteDomain {
 }
 
 export type Domain = IntervalDomain | DiscreteDomain;
-export interface HparamSpec extends Omit<
-  backendTypes.HparamSpec,
-  'domainInterval' | 'domainDiscrete'
-> {
+export interface HparamSpec
+  extends Omit<backendTypes.HparamSpec, 'domainInterval' | 'domainDiscrete'> {
   domain: Domain;
 }
 

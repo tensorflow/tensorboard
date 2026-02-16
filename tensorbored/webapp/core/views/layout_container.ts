@@ -87,10 +87,7 @@ export class LayoutContainer implements OnDestroy {
 
   readonly MINIMUM_SIDEBAR_WIDTH_IN_PX = 75;
 
-  constructor(
-    private readonly store: Store<State>,
-    hostElRef: ElementRef
-  ) {
+  constructor(private readonly store: Store<State>, hostElRef: ElementRef) {
     this.runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
     this.width$ = this.store.select(getSideBarWidthInPercent).pipe(
       combineLatestWith(this.runsTableFullScreen$),
