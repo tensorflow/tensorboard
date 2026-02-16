@@ -54,9 +54,14 @@ import {
   getCurrentRouteRunSelection,
 } from '../../../selectors';
 import {DataLoadState} from '../../../types/data';
+import {
+  TimeSelection,
+  TimeSelectionAffordance,
+} from '../../../widgets/card_fob/card_fob_types';
 import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer';
 import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
+import {ColumnHeader} from '../../../widgets/data_table/types';
 import * as actions from '../../actions';
 import {PluginType, ScalarStepDatum} from '../../data_source';
 import {
@@ -66,6 +71,7 @@ import {
   getMetricsXAxisType,
   getMetricsYAxisScale,
   getMetricsXAxisScale,
+  getSingleSelectionHeaders,
   getSuperimposedCardLoadState,
   getSuperimposedCardMetadata,
   getSuperimposedCardTimeSeries,
@@ -77,6 +83,7 @@ import {
   XAxisType,
 } from '../../types';
 import {
+  MinMaxStep,
   PartialSeries,
   PartitionedSeries,
   ScalarCardDataSeries,
@@ -111,11 +118,15 @@ import {getFilteredRenderableRunsIds} from '../main_view/common_selectors';
       [useDarkMode]="useDarkMode$ | async"
       [forceSvg]="forceSvg$ | async"
       [userViewBox]="userViewBox$ | async"
+      [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection$ | async"
+      [minMaxStep]="minMaxStep$ | async"
+      [columnHeaders]="columnHeaders$ | async"
       (onDeleteCard)="onDeleteCard()"
       (onRemoveTag)="onRemoveTag($event)"
       (onViewBoxChange)="onViewBoxChange($event)"
       (onYAxisScaleChanged)="onYAxisScaleChanged($event)"
       (onXAxisScaleChanged)="onXAxisScaleChanged($event)"
+      (onTimeSelectionChanged)="onTimeSelectionChanged($event)"
       (onFullWidthChanged)="fullWidthChanged.emit($event)"
       (onFullHeightChanged)="fullHeightChanged.emit($event)"
       observeIntersection
@@ -172,6 +183,9 @@ export class SuperimposedCardContainer implements OnInit, OnDestroy {
   tags$?: Observable<string[]>;
   dataSeries$?: Observable<ScalarCardDataSeries[]>;
   chartMetadataMap$?: Observable<ScalarCardSeriesMetadataMap>;
+  minMaxStep$?: Observable<MinMaxStep | undefined>;
+  stepOrLinkedTimeSelection$?: Observable<TimeSelection | undefined>;
+  columnHeaders$?: Observable<ColumnHeader[]>;
 
   onVisibilityChange({visible}: {visible: boolean}) {
     this.isVisible = visible;
@@ -192,6 +206,12 @@ export class SuperimposedCardContainer implements OnInit, OnDestroy {
     null
   );
   readonly userViewBox$ = this.userViewBoxSubject.asObservable();
+
+  private readonly localTimeSelectionSubject = new BehaviorSubject<
+    TimeSelection | undefined
+  >(undefined);
+  readonly localTimeSelection$ =
+    this.localTimeSelectionSubject.asObservable();
 
   private readonly ngUnsubscribe = new Subject<void>();
 
@@ -470,6 +490,57 @@ export class SuperimposedCardContainer implements OnInit, OnDestroy {
       ),
       startWith({} as ScalarCardSeriesMetadataMap)
     );
+
+    // Compute min/max step from the partitioned series data.
+    this.minMaxStep$ = partitionedSeries$.pipe(
+      map((seriesList): MinMaxStep | undefined => {
+        let minStep = Infinity;
+        let maxStep = -Infinity;
+        for (const series of seriesList) {
+          for (const point of series.points) {
+            if (point.step < minStep) minStep = point.step;
+            if (point.step > maxStep) maxStep = point.step;
+          }
+        }
+        if (!isFinite(minStep) || !isFinite(maxStep)) {
+          return undefined;
+        }
+        return {minStep, maxStep};
+      })
+    );
+
+    // Combine linked time selection with local selection for the fob.
+    this.stepOrLinkedTimeSelection$ = combineLatest([
+      this.minMaxStep$,
+      this.store.select(getMetricsLinkedTimeEnabled),
+      this.store.select(getMetricsLinkedTimeSelection),
+      this.localTimeSelection$,
+      this.xAxisType$,
+    ]).pipe(
+      map(
+        ([
+          minMaxStep,
+          linkedTimeEnabled,
+          linkedTimeSelection,
+          localTimeSelection,
+          xAxisType,
+        ]): TimeSelection | undefined => {
+          if (xAxisType !== XAxisType.STEP || !minMaxStep) {
+            return undefined;
+          }
+          if (linkedTimeEnabled && linkedTimeSelection) {
+            return linkedTimeSelection;
+          }
+          return localTimeSelection ?? {
+            start: {step: minMaxStep.maxStep},
+            end: null,
+          };
+        }
+      )
+    );
+
+    // Use the global single-selection column headers (same as scalar cards).
+    this.columnHeaders$ = this.store.select(getSingleSelectionHeaders);
   }
 
   ngOnDestroy() {
@@ -549,6 +620,13 @@ export class SuperimposedCardContainer implements OnInit, OnDestroy {
 
   onXAxisScaleChanged(scaleType: ScaleType) {
     this.store.dispatch(actions.metricsChangeXAxisScale({scaleType}));
+  }
+
+  onTimeSelectionChanged(event: {
+    timeSelection: TimeSelection;
+    affordance?: TimeSelectionAffordance;
+  }) {
+    this.localTimeSelectionSubject.next(event.timeSelection);
   }
 
   onViewBoxChange(viewBox: Extent | null) {

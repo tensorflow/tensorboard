@@ -25,6 +25,8 @@ import {IntersectionObserverModule} from '../../../widgets/intersection_observer
 import {LineChartModule} from '../../../widgets/line_chart_v2/line_chart_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 
+import {ScalarCardDataTableModule} from './scalar_card_data_table_module';
+import {ScalarCardLineChartModule} from './scalar_card_line_chart_module';
 import {SuperimposedCardComponent} from './superimposed_card_component';
 import {SuperimposedCardContainer} from './superimposed_card_container';
 
@@ -41,6 +43,8 @@ import {SuperimposedCardContainer} from './superimposed_card_container';
     MatIconModule,
     MatMenuModule,
     MatProgressSpinnerModule,
+    ScalarCardDataTableModule,
+    ScalarCardLineChartModule,
     TruncatedPathModule,
   ],
 })
