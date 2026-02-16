@@ -83,6 +83,10 @@ jobs:
             -r ./tensorbored/pip_package/requirements.txt \
             -r ./tensorbored/pip_package/requirements_dev.txt \
             ;
+      - name: 'Install Chrome dependencies'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgbm-dev libxss1 libasound2
       - name: 'Check Pip state'
         run: pip freeze --all
       - name: 'Bazel: fetch'
