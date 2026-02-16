@@ -198,6 +198,7 @@ def create_profile(
     y_axis_scale: AxisScale | None = None,
     x_axis_scale: AxisScale | None = None,
     tag_axis_scales: dict[str, TagAxisScale] | None = None,
+    tag_symlog_linear_thresholds: dict[str, float] | None = None,
 ) -> SerializedProfile:
     """Create a TensorBoard profile dictionary.
 
@@ -221,6 +222,8 @@ def create_profile(
         y_axis_scale: Global Y-axis scale for scalar plots.
         x_axis_scale: Global X-axis scale for scalar plots
             (STEP/RELATIVE only).
+        tag_symlog_linear_thresholds: Per-tag symlog linear threshold
+            overrides. Example: ``{"train/loss": 10.0}``
         tag_axis_scales: Per-tag axis scale overrides.  Example::
 
                 {"train/loss": {"y": "log10"}}
@@ -294,6 +297,8 @@ def create_profile(
         data["tagAxisScales"] = tag_axis_scales
     if symlog_linear_threshold != 1.0:
         data["symlogLinearThreshold"] = symlog_linear_threshold
+    if tag_symlog_linear_thresholds:
+        data["tagSymlogLinearThresholds"] = tag_symlog_linear_thresholds
 
     return SerializedProfile(version=PROFILE_VERSION, data=data)
 
@@ -356,6 +361,7 @@ def set_default_profile(
     y_axis_scale: AxisScale | None = None,
     x_axis_scale: AxisScale | None = None,
     tag_axis_scales: dict[str, TagAxisScale] | None = None,
+    tag_symlog_linear_thresholds: dict[str, float] | None = None,
 ) -> str:
     """Create and write a profile in one call.
 
@@ -382,6 +388,7 @@ def set_default_profile(
         y_axis_scale=y_axis_scale,
         x_axis_scale=x_axis_scale,
         tag_axis_scales=tag_axis_scales,
+        tag_symlog_linear_thresholds=tag_symlog_linear_thresholds,
     )
     return write_profile(logdir, profile)
 

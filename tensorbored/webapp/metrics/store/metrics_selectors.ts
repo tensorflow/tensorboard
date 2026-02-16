@@ -406,6 +406,24 @@ export const getMetricsXAxisScale = createSelector(
   (settings): ScaleType => settings.xAxisScale
 );
 
+export const getTagSymlogLinearThresholds = createSelector(
+  selectMetricsState,
+  (state): Record<string, number> => state.tagSymlogLinearThresholds
+);
+
+/**
+ * Returns the effective symlog linear threshold for a specific tag.
+ * Per-tag override takes priority over the global default.
+ */
+export const getEffectiveTagSymlogLinearThreshold = memoize((tag: string) =>
+  createSelector(
+    getTagSymlogLinearThresholds,
+    getMetricsSymlogLinearThreshold,
+    (tagThresholds, globalThreshold): number =>
+      tagThresholds[tag] ?? globalThreshold
+  )
+);
+
 export const getTagAxisScales = createSelector(
   selectMetricsState,
   (state): Record<string, {yAxisScale: ScaleType; xAxisScale: ScaleType}> =>

@@ -121,6 +121,7 @@ function buildBlankState(): MetricsState {
     settings: buildMetricsSettingsState(),
     settingOverrides: {},
     tagAxisScales: {},
+    tagSymlogLinearThresholds: {},
     cardList: [],
     cardToPinnedCopy: new Map(),
     cardToPinnedCopyCache: new Map(),

@@ -512,6 +512,7 @@ const {initialState, reducers: namespaceContextedReducer} =
       settings: METRICS_SETTINGS_DEFAULT,
       settingOverrides: {},
       tagAxisScales: {},
+      tagSymlogLinearThresholds: {},
       visibleCardMap: new Map<ElementId, CardId>(),
       previousCardInteractions: {
         tagFilters: [],
@@ -1072,6 +1073,18 @@ const reducer = createReducer(
       },
     };
   }),
+  on(
+    actions.metricsTagSymlogLinearThresholdChanged,
+    (state, {tag, symlogLinearThreshold}) => {
+      return {
+        ...state,
+        tagSymlogLinearThresholds: {
+          ...state.tagSymlogLinearThresholds,
+          [tag]: symlogLinearThreshold,
+        },
+      };
+    }
+  ),
   on(
     actions.multipleTimeSeriesRequested,
     (
@@ -1934,6 +1947,7 @@ const reducer = createReducer(
         xAxisScale,
         tagAxisScales,
         symlogLinearThreshold,
+        tagSymlogLinearThresholds,
       }
     ) => {
       // Clear existing pins and apply profile's pins
@@ -2042,6 +2056,7 @@ const reducer = createReducer(
             : {}),
         },
         tagAxisScales,
+        tagSymlogLinearThresholds: tagSymlogLinearThresholds ?? {},
       };
     }
   ),

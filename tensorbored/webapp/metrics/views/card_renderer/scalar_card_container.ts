@@ -97,12 +97,12 @@ import {
   getMetricsIgnoreOutliers,
   getMetricsScalarPartitionNonMonotonicX,
   getMetricsScalarSmoothing,
-  getMetricsSymlogLinearThreshold,
   getMetricsTagMetadata,
   getMetricsTooltipSort,
   getMetricsXAxisType,
   getEffectiveTagYAxisScale,
   getEffectiveTagXAxisScale,
+  getEffectiveTagSymlogLinearThreshold,
   getSuperimposedCardsWithMetadata,
   RunToSeries,
 } from '../../store';
@@ -232,6 +232,7 @@ function areSeriesEqual(
       (onXAxisScaleChanged)="onXAxisScaleChanged($event)"
       (onAddToSuperimposed)="onAddToSuperimposed()"
       (onAddToSuperimposedCard)="onAddToSuperimposedCard($event)"
+      (onSymlogLinearThresholdChanged)="onSymlogLinearThresholdChanged($event)"
     ></scalar-card-component>
   `,
   styles: [
@@ -279,9 +280,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       })
     );
     this.scalarSmoothing$ = this.store.select(getMetricsScalarSmoothing);
-    this.symlogLinearThreshold$ = this.store.select(
-      getMetricsSymlogLinearThreshold
-    );
     this.smoothingEnabled$ = this.store
       .select(getMetricsScalarSmoothing)
       .pipe(map((smoothing) => smoothing > 0));
@@ -340,7 +338,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   xAxisScale$!: Observable<ScaleType>;
 
   readonly scalarSmoothing$;
-  readonly symlogLinearThreshold$;
+  symlogLinearThreshold$!: Observable<number>;
   readonly smoothingEnabled$;
   readonly superimposedCards$: Observable<SuperimposedCardMetadata[]>;
 
@@ -611,8 +609,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
                   : displayName,
               visible: Boolean(
                 runSelectionMap &&
-                  runSelectionMap.get(runId) &&
-                  renderableRuns.has(runId)
+                runSelectionMap.get(runId) &&
+                renderableRuns.has(runId)
               ),
               color: colorMap[runId] ?? '#fff',
               aux: false,
@@ -661,6 +659,14 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.xAxisScale$ = cardMetadata$.pipe(
       switchMap((cardMetadata) =>
         this.store.select(getEffectiveTagXAxisScale(cardMetadata.tag))
+      )
+    );
+
+    this.symlogLinearThreshold$ = cardMetadata$.pipe(
+      switchMap((cardMetadata) =>
+        this.store.select(
+          getEffectiveTagSymlogLinearThreshold(cardMetadata.tag)
+        )
       )
     );
 
@@ -714,9 +720,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     ]).pipe(
       map(([experimentId, idToAlias, run]) => {
         const alias =
-          experimentId !== null ? idToAlias[experimentId] ?? null : null;
+          experimentId !== null ? (idToAlias[experimentId] ?? null) : null;
         return {
-          displayName: !run && !alias ? runId : run?.name ?? '...',
+          displayName: !run && !alias ? runId : (run?.name ?? '...'),
           alias: alias,
         };
       })
@@ -879,6 +885,22 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       .subscribe((tag) => {
         this.store.dispatch(
           actions.metricsTagXAxisScaleChanged({tag, scaleType})
+        );
+      });
+  }
+
+  onSymlogLinearThresholdChanged(symlogLinearThreshold: number) {
+    this.tag$
+      ?.pipe(
+        filter((tag): tag is string => !!tag),
+        take(1)
+      )
+      .subscribe((tag) => {
+        this.store.dispatch(
+          actions.metricsTagSymlogLinearThresholdChanged({
+            tag,
+            symlogLinearThreshold,
+          })
         );
       });
   }

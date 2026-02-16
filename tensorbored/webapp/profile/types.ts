@@ -188,6 +188,12 @@ export interface ProfileData {
    * Takes priority over the global yAxisScale/xAxisScale.
    */
   tagAxisScales?: Record<string, TagAxisScale>;
+
+  /**
+   * Per-tag symlog linear threshold overrides. Key is the tag name.
+   * Takes priority over the global symlogLinearThreshold.
+   */
+  tagSymlogLinearThresholds?: Record<string, number>;
 }
 
 /**

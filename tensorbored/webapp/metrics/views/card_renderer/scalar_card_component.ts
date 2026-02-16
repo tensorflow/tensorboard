@@ -151,6 +151,8 @@ export class ScalarCardComponent<Downloader> {
   @Output() onXAxisScaleChanged = new EventEmitter<ScaleType>();
   @Output() onAddToSuperimposed = new EventEmitter<void>();
   @Output() onAddToSuperimposedCard = new EventEmitter<SuperimposedCardId>();
+  @Output()
+  onSymlogLinearThresholdChanged = new EventEmitter<number>();
 
   // Line chart may not exist when was never visible (*ngIf).
   @ViewChild(LineChartComponent)
@@ -163,10 +165,11 @@ export class ScalarCardComponent<Downloader> {
   @ViewChild('dataTableContainer')
   dataTableContainer?: ElementRef;
 
-  constructor(private readonly ref: ElementRef, private dialog: MatDialog) {}
+  constructor(
+    private readonly ref: ElementRef,
+    private dialog: MatDialog
+  ) {}
 
-  /** Local override for symlog linear threshold. When null, uses the global symlogLinearThreshold input. */
-  symlogLinearThresholdOverride: number | null = null;
   isViewBoxOverridden: boolean = false;
   additionalItemsCount = 0;
 
@@ -226,31 +229,17 @@ export class ScalarCardComponent<Downloader> {
   }
 
   /**
-   * Returns the effective symlog linear threshold, considering any local override.
-   */
-  getEffectiveSymlogLinearThreshold(): number {
-    return this.symlogLinearThresholdOverride ?? this.symlogLinearThreshold;
-  }
-
-  /**
    * Called when the user changes the per-card symlog linear threshold.
    */
-  onSymlogLinearThresholdOverrideInput(event: Event) {
+  onSymlogLinearThresholdInput(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.value) {
       return;
     }
     const value = parseFloat(input.value);
     if (value > 0) {
-      this.symlogLinearThresholdOverride = value;
+      this.onSymlogLinearThresholdChanged.emit(value);
     }
-  }
-
-  /**
-   * Resets the per-card symlog linear threshold to use the global default.
-   */
-  resetSymlogLinearThresholdOverride() {
-    this.symlogLinearThresholdOverride = null;
   }
 
   /**
@@ -407,7 +396,7 @@ export class ScalarCardComponent<Downloader> {
     // Otherwise the table should be toggled.
     return Boolean(
       this.dataTableContainer?.nativeElement.style.height ||
-        !this.cardState?.tableExpanded
+      !this.cardState?.tableExpanded
     );
   }
 

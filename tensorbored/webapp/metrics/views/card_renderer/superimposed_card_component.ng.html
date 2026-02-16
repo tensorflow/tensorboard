@@ -71,10 +71,7 @@ limitations under the License.
           aria-label="Set symlog linear threshold for this card"
         >
           <mat-icon svgIcon="line_weight_24px"></mat-icon>
-          <span
-            >Symlog threshold: {{ getEffectiveSymlogLinearThreshold() }}{{
-            symlogLinearThresholdOverride !== null ? ' *' : '' }}</span
-          >
+          <span>Symlog threshold: {{ symlogLinearThreshold }}</span>
         </button>
         <button mat-menu-item (click)="onDeleteCard.emit()">
           <mat-icon svgIcon="clear_24px"></mat-icon>
@@ -88,16 +85,9 @@ limitations under the License.
             type="number"
             min="0.001"
             step="0.1"
-            [value]="getEffectiveSymlogLinearThreshold()"
-            (input)="onSymlogLinearThresholdOverrideInput($event)"
+            [value]="symlogLinearThreshold"
+            (input)="onSymlogLinearThresholdInput($event)"
           />
-          <button
-            mat-button
-            *ngIf="symlogLinearThresholdOverride !== null"
-            (click)="resetSymlogLinearThresholdOverride()"
-          >
-            Reset to global
-          </button>
         </div>
       </mat-menu>
     </span>
@@ -133,7 +123,7 @@ limitations under the License.
       [seriesMetadataMap]="chartMetadataMap"
       [xScaleType]="getEffectiveXScaleType()"
       [yScaleType]="yAxisScale"
-      [symlogLinearThreshold]="getEffectiveSymlogLinearThreshold()"
+      [symlogLinearThreshold]="symlogLinearThreshold"
       [customXFormatter]="getCustomXFormatter()"
       [ignoreYOutliers]="ignoreOutliers"
       [tooltipTemplate]="tooltip"

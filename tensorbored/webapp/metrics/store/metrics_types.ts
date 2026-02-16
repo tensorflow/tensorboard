@@ -304,6 +304,11 @@ export interface MetricsNonNamespacedState {
    * Takes priority over the global yAxisScale/xAxisScale in settings.
    */
   tagAxisScales: Record<string, {yAxisScale: ScaleType; xAxisScale: ScaleType}>;
+  /**
+   * Per-tag symlog linear threshold overrides. Key is the tag name.
+   * Takes priority over the global symlogLinearThreshold in settings.
+   */
+  tagSymlogLinearThresholds: Record<string, number>;
 }
 
 export type MetricsState = NamespaceContextedState<
