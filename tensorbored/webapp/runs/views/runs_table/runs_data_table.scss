@@ -55,9 +55,52 @@ tb-data-table-header-cell {
   @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
 }
 
-.table-column-selected,
-.table-column-color {
+.table-column-selected {
   width: 40px;
+}
+
+$_color-col-width: 40px;
+$_color-fade-width: 24px;
+
+.table-column-color {
+  width: $_color-col-width;
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  background: matm2.get-color-from-palette($tb-background, background);
+
+  @include tb-dark-theme {
+    background: map-get($tb-dark-background, background);
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -$_color-fade-width;
+    width: $_color-fade-width;
+    pointer-events: none;
+    background: linear-gradient(
+      to right,
+      transparent,
+      matm2.get-color-from-palette($tb-background, background)
+    );
+
+    @include tb-dark-theme {
+      background: linear-gradient(
+        to right,
+        transparent,
+        map-get($tb-dark-background, background)
+      );
+    }
+  }
+}
+
+// The header color cell sits at the intersection of top-sticky and
+// right-sticky, so it needs a higher z-index than both.
+tb-data-table-header-cell.table-column-color {
+  z-index: 2;
 }
 
 .filter-row {
