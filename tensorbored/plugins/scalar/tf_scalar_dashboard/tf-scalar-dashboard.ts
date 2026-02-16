@@ -227,13 +227,8 @@ class TfScalarDashboard extends LegacyElementMixin(ArrayUpdateHelper) {
   @property({
     type: Number,
     notify: true,
-    observer: '_smoothingWeightObserver',
   })
-  _smoothingWeight: number = tf_storage
-    .getNumberInitializer('_smoothingWeight', {
-      defaultValue: 0.6,
-    })
-    .call(this);
+  _smoothingWeight: number = 0.6;
 
   @property({
     type: Boolean,
@@ -283,9 +278,8 @@ class TfScalarDashboard extends LegacyElementMixin(ArrayUpdateHelper) {
     {defaultValue: false, useLocalStorage: true}
   );
 
-  _smoothingWeightObserver = tf_storage.getNumberObserver('_smoothingWeight', {
-    defaultValue: 0.6,
-  });
+  // Smoothing weight is no longer persisted to the URL hash.
+  // It is managed via Angular query params ('smoothing').
 
   _ignoreYOutliersObserver = tf_storage.getBooleanObserver('_ignoreYOutliers', {
     defaultValue: true,
