@@ -457,8 +457,8 @@ export class SuperimposedCardContainer implements OnInit, OnDestroy {
                   : `[${tag}] ${displayName}`,
               visible: Boolean(
                 runSelectionMap &&
-                runSelectionMap.get(originalRunId) &&
-                renderableRuns.has(originalRunId)
+                  runSelectionMap.get(originalRunId) &&
+                  renderableRuns.has(originalRunId)
               ),
               color,
               aux: false,
@@ -559,9 +559,9 @@ export class SuperimposedCardContainer implements OnInit, OnDestroy {
     ]).pipe(
       map(([experimentId, idToAlias, run]) => {
         const alias =
-          experimentId !== null ? (idToAlias[experimentId] ?? null) : null;
+          experimentId !== null ? idToAlias[experimentId] ?? null : null;
         return {
-          displayName: !run && !alias ? runId : (run?.name ?? '...'),
+          displayName: !run && !alias ? runId : run?.name ?? '...',
           alias: alias,
         };
       })
