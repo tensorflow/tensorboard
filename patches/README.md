@@ -3,6 +3,10 @@
 We use [patch-package](https://www.npmjs.com/package/patch-package) to apply
 TensorBoard-specific patches to some of our npm/yarn dependencies.
 
+After creating or updating a patch, ensure there is no trailing whitespace on
+any line (CI runs `./tensorboard/tools/whitespace_hygiene_test.py`). You can
+strip it with `sed -i '' 's/[[:space:]]*$//' patches/<patch-file>.patch`.
+
 To regenerate @bazel/concatjs patch:
 * `vi node_modules/@bazel/concatjs/web_test/karma.conf.js`
 * make edits
