@@ -23,6 +23,7 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {IntersectionObserverModule} from '../../../widgets/intersection_observer/intersection_observer_module';
 import {LineChartModule as LineChartV2Module} from '../../../widgets/line_chart_v2/line_chart_module';
+import {PersistResizeModule} from '../../../widgets/persist_resize_module';
 import {ResizeDetectorModule} from '../../../widgets/resize_detector_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {DataDownloadModule} from './data_download_module';
@@ -47,6 +48,7 @@ import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_w
     MatMenuModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
+    PersistResizeModule,
     ResizeDetectorModule,
     ScalarCardDataTableModule,
     ScalarCardLineChartModule,

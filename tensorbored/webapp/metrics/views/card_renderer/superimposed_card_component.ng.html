@@ -111,7 +111,10 @@ limitations under the License.
     </div>
   </div>
 
-  <div class="chart-container">
+  <div
+    class="chart-container"
+    [persistResize]="'superimposed-chart:' + superimposedCardId"
+  >
     <mat-spinner
       diameter="18"
       *ngIf="loadState === DataLoadState.LOADING"
@@ -201,6 +204,7 @@ limitations under the License.
         'data-table-container': true,
         'expanded': tableExpanded
       }"
+      [persistResize]="'superimposed-table:' + superimposedCardId"
     >
       <scalar-card-data-table
         [chartMetadataMap]="chartMetadataMap"
