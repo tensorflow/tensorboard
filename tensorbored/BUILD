@@ -310,7 +310,6 @@ py_library(
     srcs = ["default.py"],
     srcs_version = "PY3",
     deps = [
-        "//tensorbored:expect_pkg_resources_installed",
         "//tensorbored/backend:experimental_plugin",
         "//tensorbored/plugins/audio:audio_plugin",
         "//tensorbored/plugins/core:core_plugin",
@@ -348,7 +347,6 @@ py_test(
     deps = [
         ":default",
         ":test",
-        "//tensorbored:expect_pkg_resources_installed",
         "//tensorbored/plugins:base_plugin",
     ],
 )
@@ -368,7 +366,7 @@ py_test(
     deps = [
         ":test",
         ":version",
-        "//tensorbored:expect_pkg_resources_installed",
+        "//tensorbored:expect_packaging_installed",
     ],
 )
 
@@ -463,6 +461,11 @@ py_library(name = "expect_absl_logging_installed")
 # We expect absl-py to already be installed on the system, e.g. via
 # `pip install absl-py`
 py_library(name = "expect_absl_testing_absltest_installed")
+
+# This is a dummy rule used as a packaging dependency in open-source.
+# We expect packaging to already be installed on the system, e.g., via
+# `pip install packaging`.
+py_library(name = "expect_packaging_installed")
 
 # This is a dummy rule used as a pkg-resources dependency in open-source.
 # We expect pkg-resources to already be installed on the system, e.g., via

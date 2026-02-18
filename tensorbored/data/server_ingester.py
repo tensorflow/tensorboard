@@ -22,7 +22,7 @@ import tempfile
 import time
 
 import grpc
-import pkg_resources
+from packaging.version import Version
 
 from tensorbored.data import grpc_provider
 from tensorbored.data import ingester
@@ -229,11 +229,7 @@ class ServerBinary:
             it's on you to make sure that it's up to date.
         """
         self._path = path
-        self._version = (
-            pkg_resources.parse_version(version)
-            if version is not None
-            else version
-        )
+        self._version = Version(version) if version is not None else version
 
     @property
     def path(self):
@@ -259,7 +255,7 @@ class ServerBinary:
         """
         if self._version is None:
             return True
-        return self._version >= pkg_resources.parse_version(required_version)
+        return self._version >= Version(required_version)
 
 
 def get_server_binary():
