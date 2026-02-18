@@ -24,9 +24,9 @@ automatically inherit the centrally-maintained list of standard plugins,
 for less repetition.
 """
 
+import importlib.metadata
 import logging
-
-import pkg_resources
+import sys
 
 from tensorbored.plugins.audio import audio_plugin
 from tensorbored.plugins.core import core_plugin
@@ -116,9 +116,15 @@ def get_dynamic_plugins():
 
     [1]: https://packaging.python.org/specifications/entry-points/
     """
-    return [
-        entry_point.resolve()
-        for entry_point in pkg_resources.iter_entry_points(
-            "tensorbored_plugins"
-        )
-    ]
+    return [ep.load() for ep in _get_entry_points("tensorbored_plugins")]
+
+
+if sys.version_info >= (3, 10):
+
+    def _get_entry_points(group):
+        return importlib.metadata.entry_points(group=group)
+
+else:
+
+    def _get_entry_points(group):
+        return importlib.metadata.entry_points().get(group, [])

@@ -62,7 +62,7 @@ py_library(
         ":grpc_provider",
         ":ingester",
         "//tensorbored:expect_grpc_installed",
-        "//tensorbored:expect_pkg_resources_installed",
+        "//tensorbored:expect_packaging_installed",
         "//tensorbored/data/proto:protos_all_py_pb2",
         "//tensorbored/util:tb_logging",
     ],
