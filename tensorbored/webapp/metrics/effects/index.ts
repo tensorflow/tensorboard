@@ -32,6 +32,7 @@ import {
 const TAG_FILTER_STORAGE_KEY = '_tb_tag_filter.v1';
 const SUPERIMPOSED_CARDS_STORAGE_KEY = '_tb_superimposed_cards.v1';
 const AXIS_SCALES_STORAGE_KEY = '_tb_axis_scales.v1';
+const TAG_GROUP_EXPANSION_STORAGE_KEY = '_tb_tag_group_expansion.v1';
 
 type StoredAxisScalesV1 = {
   version: 1;
@@ -105,6 +106,7 @@ import {
   getMetricsSymlogLinearThreshold,
   getTagSymlogLinearThresholds,
   getSuperimposedCardsWithMetadata,
+  getMetricsTagGroupExpansionMap,
 } from '../store';
 import {
   isAxisScaleName,
@@ -866,6 +868,64 @@ export class MetricsEffects implements OnInitEffects {
       mergeMap((scaleActions) => scaleActions)
     );
 
+    this.persistTagGroupExpansion$ = this.actions$.pipe(
+      ofType(
+        actions.metricsTagGroupExpansionChanged,
+        actions.metricsTagMetadataLoaded
+      ),
+      debounceTime(200),
+      withLatestFrom(this.store.select(getMetricsTagGroupExpansionMap)),
+      tap(([, expansionMap]) => {
+        const entries: Array<[string, boolean]> = Array.from(
+          expansionMap.entries()
+        );
+        if (entries.length > 0) {
+          window.localStorage.setItem(
+            TAG_GROUP_EXPANSION_STORAGE_KEY,
+            JSON.stringify({version: 1, groups: entries})
+          );
+        } else {
+          window.localStorage.removeItem(TAG_GROUP_EXPANSION_STORAGE_KEY);
+        }
+      })
+    );
+
+    this.loadTagGroupExpansionFromStorage$ = this.actions$.pipe(
+      ofType(routingActions.navigated),
+      take(1),
+      map(() => {
+        const raw = window.localStorage.getItem(
+          TAG_GROUP_EXPANSION_STORAGE_KEY
+        );
+        if (!raw) return null;
+        try {
+          const parsed = JSON.parse(raw) as {
+            version?: number;
+            groups?: Array<[string, boolean]>;
+          };
+          if (parsed.version !== 1 || !Array.isArray(parsed.groups)) {
+            return null;
+          }
+          const valid = parsed.groups.filter(
+            (entry): entry is [string, boolean] =>
+              Array.isArray(entry) &&
+              entry.length === 2 &&
+              typeof entry[0] === 'string' &&
+              typeof entry[1] === 'boolean'
+          );
+          return valid.length > 0 ? valid : null;
+        } catch {
+          return null;
+        }
+      }),
+      filter(
+        (groups): groups is Array<[string, boolean]> => groups !== null
+      ),
+      map((groups) =>
+        actions.metricsTagGroupExpansionStateLoaded({expandedGroups: groups})
+      )
+    );
+
     this.dataEffects$ = createEffect(
       () => {
         return merge(
@@ -914,7 +974,11 @@ export class MetricsEffects implements OnInitEffects {
           /**
            * Subscribes to: axis scale changes - persists to localStorage.
            */
-          this.persistAxisScales$
+          this.persistAxisScales$,
+          /**
+           * Subscribes to: tag group expansion changes - persists to localStorage.
+           */
+          this.persistTagGroupExpansion$
         );
       },
       {dispatch: false}
@@ -934,6 +998,10 @@ export class MetricsEffects implements OnInitEffects {
     this.applyAxisScalesFromStorage$ = createEffect(
       () => this.loadAxisScalesFromStorage$
     );
+
+    this.applyTagGroupExpansionFromStorage$ = createEffect(
+      () => this.loadTagGroupExpansionFromStorage$
+    );
   }
 
   private readonly persistTagFilter$;
@@ -945,6 +1013,9 @@ export class MetricsEffects implements OnInitEffects {
   private readonly persistAxisScales$;
   private readonly loadAxisScalesFromStorage$;
   readonly applyAxisScalesFromStorage$;
+  private readonly persistTagGroupExpansion$;
+  private readonly loadTagGroupExpansionFromStorage$;
+  readonly applyTagGroupExpansionFromStorage$;
 }
 
 export const TEST_ONLY = {

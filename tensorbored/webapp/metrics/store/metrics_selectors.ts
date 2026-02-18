@@ -466,6 +466,13 @@ export const getMetricsTagGroupExpansionState = createSelector(
   }
 );
 
+export const getMetricsTagGroupExpansionMap = createSelector(
+  selectMetricsState,
+  (state: MetricsState): Map<string, boolean> => {
+    return state.tagGroupExpanded;
+  }
+);
+
 export const getMetricsLinkedTimeEnabled = createSelector(
   selectMetricsState,
   (state: MetricsState): boolean => {

@@ -1363,6 +1363,34 @@ describe('metrics selectors', () => {
     });
   });
 
+  describe('getMetricsTagGroupExpansionMap', () => {
+    beforeEach(() => {
+      selectors.getMetricsTagGroupExpansionMap.release();
+    });
+
+    it('returns the full expansion map', () => {
+      const expansionMap = new Map<string, boolean>([
+        ['groupA', true],
+        ['groupB', false],
+      ]);
+      const state = appStateFromMetricsState(
+        buildMetricsState({tagGroupExpanded: expansionMap})
+      );
+      expect(selectors.getMetricsTagGroupExpansionMap(state)).toEqual(
+        expansionMap
+      );
+    });
+
+    it('returns empty map when no groups set', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({tagGroupExpanded: new Map()})
+      );
+      expect(selectors.getMetricsTagGroupExpansionMap(state)).toEqual(
+        new Map()
+      );
+    });
+  });
+
   describe('getMetricsCardRangeSelectionEnabled', () => {
     it('returns card specific value when defined', () => {
       expect(

@@ -2931,6 +2931,49 @@ describe('metrics reducers', () => {
     });
   });
 
+  describe('metricsTagGroupExpansionStateLoaded', () => {
+    it('sets tagGroupExpanded from loaded entries', () => {
+      const state = buildMetricsState({
+        tagGroupExpanded: new Map(),
+      });
+
+      const nextState = reducers(
+        state,
+        actions.metricsTagGroupExpansionStateLoaded({
+          expandedGroups: [
+            ['foo', true],
+            ['bar', false],
+            ['baz', true],
+          ],
+        })
+      );
+      expect(nextState.tagGroupExpanded).toEqual(
+        new Map([
+          ['foo', true],
+          ['bar', false],
+          ['baz', true],
+        ])
+      );
+    });
+
+    it('replaces existing tagGroupExpanded state', () => {
+      const state = buildMetricsState({
+        tagGroupExpanded: new Map([
+          ['old', true],
+          ['other', false],
+        ]),
+      });
+
+      const nextState = reducers(
+        state,
+        actions.metricsTagGroupExpansionStateLoaded({
+          expandedGroups: [['new', true]],
+        })
+      );
+      expect(nextState.tagGroupExpanded).toEqual(new Map([['new', true]]));
+    });
+  });
+
   describe('pinned card hydration', () => {
     it('ignores RouteKind EXPERIMENTS', () => {
       const beforeState = buildMetricsState({

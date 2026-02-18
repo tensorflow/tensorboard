@@ -1267,6 +1267,13 @@ const reducer = createReducer(
 
     return {...state, tagGroupExpanded};
   }),
+  on(
+    actions.metricsTagGroupExpansionStateLoaded,
+    (state, {expandedGroups}) => {
+      const tagGroupExpanded = new Map<string, boolean>(expandedGroups);
+      return {...state, tagGroupExpanded};
+    }
+  ),
   on(actions.cardVisibilityChanged, (state, {enteredCards, exitedCards}) => {
     if (!enteredCards.length && !exitedCards.length) {
       return state;

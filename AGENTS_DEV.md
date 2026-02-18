@@ -249,6 +249,7 @@ The frontend persists state to browser localStorage. This is the core mechanism 
 | `_tb_run_colors.v1`    | Color overrides               | `{version: 1, runColorOverrides: [...], groupKeyToColorId: [...]}` | Runs effects    |
 | `_tb_tag_filter.v1`    | Tag filter regex              | `{value: string, timestamp: number}`                               | Metrics effects |
 | `_tb_axis_scales.v1`   | Axis scales                   | `{version: 1, yAxisScale?: string, xAxisScale?: string}`           | Metrics effects |
+| `_tb_tag_group_expansion.v1` | Section expanded/collapsed state | `{version: 1, groups: [[name, bool], ...]}`                   | Metrics effects |
 | `tb-saved-pins`        | Pinned cards                  | JSON `CardUniqueInfo[]`                                            | Metrics effects |
 
 Important behaviors:

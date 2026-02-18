@@ -201,6 +201,11 @@ export const metricsTagGroupExpansionChanged = createAction(
   props<{tagGroup: string}>()
 );
 
+export const metricsTagGroupExpansionStateLoaded = createAction(
+  '[Metrics] Tag Group Expansion State Loaded From Storage',
+  props<{expandedGroups: Array<[string, boolean]>}>()
+);
+
 export const cardPinStateToggled = createAction(
   '[Metrics] Card Pin State Toggled',
   props<{cardId: CardId; canCreateNewPins: boolean; wasPinned: boolean}>()
