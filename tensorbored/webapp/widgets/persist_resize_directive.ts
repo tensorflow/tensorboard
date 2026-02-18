@@ -21,7 +21,7 @@ const STORAGE_KEY = '_tb_resize_heights.v1';
 function loadHeights(): Record<string, number> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
+    return raw ? (JSON.parse(raw) as Record<string, number>) : {};
   } catch {
     return {};
   }
