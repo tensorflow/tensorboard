@@ -403,7 +403,7 @@ The single biggest architectural addition. TensorBoard stored all dashboard stat
 
 - Save/load/delete/export/import profiles
 - Backend can provide a `default_profile.json` that auto-applies on first load
-- Profiles store: pinned cards, run colors, group colors, superimposed cards, run selection, tag filter, smoothing, groupBy, metric descriptions
+- Profiles store: pinned cards, run colors, group colors, superimposed cards, run selection, tag filter, smoothing, groupBy, metric descriptions, expanded tag groups
 - The profile menu uses a bookmark icon button with an orange dot for unsaved changes
 - Multiple race conditions were fixed: session flags prevent duplicate application, localStorage is checked for active profile before applying backend defaults, pins are merged (not replaced) when loading profiles
 

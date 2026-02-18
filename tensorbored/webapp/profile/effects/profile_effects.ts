@@ -42,6 +42,7 @@ import {
   getMetricsXAxisScale,
   getTagAxisScales,
   getTagSymlogLinearThresholds,
+  getMetricsTagGroupExpansionMap,
 } from '../../metrics/store/metrics_selectors';
 import {
   getRunColorOverride,
@@ -378,6 +379,9 @@ export class ProfileEffects {
           ...(profile.tagSymlogLinearThresholds !== undefined
             ? {tagSymlogLinearThresholds: profile.tagSymlogLinearThresholds}
             : {}),
+          ...(profile.expandedTagGroups !== undefined
+            ? {expandedTagGroups: profile.expandedTagGroups}
+            : {}),
         });
       })
     )
@@ -489,7 +493,8 @@ export class ProfileEffects {
         this.store.select(getMetricsYAxisScale),
         this.store.select(getMetricsXAxisScale),
         this.store.select(getTagAxisScales),
-        this.store.select(getTagSymlogLinearThresholds)
+        this.store.select(getTagSymlogLinearThresholds),
+        this.store.select(getMetricsTagGroupExpansionMap)
       ),
       map(
         ([
@@ -510,6 +515,7 @@ export class ProfileEffects {
           xAxisScale,
           tagAxisScales,
           tagSymlogLinearThresholds,
+          tagGroupExpansionMap,
         ]) => {
           // Convert pinned cards to CardUniqueInfo format
           const pinnedCardsInfo: CardUniqueInfo[] = pinnedCards.map((card) => {
@@ -563,6 +569,9 @@ export class ProfileEffects {
             selected: Boolean(runSelectionMap.get(run.id)),
           }));
 
+          const expandedTagGroups: Record<string, boolean> =
+            Object.fromEntries(tagGroupExpansionMap.entries());
+
           const profile: ProfileData = {
             version: PROFILE_VERSION,
             name,
@@ -582,6 +591,9 @@ export class ProfileEffects {
             tagAxisScales: buildTagAxisScalesForProfile(tagAxisScales),
             ...(Object.keys(tagSymlogLinearThresholds).length > 0
               ? {tagSymlogLinearThresholds}
+              : {}),
+            ...(Object.keys(expandedTagGroups).length > 0
+              ? {expandedTagGroups}
               : {}),
           };
 

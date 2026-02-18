@@ -423,6 +423,7 @@ export const profileMetricsSettingsApplied = createAction(
     >;
     symlogLinearThreshold?: number;
     tagSymlogLinearThresholds?: Record<string, number>;
+    expandedTagGroups?: Record<string, boolean>;
   }>()
 );
 

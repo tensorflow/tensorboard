@@ -50,6 +50,7 @@ import {
   XAxisType,
 } from '../types';
 import {ColumnHeaderType, DataTableMode} from '../../widgets/data_table/types';
+import {ScaleType} from '../../widgets/line_chart_v2/lib/scale_types';
 import {reducers} from './metrics_reducers';
 import {getCardId, getPinnedCardId} from './metrics_store_internal_utils';
 import {
@@ -2971,6 +2972,81 @@ describe('metrics reducers', () => {
         })
       );
       expect(nextState.tagGroupExpanded).toEqual(new Map([['new', true]]));
+    });
+  });
+
+  describe('profileMetricsSettingsApplied with expandedTagGroups', () => {
+    it('applies expandedTagGroups from profile', () => {
+      const state = buildMetricsState({
+        tagGroupExpanded: new Map(),
+      });
+
+      const nextState = reducers(
+        state,
+        actions.profileMetricsSettingsApplied({
+          pinnedCards: [],
+          superimposedCards: [],
+          tagFilter: '',
+          smoothing: 0.6,
+          yAxisScale: ScaleType.LINEAR,
+          xAxisScale: ScaleType.LINEAR,
+          tagAxisScales: {},
+          expandedTagGroups: {train: true, eval: false, debug: true},
+        })
+      );
+      expect(nextState.tagGroupExpanded).toEqual(
+        new Map([
+          ['train', true],
+          ['eval', false],
+          ['debug', true],
+        ])
+      );
+    });
+
+    it('keeps existing tagGroupExpanded when expandedTagGroups is absent', () => {
+      const existing = new Map<string, boolean>([
+        ['foo', true],
+        ['bar', false],
+      ]);
+      const state = buildMetricsState({
+        tagGroupExpanded: existing,
+      });
+
+      const nextState = reducers(
+        state,
+        actions.profileMetricsSettingsApplied({
+          pinnedCards: [],
+          superimposedCards: [],
+          tagFilter: '',
+          smoothing: 0.6,
+          yAxisScale: ScaleType.LINEAR,
+          xAxisScale: ScaleType.LINEAR,
+          tagAxisScales: {},
+        })
+      );
+      expect(nextState.tagGroupExpanded).toEqual(existing);
+    });
+
+    it('keeps existing tagGroupExpanded when expandedTagGroups is empty', () => {
+      const existing = new Map<string, boolean>([['foo', true]]);
+      const state = buildMetricsState({
+        tagGroupExpanded: existing,
+      });
+
+      const nextState = reducers(
+        state,
+        actions.profileMetricsSettingsApplied({
+          pinnedCards: [],
+          superimposedCards: [],
+          tagFilter: '',
+          smoothing: 0.6,
+          yAxisScale: ScaleType.LINEAR,
+          xAxisScale: ScaleType.LINEAR,
+          tagAxisScales: {},
+          expandedTagGroups: {},
+        })
+      );
+      expect(nextState.tagGroupExpanded).toEqual(existing);
     });
   });
 

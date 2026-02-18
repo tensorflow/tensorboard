@@ -1955,6 +1955,7 @@ const reducer = createReducer(
         tagAxisScales,
         symlogLinearThreshold,
         tagSymlogLinearThresholds,
+        expandedTagGroups,
       }
     ) => {
       // Clear existing pins and apply profile's pins
@@ -2038,6 +2039,11 @@ const reducer = createReducer(
           resolvedResult.unresolvedImportedPinnedCards;
       }
 
+      const nextTagGroupExpanded =
+        expandedTagGroups && Object.keys(expandedTagGroups).length > 0
+          ? new Map<string, boolean>(Object.entries(expandedTagGroups))
+          : state.tagGroupExpanded;
+
       return {
         ...state,
         // Apply resolved or unresolved pinned cards
@@ -2053,6 +2059,7 @@ const reducer = createReducer(
         superimposedCardMetadataMap: nextSuperimposedCardMetadataMap,
         // Apply other settings
         tagFilter,
+        tagGroupExpanded: nextTagGroupExpanded,
         settingOverrides: {
           ...state.settingOverrides,
           scalarSmoothing: smoothing,

@@ -194,6 +194,14 @@ export interface ProfileData {
    * Takes priority over the global symlogLinearThreshold.
    */
   tagSymlogLinearThresholds?: Record<string, number>;
+
+  /**
+   * Which tag group sections are expanded or collapsed.
+   * Maps tag group names to booleans (true = expanded, false = collapsed).
+   * When absent, the dashboard uses its default behaviour
+   * (auto-expand the first two groups).
+   */
+  expandedTagGroups?: Record<string, boolean>;
 }
 
 /**
@@ -375,6 +383,20 @@ export function isValidProfile(data: unknown): data is ProfileData {
     for (const entry of Object.values(profile.tagAxisScales)) {
       if (entry.y !== undefined && !isAxisScaleName(entry.y)) return false;
       if (entry.x !== undefined && !isAxisScaleName(entry.x)) return false;
+    }
+  }
+
+  // Validate expanded tag groups
+  if (profile.expandedTagGroups !== undefined) {
+    if (
+      typeof profile.expandedTagGroups !== 'object' ||
+      profile.expandedTagGroups === null ||
+      Array.isArray(profile.expandedTagGroups)
+    ) {
+      return false;
+    }
+    for (const val of Object.values(profile.expandedTagGroups)) {
+      if (typeof val !== 'boolean') return false;
     }
   }
 
