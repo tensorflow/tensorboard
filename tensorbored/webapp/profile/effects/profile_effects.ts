@@ -569,8 +569,9 @@ export class ProfileEffects {
             selected: Boolean(runSelectionMap.get(run.id)),
           }));
 
-          const expandedTagGroups: Record<string, boolean> =
-            Object.fromEntries(tagGroupExpansionMap.entries());
+          const expandedTagGroups: Record<string, boolean> = Object.fromEntries(
+            tagGroupExpansionMap.entries()
+          );
 
           const profile: ProfileData = {
             version: PROFILE_VERSION,

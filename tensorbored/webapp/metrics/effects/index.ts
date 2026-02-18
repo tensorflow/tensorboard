@@ -918,9 +918,7 @@ export class MetricsEffects implements OnInitEffects {
           return null;
         }
       }),
-      filter(
-        (groups): groups is Array<[string, boolean]> => groups !== null
-      ),
+      filter((groups): groups is Array<[string, boolean]> => groups !== null),
       map((groups) =>
         actions.metricsTagGroupExpansionStateLoaded({expandedGroups: groups})
       )

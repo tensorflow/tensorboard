@@ -261,7 +261,6 @@ class ProfileWriterTest(unittest.TestCase):
                 tag_axis_scales={"loss": {"z": "log10"}}
             )
 
-
     def test_create_profile_with_expanded_tag_groups(self):
         """Test create_profile with expanded_tag_groups."""
         profile = profile_writer.create_profile(
