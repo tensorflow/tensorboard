@@ -215,7 +215,7 @@ export class SuperimposedCardContainer implements OnInit, OnDestroy {
   readonly userViewBox$ = this.userViewBoxSubject.asObservable();
 
   private readonly localTimeSelectionSubject = new BehaviorSubject<
-    TimeSelection | undefined
+    TimeSelection | null | undefined
   >(undefined);
   readonly localTimeSelection$ = this.localTimeSelectionSubject.asObservable();
 
@@ -537,6 +537,9 @@ export class SuperimposedCardContainer implements OnInit, OnDestroy {
           if (linkedTimeEnabled && linkedTimeSelection) {
             return linkedTimeSelection;
           }
+          if (localTimeSelection === null) {
+            return undefined;
+          }
           return (
             localTimeSelection ?? {
               start: {step: minMaxStep.maxStep},
@@ -638,7 +641,7 @@ export class SuperimposedCardContainer implements OnInit, OnDestroy {
   }
 
   onStepSelectorToggled() {
-    this.localTimeSelectionSubject.next(undefined);
+    this.localTimeSelectionSubject.next(null);
   }
 
   onViewBoxChange(viewBox: Extent | null) {
