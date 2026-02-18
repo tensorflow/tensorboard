@@ -22,7 +22,8 @@ limitations under the License.
 .superimposed-card {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex-grow: 1;
+  min-height: 0;
   border: 2px solid #673ab7;
   border-radius: 4px;
   background: var(--tb-card-background, #fff);
@@ -122,6 +123,7 @@ limitations under the License.
   overflow: hidden;
   position: relative;
   padding: 8px;
+  resize: vertical;
 
   mat-spinner {
     position: absolute;
@@ -133,6 +135,30 @@ limitations under the License.
   line-chart {
     flex-grow: 1;
     min-height: 0;
+  }
+}
+
+$_data_table_initial_height: 100px;
+
+.data-table-container {
+  height: $_data_table_initial_height;
+  min-height: $_data_table_initial_height;
+  max-height: 50em;
+  overflow: auto;
+  resize: vertical;
+
+  &.expanded {
+    height: auto;
+  }
+}
+
+.bottom-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .expand-button {
+    color: var(--tb-secondary-text, #666);
   }
 }
 

@@ -131,6 +131,7 @@ limitations under the License.
       [userViewBox]="userViewBox"
       (onViewBoxOverridden)="isViewBoxOverridden = $event"
       (viewBoxChanged)="onViewBoxChanged($event)"
+      [customChartOverlayTemplate]="lineChartCustomXAxisVis"
     ></line-chart>
     <ng-template
       #tooltip
@@ -194,3 +195,64 @@ limitations under the License.
     </ng-template>
   </div>
 </div>
+<ng-container *ngIf="showDataTable()">
+  <div
+    #dataTableContainer
+    [ngClass]="{
+      'data-table-container': true,
+      'expanded': tableExpanded
+    }"
+  >
+    <scalar-card-data-table
+      [chartMetadataMap]="chartMetadataMap"
+      [dataSeries]="dataSeries"
+      [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection"
+      [columnHeaders]="columnHeaders"
+      [sortingInfo]="sortingInfo"
+      [columnCustomizationEnabled]="false"
+      [columnContextMenusEnabled]="false"
+      [smoothingEnabled]="smoothingEnabled"
+      [columnFilters]="emptyColumnFilters"
+      [runToHparamMap]="emptyRunToHparamMap"
+      [selectableColumns]="emptySelectableColumns"
+      [numColumnsLoaded]="0"
+      [numColumnsToLoad]="0"
+      (sortDataBy)="sortDataBy($event)"
+    >
+    </scalar-card-data-table>
+  </div>
+  <div class="bottom-area">
+    <button
+      *ngIf="canExpandTable()"
+      mat-icon-button
+      class="expand-button"
+      aria-label="Expand Table"
+      [title]="shouldExpandTable() ? 'Expand Table' : 'Collapse Table'"
+      (click)="toggleTableExpanded()"
+    >
+      <mat-icon
+        [svgIcon]="shouldExpandTable() ? 'expand_more_24px' : 'expand_less_24px'"
+      ></mat-icon>
+    </button>
+  </div>
+</ng-container>
+<ng-template
+  #lineChartCustomXAxisVis
+  let-viewExtent="viewExtent"
+  let-domDim="domDimension"
+  let-xScale="xScale"
+  let-interactionState="interactionState"
+>
+  <ng-container *ngIf="showFobController()">
+    <scalar-card-fob-controller
+      [disableInteraction]="interactionState !== 'NONE'"
+      [timeSelection]="stepOrLinkedTimeSelection"
+      [scale]="xScale"
+      [minMaxHorizontalViewExtend]="viewExtent.x"
+      [minMaxStep]="minMaxStep"
+      [axisSize]="domDim.width"
+      (onTimeSelectionChanged)="onTimeSelectionChanged.emit($event)"
+      (onTimeSelectionToggled)="onFobRemoved()"
+    ></scalar-card-fob-controller>
+  </ng-container>
+</ng-template>

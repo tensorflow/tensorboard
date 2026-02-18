@@ -23,6 +23,11 @@ import {
 } from '@angular/core';
 import {DataLoadState} from '../../../types/data';
 import {
+  TimeSelection,
+  TimeSelectionAffordance,
+  TimeSelectionToggleAffordance,
+} from '../../../widgets/card_fob/card_fob_types';
+import {
   Formatter,
   intlNumberFormatter,
   numberFormatter,
@@ -38,10 +43,20 @@ import {
 } from '../../../widgets/line_chart_v2/types';
 import {TooltipSort, XAxisType, SuperimposedCardId} from '../../types';
 import {
+  ColumnHeader,
+  SortingInfo,
+  SortingOrder,
+  DiscreteFilter,
+  IntervalFilter,
+} from '../../../widgets/data_table/types';
+import {
+  MinMaxStep,
   ScalarCardDataSeries,
   ScalarCardSeriesMetadata,
   ScalarCardSeriesMetadataMap,
 } from './scalar_card_types';
+import {isDatumVisible} from './utils';
+import {RunToHparamMap} from '../../../runs/types';
 
 type ScalarTooltipDatum = TooltipDatum<
   ScalarCardSeriesMetadata & {
@@ -81,6 +96,9 @@ export class SuperimposedCardComponent {
   @Input() useDarkMode!: boolean;
   @Input() forceSvg!: boolean;
   @Input() userViewBox: Extent | null = null;
+  @Input() stepOrLinkedTimeSelection: TimeSelection | undefined;
+  @Input() minMaxStep: MinMaxStep | undefined;
+  @Input() columnHeaders: ColumnHeader[] = [];
 
   @Output() onDeleteCard = new EventEmitter<void>();
   @Output() onRemoveTag = new EventEmitter<string>();
@@ -91,6 +109,12 @@ export class SuperimposedCardComponent {
   onSymlogLinearThresholdChanged = new EventEmitter<number>();
   @Output() onYAxisScaleChanged = new EventEmitter<ScaleType>();
   @Output() onXAxisScaleChanged = new EventEmitter<ScaleType>();
+  @Output() onTimeSelectionChanged = new EventEmitter<{
+    timeSelection: TimeSelection;
+    affordance?: TimeSelectionAffordance;
+  }>();
+  @Output() onStepSelectorToggled =
+    new EventEmitter<TimeSelectionToggleAffordance>();
 
   showFullWidth = false;
   showFullHeight = false;
@@ -108,10 +132,25 @@ export class SuperimposedCardComponent {
   @ViewChild(LineChartComponent)
   lineChart?: LineChartComponent;
 
+  @ViewChild('dataTableContainer')
+  dataTableContainer?: ElementRef;
+
   constructor(private readonly ref: ElementRef) {}
 
   isViewBoxOverridden = false;
   additionalItemsCount = 0;
+  tableExpanded = false;
+  sortingInfo: SortingInfo = {
+    name: 'run',
+    order: SortingOrder.ASCENDING,
+  };
+
+  readonly emptyColumnFilters = new Map<
+    string,
+    DiscreteFilter | IntervalFilter
+  >();
+  readonly emptyRunToHparamMap: RunToHparamMap = {};
+  readonly emptySelectableColumns: ColumnHeader[] = [];
 
   private static nextScale(current: ScaleType): ScaleType {
     switch (current) {
@@ -281,6 +320,44 @@ export class SuperimposedCardComponent {
       scalarTooltipData.length - MAX_TOOLTIP_ITEMS
     );
     return scalarTooltipData.slice(0, MAX_TOOLTIP_ITEMS);
+  }
+
+  showFobController(): boolean {
+    return this.xAxisType === XAxisType.STEP && !!this.minMaxStep;
+  }
+
+  showDataTable(): boolean {
+    return (
+      this.xAxisType === XAxisType.STEP && !!this.stepOrLinkedTimeSelection
+    );
+  }
+
+  onFobRemoved() {
+    this.onStepSelectorToggled.emit(TimeSelectionToggleAffordance.FOB_DESELECT);
+  }
+
+  sortDataBy(sortingInfo: SortingInfo) {
+    this.sortingInfo = sortingInfo;
+  }
+
+  canExpandTable(): boolean {
+    const visibleRuns = this.dataSeries.filter((datum) => {
+      return isDatumVisible(datum, this.chartMetadataMap);
+    });
+    return visibleRuns.length > 3;
+  }
+
+  shouldExpandTable(): boolean {
+    return Boolean(
+      this.dataTableContainer?.nativeElement.style.height || !this.tableExpanded
+    );
+  }
+
+  toggleTableExpanded() {
+    this.tableExpanded = this.shouldExpandTable();
+    if (this.dataTableContainer) {
+      this.dataTableContainer.nativeElement.style.height = '';
+    }
   }
 
   onRemoveTagClick(tag: string, event: Event) {
