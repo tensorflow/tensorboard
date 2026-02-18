@@ -32,6 +32,8 @@ import {
 const TAG_FILTER_STORAGE_KEY = '_tb_tag_filter.v1';
 const SUPERIMPOSED_CARDS_STORAGE_KEY = '_tb_superimposed_cards.v1';
 const AXIS_SCALES_STORAGE_KEY = '_tb_axis_scales.v1';
+const TAG_GROUP_EXPANSION_STORAGE_KEY = '_tb_tag_group_expansion.v1';
+const CARD_FULL_WIDTH_STORAGE_KEY = '_tb_card_full_width.v1';
 
 type StoredAxisScalesV1 = {
   version: 1;
@@ -105,6 +107,9 @@ import {
   getMetricsSymlogLinearThreshold,
   getTagSymlogLinearThresholds,
   getSuperimposedCardsWithMetadata,
+  getMetricsTagGroupExpansionMap,
+  getCardStateMap,
+  getFullWidthSuperimposedCards,
 } from '../store';
 import {
   isAxisScaleName,
@@ -866,6 +871,136 @@ export class MetricsEffects implements OnInitEffects {
       mergeMap((scaleActions) => scaleActions)
     );
 
+    this.persistTagGroupExpansion$ = this.actions$.pipe(
+      ofType(
+        actions.metricsTagGroupExpansionChanged,
+        actions.metricsTagMetadataLoaded
+      ),
+      debounceTime(200),
+      withLatestFrom(this.store.select(getMetricsTagGroupExpansionMap)),
+      tap(([, expansionMap]) => {
+        const entries: Array<[string, boolean]> = Array.from(
+          expansionMap.entries()
+        );
+        if (entries.length > 0) {
+          window.localStorage.setItem(
+            TAG_GROUP_EXPANSION_STORAGE_KEY,
+            JSON.stringify({version: 1, groups: entries})
+          );
+        } else {
+          window.localStorage.removeItem(TAG_GROUP_EXPANSION_STORAGE_KEY);
+        }
+      })
+    );
+
+    this.loadTagGroupExpansionFromStorage$ = this.actions$.pipe(
+      ofType(routingActions.navigated),
+      take(1),
+      map(() => {
+        const raw = window.localStorage.getItem(
+          TAG_GROUP_EXPANSION_STORAGE_KEY
+        );
+        if (!raw) return null;
+        try {
+          const parsed = JSON.parse(raw) as {
+            version?: number;
+            groups?: Array<[string, boolean]>;
+          };
+          if (parsed.version !== 1 || !Array.isArray(parsed.groups)) {
+            return null;
+          }
+          const valid = parsed.groups.filter(
+            (entry): entry is [string, boolean] =>
+              Array.isArray(entry) &&
+              entry.length === 2 &&
+              typeof entry[0] === 'string' &&
+              typeof entry[1] === 'boolean'
+          );
+          return valid.length > 0 ? valid : null;
+        } catch {
+          return null;
+        }
+      }),
+      filter((groups): groups is Array<[string, boolean]> => groups !== null),
+      map((groups) =>
+        actions.metricsTagGroupExpansionStateLoaded({expandedGroups: groups})
+      )
+    );
+
+    this.persistCardFullWidth$ = this.actions$.pipe(
+      ofType(
+        actions.metricsCardFullSizeToggled,
+        actions.superimposedCardFullWidthChanged,
+        actions.cardFullWidthStateLoaded
+      ),
+      debounceTime(200),
+      withLatestFrom(
+        this.store.select(getCardStateMap),
+        this.store.select(getFullWidthSuperimposedCards)
+      ),
+      tap(([, cardStateMap, fullWidthSuperimposed]) => {
+        const fullWidthCardIds: string[] = [];
+        for (const [cardId, state] of Object.entries(cardStateMap)) {
+          if (state?.fullWidth) {
+            fullWidthCardIds.push(cardId);
+          }
+        }
+        const fullWidthSuperimposedCardIds = Array.from(fullWidthSuperimposed);
+        if (
+          fullWidthCardIds.length > 0 ||
+          fullWidthSuperimposedCardIds.length > 0
+        ) {
+          window.localStorage.setItem(
+            CARD_FULL_WIDTH_STORAGE_KEY,
+            JSON.stringify({
+              version: 1,
+              cards: fullWidthCardIds,
+              superimposed: fullWidthSuperimposedCardIds,
+            })
+          );
+        } else {
+          window.localStorage.removeItem(CARD_FULL_WIDTH_STORAGE_KEY);
+        }
+      })
+    );
+
+    this.loadCardFullWidthFromStorage$ = this.actions$.pipe(
+      ofType(routingActions.navigated),
+      take(1),
+      map(() => {
+        const raw = window.localStorage.getItem(CARD_FULL_WIDTH_STORAGE_KEY);
+        if (!raw) return null;
+        try {
+          const parsed = JSON.parse(raw) as {
+            version?: number;
+            cards?: string[];
+            superimposed?: string[];
+          };
+          if (parsed.version !== 1) return null;
+          const cards = Array.isArray(parsed.cards) ? parsed.cards : [];
+          const superimposed = Array.isArray(parsed.superimposed)
+            ? parsed.superimposed
+            : [];
+          if (cards.length === 0 && superimposed.length === 0) return null;
+          return {
+            fullWidthCardIds: cards,
+            fullWidthSuperimposedCardIds: superimposed,
+          };
+        } catch {
+          return null;
+        }
+      }),
+      filter(
+        (
+          result
+        ): result is {
+          fullWidthCardIds: string[];
+          fullWidthSuperimposedCardIds: string[];
+        } => result !== null
+      ),
+      map((result) => actions.cardFullWidthStateLoaded(result))
+    );
+
     this.dataEffects$ = createEffect(
       () => {
         return merge(
@@ -914,25 +1049,38 @@ export class MetricsEffects implements OnInitEffects {
           /**
            * Subscribes to: axis scale changes - persists to localStorage.
            */
-          this.persistAxisScales$
+          this.persistAxisScales$,
+          /**
+           * Subscribes to: tag group expansion changes - persists to localStorage.
+           */
+          this.persistTagGroupExpansion$,
+          /**
+           * Subscribes to: card full width changes - persists to localStorage.
+           */
+          this.persistCardFullWidth$
         );
       },
       {dispatch: false}
     );
 
-    // Effect that dispatches action to load tag filter from localStorage
     this.applyTagFilterFromStorage$ = createEffect(
       () => this.loadTagFilterFromStorage$
     );
 
-    // Effect that dispatches action to load superimposed cards from localStorage
     this.applySuperimposedCardsFromStorage$ = createEffect(
       () => this.loadSuperimposedCardsFromStorage$
     );
 
-    // Effect that dispatches actions to load axis scales from localStorage
     this.applyAxisScalesFromStorage$ = createEffect(
       () => this.loadAxisScalesFromStorage$
+    );
+
+    this.applyTagGroupExpansionFromStorage$ = createEffect(
+      () => this.loadTagGroupExpansionFromStorage$
+    );
+
+    this.applyCardFullWidthFromStorage$ = createEffect(
+      () => this.loadCardFullWidthFromStorage$
     );
   }
 
@@ -945,6 +1093,12 @@ export class MetricsEffects implements OnInitEffects {
   private readonly persistAxisScales$;
   private readonly loadAxisScalesFromStorage$;
   readonly applyAxisScalesFromStorage$;
+  private readonly persistTagGroupExpansion$;
+  private readonly loadTagGroupExpansionFromStorage$;
+  readonly applyTagGroupExpansionFromStorage$;
+  private readonly persistCardFullWidth$;
+  private readonly loadCardFullWidthFromStorage$;
+  readonly applyCardFullWidthFromStorage$;
 }
 
 export const TEST_ONLY = {

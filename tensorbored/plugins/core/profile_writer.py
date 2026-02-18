@@ -169,6 +169,7 @@ class ProfileData(_ProfileDataRequired, total=False):
     yAxisScale: AxisScale
     xAxisScale: AxisScale
     tagAxisScales: dict[str, TagAxisScale]
+    expandedTagGroups: dict[str, bool]
 
 
 class SerializedProfile(TypedDict):
@@ -199,6 +200,7 @@ def create_profile(
     x_axis_scale: AxisScale | None = None,
     tag_axis_scales: dict[str, TagAxisScale] | None = None,
     tag_symlog_linear_thresholds: dict[str, float] | None = None,
+    expanded_tag_groups: dict[str, bool] | None = None,
 ) -> SerializedProfile:
     """Create a TensorBoard profile dictionary.
 
@@ -227,6 +229,14 @@ def create_profile(
         tag_axis_scales: Per-tag axis scale overrides.  Example::
 
                 {"train/loss": {"y": "log10"}}
+
+        expanded_tag_groups: Which tag group sections to expand or
+            collapse. Maps tag group names to booleans
+            (``True`` = expanded, ``False`` = collapsed).
+            When omitted, the dashboard uses its default behaviour
+            (auto-expand the first two groups).  Example::
+
+                {"train": True, "eval": True, "debug": False}
 
     Returns:
         A serialised profile ready to be written to the logdir.
@@ -299,6 +309,8 @@ def create_profile(
         data["symlogLinearThreshold"] = symlog_linear_threshold
     if tag_symlog_linear_thresholds:
         data["tagSymlogLinearThresholds"] = tag_symlog_linear_thresholds
+    if expanded_tag_groups:
+        data["expandedTagGroups"] = expanded_tag_groups
 
     return SerializedProfile(version=PROFILE_VERSION, data=data)
 
@@ -362,6 +374,7 @@ def set_default_profile(
     x_axis_scale: AxisScale | None = None,
     tag_axis_scales: dict[str, TagAxisScale] | None = None,
     tag_symlog_linear_thresholds: dict[str, float] | None = None,
+    expanded_tag_groups: dict[str, bool] | None = None,
 ) -> str:
     """Create and write a profile in one call.
 
@@ -389,6 +402,7 @@ def set_default_profile(
         x_axis_scale=x_axis_scale,
         tag_axis_scales=tag_axis_scales,
         tag_symlog_linear_thresholds=tag_symlog_linear_thresholds,
+        expanded_tag_groups=expanded_tag_groups,
     )
     return write_profile(logdir, profile)
 

@@ -466,6 +466,13 @@ export const getMetricsTagGroupExpansionState = createSelector(
   }
 );
 
+export const getMetricsTagGroupExpansionMap = createSelector(
+  selectMetricsState,
+  (state: MetricsState): Map<string, boolean> => {
+    return state.tagGroupExpanded;
+  }
+);
+
 export const getMetricsLinkedTimeEnabled = createSelector(
   selectMetricsState,
   (state: MetricsState): boolean => {
@@ -798,6 +805,13 @@ export const getSuperimposedCardsWithMetadata = createSelector(
     return cardList
       .filter((id) => metadataMap[id])
       .map((id) => metadataMap[id]);
+  }
+);
+
+export const getFullWidthSuperimposedCards = createSelector(
+  selectMetricsState,
+  (state: MetricsState): Set<SuperimposedCardId> => {
+    return state.fullWidthSuperimposedCards;
   }
 );
 

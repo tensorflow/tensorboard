@@ -236,6 +236,35 @@ describe('profile types', () => {
       const profile = {...createEmptyProfile('Test'), xAxisScale: 42} as any;
       expect(isValidProfile(profile)).toBe(false);
     });
+
+    it('returns true with valid expandedTagGroups', () => {
+      const profile = {
+        ...createEmptyProfile('Test'),
+        expandedTagGroups: {train: true, eval: false},
+      };
+      expect(isValidProfile(profile)).toBe(true);
+    });
+
+    it('returns true when expandedTagGroups is absent', () => {
+      const profile = createEmptyProfile('Test');
+      expect(isValidProfile(profile)).toBe(true);
+    });
+
+    it('returns false for invalid expandedTagGroups (not an object)', () => {
+      const profile = {
+        ...createEmptyProfile('Test'),
+        expandedTagGroups: 'invalid',
+      } as any;
+      expect(isValidProfile(profile)).toBe(false);
+    });
+
+    it('returns false for expandedTagGroups with non-boolean values', () => {
+      const profile = {
+        ...createEmptyProfile('Test'),
+        expandedTagGroups: {train: 'yes'},
+      } as any;
+      expect(isValidProfile(profile)).toBe(false);
+    });
   });
 
   describe('axis scale conversion', () => {

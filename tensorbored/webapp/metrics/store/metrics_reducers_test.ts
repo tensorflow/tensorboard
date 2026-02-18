@@ -50,6 +50,7 @@ import {
   XAxisType,
 } from '../types';
 import {ColumnHeaderType, DataTableMode} from '../../widgets/data_table/types';
+import {ScaleType} from '../../widgets/line_chart_v2/lib/scale_types';
 import {reducers} from './metrics_reducers';
 import {getCardId, getPinnedCardId} from './metrics_store_internal_utils';
 import {
@@ -2890,6 +2891,65 @@ describe('metrics reducers', () => {
       });
     });
   });
+  describe('cardFullWidthStateLoaded', () => {
+    it('sets fullWidth for specified cardIds', () => {
+      const state = buildMetricsState();
+      const nextState = reducers(
+        state,
+        actions.cardFullWidthStateLoaded({
+          fullWidthCardIds: ['card1', 'card2'],
+          fullWidthSuperimposedCardIds: [],
+        })
+      );
+      expect(nextState.cardStateMap['card1']?.fullWidth).toBe(true);
+      expect(nextState.cardStateMap['card2']?.fullWidth).toBe(true);
+    });
+
+    it('sets fullWidthSuperimposedCards from loaded IDs', () => {
+      const state = buildMetricsState();
+      const nextState = reducers(
+        state,
+        actions.cardFullWidthStateLoaded({
+          fullWidthCardIds: [],
+          fullWidthSuperimposedCardIds: ['sup-1', 'sup-2'],
+        })
+      );
+      expect(nextState.fullWidthSuperimposedCards).toEqual(
+        new Set(['sup-1', 'sup-2'])
+      );
+    });
+  });
+
+  describe('superimposedCardFullWidthChanged', () => {
+    it('adds card to fullWidthSuperimposedCards when fullWidth is true', () => {
+      const state = buildMetricsState({
+        fullWidthSuperimposedCards: new Set<string>(),
+      });
+      const nextState = reducers(
+        state,
+        actions.superimposedCardFullWidthChanged({
+          superimposedCardId: 'sup-1',
+          fullWidth: true,
+        })
+      );
+      expect(nextState.fullWidthSuperimposedCards.has('sup-1')).toBe(true);
+    });
+
+    it('removes card from fullWidthSuperimposedCards when fullWidth is false', () => {
+      const state = buildMetricsState({
+        fullWidthSuperimposedCards: new Set<string>(['sup-1']),
+      });
+      const nextState = reducers(
+        state,
+        actions.superimposedCardFullWidthChanged({
+          superimposedCardId: 'sup-1',
+          fullWidth: false,
+        })
+      );
+      expect(nextState.fullWidthSuperimposedCards.has('sup-1')).toBe(false);
+    });
+  });
+
   describe('metricsTagFilterChanged', () => {
     it('sets the tagFilter state', () => {
       const state = buildMetricsState({tagFilter: 'foo'});
@@ -2928,6 +2988,124 @@ describe('metrics reducers', () => {
         actions.metricsTagGroupExpansionChanged({tagGroup: 'foo'})
       );
       expect(nextState.tagGroupExpanded).toEqual(new Map([['foo', true]]));
+    });
+  });
+
+  describe('metricsTagGroupExpansionStateLoaded', () => {
+    it('sets tagGroupExpanded from loaded entries', () => {
+      const state = buildMetricsState({
+        tagGroupExpanded: new Map(),
+      });
+
+      const nextState = reducers(
+        state,
+        actions.metricsTagGroupExpansionStateLoaded({
+          expandedGroups: [
+            ['foo', true],
+            ['bar', false],
+            ['baz', true],
+          ],
+        })
+      );
+      expect(nextState.tagGroupExpanded).toEqual(
+        new Map([
+          ['foo', true],
+          ['bar', false],
+          ['baz', true],
+        ])
+      );
+    });
+
+    it('replaces existing tagGroupExpanded state', () => {
+      const state = buildMetricsState({
+        tagGroupExpanded: new Map([
+          ['old', true],
+          ['other', false],
+        ]),
+      });
+
+      const nextState = reducers(
+        state,
+        actions.metricsTagGroupExpansionStateLoaded({
+          expandedGroups: [['new', true]],
+        })
+      );
+      expect(nextState.tagGroupExpanded).toEqual(new Map([['new', true]]));
+    });
+  });
+
+  describe('profileMetricsSettingsApplied with expandedTagGroups', () => {
+    it('applies expandedTagGroups from profile', () => {
+      const state = buildMetricsState({
+        tagGroupExpanded: new Map(),
+      });
+
+      const nextState = reducers(
+        state,
+        actions.profileMetricsSettingsApplied({
+          pinnedCards: [],
+          superimposedCards: [],
+          tagFilter: '',
+          smoothing: 0.6,
+          yAxisScale: ScaleType.LINEAR,
+          xAxisScale: ScaleType.LINEAR,
+          tagAxisScales: {},
+          expandedTagGroups: {train: true, eval: false, debug: true},
+        })
+      );
+      expect(nextState.tagGroupExpanded).toEqual(
+        new Map([
+          ['train', true],
+          ['eval', false],
+          ['debug', true],
+        ])
+      );
+    });
+
+    it('keeps existing tagGroupExpanded when expandedTagGroups is absent', () => {
+      const existing = new Map<string, boolean>([
+        ['foo', true],
+        ['bar', false],
+      ]);
+      const state = buildMetricsState({
+        tagGroupExpanded: existing,
+      });
+
+      const nextState = reducers(
+        state,
+        actions.profileMetricsSettingsApplied({
+          pinnedCards: [],
+          superimposedCards: [],
+          tagFilter: '',
+          smoothing: 0.6,
+          yAxisScale: ScaleType.LINEAR,
+          xAxisScale: ScaleType.LINEAR,
+          tagAxisScales: {},
+        })
+      );
+      expect(nextState.tagGroupExpanded).toEqual(existing);
+    });
+
+    it('keeps existing tagGroupExpanded when expandedTagGroups is empty', () => {
+      const existing = new Map<string, boolean>([['foo', true]]);
+      const state = buildMetricsState({
+        tagGroupExpanded: existing,
+      });
+
+      const nextState = reducers(
+        state,
+        actions.profileMetricsSettingsApplied({
+          pinnedCards: [],
+          superimposedCards: [],
+          tagFilter: '',
+          smoothing: 0.6,
+          yAxisScale: ScaleType.LINEAR,
+          xAxisScale: ScaleType.LINEAR,
+          tagAxisScales: {},
+          expandedTagGroups: {},
+        })
+      );
+      expect(nextState.tagGroupExpanded).toEqual(existing);
     });
   });
 

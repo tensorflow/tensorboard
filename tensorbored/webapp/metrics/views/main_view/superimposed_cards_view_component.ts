@@ -13,8 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {Store} from '@ngrx/store';
+import {Observable} from 'rxjs';
+import {State} from '../../../app_state';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {SuperimposedCardMetadata} from '../../types';
+import {superimposedCardFullWidthChanged} from '../../actions';
+import {getFullWidthSuperimposedCards} from '../../store';
 
 @Component({
   standalone: false,
@@ -38,7 +43,7 @@ import {SuperimposedCardMetadata} from '../../types';
         <div
           *ngFor="let card of superimposedCards; trackBy: trackByCard"
           class="card-wrapper"
-          [class.full-width]="cardsAtFullWidth.has(card.id)"
+          [class.full-width]="(cardsAtFullWidth$ | async)?.has(card.id)"
           [class.full-height]="cardsAtFullHeight.has(card.id)"
         >
           <superimposed-card
@@ -57,19 +62,24 @@ export class SuperimposedCardsViewComponent {
   @Input() cardObserver!: CardObserver;
   @Input() superimposedCards: SuperimposedCardMetadata[] = [];
 
-  cardsAtFullWidth = new Set<string>();
+  readonly cardsAtFullWidth$: Observable<Set<string>>;
   cardsAtFullHeight = new Set<string>();
+
+  constructor(private readonly store: Store<State>) {
+    this.cardsAtFullWidth$ = this.store.select(getFullWidthSuperimposedCards);
+  }
 
   trackByCard(index: number, card: SuperimposedCardMetadata): string {
     return card.id;
   }
 
-  onFullWidthChanged(cardId: string, showFullWidth: boolean) {
-    if (showFullWidth) {
-      this.cardsAtFullWidth.add(cardId);
-    } else {
-      this.cardsAtFullWidth.delete(cardId);
-    }
+  onFullWidthChanged(cardId: string, fullWidth: boolean) {
+    this.store.dispatch(
+      superimposedCardFullWidthChanged({
+        superimposedCardId: cardId,
+        fullWidth,
+      })
+    );
   }
 
   onFullHeightChanged(cardId: string, showFullHeight: boolean) {

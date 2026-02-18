@@ -498,6 +498,7 @@ const {initialState, reducers: namespaceContextedReducer} =
       },
       superimposedCardMetadataMap: {},
       superimposedCardList: [],
+      fullWidthSuperimposedCards: new Set<string>(),
     },
     {
       isSettingsPaneOpen: true,
@@ -1267,6 +1268,40 @@ const reducer = createReducer(
 
     return {...state, tagGroupExpanded};
   }),
+  on(actions.metricsTagGroupExpansionStateLoaded, (state, {expandedGroups}) => {
+    const tagGroupExpanded = new Map<string, boolean>(expandedGroups);
+    return {...state, tagGroupExpanded};
+  }),
+  on(
+    actions.cardFullWidthStateLoaded,
+    (state, {fullWidthCardIds, fullWidthSuperimposedCardIds}) => {
+      const nextCardStateMap = {...state.cardStateMap};
+      for (const cardId of fullWidthCardIds) {
+        nextCardStateMap[cardId] = {
+          ...nextCardStateMap[cardId],
+          fullWidth: true,
+          tableExpanded: true,
+        };
+      }
+      return {
+        ...state,
+        cardStateMap: nextCardStateMap,
+        fullWidthSuperimposedCards: new Set(fullWidthSuperimposedCardIds),
+      };
+    }
+  ),
+  on(
+    actions.superimposedCardFullWidthChanged,
+    (state, {superimposedCardId, fullWidth}) => {
+      const next = new Set(state.fullWidthSuperimposedCards);
+      if (fullWidth) {
+        next.add(superimposedCardId);
+      } else {
+        next.delete(superimposedCardId);
+      }
+      return {...state, fullWidthSuperimposedCards: next};
+    }
+  ),
   on(actions.cardVisibilityChanged, (state, {enteredCards, exitedCards}) => {
     if (!enteredCards.length && !exitedCards.length) {
       return state;
@@ -1948,6 +1983,7 @@ const reducer = createReducer(
         tagAxisScales,
         symlogLinearThreshold,
         tagSymlogLinearThresholds,
+        expandedTagGroups,
       }
     ) => {
       // Clear existing pins and apply profile's pins
@@ -2031,6 +2067,11 @@ const reducer = createReducer(
           resolvedResult.unresolvedImportedPinnedCards;
       }
 
+      const nextTagGroupExpanded =
+        expandedTagGroups && Object.keys(expandedTagGroups).length > 0
+          ? new Map<string, boolean>(Object.entries(expandedTagGroups))
+          : state.tagGroupExpanded;
+
       return {
         ...state,
         // Apply resolved or unresolved pinned cards
@@ -2046,6 +2087,7 @@ const reducer = createReducer(
         superimposedCardMetadataMap: nextSuperimposedCardMetadataMap,
         // Apply other settings
         tagFilter,
+        tagGroupExpanded: nextTagGroupExpanded,
         settingOverrides: {
           ...state.settingOverrides,
           scalarSmoothing: smoothing,

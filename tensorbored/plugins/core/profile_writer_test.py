@@ -261,6 +261,41 @@ class ProfileWriterTest(unittest.TestCase):
                 tag_axis_scales={"loss": {"z": "log10"}}
             )
 
+    def test_create_profile_with_expanded_tag_groups(self):
+        """Test create_profile with expanded_tag_groups."""
+        profile = profile_writer.create_profile(
+            expanded_tag_groups={"train": True, "eval": True, "debug": False},
+        )
+        data = profile["data"]
+        self.assertEqual(
+            data["expandedTagGroups"],
+            {"train": True, "eval": True, "debug": False},
+        )
+
+    def test_create_profile_omits_expanded_tag_groups_when_none(self):
+        """Test create_profile omits expandedTagGroups when not provided."""
+        profile = profile_writer.create_profile()
+        data = profile["data"]
+        self.assertNotIn("expandedTagGroups", data)
+
+    def test_create_profile_omits_expanded_tag_groups_when_empty(self):
+        """Test create_profile omits expandedTagGroups when empty dict."""
+        profile = profile_writer.create_profile(expanded_tag_groups={})
+        data = profile["data"]
+        self.assertNotIn("expandedTagGroups", data)
+
+    def test_set_default_profile_with_expanded_tag_groups(self):
+        """Test set_default_profile passes expanded_tag_groups through."""
+        path = profile_writer.set_default_profile(
+            self.logdir,
+            expanded_tag_groups={"train": True, "eval": False},
+        )
+        loaded = profile_writer.read_profile(self.logdir)
+        self.assertEqual(
+            loaded["data"]["expandedTagGroups"],
+            {"train": True, "eval": False},
+        )
+
 
 class IntegrationTest(unittest.TestCase):
     """Integration tests demonstrating typical usage."""
