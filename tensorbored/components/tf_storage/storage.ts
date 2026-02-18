@@ -206,6 +206,22 @@ export function makeBindings<T>(
   }
   return {get, set, getInitializer, getObserver, disposeBinding};
 }
+/**
+ * Hash param keys that are now managed elsewhere (localStorage or Angular
+ * query params) and should be removed from the URL hash to prevent
+ * accumulation.  See https://github.com/Demonstrandum/tensorbored/issues/42.
+ */
+const LEGACY_HASH_PARAMS_TO_REMOVE: ReadonlySet<string> = new Set([
+  // Run selection is now persisted to localStorage via runs_effects.ts
+  'runSelectionState',
+  // Smoothing is now an Angular query param ('smoothing')
+  '_smoothingWeight',
+  // Tag filter is now an Angular query param ('tagFilter')
+  'tagFilter',
+  // Run regex is now an Angular query param ('runFilter')
+  'regexInput',
+]);
+
 export function migrateLegacyURLScheme() {
   /**
    * TODO(psybuzz): move to some compatibility file.
@@ -248,6 +264,14 @@ export function migrateLegacyURLScheme() {
       }
     }
   }
+
+  // Remove hash params that are now managed by Angular query params or
+  // localStorage.  This prevents the URL from accumulating stale params
+  // that were written by legacy Polymer components.
+  for (const key of LEGACY_HASH_PARAMS_TO_REMOVE) {
+    delete items[key];
+  }
+
   writeComponent(dictToComponent(items));
   updateUrlDict(items);
 }

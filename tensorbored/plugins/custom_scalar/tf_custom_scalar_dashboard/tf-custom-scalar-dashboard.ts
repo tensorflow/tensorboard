@@ -30,8 +30,6 @@ import '../../../components/tf_runs_selector/tf-runs-selector';
 import {
   getBooleanInitializer,
   getBooleanObserver,
-  getNumberInitializer,
-  getNumberObserver,
 } from '../../../components/tf_storage/storage';
 import '../../../components/tf_utils/utils';
 import '../../scalar/tf_scalar_dashboard/tf-smoothing-input';
@@ -272,11 +270,8 @@ writer.add_summary(layout_summary)
   @property({
     type: Number,
     notify: true,
-    observer: '_smoothingWeightObserver',
   })
-  _smoothingWeight: number = getNumberInitializer('_smoothingWeight', {
-    defaultValue: 0.6,
-  }).call(this);
+  _smoothingWeight: number = 0.6;
 
   @property({
     type: Boolean,
@@ -362,9 +357,8 @@ writer.add_summary(layout_summary)
     useLocalStorage: true,
   });
 
-  _smoothingWeightObserver = getNumberObserver('_smoothingWeight', {
-    defaultValue: 0.6,
-  });
+  // Smoothing weight is no longer persisted to the URL hash.
+  // It is managed via Angular query params ('smoothing').
 
   _ignoreYOutliersObserver = getBooleanObserver('_ignoreYOutliers', {
     defaultValue: true,

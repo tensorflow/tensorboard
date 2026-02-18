@@ -16,7 +16,6 @@ limitations under the License.
 import {customElement, property} from '@polymer/decorators';
 import {html, PolymerElement} from '@polymer/polymer';
 import '../polymer/irons_and_papers';
-import {getStringInitializer, getStringObserver} from '../tf_storage/storage';
 
 @customElement('tf-tag-filterer')
 class TfTagFilterer extends PolymerElement {
@@ -46,19 +45,11 @@ class TfTagFilterer extends PolymerElement {
 
   @property({
     type: String,
-    observer: '_tagFilterObserver',
   })
-  _tagFilter: string = getStringInitializer('tagFilter', {
-    defaultValue: '',
-    useLocalStorage: false,
-    polymerProperty: '_tagFilter',
-  }).call(this);
+  _tagFilter: string = '';
 
-  _tagFilterObserver = getStringObserver('tagFilter', {
-    defaultValue: '',
-    useLocalStorage: false,
-    polymerProperty: '_tagFilter',
-  });
+  // Tag filter is no longer persisted to the URL hash.
+  // It is managed via Angular query params ('tagFilter').
 
   _computeTagFilter() {
     return this._tagFilter;

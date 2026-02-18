@@ -15,7 +15,6 @@ tf_ts_library(
         "//tensorbored/components/polymer:irons_and_papers",
         "//tensorbored/components/tf_backend",
         "//tensorbored/components/tf_backend:type",
-        "//tensorbored/components/tf_storage",
         "//tensorbored/components/vz_sorting",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",

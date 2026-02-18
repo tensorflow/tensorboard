@@ -14,7 +14,6 @@ tf_ts_library(
         "//tensorbored/components/tf_backend",
         "//tensorbored/components/tf_color_scale",
         "//tensorbored/components/tf_dashboard_common",
-        "//tensorbored/components/tf_storage",
         "//tensorbored/components/tf_wbr_string",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
