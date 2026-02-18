@@ -129,6 +129,7 @@ import {getFilteredRenderableRunsIds} from '../main_view/common_selectors';
       (onYAxisScaleChanged)="onYAxisScaleChanged($event)"
       (onXAxisScaleChanged)="onXAxisScaleChanged($event)"
       (onTimeSelectionChanged)="onTimeSelectionChanged($event)"
+      (onStepSelectorToggled)="onStepSelectorToggled()"
       (onFullWidthChanged)="fullWidthChanged.emit($event)"
       (onFullHeightChanged)="fullHeightChanged.emit($event)"
       observeIntersection
@@ -634,6 +635,10 @@ export class SuperimposedCardContainer implements OnInit, OnDestroy {
     affordance?: TimeSelectionAffordance;
   }) {
     this.localTimeSelectionSubject.next(event.timeSelection);
+  }
+
+  onStepSelectorToggled() {
+    this.localTimeSelectionSubject.next(undefined);
   }
 
   onViewBoxChange(viewBox: Extent | null) {

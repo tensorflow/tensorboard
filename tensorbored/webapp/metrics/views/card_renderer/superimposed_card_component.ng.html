@@ -194,48 +194,48 @@ limitations under the License.
       </table>
     </ng-template>
   </div>
+  <ng-container *ngIf="showDataTable()">
+    <div
+      #dataTableContainer
+      [ngClass]="{
+        'data-table-container': true,
+        'expanded': tableExpanded
+      }"
+    >
+      <scalar-card-data-table
+        [chartMetadataMap]="chartMetadataMap"
+        [dataSeries]="dataSeries"
+        [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection"
+        [columnHeaders]="columnHeaders"
+        [sortingInfo]="sortingInfo"
+        [columnCustomizationEnabled]="false"
+        [columnContextMenusEnabled]="false"
+        [smoothingEnabled]="smoothingEnabled"
+        [columnFilters]="emptyColumnFilters"
+        [runToHparamMap]="emptyRunToHparamMap"
+        [selectableColumns]="emptySelectableColumns"
+        [numColumnsLoaded]="0"
+        [numColumnsToLoad]="0"
+        (sortDataBy)="sortDataBy($event)"
+      >
+      </scalar-card-data-table>
+    </div>
+    <div class="bottom-area">
+      <button
+        *ngIf="canExpandTable()"
+        mat-icon-button
+        class="expand-button"
+        aria-label="Expand Table"
+        [title]="shouldExpandTable() ? 'Expand Table' : 'Collapse Table'"
+        (click)="toggleTableExpanded()"
+      >
+        <mat-icon
+          [svgIcon]="shouldExpandTable() ? 'expand_more_24px' : 'expand_less_24px'"
+        ></mat-icon>
+      </button>
+    </div>
+  </ng-container>
 </div>
-<ng-container *ngIf="showDataTable()">
-  <div
-    #dataTableContainer
-    [ngClass]="{
-      'data-table-container': true,
-      'expanded': tableExpanded
-    }"
-  >
-    <scalar-card-data-table
-      [chartMetadataMap]="chartMetadataMap"
-      [dataSeries]="dataSeries"
-      [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection"
-      [columnHeaders]="columnHeaders"
-      [sortingInfo]="sortingInfo"
-      [columnCustomizationEnabled]="false"
-      [columnContextMenusEnabled]="false"
-      [smoothingEnabled]="smoothingEnabled"
-      [columnFilters]="emptyColumnFilters"
-      [runToHparamMap]="emptyRunToHparamMap"
-      [selectableColumns]="emptySelectableColumns"
-      [numColumnsLoaded]="0"
-      [numColumnsToLoad]="0"
-      (sortDataBy)="sortDataBy($event)"
-    >
-    </scalar-card-data-table>
-  </div>
-  <div class="bottom-area">
-    <button
-      *ngIf="canExpandTable()"
-      mat-icon-button
-      class="expand-button"
-      aria-label="Expand Table"
-      [title]="shouldExpandTable() ? 'Expand Table' : 'Collapse Table'"
-      (click)="toggleTableExpanded()"
-    >
-      <mat-icon
-        [svgIcon]="shouldExpandTable() ? 'expand_more_24px' : 'expand_less_24px'"
-      ></mat-icon>
-    </button>
-  </div>
-</ng-container>
 <ng-template
   #lineChartCustomXAxisVis
   let-viewExtent="viewExtent"
