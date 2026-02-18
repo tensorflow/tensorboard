@@ -110,7 +110,7 @@ When anyone opens TensorBored pointed at this logdir, they get your pre-configur
 | **Programmatic Run Colors** | Hash-based stable colors by default; full programmatic control available. |
 | **Color Sampler API** | Generate perceptually uniform color palettes using the OKLCH color space. |
 | **Log/Symlog X-Axis** | Log and symmetric-log scales for both X and Y axes. |
-| **Persistent Settings** | Tag filters, run selections, and pins survive page refreshes. |
+| **Persistent Settings** | Tag filters, run selections, pins, and section expansion survive page refreshes. |
 | **Default Run Selection** | All runs visible by default; no more blank dashboards. |
 | **Pin Limit Increase** | Up to 1,000 pinned cards (TensorBoard's URL-based limit was ~10-20). |
 
@@ -199,6 +199,13 @@ profile_writer.set_default_profile(
         'key': 'regex',
         'regexString': r'(baseline|experiment)',
     },
+
+    # Control which sections are expanded on load
+    expanded_tag_groups={
+        'train': True,
+        'eval': True,
+        'debug': False,
+    },
 )
 ```
 
@@ -222,6 +229,7 @@ A profile contains the following fields:
 | `runFilter` | `str` | Regex to filter visible runs |
 | `smoothing` | `float` | Scalar smoothing value (0.0–0.999) |
 | `groupBy` | `dict or null` | Run grouping config (`key` + optional `regexString`) |
+| `expandedTagGroups` | `dict[str, bool]` | Which tag group sections are expanded (`true`) or collapsed (`false`). Omit for default (first two expanded). |
 
 ---
 
@@ -453,6 +461,14 @@ Pinned cards are saved to localStorage:
 - Pin order is preserved
 - Up to 1,000 pinned cards supported
 
+### Section Expansion Persistence
+
+Which tag group sections are expanded or collapsed is persisted:
+- Expand or collapse sections → refresh → your choice is preserved
+- On first load with no persisted state, the first two sections are expanded by default
+- Profiles can override this with the `expanded_tag_groups` parameter
+- When a profile specifies `expanded_tag_groups`, those values are applied; when omitted, the default behavior (first two groups) is used
+
 ---
 
 ## Default Run Selection
@@ -530,6 +546,7 @@ Create and write a default profile in one call. Returns the path to the written 
 | `run_filter` | `str` | `""` | Regex pattern to filter runs |
 | `smoothing` | `float` | `0.6` | Scalar smoothing (0.0–0.999) |
 | `group_by` | `dict` | `None` | Grouping config (`key`: `"RUN"`, `"EXPERIMENT"`, `"REGEX"`, or `"REGEX_BY_EXP"`; optional `regexString`) |
+| `expanded_tag_groups` | `dict[str, bool]` | `None` | Which tag group sections to expand/collapse (omit for default behavior) |
 
 #### `create_profile(**kwargs) -> dict`
 
@@ -802,6 +819,7 @@ TensorBored uses browser localStorage for client-side persistence:
 | `_tb_run_selection.v1` | Run visibility states |
 | `_tb_run_colors.v1` | Custom run color overrides |
 | `_tb_tag_filter.v1` | Tag filter regex with timestamp |
+| `_tb_tag_group_expansion.v1` | Section expanded/collapsed state |
 | `tb-saved-pins` | Pinned card list |
 
 Server-side, the only file TensorBored writes is the default profile:

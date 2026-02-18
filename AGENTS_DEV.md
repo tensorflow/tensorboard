@@ -54,6 +54,7 @@ The key features added on top of TensorBoard are:
 | HuggingFace Spaces demo              | —     | #16, #27, #28, #29, #30 |
 | Default axis scales in profiles      | #32   | —                       |
 | Configurable symlog linear threshold | #34   | —                       |
+| Section expansion persistence        | #56   | —                       |
 
 ---
 
@@ -179,6 +180,7 @@ The frontend uses Angular with NgRx for state management. The pattern is:
 | **Legacy symlog**          | `components/vz_line_chart2/symlog-scale.ts` (Plottable-based `SymLogScale`)                                                                                                 |
 | **Metric descriptions**    | `webapp/metrics/views/utils.ts` (`htmlToText`, `buildTagTooltip`), card components fetch `tagDescription`                                                                   |
 | **Card scale cycling**     | Scalar cards and superimposed cards cycle `LINEAR → LOG10 → SYMLOG10 → LINEAR` on click for both X and Y axes (X-axis only for STEP/RELATIVE)                               |
+| **Section expansion**      | `webapp/metrics/store/metrics_reducers.ts` (`tagGroupExpanded`), `webapp/metrics/effects/index.ts` (`persistTagGroupExpansion$`, `loadTagGroupExpansionFromStorage$`)        |
 
 ---
 
@@ -207,6 +209,8 @@ Key functions:
 - `set_default_profile(logdir, ...)` — convenience: create + write in one call
 - `pin_scalar(tag)`, `pin_histogram(tag, run_id)`, `pin_image(tag, run_id, sample)` — helpers for pinned card entries
 - `create_superimposed_card(title, tags, run_id)` — helper for superimposed card entries
+
+Key parameters of `create_profile` / `set_default_profile` include `pinned_cards`, `run_colors`, `superimposed_cards`, `run_selection`, `selected_runs`, `metric_descriptions`, `tag_filter`, `smoothing`, `y_axis_scale`, `x_axis_scale`, `tag_axis_scales`, `symlog_linear_threshold`, `tag_symlog_linear_thresholds`, `expanded_tag_groups`, and `group_by`. See the docstrings for full details.
 
 Profile data schema version is tracked via `PROFILE_VERSION = 1`.
 
@@ -257,6 +261,7 @@ Important behaviors:
 - When loading run selection from localStorage, if **all** runs would be hidden, the selection is discarded and all runs default to visible.
 - Tag filter persistence uses timestamps: user-set values override profile defaults.
 - Pins are synced to localStorage both when saving profiles and when pinning/unpinning cards directly.
+- Section expansion state is restored from localStorage before tag metadata loads, so the auto-expand-first-2-groups default only applies on truly fresh sessions with no persisted state.
 - Profiles can come from two sources: `LOCAL` (user-created in browser) or `BACKEND` (from `default_profile.json`). Backend profiles do not overwrite existing user state if a local profile is already active.
 
 ---
@@ -464,6 +469,16 @@ Profiles can specify Y-axis and X-axis scale types for scalar plots via `yAxisSc
 3. **localStorage** (`_tb_axis_scales.v1`): When the user changes the axis scale, it's persisted to localStorage. On reload, the stored scales are restored.
 
 In scalar card and superimposed card components, the profile's scale is applied as the initial value. Once the user manually toggles the scale on a specific card (cycling LINEAR → LOG10 → SYMLOG10), that card's `yScaleUserSet`/`xScaleUserSet` flag is set to `true`, preventing the profile value from overriding the user's choice. X-axis scale settings only apply to STEP and RELATIVE axis types (not WALL_TIME).
+
+### Section Expansion Persistence
+
+The expanded/collapsed state of tag group sections on the time-series page is persisted to localStorage (`_tb_tag_group_expansion.v1`). The feature has three layers:
+
+1. **Backend profiles** (`profile_writer.py`): Set `expanded_tag_groups={"train": True, "eval": False}` in `create_profile()` or `set_default_profile()`. When applied, the frontend sets the `tagGroupExpanded` map from the profile.
+2. **Local profiles**: When saving a profile in the UI, the current section expansion state is captured in the `expandedTagGroups` field.
+3. **localStorage**: When the user expands or collapses a section, the full state is persisted. On reload, it is restored before tag metadata loads, preventing the default "auto-expand first 2 groups" from overriding the user's choice.
+
+If no persisted state exists and no profile specifies `expandedTagGroups`, the default behavior (expand the first two tag groups) is preserved.
 
 ---
 
