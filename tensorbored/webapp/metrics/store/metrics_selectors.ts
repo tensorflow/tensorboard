@@ -808,6 +808,13 @@ export const getSuperimposedCardsWithMetadata = createSelector(
   }
 );
 
+export const getFullWidthSuperimposedCards = createSelector(
+  selectMetricsState,
+  (state: MetricsState): Set<SuperimposedCardId> => {
+    return state.fullWidthSuperimposedCards;
+  }
+);
+
 /**
  * Returns the time series data for all tags in a superimposed card.
  */

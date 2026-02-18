@@ -820,6 +820,7 @@ TensorBored uses browser localStorage for client-side persistence:
 | `_tb_run_colors.v1` | Custom run color overrides |
 | `_tb_tag_filter.v1` | Tag filter regex with timestamp |
 | `_tb_tag_group_expansion.v1` | Section expanded/collapsed state |
+| `_tb_card_full_width.v1` | Cards shown at full width |
 | `tb-saved-pins` | Pinned card list |
 
 Server-side, the only file TensorBored writes is the default profile:

@@ -254,6 +254,7 @@ The frontend persists state to browser localStorage. This is the core mechanism 
 | `_tb_tag_filter.v1`    | Tag filter regex              | `{value: string, timestamp: number}`                               | Metrics effects |
 | `_tb_axis_scales.v1`   | Axis scales                   | `{version: 1, yAxisScale?: string, xAxisScale?: string}`           | Metrics effects |
 | `_tb_tag_group_expansion.v1` | Section expanded/collapsed state | `{version: 1, groups: [[name, bool], ...]}`                   | Metrics effects |
+| `_tb_card_full_width.v1` | Cards shown at full width     | `{version: 1, cards: [...cardIds], superimposed: [...ids]}`        | Metrics effects |
 | `tb-saved-pins`        | Pinned cards                  | JSON `CardUniqueInfo[]`                                            | Metrics effects |
 
 Important behaviors:

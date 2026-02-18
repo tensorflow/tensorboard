@@ -498,6 +498,7 @@ const {initialState, reducers: namespaceContextedReducer} =
       },
       superimposedCardMetadataMap: {},
       superimposedCardList: [],
+      fullWidthSuperimposedCards: new Set<string>(),
     },
     {
       isSettingsPaneOpen: true,
@@ -1271,6 +1272,36 @@ const reducer = createReducer(
     const tagGroupExpanded = new Map<string, boolean>(expandedGroups);
     return {...state, tagGroupExpanded};
   }),
+  on(
+    actions.cardFullWidthStateLoaded,
+    (state, {fullWidthCardIds, fullWidthSuperimposedCardIds}) => {
+      const nextCardStateMap = {...state.cardStateMap};
+      for (const cardId of fullWidthCardIds) {
+        nextCardStateMap[cardId] = {
+          ...nextCardStateMap[cardId],
+          fullWidth: true,
+          tableExpanded: true,
+        };
+      }
+      return {
+        ...state,
+        cardStateMap: nextCardStateMap,
+        fullWidthSuperimposedCards: new Set(fullWidthSuperimposedCardIds),
+      };
+    }
+  ),
+  on(
+    actions.superimposedCardFullWidthChanged,
+    (state, {superimposedCardId, fullWidth}) => {
+      const next = new Set(state.fullWidthSuperimposedCards);
+      if (fullWidth) {
+        next.add(superimposedCardId);
+      } else {
+        next.delete(superimposedCardId);
+      }
+      return {...state, fullWidthSuperimposedCards: next};
+    }
+  ),
   on(actions.cardVisibilityChanged, (state, {enteredCards, exitedCards}) => {
     if (!enteredCards.length && !exitedCards.length) {
       return state;

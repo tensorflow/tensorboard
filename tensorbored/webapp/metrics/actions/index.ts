@@ -206,6 +206,16 @@ export const metricsTagGroupExpansionStateLoaded = createAction(
   props<{expandedGroups: Array<[string, boolean]>}>()
 );
 
+export const cardFullWidthStateLoaded = createAction(
+  '[Metrics] Card Full Width State Loaded From Storage',
+  props<{fullWidthCardIds: string[]; fullWidthSuperimposedCardIds: string[]}>()
+);
+
+export const superimposedCardFullWidthChanged = createAction(
+  '[Metrics] Superimposed Card Full Width Changed',
+  props<{superimposedCardId: SuperimposedCardId; fullWidth: boolean}>()
+);
+
 export const cardPinStateToggled = createAction(
   '[Metrics] Card Pin State Toggled',
   props<{cardId: CardId; canCreateNewPins: boolean; wasPinned: boolean}>()

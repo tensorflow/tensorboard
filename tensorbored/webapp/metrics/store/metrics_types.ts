@@ -234,6 +234,11 @@ export interface MetricsNamespacedState {
    * Ordered list of superimposed card IDs.
    */
   superimposedCardList: SuperimposedCardId[];
+
+  /**
+   * Set of superimposed card IDs that are displayed at full width.
+   */
+  fullWidthSuperimposedCards: Set<SuperimposedCardId>;
 }
 
 export interface MetricsSettings {

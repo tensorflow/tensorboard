@@ -2891,6 +2891,65 @@ describe('metrics reducers', () => {
       });
     });
   });
+  describe('cardFullWidthStateLoaded', () => {
+    it('sets fullWidth for specified cardIds', () => {
+      const state = buildMetricsState();
+      const nextState = reducers(
+        state,
+        actions.cardFullWidthStateLoaded({
+          fullWidthCardIds: ['card1', 'card2'],
+          fullWidthSuperimposedCardIds: [],
+        })
+      );
+      expect(nextState.cardStateMap['card1']?.fullWidth).toBe(true);
+      expect(nextState.cardStateMap['card2']?.fullWidth).toBe(true);
+    });
+
+    it('sets fullWidthSuperimposedCards from loaded IDs', () => {
+      const state = buildMetricsState();
+      const nextState = reducers(
+        state,
+        actions.cardFullWidthStateLoaded({
+          fullWidthCardIds: [],
+          fullWidthSuperimposedCardIds: ['sup-1', 'sup-2'],
+        })
+      );
+      expect(nextState.fullWidthSuperimposedCards).toEqual(
+        new Set(['sup-1', 'sup-2'])
+      );
+    });
+  });
+
+  describe('superimposedCardFullWidthChanged', () => {
+    it('adds card to fullWidthSuperimposedCards when fullWidth is true', () => {
+      const state = buildMetricsState({
+        fullWidthSuperimposedCards: new Set<string>(),
+      });
+      const nextState = reducers(
+        state,
+        actions.superimposedCardFullWidthChanged({
+          superimposedCardId: 'sup-1',
+          fullWidth: true,
+        })
+      );
+      expect(nextState.fullWidthSuperimposedCards.has('sup-1')).toBe(true);
+    });
+
+    it('removes card from fullWidthSuperimposedCards when fullWidth is false', () => {
+      const state = buildMetricsState({
+        fullWidthSuperimposedCards: new Set<string>(['sup-1']),
+      });
+      const nextState = reducers(
+        state,
+        actions.superimposedCardFullWidthChanged({
+          superimposedCardId: 'sup-1',
+          fullWidth: false,
+        })
+      );
+      expect(nextState.fullWidthSuperimposedCards.has('sup-1')).toBe(false);
+    });
+  });
+
   describe('metricsTagFilterChanged', () => {
     it('sets the tagFilter state', () => {
       const state = buildMetricsState({tagFilter: 'foo'});
