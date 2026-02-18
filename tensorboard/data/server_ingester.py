@@ -22,7 +22,7 @@ import tempfile
 import time
 
 import grpc
-import pkg_resources
+from packaging import version as packaging_version
 
 from tensorboard.data import grpc_provider
 from tensorboard.data import ingester
@@ -231,7 +231,7 @@ class ServerBinary:
         """
         self._path = path
         self._version = (
-            pkg_resources.parse_version(version)
+            packaging_version.parse(version)
             if version is not None
             else version
         )
@@ -260,7 +260,7 @@ class ServerBinary:
         """
         if self._version is None:
             return True
-        return self._version >= pkg_resources.parse_version(required_version)
+        return self._version >= packaging_version.parse(required_version)
 
 
 def get_server_binary():
