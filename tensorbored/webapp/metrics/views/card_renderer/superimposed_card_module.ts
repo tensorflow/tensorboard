@@ -23,6 +23,7 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {IntersectionObserverModule} from '../../../widgets/intersection_observer/intersection_observer_module';
 import {LineChartModule} from '../../../widgets/line_chart_v2/line_chart_module';
+import {PersistResizeModule} from '../../../widgets/persist_resize_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 
 import {ScalarCardDataTableModule} from './scalar_card_data_table_module';
@@ -43,6 +44,7 @@ import {SuperimposedCardContainer} from './superimposed_card_container';
     MatIconModule,
     MatMenuModule,
     MatProgressSpinnerModule,
+    PersistResizeModule,
     ScalarCardDataTableModule,
     ScalarCardLineChartModule,
     TruncatedPathModule,

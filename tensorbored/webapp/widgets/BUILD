@@ -5,6 +5,19 @@ package(default_visibility = ["//tensorbored:internal"])
 licenses(["notice"])
 
 tf_ng_module(
+    name = "persist_resize",
+    srcs = [
+        "persist_resize_directive.ts",
+        "persist_resize_module.ts",
+    ],
+    deps = [
+        "@npm//@angular/core",
+        "@npm//@types/resize-observer-browser",
+        "@npm//rxjs",
+    ],
+)
+
+tf_ng_module(
     name = "resize_detector",
     srcs = [
         "resize_detector_directive.ts",

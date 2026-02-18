@@ -166,7 +166,11 @@ limitations under the License.
       </mat-menu>
     </span>
   </div>
-  <div #chartContainer class="chart-container">
+  <div
+    #chartContainer
+    class="chart-container"
+    [persistResize]="'scalar-chart:' + tag"
+  >
     <mat-spinner
       diameter="18"
       *ngIf="loadState === DataLoadState.LOADING"
@@ -259,6 +263,7 @@ limitations under the License.
       'data-table-container': true,
       'expanded': cardState!.tableExpanded
     }"
+    [persistResize]="'scalar-table:' + tag"
   >
     <scalar-card-data-table
       [chartMetadataMap]="chartMetadataMap"
