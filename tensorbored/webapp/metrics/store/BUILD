@@ -115,6 +115,7 @@ tf_ts_library(
         "//tensorbored/webapp/util:types",
         "//tensorbored/webapp/widgets/card_fob:types",
         "//tensorbored/webapp/widgets/data_table:types",
+        "//tensorbored/webapp/widgets/line_chart_v2/lib:internal_types",
         "@npm//@types/jasmine",
     ],
 )
