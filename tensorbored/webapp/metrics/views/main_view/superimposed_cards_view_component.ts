@@ -12,7 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {State} from '../../../app_state';
@@ -20,6 +26,9 @@ import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {SuperimposedCardMetadata} from '../../types';
 import {superimposedCardFullWidthChanged} from '../../actions';
 import {getFullWidthSuperimposedCards} from '../../store';
+
+const MIN_CARD_MIN_WIDTH_IN_PX = 335;
+const MAX_CARD_MIN_WIDTH_IN_PX = 735;
 
 @Component({
   standalone: false,
@@ -39,7 +48,10 @@ import {getFullWidthSuperimposedCards} from '../../store';
           </span>
         </div>
       </div>
-      <div class="superimposed-cards-grid">
+      <div
+        class="superimposed-cards-grid"
+        [style.grid-template-columns]="gridTemplateColumn"
+      >
         <div
           *ngFor="let card of superimposedCards; trackBy: trackByCard"
           class="card-wrapper"
@@ -58,15 +70,33 @@ import {getFullWidthSuperimposedCards} from '../../store';
   styleUrls: ['superimposed_cards_view_component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SuperimposedCardsViewComponent {
+export class SuperimposedCardsViewComponent implements OnChanges {
   @Input() cardObserver!: CardObserver;
   @Input() superimposedCards: SuperimposedCardMetadata[] = [];
+  @Input() cardMinWidth: number | null = null;
+
+  gridTemplateColumn = '';
 
   readonly cardsAtFullWidth$: Observable<Set<string>>;
   cardsAtFullHeight = new Set<string>();
 
   constructor(private readonly store: Store<State>) {
     this.cardsAtFullWidth$ = this.store.select(getFullWidthSuperimposedCards);
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['cardMinWidth']) {
+      const width = changes['cardMinWidth'].currentValue;
+      if (
+        width &&
+        width >= MIN_CARD_MIN_WIDTH_IN_PX &&
+        width <= MAX_CARD_MIN_WIDTH_IN_PX
+      ) {
+        this.gridTemplateColumn = `repeat(auto-fill, minmax(${width}px, 1fr))`;
+      } else {
+        this.gridTemplateColumn = '';
+      }
+    }
   }
 
   trackByCard(index: number, card: SuperimposedCardMetadata): string {
