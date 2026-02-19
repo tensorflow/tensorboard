@@ -454,7 +454,11 @@ class TfCategoryPaginatedView<
   ready() {
     super.ready();
     const stored = this.category?.name ? readExpansionMap() : null;
-    if (stored !== null && this.category?.name && stored.has(this.category.name)) {
+    if (
+      stored !== null &&
+      this.category?.name &&
+      stored.has(this.category.name)
+    ) {
       this.opened = stored.get(this.category.name)!;
     } else {
       this.opened = this.initialOpened == null ? true : this.initialOpened;

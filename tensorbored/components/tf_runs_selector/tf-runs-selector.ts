@@ -55,9 +55,7 @@ function readSelectionFromLocalStorage(): Record<string, boolean> {
  * Merge a bare-run-name selection map back into the NgRx localStorage
  * entry, preserving any run-IDs that we don't know about.
  */
-function writeSelectionToLocalStorage(
-  state: Record<string, boolean>
-): void {
+function writeSelectionToLocalStorage(state: Record<string, boolean>): void {
   const raw = window.localStorage.getItem(RUN_SELECTION_KEY);
   let existing: Array<[string, boolean]> = [];
   if (raw) {
