@@ -1776,7 +1776,7 @@ describe('customizable share button ', () => {
       providers: [
         {
           provide: SHARE_BUTTON_COMPONENT,
-          useClass: TestShareButtonContainer,
+          useValue: TestShareButtonContainer,
         },
         provideMockStore({
           initialState: appStateFromMetricsState(buildMetricsState()),

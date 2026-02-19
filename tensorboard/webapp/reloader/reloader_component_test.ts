@@ -36,6 +36,7 @@ describe('reloader_component', () => {
       removeEventListener: document.removeEventListener.bind(document),
       // DOMTestComponentRenderer injects DOCUMENT and requires the following
       // properties to function.
+      querySelector: document.querySelector.bind(document),
       querySelectorAll: document.querySelectorAll.bind(document),
       body: document.body,
     };

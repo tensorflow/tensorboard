@@ -69,7 +69,7 @@ export class CustomizableComponent {}
   providers: [
     {
       provide: CustomizableComponentType,
-      useClass: CustomizableComponent,
+      useValue: CustomizableComponent,
     },
   ],
 })
