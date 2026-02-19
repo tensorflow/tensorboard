@@ -140,6 +140,7 @@ function persistPolymerColorMap(runColorMap: Record<string, string>) {
     POLYMER_RUN_COLOR_MAP_KEY,
     JSON.stringify(polymerColorMap)
   );
+  window.dispatchEvent(new CustomEvent('tb-run-color-map-changed'));
 }
 
 function runIdToRunName(runId: string): string {
@@ -338,9 +339,12 @@ export class RunsEffects {
           debounceTime(300),
           withLatestFrom(this.store.select(getRunColorMap)),
           tap(([, runColorMap]) => {
-            persistPolymerColorMap(runColorMap);
-          }),
-          catchError(() => of(null))
+            try {
+              persistPolymerColorMap(runColorMap);
+            } catch {
+              // Selector may fail during test teardown; safe to ignore.
+            }
+          })
         );
       },
       {dispatch: false}

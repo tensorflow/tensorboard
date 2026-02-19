@@ -89,8 +89,9 @@ function createAutoUpdateColorScale(
     colorScale.setDomain(getDomain());
   }
   store.addListener(update);
-  // Also re-read whenever another tab (or the NgRx effects in the same
-  // tab) writes to localStorage.
+  // Re-read when the NgRx effects write a new color map (same tab).
+  window.addEventListener('tb-run-color-map-changed', update);
+  // Re-read when another browser tab writes to localStorage.
   window.addEventListener('storage', (e: StorageEvent) => {
     if (e.key === POLYMER_RUN_COLOR_MAP_KEY) update();
   });
