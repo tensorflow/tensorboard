@@ -244,6 +244,10 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
   _envStoreListener: baseStore.ListenKey;
 
   override attached() {
+    // Re-read selection from localStorage every time this element enters
+    // the active DOM (e.g. user switches plugin tabs).
+    this.set('runSelectionState', readSelectionFromLocalStorage());
+
     this._runStoreListener = runsStore.addListener(() => {
       this.set('runs', runsStore.getRuns());
     });
