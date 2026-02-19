@@ -27,6 +27,36 @@ import {
 } from './paginatedViewStore';
 import {TfDomRepeat} from './tf-dom-repeat';
 
+const TAG_GROUP_EXPANSION_KEY = '_tb_tag_group_expansion.v1';
+
+/**
+ * Read the persisted expansion map (shared with the NgRx time-series
+ * dashboard).  Returns null when nothing is stored.
+ */
+function readExpansionMap(): Map<string, boolean> | null {
+  const raw = window.localStorage.getItem(TAG_GROUP_EXPANSION_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as {
+      version?: number;
+      groups?: Array<[string, boolean]>;
+    };
+    if (parsed.version !== 1 || !Array.isArray(parsed.groups)) return null;
+    return new Map(parsed.groups);
+  } catch {
+    return null;
+  }
+}
+
+function writeExpansionEntry(name: string, opened: boolean): void {
+  const map = readExpansionMap() ?? new Map<string, boolean>();
+  map.set(name, opened);
+  window.localStorage.setItem(
+    TAG_GROUP_EXPANSION_KEY,
+    JSON.stringify({version: 1, groups: Array.from(map.entries())})
+  );
+}
+
 @customElement('tf-category-paginated-view')
 class TfCategoryPaginatedView<
   CategoryItem extends {}
@@ -375,6 +405,9 @@ class TfCategoryPaginatedView<
   }
   _togglePane() {
     this.opened = !this.opened;
+    if (this.category?.name) {
+      writeExpansionEntry(this.category.name, this.opened);
+    }
   }
 
   @observe('opened')
@@ -420,7 +453,12 @@ class TfCategoryPaginatedView<
   }
   ready() {
     super.ready();
-    this.opened = this.initialOpened == null ? true : this.initialOpened;
+    const stored = this.category?.name ? readExpansionMap() : null;
+    if (stored !== null && this.category?.name && stored.has(this.category.name)) {
+      this.opened = stored.get(this.category.name)!;
+    } else {
+      this.opened = this.initialOpened == null ? true : this.initialOpened;
+    }
     this._limitListener = () => {
       this.set('_limit', getLimit());
     };
