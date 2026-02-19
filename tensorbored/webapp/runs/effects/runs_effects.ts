@@ -121,8 +121,7 @@ const POLYMER_RUN_COLOR_MAP_KEY = '_tb_run_color_map';
 
 function persistRunColorsToLocalStorage(
   runColorOverrides: Map<string, string>,
-  groupKeyToColorId: Map<string, number>,
-  runColorMap: Record<string, string>
+  groupKeyToColorId: Map<string, number>
 ) {
   const payload: StoredRunColorsV1 = {
     version: 1,
@@ -130,9 +129,9 @@ function persistRunColorsToLocalStorage(
     groupKeyToColorId: Array.from(groupKeyToColorId.entries()),
   };
   window.localStorage.setItem(RUN_COLOR_STORAGE_KEY, JSON.stringify(payload));
+}
 
-  // Write a run-name → hex-color map so the Polymer old-style dashboards
-  // (Scalars, Images, Text) display the same colors as the time-series tab.
+function persistPolymerColorMap(runColorMap: Record<string, string>) {
   const polymerColorMap: Record<string, string> = {};
   for (const [runId, hex] of Object.entries(runColorMap)) {
     polymerColorMap[runIdToRunName(runId)] = hex;
@@ -312,16 +311,36 @@ export class RunsEffects {
           debounceTime(200),
           withLatestFrom(
             this.store.select(getRunColorOverride),
-            this.store.select(getGroupKeyToColorIdMap),
-            this.store.select(getRunColorMap)
+            this.store.select(getGroupKeyToColorIdMap)
           ),
-          tap(([, runColorOverrides, groupKeyToColorId, runColorMap]) => {
+          tap(([, runColorOverrides, groupKeyToColorId]) => {
             persistRunColorsToLocalStorage(
               runColorOverrides,
-              groupKeyToColorId,
-              runColorMap
+              groupKeyToColorId
             );
           })
+        );
+      },
+      {dispatch: false}
+    );
+
+    this.persistPolymerColorMap$ = createEffect(
+      () => {
+        return this.actions$.pipe(
+          ofType(
+            actions.runColorChanged,
+            actions.runGroupByChanged,
+            actions.fetchRunsSucceeded,
+            actions.runColorSettingsLoaded,
+            actions.runColorOverridesFetchedFromApi,
+            actions.profileRunsSettingsApplied
+          ),
+          debounceTime(300),
+          withLatestFrom(this.store.select(getRunColorMap)),
+          tap(([, runColorMap]) => {
+            persistPolymerColorMap(runColorMap);
+          }),
+          catchError(() => of(null))
         );
       },
       {dispatch: false}
@@ -432,6 +451,9 @@ export class RunsEffects {
 
   /** @export */
   persistRunColorSettings$;
+
+  /** @export */
+  persistPolymerColorMap$;
 
   /** @export */
   loadRunSelectionFromStorage$;
