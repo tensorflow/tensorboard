@@ -63,7 +63,7 @@ import {Component, Input, OnInit, Type, ViewContainerRef} from '@angular/core';
  *      declarations: [MyCustomButtonComponent],
  *      providers: [{
  *        provide: CustomizableButton,
- *        useClass: MyCustomButtonComponent,
+ *        useValue: MyCustomButtonComponent,
  *      }]
  *    })
  */

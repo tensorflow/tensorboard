@@ -168,6 +168,26 @@ describe('histogram test', () => {
     return Array.from(elements).map((el) => el.textContent ?? '');
   }
 
+  // Angular 16 changed how element sizes are computed, causing chart rendering
+  // to vary across versions. Fix the content size so axis and position tests
+  // get consistent results.
+  function mockContentRect(fixture: ComponentFixture<TestableComponent>): void {
+    const contentEl = fixture.debugElement.query(
+      By.css('.content')
+    ).nativeElement;
+    spyOn(contentEl, 'getBoundingClientRect').and.returnValue({
+      width: 30,
+      height: 50,
+      top: 0,
+      left: 0,
+      right: 30,
+      bottom: 50,
+      x: 0,
+      y: 0,
+      toJSON: () => {},
+    } as DOMRect);
+  }
+
   describe('x axis render', () => {
     it('does not render until component becomes visible', () => {
       const fixture = createComponent('foo', [buildHistogramDatum({})]);
@@ -204,6 +224,7 @@ describe('histogram test', () => {
       fixture.componentInstance.mode = HistogramMode.OFFSET;
       fixture.componentInstance.timeProperty = TimeProperty.STEP;
       fixture.detectChanges();
+      mockContentRect(fixture);
       intersectionObserver.simulateVisibilityChange(fixture, true);
 
       expect(
@@ -229,6 +250,7 @@ describe('histogram test', () => {
       fixture.componentInstance.mode = HistogramMode.OFFSET;
       fixture.componentInstance.timeProperty = TimeProperty.STEP;
       fixture.detectChanges();
+      mockContentRect(fixture);
       intersectionObserver.simulateVisibilityChange(fixture, true);
       const beforeAxisLabels = getAxisLabelText(
         fixture.debugElement.query(byCss.X_AXIS)
@@ -296,6 +318,7 @@ describe('histogram test', () => {
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
         fixture.detectChanges();
+        mockContentRect(fixture);
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
         expect(
@@ -333,6 +356,7 @@ describe('histogram test', () => {
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
         fixture.detectChanges();
+        mockContentRect(fixture);
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
         expect(
@@ -358,6 +382,7 @@ describe('histogram test', () => {
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.WALL_TIME;
         fixture.detectChanges();
+        mockContentRect(fixture);
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
         expect(
@@ -387,6 +412,7 @@ describe('histogram test', () => {
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.RELATIVE;
         fixture.detectChanges();
+        mockContentRect(fixture);
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
         expect(
@@ -414,6 +440,7 @@ describe('histogram test', () => {
         fixture.componentInstance.mode = HistogramMode.OVERLAY;
         fixture.componentInstance.timeProperty = TimeProperty.WALL_TIME;
         fixture.detectChanges();
+        mockContentRect(fixture);
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
         expect(
@@ -450,6 +477,7 @@ describe('histogram test', () => {
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
         fixture.detectChanges();
+        mockContentRect(fixture);
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
         expect(
@@ -474,6 +502,7 @@ describe('histogram test', () => {
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
         fixture.detectChanges();
+        mockContentRect(fixture);
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
         fixture.componentInstance.timeProperty = TimeProperty.WALL_TIME;
@@ -513,6 +542,7 @@ describe('histogram test', () => {
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
         fixture.detectChanges();
+        mockContentRect(fixture);
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
         expect(
@@ -547,6 +577,7 @@ describe('histogram test', () => {
         fixture.componentInstance.mode = HistogramMode.OVERLAY;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
         fixture.detectChanges();
+        mockContentRect(fixture);
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
         // Again, rendered in 30x50 box and histogram now spans 50px high!
