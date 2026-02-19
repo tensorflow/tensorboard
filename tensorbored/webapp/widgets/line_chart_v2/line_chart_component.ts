@@ -256,11 +256,7 @@ export class LineChartComponent
     // The ResizeDetectorDirective's skip(1) can swallow the only
     // ResizeObserver event in that window, leaving the renderer and the
     // interactive overlay with stale dimensions.  Re-read and apply now.
-    if (
-      changes['disableUpdate'] &&
-      !this.disableUpdate &&
-      this.lineChart
-    ) {
+    if (changes['disableUpdate'] && !this.disableUpdate && this.lineChart) {
       this.readAndUpdateDomDimensions();
       this.lineChart.resize(this.domDimensions.main);
     }
