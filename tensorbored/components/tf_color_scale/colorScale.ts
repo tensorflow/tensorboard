@@ -18,6 +18,18 @@ import {experimentsStore} from '../tf_backend/experimentsStore';
 import {runsStore} from '../tf_backend/runsStore';
 import {standard} from './palettes';
 
+const POLYMER_RUN_COLOR_MAP_KEY = '_tb_run_color_map';
+
+function readColorMapFromLocalStorage(): Record<string, string> {
+  const raw = window.localStorage.getItem(POLYMER_RUN_COLOR_MAP_KEY);
+  if (!raw) return {};
+  try {
+    return JSON.parse(raw) as Record<string, string>;
+  } catch {
+    return {};
+  }
+}
+
 // Example usage:
 // runs = ["train", "test", "test1", "test2"]
 // ccs = new ColorScale();
@@ -33,14 +45,20 @@ export class ColorScale {
    */
   constructor(private readonly palette: string[] = standard) {}
   /**
-   * Set the domain of strings.
+   * Set the domain of strings.  Colours are pulled from the time-series
+   * dashboard's colour map in localStorage first; the fixed palette is
+   * only used as a fallback for runs that don't appear there yet.
    * @param {Array<string>} strings - An array of possible strings to use as the
    *     domain for your scale.
    */
   public setDomain(strings: string[]): this {
+    const storedColors = readColorMapFromLocalStorage();
     this.identifiers = d3.map();
     strings.forEach((s, i) => {
-      this.identifiers.set(s, this.palette[i % this.palette.length]);
+      this.identifiers.set(
+        s,
+        storedColors[s] ?? this.palette[i % this.palette.length]
+      );
     });
     return this;
   }
@@ -67,11 +85,16 @@ function createAutoUpdateColorScale(
   getDomain: () => string[]
 ): (runName: string) => string {
   const colorScale = new ColorScale();
-  function updateRunsColorScale(): void {
+  function update(): void {
     colorScale.setDomain(getDomain());
   }
-  store.addListener(updateRunsColorScale);
-  updateRunsColorScale();
+  store.addListener(update);
+  // Also re-read whenever another tab (or the NgRx effects in the same
+  // tab) writes to localStorage.
+  window.addEventListener('storage', (e: StorageEvent) => {
+    if (e.key === POLYMER_RUN_COLOR_MAP_KEY) update();
+  });
+  update();
   return (domain) => colorScale.getColor(domain);
 }
 
