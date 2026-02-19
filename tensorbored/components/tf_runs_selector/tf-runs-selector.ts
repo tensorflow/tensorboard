@@ -105,6 +105,7 @@ function writeSelectionToLocalStorage(state: Record<string, boolean>): void {
     RUN_SELECTION_KEY,
     JSON.stringify({version: 1, runSelection: result})
   );
+  window.dispatchEvent(new CustomEvent('tb-run-selection-changed'));
 }
 
 @customElement('tf-runs-selector')
@@ -243,10 +244,11 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
 
   _envStoreListener: baseStore.ListenKey;
 
+  private _selectionChangedListener: (() => void) | null = null;
+  private _syncingFromStorage = false;
+
   override attached() {
-    // Re-read selection from localStorage every time this element enters
-    // the active DOM (e.g. user switches plugin tabs).
-    this.set('runSelectionState', readSelectionFromLocalStorage());
+    this._syncFromStorage();
 
     this._runStoreListener = runsStore.addListener(() => {
       this.set('runs', runsStore.getRuns());
@@ -256,11 +258,30 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
       this.set('dataLocation', environmentStore.getDataLocation());
     });
     this.set('dataLocation', environmentStore.getDataLocation());
+
+    this._selectionChangedListener = () => this._syncFromStorage();
+    window.addEventListener(
+      'tb-run-selection-changed',
+      this._selectionChangedListener
+    );
+  }
+
+  private _syncFromStorage() {
+    this._syncingFromStorage = true;
+    this.set('runSelectionState', readSelectionFromLocalStorage());
+    this._syncingFromStorage = false;
   }
 
   override detached() {
     runsStore.removeListenerByKey(this._runStoreListener);
     environmentStore.removeListenerByKey(this._envStoreListener);
+    if (this._selectionChangedListener) {
+      window.removeEventListener(
+        'tb-run-selection-changed',
+        this._selectionChangedListener
+      );
+      this._selectionChangedListener = null;
+    }
   }
 
   _toggleAll() {
@@ -294,6 +315,7 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
   }
 
   _storeRunSelectionState() {
+    if (this._syncingFromStorage) return;
     writeSelectionToLocalStorage(
       this.runSelectionState as Record<string, boolean>
     );

@@ -55,6 +55,7 @@ function writeExpansionEntry(name: string, opened: boolean): void {
     TAG_GROUP_EXPANSION_KEY,
     JSON.stringify({version: 1, groups: Array.from(map.entries())})
   );
+  window.dispatchEvent(new CustomEvent('tb-tag-group-expansion-changed'));
 }
 
 @customElement('tf-category-paginated-view')
@@ -451,6 +452,8 @@ class TfCategoryPaginatedView<
     const {type, compositeSearch} = this.category.metadata as any;
     return compositeSearch && type === CategoryType.SEARCH_RESULTS;
   }
+  private _expansionChangedListener: (() => void) | null = null;
+
   ready() {
     super.ready();
     const stored = this.category?.name ? readExpansionMap() : null;
@@ -468,15 +471,23 @@ class TfCategoryPaginatedView<
     };
     addLimitListener(this._limitListener);
     this._limitListener();
-  }
-  attached() {
-    // Re-read expansion state every time this element enters the active
-    // DOM (e.g. user switches plugin tabs).
-    this._applyStoredExpansion();
+
+    this._expansionChangedListener = () => this._applyStoredExpansion();
+    window.addEventListener(
+      'tb-tag-group-expansion-changed',
+      this._expansionChangedListener
+    );
   }
 
   detached() {
     removeLimitListener(this._limitListener);
+    if (this._expansionChangedListener) {
+      window.removeEventListener(
+        'tb-tag-group-expansion-changed',
+        this._expansionChangedListener
+      );
+      this._expansionChangedListener = null;
+    }
   }
 
   _applyStoredExpansion() {

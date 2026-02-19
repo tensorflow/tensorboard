@@ -157,6 +157,7 @@ function persistRunSelectionToLocalStorage(runSelection: Map<string, boolean>) {
     RUN_SELECTION_STORAGE_KEY,
     JSON.stringify(payload)
   );
+  window.dispatchEvent(new CustomEvent('tb-run-selection-changed'));
 }
 
 function runToRunId(run: string, experimentId: string) {

@@ -890,6 +890,7 @@ export class MetricsEffects implements OnInitEffects {
         } else {
           window.localStorage.removeItem(TAG_GROUP_EXPANSION_STORAGE_KEY);
         }
+        window.dispatchEvent(new CustomEvent('tb-tag-group-expansion-changed'));
       })
     );
 
