@@ -22,6 +22,7 @@ import {environmentStore} from '../tf_backend/environmentStore';
 import {runsStore} from '../tf_backend/runsStore';
 import {runsColorScale} from '../tf_color_scale/colorScale';
 import '../tf_dashboard_common/tf-multi-checkbox';
+import * as storage from '../tf_storage/storage';
 import '../tf_wbr_string/tf-wbr-string';
 
 @customElement('tf-runs-selector')
@@ -115,8 +116,14 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
 
   @property({
     type: Object,
+    observer: '_storeRunSelectionState',
   })
-  runSelectionState: object = {};
+  runSelectionState: object = storage
+    .getObjectInitializer('runSelectionState', {
+      defaultValue: {},
+      useLocalStorage: true,
+    })
+    .call(this);
 
   @property({
     type: String,
@@ -205,7 +212,8 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
     return dataLocation && dataLocation.length > _dataLocationClipLength;
   }
 
-  // Run selection state and regex are no longer persisted to the URL hash.
-  // Run selection is managed via localStorage (runs_effects.ts).
-  // Regex filter is managed via Angular query params ('runFilter').
+  _storeRunSelectionState = storage.getObjectObserver('runSelectionState', {
+    defaultValue: {},
+    useLocalStorage: true,
+  });
 }

@@ -100,18 +100,33 @@ function buildTagAxisScalesForProfile(
 }
 
 const RUN_SELECTION_STORAGE_KEY = '_tb_run_selection.v1';
+const POLYMER_RUN_SELECTION_STORAGE_KEY = 'runSelectionState';
 
 function hasStoredRunSelection(): boolean {
   const raw = window.localStorage.getItem(RUN_SELECTION_STORAGE_KEY);
-  if (!raw) {
-    return false;
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw) as {runSelection?: unknown};
+      if (Array.isArray(parsed.runSelection) && parsed.runSelection.length > 0)
+        return true;
+    } catch {
+      // fall through to Polymer check
+    }
   }
-  try {
-    const parsed = JSON.parse(raw) as {runSelection?: unknown};
-    return Array.isArray(parsed.runSelection) && parsed.runSelection.length > 0;
-  } catch {
-    return false;
+
+  // Also check the Polymer tf-runs-selector localStorage format.
+  const polymerRaw = window.localStorage.getItem(
+    POLYMER_RUN_SELECTION_STORAGE_KEY
+  );
+  if (polymerRaw) {
+    try {
+      const obj = JSON.parse(atob(polymerRaw)) as Record<string, boolean>;
+      return Object.keys(obj).length > 0;
+    } catch {
+      // ignore
+    }
   }
+  return false;
 }
 
 /**
