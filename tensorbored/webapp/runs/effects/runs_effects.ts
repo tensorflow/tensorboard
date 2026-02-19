@@ -37,7 +37,6 @@ import {
   getActiveRoute,
   getDashboardExperimentNames,
   getExperimentIdsFromRoute,
-  getRunColorMap,
   getRuns,
   getRunsLoadState,
 } from '../../selectors';
@@ -117,8 +116,6 @@ function safeParseStoredRunSelection(
   }
 }
 
-const POLYMER_RUN_COLOR_MAP_KEY = '_tb_run_color_map';
-
 function persistRunColorsToLocalStorage(
   runColorOverrides: Map<string, string>,
   groupKeyToColorId: Map<string, number>
@@ -129,23 +126,6 @@ function persistRunColorsToLocalStorage(
     groupKeyToColorId: Array.from(groupKeyToColorId.entries()),
   };
   window.localStorage.setItem(RUN_COLOR_STORAGE_KEY, JSON.stringify(payload));
-}
-
-function persistPolymerColorMap(runColorMap: Record<string, string>) {
-  const polymerColorMap: Record<string, string> = {};
-  for (const [runId, hex] of Object.entries(runColorMap)) {
-    polymerColorMap[runIdToRunName(runId)] = hex;
-  }
-  window.localStorage.setItem(
-    POLYMER_RUN_COLOR_MAP_KEY,
-    JSON.stringify(polymerColorMap)
-  );
-  window.dispatchEvent(new CustomEvent('tb-run-color-map-changed'));
-}
-
-function runIdToRunName(runId: string): string {
-  const slashIdx = runId.indexOf('/');
-  return slashIdx >= 0 ? runId.substring(slashIdx + 1) : runId;
 }
 
 function persistRunSelectionToLocalStorage(runSelection: Map<string, boolean>) {
@@ -325,31 +305,6 @@ export class RunsEffects {
       {dispatch: false}
     );
 
-    this.persistPolymerColorMap$ = createEffect(
-      () => {
-        return this.actions$.pipe(
-          ofType(
-            actions.runColorChanged,
-            actions.runGroupByChanged,
-            actions.fetchRunsSucceeded,
-            actions.runColorSettingsLoaded,
-            actions.runColorOverridesFetchedFromApi,
-            actions.profileRunsSettingsApplied
-          ),
-          debounceTime(300),
-          withLatestFrom(this.store.select(getRunColorMap)),
-          tap(([, runColorMap]) => {
-            try {
-              persistPolymerColorMap(runColorMap);
-            } catch {
-              // Selector may fail during test teardown; safe to ignore.
-            }
-          })
-        );
-      },
-      {dispatch: false}
-    );
-
     this.persistRunSelection$ = createEffect(
       () => {
         return this.actions$.pipe(
@@ -455,9 +410,6 @@ export class RunsEffects {
 
   /** @export */
   persistRunColorSettings$;
-
-  /** @export */
-  persistPolymerColorMap$;
 
   /** @export */
   loadRunSelectionFromStorage$;

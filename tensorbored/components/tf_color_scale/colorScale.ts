@@ -18,56 +18,119 @@ import {experimentsStore} from '../tf_backend/experimentsStore';
 import {runsStore} from '../tf_backend/runsStore';
 import {standard} from './palettes';
 
-const POLYMER_RUN_COLOR_MAP_KEY = '_tb_run_color_map';
+// ---- Inline OKLCH color computation (must match webapp/util/oklch_colors.ts) -
 
-function readColorMapFromLocalStorage(): Record<string, string> {
-  const raw = window.localStorage.getItem(POLYMER_RUN_COLOR_MAP_KEY);
+function fnv1a32(input: string): number {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
+}
+
+function hashToHue(hash: number): number {
+  return (hash / 0x100000000) * 360;
+}
+
+function oklchToHex(L: number, C: number, H: number): string {
+  const hRad = (H * Math.PI) / 180;
+  const labA = C * Math.cos(hRad);
+  const labB = C * Math.sin(hRad);
+  const l_ = L + 0.3963377774 * labA + 0.2158037573 * labB;
+  const m_ = L - 0.1055613458 * labA - 0.0638541728 * labB;
+  const s_ = L - 0.0894841775 * labA - 1.291485548 * labB;
+  const l = l_ * l_ * l_;
+  const m = m_ * m_ * m_;
+  const s = s_ * s_ * s_;
+  const linR = +4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s;
+  const linG = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
+  const linB = -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s;
+  const toSrgb = (x: number) =>
+    x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055;
+  const clamp = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x);
+  const r = Math.round(clamp(toSrgb(linR)) * 255);
+  const g = Math.round(clamp(toSrgb(linG)) * 255);
+  const b = Math.round(clamp(toSrgb(linB)) * 255);
+  return (
+    '#' +
+    r.toString(16).padStart(2, '0') +
+    g.toString(16).padStart(2, '0') +
+    b.toString(16).padStart(2, '0')
+  );
+}
+
+const LIGHTNESS = 0.65;
+const CHROMA = 0.155;
+
+function hashColorForRun(runName: string): string {
+  const scopedKey = 'run|' + runName;
+  const colorId = fnv1a32(scopedKey);
+  return oklchToHex(LIGHTNESS, CHROMA, hashToHue(colorId));
+}
+
+// ---- Read overrides from _tb_run_colors.v1 ----------------------------------
+
+const RUN_COLORS_KEY = '_tb_run_colors.v1';
+
+function stripExpPrefix(runId: string): string {
+  const i = runId.indexOf('/');
+  return i >= 0 ? runId.substring(i + 1) : runId;
+}
+
+/**
+ * Read _tb_run_colors.v1 and build a bare-run-name → hex-color map.
+ * Priority: explicit override > groupKeyToColorId hash > null.
+ */
+function readStoredColors(): Record<string, string> {
+  const raw = window.localStorage.getItem(RUN_COLORS_KEY);
   if (!raw) return {};
   try {
-    return JSON.parse(raw) as Record<string, string>;
+    const parsed = JSON.parse(raw) as {
+      version?: number;
+      runColorOverrides?: Array<[string, string]>;
+      groupKeyToColorId?: Array<[string, number]>;
+    };
+    if (parsed.version !== 1) return {};
+    const out: Record<string, string> = {};
+    // Default colors from the stored groupKey → colorId map.
+    if (Array.isArray(parsed.groupKeyToColorId)) {
+      for (const [groupKey, colorId] of parsed.groupKeyToColorId) {
+        if (!groupKey.startsWith('run|')) continue;
+        const runId = groupKey.substring(4); // strip "run|"
+        const name = stripExpPrefix(runId);
+        if (colorId > 6) {
+          out[name] = oklchToHex(LIGHTNESS, CHROMA, hashToHue(colorId));
+        }
+      }
+    }
+    // Explicit overrides win.
+    if (Array.isArray(parsed.runColorOverrides)) {
+      for (const [runId, color] of parsed.runColorOverrides) {
+        out[stripExpPrefix(runId)] = color;
+      }
+    }
+    return out;
   } catch {
     return {};
   }
 }
 
-// Example usage:
-// runs = ["train", "test", "test1", "test2"]
-// ccs = new ColorScale();
-// ccs.domain(runs);
-// ccs.getColor("train");
-// ccs.getColor("test1");
+// ---- ColorScale -------------------------------------------------------------
+
 export class ColorScale {
   private identifiers = d3.map();
-  /**
-   * Creates a color scale with optional custom palette.
-   * @param {Array<string>} palette The color palette to use, as an
-   *   Array of hex strings. Defaults to the standard palette.
-   */
   constructor(private readonly palette: string[] = standard) {}
-  /**
-   * Set the domain of strings.  Colours are pulled from the time-series
-   * dashboard's colour map in localStorage first; the fixed palette is
-   * only used as a fallback for runs that don't appear there yet.
-   * @param {Array<string>} strings - An array of possible strings to use as the
-   *     domain for your scale.
-   */
+
   public setDomain(strings: string[]): this {
-    const storedColors = readColorMapFromLocalStorage();
+    const stored = readStoredColors();
     this.identifiers = d3.map();
-    strings.forEach((s, i) => {
-      this.identifiers.set(
-        s,
-        storedColors[s] ?? this.palette[i % this.palette.length]
-      );
-    });
+    for (const s of strings) {
+      this.identifiers.set(s, stored[s] ?? hashColorForRun(s));
+    }
     return this;
   }
-  /**
-   * Use the color scale to transform an element in the domain into a color.
-   * @param {string} The input string to map to a color.
-   * @return {string} The color corresponding to that input string.
-   * @throws Will error if input string is not in the scale's domain.
-   */
+
   public getColor(s: string): string {
     if (!this.identifiers.has(s)) {
       throw new Error(`String ${s} was not in the domain.`);
@@ -76,10 +139,8 @@ export class ColorScale {
   }
 }
 
-/**
- * A color scale of a domain from a store. Automatically updated when the store
- * emits a change.
- */
+// ---- Auto-updating color scales ---------------------------------------------
+
 function createAutoUpdateColorScale(
   store: BaseStore,
   getDomain: () => string[]
@@ -89,14 +150,8 @@ function createAutoUpdateColorScale(
     colorScale.setDomain(getDomain());
   }
   store.addListener(update);
-  // Re-read when the NgRx effects write a new color map (same tab).
-  window.addEventListener('tb-run-color-map-changed', update);
-  // Re-read when another browser tab writes to localStorage.
-  window.addEventListener('storage', (e: StorageEvent) => {
-    if (e.key === POLYMER_RUN_COLOR_MAP_KEY) update();
-  });
   update();
-  return (domain) => colorScale.getColor(domain);
+  return (runName) => colorScale.getColor(runName);
 }
 
 export const runsColorScale = createAutoUpdateColorScale(runsStore, () =>
