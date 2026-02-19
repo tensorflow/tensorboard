@@ -35,6 +35,86 @@ import {DEFAULT_TOOLTIP_COLUMNS} from '../../../components/vz_line_chart2/vz-lin
 
 type RunTagItem = {run: string; tag: string};
 
+const AXIS_SCALES_KEY = '_tb_axis_scales.v1';
+
+function ngRxScaleToYScale(name: string): YScaleType {
+  if (name === 'log10') return YScaleType.LOG;
+  if (name === 'symlog10') return YScaleType.SYMLOG;
+  return YScaleType.LINEAR;
+}
+
+function yScaleToNgRxName(scale: YScaleType): string {
+  if (scale === YScaleType.LOG) return 'log10';
+  if (scale === YScaleType.SYMLOG) return 'symlog10';
+  return 'linear';
+}
+
+function ngRxScaleToXScale(name: string): AxisScaleType {
+  if (name === 'log10') return AxisScaleType.LOG;
+  if (name === 'symlog10') return AxisScaleType.SYMLOG;
+  return AxisScaleType.LINEAR;
+}
+
+function xScaleToNgRxName(scale: AxisScaleType): string {
+  if (scale === AxisScaleType.LOG) return 'log10';
+  if (scale === AxisScaleType.SYMLOG) return 'symlog10';
+  return 'linear';
+}
+
+function readAxisScalesForTag(tag: string): {y: YScaleType; x: AxisScaleType} {
+  const raw = window.localStorage.getItem(AXIS_SCALES_KEY);
+  if (!raw) return {y: YScaleType.LINEAR, x: AxisScaleType.LINEAR};
+  try {
+    const parsed = JSON.parse(raw) as {
+      version?: number;
+      yAxisScale?: string;
+      xAxisScale?: string;
+      tagAxisScales?: Record<string, {y?: string; x?: string}>;
+    };
+    if (parsed.version !== 1)
+      return {y: YScaleType.LINEAR, x: AxisScaleType.LINEAR};
+    const perTag = parsed.tagAxisScales?.[tag];
+    const yName = perTag?.y ?? parsed.yAxisScale ?? 'linear';
+    const xName = perTag?.x ?? parsed.xAxisScale ?? 'linear';
+    return {y: ngRxScaleToYScale(yName), x: ngRxScaleToXScale(xName)};
+  } catch {
+    return {y: YScaleType.LINEAR, x: AxisScaleType.LINEAR};
+  }
+}
+
+function persistTagAxisScale(
+  tag: string,
+  yScale: YScaleType,
+  xScale: AxisScaleType
+): void {
+  const raw = window.localStorage.getItem(AXIS_SCALES_KEY);
+  let stored: Record<string, unknown> = {version: 1};
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
+      if (parsed['version'] === 1) stored = parsed;
+    } catch {
+      // use default
+    }
+  }
+  if (!stored['tagAxisScales']) stored['tagAxisScales'] = {};
+  const tagScales = stored['tagAxisScales'] as Record<
+    string,
+    Record<string, string>
+  >;
+  const yName = yScaleToNgRxName(yScale);
+  const xName = xScaleToNgRxName(xScale);
+  const entry: Record<string, string> = {};
+  if (yName !== 'linear') entry['y'] = yName;
+  if (xName !== 'linear') entry['x'] = xName;
+  if (Object.keys(entry).length > 0) {
+    tagScales[tag] = entry;
+  } else {
+    delete tagScales[tag];
+  }
+  window.localStorage.setItem(AXIS_SCALES_KEY, JSON.stringify(stored));
+}
+
 // Request at most this many runs at once.
 //
 // Back-of-the-envelope math: each scalar datum JSON value contains
@@ -419,12 +499,27 @@ export class TfScalarCard extends PolymerElement {
     this.redraw();
   }
 
+  ready() {
+    super.ready();
+    if (this.tag) {
+      const scales = readAxisScalesForTag(this.tag);
+      this._yScaleType = scales.y;
+      this._xScaleType = scales.x;
+    }
+  }
+
   _toggleYScaleType() {
     this.set('_yScaleType', this._getNextYScaleType(this._yScaleType));
+    if (this.tag) {
+      persistTagAxisScale(this.tag, this._yScaleType, this._xScaleType);
+    }
   }
 
   _toggleXScaleType() {
     this.set('_xScaleType', this._getNextXScaleType(this._xScaleType));
+    if (this.tag) {
+      persistTagAxisScale(this.tag, this._yScaleType, this._xScaleType);
+    }
   }
 
   _getNextYScaleType(scaleType: YScaleType): YScaleType {
