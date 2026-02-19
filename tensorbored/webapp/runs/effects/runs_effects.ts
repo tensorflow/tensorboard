@@ -59,16 +59,6 @@ import {getDarkModeEnabled} from '../../feature_flag/store/feature_flag_selector
 const RUN_COLOR_STORAGE_KEY = '_tb_run_colors.v1';
 const RUN_SELECTION_STORAGE_KEY = '_tb_run_selection.v1';
 
-/**
- * The Polymer tf-runs-selector persists its `runSelectionState` to
- * localStorage via tf-storage using base64-encoded JSON.  The key names
- * in that object are bare run names (no experiment prefix), while the
- * NgRx state uses full run IDs (`experimentId/runName`).
- *
- * To keep the two systems in sync we read from and write to both formats.
- */
-const POLYMER_RUN_SELECTION_STORAGE_KEY = 'runSelectionState';
-
 type StoredRunColorsV1 = {
   version: 1;
   runColorOverrides: Array<[runId: string, color: string]>;
@@ -127,23 +117,6 @@ function safeParseStoredRunSelection(
   }
 }
 
-/**
- * Read the Polymer tf-runs-selector localStorage format.  Returns run
- * entries keyed by bare run name (no experiment prefix).
- */
-function safeParsePolymerRunSelection(): Array<
-  [runName: string, selected: boolean]
-> {
-  const raw = window.localStorage.getItem(POLYMER_RUN_SELECTION_STORAGE_KEY);
-  if (!raw) return [];
-  try {
-    const obj = JSON.parse(atob(raw)) as Record<string, boolean>;
-    return Object.entries(obj);
-  } catch {
-    return [];
-  }
-}
-
 const POLYMER_RUN_COLOR_MAP_KEY = '_tb_run_color_map';
 
 function persistRunColorsToLocalStorage(
@@ -183,18 +156,6 @@ function persistRunSelectionToLocalStorage(runSelection: Map<string, boolean>) {
   window.localStorage.setItem(
     RUN_SELECTION_STORAGE_KEY,
     JSON.stringify(payload)
-  );
-
-  // Also write the Polymer-compatible format so that old-style plugin
-  // dashboards (Scalars, Images, Text) pick up selection changes made
-  // in the time-series dashboard.
-  const polymerState: Record<string, boolean> = {};
-  for (const [runId, selected] of runSelection) {
-    polymerState[runIdToRunName(runId)] = selected;
-  }
-  window.localStorage.setItem(
-    POLYMER_RUN_SELECTION_STORAGE_KEY,
-    btoa(JSON.stringify(polymerState))
   );
 }
 
@@ -316,15 +277,7 @@ export class RunsEffects {
           const stored = safeParseStoredRunSelection(
             window.localStorage.getItem(RUN_SELECTION_STORAGE_KEY)
           );
-
-          let runSelection = stored.runSelection;
-
-          // If the NgRx format is empty, fall back to the Polymer
-          // tf-runs-selector format (bare run names).  This picks up
-          // selections made in old-style plugin dashboards.
-          if (runSelection.length === 0) {
-            runSelection = safeParsePolymerRunSelection();
-          }
+          const runSelection = stored.runSelection;
 
           // If stored selection exists but ALL runs are set to false
           // (none visible), discard it so the default behaviour (all

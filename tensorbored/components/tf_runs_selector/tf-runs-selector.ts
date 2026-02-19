@@ -22,8 +22,92 @@ import {environmentStore} from '../tf_backend/environmentStore';
 import {runsStore} from '../tf_backend/runsStore';
 import {runsColorScale} from '../tf_color_scale/colorScale';
 import '../tf_dashboard_common/tf-multi-checkbox';
-import * as storage from '../tf_storage/storage';
 import '../tf_wbr_string/tf-wbr-string';
+
+const RUN_SELECTION_KEY = '_tb_run_selection.v1';
+
+/**
+ * Read the NgRx run-selection localStorage entry and return it as a
+ * bare-run-name → boolean map suitable for tf-multi-checkbox.
+ */
+function readSelectionFromLocalStorage(): Record<string, boolean> {
+  const raw = window.localStorage.getItem(RUN_SELECTION_KEY);
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw) as {
+      version?: number;
+      runSelection?: Array<[string, boolean]>;
+    };
+    if (parsed.version !== 1 || !Array.isArray(parsed.runSelection)) return {};
+    const out: Record<string, boolean> = {};
+    for (const [runId, selected] of parsed.runSelection) {
+      const slashIdx = runId.indexOf('/');
+      const name = slashIdx >= 0 ? runId.substring(slashIdx + 1) : runId;
+      out[name] = selected;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Merge a bare-run-name selection map back into the NgRx localStorage
+ * entry, preserving any run-IDs that we don't know about.
+ */
+function writeSelectionToLocalStorage(
+  state: Record<string, boolean>
+): void {
+  const raw = window.localStorage.getItem(RUN_SELECTION_KEY);
+  let existing: Array<[string, boolean]> = [];
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw) as {
+        version?: number;
+        runSelection?: Array<[string, boolean]>;
+      };
+      if (parsed.version === 1 && Array.isArray(parsed.runSelection)) {
+        existing = parsed.runSelection;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  // Build a set of bare names we're about to write so we can detect
+  // which existing entries to update vs. keep as-is.
+  const updatedIds = new Set<string>();
+  const result: Array<[string, boolean]> = [];
+
+  for (const [runId, _] of existing) {
+    const slashIdx = runId.indexOf('/');
+    const name = slashIdx >= 0 ? runId.substring(slashIdx + 1) : runId;
+    if (name in state) {
+      result.push([runId, state[name]]);
+      updatedIds.add(runId);
+    } else {
+      result.push([runId, _]);
+      updatedIds.add(runId);
+    }
+  }
+
+  // Add entries from `state` that weren't in `existing` (bare names).
+  for (const [name, selected] of Object.entries(state)) {
+    const alreadyCovered = existing.some(([runId]) => {
+      const slashIdx = runId.indexOf('/');
+      const n = slashIdx >= 0 ? runId.substring(slashIdx + 1) : runId;
+      return n === name;
+    });
+    if (!alreadyCovered) {
+      result.push([name, selected]);
+    }
+  }
+
+  window.localStorage.setItem(
+    RUN_SELECTION_KEY,
+    JSON.stringify({version: 1, runSelection: result})
+  );
+}
 
 @customElement('tf-runs-selector')
 class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
@@ -118,12 +202,7 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
     type: Object,
     observer: '_storeRunSelectionState',
   })
-  runSelectionState: object = storage
-    .getObjectInitializer('runSelectionState', {
-      defaultValue: {},
-      useLocalStorage: true,
-    })
-    .call(this);
+  runSelectionState: object = readSelectionFromLocalStorage();
 
   @property({
     type: String,
@@ -212,8 +291,9 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
     return dataLocation && dataLocation.length > _dataLocationClipLength;
   }
 
-  _storeRunSelectionState = storage.getObjectObserver('runSelectionState', {
-    defaultValue: {},
-    useLocalStorage: true,
-  });
+  _storeRunSelectionState() {
+    writeSelectionToLocalStorage(
+      this.runSelectionState as Record<string, boolean>
+    );
+  }
 }
