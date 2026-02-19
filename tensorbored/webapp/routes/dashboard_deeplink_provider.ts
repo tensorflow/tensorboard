@@ -41,6 +41,7 @@ import {
   SMOOTHING_KEY,
   TAG_FILTER_KEY,
 } from './dashboard_deeplink_provider_types';
+// Note: SMOOTHING_KEY is only used for deserialization (backwards compat with old URLs).
 import {featureFlagsToSerializableQueryParams} from './feature_flag_serializer';
 
 const COLOR_GROUP_REGEX_VALUE_PREFIX = 'regex:';
@@ -49,16 +50,19 @@ const COLOR_GROUP_REGEX_BY_EXP_VALUE_PREFIX = 'regex_by_exp:';
 /**
  * Provides deeplinking for the core dashboards page.
  *
- * Note: Pinned cards are NO LONGER stored in the URL to avoid URL length
- * limitations. Pins are now stored in localStorage via the profile system.
+ * Note: Pinned cards and smoothing are NO LONGER stored in the URL.
+ * Pins are stored in localStorage via the profile system to avoid URL length
+ * limitations. Smoothing is persisted in localStorage only.
  * See https://github.com/tensorflow/tensorboard/issues/4242 for context.
  *
  * The URL still supports:
  * - tagFilter: for filtering displayed tags
- * - smoothing: scalar smoothing setting
  * - runColorGroup: run color grouping configuration
  * - runFilter: run selector regex filter
  * - Feature flags
+ *
+ * For backwards compatibility, smoothing and pinnedCards are still
+ * deserialized from the URL if present (e.g. from old bookmarked URLs).
  *
  * For sharing complete dashboard configurations including pins, use the
  * profile export/import functionality.
@@ -89,19 +93,6 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
             overriddenFeatureFlags,
             featureFlagsMetadata
           );
-        })
-      ),
-      store.select(selectors.getMetricsSettingOverrides).pipe(
-        map((settingOverrides) => {
-          if (Number.isFinite(settingOverrides.scalarSmoothing)) {
-            return [
-              {
-                key: SMOOTHING_KEY,
-                value: String(settingOverrides.scalarSmoothing),
-              },
-            ];
-          }
-          return [];
         })
       ),
       store.select(selectors.getRunUserSetGroupBy).pipe(

@@ -69,30 +69,19 @@ describe('core deeplink provider', () => {
 
   describe('time series', () => {
     describe('smoothing state', () => {
-      it('serializes the smoothing state to the URL', () => {
+      it('does NOT serialize smoothing to the URL (stored in localStorage instead)', () => {
         store.overrideSelector(selectors.getMetricsSettingOverrides, {
-          scalarSmoothing: 0,
+          scalarSmoothing: 0.6,
         });
+        store.overrideSelector(selectors.getMetricsTagFilter, 'trigger');
         store.refreshState();
 
-        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
-          [
-            {
-              key: 'smoothing',
-              value: '0',
-            },
-          ]
-        );
-      });
-
-      it('does not reflect state when there is no override', () => {
-        store.overrideSelector(selectors.getMetricsSettingOverrides, {});
-
-        store.refreshState();
-
-        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
-          []
-        );
+        const lastEmission =
+          queryParamsSerialized[queryParamsSerialized.length - 1];
+        expect(lastEmission).toBeDefined();
+        expect(
+          lastEmission.find((p: {key: string}) => p.key === 'smoothing')
+        ).toBeUndefined();
       });
 
       it('deserializes the state in the URL without much sanitization', () => {
@@ -176,23 +165,19 @@ describe('core deeplink provider', () => {
       it('serializes nothing when states are empty', () => {
         store.overrideSelector(selectors.getPinnedCardsWithMetadata, []);
         store.overrideSelector(selectors.getUnresolvedImportedPinnedCards, []);
-        // Trigger an emission by changing a serialized selector (smoothing)
-        store.overrideSelector(selectors.getMetricsSettingOverrides, {
-          scalarSmoothing: 0.5,
-        });
+        // Trigger an emission by changing a serialized selector (tag filter)
+        store.overrideSelector(selectors.getMetricsTagFilter, 'trigger');
         store.refreshState();
 
-        // Verify emission occurred and does NOT contain pinned cards
         const lastEmission =
           queryParamsSerialized[queryParamsSerialized.length - 1];
         expect(lastEmission).toBeDefined();
-        // Should only have smoothing, no pinnedCards
         expect(
           lastEmission.find((p: {key: string}) => p.key === 'pinnedCards')
         ).toBeUndefined();
         expect(
           lastEmission.find((p: {key: string}) => p.key === 'smoothing')
-        ).toBeDefined();
+        ).toBeUndefined();
       });
 
       // Deserialization still works for backwards compatibility with old URLs
