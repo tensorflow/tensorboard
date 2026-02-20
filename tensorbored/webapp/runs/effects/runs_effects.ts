@@ -403,23 +403,35 @@ export class RunsEffects {
     // Keep a live run-name→hex-color map on `window` so the Polymer
     // old-style dashboards can read the exact same colors the
     // time-series tab is showing, with zero delay.
+    //
+    // We use a raw state selector with try/catch instead of
+    // store.select(getRunColorMap) because the latter throws when the
+    // settings slice isn't initialised yet, which kills the
+    // subscription permanently (catchError completes the observable).
     this.store
-      .select(getRunColorMap)
       .pipe(
+        map((state: State) => {
+          try {
+            return getRunColorMap(state);
+          } catch {
+            return null;
+          }
+        }),
+        filter(
+          (m): m is Record<string, string> =>
+            m !== null && Object.keys(m).length > 0
+        ),
         map((colorMap) => {
           const byName: Record<string, string> = {};
           for (const [runId, hex] of Object.entries(colorMap)) {
             byName[stripExpPrefix(runId)] = hex;
           }
           return byName;
-        }),
-        catchError(() => of({} as Record<string, string>))
+        })
       )
       .subscribe((byName) => {
-        if (Object.keys(byName).length > 0) {
-          (window as any).__tbRunColorMap = byName;
-          window.dispatchEvent(new CustomEvent('tb-run-color-map-changed'));
-        }
+        (window as any).__tbRunColorMap = byName;
+        window.dispatchEvent(new CustomEvent('tb-run-color-map-changed'));
       });
   }
 
