@@ -124,11 +124,16 @@ function stripExpPrefix(runId: string): string {
   return i >= 0 ? runId.substring(i + 1) : runId;
 }
 
+function runIdHasExperimentPrefix(runId: string): boolean {
+  return runId.indexOf('/') > 0;
+}
+
 function toPolymerRunColorMap(
   runColorMap: Record<string, string>
 ): Record<string, string> {
   const byName: Record<string, string> = {};
-  for (const [runId, hex] of Object.entries(runColorMap)) {
+  for (const runId of Object.keys(runColorMap).sort()) {
+    const hex = runColorMap[runId];
     const runName = stripExpPrefix(runId);
     const existing = byName[runName];
     if (existing !== undefined && existing !== hex) {
@@ -170,6 +175,45 @@ function filterRunColorMapToActiveRoute(
     }
   }
   return filtered;
+}
+
+function normalizeSelectionForActiveRoute(
+  runSelection: Array<[string, boolean]>,
+  experimentIds: string[] | null,
+  runIdToExperimentId: Record<string, string>
+): Array<[string, boolean]> {
+  const normalized = new Map<string, boolean>();
+  const activeExperimentIds = experimentIds ? new Set(experimentIds) : null;
+
+  for (const [storedRunId, selected] of runSelection) {
+    if (runIdHasExperimentPrefix(storedRunId)) {
+      normalized.set(storedRunId, selected);
+      continue;
+    }
+
+    const bareName = storedRunId;
+    let matched = false;
+    if (activeExperimentIds) {
+      for (const [runId, experimentId] of Object.entries(runIdToExperimentId)) {
+        if (!activeExperimentIds.has(experimentId)) continue;
+        if (stripExpPrefix(runId) !== bareName) continue;
+        normalized.set(runId, selected);
+        matched = true;
+      }
+    }
+
+    if (matched) continue;
+
+    if (activeExperimentIds && activeExperimentIds.size === 1) {
+      const [experimentId] = Array.from(activeExperimentIds);
+      normalized.set(`${experimentId}/${bareName}`, selected);
+      continue;
+    }
+
+    normalized.set(storedRunId, selected);
+  }
+
+  return Array.from(normalized.entries());
 }
 
 function storedSelectionEqualsMap(
@@ -321,11 +365,19 @@ export class RunsEffects {
     this.loadRunSelectionFromStorage$ = createEffect(() => {
       return this.actions$.pipe(
         ofType(navigated),
-        map(() => {
+        withLatestFrom(
+          this.store.select(getExperimentIdsFromRoute),
+          this.store.select(getRunIdToExperimentId)
+        ),
+        map(([, experimentIds, runIdToExperimentId]) => {
           const stored = safeParseStoredRunSelection(
             window.localStorage.getItem(RUN_SELECTION_STORAGE_KEY)
           );
-          const runSelection = stored.runSelection;
+          const runSelection = normalizeSelectionForActiveRoute(
+            stored.runSelection,
+            experimentIds,
+            runIdToExperimentId
+          );
 
           // If stored selection exists but ALL runs are set to false
           // (none visible), discard it so the default behaviour (all
@@ -435,12 +487,35 @@ export class RunsEffects {
           );
           return stored.runSelection;
         }),
-        withLatestFrom(this.store.select(getRunSelectionMap)),
-        filter(
-          ([runSelection, selectionMap]) =>
-            !storedSelectionEqualsMap(runSelection, selectionMap)
+        withLatestFrom(
+          this.store.select(getRunSelectionMap),
+          this.store.select(getExperimentIdsFromRoute),
+          this.store.select(getRunIdToExperimentId)
         ),
-        map(([runSelection]) => actions.runSelectionStateLoaded({runSelection}))
+        map(
+          ([
+            runSelection,
+            selectionMap,
+            experimentIds,
+            runIdToExperimentId,
+          ]) => {
+            const normalizedRunSelection = normalizeSelectionForActiveRoute(
+              runSelection,
+              experimentIds,
+              runIdToExperimentId
+            );
+            return {normalizedRunSelection, selectionMap};
+          }
+        ),
+        filter(
+          ({normalizedRunSelection, selectionMap}) =>
+            !storedSelectionEqualsMap(normalizedRunSelection, selectionMap)
+        ),
+        map(({normalizedRunSelection}) =>
+          actions.runSelectionStateLoaded({
+            runSelection: normalizedRunSelection,
+          })
+        )
       );
     });
 
