@@ -23,7 +23,10 @@ import {RequestManager} from '../../../components/tf_backend/requestManager';
 import {getRouter} from '../../../components/tf_backend/router';
 import {addParams} from '../../../components/tf_backend/urlPathHelpers';
 import '../../../components/tf_card_heading/tf-card-heading';
-import {runsColorScale} from '../../../components/tf_color_scale/colorScale';
+import {
+  RUN_COLOR_MAP_CHANGED_EVENT,
+  runsColorScale,
+} from '../../../components/tf_color_scale/colorScale';
 import {RequestDataCallback} from '../../../components/tf_dashboard_common/data-loader-behavior';
 import '../../../components/tf_line_chart_data_loader/tf-line-chart-data-loader';
 import * as vz_chart_helpers from '../../../components/vz_chart_helpers/vz-chart-helpers';
@@ -81,7 +84,7 @@ export class TfPrCurveCard extends PolymerElement {
         <div class="legend-row">
           <div
             class="color-box"
-            style="background: [[_computeRunColor(run)]];"
+            style="background: [[_computeRunColor(run, _runColorVersion)]];"
           ></div>
           [[run]] is at
           <span class="step-label-text">
@@ -198,6 +201,9 @@ export class TfPrCurveCard extends PolymerElement {
 
   @property({type: Boolean})
   _attached: boolean;
+  @property({type: Number})
+  _runColorVersion = 0;
+  private _runColorMapChangedListener: (() => void) | null = null;
 
   @property({type: Object})
   _xComponentsCreationMethod = () => {
@@ -306,17 +312,35 @@ export class TfPrCurveCard extends PolymerElement {
     };
   }
 
-  _computeRunColor(run) {
+  _computeRunColor(run, _) {
     return runsColorScale(run);
   }
 
   connectedCallback() {
     super.connectedCallback();
+    this._runColorMapChangedListener = () => {
+      this._runColorVersion += 1;
+    };
+    window.addEventListener(
+      RUN_COLOR_MAP_CHANGED_EVENT,
+      this._runColorMapChangedListener
+    );
     // Defer reloading until after we're attached, because that ensures that
     // the requestManager has been set from above. (Polymer is tricky
     // sometimes)
     this._attached = true;
     this.reload();
+  }
+
+  disconnectedCallback() {
+    if (this._runColorMapChangedListener) {
+      window.removeEventListener(
+        RUN_COLOR_MAP_CHANGED_EVENT,
+        this._runColorMapChangedListener
+      );
+      this._runColorMapChangedListener = null;
+    }
+    super.disconnectedCallback();
   }
 
   _getChartDataLoader() {

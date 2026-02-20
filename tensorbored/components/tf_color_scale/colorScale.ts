@@ -18,6 +18,8 @@ import {experimentsStore} from '../tf_backend/experimentsStore';
 import {runsStore} from '../tf_backend/runsStore';
 import {standard} from './palettes';
 
+export const RUN_COLOR_MAP_CHANGED_EVENT = 'tb-run-color-map-changed';
+
 /**
  * Read the run-name → hex-color map seeded on window by the NgRx
  * RunsEffects syncPolymerRunColorMap$ effect. Returns null before the
@@ -77,7 +79,7 @@ function createAutoUpdateColorScale(
   }
   store.addListener(update);
   // Re-read colors when the NgRx store subscription updates them.
-  window.addEventListener('tb-run-color-map-changed', update);
+  window.addEventListener(RUN_COLOR_MAP_CHANGED_EVENT, update);
   update();
   return (runName) => colorScale.getColor(runName);
 }
