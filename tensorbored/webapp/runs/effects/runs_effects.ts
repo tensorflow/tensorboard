@@ -15,7 +15,7 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Store} from '@ngrx/store';
-import {forkJoin, merge, Observable, of, throwError} from 'rxjs';
+import {forkJoin, fromEvent, merge, Observable, of, throwError} from 'rxjs';
 import {
   catchError,
   debounceTime,
@@ -39,6 +39,7 @@ import {
   getDashboardExperimentNames,
   getExperimentIdsFromRoute,
   getRunColorMap,
+  getRunIdToExperimentId,
   getRuns,
   getRunsLoadState,
 } from '../../selectors';
@@ -131,13 +132,55 @@ function toPolymerRunColorMap(
     const runName = stripExpPrefix(runId);
     const existing = byName[runName];
     if (existing !== undefined && existing !== hex) {
-      throw new Error(
+      // Old-style dashboards key by bare run name only. In compare-experiment
+      // mode, two experiments can share a run name with different colors. Keep
+      // the first color deterministically and report the conflict.
+      console.error(
         `Conflicting colors for run name "${runName}" across experiments.`
       );
+      continue;
     }
     byName[runName] = hex;
   }
   return byName;
+}
+
+function filterRunColorMapToActiveRoute(
+  runColorMap: Record<string, string>,
+  experimentIds: string[] | null,
+  runIdToExperimentId: Record<string, string>
+): Record<string, string> {
+  if (!experimentIds || experimentIds.length === 0) {
+    return {};
+  }
+  const activeExperimentIds = new Set(experimentIds);
+  const filtered: Record<string, string> = {};
+  for (const [runId, color] of Object.entries(runColorMap)) {
+    const mappedExperimentId = runIdToExperimentId[runId];
+    if (
+      mappedExperimentId !== undefined &&
+      activeExperimentIds.has(mappedExperimentId)
+    ) {
+      filtered[runId] = color;
+      continue;
+    }
+    const slashIdx = runId.indexOf('/');
+    if (slashIdx > 0 && activeExperimentIds.has(runId.substring(0, slashIdx))) {
+      filtered[runId] = color;
+    }
+  }
+  return filtered;
+}
+
+function storedSelectionEqualsMap(
+  runSelection: Array<[string, boolean]>,
+  map: Map<string, boolean>
+): boolean {
+  if (runSelection.length !== map.size) return false;
+  for (const [runId, selected] of runSelection) {
+    if (map.get(runId) !== selected) return false;
+  }
+  return true;
 }
 
 function persistRunColorsToLocalStorage(
@@ -343,9 +386,19 @@ export class RunsEffects {
             featureFlagActions.partialFeatureFlagsLoaded,
             featureFlagActions.overrideEnableDarkModeChanged
           ),
-          withLatestFrom(this.store.select(getRunColorMap)),
-          tap(([, runColorMap]) => {
-            (window as any).__tbRunColorMap = toPolymerRunColorMap(runColorMap);
+          withLatestFrom(
+            this.store.select(getRunColorMap),
+            this.store.select(getExperimentIdsFromRoute),
+            this.store.select(getRunIdToExperimentId)
+          ),
+          tap(([, runColorMap, experimentIds, runIdToExperimentId]) => {
+            const activeRouteColorMap = filterRunColorMapToActiveRoute(
+              runColorMap,
+              experimentIds,
+              runIdToExperimentId
+            );
+            (window as any).__tbRunColorMap =
+              toPolymerRunColorMap(activeRouteColorMap);
             window.dispatchEvent(new CustomEvent('tb-run-color-map-changed'));
           })
         );
@@ -373,6 +426,23 @@ export class RunsEffects {
       },
       {dispatch: false}
     );
+
+    this.syncRunSelectionFromPolymer$ = createEffect(() => {
+      return fromEvent(window, 'tb-run-selection-changed').pipe(
+        map(() => {
+          const stored = safeParseStoredRunSelection(
+            window.localStorage.getItem(RUN_SELECTION_STORAGE_KEY)
+          );
+          return stored.runSelection;
+        }),
+        withLatestFrom(this.store.select(getRunSelectionMap)),
+        filter(
+          ([runSelection, selectionMap]) =>
+            !storedSelectionEqualsMap(runSelection, selectionMap)
+        ),
+        map(([runSelection]) => actions.runSelectionStateLoaded({runSelection}))
+      );
+    });
 
     /**
      * After runs are loaded, compute all active run colors and detect
@@ -467,6 +537,9 @@ export class RunsEffects {
 
   /** @export */
   persistRunSelection$;
+
+  /** @export */
+  syncRunSelectionFromPolymer$;
 
   /** @export */
   resolveColorClashes$;
