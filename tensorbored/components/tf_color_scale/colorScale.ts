@@ -16,42 +16,32 @@ import * as d3 from 'd3';
 import {BaseStore} from '../tf_backend/baseStore';
 import {experimentsStore} from '../tf_backend/experimentsStore';
 import {runsStore} from '../tf_backend/runsStore';
-import {standard} from './palettes';
-
-const POLYMER_RUN_COLOR_MAP_KEY = '_tb_run_color_map';
 
 /**
- * Read the run-name → hex-color map.  Primary source is the in-memory
- * map on `window.__tbRunColorMap` (set by a live NgRx store
- * subscription, always up-to-date).  Falls back to localStorage for
- * the first render before the NgRx subscription has fired.
+ * Read the run-name → hex-color map from NgRx (exposed on window by
+ * RunsEffects). This is the single source of truth used by time-series.
  */
 function readColorMap(): Record<string, string> {
   const live = (window as any).__tbRunColorMap as
     | Record<string, string>
     | undefined;
-  if (live && Object.keys(live).length > 0) return live;
-  const raw = window.localStorage.getItem(POLYMER_RUN_COLOR_MAP_KEY);
-  if (!raw) return {};
-  try {
-    return JSON.parse(raw) as Record<string, string>;
-  } catch {
-    return {};
+  if (!live) {
+    throw new Error('Missing run color map on window.__tbRunColorMap');
   }
+  return live;
 }
 
 export class ColorScale {
   private identifiers = d3.map();
-  constructor(private readonly palette: string[] = standard) {}
 
   public setDomain(strings: string[]): this {
     const stored = readColorMap();
     this.identifiers = d3.map();
-    strings.forEach((s, i) => {
-      this.identifiers.set(
-        s,
-        stored[s] ?? this.palette[i % this.palette.length]
-      );
+    strings.forEach((s) => {
+      if (stored[s] === undefined) {
+        throw new Error(`Missing run color for "${s}" in shared color map`);
+      }
+      this.identifiers.set(s, stored[s]);
     });
     return this;
   }

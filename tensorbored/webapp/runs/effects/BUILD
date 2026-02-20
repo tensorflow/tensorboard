@@ -17,6 +17,7 @@ tf_ng_module(
         "//tensorbored/webapp/app_routing:types",
         "//tensorbored/webapp/app_routing/actions",
         "//tensorbored/webapp/core/actions",
+        "//tensorbored/webapp/feature_flag/actions",
         "//tensorbored/webapp/feature_flag/store",
         "//tensorbored/webapp/hparams/_redux:hparams_actions",
         "//tensorbored/webapp/runs:types",

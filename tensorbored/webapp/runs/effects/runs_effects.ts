@@ -32,6 +32,7 @@ import {navigated} from '../../app_routing/actions';
 import {RouteKind} from '../../app_routing/types';
 import {State} from '../../app_state';
 import * as coreActions from '../../core/actions';
+import * as featureFlagActions from '../../feature_flag/actions/feature_flag_actions';
 import * as hparamsActions from '../../hparams/_redux/hparams_actions';
 import {
   getActiveRoute,
@@ -117,17 +118,31 @@ function safeParseStoredRunSelection(
   }
 }
 
-const POLYMER_RUN_COLOR_MAP_KEY = '_tb_run_color_map';
-
 function stripExpPrefix(runId: string): string {
   const i = runId.indexOf('/');
   return i >= 0 ? runId.substring(i + 1) : runId;
 }
 
+function toPolymerRunColorMap(
+  runColorMap: Record<string, string>
+): Record<string, string> {
+  const byName: Record<string, string> = {};
+  for (const [runId, hex] of Object.entries(runColorMap)) {
+    const runName = stripExpPrefix(runId);
+    const existing = byName[runName];
+    if (existing !== undefined && existing !== hex) {
+      throw new Error(
+        `Conflicting colors for run name "${runName}" across experiments.`
+      );
+    }
+    byName[runName] = hex;
+  }
+  return byName;
+}
+
 function persistRunColorsToLocalStorage(
   runColorOverrides: Map<string, string>,
-  groupKeyToColorId: Map<string, number>,
-  runColorMap: Record<string, string>
+  groupKeyToColorId: Map<string, number>
 ) {
   const payload: StoredRunColorsV1 = {
     version: 1,
@@ -135,20 +150,6 @@ function persistRunColorsToLocalStorage(
     groupKeyToColorId: Array.from(groupKeyToColorId.entries()),
   };
   window.localStorage.setItem(RUN_COLOR_STORAGE_KEY, JSON.stringify(payload));
-
-  // Write run-name → hex map for old-style Polymer dashboards.
-  // Only write if we actually have data — don't poison localStorage
-  // with an empty map if the selector failed to produce colors.
-  if (Object.keys(runColorMap).length > 0) {
-    const polymerMap: Record<string, string> = {};
-    for (const [runId, hex] of Object.entries(runColorMap)) {
-      polymerMap[stripExpPrefix(runId)] = hex;
-    }
-    window.localStorage.setItem(
-      POLYMER_RUN_COLOR_MAP_KEY,
-      JSON.stringify(polymerMap)
-    );
-  }
 }
 
 function persistRunSelectionToLocalStorage(runSelection: Map<string, boolean>) {
@@ -318,22 +319,31 @@ export class RunsEffects {
             this.store.select(getGroupKeyToColorIdMap)
           ),
           tap(([, runColorOverrides, groupKeyToColorId]) => {
-            let runColorMap: Record<string, string> = {};
-            try {
-              this.store
-                .select(getRunColorMap)
-                .pipe(take(1))
-                .subscribe((m) => {
-                  runColorMap = m;
-                });
-            } catch {
-              // getRunColorMap may fail during test teardown.
-            }
-            persistRunColorsToLocalStorage(
-              runColorOverrides,
-              groupKeyToColorId,
-              runColorMap
-            );
+            persistRunColorsToLocalStorage(runColorOverrides, groupKeyToColorId);
+          })
+        );
+      },
+      {dispatch: false}
+    );
+
+    this.syncPolymerRunColorMap$ = createEffect(
+      () => {
+        return this.actions$.pipe(
+          ofType(
+            navigated,
+            actions.fetchRunsSucceeded,
+            actions.runColorChanged,
+            actions.runGroupByChanged,
+            actions.runColorSettingsLoaded,
+            actions.runColorOverridesFetchedFromApi,
+            actions.profileRunsSettingsApplied,
+            featureFlagActions.partialFeatureFlagsLoaded,
+            featureFlagActions.overrideEnableDarkModeChanged
+          ),
+          withLatestFrom(this.store.select(getRunColorMap)),
+          tap(([, runColorMap]) => {
+            (window as any).__tbRunColorMap = toPolymerRunColorMap(runColorMap);
+            window.dispatchEvent(new CustomEvent('tb-run-color-map-changed'));
           })
         );
       },
@@ -400,39 +410,6 @@ export class RunsEffects {
       );
     });
 
-    // Keep a live run-name→hex-color map on `window` so the Polymer
-    // old-style dashboards can read the exact same colors the
-    // time-series tab is showing, with zero delay.
-    //
-    // We use a raw state selector with try/catch instead of
-    // store.select(getRunColorMap) because the latter throws when the
-    // settings slice isn't initialised yet, which kills the
-    // subscription permanently (catchError completes the observable).
-    this.store
-      .pipe(
-        map((state: State) => {
-          try {
-            return getRunColorMap(state);
-          } catch {
-            return null;
-          }
-        }),
-        filter(
-          (m): m is Record<string, string> =>
-            m !== null && Object.keys(m).length > 0
-        ),
-        map((colorMap) => {
-          const byName: Record<string, string> = {};
-          for (const [runId, hex] of Object.entries(colorMap)) {
-            byName[stripExpPrefix(runId)] = hex;
-          }
-          return byName;
-        })
-      )
-      .subscribe((byName) => {
-        (window as any).__tbRunColorMap = byName;
-        window.dispatchEvent(new CustomEvent('tb-run-color-map-changed'));
-      });
   }
 
   private getRunsListLoadState(experimentId: string): Observable<LoadState> {
@@ -479,6 +456,9 @@ export class RunsEffects {
 
   /** @export */
   persistRunColorSettings$;
+
+  /** @export */
+  syncPolymerRunColorMap$;
 
   /** @export */
   loadRunSelectionFromStorage$;

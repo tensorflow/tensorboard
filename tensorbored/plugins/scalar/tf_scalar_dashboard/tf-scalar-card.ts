@@ -36,6 +36,7 @@ import {DEFAULT_TOOLTIP_COLUMNS} from '../../../components/vz_line_chart2/vz-lin
 type RunTagItem = {run: string; tag: string};
 
 const AXIS_SCALES_KEY = '_tb_axis_scales.v1';
+const AXIS_SCALES_CHANGED_EVENT = 'tb-axis-scales-changed';
 
 function ngRxScaleToYScale(name: string): YScaleType {
   if (name === 'log10') return YScaleType.LOG;
@@ -113,6 +114,7 @@ function persistTagAxisScale(
     delete tagScales[tag];
   }
   window.localStorage.setItem(AXIS_SCALES_KEY, JSON.stringify(stored));
+  window.dispatchEvent(new CustomEvent(AXIS_SCALES_CHANGED_EVENT));
 }
 
 // Request at most this many runs at once.
@@ -481,6 +483,29 @@ export class TfScalarCard extends PolymerElement {
     return columns;
   })();
 
+  private _axisScalesChangedListener: (() => void) | null = null;
+
+  override attached() {
+    super.attached();
+    this._axisScalesChangedListener = () => this._applyStoredScales();
+    window.addEventListener(
+      AXIS_SCALES_CHANGED_EVENT,
+      this._axisScalesChangedListener
+    );
+    this._applyStoredScales();
+  }
+
+  override detached() {
+    if (this._axisScalesChangedListener) {
+      window.removeEventListener(
+        AXIS_SCALES_CHANGED_EVENT,
+        this._axisScalesChangedListener
+      );
+      this._axisScalesChangedListener = null;
+    }
+    super.detached();
+  }
+
   _getChartDataLoader() {
     // tslint:disable-next-line:no-unnecessary-type-assertion
     return this.shadowRoot?.querySelector('tf-line-chart-data-loader') as any; // TfLineChartDataLoader
@@ -501,7 +526,12 @@ export class TfScalarCard extends PolymerElement {
 
   _tagChanged(tag: string) {
     if (!tag) return;
-    const scales = readAxisScalesForTag(tag);
+    this._applyStoredScales();
+  }
+
+  _applyStoredScales() {
+    if (!this.tag) return;
+    const scales = readAxisScalesForTag(this.tag);
     this._yScaleType = scales.y;
     this._xScaleType = scales.x;
   }

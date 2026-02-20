@@ -789,6 +789,7 @@ export class MetricsEffects implements OnInitEffects {
           } else {
             window.localStorage.removeItem(AXIS_SCALES_STORAGE_KEY);
           }
+          window.dispatchEvent(new CustomEvent('tb-axis-scales-changed'));
         }
       )
     );
