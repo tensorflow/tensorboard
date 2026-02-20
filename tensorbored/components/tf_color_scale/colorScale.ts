@@ -16,12 +16,12 @@ import * as d3 from 'd3';
 import {BaseStore} from '../tf_backend/baseStore';
 import {experimentsStore} from '../tf_backend/experimentsStore';
 import {runsStore} from '../tf_backend/runsStore';
+import {standard} from './palettes';
 
 /**
- * Read the run-name → hex-color map from NgRx (exposed on window by
- * RunsEffects). This is the single source of truth used by time-series.
- * Returns null when the map has not been seeded yet (e.g. during tests
- * or before the first NgRx effect fires).
+ * Read the run-name → hex-color map seeded on window by the NgRx
+ * RunsEffects syncPolymerRunColorMap$ effect. Returns null before the
+ * effect has fired for the first time.
  */
 function readColorMap(): Record<string, string> | null {
   return ((window as any).__tbRunColorMap as Record<string, string>) ?? null;
@@ -30,27 +30,37 @@ function readColorMap(): Record<string, string> | null {
 export class ColorScale {
   private identifiers = d3.map();
 
+  constructor(private readonly palette: string[] = standard) {}
+
   public setDomain(strings: string[]): this {
     this.identifiers = d3.map();
     if (strings.length === 0) {
       return this;
     }
     const stored = readColorMap();
-    if (!stored) {
-      return this;
+    if (stored) {
+      strings.forEach((s) => {
+        if (stored[s] === undefined) {
+          console.error(
+            `ColorScale: run "${s}" missing from shared color map`
+          );
+        }
+        this.identifiers.set(s, stored[s]);
+      });
+    } else {
+      // NgRx bridge has not seeded window.__tbRunColorMap yet.
+      // Fall back to the static palette so getColor never fails for
+      // runs that were passed to setDomain.
+      strings.forEach((s, i) => {
+        this.identifiers.set(s, this.palette[i % this.palette.length]);
+      });
     }
-    strings.forEach((s) => {
-      const color = stored[s];
-      if (color !== undefined) {
-        this.identifiers.set(s, color);
-      }
-    });
     return this;
   }
 
   public getColor(s: string): string {
     if (!this.identifiers.has(s)) {
-      return '#808080';
+      throw new Error(`String ${s} was not in the domain.`);
     }
     return this.identifiers.get(s) as string;
   }
