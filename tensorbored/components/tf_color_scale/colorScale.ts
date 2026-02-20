@@ -16,40 +16,42 @@ import * as d3 from 'd3';
 import {BaseStore} from '../tf_backend/baseStore';
 import {experimentsStore} from '../tf_backend/experimentsStore';
 import {runsStore} from '../tf_backend/runsStore';
-import {standard} from './palettes';
 
-// Example usage:
-// runs = ["train", "test", "test1", "test2"]
-// ccs = new ColorScale();
-// ccs.domain(runs);
-// ccs.getColor("train");
-// ccs.getColor("test1");
+/**
+ * Read the run-name → hex-color map from NgRx (exposed on window by
+ * RunsEffects). This is the single source of truth used by time-series.
+ */
+function readColorMap(): Record<string, string> {
+  const live = (window as any).__tbRunColorMap as
+    | Record<string, string>
+    | undefined;
+  if (!live) {
+    throw new Error('Missing run color map on window.__tbRunColorMap');
+  }
+  return live;
+}
+
 export class ColorScale {
   private identifiers = d3.map();
-  /**
-   * Creates a color scale with optional custom palette.
-   * @param {Array<string>} palette The color palette to use, as an
-   *   Array of hex strings. Defaults to the standard palette.
-   */
-  constructor(private readonly palette: string[] = standard) {}
-  /**
-   * Set the domain of strings.
-   * @param {Array<string>} strings - An array of possible strings to use as the
-   *     domain for your scale.
-   */
+
   public setDomain(strings: string[]): this {
     this.identifiers = d3.map();
-    strings.forEach((s, i) => {
-      this.identifiers.set(s, this.palette[i % this.palette.length]);
+    // Module-level initialization runs before the NgRx bridge seeds
+    // window.__tbRunColorMap. During that phase the run domain is empty.
+    // Keep strict behavior for non-empty domains only.
+    if (strings.length === 0) {
+      return this;
+    }
+    const stored = readColorMap();
+    strings.forEach((s) => {
+      if (stored[s] === undefined) {
+        throw new Error(`Missing run color for "${s}" in shared color map`);
+      }
+      this.identifiers.set(s, stored[s]);
     });
     return this;
   }
-  /**
-   * Use the color scale to transform an element in the domain into a color.
-   * @param {string} The input string to map to a color.
-   * @return {string} The color corresponding to that input string.
-   * @throws Will error if input string is not in the scale's domain.
-   */
+
   public getColor(s: string): string {
     if (!this.identifiers.has(s)) {
       throw new Error(`String ${s} was not in the domain.`);
@@ -58,21 +60,19 @@ export class ColorScale {
   }
 }
 
-/**
- * A color scale of a domain from a store. Automatically updated when the store
- * emits a change.
- */
 function createAutoUpdateColorScale(
   store: BaseStore,
   getDomain: () => string[]
 ): (runName: string) => string {
   const colorScale = new ColorScale();
-  function updateRunsColorScale(): void {
+  function update(): void {
     colorScale.setDomain(getDomain());
   }
-  store.addListener(updateRunsColorScale);
-  updateRunsColorScale();
-  return (domain) => colorScale.getColor(domain);
+  store.addListener(update);
+  // Re-read colors when the NgRx store subscription updates them.
+  window.addEventListener('tb-run-color-map-changed', update);
+  update();
+  return (runName) => colorScale.getColor(runName);
 }
 
 export const runsColorScale = createAutoUpdateColorScale(runsStore, () =>

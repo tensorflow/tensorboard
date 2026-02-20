@@ -103,9 +103,7 @@ const RUN_SELECTION_STORAGE_KEY = '_tb_run_selection.v1';
 
 function hasStoredRunSelection(): boolean {
   const raw = window.localStorage.getItem(RUN_SELECTION_STORAGE_KEY);
-  if (!raw) {
-    return false;
-  }
+  if (!raw) return false;
   try {
     const parsed = JSON.parse(raw) as {runSelection?: unknown};
     return Array.isArray(parsed.runSelection) && parsed.runSelection.length > 0;

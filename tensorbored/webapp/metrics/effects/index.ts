@@ -789,6 +789,7 @@ export class MetricsEffects implements OnInitEffects {
           } else {
             window.localStorage.removeItem(AXIS_SCALES_STORAGE_KEY);
           }
+          window.dispatchEvent(new CustomEvent('tb-axis-scales-changed'));
         }
       )
     );
@@ -890,6 +891,7 @@ export class MetricsEffects implements OnInitEffects {
         } else {
           window.localStorage.removeItem(TAG_GROUP_EXPANSION_STORAGE_KEY);
         }
+        window.dispatchEvent(new CustomEvent('tb-tag-group-expansion-changed'));
       })
     );
 

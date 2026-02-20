@@ -249,7 +249,8 @@ The frontend persists state to browser localStorage. This is the core mechanism 
 | `_tb_profile.*`        | Saved profile data            | JSON `ProfileData`                                                 | Profile effects |
 | `_tb_profiles_index`   | List of profile names         | JSON string array                                                  | Profile effects |
 | `_tb_active_profile`   | Currently active profile name | Plain string                                                       | Profile effects |
-| `_tb_run_selection.v1` | Run visibility states         | `{version: 1, runSelection: [[id, bool], ...]}`                    | Runs effects    |
+| `_tb_run_selection.v1` | Run visibility states (NgRx)  | `{version: 1, runSelection: [[id, bool], ...]}`                    | Runs effects    |
+| `runSelectionState`    | Run visibility states (Polymer) | Base64-encoded JSON `{runName: bool, ...}`                       | tf-runs-selector |
 | `_tb_run_colors.v1`    | Color overrides               | `{version: 1, runColorOverrides: [...], groupKeyToColorId: [...]}` | Runs effects    |
 | `_tb_tag_filter.v1`    | Tag filter regex              | `{value: string, timestamp: number}`                               | Metrics effects |
 | `_tb_axis_scales.v1`   | Axis scales                   | `{version: 1, yAxisScale?: string, xAxisScale?: string}`           | Metrics effects |
@@ -260,6 +261,7 @@ The frontend persists state to browser localStorage. This is the core mechanism 
 Important behaviors:
 
 - When loading run selection from localStorage, if **all** runs would be hidden, the selection is discarded and all runs default to visible.
+- Run selection is stored in two formats: `_tb_run_selection.v1` (NgRx, used by time-series dashboard) and `runSelectionState` (Polymer, used by old-style plugin dashboards). The NgRx effects write both formats to keep them in sync, and fall back to the Polymer format when the NgRx format is empty.
 - Tag filter persistence uses timestamps: user-set values override profile defaults.
 - Pins are synced to localStorage both when saving profiles and when pinning/unpinning cards directly.
 - Section expansion state is restored from localStorage before tag metadata loads, so the auto-expand-first-2-groups default only applies on truly fresh sessions with no persisted state.
@@ -488,6 +490,7 @@ If no persisted state exists and no profile specifies `expandedTagGroups`, the d
 | Issue | Status      | Description                                                                            |
 | ----- | ----------- | -------------------------------------------------------------------------------------- |
 | #25   | Implemented | Shift-select runs to toggle a range (shift+click to select a contiguous range of runs) |
+| #53   | Implemented | Run selection persistence across plugin dashboards and page reloads                    |
 
 ---
 

@@ -24,6 +24,90 @@ import {runsColorScale} from '../tf_color_scale/colorScale';
 import '../tf_dashboard_common/tf-multi-checkbox';
 import '../tf_wbr_string/tf-wbr-string';
 
+const RUN_SELECTION_KEY = '_tb_run_selection.v1';
+
+/**
+ * Read the NgRx run-selection localStorage entry and return it as a
+ * bare-run-name → boolean map suitable for tf-multi-checkbox.
+ */
+function readSelectionFromLocalStorage(): Record<string, boolean> {
+  const raw = window.localStorage.getItem(RUN_SELECTION_KEY);
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw) as {
+      version?: number;
+      runSelection?: Array<[string, boolean]>;
+    };
+    if (parsed.version !== 1 || !Array.isArray(parsed.runSelection)) return {};
+    const out: Record<string, boolean> = {};
+    for (const [runId, selected] of parsed.runSelection) {
+      const slashIdx = runId.indexOf('/');
+      const name = slashIdx >= 0 ? runId.substring(slashIdx + 1) : runId;
+      out[name] = selected;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Merge a bare-run-name selection map back into the NgRx localStorage
+ * entry, preserving any run-IDs that we don't know about.
+ */
+function writeSelectionToLocalStorage(state: Record<string, boolean>): void {
+  const raw = window.localStorage.getItem(RUN_SELECTION_KEY);
+  let existing: Array<[string, boolean]> = [];
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw) as {
+        version?: number;
+        runSelection?: Array<[string, boolean]>;
+      };
+      if (parsed.version === 1 && Array.isArray(parsed.runSelection)) {
+        existing = parsed.runSelection;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  // Build a set of bare names we're about to write so we can detect
+  // which existing entries to update vs. keep as-is.
+  const updatedIds = new Set<string>();
+  const result: Array<[string, boolean]> = [];
+
+  for (const [runId, _] of existing) {
+    const slashIdx = runId.indexOf('/');
+    const name = slashIdx >= 0 ? runId.substring(slashIdx + 1) : runId;
+    if (name in state) {
+      result.push([runId, state[name]]);
+      updatedIds.add(runId);
+    } else {
+      result.push([runId, _]);
+      updatedIds.add(runId);
+    }
+  }
+
+  // Add entries from `state` that weren't in `existing` (bare names).
+  for (const [name, selected] of Object.entries(state)) {
+    const alreadyCovered = existing.some(([runId]) => {
+      const slashIdx = runId.indexOf('/');
+      const n = slashIdx >= 0 ? runId.substring(slashIdx + 1) : runId;
+      return n === name;
+    });
+    if (!alreadyCovered) {
+      result.push([name, selected]);
+    }
+  }
+
+  window.localStorage.setItem(
+    RUN_SELECTION_KEY,
+    JSON.stringify({version: 1, runSelection: result})
+  );
+  window.dispatchEvent(new CustomEvent('tb-run-selection-changed'));
+}
+
 @customElement('tf-runs-selector')
 class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
@@ -115,8 +199,9 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
 
   @property({
     type: Object,
+    observer: '_storeRunSelectionState',
   })
-  runSelectionState: object = {};
+  runSelectionState: object = readSelectionFromLocalStorage();
 
   @property({
     type: String,
@@ -159,20 +244,44 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
 
   _envStoreListener: baseStore.ListenKey;
 
+  private _selectionChangedListener: (() => void) | null = null;
+  private _syncingFromStorage = false;
+
   override attached() {
+    this._syncFromStorage();
+
     this._runStoreListener = runsStore.addListener(() => {
-      this.set('runs', runsStore.getRuns());
+      this.set('runs', runsStore.getRuns().slice().sort());
     });
-    this.set('runs', runsStore.getRuns());
+    this.set('runs', runsStore.getRuns().slice().sort());
     this._envStoreListener = environmentStore.addListener(() => {
       this.set('dataLocation', environmentStore.getDataLocation());
     });
     this.set('dataLocation', environmentStore.getDataLocation());
+
+    this._selectionChangedListener = () => this._syncFromStorage();
+    window.addEventListener(
+      'tb-run-selection-changed',
+      this._selectionChangedListener
+    );
+  }
+
+  private _syncFromStorage() {
+    this._syncingFromStorage = true;
+    this.set('runSelectionState', readSelectionFromLocalStorage());
+    this._syncingFromStorage = false;
   }
 
   override detached() {
     runsStore.removeListenerByKey(this._runStoreListener);
     environmentStore.removeListenerByKey(this._envStoreListener);
+    if (this._selectionChangedListener) {
+      window.removeEventListener(
+        'tb-run-selection-changed',
+        this._selectionChangedListener
+      );
+      this._selectionChangedListener = null;
+    }
   }
 
   _toggleAll() {
@@ -205,7 +314,10 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
     return dataLocation && dataLocation.length > _dataLocationClipLength;
   }
 
-  // Run selection state and regex are no longer persisted to the URL hash.
-  // Run selection is managed via localStorage (runs_effects.ts).
-  // Regex filter is managed via Angular query params ('runFilter').
+  _storeRunSelectionState() {
+    if (this._syncingFromStorage) return;
+    writeSelectionToLocalStorage(
+      this.runSelectionState as Record<string, boolean>
+    );
+  }
 }

@@ -15,7 +15,7 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Store} from '@ngrx/store';
-import {forkJoin, merge, Observable, of, throwError} from 'rxjs';
+import {forkJoin, fromEvent, merge, Observable, of, throwError} from 'rxjs';
 import {
   catchError,
   debounceTime,
@@ -32,11 +32,14 @@ import {navigated} from '../../app_routing/actions';
 import {RouteKind} from '../../app_routing/types';
 import {State} from '../../app_state';
 import * as coreActions from '../../core/actions';
+import * as featureFlagActions from '../../feature_flag/actions/feature_flag_actions';
 import * as hparamsActions from '../../hparams/_redux/hparams_actions';
 import {
   getActiveRoute,
   getDashboardExperimentNames,
   getExperimentIdsFromRoute,
+  getRunColorMap,
+  getRunIdToExperimentId,
   getRuns,
   getRunsLoadState,
 } from '../../selectors';
@@ -116,6 +119,70 @@ function safeParseStoredRunSelection(
   }
 }
 
+function stripExpPrefix(runId: string): string {
+  const i = runId.indexOf('/');
+  return i >= 0 ? runId.substring(i + 1) : runId;
+}
+
+function toPolymerRunColorMap(
+  runColorMap: Record<string, string>
+): Record<string, string> {
+  const byName: Record<string, string> = {};
+  for (const [runId, hex] of Object.entries(runColorMap)) {
+    const runName = stripExpPrefix(runId);
+    const existing = byName[runName];
+    if (existing !== undefined && existing !== hex) {
+      // Old-style dashboards key by bare run name only. In compare-experiment
+      // mode, two experiments can share a run name with different colors. Keep
+      // the first color deterministically and report the conflict.
+      console.error(
+        `Conflicting colors for run name "${runName}" across experiments.`
+      );
+      continue;
+    }
+    byName[runName] = hex;
+  }
+  return byName;
+}
+
+function filterRunColorMapToActiveRoute(
+  runColorMap: Record<string, string>,
+  experimentIds: string[] | null,
+  runIdToExperimentId: Record<string, string>
+): Record<string, string> {
+  if (!experimentIds || experimentIds.length === 0) {
+    return {};
+  }
+  const activeExperimentIds = new Set(experimentIds);
+  const filtered: Record<string, string> = {};
+  for (const [runId, color] of Object.entries(runColorMap)) {
+    const mappedExperimentId = runIdToExperimentId[runId];
+    if (
+      mappedExperimentId !== undefined &&
+      activeExperimentIds.has(mappedExperimentId)
+    ) {
+      filtered[runId] = color;
+      continue;
+    }
+    const slashIdx = runId.indexOf('/');
+    if (slashIdx > 0 && activeExperimentIds.has(runId.substring(0, slashIdx))) {
+      filtered[runId] = color;
+    }
+  }
+  return filtered;
+}
+
+function storedSelectionEqualsMap(
+  runSelection: Array<[string, boolean]>,
+  map: Map<string, boolean>
+): boolean {
+  if (runSelection.length !== map.size) return false;
+  for (const [runId, selected] of runSelection) {
+    if (map.get(runId) !== selected) return false;
+  }
+  return true;
+}
+
 function persistRunColorsToLocalStorage(
   runColorOverrides: Map<string, string>,
   groupKeyToColorId: Map<string, number>
@@ -137,6 +204,7 @@ function persistRunSelectionToLocalStorage(runSelection: Map<string, boolean>) {
     RUN_SELECTION_STORAGE_KEY,
     JSON.stringify(payload)
   );
+  window.dispatchEvent(new CustomEvent('tb-run-selection-changed'));
 }
 
 function runToRunId(run: string, experimentId: string) {
@@ -257,20 +325,21 @@ export class RunsEffects {
           const stored = safeParseStoredRunSelection(
             window.localStorage.getItem(RUN_SELECTION_STORAGE_KEY)
           );
-          // If stored selection exists but ALL runs are set to false (none visible),
-          // don't apply it. Let the default behavior (all runs visible) take over.
-          // This prevents the bad UX of loading a page with all runs hidden.
-          const hasAnyVisibleRuns = stored.runSelection.some(
+          const runSelection = stored.runSelection;
+
+          // If stored selection exists but ALL runs are set to false
+          // (none visible), discard it so the default behaviour (all
+          // runs visible) takes over.
+          const hasAnyVisibleRuns = runSelection.some(
             ([, selected]) => selected
           );
-          if (stored.runSelection.length > 0 && !hasAnyVisibleRuns) {
-            // Return empty selection so default behavior applies
+          if (runSelection.length > 0 && !hasAnyVisibleRuns) {
             return actions.runSelectionStateLoaded({
               runSelection: [],
             });
           }
           return actions.runSelectionStateLoaded({
-            runSelection: stored.runSelection,
+            runSelection,
           });
         })
       );
@@ -303,6 +372,40 @@ export class RunsEffects {
       {dispatch: false}
     );
 
+    this.syncPolymerRunColorMap$ = createEffect(
+      () => {
+        return this.actions$.pipe(
+          ofType(
+            navigated,
+            actions.fetchRunsSucceeded,
+            actions.runColorChanged,
+            actions.runGroupByChanged,
+            actions.runColorSettingsLoaded,
+            actions.runColorOverridesFetchedFromApi,
+            actions.profileRunsSettingsApplied,
+            featureFlagActions.partialFeatureFlagsLoaded,
+            featureFlagActions.overrideEnableDarkModeChanged
+          ),
+          withLatestFrom(
+            this.store.select(getRunColorMap),
+            this.store.select(getExperimentIdsFromRoute),
+            this.store.select(getRunIdToExperimentId)
+          ),
+          tap(([, runColorMap, experimentIds, runIdToExperimentId]) => {
+            const activeRouteColorMap = filterRunColorMapToActiveRoute(
+              runColorMap,
+              experimentIds,
+              runIdToExperimentId
+            );
+            (window as any).__tbRunColorMap =
+              toPolymerRunColorMap(activeRouteColorMap);
+            window.dispatchEvent(new CustomEvent('tb-run-color-map-changed'));
+          })
+        );
+      },
+      {dispatch: false}
+    );
+
     this.persistRunSelection$ = createEffect(
       () => {
         return this.actions$.pipe(
@@ -323,6 +426,23 @@ export class RunsEffects {
       },
       {dispatch: false}
     );
+
+    this.syncRunSelectionFromPolymer$ = createEffect(() => {
+      return fromEvent(window, 'tb-run-selection-changed').pipe(
+        map(() => {
+          const stored = safeParseStoredRunSelection(
+            window.localStorage.getItem(RUN_SELECTION_STORAGE_KEY)
+          );
+          return stored.runSelection;
+        }),
+        withLatestFrom(this.store.select(getRunSelectionMap)),
+        filter(
+          ([runSelection, selectionMap]) =>
+            !storedSelectionEqualsMap(runSelection, selectionMap)
+        ),
+        map(([runSelection]) => actions.runSelectionStateLoaded({runSelection}))
+      );
+    });
 
     /**
      * After runs are loaded, compute all active run colors and detect
@@ -410,10 +530,16 @@ export class RunsEffects {
   persistRunColorSettings$;
 
   /** @export */
+  syncPolymerRunColorMap$;
+
+  /** @export */
   loadRunSelectionFromStorage$;
 
   /** @export */
   persistRunSelection$;
+
+  /** @export */
+  syncRunSelectionFromPolymer$;
 
   /** @export */
   resolveColorClashes$;
