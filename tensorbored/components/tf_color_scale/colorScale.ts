@@ -16,39 +16,46 @@ import * as d3 from 'd3';
 import {BaseStore} from '../tf_backend/baseStore';
 import {experimentsStore} from '../tf_backend/experimentsStore';
 import {runsStore} from '../tf_backend/runsStore';
+import {standard} from './palettes';
 
 /**
- * Read the run-name → hex-color map from NgRx (exposed on window by
- * RunsEffects). This is the single source of truth used by time-series.
+ * Read the run-name → hex-color map seeded on window by the NgRx
+ * RunsEffects syncPolymerRunColorMap$ effect. Returns null before the
+ * effect has fired for the first time.
  */
-function readColorMap(): Record<string, string> {
-  const live = (window as any).__tbRunColorMap as
-    | Record<string, string>
-    | undefined;
-  if (!live) {
-    throw new Error('Missing run color map on window.__tbRunColorMap');
-  }
-  return live;
+function readColorMap(): Record<string, string> | null {
+  return ((window as any).__tbRunColorMap as Record<string, string>) ?? null;
 }
 
 export class ColorScale {
   private identifiers = d3.map();
 
+  constructor(private readonly palette: string[] = standard) {}
+
   public setDomain(strings: string[]): this {
     this.identifiers = d3.map();
-    // Module-level initialization runs before the NgRx bridge seeds
-    // window.__tbRunColorMap. During that phase the run domain is empty.
-    // Keep strict behavior for non-empty domains only.
     if (strings.length === 0) {
       return this;
     }
     const stored = readColorMap();
-    strings.forEach((s) => {
-      if (stored[s] === undefined) {
-        throw new Error(`Missing run color for "${s}" in shared color map`);
-      }
-      this.identifiers.set(s, stored[s]);
-    });
+    if (stored) {
+      strings.forEach((s, i) => {
+        const color = stored[s];
+        if (color !== undefined) {
+          this.identifiers.set(s, color);
+        } else {
+          console.error(`ColorScale: run "${s}" missing from shared color map`);
+          this.identifiers.set(s, this.palette[i % this.palette.length]);
+        }
+      });
+    } else {
+      // NgRx bridge has not seeded window.__tbRunColorMap yet.
+      // Fall back to the static palette so getColor never fails for
+      // runs that were passed to setDomain.
+      strings.forEach((s, i) => {
+        this.identifiers.set(s, this.palette[i % this.palette.length]);
+      });
+    }
     return this;
   }
 

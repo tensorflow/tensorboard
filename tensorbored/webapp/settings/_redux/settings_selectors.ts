@@ -15,10 +15,19 @@ limitations under the License.
 import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {DataLoadState} from '../../types/data';
 import {ColorPalette} from '../../util/colors';
-import {SettingsState, SETTINGS_FEATURE_KEY} from './settings_types';
+import {
+  SettingsState,
+  SETTINGS_FEATURE_KEY,
+  initialState,
+} from './settings_types';
 
-const selectSettingsState =
+const selectSettingsStateRaw =
   createFeatureSelector<SettingsState>(SETTINGS_FEATURE_KEY);
+
+const selectSettingsState = createSelector(
+  selectSettingsStateRaw,
+  (state): SettingsState => state ?? initialState
+);
 
 export const getSettingsLoadState = createSelector(
   selectSettingsState,
