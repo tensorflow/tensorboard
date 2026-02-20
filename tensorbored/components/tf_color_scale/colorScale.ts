@@ -44,9 +44,7 @@ export class ColorScale {
         if (color !== undefined) {
           this.identifiers.set(s, color);
         } else {
-          console.error(
-            `ColorScale: run "${s}" missing from shared color map`
-          );
+          console.error(`ColorScale: run "${s}" missing from shared color map`);
           this.identifiers.set(s, this.palette[i % this.palette.length]);
         }
       });
