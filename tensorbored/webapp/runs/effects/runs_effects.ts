@@ -137,14 +137,18 @@ function persistRunColorsToLocalStorage(
   window.localStorage.setItem(RUN_COLOR_STORAGE_KEY, JSON.stringify(payload));
 
   // Write run-name → hex map for old-style Polymer dashboards.
-  const polymerMap: Record<string, string> = {};
-  for (const [runId, hex] of Object.entries(runColorMap)) {
-    polymerMap[stripExpPrefix(runId)] = hex;
+  // Only write if we actually have data — don't poison localStorage
+  // with an empty map if the selector failed to produce colors.
+  if (Object.keys(runColorMap).length > 0) {
+    const polymerMap: Record<string, string> = {};
+    for (const [runId, hex] of Object.entries(runColorMap)) {
+      polymerMap[stripExpPrefix(runId)] = hex;
+    }
+    window.localStorage.setItem(
+      POLYMER_RUN_COLOR_MAP_KEY,
+      JSON.stringify(polymerMap)
+    );
   }
-  window.localStorage.setItem(
-    POLYMER_RUN_COLOR_MAP_KEY,
-    JSON.stringify(polymerMap)
-  );
 }
 
 function persistRunSelectionToLocalStorage(runSelection: Map<string, boolean>) {
@@ -405,7 +409,10 @@ export class RunsEffects {
         for (const [runId, hex] of Object.entries(colorMap)) {
           byName[stripExpPrefix(runId)] = hex;
         }
-        (window as any).__tbRunColorMap = byName;
+        if (Object.keys(byName).length > 0) {
+          (window as any).__tbRunColorMap = byName;
+          window.dispatchEvent(new CustomEvent('tb-run-color-map-changed'));
+        }
       } catch {
         // safe to ignore during teardown
       }

@@ -73,6 +73,8 @@ function createAutoUpdateColorScale(
     colorScale.setDomain(getDomain());
   }
   store.addListener(update);
+  // Re-read colors when the NgRx store subscription updates them.
+  window.addEventListener('tb-run-color-map-changed', update);
   update();
   return (runName) => colorScale.getColor(runName);
 }
