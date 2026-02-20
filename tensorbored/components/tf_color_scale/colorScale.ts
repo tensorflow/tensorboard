@@ -21,11 +21,16 @@ import {standard} from './palettes';
 const POLYMER_RUN_COLOR_MAP_KEY = '_tb_run_color_map';
 
 /**
- * Read the run-name → hex-color map written by the NgRx
- * persistRunColorSettings$ effect.  This is the single source of truth
- * for run colors — the exact same final colors the time-series tab shows.
+ * Read the run-name → hex-color map.  Primary source is the in-memory
+ * map on `window.__tbRunColorMap` (set by a live NgRx store
+ * subscription, always up-to-date).  Falls back to localStorage for
+ * the first render before the NgRx subscription has fired.
  */
 function readColorMap(): Record<string, string> {
+  const live = (window as any).__tbRunColorMap as
+    | Record<string, string>
+    | undefined;
+  if (live && Object.keys(live).length > 0) return live;
   const raw = window.localStorage.getItem(POLYMER_RUN_COLOR_MAP_KEY);
   if (!raw) return {};
   try {

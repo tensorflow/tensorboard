@@ -395,6 +395,21 @@ export class RunsEffects {
         )
       );
     });
+
+    // Keep a live run-name→hex-color map on `window` so the Polymer
+    // old-style dashboards can read the exact same colors the
+    // time-series tab is showing, with zero delay.
+    this.store.select(getRunColorMap).subscribe((colorMap) => {
+      try {
+        const byName: Record<string, string> = {};
+        for (const [runId, hex] of Object.entries(colorMap)) {
+          byName[stripExpPrefix(runId)] = hex;
+        }
+        (window as any).__tbRunColorMap = byName;
+      } catch {
+        // safe to ignore during teardown
+      }
+    });
   }
 
   private getRunsListLoadState(experimentId: string): Observable<LoadState> {
