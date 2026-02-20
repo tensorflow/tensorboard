@@ -35,8 +35,14 @@ export class ColorScale {
   private identifiers = d3.map();
 
   public setDomain(strings: string[]): this {
-    const stored = readColorMap();
     this.identifiers = d3.map();
+    // Module-level initialization runs before the NgRx bridge seeds
+    // window.__tbRunColorMap. During that phase the run domain is empty.
+    // Keep strict behavior for non-empty domains only.
+    if (strings.length === 0) {
+      return this;
+    }
+    const stored = readColorMap();
     strings.forEach((s) => {
       if (stored[s] === undefined) {
         throw new Error(`Missing run color for "${s}" in shared color map`);
