@@ -55,7 +55,7 @@ const cascadingRedraw = _.throttle(function internalRedraw() {
     x._maybeRenderedInBadState = false;
   }
   window.cancelAnimationFrame(redrawRaf);
-  window.requestAnimationFrame(internalRedraw);
+  redrawRaf = window.requestAnimationFrame(internalRedraw);
 }, 100);
 
 // A component that fetches data from the TensorBoard server and renders it into
@@ -140,6 +140,38 @@ class _TfLineChartDataLoader<ScalarMetadata>
   `;
 
   private _redrawRaf: number | null = null;
+  private _resizeObserver: ResizeObserver | null = null;
+  private _lastObservedWidth = -1;
+  private _lastObservedHeight = -1;
+
+  override connectedCallback() {
+    super.connectedCallback();
+    this._resizeObserver = new ResizeObserver((entries) => {
+      if (entries.length === 0) return;
+      const {width, height} = entries[0].contentRect;
+      const roundedWidth = Math.round(width);
+      const roundedHeight = Math.round(height);
+      if (
+        roundedWidth === this._lastObservedWidth &&
+        roundedHeight === this._lastObservedHeight
+      ) {
+        return;
+      }
+      this._lastObservedWidth = roundedWidth;
+      this._lastObservedHeight = roundedHeight;
+
+      if (roundedWidth <= 0 || roundedHeight <= 0 || !this.active) {
+        this._maybeRenderedInBadState = true;
+        return;
+      }
+
+      if (!redrawQueue.includes(this)) {
+        redrawQueue.push(this);
+      }
+      cascadingRedraw();
+    });
+    this._resizeObserver.observe(this);
+  }
 
   @property({
     type: Boolean,
@@ -231,6 +263,10 @@ class _TfLineChartDataLoader<ScalarMetadata>
   }
 
   override disconnectedCallback() {
+    if (this._resizeObserver !== null) {
+      this._resizeObserver.disconnect();
+      this._resizeObserver = null;
+    }
     super.disconnectedCallback();
     if (this._redrawRaf !== null) cancelAnimationFrame(this._redrawRaf);
   }
